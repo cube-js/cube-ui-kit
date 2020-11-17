@@ -1,0 +1,54 @@
+{
+  "name": "@cubejs-enterprise/uikit",
+  "version": "0.0.1",
+  "description": "UIKit for Cube Cloud",
+  "main": "index.js",
+  "scripts": {
+    "start": "parcel src/storybook.html",
+    "build": "NODE_ENV=production rollup -c",
+    "test": "web-test-runner \"src/**/*.test.jsx\"",
+    "format": "prettier --write \"src/**/*.{js,jsx}\"",
+    "lint": "prettier --check \"src/**/*.{js,jsx}\""
+  },
+  "keywords": [
+    "uikit"
+  ],
+  "author": "Cube Dev Team",
+  "devDependencies": {
+    "@babel/core": "^7.12.3",
+    "@babel/preset-react": "^7.12.5",
+    "@rollup/plugin-babel": "^5.2.1",
+    "@rollup/plugin-commonjs": "^15.1.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^10.0.0",
+    "@rollup/plugin-url": "^5.0.1",
+    "@svgr/rollup": "^5.4.0",
+    "@testing-library/react": "^11.0.0",
+    "@web/test-runner": "^0.9.7",
+    "antd": "^4.8.2",
+    "babel-loader": "^8.2.1",
+    "babel-plugin-import": "^1.13.1",
+    "babel-plugin-transform-react-remove-prop-types": "^0.4.24",
+    "babel-preset-react-app": "^10.0.0",
+    "chai": "^4.2.0",
+    "css-loader": "^5.0.1",
+    "less-loader": "^7.1.0",
+    "parcel-bundler": "^1.12.4",
+    "prettier": "^2.0.5",
+    "react": "^16.0.0",
+    "react-dom": "^16.0.0",
+    "rollup": "^2.33.1",
+    "rollup-plugin-less": "^1.1.2",
+    "rollup-plugin-postcss": "^3.1.8",
+    "rollup-plugin-replace": "^2.2.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "style-loader": "^2.0.0",
+    "styled-components": "^5.2.1"
+  },
+  "browserslist": [
+    "iOS 10",
+    "last 10 Chrome versions",
+    "last 5 Firefox versions",
+    "last 3 Safari versions"
+  ]
+}
