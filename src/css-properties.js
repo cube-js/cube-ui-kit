@@ -21,6 +21,10 @@ function color(name, opacity = 1) {
 }
 
 const PROPS = {
+  'font-size': '14px',
+  'line-height': '22px',
+  'input-font-size': '16px',
+  'input-line-height': '22px',
   'gap': '.5rem',
   'radius': '.25rem',
   'border-width': '1px',

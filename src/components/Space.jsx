@@ -3,11 +3,26 @@ import Base from './Base';
 
 const DEFAULT_STYLES = {
   display: 'flex',
+  gap: true,
 };
 
 export default function Flex({ ...props }) {
+  props = { ...props };
+
   if (!props.flow) {
     props.flow = 'row';
+  }
+
+  if (props.direction) {
+    props.flow = props.direction === 'vertical' ? 'column' : 'row';
+
+    delete props.direction;
+  }
+
+  if (props.align) {
+    props.items = props.align;
+
+    delete props.align;
   }
 
   return (

@@ -1,4 +1,4 @@
-const VARIABLES = require('./src/variables');
+const VARIABLES = require('./src/less-variables');
 
 const LESS_VARIABLES = {};
 

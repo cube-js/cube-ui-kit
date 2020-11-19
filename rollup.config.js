@@ -7,7 +7,7 @@ import json from '@rollup/plugin-json';
 import postcss from 'rollup-plugin-postcss';
 import pkg from './package.json';
 
-const VARIABLES = require('./src/variables');
+const VARIABLES = require('./src/less-variables');
 
 const LESS_VARIABLES = {};
 
@@ -83,6 +83,7 @@ export default [
       }),
       resolve({
         extensions: ['.jsx', '.js'],
+        preferBuiltins: false,
       }),
       commonjs(),
       json(),

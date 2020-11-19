@@ -8,6 +8,10 @@ export default function gapStyle({ display, flow, gap }) {
     flow = isFlex ? 'row' : 'column';
   }
 
+  if (typeof gap === 'number') {
+    gap = `${gap}x`;
+  }
+
   if (!gap) {
     return;
   }

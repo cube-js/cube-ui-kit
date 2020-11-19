@@ -17,6 +17,7 @@ import radiusStyle from '../styles/radius';
 import borderStyle from '../styles/border';
 import shadowStyle from '../styles/shadow';
 import paddingStyle from '../styles/padding';
+import placeStyle from '../styles/place';
 
 const STYLES = [
   gapStyle,
@@ -34,22 +35,11 @@ const STYLES = [
   borderStyle,
   shadowStyle,
   paddingStyle,
+  placeStyle,
 ];
 
-export default styled.div(({ styles, defaultStyles, styleAttrs, responsive, ...props }) => {
-  defaultStyles = defaultStyles || {};
-  styles = Object.assign({}, defaultStyles, styles || {});
-  styles.display = styles.display || 'inline-block';
-
-  if (styleAttrs) {
-    styleAttrs.forEach((style) => {
-      if (props.hasOwnProperty(style)) {
-        styles[style] = props[style];
-      }
-    });
-  }
-
-  const zones = responsive ? pointsToZones(responsive) : useContext(ResponsiveContext);
+const BaseElement = styled.div(({ styles, defaultStyles, styleAttrs, responsive, ...props }) => {
+  const zones = responsive;
 
   let rawStyles = '',
     responsiveStyles = Array.from(Array(zones.length)).map(() => '');
@@ -95,6 +85,29 @@ export default styled.div(({ styles, defaultStyles, styleAttrs, responsive, ...p
 
   return `${rawStyles}${mediaWrapper(responsiveStyles, zones)}`;
 });
+
+export default function({ styles, defaultStyles, styleAttrs, responsive, ...props }) {
+  defaultStyles = defaultStyles || {};
+  styles = Object.assign({}, defaultStyles, styles || {});
+  styles.display = styles.display || 'inline-block';
+
+  if (styleAttrs) {
+    const filteredProps = { ...props };
+
+    styleAttrs.forEach((style) => {
+      if (props.hasOwnProperty(style)) {
+        styles[style] = props[style];
+        delete filteredProps[style];
+      }
+    });
+
+    props = filteredProps;
+  }
+
+  const zones = responsive ? pointsToZones(responsive) : useContext(ResponsiveContext);
+
+  return <BaseElement {...props} responsive={zones} styles={styles}/>;
+}
 
 const styleProps = new Set();
 

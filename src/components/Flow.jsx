@@ -4,15 +4,13 @@ import Base from './Base';
 const DEFAULT_STYLES = {
   display: 'block',
   flow: 'column',
-  radius: '1x',
-  bg: '#white',
 };
 
-export default function Card({ ...props }) {
+export default function Flow({ ...props }) {
   return (
     <Base
       defaultStyles={DEFAULT_STYLES}
-      styleAttrs={['gap', 'flow', 'display', 'height', 'width', 'place']}
+      styleAttrs={['gap', 'height', 'width', 'place']}
       {...props}
     />
   );
