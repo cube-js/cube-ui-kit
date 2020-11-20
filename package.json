@@ -2,7 +2,7 @@
   "name": "@cubejs-enterprise/uikit",
   "version": "0.0.1",
   "description": "UIKit for Cube Cloud",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "start": "parcel src/storybook.html",
     "build": "NODE_ENV=production rollup -c",

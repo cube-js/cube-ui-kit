@@ -1,5 +1,3 @@
-dist/storybook.html
-dist/script*
 node_modules
 .DS_Store
 .idea
