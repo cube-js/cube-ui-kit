@@ -4,6 +4,7 @@ import Base from './Base';
 const DEFAULT_STYLES = {
   display: 'flex',
   gap: true,
+  items: 'center stretch',
 };
 
 export default function Flex({ ...props }) {

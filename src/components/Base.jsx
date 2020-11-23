@@ -2,9 +2,6 @@ import React, { useContext } from 'react';
 import styled from 'styled-components';
 import { ResponsiveContext } from '../providers/Responsive';
 import gapStyle from '../styles/gap';
-import itemsStyle from '../styles/items';
-import contentStyle from '../styles/content';
-import displayStyle from '../styles/display';
 import flowStyle from '../styles/flow';
 import { mediaWrapper, normalizeStyleZones, pointsToZones } from '../utils/responsive';
 import columnsStyle from '../styles/colums';
@@ -17,13 +14,18 @@ import radiusStyle from '../styles/radius';
 import borderStyle from '../styles/border';
 import shadowStyle from '../styles/shadow';
 import paddingStyle from '../styles/padding';
-import placeStyle from '../styles/place';
+import createNativeStyle from '../styles/native';
 
 const STYLES = [
+  createNativeStyle('display'),
+  createNativeStyle('content', 'place-content'),
+  createNativeStyle('items', 'place-items'),
+  createNativeStyle('place', 'place-self'),
+  createNativeStyle('grow'),
+  createNativeStyle('shrink'),
+  createNativeStyle('order'),
+  createNativeStyle('cursor'),
   gapStyle,
-  itemsStyle,
-  contentStyle,
-  displayStyle,
   flowStyle,
   columnsStyle,
   rowsStyle,
@@ -35,7 +37,6 @@ const STYLES = [
   borderStyle,
   shadowStyle,
   paddingStyle,
-  placeStyle,
 ];
 
 const BaseElement = styled.div(({ styles, defaultStyles, styleAttrs, responsive, ...props }) => {

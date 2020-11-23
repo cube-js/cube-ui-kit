@@ -17,7 +17,7 @@ export default function gapStyle({ display, flow, gap }) {
   }
 
   if (gap === true) {
-    gap = '1x';
+    gap = '2x';
   }
 
   const { values } = parseStyle(gap);

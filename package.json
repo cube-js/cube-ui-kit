@@ -16,7 +16,6 @@
   ],
   "author": "Cube Dev Team",
   "devDependencies": {
-    "antd": "^4.8.2",
     "@babel/cli": "^7.12.7",
     "@babel/core": "^7.12.3",
     "@babel/plugin-proposal-optional-chaining": "^7.12.7",
@@ -30,6 +29,7 @@
     "@svgr/rollup": "^5.4.0",
     "@testing-library/react": "^11.0.0",
     "@web/test-runner": "^0.9.7",
+    "antd": "^4.8.2",
     "babel-loader": "^8.2.1",
     "babel-plugin-import": "^1.13.1",
     "babel-plugin-transform-react-remove-prop-types": "^0.4.24",

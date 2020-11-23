@@ -7,6 +7,7 @@ module.exports = {
       ignoreRegExpLiterals: true,
       ignoreStrings: true,
       ignoreTemplateLiterals: true,
-    }]
+    }],
+    'no-sparse-arrays': 0,
   }
 };
