@@ -15,7 +15,15 @@ export default function Card({ ...props }) {
     <Base
       role="region"
       defaultStyles={DEFAULT_STYLES}
-      styleAttrs={['gap', 'flow', 'display', 'height', 'width', 'place', 'padding']}
+      styleAttrs={[
+        'gap',
+        'flow',
+        'display',
+        'height',
+        'width',
+        'place',
+        'padding',
+      ]}
       {...props}
     />
   );

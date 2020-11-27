@@ -1,7 +1,7 @@
 import { createRule, parseStyle } from '../utils/styles';
 
 export default function createNativeStyle(styleName, cssStyle, parseUnits) {
-  const NativeStyle = function(styles) {
+  const NativeStyle = function (styles) {
     let value = styles[styleName];
 
     if (!value) return '';

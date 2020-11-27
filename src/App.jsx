@@ -20,8 +20,7 @@ function App() {
       <PageHeader
         title="Storybook"
         description="Showcase and documentation for Cube Cloud UIKit"
-      >
-      </PageHeader>
+      ></PageHeader>
       <TopBar onLogoPress={() => {}}></TopBar>
       <Flex
         styles={{
@@ -34,14 +33,19 @@ function App() {
         <button>2</button>
       </Flex>
       <Grid columns="auto 1fr" gap="1x" styles={{ height: '100px' }}>
-        <Base
-          styles={{ bg: color('purple', 0.1), width: '200px' }}
-        >Without padding</Base>
-        <Card styles={{
-          bg: '#purple.50',
-          border: true,
-          shadow: true,
-          padding: '2x' }}>Text</Card>
+        <Base styles={{ bg: color('purple', 0.1), width: '200px' }}>
+          Without padding
+        </Base>
+        <Card
+          styles={{
+            bg: '#purple.50',
+            border: true,
+            shadow: true,
+            padding: '2x',
+          }}
+        >
+          Text
+        </Card>
       </Grid>
     </ResponsiveProvider>
   );

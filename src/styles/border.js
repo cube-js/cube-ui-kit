@@ -1,4 +1,9 @@
-import { createRule, DIRECTIONS, filterMods, parseStyle } from '../utils/styles';
+import {
+  createRule,
+  DIRECTIONS,
+  filterMods,
+  parseStyle,
+} from '../utils/styles';
 
 export default function borderStyle({ border }) {
   if (border === true) border = '1bw';
@@ -6,7 +11,7 @@ export default function borderStyle({ border }) {
   const { values, mods, color } = parseStyle(border);
 
   const directions = filterMods(mods, DIRECTIONS);
-  const typeMods = mods.filter(m => !directions.includes(m));
+  const typeMods = mods.filter((m) => !directions.includes(m));
 
   const value = values[0] || 'var(--border-width)';
   const type = typeMods[0] || 'solid';

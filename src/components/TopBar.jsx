@@ -19,7 +19,7 @@ export default function TopBar({ children, onLogoPress, ...props }) {
       {...props}
     >
       <CloudLogo onPress={onLogoPress} />
-      { children }
+      {children}
     </Base>
   );
 }

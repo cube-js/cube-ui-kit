@@ -1,4 +1,9 @@
-import { createRule, parseStyle, DIRECTIONS, filterMods } from '../utils/styles';
+import {
+  createRule,
+  parseStyle,
+  DIRECTIONS,
+  filterMods,
+} from '../utils/styles';
 
 export default function paddingStyle({ padding }) {
   if (padding === true) padding = '1x';
@@ -18,7 +23,10 @@ export default function paddingStyle({ padding }) {
   return directions.reduce((styles, dir) => {
     const index = DIRECTIONS.indexOf(dir);
 
-    styles += createRule(`padding-${dir}`, values[index] || values[index % 2] || values[0]);
+    styles += createRule(
+      `padding-${dir}`,
+      values[index] || values[index % 2] || values[0],
+    );
 
     return styles;
   }, '');

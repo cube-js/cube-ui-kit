@@ -13,7 +13,15 @@ export default function Flex({ ...props }) {
   return (
     <Base
       defaultStyles={DEFAULT_STYLES}
-      styleAttrs={['gap', 'flow', 'height', 'width', 'place', 'content', 'items']}
+      styleAttrs={[
+        'gap',
+        'flow',
+        'height',
+        'width',
+        'place',
+        'content',
+        'items',
+      ]}
       {...props}
     />
   );
