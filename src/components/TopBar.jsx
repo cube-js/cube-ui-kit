@@ -18,10 +18,11 @@ export default function TopBar({ children, onLogoPress, ...props }) {
       role="banner"
       defaultStyles={DEFAULT_STYLES}
       styleAttrs={['gap', 'height', 'width', 'content', 'items', 'border']}
+      content="space-between"
       {...props}
     >
       <CloudLogo onPress={onLogoPress} />
-      <Space grow={1}>
+      <Space grow={1} content="space-between">
         {children}
       </Space>
     </Base>

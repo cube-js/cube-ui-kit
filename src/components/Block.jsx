@@ -9,7 +9,7 @@ export default function Block({ ...props }) {
   return (
     <Base
       defaultStyles={DEFAULT_STYLES}
-      styleAttrs={['height', 'width', 'place', 'padding', 'border', 'shadow', 'radius']}
+      styleAttrs={['height', 'width', 'place', 'padding', 'border', 'shadow', 'radius', 'grow', 'shrink']}
       {...props}
     />
   );
