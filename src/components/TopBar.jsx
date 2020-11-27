@@ -1,6 +1,7 @@
 import React from 'react';
 import Base from './Base';
 import CloudLogo from './CloudLogo';
+import Space from './Space';
 
 const DEFAULT_STYLES = {
   display: 'flex',
@@ -14,12 +15,15 @@ const DEFAULT_STYLES = {
 export default function TopBar({ children, onLogoPress, ...props }) {
   return (
     <Base
+      role="banner"
       defaultStyles={DEFAULT_STYLES}
-      styleAttrs={['gap', 'height', 'width', 'content', 'items']}
+      styleAttrs={['gap', 'height', 'width', 'content', 'items', 'border']}
       {...props}
     >
       <CloudLogo onPress={onLogoPress} />
-      { children }
+      <Space grow={1}>
+        {children}
+      </Space>
     </Base>
   );
 }

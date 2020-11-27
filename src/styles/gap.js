@@ -1,6 +1,8 @@
 import { createRule, parseStyle } from '../utils/styles';
 
 export default function gapStyle({ display, flow, gap }) {
+  if (!gap) return '';
+
   const isGrid = display.includes('grid');
   const isFlex = display.includes('flex');
 

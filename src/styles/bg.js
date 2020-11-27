@@ -1,6 +1,8 @@
 import { createRule, parseStyle } from '../utils/styles';
 
 export default function bgStyle({ bg }) {
+  if (!bg) return '';
+
   if (bg.startsWith('#')) {
     bg = parseStyle(bg).color;
   }

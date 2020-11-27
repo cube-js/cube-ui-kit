@@ -56,6 +56,13 @@ module.exports = {
   'disabled-color': color('dark-03'),
   'disabled-bg': color('dark-05', 0.2),
 
+  // headings
+  'heading-1-size': 'var(--h1-font-size)',
+  'heading-2-size': 'var(--h2-font-size)',
+  'heading-3-size': 'var(--h3-font-size)',
+  'heading-4-size': 'var(--h4-font-size)',
+  'heading-5-size': 'var(--h5-font-size)',
+
   // select
   'select-item-selected-color': 'white',
 

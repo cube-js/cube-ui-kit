@@ -1,6 +1,8 @@
 import { createRule, DIRECTIONS, filterMods, parseStyle } from '../utils/styles';
 
 export default function borderStyle({ border }) {
+  if (!border) return '';
+
   if (border === true) border = '1bw';
 
   const { values, mods, color } = parseStyle(border);

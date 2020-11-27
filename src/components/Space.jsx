@@ -7,9 +7,7 @@ const DEFAULT_STYLES = {
   items: 'center stretch',
 };
 
-export default function Flex({ ...props }) {
-  props = { ...props };
-
+export default function Space({ ...props }) {
   if (!props.flow) {
     props.flow = 'row';
   }
@@ -26,10 +24,14 @@ export default function Flex({ ...props }) {
     delete props.align;
   }
 
+  if (!props.items) {
+    props.items = props.flow === 'row' ? 'center' : 'stretch';
+  }
+
   return (
     <Base
       defaultStyles={DEFAULT_STYLES}
-      styleAttrs={['gap', 'flow', 'height', 'width', 'place', 'content', 'items']}
+      styleAttrs={['bg', 'color', 'gap', 'flow', 'height', 'width', 'place', 'content', 'items', 'padding', 'border', 'shadow', 'radius']}
       {...props}
     />
   );

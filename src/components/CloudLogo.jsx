@@ -22,7 +22,7 @@ export default function CloudLogo(props) {
   let ref = React.useRef();
   let { buttonProps } = useButton(props, ref);
 
-  return <Button {...buttonProps} isLink={!!props.onPress} ref={ref}>
+  return <Button data-qa="HeaderCubeCloudLogo" {...buttonProps} isLink={!!props.onPress} ref={ref}>
     <svg width="131" height="30" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M26.274 7.54L13.139 0v5.217l13.135 7.509V7.54z" fill="#FF6492"/>
       <path d="M26.274 12.725L22.334 15l-9.197-5.27-5.255 3-3.94-2.109 9.197-5.404 13.135 7.508z"

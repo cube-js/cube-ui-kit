@@ -1,6 +1,8 @@
 import { createRule, parseStyle } from '../utils/styles';
 
 export default function radiusStyle({ radius }) {
+  if (!radius) return '';
+
   if (radius === true) radius = '1r';
 
   const { values } = parseStyle(radius);

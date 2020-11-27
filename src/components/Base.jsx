@@ -15,6 +15,9 @@ import borderStyle from '../styles/border';
 import shadowStyle from '../styles/shadow';
 import paddingStyle from '../styles/padding';
 import createNativeStyle from '../styles/native';
+import sizeStyle from '../styles/size';
+import italicStyle from '../styles/italic';
+import marginStyle from '../styles/margin';
 
 const STYLES = [
   createNativeStyle('display'),
@@ -25,6 +28,11 @@ const STYLES = [
   createNativeStyle('shrink'),
   createNativeStyle('order'),
   createNativeStyle('cursor'),
+  createNativeStyle('textAlign'),
+  createNativeStyle('fontWeight'),
+  createNativeStyle('textTransform'),
+  italicStyle,
+  marginStyle,
   gapStyle,
   flowStyle,
   columnsStyle,
@@ -37,6 +45,7 @@ const STYLES = [
   borderStyle,
   shadowStyle,
   paddingStyle,
+  sizeStyle,
 ];
 
 const BaseElement = styled.div(({ styles, defaultStyles, styleAttrs, responsive, ...props }) => {
@@ -92,18 +101,16 @@ export default function({ styles, defaultStyles, styleAttrs, responsive, ...prop
   styles = Object.assign({}, defaultStyles, styles || {});
   styles.display = styles.display || 'inline-block';
 
-  if (styleAttrs) {
-    const filteredProps = { ...props };
+  const filteredProps = { ...props };
 
-    styleAttrs.forEach((style) => {
-      if (props.hasOwnProperty(style)) {
-        styles[style] = props[style];
-        delete filteredProps[style];
-      }
-    });
+  ['display', ...styleAttrs].forEach((style) => {
+    if (props.hasOwnProperty(style)) {
+      styles[style] = props[style];
+      delete filteredProps[style];
+    }
+  });
 
-    props = filteredProps;
-  }
+  props = filteredProps;
 
   const zones = responsive ? pointsToZones(responsive) : useContext(ResponsiveContext);
 

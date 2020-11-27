@@ -14,6 +14,9 @@ const colors = {
   light: '243, 243, 251',
   white: '255, 255, 255',
   black: '0, 0, 0',
+  'danger-text': '239, 64, 74',
+  danger: '255, 100, 109',
+  'light-grey': '248, 248, 249',
 };
 
 function color(name, opacity = 1) {
@@ -22,15 +25,17 @@ function color(name, opacity = 1) {
 
 const PROPS = {
   'font-size': '14px',
-  'line-height': '22px',
+  'line-height': '20px',
   'input-font-size': '16px',
-  'input-line-height': '22px',
+  'input-line-height': '20px',
   'gap': '.5rem',
   'radius': '.25rem',
   'border-width': '1px',
   'outline-width': 'calc(1rem / 16 * 3)',
   'border-color': color('dark', 0.1),
   'shadow-color': color('dark-03', 0.05),
+  'minor-color': color('dark', .65),
+  'danger-bg-color': color('danger', .05),
   'primary-1': color('purple', 0.9),
   'primary-2': color('purple', 0.8),
   'primary-3': color('purple', 0.7),
@@ -47,6 +52,30 @@ const PROPS = {
   'topbar-height': '48px',
   'page-content-min-height': 'calc(100vh - var(--topbar-height))',
   'sidebar-width': '200px',
+
+  // font sizes
+  'text-font-size': '14px',
+  'text-line-height': '22px',
+  'medium-font-size': '14px',
+  'medium-line-height': '20px',
+  'md-font-size': 'var(--medium-font-size)',
+  'md-line-height': 'var(--medium-line-height)',
+  'large-font-size': '16px',
+  'large-line-height': '22px',
+  'lg-font-size': 'var(--large-font-size)',
+  'lg-line-height': 'var(--large-line-height)',
+  'h1-font-size': '32px',
+  'h1-line-height': '40px',
+  'h2-font-size': '24px',
+  'h2-line-height': '36px',
+  'h3-font-size': '20px',
+  'h3-line-height': '28px',
+  'h4-font-size': '18px',
+  'h4-line-height': '24px',
+  'h5-font-size': '16px',
+  'h5-line-height': '22px',
+  'h6-font-size': '14px',
+  'h6-line-height': '20px',
 };
 
 Object.keys(colors).forEach((name) => {

@@ -7,7 +7,7 @@ const DEFAULT_STYLES = {
   radius: '1x',
   bg: '#white',
   border: true,
-  padding: '2x',
+  padding: '3x',
 };
 
 export default function Card({ ...props }) {
@@ -15,7 +15,7 @@ export default function Card({ ...props }) {
     <Base
       role="region"
       defaultStyles={DEFAULT_STYLES}
-      styleAttrs={['gap', 'flow', 'display', 'height', 'width', 'place', 'padding']}
+      styleAttrs={['bg', 'color', 'gap', 'flow', 'display', 'height', 'width', 'place', 'padding', 'border', 'shadow', 'radius']}
       {...props}
     />
   );
