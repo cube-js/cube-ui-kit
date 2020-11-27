@@ -12,12 +12,15 @@ const inputStyles = ` {
     font-size: var(--input-font-size);
     padding: 8px 12px;
     border: var(--border-width) solid var(--border-color);
-    
+
     &:-webkit-autofill {
-      &, &:hover, &:focus {
+      &,
+      &:hover,
+      &:focus {
         caret-color: var(--purple-color);
         -webkit-text-fill-color: var(--text-color);
-        box-shadow: 0 0 0 9999rem rgba(var(--purple-color-rgb), .1) inset, 0 0 0 9999rem var(--white-color) inset;
+        box-shadow: 0 0 0 9999rem rgba(var(--purple-color-rgb), 0.1) inset,
+          0 0 0 9999rem var(--white-color) inset;
         background-color: transparent;
         font-family: inherit;
         line-height: var(--input-line-height);

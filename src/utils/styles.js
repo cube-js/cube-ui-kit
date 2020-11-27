@@ -1,28 +1,30 @@
 const devMode = process.env.NODE_ENV !== 'production';
 export const CUSTOM_UNITS = {
-  'r': 'var(--radius)',
-  'bw': 'var(--border-width)',
-  'ow': 'var(--outline-width)',
-  'x': 'var(--gap)',
-  'fs': 'var(--font-size)',
-  'lh': 'var(--line-height)',
-  'rp': 'var(--rem-pixel)',
+  r: 'var(--radius)',
+  bw: 'var(--border-width)',
+  ow: 'var(--outline-width)',
+  x: 'var(--gap)',
+  fs: 'var(--font-size)',
+  lh: 'var(--line-height)',
+  rp: 'var(--rem-pixel)',
   // global setting
-  'wh': 'var(--window-height)',
+  wh: 'var(--window-height)',
 };
-export const DIRECTIONS = [
-  'top',
-  'right',
-  'bottom',
-  'left',
-];
+export const DIRECTIONS = ['top', 'right', 'bottom', 'left'];
 const COLOR_FUNCS = ['rgb', 'rgba'];
-const IGNORE_MODS = ['auto', 'max-content', 'min-content', 'none', 'subgrid', 'initial'];
-const ATTR_REGEXP = /('[^'|]*')|([a-z]+\()|(#[a-z0-9.-]{2,}(?![a-f0-9\[-]))|(--[a-z0-9-]+|@[a-z0-9-]+)|([a-z][a-z0-9-]*)|(([0-9]+(?![0-9.])|[0-9-.]{2,}|[0-9-]{2,}|[0-9.-]{3,})([a-z%]{0,3}))|([*\/+-])|([()])|(,)/ig;
-const ATTR_CACHE = new Map;
-const ATTR_CACHE_AUTOCALC = new Map;
-const ATTR_CACHE_REM = new Map;
-const ATTR_CACHE_IGNORE_COLOR = new Map;
+const IGNORE_MODS = [
+  'auto',
+  'max-content',
+  'min-content',
+  'none',
+  'subgrid',
+  'initial',
+];
+const ATTR_REGEXP = /('[^'|]*')|([a-z]+\()|(#[a-z0-9.-]{2,}(?![a-f0-9\[-]))|(--[a-z0-9-]+|@[a-z0-9-]+)|([a-z][a-z0-9-]*)|(([0-9]+(?![0-9.])|[0-9-.]{2,}|[0-9-]{2,}|[0-9.-]{3,})([a-z%]{0,3}))|([*\/+-])|([()])|(,)/gi;
+const ATTR_CACHE = new Map();
+const ATTR_CACHE_AUTOCALC = new Map();
+const ATTR_CACHE_REM = new Map();
+const ATTR_CACHE_IGNORE_COLOR = new Map();
 const MAX_CACHE = 10000;
 const ATTR_CACHE_MODE_MAP = [
   ATTR_CACHE_AUTOCALC,
@@ -30,7 +32,7 @@ const ATTR_CACHE_MODE_MAP = [
   ATTR_CACHE,
   ATTR_CACHE_IGNORE_COLOR,
 ];
-const PREPARE_REGEXP = /calc\((\d*)\)/ig;
+const PREPARE_REGEXP = /calc\((\d*)\)/gi;
 
 export function createRule(prop, value, selector) {
   if (value == null) return '';
@@ -75,8 +77,21 @@ export function parseStyle(value, mode = 0) {
 
     value = value.replace(/@\(/g, 'var(--');
 
-    while (token = ATTR_REGEXP.exec(value)) {
-      let [s, quoted, func, hashColor, prop, mod, unit, unitVal, unitMetric, operator, bracket, comma] = token;
+    while ((token = ATTR_REGEXP.exec(value))) {
+      let [
+        s,
+        quoted,
+        func,
+        hashColor,
+        prop,
+        mod,
+        unit,
+        unitVal,
+        unitMetric,
+        operator,
+        bracket,
+        comma,
+      ] = token;
 
       if (quoted) {
         currentValue += `${quoted} `;
@@ -134,13 +149,19 @@ export function parseStyle(value, mode = 0) {
             if (currentValue.includes('(')) {
               const index = currentValue.lastIndexOf('(');
 
-              currentValue = `${currentValue.slice(0, index)}(calc(${currentValue.slice(index + 1)}`;
+              currentValue = `${currentValue.slice(
+                0,
+                index,
+              )}(calc(${currentValue.slice(index + 1)}`;
 
               calc = counter;
               counter++;
             }
           } else if (values.length) {
-            parsedValue = parsedValue.slice(0, parsedValue.length - values[values.length - 1].length - 1);
+            parsedValue = parsedValue.slice(
+              0,
+              parsedValue.length - values[values.length - 1].length - 1,
+            );
 
             let tmp = values.splice(values.length - 1, 1)[0];
 
@@ -213,7 +234,9 @@ export function parseStyle(value, mode = 0) {
     }
 
     if (counter) {
-      let prepared = prepareParsedValue(`${currentValue.trim()}${')'.repeat(counter)}`);
+      let prepared = prepareParsedValue(
+        `${currentValue.trim()}${')'.repeat(counter)}`,
+      );
 
       if (prepared.startsWith('color(')) {
         prepared = prepared.slice(6, -1);
@@ -281,9 +304,10 @@ export function parseColor(val, ignoreError = false) {
       }
     }
 
-    color = opacity !== 100
-      ? rgbColorProp(name, Math.round(opacity) / 100)
-      : colorProp(name, null, strToRgb(`#${name}`));
+    color =
+      opacity !== 100
+        ? rgbColorProp(name, Math.round(opacity) / 100)
+        : colorProp(name, null, strToRgb(`#${name}`));
 
     return {
       color,
@@ -299,10 +323,12 @@ export function parseColor(val, ignoreError = false) {
   let name, opacity;
 
   if (color) {
-    return { color: (!color.startsWith('var(') ? strToRgb(color) : color) || color };
+    return {
+      color: (!color.startsWith('var(') ? strToRgb(color) : color) || color,
+    };
   }
 
-  values.forEach(token => {
+  values.forEach((token) => {
     if (token.match(/^((var|rgb|rgba|hsl|hsla)\(|#[0-9a-f]{3,6})/)) {
       color = !token.startsWith('var') ? strToRgb(token) : token;
     } else if (token.endsWith('%')) {
@@ -338,7 +364,7 @@ export function parseColor(val, ignoreError = false) {
     return {
       name,
       color,
-    }
+    };
   }
 
   return {
@@ -348,16 +374,29 @@ export function parseColor(val, ignoreError = false) {
   };
 }
 
-export function rgbColorProp(colorName, opacity, fallbackColorName, fallbackValue) {
+export function rgbColorProp(
+  colorName,
+  opacity,
+  fallbackColorName,
+  fallbackValue,
+) {
   const fallbackValuePart = fallbackValue ? `, ${fallbackValue}` : '';
 
-  return `rgba(var(--${colorName}-color-rgb${fallbackColorName ? `, var(--${fallbackColorName}-color-rgb, ${fallbackValuePart})` : fallbackValuePart}), ${opacity})`;
+  return `rgba(var(--${colorName}-color-rgb${
+    fallbackColorName
+      ? `, var(--${fallbackColorName}-color-rgb, ${fallbackValuePart})`
+      : fallbackValuePart
+  }), ${opacity})`;
 }
 
 export function colorProp(colorName, fallbackColorName, fallbackValue) {
   const fallbackValuePart = fallbackValue ? `, ${fallbackValue}` : '';
 
-  return `var(--${colorName}-color${fallbackColorName ? `, var(--${fallbackColorName}${fallbackValuePart})` : fallbackValuePart})`;
+  return `var(--${colorName}-color${
+    fallbackColorName
+      ? `, var(--${fallbackColorName}${fallbackValuePart})`
+      : fallbackValuePart
+  })`;
 }
 
 export function strToRgb(color, ignoreAlpha = false) {
@@ -369,7 +408,7 @@ export function strToRgb(color, ignoreAlpha = false) {
 }
 
 export function transferMods(mods, from, to) {
-  mods.forEach(mod => {
+  mods.forEach((mod) => {
     if (from.includes(mod)) {
       to.push(mod);
       from.splice(from.indexOf(mod), 1);
@@ -382,7 +421,7 @@ function prepareParsedValue(val) {
 }
 
 export function filterMods(mods, allowedMods) {
-  return mods.filter(mod => allowedMods.includes(mod));
+  return mods.filter((mod) => allowedMods.includes(mod));
 }
 
 export function customUnit(value, unit) {

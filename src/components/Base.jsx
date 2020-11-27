@@ -3,7 +3,11 @@ import styled from 'styled-components';
 import { ResponsiveContext } from '../providers/Responsive';
 import gapStyle from '../styles/gap';
 import flowStyle from '../styles/flow';
-import { mediaWrapper, normalizeStyleZones, pointsToZones } from '../utils/responsive';
+import {
+  mediaWrapper,
+  normalizeStyleZones,
+  pointsToZones,
+} from '../utils/responsive';
 import columnsStyle from '../styles/colums';
 import rowsStyle from '../styles/rows';
 import colorStyle from '../styles/color';
@@ -48,55 +52,63 @@ const STYLES = [
   sizeStyle,
 ];
 
-const BaseElement = styled.div(({ styles, defaultStyles, styleAttrs, responsive, ...props }) => {
-  const zones = responsive;
+const BaseElement = styled.div(
+  ({ styles, defaultStyles, styleAttrs, responsive, ...props }) => {
+    const zones = responsive;
 
-  let rawStyles = '',
-    responsiveStyles = Array.from(Array(zones.length)).map(() => '');
+    let rawStyles = '',
+      responsiveStyles = Array.from(Array(zones.length)).map(() => '');
 
-  STYLES.map((STYLE) => {
-    const lookupStyles = STYLE.__styleLookup;
-    const hasStyles = !!lookupStyles.find((style) => style in styles);
+    STYLES.map((STYLE) => {
+      const lookupStyles = STYLE.__styleLookup;
+      const hasStyles = !!lookupStyles.find((style) => style in styles);
 
-    if (!hasStyles) return;
+      if (!hasStyles) return;
 
-    const hasResponsive = !!lookupStyles.find((style) =>
-      Array.isArray(styles[style]),
-    );
+      const hasResponsive = !!lookupStyles.find((style) =>
+        Array.isArray(styles[style]),
+      );
 
-    if (hasResponsive) {
-      const valueMap = lookupStyles.reduce((map, style) => {
-        map[style] = normalizeStyleZones(styles[style], zones.length);
+      if (hasResponsive) {
+        const valueMap = lookupStyles.reduce((map, style) => {
+          map[style] = normalizeStyleZones(styles[style], zones.length);
 
-        return map;
-      }, {});
+          return map;
+        }, {});
 
-      const propsByPoint = zones.map((zone, i) => {
-        const pointProps = {};
+        const propsByPoint = zones.map((zone, i) => {
+          const pointProps = {};
 
-        lookupStyles.forEach((style) => {
-          if (valueMap != null) {
-            pointProps[style] = valueMap[style][i];
-          }
+          lookupStyles.forEach((style) => {
+            if (valueMap != null) {
+              pointProps[style] = valueMap[style][i];
+            }
+          });
+
+          return pointProps;
         });
 
-        return pointProps;
-      });
+        const rulesByPoint = propsByPoint.map(STYLE);
 
-      const rulesByPoint = propsByPoint.map(STYLE);
+        rulesByPoint.forEach((rules, i) => {
+          responsiveStyles[i] += rules || '';
+        });
+      } else {
+        rawStyles += STYLE(styles) || '';
+      }
+    });
 
-      rulesByPoint.forEach((rules, i) => {
-        responsiveStyles[i] += rules || '';
-      });
-    } else {
-      rawStyles += STYLE(styles) || '';
-    }
-  });
+    return `${rawStyles}${mediaWrapper(responsiveStyles, zones)}`;
+  },
+);
 
-  return `${rawStyles}${mediaWrapper(responsiveStyles, zones)}`;
-});
-
-export default function({ styles, defaultStyles, styleAttrs, responsive, ...props }) {
+export default function ({
+  styles,
+  defaultStyles,
+  styleAttrs,
+  responsive,
+  ...props
+}) {
   defaultStyles = defaultStyles || {};
   styles = Object.assign({}, defaultStyles, styles || {});
   styles.display = styles.display || 'inline-block';
@@ -112,15 +124,17 @@ export default function({ styles, defaultStyles, styleAttrs, responsive, ...prop
 
   props = filteredProps;
 
-  const zones = responsive ? pointsToZones(responsive) : useContext(ResponsiveContext);
+  const zones = responsive
+    ? pointsToZones(responsive)
+    : useContext(ResponsiveContext);
 
-  return <BaseElement {...props} responsive={zones} styles={styles}/>;
+  return <BaseElement {...props} responsive={zones} styles={styles} />;
 }
 
 const styleProps = new Set();
 
-STYLES.forEach(STYLE => {
-  STYLE.__styleLookup.forEach(style => {
+STYLES.forEach((STYLE) => {
+  STYLE.__styleLookup.forEach((style) => {
     styleProps.add(style);
   });
 });

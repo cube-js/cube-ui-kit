@@ -31,7 +31,21 @@ export default function Space({ ...props }) {
   return (
     <Base
       defaultStyles={DEFAULT_STYLES}
-      styleAttrs={['bg', 'color', 'gap', 'flow', 'height', 'width', 'place', 'content', 'items', 'padding', 'border', 'shadow', 'radius', 'grow', 'shrink']}
+      styleAttrs={[
+        'gap',
+        'flow',
+        'height',
+        'width',
+        'place',
+        'content',
+        'items',
+        'padding',
+        'border',
+        'shadow',
+        'radius',
+        'grow',
+        'shrink',
+      ]}
       {...props}
     />
   );

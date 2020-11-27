@@ -10,7 +10,21 @@ export default function Grid({ ...props }) {
   return (
     <Base
       defaultStyles={DEFAULT_STYLES}
-      styleAttrs={['bg', 'color', 'gap', 'flow', 'columns', 'rows', 'height', 'width', 'place', 'content', 'items', 'padding', 'border', 'shadow', 'radius']}
+      styleAttrs={[
+        'gap',
+        'flow',
+        'columns',
+        'rows',
+        'height',
+        'width',
+        'place',
+        'content',
+        'items',
+        'padding',
+        'border',
+        'shadow',
+        'radius',
+      ]}
       {...props}
     />
   );
