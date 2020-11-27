@@ -20,7 +20,7 @@ const IGNORE_MODS = [
   'subgrid',
   'initial',
 ];
-const ATTR_REGEXP = /('[^'|]*')|([a-z]+\()|(#[a-z0-9.-]{2,}(?![a-f0-9\[-]))|(--[a-z0-9-]+|@[a-z0-9-]+)|([a-z][a-z0-9-]*)|(([0-9]+(?![0-9.])|[0-9-.]{2,}|[0-9-]{2,}|[0-9.-]{3,})([a-z%]{0,3}))|([*\/+-])|([()])|(,)/gi;
+const ATTR_REGEXP = /('[^'|]*')|([a-z]+\()|(#[a-z0-9.-]{2,}(?![a-f0-9[-]))|(--[a-z0-9-]+|@[a-z0-9-]+)|([a-z][a-z0-9-]*)|(([0-9]+(?![0-9.])|[0-9-.]{2,}|[0-9-]{2,}|[0-9.-]{3,})([a-z%]{0,3}))|([*/+-])|([()])|(,)/gi;
 const ATTR_CACHE = new Map();
 const ATTR_CACHE_AUTOCALC = new Map();
 const ATTR_CACHE_REM = new Map();
@@ -79,6 +79,7 @@ export function parseStyle(value, mode = 0) {
 
     while ((token = ATTR_REGEXP.exec(value))) {
       let [
+        /* eslint-disable-next-line */
         s,
         quoted,
         func,
@@ -285,7 +286,7 @@ export function parseColor(val, ignoreError = false) {
     if (tmp.length > 0) {
       opacity = Number(tmp[1]);
 
-      if (opacity !== opacity) {
+      if (Number.isNaN(opacity)) {
         opacity = 100;
       }
     }
@@ -344,7 +345,7 @@ export function parseColor(val, ignoreError = false) {
 
   if (!name) {
     if (!ignoreError && devMode) {
-      warn('incorrect color value:', val);
+      console.warn('incorrect color value:', val);
     }
 
     return {};

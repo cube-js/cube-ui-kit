@@ -59,7 +59,7 @@ const BaseElement = styled.div(
     let rawStyles = '',
       responsiveStyles = Array.from(Array(zones.length)).map(() => '');
 
-    STYLES.map((STYLE) => {
+    STYLES.forEach((STYLE) => {
       const lookupStyles = STYLE.__styleLookup;
       const hasStyles = !!lookupStyles.find((style) => style in styles);
 
@@ -102,7 +102,7 @@ const BaseElement = styled.div(
   },
 );
 
-export default function ({
+export default function Base({
   styles,
   defaultStyles,
   styleAttrs,
@@ -124,9 +124,10 @@ export default function ({
 
   props = filteredProps;
 
+  const zonesContext = useContext(ResponsiveContext);
   const zones = responsive
     ? pointsToZones(responsive)
-    : useContext(ResponsiveContext);
+    : zonesContext;
 
   return <BaseElement {...props} responsive={zones} styles={styles} />;
 }

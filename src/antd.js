@@ -4,7 +4,7 @@ import {
   Input as AntdInput,
   Button as AntdButton,
   AutoComplete as AntdAutoComplete,
-  Form as Form,
+  Form,
 } from 'antd';
 
 const inputStyles = ` {

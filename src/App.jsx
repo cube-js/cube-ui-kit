@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Base, Grid, TopBar } from './index';
 import ResponsiveProvider from './providers/Responsive';
 import { color } from './utils/colors';
@@ -7,21 +7,13 @@ import Card from './components/Card';
 import Flex from './components/Flex';
 
 function App() {
-  // Create the count state.
-  const [count, setCount] = useState(0);
-  // Create the counter (+1 every second).
-  // useEffect(() => {
-  //   const timer = setTimeout(() => setCount(count + 1), 1000);
-  //   return () => clearTimeout(timer);
-  // }, [count, setCount]);
-  // Return the App component.
   return (
     <ResponsiveProvider value={[1200, 640]}>
       <PageHeader
         title="Storybook"
         description="Showcase and documentation for Cube Cloud UIKit"
-      ></PageHeader>
-      <TopBar onLogoPress={() => {}}></TopBar>
+      />
+      <TopBar onLogoPress={() => {}}/>
       <Flex
         styles={{
           flow: 'row',

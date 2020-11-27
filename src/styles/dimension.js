@@ -57,6 +57,8 @@ export default function dimensionStyle(name) {
           styles[maxStyle] = values[0] || DEFAULT_MAX_SIZE;
           flag = true;
           break;
+        default:
+          break;
       }
     }
 
