@@ -125,9 +125,7 @@ export default function Base({
   props = filteredProps;
 
   const zonesContext = useContext(ResponsiveContext);
-  const zones = responsive
-    ? pointsToZones(responsive)
-    : zonesContext;
+  const zones = responsive ? pointsToZones(responsive) : zonesContext;
 
   return <BaseElement {...props} responsive={zones} styles={styles} />;
 }

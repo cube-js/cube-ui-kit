@@ -26,7 +26,7 @@ export default function dimensionStyle(name) {
   const minStyle = `min-${name}`;
   const maxStyle = `max-${name}`;
 
-  return val => {
+  return (val) => {
     if (!val) return '';
 
     const styles = {

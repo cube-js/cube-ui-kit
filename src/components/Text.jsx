@@ -23,20 +23,27 @@ export default function Text({ as, align, transform, weight, ...props }) {
     <Base
       as={as || 'span'}
       defaultStyles={DEFAULT_STYLES}
-      styleAttrs={['size', 'color', 'textAlign', 'textTransform', 'fontWeight', 'italic']}
+      styleAttrs={[
+        'size',
+        'color',
+        'textAlign',
+        'textTransform',
+        'fontWeight',
+        'italic',
+      ]}
       {...props}
     />
   );
 }
 
 Text.Minor = function MinorText(props) {
-  return <Text color="#minor" {...props}/>;
+  return <Text color="#minor" {...props} />;
 };
 
 Text.Danger = function DangerText(props) {
-  return <Text color="#danger" {...props}/>;
+  return <Text color="#danger" {...props} />;
 };
 
 Text.Paragraph = function Paragraph(props) {
-  return <Text as="p" {...props}/>;
+  return <Text as="p" {...props} />;
 };

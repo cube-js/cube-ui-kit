@@ -1,4 +1,9 @@
-import { createRule, parseStyle, DIRECTIONS, filterMods } from '../utils/styles';
+import {
+  createRule,
+  parseStyle,
+  DIRECTIONS,
+  filterMods,
+} from '../utils/styles';
 
 export default function marginStyle({ margin }) {
   if (!margin) return '';
@@ -20,7 +25,10 @@ export default function marginStyle({ margin }) {
   return directions.reduce((styles, dir) => {
     const index = DIRECTIONS.indexOf(dir);
 
-    styles += createRule(`margin-${dir}`, values[index] || values[index % 2] || values[0]);
+    styles += createRule(
+      `margin-${dir}`,
+      values[index] || values[index % 2] || values[0],
+    );
 
     return styles;
   }, '');

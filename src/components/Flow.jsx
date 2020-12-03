@@ -10,7 +10,18 @@ export default function Flow({ ...props }) {
   return (
     <Base
       defaultStyles={DEFAULT_STYLES}
-      styleAttrs={['bg', 'color', 'gap', 'height', 'width', 'place', 'padding', 'border', 'shadow', 'radius']}
+      styleAttrs={[
+        'bg',
+        'color',
+        'gap',
+        'height',
+        'width',
+        'place',
+        'padding',
+        'border',
+        'shadow',
+        'radius',
+      ]}
       {...props}
     />
   );

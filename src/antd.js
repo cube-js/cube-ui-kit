@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import './antd.less';
 import {
   Input as AntdInput,
+  InputNumber as AntdInputNumber,
   Button as AntdButton,
   AutoComplete as AntdAutoComplete,
   Form,
@@ -34,10 +35,12 @@ export const Input = styled(AntdInput)`
   &&& ${inputStyles}
 `;
 
-Input.TextArea = styled(AntdInput.TextArea)`
+export const InputNumber = styled(AntdInputNumber)`
   &&& ${inputStyles}
-  
-  &&& {
+`;
+
+Input.TextArea = styled(AntdInput.TextArea)`
+  &&& ${inputStyles} &&& {
     overflow: auto;
   }
 `;
@@ -46,13 +49,15 @@ export const AutoComplete = styled(AntdAutoComplete)`
   &&.ant-select-single:not(.ant-select-customize-input) .ant-select-selector {
     height: auto;
   }
-  
+
   &&.ant-select:not(.ant-select-customize-input) .ant-select-selector {
     border: var(--border-width) solid var(--border-color);
     padding: 3px 12px;
   }
-  
-  &&.ant-select:not(.ant-select-customize-input) .ant-select-selector .ant-select-selection-search-input {
+
+  &&.ant-select:not(.ant-select-customize-input)
+    .ant-select-selector
+    .ant-select-selection-search-input {
     height: auto;
     line-height: var(--input-line-height);
     font-size: var(--input-font-size);
@@ -66,7 +71,7 @@ export const Button = styled(AntdButton)`
     font-size: var(--font-size);
     padding: 8px 16px;
     height: auto;
-    
+
     &.ant-btn-icon-only {
       padding: 8px;
       width: auto;

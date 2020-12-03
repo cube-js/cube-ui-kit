@@ -23,7 +23,12 @@ export default function CloudLogo(props) {
   let { buttonProps } = useButton(props, ref);
 
   return (
-    <Button data-qa="HeaderCubeCloudLogo" {...buttonProps} isLink={!!props.onPress} ref={ref}>
+    <Button
+      data-qa="HeaderCubeCloudLogo"
+      {...buttonProps}
+      isLink={!!props.onPress}
+      ref={ref}
+    >
       <svg
         width="131"
         height="30"
