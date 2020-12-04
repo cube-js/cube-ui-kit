@@ -71,6 +71,12 @@ export const Button = styled(AntdButton)`
     font-size: var(--font-size);
     padding: 8px 16px;
     height: auto;
+    box-shadow: none;
+    
+    &:not(.ant-btn-primary):not(.ant-btn-dangerous):hover {
+      background-color: rgba(var(--purple-color-rgb), .05);
+      color: var(--purple-color);
+    }
 
     &.ant-btn-icon-only {
       padding: 8px;

@@ -32,6 +32,8 @@ export default function Space({ ...props }) {
     <Base
       defaultStyles={DEFAULT_STYLES}
       styleAttrs={[
+        'color',
+        'bg',
         'gap',
         'flow',
         'height',

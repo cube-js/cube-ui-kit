@@ -14,6 +14,8 @@ export default function Flex({ ...props }) {
     <Base
       defaultStyles={DEFAULT_STYLES}
       styleAttrs={[
+        'bg',
+        'color',
         'gap',
         'flow',
         'height',
