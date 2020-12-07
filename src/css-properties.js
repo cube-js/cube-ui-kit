@@ -36,7 +36,7 @@ const PROPS = {
   'outline-width': 'calc(1rem / 16 * 3)',
   'border-color': color('dark', 0.1),
   'shadow-color': color('dark-03', 0.05),
-  'draft-color': color('dark', .2),
+  'draft-color': color('dark', 0.2),
   'minor-color': color('dark', 0.65),
   'danger-bg-color': color('danger', 0.05),
   'primary-1': color('purple', 0.9),

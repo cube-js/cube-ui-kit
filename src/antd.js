@@ -73,9 +73,9 @@ export const Button = styled(AntdButton)`
     padding: 8px 16px;
     height: auto;
     box-shadow: none;
-    
+
     &:not(.ant-btn-primary):not(.ant-btn-dangerous):hover {
-      background-color: rgba(var(--purple-color-rgb), .05);
+      background-color: rgba(var(--purple-color-rgb), 0.05);
       color: var(--purple-color);
     }
 
@@ -89,20 +89,20 @@ export const Button = styled(AntdButton)`
 
 export const Table = styled(AntdTable)`
   &&& {
-    & table>thead>tr>th {
+    & table > thead > tr > th {
       background: transparent;
       font-size: var(--font-size);
       line-height: var(--line-height);
       font-weight: 400;
       color: var(--dark-65-color);
     }
-    
-    .ant-table-tbody>tr.ant-table-row:hover>td {
-      background: rgba(var(--purple-color-rgb), .05);
+
+    .ant-table-tbody > tr.ant-table-row:hover > td {
+      background: rgba(var(--purple-color-rgb), 0.05);
     }
-    
-    .ant-table-tbody>tr>td {
-      border-bottom: 1px solid rgba(var(--dark-color-rgb), .1);
+
+    .ant-table-tbody > tr > td {
+      border-bottom: 1px solid rgba(var(--dark-color-rgb), 0.1);
     }
   }
 `;
