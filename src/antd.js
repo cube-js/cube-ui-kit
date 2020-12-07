@@ -5,6 +5,7 @@ import {
   InputNumber as AntdInputNumber,
   Button as AntdButton,
   AutoComplete as AntdAutoComplete,
+  Table as AntdTable,
   Form,
 } from 'antd';
 
@@ -82,6 +83,26 @@ export const Button = styled(AntdButton)`
       padding: 8px;
       width: auto;
       height: auto;
+    }
+  }
+`;
+
+export const Table = styled(AntdTable)`
+  &&& {
+    & table>thead>tr>th {
+      background: transparent;
+      font-size: var(--font-size);
+      line-height: var(--line-height);
+      font-weight: 400;
+      color: var(--dark-65-color);
+    }
+    
+    .ant-table-tbody>tr.ant-table-row:hover>td {
+      background: rgba(var(--purple-color-rgb), .05);
+    }
+    
+    .ant-table-tbody>tr>td {
+      border-bottom: 1px solid rgba(var(--dark-color-rgb), .1);
     }
   }
 `;

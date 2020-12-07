@@ -10,6 +10,8 @@ export default function Block({ ...props }) {
     <Base
       defaultStyles={DEFAULT_STYLES}
       styleAttrs={[
+        'color',
+        'bg',
         'height',
         'width',
         'place',

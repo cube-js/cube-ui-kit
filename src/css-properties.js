@@ -17,6 +17,8 @@ const colors = {
   'danger-text': '239, 64, 74',
   danger: '255, 100, 109',
   'light-grey': '248, 248, 249',
+  success: '49, 195, 124',
+  note: '251, 188, 5',
 };
 
 function color(name, opacity = 1) {
@@ -34,6 +36,7 @@ const PROPS = {
   'outline-width': 'calc(1rem / 16 * 3)',
   'border-color': color('dark', 0.1),
   'shadow-color': color('dark-03', 0.05),
+  'draft-color': color('dark', .2),
   'minor-color': color('dark', 0.65),
   'danger-bg-color': color('danger', 0.05),
   'primary-1': color('purple', 0.9),
