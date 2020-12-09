@@ -78,4 +78,6 @@ module.exports = {
   'topbar-height': '48px',
   'page-content-min-height': 'calc(100vh - var(--topbar-height))',
   'sidebar-width': '200px',
+
+  'page-header-heading-title': 'var(--h1-font-size)',
 };
