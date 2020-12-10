@@ -12,7 +12,7 @@ import {
 const inputStyles = ` {
     line-height: var(--input-line-height);
     font-size: var(--input-font-size);
-    padding: 8px 12px;
+    padding: 10px 12px;
     border: var(--border-width) solid var(--border-color);
 
     &:-webkit-autofill {

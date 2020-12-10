@@ -1,6 +1,7 @@
 const colors = {
   pink: '255, 100, 146',
   purple: '122, 119, 255',
+  'purple-new': '102, 93, 232',
   'purple-01': '122, 119, 255',
   'purple-03': '175, 173, 255',
   'purple-04': '202, 201, 255',
@@ -32,6 +33,7 @@ const PROPS = {
   'input-line-height': '20px',
   gap: '8px',
   radius: '4px',
+  transition: '140ms',
   'border-width': '1px',
   'outline-width': 'calc(1rem / 16 * 3)',
   'border-color': color('dark', 0.1),

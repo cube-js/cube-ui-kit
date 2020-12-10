@@ -1,45 +1,53 @@
 import React from 'react';
-import { Base, Grid, TopBar } from './index';
+import { Base, Button, Grid, TopBar, Space } from './index';
 import ResponsiveProvider from './providers/Responsive';
 import { color } from './utils/colors';
-import { Button, PageHeader } from './antd';
+import { PageHeader } from './antd';
 import Card from './components/Card';
 import Flex from './components/Flex';
+import Base64Upload from './components/Base64Upload';
 
 function App() {
   return (
-    <ResponsiveProvider value={[1200, 640]}>
-      <PageHeader
-        title="Storybook"
-        description="Showcase and documentation for Cube Cloud UIKit"
-      />
-      <TopBar onLogoPress={() => {}} />
-      <Flex
-        styles={{
-          flow: 'row',
-          content: ['center', , 'start'],
-        }}
-        gap={['1rem', '2rem']}
-      >
+    <>
+      <Space padding="1x">
+        <Button>123</Button>
         <Button type="primary">123</Button>
-        <button>2</button>
-      </Flex>
-      <Grid columns="auto 1fr" gap="1x" styles={{ height: '100px' }}>
-        <Base styles={{ bg: color('purple', 0.1), width: '200px' }}>
-          Without padding
-        </Base>
-        <Card
+        <Base64Upload>123</Base64Upload>
+      </Space>
+      <ResponsiveProvider value={[1200, 640]}>
+        <PageHeader
+          title="Storybook"
+          description="Showcase and documentation for Cube Cloud UIKit"
+        />
+        <TopBar onLogoPress={() => {
+        }}/>
+        <Flex
           styles={{
-            bg: '#purple.50',
-            border: true,
-            shadow: true,
-            padding: '2x',
+            flow: 'row',
+            content: ['center', , 'start'],
           }}
+          gap={['1rem', '2rem']}
         >
-          Text
-        </Card>
-      </Grid>
-    </ResponsiveProvider>
+          <button>2</button>
+        </Flex>
+        <Grid columns="auto 1fr" gap="1x" styles={{ height: '100px' }}>
+          <Base styles={{ bg: color('purple', 0.1), width: '200px' }}>
+            Without padding
+          </Base>
+          <Card
+            styles={{
+              bg: '#purple.50',
+              border: true,
+              shadow: true,
+              padding: '2x',
+            }}
+          >
+            Text
+          </Card>
+        </Grid>
+      </ResponsiveProvider>
+    </>
   );
 }
 

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, forwardRef, useRef } from 'react';
 import styled from 'styled-components';
 import { ResponsiveContext } from '../providers/Responsive';
 import gapStyle from '../styles/gap';
@@ -52,8 +52,26 @@ const STYLES = [
   sizeStyle,
 ];
 
+function useCombinedRefs(...refs) {
+  const targetRef = React.useRef()
+
+  React.useEffect(() => {
+    refs.forEach(ref => {
+      if (!ref) return
+
+      if (typeof ref === 'function') {
+        ref(targetRef.current)
+      } else {
+        ref.current = targetRef.current
+      }
+    })
+  }, [refs])
+
+  return targetRef
+}
+
 const BaseElement = styled.div(
-  ({ styles, defaultStyles, styleAttrs, responsive, ...props }) => {
+  ({ styles, responsive, css }) => {
     const zones = responsive;
 
     let rawStyles = '',
@@ -98,17 +116,21 @@ const BaseElement = styled.div(
       }
     });
 
-    return `${rawStyles}${mediaWrapper(responsiveStyles, zones)}`;
+    return `${css || ''}${rawStyles}${mediaWrapper(responsiveStyles, zones)}`;
   },
 );
 
-export default function Base({
+export default forwardRef(function Base({
   styles,
   defaultStyles,
-  styleAttrs,
+  styleAttrs = [],
   responsive,
+  css,
   ...props
-}) {
+}, ref) {
+  const innerRef = useRef();
+  const combinedRef = useCombinedRefs(ref, innerRef);
+
   defaultStyles = defaultStyles || {};
   styles = Object.assign({}, defaultStyles, styles || {});
   styles.display = styles.display || 'inline-block';
@@ -127,8 +149,8 @@ export default function Base({
   const zonesContext = useContext(ResponsiveContext);
   const zones = responsive ? pointsToZones(responsive) : zonesContext;
 
-  return <BaseElement {...props} responsive={zones} styles={styles} />;
-}
+  return <BaseElement {...props} css={css} responsive={zones} styles={styles} ref={combinedRef} />;
+});
 
 const styleProps = new Set();
 

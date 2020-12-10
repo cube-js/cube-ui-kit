@@ -5,6 +5,8 @@ export default function radiusStyle({ radius }) {
 
   if (radius === true) radius = '1r';
 
+  if (radius === 'round') radius = '9999rem';
+
   const { values } = parseStyle(radius);
 
   return createRule('border-radius', values.join(' '));

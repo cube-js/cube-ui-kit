@@ -3,6 +3,9 @@ import Title from './components/Title';
 
 export { default as Base } from './components/Base';
 export { default as Block } from './components/Block';
+export { default as Action } from './components/Action';
+export { default as Button } from './components/Button';
+export { default as Base64Upload } from './components/Base64Upload';
 export { default as Grid } from './components/Grid';
 export { default as Flex } from './components/Flex';
 export { default as Card } from './components/Card';
