@@ -1,5 +1,5 @@
 import React from 'react';
-import { Base, Button, Grid, TopBar, Space } from './index';
+import { Base, Button, Grid, TopBar, Space, LoadingAnimation } from './index';
 import ResponsiveProvider from './providers/Responsive';
 import { color } from './utils/colors';
 import { PageHeader } from './antd';
@@ -10,6 +10,7 @@ import Base64Upload from './components/Base64Upload';
 function App() {
   return (
     <>
+      <LoadingAnimation />
       <Space padding="1x">
         <Button>123</Button>
         <Button type="primary">123</Button>

@@ -29,6 +29,8 @@ export default function dimensionStyle(name) {
   return (val) => {
     if (!val) return '';
 
+    val = String(val);
+
     const styles = {
       [name]: 'auto',
       [minStyle]: 'auto',

@@ -4,7 +4,7 @@
   "description": "UIKit for Cube Cloud",
   "main": "dist/index.js",
   "scripts": {
-    "start": "parcel --no-autoinstall src/storybook.html",
+    "start": "PARCEL_AUTOINSTALL=false parcel src/storybook.html",
     "build": "NODE_ENV=production rollup -c",
     "test": "web-test-runner \"src/**/*.test.jsx\"",
     "format": "prettier --write \"src/**/*.{js,jsx}\"",
