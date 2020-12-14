@@ -7,7 +7,7 @@ Object.keys(VARIABLES).forEach((key) => {
   CSS_PROPERTIES[`--${key}`] = VARIABLES[key];
 });
 
-const CSSCustomProperties = createGlobalStyle`
+const GlobalStyles = createGlobalStyle`
   body {
     ${Object.entries(CSS_PROPERTIES)
       .map(([key, value]) => {
@@ -35,33 +35,33 @@ const CSSCustomProperties = createGlobalStyle`
     font-style: normal;
     font-weight: 400;
     font-display: swap;
-    src: url(/fonts/Inter-Regular.woff2);
+    src: url(${({ publicUrl }) => publicUrl || ''}/fonts/Inter-Regular.woff2);
   }
   @font-face {
     font-family: 'Inter';
     font-style: normal;
     font-weight: 500;
     font-display: swap;
-    src: url(/fonts/Inter-Medium.woff2);
+    src: url(${({ publicUrl }) => publicUrl || ''}/fonts/Inter-Medium.woff2);
   }
   @font-face {
     font-family: 'Inter';
     font-style: normal;
     font-weight: 600;
     font-display: swap;
-    src: url(/fonts/Inter-SemiBold.woff2);
+    src: url(${({ publicUrl }) => publicUrl || ''}/fonts/Inter-SemiBold.woff2);
   }
   @font-face {
     font-family: 'Inter';
     font-style: normal;
     font-weight: 700;
     font-display: swap;
-    src: url(/fonts/Inter-Bold.woff2);
+    src: url(${({ publicUrl }) => publicUrl || ''}/fonts/Inter-Bold.woff2);
   }
   @font-face {
     font-family: "Source Code Pro";
-    src: url('/fonts/SourceCodePro-Regular.woff2') format('woff2'),
-      url('/fonts/SourceCodePro-Regular.woff') format('woff');
+    src: url('${({ publicUrl }) => publicUrl || ''}/fonts/SourceCodePro-Regular.woff2') format('woff2'),
+      url('${({ publicUrl }) => publicUrl || ''}/fonts/SourceCodePro-Regular.woff') format('woff');
     font-weight: normal;
     font-style: normal;
   }
@@ -72,4 +72,4 @@ const CSSCustomProperties = createGlobalStyle`
   }
 `;
 
-export default CSSCustomProperties;
+export default GlobalStyles;

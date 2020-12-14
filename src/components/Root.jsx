@@ -1,10 +1,10 @@
 import React from 'react';
-import CSSCustomProperties from './CSSCustomProperties';
+import GlobalStyles from './GlobalStyles';
 
-export default function Root({ children }) {
+export default function Root({ children, publicUrl }) {
   return (
     <div className="root">
-      <CSSCustomProperties />
+      <GlobalStyles publicUrl={publicUrl} />
       {children}
     </div>
   );
