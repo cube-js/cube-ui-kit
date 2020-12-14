@@ -53,81 +53,75 @@ const STYLES = [
 ];
 
 function useCombinedRefs(...refs) {
-  const targetRef = React.useRef()
+  const targetRef = React.useRef();
 
   React.useEffect(() => {
-    refs.forEach(ref => {
-      if (!ref) return
+    refs.forEach((ref) => {
+      if (!ref) return;
 
       if (typeof ref === 'function') {
-        ref(targetRef.current)
+        ref(targetRef.current);
       } else {
-        ref.current = targetRef.current
-      }
-    })
-  }, [refs])
-
-  return targetRef
-}
-
-const BaseElement = styled.div(
-  ({ styles, responsive, css }) => {
-    const zones = responsive;
-
-    let rawStyles = '',
-      responsiveStyles = Array.from(Array(zones.length)).map(() => '');
-
-    STYLES.forEach((STYLE) => {
-      const lookupStyles = STYLE.__styleLookup;
-      const hasStyles = !!lookupStyles.find((style) => style in styles);
-
-      if (!hasStyles) return;
-
-      const hasResponsive = !!lookupStyles.find((style) =>
-        Array.isArray(styles[style]),
-      );
-
-      if (hasResponsive) {
-        const valueMap = lookupStyles.reduce((map, style) => {
-          map[style] = normalizeStyleZones(styles[style], zones.length);
-
-          return map;
-        }, {});
-
-        const propsByPoint = zones.map((zone, i) => {
-          const pointProps = {};
-
-          lookupStyles.forEach((style) => {
-            if (valueMap != null) {
-              pointProps[style] = valueMap[style][i];
-            }
-          });
-
-          return pointProps;
-        });
-
-        const rulesByPoint = propsByPoint.map(STYLE);
-
-        rulesByPoint.forEach((rules, i) => {
-          responsiveStyles[i] += rules || '';
-        });
-      } else {
-        rawStyles += STYLE(styles) || '';
+        ref.current = targetRef.current;
       }
     });
+  }, [refs]);
 
-    return `${css || ''}${rawStyles}${mediaWrapper(responsiveStyles, zones)}`;
-  },
-);
+  return targetRef;
+}
 
-export default forwardRef(function Base({
-  styles,
-  defaultStyles,
-  styleAttrs = [],
-  responsive,
-  css,
-  ...props
-}, ref) {
+const BaseElement = styled.div(({ styles, responsive, css }) => {
+  const zones = responsive;
+
+  let rawStyles = '',
+    responsiveStyles = Array.from(Array(zones.length)).map(() => '');
+
+  STYLES.forEach((STYLE) => {
+    const lookupStyles = STYLE.__styleLookup;
+    const hasStyles = !!lookupStyles.find((style) => style in styles);
+
+    if (!hasStyles) return;
+
+    const hasResponsive = !!lookupStyles.find((style) =>
+      Array.isArray(styles[style]),
+    );
+
+    if (hasResponsive) {
+      const valueMap = lookupStyles.reduce((map, style) => {
+        map[style] = normalizeStyleZones(styles[style], zones.length);
+
+        return map;
+      }, {});
+
+      const propsByPoint = zones.map((zone, i) => {
+        const pointProps = {};
+
+        lookupStyles.forEach((style) => {
+          if (valueMap != null) {
+            pointProps[style] = valueMap[style][i];
+          }
+        });
+
+        return pointProps;
+      });
+
+      const rulesByPoint = propsByPoint.map(STYLE);
+
+      rulesByPoint.forEach((rules, i) => {
+        responsiveStyles[i] += rules || '';
+      });
+    } else {
+      rawStyles += STYLE(styles) || '';
+    }
+  });
+
+  return `${css || ''}${rawStyles}${mediaWrapper(responsiveStyles, zones)}`;
+});
+
+export default forwardRef(function Base(
+  { styles, defaultStyles, styleAttrs = [], responsive, css, ...props },
+  ref,
+) {
   const innerRef = useRef();
   const combinedRef = useCombinedRefs(ref, innerRef);
 
@@ -149,7 +143,15 @@ export default forwardRef(function Base({
   const zonesContext = useContext(ResponsiveContext);
   const zones = responsive ? pointsToZones(responsive) : zonesContext;
 
-  return <BaseElement {...props} css={css} responsive={zones} styles={styles} ref={combinedRef} />;
+  return (
+    <BaseElement
+      {...props}
+      css={css}
+      responsive={zones}
+      styles={styles}
+      ref={combinedRef}
+    />
+  );
 });
 
 const styleProps = new Set();

@@ -20,8 +20,7 @@ function App() {
           title="Storybook"
           description="Showcase and documentation for Cube Cloud UIKit"
         />
-        <TopBar onLogoPress={() => {
-        }}/>
+        <TopBar onLogoPress={() => {}} />
         <Flex
           styles={{
             flow: 'row',
