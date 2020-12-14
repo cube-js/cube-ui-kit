@@ -3,7 +3,7 @@ import Block from './Block';
 import styled from 'styled-components';
 
 const POSITIONS = [
-  [49, .5],
+  [49, 0.5],
   [0, 25],
   [49, 49],
   [98, 25],
@@ -15,13 +15,16 @@ function pos(index) {
   return `transform: translate(${POSITIONS[index][0]}%, ${POSITIONS[index][1]}%);`;
 }
 
-const RawImg = styled.img(({ index }) => `
+const RawImg = styled.img(
+  ({ index }) => `
   display: block;
   position: absolute;
   width: 50%;
   height: 50%;
   
-  ${index != null ? `
+  ${
+    index != null
+      ? `
   animation-name: dice${index};
   animation-duration: 2s;
   animation-iteration-count: infinite;
@@ -29,7 +32,9 @@ const RawImg = styled.img(({ index }) => `
   z-index: 0;
   
   @keyframes dice${index} {
-    ${index === 0 ? `
+    ${
+      index === 0
+        ? `
     from {
       ${pos(0)}
       z-index: 0;
@@ -57,9 +62,13 @@ const RawImg = styled.img(({ index }) => `
       ${pos(1)}
       z-index: 1;
     }
-    ` : ''}
+    `
+        : ''
+    }
     
-    ${index === 1 ? `
+    ${
+      index === 1
+        ? `
     from {
       ${pos(1)}
       z-index: 3;
@@ -79,9 +88,13 @@ const RawImg = styled.img(({ index }) => `
       ${pos(3)}
       z-index: 1;
     }
-    ` : ''}
+    `
+        : ''
+    }
     
-    ${index === 2 ? `
+    ${
+      index === 2
+        ? `
     from {
       ${pos(3)}
       z-index: 1;
@@ -101,16 +114,21 @@ const RawImg = styled.img(({ index }) => `
       ${pos(0)}
       z-index: 0;
     }
-    ` : ''}
+    `
+        : ''
+    }
   }
-  ` : ''}
-`);
+  `
+      : ''
+  }
+`,
+);
 
 const Cube = (props) => {
-  return <RawImg role="presentation" src={cubeImage} alt="" {...props} />
+  return <RawImg role="presentation" src={cubeImage} alt="" {...props} />;
 };
 
-export default function LoadingAnimation({ size, ...props}) {
+export default function LoadingAnimation({ size, ...props }) {
   return (
     <Block
       role="img"

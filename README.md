@@ -1,25 +1,24 @@
-# New Project
-
-> ✨ Bootstrapped with Create Snowpack App (CSA).
+# UI Kit for Cube Cloud
 
 ## Available Scripts
 
-### npm start
+### yarn start
 
-Runs the app in the development mode.
+Runs the test page in the development mode.
 Open http://localhost:8080 to view it in the browser.
 
 The page will reload if you make edits.
 You will also see any lint errors in the console.
 
-### npm run build
+### yarn storybook
 
-Builds a static copy of your site to the `build/` folder.
+Run storybook with all the components of UI Kit.
+
+### yarn run build
+
+Builds a static copy of UIKit to the `dist/` folder.
 Your app is ready to be deployed!
 
-**For the best production performance:** Add a build bundler plugin like "@snowpack/plugin-webpack" to your `snowpack.config.js` config file.
+### yarn test
 
-### npm test
-
-Launches the application test runner.
-Run with the `--watch` flag (`npm test -- --watch`) to run in interactive watch mode.
+Not yet implemented

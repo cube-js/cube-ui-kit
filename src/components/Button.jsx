@@ -31,6 +31,7 @@ export default styled(
           ...POSITION_STYLES,
           ...DIMENSION_STYLES,
           ...TEXT_STYLES,
+          'radius',
         ]}
         data-type={type || 'default'}
         {...props}

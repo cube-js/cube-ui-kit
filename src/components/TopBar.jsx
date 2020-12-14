@@ -8,6 +8,7 @@ const DEFAULT_STYLES = {
   flow: 'row',
   gap: '1x',
   content: 'space-between',
+  items: 'center',
   padding: '1x 1.5x',
   bg: '#white',
 };
