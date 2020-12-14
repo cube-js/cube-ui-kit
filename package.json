@@ -73,10 +73,6 @@
     "last 5 Firefox versions",
     "last 3 Safari versions"
   ],
-  "peerDependencies": {
-    "react": "^16.0.0",
-    "react-dom": "^16.0.0"
-  },
   "dependencies": {
     "react": "^17.0.1",
     "react-dom": "^17.0.1"
