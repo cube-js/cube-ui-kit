@@ -60,8 +60,10 @@ const GlobalStyles = createGlobalStyle`
   }
   @font-face {
     font-family: "Source Code Pro";
-    src: url('${({ publicUrl }) => publicUrl || ''}/fonts/SourceCodePro-Regular.woff2') format('woff2'),
-      url('${({ publicUrl }) => publicUrl || ''}/fonts/SourceCodePro-Regular.woff') format('woff');
+    src: url('${({ publicUrl }) =>
+      publicUrl || ''}/fonts/SourceCodePro-Regular.woff2') format('woff2'),
+      url('${({ publicUrl }) =>
+        publicUrl || ''}/fonts/SourceCodePro-Regular.woff') format('woff');
     font-weight: normal;
     font-style: normal;
   }
