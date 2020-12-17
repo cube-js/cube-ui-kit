@@ -12,18 +12,6 @@ const DEFAULT_STYLES = {
   items: 'center',
 };
 
-const Input = styled.input`
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  opacity: 0;
-  cursor: pointer;
-  width: 100%;
-  height: 100%;
-`;
-
 export default styled(
   React.forwardRef(({ type, onInput, ...props }, ref) => {
     const [file, setFile] = useState();
@@ -97,7 +85,7 @@ export default styled(
             Choose file
           </Block>
           <Block color="#dark-04">{file || 'No file selected'}</Block>
-          <Input type="file" name="base64" onInput={onInputFile} />
+          <input type="file" name="base64" onInput={onInputFile} />
         </Button>
         {error && <Text.Danger color="danger">{error}</Text.Danger>}
       </>
@@ -107,6 +95,18 @@ export default styled(
   appearance: none;
   cursor: pointer;
   outline: none;
+  
+  & input {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
 
   && {
     border: var(--border-width) solid rgba(var(--dark-02-color-rgb), 0.1);
