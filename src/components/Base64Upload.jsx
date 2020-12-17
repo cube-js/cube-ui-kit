@@ -46,6 +46,9 @@ export default styled(
       }
 
       reader.onload = function () {
+        /**
+         * @type {string}
+         */
         const text = reader.result;
 
         let base64text;
@@ -62,7 +65,10 @@ export default styled(
           return;
         }
 
-        onInput && onInput(base64text);
+        onInput && onInput({
+          encoded: base64text,
+          raw: JSON.parse(text),
+        });
 
         setFile(localFile.name);
       };
