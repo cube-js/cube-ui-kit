@@ -16,9 +16,14 @@ const GlobalStyles = createGlobalStyle`
       .join('\n    ')}
   }
   
+  html {
+    --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    --monospace-font: 'Source Code Pro', Menlo, Monaco, Consolas, 'Courier New', monospace;
+  }
+  
   body {
     background-color: white !important;
-    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    font-family: var(--font);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     margin: 0;
@@ -26,7 +31,7 @@ const GlobalStyles = createGlobalStyle`
   }
   
   code {
-    font-family: 'Source Code Pro', Menlo, Monaco, Consolas, 'Courier New', monospace;
+    font-family: var(--monospace-font);
   }
   
   @font-face {

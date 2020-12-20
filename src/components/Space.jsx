@@ -33,7 +33,7 @@ export default function Space({ ...props }) {
       defaultStyles={DEFAULT_STYLES}
       styleAttrs={[
         'color',
-        'bg',
+        'fill',
         'gap',
         'flow',
         'height',

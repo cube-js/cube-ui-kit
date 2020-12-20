@@ -7,7 +7,7 @@ export const POSITION_STYLES = [
   'margin',
 ];
 
-export const COLOR_STYLES = ['color', 'bg'];
+export const COLOR_STYLES = ['color', 'fill'];
 
 export const TEXT_STYLES = [
   'size',
@@ -15,6 +15,7 @@ export const TEXT_STYLES = [
   'textTransform',
   'fontWeight',
   'italic',
+  'font',
 ];
 
 export const DIMENSION_STYLES = ['width', 'height', 'padding'];

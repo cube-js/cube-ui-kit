@@ -1,12 +1,14 @@
 import React from 'react';
 import Base from './Base';
+import { COLOR_STYLES, TEXT_STYLES } from '../styles/list';
 
 const DEFAULT_STYLES = {
   display: 'inline',
   size: 'md',
+  margin: '0',
 };
 
-export default function Text({ as, align, transform, weight, ...props }) {
+export default function Text({ as, align, transform, weight, code, ...props }) {
   if (align) {
     props.textAlign = align;
   }
@@ -24,12 +26,8 @@ export default function Text({ as, align, transform, weight, ...props }) {
       as={as || 'span'}
       defaultStyles={DEFAULT_STYLES}
       styleAttrs={[
-        'size',
-        'color',
-        'textAlign',
-        'textTransform',
-        'fontWeight',
-        'italic',
+        ...TEXT_STYLES,
+        ...COLOR_STYLES,
       ]}
       {...props}
     />

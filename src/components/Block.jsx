@@ -11,7 +11,7 @@ export default function Block({ ...props }) {
       defaultStyles={DEFAULT_STYLES}
       styleAttrs={[
         'color',
-        'bg',
+        'fill',
         'height',
         'width',
         'place',

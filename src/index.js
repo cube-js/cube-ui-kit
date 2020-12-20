@@ -1,5 +1,6 @@
 import Text from './components/Text';
 import Title from './components/Title';
+import Paragraph from './components/Paragraph';
 
 export { default as Base } from './components/Base';
 export { default as Block } from './components/Block';
@@ -14,10 +15,12 @@ export { default as Space } from './components/Space';
 export { default as Flow } from './components/Flow';
 export { default as Root } from './components/Root';
 export { default as TopBar } from './components/TopBar';
+export { default as Link } from './components/Link';
 
 export * from './providers/Responsive';
 
 export const Typography = {
   Text,
   Title,
+  Paragraph,
 };

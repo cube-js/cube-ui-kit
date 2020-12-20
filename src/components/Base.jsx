@@ -11,7 +11,7 @@ import {
 import columnsStyle from '../styles/colums';
 import rowsStyle from '../styles/rows';
 import colorStyle from '../styles/color';
-import bgStyle from '../styles/bg';
+import fillStyle from '../styles/fill';
 import widthStyle from '../styles/width';
 import heightStyle from '../styles/height';
 import radiusStyle from '../styles/radius';
@@ -22,6 +22,7 @@ import createNativeStyle from '../styles/native';
 import sizeStyle from '../styles/size';
 import italicStyle from '../styles/italic';
 import marginStyle from '../styles/margin';
+import fontStyle from '../styles/font';
 
 const STYLES = [
   createNativeStyle('display'),
@@ -42,7 +43,7 @@ const STYLES = [
   columnsStyle,
   rowsStyle,
   colorStyle,
-  bgStyle,
+  fillStyle,
   widthStyle,
   heightStyle,
   radiusStyle,
@@ -50,6 +51,7 @@ const STYLES = [
   shadowStyle,
   paddingStyle,
   sizeStyle,
+  fontStyle,
 ];
 
 function useCombinedRefs(...refs) {

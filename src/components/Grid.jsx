@@ -11,7 +11,7 @@ export default function Grid({ ...props }) {
     <Base
       defaultStyles={DEFAULT_STYLES}
       styleAttrs={[
-        'bg',
+        'fill',
         'color',
         'gap',
         'flow',

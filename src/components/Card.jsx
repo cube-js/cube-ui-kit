@@ -16,7 +16,7 @@ export default function Card({ ...props }) {
       role="region"
       defaultStyles={DEFAULT_STYLES}
       styleAttrs={[
-        'bg',
+        'fill',
         'color',
         'gap',
         'flow',
