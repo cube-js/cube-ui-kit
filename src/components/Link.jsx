@@ -2,11 +2,7 @@ import React from 'react';
 import Action from './Action';
 import { useHistory } from 'react-router';
 import styled from 'styled-components';
-import {
-  COLOR_STYLES,
-  POSITION_STYLES,
-  TEXT_STYLES,
-} from '../styles/list';
+import { COLOR_STYLES, POSITION_STYLES, TEXT_STYLES } from '../styles/list';
 
 const DEFAULT_STYLES = {
   display: 'inline',
@@ -50,11 +46,7 @@ export default styled(
       <Action
         as="a"
         defaultStyles={defaultStyles}
-        styleAttrs={[
-          ...COLOR_STYLES,
-          ...POSITION_STYLES,
-          ...TEXT_STYLES,
-        ]}
+        styleAttrs={[...COLOR_STYLES, ...POSITION_STYLES, ...TEXT_STYLES]}
         elementType="a"
         onClick={onClickHandler}
         {...props}
@@ -72,19 +64,20 @@ export default styled(
   &:not([data-is-focused]),
   &:not([data-is-focus-visible]) {
     box-shadow: 0 0 0 var(--outline-width) rgba(var(--purple-03-color-rgb), 0);
-    border-bottom: var(--border-width) solid rgba(var(--purple-new-color-rgb), .5);
+    border-bottom: var(--border-width) solid
+      rgba(var(--purple-new-color-rgb), 0.5);
   }
 
   &[data-is-focused][data-is-focus-visible] {
     box-shadow: 0 0 0 var(--outline-width) rgba(var(--purple-03-color-rgb), 1);
     border-radius: var(--radius);
   }
-  
+
   &:not([data-is-hovered]) {
     color: var(--purple-new-color);
   }
-  
+
   &[data-is-hovered] {
-    color: rgba(var(--purple-new-color-rgb), .8);
+    color: rgba(var(--purple-new-color-rgb), 0.8);
   }
 `;

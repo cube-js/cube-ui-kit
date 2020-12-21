@@ -24,7 +24,7 @@ const VERSION = `"${pkg.version}"`;
 export default [
   {
     input: 'src/index.js',
-    external: ['react', 'react-dom'],
+    external: ['react', 'react-dom', 'react-router', 'react-router-dom'],
     output: [{
       name: 'Cube Cloud UIKit',
       dir: `./dist/`,

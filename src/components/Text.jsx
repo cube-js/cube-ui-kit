@@ -25,10 +25,7 @@ export default function Text({ as, align, transform, weight, code, ...props }) {
     <Base
       as={as || 'span'}
       defaultStyles={DEFAULT_STYLES}
-      styleAttrs={[
-        ...TEXT_STYLES,
-        ...COLOR_STYLES,
-      ]}
+      styleAttrs={[...TEXT_STYLES, ...COLOR_STYLES]}
       {...props}
     />
   );

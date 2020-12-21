@@ -3,7 +3,10 @@ import Base from './Base';
 import { useButton } from '@react-aria/button';
 import { useFocusVisible, useHover, useFocus } from '@react-aria/interactions';
 
-export default React.forwardRef(function Action({ elementType, ...props }, ref) {
+export default React.forwardRef(function Action(
+  { elementType, ...props },
+  ref,
+) {
   let [isFocused, setIsFocused] = useState(false);
   let { focusProps } = useFocus({
     onFocusChange: setIsFocused,

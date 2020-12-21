@@ -5,6 +5,7 @@ export const POSITION_STYLES = [
   'column',
   'row',
   'margin',
+  'place',
 ];
 
 export const COLOR_STYLES = ['color', 'fill'];
