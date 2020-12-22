@@ -1,6 +1,5 @@
 import React from 'react';
-import Action from './Action';
-import { useHistory } from 'react-router';
+import Action, { createLinkClickHandler } from './Action';
 import styled from 'styled-components';
 import { COLOR_STYLES, POSITION_STYLES, TEXT_STYLES } from '../styles/list';
 
@@ -16,31 +15,7 @@ export default styled(
       ? Object.assign({}, DEFAULT_STYLES, defaultStyles)
       : DEFAULT_STYLES;
 
-    const history = useHistory();
-    const newTab = to && to.startsWith('!');
-    const href = to ? (newTab ? to.slice(1) : to) : '';
-
-    function onClickHandler(evt) {
-      if (ref && ref.current && ref.current.disabled) {
-        return;
-      }
-
-      if (onClick) {
-        onClick();
-
-        evt.preventDefault();
-
-        return;
-      }
-
-      if (evt.ctrlKey || evt.metaKey || newTab) {
-        return;
-      }
-
-      history.push(href);
-
-      evt.preventDefault();
-    }
+    const clickHandler = createLinkClickHandler(ref, to, onClick);
 
     return (
       <Action
@@ -48,7 +23,7 @@ export default styled(
         defaultStyles={defaultStyles}
         styleAttrs={[...COLOR_STYLES, ...POSITION_STYLES, ...TEXT_STYLES]}
         elementType="a"
-        onClick={onClickHandler}
+        onClick={clickHandler}
         {...props}
         ref={ref}
       />

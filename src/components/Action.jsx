@@ -1,10 +1,40 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
+import { useHistory } from 'react-router';
 import Base from './Base';
 import { useButton } from '@react-aria/button';
 import { useFocusVisible, useHover, useFocus } from '@react-aria/interactions';
 
+export function createLinkClickHandler(ref, to, onClick) {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const history = useHistory();
+  const newTab = to && to.startsWith('!');
+  const href = to ? (newTab ? to.slice(1) : to) : '';
+
+  return function onClickHandler(evt) {
+    if (ref && ref.current && ref.current.disabled) {
+      return;
+    }
+
+    if (onClick) {
+      onClick();
+
+      evt.preventDefault();
+
+      return;
+    }
+
+    if (evt.ctrlKey || evt.metaKey || newTab) {
+      return;
+    }
+
+    history.push(href);
+
+    evt.preventDefault();
+  };
+}
+
 export default React.forwardRef(function Action(
-  { elementType, ...props },
+  { elementType, to, styles, ...props },
   ref,
 ) {
   let [isFocused, setIsFocused] = useState(false);
@@ -16,6 +46,20 @@ export default React.forwardRef(function Action(
   let { hoverProps, isHovered } = useHover({});
   let { isFocusVisible } = useFocusVisible({});
 
+  const listeners = {};
+
+  const pressHandler = createLinkClickHandler(ref, to);
+
+  if (to) {
+    listeners.onClick = pressHandler;
+  }
+
+  styles = { ...styles };
+
+  if (!styles.cursor) {
+    styles.cursor = 'pointer';
+  }
+
   return (
     <Base
       data-is-hovered={isHovered ? '' : null}
@@ -26,6 +70,8 @@ export default React.forwardRef(function Action(
       {...buttonProps}
       {...focusProps}
       {...props}
+      {...listeners}
+      styles={styles}
       ref={ref}
     />
   );
