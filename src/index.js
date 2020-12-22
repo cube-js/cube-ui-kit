@@ -24,3 +24,5 @@ export const Typography = {
   Title,
   Paragraph,
 };
+
+export { Text, Title, Paragraph };
