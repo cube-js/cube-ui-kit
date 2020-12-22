@@ -53,10 +53,11 @@ export default styled(
           return;
         }
 
-        onInput && onInput({
-          encoded: base64text,
-          raw: JSON.parse(text),
-        });
+        onInput &&
+          onInput({
+            encoded: base64text,
+            raw: JSON.parse(text),
+          });
 
         setFile(localFile.name);
       };
@@ -95,7 +96,7 @@ export default styled(
   appearance: none;
   cursor: pointer;
   outline: none;
-  
+
   & input {
     position: absolute;
     top: 0;

@@ -112,8 +112,8 @@ Form.Item = styled(Form.Item)`
     .ant-form-item-label-left > label {
       line-height: 40px;
     }
-    
-    .ant-form-item-explain-success > [role="alert"] {
+
+    .ant-form-item-explain-success > [role='alert'] {
       color: var(--success-color);
     }
   }

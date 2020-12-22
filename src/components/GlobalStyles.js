@@ -33,29 +33,37 @@ const GlobalStyles = createGlobalStyle`
     font-family: 'Inter';
     font-style: normal;
     font-weight: 400;
-    src: url(${({ publicUrl }) => publicUrl || ''}/fonts/Inter-Regular.woff2) format('woff2'),
-      url(${({ publicUrl }) => publicUrl || ''}/fonts/Inter-Regular.woff) format('woff');
+    src: url(${({ publicUrl }) =>
+      publicUrl || ''}/fonts/Inter-Regular.woff2) format('woff2'),
+      url(${({ publicUrl }) =>
+        publicUrl || ''}/fonts/Inter-Regular.woff) format('woff');
   }
   @font-face {
     font-family: 'Inter';
     font-style: normal;
     font-weight: 500;
-    src: url(${({ publicUrl }) => publicUrl || ''}/fonts/Inter-Medium.woff2) format('woff2'),
-      url(${({ publicUrl }) => publicUrl || ''}/fonts/Inter-Medium.woff) format('woff');
+    src: url(${({ publicUrl }) =>
+      publicUrl || ''}/fonts/Inter-Medium.woff2) format('woff2'),
+      url(${({ publicUrl }) =>
+        publicUrl || ''}/fonts/Inter-Medium.woff) format('woff');
   }
   @font-face {
     font-family: 'Inter';
     font-style: normal;
     font-weight: 600;
-    src: url(${({ publicUrl }) => publicUrl || ''}/fonts/Inter-SemiBold.woff2) format('woff2'),
-      url(${({ publicUrl }) => publicUrl || ''}/fonts/Inter-SemiBold.woff) format('woff');
+    src: url(${({ publicUrl }) =>
+      publicUrl || ''}/fonts/Inter-SemiBold.woff2) format('woff2'),
+      url(${({ publicUrl }) =>
+        publicUrl || ''}/fonts/Inter-SemiBold.woff) format('woff');
   }
   @font-face {
     font-family: 'Inter';
     font-style: normal;
     font-weight: 700;
-    src: url(${({ publicUrl }) => publicUrl || ''}/fonts/Inter-Bold.woff2) format('woff2'),
-      url(${({ publicUrl }) => publicUrl || ''}/fonts/Inter-Bold.woff) format('woff');
+    src: url(${({ publicUrl }) =>
+      publicUrl || ''}/fonts/Inter-Bold.woff2) format('woff2'),
+      url(${({ publicUrl }) =>
+        publicUrl || ''}/fonts/Inter-Bold.woff) format('woff');
   }
   @font-face {
     font-family: 'Source Code Pro';

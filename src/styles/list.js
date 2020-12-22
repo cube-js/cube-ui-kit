@@ -1,4 +1,11 @@
-export const POSITION_STYLES = ['grow', 'shrink', 'order', 'column', 'row', 'margin'];
+export const POSITION_STYLES = [
+  'grow',
+  'shrink',
+  'order',
+  'column',
+  'row',
+  'margin',
+];
 
 export const COLOR_STYLES = ['color', 'bg'];
 
