@@ -84,6 +84,22 @@ const GlobalStyles = createGlobalStyle`
     display: block;
     font-weight: 500;
   }
+
+  .ant-modal-content {
+    border-radius: 8px;
+  }
+  
+  .ant-modal-header {
+    border-radius: 8px 8px 0 0;
+  }
+  
+  .ant-modal-body {
+    padding: 24px 20px;
+  }
+  
+  .ant-modal-footer {
+    padding: 12px 20px;
+  }
 `;
 
 export default GlobalStyles;

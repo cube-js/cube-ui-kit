@@ -71,6 +71,7 @@ module.exports = {
 
   'font-size-base': '14px',
   'border-radius-base': '4px',
+  'card-radius': '8px',
   'padding-lg': '16px',
   'border-color': color('dark', 0.1),
 
