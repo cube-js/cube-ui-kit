@@ -40,7 +40,7 @@ export default styled(
   &:not([data-is-focus-visible]) {
     box-shadow: 0 0 0 var(--outline-width) rgba(var(--purple-03-color-rgb), 0);
     border-bottom: var(--border-width) solid
-      rgba(var(--purple-new-color-rgb), 0.5);
+      rgba(var(--purple-text-color-rgb), 0.5);
   }
 
   &[data-is-focused][data-is-focus-visible] {
@@ -49,10 +49,10 @@ export default styled(
   }
 
   &:not([data-is-hovered]) {
-    color: var(--purple-new-color);
+    color: var(--purple-text-color);
   }
 
   &[data-is-hovered] {
-    color: rgba(var(--purple-new-color-rgb), 0.8);
+    color: rgba(var(--purple-text-color-rgb), 0.8);
   }
 `;
