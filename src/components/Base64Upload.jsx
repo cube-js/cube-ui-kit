@@ -79,7 +79,7 @@ export default styled(
         >
           <Block
             radius="round"
-            bg="#purple.10"
+            fill="#purple.10"
             color="#dark-02"
             padding=".5x 1x"
           >

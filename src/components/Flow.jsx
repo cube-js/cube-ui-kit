@@ -6,7 +6,7 @@ const DEFAULT_STYLES = {
   flow: 'column',
 };
 
-export default function Flow({ ...props }) {
+export default React.forwardRef(function Flow({ ...props }, ref) {
   return (
     <Base
       defaultStyles={DEFAULT_STYLES}
@@ -23,6 +23,7 @@ export default function Flow({ ...props }) {
         'radius',
       ]}
       {...props}
+      ref={ref}
     />
   );
-}
+});
