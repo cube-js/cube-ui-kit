@@ -1,5 +1,10 @@
 import React from 'react';
 import Base from './Base';
+import {
+  COLOR_STYLES,
+  DIMENSION_STYLES,
+  POSITION_STYLES,
+} from '../styles/list';
 
 const DEFAULT_STYLES = {
   display: 'grid',
@@ -11,21 +16,20 @@ export default function Grid({ ...props }) {
     <Base
       defaultStyles={DEFAULT_STYLES}
       styleAttrs={[
-        'fill',
-        'color',
+        ...COLOR_STYLES,
+        ...POSITION_STYLES,
+        ...DIMENSION_STYLES,
         'gap',
         'flow',
         'columns',
         'rows',
-        'height',
-        'width',
         'place',
         'content',
         'items',
-        'padding',
         'border',
         'shadow',
         'radius',
+        'margin',
       ]}
       {...props}
     />

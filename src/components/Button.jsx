@@ -73,11 +73,11 @@ export default styled(
     border: var(--border-width) solid transparent;
 
     &:not([data-is-hovered]) {
-      background: rgba(var(--purple-color-rgb), 1);
+      background: var(--purple-color);
     }
 
     &[data-is-hovered] {
-      background: rgba(var(--purple-color-rgb), 0.9);
+      background: var(--purple-text-color);
     }
   }
 `;

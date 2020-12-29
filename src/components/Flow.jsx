@@ -1,5 +1,6 @@
 import React from 'react';
 import Base from './Base';
+import { COLOR_STYLES, DIMENSION_STYLES } from '../styles/list';
 
 const DEFAULT_STYLES = {
   display: 'block',
@@ -11,13 +12,10 @@ export default React.forwardRef(function Flow({ ...props }, ref) {
     <Base
       defaultStyles={DEFAULT_STYLES}
       styleAttrs={[
-        'fill',
-        'color',
+        ...COLOR_STYLES,
+        ...DIMENSION_STYLES,
         'gap',
-        'height',
-        'width',
         'place',
-        'padding',
         'border',
         'shadow',
         'radius',

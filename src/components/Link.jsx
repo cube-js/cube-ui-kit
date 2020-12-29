@@ -16,10 +16,14 @@ export default styled(
       : DEFAULT_STYLES;
 
     const clickHandler = createLinkClickHandler(ref, to, onClick);
+    const newTab = to && to.startsWith('!');
+    const href = to ? (newTab ? to.slice(1) : to) : '';
 
     return (
       <Action
         as="a"
+        target={newTab ? '_blank' : null}
+        href={href || null}
         defaultStyles={defaultStyles}
         styleAttrs={[...COLOR_STYLES, ...POSITION_STYLES, ...TEXT_STYLES]}
         elementType="a"

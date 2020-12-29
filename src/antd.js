@@ -7,6 +7,7 @@ import {
   AutoComplete as AntdAutoComplete,
   Table as AntdTable,
   Form,
+  Tabs as AntdTabs,
 } from 'antd';
 
 const inputStyles = ` {
@@ -118,5 +119,14 @@ Form.Item = styled(Form.Item)`
     }
   }
 `;
+
+export const Tabs = styled(AntdTabs)`
+  .ant-tabs-tab-btn,
+  .ant-tabs-tab-remove {
+    font-weight: 500;
+  }
+`;
+
+Tabs.TabPane = AntdTabs.TabPane;
 
 export * from 'antd';

@@ -38,7 +38,3 @@ Text.Minor = function MinorText(props) {
 Text.Danger = function DangerText(props) {
   return <Text color="#danger" {...props} />;
 };
-
-Text.Paragraph = function Paragraph(props) {
-  return <Text as="p" {...props} />;
-};

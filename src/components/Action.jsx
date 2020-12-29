@@ -4,6 +4,27 @@ import Base from './Base';
 import { useButton } from '@react-aria/button';
 import { useFocusVisible, useHover, useFocus } from '@react-aria/interactions';
 
+/**
+ * Helper to open link.
+ * @param {String} href
+ * @param {String} target
+ */
+export function openLink(href, target) {
+  const link = document.createElement('a');
+
+  link.href = href;
+
+  if (target) {
+    link.target = target === true ? '_blank' : target;
+  }
+
+  document.body.appendChild(link);
+
+  link.click();
+
+  document.body.removeChild(link);
+}
+
 export function createLinkClickHandler(ref, to, onClick) {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const history = useHistory();
@@ -11,7 +32,7 @@ export function createLinkClickHandler(ref, to, onClick) {
   const href = to ? (newTab ? to.slice(1) : to) : '';
 
   return function onClickHandler(evt) {
-    if (ref && ref.current && ref.current.disabled) {
+    if (ref && ref.current && ref.current.hasAttribute('disabled')) {
       return;
     }
 
