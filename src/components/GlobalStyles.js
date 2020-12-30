@@ -101,6 +101,10 @@ const GlobalStyles = createGlobalStyle`
   .ant-modal-footer {
     padding: 12px 20px;
   }
+  
+  .ant-page-header-heading-sub-title {
+    color: var(--dark-65-color);
+  }
 `;
 
 export default GlobalStyles;
