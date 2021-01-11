@@ -9,7 +9,7 @@ export default function Title({ as, level, ...props }) {
       as={as || tag}
       display="block"
       size={tag}
-      fontWeight={700}
+      fontWeight={(level || 1) === 1 ? 700 : 600}
       color="#dark"
       {...props}
     />
