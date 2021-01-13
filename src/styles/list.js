@@ -8,6 +8,8 @@ export const POSITION_STYLES = [
   'place',
 ];
 
+export const BLOCK_STYLES = ['padding', 'shadow', 'border', 'radius', 'margin'];
+
 export const COLOR_STYLES = ['color', 'fill'];
 
 export const TEXT_STYLES = [
@@ -19,4 +21,4 @@ export const TEXT_STYLES = [
   'font',
 ];
 
-export const DIMENSION_STYLES = ['width', 'height', 'padding'];
+export const DIMENSION_STYLES = ['width', 'height'];

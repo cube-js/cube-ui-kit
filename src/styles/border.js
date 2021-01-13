@@ -6,11 +6,11 @@ import {
 } from '../utils/styles';
 
 export default function borderStyle({ border }) {
-  if (!border) return '';
+  if (!border && border !== 0) return '';
 
   if (border === true) border = '1bw';
 
-  const { values, mods, color } = parseStyle(border);
+  const { values, mods, color } = parseStyle(String(border));
 
   const directions = filterMods(mods, DIRECTIONS);
   const typeMods = mods.filter((m) => !directions.includes(m));

@@ -6,6 +6,7 @@ import {
   DIMENSION_STYLES,
   POSITION_STYLES,
   TEXT_STYLES,
+  BLOCK_STYLES,
 } from '../styles/list';
 
 const DEFAULT_STYLES = {
@@ -30,6 +31,7 @@ export default styled(
           ...POSITION_STYLES,
           ...DIMENSION_STYLES,
           ...TEXT_STYLES,
+          ...BLOCK_STYLES,
           'radius',
         ]}
         data-type={type || 'default'}
@@ -78,6 +80,18 @@ export default styled(
 
     &[data-is-hovered] {
       background: var(--purple-text-color);
+    }
+  }
+  
+  &[data-type='clear'] {
+    &:not([data-is-hovered]) {
+      color: var(--dark-65-color);
+      background: rgba(var(--purple-color-rgb), 0);
+    }
+
+    &[data-is-hovered] {
+      color: var(--purple-text-color);
+      background: rgba(var(--purple-color-rgb), 0.05);
     }
   }
 `;

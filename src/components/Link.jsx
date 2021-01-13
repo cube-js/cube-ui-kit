@@ -7,6 +7,7 @@ const DEFAULT_STYLES = {
   display: 'inline',
   cursor: 'pointer',
   size: 'md',
+  fontWeight: 500,
 };
 
 export default styled(
@@ -38,13 +39,13 @@ export default styled(
   cursor: pointer;
   outline: none;
   transition: color var(--transition) linear,
-    background var(--transition) linear, box-shadow var(--transition) linear;
+    background var(--transition) linear, 
+    box-shadow var(--transition) linear,
+    border-radius var(--transition) linear;
 
-  &:not([data-is-focused]),
-  &:not([data-is-focus-visible]) {
-    box-shadow: 0 0 0 var(--outline-width) rgba(var(--purple-03-color-rgb), 0);
-    border-bottom: var(--border-width) solid
-      rgba(var(--purple-text-color-rgb), 0.5);
+  &:not([data-is-focused]):not([data-is-hovered]),
+  &:not([data-is-focus-visible]):not([data-is-hovered]) {
+    box-shadow: 0 var(--border-width) 0 0 rgba(var(--purple-03-color-rgb), 0.2);
   }
 
   &[data-is-focused][data-is-focus-visible] {
@@ -57,6 +58,6 @@ export default styled(
   }
 
   &[data-is-hovered] {
-    color: rgba(var(--purple-text-color-rgb), 0.8);
+    color: var(--purple-color);
   }
 `;

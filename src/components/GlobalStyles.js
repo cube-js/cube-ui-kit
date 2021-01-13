@@ -31,6 +31,10 @@ const GlobalStyles = createGlobalStyle`
     color: var(--dark-65-color);
   }
   
+  [type=reset], [type=submit], button, html [type=button] {
+    -webkit-appearance: none;
+  }
+  
   code {
     font-family: var(--monospace-font);
   }

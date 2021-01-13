@@ -4,6 +4,7 @@ import {
   COLOR_STYLES,
   DIMENSION_STYLES,
   POSITION_STYLES,
+  BLOCK_STYLES,
 } from '../styles/list';
 
 const DEFAULT_STYLES = {
@@ -19,6 +20,7 @@ export default function Grid({ ...props }) {
         ...COLOR_STYLES,
         ...POSITION_STYLES,
         ...DIMENSION_STYLES,
+        ...BLOCK_STYLES,
         'gap',
         'flow',
         'columns',

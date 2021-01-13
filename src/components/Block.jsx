@@ -4,6 +4,7 @@ import {
   COLOR_STYLES,
   DIMENSION_STYLES,
   POSITION_STYLES,
+  BLOCK_STYLES,
 } from '../styles/list';
 
 const DEFAULT_STYLES = {
@@ -14,6 +15,7 @@ const STYLE_ATTRS = [
   ...COLOR_STYLES,
   ...DIMENSION_STYLES,
   ...POSITION_STYLES,
+  ...BLOCK_STYLES,
   'padding',
   'border',
   'shadow',
