@@ -82,7 +82,7 @@ export default styled(
       background: var(--purple-text-color);
     }
   }
-  
+
   &[data-type='clear'] {
     &:not([data-is-hovered]) {
       color: var(--dark-65-color);

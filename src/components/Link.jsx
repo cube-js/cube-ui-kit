@@ -39,8 +39,7 @@ export default styled(
   cursor: pointer;
   outline: none;
   transition: color var(--transition) linear,
-    background var(--transition) linear, 
-    box-shadow var(--transition) linear,
+    background var(--transition) linear, box-shadow var(--transition) linear,
     border-radius var(--transition) linear;
 
   &:not([data-is-focused]):not([data-is-hovered]),
