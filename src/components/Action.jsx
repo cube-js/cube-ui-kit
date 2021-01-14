@@ -7,7 +7,7 @@ import { useFocusVisible, useHover, useFocus } from '@react-aria/interactions';
 /**
  * Helper to open link.
  * @param {String} href
- * @param {String} target
+ * @param {String|Boolean} [target]
  */
 export function openLink(href, target) {
   const link = document.createElement('a');
@@ -45,6 +45,10 @@ export function createLinkClickHandler(ref, to, onClick) {
     }
 
     if (evt.ctrlKey || evt.metaKey || newTab) {
+      if (evt.target.tagName !== 'A') {
+        openLink(href, true);
+      }
+
       return;
     }
 
