@@ -37,7 +37,7 @@ export function createLinkClickHandler(ref, to, onClick) {
     }
 
     if (onClick) {
-      onClick();
+      onClick(evt);
 
       evt.preventDefault();
 

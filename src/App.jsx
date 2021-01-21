@@ -32,12 +32,12 @@ function App() {
           <button>2</button>
         </Flex>
         <Grid columns="auto 1fr" gap="1x" styles={{ height: '100px' }}>
-          <Base styles={{ bg: color('purple', 0.1), width: '200px' }}>
+          <Base styles={{ fill: color('purple', 0.1), width: '200px' }}>
             Without padding
           </Base>
           <Card
             styles={{
-              bg: '#purple.50',
+              fill: '#purple.50',
               border: true,
               shadow: true,
               padding: '2x',

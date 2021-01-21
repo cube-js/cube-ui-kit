@@ -4,7 +4,6 @@ export const POSITION_STYLES = [
   'order',
   'column',
   'row',
-  'margin',
   'place',
 ];
 

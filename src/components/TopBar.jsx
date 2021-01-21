@@ -10,7 +10,7 @@ const DEFAULT_STYLES = {
   content: 'space-between',
   items: 'center',
   padding: '1x 1.5x',
-  bg: '#white',
+  fill: '#white',
 };
 
 export default function TopBar({ children, onLogoPress, ...props }) {
