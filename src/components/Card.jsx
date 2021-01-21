@@ -11,7 +11,6 @@ const DEFAULT_STYLES = {
   padding: '3x',
 };
 
-
 export default function Card({ ...props }) {
   return (
     <Base

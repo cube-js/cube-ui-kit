@@ -44,7 +44,9 @@ export default function Alert({ type, label, children, ...props }) {
         ...DIMENSION_STYLES,
       ]}
       fill={THEMES[type] ? THEMES[type].fill : '#clear'}
-      border={THEMES[type] && THEMES[type].border ? THEMES[type].border : '#clear'}
+      border={
+        THEMES[type] && THEMES[type].border ? THEMES[type].border : '#clear'
+      }
       {...props}
     >
       {children}
