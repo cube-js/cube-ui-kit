@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { forwardRef, useRef } from 'react';
 import Action from './Action';
-import styled from 'styled-components';
 import {
+  BLOCK_STYLES,
   COLOR_STYLES,
   DIMENSION_STYLES,
   POSITION_STYLES,
   TEXT_STYLES,
-  BLOCK_STYLES,
 } from '../styles/list';
+import { useCombinedRefs } from '../utils/react';
 
 const DEFAULT_STYLES = {
   display: 'inline-block',
@@ -15,38 +15,19 @@ const DEFAULT_STYLES = {
   radius: true,
   size: 'md',
 };
-
-export default styled(
-  React.forwardRef(({ type, defaultStyles, ...props }, ref) => {
-    defaultStyles = defaultStyles
-      ? Object.assign({}, DEFAULT_STYLES, defaultStyles)
-      : DEFAULT_STYLES;
-
-    return (
-      <Action
-        as="button"
-        defaultStyles={defaultStyles}
-        styleAttrs={[
-          ...COLOR_STYLES,
-          ...POSITION_STYLES,
-          ...DIMENSION_STYLES,
-          ...TEXT_STYLES,
-          ...BLOCK_STYLES,
-          'radius',
-        ]}
-        data-type={type || 'default'}
-        {...props}
-        ref={ref}
-      />
-    );
-  }),
-)`
+const CSS = `
   position: relative;
   appearance: none;
   cursor: pointer;
   outline: none;
   transition: color var(--transition) linear,
     background var(--transition) linear, box-shadow var(--transition) linear;
+  white-space: nowrap;
+  
+  &[disabled] {
+    opacity: .4;
+    cursor: default;
+  }
 
   &:not([data-is-focused]),
   &:not([data-is-focus-visible]) {
@@ -61,11 +42,11 @@ export default styled(
     color: var(--purple-color);
     border: var(--border-width) solid transparent;
 
-    &:not([data-is-hovered]) {
+    &:not([data-is-hovered]), &[disabled] {
       background: rgba(var(--purple-color-rgb), 0.1);
     }
 
-    &[data-is-hovered] {
+    &[data-is-hovered]:not([disabled]) {
       background: rgba(var(--purple-color-rgb), 0.2);
     }
   }
@@ -74,24 +55,53 @@ export default styled(
     color: var(--white-color);
     border: var(--border-width) solid transparent;
 
-    &:not([data-is-hovered]) {
+    &:not([data-is-hovered]), &[disabled] {
       background: var(--purple-color);
     }
 
-    &[data-is-hovered] {
+    &[data-is-hovered]:not([disabled]) {
       background: var(--purple-text-color);
     }
   }
 
   &[data-type='clear'] {
-    &:not([data-is-hovered]) {
+    &:not([data-is-hovered]), &[disabled] {
       color: var(--dark-65-color);
       background: rgba(var(--purple-color-rgb), 0);
     }
 
-    &[data-is-hovered] {
+    &[data-is-hovered]:not([disabled]) {
       color: var(--purple-text-color);
       background: rgba(var(--purple-color-rgb), 0.05);
     }
   }
 `;
+
+export default forwardRef(function Button(
+  { type, defaultStyles, ...props },
+  ref,
+) {
+  const combinedRef = useCombinedRefs(ref);
+  defaultStyles = defaultStyles
+    ? Object.assign({}, DEFAULT_STYLES, defaultStyles)
+    : DEFAULT_STYLES;
+
+  return (
+    <Action
+      as="button"
+      defaultStyles={defaultStyles}
+      styleAttrs={[
+        ...COLOR_STYLES,
+        ...POSITION_STYLES,
+        ...DIMENSION_STYLES,
+        ...TEXT_STYLES,
+        ...BLOCK_STYLES,
+        'radius',
+      ]}
+      css={CSS}
+      data-type={type || 'default'}
+      {...props}
+      ref={combinedRef}
+    />
+  );
+});

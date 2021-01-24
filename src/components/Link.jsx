@@ -1,7 +1,7 @@
-import React from 'react';
-import Action, { createLinkClickHandler } from './Action';
-import styled from 'styled-components';
+import React, { forwardRef } from 'react';
+import Action  from './Action';
 import { COLOR_STYLES, POSITION_STYLES, TEXT_STYLES } from '../styles/list';
+import { useCombinedRefs } from '../utils/react';
 
 const DEFAULT_STYLES = {
   display: 'inline',
@@ -10,31 +10,7 @@ const DEFAULT_STYLES = {
   fontWeight: 500,
 };
 
-export default styled(
-  React.forwardRef(({ to, onClick, defaultStyles, ...props }, ref) => {
-    defaultStyles = defaultStyles
-      ? Object.assign({}, DEFAULT_STYLES, defaultStyles)
-      : DEFAULT_STYLES;
-
-    const clickHandler = createLinkClickHandler(ref, to, onClick);
-    const newTab = to && to.startsWith('!');
-    const href = to ? (newTab ? to.slice(1) : to) : '';
-
-    return (
-      <Action
-        as="a"
-        target={newTab ? '_blank' : null}
-        href={href || null}
-        defaultStyles={defaultStyles}
-        styleAttrs={[...COLOR_STYLES, ...POSITION_STYLES, ...TEXT_STYLES]}
-        elementType="a"
-        onClick={clickHandler}
-        {...props}
-        ref={ref}
-      />
-    );
-  }),
-)`
+const CSS = `
   position: relative;
   cursor: pointer;
   outline: none;
@@ -60,3 +36,29 @@ export default styled(
     color: var(--purple-color);
   }
 `;
+
+export default forwardRef(({ to, defaultStyles, ...props }, ref) => {
+  const combinedRef = useCombinedRefs(ref);
+
+  defaultStyles = defaultStyles
+    ? Object.assign({}, DEFAULT_STYLES, defaultStyles)
+    : DEFAULT_STYLES;
+
+  const newTab = to && to.startsWith('!');
+  const href = to ? (newTab ? to.slice(1) : to) : '';
+
+  return (
+    <Action
+      as="a"
+      to={to}
+      target={newTab ? '_blank' : null}
+      href={href || null}
+      defaultStyles={defaultStyles}
+      styleAttrs={[...COLOR_STYLES, ...POSITION_STYLES, ...TEXT_STYLES]}
+      elementType="a"
+      css={CSS}
+      {...props}
+      ref={combinedRef}
+    />
+  );
+});

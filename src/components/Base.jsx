@@ -1,4 +1,4 @@
-import React, { useContext, forwardRef, useRef } from 'react';
+import React, { useContext, forwardRef } from 'react';
 import styled from 'styled-components';
 import { ResponsiveContext } from '../providers/Responsive';
 import gapStyle from '../styles/gap';
@@ -23,6 +23,7 @@ import sizeStyle from '../styles/size';
 import italicStyle from '../styles/italic';
 import marginStyle from '../styles/margin';
 import fontStyle from '../styles/font';
+import { useCombinedRefs } from '../utils/react';
 
 const STYLES = [
   createNativeStyle('display'),
@@ -53,24 +54,6 @@ const STYLES = [
   sizeStyle,
   fontStyle,
 ];
-
-function useCombinedRefs(...refs) {
-  const targetRef = React.useRef();
-
-  React.useEffect(() => {
-    refs.forEach((ref) => {
-      if (!ref) return;
-
-      if (typeof ref === 'function') {
-        ref(targetRef.current);
-      } else {
-        ref.current = targetRef.current;
-      }
-    });
-  }, [refs]);
-
-  return targetRef;
-}
 
 const BaseElement = styled.div(({ styles, responsive, css }) => {
   const zones = responsive;
@@ -124,8 +107,7 @@ export default forwardRef(function Base(
   { styles, defaultStyles, styleAttrs = [], responsive, css, ...props },
   ref,
 ) {
-  const innerRef = useRef();
-  const combinedRef = useCombinedRefs(ref, innerRef);
+  const combinedRef = useCombinedRefs(ref);
 
   defaultStyles = defaultStyles || {};
   styles = Object.assign({}, defaultStyles, styles || {});

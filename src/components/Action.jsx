@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, forwardRef } from 'react';
 import { useHistory } from 'react-router';
 import Base from './Base';
 import { useButton } from '@react-aria/button';
-import { useFocusVisible, useHover, useFocus } from '@react-aria/interactions';
+import { useFocusVisible, useHover, useFocus, usePress } from '@react-aria/interactions';
+import { useCombinedRefs } from '../utils/react';
 
 /**
  * Helper to open link.
@@ -32,13 +33,11 @@ export function createLinkClickHandler(ref, to, onClick) {
   const href = to ? (newTab ? to.slice(1) : to) : '';
 
   return function onClickHandler(evt) {
-    if (ref && ref.current && ref.current.hasAttribute('disabled')) {
+    if (!to || (ref && ref.current && ref.current.hasAttribute('disabled'))) {
       return;
     }
 
     if (onClick) {
-      onClick(evt);
-
       evt.preventDefault();
 
       return;
@@ -58,25 +57,37 @@ export function createLinkClickHandler(ref, to, onClick) {
   };
 }
 
-export default React.forwardRef(function Action(
-  { elementType, to, styles, ...props },
+export default forwardRef(function Action(
+  { elementType, to, styles, onClick, ...props },
   ref,
 ) {
+  const combinedRef = useCombinedRefs(ref);
+
   let [isFocused, setIsFocused] = useState(false);
   let { focusProps } = useFocus({
     onFocusChange: setIsFocused,
     elementType,
   });
-  let { buttonProps, isPressed } = useButton(props, ref);
+  let { pressProps } = usePress({
+    onPress(e) {
+      if (props.disabled) return;
+
+      if (!to) {
+        onClick && onClick(e);
+      }
+    }
+  });
+  let { buttonProps, isPressed } = useButton(props, combinedRef);
   let { hoverProps, isHovered } = useHover({});
   let { isFocusVisible } = useFocusVisible({});
 
   const listeners = {};
 
-  const pressHandler = createLinkClickHandler(ref, to);
+  const pressHandler = createLinkClickHandler(combinedRef, to, onClick);
 
   if (to) {
     listeners.onClick = pressHandler;
+    buttonProps.type = undefined;
   }
 
   styles = { ...styles };
@@ -85,19 +96,24 @@ export default React.forwardRef(function Action(
     styles.cursor = 'pointer';
   }
 
+  if (props.as === 'a') {
+    buttonProps.tabIndex = '0';
+  }
+
   return (
     <Base
       data-is-hovered={isHovered ? '' : null}
       data-is-pressed={isPressed ? '' : null}
       data-is-focused={isFocused ? '' : null}
       data-is-focus-visible={isFocusVisible ? '' : null}
-      {...hoverProps}
       {...buttonProps}
+      {...pressProps}
+      {...hoverProps}
       {...focusProps}
       {...props}
       {...listeners}
       styles={styles}
-      ref={ref}
+      ref={combinedRef}
     />
   );
 });
