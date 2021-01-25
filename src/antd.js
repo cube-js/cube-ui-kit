@@ -13,7 +13,7 @@ import {
 const inputStyles = ` {
     line-height: var(--input-line-height);
     font-size: var(--input-font-size);
-    padding: 10px 12px;
+    padding: 9px 12px;
     border: var(--border-width) solid var(--border-color);
 
     &:-webkit-autofill {
@@ -34,15 +34,15 @@ const inputStyles = ` {
 `;
 
 export const Input = styled(AntdInput)`
-  &&& ${inputStyles}
+  &&&.ant-input ${inputStyles}
 `;
 
 export const InputNumber = styled(AntdInputNumber)`
-  &&& ${inputStyles}
+  &&&.ant-input ${inputStyles}
 `;
 
 Input.TextArea = styled(AntdInput.TextArea)`
-  &&& ${inputStyles} &&& {
+  &&&.ant-input ${inputStyles} &&&.ant-input {
     overflow: auto;
   }
 `;
@@ -54,7 +54,7 @@ export const AutoComplete = styled(AntdAutoComplete)`
 
   &&.ant-select:not(.ant-select-customize-input) .ant-select-selector {
     border: var(--border-width) solid var(--border-color);
-    padding: 3px 12px;
+    padding: 4px 12px;
   }
 
   &&.ant-select:not(.ant-select-customize-input)
@@ -63,7 +63,7 @@ export const AutoComplete = styled(AntdAutoComplete)`
     height: auto;
     line-height: var(--input-line-height);
     font-size: var(--input-font-size);
-    padding: 8px 0;
+    padding: 9px 0;
   }
 `;
 

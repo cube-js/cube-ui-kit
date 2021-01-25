@@ -2,7 +2,12 @@ import React, { useState, forwardRef } from 'react';
 import { useHistory } from 'react-router';
 import Base from './Base';
 import { useButton } from '@react-aria/button';
-import { useFocusVisible, useHover, useFocus, usePress } from '@react-aria/interactions';
+import {
+  useFocusVisible,
+  useHover,
+  useFocus,
+  usePress,
+} from '@react-aria/interactions';
 import { useCombinedRefs } from '../utils/react';
 
 /**
@@ -75,7 +80,7 @@ export default forwardRef(function Action(
       if (!to) {
         onClick && onClick(e);
       }
-    }
+    },
   });
   let { buttonProps, isPressed } = useButton(props, combinedRef);
   let { hoverProps, isHovered } = useHover({});

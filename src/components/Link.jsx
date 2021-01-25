@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import Action  from './Action';
+import Action from './Action';
 import { COLOR_STYLES, POSITION_STYLES, TEXT_STYLES } from '../styles/list';
 import { useCombinedRefs } from '../utils/react';
 
