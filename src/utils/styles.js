@@ -317,8 +317,6 @@ export function parseColor(val, ignoreError = false) {
     };
   }
 
-  console.log('!', val);
-
   let { values, mods, color } = parseStyle(val, 0);
 
   let name, opacity;
