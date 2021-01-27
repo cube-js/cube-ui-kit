@@ -61,7 +61,7 @@ const PROPS = {
   'primary-color': color('purple'),
   'max-content-width': '1440px',
   'topbar-height': '48px',
-  'page-content-min-height': 'calc(100vh - var(--topbar-height))',
+  'devmodebar-height': '54px',
   'sidebar-width': '200px',
 
   // font sizes
