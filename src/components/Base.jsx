@@ -1,5 +1,13 @@
 import React, { useContext, forwardRef } from 'react';
+import {
+  replaceStateValues,
+  applyStates,
+  styleMapToStyleMapStateList,
+  styleValueToStyleStateList,
+  normalizeStates
+} from 'numl-utils';
 import styled from 'styled-components';
+import { useCombinedRefs } from '../utils/react';
 import { ResponsiveContext } from '../providers/Responsive';
 import gapStyle from '../styles/gap';
 import flowStyle from '../styles/flow';
@@ -23,7 +31,8 @@ import sizeStyle from '../styles/size';
 import italicStyle from '../styles/italic';
 import marginStyle from '../styles/margin';
 import fontStyle from '../styles/font';
-import { useCombinedRefs } from '../utils/react';
+import boxShadowCombinator from '../styles/box-shadow.combinator';
+import outlineStyle from '../styles/outline';
 
 const STYLES = [
   createNativeStyle('display'),
@@ -34,6 +43,7 @@ const STYLES = [
   createNativeStyle('shrink', 'flex-shrink'),
   createNativeStyle('order'),
   createNativeStyle('cursor'),
+  createNativeStyle('opacity'),
   createNativeStyle('textAlign'),
   createNativeStyle('fontWeight'),
   createNativeStyle('textTransform'),
@@ -53,7 +63,19 @@ const STYLES = [
   paddingStyle,
   sizeStyle,
   fontStyle,
+  boxShadowCombinator,
+  outlineStyle,
 ];
+
+const UTILS_CONFIG = {
+  getModSelector(modName) {
+    if (modName === 'disabled') {
+      return '[disabled]';
+    }
+
+    return `[data-is-${modName}]`
+  }
+}
 
 const BaseElement = styled.div(({ styles, responsive, css }) => {
   const zones = responsive;
@@ -63,6 +85,15 @@ const BaseElement = styled.div(({ styles, responsive, css }) => {
 
   STYLES.forEach((STYLE) => {
     const lookupStyles = STYLE.__styleLookup;
+    const handler = (styleMap) => {
+      if (!lookupStyles.find(style => style in styleMap)) return;
+
+      const stateMapList = styleMapToStyleMapStateList(styleMap, lookupStyles);
+
+      replaceStateValues(stateMapList, STYLE);
+
+      return applyStates('&', stateMapList);
+    };
     const hasStyles = !!lookupStyles.find((style) => style in styles);
 
     if (!hasStyles) return;
@@ -90,17 +121,17 @@ const BaseElement = styled.div(({ styles, responsive, css }) => {
         return pointProps;
       });
 
-      const rulesByPoint = propsByPoint.map(STYLE);
+      const rulesByPoint = propsByPoint.map(handler);
 
       rulesByPoint.forEach((rules, i) => {
         responsiveStyles[i] += rules || '';
       });
     } else {
-      rawStyles += STYLE(styles) || '';
+      rawStyles += handler(styles) || '';
     }
   });
 
-  return `${css || ''}${rawStyles}${mediaWrapper(responsiveStyles, zones)}`;
+  return `outline: none;${css || ''}${rawStyles}${mediaWrapper(responsiveStyles, zones)}`;
 });
 
 export default forwardRef(function Base(

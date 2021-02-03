@@ -436,3 +436,7 @@ export function customUnit(value, unit) {
 
   return `(${value} * ${converter})`;
 }
+
+export function isNoValue(val) {
+  return !val && val !== 0;
+}

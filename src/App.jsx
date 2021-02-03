@@ -6,15 +6,21 @@ import { PageHeader } from './antd';
 import Card from './components/Card';
 import Flex from './components/Flex';
 import Base64Upload from './components/Base64Upload';
+import Link from './components/Link';
 
 function App() {
   return (
     <>
       <LoadingAnimation />
       <Space padding="1x">
-        <Button>123</Button>
-        <Button type="primary">123</Button>
+        <Button>Default</Button>
+        <Button type="primary">Primary</Button>
+        <Button type="clear">Clear</Button>
+        <Button type="danger">Danger</Button>
         <Base64Upload>123</Base64Upload>
+      </Space>
+      <Space padding="1x">
+        <Link to="!https://cube.dev">Cube.dev</Link>
       </Space>
       <ResponsiveProvider value={[1200, 640]}>
         <PageHeader

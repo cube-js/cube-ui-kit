@@ -39,6 +39,7 @@ const PROPS = {
   transition: '140ms',
   'border-width': '1px',
   'outline-width': 'calc(1rem / 16 * 3)',
+  'clear-color': 'transparent',
   'border-color': color('dark', 0.1),
   'shadow-color': color('dark-03', 0.05),
   'draft-color': color('dark', 0.2),

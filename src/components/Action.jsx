@@ -31,14 +31,14 @@ export function openLink(href, target) {
   document.body.removeChild(link);
 }
 
-export function createLinkClickHandler(ref, to, onClick) {
+export function createLinkClickHandler(to, onClick, disabled) {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const history = useHistory();
   const newTab = to && to.startsWith('!');
   const href = to ? (newTab ? to.slice(1) : to) : '';
 
   return function onClickHandler(evt) {
-    if (!to || (ref && ref.current && ref.current.hasAttribute('disabled'))) {
+    if (!to || disabled) {
       return;
     }
 
@@ -63,7 +63,7 @@ export function createLinkClickHandler(ref, to, onClick) {
 }
 
 export default forwardRef(function Action(
-  { elementType, to, styles, onClick, ...props },
+  { elementType, to, defaultStyles, onClick, ...props },
   ref,
 ) {
   const combinedRef = useCombinedRefs(ref);
@@ -73,7 +73,7 @@ export default forwardRef(function Action(
     onFocusChange: setIsFocused,
     elementType,
   });
-  let { pressProps } = usePress({
+  let { pressProps, isPressed } = usePress({
     onPress(e) {
       if (props.disabled) return;
 
@@ -82,23 +82,17 @@ export default forwardRef(function Action(
       }
     },
   });
-  let { buttonProps, isPressed } = useButton(props, combinedRef);
+  let { buttonProps } = useButton(props, combinedRef);
   let { hoverProps, isHovered } = useHover({});
   let { isFocusVisible } = useFocusVisible({});
 
   const listeners = {};
 
-  const pressHandler = createLinkClickHandler(combinedRef, to, onClick);
+  const pressHandler = createLinkClickHandler(to, onClick, props.disabled);
 
   if (to) {
     listeners.onClick = pressHandler;
     buttonProps.type = undefined;
-  }
-
-  styles = { ...styles };
-
-  if (!styles.cursor) {
-    styles.cursor = 'pointer';
   }
 
   if (props.as === 'a') {
@@ -107,17 +101,19 @@ export default forwardRef(function Action(
 
   return (
     <Base
-      data-is-hovered={isHovered ? '' : null}
+      data-is-hovered={isHovered && !props.disabled ? '' : null}
       data-is-pressed={isPressed ? '' : null}
       data-is-focused={isFocused ? '' : null}
       data-is-focus-visible={isFocusVisible ? '' : null}
+      data-is-disabled={props.disabled || null}
       {...buttonProps}
       {...pressProps}
       {...hoverProps}
       {...focusProps}
       {...props}
       {...listeners}
-      styles={styles}
+      disabled={props.disabled || null}
+      defaultStyles={defaultStyles}
       ref={combinedRef}
     />
   );

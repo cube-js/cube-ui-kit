@@ -1,0 +1,33 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { Paragraph, Title, Text, Flow } from '../index';
+
+<Meta title="Example/Typography" />
+
+# Typography
+
+There are many ways to create typography elements like text labels and headings. You can use complete components, presets or low-level styles to get exact text label you want.
+
+## Typography Components
+
+### Paragraphs
+
+Paragraphs with gaps between them.
+
+```
+<Flow gap="2x">
+  <Paragraph>
+    There are many ways to create typography elements like text labels and headings.
+  </Paragraph>
+  <Paragraph>
+    You can use complete components, presets or low-level styles to get exact text label you want.
+  </Paragraph>
+</Flow>
+```
+
+### Text labels
+
+```
+<Text>Normal label</Text>
+<Text.Danger>Danger label</Text.Danger>
+<Text.Minor>Minor label</Text.Minor>
+```

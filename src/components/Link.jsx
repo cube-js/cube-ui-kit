@@ -8,33 +8,26 @@ const DEFAULT_STYLES = {
   cursor: 'pointer',
   size: 'md',
   fontWeight: 500,
+  radius: {
+    '': '0',
+    'focused & focus-visible': '1r',
+  },
+  color: {
+    '': '#purple-text',
+    'hovered': '#purple',
+  },
+  shadow: {
+    '': '0 @border-width 0 0 #purple-03.20',
+    'focused & focus-visible': '0 0 0 @outline-width #purple-03',
+  },
 };
 
 const CSS = `
   position: relative;
-  cursor: pointer;
   outline: none;
   transition: color var(--transition) linear,
     background var(--transition) linear, box-shadow var(--transition) linear,
     border-radius var(--transition) linear;
-
-  &:not([data-is-focused]):not([data-is-hovered]),
-  &:not([data-is-focus-visible]):not([data-is-hovered]) {
-    box-shadow: 0 var(--border-width) 0 0 rgba(var(--purple-03-color-rgb), 0.2);
-  }
-
-  &[data-is-focused][data-is-focus-visible] {
-    box-shadow: 0 0 0 var(--outline-width) rgba(var(--purple-03-color-rgb), 1);
-    border-radius: var(--radius);
-  }
-
-  &:not([data-is-hovered]) {
-    color: var(--purple-text-color);
-  }
-
-  &[data-is-hovered] {
-    color: var(--purple-color);
-  }
 `;
 
 export default forwardRef(({ to, defaultStyles, ...props }, ref) => {
