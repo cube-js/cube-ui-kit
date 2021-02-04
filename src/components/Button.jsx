@@ -16,14 +16,14 @@ const DEFAULT_STYLES = {
   size: 'md',
   border: {
     '': '#clear',
-    'pressed': '#purple-text.15',
+    pressed: '#purple-text.15',
     'primary & pressed': '#purple-text',
     'clear & pressed': '#purple-text.10',
     'danger & pressed': '#danger-text',
   },
   fill: {
     ', pressed, pressed & hovered': '#purple.10',
-    'hovered': '#purple.20',
+    hovered: '#purple.20',
     'primary, primary & pressed, primary & pressed & hovered': '#purple',
     'primary & hovered': '#purple-text',
     'clear, clear & pressed, clear & pressed & hovered': '#purple.0',
@@ -42,11 +42,11 @@ const DEFAULT_STYLES = {
   },
   opacity: {
     '': 1,
-    'disabled': .4,
+    disabled: 0.4,
   },
   cursor: {
     '': 'pointer',
-    'disabled': 'default',
+    disabled: 'default',
   },
 };
 const CSS = `
@@ -81,7 +81,7 @@ export default forwardRef(function Button(
         'radius',
       ]}
       css={CSS}
-      {...{[`data-is-${type || 'default'}`]: ''}}
+      {...{ [`data-is-${type || 'default'}`]: '' }}
       {...props}
       ref={combinedRef}
     />

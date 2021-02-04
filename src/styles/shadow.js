@@ -10,7 +10,10 @@ export default function shadowStyle({ shadow }) {
   const mod = mods[0] || '';
   const shadowColor = color || 'var(--shadow-color)';
 
-  return createRule('--local-shadow-box-shadow', [mod, ...values, shadowColor].join(' '));
+  return createRule(
+    '--local-shadow-box-shadow',
+    [mod, ...values, shadowColor].join(' '),
+  );
 }
 
 shadowStyle.__styleLookup = ['shadow'];

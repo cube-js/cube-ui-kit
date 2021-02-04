@@ -4,7 +4,7 @@ import {
   applyStates,
   styleMapToStyleMapStateList,
   styleValueToStyleStateList,
-  normalizeStates
+  normalizeStates,
 } from 'numl-utils';
 import styled from 'styled-components';
 import { useCombinedRefs } from '../utils/react';
@@ -73,9 +73,9 @@ const UTILS_CONFIG = {
       return '[disabled]';
     }
 
-    return `[data-is-${modName}]`
-  }
-}
+    return `[data-is-${modName}]`;
+  },
+};
 
 const BaseElement = styled.div(({ styles, responsive, css }) => {
   const zones = responsive;
@@ -86,7 +86,7 @@ const BaseElement = styled.div(({ styles, responsive, css }) => {
   STYLES.forEach((STYLE) => {
     const lookupStyles = STYLE.__styleLookup;
     const handler = (styleMap) => {
-      if (!lookupStyles.find(style => style in styleMap)) return;
+      if (!lookupStyles.find((style) => style in styleMap)) return;
 
       const stateMapList = styleMapToStyleMapStateList(styleMap, lookupStyles);
 
@@ -131,7 +131,10 @@ const BaseElement = styled.div(({ styles, responsive, css }) => {
     }
   });
 
-  return `outline: none;${css || ''}${rawStyles}${mediaWrapper(responsiveStyles, zones)}`;
+  return `outline: none;${css || ''}${rawStyles}${mediaWrapper(
+    responsiveStyles,
+    zones,
+  )}`;
 });
 
 export default forwardRef(function Base(

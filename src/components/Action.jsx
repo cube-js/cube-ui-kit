@@ -2,7 +2,12 @@ import React, { forwardRef, useState } from 'react';
 import { useHistory } from 'react-router';
 import Base from './Base';
 import { useButton } from '@react-aria/button';
-import { useFocus, useFocusVisible, useHover, usePress, } from '@react-aria/interactions';
+import {
+  useFocus,
+  useFocusVisible,
+  useHover,
+  usePress,
+} from '@react-aria/interactions';
 import { useCombinedRefs } from '../utils/react';
 
 /**
@@ -60,11 +65,11 @@ export function createLinkClickHandler(to, onClick, disabled) {
 const DEFAULT_STYLES = {
   opacity: {
     '': 1,
-    'disabled': .4,
+    disabled: 0.4,
   },
   cursor: {
     '': 'pointer',
-    'disabled': 'default',
+    disabled: 'default',
   },
 };
 
@@ -121,7 +126,7 @@ export default forwardRef(function Action(
       disabled={props.disabled || null}
       defaultStyles={{
         ...DEFAULT_STYLES,
-        ...defaultStyles
+        ...defaultStyles,
       }}
       ref={combinedRef}
     />

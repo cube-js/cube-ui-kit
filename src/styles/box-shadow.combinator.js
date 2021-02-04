@@ -1,7 +1,4 @@
-import {
-  createRule,
-  isNoValue,
-} from '../utils/styles';
+import { createRule, isNoValue } from '../utils/styles';
 
 export default function boxShadowCombinator(styles) {
   const values = boxShadowCombinator.__styleLookup.reduce((list, style) => {

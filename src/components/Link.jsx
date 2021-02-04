@@ -14,7 +14,7 @@ const DEFAULT_STYLES = {
   },
   color: {
     '': '#purple-text',
-    'hovered': '#purple',
+    hovered: '#purple',
   },
   shadow: {
     '': '0 @border-width 0 0 #purple-03.20',
