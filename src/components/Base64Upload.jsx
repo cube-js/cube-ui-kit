@@ -86,7 +86,12 @@ export default styled(
             Choose file
           </Block>
           <Block color="#dark-04">{file || 'No file selected'}</Block>
-          <input type="file" name="base64" onInput={onInputFile} accept=".json" />
+          <input
+            type="file"
+            name="base64"
+            onInput={onInputFile}
+            accept=".json"
+          />
         </Button>
         {error && <Text.Danger color="danger">{error}</Text.Danger>}
       </>
