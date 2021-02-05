@@ -9,33 +9,75 @@ import {
 } from '../styles/list';
 import { useCombinedRefs } from '../utils/react';
 
+const STYLES_BY_TYPE = {
+  default: {
+    border: {
+      '': '#clear',
+      pressed: '#purple.30',
+    },
+    fill: {
+      ',pressed': '#purple.10',
+      hovered: '#purple.20',
+    },
+    color: '#purple',
+  },
+  primary: {
+    border: {
+      '': '#clear',
+      pressed: '#purple-text',
+    },
+    fill: {
+      ',pressed': '#purple',
+      hovered: '#purple-text',
+    },
+    color: '#white',
+  },
+  clear: {
+    border: {
+      '': '#clear',
+      pressed: '#purple-text.10',
+    },
+    fill: {
+      ',pressed': '#purple.0',
+      hovered: '#purple.05',
+    },
+    color: '#purple-text',
+  },
+  danger: {
+    border: {
+      '': '#clear',
+      pressed: '#danger-text',
+    },
+    fill: {
+      ',pressed': '#danger',
+      hovered: '#danger-text',
+    },
+    color: '#white',
+  },
+  item: {
+    border: '#clear',
+    fill: {
+      '': '#purple.0',
+      hovered: '#purple.05',
+    },
+    color: {
+      '': '#dark.75',
+      'hovered, focused, pressed': '#purple',
+    },
+  },
+  // not an actual type
+  disabled: {
+    border: '#clear',
+    fill: '#dark.12',
+    color: '#dark.50',
+  },
+};
+
 const DEFAULT_STYLES = {
   display: 'inline-block',
   padding: '1x 2x',
   radius: true,
   size: 'md',
-  border: {
-    '': '#clear',
-    pressed: '#purple-text.15',
-    'primary & pressed': '#purple-text',
-    'clear & pressed': '#purple-text.10',
-    'danger & pressed': '#danger-text',
-  },
-  fill: {
-    ', pressed, pressed & hovered': '#purple.10',
-    hovered: '#purple.20',
-    'primary, primary & pressed, primary & pressed & hovered': '#purple',
-    'primary & hovered': '#purple-text',
-    'clear, clear & pressed, clear & pressed & hovered': '#purple.0',
-    'clear & hovered': '#purple.05',
-    'danger, danger & pressed, danger & pressed & hovered': '#danger',
-    'danger & hovered': '#danger-text',
-  },
-  color: {
-    ',hovered': '#purple',
-    'primary, primary & hovered, danger, danger & hovered': '#white',
-    'clear, clear & hovered': '#purple-text',
-  },
   outline: {
     '': '#purple-03.0',
     'focused & focus-visible': '#purple-03',
@@ -48,6 +90,7 @@ const DEFAULT_STYLES = {
     '': 'pointer',
     disabled: 'default',
   },
+  fontWeight: 500,
 };
 const CSS = `
   position: relative;
@@ -71,7 +114,12 @@ export default forwardRef(function Button(
   return (
     <Action
       as="button"
-      defaultStyles={defaultStyles}
+      defaultStyles={{
+        ...defaultStyles,
+        ...(props.disabled
+          ? STYLES_BY_TYPE.disabled
+          : STYLES_BY_TYPE[type] || STYLES_BY_TYPE.default),
+      }}
       styleAttrs={[
         ...COLOR_STYLES,
         ...POSITION_STYLES,
@@ -81,7 +129,7 @@ export default forwardRef(function Button(
         'radius',
       ]}
       css={CSS}
-      {...{ [`data-is-${type || 'default'}`]: '' }}
+      type={type || 'default'}
       {...props}
       ref={combinedRef}
     />

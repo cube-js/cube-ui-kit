@@ -58,7 +58,7 @@ const PROPS = {
   'primary-8': color('purple', 0.2),
   'primary-9': color('purple', 0.1),
   'primary-10': color('purple', 0),
-  'dark-65-color': color('dark', 0.65),
+  'dark-75-color': color('dark', 0.75),
   'primary-color': color('purple'),
   'max-content-width': '1440px',
   'topbar-height': '48px',
