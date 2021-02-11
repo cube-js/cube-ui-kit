@@ -11,14 +11,17 @@ import Link from './components/Link';
 function App() {
   return (
     <>
-      <Button type="clear" styles={{
+      <Button
+        type="clear"
+        styles={{
           color: {
             '': '#dark.75',
             'hovered, focused, pressed': '#purple-text',
-          }
-        }}>
-          Clear
-        </Button>
+          },
+        }}
+      >
+        Clear
+      </Button>
       <LoadingAnimation />
       <Space padding="1x">
         <Button>Default</Button>

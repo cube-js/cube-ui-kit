@@ -142,7 +142,7 @@ export default function DirectoryTree({
             onClick={() => select(item)}
           >
             <Space gap="1x">
-              <FileOutlined style={{ opacity: .66 }} />
+              <FileOutlined style={{ opacity: 0.66 }} />
               <div style={TEXT_OVERFLOW_STYLES}>{item.title}</div>
             </Space>
           </Item>,
