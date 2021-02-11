@@ -9,18 +9,24 @@ export default {
   title: 'Example/Button',
   component: UIKitButton,
   argTypes: {
+    disabled: {
+      defaultValue: false,
+      control: {
+        type: 'boolean',
+      },
+    },
     size: {
-      defaultValue: 'medium',
+      defaultValue: undefined,
       control: {
         type: 'radio',
-        options: ['large', 'medium', 'small'],
+        options: [undefined, 'default', 'small'],
       },
     },
     type: {
       defaultValue: 'default',
       control: {
         type: 'radio',
-        options: ['default', 'primary'],
+        options: ['default', 'primary', 'clear'],
       },
     },
     radius: {
@@ -33,8 +39,8 @@ export default {
   },
 };
 
-const Template = ({ size, type, radius, label }) => (
-  <Button size={size} type={type} radius={radius}>
+const Template = ({ size, type, radius, disabled, label }) => (
+  <Button size={size} type={type} radius={radius} disabled={disabled}>
     {label}
   </Button>
 );
@@ -42,6 +48,12 @@ const Template = ({ size, type, radius, label }) => (
 export const Primary = Template.bind({});
 Primary.args = {
   type: 'primary',
+  label: 'Button',
+};
+
+export const Clear = Template.bind({});
+Clear.args = {
+  type: 'clear',
   label: 'Button',
 };
 

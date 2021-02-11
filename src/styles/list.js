@@ -21,3 +21,12 @@ export const TEXT_STYLES = [
 ];
 
 export const DIMENSION_STYLES = ['width', 'height'];
+
+export const FLOW_STYLES = [
+  'flow',
+  'items',
+  'content',
+  'gap',
+  'columns',
+  'rows',
+];

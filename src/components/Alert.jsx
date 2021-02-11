@@ -1,6 +1,5 @@
 import React from 'react';
 import Base from './Base';
-import Text from './Text';
 import { BLOCK_STYLES, DIMENSION_STYLES, COLOR_STYLES } from '../styles/list';
 
 const DEFAULT_STYLES = {

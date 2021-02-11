@@ -29,6 +29,10 @@ const GlobalStyles = createGlobalStyle`
     margin: 0;
     padding: 0;
     color: var(--dark-65-color);
+    font-size: var(--medium-font-size);
+    line-height: var(--medium-line-height);
+    letter-spacing: var(--medium-letter-spacing);
+    font-weight: 400;
   }
   
   [type=reset], [type=submit], button, html [type=button] {

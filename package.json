@@ -11,7 +11,7 @@
     "lint": "prettier --check \"src/**/*.{js,jsx}\"",
     "fix": "prettier --write \"src/**/*.{js,jsx}\"",
     "compile": "babel src -d dist --copy-files",
-    "storybook": "start-storybook -p 6006",
+    "storybook": "start-storybook -s ./public -p 6006",
     "build-storybook": "build-storybook"
   },
   "keywords": [
@@ -41,6 +41,7 @@
     "@testing-library/react": "^11.0.0",
     "@web/test-runner": "^0.9.7",
     "antd": "^4.8.2",
+    "@ant-design/icons": "^4.4.0",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.2.1",
     "babel-plugin-import": "^1.13.1",

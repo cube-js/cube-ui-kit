@@ -11,12 +11,20 @@ import Link from './components/Link';
 function App() {
   return (
     <>
+      <Button type="clear" styles={{
+          color: {
+            '': '#dark.75',
+            'hovered, focused, pressed': '#purple-text',
+          }
+        }}>
+          Clear
+        </Button>
       <LoadingAnimation />
       <Space padding="1x">
         <Button>Default</Button>
         <Button type="primary">Primary</Button>
-        <Button type="clear">Clear</Button>
         <Button type="danger">Danger</Button>
+        <Button type="clear">Clear</Button>
         <Base64Upload>123</Base64Upload>
       </Space>
       <Space padding="1x">

@@ -1,5 +1,13 @@
 import React, { forwardRef, useState } from 'react';
 import { useHistory } from 'react-router';
+import {
+  BLOCK_STYLES,
+  COLOR_STYLES,
+  DIMENSION_STYLES,
+  FLOW_STYLES,
+  POSITION_STYLES,
+  TEXT_STYLES,
+} from '../styles/list';
 import Base from './Base';
 import { useButton } from '@react-aria/button';
 import {
@@ -38,27 +46,31 @@ export function createLinkClickHandler(to, onClick, disabled) {
   const href = to ? (newTab ? to.slice(1) : to) : '';
 
   return function onClickHandler(evt) {
-    if (!to || disabled) {
-      return;
-    }
+    if (disabled) return;
 
     if (onClick) {
-      evt.preventDefault();
+      onClick();
+
+      evt && evt.preventDefault();
 
       return;
     }
 
-    if (evt.ctrlKey || evt.metaKey || newTab) {
-      if (evt.target.tagName !== 'A') {
-        openLink(href, true);
+    if (!to) return;
+
+    if (evt) {
+      if (evt.ctrlKey || evt.metaKey || newTab) {
+        if (evt.target.tagName !== 'A') {
+          openLink(href, true);
+        }
+
+        return;
       }
 
-      return;
+      evt.preventDefault();
     }
 
     history.push(href);
-
-    evt.preventDefault();
   };
 }
 
@@ -74,10 +86,11 @@ const DEFAULT_STYLES = {
 };
 
 export default forwardRef(function Action(
-  { elementType, to, defaultStyles, onClick, ...props },
+  { elementType, to, defaultStyles, onClick, css, ...props },
   ref,
 ) {
   const combinedRef = useCombinedRefs(ref);
+  const pressHandler = createLinkClickHandler(to, onClick, props.disabled);
 
   let [isFocused, setIsFocused] = useState(false);
   let { focusProps } = useFocus({
@@ -88,26 +101,22 @@ export default forwardRef(function Action(
     onPress(e) {
       if (props.disabled) return;
 
-      if (!to) {
-        onClick && onClick(e);
-      }
+      pressHandler();
     },
   });
-  let { buttonProps } = useButton(props, combinedRef);
   let { hoverProps, isHovered } = useHover({});
   let { isFocusVisible } = useFocusVisible({});
 
   const listeners = {};
 
-  const pressHandler = createLinkClickHandler(to, onClick, props.disabled);
-
   if (to) {
-    listeners.onClick = pressHandler;
-    buttonProps.type = undefined;
-  }
+    const pressOnClick = pressProps.onClick;
 
-  if (props.as === 'a') {
-    buttonProps.tabIndex = '0';
+    pressProps.onClick = (evt) => {
+      evt.preventDefault();
+
+      pressOnClick(evt);
+    };
   }
 
   return (
@@ -117,17 +126,29 @@ export default forwardRef(function Action(
       data-is-focused={isFocused ? '' : null}
       data-is-focus-visible={isFocusVisible ? '' : null}
       data-is-disabled={props.disabled || null}
-      {...buttonProps}
       {...pressProps}
       {...hoverProps}
       {...focusProps}
       {...props}
       {...listeners}
+      tabIndex={props.as === 'button' ? null : '0'}
+      styleAttrs={[
+        ...COLOR_STYLES,
+        ...POSITION_STYLES,
+        ...DIMENSION_STYLES,
+        ...TEXT_STYLES,
+        ...BLOCK_STYLES,
+        ...FLOW_STYLES,
+      ]}
       disabled={props.disabled || null}
       defaultStyles={{
         ...DEFAULT_STYLES,
         ...defaultStyles,
       }}
+      css={`
+        transition: all var(--transition) linear;
+        ${css || ''}
+      `}
       ref={combinedRef}
     />
   );

@@ -5,6 +5,7 @@ import {
   DIMENSION_STYLES,
   POSITION_STYLES,
   BLOCK_STYLES,
+  FLOW_STYLES,
 } from '../styles/list';
 
 const DEFAULT_STYLES = {
@@ -16,10 +17,7 @@ const STYLE_ATTRS = [
   ...DIMENSION_STYLES,
   ...POSITION_STYLES,
   ...BLOCK_STYLES,
-  'padding',
-  'border',
-  'shadow',
-  'radius',
+  ...FLOW_STYLES,
 ];
 
 export default function Block({ ...props }) {

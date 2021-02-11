@@ -3,8 +3,6 @@ import {
   replaceStateValues,
   applyStates,
   styleMapToStyleMapStateList,
-  styleValueToStyleStateList,
-  normalizeStates,
 } from 'numl-utils';
 import styled from 'styled-components';
 import { useCombinedRefs } from '../utils/react';

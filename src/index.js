@@ -17,6 +17,7 @@ export { default as Root } from './components/Root';
 export { default as TopBar } from './components/TopBar';
 export { default as Link } from './components/Link';
 export { default as Alert } from './components/Alert';
+export { default as DirectoryTree } from './components/DirectoryTree';
 
 export * from './providers/Responsive';
 

@@ -1,6 +1,12 @@
 import React from 'react';
 import Base from './Base';
-import { COLOR_STYLES, DIMENSION_STYLES, BLOCK_STYLES } from '../styles/list';
+import {
+  COLOR_STYLES,
+  DIMENSION_STYLES,
+  BLOCK_STYLES,
+  FLOW_STYLES,
+  POSITION_STYLES,
+} from '../styles/list';
 
 const DEFAULT_STYLES = {
   display: 'block',
@@ -15,11 +21,8 @@ export default React.forwardRef(function Flow({ ...props }, ref) {
         ...COLOR_STYLES,
         ...DIMENSION_STYLES,
         ...BLOCK_STYLES,
-        'gap',
-        'place',
-        'border',
-        'shadow',
-        'radius',
+        ...FLOW_STYLES,
+        ...POSITION_STYLES,
       ]}
       {...props}
       ref={ref}

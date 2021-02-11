@@ -6,3 +6,5 @@ node_modules
 dist
 test
 storybook-static
+
+.vercel

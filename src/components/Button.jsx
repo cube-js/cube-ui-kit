@@ -1,12 +1,5 @@
 import React, { forwardRef } from 'react';
 import Action from './Action';
-import {
-  BLOCK_STYLES,
-  COLOR_STYLES,
-  DIMENSION_STYLES,
-  POSITION_STYLES,
-  TEXT_STYLES,
-} from '../styles/list';
 import { useCombinedRefs } from '../utils/react';
 
 const STYLES_BY_TYPE = {
@@ -73,9 +66,18 @@ const STYLES_BY_TYPE = {
   },
 };
 
+const STYLES_BY_SIZE = {
+  small: {
+    padding: '(.75x - 1px) (1.5x - 1px)',
+  },
+  default: {
+    padding: '(1x - 1px) (2x - 1px)',
+  },
+};
+
 const DEFAULT_STYLES = {
   display: 'inline-block',
-  padding: '1x 2x',
+  padding: '(.75x - 1px) (1.5x - 1px)',
   radius: true,
   size: 'md',
   outline: {
@@ -96,14 +98,12 @@ const CSS = `
   position: relative;
   appearance: none;
   outline: none;
-  transition: color var(--transition) linear,
-    background var(--transition) linear, box-shadow var(--transition) linear,
-    border var(--transition) linear;
+  transition: all var(--transition) linear;
   white-space: nowrap;
 `;
 
 export default forwardRef(function Button(
-  { type, defaultStyles, ...props },
+  { type, size, defaultStyles, ...props },
   ref,
 ) {
   const combinedRef = useCombinedRefs(ref);
@@ -116,18 +116,11 @@ export default forwardRef(function Button(
       as="button"
       defaultStyles={{
         ...defaultStyles,
+        ...(STYLES_BY_SIZE[size] || STYLES_BY_SIZE.default),
         ...(props.disabled
           ? STYLES_BY_TYPE.disabled
           : STYLES_BY_TYPE[type] || STYLES_BY_TYPE.default),
       }}
-      styleAttrs={[
-        ...COLOR_STYLES,
-        ...POSITION_STYLES,
-        ...DIMENSION_STYLES,
-        ...TEXT_STYLES,
-        ...BLOCK_STYLES,
-        'radius',
-      ]}
       css={CSS}
       type={type || 'default'}
       {...props}

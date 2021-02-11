@@ -5,6 +5,7 @@ import {
   DIMENSION_STYLES,
   POSITION_STYLES,
   BLOCK_STYLES,
+  FLOW_STYLES,
 } from '../styles/list';
 
 const DEFAULT_STYLES = {
@@ -21,17 +22,7 @@ export default function Grid({ ...props }) {
         ...POSITION_STYLES,
         ...DIMENSION_STYLES,
         ...BLOCK_STYLES,
-        'gap',
-        'flow',
-        'columns',
-        'rows',
-        'place',
-        'content',
-        'items',
-        'border',
-        'shadow',
-        'radius',
-        'margin',
+        ...FLOW_STYLES,
       ]}
       {...props}
     />
