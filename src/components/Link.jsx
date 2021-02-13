@@ -30,22 +30,16 @@ const CSS = `
     border-radius var(--transition) linear;
 `;
 
-export default forwardRef(({ to, defaultStyles, ...props }, ref) => {
+export default forwardRef(({ defaultStyles, ...props }, ref) => {
   const combinedRef = useCombinedRefs(ref);
 
   defaultStyles = defaultStyles
     ? Object.assign({}, DEFAULT_STYLES, defaultStyles)
     : DEFAULT_STYLES;
 
-  const newTab = to && to.startsWith('!');
-  const href = to ? (newTab ? to.slice(1) : to) : '';
-
   return (
     <Action
       as="a"
-      to={to}
-      target={newTab ? '_blank' : null}
-      href={href || null}
       defaultStyles={defaultStyles}
       styleAttrs={[...COLOR_STYLES, ...POSITION_STYLES, ...TEXT_STYLES]}
       elementType="a"

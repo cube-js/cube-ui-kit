@@ -9,7 +9,6 @@ import {
   TEXT_STYLES,
 } from '../styles/list';
 import Base from './Base';
-import { useButton } from '@react-aria/button';
 import {
   useFocus,
   useFocusVisible,
@@ -39,7 +38,7 @@ export function openLink(href, target) {
   document.body.removeChild(link);
 }
 
-export function createLinkClickHandler(to, onClick, disabled) {
+export function createLinkClickHandler(to, onClick, disabled, as) {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const history = useHistory();
   const newTab = to && to.startsWith('!');
@@ -51,23 +50,15 @@ export function createLinkClickHandler(to, onClick, disabled) {
     if (onClick) {
       onClick();
 
-      evt && evt.preventDefault();
-
       return;
     }
 
     if (!to) return;
 
-    if (evt) {
-      if (evt.ctrlKey || evt.metaKey || newTab) {
-        if (evt.target.tagName !== 'A') {
-          openLink(href, true);
-        }
+    if (evt.shiftKey || evt.metaKey || newTab) {
+      openLink(href, true);
 
-        return;
-      }
-
-      evt.preventDefault();
+      return;
     }
 
     history.push(href);
@@ -86,11 +77,13 @@ const DEFAULT_STYLES = {
 };
 
 export default forwardRef(function Action(
-  { elementType, to, defaultStyles, onClick, css, ...props },
+  { elementType, to, as, defaultStyles, onClick, css, ...props },
   ref,
 ) {
+  as = to ? 'a' : (props.as || 'button');
+
   const combinedRef = useCombinedRefs(ref);
-  const pressHandler = createLinkClickHandler(to, onClick, props.disabled);
+  const pressHandler = createLinkClickHandler(to, onClick, props.disabled, as);
 
   let [isFocused, setIsFocused] = useState(false);
   let { focusProps } = useFocus({
@@ -101,7 +94,7 @@ export default forwardRef(function Action(
     onPress(e) {
       if (props.disabled) return;
 
-      pressHandler();
+      pressHandler(e);
     },
   });
   let { hoverProps, isHovered } = useHover({});
@@ -119,8 +112,13 @@ export default forwardRef(function Action(
     };
   }
 
+  const newTab = to && to.startsWith('!');
+  const href = to ? (newTab ? to.slice(1) : to) : '';
+
   return (
     <Base
+      target={newTab ? '_blank' : null}
+      href={href || null}
       data-is-hovered={isHovered && !props.disabled ? '' : null}
       data-is-pressed={isPressed ? '' : null}
       data-is-focused={isFocused ? '' : null}
@@ -147,9 +145,13 @@ export default forwardRef(function Action(
       }}
       css={`
         transition: all var(--transition) linear;
+        user-select: none;
+        background: transparent;
+        border: none;
         ${css || ''}
       `}
       ref={combinedRef}
+      as={as}
     />
   );
 });

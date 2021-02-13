@@ -113,7 +113,7 @@ export default forwardRef(function Button(
 
   return (
     <Action
-      as="button"
+      elementType={props.to ? 'a' : null}
       defaultStyles={{
         ...defaultStyles,
         ...(STYLES_BY_SIZE[size] || STYLES_BY_SIZE.default),
