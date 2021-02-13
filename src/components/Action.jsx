@@ -80,7 +80,7 @@ export default forwardRef(function Action(
   { elementType, to, as, defaultStyles, onClick, css, ...props },
   ref,
 ) {
-  as = to ? 'a' : (props.as || 'button');
+  as = to ? 'a' : props.as || 'button';
 
   const combinedRef = useCombinedRefs(ref);
   const pressHandler = createLinkClickHandler(to, onClick, props.disabled, as);
