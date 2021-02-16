@@ -8,6 +8,7 @@ import Flex from './Flex';
 import Action from './Action';
 import Button from './Button';
 import Space from './Space';
+import Block from './Block';
 
 const TEXT_OVERFLOW_STYLES = {
   whiteSpace: 'nowrap',
@@ -42,7 +43,7 @@ function getItemStyles({ selected }) {
       ? '#purple.05'
       : {
           '': '#clear',
-          hovered: '#purple.05',
+          hovered: '#dark.04',
         },
     color: selected ? '#purple' : '#dark.75',
     outline: {
@@ -65,19 +66,51 @@ function Item({ children, indent, onClick, selected }) {
   );
 }
 
+function sortTreeData(filesTree) {
+  filesTree = filesTree.map((item) => {
+    return {
+      ...item,
+      children: item.children ? sortTreeData(item.children) : undefined,
+    };
+  });
+
+  return filesTree.sort((a, b) => {
+    if (!a.isLeaf && b.isLeaf) {
+      return -1;
+    } else if (!b.isLeaf && a.isLeaf) {
+      return 1;
+    } else {
+      return a.title.localeCompare(b.title, 'en', { sensitivity: 'base' });
+    }
+  });
+}
+
+const HOVER_CSS = `
+  &:hover .actions { 
+    opacity: 1;
+  }
+  &:not(:hover) .actions {
+    opacity: 0;
+  }
+`;
+
 export default function DirectoryTree({
   onSelect,
   treeData,
+  selectedKey,
   defaultExpandAll,
   rootTitle,
+  actionsPanel,
   ...otherProps
 }) {
+  treeData = sortTreeData(treeData);
+
   const [expanded, setExpanded] = useState(['/']);
   const [selected, setSelected] = useState();
   const fullTreeData = [
     {
       key: '/',
-      title: rootTitle || 'root',
+      title: rootTitle || '/',
       children: treeData,
     },
   ];
@@ -112,7 +145,7 @@ export default function DirectoryTree({
             selected={selected === item.key}
             onClick={() => select(item)}
           >
-            <Space gap=".5x">
+            <Space gap=".5x" css={HOVER_CSS}>
               <Button
                 type="clear"
                 margin="-.5x"
@@ -126,7 +159,10 @@ export default function DirectoryTree({
                   <CaretDownOutlined />
                 )}
               </Button>
-              <div style={TEXT_OVERFLOW_STYLES}>{item.title}</div>
+              <Block style={TEXT_OVERFLOW_STYLES} grow="1">
+                {item.title}
+              </Block>
+              {actionsPanel(item)}
             </Space>
           </Item>,
         );
@@ -141,9 +177,12 @@ export default function DirectoryTree({
             selected={selected === item.key}
             onClick={() => select(item)}
           >
-            <Space gap="1x">
+            <Space gap="1x" css={HOVER_CSS}>
               <FileOutlined style={{ opacity: 0.66 }} />
-              <div style={TEXT_OVERFLOW_STYLES}>{item.title}</div>
+              <Block style={TEXT_OVERFLOW_STYLES} grow="1">
+                {item.title}
+              </Block>
+              {actionsPanel(item)}
             </Space>
           </Item>,
         );

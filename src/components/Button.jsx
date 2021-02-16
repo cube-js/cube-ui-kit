@@ -51,12 +51,13 @@ const STYLES_BY_TYPE = {
     border: '#clear',
     fill: {
       '': '#purple.0',
-      hovered: '#purple.05',
+      hovered: '#dark.04',
     },
     color: {
       '': '#dark.75',
-      'hovered, focused, pressed': '#purple',
+      'hovered, pressed, hovered & pressed': '#purple',
     },
+    textAlign: 'left',
   },
   // not an actual type
   disabled: {
