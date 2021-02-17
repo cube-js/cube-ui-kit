@@ -60,10 +60,10 @@ const PROPS = {
   'primary-10': color('purple', 0),
   'dark-75-color': color('dark', 0.75),
   'primary-color': color('purple'),
-  
-  'pink-8': color('pink', .2),
-  'pink-9': color('pink', .1),
-  
+
+  'pink-8': color('pink', 0.2),
+  'pink-9': color('pink', 0.1),
+
   'max-content-width': '1440px',
   'topbar-height': '48px',
   'devmodebar-height': '54px',
