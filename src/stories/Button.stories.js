@@ -15,6 +15,12 @@ export default {
         type: 'boolean',
       },
     },
+    loading: {
+      defaultValue: false,
+      control: {
+        type: 'boolean',
+      },
+    },
     size: {
       defaultValue: undefined,
       control: {
@@ -39,8 +45,8 @@ export default {
   },
 };
 
-const Template = ({ size, type, radius, disabled, label }) => (
-  <Button size={size} type={type} radius={radius} disabled={disabled}>
+const Template = ({ size, type, radius, disabled, loading, label }) => (
+  <Button size={size} type={type} radius={radius} disabled={disabled} loading={loading}>
     {label}
   </Button>
 );

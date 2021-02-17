@@ -121,8 +121,8 @@ export default forwardRef(function Action(
       href={href || null}
       data-is-hovered={isHovered && !props.disabled ? '' : null}
       data-is-pressed={isPressed ? '' : null}
-      data-is-focused={isFocused ? '' : null}
-      data-is-focus-visible={isFocusVisible ? '' : null}
+      data-is-focused={isFocused && !props.disabled ? '' : null}
+      data-is-focus-visible={isFocusVisible && !props.disabled ? '' : null}
       data-is-disabled={props.disabled || null}
       {...pressProps}
       {...hoverProps}

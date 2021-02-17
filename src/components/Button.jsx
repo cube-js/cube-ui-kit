@@ -1,6 +1,7 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useState, useEffect, useLayoutEffect } from 'react';
 import Action from './Action';
 import { useCombinedRefs } from '../utils/react';
+import { LoadingOutlined } from '@ant-design/icons';
 
 const STYLES_BY_TYPE = {
   default: {
@@ -101,16 +102,37 @@ const CSS = `
   outline: none;
   transition: all var(--transition) linear;
   white-space: nowrap;
+
+  & > .anticon.anticon-loading {
+    transition: display .2s steps(1, start), margin .2s linear, opacity .2s linear;
+    margin-top: -7px;
+    margin-bottom: -7px;
+    line-height: 0;
+  }
 `;
 
 export default forwardRef(function Button(
-  { type, size, defaultStyles, ...props },
+  { type, size, defaultStyles, loading, disabled, children, ...props },
   ref,
 ) {
+  const [showLoadingIcon, setShowLoadingIcon] = useState(loading || false);
+  const [pendingLoading, setPendingLoading] = useState(false);
   const combinedRef = useCombinedRefs(ref);
   defaultStyles = defaultStyles
     ? Object.assign({}, DEFAULT_STYLES, defaultStyles)
     : DEFAULT_STYLES;
+
+  useEffect(() => {
+    if (loading) {
+      setShowLoadingIcon(true);
+      setTimeout(() => {
+        setPendingLoading(true);
+      });
+    } else {
+      setPendingLoading(false);
+    }
+    
+  }, [loading]);
 
   return (
     <Action
@@ -126,6 +148,16 @@ export default forwardRef(function Button(
       type={type || 'default'}
       {...props}
       ref={combinedRef}
-    />
+      disabled={loading || disabled}
+    >
+      {
+        showLoadingIcon ? 
+          <LoadingOutlined style={{ 
+            opacity: pendingLoading ? 1 : 0, 
+            marginRight: pendingLoading ? 8 : -14,
+          }}/> : null
+      }
+      {children}
+    </Action>
   );
 });
