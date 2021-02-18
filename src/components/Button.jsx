@@ -63,8 +63,8 @@ const STYLES_BY_TYPE = {
   // not an actual type
   disabled: {
     border: '#clear',
-    fill: '#dark.12',
-    color: '#dark.50',
+    fill: '#dark.8',
+    color: '#dark.60',
   },
 };
 
@@ -88,7 +88,7 @@ const DEFAULT_STYLES = {
   },
   opacity: {
     '': 1,
-    disabled: 0.4,
+    disabled: 0.5,
   },
   cursor: {
     '': 'pointer',
@@ -140,7 +140,7 @@ export default forwardRef(function Button(
       defaultStyles={{
         ...defaultStyles,
         ...(STYLES_BY_SIZE[size] || STYLES_BY_SIZE.default),
-        ...(props.disabled
+        ...(disabled
           ? STYLES_BY_TYPE.disabled
           : STYLES_BY_TYPE[type] || STYLES_BY_TYPE.default),
       }}
