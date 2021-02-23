@@ -1,4 +1,4 @@
-import React, { forwardRef, useState } from 'react';
+import React, { forwardRef, useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import {
   BLOCK_STYLES,
@@ -84,6 +84,10 @@ export default forwardRef(function Action(
 
   const combinedRef = useCombinedRefs(ref);
   const pressHandler = createLinkClickHandler(to, onClick, props.disabled, as);
+
+  useEffect(() => {
+    setIsFocused(false);
+  }, [props.disabled]);
 
   let [isFocused, setIsFocused] = useState(false);
   let { focusProps } = useFocus({

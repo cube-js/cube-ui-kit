@@ -46,7 +46,13 @@ export default {
 };
 
 const Template = ({ size, type, radius, disabled, loading, label }) => (
-  <Button size={size} type={type} radius={radius} disabled={disabled} loading={loading}>
+  <Button
+    size={size}
+    type={type}
+    radius={radius}
+    disabled={disabled}
+    loading={loading}
+  >
     {label}
   </Button>
 );

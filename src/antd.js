@@ -68,7 +68,7 @@ export const AutoComplete = styled(AntdAutoComplete)`
 `;
 
 export const Button = styled(AntdButton)`
-  &&& {
+  &&&.ant-btn {
     line-height: var(--line-height);
     font-size: var(--font-size);
     padding: 8px 16px;
@@ -89,7 +89,7 @@ export const Button = styled(AntdButton)`
 `;
 
 export const Table = styled(AntdTable)`
-  &&& {
+  &&&.ant-table {
     & table > thead > tr > th {
       background: transparent;
       font-size: var(--font-size);
@@ -109,7 +109,7 @@ export const Table = styled(AntdTable)`
 `;
 
 Form.Item = styled(Form.Item)`
-  && {
+  &&.ant-form-item {
     .ant-form-item-label-left > label {
       line-height: 40px;
     }

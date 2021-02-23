@@ -5,14 +5,15 @@ export default function outlineStyle({ outline }) {
 
   if (outline === true) outline = '1bw';
 
-  const { values, color } = parseStyle(String(outline));
+  const { values, color, mods } = parseStyle(String(outline));
 
+  const inset = mods.includes('inset');
   const size = values[0] || 'var(--outline-width)';
   const outlineColor = color || 'var(--outline-color)';
 
   return createRule(
     '--local-outline-box-shadow',
-    `0 0 0 ${size} ${outlineColor}`,
+    `${inset ? 'inset ' : ''}0 0 0 ${size} ${outlineColor}`,
   );
 }
 

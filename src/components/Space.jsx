@@ -1,5 +1,12 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import Base from './Base';
+import {
+  COLOR_STYLES,
+  DIMENSION_STYLES,
+  POSITION_STYLES,
+  BLOCK_STYLES,
+  FLOW_STYLES,
+} from '../styles/list';
 
 const DEFAULT_STYLES = {
   display: 'flex',
@@ -7,7 +14,7 @@ const DEFAULT_STYLES = {
   items: 'center stretch',
 };
 
-export default function Space({ ...props }) {
+export default forwardRef(function Space({ ...props }, ref) {
   if (!props.flow) {
     props.flow = 'row';
   }
@@ -30,25 +37,16 @@ export default function Space({ ...props }) {
 
   return (
     <Base
+      ref={ref}
       defaultStyles={DEFAULT_STYLES}
       styleAttrs={[
-        'color',
-        'fill',
-        'gap',
-        'flow',
-        'height',
-        'width',
-        'place',
-        'content',
-        'items',
-        'padding',
-        'border',
-        'shadow',
-        'radius',
-        'grow',
-        'shrink',
+        ...COLOR_STYLES,
+        ...POSITION_STYLES,
+        ...DIMENSION_STYLES,
+        ...BLOCK_STYLES,
+        ...FLOW_STYLES,
       ]}
       {...props}
     />
   );
-}
+});

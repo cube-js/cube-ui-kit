@@ -162,7 +162,7 @@ export default function DirectoryTree({
               <Block style={TEXT_OVERFLOW_STYLES} grow="1">
                 {item.title}
               </Block>
-              {actionsPanel(item)}
+              {actionsPanel && actionsPanel(item)}
             </Space>
           </Item>,
         );
@@ -182,7 +182,7 @@ export default function DirectoryTree({
               <Block style={TEXT_OVERFLOW_STYLES} grow="1">
                 {item.title}
               </Block>
-              {actionsPanel(item)}
+              {actionsPanel && actionsPanel(item)}
             </Space>
           </Item>,
         );

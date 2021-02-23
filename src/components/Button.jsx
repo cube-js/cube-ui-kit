@@ -1,4 +1,4 @@
-import React, { forwardRef, useState, useEffect, useLayoutEffect } from 'react';
+import React, { forwardRef, useState, useEffect } from 'react';
 import Action from './Action';
 import { useCombinedRefs } from '../utils/react';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -131,7 +131,6 @@ export default forwardRef(function Button(
     } else {
       setPendingLoading(false);
     }
-    
   }, [loading]);
 
   return (
@@ -150,13 +149,14 @@ export default forwardRef(function Button(
       ref={combinedRef}
       disabled={loading || disabled}
     >
-      {
-        showLoadingIcon ? 
-          <LoadingOutlined style={{ 
-            opacity: pendingLoading ? 1 : 0, 
+      {showLoadingIcon ? (
+        <LoadingOutlined
+          style={{
+            opacity: pendingLoading ? 1 : 0,
             marginRight: pendingLoading ? 8 : -14,
-          }}/> : null
-      }
+          }}
+        />
+      ) : null}
       {children}
     </Action>
   );
