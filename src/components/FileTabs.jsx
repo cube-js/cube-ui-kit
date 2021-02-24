@@ -10,7 +10,6 @@ import Block from './Block';
 import Action from './Action';
 import Space from './Space';
 import Flex from './Flex';
-import styled from 'styled-components';
 
 const FileTabsContext = createContext({});
 

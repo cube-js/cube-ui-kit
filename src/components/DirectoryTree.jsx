@@ -149,7 +149,7 @@ export default function DirectoryTree({
               <Button
                 type="clear"
                 margin="-.5x"
-                padding=".5x"
+                padding=".25x"
                 color="#purple"
                 onClick={() => toggle(item)}
               >
