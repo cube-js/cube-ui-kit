@@ -8,7 +8,11 @@ const DEFAULT_STYLES = {
   margin: '0',
 };
 
-export default function Text({ as, align, transform, weight, code, ...props }) {
+export default function Text(
+  { as, align, transform, weight, code, ellipsis, css, nowrap, ...props }
+) {
+  css = css || '';
+
   if (align) {
     props.textAlign = align;
   }
@@ -21,11 +25,32 @@ export default function Text({ as, align, transform, weight, code, ...props }) {
     props.fontWeight = weight;
   }
 
+  if (ellipsis) {
+    css += `
+      && {
+        ${!as ? 'display: block;' : ''}
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        max-width: 100%;
+      }
+    `;
+  }
+
+  if (nowrap) {
+    css += `
+      && {
+        white-space: nowrap;
+      }
+    `;
+  }
+
   return (
     <Base
       as={as || 'span'}
       defaultStyles={DEFAULT_STYLES}
       styleAttrs={[...TEXT_STYLES, ...COLOR_STYLES]}
+      css={css}
       {...props}
     />
   );

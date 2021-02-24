@@ -39,6 +39,8 @@ const STYLES = [
   createNativeStyle('place', 'place-self'),
   createNativeStyle('grow', 'flex-grow'),
   createNativeStyle('shrink', 'flex-shrink'),
+  createNativeStyle('row', 'grid-row'),
+  createNativeStyle('column', 'grid-column'),
   createNativeStyle('order'),
   createNativeStyle('cursor'),
   createNativeStyle('opacity'),

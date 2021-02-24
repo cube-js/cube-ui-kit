@@ -25,6 +25,7 @@ const DEFAULT_STYLES = {
 const CSS = `
   position: relative;
   outline: none;
+  white-space: nowrap;
   transition: color var(--transition) linear,
     background var(--transition) linear, box-shadow var(--transition) linear,
     border-radius var(--transition) linear;

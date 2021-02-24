@@ -89,8 +89,8 @@ export const Button = styled(AntdButton)`
 `;
 
 export const Table = styled(AntdTable)`
-  &&&.ant-table {
-    & table > thead > tr > th {
+  &&& .ant-table {
+    table > thead > tr > th {
       background: transparent;
       font-size: var(--font-size);
       line-height: var(--line-height);
