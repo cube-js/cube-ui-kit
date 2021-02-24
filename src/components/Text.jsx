@@ -8,9 +8,17 @@ const DEFAULT_STYLES = {
   margin: '0',
 };
 
-export default function Text(
-  { as, align, transform, weight, code, ellipsis, css, nowrap, ...props }
-) {
+export default function Text({
+  as,
+  align,
+  transform,
+  weight,
+  code,
+  ellipsis,
+  css,
+  nowrap,
+  ...props
+}) {
   css = css || '';
 
   if (align) {
