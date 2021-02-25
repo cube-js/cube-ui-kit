@@ -3,6 +3,8 @@ import {
   CaretDownOutlined,
   CaretUpOutlined,
   FileOutlined,
+  FolderOutlined,
+  FolderOpenOutlined,
 } from '@ant-design/icons';
 import Flex from './Flex';
 import Action from './Action';
@@ -21,12 +23,12 @@ function calcPadding(indent) {
   return `(.75x - 1px) (.5x - 1px) (.75x - 1px) (${1.5 * indent + 0.5}x - 1px)`;
 }
 
-function extractLeafKeys(subTreeData, foldersOnly) {
+function extractLeafKeys(subTreeData, dirsOnly) {
   return subTreeData.reduce((list, item) => {
     if (!item.isLeaf) {
       list.push(item.key);
       list.push(...extractLeafKeys(item.children || []));
-    } else if (!foldersOnly) {
+    } else if (!dirsOnly) {
       list.push(item.key);
     }
 
@@ -101,12 +103,13 @@ export default function DirectoryTree({
   defaultExpandAll,
   rootTitle,
   actionsPanel,
+  onlyDirs,
   ...otherProps
 }) {
   treeData = sortTreeData(treeData);
 
   const [expanded, setExpanded] = useState(['/']);
-  const [selected, setSelected] = useState();
+  const [selected, setSelected] = useState(selectedKey);
   const fullTreeData = [
     {
       key: '/',
@@ -159,21 +162,28 @@ export default function DirectoryTree({
                   <CaretDownOutlined />
                 )}
               </Button>
-              <Block style={TEXT_OVERFLOW_STYLES} grow="1">
-                {item.title}
-              </Block>
+              <Space gap={1} grow="1">
+                {expanded.includes(item.key) ? (
+                  <FolderOpenOutlined style={{ opacity: 0.66 }} />
+                ) : (
+                  <FolderOutlined style={{ opacity: 0.66 }} />
+                )}
+                <Block style={TEXT_OVERFLOW_STYLES}>{item.title}</Block>
+              </Space>
               {actionsPanel && actionsPanel(item)}
             </Space>
           </Item>,
         );
         if (expanded.includes(item.key)) {
-          list.push(...recursiveRender(item.children || [], indent + 1));
+          list.push(
+            ...recursiveRender(item.children || [], indent + 1, onlyDirs),
+          );
         }
-      } else {
+      } else if (!onlyDirs) {
         list.push(
           <Item
             key={item.key}
-            indent={indent}
+            indent={indent + 0.65}
             selected={selected === item.key}
             onClick={() => select(item)}
           >
@@ -193,7 +203,10 @@ export default function DirectoryTree({
   }
 
   return (
-    <Flex styles={{ flow: 'column', fontWeight: 500 }} {...otherProps}>
+    <Flex
+      styles={{ flow: 'column', fontWeight: 500, width: '100%' }}
+      {...otherProps}
+    >
       {recursiveRender(fullTreeData)}
     </Flex>
   );
