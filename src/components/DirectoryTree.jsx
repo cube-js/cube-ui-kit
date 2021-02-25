@@ -119,6 +119,10 @@ export default function DirectoryTree({
   ];
 
   useEffect(() => {
+    setSelected(selectedKey);
+  }, [selectedKey]);
+
+  useEffect(() => {
     if (defaultExpandAll) {
       setExpanded(extractLeafKeys(fullTreeData, true));
     }
