@@ -8,6 +8,7 @@ const DEFAULT_STYLES = {
   cursor: 'pointer',
   size: 'md',
   fontWeight: 500,
+  padding: '0',
   radius: {
     '': '0',
     'focused & focus-visible': '1r',

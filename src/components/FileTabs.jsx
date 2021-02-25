@@ -329,6 +329,8 @@ export default function FileTabs({
   return (
     <Flex
       flow="column"
+      height="max 100%"
+      width="max 100%"
       data-is-left-fade={leftFade || null}
       data-is-right-fade={rightFade || null}
       css={TABS_CONTAINER_CSS}

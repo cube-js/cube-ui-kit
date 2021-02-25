@@ -1,5 +1,6 @@
 import React from 'react';
 import Base from './Base';
+import Title from './Title';
 import { BLOCK_STYLES, DIMENSION_STYLES, COLOR_STYLES } from '../styles/list';
 
 const DEFAULT_STYLES = {
