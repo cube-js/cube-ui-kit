@@ -63,11 +63,15 @@ const PROPS = {
 
   'pink-8': color('pink', 0.2),
   'pink-9': color('pink', 0.1),
+  
+  'disabled-color': color('dark-04'),
+  'disabled-bg': color('dark-05', .2),
 
   'max-content-width': '1440px',
   'topbar-height': '48px',
   'devmodebar-height': '54px',
   'sidebar-width': '200px',
+  'border-radius-base': '4px',
 
   // font sizes
   'text-font-size': '14px',

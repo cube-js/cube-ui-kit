@@ -40,7 +40,7 @@
     "@svgr/rollup": "^5.4.0",
     "@testing-library/react": "^11.0.0",
     "@web/test-runner": "^0.9.7",
-    "antd": "^4.8.2",
+    "antd": "4.13.0",
     "@ant-design/icons": "^4.4.0",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.2.1",
