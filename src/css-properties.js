@@ -14,7 +14,7 @@ const colors = {
   'dark-04': '161, 161, 181',
   'dark-05': '213, 213, 226',
   'grey-light': '248, 248, 249',
-  light: '243, 243, 251',
+  light: '246, 246, 248',
   white: '255, 255, 255',
   black: '0, 0, 0',
   'danger-text': '239, 64, 74',
@@ -63,6 +63,10 @@ const PROPS = {
 
   'pink-8-color': color('pink', 0.2),
   'pink-9-color': color('pink', 0.1),
+  
+  'disabled-color': color('dark-01', .25),
+  'disabled-bg': color('dark-05', .2),
+  'disabled-bg-color': color('dark-05', .2),
 
   'max-content-width': '1440px',
   'topbar-height': '48px',
