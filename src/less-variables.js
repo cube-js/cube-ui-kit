@@ -53,7 +53,7 @@ module.exports = {
   'btn-text-shadow': 'none',
   'modal-body-padding': '32px',
   'form-item-margin-bottom': '23px',
-  'disabled-color': color('dark-03'),
+  'disabled-color': color('dark-04'),
   'disabled-bg': color('dark-05', 0.2),
 
   // headings

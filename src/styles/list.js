@@ -5,6 +5,7 @@ export const POSITION_STYLES = [
   'column',
   'row',
   'place',
+  'z',
 ];
 
 export const BLOCK_STYLES = ['padding', 'shadow', 'border', 'radius', 'margin'];

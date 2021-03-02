@@ -47,6 +47,7 @@ const STYLES = [
   createNativeStyle('textAlign'),
   createNativeStyle('fontWeight'),
   createNativeStyle('textTransform'),
+  createNativeStyle('z', 'z-index'),
   italicStyle,
   marginStyle,
   gapStyle,

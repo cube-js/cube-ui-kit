@@ -99,16 +99,16 @@ const TAB_STYLES = {
   padding: '1x 1.5x',
   border: {
     '': 'left top right #clear',
-    disabled: 'left top right',
+    disabled: 'left top right rgb(227, 227, 233)',
   },
   fill: {
     '': '#dark.04',
-    hovered: '#dark.12',
+    hovered: '#dark.08',
     'disabled, disabled & hover': '#white',
   },
   color: {
-    '': '#dark',
-    disabled: '#dark.75',
+    '': '#dark.75',
+    'disabled, hovered, hovered & disabled': '#dark',
   },
   cursor: {
     '': 'pointer',
@@ -137,6 +137,14 @@ const CLOSE_STYLES = {
 };
 
 const TAB_CSS = `
+  margin-bottom: var(--border-width);
+  transform: translate(0, 0);
+  transition: color .2s linear, background-color .2s linear; 
+
+  &[disabled] {
+    transform: translate(0, var(--border-width));  
+  }
+
   &.file-tab--dirty {
     &:hover {
       & .file-tab-dirty-badge {
@@ -161,12 +169,13 @@ const TAB_CSS = `
   }
 `;
 
-const Tab = ({ dirty, children, onClose, ...props }) => {
+const Tab = ({ dirty, disabled, children, onClose, ...props }) => {
   return (
     <Action
       className={dirty ? 'file-tab--dirty' : ''}
       css={TAB_CSS}
       styles={TAB_STYLES}
+      disabled={disabled}
       {...props}
     >
       <Space gap=".75x">
@@ -360,7 +369,7 @@ export default function FileTabs({
             );
           })}
         </Space>
-        <Flex grow="1" border="top" {...(paneStyles || {})}>
+        <Flex grow="1" border="top rgb(227, 227, 233)" {...(paneStyles || {})}>
           {children}
         </Flex>
       </FileTabsContext.Provider>
