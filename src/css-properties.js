@@ -63,7 +63,7 @@ const PROPS = {
 
   'pink-8-color': color('pink', 0.2),
   'pink-9-color': color('pink', 0.1),
-  
+
   'disabled-color': color('dark-01', .25),
   'disabled-bg': color('dark-05', .2),
   'disabled-bg-color': color('dark-05', .2),
@@ -80,8 +80,10 @@ const PROPS = {
   'text-letter-spacing': '0.02em',
   'small-font-size': '12px',
   'small-line-height': '18px',
+  'small-letter-spacing': '0.04em',
   'sm-font-size': 'var(--small-font-size)',
   'sm-line-height': 'var(--small-line-height)',
+  'sm-letter-spacing': 'var(--small-letter-spacing)',
   'medium-font-size': '14px',
   'medium-line-height': '20px',
   'medium-letter-spacing': '0.02em',

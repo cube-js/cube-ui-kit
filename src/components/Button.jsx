@@ -56,9 +56,11 @@ const STYLES_BY_TYPE = {
     },
     color: {
       '': '#dark.75',
-      'hovered, pressed, hovered & pressed': '#purple',
+      'hovered': '#dark.75',
+      'pressed, hovered & pressed': '#purple',
     },
     textAlign: 'left',
+    padding: '(1x - 1px) (1.5x - 1px)',
   },
   // not an actual type
   disabled: {
@@ -79,7 +81,6 @@ const STYLES_BY_SIZE = {
 
 const DEFAULT_STYLES = {
   display: 'inline-block',
-  padding: '(.75x - 1px) (1.5x - 1px)',
   radius: true,
   size: 'md',
   outline: {

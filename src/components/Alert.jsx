@@ -47,6 +47,7 @@ export default function Alert({ type, label, children, ...props }) {
       border={
         THEMES[type] && THEMES[type].border ? THEMES[type].border : '#clear'
       }
+      color="#dark"
       {...props}
     >
       {children}

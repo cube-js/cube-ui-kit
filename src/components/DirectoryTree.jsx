@@ -20,7 +20,7 @@ const TEXT_OVERFLOW_STYLES = {
 };
 
 function calcPadding(indent) {
-  return `(.75x - 1px) (.5x - 1px) (.75x - 1px) (${1.5 * indent + 0.5}x - 1px)`;
+  return `.75x .5x .75x ${1.5 * indent + 0.5}x`;
 }
 
 function extractLeafKeys(subTreeData, dirsOnly) {
@@ -47,11 +47,13 @@ function getItemStyles({ selected }) {
           '': '#clear',
           hovered: '#dark.04',
         },
-    color: selected ? '#purple' : '#dark.75',
+    color: selected ? '#purple-text' : '#dark.75',
     outline: {
       '': '#purple-03.0',
       'focused & focus-visible': '#purple-03',
     },
+    fontWeight: selected ? 500 : 400,
+    padding: '.75x .5x',
   };
 }
 
@@ -157,7 +159,10 @@ export default function DirectoryTree({
                 type="clear"
                 margin="-.5x"
                 padding=".25x"
-                color="#purple"
+                color={{
+                  '': '#dark.60',
+                  hovered: '#purple',
+                }}
                 onClick={() => toggle(item)}
               >
                 {expanded.includes(item.key) ? (
@@ -166,13 +171,13 @@ export default function DirectoryTree({
                   <CaretDownOutlined />
                 )}
               </Button>
-              <Space gap={1} grow="1">
+              <Space gap={1} grow="1" color={selected === item.key ? '#purple' : '#dark.50'}>
                 {expanded.includes(item.key) ? (
-                  <FolderOpenOutlined style={{ opacity: 0.66 }} />
+                  <FolderOpenOutlined />
                 ) : (
-                  <FolderOutlined style={{ opacity: 0.66 }} />
+                  <FolderOutlined />
                 )}
-                <Block style={TEXT_OVERFLOW_STYLES}>{item.title}</Block>
+                <Block style={TEXT_OVERFLOW_STYLES} color="#dark.75">{item.title}</Block>
               </Space>
               {actionsPanel && actionsPanel(item)}
             </Space>
@@ -187,7 +192,7 @@ export default function DirectoryTree({
         list.push(
           <Item
             key={item.key}
-            indent={indent + 0.65}
+            indent={indent + 1.7}
             selected={selected === item.key}
             onClick={() => select(item)}
           >
