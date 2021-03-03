@@ -64,9 +64,9 @@ const PROPS = {
   'pink-8-color': color('pink', 0.2),
   'pink-9-color': color('pink', 0.1),
 
-  'disabled-color': color('dark-01', .25),
-  'disabled-bg': color('dark-05', .2),
-  'disabled-bg-color': color('dark-05', .2),
+  'disabled-color': color('dark-01', 0.25),
+  'disabled-bg': color('dark-05', 0.2),
+  'disabled-bg-color': color('dark-05', 0.2),
 
   'max-content-width': '1440px',
   'topbar-height': '48px',
