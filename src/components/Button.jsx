@@ -56,7 +56,7 @@ const STYLES_BY_TYPE = {
     },
     color: {
       '': '#dark.75',
-      'hovered': '#dark.75',
+      hovered: '#dark.75',
       'pressed, hovered & pressed': '#purple',
     },
     textAlign: 'left',

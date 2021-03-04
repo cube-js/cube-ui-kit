@@ -171,13 +171,19 @@ export default function DirectoryTree({
                   <CaretDownOutlined />
                 )}
               </Button>
-              <Space gap={1} grow="1" color={selected === item.key ? '#purple' : '#dark.50'}>
+              <Space
+                gap={1}
+                grow="1"
+                color={selected === item.key ? '#purple' : '#dark.50'}
+              >
                 {expanded.includes(item.key) ? (
                   <FolderOpenOutlined />
                 ) : (
                   <FolderOutlined />
                 )}
-                <Block style={TEXT_OVERFLOW_STYLES} color="#dark.75">{item.title}</Block>
+                <Block style={TEXT_OVERFLOW_STYLES} color="#dark.75">
+                  {item.title}
+                </Block>
               </Space>
               {actionsPanel && actionsPanel(item)}
             </Space>
