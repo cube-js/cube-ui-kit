@@ -95,7 +95,7 @@ export const Table = styled(AntdTable)`
       font-size: var(--font-size);
       line-height: var(--line-height);
       font-weight: 400;
-      color: var(--dark-65-color);
+      color: rgba(var(--dark-color-rgb), 0.5);
     }
 
     .ant-table-tbody > tr.ant-table-row:hover > td {
