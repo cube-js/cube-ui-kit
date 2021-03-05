@@ -28,7 +28,7 @@ const GlobalStyles = createGlobalStyle`
     -moz-osx-font-smoothing: grayscale;
     margin: 0;
     padding: 0;
-    color: var(--dark-65-color);
+    color: var(--dark-75-color);
     font-size: var(--medium-font-size);
     line-height: var(--medium-line-height);
     letter-spacing: var(--medium-letter-spacing);
@@ -135,10 +135,6 @@ const GlobalStyles = createGlobalStyle`
   
   .ant-modal-footer {
     padding: 12px 20px;
-  }
-  
-  .ant-page-header-heading-sub-title {
-    color: var(--dark-65-color);
   }
 `;
 

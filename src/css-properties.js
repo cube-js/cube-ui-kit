@@ -34,6 +34,7 @@ const PROPS = {
   'line-height': '20px',
   'input-font-size': '14px',
   'input-line-height': '20px',
+  'input-letter-spacing': '0.02em',
   gap: '8px',
   radius: '4px',
   transition: '140ms',
