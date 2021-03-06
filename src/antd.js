@@ -8,14 +8,11 @@ import {
   Table as AntdTable,
   Form,
   Tabs as AntdTabs,
-  Select as AntdSelect,
-  Breadcrumb,
 } from 'antd';
 
 const inputStyles = ` {
     line-height: var(--input-line-height);
     font-size: var(--input-font-size);
-    letter-spacing: var(--input-letter-spacing);
     padding: 9px 12px;
     border: var(--border-width) solid var(--border-color);
 
@@ -31,7 +28,6 @@ const inputStyles = ` {
         font-family: inherit;
         line-height: var(--input-line-height);
         font-size: var(--input-font-size);
-        letter-spacing: var(--input-letter-spacing);
       }
     }
   }
@@ -67,16 +63,7 @@ export const AutoComplete = styled(AntdAutoComplete)`
     height: auto;
     line-height: var(--input-line-height);
     font-size: var(--input-font-size);
-    letter-spacing: var(--input-letter-spacing);
     padding: 9px 0;
-  }
-`;
-
-export const Select = styled(AntdSelect)`
-  &&.ant-select .ant-select-selection-item {
-    line-height: var(--input-line-height);
-    font-size: var(--input-font-size);
-    letter-spacing: var(--input-letter-spacing);
   }
 `;
 
@@ -137,12 +124,6 @@ export const Tabs = styled(AntdTabs)`
   .ant-tabs-tab-btn,
   .ant-tabs-tab-remove {
     font-weight: 500;
-  }
-`;
-
-Breadcrumb.Item = styled(Breadcrumb.Item)`
-  & a:hover {
-    color: var(--purple-color);
   }
 `;
 

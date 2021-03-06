@@ -8,14 +8,7 @@ export const POSITION_STYLES = [
   'z',
 ];
 
-export const BLOCK_STYLES = [
-  'padding',
-  'shadow',
-  'border',
-  'radius',
-  'margin',
-  'opacity',
-];
+export const BLOCK_STYLES = ['padding', 'shadow', 'border', 'radius', 'margin'];
 
 export const COLOR_STYLES = ['color', 'fill'];
 

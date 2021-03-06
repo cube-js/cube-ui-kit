@@ -145,6 +145,7 @@ export default forwardRef(function Button(
           : STYLES_BY_TYPE[type] || STYLES_BY_TYPE.default),
       }}
       css={CSS}
+      type={type || 'default'}
       {...props}
       ref={combinedRef}
       disabled={loading || disabled}
