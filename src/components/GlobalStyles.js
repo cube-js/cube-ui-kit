@@ -7,6 +7,31 @@ Object.keys(VARIABLES).forEach((key) => {
   CSS_PROPERTIES[`--${key}`] = VARIABLES[key];
 });
 
+const inputStyles = ` {
+    line-height: var(--input-line-height);
+    font-size: var(--input-font-size);
+    letter-spacing: var(--input-letter-spacing);
+    padding: 9px 12px;
+    border: var(--border-width) solid var(--border-color);
+
+    &:-webkit-autofill {
+      &,
+      &:hover,
+      &:focus {
+        caret-color: var(--purple-color);
+        -webkit-text-fill-color: var(--text-color);
+        box-shadow: 0 0 0 9999rem rgba(var(--purple-color-rgb), 0.1) inset,
+          0 0 0 9999rem var(--white-color) inset;
+        background-color: transparent;
+        font-family: inherit;
+        line-height: var(--input-line-height);
+        font-size: var(--input-font-size);
+        letter-spacing: var(--input-letter-spacing);
+      }
+    }
+  }
+`;
+
 const GlobalStyles = createGlobalStyle`
   body {
     ${Object.entries(CSS_PROPERTIES)
@@ -28,7 +53,7 @@ const GlobalStyles = createGlobalStyle`
     -moz-osx-font-smoothing: grayscale;
     margin: 0;
     padding: 0;
-    color: var(--dark-65-color);
+    color: var(--dark-75-color);
     font-size: var(--medium-font-size);
     line-height: var(--medium-line-height);
     letter-spacing: var(--medium-letter-spacing);
@@ -135,6 +160,136 @@ const GlobalStyles = createGlobalStyle`
   
   .ant-modal-footer {
     padding: 12px 20px;
+  }
+  
+  .ant-input.ant-input.ant-input.ant-input ${inputStyles}
+  textarea.ant-input.ant-input.ant-input.ant-input { overflow: auto; }
+  
+  .ant-select {
+    overflow: hidden;
+    
+    &&.ant-select-single:not(.ant-select-customize-input) .ant-select-selector {
+      height: auto;
+    }
+    
+    &&&& .ant-select-selector {
+      height: 40px;
+    }
+    
+    && .ant-select-selection-item::after {
+      display: none;
+    }
+    
+    && .ant-select-selector::after {
+      display: none;
+    }
+  
+    &&&&&:not(.ant-select-customize-input):not(.ant-select-show-search) .ant-select-selector {
+      border: var(--border-width) solid var(--border-color);
+      padding: 5px 12px;
+    }
+  
+    &&:not(.ant-select-customize-input)
+      .ant-select-selector
+      .ant-select-selection-search-input {
+      height: auto;
+      line-height: var(--input-line-height);
+      font-size: var(--input-font-size);
+      letter-spacing: var(--input-letter-spacing);
+      padding: 0;
+    }
+    
+    &&.ant-select-auto-complete .ant-select-selection-search {
+      padding: 8px 0;
+    }
+  }
+
+  .ant-select.ant-select-single {
+    && .ant-select-selection-item {
+      line-height: var(--input-line-height);
+      font-size: var(--input-font-size);
+      letter-spacing: var(--input-letter-spacing);
+    }
+    
+    &&.ant-select-show-search {
+      & .ant-select-selection-item {
+        padding: 8px 0;
+      }
+      
+      & .ant-select-selection-search {
+        padding: 8px 0;
+      }
+    }
+    
+    &&:not(.ant-select-show-search) .ant-select-selection-item {
+      padding: 3px 0;
+    }
+  }
+  
+  .ant-btn {
+    &&& {
+      line-height: var(--line-height);
+      font-size: var(--font-size);
+      padding: 9px 16px;
+      height: auto;
+      box-shadow: none;
+  
+      &:not(.ant-btn-primary):not(.ant-btn-dangerous):hover {
+        background-color: rgba(var(--purple-color-rgb), 0.05);
+        color: var(--purple-color);
+      }
+  
+      &.ant-btn-icon-only {
+        padding: 8px;
+        width: auto;
+        height: auto;
+      }
+    }
+  }
+  
+  .ant-table {
+    &&& {
+      table > thead > tr > th {
+        background: transparent;
+        font-size: var(--font-size);
+        line-height: var(--line-height);
+        font-weight: 400;
+        color: rgba(var(--dark-color-rgb), 0.5);
+      }
+  
+      .ant-table-tbody > tr.ant-table-row:hover > td {
+        background: rgba(var(--purple-color-rgb), 0.05);
+      }
+  
+      .ant-table-tbody > tr > td {
+        border-bottom: 1px solid rgba(var(--dark-color-rgb), 0.1);
+      }
+    }
+  }
+  
+  .ant-form-item {
+    && {
+      .ant-form-item-label-left > label {
+        line-height: 40px;
+      }
+  
+      .ant-form-item-explain-success > [role='alert'] {
+        color: var(--success-color);
+      }
+    }
+  }
+  
+  .ant-tabs {
+    .ant-tabs-tab-btn,
+    .ant-tabs-tab-remove {
+      font-weight: 500;
+    }
+  }
+  
+  .ant-breadcrumb {
+    && a:hover {
+      color: var(--purple-color);
+    }
   }
   
   .ant-page-header-heading-sub-title {

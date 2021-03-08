@@ -53,40 +53,6 @@ export default [
       commonjs(),
       json(),
       ENV === 'development' ? undefined : terser(),
-    ]
-  },
-  {
-    input: 'src/antd.js',
-    external: ['react', 'react-dom', 'antd'],
-    output: [{
-      name: 'Cube Cloud AntD',
-      dir: `./dist/`,
-      format: 'es',
-    }],
-    plugins: [
-      babel({
-        presets: [
-          '@babel/react',
-        ],
-        plugins: [
-          '@babel/plugin-proposal-object-rest-spread',
-          '@babel/plugin-syntax-dynamic-import',
-          'transform-react-remove-prop-types',
-          // ['import', { libraryName: 'antd', style: true }],
-        ],
-        exclude: /node_modules/,
-        babelHelpers: 'bundled',
-      }),
-      replace({
-        'process.env.NODE_ENV': JSON.stringify(ENV),
-        'process.env.APP_VERSION': VERSION,
-      }),
-      resolve({
-        extensions: ['.jsx', '.js'],
-        preferBuiltins: false,
-      }),
-      commonjs(),
-      json(),
       postcss({
         minimize: true,
         use: {
@@ -98,6 +64,52 @@ export default [
           }
         },
       }),
-      ENV === 'development' ? undefined : terser(),
     ]
-  }];
+  },
+  // {
+  //   input: 'src/antd.js',
+  //   external: ['react', 'react-dom', 'antd'],
+  //   output: [{
+  //     name: 'Cube Cloud AntD',
+  //     dir: `./dist/`,
+  //     format: 'es',
+  //   }],
+  //   plugins: [
+  //     babel({
+  //       presets: [
+  //         '@babel/react',
+  //       ],
+  //       plugins: [
+  //         '@babel/plugin-proposal-object-rest-spread',
+  //         '@babel/plugin-syntax-dynamic-import',
+  //         'transform-react-remove-prop-types',
+  //         // ['import', { libraryName: 'antd', style: true }],
+  //       ],
+  //       exclude: /node_modules/,
+  //       babelHelpers: 'bundled',
+  //     }),
+  //     replace({
+  //       'process.env.NODE_ENV': JSON.stringify(ENV),
+  //       'process.env.APP_VERSION': VERSION,
+  //     }),
+  //     resolve({
+  //       extensions: ['.jsx', '.js'],
+  //       preferBuiltins: false,
+  //     }),
+  //     commonjs(),
+  //     json(),
+  //     postcss({
+  //       minimize: true,
+  //       use: {
+  //         sass: null,
+  //         stylus: null,
+  //         less: {
+  //           javascriptEnabled: true,
+  //           modifyVars: LESS_VARIABLES,
+  //         }
+  //       },
+  //     }),
+  //     ENV === 'development' ? undefined : terser(),
+  //   ]
+  // }
+];

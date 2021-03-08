@@ -37,6 +37,7 @@ module.exports = {
   'remove-btn-hover-bg': color('purple', 0.2),
   'primary-color': color('purple'),
 
+  'text-color': color('dark', 0.75),
   'heading-color': color('dark'),
   'typography-title-font-weight': 700,
   'link-color': color('purple'),

@@ -48,7 +48,7 @@ export function createLinkClickHandler(to, onClick, disabled, as) {
     if (disabled) return;
 
     if (onClick) {
-      onClick(evt);
+      onClick();
 
       return;
     }

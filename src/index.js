@@ -1,3 +1,5 @@
+import './antd.less';
+
 import Text from './components/Text';
 import Title from './components/Title';
 import Paragraph from './components/Paragraph';
