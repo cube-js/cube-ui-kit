@@ -106,6 +106,7 @@ export default forwardRef(function Action(
 
   const listeners = {};
 
+  // prevent default behavior for links
   if (to) {
     const pressOnClick = pressProps.onClick;
 
