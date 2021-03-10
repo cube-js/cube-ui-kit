@@ -231,7 +231,7 @@ const GlobalStyles = createGlobalStyle`
       line-height: var(--line-height);
       font-size: var(--font-size);
       padding: 9px 16px;
-      height: auto;
+      height: 40px;
       box-shadow: none;
   
       &:not(.ant-btn-primary):not(.ant-btn-dangerous):hover {
@@ -242,7 +242,6 @@ const GlobalStyles = createGlobalStyle`
       &.ant-btn-icon-only {
         padding: 8px;
         width: auto;
-        height: auto;
       }
     }
   }
