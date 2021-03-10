@@ -181,7 +181,7 @@ export default function DirectoryTree({
                 ) : (
                   <FolderOutlined />
                 )}
-                <Block style={TEXT_OVERFLOW_STYLES} color="#dark.75">
+                <Block style={TEXT_OVERFLOW_STYLES} color={selected === item.key ? '#purple-text' : '#dark.75'}>
                   {item.title}
                 </Block>
               </Space>
@@ -202,8 +202,8 @@ export default function DirectoryTree({
             selected={selected === item.key}
             onClick={() => select(item)}
           >
-            <Space gap="1x" css={HOVER_CSS}>
-              <FileOutlined style={{ opacity: 0.66 }} />
+            <Space gap="1x" css={HOVER_CSS} color={selected === item.key ? '#purple' : '#dark.75'}>
+              <FileOutlined />
               <Block style={TEXT_OVERFLOW_STYLES} grow="1">
                 {item.title}
               </Block>
