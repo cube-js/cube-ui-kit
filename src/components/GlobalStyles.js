@@ -60,6 +60,63 @@ const GlobalStyles = createGlobalStyle`
     font-weight: 400;
   }
   
+  .cube-notification-container {
+    min-width: 288px;
+    max-width: 340px;
+    width: calc(100vw - 32px);
+    position: fixed;
+    top: 32px;
+    right: 16px;
+  }
+  
+  .cube-notifications {
+    display: grid;
+    grid-auto-flow: row;
+    grid-template-columns: 1fr;
+  }
+  
+  .cube-notification-enter {
+    opacity: 0;
+    max-height: 0px;
+    margin-bottom: 0px;
+    transform: translate(100%, 0);
+  }
+  
+  .cube-notification-enter-active {
+    opacity: 1;
+    max-height: 56px;
+    margin-bottom: 8px;
+    transform: translate(0, 0);
+    transition: all 300ms ease-in;
+    
+    & > * {
+      margin-bottom: 0px;
+    } 
+  }
+  
+  .cube-notification-exit {
+    opacity: 1;
+    margin-bottom: 8px;
+    max-height: 56px;
+    transform: translate(0, 0);
+  }
+  
+  .cube-notification-exit-active {
+    opacity: 0;
+    max-height: 0px;
+    margin-bottom: 0px;
+    transform: translate(100%, 0);
+    transition: all 300ms ease-in;
+    
+    & > * {
+      margin-bottom: 0px;
+    }
+  }
+  
+  b {
+    font-weight: 600;
+  }
+  
   [type=reset], [type=submit], button, html [type=button] {
     -webkit-appearance: none;
   }
@@ -152,14 +209,15 @@ const GlobalStyles = createGlobalStyle`
   
   .ant-modal-header {
     border-radius: 8px 8px 0 0;
+    padding: 16px 24px;
   }
   
   .ant-modal-body {
-    padding: 24px 20px;
+    padding: 24px;
   }
   
   .ant-modal-footer {
-    padding: 12px 20px;
+    padding: 12px 24px;
   }
   
   .ant-input.ant-input.ant-input.ant-input ${inputStyles}
@@ -293,6 +351,10 @@ const GlobalStyles = createGlobalStyle`
   
   .ant-page-header-heading-sub-title {
     color: var(--dark-65-color);
+  }
+  
+  .ant-modal-title.ant-modal-title {
+    font-weight: 600;
   }
 `;
 

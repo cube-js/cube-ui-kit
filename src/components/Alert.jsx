@@ -1,6 +1,6 @@
 import React from 'react';
 import Base from './Base';
-import Title from './Title';
+import THEMES from '../data/themes';
 import { BLOCK_STYLES, DIMENSION_STYLES, COLOR_STYLES } from '../styles/list';
 
 const DEFAULT_STYLES = {
@@ -8,24 +8,6 @@ const DEFAULT_STYLES = {
   flow: 'column',
   radius: '1x',
   padding: '1.5x',
-};
-
-const THEMES = {
-  success: {
-    fill: '#success-bg',
-    color: '#success-text',
-    border: '#success.40',
-  },
-  danger: {
-    fill: '#danger-bg',
-    color: '#danger-text',
-    border: '#danger.40',
-  },
-  note: {
-    fill: '#note-bg',
-    color: '#note',
-    border: '#note.40',
-  },
 };
 
 export default function Alert({ type, label, children, ...props }) {

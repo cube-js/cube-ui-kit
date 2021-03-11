@@ -71,3 +71,7 @@ Text.Minor = function MinorText(props) {
 Text.Danger = function DangerText(props) {
   return <Text color="#danger" {...props} />;
 };
+
+Text.Strong = function DangerText(props) {
+  return <Text color="#dark" weight={600} {...props} />;
+};

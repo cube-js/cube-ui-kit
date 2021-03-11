@@ -19,6 +19,7 @@
   ],
   "author": "Cube Dev Team",
   "devDependencies": {
+    "@ant-design/icons": "^4.4.0",
     "@babel/cli": "^7.12.8",
     "@babel/core": "7.12.9",
     "@babel/parser": "^7.12.10",
@@ -41,7 +42,6 @@
     "@testing-library/react": "^11.0.0",
     "@web/test-runner": "^0.9.7",
     "antd": "4.13.0",
-    "@ant-design/icons": "^4.4.0",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.2.1",
     "babel-plugin-import": "^1.13.1",
@@ -78,6 +78,7 @@
   ],
   "dependencies": {
     "react": "^17.0.1",
-    "react-dom": "^17.0.1"
+    "react-dom": "^17.0.1",
+    "react-transition-group": "^4.4.1"
   }
 }

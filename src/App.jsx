@@ -2,11 +2,13 @@ import React from 'react';
 import { Base, Button, Grid, TopBar, Space, LoadingAnimation } from './index';
 import ResponsiveProvider from './providers/Responsive';
 import { color } from './utils/colors';
-import { PageHeader } from './antd';
 import Card from './components/Card';
 import Flex from './components/Flex';
 import Base64Upload from './components/Base64Upload';
 import Link from './components/Link';
+// import notification from './services/notification';
+
+// window.notification = notification;
 
 function App() {
   return (
@@ -34,10 +36,6 @@ function App() {
         <Link to="!https://cube.dev">Cube.dev</Link>
       </Space>
       <ResponsiveProvider value={[1200, 640]}>
-        <PageHeader
-          title="Storybook"
-          description="Showcase and documentation for Cube Cloud UIKit"
-        />
         <TopBar onLogoPress={() => {}} />
         <Flex
           styles={{
