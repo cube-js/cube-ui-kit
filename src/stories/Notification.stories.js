@@ -20,11 +20,7 @@ export default {
 };
 
 const Template = ({ type, label }) => (
-  <Notification
-    type={type}
-  >
-    {label}
-  </Notification>
+  <Notification type={type}>{label}</Notification>
 );
 
 export const Note = Template.bind({});

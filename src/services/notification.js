@@ -27,19 +27,22 @@ const notification = {
     this._render();
   },
   _render(items = this.items) {
-    ReactDOM.render(<TransitionGroup className="cube-notifications">
-      {items.map(item => (
-        <CSSTransition
-          key={item.id}
-          timeout={400}
-          classNames="cube-notification"
-        >
-          <Notification type={item.type} onClose={() => this.close(item.id)}>
-            {item.message}
-          </Notification>
-        </CSSTransition>
-      ))}
-    </TransitionGroup>, this.root);
+    ReactDOM.render(
+      <TransitionGroup className="cube-notifications">
+        {items.map((item) => (
+          <CSSTransition
+            key={item.id}
+            timeout={400}
+            classNames="cube-notification"
+          >
+            <Notification type={item.type} onClose={() => this.close(item.id)}>
+              {item.message}
+            </Notification>
+          </CSSTransition>
+        ))}
+      </TransitionGroup>,
+      this.root,
+    );
   },
   show(type, message, options = {}) {
     options = Object.assign({}, this.defaultOptions, options);
@@ -55,7 +58,7 @@ const notification = {
     }, options.duration);
   },
   close(id) {
-    this.items = this.items.filter(item => item.id !== id);
+    this.items = this.items.filter((item) => item.id !== id);
 
     this.render();
   },
@@ -68,6 +71,6 @@ const notification = {
   info(message, options) {
     this.show('info', message, options);
   },
-}
+};
 
 export default notification;

@@ -19,6 +19,7 @@ export { default as Link } from './components/Link';
 export { default as Alert } from './components/Alert';
 export { default as DirectoryTree } from './components/DirectoryTree';
 export { default as FileTabs } from './components/FileTabs';
+export { default as Modal } from './components/Modal';
 export { default as notification } from './services/notification';
 
 export * from './providers/Responsive';

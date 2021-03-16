@@ -16,7 +16,7 @@ export default function Alert({ type, children, onClose, ...props }) {
 
   let Icon;
 
-  switch(type) {
+  switch (type) {
     case 'success':
       Icon = CheckOutlined;
       break;
@@ -55,13 +55,16 @@ export default function Alert({ type, children, onClose, ...props }) {
           fill={THEMES[type] ? THEMES[type].fill : '#clear'}
           color={THEMES[type] ? THEMES[type].color : '#dark.75'}
         >
-          <Icon style={{ fontSize: 16 }}/>
+          <Icon style={{ fontSize: 16 }} />
         </Flex>
-        <Block>
-          {children}
-        </Block>
-        <Action color={{ '': '#dark.75', hovered: '#purple' }} width="5x" height="5x" onClick={onClose}>
-          <CloseOutlined/>
+        <Block>{children}</Block>
+        <Action
+          color={{ '': '#dark.75', hovered: '#purple' }}
+          width="5x"
+          height="5x"
+          onClick={onClose}
+        >
+          <CloseOutlined />
         </Action>
       </Card>
     </div>

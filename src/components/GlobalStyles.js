@@ -67,6 +67,7 @@ const GlobalStyles = createGlobalStyle`
     position: fixed;
     top: 32px;
     right: 16px;
+    z-index: 999999;
   }
   
   .cube-notifications {

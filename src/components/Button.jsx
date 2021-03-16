@@ -75,7 +75,7 @@ const STYLES_BY_SIZE = {
     padding: '(.75x - 1px) (1.5x - 1px)',
   },
   default: {
-    padding: '(1x - 1px) (2x - 1px)',
+    padding: '(1.25x - 1px) (2x - 1px)',
   },
 };
 
@@ -118,16 +118,24 @@ export default forwardRef(function Button(
 ) {
   const [showLoadingIcon, setShowLoadingIcon] = useState(loading || false);
   const [pendingLoading, setPendingLoading] = useState(false);
+  const [currentLoading, setCurrentLoading] = useState(loading);
   const combinedRef = useCombinedRefs(ref);
   defaultStyles = defaultStyles
     ? Object.assign({}, DEFAULT_STYLES, defaultStyles)
     : DEFAULT_STYLES;
 
   useEffect(() => {
+    setCurrentLoading(loading);
     if (loading) {
       setShowLoadingIcon(true);
       setTimeout(() => {
-        setPendingLoading(true);
+        setCurrentLoading(currentLoading => {
+          if (currentLoading) {
+            setPendingLoading(true);
+          }
+
+          return currentLoading;
+        });
       });
     } else {
       setPendingLoading(false);

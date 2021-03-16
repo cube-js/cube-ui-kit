@@ -42,7 +42,7 @@ const PROPS = {
   'outline-width': 'calc(1rem / 16 * 3)',
   'clear-color': 'transparent',
   'border-color': color('dark', 0.1),
-  'shadow-color': color('dark-03', 0.05),
+  'shadow-color': color('dark-03', 0.1),
   'draft-color': color('dark', 0.2),
   'minor-color': color('dark', 0.65),
   'success-bg-color': 'rgba(41, 190, 110, .1)',

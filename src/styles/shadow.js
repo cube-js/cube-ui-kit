@@ -3,7 +3,7 @@ import { createRule, parseStyle } from '../utils/styles';
 export default function shadowStyle({ shadow }) {
   if (!shadow) return '';
 
-  if (shadow === true) shadow = '0 3x 4x #shadow';
+  if (shadow === true) shadow = '0 5px 15px #shadow';
 
   const { values, mods, color } = parseStyle(shadow);
 

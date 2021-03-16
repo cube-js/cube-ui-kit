@@ -1,6 +1,12 @@
 import React from 'react';
 import Base from './Base';
-import { BLOCK_STYLES, DIMENSION_STYLES, COLOR_STYLES } from '../styles/list';
+import {
+  BLOCK_STYLES,
+  DIMENSION_STYLES,
+  COLOR_STYLES,
+  POSITION_STYLES,
+  FLOW_STYLES,
+} from '../styles/list';
 
 const DEFAULT_STYLES = {
   display: 'block',
@@ -23,6 +29,8 @@ export default function Card({ ...props }) {
         ...BLOCK_STYLES,
         ...COLOR_STYLES,
         ...DIMENSION_STYLES,
+        ...POSITION_STYLES,
+        ...FLOW_STYLES,
       ]}
       {...props}
     />
