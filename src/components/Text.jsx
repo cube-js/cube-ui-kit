@@ -69,7 +69,11 @@ Text.Minor = function MinorText(props) {
 };
 
 Text.Danger = function DangerText(props) {
-  return <Text color="#danger" {...props} />;
+  return <Text color="#danger-text" {...props} />;
+};
+
+Text.Success = function DangerText(props) {
+  return <Text color="#success-text" {...props} />;
 };
 
 Text.Strong = function DangerText(props) {

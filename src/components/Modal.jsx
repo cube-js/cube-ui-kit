@@ -117,7 +117,6 @@ export default function Modal({
               (onClose || onCancel)();
             }
           } catch (e) {
-
           } finally {
             setLocalLoading(false);
           }
@@ -194,7 +193,8 @@ export default function Modal({
                 <Button
                   data-qa={cancelQa || 'ModalCancelButton'}
                   onClick={onCancel || onClose}
-                  disabled={loading}>
+                  disabled={loading}
+                >
                   {okText === 'Yes' ? 'No' : cancelText || 'Cancel'}
                 </Button>
               </Space>

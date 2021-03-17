@@ -354,9 +354,16 @@ const GlobalStyles = createGlobalStyle`
     color: var(--dark-65-color);
   }
   
+  .ant-page-header-back-button.ant-page-header-back-button {
+    font-size: 24px;
+    color: var(--dark-75-color);
+  }
+  
   .ant-modal-title.ant-modal-title {
     font-weight: 600;
   }
+  
+  
 `;
 
 export default GlobalStyles;

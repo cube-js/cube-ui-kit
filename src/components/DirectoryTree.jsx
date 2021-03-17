@@ -208,10 +208,14 @@ export default function DirectoryTree({
             <Space
               gap="1x"
               css={HOVER_CSS}
-              color={selected === item.key ? '#purple' : '#dark.75'}
+              color={selected === item.key ? '#purple' : '#dark.50'}
             >
               <FileOutlined />
-              <Block style={TEXT_OVERFLOW_STYLES} grow="1">
+              <Block
+                style={TEXT_OVERFLOW_STYLES}
+                grow="1"
+                color={selected === item.key ? '#purple-text' : '#dark.75'}
+              >
                 {item.title}
               </Block>
               {actionsPanel && actionsPanel(item)}

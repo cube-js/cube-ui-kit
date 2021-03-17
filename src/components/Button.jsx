@@ -129,7 +129,7 @@ export default forwardRef(function Button(
     if (loading) {
       setShowLoadingIcon(true);
       setTimeout(() => {
-        setCurrentLoading(currentLoading => {
+        setCurrentLoading((currentLoading) => {
           if (currentLoading) {
             setPendingLoading(true);
           }
