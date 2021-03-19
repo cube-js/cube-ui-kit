@@ -17,6 +17,7 @@ export default function Text({
   ellipsis,
   css,
   nowrap,
+  styleAttrs,
   ...props
 }) {
   css = css || '';
@@ -57,7 +58,7 @@ export default function Text({
     <Base
       as={as || 'span'}
       defaultStyles={DEFAULT_STYLES}
-      styleAttrs={[...TEXT_STYLES, ...COLOR_STYLES]}
+      styleAttrs={styleAttrs || [...TEXT_STYLES, ...COLOR_STYLES]}
       css={css}
       {...props}
     />

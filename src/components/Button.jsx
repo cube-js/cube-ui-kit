@@ -156,6 +156,7 @@ export default forwardRef(function Button(
       {...props}
       ref={combinedRef}
       disabled={loading || disabled}
+      data-is-loading={loading ? '' : undefined}
     >
       {showLoadingIcon ? (
         <LoadingOutlined

@@ -1,3 +1,8 @@
+/**
+ * Modal component
+ * Designed after AntD Modal component and almost duplicate its API.
+ */
+
 import React, { useCallback, useState } from 'react';
 import ReactDOM from 'react-dom';
 import Action from './Action';
@@ -85,8 +90,6 @@ export default function Modal({
   onCancel,
   onClose,
   qa,
-  okQa,
-  cancelQa,
   disabled,
   ...props
 }) {
@@ -182,7 +185,7 @@ export default function Modal({
             {type !== 'info' && (onOk || onCancel) ? (
               <Space gap="1.5x">
                 <Button
-                  data-qa={okQa || 'ModalConfirmButton'}
+                  data-qa={'ConfirmButton'}
                   disabled={disabled}
                   type={okType === 'danger' ? 'danger' : 'primary'}
                   loading={loading || localLoading}
@@ -191,7 +194,7 @@ export default function Modal({
                   {okText || 'OK'}
                 </Button>
                 <Button
-                  data-qa={cancelQa || 'ModalCancelButton'}
+                  data-qa={'CancelButton'}
                   onClick={onCancel || onClose}
                   disabled={loading}
                 >
@@ -202,7 +205,7 @@ export default function Modal({
             {type === 'info' ? (
               <Space>
                 <Button
-                  data-qa={okQa || 'ModalOkButton'}
+                  data-qa={'OkButton'}
                   disabled={disabled}
                   type={okType === 'danger' ? 'danger' : 'primary'}
                   onClick={onClose}
