@@ -222,6 +222,9 @@ const GlobalStyles = createGlobalStyle`
   }
   
   .ant-input.ant-input.ant-input.ant-input ${inputStyles}
+  .ant-input-affix-wrapper .ant-input.ant-input.ant-input.ant-input {
+    border: none;
+  } 
   textarea.ant-input.ant-input.ant-input.ant-input { overflow: auto; }
   
   .ant-select {

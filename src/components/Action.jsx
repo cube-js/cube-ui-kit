@@ -148,6 +148,7 @@ export default forwardRef(function Action(
         ...DEFAULT_STYLES,
         ...defaultStyles,
       }}
+      ref={as === 'a' && newTab ? 'rel="noopener noreferrer"' : undefined}
       css={`
         transition: all var(--transition) linear;
         user-select: none;
