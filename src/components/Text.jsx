@@ -73,10 +73,10 @@ Text.Danger = function DangerText(props) {
   return <Text color="#danger-text" {...props} />;
 };
 
-Text.Success = function DangerText(props) {
+Text.Success = function SuccessText(props) {
   return <Text color="#success-text" {...props} />;
 };
 
-Text.Strong = function DangerText(props) {
+Text.Strong = function StrongText(props) {
   return <Text color="#dark" weight={600} {...props} />;
 };

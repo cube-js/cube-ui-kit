@@ -3,12 +3,10 @@ import { Base, Button, Grid, TopBar, Space, LoadingAnimation } from './index';
 import ResponsiveProvider from './providers/Responsive';
 import { color } from './utils/colors';
 import Card from './components/Card';
-import Block from './components/Block';
 import Flex from './components/Flex';
-import Base64Upload from './components/Base64Upload';
+import Base64Upload from './atoms/Base64Upload/Base64Upload';
 import Link from './components/Link';
-import Modal from './components/Modal';
-import { ExclamationCircleOutlined } from '@ant-design/icons';
+import Modal from './molecules/Modal/Modal';
 import notification from './services/notification';
 
 window.notification = notification;
@@ -21,31 +19,41 @@ function App() {
   return (
     <>
       <Modal
-        title="Delete file"
-        icon={<ExclamationCircleOutlined />}
-        visible={inProp}
-        okType="danger"
-        action="Yes"
-        onOk={() => {
-          return new Promise((resolve, reject) => {
-            setTimeout(() => {
-              setInProp(false);
-              resolve();
-            }, 1000);
-          });
-        }}
-        onCancel={() => setInProp(false)}
+        cancelText="Cancel"
+        okText="Ok"
+        onCancel={() => {}}
+        onOk={function noRefCheck() {}}
+        title="Modal"
+        visible={true}
       >
-        <Block>Do you really want to delete it?</Block>
-        {/*<Space gap="1.5x">*/}
-        {/*  <Button type="danger">*/}
-        {/*    Delete*/}
-        {/*  </Button>*/}
-        {/*  <Button>*/}
-        {/*    Cancel*/}
-        {/*  </Button>*/}
-        {/*</Space>*/}
+        Modal content
       </Modal>
+      {/*<Modal*/}
+      {/*  title="Delete file"*/}
+      {/*  icon={<ExclamationCircleOutlined />}*/}
+      {/*  visible={inProp}*/}
+      {/*  okType="danger"*/}
+      {/*  action="Yes"*/}
+      {/*  onOk={() => {*/}
+      {/*    return new Promise((resolve, reject) => {*/}
+      {/*      setTimeout(() => {*/}
+      {/*        setInProp(false);*/}
+      {/*        resolve();*/}
+      {/*      }, 1000);*/}
+      {/*    });*/}
+      {/*  }}*/}
+      {/*  onCancel={() => setInProp(false)}*/}
+      {/*>*/}
+      {/*  <Block>Do you really want to delete it?</Block>*/}
+      {/*  /!*<Space gap="1.5x">*!/*/}
+      {/*  /!*  <Button type="danger">*!/*/}
+      {/*  /!*    Delete*!/*/}
+      {/*  /!*  </Button>*!/*/}
+      {/*  /!*  <Button>*!/*/}
+      {/*  /!*    Cancel*!/*/}
+      {/*  /!*  </Button>*!/*/}
+      {/*  /!*</Space>*!/*/}
+      {/*</Modal>*/}
       <Button
         onClick={() => setInProp(!inProp)}
         type="clear"

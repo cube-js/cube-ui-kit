@@ -6,11 +6,11 @@ import {
   FolderOutlined,
   FolderOpenOutlined,
 } from '@ant-design/icons';
-import Flex from './Flex';
-import Action from './Action';
-import Button from './Button';
-import Space from './Space';
-import Block from './Block';
+import Flex from '../../components/Flex';
+import Action from '../../components/Action';
+import Button from '../../atoms/Button/Button';
+import Space from '../../components/Space';
+import Block from '../../components/Block';
 
 const TEXT_OVERFLOW_STYLES = {
   whiteSpace: 'nowrap',

@@ -1,9 +1,9 @@
 import React from 'react';
-import Action from './Action';
-import Card from './Card';
-import Block from './Block';
-import Flex from './Flex';
-import THEMES from '../data/themes';
+import Action from '../../components/Action';
+import Card from '../../components/Card';
+import Block from '../../components/Block';
+import Flex from '../../components/Flex';
+import THEMES from '../../data/themes';
 import {
   CheckOutlined,
   CloseOutlined,

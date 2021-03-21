@@ -1,6 +1,6 @@
 import React from 'react';
 
-import UIKitDirectoryTree from '../components/DirectoryTree';
+import UIKitDirectoryTree from './DirectoryTree';
 
 const TREE_DATA = [
   {
@@ -58,7 +58,7 @@ const TREE_DATA = [
 const DirectoryTree = (args) => <UIKitDirectoryTree {...args} />;
 
 export default {
-  title: 'Example/DirectoryTree',
+  title: 'UIKit/Molecules/DirectoryTree',
   component: DirectoryTree,
   argTypes: {},
 };

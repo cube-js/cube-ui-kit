@@ -1,12 +1,12 @@
 import React from 'react';
 
-import UIKitLoadingAnimation from '../components/LoadingAnimation';
+import UIKitLoadingAnimation from './LoadingAnimation';
 
 // fix component name
 const LoadingAnimation = (args) => <UIKitLoadingAnimation {...args} />;
 
 export default {
-  title: 'Example/LoadingAnimation',
+  title: 'UIKit/Atoms/LoadingAnimation',
   component: LoadingAnimation,
   argTypes: {
     size: {

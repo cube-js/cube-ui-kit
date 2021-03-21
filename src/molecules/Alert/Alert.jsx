@@ -1,7 +1,7 @@
 import React from 'react';
-import Base from './Base';
-import THEMES from '../data/themes';
-import { BLOCK_STYLES, DIMENSION_STYLES, COLOR_STYLES } from '../styles/list';
+import Base from '../../components/Base';
+import THEMES from '../../data/themes';
+import { BLOCK_STYLES, DIMENSION_STYLES, COLOR_STYLES } from '../../styles/list';
 
 const DEFAULT_STYLES = {
   display: 'block',

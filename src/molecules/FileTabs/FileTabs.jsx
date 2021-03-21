@@ -7,10 +7,10 @@ import React, {
   useState,
 } from 'react';
 import { CloseOutlined } from '@ant-design/icons';
-import Block from './Block';
-import Action from './Action';
-import Space from './Space';
-import Flex from './Flex';
+import Block from '../../components/Block';
+import Action from '../../components/Action';
+import Space from '../../components/Space';
+import Flex from '../../components/Flex';
 
 const FileTabsContext = createContext({});
 

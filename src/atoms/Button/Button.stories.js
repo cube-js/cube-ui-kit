@@ -1,12 +1,12 @@
 import React from 'react';
 
-import UIKitButton from '../components/Button';
+import UIKitButton from './Button';
 
 // fix component name
 const Button = (args) => <UIKitButton {...args} />;
 
 export default {
-  title: 'Example/Button',
+  title: 'UIKit/Atoms/Button',
   component: UIKitButton,
   argTypes: {
     disabled: {

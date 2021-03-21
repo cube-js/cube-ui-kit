@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import UIKitFileTabs from '../components/FileTabs';
+import UIKitFileTabs from './FileTabs';
 
 // fix component name
 const FileTabs = (args) => <UIKitFileTabs {...args} />;
@@ -8,7 +8,7 @@ const FileTabs = (args) => <UIKitFileTabs {...args} />;
 FileTabs.TabPane = UIKitFileTabs.TabPane;
 
 export default {
-  title: 'Example/FileTabs',
+  title: 'UIKit/Molecules/FileTabs',
   component: FileTabs,
   argTypes: {},
 };

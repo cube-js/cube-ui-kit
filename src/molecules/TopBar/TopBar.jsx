@@ -1,7 +1,7 @@
 import React from 'react';
-import Base from './Base';
-import CloudLogo from './CloudLogo';
-import Space from './Space';
+import Base from '../../components/Base';
+import CloudLogo from '../../atoms/CloudLogo/CloudLogo';
+import Space from '../../components/Space';
 
 const DEFAULT_STYLES = {
   display: 'flex',

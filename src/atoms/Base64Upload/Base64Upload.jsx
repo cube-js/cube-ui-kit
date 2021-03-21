@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import Button from './Button';
-import Block from './Block';
-import Text from './Text';
+import Button from '../Button/Button';
+import Block from '../../components/Block';
+import Text from '../../components/Text';
 import styled from 'styled-components';
 
 const DEFAULT_STYLES = {

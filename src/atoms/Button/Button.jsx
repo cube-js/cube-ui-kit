@@ -1,6 +1,6 @@
 import React, { forwardRef, useState, useEffect } from 'react';
-import Action from './Action';
-import { useCombinedRefs } from '../utils/react';
+import Action from '../../components/Action';
+import { useCombinedRefs } from '../../utils/react';
 import { LoadingOutlined } from '@ant-design/icons';
 
 const STYLES_BY_TYPE = {

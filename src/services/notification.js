@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Notification from '../components/Notification';
+import Notification from '../molecules/Notification/Notification';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 
 let ID = 0;

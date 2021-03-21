@@ -6,7 +6,7 @@ import UIKitBlock from '../components/Block';
 const Block = (args) => <UIKitBlock {...args} />;
 
 export default {
-  title: 'Example/Block',
+  title: 'UIKit/Generic/Block',
   component: UIKitBlock,
   argTypes: {
     shadow: {

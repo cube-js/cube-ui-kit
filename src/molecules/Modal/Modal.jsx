@@ -3,16 +3,17 @@
  * Designed after AntD Modal component and almost duplicate its API.
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import Action from './Action';
-import Card from './Card';
-import Flow from './Flow';
-import Flex from './Flex';
-import Button from './Button';
-import Space from './Space';
+import Action from '../../components/Action';
+import Card from '../../components/Card';
+import Flow from '../../components/Flow';
+import Flex from '../../components/Flex';
+import Block from '../../components/Block';
+import Button from '../../atoms/Button/Button';
+import Space from '../../components/Space';
 import styled from 'styled-components';
-import Title from './Title';
+import Title from '../../components/Title';
 import { CloseOutlined } from '@ant-design/icons';
 import { CSSTransition } from 'react-transition-group';
 
@@ -95,19 +96,44 @@ export default function Modal({
 }) {
   closable = !!closable;
 
+  const [inProp, setInProp] = useState(false);
   const [localLoading, setLocalLoading] = useState(false);
+
+  useEffect(() => {
+    setInProp(visible);
+  }, [visible]);
+
+  function close() {
+    if (onClose || onCancel) {
+      if (closable) {
+        (onClose || onCancel)();
+      } else {
+        (onCancel || onClose)();
+      }
+    }
+  }
 
   const onOverlayClick = (evt) => {
     if (!evt || !evt.target) return;
 
-    if (evt.target.classList.contains('cube-modal-overlay') && closable) {
-      if (onClose) {
-        onClose();
-      } else if (onCancel) {
-        onCancel();
-      }
+    if (evt.target.classList.contains('cube-modal-overlay') && !loading) {
+      close();
     }
   };
+
+  useEffect(() => {
+    function handleKeyDown(evt) {
+      if (evt.key === 'Escape' && !loading) {
+        close();
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   const handleOk = useCallback(
     (arg) => {
@@ -131,7 +157,7 @@ export default function Modal({
 
   return (
     <CSSTransition
-      in={visible}
+      in={inProp}
       timeout={250}
       classNames="cube-modal-transition"
     >
@@ -181,7 +207,7 @@ export default function Modal({
             height="max (100vh - 90px)"
             style={{ overflow: 'auto' }}
           >
-            {children}
+            {typeof children === 'string' ? <Block>{children}</Block> : children}
             {type !== 'info' && (onOk || onCancel) ? (
               <Space gap="1.5x">
                 <Button
@@ -324,9 +350,9 @@ const modal = {
 };
 
 Modal.confirm = (options) => {
-  return modal.open({ type: 'confirm', ...options });
+  return modal.open({ type: 'confirm', ...Object.assign({ closable: true }, options) });
 };
 
 Modal.info = (options) => {
-  return modal.open({ type: 'info', ...options });
+  return modal.open({ type: 'info', ...Object.assign({ closable: true }, options) });
 };

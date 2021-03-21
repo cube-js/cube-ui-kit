@@ -4,7 +4,9 @@ const DEFAULT_MIN_SIZE = 'var(--gap)';
 const DEFAULT_MAX_SIZE = '100%';
 
 function isSizingSupport(val) {
-  return CSS.supports('height', val);
+  return typeof CSS !== 'undefined' && typeof CSS.supports !== 'undefined'
+    ? CSS.supports('height', val)
+    : false;
 }
 
 const STRETCH = 'stretch';

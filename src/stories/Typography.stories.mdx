@@ -1,7 +1,7 @@
 import { Meta } from '@storybook/addon-docs/blocks';
-import { Paragraph, Title, Text, Flow } from '../index';
+import { Paragraph, Title, Text, Flow, Root, Space, Card } from '../index';
 
-<Meta title="Example/Typography" />
+<Meta title="UIKit/Typography" />
 
 # Typography
 
@@ -9,25 +9,70 @@ There are many ways to create typography elements like text labels and headings.
 
 ## Typography Components
 
+### Headings
+
+```
+<Title level="1">Heading level 1</Title>
+<Title level="2">Heading level 2</Title>
+<Title level="3">Heading level 3</Title>
+<Title level="4">Heading level 4</Title>
+<Title level="5">Heading level 5</Title>
+<Title level="6">Heading level 6</Title>
+```
+
+<Root>
+  <Card>
+    <Flow gap="1x">
+      <Title level="1">Heading level 1</Title>
+      <Title level="2">Heading level 2</Title>
+      <Title level="3">Heading level 3</Title>
+      <Title level="4">Heading level 4</Title>
+      <Title level="5">Heading level 5</Title>
+      <Title level="6">Heading level 6</Title>
+    </Flow>
+  </Card>
+</Root>
+
 ### Paragraphs
 
 Paragraphs with gaps between them.
 
 ```
-<Flow gap="2x">
-  <Paragraph>
-    There are many ways to create typography elements like text labels and headings.
-  </Paragraph>
-  <Paragraph>
-    You can use complete components, presets or low-level styles to get exact text label you want.
-  </Paragraph>
-</Flow>
+<Paragraph>
+  There are many ways to create typography elements like text labels and headings.
+</Paragraph>
+<Paragraph>
+  You can use complete components, presets or low-level styles to get exact text label you want.
+</Paragraph>
 ```
+
+<Root>
+  <Card gap="2x">
+    <Paragraph>
+      There are many ways to create typography elements like text labels and headings.
+    </Paragraph>
+    <Paragraph>
+      You can use complete components, presets or low-level styles to get exact text label you want.
+    </Paragraph>
+  </Card>
+</Root>
 
 ### Text labels
 
 ```
 <Text>Normal label</Text>
+<Text.Success>Success label</Text.Success>
 <Text.Danger>Danger label</Text.Danger>
-<Text.Minor>Minor label</Text.Minor>
+<Text.Strong>Strong label</Text.Strong>
 ```
+
+<Root>
+  <Card>
+    <Space>
+      <Text>Normal label</Text>
+      <Text.Success>Success label</Text.Success>
+      <Text.Danger>Danger label</Text.Danger>
+      <Text.Strong>Strong label</Text.Strong>
+    </Space>
+  </Card>
+</Root>
