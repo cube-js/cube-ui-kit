@@ -25,9 +25,6 @@ export default {
     },
     onOk: Function,
     onCancel: Function,
-    visible: {
-      control: 'boolean',
-    },
     loading: {
       control: 'boolean',
     },

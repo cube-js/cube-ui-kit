@@ -6,5 +6,5 @@ node_modules
 dist
 test
 storybook-static
-
+build-storybook.log
 .vercel

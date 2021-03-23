@@ -103,12 +103,20 @@ export default function Modal({
     setInProp(visible);
   }, [visible]);
 
+  function cancel() {
+    if (onCancel) {
+      onCancel();
+    } else if (onClose) {
+      onClose();
+    }
+  }
+
   function close() {
     if (onClose || onCancel) {
       if (closable) {
         (onClose || onCancel)();
-      } else {
-        (onCancel || onClose)();
+      } else if (onCancel) {
+        onCancel();
       }
     }
   }
@@ -221,10 +229,10 @@ export default function Modal({
                 </Button>
                 <Button
                   data-qa={'CancelButton'}
-                  onClick={onCancel || onClose}
+                  onClick={cancel}
                   disabled={loading}
                 >
-                  {okText === 'Yes' ? 'No' : cancelText || 'Cancel'}
+                  {cancelText || (okText === 'Yes' ? 'No' : 'Cancel')}
                 </Button>
               </Space>
             ) : null}
@@ -234,7 +242,7 @@ export default function Modal({
                   data-qa={'OkButton'}
                   disabled={disabled}
                   type={okType === 'danger' ? 'danger' : 'primary'}
-                  onClick={onClose}
+                  onClick={close}
                 >
                   {okText || 'OK'}
                 </Button>
@@ -350,9 +358,9 @@ const modal = {
 };
 
 Modal.confirm = (options) => {
-  return modal.open({ type: 'confirm', ...Object.assign({ closable: true }, options) });
+  return modal.open({ type: 'confirm', ...options });
 };
 
 Modal.info = (options) => {
-  return modal.open({ type: 'info', ...Object.assign({ closable: true }, options) });
+  return modal.open({ type: 'info', ...options });
 };

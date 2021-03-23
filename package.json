@@ -12,7 +12,8 @@
     "fix": "prettier --write \"src/**/*.{js,jsx}\"",
     "compile": "babel src -d dist --copy-files",
     "storybook": "start-storybook -s ./public -p 6006",
-    "build-storybook": "build-storybook"
+    "build-storybook": "build-storybook",
+    "chromatic": "npx chromatic --project-token 88d3a2cec0c0"
   },
   "keywords": [
     "uikit"
@@ -53,6 +54,7 @@
     "babel-plugin-transform-react-remove-prop-types": "^0.4.24",
     "babel-preset-react-app": "^10.0.0",
     "chai": "^4.2.0",
+    "chromatic": "^5.7.0",
     "css-loader": "^5.0.1",
     "eslint": "^7.14.0",
     "eslint-config-react-app": "^6.0.0",
