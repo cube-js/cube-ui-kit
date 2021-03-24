@@ -28,13 +28,18 @@ const Overlay = styled.div`
   place-items: center;
   z-index: 9999;
   display: none;
+  
+  .cube-modal {
+    --base-translate: ((50vh - 50%) / -3);
+    transform: translate(0, calc(var(--base-translate)));
+  }
 
   &.cube-modal-transition-enter {
     opacity: 0;
     display: flex;
 
     & .cube-modal {
-      transform: translate(0, -32px) scale(0.5);
+      transform: translate(0, calc(-32px + var(--base-translate))) scale(0.5);
     }
   }
 
@@ -43,7 +48,7 @@ const Overlay = styled.div`
     transition: all 250ms cubic-bezier(0, 0.5, 0, 1);
 
     & .cube-modal {
-      transform: translate(0, 0) scale(1);
+      transform: translate(0, calc(var(--base-translate))) scale(1);
       transition: all 250ms cubic-bezier(0.5, 0.5, 0, 1);
     }
   }
@@ -57,7 +62,7 @@ const Overlay = styled.div`
     display: flex;
 
     & .cube-modal {
-      transform: translate(0, 0) scale(1);
+      transform: translate(0, calc(var(--base-translate))) scale(1);
     }
   }
 
@@ -66,7 +71,7 @@ const Overlay = styled.div`
     transition: all 160ms ease-in;
 
     & .cube-modal {
-      transform: translate(0, -32px) scale(0.5);
+      transform: translate(0, calc(-32px + var(--base-translate))) scale(0.5);
       transition: all 160ms ease-in;
     }
   }
