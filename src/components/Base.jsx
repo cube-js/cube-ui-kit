@@ -46,6 +46,7 @@ const STYLES = [
   createNativeStyle('opacity'),
   createNativeStyle('textAlign'),
   createNativeStyle('fontWeight'),
+  createNativeStyle('fontFamily'),
   createNativeStyle('textTransform'),
   createNativeStyle('z', 'z-index'),
   italicStyle,

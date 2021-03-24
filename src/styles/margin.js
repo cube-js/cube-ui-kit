@@ -6,7 +6,7 @@ import {
 } from '../utils/styles';
 
 export default function marginStyle({ margin }) {
-  if (!margin) return '';
+  if (!margin && margin !== 0) return '';
 
   if (margin === true) margin = '1x';
 

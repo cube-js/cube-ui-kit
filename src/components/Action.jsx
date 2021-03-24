@@ -74,6 +74,9 @@ const DEFAULT_STYLES = {
     '': 'pointer',
     disabled: 'default',
   },
+  margin: 0,
+  fontFamily: 'var(--font)',
+  size: 'md',
 };
 
 export default forwardRef(function Action(
@@ -148,12 +151,17 @@ export default forwardRef(function Action(
         ...DEFAULT_STYLES,
         ...defaultStyles,
       }}
-      ref={as === 'a' && newTab ? 'rel="noopener noreferrer"' : undefined}
+      rel={as === 'a' && newTab ? 'rel="noopener noreferrer"' : undefined}
       css={`
         transition: all var(--transition) linear;
         user-select: none;
         background: transparent;
         border: none;
+        outline: none;
+        appearance: none;
+        position: relative;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: var(--mark-color);
         ${css || ''}
       `}
       ref={combinedRef}

@@ -82,7 +82,6 @@ const STYLES_BY_SIZE = {
 const DEFAULT_STYLES = {
   display: 'inline-block',
   radius: true,
-  size: 'md',
   outline: {
     '': '#purple-03.0',
     'focused & focus-visible': '#purple-03',
@@ -97,11 +96,8 @@ const DEFAULT_STYLES = {
   },
   fontWeight: 500,
 };
+
 const CSS = `
-  position: relative;
-  appearance: none;
-  outline: none;
-  transition: all var(--transition) linear;
   white-space: nowrap;
 
   & > .anticon.anticon-loading {
@@ -146,11 +142,11 @@ export default forwardRef(function Button(
     <Action
       elementType={props.to ? 'a' : null}
       defaultStyles={{
-        ...defaultStyles,
         ...(STYLES_BY_SIZE[size] || STYLES_BY_SIZE.default),
         ...(disabled
           ? STYLES_BY_TYPE.disabled
           : STYLES_BY_TYPE[type] || STYLES_BY_TYPE.default),
+        ...defaultStyles,
       }}
       css={CSS}
       {...props}

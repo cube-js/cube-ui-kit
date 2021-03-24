@@ -43,7 +43,7 @@ const GlobalStyles = createGlobalStyle`
   
   html {
     --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-    --monospace-font: 'Source Code Pro', Menlo, Monaco, Consolas, 'Courier New', monospace;
+    --monospace-font: Menlo, Monaco, Consolas, 'Courier New', monospace;
   }
   
   body {

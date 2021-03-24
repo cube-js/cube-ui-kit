@@ -230,7 +230,7 @@ export default function DirectoryTree({
 
   return (
     <Flex
-      styles={{ flow: 'column', fontWeight: 500, width: '100%' }}
+      styles={{ flow: 'column', fontWeight: 500, width: '100%', gap: '1bw' }}
       {...otherProps}
     >
       {recursiveRender(fullTreeData)}
