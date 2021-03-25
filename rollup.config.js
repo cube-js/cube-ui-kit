@@ -1,4 +1,5 @@
 import { terser } from 'rollup-plugin-terser';
+import visualizer from 'rollup-plugin-visualizer';
 import babel from '@rollup/plugin-babel';
 import replace from 'rollup-plugin-replace';
 import resolve from '@rollup/plugin-node-resolve';
@@ -31,6 +32,7 @@ export default [
       format: 'es',
     }],
     plugins: [
+      visualizer(),
       babel({
         presets: [
           '@babel/react',
@@ -68,7 +70,6 @@ export default [
   },
   {
     input: 'src/antd.js',
-    external: ['react', 'react-dom', 'antd'],
     output: [{
       name: 'Cube Cloud AntD',
       dir: `./dist/`,

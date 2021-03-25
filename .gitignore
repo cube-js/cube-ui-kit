@@ -8,3 +8,5 @@ test
 storybook-static
 build-storybook.log
 .vercel
+graph.png
+stats.html

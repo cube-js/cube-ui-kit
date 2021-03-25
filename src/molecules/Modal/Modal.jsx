@@ -6,7 +6,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import Action from '../../components/Action';
-import Card from '../../components/Card';
+import Card from '../../atoms/Card/Card';
 import Flow from '../../components/Flow';
 import Flex from '../../components/Flex';
 import Block from '../../components/Block';
@@ -28,7 +28,7 @@ const Overlay = styled.div`
   place-items: center;
   z-index: 9999;
   display: none;
-  
+
   .cube-modal {
     --base-translate: ((50vh - 50%) / -3);
     transform: translate(0, calc(var(--base-translate)));
@@ -169,11 +169,7 @@ export default function Modal({
   );
 
   return (
-    <CSSTransition
-      in={inProp}
-      timeout={250}
-      classNames="cube-modal-transition"
-    >
+    <CSSTransition in={inProp} timeout={250} classNames="cube-modal-transition">
       <Overlay className="cube-modal-overlay" onClick={onOverlayClick}>
         <Card
           data-qa={qa || 'Modal'}
@@ -220,7 +216,11 @@ export default function Modal({
             height="max (100vh - 90px)"
             style={{ overflow: 'auto' }}
           >
-            {typeof children === 'string' ? <Block>{children}</Block> : children}
+            {typeof children === 'string' ? (
+              <Block>{children}</Block>
+            ) : (
+              children
+            )}
             {type !== 'info' && (onOk || onCancel) ? (
               <Space gap="1.5x">
                 <Button

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Base, Button, Grid, TopBar, Space, LoadingAnimation } from './index';
 import ResponsiveProvider from './providers/Responsive';
 import { color } from './utils/colors';
-import Card from './components/Card';
+import Card from './atoms/Card/Card';
 import Flex from './components/Flex';
 import Base64Upload from './atoms/Base64Upload/Base64Upload';
 import Link from './components/Link';

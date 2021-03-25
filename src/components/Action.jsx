@@ -154,7 +154,6 @@ export default forwardRef(function Action(
       rel={as === 'a' && newTab ? 'rel="noopener noreferrer"' : undefined}
       css={`
         transition: all var(--transition) linear;
-        user-select: none;
         background: transparent;
         border: none;
         outline: none;

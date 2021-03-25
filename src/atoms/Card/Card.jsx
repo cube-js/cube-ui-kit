@@ -1,12 +1,12 @@
 import React from 'react';
-import Base from './Base';
+import Base from '../../components/Base';
 import {
   BLOCK_STYLES,
   DIMENSION_STYLES,
   COLOR_STYLES,
   POSITION_STYLES,
   FLOW_STYLES,
-} from '../styles/list';
+} from '../../styles/list';
 
 const DEFAULT_STYLES = {
   display: 'block',

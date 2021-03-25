@@ -31,6 +31,7 @@ import marginStyle from '../styles/margin';
 import fontStyle from '../styles/font';
 import boxShadowCombinator from '../styles/box-shadow.combinator';
 import outlineStyle from '../styles/outline';
+import { extendStyles } from '../utils/styles';
 
 const STYLES = [
   createNativeStyle('display'),
@@ -94,7 +95,7 @@ const BaseElement = styled.div(({ styles, responsive, css }) => {
 
       replaceStateValues(stateMapList, STYLE);
 
-      return applyStates('&', stateMapList);
+      return applyStates('&&', stateMapList);
     };
     const hasStyles = !!lookupStyles.find((style) => style in styles);
 
@@ -146,13 +147,13 @@ export default forwardRef(function Base(
   const combinedRef = useCombinedRefs(ref);
 
   defaultStyles = defaultStyles || {};
-  styles = Object.assign({}, defaultStyles, styles || {});
+  styles = extendStyles(defaultStyles, styles);
   styles.display = styles.display || 'inline-block';
 
   const filteredProps = { ...props };
 
   ['display', ...styleAttrs].forEach((style) => {
-    if (props.hasOwnProperty(style)) {
+    if (props.hasOwnProperty(style) && props[style] != null) {
       styles[style] = props[style];
       delete filteredProps[style];
     }

@@ -440,3 +440,25 @@ export function customUnit(value, unit) {
 export function isNoValue(val) {
   return !val && val !== 0;
 }
+
+export function extendStyles(defaultStyles, newStyles) {
+  let styles = {};
+
+  if (!defaultStyles) {
+    if (!newStyles) {
+      return styles;
+    }
+  } else {
+    styles = Object.assign({}, defaultStyles);
+  }
+
+  if (newStyles) {
+    Object.keys(newStyles).forEach((key) => {
+      if (newStyles[key] != null) {
+        styles[key] = newStyles[key];
+      }
+    });
+  }
+
+  return styles;
+}

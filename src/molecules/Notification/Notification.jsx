@@ -1,6 +1,6 @@
 import React from 'react';
 import Action from '../../components/Action';
-import Card from '../../components/Card';
+import Card from '../../atoms/Card/Card';
 import Block from '../../components/Block';
 import Flex from '../../components/Flex';
 import THEMES from '../../data/themes';

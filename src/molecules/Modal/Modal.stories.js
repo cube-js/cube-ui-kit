@@ -48,19 +48,27 @@ export default {
   },
 };
 
-const Template = ({ content, ...args}) => {
+const Template = ({ content, ...args }) => {
   const [inProp, setInProp] = useState(false);
 
   function close() {
     setInProp(false);
   }
 
-  return <>
-    <Button onClick={() => setInProp(true)}>Open Modal</Button>
-    <Modal {...args} onOk={close} onCancel={close} onClose={close} visible={inProp}>
-      {content}
-    </Modal>
-  </>;
+  return (
+    <>
+      <Button onClick={() => setInProp(true)}>Open Modal</Button>
+      <Modal
+        {...args}
+        onOk={close}
+        onCancel={close}
+        onClose={close}
+        visible={inProp}
+      >
+        {content}
+      </Modal>
+    </>
+  );
 };
 
 export const Default = Template.bind({});

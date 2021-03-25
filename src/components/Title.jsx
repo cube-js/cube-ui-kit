@@ -27,3 +27,11 @@ export default function Title({ as, level, ...props }) {
     />
   );
 }
+
+Title.Danger = function DangerTitle(props) {
+  return <Title color="#danger-text" {...props} />;
+};
+
+Title.Success = function SuccessTitle(props) {
+  return <Title color="#success-text" {...props} />;
+};
