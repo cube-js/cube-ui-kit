@@ -118,7 +118,7 @@ export default function CopySnippet({
               .split(/\n/g)
               .map((line) => `${prefix || ''}${line} `)
               .join('\n')}
-            language={language || 'bash'}
+            language={language || 'javascript'}
           />
         </StyledBlock>
         <ButtonContainer padding={padding} overlay={showOverlay} />

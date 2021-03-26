@@ -28,6 +28,9 @@ export { default as DirectoryTree } from './molecules/DirectoryTree/DirectoryTre
 export { default as FileTabs } from './molecules/FileTabs/FileTabs';
 export { default as Modal } from './molecules/Modal/Modal';
 export { default as CopySnippet } from './molecules/CopySnippet/CopySnippet';
+export { default as StatsCard } from './molecules/StatsCard/StatsCard';
+
+// services
 export { default as notification } from './services/notification';
 
 export * from './providers/Responsive';

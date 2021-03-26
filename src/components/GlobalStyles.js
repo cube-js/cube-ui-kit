@@ -436,8 +436,11 @@ const GlobalStyles = createGlobalStyle`
       color: var(--dark-04-color);
     }
     
+    .token.keyword,
+    .token.tag,
+    .token.operator,
     .token.punctuation {
-      color: var(--dark-04-color);
+      color: #993388;
     }
     
     .namespace {
@@ -445,13 +448,16 @@ const GlobalStyles = createGlobalStyle`
     }
     
     .token.property,
-    .token.tag,
     .token.boolean,
-    .token.number,
     .token.constant,
     .token.symbol,
     .token.deleted {
       color: var(--pink-color);
+    }
+    
+    .token.entity,
+    .token.number {
+      color: #30A666;
     }
     
     .token.selector,
@@ -463,8 +469,6 @@ const GlobalStyles = createGlobalStyle`
       color: var(--purple-text-color);
     }
     
-    .token.operator,
-    .token.entity,
     .token.url,
     .language-css .token.string,
     .style .token.string {
@@ -472,8 +476,7 @@ const GlobalStyles = createGlobalStyle`
     }
     
     .token.atrule,
-    .token.attr-value,
-    .token.keyword {
+    .token.attr-value {
       color: var(--dark-color);
     }
     
