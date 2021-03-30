@@ -26,7 +26,7 @@ const Overlay = styled.div`
   background: rgba(0, 0, 0, 0.4);
   place-content: center;
   place-items: center;
-  z-index: 9999;
+  z-index: 1000;
   display: none;
 
   .cube-modal {
