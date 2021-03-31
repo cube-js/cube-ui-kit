@@ -16,6 +16,7 @@ export { default as PrismCode } from './atoms/PrismCode/PrismCode';
 
 // atoms
 export { default as LoadingAnimation } from './atoms/LoadingAnimation/LoadingAnimation';
+export { default as Spin } from './atoms/Spin/Spin';
 export { default as Base64Upload } from './atoms/Base64Upload/Base64Upload';
 export { default as Card } from './atoms/Card/Card';
 export { default as Button } from './atoms/Button/Button';

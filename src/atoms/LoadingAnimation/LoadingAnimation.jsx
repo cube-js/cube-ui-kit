@@ -136,6 +136,7 @@ export default function LoadingAnimation({ size, ...props }) {
       width={size || 4}
       height={(size || 4) * 1.1388888889}
       style={{ position: 'relative' }}
+      {...props}
     >
       <Cube style={{ transform: 'translate(0%, 72.5%)' }} />
       <Cube style={{ transform: 'translate(98%, 72.5%)' }} />
