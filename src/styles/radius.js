@@ -7,6 +7,8 @@ export default function radiusStyle({ radius }) {
 
   if (radius === 'round') radius = '9999rem';
 
+  if (radius === 'ellipse') radius = '50%';
+
   const { values } = parseStyle(radius);
 
   return createRule('border-radius', values.join(' '));

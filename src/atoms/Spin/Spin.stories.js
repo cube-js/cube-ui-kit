@@ -13,7 +13,7 @@ export default {
       defaultValue: undefined,
       control: {
         type: 'radio',
-        options: [undefined, 'small', 'medium', 'large', 8],
+        options: [undefined, 'small', 'default', 'large', 8],
       },
     },
   },

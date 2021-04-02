@@ -17,10 +17,17 @@ export default function Text({
   ellipsis,
   css,
   nowrap,
+  italic,
   styleAttrs,
   ...props
 }) {
   css = css || '';
+
+  props = { ...props };
+
+  if (italic) {
+    props.fontStyle = 'italic';
+  }
 
   if (align) {
     props.textAlign = align;

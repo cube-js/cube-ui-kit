@@ -172,7 +172,7 @@ export default function DirectoryTree({
                 )}
               </Button>
               <Space
-                gap={1}
+                gap="1x"
                 grow="1"
                 color={selected === item.key ? '#purple' : '#dark.50'}
               >

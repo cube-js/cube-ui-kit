@@ -1,7 +1,9 @@
 import { Meta } from '@storybook/addon-docs/blocks';
-import { Paragraph, Title, Text, Flow, Root, Space, Card } from '../index';
+import { Paragraph, Title, Text, Link, Flow, Root, Space, Card } from '../index';
 
 <Meta title="UIKit/Typography" />
+
+<Root/>
 
 # Typography
 
@@ -20,18 +22,16 @@ There are many ways to create typography elements like text labels and headings.
 <Title level="6">Heading level 6</Title>
 ```
 
-<Root>
-  <Card>
-    <Flow gap="1x">
-      <Title level="1">Heading level 1</Title>
-      <Title level="2">Heading level 2</Title>
-      <Title level="3">Heading level 3</Title>
-      <Title level="4">Heading level 4</Title>
-      <Title level="5">Heading level 5</Title>
-      <Title level="6">Heading level 6</Title>
-    </Flow>
-  </Card>
-</Root>
+<Card>
+  <Flow gap="1x">
+    <Title level="1">Heading level 1</Title>
+    <Title level="2">Heading level 2</Title>
+    <Title level="3">Heading level 3</Title>
+    <Title level="4">Heading level 4</Title>
+    <Title level="5">Heading level 5</Title>
+    <Title level="6">Heading level 6</Title>
+  </Flow>
+</Card>
 
 ### Paragraphs
 
@@ -66,13 +66,26 @@ Paragraphs with gaps between them.
 <Text.Strong>Strong label</Text.Strong>
 ```
 
-<Root>
-  <Card>
-    <Space>
-      <Text>Normal label</Text>
-      <Text.Success>Success label</Text.Success>
-      <Text.Danger>Danger label</Text.Danger>
-      <Text.Strong>Strong label</Text.Strong>
-    </Space>
-  </Card>
-</Root>
+<Card>
+  <Space>
+    <Text>Normal label</Text>
+    <Text.Success>Success label</Text.Success>
+    <Text.Danger>Danger label</Text.Danger>
+    <Text.Strong>Strong label</Text.Strong>
+  </Space>
+</Card>
+
+### Links
+
+Use `!` prefix to open link in new tab.
+
+```
+<Link to="https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit</Link>
+<Link to="!https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit in new tab</Link>
+```
+
+<Paragraph>
+  <Link to="https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit</Link>&nbsp;
+  <Link to="!https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit in new tab</Link>
+</Paragraph>
+

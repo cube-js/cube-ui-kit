@@ -11,7 +11,7 @@ export default function marginStyle({ margin }) {
   if (margin === true) margin = '1x';
 
   if (typeof margin === 'number') {
-    margin = `${margin}x`;
+    margin = `${margin}px`;
   }
 
   const { values, mods } = parseStyle(margin, 1);

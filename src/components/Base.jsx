@@ -14,8 +14,6 @@ import {
   normalizeStyleZones,
   pointsToZones,
 } from '../utils/responsive';
-import columnsStyle from '../styles/colums';
-import rowsStyle from '../styles/rows';
 import colorStyle from '../styles/color';
 import fillStyle from '../styles/fill';
 import widthStyle from '../styles/width';
@@ -26,7 +24,7 @@ import shadowStyle from '../styles/shadow';
 import paddingStyle from '../styles/padding';
 import createNativeStyle from '../styles/native';
 import sizeStyle from '../styles/size';
-import italicStyle from '../styles/italic';
+import fontStyleStyle from '../styles/fontStyle';
 import marginStyle from '../styles/margin';
 import fontStyle from '../styles/font';
 import boxShadowCombinator from '../styles/box-shadow.combinator';
@@ -50,24 +48,24 @@ const STYLES = [
   createNativeStyle('fontFamily'),
   createNativeStyle('textTransform'),
   createNativeStyle('z', 'z-index'),
-  italicStyle,
+  createNativeStyle('columns', 'grid-template-columns', true),
+  createNativeStyle('rows', 'grid-template-rows', true),
+  fillStyle,
+  widthStyle,
   marginStyle,
   gapStyle,
   flowStyle,
-  columnsStyle,
-  rowsStyle,
   colorStyle,
-  fillStyle,
-  widthStyle,
   heightStyle,
   radiusStyle,
   borderStyle,
   shadowStyle,
   paddingStyle,
   sizeStyle,
-  fontStyle,
   boxShadowCombinator,
   outlineStyle,
+  fontStyle,
+  fontStyleStyle,
 ];
 
 const UTILS_CONFIG = {

@@ -3,12 +3,12 @@ import Block from '../../components/Block';
 
 const SIZE_MAP = {
   small: 3,
-  medium: 4,
+  default: 4,
   large: 6,
 };
 
 export default function Spin({ size, spinning, style, children, ...props }) {
-  size = SIZE_MAP[size] || size || 4;
+  size = SIZE_MAP[size] || size || SIZE_MAP.default;
 
   if (spinning === false) {
     return children;

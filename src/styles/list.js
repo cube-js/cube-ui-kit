@@ -24,7 +24,7 @@ export const TEXT_STYLES = [
   'textAlign',
   'textTransform',
   'fontWeight',
-  'italic',
+  'fontStyle',
   'font',
 ];
 

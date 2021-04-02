@@ -1,0 +1,112 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { Button, Root, Space, Card, Text, Block, Paragraph, Flow, Flex, Grid } from '../index';
+
+<Meta title="UIKit/Layout" />
+
+<Root/>
+
+# Layout examples
+
+Documentation is in process...
+
+## Flow layout
+
+Flow Component is used to create gaps between blocks inside block layout.
+
+```
+<Card gap>
+  <Card>
+    Card 1
+  </Card>
+  <Card>
+    Card 2
+  </Card>
+  <Card>
+    Card 3
+  </Card>
+</Flow>
+```
+
+<Card gap>
+  <Card>
+    Card 1
+  </Card>
+  <Card>
+    Card 2
+  </Card>
+  <Card>
+    Card 3
+  </Card>
+</Card>
+
+## Flex layout
+
+Use Space Component to create a row or a column of elements.
+
+```
+<Space flow="row">
+  <Block>horizontal space</Block>
+  <Button>One</Button>
+  <Button>Two</Button>
+</Space>
+<Space flow="column">
+  <Block>vertical space</Block>
+  <Button>One</Button>
+  <Button>Two</Button>
+</Space>
+```
+
+<Card gap>
+  <Space flow="row">
+    <Block>horizontal space</Block>
+    <Button>One</Button>
+    <Button>Two</Button>
+  </Space>
+  <Space flow="column">
+    <Block>vertical space</Block>
+    <Button>One</Button>
+    <Button>Two</Button>
+  </Space>
+</Card>
+
+Use Flex Component for more flexible layouts.
+
+```
+<Flex flow="row" content="space-between" items="center">
+  <Button>One</Button>
+  <Button>Two</Button>
+  <Button>Three</Button>
+  <Button>Four</Button>
+</Flex>
+```
+
+<Card>
+  <Flex flow="row" gap="4x" content="space-between" items="center">
+    <Button>One</Button>
+    <Button>Two</Button>
+    <Button>Three</Button>
+    <Button>Four</Button>
+  </Flex>
+</Card>
+
+## Grid layout
+
+Use Grid Component for grid layouts.
+
+### Simple layout with side bar.
+
+```
+<Grid columns="200px 1fr" height="500px">
+  <Card column="1 / -1">Header</Card>
+  <Card>Sidebar</Card>
+  <Card>Content</Card>
+</Grid>
+```
+
+<Card>
+  <Grid columns="200px 1fr" rows="60px 1fr" height="500px" gap="1x">
+    <Card column="1 / -1">Header</Card>
+    <Card>Sidebar</Card>
+    <Card>Content</Card>
+  </Grid>
+</Card>

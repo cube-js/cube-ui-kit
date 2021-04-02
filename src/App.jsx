@@ -84,7 +84,7 @@ function App() {
             flow: 'row',
             content: ['center', , 'start'],
           }}
-          gap={['1rem', '2rem']}
+          gap={['2x', '4x']}
         >
           <button>2</button>
         </Flex>

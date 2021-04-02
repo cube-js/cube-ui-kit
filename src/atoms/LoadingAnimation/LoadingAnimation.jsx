@@ -128,13 +128,21 @@ const Cube = (props) => {
   return <RawImg role="presentation" src={cubeImage} alt="" {...props} />;
 };
 
+const SIZE_MAP = {
+  small: 32,
+  medium: 64,
+  large: 96,
+};
+
 export default function LoadingAnimation({ size, ...props }) {
+  size = SIZE_MAP[size] || size || SIZE_MAP.medium;
+
   return (
     <Block
       role="img"
       aria-label="Loading animation"
-      width={size || 4}
-      height={(size || 4) * 1.1388888889}
+      width={size}
+      height={size * 1.1388888889}
       style={{ position: 'relative' }}
       {...props}
     >

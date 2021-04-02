@@ -6,8 +6,10 @@
 export function numUnit(val) {
   if (val == null) return null;
 
+  if (val !== val) return null;
+
   if (typeof val === 'number') {
-    return `${(val / 2).toFixed(3)}rem`;
+    return `${val.toFixed(3)}px`;
   }
 
   if (Array.isArray(val)) {

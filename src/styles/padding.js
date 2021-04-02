@@ -11,7 +11,7 @@ export default function paddingStyle({ padding }) {
   if (padding === true) padding = '1x';
 
   if (typeof padding === 'number') {
-    padding = `${padding}x`;
+    padding = `${padding}px`;
   }
 
   const { values, mods } = parseStyle(padding, 1);

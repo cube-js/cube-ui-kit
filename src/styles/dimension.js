@@ -31,6 +31,10 @@ export default function dimensionStyle(name) {
   return (val) => {
     if (!val) return '';
 
+    if (typeof val === 'number') {
+      val = `${val}px`;
+    }
+
     val = String(val);
 
     const styles = {

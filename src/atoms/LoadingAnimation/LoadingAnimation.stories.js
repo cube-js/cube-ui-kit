@@ -10,10 +10,10 @@ export default {
   component: LoadingAnimation,
   argTypes: {
     size: {
-      defaultValue: 4,
+      defaultValue: undefined,
       control: {
         type: 'inline-radio',
-        options: [2, 3, 4],
+        options: [undefined, 'small', 'medium', 'large', 128],
       },
     },
   },

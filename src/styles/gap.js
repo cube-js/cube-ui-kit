@@ -11,7 +11,7 @@ export default function gapStyle({ display, flow, gap }) {
   }
 
   if (typeof gap === 'number') {
-    gap = `${gap}x`;
+    gap = `${gap}px`;
   }
 
   if (!gap) {
@@ -31,7 +31,7 @@ export default function gapStyle({ display, flow, gap }) {
 
   return gap
     ? isGrid
-      ? createRule('grid-gap', gap)
+      ? createRule('gap', gap)
       : createRule(`margin-${gapDir}`, gap, '& > *:not(:last-child)')
     : '';
 }
