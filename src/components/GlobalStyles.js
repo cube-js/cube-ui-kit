@@ -353,6 +353,10 @@ const GlobalStyles = createGlobalStyle`
     }
   }
   
+  .ant-page-header-heading {
+    align-items: center;
+  }
+  
   .ant-page-header-heading-sub-title {
     color: var(--dark-65-color);
   }
