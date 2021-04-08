@@ -31,6 +31,12 @@ import boxShadowCombinator from '../styles/box-shadow.combinator';
 import outlineStyle from '../styles/outline';
 import { extendStyles } from '../utils/styles';
 
+const INLINE_MAP = {
+  block: 'inline',
+  grid: 'inline-grid',
+  flex: 'inline-flex',
+};
+
 const STYLES = [
   createNativeStyle('display'),
   createNativeStyle('content', 'place-content'),
@@ -139,7 +145,7 @@ const BaseElement = styled.div(({ styles, responsive, css }) => {
 });
 
 export default forwardRef(function Base(
-  { styles, defaultStyles, styleAttrs = [], responsive, css, ...props },
+  { styles, defaultStyles, styleAttrs = [], responsive, css, block, inline, ...props },
   ref,
 ) {
   const combinedRef = useCombinedRefs(ref);
@@ -156,6 +162,14 @@ export default forwardRef(function Base(
       delete filteredProps[style];
     }
   });
+
+  if (block) {
+    styles.display = 'block';
+  }
+
+  if (inline) {
+    styles.display = INLINE_MAP[defaultStyles.display || 'block'];
+  }
 
   props = filteredProps;
 
