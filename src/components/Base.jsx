@@ -145,7 +145,16 @@ const BaseElement = styled.div(({ styles, responsive, css }) => {
 });
 
 export default forwardRef(function Base(
-  { styles, defaultStyles, styleAttrs = [], responsive, css, block, inline, ...props },
+  {
+    styles,
+    defaultStyles,
+    styleAttrs = [],
+    responsive,
+    css,
+    block,
+    inline,
+    ...props
+  },
   ref,
 ) {
   const combinedRef = useCombinedRefs(ref);

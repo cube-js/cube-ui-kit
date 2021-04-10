@@ -20,6 +20,8 @@ export { default as Spin } from './atoms/Spin/Spin';
 export { default as Base64Upload } from './atoms/Base64Upload/Base64Upload';
 export { default as Card } from './atoms/Card/Card';
 export { default as Button } from './atoms/Button/Button';
+export { default as Placeholder } from './atoms/Placeholder/Placeholder';
+export { default as Skeleton } from './atoms/Skeleton/Skeleton';
 export { default as CloudLogo } from './atoms/CloudLogo/CloudLogo';
 
 // molecules
