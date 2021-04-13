@@ -114,7 +114,10 @@ const BaseElement = styled.div(({ styles, responsive, css }) => {
           }
 
           if (STYLE.__cache[styleCacheKey] == null) {
-            const stateMapList = styleMapToStyleMapStateList(filteredStyleMap, STYLE.__styleLookup);
+            const stateMapList = styleMapToStyleMapStateList(
+              filteredStyleMap,
+              STYLE.__styleLookup,
+            );
 
             replaceStateValues(stateMapList, STYLE);
 
@@ -122,7 +125,7 @@ const BaseElement = styled.div(({ styles, responsive, css }) => {
           }
 
           return STYLE.__cache[styleCacheKey];
-        }
+        };
       }
 
       const handler = STYLE.__handler;

@@ -45,6 +45,11 @@ Tabs.args = {
   layout: 'tabs',
 };
 
+export const Stats = Template.bind({});
+Stats.args = {
+  layout: 'stats',
+};
+
 export const Table = Template.bind({});
 Table.args = {
   layout: 'table',

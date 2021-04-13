@@ -10,6 +10,9 @@ const DEFAULT_STYLES = {
   gap: '1x',
   flow: 'row',
   items: 'center',
+  fill: '#white',
+  border: true,
+  fontWeight: 400,
 };
 
 export default styled(

@@ -222,6 +222,12 @@ const GlobalStyles = createGlobalStyle`
   }
   
   .ant-input.ant-input.ant-input.ant-input ${inputStyles}
+  .ant-input-password.ant-input-password.ant-input-password {
+    padding: 0 12px 0 0;
+    border: var(--border-width) solid var(--border-color);
+    
+    & input ${inputStyles}
+  } 
   .ant-input-affix-wrapper .ant-input.ant-input.ant-input.ant-input {
     border: none;
   } 

@@ -192,7 +192,9 @@ export default function Modal({
             {typeof title === 'object' ? (
               title
             ) : (
-              <Title level={4}>{title}</Title>
+              <Title level={4} grow={1}>
+                {title}
+              </Title>
             )}
             {closable ? (
               <Action

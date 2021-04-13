@@ -21,6 +21,16 @@ const LAYOUT_MAP = {
       </Flow>
     );
   },
+  content({ children, lines, ...props }) {
+    return (
+      <Flow gap="2x" {...props}>
+        {children ||
+          Array(lines || 5)
+            .fill(0)
+            .map((item, i) => <Placeholder key={i} />)}
+      </Flow>
+    );
+  },
   topbar(props) {
     return (
       <Space
@@ -52,6 +62,17 @@ const LAYOUT_MAP = {
             <Placeholder key={i} />
           ))}
       </Flow>
+    );
+  },
+  stats({ cards, ...props }) {
+    return (
+      <Space gap="4x" {...props}>
+        {Array(cards || 3)
+          .fill(0)
+          .map((item, i) => (
+            <Placeholder key={i} radius="1x" width="20x" height="12x" />
+          ))}
+      </Space>
     );
   },
   tabs({ tabs, children, lines, ...props }) {
