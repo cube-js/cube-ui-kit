@@ -42,7 +42,7 @@ module.exports = {
   'typography-title-font-weight': 700,
   'link-color': color('purple'),
   'info-color': color('purple'),
-  'layout-body-background': '#f3f3fc',
+  'layout-body-background': '#f6f6f8',
   'layout-header-background': '#eeeef5',
   'menu-highlight-color': color('dark-01'),
   'item-hover-bg': color('light'),
