@@ -74,15 +74,9 @@ const STYLES = [
   fontStyleStyle,
 ];
 
-const UTILS_CONFIG = {
-  getModSelector(modName) {
-    if (modName === 'disabled') {
-      return '[disabled]';
-    }
-
-    return `[data-is-${modName}]`;
-  },
-};
+const CACHE_LIMIT = 1000;
+let STYLE_CACHE = {};
+let STYLE_CACHE_COUNT = 0;
 
 const BaseElement = styled.div(({ styles, responsive, css }) => {
   const zones = responsive;
@@ -90,58 +84,92 @@ const BaseElement = styled.div(({ styles, responsive, css }) => {
   let rawStyles = '',
     responsiveStyles = Array.from(Array(zones.length)).map(() => '');
 
-  STYLES.forEach((STYLE) => {
-    const lookupStyles = STYLE.__styleLookup;
-    const handler = (styleMap) => {
-      if (!lookupStyles.find((style) => style in styleMap)) return;
+  const cacheKey = JSON.stringify({ s: styles, r: responsive });
 
-      const stateMapList = styleMapToStyleMapStateList(styleMap, lookupStyles);
+  if (STYLE_CACHE[cacheKey] == null) {
+    STYLE_CACHE_COUNT++;
 
-      replaceStateValues(stateMapList, STYLE);
+    if (STYLE_CACHE_COUNT > CACHE_LIMIT) {
+      STYLE_CACHE = {};
+      STYLE_CACHE_COUNT = 0;
+    }
 
-      return applyStates('&&', stateMapList);
-    };
-    const hasStyles = !!lookupStyles.find((style) => style in styles);
+    STYLES.forEach((STYLE) => {
+      const lookupStyles = STYLE.__styleLookup;
 
-    if (!hasStyles) return;
+      if (!STYLE.__handler) {
+        STYLE.__handler = (styleMap) => {
+          if (!lookupStyles.find((style) => style in styleMap)) return;
 
-    const hasResponsive = !!lookupStyles.find((style) =>
-      Array.isArray(styles[style]),
-    );
+          const filteredStyleMap = lookupStyles.reduce((map, name) => {
+            map[name] = styleMap[name];
 
-    if (hasResponsive) {
-      const valueMap = lookupStyles.reduce((map, style) => {
-        map[style] = normalizeStyleZones(styles[style], zones.length);
+            return map;
+          }, {});
+          const styleCacheKey = JSON.stringify(filteredStyleMap);
 
-        return map;
-      }, {});
-
-      const propsByPoint = zones.map((zone, i) => {
-        const pointProps = {};
-
-        lookupStyles.forEach((style) => {
-          if (valueMap != null) {
-            pointProps[style] = valueMap[style][i];
+          if (!STYLE.__cache || STYLE.__cacheCount > 1000) {
+            STYLE.__cache = {};
+            STYLE.__cacheCount = 0;
           }
+
+          if (STYLE.__cache[styleCacheKey] == null) {
+            const stateMapList = styleMapToStyleMapStateList(filteredStyleMap, STYLE.__styleLookup);
+
+            replaceStateValues(stateMapList, STYLE);
+
+            STYLE.__cache[styleCacheKey] = applyStates('&&', stateMapList);
+          }
+
+          return STYLE.__cache[styleCacheKey];
+        }
+      }
+
+      const handler = STYLE.__handler;
+      const hasStyles = !!lookupStyles.find((style) => style in styles);
+
+      if (!hasStyles) return;
+
+      const hasResponsive = !!lookupStyles.find((style) =>
+        Array.isArray(styles[style]),
+      );
+
+      if (hasResponsive) {
+        const valueMap = lookupStyles.reduce((map, style) => {
+          map[style] = normalizeStyleZones(styles[style], zones.length);
+
+          return map;
+        }, {});
+
+        const propsByPoint = zones.map((zone, i) => {
+          const pointProps = {};
+
+          lookupStyles.forEach((style) => {
+            if (valueMap != null) {
+              pointProps[style] = valueMap[style][i];
+            }
+          });
+
+          return pointProps;
         });
 
-        return pointProps;
-      });
+        const rulesByPoint = propsByPoint.map(handler);
 
-      const rulesByPoint = propsByPoint.map(handler);
+        rulesByPoint.forEach((rules, i) => {
+          responsiveStyles[i] += rules || '';
+        });
+      } else {
+        rawStyles += handler(styles) || '';
+      }
+    });
 
-      rulesByPoint.forEach((rules, i) => {
-        responsiveStyles[i] += rules || '';
-      });
-    } else {
-      rawStyles += handler(styles) || '';
-    }
-  });
+    STYLE_CACHE[cacheKey] = `${rawStyles}${mediaWrapper(
+      responsiveStyles,
+      zones,
+    )}`;
+  }
 
-  return `outline: none;${css || ''}${rawStyles}${mediaWrapper(
-    responsiveStyles,
-    zones,
-  )}`;
+  return `outline: none;${css || ''}${STYLE_CACHE[cacheKey]}`;
 });
 
 export default forwardRef(function Base(
