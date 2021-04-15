@@ -239,7 +239,7 @@ const GlobalStyles = createGlobalStyle`
     &:not(.ant-input-affix-wrapper) {
       padding: 0 12px 0 0;
       
-      & input {
+      & input.ant-input {
         padding: 9px 6px 9px 12px;
       }
     }
@@ -247,13 +247,13 @@ const GlobalStyles = createGlobalStyle`
     &.ant-input-affix-wrapper {
       padding: 0 12px;
       
-      & input {
-        padding: 9px 6px;
+      & input.ant-input {
+        padding: 9px 6px 9px 0;
       }
     }
     
     & input ${inputStyles}
-    & input {
+    & input.ant-input {
       border-radius: 0;
     }
   } 
