@@ -221,12 +221,41 @@ const GlobalStyles = createGlobalStyle`
     padding: 12px 24px;
   }
   
-  .ant-input.ant-input.ant-input.ant-input ${inputStyles}
-  .ant-input-password.ant-input-password.ant-input-password {
-    padding: 0 12px 0 0;
+  input.ant-input.ant-input.ant-input.ant-input, textarea.ant-input.ant-input.ant-input.ant-input ${inputStyles}
+  .ant-input-affix-wrapper.ant-input-affix-wrapper.ant-input-affix-wrapper {
     border: var(--border-width) solid var(--border-color);
+    padding: 0 0 0 12px;
     
     & input ${inputStyles}
+    & input.ant-input {
+      padding: 9px 12px 9px 6px;
+      border-radius: 0 calc(var(--radius) - var(--border-width)) calc(var(--radius) - var(--border-width)) 0;
+    }
+  }
+  
+  .ant-input-password.ant-input-password.ant-input-password {
+    border: var(--border-width) solid var(--border-color);
+    
+    &:not(.ant-input-affix-wrapper) {
+      padding: 0 12px 0 0;
+      
+      & input {
+        padding: 9px 6px 9px 12px;
+      }
+    }
+    
+    &.ant-input-affix-wrapper {
+      padding: 0 12px;
+      
+      & input {
+        padding: 9px 6px;
+      }
+    }
+    
+    & input ${inputStyles}
+    & input {
+      border-radius: 0;
+    }
   } 
   .ant-input-affix-wrapper .ant-input.ant-input.ant-input.ant-input {
     border: none;
@@ -236,12 +265,17 @@ const GlobalStyles = createGlobalStyle`
   .ant-select {
     overflow: hidden;
     
+    && .ant-select-selector .ant-select-selection-placeholder {
+      line-height: 38px;
+    }
+    
     &&.ant-select-single:not(.ant-select-customize-input) .ant-select-selector {
       height: auto;
     }
     
     &&&& .ant-select-selector {
       height: 40px;
+      border: var(--border-width) solid var(--border-color);
     }
     
     && .ant-select-selection-item::after {
