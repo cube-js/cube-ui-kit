@@ -184,6 +184,7 @@ export default forwardRef(function Base(
     css,
     block,
     inline,
+    hidden,
     ...props
   },
   ref,
@@ -223,6 +224,7 @@ export default forwardRef(function Base(
       responsive={zones}
       styles={styles}
       ref={combinedRef}
+      hidden={!!hidden}
     />
   );
 });

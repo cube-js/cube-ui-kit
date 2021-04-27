@@ -12,6 +12,42 @@ import Button from '../../atoms/Button/Button';
 import Space from '../../components/Space';
 import Block from '../../components/Block';
 
+const IMAGES = {
+  created: (
+    <svg width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M4.714 8.572h2.714v2.715c0 .078.065.142.143.142h.857a.143.143 0 00.143-.143V8.572h2.715a.143.143 0 00.142-.143v-.857a.143.143 0 00-.142-.143H8.57V4.715a.143.143 0 00-.143-.143h-.857a.143.143 0 00-.143.143V7.43H4.714a.143.143 0 00-.143.143v.857c0 .079.065.143.143.143z"
+        fill="#67C082"
+      />
+      <path
+        d="M14.572.857H1.429a.57.57 0 00-.572.572v13.143a.57.57 0 00.572.571h13.143a.57.57 0 00.571-.571V1.429a.57.57 0 00-.571-.572zm-.715 13H2.143V2.143h11.714v11.714z"
+        fill="#67C082"
+      />
+    </svg>
+  ),
+  deleted: (
+    <svg width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M4.714 8.57h6.572a.143.143 0 00.142-.142V7.57a.143.143 0 00-.142-.143H4.714a.143.143 0 00-.143.143v.857c0 .078.065.143.143.143z"
+        fill="#FF646D"
+      />
+      <path
+        d="M14.572.857H1.429a.57.57 0 00-.572.572v13.143a.57.57 0 00.572.571h13.143a.57.57 0 00.571-.571V1.429a.57.57 0 00-.571-.572zm-.715 13H2.143V2.143h11.714v11.714z"
+        fill="#FF646D"
+      />
+    </svg>
+  ),
+  modified: (
+    <svg width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M14.572.857H1.429a.57.57 0 00-.572.572v13.143a.57.57 0 00.572.571h13.143a.57.57 0 00.571-.571V1.429a.57.57 0 00-.571-.572zm-.715 13H2.143V2.143h11.714v11.714z"
+        fill="#FBBC05"
+      />
+      <circle cx="8" cy="8" r="2.222" fill="#FBBC05" />
+    </svg>
+  ),
+};
+
 const TEXT_OVERFLOW_STYLES = {
   whiteSpace: 'nowrap',
   textOverflow: 'ellipsis',
@@ -36,18 +72,33 @@ function extractLeafKeys(subTreeData, dirsOnly) {
   }, []);
 }
 
-function getItemStyles({ selected }) {
+const MODE_BG = {
+  created: {
+    '': '#success.10',
+    hovered: '#success.15',
+  },
+  deleted: {
+    '': '#danger.08',
+    hovered: '#danger.13',
+  },
+};
+const MODE_COLOR = {
+  created: '#success',
+  deleted: '#danger',
+};
+
+function getItemStyles({ selected, mode }) {
   return {
     width: 'max 100%',
     radius: true,
     textAlign: 'left',
     fill: selected
       ? '#purple.05'
-      : {
+      : MODE_BG[mode] || {
           '': '#clear',
           hovered: '#dark.04',
         },
-    color: selected ? '#purple-text' : '#dark.75',
+    color: selected ? '#purple-text' : MODE_COLOR[mode] || '#dark.75',
     outline: {
       '': '#purple-03.0',
       'focused & focus-visible': '#purple-03',
@@ -57,12 +108,12 @@ function getItemStyles({ selected }) {
   };
 }
 
-function Item({ children, indent, onClick, selected }) {
+function Item({ children, mode, indent, onClick, selected }) {
   return (
     <Action
       padding={calcPadding(indent)}
       onClick={onClick}
-      styles={getItemStyles({ selected })}
+      styles={getItemStyles({ selected, mode })}
       style={{ whiteSpace: 'nowrap' }}
     >
       {children}
@@ -204,6 +255,7 @@ export default function DirectoryTree({
             indent={indent + 1.7}
             selected={selected === item.key}
             onClick={() => select(item)}
+            mode={item.mode}
           >
             <Space
               gap="1x"
@@ -219,6 +271,11 @@ export default function DirectoryTree({
                 {item.title}
               </Block>
               {actionsPanel && actionsPanel(item)}
+              {item.mode && (
+                <Flex padding="0 .5x" items="center">
+                  {IMAGES[item.mode]}
+                </Flex>
+              )}
             </Space>
           </Item>,
         );

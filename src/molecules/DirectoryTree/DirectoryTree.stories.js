@@ -54,6 +54,58 @@ const TREE_DATA = [
   { title: 'cube.js', key: '/cube.js', isLeaf: true },
 ];
 
+const TREE_DIFF_DATA = [
+  {
+    title: 'schema',
+    key: '/schema',
+    children: [
+      {
+        title: 'LineItems.js',
+        key: '/schema/LineItems.js',
+        isLeaf: true,
+        mode: 'modified',
+      },
+      {
+        title: 'Orders.js',
+        key: '/schema/Orders.js',
+        mode: 'modified',
+        isLeaf: true,
+      },
+      {
+        title: 'ProductCategories.js',
+        key: '/schema/ProductCategories.js',
+        isLeaf: true,
+        mode: 'created',
+      },
+      {
+        title: 'Products.js',
+        key: '/schema/Products.js',
+        isLeaf: true,
+        mode: 'modified',
+      },
+      {
+        title: 'Suppliers.js',
+        key: '/schema/Suppliers.js',
+        isLeaf: true,
+        mode: 'deleted',
+      },
+    ],
+    isLeaf: false,
+  },
+  {
+    title: 'package.json',
+    key: '/package.json',
+    isLeaf: true,
+    mode: 'modified',
+  },
+  {
+    title: 'cube.js',
+    key: '/cube.js',
+    isLeaf: true,
+    mode: 'modified',
+  },
+];
+
 // fix component name
 const DirectoryTree = (args) => <UIKitDirectoryTree {...args} />;
 
@@ -63,9 +115,16 @@ export default {
   argTypes: {},
 };
 
-const Template = (props) => <DirectoryTree treeData={TREE_DATA} {...props} />;
+const Template = (props) => <DirectoryTree {...props} />;
 
 export const Default = Template.bind({});
 Default.args = {
   defaultExpandAll: true,
+  treeData: TREE_DATA,
+};
+
+export const Diff = Template.bind({});
+Diff.args = {
+  defaultExpandAll: true,
+  treeData: TREE_DIFF_DATA,
 };

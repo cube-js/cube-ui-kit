@@ -23,11 +23,13 @@ export { default as Button } from './atoms/Button/Button';
 export { default as Placeholder } from './atoms/Placeholder/Placeholder';
 export { default as Skeleton } from './atoms/Skeleton/Skeleton';
 export { default as CloudLogo } from './atoms/CloudLogo/CloudLogo';
+export { default as Badge } from './atoms/Badge/Badge';
 
 // molecules
 export { default as TopBar } from './molecules/TopBar/TopBar';
 export { default as Alert } from './molecules/Alert/Alert';
 export { default as DirectoryTree } from './molecules/DirectoryTree/DirectoryTree';
+export { default as Tabs } from './molecules/Tabs/Tabs';
 export { default as FileTabs } from './molecules/FileTabs/FileTabs';
 export { default as Modal } from './molecules/Modal/Modal';
 export { default as CopySnippet } from './molecules/CopySnippet/CopySnippet';

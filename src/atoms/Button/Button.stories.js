@@ -34,11 +34,20 @@ export default {
       description: "A visual type of the button. Don't affect any logic",
       control: {
         type: 'radio',
-        options: [undefined, 'default', 'primary', 'clear'],
+        options: [undefined, 'default', 'primary', 'clear', 'item', 'tab'],
       },
       table: {
         type: { summary: 'string' },
         defaultValue: { summary: 'default' },
+      },
+    },
+    selected: {
+      control: 'boolean',
+      description: 'Selected state for Tab type buttons',
+      defaultValue: false,
+      table: {
+        type: { summary: 'boolean' },
+        defaultValue: { summary: false },
       },
     },
     size: {
@@ -71,17 +80,31 @@ export default {
   },
 };
 
-const Template = ({ size, type, radius, disabled, loading, label }) => (
+const Template = ({
+  size,
+  type,
+  radius,
+  selected,
+  disabled,
+  loading,
+  label,
+}) => (
   <Button
     size={size}
     type={type}
     radius={radius}
     disabled={disabled}
     loading={loading}
+    selected={selected}
   >
     {label}
   </Button>
 );
+
+export const Default = Template.bind({});
+Default.args = {
+  label: 'Button',
+};
 
 export const Primary = Template.bind({});
 Primary.args = {
@@ -95,7 +118,15 @@ Clear.args = {
   label: 'Button',
 };
 
-export const Default = Template.bind({});
-Default.args = {
+export const Item = Template.bind({});
+Item.args = {
   label: 'Button',
+  type: 'item',
+};
+
+export const Tab = Template.bind({});
+Tab.args = {
+  label: 'Tab',
+  type: 'tab',
+  selected: true,
 };

@@ -62,11 +62,30 @@ const STYLES_BY_TYPE = {
     textAlign: 'left',
     padding: '(1x - 1px) (1.5x - 1px)',
   },
+  tab: {
+    // shadow: {
+    //   '': '',
+    //   selected: 'inset 0 -1ow 0 0 #purple',
+    // },
+    opacity: 1,
+    color: {
+      '': '#dark',
+      disabled: '#dark.50',
+      'hovered & disabled': '#dark.50',
+      'selected, hovered': '#purple-text',
+    },
+    fill: '#purple.0',
+    textAlign: 'center',
+    fontWeight: 600,
+    padding: '(1x - 1px) (1x - 1px)',
+    radius: '1r 1r 0 0',
+  },
   // not an actual type
   disabled: {
-    border: '#clear',
+    // border: '#clear',
     fill: '#dark.8',
     color: '#dark.60',
+    disabled: 0.5,
   },
 };
 
@@ -79,8 +98,35 @@ const STYLES_BY_SIZE = {
   },
 };
 
+const CSS_BY_TYPE = {
+  tab: `
+&::before {
+  --outline-size: 0px;
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  box-shadow: inset 0 calc(-1 * var(--outline-size)) 0 var(--purple-color);
+  pointer-events: none;
+  transition: opacity linear .2s, box-shadow linear .2s;
+}
+&[data-is-selected]::before {
+  --outline-size: 2px;
+}
+&:not([data-is-selected]):not([disabled])[data-is-hovered]::before {
+  --outline-size: 1px;
+}
+  `,
+};
+
 const DEFAULT_STYLES = {
   display: 'inline-block',
+  items: 'center stretch',
+  flow: 'column',
+  gap: '1x',
   radius: true,
   outline: {
     '': '#purple-03.0',
@@ -90,10 +136,7 @@ const DEFAULT_STYLES = {
     '': 1,
     disabled: 0.5,
   },
-  cursor: {
-    '': 'pointer',
-    disabled: 'default',
-  },
+  cursor: 'pointer',
   fontWeight: 500,
 };
 
@@ -109,13 +152,23 @@ const CSS = `
 `;
 
 export default forwardRef(function Button(
-  { type, size, defaultStyles, loading, disabled, children, ...props },
+  {
+    type,
+    size,
+    defaultStyles,
+    loading,
+    disabled,
+    selected,
+    children,
+    ...props
+  },
   ref,
 ) {
   const [showLoadingIcon, setShowLoadingIcon] = useState(loading || false);
   const [pendingLoading, setPendingLoading] = useState(false);
   const [currentLoading, setCurrentLoading] = useState(loading);
   const combinedRef = useCombinedRefs(ref);
+
   defaultStyles = defaultStyles
     ? Object.assign({}, DEFAULT_STYLES, defaultStyles)
     : DEFAULT_STYLES;
@@ -143,16 +196,22 @@ export default forwardRef(function Button(
       elementType={props.to ? 'a' : null}
       defaultStyles={{
         ...(STYLES_BY_SIZE[size] || STYLES_BY_SIZE.default),
-        ...(disabled
-          ? STYLES_BY_TYPE.disabled
-          : STYLES_BY_TYPE[type] || STYLES_BY_TYPE.default),
         ...defaultStyles,
+        ...(disabled
+          ? {
+              ...(STYLES_BY_TYPE[type] || STYLES_BY_TYPE.default),
+              ...STYLES_BY_TYPE.disabled,
+            }
+          : STYLES_BY_TYPE[type] || STYLES_BY_TYPE.default),
       }}
-      css={CSS}
+      css={`
+        ${CSS}${CSS_BY_TYPE[type] || ''}
+      `}
       {...props}
       ref={combinedRef}
-      disabled={loading || disabled}
+      disabled={loading || disabled || (type === 'tab' && selected)}
       data-is-loading={loading ? '' : undefined}
+      data-is-selected={selected ? '' : undefined}
     >
       {showLoadingIcon ? (
         <LoadingOutlined

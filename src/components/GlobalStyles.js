@@ -329,6 +329,10 @@ const GlobalStyles = createGlobalStyle`
   }
   
   .ant-btn {
+    .ant-btn-group &&& {
+      height: 38px;
+    }
+    
     &&& {
       line-height: var(--line-height);
       font-size: var(--font-size);

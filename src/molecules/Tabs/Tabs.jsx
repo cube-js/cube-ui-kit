@@ -6,13 +6,12 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { CloseOutlined } from '@ant-design/icons';
 import Block from '../../components/Block';
-import Action from '../../components/Action';
 import Space from '../../components/Space';
 import Flex from '../../components/Flex';
+import Button from '../../atoms/Button/Button';
 
-const FileTabsContext = createContext({});
+const TabsContext = createContext({});
 
 const TABS_PANEL_CSS = `
   position: relative;
@@ -86,143 +85,25 @@ const TABS_CONTAINER_CSS = `
   }
 `;
 
-const DIRTY_BADGE_CSS = `
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  transition: all .2s linear;
-`;
-
-const TAB_STYLES = {
-  radius: '1r 1r 0 0',
-  padding: '1x 1.5x',
-  border: {
-    '': 'left top right #clear',
-    disabled: 'left top right rgb(227, 227, 233)',
-  },
-  fill: {
-    '': '#dark.04',
-    hovered: '#dark.08',
-    'disabled, disabled & hover': '#white',
-  },
-  color: {
-    '': '#dark.75',
-    'disabled, hovered, hovered & disabled': '#dark',
-  },
-  cursor: {
-    '': 'pointer',
-    disabled: 'default',
-  },
-  fontWeight: 500,
-  opacity: 1,
-  size: 'md',
-  outline: {
-    '': 'inset #purple-03.0',
-    'focused & focus-visible': 'inset #purple-03',
-  },
-};
-
-const CLOSE_STYLES = {
-  color: {
-    '': '#dark.50',
-    hovered: '#dark',
-  },
-  padding: '0 .25x',
-  outline: {
-    '': '#purple-03.0',
-    'focused & focus-visible': '#purple-03',
-  },
-  radius: '1r',
-};
-
-const TAB_CSS = `
-  margin-bottom: var(--border-width);
-  transform: translate(0, 0);
-  transition: color .2s linear, background-color .2s linear; 
-
-  &[disabled] {
-    transform: translate(0, var(--border-width));  
-  }
-
-  &.file-tab--dirty {
-    &:hover {
-      & .file-tab-dirty-badge {
-        opacity: 0;
-        pointer-events: none;
-      }
-      
-      & .file-tab-close {
-        opacity: 1;
-      }
-    }
-    
-    &:not(:hover) {
-      & .file-tab-dirty-badge {
-        opacity: 1;
-      }
-      
-      & .file-tab-close {
-        opacity: 0;
-      }
-    }  
-  }
-`;
-
-const Tab = ({ dirty, disabled, children, closable, onClose, ...props }) => {
+const Tab = ({ dirty, selected, hidden, children, onClose, ...props }) => {
   return (
-    <Action
-      className={dirty ? 'file-tab--dirty' : ''}
-      css={TAB_CSS}
-      styles={TAB_STYLES}
-      disabled={disabled}
-      {...props}
-    >
-      <Space gap=".75x">
-        <Block>{children}</Block>
-        {(closable || dirty) && (
-          <Flex items="center" style={{ position: 'relative' }}>
-            {closable ? (
-              <Action
-                onClick={onClose}
-                className="file-tab-close"
-                styles={CLOSE_STYLES}
-              >
-                <CloseOutlined />
-              </Action>
-            ) : (
-              <div></div>
-            )}
-            {dirty ? (
-              <Block
-                className="file-tab-dirty-badge"
-                css={DIRTY_BADGE_CSS}
-                width="1x"
-                height="1x"
-                fill="#dark.30"
-                radius="round"
-              />
-            ) : null}
-          </Flex>
-        )}
-      </Space>
-    </Action>
+    <Button type="tab" selected={selected} hidden={hidden} {...props}>
+      {children}
+    </Button>
   );
 };
 
-export default function FileTabs({
+export default function Tabs({
   defaultActiveKey,
   activeKey: activeKeyProp,
   onTabClick,
   onTabClose,
   paneStyles,
-  closable,
+  extra,
   children,
   ...props
 }) {
   const tabsRef = useRef();
-
-  closable = closable != null ? !!closable : true;
 
   const [tabs, setTabs] = useState([]);
   const [activeKey, setActiveKey] = useState(activeKeyProp || defaultActiveKey);
@@ -339,9 +220,21 @@ export default function FileTabs({
     });
   }
 
+  function changeTab(tab) {
+    setTabs((tabs) => {
+      const existTab = tabs.find((_tab) => _tab.id === tab.id);
+
+      if (existTab) {
+        Object.assign(existTab, tab);
+      }
+
+      return [...tabs];
+    });
+  }
+
   function onClick(tab) {
-    setTab(tab.id);
     onTabClick && onTabClick(tab.id);
+    setTab(tab.id);
   }
 
   return (
@@ -354,55 +247,58 @@ export default function FileTabs({
       css={TABS_CONTAINER_CSS}
       {...props}
     >
-      <FileTabsContext.Provider
+      <TabsContext.Provider
         value={{
           addTab,
           setTab,
           removeTab,
+          changeTab,
           setDirtyTab,
           currentTab: activeKey,
         }}
       >
-        <Space ref={tabsRef} gap=".5x" shrink="0" css={TABS_PANEL_CSS}>
-          {tabs.map((tab) => {
-            return (
-              <Tab
-                onClick={() => onClick(tab)}
-                key={tab.id}
-                onClose={() => closable && handleClose(tab)}
-                closable={closable}
-                disabled={tab.id === activeKey || null}
-                dirty={tab.dirty}
-              >
-                {tab.title}
-              </Tab>
-            );
-          })}
+        <Space gap=".5x" content="center space-between">
+          <Space ref={tabsRef} gap="1x" shrink="0" css={TABS_PANEL_CSS}>
+            {tabs.map((tab) => {
+              return (
+                <Tab
+                  onClick={() => onClick(tab)}
+                  key={tab.id}
+                  selected={tab.id === activeKey || null}
+                  disabled={tab.disabled}
+                  hidden={tab.hidden}
+                >
+                  {tab.title}
+                </Tab>
+              );
+            })}
+          </Space>
+          {extra}
         </Space>
         <Flex grow="1" border="top rgb(227, 227, 233)" {...(paneStyles || {})}>
           {children}
         </Flex>
-      </FileTabsContext.Provider>
+      </TabsContext.Provider>
     </Flex>
   );
 }
 
-FileTabs.TabPane = function FileTabPane({
+Tabs.TabPane = function FileTabPane({
   id,
+  hidden,
   tab,
-  dirty,
+  disabled,
   children,
   ...props
 }) {
-  const { addTab, removeTab, currentTab, setDirtyTab } = useContext(
-    FileTabsContext,
-  );
+  const { addTab, removeTab, changeTab, currentTab } = useContext(TabsContext);
 
   useEffect(() => {
     const tabData = {
       id,
       title: tab,
-      dirty,
+      disabled,
+      hidden,
     };
 
     addTab(tabData);
@@ -410,11 +306,16 @@ FileTabs.TabPane = function FileTabPane({
     return () => {
       removeTab(tabData);
     };
-  }, [id, tab]);
+  }, [id]);
 
   useEffect(() => {
-    setDirtyTab(id, dirty);
-  }, [dirty]);
+    changeTab({
+      id,
+      title: tab,
+      disabled,
+      hidden,
+    });
+  }, [tab, disabled, hidden]);
 
   const isCurrent = id === currentTab;
 
