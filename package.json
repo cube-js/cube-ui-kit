@@ -6,6 +6,7 @@
   "scripts": {
     "start": "PARCEL_AUTOINSTALL=false parcel src/storybook.html",
     "build": "NODE_ENV=production rollup -c",
+    "watch": "rollup -c -w",
     "test": "jest",
     "format": "prettier --write \"src/**/*.{js,jsx}\"",
     "lint": "prettier --check \"src/**/*.{js,jsx}\"",

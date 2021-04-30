@@ -336,10 +336,10 @@ const GlobalStyles = createGlobalStyle`
     &&& {
       line-height: var(--line-height);
       font-size: var(--font-size);
-      padding: 9px 16px;
       height: 40px;
       box-shadow: none;
-  
+      padding: 9px 16px;
+      
       &:not(.ant-btn-primary):not(.ant-btn-dangerous):hover {
         background-color: rgba(var(--purple-color-rgb), 0.05);
         color: var(--purple-color);
