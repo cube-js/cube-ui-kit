@@ -67,7 +67,11 @@ const STYLES_BY_TYPE = {
     //   '': '',
     //   selected: 'inset 0 -1ow 0 0 #purple',
     // },
-    opacity: 1,
+    opacity: {
+      '': 1,
+      disabled: 0.5,
+      selected: 1,
+    },
     color: {
       '': '#dark',
       disabled: '#dark.50',
@@ -83,9 +87,9 @@ const STYLES_BY_TYPE = {
   // not an actual type
   disabled: {
     // border: '#clear',
-    fill: '#dark.8',
+    fill: '#dark.08',
     color: '#dark.60',
-    disabled: 0.5,
+    opacity: 0.5,
   },
 };
 
@@ -200,7 +204,7 @@ export default forwardRef(function Button(
         ...(disabled
           ? {
               ...(STYLES_BY_TYPE[type] || STYLES_BY_TYPE.default),
-              ...STYLES_BY_TYPE.disabled,
+              ...(type !== 'tab' ? STYLES_BY_TYPE.disabled : {}),
             }
           : STYLES_BY_TYPE[type] || STYLES_BY_TYPE.default),
       }}

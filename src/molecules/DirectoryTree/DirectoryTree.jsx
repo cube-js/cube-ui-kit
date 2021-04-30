@@ -134,8 +134,10 @@ function sortTreeData(filesTree) {
       return -1;
     } else if (!b.isLeaf && a.isLeaf) {
       return 1;
-    } else {
+    } else if (a.title && b.title) {
       return a.title.localeCompare(b.title, 'en', { sensitivity: 'base' });
+    } else {
+      return 0;
     }
   });
 }

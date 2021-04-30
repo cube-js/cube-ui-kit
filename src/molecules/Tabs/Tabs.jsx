@@ -262,6 +262,7 @@ export default function Tabs({
             {tabs.map((tab) => {
               return (
                 <Tab
+                  data-qa={tab.qa}
                   onClick={() => onClick(tab)}
                   key={tab.id}
                   selected={tab.id === activeKey || null}
@@ -287,6 +288,7 @@ Tabs.TabPane = function FileTabPane({
   id,
   hidden,
   tab,
+  qa,
   disabled,
   children,
   ...props
@@ -296,6 +298,7 @@ Tabs.TabPane = function FileTabPane({
   useEffect(() => {
     const tabData = {
       id,
+      qa,
       title: tab,
       disabled,
       hidden,
@@ -311,6 +314,7 @@ Tabs.TabPane = function FileTabPane({
   useEffect(() => {
     changeTab({
       id,
+      qa,
       title: tab,
       disabled,
       hidden,
