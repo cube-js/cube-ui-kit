@@ -87,3 +87,7 @@ Text.Success = function SuccessText(props) {
 Text.Strong = function StrongText(props) {
   return <Text color="#dark" weight={600} {...props} />;
 };
+
+Text.Selection = function SelectionText(props) {
+  return <Text color="#dark" fill="#note.30" {...props} />;
+};

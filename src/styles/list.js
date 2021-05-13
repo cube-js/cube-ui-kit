@@ -9,6 +9,7 @@ export const POSITION_STYLES = [
 ];
 
 export const BLOCK_STYLES = [
+  'reset',
   'padding',
   'shadow',
   'border',

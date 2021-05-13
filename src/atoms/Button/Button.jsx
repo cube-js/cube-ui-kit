@@ -213,7 +213,7 @@ export default forwardRef(function Button(
       `}
       {...props}
       ref={combinedRef}
-      disabled={loading || disabled || (type === 'tab' && selected)}
+      isDisabled={loading || disabled || (type === 'tab' && selected)}
       data-is-loading={loading ? '' : undefined}
       data-is-selected={selected ? '' : undefined}
     >

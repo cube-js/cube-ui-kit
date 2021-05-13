@@ -24,6 +24,7 @@ export { default as Placeholder } from './atoms/Placeholder/Placeholder';
 export { default as Skeleton } from './atoms/Skeleton/Skeleton';
 export { default as CloudLogo } from './atoms/CloudLogo/CloudLogo';
 export { default as Badge } from './atoms/Badge/Badge';
+export { default as SearchField } from './atoms/SearchField/SearchField';
 
 // molecules
 export { default as TopBar } from './molecules/TopBar/TopBar';
@@ -34,6 +35,7 @@ export { default as FileTabs } from './molecules/FileTabs/FileTabs';
 export { default as Modal } from './molecules/Modal/Modal';
 export { default as CopySnippet } from './molecules/CopySnippet/CopySnippet';
 export { default as StatsCard } from './molecules/StatsCard/StatsCard';
+export { default as SearchResults } from './molecules/SearchResults/SearchResults';
 
 // services
 export { default as notification } from './services/notification';

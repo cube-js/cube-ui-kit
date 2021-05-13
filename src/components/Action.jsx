@@ -38,7 +38,7 @@ export function openLink(href, target) {
   document.body.removeChild(link);
 }
 
-export function createLinkClickHandler(to, onClick, disabled, as) {
+export function createLinkClickHandler(to, onClick, disabled) {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const history = useHistory();
   const newTab = to && to.startsWith('!');
@@ -80,17 +80,18 @@ const DEFAULT_STYLES = {
 };
 
 export default forwardRef(function Action(
-  { elementType, to, as, defaultStyles, onClick, css, ...props },
+  { elementType, to, as, defaultStyles, onClick, ...props },
   ref,
 ) {
   as = to ? 'a' : props.as || 'button';
 
+  const isDisabled = !!(props.disabled || props.isDisabled);
   const combinedRef = useCombinedRefs(ref);
-  const pressHandler = createLinkClickHandler(to, onClick, props.disabled, as);
+  const pressHandler = createLinkClickHandler(to, onClick, isDisabled, as);
 
   useEffect(() => {
     setIsFocused(false);
-  }, [props.disabled]);
+  }, [isDisabled]);
 
   let [isFocused, setIsFocused] = useState(false);
   let { focusProps } = useFocus({
@@ -99,7 +100,7 @@ export default forwardRef(function Action(
   });
   let { pressProps, isPressed } = usePress({
     onPress(e) {
-      if (props.disabled) return;
+      if (isDisabled) return;
 
       pressHandler(e);
     },
@@ -127,11 +128,11 @@ export default forwardRef(function Action(
     <Base
       target={newTab ? '_blank' : null}
       href={href || null}
-      data-is-hovered={isHovered && !props.disabled ? '' : null}
-      data-is-pressed={isPressed ? '' : null}
-      data-is-focused={isFocused && !props.disabled ? '' : null}
-      data-is-focus-visible={isFocusVisible && !props.disabled ? '' : null}
-      data-is-disabled={props.disabled || null}
+      data-is-hovered={isHovered && !isDisabled ? '' : null}
+      data-is-pressed={isPressed && !isDisabled ? '' : null}
+      data-is-focused={isFocused && !isDisabled ? '' : null}
+      data-is-focus-visible={isFocusVisible && !isDisabled ? '' : null}
+      data-is-disabled={isDisabled || null}
       {...pressProps}
       {...hoverProps}
       {...focusProps}
@@ -146,23 +147,13 @@ export default forwardRef(function Action(
         ...BLOCK_STYLES,
         ...FLOW_STYLES,
       ]}
-      disabled={props.disabled || null}
+      disabled={isDisabled}
+      reset="button"
       defaultStyles={{
         ...DEFAULT_STYLES,
         ...defaultStyles,
       }}
       rel={as === 'a' && newTab ? 'rel="noopener noreferrer"' : undefined}
-      css={`
-        transition: all var(--transition) linear;
-        background: transparent;
-        border: none;
-        outline: none;
-        appearance: none;
-        position: relative;
-        touch-action: manipulation;
-        -webkit-tap-highlight-color: var(--mark-color);
-        ${css || ''}
-      `}
       ref={combinedRef}
       as={as}
     />

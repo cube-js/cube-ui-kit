@@ -5,7 +5,6 @@ import {
   styleMapToStyleMapStateList,
 } from 'numl-utils';
 import styled from 'styled-components';
-import { useCombinedRefs } from '../utils/react';
 import { ResponsiveContext } from '../providers/Responsive';
 import gapStyle from '../styles/gap';
 import flowStyle from '../styles/flow';
@@ -14,6 +13,7 @@ import {
   normalizeStyleZones,
   pointsToZones,
 } from '../utils/responsive';
+import resetStyle from '../styles/reset';
 import colorStyle from '../styles/color';
 import fillStyle from '../styles/fill';
 import widthStyle from '../styles/width';
@@ -38,6 +38,7 @@ const INLINE_MAP = {
 };
 
 const STYLES = [
+  resetStyle,
   createNativeStyle('display'),
   createNativeStyle('content', 'place-content'),
   createNativeStyle('items', 'place-items'),
@@ -175,59 +176,59 @@ const BaseElement = styled.div(({ styles, responsive, css }) => {
   return `outline: none;${css || ''}${STYLE_CACHE[cacheKey]}`;
 });
 
-export default forwardRef(function Base(
-  {
-    styles,
-    defaultStyles,
-    styleAttrs = [],
-    responsive,
-    css,
-    block,
-    inline,
-    hidden,
-    ...props
-  },
-  ref,
-) {
-  const combinedRef = useCombinedRefs(ref);
+export default forwardRef(
+  (
+    {
+      styles,
+      defaultStyles,
+      styleAttrs = [],
+      responsive,
+      css,
+      block,
+      inline,
+      hidden,
+      ...props
+    },
+    ref,
+  ) => {
+    defaultStyles = defaultStyles || {};
+    styles = extendStyles(defaultStyles, styles);
+    styles.display = styles.display || 'inline-block';
 
-  defaultStyles = defaultStyles || {};
-  styles = extendStyles(defaultStyles, styles);
-  styles.display = styles.display || 'inline-block';
+    const filteredProps = { ...props };
 
-  const filteredProps = { ...props };
+    ['display', ...styleAttrs].forEach((style) => {
+      if (props.hasOwnProperty(style) && props[style] != null) {
+        styles[style] = props[style];
+        delete filteredProps[style];
+      }
+    });
 
-  ['display', ...styleAttrs].forEach((style) => {
-    if (props.hasOwnProperty(style) && props[style] != null) {
-      styles[style] = props[style];
-      delete filteredProps[style];
+    if (block) {
+      styles.display = 'block';
     }
-  });
 
-  if (block) {
-    styles.display = 'block';
-  }
+    if (inline) {
+      styles.display = INLINE_MAP[defaultStyles.display || 'block'];
+    }
 
-  if (inline) {
-    styles.display = INLINE_MAP[defaultStyles.display || 'block'];
-  }
+    props = filteredProps;
 
-  props = filteredProps;
+    const zonesContext = useContext(ResponsiveContext);
+    const zones = responsive ? pointsToZones(responsive) : zonesContext;
 
-  const zonesContext = useContext(ResponsiveContext);
-  const zones = responsive ? pointsToZones(responsive) : zonesContext;
-
-  return (
-    <BaseElement
-      {...props}
-      css={css}
-      responsive={zones}
-      styles={styles}
-      ref={combinedRef}
-      hidden={!!hidden}
-    />
-  );
-});
+    return (
+      <BaseElement
+        {...props}
+        css={css}
+        responsive={zones}
+        styles={styles}
+        ref={ref}
+        hidden={!!hidden}
+      />
+    );
+  },
+);
 
 const styleProps = new Set();
 
