@@ -107,7 +107,7 @@ export default function SearchResults({
 
   return (
     <Flex
-      styles={{ flow: 'column', width: '100%', gap: '1bw' }}
+      styles={{ flow: 'column', width: '100%', gap: '1bw', padding: '2x bottom' }}
       {...otherProps}
     >
       <Paragraph color="#dark.50" padding="1x 0">

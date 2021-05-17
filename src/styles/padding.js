@@ -14,9 +14,13 @@ export default function paddingStyle({ padding }) {
     padding = `${padding}px`;
   }
 
-  const { values, mods } = parseStyle(padding, 1);
+  let { values, mods } = parseStyle(padding, 1);
 
   const directions = filterMods(mods, DIRECTIONS);
+
+  if (!values.length) {
+    values = ['var(--gap)'];
+  }
 
   if (!directions.length) {
     return createRule('padding', values.join(' '));
