@@ -462,3 +462,13 @@ export function extendStyles(defaultStyles, newStyles) {
 
   return styles;
 }
+
+export function extractStyleProps(props, styles) {
+  return styles.reduce((map, style) => {
+    if (style in props && props[style] != null && props[style] !== false) {
+      map[style] = props[style];
+    }
+
+    return map;
+  }, {});
+}

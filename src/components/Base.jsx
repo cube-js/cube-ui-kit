@@ -75,6 +75,18 @@ const STYLES = [
   fontStyleStyle,
 ];
 
+const STYLE_LIST = STYLES.reduce((list, STYLE) => {
+  const lookup = STYLE.__styleLookup;
+
+  lookup.forEach(style => {
+    if (!list.includes(style)) {
+      list.push(style);
+    }
+  });
+
+  return list;
+}, []);
+
 const CACHE_LIMIT = 1000;
 let STYLE_CACHE = {};
 let STYLE_CACHE_COUNT = 0;

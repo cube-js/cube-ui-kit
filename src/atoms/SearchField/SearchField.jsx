@@ -7,6 +7,7 @@ import { useFocus, useHover } from '@react-aria/interactions';
 import { useSearchFieldState } from '@react-stately/searchfield';
 import { useSearchField } from '@react-aria/searchfield';
 import { useButton } from '@react-aria/button';
+import { mergeProps } from '@react-aria/utils';
 
 const FIELD_STYLES = {
   outline: {
@@ -106,9 +107,7 @@ export default forwardRef(
           as="input"
           data-is-hovered={isHovered && !disabled ? '' : null}
           data-is-disabled={disabled || null}
-          {...inputProps}
-          {...hoverProps}
-          {...focusProps}
+          {...mergeProps(inputProps, hoverProps, focusProps)}
           ref={ref}
           styles={{
             ...STYLES,

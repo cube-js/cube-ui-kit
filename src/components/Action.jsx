@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useState } from 'react';
+import React, { forwardRef, useEffect, useState, useRef } from 'react';
 import { useHistory } from 'react-router';
 import {
   BLOCK_STYLES,
@@ -13,8 +13,9 @@ import {
   useFocus,
   useFocusVisible,
   useHover,
-  usePress,
 } from '@react-aria/interactions';
+import { useButton } from '@react-aria/button';
+import { mergeProps } from '@react-aria/utils';
 import { useCombinedRefs } from '../utils/react';
 
 /**
@@ -80,14 +81,28 @@ const DEFAULT_STYLES = {
 };
 
 export default forwardRef(function Action(
-  { elementType, to, as, defaultStyles, onClick, ...props },
+  { to, as, isDisabled, disabled, defaultStyles, htmlType, onPress, onClick, ...props },
   ref,
 ) {
   as = to ? 'a' : props.as || 'button';
 
-  const isDisabled = !!(props.disabled || props.isDisabled);
-  const combinedRef = useCombinedRefs(ref);
+  const newTab = to && to.startsWith('!');
+  const href = to ? (newTab ? to.slice(1) : to) : '';
+  const target = newTab ? '_blank' : undefined;
+
+  isDisabled = !!(disabled || isDisabled);
+
   const pressHandler = createLinkClickHandler(to, onClick, isDisabled, as);
+  const localRef = useRef();
+  const combinedRef = useCombinedRefs(ref, localRef);
+  const elementProps = {
+    ...props,
+    href,
+    elementType: as,
+    target,
+    onPress: onPress || onClick,
+    isDisabled,
+  };
 
   useEffect(() => {
     setIsFocused(false);
@@ -96,33 +111,24 @@ export default forwardRef(function Action(
   let [isFocused, setIsFocused] = useState(false);
   let { focusProps } = useFocus({
     onFocusChange: setIsFocused,
-    elementType,
+    elementType: as,
   });
-  let { pressProps, isPressed } = usePress({
-    onPress(e) {
-      if (isDisabled) return;
-
-      pressHandler(e);
-    },
-  });
-  let { hoverProps, isHovered } = useHover({});
+  let { buttonProps, isPressed } = useButton(elementProps, combinedRef);
+  let { hoverProps, isHovered } = useHover(elementProps);
   let { isFocusVisible } = useFocusVisible({});
 
-  const listeners = {};
+  const customProps = {};
 
   // prevent default behavior for links
   if (to) {
-    const pressOnClick = pressProps.onClick;
-
-    pressProps.onClick = (evt) => {
+    customProps.onClick = (evt) => {
       evt.preventDefault();
 
-      pressOnClick(evt);
+      if (isDisabled) return;
+
+      pressHandler(evt);
     };
   }
-
-  const newTab = to && to.startsWith('!');
-  const href = to ? (newTab ? to.slice(1) : to) : '';
 
   return (
     <Base
@@ -133,11 +139,8 @@ export default forwardRef(function Action(
       data-is-focused={isFocused && !isDisabled ? '' : null}
       data-is-focus-visible={isFocusVisible && !isDisabled ? '' : null}
       data-is-disabled={isDisabled || null}
-      {...pressProps}
-      {...hoverProps}
-      {...focusProps}
+      {...mergeProps(buttonProps, hoverProps, focusProps, customProps)}
       {...props}
-      {...listeners}
       tabIndex={props.as === 'button' ? null : '0'}
       styleAttrs={[
         ...COLOR_STYLES,
@@ -147,7 +150,7 @@ export default forwardRef(function Action(
         ...BLOCK_STYLES,
         ...FLOW_STYLES,
       ]}
-      disabled={isDisabled}
+      type={htmlType}
       reset="button"
       defaultStyles={{
         ...DEFAULT_STYLES,
