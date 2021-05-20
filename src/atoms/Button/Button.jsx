@@ -1,7 +1,9 @@
 import React, { forwardRef, useState, useEffect } from 'react';
 import Action from '../../components/Action';
+import Space from '../../components/Space';
 import { useCombinedRefs } from '../../utils/react';
 import { LoadingOutlined } from '@ant-design/icons';
+import { propDeprecationWarning } from '../../utils/warnings';
 
 const STYLES_BY_TYPE = {
   default: {
@@ -14,6 +16,24 @@ const STYLES_BY_TYPE = {
       hovered: '#purple.20',
     },
     color: '#purple',
+  },
+  link: {
+    size: 'md',
+    fontWeight: 500,
+    padding: '0',
+    radius: {
+      '': '0',
+      'focused': '1r',
+    },
+    fill: '#clear',
+    color: {
+      '': '#purple-text',
+      hovered: '#purple',
+    },
+    shadow: {
+      '': '0 @border-width 0 0 #purple-03.20',
+      'focused': '0 0 0 @outline-width #purple-03',
+    },
   },
   primary: {
     border: {
@@ -83,6 +103,7 @@ const STYLES_BY_TYPE = {
     fontWeight: 600,
     padding: '(1x - 1px) (1x - 1px)',
     radius: '1r 1r 0 0',
+    border: 0,
   },
   // not an actual type
   disabled: {
@@ -129,13 +150,7 @@ const CSS_BY_TYPE = {
 const DEFAULT_STYLES = {
   display: 'inline-block',
   items: 'center stretch',
-  flow: 'column',
-  gap: '1x',
   radius: true,
-  outline: {
-    '': '#purple-03.0',
-    'focused & focus-visible': '#purple-03',
-  },
   opacity: {
     '': 1,
     disabled: 0.5,
@@ -155,31 +170,53 @@ const CSS = `
   }
 `;
 
+const DEPRECATED_PROPS = ['disabled', 'loading', 'onClick'];
+
 export default forwardRef(function Button(
   {
     type,
     size,
-    defaultStyles,
-    loading,
-    disabled,
-    selected,
+    styles,
+    ghost,
     children,
+    css,
+    icon,
+    skipWarnings,
     ...props
   },
   ref,
 ) {
-  const [showLoadingIcon, setShowLoadingIcon] = useState(loading || false);
+  if (!skipWarnings) {
+    propDeprecationWarning('Action', props, DEPRECATED_PROPS);
+  }
+
+  const isDisabled = props.isDisabled;
+  const isLoading = props.isLoading;
+  const isSelected = props.isSelected;
+  const [showLoadingIcon, setShowLoadingIcon] = useState(isLoading || false);
   const [pendingLoading, setPendingLoading] = useState(false);
-  const [currentLoading, setCurrentLoading] = useState(loading);
+  const [currentLoading, setCurrentLoading] = useState(isLoading);
   const combinedRef = useCombinedRefs(ref);
 
-  defaultStyles = defaultStyles
-    ? Object.assign({}, DEFAULT_STYLES, defaultStyles)
-    : DEFAULT_STYLES;
+  styles = {
+    ...(STYLES_BY_SIZE[size] || STYLES_BY_SIZE.default),
+    ...DEFAULT_STYLES,
+    ...(STYLES_BY_TYPE[type] || STYLES_BY_TYPE.default),
+    ...(isDisabled ? {
+      ...(type !== 'tab' ? STYLES_BY_TYPE.disabled : {}),
+    } : {}),
+    ...(ghost ? { fill: '#clear' }  : null),
+    ...((isLoading || icon) && !children ? { padding: '(1.25x - 1px)' } : null),
+    ...styles,
+  };
+
+  if (isLoading && !children) {
+    styles.size = '1em 1em';
+  }
 
   useEffect(() => {
-    setCurrentLoading(loading);
-    if (loading) {
+    setCurrentLoading(isLoading);
+    if (isLoading) {
       setShowLoadingIcon(true);
       setTimeout(() => {
         setCurrentLoading((currentLoading) => {
@@ -193,39 +230,31 @@ export default forwardRef(function Button(
     } else {
       setPendingLoading(false);
     }
-  }, [loading]);
+  }, [isLoading]);
 
   return (
     <Action
       elementType={props.to ? 'a' : null}
-      defaultStyles={{
-        ...(STYLES_BY_SIZE[size] || STYLES_BY_SIZE.default),
-        ...defaultStyles,
-        ...(disabled
-          ? {
-              ...(STYLES_BY_TYPE[type] || STYLES_BY_TYPE.default),
-              ...(type !== 'tab' ? STYLES_BY_TYPE.disabled : {}),
-            }
-          : STYLES_BY_TYPE[type] || STYLES_BY_TYPE.default),
-      }}
       css={`
-        ${CSS}${CSS_BY_TYPE[type] || ''}
+        ${CSS}${CSS_BY_TYPE[type] || ''}${css}
       `}
       {...props}
       ref={combinedRef}
-      isDisabled={loading || disabled || (type === 'tab' && selected)}
-      data-is-loading={loading ? '' : undefined}
-      data-is-selected={selected ? '' : undefined}
+      isDisabled={isLoading || isDisabled}
+      data-is-loading={isLoading ? '' : undefined}
+      data-is-selected={isSelected ? '' : undefined}
+      styles={styles}
+      skipWarnings={skipWarnings}
     >
       {showLoadingIcon ? (
         <LoadingOutlined
           style={{
             opacity: pendingLoading ? 1 : 0,
-            marginRight: pendingLoading ? 8 : -14,
+            marginRight: children ? (pendingLoading ? 8 : -14) : 0,
           }}
         />
       ) : null}
-      {children}
+      {icon ? <Space gap="1x">{!showLoadingIcon && !isLoading ? icon : null}{ children ? <div>{children}</div> : null}</Space> : children}
     </Action>
   );
 });

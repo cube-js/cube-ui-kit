@@ -1,12 +1,14 @@
 import React, { forwardRef } from 'react';
 import Base from './Base';
 import {
+  BASE_STYLES,
+  BLOCK_STYLES,
   COLOR_STYLES,
   DIMENSION_STYLES,
-  POSITION_STYLES,
-  BLOCK_STYLES,
   FLOW_STYLES,
+  POSITION_STYLES,
 } from '../styles/list';
+import { extractStyles } from '../utils/styles';
 
 const DEFAULT_STYLES = {
   display: 'flex',
@@ -14,39 +16,33 @@ const DEFAULT_STYLES = {
   items: 'center stretch',
 };
 
-export default forwardRef(function Space({ ...props }, ref) {
-  if (!props.flow) {
-    props.flow = 'row';
-  }
+const STYLE_PROPS = [
+  ...BASE_STYLES,
+  ...COLOR_STYLES,
+  ...POSITION_STYLES,
+  ...DIMENSION_STYLES,
+  ...BLOCK_STYLES,
+  ...FLOW_STYLES,
+];
 
-  if (props.direction) {
-    props.flow = props.direction === 'vertical' ? 'column' : 'row';
+const Space = forwardRef(function Space(props, ref) {
+  const flow = props.direction ? (props.direction === 'vertical' ? 'column' : 'row') : (props.flow || 'row');
+  const { styles, otherProps } = extractStyles(props, STYLE_PROPS, {
+    ...DEFAULT_STYLES,
+    flow,
+    items: props.align ? props.align : (flow === 'row' ? 'center' : 'stretch'),
+  });
 
-    delete props.direction;
-  }
-
-  if (props.align) {
-    props.items = props.align;
-
-    delete props.align;
-  }
-
-  if (!props.items) {
-    props.items = props.flow === 'row' ? 'center' : 'stretch';
-  }
+  delete otherProps.align;
+  delete otherProps.direction;
 
   return (
     <Base
+      {...otherProps}
+      styles={styles}
       ref={ref}
-      defaultStyles={DEFAULT_STYLES}
-      styleAttrs={[
-        ...COLOR_STYLES,
-        ...POSITION_STYLES,
-        ...DIMENSION_STYLES,
-        ...BLOCK_STYLES,
-        ...FLOW_STYLES,
-      ]}
-      {...props}
     />
   );
 });
+
+export default Space;

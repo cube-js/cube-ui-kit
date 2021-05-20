@@ -1,3 +1,7 @@
+export const BASE_STYLES = [
+  'display',
+];
+
 export const POSITION_STYLES = [
   'grow',
   'shrink',
@@ -18,7 +22,10 @@ export const BLOCK_STYLES = [
   'opacity',
 ];
 
-export const COLOR_STYLES = ['color', 'fill'];
+export const COLOR_STYLES = [
+  'color',
+  'fill',
+];
 
 export const TEXT_STYLES = [
   'size',

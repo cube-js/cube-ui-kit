@@ -85,11 +85,9 @@ const TABS_CONTAINER_CSS = `
   }
 `;
 
-const Tab = ({ dirty, selected, hidden, children, onClose, ...props }) => {
+const Tab = ({ isSelected, isHidden, onClose, ...props }) => {
   return (
-    <Button type="tab" selected={selected} hidden={hidden} {...props}>
-      {children}
-    </Button>
+    <Button type="tab" isSelected={isSelected} isHidden={isHidden} {...props}/>
   );
 };
 
@@ -184,26 +182,6 @@ export default function Tabs({
     });
   }
 
-  function setDirtyTab(id, isDirty) {
-    setTabs((tabs) => {
-      const tab = getTab(tabs, id);
-
-      if (tab) {
-        tab.dirty = isDirty;
-
-        return [...tabs];
-      }
-
-      return tabs;
-    });
-  }
-
-  function handleClose(tab) {
-    if (getTab(tabs, tab.id)) {
-      onTabClose && onTabClose(tab.id);
-    }
-  }
-
   function removeTab(tab) {
     setTabs((tabs) => {
       const _tabs = tabs.filter((_tab) => _tab.id !== tab.id);
@@ -232,7 +210,7 @@ export default function Tabs({
     });
   }
 
-  function onClick(tab) {
+  function onPress(tab) {
     onTabClick && onTabClick(tab.id);
     setTab(tab.id);
   }
@@ -253,7 +231,6 @@ export default function Tabs({
           setTab,
           removeTab,
           changeTab,
-          setDirtyTab,
           currentTab: activeKey,
         }}
       >
@@ -263,11 +240,11 @@ export default function Tabs({
               return (
                 <Tab
                   data-qa={tab.qa}
-                  onClick={() => onClick(tab)}
+                  onPress={() => onPress(tab)}
                   key={tab.id}
-                  selected={tab.id === activeKey || null}
-                  disabled={tab.disabled}
-                  hidden={tab.hidden}
+                  isSelected={tab.id === activeKey || null}
+                  isDisabled={tab.isDisabled}
+                  isHidden={tab.isHidden}
                 >
                   {tab.title}
                 </Tab>
@@ -286,10 +263,10 @@ export default function Tabs({
 
 Tabs.TabPane = function FileTabPane({
   id,
-  hidden,
   tab,
   qa,
-  disabled,
+  isHidden,
+  isDisabled,
   children,
   ...props
 }) {
@@ -300,8 +277,8 @@ Tabs.TabPane = function FileTabPane({
       id,
       qa,
       title: tab,
-      disabled,
-      hidden,
+      isDisabled,
+      isHidden,
     };
 
     addTab(tabData);
@@ -316,10 +293,10 @@ Tabs.TabPane = function FileTabPane({
       id,
       qa,
       title: tab,
-      disabled,
-      hidden,
+      isDisabled,
+      isHidden,
     });
-  }, [tab, disabled, hidden]);
+  }, [tab, isDisabled, isHidden]);
 
   const isCurrent = id === currentTab;
 

@@ -83,11 +83,11 @@ const Overlay = styled.div`
 
 export default function Modal({
   title,
-  visible,
+  isVisible,
   type,
   okType,
-  closable,
-  loading,
+  isClosable,
+  isLoading,
   children,
   okText,
   cancelText,
@@ -96,17 +96,17 @@ export default function Modal({
   onCancel,
   onClose,
   qa,
-  disabled,
+  isDisabled,
   ...props
 }) {
-  closable = !!closable;
+  isClosable = !!isClosable;
 
   const [inProp, setInProp] = useState(false);
   const [localLoading, setLocalLoading] = useState(false);
 
   useEffect(() => {
-    setInProp(visible);
-  }, [visible]);
+    setInProp(isVisible);
+  }, [isVisible]);
 
   function cancel() {
     if (onCancel) {
@@ -118,7 +118,7 @@ export default function Modal({
 
   function close() {
     if (onClose || onCancel) {
-      if (closable) {
+      if (isClosable) {
         (onClose || onCancel)();
       } else if (onCancel) {
         onCancel();
@@ -129,14 +129,14 @@ export default function Modal({
   const onOverlayClick = (evt) => {
     if (!evt || !evt.target) return;
 
-    if (evt.target.classList.contains('cube-modal-overlay') && !loading) {
+    if (evt.target.classList.contains('cube-modal-overlay') && !isLoading) {
       close();
     }
   };
 
   useEffect(() => {
     function handleKeyDown(evt) {
-      if (evt.key === 'Escape' && !loading) {
+      if (evt.key === 'Escape' && !isLoading) {
         close();
       }
     }
@@ -196,12 +196,12 @@ export default function Modal({
                 {title}
               </Title>
             )}
-            {closable ? (
+            {isClosable ? (
               <Action
                 data-qa="ModalCloseButton"
                 width="3x"
                 height="3x"
-                onClick={onClose || onCancel}
+                onPress={onClose || onCancel}
                 color={{ '': '#dark.75', hovered: '#purple' }}
                 outline={{
                   '': '#purple-03.0',
@@ -227,17 +227,17 @@ export default function Modal({
               <Space gap="1.5x">
                 <Button
                   data-qa={'ConfirmButton'}
-                  disabled={disabled}
+                  isDisabled={isDisabled}
                   type={okType === 'danger' ? 'danger' : 'primary'}
-                  loading={loading || localLoading}
-                  onClick={handleOk}
+                  isLoading={isLoading || localLoading}
+                  onPress={handleOk}
                 >
                   {okText || 'OK'}
                 </Button>
                 <Button
                   data-qa={'CancelButton'}
-                  onClick={cancel}
-                  disabled={loading}
+                  onPress={cancel}
+                  isDisabled={isLoading}
                 >
                   {cancelText || (okText === 'Yes' ? 'No' : 'Cancel')}
                 </Button>
@@ -247,9 +247,9 @@ export default function Modal({
               <Space>
                 <Button
                   data-qa={'OkButton'}
-                  disabled={disabled}
+                  isDisabled={isDisabled}
                   type={okType === 'danger' ? 'danger' : 'primary'}
-                  onClick={close}
+                  onPress={close}
                 >
                   {okText || 'OK'}
                 </Button>
@@ -323,7 +323,7 @@ const modal = {
     );
   },
   open(item) {
-    item.visible = false;
+    item.isVisible = false;
     item.id = ++ID;
 
     this.items.push(item);
@@ -331,7 +331,7 @@ const modal = {
     this.render();
 
     setTimeout(() => {
-      item.visible = true;
+      item.isVisible = true;
 
       this.render();
     });
@@ -342,7 +342,7 @@ const modal = {
     });
   },
   close(item) {
-    item.visible = false;
+    item.isVisible = false;
 
     this.render();
 

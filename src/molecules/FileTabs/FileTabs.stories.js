@@ -21,14 +21,14 @@ const Template = () => {
     setArr((arr) => arr.filter((n) => n !== id));
   }
 
-  function onClick(id) {
+  function onPress(id) {
     setActiveKey(id);
   }
 
   return (
-    <FileTabs activeKey={activeKey} onTabClose={onClose} onTabClick={onClick}>
+    <FileTabs activeKey={activeKey} onTabClose={onClose} onTabClick={onPress}>
       {arr.map((n) => (
-        <FileTabs.TabPane tab={`Long Tab ${n}`} id={n} key={n} dirty={n === 3}>
+        <FileTabs.TabPane tab={`Long Tab ${n}`} id={n} key={n} isDirty={n === 3}>
           Content of tab {n}
         </FileTabs.TabPane>
       ))}

@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import Base from '../../components/Base';
 import {
   BLOCK_STYLES,
-  DIMENSION_STYLES,
   COLOR_STYLES,
-  POSITION_STYLES,
+  DIMENSION_STYLES,
   FLOW_STYLES,
+  POSITION_STYLES,
 } from '../../styles/list';
+import { extractStyles } from '../../utils/styles';
 
 const DEFAULT_STYLES = {
   display: 'block',
@@ -14,6 +15,14 @@ const DEFAULT_STYLES = {
   height: '2x',
   opacity: '.35',
 };
+
+const STYLE_LIST = [
+  ...BLOCK_STYLES,
+  ...COLOR_STYLES,
+  ...DIMENSION_STYLES,
+  ...POSITION_STYLES,
+  ...FLOW_STYLES,
+];
 
 const CSS = `
   --placeholder-animation-time: 1.4s;
@@ -33,23 +42,23 @@ const CSS = `
   }
 `;
 
-export default function Placeholder({ size, width, circle, ...props }) {
+const Placeholder = forwardRef(({ size = '2x', circle, ...props }, ref) => {
+  const { styles, otherProps } = extractStyles(props, STYLE_LIST, {
+    ...DEFAULT_STYLES,
+    height: size,
+    width: (circle ? size : false),
+    radius: circle ? '9999rem' : '1r',
+  });
+
   return (
     <Base
       role="region"
-      defaultStyles={DEFAULT_STYLES}
-      styleAttrs={[
-        ...BLOCK_STYLES,
-        ...COLOR_STYLES,
-        ...DIMENSION_STYLES,
-        ...POSITION_STYLES,
-        ...FLOW_STYLES,
-      ]}
-      height={size}
-      width={width || (circle ? size : false)}
-      radius={circle ? '9999rem' : '1r'}
       css={CSS}
-      {...props}
+      {...otherProps}
+      styles={styles}
+      ref={ref}
     />
   );
-}
+});
+
+export default Placeholder;

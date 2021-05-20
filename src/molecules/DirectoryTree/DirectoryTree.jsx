@@ -87,33 +87,32 @@ const MODE_COLOR = {
   deleted: '#danger',
 };
 
-function getItemStyles({ selected, mode }) {
+function getItemStyles({ isSelected, mode, indent }) {
   return {
     width: 'max 100%',
     radius: true,
     textAlign: 'left',
-    fill: selected
+    fill: isSelected
       ? '#purple.05'
       : MODE_BG[mode] || {
           '': '#clear',
           hovered: '#dark.04',
         },
-    color: selected ? '#purple-text' : MODE_COLOR[mode] || '#dark.75',
+    color: isSelected ? '#purple-text' : MODE_COLOR[mode] || '#dark.75',
     outline: {
       '': '#purple-03.0',
       'focused & focus-visible': '#purple-03',
     },
-    fontWeight: selected ? 500 : 400,
-    padding: '.75x .5x',
+    fontWeight: isSelected ? 500 : 400,
+    padding: calcPadding(indent),
   };
 }
 
-function Item({ children, mode, indent, onClick, selected }) {
+function Item({ children, mode, indent, onPress, isSelected }) {
   return (
     <Action
-      padding={calcPadding(indent)}
-      onClick={onClick}
-      styles={getItemStyles({ selected, mode })}
+      onPress={onPress}
+      styles={getItemStyles({ isSelected, mode, indent })}
       style={{ whiteSpace: 'nowrap' }}
     >
       {children}
@@ -204,8 +203,8 @@ export default function DirectoryTree({
           <Item
             key={item.key}
             indent={indent}
-            selected={selected === item.key}
-            onClick={() => select(item)}
+            isSelected={selected === item.key}
+            onPress={() => select(item)}
           >
             <Space gap=".5x" css={HOVER_CSS}>
               <Button
@@ -216,7 +215,7 @@ export default function DirectoryTree({
                   '': '#dark.60',
                   hovered: '#purple',
                 }}
-                onClick={() => toggle(item)}
+                onPress={() => toggle(item)}
               >
                 {expanded.includes(item.key) ? (
                   <CaretUpOutlined />
@@ -256,7 +255,7 @@ export default function DirectoryTree({
             key={item.key}
             indent={indent + 1.7}
             selected={selected === item.key}
-            onClick={() => select(item)}
+            onPress={() => select(item)}
             mode={item.mode}
           >
             <Space

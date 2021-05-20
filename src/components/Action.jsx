@@ -7,6 +7,7 @@ import {
   FLOW_STYLES,
   POSITION_STYLES,
   TEXT_STYLES,
+  BASE_STYLES,
 } from '../styles/list';
 import Base from './Base';
 import {
@@ -17,6 +18,8 @@ import {
 import { useButton } from '@react-aria/button';
 import { mergeProps } from '@react-aria/utils';
 import { useCombinedRefs } from '../utils/react';
+import { propDeprecationWarning } from '../utils/warnings';
+import { extractStyles } from '../utils/styles';
 
 /**
  * Helper to open link.
@@ -39,7 +42,7 @@ export function openLink(href, target) {
   document.body.removeChild(link);
 }
 
-export function createLinkClickHandler(to, onClick, disabled) {
+export function createLinkClickHandler(to, onPress, disabled) {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const history = useHistory();
   const newTab = to && to.startsWith('!');
@@ -48,8 +51,8 @@ export function createLinkClickHandler(to, onClick, disabled) {
   return function onClickHandler(evt) {
     if (disabled) return;
 
-    if (onClick) {
-      onClick();
+    if (onPress) {
+      onPress();
 
       return;
     }
@@ -67,6 +70,8 @@ export function createLinkClickHandler(to, onClick, disabled) {
 }
 
 const DEFAULT_STYLES = {
+  reset: 'button',
+  position: 'relative',
   opacity: {
     '': 1,
     disabled: 0.4,
@@ -78,31 +83,52 @@ const DEFAULT_STYLES = {
   margin: 0,
   fontFamily: 'var(--font)',
   size: 'md',
+  border: '0',
+  outline: {
+    '': '#purple-03.0',
+    'focused': '#purple-03',
+  },
 };
 
-export default forwardRef(function Action(
-  { to, as, isDisabled, disabled, defaultStyles, htmlType, onPress, onClick, ...props },
+const DEPRECATED_PROPS = ['disabled', 'onClick'];
+const STYLE_PROPS = [
+  ...BASE_STYLES,
+  ...COLOR_STYLES,
+  ...POSITION_STYLES,
+  ...DIMENSION_STYLES,
+  ...TEXT_STYLES,
+  ...BLOCK_STYLES,
+  ...FLOW_STYLES,
+];
+
+const Action = forwardRef((
+  { to, as, htmlType, skipWarnings, props: directProps, ...props },
   ref,
-) {
+) => {
+  if (!skipWarnings) {
+    propDeprecationWarning('Action', props, DEPRECATED_PROPS);
+  }
+
   as = to ? 'a' : props.as || 'button';
 
+  const isDisabled = props.isDisabled;
   const newTab = to && to.startsWith('!');
   const href = to ? (newTab ? to.slice(1) : to) : '';
-  const target = newTab ? '_blank' : undefined;
-
-  isDisabled = !!(disabled || isDisabled);
-
-  const pressHandler = createLinkClickHandler(to, onClick, isDisabled, as);
+  const target = newTab ? '_blank' : null;
+  const pressHandler = createLinkClickHandler(to, props.onPress || props.onClick, isDisabled, as);
   const localRef = useRef();
   const combinedRef = useCombinedRefs(ref, localRef);
-  const elementProps = {
-    ...props,
-    href,
-    elementType: as,
-    target,
-    onPress: onPress || onClick,
-    isDisabled,
-  };
+  const { styles, otherProps } = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES, null);
+
+  if ('disabled' in otherProps) {
+    otherProps.isDisabled = otherProps.disabled;
+    delete otherProps.disabled;
+  }
+
+  if ('onClick' in otherProps) {
+    otherProps.onPress = otherProps.onClick;
+    delete otherProps.onClick;
+  }
 
   useEffect(() => {
     setIsFocused(false);
@@ -113,8 +139,8 @@ export default forwardRef(function Action(
     onFocusChange: setIsFocused,
     elementType: as,
   });
-  let { buttonProps, isPressed } = useButton(elementProps, combinedRef);
-  let { hoverProps, isHovered } = useHover(elementProps);
+  let { buttonProps, isPressed } = useButton(otherProps, combinedRef);
+  let { hoverProps, isHovered } = useHover(otherProps);
   let { isFocusVisible } = useFocusVisible({});
 
   const customProps = {};
@@ -130,35 +156,27 @@ export default forwardRef(function Action(
     };
   }
 
+  const { onPress, ...restProps } = otherProps;
+
   return (
     <Base
-      target={newTab ? '_blank' : null}
+      target={target}
       href={href || null}
       data-is-hovered={isHovered && !isDisabled ? '' : null}
       data-is-pressed={isPressed && !isDisabled ? '' : null}
-      data-is-focused={isFocused && !isDisabled ? '' : null}
-      data-is-focus-visible={isFocusVisible && !isDisabled ? '' : null}
+      data-is-focused={isFocused && isFocusVisible && !isDisabled ? '' : null}
       data-is-disabled={isDisabled || null}
       {...mergeProps(buttonProps, hoverProps, focusProps, customProps)}
-      {...props}
+      {...restProps}
+      {...directProps}
       tabIndex={props.as === 'button' ? null : '0'}
-      styleAttrs={[
-        ...COLOR_STYLES,
-        ...POSITION_STYLES,
-        ...DIMENSION_STYLES,
-        ...TEXT_STYLES,
-        ...BLOCK_STYLES,
-        ...FLOW_STYLES,
-      ]}
       type={htmlType}
-      reset="button"
-      defaultStyles={{
-        ...DEFAULT_STYLES,
-        ...defaultStyles,
-      }}
       rel={as === 'a' && newTab ? 'rel="noopener noreferrer"' : undefined}
       ref={combinedRef}
       as={as}
+      styles={styles}
     />
   );
 });
+
+export default Action;

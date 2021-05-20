@@ -1,15 +1,23 @@
 import React from 'react';
-
-import UIKitButton from './Button';
-
-// fix component name
-const Button = (args) => <UIKitButton {...args} />;
+import { DollarCircleOutlined } from '@ant-design/icons';
+import Button from './Button';
 
 export default {
   title: 'UIKit/Atoms/Button',
-  component: UIKitButton,
+  component: Button,
   argTypes: {
-    disabled: {
+    icon: {
+      defaultValue: false,
+      description: 'Show the icon',
+      control: {
+        type: 'boolean',
+      },
+      table: {
+        type: { summary: 'boolean' },
+        defaultValue: { summary: false },
+      },
+    },
+    isDisabled: {
       defaultValue: false,
       description: 'Disables the button.',
       control: {
@@ -20,7 +28,7 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    loading: {
+    isLoading: {
       control: 'boolean',
       description: 'Loading state with spinner. Also works as disabled',
       defaultValue: false,
@@ -41,7 +49,7 @@ export default {
         defaultValue: { summary: 'default' },
       },
     },
-    selected: {
+    isSelected: {
       control: 'boolean',
       description: 'Selected state for Tab type buttons',
       defaultValue: false,
@@ -84,18 +92,21 @@ const Template = ({
   size,
   type,
   radius,
-  selected,
-  disabled,
-  loading,
+  isSelected,
+  isDisabled,
+  isLoading,
   label,
+  icon,
 }) => (
   <Button
     size={size}
     type={type}
     radius={radius}
-    disabled={disabled}
-    loading={loading}
-    selected={selected}
+    isDisabled={isDisabled}
+    isLoading={isLoading}
+    isSelected={isSelected}
+    icon={<DollarCircleOutlined/>}
+    onPress={() => console.log('! on press')}
   >
     {label}
   </Button>
@@ -129,4 +140,23 @@ Tab.args = {
   label: 'Tab',
   type: 'tab',
   selected: true,
+};
+
+export const Link = Template.bind({});
+Link.args = {
+  label: 'Link',
+  type: 'link',
+  selected: true,
+};
+
+export const WithIcon = Template.bind({});
+WithIcon.args = {
+  icon: true,
+};
+
+export const Loading = Template.bind({});
+Loading.args = {
+  icon: true,
+  isLoading: true,
+  label: '',
 };

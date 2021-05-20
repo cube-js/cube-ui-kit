@@ -28,7 +28,7 @@ const Template = () => {
   return (
     <Tabs activeKey={activeKey} onTabClose={onClose} onTabClick={onClick}>
       {arr.map((n) => (
-        <Tabs.TabPane tab={`Long Tab ${n}`} id={n} key={n} dirty={n === 3}>
+        <Tabs.TabPane tab={`Long Tab ${n}`} id={n} key={n}>
           Content of tab {n}
         </Tabs.TabPane>
       ))}

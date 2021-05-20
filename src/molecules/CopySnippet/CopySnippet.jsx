@@ -136,7 +136,7 @@ export default function CopySnippet({
             },
           }}
           style={POSITION_ACTION}
-          onClick={onCopy}
+          onPress={onCopy}
         >
           <CopyOutlined />
         </Button>

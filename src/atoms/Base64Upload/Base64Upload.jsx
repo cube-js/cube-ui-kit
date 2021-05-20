@@ -3,6 +3,7 @@ import Button from '../Button/Button';
 import Block from '../../components/Block';
 import Text from '../../components/Text';
 import styled from 'styled-components';
+import { extractStyles } from '../../utils/styles';
 
 const DEFAULT_STYLES = {
   display: 'inline-flex',
@@ -17,6 +18,7 @@ const DEFAULT_STYLES = {
 
 export default styled(
   React.forwardRef(({ type, onInput, ...props }, ref) => {
+    const { styles, otherProps } = extractStyles(props, [], DEFAULT_STYLES);
     const [file, setFile] = useState();
     const [error, setError] = useState('');
 
@@ -76,8 +78,8 @@ export default styled(
       <>
         <Button
           tag="button"
-          defaultStyles={DEFAULT_STYLES}
-          {...props}
+          {...otherProps}
+          styles={styles}
           ref={ref}
         >
           <Block

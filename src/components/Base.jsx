@@ -29,7 +29,6 @@ import marginStyle from '../styles/margin';
 import fontStyle from '../styles/font';
 import boxShadowCombinator from '../styles/box-shadow.combinator';
 import outlineStyle from '../styles/outline';
-import { extendStyles } from '../utils/styles';
 
 const INLINE_MAP = {
   block: 'inline',
@@ -40,6 +39,7 @@ const INLINE_MAP = {
 const STYLES = [
   resetStyle,
   createNativeStyle('display'),
+  createNativeStyle('position'),
   createNativeStyle('content', 'place-content'),
   createNativeStyle('items', 'place-items'),
   createNativeStyle('place', 'place-self'),
@@ -74,18 +74,6 @@ const STYLES = [
   fontStyle,
   fontStyleStyle,
 ];
-
-const STYLE_LIST = STYLES.reduce((list, STYLE) => {
-  const lookup = STYLE.__styleLookup;
-
-  lookup.forEach(style => {
-    if (!list.includes(style)) {
-      list.push(style);
-    }
-  });
-
-  return list;
-}, []);
 
 const CACHE_LIMIT = 1000;
 let STYLE_CACHE = {};
@@ -188,55 +176,45 @@ const BaseElement = styled.div(({ styles, responsive, css }) => {
   return `outline: none;${css || ''}${STYLE_CACHE[cacheKey]}`;
 });
 
-export default forwardRef(
+const Base = forwardRef(
   (
     {
       styles,
-      defaultStyles,
-      styleAttrs = [],
       responsive,
-      css,
       block,
       inline,
-      hidden,
+      isHidden,
+      qa,
+      qaVal,
       ...props
     },
     ref,
   ) => {
-    defaultStyles = defaultStyles || {};
-    styles = extendStyles(defaultStyles, styles);
-    styles.display = styles.display || 'inline-block';
-
-    const filteredProps = { ...props };
-
-    ['display', ...styleAttrs].forEach((style) => {
-      if (props.hasOwnProperty(style) && props[style] != null) {
-        styles[style] = props[style];
-        delete filteredProps[style];
-      }
-    });
+    styles = {
+      display: 'inline-block',
+      ...styles,
+    };
 
     if (block) {
       styles.display = 'block';
     }
 
     if (inline) {
-      styles.display = INLINE_MAP[defaultStyles.display || 'block'];
+      styles.display = INLINE_MAP[styles.display || 'block'];
     }
-
-    props = filteredProps;
 
     const zonesContext = useContext(ResponsiveContext);
     const zones = responsive ? pointsToZones(responsive) : zonesContext;
 
     return (
       <BaseElement
+        data-qa={qa}
+        data-qaval={qaVal}
         {...props}
-        css={css}
         responsive={zones}
         styles={styles}
         ref={ref}
-        hidden={!!hidden}
+        hidden={!!isHidden}
       />
     );
   },
@@ -251,3 +229,5 @@ STYLES.forEach((STYLE) => {
 });
 
 export const STYLE_PROPS = Array.from(styleProps);
+
+export default Base;

@@ -1,32 +1,44 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import Text from './Text';
 import {
+  BASE_STYLES,
   BLOCK_STYLES,
   COLOR_STYLES,
   POSITION_STYLES,
   TEXT_STYLES,
 } from '../styles/list';
+import { extractStyles } from '../utils/styles';
 
-export default function Title({ as, level, ...props }) {
+const DEFAULT_STYLES = {
+  display: 'block',
+  color: '#dark',
+};
+
+const STYLE_LIST = [
+  ...BASE_STYLES,
+  ...TEXT_STYLES,
+  ...BLOCK_STYLES,
+  ...COLOR_STYLES,
+  ...POSITION_STYLES,
+];
+
+const Title = forwardRef(({ as, level, ...props }, ref) => {
   const tag = `h${level || 1}`;
+  const { styles, otherProps } = extractStyles(props, STYLE_LIST, {
+    ...DEFAULT_STYLES,
+    size: tag,
+    fontWeight: (level || 1) === 1 ? 700 : 600,
+  })
 
   return (
     <Text
       as={as || tag}
-      display="block"
-      size={tag}
-      fontWeight={(level || 1) === 1 ? 700 : 600}
-      color="#dark"
-      styleAttrs={[
-        ...TEXT_STYLES,
-        ...BLOCK_STYLES,
-        ...COLOR_STYLES,
-        ...POSITION_STYLES,
-      ]}
-      {...props}
+      {...otherProps}
+      styles={styles}
+      ref={ref}
     />
   );
-}
+})
 
 Title.Danger = function DangerTitle(props) {
   return <Title color="#danger-text" {...props} />;
@@ -35,3 +47,5 @@ Title.Danger = function DangerTitle(props) {
 Title.Success = function SuccessTitle(props) {
   return <Title color="#success-text" {...props} />;
 };
+
+export default Title;

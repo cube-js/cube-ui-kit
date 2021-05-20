@@ -25,13 +25,13 @@ export default {
     },
     onOk: Function,
     onCancel: Function,
-    loading: {
+    isLoading: {
       control: 'boolean',
     },
-    disabled: {
+    isDisabled: {
       control: 'boolean',
     },
-    closable: {
+    isClosable: {
       control: 'boolean',
     },
     title: {
@@ -57,13 +57,13 @@ const Template = ({ content, ...args }) => {
 
   return (
     <>
-      <Button onClick={() => setInProp(true)}>Open Modal</Button>
+      <Button onPress={() => setInProp(true)}>Open Modal</Button>
       <Modal
         {...args}
         onOk={close}
         onCancel={close}
         onClose={close}
-        visible={inProp}
+        isVisible={inProp}
       >
         {content}
       </Modal>

@@ -19,18 +19,18 @@ const TEXT_OVERFLOW_STYLES = {
   overflow: 'hidden',
 };
 
-function getItemStyles({ indent, selected }) {
+function getItemStyles({ indent, isSelected }) {
   return {
     width: 'max 100%',
     radius: true,
     textAlign: 'left',
-    fill: selected
+    fill: isSelected
       ? '#purple.05'
       : {
           '': '#clear',
           hovered: '#dark.04',
         },
-    color: selected ? '#purple-text' : '#dark.75',
+    color: isSelected ? '#purple-text' : '#dark.75',
     outline: {
       '': '#purple-03.0',
       'focused & focus-visible': '#purple-03',
@@ -40,11 +40,11 @@ function getItemStyles({ indent, selected }) {
   };
 }
 
-function Item({ children, indent, onClick, selected }) {
+function Item({ children, indent, onPress, isSelected }) {
   return (
     <Action
-      onClick={onClick}
-      styles={getItemStyles({ indent, selected })}
+      onPress={onPress}
+      styles={getItemStyles({ indent, isSelected })}
       style={{ whiteSpace: 'nowrap' }}
     >
       {children}
@@ -122,8 +122,8 @@ export default function SearchResults({
           <Fragment key={file.key}>
             <Item
               key={file.key}
-              selected={selected === file.key}
-              onClick={() => select(file)}
+              isSelected={selected === file.key}
+              onPress={() => select(file)}
               indent={file.items.length ? null : 2.25}
             >
               <Space gap=".5x" css={HOVER_CSS}>
@@ -135,7 +135,7 @@ export default function SearchResults({
                     '': '#dark.60',
                     hovered: '#purple',
                   }}
-                  onClick={() => toggle(file)}
+                  onPress={() => toggle(file)}
                 >
                   {file.items.length ? (
                     expanded.includes(file.key) ? (
@@ -181,8 +181,8 @@ export default function SearchResults({
                   <Item
                     key={key}
                     indent={3.5}
-                    selected={isSelected}
-                    onClick={() => select(key, [item.row, item.column])}
+                    isSelected={isSelected}
+                    onPress={() => select(key, [item.row, item.column])}
                   >
                     <Space
                       gap="1x"

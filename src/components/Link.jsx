@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react';
 import Action from './Action';
-import { COLOR_STYLES, POSITION_STYLES, TEXT_STYLES } from '../styles/list';
-import { useCombinedRefs } from '../utils/react';
+import { BASE_STYLES, COLOR_STYLES, POSITION_STYLES, TEXT_STYLES } from '../styles/list';
+import { extractStyles } from '../utils/styles';
 
 const DEFAULT_STYLES = {
   display: 'inline',
@@ -11,7 +11,7 @@ const DEFAULT_STYLES = {
   padding: '0',
   radius: {
     '': '0',
-    'focused & focus-visible': '1r',
+    'focused': '1r',
   },
   color: {
     '': '#purple-text',
@@ -19,35 +19,37 @@ const DEFAULT_STYLES = {
   },
   shadow: {
     '': '0 @border-width 0 0 #purple-03.20',
-    'focused & focus-visible': '0 0 0 @outline-width #purple-03',
+    'focused': '0 0 0 @outline-width #purple-03',
   },
 };
 
 const CSS = `
-  position: relative;
-  outline: none;
   white-space: nowrap;
   transition: color var(--transition) linear,
     background var(--transition) linear, box-shadow var(--transition) linear,
     border-radius var(--transition) linear;
 `;
 
-export default forwardRef(({ defaultStyles, ...props }, ref) => {
-  const combinedRef = useCombinedRefs(ref);
+const STYLE_PROPS = [
+  ...BASE_STYLES,
+  ...COLOR_STYLES,
+  ...POSITION_STYLES,
+  ...TEXT_STYLES,
+];
 
-  defaultStyles = defaultStyles
-    ? Object.assign({}, DEFAULT_STYLES, defaultStyles)
-    : DEFAULT_STYLES;
+const Link = forwardRef((props, ref) => {
+  const { styles, otherProps } = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
 
   return (
     <Action
       as="a"
-      defaultStyles={defaultStyles}
-      styleAttrs={[...COLOR_STYLES, ...POSITION_STYLES, ...TEXT_STYLES]}
       elementType="a"
       css={CSS}
-      {...props}
-      ref={combinedRef}
+      {...otherProps}
+      styles={styles}
+      ref={ref}
     />
   );
 });
+
+export default Link;

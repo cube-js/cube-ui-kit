@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import Base from '../../components/Base';
 import {
   BLOCK_STYLES,
@@ -7,6 +7,7 @@ import {
   POSITION_STYLES,
   FLOW_STYLES,
 } from '../../styles/list';
+import { extractStyles } from '../../utils/styles';
 
 const DEFAULT_STYLES = {
   display: 'block',
@@ -17,20 +18,26 @@ const DEFAULT_STYLES = {
   padding: '3x',
 };
 
-export default function Card({ ...props }) {
+const STYLE_LIST = [
+  'display',
+  ...BLOCK_STYLES,
+  ...COLOR_STYLES,
+  ...DIMENSION_STYLES,
+  ...POSITION_STYLES,
+  ...FLOW_STYLES,
+];
+
+const Card = forwardRef(({ ...props }, ref) => {
+  const { styles, otherProps } = extractStyles(props, STYLE_LIST, DEFAULT_STYLES);
+
   return (
     <Base
       role="region"
-      defaultStyles={DEFAULT_STYLES}
-      styleAttrs={[
-        'display',
-        ...BLOCK_STYLES,
-        ...COLOR_STYLES,
-        ...DIMENSION_STYLES,
-        ...POSITION_STYLES,
-        ...FLOW_STYLES,
-      ]}
-      {...props}
+      {...otherProps}
+      styles={styles}
+      ref={ref}
     />
   );
-}
+});
+
+export default Card;

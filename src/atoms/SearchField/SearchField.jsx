@@ -8,6 +8,7 @@ import { useSearchFieldState } from '@react-stately/searchfield';
 import { useSearchField } from '@react-aria/searchfield';
 import { useButton } from '@react-aria/button';
 import { mergeProps } from '@react-aria/utils';
+import { useCombinedRefs } from '../../utils/react';
 
 const FIELD_STYLES = {
   outline: {
@@ -50,26 +51,26 @@ const STYLES = {
 export default forwardRef(
   (
     {
-      clearable,
+      isClearable,
       styles,
-      disabled,
+      isDisabled,
       validationState,
       onSubmit,
       onChange,
-      required,
-      readOnly,
+      isRequired,
+      isReadOnly,
       ...props
     },
     ref,
   ) => {
-    // const localRef = useRef(null);
-    // const combinedRef = useCombinedRefs(ref, localRef);
+    const localRef = useRef();
+    const combinedRef = useCombinedRefs(ref, localRef);
     const propsForField = {
       onSubmit,
       onChange,
-      isDisabled: disabled,
-      isRequired: required,
-      isReadOnly: readOnly,
+      isDisabled,
+      isRequired,
+      isReadOnly,
       validationState,
     };
 
@@ -77,7 +78,7 @@ export default forwardRef(
     let { inputProps, clearButtonProps } = useSearchField(
       propsForField,
       state,
-      ref,
+      combinedRef,
     );
     let { buttonProps } = useButton(clearButtonProps);
     let [isFocused, setIsFocused] = useState(false);
@@ -89,44 +90,44 @@ export default forwardRef(
 
     useEffect(() => {
       setIsFocused(false);
-    }, [disabled]);
+    }, [isDisabled]);
 
     return (
       <Space
         gap={0}
-        data-is-focused={isFocused && !disabled ? '' : null}
-        data-is-disabled={disabled ? '' : null}
+        data-is-focused={isFocused && !isDisabled ? '' : null}
+        data-is-disabled={isDisabled ? '' : null}
         styles={{
           ...FIELD_STYLES,
           ...(styles || {}),
         }}
         {...props}
       >
-        {clearable ? <SearchOutlined /> : null}
+        {isClearable ? <SearchOutlined /> : null}
         <Base
           as="input"
-          data-is-hovered={isHovered && !disabled ? '' : null}
-          data-is-disabled={disabled || null}
+          data-is-hovered={isHovered && !isDisabled ? '' : null}
+          data-is-disabled={isDisabled || null}
           {...mergeProps(inputProps, hoverProps, focusProps)}
-          ref={ref}
+          ref={combinedRef}
           styles={{
             ...STYLES,
             radius: state.value !== '' ? '1r 0 0 1r' : '1r',
-            margin: clearable ? '1x left' : 0,
+            margin: isClearable ? '1x left' : 0,
           }}
           aria-label="Search field"
         />
-        {state.value !== '' && clearable ? (
+        {state.value !== '' && isClearable ? (
           <Action
             type="item"
             padding=".5x"
             color={{ '': '#dark.85', hovered: '#purple-text' }}
-            {...buttonProps}
+            props={buttonProps}
           >
             <CloseOutlined />
           </Action>
         ) : null}
-        {!clearable ? <SearchOutlined /> : null}
+        {!isClearable ? <SearchOutlined /> : null}
       </Space>
     );
   },

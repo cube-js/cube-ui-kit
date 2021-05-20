@@ -1,6 +1,13 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import Base from './Base';
-import { COLOR_STYLES, TEXT_STYLES } from '../styles/list';
+import { BASE_STYLES, COLOR_STYLES, TEXT_STYLES } from '../styles/list';
+import { extractStyles } from '../utils/styles';
+
+const STYLE_LIST = [
+  ...BASE_STYLES,
+  ...TEXT_STYLES,
+  ...COLOR_STYLES,
+];
 
 const DEFAULT_STYLES = {
   display: 'inline',
@@ -8,11 +15,15 @@ const DEFAULT_STYLES = {
   margin: '0',
 };
 
-export default function Text({
+const PROP_MAP = {
+  align: 'textAlign',
+  transform: 'textTransform',
+  weight: 'fontWeight',
+  italic: 'fontStyle',
+};
+
+const Text = forwardRef(({
   as,
-  align,
-  transform,
-  weight,
   code,
   ellipsis,
   css,
@@ -20,26 +31,10 @@ export default function Text({
   italic,
   styleAttrs,
   ...props
-}) {
+}, ref) => {
+  const { styles, otherProps } = extractStyles(props, STYLE_LIST, DEFAULT_STYLES, PROP_MAP);
+
   css = css || '';
-
-  props = { ...props };
-
-  if (italic) {
-    props.fontStyle = 'italic';
-  }
-
-  if (align) {
-    props.textAlign = align;
-  }
-
-  if (transform) {
-    props.textTransform = transform;
-  }
-
-  if (weight) {
-    props.fontWeight = weight;
-  }
 
   if (ellipsis) {
     css += `
@@ -64,13 +59,13 @@ export default function Text({
   return (
     <Base
       as={as || 'span'}
-      defaultStyles={DEFAULT_STYLES}
-      styleAttrs={styleAttrs || [...TEXT_STYLES, ...COLOR_STYLES]}
       css={css}
-      {...props}
+      {...otherProps}
+      styles={styles}
+      ref={ref}
     />
   );
-}
+})
 
 Text.Minor = function MinorText(props) {
   return <Text color="#minor" {...props} />;
@@ -91,3 +86,5 @@ Text.Strong = function StrongText(props) {
 Text.Selection = function SelectionText(props) {
   return <Text color="#dark" fill="#note.30" {...props} />;
 };
+
+export default Text;

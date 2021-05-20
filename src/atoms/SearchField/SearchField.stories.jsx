@@ -9,7 +9,7 @@ export default {
   title: 'UIKit/Atoms/SearchField',
   component: SearchField,
   argTypes: {
-    disabled: {
+    isDisabled: {
       defaultValue: false,
       description: 'Disables the button.',
       control: {
@@ -20,7 +20,7 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    clearable: {
+    isClearable: {
       defaultValue: false,
       description: 'Show clear button',
       control: {
@@ -40,3 +40,8 @@ const Template = (args) => (
 
 export const Default = Template.bind({});
 Default.args = {};
+
+export const Clearable = Template.bind({});
+Clearable.args = {
+  isClearable: true,
+};

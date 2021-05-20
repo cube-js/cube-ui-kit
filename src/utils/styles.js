@@ -463,12 +463,39 @@ export function extendStyles(defaultStyles, newStyles) {
   return styles;
 }
 
-export function extractStyleProps(props, styles) {
-  return styles.reduce((map, style) => {
-    if (style in props && props[style] != null && props[style] !== false) {
-      map[style] = props[style];
-    }
+/**
+ * Split properties into style and non-style properties.
+ * @param {Object} props - Component prop map.
+ * @param {String[]} styleList - List of all style properties.
+ * @param {Object} [defaultStyles] - Default style map of the component.
+ * @param {Object} [propMap] - Props to style alias map.
+ * @param {String[]} [ignoreList] - A list of properties to ignore.
+ * @return {{otherProps: {}, styles: {}}}
+ */
+export function extractStyles(props, styleList, defaultStyles, propMap, ignoreList = []) {
+  const otherProps = {};
+  const styles = {
+    ...defaultStyles,
+    ...props.styles,
+  };
 
-    return map;
+  Object.keys(props).forEach((prop) => {
+    const propName = propMap ? (propMap[prop] || prop) : prop;
+    const value = props[prop];
+
+    if (ignoreList && ignoreList.includes(prop)) {
+      // do nothing
+    } else if (styleList.includes(propName)) {
+      if (value != null && value !== false) {
+        styles[propName] = value;
+      }
+    } else if (props !== 'styles') {
+      otherProps[propName] = value;
+    }
   }, {});
+
+  return {
+    styles,
+    otherProps,
+  };
 }

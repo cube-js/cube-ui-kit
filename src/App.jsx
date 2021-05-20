@@ -55,7 +55,7 @@ function App() {
       {/*  /!*</Space>*!/*/}
       {/*</Modal>*/}
       <Button
-        onClick={() => setInProp(!inProp)}
+        onPress={() => setInProp(!inProp)}
         type="clear"
         styles={{
           color: {

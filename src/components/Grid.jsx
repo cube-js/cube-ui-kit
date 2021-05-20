@@ -1,30 +1,39 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import Base from './Base';
 import {
+  BASE_STYLES,
+  BLOCK_STYLES,
   COLOR_STYLES,
   DIMENSION_STYLES,
-  POSITION_STYLES,
-  BLOCK_STYLES,
   FLOW_STYLES,
+  POSITION_STYLES,
 } from '../styles/list';
+import { extractStyles } from '../utils/styles';
 
 const DEFAULT_STYLES = {
   display: 'grid',
   flow: 'row',
 };
 
-export default function Grid({ ...props }) {
+const STYLE_PROPS = [
+  ...BASE_STYLES,
+  ...COLOR_STYLES,
+  ...POSITION_STYLES,
+  ...DIMENSION_STYLES,
+  ...BLOCK_STYLES,
+  ...FLOW_STYLES,
+];
+
+const Grid = forwardRef((props, ref) => {
+  const { styles, otherProps } = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
+
   return (
     <Base
-      defaultStyles={DEFAULT_STYLES}
-      styleAttrs={[
-        ...COLOR_STYLES,
-        ...POSITION_STYLES,
-        ...DIMENSION_STYLES,
-        ...BLOCK_STYLES,
-        ...FLOW_STYLES,
-      ]}
-      {...props}
+      {...otherProps}
+      styles={styles}
+      ref={ref}
     />
   );
-}
+});
+
+export default Grid;

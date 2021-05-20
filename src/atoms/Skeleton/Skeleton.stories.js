@@ -9,10 +9,10 @@ export default {
   title: 'UIKit/Atoms/Skeleton',
   component: Skeleton,
   argTypes: {
-    size: {
+    layout: {
       control: {
         type: 'radio',
-        options: [undefined, 'page', 'topbar', 'menu'],
+        options: [undefined, 'page', 'topbar', 'menu', 'tabs', 'stats', 'table'],
       },
       description: 'Skeleton layout',
       table: {

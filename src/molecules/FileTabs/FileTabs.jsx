@@ -169,22 +169,22 @@ const TAB_CSS = `
   }
 `;
 
-const Tab = ({ dirty, disabled, children, closable, onClose, ...props }) => {
+const Tab = ({ isDirty, isDisabled, children, isClosable, onClose, ...props }) => {
   return (
     <Action
-      className={dirty ? 'file-tab--dirty' : ''}
+      className={isDirty ? 'file-tab--dirty' : ''}
       css={TAB_CSS}
       styles={TAB_STYLES}
-      disabled={disabled}
+      isDisabled={isDisabled}
       {...props}
     >
       <Space gap=".75x">
         <Block>{children}</Block>
-        {(closable || dirty) && (
+        {(isClosable || isDirty) && (
           <Flex items="center" style={{ position: 'relative' }}>
-            {closable ? (
+            {isClosable ? (
               <Action
-                onClick={onClose}
+                onPress={onClose}
                 className="file-tab-close"
                 styles={CLOSE_STYLES}
               >
@@ -193,7 +193,7 @@ const Tab = ({ dirty, disabled, children, closable, onClose, ...props }) => {
             ) : (
               <div></div>
             )}
-            {dirty ? (
+            {isDirty ? (
               <Block
                 className="file-tab-dirty-badge"
                 css={DIRTY_BADGE_CSS}
@@ -216,13 +216,13 @@ export default function FileTabs({
   onTabClick,
   onTabClose,
   paneStyles,
-  closable,
+  isClosable,
   children,
   ...props
 }) {
   const tabsRef = useRef();
 
-  closable = closable != null ? !!closable : true;
+  isClosable = isClosable != null ? !!isClosable : true;
 
   const [tabs, setTabs] = useState([]);
   const [activeKey, setActiveKey] = useState(activeKeyProp || defaultActiveKey);
@@ -308,7 +308,7 @@ export default function FileTabs({
       const tab = getTab(tabs, id);
 
       if (tab) {
-        tab.dirty = isDirty;
+        tab.isDirty = isDirty;
 
         return [...tabs];
       }
@@ -339,7 +339,7 @@ export default function FileTabs({
     });
   }
 
-  function onClick(tab) {
+  function onPress(tab) {
     setTab(tab.id);
     onTabClick && onTabClick(tab.id);
   }
@@ -367,12 +367,12 @@ export default function FileTabs({
           {tabs.map((tab) => {
             return (
               <Tab
-                onClick={() => onClick(tab)}
+                onPress={() => onPress(tab)}
                 key={tab.id}
-                onClose={() => closable && handleClose(tab)}
-                closable={closable}
-                disabled={tab.id === activeKey || null}
-                dirty={tab.dirty}
+                onClose={() => isClosable && handleClose(tab)}
+                isClosable={isClosable}
+                isDisabled={tab.id === activeKey || null}
+                isDirty={tab.isDirty}
               >
                 {tab.title}
               </Tab>
@@ -390,7 +390,7 @@ export default function FileTabs({
 FileTabs.TabPane = function FileTabPane({
   id,
   tab,
-  dirty,
+  isDirty,
   children,
   ...props
 }) {
@@ -402,7 +402,7 @@ FileTabs.TabPane = function FileTabPane({
     const tabData = {
       id,
       title: tab,
-      dirty,
+      isDirty,
     };
 
     addTab(tabData);
@@ -413,8 +413,8 @@ FileTabs.TabPane = function FileTabPane({
   }, [id, tab]);
 
   useEffect(() => {
-    setDirtyTab(id, dirty);
-  }, [dirty]);
+    setDirtyTab(id, isDirty);
+  }, [isDirty]);
 
   const isCurrent = id === currentTab;
 
