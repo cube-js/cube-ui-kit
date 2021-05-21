@@ -45,3 +45,6 @@ export const Clearable = Template.bind({});
 Clearable.args = {
   isClearable: true,
 };
+
+export const WithDefaultValue = Template.bind({});
+WithDefaultValue.args = { value: 'default value' };

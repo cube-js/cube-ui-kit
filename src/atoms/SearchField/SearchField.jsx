@@ -59,6 +59,7 @@ export default forwardRef(
       onChange,
       isRequired,
       isReadOnly,
+      value,
       ...props
     },
     ref,
@@ -73,6 +74,14 @@ export default forwardRef(
       isReadOnly,
       validationState,
     };
+
+    useEffect(() => {
+      const el = combinedRef && combinedRef.current;
+
+      if (el && value != null && el.value !== value) {
+        el.value = value;
+      }
+    }, [combinedRef, value]);
 
     let state = useSearchFieldState(propsForField);
     let { inputProps, clearButtonProps } = useSearchField(
