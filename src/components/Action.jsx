@@ -160,8 +160,6 @@ const Action = forwardRef((
 
   return (
     <Base
-      target={target}
-      href={href || null}
       data-is-hovered={isHovered && !isDisabled ? '' : null}
       data-is-pressed={isPressed && !isDisabled ? '' : null}
       data-is-focused={isFocused && isFocusVisible && !isDisabled ? '' : null}
@@ -169,6 +167,8 @@ const Action = forwardRef((
       {...mergeProps(buttonProps, hoverProps, focusProps, customProps)}
       {...restProps}
       {...directProps}
+      href={href || null}
+      target={target}
       tabIndex={props.as === 'button' ? null : '0'}
       type={htmlType}
       rel={as === 'a' && newTab ? 'rel="noopener noreferrer"' : undefined}
