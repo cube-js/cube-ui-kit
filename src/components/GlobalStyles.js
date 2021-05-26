@@ -224,7 +224,8 @@ const GlobalStyles = createGlobalStyle`
   input.ant-input.ant-input.ant-input.ant-input, textarea.ant-input.ant-input.ant-input.ant-input ${inputStyles}
   .ant-input-affix-wrapper.ant-input-affix-wrapper.ant-input-affix-wrapper {
     border: var(--border-width) solid var(--border-color);
-    padding: 0 0 0 12px;
+    // all inputs with affix should have right padding
+    padding: 0 12px;
     
     & input ${inputStyles}
     & input.ant-input {

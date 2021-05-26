@@ -153,7 +153,7 @@ export default function Skeleton({ layout, ...props }) {
   layout = layout || 'page';
 
   return LAYOUT_MAP[layout] ? (
-    LAYOUT_MAP[layout](props)
+    LAYOUT_MAP[layout]({ ...props, 'data-qa': 'loader' })
   ) : (
     <Placeholder {...props} />
   );
