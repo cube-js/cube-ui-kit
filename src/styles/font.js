@@ -1,14 +1,14 @@
-import { createRule } from '../utils/styles';
+export function fontStyle({ font }) {
+  if (font == null || font === false) return null;
 
-export default function fontStyle({ font }) {
-  return createRule(
-    'font-family',
-    font === 'monospace'
-      ? 'var(--monospace-font)'
-      : font === true
-      ? 'var(--font)'
-      : `${font}, var(--font)`,
-  );
+  return {
+    'font-family':
+      font === 'monospace'
+        ? 'var(--monospace-font)'
+        : font === true
+        ? 'var(--font)'
+        : `${font}, var(--font)`,
+  };
 }
 
-fontStyle.__styleLookup = ['font'];
+fontStyle.__lookupStyles = ['font'];

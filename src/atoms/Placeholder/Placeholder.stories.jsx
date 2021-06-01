@@ -1,9 +1,5 @@
 import React from 'react';
-
-import UIKitPlaceholder from './Placeholder';
-
-// fix component name
-const Placeholder = (args) => <UIKitPlaceholder {...args} />;
+import { Placeholder } from './Placeholder';
 
 export default {
   title: 'UIKit/Atoms/Placeholder',

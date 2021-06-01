@@ -1,9 +1,5 @@
 import React from 'react';
-
-import UIKitPrismCode from './PrismCode';
-
-// fix component name
-const PrismCode = (args) => <UIKitPrismCode {...args} />;
+import { PrismCode } from './PrismCode';
 
 export default {
   title: 'UIKit/Atoms/PrismCode',

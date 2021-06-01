@@ -1,4 +1,4 @@
-import { transferMods, parseStyle, createRule } from '../utils/styles';
+import { parseStyle, transferMods } from '../utils/styles.js';
 
 const DEFAULT_MIN_SIZE = 'var(--gap)';
 const DEFAULT_MAX_SIZE = '100%';
@@ -24,7 +24,7 @@ const STRETCH_SIZE = isSizingSupport(STRETCH)
   : null;
 const INTRINSIC_MODS = ['max-content', 'min-content', 'fit-content', 'stretch'];
 
-export default function dimensionStyle(name) {
+export function dimensionStyle(name) {
   const minStyle = `min-${name}`;
   const maxStyle = `max-${name}`;
 
@@ -43,7 +43,7 @@ export default function dimensionStyle(name) {
       [maxStyle]: 'initial',
     };
 
-    const { mods, values } = parseStyle(val, 1);
+    const { mods, values } = parseStyle(val);
 
     transferMods(INTRINSIC_MODS, mods, values);
 
@@ -83,9 +83,6 @@ export default function dimensionStyle(name) {
       }
     }
 
-    return Object.keys(styles).reduce(
-      (css, style) => css + createRule(style, styles[style]),
-      '',
-    );
+    return styles;
   };
 }

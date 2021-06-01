@@ -1,9 +1,14 @@
 import React from 'react';
-import Base from '../../components/Base';
-import CloudLogo from '../../atoms/CloudLogo/CloudLogo';
-import Space from '../../components/Space';
-import { BASE_STYLES, BLOCK_STYLES, FLOW_STYLES, POSITION_STYLES } from '../../styles/list';
-import { extractStyles } from '../../utils/styles';
+import { Base } from '../../components/Base';
+import { CloudLogo } from '../../atoms/CloudLogo/CloudLogo';
+import { Space } from '../../components/Space';
+import {
+  BASE_STYLES,
+  BLOCK_STYLES,
+  FLOW_STYLES,
+  POSITION_STYLES,
+} from '../../styles/list';
+import { extractStyles } from '../../utils/styles.js';
 
 const DEFAULT_STYLES = {
   display: 'flex',
@@ -22,15 +27,15 @@ const STYLE_LIST = [
   ...POSITION_STYLES,
 ];
 
-export default function TopBar({ children, onLogoPress, ...props }) {
-  const { styles, otherProps } = extractStyles(props, STYLE_LIST, DEFAULT_STYLES);
+export function TopBar({ children, onLogoPress, ...props }) {
+  const { styles, otherProps } = extractStyles(
+    props,
+    STYLE_LIST,
+    DEFAULT_STYLES,
+  );
 
   return (
-    <Base
-      role="banner"
-      {...otherProps}
-      styles={styles}
-    >
+    <Base role="banner" {...otherProps} styles={styles}>
       <CloudLogo onPress={onLogoPress} />
       <Space grow={1} content="space-between">
         {children}

@@ -1,9 +1,5 @@
 import React from 'react';
-
-import UIKitCard from './Card';
-
-// fix component name
-const Card = (args) => <UIKitCard {...args} />;
+import { Card } from './Card';
 
 export default {
   title: 'UIKit/Atoms/Card',
@@ -11,7 +7,7 @@ export default {
   argTypes: {},
 };
 
-const Template = (args) => <Card>Card content</Card>;
+const Template = (args) => <Card {...args}>Card content</Card>;
 
 export const Default = Template.bind({});
 Default.args = {};

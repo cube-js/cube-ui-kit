@@ -32,7 +32,7 @@ const inputStyles = ` {
   }
 `;
 
-const GlobalStyles = createGlobalStyle`
+export const GlobalStyles = createGlobalStyle`
   body {
     ${Object.entries(CSS_PROPERTIES)
       .map(([key, value]) => {
@@ -557,5 +557,3 @@ const GlobalStyles = createGlobalStyle`
     cursor: help;
   }
 `;
-
-export default GlobalStyles;

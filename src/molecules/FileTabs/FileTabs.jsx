@@ -7,10 +7,10 @@ import React, {
   useState,
 } from 'react';
 import { CloseOutlined } from '@ant-design/icons';
-import Block from '../../components/Block';
-import Action from '../../components/Action';
-import Space from '../../components/Space';
-import Flex from '../../components/Flex';
+import { Block } from '../../components/Block';
+import { Action } from '../../components/Action';
+import { Space } from '../../components/Space';
+import { Flex } from '../../components/Flex';
 
 const FileTabsContext = createContext({});
 
@@ -169,7 +169,14 @@ const TAB_CSS = `
   }
 `;
 
-const Tab = ({ isDirty, isDisabled, children, isClosable, onClose, ...props }) => {
+const Tab = ({
+  isDirty,
+  isDisabled,
+  children,
+  isClosable,
+  onClose,
+  ...props
+}) => {
   return (
     <Action
       className={isDirty ? 'file-tab--dirty' : ''}
@@ -210,7 +217,7 @@ const Tab = ({ isDirty, isDisabled, children, isClosable, onClose, ...props }) =
   );
 };
 
-export default function FileTabs({
+export function FileTabs({
   defaultActiveKey,
   activeKey: activeKeyProp,
   onTabClick,

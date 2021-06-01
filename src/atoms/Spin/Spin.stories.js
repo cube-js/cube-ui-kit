@@ -1,9 +1,5 @@
 import React from 'react';
-
-import UIKitSpin from './Spin';
-
-// fix component name
-const Spin = (args) => <UIKitSpin {...args} />;
+import { Spin } from './Spin';
 
 export default {
   title: 'UIKit/Atoms/Spin',

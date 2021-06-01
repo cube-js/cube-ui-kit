@@ -1,13 +1,9 @@
 import React from 'react';
-
-import UIKitNotification from './Notification';
-
-// fix component name
-const Notification = (args) => <UIKitNotification {...args} />;
+import { Notification } from './Notification';
 
 export default {
   title: 'UIKit/Molecules/Notification',
-  component: UIKitNotification,
+  component: Notification,
   argTypes: {
     type: {
       defaultValue: 'note',

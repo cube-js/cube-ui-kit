@@ -1,13 +1,9 @@
 import React from 'react';
-
-import UIKitBlock from '../components/Block';
-
-// fix component name
-const Block = (args) => <UIKitBlock {...args} />;
+import { Block } from '../components/Block';
 
 export default {
   title: 'UIKit/Generic/Block',
-  component: UIKitBlock,
+  component: Block,
   argTypes: {
     shadow: {
       defaultValue: true,

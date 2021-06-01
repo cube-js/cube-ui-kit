@@ -1,6 +1,6 @@
-import { createRule, parseStyle } from '../utils/styles';
+import { parseStyle } from '../utils/styles.js';
 
-export default function gapStyle({ display, flow, gap }) {
+export function gapStyle({ display, flow, gap }) {
   if (!gap) return '';
 
   const isGrid = display.includes('grid');
@@ -31,9 +31,12 @@ export default function gapStyle({ display, flow, gap }) {
 
   return gap
     ? isGrid
-      ? createRule('gap', gap)
-      : createRule(`margin-${gapDir}`, gap, '& > *:not(:last-child)')
+      ? { gap }
+      : {
+          $: '& > *:not(:last-child)',
+          [`margin-${gapDir}`]: gap,
+        }
     : '';
 }
 
-gapStyle.__styleLookup = ['display', 'flow', 'gap'];
+gapStyle.__lookupStyles = ['display', 'flow', 'gap'];

@@ -1,6 +1,6 @@
 import React from 'react';
 import { DollarCircleOutlined } from '@ant-design/icons';
-import Button from './Button';
+import { Button } from './Button';
 
 export default {
   title: 'UIKit/Atoms/Button',
@@ -105,7 +105,7 @@ const Template = ({
     isDisabled={isDisabled}
     isLoading={isLoading}
     isSelected={isSelected}
-    icon={<DollarCircleOutlined/>}
+    icon={<DollarCircleOutlined />}
     onPress={() => console.log('! on press')}
   >
     {label}

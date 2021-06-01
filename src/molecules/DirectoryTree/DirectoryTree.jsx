@@ -6,11 +6,11 @@ import {
   FolderOutlined,
   FolderOpenOutlined,
 } from '@ant-design/icons';
-import Flex from '../../components/Flex';
-import Action from '../../components/Action';
-import Button from '../../atoms/Button/Button';
-import Space from '../../components/Space';
-import Block from '../../components/Block';
+import { Flex } from '../../components/Flex';
+import { Action } from '../../components/Action';
+import { Button } from '../../atoms/Button/Button';
+import { Space } from '../../components/Space';
+import { Block } from '../../components/Block';
 
 const IMAGES = {
   created: (
@@ -150,7 +150,7 @@ const HOVER_CSS = `
   }
 `;
 
-export default function DirectoryTree({
+export function DirectoryTree({
   onSelect,
   treeData,
   selectedKey,

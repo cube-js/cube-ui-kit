@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import Base from '../../components/Base';
+import { Base } from '../../components/Base';
 import THEMES from '../../data/themes';
 import {
   BLOCK_STYLES,
@@ -7,7 +7,7 @@ import {
   COLOR_STYLES,
   FLOW_STYLES,
 } from '../../styles/list';
-import { extractStyles } from '../../utils/styles';
+import { extractStyles } from '../../utils/styles.js';
 
 const DEFAULT_STYLES = {
   display: 'block',
@@ -23,23 +23,15 @@ const STYLE_LIST = [
   ...DIMENSION_STYLES,
 ];
 
-const Alert = forwardRef(({ type, label, ...props }, ref) => {
+export const Alert = forwardRef(({ type, label, ...props }, ref) => {
   type = type || 'note';
   const { styles, otherProps } = extractStyles(props, STYLE_LIST, {
     ...DEFAULT_STYLES,
     fill: THEMES[type] ? THEMES[type].fill : '#clear',
-    border: THEMES[type] && THEMES[type].border ? THEMES[type].border : '#clear',
+    border:
+      THEMES[type] && THEMES[type].border ? THEMES[type].border : '#clear',
     color: '#dark',
   });
 
-  return (
-    <Base
-      role="region"
-      {...otherProps}
-      styles={styles}
-      ref={ref}
-    />
-  );
-})
-
-export default Alert;
+  return <Base role="region" {...otherProps} styles={styles} ref={ref} />;
+});

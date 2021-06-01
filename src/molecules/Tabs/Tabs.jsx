@@ -6,10 +6,10 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import Block from '../../components/Block';
-import Space from '../../components/Space';
-import Flex from '../../components/Flex';
-import Button from '../../atoms/Button/Button';
+import { Block } from '../../components/Block';
+import { Space } from '../../components/Space';
+import { Flex } from '../../components/Flex';
+import { Button } from '../../atoms/Button/Button';
 
 const TabsContext = createContext({});
 
@@ -87,11 +87,11 @@ const TABS_CONTAINER_CSS = `
 
 const Tab = ({ isSelected, isHidden, onClose, ...props }) => {
   return (
-    <Button type="tab" isSelected={isSelected} isHidden={isHidden} {...props}/>
+    <Button type="tab" isSelected={isSelected} isHidden={isHidden} {...props} />
   );
 };
 
-export default function Tabs({
+export function Tabs({
   defaultActiveKey,
   activeKey: activeKeyProp,
   onTabClick,

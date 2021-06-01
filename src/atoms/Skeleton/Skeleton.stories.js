@@ -1,9 +1,5 @@
 import React from 'react';
-
-import UIKitSkeleton from './Skeleton';
-
-// fix component name
-const Skeleton = (args) => <UIKitSkeleton {...args} />;
+import { Skeleton } from './Skeleton';
 
 export default {
   title: 'UIKit/Atoms/Skeleton',
@@ -12,7 +8,15 @@ export default {
     layout: {
       control: {
         type: 'radio',
-        options: [undefined, 'page', 'topbar', 'menu', 'tabs', 'stats', 'table'],
+        options: [
+          undefined,
+          'page',
+          'topbar',
+          'menu',
+          'tabs',
+          'stats',
+          'table',
+        ],
       },
       description: 'Skeleton layout',
       table: {

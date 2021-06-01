@@ -1,9 +1,9 @@
-import dimensionStyle from './dimension';
+import { dimensionStyle } from './dimension.js';
 
 const dimension = dimensionStyle('width');
 
-export default function widthStyle({ width }) {
+export function widthStyle({ width }) {
   return dimension(width);
 }
 
-widthStyle.__styleLookup = ['width'];
+widthStyle.__lookupStyles = ['width'];

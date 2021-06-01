@@ -1,11 +1,6 @@
-import {
-  createRule,
-  parseStyle,
-  DIRECTIONS,
-  filterMods,
-} from '../utils/styles';
+import { parseStyle, DIRECTIONS, filterMods } from '../utils/styles.js';
 
-export default function paddingStyle({ padding }) {
+export function paddingStyle({ padding }) {
   if (!padding) return '';
 
   if (padding === true) padding = '1x';
@@ -14,7 +9,7 @@ export default function paddingStyle({ padding }) {
     padding = `${padding}px`;
   }
 
-  let { values, mods } = parseStyle(padding, 1);
+  let { values, mods } = parseStyle(padding);
 
   const directions = filterMods(mods, DIRECTIONS);
 
@@ -23,19 +18,16 @@ export default function paddingStyle({ padding }) {
   }
 
   if (!directions.length) {
-    return createRule('padding', values.join(' '));
+    return { padding: values.join(' ') };
   }
 
   return directions.reduce((styles, dir) => {
     const index = DIRECTIONS.indexOf(dir);
 
-    styles += createRule(
-      `padding-${dir}`,
-      values[index] || values[index % 2] || values[0],
-    );
+    styles[`padding-${dir}`] = values[index] || values[index % 2] || values[0];
 
     return styles;
-  }, '');
+  }, {});
 }
 
-paddingStyle.__styleLookup = ['padding'];
+paddingStyle.__lookupStyles = ['padding'];

@@ -1,9 +1,9 @@
-import { createRule, parseStyle } from '../utils/styles';
+import { parseStyle } from '../utils/styles.js';
 
-export default function sizeStyle({ size }) {
+export function sizeStyle({ size }) {
   if (!size) return '';
 
-  const { values, mods } = parseStyle(size, 1);
+  const { values, mods } = parseStyle(size);
 
   let fontSize, lineHeight, letterSpacing;
 
@@ -19,11 +19,11 @@ export default function sizeStyle({ size }) {
     letterSpacing = values[2] || '0';
   }
 
-  return [
-    createRule('font-size', fontSize),
-    createRule('line-height', lineHeight),
-    createRule('letter-spacing', letterSpacing),
-  ].join('');
+  return {
+    'font-size': fontSize,
+    'line-height': lineHeight,
+    'letter-spacing': letterSpacing,
+  };
 }
 
-sizeStyle.__styleLookup = ['size'];
+sizeStyle.__lookupStyles = ['size'];

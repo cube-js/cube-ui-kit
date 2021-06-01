@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
-
-import UIKitTabs from './Tabs';
-
-// fix component name
-const Tabs = (args) => <UIKitTabs {...args} />;
-
-Tabs.TabPane = UIKitTabs.TabPane;
+import { Tabs } from './Tabs';
 
 export default {
   title: 'UIKit/Molecules/Tabs',

@@ -1,5 +1,6 @@
 export function mediaWrapper(cssRules, points) {
   return points
+    .filter((point) => point.mediaQuery)
     .map((point, i) => `@media ${point.mediaQuery} {${cssRules[i]}}`)
     .join('\n');
 }

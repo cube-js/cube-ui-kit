@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { Base, Button, Grid, TopBar, Space, LoadingAnimation } from './index';
+import { Base, Grid, TopBar, Space, LoadingAnimation } from './index';
+import { Button } from './atoms/Button/Button';
 import ResponsiveProvider from './providers/Responsive';
 import { color } from './utils/colors';
-import Card from './atoms/Card/Card';
-import Flex from './components/Flex';
-import Base64Upload from './atoms/Base64Upload/Base64Upload';
-import Link from './components/Link';
-import Modal from './molecules/Modal/Modal';
-import notification from './services/notification';
+import { Card } from './atoms/Card/Card';
+import { Flex } from './components/Flex';
+import { Base64Upload } from './atoms/Base64Upload/Base64Upload';
+import { Link } from './atoms/Link/Link';
+import { Modal } from './molecules/Modal/Modal';
+import { notification } from './services/notification';
+import { StylesProvider } from './providers/Styles';
 
 window.notification = notification;
 
@@ -68,8 +70,13 @@ function App() {
       </Button>
       <LoadingAnimation />
       <Space padding="1x">
-        <Button>Default</Button>
+        <StylesProvider Button={() => ({ color: '#dark' })}>
+          <StylesProvider Button={() => ({ padding: '2x' })}>
+            <Button>Default</Button>
+          </StylesProvider>
+        </StylesProvider>
         <Button type="primary">Primary</Button>
+        <Button type="primary">Other Primary</Button>
         <Button type="danger">Danger</Button>
         <Button type="clear">Clear</Button>
         <Base64Upload>123</Base64Upload>

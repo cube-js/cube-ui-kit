@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import Button from '../Button/Button';
-import Block from '../../components/Block';
-import Text from '../../components/Text';
+import { Button } from '../Button/Button';
+import { Block } from '../../components/Block';
+import { Text } from '../../components/Text';
 import styled from 'styled-components';
-import { extractStyles } from '../../utils/styles';
+import { extractStyles } from '../../utils/styles.js';
 
 const DEFAULT_STYLES = {
   display: 'inline-flex',
@@ -16,7 +16,7 @@ const DEFAULT_STYLES = {
   fontWeight: 400,
 };
 
-export default styled(
+export const Base64Upload = styled(
   React.forwardRef(({ type, onInput, ...props }, ref) => {
     const { styles, otherProps } = extractStyles(props, [], DEFAULT_STYLES);
     const [file, setFile] = useState();
@@ -76,12 +76,7 @@ export default styled(
 
     return (
       <>
-        <Button
-          tag="button"
-          {...otherProps}
-          styles={styles}
-          ref={ref}
-        >
+        <Button tag="button" {...otherProps} styles={styles} ref={ref}>
           <Block
             radius="round"
             fill="#purple.10"

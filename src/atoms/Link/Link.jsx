@@ -1,7 +1,12 @@
 import React, { forwardRef } from 'react';
-import Action from './Action';
-import { BASE_STYLES, COLOR_STYLES, POSITION_STYLES, TEXT_STYLES } from '../styles/list';
-import { extractStyles } from '../utils/styles';
+import { Action } from '../../components/Action';
+import {
+  BASE_STYLES,
+  COLOR_STYLES,
+  POSITION_STYLES,
+  TEXT_STYLES,
+} from '../../styles/list';
+import { extractStyles } from '../../utils/styles.js';
 
 const DEFAULT_STYLES = {
   display: 'inline',
@@ -11,7 +16,7 @@ const DEFAULT_STYLES = {
   padding: '0',
   radius: {
     '': '0',
-    'focused': '1r',
+    focused: '1r',
   },
   color: {
     '': '#purple-text',
@@ -19,7 +24,7 @@ const DEFAULT_STYLES = {
   },
   shadow: {
     '': '0 @border-width 0 0 #purple-03.20',
-    'focused': '0 0 0 @outline-width #purple-03',
+    focused: '0 0 0 @outline-width #purple-03',
   },
 };
 
@@ -37,8 +42,12 @@ const STYLE_PROPS = [
   ...TEXT_STYLES,
 ];
 
-const Link = forwardRef((props, ref) => {
-  const { styles, otherProps } = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
+export const Link = forwardRef((props, ref) => {
+  const { styles, otherProps } = extractStyles(
+    props,
+    STYLE_PROPS,
+    DEFAULT_STYLES,
+  );
 
   return (
     <Action
@@ -51,5 +60,3 @@ const Link = forwardRef((props, ref) => {
     />
   );
 });
-
-export default Link;

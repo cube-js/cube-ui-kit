@@ -1,13 +1,9 @@
 import React, { forwardRef } from 'react';
-import Base from './Base';
+import { Base } from './Base';
 import { BASE_STYLES, COLOR_STYLES, TEXT_STYLES } from '../styles/list';
-import { extractStyles } from '../utils/styles';
+import { extractStyles } from '../utils/styles.js';
 
-const STYLE_LIST = [
-  ...BASE_STYLES,
-  ...TEXT_STYLES,
-  ...COLOR_STYLES,
-];
+const STYLE_LIST = [...BASE_STYLES, ...TEXT_STYLES, ...COLOR_STYLES];
 
 const DEFAULT_STYLES = {
   display: 'inline',
@@ -22,22 +18,19 @@ const PROP_MAP = {
   italic: 'fontStyle',
 };
 
-const Text = forwardRef(({
-  as,
-  code,
-  ellipsis,
-  css,
-  nowrap,
-  italic,
-  styleAttrs,
-  ...props
-}, ref) => {
-  const { styles, otherProps } = extractStyles(props, STYLE_LIST, DEFAULT_STYLES, PROP_MAP);
+export const Text = forwardRef(
+  ({ as, code, ellipsis, css, nowrap, italic, styleAttrs, ...props }, ref) => {
+    const { styles, otherProps } = extractStyles(
+      props,
+      STYLE_LIST,
+      DEFAULT_STYLES,
+      PROP_MAP,
+    );
 
-  css = css || '';
+    css = css || '';
 
-  if (ellipsis) {
-    css += `
+    if (ellipsis) {
+      css += `
       && {
         ${!as ? 'display: block;' : ''}
         text-overflow: ellipsis;
@@ -46,26 +39,27 @@ const Text = forwardRef(({
         max-width: 100%;
       }
     `;
-  }
+    }
 
-  if (nowrap) {
-    css += `
+    if (nowrap) {
+      css += `
       && {
         white-space: nowrap;
       }
     `;
-  }
+    }
 
-  return (
-    <Base
-      as={as || 'span'}
-      css={css}
-      {...otherProps}
-      styles={styles}
-      ref={ref}
-    />
-  );
-})
+    return (
+      <Base
+        as={as || 'span'}
+        css={css}
+        {...otherProps}
+        styles={styles}
+        ref={ref}
+      />
+    );
+  },
+);
 
 Text.Minor = function MinorText(props) {
   return <Text color="#minor" {...props} />;
@@ -86,5 +80,3 @@ Text.Strong = function StrongText(props) {
 Text.Selection = function SelectionText(props) {
   return <Text color="#dark" fill="#note.30" {...props} />;
 };
-
-export default Text;

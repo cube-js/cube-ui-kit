@@ -1,6 +1,6 @@
-import { createRule, parseStyle } from '../utils/styles';
+import { parseStyle } from '../utils/styles.js';
 
-export default function radiusStyle({ radius }) {
+export function radiusStyle({ radius }) {
   if (!radius) return '';
 
   if (radius === true) radius = '1r';
@@ -11,7 +11,7 @@ export default function radiusStyle({ radius }) {
 
   const { values } = parseStyle(radius);
 
-  return createRule('border-radius', values.join(' '));
+  return { 'border-radius': values.join(' ') };
 }
 
-radiusStyle.__styleLookup = ['radius'];
+radiusStyle.__lookupStyles = ['radius'];

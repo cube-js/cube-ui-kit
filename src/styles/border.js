@@ -1,12 +1,12 @@
-import {
-  createRule,
-  DIRECTIONS,
-  filterMods,
-  parseStyle,
-} from '../utils/styles';
+import { DIRECTIONS, filterMods, parseStyle } from '../utils/styles.js';
 
-export default function borderStyle({ border }) {
-  if (!border && border !== 0) return '';
+/**
+ *
+ * @param border
+ * @return {{border: string}|*}
+ */
+export function borderStyle({ border }) {
+  if (!border && border !== 0) return;
 
   if (border === true) border = '1bw';
 
@@ -22,14 +22,14 @@ export default function borderStyle({ border }) {
   const styleValue = [value, type, borderColor].join(' ');
 
   if (!directions.length) {
-    return createRule('border', styleValue);
+    return { border: styleValue };
   }
 
   return mods.reduce((styles, dir) => {
-    styles += createRule(`border-${dir}`, styleValue);
+    styles[`border-${dir}`] = styleValue;
 
     return styles;
-  }, '');
+  }, {});
 }
 
-borderStyle.__styleLookup = ['border'];
+borderStyle.__lookupStyles = ['border'];

@@ -1,13 +1,15 @@
 import React, { forwardRef } from 'react';
 import THEMES from '../../data/themes';
-import Base from '../../components/Base';
+import { Base } from '../../components/Base';
 import {
   BLOCK_STYLES,
   DIMENSION_STYLES,
   COLOR_STYLES,
-  POSITION_STYLES, FLOW_STYLES, BASE_STYLES,
+  POSITION_STYLES,
+  FLOW_STYLES,
+  BASE_STYLES,
 } from '../../styles/list';
-import { extractStyles } from '../../utils/styles';
+import { extractStyles } from '../../utils/styles.js';
 
 const DEFAULT_STYLES = {
   display: 'inline-flex',
@@ -31,29 +33,23 @@ const STYLE_LIST = [
   ...POSITION_STYLES,
 ];
 
-const Badge = forwardRef(({ type, children, ...props }, ref) => {
+export const Badge = forwardRef(({ type, children, ...props }, ref) => {
   const { styles, otherProps } = extractStyles(props, STYLE_LIST, {
     ...DEFAULT_STYLES,
-    padding: typeof children === 'string'
-      ? children.length > 2
-        ? '0 2px'
-        : children.length > 1
-        ? '0 1px'
-        : 0
-      : 0,
+    padding:
+      typeof children === 'string'
+        ? children.length > 2
+          ? '0 2px'
+          : children.length > 1
+          ? '0 1px'
+          : 0
+        : 0,
     fill: THEMES[type] ? THEMES[type].color : '#purple',
   });
 
   return (
-    <Base
-      role="region"
-      {...otherProps}
-      styles={styles}
-      ref={ref}
-    >
+    <Base role="region" {...otherProps} styles={styles} ref={ref}>
       {children}
     </Base>
   );
 });
-
-export default Badge;

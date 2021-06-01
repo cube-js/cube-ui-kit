@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
-
-import UIKitFileTabs from './FileTabs';
-
-// fix component name
-const FileTabs = (args) => <UIKitFileTabs {...args} />;
-
-FileTabs.TabPane = UIKitFileTabs.TabPane;
+import { FileTabs } from './FileTabs';
 
 export default {
   title: 'UIKit/Molecules/FileTabs',
@@ -28,7 +22,12 @@ const Template = () => {
   return (
     <FileTabs activeKey={activeKey} onTabClose={onClose} onTabClick={onPress}>
       {arr.map((n) => (
-        <FileTabs.TabPane tab={`Long Tab ${n}`} id={n} key={n} isDirty={n === 3}>
+        <FileTabs.TabPane
+          tab={`Long Tab ${n}`}
+          id={n}
+          key={n}
+          isDirty={n === 3}
+        >
           Content of tab {n}
         </FileTabs.TabPane>
       ))}

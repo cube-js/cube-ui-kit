@@ -1,6 +1,6 @@
-import { createRule, parseStyle } from '../utils/styles';
+import { parseStyle } from '../utils/styles.js';
 
-export default function bgStyle({ fill }) {
+export function fillStyle({ fill }) {
   if (!fill) return '';
 
   if (fill.startsWith('#')) {
@@ -14,20 +14,23 @@ export default function bgStyle({ fill }) {
     name = match[1];
   }
 
-  return [createRule('background-color', fill)]
-    .concat(
-      name
-        ? [
-            createRule(`--context-fill-color`, `var(--${name}-color)`, '>*'),
-            createRule(
-              `--context-fill-color-rgb`,
-              `var(--${name}-color-rgb)`,
-              '>*',
-            ),
-          ]
-        : [],
-    )
-    .join();
+  const styles = [
+    {
+      'background-color': fill,
+    },
+  ];
+
+  if (name) {
+    styles.push([
+      {
+        $: '>*',
+        '--context-fill-color': `var(--${name}-color)`,
+        '--context-fill-color-rgb': `var(--${name}-color-rgb)`,
+      },
+    ]);
+  }
+
+  return styles;
 }
 
-bgStyle.__styleLookup = ['fill'];
+fillStyle.__lookupStyles = ['fill'];

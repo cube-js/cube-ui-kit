@@ -18,7 +18,7 @@ const Button = styled.button((props) => {
   `;
 });
 
-export default function CloudLogo(props) {
+export function CloudLogo(props) {
   let ref = React.useRef();
   let { buttonProps } = useButton(props, ref);
 

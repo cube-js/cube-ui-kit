@@ -1,12 +1,6 @@
 import React from 'react';
-
-import UIKitTopBar from './TopBar';
-import UIKitButton from '../../atoms/Button/Button';
-import UIKitSpace from '../../components/Space';
-
-// fix component name
-const TopBar = (args) => <UIKitTopBar {...args} />;
-const Button = (args) => <UIKitButton {...args} />;
+import { TopBar } from './TopBar';
+import { Button } from '../../index';
 
 export default {
   title: 'UIKit/Molecules/TopBar',

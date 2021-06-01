@@ -5,15 +5,15 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import Action from '../../components/Action';
-import Card from '../../atoms/Card/Card';
-import Flow from '../../components/Flow';
-import Flex from '../../components/Flex';
-import Block from '../../components/Block';
-import Button from '../../atoms/Button/Button';
-import Space from '../../components/Space';
+import { Action } from '../../components/Action';
+import { Card } from '../../atoms/Card/Card';
+import { Flow } from '../../components/Flow';
+import { Flex } from '../../components/Flex';
+import { Block } from '../../components/Block';
+import { Button } from '../../atoms/Button/Button';
+import { Space } from '../../components/Space';
+import { Title } from '../../components/Title';
 import styled from 'styled-components';
-import Title from '../../components/Title';
 import { CloseOutlined } from '@ant-design/icons';
 import { CSSTransition } from 'react-transition-group';
 
@@ -81,7 +81,7 @@ const Overlay = styled.div`
   }
 `;
 
-export default function Modal({
+export function Modal({
   title,
   isVisible,
   type,

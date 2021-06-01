@@ -1,9 +1,5 @@
 import React from 'react';
-
-import UIKitSearchField from './SearchField';
-
-// fix component name
-const SearchField = (args) => <UIKitSearchField {...args} />;
+import { SearchField } from './SearchField';
 
 export default {
   title: 'UIKit/Atoms/SearchField',

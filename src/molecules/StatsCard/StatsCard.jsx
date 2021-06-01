@@ -1,9 +1,9 @@
 import React from 'react';
-import Card from '../../atoms/Card/Card';
-import Title from '../../components/Title';
-import Text from '../../components/Text';
+import { Card } from '../../atoms/Card/Card';
+import { Title } from '../../components/Title';
+import { Text } from '../../components/Text';
 
-export default function StatsCard({ title, value, suffix, ...props }) {
+export function StatsCard({ title, value, suffix, ...props }) {
   return (
     <Card
       gap="1x"

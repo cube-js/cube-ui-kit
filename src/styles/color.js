@@ -1,11 +1,11 @@
-import { createRule, parseColor } from '../utils/styles';
+import { parseColor } from '../utils/styles.js';
 
-export default function colorStyle({ color }) {
+export function colorStyle({ color }) {
   if (!color) return '';
 
   color = parseColor(color).color;
 
-  return createRule('color', color);
+  return { color };
 }
 
-colorStyle.__styleLookup = ['color'];
+colorStyle.__lookupStyles = ['color'];

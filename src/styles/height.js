@@ -1,9 +1,9 @@
-import dimensionStyle from './dimension';
+import { dimensionStyle } from './dimension.js';
 
 const dimension = dimensionStyle('height');
 
-export default function heightStyle({ height }) {
+export function heightStyle({ height }) {
   return dimension(height);
 }
 
-heightStyle.__styleLookup = ['height'];
+heightStyle.__lookupStyles = ['height'];

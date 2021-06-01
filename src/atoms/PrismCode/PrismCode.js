@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Prism from 'prismjs';
 
-class PrismCode extends Component {
+export class PrismCode extends Component {
   componentDidMount() {
     Prism.highlightAll();
   }
@@ -20,5 +20,3 @@ class PrismCode extends Component {
     );
   }
 }
-
-export default PrismCode;

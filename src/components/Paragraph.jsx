@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import Text from './Text';
+import { Text } from './Text';
 import {
   BASE_STYLES,
   BLOCK_STYLES,
@@ -7,7 +7,7 @@ import {
   POSITION_STYLES,
   TEXT_STYLES,
 } from '../styles/list';
-import { extractStyles } from '../utils/styles';
+import { extractStyles } from '../utils/styles.js';
 
 const DEFAULT_STYLES = {
   size: 'text',
@@ -23,17 +23,12 @@ const STYLE_PROPS = [
   ...POSITION_STYLES,
 ];
 
-const Paragraph = forwardRef((props, ref) => {
-  const { styles, otherProps } = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
-
-  return (
-    <Text
-      as="p"
-      {...otherProps}
-      styles={styles}
-      ref={ref}
-    />
+export const Paragraph = forwardRef((props, ref) => {
+  const { styles, otherProps } = extractStyles(
+    props,
+    STYLE_PROPS,
+    DEFAULT_STYLES,
   );
-});
 
-export default Paragraph;
+  return <Text as="p" {...otherProps} styles={styles} ref={ref} />;
+});

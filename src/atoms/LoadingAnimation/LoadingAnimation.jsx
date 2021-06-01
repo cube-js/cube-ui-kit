@@ -1,5 +1,5 @@
 import React from 'react';
-import Block from '../../components/Block';
+import { Block } from '../../components/Block';
 import styled from 'styled-components';
 
 const POSITIONS = [
@@ -134,7 +134,7 @@ const SIZE_MAP = {
   large: 96,
 };
 
-export default function LoadingAnimation({ size, ...props }) {
+export function LoadingAnimation({ size, ...props }) {
   size = SIZE_MAP[size] || size || SIZE_MAP.medium;
 
   return (

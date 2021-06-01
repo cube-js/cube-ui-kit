@@ -1,8 +1,8 @@
 import React from 'react';
-import Action from '../../components/Action';
-import Card from '../../atoms/Card/Card';
-import Block from '../../components/Block';
-import Flex from '../../components/Flex';
+import { Action } from '../../components/Action';
+import { Card } from '../../atoms/Card/Card';
+import { Block } from '../../components/Block';
+import { Flex } from '../../components/Flex';
 import THEMES from '../../data/themes';
 import {
   CheckOutlined,
@@ -11,7 +11,7 @@ import {
   InfoOutlined,
 } from '@ant-design/icons';
 
-export default function Alert({ type, children, onClose, ...props }) {
+export function Notification({ type, children, onClose, ...props }) {
   type = type || 'note';
 
   let Icon;

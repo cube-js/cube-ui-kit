@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import Base from '../../components/Base';
+import { Base } from '../../components/Base';
 import {
   BLOCK_STYLES,
   COLOR_STYLES,
@@ -7,7 +7,7 @@ import {
   FLOW_STYLES,
   POSITION_STYLES,
 } from '../../styles/list';
-import { extractStyles } from '../../utils/styles';
+import { extractStyles } from '../../utils/styles.js';
 
 const DEFAULT_STYLES = {
   display: 'block',
@@ -42,23 +42,17 @@ const CSS = `
   }
 `;
 
-const Placeholder = forwardRef(({ size = '2x', circle, ...props }, ref) => {
-  const { styles, otherProps } = extractStyles(props, STYLE_LIST, {
-    ...DEFAULT_STYLES,
-    height: size,
-    width: (circle ? size : false),
-    radius: circle ? '9999rem' : '1r',
-  });
+export const Placeholder = forwardRef(
+  ({ size = '2x', circle, ...props }, ref) => {
+    const { styles, otherProps } = extractStyles(props, STYLE_LIST, {
+      ...DEFAULT_STYLES,
+      height: size,
+      width: circle ? size : false,
+      radius: circle ? '9999rem' : '1r',
+    });
 
-  return (
-    <Base
-      role="region"
-      css={CSS}
-      {...otherProps}
-      styles={styles}
-      ref={ref}
-    />
-  );
-});
-
-export default Placeholder;
+    return (
+      <Base role="region" css={CSS} {...otherProps} styles={styles} ref={ref} />
+    );
+  },
+);

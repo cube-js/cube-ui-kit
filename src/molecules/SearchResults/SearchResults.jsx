@@ -4,13 +4,13 @@ import {
   CaretUpOutlined,
   FileOutlined,
 } from '@ant-design/icons';
-import Flex from '../../components/Flex';
-import Action from '../../components/Action';
-import Button from '../../atoms/Button/Button';
-import Space from '../../components/Space';
-import Block from '../../components/Block';
-import Text from '../../components/Text';
-import Paragraph from '../../components/Paragraph';
+import { Flex } from '../../components/Flex';
+import { Action } from '../../components/Action';
+import { Button } from '../../atoms/Button/Button';
+import { Space } from '../../components/Space';
+import { Block } from '../../components/Block';
+import { Paragraph } from '../../components/Paragraph';
+import { Text } from '../../components/Text';
 
 const TEXT_OVERFLOW_STYLES = {
   whiteSpace: 'nowrap',
@@ -61,7 +61,7 @@ const HOVER_CSS = `
   }
 `;
 
-export default function SearchResults({
+export function SearchResults({
   onSelect,
   files,
   selectedKey,
@@ -107,7 +107,12 @@ export default function SearchResults({
 
   return (
     <Flex
-      styles={{ flow: 'column', width: '100%', gap: '1bw', padding: '2x bottom' }}
+      styles={{
+        flow: 'column',
+        width: '100%',
+        gap: '1bw',
+        padding: '2x bottom',
+      }}
       {...otherProps}
     >
       <Paragraph color="#dark.50" padding="1x 0">

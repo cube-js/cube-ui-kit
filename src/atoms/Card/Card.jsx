@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import Base from '../../components/Base';
+import { Base } from '../../components/Base';
 import {
   BLOCK_STYLES,
   DIMENSION_STYLES,
@@ -7,7 +7,7 @@ import {
   POSITION_STYLES,
   FLOW_STYLES,
 } from '../../styles/list';
-import { extractStyles } from '../../utils/styles';
+import { extractStyles } from '../../utils/styles.js';
 
 const DEFAULT_STYLES = {
   display: 'block',
@@ -27,17 +27,12 @@ const STYLE_LIST = [
   ...FLOW_STYLES,
 ];
 
-const Card = forwardRef(({ ...props }, ref) => {
-  const { styles, otherProps } = extractStyles(props, STYLE_LIST, DEFAULT_STYLES);
-
-  return (
-    <Base
-      role="region"
-      {...otherProps}
-      styles={styles}
-      ref={ref}
-    />
+export const Card = forwardRef(({ ...props }, ref) => {
+  const { styles, otherProps } = extractStyles(
+    props,
+    STYLE_LIST,
+    DEFAULT_STYLES,
   );
-});
 
-export default Card;
+  return <Base role="region" {...otherProps} styles={styles} ref={ref} />;
+});

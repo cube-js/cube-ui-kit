@@ -1,15 +1,10 @@
 import React, { useState } from 'react';
-
-import UIKitModal from './Modal';
-import UIKitButton from '../../atoms/Button/Button';
-
-// fix component name
-const Modal = (args) => <UIKitModal {...args} />;
-const Button = (args) => <UIKitButton {...args} />;
+import { Modal } from './Modal';
+import { Button } from '../../atoms/Button/Button';
 
 export default {
   title: 'UIKit/Molecules/Modal',
-  component: UIKitModal,
+  component: Modal,
   argTypes: {
     type: {
       control: {

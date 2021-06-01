@@ -1,9 +1,5 @@
 import React from 'react';
-
-import UIKitBadge from './Badge';
-
-// fix component name
-const Badge = (args) => <UIKitBadge {...args} />;
+import { Badge } from './Badge';
 
 export default {
   title: 'UIKit/Atoms/Badge',

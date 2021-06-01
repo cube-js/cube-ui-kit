@@ -1,6 +1,5 @@
 import React from 'react';
-
-import UIKitDirectoryTree from './DirectoryTree';
+import { DirectoryTree } from './DirectoryTree';
 
 const TREE_DATA = [
   {
@@ -105,9 +104,6 @@ const TREE_DIFF_DATA = [
     mode: 'modified',
   },
 ];
-
-// fix component name
-const DirectoryTree = (args) => <UIKitDirectoryTree {...args} />;
 
 export default {
   title: 'UIKit/Molecules/DirectoryTree',

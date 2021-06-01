@@ -1,9 +1,33 @@
 import React, { forwardRef, useState, useEffect } from 'react';
-import Action from '../../components/Action';
-import Space from '../../components/Space';
+import { Action } from '../../components/Action';
+import { Space } from '../../components/Space';
 import { useCombinedRefs } from '../../utils/react';
 import { LoadingOutlined } from '@ant-design/icons';
 import { propDeprecationWarning } from '../../utils/warnings';
+import { useContextStyles } from '../../providers/Styles';
+
+function provideStyles({
+  size,
+  type,
+  isDisabled,
+  ghost,
+  isLoading,
+  icon,
+  children,
+}) {
+  return {
+    ...(STYLES_BY_SIZE[size] || STYLES_BY_SIZE.default),
+    ...DEFAULT_STYLES,
+    ...(STYLES_BY_TYPE[type] || STYLES_BY_TYPE.default),
+    ...(isDisabled
+      ? {
+          ...(type !== 'tab' ? STYLES_BY_TYPE.disabled : {}),
+        }
+      : {}),
+    ...(ghost ? { fill: '#clear' } : null),
+    ...((isLoading || icon) && !children ? { padding: '(1.25x - 1px)' } : null),
+  };
+}
 
 const STYLES_BY_TYPE = {
   default: {
@@ -12,8 +36,8 @@ const STYLES_BY_TYPE = {
       pressed: '#purple.30',
     },
     fill: {
-      ',pressed': '#purple.10',
       hovered: '#purple.20',
+      'pressed | !hovered': '#purple.10',
     },
     color: '#purple',
   },
@@ -23,7 +47,7 @@ const STYLES_BY_TYPE = {
     padding: '0',
     radius: {
       '': '0',
-      'focused': '1r',
+      focused: '1r',
     },
     fill: '#clear',
     color: {
@@ -32,7 +56,7 @@ const STYLES_BY_TYPE = {
     },
     shadow: {
       '': '0 @border-width 0 0 #purple-03.20',
-      'focused': '0 0 0 @outline-width #purple-03',
+      focused: '0 0 0 @outline-width #purple-03',
     },
   },
   primary: {
@@ -41,8 +65,8 @@ const STYLES_BY_TYPE = {
       pressed: '#purple-text',
     },
     fill: {
-      ',pressed': '#purple',
       hovered: '#purple-text',
+      'pressed | !hovered': '#purple',
     },
     color: '#white',
   },
@@ -52,8 +76,8 @@ const STYLES_BY_TYPE = {
       pressed: '#purple-text.10',
     },
     fill: {
-      ',pressed': '#purple.0',
       hovered: '#purple.05',
+      'pressed | !hovered': '#purple.0',
     },
     color: '#purple-text',
   },
@@ -63,7 +87,8 @@ const STYLES_BY_TYPE = {
       pressed: '#danger-text',
     },
     fill: {
-      ',pressed': '#danger',
+      '': '#danger',
+      pressed: '#danger',
       hovered: '#danger-text',
     },
     color: '#white',
@@ -77,7 +102,7 @@ const STYLES_BY_TYPE = {
     color: {
       '': '#dark.75',
       hovered: '#dark.75',
-      'pressed, hovered & pressed': '#purple',
+      pressed: '#purple',
     },
     textAlign: 'left',
     padding: '(1x - 1px) (1.5x - 1px)',
@@ -87,16 +112,10 @@ const STYLES_BY_TYPE = {
     //   '': '',
     //   selected: 'inset 0 -1ow 0 0 #purple',
     // },
-    opacity: {
-      '': 1,
-      disabled: 0.5,
-      selected: 1,
-    },
     color: {
       '': '#dark',
-      disabled: '#dark.50',
-      'hovered & disabled': '#dark.50',
       'selected, hovered': '#purple-text',
+      disabled: '#dark.50',
     },
     fill: '#purple.0',
     textAlign: 'center',
@@ -110,7 +129,6 @@ const STYLES_BY_TYPE = {
     // border: '#clear',
     fill: '#dark.08',
     color: '#dark.60',
-    opacity: 0.5,
   },
 };
 
@@ -154,6 +172,7 @@ const DEFAULT_STYLES = {
   opacity: {
     '': 1,
     disabled: 0.5,
+    selected: 1,
   },
   cursor: 'pointer',
   fontWeight: 500,
@@ -172,89 +191,93 @@ const CSS = `
 
 const DEPRECATED_PROPS = ['disabled', 'loading', 'onClick'];
 
-export default forwardRef(function Button(
-  {
-    type,
-    size,
-    styles,
-    ghost,
-    children,
-    css,
-    icon,
-    skipWarnings,
-    ...props
-  },
-  ref,
-) {
-  if (!skipWarnings) {
-    propDeprecationWarning('Action', props, DEPRECATED_PROPS);
-  }
-
-  const isDisabled = props.isDisabled;
-  const isLoading = props.isLoading;
-  const isSelected = props.isSelected;
-  const [showLoadingIcon, setShowLoadingIcon] = useState(isLoading || false);
-  const [pendingLoading, setPendingLoading] = useState(false);
-  const [currentLoading, setCurrentLoading] = useState(isLoading);
-  const combinedRef = useCombinedRefs(ref);
-
-  styles = {
-    ...(STYLES_BY_SIZE[size] || STYLES_BY_SIZE.default),
-    ...DEFAULT_STYLES,
-    ...(STYLES_BY_TYPE[type] || STYLES_BY_TYPE.default),
-    ...(isDisabled ? {
-      ...(type !== 'tab' ? STYLES_BY_TYPE.disabled : {}),
-    } : {}),
-    ...(ghost ? { fill: '#clear' }  : null),
-    ...((isLoading || icon) && !children ? { padding: '(1.25x - 1px)' } : null),
-    ...styles,
-  };
-
-  if (isLoading && !children) {
-    styles.size = '1em 1em';
-  }
-
-  useEffect(() => {
-    setCurrentLoading(isLoading);
-    if (isLoading) {
-      setShowLoadingIcon(true);
-      setTimeout(() => {
-        setCurrentLoading((currentLoading) => {
-          if (currentLoading) {
-            setPendingLoading(true);
-          }
-
-          return currentLoading;
-        });
-      });
-    } else {
-      setPendingLoading(false);
+export const Button = forwardRef(
+  (
+    { type, size, styles, ghost, children, css, icon, skipWarnings, ...props },
+    ref,
+  ) => {
+    if (!skipWarnings) {
+      propDeprecationWarning('Action', props, DEPRECATED_PROPS);
     }
-  }, [isLoading]);
 
-  return (
-    <Action
-      elementType={props.to ? 'a' : null}
-      css={`
-        ${CSS}${CSS_BY_TYPE[type] || ''}${css}
-      `}
-      {...props}
-      ref={combinedRef}
-      isDisabled={isLoading || isDisabled}
-      data-is-loading={isLoading ? '' : undefined}
-      data-is-selected={isSelected ? '' : undefined}
-      styles={styles}
-      skipWarnings={skipWarnings}
-    >
-      {showLoadingIcon ? (
-        <LoadingOutlined
-          style={{
-            opacity: pendingLoading ? 1 : 0,
-            marginRight: children ? (pendingLoading ? 8 : -14) : 0,
-          }}
-        />
-      ) : null}
-      {icon ? <Space gap="1x">{!showLoadingIcon && !isLoading ? icon : null}{ children ? <div>{children}</div> : null}</Space> : children}
-    </Action>
-  );
-});
+    const isDisabled = props.isDisabled;
+    const isLoading = props.isLoading;
+    const isSelected = props.isSelected;
+    const [showLoadingIcon, setShowLoadingIcon] = useState(isLoading || false);
+    const [pendingLoading, setPendingLoading] = useState(false);
+    const [currentLoading, setCurrentLoading] = useState(isLoading);
+    const combinedRef = useCombinedRefs(ref);
+    const propsForStyles = {
+      ...props,
+      isLoading,
+      isDisabled,
+      size,
+      type,
+      ghost,
+      icon,
+      children,
+    };
+    const contextStyles = useContextStyles('Button', propsForStyles);
+
+    styles = {
+      ...provideStyles(propsForStyles),
+      ...contextStyles,
+      ...styles,
+    };
+
+    if (isLoading && !children) {
+      styles.size = '1em 1em';
+    }
+
+    useEffect(() => {
+      setCurrentLoading(isLoading);
+      if (isLoading) {
+        setShowLoadingIcon(true);
+        setTimeout(() => {
+          setCurrentLoading((currentLoading) => {
+            if (currentLoading) {
+              setPendingLoading(true);
+            }
+
+            return currentLoading;
+          });
+        });
+      } else {
+        setPendingLoading(false);
+      }
+    }, [isLoading]);
+
+    return (
+      <Action
+        elementType={props.to ? 'a' : null}
+        css={`
+          ${CSS}${CSS_BY_TYPE[type] || ''}${css || ''}
+        `}
+        {...props}
+        ref={combinedRef}
+        isDisabled={isLoading || isDisabled}
+        data-is-loading={isLoading ? '' : undefined}
+        data-is-selected={isSelected ? '' : undefined}
+        styles={styles}
+        skipWarnings={skipWarnings}
+      >
+        {showLoadingIcon ? (
+          <LoadingOutlined
+            style={{
+              opacity: pendingLoading ? 1 : 0,
+              marginRight: children ? (pendingLoading ? 8 : -14) : 0,
+            }}
+          />
+        ) : null}
+        {icon ? (
+          <Space gap="1x">
+            {!showLoadingIcon && !isLoading ? icon : null}
+            {children ? <div>{children}</div> : null}
+          </Space>
+        ) : (
+          children
+        )}
+      </Action>
+    );
+  },
+);

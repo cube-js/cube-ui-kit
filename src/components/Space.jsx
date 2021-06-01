@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import Base from './Base';
+import { Base } from './Base';
 import {
   BASE_STYLES,
   BLOCK_STYLES,
@@ -8,7 +8,7 @@ import {
   FLOW_STYLES,
   POSITION_STYLES,
 } from '../styles/list';
-import { extractStyles } from '../utils/styles';
+import { extractStyles } from '../utils/styles.js';
 
 const DEFAULT_STYLES = {
   display: 'flex',
@@ -25,24 +25,20 @@ const STYLE_PROPS = [
   ...FLOW_STYLES,
 ];
 
-const Space = forwardRef(function Space(props, ref) {
-  const flow = props.direction ? (props.direction === 'vertical' ? 'column' : 'row') : (props.flow || 'row');
+export const Space = forwardRef(function Space(props, ref) {
+  const flow = props.direction
+    ? props.direction === 'vertical'
+      ? 'column'
+      : 'row'
+    : props.flow || 'row';
   const { styles, otherProps } = extractStyles(props, STYLE_PROPS, {
     ...DEFAULT_STYLES,
     flow,
-    items: props.align ? props.align : (flow === 'row' ? 'center' : 'stretch'),
+    items: props.align ? props.align : flow === 'row' ? 'center' : 'stretch',
   });
 
   delete otherProps.align;
   delete otherProps.direction;
 
-  return (
-    <Base
-      {...otherProps}
-      styles={styles}
-      ref={ref}
-    />
-  );
+  return <Base {...otherProps} styles={styles} ref={ref} />;
 });
-
-export default Space;

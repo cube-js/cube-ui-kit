@@ -1,8 +1,8 @@
 import React from 'react';
-import Placeholder from '../Placeholder/Placeholder';
-import Flow from '../../components/Flow';
-import Space from '../../components/Space';
-import Grid from '../../components/Grid';
+import { Placeholder } from '../Placeholder/Placeholder';
+import { Flow } from '../../components/Flow';
+import { Space } from '../../components/Space';
+import { Grid } from '../../components/Grid';
 
 const LAYOUT_MAP = {
   page({ lines, children, ...props }) {
@@ -149,7 +149,7 @@ const LAYOUT_MAP = {
   },
 };
 
-export default function Skeleton({ layout, ...props }) {
+export function Skeleton({ layout, ...props }) {
   layout = layout || 'page';
 
   return LAYOUT_MAP[layout] ? (

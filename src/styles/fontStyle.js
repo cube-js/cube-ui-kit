@@ -1,6 +1,4 @@
-import { createRule } from '../utils/styles';
-
-export default function fontStyleStyle({ fontStyle }) {
+export function fontStyleStyle({ fontStyle }) {
   if (fontStyle === true) {
     fontStyle = 'italic';
   }
@@ -9,7 +7,7 @@ export default function fontStyleStyle({ fontStyle }) {
     fontStyle = fontStyle ? 'italic' : 'normal';
   }
 
-  return createRule('font-style', fontStyle);
+  return { 'font-style': fontStyle };
 }
 
-fontStyleStyle.__styleLookup = ['fontStyle'];
+fontStyleStyle.__lookupStyles = ['fontStyle'];

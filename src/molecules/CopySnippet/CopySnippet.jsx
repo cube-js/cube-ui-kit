@@ -1,13 +1,13 @@
 import React from 'react';
 import copy from 'clipboard-copy';
-import Block from '../../components/Block';
-import Button from '../../atoms/Button/Button';
-import Card from '../../atoms/Card/Card';
-import Grid from '../../components/Grid';
-import notification from '../../services/notification';
+import { Block } from '../../components/Block';
+import { Button } from '../../atoms/Button/Button';
+import { Card } from '../../atoms/Card/Card';
+import { Grid } from '../../components/Grid';
+import { PrismCode } from '../../atoms/PrismCode/PrismCode';
+import { notification } from '../../services/notification';
 import { CopyOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
-import PrismCode from '../../atoms/PrismCode/PrismCode';
 
 const POSITION_ACTION = {
   position: 'absolute',
@@ -62,7 +62,7 @@ const ButtonContainer = styled(Block)`
       : ''}
 `;
 
-export default function CopySnippet({
+export function CopySnippet({
   code,
   title,
   nowrap,

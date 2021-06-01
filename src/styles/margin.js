@@ -1,11 +1,6 @@
-import {
-  createRule,
-  parseStyle,
-  DIRECTIONS,
-  filterMods,
-} from '../utils/styles';
+import { parseStyle, DIRECTIONS, filterMods } from '../utils/styles.js';
 
-export default function marginStyle({ margin }) {
+export function marginStyle({ margin }) {
   if (!margin && margin !== 0) return '';
 
   if (margin === true) margin = '1x';
@@ -14,24 +9,21 @@ export default function marginStyle({ margin }) {
     margin = `${margin}px`;
   }
 
-  const { values, mods } = parseStyle(margin, 1);
+  const { values, mods } = parseStyle(margin);
 
   const directions = filterMods(mods, DIRECTIONS);
 
   if (!directions.length) {
-    return createRule('margin', values.join(' '));
+    return { margin: values.join(' ') };
   }
 
   return directions.reduce((styles, dir) => {
     const index = DIRECTIONS.indexOf(dir);
 
-    styles += createRule(
-      `margin-${dir}`,
-      values[index] || values[index % 2] || values[0],
-    );
+    styles[`margin-${dir}`] = values[index] || values[index % 2] || values[0];
 
     return styles;
-  }, '');
+  }, {});
 }
 
-marginStyle.__styleLookup = ['margin'];
+marginStyle.__lookupStyles = ['margin'];

@@ -1,6 +1,5 @@
 import React from 'react';
-
-import UIKitSearchResults from './SearchResults';
+import { SearchResults } from './SearchResults';
 
 const FILES_DATA = [
   {
@@ -52,9 +51,6 @@ const FILES_DATA = [
     ],
   },
 ];
-
-// fix component name
-const SearchResults = (args) => <UIKitSearchResults {...args} />;
 
 export default {
   title: 'UIKit/Molecules/SearchResults',

@@ -1,11 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Notification from '../molecules/Notification/Notification';
+import { Notification } from '../molecules/Notification/Notification';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 
 let ID = 0;
 
-const notification = {
+export const notification = {
   defaultOptions: {
     duration: 5000,
   },
@@ -72,5 +72,3 @@ const notification = {
     this.show('info', message, options);
   },
 };
-
-export default notification;

@@ -1,9 +1,5 @@
 import React from 'react';
-
-import UIKitCopySnippet from './CopySnippet';
-
-// fix component name
-const CopySnippet = (args) => <UIKitCopySnippet {...args} />;
+import { CopySnippet } from './CopySnippet';
 
 export default {
   title: 'UIKit/Molecules/CopySnippet',

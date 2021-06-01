@@ -1,9 +1,5 @@
 import React from 'react';
-
-import UIKitAlert from './Alert';
-
-// fix component name
-const Alert = (args) => <UIKitAlert {...args} />;
+import { Alert } from './Alert';
 
 export default {
   title: 'UIKit/Atoms/Alert',

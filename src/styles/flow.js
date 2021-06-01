@@ -1,6 +1,4 @@
-import { createRule } from '../utils/styles';
-
-export default function flowStyle({ display, flow }) {
+export function flowStyle({ display, flow }) {
   let style;
 
   if (display.includes('grid')) {
@@ -9,7 +7,7 @@ export default function flowStyle({ display, flow }) {
     style = 'flex-flow';
   }
 
-  return style ? createRule(style, flow) : '';
+  return style ? { [style]: flow } : null;
 }
 
-flowStyle.__styleLookup = ['display', 'flow'];
+flowStyle.__lookupStyles = ['display', 'flow'];

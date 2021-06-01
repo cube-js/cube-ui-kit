@@ -1,8 +1,8 @@
 import React, { forwardRef, useEffect, useState, useRef } from 'react';
 import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
-import Action from '../../components/Action';
-import Base from '../../components/Base';
-import Space from '../../components/Space';
+import { Action } from '../../components/Action';
+import { Base } from '../../components/Base';
+import { Space } from '../../components/Space';
 import { useFocus, useHover } from '@react-aria/interactions';
 import { useSearchFieldState } from '@react-stately/searchfield';
 import { useSearchField } from '@react-aria/searchfield';
@@ -48,7 +48,7 @@ const STYLES = {
   grow: 1,
 };
 
-export default forwardRef(
+export const SearchField = forwardRef(
   (
     {
       isClearable,

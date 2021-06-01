@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import Text from './Text';
+import { Text } from './Text';
 import {
   BASE_STYLES,
   BLOCK_STYLES,
@@ -7,7 +7,7 @@ import {
   POSITION_STYLES,
   TEXT_STYLES,
 } from '../styles/list';
-import { extractStyles } from '../utils/styles';
+import { extractStyles } from '../utils/styles.js';
 
 const DEFAULT_STYLES = {
   display: 'block',
@@ -22,23 +22,16 @@ const STYLE_LIST = [
   ...POSITION_STYLES,
 ];
 
-const Title = forwardRef(({ as, level, ...props }, ref) => {
+export const Title = forwardRef(({ as, level, ...props }, ref) => {
   const tag = `h${level || 1}`;
   const { styles, otherProps } = extractStyles(props, STYLE_LIST, {
     ...DEFAULT_STYLES,
     size: tag,
     fontWeight: (level || 1) === 1 ? 700 : 600,
-  })
+  });
 
-  return (
-    <Text
-      as={as || tag}
-      {...otherProps}
-      styles={styles}
-      ref={ref}
-    />
-  );
-})
+  return <Text as={as || tag} {...otherProps} styles={styles} ref={ref} />;
+});
 
 Title.Danger = function DangerTitle(props) {
   return <Title color="#danger-text" {...props} />;
@@ -47,5 +40,3 @@ Title.Danger = function DangerTitle(props) {
 Title.Success = function SuccessTitle(props) {
   return <Title color="#success-text" {...props} />;
 };
-
-export default Title;

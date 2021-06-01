@@ -1,6 +1,6 @@
-import { createRule, parseStyle } from '../utils/styles';
+import { parseStyle } from '../utils/styles.js';
 
-export default function shadowStyle({ shadow }) {
+export function shadowStyle({ shadow }) {
   if (!shadow) return '';
 
   if (shadow === true) shadow = '0 5px 15px #shadow';
@@ -10,10 +10,9 @@ export default function shadowStyle({ shadow }) {
   const mod = mods[0] || '';
   const shadowColor = color || 'var(--shadow-color)';
 
-  return createRule(
-    '--local-shadow-box-shadow',
-    [mod, ...values, shadowColor].join(' '),
-  );
+  return {
+    '--local-shadow-box-shadow': [mod, ...values, shadowColor].join(' '),
+  };
 }
 
-shadowStyle.__styleLookup = ['shadow'];
+shadowStyle.__lookupStyles = ['shadow'];
