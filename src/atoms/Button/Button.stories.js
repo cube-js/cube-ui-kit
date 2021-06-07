@@ -42,7 +42,15 @@ export default {
       description: "A visual type of the button. Don't affect any logic",
       control: {
         type: 'radio',
-        options: [undefined, 'default', 'primary', 'clear', 'item', 'tab'],
+        options: [
+          undefined,
+          'default',
+          'primary',
+          'outline',
+          'clear',
+          'item',
+          'tab',
+        ],
       },
       table: {
         type: { summary: 'string' },
@@ -120,6 +128,12 @@ Default.args = {
 export const Primary = Template.bind({});
 Primary.args = {
   type: 'primary',
+  label: 'Button',
+};
+
+export const Outline = Template.bind({});
+Outline.args = {
+  type: 'outline',
   label: 'Button',
 };
 

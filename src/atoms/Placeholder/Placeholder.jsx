@@ -8,6 +8,7 @@ import {
   POSITION_STYLES,
 } from '../../styles/list';
 import { extractStyles } from '../../utils/styles.js';
+import { filterBaseProps } from '../../utils/filterBaseProps';
 
 const DEFAULT_STYLES = {
   display: 'block',
@@ -44,7 +45,7 @@ const CSS = `
 
 export const Placeholder = forwardRef(
   ({ size = '2x', circle, ...props }, ref) => {
-    const { styles, otherProps } = extractStyles(props, STYLE_LIST, {
+    const styles = extractStyles(props, STYLE_LIST, {
       ...DEFAULT_STYLES,
       height: size,
       width: circle ? size : false,
@@ -52,7 +53,13 @@ export const Placeholder = forwardRef(
     });
 
     return (
-      <Base role="region" css={CSS} {...otherProps} styles={styles} ref={ref} />
+      <Base
+        role="region"
+        css={CSS}
+        {...filterBaseProps(props, { eventProps: true })}
+        styles={styles}
+        ref={ref}
+      />
     );
   },
 );

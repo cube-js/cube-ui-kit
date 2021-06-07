@@ -2,6 +2,7 @@ import React, { forwardRef } from 'react';
 import { Base } from './Base';
 import { BASE_STYLES, COLOR_STYLES, TEXT_STYLES } from '../styles/list';
 import { extractStyles } from '../utils/styles.js';
+import { filterBaseProps } from '../utils/filterBaseProps';
 
 const STYLE_LIST = [...BASE_STYLES, ...TEXT_STYLES, ...COLOR_STYLES];
 
@@ -20,12 +21,7 @@ const PROP_MAP = {
 
 export const Text = forwardRef(
   ({ as, code, ellipsis, css, nowrap, italic, styleAttrs, ...props }, ref) => {
-    const { styles, otherProps } = extractStyles(
-      props,
-      STYLE_LIST,
-      DEFAULT_STYLES,
-      PROP_MAP,
-    );
+    const styles = extractStyles(props, STYLE_LIST, DEFAULT_STYLES, PROP_MAP);
 
     css = css || '';
 
@@ -53,7 +49,7 @@ export const Text = forwardRef(
       <Base
         as={as || 'span'}
         css={css}
-        {...otherProps}
+        {...filterBaseProps(props, { eventProps: true })}
         styles={styles}
         ref={ref}
       />

@@ -61,8 +61,7 @@ display: none;
     },
     {
       $: ':not([disabled])::placeholder',
-      css:
-        '--local-placeholder-color: var(--placeholder-color, rgba(var(--text-color-rgb), .5));\n',
+      css: '--local-placeholder-color: var(--placeholder-color, rgba(var(--text-color-rgb), .5));\n',
     },
   ],
   button: [

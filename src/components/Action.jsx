@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useState, useRef } from 'react';
+import React, { forwardRef, useRef } from 'react';
 import { useHistory } from 'react-router';
 import {
   BLOCK_STYLES,
@@ -10,12 +10,14 @@ import {
   BASE_STYLES,
 } from '../styles/list';
 import { Base } from './Base';
-import { useFocus, useFocusVisible, useHover } from '@react-aria/interactions';
+import { useHover } from '@react-aria/interactions';
+import { useFocus } from '../utils/interactions';
 import { useButton } from '@react-aria/button';
 import { mergeProps } from '@react-aria/utils';
-import { useCombinedRefs } from '../utils/react';
+import { useCombinedRefs } from '../utils/react/useCombinedRefs';
 import { propDeprecationWarning } from '../utils/warnings';
 import { extractStyles } from '../utils/styles.js';
+import { filterBaseProps } from '../utils/filterBaseProps';
 
 /**
  * Helper to open link.
@@ -84,6 +86,7 @@ const DEFAULT_STYLES = {
     '': '#purple-03.0',
     focused: '#purple-03',
   },
+  transition: 'theme',
 };
 
 const DEPRECATED_PROPS = ['disabled', 'onClick'];
@@ -117,35 +120,22 @@ export const Action = forwardRef(
     );
     const localRef = useRef();
     const combinedRef = useCombinedRefs(ref, localRef);
-    const { styles, otherProps } = extractStyles(
-      props,
-      STYLE_PROPS,
-      DEFAULT_STYLES,
-      null,
-    );
+    const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES, null);
 
-    if ('disabled' in otherProps) {
-      otherProps.isDisabled = otherProps.disabled;
-      delete otherProps.disabled;
+    if ('disabled' in props) {
+      props.isDisabled = props.disabled;
+      delete props.disabled;
     }
 
-    if ('onClick' in otherProps) {
-      otherProps.onPress = otherProps.onClick;
-      delete otherProps.onClick;
+    if ('onClick' in props) {
+      props.onPress = props.onClick;
+      delete props.onClick;
     }
 
-    useEffect(() => {
-      setIsFocused(false);
-    }, [isDisabled]);
+    let { buttonProps, isPressed } = useButton(props, combinedRef);
+    let { hoverProps, isHovered } = useHover({ isDisabled });
 
-    let [isFocused, setIsFocused] = useState(false);
-    let { focusProps } = useFocus({
-      onFocusChange: setIsFocused,
-      elementType: as,
-    });
-    let { buttonProps, isPressed } = useButton(otherProps, combinedRef);
-    let { hoverProps, isHovered } = useHover(otherProps);
-    let { isFocusVisible } = useFocusVisible({});
+    let { focusProps, isFocused } = useFocus({ isDisabled, as }, true);
 
     const customProps = {};
 
@@ -160,24 +150,26 @@ export const Action = forwardRef(
       };
     }
 
-    const { onPress, elementType, ...restProps } = otherProps;
-
-    delete restProps.isDisabled;
-
     return (
       <Base
         data-is-hovered={isHovered && !isDisabled ? '' : null}
         data-is-pressed={isPressed && !isDisabled ? '' : null}
-        data-is-focused={isFocused && isFocusVisible && !isDisabled ? '' : null}
+        data-is-focused={isFocused && !isDisabled ? '' : null}
         data-is-disabled={isDisabled || null}
-        {...mergeProps(buttonProps, hoverProps, focusProps, customProps)}
-        {...restProps}
+        {...mergeProps(
+          buttonProps,
+          hoverProps,
+          focusProps,
+          customProps,
+          filterBaseProps(props, { eventProps: true }),
+        )}
         {...directProps}
         tabIndex={props.as === 'button' ? null : '0'}
         type={htmlType}
         rel={as === 'a' && newTab ? 'rel="noopener noreferrer"' : undefined}
         ref={combinedRef}
         as={as}
+        isDisabled={isDisabled}
         styles={styles}
         target={target}
         href={href || null}

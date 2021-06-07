@@ -8,6 +8,7 @@ import {
   FLOW_STYLES,
 } from '../../styles/list';
 import { extractStyles } from '../../utils/styles.js';
+import { filterBaseProps } from '../../utils/filterBaseProps';
 
 const DEFAULT_STYLES = {
   display: 'block',
@@ -25,7 +26,7 @@ const STYLE_LIST = [
 
 export const Alert = forwardRef(({ type, label, ...props }, ref) => {
   type = type || 'note';
-  const { styles, otherProps } = extractStyles(props, STYLE_LIST, {
+  const styles = extractStyles(props, STYLE_LIST, {
     ...DEFAULT_STYLES,
     fill: THEMES[type] ? THEMES[type].fill : '#clear',
     border:
@@ -33,5 +34,12 @@ export const Alert = forwardRef(({ type, label, ...props }, ref) => {
     color: '#dark',
   });
 
-  return <Base role="region" {...otherProps} styles={styles} ref={ref} />;
+  return (
+    <Base
+      role="region"
+      {...filterBaseProps(props, { eventProps: true })}
+      styles={styles}
+      ref={ref}
+    />
+  );
 });

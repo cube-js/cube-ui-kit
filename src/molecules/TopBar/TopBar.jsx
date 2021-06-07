@@ -28,14 +28,10 @@ const STYLE_LIST = [
 ];
 
 export function TopBar({ children, onLogoPress, ...props }) {
-  const { styles, otherProps } = extractStyles(
-    props,
-    STYLE_LIST,
-    DEFAULT_STYLES,
-  );
+  const styles = extractStyles(props, STYLE_LIST, DEFAULT_STYLES);
 
   return (
-    <Base role="banner" {...otherProps} styles={styles}>
+    <Base role="banner" {...props} styles={styles}>
       <CloudLogo onPress={onLogoPress} />
       <Space grow={1} content="space-between">
         {children}

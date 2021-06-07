@@ -4,6 +4,8 @@ import { Block } from '../../components/Block';
 import { Text } from '../../components/Text';
 import styled from 'styled-components';
 import { extractStyles } from '../../utils/styles.js';
+import { POSITION_STYLES } from '../../styles/list';
+import { filterBaseProps } from '../../utils/filterBaseProps';
 
 const DEFAULT_STYLES = {
   display: 'inline-flex',
@@ -18,7 +20,7 @@ const DEFAULT_STYLES = {
 
 export const Base64Upload = styled(
   React.forwardRef(({ type, onInput, ...props }, ref) => {
-    const { styles, otherProps } = extractStyles(props, [], DEFAULT_STYLES);
+    const styles = extractStyles(props, POSITION_STYLES, DEFAULT_STYLES);
     const [file, setFile] = useState();
     const [error, setError] = useState('');
 
@@ -76,7 +78,12 @@ export const Base64Upload = styled(
 
     return (
       <>
-        <Button tag="button" {...otherProps} styles={styles} ref={ref}>
+        <Button
+          tag="button"
+          {...filterBaseProps(props, { eventProps: true })}
+          styles={styles}
+          ref={ref}
+        >
           <Block
             radius="round"
             fill="#purple.10"

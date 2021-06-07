@@ -8,6 +8,7 @@ import {
   TEXT_STYLES,
 } from '../styles/list';
 import { extractStyles } from '../utils/styles.js';
+import { filterBaseProps } from '../utils/filterBaseProps';
 
 const DEFAULT_STYLES = {
   display: 'block',
@@ -24,13 +25,20 @@ const STYLE_LIST = [
 
 export const Title = forwardRef(({ as, level, ...props }, ref) => {
   const tag = `h${level || 1}`;
-  const { styles, otherProps } = extractStyles(props, STYLE_LIST, {
+  const styles = extractStyles(props, STYLE_LIST, {
     ...DEFAULT_STYLES,
     size: tag,
     fontWeight: (level || 1) === 1 ? 700 : 600,
   });
 
-  return <Text as={as || tag} {...otherProps} styles={styles} ref={ref} />;
+  return (
+    <Text
+      as={as || tag}
+      {...filterBaseProps(props, { eventProps: true })}
+      styles={styles}
+      ref={ref}
+    />
+  );
 });
 
 Title.Danger = function DangerTitle(props) {

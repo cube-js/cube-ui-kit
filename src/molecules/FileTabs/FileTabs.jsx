@@ -401,9 +401,8 @@ FileTabs.TabPane = function FileTabPane({
   children,
   ...props
 }) {
-  const { addTab, removeTab, currentTab, setDirtyTab } = useContext(
-    FileTabsContext,
-  );
+  const { addTab, removeTab, currentTab, setDirtyTab } =
+    useContext(FileTabsContext);
 
   useEffect(() => {
     const tabData = {

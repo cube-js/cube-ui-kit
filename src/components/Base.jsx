@@ -15,7 +15,18 @@ const BaseElement = styled.div(({ css }) => css);
 
 export const Base = forwardRef(
   (
-    { styles, responsive, block, inline, isHidden, qa, qaVal, css, ...props },
+    {
+      styles,
+      breakpoints,
+      block,
+      inline,
+      isHidden,
+      isDisabled,
+      qa,
+      qaVal,
+      css,
+      ...props
+    },
     ref,
   ) => {
     styles = {
@@ -31,10 +42,18 @@ export const Base = forwardRef(
       styles.display = INLINE_MAP[styles.display || 'block'];
     }
 
-    const zonesContext = useContext(ResponsiveContext);
-    const zones = responsive ? pointsToZones(responsive) : zonesContext;
+    const contextBreakpoints = useContext(ResponsiveContext);
+    const zones = pointsToZones(breakpoints || contextBreakpoints);
 
     css = `${css || ''}${renderStyles(styles, zones, STYLE_HANDLER_MAP)}`;
+
+    if (props.hidden == null && isHidden) {
+      props.hidden = !!isHidden;
+    }
+
+    if (props.disabled == null && isDisabled) {
+      props.disabled = !!isDisabled;
+    }
 
     return (
       <BaseElement
@@ -42,7 +61,6 @@ export const Base = forwardRef(
         data-qaval={qaVal}
         {...props}
         ref={ref}
-        hidden={!!isHidden}
         css={css}
       />
     );

@@ -8,6 +8,7 @@ export const POSITION_STYLES = [
   'row',
   'place',
   'z',
+  'margin',
 ];
 
 export const BLOCK_STYLES = [
@@ -16,7 +17,6 @@ export const BLOCK_STYLES = [
   'shadow',
   'border',
   'radius',
-  'margin',
   'opacity',
 ];
 
@@ -31,7 +31,7 @@ export const TEXT_STYLES = [
   'font',
 ];
 
-export const DIMENSION_STYLES = ['width', 'height'];
+export const DIMENSION_STYLES = ['width', 'height', 'basis'];
 
 export const FLOW_STYLES = [
   'flow',
@@ -41,3 +41,14 @@ export const FLOW_STYLES = [
   'columns',
   'rows',
 ];
+
+export const CONTAINER_STYLES = [
+  ...BASE_STYLES,
+  ...COLOR_STYLES,
+  ...DIMENSION_STYLES,
+  ...POSITION_STYLES,
+  ...BLOCK_STYLES,
+  ...FLOW_STYLES,
+];
+
+export const OUTER_STYLES = [...POSITION_STYLES, ...DIMENSION_STYLES];

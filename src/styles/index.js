@@ -15,6 +15,7 @@ import { marginStyle } from './margin.js';
 import { fontStyle } from './font.js';
 import { outlineStyle } from './outline.js';
 import { createStyle } from '../utils/render-styles.js';
+import { transitionStyle } from './transition';
 import { boxShadowCombinator } from './boxShadow.combinator.js';
 import { styleHandlerCacheWrapper } from '../utils/styles.js';
 
@@ -33,6 +34,7 @@ export const STYLES = [
   createStyle('rows', 'grid-template-rows', true),
 ].concat(
   [
+    transitionStyle,
     resetStyle,
     fillStyle,
     widthStyle,

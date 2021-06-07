@@ -10,6 +10,7 @@ import {
   BASE_STYLES,
 } from '../../styles/list';
 import { extractStyles } from '../../utils/styles.js';
+import { filterBaseProps } from '../../utils/filterBaseProps';
 
 const DEFAULT_STYLES = {
   display: 'inline-flex',
@@ -34,7 +35,7 @@ const STYLE_LIST = [
 ];
 
 export const Badge = forwardRef(({ type, children, ...props }, ref) => {
-  const { styles, otherProps } = extractStyles(props, STYLE_LIST, {
+  const styles = extractStyles(props, STYLE_LIST, {
     ...DEFAULT_STYLES,
     padding:
       typeof children === 'string'
@@ -48,7 +49,12 @@ export const Badge = forwardRef(({ type, children, ...props }, ref) => {
   });
 
   return (
-    <Base role="region" {...otherProps} styles={styles} ref={ref}>
+    <Base
+      role="region"
+      {...filterBaseProps(props, { eventProps: true })}
+      styles={styles}
+      ref={ref}
+    >
       {children}
     </Base>
   );

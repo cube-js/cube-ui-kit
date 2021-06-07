@@ -10,6 +10,9 @@ import { Link } from './atoms/Link/Link';
 import { Modal } from './molecules/Modal/Modal';
 import { notification } from './services/notification';
 import { StylesProvider } from './providers/Styles';
+import { Form } from './atoms/Form/Form';
+import { TextField } from './atoms/TextField/TextField';
+import { Provider } from './provider';
 
 window.notification = notification;
 
@@ -20,6 +23,11 @@ function App() {
 
   return (
     <>
+      <Provider>
+        <Form>
+          <TextField label="Something"></TextField>
+        </Form>
+      </Provider>
       <Modal
         cancelText="Cancel"
         okText="Ok"
@@ -70,9 +78,19 @@ function App() {
       </Button>
       <LoadingAnimation />
       <Space padding="1x">
-        <StylesProvider Button={() => ({ color: '#dark' })}>
+        <StylesProvider
+          Button={() => ({
+            color: {
+              '': '#dark',
+              pressed: '#purple-text',
+            },
+          })}
+          Link={() => ({ color: '#dark' })}
+        >
           <StylesProvider Button={() => ({ padding: '2x' })}>
-            <Button>Default</Button>
+            <Button styles={{ padding: '2x', border: '2bw #dark.50' }}>
+              Default
+            </Button>
           </StylesProvider>
         </StylesProvider>
         <Button type="primary">Primary</Button>
@@ -84,12 +102,12 @@ function App() {
       <Space padding="1x">
         <Link to="!https://cube.dev">Cube.dev</Link>
       </Space>
-      <ResponsiveProvider value={[1200, 640]}>
+      <Provider breakpoints={[1200, 640]}>
         <TopBar onLogoPress={() => {}} />
         <Flex
           styles={{
             flow: 'row',
-            content: ['center', , 'start'],
+            content: ['start', 'center', 'start'],
           }}
           gap={['2x', '4x']}
         >
@@ -110,7 +128,7 @@ function App() {
             Text
           </Card>
         </Grid>
-      </ResponsiveProvider>
+      </Provider>
     </>
   );
 }

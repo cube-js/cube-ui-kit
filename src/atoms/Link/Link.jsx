@@ -7,6 +7,7 @@ import {
   TEXT_STYLES,
 } from '../../styles/list';
 import { extractStyles } from '../../utils/styles.js';
+import { filterBaseProps } from '../../utils/filterBaseProps';
 
 const DEFAULT_STYLES = {
   display: 'inline',
@@ -33,6 +34,7 @@ const CSS = `
   transition: color var(--transition) linear,
     background var(--transition) linear, box-shadow var(--transition) linear,
     border-radius var(--transition) linear;
+  text-decoration: none;
 `;
 
 const STYLE_PROPS = [
@@ -43,18 +45,15 @@ const STYLE_PROPS = [
 ];
 
 export const Link = forwardRef((props, ref) => {
-  const { styles, otherProps } = extractStyles(
-    props,
-    STYLE_PROPS,
-    DEFAULT_STYLES,
-  );
+  const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
 
   return (
     <Action
       as="a"
       elementType="a"
       css={CSS}
-      {...otherProps}
+      {...filterBaseProps(props, { eventProps: true })}
+      to={props.to}
       styles={styles}
       ref={ref}
     />

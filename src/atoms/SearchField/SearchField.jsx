@@ -8,7 +8,7 @@ import { useSearchFieldState } from '@react-stately/searchfield';
 import { useSearchField } from '@react-aria/searchfield';
 import { useButton } from '@react-aria/button';
 import { mergeProps } from '@react-aria/utils';
-import { useCombinedRefs } from '../../utils/react';
+import { useCombinedRefs } from '../../utils/react/useCombinedRefs';
 
 const FIELD_STYLES = {
   outline: {

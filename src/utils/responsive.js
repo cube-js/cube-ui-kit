@@ -5,40 +5,48 @@ export function mediaWrapper(cssRules, points) {
     .join('\n');
 }
 
+const zonesCache = {};
+
 export function pointsToZones(points) {
-  const zones = [];
+  const cacheKey = points.join('|');
 
-  points.forEach((point, i) => {
-    const zone = {};
+  if (!zonesCache[cacheKey]) {
+    const zones = [];
 
-    if (i) {
-      zone.max = points[i - 1] - 1;
-    }
+    points.forEach((point, i) => {
+      const zone = {};
 
-    zone.min = point;
+      if (i) {
+        zone.max = points[i - 1] - 1;
+      }
 
-    zones.push(zone);
-  });
+      zone.min = point;
 
-  zones.push({
-    max: points[points.length - 1] - 1,
-  });
+      zones.push(zone);
+    });
 
-  zones.forEach((zone) => {
-    const queries = [];
+    zones.push({
+      max: points[points.length - 1] - 1,
+    });
 
-    if (zone.min) {
-      queries.push(`(min-width: ${zone.min}px)`);
-    }
+    zones.forEach((zone) => {
+      const queries = [];
 
-    if (zone.max) {
-      queries.push(`(max-width: ${zone.max}px)`);
-    }
+      if (zone.min) {
+        queries.push(`(min-width: ${zone.min}px)`);
+      }
 
-    zone.mediaQuery = queries.join(' and ');
-  });
+      if (zone.max) {
+        queries.push(`(max-width: ${zone.max}px)`);
+      }
 
-  return zones;
+      zone.mediaQuery = queries.join(' and ');
+    });
+
+    zonesCache[cacheKey] = zones;
+  }
+
+  return zonesCache[cacheKey];
 }
 
 // export function getResponsiveValue(values, zoneNumber) {

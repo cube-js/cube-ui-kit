@@ -87,7 +87,8 @@ const IGNORE_MODS = [
   'subgrid',
   'initial',
 ];
-const ATTR_REGEXP = /('[^'|]*')|([a-z]+\()|(#[a-z0-9.-]{2,}(?![a-f0-9[-]))|(--[a-z0-9-]+|@[a-z0-9-]+)|([a-z][a-z0-9-]*)|(([0-9]+(?![0-9.])|[0-9-.]{2,}|[0-9-]{2,}|[0-9.-]{3,})([a-z%]{0,3}))|([*/+-])|([()])|(,)/gi;
+const ATTR_REGEXP =
+  /('[^'|]*')|([a-z]+\()|(#[a-z0-9.-]{2,}(?![a-f0-9[-]))|(--[a-z0-9-]+|@[a-z0-9-]+)|([a-z][a-z0-9-]*)|(([0-9]+(?![0-9.])|[0-9-.]{2,}|[0-9-]{2,}|[0-9.-]{3,})([a-z%]{0,3}))|([*/+-])|([()])|(,)/gi;
 const ATTR_CACHE = new Map();
 const ATTR_CACHE_AUTOCALC = new Map();
 const ATTR_CACHE_IGNORE_COLOR = new Map();
@@ -549,7 +550,7 @@ export function extendStyles(defaultStyles, newStyles) {
  * @param {Object} [defaultStyles] - Default style map of the component.
  * @param {Object} [propMap] - Props to style alias map.
  * @param {String[]} [ignoreList] - A list of properties to ignore.
- * @return {{otherProps: {}, styles: {}}}
+ * @return {{}}
  */
 export function extractStyles(
   props,
@@ -558,7 +559,6 @@ export function extractStyles(
   propMap,
   ignoreList = [],
 ) {
-  const otherProps = {};
   const styles = {
     ...defaultStyles,
     ...props.styles,
@@ -574,15 +574,10 @@ export function extractStyles(
       if (value != null && value !== false) {
         styles[propName] = value;
       }
-    } else if (props !== 'styles') {
-      otherProps[propName] = value;
     }
   }, {});
 
-  return {
-    styles,
-    otherProps,
-  };
+  return styles;
 }
 
 /**
@@ -853,7 +848,8 @@ export function styleMapToStyleMapStateList(styleMap, keys) {
   return styleStateMapList;
 }
 
-const STATES_REGEXP = /([&|!^])|([()])|([a-z0-6-]+)|(:[a-z0-6-]+)|(\.[a-z0-6-]+)|(\[[^\]]+])/gi;
+const STATES_REGEXP =
+  /([&|!^])|([()])|([a-z0-6-]+)|(:[a-z0-6-]+)|(\.[a-z0-6-]+)|(\[[^\]]+])/gi;
 export const STATE_OPERATORS = {
   NOT: '!',
   AND: '&',

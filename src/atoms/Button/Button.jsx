@@ -1,7 +1,7 @@
 import React, { forwardRef, useState, useEffect } from 'react';
 import { Action } from '../../components/Action';
 import { Space } from '../../components/Space';
-import { useCombinedRefs } from '../../utils/react';
+import { useCombinedRefs } from '../../utils/react/useCombinedRefs';
 import { LoadingOutlined } from '@ant-design/icons';
 import { propDeprecationWarning } from '../../utils/warnings';
 import { useContextStyles } from '../../providers/Styles';
@@ -36,8 +36,9 @@ const STYLES_BY_TYPE = {
       pressed: '#purple.30',
     },
     fill: {
-      hovered: '#purple.20',
-      'pressed | !hovered': '#purple.10',
+      '': '#purple.10',
+      hovered: '#purple.16',
+      pressed: '#purple.10',
     },
     color: '#purple',
   },
@@ -76,8 +77,22 @@ const STYLES_BY_TYPE = {
       pressed: '#purple-text.10',
     },
     fill: {
-      hovered: '#purple.05',
-      'pressed | !hovered': '#purple.0',
+      '': '#purple.0',
+      hovered: '#purple.16',
+      pressed: '#purple.10',
+    },
+    color: '#purple-text',
+  },
+  outline: {
+    border: {
+      '': '#purple.30',
+      pressed: '#purple-text.10',
+      disabled: '#dark.12',
+    },
+    fill: {
+      '': '#purple.0',
+      hovered: '#purple.16',
+      pressed: '#purple.10',
     },
     color: '#purple-text',
   },

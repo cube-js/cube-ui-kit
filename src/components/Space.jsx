@@ -9,6 +9,7 @@ import {
   POSITION_STYLES,
 } from '../styles/list';
 import { extractStyles } from '../utils/styles.js';
+import { filterBaseProps } from '../utils/filterBaseProps';
 
 const DEFAULT_STYLES = {
   display: 'flex',
@@ -31,14 +32,17 @@ export const Space = forwardRef(function Space(props, ref) {
       ? 'column'
       : 'row'
     : props.flow || 'row';
-  const { styles, otherProps } = extractStyles(props, STYLE_PROPS, {
+  const styles = extractStyles(props, STYLE_PROPS, {
     ...DEFAULT_STYLES,
     flow,
     items: props.align ? props.align : flow === 'row' ? 'center' : 'stretch',
   });
 
-  delete otherProps.align;
-  delete otherProps.direction;
-
-  return <Base {...otherProps} styles={styles} ref={ref} />;
+  return (
+    <Base
+      {...filterBaseProps(props, { eventProps: true })}
+      styles={styles}
+      ref={ref}
+    />
+  );
 });

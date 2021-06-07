@@ -9,6 +9,7 @@ import {
   POSITION_STYLES,
 } from '../styles/list';
 import { extractStyles } from '../utils/styles.js';
+import { filterBaseProps } from '../utils/filterBaseProps';
 
 const DEFAULT_STYLES = {
   display: 'flex',
@@ -25,11 +26,13 @@ const STYLE_PROPS = [
 ];
 
 export const Flex = forwardRef((props, ref) => {
-  const { styles, otherProps } = extractStyles(
-    props,
-    STYLE_PROPS,
-    DEFAULT_STYLES,
-  );
+  const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
 
-  return <Base {...otherProps} styles={styles} ref={ref} />;
+  return (
+    <Base
+      {...filterBaseProps(props, { eventProps: true })}
+      styles={styles}
+      ref={ref}
+    />
+  );
 });
