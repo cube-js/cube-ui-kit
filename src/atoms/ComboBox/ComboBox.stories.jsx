@@ -1,10 +1,11 @@
 import React from 'react';
-import { TextField } from './TextField';
+import { ComboBox } from './ComboBox';
+import { Item } from '../Select/Select';
 import { DollarCircleOutlined } from '@ant-design/icons';
 
 export default {
-  title: 'UIKit/Atoms/TextField',
-  component: TextField,
+  title: 'UIKit/Atoms/ComboBox',
+  component: ComboBox,
   argTypes: {
     icon: {
       defaultValue: false,
@@ -37,6 +38,17 @@ export default {
         defaultValue: { summary: false },
       },
     },
+    hideTrigger: {
+      defaultValue: false,
+      description: 'Hides trigger button',
+      control: {
+        type: 'boolean',
+      },
+      table: {
+        type: { summary: 'boolean' },
+        defaultValue: { summary: false },
+      },
+    },
     validationState: {
       defaultValue: undefined,
       description: 'The position of labels for each field.',
@@ -46,44 +58,34 @@ export default {
       },
       table: {
         type: { summary: 'string' },
-        defaultValue: { summary: 'top' },
+        defaultValue: { summary: undefined },
       },
     },
-    type: {
-      defaultValue: 'text',
-      description: 'Input type',
+    allowsCustomValue: {
+      defaultValue: false,
+      description: 'Allows values that are not listed in options',
+      control: {
+        type: 'boolean',
+      },
+      table: {
+        type: { summary: 'boolean' },
+        defaultValue: { summary: false },
+      },
+    },
+    menuTrigger: {
+      defaultValue: undefined,
+      description: 'Menu trigger behavior',
       control: {
         type: 'radio',
-        options: ['text', 'search', 'url', 'tel', 'email', 'password'],
+        options: ['input', 'focus', 'manual'],
       },
       table: {
         type: { summary: 'string' },
-        defaultValue: { summary: 'text' },
-      },
-    },
-    inputMode: {
-      defaultValue: 'none',
-      description: 'Input type mode',
-      control: {
-        type: 'radio',
-        options: [
-          'none',
-          'text',
-          'tel',
-          'url',
-          'email',
-          'numeric',
-          'decimal',
-          'search',
-        ],
-      },
-      table: {
-        type: { summary: 'string' },
-        defaultValue: { summary: 'none' },
+        defaultValue: { summary: 'input' },
       },
     },
     labelPosition: {
-      defaultValue: 'top',
+      defaultValue: undefined,
       description: 'The position of labels for each field.',
       control: {
         type: 'radio',
@@ -96,6 +98,7 @@ export default {
     },
     label: {
       defaultValue: 'Field label',
+      description: 'Label text.',
       control: 'text',
     },
     errorMessage: {
@@ -103,50 +106,44 @@ export default {
       description: 'Validation error message',
       control: 'text',
     },
-    defaultValue: {
-      defaultValue: '',
+    defaultSelectedKey: {
+      defaultValue: null,
+      description: 'Default selected key',
       control: 'text',
     },
     placeholder: {
       defaultValue: 'Placeholder',
+      description: 'Placeholder text which appears if no value provided',
       control: 'text',
     },
   },
 };
 
-const Template = ({
-  icon,
-  labelPosition,
-  label,
-  placeholder,
-  isLoading,
-  isDisabled,
-  defaultValue,
-  validationState,
-  type,
-}) => (
-  <TextField
-    icon={icon ? <DollarCircleOutlined /> : null}
-    label={label}
-    validationState={validationState}
-    labelPosition={labelPosition}
-    placeholder={placeholder}
-    isDisabled={isDisabled}
-    isLoading={isLoading}
-    defaultValue={defaultValue}
-    type={type}
-    onChange={(query) => console.log('change', query)}
-  />
-);
+const Template = ({ icon, ...props }) => {
+  return (
+    <>
+      <ComboBox
+        icon={icon ? <DollarCircleOutlined /> : null}
+        {...props}
+        onChange={(query) => console.log('change', query)}
+      >
+        <Item key="red">Red</Item>
+        <Item key="orange">Orange</Item>
+        <Item key="yellow">Yellow</Item>
+        <Item key="green">Green</Item>
+        <Item key="blue">Blue</Item>
+        <Item key="purple">Purple</Item>
+        <Item key="violet">Violet</Item>
+      </ComboBox>
+    </>
+  );
+};
 
 export const Default = Template.bind({});
-Default.args = {};
+Default.args = { disallowEmptySelection: true };
 
 export const WithDefaultValue = Template.bind({});
-WithDefaultValue.args = { defaultValue: 'default value' };
+WithDefaultValue.args = { defaultSelectedKey: 'purple' };
 
 export const WithIcon = Template.bind({});
 WithIcon.args = { icon: true };
-
-export const Password = Template.bind({});
-Password.args = { icon: true, type: 'password' };

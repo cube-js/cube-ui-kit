@@ -6,6 +6,7 @@ import { CONTAINER_STYLES } from '../styles/list';
 import { Base } from './Base';
 import { useContextStyles } from '../providers/Styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
+import { modAttrs } from '../utils/react/modAttrs';
 
 const INTL_MESSAGES = {
   '(required)': '(required)',
@@ -24,6 +25,8 @@ export const INLINE_LABEL_STYLES = {
 };
 
 export const LABEL_STYLES = {
+  display: 'flex',
+  items: 'baseline',
   fontWeight: 600,
   size: 'md',
   padding: {
@@ -51,6 +54,8 @@ function Label(props, ref) {
     necessityIndicator = isRequired != null ? 'icon' : null,
     includeNecessityIndicatorInAccessibilityName = false,
     htmlFor,
+    isDisabled,
+    validationState,
     for: labelFor,
     onClick,
     ...otherProps
@@ -90,7 +95,12 @@ function Label(props, ref) {
       ref={domRef}
       styles={styles}
       htmlFor={labelFor || htmlFor}
-      data-is-side={labelPosition === 'left' ? '' : null}
+      {...modAttrs({
+        side: labelPosition === 'left',
+        disabled: isDisabled,
+        invalid: validationState === 'invalid',
+        valid: validationState === 'valid',
+      })}
     >
       {children}
       {(necessityIndicator === 'label' ||

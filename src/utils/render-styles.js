@@ -88,7 +88,7 @@ export function renderStyles(styles, responsive, styleHandlerMap = {}) {
           const pointProps = {};
 
           lookupStyles.forEach((style) => {
-            if (valueMap != null) {
+            if (valueMap != null && valueMap[style] != null) {
               pointProps[style] = valueMap[style][i];
             }
           });

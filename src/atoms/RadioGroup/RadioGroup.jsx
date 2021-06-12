@@ -106,11 +106,8 @@ function RadioGroup(props, ref) {
             isRequired={isRequired}
             necessityIndicator={necessityIndicator}
             styles={labelStyles}
-            {...modAttrs({
-              disabled: isDisabled,
-              invalid: validationState === 'invalid',
-              valid: (validationState = 'valid'),
-            })}
+            isDisabled={isDisabled}
+            validationState={validationState}
           >
             {label}
           </Label>

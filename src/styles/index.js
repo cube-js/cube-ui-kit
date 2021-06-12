@@ -16,8 +16,10 @@ import { fontStyle } from './font.js';
 import { outlineStyle } from './outline.js';
 import { createStyle } from '../utils/render-styles.js';
 import { transitionStyle } from './transition';
+import { groupRadiusAttr } from './groupRadius';
 import { boxShadowCombinator } from './boxShadow.combinator.js';
 import { styleHandlerCacheWrapper } from '../utils/styles.js';
+import { scrollBarStyle } from './scrollBar';
 
 export const STYLES = [
   // `display` style is used in several handlers, so we need to explicitly declare it
@@ -52,6 +54,8 @@ export const STYLES = [
     outlineStyle,
     fontStyle,
     fontStyleStyle,
+    groupRadiusAttr,
+    scrollBarStyle,
   ].map(styleHandlerCacheWrapper),
 );
 

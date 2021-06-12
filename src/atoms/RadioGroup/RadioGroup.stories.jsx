@@ -1,10 +1,9 @@
 import React from 'react';
-import { RadioGroup } from './RadioGroup';
-import { Radio } from './Radio';
+import { Radio, RadioButton } from './Radio';
 
 export default {
   title: 'UIKit/Atoms/RadioGroup',
-  component: RadioGroup,
+  component: Radio.Group,
   argTypes: {
     isDisabled: {
       defaultValue: false,
@@ -69,30 +68,41 @@ export default {
       defaultValue: 'Radio group label',
       control: 'text',
     },
+    type: {
+      defaultValue: undefined,
+      description: 'Type of the radio button',
+      control: {
+        type: 'radio',
+        options: [undefined, 'button'],
+      },
+      table: {
+        type: { summary: 'string' },
+        defaultValue: { summary: 'radio' },
+      },
+    },
   },
 };
 
-const Template = ({
-  label,
-  defaultValue,
-  isDisabled,
-  validationState,
-  labelPosition,
-  orientation,
-}) => (
-  <RadioGroup
-    label={label}
-    validationState={validationState}
-    isDisabled={isDisabled}
-    defaultValue={defaultValue}
-    labelPosition={labelPosition}
-    orientation={orientation}
-    onChange={(query) => console.log('change', query)}
-  >
-    <Radio value="yes">Yes</Radio>
-    <Radio value="no">No</Radio>
-  </RadioGroup>
+const Template = ({ type, ...props }) => (
+  <Radio.Group {...props} onChange={(query) => console.log('change', query)}>
+    {type !== 'button' ? (
+      <>
+        <Radio value="yes">Yes</Radio>
+        <Radio value="no">No</Radio>
+      </>
+    ) : (
+      <>
+        <Radio.Button value="yes">Yes</Radio.Button>
+        <Radio type="button" value="no">
+          No
+        </Radio>
+      </>
+    )}
+  </Radio.Group>
 );
 
 export const Default = Template.bind({});
 Default.args = {};
+
+export const RadioButtons = Template.bind({});
+RadioButtons.args = { type: 'button' };

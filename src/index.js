@@ -15,6 +15,7 @@ export { Root } from './components/Root';
 export { PrismCode } from './atoms/PrismCode/PrismCode';
 export { Prefix } from './components/Prefix';
 export { Suffix } from './components/Suffix';
+export { Divider } from './components/Divider';
 
 // atoms
 export { LoadingAnimation } from './atoms/LoadingAnimation/LoadingAnimation';
@@ -34,6 +35,8 @@ export { Checkbox } from './atoms/Checkbox/Checkbox';
 export { Switch } from './atoms/Switch/Switch';
 export { Radio } from './atoms/RadioGroup/Radio';
 export { Form } from './atoms/Form/Form';
+export { ComboBox } from './atoms/ComboBox/ComboBox';
+export { Select, Item } from './atoms/Select/Select';
 
 // molecules
 export { TopBar } from './molecules/TopBar/TopBar';

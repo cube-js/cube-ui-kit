@@ -1,13 +1,13 @@
 import { parseStyle, DIRECTIONS, filterMods } from '../utils/styles.js';
 
 export function paddingStyle({ padding }) {
-  if (!padding) return '';
-
-  if (padding === true) padding = '1x';
-
   if (typeof padding === 'number') {
     padding = `${padding}px`;
   }
+
+  if (!padding) return '';
+
+  if (padding === true) padding = '1x';
 
   let { values, mods } = parseStyle(padding);
 

@@ -101,7 +101,10 @@ const STYLE_PROPS = [
 ];
 
 export const Action = forwardRef(
-  ({ to, as, htmlType, skipWarnings, props: directProps, ...props }, ref) => {
+  (
+    { to, as, htmlType, label, skipWarnings, props: directProps, ...props },
+    ref,
+  ) => {
     if (!skipWarnings) {
       propDeprecationWarning('Action', props, DEPRECATED_PROPS);
     }
@@ -134,7 +137,6 @@ export const Action = forwardRef(
 
     let { buttonProps, isPressed } = useButton(props, combinedRef);
     let { hoverProps, isHovered } = useHover({ isDisabled });
-
     let { focusProps, isFocused } = useFocus({ isDisabled, as }, true);
 
     const customProps = {};
@@ -156,6 +158,7 @@ export const Action = forwardRef(
         data-is-pressed={isPressed && !isDisabled ? '' : null}
         data-is-focused={isFocused && !isDisabled ? '' : null}
         data-is-disabled={isDisabled || null}
+        aria-label={label}
         {...mergeProps(
           buttonProps,
           hoverProps,

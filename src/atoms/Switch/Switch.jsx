@@ -14,6 +14,7 @@ import { filterBaseProps } from '../../utils/filterBaseProps';
 import { useContextStyles } from '../../providers/Styles';
 import { HiddenInput } from '../../components/HiddenInput';
 import { INLINE_LABEL_STYLES } from '../../components/Label';
+import { LoadingOutlined } from '@ant-design/icons';
 
 export const SwitchGroupContext = React.createContext(null);
 
@@ -77,6 +78,7 @@ function Switch(props, ref) {
     labelProps,
     labelStyles,
     thumbStyles,
+    isLoading,
     ...otherProps
   } = props;
 
@@ -180,6 +182,12 @@ function Switch(props, ref) {
           {...filterBaseProps(labelProps)}
         >
           {label}
+          {isLoading ? (
+            <>
+              {label ? <>&nbsp;</> : null}
+              <LoadingOutlined />
+            </>
+          ) : null}
         </Base>
       )}
     </Base>

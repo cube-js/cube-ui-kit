@@ -18,12 +18,45 @@ import { RadioGroup } from './RadioGroup';
 
 const STYLES = {
   position: 'relative',
-  display: 'flex',
+  display: 'grid',
   items: 'center start',
   gap: '1x',
-  flow: 'row',
+  flow: 'column',
   size: 'input',
   width: 'min-content',
+};
+
+const BUTTON_STYLES = {
+  radius: true,
+  fill: {
+    '': '#white',
+    hovered: '#purple-text.04',
+    disabled: '#dark.04',
+  },
+  color: {
+    '': '#dark.85',
+    invalid: '#danger-text',
+    disabled: '#dark.40',
+  },
+  fontWeight: 500,
+  size: 'md',
+  border: {
+    '': true,
+    checked: '#purple-text',
+    'invalid & checked': '#danger-text',
+    'disabled & checked': '#dark.40',
+    disabled: '#border',
+  },
+  padding: '(1x - 1px) (1.5x - 1px)',
+  cursor: 'pointer',
+  opacity: {
+    '': 1,
+    disabled: 0.5,
+  },
+  outline: {
+    '': '#purple-03.0',
+    focused: '#purple-03',
+  },
 };
 
 const INPUT_STYLES = {
@@ -67,6 +100,7 @@ function Radio(props, ref) {
   props = useProviderProps(props);
 
   let {
+    qa,
     isEmphasized,
     isDisabled,
     validationState,
@@ -75,28 +109,31 @@ function Radio(props, ref) {
     autoFocus,
     labelStyles,
     labelProps,
+    inputStyles,
+    type,
+    'aria-label': ariaLabel,
     ...otherProps
   } = props;
 
-  label = label || children;
+  let isButton = type === 'button';
 
-  let wrapperContextStyles = useContextStyles('Radio_Wrapper', props);
-  let inputContextStyles = useContextStyles('Radio', props);
-  let labelContextStyles = useContextStyles('Radio_Label', props);
+  label = label || children;
 
   let styles = extractStyles(otherProps, OUTER_STYLES, {
     ...STYLES,
-    ...wrapperContextStyles,
+    ...useContextStyles('Radio_Wrapper', props),
   });
-  let inputStyles = extractStyles(otherProps, BLOCK_STYLES, {
-    ...INPUT_STYLES,
-    ...inputContextStyles,
+
+  inputStyles = extractStyles(otherProps, BLOCK_STYLES, {
+    ...(isButton ? BUTTON_STYLES : INPUT_STYLES),
+    ...useContextStyles(isButton ? 'RadioButton' : 'Radio', props),
+    ...inputStyles,
   });
 
   labelStyles = {
     ...INLINE_LABEL_STYLES,
     fontWeight: 400,
-    ...labelContextStyles,
+    ...useContextStyles('Radio_Label', props),
     ...labelStyles,
   };
 
@@ -130,11 +167,14 @@ function Radio(props, ref) {
         disabled: isDisabled,
         invalid: validationState === 'invalid',
         hovered: isHovered,
+        button: isButton,
       })}
     >
       <HiddenInput
-        data-qa="Checkbox"
+        data-qa={qa || 'Radio'}
+        aria-label={ariaLabel}
         {...mergeProps(inputProps, focusProps)}
+        isButton={isButton}
         ref={inputRef}
       />
       <Base
@@ -149,16 +189,20 @@ function Radio(props, ref) {
         })}
         styles={inputStyles}
       >
-        <Base
-          styles={CIRCLE_STYLES}
-          {...modAttrs({
-            checked: inputProps.checked,
-            invalid: validationState === 'invalid',
-            valid: validationState === 'valid',
-          })}
-        />
+        {!isButton ? (
+          <Base
+            styles={CIRCLE_STYLES}
+            {...modAttrs({
+              checked: inputProps.checked,
+              invalid: validationState === 'invalid',
+              valid: validationState === 'valid',
+            })}
+          />
+        ) : (
+          children
+        )}
       </Base>
-      {label && (
+      {label && !isButton && (
         <Base
           qa="RadioLabel"
           styles={labelStyles}
@@ -177,10 +221,16 @@ function Radio(props, ref) {
   );
 }
 
+function RadioButton(props) {
+  return Radio({ ...props, type: 'button' });
+}
+
 /**
  * Radio buttons allow users to select a single option from a list of mutually exclusive options.
  * All possible options are exposed up front for users to compare.
  */
 const _Radio = forwardRef(Radio);
 _Radio.Group = RadioGroup;
+_Radio.Button = RadioButton;
 export { _Radio as Radio };
+export { RadioButton };

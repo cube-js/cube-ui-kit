@@ -65,6 +65,8 @@
 
 import { getCombinations } from './index.js';
 
+export const NO_VALUES = [false, 'n', 'no', 'false'];
+export const YES_VALUES = [true, 'y', 'yes', 'true'];
 const devMode = process.env.NODE_ENV !== 'production';
 export const CUSTOM_UNITS = {
   r: 'var(--radius)',
@@ -517,8 +519,22 @@ export function customUnit(value, unit) {
   return `(${value} * ${converter})`;
 }
 
-export function isNoValue(val) {
-  return !val && val !== 0;
+/**
+ * Check for "no" value.
+ * @param {string} value - original attribute value.
+ * @return {boolean}
+ */
+export function isNoValue(value) {
+  return !value && value !== 0;
+}
+
+/**
+ * Check for "yes" value.
+ * @param {string} value - original attribute value.
+ * @return {boolean}
+ */
+export function isYesValue(value) {
+  return YES_VALUES && YES_VALUES.includes(value);
 }
 
 export function extendStyles(defaultStyles, newStyles) {
@@ -571,7 +587,7 @@ export function extractStyles(
     if (ignoreList && ignoreList.includes(prop)) {
       // do nothing
     } else if (styleList.includes(propName)) {
-      if (value != null && value !== false) {
+      if (value != null && (value !== false || propName in styles)) {
         styles[propName] = value;
       }
     }
@@ -1105,4 +1121,13 @@ export function cacheWrapper(handler, limit) {
 
     return cache[key];
   };
+}
+
+/**
+ * Check for "no" value in modifiers.
+ * @param mods {Array<String>} - original attribute value.
+ * @return {boolean}
+ */
+export function hasNegativeMod(mods) {
+  return mods != null && !!NO_VALUES.find((val) => mods.includes(val));
 }

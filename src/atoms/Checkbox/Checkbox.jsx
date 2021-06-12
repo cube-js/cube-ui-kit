@@ -75,6 +75,7 @@ function Checkbox(props, ref) {
   props = useProviderProps(props);
 
   let {
+    qa,
     isIndeterminate = false,
     isEmphasized = false,
     isDisabled = false,
@@ -165,7 +166,7 @@ function Checkbox(props, ref) {
       ref={domRef}
     >
       <HiddenInput
-        data-qa="Checkbox"
+        data-qa={qa || 'Checkbox'}
         {...mergeProps(inputProps, focusProps)}
         ref={inputRef}
       />

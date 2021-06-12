@@ -1,10 +1,10 @@
 import React from 'react';
-import { TextField } from './TextField';
+import { Select, Item } from './Select';
 import { DollarCircleOutlined } from '@ant-design/icons';
 
 export default {
-  title: 'UIKit/Atoms/TextField',
-  component: TextField,
+  title: 'UIKit/Atoms/Select',
+  component: Select,
   argTypes: {
     icon: {
       defaultValue: false,
@@ -49,39 +49,6 @@ export default {
         defaultValue: { summary: 'top' },
       },
     },
-    type: {
-      defaultValue: 'text',
-      description: 'Input type',
-      control: {
-        type: 'radio',
-        options: ['text', 'search', 'url', 'tel', 'email', 'password'],
-      },
-      table: {
-        type: { summary: 'string' },
-        defaultValue: { summary: 'text' },
-      },
-    },
-    inputMode: {
-      defaultValue: 'none',
-      description: 'Input type mode',
-      control: {
-        type: 'radio',
-        options: [
-          'none',
-          'text',
-          'tel',
-          'url',
-          'email',
-          'numeric',
-          'decimal',
-          'search',
-        ],
-      },
-      table: {
-        type: { summary: 'string' },
-        defaultValue: { summary: 'none' },
-      },
-    },
     labelPosition: {
       defaultValue: 'top',
       description: 'The position of labels for each field.',
@@ -103,9 +70,13 @@ export default {
       description: 'Validation error message',
       control: 'text',
     },
-    defaultValue: {
-      defaultValue: '',
+    defaultSelectedKey: {
+      defaultValue: null,
       control: 'text',
+    },
+    defaultSelectedKeys: {
+      defaultValue: null,
+      control: 'array',
     },
     placeholder: {
       defaultValue: 'Placeholder',
@@ -121,32 +92,44 @@ const Template = ({
   placeholder,
   isLoading,
   isDisabled,
-  defaultValue,
+  defaultSelectedKey,
   validationState,
+  selectionMode,
   type,
-}) => (
-  <TextField
-    icon={icon ? <DollarCircleOutlined /> : null}
-    label={label}
-    validationState={validationState}
-    labelPosition={labelPosition}
-    placeholder={placeholder}
-    isDisabled={isDisabled}
-    isLoading={isLoading}
-    defaultValue={defaultValue}
-    type={type}
-    onChange={(query) => console.log('change', query)}
-  />
-);
+}) => {
+  return (
+    <Select
+      icon={icon ? <DollarCircleOutlined /> : null}
+      label={label}
+      validationState={validationState}
+      labelPosition={labelPosition}
+      placeholder={placeholder}
+      isDisabled={isDisabled}
+      isLoading={isLoading}
+      defaultSelectedKey={defaultSelectedKey}
+      selectionMode={selectionMode}
+      type={type}
+      onChange={(query) => console.log('change', query)}
+    >
+      <Item key="red">Red</Item>
+      <Item key="orange">Orange</Item>
+      <Item key="yellow">Yellow</Item>
+      <Item key="green">Green</Item>
+      <Item key="blue">Blue</Item>
+      <Item key="purple">Purple</Item>
+      <Item key="violet">Violet</Item>
+    </Select>
+  );
+};
 
 export const Default = Template.bind({});
 Default.args = {};
 
 export const WithDefaultValue = Template.bind({});
-WithDefaultValue.args = { defaultValue: 'default value' };
+WithDefaultValue.args = { defaultSelectedKey: 'purple' };
 
 export const WithIcon = Template.bind({});
 WithIcon.args = { icon: true };
 
-export const Password = Template.bind({});
-Password.args = { icon: true, type: 'password' };
+// export const Multiple = Template.bind({});
+// Multiple.args = { icon: true, defaultSelectedKeys: ['red', 'violet'] };

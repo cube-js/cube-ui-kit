@@ -18,6 +18,8 @@ export const BLOCK_STYLES = [
   'border',
   'radius',
   'opacity',
+  'overflow',
+  'scrollBar',
 ];
 
 export const COLOR_STYLES = ['color', 'fill'];

@@ -4,13 +4,13 @@ import {
   LoadingOutlined,
 } from '@ant-design/icons';
 import { createFocusableRef } from '@react-spectrum/utils';
-import { Label } from '../../components/Label';
 import { mergeProps } from '@react-aria/utils';
 import React, {
   cloneElement,
   forwardRef,
   useImperativeHandle,
   useRef,
+  useState,
 } from 'react';
 import { useFormProps } from '../Form/Form';
 import { useHover } from '@react-aria/interactions';
@@ -23,6 +23,8 @@ import { Prefix } from '../../components/Prefix';
 import { Suffix } from '../../components/Suffix';
 import { useContextStyles } from '../../providers/Styles';
 import { modAttrs } from '../../utils/react/modAttrs';
+import { FieldWrapper } from '../../components/FieldWrapper';
+import { Space } from '../../components/Space';
 
 const DEFAULT_INPUT_STYLES = {
   padding: '(1.25x - 1bw) (1.5x - 1bw)',
@@ -64,6 +66,7 @@ function TextFieldBase(props, ref) {
     isRequired,
     necessityIndicator,
     validationState,
+    errorMessage,
     icon,
     isQuiet = false,
     isDisabled,
@@ -80,14 +83,12 @@ function TextFieldBase(props, ref) {
     wrapperChildren,
     ...otherProps
   } = props;
-  const styles = extractStyles(otherProps, POSITION_STYLES).styles;
-  // const [inputValue, setInputValue] = useState(defaultValue || value);
+  let [suffixWidth, setSuffixWidth] = useState(0);
+  let [prefixWidth, setPrefixWidth] = useState(0);
 
-  // useEffect(() => {
-  //   setInputValue(value);
-  // }, [value]);
+  let styles = extractStyles(otherProps, POSITION_STYLES).styles;
 
-  const contextStyles = useContextStyles('TextField', otherProps);
+  let contextStyles = useContextStyles('TextField', otherProps);
 
   inputStyles = extractStyles(otherProps, BLOCK_STYLES, {
     ...DEFAULT_INPUT_STYLES,
@@ -96,11 +97,11 @@ function TextFieldBase(props, ref) {
   });
 
   if (icon) {
-    inputStyles.paddingLeft = '4x';
+    inputStyles.paddingLeft = `${prefixWidth}px`;
   }
 
-  if (validationState || isLoading) {
-    inputStyles.paddingRight = '4x';
+  if (validationState || isLoading || wrapperChildren) {
+    inputStyles.paddingRight = `${suffixWidth}px`;
   }
 
   let ElementType = multiLine ? 'textarea' : 'input';
@@ -162,58 +163,47 @@ function TextFieldBase(props, ref) {
         })}
         styles={inputStyles}
       />
-      <Prefix padding="0 1x" opacity={isDisabled ? '@disabled-opacity' : false}>
+      <Prefix
+        padding="0 1x 0 1.5x"
+        onWidthChange={setPrefixWidth}
+        opacity={isDisabled ? '@disabled-opacity' : false}
+        items="center"
+      >
         {icon}
       </Prefix>
-      <Suffix padding="0 1x" opacity={isDisabled ? '@disabled-opacity' : false}>
-        {validationState && !isLoading ? validation : null}
-        {isLoading && <LoadingOutlined />}
+      <Suffix
+        padding="1x left"
+        onWidthChange={setSuffixWidth}
+        opacity={isDisabled ? '@disabled-opacity' : false}
+      >
+        <Space gap={false} padding="0 1.5x 0 0">
+          {validationState && !isLoading ? validation : null}
+          {isLoading && <LoadingOutlined />}
+        </Space>
         {wrapperChildren}
       </Suffix>
     </Base>
   );
 
-  if (label) {
-    return (
-      <Base
-        qa="Field"
-        ref={domRef}
-        data-is-has-sider={labelPosition === 'side' ? '' : null}
-        styles={{
-          display: insideForm ? 'contents' : 'grid',
-          columns: {
-            '': '1fr',
-            'has-sider': 'max-content 1fr',
-          },
-          gap: {
-            '': '.5x',
-            'has-sider': '1x',
-          },
-          items: 'baseline start',
-          ...styles,
-        }}
-      >
-        <Label
-          styles={labelStyles}
-          labelPosition={labelPosition}
-          labelAlign={labelAlign}
-          isRequired={isRequired}
-          necessityIndicator={necessityIndicator}
-          {...labelProps}
-        >
-          {label}
-        </Label>
-        {textField}
-      </Base>
-    );
-  }
-
-  return React.cloneElement(
-    textField,
-    mergeProps(textField.props, {
-      ref: domRef,
-      styles,
-    }),
+  return (
+    <FieldWrapper
+      {...{
+        labelPosition,
+        label,
+        insideForm,
+        styles,
+        isRequired,
+        labelAlign,
+        labelStyles,
+        necessityIndicator,
+        labelProps,
+        isDisabled,
+        validationState,
+        errorMessage,
+        Component: textField,
+        ref: domRef,
+      }}
+    />
   );
 }
 

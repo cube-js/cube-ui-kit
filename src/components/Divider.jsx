@@ -1,15 +1,18 @@
 import React, { forwardRef } from 'react';
 import { Base } from './Base';
-import { CONTAINER_STYLES } from '../styles/list';
+import { OUTER_STYLES } from '../styles/list';
 import { extractStyles } from '../utils/styles.js';
 import { filterBaseProps } from '../utils/filterBaseProps';
 
 const DEFAULT_STYLES = {
   display: 'block',
+  height: '1bw',
+  fill: '#border',
+  width: '100%',
 };
 
-export const Block = forwardRef((props, ref) => {
-  const styles = extractStyles(props, CONTAINER_STYLES, DEFAULT_STYLES);
+export const Divider = forwardRef((props, ref) => {
+  const styles = extractStyles(props, OUTER_STYLES, DEFAULT_STYLES);
 
   return (
     <Base

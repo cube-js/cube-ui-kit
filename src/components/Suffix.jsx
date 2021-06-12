@@ -1,12 +1,12 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useEffect } from 'react';
 import { Base } from './Base';
 import { CONTAINER_STYLES } from '../styles/list';
 import { extractStyles } from '../utils/styles.js';
 import { filterBaseProps } from '../utils/filterBaseProps';
+import { useCombinedRefs } from '../utils/react/useCombinedRefs';
 
 const DEFAULT_STYLES = {
   display: 'grid',
-  content: 'center',
   flow: 'column',
   gap: '.5x',
   position: 'absolute',
@@ -15,14 +15,26 @@ const DEFAULT_STYLES = {
   bottom: 0,
 };
 
-export const Suffix = forwardRef((props, ref) => {
-  const styles = extractStyles(props, CONTAINER_STYLES, DEFAULT_STYLES);
+export const Suffix = forwardRef(
+  ({ onWidthChange, children, ...props }, ref) => {
+    const styles = extractStyles(props, CONTAINER_STYLES, DEFAULT_STYLES);
 
-  return (
-    <Base
-      {...filterBaseProps(props, { eventProps: true })}
-      styles={styles}
-      ref={ref}
-    />
-  );
-});
+    ref = useCombinedRefs(ref);
+
+    useEffect(() => {
+      if (ref && ref.current && onWidthChange) {
+        onWidthChange(ref.current.offsetWidth);
+      }
+    }, [children, ref, onWidthChange]);
+
+    return (
+      <Base
+        {...filterBaseProps(props, { eventProps: true })}
+        styles={styles}
+        ref={ref}
+      >
+        {children}
+      </Base>
+    );
+  },
+);

@@ -6,7 +6,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { propDeprecationWarning } from '../../utils/warnings';
 import { useContextStyles } from '../../providers/Styles';
 
-function provideStyles({
+export function provideStyles({
   size,
   type,
   isDisabled,

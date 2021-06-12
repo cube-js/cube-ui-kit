@@ -1,13 +1,13 @@
 import { parseStyle, DIRECTIONS, filterMods } from '../utils/styles.js';
 
 export function marginStyle({ margin }) {
-  if (!margin && margin !== 0) return '';
-
-  if (margin === true) margin = '1x';
-
   if (typeof margin === 'number') {
     margin = `${margin}px`;
   }
+
+  if (!margin) return '';
+
+  if (margin === true) margin = '1x';
 
   const { values, mods } = parseStyle(margin);
 

@@ -106,12 +106,13 @@ function App() {
         <TopBar onLogoPress={() => {}} />
         <Flex
           styles={{
-            flow: 'row',
             content: ['start', 'center', 'start'],
           }}
           gap={['2x', '4x']}
+          flow={['row', 'column', 'row']}
         >
           <button>2</button>
+          <button>4</button>
         </Flex>
         <Grid columns="auto 1fr" gap="1x" styles={{ height: '100px' }}>
           <Base styles={{ fill: color('purple', 0.1), width: '200px' }}>
