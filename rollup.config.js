@@ -18,7 +18,7 @@ Object.keys(VARIABLES)
     LESS_VARIABLES[`@${key}`] = VARIABLES[key];
   });
 
-const DEV = !!process.env.ROLLUP_WATCH;
+const DEV = true; //!!process.env.ROLLUP_WATCH;
 const ENV = DEV ? 'development' : 'production';
 const VERSION = `"${pkg.version}"`;
 

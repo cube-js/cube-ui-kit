@@ -1,8 +1,8 @@
 import { useFocusableRef } from '@react-spectrum/utils';
-import React, { forwardRef, useRef } from 'react';
+import React, { forwardRef, useContext, useRef } from 'react';
 import { useHover } from '@react-aria/interactions';
 import { useRadio } from '@react-aria/radio';
-import { useRadioProvider } from './context';
+import { RadioGroupContext } from './context';
 import { extractStyles } from '../../utils/styles';
 import { useContextStyles } from '../../providers/Styles';
 import { BLOCK_STYLES, OUTER_STYLES } from '../../styles/list';
@@ -15,6 +15,7 @@ import { useProviderProps } from '../../provider';
 import { INLINE_LABEL_STYLES } from '../../components/Label';
 import { HiddenInput } from '../../components/HiddenInput';
 import { RadioGroup } from './RadioGroup';
+import { useFormProps } from '../Form/Form';
 
 const STYLES = {
   position: 'relative',
@@ -98,6 +99,7 @@ const CIRCLE_STYLES = {
 
 function Radio(props, ref) {
   props = useProviderProps(props);
+  props = useFormProps(props);
 
   let {
     qa,
@@ -137,8 +139,7 @@ function Radio(props, ref) {
     ...labelStyles,
   };
 
-  let radioGroupProps = useRadioProvider();
-  let { state } = radioGroupProps;
+  let state = useContext(RadioGroupContext);
 
   let { isFocused, focusProps } = useFocus({ isDisabled, as: 'input' }, true);
   let { hoverProps, isHovered } = useHover({ isDisabled });
@@ -149,7 +150,6 @@ function Radio(props, ref) {
   let { inputProps } = useRadio(
     {
       ...props,
-      ...radioGroupProps,
       isDisabled,
     },
     state,

@@ -23,7 +23,13 @@ const BasePropNames = new Set([
   'target',
 ]);
 
-const ignoreEventPropsNames = ['onPress', 'onHoverStart', 'onHoverEnd'];
+const ignoreEventPropsNames = [
+  'onPress',
+  'onHoverStart',
+  'onHoverEnd',
+  'onPressStart',
+  'onPressEnd',
+];
 
 const propRe = /^((data-).*)$/;
 const eventRe = /^on[A-Z].+$/;

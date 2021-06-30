@@ -12,8 +12,12 @@ import { useFocus } from '../../utils/interactions';
 import { mergeProps } from '@react-aria/utils';
 import { filterBaseProps } from '../../utils/filterBaseProps';
 import { useContextStyles } from '../../providers/Styles';
-import { INLINE_LABEL_STYLES } from '../../components/Label';
+import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../../components/Label';
 import { HiddenInput } from '../../components/HiddenInput';
+import { useFormProps } from '../Form/Form';
+import { FieldWrapper } from '../../components/FieldWrapper';
+import { CheckboxGroup } from './CheckboxGroup';
+import { CheckboxGroupContext } from './context';
 
 const CheckOutlined = () => (
   <svg width="10" height="8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -28,8 +32,6 @@ const IndeterminateOutline = () => (
     <path d="M0 .044v2.001l.026.025h8.063V.044H0z" fill="#fff" />
   </svg>
 );
-
-export const CheckboxGroupContext = React.createContext(null);
 
 const STYLES = {
   position: 'relative',
@@ -73,29 +75,39 @@ function Checkbox(props, ref) {
   let originalProps = props;
 
   props = useProviderProps(props);
+  props = useFormProps(props);
 
   let {
     qa,
     isIndeterminate = false,
     isEmphasized = false,
     isDisabled = false,
+    insideForm,
     autoFocus,
     children,
     label,
     validationState,
     labelProps,
     labelStyles,
+    labelPosition,
+    message,
+    requiredMark = true,
     ...otherProps
   } = props;
 
   label = label || children;
+
+  // Swap hooks depending on whether this checkbox is inside a CheckboxGroup.
+  // This is a bit unorthodox. Typically, hooks cannot be called in a conditional,
+  // but since the checkbox won't move in and out of a group, it should be safe.
+  let groupState = useContext(CheckboxGroupContext);
 
   let wrapperContextStyles = useContextStyles('Checkbox_Wrapper', props);
   let inputContextStyles = useContextStyles('Checkbox', props);
   let labelContextStyles = useContextStyles('Checkbox_Label', props);
 
   let styles = extractStyles(props, OUTER_STYLES, {
-    ...STYLES,
+    ...(insideForm && !groupState ? {} : STYLES),
     ...wrapperContextStyles,
   });
   let inputStyles = extractStyles(props, BLOCK_STYLES, {
@@ -104,22 +116,24 @@ function Checkbox(props, ref) {
   });
 
   labelStyles = {
-    ...INLINE_LABEL_STYLES,
-    fontWeight: 400,
+    ...(insideForm && !groupState ? LABEL_STYLES : INLINE_LABEL_STYLES),
     ...labelContextStyles,
     ...labelStyles,
   };
+
+  if (!insideForm) {
+    labelStyles.fontWeight = 400;
+  }
+
+  if (insideForm && labelPosition === 'side') {
+    inputStyles.marginTop = '1x';
+  }
 
   let { isFocused, focusProps } = useFocus({ isDisabled, as: 'input' }, true);
   let { hoverProps, isHovered } = useHover({ isDisabled });
 
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
-
-  // Swap hooks depending on whether this checkbox is inside a CheckboxGroup.
-  // This is a bit unorthodox. Typically, hooks cannot be called in a conditional,
-  // but since the checkbox won't move in and out of a group, it should be safe.
-  let groupState = useContext(CheckboxGroupContext);
 
   let { inputProps } = groupState
     ? // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -157,14 +171,8 @@ function Checkbox(props, ref) {
     }
   }
 
-  return (
-    <Base
-      as="label"
-      styles={styles}
-      {...hoverProps}
-      {...filterBaseProps(otherProps)}
-      ref={domRef}
-    >
+  let checkboxField = (
+    <>
       <HiddenInput
         data-qa={qa || 'Checkbox'}
         {...mergeProps(inputProps, focusProps)}
@@ -185,6 +193,39 @@ function Checkbox(props, ref) {
       >
         {markIcon}
       </Base>
+    </>
+  );
+
+  if (insideForm && !groupState) {
+    return (
+      <FieldWrapper
+        {...{
+          labelPosition,
+          label,
+          insideForm,
+          styles,
+          labelStyles,
+          labelProps,
+          isDisabled,
+          validationState,
+          message,
+          requiredMark,
+          Component: checkboxField,
+          ref: domRef,
+        }}
+      />
+    );
+  }
+
+  return (
+    <Base
+      as="label"
+      styles={styles}
+      {...hoverProps}
+      {...filterBaseProps(otherProps)}
+      ref={domRef}
+    >
+      {checkboxField}
       {label && (
         <Base
           styles={labelStyles}
@@ -209,3 +250,4 @@ function Checkbox(props, ref) {
  */
 let _Checkbox = forwardRef(Checkbox);
 export { _Checkbox as Checkbox };
+_Checkbox.Group = CheckboxGroup;

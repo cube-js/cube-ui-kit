@@ -27,7 +27,7 @@ const Template = ({ type, isDisabled, label }) => (
   <Link
     type={type}
     isDisabled={isDisabled}
-    onPress={() => console.log('! on press')}
+    onPress={() => console.log('Press')}
     to="!https://cube.dev"
   >
     {label}

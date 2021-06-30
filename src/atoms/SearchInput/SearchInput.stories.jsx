@@ -1,13 +1,24 @@
 import React from 'react';
-import { PasswordField } from './PasswordField';
+import { SearchInput } from './SearchInput';
 
 export default {
-  title: 'UIKit/Atoms/PasswordField',
-  component: PasswordField,
+  title: 'UIKit/Atoms/SearchInput',
+  component: SearchInput,
   argTypes: {
     isDisabled: {
       defaultValue: false,
-      description: 'Disables the input.',
+      description: 'Disables the button.',
+      control: {
+        type: 'boolean',
+      },
+      table: {
+        type: { summary: 'boolean' },
+        defaultValue: { summary: false },
+      },
+    },
+    isClearable: {
+      defaultValue: false,
+      description: 'Show clear button',
       control: {
         type: 'boolean',
       },
@@ -40,39 +51,33 @@ export default {
         defaultValue: { summary: 'top' },
       },
     },
-    label: {
-      defaultValue: 'Field label',
+    message: {
+      defaultValue: '',
+      description: 'Validation error message',
       control: 'text',
     },
-    defaultValue: {
-      defaultValue: '',
+    label: {
+      defaultValue: 'Search input',
       control: 'text',
     },
     placeholder: {
-      defaultValue: 'Placeholder',
+      defaultValue: 'Books, Movies, Music...',
       control: 'text',
     },
   },
 };
 
-const Template = ({
-  labelPosition,
-  label,
-  placeholder,
-  isDisabled,
-  defaultValue,
-  validationState,
-}) => (
-  <PasswordField
-    label={label}
-    validationState={validationState}
-    labelPosition={labelPosition}
-    placeholder={placeholder}
-    isDisabled={isDisabled}
-    defaultValue={defaultValue}
-    onChange={(query) => console.log('change', query)}
-  />
+const Template = (args) => (
+  <SearchInput {...args} onSubmit={(query) => console.log('result', query)} />
 );
 
 export const Default = Template.bind({});
 Default.args = {};
+
+export const Clearable = Template.bind({});
+Clearable.args = {
+  isClearable: true,
+};
+
+export const WithDefaultValue = Template.bind({});
+WithDefaultValue.args = { value: 'Back to the Future' };

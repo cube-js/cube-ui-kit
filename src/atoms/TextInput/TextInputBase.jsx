@@ -25,22 +25,17 @@ import { useContextStyles } from '../../providers/Styles';
 import { modAttrs } from '../../utils/react/modAttrs';
 import { FieldWrapper } from '../../components/FieldWrapper';
 import { Space } from '../../components/Space';
+import { Block } from '../../components/Block';
 
-const DEFAULT_INPUT_STYLES = {
-  padding: '(1.25x - 1bw) (1.5x - 1bw)',
-  border: {
-    '': true,
-    invalid: '#danger-text.50',
-    valid: '#success-text.50',
-    focused: true,
-  },
-  radius: true,
-  reset: 'input',
-  size: 'input',
-  outline: {
-    '': '#purple-03.0',
-    focused: '#purple-03',
-  },
+const WRAPPER_STYLES = {
+  display: 'grid',
+  position: 'relative',
+};
+
+export const DEFAULT_INPUT_STYLES = {
+  display: 'block',
+  width: 'initial 100% initial',
+  height: 'initial initial initial',
   color: {
     '': '#dark.85',
     invalid: '#danger-text',
@@ -51,9 +46,28 @@ const DEFAULT_INPUT_STYLES = {
     '': '#clear',
     disabled: '#dark.04',
   },
+  border: {
+    '': true,
+    valid: '#success-text.50',
+    invalid: '#danger-text.50',
+    focused: true,
+  },
+  outline: {
+    '': '#purple-03.0',
+    focused: '#purple-03',
+    'invalid & focused': '#danger.50',
+  },
+  radius: true,
+  padding: '(1.25x - 1bw) (1.5x - 1bw)',
+  fontWeight: 400,
+  textAlign: 'left',
+  reset: 'input',
+  size: 'input',
+  grow: 1,
+  margin: 0,
 };
 
-function TextFieldBase(props, ref) {
+function TextInputBase(props, ref) {
   props = useProviderProps(props);
   props = useFormProps(props);
 
@@ -61,34 +75,38 @@ function TextFieldBase(props, ref) {
     qa,
     label,
     labelPosition = 'top',
-    labelAlign,
     labelStyles,
     isRequired,
     necessityIndicator,
     validationState,
-    errorMessage,
-    icon,
-    isQuiet = false,
+    message,
+    prefix,
     isDisabled,
     multiLine,
     autoFocus,
     labelProps,
     inputProps,
+    wrapperProps,
     inputRef,
     isLoading,
     loadingIndicator,
     insideForm,
     value,
     inputStyles = {},
-    wrapperChildren,
+    wrapperStyles = {},
+    suffix,
+    suffixPosition = 'before',
+    wrapperRef,
+    requiredMark = true,
+    rows = 1,
     ...otherProps
   } = props;
   let [suffixWidth, setSuffixWidth] = useState(0);
   let [prefixWidth, setPrefixWidth] = useState(0);
 
-  let styles = extractStyles(otherProps, POSITION_STYLES).styles;
+  let styles = extractStyles(otherProps, POSITION_STYLES);
 
-  let contextStyles = useContextStyles('TextField', otherProps);
+  let contextStyles = useContextStyles('Input', otherProps);
 
   inputStyles = extractStyles(otherProps, BLOCK_STYLES, {
     ...DEFAULT_INPUT_STYLES,
@@ -96,11 +114,16 @@ function TextFieldBase(props, ref) {
     ...inputStyles,
   });
 
-  if (icon) {
+  wrapperStyles = {
+    ...WRAPPER_STYLES,
+    ...wrapperStyles,
+  };
+
+  if (prefix) {
     inputStyles.paddingLeft = `${prefixWidth}px`;
   }
 
-  if (validationState || isLoading || wrapperChildren) {
+  if (validationState || isLoading || suffix) {
     inputStyles.paddingRight = `${suffixWidth}px`;
   }
 
@@ -134,32 +157,36 @@ function TextFieldBase(props, ref) {
   );
   let validation = cloneElement(validationIcon);
 
+  suffix =
+    typeof suffix === 'string' ? (
+      <Block padding="1x right">{suffix}</Block>
+    ) : (
+      suffix
+    );
+
   let textField = (
     <Base
-      qa="TextFieldWrapper"
+      ref={wrapperRef}
+      qa={`${qa || 'TextInput'}Wrapper`}
       data-is-invalid={isInvalid ? '' : null}
       data-is-valid={validationState === 'valid' ? '' : null}
       data-is-loadable={loadingIndicator ? '' : null}
-      data-is-quite={isQuiet ? '' : null}
       data-is-multiline={multiLine ? '' : null}
-      styles={{
-        display: 'grid',
-        position: 'relative',
-      }}
+      styles={wrapperStyles}
+      {...wrapperProps}
     >
       <Base
-        qa={qa || 'TextField'}
+        qa={qa || 'TextInput'}
         as={ElementType}
         {...mergeProps(inputProps, focusProps, hoverProps)}
         ref={inputRef}
-        rows={multiLine ? 1 : undefined}
+        rows={multiLine ? rows : undefined}
         {...modAttrs({
           invalid: isInvalid,
           valid: validationState === 'valid',
           disabled: isDisabled,
           hovered: isHovered,
           focused: isFocused,
-          'has-icon': !!icon,
         })}
         styles={inputStyles}
       />
@@ -169,18 +196,23 @@ function TextFieldBase(props, ref) {
         opacity={isDisabled ? '@disabled-opacity' : false}
         items="center"
       >
-        {icon}
+        {typeof prefix === 'string' ? (
+          <Block padding="1x left">{prefix}</Block>
+        ) : (
+          prefix
+        )}
       </Prefix>
       <Suffix
         padding="1x left"
         onWidthChange={setSuffixWidth}
         opacity={isDisabled ? '@disabled-opacity' : false}
       >
+        {suffixPosition === 'before' ? suffix : null}
         <Space gap={false} padding="0 1.5x 0 0">
           {validationState && !isLoading ? validation : null}
           {isLoading && <LoadingOutlined />}
         </Space>
-        {wrapperChildren}
+        {suffixPosition === 'after' ? suffix : null}
       </Suffix>
     </Base>
   );
@@ -193,13 +225,13 @@ function TextFieldBase(props, ref) {
         insideForm,
         styles,
         isRequired,
-        labelAlign,
         labelStyles,
         necessityIndicator,
         labelProps,
         isDisabled,
         validationState,
-        errorMessage,
+        message,
+        requiredMark,
         Component: textField,
         ref: domRef,
       }}
@@ -207,5 +239,5 @@ function TextFieldBase(props, ref) {
   );
 }
 
-const _TextFieldBase = forwardRef(TextFieldBase);
-export { _TextFieldBase as TextFieldBase };
+const _TextInputBase = forwardRef(TextInputBase);
+export { _TextInputBase as TextInputBase };

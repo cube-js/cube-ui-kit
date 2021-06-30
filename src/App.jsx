@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Base, Grid, TopBar, Space, LoadingAnimation } from './index';
+import { Base, Grid, TopBar, Space, LoadingAnimation, Block } from './index';
 import { Button } from './atoms/Button/Button';
 import ResponsiveProvider from './providers/Responsive';
 import { color } from './utils/colors';
@@ -10,9 +10,11 @@ import { Link } from './atoms/Link/Link';
 import { Modal } from './molecules/Modal/Modal';
 import { notification } from './services/notification';
 import { StylesProvider } from './providers/Styles';
-import { Form } from './atoms/Form/Form';
-import { TextField } from './atoms/TextField/TextField';
+import { Form, useForm } from './atoms/Form/Form';
+import { TextInput } from './atoms/TextInput/TextInput';
 import { Provider } from './provider';
+import { GridProvider } from './components/GridProvider';
+import { Field } from './atoms/Form/Field';
 
 window.notification = notification;
 
@@ -20,13 +22,36 @@ window.Modal = Modal;
 
 function App() {
   const [inProp, setInProp] = useState(false);
+  const form = useForm({ name: '' });
 
   return (
     <>
       <Provider>
-        <Form>
-          <TextField label="Something"></TextField>
-        </Form>
+        <Block padding="2x 20x">
+          <GridProvider columns="3" gap="2x">
+            <Flex flow="row wrap">
+              <Block width="1sp" height="4x" fill="#purple.04"></Block>
+              <Block width="2sp" height="4x" fill="#purple.1"></Block>
+              <Block width="2sp" height="4x" fill="#purple.1"></Block>
+              <Block width="1sp" height="4x" fill="#purple.1"></Block>
+              {/*<Block width="1sp" height="4x" fill="#purple.04"></Block>*/}
+            </Flex>
+          </GridProvider>
+          <GridProvider columns={8} gap="3x">
+            <Form
+              labelPosition="side"
+              labelStyles={{ width: '2sp' }}
+              form={form}
+            >
+              <Field
+                name="name"
+                rules={[{ required: true, message: 'This field is required' }]}
+              >
+                <TextInput label="Your name"></TextInput>
+              </Field>
+            </Form>
+          </GridProvider>
+        </Block>
       </Provider>
       <Modal
         cancelText="Cancel"

@@ -76,6 +76,7 @@ export const CUSTOM_UNITS = {
   fs: 'var(--font-size)',
   lh: 'var(--line-height)',
   rp: 'var(--rem-pixel)',
+  gp: 'var(--column-gap)',
   // global setting
   wh: 'var(--window-height)',
 };
@@ -365,8 +366,12 @@ export function parseColor(val, ignoreError = false) {
 
     let opacity = 100;
 
-    if (tmp.length > 0) {
-      opacity = Number(tmp[1]);
+    if (tmp.length > 1) {
+      if (tmp[1].length === 1) {
+        opacity = Number(tmp[1]) * 10;
+      } else {
+        opacity = Number(tmp[1]);
+      }
 
       if (Number.isNaN(opacity)) {
         opacity = 100;

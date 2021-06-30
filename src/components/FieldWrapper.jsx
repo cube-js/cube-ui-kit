@@ -1,33 +1,37 @@
 import React, { forwardRef } from 'react';
 import { Base } from './Base';
 import { Label } from './Label';
-import { mergeProps } from '@react-aria/utils';
 import { modAttrs } from '../utils/react/modAttrs';
 
 const FIELD_STYLES = {
-  display: {
-    '': 'grid',
-    'inside-form': 'contents',
-  },
+  display: 'grid',
+  position: 'relative',
   columns: {
     '': '1fr',
-    'has-sider': 'max-content 1fr',
+    'has-sider': 'auto 1fr',
   },
   gap: {
-    '': '.5x',
-    'has-sider': '1x',
+    '': '1x',
+    'has-sider': '@(column-gap, 1x)',
   },
-  items: 'baseline start',
+  items: 'baseline stretch',
 };
 
-const ERROR_MESSAGE_STYLES = {
+const MESSAGE_STYLES = {
   size: 'md',
-  color: '#danger-text',
+  color: {
+    '': '#dark.75',
+    invalid: '#danger-text',
+    valid: '#success-text',
+    disabled: '#dark.40',
+  },
   fontWeight: 400,
+  textAlign: 'left',
   column: {
     '': 1,
     'has-sider': 2,
   },
+  userSelect: 'none',
 };
 
 function FieldWrapper(
@@ -38,70 +42,72 @@ function FieldWrapper(
     styles,
     isRequired,
     isDisabled,
-    labelAlign,
     labelStyles,
     necessityIndicator,
     labelProps,
-    errorMessage,
-    errorStyles,
+    fieldProps,
+    message,
+    messageStyles,
     Component,
     validationState,
+    requiredMark = true,
   },
   ref,
 ) {
   const modProps = modAttrs({
     'has-sider': labelPosition === 'side' && label,
     'inside-form': insideForm,
+    invalid: validationState === 'invalid',
+    valid: validationState === 'valid',
   });
 
-  if (label) {
-    return (
-      <Base
-        qa="Field"
-        ref={ref}
-        {...modProps}
-        styles={{
-          ...FIELD_STYLES,
-          ...styles,
-        }}
-      >
-        {label && (
-          <Label
-            styles={labelStyles}
-            labelPosition={labelPosition}
-            labelAlign={labelAlign}
-            isRequired={isRequired}
-            isDisabled={isDisabled}
-            necessityIndicator={necessityIndicator}
-            validationState={validationState}
-            {...labelProps}
-          >
-            {label}
-          </Label>
-        )}
-        {Component}
-        {errorMessage && validationState === 'invalid' && (
-          <Base
-            {...modProps}
-            styles={{
-              ...ERROR_MESSAGE_STYLES,
-              ...errorStyles,
-            }}
-          >
-            {errorMessage}
-          </Base>
-        )}
-      </Base>
-    );
-  }
-
-  return React.cloneElement(
-    Component,
-    mergeProps(Component.props, {
-      ref,
-      styles,
-    }),
+  return (
+    <Base
+      qa="Field"
+      ref={ref}
+      {...modProps}
+      styles={{
+        ...FIELD_STYLES,
+        ...styles,
+      }}
+      {...fieldProps}
+    >
+      {label && (
+        <Label
+          styles={labelStyles}
+          labelPosition={labelPosition}
+          isRequired={requiredMark ? isRequired : false}
+          isDisabled={isDisabled}
+          necessityIndicator={necessityIndicator}
+          validationState={validationState}
+          {...labelProps}
+        >
+          {label}
+        </Label>
+      )}
+      {Component}
+      {message && (
+        <Base
+          {...modProps}
+          styles={{
+            ...MESSAGE_STYLES,
+            ...messageStyles,
+          }}
+          role={validationState === 'invalid' ? 'alert' : null}
+        >
+          {message}
+        </Base>
+      )}
+    </Base>
   );
+
+  // return React.cloneElement(
+  //   Component,
+  //   mergeProps(Component.props, {
+  //     ref,
+  //     styles,
+  //   }),
+  // );
 }
 
 const _FieldWrapper = forwardRef(FieldWrapper);

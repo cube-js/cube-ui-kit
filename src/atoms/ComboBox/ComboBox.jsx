@@ -26,13 +26,14 @@ import { useContextStyles } from '../../providers/Styles';
 import { modAttrs } from '../../utils/react/modAttrs';
 import { FieldWrapper } from '../../components/FieldWrapper';
 import { useCombinedRefs } from '../../utils/react/useCombinedRefs';
-import { ListBoxPopup } from '../Select/Select';
+import { ListBoxPopup, OverlayWrapper } from '../Select/Select';
 import { Prefix } from '../../components/Prefix';
 import { Suffix } from '../../components/Suffix';
 import { Space } from '../../components/Space';
 import { Item } from '@react-stately/collections';
 import { CSSTransition } from 'react-transition-group';
 import { OVERLAY_TRANSITION_CSS } from '../../utils/transitions';
+import { DEFAULT_INPUT_STYLES } from '../TextInput/TextInputBase';
 
 const CaretDownIcon = () => (
   <svg
@@ -51,43 +52,20 @@ const CaretDownIcon = () => (
 
 const COMBOBOX_STYLES = {
   position: 'relative',
+  display: 'grid',
 };
 
 const INPUT_STYLES = {
-  display: 'block',
+  ...DEFAULT_INPUT_STYLES,
   width: '100%',
-  padding: '(1.25x - 1bw) (1.5x - 1bw)',
-  border: {
-    '': true,
-    invalid: '#danger-text.50',
-    valid: '#success-text.50',
-    focused: true,
-  },
-  radius: true,
-  reset: 'input',
-  size: 'input',
-  outline: {
-    '': '#purple-03.0',
-    focused: '#purple-03',
-  },
-  color: {
-    '': '#dark.85',
-    invalid: '#danger-text',
-    focused: '#dark.85',
-    disabled: '#dark.30',
-  },
-  fill: {
-    '': '#clear',
-    disabled: '#dark.04',
-  },
-  fontWeight: 400,
 };
 
 const TRIGGER_STYLES = {
   display: 'grid',
   items: 'center',
+  content: 'center',
   radius: 'right',
-  padding: '0 1.5x',
+  padding: '1.5x 1x',
   color: 'inherit',
   border: 0,
   fill: {
@@ -103,16 +81,21 @@ function ComboBox(props, ref) {
   props = useProviderProps(props);
   props = useFormProps(props);
 
+  if (props.onChange) {
+    props.onSelectionChange = props.onChange;
+
+    delete props.onChange;
+  }
+
   let {
     qa,
     label,
     labelPosition = 'top',
-    labelAlign,
     labelStyles,
     isRequired,
     necessityIndicator,
     validationState,
-    icon,
+    prefix,
     isDisabled,
     multiLine,
     autoFocus,
@@ -126,12 +109,13 @@ function ComboBox(props, ref) {
     value,
     inputStyles,
     triggerStyles,
-    wrapperChildren,
+    suffix,
     disallowEmptySelection,
     selectionMode,
     listBoxStyles,
     hideTrigger,
-    errorMessage,
+    message,
+    requiredMark = true,
     ...otherProps
   } = props;
   let { contains } = useFilter({ sensitivity: 'base' });
@@ -179,7 +163,7 @@ function ComboBox(props, ref) {
     state,
   );
 
-  if (icon) {
+  if (prefix) {
     inputStyles.paddingLeft = `${prefixWidth}px`;
   }
 
@@ -229,7 +213,6 @@ function ComboBox(props, ref) {
         disabled: isDisabled,
         hovered: isHovered,
         focused: isFocused,
-        'has-icon': !!icon,
       })}
       styles={styles}
       style={{
@@ -250,24 +233,28 @@ function ComboBox(props, ref) {
           focused: isFocused,
         })}
       />
-      <Prefix
-        onWidthChange={setPrefixWidth}
-        padding="0 1x 0 1.5x"
-        opacity={isDisabled ? '@disabled-opacity' : false}
-        items="center"
-      >
-        {icon}
-      </Prefix>
+      {prefix ? (
+        <Prefix
+          onWidthChange={setPrefixWidth}
+          padding="0 1x 0 1.5x"
+          opacity={isDisabled ? '@disabled-opacity' : false}
+          items="center"
+          outerGap={0}
+        >
+          {prefix}
+        </Prefix>
+      ) : null}
       <Suffix
         onWidthChange={setSuffixWidth}
         padding="1x left"
+        outerGap={0}
         opacity={isDisabled ? '@disabled-opacity' : false}
       >
         <Space gap={false} padding="0 1x">
           {validationState && !isLoading ? validation : null}
           {isLoading && <LoadingOutlined />}
         </Space>
-        {wrapperChildren}
+        {suffix}
         {!hideTrigger ? (
           <Base
             as="button"
@@ -286,33 +273,18 @@ function ComboBox(props, ref) {
           </Base>
         ) : null}
       </Suffix>
-      <CSSTransition
-        in={state.isOpen && !isDisabled}
-        unmountOnExit
-        timeout={120}
-        classNames="cube-overlay-transition"
-      >
-        <Base
-          styles={{
-            position: 'absolute',
-            width: '100%',
-            top: 0,
-            height: '100%',
-          }}
-          css={OVERLAY_TRANSITION_CSS}
-        >
-          <ListBoxPopup
-            {...listBoxProps}
-            listBoxRef={listBoxRef}
-            popoverRef={popoverRef}
-            shouldUseVirtualFocus
-            state={state}
-            listBoxStyles={listBoxStyles}
-            disallowEmptySelection={disallowEmptySelection}
-            selectionMode={selectionMode}
-          />
-        </Base>
-      </CSSTransition>
+      <OverlayWrapper in={state.isOpen && !isDisabled}>
+        <ListBoxPopup
+          {...listBoxProps}
+          listBoxRef={listBoxRef}
+          popoverRef={popoverRef}
+          shouldUseVirtualFocus
+          state={state}
+          listBoxStyles={listBoxStyles}
+          disallowEmptySelection={disallowEmptySelection}
+          selectionMode={selectionMode}
+        />
+      </OverlayWrapper>
     </Base>
   );
 
@@ -324,13 +296,13 @@ function ComboBox(props, ref) {
         insideForm,
         styles,
         isRequired,
-        labelAlign,
         labelStyles,
         necessityIndicator,
         labelProps,
         isDisabled,
         validationState,
-        errorMessage,
+        message,
+        requiredMark,
         Component: comboBoxField,
         ref: ref,
       }}

@@ -13,8 +13,10 @@ import { mergeProps } from '@react-aria/utils';
 import { filterBaseProps } from '../../utils/filterBaseProps';
 import { useContextStyles } from '../../providers/Styles';
 import { HiddenInput } from '../../components/HiddenInput';
-import { INLINE_LABEL_STYLES } from '../../components/Label';
+import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../../components/Label';
 import { LoadingOutlined } from '@ant-design/icons';
+import { useFormProps } from '../Form/Form';
+import { FieldWrapper } from '../../components/FieldWrapper';
 
 export const SwitchGroupContext = React.createContext(null);
 
@@ -65,9 +67,8 @@ const THUMB_STYLES = {
 };
 
 function Switch(props, ref) {
-  let originalProps = props;
-
   props = useProviderProps(props);
+  props = useFormProps(props);
 
   let {
     isEmphasized = false,
@@ -79,6 +80,12 @@ function Switch(props, ref) {
     labelStyles,
     thumbStyles,
     isLoading,
+    insideForm,
+    validationState,
+    message,
+    labelPosition,
+    inputStyles,
+    requiredMark = true,
     ...otherProps
   } = props;
 
@@ -90,12 +97,19 @@ function Switch(props, ref) {
   let thumbContextStyles = useContextStyles('Switch_Thumb', props);
 
   let styles = extractStyles(props, OUTER_STYLES, {
-    ...STYLES,
+    ...(insideForm ? {} : STYLES),
     ...wrapperContextStyles,
   });
-  let inputStyles = extractStyles(props, BLOCK_STYLES, {
+  inputStyles = extractStyles(props, BLOCK_STYLES, {
     ...INPUT_STYLES,
     ...inputContextStyles,
+    ...(insideForm && labelPosition === 'side'
+      ? {
+          marginTop: '-3px',
+          place: 'start',
+        }
+      : null),
+    ...inputStyles,
   });
 
   thumbStyles = {
@@ -105,8 +119,7 @@ function Switch(props, ref) {
   };
 
   labelStyles = {
-    ...INLINE_LABEL_STYLES,
-    fontWeight: 400,
+    ...(insideForm ? LABEL_STYLES : INLINE_LABEL_STYLES),
     ...labelContextStyles,
     ...labelStyles,
   };
@@ -117,37 +130,11 @@ function Switch(props, ref) {
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
 
-  // Swap hooks depending on whether this checkbox is inside a SwitchGroup.
-  // This is a bit unorthodox. Typically, hooks cannot be called in a conditional,
-  // but since the checkbox won't move in and out of a group, it should be safe.
-  let groupState = useContext(SwitchGroupContext);
-
   // eslint-disable-next-line react-hooks/rules-of-hooks
   let { inputProps } = useSwitch(props, useToggleState(props), inputRef);
 
-  if (groupState) {
-    for (let key of ['isSelected', 'defaultSelected', 'isEmphasized']) {
-      if (originalProps[key] != null) {
-        console.warn(
-          `${key} is unsupported on individual <Switch> elements within a <SwitchGroup>. Please apply these props to the group instead.`,
-        );
-      }
-    }
-    if (props.value == null) {
-      console.warn(
-        'A <Switch> element within a <SwitchGroup> requires a `value` property.',
-      );
-    }
-  }
-
-  return (
-    <Base
-      as="label"
-      styles={styles}
-      {...hoverProps}
-      {...filterBaseProps(otherProps)}
-      ref={domRef}
-    >
+  const switchField = (
+    <>
       <HiddenInput
         data-qa="Switch"
         {...mergeProps(inputProps, focusProps)}
@@ -172,6 +159,39 @@ function Switch(props, ref) {
           })}
         />
       </Base>
+    </>
+  );
+
+  if (insideForm) {
+    return (
+      <FieldWrapper
+        {...{
+          labelPosition,
+          label,
+          insideForm,
+          styles,
+          labelStyles,
+          labelProps,
+          isDisabled,
+          validationState,
+          message,
+          requiredMark,
+          Component: switchField,
+          ref: domRef,
+        }}
+      />
+    );
+  }
+
+  return (
+    <Base
+      as="label"
+      styles={styles}
+      {...hoverProps}
+      {...filterBaseProps(otherProps)}
+      ref={domRef}
+    >
+      {switchField}
       {label && (
         <Base
           styles={labelStyles}

@@ -1,12 +1,16 @@
 import { useDOMRef } from '@react-spectrum/utils';
 import { Provider, useProviderProps } from '../../provider';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Base } from '../../components/Base';
 import { extractStyles } from '../../utils/styles.js';
 import { CONTAINER_STYLES } from '../../styles/list';
 import { filterBaseProps } from '../../utils/filterBaseProps';
+import { modAttrs } from '../../utils/react/modAttrs';
+import useForm from './useForm';
+import { useCombinedRefs } from '../../utils/react/useCombinedRefs';
+import { timeout } from '../../utils/promise';
 
-let FormContext = React.createContext({});
+export const FormContext = React.createContext({});
 
 export function useFormProps(props) {
   const ctx = useContext(FormContext);
@@ -21,38 +25,73 @@ const formPropNames = new Set([
   'method',
   'target',
   'onSubmit',
+  'onSubmitFailed',
 ]);
 
 const DEFAULT_STYLES = {
-  display: 'grid',
-  columns: {
-    '': '1fr',
-    'has-sider': `@sider-size 1fr`,
-  },
-  gap: {
-    '': '.5x',
-    'has-sider': '2x 1x',
-  },
-  '--sider-size': 'max-content',
+  display: 'flex',
+  flow: 'column',
+  gap: '2x',
 };
 
 function Form(props, ref) {
   props = useProviderProps(props);
   let {
     qa,
+    name,
     children,
     labelPosition = 'top',
-    labelAlign = 'start',
     isRequired,
     necessityIndicator,
-    isQuiet,
     isEmphasized,
     isDisabled,
     isReadOnly,
     validationState,
+    labelStyles,
+    validateTrigger,
+    defaultValues,
+    onValuesChange,
+    requiredMark = true,
+    form,
+    onSubmit,
+    onSubmitFailed,
     ...otherProps
   } = props;
   let styles;
+
+  ref = useCombinedRefs(ref);
+
+  let onSubmitCallback;
+
+  if ((onSubmit || onSubmitFailed) && !otherProps.action) {
+    otherProps.onSubmit = onSubmitCallback = (e) => {
+      e && e.preventDefault();
+
+      return form.validateFields().then(
+        async () => {
+          await timeout();
+          onSubmit && onSubmit(form.getFieldValues());
+        },
+        async (e) => {
+          await timeout();
+          if (e instanceof Error) {
+            throw e;
+          }
+          // errors are shown
+          // transfer errors to the callback
+          onSubmitFailed && onSubmitFailed(e);
+        },
+      );
+
+      // output data from form directly
+      // onSubmit(Object.fromEntries(new FormData(e.target).entries()));
+    };
+  }
+
+  [form] = useForm(form, ref && ref.current, {
+    onSubmit: onSubmitCallback,
+    onValuesChange,
+  });
 
   styles = extractStyles(otherProps, CONTAINER_STYLES, DEFAULT_STYLES);
 
@@ -60,33 +99,36 @@ function Form(props, ref) {
 
   let ctx = {
     labelPosition,
-    labelAlign,
+    labelStyles,
     necessityIndicator,
+    validateTrigger,
+    requiredMark,
+    form,
+    idPrefix: name,
   };
 
-  if (otherProps.onSubmit && !otherProps.action) {
-    const onSubmit = otherProps.onSubmit;
-
-    otherProps.onSubmit = (e) => {
-      e.preventDefault();
-
-      onSubmit(Object.fromEntries(new FormData(e.target).entries()));
-    };
-  }
+  useEffect(() => {
+    if (form && defaultValues) {
+      form.setInitialFieldValues(defaultValues);
+      form.resetFields();
+    }
+  }, []);
 
   return (
     <Base
       as="form"
       qa="Form"
       {...filterBaseProps(otherProps, { propNames: formPropNames })}
+      noValidate
       styles={styles}
       ref={domRef}
-      data-is-has-sider={labelPosition === 'side' ? '' : null}
+      {...modAttrs({
+        'has-sider': labelPosition === 'side' ? '' : null,
+      })}
     >
       <FormContext.Provider value={ctx}>
         <Provider
           insideForm={true}
-          isQuiet={isQuiet}
           isEmphasized={isEmphasized}
           isDisabled={isDisabled}
           isReadOnly={isReadOnly}
@@ -105,3 +147,5 @@ function Form(props, ref) {
  */
 const _Form = React.forwardRef(Form);
 export { _Form as Form };
+
+_Form.useForm = useForm;

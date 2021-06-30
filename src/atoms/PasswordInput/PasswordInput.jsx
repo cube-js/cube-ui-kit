@@ -1,11 +1,11 @@
 import React, { forwardRef, useCallback, useRef, useState } from 'react';
-import { TextFieldBase } from './TextFieldBase';
+import { TextInputBase } from '../TextInput/TextInputBase';
 import { useProviderProps } from '../../provider';
 import { useTextField } from '@react-aria/textfield';
 import { Button } from '../Button/Button';
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 
-function PasswordField(props, ref) {
+function PasswordInput(props, ref) {
   props = useProviderProps({ ...props });
 
   let [type, setType] = useState('password');
@@ -15,41 +15,43 @@ function PasswordField(props, ref) {
 
   let { labelProps, inputProps } = useTextField(props, inputRef);
 
-  const toggleType = useCallback(() => {
+  const toggleType = useCallback((e) => {
     setType((type) => (type === 'password' ? 'text' : 'password'));
   }, []);
 
+  props.suffix = (
+    <>
+      {props.suffix}
+      <Button
+        type="item"
+        onPress={toggleType}
+        preventDefault
+        place="stretch"
+        radius="right (1r - 1bw)"
+        padding=".5x 1x"
+        icon={type === 'password' ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+      />
+    </>
+  );
+
   return (
-    <TextFieldBase
-      {...props}
+    <TextInputBase
       labelProps={labelProps}
       inputProps={inputProps}
       ref={ref}
       inputRef={inputRef}
       inputStyles={{ paddingRight: '4x' }}
       type={type}
-      wrapperChildren={
-        <Button
-          type="clear"
-          onPress={toggleType}
-          color={{
-            '': '#dark.50',
-            'hovered | pressed': '#purple-text',
-          }}
-          padding=".5x"
-          icon={
-            type === 'password' ? <EyeInvisibleOutlined /> : <EyeOutlined />
-          }
-        />
-      }
+      suffixPosition="after"
+      {...props}
     />
   );
 }
 
 /**
- * PasswordFields are password inputs that allow users to input passwords or code entries
+ * PasswordInputs are password inputs that allow users to input passwords or code entries
  * with a keyboard. Various decorations can be displayed around the field to
  * communicate the entry requirements.
  */
-const _PasswordField = forwardRef(PasswordField);
-export { _PasswordField as PasswordField };
+const _PasswordInput = forwardRef(PasswordInput);
+export { _PasswordInput as PasswordInput };

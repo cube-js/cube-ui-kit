@@ -28,7 +28,8 @@ export const Title = forwardRef(({ as, level, ...props }, ref) => {
   const styles = extractStyles(props, STYLE_LIST, {
     ...DEFAULT_STYLES,
     size: tag,
-    fontWeight: (level || 1) === 1 ? 700 : 600,
+    fontWeight:
+      (level || 1) === 1 && (!props.size || props.size === 'h1') ? 700 : 600,
   });
 
   return (

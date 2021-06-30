@@ -1,7 +1,3 @@
-import { useContext, createContext } from 'react';
+import { createContext } from 'react';
 
-export const RadioContext = createContext(null);
-
-export function useRadioProvider() {
-  return useContext(RadioContext);
-}
+export const RadioGroupContext = createContext(null);

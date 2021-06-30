@@ -2,6 +2,7 @@ import React from 'react';
 import { ComboBox } from './ComboBox';
 import { Item } from '../Select/Select';
 import { DollarCircleOutlined } from '@ant-design/icons';
+import { Link } from '../Link/Link';
 
 export default {
   title: 'UIKit/Atoms/ComboBox',
@@ -101,7 +102,7 @@ export default {
       description: 'Label text.',
       control: 'text',
     },
-    errorMessage: {
+    message: {
       defaultValue: '',
       description: 'Validation error message',
       control: 'text',
@@ -123,7 +124,7 @@ const Template = ({ icon, ...props }) => {
   return (
     <>
       <ComboBox
-        icon={icon ? <DollarCircleOutlined /> : null}
+        prefix={icon ? <DollarCircleOutlined /> : null}
         {...props}
         onChange={(query) => console.log('change', query)}
       >

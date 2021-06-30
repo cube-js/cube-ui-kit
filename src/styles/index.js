@@ -32,8 +32,20 @@ export const STYLES = [
   createStyle('row', 'grid-row'),
   createStyle('z', 'z-index'),
   createStyle('column', 'grid-column'),
-  createStyle('columns', 'grid-template-columns', true),
-  createStyle('rows', 'grid-template-rows', true),
+  createStyle('columns', 'grid-template-columns', (val) => {
+    if (typeof val === 'number') {
+      return 'minmax(1px, 1fr) '.repeat(val).trim();
+    }
+
+    return null;
+  }),
+  createStyle('rows', 'grid-template-rows', (val) => {
+    if (typeof val === 'number') {
+      return 'auto '.repeat(val).trim();
+    }
+
+    return null;
+  }),
 ].concat(
   [
     transitionStyle,

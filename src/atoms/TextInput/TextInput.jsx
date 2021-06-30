@@ -1,16 +1,16 @@
 import React, { forwardRef, useRef } from 'react';
-import { TextFieldBase } from './TextFieldBase';
+import { TextInputBase } from './TextInputBase';
 import { useProviderProps } from '../../provider';
 import { useTextField } from '@react-aria/textfield';
 
-function TextField(props, ref) {
+function TextInput(props, ref) {
   props = useProviderProps(props);
 
   let inputRef = useRef();
   let { labelProps, inputProps } = useTextField(props, inputRef);
 
   return (
-    <TextFieldBase
+    <TextInputBase
       {...props}
       labelProps={labelProps}
       inputProps={inputProps}
@@ -21,9 +21,9 @@ function TextField(props, ref) {
 }
 
 /**
- * TextFields are text inputs that allow users to input custom text entries
+ * TextInputs are text inputs that allow users to input custom text entries
  * with a keyboard. Various decorations can be displayed around the field to
  * communicate the entry requirements.
  */
-const _TextField = forwardRef(TextField);
-export { _TextField as TextField };
+const _TextInput = forwardRef(TextInput);
+export { _TextInput as TextInput };

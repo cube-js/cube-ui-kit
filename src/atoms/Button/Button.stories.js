@@ -114,7 +114,7 @@ const Template = ({
     isLoading={isLoading}
     isSelected={isSelected}
     icon={<DollarCircleOutlined />}
-    onPress={() => console.log('! on press')}
+    onPress={() => console.log('Press')}
   >
     {label}
   </Button>

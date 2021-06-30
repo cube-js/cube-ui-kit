@@ -65,7 +65,7 @@ export default {
       defaultValue: 'Field label',
       control: 'text',
     },
-    errorMessage: {
+    message: {
       defaultValue: '',
       description: 'Validation error message',
       control: 'text',
@@ -99,7 +99,7 @@ const Template = ({
 }) => {
   return (
     <Select
-      icon={icon ? <DollarCircleOutlined /> : null}
+      prefix={icon ? <DollarCircleOutlined /> : null}
       label={label}
       validationState={validationState}
       labelPosition={labelPosition}

@@ -1,22 +1,26 @@
 import React, { forwardRef, useEffect } from 'react';
 import { Base } from './Base';
 import { CONTAINER_STYLES } from '../styles/list';
-import { extractStyles } from '../utils/styles.js';
+import { extractStyles, parseStyle } from '../utils/styles.js';
 import { filterBaseProps } from '../utils/filterBaseProps';
 import { useCombinedRefs } from '../utils/react/useCombinedRefs';
 
 const DEFAULT_STYLES = {
   display: 'grid',
+  content: 'stretch',
+  items: 'center',
   flow: 'column',
-  gap: '.5x',
+  gap: 0,
   position: 'absolute',
-  right: 0,
-  top: 0,
-  bottom: 0,
+  right: '@suffix-gap',
+  top: '@suffix-gap',
+  bottom: '@suffix-gap',
+  color: '#dark.75',
+  height: '(100% - (2 * @suffix-gap))',
 };
 
 export const Suffix = forwardRef(
-  ({ onWidthChange, children, ...props }, ref) => {
+  ({ onWidthChange, outerGap = '1bw', children, ...props }, ref) => {
     const styles = extractStyles(props, CONTAINER_STYLES, DEFAULT_STYLES);
 
     ref = useCombinedRefs(ref);
@@ -32,6 +36,7 @@ export const Suffix = forwardRef(
         {...filterBaseProps(props, { eventProps: true })}
         styles={styles}
         ref={ref}
+        style={{ '--suffix-gap': parseStyle(outerGap).value }}
       >
         {children}
       </Base>

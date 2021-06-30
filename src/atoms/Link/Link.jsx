@@ -8,6 +8,7 @@ import {
 } from '../../styles/list';
 import { extractStyles } from '../../utils/styles.js';
 import { filterBaseProps } from '../../utils/filterBaseProps';
+import { useContextStyles } from '../../providers/Styles';
 
 const DEFAULT_STYLES = {
   display: 'inline',
@@ -45,7 +46,11 @@ const STYLE_PROPS = [
 ];
 
 export const Link = forwardRef((props, ref) => {
-  const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
+  const styles = {
+    ...DEFAULT_STYLES,
+    ...useContextStyles('Link', props),
+    ...extractStyles(props, STYLE_PROPS),
+  };
 
   return (
     <Action

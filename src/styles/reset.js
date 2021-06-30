@@ -7,7 +7,6 @@ const RESET_MAP = {
 -webkit-appearance: none;
 font-family: inherit;
 font-weight: inherit;
-text-align: inherit;
 word-spacing: initial;
 -webkit-text-fill-color: currentColor;
 box-sizing: border-box;
@@ -75,6 +74,7 @@ appearance: none;
 position: relative;
 touch-action: manipulation;
 -webkit-tap-highlight-color: var(--mark-color);
+text-decoration: none;
 `,
     },
   ],

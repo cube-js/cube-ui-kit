@@ -1,16 +1,17 @@
 import React from 'react';
 import { useDOMRef } from '@react-spectrum/utils';
-import { Label, LABEL_STYLES } from '../../components/Label';
-import { Provider, useProviderProps } from '../../provider';
+import { LABEL_STYLES } from '../../components/Label';
+import { useProviderProps } from '../../provider';
 import { useRadioGroup } from '@react-aria/radio';
 import { useRadioGroupState } from '@react-stately/radio';
-import { useFormProps } from '../Form/Form';
-import { RadioContext } from './context';
+import { FormContext, useFormProps } from '../Form/Form';
+import { RadioGroupContext } from './context';
 import { extractStyles } from '../../utils/styles';
 import { BLOCK_STYLES, OUTER_STYLES } from '../../styles/list';
 import { Base } from '../../components/Base';
 import { modAttrs } from '../../utils/react/modAttrs';
 import { useContextStyles } from '../../providers/Styles';
+import { FieldWrapper } from '../../components/FieldWrapper';
 
 const STYLES = {
   display: 'grid',
@@ -44,16 +45,17 @@ function RadioGroup(props, ref) {
 
   let {
     isDisabled,
-    isEmphasized,
     isRequired,
     necessityIndicator,
     label,
     labelPosition = 'top',
-    labelAlign,
     validationState,
     children,
+    insideForm,
     orientation = 'vertical',
+    message,
     labelStyles,
+    requiredMark = true,
     ...otherProps
   } = props;
   let domRef = useDOMRef(ref);
@@ -78,58 +80,50 @@ function RadioGroup(props, ref) {
   };
 
   let state = useRadioGroupState(props);
-  let { radioGroupProps, labelProps } = useRadioGroup(props, state);
+  let { radioGroupProps: fieldProps, labelProps } = useRadioGroup(props, state);
+
+  let radioGroup = (
+    <Base
+      qa="RadioGroup"
+      styles={groupStyles}
+      {...modAttrs({
+        horizontal: orientation === 'horizontal',
+      })}
+    >
+      <FormContext.Provider
+        value={{
+          isRequired,
+          validationState,
+          isDisabled,
+        }}
+      >
+        <RadioGroupContext.Provider value={state}>
+          {children}
+        </RadioGroupContext.Provider>
+      </FormContext.Provider>
+    </Base>
+  );
 
   return (
-    <Base
-      qa="RadioGroup_Wrapper"
-      styles={styles}
-      {...radioGroupProps}
-      {...modAttrs({
-        'has-sider': labelPosition === 'side',
-      })}
-      ref={domRef}
-    >
-      <Provider
-        isDisabled={isDisabled}
-        validationState={validationState}
-        isEmphasized={isEmphasized}
-        isRequired={isRequired}
-      >
-        {label && (
-          <Label
-            qa="RadioGroup_Label"
-            {...labelProps}
-            as="span"
-            labelPosition={labelPosition}
-            labelAlign={labelAlign}
-            isRequired={isRequired}
-            necessityIndicator={necessityIndicator}
-            styles={labelStyles}
-            isDisabled={isDisabled}
-            validationState={validationState}
-          >
-            {label}
-          </Label>
-        )}
-        <Base
-          qa="RadioGroup"
-          styles={groupStyles}
-          {...modAttrs({
-            horizontal: orientation === 'horizontal',
-          })}
-        >
-          <RadioContext.Provider
-            value={{
-              isRequired,
-              state,
-            }}
-          >
-            {children}
-          </RadioContext.Provider>
-        </Base>
-      </Provider>
-    </Base>
+    <FieldWrapper
+      {...{
+        labelPosition,
+        label,
+        insideForm,
+        styles,
+        isRequired,
+        labelStyles,
+        necessityIndicator,
+        labelProps,
+        fieldProps,
+        isDisabled,
+        validationState,
+        message,
+        requiredMark,
+        Component: radioGroup,
+        ref: domRef,
+      }}
+    />
   );
 }
 

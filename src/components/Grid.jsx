@@ -14,6 +14,7 @@ import { filterBaseProps } from '../utils/filterBaseProps';
 const DEFAULT_STYLES = {
   display: 'grid',
   flow: 'row',
+  gap: '@(column-gap, 0)',
 };
 
 const STYLE_PROPS = [

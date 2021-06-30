@@ -116,10 +116,19 @@ export function renderStyles(styles, responsive, styleHandlerMap = {}) {
 
 const CACHE = {};
 
-export function createStyle(styleName, cssStyle) {
+export function createStyle(styleName, cssStyle, converter) {
   if (!CACHE[styleName]) {
     CACHE[styleName] = styleHandlerCacheWrapper((styleMap) => {
-      const { value } = parseStyle(styleMap[styleName], 1);
+      let styleValue = styleMap[styleName];
+
+      // convert non-string values
+      if (converter && typeof styleValue !== 'string') {
+        styleValue = converter(styleValue);
+
+        if (!styleValue) return;
+      }
+
+      const { value } = parseStyle(styleValue, 1);
 
       return { [cssStyle || toSnakeCase(styleName)]: value };
     });

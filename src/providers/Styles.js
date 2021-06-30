@@ -24,7 +24,10 @@ export function useContextStyles(name, props) {
 
   if (contextStyles[name]) {
     contextStyles[name].forEach((handler) => {
-      Object.assign(styles, handler(props));
+      Object.assign(
+        styles,
+        typeof handler === 'function' ? handler(props) : handler,
+      );
     });
   }
 

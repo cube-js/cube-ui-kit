@@ -44,7 +44,8 @@ export function createLinkClickHandler(to, onPress, disabled) {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const history = useHistory();
   const newTab = to && to.startsWith('!');
-  const href = to ? (newTab ? to.slice(1) : to) : '';
+  const nativeRoute = to && to.startsWith('@');
+  const href = to ? (newTab || nativeRoute ? to.slice(1) : to) : '';
 
   return function onClickHandler(evt) {
     if (disabled) return;
@@ -63,7 +64,11 @@ export function createLinkClickHandler(to, onPress, disabled) {
       return;
     }
 
-    history.push(href);
+    if (nativeRoute) {
+      openLink(href || window.location.href);
+    } else {
+      history.push(href);
+    }
   };
 }
 
@@ -102,7 +107,16 @@ const STYLE_PROPS = [
 
 export const Action = forwardRef(
   (
-    { to, as, htmlType, label, skipWarnings, props: directProps, ...props },
+    {
+      to,
+      as,
+      htmlType,
+      label,
+      skipWarnings,
+      preventDefault,
+      props: directProps,
+      ...props
+    },
     ref,
   ) => {
     if (!skipWarnings) {
@@ -113,7 +127,8 @@ export const Action = forwardRef(
 
     const isDisabled = props.isDisabled;
     const newTab = to && to.startsWith('!');
-    const href = to ? (newTab ? to.slice(1) : to) : '';
+    const nativeRoute = to && to.startsWith('@');
+    const href = to ? (newTab || nativeRoute ? to.slice(1) : to) : '';
     const target = newTab ? '_blank' : null;
     const pressHandler = createLinkClickHandler(
       to,
@@ -150,6 +165,10 @@ export const Action = forwardRef(
 
         pressHandler(evt);
       };
+    }
+
+    if (preventDefault) {
+      customProps.onClick = (e) => e.preventDefault();
     }
 
     return (

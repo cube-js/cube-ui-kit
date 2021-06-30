@@ -59,7 +59,7 @@ const INPUT_STYLES = {
   items: 'center stretch',
   content: 'center stretch',
   gap: '1x',
-  padding: '(1.25x - 1bw) (1.5x - 1bw)',
+  padding: '(1.25x - 1bw) 1x (1.25x - 1bw) (1.5x - 1bw)',
   border: {
     '': true,
     invalid: '#danger-text.50',
@@ -80,10 +80,13 @@ const INPUT_STYLES = {
     disabled: '#dark.30',
   },
   fill: {
-    '': '#white',
+    '': '#purple.0',
+    hovered: '#dark.04',
+    pressed: '#dark.08',
     disabled: '#dark.04',
   },
   fontWeight: 400,
+  textAlign: 'left',
 };
 
 const OVERLAY_STYLES = {
@@ -134,16 +137,21 @@ function Select(props, ref) {
   props = useProviderProps(props);
   props = useFormProps(props);
 
+  if (props.onChange) {
+    props.onSelectionChange = props.onChange;
+
+    delete props.onChange;
+  }
+
   let {
     qa,
     label,
     labelPosition = 'top',
-    labelAlign,
     labelStyles,
     isRequired,
     necessityIndicator,
     validationState,
-    icon,
+    prefix,
     isDisabled,
     multiLine,
     autoFocus,
@@ -158,11 +166,12 @@ function Select(props, ref) {
     value,
     inputStyles,
     optionStyles,
-    wrapperChildren,
+    suffix,
     disallowEmptySelection,
     selectionMode,
     listBoxStyles,
-    errorMessage,
+    message,
+    requiredMark = true,
     ...otherProps
   } = props;
   let state = useSelectState(props);
@@ -227,7 +236,6 @@ function Select(props, ref) {
         disabled: isDisabled,
         hovered: isHovered,
         focused: isFocused,
-        'has-icon': !!icon,
       })}
       styles={styles}
     >
@@ -254,48 +262,33 @@ function Select(props, ref) {
           focused: isFocused,
         })}
       >
-        {icon}
+        {prefix}
         <span {...valueProps}>
           {state.selectedItem
             ? state.selectedItem.rendered
             : 'Select an option'}
         </span>
-        {(validationState || isLoading || wrapperChildren) && (
+        {(validationState || isLoading || suffix) && (
           <div>
             {validationState && !isLoading ? validation : null}
             {isLoading && <LoadingOutlined />}
-            {wrapperChildren}
+            {suffix}
           </div>
         )}
         <CaretDownIcon />
       </Base>
-      <CSSTransition
-        in={state.isOpen && !isDisabled}
-        unmountOnExit
-        timeout={120}
-        classNames="cube-overlay-transition"
-      >
-        <Base
-          styles={{
-            position: 'absolute',
-            width: '100%',
-            top: 0,
-            height: '100%',
-          }}
-          css={OVERLAY_TRANSITION_CSS}
-        >
-          <ListBoxPopup
-            {...menuProps}
-            popoverRef={popoverRef}
-            listBoxRef={listBoxRef}
-            state={state}
-            disallowEmptySelection={disallowEmptySelection}
-            selectionMode={selectionMode}
-            listBoxStyles={listBoxStyles}
-            optionStyles={optionStyles}
-          />
-        </Base>
-      </CSSTransition>
+      <OverlayWrapper in={state.isOpen && !isDisabled}>
+        <ListBoxPopup
+          {...menuProps}
+          popoverRef={popoverRef}
+          listBoxRef={listBoxRef}
+          state={state}
+          disallowEmptySelection={disallowEmptySelection}
+          selectionMode={selectionMode}
+          listBoxStyles={listBoxStyles}
+          optionStyles={optionStyles}
+        />
+      </OverlayWrapper>
     </Base>
   );
 
@@ -307,13 +300,13 @@ function Select(props, ref) {
         insideForm,
         styles,
         isRequired,
-        labelAlign,
         labelStyles,
         necessityIndicator,
         labelProps,
         isDisabled,
         validationState,
-        errorMessage,
+        message,
+        requiredMark,
         Component: selectField,
         ref: ref,
       }}
@@ -445,6 +438,30 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
     >
       {item.rendered}
     </Base>
+  );
+}
+
+export function OverlayWrapper(props) {
+  return (
+    <CSSTransition
+      in={props.in}
+      unmountOnExit
+      timeout={180}
+      classNames="cube-overlay-transition"
+    >
+      <Base
+        styles={{
+          position: 'absolute',
+          width: '100%',
+          top: 0,
+          height: '100%',
+          z: 999,
+        }}
+        css={OVERLAY_TRANSITION_CSS}
+      >
+        {props.children}
+      </Base>
+    </CSSTransition>
   );
 }
 

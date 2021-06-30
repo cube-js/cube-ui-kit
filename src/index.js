@@ -1,6 +1,15 @@
+import { TextInput } from './atoms/TextInput/TextInput';
+import { PasswordInput } from './atoms/PasswordInput/PasswordInput';
+import { NumberInput } from './atoms/NumberInput/NumberInput';
+import { Form } from './atoms/Form/Form';
+import { Field } from './atoms/Form/Field';
+
 import { Text } from './components/Text';
 import { Title } from './components/Title';
 import { Paragraph } from './components/Paragraph';
+import { TextArea } from './atoms/TextArea/TextArea';
+
+Form.Item = Field;
 
 // generic components
 export { Base } from './components/Base';
@@ -16,6 +25,7 @@ export { PrismCode } from './atoms/PrismCode/PrismCode';
 export { Prefix } from './components/Prefix';
 export { Suffix } from './components/Suffix';
 export { Divider } from './components/Divider';
+export { GridProvider } from './components/GridProvider';
 
 // atoms
 export { LoadingAnimation } from './atoms/LoadingAnimation/LoadingAnimation';
@@ -27,16 +37,20 @@ export { Placeholder } from './atoms/Placeholder/Placeholder';
 export { Skeleton } from './atoms/Skeleton/Skeleton';
 export { CloudLogo } from './atoms/CloudLogo/CloudLogo';
 export { Badge } from './atoms/Badge/Badge';
-export { SearchField } from './atoms/SearchField/SearchField';
+export { SearchInput } from './atoms/SearchInput/SearchInput';
 export { Submit } from './components/Submit';
-export { TextField } from './atoms/TextField/TextField';
-export { PasswordField } from './atoms/TextField/PasswordField';
+export { TextInput } from './atoms/TextInput/TextInput';
+export { TextArea } from './atoms/TextArea/TextArea';
+export { PasswordInput } from './atoms/PasswordInput/PasswordInput';
 export { Checkbox } from './atoms/Checkbox/Checkbox';
+export { CheckboxGroup } from './atoms/Checkbox/CheckboxGroup';
 export { Switch } from './atoms/Switch/Switch';
 export { Radio } from './atoms/RadioGroup/Radio';
-export { Form } from './atoms/Form/Form';
+export { Form, Field };
 export { ComboBox } from './atoms/ComboBox/ComboBox';
 export { Select, Item } from './atoms/Select/Select';
+export { NumberInput } from './atoms/NumberInput/NumberInput';
+export { Avatar } from './atoms/Avatar/Avatar';
 
 // molecules
 export { TopBar } from './molecules/TopBar/TopBar';
@@ -47,9 +61,10 @@ export { FileTabs } from './molecules/FileTabs/FileTabs';
 export { Modal } from './molecules/Modal/Modal';
 export { CopySnippet } from './molecules/CopySnippet/CopySnippet';
 export { StatsCard } from './molecules/StatsCard/StatsCard';
-export { SearchResults } from './molecules/SearchResults/SearchResults';
 
+export { SearchResults } from './molecules/SearchResults/SearchResults';
 // services
+
 export { notification } from './services/notification';
 
 export * from './providers/Responsive';
@@ -65,3 +80,12 @@ export { Text, Title, Paragraph };
 export { useContextStyles, StylesProvider } from './providers/Styles';
 
 export { Provider, useProviderProps } from './provider';
+
+const Input = TextInput;
+
+Input.Text = TextInput;
+Input.Password = PasswordInput;
+Input.Number = NumberInput;
+Input.TextArea = TextArea;
+
+export { Input };

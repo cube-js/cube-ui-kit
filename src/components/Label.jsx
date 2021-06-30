@@ -4,9 +4,34 @@ import { useProviderProps } from '../provider';
 import { extractStyles } from '../utils/styles';
 import { CONTAINER_STYLES } from '../styles/list';
 import { Base } from './Base';
-import { useContextStyles } from '../providers/Styles';
+import { StylesProvider, useContextStyles } from '../providers/Styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
 import { modAttrs } from '../utils/react/modAttrs';
+
+const REQUIRED_ICON = (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    version="1.1"
+    x="0px"
+    y="0px"
+    viewBox="0 0 100 125"
+    style={{
+      enableBackground: 'new 0 0 100 100',
+      width: '.8em',
+      height: '.8em',
+      transform: 'rotate(-5deg)',
+    }}
+  >
+    <switch>
+      <g>
+        <polygon
+          fill="currentColor"
+          points="97.5,47.5 90.5,26.1 61.3,35.6 61.3,4.8 38.7,4.8 38.7,35.6 9.5,26.1 2.5,47.5 31.8,57 13.7,82 31.9,95.2     50,70.3 68.1,95.2 86.3,82 68.2,57"
+        />
+      </g>
+    </switch>
+  </svg>
+);
 
 const INTL_MESSAGES = {
   '(required)': '(required)',
@@ -25,12 +50,11 @@ export const INLINE_LABEL_STYLES = {
 };
 
 export const LABEL_STYLES = {
-  display: 'flex',
-  items: 'baseline',
+  display: 'block',
   fontWeight: 600,
   size: 'md',
   padding: {
-    '': '1x 0 0 0',
+    '': '0',
     side: '(1x - 1bw) 0',
   },
   color: {
@@ -49,7 +73,6 @@ function Label(props, ref) {
     qa,
     children,
     labelPosition = 'top',
-    labelAlign = labelPosition === 'side' ? 'start' : null,
     isRequired,
     necessityIndicator = isRequired != null ? 'icon' : null,
     includeNecessityIndicatorInAccessibilityName = false,
@@ -75,15 +98,15 @@ function Label(props, ref) {
     ? formatMessage('(required)')
     : formatMessage('(optional)');
   let icon = (
-    <div
+    <span
       aria-label={
         includeNecessityIndicatorInAccessibilityName
           ? formatMessage('(required)')
           : undefined
       }
     >
-      *
-    </div>
+      {REQUIRED_ICON}
+    </span>
   );
 
   return (
@@ -102,25 +125,31 @@ function Label(props, ref) {
         valid: validationState === 'valid',
       })}
     >
-      {children}
-      {(necessityIndicator === 'label' ||
-        (necessityIndicator === 'icon' && isRequired)) &&
-        ' \u200b'}
-      {/* necessityLabel is hidden to screen readers if the field is required because
-       * aria-required is set on the field in that case. That will already be announced,
-       * so no need to duplicate it here. If optional, we do want it to be announced here. */}
-      {necessityIndicator === 'label' && (
-        <span
-          aria-hidden={
-            !includeNecessityIndicatorInAccessibilityName
-              ? isRequired
-              : undefined
-          }
-        >
-          {necessityLabel}
-        </span>
+      {typeof children !== 'string' ? (
+        children
+      ) : (
+        <>
+          {children}
+          {(necessityIndicator === 'label' ||
+            (necessityIndicator === 'icon' && isRequired)) &&
+            ' \u200b'}
+          {/* necessityLabel is hidden to screen readers if the field is required because
+           * aria-required is set on the field in that case. That will already be announced,
+           * so no need to duplicate it here. If optional, we do want it to be announced here. */}
+          {necessityIndicator === 'label' && (
+            <span
+              aria-hidden={
+                !includeNecessityIndicatorInAccessibilityName
+                  ? isRequired
+                  : undefined
+              }
+            >
+              {necessityLabel}
+            </span>
+          )}
+          {necessityIndicator === 'icon' && isRequired && icon}
+        </>
       )}
-      {necessityIndicator === 'icon' && isRequired && icon}
     </Base>
   );
 }

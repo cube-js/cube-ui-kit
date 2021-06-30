@@ -295,7 +295,11 @@ const modal = {
         const wrapOnCancel = (arg) => {
           onCancel && onCancel(arg);
 
-          this.reject(item, arg);
+          if (item.type === 'info') {
+            this.resolve(item, arg);
+          } else {
+            this.reject(item, arg);
+          }
         };
         const wrapOnClose = (arg) => {
           onClose && onClose(arg);

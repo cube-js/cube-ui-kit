@@ -109,7 +109,7 @@ const STYLES_BY_TYPE = {
     color: '#white',
   },
   item: {
-    border: '#clear',
+    border: '0',
     fill: {
       '': '#purple.0',
       hovered: '#dark.04',
@@ -121,6 +121,7 @@ const STYLES_BY_TYPE = {
     },
     textAlign: 'left',
     padding: '(1x - 1px) (1.5x - 1px)',
+    cursor: 'default',
   },
   tab: {
     // shadow: {
@@ -285,7 +286,11 @@ export const Button = forwardRef(
           />
         ) : null}
         {icon ? (
-          <Space gap="1x">
+          <Space
+            gap="1x"
+            display="inline-flex"
+            styles={{ verticalAlign: 'middle' }}
+          >
             {!showLoadingIcon && !isLoading ? icon : null}
             {children ? <div>{children}</div> : null}
           </Space>
