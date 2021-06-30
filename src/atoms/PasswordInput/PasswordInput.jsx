@@ -29,6 +29,8 @@ function PasswordInput(props, ref) {
         place="stretch"
         radius="right (1r - 1bw)"
         padding=".5x 1x"
+        aria-label="Toggle masking"
+        excludeFromTabOrder
         icon={type === 'password' ? <EyeInvisibleOutlined /> : <EyeOutlined />}
       />
     </>

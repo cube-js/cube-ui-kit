@@ -86,7 +86,7 @@ function FieldWrapper(
         </Label>
       )}
       {Component}
-      {message && (
+      {message && !isDisabled && (
         <Base
           {...modProps}
           styles={{

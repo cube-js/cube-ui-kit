@@ -31,8 +31,6 @@ import { Prefix } from '../../components/Prefix';
 import { Suffix } from '../../components/Suffix';
 import { Space } from '../../components/Space';
 import { Item } from '@react-stately/collections';
-import { CSSTransition } from 'react-transition-group';
-import { OVERLAY_TRANSITION_CSS } from '../../utils/transitions';
 import { DEFAULT_INPUT_STYLES } from '../TextInput/TextInputBase';
 
 const CaretDownIcon = () => (

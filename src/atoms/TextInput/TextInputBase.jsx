@@ -48,14 +48,16 @@ export const DEFAULT_INPUT_STYLES = {
   },
   border: {
     '': true,
+    focused: true,
     valid: '#success-text.50',
     invalid: '#danger-text.50',
-    focused: true,
+    disabled: true,
   },
   outline: {
     '': '#purple-03.0',
     focused: '#purple-03',
     'invalid & focused': '#danger.50',
+    'valid & focused': '#success.50',
   },
   radius: true,
   padding: '(1.25x - 1bw) (1.5x - 1bw)',

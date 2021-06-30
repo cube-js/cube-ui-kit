@@ -186,7 +186,6 @@ export const Action = forwardRef(
           filterBaseProps(props, { eventProps: true }),
         )}
         {...directProps}
-        tabIndex={props.as === 'button' ? null : '0'}
         type={htmlType}
         rel={as === 'a' && newTab ? 'rel="noopener noreferrer"' : undefined}
         ref={combinedRef}
