@@ -16,7 +16,7 @@ import { HiddenSelect, useSelect } from '@react-aria/select';
 import { useListBox, useOption } from '@react-aria/listbox';
 import { useButton } from '@react-aria/button';
 import { FocusScope } from '@react-aria/focus';
-import { DismissButton, useOverlay } from '@react-aria/overlays';
+import { DismissButton, useOverlay, useOverlayPosition } from '@react-aria/overlays';
 import { useFormProps } from '../Form/Form';
 import { useFocus as useAriaFocus, useHover } from '@react-aria/interactions';
 import { useProviderProps } from '../../provider';
@@ -29,8 +29,7 @@ import { modAttrs } from '../../utils/react/modAttrs';
 import { FieldWrapper } from '../../components/FieldWrapper';
 import { useCombinedRefs } from '../../utils/react/useCombinedRefs';
 import { Item } from '@react-stately/collections';
-import { CSSTransition } from 'react-transition-group';
-import { OVERLAY_TRANSITION_CSS } from '../../utils/transitions';
+import { OverlayWrapper } from '../../components/OverlayWrapper';
 
 const CaretDownIcon = () => (
   <svg
@@ -91,11 +90,21 @@ const INPUT_STYLES = {
 
 const OVERLAY_STYLES = {
   position: 'absolute',
-  left: '50%',
-  top: '(100% + .5x)',
-  transform: 'translate(-50%, 0)',
+  // left: '50%',
+  // top: {
+  //   '': '(100% + .5x)',
+  //   '[data-position="top"]': 'auto',
+  // },
+  // bottom: {
+  //   '': 'auto',
+  //   '[data-position="top"]': '(100% + .5x)',
+  // },
+  transform: {
+    '': 'translate(-1.5x, 0)',
+    '[data-position="top"]': 'translate(-1.5x, 0)',
+  },
   width: '100% max-content max-content',
-  z: 999,
+  // z: 999,
 };
 
 const LISTBOX_STYLES = {
@@ -164,6 +173,7 @@ function Select(props, ref) {
     loadingIndicator,
     insideForm,
     value,
+    offset = 8,
     inputStyles,
     optionStyles,
     suffix,
@@ -171,6 +181,8 @@ function Select(props, ref) {
     selectionMode,
     listBoxStyles,
     message,
+    direction = 'bottom',
+    shouldFlip = true,
     requiredMark = true,
     ...otherProps
   } = props;
@@ -198,6 +210,17 @@ function Select(props, ref) {
     state,
     triggerRef,
   );
+
+  let { overlayProps, placement } = useOverlayPosition({
+    targetRef: triggerRef,
+    overlayRef: popoverRef,
+    scrollRef: listBoxRef,
+    placement: `${direction} end`,
+    shouldFlip: shouldFlip,
+    isOpen: state.isOpen,
+    onClose: state.close,
+    offset,
+  });
 
   let { isFocused, focusProps } = useFocus({ isDisabled, as: 'input' }, true);
   let { hoverProps, isHovered } = useHover({ isDisabled });
@@ -277,11 +300,13 @@ function Select(props, ref) {
         )}
         <CaretDownIcon />
       </Base>
-      <OverlayWrapper in={state.isOpen && !isDisabled}>
+      <OverlayWrapper isOpen={state.isOpen && !isDisabled}>
         <ListBoxPopup
           {...menuProps}
           popoverRef={popoverRef}
           listBoxRef={listBoxRef}
+          overlayProps={overlayProps}
+          placement={placement}
           state={state}
           disallowEmptySelection={disallowEmptySelection}
           selectionMode={selectionMode}
@@ -321,9 +346,11 @@ export function ListBoxPopup({
   listBoxStyles,
   overlayStyles,
   optionStyles,
+  overlayProps: parentOverlayProps,
   disallowEmptySelection,
   shouldUseVirtualFocus,
   selectionMode,
+  placement,
   ...otherProps
 }) {
   // Get props for the listbox
@@ -368,7 +395,9 @@ export function ListBoxPopup({
           ...OVERLAY_STYLES,
           overlayStyles,
         }}
+        {...parentOverlayProps}
         {...overlayProps}
+        data-position={placement}
         ref={popoverRef}
       >
         <DismissButton onDismiss={() => state.close()} />
@@ -438,30 +467,6 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
     >
       {item.rendered}
     </Base>
-  );
-}
-
-export function OverlayWrapper(props) {
-  return (
-    <CSSTransition
-      in={props.in}
-      unmountOnExit
-      timeout={180}
-      classNames="cube-overlay-transition"
-    >
-      <Base
-        styles={{
-          position: 'absolute',
-          width: '100%',
-          top: 0,
-          height: '100%',
-          z: 999,
-        }}
-        css={OVERLAY_TRANSITION_CSS}
-      >
-        {props.children}
-      </Base>
-    </CSSTransition>
   );
 }
 

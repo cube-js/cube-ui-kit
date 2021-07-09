@@ -1,12 +1,6 @@
 import { createGlobalStyle } from 'styled-components';
 import VARIABLES from '../css-properties';
 
-const CSS_PROPERTIES = {};
-
-Object.keys(VARIABLES).forEach((key) => {
-  CSS_PROPERTIES[`--${key}`] = VARIABLES[key];
-});
-
 const inputStyles = ` {
     line-height: var(--input-line-height);
     font-size: var(--input-font-size);
@@ -32,146 +26,43 @@ const inputStyles = ` {
   }
 `;
 
-export const GlobalStyles = createGlobalStyle`
-  body {
-    ${Object.entries(CSS_PROPERTIES)
-      .map(([key, value]) => {
-        return `${key}: ${value};`;
-      })
-      .join('\n    ')}
-  }
-  
-  html {
-    --font: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-    --monospace-font: Menlo, Monaco, Consolas, 'Courier New', monospace;
-  }
-  
-  body {
-    background-color: white !important;
-    font-family: var(--font);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    margin: 0;
-    padding: 0;
-    color: var(--dark-75-color);
-    font-size: var(--medium-font-size);
-    line-height: var(--medium-line-height);
-    letter-spacing: var(--medium-letter-spacing);
-    font-weight: 400;
-  }
-  
-  .cube-notification-container {
-    min-width: 288px;
-    max-width: 340px;
-    width: calc(100vw - 32px);
-    position: fixed;
-    top: 32px;
-    right: 16px;
-    z-index: 999999;
-  }
-  
-  .cube-notifications {
-    display: grid;
-    grid-auto-flow: row;
-    grid-template-columns: 1fr;
-  }
-  
-  .cube-notification-enter {
-    opacity: 0;
-    max-height: 0px;
-    margin-bottom: 0px;
-    transform: translate(100%, 0);
-  }
-  
-  .cube-notification-enter-active {
-    opacity: 1;
-    max-height: 56px;
-    margin-bottom: 8px;
-    transform: translate(0, 0);
-    transition: all 300ms ease-in;
-    
-    & > * {
-      margin-bottom: 0px;
-    } 
-  }
-  
-  .cube-notification-exit {
-    opacity: 1;
-    margin-bottom: 8px;
-    max-height: 56px;
-    transform: translate(0, 0);
-  }
-  
-  .cube-notification-exit-active {
-    opacity: 0;
-    max-height: 0px;
-    margin-bottom: 0px;
-    transform: translate(100%, 0);
-    transition: all 300ms ease-in;
-    
-    & > * {
-      margin-bottom: 0px;
-    }
-  }
-  
-  b {
-    font-weight: 600;
-  }
-  
-  [type=reset], [type=submit], button, html [type=button] {
-    -webkit-appearance: none;
-  }
-  
-  code {
-    font-family: var(--monospace-font);
-  }
-  
+const fontsProvider = ({ publicUrl = '' }) => `
   @font-face {
     font-family: 'Inter';
     font-style: normal;
     font-weight: 400;
     font-display: swap;
-    src: url(${({ publicUrl }) =>
-      publicUrl || ''}/fonts/Inter-Regular.woff2) format('woff2'),
-      url(${({ publicUrl }) =>
-        publicUrl || ''}/fonts/Inter-Regular.woff) format('woff');
+    src: url(${publicUrl}/fonts/Inter-Regular.woff2) format('woff2'),
+      url(${publicUrl}/fonts/Inter-Regular.woff) format('woff');
   }
   @font-face {
     font-family: 'Inter';
     font-style: normal;
     font-weight: 500;
     font-display: swap;
-    src: url(${({ publicUrl }) =>
-      publicUrl || ''}/fonts/Inter-Medium.woff2) format('woff2'),
-      url(${({ publicUrl }) =>
-        publicUrl || ''}/fonts/Inter-Medium.woff) format('woff');
+    src: url(${publicUrl}/fonts/Inter-Medium.woff2) format('woff2'),
+      url(${publicUrl}/fonts/Inter-Medium.woff) format('woff');
   }
   @font-face {
     font-family: 'Inter';
     font-style: normal;
     font-weight: 600;
     font-display: swap;
-    src: url(${({ publicUrl }) =>
-      publicUrl || ''}/fonts/Inter-SemiBold.woff2) format('woff2'),
-      url(${({ publicUrl }) =>
-        publicUrl || ''}/fonts/Inter-SemiBold.woff) format('woff');
+    src: url(${publicUrl}/fonts/Inter-SemiBold.woff2) format('woff2'),
+      url(${publicUrl}/fonts/Inter-SemiBold.woff) format('woff');
   }
   @font-face {
     font-family: 'Inter';
     font-style: normal;
     font-weight: 700;
     font-display: swap;
-    src: url(${({ publicUrl }) =>
-      publicUrl || ''}/fonts/Inter-Bold.woff2) format('woff2'),
-      url(${({ publicUrl }) =>
-        publicUrl || ''}/fonts/Inter-Bold.woff) format('woff');
+    src: url(${publicUrl}/fonts/Inter-Bold.woff2) format('woff2'),
+      url(${publicUrl}/fonts/Inter-Bold.woff) format('woff');
   }
   @font-face {
     font-family: 'Source Code Pro';
-    src: url('${({ publicUrl }) =>
-      publicUrl || ''}/fonts/SourceCodePro-Regular.woff2') format('woff2'),
-      url('${({ publicUrl }) =>
-        publicUrl || ''}/fonts/SourceCodePro-Regular.woff') format('woff');
+    src: url('${publicUrl}/fonts/SourceCodePro-Regular.woff2') format('woff2'),
+      url('${publicUrl}/fonts/SourceCodePro-Regular.woff') format('woff');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
@@ -182,10 +73,8 @@ export const GlobalStyles = createGlobalStyle`
     font-style: normal;
     font-weight: 400;
     font-display: swap;
-    src: url(${({ publicUrl }) =>
-      publicUrl || ''}/fonts/JetBrainsMono-Regular.woff2) format('woff2'),
-      url(${({ publicUrl }) =>
-        publicUrl || ''}/fonts/JetBrainsMono-Regular.woff) format('woff');
+    src: url(${publicUrl}/fonts/JetBrainsMono-Regular.woff2) format('woff2'),
+      url(${publicUrl}/fonts/JetBrainsMono-Regular.woff) format('woff');
   }
   
   @font-face {
@@ -193,12 +82,12 @@ export const GlobalStyles = createGlobalStyle`
     font-style: normal;
     font-weight: 700;
     font-display: swap;
-    src: url(${({ publicUrl }) =>
-      publicUrl || ''}/fonts/JetBrainsMono-Bold.woff2) format('woff2'),
-      url(${({ publicUrl }) =>
-        publicUrl || ''}/fonts/JetBrainsMono-Bold.woff) format('woff');
+    src: url(${publicUrl}/fonts/JetBrainsMono-Bold.woff2) format('woff2'),
+      url(${publicUrl}/fonts/JetBrainsMono-Bold.woff) format('woff');
   }
-  
+`;
+
+const LEGACY_CSS = `
   .ant-form-item-label>label {
     display: block;
     font-weight: 500;
@@ -414,6 +303,105 @@ export const GlobalStyles = createGlobalStyle`
   .ant-modal-title.ant-modal-title {
     font-weight: 600;
   }
+`;
+
+export const GlobalStyles = createGlobalStyle`
+  body {
+    ${({ tokens }) => {
+      return Object.entries({ ...VARIABLES, ...tokens })
+        .map(([key, value]) => {
+          return `--${key}: ${value};`;
+        })
+        .join('\n    ');
+    }}
+  }
+  
+  html {
+    --font: ${({ font }) => font || 'Inter'}, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    --monospace-font: ${({ monospaceFont }) => `${monospaceFont}, ` || ''}Menlo, Monaco, Consolas, 'Courier New', monospace;
+  }
+  
+  body {
+    background-color: white !important;
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding: 0;
+    color: var(--dark-75-color);
+    font-size: var(--medium-font-size);
+    line-height: var(--medium-line-height);
+    letter-spacing: var(--medium-letter-spacing);
+    font-weight: 400;
+  }
+  
+  .cube-notification-container {
+    min-width: 288px;
+    max-width: 340px;
+    width: calc(100vw - 32px);
+    position: fixed;
+    top: 32px;
+    right: 16px;
+    z-index: 999999;
+  }
+  
+  .cube-notifications {
+    display: grid;
+    grid-auto-flow: row;
+    grid-template-columns: 1fr;
+  }
+  
+  .cube-notification-enter {
+    opacity: 0;
+    max-height: 0px;
+    margin-bottom: 0px;
+    transform: translate(100%, 0);
+  }
+  
+  .cube-notification-enter-active {
+    opacity: 1;
+    max-height: 56px;
+    margin-bottom: 8px;
+    transform: translate(0, 0);
+    transition: all 300ms ease-in;
+    
+    & > * {
+      margin-bottom: 0px;
+    } 
+  }
+  
+  .cube-notification-exit {
+    opacity: 1;
+    margin-bottom: 8px;
+    max-height: 56px;
+    transform: translate(0, 0);
+  }
+  
+  .cube-notification-exit-active {
+    opacity: 0;
+    max-height: 0px;
+    margin-bottom: 0px;
+    transform: translate(100%, 0);
+    transition: all 300ms ease-in;
+    
+    & > * {
+      margin-bottom: 0px;
+    }
+  }
+  
+  b {
+    font-weight: 600;
+  }
+  
+  [type=reset], [type=submit], button, html [type=button] {
+    -webkit-appearance: none;
+  }
+  
+  code {
+    font-family: var(--monospace-font);
+  }
+  
+  ${({ fonts, publicUrl }) => fonts === false ? '' : fontsProvider({ publicUrl })}
   
   // Prism Code
   code[class*="language-"],
@@ -556,4 +544,6 @@ export const GlobalStyles = createGlobalStyle`
   .token.entity {
     cursor: help;
   }
+  
+  ${({ legacy }) => legacy ? LEGACY_CSS : ''}
 `;

@@ -91,7 +91,7 @@ const IGNORE_MODS = [
   'initial',
 ];
 const ATTR_REGEXP =
-  /('[^'|]*')|([a-z]+\()|(#[a-z0-9.-]{2,}(?![a-f0-9[-]))|(--[a-z0-9-]+|@[a-z0-9-]+)|([a-z][a-z0-9-]*)|(([0-9]+(?![0-9.])|[0-9-.]{2,}|[0-9-]{2,}|[0-9.-]{3,})([a-z%]{0,3}))|([*/+-])|([()])|(,)/gi;
+  /("[^"]*")|('[^']*')|([a-z]+\()|(#[a-z0-9.-]{2,}(?![a-f0-9[-]))|(--[a-z0-9-]+|@[a-z0-9-]+)|([a-z][a-z0-9-]*)|(([0-9]+(?![0-9.])|[0-9-.]{2,}|[0-9-]{2,}|[0-9.-]{3,})([a-z%]{0,3}))|([*\/+-])|([()])|(,)/gi;
 const ATTR_CACHE = new Map();
 const ATTR_CACHE_AUTOCALC = new Map();
 const ATTR_CACHE_IGNORE_COLOR = new Map();
@@ -166,7 +166,8 @@ export function parseStyle(value, mode = 0) {
       let [
         /* eslint-disable-next-line */
         s,
-        quoted,
+        quotedDouble,
+        quotedSingle,
         func,
         hashColor,
         prop,
@@ -179,8 +180,8 @@ export function parseStyle(value, mode = 0) {
         comma,
       ] = token;
 
-      if (quoted) {
-        currentValue += `${quoted} `;
+      if (quotedSingle || quotedDouble) {
+        currentValue += `${quotedSingle || quotedDouble} `;
       } else if (func) {
         currentFunc = func.slice(0, -1);
         currentValue += func;
@@ -489,6 +490,26 @@ export function strToRgb(color, ignoreAlpha = false) {
   if (!color) return undefined;
 
   if (color.startsWith('rgb')) return color;
+
+  if (color.startsWith('#')) return hexToRgb(color);
+
+  return null;
+}
+
+export function getRgbValuesFromRgbaString(str) {
+  return str.match(/\d+/g).map(s => parseInt(s)).slice(0, 3);
+}
+
+export function hexToRgb(hex) {
+  const rgba = hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i, (m, r, g, b) => '#' + r + r + g + g + b + b)
+    .substring(1).match(/.{2}/g)
+    .map((x, i) => parseInt(x, 16) * (i === 3 ? 1 / 255 : 1));
+
+  if (rgba.length === 3) {
+    return `rgb(${rgba.join(', ')})`;
+  } else if (rgba.length === 4) {
+    return `rgba(${rgba.join(', ')})`;
+  }
 
   return null;
 }

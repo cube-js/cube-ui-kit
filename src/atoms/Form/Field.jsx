@@ -1,6 +1,6 @@
 import React, { Children, cloneElement, useEffect, useState } from 'react';
-import { mergeProps } from '@react-aria/utils';
 import { useFormProps } from './Form';
+import { mergeProps } from '../../utils/react';
 
 const TRIGGERS = ['onBlur', 'onChange', 'onSubmit'];
 const ID_MAP = {};
@@ -25,6 +25,10 @@ function createId(name) {
 
 function removeId(name, id) {
   ID_MAP[name] = ID_MAP[name].filter((_id) => _id !== id);
+}
+
+function getDefaultValidateTrigger(type) {
+  return type === 'NumberInput' || type.includes('Input') || type.includes('TextArea') ? 'onBlur' : 'onChange';
 }
 
 function getValueProps(type, value) {
@@ -85,10 +89,6 @@ export function Field(props) {
   let field = form.getFieldInstance(name);
   let isRequired = rules && rules.find((rule) => rule.required);
 
-  if (!TRIGGERS.includes(validateTrigger)) {
-    validateTrigger = 'onBlur';
-  }
-
   useEffect(() => {
     if (field) {
       field.rules = rules;
@@ -120,6 +120,8 @@ export function Field(props) {
 
   const typeName = child.type.render.name;
 
+  const defaultValidateTrigger = getDefaultValidateTrigger(typeName);
+
   if (!field) {
     return cloneElement(
       child,
@@ -131,26 +133,35 @@ export function Field(props) {
     );
   }
 
+  if (!TRIGGERS.includes(validateTrigger)) {
+    validateTrigger = defaultValidateTrigger;
+  }
+
+  function onChangeHandler(val) {
+    form.setFieldValue(name, val, true);
+
+    const field = form.getFieldInstance(name);
+
+    if (
+      validateTrigger === 'onChange' ||
+      (field && field.errors && field.errors.length)
+    ) {
+      form.validateField(name).catch(() => {
+      }); // do nothing on fail
+    }
+  }
+
   const newProps = {
     id: fieldId,
     name,
-    onChange(val) {
-      form.setFieldValue(name, val, true);
-
-      const field = form.getFieldInstance(name);
-
-      if (
-        validateTrigger === 'onChange' ||
-        (field && field.errors && field.errors.length)
-      ) {
-        form.validateField(name).catch(() => {}); // do nothing on fail
-      }
-    },
+    onChange: onChangeHandler,
+    onSelectionChange: onChangeHandler,
     onBlur() {
       if (validateTrigger === 'onBlur') {
         // We need timeout so the change event can be done.
         setTimeout(() => {
-          form.validateField(name).catch(() => {}); // do nothing on fail
+          form.validateField(name).catch(() => {
+          }); // do nothing on fail
         });
       }
     },

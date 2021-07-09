@@ -9,7 +9,7 @@ import { Base64Upload } from './atoms/Base64Upload/Base64Upload';
 import { Link } from './atoms/Link/Link';
 import { Modal } from './molecules/Modal/Modal';
 import { notification } from './services/notification';
-import { StylesProvider } from './providers/Styles';
+import { StyleProvider } from './providers/Styles';
 import { Form, useForm } from './atoms/Form/Form';
 import { TextInput } from './atoms/TextInput/TextInput';
 import { Provider } from './provider';
@@ -103,7 +103,7 @@ function App() {
       </Button>
       <LoadingAnimation />
       <Space padding="1x">
-        <StylesProvider
+        <StyleProvider
           Button={() => ({
             color: {
               '': '#dark',
@@ -112,12 +112,12 @@ function App() {
           })}
           Link={() => ({ color: '#dark' })}
         >
-          <StylesProvider Button={() => ({ padding: '2x' })}>
+          <StyleProvider Button={() => ({ padding: '2x' })}>
             <Button styles={{ padding: '2x', border: '2bw #dark.50' }}>
               Default
             </Button>
-          </StylesProvider>
-        </StylesProvider>
+          </StyleProvider>
+        </StyleProvider>
         <Button type="primary">Primary</Button>
         <Button type="primary">Other Primary</Button>
         <Button type="danger">Danger</Button>

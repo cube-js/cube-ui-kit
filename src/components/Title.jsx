@@ -9,8 +9,10 @@ import {
 } from '../styles/list';
 import { extractStyles } from '../utils/styles.js';
 import { filterBaseProps } from '../utils/filterBaseProps';
+import { useSlotProps } from '../utils/react';
 
 const DEFAULT_STYLES = {
+  area: 'heading',
   display: 'block',
   color: '#dark',
 };
@@ -23,7 +25,9 @@ const STYLE_LIST = [
   ...POSITION_STYLES,
 ];
 
-export const Title = forwardRef(({ as, level, ...props }, ref) => {
+export const Title = forwardRef(({ qa, as, level, ...props }, ref) => {
+  props = useSlotProps(props, 'heading');
+
   const tag = `h${level || 1}`;
   const styles = extractStyles(props, STYLE_LIST, {
     ...DEFAULT_STYLES,
@@ -34,6 +38,7 @@ export const Title = forwardRef(({ as, level, ...props }, ref) => {
 
   return (
     <Text
+      qa={qa || 'Title'}
       as={as || tag}
       {...filterBaseProps(props, { eventProps: true })}
       styles={styles}

@@ -2,7 +2,6 @@ import React from 'react';
 import { ComboBox } from './ComboBox';
 import { Item } from '../Select/Select';
 import { DollarCircleOutlined } from '@ant-design/icons';
-import { Link } from '../Link/Link';
 
 export default {
   title: 'UIKit/Atoms/ComboBox',

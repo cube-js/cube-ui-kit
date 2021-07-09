@@ -1,5 +1,4 @@
-import React, { forwardRef, useRef } from 'react';
-import { useHistory } from 'react-router';
+import React, { forwardRef, useContext, useRef } from 'react';
 import {
   BLOCK_STYLES,
   COLOR_STYLES,
@@ -18,6 +17,7 @@ import { useCombinedRefs } from '../utils/react/useCombinedRefs';
 import { propDeprecationWarning } from '../utils/warnings';
 import { extractStyles } from '../utils/styles.js';
 import { filterBaseProps } from '../utils/filterBaseProps';
+import { UIKitContext } from '../provider';
 
 /**
  * Helper to open link.
@@ -40,9 +40,8 @@ export function openLink(href, target) {
   document.body.removeChild(link);
 }
 
-export function createLinkClickHandler(to, onPress, disabled) {
+export function createLinkClickHandler(router, to, onPress, disabled) {
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const history = useHistory();
   const newTab = to && to.startsWith('!');
   const nativeRoute = to && to.startsWith('@');
   const href = to ? (newTab || nativeRoute ? to.slice(1) : to) : '';
@@ -66,8 +65,10 @@ export function createLinkClickHandler(to, onPress, disabled) {
 
     if (nativeRoute) {
       openLink(href || window.location.href);
+    } else if (router) {
+      router.push(href);
     } else {
-      history.push(href);
+      window.location.href = href;
     }
   };
 }
@@ -125,16 +126,17 @@ export const Action = forwardRef(
 
     as = to ? 'a' : props.as || 'button';
 
+    const router = useContext(UIKitContext).router;
     const isDisabled = props.isDisabled;
     const newTab = to && to.startsWith('!');
     const nativeRoute = to && to.startsWith('@');
     const href = to ? (newTab || nativeRoute ? to.slice(1) : to) : '';
     const target = newTab ? '_blank' : null;
     const pressHandler = createLinkClickHandler(
+      router,
       to,
       props.onPress || props.onClick,
       isDisabled,
-      as,
     );
     const localRef = useRef();
     const combinedRef = useCombinedRefs(ref, localRef);

@@ -2,7 +2,7 @@ import React, { createContext, useContext } from 'react';
 
 export const StyleContext = createContext({});
 
-export function StylesProvider({ children, ...props }) {
+export function StyleProvider({ children, ...props }) {
   const styles = Object.assign({}, useContext(StyleContext));
 
   Object.keys(props).forEach((propName) => {

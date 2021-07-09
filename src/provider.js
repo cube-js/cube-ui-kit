@@ -1,8 +1,8 @@
 import React, { createContext, useContext } from 'react';
-import { StylesProvider } from './providers/Styles';
-import ResponsiveProvider from './providers/Responsive';
+import { StyleProvider } from './providers/Styles';
+import { ResponsiveProvider } from './providers/Responsive';
 
-const Context = createContext({
+export const UIKitContext = createContext({
   breakpoints: [980],
 });
 
@@ -16,10 +16,12 @@ export function Provider({
   isReadOnly,
   isRequired,
   validationState,
+  router,
   styles,
+  ref,
 }) {
   if (styles) {
-    children = <StylesProvider {...styles}>{children}</StylesProvider>;
+    children = <StyleProvider {...styles}>{children}</StyleProvider>;
   }
 
   if (breakpoints) {
@@ -28,8 +30,9 @@ export function Provider({
     );
   }
 
-  const parentContext = useContext(Context);
+  const parentContext = useContext(UIKitContext);
   const props = {
+    ref,
     breakpoints,
     insideForm,
     isQuiet,
@@ -38,6 +41,7 @@ export function Provider({
     isReadOnly,
     isRequired,
     validationState,
+    router,
   };
   const newValue = Object.assign({}, parentContext);
 
@@ -47,9 +51,9 @@ export function Provider({
     }
   });
 
-  return <Context.Provider value={newValue}>{children}</Context.Provider>;
+  return <UIKitContext.Provider value={newValue}>{children}</UIKitContext.Provider>;
 }
 
 export function useProviderProps(props) {
-  return { ...useContext(Context), ...props };
+  return { ...useContext(UIKitContext), ...props };
 }

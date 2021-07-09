@@ -3,8 +3,8 @@ import {
   CaretDownOutlined,
   CaretUpOutlined,
   FileOutlined,
-  FolderOutlined,
-  FolderOpenOutlined,
+  FolderOpenFilled,
+  FolderFilled,
 } from '@ant-design/icons';
 import { Flex } from '../../components/Flex';
 import { Action } from '../../components/Action';
@@ -229,9 +229,9 @@ export function DirectoryTree({
                 color={selected === item.key ? '#purple' : '#dark.50'}
               >
                 {expanded.includes(item.key) ? (
-                  <FolderOpenOutlined />
+                  <FolderOpenFilled />
                 ) : (
-                  <FolderOutlined />
+                  <FolderFilled />
                 )}
                 <Block
                   style={TEXT_OVERFLOW_STYLES}

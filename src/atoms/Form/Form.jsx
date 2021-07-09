@@ -5,9 +5,9 @@ import { Base } from '../../components/Base';
 import { extractStyles } from '../../utils/styles.js';
 import { CONTAINER_STYLES } from '../../styles/list';
 import { filterBaseProps } from '../../utils/filterBaseProps';
-import { modAttrs } from '../../utils/react/modAttrs';
+import { modAttrs } from '../../utils/react';
 import useForm from './useForm';
-import { useCombinedRefs } from '../../utils/react/useCombinedRefs';
+import { useCombinedRefs } from '../../utils/react';
 import { timeout } from '../../utils/promise';
 
 export const FormContext = React.createContext({});
@@ -29,7 +29,7 @@ const formPropNames = new Set([
 ]);
 
 const DEFAULT_STYLES = {
-  display: 'flex',
+  display: 'block',
   flow: 'column',
   gap: '2x',
 };
@@ -122,9 +122,9 @@ function Form(props, ref) {
       noValidate
       styles={styles}
       ref={domRef}
-      {...modAttrs({
+      mods={{
         'has-sider': labelPosition === 'side' ? '' : null,
-      })}
+      }}
     >
       <FormContext.Provider value={ctx}>
         <Provider

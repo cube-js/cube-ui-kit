@@ -24,6 +24,8 @@ import { scrollBarStyle } from './scrollBar';
 export const STYLES = [
   // `display` style is used in several handlers, so we need to explicitly declare it
   createStyle('display'),
+  createStyle('area', 'grid-area'),
+  createStyle('areas', 'grid-template-areas'),
   createStyle('content', 'place-content'),
   createStyle('items', 'place-items'),
   createStyle('place', 'place-self'),
@@ -75,7 +77,7 @@ export const STYLE_HANDLER_MAP = STYLES.reduce((map, handler) => {
   const lookup = handler.__lookupStyles;
 
   if (!lookup) {
-    console.log('style lookup not found for the handler', handler);
+    console.warn('style lookup not found for the handler', handler);
 
     return map;
   }

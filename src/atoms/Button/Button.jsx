@@ -209,7 +209,7 @@ const DEPRECATED_PROPS = ['disabled', 'loading', 'onClick'];
 
 export const Button = forwardRef(
   (
-    { type, size, styles, ghost, children, css, icon, skipWarnings, ...props },
+    { type, size, label, styles, ghost, children, css, icon, skipWarnings, ...props },
     ref,
   ) => {
     if (!skipWarnings) {
@@ -234,6 +234,8 @@ export const Button = forwardRef(
       children,
     };
     const contextStyles = useContextStyles('Button', propsForStyles);
+
+    children = children || label;
 
     styles = {
       ...provideStyles(propsForStyles),

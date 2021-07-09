@@ -172,7 +172,7 @@ function Checkbox(props, ref) {
   }
 
   let checkboxField = (
-    <>
+    <Base styles={{ position: 'relative' }}>
       <HiddenInput
         data-qa={qa || 'Checkbox'}
         {...mergeProps(inputProps, focusProps)}
@@ -193,13 +193,14 @@ function Checkbox(props, ref) {
       >
         {markIcon}
       </Base>
-    </>
+    </Base>
   );
 
   if (insideForm && !groupState) {
     return (
       <FieldWrapper
         {...{
+          as: 'label',
           labelPosition,
           label,
           insideForm,

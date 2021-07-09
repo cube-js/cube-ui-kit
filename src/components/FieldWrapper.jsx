@@ -5,7 +5,6 @@ import { modAttrs } from '../utils/react/modAttrs';
 
 const FIELD_STYLES = {
   display: 'grid',
-  position: 'relative',
   columns: {
     '': '1fr',
     'has-sider': 'auto 1fr',
@@ -36,6 +35,7 @@ const MESSAGE_STYLES = {
 
 function FieldWrapper(
   {
+    as,
     labelPosition,
     label,
     insideForm,
@@ -63,6 +63,7 @@ function FieldWrapper(
 
   return (
     <Base
+      as={as || 'div'}
       qa="Field"
       ref={ref}
       {...modProps}
@@ -74,6 +75,7 @@ function FieldWrapper(
     >
       {label && (
         <Label
+          as={as === 'label' ? 'div' : 'label'}
           styles={labelStyles}
           labelPosition={labelPosition}
           isRequired={requiredMark ? isRequired : false}

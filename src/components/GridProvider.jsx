@@ -1,7 +1,6 @@
 import React, { forwardRef } from 'react';
 import { filterBaseProps } from '../utils/filterBaseProps';
 import { useCombinedRefs } from '../utils/react/useCombinedRefs';
-import { ResizeSensor } from '../utils/ResizeSensor';
 import { CUSTOM_UNITS, parseStyle } from '../utils/styles';
 import { Base } from './Base';
 
@@ -27,16 +26,10 @@ export const GridProvider = forwardRef((props, ref) => {
     width: forcedWidth,
     initialWidth,
   } = props;
-  let inherit = false;
-  let [width, setWidth] = React.useState(
-    forcedWidth || initialWidth
-      ? parseStyle(forcedWidth || initialWidth).values[0]
-      : '100%',
-  );
 
-  if (width === 'inherit') {
-    width;
-  }
+  let [width, setWidth] = React.useState(
+    forcedWidth || initialWidth || '100vw',
+  );
 
   if (typeof gap === 'number') {
     gap = `${gap}px`;
@@ -65,10 +58,18 @@ export const GridProvider = forwardRef((props, ref) => {
 
     if (!el) return;
 
-    const sensor = new ResizeSensor(el, resizeCallback);
+    let sensor;
+
+    import('../utils/ResizeSensor')
+      .then(module => module.ResizeSensor)
+      .then(ResizeSensor => {
+        sensor = new ResizeSensor(el, resizeCallback)
+      });
 
     return () => {
-      sensor.detach();
+      if (sensor) {
+        sensor.detach();
+      }
     };
   }, [resizeCallback]);
 

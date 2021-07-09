@@ -4,9 +4,9 @@ import { useProviderProps } from '../provider';
 import { extractStyles } from '../utils/styles';
 import { CONTAINER_STYLES } from '../styles/list';
 import { Base } from './Base';
-import { StylesProvider, useContextStyles } from '../providers/Styles';
+import { useContextStyles } from '../providers/Styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
-import { modAttrs } from '../utils/react/modAttrs';
+import { modAttrs } from '../utils/react';
 
 const REQUIRED_ICON = (
   <svg

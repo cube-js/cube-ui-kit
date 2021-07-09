@@ -1,16 +1,7 @@
-import {
-  CheckOutlined,
-  LoadingOutlined,
-  WarningOutlined,
-} from '@ant-design/icons';
+import { CheckOutlined, LoadingOutlined, WarningOutlined, } from '@ant-design/icons';
 import { createFocusableRef } from '@react-spectrum/utils';
 import { mergeProps } from '@react-aria/utils';
-import React, {
-  cloneElement,
-  forwardRef,
-  useImperativeHandle,
-  useState,
-} from 'react';
+import React, { cloneElement, forwardRef, useImperativeHandle, useState, } from 'react';
 import { useComboBoxState } from '@react-stately/combobox';
 import { useComboBox } from '@react-aria/combobox';
 import { useButton } from '@react-aria/button';
@@ -26,12 +17,14 @@ import { useContextStyles } from '../../providers/Styles';
 import { modAttrs } from '../../utils/react/modAttrs';
 import { FieldWrapper } from '../../components/FieldWrapper';
 import { useCombinedRefs } from '../../utils/react/useCombinedRefs';
-import { ListBoxPopup, OverlayWrapper } from '../Select/Select';
+import { ListBoxPopup } from '../Select/Select';
 import { Prefix } from '../../components/Prefix';
 import { Suffix } from '../../components/Suffix';
 import { Space } from '../../components/Space';
 import { Item } from '@react-stately/collections';
 import { DEFAULT_INPUT_STYLES } from '../TextInput/TextInputBase';
+import { useOverlayPosition } from '@react-aria/overlays';
+import { OverlayWrapper } from '../../components/OverlayWrapper';
 
 const CaretDownIcon = () => (
   <svg
@@ -72,7 +65,6 @@ const TRIGGER_STYLES = {
     pressed: '#dark.08',
     disabled: '#clear',
   },
-  margin: '1bw top right bottom',
 };
 
 function ComboBox(props, ref) {
@@ -105,6 +97,7 @@ function ComboBox(props, ref) {
     loadingIndicator,
     insideForm,
     value,
+    offset = 8,
     inputStyles,
     triggerStyles,
     suffix,
@@ -113,6 +106,8 @@ function ComboBox(props, ref) {
     listBoxStyles,
     hideTrigger,
     message,
+    direction = 'bottom',
+    shouldFlip = true,
     requiredMark = true,
     ...otherProps
   } = props;
@@ -161,6 +156,17 @@ function ComboBox(props, ref) {
     state,
   );
 
+  let { overlayProps, placement } = useOverlayPosition({
+    targetRef: triggerRef,
+    overlayRef: popoverRef,
+    scrollRef: listBoxRef,
+    placement: `${direction} end`,
+    shouldFlip: shouldFlip,
+    isOpen: state.isOpen,
+    onClose: state.close,
+    offset,
+  });
+
   if (prefix) {
     inputStyles.paddingLeft = `${prefixWidth}px`;
   }
@@ -196,9 +202,9 @@ function ComboBox(props, ref) {
   let isInvalid = validationState === 'invalid';
 
   let validationIcon = isInvalid ? (
-    <WarningOutlined style={{ color: 'var(--danger-color)' }} />
+    <WarningOutlined style={{ color: 'var(--danger-color)' }}/>
   ) : (
-    <CheckOutlined style={{ color: 'var(--success-color)' }} />
+    <CheckOutlined style={{ color: 'var(--success-color)' }}/>
   );
   let validation = cloneElement(validationIcon);
 
@@ -245,12 +251,11 @@ function ComboBox(props, ref) {
       <Suffix
         onWidthChange={setSuffixWidth}
         padding="1x left"
-        outerGap={0}
         opacity={isDisabled ? '@disabled-opacity' : false}
       >
         <Space gap={false} padding="0 1x">
           {validationState && !isLoading ? validation : null}
-          {isLoading && <LoadingOutlined />}
+          {isLoading && <LoadingOutlined/>}
         </Space>
         {suffix}
         {!hideTrigger ? (
@@ -267,19 +272,21 @@ function ComboBox(props, ref) {
             ref={triggerRef}
             styles={triggerStyles}
           >
-            <CaretDownIcon />
+            <CaretDownIcon/>
           </Base>
         ) : null}
       </Suffix>
-      <OverlayWrapper in={state.isOpen && !isDisabled}>
+      <OverlayWrapper isOpen={state.isOpen && !isDisabled}>
         <ListBoxPopup
           {...listBoxProps}
           listBoxRef={listBoxRef}
           popoverRef={popoverRef}
+          overlayProps={overlayProps}
           shouldUseVirtualFocus
+          placement={placement}
           state={state}
-          listBoxStyles={listBoxStyles}
           disallowEmptySelection={disallowEmptySelection}
+          listBoxStyles={listBoxStyles}
           selectionMode={selectionMode}
         />
       </OverlayWrapper>

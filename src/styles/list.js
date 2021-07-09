@@ -1,6 +1,7 @@
 export const BASE_STYLES = ['display'];
 
 export const POSITION_STYLES = [
+  'area',
   'grow',
   'shrink',
   'order',

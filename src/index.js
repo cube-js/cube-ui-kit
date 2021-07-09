@@ -26,6 +26,9 @@ export { Prefix } from './components/Prefix';
 export { Suffix } from './components/Suffix';
 export { Divider } from './components/Divider';
 export { GridProvider } from './components/GridProvider';
+export { Content } from './components/Content';
+export { Header } from './components/Header';
+export { Footer } from './components/Footer';
 
 // atoms
 export { LoadingAnimation } from './atoms/LoadingAnimation/LoadingAnimation';
@@ -51,6 +54,10 @@ export { ComboBox } from './atoms/ComboBox/ComboBox';
 export { Select, Item } from './atoms/Select/Select';
 export { NumberInput } from './atoms/NumberInput/NumberInput';
 export { Avatar } from './atoms/Avatar/Avatar';
+export { Dialog, DialogTrigger, DialogContainer } from './atoms/Dialog';
+export { Tooltip } from './atoms/Tooltip/Tooltip';
+export { TooltipTrigger } from './atoms/Tooltip/TooltipTrigger';
+export { ButtonGroup } from './atoms/ButtonGroup/ButtonGroup';
 
 // molecules
 export { TopBar } from './molecules/TopBar/TopBar';
@@ -61,6 +68,7 @@ export { FileTabs } from './molecules/FileTabs/FileTabs';
 export { Modal } from './molecules/Modal/Modal';
 export { CopySnippet } from './molecules/CopySnippet/CopySnippet';
 export { StatsCard } from './molecules/StatsCard/StatsCard';
+export { AlertDialog } from './molecules/AlertDialog/AlertDialog';
 
 export { SearchResults } from './molecules/SearchResults/SearchResults';
 // services
@@ -77,7 +85,7 @@ export const Typography = {
 
 export { Text, Title, Paragraph };
 
-export { useContextStyles, StylesProvider } from './providers/Styles';
+export { useContextStyles, StyleProvider } from './providers/Styles';
 
 export { Provider, useProviderProps } from './provider';
 

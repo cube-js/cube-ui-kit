@@ -4,6 +4,7 @@ import { ResponsiveContext } from '../providers/Responsive';
 import { pointsToZones } from '../utils/responsive';
 import { STYLE_HANDLER_MAP } from '../styles';
 import { renderStyles } from '../utils/render-styles';
+import { modAttrs } from '../utils/react';
 
 const INLINE_MAP = {
   block: 'inline',
@@ -19,6 +20,7 @@ export const Base = forwardRef(
       styles,
       breakpoints,
       block,
+      mods,
       inline,
       isHidden,
       isDisabled,
@@ -53,6 +55,10 @@ export const Base = forwardRef(
 
     if (props.disabled == null && isDisabled) {
       props.disabled = !!isDisabled;
+    }
+
+    if (mods) {
+      Object.assign(props, modAttrs(mods));
     }
 
     return (

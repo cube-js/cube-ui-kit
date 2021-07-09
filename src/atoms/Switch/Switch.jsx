@@ -134,7 +134,7 @@ function Switch(props, ref) {
   let { inputProps } = useSwitch(props, useToggleState(props), inputRef);
 
   const switchField = (
-    <>
+    <Base styles={{ position: 'relative' }}>
       <HiddenInput
         data-qa="Switch"
         {...mergeProps(inputProps, focusProps)}
@@ -159,13 +159,14 @@ function Switch(props, ref) {
           })}
         />
       </Base>
-    </>
+    </Base>
   );
 
   if (insideForm) {
     return (
       <FieldWrapper
         {...{
+          as: 'label',
           labelPosition,
           label,
           insideForm,

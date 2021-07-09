@@ -1,5 +1,10 @@
 import { mediaWrapper, normalizeStyleZones } from './responsive.js';
-import { styleHandlerCacheWrapper } from './styles.js';
+import {
+  getRgbValuesFromRgbaString,
+  hexToRgb,
+  parseColor, strToRgb,
+  styleHandlerCacheWrapper
+} from './styles.js';
 import { parseStyle } from './styles.js';
 import { toSnakeCase } from './string.js';
 
@@ -121,6 +126,8 @@ export function createStyle(styleName, cssStyle, converter) {
     CACHE[styleName] = styleHandlerCacheWrapper((styleMap) => {
       let styleValue = styleMap[styleName];
 
+      cssStyle = cssStyle || toSnakeCase(styleName).replace(/^@/, '--');
+
       // convert non-string values
       if (converter && typeof styleValue !== 'string') {
         styleValue = converter(styleValue);
@@ -128,9 +135,38 @@ export function createStyle(styleName, cssStyle, converter) {
         if (!styleValue) return;
       }
 
+      if (typeof styleValue === 'string' && cssStyle.startsWith('--') && cssStyle.endsWith('-color')) {
+        styleValue = styleValue.trim();
+
+        const rgba = strToRgb(styleValue);
+
+        const { color, name } = parseColor(styleValue);
+
+        if (name && rgba) {
+          return {
+            [cssStyle]: `var(--${name}-color, ${rgba})`,
+            [`${cssStyle}-rgb`]: `var(--${name}-color-rgb, ${getRgbValuesFromRgbaString(rgba).join(', ')})`,
+          };
+        } else if (name) {
+          return {
+            [cssStyle]: `var(--${name}-color)`,
+            [`${cssStyle}-rgb`]: `var(--${name}-color-rgb)`,
+          };
+        } else if (rgba) {
+          return {
+            [cssStyle]: rgba,
+            [`${cssStyle}-rgb`]: getRgbValuesFromRgbaString(rgba).join(', '),
+          };
+        }
+
+        return {
+          [cssStyle]: color,
+        };
+      }
+
       const { value } = parseStyle(styleValue, 1);
 
-      return { [cssStyle || toSnakeCase(styleName)]: value };
+      return { [cssStyle]: value };
     });
 
     CACHE[styleName].__lookupStyles = [styleName];

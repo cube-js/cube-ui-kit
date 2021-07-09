@@ -1,28 +1,39 @@
-export const OVERLAY_TRANSITION_CSS = `
-  transform: var(--overlay-position);
-  transform-origin: calc(100% + calc(2 * var(--gap))) center;
-  --overlay-translate: translate(0, 0); 
-  --overlay-transition: 180ms;
-  --overlay-hidden-scale: scale(1, 0.9);
-  --overlay-normal-scale: scale(1, 1);
+const DIRECTION_MAP = {
+  top: 'bottom center',
+  right: 'center left',
+  left: 'center right',
+  bottom: 'top center',
+};
 
-  &.cube-overlay-transition-enter {
+export const getOverlayTransitionCSS = ({ placement, suffix = '', minScale = '0.9' } = {}) => `
+  &${suffix} {
+    transform: var(--overlay-position);
+    transform-origin: ${DIRECTION_MAP[placement] || 'initial'};
+    --overlay-hidden-x-scale: ${placement === 'top' || placement === 'bottom' || !placement ? '1' : minScale};
+    --overlay-hidden-y-scale: ${placement === 'left' || placement === 'right' ? '1' : minScale};
+    --overlay-translate: translate(0, 0); 
+    --overlay-transition: 180ms;
+    --overlay-hidden-scale: scale(var(--overlay-hidden-x-scale), var(--overlay-hidden-y-scale));
+    --overlay-normal-scale: scale(1, 1);
+  }
+
+  &.cube-overlay-transition-enter${suffix} {
     opacity: 0;
     transform: var(--overlay-hidden-scale) var(--overlay-translate);
   }
 
-  &.cube-overlay-transition-enter-active {
+  &.cube-overlay-transition-enter-active${suffix} {
     opacity: 1;
     transition: transform var(--overlay-transition) cubic-bezier(0, .66, 0, .66), opacity var(--overlay-transition) cubic-bezier(0, .66, 0, .66);
     transform: var(--overlay-normal-scale) var(--overlay-translate);
   }
 
-  &.cube-overlay-transition-exit {
+  &.cube-overlay-transition-exit${suffix} {
     opacity: 1;
     transform: var(--overlay-normal-scale) var(--overlay-translate);
   }
 
-  &.cube-overlay-transition-exit-active {
+  &.cube-overlay-transition-exit-active${suffix} {
     opacity: 0;
     transition: transform var(--overlay-transition) cubic-bezier(.66, 0, .66, 0), opacity var(--overlay-transition) cubic-bezier(.66, 0, .66, 0);
     transform: var(--overlay-hidden-scale) var(--overlay-translate);
