@@ -20,7 +20,7 @@ const POPOVER_STYLES = {
   transformOrigin: {
     '': 'top center',
     '[data-placement="top"]': 'bottom center',
-  }
+  },
 };
 
 function Popover(props, ref) {

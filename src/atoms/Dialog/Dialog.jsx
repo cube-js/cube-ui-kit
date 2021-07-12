@@ -39,7 +39,10 @@ const DEFAULT_STYLES = {
     '[data-type="fullscreenTakeover"]': '0r',
   },
   fill: '#white',
-  shadow: '0 20px 30px #shadow',
+  shadow: {
+    '': '0 20px 30px #shadow',
+    '[data-type="popover"]': '0px 4px 16px #shadow',
+  },
   transform: {
     '': false,
     '[data-type="modal"]': 'translate(0, @base-translate)',

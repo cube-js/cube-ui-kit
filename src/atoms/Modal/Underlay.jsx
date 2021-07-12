@@ -1,5 +1,4 @@
 import React from 'react';
-import { modAttrs } from '../../utils/react';
 import { Base } from '../../components/Base';
 import { useContextStyles } from '../../providers/Styles';
 
@@ -28,14 +27,21 @@ const UNDERLAY_STYLES = {
   transition: 'transform .25s ease-in-out, opacity .25s linear, visibility 0ms linear',
 };
 
-const Underlay = ({ isOpen }) => {
+const Underlay = ({ isOpen }, ref) => {
   const styles = {
     ...UNDERLAY_STYLES,
     ...useContextStyles('Underlay'),
   };
 
   return (
-    <Base data-qa="Underlay" styles={styles} {...modAttrs({ open: isOpen })} />
+    <Base
+      ref={ref}
+      data-qa="Underlay"
+      styles={styles}
+      mods={{
+        open: isOpen,
+      }}
+    />
   );
 };
 

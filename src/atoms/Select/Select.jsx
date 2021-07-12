@@ -116,7 +116,7 @@ const LISTBOX_STYLES = {
   listStyle: 'none',
   radius: true,
   fill: '#white',
-  shadow: true,
+  shadow: '0px 4px 16px #shadow',
   height: 'initial 30x',
   overflow: 'hidden auto',
   scrollBar: true,
