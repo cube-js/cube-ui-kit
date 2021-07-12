@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useRef, useState } from 'react';
+import React, { Fragment, useEffect, useRef } from 'react';
 import { useOverlayTriggerState } from '@react-stately/overlays';
 import { PressResponder } from '@react-aria/interactions';
 import { unwrapDOMRef, useMediaQuery } from '@react-spectrum/utils';
@@ -37,6 +37,7 @@ function DialogTrigger(props) {
   }
 
   let state = useOverlayTriggerState(props);
+
   let wasOpen = useRef(false);
   let isExiting = useRef(false);
   let onExiting = () => isExiting.current = true;

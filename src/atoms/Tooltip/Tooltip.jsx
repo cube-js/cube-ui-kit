@@ -4,7 +4,6 @@ import { createDOMRef } from '@react-spectrum/utils';
 import { TooltipContext } from './context';
 import { useTooltip } from '@react-aria/tooltip';
 import { Base } from '../../components/Base';
-import { modAttrs } from '../../utils/react/modAttrs';
 import { extractStyles } from '../../utils/styles';
 import { CONTAINER_STYLES } from '../../styles/list';
 import { useContextStyles } from '../../providers/Styles';
@@ -98,9 +97,9 @@ function Tooltip(props, ref) {
       {...overlayProps}
       css={getOverlayTransitionCSS({ placement })}
       styles={styles}
-      {...modAttrs({
+      mods={{
         open: isOpen,
-      })}
+      }}
       data-placement={placement}
       ref={overlayRef}
     >

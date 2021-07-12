@@ -7,8 +7,6 @@ import { useModal, useOverlay, usePreventScroll } from '@react-aria/overlays';
 import { OVERLAY_WRAPPER_STYLES } from './Modal';
 import { Base } from '../../components/Base';
 import { useContextStyles } from '../../providers/Styles';
-import { extractStyles } from '../../utils/styles';
-import { BLOCK_STYLES } from '../../styles/list';
 
 const TRAY_STYLES = {
   z: 2,
