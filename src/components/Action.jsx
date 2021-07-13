@@ -13,7 +13,7 @@ import { useHover } from '@react-aria/interactions';
 import { useFocus } from '../utils/interactions';
 import { useButton } from '@react-aria/button';
 import { mergeProps } from '@react-aria/utils';
-import { useCombinedRefs } from '../utils/react/useCombinedRefs';
+import { useCombinedRefs } from '../utils/react';
 import { propDeprecationWarning } from '../utils/warnings';
 import { extractStyles } from '../utils/styles.js';
 import { filterBaseProps } from '../utils/filterBaseProps';
@@ -40,11 +40,20 @@ export function openLink(href, target) {
   document.body.removeChild(link);
 }
 
+export function parseTo(to) {
+  const newTab = to && typeof to === 'string' && to.startsWith('!');
+  const nativeRoute = to && typeof to === 'string' && to.startsWith('@');
+  const href = to && typeof to === 'string' ? (newTab || nativeRoute ? to.slice(1) : to) : '';
+
+  return {
+    newTab,
+    nativeRoute,
+    href,
+  };
+}
+
 export function createLinkClickHandler(router, to, onPress, disabled) {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const newTab = to && to.startsWith('!');
-  const nativeRoute = to && to.startsWith('@');
-  const href = to ? (newTab || nativeRoute ? to.slice(1) : to) : '';
+  const { newTab, nativeRoute, href } = parseTo(to);
 
   return function onClickHandler(evt) {
     if (disabled) return;
@@ -128,9 +137,7 @@ export const Action = forwardRef(
 
     const router = useContext(UIKitContext).router;
     const isDisabled = props.isDisabled;
-    const newTab = to && to.startsWith('!');
-    const nativeRoute = to && to.startsWith('@');
-    const href = to ? (newTab || nativeRoute ? to.slice(1) : to) : '';
+    const { newTab, href } = parseTo(to);
     const target = newTab ? '_blank' : null;
     const pressHandler = createLinkClickHandler(
       router,
