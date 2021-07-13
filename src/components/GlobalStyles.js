@@ -255,6 +255,10 @@ const LEGACY_CSS = `
       .ant-table-tbody > tr.ant-table-row:hover > td {
         background: rgba(var(--purple-color-rgb), 0.05);
       }
+
+      .ant-table-tbody > tr.ant-table-row-selected > td {
+        background: rgba(var(--purple-color-rgb), 0.025);
+      }
   
       .ant-table-tbody > tr > td {
         border-bottom: 1px solid rgba(var(--dark-color-rgb), 0.1);
