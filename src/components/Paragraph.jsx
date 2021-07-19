@@ -5,6 +5,7 @@ import {
   BLOCK_STYLES,
   COLOR_STYLES,
   POSITION_STYLES,
+  DIMENSION_STYLES,
   TEXT_STYLES,
 } from '../styles/list';
 import { extractStyles } from '../utils/styles.js';
@@ -22,6 +23,7 @@ const STYLE_PROPS = [
   ...BLOCK_STYLES,
   ...COLOR_STYLES,
   ...POSITION_STYLES,
+  ...DIMENSION_STYLES,
 ];
 
 export const Paragraph = forwardRef((props, ref) => {
