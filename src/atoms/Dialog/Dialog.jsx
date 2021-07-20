@@ -10,11 +10,14 @@ import { useMessageFormatter } from '@react-aria/i18n';
 import { Base } from '../../components/Base';
 import { CloseOutlined } from '@ant-design/icons';
 import { extractStyles } from '../../utils/styles';
-import { BLOCK_STYLES } from '../../styles/list';
+import { BLOCK_STYLES, DIMENSION_STYLES } from '../../styles/list';
 import { SlotProvider } from '../../utils/react';
 import { useContextStyles } from '../../providers/Styles';
 
+const STYLES_LIST = [...DIMENSION_STYLES, ...BLOCK_STYLES];
+
 const DEFAULT_STYLES = {
+  pointerEvents: 'auto',
   position: 'relative',
   display: 'grid',
   areas: `"hero hero hero hero hero hero"
@@ -31,12 +34,13 @@ const DEFAULT_STYLES = {
     '': '288px @dialog-size 90vw',
     '[data-type="fullscreen"]': '90vw 90vw',
     '[data-type="fullscreenTakeover"]': '100vw 100vw',
+    '[data-type="panel"]': '100vw 100vw',
   },
   flow: 'column',
   radius: {
     '': '2r',
     '[data-type="tray"]': '2r top',
-    '[data-type="fullscreenTakeover"]': '0r',
+    '[data-type="fullscreenTakeover"] | [data-type="panel"]': '0r',
   },
   fill: '#white',
   shadow: {
@@ -45,7 +49,7 @@ const DEFAULT_STYLES = {
   },
   transform: {
     '': false,
-    '[data-type="modal"]': 'translate(0, @base-translate)',
+    '[data-type="modal"]': 'translate(0, ((50vh - 50%) / -3))',
   },
   place: 'stretch',
   '@dialog-heading-padding-v': {
@@ -61,11 +65,6 @@ const DEFAULT_STYLES = {
     '[data-type="popover"]': '2x',
   },
   '@dialog-content-gap': '3x',
-  '@base-translate': {
-    '': '((50vh - 50%) / -3)',
-    '[data-type="fullscreen"]': false,
-    '[data-type="fullscreenTakeover"]': false,
-  },
 };
 
 const CLOSE_BUTTON = {
@@ -93,17 +92,13 @@ const sizePxMap = {
 
 const intlMessages = {
   'en-US': {
-    'dismiss': 'Dismiss',
-    'alert': 'Alert',
+    dismiss: 'Dismiss',
+    alert: 'Alert',
   },
 };
 
 function Dialog(props, ref) {
-  let {
-    qa,
-    type = 'modal',
-    ...contextProps
-  } = useContext(DialogContext) || {};
+  let { qa, type = 'modal', ...contextProps } = useContext(DialogContext) || {};
 
   let {
     children,
@@ -118,20 +113,23 @@ function Dialog(props, ref) {
   const styles = {
     ...DEFAULT_STYLES,
     ...useContextStyles('Dialog'),
-    ...extractStyles(otherProps, BLOCK_STYLES),
+    ...extractStyles(otherProps, STYLES_LIST),
     '@dialog-size': `${sizePxMap[size] || 288}px`,
   };
 
   let formatMessage = useMessageFormatter(intlMessages);
 
   let domRef = useDOMRef(ref);
-  let { dialogProps, titleProps } = useDialog(mergeProps(contextProps, props), domRef);
+  let { dialogProps, titleProps } = useDialog(
+    mergeProps(contextProps, props),
+    domRef,
+  );
 
   // If rendered in a popover or tray there won't be a visible dismiss button,
   // so we render a hidden one for screen readers.
   let dismissButton;
   if (type === 'popover' || type === 'tray') {
-    dismissButton = <DismissButton onDismiss={onDismiss}/>;
+    dismissButton = <DismissButton onDismiss={onDismiss} />;
   }
 
   // let hasHeader = useHasChild('[data-id="Header"]', domRef);
@@ -198,16 +196,16 @@ function Dialog(props, ref) {
         {dismissButton}
         <SlotProvider slots={slots}>
           {children}
-          {isDismissable &&
-          <Button
-            qa="ModalCloseButton"
-            type="item"
-            styles={CLOSE_BUTTON}
-            icon={<CloseOutlined/>}
-            aria-label={formatMessage('dismiss')}
-            onPress={onDismiss}
-          />
-          }
+          {isDismissable && (
+            <Button
+              qa="ModalCloseButton"
+              type="item"
+              styles={CLOSE_BUTTON}
+              icon={<CloseOutlined />}
+              aria-label={formatMessage('dismiss')}
+              onPress={onDismiss}
+            />
+          )}
         </SlotProvider>
       </Base>
     </FocusScope>

@@ -2,8 +2,9 @@ import { mediaWrapper, normalizeStyleZones } from './responsive.js';
 import {
   getRgbValuesFromRgbaString,
   hexToRgb,
-  parseColor, strToRgb,
-  styleHandlerCacheWrapper
+  parseColor,
+  strToRgb,
+  styleHandlerCacheWrapper,
 } from './styles.js';
 import { parseStyle } from './styles.js';
 import { toSnakeCase } from './string.js';
@@ -135,7 +136,11 @@ export function createStyle(styleName, cssStyle, converter) {
         if (!styleValue) return;
       }
 
-      if (typeof styleValue === 'string' && cssStyle.startsWith('--') && cssStyle.endsWith('-color')) {
+      if (
+        typeof styleValue === 'string' &&
+        cssStyle.startsWith('--') &&
+        cssStyle.endsWith('-color')
+      ) {
         styleValue = styleValue.trim();
 
         const rgba = strToRgb(styleValue);
@@ -145,7 +150,9 @@ export function createStyle(styleName, cssStyle, converter) {
         if (name && rgba) {
           return {
             [cssStyle]: `var(--${name}-color, ${rgba})`,
-            [`${cssStyle}-rgb`]: `var(--${name}-color-rgb, ${getRgbValuesFromRgbaString(rgba).join(', ')})`,
+            [`${cssStyle}-rgb`]: `var(--${name}-color-rgb, ${getRgbValuesFromRgbaString(
+              rgba,
+            ).join(', ')})`,
           };
         } else if (name) {
           return {

@@ -7,8 +7,10 @@ import { Base } from '../../components/Base';
 import { useContextStyles } from '../../providers/Styles';
 
 const POPOVER_STYLES = {
+  pointerEvents: 'auto',
   position: 'absolute',
-  transition: 'opacity .120s linear, visibility 0ms linear, transform .120s ease-in-out',
+  transition:
+    'opacity .120s linear, visibility 0ms linear, transform .120s ease-in-out',
   transform: {
     '': 'scale(1, .9)',
     open: 'scale(1, 1)',
@@ -76,9 +78,12 @@ const PopoverWrapper = forwardRef((props, ref) => {
     isDismissable,
     ...otherProps
   } = props;
-  let { overlayProps } = useOverlay({ ...props, isDismissable: isDismissable && isOpen }, ref);
+  let { overlayProps } = useOverlay(
+    { ...props, isDismissable: isDismissable && isOpen },
+    ref,
+  );
   let { modalProps } = useModal({
-    isDisabled: isNonModal
+    isDisabled: isNonModal,
   });
 
   styles = {

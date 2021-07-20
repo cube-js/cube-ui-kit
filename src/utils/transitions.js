@@ -5,12 +5,22 @@ const DIRECTION_MAP = {
   bottom: 'top center',
 };
 
-export const getOverlayTransitionCSS = ({ placement, suffix = '', minScale = '0.9' } = {}) => `
+export const getOverlayTransitionCSS = ({
+  placement,
+  suffix = '',
+  minScale = '0.9',
+} = {}) => `
   &${suffix} {
     transform: var(--overlay-position);
     transform-origin: ${DIRECTION_MAP[placement] || 'initial'};
-    --overlay-hidden-x-scale: ${placement === 'top' || placement === 'bottom' || !placement ? '1' : minScale};
-    --overlay-hidden-y-scale: ${placement === 'left' || placement === 'right' ? '1' : minScale};
+    --overlay-hidden-x-scale: ${
+      placement === 'top' || placement === 'bottom' || !placement
+        ? '1'
+        : minScale
+    };
+    --overlay-hidden-y-scale: ${
+      placement === 'left' || placement === 'right' ? '1' : minScale
+    };
     --overlay-translate: translate(0, 0); 
     --overlay-transition: 180ms;
     --overlay-hidden-scale: scale(var(--overlay-hidden-x-scale), var(--overlay-hidden-y-scale));

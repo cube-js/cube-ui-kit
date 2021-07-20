@@ -43,7 +43,14 @@ export default {
     type: {
       control: {
         type: 'inline-radio',
-        options: [undefined, 'modal', 'popover', 'tray', 'fullscreen', 'fullscreenTakeover'],
+        options: [
+          undefined,
+          'modal',
+          'popover',
+          'tray',
+          'fullscreen',
+          'fullscreenTakeover',
+        ],
       },
       description: 'Type of the dialog',
       defaultValue: undefined,
@@ -55,7 +62,14 @@ export default {
     mobileType: {
       control: {
         type: 'inline-radio',
-        options: [undefined, 'modal', 'popover', 'tray', 'fullscreen', 'fullscreenTakeover'],
+        options: [
+          undefined,
+          'modal',
+          'popover',
+          'tray',
+          'fullscreen',
+          'fullscreenTakeover',
+        ],
       },
       description: 'Type of the dialog for mobile devices',
       defaultValue: undefined,
@@ -114,16 +128,17 @@ const Template = (props) => {
     ...args
   } = props;
   const triggerProps = {
-    type, mobileType, placement, isDismissable,
+    type,
+    mobileType,
+    placement,
+    isDismissable,
   };
 
   return (
     <ModalProvider>
       <DialogTrigger {...triggerProps} onDismiss={() => console.log('dismiss')}>
-        <Button>
-          Open Modal
-        </Button>
-        {close => (
+        <Button>Open Modal</Button>
+        {(close) => (
           <AlertDialog
             {...args}
             primaryProps={{
@@ -131,22 +146,30 @@ const Template = (props) => {
               onPress() {
                 console.log('primary');
                 close();
-              }
+              },
             }}
-            secondaryProps={secondaryProps ? {
-              ...secondaryProps,
-              onPress() {
-                console.log('secondary');
-                close();
-              }
-            } : null}
-            cancelProps={cancelProps ? {
-              ...cancelProps,
-              onPress() {
-                console.log('cancel');
-                close();
-              }
-            } : null}
+            secondaryProps={
+              secondaryProps
+                ? {
+                    ...secondaryProps,
+                    onPress() {
+                      console.log('secondary');
+                      close();
+                    },
+                  }
+                : null
+            }
+            cancelProps={
+              cancelProps
+                ? {
+                    ...cancelProps,
+                    onPress() {
+                      console.log('cancel');
+                      close();
+                    },
+                  }
+                : null
+            }
           >
             {content}
           </AlertDialog>

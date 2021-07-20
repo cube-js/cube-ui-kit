@@ -43,7 +43,12 @@ export function openLink(href, target) {
 export function parseTo(to) {
   const newTab = to && typeof to === 'string' && to.startsWith('!');
   const nativeRoute = to && typeof to === 'string' && to.startsWith('@');
-  const href = to && typeof to === 'string' ? (newTab || nativeRoute ? to.slice(1) : to) : '';
+  const href =
+    to && typeof to === 'string'
+      ? newTab || nativeRoute
+        ? to.slice(1)
+        : to
+      : '';
 
   return {
     newTab,

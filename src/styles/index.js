@@ -20,10 +20,10 @@ import { groupRadiusAttr } from './groupRadius';
 import { boxShadowCombinator } from './boxShadow.combinator.js';
 import { styleHandlerCacheWrapper } from '../utils/styles.js';
 import { scrollBarStyle } from './scrollBar';
+import { displayStyle } from './display';
 
 export const STYLES = [
   // `display` style is used in several handlers, so we need to explicitly declare it
-  createStyle('display'),
   createStyle('area', 'grid-area'),
   createStyle('areas', 'grid-template-areas'),
   createStyle('content', 'place-content'),
@@ -50,6 +50,7 @@ export const STYLES = [
   }),
 ].concat(
   [
+    displayStyle,
     transitionStyle,
     resetStyle,
     fillStyle,

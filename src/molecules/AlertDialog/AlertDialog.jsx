@@ -12,10 +12,7 @@ import { ButtonGroup } from '../../atoms/ButtonGroup/ButtonGroup';
  * AlertDialogs are a specific type of Dialog. They display important information that users need to acknowledge.
  */
 function AlertDialog(props, ref) {
-  let {
-    onClose = () => {
-    }
-  } = useContext(DialogContext) || {};
+  let { onClose = () => {} } = useContext(DialogContext) || {};
 
   let {
     danger,
@@ -38,32 +35,37 @@ function AlertDialog(props, ref) {
   }
 
   return (
-    <Dialog
-      role="alertdialog"
-      ref={ref}
-      {...otherProps}
-    >
+    <Dialog role="alertdialog" ref={ref} {...otherProps}>
       <Title>{title}</Title>
-      <Divider/>
+      <Divider />
       <Content>{children}</Content>
       <ButtonGroup align="end">
         <Button
           type={confirmType}
           {...primaryProps}
-          onPress={() => chain(primaryProps.onPress && primaryProps.onPress(), onClose())}
+          onPress={() =>
+            chain(primaryProps.onPress && primaryProps.onPress(), onClose())
+          }
         />
-        {secondaryProps &&
-        <Button
-          {...secondaryProps}
-          onPress={() => chain(secondaryProps.onPress && secondaryProps.onPress(), onClose())}
-        />
-        }
-        {cancelProps &&
-        <Button
-          {...cancelProps}
-          onPress={() => chain(cancelProps.onPress && cancelProps.onPress(), onClose())}
-        />
-        }
+        {secondaryProps && (
+          <Button
+            {...secondaryProps}
+            onPress={() =>
+              chain(
+                secondaryProps.onPress && secondaryProps.onPress(),
+                onClose(),
+              )
+            }
+          />
+        )}
+        {cancelProps && (
+          <Button
+            {...cancelProps}
+            onPress={() =>
+              chain(cancelProps.onPress && cancelProps.onPress(), onClose())
+            }
+          />
+        )}
       </ButtonGroup>
     </Dialog>
   );

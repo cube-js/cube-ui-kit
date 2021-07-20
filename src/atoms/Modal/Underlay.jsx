@@ -16,7 +16,7 @@ const UNDERLAY_STYLES = {
   // },
   opacity: {
     '': 0,
-    open: .9999,
+    open: 0.9999,
   },
   pointerEvents: {
     '': 'none',
@@ -24,7 +24,8 @@ const UNDERLAY_STYLES = {
   },
   fill: '#dark.30',
   overflow: 'hidden',
-  transition: 'transform .25s ease-in-out, opacity .25s linear, visibility 0ms linear',
+  transition:
+    'transform .25s ease-in-out, opacity .25s linear, visibility 0ms linear',
 };
 
 const Underlay = ({ isOpen }, ref) => {

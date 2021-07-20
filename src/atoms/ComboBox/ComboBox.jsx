@@ -1,7 +1,16 @@
-import { CheckOutlined, LoadingOutlined, WarningOutlined, } from '@ant-design/icons';
+import {
+  CheckOutlined,
+  LoadingOutlined,
+  WarningOutlined,
+} from '@ant-design/icons';
 import { createFocusableRef } from '@react-spectrum/utils';
 import { mergeProps } from '@react-aria/utils';
-import React, { cloneElement, forwardRef, useImperativeHandle, useState, } from 'react';
+import React, {
+  cloneElement,
+  forwardRef,
+  useImperativeHandle,
+  useState,
+} from 'react';
 import { useComboBoxState } from '@react-stately/combobox';
 import { useComboBox } from '@react-aria/combobox';
 import { useButton } from '@react-aria/button';
@@ -202,9 +211,9 @@ function ComboBox(props, ref) {
   let isInvalid = validationState === 'invalid';
 
   let validationIcon = isInvalid ? (
-    <WarningOutlined style={{ color: 'var(--danger-color)' }}/>
+    <WarningOutlined style={{ color: 'var(--danger-color)' }} />
   ) : (
-    <CheckOutlined style={{ color: 'var(--success-color)' }}/>
+    <CheckOutlined style={{ color: 'var(--success-color)' }} />
   );
   let validation = cloneElement(validationIcon);
 
@@ -255,7 +264,7 @@ function ComboBox(props, ref) {
       >
         <Space gap={false} padding="0 1x">
           {validationState && !isLoading ? validation : null}
-          {isLoading && <LoadingOutlined/>}
+          {isLoading && <LoadingOutlined />}
         </Space>
         {suffix}
         {!hideTrigger ? (
@@ -272,7 +281,7 @@ function ComboBox(props, ref) {
             ref={triggerRef}
             styles={triggerStyles}
           >
-            <CaretDownIcon/>
+            <CaretDownIcon />
           </Base>
         ) : null}
       </Suffix>

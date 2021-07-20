@@ -13,7 +13,8 @@ const TRAY_STYLES = {
   height: 'max (@cube-visual-viewport-height * .9)',
   width: '288px 90vw',
   pointerEvents: 'auto',
-  transition: 'transform .25s ease-in-out, opacity .25s linear, visibility 0ms linear',
+  transition:
+    'transform .25s ease-in-out, opacity .25s linear, visibility 0ms linear',
   opacity: {
     '': 0,
     open: '.9999',
@@ -21,10 +22,21 @@ const TRAY_STYLES = {
 };
 
 function Tray(props, ref) {
-  let { qa, children, onClose, isFixedHeight, isNonModal, styles, ...otherProps } = props;
+  let {
+    qa,
+    children,
+    onClose,
+    isFixedHeight,
+    isNonModal,
+    styles,
+    ...otherProps
+  } = props;
   let domRef = useDOMRef(ref);
 
-  let { overlayProps, underlayProps } = useOverlay({ ...props, isDismissable: true }, domRef);
+  let { overlayProps, underlayProps } = useOverlay(
+    { ...props, isDismissable: true },
+    domRef,
+  );
 
   return (
     <Overlay {...otherProps}>
@@ -57,7 +69,7 @@ let TrayWrapper = forwardRef(function (props, ref) {
   } = props;
   usePreventScroll();
   let { modalProps } = useModal({
-    isDisabled: isNonModal
+    isDisabled: isNonModal,
   });
 
   styles = {

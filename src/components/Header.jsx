@@ -1,8 +1,5 @@
 import React, { forwardRef } from 'react';
-import {
-  CONTAINER_STYLES,
-  TEXT_STYLES,
-} from '../styles/list';
+import { CONTAINER_STYLES, TEXT_STYLES } from '../styles/list';
 import { extractStyles } from '../utils/styles.js';
 import { filterBaseProps } from '../utils/filterBaseProps';
 import { Base } from './Base';
@@ -14,10 +11,7 @@ const DEFAULT_STYLES = {
   flow: 'column',
 };
 
-const STYLE_LIST = [
-  ...CONTAINER_STYLES,
-  ...TEXT_STYLES,
-];
+const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
 export const Header = forwardRef((props, ref) => {
   props = useSlotProps(props, 'header');

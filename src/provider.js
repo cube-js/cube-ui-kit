@@ -51,7 +51,9 @@ export function Provider({
     }
   });
 
-  return <UIKitContext.Provider value={newValue}>{children}</UIKitContext.Provider>;
+  return (
+    <UIKitContext.Provider value={newValue}>{children}</UIKitContext.Provider>
+  );
 }
 
 export function useProviderProps(props) {

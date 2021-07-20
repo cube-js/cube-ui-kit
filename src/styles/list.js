@@ -21,6 +21,7 @@ export const BLOCK_STYLES = [
   'opacity',
   'overflow',
   'scrollBar',
+  'hide',
 ];
 
 export const COLOR_STYLES = ['color', 'fill'];

@@ -13,7 +13,7 @@ function Overlay(props, ref) {
     onEntered,
     onExit,
     onExiting,
-    onExited
+    onExited,
   } = props;
   let [exited, setExited] = useState(!isOpen);
 
@@ -50,7 +50,8 @@ function Overlay(props, ref) {
         onExited={handleExited}
         onEnter={onEnter}
         onEntering={onEntering}
-        onEntered={handleEntered}>
+        onEntered={handleEntered}
+      >
         {children}
       </OpenTransition>
     </Provider>

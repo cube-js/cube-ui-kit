@@ -47,8 +47,10 @@ const TIP_STYLES = {
   transform: {
     '': 'translate((-.375x - 1px), 0)',
     '[data-placement="bottom"]': 'translate((-.375x - 1px), 0) rotate(180deg)',
-    '[data-placement="left"]': 'translate(-.375x, (-.375x - 1px)) rotate(270deg)',
-    '[data-placement="right"]': 'translate(.375x, (-.375x - 1px)) rotate(90deg)',
+    '[data-placement="left"]':
+      'translate(-.375x, (-.375x - 1px)) rotate(270deg)',
+    '[data-placement="right"]':
+      'translate(.375x, (-.375x - 1px)) rotate(90deg)',
   },
 };
 
@@ -67,13 +69,7 @@ function Tooltip(props, ref) {
 
   props = mergeProps(props, tooltipProviderProps);
 
-  let {
-    placement = 'top',
-    isOpen,
-    tipStyles,
-    showIcon,
-    ...otherProps
-  } = props;
+  let { placement = 'top', isOpen, tipStyles, showIcon, ...otherProps } = props;
 
   const styles = extractStyles(otherProps, CONTAINER_STYLES, {
     ...TOOLTIP_STYLES,
@@ -104,11 +100,7 @@ function Tooltip(props, ref) {
       ref={overlayRef}
     >
       {props.children}
-      <Base
-        data-placement={placement}
-        styles={tipStyles}
-        {...arrowProps}
-      />
+      <Base data-placement={placement} styles={tipStyles} {...arrowProps} />
     </Base>
   );
 }

@@ -497,12 +497,20 @@ export function strToRgb(color, ignoreAlpha = false) {
 }
 
 export function getRgbValuesFromRgbaString(str) {
-  return str.match(/\d+/g).map(s => parseInt(s)).slice(0, 3);
+  return str
+    .match(/\d+/g)
+    .map((s) => parseInt(s))
+    .slice(0, 3);
 }
 
 export function hexToRgb(hex) {
-  const rgba = hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i, (m, r, g, b) => '#' + r + r + g + g + b + b)
-    .substring(1).match(/.{2}/g)
+  const rgba = hex
+    .replace(
+      /^#?([a-f\d])([a-f\d])([a-f\d])$/i,
+      (m, r, g, b) => '#' + r + r + g + g + b + b,
+    )
+    .substring(1)
+    .match(/.{2}/g)
     .map((x, i) => parseInt(x, 16) * (i === 3 ? 1 / 255 : 1));
 
   if (rgba.length === 3) {
@@ -613,8 +621,10 @@ export function extractStyles(
     if (ignoreList && ignoreList.includes(prop)) {
       // do nothing
     } else if (styleList.includes(propName)) {
-      if (value != null && (value !== false || propName in styles)) {
+      if (value != null && value !== false) {
         styles[propName] = value;
+      } else if (propName in styles) {
+        delete styles[propName];
       }
     }
   }, {});

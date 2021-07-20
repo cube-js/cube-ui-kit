@@ -28,7 +28,11 @@ function removeId(name, id) {
 }
 
 function getDefaultValidateTrigger(type) {
-  return type === 'NumberInput' || type.includes('Input') || type.includes('TextArea') ? 'onBlur' : 'onChange';
+  return type === 'NumberInput' ||
+    type.includes('Input') ||
+    type.includes('TextArea')
+    ? 'onBlur'
+    : 'onChange';
 }
 
 function getValueProps(type, value) {
@@ -146,8 +150,7 @@ export function Field(props) {
       validateTrigger === 'onChange' ||
       (field && field.errors && field.errors.length)
     ) {
-      form.validateField(name).catch(() => {
-      }); // do nothing on fail
+      form.validateField(name).catch(() => {}); // do nothing on fail
     }
   }
 
@@ -160,8 +163,7 @@ export function Field(props) {
       if (validateTrigger === 'onBlur') {
         // We need timeout so the change event can be done.
         setTimeout(() => {
-          form.validateField(name).catch(() => {
-          }); // do nothing on fail
+          form.validateField(name).catch(() => {}); // do nothing on fail
         });
       }
     },

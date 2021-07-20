@@ -10,10 +10,7 @@ import { ModalProvider } from '@react-aria/overlays';
 const DEFAULT_STYLES = {
   display: 'block',
 };
-const STYLES = [
-  ...BASE_STYLES,
-  ...BLOCK_STYLES,
-];
+const STYLES = [...BASE_STYLES, ...BLOCK_STYLES];
 
 export const Root = forwardRef((allProps, ref) => {
   let {
@@ -44,15 +41,9 @@ export const Root = forwardRef((allProps, ref) => {
         font={font}
         monospaceFont={monospaceFont}
       />
-      <ModalProvider>
-        {children}
-      </ModalProvider>
+      <ModalProvider>{children}</ModalProvider>
     </Base>
   );
 
-  return (
-    router ? <Provider router={router}>
-      {root}
-    </Provider> : root
-  );
+  return router ? <Provider router={router}>{root}</Provider> : root;
 });

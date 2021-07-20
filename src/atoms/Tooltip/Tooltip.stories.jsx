@@ -14,7 +14,8 @@ export default {
         type: 'radio',
         options: [undefined, 'top', 'right', 'bottom', 'left'],
       },
-      description: 'The placement of the element with respect to its anchor element.',
+      description:
+        'The placement of the element with respect to its anchor element.',
       table: {
         type: { summary: 'boolean' },
         defaultValue: { summary: false },
@@ -31,11 +32,13 @@ export default {
         type: 'inline-radio',
         options: [undefined, 'focus'],
       },
-      description: 'By default, opens for both focus and hover. Can be made to open only for focus.',
+      description:
+        'By default, opens for both focus and hover. Can be made to open only for focus.',
     },
     isDisabled: {
       defaultValue: false,
-      description: 'Whether the tooltip should be disabled, independent from the trigger.',
+      description:
+        'Whether the tooltip should be disabled, independent from the trigger.',
       control: {
         type: 'boolean',
       },
@@ -47,12 +50,14 @@ export default {
     offset: {
       defaultValue: undefined,
       control: 'number',
-      description: 'The additional offset applied along the main axis between the element and its anchor element.',
+      description:
+        'The additional offset applied along the main axis between the element and its anchor element.',
     },
     crossOffset: {
       defaultValue: undefined,
       control: 'number',
-      description: 'The additional offset applied along the cross axis between the element and its anchor element.',
+      description:
+        'The additional offset applied along the cross axis between the element and its anchor element.',
     },
     shouldFlip: {
       defaultValue: undefined,
@@ -60,16 +65,15 @@ export default {
         type: 'inline-radio',
         options: [undefined, false, true],
       },
-      description: 'Whether the element should flip its orientation (e.g. top to bottom or left to right) when there is insufficient room for it to render completely.',
+      description:
+        'Whether the element should flip its orientation (e.g. top to bottom or left to right) when there is insufficient room for it to render completely.',
     },
   },
 };
 
 const Template = (args) => (
   <TooltipTrigger {...args}>
-    <Button margin="8x 18x">
-      Hover to show a tooltip
-    </Button>
+    <Button margin="8x 18x">Hover to show a tooltip</Button>
     <Tooltip>Tooltip content</Tooltip>
   </TooltipTrigger>
 );

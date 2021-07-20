@@ -321,8 +321,12 @@ export const GlobalStyles = createGlobalStyle`
   }
   
   html {
-    --font: ${({ font }) => font || 'Inter'}, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-    --monospace-font: ${({ monospaceFont }) => `${monospaceFont}, ` || ''}Menlo, Monaco, Consolas, 'Courier New', monospace;
+    --font: ${({ font }) =>
+      font ||
+      'Inter'}, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    --monospace-font: ${({ monospaceFont }) =>
+      `${monospaceFont}, ` ||
+      ''}Menlo, Monaco, Consolas, 'Courier New', monospace;
   }
   
   body {
@@ -405,7 +409,8 @@ export const GlobalStyles = createGlobalStyle`
     font-family: var(--monospace-font);
   }
   
-  ${({ fonts, publicUrl }) => fonts === false ? '' : fontsProvider({ publicUrl })}
+  ${({ fonts, publicUrl }) =>
+    fonts === false ? '' : fontsProvider({ publicUrl })}
   
   // Prism Code
   code[class*="language-"],
@@ -549,5 +554,5 @@ export const GlobalStyles = createGlobalStyle`
     cursor: help;
   }
   
-  ${({ legacy }) => legacy ? LEGACY_CSS : ''}
+  ${({ legacy }) => (legacy ? LEGACY_CSS : '')}
 `;

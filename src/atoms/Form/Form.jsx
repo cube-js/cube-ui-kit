@@ -5,7 +5,7 @@ import { Base } from '../../components/Base';
 import { extractStyles } from '../../utils/styles.js';
 import { CONTAINER_STYLES } from '../../styles/list';
 import { filterBaseProps } from '../../utils/filterBaseProps';
-import useForm from './useForm';
+import { useForm } from './useForm';
 import { useCombinedRefs } from '../../utils/react';
 import { timeout } from '../../utils/promise';
 

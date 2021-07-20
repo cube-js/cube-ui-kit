@@ -34,7 +34,15 @@ export default {
     type: {
       control: {
         type: 'inline-radio',
-        options: [undefined, 'modal', 'popover', 'tray', 'fullscreen', 'fullscreenTakeover'],
+        options: [
+          undefined,
+          'modal',
+          'popover',
+          'tray',
+          'fullscreen',
+          'fullscreenTakeover',
+          'panel',
+        ],
       },
       description: 'Type of the dialog',
       defaultValue: undefined,
@@ -46,7 +54,14 @@ export default {
     mobileType: {
       control: {
         type: 'inline-radio',
-        options: [undefined, 'modal', 'popover', 'tray', 'fullscreen', 'fullscreenTakeover'],
+        options: [
+          undefined,
+          'modal',
+          'popover',
+          'tray',
+          'fullscreen',
+          'fullscreenTakeover',
+        ],
       },
       description: 'Type of the dialog for mobile devices',
       defaultValue: undefined,
@@ -84,26 +99,40 @@ export default {
 const Template = ({ size, ...props }) => {
   return (
     <ModalProvider>
-      <DialogTrigger {...props} onDismiss={() => {
-        console.log('dismiss');
-      }}>
+      <DialogTrigger
+        {...props}
+        onDismiss={() => {
+          console.log('dismiss');
+        }}
+        // styles={{
+        //   transform: {
+        //     '': 'translate(100%, 0)',
+        //     open: 'translate(0, 0)',
+        //   },
+        // }}
+      >
         <Button margin="22x top">Click me!</Button>
         {(close) => (
-          <Dialog size={size}>
+          <Dialog
+            size={size}
+            // styles={{
+            //   width: '320px',
+            //   place: 'end',
+            //   height: '@cube-visual-viewport-height',
+            // }}
+          >
             <Title>Modal title</Title>
-            <Header>
-              Header
-            </Header>
-            <Divider/>
+            <Header>Header</Header>
+            <Divider />
             <Content>
               <Paragraph>Test content</Paragraph>
               <Paragraph>Test content</Paragraph>
             </Content>
-            <Footer>
-              Footer
-            </Footer>
+            <Footer>Footer</Footer>
             <ButtonGroup>
-              <Button onPress={close} type="primary">Action</Button>
+              <Button onPress={close} type="primary">
+                Action
+              </Button>
               <Button onPress={close}>Sec</Button>
               <Button onPress={close}>Cancel</Button>
             </ButtonGroup>

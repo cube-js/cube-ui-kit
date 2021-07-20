@@ -13,7 +13,7 @@ export function DialogContainer(props) {
     type = 'modal',
     onDismiss,
     isDismissable,
-    isKeyboardDismissDisabled
+    isKeyboardDismissDisabled,
   } = props;
 
   let childArray = React.Children.toArray(children);
@@ -30,7 +30,7 @@ export function DialogContainer(props) {
   let context = {
     type,
     onClose: onDismiss,
-    isDismissable
+    isDismissable,
   };
 
   return (
@@ -39,7 +39,8 @@ export function DialogContainer(props) {
       onClose={isDismissable ? onDismiss : null}
       type={type}
       isDismissable={isDismissable}
-      isKeyboardDismissDisabled={isKeyboardDismissDisabled}>
+      isKeyboardDismissDisabled={isKeyboardDismissDisabled}
+    >
       <DialogContext.Provider value={context}>
         {lastChild.current}
       </DialogContext.Provider>

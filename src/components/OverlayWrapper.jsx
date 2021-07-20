@@ -19,12 +19,16 @@ export function OverlayWrapper({ isOpen, placement, children, childrenOnly }) {
       timeout={180}
       classNames="cube-overlay-transition"
     >
-      { childrenOnly ? children : <Base
+      {childrenOnly ? (
+        children
+      ) : (
+        <Base
           styles={OVERLAY_WRAPPER_STYLES}
           css={getOverlayTransitionCSS({ placement })}
         >
           {children}
-        </Base> }
+        </Base>
+      )}
     </CSSTransition>
   );
 }

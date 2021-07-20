@@ -42,7 +42,7 @@ export function transitionStyle({ transition }) {
   let tempTransition = '';
   const transitions = [];
 
-  tokens.forEach(token => {
+  tokens.forEach((token) => {
     if (token === ',') {
       if (tempTransition) {
         transitions.push(tempTransition);
@@ -80,9 +80,7 @@ export function transitionStyle({ transition }) {
     .map(([style, [name, easing, timing, delay]]) => {
       return `${style}  ${timing || getTiming(name)} ${
         easing || DEFAULT_EASING
-      } ${
-        delay || '0s'
-      }`;
+      } ${delay || '0s'}`;
     })
     .join(', ');
 

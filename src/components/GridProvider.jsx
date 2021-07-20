@@ -61,9 +61,9 @@ export const GridProvider = forwardRef((props, ref) => {
     let sensor;
 
     import('../utils/ResizeSensor')
-      .then(module => module.ResizeSensor)
-      .then(ResizeSensor => {
-        sensor = new ResizeSensor(el, resizeCallback)
+      .then((module) => module.ResizeSensor)
+      .then((ResizeSensor) => {
+        sensor = new ResizeSensor(el, resizeCallback);
       });
 
     return () => {

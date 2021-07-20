@@ -56,31 +56,34 @@ export const api = {
                 }
               }}
             >
-              {
-                item.isVisible ? <AlertDialog
+              {item.isVisible ? (
+                <AlertDialog
                   primaryProps={{
                     ...primaryProps,
                     onPress: () => {
                       this.resolve(item);
                     },
                   }}
-                  cancelProps={cancelProps ? {
-                    ...cancelProps,
-                    onPress: () => {
-                      this.reject(item);
-                    },
-                  } : null}
+                  cancelProps={
+                    cancelProps
+                      ? {
+                          ...cancelProps,
+                          onPress: () => {
+                            this.reject(item);
+                          },
+                        }
+                      : null
+                  }
                   {...options}
                   key={id}
                 >
                   {content}
-                </AlertDialog> : null
-              }
+                </AlertDialog>
+              ) : null}
             </DialogContainer>
           );
         })}
-      </ModalProvider>
-      ,
+      </ModalProvider>,
       this.root,
     );
   },

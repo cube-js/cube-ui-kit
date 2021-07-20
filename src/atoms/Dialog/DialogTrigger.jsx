@@ -16,6 +16,8 @@ function DialogTrigger(props) {
     onDismiss,
     isDismissable,
     isKeyboardDismissDisabled,
+    styles,
+    mobileViewport = 700,
     ...positionProps
   } = props;
 
@@ -26,7 +28,7 @@ function DialogTrigger(props) {
   let [trigger, content] = children;
 
   // On small devices, show a modal or tray instead of a popover.
-  let isMobile = useMediaQuery('(max-width: 700px)');
+  let isMobile = useMediaQuery(`(max-width: ${mobileViewport}px)`);
   if (isMobile) {
     // handle cases where desktop popovers need a close button for the mobile modal view
     if (type !== 'modal' && mobileType === 'modal') {
@@ -40,16 +42,22 @@ function DialogTrigger(props) {
 
   let wasOpen = useRef(false);
   let isExiting = useRef(false);
-  let onExiting = () => isExiting.current = true;
-  let onExited = () => isExiting.current = false;
+  let onExiting = () => (isExiting.current = true);
+  let onExited = () => (isExiting.current = false);
 
   wasOpen.current = state.isOpen;
 
   // eslint-disable-next-line arrow-body-style
   useEffect(() => {
     return () => {
-      if ((wasOpen.current || isExiting.current) && type !== 'popover' && type !== 'tray') {
-        console.warn('A DialogTrigger unmounted while open. This is likely due to being placed within a trigger that unmounts or inside a conditional. Consider using a DialogContainer instead.');
+      if (
+        (wasOpen.current || isExiting.current) &&
+        type !== 'popover' &&
+        type !== 'tray'
+      ) {
+        console.warn(
+          'A DialogTrigger unmounted while open. This is likely due to being placed within a trigger that unmounts or inside a conditional. Consider using a DialogContainer instead.',
+        );
       }
     };
   }, []);
@@ -71,24 +79,28 @@ function DialogTrigger(props) {
         content={content}
         onClose={onClose}
         isKeyboardDismissDisabled={isKeyboardDismissDisabled}
-        hideArrow={hideArrow}/>
+        hideArrow={hideArrow}
+      />
     );
   }
 
   let renderOverlay = () => {
     switch (type) {
+      case 'panel':
       case 'fullscreen':
       case 'fullscreenTakeover':
       case 'modal':
         return (
           <Modal
             isOpen={state.isOpen}
-            isDismissable={type === 'modal' ? isDismissable : false}
+            isDismissable={isDismissable}
             onClose={onClose}
             type={type}
             isKeyboardDismissDisabled={isKeyboardDismissDisabled}
             onExiting={onExiting}
-            onExited={onExited}>
+            onExited={onExited}
+            styles={styles}
+          >
             {typeof content === 'function' ? content(state.close) : content}
           </Modal>
         );
@@ -97,7 +109,9 @@ function DialogTrigger(props) {
           <Tray
             isOpen={state.isOpen}
             onClose={onClose}
-            isKeyboardDismissDisabled={isKeyboardDismissDisabled}>
+            isKeyboardDismissDisabled={isKeyboardDismissDisabled}
+            styles={styles}
+          >
             {typeof content === 'function' ? content(state.close) : content}
           </Tray>
         );
@@ -111,7 +125,8 @@ function DialogTrigger(props) {
       onClose={onClose}
       isDismissable={isDismissable}
       trigger={trigger}
-      overlay={renderOverlay()}/>
+      overlay={renderOverlay()}
+    />
   );
 }
 
@@ -138,7 +153,11 @@ function PopoverTrigger(allProps) {
   let triggerRef = useRef();
   let overlayRef = useRef();
 
-  let { overlayProps: popoverProps, placement, arrowProps } = useOverlayPosition({
+  let {
+    overlayProps: popoverProps,
+    placement,
+    arrowProps,
+  } = useOverlayPosition({
     targetRef: targetRef || triggerRef,
     overlayRef: unwrapDOMRef(overlayRef),
     placement: props.placement,
@@ -146,14 +165,18 @@ function PopoverTrigger(allProps) {
     offset: props.offset || 8,
     crossOffset: props.crossOffset,
     shouldFlip: props.shouldFlip,
-    isOpen: state.isOpen
+    isOpen: state.isOpen,
   });
 
-  let { triggerProps, overlayProps } = useOverlayTrigger({ type: 'dialog' }, state, triggerRef);
+  let { triggerProps, overlayProps } = useOverlayTrigger(
+    { type: 'dialog' },
+    state,
+    triggerRef,
+  );
 
   let triggerPropsWithRef = {
     ...triggerProps,
-    ref: targetRef ? undefined : triggerRef
+    ref: targetRef ? undefined : triggerRef,
   };
 
   let overlay = (
@@ -165,7 +188,8 @@ function PopoverTrigger(allProps) {
       placement={placement}
       arrowProps={arrowProps}
       isKeyboardDismissDisabled={isKeyboardDismissDisabled}
-      hideArrow={hideArrow}>
+      hideArrow={hideArrow}
+    >
       {typeof content === 'function' ? content(state.close) : content}
     </Popover>
   );
@@ -177,7 +201,8 @@ function PopoverTrigger(allProps) {
       triggerProps={triggerPropsWithRef}
       dialogProps={overlayProps}
       trigger={trigger}
-      overlay={overlay}/>
+      overlay={overlay}
+    />
   );
 }
 
@@ -190,14 +215,14 @@ function DialogTriggerBase(props) {
     dialogProps = {},
     triggerProps = {},
     overlay,
-    trigger
+    trigger,
   } = props;
 
   let context = {
     type,
     onClose,
     isDismissable,
-    ...dialogProps
+    ...dialogProps,
   };
 
   return (
@@ -205,12 +230,16 @@ function DialogTriggerBase(props) {
       <PressResponder
         {...triggerProps}
         onPress={state.toggle}
-        isPressed={state.isOpen && type !== 'modal' && type !== 'fullscreen' && type !== 'fullscreenTakeover'}>
+        isPressed={
+          state.isOpen &&
+          type !== 'modal' &&
+          type !== 'fullscreen' &&
+          type !== 'fullscreenTakeover'
+        }
+      >
         {trigger}
       </PressResponder>
-      <DialogContext.Provider value={context}>
-        {overlay}
-      </DialogContext.Provider>
+      <DialogContext.Provider value={context}>{overlay}</DialogContext.Provider>
     </Fragment>
   );
 }

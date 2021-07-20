@@ -203,7 +203,7 @@ class FormStore {
   }
 }
 
-function useForm(form, ref, { onSubmit, onValuesChange } = {}) {
+export function useForm(form, ref, { onSubmit, onValuesChange } = {}) {
   const formRef = React.useRef();
   const [, forceUpdate] = React.useState({});
 
@@ -226,5 +226,3 @@ function useForm(form, ref, { onSubmit, onValuesChange } = {}) {
 
   return [formRef.current];
 }
-
-export default useForm;

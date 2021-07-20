@@ -15,7 +15,7 @@ export const OVERLAY_WRAPPER_STYLES = {
   items: {
     '': 'center',
     '[data-type="fullscreen"]': 'center',
-    '[data-type="fullscreenTakeover"]': 'stretch',
+    '[data-type="fullscreenTakeover"] | [data-type="panel"]': 'stretch',
   },
   boxSizing: 'border-box',
   width: '100vw',
@@ -30,17 +30,23 @@ const MODAL_STYLES = {
   z: 2,
   height: {
     '': 'max (@cube-visual-viewport-height * .9)',
-    '[data-type="fullscreen"]': '(@cube-visual-viewport-height * .9) (@cube-visual-viewport-height * .9)',
-    '[data-type="fullscreenTakeover"]': '@cube-visual-viewport-height @cube-visual-viewport-height',
+    '[data-type="fullscreenTakeover"] | [data-type="panel"]':
+      '@cube-visual-viewport-height @cube-visual-viewport-height',
+    '[data-type="fullscreen"]':
+      '(@cube-visual-viewport-height * .9) (@cube-visual-viewport-height * .9)',
+    '[data-type="fullscreenTakeover"]':
+      '@cube-visual-viewport-height @cube-visual-viewport-height',
   },
   width: {
     width: '288px 90vw',
   },
-  pointerEvents: 'auto',
-  transition: 'opacity .25s linear, visibility 0ms linear, transform .25s ease-in-out',
+  pointerEvents: 'none',
+  transition:
+    'opacity .25s linear, visibility 0ms linear, transform .25s ease-in-out',
   transform: {
-    '': 'translate(0, -3x)',
-    open: 'translate(0, 0)',
+    '': 'translate(0, 0) scale(1, 1)',
+    '[data-type="modal"] & !open': 'translate(0, -3x) scale(1, 1)',
+    '[data-type^="fullscreen"] & !open': 'translate(0, 0) scale(1.02, 1.02)',
   },
   opacity: {
     '': 0,
@@ -56,7 +62,7 @@ function Modal(props, ref) {
 
   return (
     <Overlay {...otherProps}>
-      <Underlay {...underlayProps} />
+      {type !== 'fullscreenTakeover' && <Underlay {...underlayProps} />}
       <ModalWrapper
         qa={qa}
         onClose={onClose}
@@ -73,11 +79,20 @@ function Modal(props, ref) {
 
 let typeMap = {
   fullscreen: 'fullscreen',
-  fullscreenTakeover: 'fullscreenTakeover'
+  fullscreenTakeover: 'fullscreenTakeover',
 };
 
 let ModalWrapper = forwardRef(function (props, ref) {
-  let { qa, children, isOpen, type, styles, overlayProps, ...otherProps } = props;
+  let {
+    qa,
+    children,
+    isOpen,
+    type,
+    placement,
+    styles,
+    overlayProps,
+    ...otherProps
+  } = props;
   let typeVariant = typeMap[type];
 
   styles = {
@@ -98,7 +113,8 @@ let ModalWrapper = forwardRef(function (props, ref) {
     <Base
       qa="ModalWrapper"
       mods={{ open: isOpen }}
-      data-type={typeVariant}
+      data-type={type}
+      data-placement={placement}
       styles={OVERLAY_WRAPPER_STYLES}
       style={style}
     >
@@ -106,7 +122,8 @@ let ModalWrapper = forwardRef(function (props, ref) {
         qa={qa || 'Modal'}
         styles={styles}
         mods={{ open: isOpen }}
-        data-type={typeVariant}
+        data-type={type}
+        data-placement={placement}
         {...mergeProps(otherProps, overlayProps, modalProps)}
         ref={ref}
       >

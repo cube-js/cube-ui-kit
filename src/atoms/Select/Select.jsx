@@ -16,7 +16,11 @@ import { HiddenSelect, useSelect } from '@react-aria/select';
 import { useListBox, useOption } from '@react-aria/listbox';
 import { useButton } from '@react-aria/button';
 import { FocusScope } from '@react-aria/focus';
-import { DismissButton, useOverlay, useOverlayPosition } from '@react-aria/overlays';
+import {
+  DismissButton,
+  useOverlay,
+  useOverlayPosition,
+} from '@react-aria/overlays';
 import { useFormProps } from '../Form/Form';
 import { useFocus as useAriaFocus, useHover } from '@react-aria/interactions';
 import { useProviderProps } from '../../provider';
@@ -25,9 +29,8 @@ import { extractStyles } from '../../utils/styles';
 import { BLOCK_STYLES, OUTER_STYLES } from '../../styles/list';
 import { useFocus } from '../../utils/interactions';
 import { useContextStyles } from '../../providers/Styles';
-import { modAttrs } from '../../utils/react/modAttrs';
+import { modAttrs, useCombinedRefs } from '../../utils/react';
 import { FieldWrapper } from '../../components/FieldWrapper';
-import { useCombinedRefs } from '../../utils/react/useCombinedRefs';
 import { Item } from '@react-stately/collections';
 import { OverlayWrapper } from '../../components/OverlayWrapper';
 
@@ -253,13 +256,13 @@ function Select(props, ref) {
   let selectField = (
     <Base
       qa="SelectWrapper"
-      {...modAttrs({
+      mods={{
         invalid: isInvalid,
         valid: validationState === 'valid',
         disabled: isDisabled,
         hovered: isHovered,
         focused: isFocused,
-      })}
+      }}
       styles={styles}
     >
       <HiddenSelect
@@ -277,13 +280,13 @@ function Select(props, ref) {
           ...INPUT_STYLES,
           ...inputStyles,
         }}
-        {...modAttrs({
+        mods={{
           invalid: isInvalid,
           valid: validationState === 'valid',
           disabled: isDisabled,
           hovered: isHovered,
           focused: isFocused,
-        })}
+        }}
       >
         {prefix}
         <span {...valueProps}>
@@ -458,11 +461,11 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
       as="li"
       {...mergeProps(optionProps, focusProps)}
       ref={ref}
-      {...modAttrs({
+      mods={{
         selected: isSelected,
         focused: shouldUseVirtualFocus ? isVirtualFocused : isFocused,
         disabled: isDisabled,
-      })}
+      }}
       styles={styles}
     >
       {item.rendered}

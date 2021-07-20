@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Base, Grid, TopBar, Space, LoadingAnimation, Block } from './index';
 import { Button } from './atoms/Button/Button';
-import ResponsiveProvider from './providers/Responsive';
+// import ResponsiveProvider from './providers/Responsive';
 import { color } from './utils/colors';
 import { Card } from './atoms/Card/Card';
 import { Flex } from './components/Flex';
@@ -10,11 +10,10 @@ import { Link } from './atoms/Link/Link';
 import { Modal } from './molecules/Modal/Modal';
 import { notification } from './services/notification';
 import { StyleProvider } from './providers/Styles';
-import { Form, useForm } from './atoms/Form/Form';
+import { Form, useForm, Field } from './atoms/Form';
 import { TextInput } from './atoms/TextInput/TextInput';
 import { Provider } from './provider';
 import { GridProvider } from './components/GridProvider';
-import { Field } from './atoms/Form/Field';
 
 window.notification = notification;
 
@@ -22,7 +21,7 @@ window.Modal = Modal;
 
 function App() {
   const [inProp, setInProp] = useState(false);
-  const form = useForm({ name: '' });
+  const [form] = useForm();
 
   return (
     <>

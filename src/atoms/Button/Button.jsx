@@ -209,7 +209,18 @@ const DEPRECATED_PROPS = ['disabled', 'loading', 'onClick'];
 
 export const Button = forwardRef(
   (
-    { type, size, label, styles, ghost, children, css, icon, skipWarnings, ...props },
+    {
+      type,
+      size,
+      label,
+      styles,
+      ghost,
+      children,
+      css,
+      icon,
+      skipWarnings,
+      ...props
+    },
     ref,
   ) => {
     if (!skipWarnings) {
