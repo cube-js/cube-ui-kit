@@ -1,14 +1,14 @@
-import React from 'react';
+import { StrictMode } from 'react';
 import ReactDOM from 'react-dom';
-import App from './App.tsx';
+import App from './App';
 import { Root } from './index';
 
 ReactDOM.render(
-  <React.StrictMode>
+  <StrictMode>
     <Root>
       <App />
     </Root>
-  </React.StrictMode>,
+  </StrictMode>,
   document.getElementById('root'),
 );
 

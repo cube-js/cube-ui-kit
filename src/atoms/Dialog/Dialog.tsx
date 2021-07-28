@@ -4,7 +4,7 @@ import { DialogContext } from './context';
 import { DismissButton } from '@react-aria/overlays';
 import { FocusScope } from '@react-aria/focus';
 import { mergeProps } from '@react-aria/utils';
-import React, { useContext } from 'react';
+import { forwardRef, useContext } from 'react';
 import { useDialog } from '@react-aria/dialog';
 import { useMessageFormatter } from '@react-aria/i18n';
 import { Base } from '../../components/Base';
@@ -216,6 +216,6 @@ function Dialog(props, ref) {
  * Dialogs are windows containing contextual information, tasks, or workflows that appear over the user interface.
  * Depending on the kind of Dialog, further interactions may be blocked until the Dialog is acknowledged.
  */
-let _Dialog = React.forwardRef(Dialog);
+let _Dialog = forwardRef(Dialog);
 _Dialog.displayName = 'Dialog';
 export { _Dialog as Dialog };

@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 import { Action } from '../../components/Action';
 import {
   BASE_STYLES,

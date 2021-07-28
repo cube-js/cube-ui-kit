@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useLayoutEffect, useRef } from 'react';
+import { forwardRef, useCallback, useLayoutEffect, useRef } from 'react';
 import { TextInputBase } from '../TextInput/TextInputBase';
 import { useControlledState } from '@react-stately/utils';
 import { useProviderProps } from '../../provider';

@@ -5,12 +5,7 @@ import {
 } from '@ant-design/icons';
 import { createFocusableRef } from '@react-spectrum/utils';
 import { mergeProps } from '@react-aria/utils';
-import React, {
-  cloneElement,
-  forwardRef,
-  useImperativeHandle,
-  useState,
-} from 'react';
+import { cloneElement, forwardRef, useImperativeHandle, useState } from 'react';
 import { useComboBoxState } from '@react-stately/combobox';
 import { useComboBox } from '@react-aria/combobox';
 import { useButton } from '@react-aria/button';

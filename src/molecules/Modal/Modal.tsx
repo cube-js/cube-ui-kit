@@ -3,7 +3,7 @@
  * Designed after AntD Modal component and almost duplicate its API.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { Action } from '../../components/Action';
 import { Card } from '../../atoms/Card/Card';

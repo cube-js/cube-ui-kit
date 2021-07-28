@@ -1,5 +1,5 @@
 import { useDOMRef } from '@react-spectrum/utils';
-import React from 'react';
+import { forwardRef } from 'react';
 import { useProviderProps } from '../provider';
 import { extractStyles } from '../utils/styles';
 import { CONTAINER_STYLES } from '../styles/list';
@@ -154,5 +154,5 @@ function Label(props, ref) {
   );
 }
 
-let _Label = React.forwardRef(Label);
+let _Label = forwardRef(Label);
 export { _Label as Label };

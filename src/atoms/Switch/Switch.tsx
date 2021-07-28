@@ -1,5 +1,5 @@
 import { useFocusableRef } from '@react-spectrum/utils';
-import React, { forwardRef, useContext, useRef } from 'react';
+import { createContext, forwardRef, useContext, useRef } from 'react';
 import { useSwitch } from '@react-aria/switch';
 import { useHover } from '@react-aria/interactions';
 import { useToggleState } from '@react-stately/toggle';
@@ -18,7 +18,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { useFormProps } from '../Form/Form';
 import { FieldWrapper } from '../../components/FieldWrapper';
 
-export const SwitchGroupContext = React.createContext(null);
+export const SwitchGroupContext = createContext(null);
 
 const STYLES = {
   position: 'relative',

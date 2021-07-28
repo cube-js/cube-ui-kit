@@ -5,12 +5,7 @@ import {
 } from '@ant-design/icons';
 import { createFocusableRef } from '@react-spectrum/utils';
 import { mergeProps } from '@react-aria/utils';
-import React, {
-  cloneElement,
-  forwardRef,
-  useImperativeHandle,
-  useRef,
-} from 'react';
+import { useState, cloneElement, forwardRef, useImperativeHandle, useRef } from 'react';
 import { useSelectState } from '@react-stately/select';
 import { HiddenSelect, useSelect } from '@react-aria/select';
 import { useListBox, useOption } from '@react-aria/listbox';
@@ -453,7 +448,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
 
   // Handle focus events so we can apply highlighted
   // style to the focused option
-  let [isFocused, setFocused] = React.useState(false);
+  let [isFocused, setFocused] = useState(false);
   let { focusProps } = useAriaFocus({ onFocusChange: setFocused });
 
   return (

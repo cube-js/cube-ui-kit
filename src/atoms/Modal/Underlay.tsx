@@ -1,4 +1,4 @@
-import React from 'react';
+import { forwardRef } from 'react';
 import { Base } from '../../components/Base';
 import { useContextStyles } from '../../providers/Styles';
 
@@ -46,5 +46,5 @@ const Underlay = ({ isOpen }, ref) => {
   );
 };
 
-let _Underlay = React.forwardRef(Underlay);
+let _Underlay = forwardRef(Underlay);
 export { _Underlay as Underlay };

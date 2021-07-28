@@ -1,4 +1,3 @@
-import React from 'react';
 import ReactDOM from 'react-dom';
 import { AlertDialog } from '../../molecules/AlertDialog/AlertDialog';
 import { DialogContainer } from './DialogContainer';

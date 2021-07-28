@@ -1,5 +1,5 @@
 import { useFocusableRef } from '@react-spectrum/utils';
-import React, { forwardRef, useContext, useRef } from 'react';
+import { forwardRef, useContext, useRef } from 'react';
 import { useHover } from '@react-aria/interactions';
 import { useRadio } from '@react-aria/radio';
 import { RadioGroupContext } from './context';

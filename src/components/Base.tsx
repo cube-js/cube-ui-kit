@@ -1,4 +1,4 @@
-import React, { forwardRef, PropsWithChildren, useContext } from 'react';
+import { forwardRef, PropsWithChildren, useContext } from 'react';
 import styled from 'styled-components';
 import { ResponsiveContext } from '../providers/Responsive';
 import { pointsToZones } from '../utils/responsive';

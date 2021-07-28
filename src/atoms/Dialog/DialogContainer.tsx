@@ -1,6 +1,6 @@
 import { DialogContext } from './context';
 import { Modal } from '../Modal/Modal';
-import React, { useRef } from 'react';
+import { Children, isValidElement, useRef } from 'react';
 
 /**
  * A DialogContainer accepts a single Dialog as a child, and manages showing and hiding
@@ -16,13 +16,13 @@ export function DialogContainer(props) {
     isKeyboardDismissDisabled,
   } = props;
 
-  let childArray = React.Children.toArray(children);
+  let childArray = Children.toArray(children);
   if (childArray.length > 1) {
     throw new Error('Only a single child can be passed to DialogContainer.');
   }
 
   let lastChild = useRef(null);
-  let child = React.isValidElement(childArray[0]) ? childArray[0] : null;
+  let child = isValidElement(childArray[0]) ? childArray[0] : null;
   if (child) {
     lastChild.current = child;
   }

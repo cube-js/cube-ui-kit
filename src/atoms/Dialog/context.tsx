@@ -1,3 +1,3 @@
-import React from 'react';
+import { createContext } from 'react';
 
-export const DialogContext = React.createContext(null);
+export const DialogContext = createContext(null);

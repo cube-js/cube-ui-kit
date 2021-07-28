@@ -5,7 +5,7 @@ import { Dialog } from '../../atoms/Dialog/Dialog';
 import { DialogContext } from '../../atoms/Dialog/context';
 import { Divider } from '../../components/Divider';
 import { Title } from '../../components/Title';
-import React, { forwardRef, useContext } from 'react';
+import { forwardRef, useContext } from 'react';
 import { ButtonGroup } from '../../atoms/ButtonGroup/ButtonGroup';
 
 /**

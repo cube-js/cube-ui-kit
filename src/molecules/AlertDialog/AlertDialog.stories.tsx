@@ -1,4 +1,3 @@
-import React from 'react';
 import { AlertDialog, Button, DialogTrigger } from '../../index';
 import { ModalProvider } from '@react-aria/overlays';
 

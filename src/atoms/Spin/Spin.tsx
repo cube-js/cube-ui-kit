@@ -1,4 +1,3 @@
-import React from 'react';
 import { Block } from '../../components/Block';
 
 const SIZE_MAP = {

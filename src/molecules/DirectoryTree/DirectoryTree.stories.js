@@ -1,4 +1,3 @@
-import React from 'react';
 import { DirectoryTree } from './DirectoryTree';
 
 const TREE_DATA = [

@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 import { Text, TextProps } from './Text';
 import {
   BASE_STYLES,

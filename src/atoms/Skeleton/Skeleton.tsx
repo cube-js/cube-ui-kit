@@ -1,4 +1,3 @@
-import React from 'react';
 import { Placeholder } from '../Placeholder/Placeholder';
 import { Flow } from '../../components/Flow';
 import { Space } from '../../components/Space';

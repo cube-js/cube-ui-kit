@@ -1,4 +1,4 @@
-import React, { forwardRef, useRef } from 'react';
+import { forwardRef, useRef } from 'react';
 import { useFormProps } from '../Form/Form';
 import { useProviderProps } from '../../provider';
 import { useLocale } from '@react-aria/i18n';

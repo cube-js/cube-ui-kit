@@ -1,4 +1,4 @@
-import React from 'react';
+import { forwardRef } from 'react';
 import { useDOMRef } from '@react-spectrum/utils';
 import { LABEL_STYLES } from '../../components/Label';
 import { useProviderProps } from '../../provider';
@@ -131,5 +131,5 @@ function RadioGroup(props, ref) {
  * Radio groups allow users to select a single option from a list of mutually exclusive options.
  * All possible options are exposed up front for users to compare.
  */
-const _RadioGroup = React.forwardRef(RadioGroup);
+const _RadioGroup = forwardRef(RadioGroup);
 export { _RadioGroup as RadioGroup };

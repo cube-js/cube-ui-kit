@@ -1,7 +1,7 @@
 import { useDOMRef } from '@react-spectrum/utils';
 import { mergeProps } from '@react-aria/utils';
 import { Overlay } from './Overlay';
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 import { useModal, useOverlay } from '@react-aria/overlays';
 import { Base } from '../../components/Base';
 import { useContextStyles } from '../../providers/Styles';

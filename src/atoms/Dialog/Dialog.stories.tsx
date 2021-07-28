@@ -1,4 +1,3 @@
-import React from 'react';
 import { ModalProvider } from '@react-aria/overlays';
 import {
   Button,

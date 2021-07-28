@@ -1,11 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
+import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { CloseOutlined } from '@ant-design/icons';
 import { Block } from '../../components/Block';
 import { Action } from '../../components/Action';

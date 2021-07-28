@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 
 // During SSR, React emits a warning when calling useLayoutEffect.
 // Since neither useLayoutEffect nor useEffect run on the server,

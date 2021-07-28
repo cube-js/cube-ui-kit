@@ -1,4 +1,3 @@
-import React from 'react';
 import copy from 'clipboard-copy';
 import { Block } from '../../components/Block';
 import { Button } from '../../atoms/Button/Button';

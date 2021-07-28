@@ -1,4 +1,3 @@
-import React from 'react';
 import { Base64Upload } from './Base64Upload';
 
 export default {

@@ -1,4 +1,3 @@
-import React from 'react';
 import { TopBar } from './TopBar';
 import { Button } from '../../index';
 

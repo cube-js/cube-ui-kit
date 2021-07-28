@@ -1,4 +1,4 @@
-import React, { forwardRef, useState, useEffect } from 'react';
+import { forwardRef, useState, useEffect } from 'react';
 import { Action } from '../../components/Action';
 import { Space } from '../../components/Space';
 import { useCombinedRefs } from '../../utils/react/useCombinedRefs';

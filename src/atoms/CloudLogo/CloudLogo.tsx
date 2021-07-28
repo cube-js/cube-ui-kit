@@ -1,4 +1,4 @@
-import React from 'react';
+import { useRef } from 'react';
 import styled from 'styled-components';
 import { useButton } from '@react-aria/button';
 
@@ -19,7 +19,7 @@ const Button = styled.button((props) => {
 });
 
 export function CloudLogo(props) {
-  let ref = React.useRef();
+  let ref = useRef();
   let { buttonProps } = useButton(props, ref);
 
   return (

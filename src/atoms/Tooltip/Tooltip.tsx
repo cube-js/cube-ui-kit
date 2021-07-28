@@ -1,4 +1,4 @@
-import React, { useContext, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useContext, useImperativeHandle, useRef } from 'react';
 import { mergeProps } from '@react-aria/utils';
 import { createDOMRef } from '@react-spectrum/utils';
 import { TooltipContext } from './context';
@@ -108,5 +108,5 @@ function Tooltip(props, ref) {
 /**
  * Display container for Tooltip content. Has a directional arrow dependent on its placement.
  */
-let _Tooltip = React.forwardRef(Tooltip);
+let _Tooltip = forwardRef(Tooltip);
 export { _Tooltip as Tooltip };

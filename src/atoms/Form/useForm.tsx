@@ -1,4 +1,4 @@
-import React from 'react';
+import { useRef, useState } from 'react';
 import { applyRules } from './validation';
 
 function isEqual(v1, v2) {
@@ -204,8 +204,8 @@ class FormStore {
 }
 
 export function useForm(form, ref, { onSubmit, onValuesChange } = {}) {
-  const formRef = React.useRef();
-  const [, forceUpdate] = React.useState({});
+  const formRef = useRef();
+  const [, forceUpdate] = useState({});
 
   if (!formRef.current) {
     if (form) {

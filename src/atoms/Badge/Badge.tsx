@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 import THEMES from '../../data/themes';
 import { Base } from '../../components/Base';
 import {

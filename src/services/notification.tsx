@@ -1,4 +1,3 @@
-import React from 'react';
 import ReactDOM from 'react-dom';
 import { Notification } from '../molecules/Notification/Notification';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';

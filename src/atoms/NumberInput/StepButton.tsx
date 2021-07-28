@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 import { Button } from '../Button/Button';
 import { CaretDownOutlined, CaretUpOutlined } from '@ant-design/icons';
 import { modAttrs } from '../../utils/react/modAttrs';

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Action } from '../../components/Action';
 import { Card } from '../../atoms/Card/Card';
 import { Block } from '../../components/Block';

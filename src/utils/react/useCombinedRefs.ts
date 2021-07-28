@@ -1,9 +1,9 @@
-import React from 'react';
+import { useRef, useEffect } from 'react';
 
 export function useCombinedRefs(...refs) {
-  const targetRef = React.useRef();
+  const targetRef = useRef();
 
-  React.useEffect(() => {
+  useEffect(() => {
     refs.forEach((ref) => {
       if (!ref) return;
 

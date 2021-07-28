@@ -1,4 +1,3 @@
-import React from 'react';
 import { Block } from '../../components/Block';
 import styled from 'styled-components';
 

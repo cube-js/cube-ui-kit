@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 import { Button } from '../atoms/Button/Button';
 import { useProviderProps } from '../provider';
 import { useFormProps } from '../atoms/Form/Form';

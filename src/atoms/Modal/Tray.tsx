@@ -1,7 +1,7 @@
 import { useDOMRef } from '@react-spectrum/utils';
 import { mergeProps, useViewportSize } from '@react-aria/utils';
 import { Overlay } from './Overlay';
-import React, { forwardRef, useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
 import { Underlay } from './Underlay';
 import { useModal, useOverlay, usePreventScroll } from '@react-aria/overlays';
 import { OVERLAY_WRAPPER_STYLES } from './Modal';

@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 import { Base } from './Base';
 import {
   BASE_STYLES,

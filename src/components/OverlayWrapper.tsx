@@ -1,4 +1,3 @@
-import React from 'react';
 import { Base } from './Base';
 import { getOverlayTransitionCSS } from '../utils/transitions';
 import { CSSTransition } from 'react-transition-group';

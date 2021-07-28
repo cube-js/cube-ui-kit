@@ -1,4 +1,4 @@
-import React, { forwardRef, useContext, useRef } from 'react';
+import { forwardRef, useContext, useRef } from 'react';
 import {
   BLOCK_STYLES,
   COLOR_STYLES,

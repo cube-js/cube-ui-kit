@@ -1,3 +1,3 @@
-import React from 'react';
+import { createContext } from 'react';
 
-export const TooltipContext = React.createContext({});
+export const TooltipContext = createContext({});

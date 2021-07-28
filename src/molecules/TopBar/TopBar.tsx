@@ -1,4 +1,3 @@
-import React from 'react';
 import { Base } from '../../components/Base';
 import { CloudLogo } from '../../atoms/CloudLogo/CloudLogo';
 import { Space } from '../../components/Space';

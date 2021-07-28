@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card } from '../../atoms/Card/Card';
 import { Title } from '../../components/Title';
 import { Text } from '../../components/Text';

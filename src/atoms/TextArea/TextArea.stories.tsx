@@ -1,4 +1,3 @@
-import React from 'react';
 import { TextArea } from './TextArea';
 import { DollarCircleOutlined } from '@ant-design/icons';
 import {

@@ -1,5 +1,5 @@
 import { OpenTransition } from './OpenTransition';
-import React, { useCallback, useState } from 'react';
+import { forwardRef, useCallback, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from '../../provider';
 
@@ -60,5 +60,5 @@ function Overlay(props, ref) {
   return ReactDOM.createPortal(contents, container || document.body);
 }
 
-let _Overlay = React.forwardRef(Overlay);
+let _Overlay = forwardRef(Overlay);
 export { _Overlay as Overlay };

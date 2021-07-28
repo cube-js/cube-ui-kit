@@ -1,4 +1,3 @@
-import React from 'react';
 import { PrismCode } from './PrismCode';
 
 export default {

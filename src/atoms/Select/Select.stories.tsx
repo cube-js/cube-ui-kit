@@ -1,4 +1,3 @@
-import React from 'react';
 import { Select, Item } from './Select';
 import { DollarCircleOutlined } from '@ant-design/icons';
 

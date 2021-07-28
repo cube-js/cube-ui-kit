@@ -1,4 +1,3 @@
-import React from 'react';
 import { Tooltip } from './Tooltip';
 import { Button } from '../Button/Button';
 import { TooltipTrigger } from './TooltipTrigger';

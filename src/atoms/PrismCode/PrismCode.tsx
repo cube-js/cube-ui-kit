@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import Prism from 'prismjs';
 
 export class PrismCode extends Component {

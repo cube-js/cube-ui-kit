@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import { useState, useCallback, useEffect, forwardRef } from 'react';
 import { filterBaseProps } from '../utils/filterBaseProps';
 import { useCombinedRefs } from '../utils/react/useCombinedRefs';
 import { CUSTOM_UNITS, parseStyle } from '../utils/styles';
@@ -27,7 +27,7 @@ export const GridProvider = forwardRef((props, ref) => {
     initialWidth,
   } = props;
 
-  let [width, setWidth] = React.useState(
+  let [width, setWidth] = useState(
     forcedWidth || initialWidth || '100vw',
   );
 
@@ -37,7 +37,7 @@ export const GridProvider = forwardRef((props, ref) => {
 
   gap = parseStyle(gap).values[0] || '0';
 
-  const resizeCallback = React.useCallback(() => {
+  const resizeCallback = useCallback(() => {
     const el = ref && ref.current && ref.current.parentNode;
 
     if (!el) return;
@@ -51,7 +51,7 @@ export const GridProvider = forwardRef((props, ref) => {
     setWidth(`${containerWidth}px`);
   }, [ref, columns, gap]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (forcedWidth) return;
 
     const el = ref && ref.current && ref.current.parentNode;
@@ -73,7 +73,7 @@ export const GridProvider = forwardRef((props, ref) => {
     };
   }, [resizeCallback]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (forcedWidth) return;
 
     resizeCallback();

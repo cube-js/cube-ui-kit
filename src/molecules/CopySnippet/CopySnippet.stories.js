@@ -1,4 +1,3 @@
-import React from 'react';
 import { CopySnippet } from './CopySnippet';
 
 export default {

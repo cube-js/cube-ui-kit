@@ -1,5 +1,5 @@
 import { FocusableProvider } from '@react-aria/focus';
-import React, { useRef } from 'react';
+import { Children, useRef } from 'react';
 import { TooltipContext } from './context';
 import { useOverlayPosition } from '@react-aria/overlays';
 import { useTooltipTrigger } from '@react-aria/tooltip';
@@ -18,7 +18,7 @@ function TooltipTrigger(props) {
     trigger: triggerAction,
   } = props;
 
-  let [trigger, tooltip] = React.Children.toArray(children);
+  let [trigger, tooltip] = Children.toArray(children);
 
   let state = useTooltipTriggerState({
     delay: 1000,

@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 import { useSlotProps } from '../../utils/react/index';
 import { Space } from '../../components/Space';
 

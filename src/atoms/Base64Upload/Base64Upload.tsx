@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { forwardRef, useState } from 'react';
 import { Button } from '../Button/Button';
 import { Block } from '../../components/Block';
 import { Text } from '../../components/Text';
@@ -19,7 +19,7 @@ const DEFAULT_STYLES = {
 };
 
 export const Base64Upload = styled(
-  React.forwardRef(({ type, onInput, ...props }, ref) => {
+  forwardRef(({ type, onInput, ...props }, ref) => {
     const styles = extractStyles(props, POSITION_STYLES, DEFAULT_STYLES);
     const [file, setFile] = useState();
     const [error, setError] = useState('');

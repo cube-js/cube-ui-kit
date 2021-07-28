@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 import { Base } from './Base';
 import { OUTER_STYLES } from '../styles/list';
 import { extractStyles } from '../utils/styles';
