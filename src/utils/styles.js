@@ -609,10 +609,10 @@ export function extendStyles(defaultStyles, newStyles) {
  */
 export function extractStyles(
   props,
-  styleList: string[],
+  styleList,
   defaultStyles = null,
   propMap = null,
-  ignoreList: string[] = [],
+  ignoreList = [],
 ) {
   const styles = {
     ...defaultStyles,

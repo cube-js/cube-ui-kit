@@ -84,9 +84,9 @@ export default [
     input: 'src/index.ts',
     external: ['react', 'react-dom', 'styled-components'],
     output: [{
-      // file: pkg.module,
+      file: pkg.module,
       name: 'Cube Cloud UIKit',
-      dir: './dist/',
+      // dir: './dist/',
       format: 'es',
       sourcemap: true,
     }],

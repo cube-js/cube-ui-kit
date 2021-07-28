@@ -1,8 +1,8 @@
-import {StyleValue} from "../components/types";
+import { NuStyleValue } from './types';
 
 export const BASE_STYLES = ['display'];
 export type BaseStyleProps = {
-  [key in 'display']?: StyleValue;
+  [key in 'display']?: NuStyleValue;
 };
 
 export const POSITION_STYLES = [
@@ -40,7 +40,7 @@ export const TEXT_STYLES = [
   'font',
 ];
 export type TextStyleProps = {
-  [key in 'size' | 'textAlign' | 'textTransform' | 'fontWeight' | 'fontStyle' | 'font']?: StyleValue;
+  [key in 'size' | 'textAlign' | 'textTransform' | 'fontWeight' | 'fontStyle' | 'font']?: NuStyleValue;
 };
 
 export const DIMENSION_STYLES = ['width', 'height', 'basis'];
