@@ -1,4 +1,4 @@
-import { dimensionStyle } from './dimension.ts';
+import { dimensionStyle } from './dimension';
 
 const dimension = dimensionStyle('height');
 

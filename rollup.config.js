@@ -1,23 +1,23 @@
 import { terser } from 'rollup-plugin-terser';
 import visualizer from 'rollup-plugin-visualizer';
-import babel from '@rollup/plugin-babel';
+// import babel from '@rollup/plugin-babel';
 import replace from 'rollup-plugin-replace';
 import localResolve from 'rollup-plugin-local-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import postcss from 'rollup-plugin-postcss';
 import typescript from '@rollup/plugin-typescript';
+
 import pkg from './package.json';
 
-const VARIABLES = require('./src/less-variables');
+const VARIABLES = require('./less-variables');
 
 const LESS_VARIABLES = {};
 
 // Create LESS variable map.
-Object.keys(VARIABLES)
-  .forEach((key) => {
-    LESS_VARIABLES[`@${key}`] = VARIABLES[key];
-  });
+Object.keys(VARIABLES).forEach((key) => {
+  LESS_VARIABLES[`@${key}`] = VARIABLES[key];
+});
 
 const DEV = !!process.env.ROLLUP_WATCH;
 const ENV = DEV ? 'development' : 'production';
@@ -38,7 +38,6 @@ const plugins = [
   }),
   commonjs(),
   typescript({
-    typescript: require('typescript'),
     tsconfig: 'tsconfig.json',
   }),
   localResolve({
@@ -51,13 +50,14 @@ const plugins = [
 export default [
   {
     input: 'src/index.ts',
-    output: [{
-      file: pkg.module,
-      name: 'Cube Cloud UIKit',
-      dir: 'dist',
-      format: 'es',
-      sourcemap: true,
-    }],
+    output: [
+      {
+        file: pkg.module,
+        name: 'Cube Cloud UIKit',
+        format: 'es',
+        sourcemap: true,
+      },
+    ],
     inlineDynamicImports: true,
     plugins,
   },

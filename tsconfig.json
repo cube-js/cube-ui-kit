@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
-    "tsBuildInfoFile": "dist/.tsbuildinfo",
     "module": "esnext",
-    "lib": [
-      "dom",
-      "esnext"
-    ],
+    "lib": ["dom", "esnext"],
     "declaration": true,
     "declarationDir": "dist",
     "noEmitOnError": false,
@@ -24,11 +20,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noImplicitAny": false,
-    "incremental": true,
     "target": "es5",
     "noEmit": true
   },
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["src/**/*.stories.js"]
 }
