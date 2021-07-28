@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 // https://github.com/marcj/css-element-queries/blob/master/src/ResizeSensor.js
 // https://github.com/Semantic-Org/Semantic-UI/issues/3855
 // https://github.com/marcj/css-element-queries/issues/257

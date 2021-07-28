@@ -32,48 +32,17 @@ const plugins = [
       less: null,
     },
   }),
-  // babel({
-  //   extensions: ['.js', '.jsx', '.ts', '.tsx'],
-  //   presets: [
-  //     '@babel/react',
-  //     '@babel/preset-typescript',
-  //     [
-  //       '@babel/preset-env',
-  //       {
-  //         shippedProposals: true,
-  //         useBuiltIns: 'usage',
-  //         corejs: 3,
-  //       },
-  //     ],
-  //   ],
-  //   plugins: [
-  //     [
-  //       '@babel/plugin-transform-runtime',
-  //       {
-  //         corejs: false,
-  //         helpers: true,
-  //         regenerator: true,
-  //         useESModules: false,
-  //       },
-  //     ],
-  //     '@babel/plugin-proposal-object-rest-spread',
-  //     '@babel/plugin-syntax-dynamic-import',
-  //     'transform-react-remove-prop-types',
-  //   ],
-  //   exclude: ['node_modules/**', /\/core-js\//, /\/dist\//],
-  //   babelHelpers: 'runtime',
-  // }),
   replace({
     'process.env.NODE_ENV': JSON.stringify(ENV),
     'process.env.APP_VERSION': VERSION,
   }),
   commonjs(),
-  localResolve({
-    extensions: ['.jsx', '.js', '.tsx', '.ts'],
-  }),
   typescript({
     typescript: require('typescript'),
     tsconfig: 'tsconfig.json',
+  }),
+  localResolve({
+    extensions: ['.jsx', '.js', '.tsx', '.ts'],
   }),
   json(),
   ENV === 'development' ? undefined : terser(),
@@ -82,60 +51,59 @@ const plugins = [
 export default [
   {
     input: 'src/index.ts',
-    external: ['react', 'react-dom', 'styled-components'],
     output: [{
       file: pkg.module,
       name: 'Cube Cloud UIKit',
-      // dir: './dist/',
+      dir: 'dist',
       format: 'es',
       sourcemap: true,
     }],
     inlineDynamicImports: true,
     plugins,
   },
-  {
-    input: 'src/antd.js',
-    output: [{
-      name: 'Cube Cloud AntD',
-      dir: './dist/',
-      format: 'es',
-    }],
-    plugins: [
-      babel({
-        presets: [
-          '@babel/react',
-        ],
-        plugins: [
-          '@babel/plugin-proposal-object-rest-spread',
-          '@babel/plugin-syntax-dynamic-import',
-          'transform-react-remove-prop-types',
-          // ['import', { libraryName: 'antd', style: true }],
-        ],
-        exclude: /node_modules/,
-        babelHelpers: 'bundled',
-      }),
-      replace({
-        'process.env.NODE_ENV': JSON.stringify(ENV),
-        'process.env.APP_VERSION': VERSION,
-      }),
-      localResolve({
-        extensions: ['.jsx', '.js'],
-        preferBuiltins: false,
-      }),
-      commonjs(),
-      json(),
-      postcss({
-        minimize: true,
-        use: {
-          sass: null,
-          stylus: null,
-          less: {
-            javascriptEnabled: true,
-            modifyVars: LESS_VARIABLES,
-          }
-        },
-      }),
-      ENV === 'development' ? undefined : terser(),
-    ]
-  }
+  // {
+  //   input: 'src/antd.js',
+  //   output: [{
+  //     name: 'Cube Cloud AntD',
+  //     dir: './dist/',
+  //     format: 'es',
+  //   }],
+  //   plugins: [
+  //     babel({
+  //       presets: [
+  //         '@babel/react',
+  //       ],
+  //       plugins: [
+  //         '@babel/plugin-proposal-object-rest-spread',
+  //         '@babel/plugin-syntax-dynamic-import',
+  //         'transform-react-remove-prop-types',
+  //         // ['import', { libraryName: 'antd', style: true }],
+  //       ],
+  //       exclude: /node_modules/,
+  //       babelHelpers: 'bundled',
+  //     }),
+  //     replace({
+  //       'process.env.NODE_ENV': JSON.stringify(ENV),
+  //       'process.env.APP_VERSION': VERSION,
+  //     }),
+  //     localResolve({
+  //       extensions: ['.jsx', '.js'],
+  //       preferBuiltins: false,
+  //     }),
+  //     commonjs(),
+  //     json(),
+  //     postcss({
+  //       minimize: true,
+  //       use: {
+  //         sass: null,
+  //         stylus: null,
+  //         less: {
+  //           javascriptEnabled: true,
+  //           modifyVars: LESS_VARIABLES,
+  //         }
+  //       },
+  //     }),
+  //     ENV === 'development' ? undefined : terser(),
+  //   ]
+  // }
 ];
