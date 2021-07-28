@@ -26,6 +26,7 @@
   "devDependencies": {
     "@ant-design/icons": "^4.4.0",
     "@babel/cli": "^7.12.8",
+    "@babel/plugin-proposal-private-property-in-object": "^7.14.5",
     "@open-wc/testing": "^2.5.32",
     "@react-aria/button": "^3.3.2",
     "@react-aria/checkbox": "^3.2.2",

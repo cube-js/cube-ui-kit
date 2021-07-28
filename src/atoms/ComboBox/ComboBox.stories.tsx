@@ -1,5 +1,4 @@
-import { ComboBox } from './ComboBox';
-import { Item } from '../Select/Select';
+import { ComboBox, Item } from '../../index';
 import { DollarCircleOutlined } from '@ant-design/icons';
 
 export default {

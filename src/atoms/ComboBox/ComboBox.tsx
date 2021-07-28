@@ -18,9 +18,8 @@ import { extractStyles } from '../../utils/styles';
 import { BLOCK_STYLES, OUTER_STYLES } from '../../styles/list';
 import { useFocus } from '../../utils/interactions';
 import { useContextStyles } from '../../providers/Styles';
-import { modAttrs } from '../../utils/react/modAttrs';
+import { modAttrs, useCombinedRefs } from '../../utils/react';
 import { FieldWrapper } from '../../components/FieldWrapper';
-import { useCombinedRefs } from '../../utils/react/useCombinedRefs';
 import { ListBoxPopup } from '../Select/Select';
 import { Prefix } from '../../components/Prefix';
 import { Suffix } from '../../components/Suffix';
@@ -103,6 +102,7 @@ function ComboBox(props, ref) {
     value,
     offset = 8,
     inputStyles,
+    optionStyles,
     triggerStyles,
     suffix,
     disallowEmptySelection,
@@ -291,6 +291,7 @@ function ComboBox(props, ref) {
           state={state}
           disallowEmptySelection={disallowEmptySelection}
           listBoxStyles={listBoxStyles}
+          optionStyles={optionStyles}
           selectionMode={selectionMode}
         />
       </OverlayWrapper>

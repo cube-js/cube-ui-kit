@@ -1,4 +1,4 @@
-import { Select, Item } from './Select';
+import { Select } from '../../index';
 import { DollarCircleOutlined } from '@ant-design/icons';
 
 export default {
@@ -84,6 +84,8 @@ export default {
   },
 };
 
+const options = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'violet'];
+
 const Template = ({
   icon,
   labelPosition,
@@ -110,13 +112,9 @@ const Template = ({
       type={type}
       onChange={(query) => console.log('change', query)}
     >
-      <Item key="red">Red</Item>
-      <Item key="orange">Orange</Item>
-      <Item key="yellow">Yellow</Item>
-      <Item key="green">Green</Item>
-      <Item key="blue">Blue</Item>
-      <Item key="purple">Purple</Item>
-      <Item key="violet">Violet</Item>
+      {options.map(option => {
+        return <Select.Item key={option}>{option}</Select.Item>
+      })}
     </Select>
   );
 };

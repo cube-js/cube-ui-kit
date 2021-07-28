@@ -52,14 +52,9 @@ type NoType = false | null | undefined;
 
 export interface AllStyles {
   [key: string]: NuStyleValue,
-  /** Set the background color of the element **/
+  /** Set the background color of the element */
   fill?: `#${NamedColor | `${NamedColor}${OpaquePercentage}`}` | NoType,
-  /** Set the text (current) color of the element **/
+  /** Set the text (current) color of the element */
   color?: `#${NamedColor | `${NamedColor}${OpaquePercentage}`}` | NoType,
   border?: NoType,
-}
-
-const styles: AllStyles = {
-  fill: '#purple.3',
-  other: '234',
 }

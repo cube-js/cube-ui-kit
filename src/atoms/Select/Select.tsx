@@ -405,12 +405,12 @@ export function ListBoxPopup({
           {...mergeProps(listBoxProps, otherProps)}
           ref={listBoxRef}
         >
-          {[...state.collection].map((item) => (
+          {Array.from(state.collection).map((item) => (
             <Option
               key={item.key}
               item={item}
               state={state}
-              optionStyles={optionStyles}
+              styles={optionStyles}
               shouldUseVirtualFocus={shouldUseVirtualFocus}
             />
           ))}
@@ -462,6 +462,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
         disabled: isDisabled,
       }}
       styles={styles}
+      key={item.key}
     >
       {item.rendered}
     </Base>
