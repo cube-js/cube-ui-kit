@@ -1,4 +1,17 @@
-import { DIRECTIONS, filterMods, parseStyle } from '../utils/styles.js';
+import { DIRECTIONS, filterMods, parseStyle } from '../utils/styles';
+
+const BORDER_STYLES = [
+  'none',
+  'hidden',
+  'dotted',
+  'dashed',
+  'solid',
+  'double',
+  'groove',
+  'ridge',
+  'inset',
+  'outset',
+];
 
 /**
  *
@@ -13,7 +26,7 @@ export function borderStyle({ border }) {
   const { values, mods, color } = parseStyle(String(border));
 
   const directions = filterMods(mods, DIRECTIONS);
-  const typeMods = mods.filter((m) => !directions.includes(m));
+  const typeMods = filterMods(mods, BORDER_STYLES);
 
   const value = values[0] || 'var(--border-width)';
   const type = typeMods[0] || 'solid';

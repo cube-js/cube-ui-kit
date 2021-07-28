@@ -1,15 +1,15 @@
 import { useDOMRef } from '@react-spectrum/utils';
 import { Provider, useProviderProps } from '../../provider';
-import React, { useContext, useEffect } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 import { Base } from '../../components/Base';
-import { extractStyles } from '../../utils/styles.js';
+import { extractStyles } from '../../utils/styles';
 import { CONTAINER_STYLES } from '../../styles/list';
 import { filterBaseProps } from '../../utils/filterBaseProps';
 import { useForm } from './useForm';
-import { useCombinedRefs } from '../../utils/react';
+import { useCombinedRefs } from '../../utils/react/index';
 import { timeout } from '../../utils/promise';
 
-export const FormContext = React.createContext({});
+export const FormContext = createContext({});
 
 export function useFormProps(props) {
   const ctx = useContext(FormContext);

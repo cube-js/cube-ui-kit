@@ -9,7 +9,7 @@ import { Title } from './components/Title';
 import { Paragraph } from './components/Paragraph';
 import { TextArea } from './atoms/TextArea/TextArea';
 
-Form.Item = Field;
+// Form.Item = Field;
 
 // generic components
 export { Base } from './components/Base';
@@ -54,7 +54,7 @@ export { ComboBox } from './atoms/ComboBox/ComboBox';
 export { Select, Item } from './atoms/Select/Select';
 export { NumberInput } from './atoms/NumberInput/NumberInput';
 export { Avatar } from './atoms/Avatar/Avatar';
-export { Dialog, DialogTrigger, DialogContainer } from './atoms/Dialog';
+export { Dialog, DialogTrigger, DialogContainer } from './atoms/Dialog/index';
 export { Tooltip } from './atoms/Tooltip/Tooltip';
 export { TooltipTrigger } from './atoms/Tooltip/TooltipTrigger';
 export { ButtonGroup } from './atoms/ButtonGroup/ButtonGroup';
@@ -91,9 +91,9 @@ export { Provider, useProviderProps } from './provider';
 
 const Input = TextInput;
 
-Input.Text = TextInput;
-Input.Password = PasswordInput;
-Input.Number = NumberInput;
-Input.TextArea = TextArea;
+// Input.Text = TextInput;
+// Input.Password = PasswordInput;
+// Input.Number = NumberInput;
+// Input.TextArea = TextArea;
 
 export { Input };

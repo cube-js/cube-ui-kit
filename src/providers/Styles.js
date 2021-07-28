@@ -1,6 +1,6 @@
 import React, { createContext, useContext } from 'react';
 
-export const StyleContext = createContext({});
+export const StyleContext = createContext<any>({});
 
 export function StyleProvider({ children, ...props }) {
   const styles = Object.assign({}, useContext(StyleContext));
@@ -13,9 +13,8 @@ export function StyleProvider({ children, ...props }) {
     }
   });
 
-  return (
-    <StyleContext.Provider value={styles}>{children}</StyleContext.Provider>
-  );
+  // @ts-ignore
+  return <StyleContext.Provider value={styles}>{children}</StyleContext.Provider>;
 }
 
 export function useContextStyles(name, props) {

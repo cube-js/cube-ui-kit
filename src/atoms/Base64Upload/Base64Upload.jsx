@@ -3,7 +3,7 @@ import { Button } from '../Button/Button';
 import { Block } from '../../components/Block';
 import { Text } from '../../components/Text';
 import styled from 'styled-components';
-import { extractStyles } from '../../utils/styles.js';
+import { extractStyles } from '../../utils/styles';
 import { POSITION_STYLES } from '../../styles/list';
 import { filterBaseProps } from '../../utils/filterBaseProps';
 

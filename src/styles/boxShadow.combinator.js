@@ -1,4 +1,4 @@
-import { isNoValue } from '../utils/styles.js';
+import { isNoValue } from '../utils/styles';
 
 export function boxShadowCombinator(styles) {
   const values = boxShadowCombinator.__lookupStyles.reduce((list, style) => {

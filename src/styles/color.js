@@ -1,4 +1,4 @@
-import { parseColor } from '../utils/styles.js';
+import { parseColor } from '../utils/styles';
 
 export function colorStyle({ color }) {
   if (!color) return '';

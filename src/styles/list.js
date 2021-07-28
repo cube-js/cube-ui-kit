@@ -1,4 +1,9 @@
+import {StyleValue} from "../components/types";
+
 export const BASE_STYLES = ['display'];
+export type BaseStyleProps = {
+  [key in 'display']?: StyleValue;
+};
 
 export const POSITION_STYLES = [
   'area',
@@ -34,6 +39,9 @@ export const TEXT_STYLES = [
   'fontStyle',
   'font',
 ];
+export type TextStyleProps = {
+  [key in 'size' | 'textAlign' | 'textTransform' | 'fontWeight' | 'fontStyle' | 'font']?: StyleValue;
+};
 
 export const DIMENSION_STYLES = ['width', 'height', 'basis'];
 

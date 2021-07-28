@@ -1,4 +1,4 @@
-import { parseStyle } from '../utils/styles.js';
+import { parseStyle } from '../utils/styles';
 
 export function gapStyle({ display, flow, gap }) {
   if (!gap) return '';

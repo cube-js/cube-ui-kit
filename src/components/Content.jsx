@@ -1,9 +1,9 @@
 import React, { forwardRef } from 'react';
 import { CONTAINER_STYLES, TEXT_STYLES } from '../styles/list';
-import { extractStyles } from '../utils/styles.js';
+import { extractStyles } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
 import { Base } from './Base';
-import { useSlotProps } from '../utils/react';
+import { useSlotProps } from '../utils/react/index';
 
 const DEFAULT_STYLES = {
   area: 'content',

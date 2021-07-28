@@ -1,4 +1,4 @@
-import { parseStyle } from '../utils/styles.js';
+import { parseStyle } from '../utils/styles';
 
 export function outlineStyle({ outline }) {
   if (!outline && outline !== 0) return '';

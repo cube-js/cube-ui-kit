@@ -1,6 +1,6 @@
 import React, { Children, cloneElement, useEffect, useState } from 'react';
 import { useFormProps } from './Form';
-import { mergeProps } from '../../utils/react';
+import { mergeProps } from '../../utils/react/index';
 
 const TRIGGERS = ['onBlur', 'onChange', 'onSubmit'];
 const ID_MAP = {};

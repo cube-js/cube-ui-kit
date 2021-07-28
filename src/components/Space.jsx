@@ -8,7 +8,7 @@ import {
   FLOW_STYLES,
   POSITION_STYLES,
 } from '../styles/list';
-import { extractStyles } from '../utils/styles.js';
+import { extractStyles } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
 
 const DEFAULT_STYLES = {

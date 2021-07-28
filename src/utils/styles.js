@@ -36,7 +36,7 @@
  */
 
 /**
- * @typedef {Array<NuComputeUnit>|Number} NuComputeUnit
+ * @typedef {Array<Number>|Number} NuComputeUnit
  */
 
 /**
@@ -63,11 +63,13 @@
  * @typedef {Object<string,NuStyleStateList>} NuStyleStateListMap
  */
 
-import { getCombinations } from './index.js';
+import { getCombinations } from './index';
 
 export const NO_VALUES = [false, 'n', 'no', 'false'];
 export const YES_VALUES = [true, 'y', 'yes', 'true'];
+
 const devMode = process.env.NODE_ENV !== 'production';
+
 export const CUSTOM_UNITS = {
   r: 'var(--radius)',
   bw: 'var(--border-width)',
@@ -80,7 +82,9 @@ export const CUSTOM_UNITS = {
   // global setting
   wh: 'var(--window-height)',
 };
+
 export const DIRECTIONS = ['top', 'right', 'bottom', 'left'];
+
 const COLOR_FUNCS = ['rgb', 'rgba'];
 const IGNORE_MODS = [
   'auto',
@@ -90,6 +94,7 @@ const IGNORE_MODS = [
   'subgrid',
   'initial',
 ];
+
 const ATTR_REGEXP =
   /("[^"]*")|('[^']*')|([a-z]+\()|(#[a-z0-9.-]{2,}(?![a-f0-9[-]))|(--[a-z0-9-]+|@[a-z0-9-]+)|([a-z][a-z0-9-]*)|(([0-9]+(?![0-9.])|[0-9-.]{2,}|[0-9-]{2,}|[0-9.-]{3,})([a-z%]{0,3}))|([*\/+-])|([()])|(,)/gi;
 const ATTR_CACHE = new Map();
@@ -604,10 +609,10 @@ export function extendStyles(defaultStyles, newStyles) {
  */
 export function extractStyles(
   props,
-  styleList,
-  defaultStyles,
-  propMap,
-  ignoreList = [],
+  styleList: string[],
+  defaultStyles = null,
+  propMap = null,
+  ignoreList: string[] = [],
 ) {
   const styles = {
     ...defaultStyles,

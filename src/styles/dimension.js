@@ -1,4 +1,4 @@
-import { parseStyle, transferMods } from '../utils/styles.js';
+import { parseStyle, transferMods } from '../utils/styles';
 
 const DEFAULT_MIN_SIZE = 'var(--gap)';
 const DEFAULT_MAX_SIZE = '100%';

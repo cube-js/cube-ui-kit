@@ -1,4 +1,4 @@
-import { parseStyle } from '../utils/styles.js';
+import { parseStyle } from '../utils/styles';
 
 export function shadowStyle({ shadow }) {
   if (!shadow) return '';

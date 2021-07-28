@@ -11,7 +11,7 @@ import { Base } from '../../components/Base';
 import { CloseOutlined } from '@ant-design/icons';
 import { extractStyles } from '../../utils/styles';
 import { BLOCK_STYLES, DIMENSION_STYLES } from '../../styles/list';
-import { SlotProvider } from '../../utils/react';
+import { SlotProvider } from '../../utils/react/index';
 import { useContextStyles } from '../../providers/Styles';
 
 const STYLES_LIST = [...DIMENSION_STYLES, ...BLOCK_STYLES];

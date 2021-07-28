@@ -67,6 +67,7 @@ const PROPS = {
   'pink-9-color': color('pink', 0.1),
 
   'disabled-color': color('dark-01', 0.25),
+  'disabled-text-color': color('dark-01', 0.25),
   'disabled-bg': color('dark-05', 0.2),
   'disabled-bg-color': color('dark-05', 0.2),
 

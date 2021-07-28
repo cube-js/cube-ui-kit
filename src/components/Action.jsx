@@ -13,9 +13,9 @@ import { useHover } from '@react-aria/interactions';
 import { useFocus } from '../utils/interactions';
 import { useButton } from '@react-aria/button';
 import { mergeProps } from '@react-aria/utils';
-import { useCombinedRefs } from '../utils/react';
+import { useCombinedRefs } from '../utils/react/index';
 import { propDeprecationWarning } from '../utils/warnings';
-import { extractStyles } from '../utils/styles.js';
+import { extractStyles } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
 import { UIKitContext } from '../provider';
 

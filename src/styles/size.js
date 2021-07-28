@@ -1,4 +1,4 @@
-import { parseStyle } from '../utils/styles.js';
+import { parseStyle } from '../utils/styles';
 
 export function sizeStyle({ size }) {
   if (!size) return '';

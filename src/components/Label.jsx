@@ -6,7 +6,7 @@ import { CONTAINER_STYLES } from '../styles/list';
 import { Base } from './Base';
 import { useContextStyles } from '../providers/Styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
-import { modAttrs } from '../utils/react';
+import { modAttrs } from '../utils/react/index';
 
 const REQUIRED_ICON = (
   <svg

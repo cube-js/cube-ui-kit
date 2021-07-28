@@ -1,7 +1,7 @@
 import React, { forwardRef, useEffect } from 'react';
 import { Base } from './Base';
 import { CONTAINER_STYLES } from '../styles/list';
-import { extractStyles, parseStyle } from '../utils/styles.js';
+import { extractStyles, parseStyle } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
 import { useCombinedRefs } from '../utils/react/useCombinedRefs';
 

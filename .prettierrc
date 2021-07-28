@@ -1,4 +1,12 @@
 {
   "singleQuote": true,
   "trailingComma": "all",
+  "space-in-brackets": ["error", "always", {
+    "singleValue": true,
+    "objectsInArrays": true,
+    "arraysInArrays": false,
+    "arraysInObjects": false,
+    "objectsInObjects": true,
+    "propertyName": true
+  }]
 }

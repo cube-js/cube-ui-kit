@@ -1,4 +1,4 @@
-import { parseStyle, DIRECTIONS, filterMods } from '../utils/styles.js';
+import { parseStyle, DIRECTIONS, filterMods } from '../utils/styles';
 
 export function paddingStyle({ padding }) {
   if (typeof padding === 'number') {

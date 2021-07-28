@@ -1,4 +1,4 @@
-import React, { forwardRef, useRef } from 'react';
+import { forwardRef, useRef } from 'react';
 import { TextInputBase } from './TextInputBase';
 import { useProviderProps } from '../../provider';
 import { useTextField } from '@react-aria/textfield';

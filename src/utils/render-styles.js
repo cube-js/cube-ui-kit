@@ -1,13 +1,13 @@
-import { mediaWrapper, normalizeStyleZones } from './responsive.js';
+import { mediaWrapper, normalizeStyleZones } from './responsive.ts';
 import {
   getRgbValuesFromRgbaString,
   hexToRgb,
   parseColor,
   strToRgb,
   styleHandlerCacheWrapper,
-} from './styles.js';
-import { parseStyle } from './styles.js';
-import { toSnakeCase } from './string.js';
+} from './styles';
+import { parseStyle } from './styles';
+import { toSnakeCase } from './string.ts';
 
 /**
  * Props level cache for `renderStyles` function.

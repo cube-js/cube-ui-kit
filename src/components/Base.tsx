@@ -1,10 +1,11 @@
-import React, { useContext, forwardRef } from 'react';
+import React, { forwardRef, PropsWithChildren, useContext } from 'react';
 import styled from 'styled-components';
 import { ResponsiveContext } from '../providers/Responsive';
 import { pointsToZones } from '../utils/responsive';
 import { STYLE_HANDLER_MAP } from '../styles';
 import { renderStyles } from '../utils/render-styles';
 import { modAttrs } from '../utils/react';
+import { BaseProps } from './types';
 
 const INLINE_MAP = {
   block: 'inline',
@@ -17,6 +18,7 @@ const BaseElement = styled.div(({ css }) => css);
 export const Base = forwardRef(
   (
     {
+      as,
       styles,
       breakpoints,
       block,
@@ -28,7 +30,7 @@ export const Base = forwardRef(
       qaVal,
       css,
       ...props
-    },
+    }: PropsWithChildren<BaseProps>,
     ref,
   ) => {
     styles = {
@@ -41,7 +43,9 @@ export const Base = forwardRef(
     }
 
     if (inline) {
-      styles.display = INLINE_MAP[styles.display || 'block'];
+      styles.display = typeof styles.display === 'string' ?
+        INLINE_MAP[styles.display || 'block'] :
+        'block';
     }
 
     const contextBreakpoints = useContext(ResponsiveContext);
@@ -63,6 +67,7 @@ export const Base = forwardRef(
 
     return (
       <BaseElement
+        as={as}
         data-qa={qa}
         data-qaval={qaVal}
         {...props}
