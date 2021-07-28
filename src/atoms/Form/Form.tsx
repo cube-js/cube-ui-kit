@@ -1,12 +1,12 @@
 import { useDOMRef } from '@react-spectrum/utils';
 import { Provider, useProviderProps } from '../../provider';
-import { createContext, useContext, useEffect } from 'react';
+import { createContext, useContext, useEffect, forwardRef } from 'react';
 import { Base } from '../../components/Base';
 import { extractStyles } from '../../utils/styles';
 import { CONTAINER_STYLES } from '../../styles/list';
 import { filterBaseProps } from '../../utils/filterBaseProps';
 import { useForm } from './useForm';
-import { useCombinedRefs } from '../../utils/react/index';
+import { useCombinedRefs } from '../../utils/react';
 import { timeout } from '../../utils/promise';
 
 export const FormContext = createContext({});
@@ -122,7 +122,7 @@ function Form(props, ref) {
       styles={styles}
       ref={domRef}
       mods={{
-        'has-sider': labelPosition === 'side' ? '' : null,
+        'has-sider': labelPosition === 'side',
       }}
     >
       <FormContext.Provider value={ctx}>
@@ -144,7 +144,5 @@ function Form(props, ref) {
 /**
  * Forms allow users to enter data that can be submitted while providing alignment and styling for form fields.
  */
-const _Form = React.forwardRef(Form);
+const _Form = Object.assign(forwardRef(Form), { useForm });
 export { _Form as Form };
-
-_Form.useForm = useForm;

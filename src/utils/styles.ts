@@ -1,67 +1,48 @@
-/**
- * @typedef {Array<NuComputeModel|string|number>} NuComputeModel
- */
+export type NuResponsiveStyleValue<T = string> = NuStyleValue<T> | NuStyleValue<T>[];
 
-/**
- * @typedef {Array<string,string|Array>} NuCSSMap
- */
+export type NuStyleValue<T = string> =
+  | number
+  | null
+  | boolean
+  | undefined
+  | T;
 
-/**
- * @typedef {function} NuStyleHandler
- * @property {Array<String>} __styleLookup
- */
+export type NuComputeModel = string | number;
 
-/**
- * @typedef NuStyleStateData
- * @property {NuComputeModel} model
- * @property {Array<string>} [tokens]
- * @property {NuStyleValue} value
- * @property {string[]} mods
- */
+export type NuCSSMap = { [key: string]: string | string[] };
 
-/**
- * @typedef {NuStyleStateData[]} NuStyleStateDataList
- */
+export type NuStyleHandler = ((value: NuStyleValue) => NuCSSMap | NuCSSMap[]) & { lookupStyles: string[] };
 
-/**
- * @typedef {Object<string,NuStyleStateDataList>} NuStyleStateDataListMap
- */
+export interface NuStyleStateData {
+  model: NuComputeModel
+  tokens?: string[]
+  value: NuResponsiveStyleValue
+  mods: string[]
+}
 
-/**
- * An object that describes a relation between specific modifiers and style value.
- * @typedef NuStyleState
- * @property {string[]} mods
- * @property {string[]} [notMods]
- * @property {NuStyleValue} value
- */
+export type NuStyleStateDataList = NuStyleStateData[];
 
-/**
- * @typedef {Array<Number>|Number} NuComputeUnit
- */
+export type NuStyleStateDataListMap = { [key: string]: NuStyleStateDataList };
 
-/**
- * @typedef {NuStyleState[]} NuStyleStateList
- */
+/** An object that describes a relation between specific modifiers and style value. **/
+export interface NuStyleState {
+  mods: string[]
+  notMods: string[]
+  value: NuResponsiveStyleValue
+}
 
-/**
- * @typedef {string|boolean|null|undefined} NuStyleValue
- */
+export type NuComputeUnit = number[] | number;
 
-/**
- * @typedef {Object<string,NuStyleValue>} NuStyleMap
- */
+export type NuStyleStateList = NuStyleState[];
 
-/**
- * @typedef {Object<string,NuStyleState>} NuStyleStateMap
- */
+export type NuStyleMap = { [key: string]: NuResponsiveStyleValue };
 
-/**
- * @typedef {NuStyleStateMap[]} NuStyleStateMapList
- */
+export type NuStyleStateMap = { [key: string]: NuStyleState };
 
-/**
- * @typedef {Object<string,NuStyleStateList>} NuStyleStateListMap
- */
+export type NuStyleStateMapList = NuStyleStateMap[];
+
+export type NuStyleStateListMap = { [key: string]: NuStyleStateList }
+
 
 import { getCombinations } from './index';
 
@@ -610,8 +591,8 @@ export function extendStyles(defaultStyles, newStyles) {
 export function extractStyles(
   props,
   styleList,
-  defaultStyles = null,
-  propMap = null,
+  defaultStyles?: { [key: string]: NuStyleValue },
+  propMap?: { [key: string]: string },
   ignoreList = [],
 ) {
   const styles = {
@@ -1142,7 +1123,7 @@ export function computeState(computeModel, valueMap) {
   return !!func(a, b);
 }
 
-export function cacheWrapper(handler, limit) {
+export function cacheWrapper(handler, limit = 1000) {
   let cache = {};
   let count = 0;
 

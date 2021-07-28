@@ -1,6 +1,5 @@
 import { terser } from 'rollup-plugin-terser';
 import visualizer from 'rollup-plugin-visualizer';
-// import babel from '@rollup/plugin-babel';
 import replace from 'rollup-plugin-replace';
 import localResolve from 'rollup-plugin-local-resolve';
 import commonjs from '@rollup/plugin-commonjs';
@@ -61,49 +60,36 @@ export default [
     inlineDynamicImports: true,
     plugins,
   },
-  // {
-  //   input: 'src/antd.js',
-  //   output: [{
-  //     name: 'Cube Cloud AntD',
-  //     dir: './dist/',
-  //     format: 'es',
-  //   }],
-  //   plugins: [
-  //     babel({
-  //       presets: [
-  //         '@babel/react',
-  //       ],
-  //       plugins: [
-  //         '@babel/plugin-proposal-object-rest-spread',
-  //         '@babel/plugin-syntax-dynamic-import',
-  //         'transform-react-remove-prop-types',
-  //         // ['import', { libraryName: 'antd', style: true }],
-  //       ],
-  //       exclude: /node_modules/,
-  //       babelHelpers: 'bundled',
-  //     }),
-  //     replace({
-  //       'process.env.NODE_ENV': JSON.stringify(ENV),
-  //       'process.env.APP_VERSION': VERSION,
-  //     }),
-  //     localResolve({
-  //       extensions: ['.jsx', '.js'],
-  //       preferBuiltins: false,
-  //     }),
-  //     commonjs(),
-  //     json(),
-  //     postcss({
-  //       minimize: true,
-  //       use: {
-  //         sass: null,
-  //         stylus: null,
-  //         less: {
-  //           javascriptEnabled: true,
-  //           modifyVars: LESS_VARIABLES,
-  //         }
-  //       },
-  //     }),
-  //     ENV === 'development' ? undefined : terser(),
-  //   ]
-  // }
+  {
+    input: 'src/antd.js',
+    output: [{
+      name: 'Cube Cloud AntD',
+      dir: './dist/',
+      format: 'es',
+    }],
+    plugins: [
+      replace({
+        'process.env.NODE_ENV': JSON.stringify(ENV),
+        'process.env.APP_VERSION': VERSION,
+      }),
+      localResolve({
+        extensions: ['.jsx', '.js'],
+        preferBuiltins: false,
+      }),
+      commonjs(),
+      json(),
+      postcss({
+        minimize: true,
+        use: {
+          sass: null,
+          stylus: null,
+          less: {
+            javascriptEnabled: true,
+            modifyVars: LESS_VARIABLES,
+          }
+        },
+      }),
+      ENV === 'development' ? undefined : terser(),
+    ]
+  }
 ];

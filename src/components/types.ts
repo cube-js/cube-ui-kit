@@ -1,7 +1,7 @@
-import { HTMLAttributes } from 'react';
+import { AllHTMLAttributes } from 'react';
 import { AllStyles } from '../styles/types';
 
-export interface BaseProps extends HTMLAttributes<Element> {
+export interface BaseProps extends AllHTMLAttributes<Element> {
   /** QA ID for e2e testing **/
   qa?: string,
   /** QA value for e2e testing **/
@@ -17,7 +17,7 @@ export interface BaseProps extends HTMLAttributes<Element> {
   /** Whether the element has the inline layout outside **/
   inline?: boolean,
   /** The list of element modifiers **/
-  mods?: { string: boolean },
+  mods?: { [key: string]: boolean | undefined | null },
   /** Whether the element is hidden (`hidden` attribute is set) **/
   isHidden?: boolean,
   /** DEPRECATED: Whether the element is hidden (`hidden` attribute is set) **/

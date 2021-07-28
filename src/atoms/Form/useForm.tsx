@@ -6,8 +6,15 @@ function isEqual(v1, v2) {
 }
 
 class FormStore {
-  constructor(forceReRender) {
-    this.forceReRender = forceReRender;
+  private forceReRender = () => {}
+  private initialFields = {}
+  private fields = {}
+  public ref = {}
+  public onValuesChange = () => {}
+  public onSubmit = () => {}
+
+  constructor(forceReRender?: () => void) {
+    this.forceReRender = forceReRender || (() => {});
     this.initialFields = {};
     this.fields = {};
 

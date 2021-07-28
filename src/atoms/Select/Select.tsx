@@ -24,7 +24,7 @@ import { extractStyles } from '../../utils/styles';
 import { BLOCK_STYLES, OUTER_STYLES } from '../../styles/list';
 import { useFocus } from '../../utils/interactions';
 import { useContextStyles } from '../../providers/Styles';
-import { modAttrs, useCombinedRefs } from '../../utils/react/index';
+import { useCombinedRefs } from '../../utils/react';
 import { FieldWrapper } from '../../components/FieldWrapper';
 import { Item } from '@react-stately/collections';
 import { OverlayWrapper } from '../../components/OverlayWrapper';
@@ -468,8 +468,5 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
   );
 }
 
-const _Select = forwardRef(Select);
-_Select.Item = Item;
+const _Select = Object.assign(forwardRef(Select), { Item });
 export { _Select as Select };
-
-export { Item };

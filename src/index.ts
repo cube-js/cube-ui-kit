@@ -1,15 +1,16 @@
 import { TextInput } from './atoms/TextInput/TextInput';
 import { PasswordInput } from './atoms/PasswordInput/PasswordInput';
 import { NumberInput } from './atoms/NumberInput/NumberInput';
-import { Form } from './atoms/Form/Form';
-import { Field } from './atoms/Form/Field';
+import { Form as _Form, Field } from './atoms/Form';
 
 import { Text } from './components/Text';
 import { Title } from './components/Title';
 import { Paragraph } from './components/Paragraph';
 import { TextArea } from './atoms/TextArea/TextArea';
 
-// Form.Item = Field;
+const Form = Object.assign(_Form, { Item: Field });
+
+export { Item } from '@react-stately/collections';
 
 // generic components
 export { Base } from './components/Base';
@@ -51,7 +52,7 @@ export { Switch } from './atoms/Switch/Switch';
 export { Radio } from './atoms/RadioGroup/Radio';
 export { Form, Field };
 export { ComboBox } from './atoms/ComboBox/ComboBox';
-export { Select, Item } from './atoms/Select/Select';
+export { Select } from './atoms/Select/Select';
 export { NumberInput } from './atoms/NumberInput/NumberInput';
 export { Avatar } from './atoms/Avatar/Avatar';
 export { Dialog, DialogTrigger, DialogContainer } from './atoms/Dialog/index';
@@ -89,11 +90,11 @@ export { useContextStyles, StyleProvider } from './providers/Styles';
 
 export { Provider, useProviderProps } from './provider';
 
-const Input = TextInput;
-
-// Input.Text = TextInput;
-// Input.Password = PasswordInput;
-// Input.Number = NumberInput;
-// Input.TextArea = TextArea;
+const Input = Object.assign(TextInput, {
+  Text: TextInput,
+  Password: PasswordInput,
+  Number: NumberInput,
+  TextArea: TextArea,
+});
 
 export { Input };

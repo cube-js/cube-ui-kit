@@ -28,9 +28,9 @@ const STYLE_LIST = [
 
 export interface TitleProps extends TextProps {
   /** The level of the heading **/
-  level: number,
+  level?: 1 | 2 | 3 | 4 | 5 | 6,
   /** The size style for the heading **/
-  size: NuStyleValue,
+  size?: NuStyleValue<'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'>,
 }
 
 function getFontWeight(level, size) {
