@@ -52,8 +52,8 @@ export default [
     input: 'src/index.ts',
     output: [
       {
-        file: pkg.module,
         name: 'Cube Cloud UIKit',
+        dir: 'dist',
         format: 'es',
         sourcemap: true,
       },
