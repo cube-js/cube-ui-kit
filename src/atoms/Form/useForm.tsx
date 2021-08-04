@@ -6,12 +6,12 @@ function isEqual(v1, v2) {
 }
 
 class FormStore {
-  private forceReRender = () => {}
-  private initialFields = {}
-  private fields = {}
-  public ref = {}
-  public onValuesChange = () => {}
-  public onSubmit = () => {}
+  private forceReRender = () => {};
+  private initialFields = {};
+  private fields = {};
+  public ref = {};
+  public onValuesChange = () => {};
+  public onSubmit = () => {};
 
   constructor(forceReRender?: () => void) {
     this.forceReRender = forceReRender || (() => {});
@@ -210,8 +210,13 @@ class FormStore {
   }
 }
 
-export function useForm(form, ref, { onSubmit, onValuesChange } = {}) {
-  const formRef = useRef();
+export function useForm(
+  form?,
+  ref?,
+  options: { onSubmit?: Function; onValuesChange?: Function } = {},
+) {
+  const { onSubmit, onValuesChange } = options;
+  const formRef = useRef<FormStore>();
   const [, forceUpdate] = useState({});
 
   if (!formRef.current) {

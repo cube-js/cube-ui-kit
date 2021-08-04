@@ -9,7 +9,7 @@ import { Base } from '../../components/Base';
 import { useContextStyles } from '../../providers/Styles';
 
 const TRAY_STYLES = {
-  z: 2,
+  zIndex: 2,
   height: 'max (@cube-visual-viewport-height * .9)',
   width: '288px 90vw',
   pointerEvents: 'auto',

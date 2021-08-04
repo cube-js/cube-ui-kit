@@ -5,7 +5,13 @@ import {
 } from '@ant-design/icons';
 import { createFocusableRef } from '@react-spectrum/utils';
 import { mergeProps } from '@react-aria/utils';
-import { cloneElement, forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import {
+  cloneElement,
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 import { useFormProps } from '../Form/Form';
 import { useHover } from '@react-aria/interactions';
 import { useProviderProps } from '../../provider';
@@ -16,17 +22,22 @@ import { useFocus } from '../../utils/interactions';
 import { Prefix } from '../../components/Prefix';
 import { Suffix } from '../../components/Suffix';
 import { useContextStyles } from '../../providers/Styles';
-import { modAttrs } from '../../utils/react/modAttrs';
 import { FieldWrapper } from '../../components/FieldWrapper';
 import { Space } from '../../components/Space';
 import { Block } from '../../components/Block';
+import { NuStyles } from '../../styles/types';
+import {
+  BaseProps,
+  BlockStyleProps,
+  PositionStyleProps,
+} from '../../components/types';
 
 const WRAPPER_STYLES = {
   display: 'grid',
   position: 'relative',
 };
 
-export const DEFAULT_INPUT_STYLES = {
+export const DEFAULT_INPUT_STYLES: NuStyles = {
   display: 'block',
   width: 'initial 100% initial',
   height: 'initial initial initial',
@@ -59,9 +70,14 @@ export const DEFAULT_INPUT_STYLES = {
   textAlign: 'left',
   reset: 'input',
   size: 'input',
-  grow: 1,
+  flexGrow: 1,
   margin: 0,
 };
+
+export interface TextInputBaseProps
+  extends BaseProps,
+    PositionStyleProps,
+    BlockStyleProps {}
 
 function TextInputBase(props, ref) {
   props = useProviderProps(props);
@@ -124,7 +140,7 @@ function TextInputBase(props, ref) {
   }
 
   let ElementType = multiLine ? 'textarea' : 'input';
-  let { isFocused, focusProps } = useFocus({ isDisabled, as: ElementType });
+  let { isFocused, focusProps } = useFocus({ isDisabled });
   let { hoverProps, isHovered } = useHover({ isDisabled });
   let domRef = useRef(null);
   let defaultInputRef = useRef(null);
@@ -177,20 +193,20 @@ function TextInputBase(props, ref) {
         {...mergeProps(inputProps, focusProps, hoverProps)}
         ref={inputRef}
         rows={multiLine ? rows : undefined}
-        {...modAttrs({
+        mods={{
           invalid: isInvalid,
           valid: validationState === 'valid',
           disabled: isDisabled,
           hovered: isHovered,
           focused: isFocused,
-        })}
+        }}
         styles={inputStyles}
       />
       <Prefix
         padding="0 1x 0 1.5x"
         onWidthChange={setPrefixWidth}
         opacity={isDisabled ? '@disabled-opacity' : false}
-        items="center"
+        placeItems="center"
       >
         {typeof prefix === 'string' ? (
           <Block padding="1x left">{prefix}</Block>

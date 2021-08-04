@@ -1,9 +1,9 @@
 import { forwardRef } from 'react';
-import { useSlotProps } from '../../utils/react/index';
-import { Space } from '../../components/Space';
+import { useSlotProps } from '../../utils/react';
+import { Space, SpaceProps } from '../../components/Space';
 
-export const ButtonGroup = forwardRef((props, ref) => {
+export const ButtonGroup = forwardRef((props: SpaceProps, ref) => {
   props = useSlotProps(props, 'buttonGroup');
 
-  return <Space area="buttonGroup" ref={ref} {...props} />;
+  return <Space gridArea="buttonGroup" ref={ref} {...props} />;
 });

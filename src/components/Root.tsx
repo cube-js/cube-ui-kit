@@ -6,13 +6,24 @@ import { extractStyles } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
 import { Provider } from '../provider';
 import { ModalProvider } from '@react-aria/overlays';
+import { BaseProps } from './types';
 
 const DEFAULT_STYLES = {
   display: 'block',
 };
 const STYLES = [...BASE_STYLES, ...BLOCK_STYLES];
 
-export const Root = forwardRef((allProps, ref) => {
+export interface RootProps extends BaseProps {
+  tokens: { [key: string]: string };
+  fonts: boolean;
+  legacyCSS: boolean;
+  publicUrl: string;
+  router: Function;
+  font: string;
+  monospaceFont: string;
+}
+
+export const Root = forwardRef((allProps: RootProps, ref) => {
   let {
     children,
     tokens,

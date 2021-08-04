@@ -9,13 +9,15 @@ import { CheckboxGroupContext } from './context';
 import { extractStyles } from '../../utils/styles';
 import { BLOCK_STYLES, OUTER_STYLES } from '../../styles/list';
 import { Base } from '../../components/Base';
-import { modAttrs } from '../../utils/react/modAttrs';
 import { useContextStyles } from '../../providers/Styles';
 import { FieldWrapper } from '../../components/FieldWrapper';
+import { BaseProps } from '../../components/types';
+import { AriaCheckboxGroupProps } from '@react-types/checkbox';
+import { FormFieldProps } from '../../shared';
 
 const STYLES = {
   display: 'grid',
-  columns: {
+  gridColumns: {
     '': '1fr',
     'has-sider': 'max-content 1fr',
   },
@@ -39,7 +41,14 @@ const GROUP_STYLES = {
   padding: '(1x - 1bw) 0',
 };
 
-function CheckboxGroup(props, ref) {
+export interface CheckboxGroupProps
+  extends BaseProps,
+    AriaCheckboxGroupProps,
+    FormFieldProps {
+  orientation?: 'vertical' | 'horizontal';
+}
+
+function CheckboxGroup(props: CheckboxGroupProps, ref) {
   props = useProviderProps(props);
   props = useFormProps(props);
 
@@ -80,18 +89,15 @@ function CheckboxGroup(props, ref) {
   };
 
   let state = useCheckboxGroupState(props);
-  let { radioGroupProps: fieldProps, labelProps } = useCheckboxGroup(
-    props,
-    state,
-  );
+  let { groupProps, labelProps } = useCheckboxGroup(props, state);
 
   let radioGroup = (
     <Base
       qa="CheckboxGroup"
       styles={groupStyles}
-      {...modAttrs({
+      mods={{
         horizontal: orientation === 'horizontal',
-      })}
+      }}
     >
       <FormContext.Provider
         value={{
@@ -117,7 +123,7 @@ function CheckboxGroup(props, ref) {
         labelStyles,
         necessityIndicator,
         labelProps,
-        fieldProps,
+        fieldProps: groupProps,
         isDisabled,
         validationState,
         message,

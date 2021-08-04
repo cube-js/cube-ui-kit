@@ -15,7 +15,7 @@ import { FieldWrapper } from '../../components/FieldWrapper';
 
 const STYLES = {
   display: 'grid',
-  columns: {
+  gridColumns: {
     '': '1fr',
     'has-sider': 'max-content 1fr',
   },

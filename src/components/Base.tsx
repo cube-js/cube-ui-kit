@@ -1,79 +1,79 @@
-import { forwardRef, PropsWithChildren, useContext } from 'react';
+import { forwardRef, useContext } from 'react';
 import styled from 'styled-components';
 import { ResponsiveContext } from '../providers/Responsive';
 import { pointsToZones } from '../utils/responsive';
 import { STYLE_HANDLER_MAP } from '../styles';
 import { renderStyles } from '../utils/render-styles';
 import { modAttrs } from '../utils/react';
-import { BaseProps } from './types';
+import { AllBaseProps } from './types';
+import { NuStyles } from '../styles/types';
 
 const INLINE_MAP = {
   block: 'inline',
   grid: 'inline-grid',
   flex: 'inline-flex',
-};
+} as const;
+
+const DEFAULT_STYLES: NuStyles = {
+  display: 'inline-block',
+} as const;
 
 const BaseElement = styled.div(({ css }) => css);
 
-export const Base = forwardRef(
-  (
-    {
-      as,
-      styles,
-      breakpoints,
-      block,
-      mods,
-      inline,
-      isHidden,
-      isDisabled,
-      qa,
-      qaVal,
-      css,
-      ...props
-    }: PropsWithChildren<BaseProps>,
-    ref,
-  ) => {
-    styles = {
-      display: 'inline-block',
-      ...styles,
-    };
+export const Base = forwardRef((allProps: AllBaseProps, ref) => {
+  let {
+    as,
+    styles: originalStyles,
+    breakpoints,
+    block,
+    mods,
+    inline,
+    isHidden,
+    isDisabled,
+    qa,
+    qaVal,
+    css,
+    ...props
+  } = allProps;
 
-    if (block) {
-      styles.display = 'block';
-    }
+  const styles: NuStyles = { ...DEFAULT_STYLES, ...originalStyles };
 
-    if (inline) {
-      styles.display = typeof styles.display === 'string' ?
-        INLINE_MAP[styles.display || 'block'] :
-        'block';
-    }
+  if (block) {
+    styles.display = 'block';
+  }
 
-    const contextBreakpoints = useContext(ResponsiveContext);
-    const zones = pointsToZones(breakpoints || contextBreakpoints);
+  if (inline) {
+    styles.display =
+      typeof styles.display === 'string'
+        ? INLINE_MAP[styles.display || 'block']
+        : 'block';
+  }
 
-    css = `${css || ''}${renderStyles(styles, zones, STYLE_HANDLER_MAP)}`;
+  const contextBreakpoints = useContext(ResponsiveContext);
+  const zones = pointsToZones(breakpoints || contextBreakpoints);
 
-    if (props.hidden == null && isHidden) {
-      props.hidden = !!isHidden;
-    }
+  css = `${css || ''}${renderStyles(styles, zones, STYLE_HANDLER_MAP)}`;
 
-    if (props.disabled == null && isDisabled) {
-      props.disabled = !!isDisabled;
-    }
+  if (props.hidden == null && isHidden) {
+    props.hidden = isHidden;
+  }
 
-    if (mods) {
-      Object.assign(props, modAttrs(mods));
-    }
+  if (props.disabled == null && isDisabled) {
+    props.disabled = isDisabled;
+  }
 
-    return (
-      <BaseElement
-        as={as}
-        data-qa={qa}
-        data-qaval={qaVal}
-        {...props}
-        ref={ref}
-        css={css}
-      />
-    );
-  },
-);
+  if (mods) {
+    Object.assign(props, modAttrs(mods));
+  }
+
+  return (
+    <BaseElement
+      as={as}
+      data-qa={qa}
+      data-qaval={qaVal}
+      {...props}
+      ref={ref}
+      css={css}
+    />
+  );
+});

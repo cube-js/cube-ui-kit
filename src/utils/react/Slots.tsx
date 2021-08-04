@@ -1,11 +1,19 @@
 import { mergeProps } from '@react-aria/utils';
-import { createContext, Children, cloneElement, useContext, useMemo } from 'react';
+import {
+  createContext,
+  Children,
+  cloneElement,
+  useContext,
+  useMemo,
+} from 'react';
+import { Props } from '../../components/types';
 
-let SlotContext = createContext(null);
+let SlotContext = createContext<Object>({});
 
-export function useSlotProps(props, defaultSlot) {
-  let slot = props.slot || defaultSlot;
-  let { [slot]: slotProps = {} } = useContext(SlotContext) || {};
+export function useSlotProps(props: Props, defaultSlot) {
+  let slot: string = props.slot || defaultSlot;
+  let allSlots = useContext(SlotContext) || {};
+  let slotProps: Props = allSlots[slot];
 
   return mergeProps(slotProps, props);
 }

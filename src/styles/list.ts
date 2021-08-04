@@ -1,21 +1,16 @@
-import { NuStyleValue } from './types';
-
-export const BASE_STYLES = ['display'];
-export type BaseStyleProps = {
-  [key in 'display']?: NuStyleValue;
-};
+export const BASE_STYLES = ['display'] as const;
 
 export const POSITION_STYLES = [
-  'area',
-  'grow',
-  'shrink',
+  'gridArea',
+  'flexGrow',
+  'flexShrink',
   'order',
-  'column',
-  'row',
-  'place',
-  'z',
+  'gridColumn',
+  'gridRow',
+  'placeSelf',
+  'zIndex',
   'margin',
-];
+] as const;
 
 export const BLOCK_STYLES = [
   'reset',
@@ -27,9 +22,10 @@ export const BLOCK_STYLES = [
   'overflow',
   'scrollBar',
   'hide',
-];
+  'outline',
+] as const;
 
-export const COLOR_STYLES = ['color', 'fill'];
+export const COLOR_STYLES = ['color', 'fill'] as const;
 
 export const TEXT_STYLES = [
   'size',
@@ -38,21 +34,24 @@ export const TEXT_STYLES = [
   'fontWeight',
   'fontStyle',
   'font',
-];
-export type TextStyleProps = {
-  [key in 'size' | 'textAlign' | 'textTransform' | 'fontWeight' | 'fontStyle' | 'font']?: NuStyleValue;
-};
+] as const;
 
-export const DIMENSION_STYLES = ['width', 'height', 'basis'];
+export const DIMENSION_STYLES = ['width', 'height', 'flexBasis'] as const;
 
 export const FLOW_STYLES = [
   'flow',
-  'items',
-  'content',
+  'placeItems',
+  'placeContent',
+  'alignItems',
+  'alignContent',
+  'justifyItems',
+  'justifyContent',
   'gap',
-  'columns',
-  'rows',
-];
+  'gridColumns',
+  'gridRows',
+  'gridTemplate',
+  'gridAreas',
+] as const;
 
 export const CONTAINER_STYLES = [
   ...BASE_STYLES,
@@ -61,6 +60,6 @@ export const CONTAINER_STYLES = [
   ...POSITION_STYLES,
   ...BLOCK_STYLES,
   ...FLOW_STYLES,
-];
+] as const;
 
-export const OUTER_STYLES = [...POSITION_STYLES, ...DIMENSION_STYLES];
+export const OUTER_STYLES = [...POSITION_STYLES, ...DIMENSION_STYLES] as const;

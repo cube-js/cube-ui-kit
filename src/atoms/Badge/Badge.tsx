@@ -1,21 +1,16 @@
 import { forwardRef } from 'react';
 import THEMES from '../../data/themes';
 import { Base } from '../../components/Base';
-import {
-  BLOCK_STYLES,
-  DIMENSION_STYLES,
-  COLOR_STYLES,
-  POSITION_STYLES,
-  FLOW_STYLES,
-  BASE_STYLES,
-} from '../../styles/list';
+import { CONTAINER_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
+import { BaseProps, ContainerStyleProps } from '../../components/types';
+import { NuStyles } from '../../styles/types';
 
-const DEFAULT_STYLES = {
+const DEFAULT_STYLES: NuStyles = {
   display: 'inline-flex',
-  content: 'center',
-  items: 'center',
+  placeContent: 'center',
+  placeItems: 'center',
   radius: 'round',
   size: '12px 12px',
   width: 'min 16px',
@@ -23,19 +18,16 @@ const DEFAULT_STYLES = {
   textAlign: 'center',
   fontWeight: 600,
   color: '#white',
-};
+} as const;
 
-const STYLE_LIST = [
-  ...BASE_STYLES,
-  ...FLOW_STYLES,
-  ...BLOCK_STYLES,
-  ...COLOR_STYLES,
-  ...DIMENSION_STYLES,
-  ...POSITION_STYLES,
-];
+export interface BadgeProps extends BaseProps, ContainerStyleProps {
+  type?: keyof typeof THEMES;
+}
 
-export const Badge = forwardRef(({ type, children, ...props }, ref) => {
-  const styles = extractStyles(props, STYLE_LIST, {
+export const Badge = forwardRef((allProps: BadgeProps, ref) => {
+  let { type, children, ...props } = allProps;
+
+  const styles = extractStyles(props, CONTAINER_STYLES, {
     ...DEFAULT_STYLES,
     padding:
       typeof children === 'string'
@@ -45,7 +37,7 @@ export const Badge = forwardRef(({ type, children, ...props }, ref) => {
           ? '0 1px'
           : 0
         : 0,
-    fill: THEMES[type] ? THEMES[type].color : '#purple',
+    fill: type && THEMES[type] ? THEMES[type].color : '#purple',
   });
 
   return (

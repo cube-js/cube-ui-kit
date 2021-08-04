@@ -26,8 +26,7 @@ export function OpenTransition(props) {
         Children.map(
           props.children,
           (child) =>
-            child &&
-            cloneElement(child, { isOpen: !!OPEN_STATES[state] }),
+            child && cloneElement(child, { isOpen: !!OPEN_STATES[state] }),
         )
       }
     </Transition>

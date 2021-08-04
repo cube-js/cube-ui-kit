@@ -3,9 +3,8 @@ import {
   LoadingOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
-import { createFocusableRef } from '@react-spectrum/utils';
 import { mergeProps } from '@react-aria/utils';
-import { useState, cloneElement, forwardRef, useImperativeHandle, useRef } from 'react';
+import { cloneElement, forwardRef, RefObject, useRef, useState } from 'react';
 import { useSelectState } from '@react-stately/select';
 import { HiddenSelect, useSelect } from '@react-aria/select';
 import { useListBox, useOption } from '@react-aria/listbox';
@@ -28,6 +27,17 @@ import { useCombinedRefs } from '../../utils/react';
 import { FieldWrapper } from '../../components/FieldWrapper';
 import { Item } from '@react-stately/collections';
 import { OverlayWrapper } from '../../components/OverlayWrapper';
+import { NuStyles } from '../../styles/types';
+import {
+  BasePropsWithoutChildren,
+  BlockStyleProps,
+  ChildrenProp,
+  OuterStyleProps,
+  Props,
+} from '../../components/types';
+import { AriaSelectProps } from '@react-types/select';
+import { DOMRef } from '@react-types/shared';
+import { FormFieldProps } from '../../shared';
 
 const CaretDownIcon = () => (
   <svg
@@ -44,17 +54,17 @@ const CaretDownIcon = () => (
   </svg>
 );
 
-const SELECT_STYLES = {
+const SELECT_STYLES: NuStyles = {
   display: 'grid',
   position: 'relative',
-};
+} as const;
 
-const INPUT_STYLES = {
+const INPUT_STYLES: NuStyles = {
   display: 'grid',
   flow: 'column',
-  columns: '1fr auto',
-  items: 'center stretch',
-  content: 'center stretch',
+  gridColumns: '1fr auto',
+  placeItems: 'center stretch',
+  placeContent: 'center stretch',
   gap: '1x',
   padding: '(1.25x - 1bw) 1x (1.25x - 1bw) (1.5x - 1bw)',
   border: {
@@ -84,28 +94,18 @@ const INPUT_STYLES = {
   },
   fontWeight: 400,
   textAlign: 'left',
-};
+} as const;
 
-const OVERLAY_STYLES = {
+const OVERLAY_STYLES: NuStyles = {
   position: 'absolute',
-  // left: '50%',
-  // top: {
-  //   '': '(100% + .5x)',
-  //   '[data-position="top"]': 'auto',
-  // },
-  // bottom: {
-  //   '': 'auto',
-  //   '[data-position="top"]': '(100% + .5x)',
-  // },
   transform: {
     '': 'translate(-1.5x, 0)',
     '[data-position="top"]': 'translate(-1.5x, 0)',
   },
   width: '100% max-content max-content',
-  // z: 999,
-};
+} as const;
 
-const LISTBOX_STYLES = {
+const LISTBOX_STYLES: NuStyles = {
   display: 'flex',
   gap: '.5x',
   flow: 'column',
@@ -118,9 +118,9 @@ const LISTBOX_STYLES = {
   height: 'initial 30x',
   overflow: 'hidden auto',
   scrollBar: true,
-};
+} as const;
 
-const OPTION_STYLES = {
+const OPTION_STYLES: NuStyles = {
   display: 'block',
   padding: '(1x - 1px) (1.5x - 1px)',
   cursor: 'pointer',
@@ -138,17 +138,42 @@ const OPTION_STYLES = {
     disabled: '#dark.30',
   },
   fontWeight: 500,
-};
+} as const;
 
-function Select(props, ref) {
+export interface DropdownProps
+  extends BasePropsWithoutChildren,
+    OuterStyleProps,
+    FormFieldProps,
+    BlockStyleProps {
+  prefix?: ChildrenProp;
+  suffix?: ChildrenProp;
+  triggerRef?: RefObject<HTMLButtonElement>;
+  isLoading?: boolean;
+  loadingIndicator?: ChildrenProp;
+  overlayOffset?: number;
+  hideTrigger?: boolean;
+  inputStyles?: NuStyles;
+  optionStyles?: NuStyles;
+  triggerStyles?: NuStyles;
+  listBoxStyles?: NuStyles;
+  overlayStyles?: NuStyles;
+  direction?: 'top' | 'bottom';
+  shouldFlip?: boolean;
+  inputProps?: Props;
+}
+
+export interface SelectProps<T> extends DropdownProps, AriaSelectProps<T> {
+  inputRef?: RefObject<HTMLInputElement>;
+  popoverRef?: RefObject<HTMLInputElement>;
+  listBoxRef?: RefObject<HTMLInputElement>;
+}
+
+function Select<T extends object>(
+  props: SelectProps<T>,
+  ref: DOMRef<HTMLDivElement>,
+) {
   props = useProviderProps(props);
   props = useFormProps(props);
-
-  if (props.onChange) {
-    props.onSelectionChange = props.onChange;
-
-    delete props.onChange;
-  }
 
   let {
     qa,
@@ -160,7 +185,6 @@ function Select(props, ref) {
     validationState,
     prefix,
     isDisabled,
-    multiLine,
     autoFocus,
     inputProps,
     inputRef,
@@ -170,14 +194,13 @@ function Select(props, ref) {
     isLoading,
     loadingIndicator,
     insideForm,
-    value,
-    offset = 8,
+    overlayOffset = 8,
     inputStyles,
     optionStyles,
     suffix,
     disallowEmptySelection,
-    selectionMode,
     listBoxStyles,
+    overlayStyles,
     message,
     direction = 'bottom',
     shouldFlip = true,
@@ -213,28 +236,16 @@ function Select(props, ref) {
     targetRef: triggerRef,
     overlayRef: popoverRef,
     scrollRef: listBoxRef,
+    // @ts-ignore
     placement: `${direction} end`,
     shouldFlip: shouldFlip,
     isOpen: state.isOpen,
     onClose: state.close,
-    offset,
+    offset: overlayOffset,
   });
 
-  let { isFocused, focusProps } = useFocus({ isDisabled, as: 'input' }, true);
+  let { isFocused, focusProps } = useFocus({ isDisabled }, true);
   let { hoverProps, isHovered } = useHover({ isDisabled });
-
-  // Expose imperative interface for ref
-  useImperativeHandle(ref, () => ({
-    ...createFocusableRef(ref, triggerRef),
-    select() {
-      if (triggerRef.current) {
-        triggerRef.current.select();
-      }
-    },
-    getInputElement() {
-      return inputRef.current;
-    },
-  }));
 
   // Get props for the button based on the trigger props from useSelect
   let { buttonProps } = useButton(triggerProps, triggerRef);
@@ -307,8 +318,8 @@ function Select(props, ref) {
           placement={placement}
           state={state}
           disallowEmptySelection={disallowEmptySelection}
-          selectionMode={selectionMode}
           listBoxStyles={listBoxStyles}
+          overlayStyles={overlayStyles}
           optionStyles={optionStyles}
         />
       </OverlayWrapper>
@@ -346,8 +357,7 @@ export function ListBoxPopup({
   optionStyles,
   overlayProps: parentOverlayProps,
   disallowEmptySelection,
-  shouldUseVirtualFocus,
-  selectionMode,
+  shouldUseVirtualFocus = false,
   placement,
   ...otherProps
 }) {
@@ -356,7 +366,6 @@ export function ListBoxPopup({
     {
       autoFocus: state.focusStrategy || true,
       disallowEmptySelection,
-      selectionMode,
       shouldUseVirtualFocus,
       ...otherProps,
     },
@@ -405,7 +414,7 @@ export function ListBoxPopup({
           {...mergeProps(listBoxProps, otherProps)}
           ref={listBoxRef}
         >
-          {Array.from(state.collection).map((item) => (
+          {Array.from(state.collection).map((item: any) => (
             <Option
               key={item.key}
               item={item}
@@ -422,7 +431,7 @@ export function ListBoxPopup({
 }
 
 function Option({ item, state, styles, shouldUseVirtualFocus }) {
-  let ref = useRef();
+  let ref = useRef<HTMLDivElement>(null);
   let isDisabled = state.disabledKeys.has(item.key);
   let isSelected = state.selectionManager.isSelected(item.key);
   let isVirtualFocused = state.selectionManager.focusedKey === item.key;

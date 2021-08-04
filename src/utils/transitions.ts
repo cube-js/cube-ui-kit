@@ -6,22 +6,22 @@ const DIRECTION_MAP = {
 };
 
 export const getOverlayTransitionCSS = ({
-  placement,
+  placement = 'initial',
   suffix = '',
   minScale = '0.9',
 } = {}) => `
   &${suffix} {
     transform: var(--overlay-position);
-    transform-origin: ${DIRECTION_MAP[placement] || 'initial'};
+    transform-origin: ${DIRECTION_MAP[placement]};
     --overlay-hidden-x-scale: ${
-      placement === 'top' || placement === 'bottom' || !placement
+      placement === 'top' || placement === 'bottom' || placement === 'initial'
         ? '1'
         : minScale
     };
     --overlay-hidden-y-scale: ${
       placement === 'left' || placement === 'right' ? '1' : minScale
     };
-    --overlay-translate: translate(0, 0); 
+    --overlay-translate: translate(0, 0);
     --overlay-transition: 180ms;
     --overlay-hidden-scale: scale(var(--overlay-hidden-x-scale), var(--overlay-hidden-y-scale));
     --overlay-normal-scale: scale(1, 1);
@@ -47,6 +47,6 @@ export const getOverlayTransitionCSS = ({
     opacity: 0;
     transition: transform var(--overlay-transition) cubic-bezier(.66, 0, .66, 0), opacity var(--overlay-transition) cubic-bezier(.66, 0, .66, 0);
     transform: var(--overlay-hidden-scale) var(--overlay-translate);
-    pointer-events: none; 
+    pointer-events: none;
   }
 `;

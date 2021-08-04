@@ -1,16 +1,11 @@
 import { useEffect, useState } from 'react';
 import {
+  FocusProps,
   useFocus as reactAriaUseFocus,
   useFocusVisible,
 } from '@react-aria/interactions';
 
-/**
- * @param isDisabled
- * @param [as]
- * @param [onlyVisible]
- * @return {{isFocused: number, focusProps: React.HTMLAttributes<HTMLElement>}}
- */
-export function useFocus({ isDisabled, as }, onlyVisible = false) {
+export function useFocus({ isDisabled }: FocusProps, onlyVisible = false) {
   useEffect(() => {
     setIsFocused(false);
   }, [isDisabled]);
@@ -19,11 +14,10 @@ export function useFocus({ isDisabled, as }, onlyVisible = false) {
   let { isFocusVisible } = useFocusVisible({});
   let { focusProps } = reactAriaUseFocus({
     onFocusChange: setIsFocused,
-    elementType: as,
   });
 
   return {
     focusProps,
-    isFocused: isFocused & (onlyVisible ? isFocusVisible : true),
+    isFocused: isFocused && (onlyVisible ? isFocusVisible : true),
   };
 }

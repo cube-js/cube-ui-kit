@@ -4,7 +4,7 @@ const MAP = {
   move: ['transform'],
   rotate: ['transform'],
   scale: ['transform'],
-  place: ['transform', 'top', 'right', 'bottom', 'left'],
+  placeSelf: ['transform', 'top', 'right', 'bottom', 'left'],
   fill: ['background-color'],
   border: ['border', 'box-shadow'],
   filter: ['filter', 'backdrop-filter'],
@@ -19,7 +19,7 @@ const MAP = {
   width: ['max-width', 'min-width', 'width'],
   height: ['max-height', 'min-height', 'height'],
   gap: ['gap', 'margin'],
-  z: ['z-index'],
+  zIndex: ['z-index'],
   image: ['background-image', 'background-position', 'background-size'],
 };
 
@@ -40,7 +40,7 @@ export function transitionStyle({ transition }) {
   if (!tokens) return;
 
   let tempTransition = '';
-  const transitions = [];
+  const transitions: string[] = [];
 
   tokens.forEach((token) => {
     if (token === ',') {
@@ -57,7 +57,12 @@ export function transitionStyle({ transition }) {
     transitions.push(tempTransition);
   }
 
-  const map = {};
+  const map: {
+    name?: string;
+    easing?: string;
+    timing?: string;
+    delay?: string;
+  } = {};
 
   transitions.forEach((transition) => {
     const temp = transition.match(TRANSITION_REGEXP);

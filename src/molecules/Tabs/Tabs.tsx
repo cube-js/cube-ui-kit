@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { Block } from '../../components/Block';
 import { Space } from '../../components/Space';
 import { Flex } from '../../components/Flex';
@@ -72,7 +79,7 @@ const TABS_CONTAINER_CSS = `
     );
     z-index: 10;
   }
-  
+
   &[data-is-left-fade]::before, &[data-is-right-fade]::after {
     opacity: 1;
   }
@@ -227,8 +234,8 @@ export function Tabs({
           currentTab: activeKey,
         }}
       >
-        <Space gap=".5x" content="center space-between">
-          <Space ref={tabsRef} gap="1x" shrink="0" css={TABS_PANEL_CSS}>
+        <Space gap=".5x" placeContent="center space-between">
+          <Space ref={tabsRef} gap="1x" flexShrink="0" css={TABS_PANEL_CSS}>
             {tabs.map((tab) => {
               return (
                 <Tab
@@ -246,7 +253,11 @@ export function Tabs({
           </Space>
           {extra}
         </Space>
-        <Flex grow="1" border="top rgb(227, 227, 233)" {...(paneStyles || {})}>
+        <Flex
+          flexFrow="1"
+          border="top rgb(227, 227, 233)"
+          {...(paneStyles || {})}
+        >
           {children}
         </Flex>
       </TabsContext.Provider>
@@ -296,7 +307,7 @@ Tabs.TabPane = function FileTabPane({
   return (
     <Block
       style={{ display: isCurrent ? 'block' : 'none' }}
-      grow="1"
+      flexGrow={1}
       {...props}
     >
       {children}

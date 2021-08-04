@@ -44,4 +44,3 @@ export default {
 const Template = (args) => <Card {...args}>Card content</Card>;
 
 export const Default = Template.bind({});
-Default.args = {};

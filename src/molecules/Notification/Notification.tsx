@@ -38,7 +38,7 @@ export function Notification({ type, children, onClose, ...props }) {
       margin="1x bottom"
       radius="1.5r"
       styles={{
-        columns: 'auto 1fr auto',
+        gridColumns: 'auto 1fr auto',
         items: 'center start',
         gap: '2x',
       }}
@@ -48,8 +48,8 @@ export function Notification({ type, children, onClose, ...props }) {
         radius="1r"
         width="5x"
         height="5x"
-        items="center"
-        content="center"
+        placeContent="center"
+        placeItems="center"
         fill={THEMES[type] ? THEMES[type].fill : '#clear'}
         color={THEMES[type] ? THEMES[type].color : '#dark.75'}
       >

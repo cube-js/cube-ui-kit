@@ -1,8 +1,3 @@
-/**
- * Modal component
- * Designed after AntD Modal component and almost duplicate its API.
- */
-
 import { useCallback, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { Action } from '../../components/Action';
@@ -81,6 +76,10 @@ const Overlay = styled.div`
   }
 `;
 
+/**
+ * DEPRECATED Modal component
+ * Designed after AntD Modal component and almost duplicate its API.
+ */
 export function Modal({
   title,
   isVisible,
@@ -175,7 +174,6 @@ export function Modal({
           data-qa={qa || 'Modal'}
           className="cube-modal"
           display="flex"
-          column="row"
           role="region"
           color="#dark.85"
           padding="0"
@@ -188,11 +186,11 @@ export function Modal({
           style={{ textAlign: 'left' }}
           {...props}
         >
-          <Flex content="space-between" padding="2x 3x" border="bottom">
+          <Flex placeContent="space-between" padding="2x 3x" border="bottom">
             {typeof title === 'object' ? (
               title
             ) : (
-              <Title level={4} grow={1}>
+              <Title level={4} flexGrow={1}>
                 {title}
               </Title>
             )}
@@ -264,7 +262,15 @@ export function Modal({
 
 let ID = 0;
 
-const modal = {
+interface ModalService {
+  root?: HTMLDivElement;
+  items: any[];
+  init: () => void;
+  render: () => void;
+  _render: (items?: any[]) => void;
+}
+
+const modal: ModalService = {
   items: [],
   init() {
     if (this.root) return;

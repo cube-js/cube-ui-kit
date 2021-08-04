@@ -7,7 +7,7 @@ import { useProviderProps } from '../../provider';
 import { BLOCK_STYLES, OUTER_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
 import { Base } from '../../components/Base';
-import { modAttrs } from '../../utils/react/modAttrs';
+import { modAttrs } from '../../utils/react';
 import { useFocus } from '../../utils/interactions';
 import { mergeProps } from '@react-aria/utils';
 import { filterBaseProps } from '../../utils/filterBaseProps';
@@ -63,7 +63,7 @@ const THUMB_STYLES = {
     '': '.25x',
     checked: '2.5x',
   },
-  transition: 'place',
+  transition: 'left',
 };
 
 function Switch(props, ref) {
@@ -106,7 +106,7 @@ function Switch(props, ref) {
     ...(insideForm && labelPosition === 'side'
       ? {
           marginTop: '-3px',
-          place: 'start',
+          placeSelf: 'start',
         }
       : null),
     ...inputStyles,
@@ -124,7 +124,7 @@ function Switch(props, ref) {
     ...labelStyles,
   };
 
-  let { isFocused, focusProps } = useFocus({ isDisabled, as: 'input' }, true);
+  let { isFocused, focusProps } = useFocus({ isDisabled }, true);
   let { hoverProps, isHovered } = useHover({ isDisabled });
 
   let inputRef = useRef(null);
@@ -141,22 +141,22 @@ function Switch(props, ref) {
         ref={inputRef}
       />
       <Base
-        {...modAttrs({
+        mods={{
           checked: inputProps.checked,
           quite: !isEmphasized,
           disabled: isDisabled,
           hovered: isHovered,
           focused: isFocused,
-        })}
+        }}
         styles={inputStyles}
       >
         <Base
           qa="SwitchThumb"
           styles={thumbStyles}
           aria-hidden="true"
-          {...modAttrs({
+          mods={{
             checked: inputProps.checked,
-          })}
+          }}
         />
       </Base>
     </Base>

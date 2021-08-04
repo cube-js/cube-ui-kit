@@ -42,7 +42,7 @@ export { Skeleton } from './atoms/Skeleton/Skeleton';
 export { CloudLogo } from './atoms/CloudLogo/CloudLogo';
 export { Badge } from './atoms/Badge/Badge';
 export { SearchInput } from './atoms/SearchInput/SearchInput';
-export { Submit } from './components/Submit';
+export { Submit } from './atoms/Button/Submit';
 export { TextInput } from './atoms/TextInput/TextInput';
 export { TextArea } from './atoms/TextArea/TextArea';
 export { PasswordInput } from './atoms/PasswordInput/PasswordInput';

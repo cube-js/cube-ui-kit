@@ -11,8 +11,9 @@ import { Base } from '../../components/Base';
 import { CloseOutlined } from '@ant-design/icons';
 import { extractStyles } from '../../utils/styles';
 import { BLOCK_STYLES, DIMENSION_STYLES } from '../../styles/list';
-import { SlotProvider } from '../../utils/react/index';
+import { SlotProvider } from '../../utils/react';
 import { useContextStyles } from '../../providers/Styles';
+import { NuStyles } from '../../styles/types';
 
 const STYLES_LIST = [...DIMENSION_STYLES, ...BLOCK_STYLES];
 
@@ -20,16 +21,17 @@ const DEFAULT_STYLES = {
   pointerEvents: 'auto',
   position: 'relative',
   display: 'grid',
-  areas: `"hero hero hero hero hero hero"
+  gridAreas: `"hero hero hero hero hero hero"
           ". . . . . ."
           ". heading header header header ."
           "divider divider divider divider divider divider"
           ". content content content content ."
           ". buttonGroup buttonGroup footer footer ."
           ". . . . . ."`,
-  columns: '@dialog-padding-h auto auto auto auto @dialog-padding-h',
-  rows: 'auto @dialog-heading-padding-v auto auto 1fr auto @dialog-content-padding-v',
-  items: 'baseline stretch',
+  gridColumns: '@dialog-padding-h auto auto auto auto @dialog-padding-h',
+  gridRows:
+    'auto @dialog-heading-padding-v auto auto 1fr auto @dialog-content-padding-v',
+  placeItems: 'baseline stretch',
   width: {
     '': '288px @dialog-size 90vw',
     '[data-type="fullscreen"]': '90vw 90vw',
@@ -51,7 +53,7 @@ const DEFAULT_STYLES = {
     '': false,
     '[data-type="modal"]': 'translate(0, ((50vh - 50%) / -3))',
   },
-  place: 'stretch',
+  placeSelf: 'stretch',
   '@dialog-heading-padding-v': {
     '': '2x',
     '[data-type="popover"]': '1x',
@@ -67,17 +69,17 @@ const DEFAULT_STYLES = {
   '@dialog-content-gap': '3x',
 };
 
-const CLOSE_BUTTON = {
+const CLOSE_BUTTON_STYLES: NuStyles = {
   position: 'absolute',
   top: '1x',
   right: '1x',
   width: '5x',
   height: '5x',
   display: 'flex',
-  content: 'center',
+  placeContent: 'center',
 };
 
-const HEADING_STYLES = {};
+const HEADING_STYLES: NuStyles = {};
 
 const sizeMap = {
   S: 'small',
@@ -112,7 +114,7 @@ function Dialog(props, ref) {
 
   const styles = {
     ...DEFAULT_STYLES,
-    ...useContextStyles('Dialog'),
+    ...useContextStyles('Dialog', props),
     ...extractStyles(otherProps, STYLES_LIST),
     '@dialog-size': `${sizePxMap[size] || 288}px`,
   };
@@ -149,7 +151,7 @@ function Dialog(props, ref) {
     },
     content: {
       styles: {
-        grow: 1,
+        flexGrow: 1,
         margin: {
           '': '@dialog-content-gap bottom',
           ':last-child': '0',
@@ -199,8 +201,8 @@ function Dialog(props, ref) {
           {isDismissable && (
             <Button
               qa="ModalCloseButton"
-              type="item"
-              styles={CLOSE_BUTTON}
+              variant="item"
+              styles={CLOSE_BUTTON_STYLES}
               icon={<CloseOutlined />}
               aria-label={formatMessage('dismiss')}
               onPress={onDismiss}

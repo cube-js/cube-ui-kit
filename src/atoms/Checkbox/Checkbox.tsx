@@ -1,5 +1,6 @@
 import { useFocusableRef } from '@react-spectrum/utils';
 import { forwardRef, useContext, useRef } from 'react';
+import { AriaCheckboxProps } from '@react-types/checkbox';
 import { useCheckbox, useCheckboxGroupItem } from '@react-aria/checkbox';
 import { useHover } from '@react-aria/interactions';
 import { useToggleState } from '@react-stately/toggle';
@@ -7,7 +8,6 @@ import { useProviderProps } from '../../provider';
 import { BLOCK_STYLES, OUTER_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
 import { Base } from '../../components/Base';
-import { modAttrs } from '../../utils/react/modAttrs';
 import { useFocus } from '../../utils/interactions';
 import { mergeProps } from '@react-aria/utils';
 import { filterBaseProps } from '../../utils/filterBaseProps';
@@ -18,6 +18,15 @@ import { useFormProps } from '../Form/Form';
 import { FieldWrapper } from '../../components/FieldWrapper';
 import { CheckboxGroup } from './CheckboxGroup';
 import { CheckboxGroupContext } from './context';
+import { BaseProps } from '../../components/types';
+import { NuStyles } from '../../styles/types';
+import { FocusableRef } from '@react-types/shared';
+import { FormFieldProps } from '../../shared';
+
+export interface CheckboxProps
+  extends BaseProps,
+    AriaCheckboxProps,
+    FormFieldProps {}
 
 const CheckOutlined = () => (
   <svg width="10" height="8" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -33,16 +42,16 @@ const IndeterminateOutline = () => (
   </svg>
 );
 
-const STYLES = {
+const DEFAULT_STYLES: NuStyles = {
   position: 'relative',
   display: 'flex',
   items: 'center start',
   gap: '1x',
   flow: 'row',
   size: 'input',
-};
+} as const;
 
-const INPUT_STYLES = {
+const INPUT_STYLES: NuStyles = {
   display: 'grid',
   items: 'center',
   radius: '.5r',
@@ -69,9 +78,9 @@ const INPUT_STYLES = {
     focused: '#purple-03',
   },
   transition: 'theme',
-};
+} as const;
 
-function Checkbox(props, ref) {
+function Checkbox(props: CheckboxProps, ref: FocusableRef) {
   let originalProps = props;
 
   props = useProviderProps(props);
@@ -80,7 +89,6 @@ function Checkbox(props, ref) {
   let {
     qa,
     isIndeterminate = false,
-    isEmphasized = false,
     isDisabled = false,
     insideForm,
     autoFocus,
@@ -106,8 +114,8 @@ function Checkbox(props, ref) {
   let inputContextStyles = useContextStyles('Checkbox', props);
   let labelContextStyles = useContextStyles('Checkbox_Label', props);
 
-  let styles = extractStyles(props, OUTER_STYLES, {
-    ...(insideForm && !groupState ? {} : STYLES),
+  let styles: NuStyles = extractStyles(props, OUTER_STYLES, {
+    ...(insideForm && !groupState ? {} : DEFAULT_STYLES),
     ...wrapperContextStyles,
   });
   let inputStyles = extractStyles(props, BLOCK_STYLES, {
@@ -129,20 +137,19 @@ function Checkbox(props, ref) {
     inputStyles.marginTop = '1x';
   }
 
-  let { isFocused, focusProps } = useFocus({ isDisabled, as: 'input' }, true);
+  let { isFocused, focusProps } = useFocus({ isDisabled }, true);
   let { hoverProps, isHovered } = useHover({ isDisabled });
 
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
 
-  let { inputProps } = groupState
-    ? // eslint-disable-next-line react-hooks/rules-of-hooks
-      useCheckboxGroupItem(
+  let { inputProps } = groupState // eslint-disable-next-line react-hooks/rules-of-hooks
+    ? useCheckboxGroupItem(
         {
           ...props,
           // Value is optional for standalone checkboxes, but required for CheckboxGroup items;
           // it's passed explicitly here to avoid typescript error (requires strictNullChecks disabled).
-          value: props.value,
+          value: props.value || '',
           // Only pass isRequired and validationState to react-aria if they came from
           // the props for this individual checkbox, and not from the group via context.
           isRequired: originalProps.isRequired,
@@ -150,9 +157,8 @@ function Checkbox(props, ref) {
         },
         groupState,
         inputRef,
-      )
-    : // eslint-disable-next-line react-hooks/rules-of-hooks
-      useCheckbox(props, useToggleState(props), inputRef);
+      ) // eslint-disable-next-line react-hooks/rules-of-hooks
+    : useCheckbox(props, useToggleState(props), inputRef);
 
   let markIcon = isIndeterminate ? <IndeterminateOutline /> : <CheckOutlined />;
 
@@ -179,16 +185,15 @@ function Checkbox(props, ref) {
         ref={inputRef}
       />
       <Base
-        {...modAttrs({
+        mods={{
           checked: inputProps.checked,
           indeterminate: isIndeterminate,
-          quite: !isEmphasized,
           invalid: validationState === 'invalid',
           valid: validationState === 'valid',
           disabled: isDisabled,
           hovered: isHovered,
           focused: isFocused,
-        })}
+        }}
         styles={inputStyles}
       >
         {markIcon}
@@ -230,12 +235,11 @@ function Checkbox(props, ref) {
       {label && (
         <Base
           styles={labelStyles}
-          {...modAttrs({
-            quite: !isEmphasized,
+          mods={{
             invalid: validationState === 'invalid',
             valid: validationState === 'valid',
             disabled: isDisabled,
-          })}
+          }}
           {...filterBaseProps(labelProps)}
         >
           {label}
@@ -249,6 +253,7 @@ function Checkbox(props, ref) {
  * Checkboxes allow users to select multiple items from a list of individual items,
  * or to mark one individual item as selected.
  */
-let _Checkbox = forwardRef(Checkbox);
+let _Checkbox = Object.assign(forwardRef(Checkbox), {
+  Group: CheckboxGroup,
+});
 export { _Checkbox as Checkbox };
-_Checkbox.Group = CheckboxGroup;

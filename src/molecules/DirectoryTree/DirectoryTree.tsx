@@ -6,11 +6,7 @@ import {
   FolderOpenFilled,
   FolderFilled,
 } from '@ant-design/icons';
-import { Flex } from '../../components/Flex';
-import { Action } from '../../components/Action';
-import { Button } from '../../atoms/Button/Button';
-import { Space } from '../../components/Space';
-import { Block } from '../../components/Block';
+import { Flex, Action, Button, Space, Block } from '../../index';
 
 const IMAGES = {
   created: (
@@ -142,7 +138,7 @@ function sortTreeData(filesTree) {
 }
 
 const HOVER_CSS = `
-  &:hover .actions { 
+  &:hover .actions {
     opacity: 1;
   }
   &:not(:hover) .actions {
@@ -208,7 +204,7 @@ export function DirectoryTree({
           >
             <Space gap=".5x" css={HOVER_CSS}>
               <Button
-                type="clear"
+                variant="clear"
                 margin="-.5x"
                 padding=".25x"
                 color={{
@@ -225,7 +221,7 @@ export function DirectoryTree({
               </Button>
               <Space
                 gap="1x"
-                grow="1"
+                flexGrow="1"
                 color={selected === item.key ? '#purple' : '#dark.50'}
               >
                 {expanded.includes(item.key) ? (
@@ -266,14 +262,14 @@ export function DirectoryTree({
               <FileOutlined />
               <Block
                 style={TEXT_OVERFLOW_STYLES}
-                grow="1"
+                flexGrow={1}
                 color={selected === item.key ? '#purple-text' : '#dark.75'}
               >
                 {item.title}
               </Block>
               {actionsPanel && actionsPanel(item)}
               {item.mode && (
-                <Flex padding="0 .5x" items="center">
+                <Flex padding="0 .5x" placeItems="center">
                   {IMAGES[item.mode]}
                 </Flex>
               )}

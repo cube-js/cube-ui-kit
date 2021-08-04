@@ -1,23 +1,35 @@
-export type NuResponsiveStyleValue<T = string> = NuStyleValue<T> | NuStyleValue<T>[];
+import { NuStyles } from '../styles/types';
 
-export type NuStyleValue<T = string> =
-  | number
-  | null
-  | boolean
-  | undefined
-  | T;
+import { getCombinations } from './index';
+
+export type NuStyleValue<T = string> = number | null | boolean | undefined | T;
+
+export type NuStyleValueStateMap<T> = {
+  [key: string]: NuStyleValue<T>;
+};
+
+export type NuResponsiveStyleValue<T = string> =
+  | NuStyleValue<T>
+  | NuStyleValue<T>[]
+  | NuStyleValueStateMap<T>
+  | NuStyleValueStateMap<T>[];
 
 export type NuComputeModel = string | number;
 
 export type NuCSSMap = { [key: string]: string | string[] };
 
-export type NuStyleHandler = ((value: NuStyleValue) => NuCSSMap | NuCSSMap[]) & { lookupStyles: string[] };
+export type NuStyleHandler = ((NuStyleValue) => NuCSSMap | NuCSSMap[]) & {
+  __lookupStyles: string[];
+};
 
 export interface NuStyleStateData {
-  model: NuComputeModel
-  tokens?: string[]
-  value: NuResponsiveStyleValue
-  mods: string[]
+  model?: NuComputeModel;
+  tokens?: string[];
+  value: NuResponsiveStyleValue;
+  /** The list of mods to apply */
+  mods: string[];
+  /** The list of **not** mods to apply (e.g. `:not(:hover)`) */
+  notMods: string[];
 }
 
 export type NuStyleStateDataList = NuStyleStateData[];
@@ -26,12 +38,15 @@ export type NuStyleStateDataListMap = { [key: string]: NuStyleStateDataList };
 
 /** An object that describes a relation between specific modifiers and style value. **/
 export interface NuStyleState {
-  mods: string[]
-  notMods: string[]
-  value: NuResponsiveStyleValue
+  /** The list of mods to apply */
+  mods: string[];
+  /** The list of **not** mods to apply (e.g. `:not(:hover)`) */
+  notMods: string[];
+  /** The value to apply */
+  value: NuStyleMap;
 }
 
-export type NuComputeUnit = number[] | number;
+export type NuComputeUnit = string | (string | string[])[];
 
 export type NuStyleStateList = NuStyleState[];
 
@@ -41,10 +56,7 @@ export type NuStyleStateMap = { [key: string]: NuStyleState };
 
 export type NuStyleStateMapList = NuStyleStateMap[];
 
-export type NuStyleStateListMap = { [key: string]: NuStyleStateList }
-
-
-import { getCombinations } from './index';
+export type NuStyleStateListMap = { [key: string]: NuStyleStateList };
 
 export const NO_VALUES = [false, 'n', 'no', 'false'];
 export const YES_VALUES = [true, 'y', 'yes', 'true'];
@@ -62,6 +74,12 @@ export const CUSTOM_UNITS = {
   gp: 'var(--column-gap)',
   // global setting
   wh: 'var(--window-height)',
+  // span unit for GridProvider
+  sp: function spanWidth(num) {
+    return `((${num} * var(--column-width)) + (${
+      num - 1
+    } * var(--column-gap)))`;
+  },
 };
 
 export const DIRECTIONS = ['top', 'right', 'bottom', 'left'];
@@ -130,9 +148,9 @@ export function parseStyle(value, mode = 0) {
       CACHE.clear();
     }
 
-    const mods = [];
-    const all = [];
-    const values = [];
+    const mods: string[] = [];
+    const all: string[] = [];
+    const values: string[] = [];
     const autoCalc = mode !== 1;
 
     let currentValue = '';
@@ -448,10 +466,10 @@ export function parseColor(val, ignoreError = false) {
 }
 
 export function rgbColorProp(
-  colorName,
-  opacity,
-  fallbackColorName,
-  fallbackValue,
+  colorName: string,
+  opacity: number,
+  fallbackColorName?: Function,
+  fallbackValue?: Function,
 ) {
   const fallbackValuePart = fallbackValue ? `, ${fallbackValue}` : '';
 
@@ -581,21 +599,20 @@ export function extendStyles(defaultStyles, newStyles) {
 
 /**
  * Split properties into style and non-style properties.
- * @param {Object} props - Component prop map.
- * @param {String[]} styleList - List of all style properties.
- * @param {Object} [defaultStyles] - Default style map of the component.
- * @param {Object} [propMap] - Props to style alias map.
- * @param {String[]} [ignoreList] - A list of properties to ignore.
- * @return {{}}
+ * @param props - Component prop map.
+ * @param [styleList] - List of all style properties.
+ * @param [defaultStyles] - Default style map of the component.
+ * @param [propMap] - Props to style alias map.
+ * @param [ignoreList] - A list of properties to ignore.
  */
 export function extractStyles(
-  props,
-  styleList,
-  defaultStyles?: { [key: string]: NuStyleValue },
+  props: { [key: string]: any },
+  styleList: readonly string[] = [],
+  defaultStyles?: NuStyles,
   propMap?: { [key: string]: string },
-  ignoreList = [],
+  ignoreList: readonly string[] = [],
 ) {
-  const styles = {
+  const styles: NuStyles = {
     ...defaultStyles,
     ...props.styles,
   };
@@ -607,8 +624,10 @@ export function extractStyles(
     if (ignoreList && ignoreList.includes(prop)) {
       // do nothing
     } else if (styleList.includes(propName)) {
+      // If value is not nullish then map it to the styles
       if (value != null && value !== false) {
         styles[propName] = value;
+        // If value is nullish then erase the default value of the style
       } else if (propName in styles) {
         delete styles[propName];
       }
@@ -620,16 +639,15 @@ export function extractStyles(
 
 /**
  * Render NuCSSMap to Styled Components CSS
- * @param {Object|Array|null|undefined} styles
- * @param {string} [selector]
- * @return {string}
+ * @param styles
+ * @param [selector]
  */
-export function renderStylesToSC(styles, selector) {
+export function renderStylesToSC(styles: NuCSSMap | NuCSSMap[], selector = '') {
   if (!styles) return '';
 
   if (Array.isArray(styles)) {
     return styles.reduce((css, stls) => {
-      return css + renderStylesToSC(stls);
+      return css + renderStylesToSC(stls, selector);
     }, '');
   }
 
@@ -719,9 +737,9 @@ export function styleHandlerCacheWrapper(styleHandler, limit = 1000) {
     return applyStates('&&', stateMapList);
   }, limit);
 
-  wrappedMapHandler.__lookupStyles = styleHandler.__lookupStyles;
-
-  return wrappedMapHandler;
+  return Object.assign(wrappedMapHandler, {
+    __lookupStyles: styleHandler.__lookupStyles,
+  });
 }
 
 /**
@@ -827,7 +845,7 @@ export function getModesFromStyleStateList(stateList) {
  * @return {string[]}
  */
 export function getModesFromStyleStateListMap(stateListMap) {
-  return Object.keys(stateListMap).reduce((list, style) => {
+  return Object.keys(stateListMap).reduce((list: string[], style) => {
     const stateList = stateListMap[style];
 
     getModesFromStyleStateList(stateList).forEach((mod) => {
@@ -842,12 +860,14 @@ export function getModesFromStyleStateListMap(stateListMap) {
 
 /**
  * Convert style map to the normalized style map state list.
- * @param {NuStyleMap} styleMap
- * @param {string[]} [keys]
- * @return {NuStyleStateMapList}
+ * @param styleMap
+ * @param filterKeys
  */
-export function styleMapToStyleMapStateList(styleMap, keys) {
-  keys = keys || Object.keys(styleMap);
+export function styleMapToStyleMapStateList(
+  styleMap: NuStyleMap,
+  filterKeys?: string[],
+) {
+  const keys = filterKeys || Object.keys(styleMap);
 
   if (!keys.length) return [];
 
@@ -856,23 +876,23 @@ export function styleMapToStyleMapStateList(styleMap, keys) {
    */
   const stateDataListMap = {};
 
-  let allMods = new Set();
+  let allModsSet: Set<string> = new Set();
 
   keys.forEach((style) => {
     stateDataListMap[style] = styleStateMapToStyleStateDataList(
       styleMap[style],
     );
-    stateDataListMap[style].mods.forEach(allMods.add, allMods);
+    stateDataListMap[style].mods.forEach(allModsSet.add, allModsSet);
   });
 
-  allMods = Array.from(allMods);
+  const allModsArr: string[] = Array.from(allModsSet);
 
-  const styleStateMapList = [];
+  const styleStateMapList: NuStyleStateList = [];
 
-  getCombinations(allMods, true).forEach((combination) => {
+  getCombinations(allModsArr, true).forEach((combination) => {
     styleStateMapList.push({
       mods: combination,
-      notMods: allMods.filter((mod) => !combination.includes(mod)),
+      notMods: allModsArr.filter((mod) => !combination.includes(mod)),
       value: keys.reduce((map, key) => {
         map[key] = stateDataListMap[key].states.find((state) => {
           return computeState(state.model, (mod) => combination.includes(mod));
@@ -899,10 +919,8 @@ export const STATE_OPERATOR_LIST = ['!', '&', '|', '^'];
 
 /**
  *
- * @param {string[]} tokens
- * @return {NuComputeModel}
  */
-function convertTokensToComputeUnits(tokens) {
+function convertTokensToComputeUnits(tokens: any[]) {
   if (tokens.length === 1) {
     return tokens[0];
   }
@@ -914,7 +932,7 @@ function convertTokensToComputeUnits(tokens) {
       const token = tokens[i];
 
       if (token === '!') {
-        if (tokens[i + 1] && tokens[i + 1] !== 1) {
+        if (tokens[i + 1] && tokens[i + 1].length !== 1) {
           tokens.splice(i, 2, ['!', tokens[i + 1]]);
         } else {
           tokens.splice(i, 1);
@@ -939,11 +957,8 @@ function convertTokensToComputeUnits(tokens) {
 
 /**
  * Parse state notation and return tokens, modifiers and compute model.
- * @param {string} notation
- * @param {any} [value]
- * @return {Array<string>}
  */
-function parseStateNotationInner(notation, value) {
+function parseStateNotationInner<T>(notation: string, value: T) {
   const tokens = notation.replace(/,/g, '|').match(STATES_REGEXP);
 
   if (!tokens || !tokens.length) {
@@ -962,9 +977,9 @@ function parseStateNotationInner(notation, value) {
     };
   }
 
-  const mods = [];
+  const mods: string[] = [];
 
-  let operations = [[]];
+  let operations: any[][] = [[]];
   let list = operations[0];
   let position = 0;
 
@@ -1011,7 +1026,9 @@ export const parseStateNotation = cacheWrapper(parseStateNotationInner);
  * @param {NuStyleStateMap|string|number|boolean|null|undefined} styleStateMap
  * @return {{ states: NuStyleStateDataList, mods: string[] }}
  */
-export function styleStateMapToStyleStateDataList(styleStateMap) {
+export function styleStateMapToStyleStateDataList(
+  styleStateMap: NuStyleStateMap | NuResponsiveStyleValue,
+) {
   if (typeof styleStateMap !== 'object' || !styleStateMap) {
     return {
       states: [
@@ -1025,7 +1042,7 @@ export function styleStateMapToStyleStateDataList(styleStateMap) {
     };
   }
 
-  const stateDataList = [];
+  const stateDataList: NuStyleStateDataList = [];
 
   Object.keys(styleStateMap).forEach((stateNotation) => {
     const state = parseStateNotation(stateNotation);
@@ -1039,7 +1056,7 @@ export function styleStateMapToStyleStateDataList(styleStateMap) {
 
   let initialState;
 
-  const allMods = stateDataList.reduce((all, state) => {
+  const allMods: string[] = stateDataList.reduce((all: string[], state) => {
     if (!state.mods.length) {
       initialState = state;
     } else {
@@ -1055,7 +1072,6 @@ export function styleStateMapToStyleStateDataList(styleStateMap) {
 
   if (!initialState) {
     stateDataList.push({
-      model: null,
       mods: [],
       notMods: allMods,
       value: true,
@@ -1074,11 +1090,11 @@ export const COMPUTE_FUNC_MAP = {
 
 /**
  * Compute a result based on model and incoming map.
- * @param {NuComputeModel} computeModel
- * @param {Array<boolean|number>|Object<string,boolean>|Function} valueMap
- * @return {boolean}
  */
-export function computeState(computeModel, valueMap) {
+export function computeState(
+  computeModel: NuComputeModel,
+  valueMap: (number | boolean)[] | { [key: string]: boolean } | Function,
+) {
   if (!computeModel) return true;
 
   if (!Array.isArray(computeModel)) {
@@ -1123,7 +1139,7 @@ export function computeState(computeModel, valueMap) {
   return !!func(a, b);
 }
 
-export function cacheWrapper(handler, limit = 1000) {
+export function cacheWrapper(handler: Function, limit = 1000) {
   let cache = {};
   let count = 0;
 

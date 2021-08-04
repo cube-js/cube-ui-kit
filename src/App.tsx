@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { Base, Grid, TopBar, Space, LoadingAnimation, Block } from './index';
+import {
+  Base,
+  Grid,
+  TopBar,
+  Space,
+  LoadingAnimation,
+  Block,
+  Text,
+} from './index';
 import { Button } from './atoms/Button/Button';
 // import ResponsiveProvider from './providers/Responsive';
 import { color } from './utils/colors';
@@ -27,12 +35,12 @@ function App() {
     <>
       <Provider>
         <Block padding="2x 20x">
-          <GridProvider columns="3" gap="2x">
-            <Flex flow="row wrap">
-              <Block width="1sp" height="4x" fill="#purple.04"></Block>
-              <Block width="2sp" height="4x" fill="#purple.1"></Block>
-              <Block width="2sp" height="4x" fill="#purple.1"></Block>
-              <Block width="1sp" height="4x" fill="#purple.1"></Block>
+          <GridProvider columns={3} gap="2x">
+            <Flex flow="row wrap" align="center" justify="center">
+              <Block width="1sp" height="4x" fill="#purple.04" />
+              <Block width="2sp" height="4x" fill="#purple.1" />
+              <Block width="2sp" height="4x" fill="#purple.1" />
+              <Block width="1sp" height="4x" fill="#purple.1" />
               {/*<Block width="1sp" height="4x" fill="#purple.04"></Block>*/}
             </Flex>
           </GridProvider>
@@ -90,7 +98,7 @@ function App() {
       {/*</Modal>*/}
       <Button
         onPress={() => setInProp(!inProp)}
-        type="clear"
+        variant="clear"
         styles={{
           color: {
             '': '#dark.75',
@@ -117,10 +125,10 @@ function App() {
             </Button>
           </StyleProvider>
         </StyleProvider>
-        <Button type="primary">Primary</Button>
-        <Button type="primary">Other Primary</Button>
-        <Button type="danger">Danger</Button>
-        <Button type="clear">Clear</Button>
+        <Button variant="primary">Primary</Button>
+        <Button variant="primary">Other Primary</Button>
+        <Button variant="danger">Danger</Button>
+        <Button variant="clear">Clear</Button>
         <Base64Upload>123</Base64Upload>
       </Space>
       <Space padding="1x">
@@ -130,7 +138,7 @@ function App() {
         <TopBar onLogoPress={() => {}} />
         <Flex
           styles={{
-            content: ['start', 'center', 'start'],
+            placeContent: ['start', 'center', 'start'],
           }}
           gap={['2x', '4x']}
           flow={['row', 'column', 'row']}

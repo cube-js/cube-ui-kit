@@ -41,7 +41,7 @@ export const SearchInput = forwardRef((props, ref) => {
         state.value !== '' &&
         !props.isReadOnly && (
           <Button
-            type="clear"
+            variant="clear"
             {...clearButtonProps}
             color={{
               '': '#dark.50',
@@ -49,7 +49,7 @@ export const SearchInput = forwardRef((props, ref) => {
             }}
             radius="right (1r - 1bw)"
             padding=".5x 1x"
-            place="stretch"
+            placeSelf="stretch"
             icon={<CloseOutlined />}
           />
         )

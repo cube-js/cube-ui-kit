@@ -19,4 +19,4 @@ export default {
     color: '#dark.40',
     border: '#dark.20',
   },
-};
+} as const;

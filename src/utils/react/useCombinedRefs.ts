@@ -1,6 +1,6 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, RefObject } from 'react';
 
-export function useCombinedRefs(...refs) {
+export function useCombinedRefs(...refs: any[]): RefObject<any> {
   const targetRef = useRef();
 
   useEffect(() => {

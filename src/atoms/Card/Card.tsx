@@ -3,6 +3,7 @@ import { Base } from '../../components/Base';
 import { CONTAINER_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
+import { BaseProps, ContainerStyleProps } from '../../components/types';
 
 const DEFAULT_STYLES = {
   display: 'block',
@@ -13,7 +14,9 @@ const DEFAULT_STYLES = {
   padding: '3x',
 };
 
-export const Card = forwardRef(({ ...props }, ref) => {
+export interface CardProps extends BaseProps, ContainerStyleProps {}
+
+export const Card = forwardRef((props: CardProps, ref) => {
   const styles = extractStyles(props, CONTAINER_STYLES, DEFAULT_STYLES);
 
   return (

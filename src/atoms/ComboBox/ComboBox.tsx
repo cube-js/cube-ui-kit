@@ -3,11 +3,10 @@ import {
   LoadingOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
-import { createFocusableRef } from '@react-spectrum/utils';
 import { mergeProps } from '@react-aria/utils';
-import { cloneElement, forwardRef, useImperativeHandle, useState } from 'react';
+import { cloneElement, forwardRef, useState } from 'react';
 import { useComboBoxState } from '@react-stately/combobox';
-import { useComboBox } from '@react-aria/combobox';
+import { AriaComboBoxProps, useComboBox } from '@react-aria/combobox';
 import { useButton } from '@react-aria/button';
 import { useFormProps } from '../Form/Form';
 import { useHover } from '@react-aria/interactions';
@@ -20,7 +19,7 @@ import { useFocus } from '../../utils/interactions';
 import { useContextStyles } from '../../providers/Styles';
 import { modAttrs, useCombinedRefs } from '../../utils/react';
 import { FieldWrapper } from '../../components/FieldWrapper';
-import { ListBoxPopup } from '../Select/Select';
+import { DropdownProps, ListBoxPopup } from '../Select/Select';
 import { Prefix } from '../../components/Prefix';
 import { Suffix } from '../../components/Suffix';
 import { Space } from '../../components/Space';
@@ -28,6 +27,8 @@ import { Item } from '@react-stately/collections';
 import { DEFAULT_INPUT_STYLES } from '../TextInput/TextInputBase';
 import { useOverlayPosition } from '@react-aria/overlays';
 import { OverlayWrapper } from '../../components/OverlayWrapper';
+import { NuStyles } from '../../styles/types';
+import { DOMRef } from '@react-types/shared';
 
 const CaretDownIcon = () => (
   <svg
@@ -44,20 +45,20 @@ const CaretDownIcon = () => (
   </svg>
 );
 
-const COMBOBOX_STYLES = {
+const COMBOBOX_STYLES: NuStyles = {
   position: 'relative',
   display: 'grid',
-};
+} as const;
 
-const INPUT_STYLES = {
+const INPUT_STYLES: NuStyles = {
   ...DEFAULT_INPUT_STYLES,
   width: '100%',
-};
+} as const;
 
-const TRIGGER_STYLES = {
+const TRIGGER_STYLES: NuStyles = {
   display: 'grid',
   items: 'center',
-  content: 'center',
+  placeContent: 'center',
   radius: 'right',
   padding: '1.5x 1x',
   color: 'inherit',
@@ -68,17 +69,18 @@ const TRIGGER_STYLES = {
     pressed: '#dark.08',
     disabled: '#clear',
   },
-};
+} as const;
 
-function ComboBox(props, ref) {
+export interface ComboBoxProps<T> extends DropdownProps, AriaComboBoxProps<T> {
+  multiLine?: boolean;
+}
+
+function ComboBox<T extends object>(
+  props: ComboBoxProps<T>,
+  ref: DOMRef<HTMLDivElement>,
+) {
   props = useProviderProps(props);
   props = useFormProps(props);
-
-  if (props.onChange) {
-    props.onSelectionChange = props.onChange;
-
-    delete props.onChange;
-  }
 
   let {
     qa,
@@ -99,15 +101,14 @@ function ComboBox(props, ref) {
     isLoading,
     loadingIndicator,
     insideForm,
-    value,
-    offset = 8,
+    overlayOffset = 8,
     inputStyles,
     optionStyles,
     triggerStyles,
     suffix,
     disallowEmptySelection,
-    selectionMode,
     listBoxStyles,
+    overlayStyles,
     hideTrigger,
     message,
     direction = 'bottom',
@@ -164,11 +165,12 @@ function ComboBox(props, ref) {
     targetRef: triggerRef,
     overlayRef: popoverRef,
     scrollRef: listBoxRef,
+    // @ts-ignore
     placement: `${direction} end`,
     shouldFlip: shouldFlip,
     isOpen: state.isOpen,
     onClose: state.close,
-    offset,
+    offset: overlayOffset,
   });
 
   if (prefix) {
@@ -177,29 +179,19 @@ function ComboBox(props, ref) {
 
   inputStyles.paddingRight = `${suffixWidth}px`;
 
-  let { isFocused, focusProps } = useFocus({ isDisabled, as: 'input' });
+  let { isFocused, focusProps } = useFocus({ isDisabled });
   let { hoverProps, isHovered } = useHover({ isDisabled });
 
-  // Expose imperative interface for ref
-  useImperativeHandle(ref, () => ({
-    ...createFocusableRef(ref, inputRef),
-    select() {
-      if (inputRef.current) {
-        inputRef.current.select();
-      }
-    },
-    getInputElement() {
-      return inputRef.current;
-    },
-  }));
-
   // Get props for the button based on the trigger props from useComboBox
-  let { buttonProps, isTriggerPressed } = useButton(triggerProps, triggerRef);
+  let { buttonProps, isPressed: isTriggerPressed } = useButton(
+    triggerProps,
+    triggerRef,
+  );
   let { hoverProps: triggerHoverProps, isHovered: isTriggerHovered } = useHover(
     { isDisabled },
   );
   let { focusProps: triggerFocusProps, isFocused: isTriggerFocused } = useFocus(
-    { isDisabled, as: 'button' },
+    { isDisabled },
     true,
   );
 
@@ -224,7 +216,7 @@ function ComboBox(props, ref) {
       })}
       styles={styles}
       style={{
-        zIndex: isFocused ? '1' : 'initial',
+        zIndex: isFocused ? 1 : 'initial',
       }}
     >
       <Base
@@ -246,7 +238,7 @@ function ComboBox(props, ref) {
           onWidthChange={setPrefixWidth}
           padding="0 1x 0 1.5x"
           opacity={isDisabled ? '@disabled-opacity' : false}
-          items="center"
+          placeItems="center"
           outerGap={0}
         >
           {prefix}
@@ -291,8 +283,8 @@ function ComboBox(props, ref) {
           state={state}
           disallowEmptySelection={disallowEmptySelection}
           listBoxStyles={listBoxStyles}
+          overlayStyles={overlayStyles}
           optionStyles={optionStyles}
-          selectionMode={selectionMode}
         />
       </OverlayWrapper>
     </Base>
@@ -320,6 +312,7 @@ function ComboBox(props, ref) {
   );
 }
 
-const _ComboBox = forwardRef(ComboBox);
-_ComboBox.Item = Item;
+const _ComboBox = Object.assign(forwardRef(ComboBox), {
+  Item,
+});
 export { _ComboBox as ComboBox };

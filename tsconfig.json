@@ -21,7 +21,8 @@
     "isolatedModules": true,
     "noImplicitAny": false,
     "target": "es5",
-    "noEmit": true
+    "noEmit": true,
+    "downlevelIteration": true
   },
   "include": ["src/**/*"],
   "exclude": ["src/**/*.stories.tsx", "src/**/*.stories.ts", "src/**/*.test.tsx", "src/**/*.test.ts", "src/App.tsx", "src/antd.js"]

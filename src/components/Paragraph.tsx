@@ -4,12 +4,21 @@ import {
   BASE_STYLES,
   BLOCK_STYLES,
   COLOR_STYLES,
-  POSITION_STYLES,
   DIMENSION_STYLES,
+  POSITION_STYLES,
   TEXT_STYLES,
 } from '../styles/list';
 import { extractStyles } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
+import {
+  BaseProps,
+  BaseStyleProps,
+  BlockStyleProps,
+  ColorStyleProps,
+  DimensionStyleProps,
+  PositionStyleProps,
+  TextStyleProps,
+} from './types';
 
 const DEFAULT_STYLES = {
   size: 'text',
@@ -26,7 +35,16 @@ const STYLE_PROPS = [
   ...DIMENSION_STYLES,
 ];
 
-export const Paragraph = forwardRef((props, ref) => {
+export interface ParagraphProps
+  extends BaseProps,
+    BaseStyleProps,
+    TextStyleProps,
+    BlockStyleProps,
+    ColorStyleProps,
+    PositionStyleProps,
+    DimensionStyleProps {}
+
+export const Paragraph = forwardRef((props: ParagraphProps, ref) => {
   const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
 
   return (

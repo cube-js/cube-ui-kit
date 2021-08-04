@@ -23,23 +23,29 @@ const BasePropNames = new Set([
   'target',
 ]);
 
-const ignoreEventPropsNames = [
+const ignoreEventPropsNames = new Set([
   'onPress',
   'onHoverStart',
   'onHoverEnd',
   'onPressStart',
   'onPressEnd',
-];
+]);
 
 const propRe = /^((data-).*)$/;
 const eventRe = /^on[A-Z].+$/;
+
+interface PropsFilterOptions {
+  labelable?: boolean;
+  propNames?: Set<string>;
+  eventProps?: boolean;
+}
 
 /**
  * Filters out all props that aren't valid DOM props or defined via override prop obj.
  * @param props - The component props to be filtered.
  * @param opts - Props to override.
  */
-export function filterBaseProps(props, opts = {}) {
+export function filterBaseProps(props, opts: PropsFilterOptions = {}) {
   let { labelable, propNames, eventProps } = opts;
   let filteredProps = {};
 
@@ -51,7 +57,7 @@ export function filterBaseProps(props, opts = {}) {
         (labelable && labelablePropNames.has(prop)) ||
         (eventProps &&
           eventRe.test(prop) &&
-          !ignoreEventPropsNames.includes(prop)) ||
+          !ignoreEventPropsNames.has(prop)) ||
         propNames?.has(prop) ||
         propRe.test(prop))
     ) {

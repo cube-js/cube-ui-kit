@@ -3,10 +3,11 @@ import { CONTAINER_STYLES, TEXT_STYLES } from '../styles/list';
 import { extractStyles } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
 import { Base } from './Base';
-import { useSlotProps } from '../utils/react/index';
+import { useSlotProps } from '../utils/react';
+import { BaseProps, ContainerStyleProps, TextStyleProps } from './types';
 
 const DEFAULT_STYLES = {
-  area: 'content',
+  gridArea: 'content',
   size: 'text',
   color: '#dark.75',
   display: 'block',
@@ -16,7 +17,12 @@ const DEFAULT_STYLES = {
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
-export const Content = forwardRef((props, ref) => {
+export interface ContentProps
+  extends BaseProps,
+    ContainerStyleProps,
+    TextStyleProps {}
+
+export const Content = forwardRef((props: ContentProps, ref) => {
   props = useSlotProps(props, 'content');
 
   const styles = extractStyles(props, STYLE_LIST, DEFAULT_STYLES);

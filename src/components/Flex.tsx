@@ -1,15 +1,9 @@
 import { forwardRef } from 'react';
 import { Base } from './Base';
-import {
-  BASE_STYLES,
-  BLOCK_STYLES,
-  COLOR_STYLES,
-  DIMENSION_STYLES,
-  FLOW_STYLES,
-  POSITION_STYLES,
-} from '../styles/list';
+import { CONTAINER_STYLES } from '../styles/list';
 import { extractStyles } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
+import { BaseProps, ContainerStyleProps, ShortItemsStyles } from './types';
 
 const DEFAULT_STYLES = {
   display: 'flex',
@@ -17,17 +11,25 @@ const DEFAULT_STYLES = {
   gap: '@(column-gap, 0)',
 };
 
-const STYLE_PROPS = [
-  ...BASE_STYLES,
-  ...BLOCK_STYLES,
-  ...COLOR_STYLES,
-  ...DIMENSION_STYLES,
-  ...FLOW_STYLES,
-  ...POSITION_STYLES,
-];
+export interface FlexProps
+  extends BaseProps,
+    ContainerStyleProps,
+    ShortItemsStyles {}
 
-export const Flex = forwardRef((props, ref) => {
-  const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
+const PROP_MAP = {
+  align: 'alignItems',
+  justify: 'justifyItems',
+} as const;
+
+export const Flex = forwardRef((props: FlexProps, ref) => {
+  const styles = extractStyles(
+    props,
+    CONTAINER_STYLES,
+    DEFAULT_STYLES,
+    PROP_MAP,
+  );
+
+  console.log('!!', styles);
 
   return (
     <Base

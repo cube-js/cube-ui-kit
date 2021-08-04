@@ -1,10 +1,27 @@
 import { forwardRef, useState, useEffect } from 'react';
-import { Action } from '../../components/Action';
+import { Action, ActionProps } from '../../components/Action';
 import { Space } from '../../components/Space';
-import { useCombinedRefs } from '../../utils/react/useCombinedRefs';
 import { LoadingOutlined } from '@ant-design/icons';
 import { propDeprecationWarning } from '../../utils/warnings';
 import { useContextStyles } from '../../providers/Styles';
+import { FocusableRef } from '@react-types/shared';
+import { NuStyles } from '../../styles/types';
+
+export interface ButtonProps extends ActionProps {
+  ghost?: boolean;
+  icon?: JSX.Element;
+  isLoading?: boolean;
+  isSelected?: boolean;
+  type?:
+    | 'primary'
+    | 'default'
+    | 'danger'
+    | 'link'
+    | 'clear'
+    | 'outline'
+    | 'tab'
+    | 'item';
+}
 
 export function provideStyles({
   size,
@@ -16,12 +33,12 @@ export function provideStyles({
   children,
 }) {
   return {
-    ...(STYLES_BY_SIZE[size] || STYLES_BY_SIZE.default),
+    ...STYLES_BY_SIZE[size || 'default'],
     ...DEFAULT_STYLES,
-    ...(STYLES_BY_TYPE[type] || STYLES_BY_TYPE.default),
+    ...STYLES_BY_TYPE[type || 'default'],
     ...(isDisabled
       ? {
-          ...(type !== 'tab' ? STYLES_BY_TYPE.disabled : {}),
+          ...(type !== 'tab' ? STYLES_BY_TYPE['disabled'] : {}),
         }
       : {}),
     ...(ghost ? { fill: '#clear' } : null),
@@ -29,7 +46,7 @@ export function provideStyles({
   };
 }
 
-const STYLES_BY_TYPE = {
+const STYLES_BY_TYPE: { [key in keyof ButtonProps['type']]: NuStyles } = {
   default: {
     border: {
       '': '#clear',
@@ -208,8 +225,8 @@ const CSS = `
 const DEPRECATED_PROPS = ['disabled', 'loading', 'onClick'];
 
 export const Button = forwardRef(
-  (
-    {
+  (allProps: ButtonProps, ref: FocusableRef<HTMLElement>) => {
+    let {
       type,
       size,
       label,
@@ -220,9 +237,8 @@ export const Button = forwardRef(
       icon,
       skipWarnings,
       ...props
-    },
-    ref,
-  ) => {
+    } = allProps;
+
     if (!skipWarnings) {
       propDeprecationWarning('Action', props, DEPRECATED_PROPS);
     }
@@ -233,7 +249,6 @@ export const Button = forwardRef(
     const [showLoadingIcon, setShowLoadingIcon] = useState(isLoading || false);
     const [pendingLoading, setPendingLoading] = useState(false);
     const [currentLoading, setCurrentLoading] = useState(isLoading);
-    const combinedRef = useCombinedRefs(ref);
     const propsForStyles = {
       ...props,
       isLoading,
@@ -254,7 +269,7 @@ export const Button = forwardRef(
       ...styles,
     };
 
-    if (isLoading && !children) {
+    if (isLoading && !children && styles) {
       styles.size = '1em 1em';
     }
 
@@ -278,12 +293,12 @@ export const Button = forwardRef(
 
     return (
       <Action
-        elementType={props.to ? 'a' : null}
+        as={props.to ? 'a' : undefined}
         css={`
-          ${CSS}${CSS_BY_TYPE[type] || ''}${css || ''}
+          ${CSS}${type ? CSS_BY_TYPE[type] : ''}${css || ''}
         `}
         {...props}
-        ref={combinedRef}
+        ref={ref}
         isDisabled={isLoading || isDisabled}
         data-is-loading={isLoading ? '' : undefined}
         data-is-selected={isSelected ? '' : undefined}

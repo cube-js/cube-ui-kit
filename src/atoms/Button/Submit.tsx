@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
-import { Button } from '../atoms/Button/Button';
-import { useProviderProps } from '../provider';
-import { useFormProps } from '../atoms/Form/Form';
+import { Button } from './Button';
+import { useProviderProps } from '../../provider';
+import { useFormProps } from '../Form/Form';
 
 function Submit(props) {
   props = useProviderProps(props);

@@ -1,11 +1,13 @@
-import { forwardRef, useEffect } from 'react';
+import { CSSProperties, forwardRef, useEffect } from 'react';
 import { Base } from './Base';
 import { CONTAINER_STYLES } from '../styles/list';
 import { extractStyles, parseStyle } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
-import { useCombinedRefs } from '../utils/react/useCombinedRefs';
+import { useCombinedRefs } from '../utils/react';
+import { BaseProps, ContainerStyleProps } from './types';
+import { NuStyles } from '../styles/types';
 
-const DEFAULT_STYLES = {
+const DEFAULT_STYLES: NuStyles = {
   display: 'grid',
   position: 'absolute',
   items: 'center',
@@ -17,27 +19,34 @@ const DEFAULT_STYLES = {
   height: '(100% - (2 * @prefix-gap))',
 };
 
-export const Prefix = forwardRef(
-  ({ onWidthChange, outerGap = '1bw', children, ...props }, ref) => {
-    const styles = extractStyles(props, CONTAINER_STYLES, DEFAULT_STYLES);
+export interface PrefixProps extends BaseProps, ContainerStyleProps {
+  onWidthChange?: Function;
+  outerGap?: CSSProperties['gap'];
+}
 
-    ref = useCombinedRefs(ref);
+export const Prefix = forwardRef((allProps: PrefixProps, outerRef) => {
+  let { onWidthChange, outerGap = '1bw', children, ...props } = allProps;
 
-    useEffect(() => {
-      if (ref && ref.current && onWidthChange) {
-        onWidthChange(ref.current.offsetWidth);
-      }
-    }, [children, ref, onWidthChange]);
+  const styles = extractStyles(props, CONTAINER_STYLES, DEFAULT_STYLES);
+  const ref = useCombinedRefs(outerRef);
 
-    return (
-      <Base
-        {...filterBaseProps(props, { eventProps: true })}
-        styles={styles}
-        ref={ref}
-        style={{ '--prefix-gap': parseStyle(outerGap).value }}
-      >
-        {children}
-      </Base>
-    );
-  },
-);
+  useEffect(() => {
+    if (ref?.current && onWidthChange) {
+      onWidthChange(ref.current.offsetWidth);
+    }
+  }, [children, ref, onWidthChange]);
+
+  return (
+    <Base
+      {...filterBaseProps(props, { eventProps: true })}
+      styles={styles}
+      ref={ref}
+      style={{
+        // @ts-ignore
+        '--prefix-gap': parseStyle(outerGap).value,
+      }}
+    >
+      {children}
+    </Base>
+  );
+});

@@ -1,25 +1,41 @@
-import { createContext, useContext } from 'react';
+import { createContext, PropsWithChildren, useContext } from 'react';
 import { StyleProvider } from './providers/Styles';
 import { ResponsiveProvider } from './providers/Responsive';
+import { NuResponsiveStyleValue } from './utils/styles';
+import { Props } from './components/types';
 
-export const UIKitContext = createContext({
+export const UIKitContext = createContext<ProviderProps>({
   breakpoints: [980],
 });
 
-export function Provider({
-  breakpoints,
-  children,
-  insideForm,
-  isQuiet,
-  isEmphasized,
-  isDisabled,
-  isReadOnly,
-  isRequired,
-  validationState,
-  router,
-  styles,
-  ref,
-}) {
+export interface ProviderProps extends Props {
+  breakpoints?: number[];
+  insideForm?: boolean;
+  isDisabled?: boolean;
+  isReadOnly?: boolean;
+  isRequired?: boolean;
+  validationState?: string;
+  router?: Function;
+  styles?: {
+    [key: string]: { [key: string]: NuResponsiveStyleValue } | Function;
+  };
+  ref?: JSX.Element;
+}
+
+export function Provider(allProps: PropsWithChildren<ProviderProps>) {
+  let {
+    breakpoints,
+    children,
+    insideForm,
+    isDisabled,
+    isReadOnly,
+    isRequired,
+    validationState,
+    router,
+    styles,
+    ref,
+  } = allProps;
+
   if (styles) {
     children = <StyleProvider {...styles}>{children}</StyleProvider>;
   }
@@ -35,8 +51,6 @@ export function Provider({
     ref,
     breakpoints,
     insideForm,
-    isQuiet,
-    isEmphasized,
     isDisabled,
     isReadOnly,
     isRequired,
@@ -56,6 +70,6 @@ export function Provider({
   );
 }
 
-export function useProviderProps(props) {
+export function useProviderProps<T = Props>(props: T): T {
   return { ...useContext(UIKitContext), ...props };
 }

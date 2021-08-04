@@ -3,19 +3,24 @@ import { CONTAINER_STYLES, TEXT_STYLES } from '../styles/list';
 import { extractStyles } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
 import { Base } from './Base';
-import { useSlotProps } from '../utils/react/index';
+import { useSlotProps } from '../utils/react';
+import { BaseProps, ContainerStyleProps, TextStyleProps } from './types';
 
 const DEFAULT_STYLES = {
-  area: 'header',
+  gridArea: 'header',
   display: 'block',
   flow: 'column',
 };
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
-export const Header = forwardRef((props, ref) => {
-  props = useSlotProps(props, 'header');
+export interface HeaderProps
+  extends BaseProps,
+    ContainerStyleProps,
+    TextStyleProps {}
 
+export const Header = forwardRef((allProps: HeaderProps, ref) => {
+  const props = useSlotProps(allProps, 'header');
   const styles = extractStyles(props, STYLE_LIST, DEFAULT_STYLES);
 
   return (

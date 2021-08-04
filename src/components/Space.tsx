@@ -1,42 +1,43 @@
 import { forwardRef } from 'react';
 import { Base } from './Base';
-import {
-  BASE_STYLES,
-  BLOCK_STYLES,
-  COLOR_STYLES,
-  DIMENSION_STYLES,
-  FLOW_STYLES,
-  POSITION_STYLES,
-} from '../styles/list';
+import { CONTAINER_STYLES } from '../styles/list';
 import { extractStyles } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
+import { BaseProps, ContainerStyleProps, ShortItemsStyles } from './types';
 
 const DEFAULT_STYLES = {
   display: 'flex',
   gap: true,
-  items: 'center stretch',
 };
 
-const STYLE_PROPS = [
-  ...BASE_STYLES,
-  ...COLOR_STYLES,
-  ...POSITION_STYLES,
-  ...DIMENSION_STYLES,
-  ...BLOCK_STYLES,
-  ...FLOW_STYLES,
-];
+export interface SpaceProps
+  extends BaseProps,
+    ContainerStyleProps,
+    ShortItemsStyles {
+  direction?: 'vertical' | 'horizontal';
+}
 
-export const Space = forwardRef(function Space(props, ref) {
+const PROP_MAP = {
+  align: 'alignItems',
+  justify: 'justifyItems',
+} as const;
+
+export const Space = forwardRef(function Space(props: SpaceProps, ref) {
   const flow = props.direction
     ? props.direction === 'vertical'
       ? 'column'
       : 'row'
     : props.flow || 'row';
-  const styles = extractStyles(props, STYLE_PROPS, {
-    ...DEFAULT_STYLES,
-    flow,
-    items: props.align ? props.align : flow === 'row' ? 'center' : 'stretch',
-  });
+  const styles = extractStyles(
+    props,
+    CONTAINER_STYLES,
+    {
+      ...DEFAULT_STYLES,
+      flow,
+      alignItems: flow === 'row' ? 'center' : 'stretch',
+    },
+    PROP_MAP,
+  );
 
   return (
     <Base

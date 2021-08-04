@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { CloseOutlined } from '@ant-design/icons';
 import { Block } from '../../components/Block';
 import { Action } from '../../components/Action';
@@ -73,7 +80,7 @@ const TABS_CONTAINER_CSS = `
     );
     z-index: 10;
   }
-  
+
   &[data-is-left-fade]::before, &[data-is-right-fade]::after {
     opacity: 1;
   }
@@ -132,10 +139,10 @@ const CLOSE_STYLES = {
 const TAB_CSS = `
   margin-bottom: var(--border-width);
   transform: translate(0, 0);
-  transition: color .2s linear, background-color .2s linear; 
+  transition: color .2s linear, background-color .2s linear;
 
   &[disabled] {
-    transform: translate(0, var(--border-width));  
+    transform: translate(0, var(--border-width));
   }
 
   &.file-tab--dirty {
@@ -144,21 +151,21 @@ const TAB_CSS = `
         opacity: 0;
         pointer-events: none;
       }
-      
+
       & .file-tab-close {
         opacity: 1;
       }
     }
-    
+
     &:not(:hover) {
       & .file-tab-dirty-badge {
         opacity: 1;
       }
-      
+
       & .file-tab-close {
         opacity: 0;
       }
-    }  
+    }
   }
 `;
 
@@ -181,7 +188,7 @@ const Tab = ({
       <Space gap=".75x">
         <Block>{children}</Block>
         {(isClosable || isDirty) && (
-          <Flex items="center" style={{ position: 'relative' }}>
+          <Flex placeItems="center" style={{ position: 'relative' }}>
             {isClosable ? (
               <Action
                 onPress={onClose}
@@ -363,7 +370,7 @@ export function FileTabs({
           currentTab: activeKey,
         }}
       >
-        <Space ref={tabsRef} gap=".5x" shrink="0" css={TABS_PANEL_CSS}>
+        <Space ref={tabsRef} gap=".5x" flexShrink={0} css={TABS_PANEL_CSS}>
           {tabs.map((tab) => {
             return (
               <Tab
@@ -379,7 +386,11 @@ export function FileTabs({
             );
           })}
         </Space>
-        <Flex grow="1" border="top rgb(227, 227, 233)" {...(paneStyles || {})}>
+        <Flex
+          flexGrow={1}
+          border="top rgb(227, 227, 233)"
+          {...(paneStyles || {})}
+        >
           {children}
         </Flex>
       </FileTabsContext.Provider>
@@ -420,7 +431,7 @@ FileTabs.TabPane = function FileTabPane({
   return (
     <Block
       style={{ display: isCurrent ? 'block' : 'none' }}
-      grow="1"
+      flexGrow={1}
       {...props}
     >
       {children}

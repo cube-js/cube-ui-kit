@@ -53,7 +53,7 @@ function Item({ children, indent, onPress, isSelected }) {
 }
 
 const HOVER_CSS = `
-  &:hover .actions { 
+  &:hover .actions {
     opacity: 1;
   }
   &:not(:hover) .actions {
@@ -133,7 +133,7 @@ export function SearchResults({
             >
               <Space gap=".5x" css={HOVER_CSS}>
                 <Button
-                  type="clear"
+                  variant="clear"
                   margin="-.5x"
                   padding=".25x"
                   color={{
@@ -152,7 +152,7 @@ export function SearchResults({
                 </Button>
                 <Space
                   gap="1x"
-                  grow="1"
+                  flexGrow={1}
                   color={selected === file.key ? '#purple' : '#dark.50'}
                 >
                   {expanded.includes(file.key) ? (
@@ -196,7 +196,7 @@ export function SearchResults({
                     >
                       <Block
                         style={TEXT_OVERFLOW_STYLES}
-                        grow="1"
+                        flexGrow={1}
                         color={isSelected ? '#purple-text' : '#dark.75'}
                       >
                         {item.before || ''}

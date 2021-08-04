@@ -13,8 +13,8 @@ const DEFAULT_STYLES = {
   display: 'flex',
   flow: 'row',
   gap: '1x',
-  content: 'space-between',
-  items: 'center',
+  placeContent: 'space-between',
+  placeItems: 'center',
   padding: '1x 1.5x',
   fill: '#white',
 };
@@ -32,7 +32,7 @@ export function TopBar({ children, onLogoPress, ...props }) {
   return (
     <Base role="banner" {...props} styles={styles}>
       <CloudLogo onPress={onLogoPress} />
-      <Space grow={1} content="space-between">
+      <Space flexGrow={1} placeContent="space-between">
         {children}
       </Space>
     </Base>

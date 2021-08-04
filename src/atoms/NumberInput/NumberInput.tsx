@@ -39,10 +39,10 @@ function NumberInput(props, ref) {
           <Base
             styles={{
               display: 'grid',
-              columns: '1fr',
-              rows: 'minmax(1px, 1fr) minmax(1px, 1fr)',
+              gridColumns: '1fr',
+              gridRows: 'minmax(1px, 1fr) minmax(1px, 1fr)',
               flow: 'column',
-              place: 'stretch',
+              placeSelf: 'stretch',
             }}
           >
             <StepButton direction="up" {...incrementButtonProps} />

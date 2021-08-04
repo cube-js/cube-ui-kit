@@ -7,7 +7,7 @@ const LAYOUT_MAP = {
   page({ lines, children, ...props }) {
     return (
       <Flow gap="4x" {...props}>
-        <Space content="space-between">
+        <Space placeContent="space-between">
           <Placeholder width="100px 25% 300px" />
           <Placeholder width="50px 10% 150px" />
         </Space>
@@ -34,7 +34,7 @@ const LAYOUT_MAP = {
     return (
       <Space
         gap="4x"
-        content="space-between"
+        placeContent="space-between"
         height="6x"
         padding="1x"
         border="bottom"
@@ -128,7 +128,7 @@ const LAYOUT_MAP = {
         columns={`repeat(${columns}, 1fr)`}
         gap="3x"
         padding="1x 0"
-        items="end stretch"
+        placeItems="end stretch"
         height="40x"
         {...props}
       >

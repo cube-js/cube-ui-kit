@@ -23,10 +23,10 @@ function PasswordInput(props, ref) {
     <>
       {props.suffix}
       <Button
-        type="item"
+        variant="item"
         onPress={toggleType}
         preventDefault
-        place="stretch"
+        placeSelf="stretch"
         radius="right (1r - 1bw)"
         padding=".5x 1x"
         aria-label="Toggle masking"

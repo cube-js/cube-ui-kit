@@ -72,7 +72,7 @@ Use Space Component to create a row or a column of elements.
 Use Flex Component for more flexible layouts.
 
 ```
-<Flex flow="row" content="space-between" items="center">
+<Flex flow="row" placeContent="space-between" placeItems="center">
   <Button>One</Button>
   <Button>Two</Button>
   <Button>Three</Button>
@@ -81,7 +81,7 @@ Use Flex Component for more flexible layouts.
 ```
 
 <Card>
-  <Flex flow="row" gap="4x" content="space-between" items="center">
+  <Flex flow="row" gap="4x" placeContent="space-between" placeItems="center">
     <Button>One</Button>
     <Button>Two</Button>
     <Button>Three</Button>
@@ -96,16 +96,16 @@ Use Grid Component for grid layouts.
 ### Simple layout with side bar.
 
 ```
-<Grid columns="200px 1fr" height="500px">
-  <Card column="1 / -1">Header</Card>
+<Grid gridColumns="200px 1fr" gridRows="60px 1fr" height="500px">
+  <Card gridColumn="1 / -1">Header</Card>
   <Card>Sidebar</Card>
   <Card>Content</Card>
 </Grid>
 ```
 
 <Card>
-  <Grid columns="200px 1fr" rows="60px 1fr" height="500px" gap="1x">
-    <Card column="1 / -1">Header</Card>
+  <Grid gridColumns="200px 1fr" gridRows="60px 1fr" height="500px" gap="1x">
+    <Card gridColumn="1 / -1">Header</Card>
     <Card>Sidebar</Card>
     <Card>Content</Card>
   </Grid>

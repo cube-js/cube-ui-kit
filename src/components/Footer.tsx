@@ -3,17 +3,23 @@ import { CONTAINER_STYLES, TEXT_STYLES } from '../styles/list';
 import { extractStyles } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
 import { Base } from './Base';
-import { useSlotProps } from '../utils/react/index';
+import { useSlotProps } from '../utils/react';
+import { BaseProps, ContainerStyleProps, TextStyleProps } from './types';
 
 const DEFAULT_STYLES = {
-  area: 'footer',
+  gridArea: 'footer',
   display: 'block',
   flow: 'column',
 };
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
-export const Footer = forwardRef((props, ref) => {
+export interface FooterProps
+  extends BaseProps,
+    ContainerStyleProps,
+    TextStyleProps {}
+
+export const Footer = forwardRef((props: FooterProps, ref) => {
   props = useSlotProps(props, 'footer');
 
   const styles = extractStyles(props, STYLE_LIST, DEFAULT_STYLES);

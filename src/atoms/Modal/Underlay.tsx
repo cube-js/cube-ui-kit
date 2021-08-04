@@ -8,7 +8,7 @@ const UNDERLAY_STYLES = {
   right: 0,
   bottom: 0,
   left: 0,
-  z: 1,
+  zIndex: 1,
   transitionDelay: '0ms',
   // visibility: {
   //   '': 'hidden',

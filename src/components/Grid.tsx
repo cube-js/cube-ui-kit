@@ -1,15 +1,14 @@
 import { forwardRef } from 'react';
 import { Base } from './Base';
-import {
-  BASE_STYLES,
-  BLOCK_STYLES,
-  COLOR_STYLES,
-  DIMENSION_STYLES,
-  FLOW_STYLES,
-  POSITION_STYLES,
-} from '../styles/list';
+import { CONTAINER_STYLES } from '../styles/list';
 import { extractStyles } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
+import {
+  BaseProps,
+  ContainerStyleProps,
+  ShortGridStyles,
+  ShortItemsStyles,
+} from './types';
 
 const DEFAULT_STYLES = {
   display: 'grid',
@@ -17,17 +16,28 @@ const DEFAULT_STYLES = {
   gap: '@(column-gap, 0)',
 };
 
-const STYLE_PROPS = [
-  ...BASE_STYLES,
-  ...COLOR_STYLES,
-  ...POSITION_STYLES,
-  ...DIMENSION_STYLES,
-  ...BLOCK_STYLES,
-  ...FLOW_STYLES,
-];
+export interface GridProps
+  extends BaseProps,
+    ContainerStyleProps,
+    ShortItemsStyles,
+    ShortGridStyles {}
 
-export const Grid = forwardRef((props, ref) => {
-  const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
+const PROP_MAP = {
+  align: 'alignItems',
+  justify: 'justifyItems',
+  template: 'gridTemplate',
+  columns: 'gridColumns',
+  rows: 'gridRows',
+  areas: 'gridAreas',
+} as const;
+
+export const Grid = forwardRef((props: GridProps, ref) => {
+  const styles = extractStyles(
+    props,
+    CONTAINER_STYLES,
+    DEFAULT_STYLES,
+    PROP_MAP,
+  );
 
   return (
     <Base

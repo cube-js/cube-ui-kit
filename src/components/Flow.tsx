@@ -3,6 +3,7 @@ import { Base } from './Base';
 import { CONTAINER_STYLES } from '../styles/list';
 import { extractStyles } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
+import { BaseProps, ContainerStyleProps } from './types';
 
 const DEFAULT_STYLES = {
   display: 'block',
@@ -11,7 +12,9 @@ const DEFAULT_STYLES = {
 
 const STYLE_PROPS = CONTAINER_STYLES;
 
-export const Flow = forwardRef((props, ref) => {
+export interface FlexProps extends BaseProps, ContainerStyleProps {}
+
+export const Flow = forwardRef((props: FlexProps, ref) => {
   const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
 
   return (

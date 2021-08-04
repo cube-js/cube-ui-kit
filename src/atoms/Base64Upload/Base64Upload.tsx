@@ -6,6 +6,8 @@ import styled from 'styled-components';
 import { extractStyles } from '../../utils/styles';
 import { POSITION_STYLES } from '../../styles/list';
 import { filterBaseProps } from '../../utils/filterBaseProps';
+import { BaseProps, PositionStyleProps } from '../../components/types';
+import { FocusableRef } from '@react-types/shared';
 
 const DEFAULT_STYLES = {
   display: 'inline-flex',
@@ -18,8 +20,14 @@ const DEFAULT_STYLES = {
   fontWeight: 400,
 };
 
+export interface Base64UploadProps extends BaseProps, PositionStyleProps {
+  onInput?: Function;
+}
+
 export const Base64Upload = styled(
-  forwardRef(({ type, onInput, ...props }, ref) => {
+  forwardRef((allProps: Base64UploadProps, ref: FocusableRef<HTMLElement>) => {
+    const { onInput, ...props } = allProps;
+
     const styles = extractStyles(props, POSITION_STYLES, DEFAULT_STYLES);
     const [file, setFile] = useState();
     const [error, setError] = useState('');
@@ -44,9 +52,9 @@ export const Base64Upload = styled(
         /**
          * @type {string}
          */
-        const text = reader.result;
+        const text = String(reader.result);
 
-        let base64text;
+        let base64text: string;
 
         try {
           JSON.parse(text);
@@ -79,7 +87,6 @@ export const Base64Upload = styled(
     return (
       <>
         <Button
-          tag="button"
           {...filterBaseProps(props, { eventProps: true })}
           styles={styles}
           ref={ref}

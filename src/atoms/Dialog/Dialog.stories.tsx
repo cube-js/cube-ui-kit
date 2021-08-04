@@ -116,7 +116,7 @@ const Template = ({ size, ...props }) => {
             size={size}
             // styles={{
             //   width: '320px',
-            //   place: 'end',
+            //   placeSelf: 'end',
             //   height: '@cube-visual-viewport-height',
             // }}
           >
@@ -129,7 +129,7 @@ const Template = ({ size, ...props }) => {
             </Content>
             <Footer>Footer</Footer>
             <ButtonGroup>
-              <Button onPress={close} type="primary">
+              <Button onPress={close} variant="primary">
                 Action
               </Button>
               <Button onPress={close}>Sec</Button>

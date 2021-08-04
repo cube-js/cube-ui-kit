@@ -21,13 +21,13 @@ export const OVERLAY_WRAPPER_STYLES = {
   width: '100vw',
   height: '@cube-visual-viewport-height',
   pointerEvents: 'none',
-  z: 2,
+  zIndex: 2,
   transition: 'visibility 0ms linear .13s',
 };
 
 const MODAL_STYLES = {
   display: 'grid',
-  z: 2,
+  zIndex: 2,
   height: {
     '': 'max (@cube-visual-viewport-height * .9)',
     '[data-type="fullscreenTakeover"] | [data-type="panel"]':

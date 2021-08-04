@@ -1,11 +1,12 @@
 import { forwardRef } from 'react';
 import { Base } from './Base';
 import { Label } from './Label';
-import { modAttrs } from '../utils/react/modAttrs';
+import { LabelPosition, NecessityIndicator, ValidationState } from '../shared';
+import { NuStyles } from '../styles/types';
 
 const FIELD_STYLES = {
   display: 'grid',
-  columns: {
+  gridColumns: {
     '': '1fr',
     'has-sider': 'auto 1fr',
   },
@@ -33,8 +34,27 @@ const MESSAGE_STYLES = {
   userSelect: 'none',
 };
 
-function FieldWrapper(
-  {
+export type FieldWrapperProps = {
+  as: string;
+  labelPosition: LabelPosition;
+  label?: string;
+  insideForm?: boolean;
+  styles?: NuStyles;
+  isRequired?: boolean;
+  isDisabled?: boolean;
+  labelStyles?: NuStyles;
+  necessityIndicator?: NecessityIndicator;
+  labelProps?: any;
+  fieldProps?: any;
+  message?: string | JSX.Element;
+  messageStyles?: NuStyles;
+  Component?: JSX.Element;
+  validationState?: ValidationState;
+  requiredMark?: boolean;
+};
+
+function FieldWrapper(props, ref) {
+  const {
     as,
     labelPosition,
     label,
@@ -51,22 +71,20 @@ function FieldWrapper(
     Component,
     validationState,
     requiredMark = true,
-  },
-  ref,
-) {
-  const modProps = modAttrs({
+  } = props;
+  const mods = {
     'has-sider': labelPosition === 'side' && label,
     'inside-form': insideForm,
     invalid: validationState === 'invalid',
     valid: validationState === 'valid',
-  });
+  };
 
   return (
     <Base
       as={as || 'div'}
       qa="Field"
       ref={ref}
-      {...modProps}
+      mods={mods}
       styles={{
         ...FIELD_STYLES,
         ...styles,
@@ -90,26 +108,18 @@ function FieldWrapper(
       {Component}
       {message && !isDisabled && (
         <Base
-          {...modProps}
+          mods={mods}
           styles={{
             ...MESSAGE_STYLES,
             ...messageStyles,
           }}
-          role={validationState === 'invalid' ? 'alert' : null}
+          role={validationState === 'invalid' ? 'alert' : undefined}
         >
           {message}
         </Base>
       )}
     </Base>
   );
-
-  // return React.cloneElement(
-  //   Component,
-  //   mergeProps(Component.props, {
-  //     ref,
-  //     styles,
-  //   }),
-  // );
 }
 
 const _FieldWrapper = forwardRef(FieldWrapper);

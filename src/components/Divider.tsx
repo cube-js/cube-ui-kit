@@ -3,10 +3,11 @@ import { Base } from './Base';
 import { OUTER_STYLES } from '../styles/list';
 import { extractStyles } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
-import { useSlotProps } from '../utils/react/index';
+import { useSlotProps } from '../utils/react';
+import { BaseProps, OuterStyleProps } from './types';
 
 const DEFAULT_STYLES = {
-  area: 'divider',
+  gridArea: 'divider',
   display: 'block',
   height: '1bw 1bw',
   fill: '#border',
@@ -14,7 +15,9 @@ const DEFAULT_STYLES = {
   margin: '0',
 };
 
-export const Divider = forwardRef((props, ref) => {
+export interface DividerProps extends BaseProps, OuterStyleProps {}
+
+export const Divider = forwardRef((props: DividerProps, ref) => {
   props = useSlotProps(props, 'divider');
 
   const styles = extractStyles(props, OUTER_STYLES, DEFAULT_STYLES);

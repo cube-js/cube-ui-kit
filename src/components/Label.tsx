@@ -1,12 +1,14 @@
 import { useDOMRef } from '@react-spectrum/utils';
-import { forwardRef } from 'react';
+import { forwardRef, MouseEventHandler } from 'react';
 import { useProviderProps } from '../provider';
 import { extractStyles } from '../utils/styles';
 import { CONTAINER_STYLES } from '../styles/list';
 import { Base } from './Base';
 import { useContextStyles } from '../providers/Styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
-import { modAttrs } from '../utils/react/index';
+import { BaseProps, ContainerStyleProps } from './types';
+import { LabelPosition, NecessityIndicator, ValidationState } from '../shared';
+import { NuStyles } from '../styles/types';
 
 const REQUIRED_ICON = (
   <svg
@@ -16,6 +18,7 @@ const REQUIRED_ICON = (
     y="0px"
     viewBox="0 0 100 125"
     style={{
+      // @ts-ignore
       enableBackground: 'new 0 0 100 100',
       width: '.8em',
       height: '.8em',
@@ -38,7 +41,7 @@ const INTL_MESSAGES = {
   '(optional)': '(optional)',
 };
 
-export const INLINE_LABEL_STYLES = {
+export const INLINE_LABEL_STYLES: NuStyles = {
   fontWeight: 400,
   size: 'md',
   color: {
@@ -47,9 +50,9 @@ export const INLINE_LABEL_STYLES = {
     disabled: '#dark.30',
   },
   whiteSpace: 'nowrap',
-};
+} as const;
 
-export const LABEL_STYLES = {
+export const LABEL_STYLES: NuStyles = {
   display: 'block',
   fontWeight: 600,
   size: 'md',
@@ -63,10 +66,21 @@ export const LABEL_STYLES = {
     disabled: '#dark.30',
   },
   whiteSpace: 'nowrap',
-};
+} as const;
 
-function Label(props, ref) {
-  props = useProviderProps(props);
+export interface LabelProps extends BaseProps, ContainerStyleProps {
+  labelPosition?: LabelPosition;
+  necessityIndicator?: NecessityIndicator;
+  isRequired?: boolean;
+  includeNecessityIndicatorInAccessibilityName?: boolean;
+  htmlFor?: string;
+  for?: string;
+  validationState?: ValidationState;
+  onClick?: MouseEventHandler;
+}
+
+function Label(props: LabelProps, ref) {
+  props = useProviderProps<LabelProps>(props);
 
   let {
     as,
@@ -118,12 +132,12 @@ function Label(props, ref) {
       ref={domRef}
       styles={styles}
       htmlFor={labelFor || htmlFor}
-      {...modAttrs({
-        side: labelPosition === 'left',
+      mods={{
+        side: labelPosition === 'side',
         disabled: isDisabled,
         invalid: validationState === 'invalid',
         valid: validationState === 'valid',
-      })}
+      }}
     >
       {typeof children !== 'string' ? (
         children

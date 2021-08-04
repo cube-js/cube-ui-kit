@@ -1,13 +1,9 @@
-import { useState, useCallback, useEffect, forwardRef } from 'react';
+import { forwardRef, useCallback, useEffect, useState } from 'react';
 import { filterBaseProps } from '../utils/filterBaseProps';
-import { useCombinedRefs } from '../utils/react/useCombinedRefs';
-import { CUSTOM_UNITS, parseStyle } from '../utils/styles';
+import { useCombinedRefs } from '../utils/react';
 import { Base } from './Base';
-
-// Declare `sp` custom unit for styles
-CUSTOM_UNITS.sp = function spanWidth(num) {
-  return `((${num} * var(--column-width)) + (${num - 1} * var(--column-gap)))`;
-};
+import { ChildrenProp } from './types';
+import { NuStyles } from '../styles/types';
 
 const DEFAULT_STYLES = {
   display: 'contents',
@@ -16,8 +12,16 @@ const DEFAULT_STYLES = {
 const COLUMN_WIDTH =
   '((@grid-width - (@column-gap * (@columns-amount - 1))) / @columns-amount)';
 
-export const GridProvider = forwardRef((props, ref) => {
-  ref = useCombinedRefs(ref);
+export interface GridProviderProps {
+  children: ChildrenProp;
+  columns?: number;
+  gap?: NuStyles['gap'];
+  width?: NuStyles['width'];
+  initialWidth?: NuStyles['width'];
+}
+
+export const GridProvider = forwardRef((props: GridProviderProps, outerRef) => {
+  let ref = useCombinedRefs(outerRef);
 
   let {
     children,
@@ -27,18 +31,12 @@ export const GridProvider = forwardRef((props, ref) => {
     initialWidth,
   } = props;
 
-  let [width, setWidth] = useState(
+  let [width, setWidth] = useState<NuStyles['width']>(
     forcedWidth || initialWidth || '100vw',
   );
 
-  if (typeof gap === 'number') {
-    gap = `${gap}px`;
-  }
-
-  gap = parseStyle(gap).values[0] || '0';
-
   const resizeCallback = useCallback(() => {
-    const el = ref && ref.current && ref.current.parentNode;
+    const el = ref?.current?.parentElement;
 
     if (!el) return;
 

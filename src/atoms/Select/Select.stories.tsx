@@ -84,7 +84,15 @@ export default {
   },
 };
 
-const options = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'violet'];
+const options = [
+  'red',
+  'orange',
+  'yellow',
+  'green',
+  'blue',
+  'purple',
+  'violet',
+];
 
 const Template = ({
   icon,
@@ -112,8 +120,8 @@ const Template = ({
       type={type}
       onChange={(query) => console.log('change', query)}
     >
-      {options.map(option => {
-        return <Select.Item key={option}>{option}</Select.Item>
+      {options.map((option) => {
+        return <Select.Item key={option}>{option}</Select.Item>;
       })}
     </Select>
   );

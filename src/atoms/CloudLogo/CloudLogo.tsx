@@ -1,6 +1,9 @@
-import { useRef } from 'react';
+import { forwardRef } from 'react';
 import styled from 'styled-components';
 import { useButton } from '@react-aria/button';
+import { useFocusableRef } from '@react-spectrum/utils';
+import { FocusableRef } from '@react-types/shared';
+import { ButtonProps } from '../Button/Button';
 
 const Button = styled.button((props) => {
   return `
@@ -18,16 +21,16 @@ const Button = styled.button((props) => {
   `;
 });
 
-export function CloudLogo(props) {
-  let ref = useRef();
-  let { buttonProps } = useButton(props, ref);
+function CloudLogo(props: ButtonProps, ref: FocusableRef<HTMLButtonElement>) {
+  let domRef = useFocusableRef(ref);
+  let { buttonProps } = useButton(props, domRef);
 
   return (
     <Button
       data-qa="HeaderCubeCloudLogo"
       {...buttonProps}
       isLink={!!props.onPress}
-      ref={ref}
+      ref={domRef}
     >
       <svg
         width="159"
@@ -64,3 +67,6 @@ export function CloudLogo(props) {
     </Button>
   );
 }
+
+const _CloudLogo = forwardRef(CloudLogo);
+export { _CloudLogo as CloudLogo };
