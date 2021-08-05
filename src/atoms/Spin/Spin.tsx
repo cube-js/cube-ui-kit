@@ -1,4 +1,5 @@
 import { Block, CubeBlockProps } from '../../components/Block';
+import { NuStyles } from '../../styles/types';
 
 const SIZE_MAP = {
   small: 3,

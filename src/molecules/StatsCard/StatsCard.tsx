@@ -8,7 +8,7 @@ export interface CubeStatsCard extends CubeCardProps {
   suffix?: string | number;
 }
 
-export function StatsCard({ title, value, suffix, ...props }) {
+export function StatsCard({ title, value, suffix, ...props }: CubeStatsCard) {
   return (
     <Card
       gap="1x"
