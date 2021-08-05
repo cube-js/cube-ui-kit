@@ -9,13 +9,13 @@ import { propDeprecationWarning } from '../utils/warnings';
 import { extractStyles } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
 import { UIKitContext } from '../provider';
-import { BaseProps, ContainerStyleProps, Props, TextStyleProps } from './types';
+import { BaseProps, ContainerStyleProps, TextStyleProps } from './types';
 import { AriaButtonProps } from '@react-types/button';
 import { NuStyles } from '../styles/types';
 import { useFocusableRef } from '@react-spectrum/utils';
 import { FocusableRef } from '@react-types/shared';
 
-export interface ActionProps
+export interface CubeActionProps
   extends BaseProps,
     ContainerStyleProps,
     TextStyleProps,
@@ -135,7 +135,7 @@ export const Action = forwardRef(
       skipWarnings,
       preventDefault,
       ...props
-    }: ActionProps,
+    }: CubeActionProps,
     ref: FocusableRef<HTMLElement>,
   ) => {
     if (!skipWarnings) {

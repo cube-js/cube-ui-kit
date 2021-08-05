@@ -1,12 +1,15 @@
-import { useDOMRef } from '@react-spectrum/utils';
 import { mergeProps } from '@react-aria/utils';
 import { Overlay } from './Overlay';
-import { forwardRef } from 'react';
+import { forwardRef, HTMLAttributes } from 'react';
 import { useModal, useOverlay } from '@react-aria/overlays';
 import { Base } from '../../components/Base';
 import { useContextStyles } from '../../providers/Styles';
+import { OverlayProps } from '@react-types/overlays';
+import { BaseProps } from '../../components/types';
+import { PlacementAxis } from '../../shared';
+import { NuStyles } from '../../styles/types';
 
-const POPOVER_STYLES = {
+const POPOVER_STYLES: NuStyles = {
   pointerEvents: 'auto',
   position: 'absolute',
   transition:
@@ -25,7 +28,20 @@ const POPOVER_STYLES = {
   },
 };
 
-function Popover(props, ref) {
+export interface CubePopoverProps
+  extends BaseProps,
+    Omit<OverlayProps, 'children'> {
+  placement?: PlacementAxis;
+  arrowProps?: HTMLAttributes<HTMLElement>;
+  hideArrow?: boolean;
+  isOpen?: boolean;
+  onClose?: () => void;
+  shouldCloseOnBlur?: boolean;
+  isNonModal?: boolean;
+  isDismissable?: boolean;
+}
+
+function Popover(props: CubePopoverProps, ref) {
   let {
     qa,
     style,
@@ -40,13 +56,12 @@ function Popover(props, ref) {
     isDismissable = true,
     ...otherProps
   } = props;
-  let domRef = useDOMRef(ref);
 
   return (
     <Overlay {...otherProps}>
       <PopoverWrapper
         qa={qa}
-        ref={domRef}
+        ref={ref}
         style={style}
         styles={styles}
         placement={placement}
@@ -63,7 +78,7 @@ function Popover(props, ref) {
   );
 }
 
-const PopoverWrapper = forwardRef((props, ref) => {
+const PopoverWrapper = forwardRef((props: CubePopoverProps, ref) => {
   let {
     qa,
     children,
@@ -80,6 +95,7 @@ const PopoverWrapper = forwardRef((props, ref) => {
   } = props;
   let { overlayProps } = useOverlay(
     { ...props, isDismissable: isDismissable && isOpen },
+    // @ts-ignore
     ref,
   );
   let { modalProps } = useModal({

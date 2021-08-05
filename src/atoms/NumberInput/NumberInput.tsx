@@ -2,11 +2,19 @@ import { forwardRef, useRef } from 'react';
 import { useFormProps } from '../Form/Form';
 import { useProviderProps } from '../../provider';
 import { useLocale } from '@react-aria/i18n';
-import { TextInputBase } from '../TextInput/TextInputBase';
+import {
+  CubeTextInputBaseProps,
+  TextInputBase,
+} from '../TextInput/TextInputBase';
 import { useNumberFieldState } from '@react-stately/numberfield';
 import { useNumberField } from '@react-aria/numberfield';
 import { Base } from '../../components/Base';
 import { StepButton } from './StepButton';
+import { AriaNumberFieldProps } from '@react-types/numberfield';
+
+export interface CubeNumberInputProps
+  extends Omit<CubeTextInputBaseProps, 'defaultValue' | 'value' | 'onChange'>,
+    AriaNumberFieldProps {}
 
 function NumberInput(props, ref) {
   props = useProviderProps(props);
@@ -16,7 +24,7 @@ function NumberInput(props, ref) {
   let showStepper = !hideStepper;
   let { locale } = useLocale();
   let state = useNumberFieldState({ ...props, locale });
-  let inputRef = useRef();
+  let inputRef = useRef(null);
   let {
     groupProps,
     labelProps,
@@ -54,5 +62,8 @@ function NumberInput(props, ref) {
   );
 }
 
+/**
+ * NumberFields allow users to enter a number, and increment or decrement the value using stepper buttons.
+ */
 const _NumberInput = forwardRef(NumberInput);
 export { _NumberInput as NumberInput };

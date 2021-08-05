@@ -1,31 +1,38 @@
 import { forwardRef } from 'react';
 import { Base } from '../../components/Base';
 import THEMES from '../../data/themes';
-import {
-  BLOCK_STYLES,
-  DIMENSION_STYLES,
-  COLOR_STYLES,
-  FLOW_STYLES,
-} from '../../styles/list';
+import { CONTAINER_STYLES, TEXT_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
+import { NuStyles } from '../../styles/types';
+import {
+  BaseProps,
+  ContainerStyleProps,
+  TextStyleProps,
+} from '../../components/types';
 
-const DEFAULT_STYLES = {
+const DEFAULT_STYLES: NuStyles = {
   display: 'block',
   flow: 'column',
   radius: '1x',
   padding: '1.5x',
 };
 
-const STYLE_LIST = [
-  ...FLOW_STYLES,
-  ...BLOCK_STYLES,
-  ...COLOR_STYLES,
-  ...DIMENSION_STYLES,
-];
+const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES] as const;
 
-export const Alert = forwardRef(({ type, label, ...props }, ref) => {
+export interface CubeAlertProps
+  extends BaseProps,
+    ContainerStyleProps,
+    TextStyleProps {
+  type?: keyof typeof THEMES;
+  label?: string;
+}
+
+export const Alert = forwardRef((allProps: CubeAlertProps, ref) => {
+  let { type, label, ...props } = allProps;
+
   type = type || 'note';
+
   const styles = extractStyles(props, STYLE_LIST, {
     ...DEFAULT_STYLES,
     fill: THEMES[type] ? THEMES[type].fill : '#clear',

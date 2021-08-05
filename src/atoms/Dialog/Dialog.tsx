@@ -3,7 +3,6 @@ import { useDOMRef } from '@react-spectrum/utils';
 import { DialogContext } from './context';
 import { DismissButton } from '@react-aria/overlays';
 import { FocusScope } from '@react-aria/focus';
-import { mergeProps } from '@react-aria/utils';
 import { forwardRef, useContext } from 'react';
 import { useDialog } from '@react-aria/dialog';
 import { useMessageFormatter } from '@react-aria/i18n';
@@ -11,7 +10,7 @@ import { Base } from '../../components/Base';
 import { CloseOutlined } from '@ant-design/icons';
 import { extractStyles } from '../../utils/styles';
 import { BLOCK_STYLES, DIMENSION_STYLES } from '../../styles/list';
-import { SlotProvider } from '../../utils/react';
+import { mergeProps, SlotProvider } from '../../utils/react';
 import { useContextStyles } from '../../providers/Styles';
 import { NuStyles } from '../../styles/types';
 import { BaseProps } from '../../components/types';
@@ -102,7 +101,9 @@ const intlMessages = {
   },
 };
 
-export interface DialogProps extends BaseProps, AriaDialogProps {
+export interface CubeDialogProps
+  extends Omit<BaseProps, 'role'>,
+    AriaDialogProps {
   type?:
     | 'modal'
     | 'popover'
@@ -112,10 +113,10 @@ export interface DialogProps extends BaseProps, AriaDialogProps {
     | 'tray';
   size?: 'S' | 'M' | 'L';
   isDismissable?: boolean;
-  onDismiss?: () => void;
+  onDismiss?: (arg?: any) => void;
 }
 
-function Dialog(props: DialogProps, ref: DOMRef<HTMLDivElement>) {
+function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
   let { type = 'modal', ...contextProps } = useContext(DialogContext) || {};
 
   let {
@@ -181,7 +182,7 @@ function Dialog(props: DialogProps, ref: DOMRef<HTMLDivElement>) {
         display: 'grid',
         flow: 'column',
         gap: '1x',
-        items: 'baseline stretch',
+        placeItems: 'baseline stretch',
         padding: isDismissable ? '4x right' : false,
         textAlign: 'right',
       },
@@ -191,7 +192,7 @@ function Dialog(props: DialogProps, ref: DOMRef<HTMLDivElement>) {
         display: 'grid',
         gap: '1x',
         flow: 'column',
-        items: 'baseline stretch',
+        placeItems: 'baseline stretch',
         textAlign: 'right',
       },
     },
@@ -222,7 +223,7 @@ function Dialog(props: DialogProps, ref: DOMRef<HTMLDivElement>) {
               styles={CLOSE_BUTTON_STYLES}
               icon={<CloseOutlined />}
               aria-label={formatMessage('dismiss')}
-              onPress={onDismiss}
+              onPress={() => onDismiss && onDismiss()}
             />
           )}
         </SlotProvider>

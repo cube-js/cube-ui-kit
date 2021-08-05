@@ -14,9 +14,9 @@ const DEFAULT_STYLES = {
   padding: '3x',
 };
 
-export interface CardProps extends BaseProps, ContainerStyleProps {}
+export interface CubeCardProps extends BaseProps, ContainerStyleProps {}
 
-export const Card = forwardRef((props: CardProps, ref) => {
+export const Card = forwardRef((props: CubeCardProps, ref) => {
   const styles = extractStyles(props, CONTAINER_STYLES, DEFAULT_STYLES);
 
   return (

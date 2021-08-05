@@ -1,27 +1,33 @@
 import { forwardRef, useCallback, useRef, useState } from 'react';
-import { TextInputBase } from '../TextInput/TextInputBase';
+import {
+  CubeTextInputBaseProps,
+  TextInputBase,
+} from '../TextInput/TextInputBase';
 import { useProviderProps } from '../../provider';
 import { useTextField } from '@react-aria/textfield';
 import { Button } from '../Button/Button';
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 
-function PasswordInput(props, ref) {
-  props = useProviderProps({ ...props });
+function PasswordInput(props: CubeTextInputBaseProps, ref) {
+  let { suffix, ...otherProps } = useProviderProps({ ...props });
 
   let [type, setType] = useState('password');
-  let inputRef = useRef();
-
-  props.type = type;
-
-  let { labelProps, inputProps } = useTextField(props, inputRef);
+  let inputRef = useRef(null);
+  let { labelProps, inputProps } = useTextField(
+    {
+      ...otherProps,
+      type,
+    },
+    inputRef,
+  );
 
   const toggleType = useCallback((e) => {
     setType((type) => (type === 'password' ? 'text' : 'password'));
   }, []);
 
-  props.suffix = (
+  const wrappedSuffix = (
     <>
-      {props.suffix}
+      {suffix}
       <Button
         type="item"
         onPress={toggleType}
@@ -45,7 +51,8 @@ function PasswordInput(props, ref) {
       inputStyles={{ paddingRight: '4x' }}
       type={type}
       suffixPosition="after"
-      {...props}
+      suffix={wrappedSuffix}
+      {...otherProps}
     />
   );
 }

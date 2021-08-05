@@ -10,7 +10,7 @@ import { NuStyles } from '../styles/types';
 const DEFAULT_STYLES: NuStyles = {
   display: 'grid',
   position: 'absolute',
-  items: 'center',
+  placeItems: 'center',
   gap: 0,
   left: '@prefix-gap',
   top: '@prefix-gap',
@@ -19,12 +19,12 @@ const DEFAULT_STYLES: NuStyles = {
   height: '(100% - (2 * @prefix-gap))',
 };
 
-export interface PrefixProps extends BaseProps, ContainerStyleProps {
+export interface CubePrefixProps extends BaseProps, ContainerStyleProps {
   onWidthChange?: Function;
   outerGap?: CSSProperties['gap'];
 }
 
-export const Prefix = forwardRef((allProps: PrefixProps, outerRef) => {
+export const Prefix = forwardRef((allProps: CubePrefixProps, outerRef) => {
   let { onWidthChange, outerGap = '1bw', children, ...props } = allProps;
 
   const styles = extractStyles(props, CONTAINER_STYLES, DEFAULT_STYLES);

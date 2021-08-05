@@ -15,7 +15,7 @@ import { FormStore, useForm, CubeFormData } from './useForm';
 import { useCombinedRefs } from '../../utils/react';
 import { timeout } from '../../utils/promise';
 import { BaseProps, ContainerStyleProps } from '../../components/types';
-import { FormBaseProps, ValidateTrigger } from '../../shared';
+import { FormBaseProps } from '../../shared';
 
 export const FormContext = createContext({});
 

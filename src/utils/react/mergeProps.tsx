@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { chain, mergeIds } from '@react-aria/utils';
+import { Props } from '../../components/types';
 
 /**
  * Merges multiple props objects together. Event handlers are chained,
@@ -8,8 +9,8 @@ import { chain, mergeIds } from '@react-aria/utils';
  * For all other props, the last prop object overrides all previous ones.
  * @param args - Multiple sets of props to merge together.
  */
-export function mergeProps(...args) {
-  let result = {};
+export function mergeProps(...args: (Props | undefined)[]) {
+  let result: Props = {};
 
   for (let props of args) {
     for (let key in result) {
@@ -17,6 +18,7 @@ export function mergeProps(...args) {
       if (
         /^on[A-Z]/.test(key) &&
         typeof result[key] === 'function' &&
+        props &&
         typeof props[key] === 'function'
       ) {
         result[key] = chain(result[key], props[key]);
@@ -25,20 +27,23 @@ export function mergeProps(...args) {
       } else if (
         key === 'className' &&
         typeof result.className === 'string' &&
+        props &&
         typeof props.className === 'string'
       ) {
         result[key] = clsx(result.className, props.className);
       } else if (
         key === 'styles' &&
         typeof result.styles === 'object' &&
+        props &&
         typeof props.styles === 'object'
       ) {
         result[key] = { ...result.styles, ...props.styles };
-      } else if (key === 'id' && result.id && props.id) {
-        result.id = mergeIds(result.id, props.id);
+      } else if (key === 'id' && result.id && props?.id) {
+        result.id = mergeIds(result.id, props?.id);
         // Override others
       } else {
-        result[key] = props[key] !== undefined ? props[key] : result[key];
+        result[key] =
+          props && props[key] !== undefined ? props[key] : result[key];
       }
     }
 

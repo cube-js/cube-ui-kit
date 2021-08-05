@@ -116,9 +116,7 @@ const Template = ({
       isDisabled={isDisabled}
       isLoading={isLoading}
       defaultSelectedKey={defaultSelectedKey}
-      selectionMode={selectionMode}
-      type={type}
-      onChange={(query) => console.log('change', query)}
+      onSelectionChange={(query) => console.log('change', query)}
     >
       {options.map((option) => {
         return <Select.Item key={option}>{option}</Select.Item>;

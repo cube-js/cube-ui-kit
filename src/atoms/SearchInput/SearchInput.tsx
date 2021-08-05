@@ -2,19 +2,28 @@ import { forwardRef, useEffect, useRef } from 'react';
 import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
 import { useSearchFieldState } from '@react-stately/searchfield';
 import { useSearchField } from '@react-aria/searchfield';
-import { useCombinedRefs } from '../../utils/react/useCombinedRefs';
-import { TextInputBase } from '../TextInput/TextInputBase';
+import { useCombinedRefs } from '../../utils/react';
+import {
+  CubeTextInputBaseProps,
+  TextInputBase,
+} from '../TextInput/TextInputBase';
 import { useProviderProps } from '../../provider';
 import { Button } from '../Button/Button';
+import { ariaToCubeButtonProps } from '../../utils/react/mapProps';
 
-export const SearchInput = forwardRef((props, ref) => {
+export interface CubeSearchInputProps extends CubeTextInputBaseProps {
+  /** Whether the search input is clearable using ESC keyboard button or clear button inside the input */
+  isClearable?: boolean;
+}
+
+export const SearchInput = forwardRef((props: CubeSearchInputProps, ref) => {
   props = useProviderProps(props);
 
   let { isClearable, value } = props;
 
-  const localRef = useRef();
+  const localRef = useRef(null);
   const combinedRef = useCombinedRefs(ref, localRef);
-  let inputRef = useRef();
+  let inputRef = useRef(null);
 
   useEffect(() => {
     const el = combinedRef && combinedRef.current;
@@ -42,7 +51,7 @@ export const SearchInput = forwardRef((props, ref) => {
         !props.isReadOnly && (
           <Button
             type="clear"
-            {...clearButtonProps}
+            {...ariaToCubeButtonProps(clearButtonProps)}
             color={{
               '': '#dark.50',
               'hovered | pressed': '#purple-text',

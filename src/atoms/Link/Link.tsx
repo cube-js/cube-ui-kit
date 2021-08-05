@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { Action, ActionProps } from '../../components/Action';
+import { Action, CubeActionProps } from '../../components/Action';
 import {
   BASE_STYLES,
   COLOR_STYLES,
@@ -47,7 +47,7 @@ const STYLE_PROPS = [
 ];
 
 export const Link = forwardRef(
-  (props: ActionProps, ref: FocusableRef<HTMLLinkElement>) => {
+  (props: CubeActionProps, ref: FocusableRef<HTMLLinkElement>) => {
     const styles = {
       ...DEFAULT_STYLES,
       ...useContextStyles('Link', props),

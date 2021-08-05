@@ -16,7 +16,7 @@ export type NuResponsiveStyleValue<T = string> =
 
 export type NuComputeModel = string | number;
 
-export type NuCSSMap = { [key: string]: string | string[] };
+export type NuCSSMap = { $?: string } & { [key: string]: string | string[] };
 
 export type NuStyleHandler = ((NuStyleValue) => NuCSSMap | NuCSSMap[]) & {
   __lookupStyles: string[];

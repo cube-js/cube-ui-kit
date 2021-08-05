@@ -25,7 +25,7 @@ const STYLES = {
     '': '0',
     'has-sider': '1x',
   },
-  items: 'baseline start',
+  placeItems: 'baseline start',
 };
 
 const GROUP_STYLES = {
@@ -41,14 +41,14 @@ const GROUP_STYLES = {
   padding: '(1x - 1bw) 0',
 };
 
-export interface CheckboxGroupProps
+export interface CubeCheckboxGroupProps
   extends BaseProps,
     AriaCheckboxGroupProps,
     FormFieldProps {
   orientation?: 'vertical' | 'horizontal';
 }
 
-function CheckboxGroup(props: CheckboxGroupProps, ref) {
+function CheckboxGroup(props: CubeCheckboxGroupProps, ref) {
   props = useProviderProps(props);
   props = useFormProps(props);
 

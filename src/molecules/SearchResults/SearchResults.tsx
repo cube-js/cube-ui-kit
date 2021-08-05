@@ -1,25 +1,46 @@
-import { useEffect, useState, Fragment } from 'react';
+import { useEffect, useState, Fragment, ReactNode, CSSProperties } from 'react';
 import {
   CaretDownOutlined,
   CaretUpOutlined,
   FileOutlined,
 } from '@ant-design/icons';
-import { Flex } from '../../components/Flex';
+import { CubeFlexProps, Flex } from '../../components/Flex';
 import { Action } from '../../components/Action';
 import { Button } from '../../atoms/Button/Button';
 import { Space } from '../../components/Space';
 import { Block } from '../../components/Block';
 import { Paragraph } from '../../components/Paragraph';
 import { Text } from '../../components/Text';
+import { NuStyles } from '../../styles/types';
 
-const TEXT_OVERFLOW_STYLES = {
+export type CubeSearchFileData = {
+  title?: string;
+  key: string;
+  entry?: string;
+  before?: string;
+  after?: string;
+  items: CubeSearchFileDataItem[];
+};
+
+export type CubeSearchFileDataItem = {
+  entry: string;
+  before?: string;
+  after?: string;
+  row: number;
+  column: number;
+};
+
+const TEXT_OVERFLOW_STYLES: CSSProperties = {
   whiteSpace: 'nowrap',
   textOverflow: 'ellipsis',
   maxWidth: '100%',
   overflow: 'hidden',
 };
 
-function getItemStyles({ indent, isSelected }) {
+function getItemStyles({
+  indent,
+  isSelected,
+}: CubeSearchResultsItemProps): NuStyles {
   return {
     width: 'max 100%',
     radius: true,
@@ -40,7 +61,19 @@ function getItemStyles({ indent, isSelected }) {
   };
 }
 
-function Item({ children, indent, onPress, isSelected }) {
+export interface CubeSearchResultsItemProps {
+  children?: ReactNode;
+  indent?: number | null;
+  onPress?: () => void;
+  isSelected?: boolean;
+}
+
+function Item({
+  children,
+  indent,
+  onPress,
+  isSelected,
+}: CubeSearchResultsItemProps) {
   return (
     <Action
       onPress={onPress}
@@ -61,14 +94,23 @@ const HOVER_CSS = `
   }
 `;
 
+export type SearchPosition = [number, number];
+
+export interface CubeSearchResultsProps extends CubeFlexProps {
+  onSelect?: (string, SearchPosition?) => void;
+  files: CubeSearchFileData[];
+  selectedKey?: string;
+  defaultExpandAll?: boolean;
+}
+
 export function SearchResults({
   onSelect,
   files,
   selectedKey,
   defaultExpandAll,
   ...otherProps
-}) {
-  const [expanded, setExpanded] = useState([]);
+}: CubeSearchResultsProps) {
+  const [expanded, setExpanded] = useState<string[]>([]);
   const [selected, setSelected] = useState(selectedKey);
 
   useEffect(() => {
@@ -95,7 +137,7 @@ export function SearchResults({
     }
   }
 
-  function select(item, position) {
+  function select(item, position?) {
     const key = typeof item === 'string' ? item : item.key;
 
     onSelect && onSelect(key.split('|')[0], position);

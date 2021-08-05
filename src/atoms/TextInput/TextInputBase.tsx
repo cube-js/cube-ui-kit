@@ -4,10 +4,11 @@ import {
   LoadingOutlined,
 } from '@ant-design/icons';
 import { createFocusableRef } from '@react-spectrum/utils';
-import { mergeProps } from '@react-aria/utils';
 import {
   cloneElement,
   forwardRef,
+  ReactNode,
+  RefObject,
   useImperativeHandle,
   useRef,
   useState,
@@ -30,9 +31,13 @@ import {
   BaseProps,
   BlockStyleProps,
   PositionStyleProps,
+  Props,
 } from '../../components/types';
+import { FormFieldProps } from '../../shared';
+import { AriaTextFieldProps } from '@react-types/textfield';
+import { mergeProps } from '../../utils/react';
 
-const WRAPPER_STYLES = {
+const WRAPPER_STYLES: NuStyles = {
   display: 'grid',
   position: 'relative',
 };
@@ -74,12 +79,43 @@ export const DEFAULT_INPUT_STYLES: NuStyles = {
   margin: 0,
 };
 
-export interface TextInputBaseProps
+export interface CubeTextInputBaseProps
   extends BaseProps,
     PositionStyleProps,
-    BlockStyleProps {}
+    BlockStyleProps,
+    AriaTextFieldProps,
+    FormFieldProps {
+  /** Input decoration before the main input */
+  prefix?: ReactNode;
+  /** Input decoration after the main input */
+  suffix?: ReactNode;
+  /** Suffix position goes before or after the validation and loading statuses */
+  suffixPosition?: 'before' | 'after';
+  /** Whether the input is multiline */
+  multiLine?: boolean;
+  /** Whether the input should have auto focus */
+  autoFocus?: boolean;
+  /** Direct input props */
+  inputProps?: Props;
+  /** Direct input wrapper props */
+  wrapperProps?: Props;
+  /** The input ref */
+  inputRef?: RefObject<HTMLInputElement>;
+  /** The wrapper ref */
+  wrapperRef?: RefObject<HTMLDivElement>;
+  /** Whether the input has the loading status */
+  isLoading?: boolean;
+  /** The loading status indicator */
+  loadingIndicator?: ReactNode;
+  /** Style map for the input */
+  inputStyles?: NuStyles;
+  /** Style map for the input wrapper */
+  wrapperStyles?: NuStyles;
+  /** The number of rows for the input. Only applies to textarea. */
+  rows?: number;
+}
 
-function TextInputBase(props, ref) {
+function TextInputBase(props: CubeTextInputBaseProps, ref) {
   props = useProviderProps(props);
   props = useFormProps(props);
 
@@ -151,12 +187,12 @@ function TextInputBase(props, ref) {
   useImperativeHandle(ref, () => ({
     ...createFocusableRef(domRef, inputRef),
     select() {
-      if (inputRef.current) {
+      if (inputRef?.current) {
         inputRef.current.select();
       }
     },
     getInputElement() {
-      return inputRef.current;
+      return inputRef?.current;
     },
   }));
 

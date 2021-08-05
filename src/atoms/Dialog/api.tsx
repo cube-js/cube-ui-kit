@@ -1,11 +1,40 @@
 import ReactDOM from 'react-dom';
-import { AlertDialog } from '../../molecules/AlertDialog/AlertDialog';
-import { DialogContainer } from './DialogContainer';
+import {
+  AlertDialog,
+  CubeAlertDialogProps,
+} from '../../molecules/AlertDialog/AlertDialog';
+import { CubeDialogContainerProps, DialogContainer } from './DialogContainer';
 import { ModalProvider } from '@react-aria/overlays';
+import { ReactNode } from 'react';
 
 let ID = 0;
 
-export const api = {
+export interface DialogData
+  extends Omit<CubeDialogContainerProps, 'onDismiss'>,
+    Omit<CubeAlertDialogProps, 'type' | 'id'> {
+  id?: number;
+  placement: 'top' | 'bottom';
+  resolve: (any) => void;
+  reject: (any) => void;
+  content: ReactNode;
+  isVisible?: boolean;
+  dialogType?: 'info' | 'confirm';
+}
+
+export interface DialogService {
+  root: Element | null;
+  items: DialogData[];
+  init: () => void;
+  render: () => void;
+  _render: (items?: DialogData[]) => void;
+  open: (DialogData) => void;
+  close: (DialogData) => void;
+  resolve: (item: DialogData, arg?: any) => void;
+  reject: (item: DialogData, arg?: any) => void;
+}
+
+export const api: DialogService = {
+  root: null,
   items: [],
   init() {
     if (this.root) return;
@@ -23,14 +52,17 @@ export const api = {
 
     this._render();
   },
-  _render(items = this.items) {
+  _render(items) {
+    if (!items) {
+      items = this.items;
+    }
+
     ReactDOM.render(
       <ModalProvider>
         {items.map((item) => {
           const {
             id,
             type,
-            mobileType,
             placement,
             isDismissable = true,
             primaryProps,
@@ -45,8 +77,6 @@ export const api = {
               key={id}
               isDismissable={isDismissable}
               type={type}
-              mobileType={mobileType}
-              placement={placement}
               onDismiss={() => {
                 if (item.dialogType === 'info') {
                   this.resolve(item);
@@ -71,7 +101,7 @@ export const api = {
                             this.reject(item);
                           },
                         }
-                      : null
+                      : undefined
                   }
                   {...options}
                   key={id}

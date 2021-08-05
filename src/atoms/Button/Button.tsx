@@ -1,5 +1,5 @@
 import { forwardRef, useState, useEffect } from 'react';
-import { Action, ActionProps } from '../../components/Action';
+import { Action, CubeActionProps } from '../../components/Action';
 import { Space } from '../../components/Space';
 import { LoadingOutlined } from '@ant-design/icons';
 import { propDeprecationWarning } from '../../utils/warnings';
@@ -7,7 +7,7 @@ import { useContextStyles } from '../../providers/Styles';
 import { FocusableRef } from '@react-types/shared';
 import { NuStyles } from '../../styles/types';
 
-export interface ButtonProps extends ActionProps {
+export interface CubeButtonProps extends CubeActionProps {
   ghost?: boolean;
   icon?: JSX.Element;
   isLoading?: boolean;
@@ -46,7 +46,7 @@ export function provideStyles({
   };
 }
 
-const STYLES_BY_TYPE: { [key in keyof ButtonProps['type']]: NuStyles } = {
+const STYLES_BY_TYPE: { [key in keyof CubeButtonProps['type']]: NuStyles } = {
   default: {
     border: {
       '': '#clear',
@@ -200,7 +200,7 @@ const CSS_BY_TYPE = {
 
 const DEFAULT_STYLES = {
   display: 'inline-block',
-  items: 'center stretch',
+  placeItems: 'center stretch',
   radius: true,
   opacity: {
     '': 1,
@@ -225,7 +225,7 @@ const CSS = `
 const DEPRECATED_PROPS = ['disabled', 'loading', 'onClick'];
 
 export const Button = forwardRef(
-  (allProps: ButtonProps, ref: FocusableRef<HTMLElement>) => {
+  (allProps: CubeButtonProps, ref: FocusableRef<HTMLElement>) => {
     let {
       type,
       size,

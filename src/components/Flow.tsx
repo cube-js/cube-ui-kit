@@ -12,9 +12,9 @@ const DEFAULT_STYLES = {
 
 const STYLE_PROPS = CONTAINER_STYLES;
 
-export interface FlexProps extends BaseProps, ContainerStyleProps {}
+export interface CubeFlowProps extends BaseProps, ContainerStyleProps {}
 
-export const Flow = forwardRef((props: FlexProps, ref) => {
+export const Flow = forwardRef((props: CubeFlowProps, ref) => {
   const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
 
   return (

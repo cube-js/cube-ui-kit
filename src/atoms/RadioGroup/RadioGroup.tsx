@@ -5,11 +5,10 @@ import { useProviderProps } from '../../provider';
 import { useRadioGroup } from '@react-aria/radio';
 import { useRadioGroupState } from '@react-stately/radio';
 import { FormContext, useFormProps } from '../Form/Form';
-import { RadioGroupContext } from './context';
+import { RadioContext } from './context';
 import { extractStyles } from '../../utils/styles';
 import { BLOCK_STYLES, OUTER_STYLES } from '../../styles/list';
 import { Base } from '../../components/Base';
-import { modAttrs } from '../../utils/react/modAttrs';
 import { useContextStyles } from '../../providers/Styles';
 import { FieldWrapper } from '../../components/FieldWrapper';
 
@@ -23,7 +22,7 @@ const STYLES = {
     '': '0',
     'has-sider': '1x',
   },
-  items: 'baseline start',
+  placeItems: 'baseline start',
 };
 
 const GROUP_STYLES = {
@@ -86,9 +85,9 @@ function RadioGroup(props, ref) {
     <Base
       qa="RadioGroup"
       styles={groupStyles}
-      {...modAttrs({
+      mods={{
         horizontal: orientation === 'horizontal',
-      })}
+      }}
     >
       <FormContext.Provider
         value={{
@@ -97,9 +96,7 @@ function RadioGroup(props, ref) {
           isDisabled,
         }}
       >
-        <RadioGroupContext.Provider value={state}>
-          {children}
-        </RadioGroupContext.Provider>
+        <RadioContext.Provider value={state}>{children}</RadioContext.Provider>
       </FormContext.Provider>
     </Base>
   );

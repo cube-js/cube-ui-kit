@@ -1,10 +1,15 @@
-import { Block } from '../../components/Block';
+import { Block, CubeBlockProps } from '../../components/Block';
 
 const SIZE_MAP = {
   small: 3,
   default: 4,
   large: 6,
 };
+
+export interface CubeSpinProps extends CubeBlockProps {
+  size?: 'small' | 'default' | 'large';
+  spinning?: boolean;
+}
 
 export function Spin({ size, spinning, style, children, ...props }) {
   size = SIZE_MAP[size] || size || SIZE_MAP.default;
@@ -45,7 +50,7 @@ export function Spin({ size, spinning, style, children, ...props }) {
             keyTimes="0;0.083;0.25;0.333;0.5;0.583;0.75;0.833;1"
             values="14;54;54;54;54;14;14;14;14"
             begin="-2.083333333333333s"
-          ></animate>
+          />
           <animate
             attributeName="y"
             dur="2.272727272727273s"
@@ -53,7 +58,7 @@ export function Spin({ size, spinning, style, children, ...props }) {
             keyTimes="0;0.083;0.25;0.333;0.5;0.583;0.75;0.833;1"
             values="14;54;54;54;54;14;14;14;14"
             begin="-1.5151515151515151s"
-          ></animate>
+          />
         </rect>
         <rect fill="#ff6492" x="14" y="14" width="32" height="32" rx="4" ry="4">
           <animate
@@ -63,7 +68,7 @@ export function Spin({ size, spinning, style, children, ...props }) {
             keyTimes="0;0.083;0.25;0.333;0.5;0.583;0.75;0.833;1"
             values="14;54;54;54;54;14;14;14;14"
             begin="-1.325757575757576s"
-          ></animate>
+          />
           <animate
             attributeName="y"
             dur="2.272727272727273s"
@@ -71,7 +76,7 @@ export function Spin({ size, spinning, style, children, ...props }) {
             keyTimes="0;0.083;0.25;0.333;0.5;0.583;0.75;0.833;1"
             values="14;54;54;54;54;14;14;14;14"
             begin="-0.7575757575757576s"
-          ></animate>
+          />
         </rect>
         <rect fill="#727290" x="14" y="14" width="32" height="32" rx="4" ry="4">
           <animate
@@ -81,7 +86,7 @@ export function Spin({ size, spinning, style, children, ...props }) {
             keyTimes="0;0.083;0.25;0.333;0.5;0.583;0.75;0.833;1"
             values="14;54;54;54;54;14;14;14;14"
             begin="-0.5681818181818182s"
-          ></animate>
+          />
           <animate
             attributeName="y"
             dur="2.272727272727273s"
@@ -89,7 +94,7 @@ export function Spin({ size, spinning, style, children, ...props }) {
             keyTimes="0;0.083;0.25;0.333;0.5;0.583;0.75;0.833;1"
             values="14;54;54;54;54;14;14;14;14"
             begin="0s"
-          ></animate>
+          />
         </rect>
       </svg>
     </Block>

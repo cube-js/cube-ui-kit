@@ -10,6 +10,7 @@ import { useContextStyles } from '../../providers/Styles';
 import { NuStyles } from '../../styles/types';
 import { BaseProps, Props } from '../../components/types';
 import { mergeProps } from '../../utils/react';
+import { TrayProps } from '@react-types/overlays';
 
 const TRAY_STYLES: NuStyles = {
   zIndex: 2,
@@ -24,9 +25,8 @@ const TRAY_STYLES: NuStyles = {
   },
 };
 
-export interface CubeTrayProps {
+export interface CubeTrayProps extends TrayProps {
   qa?: BaseProps['qa'];
-  children: ReactNode;
   onClose?: () => void;
   isFixedHeight?: boolean;
   isNonModal?: boolean;
@@ -138,8 +138,8 @@ let TrayWrapper = forwardRef(function (props: CubeTrayWrapperProps, ref) {
       }}
       styles={{
         ...OVERLAY_WRAPPER_STYLES,
-        content: 'end center',
-        items: 'end center',
+        placeContent: 'end center',
+        placeItems: 'end center',
       }}
       style={wrapperStyle}
     >

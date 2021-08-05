@@ -110,7 +110,7 @@ const Template = ({ size, ...props }) => {
         //   },
         // }}
       >
-        <Button margin="22x top">Click me!</Button>
+        <Button margin="30x top">Click me!</Button>
         {(close) => (
           <Dialog
             size={size}

@@ -21,12 +21,12 @@ const DEFAULT_STYLES: NuStyles = {
   height: '(100% - (2 * @suffix-gap))',
 };
 
-export interface SuffixProps extends BaseProps, ContainerStyleProps {
+export interface CubeSuffixProps extends BaseProps, ContainerStyleProps {
   onWidthChange?: Function;
   outerGap?: CSSProperties['gap'];
 }
 
-export const Suffix = forwardRef((allProps: SuffixProps, outerRef) => {
+export const Suffix = forwardRef((allProps: CubeSuffixProps, outerRef) => {
   let { onWidthChange, outerGap = '1bw', children, ...props } = allProps;
   const styles = extractStyles(props, CONTAINER_STYLES, DEFAULT_STYLES);
   const ref = useCombinedRefs(outerRef);

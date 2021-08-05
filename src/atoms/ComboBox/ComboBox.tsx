@@ -19,7 +19,7 @@ import { useFocus } from '../../utils/interactions';
 import { useContextStyles } from '../../providers/Styles';
 import { modAttrs, useCombinedRefs } from '../../utils/react';
 import { FieldWrapper } from '../../components/FieldWrapper';
-import { DropdownProps, ListBoxPopup } from '../Select/Select';
+import { CubeSelectProps, ListBoxPopup } from '../Select/Select';
 import { Prefix } from '../../components/Prefix';
 import { Suffix } from '../../components/Suffix';
 import { Space } from '../../components/Space';
@@ -57,7 +57,7 @@ const INPUT_STYLES: NuStyles = {
 
 const TRIGGER_STYLES: NuStyles = {
   display: 'grid',
-  items: 'center',
+  placeItems: 'center',
   placeContent: 'center',
   radius: 'right',
   padding: '1.5x 1x',
@@ -71,12 +71,14 @@ const TRIGGER_STYLES: NuStyles = {
   },
 } as const;
 
-export interface ComboBoxProps<T> extends DropdownProps, AriaComboBoxProps<T> {
+export interface CubeComboBoxProps<T>
+  extends CubeSelectProps,
+    AriaComboBoxProps<T> {
   multiLine?: boolean;
 }
 
 function ComboBox<T extends object>(
-  props: ComboBoxProps<T>,
+  props: CubeComboBoxProps<T>,
   ref: DOMRef<HTMLDivElement>,
 ) {
   props = useProviderProps(props);

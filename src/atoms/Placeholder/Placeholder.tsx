@@ -1,33 +1,21 @@
 import { forwardRef } from 'react';
 import { Base } from '../../components/Base';
-import {
-  BLOCK_STYLES,
-  COLOR_STYLES,
-  DIMENSION_STYLES,
-  FLOW_STYLES,
-  POSITION_STYLES,
-} from '../../styles/list';
+import { CONTAINER_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
+import { NuStyles } from '../../styles/types';
+import { BaseProps, ContainerStyleProps } from '../../components/types';
 
-const DEFAULT_STYLES = {
+const DEFAULT_STYLES: NuStyles = {
   display: 'block',
   fill: '#dark.10',
   height: '2x',
   opacity: '.35',
 };
 
-const STYLE_LIST = [
-  ...BLOCK_STYLES,
-  ...COLOR_STYLES,
-  ...DIMENSION_STYLES,
-  ...POSITION_STYLES,
-  ...FLOW_STYLES,
-];
-
 const CSS = `
   --placeholder-animation-time: 1.4s;
-  --placeholder-animation-size: calc((180rem + 100vw) / 3);  
+  --placeholder-animation-size: calc((180rem + 100vw) / 3);
   background-image: linear-gradient(135deg, rgba(var(--dark-color-rgb), .15) 0%, rgba(var(--dark-color-rgb), .15) 5%, rgba(var(--dark-color-rgb), 0) 35%, rgba(var(--dark-03-color-rgb), .2) 50%, rgba(var(--dark-03-color-rgb), 0) 65%, rgba(var(--dark-color-rgb), .15) 95%, rgba(var(--dark-color-rgb), .15) 100%);
   background-repeat: repeat;
   background-size: var(--placeholder-animation-size);
@@ -43,23 +31,27 @@ const CSS = `
   }
 `;
 
-export const Placeholder = forwardRef(
-  ({ size = '2x', circle, ...props }, ref) => {
-    const styles = extractStyles(props, STYLE_LIST, {
-      ...DEFAULT_STYLES,
-      height: size,
-      width: circle ? size : false,
-      radius: circle ? '9999rem' : '1r',
-    });
+export interface CubePlaceholderProps extends BaseProps, ContainerStyleProps {
+  size?: NuStyles['size'];
+  circle?: boolean;
+}
 
-    return (
-      <Base
-        role="region"
-        css={CSS}
-        {...filterBaseProps(props, { eventProps: true })}
-        styles={styles}
-        ref={ref}
-      />
-    );
-  },
-);
+export const Placeholder = forwardRef((allProps: CubePlaceholderProps, ref) => {
+  let { size = '2x', circle, ...props } = allProps;
+  const styles = extractStyles(props, CONTAINER_STYLES, {
+    ...DEFAULT_STYLES,
+    height: size,
+    width: circle ? size : false,
+    radius: circle ? '9999rem' : '1r',
+  });
+
+  return (
+    <Base
+      role="region"
+      css={CSS}
+      {...filterBaseProps(props, { eventProps: true })}
+      styles={styles}
+      ref={ref}
+    />
+  );
+});

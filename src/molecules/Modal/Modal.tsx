@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { Action } from '../../components/Action';
-import { Card } from '../../atoms/Card/Card';
+import { Card, CubeCardProps } from '../../atoms/Card/Card';
 import { Flow } from '../../components/Flow';
 import { Flex } from '../../components/Flex';
 import { Block } from '../../components/Block';
@@ -76,35 +76,53 @@ const Overlay = styled.div`
   }
 `;
 
+export interface CubeModalProps extends CubeCardProps {
+  title?: string;
+  isVisible?: boolean;
+  type?: 'default' | 'primary' | 'info' | 'danger';
+  isClosable?: boolean;
+  isLoading?: boolean;
+  okType?: 'default' | 'primary' | 'danger';
+  okText?: string;
+  cancelText?: string;
+  onOk?: (any) => Promise<any> | void | false;
+  onCancel?: () => Promise<any> | void;
+  onClose?: () => Promise<any> | void;
+  isDisabled?: boolean;
+}
+
 /**
  * DEPRECATED Modal component
  * Designed after AntD Modal component and almost duplicate its API.
+ * Use Dialog component instead
  */
-export function Modal({
-  title,
-  isVisible,
-  type,
-  okType,
-  isClosable,
-  isLoading,
-  children,
-  okText,
-  cancelText,
-  width,
-  onOk,
-  onCancel,
-  onClose,
-  qa,
-  isDisabled,
-  ...props
-}) {
+export function Modal(allProps: CubeModalProps) {
+  let {
+    title,
+    isVisible,
+    type,
+    okType,
+    isClosable,
+    isLoading,
+    children,
+    okText,
+    cancelText,
+    width,
+    onOk,
+    onCancel,
+    onClose,
+    qa,
+    isDisabled,
+    ...props
+  } = allProps;
+
   isClosable = !!isClosable;
 
-  const [inProp, setInProp] = useState(false);
+  const [inProp, setInProp] = useState<boolean>(false);
   const [localLoading, setLocalLoading] = useState(false);
 
   useEffect(() => {
-    setInProp(isVisible);
+    setInProp(isVisible || false);
   }, [isVisible]);
 
   function cancel() {
@@ -118,6 +136,7 @@ export function Modal({
   function close() {
     if (onClose || onCancel) {
       if (isClosable) {
+        // @ts-ignore
         (onClose || onCancel)();
       } else if (onCancel) {
         onCancel();
@@ -155,6 +174,7 @@ export function Modal({
         if (onOk) {
           try {
             if ((await onOk(arg)) === false && (onClose || onCancel)) {
+              // @ts-ignore
               (onClose || onCancel)();
             }
           } catch (e) {
@@ -263,14 +283,27 @@ export function Modal({
 let ID = 0;
 
 interface ModalService {
-  root?: HTMLDivElement;
-  items: any[];
+  root: Element | null;
+  items: ModalItem[];
   init: () => void;
   render: () => void;
-  _render: (items?: any[]) => void;
+  _render: (items?: ModalItem[]) => void;
+  open: (item: ModalItem) => void;
+  close: (item: ModalItem) => void;
+  resolve: (item: ModalItem, arg?: any) => void;
+  reject: (item: ModalItem, arg?: any) => void;
+}
+
+interface ModalItem extends Omit<CubeModalProps, 'id'> {
+  id?: number;
+  isVisible?: boolean;
+  resolve: (any) => void;
+  reject: (any) => void;
+  content: ReactNode;
 }
 
 const modal: ModalService = {
+  root: null,
   items: [],
   init() {
     if (this.root) return;
@@ -288,7 +321,11 @@ const modal: ModalService = {
 
     this._render();
   },
-  _render(items = this.items) {
+  _render(items) {
+    if (!items) {
+      items = this.items;
+    }
+
     ReactDOM.render(
       items.map((item) => {
         const { id, onOk, onCancel, onClose, content, ...options } = item;
@@ -298,22 +335,22 @@ const modal: ModalService = {
 
           this.resolve(item, arg);
         };
-        const wrapOnCancel = (arg) => {
-          onCancel && onCancel(arg);
+        const wrapOnCancel = () => {
+          onCancel && onCancel();
 
           if (item.type === 'info') {
-            this.resolve(item, arg);
+            this.resolve(item);
           } else {
-            this.reject(item, arg);
+            this.reject(item);
           }
         };
-        const wrapOnClose = (arg) => {
-          onClose && onClose(arg);
+        const wrapOnClose = () => {
+          onClose && onClose();
 
           if (item.type === 'info') {
-            this.resolve(item, arg);
+            this.resolve(item);
           } else {
-            this.reject(item, arg);
+            this.reject(item);
           }
         };
 

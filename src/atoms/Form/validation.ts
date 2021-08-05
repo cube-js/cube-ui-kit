@@ -1,4 +1,3 @@
-import { extractModule } from '../../utils/modules';
 import validUrl from 'valid-url';
 import emailValidator from 'email-validator';
 
@@ -19,7 +18,7 @@ const TYPE_CHECKERS = {
     return v instanceof RegExp;
   },
   integer(v) {
-    return typeof v === 'number' && v === parseInt(v, 10);
+    return typeof v === 'number' && v === parseInt(String(v), 10);
   },
   array(v) {
     return Array.isArray(v);

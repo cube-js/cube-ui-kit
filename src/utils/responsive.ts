@@ -1,3 +1,5 @@
+import { NuResponsiveStyleValue } from './styles';
+
 export function mediaWrapper(cssRules, points) {
   return points
     .filter((point) => point.mediaQuery)
@@ -5,16 +7,22 @@ export function mediaWrapper(cssRules, points) {
     .join('\n');
 }
 
+export interface ResponsiveZone {
+  max?: number;
+  min?: number;
+  mediaQuery?: string;
+}
+
 const zonesCache = {};
 
-export function pointsToZones(points) {
+export function pointsToZones(points: number[]) {
   const cacheKey = points.join('|');
 
   if (!zonesCache[cacheKey]) {
-    const zones = [];
+    const zones: ResponsiveZone[] = [];
 
     points.forEach((point, i) => {
-      const zone = {};
+      const zone: ResponsiveZone = {};
 
       if (i) {
         zone.max = points[i - 1] - 1;
@@ -30,7 +38,7 @@ export function pointsToZones(points) {
     });
 
     zones.forEach((zone) => {
-      const queries = [];
+      const queries: string[] = [];
 
       if (zone.min) {
         queries.push(`(min-width: ${zone.min}px)`);
@@ -55,7 +63,10 @@ export function pointsToZones(points) {
 //   }
 // }
 
-export function normalizeStyleZones(value, zoneNumber) {
+export function normalizeStyleZones(
+  value: NuResponsiveStyleValue,
+  zoneNumber: number,
+) {
   if (value == null) return value;
 
   const arr = Array.from(Array(zoneNumber));

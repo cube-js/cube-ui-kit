@@ -2,7 +2,7 @@ import { Base } from './Base';
 import { getOverlayTransitionCSS } from '../utils/transitions';
 import { CSSTransition } from 'react-transition-group';
 import { NuStyles } from '../styles/types';
-import { ChildrenProp } from './types';
+import { ReactNode } from 'react';
 
 const OVERLAY_WRAPPER_STYLES: NuStyles = {
   position: 'absolute',
@@ -12,10 +12,10 @@ const OVERLAY_WRAPPER_STYLES: NuStyles = {
   zIndex: 999,
 };
 
-export interface OverlayWrapperProps {
+export interface CubeOverlayWrapperProps {
   isOpen?: boolean;
-  placement?: 'top' | 'bottom';
-  children: ChildrenProp;
+  placement?: 'start' | 'end' | 'right' | 'left' | 'top' | 'bottom';
+  children: ReactNode;
   childrenOnly?: boolean;
 }
 
@@ -24,7 +24,7 @@ export function OverlayWrapper({
   placement,
   children,
   childrenOnly,
-}: OverlayWrapperProps) {
+}: CubeOverlayWrapperProps) {
   return (
     <CSSTransition
       in={isOpen}

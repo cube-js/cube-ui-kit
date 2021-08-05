@@ -17,12 +17,12 @@ const DEFAULT_STYLES = {
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
-export interface ContentProps
+export interface CubeContentProps
   extends BaseProps,
     ContainerStyleProps,
     TextStyleProps {}
 
-export const Content = forwardRef((props: ContentProps, ref) => {
+export const Content = forwardRef((props: CubeContentProps, ref) => {
   props = useSlotProps(props, 'content');
 
   const styles = extractStyles(props, STYLE_LIST, DEFAULT_STYLES);

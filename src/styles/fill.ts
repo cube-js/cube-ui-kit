@@ -14,7 +14,7 @@ export function fillStyle({ fill }) {
     name = match[1];
   }
 
-  const styles = [
+  const styles: any[] = [
     {
       'background-color': fill,
     },

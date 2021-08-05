@@ -1,4 +1,10 @@
-import { forwardRef, useContext, useImperativeHandle, useRef } from 'react';
+import {
+  forwardRef,
+  RefObject,
+  useContext,
+  useImperativeHandle,
+  useRef,
+} from 'react';
 import { mergeProps } from '@react-aria/utils';
 import { createDOMRef } from '@react-spectrum/utils';
 import { TooltipContext } from './context';
@@ -8,8 +14,12 @@ import { extractStyles } from '../../utils/styles';
 import { CONTAINER_STYLES } from '../../styles/list';
 import { useContextStyles } from '../../providers/Styles';
 import { getOverlayTransitionCSS } from '../../utils/transitions';
+import { NuStyles } from '../../styles/types';
+import { BaseProps, ContainerStyleProps } from '../../components/types';
+import { AriaTooltipProps } from '@react-types/tooltip';
+import { PlacementAxis } from '../../shared';
 
-const TOOLTIP_STYLES = {
+const TOOLTIP_STYLES: NuStyles = {
   display: 'block',
   fill: '#dark.70',
   color: '#white',
@@ -19,7 +29,7 @@ const TOOLTIP_STYLES = {
   size: 'sm',
 };
 
-const TIP_STYLES = {
+const TIP_STYLES: NuStyles = {
   position: 'absolute',
   width: '1px',
   height: '1px',
@@ -54,7 +64,16 @@ const TIP_STYLES = {
   },
 };
 
-function Tooltip(props, ref) {
+export interface CubeTooltipProps
+  extends BaseProps,
+    ContainerStyleProps,
+    AriaTooltipProps {
+  tipStyles?: NuStyles;
+  showIcon?: boolean;
+  placement?: PlacementAxis;
+}
+
+function Tooltip(props: CubeTooltipProps, ref) {
   let {
     ref: overlayRef,
     arrowProps,
@@ -63,7 +82,7 @@ function Tooltip(props, ref) {
     ...tooltipProviderProps
   } = useContext(TooltipContext);
 
-  let defaultRef = useRef();
+  let defaultRef = useRef<HTMLDivElement>(null);
 
   overlayRef = overlayRef || defaultRef;
 
@@ -79,13 +98,15 @@ function Tooltip(props, ref) {
   tipStyles = {
     ...TIP_STYLES,
     ...useContextStyles('Tooltip_Tip'),
-    tipStyles,
+    ...tipStyles,
   };
 
   let { tooltipProps } = useTooltip(props, state);
 
   // Sync ref with overlayRef from context.
-  useImperativeHandle(ref, () => createDOMRef(overlayRef));
+  useImperativeHandle(ref, () =>
+    overlayRef ? createDOMRef(overlayRef) : null,
+  );
 
   return (
     <Base

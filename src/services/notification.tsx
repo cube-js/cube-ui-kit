@@ -1,10 +1,44 @@
 import ReactDOM from 'react-dom';
-import { Notification } from '../molecules/Notification/Notification';
+import {
+  CubeNotificationProps,
+  Notification,
+} from '../molecules/Notification/Notification';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 
 let ID = 0;
 
-export const notification = {
+export interface NotificationData {
+  id: number;
+  type?: CubeNotificationProps['type'];
+  message?: string;
+}
+
+export interface NotificationService {
+  root: Element | null;
+  defaultOptions: {
+    duration: number;
+  };
+  items: NotificationData[];
+  init: () => void;
+  render: () => void;
+  _render: (items?: NotificationData[]) => void;
+  show: (
+    type: CubeNotificationProps['type'],
+    message: string,
+    options?: CubeNotificationOptions,
+  ) => void;
+  close: (number) => void;
+  success: (message: string, options?: CubeNotificationOptions) => void;
+  info: (message: string, options?: CubeNotificationOptions) => void;
+  danger: (message: string, options?: CubeNotificationOptions) => void;
+}
+
+export interface CubeNotificationOptions {
+  duration?: number;
+}
+
+export const notification: NotificationService = {
+  root: null,
   defaultOptions: {
     duration: 5000,
   },
@@ -25,7 +59,11 @@ export const notification = {
 
     this._render();
   },
-  _render(items = this.items) {
+  _render(items) {
+    if (!items) {
+      items = this.items;
+    }
+
     ReactDOM.render(
       <TransitionGroup className="cube-notifications">
         {items.map((item) => (
@@ -61,13 +99,13 @@ export const notification = {
 
     this.render();
   },
-  success(message, options) {
+  success(message, options?) {
     this.show('success', message, options);
   },
-  danger(message, options) {
+  danger(message, options?) {
     this.show('danger', message, options);
   },
-  info(message, options) {
-    this.show('info', message, options);
+  info(message, options?) {
+    this.show('note', message, options);
   },
 };

@@ -15,9 +15,9 @@ const DEFAULT_STYLES = {
   margin: '0',
 };
 
-export interface DividerProps extends BaseProps, OuterStyleProps {}
+export interface CubeDividerProps extends BaseProps, OuterStyleProps {}
 
-export const Divider = forwardRef((props: DividerProps, ref) => {
+export const Divider = forwardRef((props: CubeDividerProps, ref) => {
   props = useSlotProps(props, 'divider');
 
   const styles = extractStyles(props, OUTER_STYLES, DEFAULT_STYLES);

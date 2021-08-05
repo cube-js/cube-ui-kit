@@ -11,7 +11,7 @@ const DEFAULT_STYLES = {
   gap: '@(column-gap, 0)',
 };
 
-export interface FlexProps
+export interface CubeFlexProps
   extends BaseProps,
     ContainerStyleProps,
     ShortItemsStyles {}
@@ -21,7 +21,7 @@ const PROP_MAP = {
   justify: 'justifyItems',
 } as const;
 
-export const Flex = forwardRef((props: FlexProps, ref) => {
+export const Flex = forwardRef((props: CubeFlexProps, ref) => {
   const styles = extractStyles(
     props,
     CONTAINER_STYLES,

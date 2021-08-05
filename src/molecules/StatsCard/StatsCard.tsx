@@ -1,6 +1,12 @@
-import { Card } from '../../atoms/Card/Card';
+import { Card, CubeCardProps } from '../../atoms/Card/Card';
 import { Title } from '../../components/Title';
 import { Text } from '../../components/Text';
+
+export interface CubeStatsCard extends CubeCardProps {
+  title?: string;
+  value?: string | number;
+  suffix?: string | number;
+}
 
 export function StatsCard({ title, value, suffix, ...props }) {
   return (

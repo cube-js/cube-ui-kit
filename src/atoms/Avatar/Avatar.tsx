@@ -21,13 +21,13 @@ const DEFAULT_STYLES = {
   fontWeight: 500,
 };
 
-export interface AvatarProps extends BaseProps, ContainerStyleProps {
+export interface CubeAvatarProps extends BaseProps, ContainerStyleProps {
   icon?: JSX.Element;
   size?: NuStyles['size'];
 }
 
 export const Avatar = forwardRef(
-  ({ size = '4x', icon, children, ...props }: AvatarProps, ref) => {
+  ({ size = '4x', icon, children, ...props }: CubeAvatarProps, ref) => {
     const styles = extractStyles(props, CONTAINER_STYLES, {
       ...DEFAULT_STYLES,
       '--avatar-size': size,

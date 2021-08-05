@@ -9,10 +9,11 @@ import {
   ColorStyleProps,
   TextStyleProps,
 } from './types';
+import { NuStyles } from '../styles/types';
 
 const STYLE_LIST = [...BASE_STYLES, ...TEXT_STYLES, ...COLOR_STYLES] as const;
 
-const DEFAULT_STYLES = {
+const DEFAULT_STYLES: NuStyles = {
   display: 'inline',
   size: 'md',
   margin: '0',
@@ -25,7 +26,7 @@ const PROP_MAP = {
   italic: 'fontStyle',
 } as const;
 
-export interface TextProps
+export interface CubeTextProps
   extends BaseProps,
     TextStyleProps,
     BaseStyleProps,
@@ -39,7 +40,7 @@ export interface TextProps
   transform?: NuResponsiveStyleValue<CSSProperties['textTransform']>;
 }
 
-const _Text = forwardRef((allProps: TextProps, ref) => {
+const _Text = forwardRef((allProps: CubeTextProps, ref) => {
   let { as, qa, code, ellipsis, css, nowrap, italic, ...props } = allProps;
 
   const styles = extractStyles(props, STYLE_LIST, DEFAULT_STYLES, PROP_MAP);
@@ -79,19 +80,19 @@ const _Text = forwardRef((allProps: TextProps, ref) => {
 });
 
 const Text = Object.assign(_Text, {
-  Minor: function MinorText(props: TextProps) {
+  Minor: function MinorText(props: CubeTextProps) {
     return <Text color="#minor" {...props} />;
   },
-  Danger: function DangerText(props: TextProps) {
+  Danger: function DangerText(props: CubeTextProps) {
     return <Text color="#danger-text" {...props} />;
   },
-  Success: function SuccessText(props: TextProps) {
+  Success: function SuccessText(props: CubeTextProps) {
     return <Text color="#success-text" {...props} />;
   },
-  Strong: function StrongText(props: TextProps) {
+  Strong: function StrongText(props: CubeTextProps) {
     return <Text color="#dark" weight={600} {...props} />;
   },
-  Selection: function SelectionText(props: TextProps) {
+  Selection: function SelectionText(props: CubeTextProps) {
     return <Text color="#dark" fill="#note.30" {...props} />;
   },
 });

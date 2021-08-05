@@ -2,6 +2,7 @@ import { Placeholder } from '../Placeholder/Placeholder';
 import { Flow } from '../../components/Flow';
 import { Space } from '../../components/Space';
 import { Grid } from '../../components/Grid';
+import { BaseProps, ContainerStyleProps } from '../../components/types';
 
 const LAYOUT_MAP = {
   page({ lines, children, ...props }) {
@@ -146,13 +147,18 @@ const LAYOUT_MAP = {
       </Grid>
     );
   },
-};
+} as const;
 
-export function Skeleton({ layout, ...props }) {
+export interface CubeSkeletonProps extends BaseProps, ContainerStyleProps {
+  /** The type of the layout */
+  layout?: keyof typeof LAYOUT_MAP;
+}
+
+export function Skeleton({ layout, ...props }: CubeSkeletonProps) {
   layout = layout || 'page';
 
   return LAYOUT_MAP[layout] ? (
-    LAYOUT_MAP[layout]({ ...props, 'data-qa': 'loader' })
+    LAYOUT_MAP[layout]({ ...props, qa: 'Skeleton' })
   ) : (
     <Placeholder {...props} />
   );

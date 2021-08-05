@@ -1,15 +1,23 @@
 import { FocusableProvider } from '@react-aria/focus';
-import { Children, useRef } from 'react';
+import { Children, ReactElement, useRef } from 'react';
 import { TooltipContext } from './context';
 import { useOverlayPosition } from '@react-aria/overlays';
 import { useTooltipTrigger } from '@react-aria/tooltip';
 import { useTooltipTriggerState } from '@react-stately/tooltip';
 import { OverlayWrapper } from '../../components/OverlayWrapper';
+import { TooltipTriggerProps } from '@react-types/tooltip';
 
 const DEFAULT_OFFSET = 8; // Offset needed to reach 4px/5px (med/large) distance between tooltip and trigger button
 const DEFAULT_CROSS_OFFSET = 0;
 
-function TooltipTrigger(props) {
+export interface CubeTooltipTriggerProps extends TooltipTriggerProps {
+  children: [ReactElement, ReactElement];
+  crossOffset?: number;
+  offset?: number;
+  placement?: 'start' | 'end' | 'right' | 'left' | 'top' | 'bottom';
+}
+
+function TooltipTrigger(props: CubeTooltipTriggerProps) {
   let {
     children,
     crossOffset = DEFAULT_CROSS_OFFSET,
@@ -25,8 +33,8 @@ function TooltipTrigger(props) {
     ...props,
   });
 
-  let tooltipTriggerRef = useRef();
-  let overlayRef = useRef();
+  let tooltipTriggerRef = useRef(null);
+  let overlayRef = useRef(null);
 
   let { triggerProps, tooltipProps } = useTooltipTrigger(
     {

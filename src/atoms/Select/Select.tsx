@@ -4,7 +4,14 @@ import {
   WarningOutlined,
 } from '@ant-design/icons';
 import { mergeProps } from '@react-aria/utils';
-import { cloneElement, forwardRef, RefObject, useRef, useState } from 'react';
+import {
+  cloneElement,
+  forwardRef,
+  ReactNode,
+  RefObject,
+  useRef,
+  useState,
+} from 'react';
 import { useSelectState } from '@react-stately/select';
 import { HiddenSelect, useSelect } from '@react-aria/select';
 import { useListBox, useOption } from '@react-aria/listbox';
@@ -31,7 +38,6 @@ import { NuStyles } from '../../styles/types';
 import {
   BasePropsWithoutChildren,
   BlockStyleProps,
-  ChildrenProp,
   OuterStyleProps,
   Props,
 } from '../../components/types';
@@ -140,16 +146,16 @@ const OPTION_STYLES: NuStyles = {
   fontWeight: 500,
 } as const;
 
-export interface DropdownProps
+export interface CubeSelectProps
   extends BasePropsWithoutChildren,
     OuterStyleProps,
     FormFieldProps,
     BlockStyleProps {
-  prefix?: ChildrenProp;
-  suffix?: ChildrenProp;
+  prefix?: ReactNode;
+  suffix?: ReactNode;
   triggerRef?: RefObject<HTMLButtonElement>;
   isLoading?: boolean;
-  loadingIndicator?: ChildrenProp;
+  loadingIndicator?: ReactNode;
   overlayOffset?: number;
   hideTrigger?: boolean;
   inputStyles?: NuStyles;
@@ -162,7 +168,7 @@ export interface DropdownProps
   inputProps?: Props;
 }
 
-export interface SelectProps<T> extends DropdownProps, AriaSelectProps<T> {
+export interface SelectProps<T> extends CubeSelectProps, AriaSelectProps<T> {
   inputRef?: RefObject<HTMLInputElement>;
   popoverRef?: RefObject<HTMLInputElement>;
   listBoxRef?: RefObject<HTMLInputElement>;

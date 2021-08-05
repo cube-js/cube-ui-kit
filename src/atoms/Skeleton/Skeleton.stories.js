@@ -26,7 +26,9 @@ export default {
   },
 };
 
-const Template = (args) => <Skeleton {...args} />;
+const Template = (args) => {
+  return <Skeleton {...args} />;
+};
 
 export const Page = Template.bind({});
 Page.args = {

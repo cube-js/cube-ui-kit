@@ -1,5 +1,5 @@
 import { Action } from '../../components/Action';
-import { Card } from '../../atoms/Card/Card';
+import { Card, CubeCardProps } from '../../atoms/Card/Card';
 import { Block } from '../../components/Block';
 import { Flex } from '../../components/Flex';
 import THEMES from '../../data/themes';
@@ -10,7 +10,14 @@ import {
   InfoOutlined,
 } from '@ant-design/icons';
 
-export function Notification({ type, children, onClose, ...props }) {
+export interface CubeNotificationProps extends CubeCardProps {
+  type?: 'success' | 'note' | 'danger';
+  onClose?: () => void;
+}
+
+export function Notification(allProps: CubeNotificationProps) {
+  let { type, children, onClose, ...props } = allProps;
+
   type = type || 'note';
 
   let Icon;
@@ -39,7 +46,7 @@ export function Notification({ type, children, onClose, ...props }) {
       radius="1.5r"
       styles={{
         gridColumns: 'auto 1fr auto',
-        items: 'center start',
+        placeItems: 'center start',
         gap: '2x',
       }}
       {...props}

@@ -3,12 +3,15 @@ import { Block } from '../../components/Block';
 import { Button } from '../../atoms/Button/Button';
 import { Card } from '../../atoms/Card/Card';
 import { Grid } from '../../components/Grid';
-import { PrismCode } from '../../atoms/PrismCode/PrismCode';
+import { CubePrismCodeProps, PrismCode } from '../../atoms/PrismCode/PrismCode';
 import { notification } from '../../services/notification';
 import { CopyOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
+import { NuStyles } from '../../styles/types';
+import { BaseProps } from '../../components/types';
+import { CSSProperties } from 'react';
 
-const POSITION_ACTION = {
+const POSITION_ACTION: CSSProperties = {
   position: 'absolute',
   right: 0,
   top: 0,
@@ -61,19 +64,41 @@ const ButtonContainer = styled(Block)`
       : ''}
 `;
 
-export function CopySnippet({
-  code,
-  title,
-  nowrap,
-  prefix,
-  language,
-  scroll,
-  serif,
-  children,
-  padding,
-  overlay,
-  ...props
-}) {
+export interface CubeCopySnippetProps extends BaseProps {
+  padding?: NuStyles['padding'];
+  /** The code snippet */
+  code: string;
+  /** The title of the snippet */
+  title?: string;
+  /** Whether the snippet is single-lined */
+  nowrap?: boolean;
+  /** The prefix for each line of code. Useful for bash snippets. */
+  prefix?: string;
+  /** The code language of the snippet */
+  language?: CubePrismCodeProps['language'];
+  /** Whether the snippet uses a serif font */
+  serif?: boolean;
+  /** Whether the snippet uses overlay on the edge */
+  showOverlay?: boolean;
+  /** Whether the snippet is scrollable */
+  showScroll?: boolean;
+}
+
+export function CopySnippet(allProps: CubeCopySnippetProps) {
+  let {
+    code,
+    title,
+    nowrap,
+    prefix,
+    language,
+    showScroll = true,
+    serif,
+    children,
+    padding,
+    showOverlay = true,
+    ...props
+  } = allProps;
+
   padding = padding || '1.125x 1.5x';
 
   const codeTitle = title || 'Code example';
@@ -85,8 +110,6 @@ export function CopySnippet({
   }
 
   const multiline = (code || '').includes('\n') && !nowrap;
-  const showScroll = scroll !== false;
-  const showOverlay = overlay !== false;
 
   return (
     <Card

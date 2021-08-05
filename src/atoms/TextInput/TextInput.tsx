@@ -1,12 +1,12 @@
 import { forwardRef, useRef } from 'react';
-import { TextInputBase } from './TextInputBase';
+import { CubeTextInputBaseProps, TextInputBase } from './TextInputBase';
 import { useProviderProps } from '../../provider';
 import { useTextField } from '@react-aria/textfield';
 
-function TextInput(props, ref) {
+function TextInput(props: CubeTextInputBaseProps, ref) {
   props = useProviderProps(props);
 
-  let inputRef = useRef();
+  let inputRef = useRef(null);
   let { labelProps, inputProps } = useTextField(props, inputRef);
 
   return (

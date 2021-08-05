@@ -2,12 +2,11 @@ import { useFocusableRef } from '@react-spectrum/utils';
 import { forwardRef, useContext, useRef } from 'react';
 import { useHover } from '@react-aria/interactions';
 import { useRadio } from '@react-aria/radio';
-import { RadioGroupContext } from './context';
+import { RadioContext, useRadioProvider } from './context';
 import { extractStyles } from '../../utils/styles';
 import { useContextStyles } from '../../providers/Styles';
 import { BLOCK_STYLES, OUTER_STYLES } from '../../styles/list';
 import { Base } from '../../components/Base';
-import { modAttrs } from '../../utils/react/modAttrs';
 import { filterBaseProps } from '../../utils/filterBaseProps';
 import { useFocus } from '../../utils/interactions';
 import { mergeProps } from '@react-aria/utils';
@@ -16,18 +15,22 @@ import { INLINE_LABEL_STYLES } from '../../components/Label';
 import { HiddenInput } from '../../components/HiddenInput';
 import { RadioGroup } from './RadioGroup';
 import { useFormProps } from '../Form/Form';
+import { NuStyles } from '../../styles/types';
+import { BaseProps } from '../../components/types';
+import { AriaRadioProps } from '@react-types/radio';
+import { FormFieldProps } from '../../shared';
 
-const STYLES = {
+const STYLES: NuStyles = {
   position: 'relative',
   display: 'grid',
-  items: 'center start',
+  placeItems: 'center start',
   gap: '1x',
   flow: 'column',
   size: 'input',
   width: 'min-content',
 };
 
-const BUTTON_STYLES = {
+const BUTTON_STYLES: NuStyles = {
   radius: true,
   fill: {
     '': '#white',
@@ -60,9 +63,9 @@ const BUTTON_STYLES = {
   },
 };
 
-const INPUT_STYLES = {
+const INPUT_STYLES: NuStyles = {
   display: 'grid',
-  items: 'center',
+  placeItems: 'center',
   radius: 'round',
   fill: {
     '': '#white',
@@ -89,7 +92,7 @@ const INPUT_STYLES = {
   transition: 'theme',
 };
 
-const CIRCLE_STYLES = {
+const CIRCLE_STYLES: NuStyles = {
   radius: 'round',
   width: '1x',
   height: '1x',
@@ -97,13 +100,21 @@ const CIRCLE_STYLES = {
   transition: 'theme',
 };
 
-function Radio(props, ref) {
+export interface CubeRadioProps
+  extends BaseProps,
+    AriaRadioProps,
+    FormFieldProps {
+  inputStyles?: NuStyles;
+  /* The visual type of the radio button */
+  type?: 'button' | 'radio';
+}
+
+function Radio(props: CubeRadioProps, ref) {
   props = useProviderProps(props);
   props = useFormProps(props);
 
   let {
     qa,
-    isEmphasized,
     isDisabled,
     validationState,
     children,
@@ -139,9 +150,13 @@ function Radio(props, ref) {
     ...labelStyles,
   };
 
-  let state = useContext(RadioGroupContext);
+  let state = useRadioProvider();
 
-  let { isFocused, focusProps } = useFocus({ isDisabled, as: 'input' }, true);
+  if (!state) {
+    throw new Error('CubeUI: The Radio button is used outside the RadioGroup.');
+  }
+
+  let { isFocused, focusProps } = useFocus({ isDisabled }, true);
   let { hoverProps, isHovered } = useHover({ isDisabled });
 
   let inputRef = useRef(null);
@@ -162,13 +177,12 @@ function Radio(props, ref) {
       styles={styles}
       {...hoverProps}
       ref={domRef}
-      {...modAttrs({
-        quite: !isEmphasized,
+      mods={{
         disabled: isDisabled,
         invalid: validationState === 'invalid',
         hovered: isHovered,
         button: isButton,
-      })}
+      }}
     >
       <HiddenInput
         data-qa={qa || 'Radio'}
@@ -178,25 +192,24 @@ function Radio(props, ref) {
         ref={inputRef}
       />
       <Base
-        {...modAttrs({
+        mods={{
           checked: inputProps.checked,
-          quite: !isEmphasized,
           invalid: validationState === 'invalid',
           valid: validationState === 'valid',
           disabled: isDisabled,
           hovered: isHovered,
           focused: isFocused,
-        })}
+        }}
         styles={inputStyles}
       >
         {!isButton ? (
           <Base
             styles={CIRCLE_STYLES}
-            {...modAttrs({
+            mods={{
               checked: inputProps.checked,
               invalid: validationState === 'invalid',
               valid: validationState === 'valid',
-            })}
+            }}
           />
         ) : (
           children
@@ -206,12 +219,11 @@ function Radio(props, ref) {
         <Base
           qa="RadioLabel"
           styles={labelStyles}
-          {...modAttrs({
-            quite: !isEmphasized,
+          mods={{
             invalid: validationState === 'invalid',
             valid: validationState === 'valid',
             disabled: isDisabled,
-          })}
+          }}
           {...filterBaseProps(labelProps)}
         >
           {label}
@@ -221,16 +233,19 @@ function Radio(props, ref) {
   );
 }
 
-function RadioButton(props) {
-  return Radio({ ...props, type: 'button' });
+function RadioButton(props: CubeRadioProps, ref) {
+  const Radio = _Radio;
+
+  return <Radio {...props} type="button" ref={ref} />;
 }
 
 /**
  * Radio buttons allow users to select a single option from a list of mutually exclusive options.
  * All possible options are exposed up front for users to compare.
  */
-const _Radio = forwardRef(Radio);
-_Radio.Group = RadioGroup;
-_Radio.Button = RadioButton;
+const _Radio = Object.assign(forwardRef(Radio), {
+  Group: RadioGroup,
+  Button: forwardRef(RadioButton),
+});
 export { _Radio as Radio };
 export { RadioButton };

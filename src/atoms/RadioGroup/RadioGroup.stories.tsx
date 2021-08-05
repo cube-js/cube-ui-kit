@@ -1,4 +1,4 @@
-import { Radio, RadioButton } from './Radio';
+import { Radio } from './Radio';
 
 export default {
   title: 'UIKit/Atoms/RadioGroup',

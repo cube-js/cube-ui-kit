@@ -1,7 +1,7 @@
 import { Fragment, ReactElement, RefObject, useEffect, useRef } from 'react';
 import { useOverlayTriggerState } from '@react-stately/overlays';
 import { PressResponder } from '@react-aria/interactions';
-import { unwrapDOMRef, useMediaQuery } from '@react-spectrum/utils';
+import { useMediaQuery } from '@react-spectrum/utils';
 import { useOverlayPosition, useOverlayTrigger } from '@react-aria/overlays';
 import { DialogContext } from './context';
 import { Modal, Popover, Tray } from '../Modal';
@@ -187,7 +187,7 @@ function PopoverTrigger(allProps) {
   } = allProps;
 
   let triggerRef = useRef<HTMLElement>(null);
-  let overlayRef = useRef<DOMRefValue<HTMLDivElement>>(null);
+  let overlayRef = useRef<HTMLDivElement>(null);
 
   let {
     overlayProps: popoverProps,
@@ -195,7 +195,7 @@ function PopoverTrigger(allProps) {
     arrowProps,
   } = useOverlayPosition({
     targetRef: targetRef || triggerRef,
-    overlayRef: unwrapDOMRef(overlayRef),
+    overlayRef: overlayRef,
     placement: props.placement,
     containerPadding: props.containerPadding,
     offset: props.offset || 8,
@@ -214,6 +214,8 @@ function PopoverTrigger(allProps) {
     ...triggerProps,
     ref: targetRef ? undefined : triggerRef,
   };
+
+  console.log('! placement', placement);
 
   let overlay = (
     <Popover

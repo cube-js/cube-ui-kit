@@ -8,109 +8,112 @@ import { POSITION_STYLES } from '../../styles/list';
 import { filterBaseProps } from '../../utils/filterBaseProps';
 import { BaseProps, PositionStyleProps } from '../../components/types';
 import { FocusableRef } from '@react-types/shared';
+import { NuStyles } from '../../styles/types';
 
-const DEFAULT_STYLES = {
+const DEFAULT_STYLES: NuStyles = {
   display: 'inline-flex',
   padding: '.75x 1x',
   gap: '1x',
   flow: 'row',
-  items: 'center',
+  placeItems: 'center',
   fill: '#white',
   border: true,
   fontWeight: 400,
 };
 
-export interface Base64UploadProps extends BaseProps, PositionStyleProps {
+export interface CubeBase64UploadProps extends BaseProps, PositionStyleProps {
   onInput?: Function;
 }
 
 export const Base64Upload = styled(
-  forwardRef((allProps: Base64UploadProps, ref: FocusableRef<HTMLElement>) => {
-    const { onInput, ...props } = allProps;
+  forwardRef(
+    (allProps: CubeBase64UploadProps, ref: FocusableRef<HTMLElement>) => {
+      const { onInput, ...props } = allProps;
 
-    const styles = extractStyles(props, POSITION_STYLES, DEFAULT_STYLES);
-    const [file, setFile] = useState();
-    const [error, setError] = useState('');
+      const styles = extractStyles(props, POSITION_STYLES, DEFAULT_STYLES);
+      const [file, setFile] = useState();
+      const [error, setError] = useState('');
 
-    function onInputFile(e) {
-      if (!e.target) return;
+      function onInputFile(e) {
+        if (!e.target) return;
 
-      const localFile = e.target.files[0];
-      const reader = new FileReader();
+        const localFile = e.target.files[0];
+        const reader = new FileReader();
 
-      setError('');
+        setError('');
 
-      if (!localFile) return;
+        if (!localFile) return;
 
-      if (!localFile.name.endsWith('.json')) {
-        setError('Incorrect format. JSON file is required');
-
-        return;
-      }
-
-      reader.onload = function () {
-        /**
-         * @type {string}
-         */
-        const text = String(reader.result);
-
-        let base64text: string;
-
-        try {
-          JSON.parse(text);
-
-          base64text = btoa(text);
-        } catch (e) {
-          setError('Invalid JSON file');
-
-          console.error(e);
+        if (!localFile.name.endsWith('.json')) {
+          setError('Incorrect format. JSON file is required');
 
           return;
         }
 
-        onInput &&
-          onInput({
-            encoded: base64text,
-            raw: JSON.parse(text),
-          });
+        reader.onload = function () {
+          /**
+           * @type {string}
+           */
+          const text = String(reader.result);
 
-        setFile(localFile.name);
-      };
+          let base64text: string;
 
-      try {
-        reader.readAsText(localFile);
-      } catch (e) {
-        setError('Invalid file');
+          try {
+            JSON.parse(text);
+
+            base64text = btoa(text);
+          } catch (e) {
+            setError('Invalid JSON file');
+
+            console.error(e);
+
+            return;
+          }
+
+          onInput &&
+            onInput({
+              encoded: base64text,
+              raw: JSON.parse(text),
+            });
+
+          setFile(localFile.name);
+        };
+
+        try {
+          reader.readAsText(localFile);
+        } catch (e) {
+          setError('Invalid file');
+        }
       }
-    }
 
-    return (
-      <>
-        <Button
-          {...filterBaseProps(props, { eventProps: true })}
-          styles={styles}
-          ref={ref}
-        >
-          <Block
-            radius="round"
-            fill="#purple.10"
-            color="#dark-02"
-            padding=".5x 1x"
+      return (
+        <>
+          <Button
+            {...filterBaseProps(props, { eventProps: true })}
+            styles={styles}
+            ref={ref}
           >
-            Choose file
-          </Block>
-          <Block color="#dark-04">{file || 'No file selected'}</Block>
-          <input
-            type="file"
-            name="base64"
-            onInput={onInputFile}
-            accept=".json"
-          />
-        </Button>
-        {error && <Text.Danger color="danger">{error}</Text.Danger>}
-      </>
-    );
-  }),
+            <Block
+              radius="round"
+              fill="#purple.10"
+              color="#dark-02"
+              padding=".5x 1x"
+            >
+              Choose file
+            </Block>
+            <Block color="#dark-04">{file || 'No file selected'}</Block>
+            <input
+              type="file"
+              name="base64"
+              onInput={onInputFile}
+              accept=".json"
+            />
+          </Button>
+          {error && <Text.Danger color="danger">{error}</Text.Danger>}
+        </>
+      );
+    },
+  ),
 )`
   appearance: none;
   cursor: pointer;

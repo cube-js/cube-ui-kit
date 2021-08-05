@@ -14,12 +14,12 @@ const DEFAULT_STYLES = {
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
-export interface FooterProps
+export interface CubeFooterProps
   extends BaseProps,
     ContainerStyleProps,
     TextStyleProps {}
 
-export const Footer = forwardRef((props: FooterProps, ref) => {
+export const Footer = forwardRef((props: CubeFooterProps, ref) => {
   props = useSlotProps(props, 'footer');
 
   const styles = extractStyles(props, STYLE_LIST, DEFAULT_STYLES);

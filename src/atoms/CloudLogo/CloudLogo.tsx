@@ -3,7 +3,8 @@ import styled from 'styled-components';
 import { useButton } from '@react-aria/button';
 import { useFocusableRef } from '@react-spectrum/utils';
 import { FocusableRef } from '@react-types/shared';
-import { ButtonProps } from '../Button/Button';
+import { CubeButtonProps } from '../Button/Button';
+import { cubeToAriaButtonProps } from '../../utils/react/mapProps';
 
 const Button = styled.button((props) => {
   return `
@@ -21,9 +22,12 @@ const Button = styled.button((props) => {
   `;
 });
 
-function CloudLogo(props: ButtonProps, ref: FocusableRef<HTMLButtonElement>) {
+function CloudLogo(
+  props: CubeButtonProps,
+  ref: FocusableRef<HTMLButtonElement>,
+) {
   let domRef = useFocusableRef(ref);
-  let { buttonProps } = useButton(props, domRef);
+  let { buttonProps } = useButton(cubeToAriaButtonProps(props), domRef);
 
   return (
     <Button

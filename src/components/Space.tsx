@@ -10,7 +10,7 @@ const DEFAULT_STYLES = {
   gap: true,
 };
 
-export interface SpaceProps
+export interface CubeSpaceProps
   extends BaseProps,
     ContainerStyleProps,
     ShortItemsStyles {
@@ -22,7 +22,7 @@ const PROP_MAP = {
   justify: 'justifyItems',
 } as const;
 
-export const Space = forwardRef(function Space(props: SpaceProps, ref) {
+export const Space = forwardRef(function Space(props: CubeSpaceProps, ref) {
   const flow = props.direction
     ? props.direction === 'vertical'
       ? 'column'

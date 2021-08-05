@@ -1,17 +1,26 @@
 import { chain } from '@react-aria/utils';
-import { Button } from '../../atoms/Button/Button';
+import { Button, CubeButtonProps } from '../../atoms/Button/Button';
 import { Content } from '../../components/Content';
-import { Dialog } from '../../atoms/Dialog/Dialog';
+import { CubeDialogProps, Dialog } from '../../atoms/Dialog/Dialog';
 import { DialogContext } from '../../atoms/Dialog/context';
 import { Divider } from '../../components/Divider';
 import { Title } from '../../components/Title';
 import { forwardRef, useContext } from 'react';
 import { ButtonGroup } from '../../atoms/ButtonGroup/ButtonGroup';
 
+export interface CubeAlertDialogProps extends CubeDialogProps {
+  /** Whether the dialog is an important prompt */
+  danger?: boolean;
+  primaryProps?: CubeButtonProps;
+  secondaryProps?: CubeButtonProps;
+  cancelProps?: CubeButtonProps;
+  title?: string;
+}
+
 /**
  * AlertDialogs are a specific type of Dialog. They display important information that users need to acknowledge.
  */
-function AlertDialog(props, ref) {
+function AlertDialog(props: CubeAlertDialogProps, ref) {
   let { onClose = () => {} } = useContext(DialogContext) || {};
 
   let {
@@ -28,7 +37,7 @@ function AlertDialog(props, ref) {
     primaryProps.label = 'Ok';
   }
 
-  let confirmType = 'primary';
+  let confirmType: CubeButtonProps['type'] = 'primary';
 
   if (danger) {
     confirmType = 'danger';
@@ -43,17 +52,20 @@ function AlertDialog(props, ref) {
         <Button
           type={confirmType}
           {...primaryProps}
-          onPress={() =>
-            chain(primaryProps.onPress && primaryProps.onPress(), onClose())
+          onPress={(e) =>
+            chain(
+              primaryProps.onPress && primaryProps.onPress(e),
+              onClose('primary'),
+            )
           }
         />
         {secondaryProps && (
           <Button
             {...secondaryProps}
-            onPress={() =>
+            onPress={(e) =>
               chain(
-                secondaryProps.onPress && secondaryProps.onPress(),
-                onClose(),
+                secondaryProps?.onPress && secondaryProps?.onPress(e),
+                onClose('secondary'),
               )
             }
           />
@@ -61,8 +73,11 @@ function AlertDialog(props, ref) {
         {cancelProps && (
           <Button
             {...cancelProps}
-            onPress={() =>
-              chain(cancelProps.onPress && cancelProps.onPress(), onClose())
+            onPress={(e) =>
+              chain(
+                cancelProps?.onPress && cancelProps?.onPress(e),
+                onClose('cancel'),
+              )
             }
           />
         )}

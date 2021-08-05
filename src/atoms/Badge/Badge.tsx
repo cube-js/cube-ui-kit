@@ -20,11 +20,11 @@ const DEFAULT_STYLES: NuStyles = {
   color: '#white',
 } as const;
 
-export interface BadgeProps extends BaseProps, ContainerStyleProps {
+export interface CubeBadgeProps extends BaseProps, ContainerStyleProps {
   type?: keyof typeof THEMES;
 }
 
-export const Badge = forwardRef((allProps: BadgeProps, ref) => {
+export const Badge = forwardRef((allProps: CubeBadgeProps, ref) => {
   let { type, children, ...props } = allProps;
 
   const styles = extractStyles(props, CONTAINER_STYLES, {

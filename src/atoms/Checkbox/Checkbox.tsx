@@ -23,7 +23,7 @@ import { NuStyles } from '../../styles/types';
 import { FocusableRef } from '@react-types/shared';
 import { FormFieldProps } from '../../shared';
 
-export interface CheckboxProps
+export interface CubeCheckboxProps
   extends BaseProps,
     AriaCheckboxProps,
     FormFieldProps {}
@@ -45,7 +45,7 @@ const IndeterminateOutline = () => (
 const DEFAULT_STYLES: NuStyles = {
   position: 'relative',
   display: 'flex',
-  items: 'center start',
+  placeItems: 'center start',
   gap: '1x',
   flow: 'row',
   size: 'input',
@@ -53,7 +53,7 @@ const DEFAULT_STYLES: NuStyles = {
 
 const INPUT_STYLES: NuStyles = {
   display: 'grid',
-  items: 'center',
+  placeItems: 'center',
   radius: '.5r',
   fill: {
     '': '#white',
@@ -80,7 +80,7 @@ const INPUT_STYLES: NuStyles = {
   transition: 'theme',
 } as const;
 
-function Checkbox(props: CheckboxProps, ref: FocusableRef) {
+function Checkbox(props: CubeCheckboxProps, ref: FocusableRef) {
   let originalProps = props;
 
   props = useProviderProps(props);

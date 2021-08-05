@@ -1,5 +1,6 @@
-import { ChildrenProp, Props } from '../components/types';
+import { Props } from '../components/types';
 import { NuStyles } from '../styles/types';
+import { ReactNode } from 'react';
 
 export type LabelPosition = 'side' | 'top';
 export type NecessityIndicator = 'icon' | 'label';
@@ -39,9 +40,9 @@ export interface FormBaseProps {
 
 export interface FormFieldProps extends FormBaseProps {
   insideForm?: boolean;
-  label?: string | ChildrenProp;
+  label?: ReactNode;
   labelProps?: Props;
-  message?: string | ChildrenProp;
+  message?: ReactNode;
 }
 
 export type ValidationRuleBase = { [key: string]: any } & {

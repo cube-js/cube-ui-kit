@@ -1,9 +1,9 @@
 import { forwardRef } from 'react';
 import { Button } from '../Button/Button';
 import { CaretDownOutlined, CaretUpOutlined } from '@ant-design/icons';
-import { modAttrs } from '../../utils/react/modAttrs';
+import { NuStyles } from '../../styles/types';
 
-const STEP_BUTTON_STYLES = {
+const STEP_BUTTON_STYLES: NuStyles = {
   padding: '0 .5x',
   radius: {
     '': '0 (1r - 1bw) 0 0',
@@ -22,14 +22,17 @@ function StepButton(props) {
       icon={
         props.direction === 'up' ? <CaretUpOutlined /> : <CaretDownOutlined />
       }
-      {...modAttrs({
+      mods={{
         up: props.direction === 'up',
         down: props.direction === 'down',
-      })}
+      }}
       {...props}
     />
   );
 }
 
+/**
+ * Buttons for NumberField.
+ */
 const _StepButton = forwardRef(StepButton);
 export { _StepButton as StepButton };

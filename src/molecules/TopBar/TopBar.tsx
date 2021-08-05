@@ -1,15 +1,12 @@
 import { Base } from '../../components/Base';
 import { CloudLogo } from '../../atoms/CloudLogo/CloudLogo';
 import { Space } from '../../components/Space';
-import {
-  BASE_STYLES,
-  BLOCK_STYLES,
-  FLOW_STYLES,
-  POSITION_STYLES,
-} from '../../styles/list';
+import { CONTAINER_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
+import { NuStyles } from '../../styles/types';
+import { BaseProps, ContainerStyleProps } from '../../components/types';
 
-const DEFAULT_STYLES = {
+const DEFAULT_STYLES: NuStyles = {
   display: 'flex',
   flow: 'row',
   gap: '1x',
@@ -19,15 +16,12 @@ const DEFAULT_STYLES = {
   fill: '#white',
 };
 
-const STYLE_LIST = [
-  ...BASE_STYLES,
-  ...BLOCK_STYLES,
-  ...FLOW_STYLES,
-  ...POSITION_STYLES,
-];
+export interface CubeTopbarProps extends BaseProps, ContainerStyleProps {
+  onLogoPress?: () => void;
+}
 
 export function TopBar({ children, onLogoPress, ...props }) {
-  const styles = extractStyles(props, STYLE_LIST, DEFAULT_STYLES);
+  const styles = extractStyles(props, CONTAINER_STYLES, DEFAULT_STYLES);
 
   return (
     <Base role="banner" {...props} styles={styles}>

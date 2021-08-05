@@ -14,12 +14,12 @@ const DEFAULT_STYLES = {
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
-export interface HeaderProps
+export interface CubeHeaderProps
   extends BaseProps,
     ContainerStyleProps,
     TextStyleProps {}
 
-export const Header = forwardRef((allProps: HeaderProps, ref) => {
+export const Header = forwardRef((allProps: CubeHeaderProps, ref) => {
   const props = useSlotProps(allProps, 'header');
   const styles = extractStyles(props, STYLE_LIST, DEFAULT_STYLES);
 

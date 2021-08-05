@@ -14,7 +14,7 @@ const FIELD_STYLES = {
     '': '1x',
     'has-sider': '@(column-gap, 1x)',
   },
-  items: 'baseline stretch',
+  placeItems: 'baseline stretch',
 };
 
 const MESSAGE_STYLES = {
@@ -34,7 +34,7 @@ const MESSAGE_STYLES = {
   userSelect: 'none',
 };
 
-export type FieldWrapperProps = {
+export type CubeFieldWrapperProps = {
   as: string;
   labelPosition: LabelPosition;
   label?: string;

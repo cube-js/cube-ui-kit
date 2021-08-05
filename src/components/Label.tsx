@@ -68,7 +68,7 @@ export const LABEL_STYLES: NuStyles = {
   whiteSpace: 'nowrap',
 } as const;
 
-export interface LabelProps extends BaseProps, ContainerStyleProps {
+export interface CubeLabelProps extends BaseProps, ContainerStyleProps {
   labelPosition?: LabelPosition;
   necessityIndicator?: NecessityIndicator;
   isRequired?: boolean;
@@ -79,8 +79,8 @@ export interface LabelProps extends BaseProps, ContainerStyleProps {
   onClick?: MouseEventHandler;
 }
 
-function Label(props: LabelProps, ref) {
-  props = useProviderProps<LabelProps>(props);
+function Label(props: CubeLabelProps, ref) {
+  props = useProviderProps<CubeLabelProps>(props);
 
   let {
     as,

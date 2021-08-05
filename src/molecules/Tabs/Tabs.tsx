@@ -1,5 +1,6 @@
 import {
   createContext,
+  ReactNode,
   useContext,
   useEffect,
   useLayoutEffect,
@@ -8,10 +9,33 @@ import {
 } from 'react';
 import { Block } from '../../components/Block';
 import { Space } from '../../components/Space';
-import { Flex } from '../../components/Flex';
-import { Button } from '../../atoms/Button/Button';
+import { CubeFlexProps, Flex } from '../../components/Flex';
+import { Button, CubeButtonProps } from '../../atoms/Button/Button';
+import { NuStyles } from '../../styles/types';
 
-const TabsContext = createContext({});
+export interface CubeTabData {
+  id: string;
+  qa?: string;
+  title?: string;
+  isDisabled?: boolean;
+  isHidden?: boolean;
+}
+
+export interface CubeTabsContextValue {
+  addTab: (CubeTabData) => void;
+  setTab: (string) => void;
+  removeTab: (CubeTabData) => void;
+  changeTab: (CubeTabData) => void;
+  currentTab: string;
+}
+
+const TabsContext = createContext<CubeTabsContextValue>({
+  addTab() {},
+  removeTab() {},
+  setTab() {},
+  changeTab() {},
+  currentTab: '',
+});
 
 const TABS_PANEL_CSS = `
   position: relative;
@@ -85,11 +109,32 @@ const TABS_CONTAINER_CSS = `
   }
 `;
 
-const Tab = ({ isSelected, isHidden, onClose, ...props }) => {
+export interface CubeTabProps extends CubeButtonProps {
+  isSelected?: boolean;
+  isHidden?: boolean;
+  onClose?: () => void;
+}
+
+const Tab = ({ isSelected, isHidden, onClose, ...props }: CubeTabProps) => {
   return (
     <Button type="tab" isSelected={isSelected} isHidden={isHidden} {...props} />
   );
 };
+
+export interface CubeTabsProps extends CubeFlexProps {
+  /** The initial active key in the tabs (uncontrolled). */
+  defaultActiveKey?: string;
+  /** The currently active key in the tabs (controlled). */
+  activeKey?: string;
+  /** Handler that is called when the tab is clicked. */
+  onTabClick?: (string) => void;
+  /** Handler that is called when the tab is closed. */
+  onTabClose?: (string) => void;
+  /** Styles for the each tab pane */
+  paneStyles?: NuStyles;
+  /** Additional content along the tabs */
+  extra?: ReactNode;
+}
 
 export function Tabs({
   defaultActiveKey,
@@ -101,13 +146,13 @@ export function Tabs({
   children,
   ...props
 }) {
-  const tabsRef = useRef();
+  const tabsRef = useRef<HTMLDivElement>(null);
 
-  const [tabs, setTabs] = useState([]);
+  const [tabs, setTabs] = useState<CubeTabData[]>([]);
   const [activeKey, setActiveKey] = useState(activeKeyProp || defaultActiveKey);
 
-  const [leftFade, setLeftFade] = useState(false);
-  const [rightFade, setRightFade] = useState(false);
+  const [leftFade, setLeftFade] = useState<boolean>(false);
+  const [rightFade, setRightFade] = useState<boolean>(false);
 
   function updateScroll() {
     const el = tabsRef && tabsRef.current;
@@ -162,17 +207,17 @@ export function Tabs({
     setActiveKey(activeKeyProp);
   }, [activeKeyProp]);
 
-  function getTab(tabs, key) {
+  function getTab(tabs: CubeTabData[], key: string): CubeTabData | undefined {
     return tabs.find((tab) => tab.id === key);
   }
 
-  function setTab(key) {
+  function setTab(key: string) {
     if (getTab(tabs, key)) {
       setActiveKey(key);
     }
   }
 
-  function addTab(tab) {
+  function addTab(tab: CubeTabData) {
     setTabs((tabs) => {
       if (!getTab(tabs, tab.id)) {
         return [...tabs, tab];
@@ -182,7 +227,7 @@ export function Tabs({
     });
   }
 
-  function removeTab(tab) {
+  function removeTab(tab: CubeTabData) {
     setTabs((tabs) => {
       const _tabs = tabs.filter((_tab) => _tab.id !== tab.id);
 
@@ -198,7 +243,7 @@ export function Tabs({
     });
   }
 
-  function changeTab(tab) {
+  function changeTab(tab: CubeTabData) {
     setTabs((tabs) => {
       const existTab = tabs.find((_tab) => _tab.id === tab.id);
 
@@ -210,7 +255,7 @@ export function Tabs({
     });
   }
 
-  function onPress(tab) {
+  function onPress(tab: CubeTabData) {
     onTabClick && onTabClick(tab.id);
     setTab(tab.id);
   }
@@ -235,14 +280,14 @@ export function Tabs({
         }}
       >
         <Space gap=".5x" placeContent="center space-between">
-          <Space ref={tabsRef} gap="1x" flexShrink="0" css={TABS_PANEL_CSS}>
+          <Space ref={tabsRef} gap="1x" flexShrink={0} css={TABS_PANEL_CSS}>
             {tabs.map((tab) => {
               return (
                 <Tab
                   data-qa={tab.qa}
                   onPress={() => onPress(tab)}
                   key={tab.id}
-                  isSelected={tab.id === activeKey || null}
+                  isSelected={tab.id === activeKey || false}
                   isDisabled={tab.isDisabled}
                   isHidden={tab.isHidden}
                 >

@@ -19,8 +19,9 @@ import {
   PositionStyleProps,
   TextStyleProps,
 } from './types';
+import { NuStyles } from '../styles/types';
 
-const DEFAULT_STYLES = {
+const DEFAULT_STYLES: NuStyles = {
   size: 'text',
   color: '#dark.75',
   display: 'block',
@@ -35,7 +36,7 @@ const STYLE_PROPS = [
   ...DIMENSION_STYLES,
 ];
 
-export interface ParagraphProps
+export interface CubeParagraphProps
   extends BaseProps,
     BaseStyleProps,
     TextStyleProps,
@@ -44,7 +45,7 @@ export interface ParagraphProps
     PositionStyleProps,
     DimensionStyleProps {}
 
-export const Paragraph = forwardRef((props: ParagraphProps, ref) => {
+export const Paragraph = forwardRef((props: CubeParagraphProps, ref) => {
   const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
 
   return (

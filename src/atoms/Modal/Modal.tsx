@@ -7,15 +7,16 @@ import { useModal, useOverlay, usePreventScroll } from '@react-aria/overlays';
 import { Base } from '../../components/Base';
 import { useContextStyles } from '../../providers/Styles';
 import { NuStyles } from '../../styles/types';
-import { BaseProps, ChildrenProp, Props } from '../../components/types';
+import { BaseProps, Props } from '../../components/types';
 import { mergeProps } from '../../utils/react';
+import { ModalProps } from '@react-types/overlays';
 
 export const OVERLAY_WRAPPER_STYLES: NuStyles = {
   position: 'fixed',
   display: 'grid',
   left: 0,
   top: 0,
-  items: {
+  placeItems: {
     '': 'center',
     '[data-type="fullscreen"]': 'center',
     '[data-type="fullscreenTakeover"] | [data-type="panel"]': 'stretch',
@@ -57,12 +58,11 @@ const MODAL_STYLES: NuStyles = {
   },
 };
 
-export interface CubeModalProps {
+export interface CubeModalProps extends ModalProps {
   qa?: BaseProps['qa'];
   onClose?: () => void;
-  type?: 'fullscreen' | 'fullscreenTakeover';
+  type?: 'modal' | 'fullscreen' | 'fullscreenTakeover';
   styles?: NuStyles;
-  children: ReactNode;
 }
 
 function Modal(props: CubeModalProps, ref) {
@@ -92,7 +92,7 @@ interface ModalWrapperProps {
   children?: ReactNode;
   qa?: BaseProps['qa'];
   isOpen?: boolean;
-  type?: 'fullscreen' | 'fullscreenTakeover';
+  type?: 'modal' | 'fullscreen' | 'fullscreenTakeover';
   placement?: 'top' | 'bottom';
   styles?: NuStyles;
   overlayProps?: Props;

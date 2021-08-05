@@ -2,8 +2,11 @@ import { OpenTransition } from './OpenTransition';
 import { forwardRef, useCallback, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from '../../provider';
+import { OverlayProps } from '@react-types/overlays';
 
-function Overlay(props, ref) {
+export interface CubeOverlayProps extends OverlayProps {}
+
+function Overlay(props: CubeOverlayProps, ref) {
   let {
     children,
     isOpen,

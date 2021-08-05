@@ -3,12 +3,13 @@ import { DialogTrigger } from './DialogTrigger';
 import { api } from './api';
 import { DialogContainer } from './DialogContainer';
 
-Dialog.confirm = (options) => {
-  return api.open({ dialogType: 'confirm', ...options });
-};
+const _Dialog = Object.assign(Dialog, {
+  confirm: (options) => {
+    return api.open({ dialogType: 'confirm', ...options });
+  },
+  info: (options) => {
+    return api.open({ dialogType: 'info', ...options });
+  },
+});
 
-Dialog.info = (options) => {
-  return api.open({ dialogType: 'info', ...options });
-};
-
-export { Dialog, DialogContainer, DialogTrigger };
+export { _Dialog as Dialog, DialogContainer, DialogTrigger };

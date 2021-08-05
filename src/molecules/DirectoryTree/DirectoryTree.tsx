@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { CSSProperties, ReactNode, useEffect, useState } from 'react';
 import {
   CaretDownOutlined,
   CaretUpOutlined,
@@ -11,6 +11,16 @@ import { Action } from '../../components/Action';
 import { Button } from '../../atoms/Button/Button';
 import { Space } from '../../components/Space';
 import { Block } from '../../components/Block';
+import { NuStyles } from '../../styles/types';
+
+export type CubeFileTree = CubeFileTreeItem[];
+
+export interface CubeFileTreeItem {
+  isLeaf?: boolean;
+  title?: string;
+  key?: string;
+  children?: CubeFileTree;
+}
 
 const IMAGES = {
   created: (
@@ -48,7 +58,7 @@ const IMAGES = {
   ),
 };
 
-const TEXT_OVERFLOW_STYLES = {
+const TEXT_OVERFLOW_STYLES: CSSProperties = {
   whiteSpace: 'nowrap',
   textOverflow: 'ellipsis',
   maxWidth: '100%',
@@ -59,7 +69,7 @@ function calcPadding(indent) {
   return `.75x .5x .75x ${1.5 * indent + 0.5}x`;
 }
 
-function extractLeafKeys(subTreeData, dirsOnly) {
+function extractLeafKeys(subTreeData, dirsOnly = false) {
   return subTreeData.reduce((list, item) => {
     if (!item.isLeaf) {
       list.push(item.key);
@@ -81,13 +91,13 @@ const MODE_BG = {
     '': '#danger.08',
     hovered: '#danger.13',
   },
-};
+} as const;
 const MODE_COLOR = {
   created: '#success',
   deleted: '#danger',
-};
+} as const;
 
-function getItemStyles({ isSelected, mode, indent }) {
+function getItemStyles({ isSelected, mode, indent }): NuStyles {
   return {
     width: 'max 100%',
     radius: true,
@@ -108,7 +118,17 @@ function getItemStyles({ isSelected, mode, indent }) {
   };
 }
 
-function Item({ children, mode, indent, onPress, isSelected }) {
+export interface CubeDirectoryTreeItemProps {
+  children?: ReactNode;
+  mode?: keyof typeof MODE_BG;
+  indent?: number;
+  onPress?: () => void;
+  isSelected?: boolean;
+}
+
+function Item(props: CubeDirectoryTreeItemProps) {
+  let { children, mode, indent, onPress, isSelected } = props;
+
   return (
     <Action
       onPress={onPress}
@@ -120,7 +140,7 @@ function Item({ children, mode, indent, onPress, isSelected }) {
   );
 }
 
-function sortTreeData(filesTree) {
+function sortTreeData(filesTree: CubeFileTree) {
   filesTree = filesTree.map((item) => {
     return {
       ...item,
@@ -150,16 +170,35 @@ const HOVER_CSS = `
   }
 `;
 
-export function DirectoryTree({
-  onSelect,
-  treeData,
-  selectedKey,
-  defaultExpandAll,
-  rootTitle,
-  actionsPanel,
-  onlyDirs,
-  ...otherProps
-}) {
+export interface CubeDirectoryTreeProps {
+  /** Event that fires on file selection */
+  onSelect?: (key: string) => void;
+  /** The selected key */
+  selectedKey?: string;
+  /** Whether all folders are expanded by default */
+  defaultExpandAll?: boolean;
+  /** Custom title for the root folder */
+  rootTitle?: string;
+  /** The Action panel provider  */
+  actionsPanel?: (CubeFileTreeItem) => ReactNode;
+  /** Whether to show only dirs */
+  onlyDirs?: boolean;
+  /** The full tree data */
+  treeData: CubeFileTree;
+}
+
+export function DirectoryTree(props: CubeDirectoryTreeProps) {
+  let {
+    onSelect,
+    treeData,
+    selectedKey,
+    defaultExpandAll,
+    rootTitle,
+    actionsPanel,
+    onlyDirs,
+    ...otherProps
+  } = props;
+
   treeData = sortTreeData(treeData);
 
   const [expanded, setExpanded] = useState(['/']);
@@ -225,7 +264,7 @@ export function DirectoryTree({
               </Button>
               <Space
                 gap="1x"
-                flexGrow="1"
+                flexGrow={1}
                 color={selected === item.key ? '#purple' : '#dark.50'}
               >
                 {expanded.includes(item.key) ? (
@@ -245,16 +284,14 @@ export function DirectoryTree({
           </Item>,
         );
         if (expanded.includes(item.key)) {
-          list.push(
-            ...recursiveRender(item.children || [], indent + 1, onlyDirs),
-          );
+          list.push(...recursiveRender(item.children || [], indent + 1));
         }
       } else if (!onlyDirs) {
         list.push(
           <Item
             key={item.key}
             indent={indent + 1.7}
-            selected={selected === item.key}
+            isSelected={selected === item.key}
             onPress={() => select(item)}
             mode={item.mode}
           >

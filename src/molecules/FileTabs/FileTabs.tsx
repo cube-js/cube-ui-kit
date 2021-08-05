@@ -1,5 +1,6 @@
 import {
   createContext,
+  ReactNode,
   useContext,
   useEffect,
   useLayoutEffect,
@@ -8,11 +9,31 @@ import {
 } from 'react';
 import { CloseOutlined } from '@ant-design/icons';
 import { Block } from '../../components/Block';
-import { Action } from '../../components/Action';
+import { Action, CubeActionProps } from '../../components/Action';
 import { Space } from '../../components/Space';
-import { Flex } from '../../components/Flex';
+import { Flex, CubeFlexProps } from '../../components/Flex';
+import { NuStyles } from '../../styles/types';
 
-const FileTabsContext = createContext({});
+interface TabData {
+  id: string | number;
+  title?: string;
+  isDirty?: boolean;
+}
+
+interface FileTabContextValue {
+  addTab: (TabData) => void;
+  setTab: (string) => void;
+  removeTab: (string) => void;
+  currentTab?: string | number;
+  setDirtyTab: (string, boolean) => void;
+}
+
+const FileTabsContext = createContext<FileTabContextValue>({
+  addTab() {},
+  removeTab() {},
+  setTab() {},
+  setDirtyTab() {},
+});
 
 const TABS_PANEL_CSS = `
   position: relative;
@@ -94,7 +115,7 @@ const DIRTY_BADGE_CSS = `
   transition: all .2s linear;
 `;
 
-const TAB_STYLES = {
+const TAB_STYLES: NuStyles = {
   radius: '1r 1r 0 0',
   padding: '1x 1.5x',
   border: {
@@ -169,6 +190,14 @@ const TAB_CSS = `
   }
 `;
 
+export interface CubeFileTabProps extends CubeActionProps {
+  isDirty?: boolean;
+  isDisabled?: boolean;
+  children?: ReactNode;
+  isClosable?: boolean;
+  onClose?: () => void;
+}
+
 const Tab = ({
   isDirty,
   isDisabled,
@@ -176,7 +205,7 @@ const Tab = ({
   isClosable,
   onClose,
   ...props
-}) => {
+}: CubeFileTabProps) => {
   return (
     <Action
       className={isDirty ? 'file-tab--dirty' : ''}
@@ -217,6 +246,22 @@ const Tab = ({
   );
 };
 
+export interface CubeFileTabsProps extends CubeFlexProps {
+  /** The initial active key in the tabs (uncontrolled). */
+  defaultActiveKey?: string;
+  /** The currently active key in the tabs (controlled). */
+  activeKey?: string | number;
+  /** Handler that is called when the tab is clicked. */
+  onTabClick?: (string) => void;
+  /** Handler that is called when the tab is closed. */
+  onTabClose?: (string) => void;
+  /** Styles for the each tab pane */
+  paneStyles?: NuStyles;
+  /** Whether the tabs are closable */
+  isClosable?: boolean;
+  children?: ReactNode;
+}
+
 export function FileTabs({
   defaultActiveKey,
   activeKey: activeKeyProp,
@@ -226,13 +271,12 @@ export function FileTabs({
   isClosable,
   children,
   ...props
-}) {
-  const tabsRef = useRef();
-
-  isClosable = isClosable != null ? !!isClosable : true;
-
-  const [tabs, setTabs] = useState([]);
-  const [activeKey, setActiveKey] = useState(activeKeyProp || defaultActiveKey);
+}: CubeFileTabsProps) {
+  const tabsRef = useRef<HTMLButtonElement>(null);
+  const [tabs, setTabs] = useState<TabData[]>([]);
+  const [activeKey, setActiveKey] = useState<string | number | undefined>(
+    activeKeyProp || defaultActiveKey,
+  );
 
   const [leftFade, setLeftFade] = useState(false);
   const [rightFade, setRightFade] = useState(false);
@@ -290,17 +334,17 @@ export function FileTabs({
     setActiveKey(activeKeyProp);
   }, [activeKeyProp]);
 
-  function getTab(tabs, key) {
+  function getTab(tabs: TabData[], key: string | number): TabData | undefined {
     return tabs.find((tab) => tab.id === key);
   }
 
-  function setTab(key) {
+  function setTab(key: string) {
     if (getTab(tabs, key)) {
       setActiveKey(key);
     }
   }
 
-  function addTab(tab) {
+  function addTab(tab: TabData) {
     setTabs((tabs) => {
       if (!getTab(tabs, tab.id)) {
         return [...tabs, tab];
@@ -310,7 +354,7 @@ export function FileTabs({
     });
   }
 
-  function setDirtyTab(id, isDirty) {
+  function setDirtyTab(id: string, isDirty: boolean) {
     setTabs((tabs) => {
       const tab = getTab(tabs, id);
 
@@ -378,7 +422,7 @@ export function FileTabs({
                 key={tab.id}
                 onClose={() => isClosable && handleClose(tab)}
                 isClosable={isClosable}
-                isDisabled={tab.id === activeKey || null}
+                isDisabled={tab.id === activeKey || false}
                 isDirty={tab.isDirty}
               >
                 {tab.title}

@@ -1,11 +1,22 @@
 import { forwardRef, useCallback, useLayoutEffect, useRef } from 'react';
-import { TextInputBase } from '../TextInput/TextInputBase';
+import {
+  CubeTextInputBaseProps,
+  TextInputBase,
+} from '../TextInput/TextInputBase';
 import { useControlledState } from '@react-stately/utils';
 import { useProviderProps } from '../../provider';
 import { useTextField } from '@react-aria/textfield';
 import { chain } from '@react-aria/utils';
 
-function TextArea(props, ref) {
+export interface CubeTextAreaProps extends CubeTextInputBaseProps {
+  /** Whether the textarea should change its size depends on content */
+  autoSize?: boolean;
+  /** The rows attribute in HTML is used to specify the number of visible text lines for the
+   * control i.e the number of rows to display. */
+  rows?: number;
+}
+
+function TextArea(props: CubeTextAreaProps, ref) {
   props = useProviderProps(props);
   let {
     autoSize = false,
@@ -24,12 +35,12 @@ function TextArea(props, ref) {
     props.defaultValue,
     () => {},
   );
-  let inputRef = useRef();
+  let inputRef = useRef<HTMLInputElement>(null);
 
   let onHeightChange = useCallback(() => {
     if (autoSize && inputRef.current) {
       let input = inputRef.current;
-      let prevAlignment = input.style.alignStyle;
+      let prevAlignment = input.style.alignSelf;
       let computedStyle = getComputedStyle(input);
       input.style.alignSelf = 'start';
       input.style.height = 'auto';
@@ -38,7 +49,7 @@ function TextArea(props, ref) {
         : `${
             parseFloat(computedStyle.paddingTop) +
             parseFloat(computedStyle.paddingBottom) +
-            parseFloat(computedStyle.lineHeight * rows) +
+            parseFloat(computedStyle.lineHeight) * (rows || 3) +
             2
           }px`;
       input.style.alignSelf = prevAlignment;

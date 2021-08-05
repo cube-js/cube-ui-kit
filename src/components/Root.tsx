@@ -13,7 +13,7 @@ const DEFAULT_STYLES = {
 };
 const STYLES = [...BASE_STYLES, ...BLOCK_STYLES];
 
-export interface RootProps extends BaseProps {
+export interface CubeRootProps extends BaseProps {
   tokens: { [key: string]: string };
   fonts: boolean;
   legacyCSS: boolean;
@@ -23,7 +23,7 @@ export interface RootProps extends BaseProps {
   monospaceFont: string;
 }
 
-export const Root = forwardRef((allProps: RootProps, ref) => {
+export const Root = forwardRef((allProps: CubeRootProps, ref) => {
   let {
     children,
     tokens,

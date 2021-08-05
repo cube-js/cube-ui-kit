@@ -1,5 +1,5 @@
 import { useFocusableRef } from '@react-spectrum/utils';
-import { createContext, forwardRef, useContext, useRef } from 'react';
+import { forwardRef, useRef } from 'react';
 import { useSwitch } from '@react-aria/switch';
 import { useHover } from '@react-aria/interactions';
 import { useToggleState } from '@react-stately/toggle';
@@ -7,7 +7,6 @@ import { useProviderProps } from '../../provider';
 import { BLOCK_STYLES, OUTER_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
 import { Base } from '../../components/Base';
-import { modAttrs } from '../../utils/react';
 import { useFocus } from '../../utils/interactions';
 import { mergeProps } from '@react-aria/utils';
 import { filterBaseProps } from '../../utils/filterBaseProps';
@@ -17,23 +16,29 @@ import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../../components/Label';
 import { LoadingOutlined } from '@ant-design/icons';
 import { useFormProps } from '../Form/Form';
 import { FieldWrapper } from '../../components/FieldWrapper';
+import { NuStyles } from '../../styles/types';
+import {
+  BaseProps,
+  BlockStyleProps,
+  OuterStyleProps,
+} from '../../components/types';
+import { AriaSwitchProps } from '@react-types/switch';
+import { FormFieldProps } from '../../shared';
 
-export const SwitchGroupContext = createContext(null);
-
-const STYLES = {
+const STYLES: NuStyles = {
   position: 'relative',
   display: 'flex',
-  items: 'center start',
+  placeItems: 'center start',
   gap: '1x',
   flow: 'row',
   size: 'input',
   width: 'min-content',
 };
 
-const INPUT_STYLES = {
+const INPUT_STYLES: NuStyles = {
   position: 'relative',
   display: 'grid',
-  items: 'center',
+  placeItems: 'center',
   radius: 'round',
   fill: {
     '': '#dark.50',
@@ -51,7 +56,7 @@ const INPUT_STYLES = {
   transition: 'theme',
 };
 
-const THUMB_STYLES = {
+const THUMB_STYLES: NuStyles = {
   position: 'absolute',
   width: '2.5x',
   height: '2.5x',
@@ -66,12 +71,22 @@ const THUMB_STYLES = {
   transition: 'left',
 };
 
-function Switch(props, ref) {
+export interface CubeSwitchProps
+  extends BaseProps,
+    OuterStyleProps,
+    BlockStyleProps,
+    FormFieldProps,
+    AriaSwitchProps {
+  thumbStyles?: NuStyles;
+  inputStyles?: NuStyles;
+  isLoading?: boolean;
+}
+
+function Switch(props: CubeSwitchProps, ref) {
   props = useProviderProps(props);
   props = useFormProps(props);
 
   let {
-    isEmphasized = false,
     isDisabled = false,
     autoFocus,
     children,
@@ -143,7 +158,6 @@ function Switch(props, ref) {
       <Base
         mods={{
           checked: inputProps.checked,
-          quite: !isEmphasized,
           disabled: isDisabled,
           hovered: isHovered,
           focused: isFocused,
@@ -196,10 +210,9 @@ function Switch(props, ref) {
       {label && (
         <Base
           styles={labelStyles}
-          {...modAttrs({
-            quite: !isEmphasized,
+          mods={{
             disabled: isDisabled,
-          })}
+          }}
           {...filterBaseProps(labelProps)}
         >
           {label}
