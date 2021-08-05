@@ -1,8 +1,9 @@
-import { forwardRef } from 'react';
+import { forwardRef, HTMLAttributes } from 'react';
 import { Base } from '../../components/Base';
 import { useContextStyles } from '../../providers/Styles';
+import { NuStyles } from '../../styles/types';
 
-const UNDERLAY_STYLES = {
+const UNDERLAY_STYLES: NuStyles = {
   position: 'fixed',
   top: 0,
   right: 0,
@@ -28,7 +29,11 @@ const UNDERLAY_STYLES = {
     'transform .25s ease-in-out, opacity .25s linear, visibility 0ms linear',
 };
 
-const Underlay = ({ isOpen }, ref) => {
+export interface CubeUnderlayProps extends HTMLAttributes<HTMLElement> {
+  isOpen?: boolean;
+}
+
+const Underlay = ({ isOpen, ...otherProps }, ref) => {
   const styles = {
     ...UNDERLAY_STYLES,
     ...useContextStyles('Underlay'),
@@ -42,6 +47,7 @@ const Underlay = ({ isOpen }, ref) => {
       mods={{
         open: isOpen,
       }}
+      {...otherProps}
     />
   );
 };

@@ -1,5 +1,5 @@
 module.exports = {
-  'extends': ['react-app'],
+  'extends': ['react-app', 'prettier'],
   'rules': {
     'import/no-unresolved': 0,
     'comma-dangle': 0,
@@ -14,7 +14,7 @@ module.exports = {
     'no-else-return': 0,
     'prefer-promise-reject-errors': 0,
     'react-hooks/exhaustive-deps': 0,
-    'operator-linebreak': ['error', 'after'],
+    'operator-linebreak': ['error', 'before'],
     'import/no-anonymous-default-export': 0,
     'space-before-function-paren': [1, 'never'],
     'space-before-blocks': [1, 'always'],
@@ -24,6 +24,6 @@ module.exports = {
       ignoreRegExpLiterals: true,
       ignoreStrings: true,
       ignoreTemplateLiterals: true,
-    }]
+    }],
   }
 };

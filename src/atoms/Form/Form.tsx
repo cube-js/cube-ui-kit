@@ -1,13 +1,21 @@
 import { useDOMRef } from '@react-spectrum/utils';
 import { Provider, useProviderProps } from '../../provider';
-import { createContext, useContext, useEffect, forwardRef } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  forwardRef,
+  FormHTMLAttributes,
+} from 'react';
 import { Base } from '../../components/Base';
 import { extractStyles } from '../../utils/styles';
 import { CONTAINER_STYLES } from '../../styles/list';
 import { filterBaseProps } from '../../utils/filterBaseProps';
-import { useForm } from './useForm';
+import { FormStore, useForm, CubeFormData } from './useForm';
 import { useCombinedRefs } from '../../utils/react';
 import { timeout } from '../../utils/promise';
+import { BaseProps, ContainerStyleProps } from '../../components/types';
+import { FormBaseProps, ValidateTrigger } from '../../shared';
 
 export const FormContext = createContext({});
 
@@ -33,7 +41,24 @@ const DEFAULT_STYLES = {
   gap: '2x',
 };
 
-function Form(props, ref) {
+export interface CubeFormProps
+  extends FormBaseProps,
+    BaseProps,
+    ContainerStyleProps,
+    Pick<
+      FormHTMLAttributes<HTMLFormElement>,
+      'action' | 'autoComplete' | 'encType' | 'method' | 'target'
+    > {
+  /** The form name */
+  name?: string;
+  defaultValues?: { [key: string]: any };
+  onValuesChange?: (data: CubeFormData) => void;
+  onSubmit?: (data: CubeFormData) => void;
+  onSubmitFailed?: (any?) => void;
+  form?: FormStore;
+}
+
+function Form(props: CubeFormProps, ref) {
   props = useProviderProps(props);
   let {
     qa,
@@ -42,7 +67,6 @@ function Form(props, ref) {
     labelPosition = 'top',
     isRequired,
     necessityIndicator,
-    isEmphasized,
     isDisabled,
     isReadOnly,
     validationState,
@@ -63,13 +87,16 @@ function Form(props, ref) {
   let onSubmitCallback;
 
   if ((onSubmit || onSubmitFailed) && !otherProps.action) {
-    otherProps.onSubmit = onSubmitCallback = (e) => {
+    onSubmitCallback = (e) => {
       e && e.preventDefault();
 
-      return form.validateFields().then(
+      return form?.validateFields().then(
         async () => {
           await timeout();
-          onSubmit && onSubmit(form.getFieldValues());
+
+          if (form) {
+            onSubmit && onSubmit(form.getFieldValues());
+          }
         },
         async (e) => {
           await timeout();
@@ -118,6 +145,7 @@ function Form(props, ref) {
       as="form"
       qa="Form"
       {...filterBaseProps(otherProps, { propNames: formPropNames })}
+      onSubmit={onSubmitCallback}
       noValidate
       styles={styles}
       ref={domRef}
@@ -128,7 +156,6 @@ function Form(props, ref) {
       <FormContext.Provider value={ctx}>
         <Provider
           insideForm={true}
-          isEmphasized={isEmphasized}
           isDisabled={isDisabled}
           isReadOnly={isReadOnly}
           isRequired={isRequired}

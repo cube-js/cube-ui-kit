@@ -6,7 +6,11 @@ import {
   FolderOpenFilled,
   FolderFilled,
 } from '@ant-design/icons';
-import { Flex, Action, Button, Space, Block } from '../../index';
+import { Flex } from '../../components/Flex';
+import { Action } from '../../components/Action';
+import { Button } from '../../atoms/Button/Button';
+import { Space } from '../../components/Space';
+import { Block } from '../../components/Block';
 
 const IMAGES = {
   created: (
@@ -204,7 +208,7 @@ export function DirectoryTree({
           >
             <Space gap=".5x" css={HOVER_CSS}>
               <Button
-                variant="clear"
+                type="clear"
                 margin="-.5x"
                 padding=".25x"
                 color={{

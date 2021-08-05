@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { Action } from '../../components/Action';
+import { Action, ActionProps } from '../../components/Action';
 import {
   BASE_STYLES,
   COLOR_STYLES,
@@ -9,6 +9,7 @@ import {
 import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
 import { useContextStyles } from '../../providers/Styles';
+import { FocusableRef } from '@react-types/shared';
 
 const DEFAULT_STYLES = {
   display: 'inline',
@@ -45,22 +46,23 @@ const STYLE_PROPS = [
   ...TEXT_STYLES,
 ];
 
-export const Link = forwardRef((props, ref) => {
-  const styles = {
-    ...DEFAULT_STYLES,
-    ...useContextStyles('Link', props),
-    ...extractStyles(props, STYLE_PROPS),
-  };
+export const Link = forwardRef(
+  (props: ActionProps, ref: FocusableRef<HTMLLinkElement>) => {
+    const styles = {
+      ...DEFAULT_STYLES,
+      ...useContextStyles('Link', props),
+      ...extractStyles(props, STYLE_PROPS),
+    };
 
-  return (
-    <Action
-      as="a"
-      elementType="a"
-      css={CSS}
-      {...filterBaseProps(props, { eventProps: true })}
-      to={props.to}
-      styles={styles}
-      ref={ref}
-    />
-  );
-});
+    return (
+      <Action
+        as="a"
+        css={CSS}
+        {...filterBaseProps(props, { eventProps: true })}
+        to={props.to}
+        styles={styles}
+        ref={ref}
+      />
+    );
+  },
+);

@@ -1,17 +1,27 @@
 import { useRef, useState } from 'react';
 import { applyRules } from './validation';
 
+export type CubeFormData = { [key: string]: any };
+export type CubeField = {
+  value?: any;
+  name: string;
+  errors: string[];
+  invalid?: boolean;
+  touched?: boolean;
+  rules?: any[];
+};
+
 function isEqual(v1, v2) {
   return JSON.stringify(v1) === JSON.stringify(v2);
 }
 
-class FormStore {
-  private forceReRender = () => {};
+export class FormStore {
+  public forceReRender: () => void = () => {};
   private initialFields = {};
-  private fields = {};
+  private fields: { [key: string]: CubeField } = {};
   public ref = {};
-  public onValuesChange = () => {};
-  public onSubmit = () => {};
+  public onValuesChange: (CubeFormData) => void = () => {};
+  public onSubmit: (CubeFormData) => void = () => {};
 
   constructor(forceReRender?: () => void) {
     this.forceReRender = forceReRender || (() => {});
@@ -36,7 +46,7 @@ class FormStore {
 
   async submit() {
     if (this.onSubmit) {
-      return this.onSubmit();
+      return this.onSubmit(this.getFieldValues());
     }
   }
 
@@ -70,12 +80,14 @@ class FormStore {
     return this.fields[name] && this.fields[name].value;
   }
 
-  getFieldValues() {
+  getFieldValues(): CubeFormData {
+    const data: CubeFormData = {};
+
     return Object.values(this.fields).reduce((map, field) => {
       map[field.name] = field.value;
 
       return map;
-    }, {});
+    }, data);
   }
 
   setFieldValue(name, value, touched = false) {
@@ -132,7 +144,7 @@ class FormStore {
       });
   }
 
-  validateFields(list) {
+  validateFields(list?) {
     const fieldsList = list || Object.keys(this.fields);
     const errMap = {};
 
@@ -198,7 +210,7 @@ class FormStore {
     this.forceReRender();
   }
 
-  _createField(name, data) {
+  _createField(name, data?) {
     return {
       name,
       value: undefined,

@@ -1,8 +1,15 @@
-import { Children, cloneElement, useEffect, useState } from 'react';
+import {
+  Children,
+  cloneElement,
+  ReactElement,
+  useEffect,
+  useState,
+} from 'react';
 import { useFormProps } from './Form';
-import { mergeProps } from '../../utils/react/index';
+import { mergeProps } from '../../utils/react';
+import { FieldBaseProps, ValidationRule } from '../../shared';
+import { FormStore } from './useForm';
 
-const TRIGGERS = ['onBlur', 'onChange', 'onSubmit'];
 const ID_MAP = {};
 
 function createId(name) {
@@ -28,14 +35,14 @@ function removeId(name, id) {
 }
 
 function getDefaultValidateTrigger(type) {
-  return type === 'NumberInput' ||
+  return (
+    type === 'NumberInput' ||
     type.includes('Input') ||
-    type.includes('TextArea')
-    ? 'onBlur'
-    : 'onChange';
+    (type.includes('TextArea') ? 'onBlur' : 'onChange')
+  );
 }
 
-function getValueProps(type, value) {
+function getValueProps(type, value?) {
   if (type === 'NumberInput') {
     return {
       value: value != null ? value : null,
@@ -64,8 +71,33 @@ function getValueProps(type, value) {
   };
 }
 
-export function Field(props) {
-  props = useFormProps(props);
+export interface CubeFieldProps extends FieldBaseProps {
+  /** The unique ID of the field */
+  id?: string;
+  /** The id prefix for the field to avoid collisions between forms */
+  idPrefix?: string;
+  children?: ReactElement | ((FormStore) => ReactElement);
+  /** Validation rules */
+  rules?: ValidationRule[];
+  /** The form instance */
+  form?: FormStore;
+  /** The message for the field or text for the error */
+  message?: string;
+}
+
+interface CubeFullFieldProps extends CubeFieldProps {
+  form: FormStore;
+}
+
+interface CubeReplaceFieldProps extends CubeFieldProps {
+  isRequired?: boolean;
+  onChange: (any) => void;
+  onSelectionChange: (any) => void;
+  onBlur: () => void;
+}
+
+export function Field(allProps: CubeFieldProps) {
+  const props: CubeFullFieldProps = useFormProps(allProps);
 
   let {
     id,
@@ -86,11 +118,11 @@ export function Field(props) {
 
   useEffect(() => {
     return () => {
-      return id || removeId(idPrefix ? `${idPrefix}_${name}` : name, fieldId);
+      id || removeId(idPrefix ? `${idPrefix}_${name}` : name, fieldId);
     };
   }, []);
 
-  let field = form.getFieldInstance(name);
+  let field = form?.getFieldInstance(name);
   let isRequired = rules && rules.find((rule) => rule.required);
 
   useEffect(() => {
@@ -102,7 +134,7 @@ export function Field(props) {
     }
   }, [field]);
 
-  if (!name || typeof name !== 'string') {
+  if (!name) {
     console.error('invalid form name:', name);
 
     return null;
@@ -122,6 +154,7 @@ export function Field(props) {
 
   let child = Children.only(children);
 
+  // @ts-ignore
   const typeName = child.type.render.name;
 
   const defaultValidateTrigger = getDefaultValidateTrigger(typeName);
@@ -137,7 +170,7 @@ export function Field(props) {
     );
   }
 
-  if (!TRIGGERS.includes(validateTrigger)) {
+  if (!validateTrigger) {
     validateTrigger = defaultValidateTrigger;
   }
 
@@ -154,7 +187,7 @@ export function Field(props) {
     }
   }
 
-  const newProps = {
+  const newProps: CubeReplaceFieldProps = {
     id: fieldId,
     name,
     onChange: onChangeHandler,

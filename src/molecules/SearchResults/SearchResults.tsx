@@ -133,7 +133,7 @@ export function SearchResults({
             >
               <Space gap=".5x" css={HOVER_CSS}>
                 <Button
-                  variant="clear"
+                  type="clear"
                   margin="-.5x"
                   padding=".25x"
                   color={{

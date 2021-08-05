@@ -129,7 +129,7 @@ const Template = ({ size, ...props }) => {
             </Content>
             <Footer>Footer</Footer>
             <ButtonGroup>
-              <Button onPress={close} variant="primary">
+              <Button onPress={close} type="primary">
                 Action
               </Button>
               <Button onPress={close}>Sec</Button>

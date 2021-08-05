@@ -123,7 +123,7 @@ export function CopySnippet({
         <ButtonContainer padding={padding} overlay={showOverlay} />
         <Button
           aria-label={`Copy ${codeTitle}`}
-          variant="clear"
+          type="clear"
           styles={{
             padding: '1x 1.5x',
             fontWeight: 500,

@@ -14,10 +14,13 @@ import { BLOCK_STYLES, DIMENSION_STYLES } from '../../styles/list';
 import { SlotProvider } from '../../utils/react';
 import { useContextStyles } from '../../providers/Styles';
 import { NuStyles } from '../../styles/types';
+import { BaseProps } from '../../components/types';
+import { AriaDialogProps } from '@react-types/dialog';
+import { DOMRef } from '@react-types/shared';
 
 const STYLES_LIST = [...DIMENSION_STYLES, ...BLOCK_STYLES];
 
-const DEFAULT_STYLES = {
+const DEFAULT_STYLES: NuStyles = {
   pointerEvents: 'auto',
   position: 'relative',
   display: 'grid',
@@ -99,10 +102,24 @@ const intlMessages = {
   },
 };
 
-function Dialog(props, ref) {
-  let { qa, type = 'modal', ...contextProps } = useContext(DialogContext) || {};
+export interface DialogProps extends BaseProps, AriaDialogProps {
+  type?:
+    | 'modal'
+    | 'popover'
+    | 'fullscreen'
+    | 'fullscreenTakeover'
+    | 'panel'
+    | 'tray';
+  size?: 'S' | 'M' | 'L';
+  isDismissable?: boolean;
+  onDismiss?: () => void;
+}
+
+function Dialog(props: DialogProps, ref: DOMRef<HTMLDivElement>) {
+  let { type = 'modal', ...contextProps } = useContext(DialogContext) || {};
 
   let {
+    qa,
     children,
     size = 'S',
     isDismissable = contextProps.isDismissable,
@@ -112,7 +129,7 @@ function Dialog(props, ref) {
 
   size = sizeMap[size.toUpperCase()] || size;
 
-  const styles = {
+  const styles: NuStyles = {
     ...DEFAULT_STYLES,
     ...useContextStyles('Dialog', props),
     ...extractStyles(otherProps, STYLES_LIST),
@@ -201,7 +218,7 @@ function Dialog(props, ref) {
           {isDismissable && (
             <Button
               qa="ModalCloseButton"
-              variant="item"
+              type="item"
               styles={CLOSE_BUTTON_STYLES}
               icon={<CloseOutlined />}
               aria-label={formatMessage('dismiss')}

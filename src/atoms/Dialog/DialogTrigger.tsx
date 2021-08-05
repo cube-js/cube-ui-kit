@@ -1,10 +1,46 @@
-import { Fragment, useEffect, useRef } from 'react';
+import { Fragment, ReactElement, RefObject, useEffect, useRef } from 'react';
 import { useOverlayTriggerState } from '@react-stately/overlays';
 import { PressResponder } from '@react-aria/interactions';
 import { unwrapDOMRef, useMediaQuery } from '@react-spectrum/utils';
 import { useOverlayPosition, useOverlayTrigger } from '@react-aria/overlays';
 import { DialogContext } from './context';
 import { Modal, Popover, Tray } from '../Modal';
+import { NuStyles } from '../../styles/types';
+import { DOMRefValue } from '@react-types/shared';
+
+export type CubeDialogClose = (close: () => void) => ReactElement;
+
+export interface DialogTriggerProps {
+  /** The Dialog and its trigger element. See the DialogTrigger [Content section](#content) for more information on what to provide as children. */
+  children: [ReactElement, CubeDialogClose | ReactElement];
+  /**
+   * The type of Dialog that should be rendered. See the DialogTrigger [types section](#dialog-types) for an explanation on each.
+   * @default 'modal'
+   */
+  type?:
+    | 'modal'
+    | 'popover'
+    | 'tray'
+    | 'fullscreen'
+    | 'fullscreenTakeover'
+    | 'panel';
+  /** The type of Dialog that should be rendered when on a mobile device. See DialogTrigger [types section](#dialog-types) for an explanation on each. */
+  mobileType?: 'modal' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel';
+  /**
+   * Whether a popover type Dialog's arrow should be hidden.
+   */
+  hideArrow?: boolean;
+  /** The ref of the element the Dialog should visually attach itself to. Defaults to the trigger button if not defined. */
+  targetRef?: RefObject<HTMLElement>;
+  /** Whether a modal type Dialog should be dismissable. */
+  isDismissable?: boolean;
+  /** Whether pressing the escape key to close the dialog should be disabled. */
+  isKeyboardDismissDisabled?: boolean;
+  /** The screen breakpoint for the mobile type */
+  mobileViewport?: number;
+  /** The style map for the overlay **/
+  styles?: NuStyles;
+}
 
 function DialogTrigger(props) {
   let {
@@ -150,8 +186,8 @@ function PopoverTrigger(allProps) {
     ...props
   } = allProps;
 
-  let triggerRef = useRef();
-  let overlayRef = useRef();
+  let triggerRef = useRef<HTMLElement>(null);
+  let overlayRef = useRef<DOMRefValue<HTMLDivElement>>(null);
 
   let {
     overlayProps: popoverProps,

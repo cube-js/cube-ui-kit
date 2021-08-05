@@ -23,7 +23,7 @@ function PasswordInput(props, ref) {
     <>
       {props.suffix}
       <Button
-        variant="item"
+        type="item"
         onPress={toggleType}
         preventDefault
         placeSelf="stretch"

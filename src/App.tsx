@@ -1,13 +1,5 @@
 import { useState } from 'react';
-import {
-  Base,
-  Grid,
-  TopBar,
-  Space,
-  LoadingAnimation,
-  Block,
-  Text,
-} from './index';
+import { Base, Grid, TopBar, Space, LoadingAnimation, Block } from './index';
 import { Button } from './atoms/Button/Button';
 // import ResponsiveProvider from './providers/Responsive';
 import { color } from './utils/colors';
@@ -98,7 +90,7 @@ function App() {
       {/*</Modal>*/}
       <Button
         onPress={() => setInProp(!inProp)}
-        variant="clear"
+        type="clear"
         styles={{
           color: {
             '': '#dark.75',
@@ -125,10 +117,10 @@ function App() {
             </Button>
           </StyleProvider>
         </StyleProvider>
-        <Button variant="primary">Primary</Button>
-        <Button variant="primary">Other Primary</Button>
-        <Button variant="danger">Danger</Button>
-        <Button variant="clear">Clear</Button>
+        <Button type="primary">Primary</Button>
+        <Button type="primary">Other Primary</Button>
+        <Button type="danger">Danger</Button>
+        <Button type="clear">Clear</Button>
         <Base64Upload>123</Base64Upload>
       </Space>
       <Space padding="1x">

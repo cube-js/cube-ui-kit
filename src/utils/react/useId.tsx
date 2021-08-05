@@ -8,7 +8,7 @@ let idsUpdaterMap = new Map();
  * If a default is not provided, generate an id.
  * @param defaultId - Default component id.
  */
-export function useId(defaultId) {
+export function useId(defaultId?) {
   let isRendering = useRef(true);
 
   isRendering.current = true;
@@ -71,11 +71,13 @@ export function mergeIds(idA, idB) {
  * if we can use it in places such as labelledby.
  */
 export function useSlotId() {
-  let [id, setId] = useState(useId());
+  let [id, setId] = useState<string | null>(useId());
   useLayoutEffect(() => {
-    let setCurr = idsUpdaterMap.get(id);
-    if (setCurr && !document.getElementById(id)) {
-      setId(null);
+    if (id) {
+      let setCurr = idsUpdaterMap.get(id);
+      if (setCurr && !document.getElementById(id)) {
+        setId(null);
+      }
     }
   }, [id]);
 

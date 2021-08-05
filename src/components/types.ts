@@ -1,6 +1,8 @@
 import {
   AllHTMLAttributes,
   CSSProperties,
+  FormEventHandler,
+  HTMLAttributes,
   JSXElementConstructor,
   ReactElement,
   ReactNodeArray,
@@ -40,8 +42,6 @@ export interface BasePropsWithoutChildren extends DOMProps {
   as?: string;
   /** The style map **/
   styles?: NuStyles;
-  /** Plain styles */
-  style?: CSSProperties;
   /** The list of responsive points in pixels **/
   breakpoints?: number[];
   /** Whether the element has the block layout outside **/
@@ -75,7 +75,9 @@ export interface BaseProps extends BasePropsWithoutChildren {
     | undefined;
 }
 
-export interface AllBaseProps extends BaseProps {
+export interface AllBaseProps
+  extends BaseProps,
+    Omit<HTMLAttributes<HTMLElement>, 'style'> {
   /** The type attribute is a generic attribute and it has different meaning based on the context in which it's used. */
   type?: AllHTMLAttributes<HTMLButtonElement>['type'];
   /** The rel attribute defines the relationship between a linked resource and the current document. Valid on <link>, <a>, <area>, and <form>, the supported values depend on the element on which the attribute is found. */
@@ -88,6 +90,14 @@ export interface AllBaseProps extends BaseProps {
   className?: string;
   /** The accessibility role */
   role?: string;
+  /** Form event handler */
+  onSubmit?: FormEventHandler;
+  /** Form attribute to disable built-in validation */
+  noValidate?: boolean;
+  /** The CSS style map */
+  style?:
+    | CSSProperties
+    | (CSSProperties & { [key: string]: string | number | null });
 }
 
 export type BaseStyleProps = Pick<NuStyles, typeof BASE_STYLES[number]>;

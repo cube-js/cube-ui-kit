@@ -1,13 +1,16 @@
 import { useDOMRef } from '@react-spectrum/utils';
-import { mergeProps, useViewportSize } from '@react-aria/utils';
+import { useViewportSize } from '@react-aria/utils';
 import { Overlay } from './Overlay';
-import { forwardRef } from 'react';
+import { forwardRef, ReactNode } from 'react';
 import { Underlay } from './Underlay';
 import { useModal, useOverlay, usePreventScroll } from '@react-aria/overlays';
 import { Base } from '../../components/Base';
 import { useContextStyles } from '../../providers/Styles';
+import { NuStyles } from '../../styles/types';
+import { BaseProps, ChildrenProp, Props } from '../../components/types';
+import { mergeProps } from '../../utils/react';
 
-export const OVERLAY_WRAPPER_STYLES = {
+export const OVERLAY_WRAPPER_STYLES: NuStyles = {
   position: 'fixed',
   display: 'grid',
   left: 0,
@@ -25,7 +28,7 @@ export const OVERLAY_WRAPPER_STYLES = {
   transition: 'visibility 0ms linear .13s',
 };
 
-const MODAL_STYLES = {
+const MODAL_STYLES: NuStyles = {
   display: 'grid',
   zIndex: 2,
   height: {
@@ -54,7 +57,15 @@ const MODAL_STYLES = {
   },
 };
 
-function Modal(props, ref) {
+export interface CubeModalProps {
+  qa?: BaseProps['qa'];
+  onClose?: () => void;
+  type?: 'fullscreen' | 'fullscreenTakeover';
+  styles?: NuStyles;
+  children: ReactNode;
+}
+
+function Modal(props: CubeModalProps, ref) {
   let { qa, children, onClose, type, styles, ...otherProps } = props;
   let domRef = useDOMRef(ref);
 
@@ -77,12 +88,18 @@ function Modal(props, ref) {
   );
 }
 
-let typeMap = {
-  fullscreen: 'fullscreen',
-  fullscreenTakeover: 'fullscreenTakeover',
-};
+interface ModalWrapperProps {
+  children?: ReactNode;
+  qa?: BaseProps['qa'];
+  isOpen?: boolean;
+  type?: 'fullscreen' | 'fullscreenTakeover';
+  placement?: 'top' | 'bottom';
+  styles?: NuStyles;
+  overlayProps?: Props;
+  onClose?: () => void;
+}
 
-let ModalWrapper = forwardRef(function (props, ref) {
+let ModalWrapper = forwardRef(function (props: ModalWrapperProps, ref) {
   let {
     qa,
     children,
@@ -93,7 +110,6 @@ let ModalWrapper = forwardRef(function (props, ref) {
     overlayProps,
     ...otherProps
   } = props;
-  let typeVariant = typeMap[type];
 
   styles = {
     ...MODAL_STYLES,

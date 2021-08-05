@@ -41,7 +41,7 @@ export const SearchInput = forwardRef((props, ref) => {
         state.value !== '' &&
         !props.isReadOnly && (
           <Button
-            variant="clear"
+            type="clear"
             {...clearButtonProps}
             color={{
               '': '#dark.50',

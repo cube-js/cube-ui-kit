@@ -1,14 +1,17 @@
 import { useDOMRef } from '@react-spectrum/utils';
-import { mergeProps, useViewportSize } from '@react-aria/utils';
+import { useViewportSize } from '@react-aria/utils';
 import { Overlay } from './Overlay';
-import { forwardRef, useEffect, useRef, useState } from 'react';
+import { forwardRef, ReactNode, useEffect, useRef, useState } from 'react';
 import { Underlay } from './Underlay';
 import { useModal, useOverlay, usePreventScroll } from '@react-aria/overlays';
 import { OVERLAY_WRAPPER_STYLES } from './Modal';
 import { Base } from '../../components/Base';
 import { useContextStyles } from '../../providers/Styles';
+import { NuStyles } from '../../styles/types';
+import { BaseProps, Props } from '../../components/types';
+import { mergeProps } from '../../utils/react';
 
-const TRAY_STYLES = {
+const TRAY_STYLES: NuStyles = {
   zIndex: 2,
   height: 'max (@cube-visual-viewport-height * .9)',
   width: '288px 90vw',
@@ -21,7 +24,21 @@ const TRAY_STYLES = {
   },
 };
 
-function Tray(props, ref) {
+export interface CubeTrayProps {
+  qa?: BaseProps['qa'];
+  children: ReactNode;
+  onClose?: () => void;
+  isFixedHeight?: boolean;
+  isNonModal?: boolean;
+  styles?: NuStyles;
+}
+
+interface CubeTrayWrapperProps extends CubeTrayProps {
+  isOpen?: boolean;
+  overlayProps?: Props;
+}
+
+function Tray(props: CubeTrayProps, ref) {
   let {
     qa,
     children,
@@ -56,7 +73,7 @@ function Tray(props, ref) {
   );
 }
 
-let TrayWrapper = forwardRef(function (props, ref) {
+let TrayWrapper = forwardRef(function (props: CubeTrayWrapperProps, ref) {
   let {
     qa,
     children,
@@ -87,10 +104,12 @@ let TrayWrapper = forwardRef(function (props, ref) {
   // is up, so use the VisualViewport API to ensure the tray is displayed above the keyboard.
   let viewport = useViewportSize();
   let [height, setHeight] = useState(viewport.height);
-  let timeoutRef = useRef();
+  let timeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
-    clearTimeout(timeoutRef.current);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
 
     // When the height is decreasing, and the keyboard is visible
     // (visual viewport smaller than layout viewport), delay setting
