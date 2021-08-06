@@ -88,7 +88,7 @@ function Form(props: CubeFormProps, ref) {
 
   if ((onSubmit || onSubmitFailed) && !otherProps.action) {
     onSubmitCallback = (e) => {
-      e && e.preventDefault();
+      e && e?.preventDefault();
 
       return form?.validateFields().then(
         async() => {
