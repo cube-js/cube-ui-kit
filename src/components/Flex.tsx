@@ -29,8 +29,6 @@ export const Flex = forwardRef((props: CubeFlexProps, ref) => {
     PROP_MAP,
   );
 
-  console.log('!!', styles);
-
   return (
     <Base
       {...filterBaseProps(props, { eventProps: true })}
