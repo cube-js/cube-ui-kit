@@ -35,6 +35,8 @@ function removeId(name, id) {
 }
 
 function getDefaultValidateTrigger(type) {
+  type = type || '';
+
   return (
     type === 'NumberInput'
     || type.includes('Input')
@@ -43,13 +45,15 @@ function getDefaultValidateTrigger(type) {
 }
 
 function getValueProps(type, value?) {
+  type = type || '';
+
   if (type === 'NumberInput') {
     return {
       value: value != null ? value : null,
     };
   } else if (type.includes('Input') || type.includes('TextArea')) {
     return {
-      value: value != null ? value : '',
+      value: (typeof value === 'string' || typeof value === 'number') ? String(value) : '',
     };
   } else if (type === 'Checkbox' || type === 'Switch') {
     return {
@@ -155,7 +159,7 @@ export function Field(allProps: CubeFieldProps) {
   let child = Children.only(children);
 
   // @ts-ignore
-  const typeName = child.type.render.name;
+  const typeName = child.type.render.displayName;
 
   const defaultValidateTrigger = getDefaultValidateTrigger(typeName);
 

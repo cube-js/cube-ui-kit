@@ -63,4 +63,5 @@ function PasswordInput(props: CubeTextInputBaseProps, ref) {
  * communicate the entry requirements.
  */
 const _PasswordInput = forwardRef(PasswordInput);
+_PasswordInput.displayName = 'PasswordInput';
 export { _PasswordInput as PasswordInput };

@@ -93,4 +93,5 @@ function TextArea(props: CubeTextAreaProps, ref) {
  * communicate the entry requirements.
  */
 const _TextArea = forwardRef(TextArea);
+_TextArea.displayName = 'TextArea';
 export { _TextArea as TextArea };

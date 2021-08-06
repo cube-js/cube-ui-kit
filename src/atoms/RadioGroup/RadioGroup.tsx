@@ -129,4 +129,5 @@ function RadioGroup(props, ref) {
  * All possible options are exposed up front for users to compare.
  */
 const _RadioGroup = forwardRef(RadioGroup);
+_RadioGroup.displayName = 'RadioGroup';
 export { _RadioGroup as RadioGroup };

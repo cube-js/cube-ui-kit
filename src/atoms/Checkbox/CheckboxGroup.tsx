@@ -140,4 +140,5 @@ function CheckboxGroup(props: CubeCheckboxGroupProps, ref) {
  * All possible options are exposed up front for users to compare.
  */
 const _CheckboxGroup = forwardRef(CheckboxGroup);
+_CheckboxGroup.displayName = 'CheckboxGroup';
 export { _CheckboxGroup as CheckboxGroup };

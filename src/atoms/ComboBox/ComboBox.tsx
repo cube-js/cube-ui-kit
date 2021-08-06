@@ -315,6 +315,7 @@ function ComboBox<T extends object>(
 }
 
 const _ComboBox = Object.assign(forwardRef(ComboBox), {
+  displayName: 'ComboBox',
   Item,
 });
 export { _ComboBox as ComboBox };

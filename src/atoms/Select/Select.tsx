@@ -485,4 +485,5 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
 }
 
 const _Select = Object.assign(forwardRef(Select), { Item });
+_Select.displayName = 'Select';
 export { _Select as Select };

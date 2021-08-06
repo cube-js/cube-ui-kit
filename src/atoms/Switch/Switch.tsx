@@ -233,4 +233,5 @@ function Switch(props: CubeSwitchProps, ref) {
  * They are usually used to activate or deactivate a specific setting.
  */
 let _Switch = forwardRef(Switch);
+_Switch.displayName = 'Switch';
 export { _Switch as Switch };
