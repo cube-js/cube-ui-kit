@@ -9,6 +9,7 @@ export type CubeField = {
   invalid?: boolean;
   touched?: boolean;
   rules?: any[];
+  validating?: boolean;
 };
 
 function isEqual(v1, v2) {
@@ -50,7 +51,7 @@ export class FormStore {
     }
   }
 
-  setFieldValues(newData, touched = false) {
+  setFieldValues(newData: { [key: string]: any }, touched = false) {
     let flag = false;
 
     Object.keys(newData).forEach((name) => {
@@ -76,7 +77,7 @@ export class FormStore {
     }
   }
 
-  getFieldValue(name) {
+  getFieldValue(name): any {
     return this.fields[name] && this.fields[name].value;
   }
 
@@ -90,7 +91,7 @@ export class FormStore {
     }, data);
   }
 
-  setFieldValue(name, value, touched = false) {
+  setFieldValue(name: string, value: any, touched = false) {
     const field = this.fields[name];
 
     if (!field || isEqual(value, field.value)) return;
@@ -108,19 +109,19 @@ export class FormStore {
     }
   }
 
-  getFieldInstance(name) {
+  getFieldInstance(name: string): CubeField {
     return this.fields[name];
   }
 
-  setInitialFieldValues(values) {
+  setInitialFieldValues(values: { [key: string]: any }): void {
     this.initialFields = values || {};
   }
 
-  resetFields() {
+  resetFields(): void {
     this.setFieldValues(this.initialFields);
   }
 
-  async validateField(name) {
+  async validateField(name: string): Promise<any> {
     const field = this.getFieldInstance(name);
 
     if (!field || !field.rules) return Promise.resolve();
@@ -144,7 +145,7 @@ export class FormStore {
       });
   }
 
-  validateFields(list?) {
+  validateFields(list?: string[]): Promise<any> {
     const fieldsList = list || Object.keys(this.fields);
     const errMap = {};
 
@@ -159,7 +160,7 @@ export class FormStore {
     ).catch(() => Promise.reject(errMap));
   }
 
-  isFieldValid(name) {
+  isFieldValid(name: string): boolean {
     const field = this.getFieldInstance(name);
 
     if (!field) return true;
@@ -167,23 +168,23 @@ export class FormStore {
     return !field.invalid;
   }
 
-  isFieldInvalid(name) {
+  isFieldInvalid(name: string): boolean {
     const field = this.getFieldInstance(name);
 
     if (!field) return false;
 
-    return field.invalid;
+    return !!field.invalid;
   }
 
-  isFieldTouched(name) {
+  isFieldTouched(name: string): boolean {
     const field = this.getFieldInstance(name);
 
     if (!field) return false;
 
-    return field.touched;
+    return !!field.touched;
   }
 
-  getFieldError(name) {
+  getFieldError(name: string) {
     const field = this.getFieldInstance(name);
 
     if (!field) return [];
@@ -191,7 +192,7 @@ export class FormStore {
     return field.errors || [];
   }
 
-  createField(name) {
+  createField(name: string) {
     if (!this.fields[name]) {
       this.fields[name] = this._createField(name);
     }
@@ -199,7 +200,7 @@ export class FormStore {
     this.forceReRender();
   }
 
-  setFields(newFields) {
+  setFields(newFields: CubeField[]) {
     newFields.forEach(({ name, value, errors }) => {
       this.fields[name] = this._createField(name, {
         value,
@@ -210,7 +211,7 @@ export class FormStore {
     this.forceReRender();
   }
 
-  _createField(name, data?) {
+  _createField(name, data?: Partial<CubeField>): CubeField {
     return {
       name,
       value: undefined,
@@ -223,10 +224,13 @@ export class FormStore {
 }
 
 export function useForm(
-  form?,
+  form?: FormStore,
   ref?,
-  options: { onSubmit?: Function; onValuesChange?: Function } = {},
-) {
+  options: {
+    onSubmit?: FormStore['onSubmit'];
+    onValuesChange?: FormStore['onValuesChange'];
+  } = {},
+): [FormStore] {
   const { onSubmit, onValuesChange } = options;
   const formRef = useRef<FormStore>();
   const [, forceUpdate] = useState({});
@@ -244,8 +248,14 @@ export function useForm(
     }
 
     form.ref = ref;
-    form.onSubmit = onSubmit;
-    form.onValuesChange = onValuesChange;
+
+    if (onSubmit) {
+      form.onSubmit = onSubmit;
+    }
+
+    if (onValuesChange) {
+      form.onValuesChange = onValuesChange;
+    }
   }
 
   return [formRef.current];

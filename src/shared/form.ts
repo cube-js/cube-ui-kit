@@ -13,7 +13,7 @@ export type ValidateTrigger = 'onBlur' | 'onChange' | 'onSubmit';
 
 export interface FieldBaseProps {
   /** The field name */
-  name?: string;
+  name: string;
   /** The label of the field */
   label?: string;
   /** The validation state of the field */
