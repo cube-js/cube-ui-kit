@@ -74,7 +74,7 @@ export interface BaseProps extends BasePropsWithoutChildren {
 
 export interface AllBaseProps
   extends BaseProps,
-    Omit<HTMLAttributes<HTMLElement>, 'style' | 'role'> {
+    Omit<HTMLAttributes<HTMLElement>, 'style' | 'role' | 'color'> {
   /** The type attribute is a generic attribute and it has different meaning based on the context
    * in which it's used. */
   type?: AllHTMLAttributes<HTMLButtonElement>['type'];

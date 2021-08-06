@@ -20,11 +20,11 @@ export interface CubeTopbarProps extends BaseProps, ContainerStyleProps {
   onLogoPress?: () => void;
 }
 
-export function TopBar({ children, onLogoPress, ...props }) {
+export function TopBar({ children, onLogoPress, ...props }: CubeTopbarProps) {
   const styles = extractStyles(props, CONTAINER_STYLES, DEFAULT_STYLES);
 
   return (
-    <Base role="banner" {...props} styles={styles}>
+    <Base role="banner" styles={styles} {...props}>
       <CloudLogo onPress={onLogoPress} />
       <Space flexGrow={1} placeContent="space-between">
         {children}

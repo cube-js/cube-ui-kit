@@ -135,18 +135,18 @@ const SIZE_MAP = {
 };
 
 export interface CubeLoadingAnimationProps extends CubeBlockProps {
-  size?: 'small' | 'medium' | 'large';
+  size?: 'small' | 'medium' | 'large' | number;
 }
 
-export function LoadingAnimation({ size, ...props }) {
-  size = SIZE_MAP[size] || size || SIZE_MAP.medium;
+export function LoadingAnimation({ size = 'medium', ...props }: CubeLoadingAnimationProps) {
+  const numSize: number = SIZE_MAP[size] || size || SIZE_MAP.medium;
 
   return (
     <Block
       role="img"
       aria-label="Loading animation"
-      width={size}
-      height={size * 1.1388888889}
+      width={numSize}
+      height={numSize * 1.1388888889}
       style={{ position: 'relative' }}
       {...props}
     >

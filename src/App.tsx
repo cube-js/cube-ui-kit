@@ -15,9 +15,9 @@ import { TextInput } from './atoms/TextInput/TextInput';
 import { Provider } from './provider';
 import { GridProvider } from './components/GridProvider';
 
-window.notification = notification;
-
-window.Modal = Modal;
+// window.notification = notification;
+//
+// window.Modal = Modal;
 
 function App() {
   const [inProp, setInProp] = useState(false);
@@ -58,7 +58,7 @@ function App() {
         onCancel={() => {}}
         onOk={function noRefCheck() {}}
         title="Modal"
-        visible={true}
+        isVisible={true}
       >
         Modal content
       </Modal>
