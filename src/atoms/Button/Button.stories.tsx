@@ -38,7 +38,7 @@ export default {
     },
     type: {
       defaultValue: 'default',
-      description: "A visual type of the button. Don't affect any logic",
+      description: 'A visual type of the button. Don\'t affect any logic',
       control: {
         type: 'radio',
         options: [

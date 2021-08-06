@@ -11,7 +11,7 @@ function apply(rule, valid = [], invalid = []) {
         invalid.map((value) => {
           return applyRules(value, [rule], {}).then(
             () => {
-              throw 'false positive';
+              throw new Error('false positive');
             },
             (err) => {
               expect(err).eq(rule.message);

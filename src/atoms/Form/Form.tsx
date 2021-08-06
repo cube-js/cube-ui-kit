@@ -91,14 +91,14 @@ function Form(props: CubeFormProps, ref) {
       e && e.preventDefault();
 
       return form?.validateFields().then(
-        async () => {
+        async() => {
           await timeout();
 
           if (form) {
             onSubmit && onSubmit(form.getFieldValues());
           }
         },
-        async (e) => {
+        async(e) => {
           await timeout();
           if (e instanceof Error) {
             throw e;

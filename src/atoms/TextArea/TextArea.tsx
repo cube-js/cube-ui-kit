@@ -47,10 +47,10 @@ function TextArea(props: CubeTextAreaProps, ref) {
       input.style.height = input.scrollHeight
         ? `calc(${input.scrollHeight}px + (2 * var(--border-width)))`
         : `${
-            parseFloat(computedStyle.paddingTop) +
-            parseFloat(computedStyle.paddingBottom) +
-            parseFloat(computedStyle.lineHeight) * (rows || 3) +
-            2
+            parseFloat(computedStyle.paddingTop)
+            + parseFloat(computedStyle.paddingBottom)
+            + parseFloat(computedStyle.lineHeight) * (rows || 3)
+            + 2
           }px`;
       input.style.alignSelf = prevAlignment;
     }

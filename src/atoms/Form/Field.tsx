@@ -36,9 +36,9 @@ function removeId(name, id) {
 
 function getDefaultValidateTrigger(type) {
   return (
-    type === 'NumberInput' ||
-    type.includes('Input') ||
-    (type.includes('TextArea') ? 'onBlur' : 'onChange')
+    type === 'NumberInput'
+    || type.includes('Input')
+    || (type.includes('TextArea') ? 'onBlur' : 'onChange')
   );
 }
 
@@ -180,8 +180,8 @@ export function Field(allProps: CubeFieldProps) {
     const field = form.getFieldInstance(name);
 
     if (
-      validateTrigger === 'onChange' ||
-      (field && field.errors && field.errors.length)
+      validateTrigger === 'onChange'
+      || (field && field.errors && field.errors.length)
     ) {
       form.validateField(name).catch(() => {}); // do nothing on fail
     }

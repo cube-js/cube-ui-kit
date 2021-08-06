@@ -1,10 +1,4 @@
-import {
-  forwardRef,
-  RefObject,
-  useContext,
-  useImperativeHandle,
-  useRef,
-} from 'react';
+import { forwardRef, useContext, useImperativeHandle, useRef } from 'react';
 import { mergeProps } from '@react-aria/utils';
 import { createDOMRef } from '@react-spectrum/utils';
 import { TooltipContext } from './context';

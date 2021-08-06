@@ -288,8 +288,8 @@ export function FileTabs({
 
     setLeftFade(!!el.scrollLeft);
     setRightFade(
-      el.scrollWidth !== el.offsetWidth &&
-        !!(el.scrollWidth - el.offsetWidth - el.scrollLeft),
+      el.scrollWidth !== el.offsetWidth
+        && !!(el.scrollWidth - el.offsetWidth - el.scrollLeft),
     );
   }
 
@@ -449,8 +449,8 @@ FileTabs.TabPane = function FileTabPane({
   children,
   ...props
 }) {
-  const { addTab, removeTab, currentTab, setDirtyTab } =
-    useContext(FileTabsContext);
+  const { addTab, removeTab, currentTab, setDirtyTab }
+    = useContext(FileTabsContext);
 
   useEffect(() => {
     const tabData = {

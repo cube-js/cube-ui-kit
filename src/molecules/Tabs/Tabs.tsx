@@ -161,8 +161,8 @@ export function Tabs({
 
     setLeftFade(!!el.scrollLeft);
     setRightFade(
-      el.scrollWidth !== el.offsetWidth &&
-        !!(el.scrollWidth - el.offsetWidth - el.scrollLeft),
+      el.scrollWidth !== el.offsetWidth
+        && !!(el.scrollWidth - el.offsetWidth - el.scrollLeft),
     );
   }
 

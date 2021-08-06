@@ -170,7 +170,7 @@ export function Modal(allProps: CubeModalProps) {
     (arg) => {
       setLocalLoading(true);
 
-      (async () => {
+      (async() => {
         if (onOk) {
           try {
             if ((await onOk(arg)) === false && (onClose || onCancel)) {
@@ -330,7 +330,7 @@ const modal: ModalService = {
       items.map((item) => {
         const { id, onOk, onCancel, onClose, content, ...options } = item;
 
-        const wrapOnOk = async (arg) => {
+        const wrapOnOk = async(arg) => {
           onOk && (await onOk(arg));
 
           this.resolve(item, arg);

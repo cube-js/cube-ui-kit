@@ -16,34 +16,34 @@ export function mergeProps(...args: (Props | undefined)[]) {
     for (let key in result) {
       // Chain events
       if (
-        /^on[A-Z]/.test(key) &&
-        typeof result[key] === 'function' &&
-        props &&
-        typeof props[key] === 'function'
+        /^on[A-Z]/.test(key)
+        && typeof result[key] === 'function'
+        && props
+        && typeof props[key] === 'function'
       ) {
         result[key] = chain(result[key], props[key]);
 
         // Merge classnames, sometimes classNames are empty string which eval to false, so we just need to do a type check
       } else if (
-        key === 'className' &&
-        typeof result.className === 'string' &&
-        props &&
-        typeof props.className === 'string'
+        key === 'className'
+        && typeof result.className === 'string'
+        && props
+        && typeof props.className === 'string'
       ) {
         result[key] = clsx(result.className, props.className);
       } else if (
-        key === 'styles' &&
-        typeof result.styles === 'object' &&
-        props &&
-        typeof props.styles === 'object'
+        key === 'styles'
+        && typeof result.styles === 'object'
+        && props
+        && typeof props.styles === 'object'
       ) {
         result[key] = { ...result.styles, ...props.styles };
       } else if (key === 'id' && result.id && props?.id) {
         result.id = mergeIds(result.id, props?.id);
         // Override others
       } else {
-        result[key] =
-          props && props[key] !== undefined ? props[key] : result[key];
+        result[key]
+          = props && props[key] !== undefined ? props[key] : result[key];
       }
     }
 

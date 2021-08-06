@@ -99,7 +99,7 @@ interface ModalWrapperProps {
   onClose?: () => void;
 }
 
-let ModalWrapper = forwardRef(function (props: ModalWrapperProps, ref) {
+let ModalWrapper = forwardRef(function(props: ModalWrapperProps, ref) {
   let {
     qa,
     children,

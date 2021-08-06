@@ -141,8 +141,8 @@ export function createStyle(
     CACHE[styleName] = styleHandlerCacheWrapper((styleMap) => {
       let styleValue = styleMap[styleName];
 
-      const finalCssStyle =
-        cssStyle || toSnakeCase(styleName).replace(/^@/, '--');
+      const finalCssStyle
+        = cssStyle || toSnakeCase(styleName).replace(/^@/, '--');
 
       // convert non-string values
       if (converter && typeof styleValue !== 'string') {
@@ -152,9 +152,9 @@ export function createStyle(
       }
 
       if (
-        typeof styleValue === 'string' &&
-        finalCssStyle.startsWith('--') &&
-        finalCssStyle.endsWith('-color')
+        typeof styleValue === 'string'
+        && finalCssStyle.startsWith('--')
+        && finalCssStyle.endsWith('-color')
       ) {
         styleValue = styleValue.trim();
 

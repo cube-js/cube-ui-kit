@@ -1,7 +1,6 @@
 import { Tooltip } from './Tooltip';
 import { Button } from '../Button/Button';
 import { TooltipTrigger } from './TooltipTrigger';
-import { IS_DISABLED_ARG } from '../../stories/FormFieldArgs';
 
 export default {
   title: 'UIKit/Atoms/Tooltip',

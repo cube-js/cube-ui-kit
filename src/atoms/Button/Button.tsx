@@ -248,7 +248,7 @@ export const Button = forwardRef(
     const isSelected = props.isSelected;
     const [showLoadingIcon, setShowLoadingIcon] = useState(isLoading || false);
     const [pendingLoading, setPendingLoading] = useState(false);
-    const [currentLoading, setCurrentLoading] = useState(isLoading);
+    const [, setCurrentLoading] = useState(isLoading);
     const propsForStyles = {
       ...props,
       isLoading,

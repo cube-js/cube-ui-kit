@@ -43,8 +43,8 @@ export const Base = forwardRef((allProps: AllBaseProps, ref) => {
   }
 
   if (inline) {
-    styles.display =
-      typeof styles.display === 'string'
+    styles.display
+      = typeof styles.display === 'string'
         ? INLINE_MAP[styles.display || 'block']
         : 'block';
   }

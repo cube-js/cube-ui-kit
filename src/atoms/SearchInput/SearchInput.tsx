@@ -46,9 +46,9 @@ export const SearchInput = forwardRef((props: CubeSearchInputProps, ref) => {
       prefix={<SearchOutlined />}
       suffixPosition="after"
       suffix={
-        isClearable &&
-        state.value !== '' &&
-        !props.isReadOnly && (
+        isClearable
+        && state.value !== ''
+        && !props.isReadOnly && (
           <Button
             type="clear"
             {...ariaToCubeButtonProps(clearButtonProps)}

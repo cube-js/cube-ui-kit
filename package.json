@@ -12,7 +12,7 @@
     "test-watch": "jest --watch",
     "format": "prettier --write \"src/**/*.{js,jsx}\"",
     "lint": "prettier --check \"src/**/*.{js,jsx}\"",
-    "fix": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
+    "fix": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\" && eslint --fix --cache src --ext .js,.ts,.jsx,.tsx",
     "compile": "babel src -d dist --copy-files",
     "storybook": "start-storybook -s ./public -p 6006",
     "build-storybook": "build-storybook",

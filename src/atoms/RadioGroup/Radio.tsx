@@ -1,8 +1,8 @@
 import { useFocusableRef } from '@react-spectrum/utils';
-import { forwardRef, useContext, useRef } from 'react';
+import { forwardRef, useRef } from 'react';
 import { useHover } from '@react-aria/interactions';
 import { useRadio } from '@react-aria/radio';
-import { RadioContext, useRadioProvider } from './context';
+import { useRadioProvider } from './context';
 import { extractStyles } from '../../utils/styles';
 import { useContextStyles } from '../../providers/Styles';
 import { BLOCK_STYLES, OUTER_STYLES } from '../../styles/list';

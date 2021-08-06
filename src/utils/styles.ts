@@ -94,8 +94,8 @@ const IGNORE_MODS = [
   'initial',
 ];
 
-const ATTR_REGEXP =
-  /("[^"]*")|('[^']*')|([a-z]+\()|(#[a-z0-9.-]{2,}(?![a-f0-9[-]))|(--[a-z0-9-]+|@[a-z0-9-]+)|([a-z][a-z0-9-]*)|(([0-9]+(?![0-9.])|[0-9-.]{2,}|[0-9-]{2,}|[0-9.-]{3,})([a-z%]{0,3}))|([*\/+-])|([()])|(,)/gi;
+const ATTR_REGEXP
+  = /("[^"]*")|('[^']*')|([a-z]+\()|(#[a-z0-9.-]{2,}(?![a-f0-9[-]))|(--[a-z0-9-]+|@[a-z0-9-]+)|([a-z][a-z0-9-]*)|(([0-9]+(?![0-9.])|[0-9-.]{2,}|[0-9-]{2,}|[0-9.-]{3,})([a-z%]{0,3}))|([*/+-])|([()])|(,)/gi;
 const ATTR_CACHE = new Map();
 const ATTR_CACHE_AUTOCALC = new Map();
 const ATTR_CACHE_IGNORE_COLOR = new Map();
@@ -168,8 +168,7 @@ export function parseStyle(value, mode = 0) {
 
     while ((token = ATTR_REGEXP.exec(value))) {
       let [
-        /* eslint-disable-next-line */
-        s,
+        ,
         quotedDouble,
         quotedSingle,
         func,
@@ -397,8 +396,8 @@ export function parseColor(val, ignoreError = false) {
       }
     }
 
-    color =
-      opacity !== 100
+    color
+      = opacity !== 100
         ? rgbColorProp(name, Math.round(opacity) / 100)
         : colorProp(name, null, strToRgb(`#${name}`));
 
@@ -658,8 +657,8 @@ export function renderStylesToSC(styles: NuCSSMap | NuCSSMap[], selector = '') {
 
       if (Array.isArray(value)) {
         return (
-          styleList +
-          value.reduce((css, val) => {
+          styleList
+          + value.reduce((css, val) => {
             if (val) {
               return css + `${styleName}:${val};\n`;
             }
@@ -689,8 +688,8 @@ export function renderStylesToSC(styles: NuCSSMap | NuCSSMap[], selector = '') {
   if (Array.isArray($)) {
     return `${selector ? `${selector}{\n` : ''}${$.reduce((rend, suffix) => {
       return (
-        rend +
-        `${suffix ? `&${suffix}{\n` : ''}${renderedStyles}${
+        rend
+        + `${suffix ? `&${suffix}{\n` : ''}${renderedStyles}${
           suffix ? '}\n' : ''
         }`
       );
@@ -906,8 +905,8 @@ export function styleMapToStyleMapStateList(
   return styleStateMapList;
 }
 
-const STATES_REGEXP =
-  /([&|!^])|([()])|([a-z0-6-]+)|(:[a-z0-6-]+)|(\.[a-z0-6-]+)|(\[[^\]]+])/gi;
+const STATES_REGEXP
+  = /([&|!^])|([()])|([a-z0-6-]+)|(:[a-z0-6-]+)|(\.[a-z0-6-]+)|(\[[^\]]+])/gi;
 export const STATE_OPERATORS = {
   NOT: '!',
   AND: '&',
@@ -939,10 +938,10 @@ function convertTokensToComputeUnits(tokens: any[]) {
         }
       } else {
         if (
-          tokens[i - 1] &&
-          tokens[i + 1] &&
-          tokens[i - 1].length !== 1 &&
-          tokens[i + 1].length !== 1
+          tokens[i - 1]
+          && tokens[i + 1]
+          && tokens[i - 1].length !== 1
+          && tokens[i + 1].length !== 1
         ) {
           tokens.splice(i - 1, 3, [token, tokens[i - 1], tokens[i + 1]]);
         } else {

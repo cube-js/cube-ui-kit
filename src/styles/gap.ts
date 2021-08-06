@@ -29,8 +29,8 @@ export function gapStyle({ display, flow, gap }) {
 
   gap = values.join(' ');
 
-  const gapDir =
-    gap && !isGrid ? (flow.includes('row') ? 'right' : 'bottom') : '';
+  const gapDir
+    = gap && !isGrid ? (flow.includes('row') ? 'right' : 'bottom') : '';
 
   return gap
     ? isGrid

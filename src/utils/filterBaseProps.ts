@@ -51,15 +51,15 @@ export function filterBaseProps(props, opts: PropsFilterOptions = {}) {
 
   for (const prop in props) {
     if (
-      Object.prototype.hasOwnProperty.call(props, prop) &&
-      (DOMPropNames.has(prop) ||
-        BasePropNames.has(prop) ||
-        (labelable && labelablePropNames.has(prop)) ||
-        (eventProps &&
-          eventRe.test(prop) &&
-          !ignoreEventPropsNames.has(prop)) ||
-        propNames?.has(prop) ||
-        propRe.test(prop))
+      Object.prototype.hasOwnProperty.call(props, prop)
+      && (DOMPropNames.has(prop)
+        || BasePropNames.has(prop)
+        || (labelable && labelablePropNames.has(prop))
+        || (eventProps
+          && eventRe.test(prop)
+          && !ignoreEventPropsNames.has(prop))
+        || propNames?.has(prop)
+        || propRe.test(prop))
     ) {
       filteredProps[prop] = props[prop];
     }
