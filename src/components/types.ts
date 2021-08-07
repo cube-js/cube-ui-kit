@@ -3,7 +3,7 @@ import {
   CSSProperties,
   FormEventHandler,
   HTMLAttributes,
-  JSXElementConstructor,
+  JSXElementConstructor, KeyboardEventHandler,
   ReactElement,
   ReactNodeArray,
   ReactPortal,

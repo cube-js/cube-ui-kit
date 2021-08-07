@@ -14,7 +14,7 @@ import { Button, CubeButtonProps } from '../../atoms/Button/Button';
 import { NuStyles } from '../../styles/types';
 
 export interface CubeTabData {
-  id: string;
+  id: string | number;
   qa?: string;
   title?: string;
   isDisabled?: boolean;
@@ -23,10 +23,10 @@ export interface CubeTabData {
 
 export interface CubeTabsContextValue {
   addTab: (CubeTabData) => void;
-  setTab: (string) => void;
+  setTab: (id: string | number) => void;
   removeTab: (CubeTabData) => void;
   changeTab: (CubeTabData) => void;
-  currentTab: string;
+  currentTab?: string | number;
 }
 
 const TabsContext = createContext<CubeTabsContextValue>({
@@ -34,7 +34,6 @@ const TabsContext = createContext<CubeTabsContextValue>({
   removeTab() {},
   setTab() {},
   changeTab() {},
-  currentTab: '',
 });
 
 const TABS_PANEL_CSS = `
@@ -109,13 +108,15 @@ const TABS_CONTAINER_CSS = `
   }
 `;
 
-export interface CubeTabProps extends CubeButtonProps {
+export interface CubeTabProps extends Omit<CubeButtonProps, 'id'> {
+  id?: string | number
+  title?: string
   isSelected?: boolean;
   isHidden?: boolean;
   onClose?: () => void;
 }
 
-const Tab = ({ isSelected, isHidden, onClose, ...props }: CubeTabProps) => {
+const Tab = ({ isSelected, isHidden, onClose, ...props }: Omit<CubeTabProps, 'id'>) => {
   return (
     <Button type="tab" isSelected={isSelected} isHidden={isHidden} {...props} />
   );
@@ -125,7 +126,7 @@ export interface CubeTabsProps extends CubeFlexProps {
   /** The initial active key in the tabs (uncontrolled). */
   defaultActiveKey?: string;
   /** The currently active key in the tabs (controlled). */
-  activeKey?: string;
+  activeKey?: string | number;
   /** Handler that is called when the tab is clicked. */
   onTabClick?: (string) => void;
   /** Handler that is called when the tab is closed. */
@@ -145,7 +146,7 @@ export function Tabs({
   extra,
   children,
   ...props
-}) {
+}: CubeTabsProps) {
   const tabsRef = useRef<HTMLDivElement>(null);
 
   const [tabs, setTabs] = useState<CubeTabData[]>([]);
@@ -207,11 +208,11 @@ export function Tabs({
     setActiveKey(activeKeyProp);
   }, [activeKeyProp]);
 
-  function getTab(tabs: CubeTabData[], key: string): CubeTabData | undefined {
+  function getTab(tabs: CubeTabData[], key: string | number): CubeTabData | undefined {
     return tabs.find((tab) => tab.id === key);
   }
 
-  function setTab(key: string) {
+  function setTab(key: string | number) {
     if (getTab(tabs, key)) {
       setActiveKey(key);
     }
@@ -299,7 +300,7 @@ export function Tabs({
           {extra}
         </Space>
         <Flex
-          flexFrow="1"
+          flexGrow={1}
           border="top rgb(227, 227, 233)"
           {...(paneStyles || {})}
         >
@@ -310,22 +311,22 @@ export function Tabs({
   );
 }
 
-Tabs.TabPane = function FileTabPane({
+Tabs.TabPane = function TabPane({
   id,
-  tab,
+  title,
   qa,
   isHidden,
   isDisabled,
   children,
   ...props
-}) {
+}: CubeTabProps) {
   const { addTab, removeTab, changeTab, currentTab } = useContext(TabsContext);
 
   useEffect(() => {
     const tabData = {
       id,
       qa,
-      title: tab,
+      title,
       isDisabled,
       isHidden,
     };
@@ -341,11 +342,11 @@ Tabs.TabPane = function FileTabPane({
     changeTab({
       id,
       qa,
-      title: tab,
+      title,
       isDisabled,
       isHidden,
     });
-  }, [tab, isDisabled, isHidden]);
+  }, [title, isDisabled, isHidden]);
 
   const isCurrent = id === currentTab;
 

@@ -23,7 +23,7 @@ const Template = () => {
     <FileTabs activeKey={activeKey} onTabClose={onClose} onTabClick={onPress}>
       {arr.map((n) => (
         <FileTabs.TabPane
-          tab={`Long Tab ${n}`}
+          title={`Long Tab ${n}`}
           id={n}
           key={n}
           isDirty={n === 3}

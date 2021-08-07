@@ -21,11 +21,11 @@ interface TabData {
 }
 
 interface FileTabContextValue {
-  addTab: (TabData) => void;
-  setTab: (string) => void;
-  removeTab: (string) => void;
+  addTab: (tab: TabData) => void;
+  setTab: (id: string | number) => void;
+  removeTab: (tab: TabData) => void;
   currentTab?: string | number;
-  setDirtyTab: (string, boolean) => void;
+  setDirtyTab: (id: string | number, isDirty: boolean) => void;
 }
 
 const FileTabsContext = createContext<FileTabContextValue>({
@@ -190,7 +190,7 @@ const TAB_CSS = `
   }
 `;
 
-export interface CubeFileTabProps extends CubeActionProps {
+export interface FileTabProps extends Omit<CubeActionProps, 'id'> {
   isDirty?: boolean;
   isDisabled?: boolean;
   children?: ReactNode;
@@ -205,7 +205,7 @@ const Tab = ({
   isClosable,
   onClose,
   ...props
-}: CubeFileTabProps) => {
+}: FileTabProps) => {
   return (
     <Action
       className={isDirty ? 'file-tab--dirty' : ''}
@@ -268,7 +268,7 @@ export function FileTabs({
   onTabClick,
   onTabClose,
   paneStyles,
-  isClosable,
+  isClosable = true,
   children,
   ...props
 }: CubeFileTabsProps) {
@@ -338,7 +338,7 @@ export function FileTabs({
     return tabs.find((tab) => tab.id === key);
   }
 
-  function setTab(key: string) {
+  function setTab(key: string | number) {
     if (getTab(tabs, key)) {
       setActiveKey(key);
     }
@@ -354,7 +354,7 @@ export function FileTabs({
     });
   }
 
-  function setDirtyTab(id: string, isDirty: boolean) {
+  function setDirtyTab(id: string | number, isDirty: boolean) {
     setTabs((tabs) => {
       const tab = getTab(tabs, id);
 
@@ -442,20 +442,26 @@ export function FileTabs({
   );
 }
 
-FileTabs.TabPane = function FileTabPane({
-  id,
-  tab,
-  isDirty,
-  children,
-  ...props
-}) {
+export interface CubeFileTabProps extends FileTabProps {
+  id: string | number
+  title: string
+}
+
+FileTabs.TabPane = function FileTabPane(allProps: CubeFileTabProps) {
+  let {
+    id,
+    title,
+    isDirty,
+    children,
+    ...props
+  } = allProps;
   const { addTab, removeTab, currentTab, setDirtyTab }
     = useContext(FileTabsContext);
 
   useEffect(() => {
     const tabData = {
       id,
-      title: tab,
+      title,
       isDirty,
     };
 
@@ -464,10 +470,10 @@ FileTabs.TabPane = function FileTabPane({
     return () => {
       removeTab(tabData);
     };
-  }, [id, tab]);
+  }, [id, title]);
 
   useEffect(() => {
-    setDirtyTab(id, isDirty);
+    setDirtyTab(id, isDirty || false);
   }, [isDirty]);
 
   const isCurrent = id === currentTab;
