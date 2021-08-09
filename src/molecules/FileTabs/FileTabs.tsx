@@ -443,18 +443,12 @@ export function FileTabs({
 }
 
 export interface CubeFileTabProps extends FileTabProps {
-  id: string | number
-  title: string
+  id: string | number;
+  title: string;
 }
 
 FileTabs.TabPane = function FileTabPane(allProps: CubeFileTabProps) {
-  let {
-    id,
-    title,
-    isDirty,
-    children,
-    ...props
-  } = allProps;
+  let { id, title, isDirty, children, ...props } = allProps;
   const { addTab, removeTab, currentTab, setDirtyTab }
     = useContext(FileTabsContext);
 

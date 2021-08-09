@@ -31,9 +31,21 @@ export interface CubeTextProps
     TextStyleProps,
     BaseStyleProps,
     ColorStyleProps {
-  code?: boolean;
+  /**
+   * Whether the text uses the monospace font.
+   */
+  monospace?: boolean;
+  /**
+   * Whether the text overflow is ellipsis
+   */
   ellipsis?: boolean;
+  /**
+   * Whether the text is not wrapping
+   */
   nowrap?: boolean;
+  /**
+   * Whether the text has italic style
+   */
   italic?: NuResponsiveStyleValue<CSSProperties['fontStyle']>;
   weight?: NuResponsiveStyleValue<CSSProperties['fontWeight']>;
   align?: NuResponsiveStyleValue<CSSProperties['textAlign']>;
@@ -41,36 +53,33 @@ export interface CubeTextProps
 }
 
 const _Text = forwardRef((allProps: CubeTextProps, ref) => {
-  let { as, qa, code, ellipsis, css, nowrap, italic, ...props } = allProps;
+  let { as, qa, block, ellipsis, css, nowrap, ...props } = allProps;
 
-  const styles = extractStyles(props, STYLE_LIST, DEFAULT_STYLES, PROP_MAP);
+  const styles = extractStyles(
+    props,
+    STYLE_LIST,
+    {
+      ...DEFAULT_STYLES,
+      whiteSpace: nowrap ? 'nowrap' : 'initial',
+      ...(ellipsis
+        ? {
+            textOverflow: 'ellipsis',
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+            width: 'max 100%',
+          }
+        : null),
+    },
+    PROP_MAP,
+  );
 
   css = css || '';
-
-  if (ellipsis) {
-    css += `
-      && {
-        ${!as ? 'display: block;' : ''}
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
-        max-width: 100%;
-      }
-    `;
-  }
-
-  if (nowrap) {
-    css += `
-      && {
-        white-space: nowrap;
-      }
-    `;
-  }
 
   return (
     <Base
       as={as || 'span'}
       qa={qa || 'Text'}
+      block={!!(block || ellipsis)}
       css={css}
       {...filterBaseProps(props, { eventProps: true })}
       styles={styles}

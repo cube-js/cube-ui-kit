@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { Block, CubeBlockProps } from '../../components/Block';
 
 const SIZE_MAP = {
@@ -7,25 +8,29 @@ const SIZE_MAP = {
 };
 
 export interface CubeSpinProps extends CubeBlockProps {
-  size?: 'small' | 'default' | 'large';
+  size?: 'small' | 'default' | 'large' | number;
   spinning?: boolean;
 }
 
-export function Spin({ size, spinning, style, children, ...props }) {
-  size = SIZE_MAP[size] || size || SIZE_MAP.default;
+const Spin = (
+  { size, spinning, style, children, ...props }: CubeSpinProps,
+  ref,
+) => {
+  const localSize = (size && SIZE_MAP[size]) || size || SIZE_MAP.default;
 
   if (spinning === false) {
-    return children;
+    return <>{children}</>;
   }
 
   return (
     <Block
+      ref={ref}
       role="img"
       aria-label="Loading animation"
       height="1em"
       opacity=".8"
       style={{
-        fontSize: size * 8,
+        fontSize: localSize * 8,
         position: 'relative',
         ...(style || {}),
       }}
@@ -99,4 +104,7 @@ export function Spin({ size, spinning, style, children, ...props }) {
       </svg>
     </Block>
   );
-}
+};
+
+const _Spin = forwardRef(Spin);
+export { _Spin as Spin };

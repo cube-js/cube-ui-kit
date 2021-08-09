@@ -53,7 +53,10 @@ function getValueProps(type, value?) {
     };
   } else if (type.includes('Input') || type.includes('TextArea')) {
     return {
-      value: (typeof value === 'string' || typeof value === 'number') ? String(value) : '',
+      value:
+        typeof value === 'string' || typeof value === 'number'
+          ? String(value)
+          : '',
     };
   } else if (type === 'Checkbox' || type === 'Switch') {
     return {

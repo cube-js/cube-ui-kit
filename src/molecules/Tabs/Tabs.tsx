@@ -109,14 +109,19 @@ const TABS_CONTAINER_CSS = `
 `;
 
 export interface CubeTabProps extends Omit<CubeButtonProps, 'id'> {
-  id?: string | number
-  title?: string
+  id?: string | number;
+  title?: string;
   isSelected?: boolean;
   isHidden?: boolean;
   onClose?: () => void;
 }
 
-const Tab = ({ isSelected, isHidden, onClose, ...props }: Omit<CubeTabProps, 'id'>) => {
+const Tab = ({
+  isSelected,
+  isHidden,
+  onClose,
+  ...props
+}: Omit<CubeTabProps, 'id'>) => {
   return (
     <Button type="tab" isSelected={isSelected} isHidden={isHidden} {...props} />
   );
@@ -208,7 +213,10 @@ export function Tabs({
     setActiveKey(activeKeyProp);
   }, [activeKeyProp]);
 
-  function getTab(tabs: CubeTabData[], key: string | number): CubeTabData | undefined {
+  function getTab(
+    tabs: CubeTabData[],
+    key: string | number,
+  ): CubeTabData | undefined {
     return tabs.find((tab) => tab.id === key);
   }
 

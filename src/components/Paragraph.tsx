@@ -1,24 +1,8 @@
 import { forwardRef } from 'react';
-import { Text } from './Text';
-import {
-  BASE_STYLES,
-  BLOCK_STYLES,
-  COLOR_STYLES,
-  DIMENSION_STYLES,
-  POSITION_STYLES,
-  TEXT_STYLES,
-} from '../styles/list';
+import { CubeTextProps, Text } from './Text';
+import { CONTAINER_STYLES, TEXT_STYLES } from '../styles/list';
 import { extractStyles } from '../utils/styles';
-import { filterBaseProps } from '../utils/filterBaseProps';
-import {
-  BaseProps,
-  BaseStyleProps,
-  BlockStyleProps,
-  ColorStyleProps,
-  DimensionStyleProps,
-  PositionStyleProps,
-  TextStyleProps,
-} from './types';
+import { ContainerStyleProps } from './types';
 import { NuStyles } from '../styles/types';
 
 const DEFAULT_STYLES: NuStyles = {
@@ -27,33 +11,14 @@ const DEFAULT_STYLES: NuStyles = {
   display: 'block',
 };
 
-const STYLE_PROPS = [
-  ...BASE_STYLES,
-  ...TEXT_STYLES,
-  ...BLOCK_STYLES,
-  ...COLOR_STYLES,
-  ...POSITION_STYLES,
-  ...DIMENSION_STYLES,
-];
+const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
 export interface CubeParagraphProps
-  extends BaseProps,
-    BaseStyleProps,
-    TextStyleProps,
-    BlockStyleProps,
-    ColorStyleProps,
-    PositionStyleProps,
-    DimensionStyleProps {}
+  extends CubeTextProps,
+    ContainerStyleProps {}
 
 export const Paragraph = forwardRef((props: CubeParagraphProps, ref) => {
   const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
 
-  return (
-    <Text
-      as="p"
-      {...filterBaseProps(props, { eventProps: true })}
-      styles={styles}
-      ref={ref}
-    />
-  );
+  return <Text {...props} as="p" styles={styles} ref={ref} />;
 });

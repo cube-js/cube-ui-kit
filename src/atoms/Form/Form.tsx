@@ -94,7 +94,10 @@ function Form(props: CubeFormProps, ref) {
         if (e.nativeEvent) {
           const evt = e.nativeEvent;
 
-          if (evt.submitter && evt.submitter.getAttribute('type') !== 'submit') {
+          if (
+            evt.submitter
+            && evt.submitter.getAttribute('type') !== 'submit'
+          ) {
             return;
           }
         }

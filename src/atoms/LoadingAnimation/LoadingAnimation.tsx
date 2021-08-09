@@ -138,7 +138,10 @@ export interface CubeLoadingAnimationProps extends CubeBlockProps {
   size?: 'small' | 'medium' | 'large' | number;
 }
 
-export function LoadingAnimation({ size = 'medium', ...props }: CubeLoadingAnimationProps) {
+export function LoadingAnimation({
+  size = 'medium',
+  ...props
+}: CubeLoadingAnimationProps) {
   const numSize: number = SIZE_MAP[size] || size || SIZE_MAP.medium;
 
   return (

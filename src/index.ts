@@ -98,3 +98,6 @@ const Input = Object.assign(TextInput, {
 });
 
 export { Input };
+
+export * from './components/types';
+export * from './styles/types';
