@@ -19,7 +19,7 @@ import { transitionStyle } from './transition';
 import { groupRadiusAttr } from './groupRadius';
 import { boxShadowCombinator } from './boxShadow.combinator';
 import { styleHandlerCacheWrapper } from '../utils/styles';
-import { scrollBarStyle } from './scrollBar';
+import { styledScrollbarStyle } from './styledScrollbar';
 import { displayStyle } from './display';
 
 const columnsConverter = (val) => {
@@ -71,7 +71,7 @@ export const STYLES = [
     fontStyle,
     fontStyleStyle,
     groupRadiusAttr,
-    scrollBarStyle,
+    styledScrollbarStyle,
   ].map(styleHandlerCacheWrapper),
 );
 

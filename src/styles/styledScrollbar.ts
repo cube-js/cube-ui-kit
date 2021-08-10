@@ -1,7 +1,7 @@
-export function scrollBarStyle({ scrollBar }) {
-  if (scrollBar == null) return null;
+export function styledScrollbarStyle({ styledScrollbar: val }) {
+  if (val == null) return null;
 
-  if (!scrollBar) {
+  if (!val) {
     return [
       {
         $: '::-webkit-scrollbar',
@@ -50,4 +50,4 @@ export function scrollBarStyle({ scrollBar }) {
   ];
 }
 
-scrollBarStyle.__lookupStyles = ['scrollBar'];
+styledScrollbarStyle.__lookupStyles = ['styledScrollbar'];

@@ -123,7 +123,7 @@ const LISTBOX_STYLES: NuStyles = {
   shadow: '0px 4px 16px #shadow',
   height: 'initial 30x',
   overflow: 'hidden auto',
-  scrollBar: true,
+  styledScrollbar: true,
 } as const;
 
 const OPTION_STYLES: NuStyles = {
@@ -169,7 +169,6 @@ export interface CubeSelectProps
 }
 
 export interface SelectProps<T> extends CubeSelectProps, AriaSelectProps<T> {
-  inputRef?: RefObject<HTMLInputElement>;
   popoverRef?: RefObject<HTMLInputElement>;
   listBoxRef?: RefObject<HTMLInputElement>;
 }
@@ -193,7 +192,6 @@ function Select<T extends object>(
     isDisabled,
     autoFocus,
     inputProps,
-    inputRef,
     triggerRef,
     popoverRef,
     listBoxRef,
@@ -227,7 +225,6 @@ function Select<T extends object>(
   });
 
   ref = useCombinedRefs(ref);
-  inputRef = useCombinedRefs(inputRef);
   triggerRef = useCombinedRefs(triggerRef);
   popoverRef = useCombinedRefs(popoverRef);
   listBoxRef = useCombinedRefs(listBoxRef);

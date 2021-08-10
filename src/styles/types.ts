@@ -44,7 +44,7 @@ type Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 type OpaquePercentage = '' | `.${Digit}` | `.${Digit}${Digit}` | '.100';
 export type NoType = false | null | undefined;
 
-export interface NuStylesInterface extends CSSProperties {
+export interface NuStylesInterface extends Omit<CSSProperties, 'color' | 'fill' | 'font' | 'outline'> {
   /** Set the background color of the element.
    * ```
    * fill="#{name_of_the_color}"
@@ -53,7 +53,7 @@ export interface NuStylesInterface extends CSSProperties {
    * fill="#dark.30" // the dark color with 30% opacity
    * ```
    */
-  fill?: `#${NamedColor | `${NamedColor}${OpaquePercentage}`}` | string;
+  fill?: `#${NamedColor | `${NamedColor}${OpaquePercentage}`}` | `rgb(${string})` | `rgba(${string})` | boolean;
   /** Set the text (current) color of the element
    * ```
    * color="#{name_of_the_color}"
@@ -62,17 +62,76 @@ export interface NuStylesInterface extends CSSProperties {
    * color="#dark.30" // the dark color with 30% opacity
    * ```
    */
-  color?: `#${NamedColor | `${NamedColor}${OpaquePercentage}`}` | string;
-  size?: 'md' | 'xs' | string;
-  reset?: string;
-  scrollBar?: string;
-  hide?: string;
+  color?: `#${NamedColor | `${NamedColor}${OpaquePercentage}`}` | `rgb(${string})` | `rgba(${string})` | boolean;
+  /**
+   * The font-size, line-height, and letter-spacing of the element with ability to apply presets.
+   * Syntax: `<fontSize> <lineHeight>? <letterSpacing>?`.
+   * Syntax: `<presetName>`
+   */
+  size?: 'md' | 'sm' | 'lg' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'text' | string;
+  /**
+   * Whether styles of the element should be reset.
+   * Possible values: `input`, `button`.
+   */
+  reset?: 'input' | 'button';
+  /**
+   * Whether the element has styled scrollbar.
+   */
+  styledScrollbar?: boolean;
+  /**
+   * Whether the element is hidden using `display: none`.
+   */
+  hide?: boolean;
+  /**
+   * The shadow style adds shadow effects around an element's frame. You can set multiple effects separated by commas. A box shadow is described by X and Y offsets relative to the element, blur and spread radius, and color.
+   * Examples:
+   * `shadow="1x .5x .5x #dark.50"`
+   * `shadow="0 1x 2x #dark.20"`
+   */
   shadow?: string;
-  radius?: string;
-  flow?: CSSProperties['flexFlow'];
+  /**
+   * The radius style rounds the corners of an element's outer border edge. You can set a single radius to make circular corners, or two radii to make elliptical corners.
+   * Syntax: `[[<value> | [ <verticalValue> <horizontalValue>] ]? [ [ leaf | backleaf ] | [ 'top' | 'right' | 'bottom' | 'top' ]{1,2} ] ] | [ 'round' | 'ellipse' ] | true`
+   * Examples: `"1x"`, `"2x 4x"`, `"top"`, `"round"`, `"3x leaf"`, `"ellipse"`.
+   */
+  radius?: 'round' | 'ellipse' | 'leaf' | 'backleaf' | string;
+  /**
+   * The group radius style rounds the corners of a container's outer border edge by applying radius style to to its children.
+   * Syntax: `<value> [ 'round' | 'ellipse' ]? | true`
+   * Examples: `"2r"`, `"round"`, `"ellipse"`.
+   */
+  groupRadius?: 'round' | 'ellipse' | string;
+  /**
+   * The flow style specifies the direction of a flex/grid container, as well as its wrapping behavior (for flex only).
+   * Syntax: `[ [ row | row-reverse | column | column-reverse ] | [ nowrap | wrap | wrap-reverse ]  | [ [ row | column ] || dense ]`
+   */
+  flow?: CSSProperties['flexFlow'] | CSSProperties['gridAutoFlow'];
+  /**
+   * The gridAreas style specifies named grid areas, establishing the cells in the grid and assigning them names.
+   */
   gridAreas?: CSSProperties['gridTemplateAreas'];
-  gridColumns?: CSSProperties['gridTemplateColumns'];
-  gridRows?: CSSProperties['gridTemplateRows'];
+  /**
+   * The gridColumns style defines the line names and track sizing functions of the grid columns.
+   */
+  gridColumns?: CSSProperties['gridTemplateColumns'] | number;
+  /**
+   * The gridRows style defines the line names and track sizing functions of the grid rows.
+   */
+  gridRows?: CSSProperties['gridTemplateRows'] | number;
+  /**
+   * The gridTemplate style is a shorthand property for defining grid columns, rows, and areas.
+   */
+  gridTemplate?: CSSProperties['gridTemplate'];
+  /**
+   * The font style specifies a prioritized list of one or more font family names and/or generic family names for the selected element. The style will also provide a reasonable fallback to system fonts.
+   * Syntax: 'monospace' | <fontFamilyList> | true
+   */
+  font: CSSProperties['fontFamily'] | boolean,
+  /**
+   * The outline style sets the outline for the element using `box-shadow` CSS property. The outline is drawn inside if `inset` modifier is set.
+   * Syntax: <value> 'inset'?
+   */
+  outline: CSSProperties['fontFamily'] | boolean,
 }
 
 export type NuStyles = {
