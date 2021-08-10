@@ -32,9 +32,7 @@ export default {
   },
 };
 
-const Template = ({ label, ...args }) => (
-  <Text {...args}>{label}</Text>
-);
+const Template = ({ label, ...args }) => <Text {...args}>{label}</Text>;
 
 export const Default = Template.bind({});
 Default.args = {

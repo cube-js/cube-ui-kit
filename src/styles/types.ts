@@ -44,7 +44,8 @@ type Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 type OpaquePercentage = '' | `.${Digit}` | `.${Digit}${Digit}` | '.100';
 export type NoType = false | null | undefined;
 
-export interface NuStylesInterface extends Omit<CSSProperties, 'color' | 'fill' | 'font' | 'outline'> {
+export interface NuStylesInterface
+  extends Omit<CSSProperties, 'color' | 'fill' | 'font' | 'outline'> {
   /** Set the background color of the element.
    * ```
    * fill="#{name_of_the_color}"
@@ -53,7 +54,11 @@ export interface NuStylesInterface extends Omit<CSSProperties, 'color' | 'fill' 
    * fill="#dark.30" // the dark color with 30% opacity
    * ```
    */
-  fill?: `#${NamedColor | `${NamedColor}${OpaquePercentage}`}` | `rgb(${string})` | `rgba(${string})` | boolean;
+  fill?:
+    | `#${NamedColor | `${NamedColor}${OpaquePercentage}`}`
+    | `rgb(${string})`
+    | `rgba(${string})`
+    | boolean;
   /** Set the text (current) color of the element
    * ```
    * color="#{name_of_the_color}"
@@ -62,13 +67,28 @@ export interface NuStylesInterface extends Omit<CSSProperties, 'color' | 'fill' 
    * color="#dark.30" // the dark color with 30% opacity
    * ```
    */
-  color?: `#${NamedColor | `${NamedColor}${OpaquePercentage}`}` | `rgb(${string})` | `rgba(${string})` | boolean;
+  color?:
+    | `#${NamedColor | `${NamedColor}${OpaquePercentage}`}`
+    | `rgb(${string})`
+    | `rgba(${string})`
+    | boolean;
   /**
    * The font-size, line-height, and letter-spacing of the element with ability to apply presets.
    * Syntax: `<fontSize> <lineHeight>? <letterSpacing>?`.
    * Syntax: `<presetName>`
    */
-  size?: 'md' | 'sm' | 'lg' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'text' | string;
+  size?:
+    | 'md'
+    | 'sm'
+    | 'lg'
+    | 'h1'
+    | 'h2'
+    | 'h3'
+    | 'h4'
+    | 'h5'
+    | 'h6'
+    | 'text'
+    | string;
   /**
    * Whether styles of the element should be reset.
    * Possible values: `input`, `button`.
@@ -126,12 +146,12 @@ export interface NuStylesInterface extends Omit<CSSProperties, 'color' | 'fill' 
    * The font style specifies a prioritized list of one or more font family names and/or generic family names for the selected element. The style will also provide a reasonable fallback to system fonts.
    * Syntax: 'monospace' | <fontFamilyList> | true
    */
-  font: CSSProperties['fontFamily'] | boolean,
+  font?: CSSProperties['fontFamily'] | boolean;
   /**
    * The outline style sets the outline for the element using `box-shadow` CSS property. The outline is drawn inside if `inset` modifier is set.
    * Syntax: <value> 'inset'?
    */
-  outline: CSSProperties['fontFamily'] | boolean,
+  outline?: CSSProperties['fontFamily'] | boolean;
 }
 
 export type NuStyles = {
