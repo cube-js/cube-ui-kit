@@ -55,10 +55,11 @@ export interface NuStylesInterface
    * ```
    */
   fill?:
-    | `#${NamedColor | `${NamedColor}${OpaquePercentage}`}`
+    | `#${NamedColor}${OpaquePercentage}`
     | `rgb(${string})`
     | `rgba(${string})`
-    | boolean;
+    | boolean
+    | string;
   /** Set the text (current) color of the element
    * ```
    * color="#{name_of_the_color}"
@@ -68,10 +69,11 @@ export interface NuStylesInterface
    * ```
    */
   color?:
-    | `#${NamedColor | `${NamedColor}${OpaquePercentage}`}`
+    | `#${NamedColor}${OpaquePercentage}`
     | `rgb(${string})`
     | `rgba(${string})`
-    | boolean;
+    | boolean
+    | string;
   /**
    * The font-size, line-height, and letter-spacing of the element with ability to apply presets.
    * Syntax: `<fontSize> <lineHeight>? <letterSpacing>?`.
@@ -158,4 +160,6 @@ export type NuStyles = {
   [key in keyof NuStylesInterface]?: NuResponsiveStyleValue<
     NuStylesInterface[key]
   >;
-} & { [key: string]: NuResponsiveStyleValue<string | number | undefined> };
+} & {
+  [key: string]: NuResponsiveStyleValue<string | number | boolean | undefined>;
+};

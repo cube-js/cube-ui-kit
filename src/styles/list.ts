@@ -1,4 +1,4 @@
-export const BASE_STYLES = ['display'] as const;
+export const BASE_STYLES = ['display', 'size', 'font'] as const;
 
 export const POSITION_STYLES = [
   'gridArea',
@@ -28,12 +28,10 @@ export const BLOCK_STYLES = [
 export const COLOR_STYLES = ['color', 'fill'] as const;
 
 export const TEXT_STYLES = [
-  'size',
   'textAlign',
   'textTransform',
   'fontWeight',
   'fontStyle',
-  'font',
 ] as const;
 
 export const DIMENSION_STYLES = ['width', 'height', 'flexBasis'] as const;

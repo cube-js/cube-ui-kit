@@ -102,3 +102,5 @@ export { Input };
 export * from './components/types';
 export * from './styles/types';
 export * from './styles/list';
+
+export { ModalProvider } from '@react-aria/overlays';
