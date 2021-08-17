@@ -9,7 +9,7 @@ const DEFAULT_STYLES = {
   display: 'block',
 };
 
-export interface CubeBlockProps extends AllBaseProps, ContainerStyleProps {}
+export interface CubeBlockProps extends Omit<AllBaseProps, keyof ContainerStyleProps | 'as'>, ContainerStyleProps {}
 
 export const Block = forwardRef((props: CubeBlockProps, ref) => {
   const styles = extractStyles(props, CONTAINER_STYLES, DEFAULT_STYLES);

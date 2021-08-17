@@ -6,7 +6,7 @@ import { CONTAINER_STYLES } from '../styles/list';
 import { Base } from './Base';
 import { useContextStyles } from '../providers/Styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
-import { BaseProps, ContainerStyleProps } from './types';
+import { BaseProps, ContainerStyleProps, TagName, TagNameProps } from './types';
 import { LabelPosition, NecessityIndicator, ValidationState } from '../shared';
 import { NuStyles } from '../styles/types';
 
@@ -68,7 +68,7 @@ export const LABEL_STYLES: NuStyles = {
   whiteSpace: 'nowrap',
 } as const;
 
-export interface CubeLabelProps extends BaseProps, ContainerStyleProps {
+export interface CubeLabelProps extends BaseProps, TagNameProps, ContainerStyleProps {
   labelPosition?: LabelPosition;
   necessityIndicator?: NecessityIndicator;
   isRequired?: boolean;

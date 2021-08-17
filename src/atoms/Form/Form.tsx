@@ -31,8 +31,6 @@ const formPropNames = new Set([
   'encType',
   'method',
   'target',
-  'onSubmit',
-  'onSubmitFailed',
 ]);
 
 const DEFAULT_STYLES = {

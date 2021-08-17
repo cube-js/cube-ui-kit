@@ -183,7 +183,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     inputStyles.paddingRight = `${suffixWidth}px`;
   }
 
-  let ElementType = multiLine ? 'textarea' : 'input';
+  let ElementType: 'textarea' | 'input' = multiLine ? 'textarea' : 'input';
   let { isFocused, focusProps } = useFocus({ isDisabled });
   let { hoverProps, isHovered } = useHover({ isDisabled });
   let domRef = useRef(null);

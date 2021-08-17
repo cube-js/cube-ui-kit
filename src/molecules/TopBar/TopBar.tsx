@@ -5,6 +5,7 @@ import { CONTAINER_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
 import { NuStyles } from '../../styles/types';
 import { BaseProps, ContainerStyleProps } from '../../components/types';
+import { filterBaseProps } from '../../utils/filterBaseProps';
 
 const DEFAULT_STYLES: NuStyles = {
   display: 'flex',
@@ -24,7 +25,7 @@ export function TopBar({ children, onLogoPress, ...props }: CubeTopbarProps) {
   const styles = extractStyles(props, CONTAINER_STYLES, DEFAULT_STYLES);
 
   return (
-    <Base role="banner" styles={styles} {...props}>
+    <Base role="banner" styles={styles} {...filterBaseProps(props)}>
       <CloudLogo onPress={onLogoPress} />
       <Space flexGrow={1} placeContent="space-between">
         {children}

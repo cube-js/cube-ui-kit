@@ -1,8 +1,6 @@
 import {
   AllHTMLAttributes,
   CSSProperties,
-  FormEventHandler,
-  HTMLAttributes,
   JSXElementConstructor,
   ReactElement,
   ReactNodeArray,
@@ -20,15 +18,14 @@ import {
   POSITION_STYLES,
   TEXT_STYLES,
 } from '../styles/list';
-import { DOMProps } from '@react-types/shared';
 
-export interface BasePropsWithoutChildren extends DOMProps {
+export interface BasePropsWithoutChildren extends Pick<AllHTMLAttributes<HTMLElement>, 'className' | 'role' | 'id'> {
   /** QA ID for e2e testing **/
   qa?: string;
   /** QA value for e2e testing **/
   qaVal?: string | number;
   /** The tag name of the element **/
-  as?: string;
+  // as?: string;
   /** The style map **/
   styles?: NuStyles;
   /** The list of responsive points in pixels **/
@@ -49,14 +46,10 @@ export interface BasePropsWithoutChildren extends DOMProps {
   disabled?: boolean;
   /** Plain css for the element **/
   css?: string;
-  /** The list of CSS classes */
-  className?: string;
-  /** The accessibility role */
-  role?: string;
   /** The CSS style map */
   style?:
     | CSSProperties
-    | (CSSProperties & { [key: string]: string | number | null });
+    | CSSProperties & { [key: string]: string | number | null };
 }
 
 export interface BaseProps extends BasePropsWithoutChildren {
@@ -72,40 +65,9 @@ export interface BaseProps extends BasePropsWithoutChildren {
     | undefined;
 }
 
-export interface AllBaseProps
-  extends BaseProps,
-    Omit<HTMLAttributes<HTMLElement>, 'style' | 'role' | 'color'> {
-  /** The type attribute is a generic attribute and it has different meaning based on the context
-   * in which it's used. */
-  type?: AllHTMLAttributes<HTMLButtonElement>['type'];
-  /** The rel attribute defines the relationship between a linked resource and the current document.
-   * Valid on <link>, <a>, <area>, and <form>, the supported values depend on the element on which
-   * the attribute is found. */
-  rel?: AllHTMLAttributes<HTMLLinkElement>['rel'];
-  /** The target attribute should be used when there are multiple possible targets for the ending
-   * resource, such as when the parent document is embedded within an HTML or XHTML document, or is
-   * viewed with a tabbed browser. This attribute specifies the name of the browsing context (e.g.,
-   * a browser tab or an (X)HTML iframe or object element) into which a document is to be opened
-   * when the link is activated. */
-  target?: AllHTMLAttributes<HTMLLinkElement>['target'];
-  /** The href attribute defines a link to a resource as a reference URL. The exact meaning of that
-   * link depends on the context of each element using it. */
-  href?: AllHTMLAttributes<HTMLLinkElement>['href'];
-  /** The rows attribute in HTML is used to specify the number of visible text lines for the
-   * control i.e the number of rows to display. */
-  rows?: AllHTMLAttributes<HTMLInputElement>['rows'];
-  /** The for attribute is an allowed attribute for <label> and <output>. When used on a <label>
-   * element it indicates the form element that this label describes. When used on an <output>
-   * element it allows for an explicit relationship between the elements that represent values
-   * which are used in the output. */
-  htmlFor?: AllHTMLAttributes<HTMLLabelElement>['htmlFor'];
-  autoComplete?: AllHTMLAttributes<HTMLInputElement>['autoComplete'];
-  autoCapitalize?: AllHTMLAttributes<HTMLInputElement>['autoCapitalize'];
-  autoCorrect?: AllHTMLAttributes<HTMLInputElement>['autoCorrect'];
-  /** Form event handler */
-  onSubmit?: FormEventHandler;
-  /** Form attribute to disable built-in validation */
-  noValidate?: boolean;
+export interface AllBaseProps<K extends keyof HTMLElementTagNameMap = 'div'>
+  extends BaseProps, Omit<AllHTMLAttributes<HTMLElementTagNameMap[K]>, 'style'> {
+  as?: K,
 }
 
 export type BaseStyleProps = Pick<NuStyles, typeof BASE_STYLES[number]>;
@@ -137,4 +99,10 @@ export type ShortGridStyles = {
 
 export interface Props {
   [key: string]: any;
+}
+
+export type TagName = keyof HTMLElementTagNameMap;
+
+export interface TagNameProps {
+  as?: TagName;
 }

@@ -7,6 +7,7 @@ import {
   BaseProps,
   BaseStyleProps,
   ColorStyleProps,
+  TagNameProps,
   TextStyleProps,
 } from './types';
 import { NuStyles } from '../styles/types';
@@ -28,6 +29,7 @@ const PROP_MAP = {
 
 export interface CubeTextProps
   extends BaseProps,
+    TagNameProps,
     TextStyleProps,
     BaseStyleProps,
     ColorStyleProps {

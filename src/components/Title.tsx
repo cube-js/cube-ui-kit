@@ -10,7 +10,7 @@ import {
 import { extractStyles, NuResponsiveStyleValue } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
 import { useSlotProps } from '../utils/react';
-import { BlockStyleProps, PositionStyleProps } from './types';
+import { BlockStyleProps, PositionStyleProps, TagNameProps } from './types';
 
 const DEFAULT_STYLES = {
   gridArea: 'heading',
@@ -35,6 +35,7 @@ const PROP_MAP = {
 
 export interface CubeTitleProps
   extends CubeTextProps,
+    TagNameProps,
     BlockStyleProps,
     PositionStyleProps {
   /** The level of the heading **/
@@ -54,7 +55,7 @@ const _Title = forwardRef(
     props = useSlotProps(props, 'heading');
 
     let cachedSize;
-    const tag = `h${level || 1}`;
+    const tag: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' = `h${level || 1}`;
     const styles = extractStyles(
       props,
       STYLE_LIST,
