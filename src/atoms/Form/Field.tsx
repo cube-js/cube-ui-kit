@@ -85,6 +85,7 @@ function getValueProps(type, value?, onChange?) {
 
   return {
     value: value != null ? value : null,
+    onChange,
   };
 }
 
