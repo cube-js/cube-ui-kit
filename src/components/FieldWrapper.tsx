@@ -122,5 +122,8 @@ function FieldWrapper(props, ref) {
   );
 }
 
+/**
+ * A wrapper for form fields to provide additional decoration for inputs.
+ */
 const _FieldWrapper = forwardRef(FieldWrapper);
 export { _FieldWrapper as FieldWrapper };

@@ -42,6 +42,11 @@ const WRAPPER_STYLES: NuStyles = {
   position: 'relative',
 };
 
+const INPUT_STYLE_PROPS_LIST = [
+  ...BLOCK_STYLES,
+  'resize',
+]
+
 export const DEFAULT_INPUT_STYLES: NuStyles = {
   display: 'block',
   width: 'initial 100% initial',
@@ -77,6 +82,7 @@ export const DEFAULT_INPUT_STYLES: NuStyles = {
   size: 'input',
   flexGrow: 1,
   margin: 0,
+  resize: 'none',
 };
 
 export interface CubeTextInputBaseProps
@@ -113,6 +119,8 @@ export interface CubeTextInputBaseProps
   wrapperStyles?: NuStyles;
   /** The number of rows for the input. Only applies to textarea. */
   rows?: number;
+  /** The resize CSS property sets whether an element is resizable, and if so, in which directions. */
+  resize?: NuStyles['resize'],
 }
 
 function TextInputBase(props: CubeTextInputBaseProps, ref) {
@@ -156,7 +164,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
 
   let contextStyles = useContextStyles('Input', otherProps);
 
-  inputStyles = extractStyles(otherProps, BLOCK_STYLES, {
+  inputStyles = extractStyles(otherProps, INPUT_STYLE_PROPS_LIST, {
     ...DEFAULT_INPUT_STYLES,
     ...contextStyles,
     ...inputStyles,

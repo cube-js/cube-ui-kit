@@ -1,10 +1,11 @@
-import { TextInput } from '../TextInput/TextInput';
+// import { TextInput, Select } from '../../../dist/index';
 import {
+  TextInput,
+  Select,
   ComboBox,
   Form,
   Radio,
   Item,
-  Select,
   Submit,
   Field,
   Checkbox,

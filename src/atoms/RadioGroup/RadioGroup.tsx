@@ -128,6 +128,7 @@ function RadioGroup(props, ref) {
  * Radio groups allow users to select a single option from a list of mutually exclusive options.
  * All possible options are exposed up front for users to compare.
  */
-const _RadioGroup = forwardRef(RadioGroup);
-_RadioGroup.displayName = 'RadioGroup';
+const _RadioGroup = Object.assign(forwardRef(RadioGroup), {
+  cubeInputType: 'RadioGroup',
+});
 export { _RadioGroup as RadioGroup };

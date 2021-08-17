@@ -7,7 +7,21 @@ function Submit(props) {
   props = useProviderProps(props);
   props = useFormProps(props);
 
-  return <Button htmlType="submit" width="min-content" {...props} />;
+  const { form, ...otherProps } = props;
+  const formData = form.getFieldsValue();
+  const isValid = !Object.keys(formData).find((name) => {
+    return form.isFieldInvalid(name);
+  });
+
+  return (
+    <Button
+      type="primary"
+      htmlType="submit"
+      width="min-content"
+      {...otherProps}
+      isDisabled={!isValid}
+    />
+  );
 }
 
 const _Submit = forwardRef(Submit);

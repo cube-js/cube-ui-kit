@@ -214,8 +214,6 @@ function PopoverTrigger(allProps) {
     ref: targetRef ? undefined : triggerRef,
   };
 
-  console.log('! placement', placement);
-
   let overlay = (
     <Popover
       isOpen={state.isOpen}

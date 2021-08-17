@@ -109,6 +109,11 @@ export default {
       description: 'Default selected key',
       control: 'text',
     },
+    defaultInputValue: {
+      defaultValue: null,
+      description: 'Default selected key',
+      control: 'text',
+    },
     placeholder: {
       defaultValue: 'Placeholder',
       description: 'Placeholder text which appears if no value provided',
@@ -121,9 +126,11 @@ const Template = ({ icon, ...props }) => {
   return (
     <>
       <ComboBox
+        autoComplete="off"
         prefix={icon ? <DollarCircleOutlined /> : null}
         {...props}
-        onChange={(query) => console.log('change', query)}
+        onSelectionChange={(query) => console.log('change', query)}
+        onInputChange={(query) => console.log('input', query)}
       >
         <Item key="red">Red</Item>
         <Item key="orange">Orange</Item>

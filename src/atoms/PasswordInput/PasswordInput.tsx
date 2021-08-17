@@ -30,9 +30,11 @@ function PasswordInput(props: CubeTextInputBaseProps, ref) {
       {suffix}
       <Button
         type="item"
+        htmlType="button"
         onPress={toggleType}
         preventDefault
         placeSelf="stretch"
+        height="auto"
         radius="right (1r - 1bw)"
         padding=".5x 1x"
         aria-label="Toggle masking"
@@ -62,6 +64,7 @@ function PasswordInput(props: CubeTextInputBaseProps, ref) {
  * with a keyboard. Various decorations can be displayed around the field to
  * communicate the entry requirements.
  */
-const _PasswordInput = forwardRef(PasswordInput);
-_PasswordInput.displayName = 'PasswordInput';
+const _PasswordInput = Object.assign(forwardRef(PasswordInput), {
+  cubeInputType: 'Text',
+});
 export { _PasswordInput as PasswordInput };

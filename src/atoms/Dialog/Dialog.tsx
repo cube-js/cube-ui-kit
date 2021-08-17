@@ -237,5 +237,4 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
  * Depending on the kind of Dialog, further interactions may be blocked until the Dialog is acknowledged.
  */
 let _Dialog = forwardRef(Dialog);
-_Dialog.displayName = 'Dialog';
 export { _Dialog as Dialog };

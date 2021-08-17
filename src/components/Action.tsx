@@ -194,7 +194,7 @@ export const Action = forwardRef(
           customProps,
           filterBaseProps(props, { eventProps: true }),
         )}
-        type={htmlType}
+        type={htmlType || 'button'}
         rel={as === 'a' && newTab ? 'rel="noopener noreferrer"' : undefined}
         ref={domRef}
         as={as}

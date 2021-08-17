@@ -57,7 +57,7 @@ const VALIDATORS = {
   async pattern(value, rule) {
     const pattern = rule.pattern;
 
-    if (value == null || typeof value !== 'string') return Promise.resolve();
+    if (typeof value !== 'string') return Promise.resolve();
 
     return value.match(pattern) ? Promise.resolve() : Promise.reject();
   },

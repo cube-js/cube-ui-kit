@@ -139,6 +139,7 @@ function CheckboxGroup(props: CubeCheckboxGroupProps, ref) {
  * Checkbox groups allow users to select a single option from a list of mutually exclusive options.
  * All possible options are exposed up front for users to compare.
  */
-const _CheckboxGroup = forwardRef(CheckboxGroup);
-_CheckboxGroup.displayName = 'CheckboxGroup';
+const _CheckboxGroup = Object.assign(forwardRef(CheckboxGroup), {
+  cubeInputType: 'CheckboxGroup',
+});
 export { _CheckboxGroup as CheckboxGroup };

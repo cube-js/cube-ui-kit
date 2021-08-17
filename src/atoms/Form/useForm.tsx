@@ -6,7 +6,6 @@ export type CubeField = {
   value?: any;
   name: string;
   errors: string[];
-  invalid?: boolean;
   touched?: boolean;
   rules?: any[];
   validating?: boolean;
@@ -21,8 +20,8 @@ export class FormStore {
   private initialFields = {};
   private fields: { [key: string]: CubeField } = {};
   public ref = {};
-  public onValuesChange: (CubeFormData) => void = () => {};
-  public onSubmit: (CubeFormData) => void = () => {};
+  public onValuesChange: (CubeFormData) => void | Promise<any> = () => {};
+  public onSubmit: (CubeFormData) => void | Promise<any> = () => {};
 
   constructor(forceReRender?: () => void) {
     this.forceReRender = forceReRender || (() => {});
@@ -31,7 +30,7 @@ export class FormStore {
 
     this.setFieldValues = this.setFieldValues.bind(this);
     this.getFieldValue = this.getFieldValue.bind(this);
-    this.getFieldValues = this.getFieldValues.bind(this);
+    this.getFieldsValue = this.getFieldsValue.bind(this);
     this.setFieldValue = this.setFieldValue.bind(this);
     this.getFieldInstance = this.getFieldInstance.bind(this);
     this.setInitialFieldValues = this.setInitialFieldValues.bind(this);
@@ -47,7 +46,7 @@ export class FormStore {
 
   async submit() {
     if (this.onSubmit) {
-      return this.onSubmit(this.getFieldValues());
+      return this.onSubmit(this.getFieldsValue());
     }
   }
 
@@ -72,7 +71,7 @@ export class FormStore {
       this.forceReRender();
 
       if (touched) {
-        this.onValuesChange && this.onValuesChange(this.getFieldValues());
+        this.onValuesChange && this.onValuesChange(this.getFieldsValue());
       }
     }
   }
@@ -81,7 +80,7 @@ export class FormStore {
     return this.fields[name] && this.fields[name].value;
   }
 
-  getFieldValues(): CubeFormData {
+  getFieldsValue(): CubeFormData {
     const data: CubeFormData = {};
 
     return Object.values(this.fields).reduce((map, field) => {
@@ -105,7 +104,7 @@ export class FormStore {
     this.forceReRender();
 
     if (touched) {
-      this.onValuesChange && this.onValuesChange(this.getFieldValues());
+      this.onValuesChange && this.onValuesChange(this.getFieldsValue());
     }
   }
 
@@ -165,7 +164,7 @@ export class FormStore {
 
     if (!field) return true;
 
-    return !field.invalid;
+    return !field.errors.length;
   }
 
   isFieldInvalid(name: string): boolean {
@@ -173,7 +172,7 @@ export class FormStore {
 
     if (!field) return false;
 
-    return !!field.invalid;
+    return !!field.errors.length;
   }
 
   isFieldTouched(name: string): boolean {

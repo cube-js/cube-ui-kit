@@ -38,6 +38,7 @@ export const Avatar = forwardRef(
         {...filterBaseProps(props, { eventProps: true })}
         styles={styles}
         ref={ref}
+        data-theme="special"
       >
         {icon}
         {children}

@@ -90,5 +90,4 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
  * AlertDialogs are a specific type of Dialog. They display important information that users need to acknowledge.
  */
 let _AlertDialog = forwardRef(AlertDialog);
-_AlertDialog.displayName = 'AlertDialog';
 export { _AlertDialog as AlertDialog };

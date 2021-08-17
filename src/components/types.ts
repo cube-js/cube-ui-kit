@@ -99,6 +99,9 @@ export interface AllBaseProps
    * element it allows for an explicit relationship between the elements that represent values
    * which are used in the output. */
   htmlFor?: AllHTMLAttributes<HTMLLabelElement>['htmlFor'];
+  autoComplete?: AllHTMLAttributes<HTMLInputElement>['autoComplete'];
+  autoCapitalize?: AllHTMLAttributes<HTMLInputElement>['autoCapitalize'];
+  autoCorrect?: AllHTMLAttributes<HTMLInputElement>['autoCorrect'];
   /** Form event handler */
   onSubmit?: FormEventHandler;
   /** Form attribute to disable built-in validation */

@@ -30,6 +30,7 @@ export { GridProvider } from './components/GridProvider';
 export { Content } from './components/Content';
 export { Header } from './components/Header';
 export { Footer } from './components/Footer';
+export { FieldWrapper } from './components/FieldWrapper';
 
 // atoms
 export { LoadingAnimation } from './atoms/LoadingAnimation/LoadingAnimation';

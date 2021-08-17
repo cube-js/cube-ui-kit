@@ -26,5 +26,4 @@ function TextInput(props: CubeTextInputBaseProps, ref) {
  * communicate the entry requirements.
  */
 const _TextInput = forwardRef(TextInput);
-_TextInput.displayName = 'TextInput';
 export { _TextInput as TextInput };

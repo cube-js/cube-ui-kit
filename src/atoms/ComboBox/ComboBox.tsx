@@ -4,9 +4,9 @@ import {
   WarningOutlined,
 } from '@ant-design/icons';
 import { mergeProps } from '@react-aria/utils';
-import { cloneElement, forwardRef, useState } from 'react';
+import { cloneElement, forwardRef, RefObject, useState } from 'react';
 import { useComboBoxState } from '@react-stately/combobox';
-import { AriaComboBoxProps, useComboBox } from '@react-aria/combobox';
+import { useComboBox } from '@react-aria/combobox';
 import { useButton } from '@react-aria/button';
 import { useFormProps } from '../Form/Form';
 import { useHover } from '@react-aria/interactions';
@@ -28,7 +28,13 @@ import { DEFAULT_INPUT_STYLES } from '../TextInput/TextInputBase';
 import { useOverlayPosition } from '@react-aria/overlays';
 import { OverlayWrapper } from '../../components/OverlayWrapper';
 import { NuStyles } from '../../styles/types';
-import { DOMRef } from '@react-types/shared';
+import {
+  CollectionBase,
+  DOMRef,
+  KeyboardDelegate,
+  LoadingState,
+} from '@react-types/shared';
+import { ComboBoxProps } from '@react-types/combobox';
 
 const CaretDownIcon = () => (
   <svg
@@ -73,8 +79,19 @@ const TRIGGER_STYLES: NuStyles = {
 
 export interface CubeComboBoxProps<T>
   extends CubeSelectProps,
-    AriaComboBoxProps<T> {
+    ComboBoxProps<T>,
+    CollectionBase<T> {
   multiLine?: boolean;
+  autoComplete?: string;
+  inputRef?: RefObject<HTMLInputElement | HTMLTextAreaElement>;
+  /** The ref for the list box popover. */
+  popoverRef?: RefObject<HTMLDivElement>;
+  /** The ref for the list box. */
+  listBoxRef?: RefObject<HTMLElement>;
+  /** An optional keyboard delegate implementation, to override the default. */
+  keyboardDelegate?: KeyboardDelegate;
+  loadingState?: LoadingState;
+  filter?: (val: any, str: string) => boolean;
 }
 
 function ComboBox<T extends object>(
@@ -113,15 +130,24 @@ function ComboBox<T extends object>(
     overlayStyles,
     hideTrigger,
     message,
+    autoComplete,
     direction = 'bottom',
     shouldFlip = true,
     requiredMark = true,
+    menuTrigger = 'input',
+    loadingState,
+    filter,
     ...otherProps
   } = props;
+  let isAsync = loadingState != null;
   let { contains } = useFilter({ sensitivity: 'base' });
   let [suffixWidth, setSuffixWidth] = useState(0);
   let [prefixWidth, setPrefixWidth] = useState(0);
-  let state = useComboBoxState({ ...props, defaultFilter: contains });
+  let state = useComboBoxState({
+    ...props,
+    defaultFilter: filter || contains,
+    allowsEmptyCollection: isAsync,
+  });
 
   const styles = extractStyles(otherProps, OUTER_STYLES, {
     ...COMBOBOX_STYLES,
@@ -158,7 +184,7 @@ function ComboBox<T extends object>(
       buttonRef: triggerRef,
       listBoxRef,
       popoverRef,
-      menuTrigger: 'input',
+      menuTrigger,
     },
     state,
   );
@@ -226,6 +252,7 @@ function ComboBox<T extends object>(
         as="input"
         {...mergeProps(inputProps, hoverProps, focusProps)}
         ref={inputRef}
+        autoComplete={autoComplete}
         styles={inputStyles}
         {...modAttrs({
           invalid: isInvalid,
@@ -315,7 +342,7 @@ function ComboBox<T extends object>(
 }
 
 const _ComboBox = Object.assign(forwardRef(ComboBox), {
-  displayName: 'ComboBox',
+  cubeInputType: 'ComboBox',
   Item,
 });
 export { _ComboBox as ComboBox };

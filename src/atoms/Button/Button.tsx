@@ -1,4 +1,4 @@
-import { forwardRef, useState, useEffect } from 'react';
+import { forwardRef } from 'react';
 import { Action, CubeActionProps } from '../../components/Action';
 import { Space } from '../../components/Space';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -6,6 +6,7 @@ import { propDeprecationWarning } from '../../utils/warnings';
 import { useContextStyles } from '../../providers/Styles';
 import { FocusableRef } from '@react-types/shared';
 import { NuStyles } from '../../styles/types';
+import { Block } from '../../components/Block';
 
 export interface CubeButtonProps extends CubeActionProps {
   ghost?: boolean;
@@ -42,7 +43,15 @@ export function provideStyles({
         }
       : {}),
     ...(ghost ? { fill: '#clear' } : null),
-    ...((isLoading || icon) && !children ? { padding: '(1.25x - 1px)' } : null),
+    ...((isLoading || icon) && !children
+      ? {
+          padding: '0',
+          width: '(2.5x + 1lh)',
+          height: '(2.5x + 1lh)',
+          display: 'grid',
+          placeItems: 'center',
+        }
+      : null),
   };
 }
 
@@ -138,6 +147,7 @@ const STYLES_BY_TYPE: { [key in keyof CubeButtonProps['type']]: NuStyles } = {
     },
     textAlign: 'left',
     padding: '(1x - 1px) (1.5x - 1px)',
+    height: 'min (2x + 1lh)',
     cursor: 'default',
   },
   tab: {
@@ -246,9 +256,6 @@ export const Button = forwardRef(
     const isDisabled = props.isDisabled;
     const isLoading = props.isLoading;
     const isSelected = props.isSelected;
-    const [showLoadingIcon, setShowLoadingIcon] = useState(isLoading || false);
-    const [pendingLoading, setPendingLoading] = useState(false);
-    const [, setCurrentLoading] = useState(isLoading);
     const propsForStyles = {
       ...props,
       isLoading,
@@ -273,24 +280,6 @@ export const Button = forwardRef(
       styles.size = '1em 1em';
     }
 
-    useEffect(() => {
-      setCurrentLoading(isLoading);
-      if (isLoading) {
-        setShowLoadingIcon(true);
-        setTimeout(() => {
-          setCurrentLoading((currentLoading) => {
-            if (currentLoading) {
-              setPendingLoading(true);
-            }
-
-            return currentLoading;
-          });
-        });
-      } else {
-        setPendingLoading(false);
-      }
-    }, [isLoading]);
-
     return (
       <Action
         as={props.to ? 'a' : undefined}
@@ -300,26 +289,25 @@ export const Button = forwardRef(
         {...props}
         ref={ref}
         isDisabled={isLoading || isDisabled}
+        data-type={type}
+        data-theme={type && ['success', 'danger', 'primary'].includes(type) ? 'special' : undefined}
         data-is-loading={isLoading ? '' : undefined}
         data-is-selected={isSelected ? '' : undefined}
         styles={styles}
         skipWarnings={skipWarnings}
       >
-        {showLoadingIcon ? (
-          <LoadingOutlined
-            style={{
-              opacity: pendingLoading ? 1 : 0,
-              marginRight: children ? (pendingLoading ? 8 : -14) : 0,
-            }}
-          />
+        {isLoading ? (
+          <Block display="inline-block" margin={children ? '1x right' : undefined}>
+            <LoadingOutlined />
+          </Block>
         ) : null}
-        {icon ? (
+        {icon && !isLoading ? (
           <Space
             gap="1x"
             display="inline-flex"
             styles={{ verticalAlign: 'middle' }}
           >
-            {!showLoadingIcon && !isLoading ? icon : null}
+            {!isLoading ? icon : null}
             {children ? <div>{children}</div> : null}
           </Space>
         ) : (

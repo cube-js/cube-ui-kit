@@ -254,7 +254,7 @@ function Checkbox(props: CubeCheckboxProps, ref: FocusableRef) {
  * or to mark one individual item as selected.
  */
 let _Checkbox = Object.assign(forwardRef(Checkbox), {
-  displayName: 'Checkbox',
+  cubeInputType: 'Checkbox',
   Group: CheckboxGroup,
 });
 export { _Checkbox as Checkbox };

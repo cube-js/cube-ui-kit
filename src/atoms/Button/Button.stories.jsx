@@ -112,7 +112,7 @@ const Template = ({
     isDisabled={isDisabled}
     isLoading={isLoading}
     isSelected={isSelected}
-    icon={<DollarCircleOutlined />}
+    icon={icon ? <DollarCircleOutlined /> : undefined}
     onPress={() => console.log('Press')}
   >
     {label}

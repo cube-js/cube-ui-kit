@@ -44,32 +44,42 @@ function getDefaultValidateTrigger(type) {
   );
 }
 
-function getValueProps(type, value?) {
+function getValueProps(type, value?, onChange?) {
   type = type || '';
 
-  if (type === 'NumberInput') {
+  if (type === 'Number') {
     return {
       value: value != null ? value : null,
+      onChange: onChange,
     };
-  } else if (type.includes('Input') || type.includes('TextArea')) {
+  } else if (type === 'Text') {
     return {
       value:
         typeof value === 'string' || typeof value === 'number'
           ? String(value)
           : '',
+      onChange: onChange,
     };
-  } else if (type === 'Checkbox' || type === 'Switch') {
+  } else if (type === 'Checkbox') {
     return {
       isSelected: value != null ? value : false,
       isIndeterminate: false,
+      onChange: onChange,
     };
   } else if (type === 'CheckboxGroup') {
     return {
       value: value != null ? value : [],
+      onChange: onChange,
     };
-  } else if (type === 'ComboBox' || type === 'Select') {
+  } else if (type === 'ComboBox') {
+    return {
+      inputValue: value != null ? value : '',
+      onInputChange: onChange,
+    };
+  } else if (type === 'Select') {
     return {
       selectedKey: value != null ? value : null,
+      onSelectionChange: onChange,
     };
   }
 
@@ -79,6 +89,8 @@ function getValueProps(type, value?) {
 }
 
 export interface CubeFieldProps extends FieldBaseProps {
+  /** The type of the input. `Input`, `Checkbox`, RadioGroup`, `Select`, `ComboBox` etc... */
+  type?: string,
   /** The unique ID of the field */
   id?: string;
   /** The id prefix for the field to avoid collisions between forms */
@@ -98,15 +110,17 @@ interface CubeFullFieldProps extends CubeFieldProps {
 
 interface CubeReplaceFieldProps extends CubeFieldProps {
   isRequired?: boolean;
-  onChange: (any) => void;
-  onSelectionChange: (any) => void;
+  onChange?: (any) => void;
+  onSelectionChange?: (any) => void;
   onBlur: () => void;
+  onInputChange?: (any) => void;
 }
 
 export function Field(allProps: CubeFieldProps) {
   const props: CubeFullFieldProps = useFormProps(allProps);
 
   let {
+    type: inputType,
     id,
     idPrefix,
     children,
@@ -162,15 +176,15 @@ export function Field(allProps: CubeFieldProps) {
   let child = Children.only(children);
 
   // @ts-ignore
-  const typeName = child.type.render.displayName;
+  inputType = inputType || child.type.cubeInputType || 'Text';
 
-  const defaultValidateTrigger = getDefaultValidateTrigger(typeName);
+  const defaultValidateTrigger = getDefaultValidateTrigger(inputType);
 
   if (!field) {
     return cloneElement(
       child,
       mergeProps(child.props, {
-        ...getValueProps(typeName),
+        ...getValueProps(inputType),
         name,
         id: fieldId,
       }),
@@ -197,8 +211,6 @@ export function Field(allProps: CubeFieldProps) {
   const newProps: CubeReplaceFieldProps = {
     id: fieldId,
     name,
-    onChange: onChangeHandler,
-    onSelectionChange: onChangeHandler,
     onBlur() {
       if (validateTrigger === 'onBlur') {
         // We need timeout so the change event can be done.
@@ -235,7 +247,10 @@ export function Field(allProps: CubeFieldProps) {
     }
   }
 
-  Object.assign(newProps, getValueProps(typeName, field?.value));
+  Object.assign(
+    newProps,
+    getValueProps(inputType, field?.value, onChangeHandler),
+  );
 
   const { onChange, onSelectionChange, ...childProps } = child.props;
 
