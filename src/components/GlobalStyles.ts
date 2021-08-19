@@ -1,31 +1,6 @@
 import { createGlobalStyle } from 'styled-components';
 import VARIABLES from '../css-properties';
 
-const inputStyles = ` {
-    line-height: var(--input-line-height);
-    font-size: var(--input-font-size);
-    letter-spacing: var(--input-letter-spacing);
-    padding: 9px 12px;
-    border: var(--border-width) solid var(--border-color);
-
-    &:-webkit-autofill {
-      &,
-      &:hover,
-      &:focus {
-        caret-color: var(--purple-color);
-        -webkit-text-fill-color: var(--text-color);
-        box-shadow: 0 0 0 9999rem rgba(var(--purple-color-rgb), 0.1) inset,
-          0 0 0 9999rem var(--white-color) inset;
-        background-color: transparent;
-        font-family: inherit;
-        line-height: var(--input-line-height);
-        font-size: var(--input-font-size);
-        letter-spacing: var(--input-letter-spacing);
-      }
-    }
-  }
-`;
-
 const fontsProvider = ({ publicUrl = '' }) => `
   @font-face {
     font-family: 'Inter';
@@ -67,7 +42,7 @@ const fontsProvider = ({ publicUrl = '' }) => `
     font-style: normal;
     font-display: swap;
   }
-  
+
   @font-face {
     font-family: 'JetBrains Mono';
     font-style: normal;
@@ -76,7 +51,7 @@ const fontsProvider = ({ publicUrl = '' }) => `
     src: url(${publicUrl}/fonts/JetBrainsMono-Regular.woff2) format('woff2'),
       url(${publicUrl}/fonts/JetBrainsMono-Regular.woff) format('woff');
   }
-  
+
   @font-face {
     font-family: 'JetBrains Mono';
     font-style: normal;
@@ -84,228 +59,6 @@ const fontsProvider = ({ publicUrl = '' }) => `
     font-display: swap;
     src: url(${publicUrl}/fonts/JetBrainsMono-Bold.woff2) format('woff2'),
       url(${publicUrl}/fonts/JetBrainsMono-Bold.woff) format('woff');
-  }
-`;
-
-const LEGACY_CSS = `
-  .ant-form-item-label>label {
-    display: block;
-    font-weight: 500;
-  }
-
-  .ant-modal-content {
-    border-radius: 8px;
-  }
-  
-  .ant-modal-header {
-    border-radius: 8px 8px 0 0;
-    padding: 16px 24px;
-  }
-  
-  .ant-modal-body {
-    padding: 24px;
-  }
-  
-  .ant-modal-footer {
-    padding: 12px 24px;
-  }
-  
-  input.ant-input.ant-input.ant-input.ant-input, textarea.ant-input.ant-input.ant-input.ant-input ${inputStyles}
-  .ant-input-affix-wrapper.ant-input-affix-wrapper.ant-input-affix-wrapper {
-    border: var(--border-width) solid var(--border-color);
-    // all inputs with affix should have right padding
-    padding: 0 12px;
-    
-    & input ${inputStyles}
-    & input.ant-input {
-      padding: 9px 12px 9px 6px;
-      border-radius: 0 calc(var(--radius) - var(--border-width)) calc(var(--radius) - var(--border-width)) 0;
-    }
-  }
-  
-  .ant-input-password.ant-input-password.ant-input-password {
-    border: var(--border-width) solid var(--border-color);
-    
-    &:not(.ant-input-affix-wrapper) {
-      padding: 0 12px 0 0;
-      
-      & input.ant-input {
-        padding: 9px 6px 9px 12px;
-      }
-    }
-    
-    &.ant-input-affix-wrapper {
-      padding: 0 12px;
-      
-      & input.ant-input {
-        padding: 9px 6px 9px 0;
-      }
-    }
-    
-    & input ${inputStyles}
-    & input.ant-input {
-      border-radius: 0;
-    }
-  } 
-  .ant-input-affix-wrapper .ant-input.ant-input.ant-input.ant-input {
-    border: none;
-  } 
-  textarea.ant-input.ant-input.ant-input.ant-input { overflow: auto; }
-  
-  .ant-select {
-    overflow: hidden;
-    
-    && .ant-select-selector .ant-select-selection-placeholder {
-      line-height: 38px;
-    }
-    
-    &&.ant-select-single:not(.ant-select-customize-input) .ant-select-selector {
-      height: auto;
-    }
-    
-    &&&& .ant-select-selector {
-      height: 40px;
-      border: var(--border-width) solid var(--border-color);
-    }
-    
-    && .ant-select-selection-item::after {
-      display: none;
-    }
-    
-    && .ant-select-selector::after {
-      display: none;
-    }
-  
-    &&&&&:not(.ant-select-customize-input):not(.ant-select-show-search) .ant-select-selector {
-      border: var(--border-width) solid var(--border-color);
-      padding: 5px 12px;
-    }
-  
-    &&:not(.ant-select-customize-input)
-      .ant-select-selector
-      .ant-select-selection-search-input {
-      height: auto;
-      line-height: var(--input-line-height);
-      font-size: var(--input-font-size);
-      letter-spacing: var(--input-letter-spacing);
-      padding: 0;
-    }
-    
-    &&.ant-select-auto-complete .ant-select-selection-search {
-      padding: 8px 0;
-    }
-  }
-
-  .ant-select.ant-select-single {
-    && .ant-select-selection-item {
-      line-height: var(--input-line-height);
-      font-size: var(--input-font-size);
-      letter-spacing: var(--input-letter-spacing);
-    }
-    
-    &&.ant-select-show-search {
-      & .ant-select-selection-item {
-        padding: 8px 0;
-      }
-      
-      & .ant-select-selection-search {
-        padding: 8px 0;
-      }
-    }
-    
-    &&:not(.ant-select-show-search) .ant-select-selection-item {
-      padding: 3px 0;
-    }
-  }
-  
-  .ant-btn {
-    .ant-btn-group &&& {
-      height: 38px;
-    }
-    
-    &&& {
-      line-height: var(--line-height);
-      font-size: var(--font-size);
-      height: 40px;
-      box-shadow: none;
-      padding: 9px 16px;
-      
-      &:not(.ant-btn-primary):not(.ant-btn-dangerous):hover {
-        background-color: rgba(var(--purple-color-rgb), 0.05);
-        color: var(--purple-color);
-      }
-  
-      &.ant-btn-icon-only {
-        padding: 8px;
-        width: auto;
-      }
-    }
-  }
-  
-  .ant-table {
-    &&& {
-      table > thead > tr > th {
-        background: transparent;
-        font-size: var(--font-size);
-        line-height: var(--line-height);
-        font-weight: 400;
-        color: rgba(var(--dark-color-rgb), 0.5);
-      }
-  
-      .ant-table-tbody > tr.ant-table-row:hover > td {
-        background: rgba(var(--purple-color-rgb), 0.05);
-      }
-
-      .ant-table-tbody > tr.ant-table-row-selected > td {
-        background: rgba(var(--purple-color-rgb), 0.025);
-      }
-  
-      .ant-table-tbody > tr > td {
-        border-bottom: 1px solid rgba(var(--dark-color-rgb), 0.1);
-      }
-    }
-  }
-  
-  .ant-form-item {
-    && {
-      .ant-form-item-label-left > label {
-        line-height: 40px;
-      }
-  
-      .ant-form-item-explain-success > [role='alert'] {
-        color: var(--success-color);
-      }
-    }
-  }
-  
-  .ant-tabs {
-    .ant-tabs-tab-btn,
-    .ant-tabs-tab-remove {
-      font-weight: 500;
-    }
-  }
-  
-  .ant-breadcrumb {
-    && a:hover {
-      color: var(--purple-color);
-    }
-  }
-  
-  .ant-page-header-heading {
-    align-items: center;
-  }
-  
-  .ant-page-header-heading-sub-title {
-    color: var(--dark-65-color);
-  }
-  
-  .ant-page-header-back-button.ant-page-header-back-button {
-    font-size: 24px;
-    color: var(--dark-75-color);
-  }
-  
-  .ant-modal-title.ant-modal-title {
-    font-weight: 600;
   }
 `;
 
@@ -319,7 +72,7 @@ export const GlobalStyles = createGlobalStyle`
         .join('\n    ');
     }}
   }
-  
+
   html {
     --font: ${({ font }) =>
       font
@@ -328,7 +81,7 @@ export const GlobalStyles = createGlobalStyle`
       `${monospaceFont}, `
       || ''}Menlo, Monaco, Consolas, 'Courier New', monospace;
   }
-  
+
   body {
     background-color: white !important;
     font-family: var(--font);
@@ -342,7 +95,7 @@ export const GlobalStyles = createGlobalStyle`
     letter-spacing: var(--medium-letter-spacing);
     font-weight: 400;
   }
-  
+
   .cube-notification-container {
     min-width: 288px;
     max-width: 340px;
@@ -352,66 +105,66 @@ export const GlobalStyles = createGlobalStyle`
     right: 16px;
     z-index: 999999;
   }
-  
+
   .cube-notifications {
     display: grid;
     grid-auto-flow: row;
     grid-template-columns: 1fr;
   }
-  
+
   .cube-notification-enter {
     opacity: 0;
     max-height: 0px;
     margin-bottom: 0px;
     transform: translate(100%, 0);
   }
-  
+
   .cube-notification-enter-active {
     opacity: 1;
     max-height: 56px;
     margin-bottom: 8px;
     transform: translate(0, 0);
     transition: all 300ms ease-in;
-    
+
     & > * {
       margin-bottom: 0px;
-    } 
+    }
   }
-  
+
   .cube-notification-exit {
     opacity: 1;
     margin-bottom: 8px;
     max-height: 56px;
     transform: translate(0, 0);
   }
-  
+
   .cube-notification-exit-active {
     opacity: 0;
     max-height: 0px;
     margin-bottom: 0px;
     transform: translate(100%, 0);
     transition: all 300ms ease-in;
-    
+
     & > * {
       margin-bottom: 0px;
     }
   }
-  
+
   b {
     font-weight: 600;
   }
-  
+
   [type=reset], [type=submit], button, html [type=button] {
     -webkit-appearance: none;
   }
-  
+
   code {
     font-family: var(--monospace-font);
   }
-  
+
   ${({ fonts, publicUrl }) =>
     fonts === false ? '' : fontsProvider({ publicUrl })}
-  
+
   // Prism Code
   code[class*="language-"],
   pre[class*="language-"] {
@@ -428,70 +181,70 @@ export const GlobalStyles = createGlobalStyle`
     word-wrap: normal;
     border-radius: 4px;
     border: none;
-  
+
     -moz-tab-size: 4;
     -o-tab-size: 4;
     tab-size: 4;
-  
+
     -webkit-hyphens: none;
     -moz-hyphens: none;
     -ms-hyphens: none;
     hyphens: none;
   }
-  
+
   pre[class*="language-"]::-moz-selection, pre[class*="language-"] ::-moz-selection,
   code[class*="language-"]::-moz-selection, code[class*="language-"] ::-moz-selection {
     text-shadow: none;
     /*background: #b3d4fc;*/
   }
-  
+
   pre[class*="language-"]::selection, pre[class*="language-"] ::selection,
   code[class*="language-"]::selection, code[class*="language-"] ::selection {
     text-shadow: none;
     /*background: #b3d4fc;*/
   }
-  
+
   @media print {
     code[class*="language-"],
     pre[class*="language-"] {
       text-shadow: none;
     }
   }
-  
+
   /* Code blocks */
   pre[class*="language-"] {
     overflow: auto;
   }
-  
+
   :not(pre) > code[class*="language-"],
   pre[class*="language-"] {
     background: transparent;
   }
-  
+
   /* Inline code */
   :not(pre) > code[class*="language-"] {
     border-radius: .3em;
     white-space: normal;
   }
-  
+
   .token.comment,
   .token.prolog,
   .token.doctype,
   .token.cdata {
     color: var(--dark-04-color);
   }
-  
+
   .token.keyword,
   .token.tag,
   .token.operator,
   .token.punctuation {
     color: #993388;
   }
-  
+
   .namespace {
     opacity: .7;
   }
-  
+
   .token.property,
   .token.boolean,
   .token.constant,
@@ -499,12 +252,12 @@ export const GlobalStyles = createGlobalStyle`
   .token.deleted {
     color: var(--pink-color);
   }
-  
+
   .token.entity,
   .token.number {
     color: #30A666;
   }
-  
+
   .token.selector,
   .token.attr-name,
   .token.string,
@@ -513,46 +266,44 @@ export const GlobalStyles = createGlobalStyle`
   .token.inserted {
     color: var(--purple-text-color);
   }
-  
+
   .token.url,
   .language-css .token.string,
   .style .token.string {
     color: var(--dark-color);
   }
-  
+
   .token.atrule,
   .token.attr-value {
     color: var(--dark-color);
   }
-  
+
   .token.atrule,
   .token.keyword {
     font-weight: 500;
   }
-  
+
   .token.function,
   .token.class-name {
     color: var(--pink-color);
   }
-  
+
   .token.regex,
   .token.important,
   .token.variable {
     color: var(--pink-color);
   }
-  
+
   .token.important,
   .token.bold {
     font-weight: bold;
   }
-  
+
   .token.italic {
     font-style: italic;
   }
-  
+
   .token.entity {
     cursor: help;
   }
-  
-  ${({ legacy }) => (legacy ? LEGACY_CSS : '')}
 `;

@@ -3,7 +3,6 @@
     "module": "esnext",
     "lib": ["dom", "esnext"],
     "declaration": true,
-    "declarationDir": "dist",
     "noEmitOnError": false,
     "sourceMap": true,
     "allowJs": true,

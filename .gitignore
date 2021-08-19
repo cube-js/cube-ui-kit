@@ -12,3 +12,4 @@ graph.png
 stats.html
 .rollup.cache
 .eslintcache
+yarn-error.log

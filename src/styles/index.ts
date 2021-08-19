@@ -14,7 +14,7 @@ import { fontStyleStyle } from './fontStyle';
 import { marginStyle } from './margin';
 import { fontStyle } from './font';
 import { outlineStyle } from './outline';
-import { createStyle } from '../utils/render-styles';
+import { createStyle } from '../utils/renderStyles';
 import { transitionStyle } from './transition';
 import { groupRadiusAttr } from './groupRadius';
 import { boxShadowCombinator } from './boxShadow.combinator';

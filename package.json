@@ -1,9 +1,15 @@
 {
-  "name": "@cubejs-enterprise/uikit",
+  "name": "cube-ui-kit",
   "version": "0.1.0",
-  "description": "UIKit for Cube Cloud",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "description": "UIKit for Cube Projects",
+  "main": "dist/cjs/index.js",
+  "module": "dist/mjs/index.js",
+  "types": "dist/mjs/index.d.ts",
+  "exports": {
+    "require": "dist/cjs/index.js",
+    "import": "dist/mjs/index.js",
+    "types": "dist/mjs/index.d.ts"
+  },
   "scripts": {
     "start": "PARCEL_AUTOINSTALL=false parcel src/storybook.html",
     "build": "NODE_ENV=production rollup -c",
@@ -25,8 +31,6 @@
   "author": "Cube Dev Team",
   "devDependencies": {
     "@ant-design/icons": "^4.4.0",
-    "@babel/cli": "^7.12.8",
-    "@babel/plugin-proposal-private-property-in-object": "^7.14.5",
     "@open-wc/testing": "^2.5.32",
     "@react-aria/button": "^3.3.2",
     "@react-aria/checkbox": "^3.2.2",
@@ -89,13 +93,6 @@
     "@typescript-eslint/eslint-plugin": "^4.28.5",
     "@typescript-eslint/parser": "^4.28.5",
     "@web/test-runner": "^0.9.7",
-    "antd": "4.13.0",
-    "babel-eslint": "^10.1.0",
-    "babel-jest": "^26.6.3",
-    "babel-loader": "^8.2.1",
-    "babel-plugin-import": "^1.13.1",
-    "babel-plugin-transform-react-remove-prop-types": "^0.4.24",
-    "babel-preset-react-app": "^10.0.0",
     "chai": "^4.2.0",
     "chromatic": "^5.7.0",
     "clipboard-copy": "^4.0.1",
@@ -112,7 +109,6 @@
     "eslint-plugin-react-hooks": "^4.2.0",
     "jest": "^26.6.3",
     "less-loader": "^7.1.0",
-    "numl-utils": "0.0.9",
     "parcel-bundler": "^1.12.4",
     "prettier": "^2.0.5",
     "prismjs": "^1.23.0",
@@ -137,15 +133,9 @@
   },
   "size-limit": [
     {
-      "name": "Cube Cloud UI Kit Core",
+      "name": "Cube UI Kit",
       "path": [
-        "dist/index.js"
-      ]
-    },
-    {
-      "name": "AntD Styles",
-      "path": [
-        "dist/antd.js"
+        "dist/index.mjs"
       ]
     }
   ],
@@ -161,5 +151,6 @@
   },
   "dependencies": {
     "dom-helpers": "^5.2.1"
-  }
+  },
+  "private": true
 }

@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { ResponsiveContext } from '../providers/Responsive';
 import { pointsToZones } from '../utils/responsive';
 import { STYLE_HANDLER_MAP } from '../styles';
-import { renderStyles } from '../utils/render-styles';
+import { renderStyles } from '../utils/renderStyles';
 import { modAttrs } from '../utils/react';
 import { AllBaseProps } from './types';
 import { NuStyles } from '../styles/types';

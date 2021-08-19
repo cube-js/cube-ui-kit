@@ -9,19 +9,20 @@ import typescript from '@rollup/plugin-typescript';
 
 import pkg from './package.json';
 
-const VARIABLES = require('./less-variables');
-
-const LESS_VARIABLES = {};
-
-// Create LESS variable map.
-Object.keys(VARIABLES).forEach((key) => {
-  LESS_VARIABLES[`@${key}`] = VARIABLES[key];
-});
-
+const author = pkg.author;
+const moduleName = pkg.name;
+const banner = `
+  /**
+   * @license
+   * author: ${author}
+   * ${moduleName}.js v${pkg.version}
+   * Released under the ${pkg.license} license.
+   */
+`;
 const DEV = !!process.env.ROLLUP_WATCH;
 const ENV = DEV ? 'development' : 'production';
 const VERSION = `"${pkg.version}"`;
-const plugins = [
+const getPlugins = (type) => [
   visualizer(),
   postcss({
     minimize: true,
@@ -35,10 +36,10 @@ const plugins = [
     'process.env.NODE_ENV': JSON.stringify(ENV),
     'process.env.APP_VERSION': VERSION,
   }),
-  commonjs(),
   typescript({
-    tsconfig: 'tsconfig.json',
+    tsconfig: `tsconfig.${type}.json`,
   }),
+  commonjs(),
   localResolve({
     extensions: ['.jsx', '.js', '.tsx', '.ts'],
   }),
@@ -52,44 +53,27 @@ export default [
     output: [
       {
         name: 'Cube Cloud UIKit',
-        dir: 'dist',
+        dir: 'dist/mjs',
         format: 'es',
         sourcemap: true,
+        banner,
       },
     ],
     inlineDynamicImports: true,
-    plugins,
+    plugins: getPlugins('mjs'),
   },
   {
-    input: 'src/antd.js',
-    output: [{
-      name: 'Cube Cloud AntD',
-      dir: './dist/',
-      format: 'es',
-    }],
-    plugins: [
-      replace({
-        'process.env.NODE_ENV': JSON.stringify(ENV),
-        'process.env.APP_VERSION': VERSION,
-      }),
-      localResolve({
-        extensions: ['.jsx', '.js'],
-        preferBuiltins: false,
-      }),
-      commonjs(),
-      json(),
-      postcss({
-        minimize: true,
-        use: {
-          sass: null,
-          stylus: null,
-          less: {
-            javascriptEnabled: true,
-            modifyVars: LESS_VARIABLES,
-          }
-        },
-      }),
-      ENV === 'development' ? undefined : terser(),
-    ]
-  }
+    input: 'src/index.ts',
+    output: [
+      {
+        name: 'Cube Cloud UIKit',
+        dir: 'dist/cjs',
+        format: 'cjs',
+        sourcemap: true,
+        banner,
+      },
+    ],
+    inlineDynamicImports: true,
+    plugins: getPlugins('cjs'),
+  },
 ];

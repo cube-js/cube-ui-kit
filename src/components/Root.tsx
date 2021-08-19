@@ -16,7 +16,6 @@ const STYLES = [...BASE_STYLES, ...BLOCK_STYLES];
 export interface CubeRootProps extends BaseProps {
   tokens: { [key: string]: string };
   fonts: boolean;
-  legacyCSS: boolean;
   publicUrl: string;
   router: Function;
   font: string;
@@ -28,7 +27,6 @@ export const Root = forwardRef((allProps: CubeRootProps, ref) => {
     children,
     tokens,
     fonts,
-    legacyCSS,
     publicUrl,
     router,
     font,
@@ -47,7 +45,6 @@ export const Root = forwardRef((allProps: CubeRootProps, ref) => {
       <GlobalStyles
         tokens={tokens}
         publicUrl={publicUrl}
-        legacy={legacyCSS}
         fonts={fonts}
         font={font}
         monospaceFont={monospaceFont}
