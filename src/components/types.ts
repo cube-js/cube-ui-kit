@@ -19,7 +19,8 @@ import {
   TEXT_STYLES,
 } from '../styles/list';
 
-export interface BasePropsWithoutChildren extends Pick<AllHTMLAttributes<HTMLElement>, 'className' | 'role' | 'id'> {
+export interface BasePropsWithoutChildren
+  extends Pick<AllHTMLAttributes<HTMLElement>, 'className' | 'role' | 'id'> {
   /** QA ID for e2e testing **/
   qa?: string;
   /** QA value for e2e testing **/
@@ -49,7 +50,7 @@ export interface BasePropsWithoutChildren extends Pick<AllHTMLAttributes<HTMLEle
   /** The CSS style map */
   style?:
     | CSSProperties
-    | CSSProperties & { [key: string]: string | number | null };
+    | (CSSProperties & { [key: string]: string | number | null });
 }
 
 export interface BaseProps extends BasePropsWithoutChildren {
@@ -66,8 +67,9 @@ export interface BaseProps extends BasePropsWithoutChildren {
 }
 
 export interface AllBaseProps<K extends keyof HTMLElementTagNameMap = 'div'>
-  extends BaseProps, Omit<AllHTMLAttributes<HTMLElementTagNameMap[K]>, 'style'> {
-  as?: K,
+  extends BaseProps,
+    Omit<AllHTMLAttributes<HTMLElementTagNameMap[K]>, 'style'> {
+  as?: K;
 }
 
 export type BaseStyleProps = Pick<NuStyles, typeof BASE_STYLES[number]>;

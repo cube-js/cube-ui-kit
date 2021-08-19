@@ -20,7 +20,10 @@ const DEFAULT_STYLES: NuStyles = {
 
 const BaseElement = styled.div(({ css }) => css);
 
-const Base = function Base<K extends keyof HTMLElementTagNameMap>(allProps: AllBaseProps<K>, ref) {
+const Base = function Base<K extends keyof HTMLElementTagNameMap>(
+  allProps: AllBaseProps<K>,
+  ref,
+) {
   let {
     as,
     styles: originalStyles,

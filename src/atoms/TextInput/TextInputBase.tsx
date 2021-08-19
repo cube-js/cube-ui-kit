@@ -42,10 +42,7 @@ const WRAPPER_STYLES: NuStyles = {
   position: 'relative',
 };
 
-const INPUT_STYLE_PROPS_LIST = [
-  ...BLOCK_STYLES,
-  'resize',
-]
+const INPUT_STYLE_PROPS_LIST = [...BLOCK_STYLES, 'resize'];
 
 export const DEFAULT_INPUT_STYLES: NuStyles = {
   display: 'block',
@@ -120,7 +117,7 @@ export interface CubeTextInputBaseProps
   /** The number of rows for the input. Only applies to textarea. */
   rows?: number;
   /** The resize CSS property sets whether an element is resizable, and if so, in which directions. */
-  resize?: NuStyles['resize'],
+  resize?: NuStyles['resize'];
 }
 
 function TextInputBase(props: CubeTextInputBaseProps, ref) {

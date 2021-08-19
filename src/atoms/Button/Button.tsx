@@ -290,14 +290,21 @@ export const Button = forwardRef(
         ref={ref}
         isDisabled={isLoading || isDisabled}
         data-type={type}
-        data-theme={type && ['success', 'danger', 'primary'].includes(type) ? 'special' : undefined}
+        data-theme={
+          type && ['success', 'danger', 'primary'].includes(type)
+            ? 'special'
+            : undefined
+        }
         data-is-loading={isLoading ? '' : undefined}
         data-is-selected={isSelected ? '' : undefined}
         styles={styles}
         skipWarnings={skipWarnings}
       >
         {isLoading ? (
-          <Block display="inline-block" margin={children ? '1x right' : undefined}>
+          <Block
+            display="inline-block"
+            margin={children ? '1x right' : undefined}
+          >
             <LoadingOutlined />
           </Block>
         ) : null}

@@ -91,7 +91,7 @@ function getValueProps(type, value?, onChange?) {
 
 export interface CubeFieldProps extends FieldBaseProps {
   /** The type of the input. `Input`, `Checkbox`, RadioGroup`, `Select`, `ComboBox` etc... */
-  type?: string,
+  type?: string;
   /** The unique ID of the field */
   id?: string;
   /** The id prefix for the field to avoid collisions between forms */

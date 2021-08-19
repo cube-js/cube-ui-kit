@@ -9,7 +9,12 @@ import { propDeprecationWarning } from '../utils/warnings';
 import { extractStyles } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
 import { UIKitContext } from '../provider';
-import { BaseProps, ContainerStyleProps, TagNameProps, TextStyleProps } from './types';
+import {
+  BaseProps,
+  ContainerStyleProps,
+  TagNameProps,
+  TextStyleProps,
+} from './types';
 import { AriaButtonProps } from '@react-types/button';
 import { NuStyles } from '../styles/types';
 import { useFocusableRef } from '@react-spectrum/utils';
