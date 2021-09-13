@@ -11,6 +11,7 @@ const STEP_BUTTON_STYLES: NuStyles = {
   },
   size: 'sm',
   lineHeight: '1em',
+  height: 'auto',
 };
 
 function StepButton(props) {

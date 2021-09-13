@@ -51,7 +51,7 @@ const BUTTON_STYLES: NuStyles = {
     'disabled & checked': '#dark.40',
     disabled: '#border',
   },
-  padding: '(1x - 1px) (1.5x - 1px)',
+  padding: '(1x - 1bw) (1.5x - 1bw)',
   cursor: 'pointer',
   opacity: {
     '': 1,
@@ -83,8 +83,8 @@ const INPUT_STYLES: NuStyles = {
     invalid: '#danger-text.50',
     disabled: '#dark.12',
   },
-  width: '(2x - 2bw)',
-  height: '(2x - 2bw)',
+  width: '2x',
+  height: '2x',
   outline: {
     '': '#purple-03.0',
     focused: '#purple-03',
