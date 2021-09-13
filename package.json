@@ -1,5 +1,5 @@
 {
-  "name": "cube-ui-kit",
+  "name": "@cube-dev/ui-kit",
   "version": "0.1.0",
   "description": "UIKit for Cube Projects",
   "main": "dist/cjs/index.js",
@@ -10,6 +10,7 @@
     "import": "dist/mjs/index.js",
     "types": "dist/mjs/index.d.ts"
   },
+  "files": ["dist/*"],
   "scripts": {
     "start": "PARCEL_AUTOINSTALL=false parcel src/storybook.html",
     "build": "NODE_ENV=production rollup -c",
@@ -41,7 +42,7 @@
     "@react-aria/interactions": "^3.5.0",
     "@react-aria/listbox": "^3.3.0",
     "@react-aria/numberfield": "^3.0.0",
-    "@react-aria/overlays": "^3.7.1",
+    "@react-aria/overlays": "^3.7.2",
     "@react-aria/radio": "^3.1.4",
     "@react-aria/searchfield": "^3.1.3",
     "@react-aria/select": "^3.3.2",
@@ -77,7 +78,7 @@
     "@rollup/plugin-babel": "^5.2.1",
     "@rollup/plugin-commonjs": "^15.1.0",
     "@rollup/plugin-json": "^4.1.0",
-    "@rollup/plugin-node-resolve": "^10.0.0",
+    "@rollup/plugin-node-resolve": "^13.0.4",
     "@rollup/plugin-typescript": "^8.2.3",
     "@rollup/plugin-url": "^5.0.1",
     "@size-limit/preset-big-lib": "^4.11.0",
@@ -136,7 +137,7 @@
     {
       "name": "Cube UI Kit",
       "path": [
-        "dist/index.mjs"
+        "dist/mjs/index.js"
       ]
     }
   ],
@@ -153,5 +154,5 @@
   "dependencies": {
     "dom-helpers": "^5.2.1"
   },
-  "private": true
+  "license": "MIT"
 }

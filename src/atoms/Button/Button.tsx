@@ -219,6 +219,7 @@ const DEFAULT_STYLES = {
   },
   cursor: 'pointer',
   fontWeight: 500,
+  size: 'md',
 };
 
 const CSS = `

@@ -119,8 +119,9 @@ const DEFAULT_STYLES: NuStyles = {
   },
   margin: 0,
   fontFamily: 'var(--font)',
-  size: 'md',
-  border: '0',
+  fontWeight: 'inherit',
+  border: 0,
+  padding: 0,
   outline: {
     '': '#purple-03.0',
     focused: '#purple-03',

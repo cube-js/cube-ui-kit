@@ -2,6 +2,7 @@ import { terser } from 'rollup-plugin-terser';
 import visualizer from 'rollup-plugin-visualizer';
 import replace from 'rollup-plugin-replace';
 import localResolve from 'rollup-plugin-local-resolve';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import postcss from 'rollup-plugin-postcss';
@@ -15,7 +16,7 @@ const banner = `
   /**
    * @license
    * author: ${author}
-   * ${moduleName}.js v${pkg.version}
+   * ${moduleName} v${pkg.version}
    * Released under the ${pkg.license} license.
    */
 `;
@@ -40,12 +41,14 @@ const getPlugins = (type) => [
     tsconfig: `tsconfig.${type}.json`,
   }),
   commonjs(),
+  nodeResolve(),
   localResolve({
     extensions: ['.jsx', '.js', '.tsx', '.ts'],
   }),
   json(),
   ENV === 'development' ? undefined : terser(),
 ];
+const external = ['react', 'react-dom', 'styled-components'];
 
 export default [
   {
@@ -59,6 +62,7 @@ export default [
         banner,
       },
     ],
+    external,
     inlineDynamicImports: true,
     plugins: getPlugins('mjs'),
   },
@@ -73,6 +77,7 @@ export default [
         banner,
       },
     ],
+    external,
     inlineDynamicImports: true,
     plugins: getPlugins('cjs'),
   },

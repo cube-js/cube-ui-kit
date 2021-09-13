@@ -1,4 +1,3 @@
-// import { TextInput, Select } from '../../../dist/index';
 import {
   TextInput,
   Select,
@@ -109,7 +108,10 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
             <Item key="three">Three</Item>
           </ComboBox>
         </Field>
-        <Field name="checkboxGroup" label="Checkbox group">
+        <Field name="checkboxGroup" label="Checkbox group" rules={[{
+          required: true,
+          message: 'Specify at least a single option',
+        }]}>
           <CheckboxGroup orientation="horizontal">
             <Checkbox value="one">One</Checkbox>
             <Checkbox value="two">Two</Checkbox>
@@ -139,7 +141,7 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
           name="number"
           rules={[{ required: true, message: 'This field is required' }]}
         >
-          <NumberInput label="Number field" />
+          <NumberInput label="Number field" minValue={-1} />
         </Field>
         <Submit>Submit</Submit>
       </Form>
