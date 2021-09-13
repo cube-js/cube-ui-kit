@@ -1,6 +1,14 @@
 import { createGlobalStyle } from 'styled-components';
 import VARIABLES from '../css-properties';
 
+interface GlobalStylesProps {
+  tokens?: { [key: string]: string };
+  fonts?: boolean;
+  publicUrl?: string;
+  font?: string;
+  monospaceFont?: string;
+}
+
 const fontsProvider = ({ publicUrl = '' }) => `
   @font-face {
     font-family: 'Inter';
@@ -64,7 +72,7 @@ const fontsProvider = ({ publicUrl = '' }) => `
 
 export const GlobalStyles = createGlobalStyle`
   body {
-    ${({ tokens }) => {
+    ${({ tokens }: GlobalStylesProps) => {
       return Object.entries({ ...VARIABLES, ...tokens })
         .map(([key, value]) => {
           return `--${key}: ${value};`;
@@ -74,7 +82,7 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   html {
-    --font: ${({ font }) =>
+    --font: ${({ font }: GlobalStylesProps) =>
       font
       || 'Inter'}, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
     --monospace-font: ${({ monospaceFont }) =>
@@ -162,7 +170,7 @@ export const GlobalStyles = createGlobalStyle`
     font-family: var(--monospace-font);
   }
 
-  ${({ fonts, publicUrl }) =>
+  ${({ fonts, publicUrl }: GlobalStylesProps) =>
     fonts === false ? '' : fontsProvider({ publicUrl })}
 
   // Prism Code

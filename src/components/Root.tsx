@@ -14,12 +14,12 @@ const DEFAULT_STYLES = {
 const STYLES = [...BASE_STYLES, ...BLOCK_STYLES];
 
 export interface CubeRootProps extends BaseProps {
-  tokens: { [key: string]: string };
-  fonts: boolean;
-  publicUrl: string;
-  router: Function;
-  font: string;
-  monospaceFont: string;
+  tokens?: { [key: string]: string };
+  fonts?: boolean;
+  publicUrl?: string;
+  router?: Function;
+  font?: string;
+  monospaceFont?: string;
 }
 
 export const Root = forwardRef((allProps: CubeRootProps, ref) => {
