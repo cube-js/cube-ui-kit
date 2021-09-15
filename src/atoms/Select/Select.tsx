@@ -146,7 +146,7 @@ const OPTION_STYLES: NuStyles = {
   fontWeight: 500,
 } as const;
 
-export interface CubeSelectProps
+export interface CubeSelectBaseProps
   extends BasePropsWithoutChildren,
     OuterStyleProps,
     FormFieldProps,
@@ -168,13 +168,13 @@ export interface CubeSelectProps
   inputProps?: Props;
 }
 
-export interface SelectProps<T> extends CubeSelectProps, AriaSelectProps<T> {
+export interface CubeSelectProps<T> extends CubeSelectBaseProps, AriaSelectProps<T> {
   popoverRef?: RefObject<HTMLInputElement>;
   listBoxRef?: RefObject<HTMLInputElement>;
 }
 
 function Select<T extends object>(
-  props: SelectProps<T>,
+  props: CubeSelectProps<T>,
   ref: DOMRef<HTMLDivElement>,
 ) {
   props = useProviderProps(props);

@@ -8,7 +8,7 @@ import { cloneElement, forwardRef, RefObject, useState } from 'react';
 import { useComboBoxState } from '@react-stately/combobox';
 import { useComboBox } from '@react-aria/combobox';
 import { useButton } from '@react-aria/button';
-import { useFormProps } from '../Form/Form';
+import { useFormProps } from '../Form';
 import { useHover } from '@react-aria/interactions';
 import { useProviderProps } from '../../provider';
 import { useFilter } from '@react-aria/i18n';
@@ -19,7 +19,7 @@ import { useFocus } from '../../utils/interactions';
 import { useContextStyles } from '../../providers/Styles';
 import { modAttrs, useCombinedRefs } from '../../utils/react';
 import { FieldWrapper } from '../../components/FieldWrapper';
-import { CubeSelectProps, ListBoxPopup } from '../Select/Select';
+import { CubeSelectBaseProps, ListBoxPopup } from '../Select/Select';
 import { Prefix } from '../../components/Prefix';
 import { Suffix } from '../../components/Suffix';
 import { Space } from '../../components/Space';
@@ -78,7 +78,7 @@ const TRIGGER_STYLES: NuStyles = {
 } as const;
 
 export interface CubeComboBoxProps<T>
-  extends CubeSelectProps,
+  extends CubeSelectBaseProps,
     ComboBoxProps<T>,
     CollectionBase<T> {
   multiLine?: boolean;

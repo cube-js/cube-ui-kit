@@ -1,7 +1,7 @@
-import { Dialog } from './Dialog';
-import { DialogTrigger } from './DialogTrigger';
+import { CubeDialogProps, Dialog } from './Dialog';
+import { CubeDialogTriggerProps, DialogTrigger } from './DialogTrigger';
 import { api } from './api';
-import { DialogContainer } from './DialogContainer';
+import { CubeDialogContainerProps, DialogContainer } from './DialogContainer';
 
 const _Dialog = Object.assign(Dialog, {
   confirm: (options) => {
@@ -12,4 +12,14 @@ const _Dialog = Object.assign(Dialog, {
   },
 });
 
-export { _Dialog as Dialog, DialogContainer, DialogTrigger };
+export {
+  _Dialog as Dialog,
+  DialogContainer,
+  DialogTrigger,
+};
+
+export type {
+  CubeDialogProps,
+  CubeDialogTriggerProps,
+  CubeDialogContainerProps,
+}

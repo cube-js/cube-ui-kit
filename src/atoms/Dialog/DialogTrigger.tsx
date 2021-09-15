@@ -9,7 +9,7 @@ import { NuStyles } from '../../styles/types';
 
 export type CubeDialogClose = (close: () => void) => ReactElement;
 
-export interface DialogTriggerProps {
+export interface CubeDialogTriggerProps {
   /** The Dialog and its trigger element. See the DialogTrigger [Content section](#content) for more information on what to provide as children. */
   children: [ReactElement, CubeDialogClose | ReactElement];
   /**
