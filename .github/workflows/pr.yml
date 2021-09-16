@@ -13,4 +13,4 @@ jobs:
           node-version: 12
       - run: yarn
       - run: yarn build
-      - run: yarn chromatic
+      - run: yarn chromatic:ci
