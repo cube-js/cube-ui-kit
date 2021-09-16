@@ -277,7 +277,7 @@ export const Button = forwardRef(
       ...styles,
     };
 
-    if (isLoading && !children && styles) {
+    if (isLoading && !children) {
       styles.size = '1em 1em';
     }
 
