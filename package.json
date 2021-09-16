@@ -28,7 +28,6 @@
     "storybook": "start-storybook -s ./public -p 6006",
     "build-storybook": "build-storybook",
     "chromatic": "npx chromatic --project-token 73bc89753bad",
-    "chromatic:ci": "npx chromatic --project-token 73bc89753bad --exit-zero-on-changes",
     "size": "size-limit"
   },
   "keywords": [
