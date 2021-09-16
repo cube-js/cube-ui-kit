@@ -27,7 +27,7 @@
     "compile": "babel src -d dist --copy-files",
     "storybook": "start-storybook -s ./public -p 6006",
     "build-storybook": "build-storybook",
-    "chromatic": "npx chromatic --project-token f9b9ecbecb4e",
+    "chromatic": "npx chromatic --project-token 73bc89753bad",
     "size": "size-limit"
   },
   "keywords": [

@@ -180,7 +180,7 @@ const STYLES_BY_SIZE = {
     padding: '(.75x - 1px) (1.5x - 1px)',
   },
   default: {
-    padding: '(1.25x - 1px) (1.75x - 1px)',
+    padding: '(1.25x - 1px) (2x - 1px)',
   },
 };
 
