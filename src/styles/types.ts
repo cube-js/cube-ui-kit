@@ -157,9 +157,7 @@ export interface StylesInterface
 }
 
 export type Styles = {
-  [key in keyof StylesInterface]?: ResponsiveStyleValue<
-    StylesInterface[key]
-  >;
+  [key in keyof StylesInterface]?: ResponsiveStyleValue<StylesInterface[key]>;
 } & {
   [key: string]: ResponsiveStyleValue<string | number | boolean | undefined>;
 };

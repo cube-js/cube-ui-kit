@@ -71,8 +71,7 @@ export default {
     },
     showTooltip: {
       defaultValue: false,
-      description:
-        'Whether to show the tooltip with the full content.',
+      description: 'Whether to show the tooltip with the full content.',
       control: {
         type: 'boolean',
       },
@@ -83,8 +82,7 @@ export default {
     },
     showOverlay: {
       defaultValue: false,
-      description:
-        'Whether the snippet uses overlay on the edge.',
+      description: 'Whether the snippet uses overlay on the edge.',
       control: {
         type: 'boolean',
       },
@@ -95,8 +93,7 @@ export default {
     },
     showScroll: {
       defaultValue: true,
-      description:
-        'Whether the snippet is scrollable.',
+      description: 'Whether the snippet is scrollable.',
       control: {
         type: 'boolean',
       },

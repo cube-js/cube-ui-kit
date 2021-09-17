@@ -124,7 +124,7 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
   styles = {
     size: 'md',
     ...styles,
-  }
+  };
 
   const Snippet = (
     <Card
@@ -185,9 +185,7 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
         <Action styles={{ display: 'block', cursor: 'default', width: '100%' }}>
           {Snippet}
         </Action>
-        <Tooltip>
-          {formattedCode}
-        </Tooltip>
+        <Tooltip>{formattedCode}</Tooltip>
       </TooltipTrigger>
     );
   }

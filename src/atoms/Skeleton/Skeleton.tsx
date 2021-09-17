@@ -3,8 +3,6 @@ import { Flow } from '../../components/Flow';
 import { Space } from '../../components/Space';
 import { CubeGridProps, Grid } from '../../components/Grid';
 import { BaseProps, ContainerStyleProps } from '../../components/types';
-import { ReactNode } from 'react';
-import { Styles } from '../../styles/types';
 
 const LAYOUT_MAP = {
   page({ lines, children, ...props }) {
@@ -151,7 +149,11 @@ const LAYOUT_MAP = {
   },
 } as const;
 
-export interface CubeSkeletonProps extends CubeGridProps, CubePlaceholderProps, BaseProps, ContainerStyleProps {
+export interface CubeSkeletonProps
+  extends CubeGridProps,
+    CubePlaceholderProps,
+    BaseProps,
+    ContainerStyleProps {
   /** The type of the layout */
   layout?: keyof typeof LAYOUT_MAP;
   /** The number of columns for table layout */

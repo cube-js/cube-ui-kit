@@ -41,9 +41,7 @@ export interface CubeTitleProps
   /** The level of the heading **/
   level?: 1 | 2 | 3 | 4 | 5 | 6;
   /** The size style for the heading **/
-  size?: ResponsiveStyleValue<
-    'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | string
-  >;
+  size?: ResponsiveStyleValue<'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | string>;
 }
 
 function getFontWeight(level, size) {

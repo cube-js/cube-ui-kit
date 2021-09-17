@@ -169,8 +169,7 @@ export interface CubeSelectBaseProps<T>
   inputProps?: Props;
 }
 
-export interface CubeSelectProps<T>
-  extends CubeSelectBaseProps<T> {
+export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
   popoverRef?: RefObject<HTMLInputElement>;
   /** The ref for the list box. */
   listBoxRef?: RefObject<HTMLElement>;

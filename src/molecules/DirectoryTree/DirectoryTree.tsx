@@ -118,7 +118,7 @@ function getItemStyles({ isSelected, mode, indent }): Styles {
   };
 }
 
-export interface CubeDirectoryTreeItemProps{
+export interface CubeDirectoryTreeItemProps {
   children?: ReactNode;
   mode?: keyof typeof MODE_BG;
   indent?: number;
