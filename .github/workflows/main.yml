@@ -13,6 +13,8 @@ jobs:
           node-version: 12
       - run: yarn
       - run: yarn build
+      - run: yarn build-storybook
+      - run: npx netlify-cli deploy --dir=./storybook-static -p
       - id: publish
         uses: JS-DevTools/npm-publish@v1
         with:

@@ -16,7 +16,7 @@ import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../../components/Label';
 import { LoadingOutlined } from '@ant-design/icons';
 import { useFormProps } from '../Form/Form';
 import { FieldWrapper } from '../../components/FieldWrapper';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 import {
   BaseProps,
   BlockStyleProps,
@@ -25,7 +25,7 @@ import {
 import { AriaSwitchProps } from '@react-types/switch';
 import { FormFieldProps } from '../../shared';
 
-const STYLES: NuStyles = {
+const STYLES: Styles = {
   position: 'relative',
   display: 'flex',
   placeItems: 'center start',
@@ -35,7 +35,7 @@ const STYLES: NuStyles = {
   width: 'min-content',
 };
 
-const INPUT_STYLES: NuStyles = {
+const INPUT_STYLES: Styles = {
   position: 'relative',
   display: 'grid',
   placeItems: 'center',
@@ -56,7 +56,7 @@ const INPUT_STYLES: NuStyles = {
   transition: 'theme',
 };
 
-const THUMB_STYLES: NuStyles = {
+const THUMB_STYLES: Styles = {
   position: 'absolute',
   width: '2.5x',
   height: '2.5x',
@@ -77,8 +77,8 @@ export interface CubeSwitchProps
     BlockStyleProps,
     FormFieldProps,
     AriaSwitchProps {
-  thumbStyles?: NuStyles;
-  inputStyles?: NuStyles;
+  thumbStyles?: Styles;
+  inputStyles?: Styles;
   isLoading?: boolean;
 }
 

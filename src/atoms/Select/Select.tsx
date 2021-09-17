@@ -34,7 +34,7 @@ import { useCombinedRefs } from '../../utils/react';
 import { FieldWrapper } from '../../components/FieldWrapper';
 import { Item } from '@react-stately/collections';
 import { OverlayWrapper } from '../../components/OverlayWrapper';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 import {
   BasePropsWithoutChildren,
   BlockStyleProps,
@@ -60,12 +60,12 @@ const CaretDownIcon = () => (
   </svg>
 );
 
-const SELECT_STYLES: NuStyles = {
+const SELECT_STYLES: Styles = {
   display: 'grid',
   position: 'relative',
 } as const;
 
-const INPUT_STYLES: NuStyles = {
+const INPUT_STYLES: Styles = {
   display: 'grid',
   flow: 'column',
   gridColumns: '1fr auto',
@@ -102,7 +102,7 @@ const INPUT_STYLES: NuStyles = {
   textAlign: 'left',
 } as const;
 
-const OVERLAY_STYLES: NuStyles = {
+const OVERLAY_STYLES: Styles = {
   position: 'absolute',
   transform: {
     '': 'translate(-1.5x, 0)',
@@ -111,7 +111,7 @@ const OVERLAY_STYLES: NuStyles = {
   width: '100% max-content max-content',
 } as const;
 
-const LISTBOX_STYLES: NuStyles = {
+const LISTBOX_STYLES: Styles = {
   display: 'flex',
   gap: '.5x',
   flow: 'column',
@@ -126,7 +126,7 @@ const LISTBOX_STYLES: NuStyles = {
   styledScrollbar: true,
 } as const;
 
-const OPTION_STYLES: NuStyles = {
+const OPTION_STYLES: Styles = {
   display: 'block',
   padding: '(1x - 1px) (1.5x - 1px)',
   cursor: 'pointer',
@@ -146,11 +146,12 @@ const OPTION_STYLES: NuStyles = {
   fontWeight: 500,
 } as const;
 
-export interface CubeSelectBaseProps
+export interface CubeSelectBaseProps<T>
   extends BasePropsWithoutChildren,
     OuterStyleProps,
     FormFieldProps,
-    BlockStyleProps {
+    BlockStyleProps,
+    AriaSelectProps<T> {
   prefix?: ReactNode;
   suffix?: ReactNode;
   triggerRef?: RefObject<HTMLButtonElement>;
@@ -158,19 +159,21 @@ export interface CubeSelectBaseProps
   loadingIndicator?: ReactNode;
   overlayOffset?: number;
   hideTrigger?: boolean;
-  inputStyles?: NuStyles;
-  optionStyles?: NuStyles;
-  triggerStyles?: NuStyles;
-  listBoxStyles?: NuStyles;
-  overlayStyles?: NuStyles;
+  inputStyles?: Styles;
+  optionStyles?: Styles;
+  triggerStyles?: Styles;
+  listBoxStyles?: Styles;
+  overlayStyles?: Styles;
   direction?: 'top' | 'bottom';
   shouldFlip?: boolean;
   inputProps?: Props;
 }
 
-export interface CubeSelectProps<T> extends CubeSelectBaseProps, AriaSelectProps<T> {
+export interface CubeSelectProps<T>
+  extends CubeSelectBaseProps<T> {
   popoverRef?: RefObject<HTMLInputElement>;
-  listBoxRef?: RefObject<HTMLInputElement>;
+  /** The ref for the list box. */
+  listBoxRef?: RefObject<HTMLElement>;
 }
 
 function Select<T extends object>(

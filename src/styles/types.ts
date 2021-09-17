@@ -1,5 +1,5 @@
 import { CSSProperties } from 'react';
-import { NuResponsiveStyleValue } from '../utils/styles';
+import { ResponsiveStyleValue } from '../utils/styles';
 
 type NamedColor =
   | 'purple'
@@ -44,7 +44,7 @@ type Digit = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 type OpaquePercentage = '' | `.${Digit}` | `.${Digit}${Digit}` | '.100';
 export type NoType = false | null | undefined;
 
-export interface NuStylesInterface
+export interface StylesInterface
   extends Omit<CSSProperties, 'color' | 'fill' | 'font' | 'outline'> {
   /** Set the background color of the element.
    * ```
@@ -156,10 +156,10 @@ export interface NuStylesInterface
   outline?: CSSProperties['fontFamily'] | boolean;
 }
 
-export type NuStyles = {
-  [key in keyof NuStylesInterface]?: NuResponsiveStyleValue<
-    NuStylesInterface[key]
+export type Styles = {
+  [key in keyof StylesInterface]?: ResponsiveStyleValue<
+    StylesInterface[key]
   >;
 } & {
-  [key: string]: NuResponsiveStyleValue<string | number | boolean | undefined>;
+  [key: string]: ResponsiveStyleValue<string | number | boolean | undefined>;
 };

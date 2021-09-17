@@ -15,12 +15,12 @@ import { INLINE_LABEL_STYLES } from '../../components/Label';
 import { HiddenInput } from '../../components/HiddenInput';
 import { RadioGroup } from './RadioGroup';
 import { useFormProps } from '../Form/Form';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 import { BaseProps } from '../../components/types';
 import { AriaRadioProps } from '@react-types/radio';
 import { FormFieldProps } from '../../shared';
 
-const STYLES: NuStyles = {
+const STYLES: Styles = {
   position: 'relative',
   display: 'grid',
   placeItems: 'center start',
@@ -30,7 +30,7 @@ const STYLES: NuStyles = {
   width: 'min-content',
 };
 
-const BUTTON_STYLES: NuStyles = {
+const BUTTON_STYLES: Styles = {
   radius: true,
   fill: {
     '': '#white',
@@ -63,7 +63,7 @@ const BUTTON_STYLES: NuStyles = {
   },
 };
 
-const INPUT_STYLES: NuStyles = {
+const INPUT_STYLES: Styles = {
   display: 'grid',
   placeItems: 'center',
   radius: 'round',
@@ -92,7 +92,7 @@ const INPUT_STYLES: NuStyles = {
   transition: 'theme',
 };
 
-const CIRCLE_STYLES: NuStyles = {
+const CIRCLE_STYLES: Styles = {
   radius: 'round',
   width: '1x',
   height: '1x',
@@ -104,7 +104,7 @@ export interface CubeRadioProps
   extends BaseProps,
     AriaRadioProps,
     FormFieldProps {
-  inputStyles?: NuStyles;
+  inputStyles?: Styles;
   /* The visual type of the radio button */
   type?: 'button' | 'radio';
 }

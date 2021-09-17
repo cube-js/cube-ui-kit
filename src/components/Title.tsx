@@ -7,7 +7,7 @@ import {
   POSITION_STYLES,
   TEXT_STYLES,
 } from '../styles/list';
-import { extractStyles, NuResponsiveStyleValue } from '../utils/styles';
+import { extractStyles, ResponsiveStyleValue } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
 import { useSlotProps } from '../utils/react';
 import { BlockStyleProps, PositionStyleProps, TagNameProps } from './types';
@@ -41,7 +41,7 @@ export interface CubeTitleProps
   /** The level of the heading **/
   level?: 1 | 2 | 3 | 4 | 5 | 6;
   /** The size style for the heading **/
-  size?: NuResponsiveStyleValue<
+  size?: ResponsiveStyleValue<
     'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | string
   >;
 }
@@ -88,12 +88,12 @@ const _Title = forwardRef(
 );
 
 const Title = Object.assign(_Title, {
-  Danger: function DangerTitle(props) {
-    return <Title color="#danger-text" {...props} />;
-  },
-  Success: function SuccessTitle(props) {
-    return <Title color="#success-text" {...props} />;
-  },
+  Danger: forwardRef(function DangerTitle(props: CubeTitleProps, ref) {
+    return <Title ref={ref} color="#danger-text" {...props} />;
+  }),
+  Success: forwardRef(function SuccessTitle(props: CubeTitleProps, ref) {
+    return <Title ref={ref} color="#success-text" {...props} />;
+  }),
 });
 
 export { Title };

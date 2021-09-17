@@ -12,7 +12,7 @@ import { Block } from '../../components/Block';
 import { Action, CubeActionProps } from '../../components/Action';
 import { Space } from '../../components/Space';
 import { Flex, CubeFlexProps } from '../../components/Flex';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 
 interface TabData {
   id: string | number;
@@ -115,7 +115,7 @@ const DIRTY_BADGE_CSS = `
   transition: all .2s linear;
 `;
 
-const TAB_STYLES: NuStyles = {
+const TAB_STYLES: Styles = {
   radius: '1r 1r 0 0',
   padding: '1x 1.5x',
   border: {
@@ -256,7 +256,7 @@ export interface CubeFileTabsProps extends CubeFlexProps {
   /** Handler that is called when the tab is closed. */
   onTabClose?: (string) => void;
   /** Styles for the each tab pane */
-  paneStyles?: NuStyles;
+  paneStyles?: Styles;
   /** Whether the tabs are closable */
   isClosable?: boolean;
   children?: ReactNode;

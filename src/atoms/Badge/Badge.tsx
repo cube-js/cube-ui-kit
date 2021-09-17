@@ -5,9 +5,9 @@ import { CONTAINER_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
 import { BaseProps, ContainerStyleProps } from '../../components/types';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 
-const DEFAULT_STYLES: NuStyles = {
+const DEFAULT_STYLES: Styles = {
   display: 'inline-flex',
   placeContent: 'center',
   placeItems: 'center',

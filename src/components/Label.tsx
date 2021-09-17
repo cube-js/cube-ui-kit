@@ -8,7 +8,7 @@ import { useContextStyles } from '../providers/Styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
 import { BaseProps, ContainerStyleProps, TagNameProps } from './types';
 import { LabelPosition, NecessityIndicator, ValidationState } from '../shared';
-import { NuStyles } from '../styles/types';
+import { Styles } from '../styles/types';
 
 const REQUIRED_ICON = (
   <svg
@@ -41,7 +41,7 @@ const INTL_MESSAGES = {
   '(optional)': '(optional)',
 };
 
-export const INLINE_LABEL_STYLES: NuStyles = {
+export const INLINE_LABEL_STYLES: Styles = {
   fontWeight: 400,
   size: 'md',
   color: {
@@ -52,7 +52,7 @@ export const INLINE_LABEL_STYLES: NuStyles = {
   whiteSpace: 'nowrap',
 } as const;
 
-export const LABEL_STYLES: NuStyles = {
+export const LABEL_STYLES: Styles = {
   display: 'block',
   fontWeight: 600,
   size: 'md',

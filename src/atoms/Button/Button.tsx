@@ -5,7 +5,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { propDeprecationWarning } from '../../utils/warnings';
 import { useContextStyles } from '../../providers/Styles';
 import { FocusableRef } from '@react-types/shared';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 import { Block } from '../../components/Block';
 
 export interface CubeButtonProps extends CubeActionProps {
@@ -55,7 +55,7 @@ export function provideStyles({
   };
 }
 
-const STYLES_BY_TYPE: { [key in keyof CubeButtonProps['type']]: NuStyles } = {
+const STYLES_BY_TYPE: { [key in keyof CubeButtonProps['type']]: Styles } = {
   default: {
     border: {
       '': '#clear',
@@ -277,7 +277,7 @@ export const Button = forwardRef(
       ...styles,
     };
 
-    if (isLoading && !children) {
+    if (isLoading && !children && styles) {
       styles.size = '1em 1em';
     }
 

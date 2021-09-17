@@ -6,12 +6,12 @@ import { Underlay } from './Underlay';
 import { useModal, useOverlay, usePreventScroll } from '@react-aria/overlays';
 import { Base } from '../../components/Base';
 import { useContextStyles } from '../../providers/Styles';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 import { BaseProps, Props } from '../../components/types';
 import { mergeProps } from '../../utils/react';
 import { ModalProps } from '@react-types/overlays';
 
-export const OVERLAY_WRAPPER_STYLES: NuStyles = {
+export const OVERLAY_WRAPPER_STYLES: Styles = {
   position: 'fixed',
   display: 'grid',
   left: 0,
@@ -29,7 +29,7 @@ export const OVERLAY_WRAPPER_STYLES: NuStyles = {
   transition: 'visibility 0ms linear .13s',
 };
 
-const MODAL_STYLES: NuStyles = {
+const MODAL_STYLES: Styles = {
   display: 'grid',
   zIndex: 2,
   height: {
@@ -62,7 +62,7 @@ export interface CubeModalProps extends ModalProps {
   qa?: BaseProps['qa'];
   onClose?: () => void;
   type?: 'modal' | 'fullscreen' | 'fullscreenTakeover';
-  styles?: NuStyles;
+  styles?: Styles;
 }
 
 function Modal(props: CubeModalProps, ref) {
@@ -94,7 +94,7 @@ interface ModalWrapperProps {
   isOpen?: boolean;
   type?: 'modal' | 'fullscreen' | 'fullscreenTakeover';
   placement?: 'top' | 'bottom';
-  styles?: NuStyles;
+  styles?: Styles;
   overlayProps?: Props;
   onClose?: () => void;
 }

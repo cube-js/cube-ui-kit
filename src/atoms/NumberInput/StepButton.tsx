@@ -1,9 +1,9 @@
 import { forwardRef } from 'react';
 import { Button } from '../Button/Button';
 import { CaretDownOutlined, CaretUpOutlined } from '@ant-design/icons';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 
-const STEP_BUTTON_STYLES: NuStyles = {
+const STEP_BUTTON_STYLES: Styles = {
   padding: '0 .5x',
   radius: {
     '': '0 (1r - 1bw) 0 0',

@@ -11,7 +11,7 @@ import { Block } from '../../components/Block';
 import { Space } from '../../components/Space';
 import { CubeFlexProps, Flex } from '../../components/Flex';
 import { Button, CubeButtonProps } from '../../atoms/Button/Button';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 
 export interface CubeTabData {
   id: string | number;
@@ -137,7 +137,7 @@ export interface CubeTabsProps extends CubeFlexProps {
   /** Handler that is called when the tab is closed. */
   onTabClose?: (string) => void;
   /** Styles for the each tab pane */
-  paneStyles?: NuStyles;
+  paneStyles?: Styles;
   /** Additional content along the tabs */
   extra?: ReactNode;
 }
