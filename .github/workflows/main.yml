@@ -6,6 +6,8 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
@@ -16,8 +18,6 @@ jobs:
       - name: Building storybook
         run: yarn build-storybook
       - name: Publishing storybook
-        env:
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         run: npx netlify-cli deploy --dir=./storybook-static -p
       - id: publish
         uses: JS-DevTools/npm-publish@v1
