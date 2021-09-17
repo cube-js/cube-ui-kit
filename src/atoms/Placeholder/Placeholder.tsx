@@ -3,10 +3,10 @@ import { Base } from '../../components/Base';
 import { CONTAINER_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 import { BaseProps, ContainerStyleProps } from '../../components/types';
 
-const DEFAULT_STYLES: NuStyles = {
+const DEFAULT_STYLES: Styles = {
   display: 'block',
   fill: '#dark.10',
   height: '2x',
@@ -32,7 +32,7 @@ const CSS = `
 `;
 
 export interface CubePlaceholderProps extends BaseProps, ContainerStyleProps {
-  size?: NuStyles['size'];
+  size?: Styles['size'];
   circle?: boolean;
 }
 

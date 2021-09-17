@@ -3,11 +3,11 @@ import { CloudLogo } from '../../atoms/CloudLogo/CloudLogo';
 import { Space } from '../../components/Space';
 import { CONTAINER_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 import { BaseProps, ContainerStyleProps } from '../../components/types';
 import { filterBaseProps } from '../../utils/filterBaseProps';
 
-const DEFAULT_STYLES: NuStyles = {
+const DEFAULT_STYLES: Styles = {
   display: 'flex',
   flow: 'row',
   gap: '1x',

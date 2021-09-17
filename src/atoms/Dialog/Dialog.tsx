@@ -12,14 +12,14 @@ import { extractStyles } from '../../utils/styles';
 import { BLOCK_STYLES, DIMENSION_STYLES } from '../../styles/list';
 import { mergeProps, SlotProvider } from '../../utils/react';
 import { useContextStyles } from '../../providers/Styles';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 import { BaseProps } from '../../components/types';
 import { AriaDialogProps } from '@react-types/dialog';
 import { DOMRef } from '@react-types/shared';
 
 const STYLES_LIST = [...DIMENSION_STYLES, ...BLOCK_STYLES];
 
-const DEFAULT_STYLES: NuStyles = {
+const DEFAULT_STYLES: Styles = {
   pointerEvents: 'auto',
   position: 'relative',
   display: 'grid',
@@ -71,7 +71,7 @@ const DEFAULT_STYLES: NuStyles = {
   '@dialog-content-gap': '3x',
 };
 
-const CLOSE_BUTTON_STYLES: NuStyles = {
+const CLOSE_BUTTON_STYLES: Styles = {
   position: 'absolute',
   top: '1x',
   right: '1x',
@@ -81,7 +81,7 @@ const CLOSE_BUTTON_STYLES: NuStyles = {
   placeContent: 'center',
 };
 
-const HEADING_STYLES: NuStyles = {};
+const HEADING_STYLES: Styles = {};
 
 const sizeMap = {
   S: 'small',
@@ -130,7 +130,7 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
 
   size = sizeMap[size.toUpperCase()] || size;
 
-  const styles: NuStyles = {
+  const styles: Styles = {
     ...DEFAULT_STYLES,
     ...useContextStyles('Dialog', props),
     ...extractStyles(otherProps, STYLES_LIST),

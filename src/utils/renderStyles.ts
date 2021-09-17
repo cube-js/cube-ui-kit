@@ -1,23 +1,23 @@
 import { mediaWrapper, normalizeStyleZones } from './responsive';
 import {
   getRgbValuesFromRgbaString,
-  NuStyleHandler,
-  NuStyleMap,
+  StyleHandler,
+  StyleMap,
   parseColor,
   strToRgb,
   styleHandlerCacheWrapper,
 } from './styles';
 import { parseStyle } from './styles';
 import { toSnakeCase } from './string';
-import { NuStyles } from '../styles/types';
+import { Styles } from '../styles/types';
 
 type StyleHandlerMap = {
-  [key: string]: NuStyleHandler[];
+  [key: string]: StyleHandler[];
 };
 
 type HandlerQueueItem = {
-  handler: NuStyleHandler;
-  styleMap: NuStyleMap;
+  handler: StyleHandler;
+  styleMap: StyleMap;
   isResponsive: boolean;
 };
 
@@ -38,7 +38,7 @@ const CACHE_LIMIT = 1000;
  * @return {string}
  */
 export function renderStyles(
-  styles: NuStyles,
+  styles: Styles,
   responsive: number[],
   styleHandlerMap: StyleHandlerMap = {},
 ) {
@@ -60,7 +60,7 @@ export function renderStyles(
     }
 
     Object.keys(styles).forEach((styleName) => {
-      let handlers: NuStyleHandler[] = styleHandlerMap[styleName];
+      let handlers: StyleHandler[] = styleHandlerMap[styleName];
 
       if (!handlers) {
         handlers = [createStyle(styleName)];

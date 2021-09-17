@@ -3,9 +3,9 @@ import { CubeTextProps, Text } from './Text';
 import { CONTAINER_STYLES, TEXT_STYLES } from '../styles/list';
 import { extractStyles } from '../utils/styles';
 import { ContainerStyleProps } from './types';
-import { NuStyles } from '../styles/types';
+import { Styles } from '../styles/types';
 
-const DEFAULT_STYLES: NuStyles = {
+const DEFAULT_STYLES: Styles = {
   size: 'text',
   color: '#dark.75',
   display: 'block',

@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 import { Base } from './Base';
 import { Label } from './Label';
 import { LabelPosition, NecessityIndicator, ValidationState } from '../shared';
-import { NuStyles } from '../styles/types';
+import { Styles } from '../styles/types';
 
 const FIELD_STYLES = {
   display: 'grid',
@@ -39,15 +39,15 @@ export type CubeFieldWrapperProps = {
   labelPosition: LabelPosition;
   label?: string;
   insideForm?: boolean;
-  styles?: NuStyles;
+  styles?: Styles;
   isRequired?: boolean;
   isDisabled?: boolean;
-  labelStyles?: NuStyles;
+  labelStyles?: Styles;
   necessityIndicator?: NecessityIndicator;
   labelProps?: any;
   fieldProps?: any;
   message?: string | JSX.Element;
-  messageStyles?: NuStyles;
+  messageStyles?: Styles;
   Component?: JSX.Element;
   validationState?: ValidationState;
   requiredMark?: boolean;

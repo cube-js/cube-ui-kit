@@ -4,14 +4,14 @@ import THEMES from '../../data/themes';
 import { CONTAINER_STYLES, TEXT_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 import {
   BaseProps,
   ContainerStyleProps,
   TextStyleProps,
 } from '../../components/types';
 
-const DEFAULT_STYLES: NuStyles = {
+const DEFAULT_STYLES: Styles = {
   display: 'block',
   flow: 'column',
   radius: '1x',

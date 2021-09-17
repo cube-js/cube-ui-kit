@@ -2,7 +2,7 @@ import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react';
 import { filterBaseProps } from '../utils/filterBaseProps';
 import { useCombinedRefs } from '../utils/react';
 import { Base } from './Base';
-import { NuStyles } from '../styles/types';
+import { Styles } from '../styles/types';
 
 const DEFAULT_STYLES = {
   display: 'contents',
@@ -14,9 +14,9 @@ const COLUMN_WIDTH
 export interface CubeGridProviderProps {
   children: ReactNode;
   columns?: number;
-  gap?: NuStyles['gap'];
-  width?: NuStyles['width'];
-  initialWidth?: NuStyles['width'];
+  gap?: Styles['gap'];
+  width?: Styles['width'];
+  initialWidth?: Styles['width'];
 }
 
 export const GridProvider = forwardRef(
@@ -31,7 +31,7 @@ export const GridProvider = forwardRef(
       initialWidth,
     } = props;
 
-    let [width, setWidth] = useState<NuStyles['width']>(
+    let [width, setWidth] = useState<Styles['width']>(
       forcedWidth || initialWidth || '100vw',
     );
 

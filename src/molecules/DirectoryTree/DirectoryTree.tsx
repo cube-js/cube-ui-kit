@@ -6,12 +6,12 @@ import {
   FolderOpenFilled,
   FolderFilled,
 } from '@ant-design/icons';
-import { Flex } from '../../components/Flex';
+import { CubeFlexProps, Flex } from '../../components/Flex';
 import { Action } from '../../components/Action';
 import { Button } from '../../atoms/Button/Button';
 import { Space } from '../../components/Space';
 import { Block } from '../../components/Block';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 
 export type CubeFileTree = CubeFileTreeItem[];
 
@@ -97,7 +97,7 @@ const MODE_COLOR = {
   deleted: '#danger',
 } as const;
 
-function getItemStyles({ isSelected, mode, indent }): NuStyles {
+function getItemStyles({ isSelected, mode, indent }): Styles {
   return {
     width: 'max 100%',
     radius: true,
@@ -170,7 +170,7 @@ const HOVER_CSS = `
   }
 `;
 
-export interface CubeDirectoryTreeProps {
+export interface CubeDirectoryTreeProps extends CubeFlexProps {
   /** Event that fires on file selection */
   onSelect?: (key: string) => void;
   /** The selected key */

@@ -6,7 +6,7 @@ import {
   ReactNodeArray,
   ReactPortal,
 } from 'react';
-import { NuStyles } from '../styles/types';
+import { Styles } from '../styles/types';
 import {
   BASE_STYLES,
   BLOCK_STYLES,
@@ -28,7 +28,7 @@ export interface BasePropsWithoutChildren
   /** The tag name of the element **/
   // as?: string;
   /** The style map **/
-  styles?: NuStyles;
+  styles?: Styles;
   /** The list of responsive points in pixels **/
   breakpoints?: number[];
   /** Whether the element has the block layout outside **/
@@ -72,31 +72,25 @@ export interface AllBaseProps<K extends keyof HTMLElementTagNameMap = 'div'>
   as?: K;
 }
 
-export type BaseStyleProps = Pick<NuStyles, typeof BASE_STYLES[number]>;
-export type PositionStyleProps = Pick<NuStyles, typeof POSITION_STYLES[number]>;
-export type BlockStyleProps = Pick<NuStyles, typeof BLOCK_STYLES[number]>;
-export type ColorStyleProps = Pick<NuStyles, typeof COLOR_STYLES[number]>;
-export type TextStyleProps = Pick<NuStyles, typeof TEXT_STYLES[number]>;
-export type DimensionStyleProps = Pick<
-  NuStyles,
-  typeof DIMENSION_STYLES[number]
->;
-export type FlowStyleProps = Pick<NuStyles, typeof FLOW_STYLES[number]>;
-export type ContainerStyleProps = Pick<
-  NuStyles,
-  typeof CONTAINER_STYLES[number]
->;
-export type OuterStyleProps = Pick<NuStyles, typeof OUTER_STYLES[number]>;
+export type BaseStyleProps = Pick<Styles, typeof BASE_STYLES[number]>;
+export type PositionStyleProps = Pick<Styles, typeof POSITION_STYLES[number]>;
+export type BlockStyleProps = Pick<Styles, typeof BLOCK_STYLES[number]>;
+export type ColorStyleProps = Pick<Styles, typeof COLOR_STYLES[number]>;
+export type TextStyleProps = Pick<Styles, typeof TEXT_STYLES[number]>;
+export type DimensionStyleProps = Pick<Styles, typeof DIMENSION_STYLES[number]>;
+export type FlowStyleProps = Pick<Styles, typeof FLOW_STYLES[number]>;
+export type ContainerStyleProps = Pick<Styles, typeof CONTAINER_STYLES[number]>;
+export type OuterStyleProps = Pick<Styles, typeof OUTER_STYLES[number]>;
 export type ShortItemsStyles = {
-  align?: NuStyles['alignItems'];
-  justify?: NuStyles['justifyItems'];
+  align?: Styles['alignItems'];
+  justify?: Styles['justifyItems'];
 };
 
 export type ShortGridStyles = {
-  template?: NuStyles['gridTemplate'];
-  columns?: NuStyles['gridColumns'];
-  rows?: NuStyles['gridRows'];
-  areas?: NuStyles['gridAreas'];
+  template?: Styles['gridTemplate'];
+  columns?: Styles['gridColumns'];
+  rows?: Styles['gridRows'];
+  areas?: Styles['gridAreas'];
 };
 
 export interface Props {

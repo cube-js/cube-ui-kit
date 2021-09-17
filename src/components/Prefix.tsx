@@ -5,9 +5,9 @@ import { extractStyles, parseStyle } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
 import { useCombinedRefs } from '../utils/react';
 import { BaseProps, ContainerStyleProps } from './types';
-import { NuStyles } from '../styles/types';
+import { Styles } from '../styles/types';
 
-const DEFAULT_STYLES: NuStyles = {
+const DEFAULT_STYLES: Styles = {
   display: 'grid',
   position: 'absolute',
   placeItems: 'center',

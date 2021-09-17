@@ -7,12 +7,12 @@ import { useModal, useOverlay, usePreventScroll } from '@react-aria/overlays';
 import { OVERLAY_WRAPPER_STYLES } from './Modal';
 import { Base } from '../../components/Base';
 import { useContextStyles } from '../../providers/Styles';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 import { BaseProps, Props } from '../../components/types';
 import { mergeProps } from '../../utils/react';
 import { TrayProps } from '@react-types/overlays';
 
-const TRAY_STYLES: NuStyles = {
+const TRAY_STYLES: Styles = {
   zIndex: 2,
   height: 'max (@cube-visual-viewport-height * .9)',
   width: '288px 90vw',
@@ -30,7 +30,7 @@ export interface CubeTrayProps extends TrayProps {
   onClose?: () => void;
   isFixedHeight?: boolean;
   isNonModal?: boolean;
-  styles?: NuStyles;
+  styles?: Styles;
 }
 
 interface CubeTrayWrapperProps extends CubeTrayProps {

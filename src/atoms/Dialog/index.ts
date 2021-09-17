@@ -12,14 +12,10 @@ const _Dialog = Object.assign(Dialog, {
   },
 });
 
-export {
-  _Dialog as Dialog,
-  DialogContainer,
-  DialogTrigger,
-};
+export { _Dialog as Dialog, DialogContainer, DialogTrigger };
 
 export type {
   CubeDialogProps,
   CubeDialogTriggerProps,
   CubeDialogContainerProps,
-}
+};

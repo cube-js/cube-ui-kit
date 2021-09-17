@@ -11,7 +11,7 @@ import { Space } from '../../components/Space';
 import { Block } from '../../components/Block';
 import { Paragraph } from '../../components/Paragraph';
 import { Text } from '../../components/Text';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 
 export type CubeSearchFileData = {
   title?: string;
@@ -40,7 +40,7 @@ const TEXT_OVERFLOW_STYLES: CSSProperties = {
 function getItemStyles({
   indent,
   isSelected,
-}: CubeSearchResultsItemProps): NuStyles {
+}: CubeSearchResultsItemProps): Styles {
   return {
     width: 'max 100%',
     radius: true,

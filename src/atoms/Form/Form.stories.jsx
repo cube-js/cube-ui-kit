@@ -108,10 +108,16 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
             <Item key="three">Three</Item>
           </ComboBox>
         </Field>
-        <Field name="checkboxGroup" label="Checkbox group" rules={[{
-          required: true,
-          message: 'Specify at least a single option',
-        }]}>
+        <Field
+          name="checkboxGroup"
+          label="Checkbox group"
+          rules={[
+            {
+              required: true,
+              message: 'Specify at least a single option',
+            },
+          ]}
+        >
           <CheckboxGroup orientation="horizontal">
             <Checkbox value="one">One</Checkbox>
             <Checkbox value="two">Two</Checkbox>

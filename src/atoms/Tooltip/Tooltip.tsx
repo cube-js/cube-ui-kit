@@ -8,12 +8,12 @@ import { extractStyles } from '../../utils/styles';
 import { CONTAINER_STYLES } from '../../styles/list';
 import { useContextStyles } from '../../providers/Styles';
 import { getOverlayTransitionCSS } from '../../utils/transitions';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 import { BaseProps, ContainerStyleProps } from '../../components/types';
 import { AriaTooltipProps } from '@react-types/tooltip';
 import { PlacementAxis } from '../../shared';
 
-const TOOLTIP_STYLES: NuStyles = {
+const TOOLTIP_STYLES: Styles = {
   display: 'block',
   fill: '#dark.70',
   color: '#white',
@@ -23,7 +23,7 @@ const TOOLTIP_STYLES: NuStyles = {
   size: 'sm',
 };
 
-const TIP_STYLES: NuStyles = {
+const TIP_STYLES: Styles = {
   position: 'absolute',
   width: '1px',
   height: '1px',
@@ -62,7 +62,7 @@ export interface CubeTooltipProps
   extends BaseProps,
     ContainerStyleProps,
     AriaTooltipProps {
-  tipStyles?: NuStyles;
+  tipStyles?: Styles;
   showIcon?: boolean;
   placement?: PlacementAxis;
 }

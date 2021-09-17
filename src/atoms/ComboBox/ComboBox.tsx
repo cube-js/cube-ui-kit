@@ -27,7 +27,7 @@ import { Item } from '@react-stately/collections';
 import { DEFAULT_INPUT_STYLES } from '../TextInput/TextInputBase';
 import { useOverlayPosition } from '@react-aria/overlays';
 import { OverlayWrapper } from '../../components/OverlayWrapper';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 import {
   CollectionBase,
   DOMRef,
@@ -51,17 +51,17 @@ const CaretDownIcon = () => (
   </svg>
 );
 
-const COMBOBOX_STYLES: NuStyles = {
+const COMBOBOX_STYLES: Styles = {
   position: 'relative',
   display: 'grid',
 } as const;
 
-const INPUT_STYLES: NuStyles = {
+const INPUT_STYLES: Styles = {
   ...DEFAULT_INPUT_STYLES,
   width: '100%',
 } as const;
 
-const TRIGGER_STYLES: NuStyles = {
+const TRIGGER_STYLES: Styles = {
   display: 'grid',
   placeItems: 'center',
   placeContent: 'center',
@@ -78,7 +78,7 @@ const TRIGGER_STYLES: NuStyles = {
 } as const;
 
 export interface CubeComboBoxProps<T>
-  extends CubeSelectBaseProps,
+  extends Omit<CubeSelectBaseProps<T>, 'onOpenChange'>,
     ComboBoxProps<T>,
     CollectionBase<T> {
   multiLine?: boolean;

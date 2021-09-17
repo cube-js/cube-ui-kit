@@ -7,9 +7,9 @@ import { useContextStyles } from '../../providers/Styles';
 import { OverlayProps } from '@react-types/overlays';
 import { BaseProps } from '../../components/types';
 import { PlacementAxis } from '../../shared';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 
-const POPOVER_STYLES: NuStyles = {
+const POPOVER_STYLES: Styles = {
   pointerEvents: 'auto',
   position: 'absolute',
   transition:

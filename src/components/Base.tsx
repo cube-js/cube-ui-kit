@@ -6,7 +6,7 @@ import { STYLE_HANDLER_MAP } from '../styles';
 import { renderStyles } from '../utils/renderStyles';
 import { modAttrs } from '../utils/react';
 import { AllBaseProps } from './types';
-import { NuStyles } from '../styles/types';
+import { Styles } from '../styles/types';
 
 const INLINE_MAP = {
   block: 'inline',
@@ -14,7 +14,7 @@ const INLINE_MAP = {
   flex: 'inline-flex',
 } as const;
 
-const DEFAULT_STYLES: NuStyles = {
+const DEFAULT_STYLES: Styles = {
   display: 'inline-block',
 } as const;
 
@@ -39,7 +39,7 @@ const Base = function Base<K extends keyof HTMLElementTagNameMap>(
     ...props
   } = allProps;
 
-  const styles: NuStyles = { ...DEFAULT_STYLES, ...originalStyles };
+  const styles: Styles = { ...DEFAULT_STYLES, ...originalStyles };
 
   if (block) {
     styles.display = 'block';

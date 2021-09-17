@@ -1,5 +1,5 @@
 import { Props } from '../components/types';
-import { NuStyles } from '../styles/types';
+import { Styles } from '../styles/types';
 import { ReactNode } from 'react';
 
 export type LabelPosition = 'side' | 'top';
@@ -23,7 +23,7 @@ export interface FieldBaseProps {
 }
 
 export interface FormBaseProps {
-  labelStyles?: NuStyles;
+  labelStyles?: Styles;
   labelPosition?: LabelPosition;
   /** Whether the field presents required mark */
   requiredMark?: boolean;

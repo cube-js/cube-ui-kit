@@ -16,7 +16,7 @@ import {
   TextStyleProps,
 } from './types';
 import { AriaButtonProps } from '@react-types/button';
-import { NuStyles } from '../styles/types';
+import { Styles } from '../styles/types';
 import { useFocusableRef } from '@react-spectrum/utils';
 import { FocusableRef } from '@react-types/shared';
 
@@ -106,7 +106,7 @@ export function createLinkClickHandler(router, to, onPress, disabled) {
   };
 }
 
-const DEFAULT_STYLES: NuStyles = {
+const DEFAULT_STYLES: Styles = {
   reset: 'button',
   position: 'relative',
   opacity: {

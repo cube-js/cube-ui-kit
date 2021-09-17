@@ -29,7 +29,7 @@ function TooltipTrigger(props: CubeTooltipTriggerProps) {
   let [trigger, tooltip] = Children.toArray(children);
 
   let state = useTooltipTriggerState({
-    delay: 1000,
+    delay: 500,
     ...props,
   });
 

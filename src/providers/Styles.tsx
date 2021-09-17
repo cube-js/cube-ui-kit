@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import { NuStyles } from '../styles/types';
+import { Styles } from '../styles/types';
 
 export const StyleContext = createContext<any>({});
 
@@ -20,7 +20,7 @@ export function StyleProvider({ children, ...props }) {
   );
 }
 
-export function useContextStyles(name, props?): NuStyles {
+export function useContextStyles(name, props?): Styles {
   const contextStyles = useContext(StyleContext);
   const styles = {};
 

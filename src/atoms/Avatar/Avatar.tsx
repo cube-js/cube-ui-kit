@@ -4,7 +4,7 @@ import { CONTAINER_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
 import { BaseProps, ContainerStyleProps } from '../../components/types';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 
 const DEFAULT_STYLES = {
   display: 'grid',
@@ -23,7 +23,7 @@ const DEFAULT_STYLES = {
 
 export interface CubeAvatarProps extends BaseProps, ContainerStyleProps {
   icon?: JSX.Element;
-  size?: NuStyles['size'];
+  size?: Styles['size'];
 }
 
 export const Avatar = forwardRef(

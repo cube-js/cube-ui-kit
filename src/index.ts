@@ -1,12 +1,23 @@
 import { TextInput } from './atoms/TextInput/TextInput';
 import { PasswordInput } from './atoms/PasswordInput/PasswordInput';
 import { NumberInput } from './atoms/NumberInput/NumberInput';
-import { CubeFormProps, Field, Form as _Form, useFormProps } from './atoms/Form';
+import {
+  CubeFormProps,
+  Field,
+  Form as _Form,
+  useFormProps,
+} from './atoms/Form';
 
 import { CubeTextProps, Text } from './components/Text';
 import { CubeTitleProps, Title } from './components/Title';
 import { CubeParagraphProps, Paragraph } from './components/Paragraph';
 import { TextArea } from './atoms/TextArea/TextArea';
+import { Button } from './atoms/Button/Button';
+import { ButtonGroup } from './atoms/ButtonGroup/ButtonGroup';
+
+const _Button = Object.assign(Button, {
+  Group: ButtonGroup,
+});
 
 const Form = Object.assign(_Form, { Item: Field });
 
@@ -57,7 +68,7 @@ export { Base64Upload } from './atoms/Base64Upload/Base64Upload';
 export type { CubeBase64UploadProps } from './atoms/Base64Upload/Base64Upload';
 export { Card } from './atoms/Card/Card';
 export type { CubeCardProps } from './atoms/Card/Card';
-export { Button } from './atoms/Button/Button';
+export { _Button as Button, ButtonGroup };
 export type { CubeButtonProps } from './atoms/Button/Button';
 export { Placeholder } from './atoms/Placeholder/Placeholder';
 export type { CubePlaceholderProps } from './atoms/Placeholder/Placeholder';
@@ -88,16 +99,15 @@ export type { CubeFormProps };
 export { ComboBox } from './atoms/ComboBox/ComboBox';
 export type { CubeComboBoxProps } from './atoms/ComboBox/ComboBox';
 export { Select, ListBoxPopup } from './atoms/Select/Select';
-export type { CubeSelectProps, CubeSelectBaseProps } from './atoms/Select/Select';
+export type {
+  CubeSelectProps,
+  CubeSelectBaseProps,
+} from './atoms/Select/Select';
 export { NumberInput } from './atoms/NumberInput/NumberInput';
 export type { CubeNumberInputProps } from './atoms/NumberInput/NumberInput';
 export { Avatar } from './atoms/Avatar/Avatar';
 export type { CubeAvatarProps } from './atoms/Avatar/Avatar';
-export {
-  Dialog,
-  DialogTrigger,
-  DialogContainer,
-} from './atoms/Dialog';
+export { Dialog, DialogTrigger, DialogContainer } from './atoms/Dialog';
 export type {
   CubeDialogTriggerProps,
   CubeDialogContainerProps,
@@ -107,7 +117,6 @@ export { Tooltip } from './atoms/Tooltip/Tooltip';
 export type { CubeTooltipProps } from './atoms/Tooltip/Tooltip';
 export { TooltipTrigger } from './atoms/Tooltip/TooltipTrigger';
 export type { CubeTooltipTriggerProps } from './atoms/Tooltip/TooltipTrigger';
-export { ButtonGroup } from './atoms/ButtonGroup/ButtonGroup';
 
 // molecules
 export { TopBar } from './molecules/TopBar/TopBar';

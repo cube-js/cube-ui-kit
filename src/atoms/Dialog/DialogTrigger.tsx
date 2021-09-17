@@ -5,7 +5,7 @@ import { useMediaQuery } from '@react-spectrum/utils';
 import { useOverlayPosition, useOverlayTrigger } from '@react-aria/overlays';
 import { DialogContext } from './context';
 import { Modal, Popover, Tray } from '../Modal';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 
 export type CubeDialogClose = (close: () => void) => ReactElement;
 
@@ -38,7 +38,7 @@ export interface CubeDialogTriggerProps {
   /** The screen breakpoint for the mobile type */
   mobileViewport?: number;
   /** The style map for the overlay **/
-  styles?: NuStyles;
+  styles?: Styles;
 }
 
 function DialogTrigger(props) {

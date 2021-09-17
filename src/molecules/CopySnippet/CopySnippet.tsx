@@ -1,15 +1,17 @@
 import copy from 'clipboard-copy';
 import { Block } from '../../components/Block';
 import { Button } from '../../atoms/Button/Button';
-import { Card } from '../../atoms/Card/Card';
+import { Card, CubeCardProps } from '../../atoms/Card/Card';
 import { Grid } from '../../components/Grid';
 import { CubePrismCodeProps, PrismCode } from '../../atoms/PrismCode/PrismCode';
 import { notification } from '../../services/notification';
 import { CopyOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
-import { NuStyles } from '../../styles/types';
-import { BaseProps } from '../../components/types';
+import { Styles } from '../../styles/types';
 import { CSSProperties } from 'react';
+import { TooltipTrigger } from '../../atoms/Tooltip/TooltipTrigger';
+import { Action } from '../../components/Action';
+import { Tooltip } from '../../atoms/Tooltip/Tooltip';
 
 const POSITION_ACTION: CSSProperties = {
   position: 'absolute',
@@ -64,8 +66,8 @@ const ButtonContainer = styled(Block)`
       : ''}
 `;
 
-export interface CubeCopySnippetProps extends BaseProps {
-  padding?: NuStyles['padding'];
+export interface CubeCopySnippetProps extends CubeCardProps {
+  padding?: Styles['padding'];
   /** The code snippet */
   code: string;
   /** The title of the snippet */
@@ -82,6 +84,8 @@ export interface CubeCopySnippetProps extends BaseProps {
   showOverlay?: boolean;
   /** Whether the snippet is scrollable */
   showScroll?: boolean;
+  /** Whether to show the tooltip with the full content */
+  showTooltip?: boolean;
 }
 
 export function CopySnippet(allProps: CubeCopySnippetProps) {
@@ -96,6 +100,8 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
     children,
     padding,
     showOverlay = true,
+    showTooltip = false,
+    styles,
     ...props
   } = allProps;
 
@@ -110,8 +116,17 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
   }
 
   const multiline = (code || '').includes('\n') && !nowrap;
+  const formattedCode = code
+    .split(/\n/g)
+    .map((line) => `${prefix || ''}${line} `)
+    .join('\n');
 
-  return (
+  styles = {
+    size: 'md',
+    ...styles,
+  };
+
+  const Snippet = (
     <Card
       data-qa="CopySnippet"
       fill="#grey-light"
@@ -119,6 +134,7 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
       border={0}
       padding={0}
       style={{ position: 'relative' }}
+      styles={styles}
       {...props}
     >
       <Grid
@@ -136,10 +152,7 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
         >
           <PrismCode
             style={{ margin: 0, overflow: 'visible' }}
-            code={code
-              .split(/\n/g)
-              .map((line) => `${prefix || ''}${line} `)
-              .join('\n')}
+            code={formattedCode}
             language={language || 'javascript'}
           />
         </StyledBlock>
@@ -165,4 +178,17 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
       </Grid>
     </Card>
   );
+
+  if (showTooltip) {
+    return (
+      <TooltipTrigger>
+        <Action styles={{ display: 'block', cursor: 'default', width: '100%' }}>
+          {Snippet}
+        </Action>
+        <Tooltip>{formattedCode}</Tooltip>
+      </TooltipTrigger>
+    );
+  }
+
+  return Snippet;
 }

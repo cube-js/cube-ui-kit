@@ -1,7 +1,7 @@
-import { Placeholder } from '../Placeholder/Placeholder';
+import { CubePlaceholderProps, Placeholder } from '../Placeholder/Placeholder';
 import { Flow } from '../../components/Flow';
 import { Space } from '../../components/Space';
-import { Grid } from '../../components/Grid';
+import { CubeGridProps, Grid } from '../../components/Grid';
 import { BaseProps, ContainerStyleProps } from '../../components/types';
 
 const LAYOUT_MAP = {
@@ -149,9 +149,23 @@ const LAYOUT_MAP = {
   },
 } as const;
 
-export interface CubeSkeletonProps extends BaseProps, ContainerStyleProps {
+export interface CubeSkeletonProps
+  extends CubeGridProps,
+    CubePlaceholderProps,
+    BaseProps,
+    ContainerStyleProps {
   /** The type of the layout */
   layout?: keyof typeof LAYOUT_MAP;
+  /** The number of columns for table layout */
+  columns?: number;
+  /** The number of rows for table layout */
+  rows?: number;
+  /** The number of placeholder lines */
+  lines?: number;
+  /** The number of tabs */
+  tabs?: number;
+  /** The number of cards */
+  cards?: number;
 }
 
 export function Skeleton({ layout, ...props }: CubeSkeletonProps) {

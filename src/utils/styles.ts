@@ -1,62 +1,62 @@
-import { NuStyles } from '../styles/types';
+import { Styles } from '../styles/types';
 
 import { getCombinations } from './index';
 
-export type NuStyleValue<T = string> = number | null | boolean | undefined | T;
+export type StyleValue<T = string> = number | null | boolean | undefined | T;
 
-export type NuStyleValueStateMap<T> = {
-  [key: string]: NuStyleValue<T>;
+export type StyleValueStateMap<T> = {
+  [key: string]: StyleValue<T>;
 };
 
-export type NuResponsiveStyleValue<T = string> =
-  | NuStyleValue<T>
-  | NuStyleValue<T>[]
-  | NuStyleValueStateMap<T>
-  | NuStyleValueStateMap<T>[];
+export type ResponsiveStyleValue<T = string> =
+  | StyleValue<T>
+  | StyleValue<T>[]
+  | StyleValueStateMap<T>
+  | StyleValueStateMap<T>[];
 
-export type NuComputeModel = string | number;
+export type ComputeModel = string | number;
 
-export type NuCSSMap = { $?: string } & { [key: string]: string | string[] };
+export type CSSMap = { $?: string } & { [key: string]: string | string[] };
 
-export type NuStyleHandler = ((NuStyleValue) => NuCSSMap | NuCSSMap[]) & {
+export type StyleHandler = ((StyleValue) => CSSMap | CSSMap[]) & {
   __lookupStyles: string[];
 };
 
-export interface NuStyleStateData {
-  model?: NuComputeModel;
+export interface StyleStateData {
+  model?: ComputeModel;
   tokens?: string[];
-  value: NuResponsiveStyleValue;
+  value: ResponsiveStyleValue;
   /** The list of mods to apply */
   mods: string[];
   /** The list of **not** mods to apply (e.g. `:not(:hover)`) */
   notMods: string[];
 }
 
-export type NuStyleStateDataList = NuStyleStateData[];
+export type StyleStateDataList = StyleStateData[];
 
-export type NuStyleStateDataListMap = { [key: string]: NuStyleStateDataList };
+export type StyleStateDataListMap = { [key: string]: StyleStateDataList };
 
 /** An object that describes a relation between specific modifiers and style value. **/
-export interface NuStyleState {
+export interface StyleState {
   /** The list of mods to apply */
   mods: string[];
   /** The list of **not** mods to apply (e.g. `:not(:hover)`) */
   notMods: string[];
   /** The value to apply */
-  value: NuStyleMap;
+  value: StyleMap;
 }
 
-export type NuComputeUnit = string | (string | string[])[];
+export type ComputeUnit = string | (string | string[])[];
 
-export type NuStyleStateList = NuStyleState[];
+export type StyleStateList = StyleState[];
 
-export type NuStyleMap = { [key: string]: NuResponsiveStyleValue };
+export type StyleMap = { [key: string]: ResponsiveStyleValue };
 
-export type NuStyleStateMap = { [key: string]: NuStyleState };
+export type StyleStateMap = { [key: string]: StyleState };
 
-export type NuStyleStateMapList = NuStyleStateMap[];
+export type StyleStateMapList = StyleStateMap[];
 
-export type NuStyleStateListMap = { [key: string]: NuStyleStateList };
+export type StyleStateListMap = { [key: string]: StyleStateList };
 
 export const NO_VALUES = [false, 'n', 'no', 'false'];
 export const YES_VALUES = [true, 'y', 'yes', 'true'];
@@ -607,11 +607,11 @@ export function extendStyles(defaultStyles, newStyles) {
 export function extractStyles(
   props: { [key: string]: any },
   styleList: readonly string[] = [],
-  defaultStyles?: NuStyles,
+  defaultStyles?: Styles,
   propMap?: { [key: string]: string },
   ignoreList: readonly string[] = [],
 ) {
-  const styles: NuStyles = {
+  const styles: Styles = {
     ...defaultStyles,
     ...props.styles,
   };
@@ -637,11 +637,11 @@ export function extractStyles(
 }
 
 /**
- * Render NuCSSMap to Styled Components CSS
+ * Render CSSMap to Styled Components CSS
  * @param styles
  * @param [selector]
  */
-export function renderStylesToSC(styles: NuCSSMap | NuCSSMap[], selector = '') {
+export function renderStylesToSC(styles: CSSMap | CSSMap[], selector = '') {
   if (!styles) return '';
 
   if (Array.isArray(styles)) {
@@ -705,7 +705,7 @@ export function renderStylesToSC(styles: NuCSSMap | NuCSSMap[], selector = '') {
  * Compile states to finite CSS with selectors.
  * State values should contain a string value with CSS style list.
  * @param {string} selector
- * @param {NuStyleStateList|NuStyleStateMapList} states
+ * @param {StyleStateList|StyleStateMapList} states
  */
 export function applyStates(selector, states) {
   return states.reduce((css, state) => {
@@ -743,9 +743,9 @@ export function styleHandlerCacheWrapper(styleHandler, limit = 1000) {
 
 /**
  * Fill all unspecified states and cover all possible combinations of presented modifiers.
- * @param {NuStyleStateList} stateList
+ * @param {StyleStateList} stateList
  * @param {string[]} [allModes]
- * @return {NuStyleStateList}
+ * @return {StyleStateList}
  */
 export function normalizeStates(stateList, allModes) {
   let baseState;
@@ -805,7 +805,7 @@ export function normalizeStates(stateList, allModes) {
 /**
  * Replace state values with new ones.
  * For example, if you want to replace initial values with finite CSS code.
- * @param {NuStyleStateList|NuStyleStateMapList} states
+ * @param {StyleStateList|StyleStateMapList} states
  * @param {Function} replaceFn
  */
 export function replaceStateValues(states, replaceFn) {
@@ -824,7 +824,7 @@ export function replaceStateValues(states, replaceFn) {
 
 /**
  * Get all presented modes from style state list.
- * @param {NuStyleStateList} stateList
+ * @param {StyleStateList} stateList
  */
 export function getModesFromStyleStateList(stateList) {
   return stateList.reduce((list, state) => {
@@ -840,7 +840,7 @@ export function getModesFromStyleStateList(stateList) {
 
 /**
  * Get all presented modes from style state list map.
- * @param {NuStyleStateMapList} stateListMap
+ * @param {StyleStateMapList} stateListMap
  * @return {string[]}
  */
 export function getModesFromStyleStateListMap(stateListMap) {
@@ -863,7 +863,7 @@ export function getModesFromStyleStateListMap(stateListMap) {
  * @param filterKeys
  */
 export function styleMapToStyleMapStateList(
-  styleMap: NuStyleMap,
+  styleMap: StyleMap,
   filterKeys?: string[],
 ) {
   const keys = filterKeys || Object.keys(styleMap);
@@ -871,7 +871,7 @@ export function styleMapToStyleMapStateList(
   if (!keys.length) return [];
 
   /**
-   * //@type {NuStyleStateListMap}
+   * //@type {StyleStateListMap}
    */
   const stateDataListMap = {};
 
@@ -886,7 +886,7 @@ export function styleMapToStyleMapStateList(
 
   const allModsArr: string[] = Array.from(allModsSet);
 
-  const styleStateMapList: NuStyleStateList = [];
+  const styleStateMapList: StyleStateList = [];
 
   getCombinations(allModsArr, true).forEach((combination) => {
     styleStateMapList.push({
@@ -1022,11 +1022,11 @@ export const parseStateNotation = cacheWrapper(parseStateNotationInner);
 
 /**
  *
- * @param {NuStyleStateMap|string|number|boolean|null|undefined} styleStateMap
- * @return {{ states: NuStyleStateDataList, mods: string[] }}
+ * @param {StyleStateMap|string|number|boolean|null|undefined} styleStateMap
+ * @return {{ states: StyleStateDataList, mods: string[] }}
  */
 export function styleStateMapToStyleStateDataList(
-  styleStateMap: NuStyleStateMap | NuResponsiveStyleValue,
+  styleStateMap: StyleStateMap | ResponsiveStyleValue,
 ) {
   if (typeof styleStateMap !== 'object' || !styleStateMap) {
     return {
@@ -1041,7 +1041,7 @@ export function styleStateMapToStyleStateDataList(
     };
   }
 
-  const stateDataList: NuStyleStateDataList = [];
+  const stateDataList: StyleStateDataList = [];
 
   Object.keys(styleStateMap).forEach((stateNotation) => {
     const state = parseStateNotation(stateNotation);
@@ -1091,7 +1091,7 @@ export const COMPUTE_FUNC_MAP = {
  * Compute a result based on model and incoming map.
  */
 export function computeState(
-  computeModel: NuComputeModel,
+  computeModel: ComputeModel,
   valueMap: (number | boolean)[] | { [key: string]: boolean } | Function,
 ) {
   if (!computeModel) return true;

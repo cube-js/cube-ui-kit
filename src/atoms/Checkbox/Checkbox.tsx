@@ -19,7 +19,7 @@ import { FieldWrapper } from '../../components/FieldWrapper';
 import { CheckboxGroup } from './CheckboxGroup';
 import { CheckboxGroupContext } from './context';
 import { BaseProps } from '../../components/types';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 import { FocusableRef } from '@react-types/shared';
 import { FormFieldProps } from '../../shared';
 
@@ -42,7 +42,7 @@ const IndeterminateOutline = () => (
   </svg>
 );
 
-const DEFAULT_STYLES: NuStyles = {
+const DEFAULT_STYLES: Styles = {
   position: 'relative',
   display: 'flex',
   placeItems: 'center start',
@@ -51,7 +51,7 @@ const DEFAULT_STYLES: NuStyles = {
   size: 'input',
 } as const;
 
-const INPUT_STYLES: NuStyles = {
+const INPUT_STYLES: Styles = {
   display: 'grid',
   placeItems: 'center',
   radius: '.5r',
@@ -114,7 +114,7 @@ function Checkbox(props: CubeCheckboxProps, ref: FocusableRef) {
   let inputContextStyles = useContextStyles('Checkbox', props);
   let labelContextStyles = useContextStyles('Checkbox_Label', props);
 
-  let styles: NuStyles = extractStyles(props, OUTER_STYLES, {
+  let styles: Styles = extractStyles(props, OUTER_STYLES, {
     ...(insideForm && !groupState ? {} : DEFAULT_STYLES),
     ...wrapperContextStyles,
   });

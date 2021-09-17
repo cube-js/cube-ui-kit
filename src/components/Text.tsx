@@ -1,7 +1,7 @@
 import { CSSProperties, forwardRef } from 'react';
 import { Base } from './Base';
 import { BASE_STYLES, COLOR_STYLES, TEXT_STYLES } from '../styles/list';
-import { extractStyles, NuResponsiveStyleValue } from '../utils/styles';
+import { extractStyles, ResponsiveStyleValue } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
 import {
   BaseProps,
@@ -10,11 +10,11 @@ import {
   TagNameProps,
   TextStyleProps,
 } from './types';
-import { NuStyles } from '../styles/types';
+import { Styles } from '../styles/types';
 
 const STYLE_LIST = [...BASE_STYLES, ...TEXT_STYLES, ...COLOR_STYLES] as const;
 
-const DEFAULT_STYLES: NuStyles = {
+const DEFAULT_STYLES: Styles = {
   display: 'inline',
   size: 'md',
   margin: '0',
@@ -48,10 +48,10 @@ export interface CubeTextProps
   /**
    * Whether the text has italic style
    */
-  italic?: NuResponsiveStyleValue<CSSProperties['fontStyle']>;
-  weight?: NuResponsiveStyleValue<CSSProperties['fontWeight']>;
-  align?: NuResponsiveStyleValue<CSSProperties['textAlign']>;
-  transform?: NuResponsiveStyleValue<CSSProperties['textTransform']>;
+  italic?: ResponsiveStyleValue<CSSProperties['fontStyle']>;
+  weight?: ResponsiveStyleValue<CSSProperties['fontWeight']>;
+  align?: ResponsiveStyleValue<CSSProperties['textAlign']>;
+  transform?: ResponsiveStyleValue<CSSProperties['textTransform']>;
 }
 
 const _Text = forwardRef((allProps: CubeTextProps, ref) => {
@@ -91,21 +91,21 @@ const _Text = forwardRef((allProps: CubeTextProps, ref) => {
 });
 
 const Text = Object.assign(_Text, {
-  Minor: function MinorText(props: CubeTextProps) {
-    return <Text color="#minor" {...props} />;
-  },
-  Danger: function DangerText(props: CubeTextProps) {
-    return <Text color="#danger-text" {...props} />;
-  },
-  Success: function SuccessText(props: CubeTextProps) {
-    return <Text color="#success-text" {...props} />;
-  },
-  Strong: function StrongText(props: CubeTextProps) {
-    return <Text color="#dark" weight={600} {...props} />;
-  },
-  Selection: function SelectionText(props: CubeTextProps) {
-    return <Text color="#dark" fill="#note.30" {...props} />;
-  },
+  Minor: forwardRef(function MinorText(props: CubeTextProps, ref) {
+    return <Text ref={ref} color="#minor" {...props} />;
+  }),
+  Danger: forwardRef(function DangerText(props: CubeTextProps, ref) {
+    return <Text ref={ref} color="#danger-text" {...props} />;
+  }),
+  Success: forwardRef(function SuccessText(props: CubeTextProps, ref) {
+    return <Text ref={ref} color="#success-text" {...props} />;
+  }),
+  Strong: forwardRef(function StrongText(props: CubeTextProps, ref) {
+    return <Text ref={ref} color="#dark" weight={600} {...props} />;
+  }),
+  Selection: forwardRef(function SelectionText(props: CubeTextProps, ref) {
+    return <Text ref={ref} color="#dark" fill="#note.30" {...props} />;
+  }),
 });
 
 export { Text };

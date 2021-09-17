@@ -50,15 +50,6 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    scroll: {
-      control: 'boolean',
-      description: 'Show scroll if code is bigger that the widget area',
-      defaultValue: true,
-      table: {
-        type: { summary: 'boolean' },
-        defaultValue: { summary: true },
-      },
-    },
     serif: {
       control: 'boolean',
       description: 'Use Serif font family instead of monospace',
@@ -76,6 +67,39 @@ export default {
       table: {
         type: { summary: 'boolean' },
         defaultValue: { summary: '' },
+      },
+    },
+    showTooltip: {
+      defaultValue: false,
+      description: 'Whether to show the tooltip with the full content.',
+      control: {
+        type: 'boolean',
+      },
+      table: {
+        type: { summary: 'boolean' },
+        defaultValue: { summary: false },
+      },
+    },
+    showOverlay: {
+      defaultValue: false,
+      description: 'Whether the snippet uses overlay on the edge.',
+      control: {
+        type: 'boolean',
+      },
+      table: {
+        type: { summary: 'boolean' },
+        defaultValue: { summary: false },
+      },
+    },
+    showScroll: {
+      defaultValue: true,
+      description: 'Whether the snippet is scrollable.',
+      control: {
+        type: 'boolean',
+      },
+      table: {
+        type: { summary: 'boolean' },
+        defaultValue: { summary: true },
       },
     },
   },
@@ -101,43 +125,43 @@ JavascriptSyntax.args = {
   code: `cube('LineItems', {
   sql: \`SELECT * FROM public.line_items\`,
 
-  
+
   joins: {
     Products: {
       sql: \`\${CUBE}.product_id = \${Products}.id\`,
       relationship: \`belongsTo\`
     },
-    
+
     Orders: {
       sql: \`\${CUBE}.order_id = \${Orders}.id\`,
       relationship: \`belongsTo\`
     }
   },
-  
+
   measures: {
     count: {
       type: \`count\`,
       drillMembers: [id, createdAt]
     },
-    
+
     price: {
       sql: \`price\`,
       type: \`sum\`
     },
-    
+
     quantity: {
       sql: \`quantity\`,
       type: \`sum\`
     }
   },
-  
+
   dimensions: {
     id: {
       sql: \`id\`,
       type: \`number\`,
       primaryKey: true
     },
-    
+
     createdAt: {
       sql: \`created_at\`,
       type: \`time\`

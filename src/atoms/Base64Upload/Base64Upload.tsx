@@ -8,9 +8,9 @@ import { POSITION_STYLES } from '../../styles/list';
 import { filterBaseProps } from '../../utils/filterBaseProps';
 import { BaseProps, PositionStyleProps } from '../../components/types';
 import { FocusableRef } from '@react-types/shared';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 
-const DEFAULT_STYLES: NuStyles = {
+const DEFAULT_STYLES: Styles = {
   display: 'inline-flex',
   padding: '.75x 1x',
   gap: '1x',

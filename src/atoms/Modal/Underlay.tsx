@@ -1,9 +1,9 @@
 import { forwardRef, HTMLAttributes } from 'react';
 import { Base } from '../../components/Base';
 import { useContextStyles } from '../../providers/Styles';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 
-const UNDERLAY_STYLES: NuStyles = {
+const UNDERLAY_STYLES: Styles = {
   position: 'fixed',
   top: 0,
   right: 0,

@@ -26,7 +26,7 @@ import { useContextStyles } from '../../providers/Styles';
 import { FieldWrapper } from '../../components/FieldWrapper';
 import { Space } from '../../components/Space';
 import { Block } from '../../components/Block';
-import { NuStyles } from '../../styles/types';
+import { Styles } from '../../styles/types';
 import {
   BaseProps,
   BlockStyleProps,
@@ -37,14 +37,14 @@ import { FormFieldProps } from '../../shared';
 import { AriaTextFieldProps } from '@react-types/textfield';
 import { mergeProps } from '../../utils/react';
 
-const WRAPPER_STYLES: NuStyles = {
+const WRAPPER_STYLES: Styles = {
   display: 'grid',
   position: 'relative',
 };
 
 const INPUT_STYLE_PROPS_LIST = [...BLOCK_STYLES, 'resize'];
 
-export const DEFAULT_INPUT_STYLES: NuStyles = {
+export const DEFAULT_INPUT_STYLES: Styles = {
   display: 'block',
   width: 'initial 100% initial',
   height: 'initial initial initial',
@@ -111,13 +111,13 @@ export interface CubeTextInputBaseProps
   /** The loading status indicator */
   loadingIndicator?: ReactNode;
   /** Style map for the input */
-  inputStyles?: NuStyles;
+  inputStyles?: Styles;
   /** Style map for the input wrapper */
-  wrapperStyles?: NuStyles;
+  wrapperStyles?: Styles;
   /** The number of rows for the input. Only applies to textarea. */
   rows?: number;
   /** The resize CSS property sets whether an element is resizable, and if so, in which directions. */
-  resize?: NuStyles['resize'];
+  resize?: Styles['resize'];
 }
 
 function TextInputBase(props: CubeTextInputBaseProps, ref) {

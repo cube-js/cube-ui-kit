@@ -1,7 +1,7 @@
 import { createContext, PropsWithChildren, useContext } from 'react';
 import { StyleProvider } from './providers/Styles';
 import { ResponsiveProvider } from './providers/Responsive';
-import { NuResponsiveStyleValue } from './utils/styles';
+import { ResponsiveStyleValue } from './utils/styles';
 import { Props } from './components/types';
 
 export const UIKitContext = createContext<ProviderProps>({
@@ -17,7 +17,7 @@ export interface ProviderProps extends Props {
   validationState?: string;
   router?: Function;
   styles?: {
-    [key: string]: { [key: string]: NuResponsiveStyleValue } | Function;
+    [key: string]: { [key: string]: ResponsiveStyleValue } | Function;
   };
   ref?: JSX.Element;
 }
