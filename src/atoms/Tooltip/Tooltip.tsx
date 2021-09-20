@@ -73,6 +73,8 @@ function Tooltip(props: CubeTooltipProps, ref) {
     arrowProps,
     state,
     overlayProps,
+    minOffset,
+    minScale,
     ...tooltipProviderProps
   } = useContext(TooltipContext);
 
@@ -106,7 +108,7 @@ function Tooltip(props: CubeTooltipProps, ref) {
     <Base
       {...tooltipProps}
       {...overlayProps}
-      css={getOverlayTransitionCSS({ placement })}
+      css={getOverlayTransitionCSS({ placement, minOffset, minScale })}
       styles={styles}
       mods={{
         open: isOpen,

@@ -1,5 +1,5 @@
 import { Base } from './Base';
-import { getOverlayTransitionCSS } from '../utils/transitions';
+import { getOverlayTransitionCSS, OverlayTransitionCSSProps } from '../utils/transitions';
 import { CSSTransition } from 'react-transition-group';
 import { Styles } from '../styles/types';
 import { ReactNode } from 'react';
@@ -17,14 +17,38 @@ export interface CubeOverlayWrapperProps {
   placement?: 'start' | 'end' | 'right' | 'left' | 'top' | 'bottom';
   children: ReactNode;
   childrenOnly?: boolean;
+  minOffset?: string | number;
+  minScale?: string;
+  withoutTransition?: boolean;
 }
 
 export function OverlayWrapper({
   isOpen,
   placement,
+  minOffset,
+  minScale,
+  withoutTransition,
   children,
   childrenOnly,
 }: CubeOverlayWrapperProps) {
+  const options: OverlayTransitionCSSProps = {};
+
+  if (typeof minOffset === 'number') {
+    minOffset = `${minOffset}px`;
+  }
+
+  if (placement != null) {
+    options.placement = placement;
+  }
+
+  if (minScale != null) {
+    options.minScale = minScale;
+  }
+
+  if (minOffset != null) {
+    options.minOffset = minOffset;
+  }
+
   return (
     <CSSTransition
       in={isOpen}
@@ -37,7 +61,7 @@ export function OverlayWrapper({
       ) : (
         <Base
           styles={OVERLAY_WRAPPER_STYLES}
-          css={getOverlayTransitionCSS({ placement })}
+          css={withoutTransition ? '' : getOverlayTransitionCSS(options)}
         >
           {children}
         </Base>

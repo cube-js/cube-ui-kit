@@ -64,6 +64,8 @@ function TooltipTrigger(props: CubeTooltipTriggerProps) {
           ref: overlayRef,
           overlayProps,
           arrowProps,
+          minOffset: 'var(--gap)',
+          minScale: '1',
           ...tooltipProps,
         }}
       >
@@ -72,6 +74,7 @@ function TooltipTrigger(props: CubeTooltipTriggerProps) {
           isOpen={state.isOpen}
           childrenOnly
           placement={props.placement || 'top'}
+          withoutTransition={true}
         >
           {tooltip}
         </OverlayWrapper>
