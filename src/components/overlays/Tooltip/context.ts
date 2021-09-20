@@ -1,0 +1,16 @@
+import React, { HTMLAttributes, RefObject } from 'react';
+import { TooltipTriggerState } from '@react-stately/tooltip';
+import { PlacementAxis } from '../../../shared';
+import { Props } from '../../types';
+
+interface TooltipContextProps {
+  state?: TooltipTriggerState;
+  ref?: RefObject<HTMLDivElement>;
+  placement?: PlacementAxis;
+  arrowProps?: HTMLAttributes<HTMLElement>;
+  overlayProps?: Props;
+  minScale?: string | number;
+  minOffset?: string | number;
+}
+
+export const TooltipContext = React.createContext<TooltipContextProps>({});

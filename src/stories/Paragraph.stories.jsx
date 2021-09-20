@@ -1,4 +1,4 @@
-import { Paragraph } from '../components/Paragraph';
+import { Paragraph } from '../components/content/Paragraph';
 
 export default {
   title: 'UIKit/Generic/Paragraph',

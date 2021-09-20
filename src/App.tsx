@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import { Base, Grid, TopBar, Space, LoadingAnimation, Block } from './index';
-import { Button } from './atoms/Button/Button';
+import { Button } from './components/actions/Button/Button';
 // import ResponsiveProvider from './providers/Responsive';
 import { color } from './utils/colors';
-import { Card } from './atoms/Card/Card';
-import { Flex } from './components/Flex';
-import { Base64Upload } from './atoms/Base64Upload/Base64Upload';
-import { Link } from './atoms/Link/Link';
-import { Modal } from './molecules/Modal/Modal';
+import { Card } from './components/content/Card/Card';
+import { Flex } from './components/layout/Flex';
+import { Base64Upload } from './components/other/Base64Upload/Base64Upload';
+import { Link } from './components/navigation/Link/Link';
+import { Modal } from './components/organisms/Modal/Modal';
 // import { notification } from './services/notification';
 import { StyleProvider } from './providers/Styles';
-import { Form, useForm, Field } from './atoms/Form';
-import { TextInput } from './atoms/TextInput/TextInput';
+import { Form, useForm, Field } from './components/forms/Form';
+import { TextInput } from './components/forms/TextInput/TextInput';
 import { Provider } from './provider';
 import { GridProvider } from './components/GridProvider';
 

@@ -2,7 +2,7 @@ import ReactDOM from 'react-dom';
 import {
   CubeNotificationProps,
   Notification,
-} from '../molecules/Notification/Notification';
+} from '../components/overlays/Notification/Notification';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 
 let ID = 0;

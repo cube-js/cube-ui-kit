@@ -16,16 +16,16 @@ const TRANSLATE_MAP = {
 export interface OverlayTransitionCSSProps {
   suffix?: string;
   placement?: string;
-  minScale?: string;
+  minScale?: string | number;
   minOffset?: string;
 }
 
 export const getOverlayTransitionCSS = ({
   suffix = '',
   placement = 'initial',
-  minScale = '0.9',
+  minScale = 0.9,
   minOffset = '0px',
-} = {}) => `
+}: OverlayTransitionCSSProps = {}) => `
   &${suffix} {
     transform: var(--overlay-position);
     transform-origin: ${DIRECTION_MAP[placement]};
