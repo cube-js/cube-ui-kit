@@ -52,8 +52,8 @@ export const getOverlayTransitionCSS = ({
 
   &.cube-overlay-transition-enter-active${suffix} {
     opacity: 1;
-    transition: transform var(--overlay-transition) cubic-bezier(0, .66, 0, .66), opacity var(--overlay-transition) cubic-bezier(0, .66, 0, .66);
     transform: var(--overlay-normal-scale) var(--overlay-translate-visible);
+    transition: transform var(--overlay-transition) cubic-bezier(0, .66, 0, .66), opacity var(--overlay-transition) cubic-bezier(0, .66, 0, .66);
   }
 
   &.cube-overlay-transition-exit${suffix} {
@@ -63,8 +63,8 @@ export const getOverlayTransitionCSS = ({
 
   &.cube-overlay-transition-exit-active${suffix} {
     opacity: 0;
-    transition: transform var(--overlay-transition) cubic-bezier(.66, 0, .66, 0), opacity var(--overlay-transition) cubic-bezier(.66, 0, .66, 0);
     transform: var(--overlay-hidden-scale) var(--overlay-translate-hidden);
     pointer-events: none;
+    transition: transform var(--overlay-transition) cubic-bezier(.66, 0, .66, 0), opacity var(--overlay-transition) cubic-bezier(.66, 0, .66, 0);
   }
 `;
