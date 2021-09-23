@@ -49,7 +49,7 @@ export interface CubeTextProps
    * Whether the text has italic style
    */
   italic?: ResponsiveStyleValue<CSSProperties['fontStyle']>;
-  weight?: ResponsiveStyleValue<CSSProperties['fontWeight']>;
+  weight?: string | number;
   align?: ResponsiveStyleValue<CSSProperties['textAlign']>;
   transform?: ResponsiveStyleValue<CSSProperties['textTransform']>;
 }

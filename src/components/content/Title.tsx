@@ -45,7 +45,7 @@ export interface CubeTitleProps
 }
 
 function getFontWeight(level, size) {
-  return (level || 1) === 1 && (!size || size === 'h1') ? 700 : 600;
+  return ((level || 1) === 1 || (level === 2)) && (!size || size === 'h1' || size === 'h2') ? 700 : 600;
 }
 
 const _Title = forwardRef(
