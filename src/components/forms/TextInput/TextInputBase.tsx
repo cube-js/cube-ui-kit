@@ -55,7 +55,7 @@ export const DEFAULT_INPUT_STYLES: Styles = {
     disabled: '#dark.30',
   },
   fill: {
-    '': '#clear',
+    '': '#white',
     disabled: '#dark.04',
   },
   border: {

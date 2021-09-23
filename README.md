@@ -14,7 +14,9 @@ You will also see any lint errors in the console.
 
 Run storybook with all the components of UI Kit.
 
-### yarn run build
+Deployed version of the Storybook from the `main` branch is here: https://cube-uikit-storybook.netlify.app/ 
+
+### yarn build
 
 Builds a static copy of UIKit to the `dist/` folder.
 Your app is ready to be deployed!
