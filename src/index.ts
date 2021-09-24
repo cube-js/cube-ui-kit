@@ -77,6 +77,8 @@ export type { CubeSkeletonProps } from './components/content/Skeleton/Skeleton';
 export { CloudLogo } from './components/other/CloudLogo/CloudLogo';
 export { Badge } from './components/content/Badge/Badge';
 export type { CubeBadgeProps } from './components/content/Badge/Badge';
+export { Tag } from './components/content/Tag/Tag';
+export type { CubeTagProps } from './components/content/Tag/Tag';
 export { SearchInput } from './components/forms/SearchInput/SearchInput';
 export type { CubeSearchInputProps } from './components/forms/SearchInput/SearchInput';
 export { Submit } from './components/actions/Button/Submit';
