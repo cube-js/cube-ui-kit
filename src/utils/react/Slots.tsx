@@ -6,14 +6,16 @@ import {
   useContext,
   useMemo,
 } from 'react';
-import { Props } from '../../components/types';
 
 let SlotContext = createContext<Object>({});
 
-export function useSlotProps(props: Props, defaultSlot) {
+export function useSlotProps(
+  props: Record<string, any>,
+  defaultSlot,
+): Record<string, any> {
   let slot: string = props.slot || defaultSlot;
   let allSlots = useContext(SlotContext) || {};
-  let slotProps: Props = allSlots[slot];
+  let slotProps: Record<string, any> = allSlots[slot];
 
   return mergeProps(slotProps, props);
 }

@@ -10,6 +10,7 @@ import { borderStyle } from './border';
 import { shadowStyle } from './shadow';
 import { paddingStyle } from './padding';
 import { sizeStyle } from './size';
+import { presetStyle } from './preset';
 import { fontStyleStyle } from './fontStyle';
 import { marginStyle } from './margin';
 import { fontStyle } from './font';
@@ -66,6 +67,7 @@ export const STYLES = [
     shadowStyle,
     paddingStyle,
     sizeStyle,
+    presetStyle,
     boxShadowCombinator,
     outlineStyle,
     fontStyle,

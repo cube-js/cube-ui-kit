@@ -1,11 +1,4 @@
-import {
-  AllHTMLAttributes,
-  CSSProperties,
-  JSXElementConstructor,
-  ReactElement,
-  ReactNodeArray,
-  ReactPortal,
-} from 'react';
+import { AllHTMLAttributes, CSSProperties } from 'react';
 import { Styles } from '../styles/types';
 import {
   BASE_STYLES,
@@ -53,23 +46,14 @@ export interface BasePropsWithoutChildren
     | (CSSProperties & { [key: string]: string | number | null });
 }
 
-export interface BaseProps extends BasePropsWithoutChildren {
-  children?:
-    | ReactElement<any, string | JSXElementConstructor<any>>
-    | string
-    | number
-    | {}
-    | ReactNodeArray
-    | ReactPortal
-    | boolean
-    | null
-    | undefined;
-}
+export interface BaseProps
+  extends BasePropsWithoutChildren,
+    Pick<AllHTMLAttributes<HTMLElementTagNameMap['div']>, 'children'> {}
 
 export interface AllBaseProps<K extends keyof HTMLElementTagNameMap = 'div'>
   extends BaseProps,
     Omit<AllHTMLAttributes<HTMLElementTagNameMap[K]>, 'style'> {
-  as?: K;
+  as?: string;
 }
 
 export type BaseStyleProps = Pick<Styles, typeof BASE_STYLES[number]>;

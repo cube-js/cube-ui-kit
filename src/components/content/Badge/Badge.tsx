@@ -12,7 +12,7 @@ const DEFAULT_STYLES: Styles = {
   placeContent: 'center',
   placeItems: 'center',
   radius: 'round',
-  size: '12px 12px',
+  preset: 'tag',
   width: 'min 16px',
   height: '16px',
   textAlign: 'center',

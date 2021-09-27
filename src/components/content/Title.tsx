@@ -7,10 +7,15 @@ import {
   POSITION_STYLES,
   TEXT_STYLES,
 } from '../../styles/list';
-import { extractStyles, ResponsiveStyleValue } from '../../utils/styles';
+import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
 import { useSlotProps } from '../../utils/react';
-import { BlockStyleProps, PositionStyleProps, TagNameProps } from '../types';
+import {
+  BaseProps,
+  BlockStyleProps,
+  PositionStyleProps,
+  TagNameProps,
+} from '../types';
 
 const DEFAULT_STYLES = {
   gridArea: 'heading',
@@ -34,41 +39,26 @@ const PROP_MAP = {
 } as const;
 
 export interface CubeTitleProps
-  extends CubeTextProps,
+  extends BaseProps,
+    CubeTextProps,
     TagNameProps,
     BlockStyleProps,
     PositionStyleProps {
   /** The level of the heading **/
   level?: 1 | 2 | 3 | 4 | 5 | 6;
-  /** The size style for the heading **/
-  size?: ResponsiveStyleValue<'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | string>;
-}
-
-function getFontWeight(level, size) {
-  return ((level || 1) === 1 || (level === 2)) && (!size || size === 'h1' || size === 'h2') ? 700 : 600;
 }
 
 const _Title = forwardRef(
   ({ qa, as, level, ...props }: CubeTitleProps, ref) => {
     props = useSlotProps(props, 'heading');
 
-    let cachedSize;
     const tag: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' = `h${level || 1}`;
     const styles = extractStyles(
       props,
       STYLE_LIST,
       {
         ...DEFAULT_STYLES,
-        size: tag,
-        fontWeight: Array.isArray(props.size)
-          ? props.size.map((size) => {
-              if (size == null) size = cachedSize;
-
-              cachedSize = size;
-
-              return getFontWeight(level, size);
-            })
-          : getFontWeight(level, props.size),
+        preset: tag,
       },
       PROP_MAP,
     );

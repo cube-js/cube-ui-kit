@@ -6,7 +6,7 @@ import { ContainerStyleProps } from '../types';
 import { Styles } from '../../styles/types';
 
 const DEFAULT_STYLES: Styles = {
-  size: 'text',
+  preset: 'p3',
   color: '#dark.75',
   display: 'block',
 };

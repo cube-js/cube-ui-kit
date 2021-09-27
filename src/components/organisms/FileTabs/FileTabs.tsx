@@ -137,7 +137,7 @@ const TAB_STYLES: Styles = {
   },
   fontWeight: 500,
   opacity: 1,
-  size: 'md',
+  preset: 'default',
   outline: {
     '': 'inset #purple-03.0',
     'focused & focus-visible': 'inset #purple-03',

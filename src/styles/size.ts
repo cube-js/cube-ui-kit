@@ -8,21 +8,26 @@ export function sizeStyle({ size }) {
   let fontSize, lineHeight, letterSpacing;
 
   if (mods.length) {
-    const mod = mods[0];
-
-    fontSize = `var(--${mod}-font-size, inherit)`;
-    lineHeight = `var(--${mod}-line-height, inherit)`;
-    letterSpacing = `var(--${mod}-letter-spacing, 0)`;
+    fontSize = `var(--${mods[0] || 'default'}-font-size, inherit)`;
+    lineHeight = `var(--${
+      mods[1] || mods[0] || 'default'
+    }-line-height, inherit)`;
+    letterSpacing = `var(--${
+      mods[2] || mods[1] || mods[0] || 'default'
+    }-letter-spacing, 0)`;
   } else {
-    fontSize = values[0] || 'var(--md-font-size)';
-    lineHeight = values[1] || '1.5';
-    letterSpacing = values[2] || '0';
+    fontSize = values[0] || 'var(--default-font-size, inherit)';
+    lineHeight = values[1] || 'var(--default-line-height, inherit)';
+    letterSpacing = values[2] || 'var(--default-letter-spacing, 0)';
   }
 
   return {
     'font-size': fontSize,
     'line-height': lineHeight,
     'letter-spacing': letterSpacing,
+    '--font-size': fontSize,
+    '--line-height': lineHeight,
+    '--letter-spacing': letterSpacing,
   };
 }
 

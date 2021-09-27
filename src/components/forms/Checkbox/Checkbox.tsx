@@ -48,7 +48,7 @@ const DEFAULT_STYLES: Styles = {
   placeItems: 'center start',
   gap: '1x',
   flow: 'row',
-  size: 'input',
+  preset: 'default',
 } as const;
 
 const INPUT_STYLES: Styles = {

@@ -8,7 +8,7 @@ import { BaseProps, ContainerStyleProps, TextStyleProps } from '../types';
 
 const DEFAULT_STYLES = {
   gridArea: 'content',
-  size: 'text',
+  preset: 'p3',
   color: '#dark.75',
   display: 'block',
   flow: 'column',

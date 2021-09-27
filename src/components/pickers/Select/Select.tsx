@@ -81,7 +81,7 @@ const INPUT_STYLES: Styles = {
   },
   radius: true,
   reset: 'input',
-  size: 'input',
+  preset: 'default',
   outline: {
     '': '#purple-03.0',
     focused: '#purple-03',

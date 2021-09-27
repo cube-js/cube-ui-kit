@@ -20,7 +20,8 @@ const TOOLTIP_STYLES: Styles = {
   width: 'initial 28x max-content',
   radius: true,
   padding: '.5x 1x',
-  size: 'sm',
+  preset: 't4',
+  backdropFilter: 'blur(.5x)',
 };
 
 const TIP_STYLES: Styles = {

@@ -76,7 +76,7 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   fontWeight: 400,
   textAlign: 'left',
   reset: 'input',
-  size: 'input',
+  preset: 'default',
   flexGrow: 1,
   margin: 0,
   resize: 'none',

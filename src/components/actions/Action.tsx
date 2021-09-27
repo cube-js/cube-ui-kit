@@ -11,6 +11,7 @@ import { filterBaseProps } from '../../utils/filterBaseProps';
 import { UIKitContext } from '../../provider';
 import {
   BaseProps,
+  BaseStyleProps,
   ContainerStyleProps,
   TagNameProps,
   TextStyleProps,
@@ -23,6 +24,7 @@ import { FocusableRef } from '@react-types/shared';
 export interface CubeActionProps
   extends BaseProps,
     TagNameProps,
+    BaseStyleProps,
     ContainerStyleProps,
     TextStyleProps,
     Omit<AriaButtonProps, 'type'> {

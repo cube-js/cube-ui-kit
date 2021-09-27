@@ -48,6 +48,7 @@ const PROPS = {
   'minor-color': color('dark', 0.65),
   'success-bg-color': 'rgba(41, 190, 110, .1)',
   'note-bg-color': color('note', 0.1),
+  'note-text-color': color('dark', 0.65),
   'danger-bg-color': color('danger', 0.05),
   'danger-bg-hover-color': color('danger', 0.1),
   'primary-1': color('purple', 0.9),
@@ -97,19 +98,99 @@ const PROPS = {
   'large-line-height': '22px',
   'lg-font-size': 'var(--large-font-size)',
   'lg-line-height': 'var(--large-line-height)',
+  // h1
   'h1-font-size': '36px',
   'h1-line-height': '44px',
   'h1-letter-spacing': '-0.01em',
+  'h1-font-weight': '700',
+  // h2
   'h2-font-size': '24px',
   'h2-line-height': '36px',
+  'h2-letter-spacing': '0em',
+  'h2-font-weight': '700',
+  // h3
   'h3-font-size': '20px',
   'h3-line-height': '28px',
+  'h3-letter-spacing': '0em',
+  'h3-font-weight': '700',
+  // h4
   'h4-font-size': '18px',
   'h4-line-height': '24px',
+  'h4-letter-spacing': '0.01em',
+  'h4-font-weight': '700',
+  // h5
   'h5-font-size': '16px',
   'h5-line-height': '22px',
+  'h5-letter-spacing': '0.02em',
+  'h5-font-weight': '700',
+  // h5 semi-bold
+  'h5s-font-size': '16px',
+  'h5s-line-height': '22px',
+  'h5s-letter-spacing': '0.02em',
+  'h5s-font-weight': '600',
+  // h5 medium
+  'h5m-font-size': '16px',
+  'h5m-line-height': '22px',
+  'h5m-letter-spacing': '0.02em',
+  'h5m-font-weight': '500',
+  // h6 unused
   'h6-font-size': '14px',
   'h6-line-height': '20px',
+  // t1
+  't1-font-size': '18px',
+  't1-line-height': '24px',
+  't1-letter-spacing': '0',
+  't1-font-weight': '400',
+  // t2
+  't2-font-size': '16px',
+  't2-line-height': '22px',
+  't2-letter-spacing': '0.01em',
+  't2-font-weight': '400',
+  // t3
+  't3-font-size': '14px',
+  't3-line-height': '20px',
+  't3-letter-spacing': '0.02em',
+  't3-font-weight': '400',
+  // t4
+  't4-font-size': '12px',
+  't4-line-height': '18px',
+  't4-letter-spacing': '0.025em',
+  't4-font-weight': '400',
+  // t4m
+  't4m-font-size': '12px',
+  't4m-line-height': '18px',
+  't4m-letter-spacing': '0.02em',
+  't4m-font-weight': '500',
+  // p1
+  'p1-font-size': '18px',
+  'p1-line-height': '28px',
+  'p1-letter-spacing': '0',
+  'p1-font-weight': '400',
+  // p2
+  'p2-font-size': '16px',
+  'p2-line-height': '24px',
+  'p2-letter-spacing': '0.01em',
+  'p2-font-weight': '400',
+  // p3
+  'p3-font-size': '14px',
+  'p3-line-height': '22px',
+  'p3-letter-spacing': '0.02em',
+  'p3-font-weight': '400',
+  // p4
+  'p4-font-size': '12px',
+  'p4-line-height': '20px',
+  'p4-letter-spacing': '0.025em',
+  'p4-font-weight': '400',
+  // tag
+  'tag-font-size': '12px',
+  'tag-line-height': '12px',
+  'tag-letter-spacing': '0.02em',
+  'tag-font-weight': '500',
+  // default
+  'default-font-size': 'var(--t3-font-size)',
+  'default-line-height': 'var(--t3-line-height)',
+  'default-letter-spacing': 'var(--t3-letter-spacing)',
+  'default-font-weight': 'var(--t3-font-weight)',
 };
 
 Object.keys(colors).forEach((name) => {

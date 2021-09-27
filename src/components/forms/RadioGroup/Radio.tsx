@@ -26,7 +26,7 @@ const STYLES: Styles = {
   placeItems: 'center start',
   gap: '1x',
   flow: 'column',
-  size: 'input',
+  preset: 'default',
   width: 'min-content',
 };
 
@@ -43,7 +43,7 @@ const BUTTON_STYLES: Styles = {
     disabled: '#dark.40',
   },
   fontWeight: 500,
-  size: 'md',
+  preset: 'default',
   border: {
     '': true,
     checked: '#purple-text',

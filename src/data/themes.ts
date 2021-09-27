@@ -11,7 +11,7 @@ export default {
   },
   note: {
     fill: '#note-bg',
-    color: '#note',
+    color: '#note-text',
     border: '#note.40',
   },
   disabled: {

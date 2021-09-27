@@ -16,7 +16,6 @@ const STYLE_LIST = [...BASE_STYLES, ...TEXT_STYLES, ...COLOR_STYLES] as const;
 
 const DEFAULT_STYLES: Styles = {
   display: 'inline',
-  size: 'md',
   margin: '0',
 } as const;
 
