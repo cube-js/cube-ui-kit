@@ -7,25 +7,35 @@ import { filterBaseProps } from '../../../utils/filterBaseProps';
 import { BaseProps, ContainerStyleProps } from '../../types';
 import { Styles } from '../../../styles/types';
 import { Action } from '../../actions/Action';
+import { Suffix } from '../../layout/Suffix';
+import { Block } from '../../Block';
 import { CloseOutlined } from '@ant-design/icons';
 
 const DEFAULT_STYLES: Styles = {
+  position: 'relative',
   display: 'inline-flex',
-  placeContent: 'center',
-  placeItems: 'center',
+  placeContent: 'center start',
+  placeItems: 'center start',
   radius: '1r',
   preset: 't4m',
-  width: 'min 16px',
+  width: '16px max-content max-content',
   height: '16px',
-  textAlign: 'center',
+  textAlign: 'left',
   fontWeight: 500,
   color: '#dark.65',
   border: '#border',
   fill: '#dark.04',
+  whiteSpace: 'nowrap',
   padding: {
     '': '1bw (1x - 1bw)',
-    closable: '1bw (.5x - 1bw) 1bw (1x - 1bw)',
+    closable: '1bw (2.5x - 1bw) 1bw (1x - 1bw)',
   },
+} as const;
+
+const DEFAULT_CONTENT_STYLES: Styles = {
+  width: 'max 100%',
+  textOverflow: 'ellipsis',
+  overflow: 'hidden',
 } as const;
 
 const DEFAULT_CLOSE_STYLES: Styles = {
@@ -33,12 +43,12 @@ const DEFAULT_CLOSE_STYLES: Styles = {
   placeItems: 'center',
   color: true,
   placeSelf: 'center',
-  marginLeft: '.5x',
   opacity: {
     '': 0.85,
     'pressed | hovered': 1,
   },
   transition: 'opacity',
+  padding: '0 .5x',
 } as const;
 
 export interface CubeTagProps extends BaseProps, ContainerStyleProps {
@@ -69,15 +79,22 @@ const Tag = (allProps: CubeTagProps, ref) => {
       mods={{ closable: isClosable }}
       ref={ref}
     >
-      {children}
+      <Block
+        mods={{ closable: isClosable }}
+        styles={DEFAULT_CONTENT_STYLES}
+      >
+        {children}
+      </Block>
       {isClosable ? (
-        <Action onPress={onClose} styles={DEFAULT_CLOSE_STYLES}>
-          <CloseOutlined
-            style={{
-              fontSize: 'calc(var(--font-size) - (var(--border-width) * 2))',
-            }}
-          />
-        </Action>
+        <Suffix outerGap="0">
+          <Action onPress={onClose} styles={DEFAULT_CLOSE_STYLES}>
+            <CloseOutlined
+              style={{
+                fontSize: 'calc(var(--font-size) - (var(--border-width) * 2))',
+              }}
+            />
+          </Action>
+        </Suffix>
       ) : undefined}
     </Base>
   );
