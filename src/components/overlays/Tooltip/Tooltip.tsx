@@ -21,6 +21,7 @@ const TOOLTIP_STYLES: Styles = {
   radius: true,
   padding: '.5x 1x',
   preset: 't4',
+  backdropFilter: 'blur(.5x)',
 };
 
 const TIP_STYLES: Styles = {
