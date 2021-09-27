@@ -19,7 +19,7 @@ const DEFAULT_STYLES: Styles = {
   radius: '1r',
   preset: 't4m',
   width: '16px max-content max-content',
-  height: '16px',
+  height: 'min-content',
   textAlign: 'left',
   fontWeight: 500,
   color: '#dark.65',
