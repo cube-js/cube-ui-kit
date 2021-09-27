@@ -27,8 +27,8 @@ const DEFAULT_STYLES: Styles = {
   fill: '#dark.04',
   whiteSpace: 'nowrap',
   padding: {
-    '': '1bw (1x - 1bw)',
-    closable: '1bw (2.5x - 1bw) 1bw (1x - 1bw)',
+    '': '0 (1x - 1bw)',
+    closable: '0 (2.5x - 1bw) 0 (1x - 1bw)',
   },
 } as const;
 
