@@ -47,7 +47,7 @@ const INTL_MESSAGES = {
 
 export const INLINE_LABEL_STYLES: Styles = {
   fontWeight: 400,
-  size: 'md',
+  preset: 'default',
   color: {
     '': '#dark.85',
     invalid: '#danger-text',
@@ -59,7 +59,7 @@ export const INLINE_LABEL_STYLES: Styles = {
 export const LABEL_STYLES: Styles = {
   display: 'block',
   fontWeight: 600,
-  size: 'md',
+  preset: 'default',
   padding: {
     '': '0',
     side: '(1x - 1bw) 0',

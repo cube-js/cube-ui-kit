@@ -20,7 +20,7 @@ const TOOLTIP_STYLES: Styles = {
   width: 'initial 28x max-content',
   radius: true,
   padding: '.5x 1x',
-  size: 'sm',
+  preset: 't4',
 };
 
 const TIP_STYLES: Styles = {

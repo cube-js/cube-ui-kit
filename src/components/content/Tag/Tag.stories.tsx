@@ -16,6 +16,17 @@ export default {
         defaultValue: { summary: 'note' },
       },
     },
+    isClosable: {
+      defaultValue: false,
+      description: 'Whether the tag is closable',
+      control: {
+        type: 'boolean',
+      },
+      table: {
+        type: { summary: 'boolean' },
+        defaultValue: { summary: false },
+      },
+    },
     color: {
       control: {
         type: 'inline-radio',
@@ -31,9 +42,13 @@ export default {
   },
 };
 
-const Template = ({ label, ...props }) => <Tag {...props}>{label}</Tag>;
+const Template = ({ label, ...props }) => (
+  <Tag {...props} onClose={() => console.log('! close')}>
+    {label}
+  </Tag>
+);
 
 export const Default = Template.bind({});
 Default.args = {
-  label: 'SELECT MAX(ts) FROM cubejs_slack.messages',
+  label: 'Tag name or content',
 };

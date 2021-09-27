@@ -610,7 +610,7 @@ export function extractStyles(
   defaultStyles?: Styles,
   propMap?: { [key: string]: string },
   ignoreList: readonly string[] = [],
-) {
+): Styles {
   const styles: Styles = {
     ...defaultStyles,
     ...props.styles,

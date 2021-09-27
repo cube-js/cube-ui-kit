@@ -9,7 +9,7 @@ const STEP_BUTTON_STYLES: Styles = {
     '': '0 (1r - 1bw) 0 0',
     down: '0 0 (1r - 1bw) 0',
   },
-  size: 'sm',
+  preset: 't4',
   lineHeight: '1em',
   height: 'auto',
 };

@@ -22,7 +22,7 @@ const FIELD_STYLES = {
 };
 
 const MESSAGE_STYLES = {
-  size: 'md',
+  preset: 'default',
   color: {
     '': '#dark.75',
     invalid: '#danger-text',

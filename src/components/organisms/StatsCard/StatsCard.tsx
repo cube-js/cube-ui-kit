@@ -20,10 +20,10 @@ export function StatsCard({ title, value, suffix, ...props }: CubeStatsCard) {
       padding="2.5x"
       {...props}
     >
-      <Title level={4} weight={400} color="#minor" size="md" nowrap>
+      <Title level={4} color="#minor" preset="default" nowrap>
         {title}
       </Title>
-      <Text.Strong size="h3">
+      <Text.Strong preset="h3">
         {value} {suffix}
       </Text.Strong>
     </Card>

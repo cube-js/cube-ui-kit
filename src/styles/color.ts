@@ -18,7 +18,7 @@ export function colorStyle({ color }) {
 
   const styles: any[] = [
     {
-      'color': color,
+      color: color,
     },
   ];
 

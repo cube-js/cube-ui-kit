@@ -69,7 +69,6 @@ const STYLES_BY_TYPE: { [key in keyof CubeButtonProps['type']]: Styles } = {
     color: '#purple',
   },
   link: {
-    size: 'md',
     fontWeight: 500,
     padding: '0',
     radius: {
@@ -219,7 +218,7 @@ const DEFAULT_STYLES = {
   },
   cursor: 'pointer',
   fontWeight: 500,
-  size: 'md',
+  preset: 'default',
 };
 
 const CSS = `

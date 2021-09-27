@@ -14,7 +14,6 @@ import { FocusableRef } from '@react-types/shared';
 const DEFAULT_STYLES = {
   display: 'inline',
   cursor: 'pointer',
-  size: 'md',
   fontWeight: 500,
   padding: '0',
   radius: {

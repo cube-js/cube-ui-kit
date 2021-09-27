@@ -125,7 +125,7 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
     .join('\n');
 
   styles = {
-    size: 'md',
+    preset: 'default',
     ...styles,
   };
 

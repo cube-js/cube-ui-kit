@@ -158,7 +158,7 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
   let slots = {
     heading: {
       level: 2,
-      size: 'h4',
+      preset: 'h4',
       styles: HEADING_STYLES,
       ...titleProps,
     },

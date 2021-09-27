@@ -27,7 +27,7 @@ const STYLES: Styles = {
   placeItems: 'center start',
   gap: '1x',
   flow: 'row',
-  size: 'input',
+  preset: 'input',
   width: 'min-content',
 };
 

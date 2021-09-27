@@ -154,6 +154,30 @@ export interface StylesInterface
    * Syntax: <value> 'inset'?
    */
   outline?: CSSProperties['fontFamily'] | boolean;
+  /**
+   * The preset style sets the base text settings according to the names preset. Affected styles: `font-size`, `line-height`, `letter-spacing`, `font-weight` and `text-transform`.
+   */
+  preset?:
+    | 'h1'
+    | 'h2'
+    | 'h3'
+    | 'h4'
+    | 'h5'
+    | 'h5s'
+    | 'h5m'
+    | 'h6'
+    | 't1'
+    | 't2'
+    | 't3'
+    | 't4'
+    | 't4m'
+    | 'p1'
+    | 'p2'
+    | 'p3'
+    | 'p4'
+    | 'tag'
+    | 'default'
+    | string;
 }
 
 export type Styles = {
