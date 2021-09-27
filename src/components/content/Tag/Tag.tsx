@@ -21,7 +21,6 @@ const DEFAULT_STYLES: Styles = {
   width: '16px max-content max-content',
   height: 'min-content',
   textAlign: 'left',
-  fontWeight: 500,
   color: '#dark.65',
   border: '#border',
   fill: '#dark.04',

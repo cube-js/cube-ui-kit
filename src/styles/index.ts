@@ -39,6 +39,14 @@ const rowsConverter = (val) => {
 };
 
 export const STYLES = [
+  // Manually define styles that are used in other custom styles.
+  // Otherwise, they won't be handled as expected.
+  createStyle('fontSize'),
+  createStyle('lineHeight'),
+  createStyle('fontWeight'),
+  createStyle('letterSpacing'),
+  createStyle('textTransform'),
+  // Style aliases
   createStyle('gridAreas', 'grid-template-areas'),
   createStyle('gridColumns', 'grid-template-columns', columnsConverter),
   createStyle('gridRows', 'grid-template-rows', rowsConverter),
