@@ -35,6 +35,7 @@ const DEFAULT_CONTENT_STYLES: Styles = {
   width: 'max 100%',
   textOverflow: 'ellipsis',
   overflow: 'hidden',
+  pointerEvents: 'none',
 } as const;
 
 const DEFAULT_CLOSE_STYLES: Styles = {
