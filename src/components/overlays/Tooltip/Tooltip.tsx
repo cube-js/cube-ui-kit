@@ -15,12 +15,12 @@ import { PlacementAxis } from '../../../shared';
 
 const TOOLTIP_STYLES: Styles = {
   display: 'block',
-  fill: '#dark.70',
+  fill: '#dark.85',
   color: '#white',
   width: 'initial 28x max-content',
   radius: true,
   padding: '.75x 1x',
-  preset: 't4',
+  preset: 't3',
   backdropFilter: 'blur(.5x)',
 };
 
@@ -28,8 +28,8 @@ const TIP_STYLES: Styles = {
   position: 'absolute',
   width: '1px',
   height: '1px',
-  border: '.75x #clear',
-  borderTop: '.75x solid #dark.70',
+  border: '.5x #clear',
+  borderTop: '.5x solid #dark.85',
   borderBottom: '0',
   top: {
     '': 'initial',

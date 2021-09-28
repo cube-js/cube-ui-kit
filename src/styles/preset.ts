@@ -1,6 +1,6 @@
 import { parseStyle } from '../utils/styles';
 
-export function presetStyle({ preset, fontSize, lineHeight, textTransform, letterSpacing, fontWeight }) {
+export function presetStyle({ preset, fontSize, lineHeight, textTransform, letterSpacing, fontWeight, font }) {
   if (!preset) return '';
 
   if (preset === true) preset = '';
@@ -31,7 +31,11 @@ export function presetStyle({ preset, fontSize, lineHeight, textTransform, lette
     styles['text-transform'] = styles['--text-transform'] = `var(--${name}-text-transform, var(--initial-text-transform, none))`;
   }
 
+  if (!font) {
+    styles['font-family'] = styles['--font-family'] = `var(--${name}-font-family, var(--font))`;
+  }
+
   return styles;
 }
 
-presetStyle.__lookupStyles = ['preset', 'fontSize', 'lineHeight', 'letterSpacing', 'textTransform', 'fontWeight'];
+presetStyle.__lookupStyles = ['preset', 'fontSize', 'lineHeight', 'letterSpacing', 'textTransform', 'fontWeight', 'font'];
