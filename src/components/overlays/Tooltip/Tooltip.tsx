@@ -19,7 +19,7 @@ const TOOLTIP_STYLES: Styles = {
   color: '#white',
   width: 'initial 28x max-content',
   radius: true,
-  padding: '.5x 1x',
+  padding: '.75x 1x',
   preset: 't4',
   backdropFilter: 'blur(.5x)',
 };
