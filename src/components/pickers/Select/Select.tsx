@@ -366,7 +366,7 @@ export function ListBoxPopup({
   disallowEmptySelection,
   shouldUseVirtualFocus = false,
   placement,
-  minWidth = undefined,
+  minWidth,
   ...otherProps
 }) {
   // Get props for the listbox
@@ -407,9 +407,9 @@ export function ListBoxPopup({
     <FocusScope restoreFocus>
       <Base
         styles={{
+          minWidth: minWidth ? `${minWidth}px` : 'initial',
           ...OVERLAY_STYLES,
           overlayStyles,
-          ...(minWidth ? { minWidth: `${minWidth}px` } : null),
         }}
         {...parentOverlayProps}
         {...overlayProps}
