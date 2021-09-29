@@ -1,28 +1,5 @@
 // @ts-nocheck
 
-// https://github.com/marcj/css-element-queries/blob/master/src/ResizeSensor.js
-// https://github.com/Semantic-Org/Semantic-UI/issues/3855
-// https://github.com/marcj/css-element-queries/issues/257
-let globalWindow = window;
-// Only used for the dirty checking, so the event callback count is limited to max 1 call per fps per sensor.
-// In combination with the event based resize sensor this saves cpu time, because the sensor is too fast and
-// would generate too many unnecessary events.
-let requestAnimationFrame
-  = globalWindow.requestAnimationFrame
-  || globalWindow.mozRequestAnimationFrame
-  || globalWindow.webkitRequestAnimationFrame
-  || function(fn) {
-    return globalWindow.setTimeout(fn, 20);
-  };
-
-let cancelAnimationFrame
-  = globalWindow.cancelAnimationFrame
-  || globalWindow.mozCancelAnimationFrame
-  || globalWindow.webkitCancelAnimationFrame
-  || function(timer) {
-    globalWindow.clearTimeout(timer);
-  };
-
 /**
  * Iterate over each of the provided element(s).
  *
@@ -84,12 +61,34 @@ function setStyle(element, style) {
 /**
  * Class for dimension change detection.
  *
- * @param {Element|Element[]|Elements|jQuery} element
+ * @param {Element|Element[]|Elements} element
  * @param {Function} callback
  *
  * @constructor
  */
 export let ResizeSensor = function(element, callback) {
+  // https://github.com/marcj/css-element-queries/blob/master/src/ResizeSensor.js
+  // https://github.com/Semantic-Org/Semantic-UI/issues/3855
+  // https://github.com/marcj/css-element-queries/issues/257
+  let globalWindow = window;
+  // Only used for the dirty checking, so the event callback count is limited to max 1 call per fps per sensor.
+  // In combination with the event based resize sensor this saves cpu time, because the sensor is too fast and
+  // would generate too many unnecessary events.
+  let requestAnimationFrame
+    = globalWindow.requestAnimationFrame
+    || globalWindow.mozRequestAnimationFrame
+    || globalWindow.webkitRequestAnimationFrame
+    || function(fn) {
+      return globalWindow.setTimeout(fn, 20);
+    };
+  let cancelAnimationFrame
+    = globalWindow.cancelAnimationFrame
+    || globalWindow.mozCancelAnimationFrame
+    || globalWindow.webkitCancelAnimationFrame
+    || function(timer) {
+      globalWindow.clearTimeout(timer);
+    };
+
   //Is used when checking in reset() only for invisible elements
   let lastAnimationFrameForInvisibleCheck = 0;
 
