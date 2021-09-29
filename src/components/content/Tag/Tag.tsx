@@ -79,10 +79,7 @@ const Tag = (allProps: CubeTagProps, ref) => {
       mods={{ closable: isClosable }}
       ref={ref}
     >
-      <Block
-        mods={{ closable: isClosable }}
-        styles={DEFAULT_CONTENT_STYLES}
-      >
+      <Block mods={{ closable: isClosable }} styles={DEFAULT_CONTENT_STYLES}>
         {children}
       </Block>
       {isClosable ? (

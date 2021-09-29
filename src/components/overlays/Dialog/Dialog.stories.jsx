@@ -12,8 +12,6 @@ import {
   Title,
 } from '../../../index';
 
-window.Dialog = Dialog;
-
 export default {
   title: 'UIKit/Overlays/Dialog',
   component: Dialog,

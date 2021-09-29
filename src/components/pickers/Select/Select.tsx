@@ -108,7 +108,6 @@ const OVERLAY_STYLES: Styles = {
     '': 'translate(-1.5x, 0)',
     '[data-position="top"]': 'translate(-1.5x, 0)',
   },
-  width: '100% max-content max-content',
 } as const;
 
 const LISTBOX_STYLES: Styles = {
@@ -264,6 +263,8 @@ function Select<T extends object>(
   );
   let validation = cloneElement(validationIcon);
 
+  let triggerWidth = triggerRef?.current?.offsetWidth;
+
   let selectField = (
     <Base
       qa="SelectWrapper"
@@ -326,6 +327,7 @@ function Select<T extends object>(
           listBoxStyles={listBoxStyles}
           overlayStyles={overlayStyles}
           optionStyles={optionStyles}
+          minWidth={triggerWidth}
         />
       </OverlayWrapper>
     </Base>
@@ -364,6 +366,7 @@ export function ListBoxPopup({
   disallowEmptySelection,
   shouldUseVirtualFocus = false,
   placement,
+  minWidth = null,
   ...otherProps
 }) {
   // Get props for the listbox
@@ -406,6 +409,7 @@ export function ListBoxPopup({
         styles={{
           ...OVERLAY_STYLES,
           overlayStyles,
+          ...(minWidth ? { minWidth: `${minWidth}px` } : null),
         }}
         {...parentOverlayProps}
         {...overlayProps}

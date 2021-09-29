@@ -6,10 +6,10 @@ import {
 import { CSSTransition } from 'react-transition-group';
 import { Styles } from '../../styles/types';
 import { ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 
 const OVERLAY_WRAPPER_STYLES: Styles = {
   position: 'absolute',
-  width: '100%',
   top: 0,
   height: '100%',
   zIndex: 999,
@@ -23,6 +23,7 @@ export interface CubeOverlayWrapperProps {
   minOffset?: string | number;
   minScale?: string;
   withoutTransition?: boolean;
+  container?: Element;
 }
 
 export function OverlayWrapper({
@@ -33,6 +34,7 @@ export function OverlayWrapper({
   withoutTransition,
   children,
   childrenOnly,
+  container,
 }: CubeOverlayWrapperProps) {
   const options: OverlayTransitionCSSProps = {};
 
@@ -52,7 +54,7 @@ export function OverlayWrapper({
     options.minOffset = minOffset;
   }
 
-  return (
+  const contents = (
     <CSSTransition
       in={isOpen}
       unmountOnExit
@@ -71,4 +73,6 @@ export function OverlayWrapper({
       )}
     </CSSTransition>
   );
+
+  return createPortal(contents, container || document.body);
 }

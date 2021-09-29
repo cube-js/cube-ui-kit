@@ -43,7 +43,7 @@ export default {
 };
 
 const Template = ({ label, ...props }) => (
-  <Tag {...props} onClose={() => console.log('! close')}>
+  <Tag {...props} onClose={() => console.log('close')}>
     {label}
   </Tag>
 );

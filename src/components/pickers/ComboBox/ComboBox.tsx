@@ -30,7 +30,6 @@ import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import { Styles } from '../../../styles/types';
 import {
   CollectionBase,
-  DOMRef,
   KeyboardDelegate,
   LoadingState,
 } from '@react-types/shared';
@@ -94,10 +93,7 @@ export interface CubeComboBoxProps<T>
   filter?: (val: any, str: string) => boolean;
 }
 
-function ComboBox<T extends object>(
-  props: CubeComboBoxProps<T>,
-  ref: DOMRef<HTMLDivElement>,
-) {
+function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
   props = useProviderProps(props);
   props = useFormProps(props);
 
@@ -232,8 +228,11 @@ function ComboBox<T extends object>(
   );
   let validation = cloneElement(validationIcon);
 
+  let comboBoxWidth = ref?.current?.offsetWidth;
+
   let comboBoxField = (
     <Base
+      ref={ref}
       qa="ComboBoxWrapper"
       {...modAttrs({
         invalid: isInvalid,
@@ -314,6 +313,7 @@ function ComboBox<T extends object>(
           listBoxStyles={listBoxStyles}
           overlayStyles={overlayStyles}
           optionStyles={optionStyles}
+          minWidth={comboBoxWidth}
         />
       </OverlayWrapper>
     </Base>
