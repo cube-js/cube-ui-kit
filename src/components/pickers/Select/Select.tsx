@@ -366,7 +366,7 @@ export function ListBoxPopup({
   disallowEmptySelection,
   shouldUseVirtualFocus = false,
   placement,
-  minWidth = null,
+  minWidth = undefined,
   ...otherProps
 }) {
   // Get props for the listbox
