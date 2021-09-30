@@ -123,6 +123,8 @@ export { Tooltip } from './components/overlays/Tooltip/Tooltip';
 export type { CubeTooltipProps } from './components/overlays/Tooltip/Tooltip';
 export { TooltipTrigger } from './components/overlays/Tooltip/TooltipTrigger';
 export type { CubeTooltipTriggerProps } from './components/overlays/Tooltip/TooltipTrigger';
+export { TooltipProvider } from './components/overlays/Tooltip/TooltipProvider';
+export type { CubeTooltipProviderProps } from './components/overlays/Tooltip/TooltipProvider';
 
 // molecules
 export { TopBar } from './components/organisms/TopBar/TopBar';

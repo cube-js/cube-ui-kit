@@ -11,6 +11,7 @@ interface TooltipContextProps {
   overlayProps?: Props;
   minScale?: string | number;
   minOffset?: string | number;
+  isMaterial?: boolean;
 }
 
 export const TooltipContext = React.createContext<TooltipContextProps>({});

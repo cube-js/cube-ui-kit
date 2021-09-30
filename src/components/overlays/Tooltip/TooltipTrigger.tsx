@@ -15,6 +15,7 @@ export interface CubeTooltipTriggerProps extends TooltipTriggerProps {
   crossOffset?: number;
   offset?: number;
   placement?: 'start' | 'end' | 'right' | 'left' | 'top' | 'bottom';
+  isMaterial?: boolean;
 }
 
 function TooltipTrigger(props: CubeTooltipTriggerProps) {
@@ -22,6 +23,7 @@ function TooltipTrigger(props: CubeTooltipTriggerProps) {
     children,
     crossOffset = DEFAULT_CROSS_OFFSET,
     isDisabled,
+    isMaterial,
     offset = DEFAULT_OFFSET,
     trigger: triggerAction,
   } = props;
@@ -29,7 +31,7 @@ function TooltipTrigger(props: CubeTooltipTriggerProps) {
   let [trigger, tooltip] = Children.toArray(children);
 
   let state = useTooltipTriggerState({
-    delay: 500,
+    delay: 750,
     ...props,
   });
 
@@ -66,6 +68,7 @@ function TooltipTrigger(props: CubeTooltipTriggerProps) {
           arrowProps,
           minOffset: 'var(--gap)',
           minScale: '1',
+          isMaterial,
           ...tooltipProps,
         }}
       >

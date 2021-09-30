@@ -66,6 +66,7 @@ export interface CubeTooltipProps
   tipStyles?: Styles;
   showIcon?: boolean;
   placement?: PlacementAxis;
+  isMaterial?: boolean;
 }
 
 function Tooltip(props: CubeTooltipProps, ref) {
@@ -76,6 +77,7 @@ function Tooltip(props: CubeTooltipProps, ref) {
     overlayProps,
     minOffset,
     minScale,
+    isMaterial,
     ...tooltipProviderProps
   } = useContext(TooltipContext);
 
@@ -89,6 +91,7 @@ function Tooltip(props: CubeTooltipProps, ref) {
 
   const styles = extractStyles(otherProps, CONTAINER_STYLES, {
     ...TOOLTIP_STYLES,
+    pointerEvents: isMaterial ? 'auto' : 'none',
     ...useContextStyles('Tooltip', props),
   });
 
