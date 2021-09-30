@@ -77,7 +77,6 @@ function Tooltip(props: CubeTooltipProps, ref) {
     overlayProps,
     minOffset,
     minScale,
-    isMaterial,
     ...tooltipProviderProps
   } = useContext(TooltipContext);
 
@@ -87,7 +86,7 @@ function Tooltip(props: CubeTooltipProps, ref) {
 
   props = mergeProps(props, tooltipProviderProps);
 
-  let { placement = 'top', isOpen, tipStyles, showIcon, ...otherProps } = props;
+  let { placement = 'top', isOpen, tipStyles, showIcon, isMaterial, ...otherProps } = props;
 
   const styles = extractStyles(otherProps, CONTAINER_STYLES, {
     ...TOOLTIP_STYLES,
