@@ -1,6 +1,6 @@
 import { Styles } from '../styles/types';
 
-import { getCombinations } from './index';
+import { getModCombinations } from './index';
 
 export type StyleValue<T = string> = number | null | boolean | undefined | T;
 
@@ -742,67 +742,6 @@ export function styleHandlerCacheWrapper(styleHandler, limit = 1000) {
 }
 
 /**
- * Fill all unspecified states and cover all possible combinations of presented modifiers.
- * @param {StyleStateList} stateList
- * @param {string[]} [allModes]
- * @return {StyleStateList}
- */
-export function normalizeStates(stateList, allModes) {
-  let baseState;
-
-  stateList.forEach((state) => {
-    if (!state.mods.length) {
-      baseState = state;
-    }
-
-    state.mods.sort();
-  });
-
-  if (!baseState) {
-    baseState = {
-      mods: [],
-      value: '',
-    };
-
-    stateList.unshift(baseState);
-  }
-
-  if (!allModes) {
-    const allModesSet = new Set();
-
-    stateList.forEach((state) =>
-      state.mods.forEach((mod) => allModesSet.add(mod)),
-    );
-
-    allModes = Array.from(allModesSet);
-  }
-
-  const allCombinations = getCombinations(allModes).concat([]);
-
-  allCombinations.forEach((comb) => {
-    comb.sort();
-
-    const existState = stateList.find(
-      (state) => state.mods.join() === comb.join(),
-    );
-
-    if (existState) return;
-
-    stateList.push({
-      mods: comb,
-      notMods: [],
-      value: baseState.value,
-    });
-  });
-
-  stateList.forEach((state) => {
-    state.notMods = allModes.filter((mod) => !state.mods.includes(mod));
-  });
-
-  return stateList;
-}
-
-/**
  * Replace state values with new ones.
  * For example, if you want to replace initial values with finite CSS code.
  * @param {StyleStateList|StyleStateMapList} states
@@ -888,7 +827,7 @@ export function styleMapToStyleMapStateList(
 
   const styleStateMapList: StyleStateList = [];
 
-  getCombinations(allModsArr, true).forEach((combination) => {
+  getModCombinations(allModsArr, true).forEach((combination) => {
     styleStateMapList.push({
       mods: combination,
       notMods: allModsArr.filter((mod) => !combination.includes(mod)),
