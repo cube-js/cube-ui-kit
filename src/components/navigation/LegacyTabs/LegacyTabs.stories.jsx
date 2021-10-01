@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Tabs } from './Tabs';
+import { LegacyTabs } from './LegacyTabs';
 
 export default {
   title: 'UIKit/Navigation/Tabs',
-  component: Tabs,
+  component: LegacyTabs,
   argTypes: {},
 };
 
@@ -20,13 +20,13 @@ const Template = () => {
   }
 
   return (
-    <Tabs activeKey={activeKey} onTabClose={onClose} onTabClick={onClick}>
+    <LegacyTabs activeKey={activeKey} onTabClose={onClose} onTabClick={onClick}>
       {arr.map((n) => (
-        <Tabs.TabPane title={`Long Tab ${n}`} id={n} key={n}>
+        <LegacyTabs.TabPane title={`Long Tab ${n}`} id={n} key={n}>
           Content of tab {n}
-        </Tabs.TabPane>
+        </LegacyTabs.TabPane>
       ))}
-    </Tabs>
+    </LegacyTabs>
   );
 };
 

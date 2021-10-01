@@ -21,7 +21,7 @@ export interface CubeTabData {
   isHidden?: boolean;
 }
 
-export interface CubeTabsContextValue {
+export interface LegacyCubeTabsContextValue {
   addTab: (CubeTabData) => void;
   setTab: (id: string | number) => void;
   removeTab: (CubeTabData) => void;
@@ -29,7 +29,7 @@ export interface CubeTabsContextValue {
   currentTab?: string | number;
 }
 
-const TabsContext = createContext<CubeTabsContextValue>({
+const LegacyTabsContext = createContext<LegacyCubeTabsContextValue>({
   addTab() {},
   removeTab() {},
   setTab() {},
@@ -108,7 +108,7 @@ const TABS_CONTAINER_CSS = `
   }
 `;
 
-export interface CubeTabProps extends Omit<CubeButtonProps, 'id'> {
+export interface LegacyCubeTabProps extends Omit<CubeButtonProps, 'id'> {
   id?: string | number;
   title?: string;
   isSelected?: boolean;
@@ -121,7 +121,7 @@ const Tab = ({
   isHidden,
   onClose,
   ...props
-}: Omit<CubeTabProps, 'id'>) => {
+}: Omit<LegacyCubeTabProps, 'id'>) => {
   return (
     <Button type="tab" isSelected={isSelected} isHidden={isHidden} {...props} />
   );
@@ -142,7 +142,7 @@ export interface CubeTabsProps extends CubeFlexProps {
   extra?: ReactNode;
 }
 
-export function Tabs({
+export function LegacyTabs({
   defaultActiveKey,
   activeKey: activeKeyProp,
   onTabClick,
@@ -279,7 +279,7 @@ export function Tabs({
       css={TABS_CONTAINER_CSS}
       {...props}
     >
-      <TabsContext.Provider
+      <LegacyTabsContext.Provider
         value={{
           addTab,
           setTab,
@@ -314,12 +314,12 @@ export function Tabs({
         >
           {children}
         </Flex>
-      </TabsContext.Provider>
+      </LegacyTabsContext.Provider>
     </Flex>
   );
 }
 
-Tabs.TabPane = function TabPane({
+LegacyTabs.TabPane = function TabPane({
   id,
   title,
   qa,
@@ -327,8 +327,8 @@ Tabs.TabPane = function TabPane({
   isDisabled,
   children,
   ...props
-}: CubeTabProps) {
-  const { addTab, removeTab, changeTab, currentTab } = useContext(TabsContext);
+}: LegacyCubeTabProps) {
+  const { addTab, removeTab, changeTab, currentTab } = useContext(LegacyTabsContext);
 
   useEffect(() => {
     const tabData = {

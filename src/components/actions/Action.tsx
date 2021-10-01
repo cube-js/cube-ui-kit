@@ -115,10 +115,6 @@ const DEFAULT_STYLES: Styles = {
     '': 1,
     disabled: 0.4,
   },
-  cursor: {
-    '': 'pointer',
-    disabled: 'default',
-  },
   margin: 0,
   fontFamily: 'var(--font)',
   fontWeight: 'inherit',
