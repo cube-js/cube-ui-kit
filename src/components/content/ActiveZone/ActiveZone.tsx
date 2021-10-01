@@ -15,6 +15,7 @@ import {
 } from '../../types';
 import { Styles } from '../../../styles/types';
 import { FocusableProps } from '@react-types/shared';
+import { useFocusableRef } from '@react-spectrum/utils';
 
 export interface CubeActiveZoneProps
   extends BaseProps,
@@ -52,16 +53,19 @@ const ActiveZone = (
   const isDisabled = props.isDisabled;
   const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
 
+  const domRef = useFocusableRef(ref);
+
   let { hoverProps, isHovered } = useHover({ isDisabled });
   let { focusProps, isFocused } = useFocus({ isDisabled }, true);
 
   return (
     <Base
-      ref={ref}
+      ref={domRef}
       data-is-hovered={isHovered && !isDisabled ? '' : null}
       data-is-focused={isFocused && !isDisabled ? '' : null}
       data-is-disabled={isDisabled || null}
       aria-label={label}
+      tabIndex={0}
       {...mergeProps(
         hoverProps,
         focusProps,
