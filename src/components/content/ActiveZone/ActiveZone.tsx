@@ -16,7 +16,6 @@ import { Styles } from '../../../styles/types';
 import { useFocusableRef } from '@react-spectrum/utils';
 import { FocusableOptions, useFocusable } from '@react-aria/focus';
 import { useFocus } from '../../../utils/interactions';
-import { useCombinedRefs } from '../../../utils/react';
 
 export interface CubeActiveZoneProps
   extends BaseProps,
@@ -32,7 +31,7 @@ const DEFAULT_STYLES: Styles = {
   position: 'relative',
   opacity: {
     '': 1,
-    disabled: 0.4,
+    '[disabled]': 0.4,
   },
   outline: {
     '': '#purple-03.0',
@@ -73,7 +72,6 @@ const ActiveZone = (
       )}
       tabIndex={props.excludeFromTabOrder || isDisabled ? -1 : 0}
       as={as}
-      isDisabled={isDisabled}
       styles={styles}
       ref={domRef}
     />
