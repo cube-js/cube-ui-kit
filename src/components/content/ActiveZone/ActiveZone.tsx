@@ -1,9 +1,8 @@
-import { forwardRef } from 'react';
+import { forwardRef, useEffect, useRef } from 'react';
 import { useHover } from '@react-aria/interactions';
 import { mergeProps } from '@react-aria/utils';
 import { CONTAINER_STYLES, TEXT_STYLES } from '../../../styles/list';
 import { Base } from '../../Base';
-import { useFocus } from '../../../utils/interactions';
 import { extractStyles } from '../../../utils/styles';
 import { filterBaseProps } from '../../../utils/filterBaseProps';
 import {
@@ -14,8 +13,10 @@ import {
   TextStyleProps,
 } from '../../types';
 import { Styles } from '../../../styles/types';
-import { FocusableProps } from '@react-types/shared';
 import { useFocusableRef } from '@react-spectrum/utils';
+import { FocusableOptions, useFocusable } from '@react-aria/focus';
+import { useFocus } from '../../../utils/interactions';
+import { useCombinedRefs } from '../../../utils/react';
 
 export interface CubeActiveZoneProps
   extends BaseProps,
@@ -23,7 +24,7 @@ export interface CubeActiveZoneProps
     BaseStyleProps,
     ContainerStyleProps,
     TextStyleProps,
-    FocusableProps {
+    FocusableOptions {
   label?: string;
 }
 
@@ -52,28 +53,29 @@ const ActiveZone = (
 ) => {
   const isDisabled = props.isDisabled;
   const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
-
   const domRef = useFocusableRef(ref);
 
   let { hoverProps, isHovered } = useHover({ isDisabled });
-  let { focusProps, isFocused } = useFocus({ isDisabled }, true);
+  let { focusProps, isFocused } = useFocus({ isDisabled });
+  let { focusableProps } = useFocusable(props, domRef);
 
   return (
     <Base
-      ref={domRef}
       data-is-hovered={isHovered && !isDisabled ? '' : null}
       data-is-focused={isFocused && !isDisabled ? '' : null}
       data-is-disabled={isDisabled || null}
       aria-label={label}
-      tabIndex={0}
       {...mergeProps(
         hoverProps,
         focusProps,
+        focusableProps,
         filterBaseProps(props, { eventProps: true }),
       )}
+      tabIndex={props.excludeFromTabOrder || isDisabled ? -1 : 0}
       as={as}
       isDisabled={isDisabled}
       styles={styles}
+      ref={domRef}
     />
   );
 };
