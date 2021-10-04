@@ -7,16 +7,19 @@ import { useTooltipTriggerState } from '@react-stately/tooltip';
 import { OverlayWrapper } from '../OverlayWrapper';
 import { TooltipTriggerProps } from '@react-types/tooltip';
 import { ActiveZone } from '../../content/ActiveZone/ActiveZone';
+import { Block } from '../../Block';
 
 const DEFAULT_OFFSET = 8; // Offset needed to reach 4px/5px (med/large) distance between tooltip and trigger button
 const DEFAULT_CROSS_OFFSET = 0;
 
 export interface CubeTooltipTriggerProps extends TooltipTriggerProps {
-  children: [ReactElement, ReactElement];
+  children: [ReactElement | string, ReactElement];
   crossOffset?: number;
   offset?: number;
   placement?: 'start' | 'end' | 'right' | 'left' | 'top' | 'bottom';
   isMaterial?: boolean;
+  /** Whether the trigger should have an ActiveZone wrap to make sure it's focusable and hoverable.
+   * Otherwise, tooltip won't work. */
   activeWrap?: boolean;
 }
 
@@ -58,6 +61,12 @@ function TooltipTrigger(props: CubeTooltipTriggerProps) {
     crossOffset,
     isOpen: state.isOpen,
   });
+
+  if (!activeWrap && typeof trigger === 'string') {
+    console.warn('CubeUIKit: Tooltips are only supported on elements that are both focusable and hoverable. To solve this issue you can: 1) Use active element as a trigger (`Button`, `Link`, etc); 2) Use `activeWrap` attribute to automatically wrap the content; 3) Use `ActiveZone` component to manually wrap the content.');
+
+    return <Block>{trigger}</Block>;
+  }
 
   return (
     <FocusableProvider {...triggerProps} ref={tooltipTriggerRef}>

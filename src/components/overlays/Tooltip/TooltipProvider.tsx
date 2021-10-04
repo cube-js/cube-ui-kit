@@ -1,11 +1,11 @@
 import { CubeTooltipTriggerProps, TooltipTrigger } from './TooltipTrigger';
 import { Tooltip } from './Tooltip';
-import { ReactElement, ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { Styles } from '../../../styles/types';
 
 export interface CubeTooltipProviderProps
   extends Omit<CubeTooltipTriggerProps, 'children'> {
-  children: ReactElement;
+  children: CubeTooltipTriggerProps['children'][0];
   title?: ReactNode;
   tooltipStyles?: Styles;
 }

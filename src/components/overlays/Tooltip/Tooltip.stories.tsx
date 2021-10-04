@@ -87,7 +87,7 @@ const ViaProviderTemplate = (args) => (
 const ViaProviderWithActiveWrapTemplate = (args) => (
   <Block padding="8x 18x">
     <TooltipProvider title="Tooltip content" activeWrap>
-      <Block padding="1x">Hover to show a tooltip</Block>
+      Hover to show a tooltip
     </TooltipProvider>
   </Block>
 );
