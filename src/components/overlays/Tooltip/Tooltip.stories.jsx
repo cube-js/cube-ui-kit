@@ -1,6 +1,8 @@
 import { Tooltip } from './Tooltip';
 import { Button } from '../../actions/Button/Button';
 import { TooltipTrigger } from './TooltipTrigger';
+import { TooltipProvider } from './TooltipProvider';
+import { Block } from '../../Block';
 
 export default {
   title: 'UIKit/Overlays/Tooltip',
@@ -76,5 +78,27 @@ const Template = (args) => (
   </TooltipTrigger>
 );
 
+const ViaProviderTemplate = (args) => (
+  <TooltipProvider title="Tooltip content" {...args}>
+    <Button margin="8x 18x">Hover to show a tooltip</Button>
+  </TooltipProvider>
+);
+
+const ViaProviderWithActiveWrapTemplate = (args) => (
+  <Block padding="8x 18x">
+    <TooltipProvider title="Tooltip content" activeWrap>
+      <Block padding="1x">Hover to show a tooltip</Block>
+    </TooltipProvider>
+  </Block>
+);
+
 export const Default = Template.bind({});
 Default.args = {};
+
+export const ViaProvider = ViaProviderTemplate.bind({});
+ViaProvider.args = {};
+
+export const ViaProviderWithActiveWrap = ViaProviderWithActiveWrapTemplate.bind(
+  {},
+);
+ViaProvider.args = {};

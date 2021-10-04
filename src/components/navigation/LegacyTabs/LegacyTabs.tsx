@@ -328,7 +328,8 @@ LegacyTabs.TabPane = function TabPane({
   children,
   ...props
 }: LegacyCubeTabProps) {
-  const { addTab, removeTab, changeTab, currentTab } = useContext(LegacyTabsContext);
+  const { addTab, removeTab, changeTab, currentTab }
+    = useContext(LegacyTabsContext);
 
   useEffect(() => {
     const tabData = {

@@ -24,28 +24,16 @@ export default {
   },
 };
 
-const Template = ({
-  isDisabled,
-  label,
-}) => (
-  <ActiveZone
-    isDisabled={isDisabled}
-  >
-    {label}
-  </ActiveZone>
+const Template = ({ isDisabled, label }) => (
+  <ActiveZone isDisabled={isDisabled}>{label}</ActiveZone>
 );
 
-const TooltipTemplate = ({
-  isDisabled,
-  label,
-}) => (
+const TooltipTemplate = ({ isDisabled, label }) => (
   <TooltipTrigger>
-    <ActiveZone isDisabled={isDisabled}>
-      {label}
-    </ActiveZone>
+    <ActiveZone isDisabled={isDisabled}>{label}</ActiveZone>
     <Tooltip>Tooltip</Tooltip>
   </TooltipTrigger>
-)
+);
 
 export const Default = Template.bind({});
 Default.args = {

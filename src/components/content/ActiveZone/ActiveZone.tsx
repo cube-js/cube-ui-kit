@@ -42,14 +42,7 @@ const DEFAULT_STYLES: Styles = {
 
 const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
-const ActiveZone = (
-  {
-    as,
-    label,
-    ...props
-  }: CubeActiveZoneProps,
-  ref,
-) => {
+const ActiveZone = ({ as, label, ...props }: CubeActiveZoneProps, ref) => {
   const isDisabled = props.isDisabled;
   const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
   const domRef = useFocusableRef(ref);

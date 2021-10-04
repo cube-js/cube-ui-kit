@@ -6,6 +6,7 @@ import { useTooltipTrigger } from '@react-aria/tooltip';
 import { useTooltipTriggerState } from '@react-stately/tooltip';
 import { OverlayWrapper } from '../OverlayWrapper';
 import { TooltipTriggerProps } from '@react-types/tooltip';
+import { ActiveZone } from '../../content/ActiveZone/ActiveZone';
 
 const DEFAULT_OFFSET = 8; // Offset needed to reach 4px/5px (med/large) distance between tooltip and trigger button
 const DEFAULT_CROSS_OFFSET = 0;
@@ -16,11 +17,13 @@ export interface CubeTooltipTriggerProps extends TooltipTriggerProps {
   offset?: number;
   placement?: 'start' | 'end' | 'right' | 'left' | 'top' | 'bottom';
   isMaterial?: boolean;
+  activeWrap?: boolean;
 }
 
 function TooltipTrigger(props: CubeTooltipTriggerProps) {
   let {
     children,
+    activeWrap,
     crossOffset = DEFAULT_CROSS_OFFSET,
     isDisabled,
     isMaterial,
@@ -58,7 +61,7 @@ function TooltipTrigger(props: CubeTooltipTriggerProps) {
 
   return (
     <FocusableProvider {...triggerProps} ref={tooltipTriggerRef}>
-      {trigger}
+      {activeWrap ? <ActiveZone>{trigger}</ActiveZone> : trigger}
       <TooltipContext.Provider
         value={{
           state,
