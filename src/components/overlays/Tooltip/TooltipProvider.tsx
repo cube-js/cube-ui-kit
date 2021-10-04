@@ -17,7 +17,7 @@ function TooltipProvider(props: CubeTooltipProviderProps) {
   return (
     <TooltipTrigger {...otherProps}>
       {children}
-      <Tooltip styles={tooltipStyles} width={width}>
+      <Tooltip styles={tooltipStyles} {...(width ? { width } : null)}>
         {title}
       </Tooltip>
     </TooltipTrigger>
