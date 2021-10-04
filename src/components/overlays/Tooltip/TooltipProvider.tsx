@@ -1,5 +1,5 @@
 import { CubeTooltipTriggerProps, TooltipTrigger } from './TooltipTrigger';
-import { Tooltip } from './Tooltip';
+import { CubeTooltipProps, Tooltip } from './Tooltip';
 import { ReactNode } from 'react';
 import { Styles } from '../../../styles/types';
 
@@ -8,15 +8,18 @@ export interface CubeTooltipProviderProps
   children: CubeTooltipTriggerProps['children'][0];
   title?: ReactNode;
   tooltipStyles?: Styles;
+  width?: CubeTooltipProps['width'];
 }
 
 function TooltipProvider(props: CubeTooltipProviderProps) {
-  const { title, children, tooltipStyles, ...otherProps } = props;
+  const { title, children, tooltipStyles, width, ...otherProps } = props;
 
   return (
     <TooltipTrigger {...otherProps}>
       {children}
-      <Tooltip styles={tooltipStyles}>{title}</Tooltip>
+      <Tooltip styles={tooltipStyles} width={width}>
+        {title}
+      </Tooltip>
     </TooltipTrigger>
   );
 }
