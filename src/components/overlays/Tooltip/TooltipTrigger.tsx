@@ -63,7 +63,9 @@ function TooltipTrigger(props: CubeTooltipTriggerProps) {
   });
 
   if (!activeWrap && typeof trigger === 'string') {
-    console.warn('CubeUIKit: Tooltips are only supported on elements that are both focusable and hoverable. To solve this issue you can: 1) Use active element as a trigger (`Button`, `Link`, etc); 2) Use `activeWrap` attribute to automatically wrap the content; 3) Use `ActiveZone` component to manually wrap the content.');
+    console.warn(
+      'CubeUIKit: Tooltips are only supported on elements that are both focusable and hoverable. To solve this issue you can: 1) Use active element as a trigger (`Button`, `Link`, etc); 2) Use `activeWrap` attribute to automatically wrap the content; 3) Use `ActiveZone` component to manually wrap the content.',
+    );
 
     return <Block>{trigger}</Block>;
   }

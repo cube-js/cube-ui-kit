@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useRef } from 'react';
+import { forwardRef } from 'react';
 import { useHover } from '@react-aria/interactions';
 import { mergeProps } from '@react-aria/utils';
 import { CONTAINER_STYLES, TEXT_STYLES } from '../../../styles/list';
@@ -28,6 +28,7 @@ export interface CubeActiveZoneProps
 }
 
 const DEFAULT_STYLES: Styles = {
+  display: 'inline-block',
   position: 'relative',
   opacity: {
     '': 1,
