@@ -207,6 +207,7 @@ function Select<T extends object>(
     listBoxStyles,
     overlayStyles,
     message,
+    placeholder = 'Select an option',
     direction = 'bottom',
     shouldFlip = true,
     requiredMark = true,
@@ -302,9 +303,7 @@ function Select<T extends object>(
       >
         {prefix}
         <span {...valueProps}>
-          {state.selectedItem
-            ? state.selectedItem.rendered
-            : 'Select an option'}
+          {state.selectedItem ? state.selectedItem.rendered : placeholder}
         </span>
         {(validationState || isLoading || suffix) && (
           <div>
