@@ -1,67 +1,9 @@
 import { forwardRef } from 'react';
-import { Action, CubeActionProps } from '../../actions/Action';
-import {
-  BASE_STYLES,
-  COLOR_STYLES,
-  POSITION_STYLES,
-  TEXT_STYLES,
-} from '../../../styles/list';
-import { extractStyles } from '../../../utils/styles';
-import { filterBaseProps } from '../../../utils/filterBaseProps';
-import { useContextStyles } from '../../../providers/Styles';
+import { Button, CubeButtonProps } from '../../actions/Button/Button';
 import { FocusableRef } from '@react-types/shared';
 
-const DEFAULT_STYLES = {
-  display: 'inline',
-  cursor: 'pointer',
-  fontWeight: 500,
-  padding: '0',
-  radius: {
-    '': '0',
-    focused: '1r',
-  },
-  color: {
-    '': '#purple-text',
-    hovered: '#purple',
-  },
-  shadow: {
-    '': '0 @border-width 0 0 #purple-03.20',
-    focused: '0 0 0 @outline-width #purple-03',
-  },
-};
-
-const CSS = `
-  white-space: nowrap;
-  transition: color var(--transition) linear,
-    background var(--transition) linear, box-shadow var(--transition) linear,
-    border-radius var(--transition) linear;
-  text-decoration: none;
-`;
-
-const STYLE_PROPS = [
-  ...BASE_STYLES,
-  ...COLOR_STYLES,
-  ...POSITION_STYLES,
-  ...TEXT_STYLES,
-];
-
 export const Link = forwardRef(
-  (props: CubeActionProps, ref: FocusableRef<HTMLLinkElement>) => {
-    const styles = {
-      ...DEFAULT_STYLES,
-      ...useContextStyles('Link', props),
-      ...extractStyles(props, STYLE_PROPS),
-    };
-
-    return (
-      <Action
-        as="a"
-        css={CSS}
-        {...filterBaseProps(props, { eventProps: true })}
-        to={props.to}
-        styles={styles}
-        ref={ref}
-      />
-    );
+  (props: CubeButtonProps, ref: FocusableRef<HTMLElement>) => {
+    return <Button type="link" {...props} ref={ref} />;
   },
 );

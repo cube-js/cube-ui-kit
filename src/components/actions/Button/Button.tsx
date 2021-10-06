@@ -3,7 +3,7 @@ import { Action, CubeActionProps } from '../Action';
 import { Space } from '../../layout/Space';
 import { LoadingOutlined } from '@ant-design/icons';
 import { propDeprecationWarning } from '../../../utils/warnings';
-import { useContextStyles } from '../../../providers/Styles';
+import { useContextStyles } from '../../../providers/StylesProvider';
 import { FocusableRef } from '@react-types/shared';
 import { Styles } from '../../../styles/types';
 import { Block } from '../../Block';
@@ -219,6 +219,9 @@ const DEFAULT_STYLES = {
   cursor: 'pointer',
   fontWeight: 500,
   preset: 'default',
+  textDecoration: 'none',
+  transition: 'theme',
+  whiteSpace: 'nowrap',
 };
 
 const CSS = `

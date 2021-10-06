@@ -1,21 +1,22 @@
 import { forwardRef, useContext } from 'react';
 import styled from 'styled-components';
-import { ResponsiveContext } from '../providers/Responsive';
+import { BreakpointsContext } from '../providers/BreakpointsProvider';
 import { pointsToZones } from '../utils/responsive';
-import { STYLE_HANDLER_MAP } from '../styles';
 import { renderStyles } from '../utils/renderStyles';
 import { modAttrs } from '../utils/react';
 import { AllBaseProps } from './types';
 import { Styles } from '../styles/types';
 
-const INLINE_MAP = {
-  block: 'inline',
-  grid: 'inline-grid',
-  flex: 'inline-flex',
+const BLOCK_MAP = {
+  inline: 'block',
+  'inline-grid': 'grid',
+  'inline-flex': 'flex',
 } as const;
 
-const DEFAULT_STYLES: Styles = {
-  display: 'inline-block',
+const INLINE_MAP = {
+  block: 'inline-block',
+  grid: 'inline-grid',
+  flex: 'inline-flex',
 } as const;
 
 const BaseElement = styled.div(({ css }) => css);
@@ -39,23 +40,26 @@ const Base = function Base<K extends keyof HTMLElementTagNameMap>(
     ...props
   } = allProps;
 
-  const styles: Styles = { ...DEFAULT_STYLES, ...originalStyles };
+  const styles: Styles = { ...originalStyles };
 
   if (block) {
-    styles.display = 'block';
+    styles.display
+      = typeof styles.display === 'string'
+        ? BLOCK_MAP[styles.display || 'inline']
+        : 'block';
   }
 
   if (inline) {
     styles.display
       = typeof styles.display === 'string'
         ? INLINE_MAP[styles.display || 'block']
-        : 'block';
+        : 'inline-block';
   }
 
-  const contextBreakpoints = useContext(ResponsiveContext);
+  const contextBreakpoints = useContext(BreakpointsContext);
   const zones = pointsToZones(breakpoints || contextBreakpoints);
 
-  css = `${css || ''}${renderStyles(styles, zones, STYLE_HANDLER_MAP)}`;
+  css = `${css || ''}${renderStyles(styles, zones)}`;
 
   if (props.hidden == null && isHidden) {
     props.hidden = isHidden;

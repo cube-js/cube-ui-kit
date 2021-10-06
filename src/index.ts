@@ -15,6 +15,8 @@ import { TextArea } from './components/forms/TextArea/TextArea';
 import { Button } from './components/actions/Button/Button';
 import { ButtonGroup } from './components/actions/ButtonGroup/ButtonGroup';
 
+import './styles/predefined';
+
 const _Button = Object.assign(Button, {
   Group: ButtonGroup,
 });
@@ -154,7 +156,7 @@ export type { CubeSearchResultsProps } from './components/organisms/SearchResult
 export { notification } from './services/notification';
 export type { CubeNotificationOptions } from './services/notification';
 
-export * from './providers/Responsive';
+export * from './providers/BreakpointsProvider';
 
 export const Typography = {
   Text,
@@ -165,7 +167,7 @@ export const Typography = {
 export { Text, Title, Paragraph };
 export type { CubeTextProps, CubeTitleProps, CubeParagraphProps };
 
-export { useContextStyles, StyleProvider } from './providers/Styles';
+export { useContextStyles, StyleProvider } from './providers/StylesProvider';
 
 export { Provider } from './provider';
 export type { useProviderProps } from './provider';
@@ -200,6 +202,8 @@ export type {
 } from './components/types';
 export * from './styles/types';
 export * from './styles/list';
+export * from './styles/index';
 
 export { ModalProvider } from '@react-aria/overlays';
 export * from './utils/react';
+export * from './styled';

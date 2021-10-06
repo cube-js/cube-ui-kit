@@ -4,7 +4,7 @@ import { useProviderProps } from '../../provider';
 import { extractStyles } from '../../utils/styles';
 import { CONTAINER_STYLES } from '../../styles/list';
 import { Base } from '../Base';
-import { useContextStyles } from '../../providers/Styles';
+import { useContextStyles } from '../../providers/StylesProvider';
 import { filterBaseProps } from '../../utils/filterBaseProps';
 import { BaseProps, ContainerStyleProps, TagNameProps } from '../types';
 import {

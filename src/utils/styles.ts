@@ -4,7 +4,7 @@ import { getModCombinations } from './index';
 
 export type StyleValue<T = string> = number | null | boolean | undefined | T;
 
-export type StyleValueStateMap<T> = {
+export type StyleValueStateMap<T = string> = {
   [key: string]: StyleValue<T>;
 };
 
@@ -18,7 +18,11 @@ export type ComputeModel = string | number;
 
 export type CSSMap = { $?: string } & { [key: string]: string | string[] };
 
-export type StyleHandler = ((StyleValue) => CSSMap | CSSMap[]) & {
+export type RawStyleHandler = (
+  value: StyleValueStateMap,
+) => CSSMap | CSSMap[] | void;
+
+export type StyleHandler = RawStyleHandler & {
   __lookupStyles: string[];
 };
 

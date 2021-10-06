@@ -9,7 +9,7 @@ import { RadioContext } from './context';
 import { extractStyles } from '../../../utils/styles';
 import { BLOCK_STYLES, OUTER_STYLES } from '../../../styles/list';
 import { Base } from '../../Base';
-import { useContextStyles } from '../../../providers/Styles';
+import { useContextStyles } from '../../../providers/StylesProvider';
 import { FieldWrapper } from '../FieldWrapper';
 
 const STYLES = {

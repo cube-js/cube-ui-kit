@@ -11,7 +11,7 @@ import { CloseOutlined } from '@ant-design/icons';
 import { extractStyles } from '../../../utils/styles';
 import { BLOCK_STYLES, DIMENSION_STYLES } from '../../../styles/list';
 import { mergeProps, SlotProvider } from '../../../utils/react';
-import { useContextStyles } from '../../../providers/Styles';
+import { useContextStyles } from '../../../providers/StylesProvider';
 import { Styles } from '../../../styles/types';
 import { BaseProps } from '../../types';
 import { AriaDialogProps } from '@react-types/dialog';

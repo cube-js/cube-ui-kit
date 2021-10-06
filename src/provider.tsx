@@ -1,6 +1,6 @@
 import { createContext, PropsWithChildren, useContext } from 'react';
-import { StyleProvider } from './providers/Styles';
-import { ResponsiveProvider } from './providers/Responsive';
+import { StyleProvider } from './providers/StylesProvider';
+import { BreakpointsProvider } from './providers/BreakpointsProvider';
 import { ResponsiveStyleValue } from './utils/styles';
 import { Props } from './components/types';
 
@@ -42,7 +42,7 @@ export function Provider(allProps: PropsWithChildren<ProviderProps>) {
 
   if (breakpoints) {
     children = (
-      <ResponsiveProvider value={breakpoints}>{children}</ResponsiveProvider>
+      <BreakpointsProvider value={breakpoints}>{children}</BreakpointsProvider>
     );
   }
 

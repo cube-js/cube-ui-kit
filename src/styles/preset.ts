@@ -7,6 +7,7 @@ export function presetStyle({
   textTransform,
   letterSpacing,
   fontWeight,
+  fontStyle,
   font,
 }) {
   if (!preset) return '';
@@ -43,6 +44,12 @@ export function presetStyle({
     ] = `var(--${name}-font-weight, var(--initial-font-weight, 400))`;
   }
 
+  if (!fontStyle) {
+    styles['font-style'] = styles[
+      '--font-style'
+    ] = `var(--${name}-font-style, var(--initial-font-style, normal))`;
+  }
+
   if (!textTransform) {
     styles['text-transform'] = styles[
       '--text-transform'
@@ -65,5 +72,6 @@ presetStyle.__lookupStyles = [
   'letterSpacing',
   'textTransform',
   'fontWeight',
+  'fontStyle',
   'font',
 ];

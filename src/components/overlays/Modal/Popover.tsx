@@ -3,7 +3,7 @@ import { Overlay } from './Overlay';
 import { forwardRef, HTMLAttributes } from 'react';
 import { useModal, useOverlay } from '@react-aria/overlays';
 import { Base } from '../../Base';
-import { useContextStyles } from '../../../providers/Styles';
+import { useContextStyles } from '../../../providers/StylesProvider';
 import { OverlayProps } from '@react-types/overlays';
 import { BaseProps } from '../../types';
 import { PlacementAxis } from '../../../shared';

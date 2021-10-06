@@ -10,7 +10,7 @@ import { Base } from '../../Base';
 import { useFocus } from '../../../utils/interactions';
 import { mergeProps } from '@react-aria/utils';
 import { filterBaseProps } from '../../../utils/filterBaseProps';
-import { useContextStyles } from '../../../providers/Styles';
+import { useContextStyles } from '../../../providers/StylesProvider';
 import { HiddenInput } from '../../HiddenInput';
 import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../Label';
 import { LoadingOutlined } from '@ant-design/icons';

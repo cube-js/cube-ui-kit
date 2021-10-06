@@ -29,7 +29,7 @@ import { Base } from '../../Base';
 import { extractStyles } from '../../../utils/styles';
 import { BLOCK_STYLES, OUTER_STYLES } from '../../../styles/list';
 import { useFocus } from '../../../utils/interactions';
-import { useContextStyles } from '../../../providers/Styles';
+import { useContextStyles } from '../../../providers/StylesProvider';
 import { useCombinedRefs } from '../../../utils/react';
 import { FieldWrapper } from '../../forms/FieldWrapper';
 import { Item } from '@react-stately/collections';
@@ -104,10 +104,6 @@ const INPUT_STYLES: Styles = {
 
 const OVERLAY_STYLES: Styles = {
   position: 'absolute',
-  transform: {
-    '': 'translate(-1.5x, 0)',
-    '[data-position="top"]': 'translate(-1.5x, 0)',
-  },
 } as const;
 
 const LISTBOX_STYLES: Styles = {

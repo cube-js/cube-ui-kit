@@ -9,7 +9,7 @@ import { Base64Upload } from './components/other/Base64Upload/Base64Upload';
 import { Link } from './components/navigation/Link/Link';
 import { Modal } from './components/organisms/Modal/Modal';
 // import { notification } from './services/notification';
-import { StyleProvider } from './providers/Styles';
+import { StyleProvider } from './providers/StylesProvider';
 import { Form, useForm, Field } from './components/forms/Form';
 import { TextInput } from './components/forms/TextInput/TextInput';
 import { Provider } from './provider';
@@ -46,7 +46,7 @@ function App() {
                 name="name"
                 rules={[{ required: true, message: 'This field is required' }]}
               >
-                <TextInput label="Your name"></TextInput>
+                <TextInput label="Your name" />
               </Field>
             </Form>
           </GridProvider>
@@ -56,7 +56,6 @@ function App() {
         cancelText="Cancel"
         okText="Ok"
         onCancel={() => {}}
-        onOk={function noRefCheck() {}}
         title="Modal"
         isVisible={true}
       >
