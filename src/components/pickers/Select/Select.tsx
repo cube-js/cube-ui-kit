@@ -68,11 +68,17 @@ const SELECT_STYLES: Styles = {
 const INPUT_STYLES: Styles = {
   display: 'grid',
   flow: 'column',
-  gridColumns: '1fr auto',
+  gridColumns: {
+    '': '1fr auto',
+    'with-prefix': 'auto 1fr auto',
+  },
   placeItems: 'center stretch',
   placeContent: 'center stretch',
   gap: '1x',
-  padding: '(1.25x - 1bw) 1x (1.25x - 1bw) (1.5x - 1bw)',
+  padding: {
+    '[data-size="small"]': '(.75x - 1px) (1.5x - 1px)',
+    '[data-size="default"]': '(1.25x - 1bw) 1x (1.25x - 1bw) (1.5x - 1bw)',
+  },
   border: {
     '': true,
     invalid: '#danger-text.50',
@@ -104,10 +110,6 @@ const INPUT_STYLES: Styles = {
 
 const OVERLAY_STYLES: Styles = {
   position: 'absolute',
-  transform: {
-    '': 'translate(-1.5x, 0)',
-    '[data-position="top"]': 'translate(-1.5x, 0)',
-  },
 } as const;
 
 const LISTBOX_STYLES: Styles = {
@@ -172,6 +174,7 @@ export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
   popoverRef?: RefObject<HTMLInputElement>;
   /** The ref for the list box. */
   listBoxRef?: RefObject<HTMLElement>;
+  size?: 'small' | 'default' | Styles['size'];
 }
 
 function Select<T extends object>(
@@ -210,6 +213,7 @@ function Select<T extends object>(
     direction = 'bottom',
     shouldFlip = true,
     requiredMark = true,
+    placeholder,
     ...otherProps
   } = props;
   let state = useSelectState(props);
@@ -292,19 +296,19 @@ function Select<T extends object>(
           ...INPUT_STYLES,
           ...inputStyles,
         }}
+        data-size={props.size === 'small' ? 'small' : 'default'}
         mods={{
           invalid: isInvalid,
           valid: validationState === 'valid',
           disabled: isDisabled,
           hovered: isHovered,
           focused: isFocused,
+          'with-prefix': !!prefix,
         }}
       >
         {prefix}
         <span {...valueProps}>
-          {state.selectedItem
-            ? state.selectedItem.rendered
-            : 'Select an option'}
+          {state.selectedItem ? state.selectedItem.rendered : placeholder}
         </span>
         {(validationState || isLoading || suffix) && (
           <div>
