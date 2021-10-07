@@ -49,7 +49,7 @@ function DialogTrigger(props) {
     hideArrow,
     targetRef,
     onDismiss,
-    isDismissable,
+    isDismissable = true,
     isKeyboardDismissDisabled,
     styles,
     mobileViewport = 700,
