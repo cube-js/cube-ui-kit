@@ -475,6 +475,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
         focused: shouldUseVirtualFocus ? isVirtualFocused : isFocused,
         disabled: isDisabled,
       }}
+      data-theme={isSelected ? 'special' : undefined}
       styles={styles}
       key={item.key}
     >
