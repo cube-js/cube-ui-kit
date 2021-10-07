@@ -6,11 +6,11 @@ const DIRECTION_MAP = {
   bottom: 'top center',
 };
 const TRANSLATE_MAP = {
-  initial: 'translate(0, calc(-1 * var(--overlay-offset)))',
-  top: 'translate(0, calc(1 * var(--overlay-offset)))',
-  right: 'translate(calc(-1 * var(--overlay-offset)), 0)',
-  left: 'translate(calc(1 * var(--overlay-offset)), 0)',
-  bottom: 'translate(0, calc(-1 * var(--overlay-offset)))',
+  initial: 'translate(0px, calc(-1 * var(--overlay-offset)))',
+  top: 'translate(0px, calc(1 * var(--overlay-offset)))',
+  right: 'translate(calc(-1 * var(--overlay-offset)), 0px)',
+  left: 'translate(calc(1 * var(--overlay-offset)), 0px)',
+  bottom: 'translate(0px, calc(-1 * var(--overlay-offset)))',
 };
 
 export interface OverlayTransitionCSSProps {
@@ -23,9 +23,10 @@ export interface OverlayTransitionCSSProps {
 export const getOverlayTransitionCSS = ({
   suffix = '',
   placement = 'initial',
-  minScale = 0.9,
+  minScale = 0.95,
   minOffset = '0px',
-}: OverlayTransitionCSSProps = {}) => `
+}: OverlayTransitionCSSProps = {}) => {
+  return `
   &${suffix} {
     transform: var(--overlay-position);
     transform-origin: ${DIRECTION_MAP[placement]};
@@ -38,7 +39,7 @@ export const getOverlayTransitionCSS = ({
     --overlay-hidden-y-scale: ${
       placement === 'left' || placement === 'right' ? '1' : minScale
     };
-    --overlay-translate-visible: translate(0, 0);
+    --overlay-translate-visible: translate(0px, 0px);
     --overlay-translate-hidden: ${TRANSLATE_MAP[placement]};
     --overlay-transition: 180ms;
     --overlay-hidden-scale: scale(var(--overlay-hidden-x-scale), var(--overlay-hidden-y-scale));
@@ -54,6 +55,7 @@ export const getOverlayTransitionCSS = ({
     opacity: 1;
     transform: var(--overlay-normal-scale) var(--overlay-translate-visible);
     transition: transform var(--overlay-transition) cubic-bezier(0, .66, 0, .66), opacity var(--overlay-transition) cubic-bezier(0, .66, 0, .66);
+    pointer-events: none;
   }
 
   &.cube-overlay-transition-exit${suffix} {
@@ -68,3 +70,4 @@ export const getOverlayTransitionCSS = ({
     transition: transform var(--overlay-transition) cubic-bezier(.66, 0, .66, 0), opacity var(--overlay-transition) cubic-bezier(.66, 0, .66, 0);
   }
 `;
+};
