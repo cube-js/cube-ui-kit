@@ -16,6 +16,18 @@ export default {
         defaultValue: { summary: false },
       },
     },
+    size: {
+      defaultValue: undefined,
+      description: 'The size of the button',
+      control: {
+        type: 'radio',
+        options: [undefined, 'default', 'small'],
+      },
+      table: {
+        type: { summary: 'string' },
+        defaultValue: { summary: 'default' },
+      },
+    },
     isDisabled: {
       defaultValue: false,
       description: 'Disables the input.',
@@ -103,8 +115,7 @@ const Template = ({
   isDisabled,
   defaultSelectedKey,
   validationState,
-  selectionMode,
-  type,
+  size,
 }) => {
   return (
     <Select
@@ -117,6 +128,7 @@ const Template = ({
       isLoading={isLoading}
       defaultSelectedKey={defaultSelectedKey}
       onSelectionChange={(query) => console.log('change', query)}
+      size={size}
     >
       {options.map((option) => {
         return <Select.Item key={option}>{option}</Select.Item>;

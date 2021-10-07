@@ -89,9 +89,7 @@ function TooltipTrigger(props: CubeTooltipTriggerProps) {
         {/*{state.isOpen ? tooltip : null}*/}
         <OverlayWrapper
           isOpen={state.isOpen}
-          childrenOnly
           placement={props.placement || 'top'}
-          withoutTransition={true}
         >
           {tooltip}
         </OverlayWrapper>

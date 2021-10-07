@@ -44,6 +44,7 @@ import {
 import { AriaSelectProps } from '@react-types/select';
 import { DOMRef } from '@react-types/shared';
 import { FormFieldProps } from '../../../shared';
+import { getOverlayTransitionCSS } from '../../../utils/transitions';
 
 const CaretDownIcon = () => (
   <svg
@@ -68,11 +69,17 @@ const SELECT_STYLES: Styles = {
 const INPUT_STYLES: Styles = {
   display: 'grid',
   flow: 'column',
-  gridColumns: '1fr auto',
+  gridColumns: {
+    '': '1fr auto',
+    'with-prefix': 'auto 1fr auto',
+  },
   placeItems: 'center stretch',
   placeContent: 'center stretch',
   gap: '1x',
-  padding: '(1.25x - 1bw) 1x (1.25x - 1bw) (1.5x - 1bw)',
+  padding: {
+    '[data-size="small"]': '(.75x - 1px) (1.5x - 1px)',
+    '[data-size="default"]': '(1.25x - 1bw) 1x (1.25x - 1bw) (1.5x - 1bw)',
+  },
   border: {
     '': true,
     invalid: '#danger-text.50',
@@ -168,6 +175,7 @@ export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
   popoverRef?: RefObject<HTMLInputElement>;
   /** The ref for the list box. */
   listBoxRef?: RefObject<HTMLElement>;
+  size?: 'small' | 'default' | Styles['size'];
 }
 
 function Select<T extends object>(
@@ -206,6 +214,7 @@ function Select<T extends object>(
     direction = 'bottom',
     shouldFlip = true,
     requiredMark = true,
+    placeholder,
     ...otherProps
   } = props;
   let state = useSelectState(props);
@@ -288,19 +297,19 @@ function Select<T extends object>(
           ...INPUT_STYLES,
           ...inputStyles,
         }}
+        data-size={props.size === 'small' ? 'small' : 'default'}
         mods={{
           invalid: isInvalid,
           valid: validationState === 'valid',
           disabled: isDisabled,
           hovered: isHovered,
           focused: isFocused,
+          'with-prefix': !!prefix,
         }}
       >
         {prefix}
         <span {...valueProps}>
-          {state.selectedItem
-            ? state.selectedItem.rendered
-            : 'Select an option'}
+          {state.selectedItem ? state.selectedItem.rendered : placeholder}
         </span>
         {(validationState || isLoading || suffix) && (
           <div>
@@ -400,18 +409,19 @@ export function ListBoxPopup({
   // <DismissButton> components at the start and end of the list
   // to allow screen reader users to dismiss the popup easily.
   return (
-    <FocusScope restoreFocus>
-      <Base
-        styles={{
-          minWidth: minWidth ? `${minWidth}px` : 'initial',
-          ...OVERLAY_STYLES,
-          overlayStyles,
-        }}
-        {...parentOverlayProps}
-        {...overlayProps}
-        data-position={placement}
-        ref={popoverRef}
-      >
+    <Base
+      styles={{
+        minWidth: minWidth ? `${minWidth}px` : 'initial',
+        ...OVERLAY_STYLES,
+        overlayStyles,
+      }}
+      {...parentOverlayProps}
+      {...overlayProps}
+      css={getOverlayTransitionCSS({ placement })}
+      data-position={placement}
+      ref={popoverRef}
+    >
+      <FocusScope restoreFocus>
         <DismissButton onDismiss={() => state.close()} />
         <Base
           as="ul"
@@ -430,8 +440,8 @@ export function ListBoxPopup({
           ))}
         </Base>
         <DismissButton onDismiss={() => state.close()} />
-      </Base>
-    </FocusScope>
+      </FocusScope>
+    </Base>
   );
 }
 

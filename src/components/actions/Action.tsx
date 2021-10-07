@@ -125,6 +125,7 @@ const DEFAULT_STYLES: Styles = {
     focused: '#purple-03',
   },
   transition: 'theme',
+  cursor: 'inherit',
 } as const;
 
 const DEPRECATED_PROPS = ['disabled', 'onClick'];
