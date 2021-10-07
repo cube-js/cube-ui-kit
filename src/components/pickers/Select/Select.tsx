@@ -44,6 +44,7 @@ import {
 import { AriaSelectProps } from '@react-types/select';
 import { DOMRef } from '@react-types/shared';
 import { FormFieldProps } from '../../../shared';
+import { getOverlayTransitionCSS } from '../../../utils/transitions';
 
 const CaretDownIcon = () => (
   <svg
@@ -408,18 +409,19 @@ export function ListBoxPopup({
   // <DismissButton> components at the start and end of the list
   // to allow screen reader users to dismiss the popup easily.
   return (
-    <FocusScope restoreFocus>
-      <Base
-        styles={{
-          minWidth: minWidth ? `${minWidth}px` : 'initial',
-          ...OVERLAY_STYLES,
-          overlayStyles,
-        }}
-        {...parentOverlayProps}
-        {...overlayProps}
-        data-position={placement}
-        ref={popoverRef}
-      >
+    <Base
+      styles={{
+        minWidth: minWidth ? `${minWidth}px` : 'initial',
+        ...OVERLAY_STYLES,
+        overlayStyles,
+      }}
+      {...parentOverlayProps}
+      {...overlayProps}
+      css={getOverlayTransitionCSS({ placement })}
+      data-position={placement}
+      ref={popoverRef}
+    >
+      <FocusScope restoreFocus>
         <DismissButton onDismiss={() => state.close()} />
         <Base
           as="ul"
@@ -438,8 +440,8 @@ export function ListBoxPopup({
           ))}
         </Base>
         <DismissButton onDismiss={() => state.close()} />
-      </Base>
-    </FocusScope>
+      </FocusScope>
+    </Base>
   );
 }
 

@@ -18,15 +18,15 @@ export interface OverlayTransitionCSSProps {
   placement?: string;
   minScale?: string | number;
   minOffset?: string;
+  forChild?: boolean;
 }
 
 export const getOverlayTransitionCSS = ({
   suffix = '',
   placement = 'initial',
-  minScale = 0.95,
-  minOffset = '0px',
-}: OverlayTransitionCSSProps = {}) => {
-  return `
+  minScale = 0.8,
+  minOffset = '8px',
+}: OverlayTransitionCSSProps = {}) => `
   &${suffix} {
     transform: var(--overlay-position);
     transform-origin: ${DIRECTION_MAP[placement]};
@@ -48,26 +48,25 @@ export const getOverlayTransitionCSS = ({
 
   &.cube-overlay-transition-enter${suffix} {
     opacity: 0;
-    transform: var(--overlay-hidden-scale) var(--overlay-translate-hidden);
+    transform: var(--overlay-translate-hidden) var(--overlay-hidden-scale);
   }
 
   &.cube-overlay-transition-enter-active${suffix} {
     opacity: 1;
-    transform: var(--overlay-normal-scale) var(--overlay-translate-visible);
+    transform: var(--overlay-translate-visible) var(--overlay-normal-scale);
     transition: transform var(--overlay-transition) cubic-bezier(0, .66, 0, .66), opacity var(--overlay-transition) cubic-bezier(0, .66, 0, .66);
     pointer-events: none;
   }
 
   &.cube-overlay-transition-exit${suffix} {
     opacity: 1;
-    transform: var(--overlay-normal-scale) var(--overlay-translate-visible);
+    transform: var(--overlay-translate-visible) var(--overlay-normal-scale);
   }
 
   &.cube-overlay-transition-exit-active${suffix} {
     opacity: 0;
-    transform: var(--overlay-hidden-scale) var(--overlay-translate-hidden);
+    transform: var(--overlay-translate-hidden) var(--overlay-hidden-scale);
     pointer-events: none;
     transition: transform var(--overlay-transition) cubic-bezier(.66, 0, .66, 0), opacity var(--overlay-transition) cubic-bezier(.66, 0, .66, 0);
   }
 `;
-};
