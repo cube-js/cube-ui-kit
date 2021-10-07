@@ -4,7 +4,7 @@ import { useHover } from '@react-aria/interactions';
 import { useRadio } from '@react-aria/radio';
 import { useRadioProvider } from './context';
 import { extractStyles } from '../../../utils/styles';
-import { useContextStyles } from '../../../providers/Styles';
+import { useContextStyles } from '../../../providers/StylesProvider';
 import { BLOCK_STYLES, OUTER_STYLES } from '../../../styles/list';
 import { Base } from '../../Base';
 import { filterBaseProps } from '../../../utils/filterBaseProps';

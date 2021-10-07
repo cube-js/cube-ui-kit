@@ -22,9 +22,8 @@ export default {
   },
 };
 
-const Template = ({ type, isDisabled, label }) => (
+const Template = ({ isDisabled, label }) => (
   <Link
-    type={type}
     isDisabled={isDisabled}
     onPress={() => console.log('Press')}
     to="!https://cube.dev"

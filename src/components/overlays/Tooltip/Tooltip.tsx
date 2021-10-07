@@ -6,7 +6,7 @@ import { useTooltip } from '@react-aria/tooltip';
 import { Base } from '../../Base';
 import { extractStyles } from '../../../utils/styles';
 import { CONTAINER_STYLES } from '../../../styles/list';
-import { useContextStyles } from '../../../providers/Styles';
+import { useContextStyles } from '../../../providers/StylesProvider';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
 import { Styles } from '../../../styles/types';
 import { BaseProps, ContainerStyleProps } from '../../types';
@@ -22,6 +22,7 @@ const TOOLTIP_STYLES: Styles = {
   padding: '.75x 1x',
   preset: 't3',
   backdropFilter: 'blur(.5x)',
+  whiteSpace: 'pre-line',
 };
 
 const TIP_STYLES: Styles = {

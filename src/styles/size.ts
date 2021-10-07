@@ -1,11 +1,15 @@
 import { parseStyle } from '../utils/styles';
 
-export function sizeStyle({ size }) {
+export function sizeStyle({ size, fontSize, lineHeight, letterSpacing }) {
   if (!size) return '';
 
   const { values, mods } = parseStyle(size);
 
-  let fontSize, lineHeight, letterSpacing;
+  if (fontSize || lineHeight || letterSpacing) {
+    console.log(
+      'CubeUIKit: unable to use `fontSize`, `lineHeight` and `letterSpacing` styles simultaneously with `size` style.',
+    );
+  }
 
   if (mods.length) {
     fontSize = `var(--${mods[0] || 'default'}-font-size, inherit)`;
@@ -31,4 +35,4 @@ export function sizeStyle({ size }) {
   };
 }
 
-sizeStyle.__lookupStyles = ['size'];
+sizeStyle.__lookupStyles = ['size', 'fontSize', 'lineHeight', 'letterSpacing'];

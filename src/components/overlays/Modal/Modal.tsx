@@ -5,7 +5,7 @@ import { forwardRef, ReactNode } from 'react';
 import { Underlay } from './Underlay';
 import { useModal, useOverlay, usePreventScroll } from '@react-aria/overlays';
 import { Base } from '../../Base';
-import { useContextStyles } from '../../../providers/Styles';
+import { useContextStyles } from '../../../providers/StylesProvider';
 import { Styles } from '../../../styles/types';
 import { BaseProps, Props } from '../../types';
 import { mergeProps } from '../../../utils/react';

@@ -22,7 +22,7 @@ import { BLOCK_STYLES, POSITION_STYLES } from '../../../styles/list';
 import { useFocus } from '../../../utils/interactions';
 import { Prefix } from '../../layout/Prefix';
 import { Suffix } from '../../layout/Suffix';
-import { useContextStyles } from '../../../providers/Styles';
+import { useContextStyles } from '../../../providers/StylesProvider';
 import { FieldWrapper } from '../FieldWrapper';
 import { Space } from '../../layout/Space';
 import { Block } from '../../Block';

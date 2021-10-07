@@ -16,7 +16,7 @@ import { Base } from '../../Base';
 import { extractStyles } from '../../../utils/styles';
 import { BLOCK_STYLES, OUTER_STYLES } from '../../../styles/list';
 import { useFocus } from '../../../utils/interactions';
-import { useContextStyles } from '../../../providers/Styles';
+import { useContextStyles } from '../../../providers/StylesProvider';
 import { modAttrs, useCombinedRefs } from '../../../utils/react';
 import { FieldWrapper } from '../../forms/FieldWrapper';
 import { CubeSelectBaseProps, ListBoxPopup } from '../Select/Select';

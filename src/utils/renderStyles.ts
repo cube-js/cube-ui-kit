@@ -1,19 +1,7 @@
 import { mediaWrapper, normalizeStyleZones } from './responsive';
-import {
-  getRgbValuesFromRgbaString,
-  StyleHandler,
-  StyleMap,
-  parseColor,
-  strToRgb,
-  styleHandlerCacheWrapper,
-} from './styles';
-import { parseStyle } from './styles';
-import { toSnakeCase } from './string';
+import { StyleHandler, StyleMap, StyleValueStateMap } from './styles';
 import { Styles } from '../styles/types';
-
-type StyleHandlerMap = {
-  [key: string]: StyleHandler[];
-};
+import { createStyle, STYLE_HANDLER_MAP } from '../styles';
 
 type HandlerQueueItem = {
   handler: StyleHandler;
@@ -34,14 +22,9 @@ const CACHE_LIMIT = 1000;
  * Render style props to complete Styled Components CSS.
  * @param styles - Complete style props.
  * @param responsive - A list of responsive zones
- * @param styleHandlerMap - Style to handler list map.
  * @return {string}
  */
-export function renderStyles(
-  styles: Styles,
-  responsive: number[],
-  styleHandlerMap: StyleHandlerMap = {},
-) {
+export function renderStyles(styles: Styles, responsive: number[]) {
   const zones = responsive;
   const responsiveStyles = Array.from(Array(zones.length)).map(() => '');
   const cacheKey = JSON.stringify({ s: styles, r: responsive });
@@ -60,7 +43,7 @@ export function renderStyles(
     }
 
     Object.keys(styles).forEach((styleName) => {
-      let handlers: StyleHandler[] = styleHandlerMap[styleName];
+      let handlers: StyleHandler[] = STYLE_HANDLER_MAP[styleName];
 
       if (!handlers) {
         handlers = [createStyle(styleName)];
@@ -118,7 +101,7 @@ export function renderStyles(
           responsiveStyles[i] += rules || '';
         });
       } else {
-        rawStyles += handler(styleMap) || '';
+        rawStyles += handler(styleMap as StyleValueStateMap<string>) || '';
       }
     });
 
@@ -128,74 +111,4 @@ export function renderStyles(
   }
 
   return `outline: none;\n${STYLE_CACHE[cacheKey]}`;
-}
-
-const CACHE = {};
-
-export function createStyle(
-  styleName: string,
-  cssStyle?: string,
-  converter?: Function,
-) {
-  if (!CACHE[styleName]) {
-    CACHE[styleName] = styleHandlerCacheWrapper((styleMap) => {
-      let styleValue = styleMap[styleName];
-
-      if (styleValue == null || styleValue === false) return;
-
-      const finalCssStyle
-        = cssStyle || toSnakeCase(styleName).replace(/^@/, '--');
-
-      // convert non-string values
-      if (converter && typeof styleValue !== 'string') {
-        styleValue = converter(styleValue);
-
-        if (!styleValue) return;
-      }
-
-      if (
-        typeof styleValue === 'string'
-        && finalCssStyle.startsWith('--')
-        && finalCssStyle.endsWith('-color')
-      ) {
-        styleValue = styleValue.trim();
-
-        const rgba = strToRgb(styleValue);
-
-        const { color, name } = parseColor(styleValue);
-
-        if (name && rgba) {
-          return {
-            [finalCssStyle]: `var(--${name}-color, ${rgba})`,
-            [`${finalCssStyle}-rgb`]: `var(--${name}-color-rgb, ${getRgbValuesFromRgbaString(
-              rgba,
-            ).join(', ')})`,
-          };
-        } else if (name) {
-          return {
-            [finalCssStyle]: `var(--${name}-color)`,
-            [`${finalCssStyle}-rgb`]: `var(--${name}-color-rgb)`,
-          };
-        } else if (rgba) {
-          return {
-            [finalCssStyle]: rgba,
-            [`${finalCssStyle}-rgb`]:
-              getRgbValuesFromRgbaString(rgba).join(', '),
-          };
-        }
-
-        return {
-          [finalCssStyle]: color,
-        };
-      }
-
-      const { value } = parseStyle(styleValue, 1);
-
-      return { [finalCssStyle]: value };
-    });
-
-    CACHE[styleName].__lookupStyles = [styleName];
-  }
-
-  return CACHE[styleName];
 }

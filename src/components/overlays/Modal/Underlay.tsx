@@ -1,6 +1,6 @@
 import { forwardRef, HTMLAttributes } from 'react';
 import { Base } from '../../Base';
-import { useContextStyles } from '../../../providers/Styles';
+import { useContextStyles } from '../../../providers/StylesProvider';
 import { Styles } from '../../../styles/types';
 
 const UNDERLAY_STYLES: Styles = {

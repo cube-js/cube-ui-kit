@@ -1,108 +1,131 @@
-import { gapStyle } from './gap';
-import { flowStyle } from './flow';
-import { resetStyle } from './reset';
-import { colorStyle } from './color';
-import { fillStyle } from './fill';
-import { widthStyle } from './width';
-import { heightStyle } from './height';
-import { radiusStyle } from './radius';
-import { borderStyle } from './border';
-import { shadowStyle } from './shadow';
-import { paddingStyle } from './padding';
-import { sizeStyle } from './size';
-import { presetStyle } from './preset';
-import { fontStyleStyle } from './fontStyle';
-import { marginStyle } from './margin';
-import { fontStyle } from './font';
-import { outlineStyle } from './outline';
-import { createStyle } from '../utils/renderStyles';
-import { transitionStyle } from './transition';
-import { groupRadiusAttr } from './groupRadius';
-import { boxShadowCombinator } from './boxShadow.combinator';
-import { styleHandlerCacheWrapper } from '../utils/styles';
-import { styledScrollbarStyle } from './styledScrollbar';
-import { displayStyle } from './display';
+import { RawStyleHandler, StyleHandler } from '../utils/styles';
+import {
+  getRgbValuesFromRgbaString,
+  parseColor,
+  parseStyle,
+  strToRgb,
+  styleHandlerCacheWrapper,
+} from '../utils/styles';
+import { toSnakeCase } from '../utils/string';
 
-const columnsConverter = (val) => {
-  if (typeof val === 'number') {
-    return 'minmax(1px, 1fr) '.repeat(val).trim();
+const CACHE = {};
+
+export function createStyle(
+  styleName: string,
+  cssStyle?: string,
+  converter?: Function,
+) {
+  if (!CACHE[styleName]) {
+    CACHE[styleName] = styleHandlerCacheWrapper((styleMap) => {
+      let styleValue = styleMap[styleName];
+
+      if (styleValue == null || styleValue === false) return;
+
+      const finalCssStyle
+        = cssStyle || toSnakeCase(styleName).replace(/^@/, '--');
+
+      // convert non-string values
+      if (converter && typeof styleValue !== 'string') {
+        styleValue = converter(styleValue);
+
+        if (!styleValue) return;
+      }
+
+      if (
+        typeof styleValue === 'string'
+        && finalCssStyle.startsWith('--')
+        && finalCssStyle.endsWith('-color')
+      ) {
+        styleValue = styleValue.trim();
+
+        const rgba = strToRgb(styleValue);
+
+        const { color, name } = parseColor(styleValue);
+
+        if (name && rgba) {
+          return {
+            [finalCssStyle]: `var(--${name}-color, ${rgba})`,
+            [`${finalCssStyle}-rgb`]: `var(--${name}-color-rgb, ${getRgbValuesFromRgbaString(
+              rgba,
+            ).join(', ')})`,
+          };
+        } else if (name) {
+          return {
+            [finalCssStyle]: `var(--${name}-color)`,
+            [`${finalCssStyle}-rgb`]: `var(--${name}-color-rgb)`,
+          };
+        } else if (rgba) {
+          return {
+            [finalCssStyle]: rgba,
+            [`${finalCssStyle}-rgb`]:
+              getRgbValuesFromRgbaString(rgba).join(', '),
+          };
+        }
+
+        return {
+          [finalCssStyle]: color,
+        };
+      }
+
+      const { value } = parseStyle(styleValue, 1);
+
+      return { [finalCssStyle]: value };
+    });
+
+    CACHE[styleName].__lookupStyles = [styleName];
   }
 
-  return null;
-};
-const rowsConverter = (val) => {
-  if (typeof val === 'number') {
-    return 'auto '.repeat(val).trim();
+  return CACHE[styleName];
+}
+
+type StyleHandlerMap = Record<string, StyleHandler[]>;
+
+export const STYLE_HANDLER_MAP: StyleHandlerMap = {};
+
+export function defineCustomStyle(
+  names: string[] | StyleHandler,
+  handler?: RawStyleHandler,
+) {
+  let handlerWithLookup: StyleHandler;
+
+  if (typeof names === 'function') {
+    handlerWithLookup = names;
+    names = handlerWithLookup.__lookupStyles;
+  } else if (handler) {
+    handlerWithLookup = Object.assign(handler, { __lookupStyles: names });
+  } else {
+    console.warn('CubeUIKit: incorrect custom style definition:', names);
+    return;
   }
 
-  return null;
-};
+  handlerWithLookup = styleHandlerCacheWrapper(handlerWithLookup);
 
-export const STYLES = [
-  // Manually define styles that are used in other custom styles.
-  // Otherwise, they won't be handled as expected.
-  createStyle('fontSize'),
-  createStyle('lineHeight'),
-  createStyle('fontWeight'),
-  createStyle('letterSpacing'),
-  createStyle('textTransform'),
-  // Style aliases
-  createStyle('gridAreas', 'grid-template-areas'),
-  createStyle('gridColumns', 'grid-template-columns', columnsConverter),
-  createStyle('gridRows', 'grid-template-rows', rowsConverter),
-  createStyle('gridTemplate', 'grid-template', (val) => {
-    if (typeof val !== 'string') return;
+  if (Array.isArray(names)) {
+    // just to pass type checking
+    names.forEach((name) => {
+      if (!STYLE_HANDLER_MAP[name]) {
+        STYLE_HANDLER_MAP[name] = [];
+      }
 
-    return val
-      .split('/')
-      .map((s, i) => (i ? columnsConverter : rowsConverter)(s))
-      .join('/');
-  }),
-].concat(
-  [
-    displayStyle,
-    transitionStyle,
-    resetStyle,
-    fillStyle,
-    widthStyle,
-    marginStyle,
-    gapStyle,
-    flowStyle,
-    colorStyle,
-    heightStyle,
-    radiusStyle,
-    borderStyle,
-    shadowStyle,
-    paddingStyle,
-    sizeStyle,
-    presetStyle,
-    boxShadowCombinator,
-    outlineStyle,
-    fontStyle,
-    fontStyleStyle,
-    groupRadiusAttr,
-    styledScrollbarStyle,
-  ].map(styleHandlerCacheWrapper),
-);
+      STYLE_HANDLER_MAP[name].push(handlerWithLookup);
+    });
+  }
+}
 
-export const STYLE_HANDLER_MAP = STYLES.reduce((map, handler) => {
-  const lookup = handler.__lookupStyles;
+type ConverterHandler = (
+  s: string | boolean | number | undefined,
+) => string | undefined;
 
-  if (!lookup) {
-    console.warn('style lookup not found for the handler', handler);
+export function defineStyleAlias(
+  styleName: string,
+  cssStyleName?: string,
+  converter?: ConverterHandler,
+) {
+  const styleHandler = createStyle(styleName, cssStyleName, converter);
 
-    return map;
+  if (!STYLE_HANDLER_MAP[styleName]) {
+    STYLE_HANDLER_MAP[styleName] = [];
   }
 
-  lookup.forEach((styleName) => {
-    if (!map[styleName]) {
-      map[styleName] = [];
-    }
-
-    if (!map[styleName].includes(handler)) {
-      map[styleName].push(handler);
-    }
-  });
-
-  return map;
-}, {});
+  STYLE_HANDLER_MAP[styleName].push(styleHandler);
+}
