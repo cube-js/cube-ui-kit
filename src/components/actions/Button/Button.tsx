@@ -21,7 +21,8 @@ export interface CubeButtonProps extends CubeActionProps {
     | 'clear'
     | 'outline'
     | 'tab'
-    | 'item';
+    | 'item'
+    | string;
 }
 
 export function provideStyles({
