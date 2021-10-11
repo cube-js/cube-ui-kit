@@ -231,7 +231,7 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
           {isDismissable && (
             <Button
               qa="ModalCloseButton"
-              type="item"
+              type="neutral"
               styles={CLOSE_BUTTON_STYLES}
               icon={<CloseOutlined />}
               aria-label={formatMessage('dismiss')}

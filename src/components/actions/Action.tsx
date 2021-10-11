@@ -111,10 +111,6 @@ export function createLinkClickHandler(router, to, onPress, disabled) {
 const DEFAULT_STYLES: Styles = {
   reset: 'button',
   position: 'relative',
-  opacity: {
-    '': 1,
-    disabled: 0.4,
-  },
   margin: 0,
   fontFamily: 'var(--font)',
   fontWeight: 'inherit',

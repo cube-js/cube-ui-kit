@@ -17,7 +17,7 @@ const STEP_BUTTON_STYLES: Styles = {
 function StepButton(props) {
   return (
     <Button
-      type="item"
+      type="neutral"
       styles={STEP_BUTTON_STYLES}
       preventDefault
       icon={

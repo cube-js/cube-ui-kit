@@ -79,7 +79,7 @@ function App() {
       {/*>*/}
       {/*  <Block>Do you really want to delete it?</Block>*/}
       {/*  /!*<Space gap="1.5x">*!/*/}
-      {/*  /!*  <Button type="danger">*!/*/}
+      {/*  /!*  <Button theme="danger">*!/*/}
       {/*  /!*    Delete*!/*/}
       {/*  /!*  </Button>*!/*/}
       {/*  /!*  <Button>*!/*/}
@@ -118,7 +118,7 @@ function App() {
         </StyleProvider>
         <Button type="primary">Primary</Button>
         <Button type="primary">Other Primary</Button>
-        <Button type="danger">Danger</Button>
+        <Button theme="danger">Danger</Button>
         <Button type="clear">Clear</Button>
         <Base64Upload>123</Base64Upload>
       </Space>

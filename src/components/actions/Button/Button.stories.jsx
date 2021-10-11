@@ -47,8 +47,23 @@ export default {
           'primary',
           'outline',
           'clear',
-          'item',
-          'tab',
+          'neutral',
+          'link',
+        ],
+      },
+      table: {
+        type: { summary: 'string' },
+        defaultValue: { summary: 'default' },
+      },
+    },
+    theme: {
+      defaultValue: 'default',
+      description: 'A visual type of the button. Don\'t affect any logic',
+      control: {
+        type: 'radio',
+        options: [
+          undefined,
+          'danger',
         ],
       },
       table: {
@@ -96,24 +111,14 @@ export default {
 };
 
 const Template = ({
-  size,
-  type,
-  radius,
-  isSelected,
-  isDisabled,
-  isLoading,
-  label,
   icon,
+  label,
+  ...props
 }) => (
   <Button
-    size={size}
-    type={type}
-    radius={radius}
-    isDisabled={isDisabled}
-    isLoading={isLoading}
-    isSelected={isSelected}
     icon={icon ? <DollarCircleOutlined /> : undefined}
     onPress={() => console.log('Press')}
+    {...props}
   >
     {label}
   </Button>
@@ -145,14 +150,7 @@ Clear.args = {
 export const Item = Template.bind({});
 Item.args = {
   label: 'Button',
-  type: 'item',
-};
-
-export const Tab = Template.bind({});
-Tab.args = {
-  label: 'Tab',
-  type: 'tab',
-  selected: true,
+  type: 'neutral',
 };
 
 export const Link = Template.bind({});

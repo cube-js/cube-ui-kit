@@ -9,7 +9,6 @@ import { Styles } from '../../../styles/types';
 import { Block } from '../../Block';
 
 export interface CubeButtonProps extends CubeActionProps {
-  ghost?: boolean;
   icon?: JSX.Element;
   isLoading?: boolean;
   isSelected?: boolean;
@@ -20,16 +19,18 @@ export interface CubeButtonProps extends CubeActionProps {
     | 'link'
     | 'clear'
     | 'outline'
-    | 'tab'
-    | 'item'
+    | 'neutral'
+    | string;
+  theme?:
+    | 'default'
+    | 'danger'
     | string;
 }
 
 export function provideStyles({
   size,
   type,
-  isDisabled,
-  ghost,
+  theme,
   isLoading,
   icon,
   children,
@@ -37,13 +38,7 @@ export function provideStyles({
   return {
     ...STYLES_BY_SIZE[size || 'default'],
     ...DEFAULT_STYLES,
-    ...STYLES_BY_TYPE[type || 'default'],
-    ...(isDisabled
-      ? {
-          ...(type !== 'tab' ? STYLES_BY_TYPE['disabled'] : {}),
-        }
-      : {}),
-    ...(ghost ? { fill: '#clear' } : null),
+    ...(theme === 'danger' ? DANGER_STYLES_BY_TYPE : DEFAULT_STYLES_BY_TYPE)[type || 'default'],
     ...((isLoading || icon) && !children
       ? {
           padding: '0',
@@ -56,7 +51,22 @@ export function provideStyles({
   };
 }
 
-const STYLES_BY_TYPE: { [key in keyof CubeButtonProps['type']]: Styles } = {
+const DEFAULT_STYLES_BY_TYPE: { [key: string]: Styles } = {
+  primary: {
+    border: {
+      '': '#clear',
+      pressed: '#purple-text',
+    },
+    fill: {
+      hovered: '#purple-text',
+      'pressed | !hovered': '#purple',
+      '[disabled]': '#dark.04',
+    },
+    color: {
+      '': '#white',
+      '[disabled]': '#dark.30',
+    },
+  },
   default: {
     border: {
       '': '#clear',
@@ -66,36 +76,12 @@ const STYLES_BY_TYPE: { [key in keyof CubeButtonProps['type']]: Styles } = {
       '': '#purple.10',
       hovered: '#purple.16',
       pressed: '#purple.10',
+      '[disabled]': '#dark.04',
     },
-    color: '#purple',
-  },
-  link: {
-    fontWeight: 500,
-    padding: '0',
-    radius: {
-      '': '0',
-      focused: '1r',
-    },
-    fill: '#clear',
     color: {
-      '': '#purple-text',
-      hovered: '#purple',
+      '': '#purple',
+      '[disabled]': '#dark.30',
     },
-    shadow: {
-      '': '0 @border-width 0 0 #purple-03.20',
-      focused: '0 0 0 @outline-width #purple-03',
-    },
-  },
-  primary: {
-    border: {
-      '': '#clear',
-      pressed: '#purple-text',
-    },
-    fill: {
-      hovered: '#purple-text',
-      'pressed | !hovered': '#purple',
-    },
-    color: '#white',
   },
   clear: {
     border: {
@@ -106,21 +92,48 @@ const STYLES_BY_TYPE: { [key in keyof CubeButtonProps['type']]: Styles } = {
       '': '#purple.0',
       hovered: '#purple.16',
       pressed: '#purple.10',
+      '[disabled]': '#purple.0',
     },
-    color: '#purple-text',
+    color: {
+      '': '#purple-text',
+      '[disabled]': '#dark.30',
+    },
   },
   outline: {
     border: {
       '': '#purple.30',
       pressed: '#purple-text.10',
-      disabled: '#dark.12',
+      '[disabled]': '#dark.12',
     },
     fill: {
       '': '#purple.0',
       hovered: '#purple.16',
       pressed: '#purple.10',
+      '[disabled]': '#purple.0',
     },
-    color: '#purple-text',
+    color: {
+      '': '#purple-text',
+      '[disabled]': '#dark.30',
+    },
+  },
+  link: {
+    fontWeight: 500,
+    padding: '0',
+    radius: {
+      '': '0',
+      focused: true,
+    },
+    fill: '#clear',
+    color: {
+      '': '#purple-text',
+      pressed: '#purple',
+      '[disabled]': '#dark.30',
+    },
+    shadow: {
+      '': '0 @border-width 0 0 #purple-03.20',
+      focused: '0 0 0 @outline-width #purple-03.20',
+      'pressed | hovered | [disabled]': '0 0 0 0 #purple.20',
+    },
   },
   danger: {
     border: {
@@ -131,47 +144,126 @@ const STYLES_BY_TYPE: { [key in keyof CubeButtonProps['type']]: Styles } = {
       '': '#danger',
       pressed: '#danger',
       hovered: '#danger-text',
+      '[disabled]': '#dark.04',
     },
-    color: '#white',
+    color: {
+      '': '#white',
+      '[disabled]': '#dark.30',
+    },
   },
-  item: {
+  neutral: {
     border: '0',
     fill: {
-      '': '#purple.0',
+      '': '#dark.0',
       hovered: '#dark.04',
+      '[disabled]': '#dark.04',
     },
     color: {
       '': '#dark.75',
       hovered: '#dark.75',
       pressed: '#purple',
+      '[disabled]': '#dark.30',
     },
     textAlign: 'left',
     padding: '(1x - 1px) (1.5x - 1px)',
     height: 'min (2x + 1lh)',
-    cursor: 'default',
   },
-  tab: {
-    // shadow: {
-    //   '': '',
-    //   selected: 'inset 0 -1ow 0 0 #purple',
-    // },
-    color: {
-      '': '#dark',
-      'selected, hovered': '#purple-text',
-      disabled: '#dark.50',
+};
+
+const DANGER_STYLES_BY_TYPE: { [key: string]: Styles } = {
+  primary: {
+    border: {
+      '': '#clear',
+      pressed: '#danger-text',
     },
-    fill: '#purple.0',
-    textAlign: 'center',
-    fontWeight: 600,
-    padding: '(1x - 1px) (1x - 1px)',
-    radius: '1r 1r 0 0',
-    border: 0,
+    fill: {
+      hovered: '#danger-text',
+      'pressed | !hovered': '#danger',
+      '[disabled]': '#dark.04',
+    },
+    color: {
+      '': '#white',
+      '[disabled]': '#dark.30',
+    },
   },
-  // not an actual type
-  disabled: {
-    // border: '#clear',
-    fill: '#dark.08',
-    color: '#dark.60',
+  default: {
+    border: {
+      '': '#clear',
+      pressed: '#danger.30',
+    },
+    fill: {
+      '': '#danger.05',
+      hovered: '#danger.1',
+      pressed: '#danger.05',
+      '[disabled]': '#dark.04',
+    },
+    color: {
+      '': '#danger',
+      '[disabled]': '#dark.30',
+    },
+  },
+  clear: {
+    border: {
+      '': '#clear',
+      pressed: '#danger-text.10',
+    },
+    fill: {
+      '': '#danger.0',
+      hovered: '#danger.1',
+      pressed: '#danger.05',
+      '[disabled]': '#danger.0',
+    },
+    color: {
+      '': '#danger-text',
+      '[disabled]': '#dark.30',
+    },
+  },
+  outline: {
+    border: {
+      '': '#danger.30',
+      pressed: '#danger-text.10',
+      '[disabled]': '#dark.04',
+    },
+    fill: {
+      '': '#danger.0',
+      hovered: '#danger.1',
+      pressed: '#danger.05',
+      '[disabled]': '#danger.0',
+    },
+    color: {
+      '': '#danger-text',
+      '[disabled]': '#dark.30',
+    },
+  },
+  link: {
+    ...DEFAULT_STYLES_BY_TYPE.link,
+    color: {
+      '': '#danger-text',
+      pressed: '#danger',
+      '[disabled]': '#dark.30',
+    },
+    shadow: {
+      '': '0 @border-width 0 0 #danger.20',
+      focused: '0 0 0 @outline-width #danger.20',
+      'pressed | hovered | [disabled]': '0 0 0 0 #danger.20',
+    },
+  },
+  neutral: {
+    border: '0',
+    fill: {
+      '': '#dark.0',
+      hovered: '#dark.04',
+      '[disabled]': '#dark.04',
+    },
+    color: {
+      '': '#dark.75',
+      hovered: '#dark.75',
+      pressed: '#danger',
+      '[disabled]': '#dark.30',
+    },
+    textAlign: 'left',
+    padding: '(1x - 1px) (1.5x - 1px)',
+    height: 'min (2x + 1lh)',
   },
 };
 
@@ -184,40 +276,10 @@ const STYLES_BY_SIZE = {
   },
 };
 
-const CSS_BY_TYPE = {
-  tab: `
-&::before {
-  --outline-size: 0px;
-  content: '';
-  display: block;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  box-shadow: inset 0 calc(-1 * var(--outline-size)) 0 var(--purple-color);
-  pointer-events: none;
-  transition: opacity linear .2s, box-shadow linear .2s;
-}
-&[data-is-selected]::before {
-  --outline-size: 2px;
-}
-&:not([data-is-selected]):not([disabled])[data-is-hovered]::before {
-  --outline-size: 1px;
-}
-  `,
-};
-
 const DEFAULT_STYLES = {
   display: 'inline-block',
   placeItems: 'center stretch',
   radius: true,
-  opacity: {
-    '': 1,
-    disabled: 0.5,
-    selected: 1,
-  },
-  cursor: 'pointer',
   fontWeight: 500,
   preset: 'default',
   textDecoration: 'none',
@@ -226,8 +288,6 @@ const DEFAULT_STYLES = {
 };
 
 const CSS = `
-  white-space: nowrap;
-
   & > .anticon.anticon-loading {
     transition: display .2s steps(1, start), margin .2s linear, opacity .2s linear;
     margin-top: -7px;
@@ -245,8 +305,8 @@ export const Button = forwardRef(
       size,
       label,
       styles,
-      ghost,
       children,
+      theme,
       css,
       icon,
       skipWarnings,
@@ -264,9 +324,9 @@ export const Button = forwardRef(
       ...props,
       isLoading,
       isDisabled,
+      theme,
       size,
       type,
-      ghost,
       icon,
       children,
     };
@@ -287,9 +347,7 @@ export const Button = forwardRef(
     return (
       <Action
         as={props.to ? 'a' : undefined}
-        css={`
-          ${CSS}${type ? CSS_BY_TYPE[type] : ''}${css || ''}
-        `}
+        css={CSS}
         {...props}
         ref={ref}
         isDisabled={isLoading || isDisabled}

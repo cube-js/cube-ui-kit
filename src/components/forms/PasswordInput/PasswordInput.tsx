@@ -29,7 +29,7 @@ function PasswordInput(props: CubeTextInputBaseProps, ref) {
     <>
       {suffix}
       <Button
-        type="item"
+        type="neutral"
         htmlType="button"
         onPress={toggleType}
         preventDefault

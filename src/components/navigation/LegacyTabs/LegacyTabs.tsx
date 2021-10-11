@@ -36,6 +36,42 @@ const LegacyTabsContext = createContext<LegacyCubeTabsContextValue>({
   changeTab() {},
 });
 
+const TAB_STYLES = {
+  color: {
+    '': '#dark',
+    'selected, hovered': '#purple-text',
+    disabled: '#dark.50',
+  },
+  fill: '#purple.0',
+  textAlign: 'center',
+  fontWeight: 600,
+  padding: '(1x - 1px) (1x - 1px)',
+  radius: '1r 1r 0 0',
+  border: 0,
+};
+
+const TAB_CSS = `
+&::before {
+  --outline-size: 0px;
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  box-shadow: inset 0 calc(-1 * var(--outline-size)) 0 var(--purple-color);
+  pointer-events: none;
+  transition: opacity linear .2s, box-shadow linear .2s;
+}
+&[data-is-selected]::before {
+  --outline-size: 2px;
+}
+&:not([data-is-selected]):not([disabled])[data-is-hovered]::before {
+  --outline-size: 1px;
+}
+`;
+
 const TABS_PANEL_CSS = `
   position: relative;
   overflow: auto hidden;
