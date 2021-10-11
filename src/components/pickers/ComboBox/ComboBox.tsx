@@ -74,6 +74,7 @@ const TRIGGER_STYLES: Styles = {
     pressed: '#dark.08',
     disabled: '#clear',
   },
+  cursor: 'pointer',
 } as const;
 
 export interface CubeComboBoxProps<T>
@@ -274,13 +275,12 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
       ) : null}
       <Suffix
         onWidthChange={setSuffixWidth}
-        padding="1x left"
         opacity={isDisabled ? '@disabled-opacity' : false}
       >
-        <Space gap={false} padding="0 1x">
+        {validationState || isLoading ? <Space gap={false} padding="0 1x">
           {validationState && !isLoading ? validation : null}
           {isLoading && <LoadingOutlined />}
-        </Space>
+        </Space> : null}
         {suffix}
         {!hideTrigger ? (
           <Base
