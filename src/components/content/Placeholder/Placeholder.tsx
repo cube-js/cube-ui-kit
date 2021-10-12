@@ -32,7 +32,7 @@ const CSS = `
 `;
 
 export interface CubePlaceholderProps extends BaseProps, ContainerStyleProps {
-  size?: Styles['size'];
+  size?: Styles['fontSize'];
   circle?: boolean;
 }
 
