@@ -64,8 +64,9 @@ const TRIGGER_STYLES: Styles = {
   display: 'grid',
   placeItems: 'center',
   placeContent: 'center',
+  placeSelf: 'stretch',
   radius: 'right',
-  padding: '1.5x 1x',
+  padding: '0 1x',
   color: 'inherit',
   border: 0,
   fill: {
@@ -92,6 +93,11 @@ export interface CubeComboBoxProps<T>
   keyboardDelegate?: KeyboardDelegate;
   loadingState?: LoadingState;
   filter?: (val: any, str: string) => boolean;
+  size?:
+    | 'small'
+    | 'default'
+    | 'large'
+    | string;
 }
 
 function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
@@ -127,6 +133,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
     overlayStyles,
     hideTrigger,
     message,
+    size,
     autoComplete,
     direction = 'bottom',
     shouldFlip = true,
@@ -134,6 +141,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
     menuTrigger = 'input',
     loadingState,
     filter,
+    styles,
     ...otherProps
   } = props;
   let isAsync = loadingState != null;
@@ -146,9 +154,10 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
     allowsEmptyCollection: isAsync,
   });
 
-  const styles = extractStyles(otherProps, OUTER_STYLES, {
+  const outerStyles = extractStyles(otherProps, OUTER_STYLES, {
     ...COMBOBOX_STYLES,
     ...useContextStyles('ComboBox_Wrapper', props),
+    ...styles,
   });
 
   inputStyles = extractStyles(otherProps, BLOCK_STYLES, {
@@ -242,10 +251,11 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
         hovered: isHovered,
         focused: isFocused,
       })}
-      styles={styles}
+      styles={outerStyles}
       style={{
         zIndex: isFocused ? 1 : 'initial',
       }}
+      data-size={size}
     >
       <Base
         qa={qa || 'ComboBox'}
@@ -261,6 +271,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
           hovered: isHovered,
           focused: isFocused,
         })}
+        data-size={size}
       />
       {prefix ? (
         <Prefix
@@ -292,6 +303,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
               hovered: isTriggerHovered,
               disabled: isDisabled,
             })}
+            data-size={size}
             isDisabled={isDisabled}
             ref={triggerRef}
             styles={triggerStyles}

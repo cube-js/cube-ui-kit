@@ -1,5 +1,6 @@
 import { DollarCircleOutlined } from '@ant-design/icons';
 import { Button } from './Button';
+import { IS_DISABLED_ARG, IS_LOADING_ARG, SIZE_ARG } from '../../../stories/FormFieldArgs';
 
 export default {
   title: 'UIKit/Actions/Button',
@@ -11,26 +12,6 @@ export default {
       control: {
         type: 'boolean',
       },
-      table: {
-        type: { summary: 'boolean' },
-        defaultValue: { summary: false },
-      },
-    },
-    isDisabled: {
-      defaultValue: false,
-      description: 'Disables the button.',
-      control: {
-        type: 'boolean',
-      },
-      table: {
-        type: { summary: 'boolean' },
-        defaultValue: { summary: false },
-      },
-    },
-    isLoading: {
-      control: 'boolean',
-      description: 'Loading state with spinner. Also works as disabled',
-      defaultValue: false,
       table: {
         type: { summary: 'boolean' },
         defaultValue: { summary: false },
@@ -80,18 +61,9 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    size: {
-      defaultValue: undefined,
-      description: 'The size of the button',
-      control: {
-        type: 'radio',
-        options: [undefined, 'default', 'small'],
-      },
-      table: {
-        type: { summary: 'string' },
-        defaultValue: { summary: 'default' },
-      },
-    },
+    ...IS_LOADING_ARG,
+    ...IS_DISABLED_ARG,
+    ...SIZE_ARG,
     radius: {
       defaultValue: undefined,
       control: {

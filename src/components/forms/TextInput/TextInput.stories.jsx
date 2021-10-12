@@ -9,7 +9,7 @@ import {
   LABEL_POSITION_ARG,
   MULTILINE_ARG,
   PLACEHOLDER_ARG,
-  VALIDATION_STATE_ARG,
+  VALIDATION_STATE_ARG, SIZE_ARG,
 } from '../../../stories/FormFieldArgs';
 
 export default {
@@ -43,6 +43,7 @@ export default {
         defaultValue: { summary: 'text' },
       },
     },
+    ...SIZE_ARG,
     inputMode: {
       defaultValue: 'none',
       description: 'Input type mode',

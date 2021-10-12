@@ -10,6 +10,7 @@ import { BaseProps } from './types';
 
 const DEFAULT_STYLES = {
   display: 'block',
+  size: 'default',
 };
 const STYLES = [...BASE_STYLES, ...BLOCK_STYLES];
 

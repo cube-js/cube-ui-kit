@@ -11,7 +11,7 @@ const MAP = {
   radius: ['border-radius'],
   shadow: ['box-shadow'],
   outline: ['box-shadow'],
-  size: ['font-size', 'line-height'],
+  preset: ['font-size', 'line-height', 'letter-spacing', 'font-weight', 'font-style'],
   text: ['font-weight', 'text-decoration-color'],
   theme: ['color', 'background-color', 'box-shadow', 'border', 'border-radius'],
   inset: ['box-shadow'],

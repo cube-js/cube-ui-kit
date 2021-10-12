@@ -1,5 +1,11 @@
 import { Select } from '../../../index';
 import { DollarCircleOutlined } from '@ant-design/icons';
+import {
+  IS_DISABLED_ARG,
+  IS_LOADING_ARG, LABEL_ARG, LABEL_POSITION_ARG, MESSAGE_ARG, PLACEHOLDER_ARG,
+  SIZE_ARG,
+  VALIDATION_STATE_ARG,
+} from '../../../stories/FormFieldArgs';
 
 export default {
   title: 'UIKit/Pickers/Select',
@@ -16,71 +22,14 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    size: {
-      defaultValue: undefined,
-      description: 'The size of the button',
-      control: {
-        type: 'radio',
-        options: [undefined, 'default', 'small'],
-      },
-      table: {
-        type: { summary: 'string' },
-        defaultValue: { summary: 'default' },
-      },
-    },
-    isDisabled: {
-      defaultValue: false,
-      description: 'Disables the input.',
-      control: {
-        type: 'boolean',
-      },
-      table: {
-        type: { summary: 'boolean' },
-        defaultValue: { summary: false },
-      },
-    },
-    isLoading: {
-      control: 'boolean',
-      description: 'Loading state with spinner. Also works as disabled',
-      defaultValue: false,
-      table: {
-        type: { summary: 'boolean' },
-        defaultValue: { summary: false },
-      },
-    },
-    validationState: {
-      defaultValue: undefined,
-      description: 'The position of labels for each field.',
-      control: {
-        type: 'radio',
-        options: [undefined, 'valid', 'invalid'],
-      },
-      table: {
-        type: { summary: 'string' },
-        defaultValue: { summary: 'top' },
-      },
-    },
-    labelPosition: {
-      defaultValue: 'top',
-      description: 'The position of labels for each field.',
-      control: {
-        type: 'radio',
-        options: ['top', 'side'],
-      },
-      table: {
-        type: { summary: 'string' },
-        defaultValue: { summary: 'top' },
-      },
-    },
-    label: {
-      defaultValue: 'Field label',
-      control: 'text',
-    },
-    message: {
-      defaultValue: '',
-      description: 'Validation error message',
-      control: 'text',
-    },
+    ...SIZE_ARG,
+    ...IS_DISABLED_ARG,
+    ...IS_LOADING_ARG,
+    ...VALIDATION_STATE_ARG,
+    ...LABEL_POSITION_ARG,
+    ...LABEL_ARG,
+    ...MESSAGE_ARG,
+    ...PLACEHOLDER_ARG,
     defaultSelectedKey: {
       defaultValue: null,
       control: 'text',
@@ -88,10 +37,6 @@ export default {
     defaultSelectedKeys: {
       defaultValue: null,
       control: 'array',
-    },
-    placeholder: {
-      defaultValue: 'Placeholder',
-      control: 'text',
     },
   },
 };

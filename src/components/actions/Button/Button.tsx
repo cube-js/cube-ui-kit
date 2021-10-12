@@ -25,6 +25,11 @@ export interface CubeButtonProps extends CubeActionProps {
     | 'default'
     | 'danger'
     | string;
+  size?:
+    | 'small'
+    | 'default'
+    | 'large'
+    | string;
 }
 
 export function provideStyles({
@@ -359,6 +364,7 @@ export const Button = forwardRef(
         }
         data-is-loading={isLoading ? '' : undefined}
         data-is-selected={isSelected ? '' : undefined}
+        data-size={props.size}
         styles={styles}
         skipWarnings={skipWarnings}
       >

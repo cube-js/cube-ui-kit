@@ -75,36 +75,6 @@ export interface StylesInterface
     | boolean
     | string;
   /**
-   * The font-size, line-height, and letter-spacing of the element with ability to apply presets.
-   * Syntax: `<fontSize> <lineHeight>? <letterSpacing>?`.
-   * Syntax: `<presetName>`
-   */
-  size?:
-    | 'md'
-    | 'sm'
-    | 'lg'
-    | 'h1'
-    | 'h2'
-    | 'h3'
-    | 'h4'
-    | 'h5'
-    | 'h5s'
-    | 'h5m'
-    | 'h6'
-    | 't1'
-    | 't2'
-    | 't3'
-    | 't4'
-    | 't4m'
-    | 'p1'
-    | 'p2'
-    | 'p3'
-    | 'p4'
-    | 'tag'
-    | 'default'
-    | 'text'
-    | string;
-  /**
    * Whether styles of the element should be reset.
    * Possible values: `input`, `button`.
    */

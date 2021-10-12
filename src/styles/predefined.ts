@@ -9,7 +9,6 @@ import { radiusStyle } from './radius';
 import { borderStyle } from './border';
 import { shadowStyle } from './shadow';
 import { paddingStyle } from './padding';
-import { sizeStyle } from './size';
 import { presetStyle } from './preset';
 import { fontStyleStyle } from './fontStyle';
 import { marginStyle } from './margin';
@@ -74,7 +73,6 @@ defineStyleAlias('gridTemplate', 'grid-template', (val) => {
   borderStyle,
   shadowStyle,
   paddingStyle,
-  sizeStyle,
   presetStyle,
   boxShadowCombinator,
   outlineStyle,

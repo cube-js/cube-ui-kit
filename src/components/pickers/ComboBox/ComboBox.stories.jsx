@@ -1,5 +1,11 @@
 import { ComboBox, Item } from '../../../index';
 import { DollarCircleOutlined } from '@ant-design/icons';
+import {
+  IS_LOADING_ARG, LABEL_ARG,
+  LABEL_POSITION_ARG, MESSAGE_ARG, PLACEHOLDER_ARG,
+  SIZE_ARG,
+  VALIDATION_STATE_ARG,
+} from '../../../stories/FormFieldArgs';
 
 export default {
   title: 'UIKit/Pickers/ComboBox',
@@ -16,26 +22,8 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    isDisabled: {
-      defaultValue: false,
-      description: 'Disables the input.',
-      control: {
-        type: 'boolean',
-      },
-      table: {
-        type: { summary: 'boolean' },
-        defaultValue: { summary: false },
-      },
-    },
-    isLoading: {
-      control: 'boolean',
-      description: 'Loading state with spinner. Also works as disabled',
-      defaultValue: false,
-      table: {
-        type: { summary: 'boolean' },
-        defaultValue: { summary: false },
-      },
-    },
+    ...SIZE_ARG,
+    ...IS_LOADING_ARG,
     hideTrigger: {
       defaultValue: false,
       description: 'Hides trigger button',
@@ -47,18 +35,7 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    validationState: {
-      defaultValue: undefined,
-      description: 'The position of labels for each field.',
-      control: {
-        type: 'radio',
-        options: [undefined, 'valid', 'invalid'],
-      },
-      table: {
-        type: { summary: 'string' },
-        defaultValue: { summary: undefined },
-      },
-    },
+    ...VALIDATION_STATE_ARG,
     allowsCustomValue: {
       defaultValue: false,
       description: 'Allows values that are not listed in options',
@@ -82,28 +59,10 @@ export default {
         defaultValue: { summary: 'input' },
       },
     },
-    labelPosition: {
-      defaultValue: undefined,
-      description: 'The position of labels for each field.',
-      control: {
-        type: 'radio',
-        options: ['top', 'side'],
-      },
-      table: {
-        type: { summary: 'string' },
-        defaultValue: { summary: 'top' },
-      },
-    },
-    label: {
-      defaultValue: 'Field label',
-      description: 'Label text.',
-      control: 'text',
-    },
-    message: {
-      defaultValue: '',
-      description: 'Validation error message',
-      control: 'text',
-    },
+    ...LABEL_POSITION_ARG,
+    ...LABEL_ARG,
+    ...MESSAGE_ARG,
+    ...PLACEHOLDER_ARG,
     defaultSelectedKey: {
       defaultValue: null,
       description: 'Default selected key',
@@ -112,11 +71,6 @@ export default {
     defaultInputValue: {
       defaultValue: null,
       description: 'Default selected key',
-      control: 'text',
-    },
-    placeholder: {
-      defaultValue: 'Placeholder',
-      description: 'Placeholder text which appears if no value provided',
       control: 'text',
     },
   },

@@ -122,6 +122,21 @@ export const IS_DISABLED_ARG = {
   },
 };
 
+export const SIZE_ARG = {
+  size: {
+    defaultValue: undefined,
+    description: 'The size of the button',
+    control: {
+      type: 'radio',
+      options: [undefined, 'default', 'small'],
+    },
+    table: {
+      type: { summary: 'string' },
+      defaultValue: { summary: 'default' },
+    },
+  }
+};
+
 export const MULTILINE_ARG = {
   multiLine: {
     defaultValue: false,

@@ -77,8 +77,8 @@ const INPUT_STYLES: Styles = {
   placeContent: 'center stretch',
   gap: '1x',
   padding: {
-    '[data-size="small"]': '(.75x - 1px) (1.5x - 1px)',
-    '[data-size="default"]': '(1.25x - 1bw) 1x (1.25x - 1bw) (1.5x - 1bw)',
+    '': '(1.25x - 1bw) 1x (1.25x - 1bw) (1.5x - 1bw)',
+    '[data-size="small"]': '(.75x - 1px) 1x (.75x - 1px)  (1.5x - 1px)',
   },
   border: {
     '': true,
@@ -146,7 +146,7 @@ const OPTION_STYLES: Styles = {
     selected: '#white',
     disabled: '#dark.30',
   },
-  fontWeight: 500,
+  preset: 't3m',
 } as const;
 
 export interface CubeSelectBaseProps<T>
@@ -176,7 +176,11 @@ export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
   popoverRef?: RefObject<HTMLInputElement>;
   /** The ref for the list box. */
   listBoxRef?: RefObject<HTMLElement>;
-  size?: 'small' | 'default' | Styles['size'];
+  size?:
+    | 'small'
+    | 'default'
+    | 'large'
+    | string;
 }
 
 function Select<T extends object>(
@@ -216,13 +220,16 @@ function Select<T extends object>(
     shouldFlip = true,
     requiredMark = true,
     placeholder,
+    size,
+    styles,
     ...otherProps
   } = props;
   let state = useSelectState(props);
 
-  const styles = extractStyles(otherProps, OUTER_STYLES, {
+  const outerStyles = extractStyles(otherProps, OUTER_STYLES, {
     ...SELECT_STYLES,
     ...useContextStyles('Select_Wrapper', otherProps),
+    ...styles,
   });
 
   inputStyles = extractStyles(otherProps, BLOCK_STYLES, {
@@ -230,6 +237,10 @@ function Select<T extends object>(
     ...useContextStyles('Select', otherProps),
     ...inputStyles,
   });
+
+  if (styles) {
+
+  }
 
   ref = useCombinedRefs(ref);
   triggerRef = useCombinedRefs(triggerRef);
@@ -281,7 +292,8 @@ function Select<T extends object>(
         hovered: isHovered,
         focused: isFocused,
       }}
-      styles={styles}
+      styles={outerStyles}
+      data-size={size}
     >
       <HiddenSelect
         state={state}
@@ -294,11 +306,8 @@ function Select<T extends object>(
         as="button"
         {...mergeProps(buttonProps, hoverProps, focusProps)}
         ref={triggerRef}
-        styles={{
-          ...INPUT_STYLES,
-          ...inputStyles,
-        }}
-        data-size={props.size === 'small' ? 'small' : 'default'}
+        styles={inputStyles}
+        data-size={size}
         mods={{
           invalid: isInvalid,
           valid: validationState === 'valid',

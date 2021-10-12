@@ -135,6 +135,11 @@ const PROPS = {
   't3-line-height': '20px',
   't3-letter-spacing': '0.02em',
   't3-font-weight': '400',
+  // t3m
+  't3m-font-size': '14px',
+  't3m-line-height': '20px',
+  't3m-letter-spacing': '0.015em',
+  't3m-font-weight': '500',
   // t4
   't4-font-size': '12px',
   't4-line-height': '18px',

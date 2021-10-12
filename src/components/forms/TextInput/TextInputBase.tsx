@@ -72,7 +72,10 @@ export const DEFAULT_INPUT_STYLES: Styles = {
     'valid & focused': '#success.50',
   },
   radius: true,
-  padding: '(1.25x - 1bw) (1.5x - 1bw)',
+  padding: {
+    '': '(1.25x - 1bw) 1x (1.25x - 1bw) (1.5x - 1bw)',
+    '[data-size="small"]': '(.75x - 1px) (1.5x - 1px)',
+  },
   fontWeight: 400,
   textAlign: 'left',
   reset: 'input',
@@ -118,6 +121,11 @@ export interface CubeTextInputBaseProps
   rows?: number;
   /** The resize CSS property sets whether an element is resizable, and if so, in which directions. */
   resize?: Styles['resize'];
+  size?:
+    | 'small'
+    | 'default'
+    | 'large'
+    | string;
 }
 
 function TextInputBase(props: CubeTextInputBaseProps, ref) {
@@ -152,6 +160,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     wrapperRef,
     requiredMark = true,
     rows = 1,
+    size,
     ...otherProps
   } = props;
   let [suffixWidth, setSuffixWidth] = useState(0);
@@ -221,10 +230,13 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     <Base
       ref={wrapperRef}
       qa={`${qa || 'TextInput'}Wrapper`}
-      data-is-invalid={isInvalid ? '' : null}
-      data-is-valid={validationState === 'valid' ? '' : null}
-      data-is-loadable={loadingIndicator ? '' : null}
-      data-is-multiline={multiLine ? '' : null}
+      mods={{
+        invalid: isInvalid,
+        valid: validationState === 'valid',
+        loadable: !!loadingIndicator,
+        multiline: multiLine,
+      }}
+      data-size={size}
       styles={wrapperStyles}
       {...wrapperProps}
     >
@@ -241,6 +253,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
           hovered: isHovered,
           focused: isFocused,
         }}
+        data-size={size}
         styles={inputStyles}
       />
       <Prefix
