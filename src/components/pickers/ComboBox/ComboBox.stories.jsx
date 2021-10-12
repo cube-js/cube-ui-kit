@@ -1,8 +1,11 @@
 import { ComboBox, Item } from '../../../index';
 import { DollarCircleOutlined } from '@ant-design/icons';
 import {
-  IS_LOADING_ARG, LABEL_ARG,
-  LABEL_POSITION_ARG, MESSAGE_ARG, PLACEHOLDER_ARG,
+  IS_LOADING_ARG,
+  LABEL_ARG,
+  LABEL_POSITION_ARG,
+  MESSAGE_ARG,
+  PLACEHOLDER_ARG,
   SIZE_ARG,
   VALIDATION_STATE_ARG,
 } from '../../../stories/FormFieldArgs';

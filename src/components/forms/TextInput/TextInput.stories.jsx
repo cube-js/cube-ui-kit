@@ -9,7 +9,8 @@ import {
   LABEL_POSITION_ARG,
   MULTILINE_ARG,
   PLACEHOLDER_ARG,
-  VALIDATION_STATE_ARG, SIZE_ARG,
+  VALIDATION_STATE_ARG,
+  SIZE_ARG,
 } from '../../../stories/FormFieldArgs';
 
 export default {

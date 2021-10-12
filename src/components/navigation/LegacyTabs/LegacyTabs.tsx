@@ -48,7 +48,7 @@ const TAB_STYLES = {
   padding: '(1x - 1px) (1x - 1px)',
   radius: '1r 1r 0 0',
   border: 0,
-};
+} as const;
 
 const TAB_CSS = `
 &::before {
@@ -159,7 +159,14 @@ const Tab = ({
   ...props
 }: Omit<LegacyCubeTabProps, 'id'>) => {
   return (
-    <Button type="tab" isSelected={isSelected} isHidden={isHidden} {...props} />
+    <Button
+      type="tab"
+      styles={TAB_STYLES}
+      css={TAB_CSS}
+      isSelected={isSelected}
+      isHidden={isHidden}
+      {...props}
+    />
   );
 };
 

@@ -21,15 +21,8 @@ export interface CubeButtonProps extends CubeActionProps {
     | 'outline'
     | 'neutral'
     | string;
-  theme?:
-    | 'default'
-    | 'danger'
-    | string;
-  size?:
-    | 'small'
-    | 'default'
-    | 'large'
-    | string;
+  theme?: 'default' | 'danger' | string;
+  size?: 'small' | 'default' | 'large' | string;
 }
 
 export function provideStyles({
@@ -43,7 +36,9 @@ export function provideStyles({
   return {
     ...STYLES_BY_SIZE[size || 'default'],
     ...DEFAULT_STYLES,
-    ...(theme === 'danger' ? DANGER_STYLES_BY_TYPE : DEFAULT_STYLES_BY_TYPE)[type || 'default'],
+    ...(theme === 'danger' ? DANGER_STYLES_BY_TYPE : DEFAULT_STYLES_BY_TYPE)[
+      type || 'default'
+    ],
     ...((isLoading || icon) && !children
       ? {
           padding: '0',
@@ -346,13 +341,16 @@ export const Button = forwardRef(
     };
 
     if (isLoading && !children && styles) {
-      styles.size = '1em 1em';
+      styles.fontSize = '1em';
+      styles.lineHeight = '1em';
     }
 
     return (
       <Action
         as={props.to ? 'a' : undefined}
-        css={CSS}
+        css={`
+          ${CSS}${css || ''}
+        `}
         {...props}
         ref={ref}
         isDisabled={isLoading || isDisabled}
@@ -364,7 +362,7 @@ export const Button = forwardRef(
         }
         data-is-loading={isLoading ? '' : undefined}
         data-is-selected={isSelected ? '' : undefined}
-        data-size={props.size}
+        data-size={size}
         styles={styles}
         skipWarnings={skipWarnings}
       >

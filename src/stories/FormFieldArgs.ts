@@ -134,7 +134,7 @@ export const SIZE_ARG = {
       type: { summary: 'string' },
       defaultValue: { summary: 'default' },
     },
-  }
+  },
 };
 
 export const MULTILINE_ARG = {

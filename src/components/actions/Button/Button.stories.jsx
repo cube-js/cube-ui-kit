@@ -1,6 +1,10 @@
 import { DollarCircleOutlined } from '@ant-design/icons';
 import { Button } from './Button';
-import { IS_DISABLED_ARG, IS_LOADING_ARG, SIZE_ARG } from '../../../stories/FormFieldArgs';
+import {
+  IS_DISABLED_ARG,
+  IS_LOADING_ARG,
+  SIZE_ARG,
+} from '../../../stories/FormFieldArgs';
 
 export default {
   title: 'UIKit/Actions/Button',
@@ -42,10 +46,7 @@ export default {
       description: 'A visual type of the button. Don\'t affect any logic',
       control: {
         type: 'radio',
-        options: [
-          undefined,
-          'danger',
-        ],
+        options: [undefined, 'danger'],
       },
       table: {
         type: { summary: 'string' },
@@ -82,11 +83,7 @@ export default {
   },
 };
 
-const Template = ({
-  icon,
-  label,
-  ...props
-}) => (
+const Template = ({ icon, label, ...props }) => (
   <Button
     icon={icon ? <DollarCircleOutlined /> : undefined}
     onPress={() => console.log('Press')}

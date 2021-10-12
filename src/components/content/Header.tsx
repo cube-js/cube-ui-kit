@@ -1,32 +1,38 @@
 import { forwardRef } from 'react';
+import { styled } from '../../styled';
 import { CONTAINER_STYLES, TEXT_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
-import { Base } from '../Base';
 import { useSlotProps } from '../../utils/react';
 import { BaseProps, ContainerStyleProps, TextStyleProps } from '../types';
 
-const DEFAULT_STYLES = {
-  gridArea: 'header',
-  display: 'block',
-  flow: 'column',
-};
-
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
+
+const RawHeader = styled({
+  name: 'Header',
+  tag: 'header',
+  styles: {
+    gridArea: 'header',
+    display: 'block',
+    flow: 'column',
+  },
+  attrs: {
+    'data-id': 'Header',
+  },
+});
 
 export interface CubeHeaderProps
   extends BaseProps,
     ContainerStyleProps,
     TextStyleProps {}
 
-export const Header = forwardRef((allProps: CubeHeaderProps, ref) => {
-  const props = useSlotProps(allProps, 'header');
-  const styles = extractStyles(props, STYLE_LIST, DEFAULT_STYLES);
+export const Header = forwardRef((props: CubeHeaderProps, ref) => {
+  props = useSlotProps(props, 'header');
+
+  const styles = extractStyles(props, STYLE_LIST);
 
   return (
-    <Base
-      data-id="Header"
-      as="header"
+    <RawHeader
       {...filterBaseProps(props, { eventProps: true })}
       styles={styles}
       ref={ref}

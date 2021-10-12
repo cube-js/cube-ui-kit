@@ -93,11 +93,7 @@ export interface CubeComboBoxProps<T>
   keyboardDelegate?: KeyboardDelegate;
   loadingState?: LoadingState;
   filter?: (val: any, str: string) => boolean;
-  size?:
-    | 'small'
-    | 'default'
-    | 'large'
-    | string;
+  size?: 'small' | 'default' | 'large' | string;
 }
 
 function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
@@ -288,10 +284,12 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
         onWidthChange={setSuffixWidth}
         opacity={isDisabled ? '@disabled-opacity' : false}
       >
-        {validationState || isLoading ? <Space gap={false} padding="0 1x">
-          {validationState && !isLoading ? validation : null}
-          {isLoading && <LoadingOutlined />}
-        </Space> : null}
+        {validationState || isLoading ? (
+          <Space gap={false} padding="0 1x">
+            {validationState && !isLoading ? validation : null}
+            {isLoading && <LoadingOutlined />}
+          </Space>
+        ) : null}
         {suffix}
         {!hideTrigger ? (
           <Base

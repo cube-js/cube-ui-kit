@@ -81,11 +81,22 @@ Use `!` prefix to open link in new tab.
 
 ```
 <Link to="https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit</Link>
-<Link to="!https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit in new tab</Link>
+| <Link to="!https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit in new tab</Link>
 ```
 
 <Paragraph>
   <Link to="https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit</Link>&nbsp;
-  <Link to="!https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit in new tab</Link>
+  | <Link to="!https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit in new tab</Link>
 </Paragraph>
 
+Use `@` prefix to navigate to the new page without using the Router.
+
+```
+<Link to="@">Reload this page</Link>
+| <Link to="@/">Move to the Main Page</Link>
+```
+
+<Paragraph>
+  <Link to="@">Reload the current page</Link>
+| <Link to="@/">Move to the Main Page</Link>
+</Paragraph>

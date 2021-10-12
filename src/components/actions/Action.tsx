@@ -136,6 +136,7 @@ export const Action = forwardRef(
       label,
       skipWarnings,
       preventDefault,
+      css,
       ...props
     }: CubeActionProps,
     ref: FocusableRef<HTMLElement>,
@@ -204,6 +205,7 @@ export const Action = forwardRef(
         styles={styles}
         target={target}
         href={href}
+        css={css}
       />
     );
   },

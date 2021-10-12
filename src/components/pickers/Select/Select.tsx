@@ -176,11 +176,7 @@ export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
   popoverRef?: RefObject<HTMLInputElement>;
   /** The ref for the list box. */
   listBoxRef?: RefObject<HTMLElement>;
-  size?:
-    | 'small'
-    | 'default'
-    | 'large'
-    | string;
+  size?: 'small' | 'default' | 'large' | string;
 }
 
 function Select<T extends object>(
@@ -239,7 +235,6 @@ function Select<T extends object>(
   });
 
   if (styles) {
-
   }
 
   ref = useCombinedRefs(ref);

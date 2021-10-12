@@ -117,9 +117,10 @@ const PROPS = {
   'h5m-line-height': '22px',
   'h5m-letter-spacing': '0.02em',
   'h5m-font-weight': '500',
-  // h6 unused
+  // h6 (unused)
   'h6-font-size': '14px',
   'h6-line-height': '20px',
+  'h6-font-weight': '700',
   // t1
   't1-font-size': '18px',
   't1-line-height': '24px',
