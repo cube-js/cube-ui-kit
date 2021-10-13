@@ -166,13 +166,13 @@ function Checkbox(props: CubeCheckboxProps, ref: FocusableRef) {
     for (let key of ['isSelected', 'defaultSelected', 'isEmphasized']) {
       if (originalProps[key] != null) {
         console.warn(
-          `${key} is unsupported on individual <Checkbox> elements within a <CheckboxGroup>. Please apply these props to the group instead.`,
+          `CubeUIKit: ${key} is unsupported on individual <Checkbox> elements within a <CheckboxGroup>. Please apply these props to the group instead.`,
         );
       }
     }
     if (props.value == null) {
       console.warn(
-        'A <Checkbox> element within a <CheckboxGroup> requires a `value` property.',
+        'CubeUIKit: A <Checkbox> element within a <CheckboxGroup> requires a `value` property.',
       );
     }
   }

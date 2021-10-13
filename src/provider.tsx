@@ -1,12 +1,13 @@
-import { createContext, PropsWithChildren, useContext } from 'react';
+import {
+  createContext,
+  ForwardedRef,
+  PropsWithChildren,
+  useContext,
+} from 'react';
 import { StyleProvider } from './providers/StylesProvider';
 import { BreakpointsProvider } from './providers/BreakpointsProvider';
 import { ResponsiveStyleValue } from './utils/styles';
 import { Props } from './components/types';
-
-export const UIKitContext = createContext<ProviderProps>({
-  breakpoints: [980],
-});
 
 export interface ProviderProps extends Props {
   breakpoints?: number[];
@@ -20,7 +21,13 @@ export interface ProviderProps extends Props {
     [key: string]: { [key: string]: ResponsiveStyleValue } | Function;
   };
   ref?: JSX.Element;
+  root?: ForwardedRef<any>;
 }
+
+export interface ProviderInsideProps
+  extends Omit<ProviderProps, 'styles' | 'breakpoints'> {}
+
+export const UIKitContext = createContext<ProviderInsideProps>({});
 
 export function Provider(allProps: PropsWithChildren<ProviderProps>) {
   let {
@@ -33,6 +40,7 @@ export function Provider(allProps: PropsWithChildren<ProviderProps>) {
     validationState,
     router,
     styles,
+    root,
     ref,
   } = allProps;
 
@@ -56,6 +64,7 @@ export function Provider(allProps: PropsWithChildren<ProviderProps>) {
     isRequired,
     validationState,
     router,
+    root,
   };
   const newValue = Object.assign({}, parentContext);
 
@@ -65,11 +74,15 @@ export function Provider(allProps: PropsWithChildren<ProviderProps>) {
     }
   });
 
+  console.log('! context', newValue.root);
+
   return (
     <UIKitContext.Provider value={newValue}>{children}</UIKitContext.Provider>
   );
 }
 
-export function useProviderProps<T = Props>(props: T): T {
-  return { ...useContext(UIKitContext), ...props };
+export function useProviderProps<T extends Props = Props>(props: T): T {
+  const contextProps = useContext(UIKitContext);
+
+  return { ...contextProps, ...props } as T;
 }

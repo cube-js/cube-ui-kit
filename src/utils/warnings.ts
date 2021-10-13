@@ -11,7 +11,7 @@ export function propDeprecationWarning(name, props, propList) {
       const suggestion = SUGGESTED_PROP_MAP[prop];
 
       console.warn(
-        `UI Kit: "${prop}" property of "${name}" component is deprecated.${
+        `CubeUIKit: "${prop}" property of "${name}" component is deprecated.${
           suggestion ? ` Use "${suggestion}" property instead.` : ''
         }`,
       );

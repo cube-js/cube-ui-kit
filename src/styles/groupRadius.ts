@@ -1,4 +1,4 @@
-import { hasNegativeMod, parseStyle } from '../utils/styles';
+import { parseStyle } from '../utils/styles';
 
 const MAP = {
   row: ['* 0 0 *', '0 * * 0'],
@@ -16,10 +16,6 @@ export function groupRadiusAttr({ groupRadius, flow }) {
 
   const reverse = mods.includes('reverse');
   let value = values[0];
-
-  if (hasNegativeMod(mods)) {
-    value = '0';
-  }
 
   if (!value) {
     if (mods.includes('round')) {

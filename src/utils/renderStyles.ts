@@ -105,10 +105,10 @@ export function renderStyles(styles: Styles, responsive: number[]) {
       }
     });
 
-    STYLE_CACHE[cacheKey] = `${rawStyles}${
+    STYLE_CACHE[cacheKey] = `outline: none;\n${rawStyles}${
       responsive ? mediaWrapper(responsiveStyles, zones) : ''
     }`;
   }
 
-  return `outline: none;\n${STYLE_CACHE[cacheKey]}`;
+  return STYLE_CACHE[cacheKey];
 }

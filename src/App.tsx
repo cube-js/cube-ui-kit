@@ -7,7 +7,7 @@ import { Card } from './components/content/Card/Card';
 import { Flex } from './components/layout/Flex';
 import { Base64Upload } from './components/other/Base64Upload/Base64Upload';
 import { Link } from './components/navigation/Link/Link';
-import { Modal } from './components/organisms/Modal/Modal';
+// import { Modal } from './components/organisms/Modal/Modal';
 // import { notification } from './services/notification';
 import { StyleProvider } from './providers/StylesProvider';
 import { Form, useForm, Field } from './components/forms/Form';
@@ -52,15 +52,15 @@ function App() {
           </GridProvider>
         </Block>
       </Provider>
-      <Modal
-        cancelText="Cancel"
-        okText="Ok"
-        onCancel={() => {}}
-        title="Modal"
-        isVisible={true}
-      >
-        Modal content
-      </Modal>
+      {/*<Modal*/}
+      {/*  cancelText="Cancel"*/}
+      {/*  okText="Ok"*/}
+      {/*  onCancel={() => {}}*/}
+      {/*  title="Modal"*/}
+      {/*  isVisible={true}*/}
+      {/*>*/}
+      {/*  Modal content*/}
+      {/*</Modal>*/}
       {/*<Modal*/}
       {/*  title="Delete file"*/}
       {/*  icon={<ExclamationCircleOutlined />}*/}

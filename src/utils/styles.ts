@@ -62,9 +62,6 @@ export type StyleStateMapList = StyleStateMap[];
 
 export type StyleStateListMap = { [key: string]: StyleStateList };
 
-export const NO_VALUES = [false, 'n', 'no', 'false'];
-export const YES_VALUES = [true, 'y', 'yes', 'true'];
-
 const devMode = process.env.NODE_ENV !== 'production';
 
 export const CUSTOM_UNITS = {
@@ -438,7 +435,7 @@ export function parseColor(val, ignoreError = false) {
 
   if (!name) {
     if (!ignoreError && devMode) {
-      console.warn('incorrect color value:', val);
+      console.warn('CubeUIKit: incorrect color value:', val);
     }
 
     return {};
@@ -558,24 +555,6 @@ export function customUnit(value, unit) {
   }
 
   return `(${value} * ${converter})`;
-}
-
-/**
- * Check for "no" value.
- * @param {string} value - original attribute value.
- * @return {boolean}
- */
-export function isNoValue(value) {
-  return !value && value !== 0;
-}
-
-/**
- * Check for "yes" value.
- * @param {string} value - original attribute value.
- * @return {boolean}
- */
-export function isYesValue(value) {
-  return YES_VALUES && YES_VALUES.includes(value);
 }
 
 export function extendStyles(defaultStyles, newStyles) {
@@ -1050,7 +1029,10 @@ export function computeState(
   const func = COMPUTE_FUNC_MAP[computeModel[0]];
 
   if (!func) {
-    console.warn('nusc: unexpected compute method in the model', computeModel);
+    console.warn(
+      'CubeUIKit: unexpected compute method in the model',
+      computeModel,
+    );
     // return false;
   }
 
@@ -1101,13 +1083,4 @@ export function cacheWrapper(handler: Function, limit = 1000) {
 
     return cache[key];
   };
-}
-
-/**
- * Check for "no" value in modifiers.
- * @param mods {Array<String>} - original attribute value.
- * @return {boolean}
- */
-export function hasNegativeMod(mods) {
-  return mods != null && !!NO_VALUES.find((val) => mods.includes(val));
 }

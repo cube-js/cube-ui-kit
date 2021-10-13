@@ -46,6 +46,7 @@ export function provideStyles({
           height: '(2.5x + 1lh)',
           display: 'grid',
           placeItems: 'center',
+          placeContent: 'center',
         }
       : null),
   };

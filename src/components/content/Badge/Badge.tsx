@@ -6,15 +6,6 @@ import { filterBaseProps } from '../../../utils/filterBaseProps';
 import { BaseProps, ContainerStyleProps } from '../../types';
 import { styled } from '../../../styled';
 
-console.log({
-  '': '#purple',
-  ...Object.keys(THEMES).reduce((map, type) => {
-    map[`[data-type="${type}"]`] = THEMES[type].color;
-
-    return map;
-  }, {}),
-});
-
 const RawBadge = styled({
   name: 'Badge',
   styles: {

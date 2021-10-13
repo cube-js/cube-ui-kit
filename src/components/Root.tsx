@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { GlobalStyles } from './GlobalStyles';
 import { Base } from './Base';
 import { BASE_STYLES, BLOCK_STYLES } from '../styles/list';
@@ -23,7 +23,7 @@ export interface CubeRootProps extends BaseProps {
   monospaceFont?: string;
 }
 
-export const Root = forwardRef((allProps: CubeRootProps, ref) => {
+export const Root = (allProps: CubeRootProps) => {
   let {
     children,
     tokens,
@@ -34,6 +34,17 @@ export const Root = forwardRef((allProps: CubeRootProps, ref) => {
     monospaceFont,
     ...props
   } = allProps;
+
+  const ref = useRef(null);
+
+  const [rootRef, setRootRef] = useState();
+
+  useEffect(() => {
+    if (!rootRef) {
+      // @ts-ignore
+      setRootRef(ref?.current);
+    }
+  }, []);
 
   const styles = extractStyles(props, STYLES, DEFAULT_STYLES);
   const root = (
@@ -54,5 +65,9 @@ export const Root = forwardRef((allProps: CubeRootProps, ref) => {
     </Base>
   );
 
-  return router ? <Provider router={router}>{root}</Provider> : root;
-});
+  return (
+    <Provider router={router} root={rootRef}>
+      {root}
+    </Provider>
+  );
+};
