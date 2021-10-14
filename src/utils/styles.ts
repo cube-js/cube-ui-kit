@@ -689,8 +689,9 @@ export function renderStylesToSC(styles: CSSMap | CSSMap[], selector = '') {
  * State values should contain a string value with CSS style list.
  * @param {string} selector
  * @param {StyleStateList|StyleStateMapList} states
+ * @param {string} suffix
  */
-export function applyStates(selector, states) {
+export function applyStates(selector: string, states, suffix: string = '') {
   return states.reduce((css, state) => {
     if (!state.value) return css;
 
@@ -700,7 +701,7 @@ export function applyStates(selector, states) {
       .map((mod) => `:not(${getModSelector(mod)})`)
       .join('')}`;
 
-    return `${css}${selector}${modifiers}{\n${state.value}}\n`;
+    return `${css}${selector}${modifiers}${suffix}{\n${state.value}}\n`;
   }, '');
 }
 
@@ -709,14 +710,35 @@ export function styleHandlerCacheWrapper(styleHandler, limit = 1000) {
     return renderStylesToSC(styleHandler(styleMap));
   }, limit);
 
-  const wrappedMapHandler = cacheWrapper((styleMap, selector) => {
+  const wrappedMapHandler = cacheWrapper((styleMap) => {
     if (styleMap == null || styleMap === false) return null;
+
+    const keys = Object.keys(styleMap);
+    const selectors = keys.filter((sel) => sel.startsWith('&'));
+
+    let cssForSelectors = '';
+
+    if (selectors.length) {
+      cssForSelectors = selectors.reduce((css, selector) => {
+        const localStyleMap = styleMap[selector];
+
+        selector = selector.slice(1);
+
+        const stateMapList = styleMapToStyleMapStateList(localStyleMap);
+
+        replaceStateValues(stateMapList, wrappedStyleHandler);
+
+        return `${css}${applyStates('&&', stateMapList, selector)}`;
+      }, '');
+    }
 
     const stateMapList = styleMapToStyleMapStateList(styleMap);
 
     replaceStateValues(stateMapList, wrappedStyleHandler);
 
-    return applyStates(selector ? `&&${selector}` : '&&', stateMapList);
+    const css = applyStates('&&', stateMapList);
+
+    return cssForSelectors ? `${css}${cssForSelectors}` : css;
   }, limit);
 
   return Object.assign(wrappedMapHandler, {
