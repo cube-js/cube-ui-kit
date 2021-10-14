@@ -74,8 +74,6 @@ export function Provider(allProps: PropsWithChildren<ProviderProps>) {
     }
   });
 
-  console.log('! context', newValue.root);
-
   return (
     <UIKitContext.Provider value={newValue}>{children}</UIKitContext.Provider>
   );
