@@ -286,16 +286,14 @@ const DEFAULT_STYLES = {
   textDecoration: 'none',
   transition: 'theme',
   whiteSpace: 'nowrap',
-};
-
-const CSS = `
-  & > .anticon.anticon-loading {
-    transition: display .2s steps(1, start), margin .2s linear, opacity .2s linear;
-    margin-top: -7px;
-    margin-bottom: -7px;
-    line-height: 0;
-  }
-`;
+  '& .anticon.anticon-loading': {
+    transition:
+      'display .2s steps(1, start), margin .2s linear, opacity .2s linear',
+    marginTop: '-7px',
+    marginBottom: '-7px',
+    lineHeight: 0,
+  },
+} as Styles;
 
 const DEPRECATED_PROPS = ['disabled', 'loading', 'onClick'];
 
@@ -349,9 +347,7 @@ export const Button = forwardRef(
     return (
       <Action
         as={props.to ? 'a' : undefined}
-        css={`
-          ${CSS}${css || ''}
-        `}
+        css={css}
         {...props}
         ref={ref}
         isDisabled={isLoading || isDisabled}

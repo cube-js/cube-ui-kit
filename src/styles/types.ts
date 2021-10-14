@@ -163,8 +163,14 @@ export interface StylesInterface
     | string;
 }
 
-export type Styles = {
+export type SuffixSelector = `&${string}`;
+export type NotSuffixSelector = Exclude<string, SuffixSelector>;
+
+export type StylesWithoutSelectors = {
   [key in keyof StylesInterface]?: ResponsiveStyleValue<StylesInterface[key]>;
-} & {
-  [key: string]: ResponsiveStyleValue<string | number | boolean | undefined>;
-};
+} & Record<
+  NotSuffixSelector,
+  ResponsiveStyleValue<string | number | boolean | undefined>
+>;
+export type Styles = StylesWithoutSelectors &
+  Record<SuffixSelector, StylesWithoutSelectors>;

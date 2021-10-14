@@ -23,6 +23,10 @@ function filterCombinations(combinations) {
 export function getModCombinations(array: string[], allowEmpty?: boolean) {
   const result: string[][] = allowEmpty ? [[]] : [];
 
+  if (array.length === 0) {
+    return [array];
+  }
+
   if (array.length < 2) {
     return result.concat([array]);
   }

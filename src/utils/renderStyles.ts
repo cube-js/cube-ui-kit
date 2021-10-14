@@ -1,6 +1,6 @@
 import { mediaWrapper, normalizeStyleZones } from './responsive';
 import { StyleHandler, StyleMap, StyleValueStateMap } from './styles';
-import { Styles } from '../styles/types';
+import { Styles, SuffixSelector } from '../styles/types';
 import { createStyle, STYLE_HANDLER_MAP } from '../styles';
 
 type HandlerQueueItem = {
@@ -22,12 +22,17 @@ const CACHE_LIMIT = 1000;
  * Render style props to complete Styled Components CSS.
  * @param styles - Complete style props.
  * @param responsive - A list of responsive zones
+ * @param {string} [suffix]
  * @return {string}
  */
-export function renderStyles(styles: Styles, responsive: number[]) {
+export function renderStyles(
+  styles: Styles,
+  responsive: number[],
+  suffix?: string,
+) {
   const zones = responsive;
   const responsiveStyles = Array.from(Array(zones.length)).map(() => '');
-  const cacheKey = JSON.stringify({ s: styles, r: responsive });
+  const cacheKey = JSON.stringify({ s: styles, r: responsive, suffix });
 
   let rawStyles = '';
 
@@ -42,11 +47,32 @@ export function renderStyles(styles: Styles, responsive: number[]) {
       STYLE_CACHE = {};
     }
 
-    Object.keys(styles).forEach((styleName) => {
+    const keys = Object.keys(styles);
+    const selectorKeys = keys.filter((key) =>
+      key.startsWith('&'),
+    ) as SuffixSelector[];
+
+    let innerStyles = '';
+
+    if (selectorKeys.length) {
+      selectorKeys.forEach((selector) => {
+        const suffix = selector.slice(1);
+
+        innerStyles += renderStyles(
+          styles[selector] as Styles,
+          responsive,
+          suffix,
+        );
+      });
+    }
+
+    keys.forEach((styleName) => {
+      if (styleName.startsWith('&')) return;
+
       let handlers: StyleHandler[] = STYLE_HANDLER_MAP[styleName];
 
       if (!handlers) {
-        handlers = [createStyle(styleName)];
+        handlers = STYLE_HANDLER_MAP[styleName] = [createStyle(styleName)];
       }
 
       handlers.forEach((STYLE) => {
@@ -95,19 +121,24 @@ export function renderStyles(styles: Styles, responsive: number[]) {
           return pointProps;
         });
 
-        const rulesByPoint = propsByPoint.map(handler);
+        const rulesByPoint = propsByPoint.map((props) =>
+          handler(props, suffix),
+        );
 
         rulesByPoint.forEach((rules, i) => {
           responsiveStyles[i] += rules || '';
         });
       } else {
-        rawStyles += handler(styleMap as StyleValueStateMap<string>) || '';
+        rawStyles
+          += handler(styleMap as StyleValueStateMap<string>, suffix) || '';
       }
     });
 
     STYLE_CACHE[cacheKey] = `outline: none;\n${rawStyles}${
-      responsive ? mediaWrapper(responsiveStyles, zones) : ''
-    }`;
+      responsive && responsive.length
+        ? mediaWrapper(responsiveStyles, zones)
+        : ''
+    }${innerStyles}`;
   }
 
   return STYLE_CACHE[cacheKey];

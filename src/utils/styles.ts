@@ -20,6 +20,7 @@ export type CSSMap = { $?: string } & { [key: string]: string | string[] };
 
 export type RawStyleHandler = (
   value: StyleValueStateMap,
+  suffix?: string,
 ) => CSSMap | CSSMap[] | void;
 
 export type StyleHandler = RawStyleHandler & {
@@ -517,6 +518,10 @@ export function hexToRgb(hex) {
     .match(/.{2}/g)
     .map((x, i) => parseInt(x, 16) * (i === 3 ? 1 / 255 : 1));
 
+  if (Number.isNaN(rgba[0])) {
+    return 'rgba(0, 0, 0, 1)';
+  }
+
   if (rgba.length === 3) {
     return `rgb(${rgba.join(', ')})`;
   } else if (rgba.length === 4) {
@@ -710,35 +715,14 @@ export function styleHandlerCacheWrapper(styleHandler, limit = 1000) {
     return renderStylesToSC(styleHandler(styleMap));
   }, limit);
 
-  const wrappedMapHandler = cacheWrapper((styleMap) => {
+  const wrappedMapHandler = cacheWrapper((styleMap, suffix = '') => {
     if (styleMap == null || styleMap === false) return null;
-
-    const keys = Object.keys(styleMap);
-    const selectors = keys.filter((sel) => sel.startsWith('&'));
-
-    let cssForSelectors = '';
-
-    if (selectors.length) {
-      cssForSelectors = selectors.reduce((css, selector) => {
-        const localStyleMap = styleMap[selector];
-
-        selector = selector.slice(1);
-
-        const stateMapList = styleMapToStyleMapStateList(localStyleMap);
-
-        replaceStateValues(stateMapList, wrappedStyleHandler);
-
-        return `${css}${applyStates('&&', stateMapList, selector)}`;
-      }, '');
-    }
 
     const stateMapList = styleMapToStyleMapStateList(styleMap);
 
     replaceStateValues(stateMapList, wrappedStyleHandler);
 
-    const css = applyStates('&&', stateMapList);
-
-    return cssForSelectors ? `${css}${cssForSelectors}` : css;
+    return applyStates('&&', stateMapList, suffix);
   }, limit);
 
   return Object.assign(wrappedMapHandler, {
@@ -1089,8 +1073,10 @@ export function cacheWrapper(handler: Function, limit = 1000) {
   let cache = {};
   let count = 0;
 
-  return (arg) => {
-    const key = typeof arg === 'string' ? arg : JSON.stringify(arg);
+  return (map: any, suffix?: string) => {
+    const args = [map, suffix];
+    const key
+      = typeof args[0] === 'string' && !suffix ? args[0] : JSON.stringify(args);
 
     if (!cache[key]) {
       if (count > limit) {
@@ -1100,7 +1086,7 @@ export function cacheWrapper(handler: Function, limit = 1000) {
 
       count++;
 
-      cache[key] = handler(arg);
+      cache[key] = !suffix ? handler(map) : handler(map, suffix);
     }
 
     return cache[key];
