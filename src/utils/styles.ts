@@ -692,7 +692,7 @@ export function renderStylesToSC(styles: CSSMap | CSSMap[], selector = '') {
  */
 export function applyStates(selector, states) {
   return states.reduce((css, state) => {
-    if (!state.value) return '';
+    if (!state.value) return css;
 
     const modifiers = `${(state.mods || []).map(getModSelector).join('')}${(
       state.notMods || []
@@ -709,14 +709,14 @@ export function styleHandlerCacheWrapper(styleHandler, limit = 1000) {
     return renderStylesToSC(styleHandler(styleMap));
   }, limit);
 
-  const wrappedMapHandler = cacheWrapper((styleMap) => {
+  const wrappedMapHandler = cacheWrapper((styleMap, selector) => {
     if (styleMap == null || styleMap === false) return null;
 
     const stateMapList = styleMapToStyleMapStateList(styleMap);
 
     replaceStateValues(stateMapList, wrappedStyleHandler);
 
-    return applyStates('&&', stateMapList);
+    return applyStates(selector ? `&&${selector}` : '&&', stateMapList);
   }, limit);
 
   return Object.assign(wrappedMapHandler, {

@@ -355,7 +355,7 @@ export const Button = forwardRef(
         {...props}
         ref={ref}
         isDisabled={isLoading || isDisabled}
-        data-type={type}
+        data-type={type || 'default'}
         data-theme={
           type && ['success', 'danger', 'primary'].includes(type)
             ? 'special'
