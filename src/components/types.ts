@@ -39,7 +39,9 @@ export interface BasePropsWithoutChildren
   /** DEPRECATED: Whether the element is disabled (`disabled` attribute is set) **/
   disabled?: boolean;
   /** Plain css for the element **/
-  css?: string;
+  css?: string | ((props: Props) => string);
+  /** The element name for using in style overriding */
+  styleName?: string;
   /** The CSS style map */
   style?:
     | CSSProperties

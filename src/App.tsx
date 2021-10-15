@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { Base, Grid, TopBar, Space, LoadingAnimation, Block } from './index';
+import {
+  Base,
+  Grid,
+  TopBar,
+  Title,
+  Space,
+  LoadingAnimation,
+  Block,
+} from './index';
 import { Button } from './components/actions/Button/Button';
 // import ResponsiveProvider from './providers/Responsive';
 import { color } from './utils/colors';
@@ -108,9 +116,11 @@ function App() {
               pressed: '#purple-text',
             },
           })}
+          BigTitle={{ color: '#purple' }}
           Link={() => ({ color: '#dark' })}
         >
           <StyleProvider Button={() => ({ padding: '2x' })}>
+            <Title styleName="BigTitle">Test</Title>
             <Button styles={{ padding: '2x', border: '2bw #dark.50' }}>
               Default
             </Button>

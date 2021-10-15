@@ -1,5 +1,4 @@
 import { CSSProperties, forwardRef } from 'react';
-import { Base } from '../Base';
 import { BASE_STYLES, COLOR_STYLES, TEXT_STYLES } from '../../styles/list';
 import { extractStyles, ResponsiveStyleValue } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
@@ -11,15 +10,23 @@ import {
   TextStyleProps,
 } from '../types';
 import { Styles } from '../../styles/types';
+import { styled } from '../../styled';
 
 const STYLE_LIST = [...BASE_STYLES, ...TEXT_STYLES, ...COLOR_STYLES] as const;
 
 const DEFAULT_STYLES: Styles = {
   display: 'inline',
   margin: '0',
-} as const;
+  whiteSpace: {
+    '': 'initial',
+    'nowrap | ellipsis': 'nowrap',
+  },
+  textOverflow: 'ellipsis',
+  overflow: 'hidden',
+  width: 'max 100%',
+};
 
-const PROP_MAP = {
+export const TEXT_PROP_MAP = {
   align: 'textAlign',
   transform: 'textTransform',
   weight: 'fontWeight',
@@ -53,33 +60,29 @@ export interface CubeTextProps
   transform?: ResponsiveStyleValue<CSSProperties['textTransform']>;
 }
 
+const RawText = styled({
+  name: 'Text',
+  tag: 'span',
+  availableMods: ['nowrap', 'ellipsis'],
+  styles: DEFAULT_STYLES,
+  attrs: {
+    'data-qa': 'Text',
+  },
+});
+
 const _Text = forwardRef((allProps: CubeTextProps, ref) => {
-  let { as, qa, block, ellipsis, css, nowrap, ...props } = allProps;
+  let { as, qa, block, styleName, ellipsis, css, nowrap, ...props } = allProps;
 
-  const styles = extractStyles(
-    props,
-    STYLE_LIST,
-    {
-      ...DEFAULT_STYLES,
-      whiteSpace: nowrap ? 'nowrap' : 'initial',
-      ...(ellipsis
-        ? {
-            textOverflow: 'ellipsis',
-            overflow: 'hidden',
-            whiteSpace: 'nowrap',
-            width: 'max 100%',
-          }
-        : null),
-    },
-    PROP_MAP,
-  );
-
-  css = css || '';
+  const styles = extractStyles(props, STYLE_LIST, {}, TEXT_PROP_MAP);
 
   return (
-    <Base
-      as={as || 'span'}
+    <RawText
       qa={qa || 'Text'}
+      styleName={styleName}
+      mods={{
+        nowrap,
+        ellipsis,
+      }}
       block={!!(block || ellipsis)}
       css={css}
       {...filterBaseProps(props, { eventProps: true })}
