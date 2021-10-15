@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, ReactNode } from 'react';
 import { Base } from '../../Base';
 import { CONTAINER_STYLES } from '../../../styles/list';
 import { extractStyles } from '../../../utils/styles';
@@ -22,7 +22,7 @@ const DEFAULT_STYLES = {
 };
 
 export interface CubeAvatarProps extends BaseProps, ContainerStyleProps {
-  icon?: JSX.Element;
+  icon?: ReactNode;
   size?: Styles['size'];
 }
 

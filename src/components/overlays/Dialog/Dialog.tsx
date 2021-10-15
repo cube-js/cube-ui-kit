@@ -3,7 +3,7 @@ import { useDOMRef } from '@react-spectrum/utils';
 import { DialogContext } from './context';
 import { DismissButton } from '@react-aria/overlays';
 import { FocusScope } from '@react-aria/focus';
-import { forwardRef, useContext } from 'react';
+import { forwardRef, ReactNode, useContext } from 'react';
 import { useDialog } from '@react-aria/dialog';
 import { useMessageFormatter } from '@react-aria/i18n';
 import { Base } from '../../Base';
@@ -126,6 +126,7 @@ export interface CubeDialogProps
   size?: 'S' | 'M' | 'L';
   isDismissable?: boolean;
   onDismiss?: (arg?: any) => void;
+  closeIcon?: ReactNode;
 }
 
 function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
@@ -137,6 +138,7 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
     size = 'S',
     isDismissable = contextProps.isDismissable,
     onDismiss = contextProps.onClose,
+    closeIcon,
     ...otherProps
   } = props;
 
@@ -233,7 +235,7 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
               qa="ModalCloseButton"
               type="neutral"
               styles={CLOSE_BUTTON_STYLES}
-              icon={<CloseOutlined />}
+              icon={closeIcon || <CloseOutlined />}
               aria-label={formatMessage('dismiss')}
               onPress={() => onDismiss && onDismiss()}
             />

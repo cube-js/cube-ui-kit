@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, ReactNode } from 'react';
 import { Base } from '../Base';
 import { Label } from './Label';
 import {
@@ -50,7 +50,7 @@ export type CubeFieldWrapperProps = {
   necessityIndicator?: NecessityIndicator;
   labelProps?: any;
   fieldProps?: any;
-  message?: string | JSX.Element;
+  message?: string | ReactNode;
   messageStyles?: Styles;
   Component?: JSX.Element;
   validationState?: ValidationState;

@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, ReactNode } from 'react';
 import { Action, CubeActionProps } from '../Action';
 import { Space } from '../../layout/Space';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -9,7 +9,7 @@ import { Styles } from '../../../styles/types';
 import { Block } from '../../Block';
 
 export interface CubeButtonProps extends CubeActionProps {
-  icon?: JSX.Element;
+  icon?: ReactNode;
   isLoading?: boolean;
   isSelected?: boolean;
   type?:
