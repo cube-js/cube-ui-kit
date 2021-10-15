@@ -309,6 +309,7 @@ export const Button = forwardRef(
       css,
       icon,
       skipWarnings,
+      mods,
       ...props
     } = allProps;
 
@@ -360,6 +361,7 @@ export const Button = forwardRef(
         data-is-loading={isLoading ? '' : undefined}
         data-is-selected={isSelected ? '' : undefined}
         data-size={size}
+        mods={mods}
         styles={styles}
         skipWarnings={skipWarnings}
       >

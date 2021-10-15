@@ -137,6 +137,7 @@ export const Action = forwardRef(
       skipWarnings,
       preventDefault,
       css,
+      mods,
       ...props
     }: CubeActionProps,
     ref: FocusableRef<HTMLElement>,
@@ -189,6 +190,7 @@ export const Action = forwardRef(
         data-is-pressed={isPressed && !isDisabled ? '' : null}
         data-is-focused={isFocused && !isDisabled ? '' : null}
         data-is-disabled={isDisabled || null}
+        mods={mods}
         aria-label={label}
         {...mergeProps(
           buttonProps,

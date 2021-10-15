@@ -11,6 +11,7 @@ const BasePropNames = new Set([
   'as',
   'css',
   'qa',
+  'mods',
   'qaVal',
   'hidden',
   'isHidden',
