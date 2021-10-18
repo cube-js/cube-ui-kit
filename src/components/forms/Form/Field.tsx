@@ -12,8 +12,8 @@ import { FormStore } from './useForm';
 
 const ID_MAP = {};
 
-function createId(name) {
-  if (!ID_MAP[name]) {
+function createId(name, isSSR) {
+  if (!ID_MAP[name] || isSSR) {
     ID_MAP[name] = [];
   }
 
@@ -135,7 +135,13 @@ export function Field(allProps: CubeFieldProps) {
   } = props;
 
   let [fieldId] = useState(() => {
-    return id || createId(idPrefix ? `${idPrefix}_${name}` : name);
+    return (
+      id
+      || createId(
+        idPrefix ? `${idPrefix}_${name}` : name,
+        typeof window === 'undefined',
+      )
+    );
   });
 
   useEffect(() => {

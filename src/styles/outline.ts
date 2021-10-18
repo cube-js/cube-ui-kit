@@ -3,7 +3,7 @@ import { parseStyle } from '../utils/styles';
 export function outlineStyle({ outline }) {
   if (!outline && outline !== 0) return '';
 
-  if (outline === true) outline = '1bw';
+  if (outline === true) outline = '1ow';
 
   const { values, color, mods } = parseStyle(String(outline));
 
