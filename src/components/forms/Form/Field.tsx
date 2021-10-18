@@ -12,8 +12,8 @@ import { FormStore } from './useForm';
 
 const ID_MAP = {};
 
-function createId(name, isSSR) {
-  if (!ID_MAP[name] || isSSR) {
+function createId(name) {
+  if (!ID_MAP[name]) {
     ID_MAP[name] = [];
   }
 
@@ -134,19 +134,23 @@ export function Field(allProps: CubeFieldProps) {
     message,
   } = props;
 
-  let [fieldId] = useState(() => {
-    return (
-      id
-      || createId(
-        idPrefix ? `${idPrefix}_${name}` : name,
-        typeof window === 'undefined',
-      )
-    );
-  });
+  let [fieldId, setFieldId] = useState(
+    id || (idPrefix ? `${idPrefix}_${name}` : name),
+  );
 
   useEffect(() => {
+    let newId;
+
+    if (!id) {
+      newId = createId(fieldId);
+
+      setFieldId(newId);
+    }
+
     return () => {
-      id || removeId(idPrefix ? `${idPrefix}_${name}` : name, fieldId);
+      if (!id) {
+        removeId(idPrefix ? `${idPrefix}_${name}` : name, newId);
+      }
     };
   }, []);
 
