@@ -1,10 +1,23 @@
 import { forwardRef, useEffect } from 'react';
 import Prism from 'prismjs';
 import { BaseProps } from '../../types';
+import { styled } from '../../../styled';
+import { Styles } from '../../../styles/types';
+import { CONTAINER_STYLES } from '../../../styles/list';
+
+const RawPre = styled({
+  name: 'CodeBlock',
+  tag: 'pre',
+  attrs: {
+    className: 'cube-prism-code',
+  },
+  styleProps: CONTAINER_STYLES,
+});
 
 export interface CubePrismCodeProps {
   /** The CSS style map */
   style?: BaseProps['style'];
+  styles?: Styles;
   /** The code snippet */
   code?: string;
   /** The language of the code snippet */
@@ -24,16 +37,16 @@ export interface CubePrismCodeProps {
 }
 
 function PrismCode(props: CubePrismCodeProps) {
-  let { style, code, language = 'javascript' } = props;
+  let { code, language = 'javascript', ...otherProps } = props;
 
   useEffect(() => {
     Prism.highlightAll();
   });
 
   return (
-    <pre className="cube-prism-code" style={style}>
+    <RawPre className="cube-prism-code" {...otherProps}>
       <code className={`language-${language}`}>{code}</code>
-    </pre>
+    </RawPre>
   );
 }
 

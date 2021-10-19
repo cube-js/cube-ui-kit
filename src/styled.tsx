@@ -27,10 +27,7 @@ export interface StyledProps<T extends string, K extends PossibleStyleNames> {
   availableMods?: T[];
 }
 
-export type PossibleStyleNames = readonly (keyof Omit<
-  StylesInterface,
-  typeof BASE_STYLES[number]
->)[];
+export type PossibleStyleNames = readonly (keyof StylesInterface)[];
 export type AllPossibleStyleNames = readonly (keyof StylesInterface)[];
 
 export type AllBasePropsWithMods<

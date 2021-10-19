@@ -352,12 +352,8 @@ export const Button = forwardRef(
         {...props}
         ref={ref}
         isDisabled={isLoading || isDisabled}
-        data-type={type || 'default'}
-        data-theme={
-          type && ['success', 'danger', 'primary'].includes(type)
-            ? 'special'
-            : undefined
-        }
+        data-type={type}
+        data-theme={theme}
         data-is-loading={isLoading ? '' : undefined}
         data-is-selected={isSelected ? '' : undefined}
         data-size={size}
