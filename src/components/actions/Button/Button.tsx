@@ -21,7 +21,6 @@ export interface CubeButtonProps extends CubeActionProps {
     | 'outline'
     | 'neutral'
     | string;
-  theme?: 'default' | 'danger' | string;
   size?: 'small' | 'default' | 'large' | string;
 }
 
@@ -352,8 +351,8 @@ export const Button = forwardRef(
         {...props}
         ref={ref}
         isDisabled={isLoading || isDisabled}
+        theme={theme}
         data-type={type}
-        data-theme={theme}
         data-is-loading={isLoading ? '' : undefined}
         data-is-selected={isSelected ? '' : undefined}
         data-size={size}

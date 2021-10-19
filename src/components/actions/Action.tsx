@@ -134,6 +134,7 @@ export const Action = forwardRef(
       as,
       htmlType,
       label,
+      theme,
       skipWarnings,
       preventDefault,
       css,
@@ -192,6 +193,7 @@ export const Action = forwardRef(
         data-is-disabled={isDisabled || null}
         mods={mods}
         aria-label={label}
+        data-theme={theme}
         {...mergeProps(
           buttonProps,
           hoverProps,

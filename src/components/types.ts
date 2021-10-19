@@ -46,6 +46,8 @@ export interface BasePropsWithoutChildren
   style?:
     | CSSProperties
     | (CSSProperties & { [key: string]: string | number | null });
+  /** User-defined theme for the element. Mapped to data-theme attribute. */
+  theme?: 'default' | 'danger' | string;
 }
 
 export interface BaseProps
