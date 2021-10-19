@@ -332,7 +332,7 @@ export const Button = forwardRef(
     };
     const contextStyles = useContextStyles('Button', propsForStyles);
 
-    children = children || label;
+    children = children || icon ? children : label;
 
     styles = {
       ...provideStyles(propsForStyles),
@@ -364,6 +364,7 @@ export const Button = forwardRef(
         mods={mods}
         styles={styles}
         skipWarnings={skipWarnings}
+        label={label}
       >
         {isLoading ? (
           <Block
