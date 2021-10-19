@@ -31,6 +31,9 @@ export function gapStyle({ display, flow, gap }) {
 
   const gapDir
     = gap && !isGrid ? (flow.includes('row') ? 'right' : 'bottom') : '';
+  const isReverse = isFlex && flow.includes('reverse');
+  const marginFirst = isReverse ? 'margin-left' : 'margin-right';
+  const marginSecond = isReverse ? 'margin-top' : 'margin-bottom';
 
   return gap
     ? isGrid
@@ -38,13 +41,13 @@ export function gapStyle({ display, flow, gap }) {
       : isWrap
       ? [
           {
-            'margin-right': `calc(-1 * ${values[1] || values[0]})`,
-            'margin-bottom': `calc(-1 * ${values[0]})`,
+            [marginFirst]: `calc(-1 * ${values[1] || values[0]})`,
+            [marginSecond]: `calc(-1 * ${values[0]})`,
           },
           {
             $: '& > *',
-            'margin-right': values[1] || values[0],
-            'margin-bottom': values[0],
+            [marginFirst]: values[1] || values[0],
+            [marginSecond]: values[0],
           },
         ]
       : {
