@@ -11,6 +11,7 @@ import { BLOCK_STYLES, OUTER_STYLES } from '../../../styles/list';
 import { Base } from '../../Base';
 import { useContextStyles } from '../../../providers/StylesProvider';
 import { FieldWrapper } from '../FieldWrapper';
+import { Styles } from '../../../styles/types';
 
 const STYLES = {
   display: 'grid',
@@ -23,7 +24,7 @@ const STYLES = {
     'has-sider': '1x',
   },
   placeItems: 'baseline start',
-};
+} as Styles;
 
 const GROUP_STYLES = {
   display: 'grid',
@@ -36,7 +37,7 @@ const GROUP_STYLES = {
     horizontal: '2x',
   },
   padding: '(1x - 1bw) 0',
-};
+} as Styles;
 
 function RadioGroup(props, ref) {
   props = useProviderProps(props);
@@ -68,12 +69,12 @@ function RadioGroup(props, ref) {
   styles = extractStyles(otherProps, OUTER_STYLES, {
     ...STYLES,
     ...wrapperContextStyles,
-    styles
+    ...styles,
   });
   groupStyles = extractStyles(otherProps, BLOCK_STYLES, {
     ...GROUP_STYLES,
     ...groupContextStyles,
-    groupStyles,
+    ...groupStyles,
   });
 
   labelStyles = {
