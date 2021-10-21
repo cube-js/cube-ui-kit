@@ -73,7 +73,7 @@ outline: none;
 appearance: none;
 position: relative;
 touch-action: manipulation;
--webkit-tap-highlight-color: var(--mark-color);
+-webkit-tap-highlight-color: transparent;
 text-decoration: none;
 `,
     },

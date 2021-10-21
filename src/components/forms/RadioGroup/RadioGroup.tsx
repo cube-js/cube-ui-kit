@@ -55,6 +55,8 @@ function RadioGroup(props, ref) {
     message,
     labelStyles,
     requiredMark = true,
+    styles,
+    groupStyles,
     ...otherProps
   } = props;
   let domRef = useDOMRef(ref);
@@ -63,13 +65,15 @@ function RadioGroup(props, ref) {
   let groupContextStyles = useContextStyles('RadioGroup', props);
   let labelContextStyles = useContextStyles('RadioGroup_Label', props);
 
-  let styles = extractStyles(otherProps, OUTER_STYLES, {
+  styles = extractStyles(otherProps, OUTER_STYLES, {
     ...STYLES,
     ...wrapperContextStyles,
+    styles
   });
-  let groupStyles = extractStyles(otherProps, BLOCK_STYLES, {
+  groupStyles = extractStyles(otherProps, BLOCK_STYLES, {
     ...GROUP_STYLES,
     ...groupContextStyles,
+    groupStyles,
   });
 
   labelStyles = {
