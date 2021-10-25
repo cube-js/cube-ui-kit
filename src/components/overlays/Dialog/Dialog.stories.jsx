@@ -68,14 +68,14 @@ export default {
       },
     },
     isDismissable: {
-      defaultValue: false,
+      defaultValue: true,
       description: 'Whether the dialog can be dismissed.',
       control: {
         type: 'boolean',
       },
       table: {
         type: { summary: 'boolean' },
-        defaultValue: { summary: false },
+        defaultValue: { summary: true },
       },
     },
     placement: {

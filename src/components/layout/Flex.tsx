@@ -8,7 +8,6 @@ import { BaseProps, ContainerStyleProps, ShortItemsStyles } from '../types';
 const DEFAULT_STYLES = {
   display: 'flex',
   flow: 'row',
-  gap: '@(column-gap, 0)',
 };
 
 export interface CubeFlexProps
