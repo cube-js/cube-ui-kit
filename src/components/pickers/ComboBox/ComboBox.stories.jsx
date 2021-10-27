@@ -83,7 +83,7 @@ const Template = ({ icon, ...props }) => {
   return (
     <>
       <ComboBox
-        autoComplete="off"
+        id="name"
         prefix={icon ? <DollarCircleOutlined /> : null}
         {...props}
         onSelectionChange={(query) => console.log('change', query)}

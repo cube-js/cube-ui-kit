@@ -130,7 +130,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
     hideTrigger,
     message,
     size,
-    autoComplete,
+    autoComplete = 'off',
     direction = 'bottom',
     shouldFlip = true,
     requiredMark = true,

@@ -29,32 +29,41 @@ export function gapStyle({ display, flow, gap }) {
 
   gap = values.join(' ');
 
-  const gapDir
-    = gap && !isGrid ? (flow.includes('row') ? 'right' : 'bottom') : '';
+  if (isGrid) {
+    return { gap };
+  }
+
   const isReverse = isFlex && flow.includes('reverse');
+  const gapDir
+    = gap && !isGrid
+      ? (!isReverse
+        ? (flow.includes('row') ? 'right' : 'bottom')
+        : (flow.includes('row') ? 'left' : 'top'))
+      : '';
   const marginFirst = isReverse ? 'margin-left' : 'margin-right';
   const marginSecond = isReverse ? 'margin-top' : 'margin-bottom';
 
-  return gap
-    ? isGrid
-      ? { gap }
-      : isWrap
-      ? [
-          {
-            [marginFirst]: `calc(-1 * ${values[1] || values[0]})`,
-            [marginSecond]: `calc(-1 * ${values[0]})`,
-          },
-          {
-            $: '& > *',
-            [marginFirst]: values[1] || values[0],
-            [marginSecond]: values[0],
-          },
-        ]
-      : {
-          $: '& > *:not(:last-child)',
-          [`margin-${gapDir}`]: gap,
-        }
-    : '';
+  console.log('! reverse', isReverse);
+  console.log('! wrap', isWrap);
+  console.log('! dir', gapDir, marginFirst, marginSecond);
+  console.log('!', display, flow, gap);
+
+  return isWrap
+    ? [
+        {
+          [marginFirst]: `calc(-1 * ${values[1] || values[0]})`,
+          [marginSecond]: `calc(-1 * ${values[0]})`,
+        },
+        {
+          $: '& > *',
+          [marginFirst]: values[1] || values[0],
+          [marginSecond]: values[0],
+        },
+      ]
+    : {
+        $: '& > *:not(:last-child)',
+        [`margin-${gapDir}`]: gap,
+      };
 }
 
 gapStyle.__lookupStyles = ['display', 'flow', 'gap'];

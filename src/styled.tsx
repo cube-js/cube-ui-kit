@@ -61,7 +61,7 @@ export function styled<T extends string, K extends PossibleStyleNames>(
     css: defaultCSS,
     attrs,
   } = options;
-  let Element = styledComponents[tag || 'div'](({ theme }) => theme.css);
+  let Element = styledComponents[tag || 'div'](({ css }) => css);
 
   if (name) {
     return forwardRef((allProps: AllBasePropsWithMods<T, K>, ref) => {
@@ -119,7 +119,7 @@ export function styled<T extends string, K extends PossibleStyleNames>(
           {...attrs}
           {...props}
           ref={ref}
-          theme={{ css }}
+          css={css}
         />
       );
     });
@@ -168,7 +168,7 @@ export function styled<T extends string, K extends PossibleStyleNames>(
           {...attrs}
           {...props}
           ref={ref}
-          theme={{ css }}
+          css={css}
         />
       );
     });
