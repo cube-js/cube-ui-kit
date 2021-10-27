@@ -36,17 +36,16 @@ export function gapStyle({ display, flow, gap }) {
   const isReverse = isFlex && flow.includes('reverse');
   const gapDir
     = gap && !isGrid
-      ? (!isReverse
-        ? (flow.includes('row') ? 'right' : 'bottom')
-        : (flow.includes('row') ? 'left' : 'top'))
+      ? !isReverse
+        ? flow.includes('row')
+          ? 'right'
+          : 'bottom'
+        : flow.includes('row')
+        ? 'left'
+        : 'top'
       : '';
   const marginFirst = isReverse ? 'margin-left' : 'margin-right';
   const marginSecond = isReverse ? 'margin-top' : 'margin-bottom';
-
-  console.log('! reverse', isReverse);
-  console.log('! wrap', isWrap);
-  console.log('! dir', gapDir, marginFirst, marginSecond);
-  console.log('!', display, flow, gap);
 
   return isWrap
     ? [

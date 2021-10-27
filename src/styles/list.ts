@@ -1,4 +1,10 @@
-export const BASE_STYLES = ['display', 'font', 'preset', 'hide', 'opacity'] as const;
+export const BASE_STYLES = [
+  'display',
+  'font',
+  'preset',
+  'hide',
+  'opacity',
+] as const;
 
 export const POSITION_STYLES = [
   'gridArea',

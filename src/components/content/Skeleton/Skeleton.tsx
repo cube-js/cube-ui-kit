@@ -70,7 +70,13 @@ const LAYOUT_MAP = {
         {Array(cards || 3)
           .fill(0)
           .map((item, i) => (
-            <Placeholder key={i} radius="1x" width="20x" height="12x" flexGrow={1} />
+            <Placeholder
+              key={i}
+              radius="1x"
+              width="20x"
+              height="12x"
+              flexGrow={1}
+            />
           ))}
       </Space>
     );

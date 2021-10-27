@@ -36,7 +36,12 @@ function App() {
       <Provider>
         <Block padding="2x 20x">
           <GridProvider columns={3} gap="2x">
-            <Flex flow="row-reverse wrap" align="center" justify="center" gap="2x">
+            <Flex
+              flow="row-reverse wrap"
+              align="center"
+              justify="center"
+              gap="2x"
+            >
               <Block width="1sp" height="4x" fill="#purple.04" />
               <Block width="2sp" height="4x" fill="#purple.1" />
               <Block width="2sp" height="4x" fill="#purple.1" />
