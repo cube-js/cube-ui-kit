@@ -65,9 +65,6 @@ const RawText = styled({
   tag: 'span',
   availableMods: ['nowrap', 'ellipsis'],
   styles: DEFAULT_STYLES,
-  attrs: {
-    'data-qa': 'Text',
-  },
 });
 
 const _Text = forwardRef((allProps: CubeTextProps, ref) => {
@@ -77,6 +74,7 @@ const _Text = forwardRef((allProps: CubeTextProps, ref) => {
 
   return (
     <RawText
+      as={as || 'span'}
       qa={qa || 'Text'}
       styleName={styleName}
       mods={{

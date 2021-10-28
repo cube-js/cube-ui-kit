@@ -20,5 +20,5 @@ export interface CubeParagraphProps
 export const Paragraph = forwardRef((props: CubeParagraphProps, ref) => {
   const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
 
-  return <Text {...props} as="p" styles={styles} ref={ref} />;
+  return <Text as="p" qa="Paragraph" {...props} styles={styles} ref={ref} />;
 });
