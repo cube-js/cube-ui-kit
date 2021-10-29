@@ -20,6 +20,7 @@ export class FormStore {
   private initialFields = {};
   private fields: { [key: string]: CubeField } = {};
   public ref = {};
+  public isSubmitting: boolean = false;
   public onValuesChange: (CubeFormData) => void | Promise<any> = () => {};
   public onSubmit: (CubeFormData) => void | Promise<any> = () => {};
 
@@ -207,6 +208,11 @@ export class FormStore {
       });
     });
 
+    this.forceReRender();
+  }
+
+  setSubmitting(isSubmitting: boolean) {
+    this.isSubmitting = isSubmitting;
     this.forceReRender();
   }
 

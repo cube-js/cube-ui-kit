@@ -18,6 +18,7 @@ function Submit(props) {
       type="primary"
       htmlType="submit"
       width="min-content"
+      isLoading={form.isSubmitting}
       {...otherProps}
       isDisabled={!isValid}
     />

@@ -50,8 +50,8 @@ export interface CubeFormProps
   /** The form name */
   name?: string;
   defaultValues?: { [key: string]: any };
-  onValuesChange?: (data: CubeFormData) => void | Promise<any>;
-  onSubmit?: (data: CubeFormData) => void | Promise<any>;
+  onValuesChange?: (data: CubeFormData) => void | Promise<void>;
+  onSubmit?: (data: CubeFormData) => void | Promise<void>;
   onSubmitFailed?: (any?) => void | Promise<any>;
   form?: FormStore;
 }
@@ -107,7 +107,9 @@ function Form(props: CubeFormProps, ref) {
           await timeout();
 
           if (form) {
-            onSubmit && onSubmit(form.getFieldsValue());
+            form.setSubmitting(true);
+            await onSubmit?.(form.getFieldsValue());
+            form.setSubmitting(false);
           }
         },
         async(e) => {
