@@ -107,9 +107,12 @@ function Form(props: CubeFormProps, ref) {
           await timeout();
 
           if (form) {
-            form.setSubmitting(true);
-            await onSubmit?.(form.getFieldsValue());
-            form.setSubmitting(false);
+            try {
+              form.setSubmitting(true);
+              await onSubmit?.(form.getFieldsValue());
+            } finally {
+              form.setSubmitting(false);
+            }
           }
         },
         async(e) => {
