@@ -11,6 +11,7 @@ import {
   PLACEHOLDER_ARG,
   VALIDATION_STATE_ARG,
   SIZE_ARG,
+  NECESSITY_INDICATOR_ARG,
 } from '../../../stories/FormFieldArgs';
 
 export default {
@@ -32,6 +33,7 @@ export default {
     ...IS_LOADING_ARG,
     ...VALIDATION_STATE_ARG,
     ...IS_REQUIRED_ARG,
+    ...NECESSITY_INDICATOR_ARG,
     type: {
       defaultValue: 'text',
       description: 'Input type',

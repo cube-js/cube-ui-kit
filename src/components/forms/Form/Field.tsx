@@ -234,7 +234,7 @@ export function Field(allProps: CubeFieldProps) {
     },
   };
 
-  if (necessityIndicator) {
+  if (necessityIndicator != null) {
     newProps.necessityIndicator = necessityIndicator;
   }
 

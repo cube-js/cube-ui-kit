@@ -21,6 +21,21 @@ export const LABEL_ARG = {
   },
 };
 
+export const NECESSITY_INDICATOR_ARG = {
+  necessityIndicator: {
+    defaultValue: 'icon',
+    description: 'Type of the necessity indicator',
+    control: {
+      type: 'radio',
+      options: ['icon', 'label', false],
+    },
+    table: {
+      type: { summary: 'string' },
+      defaultValue: { summary: 'icon' },
+    },
+  },
+};
+
 export const MESSAGE_ARG = {
   message: {
     defaultValue: '',
