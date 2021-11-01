@@ -100,7 +100,22 @@ export function createLinkClickHandler(router, to, onPress, disabled) {
 
     if (nativeRoute) {
       openLink(href || window.location.href);
-    } else if (router) {
+    } else if (href && href.startsWith('#')) {
+      const id = href.slice(1);
+      const element = document.getElementById(id);
+
+      if (element) {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+          inline: 'nearest',
+        });
+
+        return;
+      }
+    }
+
+    if (router) {
       router.push(href);
     } else if (href) {
       window.location.href = href;

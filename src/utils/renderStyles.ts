@@ -68,8 +68,8 @@ export function renderStyles(
     }
 
     const keys = Object.keys(styles);
-    const selectorKeys = keys.filter(
-      (key) => isSelector(key),
+    const selectorKeys = keys.filter((key) =>
+      isSelector(key),
     ) as SuffixSelector[];
 
     let innerStyles = '';
@@ -98,7 +98,10 @@ export function renderStyles(
         let isResponsive = false;
         const lookupStyles = STYLE.__lookupStyles;
         const filteredStyleMap = lookupStyles.reduce((map, name) => {
-          if (typeof styles[name] === 'string' && (styles as unknown as string)[name].includes('|')) {
+          if (
+            typeof styles[name] === 'string'
+            && (styles as unknown as string)[name].includes('|')
+          ) {
             map[name] = (styles as unknown as string)[name].split('|');
           } else {
             map[name] = styles[name];
