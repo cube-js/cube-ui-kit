@@ -187,11 +187,13 @@ export const Action = forwardRef(
 
     return (
       <Base
-        data-is-hovered={isHovered && !isDisabled ? '' : null}
-        data-is-pressed={isPressed && !isDisabled ? '' : null}
-        data-is-focused={isFocused && !isDisabled ? '' : null}
-        data-is-disabled={isDisabled || null}
-        mods={mods}
+        mods={{
+          hovered: isHovered && !isDisabled,
+          pressed: isPressed && !isDisabled,
+          focused: isFocused && !isDisabled,
+          disabled: isDisabled,
+          ...mods,
+        }}
         aria-label={label}
         data-theme={theme}
         {...mergeProps(

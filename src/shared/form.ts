@@ -20,6 +20,8 @@ export interface FieldBaseProps {
   validationState?: ValidationState;
   /** On which event perform validation for the field */
   validateTrigger?: ValidateTrigger;
+  necessityIndicator?: NecessityIndicator;
+  necessityLabel?: ReactNode;
 }
 
 export interface FormBaseProps {
@@ -30,6 +32,7 @@ export interface FormBaseProps {
   /** Whether the field is required */
   isRequired?: boolean;
   necessityIndicator?: NecessityIndicator;
+  necessityLabel?: ReactNode;
   /** Whether the field is read only */
   isReadOnly?: boolean;
   /** The validation state of the field */

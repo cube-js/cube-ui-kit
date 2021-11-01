@@ -9,6 +9,22 @@ type HandlerQueueItem = {
   isResponsive: boolean;
 };
 
+function getSelector(key) {
+  if (key.startsWith('&')) {
+    return key.slice(1);
+  }
+
+  if (key.startsWith('.')) {
+    return `& ${key}`;
+  }
+
+  if (key.startsWith('[')) {
+    return `& [data-element="${key.slice(1, -1)}"]`;
+  }
+
+  return null;
+}
+
 /** Props level cache for `renderStyles` function. */
 let STYLE_CACHE = {};
 
@@ -48,26 +64,22 @@ export function renderStyles(
     }
 
     const keys = Object.keys(styles);
-    const selectorKeys = keys.filter((key) =>
-      key.startsWith('&'),
+    const selectorKeys = keys.filter(
+      (key) => !!getSelector(key),
     ) as SuffixSelector[];
 
     let innerStyles = '';
 
     if (selectorKeys.length) {
-      selectorKeys.forEach((selector) => {
-        const suffix = selector.slice(1);
+      selectorKeys.forEach((key) => {
+        const suffix = getSelector(key);
 
-        innerStyles += renderStyles(
-          styles[selector] as Styles,
-          responsive,
-          suffix,
-        );
+        innerStyles += renderStyles(styles[key] as Styles, responsive, suffix);
       });
     }
 
     keys.forEach((styleName) => {
-      if (styleName.startsWith('&')) return;
+      if (getSelector(styleName)) return;
 
       let handlers: StyleHandler[] = STYLE_HANDLER_MAP[styleName];
 

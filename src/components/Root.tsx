@@ -7,6 +7,7 @@ import { filterBaseProps } from '../utils/filterBaseProps';
 import { Provider } from '../provider';
 import { ModalProvider } from '@react-aria/overlays';
 import { BaseProps } from './types';
+import { StyleSheetManager } from 'styled-components';
 
 const DEFAULT_STYLES = {
   display: 'block',
@@ -48,21 +49,23 @@ export const Root = (allProps: CubeRootProps) => {
 
   const styles = extractStyles(props, STYLES, DEFAULT_STYLES);
   const root = (
-    <Base
-      ref={ref}
-      className="root"
-      {...filterBaseProps(props, { eventProps: true })}
-      styles={styles}
-    >
-      <GlobalStyles
-        tokens={tokens}
-        publicUrl={publicUrl}
-        fonts={fonts}
-        font={font}
-        monospaceFont={monospaceFont}
-      />
-      <ModalProvider>{children}</ModalProvider>
-    </Base>
+    <StyleSheetManager disableVendorPrefixes>
+      <Base
+        ref={ref}
+        className="root"
+        {...filterBaseProps(props, { eventProps: true })}
+        styles={styles}
+      >
+        <GlobalStyles
+          tokens={tokens}
+          publicUrl={publicUrl}
+          fonts={fonts}
+          font={font}
+          monospaceFont={monospaceFont}
+        />
+        <ModalProvider>{children}</ModalProvider>
+      </Base>
+    </StyleSheetManager>
   );
 
   return (

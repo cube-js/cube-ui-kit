@@ -75,10 +75,6 @@ export default {
       control: 'text',
     },
     ...PLACEHOLDER_ARG,
-    multiLine: {
-      defaultValue: undefined,
-      control: 'number',
-    },
     suffix: {
       defaultValue: '',
       control: 'text',

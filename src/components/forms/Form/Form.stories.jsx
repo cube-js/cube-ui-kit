@@ -88,6 +88,7 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
               message: 'This field should be a valid email address',
             },
           ]}
+          necessityIndicator={'label'}
         >
           <TextInput type="email" label="Email field" />
         </Field>

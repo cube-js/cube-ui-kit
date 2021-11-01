@@ -91,6 +91,8 @@ export type { CubeTextInputBaseProps as CubeTextInputProps } from './components/
 export { TextInput } from './components/forms/TextInput/TextInput';
 export { TextArea } from './components/forms/TextArea/TextArea';
 export type { CubeTextAreaProps } from './components/forms/TextArea/TextArea';
+export { FileInput } from './components/forms/FileInput/FileInput';
+export type { CubeFileInputProps } from './components/forms/FileInput/FileInput';
 export { PasswordInput } from './components/forms/PasswordInput/PasswordInput';
 export { Checkbox } from './components/forms/Checkbox/Checkbox';
 export type { CubeCheckboxProps } from './components/forms/Checkbox/Checkbox';

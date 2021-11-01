@@ -131,6 +131,8 @@ export function Field(allProps: CubeFieldProps) {
     label,
     validateTrigger,
     validationState,
+    necessityLabel,
+    necessityIndicator,
     message,
   } = props;
 
@@ -231,6 +233,14 @@ export function Field(allProps: CubeFieldProps) {
       }
     },
   };
+
+  if (necessityIndicator) {
+    newProps.necessityIndicator = necessityIndicator;
+  }
+
+  if (necessityLabel) {
+    newProps.necessityLabel = necessityLabel;
+  }
 
   if (validationState) {
     newProps.validationState = validationState;
