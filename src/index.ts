@@ -14,6 +14,7 @@ import { CubeParagraphProps, Paragraph } from './components/content/Paragraph';
 import { TextArea } from './components/forms/TextArea/TextArea';
 import { Button } from './components/actions/Button/Button';
 import { ButtonGroup } from './components/actions/ButtonGroup/ButtonGroup';
+import { FileInput } from './components/forms/FileInput/FileInput';
 
 import './styles/predefined';
 
@@ -179,6 +180,7 @@ const Input = Object.assign(TextInput, {
   Password: PasswordInput,
   Number: NumberInput,
   TextArea: TextArea,
+  File: FileInput,
 });
 
 export { Input };

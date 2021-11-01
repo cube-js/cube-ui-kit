@@ -73,6 +73,10 @@ export interface CubeFileInputProps
 
 function FileInput(props: CubeFileInputProps, ref) {
   let {
+    id,
+    name,
+    qa,
+    qaVal,
     onChange,
     placeholder,
     inputRef,
@@ -130,12 +134,20 @@ function FileInput(props: CubeFileInputProps, ref) {
   }));
 
   const fileInput = (
-    <Action styles={inputStyles} isDisabled={isDisabled} ref={domRef}>
+    <Action
+      qa={qa || 'FileInput'}
+      styles={inputStyles}
+      isDisabled={isDisabled}
+      ref={domRef}
+    >
       <input
+        id={id}
+        name={name}
         ref={inputRef}
         onChange={onLocalChange}
         data-element="Input"
         type="file"
+        tabIndex={-1}
       />
       <div data-element="Button">Choose file</div>
       <div data-element="Placeholder">
