@@ -147,7 +147,7 @@ function App() {
             placeContent: ['start', 'center', 'start'],
           }}
           gap={['2x', '4x']}
-          flow={['row', 'column', 'row']}
+          flow="row|column|row"
         >
           <button>2</button>
           <button>4</button>

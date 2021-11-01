@@ -98,9 +98,13 @@ export function renderStyles(
         let isResponsive = false;
         const lookupStyles = STYLE.__lookupStyles;
         const filteredStyleMap = lookupStyles.reduce((map, name) => {
-          map[name] = styles[name];
+          if (typeof styles[name] === 'string' && (styles as unknown as string)[name].includes('|')) {
+            map[name] = (styles as unknown as string)[name].split('|');
+          } else {
+            map[name] = styles[name];
+          }
 
-          if (Array.isArray(styles[name])) {
+          if (Array.isArray(map[name])) {
             isResponsive = true;
           }
 
