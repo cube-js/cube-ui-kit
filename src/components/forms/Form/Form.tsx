@@ -106,7 +106,7 @@ function Form(props: CubeFormProps, ref) {
         async() => {
           await timeout();
 
-          if (form) {
+          if (form && !form.isSubmitting) {
             try {
               form.setSubmitting(true);
               await onSubmit?.(form.getFieldsValue());
@@ -122,7 +122,7 @@ function Form(props: CubeFormProps, ref) {
           }
           // errors are shown
           // transfer errors to the callback
-          onSubmitFailed && onSubmitFailed(e);
+          onSubmitFailed?.(e);
         },
       );
 

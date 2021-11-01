@@ -9,6 +9,10 @@ type HandlerQueueItem = {
   isResponsive: boolean;
 };
 
+function isSelector(key) {
+  return key.startsWith('&') || key.startsWith('.') || key.startsWith('[');
+}
+
 function getSelector(key) {
   if (key.startsWith('&')) {
     return key.slice(1);
@@ -65,7 +69,7 @@ export function renderStyles(
 
     const keys = Object.keys(styles);
     const selectorKeys = keys.filter(
-      (key) => !!getSelector(key),
+      (key) => isSelector(key),
     ) as SuffixSelector[];
 
     let innerStyles = '';
@@ -79,7 +83,7 @@ export function renderStyles(
     }
 
     keys.forEach((styleName) => {
-      if (getSelector(styleName)) return;
+      if (isSelector(styleName)) return;
 
       let handlers: StyleHandler[] = STYLE_HANDLER_MAP[styleName];
 
