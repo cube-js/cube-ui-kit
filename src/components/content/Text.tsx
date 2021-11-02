@@ -15,7 +15,10 @@ import { styled } from '../../styled';
 const STYLE_LIST = [...BASE_STYLES, ...TEXT_STYLES, ...COLOR_STYLES] as const;
 
 const DEFAULT_STYLES: Styles = {
-  display: 'inline',
+  display: {
+    '': 'inline',
+    ellipsis: 'inline-block',
+  },
   margin: '0',
   whiteSpace: {
     '': 'initial',
