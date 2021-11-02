@@ -17,7 +17,7 @@ const STYLE_LIST = [...BASE_STYLES, ...TEXT_STYLES, ...COLOR_STYLES] as const;
 const DEFAULT_STYLES: Styles = {
   display: {
     '': 'inline',
-    ellipsis: 'inline-block',
+    ellipsis: 'block',
   },
   margin: '0',
   whiteSpace: {
