@@ -35,6 +35,8 @@ export interface CubeActionProps
   allowNativeEvents?: boolean;
 }
 
+const FILTER_OPTIONS = { propNames: new Set(['onMouseEnter', 'onMouseLeave']) };
+
 /**
  * Helper to open link.
  * @param {String} href
@@ -151,6 +153,8 @@ export const Action = forwardRef(
   ) => {
     if (
       (props.onClick
+        || props.onMouseEnter
+        || props.onMouseLeave
         || props.onBlur
         || props.onFocus
         || props.onKeyDown
@@ -212,7 +216,7 @@ export const Action = forwardRef(
           hoverProps,
           focusProps,
           customProps,
-          filterBaseProps(props),
+          filterBaseProps(props, FILTER_OPTIONS),
         )}
         type={htmlType || 'button'}
         rel={as === 'a' && newTab ? 'rel="noopener noreferrer"' : undefined}
