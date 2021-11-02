@@ -83,11 +83,11 @@ export default {
   },
 };
 
-const Template = ({ icon, label, ...props }) => (
+const Template = ({ icon, label, onClick, ...props }) => (
   <Button
     icon={icon ? <DollarCircleOutlined /> : undefined}
-    onPress={() => console.log('Press')}
     {...props}
+    onPress={() => console.log('Press')}
   >
     {label}
   </Button>

@@ -126,7 +126,10 @@ function App() {
         >
           <StyleProvider Button={() => ({ padding: '2x' })}>
             <Title styleName="BigTitle">Test</Title>
-            <Button styles={{ padding: '2x', border: '2bw #dark.50' }}>
+            <Button
+              onClick={(e) => console.log(e)}
+              styles={{ padding: '2x', border: '2bw #dark.50' }}
+            >
               Default
             </Button>
           </StyleProvider>
@@ -147,7 +150,7 @@ function App() {
             placeContent: ['start', 'center', 'start'],
           }}
           gap={['2x', '4x']}
-          flow="row|column|row"
+          flow={['row', 'column', 'row']}
         >
           <button>2</button>
           <button>4</button>

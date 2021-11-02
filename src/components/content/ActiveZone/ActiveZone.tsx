@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, MouseEventHandler } from 'react';
 import { useHover } from '@react-aria/interactions';
 import { mergeProps } from '@react-aria/utils';
 import { CONTAINER_STYLES, TEXT_STYLES } from '../../../styles/list';
@@ -25,6 +25,7 @@ export interface CubeActiveZoneProps
     TextStyleProps,
     FocusableOptions {
   label?: string;
+  onClick?: MouseEventHandler;
 }
 
 const DEFAULT_STYLES: Styles = {
@@ -43,7 +44,10 @@ const DEFAULT_STYLES: Styles = {
 
 const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
-const ActiveZone = ({ as, label, ...props }: CubeActiveZoneProps, ref) => {
+const ActiveZone = (
+  { as, label, onClick, ...props }: CubeActiveZoneProps,
+  ref,
+) => {
   const isDisabled = props.isDisabled;
   const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
   const domRef = useFocusableRef(ref);
@@ -62,6 +66,7 @@ const ActiveZone = ({ as, label, ...props }: CubeActiveZoneProps, ref) => {
         hoverProps,
         focusProps,
         focusableProps,
+        { onClick },
         filterBaseProps(props, { eventProps: true }),
       )}
       tabIndex={props.excludeFromTabOrder || isDisabled ? -1 : 0}

@@ -2,7 +2,6 @@ const SUGGESTED_PROP_MAP = {
   disabled: 'isDisabled',
   loading: 'isLoading',
   selected: 'isSelected',
-  onClick: 'onPress',
 };
 
 export function propDeprecationWarning(name, props, propList) {

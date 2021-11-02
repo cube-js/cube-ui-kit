@@ -56,7 +56,10 @@ export interface BaseProps
 
 export interface AllBaseProps<K extends keyof HTMLElementTagNameMap = 'div'>
   extends BaseProps,
-    Omit<AllHTMLAttributes<HTMLElementTagNameMap[K]>, 'style' | 'size'> {
+    Omit<
+      AllHTMLAttributes<HTMLElementTagNameMap[K]>,
+      'style' | 'size' | 'disabled' | 'hidden'
+    > {
   as?: string;
 }
 

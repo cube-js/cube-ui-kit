@@ -5,7 +5,6 @@ import { useHover } from '@react-aria/interactions';
 import { useFocus } from '../../utils/interactions';
 import { useButton } from '@react-aria/button';
 import { mergeProps } from '@react-aria/utils';
-import { propDeprecationWarning } from '../../utils/warnings';
 import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
 import { UIKitContext } from '../../provider';
@@ -30,10 +29,10 @@ export interface CubeActionProps
     Omit<AriaButtonProps, 'type'> {
   to?: string;
   label?: string;
-  skipWarnings?: boolean;
   preventDefault?: boolean;
-  onClick?: MouseEventHandler;
   htmlType?: 'button' | 'submit' | 'reset' | undefined;
+  onClick?: MouseEventHandler;
+  allowNativeEvents?: boolean;
 }
 
 /**
@@ -84,12 +83,6 @@ export function createLinkClickHandler(router, to, onPress, disabled) {
   return function onClickHandler(evt) {
     if (disabled) return;
 
-    if (onPress) {
-      onPress();
-
-      return;
-    }
-
     if (!to) return;
 
     if (evt.shiftKey || evt.metaKey || newTab) {
@@ -139,7 +132,6 @@ const DEFAULT_STYLES: Styles = {
   cursor: 'pointer',
 } as const;
 
-const DEPRECATED_PROPS = ['disabled', 'onClick'];
 const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
 export const Action = forwardRef(
@@ -150,7 +142,6 @@ export const Action = forwardRef(
       htmlType,
       label,
       theme,
-      skipWarnings,
       preventDefault,
       css,
       mods,
@@ -158,8 +149,17 @@ export const Action = forwardRef(
     }: CubeActionProps,
     ref: FocusableRef<HTMLElement>,
   ) => {
-    if (!skipWarnings) {
-      propDeprecationWarning('Action', props, DEPRECATED_PROPS);
+    if (
+      (props.onClick
+        || props.onBlur
+        || props.onFocus
+        || props.onKeyDown
+        || props.onKeyUp)
+      && !props.allowNativeEvents
+    ) {
+      throw new Error(
+        'CubeUIKit: add `allowNativeEvents` property to the `Action` component to allow usage of native events like `onClick`.',
+      );
     }
 
     as = to ? 'a' : as || 'button';
@@ -171,7 +171,7 @@ export const Action = forwardRef(
     const pressHandler = createLinkClickHandler(
       router,
       to,
-      props.onPress || props.onClick,
+      props.onPress,
       isDisabled,
     );
     const domRef = useFocusableRef(ref);
@@ -196,10 +196,6 @@ export const Action = forwardRef(
       };
     }
 
-    if (preventDefault) {
-      customProps.onClick = (e) => e.preventDefault();
-    }
-
     return (
       <Base
         mods={{
@@ -216,7 +212,7 @@ export const Action = forwardRef(
           hoverProps,
           focusProps,
           customProps,
-          filterBaseProps(props, { eventProps: true }),
+          filterBaseProps(props),
         )}
         type={htmlType || 'button'}
         rel={as === 'a' && newTab ? 'rel="noopener noreferrer"' : undefined}

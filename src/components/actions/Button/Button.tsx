@@ -2,7 +2,6 @@ import { forwardRef, ReactNode } from 'react';
 import { Action, CubeActionProps } from '../Action';
 import { Space } from '../../layout/Space';
 import { LoadingOutlined } from '@ant-design/icons';
-import { propDeprecationWarning } from '../../../utils/warnings';
 import { useContextStyles } from '../../../providers/StylesProvider';
 import { FocusableRef } from '@react-types/shared';
 import { Styles } from '../../../styles/types';
@@ -294,8 +293,6 @@ const DEFAULT_STYLES = {
   },
 } as Styles;
 
-const DEPRECATED_PROPS = ['disabled', 'loading', 'onClick'];
-
 export const Button = forwardRef(
   (allProps: CubeButtonProps, ref: FocusableRef<HTMLElement>) => {
     let {
@@ -307,14 +304,9 @@ export const Button = forwardRef(
       theme,
       css,
       icon,
-      skipWarnings,
       mods,
       ...props
     } = allProps;
-
-    if (!skipWarnings) {
-      propDeprecationWarning('Action', props, DEPRECATED_PROPS);
-    }
 
     const isDisabled = props.isDisabled;
     const isLoading = props.isLoading;
@@ -358,7 +350,6 @@ export const Button = forwardRef(
         data-size={size}
         mods={mods}
         styles={styles}
-        skipWarnings={skipWarnings}
         label={label}
       >
         {isLoading ? (

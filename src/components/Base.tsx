@@ -61,14 +61,6 @@ const Base = function Base<K extends keyof HTMLElementTagNameMap>(
 
   css = `${css || ''}${renderStyles(styles, zones)}`;
 
-  if (props.hidden == null && isHidden) {
-    props.hidden = isHidden;
-  }
-
-  if (props.disabled == null && isDisabled) {
-    props.disabled = isDisabled;
-  }
-
   if (mods) {
     Object.assign(props, modAttrs(mods));
   }
@@ -79,6 +71,8 @@ const Base = function Base<K extends keyof HTMLElementTagNameMap>(
       data-qa={qa}
       data-qaval={qaVal}
       {...props}
+      hidden={isHidden}
+      disabled={isDisabled}
       ref={ref}
       css={css}
     />

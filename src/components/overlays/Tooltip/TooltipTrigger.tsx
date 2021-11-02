@@ -70,9 +70,17 @@ function TooltipTrigger(props: CubeTooltipTriggerProps) {
     return <Block>{trigger}</Block>;
   }
 
+  function onClick(e) {
+    e.target.parentNode.click();
+  }
+
   return (
     <FocusableProvider {...triggerProps} ref={tooltipTriggerRef}>
-      {activeWrap ? <ActiveZone>{trigger}</ActiveZone> : trigger}
+      {activeWrap ? (
+        <ActiveZone onClick={onClick}>{trigger}</ActiveZone>
+      ) : (
+        trigger
+      )}
       <TooltipContext.Provider
         value={{
           state,
