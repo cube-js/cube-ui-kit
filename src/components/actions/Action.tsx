@@ -32,6 +32,8 @@ export interface CubeActionProps
   preventDefault?: boolean;
   htmlType?: 'button' | 'submit' | 'reset' | undefined;
   onClick?: MouseEventHandler;
+  onMouseEnter?: MouseEventHandler;
+  onMouseLeave?: MouseEventHandler;
   allowNativeEvents?: boolean;
 }
 
