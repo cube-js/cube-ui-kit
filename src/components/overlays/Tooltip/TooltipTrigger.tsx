@@ -77,9 +77,7 @@ function TooltipTrigger(props: CubeTooltipTriggerProps) {
   return (
     <FocusableProvider {...triggerProps} ref={tooltipTriggerRef}>
       {activeWrap ? (
-        <ActiveZone onClick={onClick} allowNativeEvents>
-          {trigger}
-        </ActiveZone>
+        <ActiveZone onClick={onClick}>{trigger}</ActiveZone>
       ) : (
         trigger
       )}
