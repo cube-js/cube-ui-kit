@@ -29,15 +29,11 @@ export interface CubeActiveZoneProps
 }
 
 const DEFAULT_STYLES: Styles = {
-  display: 'inline-block',
+  display: 'block',
   position: 'relative',
   opacity: {
     '': 1,
     '[disabled]': 0.4,
-  },
-  outline: {
-    '': '#purple-03.0',
-    focused: '#purple-03',
   },
   transition: 'theme',
 } as const;
