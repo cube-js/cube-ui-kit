@@ -12,6 +12,7 @@ const DEFAULT_STYLES: Styles = {
   flow: 'column',
   radius: '1x',
   padding: '1.5x',
+  preset: 't3',
 };
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES] as const;
