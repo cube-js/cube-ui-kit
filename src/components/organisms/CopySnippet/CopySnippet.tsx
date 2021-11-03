@@ -115,7 +115,7 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
   async function onCopy() {
     await copy(code);
 
-    notification.success(`${codeTitle} is copied`);
+    notification.success(`${codeTitle} copied`);
   }
 
   const multiline = (code || '').includes('\n') && !nowrap;

@@ -34,7 +34,6 @@ export interface CubeActionProps
   onClick?: MouseEventHandler;
   onMouseEnter?: MouseEventHandler;
   onMouseLeave?: MouseEventHandler;
-  allowNativeEvents?: boolean;
 }
 
 const FILTER_OPTIONS = { propNames: new Set(['onMouseEnter', 'onMouseLeave']) };
@@ -153,21 +152,6 @@ export const Action = forwardRef(
     }: CubeActionProps,
     ref: FocusableRef<HTMLElement>,
   ) => {
-    if (
-      (props.onClick
-        || props.onMouseEnter
-        || props.onMouseLeave
-        || props.onBlur
-        || props.onFocus
-        || props.onKeyDown
-        || props.onKeyUp)
-      && !props.allowNativeEvents
-    ) {
-      throw new Error(
-        'CubeUIKit: add `allowNativeEvents` property to the `Action` component to allow usage of native events like `onClick`.',
-      );
-    }
-
     as = to ? 'a' : as || 'button';
 
     const router = useContext(UIKitContext).router;
