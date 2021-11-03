@@ -1,4 +1,4 @@
-import { forwardRef, MouseEventHandler, useContext } from 'react';
+import { forwardRef, MouseEventHandler, useContext, useCallback } from 'react';
 import { CONTAINER_STYLES, TEXT_STYLES } from '../../styles/list';
 import { Base } from '../Base';
 import { useHover } from '@react-aria/interactions';
@@ -80,43 +80,43 @@ export function parseTo(to): {
   };
 }
 
-export function createLinkClickHandler(router, to, onPress, disabled) {
+export function performClickHandler(evt, router, to, onPress) {
   const { newTab, nativeRoute, href } = parseTo(to);
 
-  return function onClickHandler(evt) {
-    if (disabled) return;
+  onPress?.(evt);
 
-    if (!to) return;
+  if (!to) return;
 
-    if (evt.shiftKey || evt.metaKey || newTab) {
-      openLink(href, true);
+  evt.preventDefault();
+
+  if (evt.shiftKey || evt.metaKey || newTab) {
+    openLink(href, true);
+
+    return;
+  }
+
+  if (nativeRoute) {
+    openLink(href || window.location.href);
+  } else if (href && href.startsWith('#')) {
+    const id = href.slice(1);
+    const element = document.getElementById(id);
+
+    if (element) {
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest',
+      });
 
       return;
     }
+  }
 
-    if (nativeRoute) {
-      openLink(href || window.location.href);
-    } else if (href && href.startsWith('#')) {
-      const id = href.slice(1);
-      const element = document.getElementById(id);
-
-      if (element) {
-        element.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-          inline: 'nearest',
-        });
-
-        return;
-      }
-    }
-
-    if (router) {
-      router.push(href);
-    } else if (href) {
-      window.location.href = href;
-    }
-  };
+  if (router) {
+    router.push(href);
+  } else if (href) {
+    window.location.href = href;
+  }
 }
 
 const DEFAULT_STYLES: Styles = {
@@ -148,6 +148,7 @@ export const Action = forwardRef(
       preventDefault,
       css,
       mods,
+      onPress,
       ...props
     }: CubeActionProps,
     ref: FocusableRef<HTMLElement>,
@@ -158,33 +159,25 @@ export const Action = forwardRef(
     const isDisabled = props.isDisabled;
     const { newTab, href } = parseTo(to);
     const target = newTab ? '_blank' : undefined;
-    const pressHandler = createLinkClickHandler(
-      router,
-      to,
-      props.onPress,
-      isDisabled,
-    );
     const domRef = useFocusableRef(ref);
     const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
 
-    let { buttonProps, isPressed } = useButton(props, domRef);
+    const customOnPress = useCallback(
+      (evt) => {
+        performClickHandler(evt, router, to, onPress);
+      },
+      [router, to, onPress],
+    );
+
+    let { buttonProps, isPressed } = useButton(
+      {
+        ...props,
+        onPress: customOnPress,
+      },
+      domRef,
+    );
     let { hoverProps, isHovered } = useHover({ isDisabled });
     let { focusProps, isFocused } = useFocus({ isDisabled }, true);
-
-    const customProps: {
-      onClick?: MouseEventHandler;
-    } = {};
-
-    // prevent default behavior for links
-    if (to) {
-      customProps.onClick = (evt) => {
-        evt.preventDefault();
-
-        if (isDisabled) return;
-
-        pressHandler(evt);
-      };
-    }
 
     return (
       <Base
@@ -201,7 +194,6 @@ export const Action = forwardRef(
           buttonProps,
           hoverProps,
           focusProps,
-          customProps,
           filterBaseProps(props, FILTER_OPTIONS),
         )}
         type={htmlType || 'button'}

@@ -87,7 +87,7 @@ const Template = ({ icon, label, onClick, ...props }) => (
   <Button
     icon={icon ? <DollarCircleOutlined /> : undefined}
     {...props}
-    onPress={() => console.log('Press')}
+    onPress={(e) => console.log('Press', e)}
   >
     {label}
   </Button>
