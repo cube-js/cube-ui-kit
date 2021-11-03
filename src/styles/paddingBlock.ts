@@ -1,6 +1,10 @@
 import { parseStyle } from '../utils/styles';
 
-export function paddingBlockStyle({ paddingBlock: padding, paddingTop, paddingBottom }) {
+export function paddingBlockStyle({
+  paddingBlock: padding,
+  paddingTop,
+  paddingBottom,
+}) {
   if (typeof padding === 'number') {
     padding = `${padding}px`;
   }
@@ -28,4 +32,8 @@ export function paddingBlockStyle({ paddingBlock: padding, paddingTop, paddingBo
   return styles;
 }
 
-paddingBlockStyle.__lookupStyles = ['paddingBlock', 'paddingTop', 'paddingBottom'];
+paddingBlockStyle.__lookupStyles = [
+  'paddingBlock',
+  'paddingTop',
+  'paddingBottom',
+];

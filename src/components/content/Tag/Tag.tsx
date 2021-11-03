@@ -29,7 +29,7 @@ const RawTag = styled({
       closable: '0 (2.5x - 1bw) 0 (1x - 1bw)',
     },
     fill: {
-      '': '#white',
+      '': '#dark.04',
       ...Object.keys(THEMES).reduce((map, type) => {
         map[`[data-type="${type}"]`] = THEMES[type].fill;
 
@@ -37,7 +37,7 @@ const RawTag = styled({
       }, {}),
     },
     color: {
-      '': '#purple',
+      '': '#dark.65',
       ...Object.keys(THEMES).reduce((map, type) => {
         map[`[data-type="${type}"]`] = THEMES[type].color;
 
@@ -45,7 +45,7 @@ const RawTag = styled({
       }, {}),
     },
     border: {
-      '': '#purple.40',
+      '': true,
       ...Object.keys(THEMES).reduce((map, type) => {
         map[`[data-type="${type}"]`] = THEMES[type].border;
 

@@ -1,6 +1,10 @@
 import { parseStyle } from '../utils/styles';
 
-export function paddingInlineStyle({ paddingInline: padding, paddingLeft, paddingRight }) {
+export function paddingInlineStyle({
+  paddingInline: padding,
+  paddingLeft,
+  paddingRight,
+}) {
   if (typeof padding === 'number') {
     padding = `${padding}px`;
   }
@@ -28,4 +32,8 @@ export function paddingInlineStyle({ paddingInline: padding, paddingLeft, paddin
   return styles;
 }
 
-paddingInlineStyle.__lookupStyles = ['paddingInline', 'paddingLeft', 'paddingRight'];
+paddingInlineStyle.__lookupStyles = [
+  'paddingInline',
+  'paddingLeft',
+  'paddingRight',
+];

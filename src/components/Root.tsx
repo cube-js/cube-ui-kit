@@ -12,6 +12,7 @@ import { StyleSheetManager } from 'styled-components';
 const DEFAULT_STYLES = {
   display: 'block',
   size: 'default',
+  preset: 't3',
 };
 const STYLES = [...BASE_STYLES, ...BLOCK_STYLES];
 
