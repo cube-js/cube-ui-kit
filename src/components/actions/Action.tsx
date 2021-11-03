@@ -29,7 +29,6 @@ export interface CubeActionProps
     Omit<AriaButtonProps, 'type'> {
   to?: string;
   label?: string;
-  preventDefault?: boolean;
   htmlType?: 'button' | 'submit' | 'reset' | undefined;
   onClick?: MouseEventHandler;
   onMouseEnter?: MouseEventHandler;
@@ -87,8 +86,6 @@ export function performClickHandler(evt, router, to, onPress) {
 
   if (!to) return;
 
-  evt.preventDefault();
-
   if (evt.shiftKey || evt.metaKey || newTab) {
     openLink(href, true);
 
@@ -145,7 +142,6 @@ export const Action = forwardRef(
       htmlType,
       label,
       theme,
-      preventDefault,
       css,
       mods,
       onPress,
@@ -179,6 +175,14 @@ export const Action = forwardRef(
     let { hoverProps, isHovered } = useHover({ isDisabled });
     let { focusProps, isFocused } = useFocus({ isDisabled }, true);
 
+    const customProps = to
+      ? {
+          onClick(evt) {
+            evt.preventDefault();
+          },
+        }
+      : {};
+
     return (
       <Base
         mods={{
@@ -194,6 +198,7 @@ export const Action = forwardRef(
           buttonProps,
           hoverProps,
           focusProps,
+          customProps,
           filterBaseProps(props, FILTER_OPTIONS),
         )}
         type={htmlType || 'button'}
