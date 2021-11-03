@@ -20,7 +20,7 @@ export interface CubeRootProps extends BaseProps {
   tokens?: { [key: string]: string };
   fonts?: boolean;
   publicUrl?: string;
-  router?: Function;
+  router?: any;
   font?: string;
   monospaceFont?: string;
 }
