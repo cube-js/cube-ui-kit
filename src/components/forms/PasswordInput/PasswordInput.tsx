@@ -37,6 +37,7 @@ function PasswordInput(props: CubeTextInputBaseProps, ref) {
         height="auto"
         radius="right (1r - 1bw)"
         padding=".5x 1x"
+        width="auto"
         aria-label="Toggle masking"
         excludeFromTabOrder
         icon={type === 'password' ? <EyeInvisibleOutlined /> : <EyeOutlined />}

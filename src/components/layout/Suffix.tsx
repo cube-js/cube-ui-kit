@@ -43,7 +43,6 @@ export const Suffix = forwardRef((allProps: CubeSuffixProps, outerRef) => {
       styles={styles}
       ref={ref}
       style={{
-        // @ts-ignore
         '--suffix-gap': parseStyle(outerGap).value,
       }}
     >

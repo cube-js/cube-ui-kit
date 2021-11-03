@@ -9,6 +9,8 @@ import { radiusStyle } from './radius';
 import { borderStyle } from './border';
 import { shadowStyle } from './shadow';
 import { paddingStyle } from './padding';
+import { paddingBlockStyle } from './paddingBlock';
+import { paddingInlineStyle } from './paddingInline';
 import { presetStyle } from './preset';
 import { fontStyleStyle } from './fontStyle';
 import { marginStyle } from './margin';
@@ -45,6 +47,10 @@ defineStyleAlias('fontStyle');
 defineStyleAlias('letterSpacing');
 defineStyleAlias('textTransform');
 defineStyleAlias('fontFamily');
+defineStyleAlias('paddingTop');
+defineStyleAlias('paddingRight');
+defineStyleAlias('paddingBottom');
+defineStyleAlias('paddingLeft');
 // Style aliases
 defineStyleAlias('gridAreas', 'grid-template-areas');
 defineStyleAlias('gridColumns', 'grid-template-columns', columnsConverter);
@@ -73,6 +79,8 @@ defineStyleAlias('gridTemplate', 'grid-template', (val) => {
   borderStyle,
   shadowStyle,
   paddingStyle,
+  paddingBlockStyle,
+  paddingInlineStyle,
   presetStyle,
   boxShadowCombinator,
   outlineStyle,

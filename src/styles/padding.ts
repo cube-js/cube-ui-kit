@@ -1,6 +1,14 @@
 import { parseStyle, DIRECTIONS, filterMods } from '../utils/styles';
 
-export function paddingStyle({ padding }) {
+export function paddingStyle({
+  padding,
+  paddingBlock,
+  paddingInline,
+  paddingTop,
+  paddingRight,
+  paddingBottom,
+  paddingLeft,
+}) {
   if (typeof padding === 'number') {
     padding = `${padding}px`;
   }
@@ -11,23 +19,40 @@ export function paddingStyle({ padding }) {
 
   let { values, mods } = parseStyle(padding);
 
-  const directions = filterMods(mods, DIRECTIONS);
+  let directions = filterMods(mods, DIRECTIONS);
 
   if (!values.length) {
     values = ['var(--gap)'];
   }
 
   if (!directions.length) {
-    return { padding: values.join(' ') };
+    directions = DIRECTIONS;
   }
+
+  const paddingDirs = [paddingTop, paddingRight, paddingBottom, paddingLeft];
 
   return directions.reduce((styles, dir) => {
     const index = DIRECTIONS.indexOf(dir);
 
-    styles[`padding-${dir}`] = values[index] || values[index % 2] || values[0];
+    if (
+      ((!!(index % 2) && paddingInline == null)
+        || (!(index % 2) && paddingBlock == null))
+      && paddingDirs[index] == null
+    ) {
+      styles[`padding-${dir}`]
+        = values[index] || values[index % 2] || values[0];
+    }
 
     return styles;
   }, {});
 }
 
-paddingStyle.__lookupStyles = ['padding'];
+paddingStyle.__lookupStyles = [
+  'padding',
+  'paddingTop',
+  'paddingRight',
+  'paddingBottom',
+  'paddingLeft',
+  'paddingBlock',
+  'paddingInline',
+];

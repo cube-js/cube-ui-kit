@@ -76,6 +76,7 @@ export const DEFAULT_INPUT_STYLES: Styles = {
     '': '(1.25x - 1bw) 1x (1.25x - 1bw) (1.5x - 1bw)',
     '[data-size="small"]': '(.75x - 1px) (1.5x - 1px)',
   },
+  paddingInline: '3x',
   fontWeight: 400,
   textAlign: 'left',
   reset: 'input',
@@ -266,12 +267,12 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
         )}
       </Prefix>
       <Suffix
-        padding="1x left"
+        padding=".5x left"
         onWidthChange={setSuffixWidth}
         opacity={isDisabled ? '@disabled-opacity' : false}
       >
         {suffixPosition === 'before' ? suffix : null}
-        <Space gap={false} padding="0 1.5x 0 0">
+        <Space gap={false} padding={`0 ${suffix ? '1x' : '1.5x'} 0 0`}>
           {validationState && !isLoading ? validation : null}
           {isLoading && <LoadingOutlined />}
         </Space>
