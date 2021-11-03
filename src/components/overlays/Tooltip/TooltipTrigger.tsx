@@ -71,7 +71,7 @@ function TooltipTrigger(props: CubeTooltipTriggerProps) {
   }
 
   function onClick(e) {
-    e.target.parentNode.click();
+    e?.currentTarget?.parentNode.click();
   }
 
   return (
