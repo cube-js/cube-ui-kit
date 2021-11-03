@@ -29,6 +29,7 @@ const STYLES: Styles = {
   flow: 'row',
   preset: 'input',
   width: 'min-content',
+  cursor: 'pointer',
 };
 
 const INPUT_STYLES: Styles = {
@@ -50,6 +51,7 @@ const INPUT_STYLES: Styles = {
     focused: '#purple-03',
   },
   transition: 'theme',
+  cursor: 'pointer',
 };
 
 const THUMB_STYLES: Styles = {
@@ -65,6 +67,7 @@ const THUMB_STYLES: Styles = {
     checked: '2.5x',
   },
   transition: 'left',
+  cursor: 'pointer',
 };
 
 export interface CubeSwitchProps

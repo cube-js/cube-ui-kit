@@ -20,5 +20,6 @@ export const HiddenInput = styled.input`
     cursor: ${({ isButton }) => (isButton ? 'pointer' : 'default')};
     width: 100%;
     height: 100%;
+    cursor: pointer;
   }
 `;

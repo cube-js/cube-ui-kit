@@ -49,6 +49,7 @@ const DEFAULT_STYLES: Styles = {
   gap: '1x',
   flow: 'row',
   preset: 'default',
+  cursor: 'pointer',
 } as const;
 
 const INPUT_STYLES: Styles = {
