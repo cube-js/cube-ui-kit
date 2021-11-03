@@ -32,7 +32,6 @@ function PasswordInput(props: CubeTextInputBaseProps, ref) {
         type="neutral"
         htmlType="button"
         onPress={toggleType}
-        preventDefault
         placeSelf="stretch"
         height="auto"
         radius="right (1r - 1bw)"
