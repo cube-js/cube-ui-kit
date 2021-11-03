@@ -88,6 +88,7 @@ const Template = ({ icon, ...props }) => {
         {...props}
         onSelectionChange={(query) => console.log('change', query)}
         onInputChange={(query) => console.log('input', query)}
+        width="200px"
       >
         <Item key="red">Red</Item>
         <Item key="orange">Orange</Item>

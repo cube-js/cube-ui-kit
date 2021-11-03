@@ -234,7 +234,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
   );
   let validation = cloneElement(validationIcon);
 
-  let comboBoxWidth = ref?.current?.offsetWidth;
+  let comboBoxWidth = inputRef?.current?.offsetWidth;
 
   let comboBoxField = (
     <Base
