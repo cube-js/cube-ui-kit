@@ -104,6 +104,7 @@ function App() {
         onPress={() => setInProp(!inProp)}
         type="clear"
         styles={{
+          transition: 'shadow 0.2s ease-in-out',
           color: {
             '': '#dark.75',
             'hovered, focused, pressed': '#purple-text',

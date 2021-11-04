@@ -299,6 +299,10 @@ export function parseStyle(value, mode = 0) {
         } else {
           currentValue = `${currentValue.trim()}, `;
         }
+
+        if (!counter) {
+          all.push(',');
+        }
       }
 
       if (currentValue && !counter) {
