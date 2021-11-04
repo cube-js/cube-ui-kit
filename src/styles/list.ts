@@ -21,6 +21,8 @@ export const POSITION_STYLES = [
 export const BLOCK_STYLES = [
   'reset',
   'padding',
+  'paddingInline',
+  'paddingBlock',
   'shadow',
   'border',
   'radius',
