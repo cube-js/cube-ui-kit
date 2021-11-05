@@ -84,6 +84,8 @@ export function styled<T extends string, K extends PossibleStyleNames>(
       ).reduce((map, prop) => {
         if (prop in props) {
           map[prop] = props[prop];
+
+          delete props[prop];
         }
 
         return map;
@@ -136,6 +138,8 @@ export function styled<T extends string, K extends PossibleStyleNames>(
       const propStyles: Styles = allPropStyles.reduce((map, prop) => {
         if (prop in props) {
           map[prop] = props[prop];
+
+          delete props[prop];
         }
 
         return map;
