@@ -27,7 +27,7 @@ function TooltipProvider(props: CubeTooltipProviderProps) {
       </Tooltip>
     </TooltipTrigger>
   ) : (
-    children
+    <>children</>
   );
 }
 

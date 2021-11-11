@@ -1,18 +1,6 @@
 import { parseStyle } from '../utils/styles';
 
-export function gapStyle({ display, flow, gap }) {
-  if (!gap) return '';
-
-  const isGrid = display.includes('grid');
-  const isFlex = display.includes('flex');
-  const isWrap = flow
-    ? flow.includes('wrap') && !flow.includes('nowrap')
-    : false;
-
-  if (!isGrid && flow == null) {
-    flow = isFlex ? 'row' : 'column';
-  }
-
+export function gapStyle({ display = 'block', flow, gap }) {
   if (typeof gap === 'number') {
     gap = `${gap}px`;
   }
@@ -23,6 +11,16 @@ export function gapStyle({ display, flow, gap }) {
 
   if (gap === true) {
     gap = '1.5x';
+  }
+
+  const isGrid = display.includes('grid');
+  const isFlex = display.includes('flex');
+  const isWrap = flow
+    ? flow.includes('wrap') && !flow.includes('nowrap')
+    : false;
+
+  if (!isGrid && flow == null) {
+    flow = isFlex ? 'row' : 'column';
   }
 
   const { values } = parseStyle(gap);
