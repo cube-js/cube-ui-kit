@@ -211,3 +211,4 @@ export * from './styles/index';
 export { ModalProvider } from '@react-aria/overlays';
 export * from './utils/react';
 export * from './styled';
+export { default as copy } from 'clipboard-copy';
