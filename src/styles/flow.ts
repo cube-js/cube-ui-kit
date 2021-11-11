@@ -1,4 +1,4 @@
-export function flowStyle({ display, flow }) {
+export function flowStyle({ display = 'block', flow }) {
   let style;
 
   if (display.includes('grid')) {
