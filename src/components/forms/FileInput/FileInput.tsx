@@ -45,6 +45,9 @@ const DEFAULT_WRAPPER_STYLES: Styles = {
   '[Placeholder]': {
     color: '#dark-02',
   },
+  '[Value]': {
+    color: '#dark-02',
+  },
   '[Input]': {
     position: 'absolute',
     top: '-50px',
@@ -92,7 +95,6 @@ function FileInput(props: CubeFileInputProps, ref) {
     validationState,
     message,
     requiredMark,
-    styles,
     inputStyles,
     ...otherProps
   } = useProviderProps(props);
@@ -101,7 +103,7 @@ function FileInput(props: CubeFileInputProps, ref) {
   let defaultInputRef = useRef(null);
   inputRef = inputRef || defaultInputRef;
 
-  styles = extractStyles(otherProps, CONTAINER_STYLES);
+  let styles = extractStyles(otherProps, CONTAINER_STYLES);
 
   inputStyles = {
     ...DEFAULT_WRAPPER_STYLES,
@@ -153,7 +155,7 @@ function FileInput(props: CubeFileInputProps, ref) {
         tabIndex={-1}
       />
       <div data-element="Button">Choose file</div>
-      <div data-element="Placeholder">
+      <div data-element={!!value ? 'Value' : 'Placeholder'}>
         {value || placeholder || 'No file selected'}
       </div>
     </Action>
