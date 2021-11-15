@@ -36,7 +36,7 @@ export interface CubePrismCodeProps {
     | 'typescript';
 }
 
-function PrismCode(props: CubePrismCodeProps) {
+function PrismCode(props: CubePrismCodeProps, ref) {
   let { code, language = 'javascript', ...otherProps } = props;
 
   useEffect(() => {
@@ -44,7 +44,7 @@ function PrismCode(props: CubePrismCodeProps) {
   });
 
   return (
-    <RawPre className="cube-prism-code" {...otherProps}>
+    <RawPre ref={ref} className="cube-prism-code" {...otherProps}>
       <code className={`language-${language}`}>{code}</code>
     </RawPre>
   );

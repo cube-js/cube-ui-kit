@@ -3,7 +3,7 @@ import { Button } from './Button';
 import { useProviderProps } from '../../../provider';
 import { useFormProps } from '../../forms/Form/Form';
 
-function Submit(props) {
+function Submit(props, ref) {
   props = useProviderProps(props);
   props = useFormProps(props);
 
@@ -15,6 +15,7 @@ function Submit(props) {
 
   return (
     <Button
+      ref={ref}
       type="primary"
       htmlType="submit"
       width="min-content"

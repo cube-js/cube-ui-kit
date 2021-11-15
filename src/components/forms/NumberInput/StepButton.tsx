@@ -1,4 +1,3 @@
-import { forwardRef } from 'react';
 import { Button } from '../../actions/Button/Button';
 import { CaretDownOutlined, CaretUpOutlined } from '@ant-design/icons';
 import { Styles } from '../../../styles/types';
@@ -14,7 +13,10 @@ const STEP_BUTTON_STYLES: Styles = {
   height: 'auto',
 };
 
-function StepButton(props) {
+/**
+ * Buttons for NumberField.
+ */
+export function StepButton(props) {
   return (
     <Button
       type="neutral"
@@ -31,9 +33,3 @@ function StepButton(props) {
     />
   );
 }
-
-/**
- * Buttons for NumberField.
- */
-const _StepButton = forwardRef(StepButton);
-export { _StepButton as StepButton };
