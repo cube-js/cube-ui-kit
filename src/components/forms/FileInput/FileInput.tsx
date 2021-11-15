@@ -139,6 +139,9 @@ function FileInput(props: CubeFileInputProps, ref) {
       styles={inputStyles}
       isDisabled={isDisabled}
       ref={domRef}
+      mods={{
+        selected: !!value,
+      }}
     >
       <input
         id={id}
