@@ -8,6 +8,7 @@ const labelablePropNames = new Set([
 ]);
 
 const BasePropNames = new Set([
+  'role',
   'as',
   'css',
   'qa',

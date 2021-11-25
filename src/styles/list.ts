@@ -4,16 +4,17 @@ export const BASE_STYLES = [
   'preset',
   'hide',
   'opacity',
+  'whiteSpace',
 ] as const;
 
 export const POSITION_STYLES = [
   'gridArea',
-  'flexGrow',
-  'flexShrink',
   'order',
   'gridColumn',
   'gridRow',
   'placeSelf',
+  'alignSelf',
+  'justifySelf',
   'zIndex',
   'margin',
 ] as const;
@@ -42,7 +43,14 @@ export const TEXT_STYLES = [
   'fontStyle',
 ] as const;
 
-export const DIMENSION_STYLES = ['width', 'height', 'flexBasis'] as const;
+export const DIMENSION_STYLES = [
+  'width',
+  'height',
+  'flexBasis',
+  'flexGrow',
+  'flexShrink',
+  'flex',
+] as const;
 
 export const FLOW_STYLES = [
   'flow',
@@ -53,6 +61,8 @@ export const FLOW_STYLES = [
   'justifyItems',
   'justifyContent',
   'gap',
+  'columnGap',
+  'rowGap',
   'gridColumns',
   'gridRows',
   'gridTemplate',

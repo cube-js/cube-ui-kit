@@ -23,6 +23,13 @@ import { styledScrollbarStyle } from './styledScrollbar';
 import { displayStyle } from './display';
 import { defineCustomStyle, defineStyleAlias } from './index';
 
+const numberConverter = (val) => {
+  if (typeof val === 'number') {
+    return `${val}px`;
+  }
+
+  return val;
+};
 const columnsConverter = (val) => {
   if (typeof val === 'number') {
     return 'minmax(1px, 1fr) '.repeat(val).trim();
@@ -51,6 +58,11 @@ defineStyleAlias('paddingTop');
 defineStyleAlias('paddingRight');
 defineStyleAlias('paddingBottom');
 defineStyleAlias('paddingLeft');
+// Coordinates
+defineStyleAlias('top', 'top', numberConverter);
+defineStyleAlias('right', 'right', numberConverter);
+defineStyleAlias('bottom', 'bottom', numberConverter);
+defineStyleAlias('left', 'left', numberConverter);
 // Style aliases
 defineStyleAlias('gridAreas', 'grid-template-areas');
 defineStyleAlias('gridColumns', 'grid-template-columns', columnsConverter);

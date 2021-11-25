@@ -1,18 +1,12 @@
 import { forwardRef } from 'react';
 import { CubeTextProps, TEXT_PROP_MAP } from './Text';
-import {
-  BASE_STYLES,
-  BLOCK_STYLES,
-  COLOR_STYLES,
-  POSITION_STYLES,
-  TEXT_STYLES,
-} from '../../styles/list';
+import { CONTAINER_STYLES, TEXT_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
 import { useSlotProps } from '../../utils/react';
 import {
   BaseProps,
-  BlockStyleProps,
+  ContainerStyleProps,
   PositionStyleProps,
   TagNameProps,
 } from '../types';
@@ -42,19 +36,13 @@ const DEFAULT_STYLES: Styles = {
   width: 'max 100%',
 };
 
-const STYLE_LIST = [
-  ...BASE_STYLES,
-  ...TEXT_STYLES,
-  ...BLOCK_STYLES,
-  ...COLOR_STYLES,
-  ...POSITION_STYLES,
-];
+const STYLE_LIST = [...TEXT_STYLES, ...CONTAINER_STYLES];
 
 export interface CubeTitleProps
   extends BaseProps,
     CubeTextProps,
     TagNameProps,
-    BlockStyleProps,
+    ContainerStyleProps,
     PositionStyleProps {
   /** The level of the heading **/
   level?: 1 | 2 | 3 | 4 | 5 | 6;

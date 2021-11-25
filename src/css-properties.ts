@@ -177,6 +177,20 @@ const PROPS = {
   'tag-line-height': '12px',
   'tag-letter-spacing': '0.02em',
   'tag-font-weight': '500',
+  // strong
+  'strong-font-size': 'inherit',
+  'strong-line-height': 'inherit',
+  'strong-letter-spacing': 'inherit',
+  'strong-font-family': 'inherit',
+  'strong-font-style': 'inherit',
+  'strong-font-weight': 600,
+  // em
+  'em-font-size': 'inherit',
+  'em-line-height': 'inherit',
+  'em-letter-spacing': 'inherit',
+  'em-font-family': 'inherit',
+  'em-font-style': 'italic',
+  'em-font-weight': 'inherit',
   // default
   'default-font-size': 'var(--t3-font-size)',
   'default-line-height': 'var(--t3-line-height)',

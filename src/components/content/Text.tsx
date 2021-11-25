@@ -107,13 +107,18 @@ const Text = Object.assign(_Text, {
     return <Text ref={ref} color="#minor" {...props} />;
   }),
   Danger: forwardRef(function DangerText(props: CubeTextProps, ref) {
-    return <Text ref={ref} color="#danger-text" {...props} />;
+    return <Text role="alert" ref={ref} color="#danger-text" {...props} />;
   }),
   Success: forwardRef(function SuccessText(props: CubeTextProps, ref) {
     return <Text ref={ref} color="#success-text" {...props} />;
   }),
   Strong: forwardRef(function StrongText(props: CubeTextProps, ref) {
-    return <Text ref={ref} color="#dark" weight={600} {...props} />;
+    return (
+      <Text as="strong" preset="strong" ref={ref} color="#dark" {...props} />
+    );
+  }),
+  Emphasis: forwardRef(function EmphasisText(props: CubeTextProps, ref) {
+    return <Text as="em" preset="em" ref={ref} {...props} />;
   }),
   Selection: forwardRef(function SelectionText(props: CubeTextProps, ref) {
     return <Text ref={ref} color="#dark" fill="#note.30" {...props} />;
