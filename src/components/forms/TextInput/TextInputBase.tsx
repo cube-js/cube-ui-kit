@@ -18,7 +18,11 @@ import { useHover } from '@react-aria/interactions';
 import { useProviderProps } from '../../../provider';
 import { Base } from '../../Base';
 import { extractStyles } from '../../../utils/styles';
-import { BLOCK_STYLES, POSITION_STYLES } from '../../../styles/list';
+import {
+  BLOCK_STYLES,
+  POSITION_STYLES,
+  DIMENSION_STYLES,
+} from '../../../styles/list';
 import { useFocus } from '../../../utils/interactions';
 import { Prefix } from '../../layout/Prefix';
 import { Suffix } from '../../layout/Suffix';
@@ -29,7 +33,7 @@ import { Block } from '../../Block';
 import { Styles } from '../../../styles/types';
 import {
   BaseProps,
-  BlockStyleProps,
+  BlockStyleProps, DimensionStyleProps,
   PositionStyleProps,
   Props,
 } from '../../types';
@@ -41,6 +45,8 @@ const WRAPPER_STYLES: Styles = {
   display: 'grid',
   position: 'relative',
 };
+
+const STYLE_LIST = [...POSITION_STYLES, ...DIMENSION_STYLES];
 
 const INPUT_STYLE_PROPS_LIST = [...BLOCK_STYLES, 'resize'];
 
@@ -88,6 +94,7 @@ export const DEFAULT_INPUT_STYLES: Styles = {
 export interface CubeTextInputBaseProps
   extends BaseProps,
     PositionStyleProps,
+    DimensionStyleProps,
     BlockStyleProps,
     AriaTextFieldProps,
     FormFieldProps {
@@ -163,7 +170,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
   let [suffixWidth, setSuffixWidth] = useState(0);
   let [prefixWidth, setPrefixWidth] = useState(0);
 
-  let styles = extractStyles(otherProps, POSITION_STYLES);
+  let styles = extractStyles(otherProps, STYLE_LIST);
 
   let contextStyles = useContextStyles('Input', otherProps);
 
