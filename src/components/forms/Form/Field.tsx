@@ -2,7 +2,7 @@ import {
   Children,
   cloneElement,
   ReactElement,
-  useEffect,
+  useEffect, useRef,
   useState,
 } from 'react';
 import { useFormProps } from './Form';
@@ -90,6 +90,8 @@ function getValueProps(type, value?, onChange?) {
 }
 
 export interface CubeFieldProps extends FieldBaseProps {
+  /** The initial value of the input. */
+  defaultValue?: any;
   /** The type of the input. `Input`, `Checkbox`, RadioGroup`, `Select`, `ComboBox` etc... */
   type?: string;
   /** The unique ID of the field */
@@ -97,6 +99,7 @@ export interface CubeFieldProps extends FieldBaseProps {
   /** The id prefix for the field to avoid collisions between forms */
   idPrefix?: string;
   children?: ReactElement | ((FormStore) => ReactElement);
+  shouldUpdate?: boolean | ((prevValues, nextValues) => boolean);
   /** Validation rules */
   rules?: ValidationRule[];
   /** The form instance */
@@ -121,6 +124,7 @@ export function Field(allProps: CubeFieldProps) {
   const props: CubeFullFieldProps = useFormProps(allProps);
 
   let {
+    defaultValue,
     type: inputType,
     id,
     idPrefix,
@@ -133,9 +137,10 @@ export function Field(allProps: CubeFieldProps) {
     validationState,
     necessityLabel,
     necessityIndicator,
+    shouldUpdate,
     message,
   } = props;
-
+  let firstRunRef = useRef(true);
   let [fieldId, setFieldId] = useState(
     id || (idPrefix ? `${idPrefix}_${name}` : name),
   );
@@ -193,6 +198,18 @@ export function Field(allProps: CubeFieldProps) {
 
   const defaultValidateTrigger = getDefaultValidateTrigger(inputType);
 
+  if (firstRunRef.current && defaultValue != null) {
+    if (!field) {
+      form.createField(name, false);
+    }
+
+    form.setFieldValue(name, defaultValue, false, false);
+
+    field = form?.getFieldInstance(name);
+  }
+
+  firstRunRef.current = false;
+
   if (!field) {
     return cloneElement(
       child,
@@ -209,9 +226,23 @@ export function Field(allProps: CubeFieldProps) {
   }
 
   function onChangeHandler(val) {
-    form.setFieldValue(name, val, true);
-
     const field = form.getFieldInstance(name);
+
+    if (shouldUpdate) {
+      const fieldsValue = form.getFieldsValue();
+      const shouldNotBeUpdated = typeof shouldUpdate === 'boolean'
+        ? !shouldUpdate
+        : !shouldUpdate(fieldsValue, {
+          ...fieldsValue,
+          [name]: val,
+        });
+      // check if we should update the value of the field
+      if (shouldNotBeUpdated) {
+        return;
+      }
+    }
+
+    form.setFieldValue(name, val, true);
 
     if (
       validateTrigger === 'onChange'

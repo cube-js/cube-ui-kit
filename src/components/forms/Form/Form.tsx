@@ -3,7 +3,7 @@ import { Provider, useProviderProps } from '../../../provider';
 import {
   createContext,
   useContext,
-  useEffect,
+  useRef,
   forwardRef,
   FormHTMLAttributes,
 } from 'react';
@@ -80,6 +80,8 @@ function Form(props: CubeFormProps, ref) {
   } = props;
   let styles;
 
+  const firstRunRef = useRef(true);
+
   ref = useCombinedRefs(ref);
 
   let onSubmitCallback;
@@ -150,12 +152,20 @@ function Form(props: CubeFormProps, ref) {
     idPrefix: name,
   };
 
-  useEffect(() => {
-    if (form && defaultValues) {
+  if (firstRunRef.current && form) {
+    if (defaultValues) {
       form.setInitialFieldValues(defaultValues);
-      form.resetFields();
+      form.resetFields(false);
+      firstRunRef.current = false;
     }
-  }, []);
+  }
+
+  // useEffect(() => {
+  //   if (form && defaultValues) {
+  //     form.setInitialFieldValues(defaultValues);
+  //     form.resetFields();
+  //   }
+  // }, []);
 
   return (
     <Base

@@ -29,7 +29,7 @@ export class FormStore {
     this.initialFields = {};
     this.fields = {};
 
-    this.setFieldValues = this.setFieldValues.bind(this);
+    this.setFieldsValue = this.setFieldsValue.bind(this);
     this.getFieldValue = this.getFieldValue.bind(this);
     this.getFieldsValue = this.getFieldsValue.bind(this);
     this.setFieldValue = this.setFieldValue.bind(this);
@@ -51,11 +51,16 @@ export class FormStore {
     }
   }
 
-  setFieldValues(newData: { [key: string]: any }, touched = false) {
+  setFieldsValue(newData: { [key: string]: any }, touched = false, reRender = true, createFields = false) {
     let flag = false;
 
     Object.keys(newData).forEach((name) => {
-      const field = this.fields[name];
+      let field = this.fields[name];
+
+      if (!field && createFields) {
+        this.createField(name, reRender);
+        field = this.fields[name];
+      }
 
       if (!field || isEqual(field.value, newData[name])) return;
 
@@ -68,7 +73,7 @@ export class FormStore {
       }
     });
 
-    if (flag) {
+    if (flag && reRender) {
       this.forceReRender();
 
       if (touched) {
@@ -91,7 +96,7 @@ export class FormStore {
     }, data);
   }
 
-  setFieldValue(name: string, value: any, touched = false) {
+  setFieldValue(name: string, value: any, touched = false, reRender = true) {
     const field = this.fields[name];
 
     if (!field || isEqual(value, field.value)) return;
@@ -102,7 +107,9 @@ export class FormStore {
       field.touched = touched;
     }
 
-    this.forceReRender();
+    if (reRender) {
+      this.forceReRender();
+    }
 
     if (touched) {
       this.onValuesChange && this.onValuesChange(this.getFieldsValue());
@@ -117,8 +124,8 @@ export class FormStore {
     this.initialFields = values || {};
   }
 
-  resetFields(): void {
-    this.setFieldValues(this.initialFields);
+  resetFields(reRender = true): void {
+    this.setFieldsValue(this.initialFields, false, reRender, true);
   }
 
   async validateField(name: string): Promise<any> {
@@ -192,12 +199,14 @@ export class FormStore {
     return field.errors || [];
   }
 
-  createField(name: string) {
+  createField(name: string, reRender = true) {
     if (!this.fields[name]) {
       this.fields[name] = this._createField(name);
     }
 
-    this.forceReRender();
+    if (reRender) {
+      this.forceReRender();
+    }
   }
 
   setFields(newFields: CubeField[]) {

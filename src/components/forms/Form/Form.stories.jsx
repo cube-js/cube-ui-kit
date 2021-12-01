@@ -89,6 +89,10 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
             },
           ]}
           necessityIndicator={'label'}
+          defaultValue="tenphi@gmail.com"
+          shouldUpdate={({ email }) => {
+            return !!email;
+          }}
         >
           <TextInput type="email" label="Email field" />
         </Field>
