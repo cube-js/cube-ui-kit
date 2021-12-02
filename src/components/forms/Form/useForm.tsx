@@ -11,6 +11,18 @@ export type CubeField = {
   validating?: boolean;
 };
 
+function setValue(obj, path, value) {
+  let a = path.split('.');
+  let o = obj;
+
+  while (a.length - 1) {
+    let n = a.shift();
+    if (!(n in o)) o[n] = {}
+    o = o[n];
+  }
+  o[a[0]] = value;
+}
+
 function isEqual(v1, v2) {
   return JSON.stringify(v1) === JSON.stringify(v2);
 }
@@ -47,7 +59,7 @@ export class FormStore {
 
   async submit() {
     if (this.onSubmit) {
-      return this.onSubmit(this.getFieldsValue());
+      return this.onSubmit(this.getFormData());
     }
   }
 
@@ -77,7 +89,7 @@ export class FormStore {
       this.forceReRender();
 
       if (touched) {
-        this.onValuesChange && this.onValuesChange(this.getFieldsValue());
+        this.onValuesChange && this.onValuesChange(this.getFormData());
       }
     }
   }
@@ -96,6 +108,23 @@ export class FormStore {
     }, data);
   }
 
+  /**
+   * Similar to getFieldsValue() but respects '.' notation and creates nested objects.
+   */
+  getFormData(): CubeFormData {
+    const fieldsValue = this.getFieldsValue();
+
+    return Object.keys(fieldsValue).reduce((map, field) => {
+      setValue(map, field, fieldsValue[field]);
+
+      if (field.includes('.')) {
+        delete map[field];
+      }
+
+      return map;
+    }, {});
+  }
+
   setFieldValue(name: string, value: any, touched = false, reRender = true) {
     const field = this.fields[name];
 
@@ -112,7 +141,7 @@ export class FormStore {
     }
 
     if (touched) {
-      this.onValuesChange && this.onValuesChange(this.getFieldsValue());
+      this.onValuesChange && this.onValuesChange(this.getFormData());
     }
   }
 

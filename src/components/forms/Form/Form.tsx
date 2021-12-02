@@ -111,7 +111,7 @@ function Form(props: CubeFormProps, ref) {
           if (form && !form.isSubmitting) {
             try {
               form.setSubmitting(true);
-              await onSubmit?.(form.getFieldsValue());
+              await onSubmit?.(form.getFormData());
             } finally {
               form.setSubmitting(false);
             }

@@ -163,6 +163,10 @@ export function Field(allProps: CubeFieldProps) {
     };
   }, []);
 
+  if (Array.isArray(name)) {
+    name = name.join('.');
+  }
+
   let field = form?.getFieldInstance(name);
   let isRequired = rules && rules.find((rule) => rule.required);
 
@@ -171,7 +175,7 @@ export function Field(allProps: CubeFieldProps) {
       field.rules = rules;
       form.forceReRender();
     } else {
-      form.createField(name);
+      form.createField(name as string);
     }
   }, [field]);
 
