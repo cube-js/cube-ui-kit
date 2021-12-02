@@ -54,7 +54,9 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
           text: 'some',
           email: '',
           checkbox: true,
-          'select.one': 'three',
+          select: {
+            one: 'three',
+          },
           combobox: 'two',
           checkboxGroup: ['one', 'three'],
           radioGroup: 'two',

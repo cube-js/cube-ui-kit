@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import dotize from 'dotize';
 import { applyRules } from './validation';
 
 export type CubeFormData = { [key: string]: any };
@@ -150,7 +151,7 @@ export class FormStore {
   }
 
   setInitialFieldValues(values: { [key: string]: any }): void {
-    this.initialFields = values || {};
+    this.initialFields = dotize.convert(values) || {};
   }
 
   resetFields(reRender = true): void {
