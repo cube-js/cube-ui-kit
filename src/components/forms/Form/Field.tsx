@@ -142,9 +142,11 @@ export function Field(allProps: CubeFieldProps) {
     message,
     tooltip,
   } = props;
+  const fieldName: string = Array.isArray(name) ? name.join('.') : name;
+
   let firstRunRef = useRef(true);
   let [fieldId, setFieldId] = useState(
-    id || (idPrefix ? `${idPrefix}_${name}` : name),
+    id || (idPrefix ? `${idPrefix}_${fieldName}` : fieldName),
   );
 
   useEffect(() => {
@@ -158,16 +160,12 @@ export function Field(allProps: CubeFieldProps) {
 
     return () => {
       if (!id) {
-        removeId(idPrefix ? `${idPrefix}_${name}` : name, newId);
+        removeId(idPrefix ? `${idPrefix}_${fieldName}` : fieldName, newId);
       }
     };
   }, []);
 
-  if (Array.isArray(name)) {
-    name = name.join('.');
-  }
-
-  let field = form?.getFieldInstance(name);
+  let field = form?.getFieldInstance(fieldName);
   let isRequired = rules && rules.find((rule) => rule.required);
 
   useEffect(() => {
@@ -175,12 +173,12 @@ export function Field(allProps: CubeFieldProps) {
       field.rules = rules;
       form.forceReRender();
     } else {
-      form.createField(name as string);
+      form.createField(fieldName);
     }
   }, [field]);
 
-  if (!name) {
-    console.error('invalid form name:', name);
+  if (!fieldName) {
+    console.error('invalid form name:', fieldName);
 
     return null;
   }
@@ -206,12 +204,12 @@ export function Field(allProps: CubeFieldProps) {
 
   if (firstRunRef.current && defaultValue != null) {
     if (!field) {
-      form.createField(name, false);
+      form.createField(fieldName, false);
     }
 
-    form.setFieldValue(name, defaultValue, false, false);
+    form.setFieldValue(fieldName, defaultValue, false, false);
 
-    field = form?.getFieldInstance(name);
+    field = form?.getFieldInstance(fieldName);
   }
 
   firstRunRef.current = false;
@@ -221,7 +219,7 @@ export function Field(allProps: CubeFieldProps) {
       child,
       mergeProps(child.props, {
         ...getValueProps(inputType),
-        name,
+        name: fieldName,
         id: fieldId,
       }),
     );
@@ -232,7 +230,7 @@ export function Field(allProps: CubeFieldProps) {
   }
 
   function onChangeHandler(val) {
-    const field = form.getFieldInstance(name);
+    const field = form.getFieldInstance(fieldName);
 
     if (shouldUpdate) {
       const fieldsValue = form.getFieldsValue();
@@ -242,7 +240,7 @@ export function Field(allProps: CubeFieldProps) {
         ? !shouldUpdate
         : !shouldUpdate(fieldsValue, {
           ...fieldsValue,
-          [name]: val,
+          [fieldName]: val,
         });
 
       if (shouldNotBeUpdated) {
@@ -250,24 +248,24 @@ export function Field(allProps: CubeFieldProps) {
       }
     }
 
-    form.setFieldValue(name, val, true);
+    form.setFieldValue(fieldName, val, true);
 
     if (
       validateTrigger === 'onChange'
       || (field && field.errors && field.errors.length)
     ) {
-      form.validateField(name).catch(() => {}); // do nothing on fail
+      form.validateField(fieldName).catch(() => {}); // do nothing on fail
     }
   }
 
   const newProps: CubeReplaceFieldProps = {
     id: fieldId,
-    name,
+    name: fieldName,
     onBlur() {
       if (validateTrigger === 'onBlur') {
         // We need timeout so the change event can be done.
         setTimeout(() => {
-          form.validateField(name).catch(() => {}); // do nothing on fail
+          form.validateField(fieldName).catch(() => {}); // do nothing on fail
         });
       }
     },
