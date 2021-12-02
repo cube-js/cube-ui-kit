@@ -207,9 +207,11 @@ export function Field(allProps: CubeFieldProps) {
       form.createField(fieldName, false);
     }
 
-    form.setFieldValue(fieldName, defaultValue, false, false);
+    if (field?.value == null) {
+      form.setFieldValue(fieldName, defaultValue, false, false);
 
-    field = form?.getFieldInstance(fieldName);
+      field = form?.getFieldInstance(fieldName);
+    }
   }
 
   firstRunRef.current = false;
