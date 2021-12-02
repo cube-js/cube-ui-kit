@@ -99,7 +99,7 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
         <Field name="password">
           <PasswordInput label="Password field" />
         </Field>
-        <Field name="select" label="Select field">
+        <Field name="select" label="Select field" tooltip="SQL API connector is currently in beta and only available in CubeJS >= 0.28.55. Check out 'How to connect' link on the Overview page to see connection details.">
           <Select>
             <Item key="one">One</Item>
             <Item key="two">Two</Item>

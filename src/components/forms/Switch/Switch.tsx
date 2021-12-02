@@ -100,6 +100,7 @@ function Switch(props: CubeSwitchProps, ref) {
     labelPosition,
     inputStyles,
     requiredMark = true,
+    tooltip,
     ...otherProps
   } = props;
 
@@ -190,6 +191,7 @@ function Switch(props: CubeSwitchProps, ref) {
           validationState,
           message,
           requiredMark,
+          tooltip,
           Component: switchField,
           ref: domRef,
         }}

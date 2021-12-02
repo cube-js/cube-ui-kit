@@ -216,6 +216,7 @@ function Select<T extends object>(
     shouldFlip = true,
     requiredMark = true,
     placeholder,
+    tooltip,
     size,
     styles,
     ...otherProps
@@ -358,6 +359,7 @@ function Select<T extends object>(
         validationState,
         message,
         requiredMark,
+        tooltip,
         Component: selectField,
         ref: ref,
       }}

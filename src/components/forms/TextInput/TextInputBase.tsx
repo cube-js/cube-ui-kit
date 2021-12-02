@@ -163,6 +163,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     suffixPosition = 'before',
     wrapperRef,
     requiredMark = true,
+    tooltip,
     rows = 1,
     size,
     ...otherProps
@@ -303,6 +304,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
         validationState,
         message,
         requiredMark,
+        tooltip,
         Component: textField,
         ref: domRef,
       }}

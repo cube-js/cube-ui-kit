@@ -1,7 +1,7 @@
 import {
   Children,
   cloneElement,
-  ReactElement,
+  ReactElement, ReactNode,
   useEffect, useRef,
   useState,
 } from 'react';
@@ -106,6 +106,7 @@ export interface CubeFieldProps extends FieldBaseProps {
   form?: FormStore;
   /** The message for the field or text for the error */
   message?: string;
+  tooltip?: ReactNode;
 }
 
 interface CubeFullFieldProps extends CubeFieldProps {
@@ -139,6 +140,7 @@ export function Field(allProps: CubeFieldProps) {
     necessityIndicator,
     shouldUpdate,
     message,
+    tooltip,
   } = props;
   let firstRunRef = useRef(true);
   let [fieldId, setFieldId] = useState(
@@ -230,13 +232,15 @@ export function Field(allProps: CubeFieldProps) {
 
     if (shouldUpdate) {
       const fieldsValue = form.getFieldsValue();
+
+      // check if we should update the value of the field
       const shouldNotBeUpdated = typeof shouldUpdate === 'boolean'
         ? !shouldUpdate
         : !shouldUpdate(fieldsValue, {
           ...fieldsValue,
           [name]: val,
         });
-      // check if we should update the value of the field
+
       if (shouldNotBeUpdated) {
         return;
       }
@@ -283,6 +287,10 @@ export function Field(allProps: CubeFieldProps) {
 
   if (label) {
     newProps.label = label;
+  }
+
+  if (tooltip) {
+    newProps.tooltip = tooltip;
   }
 
   if (message) {

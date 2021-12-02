@@ -46,6 +46,7 @@ export interface FormFieldProps extends FormBaseProps {
   label?: ReactNode;
   labelProps?: Props;
   message?: ReactNode;
+  tooltip?: ReactNode;
 }
 
 export type ValidationRuleBase = { [key: string]: any } & {

@@ -56,6 +56,7 @@ function RadioGroup(props, ref) {
     message,
     labelStyles,
     requiredMark = true,
+    tooltip,
     styles,
     groupStyles,
     ...otherProps
@@ -122,6 +123,7 @@ function RadioGroup(props, ref) {
         validationState,
         message,
         requiredMark,
+        tooltip,
         Component: radioGroup,
         ref: domRef,
       }}

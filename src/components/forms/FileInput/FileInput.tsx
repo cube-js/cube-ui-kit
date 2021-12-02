@@ -95,6 +95,7 @@ function FileInput(props: CubeFileInputProps, ref) {
     validationState,
     message,
     requiredMark,
+    tooltip,
     inputStyles,
     ...otherProps
   } = useProviderProps(props);
@@ -177,6 +178,7 @@ function FileInput(props: CubeFileInputProps, ref) {
         validationState,
         message,
         requiredMark,
+        tooltip,
         Component: fileInput,
         ref: domRef,
       }}
