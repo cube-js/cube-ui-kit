@@ -18,7 +18,6 @@ function Submit(props, ref) {
       ref={ref}
       type="primary"
       htmlType="submit"
-      width="min-content"
       isLoading={form.isSubmitting}
       isDisabled={!isValid}
       {...otherProps}
