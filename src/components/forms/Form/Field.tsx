@@ -172,6 +172,8 @@ export function Field(allProps: CubeFieldProps) {
   let isRequired = rules && rules.find((rule) => rule.required);
 
   useEffect(() => {
+    if (!form) return;
+
     if (field) {
       field.rules = rules;
       form.forceReRender();

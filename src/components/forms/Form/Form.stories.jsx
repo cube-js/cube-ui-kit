@@ -35,6 +35,9 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
 
   return (
     <>
+      <Field label="Custom field outside the any form" tooltip="What?">
+        <Block>Test</Block>
+      </Field>
       <Form
         form={form}
         isDisabled={isDisabled}
