@@ -7,8 +7,9 @@ import {
 } from 'react';
 import { useFormProps } from './Form';
 import { mergeProps } from '../../../utils/react';
-import { FieldBaseProps, ValidationRule } from '../../../shared';
+import { FieldBaseProps, OptionalFieldBaseProps, ValidationRule } from '../../../shared';
 import { FormStore } from './useForm';
+import { FieldWrapper } from '../FieldWrapper';
 
 const ID_MAP = {};
 
@@ -89,7 +90,7 @@ function getValueProps(type, value?, onChange?) {
   };
 }
 
-export interface CubeFieldProps extends FieldBaseProps {
+export interface CubeFieldProps extends OptionalFieldBaseProps {
   /** The initial value of the input. */
   defaultValue?: any;
   /** The type of the input. `Input`, `Checkbox`, RadioGroup`, `Select`, `ComboBox` etc... */
@@ -107,6 +108,7 @@ export interface CubeFieldProps extends FieldBaseProps {
   /** The message for the field or text for the error */
   message?: string;
   tooltip?: ReactNode;
+  name?: string[] | string;
 }
 
 interface CubeFullFieldProps extends CubeFieldProps {
@@ -142,7 +144,8 @@ export function Field(allProps: CubeFieldProps) {
     message,
     tooltip,
   } = props;
-  const fieldName: string = Array.isArray(name) ? name.join('.') : name;
+  const nonInput = !name;
+  const fieldName: string = name != null ? (Array.isArray(name) ? name.join('.') : name) : '';
 
   let firstRunRef = useRef(true);
   let [fieldId, setFieldId] = useState(
@@ -152,7 +155,7 @@ export function Field(allProps: CubeFieldProps) {
   useEffect(() => {
     let newId;
 
-    if (!id) {
+    if (!id && !nonInput) {
       newId = createId(fieldId);
 
       setFieldId(newId);
@@ -177,6 +180,27 @@ export function Field(allProps: CubeFieldProps) {
     }
   }, [field]);
 
+  if (typeof children === 'function') {
+    children = children(form);
+  }
+
+  if (!children) return null;
+
+  let child = Children.only(children);
+
+  if (nonInput) {
+    return <FieldWrapper
+      validationState={validationState}
+      necessityIndicator={necessityIndicator}
+      necessityLabel={necessityLabel}
+      isRequired={isRequired}
+      label={label}
+      tooltip={tooltip}
+      message={message}
+      Component={child}
+    />
+  }
+
   if (!fieldName) {
     console.error('invalid form name:', fieldName);
 
@@ -188,14 +212,6 @@ export function Field(allProps: CubeFieldProps) {
 
     return null;
   }
-
-  if (typeof children === 'function') {
-    children = children(form);
-  }
-
-  if (!children) return null;
-
-  let child = Children.only(children);
 
   // @ts-ignore
   inputType = inputType || child.type.cubeInputType || 'Text';

@@ -51,7 +51,6 @@ function RadioGroup(props, ref) {
     labelPosition = 'top',
     validationState,
     children,
-    insideForm,
     orientation = 'vertical',
     message,
     labelStyles,
@@ -112,7 +111,6 @@ function RadioGroup(props, ref) {
       {...{
         labelPosition,
         label,
-        insideForm,
         styles,
         isRequired,
         labelStyles,

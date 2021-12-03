@@ -44,7 +44,6 @@ export type CubeFieldWrapperProps = {
   as: string;
   labelPosition: LabelPosition;
   label?: string;
-  insideForm?: boolean;
   styles?: Styles;
   isRequired?: boolean;
   isDisabled?: boolean;
@@ -65,7 +64,6 @@ function FieldWrapper(props, ref) {
     as,
     labelPosition,
     label,
-    insideForm,
     styles,
     isRequired,
     isDisabled,
@@ -82,7 +80,6 @@ function FieldWrapper(props, ref) {
   } = props;
   const mods = {
     'has-sider': labelPosition === 'side' && label,
-    'inside-form': insideForm,
     invalid: validationState === 'invalid',
     valid: validationState === 'valid',
   };

@@ -183,7 +183,6 @@ function Switch(props: CubeSwitchProps, ref) {
           as: 'label',
           labelPosition,
           label,
-          insideForm,
           styles,
           labelStyles,
           labelProps,

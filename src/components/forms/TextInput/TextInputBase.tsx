@@ -155,7 +155,6 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     inputRef,
     isLoading,
     loadingIndicator,
-    insideForm,
     value,
     inputStyles = {},
     wrapperStyles = {},
@@ -293,7 +292,6 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
       {...{
         labelPosition,
         label,
-        insideForm,
         styles,
         isRequired,
         labelStyles,

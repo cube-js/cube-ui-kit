@@ -213,7 +213,6 @@ function Checkbox(props: CubeCheckboxProps, ref: FocusableRef) {
           as: 'label',
           labelPosition,
           label,
-          insideForm,
           styles,
           isRequired,
           labelStyles,

@@ -61,7 +61,6 @@ function CheckboxGroup(props: CubeCheckboxGroupProps, ref) {
     labelPosition = 'top',
     validationState,
     children,
-    insideForm,
     orientation = 'vertical',
     message,
     labelStyles,
@@ -119,7 +118,6 @@ function CheckboxGroup(props: CubeCheckboxGroupProps, ref) {
       {...{
         labelPosition,
         label,
-        insideForm,
         styles,
         isRequired,
         labelStyles,

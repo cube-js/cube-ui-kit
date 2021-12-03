@@ -203,7 +203,6 @@ function Select<T extends object>(
     listBoxRef,
     isLoading,
     loadingIndicator,
-    insideForm,
     overlayOffset = 8,
     inputStyles,
     optionStyles,
@@ -349,7 +348,6 @@ function Select<T extends object>(
       {...{
         labelPosition,
         label,
-        insideForm,
         styles,
         isRequired,
         labelStyles,

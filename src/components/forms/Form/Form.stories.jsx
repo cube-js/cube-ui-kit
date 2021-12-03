@@ -10,7 +10,7 @@ import {
   Checkbox,
   CheckboxGroup,
   PasswordInput,
-  Switch,
+  Switch, FieldWrapper, Block,
 } from '../../../index';
 import {
   IS_DISABLED_ARG,
@@ -52,7 +52,7 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
         }}
         defaultValues={{
           text: 'some',
-          email: '',
+          // email: '',
           checkbox: true,
           select: {
             one: 'three',
@@ -80,6 +80,9 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
           ]}
         >
           <TextInput label="Text field" />
+        </Field>
+        <Field label="Custom field" tooltip="What?">
+          <Block>Test</Block>
         </Field>
         <Field
           name="email"
