@@ -5,7 +5,7 @@ import {
   useContext,
   useRef,
   forwardRef,
-  FormHTMLAttributes,
+  FormHTMLAttributes, useEffect,
 } from 'react';
 import { Base } from '../../Base';
 import { extractStyles } from '../../../utils/styles';
@@ -154,18 +154,17 @@ function Form(props: CubeFormProps, ref) {
 
   if (firstRunRef.current && form) {
     if (defaultValues) {
-      form.setInitialFieldValues(defaultValues);
+      form.setInitialFieldsValue(defaultValues);
       form.resetFields(false);
       firstRunRef.current = false;
     }
   }
 
-  // useEffect(() => {
-  //   if (form && defaultValues) {
-  //     form.setInitialFieldValues(defaultValues);
-  //     form.resetFields();
-  //   }
-  // }, []);
+  useEffect(() => {
+    if (defaultValues) {
+      form?.setInitialFieldsValue(defaultValues);
+    }
+  }, [defaultValues]);
 
   return (
     <Base

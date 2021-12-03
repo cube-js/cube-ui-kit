@@ -47,7 +47,7 @@ export class FormStore {
     this.getFieldsValue = this.getFieldsValue.bind(this);
     this.setFieldValue = this.setFieldValue.bind(this);
     this.getFieldInstance = this.getFieldInstance.bind(this);
-    this.setInitialFieldValues = this.setInitialFieldValues.bind(this);
+    this.setInitialFieldsValue = this.setInitialFieldsValue.bind(this);
     this.resetFields = this.resetFields.bind(this);
     this.validateField = this.validateField.bind(this);
     this.validateFields = this.validateFields.bind(this);
@@ -150,7 +150,7 @@ export class FormStore {
     return this.fields[name];
   }
 
-  setInitialFieldValues(values: { [key: string]: any }): void {
+  setInitialFieldsValue(values: { [key: string]: any }): void {
     this.initialFields = dotize.convert(values) || {};
   }
 
