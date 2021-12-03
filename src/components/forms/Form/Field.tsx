@@ -7,13 +7,15 @@ import {
 } from 'react';
 import { useFormProps } from './Form';
 import { mergeProps } from '../../../utils/react';
-import { FieldBaseProps, OptionalFieldBaseProps, ValidationRule } from '../../../shared';
+import { OptionalFieldBaseProps, ValidationRule } from '../../../shared';
 import { FormStore } from './useForm';
 import { FieldWrapper } from '../FieldWrapper';
 
 const ID_MAP = {};
 
 function createId(name) {
+  if (!name) return;
+
   if (!ID_MAP[name]) {
     ID_MAP[name] = [];
   }
@@ -32,6 +34,8 @@ function createId(name) {
 }
 
 function removeId(name, id) {
+  if (!ID_MAP[name]) return;
+
   ID_MAP[name] = ID_MAP[name].filter((_id) => _id !== id);
 }
 
