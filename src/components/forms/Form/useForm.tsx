@@ -184,17 +184,19 @@ export class FormStore {
 
   validateFields(list?: string[]): Promise<any> {
     const fieldsList = list || Object.keys(this.fields);
-    const errMap = {};
+    const errorList: { name: string, errors: string[] }[] = [];
 
     return Promise.all(
       fieldsList.map((name) => {
-        return this.validateField(name).catch((err) => {
-          errMap[name] = err;
+        return this.validateField(name).catch((errors) => {
+          errorList.push({ name, errors });
 
           return Promise.reject();
         });
       }),
-    ).catch(() => Promise.reject(errMap));
+    )
+      .then(() => this.getFormData())
+      .catch(() => Promise.reject(errorList));
   }
 
   isFieldValid(name: string): boolean {
