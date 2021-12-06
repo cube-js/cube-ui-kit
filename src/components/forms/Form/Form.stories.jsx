@@ -2,6 +2,7 @@ import {
   TextInput,
   Select,
   ComboBox,
+  Input,
   Form,
   Radio,
   Item,
@@ -276,5 +277,27 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
   );
 };
 
+const TemplateSimple = (args) => {
+  const [form] = Form.useForm();
+
+  return <Form form={form} onSubmit={(data) => console.log('Submit', data)}>
+    <Form.Item
+      name="name"
+      rules={[() => ({
+        validator(rule, value) {
+          return value === 'Something'
+            ? Promise.resolve()
+            : Promise.reject('Please enter your deployment name!');
+        },
+        message: 'Please enter your deployment name!',
+      })]}
+    >
+      <Input placeholder="ENTER DEPLOYMENT NAME" data-qa="DeleteDeploymentName" />
+    </Form.Item>
+  </Form>;
+};
+
 export const Default = Template.bind({});
 Default.args = {};
+
+export const Simple = TemplateSimple.bind({});
