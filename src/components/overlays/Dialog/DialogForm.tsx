@@ -7,16 +7,13 @@ import { CubeFormProps, Form } from '../../forms/Form/Form';
 import { Content } from '../../content/Content';
 import { Submit } from '../../actions/Button/Submit';
 import { Button, CubeButtonProps } from '../../actions/Button/Button';
-import { FormStore } from '../../forms/Form/useForm';
 import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
 
 export interface CubeDialogFormProps extends CubeDialogProps, Omit<CubeFormProps, 'role'> {
   danger?: boolean;
-  form?: FormStore;
   submitProps?: CubeButtonProps;
   cancelProps?: CubeButtonProps;
-  title?: string;
-  noActions?: boolean;
+  preserve?: boolean;
 }
 
 export interface CubeDialogFormRef {
@@ -47,7 +44,10 @@ const DialogForm = (props, ref: ForwardedRef<CubeDialogFormRef>) => {
     noActions,
     submitProps,
     cancelProps,
+    preserve,
   } = props;
+
+  [form] = Form.useForm(form);
 
   const [open, setOpen] = useState(false);
 
@@ -74,6 +74,10 @@ const DialogForm = (props, ref: ForwardedRef<CubeDialogFormRef>) => {
           onSubmit={async(data) => {
             await onSubmit(data);
             setOpen(false);
+
+            if (!preserve) {
+              form.resetFields();
+            }
           }}
           onSubmitFailed={onSubmitFailed}
           defaultValues={defaultValues}
