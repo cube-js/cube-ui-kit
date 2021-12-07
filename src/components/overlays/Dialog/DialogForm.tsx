@@ -23,6 +23,7 @@ export interface CubeDialogFormRef {
 
 const DialogForm = (props, ref: ForwardedRef<CubeDialogFormRef>) => {
   let {
+    qa,
     name,
     form,
     defaultValues,
@@ -64,11 +65,12 @@ const DialogForm = (props, ref: ForwardedRef<CubeDialogFormRef>) => {
     onDismiss();
     setOpen(false);
   }}>
-    {open && <Dialog isDismissable={true}>
+    {open && <Dialog qa={`${qa || ''}Dialog`} isDismissable={true}>
       <Title>Delete deployment</Title>
       <Divider/>
       <Content>
         <Form
+          qa={qa || 'DialogForm'}
           form={form}
           name={name}
           onSubmit={async(data) => {
@@ -97,11 +99,13 @@ const DialogForm = (props, ref: ForwardedRef<CubeDialogFormRef>) => {
             !noActions
               ? <ButtonGroup>
                   <Submit
+                    qa={`${qa || ''}SubmitButton`}
                     theme={danger ? 'danger' : undefined}
                     label="Submit"
                     {...(submitProps || {})}
                   />
                   <Button
+                    qa={`${qa || ''}CancelButton`}
                     onPress={() => setOpen(false)}
                     label="Cancel"
                     {...(cancelProps || {})}
