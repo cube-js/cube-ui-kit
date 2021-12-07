@@ -86,6 +86,7 @@ function Switch(props: CubeSwitchProps, ref) {
   props = useFormProps(props);
 
   let {
+    qa,
     isDisabled = false,
     autoFocus,
     children,
@@ -149,9 +150,12 @@ function Switch(props: CubeSwitchProps, ref) {
   let { inputProps } = useSwitch(props, useToggleState(props), inputRef);
 
   const switchField = (
-    <Base styles={{ position: 'relative' }}>
+    <Base
+      qa={`${qa || 'Switch'}Wrapper`}
+      styles={{ position: 'relative' }}
+    >
       <HiddenInput
-        data-qa="Switch"
+        data-qa={qa || 'Switch'}
         {...mergeProps(inputProps, focusProps)}
         ref={inputRef}
       />
