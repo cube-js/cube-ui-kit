@@ -1,4 +1,13 @@
+import { useEffect, useRef, useState, useImperativeHandle, forwardRef } from 'react';
 import {
+  Paragraph,
+  Text,
+  Submit,
+  Button,
+  DialogTrigger,
+  Dialog,
+  Divider,
+  Content,
   TextInput,
   Select,
   ComboBox,
@@ -6,12 +15,15 @@ import {
   Form,
   Radio,
   Item,
-  Submit,
   Field,
   Checkbox,
   CheckboxGroup,
   PasswordInput,
-  Switch, FieldWrapper, Block,
+  Switch,
+  Block,
+  Title,
+  ButtonGroup,
+  DialogContainer,
 } from '../../../index';
 import {
   IS_DISABLED_ARG,
@@ -19,6 +31,7 @@ import {
   REQUIRED_MARK_ARG,
 } from '../../../stories/FormFieldArgs';
 import { NumberInput } from '../NumberInput/NumberInput';
+import { DialogForm } from '../../overlays/Dialog/DialogForm';
 
 export default {
   title: 'UIKit/Forms/Form',
@@ -77,13 +90,13 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
                 return value.length >= 8
                   ? Promise.resolve()
                   : Promise.reject(
-                      'This field should be at least 8 symbols long',
-                    );
+                    'This field should be at least 8 symbols long',
+                  );
               },
             }),
           ]}
         >
-          <TextInput label="Text field" />
+          <TextInput label="Text field"/>
         </Field>
         <Field label="Custom field" tooltip="What?">
           <Block>Test</Block>
@@ -103,10 +116,10 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
             return !!email;
           }}
         >
-          <TextInput type="email" label="Email field" />
+          <TextInput type="email" label="Email field"/>
         </Field>
         <Field name="password">
-          <PasswordInput label="Password field" />
+          <PasswordInput label="Password field"/>
         </Field>
         <Field name={['select', 'one']} label="Select field" tooltip="Additional field description">
           <Select>
@@ -149,19 +162,19 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
           name="checkbox"
           rules={[{ required: true, message: 'This field is required' }]}
         >
-          <Checkbox label="Checkbox field" />
+          <Checkbox label="Checkbox field"/>
         </Field>
         <Field
           name="switch"
           rules={[{ required: true, message: 'This field is required' }]}
         >
-          <Switch label="Switch field" />
+          <Switch label="Switch field"/>
         </Field>
         <Field
           name="number"
           rules={[{ required: true, message: 'This field is required' }]}
         >
-          <NumberInput label="Number field" minValue={-1} />
+          <NumberInput label="Number field" minValue={-1}/>
         </Field>
         <Submit>Submit</Submit>
       </Form>
@@ -278,26 +291,44 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
 };
 
 const TemplateSimple = (args) => {
-  const [form] = Form.useForm();
+  const deleteDeploymentFormRef = useRef();
 
-  return <Form form={form} onSubmit={(data) => console.log('Submit', data)}>
-    <Form.Item
-      name="name"
-      rules={[() => ({
-        validator(rule, value) {
-          return value === 'Something'
-            ? Promise.resolve()
-            : Promise.reject('Please enter your deployment name!');
-        },
-        message: 'Please enter your deployment name!',
-      })]}
+  function onPress() {
+    deleteDeploymentFormRef?.current?.open();
+  }
+
+  return <>
+    <Button onPress={onPress}>Open Modal</Button>
+    <DialogForm
+      ref={deleteDeploymentFormRef}
+      onSubmit={data => console.log('Dialog Form Submit', data)}
+      submitProps={{
+        theme: 'danger',
+        label: 'Delete',
+      }}
     >
-      <Input placeholder="ENTER DEPLOYMENT NAME" data-qa="DeleteDeploymentName" />
-    </Form.Item>
-  </Form>;
+      <Paragraph>
+        Are you sure you want to permanently delete&nbsp;
+        <Text.Strong style={{ whiteSpace: 'pre' }}>deployment</Text.Strong>?
+      </Paragraph>
+      <Form.Item
+        name="name"
+        rules={[{
+          validator(rule, value) {
+            return value === 'deployment'
+              ? Promise.resolve()
+              : Promise.reject('Please enter your deployment name!');
+          },
+        }]}
+      >
+        <Input placeholder="ENTER DEPLOYMENT NAME" data-qa="DeleteDeploymentName"/>
+      </Form.Item>
+    </DialogForm>
+  </>;
 };
 
 export const Default = Template.bind({});
 Default.args = {};
 
 export const Simple = TemplateSimple.bind({});
+Simple.args = {};

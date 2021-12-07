@@ -230,6 +230,15 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
       suffix
     );
 
+  // Fix safari bug: https://github.com/philipwalton/flexbugs/issues/270
+  if (!inputProps?.placeholder) {
+    if (!inputProps) {
+      inputProps = {};
+    }
+
+    inputProps.placeholder = ' ';
+  }
+
   let textField = (
     <Base
       ref={wrapperRef}
