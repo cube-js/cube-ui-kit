@@ -1,13 +1,9 @@
-import { useEffect, useRef, useState, useImperativeHandle, forwardRef } from 'react';
+import { useRef } from 'react';
 import {
   Paragraph,
   Text,
   Submit,
   Button,
-  DialogTrigger,
-  Dialog,
-  Divider,
-  Content,
   TextInput,
   Select,
   ComboBox,
@@ -21,9 +17,6 @@ import {
   PasswordInput,
   Switch,
   Block,
-  Title,
-  ButtonGroup,
-  DialogContainer,
 } from '../../../index';
 import {
   IS_DISABLED_ARG,
@@ -291,7 +284,7 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
 };
 
 const TemplateSimple = (args) => {
-  const deleteDeploymentFormRef = useRef();
+  const deleteDeploymentFormRef = useRef(null);
 
   function onPress() {
     deleteDeploymentFormRef?.current?.open();
@@ -330,5 +323,5 @@ const TemplateSimple = (args) => {
 export const Default = Template.bind({});
 Default.args = {};
 
-export const Simple = TemplateSimple.bind({});
+export const DialogForm = TemplateSimple.bind({});
 Simple.args = {};

@@ -33,13 +33,13 @@ const DEFAULT_STYLES: Styles = {
   position: 'relative',
   display: 'grid',
   gridAreas: `"hero hero hero hero hero hero"
-          ". . . . . ."
-          ". heading header header header ."
-          "divider divider divider divider divider divider"
-          ". content content content content ."
-          ". buttonGroup buttonGroup footer footer ."
-          ". . . . . ."`,
-  gridColumns: '@dialog-padding-h auto auto auto auto @dialog-padding-h',
+    ". . . . . ."
+    ". heading heading header header ."
+    "divider divider divider divider divider divider"
+    ". content content content content ."
+    ". buttonGroup buttonGroup footer footer ."
+    ". . . . . ."`,
+  gridColumns: '@dialog-padding-h auto 1fr auto auto @dialog-padding-h',
   gridRows:
     'auto @dialog-heading-padding-v auto auto 1fr auto @dialog-content-padding-v',
   placeItems: 'baseline stretch',
@@ -49,6 +49,7 @@ const DEFAULT_STYLES: Styles = {
     '[data-type="fullscreenTakeover"]': '100vw 100vw',
     '[data-type="panel"]': '100vw 100vw',
   },
+  gap: 0,
   flow: 'column',
   radius: {
     '': '2r',
@@ -193,8 +194,7 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
     },
     header: {
       styles: {
-        display: 'grid',
-        flow: 'column',
+        display: 'flex',
         gap: '1x',
         placeItems: 'baseline stretch',
         padding: isDismissable ? '4x right' : false,
@@ -229,7 +229,6 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
       >
         {dismissButton}
         <SlotProvider slots={slots}>
-          {children}
           {isDismissable && (
             <Button
               qa="ModalCloseButton"
@@ -240,6 +239,7 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
               onPress={() => onDismiss && onDismiss()}
             />
           )}
+          {children}
         </SlotProvider>
       </Base>
     </FocusScope>

@@ -120,11 +120,14 @@ export {
   Dialog,
   DialogTrigger,
   DialogContainer,
+  DialogForm,
 } from './components/overlays/Dialog';
 export type {
   CubeDialogTriggerProps,
   CubeDialogContainerProps,
   CubeDialogProps,
+  CubeDialogFormRef,
+  CubeDialogFormProps,
 } from './components/overlays/Dialog';
 export { Tooltip } from './components/overlays/Tooltip/Tooltip';
 export type { CubeTooltipProps } from './components/overlays/Tooltip/Tooltip';

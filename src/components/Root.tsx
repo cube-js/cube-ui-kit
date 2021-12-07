@@ -53,6 +53,7 @@ export const Root = (allProps: CubeRootProps) => {
     <StyleSheetManager disableVendorPrefixes>
       <Base
         ref={ref}
+        id="cube-ui-kit-root"
         className="root"
         {...filterBaseProps(props, { eventProps: true })}
         styles={styles}

@@ -1,6 +1,6 @@
 import { DialogContext } from './context';
 import { Modal } from '../Modal/Modal';
-import { Children, ReactNode } from 'react';
+import { Children, ReactNode, useRef, isValidElement, ReactElement } from 'react';
 
 export interface CubeDialogContainerProps {
   /** The Dialog to display, if any. */
@@ -32,7 +32,18 @@ export function DialogContainer(props: CubeDialogContainerProps) {
     isKeyboardDismissDisabled,
   } = props;
 
-  let child = Children.only(children);
+  let childArray = Children.toArray(children);
+  if (childArray.length > 1) {
+    throw new Error('Only a single child can be passed to DialogContainer.');
+  }
+
+  let lastChild = useRef<ReactElement>();
+  let child = isValidElement(childArray[0]) ? childArray[0] : null;
+
+  if (child) {
+    lastChild.current = child;
+  }
+
   let context = {
     type,
     onClose: onDismiss,
