@@ -203,7 +203,6 @@ function Select<T extends object>(
     listBoxRef,
     isLoading,
     loadingIndicator,
-    insideForm,
     overlayOffset = 8,
     inputStyles,
     optionStyles,
@@ -216,6 +215,7 @@ function Select<T extends object>(
     shouldFlip = true,
     requiredMark = true,
     placeholder,
+    tooltip,
     size,
     styles,
     ...otherProps
@@ -348,7 +348,6 @@ function Select<T extends object>(
       {...{
         labelPosition,
         label,
-        insideForm,
         styles,
         isRequired,
         labelStyles,
@@ -358,6 +357,7 @@ function Select<T extends object>(
         validationState,
         message,
         requiredMark,
+        tooltip,
         Component: selectField,
         ref: ref,
       }}

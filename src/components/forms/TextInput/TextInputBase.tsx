@@ -155,7 +155,6 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     inputRef,
     isLoading,
     loadingIndicator,
-    insideForm,
     value,
     inputStyles = {},
     wrapperStyles = {},
@@ -163,6 +162,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     suffixPosition = 'before',
     wrapperRef,
     requiredMark = true,
+    tooltip,
     rows = 1,
     size,
     ...otherProps
@@ -230,6 +230,15 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
       suffix
     );
 
+  // Fix safari bug: https://github.com/philipwalton/flexbugs/issues/270
+  if (!inputProps?.placeholder) {
+    if (!inputProps) {
+      inputProps = {};
+    }
+
+    inputProps.placeholder = ' ';
+  }
+
   let textField = (
     <Base
       ref={wrapperRef}
@@ -292,7 +301,6 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
       {...{
         labelPosition,
         label,
-        insideForm,
         styles,
         isRequired,
         labelStyles,
@@ -303,6 +311,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
         validationState,
         message,
         requiredMark,
+        tooltip,
         Component: textField,
         ref: domRef,
       }}

@@ -118,7 +118,6 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
     listBoxRef,
     isLoading,
     loadingIndicator,
-    insideForm,
     overlayOffset = 8,
     inputStyles,
     optionStyles,
@@ -334,7 +333,6 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
       {...{
         labelPosition,
         label,
-        insideForm,
         styles,
         isRequired,
         labelStyles,

@@ -3,9 +3,9 @@ import { Provider, useProviderProps } from '../../../provider';
 import {
   createContext,
   useContext,
-  useEffect,
+  useRef,
   forwardRef,
-  FormHTMLAttributes,
+  FormHTMLAttributes, useEffect,
 } from 'react';
 import { Base } from '../../Base';
 import { extractStyles } from '../../../utils/styles';
@@ -80,6 +80,8 @@ function Form(props: CubeFormProps, ref) {
   } = props;
   let styles;
 
+  const firstRunRef = useRef(true);
+
   ref = useCombinedRefs(ref);
 
   let onSubmitCallback;
@@ -109,7 +111,7 @@ function Form(props: CubeFormProps, ref) {
           if (form && !form.isSubmitting) {
             try {
               form.setSubmitting(true);
-              await onSubmit?.(form.getFieldsValue());
+              await onSubmit?.(form.getFormData());
             } finally {
               form.setSubmitting(false);
             }
@@ -150,12 +152,19 @@ function Form(props: CubeFormProps, ref) {
     idPrefix: name,
   };
 
-  useEffect(() => {
-    if (form && defaultValues) {
-      form.setInitialFieldValues(defaultValues);
-      form.resetFields();
+  if (firstRunRef.current && form) {
+    if (defaultValues) {
+      form.setInitialFieldsValue(defaultValues);
+      form.resetFields(false);
+      firstRunRef.current = false;
     }
-  }, []);
+  }
+
+  useEffect(() => {
+    if (defaultValues) {
+      form?.setInitialFieldsValue(defaultValues);
+    }
+  }, [defaultValues]);
 
   return (
     <Base

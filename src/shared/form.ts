@@ -11,9 +11,7 @@ export type ValidationState = 'invalid' | 'valid';
 /** On which event perform validation for the field */
 export type ValidateTrigger = 'onBlur' | 'onChange' | 'onSubmit';
 
-export interface FieldBaseProps {
-  /** The field name */
-  name: string;
+export interface OptionalFieldBaseProps {
   /** The label of the field */
   label?: string;
   /** The validation state of the field */
@@ -22,6 +20,11 @@ export interface FieldBaseProps {
   validateTrigger?: ValidateTrigger;
   necessityIndicator?: NecessityIndicator;
   necessityLabel?: ReactNode;
+}
+
+export interface FieldBaseProps extends OptionalFieldBaseProps {
+  /** The field name */
+  name: string[] | string;
 }
 
 export interface FormBaseProps {
@@ -46,6 +49,7 @@ export interface FormFieldProps extends FormBaseProps {
   label?: ReactNode;
   labelProps?: Props;
   message?: ReactNode;
+  tooltip?: ReactNode;
 }
 
 export type ValidationRuleBase = { [key: string]: any } & {

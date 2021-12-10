@@ -12,8 +12,8 @@ const RawHeader = styled({
   name: 'Header',
   tag: 'header',
   styles: {
-    gridArea: 'header',
     display: 'block',
+    gridArea: 'header',
     flow: 'column',
   },
   attrs: {

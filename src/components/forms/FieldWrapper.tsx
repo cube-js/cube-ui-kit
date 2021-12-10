@@ -7,6 +7,8 @@ import {
   ValidationState,
 } from '../../shared';
 import { Styles } from '../../styles/types';
+import { TooltipProvider } from '../overlays/Tooltip/TooltipProvider';
+import { InfoCircleOutlined } from '@ant-design/icons';
 
 const FIELD_STYLES = {
   display: 'grid',
@@ -42,7 +44,6 @@ export type CubeFieldWrapperProps = {
   as: string;
   labelPosition: LabelPosition;
   label?: string;
-  insideForm?: boolean;
   styles?: Styles;
   isRequired?: boolean;
   isDisabled?: boolean;
@@ -55,6 +56,7 @@ export type CubeFieldWrapperProps = {
   Component?: JSX.Element;
   validationState?: ValidationState;
   requiredMark?: boolean;
+  tooltip?: ReactNode;
 };
 
 function FieldWrapper(props, ref) {
@@ -62,7 +64,6 @@ function FieldWrapper(props, ref) {
     as,
     labelPosition,
     label,
-    insideForm,
     styles,
     isRequired,
     isDisabled,
@@ -75,10 +76,10 @@ function FieldWrapper(props, ref) {
     Component,
     validationState,
     requiredMark = true,
+    tooltip,
   } = props;
   const mods = {
     'has-sider': labelPosition === 'side' && label,
-    'inside-form': insideForm,
     invalid: validationState === 'invalid',
     valid: validationState === 'valid',
   };
@@ -107,6 +108,15 @@ function FieldWrapper(props, ref) {
           {...labelProps}
         >
           {label}
+          {tooltip ? <>
+            &nbsp;<TooltipProvider
+              title={tooltip}
+              activeWrap
+              width="initial max-content 40x"
+            >
+              <InfoCircleOutlined style={{ color: 'var(--primary-color)' }} />
+            </TooltipProvider>
+          </> : null}
         </Label>
       )}
       {Component}

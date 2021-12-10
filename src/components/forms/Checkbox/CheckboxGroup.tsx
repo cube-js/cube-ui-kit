@@ -61,11 +61,11 @@ function CheckboxGroup(props: CubeCheckboxGroupProps, ref) {
     labelPosition = 'top',
     validationState,
     children,
-    insideForm,
     orientation = 'vertical',
     message,
     labelStyles,
     requiredMark = true,
+    tooltip,
     ...otherProps
   } = props;
   let domRef = useDOMRef(ref);
@@ -118,7 +118,6 @@ function CheckboxGroup(props: CubeCheckboxGroupProps, ref) {
       {...{
         labelPosition,
         label,
-        insideForm,
         styles,
         isRequired,
         labelStyles,
@@ -130,6 +129,7 @@ function CheckboxGroup(props: CubeCheckboxGroupProps, ref) {
         validationState,
         message,
         requiredMark,
+        tooltip,
         Component: radioGroup,
         ref: domRef,
       }}

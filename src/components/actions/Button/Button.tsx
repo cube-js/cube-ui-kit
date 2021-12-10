@@ -5,7 +5,6 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { useContextStyles } from '../../../providers/StylesProvider';
 import { FocusableRef } from '@react-types/shared';
 import { Styles } from '../../../styles/types';
-import { Block } from '../../Block';
 
 export interface CubeButtonProps extends CubeActionProps {
   icon?: ReactNode;
@@ -30,7 +29,10 @@ export function provideStyles({
   isLoading,
   icon,
   children,
+  label,
 }) {
+  children = children || label;
+
   return {
     ...STYLES_BY_SIZE[size || 'default'],
     ...DEFAULT_STYLES,
@@ -313,6 +315,7 @@ export const Button = forwardRef(
     const isSelected = props.isSelected;
     const propsForStyles = {
       ...props,
+      label,
       isLoading,
       isDisabled,
       theme,
@@ -323,7 +326,7 @@ export const Button = forwardRef(
     };
     const contextStyles = useContextStyles('Button', propsForStyles);
 
-    children = children || icon ? children : label;
+    children = children || label;
 
     styles = {
       ...provideStyles(propsForStyles),
@@ -352,21 +355,13 @@ export const Button = forwardRef(
         styles={styles}
         label={label}
       >
-        {isLoading ? (
-          <Block
-            display="inline-block"
-            margin={children ? '1x right' : undefined}
-          >
-            <LoadingOutlined />
-          </Block>
-        ) : null}
-        {icon && !isLoading ? (
+        {icon || isLoading ? (
           <Space
             gap="1x"
             display="inline-flex"
             styles={{ verticalAlign: 'middle' }}
           >
-            {!isLoading ? icon : null}
+            {!isLoading ? icon : <LoadingOutlined />}
             {children ? <div>{children}</div> : null}
           </Space>
         ) : (

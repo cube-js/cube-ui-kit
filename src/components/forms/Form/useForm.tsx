@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import dotize from 'dotize';
 import { applyRules } from './validation';
 
 export type CubeFormData = { [key: string]: any };
@@ -10,6 +11,18 @@ export type CubeField = {
   rules?: any[];
   validating?: boolean;
 };
+
+function setValue(obj, path, value) {
+  let a = path.split('.');
+  let o = obj;
+
+  while (a.length - 1) {
+    let n = a.shift();
+    if (!(n in o)) o[n] = {}
+    o = o[n];
+  }
+  o[a[0]] = value;
+}
 
 function isEqual(v1, v2) {
   return JSON.stringify(v1) === JSON.stringify(v2);
@@ -29,12 +42,12 @@ export class FormStore {
     this.initialFields = {};
     this.fields = {};
 
-    this.setFieldValues = this.setFieldValues.bind(this);
+    this.setFieldsValue = this.setFieldsValue.bind(this);
     this.getFieldValue = this.getFieldValue.bind(this);
     this.getFieldsValue = this.getFieldsValue.bind(this);
     this.setFieldValue = this.setFieldValue.bind(this);
     this.getFieldInstance = this.getFieldInstance.bind(this);
-    this.setInitialFieldValues = this.setInitialFieldValues.bind(this);
+    this.setInitialFieldsValue = this.setInitialFieldsValue.bind(this);
     this.resetFields = this.resetFields.bind(this);
     this.validateField = this.validateField.bind(this);
     this.validateFields = this.validateFields.bind(this);
@@ -47,15 +60,20 @@ export class FormStore {
 
   async submit() {
     if (this.onSubmit) {
-      return this.onSubmit(this.getFieldsValue());
+      return this.onSubmit(this.getFormData());
     }
   }
 
-  setFieldValues(newData: { [key: string]: any }, touched = false) {
+  setFieldsValue(newData: { [key: string]: any }, touched = false, reRender = true, createFields = false) {
     let flag = false;
 
     Object.keys(newData).forEach((name) => {
-      const field = this.fields[name];
+      let field = this.fields[name];
+
+      if (!field && createFields) {
+        this.createField(name, reRender);
+        field = this.fields[name];
+      }
 
       if (!field || isEqual(field.value, newData[name])) return;
 
@@ -68,11 +86,11 @@ export class FormStore {
       }
     });
 
-    if (flag) {
+    if (flag && reRender) {
       this.forceReRender();
 
       if (touched) {
-        this.onValuesChange && this.onValuesChange(this.getFieldsValue());
+        this.onValuesChange && this.onValuesChange(this.getFormData());
       }
     }
   }
@@ -91,7 +109,24 @@ export class FormStore {
     }, data);
   }
 
-  setFieldValue(name: string, value: any, touched = false) {
+  /**
+   * Similar to getFieldsValue() but respects '.' notation and creates nested objects.
+   */
+  getFormData(): CubeFormData {
+    const fieldsValue = this.getFieldsValue();
+
+    return Object.keys(fieldsValue).reduce((map, field) => {
+      setValue(map, field, fieldsValue[field]);
+
+      if (field.includes('.')) {
+        delete map[field];
+      }
+
+      return map;
+    }, {});
+  }
+
+  setFieldValue(name: string, value: any, touched = false, reRender = true) {
     const field = this.fields[name];
 
     if (!field || isEqual(value, field.value)) return;
@@ -102,10 +137,12 @@ export class FormStore {
       field.touched = touched;
     }
 
-    this.forceReRender();
+    if (reRender) {
+      this.forceReRender();
+    }
 
     if (touched) {
-      this.onValuesChange && this.onValuesChange(this.getFieldsValue());
+      this.onValuesChange && this.onValuesChange(this.getFormData());
     }
   }
 
@@ -113,12 +150,12 @@ export class FormStore {
     return this.fields[name];
   }
 
-  setInitialFieldValues(values: { [key: string]: any }): void {
-    this.initialFields = values || {};
+  setInitialFieldsValue(values: { [key: string]: any }): void {
+    this.initialFields = dotize.convert(values) || {};
   }
 
-  resetFields(): void {
-    this.setFieldValues(this.initialFields);
+  resetFields(reRender = true): void {
+    this.setFieldsValue(this.initialFields, false, reRender, true);
   }
 
   async validateField(name: string): Promise<any> {
@@ -147,17 +184,24 @@ export class FormStore {
 
   validateFields(list?: string[]): Promise<any> {
     const fieldsList = list || Object.keys(this.fields);
-    const errMap = {};
+    const errorList: { name: string, errors: string[] }[] = [];
 
-    return Promise.all(
+    return Promise.allSettled(
       fieldsList.map((name) => {
-        return this.validateField(name).catch((err) => {
-          errMap[name] = err;
+        return this.validateField(name).catch((errors) => {
+          errorList.push({ name, errors });
 
           return Promise.reject();
         });
       }),
-    ).catch(() => Promise.reject(errMap));
+    )
+      .then(() => {
+        if (errorList.length) {
+          return Promise.reject(errorList);
+        }
+
+        return this.getFormData();
+      });
   }
 
   isFieldValid(name: string): boolean {
@@ -192,12 +236,14 @@ export class FormStore {
     return field.errors || [];
   }
 
-  createField(name: string) {
+  createField(name: string, reRender = true) {
     if (!this.fields[name]) {
       this.fields[name] = this._createField(name);
     }
 
-    this.forceReRender();
+    if (reRender) {
+      this.forceReRender();
+    }
   }
 
   setFields(newFields: CubeField[]) {

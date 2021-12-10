@@ -51,11 +51,11 @@ function RadioGroup(props, ref) {
     labelPosition = 'top',
     validationState,
     children,
-    insideForm,
     orientation = 'vertical',
     message,
     labelStyles,
     requiredMark = true,
+    tooltip,
     styles,
     groupStyles,
     ...otherProps
@@ -111,7 +111,6 @@ function RadioGroup(props, ref) {
       {...{
         labelPosition,
         label,
-        insideForm,
         styles,
         isRequired,
         labelStyles,
@@ -122,6 +121,7 @@ function RadioGroup(props, ref) {
         validationState,
         message,
         requiredMark,
+        tooltip,
         Component: radioGroup,
         ref: domRef,
       }}

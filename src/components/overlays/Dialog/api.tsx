@@ -15,7 +15,7 @@ export interface DialogData
   reject: (any) => void;
   content: ReactNode;
   isVisible?: boolean;
-  dialogType?: 'info' | 'confirm';
+  dialogType?: 'info' | 'confirm' | 'form';
 }
 
 export interface DialogService {
@@ -36,13 +36,19 @@ export const api: DialogService = {
   init() {
     if (this.root) return;
 
+    const uikitRoot = document.getElementById('cube-ui-kit-root');
+
     this.root = document.createElement('div');
 
     this.root.classList.add('cube-dialog-container');
 
-    document.body.appendChild(this.root);
+    if (uikitRoot) {
+      uikitRoot.appendChild(this.root);
 
-    this._render([]);
+      this._render([]);
+    } else {
+      console.warn('Cube UI Kit: unable to create a Modal because the Root component is not found.');
+    }
   },
   render() {
     this.init();
@@ -84,6 +90,7 @@ export const api: DialogService = {
             >
               {item.isVisible ? (
                 <AlertDialog
+                  noActions={item.dialogType === 'form'}
                   primaryProps={{
                     ...primaryProps,
                     onPress: () => {
@@ -103,7 +110,7 @@ export const api: DialogService = {
                   {...options}
                   key={id}
                 >
-                  {content}
+                  {typeof content === 'function' ? content(() => this.resolve(item), () => this.reject(item)) : content}
                 </AlertDialog>
               ) : null}
             </DialogContainer>

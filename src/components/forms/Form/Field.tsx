@@ -1,18 +1,21 @@
 import {
   Children,
   cloneElement,
-  ReactElement,
-  useEffect,
+  ReactElement, ReactNode,
+  useEffect, useRef,
   useState,
 } from 'react';
 import { useFormProps } from './Form';
 import { mergeProps } from '../../../utils/react';
-import { FieldBaseProps, ValidationRule } from '../../../shared';
+import { OptionalFieldBaseProps, ValidationRule } from '../../../shared';
 import { FormStore } from './useForm';
+import { FieldWrapper } from '../FieldWrapper';
 
 const ID_MAP = {};
 
 function createId(name) {
+  if (!name) return;
+
   if (!ID_MAP[name]) {
     ID_MAP[name] = [];
   }
@@ -31,6 +34,8 @@ function createId(name) {
 }
 
 function removeId(name, id) {
+  if (!ID_MAP[name]) return;
+
   ID_MAP[name] = ID_MAP[name].filter((_id) => _id !== id);
 }
 
@@ -89,7 +94,9 @@ function getValueProps(type, value?, onChange?) {
   };
 }
 
-export interface CubeFieldProps extends FieldBaseProps {
+export interface CubeFieldProps extends OptionalFieldBaseProps {
+  /** The initial value of the input. */
+  defaultValue?: any;
   /** The type of the input. `Input`, `Checkbox`, RadioGroup`, `Select`, `ComboBox` etc... */
   type?: string;
   /** The unique ID of the field */
@@ -97,12 +104,15 @@ export interface CubeFieldProps extends FieldBaseProps {
   /** The id prefix for the field to avoid collisions between forms */
   idPrefix?: string;
   children?: ReactElement | ((FormStore) => ReactElement);
+  shouldUpdate?: boolean | ((prevValues, nextValues) => boolean);
   /** Validation rules */
   rules?: ValidationRule[];
   /** The form instance */
   form?: FormStore;
   /** The message for the field or text for the error */
   message?: string;
+  tooltip?: ReactNode;
+  name?: string[] | string;
 }
 
 interface CubeFullFieldProps extends CubeFieldProps {
@@ -121,6 +131,7 @@ export function Field(allProps: CubeFieldProps) {
   const props: CubeFullFieldProps = useFormProps(allProps);
 
   let {
+    defaultValue,
     type: inputType,
     id,
     idPrefix,
@@ -133,17 +144,22 @@ export function Field(allProps: CubeFieldProps) {
     validationState,
     necessityLabel,
     necessityIndicator,
+    shouldUpdate,
     message,
+    tooltip,
   } = props;
+  const nonInput = !name;
+  const fieldName: string = name != null ? (Array.isArray(name) ? name.join('.') : name) : '';
 
+  let firstRunRef = useRef(true);
   let [fieldId, setFieldId] = useState(
-    id || (idPrefix ? `${idPrefix}_${name}` : name),
+    id || (idPrefix ? `${idPrefix}_${fieldName}` : fieldName),
   );
 
   useEffect(() => {
     let newId;
 
-    if (!id) {
+    if (!id && !nonInput) {
       newId = createId(fieldId);
 
       setFieldId(newId);
@@ -151,25 +167,48 @@ export function Field(allProps: CubeFieldProps) {
 
     return () => {
       if (!id) {
-        removeId(idPrefix ? `${idPrefix}_${name}` : name, newId);
+        removeId(idPrefix ? `${idPrefix}_${fieldName}` : fieldName, newId);
       }
     };
   }, []);
 
-  let field = form?.getFieldInstance(name);
+  let field = form?.getFieldInstance(fieldName);
   let isRequired = rules && rules.find((rule) => rule.required);
 
   useEffect(() => {
+    if (!form) return;
+
     if (field) {
       field.rules = rules;
       form.forceReRender();
     } else {
-      form.createField(name);
+      form.createField(fieldName);
     }
   }, [field]);
 
-  if (!name) {
-    console.error('invalid form name:', name);
+  if (typeof children === 'function') {
+    children = children(form);
+  }
+
+  if (!children) return null;
+
+  let child = Children.only(children);
+
+  if (nonInput) {
+    return <FieldWrapper
+      validationState={validationState}
+      necessityIndicator={necessityIndicator}
+      necessityLabel={necessityLabel}
+      isRequired={isRequired}
+      label={label}
+      tooltip={tooltip}
+      message={message}
+      Component={child}
+    />
+  }
+
+  if (!fieldName) {
+    console.error('invalid form name:', fieldName);
 
     return null;
   }
@@ -180,25 +219,31 @@ export function Field(allProps: CubeFieldProps) {
     return null;
   }
 
-  if (typeof children === 'function') {
-    children = children(form);
-  }
-
-  if (!children) return null;
-
-  let child = Children.only(children);
-
   // @ts-ignore
   inputType = inputType || child.type.cubeInputType || 'Text';
 
   const defaultValidateTrigger = getDefaultValidateTrigger(inputType);
+
+  if (firstRunRef.current && defaultValue != null) {
+    if (!field) {
+      form.createField(fieldName, false);
+    }
+
+    if (field?.value == null) {
+      form.setFieldValue(fieldName, defaultValue, false, false);
+
+      field = form?.getFieldInstance(fieldName);
+    }
+  }
+
+  firstRunRef.current = false;
 
   if (!field) {
     return cloneElement(
       child,
       mergeProps(child.props, {
         ...getValueProps(inputType),
-        name,
+        name: fieldName,
         id: fieldId,
       }),
     );
@@ -209,26 +254,42 @@ export function Field(allProps: CubeFieldProps) {
   }
 
   function onChangeHandler(val) {
-    form.setFieldValue(name, val, true);
+    const field = form.getFieldInstance(fieldName);
 
-    const field = form.getFieldInstance(name);
+    if (shouldUpdate) {
+      const fieldsValue = form.getFieldsValue();
+
+      // check if we should update the value of the field
+      const shouldNotBeUpdated = typeof shouldUpdate === 'boolean'
+        ? !shouldUpdate
+        : !shouldUpdate(fieldsValue, {
+          ...fieldsValue,
+          [fieldName]: val,
+        });
+
+      if (shouldNotBeUpdated) {
+        return;
+      }
+    }
+
+    form.setFieldValue(fieldName, val, true);
 
     if (
       validateTrigger === 'onChange'
       || (field && field.errors && field.errors.length)
     ) {
-      form.validateField(name).catch(() => {}); // do nothing on fail
+      form.validateField(fieldName).catch(() => {}); // do nothing on fail
     }
   }
 
   const newProps: CubeReplaceFieldProps = {
     id: fieldId,
-    name,
+    name: fieldName,
     onBlur() {
       if (validateTrigger === 'onBlur') {
         // We need timeout so the change event can be done.
         setTimeout(() => {
-          form.validateField(name).catch(() => {}); // do nothing on fail
+          form.validateField(fieldName).catch(() => {}); // do nothing on fail
         });
       }
     },
@@ -252,6 +313,10 @@ export function Field(allProps: CubeFieldProps) {
 
   if (label) {
     newProps.label = label;
+  }
+
+  if (tooltip) {
+    newProps.tooltip = tooltip;
   }
 
   if (message) {

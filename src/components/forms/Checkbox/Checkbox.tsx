@@ -104,6 +104,7 @@ function Checkbox(props: CubeCheckboxProps, ref: FocusableRef) {
     necessityIndicator,
     message,
     requiredMark = true,
+    tooltip,
     ...otherProps
   } = props;
 
@@ -212,7 +213,6 @@ function Checkbox(props: CubeCheckboxProps, ref: FocusableRef) {
           as: 'label',
           labelPosition,
           label,
-          insideForm,
           styles,
           isRequired,
           labelStyles,
@@ -223,6 +223,7 @@ function Checkbox(props: CubeCheckboxProps, ref: FocusableRef) {
           necessityIndicator,
           message,
           requiredMark,
+          tooltip,
           Component: checkboxField,
           ref: domRef,
         }}

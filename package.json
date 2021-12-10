@@ -1,6 +1,6 @@
 {
   "name": "@cube-dev/ui-kit",
-  "version": "0.6.54",
+  "version": "0.6.55",
   "description": "UIKit for Cube Projects",
   "main": "dist/cjs/index.js",
   "module": "dist/mjs/index.js",
@@ -106,6 +106,7 @@
     "clipboard-copy": "^4.0.1",
     "clsx": "^1.1.1",
     "css-loader": "^5.0.1",
+    "dotize": "^0.3.0",
     "email-validator": "^2.0.4",
     "eslint": "^7.14.0",
     "eslint-config-prettier": "^8.3.0",

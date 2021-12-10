@@ -1,16 +1,22 @@
+import { useRef } from 'react';
 import {
+  Paragraph,
+  Text,
+  Submit,
+  Button,
   TextInput,
   Select,
   ComboBox,
+  Input,
   Form,
   Radio,
   Item,
-  Submit,
   Field,
   Checkbox,
   CheckboxGroup,
   PasswordInput,
   Switch,
+  Block,
 } from '../../../index';
 import {
   IS_DISABLED_ARG,
@@ -18,6 +24,7 @@ import {
   REQUIRED_MARK_ARG,
 } from '../../../stories/FormFieldArgs';
 import { NumberInput } from '../NumberInput/NumberInput';
+import { DialogForm } from '../../overlays/Dialog/DialogForm';
 
 export default {
   title: 'UIKit/Forms/Form',
@@ -35,6 +42,9 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
 
   return (
     <>
+      <Field label="Custom field outside the any form" tooltip="What?">
+        <Block>Test</Block>
+      </Field>
       <Form
         form={form}
         isDisabled={isDisabled}
@@ -52,9 +62,11 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
         }}
         defaultValues={{
           text: 'some',
-          email: '',
+          // email: '',
           checkbox: true,
-          select: 'three',
+          select: {
+            one: 'three',
+          },
           combobox: 'two',
           checkboxGroup: ['one', 'three'],
           radioGroup: 'two',
@@ -71,13 +83,16 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
                 return value.length >= 8
                   ? Promise.resolve()
                   : Promise.reject(
-                      'This field should be at least 8 symbols long',
-                    );
+                    'This field should be at least 8 symbols long',
+                  );
               },
             }),
           ]}
         >
-          <TextInput label="Text field" />
+          <TextInput label="Text field"/>
+        </Field>
+        <Field label="Custom field" tooltip="What?">
+          <Block>Test</Block>
         </Field>
         <Field
           name="email"
@@ -89,13 +104,17 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
             },
           ]}
           necessityIndicator={'label'}
+          defaultValue="tenphi@gmail.com"
+          shouldUpdate={({ email }) => {
+            return !!email;
+          }}
         >
-          <TextInput type="email" label="Email field" />
+          <TextInput type="email" label="Email field"/>
         </Field>
         <Field name="password">
-          <PasswordInput label="Password field" />
+          <PasswordInput label="Password field"/>
         </Field>
-        <Field name="select" label="Select field">
+        <Field name={['select', 'one']} label="Select field" tooltip="Additional field description">
           <Select>
             <Item key="one">One</Item>
             <Item key="two">Two</Item>
@@ -136,19 +155,19 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
           name="checkbox"
           rules={[{ required: true, message: 'This field is required' }]}
         >
-          <Checkbox label="Checkbox field" />
+          <Checkbox label="Checkbox field"/>
         </Field>
         <Field
           name="switch"
           rules={[{ required: true, message: 'This field is required' }]}
         >
-          <Switch label="Switch field" />
+          <Switch label="Switch field"/>
         </Field>
         <Field
           name="number"
           rules={[{ required: true, message: 'This field is required' }]}
         >
-          <NumberInput label="Number field" minValue={-1} />
+          <NumberInput label="Number field" minValue={-1}/>
         </Field>
         <Submit>Submit</Submit>
       </Form>
@@ -264,5 +283,45 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
   );
 };
 
+const TemplateSimple = (args) => {
+  const deleteDeploymentFormRef = useRef(null);
+
+  function onPress() {
+    deleteDeploymentFormRef?.current?.open();
+  }
+
+  return <>
+    <Button onPress={onPress}>Open Modal</Button>
+    <DialogForm
+      ref={deleteDeploymentFormRef}
+      onSubmit={data => console.log('Dialog Form Submit', data)}
+      submitProps={{
+        theme: 'danger',
+        label: 'Delete',
+      }}
+    >
+      <Paragraph>
+        Are you sure you want to permanently delete&nbsp;
+        <Text.Strong style={{ whiteSpace: 'pre' }}>deployment</Text.Strong>?
+      </Paragraph>
+      <Form.Item
+        name="name"
+        rules={[{
+          validator(rule, value) {
+            return value === 'deployment'
+              ? Promise.resolve()
+              : Promise.reject('Please enter your deployment name!');
+          },
+        }]}
+      >
+        <Input placeholder="ENTER DEPLOYMENT NAME" data-qa="DeleteDeploymentName"/>
+      </Form.Item>
+    </DialogForm>
+  </>;
+};
+
 export const Default = Template.bind({});
 Default.args = {};
+
+export const DialogForm = TemplateSimple.bind({});
+Simple.args = {};
