@@ -42,11 +42,7 @@ function removeId(name, id) {
 function getDefaultValidateTrigger(type) {
   type = type || '';
 
-  return (
-    type === 'NumberInput'
-    || type.includes('Input')
-    || (type.includes('TextArea') ? 'onBlur' : 'onChange')
-  );
+  return type === 'Number' || type.includes('Text') ? 'onBlur' : 'onChange';
 }
 
 function getValueProps(type, value?, onChange?) {

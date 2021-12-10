@@ -283,7 +283,7 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
   );
 };
 
-const TemplateSimple = (args) => {
+const TemplateDialog = (args) => {
   const deleteDeploymentFormRef = useRef(null);
 
   function onPress() {
@@ -323,5 +323,5 @@ const TemplateSimple = (args) => {
 export const Default = Template.bind({});
 Default.args = {};
 
-export const DialogForm = TemplateSimple.bind({});
-Simple.args = {};
+export const FormInsideDialog = TemplateDialog.bind({});
+FormInsideDialog.args = {};

@@ -25,5 +25,7 @@ function TextInput(props: CubeTextInputBaseProps, ref) {
  * with a keyboard. Various decorations can be displayed around the field to
  * communicate the entry requirements.
  */
-const _TextInput = forwardRef(TextInput);
+const _TextInput = Object.assign(forwardRef(TextInput), {
+  cubeInputType: 'Text',
+});
 export { _TextInput as TextInput };
