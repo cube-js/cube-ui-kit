@@ -145,7 +145,7 @@ export async function applyRules(value, rules, form) {
   for (let rule of rules) {
     await applyRule(value, rule, form).catch((err) => {
       if (typeof err !== 'string') {
-        err = rule.message;
+        err = (err?.message || rule.message);
       }
 
       throw err;
