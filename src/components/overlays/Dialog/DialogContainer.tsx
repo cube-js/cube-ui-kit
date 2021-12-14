@@ -6,7 +6,7 @@ export interface CubeDialogContainerProps {
   /** The Dialog to display, if any. */
   children?: ReactNode;
   /** Handler that is called when the 'x' button of a dismissable Dialog is clicked. */
-  onDismiss: (arg?: any) => void;
+  onDismiss?: (arg?: any) => void;
   /**
    * The type of Dialog that should be rendered. See the visual options below for examples of each.
    * @default 'modal'
