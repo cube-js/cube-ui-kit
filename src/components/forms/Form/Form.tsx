@@ -11,7 +11,7 @@ import { Base } from '../../Base';
 import { extractStyles } from '../../../utils/styles';
 import { CONTAINER_STYLES } from '../../../styles/list';
 import { filterBaseProps } from '../../../utils/filterBaseProps';
-import { FormStore, useForm, CubeFormData } from './useForm';
+import { CubeFormInstance, useForm, CubeFormData } from './useForm';
 import { useCombinedRefs } from '../../../utils/react';
 import { timeout } from '../../../utils/promise';
 import { BaseProps, ContainerStyleProps } from '../../types';
@@ -53,7 +53,7 @@ export interface CubeFormProps
   onValuesChange?: (data: CubeFormData) => void | Promise<void>;
   onSubmit?: (data: CubeFormData) => void | Promise<void>;
   onSubmitFailed?: (any?) => void | Promise<any>;
-  form?: FormStore;
+  form?: CubeFormInstance;
 }
 
 function Form(props: CubeFormProps, ref) {
@@ -155,7 +155,7 @@ function Form(props: CubeFormProps, ref) {
   if (firstRunRef.current && form) {
     if (defaultValues) {
       form.setInitialFieldsValue(defaultValues);
-      form.resetFields(false);
+      form.resetFields(undefined, true);
       firstRunRef.current = false;
     }
   }

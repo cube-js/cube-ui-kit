@@ -29,8 +29,8 @@ const DialogForm = (props, ref: ForwardedRef<CubeDialogFormRef>) => {
     defaultValues,
     onDismiss,
     onSubmit,
-    onValuesChange,
     onSubmitFailed,
+    onValuesChange,
     labelStyles,
     labelPosition,
     requiredMark,
@@ -61,10 +61,13 @@ const DialogForm = (props, ref: ForwardedRef<CubeDialogFormRef>) => {
     },
   }));
 
-  return <DialogContainer onDismiss={() => {
+  function onLocalDismiss() {
     onDismiss();
+    form.resetFields();
     setOpen(false);
-  }}>
+  }
+
+  return <DialogContainer onDismiss={onLocalDismiss}>
     {open && <Dialog qa={`${qa || ''}Dialog`} isDismissable={true}>
       <Title>Delete deployment</Title>
       <Divider/>
@@ -94,7 +97,7 @@ const DialogForm = (props, ref: ForwardedRef<CubeDialogFormRef>) => {
           validationState={validationState}
           validateTrigger={validateTrigger}
         >
-          {typeof children === 'function' ? children(() => setOpen(false)) : children}
+          {typeof children === 'function' ? children(onLocalDismiss) : children}
           {
             !noActions
               ? <ButtonGroup>
@@ -106,7 +109,7 @@ const DialogForm = (props, ref: ForwardedRef<CubeDialogFormRef>) => {
                   />
                   <Button
                     qa={`${qa || ''}CancelButton`}
-                    onPress={() => setOpen(false)}
+                    onPress={onLocalDismiss}
                     label="Cancel"
                     {...(cancelProps || {})}
                   />

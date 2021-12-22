@@ -3,7 +3,7 @@ import dotize from 'dotize';
 import { applyRules } from './validation';
 
 export type CubeFormData = { [key: string]: any };
-export type CubeField = {
+export type CubeFieldData = {
   value?: any;
   name: string;
   errors: string[];
@@ -28,10 +28,10 @@ function isEqual(v1, v2) {
   return JSON.stringify(v1) === JSON.stringify(v2);
 }
 
-export class FormStore {
+export class CubeFormInstance {
   public forceReRender: () => void = () => {};
   private initialFields = {};
-  private fields: { [key: string]: CubeField } = {};
+  private fields: { [key: string]: CubeFieldData } = {};
   public ref = {};
   public isSubmitting: boolean = false;
   public onValuesChange: (CubeFormData) => void | Promise<any> = () => {};
@@ -42,10 +42,11 @@ export class FormStore {
     this.initialFields = {};
     this.fields = {};
 
-    this.setFieldsValue = this.setFieldsValue.bind(this);
     this.getFieldValue = this.getFieldValue.bind(this);
     this.getFieldsValue = this.getFieldsValue.bind(this);
+    this.setFieldsValue = this.setFieldsValue.bind(this);
     this.setFieldValue = this.setFieldValue.bind(this);
+    this.getFieldError = this.getFieldError.bind(this);
     this.getFieldInstance = this.getFieldInstance.bind(this);
     this.setInitialFieldsValue = this.setInitialFieldsValue.bind(this);
     this.resetFields = this.resetFields.bind(this);
@@ -64,29 +65,38 @@ export class FormStore {
     }
   }
 
-  setFieldsValue(newData: { [key: string]: any }, touched = false, reRender = true, createFields = false) {
+  setFieldsValue(newData: { [key: string]: any }, touched?: boolean, skipRender?: boolean, createFields = false) {
     let flag = false;
 
     Object.keys(newData).forEach((name) => {
       let field = this.fields[name];
 
       if (!field && createFields) {
-        this.createField(name, reRender);
+        this.createField(name, skipRender);
         field = this.fields[name];
       }
 
-      if (!field || isEqual(field.value, newData[name])) return;
+      if (!field || isEqual(field.value, newData[name])) {
+        if (field && touched === false) {
+          field.errors = [];
+        }
+
+        return;
+      }
 
       flag = true;
 
       field.value = newData[name];
 
-      if (touched) {
+      if (touched === true) {
         field.touched = touched;
+      } else if (touched === false) {
+        field.touched = false;
+        field.errors = [];
       }
     });
 
-    if (flag && reRender) {
+    if (flag && !skipRender) {
       this.forceReRender();
 
       if (touched) {
@@ -126,7 +136,7 @@ export class FormStore {
     }, {});
   }
 
-  setFieldValue(name: string, value: any, touched = false, reRender = true) {
+  setFieldValue(name: string, value: any, touched = false, skipRender?: boolean) {
     const field = this.fields[name];
 
     if (!field || isEqual(value, field.value)) return;
@@ -137,7 +147,7 @@ export class FormStore {
       field.touched = touched;
     }
 
-    if (reRender) {
+    if (!skipRender) {
       this.forceReRender();
     }
 
@@ -146,7 +156,7 @@ export class FormStore {
     }
   }
 
-  getFieldInstance(name: string): CubeField {
+  getFieldInstance(name: string): CubeFieldData {
     return this.fields[name];
   }
 
@@ -154,8 +164,22 @@ export class FormStore {
     this.initialFields = dotize.convert(values) || {};
   }
 
-  resetFields(reRender = true): void {
-    this.setFieldsValue(this.initialFields, false, reRender, true);
+  resetFields(names?: string[], skipRender?: boolean): void {
+    const fieldsValue = this.getFieldsValue();
+    const fieldNames = Object.keys({ ...fieldsValue, ...this.initialFields });
+    const filteredFieldNames = names ? fieldNames.filter(name => names.includes(name)) : fieldNames;
+
+    const values = filteredFieldNames.reduce((map, name) => {
+      if (name in this.initialFields) {
+        map[name] = this.initialFields[name];
+      } else {
+        map[name] = undefined;
+      }
+
+      return map;
+    }, {});
+
+    this.setFieldsValue(values, false, skipRender, true);
   }
 
   async validateField(name: string): Promise<any> {
@@ -236,17 +260,17 @@ export class FormStore {
     return field.errors || [];
   }
 
-  createField(name: string, reRender = true) {
+  createField(name: string, skipRender?: boolean) {
     if (!this.fields[name]) {
       this.fields[name] = this._createField(name);
     }
 
-    if (reRender) {
+    if (!skipRender) {
       this.forceReRender();
     }
   }
 
-  setFields(newFields: CubeField[]) {
+  setFields(newFields: CubeFieldData[]) {
     newFields.forEach(({ name, value, errors }) => {
       this.fields[name] = this._createField(name, {
         value,
@@ -262,7 +286,7 @@ export class FormStore {
     this.forceReRender();
   }
 
-  _createField(name, data?: Partial<CubeField>): CubeField {
+  _createField(name, data?: Partial<CubeFieldData>): CubeFieldData {
     return {
       name,
       value: undefined,
@@ -275,27 +299,27 @@ export class FormStore {
 }
 
 export function useForm(
-  form?: FormStore,
+  form?: CubeFormInstance,
   ref?,
   options: {
-    onSubmit?: FormStore['onSubmit'];
-    onValuesChange?: FormStore['onValuesChange'];
+    onSubmit?: CubeFormInstance['onSubmit'];
+    onValuesChange?: CubeFormInstance['onValuesChange'];
   } = {},
-): [FormStore] {
+): [CubeFormInstance] {
   const { onSubmit, onValuesChange } = options;
-  const formRef = useRef<FormStore>();
+  const formRef = useRef<CubeFormInstance>();
   const [, forceUpdate] = useState({});
 
   if (!formRef.current) {
     if (form) {
       formRef.current = form;
     } else {
-      // Create a new FormStore if not provided
+      // Create a new FormInstance if not provided
       const forceReRender = () => {
         forceUpdate({});
       };
 
-      form = formRef.current = new FormStore(forceReRender);
+      form = formRef.current = new CubeFormInstance(forceReRender);
     }
 
     form.ref = ref;

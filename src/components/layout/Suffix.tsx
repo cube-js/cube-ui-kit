@@ -8,12 +8,12 @@ import { BaseProps, ContainerStyleProps } from '../types';
 import { Styles } from '../../styles/types';
 
 const DEFAULT_STYLES: Styles = {
+  position: 'absolute',
   display: 'grid',
   placeContent: 'stretch',
   placeItems: 'center',
   flow: 'column',
   gap: 0,
-  position: 'absolute',
   right: '@suffix-gap',
   top: '@suffix-gap',
   bottom: '@suffix-gap',
