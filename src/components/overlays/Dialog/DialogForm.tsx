@@ -21,6 +21,8 @@ export interface CubeDialogFormProps extends CubeDialogProps, Omit<CubeFormProps
   preserve?: boolean;
   /** Whether to hide action button so developer can manually specify them */
   noActions?: boolean;
+  /** The title of the dialog */
+  title?: string;
 }
 
 export interface CubeDialogFormRef {
@@ -53,6 +55,7 @@ const DialogForm = (props: CubeDialogFormProps, ref: ForwardedRef<CubeDialogForm
     submitProps,
     cancelProps,
     preserve,
+    title,
   } = props;
 
   [form] = useForm(form);
@@ -76,7 +79,7 @@ const DialogForm = (props: CubeDialogFormProps, ref: ForwardedRef<CubeDialogForm
 
   return <DialogContainer onDismiss={onLocalDismiss}>
     {open && <Dialog qa={`${qa || ''}Dialog`} isDismissable={true}>
-      <Title>Delete deployment</Title>
+      <Title>{title}</Title>
       <Divider/>
       <Content>
         <Form
