@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { CubeDialogFormRef, Root, Button, Card } from '../../index';
+import { CubeDialogFormRef, Button } from '../../index';
 import { ConfirmDeletionDialogForm } from './ConfirmDeletionDialogForm';
 
 export function DialogFormApp() {
@@ -14,7 +14,7 @@ export function DialogFormApp() {
   }
 
   return <>
-    <Button onPress={() => ConfirmDeletionDialogFormRef?.current.open()}>
+    <Button onPress={() => ConfirmDeletionDialogFormRef?.current?.open()}>
       Delete the instance
     </Button>
     <ConfirmDeletionDialogForm

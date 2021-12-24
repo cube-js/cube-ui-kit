@@ -37,6 +37,7 @@ const DEFAULT_STYLES = {
   display: 'block',
   flow: 'column',
   gap: '2x',
+  '@label-width': '25x',
 };
 
 export interface CubeFormProps
@@ -47,12 +48,17 @@ export interface CubeFormProps
       FormHTMLAttributes<HTMLFormElement>,
       'action' | 'autoComplete' | 'encType' | 'method' | 'target'
     > {
-  /** The form name */
+  /** Form name */
   name?: string;
+  /** Default field values */
   defaultValues?: { [key: string]: any };
+  /** Trigger when any value of Field changed */
   onValuesChange?: (data: CubeFormData) => void | Promise<void>;
+  /** Trigger when form submit and success */
   onSubmit?: (data: CubeFormData) => void | Promise<void>;
+  /** Trigger when form submit and failed */
   onSubmitFailed?: (any?) => void | Promise<any>;
+  /** Set form instance created by useForm */
   form?: CubeFormInstance;
 }
 
@@ -197,5 +203,5 @@ function Form(props: CubeFormProps, ref) {
 /**
  * Forms allow users to enter data that can be submitted while providing alignment and styling for form fields.
  */
-const _Form = Object.assign(forwardRef(Form), { useForm });
+const _Form = forwardRef(Form);
 export { _Form as Form };

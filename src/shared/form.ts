@@ -2,7 +2,9 @@ import { Props } from '../components/types';
 import { Styles } from '../styles/types';
 import { ReactNode } from 'react';
 
+/** Where to place label relative to input */
 export type LabelPosition = 'side' | 'top';
+/** The type of necessity indicator */
 export type NecessityIndicator = 'icon' | 'label';
 
 /** The validation state of the field */
@@ -28,13 +30,17 @@ export interface FieldBaseProps extends OptionalFieldBaseProps {
 }
 
 export interface FormBaseProps {
+  /** Styles of the label */
   labelStyles?: Styles;
+  /** Where to place label relative to input */
   labelPosition?: LabelPosition;
   /** Whether the field presents required mark */
   requiredMark?: boolean;
   /** Whether the field is required */
   isRequired?: boolean;
+  /** The type of necessity indicator */
   necessityIndicator?: NecessityIndicator;
+  /** That can replace the necessity label */
   necessityLabel?: ReactNode;
   /** Whether the field is read only */
   isReadOnly?: boolean;

@@ -1,5 +1,5 @@
 module.exports = {
-  'extends': ['react-app', 'prettier'],
+  'extends': ["react-app", "prettier", "plugin:storybook/recommended"],
   'rules': {
     'import/no-unresolved': 0,
     'comma-dangle': 0,
@@ -23,7 +23,7 @@ module.exports = {
       ignoreComments: true,
       ignoreRegExpLiterals: true,
       ignoreStrings: true,
-      ignoreTemplateLiterals: true,
-    }],
+      ignoreTemplateLiterals: true
+    }]
   }
 };

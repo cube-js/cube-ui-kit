@@ -117,6 +117,7 @@ export interface CubeDialogProps
     BaseStyleProps,
     BlockStyleProps,
     DimensionStyleProps {
+  /** The type of the dialog. It affects its size and position. */
   type?:
     | 'modal'
     | 'popover'
@@ -124,9 +125,13 @@ export interface CubeDialogProps
     | 'fullscreenTakeover'
     | 'panel'
     | 'tray';
+  /** The size of the dialog */
   size?: 'S' | 'M' | 'L';
+  /** Whether the dialog is dismissable */
   isDismissable?: boolean;
+  /** Trigger when the dialog is dismissed */
   onDismiss?: (arg?: any) => void;
+  /** That you can replace the close icon with */
   closeIcon?: ReactNode;
 }
 

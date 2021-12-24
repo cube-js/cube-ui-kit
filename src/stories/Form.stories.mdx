@@ -1,8 +1,16 @@
 import { Meta } from '@storybook/addon-docs/blocks';
-import { Button, Root, Space, Card, Text, Block, Paragraph, Flow, Flex, Form, Field, Submit, Input, DialogForm } from '../index';
+import { baseProps } from './lists/baseProps';
+import { Story, Canvas, ArgsTable } from "@storybook/addon-docs";
+import { Button, Root, Space, Card, Text, Block, Paragraph, Flow, Flex, Form, Field, Submit, Input, DialogForm, CubeFormInstance } from '../index';
 import { DialogFormApp } from './components/DialogFormApp';
+import { LABEL_POSITION_ARG, DISABLE_BASE_ARGS } from './FormFieldArgs';
 
-<Meta title="UIKit/Form" />
+<Meta
+  title="UIKit/Forms/Form"
+  component={Form}
+  argTypes={{
+    ...DISABLE_BASE_ARGS,
+  }}/>
 
 # Form management
 
@@ -12,37 +20,24 @@ Cube UI Kit Forms are designed after AntD Forms and [rc-field-form](https://fiel
 
 ### Form (CubeFormProps)
 
-|Prop|Description|Type|Default|
-|----|----|----|----|
-|**name**|Form name|string|–|
-|**form**|Set form instance created by useForm|CubeFormInstance|–|
-|**defaultValues**|Default field values|{ [key: string]: any }|–|
-|**onValuesChange**|Trigger when any value of Field changed|(values) => void &vert; Promise&lt;void&gt;|–|
-|**onSubmit**|Trigger when form submit and success|(values) => void &vert; Promise&lt;void&gt;|–|
-|**onSubmitFailed**|Trigger when form submit and failed|(any?) => void &vert; Promise&lt;void&gt;|–|
-|**requiredMark**|Whether to show a required mark inside field label|boolean|true|
+<ArgsTable of={Form} exclude={baseProps}/>
 
 ### Field (CubeFieldProps)
 
-|Prop|Description|Type|Default|
-|----|----|----|----|
-|**name**|Form name|string|–|
-|**form**|Set form instance created by useForm|CubeFormInstance|–|
-|**defaultValues**|Default field values|{ [key: string]: any }|–|
-|**onValuesChange**|Trigger when any value of Field changed|(values) => Promise?|–|
-|**onSubmit**|Trigger when form submit and success|(values) => Promise?|–|
-|**onSubmitFailed**|Trigger when form submit and failed|(any?) => Promise?|–|
+<ArgsTable of={Field} exclude={baseProps}/>
 
-### useForm (CubeFormInstance)
+### useForm
 
 Form component default create an form instance by Form.useForm. But you can create it and pass to Form also. This allow you to call some function on the form instance.
 
-```
+```typescript
 const Demo = () => {
   const [form] = Form.useForm();
   return <Form form={form} />;
 };
 ```
+
+#### CubeFormInstance interface
 
 |Prop|Description|Type|Default|
 |----|----|----|----|
@@ -59,7 +54,7 @@ const Demo = () => {
 |submit|Trigger form to validate and submit|() => void
 |validateFields|Trigger fields to validate|(nameList?: NamePath[]) => Promise
 
-### CubeFieldData
+#### CubeFieldData interface
 
 |Prop|Type|
 |----|----|
@@ -132,15 +127,16 @@ export function LoginForm() {
 }
 ```
 
-<Root>
-  <Card>
-    <Form
+<Canvas>
+  <Story name="LoginForm">
+    {(args) => <Form
       onSubmit={() => {
         return new Promise((resolve) => {
           setTimeout(resolve, 1000); // 1s of submitting
         });
       }}
       requiredMark={false}
+      {...args}
     >
       <Field
         label="Email"
@@ -165,13 +161,15 @@ export function LoginForm() {
       <Submit>
         Submit
       </Submit>
-    </Form>
-  </Card>
-</Root>
+    </Form>}
+  </Story>
+</Canvas>
 
 ### Dialog form
 
 It's possible to create forms inside dialogs. The `DialogForm` contains all props of `Form` and `Dialog` components.
+
+<ArgsTable of={DialogForm} exclude={baseProps}/>
 
 Here is the example of usage:
 
@@ -236,7 +234,7 @@ Then you can use this component inside your application:
 ```tsx
 /* DialogFormApp */
 import { useRef } from 'react';
-import { CubeDialogFormRef, Root, Button, Card } from '@cube-dev/ui-kit';
+import { CubeDialogFormRef, Button } from '@cube-dev/ui-kit';
 import { ConfirmDeletionDialogForm } from './ConfirmDeletionDialogForm';
 
 export function DialogFormApp() {
@@ -251,7 +249,7 @@ export function DialogFormApp() {
   }
 
   return <>
-    <Button onPress={() => ConfirmDeletionDialogFormRef?.current.open()}>
+    <Button onPress={() => ConfirmDeletionDialogFormRef?.current?.open()}>
       Delete the instance
     </Button>
     <ConfirmDeletionDialogForm
@@ -264,8 +262,8 @@ export function DialogFormApp() {
 }
 ```
 
-<Root>
-  <Card>
+<Canvas>
+  <Story name="DialogFormApp">
     <DialogFormApp/>
-  </Card>
-</Root>
+  </Story>
+</Canvas>

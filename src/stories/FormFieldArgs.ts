@@ -1,3 +1,11 @@
+import { baseProps } from './lists/baseProps';
+
+export const DISABLE_BASE_ARGS = baseProps.reduce((map, prop) => {
+  map[prop] = { table: { disable: true } };
+
+  return map;
+}, {});
+
 export const LABEL_POSITION_ARG = {
   labelPosition: {
     defaultValue: 'top',

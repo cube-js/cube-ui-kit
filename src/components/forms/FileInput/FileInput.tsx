@@ -31,6 +31,7 @@ const DEFAULT_WRAPPER_STYLES: Styles = {
   radius: true,
   cursor: 'pointer',
   overflow: 'hidden',
+
   '[Button]': {
     radius: 'round',
     fill: {
@@ -42,12 +43,15 @@ const DEFAULT_WRAPPER_STYLES: Styles = {
     padding: '.5x 1x',
     transition: 'fill',
   },
+
   '[Placeholder]': {
     color: '#dark-02',
   },
+
   '[Value]': {
     color: '#dark-02',
   },
+
   '[Input]': {
     position: 'absolute',
     top: '-50px',
