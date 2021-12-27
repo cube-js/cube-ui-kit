@@ -8,12 +8,9 @@ export const DISABLE_BASE_ARGS = baseProps.reduce((map, prop) => {
 
 export const LABEL_POSITION_ARG = {
   labelPosition: {
-    defaultValue: 'top',
     description: 'The position of labels for each field.',
-    control: {
-      type: 'radio',
-      options: ['top', 'side'],
-    },
+    options: ['top', 'side'],
+    control: 'radio',
     table: {
       type: { summary: 'string' },
       defaultValue: { summary: 'top' },
@@ -23,7 +20,7 @@ export const LABEL_POSITION_ARG = {
 
 export const LABEL_ARG = {
   label: {
-    defaultValue: 'Field label',
+    // defaultValue: 'Field label',
     control: 'text',
     description: 'The content to display as the label.',
   },
@@ -31,12 +28,10 @@ export const LABEL_ARG = {
 
 export const NECESSITY_INDICATOR_ARG = {
   necessityIndicator: {
-    defaultValue: 'icon',
+    // defaultValue: 'icon',
     description: 'Type of the necessity indicator',
-    control: {
-      type: 'radio',
-      options: ['icon', 'label', false],
-    },
+    options: ['icon', 'label', false],
+    control: 'radio',
     table: {
       type: { summary: 'string' },
       defaultValue: { summary: 'icon' },
@@ -46,7 +41,7 @@ export const NECESSITY_INDICATOR_ARG = {
 
 export const MESSAGE_ARG = {
   message: {
-    defaultValue: '',
+    // defaultValue: '',
     description: 'Validation error message',
     control: 'text',
   },
@@ -54,20 +49,18 @@ export const MESSAGE_ARG = {
 
 export const PLACEHOLDER_ARG = {
   placeholder: {
-    defaultValue: 'Placeholder',
+    // defaultValue: 'Placeholder',
     control: 'text',
   },
 };
 
 export const VALIDATION_STATE_ARG = {
   validationState: {
-    defaultValue: undefined,
+    // defaultValue: undefined,
     description:
       'Whether the input should display its "valid" or "invalid" visual styling.',
-    control: {
-      type: 'radio',
-      options: [undefined, 'valid', 'invalid'],
-    },
+    options: [undefined, 'valid', 'invalid'],
+    control: 'radio',
     table: {
       type: { summary: 'string' },
       defaultValue: { summary: 'top' },
@@ -79,7 +72,7 @@ export const IS_LOADING_ARG = {
   isLoading: {
     control: 'boolean',
     description: 'Loading state with spinner. Also works as disabled',
-    defaultValue: false,
+    // defaultValue: false,
     table: {
       type: { summary: 'boolean' },
       defaultValue: { summary: false },
@@ -89,7 +82,7 @@ export const IS_LOADING_ARG = {
 
 export const AUTO_FOCUS_ARG = {
   autoFocus: {
-    defaultValue: false,
+    // defaultValue: false,
     description: 'Whether the element should receive focus on render.',
     control: {
       type: 'boolean',
@@ -103,7 +96,7 @@ export const AUTO_FOCUS_ARG = {
 
 export const IS_REQUIRED_ARG = {
   isRequired: {
-    defaultValue: false,
+    // defaultValue: false,
     description:
       'Whether user input is required on the input before form submission. Often paired with the necessityIndicator prop to add a visual indicator to the input.',
     control: {
@@ -118,7 +111,7 @@ export const IS_REQUIRED_ARG = {
 
 export const IS_READ_ONLY_ARG = {
   isReadOnly: {
-    defaultValue: false,
+    // defaultValue: false,
     description:
       'Whether the input can be selected but not changed by the user.',
     control: {
@@ -133,7 +126,7 @@ export const IS_READ_ONLY_ARG = {
 
 export const IS_DISABLED_ARG = {
   isDisabled: {
-    defaultValue: false,
+    // defaultValue: false,
     description: 'Whether the input is disabled.',
     control: {
       type: 'boolean',
@@ -147,12 +140,10 @@ export const IS_DISABLED_ARG = {
 
 export const SIZE_ARG = {
   size: {
-    defaultValue: undefined,
+    // defaultValue: undefined,
     description: 'The size of the button',
-    control: {
-      type: 'radio',
-      options: [undefined, 'default', 'small'],
-    },
+    options: [undefined, 'default', 'small'],
+    control: 'radio',
     table: {
       type: { summary: 'string' },
       defaultValue: { summary: 'default' },
@@ -162,7 +153,7 @@ export const SIZE_ARG = {
 
 export const MULTILINE_ARG = {
   multiLine: {
-    defaultValue: false,
+    // defaultValue: false,
     description: 'Whether the input is multiline.',
     control: {
       type: 'boolean',
@@ -176,7 +167,7 @@ export const MULTILINE_ARG = {
 
 export const REQUIRED_MARK_ARG = {
   requiredMark: {
-    defaultValue: true,
+    // defaultValue: true,
     description: 'Whether to show the required mark on labels.',
     control: {
       type: 'boolean',

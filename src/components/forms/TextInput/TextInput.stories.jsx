@@ -50,19 +50,17 @@ export default {
     inputMode: {
       defaultValue: 'none',
       description: 'Input type mode',
-      control: {
-        type: 'radio',
-        options: [
-          'none',
-          'text',
-          'tel',
-          'url',
-          'email',
-          'numeric',
-          'decimal',
-          'search',
-        ],
-      },
+      options: [
+        'none',
+        'text',
+        'tel',
+        'url',
+        'email',
+        'numeric',
+        'decimal',
+        'search',
+      ],
+      control: 'radio',
       table: {
         type: { summary: 'string' },
         defaultValue: { summary: 'none' },

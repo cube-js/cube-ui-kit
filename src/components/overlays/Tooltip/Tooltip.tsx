@@ -1,5 +1,5 @@
 import { forwardRef, useContext, useImperativeHandle, useRef } from 'react';
-import { mergeProps } from '@react-aria/utils';
+import { mergeProps } from '../../../utils/react';
 import { createDOMRef } from '@react-spectrum/utils';
 import { TooltipContext } from './context';
 import { useTooltip } from '@react-aria/tooltip';

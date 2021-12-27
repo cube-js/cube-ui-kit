@@ -9,7 +9,7 @@ import { BLOCK_STYLES, OUTER_STYLES } from '../../../styles/list';
 import { Base } from '../../Base';
 import { filterBaseProps } from '../../../utils/filterBaseProps';
 import { useFocus } from '../../../utils/interactions';
-import { mergeProps } from '@react-aria/utils';
+import { mergeProps } from '../../../utils/react';
 import { useProviderProps } from '../../../provider';
 import { INLINE_LABEL_STYLES } from '../Label';
 import { HiddenInput } from '../../HiddenInput';

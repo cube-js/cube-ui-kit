@@ -1,6 +1,6 @@
 import { forwardRef, MouseEventHandler } from 'react';
 import { useHover } from '@react-aria/interactions';
-import { mergeProps } from '@react-aria/utils';
+import { mergeProps } from '../../../utils/react';
 import { CONTAINER_STYLES, TEXT_STYLES } from '../../../styles/list';
 import { Base } from '../../Base';
 import { extractStyles } from '../../../utils/styles';

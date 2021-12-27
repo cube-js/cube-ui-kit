@@ -4,7 +4,7 @@ import { Base } from '../Base';
 import { useHover } from '@react-aria/interactions';
 import { useFocus } from '../../utils/interactions';
 import { useButton } from '@react-aria/button';
-import { mergeProps } from '@react-aria/utils';
+import { mergeProps } from '../../utils/react';
 import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
 import { UIKitContext } from '../../provider';

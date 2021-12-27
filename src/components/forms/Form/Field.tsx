@@ -100,6 +100,7 @@ export interface CubeFieldProps extends OptionalFieldBaseProps {
   /** The id prefix for the field to avoid collisions between forms */
   idPrefix?: string;
   children?: ReactElement | ((CubeFormInstance) => ReactElement);
+  /** Function that check whether to perform update of the form state. */
   shouldUpdate?: boolean | ((prevValues, nextValues) => boolean);
   /** Validation rules */
   rules?: ValidationRule[];
@@ -107,7 +108,9 @@ export interface CubeFieldProps extends OptionalFieldBaseProps {
   form?: CubeFormInstance;
   /** The message for the field or text for the error */
   message?: string;
+  /** Tooltip for the label that explains something. */
   tooltip?: ReactNode;
+  /** Field name. It's used as a key the form data. */
   name?: string[] | string;
 }
 
