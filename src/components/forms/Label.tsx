@@ -70,6 +70,10 @@ export const LABEL_STYLES: Styles = {
     disabled: '#dark.30',
   },
   whiteSpace: 'nowrap',
+  width: {
+    '': 'initial',
+    side: '@(label-width, initial)',
+  },
 } as const;
 
 export interface CubeLabelProps

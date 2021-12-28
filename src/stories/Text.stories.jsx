@@ -5,29 +5,21 @@ export default {
   component: Text,
   argTypes: {
     italic: {
-      defaultValue: false,
-      control: {
-        type: 'boolean',
-      },
+      // defaultValue: false,
+      control: 'boolean',
     },
     nowrap: {
-      defaultValue: false,
-      control: {
-        type: 'boolean',
-      },
+      // defaultValue: false,
+      control: 'boolean',
     },
     ellipsis: {
-      defaultValue: false,
-      control: {
-        type: 'boolean',
-      },
+      // defaultValue: false,
+      control: 'boolean',
     },
     font: {
-      defaultValue: undefined,
-      control: {
-        type: 'radio',
-        options: [undefined, 'monospace'],
-      },
+      // defaultValue: undefined,
+      control: 'radio',
+      options: [undefined, 'monospace'],
     },
   },
 };

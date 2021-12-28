@@ -1,4 +1,4 @@
-import { mergeProps } from '@react-aria/utils';
+import { mergeProps } from '../../../utils/react';
 import { Overlay } from './Overlay';
 import { forwardRef, HTMLAttributes } from 'react';
 import { useModal, useOverlay } from '@react-aria/overlays';

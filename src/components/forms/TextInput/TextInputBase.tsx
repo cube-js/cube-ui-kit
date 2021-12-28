@@ -287,10 +287,10 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
         opacity={isDisabled ? '@disabled-opacity' : false}
       >
         {suffixPosition === 'before' ? suffix : null}
-        <Space gap={false} padding={`0 ${suffix ? '1x' : '1.5x'} 0 0`}>
+        {(validationState && !isLoading || isLoading) ? <Space gap={false} padding={`0 ${suffix ? '1x' : '1.5x'} 0 0`}>
           {validationState && !isLoading ? validation : null}
           {isLoading && <LoadingOutlined />}
-        </Space>
+        </Space> : null}
         {suffixPosition === 'after' ? suffix : null}
       </Suffix>
     </Base>

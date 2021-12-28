@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/addon-docs/blocks';
+import { Meta } from '@storybook/addon-docs';
 import { Button, Root, Space, Card, Text, Block, Paragraph, Flow, Flex, Grid } from '../index';
 
 <Meta title="UIKit/Layout" />
@@ -13,7 +13,7 @@ Documentation is in process...
 
 Flow Component is used to create gaps between blocks inside block layout.
 
-```
+```jsx
 <Card gap>
   <Card>
     Card 1
@@ -43,7 +43,7 @@ Flow Component is used to create gaps between blocks inside block layout.
 
 Use Space Component to create a row or a column of elements.
 
-```
+```jsx
 <Space flow="row">
   <Block>horizontal space</Block>
   <Button>One</Button>
@@ -71,7 +71,7 @@ Use Space Component to create a row or a column of elements.
 
 Use Flex Component for more flexible layouts.
 
-```
+```jsx
 <Flex flow="row" placeContent="space-between" placeItems="center">
   <Button>One</Button>
   <Button>Two</Button>
@@ -95,7 +95,7 @@ Use Grid Component for grid layouts.
 
 ### Simple layout with side bar.
 
-```
+```jsx
 <Grid gridColumns="200px 1fr" gridRows="60px 1fr" height="500px">
   <Card gridColumn="1 / -1">Header</Card>
   <Card>Sidebar</Card>

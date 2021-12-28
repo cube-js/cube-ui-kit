@@ -27,7 +27,7 @@ import { NumberInput } from '../NumberInput/NumberInput';
 import { DialogForm } from '../../overlays/Dialog/DialogForm';
 
 export default {
-  title: 'UIKit/Forms/Form',
+  title: 'UIKit/Forms/ComplexForm',
   component: Form,
   argTypes: {
     ...IS_DISABLED_ARG,
@@ -43,7 +43,7 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
   return (
     <>
       <Field label="Custom field outside the any form" tooltip="What?">
-        <Block>Test</Block>
+        <Block>Some non-editable content</Block>
       </Field>
       <Form
         form={form}
@@ -51,7 +51,7 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
         labelPosition={labelPosition}
         requiredMark={requiredMark}
         labelStyles={{
-          width: '200px',
+          // width: '200px',
           // textAlign: 'right',
         }}
         onSubmit={(v) => {

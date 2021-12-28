@@ -8,9 +8,11 @@ import { BaseProps, ContainerStyleProps } from '../types';
 import { Styles } from '../../styles/types';
 
 const DEFAULT_STYLES: Styles = {
-  display: 'grid',
   position: 'absolute',
+  display: 'grid',
+  placeContent: 'stretch',
   placeItems: 'center',
+  flow: 'column',
   gap: 0,
   left: '@prefix-gap',
   top: '@prefix-gap',

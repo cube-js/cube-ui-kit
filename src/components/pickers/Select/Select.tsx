@@ -3,7 +3,7 @@ import {
   LoadingOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
-import { mergeProps } from '@react-aria/utils';
+import { mergeProps } from '../../../utils/react';
 import {
   cloneElement,
   forwardRef,

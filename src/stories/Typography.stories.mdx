@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/addon-docs/blocks';
+import { Meta } from '@storybook/addon-docs';
 import { Paragraph, Title, Text, Link, Flow, Root, Space, Card } from '../index';
 
 <Meta title="UIKit/Typography" />
@@ -13,7 +13,7 @@ There are many ways to create typography elements like text labels and headings.
 
 ### Headings
 
-```
+```jsx
 <Title level={1}>Heading level 1</Title>
 <Title level={2}>Heading level 2</Title>
 <Title level={3}>Heading level 3</Title>
@@ -37,7 +37,7 @@ There are many ways to create typography elements like text labels and headings.
 
 Paragraphs with gaps between them.
 
-```
+```jsx
 <Paragraph>
   There are many ways to create typography elements like text labels and headings.
 </Paragraph>
@@ -59,7 +59,7 @@ Paragraphs with gaps between them.
 
 ### Text labels
 
-```
+```jsx
 <Text>Normal label</Text>
 <Text.Success>Success label</Text.Success>
 <Text.Danger>Danger label</Text.Danger>
@@ -83,7 +83,7 @@ Paragraphs with gaps between them.
 
 Use `!` prefix to open link in new tab.
 
-```
+```jsx
 <Link to="https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit</Link>
 | <Link to="!https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit in new tab</Link>
 ```
@@ -95,7 +95,7 @@ Use `!` prefix to open link in new tab.
 
 Use `@` prefix to navigate to the new page without using the Router.
 
-```
+```jsx
 <Link to="@">Reload this page</Link>
 | <Link to="@/">Move to the Main Page</Link>
 ```

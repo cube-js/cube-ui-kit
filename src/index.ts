@@ -5,7 +5,9 @@ import {
   CubeFormProps,
   Field,
   Form as _Form,
+  useForm,
   useFormProps,
+  CubeFormInstance,
 } from './components/forms/Form';
 
 import { CubeTextProps, Text } from './components/content/Text';
@@ -22,7 +24,7 @@ const _Button = Object.assign(Button, {
   Group: ButtonGroup,
 });
 
-const Form = Object.assign(_Form, { Item: Field });
+const Form = Object.assign(_Form, { Item: Field, useForm });
 
 export { Item } from '@react-stately/collections';
 
@@ -104,7 +106,7 @@ export type { CubeSwitchProps } from './components/forms/Switch/Switch';
 export { Radio } from './components/forms/RadioGroup/Radio';
 export type { CubeRadioProps } from './components/forms/RadioGroup/Radio';
 export { Form, Field, useFormProps };
-export type { CubeFormProps };
+export type { CubeFormProps, CubeFormInstance };
 export { ComboBox } from './components/pickers/ComboBox/ComboBox';
 export type { CubeComboBoxProps } from './components/pickers/ComboBox/ComboBox';
 export { Select, ListBoxPopup } from './components/pickers/Select/Select';

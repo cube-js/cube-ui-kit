@@ -1,0 +1,268 @@
+import { baseProps } from './lists/baseProps';
+import { Meta, Story, Canvas, ArgsTable } from "@storybook/addon-docs";
+import { Button, Root, Space, Card, Text, Block, Paragraph, Flow, Flex, Form, Field, Submit, Input, DialogForm, CubeFormInstance } from '../index';
+import { DialogFormApp } from './components/DialogFormApp';
+import { LABEL_POSITION_ARG, DISABLE_BASE_ARGS } from './FormFieldArgs';
+
+<Meta
+  title="UIKit/Forms/Form"
+  component={Form}
+  argTypes={{
+    ...DISABLE_BASE_ARGS,
+  }}/>
+
+# Form management
+
+Cube UI Kit Forms are designed after AntD Forms and [rc-field-form](https://field-form-react-component.vercel.app/) and have very similar API.
+
+## API
+
+### Form (CubeFormProps)
+
+<ArgsTable of={Form} exclude={baseProps}/>
+
+### Field (CubeFieldProps)
+
+<ArgsTable of={Field} exclude={baseProps}/>
+
+### useForm
+
+Form component default create an form instance by Form.useForm. But you can create it and pass to Form also. This allow you to call some function on the form instance.
+
+```typescript
+const Demo = () => {
+  const [form] = Form.useForm();
+  return <Form form={form} />;
+};
+```
+
+#### CubeFormInstance interface
+
+|Prop|Description|Type|Default|
+|----|----|----|----|
+|getFieldValue|Get field value by name path|(name: NamePath) => any
+|getFieldsValue|Get list of field values by name path list|(nameList?: (NamePath[]) => any) &vert; true
+|getFieldError|Get field errors by name path|(name: NamePath) => string[]
+|getFieldsError|Get list of field errors by name path list|(nameList?: NamePath[]) => FieldError[]
+|isFieldsTouched|Check if list of fields are touched|(nameList?: NamePath[], allTouched?: boolean) => boolean
+|isFieldTouched|Check if a field is touched|(name: NamePath) => boolean
+|isFieldValid|Check if a field is valid|(name: NamePath) => boolean
+|resetFields|Reset fields status|(fields?: NamePath[]) => void
+|setFields|Set fields status|(fields: CubeFieldData[]) => void
+|setFieldsValue|Set fields value|(values) => void
+|submit|Trigger form to validate and submit|() => void
+|validateFields|Trigger fields to validate|(nameList?: NamePath[]) => Promise
+
+#### CubeFieldData interface
+
+|Prop|Type|
+|----|----|
+|touched|boolean|
+|errors|string[]|
+|name|string &vert; number &vert; (string &vert; number)[]|
+|value|any|
+|rules|CubeValidationRule[]|
+
+## Known differences with AntD Forms
+
+- Form component
+  - `preserve` property is not yet implemented.
+  - `onSubmit` instead of `onSuccess`.
+  - `onSubmitFailed` instead of `onFailed`.
+  - `initialValues` instead of `defaultValues`.
+  - `onSubmit` can return promise. In that case the form and the submit button are in loading state until the promise is resolved.
+  - Arrays inside form data are not supported.
+- Field component
+  - It's a virtual wrapper.
+  - Nested properties are handled via field names with `.` notation. Also, you can specify the name via array like `name={['user', 'email']}`.
+  - Do not support `validating` state. (But validation rules can be async)
+
+## Usage
+
+### Login form
+
+An example of a simple login form with validation.
+
+```tsx
+import { Form, Field, Submit, Input } from '@cube-dev/ui-kit';
+import { Auth } from '../path/to/AuthService';
+
+// `Form.Item` is an alias for `Field`.
+
+export function LoginForm() {
+  async function onSubmit(data) {
+    await Auth.login(data); // { email, password }
+  }
+
+  return (
+    <Form
+      onSubmit={onSubmit}
+      requiredMark={false}
+    >
+      <Field
+        label="Email"
+        name="email"
+        rules={[
+          { required: true, message: 'E-mail required' },
+          { type: 'email', message: 'Please enter a valid e-mail' },
+        ]}
+      >
+        <Input.Text type="email" autoFocus />
+      </Field>
+
+      <Field
+        label="Password"
+        name="password"
+        rules={[{ required: true, message: 'Password required' }]}
+      >
+        <Input.Password type="password" />
+      </Field>
+
+      <Submit>
+        Submit
+      </Submit>
+    </Form>
+  );
+}
+```
+
+<Canvas>
+  <Story name="LoginForm">
+    {(args) => <Form
+      onSubmit={() => {
+        return new Promise((resolve) => {
+          setTimeout(resolve, 1000); // 1s of submitting
+        });
+      }}
+      requiredMark={false}
+      {...args}
+    >
+      <Field
+        label="Email"
+        name="email"
+        rules={[
+          { required: true, message: 'E-mail required' },
+          { type: 'email', message: 'Please enter a valid e-mail' },
+        ]}
+      >
+        <Input.Text type="email"/>
+      </Field>
+      <Field
+        label="Password"
+        name="password"
+        rules={[
+          { required: true, message: 'Password required' },
+          { min: 8, message: 'The password must be at least 8 characters' },
+        ]}
+      >
+        <Input.Password type="password"/>
+      </Field>
+      <Submit>
+        Submit
+      </Submit>
+    </Form>}
+  </Story>
+</Canvas>
+
+### Dialog form
+
+It's possible to create forms inside dialogs. The `DialogForm` contains all props of `Form` and `Dialog` components.
+
+<ArgsTable of={DialogForm} exclude={baseProps}/>
+
+Here is the example of usage:
+
+```tsx
+/* ConfirmDeletionDialogForm.tsx */
+import { ForwardedRef, forwardRef } from 'react';
+import {
+  CubeDialogFormRef,
+  DialogForm,
+  Field,
+  Paragraph,
+  Input,
+  Text,
+  CubeDialogFormProps
+} from '@cube-dev/ui-kit';
+
+interface ConfirmDeletionDialogFormProps extends Pick<CubeDialogFormProps, 'onSubmit' | 'onDismiss' | 'form'> {
+  name?: string;
+}
+
+export const ConfirmDeletionDialogForm = forwardRef((
+  props: ConfirmDeletionDialogFormProps, ref: ForwardedRef<CubeDialogFormRef>,
+) => {
+  let { name, onSubmit, onDismiss } = props;
+
+  return <DialogForm
+    ref={ref}
+    onSubmit={onSubmit}
+    onDismiss={onDismiss}
+    submitProps={{
+      label: 'Delete',
+      theme: 'danger',
+    }}
+    cancelProps={{
+      label: 'I changed my mind'
+    }}
+  >
+    <Paragraph>
+      To delete the instance, please, enter its full name: <Text.Strong>{name}</Text.Strong>
+    </Paragraph>
+
+    <Field
+      name="name"
+      rules={[{
+        required: true, message: 'This field is required',
+      }, {
+        async validator(rule, value) {
+          if (value !== name) {
+            throw new Error('Incorrect name');
+          }
+        }
+      }]}
+    >
+      <Input.Text placeholder="Enter the name of the instance"/>
+    </Field>
+  </DialogForm>
+});
+```
+
+Then you can use this component inside your application:
+
+```tsx
+/* DialogFormApp */
+import { useRef } from 'react';
+import { CubeDialogFormRef, Button } from '@cube-dev/ui-kit';
+import { ConfirmDeletionDialogForm } from './ConfirmDeletionDialogForm';
+
+export function DialogFormApp() {
+  const ConfirmDeletionDialogFormRef = useRef<CubeDialogFormRef>(null);
+
+  function onConfirm() {
+    console.log('Deletion is confirmed');
+  }
+
+  function onDismiss() {
+    console.log('Deletion is cancelled');
+  }
+
+  return <>
+    <Button onPress={() => ConfirmDeletionDialogFormRef?.current?.open()}>
+      Delete the instance
+    </Button>
+    <ConfirmDeletionDialogForm
+      ref={ConfirmDeletionDialogFormRef}
+      name="instanceName"
+      onSubmit={onConfirm}
+      onDismiss={onDismiss}
+    />
+  </>
+}
+```
+
+<Canvas>
+  <Story name="DialogFormApp">
+    <DialogFormApp/>
+  </Story>
+</Canvas>

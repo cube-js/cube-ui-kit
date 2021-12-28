@@ -1,4 +1,4 @@
-import { mergeProps } from '@react-aria/utils';
+import { mergeProps } from '../../utils/react/mergeProps';
 import {
   createContext,
   Children,

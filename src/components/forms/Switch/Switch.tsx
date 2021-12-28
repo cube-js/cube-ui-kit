@@ -8,7 +8,7 @@ import { BLOCK_STYLES, OUTER_STYLES } from '../../../styles/list';
 import { extractStyles } from '../../../utils/styles';
 import { Base } from '../../Base';
 import { useFocus } from '../../../utils/interactions';
-import { mergeProps } from '@react-aria/utils';
+import { mergeProps } from '../../../utils/react';
 import { filterBaseProps } from '../../../utils/filterBaseProps';
 import { useContextStyles } from '../../../providers/StylesProvider';
 import { HiddenInput } from '../../HiddenInput';

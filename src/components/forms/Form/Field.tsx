@@ -8,7 +8,7 @@ import {
 import { useFormProps } from './Form';
 import { mergeProps } from '../../../utils/react';
 import { OptionalFieldBaseProps, ValidationRule } from '../../../shared';
-import { FormStore } from './useForm';
+import { CubeFormInstance } from './useForm';
 import { FieldWrapper } from '../FieldWrapper';
 
 const ID_MAP = {};
@@ -99,20 +99,23 @@ export interface CubeFieldProps extends OptionalFieldBaseProps {
   id?: string;
   /** The id prefix for the field to avoid collisions between forms */
   idPrefix?: string;
-  children?: ReactElement | ((FormStore) => ReactElement);
+  children?: ReactElement | ((CubeFormInstance) => ReactElement);
+  /** Function that check whether to perform update of the form state. */
   shouldUpdate?: boolean | ((prevValues, nextValues) => boolean);
   /** Validation rules */
   rules?: ValidationRule[];
   /** The form instance */
-  form?: FormStore;
+  form?: CubeFormInstance;
   /** The message for the field or text for the error */
   message?: string;
+  /** Tooltip for the label that explains something. */
   tooltip?: ReactNode;
+  /** Field name. It's used as a key the form data. */
   name?: string[] | string;
 }
 
 interface CubeFullFieldProps extends CubeFieldProps {
-  form: FormStore;
+  form: CubeFormInstance;
 }
 
 interface CubeReplaceFieldProps extends CubeFieldProps {
@@ -222,11 +225,11 @@ export function Field(allProps: CubeFieldProps) {
 
   if (firstRunRef.current && defaultValue != null) {
     if (!field) {
-      form.createField(fieldName, false);
+      form.createField(fieldName, true);
     }
 
     if (field?.value == null) {
-      form.setFieldValue(fieldName, defaultValue, false, false);
+      form.setFieldValue(fieldName, defaultValue, false, true);
 
       field = form?.getFieldInstance(fieldName);
     }

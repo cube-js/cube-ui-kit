@@ -15,7 +15,7 @@ export default {
   component: TextArea,
   argTypes: {
     icon: {
-      defaultValue: false,
+      // defaultValue: false,
       description: 'Show the icon',
       control: {
         type: 'boolean',
@@ -26,21 +26,19 @@ export default {
       },
     },
     inputMode: {
-      defaultValue: 'none',
+      // defaultValue: 'none',
       description: 'Input type mode',
-      control: {
-        type: 'radio',
-        options: [
-          'none',
-          'text',
-          'tel',
-          'url',
-          'email',
-          'numeric',
-          'decimal',
-          'search',
-        ],
-      },
+      control: 'radio',
+      options: [
+        'none',
+        'text',
+        'tel',
+        'url',
+        'email',
+        'numeric',
+        'decimal',
+        'search',
+      ],
       table: {
         type: { summary: 'string' },
         defaultValue: { summary: 'none' },
@@ -54,22 +52,22 @@ export default {
     ...MESSAGE_ARG,
     ...PLACEHOLDER_ARG,
     defaultValue: {
-      defaultValue: '',
+      // defaultValue: '',
       control: 'text',
     },
     rows: {
-      defaultValue: 3,
+      // defaultValue: 3,
       description: 'Number of rows.',
       control: {
         type: 'number',
       },
       table: {
         type: { summary: 'number' },
-        defaultValue: { summary: 1 },
+        defaultValue: { summary: 3 },
       },
     },
     autoSize: {
-      defaultValue: false,
+      // defaultValue: false,
       description: 'Whether the input should be resized depend on the content.',
       control: {
         type: 'boolean',
