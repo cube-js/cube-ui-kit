@@ -23,6 +23,7 @@ const Overlay = styled.div`
   place-items: center;
   z-index: 1000;
   display: none;
+  white-space: normal;
 
   .cube-modal {
     --base-translate: ((50vh - 50%) / -3);

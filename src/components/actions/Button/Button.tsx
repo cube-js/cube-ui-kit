@@ -358,7 +358,6 @@ export const Button = forwardRef(
         {icon || isLoading ? (
           <Space
             gap="1x"
-            display="inline-flex"
             styles={{ verticalAlign: 'middle' }}
           >
             {!isLoading ? icon : <LoadingOutlined />}
