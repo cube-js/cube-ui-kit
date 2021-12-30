@@ -56,6 +56,8 @@ const DialogForm = (props: CubeDialogFormProps, ref: ForwardedRef<CubeDialogForm
     cancelProps,
     preserve,
     title,
+    size,
+    closeIcon,
   } = props;
 
   [form] = useForm(form);
@@ -78,7 +80,7 @@ const DialogForm = (props: CubeDialogFormProps, ref: ForwardedRef<CubeDialogForm
   }
 
   return <DialogContainer onDismiss={onLocalDismiss}>
-    {open && <Dialog qa={`${qa || ''}Dialog`} isDismissable={true}>
+    {open && <Dialog qa={`${qa || ''}Dialog`} isDismissable={true} size={size} closeIcon={closeIcon}>
       <Title>{title}</Title>
       <Divider/>
       <Content>
