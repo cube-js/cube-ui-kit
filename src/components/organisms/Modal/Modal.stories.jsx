@@ -47,6 +47,7 @@ const Template = ({ content, ...args }) => {
   const [inProp, setInProp] = useState(false);
 
   function close() {
+    console.log('close');
     setInProp(false);
   }
 

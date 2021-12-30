@@ -135,6 +135,8 @@ export function Modal(allProps: CubeModalProps) {
   }
 
   function close() {
+    if (!isVisible) return;
+
     if (onClose || onCancel) {
       if (isClosable) {
         // @ts-ignore
