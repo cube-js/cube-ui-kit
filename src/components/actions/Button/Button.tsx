@@ -356,10 +356,12 @@ export const Button = forwardRef(
         label={label}
       >
         {icon || isLoading ? (
-          <Space
-            gap="1x"
-            styles={{ verticalAlign: 'middle' }}
-          >
+          <Space styles={{
+            gap: '1x',
+            verticalAlign: 'middle',
+            placeContent: 'center',
+            placeItems: 'center',
+          }}>
             {!isLoading ? icon : <LoadingOutlined />}
             {children ? <div>{children}</div> : null}
           </Space>
