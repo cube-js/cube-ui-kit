@@ -8,6 +8,7 @@ import {
   LABEL_POSITION_ARG,
   PLACEHOLDER_ARG,
   VALIDATION_STATE_ARG,
+  AUTO_FOCUS_ARG,
 } from '../../../stories/FormFieldArgs';
 
 export default {
@@ -51,6 +52,7 @@ export default {
     ...LABEL_ARG,
     ...MESSAGE_ARG,
     ...PLACEHOLDER_ARG,
+    ...AUTO_FOCUS_ARG,
     defaultValue: {
       // defaultValue: '',
       control: 'text',

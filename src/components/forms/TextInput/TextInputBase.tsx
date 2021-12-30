@@ -266,6 +266,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
           hovered: isHovered,
           focused: isFocused,
         }}
+        autoFocus={autoFocus}
         data-size={size}
         styles={inputStyles}
       />
