@@ -103,7 +103,7 @@ const Template = ({ icon, ...props }) => {
 };
 
 export const Default = Template.bind({});
-Default.args = { disallowEmptySelection: true };
+Default.args = {};
 
 export const WithDefaultValue = Template.bind({});
 WithDefaultValue.args = { defaultSelectedKey: 'purple' };

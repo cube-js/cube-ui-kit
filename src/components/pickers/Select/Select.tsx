@@ -207,7 +207,6 @@ function Select<T extends object>(
     inputStyles,
     optionStyles,
     suffix,
-    disallowEmptySelection,
     listBoxStyles,
     overlayStyles,
     message,
@@ -333,7 +332,6 @@ function Select<T extends object>(
           overlayProps={overlayProps}
           placement={placement}
           state={state}
-          disallowEmptySelection={disallowEmptySelection}
           listBoxStyles={listBoxStyles}
           overlayStyles={overlayStyles}
           optionStyles={optionStyles}
@@ -373,7 +371,6 @@ export function ListBoxPopup({
   overlayStyles,
   optionStyles,
   overlayProps: parentOverlayProps,
-  disallowEmptySelection,
   shouldUseVirtualFocus = false,
   placement,
   minWidth,
@@ -383,7 +380,6 @@ export function ListBoxPopup({
   let { listBoxProps } = useListBox(
     {
       autoFocus: state.focusStrategy || true,
-      disallowEmptySelection,
       shouldUseVirtualFocus,
       ...otherProps,
     },

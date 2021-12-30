@@ -79,8 +79,12 @@ const DialogForm = (props: CubeDialogFormProps, ref: ForwardedRef<CubeDialogForm
     setOpen(false);
   }
 
-  return <DialogContainer onDismiss={onLocalDismiss}>
-    {open && <Dialog qa={`${qa || ''}Dialog`} isDismissable={true} size={size} closeIcon={closeIcon}>
+  return <DialogContainer onDismiss={onLocalDismiss} isDismissable>
+    {open && <Dialog
+      qa={`${qa || ''}Dialog`}
+      size={size}
+      closeIcon={closeIcon}
+    >
       <Title>{title}</Title>
       <Divider/>
       <Content>

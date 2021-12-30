@@ -51,11 +51,18 @@ export interface FormBaseProps {
 }
 
 export interface FormFieldProps extends FormBaseProps {
+  /** Whether the field is inside the form. Private field. */
   insideForm?: boolean;
+  /** A text label of the field */
   label?: ReactNode;
+  /** Custom label props */
   labelProps?: Props;
+  /** Message for the field. Some additional information or error notice. */
   message?: ReactNode;
+  /** A tooltip that is shown inside the label */
   tooltip?: ReactNode;
+  /** Whether the element should receive focus on render. */
+  autoFocus?: boolean;
 }
 
 export type ValidationRuleBase = { [key: string]: any } & {

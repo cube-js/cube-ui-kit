@@ -10,7 +10,7 @@ type HandlerQueueItem = {
 };
 
 function isSelector(key) {
-  return key.startsWith('&') || key.startsWith('.') || key.startsWith('[');
+  return key.startsWith('&') || key.startsWith('.') || key.match(/^[A-Z]/);
 }
 
 function getSelector(key) {
@@ -22,8 +22,8 @@ function getSelector(key) {
     return `& ${key}`;
   }
 
-  if (key.startsWith('[')) {
-    return `& [data-element="${key.slice(1, -1)}"]`;
+  if (key.match(/^[A-Z]/)) {
+    return `& [data-element="${key}"]`;
   }
 
   return null;

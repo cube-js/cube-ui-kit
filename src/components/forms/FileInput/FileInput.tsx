@@ -32,7 +32,7 @@ const DEFAULT_WRAPPER_STYLES: Styles = {
   cursor: 'pointer',
   overflow: 'hidden',
 
-  '[Button]': {
+  Button: {
     radius: 'round',
     fill: {
       '': '#light',
@@ -44,15 +44,15 @@ const DEFAULT_WRAPPER_STYLES: Styles = {
     transition: 'fill',
   },
 
-  '[Placeholder]': {
+  Placeholder: {
     color: '#dark-02',
   },
 
-  '[Value]': {
+  Value: {
     color: '#dark-02',
   },
 
-  '[Input]': {
+  Input: {
     position: 'absolute',
     top: '-50px',
     right: 0,

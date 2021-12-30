@@ -20,6 +20,7 @@ export const ConfirmDeletionDialogForm = forwardRef((
 
   return <DialogForm
     ref={ref}
+    title="Delete Deployment"
     onSubmit={onSubmit}
     onDismiss={onDismiss}
     submitProps={{

@@ -75,7 +75,9 @@ export const CUSTOM_UNITS = {
   rp: 'var(--rem-pixel)',
   gp: 'var(--column-gap)',
   // global setting
-  wh: 'var(--window-height)',
+  wh: function wh(num) {
+    return `calc(var(--cube-visual-viewport-height) / 100 * ${num})`;
+  },
   // span unit for GridProvider
   sp: function spanWidth(num) {
     return `((${num} * var(--column-width)) + (${

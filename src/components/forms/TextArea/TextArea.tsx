@@ -35,7 +35,7 @@ function TextArea(props: CubeTextAreaProps, ref) {
     props.defaultValue,
     () => {},
   );
-  let inputRef = useRef<HTMLInputElement>(null);
+  let inputRef = useRef<HTMLTextAreaElement>(null);
 
   let onHeightChange = useCallback(() => {
     if (autoSize && inputRef.current) {

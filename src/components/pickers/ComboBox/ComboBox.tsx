@@ -84,7 +84,7 @@ export interface CubeComboBoxProps<T>
     CollectionBase<T> {
   multiLine?: boolean;
   autoComplete?: string;
-  inputRef?: RefObject<HTMLInputElement | HTMLTextAreaElement>;
+  inputRef?: RefObject<HTMLInputElement>;
   /** The ref for the list box popover. */
   popoverRef?: RefObject<HTMLDivElement>;
   /** The ref for the list box. */
@@ -123,7 +123,6 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
     optionStyles,
     triggerStyles,
     suffix,
-    disallowEmptySelection,
     listBoxStyles,
     overlayStyles,
     hideTrigger,
@@ -318,7 +317,6 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
           shouldUseVirtualFocus
           placement={placement}
           state={state}
-          disallowEmptySelection={disallowEmptySelection}
           listBoxStyles={listBoxStyles}
           overlayStyles={overlayStyles}
           optionStyles={optionStyles}

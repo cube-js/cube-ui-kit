@@ -113,7 +113,7 @@ export interface CubeTextInputBaseProps
   /** Direct input wrapper props */
   wrapperProps?: Props;
   /** The input ref */
-  inputRef?: RefObject<HTMLInputElement>;
+  inputRef?: RefObject<HTMLInputElement | HTMLTextAreaElement>;
   /** The wrapper ref */
   wrapperRef?: RefObject<HTMLDivElement>;
   /** Whether the input has the loading status */
