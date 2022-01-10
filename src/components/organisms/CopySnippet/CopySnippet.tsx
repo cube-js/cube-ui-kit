@@ -1,15 +1,14 @@
 import copy from 'clipboard-copy';
-import { Block } from '../../Block';
 import { Button } from '../../actions/Button/Button';
 import { Card, CubeCardProps } from '../../content/Card/Card';
 import { Grid } from '../../layout/Grid';
+import { styled } from '../../../styled';
 import {
   CubePrismCodeProps,
   PrismCode,
 } from '../../content/PrismCode/PrismCode';
 import { notification } from '../../../services/notification';
 import { CopyOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
 import { Styles } from '../../../styles/types';
 import { CSSProperties } from 'react';
 import { TooltipTrigger } from '../../overlays/Tooltip/TooltipTrigger';
@@ -23,51 +22,48 @@ const POSITION_ACTION: CSSProperties = {
   zIndex: 1,
 };
 
-const StyledBlock = styled(Block)`
-  position: relative;
-  overflow: ${({ showScroll }) => (showScroll ? 'auto hidden' : 'hidden')};
-  max-width: 100%;
-  ${({ nowrap }) => (nowrap ? 'white-space: nowrap;' : '')}
+const StyledBlock = styled({
+  styles: {
+    position: 'relative',
+    overflow: {
+      '': 'hidden',
+      scroll: 'auto hidden',
+    },
+    maxWidth: '100%',
+    whiteSpace: {
+      '': 'initial',
+      nowrap: 'nowrap',
+    },
+    styledScrollbar: true,
 
-  ${({ serif }) => (serif ? '&&& code { font-family: var(--font); }' : '')}
-
-  ::-webkit-scrollbar-track {
-    background: var(--grey-light-color);
+    '& code': {
+      font: {
+        '': 'monospace',
+        serif: true,
+      },
+    },
   }
+});
 
-  ::-webkit-scrollbar-thumb {
-    border-radius: 6px;
-    background: var(--dark-04-color);
-    background-clip: padding-box;
-    border: 3px solid transparent;
+const ButtonContainer = styled({
+  styles: {
+    position: 'relative',
+
+    '&::after': {
+      display: {
+        '': 'none',
+        overlay: 'block',
+      },
+      content: '""',
+      width: '2x',
+      position: 'absolute',
+      left: '-2x',
+      top: 0,
+      bottom: 0,
+      backgroundImage: 'linear-gradient(to right,rgba(var(--context-fill-color-rgb),0),rgba(var(--context-fill-color-rgb),1))',
+    },
   }
-
-  ::-webkit-scrollbar-corner {
-    background-color: transparent;
-  }
-
-  ::-webkit-scrollbar {
-    width: 12px;
-    height: 12px;
-  }
-`;
-const ButtonContainer = styled(Block)`
-  position: relative;
-
-  ${({ overlay }) =>
-    overlay
-      ? `::after {
-      display: block;
-      content: '';
-      width: 16px;
-      position: absolute;
-      left: -16px;
-      top: 0;
-      bottom: 0;
-      background-image: linear-gradient(to right, rgba(var(--context-fill-color-rgb), 0), rgba(var(--context-fill-color-rgb), 1));
-    }`
-      : ''}
-`;
+});
 
 export interface CubeCopySnippetProps extends CubeCardProps {
   padding?: Styles['padding'];
@@ -118,7 +114,9 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
     notification.success(`${codeTitle} copied`);
   }
 
-  const multiline = (code || '').includes('\n') && !nowrap;
+  code = (code || '').replace(/\n$/, '');
+
+  const multiline = code.includes('\n') && !nowrap;
   const formattedCode = code
     .split(/\n/g)
     .map((line) => `${prefix || ''}${line} `)
@@ -136,7 +134,6 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
       radius="1r"
       border={0}
       padding={0}
-      style={{ position: 'relative' }}
       styles={styles}
       {...props}
     >
@@ -147,11 +144,13 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
         style={{ position: 'relative', overflow: 'hidden' }}
       >
         <StyledBlock
-          nowrap={nowrap}
-          multiline={multiline}
-          showScroll={showScroll}
-          serif={serif}
-          padding={padding}
+          mods={{
+            nowrap,
+            multiline,
+            scroll: showScroll,
+            serif,
+          }}
+          styles={{ padding }}
         >
           <PrismCode
             style={{ margin: 0, overflow: 'visible' }}
@@ -159,7 +158,7 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
             language={language || 'javascript'}
           />
         </StyledBlock>
-        <ButtonContainer padding={padding} overlay={showOverlay} />
+        <ButtonContainer styles={{ padding }} mods={{ overlay: showOverlay }} />
         <Button
           aria-label={`Copy ${codeTitle}`}
           type="clear"
@@ -167,6 +166,7 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
             padding: '1x 1.5x',
             fontWeight: 500,
             radius: multiline || showScroll ? '0 1r' : '0 1r 1r 0',
+            placeSelf: !multiline && !showScroll ? 'stretch' : 'none',
             border: '#clear',
             outline: {
               '': '#purple-03.0',
@@ -175,9 +175,8 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
           }}
           style={POSITION_ACTION}
           onPress={onCopy}
-        >
-          <CopyOutlined />
-        </Button>
+          icon={<CopyOutlined />}
+        />
       </Grid>
     </Card>
   );
