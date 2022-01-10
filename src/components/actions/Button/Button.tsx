@@ -161,7 +161,6 @@ const DEFAULT_STYLES_BY_TYPE: { [key: string]: Styles } = {
       pressed: '#purple',
       '[disabled]': '#dark.30',
     },
-    textAlign: 'left',
     padding: '(1x - 1px) (1.5x - 1px)',
     height: 'min (2x + 1lh)',
   },
