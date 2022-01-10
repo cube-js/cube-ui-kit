@@ -7,21 +7,23 @@ import {
   OUTER_STYLES,
   DIMENSION_STYLES,
   TEXT_STYLES,
-  POSITION_STYLES
+  POSITION_STYLES,
 } from '../../styles/list';
 
-const allStyles: string[] = Array.from(new Set([
-  ...BASE_STYLES,
-  ...POSITION_STYLES,
-  ...CONTAINER_STYLES,
-  ...BLOCK_STYLES,
-  ...COLOR_STYLES,
-  ...FLOW_STYLES,
-  ...OUTER_STYLES,
-  ...DIMENSION_STYLES,
-  ...TEXT_STYLES,
-  ...POSITION_STYLES,
-]));
+const allStyles: string[] = Array.from(
+  new Set([
+    ...BASE_STYLES,
+    ...POSITION_STYLES,
+    ...CONTAINER_STYLES,
+    ...BLOCK_STYLES,
+    ...COLOR_STYLES,
+    ...FLOW_STYLES,
+    ...OUTER_STYLES,
+    ...DIMENSION_STYLES,
+    ...TEXT_STYLES,
+    ...POSITION_STYLES,
+  ]),
+);
 
 export const baseProps = [
   'qa',

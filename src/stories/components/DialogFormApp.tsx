@@ -13,15 +13,17 @@ export function DialogFormApp() {
     console.log('Deletion is cancelled');
   }
 
-  return <>
-    <Button onPress={() => ConfirmDeletionDialogFormRef?.current?.open()}>
-      Delete the instance
-    </Button>
-    <ConfirmDeletionDialogForm
-      ref={ConfirmDeletionDialogFormRef}
-      name="instanceName"
-      onSubmit={onConfirm}
-      onDismiss={onDismiss}
-    />
-  </>
+  return (
+    <>
+      <Button onPress={() => ConfirmDeletionDialogFormRef?.current?.open()}>
+        Delete the instance
+      </Button>
+      <ConfirmDeletionDialogForm
+        ref={ConfirmDeletionDialogFormRef}
+        name="instanceName"
+        onSubmit={onConfirm}
+        onDismiss={onDismiss}
+      />
+    </>
+  );
 }

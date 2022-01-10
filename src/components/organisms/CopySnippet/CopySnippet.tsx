@@ -42,7 +42,7 @@ const StyledBlock = styled({
         serif: true,
       },
     },
-  }
+  },
 });
 
 const ButtonContainer = styled({
@@ -60,9 +60,10 @@ const ButtonContainer = styled({
       left: '-2x',
       top: 0,
       bottom: 0,
-      backgroundImage: 'linear-gradient(to right,rgba(var(--context-fill-color-rgb),0),rgba(var(--context-fill-color-rgb),1))',
+      backgroundImage:
+        'linear-gradient(to right,rgba(var(--context-fill-color-rgb),0),rgba(var(--context-fill-color-rgb),1))',
     },
-  }
+  },
 });
 
 export interface CubeCopySnippetProps extends CubeCardProps {

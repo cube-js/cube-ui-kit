@@ -50,10 +50,12 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
         isDisabled={isDisabled}
         labelPosition={labelPosition}
         requiredMark={requiredMark}
-        labelStyles={{
-          // width: '200px',
-          // textAlign: 'right',
-        }}
+        labelStyles={
+          {
+            // width: '200px',
+            // textAlign: 'right',
+          }
+        }
         onSubmit={(v) => {
           console.log('onSubmit:', v);
         }}
@@ -83,13 +85,13 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
                 return value.length >= 8
                   ? Promise.resolve()
                   : Promise.reject(
-                    'This field should be at least 8 symbols long',
-                  );
+                      'This field should be at least 8 symbols long',
+                    );
               },
             }),
           ]}
         >
-          <TextInput label="Text field"/>
+          <TextInput label="Text field" />
         </Field>
         <Field label="Custom field" tooltip="What?">
           <Block>Test</Block>
@@ -109,12 +111,16 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
             return !!email;
           }}
         >
-          <TextInput type="email" label="Email field"/>
+          <TextInput type="email" label="Email field" />
         </Field>
         <Field name="password">
-          <PasswordInput label="Password field"/>
+          <PasswordInput label="Password field" />
         </Field>
-        <Field name={['select', 'one']} label="Select field" tooltip="Additional field description">
+        <Field
+          name={['select', 'one']}
+          label="Select field"
+          tooltip="Additional field description"
+        >
           <Select>
             <Item key="one">One</Item>
             <Item key="two">Two</Item>
@@ -155,19 +161,19 @@ const Template = ({ isDisabled, labelPosition, requiredMark }) => {
           name="checkbox"
           rules={[{ required: true, message: 'This field is required' }]}
         >
-          <Checkbox label="Checkbox field"/>
+          <Checkbox label="Checkbox field" />
         </Field>
         <Field
           name="switch"
           rules={[{ required: true, message: 'This field is required' }]}
         >
-          <Switch label="Switch field"/>
+          <Switch label="Switch field" />
         </Field>
         <Field
           name="number"
           rules={[{ required: true, message: 'This field is required' }]}
         >
-          <NumberInput label="Number field" minValue={-1}/>
+          <NumberInput label="Number field" minValue={-1} />
         </Field>
         <Submit>Submit</Submit>
       </Form>
@@ -290,34 +296,41 @@ const TemplateDialog = (args) => {
     deleteDeploymentFormRef?.current?.open();
   }
 
-  return <>
-    <Button onPress={onPress}>Open Modal</Button>
-    <DialogForm
-      ref={deleteDeploymentFormRef}
-      onSubmit={data => console.log('Dialog Form Submit', data)}
-      submitProps={{
-        theme: 'danger',
-        label: 'Delete',
-      }}
-    >
-      <Paragraph>
-        Are you sure you want to permanently delete&nbsp;
-        <Text.Strong style={{ whiteSpace: 'pre' }}>deployment</Text.Strong>?
-      </Paragraph>
-      <Form.Item
-        name="name"
-        rules={[{
-          validator(rule, value) {
-            return value === 'deployment'
-              ? Promise.resolve()
-              : Promise.reject('Please enter your deployment name!');
-          },
-        }]}
+  return (
+    <>
+      <Button onPress={onPress}>Open Modal</Button>
+      <DialogForm
+        ref={deleteDeploymentFormRef}
+        onSubmit={(data) => console.log('Dialog Form Submit', data)}
+        submitProps={{
+          theme: 'danger',
+          label: 'Delete',
+        }}
       >
-        <Input placeholder="ENTER DEPLOYMENT NAME" data-qa="DeleteDeploymentName"/>
-      </Form.Item>
-    </DialogForm>
-  </>;
+        <Paragraph>
+          Are you sure you want to permanently delete&nbsp;
+          <Text.Strong style={{ whiteSpace: 'pre' }}>deployment</Text.Strong>?
+        </Paragraph>
+        <Form.Item
+          name="name"
+          rules={[
+            {
+              validator(rule, value) {
+                return value === 'deployment'
+                  ? Promise.resolve()
+                  : Promise.reject('Please enter your deployment name!');
+              },
+            },
+          ]}
+        >
+          <Input
+            placeholder="ENTER DEPLOYMENT NAME"
+            data-qa="DeleteDeploymentName"
+          />
+        </Form.Item>
+      </DialogForm>
+    </>
+  );
 };
 
 export const Default = Template.bind({});

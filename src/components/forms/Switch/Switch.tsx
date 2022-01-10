@@ -150,10 +150,7 @@ function Switch(props: CubeSwitchProps, ref) {
   let { inputProps } = useSwitch(props, useToggleState(props), inputRef);
 
   const switchField = (
-    <Base
-      qa={`${qa || 'Switch'}Wrapper`}
-      styles={{ position: 'relative' }}
-    >
+    <Base qa={`${qa || 'Switch'}Wrapper`} styles={{ position: 'relative' }}>
       <HiddenInput
         data-qa={qa || 'Switch'}
         {...mergeProps(inputProps, focusProps)}

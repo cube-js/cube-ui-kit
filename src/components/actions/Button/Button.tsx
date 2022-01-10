@@ -351,9 +351,7 @@ export const Button = forwardRef(
         styles={styles}
         label={label}
       >
-        {icon || isLoading ? (
-          !isLoading ? icon : <LoadingOutlined />
-        ) : null}
+        {icon || isLoading ? !isLoading ? icon : <LoadingOutlined /> : null}
         {children}
       </Action>
     );

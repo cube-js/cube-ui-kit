@@ -108,15 +108,18 @@ function FieldWrapper(props, ref) {
           {...labelProps}
         >
           {label}
-          {tooltip ? <>
-            &nbsp;<TooltipProvider
-              title={tooltip}
-              activeWrap
-              width="initial max-content 40x"
-            >
-              <InfoCircleOutlined style={{ color: 'var(--primary-color)' }} />
-            </TooltipProvider>
-          </> : null}
+          {tooltip ? (
+            <>
+              &nbsp;
+              <TooltipProvider
+                title={tooltip}
+                activeWrap
+                width="initial max-content 40x"
+              >
+                <InfoCircleOutlined style={{ color: 'var(--primary-color)' }} />
+              </TooltipProvider>
+            </>
+          ) : null}
         </Label>
       )}
       {Component}

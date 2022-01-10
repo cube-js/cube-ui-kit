@@ -2,7 +2,11 @@ import { CubeDialogProps, Dialog } from './Dialog';
 import { CubeDialogTriggerProps, DialogTrigger } from './DialogTrigger';
 import { api } from './api';
 import { CubeDialogContainerProps, DialogContainer } from './DialogContainer';
-import { CubeDialogFormRef, CubeDialogFormProps, DialogForm } from './DialogForm';
+import {
+  CubeDialogFormRef,
+  CubeDialogFormProps,
+  DialogForm,
+} from './DialogForm';
 
 const _Dialog = Object.assign(Dialog, {
   confirm: (options) => {
