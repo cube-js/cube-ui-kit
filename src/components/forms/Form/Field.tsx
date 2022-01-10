@@ -1,8 +1,10 @@
 import {
   Children,
   cloneElement,
-  ReactElement, ReactNode,
-  useEffect, useRef,
+  ReactElement,
+  ReactNode,
+  useEffect,
+  useRef,
   useState,
 } from 'react';
 import { useFormProps } from './Form';
@@ -148,7 +150,8 @@ export function Field(allProps: CubeFieldProps) {
     tooltip,
   } = props;
   const nonInput = !name;
-  const fieldName: string = name != null ? (Array.isArray(name) ? name.join('.') : name) : '';
+  const fieldName: string
+    = name != null ? (Array.isArray(name) ? name.join('.') : name) : '';
 
   let firstRunRef = useRef(true);
   let [fieldId, setFieldId] = useState(
@@ -194,16 +197,18 @@ export function Field(allProps: CubeFieldProps) {
   let child = Children.only(children);
 
   if (nonInput) {
-    return <FieldWrapper
-      validationState={validationState}
-      necessityIndicator={necessityIndicator}
-      necessityLabel={necessityLabel}
-      isRequired={isRequired}
-      label={label}
-      tooltip={tooltip}
-      message={message}
-      Component={child}
-    />
+    return (
+      <FieldWrapper
+        validationState={validationState}
+        necessityIndicator={necessityIndicator}
+        necessityLabel={necessityLabel}
+        isRequired={isRequired}
+        label={label}
+        tooltip={tooltip}
+        message={message}
+        Component={child}
+      />
+    );
   }
 
   if (!fieldName) {
@@ -259,12 +264,13 @@ export function Field(allProps: CubeFieldProps) {
       const fieldsValue = form.getFieldsValue();
 
       // check if we should update the value of the field
-      const shouldNotBeUpdated = typeof shouldUpdate === 'boolean'
-        ? !shouldUpdate
-        : !shouldUpdate(fieldsValue, {
-          ...fieldsValue,
-          [fieldName]: val,
-        });
+      const shouldNotBeUpdated
+        = typeof shouldUpdate === 'boolean'
+          ? !shouldUpdate
+          : !shouldUpdate(fieldsValue, {
+              ...fieldsValue,
+              [fieldName]: val,
+            });
 
       if (shouldNotBeUpdated) {
         return;

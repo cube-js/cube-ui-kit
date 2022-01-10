@@ -18,7 +18,7 @@ function setValue(obj, path, value) {
 
   while (a.length - 1) {
     let n = a.shift();
-    if (!(n in o)) o[n] = {}
+    if (!(n in o)) o[n] = {};
     o = o[n];
   }
   o[a[0]] = value;
@@ -65,7 +65,12 @@ export class CubeFormInstance {
     }
   }
 
-  setFieldsValue(newData: { [key: string]: any }, touched?: boolean, skipRender?: boolean, createFields = false) {
+  setFieldsValue(
+    newData: { [key: string]: any },
+    touched?: boolean,
+    skipRender?: boolean,
+    createFields = false,
+  ) {
     let flag = false;
 
     Object.keys(newData).forEach((name) => {
@@ -136,7 +141,12 @@ export class CubeFormInstance {
     }, {});
   }
 
-  setFieldValue(name: string, value: any, touched = false, skipRender?: boolean) {
+  setFieldValue(
+    name: string,
+    value: any,
+    touched = false,
+    skipRender?: boolean,
+  ) {
     const field = this.fields[name];
 
     if (!field || isEqual(value, field.value)) return;
@@ -167,7 +177,9 @@ export class CubeFormInstance {
   resetFields(names?: string[], skipRender?: boolean): void {
     const fieldsValue = this.getFieldsValue();
     const fieldNames = Object.keys({ ...fieldsValue, ...this.initialFields });
-    const filteredFieldNames = names ? fieldNames.filter(name => names.includes(name)) : fieldNames;
+    const filteredFieldNames = names
+      ? fieldNames.filter((name) => names.includes(name))
+      : fieldNames;
 
     const values = filteredFieldNames.reduce((map, name) => {
       if (name in this.initialFields) {
@@ -208,7 +220,7 @@ export class CubeFormInstance {
 
   validateFields(list?: string[]): Promise<any> {
     const fieldsList = list || Object.keys(this.fields);
-    const errorList: { name: string, errors: string[] }[] = [];
+    const errorList: { name: string; errors: string[] }[] = [];
 
     return Promise.allSettled(
       fieldsList.map((name) => {
@@ -218,14 +230,13 @@ export class CubeFormInstance {
           return Promise.reject();
         });
       }),
-    )
-      .then(() => {
-        if (errorList.length) {
-          return Promise.reject(errorList);
-        }
+    ).then(() => {
+      if (errorList.length) {
+        return Promise.reject(errorList);
+      }
 
-        return this.getFormData();
-      });
+      return this.getFormData();
+    });
   }
 
   isFieldValid(name: string): boolean {

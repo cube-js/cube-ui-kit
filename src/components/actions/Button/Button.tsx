@@ -1,6 +1,5 @@
 import { forwardRef, ReactNode } from 'react';
 import { Action, CubeActionProps } from '../Action';
-import { Space } from '../../layout/Space';
 import { LoadingOutlined } from '@ant-design/icons';
 import { useContextStyles } from '../../../providers/StylesProvider';
 import { FocusableRef } from '@react-types/shared';
@@ -44,9 +43,6 @@ export function provideStyles({
           padding: '0',
           width: '(2.5x + 1lh)',
           height: '(2.5x + 1lh)',
-          display: 'grid',
-          placeItems: 'center',
-          placeContent: 'center',
         }
       : null),
   };
@@ -165,7 +161,6 @@ const DEFAULT_STYLES_BY_TYPE: { [key: string]: Styles } = {
       pressed: '#purple',
       '[disabled]': '#dark.30',
     },
-    textAlign: 'left',
     padding: '(1x - 1px) (1.5x - 1px)',
     height: 'min (2x + 1lh)',
   },
@@ -278,8 +273,11 @@ const STYLES_BY_SIZE = {
 };
 
 const DEFAULT_STYLES = {
-  display: 'inline-block',
+  display: 'inline-grid',
   placeItems: 'center stretch',
+  placeContent: 'center',
+  gap: '1x',
+  flow: 'column',
   radius: true,
   fontWeight: 500,
   preset: 'default',
@@ -289,9 +287,7 @@ const DEFAULT_STYLES = {
   '& .anticon.anticon-loading': {
     transition:
       'display .2s steps(1, start), margin .2s linear, opacity .2s linear',
-    marginTop: '-7px',
-    marginBottom: '-7px',
-    lineHeight: 0,
+    // lineHeight: 0,
   },
 } as Styles;
 
@@ -355,19 +351,8 @@ export const Button = forwardRef(
         styles={styles}
         label={label}
       >
-        {icon || isLoading ? (
-          <Space styles={{
-            gap: '1x',
-            verticalAlign: 'middle',
-            placeContent: 'center',
-            placeItems: 'center',
-          }}>
-            {!isLoading ? icon : <LoadingOutlined />}
-            {children ? <div>{children}</div> : null}
-          </Space>
-        ) : (
-          children
-        )}
+        {icon || isLoading ? !isLoading ? icon : <LoadingOutlined /> : null}
+        {children}
       </Action>
     );
   },

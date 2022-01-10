@@ -33,7 +33,8 @@ import { Block } from '../../Block';
 import { Styles } from '../../../styles/types';
 import {
   BaseProps,
-  BlockStyleProps, DimensionStyleProps,
+  BlockStyleProps,
+  DimensionStyleProps,
   PositionStyleProps,
   Props,
 } from '../../types';
@@ -288,10 +289,12 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
         opacity={isDisabled ? '@disabled-opacity' : false}
       >
         {suffixPosition === 'before' ? suffix : null}
-        {(validationState && !isLoading || isLoading) ? <Space gap={false} padding={`0 ${suffix ? '1x' : '1.5x'} 0 0`}>
-          {validationState && !isLoading ? validation : null}
-          {isLoading && <LoadingOutlined />}
-        </Space> : null}
+        {(validationState && !isLoading) || isLoading ? (
+          <Space gap={false} padding={`0 ${suffix ? '1x' : '1.5x'} 0 0`}>
+            {validationState && !isLoading ? validation : null}
+            {isLoading && <LoadingOutlined />}
+          </Space>
+        ) : null}
         {suffixPosition === 'after' ? suffix : null}
       </Suffix>
     </Base>

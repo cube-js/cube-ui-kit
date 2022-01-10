@@ -10,7 +10,9 @@ import { Submit } from '../../actions/Button/Submit';
 import { Button, CubeButtonProps } from '../../actions/Button/Button';
 import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
 
-export interface CubeDialogFormProps extends CubeDialogProps, Omit<CubeFormProps, 'role'> {
+export interface CubeDialogFormProps
+  extends CubeDialogProps,
+    Omit<CubeFormProps, 'role'> {
   /** Whether the submit button has a `danger` theme */
   danger?: boolean;
   /** Properties for submit button. Use `label` to change text. */
@@ -30,7 +32,10 @@ export interface CubeDialogFormRef {
   close: () => void;
 }
 
-const DialogForm = (props: CubeDialogFormProps, ref: ForwardedRef<CubeDialogFormRef>) => {
+const DialogForm = (
+  props: CubeDialogFormProps,
+  ref: ForwardedRef<CubeDialogFormRef>,
+) => {
   let {
     qa,
     name,
@@ -79,44 +84,43 @@ const DialogForm = (props: CubeDialogFormProps, ref: ForwardedRef<CubeDialogForm
     setOpen(false);
   }
 
-  return <DialogContainer onDismiss={onLocalDismiss} isDismissable>
-    {open && <Dialog
-      qa={`${qa || ''}Dialog`}
-      size={size}
-      closeIcon={closeIcon}
-    >
-      <Title>{title}</Title>
-      <Divider/>
-      <Content>
-        <Form
-          qa={qa || 'DialogForm'}
-          form={form}
-          name={name}
-          onSubmit={async(data) => {
-            await onSubmit?.(data);
-            setOpen(false);
+  return (
+    <DialogContainer onDismiss={onLocalDismiss} isDismissable>
+      {open && (
+        <Dialog qa={`${qa || ''}Dialog`} size={size} closeIcon={closeIcon}>
+          <Title>{title}</Title>
+          <Divider />
+          <Content>
+            <Form
+              qa={qa || 'DialogForm'}
+              form={form}
+              name={name}
+              onSubmit={async(data) => {
+                await onSubmit?.(data);
+                setOpen(false);
 
-            if (!preserve && form) {
-              form.resetFields();
-            }
-          }}
-          onSubmitFailed={onSubmitFailed}
-          defaultValues={defaultValues}
-          onValuesChange={onValuesChange}
-          labelStyles={labelStyles}
-          labelPosition={labelPosition}
-          requiredMark={requiredMark}
-          isRequired={isRequired}
-          necessityIndicator={necessityIndicator}
-          necessityLabel={necessityLabel}
-          isReadOnly={isReadOnly}
-          validationState={validationState}
-          validateTrigger={validateTrigger}
-        >
-          {typeof children === 'function' ? children(onLocalDismiss) : children}
-          {
-            !noActions
-              ? <ButtonGroup>
+                if (!preserve && form) {
+                  form.resetFields();
+                }
+              }}
+              onSubmitFailed={onSubmitFailed}
+              defaultValues={defaultValues}
+              onValuesChange={onValuesChange}
+              labelStyles={labelStyles}
+              labelPosition={labelPosition}
+              requiredMark={requiredMark}
+              isRequired={isRequired}
+              necessityIndicator={necessityIndicator}
+              necessityLabel={necessityLabel}
+              isReadOnly={isReadOnly}
+              validationState={validationState}
+              validateTrigger={validateTrigger}
+            >
+              {typeof children === 'function'
+                ? children(onLocalDismiss)
+                : children}
+              {!noActions ? (
+                <ButtonGroup>
                   <Submit
                     qa={`${qa || ''}SubmitButton`}
                     theme={danger ? 'danger' : undefined}
@@ -130,12 +134,13 @@ const DialogForm = (props: CubeDialogFormProps, ref: ForwardedRef<CubeDialogForm
                     {...(cancelProps || {})}
                   />
                 </ButtonGroup>
-              : undefined
-          }
-        </Form>
-      </Content>
-    </Dialog>}
-  </DialogContainer>;
+              ) : undefined}
+            </Form>
+          </Content>
+        </Dialog>
+      )}
+    </DialogContainer>
+  );
 };
 
 /**

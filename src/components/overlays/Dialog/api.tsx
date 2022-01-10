@@ -47,7 +47,9 @@ export const api: DialogService = {
 
       this._render([]);
     } else {
-      console.warn('Cube UI Kit: unable to create a Modal because the Root component is not found.');
+      console.warn(
+        'Cube UI Kit: unable to create a Modal because the Root component is not found.',
+      );
     }
   },
   render() {
@@ -110,7 +112,12 @@ export const api: DialogService = {
                   {...options}
                   key={id}
                 >
-                  {typeof content === 'function' ? content(() => this.resolve(item), () => this.reject(item)) : content}
+                  {typeof content === 'function'
+                    ? content(
+                        () => this.resolve(item),
+                        () => this.reject(item),
+                      )
+                    : content}
                 </AlertDialog>
               ) : null}
             </DialogContainer>

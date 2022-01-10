@@ -1,6 +1,12 @@
 import { DialogContext } from './context';
 import { Modal } from '../Modal/Modal';
-import { Children, ReactNode, useRef, isValidElement, ReactElement } from 'react';
+import {
+  Children,
+  ReactNode,
+  useRef,
+  isValidElement,
+  ReactElement,
+} from 'react';
 
 export interface CubeDialogContainerProps {
   /** The Dialog to display, if any. */
