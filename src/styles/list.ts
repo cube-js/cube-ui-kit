@@ -60,6 +60,8 @@ export const FLOW_STYLES = [
   'alignContent',
   'justifyItems',
   'justifyContent',
+  'align',
+  'justify',
   'gap',
   'columnGap',
   'rowGap',

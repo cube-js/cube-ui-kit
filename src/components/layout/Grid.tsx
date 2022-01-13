@@ -19,12 +19,9 @@ const DEFAULT_STYLES = {
 export interface CubeGridProps
   extends BaseProps,
     ContainerStyleProps,
-    ShortItemsStyles,
     ShortGridStyles {}
 
 const PROP_MAP = {
-  align: 'alignItems',
-  justify: 'justifyItems',
   template: 'gridTemplate',
   columns: 'gridColumns',
   rows: 'gridRows',

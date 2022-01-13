@@ -3,7 +3,7 @@ import { Base } from '../Base';
 import { CONTAINER_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
-import { BaseProps, ContainerStyleProps, ShortItemsStyles } from '../types';
+import { BaseProps, ContainerStyleProps } from '../types';
 
 const DEFAULT_STYLES = {
   display: 'flex',
@@ -12,15 +12,9 @@ const DEFAULT_STYLES = {
 
 export interface CubeSpaceProps
   extends BaseProps,
-    ContainerStyleProps,
-    ShortItemsStyles {
+    ContainerStyleProps {
   direction?: 'vertical' | 'horizontal';
 }
-
-const PROP_MAP = {
-  align: 'alignItems',
-  justify: 'justifyItems',
-} as const;
 
 export const Space = forwardRef(function Space(props: CubeSpaceProps, ref) {
   const flow = props.direction
@@ -36,7 +30,6 @@ export const Space = forwardRef(function Space(props: CubeSpaceProps, ref) {
       flow,
       alignItems: flow === 'row' ? 'center' : 'stretch',
     },
-    PROP_MAP,
   );
 
   return (

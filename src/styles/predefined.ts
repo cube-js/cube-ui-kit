@@ -14,6 +14,8 @@ import { paddingInlineStyle } from './paddingInline';
 import { presetStyle } from './preset';
 import { fontStyleStyle } from './fontStyle';
 import { marginStyle } from './margin';
+import { marginBlockStyle } from './marginBlock';
+import { marginInlineStyle } from './marginInline';
 import { fontStyle } from './font';
 import { outlineStyle } from './outline';
 import { transitionStyle } from './transition';
@@ -21,6 +23,8 @@ import { groupRadiusAttr } from './groupRadius';
 import { boxShadowCombinator } from './boxShadow.combinator';
 import { styledScrollbarStyle } from './styledScrollbar';
 import { displayStyle } from './display';
+import { alignStyle } from './align';
+import { justifyStyle } from './justify';
 import { defineCustomStyle, defineStyleAlias } from './index';
 
 const numberConverter = (val) => {
@@ -58,6 +62,10 @@ defineStyleAlias('paddingTop');
 defineStyleAlias('paddingRight');
 defineStyleAlias('paddingBottom');
 defineStyleAlias('paddingLeft');
+defineStyleAlias('marginTop');
+defineStyleAlias('marginRight');
+defineStyleAlias('marginBottom');
+defineStyleAlias('marginLeft');
 // Coordinates
 defineStyleAlias('top', 'top', numberConverter);
 defineStyleAlias('right', 'right', numberConverter);
@@ -83,6 +91,8 @@ defineStyleAlias('gridTemplate', 'grid-template', (val) => {
   fillStyle,
   widthStyle,
   marginStyle,
+  marginBlockStyle,
+  marginInlineStyle,
   gapStyle,
   flowStyle,
   colorStyle,
@@ -93,6 +103,8 @@ defineStyleAlias('gridTemplate', 'grid-template', (val) => {
   paddingStyle,
   paddingBlockStyle,
   paddingInlineStyle,
+  alignStyle,
+  justifyStyle,
   presetStyle,
   boxShadowCombinator,
   outlineStyle,

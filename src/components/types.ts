@@ -12,6 +12,23 @@ import {
   TEXT_STYLES,
 } from '../styles/list';
 
+export interface StyledProps<T extends string, K extends string[]> {
+  /** The name of the element. It can be used to override styles in context. */
+  name?: string;
+  /** The tag name of the element. */
+  tag?: string;
+  /** Default styles of the element. */
+  styles?: Styles;
+  /** Default css of the element. */
+  css?: string | ((props: Props) => string);
+  /** Default attributes */
+  attrs?: Record<string, any>;
+  /** The list of styles that can be provided by props */
+  styleProps?: K;
+  /** The list of available modifiers. Providing it will show a warning each time you set an incorrect modifier on the element */
+  availableMods?: T[];
+}
+
 export interface BasePropsWithoutChildren
   extends Pick<AllHTMLAttributes<HTMLElement>, 'className' | 'role' | 'id'> {
   /** QA ID for e2e testing. An alias for `data-qa` attribute. */
@@ -66,10 +83,6 @@ export type DimensionStyleProps = Pick<Styles, typeof DIMENSION_STYLES[number]>;
 export type FlowStyleProps = Pick<Styles, typeof FLOW_STYLES[number]>;
 export type ContainerStyleProps = Pick<Styles, typeof CONTAINER_STYLES[number]>;
 export type OuterStyleProps = Pick<Styles, typeof OUTER_STYLES[number]>;
-export type ShortItemsStyles = {
-  align?: Styles['alignItems'];
-  justify?: Styles['justifyItems'];
-};
 
 export type ShortGridStyles = {
   template?: Styles['gridTemplate'];
