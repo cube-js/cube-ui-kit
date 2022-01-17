@@ -7,7 +7,6 @@ import {
   BaseProps,
   ContainerStyleProps,
   ShortGridStyles,
-  ShortItemsStyles,
 } from '../types';
 
 const DEFAULT_STYLES = {

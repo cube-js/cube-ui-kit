@@ -39,7 +39,6 @@ const DEFAULT_STYLES: Styles = {
 };
 
 export const TEXT_PROP_MAP = {
-  align: 'textAlign',
   transform: 'textTransform',
   weight: 'fontWeight',
   italic: 'fontStyle',
@@ -68,14 +67,12 @@ export interface CubeTextProps
    */
   italic?: ResponsiveStyleValue<CSSProperties['fontStyle']>;
   weight?: string | number;
-  align?: ResponsiveStyleValue<CSSProperties['textAlign']>;
   transform?: ResponsiveStyleValue<CSSProperties['textTransform']>;
 }
 
 const RawText = styled({
   name: 'Text',
   tag: 'span',
-  availableMods: ['nowrap', 'ellipsis'],
   styles: DEFAULT_STYLES,
 });
 

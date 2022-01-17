@@ -1,4 +1,4 @@
-import { forwardRef, useContext } from 'react';
+import { ComponentType, forwardRef, useContext } from 'react';
 import styledComponents from 'styled-components';
 import { BreakpointsContext } from './providers/BreakpointsProvider';
 import { modAttrs } from './utils/react';
@@ -9,41 +9,65 @@ import { pointsToZones } from './utils/responsive';
 import { Styles, StylesInterface } from './styles/types';
 import { BASE_STYLES } from './styles/list';
 import { ResponsiveStyleValue } from './utils/styles';
+import { mergeStyles } from './utils/mergeStyles';
 
-export type AllBasePropsWithMods<
-  T extends string,
-  K extends string[],
-> = Omit<AllBaseProps, 'mods'> & {
-  mods?: Record<T, boolean | null | undefined>;
-} & {
-  [key in K[number]]?: ResponsiveStyleValue<key extends keyof StylesInterface ? StylesInterface[key] : string>;
+export type AllBasePropsWithMods<K extends (keyof StylesInterface)[]> = AllBaseProps & {
+  [key in K[number]]?: ResponsiveStyleValue<StylesInterface[key]>;
 } & BaseStyleProps;
 
-function combineStyles(defaultStyles, contextStyles, styles, propStyles) {
-  if (!defaultStyles && !contextStyles && !styles) return propStyles;
-
-  return {
-    ...defaultStyles,
-    ...contextStyles,
-    ...styles,
-    ...propStyles,
-  };
-}
-
-export function styled<T extends string, K extends string[]>(
-  options: StyledProps<T, K>,
+export function styled<K extends(keyof StylesInterface)[], C = {}>(
+  options: StyledProps<K> | ComponentType<C>,
+  extendOptions?: Pick<StyledProps<K>, 'styles' | 'props' | 'name' | 'tag'>,
 ) {
-  let {
+  if (typeof options === 'function') {
+    const Component = options;
+
+    let {
+      styles: extendStyles,
+      props: defaultProps,
+      name: styleName,
+      tag: extendTag,
+    } = extendOptions || {};
+
+    return forwardRef((props: C, ref) => {
+      let allProps = props as AllBasePropsWithMods<K>;
+
+      if (allProps.styles) {
+        if (extendStyles) {
+          allProps.styles = mergeStyles(allProps.styles, extendStyles);
+        }
+      } else if (extendStyles) {
+        allProps.styles = extendStyles;
+      }
+
+      if (styleName) {
+        allProps.styleName = styleName;
+      }
+
+      if (extendTag) {
+        allProps.as = extendTag;
+      }
+
+      if (defaultProps) {
+        allProps = Object.assign({}, defaultProps, allProps);
+      }
+
+      return <Component ref={ref} {...allProps as C}/>;
+    });
+  }
+
+  const {
     name,
     tag,
-    styles: defaultStyles,
-    styleProps,
     css: defaultCSS,
-    attrs,
+    styles: defaultStyles,
+    props: defaultProps,
+    styleProps,
   } = options;
-  let Element = styledComponents[tag || 'div'](({ css }) => css);
 
-  return forwardRef((allProps: AllBasePropsWithMods<T, K>, ref) => {
+  let Element = styledComponents[options.tag || 'div'](({css}) => css);
+
+  return forwardRef((allProps: AllBasePropsWithMods<K>, ref) => {
     let {
       as,
       styles,
@@ -58,8 +82,8 @@ export function styled<T extends string, K extends string[]>(
 
     const propStyles: Styles = (
       (styleProps
-        ? (styleProps as string[]).concat(BASE_STYLES)
-        : BASE_STYLES) as string[]
+        ? (styleProps as (keyof StylesInterface)[]).concat(BASE_STYLES)
+        : BASE_STYLES) as (keyof StylesInterface)[]
     ).reduce((map, prop) => {
       if (prop in props) {
         map[prop] = props[prop];
@@ -72,7 +96,7 @@ export function styled<T extends string, K extends string[]>(
 
     // @ts-ignore
     const contextStyles = useContextStyles(styleName || name, props);
-    const allStyles: Styles | undefined = combineStyles(
+    const allStyles: Styles = mergeStyles(
       defaultStyles,
       contextStyles,
       styles,
@@ -97,7 +121,7 @@ export function styled<T extends string, K extends string[]>(
         as={as || tag}
         data-qa={qa}
         data-qaval={qaVal}
-        {...attrs}
+        {...defaultProps}
         {...props}
         ref={ref}
         css={css}

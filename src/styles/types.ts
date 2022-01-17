@@ -179,7 +179,7 @@ export type NotSelector = Exclude<
 >;
 
 export type StylesWithoutSelectors = {
-  [key in keyof StylesInterface]?: ResponsiveStyleValue<StylesInterface[key] | string | number | boolean | undefined>;
+  [key in keyof StylesInterface]?: ResponsiveStyleValue<StylesInterface[key]>;
 };
 export type Styles = StylesWithoutSelectors & {
   [key: string]:

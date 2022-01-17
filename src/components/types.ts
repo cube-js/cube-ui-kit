@@ -1,5 +1,5 @@
 import { AllHTMLAttributes, CSSProperties } from 'react';
-import { Styles } from '../styles/types';
+import { Styles, StylesInterface } from '../styles/types';
 import {
   BASE_STYLES,
   BLOCK_STYLES,
@@ -12,7 +12,7 @@ import {
   TEXT_STYLES,
 } from '../styles/list';
 
-export interface StyledProps<T extends string, K extends string[]> {
+export interface StyledProps<K extends (keyof StylesInterface)[]> {
   /** The name of the element. It can be used to override styles in context. */
   name?: string;
   /** The tag name of the element. */
@@ -21,12 +21,10 @@ export interface StyledProps<T extends string, K extends string[]> {
   styles?: Styles;
   /** Default css of the element. */
   css?: string | ((props: Props) => string);
-  /** Default attributes */
-  attrs?: Record<string, any>;
+  /** Default properties */
+  props?: Record<string, any>;
   /** The list of styles that can be provided by props */
   styleProps?: K;
-  /** The list of available modifiers. Providing it will show a warning each time you set an incorrect modifier on the element */
-  availableMods?: T[];
 }
 
 export interface BasePropsWithoutChildren
@@ -69,7 +67,7 @@ export interface AllBaseProps<K extends keyof HTMLElementTagNameMap = 'div'>
   extends BaseProps,
     Omit<
       AllHTMLAttributes<HTMLElementTagNameMap[K]>,
-      'style' | 'size' | 'disabled' | 'hidden' | 'css'
+      'style' | 'size' | 'disabled' | 'hidden' | 'css' | 'color' | 'height' | 'width'
     > {
   as?: string;
 }
