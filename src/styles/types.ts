@@ -99,7 +99,7 @@ export interface StylesInterface
    * Syntax: `[[<value> | [ <verticalValue> <horizontalValue>] ]? [ [ leaf | backleaf ] | [ 'top' | 'right' | 'bottom' | 'top' ]{1,2} ] ] | [ 'round' | 'ellipse' ] | true`
    * Examples: `"1x"`, `"2x 4x"`, `"top"`, `"round"`, `"3x leaf"`, `"ellipse"`.
    */
-  radius?: 'round' | 'ellipse' | 'leaf' | 'backleaf' | string;
+  radius?: 'round' | 'ellipse' | 'leaf' | 'backleaf' | string | true;
   /**
    * The group radius style rounds the corners of a container's outer border edge by applying radius style to to its children.
    * Syntax: `<value> [ 'round' | 'ellipse' ]? | true`

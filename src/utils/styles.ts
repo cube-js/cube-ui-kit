@@ -2,7 +2,7 @@ import { Styles } from '../styles/types';
 
 import { getModCombinations } from './index';
 
-export type StyleValue<T = string> = number | null | boolean | undefined | string | T;
+export type StyleValue<T = string> = T | boolean | number | null;
 
 export type StyleValueStateMap<T = string> = {
   [key: string]: StyleValue<T>;
