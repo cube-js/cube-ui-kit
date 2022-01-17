@@ -3,11 +3,7 @@ import { Base } from '../Base';
 import { CONTAINER_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
-import {
-  BaseProps,
-  ContainerStyleProps,
-  ShortGridStyles,
-} from '../types';
+import { BaseProps, ContainerStyleProps, ShortGridStyles } from '../types';
 
 const DEFAULT_STYLES = {
   display: 'grid',

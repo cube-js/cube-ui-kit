@@ -61,28 +61,70 @@ You can pass an object to specify what style value should be bind to specific st
 
 It's possible to use more complex binding. Take a look at styles of Button with `type="neutral"`:
 
-```javascript
-fill: {
-  '': '#purple.0', // default state
-  hovered: '#dark.04', // if hovered
-},
-color: {
-  '': '#dark.75', // default  state
-  hovered: '#dark.75', // if hovered
-  'pressed, hovered & pressed': '#purple', // if pressed or hovered and pressed
-},
-```
-
-If you want to bind style to default and other state use the following syntax:
-
-```javascript
-fill: {
-  ',pressed': '#purple.0', // on default state and if pressed
-  hovered: '#dark.04', // if hovered
-},
+```typescript jsx
+// This example is not a real-life case. It's only a demonstration of library capabilities.
+<Element styles={{
+  color: {
+    // default
+    '': 'yellow',
+    // if `blue` mod is presented on the element
+    'blue': 'blue',
+    // if `blue` mod is not presented on the element and the element is hovered
+    '!blue & :hover': 'purple',
+    // if `green` or `success` mod is presented on the element
+    'success | green': 'green',
+    // if either `red` or `danger` mod is presented on the element
+    'success ^ green': 'green',
+  }
+}}></Element>
 ```
 
 Each subsequent declaration overlaps the previous one. It means in the example above if element is hovered then it will be colored as `#dark.04` even if it's pressed.
+
+## Selector syntax
+
+Selector syntax allows to specify styles for inner element of the component.
+
+There are few ways to define selector syntax.
+
+### Native syntax
+
+```jsx
+<Component styles={
+  '& [custom selector]': {
+    color: '#purple',
+  },
+  '&::before': {
+    color: '#purple',
+  },
+}>...
+```
+
+**Using custom selectors or pseudo selectors is not recommended!**
+
+### Element syntax (recommended)
+
+```jsx
+<Component styles={
+  ElementName: {
+    color: '#purple',
+  },
+}>...
+```
+
+The same as `& [data-element="ElementName"]`.
+
+### Class syntax
+
+```jsx
+<Component styles={
+  '.elementClass': {
+    color: '#purple',
+  },
+}>...
+```
+
+The same as `& .elementClass`. Use this syntax if it's impossible to declare an element name.
 
 ## Responsiveness
 
@@ -106,6 +148,12 @@ This style declaration means:
 - Use gap "1x" for screen size below 640px
 
 If some values in array are not specified then the previous value will be used.
+
+```tsx
+gap={['2.5x',, '2x']}
+// the same as
+gap={['2.5x', '2.5x', '2x']}
+```
 
 ```tsx
 gap={['2.5x', '2x']}

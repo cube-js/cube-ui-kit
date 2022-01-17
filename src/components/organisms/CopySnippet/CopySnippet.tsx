@@ -123,10 +123,10 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
     .map((line) => `${prefix || ''}${line} `)
     .join('\n');
 
-  styles = ({
+  styles = {
     preset: 'default',
     ...styles,
-  }) as Styles;
+  } as Styles;
 
   const Snippet = (
     <Card
@@ -159,7 +159,10 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
             language={language || 'javascript'}
           />
         </StyledBlock>
-        <ButtonContainer styles={{ padding } as Styles} mods={{ overlay: showOverlay }} />
+        <ButtonContainer
+          styles={{ padding } as Styles}
+          mods={{ overlay: showOverlay }}
+        />
         <Button
           aria-label={`Copy ${codeTitle}`}
           type="clear"

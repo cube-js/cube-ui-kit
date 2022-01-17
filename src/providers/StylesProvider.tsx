@@ -4,8 +4,8 @@ import { Styles } from '../styles/types';
 export const StyleContext = createContext<any>({});
 
 interface StyleProviderProps {
-	children?: ReactNode;
-	[key: string]: any;
+  children?: ReactNode;
+  [key: string]: any;
 }
 
 export function StyleProvider({ children, ...props }: StyleProviderProps) {
@@ -20,10 +20,15 @@ export function StyleProvider({ children, ...props }: StyleProviderProps) {
   });
 
   // @ts-ignore
-  return <StyleContext.Provider value={styles}>{children}</StyleContext.Provider>;
+  return (
+    <StyleContext.Provider value={styles}>{children}</StyleContext.Provider>
+  );
 }
 
-export function useContextStyles(name: string, props?: Record<string, any>): Styles | null {
+export function useContextStyles(
+  name: string,
+  props?: Record<string, any>,
+): Styles | null {
   const contextStyles = useContext(StyleContext);
 
   if (!name) return null;
@@ -32,7 +37,10 @@ export function useContextStyles(name: string, props?: Record<string, any>): Sty
 
   if (contextStyles[name]) {
     contextStyles[name].forEach((handler: Function | Styles) => {
-      Object.assign(styles, typeof handler === 'function' ? handler(props) : handler);
+      Object.assign(
+        styles,
+        typeof handler === 'function' ? handler(props) : handler,
+      );
     });
   }
 

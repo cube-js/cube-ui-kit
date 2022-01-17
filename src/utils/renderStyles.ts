@@ -68,17 +68,19 @@ export function renderStyles(
     }
 
     const keys = Object.keys(styles);
-    const selectorKeys = keys.filter((key) =>
-      isSelector(key),
-    ) as Selector[];
+    const selectorKeys = keys.filter((key) => isSelector(key)) as Selector[];
 
     let innerStyles = '';
 
     if (selectorKeys.length) {
       selectorKeys.forEach((key) => {
-        const suffix = getSelector(key);
+        const addSuffix = getSelector(key);
 
-        innerStyles += renderStyles(styles[key] as Styles, responsive, suffix);
+        innerStyles += renderStyles(
+          styles[key] as Styles,
+          responsive,
+          addSuffix,
+        );
       });
     }
 

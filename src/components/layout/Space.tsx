@@ -10,9 +10,7 @@ const DEFAULT_STYLES = {
   gap: true,
 };
 
-export interface CubeSpaceProps
-  extends BaseProps,
-    ContainerStyleProps {
+export interface CubeSpaceProps extends BaseProps, ContainerStyleProps {
   direction?: 'vertical' | 'horizontal';
 }
 
@@ -22,15 +20,11 @@ export const Space = forwardRef(function Space(props: CubeSpaceProps, ref) {
       ? 'column'
       : 'row'
     : props.flow || 'row';
-  const styles = extractStyles(
-    props,
-    CONTAINER_STYLES,
-    {
-      ...DEFAULT_STYLES,
-      flow,
-      alignItems: flow === 'row' ? 'center' : 'stretch',
-    },
-  );
+  const styles = extractStyles(props, CONTAINER_STYLES, {
+    ...DEFAULT_STYLES,
+    flow,
+    alignItems: flow === 'row' ? 'center' : 'stretch',
+  });
 
   return (
     <Base

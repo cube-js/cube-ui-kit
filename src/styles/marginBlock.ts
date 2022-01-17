@@ -32,8 +32,4 @@ export function marginBlockStyle({
   return styles;
 }
 
-marginBlockStyle.__lookupStyles = [
-  'marginBlock',
-  'marginTop',
-  'marginBottom',
-];
+marginBlockStyle.__lookupStyles = ['marginBlock', 'marginTop', 'marginBottom'];

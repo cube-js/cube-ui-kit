@@ -10,16 +10,10 @@ const DEFAULT_STYLES = {
   flow: 'row',
 };
 
-export interface CubeFlexProps
-  extends BaseProps,
-    ContainerStyleProps {}
+export interface CubeFlexProps extends BaseProps, ContainerStyleProps {}
 
 export const Flex = forwardRef((props: CubeFlexProps, ref) => {
-  const styles = extractStyles(
-    props,
-    CONTAINER_STYLES,
-    DEFAULT_STYLES,
-  );
+  const styles = extractStyles(props, CONTAINER_STYLES, DEFAULT_STYLES);
 
   return (
     <Base

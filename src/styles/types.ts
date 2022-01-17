@@ -164,19 +164,44 @@ export interface StylesInterface
   /**
    * Shorthand for align-items and align-content.
    */
-  align?: CSSProperties['alignItems'] | CSSProperties['alignContent'],
+  align?: CSSProperties['alignItems'] | CSSProperties['alignContent'];
   /**
    * Shorthand for justify-items and justify-content.
    */
-  justify?: CSSProperties['justifyItems'] | CSSProperties['justifyContent'],
+  justify?: CSSProperties['justifyItems'] | CSSProperties['justifyContent'];
 }
 
-export type SuffixForSelector = '&' | '.' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z';
+export type SuffixForSelector =
+  | '&'
+  | '.'
+  | 'A'
+  | 'B'
+  | 'C'
+  | 'D'
+  | 'E'
+  | 'F'
+  | 'G'
+  | 'H'
+  | 'I'
+  | 'J'
+  | 'K'
+  | 'L'
+  | 'M'
+  | 'N'
+  | 'O'
+  | 'P'
+  | 'Q'
+  | 'R'
+  | 'S'
+  | 'T'
+  | 'U'
+  | 'V'
+  | 'W'
+  | 'X'
+  | 'Y'
+  | 'Z';
 export type Selector = `${SuffixForSelector}${string}`;
-export type NotSelector = Exclude<
-  string,
-  Selector | keyof StylesInterface
->;
+export type NotSelector = Exclude<string, Selector | keyof StylesInterface>;
 
 export type StylesWithoutSelectors = {
   [key in keyof StylesInterface]?: ResponsiveStyleValue<StylesInterface[key]>;

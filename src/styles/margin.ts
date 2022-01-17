@@ -39,8 +39,7 @@ export function marginStyle({
         || (!(index % 2) && marginBlock == null))
       && marginDirs[index] == null
     ) {
-      styles[`margin-${dir}`]
-        = values[index] || values[index % 2] || values[0];
+      styles[`margin-${dir}`] = values[index] || values[index % 2] || values[0];
     }
 
     return styles;

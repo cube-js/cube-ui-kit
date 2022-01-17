@@ -4,10 +4,17 @@ import { createContext, ReactNode } from 'react';
 export const BreakpointsContext = createContext([980]);
 
 interface BreakpointsProviderProps {
-	value: number[];
-	children: ReactNode;
+  value: number[];
+  children: ReactNode;
 }
 
-export function BreakpointsProvider({ value, children }: BreakpointsProviderProps) {
-  return <BreakpointsContext.Provider value={value}>{children}</BreakpointsContext.Provider>;
+export function BreakpointsProvider({
+  value,
+  children,
+}: BreakpointsProviderProps) {
+  return (
+    <BreakpointsContext.Provider value={value}>
+      {children}
+    </BreakpointsContext.Provider>
+  );
 }

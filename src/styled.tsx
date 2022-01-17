@@ -1,9 +1,14 @@
 import { ComponentType, forwardRef, useContext } from 'react';
-import styledComponents from 'styled-components';
+import styledComponents, { createGlobalStyle } from 'styled-components';
 import { BreakpointsContext } from './providers/BreakpointsProvider';
 import { modAttrs } from './utils/react';
 import { useContextStyles } from './providers/StylesProvider';
-import { AllBaseProps, BaseStyleProps, StyledProps } from './components/types';
+import {
+  AllBaseProps,
+  BaseStyleProps,
+  StyledProps,
+  GlobalStyledProps,
+} from './components/types';
 import { renderStyles } from './utils/renderStyles';
 import { pointsToZones } from './utils/responsive';
 import { Styles, StylesInterface } from './styles/types';
@@ -11,16 +16,32 @@ import { BASE_STYLES } from './styles/list';
 import { ResponsiveStyleValue } from './utils/styles';
 import { mergeStyles } from './utils/mergeStyles';
 
-export type AllBasePropsWithMods<K extends (keyof StylesInterface)[]> = AllBaseProps & {
-  [key in K[number]]?: ResponsiveStyleValue<StylesInterface[key]>;
-} & BaseStyleProps;
+export type AllBasePropsWithMods<K extends (keyof StylesInterface)[]> =
+  AllBaseProps & {
+    [key in K[number]]?: ResponsiveStyleValue<StylesInterface[key]>;
+  } & BaseStyleProps;
 
 export function styled<K extends(keyof StylesInterface)[], C = {}>(
-  options: StyledProps<K> | ComponentType<C>,
+  options: StyledProps<K> | ComponentType<C> | string,
   extendOptions?: Pick<StyledProps<K>, 'styles' | 'props' | 'name' | 'tag'>,
 ) {
+  if (typeof options === 'string') {
+    let selector = options;
+    let Element = createGlobalStyle`${(css) => css}`;
+    let { styles } = extendOptions || {};
+
+    return ({ breakpoints }: GlobalStyledProps) => {
+      let contextBreakpoints = useContext(BreakpointsContext);
+      let zones = pointsToZones(breakpoints || contextBreakpoints);
+
+      let css = `${selector}{${styles ? renderStyles(styles, zones) : ''}}`;
+
+      return <Element css={css} />;
+    };
+  }
+
   if (typeof options === 'function') {
-    const Component = options;
+    let Component = options;
 
     let {
       styles: extendStyles,
@@ -52,11 +73,11 @@ export function styled<K extends(keyof StylesInterface)[], C = {}>(
         allProps = Object.assign({}, defaultProps, allProps);
       }
 
-      return <Component ref={ref} {...allProps as C}/>;
+      return <Component ref={ref} {...(allProps as C)} />;
     });
   }
 
-  const {
+  let {
     name,
     tag,
     css: defaultCSS,
@@ -65,22 +86,13 @@ export function styled<K extends(keyof StylesInterface)[], C = {}>(
     styleProps,
   } = options;
 
-  let Element = styledComponents[options.tag || 'div'](({css}) => css);
+  let Element = styledComponents[options.tag || 'div'](({ css }) => css);
 
   return forwardRef((allProps: AllBasePropsWithMods<K>, ref) => {
-    let {
-      as,
-      styles,
-      styleName,
-      breakpoints,
-      mods,
-      qa,
-      qaVal,
-      css,
-      ...props
-    } = allProps;
+    let { as, styles, styleName, breakpoints, mods, qa, qaVal, css, ...props }
+      = allProps;
 
-    const propStyles: Styles = (
+    let propStyles: Styles = (
       (styleProps
         ? (styleProps as (keyof StylesInterface)[]).concat(BASE_STYLES)
         : BASE_STYLES) as (keyof StylesInterface)[]
@@ -95,16 +107,16 @@ export function styled<K extends(keyof StylesInterface)[], C = {}>(
     }, {});
 
     // @ts-ignore
-    const contextStyles = useContextStyles(styleName || name, props);
-    const allStyles: Styles = mergeStyles(
+    let contextStyles = useContextStyles(styleName || name, props);
+    let allStyles: Styles = mergeStyles(
       defaultStyles,
       contextStyles,
       styles,
       propStyles,
     );
 
-    const contextBreakpoints = useContext(BreakpointsContext);
-    const zones = pointsToZones(breakpoints || contextBreakpoints);
+    let contextBreakpoints = useContext(BreakpointsContext);
+    let zones = pointsToZones(breakpoints || contextBreakpoints);
 
     css = `${
       typeof defaultCSS === 'function' ? defaultCSS(props) : defaultCSS || ''

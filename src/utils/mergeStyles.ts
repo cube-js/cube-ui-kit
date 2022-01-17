@@ -15,7 +15,9 @@ export function mergeStyles(...objects: (Styles | undefined | null)[]): Styles {
       if (isSelector(key)) {
         resultStyles[key] = {
           ...(styles?.[key] ? (styles[key] as StylesWithoutSelectors) : null),
-          ...(newStyles?.[key] ? (newStyles[key] as StylesWithoutSelectors) : null),
+          ...(newStyles?.[key]
+            ? (newStyles[key] as StylesWithoutSelectors)
+            : null),
         };
       }
     }

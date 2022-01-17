@@ -12,6 +12,10 @@ import {
   TEXT_STYLES,
 } from '../styles/list';
 
+export interface GlobalStyledProps {
+  breakpoints?: number[];
+}
+
 export interface StyledProps<K extends (keyof StylesInterface)[]> {
   /** The name of the element. It can be used to override styles in context. */
   name?: string;
@@ -21,7 +25,7 @@ export interface StyledProps<K extends (keyof StylesInterface)[]> {
   styles?: Styles;
   /** Default css of the element. */
   css?: string | ((props: Props) => string);
-  /** Default properties */
+  /** Default properties/attributes */
   props?: Record<string, any>;
   /** The list of styles that can be provided by props */
   styleProps?: K;
@@ -67,7 +71,14 @@ export interface AllBaseProps<K extends keyof HTMLElementTagNameMap = 'div'>
   extends BaseProps,
     Omit<
       AllHTMLAttributes<HTMLElementTagNameMap[K]>,
-      'style' | 'size' | 'disabled' | 'hidden' | 'css' | 'color' | 'height' | 'width'
+      | 'style'
+      | 'size'
+      | 'disabled'
+      | 'hidden'
+      | 'css'
+      | 'color'
+      | 'height'
+      | 'width'
     > {
   as?: string;
 }
