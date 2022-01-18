@@ -79,7 +79,6 @@ export interface AllBaseProps<K extends keyof HTMLElementTagNameMap = 'div'>
       | 'color'
       | 'height'
       | 'width'
-      | 'type'
     > {
   as?: string;
 }
