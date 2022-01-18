@@ -21,14 +21,26 @@ export type AllBasePropsWithMods<K extends (keyof StylesInterface)[]> =
     [key in K[number]]?: ResponsiveStyleValue<StylesInterface[key]>;
   } & BaseStyleProps;
 
-export function styled<K extends(keyof StylesInterface)[], C = {}>(
-  options: StyledProps<K> | ComponentType<C> | string,
-  extendOptions?: Pick<StyledProps<K>, 'styles' | 'props' | 'name' | 'tag'>,
+function styled<K extends(keyof StylesInterface)[]>(
+  options: StyledProps<K>,
+  secondArg?: never,
+);
+function styled(
+  selector: string,
+  styles?: Styles,
+);
+function styled<K extends(keyof StylesInterface)[], C = {}>(
+  Component: ComponentType<C>,
+  options?: Pick<StyledProps<K>, 'styles' | 'props' | 'name' | 'tag'>,
+);
+function styled<K extends(keyof StylesInterface)[], C = {}>(
+  Component,
+  options,
 ) {
-  if (typeof options === 'string') {
-    let selector = options;
+  if (typeof Component === 'string') {
+    let selector = Component;
+    let styles = options;
     let Element = createGlobalStyle`${(css) => css}`;
-    let { styles } = extendOptions || {};
 
     return ({ breakpoints }: GlobalStyledProps) => {
       let contextBreakpoints = useContext(BreakpointsContext);
@@ -40,15 +52,13 @@ export function styled<K extends(keyof StylesInterface)[], C = {}>(
     };
   }
 
-  if (typeof options === 'function') {
-    let Component = options;
-
+  if (typeof Component === 'function') {
     let {
       styles: extendStyles,
       props: defaultProps,
       name: styleName,
       tag: extendTag,
-    } = extendOptions || {};
+    } = options || {};
 
     return forwardRef((props: C, ref) => {
       let allProps = props as AllBasePropsWithMods<K>;
@@ -76,6 +86,8 @@ export function styled<K extends(keyof StylesInterface)[], C = {}>(
       return <Component ref={ref} {...(allProps as C)} />;
     });
   }
+
+  options = Component;
 
   let {
     name,
@@ -141,3 +153,5 @@ export function styled<K extends(keyof StylesInterface)[], C = {}>(
     );
   });
 }
+
+export { styled };
