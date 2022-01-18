@@ -21,15 +21,12 @@ export type AllBasePropsWithMods<K extends (keyof StylesInterface)[]> =
     [key in K[number]]?: ResponsiveStyleValue<StylesInterface[key]>;
   } & BaseStyleProps;
 
-function styled<K extends(keyof StylesInterface)[]>(
+function styled<K extends (keyof StylesInterface)[]>(
   options: StyledProps<K>,
   secondArg?: never,
 );
-function styled(
-  selector: string,
-  styles?: Styles,
-);
-function styled<K extends(keyof StylesInterface)[], C = {}>(
+function styled(selector: string, styles?: Styles);
+function styled<K extends (keyof StylesInterface)[], C = {}>(
   Component: ComponentType<C>,
   options?: Pick<StyledProps<K>, 'styles' | 'props' | 'name' | 'tag'>,
 );
