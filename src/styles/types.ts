@@ -45,7 +45,7 @@ type OpaquePercentage = '' | `.${Digit}` | `.${Digit}${Digit}` | '.100';
 export type NoType = false | null | undefined;
 
 export interface StylesInterface
-  extends Omit<CSSProperties, 'color' | 'fill' | 'font' | 'outline'> {
+  extends Omit<CSSProperties, 'color' | 'fill' | 'font' | 'outline' | 'type'> {
   /** Set the background color of the element.
    * ```
    * fill="#{name_of_the_color}"

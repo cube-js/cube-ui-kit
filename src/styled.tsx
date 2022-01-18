@@ -1,4 +1,5 @@
 import { ComponentType, forwardRef, useContext } from 'react';
+import { isValidElementType } from 'react-is';
 import styledComponents, { createGlobalStyle } from 'styled-components';
 import { BreakpointsContext } from './providers/BreakpointsProvider';
 import { modAttrs } from './utils/react';
@@ -29,7 +30,7 @@ function styled(selector: string, styles?: Styles);
 function styled<K extends (keyof StylesInterface)[], C = {}>(
   Component: ComponentType<C>,
   options?: Pick<StyledProps<K>, 'styles' | 'props' | 'name' | 'tag'>,
-);
+): ComponentType<C>;
 function styled<K extends(keyof StylesInterface)[], C = {}>(
   Component,
   options,
@@ -43,13 +44,13 @@ function styled<K extends(keyof StylesInterface)[], C = {}>(
       let contextBreakpoints = useContext(BreakpointsContext);
       let zones = pointsToZones(breakpoints || contextBreakpoints);
 
-      let css = `${selector}{${styles ? renderStyles(styles, zones) : ''}}`;
+      let css = `${styles ? renderStyles(styles, zones, selector) : ''}`;
 
       return <Element css={css} />;
     };
   }
 
-  if (typeof Component === 'function') {
+  if (isValidElementType(Component)) {
     let {
       styles: extendStyles,
       props: defaultProps,
@@ -58,7 +59,7 @@ function styled<K extends(keyof StylesInterface)[], C = {}>(
     } = options || {};
 
     return forwardRef((props: C, ref) => {
-      let allProps = props as AllBasePropsWithMods<K>;
+      let allProps = { ...props } as AllBasePropsWithMods<K>;
 
       if (allProps.styles) {
         if (extendStyles) {
@@ -115,7 +116,6 @@ function styled<K extends(keyof StylesInterface)[], C = {}>(
       return map;
     }, {});
 
-    // @ts-ignore
     let contextStyles = useContextStyles(styleName || name, props);
     let allStyles: Styles = mergeStyles(
       defaultStyles,
