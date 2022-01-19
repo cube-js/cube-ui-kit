@@ -1,6 +1,6 @@
 {
   "name": "@cube-dev/ui-kit",
-  "version": "0.6.66",
+  "version": "0.7.0",
   "description": "UIKit for Cube Projects",
   "main": "dist/cjs/index.js",
   "module": "dist/mjs/index.js",
@@ -163,7 +163,8 @@
     "react-dom": ">= 17.0.0"
   },
   "dependencies": {
-    "dom-helpers": "^5.2.1"
+    "dom-helpers": "^5.2.1",
+    "react-is": "^17.0.2"
   },
   "license": "MIT"
 }

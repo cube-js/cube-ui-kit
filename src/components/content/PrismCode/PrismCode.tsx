@@ -1,6 +1,6 @@
 import { forwardRef, useEffect } from 'react';
 import Prism from 'prismjs';
-import { BaseProps } from '../../types';
+import { BaseProps, ContainerStyleProps } from '../../types';
 import { styled } from '../../../styled';
 import { Styles } from '../../../styles/types';
 import { CONTAINER_STYLES } from '../../../styles/list';
@@ -8,13 +8,13 @@ import { CONTAINER_STYLES } from '../../../styles/list';
 const RawPre = styled({
   name: 'CodeBlock',
   tag: 'pre',
-  attrs: {
+  props: {
     className: 'cube-prism-code',
   },
-  styleProps: CONTAINER_STYLES,
+  styleProps: CONTAINER_STYLES.concat([]),
 });
 
-export interface CubePrismCodeProps {
+export interface CubePrismCodeProps extends ContainerStyleProps {
   /** The CSS style map */
   style?: BaseProps['style'];
   styles?: Styles;

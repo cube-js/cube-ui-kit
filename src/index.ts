@@ -206,7 +206,6 @@ export type {
   BasePropsWithoutChildren,
   Props,
   FlowStyleProps,
-  ShortItemsStyles,
   ShortGridStyles,
 } from './components/types';
 export * from './styles/types';

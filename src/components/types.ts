@@ -1,5 +1,5 @@
 import { AllHTMLAttributes, CSSProperties } from 'react';
-import { Styles } from '../styles/types';
+import { Styles, StylesInterface } from '../styles/types';
 import {
   BASE_STYLES,
   BLOCK_STYLES,
@@ -11,6 +11,25 @@ import {
   POSITION_STYLES,
   TEXT_STYLES,
 } from '../styles/list';
+
+export interface GlobalStyledProps {
+  breakpoints?: number[];
+}
+
+export interface StyledProps<K extends (keyof StylesInterface)[]> {
+  /** The name of the element. It can be used to override styles in context. */
+  name?: string;
+  /** The tag name of the element. */
+  tag?: string;
+  /** Default styles of the element. */
+  styles?: Styles;
+  /** Default css of the element. */
+  css?: string | ((props: Props) => string);
+  /** Default properties/attributes */
+  props?: Record<string, any>;
+  /** The list of styles that can be provided by props */
+  styleProps?: K;
+}
 
 export interface BasePropsWithoutChildren
   extends Pick<AllHTMLAttributes<HTMLElement>, 'className' | 'role' | 'id'> {
@@ -52,7 +71,14 @@ export interface AllBaseProps<K extends keyof HTMLElementTagNameMap = 'div'>
   extends BaseProps,
     Omit<
       AllHTMLAttributes<HTMLElementTagNameMap[K]>,
-      'style' | 'size' | 'disabled' | 'hidden' | 'css'
+      | 'style'
+      | 'size'
+      | 'disabled'
+      | 'hidden'
+      | 'css'
+      | 'color'
+      | 'height'
+      | 'width'
     > {
   as?: string;
 }
@@ -66,10 +92,6 @@ export type DimensionStyleProps = Pick<Styles, typeof DIMENSION_STYLES[number]>;
 export type FlowStyleProps = Pick<Styles, typeof FLOW_STYLES[number]>;
 export type ContainerStyleProps = Pick<Styles, typeof CONTAINER_STYLES[number]>;
 export type OuterStyleProps = Pick<Styles, typeof OUTER_STYLES[number]>;
-export type ShortItemsStyles = {
-  align?: Styles['alignItems'];
-  justify?: Styles['justifyItems'];
-};
 
 export type ShortGridStyles = {
   template?: Styles['gridTemplate'];

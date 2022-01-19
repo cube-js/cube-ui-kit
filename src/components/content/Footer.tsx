@@ -15,7 +15,7 @@ const RawFooter = styled({
     display: 'block',
     flow: 'column',
   },
-  attrs: {
+  props: {
     'data-id': 'Footer',
   },
 });

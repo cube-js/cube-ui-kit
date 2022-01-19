@@ -2,7 +2,7 @@ import { Styles } from '../styles/types';
 
 import { getModCombinations } from './index';
 
-export type StyleValue<T = string> = number | null | boolean | undefined | T;
+export type StyleValue<T = string> = T | boolean | number | null;
 
 export type StyleValueStateMap<T = string> = {
   [key: string]: StyleValue<T>;
@@ -728,7 +728,7 @@ export function styleHandlerCacheWrapper(styleHandler, limit = 1000) {
 
     replaceStateValues(stateMapList, wrappedStyleHandler);
 
-    return applyStates('&&', stateMapList, suffix);
+    return applyStates('&', stateMapList, suffix);
   }, limit);
 
   return Object.assign(wrappedMapHandler, {

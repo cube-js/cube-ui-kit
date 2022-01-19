@@ -52,8 +52,7 @@ const RawTitle = styled({
   name: 'Title',
   tag: 'h1', // it should be dynamic
   styles: DEFAULT_STYLES,
-  availableMods: ['nowrap', 'ellipsis'],
-  attrs: {
+  props: {
     'data-qa': 'Title',
   },
 });

@@ -33,7 +33,7 @@ const RawBadge = styled({
       }, {}),
     },
   },
-  attrs: {
+  props: {
     role: 'region',
   },
 });

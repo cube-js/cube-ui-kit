@@ -3,12 +3,7 @@ import { Base } from '../Base';
 import { CONTAINER_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
-import {
-  BaseProps,
-  ContainerStyleProps,
-  ShortGridStyles,
-  ShortItemsStyles,
-} from '../types';
+import { BaseProps, ContainerStyleProps, ShortGridStyles } from '../types';
 
 const DEFAULT_STYLES = {
   display: 'grid',
@@ -19,12 +14,9 @@ const DEFAULT_STYLES = {
 export interface CubeGridProps
   extends BaseProps,
     ContainerStyleProps,
-    ShortItemsStyles,
     ShortGridStyles {}
 
 const PROP_MAP = {
-  align: 'alignItems',
-  justify: 'justifyItems',
   template: 'gridTemplate',
   columns: 'gridColumns',
   rows: 'gridRows',

@@ -1,6 +1,6 @@
 import { mediaWrapper, normalizeStyleZones } from './responsive';
 import { StyleHandler, StyleMap, StyleValueStateMap } from './styles';
-import { Styles, SuffixSelector } from '../styles/types';
+import { Styles, Selector } from '../styles/types';
 import { createStyle, STYLE_HANDLER_MAP } from '../styles';
 
 type HandlerQueueItem = {
@@ -9,7 +9,7 @@ type HandlerQueueItem = {
   isResponsive: boolean;
 };
 
-function isSelector(key) {
+export function isSelector(key) {
   return key.startsWith('&') || key.startsWith('.') || key.match(/^[A-Z]/);
 }
 
@@ -19,11 +19,11 @@ function getSelector(key) {
   }
 
   if (key.startsWith('.')) {
-    return `& ${key}`;
+    return ` ${key}`;
   }
 
   if (key.match(/^[A-Z]/)) {
-    return `& [data-element="${key}"]`;
+    return ` [data-element="${key}"]`;
   }
 
   return null;
@@ -68,17 +68,19 @@ export function renderStyles(
     }
 
     const keys = Object.keys(styles);
-    const selectorKeys = keys.filter((key) =>
-      isSelector(key),
-    ) as SuffixSelector[];
+    const selectorKeys = keys.filter((key) => isSelector(key)) as Selector[];
 
     let innerStyles = '';
 
     if (selectorKeys.length) {
       selectorKeys.forEach((key) => {
-        const suffix = getSelector(key);
+        const addSuffix = getSelector(key);
 
-        innerStyles += renderStyles(styles[key] as Styles, responsive, suffix);
+        innerStyles += renderStyles(
+          styles[key] as Styles,
+          responsive,
+          addSuffix,
+        );
       });
     }
 

@@ -16,7 +16,7 @@ const RawHeader = styled({
     gridArea: 'header',
     flow: 'column',
   },
-  attrs: {
+  props: {
     'data-id': 'Header',
   },
 });

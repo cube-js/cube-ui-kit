@@ -19,7 +19,7 @@ const RawContent = styled({
     flow: 'column',
     gap: '2x',
   },
-  attrs: {
+  props: {
     'data-id': 'Content',
   },
 });

@@ -45,7 +45,7 @@ type OpaquePercentage = '' | `.${Digit}` | `.${Digit}${Digit}` | '.100';
 export type NoType = false | null | undefined;
 
 export interface StylesInterface
-  extends Omit<CSSProperties, 'color' | 'fill' | 'font' | 'outline'> {
+  extends Omit<CSSProperties, 'color' | 'fill' | 'font' | 'outline' | 'type'> {
   /** Set the background color of the element.
    * ```
    * fill="#{name_of_the_color}"
@@ -99,7 +99,7 @@ export interface StylesInterface
    * Syntax: `[[<value> | [ <verticalValue> <horizontalValue>] ]? [ [ leaf | backleaf ] | [ 'top' | 'right' | 'bottom' | 'top' ]{1,2} ] ] | [ 'round' | 'ellipse' ] | true`
    * Examples: `"1x"`, `"2x 4x"`, `"top"`, `"round"`, `"3x leaf"`, `"ellipse"`.
    */
-  radius?: 'round' | 'ellipse' | 'leaf' | 'backleaf' | string;
+  radius?: 'round' | 'ellipse' | 'leaf' | 'backleaf' | string | true;
   /**
    * The group radius style rounds the corners of a container's outer border edge by applying radius style to to its children.
    * Syntax: `<value> [ 'round' | 'ellipse' ]? | true`
@@ -161,13 +161,47 @@ export interface StylesInterface
     | 'tag'
     | 'default'
     | string;
+  /**
+   * Shorthand for align-items and align-content.
+   */
+  align?: CSSProperties['alignItems'] | CSSProperties['alignContent'];
+  /**
+   * Shorthand for justify-items and justify-content.
+   */
+  justify?: CSSProperties['justifyItems'] | CSSProperties['justifyContent'];
 }
 
-export type SuffixSelector = `&${string}`;
-export type NotSuffixSelector = Exclude<
-  string,
-  SuffixSelector | keyof StylesInterface
->;
+export type SuffixForSelector =
+  | '&'
+  | '.'
+  | 'A'
+  | 'B'
+  | 'C'
+  | 'D'
+  | 'E'
+  | 'F'
+  | 'G'
+  | 'H'
+  | 'I'
+  | 'J'
+  | 'K'
+  | 'L'
+  | 'M'
+  | 'N'
+  | 'O'
+  | 'P'
+  | 'Q'
+  | 'R'
+  | 'S'
+  | 'T'
+  | 'U'
+  | 'V'
+  | 'W'
+  | 'X'
+  | 'Y'
+  | 'Z';
+export type Selector = `${SuffixForSelector}${string}`;
+export type NotSelector = Exclude<string, Selector | keyof StylesInterface>;
 
 export type StylesWithoutSelectors = {
   [key in keyof StylesInterface]?: ResponsiveStyleValue<StylesInterface[key]>;
