@@ -1,0 +1,119 @@
+import { Meta, Story, Canvas } from '@storybook/addon-docs';
+import { Button, Root, Space, Card, Text, Block, Paragraph, Flow, Flex } from '../index';
+import { StyledButton, GlobalStyledHeading } from './components/StyledButton';
+
+<Meta title="UIKit/Styled API" />
+
+# Styled API
+
+Let's look at styled API:
+
+```typescript jsx
+import styled from 'tastycss-react';
+
+const Element = styled({
+  /** The name of the element. It can be used to override styles in context. */
+  name: 'Article',
+  /** The tag name of the element. */
+  tag: 'span',
+  /** Default styles of the element. */
+  styles: {
+    // tokens
+    '@local-padding': ['2x', '1x'], // responsive styles
+    '@text-color': 'rgba(255, 0, 0)',
+    // styles
+    padding: '@local-padding',
+    color: {
+      // the default color
+      '': '#text',
+      // the color if `blue` mod is specified
+      blue: 'blue',
+    }, // use color token
+  },
+  /** Default raw css of the element. */
+  css: `
+    appearance: none;
+  `,
+  /** Default attributes */
+  props: {
+    role: 'article',
+  },
+  /** The list of styles that can be provided by props */
+  styleProps: ['align'],
+});
+```
+
+Now you can use this element inside your React App:
+
+```typescript jsx
+export default function Component({ title, children }) {
+  return <>
+    <Heading>{title}</Heading>
+    <Element>{children}</Element>
+  </>;
+}
+```
+
+## Extend base options
+
+You can use `styled()` function to extend styling of the existing component.
+
+```typescript jsx
+const CustomElement = styled(Element, {
+  /** Change style name */
+  name: 'BigBlock',
+  /** Change tag name */
+  tag: 'input',
+  /** Extend or rewrite styles */
+  styles: {
+    color: '#purple',
+  },
+  /** Add more default properties/attributes */
+  props: {
+    role: 'article',
+  },
+});
+```
+
+An example of styled component.
+
+```typescript jsx
+import { styled } from '../../styled';
+import { Button } from '../../components/actions/Button/Button';
+
+const StyledButton = styled(Button, {
+  styles: {
+    padding: '3x 6x',
+    preset: 't1',
+  },
+});
+```
+
+<Canvas>
+  <Story name="Styled Button">
+    <StyledButton>Styled Button</StyledButton>
+  </Story>
+</Canvas>
+
+## Define global styles
+
+Use `styled()` to define global styles for elements:
+
+```typescript jsx
+import { styled } from '../../styled';
+
+const GlobalStyledHeading = styled('button.myButton', {
+  display: 'inline-block',
+  padding: '1x 2x',
+  preset: 't2',
+  border: true,
+  radius: true,
+});
+```
+
+<Canvas>
+  <Story name="Globally Styled Button">
+    <button className="myButton">Styled Button</button>
+    <GlobalStyledHeading/>
+  </Story>
+</Canvas>

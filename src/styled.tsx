@@ -44,7 +44,7 @@ function styled<K extends(keyof StylesInterface)[], C = {}>(
       let contextBreakpoints = useContext(BreakpointsContext);
       let zones = pointsToZones(breakpoints || contextBreakpoints);
 
-      let css = `${styles ? renderStyles(styles, zones, selector) : ''}`;
+      let css = `${styles ? `\n{}${selector}{${renderStyles(styles, zones)}}` : ''}`;
 
       return <Element css={css} />;
     };

@@ -160,9 +160,7 @@ export function renderStyles(
       }
     });
 
-    STYLE_CACHE[cacheKey] = `${
-      suffix ? `{}\n${suffix}{outline: none;}` : 'outline: none;'
-    }\n${rawStyles}${
+    STYLE_CACHE[cacheKey] = `outline: none;\n${rawStyles}${
       responsive && responsive.length
         ? mediaWrapper(responsiveStyles, zones)
         : ''

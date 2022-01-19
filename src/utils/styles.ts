@@ -728,7 +728,7 @@ export function styleHandlerCacheWrapper(styleHandler, limit = 1000) {
 
     replaceStateValues(stateMapList, wrappedStyleHandler);
 
-    return applyStates('&&', stateMapList, suffix);
+    return applyStates('&', stateMapList, suffix);
   }, limit);
 
   return Object.assign(wrappedMapHandler, {
