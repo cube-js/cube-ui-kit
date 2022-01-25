@@ -41,6 +41,7 @@ const PROPS = {
   'outline-width': 'calc(1rem / 16 * 3)',
   'border-width': '1px',
   radius: '4px',
+  'leaf-sharp-radius': '0px',
   transition: '120ms',
   'clear-color': 'transparent',
   'border-color': color('dark', 0.1),
