@@ -86,9 +86,9 @@ export const GlobalStyles = createGlobalStyle`
       font
       || 'Inter'}, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
     --monospace-font: ${({ monospaceFont }) =>
-      `${monospaceFont ? `${monospaceFont}, `
-      : ''}Menlo, Monaco, Consolas, 'Courier New', monospace;}`
-  }
+      `${
+        monospaceFont ? `${monospaceFont}, ` : ''
+      }Menlo, Monaco, Consolas, 'Courier New', monospace;}`}
 
   body {
     background-color: white !important;
