@@ -27,18 +27,18 @@ export type CubeResultStatus = 'success' | 'error' | 'info' | 'warning' | 404 | 
 
 type StatusIconMap = Record<CubeResultStatus, {
   color: string;
-  component: ComponentType,
+  component: ComponentType;
   size: string;
 }>;
 
 const statusIconMap: StatusIconMap = {
   success: {
-    color: 'var(--success-color)',
+    color: '#success',
     component: CheckCircleFilled,
     size: '12x',
   },
   error: {
-    color: 'var(--danger-color)',
+    color: '#danger',
     component: CloseCircleFilled,
     size: '12x',
   },
@@ -48,37 +48,31 @@ const statusIconMap: StatusIconMap = {
     size: '12x',
   },
   warning: {
-    color: 'var(--danger-color)',
+    color: '#danger',
     component: WarningFilled,
     size: '12x',
   },
   404: {
     color: '#purple',
     component: () => {
-      // TODO: will be added later
-      return (
-        <div>Illustration</div>
-      );
+      // TODO: Needs to be implemented in the future
+      return null;
     },
     size: '12x',
   },
   403: {
     color: '#purple',
     component: () => {
-      // TODO: will be added later
-      return (
-        <div>Illustration</div>
-      );
+      // TODO: Needs to be implemented in the future
+      return null;
     },
     size: '12x',
   },
   500: {
     color: '#purple',
     component: () => {
-      // TODO: will be added later
-      return (
-        <div>Illustration</div>
-      );
+      // TODO: Needs to be implemented in the future
+      return null;
     },
     size: '12x',
   },
