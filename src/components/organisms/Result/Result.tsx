@@ -1,15 +1,16 @@
 import { ComponentType, forwardRef, ReactNode, useMemo } from 'react';
 import { CheckCircleFilled, CloseCircleFilled, InfoCircleFilled, WarningFilled } from '@ant-design/icons';
 
-import { Base } from '../../Base';
-import { Block } from '../../Block';
-import { CubeFlexProps, Flex } from '../../layout/Flex';
 import { Paragraph } from '../../content/Paragraph';
 import { Title } from '../../content/Title';
+import { styled } from '../../../styled';
+import { wrapText } from '../../../utils/react';
+import { BaseProps, ContainerStyleProps } from '../../types';
+import { extractStyles } from '../../../utils/styles';
+import { CONTAINER_STYLES } from '../../../styles/list';
+import { filterBaseProps } from '../../../utils/filterBaseProps';
 
-export interface CubeResultProps extends CubeFlexProps {
-  /** The description text */
-  description?: ReactNode;
+export interface CubeResultProps extends BaseProps, ContainerStyleProps {
   /** Operating area */
   extra?: ReactNode;
   /** Custom back icon */
@@ -19,7 +20,9 @@ export interface CubeResultProps extends CubeFlexProps {
    * @default 'info'
    */
   status?: CubeResultStatus;
-  /** The title text */
+  /** The subTitle */
+  subTitle?: ReactNode;
+  /** The title */
   title?: ReactNode;
 }
 
@@ -28,29 +31,53 @@ export type CubeResultStatus = 'success' | 'error' | 'info' | 'warning' | 404 | 
 type StatusIconMap = Record<CubeResultStatus, {
   color: string;
   component: ComponentType;
-  size: string;
 }>;
+
+const Container = styled({
+  name: 'ResultContainer',
+  tag: 'section',
+  styles: {
+    display: 'flex',
+    flow: 'column',
+    placeItems: 'center',
+    gap: '3x',
+    textAlign: 'center',
+
+    Content: {
+      display: 'flex',
+      flow: 'column',
+      placeItems: 'inherit',
+      gap: '2x',
+    },
+
+    Extra: {
+      display: 'block',
+    },
+  },
+});
+
+const IconWrapper = styled({
+  styles: {
+    fontSize: '10x',
+  }
+});
 
 const statusIconMap: StatusIconMap = {
   success: {
     color: '#success',
     component: CheckCircleFilled,
-    size: '12x',
   },
   error: {
     color: '#danger',
     component: CloseCircleFilled,
-    size: '12x',
   },
   info: {
     color: '#purple',
     component: InfoCircleFilled,
-    size: '12x',
   },
   warning: {
-    color: '#danger',
+    color: '#note',
     component: WarningFilled,
-    size: '12x',
   },
   404: {
     color: '#purple',
@@ -58,7 +85,6 @@ const statusIconMap: StatusIconMap = {
       // TODO: Needs to be implemented in the future
       return null;
     },
-    size: '12x',
   },
   403: {
     color: '#purple',
@@ -66,7 +92,6 @@ const statusIconMap: StatusIconMap = {
       // TODO: Needs to be implemented in the future
       return null;
     },
-    size: '12x',
   },
   500: {
     color: '#purple',
@@ -74,16 +99,16 @@ const statusIconMap: StatusIconMap = {
       // TODO: Needs to be implemented in the future
       return null;
     },
-    size: '12x',
   },
 };
 
 export const Result = forwardRef<HTMLElement, CubeResultProps>((props, ref) => {
   const {
-    description,
+    children,
     extra,
     icon,
     status,
+    subTitle,
     title,
     ...otherProps
   } = props;
@@ -93,53 +118,42 @@ export const Result = forwardRef<HTMLElement, CubeResultProps>((props, ref) => {
       return icon;
     }
 
-    const { color, component: Component, size: fontSize } =
+    const { color, component: Component } =
       status && statusIconMap.hasOwnProperty(status)
         ? statusIconMap[status]
         : statusIconMap.info;
 
     return (
-      <Base styles={{ color, fontSize }}>
+      <IconWrapper styles={{ color }}>
         <Component />
-      </Base>
+      </IconWrapper>
     );
   }, [icon, status]);
 
+  const styles = extractStyles(otherProps, CONTAINER_STYLES);
+
   return (
-    <Flex
-      flow="column"
-      placeItems="center"
-      gap="4x"
+    <Container
+      {...filterBaseProps(otherProps, { eventProps: true })}
       ref={ref}
-      {...otherProps}
+      styles={styles}
     >
       {iconNode}
-      {(title || description) && (
-        <Block
-          gap="1x"
-          textAlign="center"
-        >
-          {title && (
-            <Title level={2}>
-              {title}
-            </Title>
-          )}
-          {description && (
-            <Paragraph>
-              {description}
-            </Paragraph>
-          )}
-        </Block>
+      {(title || subTitle) && (
+        <div data-element="Content">
+          {wrapText(title, Title, {
+            level: 2,
+          })}
+          {wrapText(subTitle, Paragraph)}
+        </div>
       )}
-      {extra && (
-        <Flex
-          placeItems="center"
-          gap="1x"
-        >
+      {(children || extra) && (
+        <div data-element="Extra">
+          {children}
           {extra}
-        </Flex>
+        </div>
       )}
-    </Flex>
+    </Container>
   );
 });
 
