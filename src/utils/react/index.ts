@@ -5,4 +5,4 @@ export { modAttrs } from './modAttrs';
 export { useSlotProps, SlotProvider, ClearSlots } from './Slots';
 export { useLayoutEffect } from './useLayoutEffect';
 export { useCombinedRefs } from './useCombinedRefs';
-export { wrapText } from './wrapText';
+export { wrapNodeIfPlain } from './wrapNodeIfPlain';

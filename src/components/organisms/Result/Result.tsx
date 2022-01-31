@@ -1,14 +1,19 @@
 import { ComponentType, forwardRef, ReactNode, useMemo } from 'react';
-import { CheckCircleFilled, CloseCircleFilled, InfoCircleFilled, WarningFilled } from '@ant-design/icons';
+import {
+  CheckCircleFilled,
+  CloseCircleFilled,
+  InfoCircleFilled,
+  WarningFilled,
+} from '@ant-design/icons';
 
 import { Paragraph } from '../../content/Paragraph';
 import { Title } from '../../content/Title';
 import { styled } from '../../../styled';
-import { wrapText } from '../../../utils/react';
-import { BaseProps, ContainerStyleProps } from '../../types';
-import { extractStyles } from '../../../utils/styles';
 import { CONTAINER_STYLES } from '../../../styles/list';
+import { BaseProps, ContainerStyleProps } from '../../types';
 import { filterBaseProps } from '../../../utils/filterBaseProps';
+import { extractStyles } from '../../../utils/styles';
+import { wrapNodeIfPlain } from '../../../utils/react';
 
 export interface CubeResultProps extends BaseProps, ContainerStyleProps {
   /** Operating area */
@@ -26,12 +31,22 @@ export interface CubeResultProps extends BaseProps, ContainerStyleProps {
   title?: ReactNode;
 }
 
-export type CubeResultStatus = 'success' | 'error' | 'info' | 'warning' | 404 | 403 | 500;
+export type CubeResultStatus =
+  | 'success'
+  | 'error'
+  | 'info'
+  | 'warning'
+  | 404
+  | 403
+  | 500;
 
-type StatusIconMap = Record<CubeResultStatus, {
-  color: string;
-  component: ComponentType;
-}>;
+type StatusIconMap = Record<
+  CubeResultStatus,
+  {
+    color: string;
+    component: ComponentType;
+  }
+>;
 
 const Container = styled({
   name: 'ResultContainer',
@@ -47,7 +62,7 @@ const Container = styled({
       display: 'flex',
       flow: 'column',
       placeItems: 'inherit',
-      gap: '2x',
+      gap: '1x',
     },
 
     Extra: {
@@ -59,7 +74,7 @@ const Container = styled({
 const IconWrapper = styled({
   styles: {
     fontSize: '10x',
-  }
+  },
 });
 
 const statusIconMap: StatusIconMap = {
@@ -103,29 +118,28 @@ const statusIconMap: StatusIconMap = {
 };
 
 export const Result = forwardRef<HTMLElement, CubeResultProps>((props, ref) => {
-  const {
-    children,
-    extra,
-    icon,
-    status,
-    subTitle,
-    title,
-    ...otherProps
-  } = props;
+  const { children, extra, icon, status, subTitle, title, ...otherProps }
+    = props;
+
+  if (icon && status) {
+    console.warn(
+      'Don\'t use "icon" and "status" together, it can lead to possible errors.',
+    );
+  }
 
   const iconNode = useMemo(() => {
     if (icon) {
       return icon;
     }
 
-    const { color, component: Component } =
-      status && statusIconMap.hasOwnProperty(status)
+    const { color, component: Component }
+      = status && statusIconMap.hasOwnProperty(status)
         ? statusIconMap[status]
         : statusIconMap.info;
 
     return (
-      <IconWrapper styles={{ color }}>
-        <Component />
+      <IconWrapper data-element="IconWrapper" styles={{ color }}>
+        <Component data-element="Icon" />
       </IconWrapper>
     );
   }, [icon, status]);
@@ -141,10 +155,14 @@ export const Result = forwardRef<HTMLElement, CubeResultProps>((props, ref) => {
       {iconNode}
       {(title || subTitle) && (
         <div data-element="Content">
-          {wrapText(title, Title, {
-            level: 2,
-          })}
-          {wrapText(subTitle, Paragraph)}
+          {wrapNodeIfPlain(title, () => (
+            <Title data-element="Title" level={2}>
+              {title}
+            </Title>
+          ))}
+          {wrapNodeIfPlain(subTitle, () => (
+            <Paragraph data-element="Subtitle">{subTitle}</Paragraph>
+          ))}
         </div>
       )}
       {(children || extra) && (
