@@ -159,8 +159,10 @@ export { AlertDialog } from './components/overlays/AlertDialog/AlertDialog';
 export type { CubeAlertDialogProps } from './components/overlays/AlertDialog/AlertDialog';
 export { SearchResults } from './components/organisms/SearchResults/SearchResults';
 export type { CubeSearchResultsProps } from './components/organisms/SearchResults/SearchResults';
-// services
+export { Result } from './components/organisms/Result/Result';
+export type { CubeResultProps, CubeResultStatus } from './components/organisms/Result/Result';
 
+// services
 export { notification } from './services/notification';
 export type { CubeNotificationOptions } from './services/notification';
 
