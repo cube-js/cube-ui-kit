@@ -17,7 +17,7 @@ import { wrapNodeIfPlain } from '../../../utils/react';
 
 export interface CubeResultProps extends BaseProps, ContainerStyleProps {
   /** Operating area */
-  extra?: ReactNode;
+  children?: ReactNode;
   /** Custom back icon */
   icon?: ReactNode;
   /**
@@ -59,14 +59,14 @@ const Container = styled({
     textAlign: 'center',
 
     Content: {
+      display: 'block',
+    },
+
+    Title: {
       display: 'flex',
       flow: 'column',
       placeItems: 'inherit',
       gap: '1x',
-    },
-
-    Extra: {
-      display: 'block',
     },
   },
 });
@@ -118,7 +118,7 @@ const statusIconMap: StatusIconMap = {
 };
 
 export const Result = forwardRef<HTMLElement, CubeResultProps>((props, ref) => {
-  const { children, extra, icon, status, subTitle, title, ...otherProps }
+  const { children, icon, status, subTitle, title, ...otherProps }
     = props;
 
   if (icon && status) {
@@ -154,21 +154,20 @@ export const Result = forwardRef<HTMLElement, CubeResultProps>((props, ref) => {
     >
       {iconNode}
       {(title || subTitle) && (
-        <div data-element="Content">
+        <div data-element="Title">
           {wrapNodeIfPlain(title, () => (
-            <Title data-element="Title" level={2}>
+            <Title level={3} preset="h4">
               {title}
             </Title>
           ))}
           {wrapNodeIfPlain(subTitle, () => (
-            <Paragraph data-element="Subtitle">{subTitle}</Paragraph>
+            <Paragraph>{subTitle}</Paragraph>
           ))}
         </div>
       )}
-      {(children || extra) && (
-        <div data-element="Extra">
+      {children && (
+        <div data-element="Content">
           {children}
-          {extra}
         </div>
       )}
     </Container>
