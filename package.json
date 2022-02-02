@@ -39,6 +39,8 @@
   "author": "Cube Dev Team",
   "devDependencies": {
     "@ant-design/icons": "^4.7.0",
+    "@commitlint/cli": "16.1.0",
+    "@commitlint/config-conventional": "16.0.0",
     "@open-wc/testing": "^3.0.3",
     "@react-aria/button": "^3.3.4",
     "@react-aria/checkbox": "^3.2.3",
