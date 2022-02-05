@@ -9,7 +9,7 @@ import { Button } from '../../actions/Button/Button';
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 
 function PasswordInput(props: CubeTextInputBaseProps, ref) {
-  let { suffix, ...otherProps } = useProviderProps({ ...props });
+  let { suffix, multiLine, ...otherProps } = useProviderProps({ ...props });
 
   let [type, setType] = useState('password');
   let inputRef = useRef(null);
@@ -54,6 +54,7 @@ function PasswordInput(props: CubeTextInputBaseProps, ref) {
       type={type}
       suffixPosition="after"
       suffix={wrappedSuffix}
+      multiLine={multiLine}
       {...otherProps}
     />
   );
