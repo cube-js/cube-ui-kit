@@ -179,11 +179,13 @@ const TOKENS = {
   'c1-line-height': '20px',
   'c1-letter-spacing': '0.015em',
   'c1-font-weight': '500',
+  'c1-text-transform': 'uppercase',
   // c2
   'c2-font-size': '12px',
   'c2-line-height': '18px',
   'c2-letter-spacing': '0.02em',
   'c2-font-weight': '500',
+  'c2-text-transform': 'uppercase',
   // tag
   'tag-font-size': '12px',
   'tag-line-height': '12px',
