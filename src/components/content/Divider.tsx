@@ -10,27 +10,55 @@ const STYLE_LIST = [...OUTER_STYLES, ...BASE_STYLES, ...COLOR_STYLES];
 
 const DEFAULT_STYLES = {
   gridArea: 'divider',
-  display: 'block',
-  height: '1bw 1bw',
-  fill: '#border',
+  display: {
+    '': 'block',
+    text: 'grid',
+  },
+  gridColumns: '1fr auto 1fr',
+  placeItems: 'center stretch',
+  gap: '1x',
+  preset: 'c1',
+  height: {
+    '': '1bw 1bw',
+    text: 'auto',
+  },
+  fill: {
+    '': '#border',
+    text: 'none',
+  },
   border: '0',
   margin: '0',
+
+  Line: {
+    height: '1bw 1bw',
+    fill: '#border',
+  },
 };
 
 export interface CubeDividerProps extends BaseProps, OuterStyleProps {}
 
 export const Divider = forwardRef((props: CubeDividerProps, ref) => {
-  props = useSlotProps(props, 'divider');
-
+  const { mods, children, ...otherProps } = useSlotProps(props, 'divider');
   const styles = extractStyles(props, STYLE_LIST, DEFAULT_STYLES);
 
   return (
     <Base
-      as="hr"
+      as={children ? 'div' : 'hr'}
+      role={children ? 'separator' : undefined}
+      mods={{
+        text: children,
+        ...mods,
+      }}
       data-id="Divider"
-      {...filterBaseProps(props, { eventProps: true })}
+      {...filterBaseProps(otherProps, { eventProps: true })}
       styles={styles}
       ref={ref}
-    />
+    >{
+      children && <>
+        <div data-element="Line"></div>
+        <div>{children}</div>
+        <div data-element="Line"></div>
+      </>
+    }</Base>
   );
 });

@@ -30,7 +30,8 @@ function color(name, opacity = 1) {
   return `rgba(${colors[name]}, ${opacity})`;
 }
 
-const PROPS = {
+const TOKENS = {
+  // Base and legacy tokens
   'font-size': '14px',
   'line-height': '20px',
   'input-font-size': '14px',
@@ -173,6 +174,16 @@ const PROPS = {
   'p4-line-height': '20px',
   'p4-letter-spacing': '0.025em',
   'p4-font-weight': '400',
+  // c1
+  'c1-font-size': '14px',
+  'c1-line-height': '20px',
+  'c1-letter-spacing': '0.015em',
+  'c1-font-weight': '500',
+  // c2
+  'c2-font-size': '12px',
+  'c2-line-height': '18px',
+  'c2-letter-spacing': '0.02em',
+  'c2-font-weight': '500',
   // tag
   'tag-font-size': '12px',
   'tag-line-height': '12px',
@@ -199,9 +210,10 @@ const PROPS = {
   'default-font-weight': 'var(--t3-font-weight)',
 };
 
+// Map color tokens
 Object.keys(colors).forEach((name) => {
-  PROPS[`${name}-color`] = color(name);
-  PROPS[`${name}-color-rgb`] = colors[name];
+  TOKENS[`${name}-color`] = color(name);
+  TOKENS[`${name}-color-rgb`] = colors[name];
 });
 
-export default PROPS;
+export { TOKENS };
