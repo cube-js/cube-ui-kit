@@ -24,7 +24,7 @@ export function fillStyle({ fill }) {
     styles.push([
       {
         $: '>*',
-        '--context-fill-color': `var(--${name}-color)`,
+        '--context-fill-color': fill,
         '--context-fill-color-rgb': `var(--${name}-color-rgb)`,
       },
     ]);

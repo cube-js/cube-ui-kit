@@ -1,5 +1,5 @@
 import { createGlobalStyle } from 'styled-components';
-import VARIABLES from '../css-properties';
+import { TOKENS } from '../tokens';
 
 interface GlobalStylesProps {
   tokens?: { [key: string]: string };
@@ -73,7 +73,7 @@ const fontsProvider = ({ publicUrl = '' }) => `
 export const GlobalStyles = createGlobalStyle`
   body {
     ${({ tokens }: GlobalStylesProps) => {
-      return Object.entries({ ...VARIABLES, ...tokens })
+      return Object.entries({ ...TOKENS, ...tokens })
         .map(([key, value]) => {
           return `--${key}: ${value};`;
         })
