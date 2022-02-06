@@ -1,4 +1,5 @@
 import { PasswordInput } from './PasswordInput';
+import { MULTILINE_ARG } from '../../../stories/FormFieldArgs';
 
 export default {
   title: 'UIKit/Forms/PasswordInput',
@@ -51,6 +52,7 @@ export default {
       defaultValue: 'Placeholder',
       control: 'text',
     },
+    ...MULTILINE_ARG,
   },
 };
 

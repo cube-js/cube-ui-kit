@@ -172,6 +172,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
   let [prefixWidth, setPrefixWidth] = useState(0);
 
   let styles = extractStyles(otherProps, STYLE_LIST);
+  let type = otherProps.type;
 
   let contextStyles = useContextStyles('Input', otherProps);
 
@@ -266,6 +267,9 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
           disabled: isDisabled,
           hovered: isHovered,
           focused: isFocused,
+        }}
+        style={{
+          WebkitTextSecurity: multiLine && type === 'password' ? 'disc' : 'initial',
         }}
         autoFocus={autoFocus}
         data-size={size}
