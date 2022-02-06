@@ -30,7 +30,8 @@
     "storybook": "start-storybook -s ./public -p 6006",
     "build-storybook": "build-storybook",
     "chromatic": "npx chromatic",
-    "size": "size-limit"
+    "size": "size-limit",
+    "prepare": "husky install"
   },
   "keywords": [
     "uikit"
@@ -38,6 +39,8 @@
   "author": "Cube Dev Team",
   "devDependencies": {
     "@ant-design/icons": "^4.7.0",
+    "@commitlint/cli": "16.1.0",
+    "@commitlint/config-conventional": "16.0.0",
     "@open-wc/testing": "^3.0.3",
     "@react-aria/button": "^3.3.4",
     "@react-aria/checkbox": "^3.2.3",
@@ -119,8 +122,10 @@
     "eslint-plugin-react": "^7.28.0",
     "eslint-plugin-react-hooks": "^4.3.0",
     "eslint-plugin-storybook": "^0.5.5",
+    "husky": ">=6",
     "jest": "^27.4.5",
     "less-loader": "^10.2.0",
+    "lint-staged": ">=10",
     "netlify-cli": "^8.6.0",
     "parcel-bundler": "^1.12.4",
     "prettier": "^2.5.1",
