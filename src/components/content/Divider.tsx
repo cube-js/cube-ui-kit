@@ -39,14 +39,14 @@ export interface CubeDividerProps extends BaseProps, OuterStyleProps {}
 
 export const Divider = forwardRef((props: CubeDividerProps, ref) => {
   const { mods, children, ...otherProps } = useSlotProps(props, 'divider');
-  const styles = extractStyles(props, STYLE_LIST, DEFAULT_STYLES);
+  const styles = extractStyles(otherProps, STYLE_LIST, DEFAULT_STYLES);
 
   return (
     <Base
       as={children ? 'div' : 'hr'}
       role={children ? 'separator' : undefined}
       mods={{
-        text: children,
+        text: !!children,
         ...mods,
       }}
       data-id="Divider"
