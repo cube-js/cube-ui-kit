@@ -21,6 +21,8 @@ const config = {
 };
 
 module.exports = {
+  verbose: true,
+  coverageDirectory: './coverage/',
   transform: {
     '^.+\\.(t|j)sx?$': [
       '@swc/jest',
