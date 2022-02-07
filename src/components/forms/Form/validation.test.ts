@@ -1,25 +1,19 @@
-import { expect } from 'chai';
 import { applyRules } from './validation';
 
-function apply(rule, valid = [], invalid = []) {
-  return Promise.all(
-    valid
-      .map((value) => {
-        return applyRules(value, [rule], {});
-      })
-      .concat(
-        invalid.map((value) => {
-          return applyRules(value, [rule], {}).then(
-            () => {
-              throw new Error('false positive');
-            },
-            (err) => {
-              expect(err).eq(rule.message);
-            },
-          );
-        }),
-      ),
-  );
+async function apply(rule, valid = [], invalid = []) {
+  for (const validCase of valid) {
+    await expect(
+      applyRules(validCase, [rule], {}).catch((err) => {
+        console.error('fails with', err);
+      }),
+    ).resolves.toBeEmpty;
+  }
+
+  for (const invalidCase of invalid) {
+    await expect(applyRules(invalidCase, [rule], {})).rejects.toEqual(
+      rule.message,
+    );
+  }
 }
 
 describe('Form validation', () => {
@@ -51,11 +45,11 @@ describe('Form validation', () => {
   it('"email" rule applying', () => {
     return apply(
       {
-        email: true,
+        type: 'email',
         message: 'This field should be a valid email address',
       },
-      ['test@example.com', ''],
-      ['test@', 'test@example', '@example.com'],
+      ['test@example.com'],
+      ['test@', 'test@example', '@example.com', ''],
     );
   });
 
