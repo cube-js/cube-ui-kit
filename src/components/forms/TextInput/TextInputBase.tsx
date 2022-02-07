@@ -225,8 +225,8 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
   );
   let validation = cloneElement(validationIcon);
 
-  suffix =
-    typeof suffix === 'string' ? (
+  suffix
+    = typeof suffix === 'string' ? (
       <Block padding="1x right">{suffix}</Block>
     ) : (
       suffix
