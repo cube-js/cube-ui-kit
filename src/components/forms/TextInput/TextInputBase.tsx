@@ -225,8 +225,8 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
   );
   let validation = cloneElement(validationIcon);
 
-  suffix
-    = typeof suffix === 'string' ? (
+  suffix =
+    typeof suffix === 'string' ? (
       <Block padding="1x right">{suffix}</Block>
     ) : (
       suffix
@@ -269,7 +269,8 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
           focused: isFocused,
         }}
         style={{
-          WebkitTextSecurity: multiLine && type === 'password' ? 'disc' : 'initial',
+          WebkitTextSecurity:
+            multiLine && type === 'password' ? 'disc' : 'initial',
         }}
         autoFocus={autoFocus}
         data-size={size}
