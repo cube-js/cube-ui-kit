@@ -53,12 +53,14 @@ export const Divider = forwardRef((props: CubeDividerProps, ref) => {
       {...filterBaseProps(otherProps, { eventProps: true })}
       styles={styles}
       ref={ref}
-    >{
-      children && <>
-        <div data-element="Line"></div>
-        <div>{children}</div>
-        <div data-element="Line"></div>
-      </>
-    }</Base>
+    >
+      {children && (
+        <>
+          <div data-element="Line"></div>
+          <div>{children}</div>
+          <div data-element="Line"></div>
+        </>
+      )}
+    </Base>
   );
 });

@@ -23,7 +23,9 @@ export default {
     },
     type: {
       defaultValue: 'default',
-      description: 'A visual type of the button. Don\'t affect any logic',
+      // @FIXME: prettier and eslint conflicts when string has escape chars in single quotes
+      // eslint-disable-next-line quotes
+      description: "A visual type of the button. Don't affect any logic",
       control: {
         type: 'radio',
         options: [
@@ -43,7 +45,9 @@ export default {
     },
     theme: {
       defaultValue: 'default',
-      description: 'A visual type of the button. Don\'t affect any logic',
+      // @FIXME: prettier and eslint conflicts when string has escape chars in single quotes
+      // eslint-disable-next-line quotes
+      description: "A visual type of the button. Don't affect any logic",
       control: {
         type: 'radio',
         options: [undefined, 'danger'],
