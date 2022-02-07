@@ -269,7 +269,8 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
           focused: isFocused,
         }}
         style={{
-          WebkitTextSecurity: multiLine && type === 'password' ? 'disc' : 'initial',
+          WebkitTextSecurity:
+            multiLine && type === 'password' ? 'disc' : 'initial',
         }}
         autoFocus={autoFocus}
         data-size={size}
