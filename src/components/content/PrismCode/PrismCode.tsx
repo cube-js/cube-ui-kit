@@ -12,6 +12,13 @@ const RawPre = styled({
     className: 'cube-prism-code',
   },
   styleProps: CONTAINER_STYLES.concat([]),
+  styles: {
+    margin: 0,
+
+    Code: {
+      display: 'block',
+    },
+  },
 });
 
 export interface CubePrismCodeProps extends ContainerStyleProps {
@@ -45,7 +52,9 @@ function PrismCode(props: CubePrismCodeProps, ref) {
 
   return (
     <RawPre ref={ref} className="cube-prism-code" {...otherProps}>
-      <code className={`language-${language}`}>{code}</code>
+      <code data-element="Code" className={`language-${language}`}>
+        {code}
+      </code>
     </RawPre>
   );
 }
