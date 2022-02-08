@@ -160,7 +160,9 @@ export const Result = forwardRef<HTMLElement, CubeResultProps>((props, ref) => {
             </Title>
           ))}
           {wrapNodeIfPlain(subTitle, () => (
-            <Title level={3} preset="h5m">{subTitle}</Title>
+            <Title level={3} preset="h5m">
+              {subTitle}
+            </Title>
           ))}
         </div>
       )}
