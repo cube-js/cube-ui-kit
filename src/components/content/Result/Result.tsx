@@ -6,8 +6,8 @@ import {
   WarningFilled,
 } from '@ant-design/icons';
 
-import { Paragraph } from '../../content/Paragraph';
-import { Title } from '../../content/Title';
+import { Paragraph } from '../Paragraph';
+import { Title } from '../Title';
 import { styled } from '../../../styled';
 import { CONTAINER_STYLES } from '../../../styles/list';
 import { BaseProps, ContainerStyleProps } from '../../types';
@@ -16,12 +16,12 @@ import { extractStyles } from '../../../utils/styles';
 import { wrapNodeIfPlain } from '../../../utils/react';
 
 export interface CubeResultProps extends BaseProps, ContainerStyleProps {
-  /** Operating area */
+  /** Additional block content. For example, a set of buttons */
   children?: ReactNode;
-  /** Custom back icon */
+  /** Custom icon element */
   icon?: ReactNode;
   /**
-   * Result status, decide icons and colors
+   * Result status from ready-made templates
    * @default 'info'
    */
   status?: CubeResultStatus;
@@ -155,12 +155,12 @@ export const Result = forwardRef<HTMLElement, CubeResultProps>((props, ref) => {
       {iconNode}
       {(title || subTitle) && (
         <div data-element="Title">
-          {wrapNodeIfPlain(title, () => (
+          {title && wrapNodeIfPlain(title, () => (
             <Title level={3} preset="h4">
               {title}
             </Title>
           ))}
-          {wrapNodeIfPlain(subTitle, () => (
+          {subTitle && wrapNodeIfPlain(subTitle, () => (
             <Paragraph>{subTitle}</Paragraph>
           ))}
         </div>

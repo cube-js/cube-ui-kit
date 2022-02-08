@@ -63,6 +63,11 @@ export { Header } from './components/content/Header';
 export type { CubeHeaderProps } from './components/content/Header';
 export { Footer } from './components/content/Footer';
 export type { CubeFooterProps } from './components/content/Footer';
+export { Result } from './components/content/Result/Result';
+export type {
+  CubeResultProps,
+  CubeResultStatus,
+} from './components/content/Result/Result';
 export { FieldWrapper } from './components/forms/FieldWrapper';
 export type { CubeFieldWrapperProps } from './components/forms/FieldWrapper';
 
@@ -159,11 +164,6 @@ export { AlertDialog } from './components/overlays/AlertDialog/AlertDialog';
 export type { CubeAlertDialogProps } from './components/overlays/AlertDialog/AlertDialog';
 export { SearchResults } from './components/organisms/SearchResults/SearchResults';
 export type { CubeSearchResultsProps } from './components/organisms/SearchResults/SearchResults';
-export { Result } from './components/organisms/Result/Result';
-export type {
-  CubeResultProps,
-  CubeResultStatus,
-} from './components/organisms/Result/Result';
 
 // services
 export { notification } from './services/notification';

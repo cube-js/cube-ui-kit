@@ -3,7 +3,7 @@ import { Story, Canvas, ArgsTable } from "@storybook/addon-docs";
 
 import { Button, Result, Space } from '../../../index';
 
-<Meta title="UIKit/Result" component={Result}/>
+<Meta title="UIKit/Content/Result" component={Result} />
 
 export const Template = ({ children, ...props }) => {
   return (
@@ -103,7 +103,10 @@ Use when important operations need to inform the user to process the results and
 
 ## API
 
-<ArgsTable of={Result}/>
+<ArgsTable
+  of={Result}
+  include={['status', 'title', 'subTitle', 'icon', 'children']}
+/>
 
 
 ## Differences from Ant Design
