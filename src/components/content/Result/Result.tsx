@@ -6,7 +6,6 @@ import {
   WarningFilled,
 } from '@ant-design/icons';
 
-import { Paragraph } from '../Paragraph';
 import { Title } from '../Title';
 import { styled } from '../../../styled';
 import { CONTAINER_STYLES } from '../../../styles/list';
