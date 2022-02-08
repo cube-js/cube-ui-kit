@@ -118,8 +118,7 @@ const statusIconMap: StatusIconMap = {
 };
 
 export const Result = forwardRef<HTMLElement, CubeResultProps>((props, ref) => {
-  const { children, icon, status, subTitle, title, ...otherProps }
-    = props;
+  const { children, icon, status, subTitle, title, ...otherProps } = props;
 
   if (icon && status) {
     console.warn(
@@ -155,21 +154,17 @@ export const Result = forwardRef<HTMLElement, CubeResultProps>((props, ref) => {
       {iconNode}
       {(title || subTitle) && (
         <div data-element="Title">
-          {title && wrapNodeIfPlain(title, () => (
+          {wrapNodeIfPlain(title, () => (
             <Title level={3} preset="h4">
               {title}
             </Title>
           ))}
-          {subTitle && wrapNodeIfPlain(subTitle, () => (
+          {wrapNodeIfPlain(subTitle, () => (
             <Paragraph>{subTitle}</Paragraph>
           ))}
         </div>
       )}
-      {children && (
-        <div data-element="Content">
-          {children}
-        </div>
-      )}
+      {children && <div data-element="Content">{children}</div>}
     </Container>
   );
 });
