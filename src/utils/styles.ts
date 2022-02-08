@@ -712,7 +712,8 @@ export function applyStates(selector: string, states, suffix: string = '') {
       .map((mod) => `:not(${getModSelector(mod)})`)
       .join('')}`;
 
-    return `${css}${selector}${modifiers}${suffix}{\n${state.value}}\n`;
+    // TODO: replace `replace()` a REAL hotfix
+    return `${css}${selector}${modifiers}${suffix}{\n${state.value.replace(/^&&/, '&')}}\n`;
   }, '');
 }
 

@@ -1,0 +1,168 @@
+import { Meta } from '@storybook/addon-docs';
+import { Story, Canvas, ArgsTable } from "@storybook/addon-docs";
+import { BulbFilled, LockFilled } from '@ant-design/icons';
+
+import { baseProps } from './lists/baseProps';
+import { Base, Button, Result, Space, Text, Title } from '../index';
+
+<Meta title="UIKit/Content/Result" component={Result} />
+
+export const Template = ({ children, ...props }) => {
+  return (
+    <Result {...props}>{children}</Result>
+  );
+};
+
+# Result
+
+Used to feed back the results of a series of operational tasks.
+
+## When To Use
+
+Use when important operations need to inform the user to process the results and the feedback is more complicated.
+
+## Examples
+
+### Success
+
+<Canvas>
+  <Story
+    name="Success"
+    args={{
+      status: 'success',
+      title: 'Successfully Purchased Cloud Server ECS!',
+      subTitle: 'Order number: 2017182818828182881 Cloud server configuration takes 1-5 minutes, please wait.',
+      children: (
+        <Space>
+          <Button type="primary">Go Console</Button>
+          <Button type="default">Buy Again</Button>
+        </Space>
+      ),
+    }}
+  >
+    {Template.bind({})}
+  </Story>
+</Canvas>
+
+
+### Info
+
+<Canvas>
+  <Story
+    name="Info"
+    args={{
+      status: 'info',
+      title: 'Your operation has been executed',
+      children: (
+        <Button type="primary">Go Console</Button>
+      ),
+    }}
+  >
+    {Template.bind({})}
+  </Story>
+</Canvas>
+
+
+### Warning
+
+<Canvas>
+  <Story
+    name="Warning"
+    args={{
+      status: 'warning',
+      title: 'There are some problems with your operation',
+      children: (
+        <Button type="primary">Go Console</Button>
+      ),
+    }}
+  >
+    {Template.bind({})}
+  </Story>
+</Canvas>
+
+
+### Error
+
+<Canvas>
+  <Story
+    name="Error"
+    args={{
+      status: 'error',
+      title: 'Submission Failed',
+      subTitle: 'Please check and modify the following information before resubmitting.',
+      children: (
+        <Space>
+          <Button type="primary">Go Console</Button>
+          <Button type="default">Buy Again</Button>
+        </Space>
+      ),
+    }}
+  >
+    {Template.bind({})}
+  </Story>
+</Canvas>
+
+
+### Custom Icon
+
+<Canvas>
+  <Story
+    name="Custom Icon"
+    args={{
+      title: 'Access is denied!',
+      subTitle: 'Request access from the administrator.',
+      icon: (
+        <Base styles={{ color: '#note', fontSize: '10x' }}>
+          <LockFilled />
+        </Base>
+      ),
+      children: (
+        <Button type="default">Request</Button>
+      ),
+    }}
+  >
+    {Template.bind({})}
+  </Story>
+</Canvas>
+
+### Custom Title
+
+<Canvas>
+  <Story
+    name="Custom Title"
+    args={{
+      title: (
+        <Title level={3} preset="h2">Advice</Title>
+      ),
+      subTitle: (
+        <Text.Selection>Complete your profile to increase search relevancy.</Text.Selection>
+      ),
+      icon: (
+        <Base styles={{ color: '#purple', fontSize: '12x' }}>
+          <BulbFilled />
+        </Base>
+      ),
+      children: (
+        <Button type="primary">Complete Now</Button>
+      ),
+    }}
+  >
+    {Template.bind({})}
+  </Story>
+</Canvas>
+
+
+## API
+
+<ArgsTable of={Result} exclude={['isDisabled', 'theme', ...baseProps]} />
+
+
+## Differences from Ant Design
+
+There are differences | Ant Design property | Cube UIKit property |
+|        :----:       |        :----:       |        :----:       |
+| No                  | `status`            | `status`            |
+| No                  | `title`             | `title`             |
+| No                  | `subTitle`          | `subTitle`          |
+| No                  | `icon`              | `icon`              |
+| Yes                 | `extra`             | `children`          |
