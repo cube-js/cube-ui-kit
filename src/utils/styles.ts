@@ -713,7 +713,10 @@ export function applyStates(selector: string, states, suffix: string = '') {
       .join('')}`;
 
     // TODO: replace `replace()` a REAL hotfix
-    return `${css}${selector}${modifiers}${suffix}{\n${state.value.replace(/^&&/, '&')}}\n`;
+    return `${css}${selector}${modifiers}${suffix}{\n${state.value.replace(
+      /^&&/,
+      '&',
+    )}}\n`;
   }, '');
 }
 
