@@ -155,12 +155,12 @@ export const Result = forwardRef<HTMLElement, CubeResultProps>((props, ref) => {
       {(title || subTitle) && (
         <div data-element="Title">
           {wrapNodeIfPlain(title, () => (
-            <Title level={3} preset="h4">
+            <Title level={2} preset="h4">
               {title}
             </Title>
           ))}
           {wrapNodeIfPlain(subTitle, () => (
-            <Paragraph>{subTitle}</Paragraph>
+            <Title level={3} preset="h5m">{subTitle}</Title>
           ))}
         </div>
       )}
