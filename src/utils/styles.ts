@@ -404,10 +404,12 @@ export function parseColor(val, ignoreError = false) {
       }
     }
 
-    color
-      = opacity !== 100
-        ? rgbColorProp(name, Math.round(opacity) / 100)
-        : colorProp(name, null, strToRgb(`#${name}`));
+    if (!color) {
+      color
+        = opacity !== 100
+          ? rgbColorProp(name, Math.round(opacity) / 100)
+          : colorProp(name, null, strToRgb(`#${name}`));
+    }
 
     return {
       color,
@@ -455,8 +457,10 @@ export function parseColor(val, ignoreError = false) {
       color = 'currentColor';
     } else if (name === 'inherit') {
       color = 'inherit';
+    } else if (name !== 'transparent' && name !== 'currentColor') {
+      color = `var(--${name}-color, ${name})`;
     } else {
-      color = `var(--${name}-color)`;
+      color = name;
     }
 
     return {

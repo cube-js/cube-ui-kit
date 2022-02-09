@@ -52,6 +52,13 @@ export function createStyle(
             ).join(', ')})`,
           };
         } else if (name) {
+          if (color) {
+            return {
+              [finalCssStyle]: color,
+              [`${finalCssStyle}-rgb`]: `var(--${name}-color-rgb)`,
+            };
+          }
+
           return {
             [finalCssStyle]: `var(--${name}-color)`,
             [`${finalCssStyle}-rgb`]: `var(--${name}-color-rgb)`,

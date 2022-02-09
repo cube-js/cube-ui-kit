@@ -210,6 +210,14 @@ const TOKENS = {
   'default-line-height': 'var(--t3-line-height)',
   'default-letter-spacing': 'var(--t3-letter-spacing)',
   'default-font-weight': 'var(--t3-font-weight)',
+  // scrollbar colors
+  'scrollbar-width': '1.5x',
+  'scrollbar-outline-width': '1ow',
+  'scrollbar-radius': '1.5r',
+  'scrollbar-thumb-color': 'rgba(var(--text-color-rgb), .5)',
+  'scrollbar-outline-color': 'var(--clear-color)',
+  'scrollbar-bg-color': 'var(--grey-light-color)',
+  'scrollbar-corner-color': 'var(--clear-color)',
 };
 
 // Map color tokens

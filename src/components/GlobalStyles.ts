@@ -1,13 +1,26 @@
 import { createGlobalStyle } from 'styled-components';
-import { TOKENS } from '../tokens';
 
 interface GlobalStylesProps {
-  tokens?: { [key: string]: string };
+  bodyStyles?: { [key: string]: string };
   fonts?: boolean;
   publicUrl?: string;
   font?: string;
   monospaceFont?: string;
 }
+
+const BODY_STYLES = {
+  'background-color': 'white !important',
+  'font-family': 'var(--font)',
+  '-webkit-font-smoothing': 'antialiased',
+  '-moz-osx-font-smoothing': 'grayscale',
+  margin: '0',
+  padding: '0',
+  color: 'var(--dark-75-color)',
+  'font-size': 'var(--default-font-size)',
+  'line-height': 'var(--default-line-height)',
+  'letter-spacing': 'var(--default-letter-spacing)',
+  'font-weight': '400',
+};
 
 const fontsProvider = ({ publicUrl = '' }) => `
   @font-face {
@@ -72,10 +85,10 @@ const fontsProvider = ({ publicUrl = '' }) => `
 
 export const GlobalStyles = createGlobalStyle`
   body {
-    ${({ tokens }: GlobalStylesProps) => {
-      return Object.entries({ ...TOKENS, ...tokens })
+    ${({ bodyStyles }: GlobalStylesProps) => {
+      return Object.entries({ ...BODY_STYLES, ...bodyStyles })
         .map(([key, value]) => {
-          return `--${key}: ${value};`;
+          return `${key}: ${value};`;
         })
         .join('\n    ');
     }}
@@ -89,20 +102,6 @@ export const GlobalStyles = createGlobalStyle`
       `${
         monospaceFont ? `${monospaceFont}, ` : ''
       }Menlo, Monaco, Consolas, 'Courier New', monospace;}`}
-
-  body {
-    background-color: white !important;
-    font-family: var(--font);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    margin: 0;
-    padding: 0;
-    color: var(--dark-75-color);
-    font-size: var(--medium-font-size);
-    line-height: var(--medium-line-height);
-    letter-spacing: var(--medium-letter-spacing);
-    font-weight: 400;
-  }
 
   .cube-notification-container {
     min-width: 288px;

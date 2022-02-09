@@ -15,37 +15,30 @@ export function styledScrollbarStyle({ styledScrollbar: val }) {
 
   return [
     {
-      '--local-scrollbar-thumb-color':
-        'var(--scrollbar-thumb-color, rgba(var(--text-color-rgb), .5))',
-      '--local-scrollbar-border-color':
-        'var(--scrollbar-border-color, var(--border-width))',
-      '--local-scrollbar-bg-color':
-        'var(--scrollbar-bg-color, var(--grey-light-color))',
-    },
-    {
       $: '::-webkit-scrollbar',
-      width: 'calc(var(--gap) * 1.5)',
-      height: 'calc(var(--gap) * 1.5)',
+      width: 'var(--scrollbar-width)',
+      height: 'var(--scrollbar-width)',
     },
     {
       $: '::-webkit-scrollbar-track',
-      'background-color': 'var(--local-scrollbar-bg-color)',
+      'background-color': 'var(--scrollbar-bg-color)',
     },
     {
       $: '::-webkit-scrollbar-thumb',
-      'background-color': 'var(--local-scrollbar-thumb-color)',
-      'border-radius': 'calc(var(--radius) * 1.5)',
-      border: 'var(--outline-width) solid transparent',
+      'background-color': 'var(--scrollbar-thumb-color)',
+      'border-radius': 'var(--scrollbar-radius)',
+      border:
+        'var(--scrollbar-outline-width) solid var(--scrollbar-outline-color)',
       'background-clip': 'padding-box',
     },
     {
       $: '::-webkit-scrollbar-corner',
-      'background-color': 'transparent',
+      'background-color': 'var(--scrollbar-corner-color)',
     },
     {
       'scrollbar-width': 'thin',
       'scrollbar-color':
-        'var(--local-scrollbar-bg-color) var(--local-scrollbar-thumb-color)',
+        'var(--scrollbar-bg-color) var(--scrollbar-thumb-color)',
     },
   ];
 }

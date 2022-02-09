@@ -25,7 +25,7 @@ export function colorStyle({ color }) {
   if (name) {
     styles.push([
       {
-        '--current-color': `var(--${name}-color)`,
+        '--current-color': `var(--${name}-color, ${name})`,
         '--current-color-rgb': `var(--${name}-color-rgb)`,
       },
     ]);
