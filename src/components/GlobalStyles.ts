@@ -15,10 +15,10 @@ const BODY_STYLES = {
   '-moz-osx-font-smoothing': 'grayscale',
   margin: '0',
   padding: '0',
-  color: 'var(--dark-75-color)',
-  'font-size': 'var(--default-font-size)',
-  'line-height': 'var(--default-line-height)',
-  'letter-spacing': 'var(--default-letter-spacing)',
+  color: 'rgba(20, 20, 70, .75)',
+  'font-size': '14px',
+  'line-height': '20px',
+  'letter-spacing': '0.02em',
   'font-weight': '400',
 };
 
