@@ -1,3 +1,4 @@
+import { TOKENS } from '../tokens';
 import { createGlobalStyle } from 'styled-components';
 
 interface GlobalStylesProps {
@@ -6,6 +7,7 @@ interface GlobalStylesProps {
   publicUrl?: string;
   font?: string;
   monospaceFont?: string;
+  applyLegacyTokens?: boolean;
 }
 
 const BODY_STYLES = {
@@ -85,6 +87,15 @@ const fontsProvider = ({ publicUrl = '' }) => `
 
 export const GlobalStyles = createGlobalStyle`
   body {
+    ${({ applyLegacyTokens }: GlobalStylesProps) => {
+      return applyLegacyTokens
+        ? Object.entries(TOKENS)
+            .map(([key, value]) => {
+              return `--${key}: ${value};`;
+            })
+            .join('\n    ')
+        : '';
+    }}
     ${({ bodyStyles }: GlobalStylesProps) => {
       return Object.entries({ ...BODY_STYLES, ...bodyStyles })
         .map(([key, value]) => {

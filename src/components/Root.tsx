@@ -29,6 +29,7 @@ export interface CubeRootProps extends BaseProps {
   router?: any;
   font?: string;
   monospaceFont?: string;
+  applyLegacyTokens?: boolean;
 }
 
 export const Root = (allProps: CubeRootProps) => {
@@ -41,6 +42,7 @@ export const Root = (allProps: CubeRootProps) => {
     router,
     font,
     monospaceFont,
+    applyLegacyTokens,
     ...props
   } = allProps;
 
@@ -67,6 +69,7 @@ export const Root = (allProps: CubeRootProps) => {
       >
         <GlobalStyles
           bodyStyles={bodyStyles}
+          applyLegacyTokens={applyLegacyTokens}
           publicUrl={publicUrl}
           fonts={fonts}
           font={font}
