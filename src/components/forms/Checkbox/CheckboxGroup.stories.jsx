@@ -1,4 +1,5 @@
 import { Checkbox } from './Checkbox';
+import { DESCRIPTION_ARG } from '../../../stories/FormFieldArgs';
 
 export default {
   title: 'UIKit/Forms/CheckboxGroup',
@@ -67,6 +68,7 @@ export default {
       defaultValue: 'Checkbox group label',
       control: 'text',
     },
+    ...DESCRIPTION_ARG,
   },
 };
 

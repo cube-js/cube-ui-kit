@@ -1,6 +1,8 @@
 import { forwardRef, ReactNode } from 'react';
 import { Base } from '../Base';
 import { Label } from './Label';
+import { Flow } from '../layout/Flow';
+import { Paragraph } from '../content/Paragraph';
 import {
   LabelPosition,
   NecessityIndicator,
@@ -9,18 +11,29 @@ import {
 import { Styles } from '../../styles/types';
 import { TooltipProvider } from '../overlays/Tooltip/TooltipProvider';
 import { InfoCircleOutlined } from '@ant-design/icons';
+import { wrapNodeIfPlain } from '../../utils/react';
 
 const FIELD_STYLES = {
   display: 'grid',
   gridColumns: {
     '': '1fr',
-    'has-sider': 'auto 1fr',
+    'has-sider': '@(label-width, auto) 1fr',
   },
   gap: {
     '': '1x',
     'has-sider': '@(column-gap, 1x)',
   },
   placeItems: 'baseline stretch',
+
+  LabelArea: {
+    display: 'block',
+  },
+
+  InputArea: {
+    display: 'block',
+    flow: 'column',
+    gap: '1x',
+  },
 };
 
 const MESSAGE_STYLES = {
@@ -33,10 +46,6 @@ const MESSAGE_STYLES = {
   },
   fontWeight: 400,
   textAlign: 'left',
-  column: {
-    '': 1,
-    'has-sider': 2,
-  },
   userSelect: 'none',
 };
 
@@ -44,15 +53,21 @@ export type CubeFieldWrapperProps = {
   as: string;
   labelPosition: LabelPosition;
   label?: string;
-  styles?: Styles;
-  isRequired?: boolean;
-  isDisabled?: boolean;
   labelStyles?: Styles;
+  styles?: Styles;
+  /** Whether the input is required */
+  isRequired?: boolean;
+  /** Whether the input is disabled */
+  isDisabled?: boolean;
   necessityIndicator?: NecessityIndicator;
   labelProps?: any;
   fieldProps?: any;
+  /** Custom message for the field. It will be placed below the label and the input */
   message?: string | ReactNode;
+  /** Styles for the message */
   messageStyles?: Styles;
+  /** The description for the field. It will be placed below the label */
+  description?: string;
   Component?: JSX.Element;
   validationState?: ValidationState;
   requiredMark?: boolean;
@@ -73,6 +88,7 @@ function FieldWrapper(props, ref) {
     fieldProps,
     message,
     messageStyles,
+    description,
     Component,
     validationState,
     requiredMark = true,
@@ -80,9 +96,45 @@ function FieldWrapper(props, ref) {
   } = props;
   const mods = {
     'has-sider': labelPosition === 'side' && label,
+    'has-description': !!description,
     invalid: validationState === 'invalid',
     valid: validationState === 'valid',
   };
+
+  const labelComponent = label && (
+    <Label
+      as={as === 'label' ? 'div' : 'label'}
+      styles={labelStyles}
+      labelPosition={labelPosition}
+      isRequired={requiredMark ? isRequired : false}
+      isDisabled={isDisabled}
+      necessityIndicator={necessityIndicator}
+      validationState={validationState}
+      {...labelProps}
+    >
+      {label}
+      {tooltip ? (
+        <>
+          &nbsp;
+          <TooltipProvider
+            title={tooltip}
+            activeWrap
+            width="initial max-content 40x"
+          >
+            <InfoCircleOutlined style={{ color: 'var(--primary-color)' }} />
+          </TooltipProvider>
+        </>
+      ) : null}
+    </Label>
+  );
+
+  let descriptionComponent = description ? (
+    <div data-element="Description">
+      {wrapNodeIfPlain(description, () => (
+        <Paragraph>{description}</Paragraph>
+      ))}
+    </div>
+  ) : null;
 
   return (
     <Base
@@ -96,45 +148,32 @@ function FieldWrapper(props, ref) {
       }}
       {...fieldProps}
     >
-      {label && (
-        <Label
-          as={as === 'label' ? 'div' : 'label'}
-          styles={labelStyles}
-          labelPosition={labelPosition}
-          isRequired={requiredMark ? isRequired : false}
-          isDisabled={isDisabled}
-          necessityIndicator={necessityIndicator}
-          validationState={validationState}
-          {...labelProps}
-        >
-          {label}
-          {tooltip ? (
-            <>
-              &nbsp;
-              <TooltipProvider
-                title={tooltip}
-                activeWrap
-                width="initial max-content 40x"
-              >
-                <InfoCircleOutlined style={{ color: 'var(--primary-color)' }} />
-              </TooltipProvider>
-            </>
-          ) : null}
-        </Label>
-      )}
-      {Component}
-      {message && !isDisabled && (
-        <Base
-          mods={mods}
-          styles={{
-            ...MESSAGE_STYLES,
-            ...messageStyles,
-          }}
-          role={validationState === 'invalid' ? 'alert' : undefined}
-        >
-          {message}
-        </Base>
-      )}
+      <div data-element="LabelArea">
+        {label
+          && (description ? (
+            <Flow>
+              {labelComponent}
+              {descriptionComponent}
+            </Flow>
+          ) : (
+            labelComponent
+          ))}
+      </div>
+      <div data-element="InputArea">
+        {Component}
+        {message && !isDisabled && (
+          <Base
+            mods={mods}
+            styles={{
+              ...MESSAGE_STYLES,
+              ...messageStyles,
+            }}
+            role={validationState === 'invalid' ? 'alert' : undefined}
+          >
+            {message}
+          </Base>
+        )}
+      </div>
     </Base>
   );
 }

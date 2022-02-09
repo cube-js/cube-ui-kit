@@ -17,6 +17,7 @@ import { useCombinedRefs } from '../../../utils/react';
 import { timeout } from '../../../utils/promise';
 import { BaseProps, ContainerStyleProps } from '../../types';
 import { FormBaseProps } from '../../../shared';
+import { Styles } from '../../../styles/types';
 
 export const FormContext = createContext({});
 
@@ -61,6 +62,8 @@ export interface CubeFormProps
   onSubmitFailed?: (any?) => void | Promise<any>;
   /** Set form instance created by useForm */
   form?: CubeFormInstance;
+  /** The size of the side area with labels. Only for `labelPosition="side"` */
+  labelWidth?: Styles['width'];
 }
 
 function Form(props: CubeFormProps, ref) {
@@ -81,6 +84,7 @@ function Form(props: CubeFormProps, ref) {
     onValuesChange,
     requiredMark = true,
     form,
+    labelWidth,
     onSubmit,
     onSubmitFailed,
     ...otherProps
@@ -146,6 +150,10 @@ function Form(props: CubeFormProps, ref) {
   });
 
   styles = extractStyles(otherProps, CONTAINER_STYLES, DEFAULT_STYLES);
+
+  if (labelWidth) {
+    styles['@label-width'] = labelWidth;
+  }
 
   let domRef = useDOMRef(ref);
 

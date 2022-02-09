@@ -26,6 +26,13 @@ export const LABEL_ARG = {
   },
 };
 
+export const DESCRIPTION_ARG = {
+  description: {
+    control: 'text',
+    description: 'The description for the field.',
+  },
+};
+
 export const NECESSITY_INDICATOR_ARG = {
   necessityIndicator: {
     // defaultValue: 'icon',

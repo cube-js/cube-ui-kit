@@ -57,11 +57,13 @@ export interface FormFieldProps extends FormBaseProps {
   label?: ReactNode;
   /** Custom label props */
   labelProps?: Props;
-  /** Message for the field. Some additional information or error notice. */
+  /** Message for the field. Some additional information or error notice */
   message?: ReactNode;
+  /** Description for the field. Will be placed below the label */
+  description?: ReactNode;
   /** A tooltip that is shown inside the label */
   tooltip?: ReactNode;
-  /** Whether the element should receive focus on render. */
+  /** Whether the element should receive focus on render */
   autoFocus?: boolean;
 }
 

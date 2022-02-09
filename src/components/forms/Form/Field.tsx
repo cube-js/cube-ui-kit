@@ -110,6 +110,8 @@ export interface CubeFieldProps extends OptionalFieldBaseProps {
   form?: CubeFormInstance;
   /** The message for the field or text for the error */
   message?: string;
+  /** The description for the field */
+  description?: ReactNode;
   /** Tooltip for the label that explains something. */
   tooltip?: ReactNode;
   /** Field name. It's used as a key the form data. */
@@ -147,6 +149,7 @@ export function Field(allProps: CubeFieldProps) {
     necessityIndicator,
     shouldUpdate,
     message,
+    description,
     tooltip,
   } = props;
   const nonInput = !name;
@@ -206,6 +209,7 @@ export function Field(allProps: CubeFieldProps) {
         label={label}
         tooltip={tooltip}
         message={message}
+        description={description}
         Component={child}
       />
     );

@@ -62,7 +62,7 @@ export const LABEL_STYLES: Styles = {
   preset: 'default',
   padding: {
     '': '0',
-    side: '(1x - 1bw) 0',
+    side: '(1x - 1bw) top',
   },
   color: {
     '': '#dark',
