@@ -89,7 +89,7 @@ export const GlobalStyles = createGlobalStyle`
   body {
     ${({ applyLegacyTokens }: GlobalStylesProps) => {
       return applyLegacyTokens
-        ? Object.entries({ TOKENS })
+        ? Object.entries(TOKENS)
             .map(([key, value]) => {
               return `--${key}: ${value};`;
             })
