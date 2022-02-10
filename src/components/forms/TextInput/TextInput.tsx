@@ -2,16 +2,25 @@ import { forwardRef, useRef } from 'react';
 import { CubeTextInputBaseProps, TextInputBase } from './TextInputBase';
 import { useProviderProps } from '../../../provider';
 import { useTextField } from '@react-aria/textfield';
+import {
+  castNullableValue,
+  WithNullableValue,
+} from '../../../utils/react/nullableValue';
 
-function TextInput(props: CubeTextInputBaseProps, ref) {
-  props = useProviderProps(props);
+function TextInput(
+  props: WithNullableValue<CubeTextInputBaseProps> | CubeTextInputBaseProps,
+  ref,
+) {
+  let castedProps = castNullableValue(props);
+
+  castedProps = useProviderProps(castedProps);
 
   let inputRef = useRef(null);
-  let { labelProps, inputProps } = useTextField(props, inputRef);
+  let { labelProps, inputProps } = useTextField(castedProps, inputRef);
 
   return (
     <TextInputBase
-      {...props}
+      {...castedProps}
       labelProps={labelProps}
       inputProps={inputProps}
       ref={ref}

@@ -129,6 +129,7 @@ export interface CubeTextInputBaseProps
   rows?: number;
   /** The resize CSS property sets whether an element is resizable, and if so, in which directions. */
   resize?: Styles['resize'];
+  /** The size of the input */
   size?: 'small' | 'default' | 'large' | string;
 }
 
