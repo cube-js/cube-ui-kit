@@ -7,20 +7,17 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 
-function TextInput(
-  props: WithNullableValue<CubeTextInputBaseProps> | CubeTextInputBaseProps,
-  ref,
-) {
-  let castedProps = castNullableValue(props);
+function TextInput(props: WithNullableValue<CubeTextInputBaseProps>, ref) {
+  castNullableValue(props);
 
-  castedProps = useProviderProps(castedProps);
+  props = useProviderProps(props);
 
   let inputRef = useRef(null);
-  let { labelProps, inputProps } = useTextField(castedProps, inputRef);
+  let { labelProps, inputProps } = useTextField(props, inputRef);
 
   return (
     <TextInputBase
-      {...castedProps}
+      {...props}
       labelProps={labelProps}
       inputProps={inputProps}
       ref={ref}
