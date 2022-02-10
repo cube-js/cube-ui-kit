@@ -10,60 +10,71 @@ import {
 import { useProviderProps } from '../../../provider';
 import { Button } from '../../actions/Button/Button';
 import { ariaToCubeButtonProps } from '../../../utils/react/mapProps';
+import {
+  castNullableStringValue,
+  WithNullableValue,
+} from '../../../utils/react/nullableValue';
 
 export interface CubeSearchInputProps extends CubeTextInputBaseProps {
   /** Whether the search input is clearable using ESC keyboard button or clear button inside the input */
   isClearable?: boolean;
 }
 
-export const SearchInput = forwardRef((props: CubeSearchInputProps, ref) => {
-  props = useProviderProps(props);
+export const SearchInput = forwardRef(
+  (props: WithNullableValue<CubeSearchInputProps>, ref) => {
+    props = castNullableStringValue(props);
+    props = useProviderProps(props);
 
-  let { isClearable, value } = props;
+    let { isClearable, value } = props;
 
-  const localRef = useRef(null);
-  const combinedRef = useCombinedRefs(ref, localRef);
-  let inputRef = useRef(null);
+    const localRef = useRef(null);
+    const combinedRef = useCombinedRefs(ref, localRef);
+    let inputRef = useRef(null);
 
-  useEffect(() => {
-    const el = combinedRef && combinedRef.current;
+    useEffect(() => {
+      const el = combinedRef && combinedRef.current;
 
-    if (el && value != null && el.value !== value) {
-      el.value = value;
-    }
-  }, [combinedRef, value]);
-
-  let state = useSearchFieldState(props);
-  let { inputProps, clearButtonProps } = useSearchField(props, state, inputRef);
-
-  return (
-    <TextInputBase
-      inputProps={inputProps}
-      ref={ref}
-      inputRef={inputRef}
-      inputStyles={{ paddingRight: '4x' }}
-      type="search"
-      prefix={<SearchOutlined />}
-      suffixPosition="after"
-      suffix={
-        isClearable
-        && state.value !== ''
-        && !props.isReadOnly && (
-          <Button
-            type="clear"
-            {...ariaToCubeButtonProps(clearButtonProps)}
-            color={{
-              '': '#dark.50',
-              'hovered | pressed': '#purple-text',
-            }}
-            radius="right (1r - 1bw)"
-            padding=".5x 1x"
-            placeSelf="stretch"
-            icon={<CloseOutlined />}
-          />
-        )
+      if (el && value != null && el.value !== value) {
+        el.value = value;
       }
-      {...props}
-    />
-  );
-});
+    }, [combinedRef, value]);
+
+    let state = useSearchFieldState(props);
+    let { inputProps, clearButtonProps } = useSearchField(
+      props,
+      state,
+      inputRef,
+    );
+
+    return (
+      <TextInputBase
+        inputProps={inputProps}
+        ref={ref}
+        inputRef={inputRef}
+        inputStyles={{ paddingRight: '4x' }}
+        type="search"
+        prefix={<SearchOutlined />}
+        suffixPosition="after"
+        suffix={
+          isClearable
+          && state.value !== ''
+          && !props.isReadOnly && (
+            <Button
+              type="clear"
+              {...ariaToCubeButtonProps(clearButtonProps)}
+              color={{
+                '': '#dark.50',
+                'hovered | pressed': '#purple-text',
+              }}
+              radius="right (1r - 1bw)"
+              padding=".5x 1x"
+              placeSelf="stretch"
+              icon={<CloseOutlined />}
+            />
+          )
+        }
+        {...props}
+      />
+    );
+  },
+);

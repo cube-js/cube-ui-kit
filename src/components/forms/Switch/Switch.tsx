@@ -20,6 +20,10 @@ import { Styles } from '../../../styles/types';
 import { BaseProps, BlockStyleProps, OuterStyleProps } from '../../types';
 import { AriaSwitchProps } from '@react-types/switch';
 import { FormFieldProps } from '../../../shared';
+import {
+  castNullableIsSelected,
+  WithNullableSelected,
+} from '../../../utils/react/nullableValue';
 
 const STYLES: Styles = {
   position: 'relative',
@@ -81,7 +85,8 @@ export interface CubeSwitchProps
   isLoading?: boolean;
 }
 
-function Switch(props: CubeSwitchProps, ref) {
+function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
+  props = castNullableIsSelected(props);
   props = useProviderProps(props);
   props = useFormProps(props);
 

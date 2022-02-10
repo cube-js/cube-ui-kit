@@ -30,7 +30,7 @@ export function provideStyles({
   children,
   label,
 }) {
-  children = children || label;
+  children = children || icon ? children : label;
 
   return {
     ...STYLES_BY_SIZE[size || 'default'],
@@ -322,7 +322,7 @@ export const Button = forwardRef(
     };
     const contextStyles = useContextStyles('Button', propsForStyles);
 
-    children = children || label;
+    children = children || icon ? children : label;
 
     styles = {
       ...provideStyles(propsForStyles),

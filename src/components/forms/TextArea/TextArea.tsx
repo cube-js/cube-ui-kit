@@ -7,6 +7,10 @@ import { useControlledState } from '@react-stately/utils';
 import { useProviderProps } from '../../../provider';
 import { useTextField } from '@react-aria/textfield';
 import { chain } from '@react-aria/utils';
+import {
+  castNullableStringValue,
+  WithNullableValue,
+} from '../../../utils/react/nullableValue';
 
 export interface CubeTextAreaProps extends CubeTextInputBaseProps {
   /** Whether the textarea should change its size depends on content */
@@ -16,7 +20,8 @@ export interface CubeTextAreaProps extends CubeTextInputBaseProps {
   rows?: number;
 }
 
-function TextArea(props: CubeTextAreaProps, ref) {
+function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
+  props = castNullableStringValue(props);
   props = useProviderProps(props);
   let {
     autoSize = false,

@@ -164,7 +164,7 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
           mods={{ overlay: showOverlay }}
         />
         <Button
-          aria-label={`Copy ${codeTitle}`}
+          label={`Copy ${codeTitle}`}
           type="clear"
           styles={{
             padding: '1x 1.5x',

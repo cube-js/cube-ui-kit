@@ -219,7 +219,7 @@ export function Modal(allProps: CubeModalProps) {
             )}
             {isClosable ? (
               <Action
-                data-qa="ModalCloseButton"
+                qa="ModalCloseButton"
                 width="3x"
                 height="3x"
                 onPress={onClose || onCancel}
@@ -228,6 +228,7 @@ export function Modal(allProps: CubeModalProps) {
                   '': '#purple-03.0',
                   'focused & focus-visible': '#purple-03',
                 }}
+                label="Close"
               >
                 <CloseOutlined style={{ fontSize: 16 }} />
               </Action>

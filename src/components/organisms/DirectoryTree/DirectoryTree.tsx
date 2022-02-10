@@ -255,6 +255,7 @@ export function DirectoryTree(props: CubeDirectoryTreeProps) {
                   hovered: '#purple',
                 }}
                 onPress={() => toggle(item)}
+                label={expanded.includes(item.key) ? 'Collapse' : 'Expand'}
               >
                 {expanded.includes(item.key) ? (
                   <CaretUpOutlined />
