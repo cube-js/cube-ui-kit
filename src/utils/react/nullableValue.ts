@@ -1,13 +1,20 @@
 import { Props } from '../../components/types';
 
-export function castNullableValue(props, keys = ['value', 'defaultValue']) {
+export function castNullableValue<T>(
+  props,
+  keys = ['value', 'defaultValue'],
+  type = 'string',
+  cast = (v) => String(v),
+): T {
+  props = { ...props };
+
   keys.forEach((key) => {
     if (props[key] === null) {
       props[key] = undefined;
     }
 
-    if (props[key] != null && typeof props[key] != 'string') {
-      props[key] = String(props[key]);
+    if (props[key] != null && typeof props[key] != type) {
+      props[key] = cast(props[key]);
 
       console.warn(
         'Wrong value type in',
@@ -17,6 +24,8 @@ export function castNullableValue(props, keys = ['value', 'defaultValue']) {
       );
     }
   });
+
+  return props;
 }
 
 export type WithNullableValue<T extends Props> = Omit<
