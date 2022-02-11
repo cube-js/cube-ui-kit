@@ -7,10 +7,15 @@ import { useProviderProps } from '../../../provider';
 import { useTextField } from '@react-aria/textfield';
 import { Button } from '../../actions/Button/Button';
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
+import {
+  castNullableStringValue,
+  WithNullableValue,
+} from '../../../utils/react/nullableValue';
 
-function PasswordInput(props: CubeTextInputBaseProps, ref) {
+function PasswordInput(props: WithNullableValue<CubeTextInputBaseProps>, ref) {
+  props = castNullableStringValue(props);
+
   let { suffix, multiLine, ...otherProps } = useProviderProps({ ...props });
-
   let [type, setType] = useState('password');
   let inputRef = useRef(null);
   let { labelProps, inputProps } = useTextField(
@@ -37,7 +42,7 @@ function PasswordInput(props: CubeTextInputBaseProps, ref) {
         radius="right (1r - 1bw)"
         padding=".5x 1x"
         width="auto"
-        aria-label="Toggle masking"
+        label="Toggle masking"
         excludeFromTabOrder
         icon={type === 'password' ? <EyeInvisibleOutlined /> : <EyeOutlined />}
       />

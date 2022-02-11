@@ -22,6 +22,10 @@ import { BaseProps } from '../../types';
 import { Styles } from '../../../styles/types';
 import { FocusableRef } from '@react-types/shared';
 import { FormFieldProps } from '../../../shared';
+import {
+  castNullableIsSelected,
+  WithNullableSelected,
+} from '../../../utils/react/nullableValue';
 
 export interface CubeCheckboxProps
   extends BaseProps,
@@ -81,7 +85,12 @@ const INPUT_STYLES: Styles = {
   transition: 'theme',
 } as const;
 
-function Checkbox(props: CubeCheckboxProps, ref: FocusableRef) {
+function Checkbox(
+  props: WithNullableSelected<CubeCheckboxProps>,
+  ref: FocusableRef,
+) {
+  props = castNullableIsSelected(props);
+
   let originalProps = props;
 
   props = useProviderProps(props);

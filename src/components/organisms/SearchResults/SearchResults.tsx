@@ -183,6 +183,7 @@ export function SearchResults({
                     hovered: '#purple',
                   }}
                   onPress={() => toggle(file)}
+                  label={expanded.includes(file.key) ? 'Collapse' : 'Expand'}
                 >
                   {file.items.length ? (
                     expanded.includes(file.key) ? (

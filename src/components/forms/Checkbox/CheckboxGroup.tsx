@@ -14,6 +14,10 @@ import { FieldWrapper } from '../FieldWrapper';
 import { BaseProps } from '../../types';
 import { AriaCheckboxGroupProps } from '@react-types/checkbox';
 import { FormFieldProps } from '../../../shared';
+import {
+  castNullableStringValue,
+  WithNullableValue,
+} from '../../../utils/react/nullableValue';
 
 const STYLES = {
   display: 'grid',
@@ -48,7 +52,8 @@ export interface CubeCheckboxGroupProps
   orientation?: 'vertical' | 'horizontal';
 }
 
-function CheckboxGroup(props: CubeCheckboxGroupProps, ref) {
+function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
+  props = castNullableStringValue(props);
   props = useProviderProps(props);
   props = useFormProps(props);
 

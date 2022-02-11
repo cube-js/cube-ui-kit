@@ -240,7 +240,7 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
               type="neutral"
               styles={CLOSE_BUTTON_STYLES}
               icon={closeIcon || <CloseOutlined />}
-              aria-label={formatMessage('dismiss')}
+              label={formatMessage('dismiss')}
               onPress={() => onDismiss && onDismiss()}
             />
           )}

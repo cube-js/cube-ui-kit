@@ -4,6 +4,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { useContextStyles } from '../../../providers/StylesProvider';
 import { FocusableRef } from '@react-types/shared';
 import { Styles } from '../../../styles/types';
+import { accessibilityWarning } from '../../../utils/warnings';
 
 export interface CubeButtonProps extends CubeActionProps {
   icon?: ReactNode;
@@ -30,7 +31,7 @@ export function provideStyles({
   children,
   label,
 }) {
-  children = children || label;
+  children = children || icon ? children : label;
 
   return {
     ...STYLES_BY_SIZE[size || 'default'],
@@ -322,7 +323,21 @@ export const Button = forwardRef(
     };
     const contextStyles = useContextStyles('Button', propsForStyles);
 
-    children = children || label;
+    if (!children) {
+      if (icon) {
+        if (!label) {
+          accessibilityWarning(
+            'If you provide `icon` property for a Button and do not provide any children then you should specify the `label` property to make sure the Button element stays accessible.',
+          );
+        }
+      } else {
+        accessibilityWarning(
+          'If you provide no children for a Button then you should specify the `label` property to make sure the Button element stays accessible.',
+        );
+      }
+    }
+
+    children = children || icon ? children : label;
 
     styles = {
       ...provideStyles(propsForStyles),

@@ -102,7 +102,7 @@ const Tag = (allProps: CubeTagProps, ref) => {
       </Block>
       {isClosable ? (
         <Suffix outerGap="0">
-          <Action onPress={onClose} styles={DEFAULT_CLOSE_STYLES}>
+          <Action onPress={onClose} styles={DEFAULT_CLOSE_STYLES} label="Close">
             <CloseOutlined
               style={{
                 fontSize: 'calc(var(--font-size) - (var(--border-width) * 2))',

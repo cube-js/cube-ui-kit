@@ -29,6 +29,7 @@ export function StepButton(props) {
         up: props.direction === 'up',
         down: props.direction === 'down',
       }}
+      label={`Step ${props.direction}`}
       {...props}
     />
   );

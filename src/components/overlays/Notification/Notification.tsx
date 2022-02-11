@@ -68,6 +68,7 @@ export function Notification(allProps: CubeNotificationProps) {
         width="5x"
         height="5x"
         onPress={onClose}
+        label="Close"
       >
         <CloseOutlined />
       </Action>

@@ -12,6 +12,20 @@ import { Base } from '../../Base';
 import { useContextStyles } from '../../../providers/StylesProvider';
 import { FieldWrapper } from '../FieldWrapper';
 import { Styles } from '../../../styles/types';
+import { BaseProps } from '../../types';
+import { AriaRadioGroupProps } from '@react-types/radio';
+import { FormFieldProps } from '../../../shared';
+import {
+  castNullableStringValue,
+  WithNullableValue,
+} from '../../../utils/react/nullableValue';
+
+export interface CubeRadioGroupProps
+  extends BaseProps,
+    AriaRadioGroupProps,
+    FormFieldProps {
+  groupStyles?: Styles;
+}
 
 const STYLES = {
   display: 'grid',
@@ -39,7 +53,8 @@ const GROUP_STYLES = {
   padding: '(1x - 1bw) 0',
 } as Styles;
 
-function RadioGroup(props, ref) {
+function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
+  props = castNullableStringValue(props);
   props = useProviderProps(props);
   props = useFormProps(props);
 

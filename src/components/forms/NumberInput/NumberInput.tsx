@@ -8,19 +8,37 @@ import {
 } from '../TextInput/TextInputBase';
 import { useNumberFieldState } from '@react-stately/numberfield';
 import { useNumberField } from '@react-aria/numberfield';
-import { Base } from '../../Base';
 import { StepButton } from './StepButton';
 import { AriaNumberFieldProps } from '@react-types/numberfield';
+import { styled } from '../../../styled';
+import {
+  castNullableNumberValue,
+  WithNullableValue,
+} from '../../../utils/react/nullableValue';
 
 export interface CubeNumberInputProps
   extends Omit<CubeTextInputBaseProps, 'defaultValue' | 'value' | 'onChange'>,
-    AriaNumberFieldProps {}
+    AriaNumberFieldProps {
+  /** Whether or to hide stepper */
+  hideStepper?: boolean;
+}
 
-function NumberInput(props, ref) {
+const StepperContainer = styled({
+  styles: {
+    display: 'grid',
+    gridColumns: '1fr',
+    gridRows: 'minmax(1px, 1fr) minmax(1px, 1fr)',
+    flow: 'column',
+    placeSelf: 'stretch',
+  },
+});
+
+function NumberInput(props: WithNullableValue<CubeNumberInputProps>, ref) {
+  props = castNullableNumberValue(props);
   props = useProviderProps(props);
   props = useFormProps(props);
 
-  let { hideStepper } = props;
+  let { hideStepper, value, defaultValue, onChange, ...otherProps } = props;
   let showStepper = !hideStepper;
   let { locale } = useLocale();
   let state = useNumberFieldState({ ...props, locale });
@@ -35,7 +53,7 @@ function NumberInput(props, ref) {
 
   return (
     <TextInputBase
-      {...props}
+      {...otherProps}
       labelProps={labelProps}
       inputProps={inputProps}
       ref={ref}
@@ -44,18 +62,10 @@ function NumberInput(props, ref) {
       suffixPosition="after"
       suffix={
         showStepper ? (
-          <Base
-            styles={{
-              display: 'grid',
-              gridColumns: '1fr',
-              gridRows: 'minmax(1px, 1fr) minmax(1px, 1fr)',
-              flow: 'column',
-              placeSelf: 'stretch',
-            }}
-          >
+          <StepperContainer>
             <StepButton direction="up" {...incrementButtonProps} />
             <StepButton direction="down" {...decrementButtonProps} />
-          </Base>
+          </StepperContainer>
         ) : null
       }
     />

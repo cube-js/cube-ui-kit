@@ -80,8 +80,8 @@ Default.args = {
   },
   title: 'Modal Title',
   content: 'Modal content',
-  closable: false,
-  loading: false,
+  isClosable: false,
+  isLoading: false,
   width: 480,
   disabled: false,
 };

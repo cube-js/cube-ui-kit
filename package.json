@@ -1,6 +1,6 @@
 {
   "name": "@cube-dev/ui-kit",
-  "version": "0.7.8",
+  "version": "0.7.9",
   "description": "UIKit for Cube Projects",
   "main": "dist/cjs/index.js",
   "module": "dist/mjs/index.js",
@@ -20,6 +20,7 @@
   "scripts": {
     "start": "PARCEL_AUTOINSTALL=false parcel src/storybook.html",
     "build": "NODE_ENV=production rollup -c",
+    "build:esm": "NODE_ENV=production ESM_BUILD_ONLY=true rollup -c",
     "watch": "rollup -c -w",
     "test": "jest",
     "test-cover": "jest --coverage",

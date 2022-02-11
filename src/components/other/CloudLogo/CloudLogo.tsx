@@ -35,6 +35,7 @@ function CloudLogo(
       {...buttonProps}
       isLink={!!props.onPress}
       ref={domRef}
+      label="Logo"
     >
       <svg
         width="159"
