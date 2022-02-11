@@ -20,6 +20,10 @@ export default {
     ...MESSAGE_ARG,
     ...LABEL_ARG,
     ...LABEL_POSITION_ARG,
+    type: {
+      control: 'radio',
+      options: ['file', 'text'],
+    },
     placeholder: {
       defaultValue: null,
       control: 'text',
