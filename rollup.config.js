@@ -66,19 +66,24 @@ export default [
     inlineDynamicImports: true,
     plugins: getPlugins('mjs'),
   },
-  {
-    input: 'src/index.ts',
-    output: [
-      {
-        name: 'Cube Cloud UIKit',
-        dir: 'dist/cjs',
-        format: 'cjs',
-        sourcemap: true,
-        banner,
-      },
-    ],
-    external,
-    inlineDynamicImports: true,
-    plugins: getPlugins('cjs'),
-  },
-];
+].concat(
+  !process.env.ESM_BUILD_ONLY
+    ? [
+        {
+          input: 'src/index.ts',
+          output: [
+            {
+              name: 'Cube Cloud UIKit',
+              dir: 'dist/cjs',
+              format: 'cjs',
+              sourcemap: true,
+              banner,
+            },
+          ],
+          external,
+          inlineDynamicImports: true,
+          plugins: getPlugins('cjs'),
+        },
+      ]
+    : [],
+);
