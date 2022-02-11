@@ -57,22 +57,22 @@ export type WithNullableValue<T extends Props> = Omit<
   T,
   'value' | 'defaultValue'
 > & {
-  value: T['value'] | any;
-  defaultValue: T['defaultValue'] | any;
+  value?: T['value'] | any;
+  defaultValue?: T['defaultValue'] | any;
 };
 
 export type WithNullableSelected<T extends Props> = Omit<
   T,
   'isSelected' | 'defaultSelected'
 > & {
-  isSelected: T['isSelected'] | any;
-  defaultSelected: T['defaultSelected'] | any;
+  isSelected?: T['isSelected'] | any;
+  defaultSelected?: T['defaultSelected'] | any;
 };
 
 export type WithNullableSelectedKey<T extends Props> = Omit<
   T,
   'selectedKey' | 'defaultSelectedKey'
 > & {
-  selectedKey: T['selectedKey'] | any;
-  defaultSelectedKey: T['defaultSelectedKey'] | any;
+  selectedKey?: T['selectedKey'] | any;
+  defaultSelectedKey?: T['defaultSelectedKey'] | any;
 };
