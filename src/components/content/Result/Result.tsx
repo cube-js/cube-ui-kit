@@ -55,6 +55,7 @@ const Container = styled({
     flow: 'column',
     placeItems: 'center',
     gap: '3x',
+    padding: '6x 4x',
     textAlign: 'center',
 
     Content: {
