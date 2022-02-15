@@ -116,6 +116,8 @@ export interface CubeFieldProps extends OptionalFieldBaseProps {
   tooltip?: ReactNode;
   /** Field name. It's used as a key the form data. */
   name?: string[] | string;
+  /** Whether the field is hidden. */
+  isHidden?: boolean;
 }
 
 interface CubeFullFieldProps extends CubeFieldProps {
@@ -151,6 +153,7 @@ export function Field(allProps: CubeFieldProps) {
     message,
     description,
     tooltip,
+    isHidden,
   } = props;
   const nonInput = !name;
   const fieldName: string
@@ -178,7 +181,7 @@ export function Field(allProps: CubeFieldProps) {
   }, []);
 
   let field = form?.getFieldInstance(fieldName);
-  let isRequired = rules && rules.find((rule) => rule.required);
+  let isRequired = rules && !!rules.find((rule) => rule.required);
 
   useEffect(() => {
     if (!form) return;
@@ -202,6 +205,7 @@ export function Field(allProps: CubeFieldProps) {
   if (nonInput) {
     return (
       <FieldWrapper
+        isHidden={isHidden}
         validationState={validationState}
         necessityIndicator={necessityIndicator}
         necessityLabel={necessityLabel}
@@ -317,7 +321,7 @@ export function Field(allProps: CubeFieldProps) {
   }
 
   if (isRequired) {
-    newProps.isRequired = true;
+    newProps.isRequired = isRequired;
   }
 
   if (label) {
@@ -330,6 +334,10 @@ export function Field(allProps: CubeFieldProps) {
 
   if (message) {
     newProps.message = message;
+  }
+
+  if (isHidden != null) {
+    newProps.isHidden = isHidden;
   }
 
   if (field && field.errors && field.errors.length) {

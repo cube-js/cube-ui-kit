@@ -166,6 +166,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     wrapperRef,
     requiredMark = true,
     tooltip,
+    isHidden,
     rows = 1,
     size,
     ...otherProps
@@ -324,6 +325,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
         description,
         requiredMark,
         tooltip,
+        isHidden,
         Component: textField,
         ref: domRef,
       }}

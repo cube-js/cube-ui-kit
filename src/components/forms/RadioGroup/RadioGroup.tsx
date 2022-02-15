@@ -72,6 +72,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
     labelStyles,
     requiredMark = true,
     tooltip,
+    isHidden,
     styles,
     groupStyles,
     ...otherProps
@@ -139,6 +140,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
         description,
         requiredMark,
         tooltip,
+        isHidden,
         Component: radioGroup,
         ref: domRef,
       }}
