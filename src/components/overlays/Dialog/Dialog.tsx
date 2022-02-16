@@ -36,7 +36,7 @@ const DEFAULT_STYLES: Styles = {
     ". . . . . ."
     ". heading heading header header ."
     "divider divider divider divider divider divider"
-    ". content content content content ."
+    "content content content content content content"
     ". buttonGroup buttonGroup footer footer ."
     ". . . . . ."`,
   gridColumns: '@dialog-padding-h auto 1fr auto auto @dialog-padding-h',
@@ -48,6 +48,10 @@ const DEFAULT_STYLES: Styles = {
     '[data-type="fullscreen"]': '90vw 90vw',
     '[data-type="fullscreenTakeover"]': '100vw 100vw',
     '[data-type="panel"]': '100vw 100vw',
+  },
+  height: {
+    '': 'max 90vh',
+    '[data-type="fullscreenTakeover"] | [data-type="panel"]': 'max 100vh',
   },
   gap: 0,
   flow: 'column',
@@ -184,17 +188,24 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
     },
     divider: {
       styles: {
-        margin: '@dialog-heading-padding-v 0 @dialog-content-gap 0',
+        margin: '@dialog-heading-padding-v 0 0 0',
       },
     },
     content: {
       styles: {
         flexGrow: 1,
+        padding:
+          '@dialog-content-padding-v @dialog-padding-h 0 @dialog-padding-h',
         margin: {
-          '': '@dialog-content-gap bottom',
+          '': '@dialog-content-padding-v bottom',
           ':last-child': '0',
         },
         gap: '@dialog-content-gap',
+        overflow: 'auto',
+        height: {
+          '': 'max (100% - (2 * @dialog-content-padding-v))',
+          ':last-child': 'max (100% - @dialog-content-padding-v)',
+        },
       },
     },
     header: {
