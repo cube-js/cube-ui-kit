@@ -1,6 +1,6 @@
 {
   "name": "@cube-dev/ui-kit",
-  "version": "0.7.10",
+  "version": "0.7.12",
   "description": "UIKit for Cube Projects",
   "main": "dist/cjs/index.js",
   "module": "dist/mjs/index.js",
@@ -18,9 +18,9 @@
     "dist/**/*.d.ts"
   ],
   "scripts": {
-    "start": "PARCEL_AUTOINSTALL=false parcel src/storybook.html",
-    "build": "NODE_ENV=production rollup -c",
-    "build:esm": "NODE_ENV=production ESM_BUILD_ONLY=true rollup -c",
+    "start": "cross-env PARCEL_AUTOINSTALL=false parcel src/storybook.html",
+    "build": "cross-env NODE_ENV=production rollup -c",
+    "build:esm": "cross-env NODE_ENV=production ESM_BUILD_ONLY=true rollup -c",
     "watch": "rollup -c -w",
     "test": "jest",
     "test-cover": "jest --coverage",
@@ -113,6 +113,7 @@
     "chromatic": "^6.3.3",
     "clipboard-copy": "^4.0.1",
     "clsx": "^1.1.1",
+    "cross-env": "^7.0.3",
     "css-loader": "^6.5.1",
     "dotize": "^0.3.0",
     "email-validator": "^2.0.4",
