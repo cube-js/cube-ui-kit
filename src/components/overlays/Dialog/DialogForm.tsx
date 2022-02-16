@@ -2,13 +2,13 @@ import { useState, forwardRef, useImperativeHandle, ForwardedRef } from 'react';
 import { DialogContainer } from './DialogContainer';
 import { Dialog, CubeDialogProps } from './Dialog';
 import { Title } from '../../content/Title';
-import { Divider } from '../../content/Divider';
 import { CubeFormProps, Form } from '../../forms/Form/Form';
 import { useForm } from '../../forms/Form/useForm';
 import { Content } from '../../content/Content';
 import { Submit } from '../../actions/Button/Submit';
 import { Button, CubeButtonProps } from '../../actions/Button/Button';
 import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
+import { Header } from '../../content/Header';
 
 export interface CubeDialogFormProps
   extends CubeDialogProps,
@@ -88,8 +88,9 @@ const DialogForm = (
     <DialogContainer onDismiss={onLocalDismiss} isDismissable>
       {open && (
         <Dialog qa={`${qa || ''}Dialog`} size={size} closeIcon={closeIcon}>
-          <Title>{title}</Title>
-          <Divider />
+          <Header>
+            <Title>{title}</Title>
+          </Header>
           <Content>
             <Form
               qa={qa || 'DialogForm'}

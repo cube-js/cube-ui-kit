@@ -32,7 +32,8 @@ const DEFAULT_STYLES: Styles = {
   pointerEvents: 'auto',
   position: 'relative',
   display: 'flex',
-  placeItems: 'baseline stretch',
+  placeItems: 'stretch',
+  placeContent: 'stretch',
   width: {
     '': '288px @dialog-size 90vw',
     '[data-type="fullscreen"]': '90vw 90vw',
@@ -201,8 +202,9 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
         gap: '1x',
         placeItems: 'baseline stretch',
         placeContent: 'space-between',
-        padding:
-          '@dialog-heading-padding-v (@dialog-padding-h + 4x) @dialog-heading-padding-v @dialog-padding-h',
+        padding: `@dialog-heading-padding-v ${
+          isDismissable ? '(@dialog-padding-h + 4x)' : '@dialog-padding-h'
+        } @dialog-heading-padding-v @dialog-padding-h`,
         border: 'bottom',
       },
     },
