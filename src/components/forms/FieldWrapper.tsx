@@ -148,17 +148,19 @@ function FieldWrapper(props, ref) {
       }}
       {...fieldProps}
     >
-      <div data-element="LabelArea">
-        {label
-          && (description ? (
-            <Flow>
-              {labelComponent}
-              {descriptionComponent}
-            </Flow>
-          ) : (
-            labelComponent
-          ))}
-      </div>
+      {labelPosition === 'side' || label || description ? (
+        <div data-element="LabelArea">
+          {label
+            && (description ? (
+              <Flow>
+                {labelComponent}
+                {descriptionComponent}
+              </Flow>
+            ) : (
+              labelComponent
+            ))}
+        </div>
+      ) : null}
       <div data-element="InputArea">
         {Component}
         {message && !isDisabled && (
