@@ -190,7 +190,6 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
           ':last-child': '0',
         },
         gap: '@dialog-content-gap',
-        overflow: 'auto',
         height: {
           '': 'max (100% - (2 * @dialog-content-padding-v))',
           ':last-child': 'max (100% - @dialog-content-padding-v)',
