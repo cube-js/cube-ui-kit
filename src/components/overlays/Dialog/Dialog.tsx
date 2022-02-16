@@ -31,17 +31,7 @@ const STYLES_LIST = [...BASE_STYLES, ...DIMENSION_STYLES, ...BLOCK_STYLES];
 const DEFAULT_STYLES: Styles = {
   pointerEvents: 'auto',
   position: 'relative',
-  display: 'grid',
-  gridAreas: `"hero hero hero hero hero hero"
-    ". . . . . ."
-    ". heading heading header header ."
-    "divider divider divider divider divider divider"
-    "content content content content content content"
-    ". buttonGroup buttonGroup footer footer ."
-    ". . . . . ."`,
-  gridColumns: '@dialog-padding-h auto 1fr auto auto @dialog-padding-h',
-  gridRows:
-    'auto @dialog-heading-padding-v auto auto 1fr auto @dialog-content-padding-v',
+  display: 'flex',
   placeItems: 'baseline stretch',
   width: {
     '': '288px @dialog-size 90vw',
@@ -82,6 +72,10 @@ const DEFAULT_STYLES: Styles = {
     '': '3x',
     '[data-type="popover"]': '2x',
   },
+  '@dialog-footer-v': {
+    '': '2x',
+    '[data-type="popover"]': '1x',
+  },
   '@dialog-content-gap': '3x',
 };
 
@@ -94,8 +88,6 @@ const CLOSE_BUTTON_STYLES: Styles = {
   display: 'flex',
   placeContent: 'center',
 };
-
-const HEADING_STYLES: Styles = {};
 
 const sizeMap = {
   S: 'small',
@@ -183,13 +175,7 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
     heading: {
       level: 2,
       preset: 'h4',
-      styles: HEADING_STYLES,
       ...titleProps,
-    },
-    divider: {
-      styles: {
-        margin: '@dialog-heading-padding-v 0 0 0',
-      },
     },
     content: {
       styles: {
@@ -211,19 +197,24 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
     header: {
       styles: {
         display: 'flex',
+        flow: 'row',
         gap: '1x',
         placeItems: 'baseline stretch',
-        padding: isDismissable ? '4x right' : false,
-        textAlign: 'right',
+        placeContent: 'space-between',
+        padding:
+          '@dialog-heading-padding-v (@dialog-padding-h + 4x) @dialog-heading-padding-v @dialog-padding-h',
+        border: 'bottom',
       },
     },
     footer: {
       styles: {
-        display: 'grid',
+        display: 'flex',
         gap: '1x',
-        flow: 'column',
+        flow: 'row',
         placeItems: 'baseline stretch',
-        textAlign: 'right',
+        placeContent: 'space-between',
+        padding:
+          '@dialog-content-padding-v @dialog-padding-h @dialog-footer-v @dialog-padding-h',
       },
     },
   };

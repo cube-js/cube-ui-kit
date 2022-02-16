@@ -5,7 +5,7 @@ import {
   Content,
   Dialog,
   DialogTrigger,
-  Divider,
+  Text,
   Footer,
   Header,
   Paragraph,
@@ -118,21 +118,24 @@ const Template = ({ size, ...props }) => {
             //   height: '@cube-visual-viewport-height',
             // }}
           >
-            <Title>Modal title</Title>
-            <Header>Header</Header>
-            <Divider />
+            <Header>
+              <Title>Modal title</Title>
+              <Text>Header</Text>
+            </Header>
             <Content>
               <Paragraph>Test content</Paragraph>
               <Paragraph>Test content</Paragraph>
             </Content>
-            <Footer>Footer</Footer>
-            <ButtonGroup>
-              <Button onPress={close} type="primary">
-                Action
-              </Button>
-              <Button onPress={close}>Sec</Button>
-              <Button onPress={close}>Cancel</Button>
-            </ButtonGroup>
+            <Footer>
+              <ButtonGroup>
+                <Button onPress={close} type="primary">
+                  Action
+                </Button>
+                <Button onPress={close}>Sec</Button>
+                <Button onPress={close}>Cancel</Button>
+              </ButtonGroup>
+              <Text>Footer</Text>
+            </Footer>
           </Dialog>
         )}
       </DialogTrigger>
