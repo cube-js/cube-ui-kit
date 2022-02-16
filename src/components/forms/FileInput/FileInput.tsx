@@ -26,7 +26,10 @@ const DEFAULT_WRAPPER_STYLES: Styles = {
   gap: '1x',
   flow: 'row',
   placeItems: 'center start',
-  fill: '#white',
+  fill: {
+    '': '#white',
+    'drag-hover': '#purple.16',
+  },
   border: true,
   radius: true,
   cursor: 'pointer',
@@ -76,6 +79,25 @@ export interface CubeFileInputProps
   inputRef?: RefObject<HTMLInputElement>;
   /** Style map for the input */
   inputStyles?: Styles;
+  /**
+   * The type of the input
+   * @default 'file'
+   */
+  type?: 'file' | 'text';
+}
+
+function extractContents(element, callback) {
+  const files = element?.files;
+
+  if (files && files.length > 0) {
+    const fileReader = new FileReader();
+
+    fileReader.onload = function() {
+      callback(fileReader.result);
+    };
+
+    fileReader.readAsText(files[0]);
+  }
 }
 
 function FileInput(props: CubeFileInputProps, ref) {
@@ -101,9 +123,11 @@ function FileInput(props: CubeFileInputProps, ref) {
     requiredMark,
     tooltip,
     inputStyles,
+    type = 'file',
     ...otherProps
   } = useProviderProps(props);
   const [value, setValue] = useState();
+  const [dragHover, setDragHover] = useState(false);
   let domRef = useRef(null);
   let defaultInputRef = useRef(null);
   inputRef = inputRef || defaultInputRef;
@@ -120,7 +144,11 @@ function FileInput(props: CubeFileInputProps, ref) {
     (event) => {
       const value = event.target.value;
 
-      onChange?.(value);
+      if (type === 'file') {
+        onChange?.(value);
+      } else if (onChange) {
+        extractContents(event.target, onChange);
+      }
 
       setValue(value);
     },
@@ -148,6 +176,12 @@ function FileInput(props: CubeFileInputProps, ref) {
       ref={domRef}
       mods={{
         selected: !!value,
+        'drag-hover': dragHover,
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === 'Space') {
+          inputRef?.current?.click();
+        }
       }}
     >
       <input
@@ -158,6 +192,15 @@ function FileInput(props: CubeFileInputProps, ref) {
         data-element="Input"
         type="file"
         tabIndex={-1}
+        onDragEnter={() => {
+          setDragHover(true);
+        }}
+        onDragLeave={() => {
+          setDragHover(false);
+        }}
+        onDrop={() => {
+          setDragHover(false);
+        }}
       />
       <div data-element="Button">Choose file</div>
       <div data-element={!!value ? 'Value' : 'Placeholder'}>

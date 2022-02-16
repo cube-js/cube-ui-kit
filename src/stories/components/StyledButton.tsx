@@ -8,7 +8,7 @@ export const StyledButton = styled(Button, {
   },
 });
 
-export const GlobalStyledHeading = styled('button', {
+export const GlobalStyledHeading = styled('div.myButton', {
   display: 'inline-block',
   padding: '1x 2x',
   preset: 't2',
