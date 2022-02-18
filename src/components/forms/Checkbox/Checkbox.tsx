@@ -115,6 +115,7 @@ function Checkbox(
     description,
     requiredMark = true,
     tooltip,
+    isHidden,
     ...otherProps
   } = props;
 
@@ -193,13 +194,18 @@ function Checkbox(
   }
 
   let checkboxField = (
-    <Base styles={{ position: 'relative' }}>
+    <Base
+      qa="CheckboxContainer"
+      isHidden={isHidden}
+      styles={{ position: 'relative' }}
+    >
       <HiddenInput
         data-qa={qa || 'Checkbox'}
         {...mergeProps(inputProps, focusProps)}
         ref={inputRef}
       />
       <Base
+        qa="CheckboxIcon"
         mods={{
           checked: inputProps.checked,
           indeterminate: isIndeterminate,
@@ -226,6 +232,7 @@ function Checkbox(
           styles,
           isRequired,
           labelStyles,
+          isHidden,
           labelProps,
           isDisabled,
           validationState,
@@ -246,6 +253,7 @@ function Checkbox(
     <Base
       as="label"
       styles={styles}
+      isHidden={isHidden}
       {...hoverProps}
       {...filterBaseProps(otherProps)}
       ref={domRef}

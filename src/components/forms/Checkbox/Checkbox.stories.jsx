@@ -57,21 +57,8 @@ export default {
   },
 };
 
-const Template = ({
-  label,
-  isSelected,
-  isIndeterminate,
-  isDisabled,
-  validationState,
-}) => (
-  <Checkbox
-    label={label}
-    validationState={validationState}
-    isDisabled={isDisabled}
-    defaultSelected={isSelected}
-    isIndeterminate={isIndeterminate}
-    onChange={(query) => console.log('change', query)}
-  />
+const Template = (props) => (
+  <Checkbox {...props} onChange={(query) => console.log('change', query)} />
 );
 
 export const Default = Template.bind({});

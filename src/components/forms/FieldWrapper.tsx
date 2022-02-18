@@ -93,6 +93,7 @@ function FieldWrapper(props, ref) {
     validationState,
     requiredMark = true,
     tooltip,
+    isHidden,
   } = props;
   const mods = {
     'has-sider': labelPosition === 'side' && label,
@@ -142,6 +143,7 @@ function FieldWrapper(props, ref) {
       qa="Field"
       ref={ref}
       mods={mods}
+      isHidden={isHidden}
       styles={{
         ...FIELD_STYLES,
         ...styles,

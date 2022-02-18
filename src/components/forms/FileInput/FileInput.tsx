@@ -122,6 +122,7 @@ function FileInput(props: CubeFileInputProps, ref) {
     description,
     requiredMark,
     tooltip,
+    isHidden,
     inputStyles,
     type = 'file',
     ...otherProps
@@ -226,6 +227,7 @@ function FileInput(props: CubeFileInputProps, ref) {
         description,
         requiredMark,
         tooltip,
+        isHidden,
         Component: fileInput,
         ref: domRef,
       }}

@@ -37,6 +37,7 @@ const Base = function Base<K extends keyof HTMLElementTagNameMap>(
     qa,
     qaVal,
     css,
+    element,
     ...props
   } = allProps;
 
@@ -68,6 +69,7 @@ const Base = function Base<K extends keyof HTMLElementTagNameMap>(
   return (
     <BaseElement
       as={as}
+      data-element={element}
       data-qa={qa}
       data-qaval={qaVal}
       {...props}

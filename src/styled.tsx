@@ -101,8 +101,18 @@ function styled<K extends(keyof StylesInterface)[], C = {}>(
   let Element = styledComponents[options.tag || 'div'](({ css }) => css);
 
   return forwardRef((allProps: AllBasePropsWithMods<K>, ref) => {
-    let { as, styles, styleName, breakpoints, mods, qa, qaVal, css, ...props }
-      = allProps;
+    let {
+      as,
+      styles,
+      styleName,
+      breakpoints,
+      mods,
+      element,
+      qa,
+      qaVal,
+      css,
+      ...props
+    } = allProps;
 
     let propStyles: Styles = (
       (styleProps
@@ -142,6 +152,7 @@ function styled<K extends(keyof StylesInterface)[], C = {}>(
     return (
       <Element
         as={as || tag}
+        data-element={element}
         data-qa={qa}
         data-qaval={qaVal}
         {...defaultProps}
