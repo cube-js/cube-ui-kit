@@ -812,9 +812,6 @@ export function styleMapToStyleMapStateList(
 
   if (!keys.length) return [];
 
-  /**
-   * //@type {StyleStateListMap}
-   */
   const stateDataListMap = {};
 
   let allModsSet: Set<string> = new Set();
@@ -899,7 +896,7 @@ function convertTokensToComputeUnits(tokens: any[]) {
 /**
  * Parse state notation and return tokens, modifiers and compute model.
  */
-function parseStateNotationInner<T>(notation: string, value: T) {
+function parseStateNotationInner(notation: string, value: any) {
   const tokens = notation.replace(/,/g, '|').match(STATES_REGEXP);
 
   if (!tokens || !tokens.length) {
@@ -986,9 +983,10 @@ export function styleStateMapToStyleStateDataList(
   const stateDataList: StyleStateDataList = [];
 
   Object.keys(styleStateMap).forEach((stateNotation) => {
-    const state = parseStateNotation(stateNotation);
-
-    state.value = styleStateMap[stateNotation];
+    const state = parseStateNotation(
+      stateNotation,
+      styleStateMap[stateNotation],
+    );
 
     stateDataList.push(state);
   });

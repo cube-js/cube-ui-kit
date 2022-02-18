@@ -1,6 +1,6 @@
 import { parseStyle } from '../utils/styles';
 
-export function gapStyle({ display = 'block', flow, gap }) {
+export function gapStyle({ display, flow, gap }) {
   if (typeof gap === 'number') {
     gap = `${gap}px`;
   }
