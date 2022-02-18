@@ -18,6 +18,8 @@ const RawContent = styled({
     display: 'block',
     flow: 'column',
     gap: '2x',
+    overflow: 'auto',
+    styledScrollbar: true,
   },
   props: {
     'data-id': 'Content',

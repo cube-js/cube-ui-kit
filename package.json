@@ -1,6 +1,6 @@
 {
   "name": "@cube-dev/ui-kit",
-  "version": "0.7.12",
+  "version": "0.7.13",
   "description": "UIKit for Cube Projects",
   "main": "dist/cjs/index.js",
   "module": "dist/mjs/index.js",
@@ -173,6 +173,7 @@
     "react-dom": ">= 17.0.0"
   },
   "dependencies": {
+    "@storybook/addon-postcss": "^2.0.0",
     "dom-helpers": "^5.2.1",
     "react-is": "^17.0.2"
   },

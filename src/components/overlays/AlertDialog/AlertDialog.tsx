@@ -3,10 +3,11 @@ import { Button, CubeButtonProps } from '../../actions/Button/Button';
 import { Content } from '../../content/Content';
 import { CubeDialogProps, Dialog } from '../Dialog/Dialog';
 import { DialogContext } from '../Dialog/context';
-import { Divider } from '../../content/Divider';
 import { Title } from '../../content/Title';
 import { forwardRef, useContext } from 'react';
 import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
+import { Header } from '../../content/Header';
+import { Footer } from '../../content/Footer';
 
 export interface CubeAlertDialogProps extends CubeDialogProps {
   /** Whether the dialog is an important prompt */
@@ -48,44 +49,47 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
 
   return (
     <Dialog role="alertdialog" ref={ref} isDismissable={false} {...otherProps}>
-      <Title>{title}</Title>
-      <Divider />
+      <Header>
+        <Title>{title}</Title>
+      </Header>
       <Content>{children}</Content>
       {!noActions ? (
-        <ButtonGroup align="end">
-          <Button
-            type={confirmType}
-            {...primaryProps}
-            onPress={(e) =>
-              chain(
-                primaryProps.onPress && primaryProps.onPress(e),
-                onClose('primary'),
-              )
-            }
-          />
-          {secondaryProps && (
+        <Footer>
+          <ButtonGroup align="end">
             <Button
-              {...secondaryProps}
+              type={confirmType}
+              {...primaryProps}
               onPress={(e) =>
                 chain(
-                  secondaryProps?.onPress && secondaryProps?.onPress(e),
-                  onClose('secondary'),
+                  primaryProps.onPress && primaryProps.onPress(e),
+                  onClose('primary'),
                 )
               }
             />
-          )}
-          {cancelProps && (
-            <Button
-              {...cancelProps}
-              onPress={(e) =>
-                chain(
-                  cancelProps?.onPress && cancelProps?.onPress(e),
-                  onClose('cancel'),
-                )
-              }
-            />
-          )}
-        </ButtonGroup>
+            {secondaryProps && (
+              <Button
+                {...secondaryProps}
+                onPress={(e) =>
+                  chain(
+                    secondaryProps?.onPress && secondaryProps?.onPress(e),
+                    onClose('secondary'),
+                  )
+                }
+              />
+            )}
+            {cancelProps && (
+              <Button
+                {...cancelProps}
+                onPress={(e) =>
+                  chain(
+                    cancelProps?.onPress && cancelProps?.onPress(e),
+                    onClose('cancel'),
+                  )
+                }
+              />
+            )}
+          </ButtonGroup>
+        </Footer>
       ) : null}
     </Dialog>
   );
