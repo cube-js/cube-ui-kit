@@ -100,7 +100,7 @@ function FieldWrapper(props, ref) {
     isHidden,
   } = props;
   const mods = {
-    'has-sider': labelPosition === 'side' && label,
+    'has-sider': labelPosition === 'side',
     'has-description': !!description,
     invalid: validationState === 'invalid',
     valid: validationState === 'valid',
