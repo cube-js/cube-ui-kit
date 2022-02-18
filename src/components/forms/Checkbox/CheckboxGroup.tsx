@@ -33,14 +33,16 @@ const STYLES = {
 };
 
 const GROUP_STYLES = {
-  display: 'grid',
+  display: 'flex',
+  placeItems: 'start',
+  placeContent: 'start',
   flow: {
-    '': 'row',
-    horizontal: 'column',
+    '': 'column',
+    horizontal: 'row wrap',
   },
   gap: {
     '': '1x',
-    horizontal: '2x',
+    horizontal: '1x 2x',
   },
   padding: '(1x - 1bw) 0',
 };
