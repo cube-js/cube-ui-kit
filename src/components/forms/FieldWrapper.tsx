@@ -102,7 +102,7 @@ function FieldWrapper(props, ref) {
     valid: validationState === 'valid',
   };
 
-  const labelComponent = label && (
+  const labelComponent = label ? (
     <Label
       as={as === 'label' ? 'div' : 'label'}
       styles={labelStyles}
@@ -127,7 +127,7 @@ function FieldWrapper(props, ref) {
         </>
       ) : null}
     </Label>
-  );
+  ) : null;
 
   let descriptionComponent = description ? (
     <div data-element="Description">
@@ -150,19 +150,10 @@ function FieldWrapper(props, ref) {
       }}
       {...fieldProps}
     >
-      {labelPosition === 'side' || label || description ? (
-        <div data-element="LabelArea">
-          {label
-            && (description ? (
-              <Flow>
-                {labelComponent}
-                {descriptionComponent}
-              </Flow>
-            ) : (
-              labelComponent
-            ))}
-        </div>
-      ) : null}
+      <div data-element="LabelArea">
+        {labelComponent}
+        {descriptionComponent}
+      </div>
       <div data-element="InputArea">
         {Component}
         {message && !isDisabled && (
