@@ -27,6 +27,10 @@ const FIELD_STYLES = {
 
   LabelArea: {
     display: 'block',
+    width: {
+      '': 'initial',
+      'has-sider': '@label-width',
+    },
   },
 
   InputArea: {
