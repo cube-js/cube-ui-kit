@@ -254,10 +254,12 @@ The same applies to `height` property.
 </Card>
 ```
 
-<Card gap="3x">
-  <Paragraph border={true} padding="2x">Text inside</Paragraph>
-  <Paragraph border={true} margin="2x">Text inside</Paragraph>
-</Card>
+<Root>
+  <Card gap="3x">
+    <Paragraph border={true} padding="2x">Text inside</Paragraph>
+    <Paragraph border={true} margin="2x">Text inside</Paragraph>
+  </Card>
+</Root>
 
 The `gap` property can be used in flex, grid and even block layouts. If it's used in block layout or in flex layout but without browser support of flex gap then it will use margins to create gaps.
 
@@ -270,12 +272,14 @@ The `gap` property can be used in flex, grid and even block layouts. If it's use
 <Block border="2bw bottom left right #dark.50" padding>Complex border</Block>
 ```
 
-<Card gap="1x">
-  <Block border padding>Default border</Block>
-  <Block border="2bw #dark.20" padding>Border size of two default border sizes</Block>
-  <Block border="bottom" padding>Default border only at the bottom</Block>
-  <Block border="2bw bottom left right #dark.50" padding>Complex border</Block>
-</Card>
+<Root>
+  <Card gap="1x">
+    <Block border padding>Default border</Block>
+    <Block border="2bw #dark.20" padding>Border size of two default border sizes</Block>
+    <Block border="bottom" padding>Default border only at the bottom</Block>
+    <Block border="2bw bottom left right #dark.50" padding>Complex border</Block>
+  </Card>
+</Root>
 
 ## Radius
 
@@ -286,12 +290,14 @@ The `gap` property can be used in flex, grid and even block layouts. If it's use
 <Block radius="ellipse" border padding>Ellipse radius</Block> // border-radius: 50%;
 ```
 
-<Card gap styles={{ textAlign: 'center' }}>
-  <Block radius border padding>The default radius</Block>
-  <Block radius="2r" border padding>Radius size of two default radii</Block>
-  <Block radius="round" border padding>Round radius</Block>
-  <Block radius="ellipse" border padding>Ellipse radius</Block>
-</Card>
+<Root>
+  <Card gap styles={{ textAlign: 'center' }}>
+    <Block radius border padding>The default radius</Block>
+    <Block radius="2r" border padding>Radius size of two default radii</Block>
+    <Block radius="round" border padding>Round radius</Block>
+    <Block radius="ellipse" border padding>Ellipse radius</Block>
+  </Card>
+</Root>
 
 ## Shadow
 
@@ -300,10 +306,12 @@ The `gap` property can be used in flex, grid and even block layouts. If it's use
 <Block shadow="5px 5px 10px #dark.20" padding>Custom shadow</Block> // box-shadow: 0 5px 15px rgba(var(--dark-color-rgb), .2);
 ```
 
-<Card gap="3x">
-  <Block shadow padding>Default shadow</Block>
-  <Block shadow="5px 5px 10px #dark.20" padding>Custom shadow</Block>
-</Card>
+<Root>
+  <Card gap="3x">
+    <Block shadow padding>Default shadow</Block>
+    <Block shadow="5px 5px 10px #dark.20" padding>Custom shadow</Block>
+  </Card>
+</Root>
 
 ## Outline
 
@@ -315,11 +323,13 @@ Outline API is similar to border but implemented via `box-shadow`.
 <Block outline="2bw #dark.20 inset" padding radius>Custom inset outline</Block>
 ```
 
-<Card gap="3x">
-  <Block outline padding radius>Default outline</Block>
-  <Block outline="2bw #dark.20" padding radius>Custom outline</Block>
-  <Block outline="2bw #dark.20 inset" padding radius>Custom inset outline</Block>
-</Card>
+<Root>
+  <Card gap="3x">
+    <Block outline padding radius>Default outline</Block>
+    <Block outline="2bw #dark.20" padding radius>Custom outline</Block>
+    <Block outline="2bw #dark.20 inset" padding radius>Custom inset outline</Block>
+  </Card>
+</Root>
 
 ## Color and Fill
 
@@ -329,9 +339,11 @@ Use `color` and `fill` properties to change text and background colors of the bl
 <Block fill="#purple" color="#white">Purple background with white text color</Block>
 ```
 
-<Card>
-  <Block fill="#purple" color="#white" padding>Purple background with white text color</Block>
-</Card>
+<Root>
+  <Card>
+    <Block fill="#purple" color="#white" padding>Purple background with white text color</Block>
+  </Card>
+</Root>
 
 ## Flow
 
@@ -348,18 +360,20 @@ Change flow of the layout by using `flow` property.
 </Flex>
 ```
 
-<Card gap>
-  <Flex flow="row" gap>
-    <Block>Row flow</Block>
-    <Button>One</Button>
-    <Button>Two</Button>
-  </Flex>
-  <Flex flow="column" gap>
-    <Block>Column flow</Block>
-    <Button>One</Button>
-    <Button>Two</Button>
-  </Flex>
-</Card>
+<Root>
+  <Card gap>
+    <Flex flow="row" gap>
+      <Block>Row flow</Block>
+      <Button>One</Button>
+      <Button>Two</Button>
+    </Flex>
+    <Flex flow="column" gap>
+      <Block>Column flow</Block>
+      <Button>One</Button>
+      <Button>Two</Button>
+    </Flex>
+  </Card>
+</Root>
 
 The same applies to grid layouts.
 

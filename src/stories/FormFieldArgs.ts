@@ -185,3 +185,119 @@ export const REQUIRED_MARK_ARG = {
     },
   },
 };
+
+export const TEXT_VALUE_ARG = {
+  value: {
+    defaultValue: undefined,
+    description: 'The text value in controlled mode',
+    control: 'text',
+    table: {
+      type: { summary: 'string' },
+    },
+  },
+  defaultValue: {
+    defaultValue: undefined,
+    description: 'The default text value in uncontrolled mode',
+    control: 'text',
+    table: {
+      type: { summary: 'string' },
+    },
+  },
+};
+
+export const NUMBER_VALUE_ARG = {
+  value: {
+    defaultValue: undefined,
+    description: 'The number value in controlled mode',
+    control: 'text',
+    table: {
+      type: { summary: 'number' },
+    },
+  },
+  defaultValue: {
+    defaultValue: undefined,
+    description: 'The default number value in uncontrolled mode',
+    control: 'text',
+    table: {
+      type: { summary: 'number' },
+    },
+  },
+};
+
+export const MULTIPLE_VALUE_ARG = {
+  value: {
+    defaultValue: undefined,
+    description: 'The multiple value in controlled mode',
+    control: 'object',
+    table: {
+      type: { summary: 'string[]' },
+    },
+  },
+  defaultValue: {
+    defaultValue: undefined,
+    description: 'The default multiple value in uncontrolled mode',
+    control: 'object',
+    table: {
+      type: { summary: 'string[]' },
+    },
+  },
+};
+
+export const IS_SELECTED_ARG = {
+  isSelected: {
+    defaultValue: undefined,
+    description: 'Whether the input is selected in controlled mode',
+    control: {
+      type: 'radio',
+      options: [undefined, true, false],
+    },
+    table: {
+      type: { summary: 'boolean' },
+    },
+  },
+  defaultSelected: {
+    defaultValue: undefined,
+    description:
+      'Whether the input is selected by default in uncontrolled mode',
+    control: {
+      type: 'radio',
+      options: [undefined, true, false],
+    },
+    table: {
+      type: { summary: 'boolean' },
+    },
+  },
+};
+
+export const IS_INDETERMINATE_ARG = {
+  isIndeterminate: {
+    defaultValue: undefined,
+    description: 'Whether the input is indeterminate in controlled mode',
+    control: {
+      type: 'radio',
+      options: [undefined, true, false],
+    },
+    table: {
+      type: { summary: 'boolean' },
+    },
+  },
+};
+
+export const SELECTED_KEY_ARG = {
+  selectedKey: {
+    defaultValue: undefined,
+    description: 'The selected value in controlled mode',
+    control: 'text',
+    table: {
+      type: { summary: 'string' },
+    },
+  },
+  defaultSelectedKey: {
+    defaultValue: undefined,
+    description: 'The default selected value in uncontrolled mode',
+    control: 'text',
+    table: {
+      type: { summary: 'string' },
+    },
+  },
+};

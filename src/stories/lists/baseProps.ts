@@ -39,5 +39,6 @@ export const baseProps = [
   'mods',
   'breakpoints',
   'isHidden',
+  'element',
   ...allStyles,
 ];

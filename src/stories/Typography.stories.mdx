@@ -1,9 +1,7 @@
-import { Meta } from '@storybook/addon-docs';
+import { Meta, Canvas, Story } from '@storybook/addon-docs';
 import { Paragraph, Title, Text, Link, Flow, Root, Space, Card } from '../index';
 
 <Meta title="UIKit/Typography" />
-
-<Root/>
 
 # Typography
 
@@ -13,71 +11,50 @@ There are many ways to create typography elements like text labels and headings.
 
 ### Headings
 
-```jsx
-<Title level={1}>Heading level 1</Title>
-<Title level={2}>Heading level 2</Title>
-<Title level={3}>Heading level 3</Title>
-<Title level={4}>Heading level 4</Title>
-<Title level={5}>Heading level 5</Title>
-<Title level={6}>Heading level 6</Title>
-```
-
-<Card>
-  <Flow gap="1x">
-    <Title level={1}>Heading level 1</Title>
-    <Title level={2}>Heading level 2</Title>
-    <Title level={3}>Heading level 3</Title>
-    <Title level={4}>Heading level 4</Title>
-    <Title level={5}>Heading level 5</Title>
-    <Title level={6}>Heading level 6</Title>
-  </Flow>
-</Card>
+<Canvas>
+  <Story name="Heading">
+    <Flow gap="1x">
+      <Title level={1}>Heading level 1</Title>
+      <Title level={2}>Heading level 2</Title>
+      <Title level={3}>Heading level 3</Title>
+      <Title level={4}>Heading level 4</Title>
+      <Title level={5}>Heading level 5</Title>
+      <Title level={6}>Heading level 6</Title>
+    </Flow>
+  </Story>
+</Canvas>
 
 ### Paragraphs
 
 Paragraphs with gaps between them.
 
-```jsx
-<Paragraph>
-  There are many ways to create typography elements like text labels and headings.
-</Paragraph>
-<Paragraph>
-  You can use complete components, presets or low-level styles to get exact text label you want.
-</Paragraph>
-```
-
-<Root>
-  <Card gap="2x">
-    <Paragraph width="320px">
-      There are many ways to create typography elements like text labels and headings.
-    </Paragraph>
-    <Paragraph>
-      You can use complete components, presets or low-level styles to get exact text label you want.
-    </Paragraph>
-  </Card>
-</Root>
+<Canvas>
+  <Story name="Paragraph">
+    <Flow gap="2x">
+      <Paragraph width="320px">
+        There are many ways to create typography elements like text labels and headings.
+      </Paragraph>
+      <Paragraph>
+        You can use complete components, presets or low-level styles to get exact text label you want.
+      </Paragraph>
+    </Flow>
+  </Story>
+</Canvas>
 
 ### Text labels
 
-```jsx
-<Text>Normal label</Text>
-<Text.Success>Success label</Text.Success>
-<Text.Danger>Danger label</Text.Danger>
-<Text.Strong>Strong label</Text.Strong>
-<Text.Emphasis>Emphasis label</Text.Emphasis>
-<Text.Selection>Selection label</Text.Selection>
-```
-
-<Card>
-  <Space>
-    <Text>Normal label</Text>
-    <Text.Success>Success label</Text.Success>
-    <Text.Danger>Danger label</Text.Danger>
-    <Text.Strong>Strong label</Text.Strong>
-    <Text.Emphasis>Emphasis label</Text.Emphasis>
-    <Text.Selection>Selection label</Text.Selection>
-  </Space>
-</Card>
+<Canvas>
+  <Story name="Text">
+    <Space flow="row wrap">
+      <Text>Normal label</Text>
+      <Text.Success>Success label</Text.Success>
+      <Text.Danger>Danger label</Text.Danger>
+      <Text.Strong>Strong label</Text.Strong>
+      <Text.Emphasis>Emphasis label</Text.Emphasis>
+      <Text.Selection>Selection label</Text.Selection>
+    </Space>
+  </Story>
+</Canvas>
 
 ### Links
 
@@ -88,10 +65,14 @@ Use `!` prefix to open link in new tab.
 | <Link to="!https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit in new tab</Link>
 ```
 
-<Paragraph>
-  <Link to="https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit</Link>&nbsp;
-  | <Link to="!https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit in new tab</Link>
-</Paragraph>
+<Canvas>
+  <Story name="External link">
+    <Paragraph>
+      <Link to="https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit</Link>&nbsp;
+      | <Link to="!https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit in new tab</Link>
+    </Paragraph>
+  </Story>
+</Canvas>
 
 Use `@` prefix to navigate to the new page without using the Router.
 
@@ -100,7 +81,11 @@ Use `@` prefix to navigate to the new page without using the Router.
 | <Link to="@/">Move to the Main Page</Link>
 ```
 
-<Paragraph>
-  <Link to="@">Reload the current page</Link>
-| <Link to="@/">Move to the Main Page</Link>
-</Paragraph>
+<Canvas>
+  <Story name="Link without using router">
+    <Paragraph>
+      <Link to="@">Reload the current page</Link>
+    | <Link to="@/">Move to the Main Page</Link>
+    </Paragraph>
+  </Story>
+</Canvas>
