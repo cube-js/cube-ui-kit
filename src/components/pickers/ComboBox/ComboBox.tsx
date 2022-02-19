@@ -357,4 +357,4 @@ const __ComboBox = Object.assign(
 );
 (__ComboBox as any).cubeInputType = 'ComboBox';
 
-export { _ComboBox as ComboBox };
+export { __ComboBox as ComboBox };
