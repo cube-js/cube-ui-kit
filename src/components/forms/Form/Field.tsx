@@ -181,6 +181,7 @@ export function Field(allProps: CubeFieldProps) {
   }, []);
 
   let field = form?.getFieldInstance(fieldName);
+
   let isRequired = rules && !!rules.find((rule) => rule.required);
 
   useEffect(() => {

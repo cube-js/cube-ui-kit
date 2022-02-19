@@ -497,7 +497,14 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
   );
 }
 
-const _Select = Object.assign(forwardRef(Select), { Item });
-// @ts-ignore
-_Select.cubeInputType = 'Select';
-export { _Select as Select };
+const _Select = forwardRef(Select);
+
+(_Select as any).cubeInputType = 'Select';
+
+const __Select = Object.assign(
+  _Select as typeof _Select & {
+    Item: typeof Item;
+  },
+);
+
+export { __Select as Select };

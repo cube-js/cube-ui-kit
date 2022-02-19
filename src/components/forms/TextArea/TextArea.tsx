@@ -97,7 +97,8 @@ function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
  * with a keyboard. Various decorations can be displayed around the field to
  * communicate the entry requirements.
  */
-const _TextArea = Object.assign(forwardRef(TextArea), {
-  cubeInputType: 'Text',
-});
+const _TextArea = forwardRef(TextArea);
+
+(_TextArea as any).cubeInputType = 'Text';
+
 export { _TextArea as TextArea };

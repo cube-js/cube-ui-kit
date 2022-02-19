@@ -280,8 +280,12 @@ function Checkbox(
  * Checkboxes allow users to select multiple items from a list of individual items,
  * or to mark one individual item as selected.
  */
-let _Checkbox = Object.assign(forwardRef(Checkbox), {
-  cubeInputType: 'Checkbox',
-  Group: CheckboxGroup,
-});
-export { _Checkbox as Checkbox };
+let _Checkbox = forwardRef(Checkbox);
+
+(_Checkbox as any).cubeInputType = 'Checkbox';
+let __Checkbox = Object.assign(
+  _Checkbox as typeof _Checkbox & { Group: typeof CheckboxGroup },
+  { Group: CheckboxGroup },
+);
+
+export { __Checkbox as Checkbox };

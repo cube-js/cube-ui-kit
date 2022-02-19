@@ -349,8 +349,8 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
   );
 }
 
-const _ComboBox = Object.assign(forwardRef(ComboBox), {
-  cubeInputType: 'ComboBox',
-  Item,
-});
+const _ComboBox = forwardRef(ComboBox);
+
+(_ComboBox as any).cubeInputType = 'ComboBox';
+
 export { _ComboBox as ComboBox };
