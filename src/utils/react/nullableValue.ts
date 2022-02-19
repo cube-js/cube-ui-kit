@@ -12,6 +12,12 @@ export function castNullableNumberValue<T>(props: T): T {
   );
 }
 
+export function castNullableArrayValue<T>(props: T): T {
+  return castNullableField(props, ['value', 'defaultValue'], 'object', (v) =>
+    Array.isArray(v) ? v : [],
+  );
+}
+
 export function castNullableIsSelected<T>(props: T): T {
   return castNullableField(
     props,

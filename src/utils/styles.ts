@@ -1085,10 +1085,11 @@ export function cacheWrapper(handler: Function, limit = 1000) {
   let cache = {};
   let count = 0;
 
-  return (map: any, suffix?: string) => {
-    const args = [map, suffix];
+  return (firstArg: any, secondArg?: string) => {
     const key
-      = typeof args[0] === 'string' && !suffix ? args[0] : JSON.stringify(args);
+      = typeof firstArg === 'string' && secondArg == null
+        ? firstArg
+        : JSON.stringify([firstArg, secondArg]);
 
     if (!cache[key]) {
       if (count > limit) {
@@ -1098,7 +1099,8 @@ export function cacheWrapper(handler: Function, limit = 1000) {
 
       count++;
 
-      cache[key] = !suffix ? handler(map) : handler(map, suffix);
+      cache[key]
+        = secondArg == null ? handler(firstArg) : handler(firstArg, secondArg);
     }
 
     return cache[key];
