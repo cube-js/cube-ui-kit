@@ -281,6 +281,18 @@ export class CubeFormInstance {
     }
   }
 
+  removeField(name: string, skipRender?: boolean) {
+    if (this.fields[name]) {
+      delete this.fields[name];
+    }
+
+    if (!skipRender) {
+      this.forceReRender();
+    }
+
+    this.validateFields().catch(() => {});
+  }
+
   setFields(newFields: CubeFieldData[]) {
     newFields.forEach(({ name, value, errors }) => {
       this.fields[name] = this._createField(name, {
