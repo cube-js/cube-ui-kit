@@ -36,7 +36,6 @@ const FIELD_STYLES = {
   InputArea: {
     display: 'block',
     flow: 'column',
-    gap: '1x',
   },
 };
 
