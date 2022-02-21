@@ -117,7 +117,7 @@ const statusIconMap: StatusIconMap = {
   },
 };
 
-export const Result = forwardRef<HTMLElement, CubeResultProps>((props, ref) => {
+function Result(props: CubeResultProps, ref) {
   const { children, icon, status, subTitle, title, ...otherProps } = props;
 
   if (icon && status) {
@@ -169,6 +169,8 @@ export const Result = forwardRef<HTMLElement, CubeResultProps>((props, ref) => {
       {children && <div data-element="Content">{children}</div>}
     </Container>
   );
-});
+}
 
-Result.displayName = 'Result';
+const _Result = forwardRef(Result);
+
+export { _Result as Result };

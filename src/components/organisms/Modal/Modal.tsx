@@ -26,6 +26,8 @@ const Overlay = styled.div`
   white-space: normal;
 
   .cube-modal {
+    --enter-transition-time: 250ms;
+    --leave-transition-time: 160ms;
     --base-translate: ((50vh - 50%) / -3);
     transform: translate(0, calc(var(--base-translate)));
   }
@@ -41,11 +43,11 @@ const Overlay = styled.div`
 
   &.cube-modal-transition-enter-active {
     opacity: 1;
-    transition: all 250ms cubic-bezier(0, 0.5, 0, 1);
+    transition: all var(--enter-transition-time) cubic-bezier(0, 0.5, 0, 1);
 
     & .cube-modal {
       transform: translate(0, calc(var(--base-translate))) scale(1);
-      transition: all 250ms cubic-bezier(0.5, 0.5, 0, 1);
+      transition: all var(--enter-transition-time) cubic-bezier(0.5, 0.5, 0, 1);
     }
   }
 
@@ -64,11 +66,11 @@ const Overlay = styled.div`
 
   &.cube-modal-transition-exit-active {
     opacity: 0;
-    transition: all 160ms ease-in;
+    transition: all var(--leave-transition-time) ease-in;
 
     & .cube-modal {
       transform: translate(0, calc(-32px + var(--base-translate))) scale(0.5);
-      transition: all 160ms ease-in;
+      transition: all var(--leave-transition-time) ease-in;
     }
   }
 

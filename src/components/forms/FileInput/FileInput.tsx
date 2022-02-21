@@ -74,6 +74,10 @@ export interface CubeFileInputProps
     BlockStyleProps,
     AriaTextFieldProps,
     FormFieldProps {
+  /**
+   * The size of the input
+   * @default default
+   */
   size?: 'small' | 'default' | 'large' | string;
   /** The input ref */
   inputRef?: RefObject<HTMLInputElement>;
@@ -81,7 +85,7 @@ export interface CubeFileInputProps
   inputStyles?: Styles;
   /**
    * The type of the input
-   * @default 'file'
+   * @default file
    */
   type?: 'file' | 'text';
 }
@@ -122,6 +126,7 @@ function FileInput(props: CubeFileInputProps, ref) {
     description,
     requiredMark,
     tooltip,
+    isHidden,
     inputStyles,
     type = 'file',
     ...otherProps
@@ -226,6 +231,7 @@ function FileInput(props: CubeFileInputProps, ref) {
         description,
         requiredMark,
         tooltip,
+        isHidden,
         Component: fileInput,
         ref: domRef,
       }}

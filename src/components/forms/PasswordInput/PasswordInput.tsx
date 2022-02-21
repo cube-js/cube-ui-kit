@@ -70,7 +70,8 @@ function PasswordInput(props: WithNullableValue<CubeTextInputBaseProps>, ref) {
  * with a keyboard. Various decorations can be displayed around the field to
  * communicate the entry requirements.
  */
-const _PasswordInput = Object.assign(forwardRef(PasswordInput), {
-  cubeInputType: 'Text',
-});
+const _PasswordInput = forwardRef(PasswordInput);
+
+(_PasswordInput as any).cubeInputType = 'Text';
+
 export { _PasswordInput as PasswordInput };

@@ -41,14 +41,16 @@ const STYLES = {
 } as Styles;
 
 const GROUP_STYLES = {
-  display: 'grid',
+  display: 'flex',
+  placeItems: 'start',
+  placeContent: 'start',
   flow: {
-    '': 'row',
-    horizontal: 'column',
+    '': 'column',
+    horizontal: 'row wrap',
   },
   gap: {
     '': '1x',
-    horizontal: '2x',
+    horizontal: '1x 2x',
   },
   padding: '(1x - 1bw) 0',
 } as Styles;
@@ -72,6 +74,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
     labelStyles,
     requiredMark = true,
     tooltip,
+    isHidden,
     styles,
     groupStyles,
     ...otherProps
@@ -139,6 +142,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
         description,
         requiredMark,
         tooltip,
+        isHidden,
         Component: radioGroup,
         ref: domRef,
       }}
@@ -150,7 +154,8 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
  * Radio groups allow users to select a single option from a list of mutually exclusive options.
  * All possible options are exposed up front for users to compare.
  */
-const _RadioGroup = Object.assign(forwardRef(RadioGroup), {
-  cubeInputType: 'RadioGroup',
-});
+const _RadioGroup = forwardRef(RadioGroup);
+
+(_RadioGroup as any).cubeInputType = 'RadioGroup';
+
 export { _RadioGroup as RadioGroup };

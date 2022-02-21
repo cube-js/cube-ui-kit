@@ -115,6 +115,7 @@ function Checkbox(
     description,
     requiredMark = true,
     tooltip,
+    isHidden,
     ...otherProps
   } = props;
 
@@ -193,13 +194,18 @@ function Checkbox(
   }
 
   let checkboxField = (
-    <Base styles={{ position: 'relative' }}>
+    <Base
+      qa="CheckboxContainer"
+      isHidden={isHidden}
+      styles={{ position: 'relative' }}
+    >
       <HiddenInput
         data-qa={qa || 'Checkbox'}
         {...mergeProps(inputProps, focusProps)}
         ref={inputRef}
       />
       <Base
+        qa="CheckboxIcon"
         mods={{
           checked: inputProps.checked,
           indeterminate: isIndeterminate,
@@ -226,6 +232,7 @@ function Checkbox(
           styles,
           isRequired,
           labelStyles,
+          isHidden,
           labelProps,
           isDisabled,
           validationState,
@@ -246,6 +253,7 @@ function Checkbox(
     <Base
       as="label"
       styles={styles}
+      isHidden={isHidden}
       {...hoverProps}
       {...filterBaseProps(otherProps)}
       ref={domRef}
@@ -272,8 +280,12 @@ function Checkbox(
  * Checkboxes allow users to select multiple items from a list of individual items,
  * or to mark one individual item as selected.
  */
-let _Checkbox = Object.assign(forwardRef(Checkbox), {
-  cubeInputType: 'Checkbox',
-  Group: CheckboxGroup,
-});
-export { _Checkbox as Checkbox };
+let _Checkbox = forwardRef(Checkbox);
+
+(_Checkbox as any).cubeInputType = 'Checkbox';
+let __Checkbox = Object.assign(
+  _Checkbox as typeof _Checkbox & { Group: typeof CheckboxGroup },
+  { Group: CheckboxGroup },
+);
+
+export { __Checkbox as Checkbox };

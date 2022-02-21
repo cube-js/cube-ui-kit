@@ -75,7 +75,8 @@ function NumberInput(props: WithNullableValue<CubeNumberInputProps>, ref) {
 /**
  * NumberFields allow users to enter a number, and increment or decrement the value using stepper buttons.
  */
-const _NumberInput = Object.assign(forwardRef(NumberInput), {
-  cubeInputType: 'Number',
-});
+const _NumberInput = forwardRef(NumberInput);
+
+(_NumberInput as any).cubeInputType = 'Number';
+
 export { _NumberInput as NumberInput };

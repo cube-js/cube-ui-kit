@@ -27,6 +27,10 @@ const FIELD_STYLES = {
 
   LabelArea: {
     display: 'block',
+    width: {
+      '': 'initial',
+      'has-sider': '@label-width',
+    },
   },
 
   InputArea: {
@@ -93,15 +97,16 @@ function FieldWrapper(props, ref) {
     validationState,
     requiredMark = true,
     tooltip,
+    isHidden,
   } = props;
   const mods = {
-    'has-sider': labelPosition === 'side' && label,
+    'has-sider': labelPosition === 'side',
     'has-description': !!description,
     invalid: validationState === 'invalid',
     valid: validationState === 'valid',
   };
 
-  const labelComponent = label && (
+  const labelComponent = label ? (
     <Label
       as={as === 'label' ? 'div' : 'label'}
       styles={labelStyles}
@@ -126,7 +131,7 @@ function FieldWrapper(props, ref) {
         </>
       ) : null}
     </Label>
-  );
+  ) : null;
 
   let descriptionComponent = description ? (
     <div data-element="Description">
@@ -142,25 +147,17 @@ function FieldWrapper(props, ref) {
       qa="Field"
       ref={ref}
       mods={mods}
+      isHidden={isHidden}
       styles={{
         ...FIELD_STYLES,
         ...styles,
       }}
       {...fieldProps}
     >
-      {labelPosition === 'side' || label || description ? (
-        <div data-element="LabelArea">
-          {label
-            && (description ? (
-              <Flow>
-                {labelComponent}
-                {descriptionComponent}
-              </Flow>
-            ) : (
-              labelComponent
-            ))}
-        </div>
-      ) : null}
+      <div data-element="LabelArea">
+        {labelComponent}
+        {descriptionComponent}
+      </div>
       <div data-element="InputArea">
         {Component}
         {message && !isDisabled && (

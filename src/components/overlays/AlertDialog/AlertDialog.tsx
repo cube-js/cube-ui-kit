@@ -49,9 +49,11 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
 
   return (
     <Dialog role="alertdialog" ref={ref} isDismissable={false} {...otherProps}>
-      <Header>
-        <Title>{title}</Title>
-      </Header>
+      {title ? (
+        <Header>
+          <Title>{title}</Title>
+        </Header>
+      ) : null}
       <Content>{children}</Content>
       {!noActions ? (
         <Footer>

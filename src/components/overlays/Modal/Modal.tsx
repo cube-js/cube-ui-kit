@@ -54,7 +54,7 @@ const MODAL_STYLES: Styles = {
   },
   opacity: {
     '': 0,
-    open: '.9999',
+    open: 0.9999,
   },
 };
 

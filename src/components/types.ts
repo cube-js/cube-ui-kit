@@ -37,6 +37,8 @@ export interface BasePropsWithoutChildren
   qa?: string;
   /** QA value for e2e testing. An alias for `data-qaval` attribute. */
   qaVal?: string | number;
+  /** Inner element name */
+  element?: string;
   /** The style map */
   styles?: Styles;
   /** The list of responsive points in pixels */

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import dotize from 'dotize';
+import { dotize } from '../../../utils/dotize';
 import { applyRules } from './validation';
 
 export type CubeFormData = { [key: string]: any };

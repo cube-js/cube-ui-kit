@@ -240,7 +240,8 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
  * Switches allow users to turn an individual option on or off.
  * They are usually used to activate or deactivate a specific setting.
  */
-let _Switch = Object.assign(forwardRef(Switch), {
-  cubeInputType: 'Checkbox',
-});
+let _Switch = forwardRef(Switch);
+
+(_Switch as any).cubeInputType = 'Checkbox';
+
 export { _Switch as Switch };

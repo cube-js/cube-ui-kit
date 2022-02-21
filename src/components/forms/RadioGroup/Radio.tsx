@@ -243,9 +243,23 @@ function RadioButton(props: CubeRadioProps, ref) {
  * Radio buttons allow users to select a single option from a list of mutually exclusive options.
  * All possible options are exposed up front for users to compare.
  */
-const _Radio = Object.assign(forwardRef(Radio), {
-  Group: RadioGroup,
-  Button: forwardRef(RadioButton),
-});
-export { _Radio as Radio };
-export { RadioButton };
+const _Radio = forwardRef(Radio);
+/**
+ * Radio buttons allow users to select a single option from a list of mutually exclusive options.
+ * All possible options are exposed up front for users to compare.
+ */
+const _RadioButton = forwardRef(RadioButton);
+
+const __Radio = Object.assign(
+  _Radio as typeof _Radio & {
+    Group: typeof RadioGroup;
+    Button: typeof _RadioButton;
+  },
+  {
+    Group: RadioGroup,
+    Button: _RadioButton,
+  },
+);
+
+export { __Radio as Radio };
+export { _RadioButton as RadioButton };

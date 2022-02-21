@@ -15,7 +15,7 @@ import { BaseProps } from '../../types';
 import { AriaCheckboxGroupProps } from '@react-types/checkbox';
 import { FormFieldProps } from '../../../shared';
 import {
-  castNullableStringValue,
+  castNullableArrayValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 
@@ -33,14 +33,16 @@ const STYLES = {
 };
 
 const GROUP_STYLES = {
-  display: 'grid',
+  display: 'flex',
+  placeItems: 'start',
+  placeContent: 'start',
   flow: {
-    '': 'row',
-    horizontal: 'column',
+    '': 'column',
+    horizontal: 'row wrap',
   },
   gap: {
     '': '1x',
-    horizontal: '2x',
+    horizontal: '1x 2x',
   },
   padding: '(1x - 1bw) 0',
 };
@@ -53,7 +55,7 @@ export interface CubeCheckboxGroupProps
 }
 
 function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
-  props = castNullableStringValue(props);
+  props = castNullableArrayValue(props);
   props = useProviderProps(props);
   props = useFormProps(props);
 
@@ -148,7 +150,8 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
  * Checkbox groups allow users to select a single option from a list of mutually exclusive options.
  * All possible options are exposed up front for users to compare.
  */
-const _CheckboxGroup = Object.assign(forwardRef(CheckboxGroup), {
-  cubeInputType: 'CheckboxGroup',
-});
+const _CheckboxGroup = forwardRef(CheckboxGroup);
+
+(_CheckboxGroup as any).cubeInputType = 'CheckboxGroup';
+
 export { _CheckboxGroup as CheckboxGroup };
