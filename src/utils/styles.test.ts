@@ -260,12 +260,12 @@ describe('styleMapToStyleMapStateList', () => {
           {
             mods: [],
             notMods: ['mod1', 'mod2', 'mod3'],
-            value: { one: 'value3', two: 'value3' },
+            value: { one: 'value1', two: 'value3' },
           },
           {
             mods: ['mod1'],
             notMods: ['mod2', 'mod3'],
-            value: { one: 'value3', two: 'value4' },
+            value: { one: 'value1', two: 'value4' },
           },
           {
             mods: ['mod1', 'mod2'],
@@ -280,22 +280,22 @@ describe('styleMapToStyleMapStateList', () => {
           {
             mods: ['mod1', 'mod3'],
             notMods: ['mod2'],
-            value: { one: 'value3', two: 'value4' },
+            value: { one: 'value1', two: 'value4' },
           },
           {
             mods: ['mod2'],
             notMods: ['mod1', 'mod3'],
-            value: { one: 'value3', two: 'value3' },
+            value: { one: 'value1', two: 'value3' },
           },
           {
             mods: ['mod2', 'mod3'],
             notMods: ['mod1'],
-            value: { one: 'value3', two: 'value4' },
+            value: { one: 'value1', two: 'value4' },
           },
           {
             mods: ['mod3'],
             notMods: ['mod1', 'mod2'],
-            value: { one: 'value3', two: 'value3' },
+            value: { one: 'value1', two: 'value3' },
           },
         ],
       },
