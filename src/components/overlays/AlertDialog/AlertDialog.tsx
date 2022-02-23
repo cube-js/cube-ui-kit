@@ -60,6 +60,7 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
           <ButtonGroup align="end">
             <Button
               type={confirmType}
+              autoFocus
               {...primaryProps}
               onPress={(e) =>
                 chain(
