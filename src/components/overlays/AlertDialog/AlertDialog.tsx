@@ -54,7 +54,7 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
           <Title>{title}</Title>
         </Header>
       ) : null}
-      <Content>{children}</Content>
+      {children ? <Content>{children}</Content> : null}
       {!noActions ? (
         <Footer>
           <ButtonGroup align="end">
