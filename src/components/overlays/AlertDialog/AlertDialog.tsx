@@ -14,7 +14,7 @@ export interface CubeAlertDialogProps extends CubeDialogProps {
   danger?: boolean;
   primaryProps?: CubeButtonProps;
   secondaryProps?: CubeButtonProps;
-  cancelProps?: CubeButtonProps;
+  cancelProps?: CubeButtonProps | true;
   title?: string;
   noActions?: boolean;
 }
@@ -47,6 +47,10 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
     confirmType = 'danger';
   }
 
+  if (cancelProps === true) {
+    cancelProps = {};
+  }
+
   return (
     <Dialog role="alertdialog" ref={ref} isDismissable={false} {...otherProps}>
       {title ? (
@@ -73,19 +77,17 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
               <Button
                 {...secondaryProps}
                 onPress={(e) =>
-                  chain(
-                    secondaryProps?.onPress && secondaryProps?.onPress(e),
-                    onClose('secondary'),
-                  )
+                  chain(secondaryProps?.onPress?.(e), onClose('secondary'))
                 }
               />
             )}
             {cancelProps && (
               <Button
+                label="Cancel"
                 {...cancelProps}
                 onPress={(e) =>
                   chain(
-                    cancelProps?.onPress && cancelProps?.onPress(e),
+                    (cancelProps as CubeButtonProps)?.onPress?.(e),
                     onClose('cancel'),
                   )
                 }
