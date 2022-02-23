@@ -100,7 +100,7 @@ export const api: DialogService = {
                     },
                   }}
                   cancelProps={
-                    cancelProps
+                    cancelProps && cancelProps !== true
                       ? {
                           ...cancelProps,
                           onPress: () => {

@@ -48,7 +48,7 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
   }
 
   if (cancelProps === true) {
-    cancelProps = {};
+    cancelProps = {} as CubeButtonProps;
   }
 
   return (
@@ -84,7 +84,7 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
             {cancelProps && (
               <Button
                 label="Cancel"
-                {...(cancelProps as CubeButtonProps)}
+                {...cancelProps}
                 onPress={(e) =>
                   chain(
                     (cancelProps as CubeButtonProps)?.onPress?.(e),
