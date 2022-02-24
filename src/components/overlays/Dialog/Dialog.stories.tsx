@@ -29,7 +29,7 @@ const Template = ({ size, ...props }) => {
       <DialogTrigger
         {...props}
         onDismiss={() => {
-          console.log('dismiss');
+          console.log('onDismiss event');
         }}
         // styles={{
         //   transform: {

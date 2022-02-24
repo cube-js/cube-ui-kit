@@ -3,6 +3,8 @@ import { AlertDialog, CubeAlertDialogProps } from '../AlertDialog/AlertDialog';
 import { CubeDialogContainerProps, DialogContainer } from './DialogContainer';
 import { ModalProvider } from '@react-aria/overlays';
 import { ReactNode } from 'react';
+import { cancel } from 'dom-helpers/animationFrame';
+import { CubeButtonProps } from '../../actions/Button/Button';
 
 let ID = 0;
 
@@ -70,12 +72,29 @@ export const api: DialogService = {
             type,
             placement,
             isDismissable = true,
-            primaryProps,
-            cancelProps,
+            actions,
             onDismiss,
             content,
             ...options
           } = item;
+
+          let { confirm: confirmProps, cancel: cancelProps } = actions || {};
+
+          if (confirmProps === true) {
+            confirmProps = {};
+          }
+
+          if (confirmProps === false) {
+            confirmProps = undefined;
+          }
+
+          if (cancelProps === true) {
+            cancelProps = {};
+          }
+
+          if (cancelProps === false) {
+            cancelProps = undefined;
+          }
 
           return (
             <DialogContainer
@@ -93,22 +112,24 @@ export const api: DialogService = {
               {item.isVisible ? (
                 <AlertDialog
                   noActions={item.dialogType === 'form'}
-                  primaryProps={{
-                    ...primaryProps,
-                    onPress: () => {
-                      this.resolve(item);
-                    },
-                  }}
-                  cancelProps={
-                    cancelProps && cancelProps !== true
+                  actions={{
+                    confirm: confirmProps
+                      ? {
+                          ...confirmProps,
+                          onPress: () => {
+                            this.resolve(item);
+                          },
+                        }
+                      : false,
+                    cancel: cancelProps
                       ? {
                           ...cancelProps,
                           onPress: () => {
                             this.reject(item);
                           },
                         }
-                      : undefined
-                  }
+                      : false,
+                  }}
                   {...options}
                   key={id}
                 >
