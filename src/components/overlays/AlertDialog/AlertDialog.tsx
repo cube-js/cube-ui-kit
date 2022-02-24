@@ -48,14 +48,18 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
 
   if (confirmProps === undefined || confirmProps === true) {
     confirmProps = DEFAULT_PRIMARY_PROPS;
-  } else if (confirmProps === false) {
+  } else if (!confirmProps) {
     confirmProps = undefined;
+  } else {
+    confirmProps = Object.assign({}, DEFAULT_PRIMARY_PROPS, confirmProps);
   }
 
   if (cancelProps === true) {
     cancelProps = DEFAUL_CANCEL_PROPS;
-  } else if (cancelProps === false) {
+  } else if (!cancelProps) {
     cancelProps = undefined;
+  } else {
+    cancelProps = Object.assign({}, DEFAUL_CANCEL_PROPS, cancelProps);
   }
 
   return (
