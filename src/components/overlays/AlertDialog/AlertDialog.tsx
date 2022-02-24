@@ -25,6 +25,7 @@ export interface CubeAlertDialogProps extends CubeDialogProps {
 
 const DEFAULT_PRIMARY_PROPS: CubeButtonProps = {
   label: 'Ok',
+  type: 'primary',
 };
 const DEFAUL_CANCEL_PROPS: CubeButtonProps = {
   label: 'Cancel',
@@ -47,13 +48,13 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
 
   if (confirmProps === undefined || confirmProps === true) {
     confirmProps = DEFAULT_PRIMARY_PROPS;
-  } else {
+  } else if (confirmProps === false) {
     confirmProps = undefined;
   }
 
   if (cancelProps === true) {
     cancelProps = DEFAUL_CANCEL_PROPS;
-  } else {
+  } else if (cancelProps === false) {
     cancelProps = undefined;
   }
 
@@ -69,7 +70,7 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
         <Footer>
           <ButtonGroup align="end">
             <Button
-              type="primary"
+              theme={danger ? 'danger' : undefined}
               autoFocus
               {...confirmProps}
               onPress={(e) =>
