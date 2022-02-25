@@ -8,7 +8,6 @@ import { forwardRef, useContext } from 'react';
 import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
 import { Header } from '../../content/Header';
 import { Footer } from '../../content/Footer';
-import { cancel } from 'dom-helpers/animationFrame';
 
 export interface CubeAlertDialogActionsProps {
   confirm?: CubeButtonProps | boolean;
