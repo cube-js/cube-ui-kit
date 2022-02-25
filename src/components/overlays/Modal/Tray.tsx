@@ -27,7 +27,7 @@ const TRAY_STYLES: Styles = {
 
 export interface CubeTrayProps extends TrayProps {
   qa?: BaseProps['qa'];
-  onClose?: () => void;
+  onClose?: (action?: string) => void;
   isFixedHeight?: boolean;
   isNonModal?: boolean;
   styles?: Styles;
