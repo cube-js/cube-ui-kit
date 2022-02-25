@@ -9659,11 +9659,6 @@ dotenv@^8.0.0:
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-8.6.0.tgz#061af664d19f7f4d8fc6e4ff9b584ce237adcb8b"
   integrity sha512-IrPdXQsk2BbzvCBGBOTmmSH5SodmqZNt4ERAZDmW4CT+tL8VtvinqywuANaFu4bOMWki16nqf0e4oC0QIaDr/g==
 
-dotize@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/dotize/-/dotize-0.3.0.tgz#b7a5c46835f6bd4087731354308f0d160dbceeac"
-  integrity sha512-/7m7WPeImgaYj/rWhp/ifA0ZuikC7ablgHiO3Ten5IfJmYX4a1NgjFatv0Srya4psxm25nFzDOKDvmKFOhkr1A==
-
 download@^8.0.0:
   version "8.0.0"
   resolved "https://registry.yarnpkg.com/download/-/download-8.0.0.tgz#afc0b309730811731aae9f5371c9f46be73e51b1"

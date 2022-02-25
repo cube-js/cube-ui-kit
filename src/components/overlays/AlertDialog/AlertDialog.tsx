@@ -9,15 +9,27 @@ import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
 import { Header } from '../../content/Header';
 import { Footer } from '../../content/Footer';
 
+export interface CubeAlertDialogActionsProps {
+  confirm?: CubeButtonProps | boolean;
+  secondary?: CubeButtonProps;
+  cancel?: CubeButtonProps | boolean;
+}
+
 export interface CubeAlertDialogProps extends CubeDialogProps {
   /** Whether the dialog is an important prompt */
   danger?: boolean;
-  primaryProps?: CubeButtonProps;
-  secondaryProps?: CubeButtonProps;
-  cancelProps?: CubeButtonProps;
+  actions?: CubeAlertDialogActionsProps;
   title?: string;
   noActions?: boolean;
 }
+
+const DEFAULT_CONFIRM_PROPS: CubeButtonProps = {
+  label: 'Ok',
+  type: 'primary',
+};
+const DEFAULT_CANCEL_PROPS: CubeButtonProps = {
+  label: 'Cancel',
+};
 
 /**
  * AlertDialogs are a specific type of Dialog. They display important information that users need to acknowledge.
@@ -25,27 +37,31 @@ export interface CubeAlertDialogProps extends CubeDialogProps {
 function AlertDialog(props: CubeAlertDialogProps, ref) {
   let { onClose = () => {} } = useContext(DialogContext) || {};
 
+  let { danger, children, actions, title, styles, noActions, ...otherProps }
+    = props;
+
   let {
-    danger,
-    children,
-    primaryProps = {},
-    secondaryProps,
-    cancelProps,
-    title,
-    styles,
-    noActions,
-    ...otherProps
-  } = props;
+    confirm: confirmProps,
+    secondary: secondaryProps,
+    cancel: cancelProps,
+  } = actions || {};
 
-  if (!primaryProps.label) {
-    primaryProps.label = 'Ok';
-  }
+  // confirm button is present by default
+  confirmProps
+    = confirmProps !== false
+      ? {
+          ...DEFAULT_CONFIRM_PROPS,
+          ...(typeof confirmProps === 'object' ? confirmProps : null),
+        }
+      : undefined;
 
-  let confirmType: CubeButtonProps['type'] = 'primary';
-
-  if (danger) {
-    confirmType = 'danger';
-  }
+  // confirm button is hidden by default
+  cancelProps = cancelProps
+    ? {
+        ...DEFAULT_CANCEL_PROPS,
+        ...(typeof cancelProps === 'object' ? cancelProps : null),
+      }
+    : undefined;
 
   return (
     <Dialog role="alertdialog" ref={ref} isDismissable={false} {...otherProps}>
@@ -54,16 +70,17 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
           <Title>{title}</Title>
         </Header>
       ) : null}
-      <Content>{children}</Content>
+      {children ? <Content>{children}</Content> : null}
       {!noActions ? (
         <Footer>
           <ButtonGroup align="end">
             <Button
-              type={confirmType}
-              {...primaryProps}
+              theme={danger ? 'danger' : undefined}
+              autoFocus
+              {...confirmProps}
               onPress={(e) =>
                 chain(
-                  primaryProps.onPress && primaryProps.onPress(e),
+                  (confirmProps as CubeButtonProps)?.onPress?.(e),
                   onClose('primary'),
                 )
               }
@@ -72,10 +89,7 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
               <Button
                 {...secondaryProps}
                 onPress={(e) =>
-                  chain(
-                    secondaryProps?.onPress && secondaryProps?.onPress(e),
-                    onClose('secondary'),
-                  )
+                  chain(secondaryProps?.onPress?.(e), onClose('secondary'))
                 }
               />
             )}
@@ -84,7 +98,7 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
                 {...cancelProps}
                 onPress={(e) =>
                   chain(
-                    cancelProps?.onPress && cancelProps?.onPress(e),
+                    (cancelProps as CubeButtonProps)?.onPress?.(e),
                     onClose('cancel'),
                   )
                 }
