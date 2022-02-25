@@ -8,6 +8,7 @@ import { forwardRef, useContext } from 'react';
 import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
 import { Header } from '../../content/Header';
 import { Footer } from '../../content/Footer';
+import { cancel } from 'dom-helpers/animationFrame';
 
 export interface CubeAlertDialogActionsProps {
   confirm?: CubeButtonProps | boolean;
@@ -23,11 +24,11 @@ export interface CubeAlertDialogProps extends CubeDialogProps {
   noActions?: boolean;
 }
 
-const DEFAULT_PRIMARY_PROPS: CubeButtonProps = {
+const DEFAULT_CONFIRM_PROPS: CubeButtonProps = {
   label: 'Ok',
   type: 'primary',
 };
-const DEFAUL_CANCEL_PROPS: CubeButtonProps = {
+const DEFAULT_CANCEL_PROPS: CubeButtonProps = {
   label: 'Cancel',
 };
 
@@ -46,21 +47,22 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
     cancel: cancelProps,
   } = actions || {};
 
-  if (confirmProps === undefined || confirmProps === true) {
-    confirmProps = DEFAULT_PRIMARY_PROPS;
-  } else if (!confirmProps) {
-    confirmProps = undefined;
-  } else {
-    confirmProps = Object.assign({}, DEFAULT_PRIMARY_PROPS, confirmProps);
-  }
+  // confirm button is present by default
+  confirmProps
+    = confirmProps !== false
+      ? {
+          ...DEFAULT_CONFIRM_PROPS,
+          ...(typeof confirmProps === 'object' ? confirmProps : null),
+        }
+      : undefined;
 
-  if (cancelProps === true) {
-    cancelProps = DEFAUL_CANCEL_PROPS;
-  } else if (!cancelProps) {
-    cancelProps = undefined;
-  } else {
-    cancelProps = Object.assign({}, DEFAUL_CANCEL_PROPS, cancelProps);
-  }
+  // confirm button is hidden by default
+  cancelProps = cancelProps
+    ? {
+        ...DEFAULT_CANCEL_PROPS,
+        ...(typeof cancelProps === 'object' ? cancelProps : null),
+      }
+    : undefined;
 
   return (
     <Dialog role="alertdialog" ref={ref} isDismissable={false} {...otherProps}>
