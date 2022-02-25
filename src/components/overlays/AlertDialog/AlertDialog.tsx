@@ -81,7 +81,7 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
               onPress={(e) =>
                 chain(
                   (confirmProps as CubeButtonProps)?.onPress?.(e),
-                  onClose('primary'),
+                  onClose('confirm'),
                 )
               }
             />
