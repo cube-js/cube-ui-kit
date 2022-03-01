@@ -24,6 +24,6 @@
     "noEmit": true,
     "downlevelIteration": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["src/**/*.stories.tsx", "src/**/*.stories.ts", "src/**/*.test.tsx", "src/**/*.test.ts", "src/antd.js", "src/storybook.tsx"]
+  "include": ["packages/**/*"],
+  "exclude": ["packages/**/*.stories.tsx", "packages/**/*.stories.ts", "packages/**/*.test.tsx", "packages/**/*.test.ts", "packages/antd.js", "packages/storybook.tsx"]
 }
