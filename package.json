@@ -101,7 +101,6 @@
     "@storybook/react": "^6.4.9",
     "@svgr/rollup": "^6.1.2",
     "@swc/core": "1.2.148",
-    "@swc/core-darwin-arm64": "^1.2.148",
     "@swc/jest": "0.2.20",
     "@testing-library/jest-dom": "^5.16.1",
     "@testing-library/react": "^12.1.2",

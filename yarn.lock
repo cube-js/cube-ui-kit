@@ -4738,7 +4738,7 @@
   resolved "https://registry.yarnpkg.com/@swc/core-android-arm64/-/core-android-arm64-1.2.148.tgz#935ea006fe89b2b5a5c479c98c3e4d7974db8ff6"
   integrity sha512-p+PFcpDByIopBfncwxOtn+mOEnKrLhCxuNi3CtaiyZa51IeefP/IhV0mtVJy9YeuRp+Bk7WkA/SSXUHA0TqZuA==
 
-"@swc/core-darwin-arm64@1.2.148", "@swc/core-darwin-arm64@^1.2.148":
+"@swc/core-darwin-arm64@1.2.148":
   version "1.2.148"
   resolved "https://registry.yarnpkg.com/@swc/core-darwin-arm64/-/core-darwin-arm64-1.2.148.tgz#5ed8e4a639ef32e4775e4794357c8fa531e93e85"
   integrity sha512-1lxLa8i0fcL/70WM+ejJHs5lC0D/Hf+7gH40PSZgrnmDQyZPDcjNYEqXrggvIfAfLab1JgVmKLu1a987nvmdug==
