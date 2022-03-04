@@ -40,7 +40,10 @@ const Template = (props) => {
 
   return (
     <ModalProvider>
-      <DialogTrigger {...triggerProps} onDismiss={() => console.log('dismiss')}>
+      <DialogTrigger
+        {...triggerProps}
+        onDismiss={(action) => console.log('onDismiss event', action)}
+      >
         <Button>Open Modal</Button>
         {(close) => (
           <AlertDialog

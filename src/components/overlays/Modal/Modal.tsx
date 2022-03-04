@@ -60,7 +60,7 @@ const MODAL_STYLES: Styles = {
 
 export interface CubeModalProps extends ModalProps {
   qa?: BaseProps['qa'];
-  onClose?: () => void;
+  onClose?: (action?: string) => void;
   type?: 'modal' | 'fullscreen' | 'fullscreenTakeover';
   styles?: Styles;
 }

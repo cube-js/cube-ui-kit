@@ -505,6 +505,7 @@ const __Select = Object.assign(
   _Select as typeof _Select & {
     Item: typeof Item;
   },
+  { Item },
 );
 
 export { __Select as Select };

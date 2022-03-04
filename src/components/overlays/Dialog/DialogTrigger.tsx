@@ -97,9 +97,9 @@ function DialogTrigger(props) {
     };
   }, []);
 
-  function onClose() {
+  function onClose(action) {
     if (isDismissable) {
-      onDismiss && onDismiss();
+      onDismiss && onDismiss(action);
       state.close();
     }
   }

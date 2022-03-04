@@ -177,6 +177,10 @@ export function Field(allProps: CubeFieldProps) {
       if (!id) {
         removeId(idPrefix ? `${idPrefix}_${fieldName}` : fieldName, newId);
       }
+
+      if (fieldName && form) {
+        form.removeField(fieldName);
+      }
     };
   }, []);
 

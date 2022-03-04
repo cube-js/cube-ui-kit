@@ -20,11 +20,22 @@ import { FileInput } from './components/forms/FileInput/FileInput';
 
 import './styles/predefined';
 
-const _Button = Object.assign(Button, {
-  Group: ButtonGroup,
-});
+const _Button = Object.assign(
+  Button as typeof Button & {
+    Group: typeof ButtonGroup;
+  },
+  {
+    Group: ButtonGroup,
+  },
+);
 
-const Form = Object.assign(_Form, { Item: Field, useForm });
+const Form = Object.assign(
+  _Form as typeof _Form & {
+    Item: typeof Field;
+    useForm: typeof useForm;
+  },
+  { Item: Field, useForm },
+);
 
 export { Item } from '@react-stately/collections';
 
@@ -110,7 +121,7 @@ export { Switch } from './components/forms/Switch/Switch';
 export type { CubeSwitchProps } from './components/forms/Switch/Switch';
 export { Radio } from './components/forms/RadioGroup/Radio';
 export type { CubeRadioProps } from './components/forms/RadioGroup/Radio';
-export { Form, Field, useFormProps };
+export { Form, Field, useFormProps, useForm };
 export type { CubeFormProps, CubeFormInstance };
 export { ComboBox } from './components/pickers/ComboBox/ComboBox';
 export type { CubeComboBoxProps } from './components/pickers/ComboBox/ComboBox';
@@ -191,13 +202,22 @@ export type { useProviderProps } from './provider';
 export { Portal } from './components/portal';
 export type { PortalProps } from './components/portal';
 
-const Input = Object.assign(TextInput, {
-  Text: TextInput,
-  Password: PasswordInput,
-  Number: NumberInput,
-  TextArea: TextArea,
-  File: FileInput,
-});
+const Input = Object.assign(
+  TextInput as typeof TextInput & {
+    Text: typeof TextInput;
+    Password: typeof PasswordInput;
+    Number: typeof NumberInput;
+    TextArea: typeof TextArea;
+    File: typeof FileInput;
+  },
+  {
+    Text: TextInput,
+    Password: PasswordInput,
+    Number: NumberInput,
+    TextArea: TextArea,
+    File: FileInput,
+  },
+);
 
 export { Input };
 
