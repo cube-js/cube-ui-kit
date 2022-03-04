@@ -39,7 +39,7 @@ import {
   Props,
 } from '../../types';
 import { FormFieldProps } from '../../../shared';
-import { AriaTextFieldProps } from '@react-types/textfield';
+import type { AriaTextFieldProps } from '@react-types/textfield';
 import { mergeProps } from '../../../utils/react';
 
 const WRAPPER_STYLES: Styles = {

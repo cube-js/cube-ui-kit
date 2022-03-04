@@ -18,7 +18,7 @@ import { useFormProps } from '../Form/Form';
 import { FieldWrapper } from '../FieldWrapper';
 import { Styles } from '../../../styles/types';
 import { BaseProps, BlockStyleProps, OuterStyleProps } from '../../types';
-import { AriaSwitchProps } from '@react-types/switch';
+import type { AriaSwitchProps } from '@react-types/switch';
 import { FormFieldProps } from '../../../shared';
 import {
   castNullableIsSelected,

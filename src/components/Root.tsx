@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { GlobalStyles } from './GlobalStyles';
 import { Base } from './Base';
+import { PortalProvider } from './portal';
 import { BASE_STYLES, BLOCK_STYLES } from '../styles/list';
 import { extractStyles } from '../utils/styles';
 import { filterBaseProps } from '../utils/filterBaseProps';
@@ -9,6 +10,7 @@ import { ModalProvider } from '@react-aria/overlays';
 import { BaseProps } from './types';
 import { StyleSheetManager } from 'styled-components';
 import { TOKENS } from '../tokens';
+import { AlertDialogApiProvider } from './overlays/AlertDialog';
 
 const DEFAULT_STYLES = {
   display: 'block',
@@ -58,31 +60,32 @@ export const Root = (allProps: CubeRootProps) => {
   }, []);
 
   const styles = extractStyles(props, STYLES, DEFAULT_STYLES);
-  const root = (
-    <StyleSheetManager disableVendorPrefixes>
-      <Base
-        ref={ref}
-        id="cube-ui-kit-root"
-        className="root"
-        {...filterBaseProps(props, { eventProps: true })}
-        styles={styles}
-      >
-        <GlobalStyles
-          bodyStyles={bodyStyles}
-          applyLegacyTokens={applyLegacyTokens}
-          publicUrl={publicUrl}
-          fonts={fonts}
-          font={font}
-          monospaceFont={monospaceFont}
-        />
-        <ModalProvider>{children}</ModalProvider>
-      </Base>
-    </StyleSheetManager>
-  );
 
   return (
     <Provider router={router} root={rootRef}>
-      {root}
+      <StyleSheetManager disableVendorPrefixes>
+        <Base
+          ref={ref}
+          id="cube-ui-kit-root"
+          className="root"
+          {...filterBaseProps(props, { eventProps: true })}
+          styles={styles}
+        >
+          <GlobalStyles
+            bodyStyles={bodyStyles}
+            applyLegacyTokens={applyLegacyTokens}
+            publicUrl={publicUrl}
+            fonts={fonts}
+            font={font}
+            monospaceFont={monospaceFont}
+          />
+          <PortalProvider value={ref}>
+            <AlertDialogApiProvider>
+              <ModalProvider>{children}</ModalProvider>
+            </AlertDialogApiProvider>
+          </PortalProvider>
+        </Base>
+      </StyleSheetManager>
     </Provider>
   );
 };

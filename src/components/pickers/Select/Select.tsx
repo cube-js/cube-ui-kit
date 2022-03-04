@@ -41,7 +41,7 @@ import {
   OuterStyleProps,
   Props,
 } from '../../types';
-import { AriaSelectProps } from '@react-types/select';
+import type { AriaSelectProps } from '@react-types/select';
 import { DOMRef } from '@react-types/shared';
 import { FormFieldProps } from '../../../shared';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';

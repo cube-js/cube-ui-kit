@@ -1,6 +1,13 @@
-import { AlertDialog, Button, DialogTrigger } from '../../../index';
+import {
+  AlertDialog,
+  Button,
+  Content,
+  DialogTrigger,
+  Paragraph,
+} from '../../../index';
 import { ModalProvider } from '@react-aria/overlays';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { useAlertDialogApi } from './AlertDialogApiProvider';
 
 export default {
   title: 'UIKit/Overlays/AlertDialog',
@@ -79,3 +86,28 @@ const Template = (props) => {
 
 export const Default = Template.bind({});
 Default.args = {};
+
+const ApiTemplate = (args) => {
+  const api = useAlertDialogApi();
+
+  return (
+    <Button
+      {...args}
+      onPress={() => {
+        const { promise } = api.open({
+          children: (
+            <Content>
+              <Paragraph>Test content</Paragraph>
+            </Content>
+          ),
+        });
+
+        promise.then(() => console.log('closed'));
+      }}
+    >
+      Open Modal
+    </Button>
+  );
+};
+
+export const UsingApi = ApiTemplate.bind({});

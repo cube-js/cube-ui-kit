@@ -17,7 +17,7 @@ import { RadioGroup } from './RadioGroup';
 import { useFormProps } from '../Form/Form';
 import { Styles } from '../../../styles/types';
 import { BaseProps } from '../../types';
-import { AriaRadioProps } from '@react-types/radio';
+import type { AriaRadioProps } from '@react-types/radio';
 import { FormFieldProps } from '../../../shared';
 
 const STYLES: Styles = {

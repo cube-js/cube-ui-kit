@@ -19,7 +19,7 @@ export interface CubeButtonProps extends CubeActionProps {
     | 'outline'
     | 'neutral'
     | string;
-  size?: 'small' | 'default' | 'large' | string;
+  size?: 'small' | 'default' | 'large' | (string & {});
 }
 
 export function provideStyles({

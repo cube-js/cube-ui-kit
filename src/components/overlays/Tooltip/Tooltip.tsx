@@ -10,7 +10,7 @@ import { useContextStyles } from '../../../providers/StylesProvider';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
 import { Styles } from '../../../styles/types';
 import { BaseProps, ContainerStyleProps } from '../../types';
-import { AriaTooltipProps } from '@react-types/tooltip';
+import type { AriaTooltipProps } from '@react-types/tooltip';
 import { PlacementAxis } from '../../../shared';
 
 const TOOLTIP_STYLES: Styles = {

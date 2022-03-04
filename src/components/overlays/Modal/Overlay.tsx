@@ -2,7 +2,7 @@ import { OpenTransition } from './OpenTransition';
 import { forwardRef, useCallback, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Provider, useProviderProps } from '../../../provider';
-import { OverlayProps } from '@react-types/overlays';
+import type { OverlayProps } from '@react-types/overlays';
 import { Props } from '../../types';
 
 export interface CubeOverlayProps extends OverlayProps {}

@@ -10,7 +10,7 @@ import { useProviderProps } from '../../../provider';
 import { Action } from '../../actions/Action';
 import { Styles } from '../../../styles/types';
 import { BaseProps, BlockStyleProps, PositionStyleProps } from '../../types';
-import { AriaTextFieldProps } from '@react-types/textfield';
+import type { AriaTextFieldProps } from '@react-types/textfield';
 import { FormFieldProps } from '../../../shared';
 import { createFocusableRef } from '@react-spectrum/utils';
 import { FieldWrapper } from '../FieldWrapper';
