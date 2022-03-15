@@ -134,5 +134,9 @@
     "dom-helpers": "^5.2.1",
     "react-is": "^17.0.2"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cube-js/cube-ui-kit.git"
+  }
 }
