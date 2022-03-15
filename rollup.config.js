@@ -10,7 +10,7 @@ import typescript from '@rollup/plugin-typescript';
 
 import pkg from './packages/cube-ui-kit/package.json';
 
-const srcPath = './packages/cube-ui-kit/src';
+const src = './packages/cube-ui-kit';
 const author = pkg.author;
 const moduleName = pkg.name;
 const banner = `
@@ -53,7 +53,7 @@ const external = ['react', 'react-dom', 'styled-components'];
 
 export default [
   {
-    input: `${srcPath}/index.ts`,
+    input: `${src}/src/index.ts`,
     output: [
       {
         name: 'Cube Cloud UIKit',
@@ -71,7 +71,7 @@ export default [
   !process.env.ESM_BUILD_ONLY
     ? [
         {
-          input: `${srcPath}/index.ts`,
+          input: `${src}/src/index.ts`,
           output: [
             {
               name: 'Cube Cloud UIKit',
