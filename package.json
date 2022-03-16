@@ -162,18 +162,15 @@
     {
       "name": "Cube UI Kit all",
       "path": "dist/__measure.js",
-      "running": false
-    },
-    {
-      "name": "Cube UI Kit standalone",
-      "path": "dist/standalone/es/index.js",
-      "running": false
+      "running": false,
+      "limit": "160 kB"
     },
     {
       "name": "Cube UI Kit after tree shaking (just a Button)",
       "path": "dist/es/index.js",
       "import": "{ Button }",
-      "running": false
+      "running": false,
+      "limit": "40 kB"
     }
   ],
   "browserslist": [
