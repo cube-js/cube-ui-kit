@@ -1,14 +1,6 @@
 import { TextInput } from './components/forms/TextInput/TextInput';
 import { PasswordInput } from './components/forms/PasswordInput/PasswordInput';
 import { NumberInput } from './components/forms/NumberInput/NumberInput';
-import {
-  CubeFormProps,
-  Field,
-  Form as _Form,
-  useForm,
-  useFormProps,
-  CubeFormInstance,
-} from './components/forms/Form';
 
 import { CubeTextProps, Text } from './components/content/Text';
 import { CubeTitleProps, Title } from './components/content/Title';
@@ -27,14 +19,6 @@ const _Button = Object.assign(
   {
     Group: ButtonGroup,
   },
-);
-
-const Form = Object.assign(
-  _Form as typeof _Form & {
-    Item: typeof Field;
-    useForm: typeof useForm;
-  },
-  { Item: Field, useForm },
 );
 
 export { Item } from '@react-stately/collections';
@@ -121,8 +105,6 @@ export { Switch } from './components/forms/Switch/Switch';
 export type { CubeSwitchProps } from './components/forms/Switch/Switch';
 export { Radio } from './components/forms/RadioGroup/Radio';
 export type { CubeRadioProps } from './components/forms/RadioGroup/Radio';
-export { Form, Field, useFormProps, useForm };
-export type { CubeFormProps, CubeFormInstance };
 export { ComboBox } from './components/pickers/ComboBox/ComboBox';
 export type { CubeComboBoxProps } from './components/pickers/ComboBox/ComboBox';
 export { Select, ListBoxPopup } from './components/pickers/Select/Select';
@@ -196,24 +178,7 @@ export { useContextStyles, StyleProvider } from './providers/StylesProvider';
 export { Provider } from './provider';
 export type { useProviderProps } from './provider';
 
-const Input = Object.assign(
-  TextInput as typeof TextInput & {
-    Text: typeof TextInput;
-    Password: typeof PasswordInput;
-    Number: typeof NumberInput;
-    TextArea: typeof TextArea;
-    File: typeof FileInput;
-  },
-  {
-    Text: TextInput,
-    Password: PasswordInput,
-    Number: NumberInput,
-    TextArea: TextArea,
-    File: FileInput,
-  },
-);
-
-export { Input };
+export * from './components/forms';
 
 export type {
   TagName,
@@ -242,3 +207,4 @@ export * from './utils/react';
 export * from './styled';
 export { default as copy } from 'clipboard-copy';
 export * from '@react-aria/ssr';
+export * from './components/forms/Form';

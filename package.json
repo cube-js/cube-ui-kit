@@ -2,14 +2,14 @@
   "name": "@cube-dev/ui-kit",
   "version": "0.8.8",
   "description": "UIKit for Cube Projects",
+  "module": "dist/es/index.js",
   "main": "dist/cjs/index.js",
-  "module": "dist/mjs/index.js",
-  "types": "dist/mjs/index.d.ts",
+  "types": "dist/types/index.d.ts",
+  "sideEffects": ["./**/styles/predefined.{js,ts}"],
   "exports": {
     ".": {
-      "require": "./dist/cjs/index.js",
-      "import": "./dist/mjs/index.js",
-      "types": "./dist/mjs/index.d.ts"
+      "import": "./dist/es/index.js",
+      "require": "./dist/cjs/index.js"
     }
   },
   "files": [
@@ -18,10 +18,11 @@
     "dist/**/*.d.ts"
   ],
   "scripts": {
-    "start": "cross-env PARCEL_AUTOINSTALL=false parcel src/storybook.html",
-    "build": "cross-env NODE_ENV=production rollup -c",
-    "build:esm": "cross-env NODE_ENV=production ESM_BUILD_ONLY=true rollup -c",
-    "watch": "rollup -c -w",
+    "start": "yarn storybook",
+    "build": "npm-run-all clear -p build:* && node ./scripts/copy-files.js && node scripts/add-banner.js",
+    "build:esm": "tsc -p tsconfig.es.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "watch": "yarn build:esm --watch",
     "test": "jest",
     "test-cover": "jest --coverage",
     "test-watch": "jest --watch",
@@ -32,18 +33,27 @@
     "storybook": "start-storybook -s ./public -p 6006",
     "build-storybook": "build-storybook",
     "chromatic": "npx chromatic",
-    "size": "size-limit",
-    "prepare": "husky install"
+    "presize": "node -e 'require(\"./scripts/size-limit\").createMeasurer()'",
+    "size": "size-limit --why",
+    "postsize": "node -e 'require(\"./scripts/size-limit\").deleteMeasurer()'",
+    "prepare": "husky install",
+    "clear": "rimraf ./dist"
+  },
+  "publishConfig": {
+    "directory": "dist"
   },
   "keywords": [
     "uikit"
   ],
   "author": "Cube Dev Team",
-  "devDependencies": {
+  "peerDependencies": {
+    "react": ">= 17.0.0",
+    "react-dom": ">= 17.0.0",
+    "styled-components": ">= 5.3.0"
+  },
+  "dependencies": {
     "@ant-design/icons": "^4.7.0",
-    "@commitlint/cli": "16.1.0",
-    "@commitlint/config-conventional": "16.0.0",
-    "@open-wc/testing": "^3.0.3",
+    "react-is": "^17.0.0",
     "@react-aria/button": "^3.3.4",
     "@react-aria/checkbox": "^3.3.1",
     "@react-aria/combobox": "^3.2.1",
@@ -86,20 +96,26 @@
     "@react-types/switch": "^3.1.2",
     "@react-types/textfield": "^3.3.0",
     "@react-types/tooltip": "^3.1.2",
-    "@rollup/plugin-babel": "^5.3.0",
-    "@rollup/plugin-commonjs": "^21.0.1",
-    "@rollup/plugin-json": "^4.1.0",
-    "@rollup/plugin-node-resolve": "^13.1.1",
-    "@rollup/plugin-typescript": "^8.3.0",
-    "@rollup/plugin-url": "^6.1.0",
+    "clsx": "^1.1.1",
+    "react-transition-group": "^4.4.2",
+    "valid-url": "^1.0.9",
+    "email-validator": "^2.0.4",
+    "prismjs": "^1.25.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "16.1.0",
+    "@commitlint/config-conventional": "16.0.0",
+    "@open-wc/testing": "^3.0.3",
     "@size-limit/preset-big-lib": "^7.0.5",
+    "@size-limit/webpack": "^7.0.5",
+    "@size-limit/webpack-why": "^7.0.5",
     "@storybook/addon-actions": "^6.4.9",
     "@storybook/addon-essentials": "^6.4.9",
     "@storybook/addon-knobs": "^6.4.0",
     "@storybook/addon-links": "^6.4.9",
+    "@storybook/addon-postcss": "^2.0.0",
     "@storybook/preset-create-react-app": "^4.0.0",
     "@storybook/react": "^6.4.9",
-    "@svgr/rollup": "^6.1.2",
     "@swc/core": "1.2.136",
     "@swc/jest": "0.2.17",
     "@testing-library/jest-dom": "^5.16.1",
@@ -112,10 +128,7 @@
     "babel-eslint": "^10.1.0",
     "chromatic": "^6.3.3",
     "clipboard-copy": "^4.0.1",
-    "clsx": "^1.1.1",
     "cross-env": "^7.0.3",
-    "css-loader": "^6.5.1",
-    "email-validator": "^2.0.4",
     "eslint": "^8.5.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-config-react-app": "^7.0.0",
@@ -128,41 +141,39 @@
     "husky": ">=6",
     "jest": "27.5.0",
     "jsdom": "19.0.0",
-    "less-loader": "^10.2.0",
     "lint-staged": ">=10",
     "netlify-cli": "^8.6.0",
-    "parcel-bundler": "^1.12.4",
+    "npm-run-all": "^4.1.5",
     "prettier": "^2.5.1",
-    "prismjs": "^1.25.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "react-router": "^6.2.1",
     "react-test-renderer": "^17.0.2",
-    "react-transition-group": "^4.4.2",
-    "rollup": "^2.62.0",
-    "rollup-plugin-less": "^1.1.3",
-    "rollup-plugin-local-resolve": "^1.0.7",
-    "rollup-plugin-postcss": "^4.0.2",
-    "rollup-plugin-replace": "^2.2.0",
-    "rollup-plugin-terser": "^7.0.2",
-    "rollup-plugin-visualizer": "^5.5.2",
+    "rimraf": "^3.0.2",
     "size-limit": "^7.0.5",
+    "styled-components": "5.3.0",
     "storybook-addon-styled-component-theme": "^2.0.0",
-    "style-loader": "^3.3.1",
-    "styled-components": "^5.3.3",
-    "typescript": "^4.5.4",
-    "valid-url": "^1.0.9"
+    "typescript": "^4.5.4"
   },
   "resolutions": {
     "es5-ext": "0.10.53"
   },
   "size-limit": [
     {
-      "name": "Cube UI Kit",
-      "path": [
-        "dist/mjs/index.js"
-      ],
-      "limit": "200 kB"
+      "name": "Cube UI Kit all",
+      "path": "dist/__measure.js",
+      "running": false
+    },
+    {
+      "name": "Cube UI Kit standalone",
+      "path": "dist/standalone/es/index.js",
+      "running": false
+    },
+    {
+      "name": "Cube UI Kit after tree shaking (just a Button)",
+      "path": "dist/es/index.js",
+      "import": "{ Button }",
+      "running": false
     }
   ],
   "browserslist": [
@@ -171,14 +182,5 @@
     "last 5 Firefox versions",
     "last 3 Safari versions"
   ],
-  "peerDependencies": {
-    "react": ">= 17.0.0",
-    "react-dom": ">= 17.0.0"
-  },
-  "dependencies": {
-    "@storybook/addon-postcss": "^2.0.0",
-    "dom-helpers": "^5.2.1",
-    "react-is": "^17.0.2"
-  },
   "license": "MIT"
 }

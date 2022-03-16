@@ -3,8 +3,6 @@ import { AlertDialog, CubeAlertDialogProps } from '../AlertDialog/AlertDialog';
 import { CubeDialogContainerProps, DialogContainer } from './DialogContainer';
 import { ModalProvider } from '@react-aria/overlays';
 import { ReactNode } from 'react';
-import { cancel } from 'dom-helpers/animationFrame';
-import { CubeButtonProps } from '../../actions/Button/Button';
 
 let ID = 0;
 
