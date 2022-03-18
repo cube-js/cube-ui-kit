@@ -6,20 +6,9 @@ import { CubeTextProps, Text } from './components/content/Text';
 import { CubeTitleProps, Title } from './components/content/Title';
 import { CubeParagraphProps, Paragraph } from './components/content/Paragraph';
 import { TextArea } from './components/forms/TextArea/TextArea';
-import { Button } from './components/actions/Button/Button';
-import { ButtonGroup } from './components/actions/ButtonGroup/ButtonGroup';
 import { FileInput } from './components/forms/FileInput/FileInput';
 
 import './styles/predefined';
-
-const _Button = Object.assign(
-  Button as typeof Button & {
-    Group: typeof ButtonGroup;
-  },
-  {
-    Group: ButtonGroup,
-  },
-);
 
 export { Item } from '@react-stately/collections';
 
@@ -27,8 +16,6 @@ export { Item } from '@react-stately/collections';
 export { Base } from './components/Base';
 export { Block } from './components/Block';
 export type { CubeBlockProps } from './components/Block';
-export { Action } from './components/actions/Action';
-export type { CubeActionProps } from './components/actions/Action';
 export { ActiveZone } from './components/content/ActiveZone/ActiveZone';
 export type { CubeActiveZoneProps } from './components/content/ActiveZone/ActiveZone';
 export { Grid } from './components/layout/Grid';
@@ -75,8 +62,7 @@ export { Base64Upload } from './components/other/Base64Upload/Base64Upload';
 export type { CubeBase64UploadProps } from './components/other/Base64Upload/Base64Upload';
 export { Card } from './components/content/Card/Card';
 export type { CubeCardProps } from './components/content/Card/Card';
-export { _Button as Button, ButtonGroup };
-export type { CubeButtonProps } from './components/actions/Button/Button';
+export * from './components/actions';
 export { Placeholder } from './components/content/Placeholder/Placeholder';
 export type { CubePlaceholderProps } from './components/content/Placeholder/Placeholder';
 export { Skeleton } from './components/content/Skeleton/Skeleton';
