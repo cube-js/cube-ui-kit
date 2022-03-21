@@ -133,6 +133,7 @@
     "netlify-cli": "^8.6.0",
     "parcel-bundler": "^1.12.4",
     "prettier": "^2.5.1",
+    "prettier-eslint": "^13.0.0",
     "prismjs": "^1.25.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
@@ -150,9 +151,9 @@
     "storybook-addon-styled-component-theme": "^2.0.0",
     "style-loader": "^3.3.1",
     "styled-components": "^5.3.3",
+    "tiny-invariant": "^1.2.0",
     "typescript": "^4.5.4",
-    "valid-url": "^1.0.9",
-    "tiny-invariant": "^1.2.0"
+    "valid-url": "^1.0.9"
   },
   "size-limit": [
     {

@@ -173,7 +173,7 @@ export { StatsCard } from './components/organisms/StatsCard/StatsCard';
 export type { CubeStatsCard } from './components/organisms/StatsCard/StatsCard';
 export {
   AlertDialog,
-  useAlertDialogApi,
+  useAlertDialogAPI,
 } from './components/overlays/AlertDialog';
 export type { CubeAlertDialogProps } from './components/overlays/AlertDialog';
 export { SearchResults } from './components/organisms/SearchResults/SearchResults';

@@ -15,13 +15,13 @@ export interface Dialog {
 }
 export interface DialogProps
   extends Omit<CubeDialogContainerProps, 'onDismiss' | 'children'>,
-    Omit<CubeAlertDialogProps, 'type' | 'id'> {
-  children: ReactNode | (({ resolve, reject }) => ReactNode);
+    Omit<CubeAlertDialogProps, 'type' | 'id' | 'content'> {
+  content: ReactNode | (({ resolve, reject }) => ReactNode);
 }
 
 interface AlertDialogMeta {
   id: number;
-  closed: boolean;
+  isClosed: boolean;
   promise: Promise<void>;
   placement: 'top' | 'bottom';
   resolve: () => void;

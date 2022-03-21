@@ -5,7 +5,7 @@ import { Provider, useProviderProps } from '../../../provider';
 import type { OverlayProps } from '@react-types/overlays';
 import { Props } from '../../types';
 
-export interface CubeOverlayProps extends OverlayProps {}
+export type CubeOverlayProps = OverlayProps;
 
 function Overlay(props: CubeOverlayProps, ref) {
   let {

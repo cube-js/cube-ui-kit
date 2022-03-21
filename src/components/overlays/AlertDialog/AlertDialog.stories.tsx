@@ -1,13 +1,7 @@
-import {
-  AlertDialog,
-  Button,
-  Content,
-  DialogTrigger,
-  Paragraph,
-} from '../../../index';
+import { AlertDialog, Button, DialogTrigger, Paragraph } from '../../../index';
 import { ModalProvider } from '@react-aria/overlays';
 import { baseProps } from '../../../stories/lists/baseProps';
-import { useAlertDialogApi } from './AlertDialogApiProvider';
+import { useAlertDialogAPI } from './AlertDialogApiProvider';
 
 export default {
   title: 'UIKit/Overlays/AlertDialog',
@@ -20,7 +14,7 @@ export default {
 };
 
 const Template = (props) => {
-  let {
+  const {
     content,
     type,
     mobileType,
@@ -91,18 +85,14 @@ export const Default = Template.bind({});
 Default.args = {};
 
 const ApiTemplate = (args) => {
-  const api = useAlertDialogApi();
+  const dialogAPI = useAlertDialogAPI();
 
   return (
     <Button
       {...args}
       onPress={() => {
-        const { promise } = api.open({
-          children: (
-            <Content>
-              <Paragraph>Test content</Paragraph>
-            </Content>
-          ),
+        const promise = dialogAPI.open({
+          content: <Paragraph>Test content</Paragraph>,
         });
 
         promise.then(() => console.log('closed'));

@@ -6,10 +6,7 @@ import { Dialog, DialogProps } from './types';
 const DialogApiContext = createContext<DialogApi | null>(null);
 
 interface DialogApi {
-  open: (dialogProps: DialogProps) => {
-    promise: Promise<void>;
-    close: () => void;
-  };
+  open: (dialogProps: DialogProps) => Promise<void>;
 }
 
 /**
@@ -17,7 +14,7 @@ interface DialogApi {
  * @internal Do not use it in your code!
  */
 export function AlertDialogApiProvider(props) {
-  const [dialogsList, setDialogsList] = useState<Dialog[]>([]);
+  const [dialogList, setDialogList] = useState<Dialog[]>([]);
   const id = useRef(0);
 
   const api = useMemo<DialogApi>(
@@ -27,15 +24,15 @@ export function AlertDialogApiProvider(props) {
         const currentId = ++id.current;
         const currentDialog = {
           props: dialogProps,
-          meta: { id: currentId, closed: false, isVisible: true },
+          meta: { id: currentId, isClosed: false, isVisible: true },
         } as Dialog;
 
         const close = () => {
-          if (currentDialog.meta.closed) return;
+          if (currentDialog.meta.isClosed) return;
 
-          currentDialog.meta.closed = true;
+          currentDialog.meta.isClosed = true;
 
-          setDialogsList((currentState) => {
+          setDialogList((currentState) => {
             if (currentIndex === null) return currentState;
 
             if (currentState[currentIndex]?.meta.id !== currentId)
@@ -49,7 +46,7 @@ export function AlertDialogApiProvider(props) {
           });
 
           setTimeout(() => {
-            setDialogsList((currentState) => {
+            setDialogList((currentState) => {
               currentIndex = null;
               currentDialog.meta.resolve();
 
@@ -57,7 +54,7 @@ export function AlertDialogApiProvider(props) {
                 (dialog) => currentId !== dialog.meta.id,
               );
             });
-          }, 10000);
+          }, 300);
         };
 
         currentDialog.meta.promise = new Promise<void>((resolve, reject) => {
@@ -71,15 +68,12 @@ export function AlertDialogApiProvider(props) {
           };
         });
 
-        setDialogsList((currentState) => {
+        setDialogList((currentState) => {
           currentIndex = currentState.length;
           return [...currentState, currentDialog];
         });
 
-        return {
-          promise: currentDialog.meta.promise,
-          close: close,
-        };
+        return currentDialog.meta.promise;
       },
     }),
     [],
@@ -87,13 +81,13 @@ export function AlertDialogApiProvider(props) {
 
   return (
     <DialogApiContext.Provider value={api}>
-      <AlertDialogZone dialogs={dialogsList} />
+      <AlertDialogZone dialogs={dialogList} />
       {props.children}
     </DialogApiContext.Provider>
   );
 }
 
-export function useAlertDialogApi(): DialogApi {
+export function useAlertDialogAPI(): DialogApi {
   const api = useContext(DialogApiContext);
 
   invariant(
