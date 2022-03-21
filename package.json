@@ -106,8 +106,8 @@
     "@commitlint/cli": "16.1.0",
     "@commitlint/config-conventional": "16.0.0",
     "@open-wc/testing": "^3.0.3",
+    "@size-limit/esbuild": "^7.0.8",
     "@size-limit/preset-big-lib": "^7.0.5",
-    "@size-limit/webpack": "^7.0.5",
     "@size-limit/webpack-why": "^7.0.5",
     "@storybook/addon-actions": "^6.4.9",
     "@storybook/addon-essentials": "^6.4.9",
@@ -169,6 +169,7 @@
       "name": "All",
       "path": "./dist/__measure.js",
       "running": false,
+      "webpack": false,
       "limit": "160 kB"
     },
     {
@@ -176,6 +177,7 @@
       "path": "./dist/es/index.js",
       "import": "{ Button }",
       "running": false,
+      "webpack": false,
       "limit": "40 kB"
     }
   ],
