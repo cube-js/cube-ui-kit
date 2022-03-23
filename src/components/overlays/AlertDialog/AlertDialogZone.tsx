@@ -1,68 +1,92 @@
-import { Dialog } from './types';
+import { CubeButtonProps } from '../../actions/Button/Button';
 import { Portal } from '../../portal';
 import { DialogContainer } from '../Dialog';
 import { AlertDialog, CubeAlertDialogActionsProps } from './AlertDialog';
+import { AlertDialogResolveStatus, Dialog } from './types';
 
 export interface DialogZoneProps {
-  dialogs: Dialog[];
+  openedDialog: Dialog | null;
 }
+
+const PORTAL_KEY = 'AlertDialogZone';
 
 /**
  * @internal Do not use it
  */
 export function AlertDialogZone(props: DialogZoneProps): JSX.Element {
-  const { dialogs } = props;
+  const { openedDialog } = props;
+
+  if (openedDialog === null) return <Portal key={PORTAL_KEY} />;
+
+  const {
+    type,
+    isDismissable = true,
+    actions,
+    onDismiss,
+    content,
+    ...options
+  } = openedDialog.props;
+  const { resolve, reject, isVisible, dialogType } = openedDialog.meta;
+
+  const _actions: CubeAlertDialogActionsProps = (() => {
+    const mergeActionProps = <
+      T extends
+        | CubeAlertDialogActionsProps['confirm']
+        | CubeAlertDialogActionsProps['secondary'],
+    >(
+      action: T,
+      status: AlertDialogResolveStatus,
+    ): T => {
+      if (typeof action === 'undefined') {
+        return undefined as unknown as T;
+      }
+
+      if (typeof action === 'boolean') {
+        return (action
+          ? { onPress: () => resolve(status) }
+          : false) as unknown as T;
+      }
+
+      const onPress = action.onPress;
+
+      return {
+        ...(action as CubeButtonProps),
+        onPress: (e) => {
+          onPress?.(e);
+          resolve(status);
+        },
+      } as T;
+    };
+
+    if (typeof actions === 'undefined') return {};
+
+    return {
+      confirm: mergeActionProps(actions.confirm, 'confirm'),
+      secondary: mergeActionProps(actions.secondary, 'secondary'),
+      cancel: mergeActionProps(actions.cancel, 'cancel'),
+    };
+  })();
 
   return (
-    <>
-      {dialogs.map(({ props, meta }) => {
-        const {
-          type,
-          isDismissable = true,
-          actions,
-          onDismiss,
-          content,
-          ...options
-        } = props;
-        const { id, resolve, reject, isVisible, dialogType } = meta;
-
-        const _actions: CubeAlertDialogActionsProps = {
-          confirm:
-            typeof actions?.confirm === 'boolean'
-              ? { onPress: resolve }
-              : { ...actions?.confirm, onPress: resolve },
-          secondary: actions?.secondary,
-          cancel:
-            typeof actions?.cancel === 'boolean'
-              ? { onPress: resolve }
-              : { ...actions?.cancel, onPress: reject },
-        };
-
-        return (
-          <Portal key={meta.id}>
-            <DialogContainer
-              key={id}
-              isOpen={isVisible}
-              isDismissable={isDismissable}
-              type={type}
-              onDismiss={resolve}
-            >
-              <AlertDialog
-                key={id}
-                noActions={dialogType === 'form'}
-                actions={_actions}
-                isHidden={!isVisible}
-                content={
-                  typeof content === 'function'
-                    ? content({ resolve, reject })
-                    : content
-                }
-                {...options}
-              />
-            </DialogContainer>
-          </Portal>
-        );
-      })}
-    </>
+    <Portal key={PORTAL_KEY}>
+      <DialogContainer
+        isOpen={isVisible}
+        isDismissable={isDismissable}
+        type={type}
+        onDismiss={resolve}
+      >
+        <AlertDialog
+          noActions={dialogType === 'form'}
+          actions={_actions}
+          isHidden={!isVisible}
+          content={
+            typeof content === 'function'
+              ? content({ resolve, reject })
+              : content
+          }
+          {...options}
+        />
+      </DialogContainer>
+    </Portal>
   );
 }

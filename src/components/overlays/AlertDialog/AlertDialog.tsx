@@ -48,7 +48,7 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
     cancel: cancelProps,
   } = actions ?? {};
 
-  // confirm button is present by default
+  // the confirm button is present by default
   confirmProps =
     confirmProps !== false
       ? {
@@ -57,7 +57,7 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
         }
       : undefined;
 
-  // confirm button is hidden by default
+  // the cancel button is hidden by default
   cancelProps = cancelProps
     ? {
         ...DEFAULT_CANCEL_PROPS,

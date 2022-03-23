@@ -19,13 +19,15 @@ export interface DialogProps
   content: ReactNode | (({ resolve, reject }) => ReactNode);
 }
 
+export type AlertDialogResolveStatus = 'confirm' | 'cancel' | 'secondary';
+
 interface AlertDialogMeta {
   id: number;
   isClosed: boolean;
-  promise: Promise<void>;
+  promise: Promise<AlertDialogResolveStatus>;
   placement: 'top' | 'bottom';
-  resolve: () => void;
-  reject: () => void;
+  resolve: (status: AlertDialogResolveStatus) => void;
+  reject: (reason) => void;
   isVisible?: boolean;
   dialogType?: 'info' | 'confirm' | 'form';
 }

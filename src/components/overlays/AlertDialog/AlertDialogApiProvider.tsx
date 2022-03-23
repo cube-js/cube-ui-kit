@@ -1,26 +1,32 @@
 import { useContext, createContext, useMemo, useRef, useState } from 'react';
 import invariant from 'tiny-invariant';
 import { AlertDialogZone } from './AlertDialogZone';
-import { Dialog, DialogProps } from './types';
+import { AlertDialogResolveStatus, Dialog, DialogProps } from './types';
 
 const DialogApiContext = createContext<DialogApi | null>(null);
 
 interface DialogApi {
-  open: (dialogProps: DialogProps) => Promise<void>;
+  open: (
+    dialogProps: DialogProps,
+    params?: DialogApiParams,
+  ) => Promise<AlertDialogResolveStatus>;
+}
+
+interface DialogApiParams {
+  cancelToken?: AbortSignal;
 }
 
 /**
- *
  * @internal Do not use it in your code!
  */
 export function AlertDialogApiProvider(props) {
-  const [dialogList, setDialogList] = useState<Dialog[]>([]);
+  const [openedDialog, setOpenedDialog] = useState<Dialog | null>(null);
   const id = useRef(0);
 
   const api = useMemo<DialogApi>(
     () => ({
-      open: (dialogProps) => {
-        let currentIndex: null | number = null;
+      open: (dialogProps, params = {}) => {
+        const { cancelToken } = params;
         const currentId = ++id.current;
         const currentDialog = {
           props: dialogProps,
@@ -31,46 +37,54 @@ export function AlertDialogApiProvider(props) {
           if (currentDialog.meta.isClosed) return;
 
           currentDialog.meta.isClosed = true;
+          params.cancelToken?.removeEventListener('abort', close);
 
-          setDialogList((currentState) => {
-            if (currentIndex === null) return currentState;
+          setOpenedDialog((currentState) =>
+            currentState?.meta.id !== currentId
+              ? currentState
+              : {
+                  props: currentState.props,
+                  meta: { ...currentState.meta, isVisible: false },
+                },
+          );
 
-            if (currentState[currentIndex]?.meta.id !== currentId)
-              return currentState;
-
-            currentState[currentIndex].meta = {
-              ...currentState[currentIndex].meta,
-              isVisible: false,
-            };
-            return [...currentState];
-          });
-
-          setTimeout(() => {
-            setDialogList((currentState) => {
-              currentIndex = null;
-              currentDialog.meta.resolve();
-
-              return currentState.filter(
-                (dialog) => currentId !== dialog.meta.id,
-              );
-            });
-          }, 300);
+          setTimeout(
+            () =>
+              setOpenedDialog((currentState) =>
+                currentState?.meta.id !== currentId ? currentState : null,
+              ),
+            300,
+          );
         };
 
-        currentDialog.meta.promise = new Promise<void>((resolve, reject) => {
-          currentDialog.meta.resolve = () => {
+        if (cancelToken?.aborted)
+          return new Promise<AlertDialogResolveStatus>(() => {});
+        cancelToken?.addEventListener('abort', close, { once: true });
+
+        currentDialog.meta.promise = new Promise((resolve, reject) => {
+          currentDialog.meta.resolve = (status: AlertDialogResolveStatus) => {
             close();
-            resolve();
+            resolve(status);
           };
-          currentDialog.meta.reject = () => {
+          currentDialog.meta.reject = (reason) => {
             close();
-            reject();
+            reject(reason);
           };
         });
 
-        setDialogList((currentState) => {
-          currentIndex = currentState.length;
-          return [...currentState, currentDialog];
+        setOpenedDialog((openedDialog) => {
+          // we already have opened dialog, so we reject opening another
+          if (openedDialog !== null) {
+            currentDialog.meta.reject(
+              new Error(
+                "Another dialog is already opened. It's a bad practice to open more than one <AlertDialog /> at the same time",
+              ),
+            );
+
+            return openedDialog;
+          }
+
+          return currentDialog;
         });
 
         return currentDialog.meta.promise;
@@ -81,18 +95,52 @@ export function AlertDialogApiProvider(props) {
 
   return (
     <DialogApiContext.Provider value={api}>
-      <AlertDialogZone dialogs={dialogList} />
+      <AlertDialogZone openedDialog={openedDialog} />
       {props.children}
     </DialogApiContext.Provider>
   );
 }
 
+/**
+ * Hook gives the ability to open `<AlertDialog />` imperatively.
+ *
+ * ***Important*** it's commonly a bad practice when you open multiple dialogs in a row;
+ * that means this api will reject all dialogs when there is already open one
+ *
+ * @example Example with calling as a side effect
+ * const alertDialogAPI = useAlertDialogAPI();
+ *
+ * useEffect(() => {
+ *   const abortDialog = new AbortController();
+ *   const openedDialog = alertDialogAPI.open({
+ *     title: 'Are you sure?',
+ *     content: <Paragraph>Test content</Paragraph>
+ *   }, {
+ *      cancelToken: abortDialog.signal
+ *   });
+ *
+ *   openedDialog.then(() => console.log('closed'))
+ *
+ *   return () => {
+ *     abortDialog.abort();
+ *   }
+ * }, [])
+ *
+ * @example opening dialog on Button click.
+ * const alertDialogAPI = useAlertDialogAPI();
+ *
+ * const onPress = useCallback(() => {
+ *   alertDialogAPI.open({...})
+ * }, [])
+ *
+ * return <Button onPress={onPress}>New issue</Button>
+ */
 export function useAlertDialogAPI(): DialogApi {
   const api = useContext(DialogApiContext);
 
   invariant(
     api !== null,
-    'You can\'t use DialogApi outside of <Root /> component. Please, check if your component is descendant of <Root/> component',
+    "You can't use DialogApi outside of <Root /> component. Please, check if your component is descendant of <Root/> component",
   );
 
   return api;

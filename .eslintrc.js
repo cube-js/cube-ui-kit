@@ -15,7 +15,6 @@ module.exports = {
     'no-console': 0,
     'arrow-parens': 0,
     'import/extensions': 0,
-    quotes: [1, 'single'],
     'no-prototype-builtins': 0,
     'class-methods-use-this': 0,
     'no-param-reassign': 0,
