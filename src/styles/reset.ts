@@ -12,7 +12,6 @@ word-spacing: initial;
 box-sizing: border-box;
 user-select: auto;
 resize: none;
-transition: opacity var(--transition) linear;
 `,
     },
     {
