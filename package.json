@@ -1,6 +1,6 @@
 {
   "name": "@cube-dev/ui-kit",
-  "version": "0.8.7",
+  "version": "0.8.8",
   "description": "UIKit for Cube Projects",
   "main": "dist/cjs/index.js",
   "module": "dist/mjs/index.js",
@@ -154,7 +154,7 @@
     "valid-url": "^1.0.9"
   },
   "resolutions": {
-    "es5-ext": "0.10.58"
+    "es5-ext": "0.10.53"
   },
   "size-limit": [
     {
