@@ -1,4 +1,4 @@
-import { ComponentType, forwardRef, useContext } from 'react';
+import { ComponentType, FC, forwardRef, useContext, useMemo } from 'react';
 import { isValidElementType } from 'react-is';
 import styledComponents, { createGlobalStyle } from 'styled-components';
 import { BreakpointsContext } from './providers/BreakpointsProvider';
@@ -16,31 +16,65 @@ import { Styles, StylesInterface } from './styles/types';
 import { BASE_STYLES } from './styles/list';
 import { ResponsiveStyleValue } from './utils/styles';
 import { mergeStyles } from './utils/mergeStyles';
+import { deprecationWarning } from './utils/warnings';
 
 export type AllBasePropsWithMods<K extends (keyof StylesInterface)[]> =
   AllBaseProps & {
     [key in K[number]]?: ResponsiveStyleValue<StylesInterface[key]>;
   } & BaseStyleProps;
 
+type StyledPropsWithDefaults<Props, DefaultProps> =
+  keyof DefaultProps extends never
+    ? Props
+    : {
+        [key in keyof DefaultProps]?: DefaultProps[key];
+      } & {
+        [key in keyof Omit<Props, keyof DefaultProps>]: Props[key];
+      };
+
+type EitherLegacyPropsOrInlined<
+  K extends (keyof StylesInterface)[],
+  DefaultProps,
+> =
+  | ((Pick<StyledProps<K>, 'name' | 'tag' | 'styles'> & {
+      /**
+       * @deprecated
+       */
+      props?: DefaultProps;
+    }) & { [key in keyof DefaultProps]?: never })
+  | ({ props?: never } & DefaultProps);
+
 function styled<K extends (keyof StylesInterface)[]>(
   options: StyledProps<K>,
   secondArg?: never,
 );
 function styled(selector: string, styles?: Styles);
-function styled<K extends (keyof StylesInterface)[], C = {}>(
-  Component: ComponentType<C>,
-  options?: Pick<StyledProps<K>, 'styles' | 'props' | 'name' | 'tag'>,
-): ComponentType<C>;
-function styled<K extends(keyof StylesInterface)[], C = {}>(
-  Component,
-  options,
-) {
+function styled<
+  K extends (keyof StylesInterface)[],
+  Props extends { styles?: Styles },
+  DefaultProps extends Partial<Props> = Partial<Props>,
+>(
+  Component: ComponentType<Props>,
+  options?: EitherLegacyPropsOrInlined<K, DefaultProps>,
+): ComponentType<StyledPropsWithDefaults<Props, DefaultProps>>;
+
+// Implementation
+function styled<
+  K extends (keyof StylesInterface)[],
+  C = Record<string, unknown>,
+>(Component, options) {
+  deprecationWarning(options?.props == null, {
+    property: 'props',
+    name: 'styled api',
+    betterAlternative:
+      "inline props directly in styled(), eg: styled({ type: 'confirm' })",
+  });
   if (typeof Component === 'string') {
     let selector = Component;
     let styles = options;
     let Element = createGlobalStyle`${(css) => css}`;
 
-    return ({ breakpoints }: GlobalStyledProps) => {
+    const _Component: FC<GlobalStyledProps> = ({ breakpoints }) => {
       let contextBreakpoints = useContext(BreakpointsContext);
       let zones = pointsToZones(breakpoints || contextBreakpoints);
 
@@ -50,118 +84,142 @@ function styled<K extends(keyof StylesInterface)[], C = {}>(
 
       return <Element css={css} />;
     };
+
+    _Component.displayName = `CubeStyled(${
+      Element.displayName ?? Element.name ?? Component
+    })`;
+
+    return _Component;
   }
 
   if (isValidElementType(Component)) {
     let {
       styles: extendStyles,
-      props: defaultProps,
-      name: styleName,
+      props: legacyDefaultProps,
+      name,
       tag: extendTag,
-    } = options || {};
+      ...defaultProps
+    } = options ?? {};
 
-    return forwardRef((props: C, ref) => {
-      let allProps = { ...props } as AllBasePropsWithMods<K>;
+    const _StyledComponent = forwardRef((props: C, ref) => {
+      const { styles, styleName, as, ...restProps } =
+        props as AllBasePropsWithMods<K>;
 
-      if (allProps.styles) {
-        if (extendStyles) {
-          allProps.styles = mergeStyles(allProps.styles, extendStyles);
+      const mergedStyles: Styles | undefined = useMemo(() => {
+        if (extendStyles != null && styles != null) {
+          return mergeStyles(styles, extendStyles);
         }
-      } else if (extendStyles) {
-        allProps.styles = extendStyles;
-      }
 
-      if (styleName) {
-        allProps.styleName = styleName;
-      }
+        return extendStyles;
+      }, [styles]);
 
-      if (extendTag) {
-        allProps.as = extendTag;
-      }
-
-      if (defaultProps) {
-        allProps = Object.assign({}, defaultProps, allProps);
-      }
-
-      return <Component ref={ref} {...(allProps as C)} />;
+      return (
+        <Component
+          ref={ref}
+          {...legacyDefaultProps}
+          {...defaultProps}
+          {...restProps}
+          styles={mergedStyles}
+          styleName={styleName ?? name}
+          as={as ?? extendTag}
+        />
+      );
     });
+
+    _StyledComponent.displayName = `CubeStyled(${
+      Component.displayName ?? Component.name ?? 'Anonymous'
+    })`;
+
+    return _StyledComponent;
   }
 
   options = Component;
 
   let {
     name,
-    tag,
+    tag = 'div',
     css: defaultCSS,
     styles: defaultStyles,
-    props: defaultProps,
+    props: legacyDefaultProps,
     styleProps,
+    ...defaultProps
   } = options;
 
-  let Element = styledComponents[options.tag || 'div'](({ css }) => css);
+  let Element = styledComponents[tag](({ css }) => css);
 
-  return forwardRef((allProps: AllBasePropsWithMods<K>, ref) => {
-    let {
-      as,
-      styles,
-      styleName,
-      breakpoints,
-      mods,
-      element,
-      qa,
-      qaVal,
-      css,
-      ...props
-    } = allProps;
+  let _StyledComponent = forwardRef(
+    (allProps: AllBasePropsWithMods<K>, ref) => {
+      let {
+        as,
+        styles,
+        styleName,
+        breakpoints,
+        mods,
+        element,
+        qa,
+        qaVal,
+        css,
+        ...props
+      } = allProps;
 
-    let propStyles: Styles = (
-      (styleProps
-        ? (styleProps as (keyof StylesInterface)[]).concat(BASE_STYLES)
-        : BASE_STYLES) as (keyof StylesInterface)[]
-    ).reduce((map, prop) => {
-      if (prop in props) {
-        map[prop] = props[prop];
+      let propStyles: Styles = useMemo(
+        () =>
+          (
+            (styleProps
+              ? (styleProps as (keyof StylesInterface)[]).concat(BASE_STYLES)
+              : BASE_STYLES) as (keyof StylesInterface)[]
+          ).reduce((map, prop) => {
+            if (prop in props) {
+              map[prop] = props[prop];
 
-        delete props[prop];
+              delete props[prop];
+            }
+
+            return map;
+          }, {}),
+        [props],
+      );
+
+      let contextStyles = useContextStyles(styleName ?? name, props);
+      let allStyles: Styles = useMemo(
+        () => mergeStyles(defaultStyles, contextStyles, styles, propStyles),
+        [contextStyles, styles, propStyles],
+      );
+
+      let contextBreakpoints = useContext(BreakpointsContext);
+      let zones = pointsToZones(breakpoints ?? contextBreakpoints);
+
+      css = `${
+        typeof defaultCSS === 'function' ? defaultCSS(props) : defaultCSS ?? ''
+      }${typeof css === 'function' ? css(props) : css ?? ''}${
+        allStyles ? renderStyles(allStyles, zones) : ''
+      }`;
+
+      if (mods) {
+        Object.assign(props, modAttrs(mods));
       }
 
-      return map;
-    }, {});
+      return (
+        <Element
+          as={as ?? tag}
+          data-element={element}
+          data-qa={qa}
+          data-qaval={qaVal}
+          {...legacyDefaultProps}
+          {...defaultProps}
+          {...props}
+          ref={ref}
+          css={css}
+        />
+      );
+    },
+  );
 
-    let contextStyles = useContextStyles(styleName || name, props);
-    let allStyles: Styles = mergeStyles(
-      defaultStyles,
-      contextStyles,
-      styles,
-      propStyles,
-    );
+  _StyledComponent.displayName = `CubeStyled(${
+    Element.displayName ?? Element.name ?? tag
+  })`;
 
-    let contextBreakpoints = useContext(BreakpointsContext);
-    let zones = pointsToZones(breakpoints || contextBreakpoints);
-
-    css = `${
-      typeof defaultCSS === 'function' ? defaultCSS(props) : defaultCSS || ''
-    }${typeof css === 'function' ? css(props) : css || ''}${
-      allStyles ? renderStyles(allStyles, zones) : ''
-    }`;
-
-    if (mods) {
-      Object.assign(props, modAttrs(mods));
-    }
-
-    return (
-      <Element
-        as={as || tag}
-        data-element={element}
-        data-qa={qa}
-        data-qaval={qaVal}
-        {...defaultProps}
-        {...props}
-        ref={ref}
-        css={css}
-      />
-    );
-  });
+  return _StyledComponent;
 }
 
 export { styled };
