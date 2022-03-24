@@ -4,7 +4,6 @@ node_modules
 .vscode
 .cache
 dist
-test
 storybook-static
 build-storybook.log
 .vercel
@@ -13,3 +12,4 @@ stats.html
 .rollup.cache
 .eslintcache
 yarn-error.log
+coverage
