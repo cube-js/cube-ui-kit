@@ -1,5 +1,13 @@
 import styledComponents, { createGlobalStyle } from 'styled-components';
-import { ComponentType, FC, forwardRef, useContext, useMemo } from 'react';
+import {
+  ComponentType,
+  FC,
+  forwardRef,
+  ForwardRefExoticComponent,
+  RefAttributes,
+  useContext,
+  useMemo,
+} from 'react';
 import { isValidElementType } from 'react-is';
 import { BreakpointsContext } from '../providers/BreakpointsProvider';
 import { modAttrs } from '../utils/react';
@@ -46,10 +54,16 @@ type EitherLegacyPropsOrInlined<
     }) & { [key in keyof DefaultProps]?: never })
   | ({ props?: never } & DefaultProps);
 
-function styled<K extends (keyof StylesInterface)[]>(
-  options: StyledProps<K>,
+function styled<
+  K extends (keyof StylesInterface)[],
+  Props,
+  DefaultProps extends Partial<Props> = Partial<Props>,
+>(
+  options: EitherLegacyPropsOrInlined<K, DefaultProps>,
   secondArg?: never,
-);
+): ForwardRefExoticComponent<
+  AllBasePropsWithMods<K> & RefAttributes<HTMLDivElement>
+>;
 function styled(selector: string, styles?: Styles);
 function styled<
   K extends (keyof StylesInterface)[],

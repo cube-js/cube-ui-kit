@@ -13,14 +13,13 @@ describe('styled() API', () => {
   });
 
   it('should warn about deprecated API', () => {
-    const spiedConsole = jest
-      .spyOn(console, 'warn')
-      .mockImplementation(() => {});
+    const spiedWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    jest.spyOn(console, 'group').mockImplementation(() => {});
 
     styled({ props: { test: 123 } });
 
-    expect(spiedConsole).toBeCalledTimes(1);
-    expect(spiedConsole.mock.calls).toMatchSnapshot();
+    expect(spiedWarn).toBeCalledTimes(1);
+    expect(spiedWarn.mock.calls).toMatchSnapshot();
   });
 
   it('should provide defaults and give ability to override', () => {
@@ -45,6 +44,14 @@ describe('styled() API', () => {
     const { container } = render(
       <StyledBlock styles={{ color: '#black.1000' }} />,
     );
+
+    expect(container).toMatchSnapshot();
+  });
+
+  it('should render raw', () => {
+    const Smth = styled({});
+
+    const { container } = render(<Smth />);
 
     expect(container).toMatchSnapshot();
   });

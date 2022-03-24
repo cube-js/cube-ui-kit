@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { ForwardedRef, forwardRef } from 'react';
 import THEMES from '../../../data/themes';
 import { CONTAINER_STYLES } from '../../../styles/list';
 import { extractStyles } from '../../../utils/styles';
@@ -8,6 +8,7 @@ import { styled } from '../../../styled';
 
 const RawBadge = styled({
   name: 'Badge',
+  role: 'region',
   styles: {
     display: 'inline-flex',
     placeContent: 'center',
@@ -33,32 +34,31 @@ const RawBadge = styled({
       }, {}),
     },
   },
-  props: {
-    role: 'region',
-  },
 });
 
 export interface CubeBadgeProps extends BaseProps, ContainerStyleProps {
   type?: keyof typeof THEMES | string;
 }
 
-export const Badge = forwardRef((allProps: CubeBadgeProps, ref) => {
-  let { type, children, ...props } = allProps;
+export const Badge = forwardRef(
+  (allProps: CubeBadgeProps, ref: ForwardedRef<HTMLDivElement>) => {
+    let { type, children, ...props } = allProps;
 
-  const styles = extractStyles(props, CONTAINER_STYLES);
+    const styles = extractStyles(props, CONTAINER_STYLES);
 
-  return (
-    <RawBadge
-      {...filterBaseProps(props, { eventProps: true })}
-      data-type={type}
-      mods={{
-        single: typeof children === 'string' && children.length === 1,
-        multiple: typeof children === 'string' && children.length === 2,
-      }}
-      styles={styles}
-      ref={ref}
-    >
-      {children}
-    </RawBadge>
-  );
-});
+    return (
+      <RawBadge
+        ref={ref}
+        {...filterBaseProps(props, { eventProps: true })}
+        data-type={type}
+        mods={{
+          single: typeof children === 'string' && children.length === 1,
+          multiple: typeof children === 'string' && children.length === 2,
+        }}
+        styles={styles}
+      >
+        {children}
+      </RawBadge>
+    );
+  },
+);

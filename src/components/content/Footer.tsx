@@ -15,9 +15,7 @@ const RawFooter = styled({
     display: 'block',
     flow: 'column',
   },
-  props: {
-    'data-id': 'Footer',
-  },
+  'data-id': 'Footer',
 });
 
 export interface CubeFooterProps

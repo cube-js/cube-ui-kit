@@ -16,9 +16,7 @@ const RawHeader = styled({
     gridArea: 'header',
     flow: 'column',
   },
-  props: {
-    'data-id': 'Header',
-  },
+  'data-id': 'Header',
 });
 
 export interface CubeHeaderProps

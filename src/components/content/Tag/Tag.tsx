@@ -53,9 +53,7 @@ const RawTag = styled({
       }, {}),
     },
   },
-  props: {
-    role: 'status',
-  },
+  role: 'status',
 });
 
 const DEFAULT_CONTENT_STYLES: Styles = {

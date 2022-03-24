@@ -52,9 +52,7 @@ const RawTitle = styled({
   name: 'Title',
   tag: 'h1', // it should be dynamic
   styles: DEFAULT_STYLES,
-  props: {
-    'data-qa': 'Title',
-  },
+  'data-qa': 'Title',
 });
 
 const _Title = forwardRef(
