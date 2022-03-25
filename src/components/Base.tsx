@@ -44,15 +44,15 @@ const Base = function Base<K extends keyof HTMLElementTagNameMap>(
   const styles: Styles = { ...originalStyles };
 
   if (block) {
-    styles.display
-      = typeof styles.display === 'string'
+    styles.display =
+      typeof styles.display === 'string'
         ? BLOCK_MAP[styles.display || 'inline']
         : 'block';
   }
 
   if (inline) {
-    styles.display
-      = typeof styles.display === 'string'
+    styles.display =
+      typeof styles.display === 'string'
         ? INLINE_MAP[styles.display || 'block']
         : 'inline-block';
   }
@@ -60,7 +60,7 @@ const Base = function Base<K extends keyof HTMLElementTagNameMap>(
   const contextBreakpoints = useContext(BreakpointsContext);
   const zones = pointsToZones(breakpoints || contextBreakpoints);
 
-  css = `${css || ''}${renderStyles(styles, zones)}`;
+  css = `${css ?? ''}${renderStyles(styles, zones)}`;
 
   if (mods) {
     Object.assign(props, modAttrs(mods));

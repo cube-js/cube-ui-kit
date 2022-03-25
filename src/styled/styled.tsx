@@ -1,36 +1,38 @@
+import styledComponents, { createGlobalStyle } from 'styled-components';
 import { ComponentType, FC, forwardRef, useContext, useMemo } from 'react';
 import { isValidElementType } from 'react-is';
-import styledComponents, { createGlobalStyle } from 'styled-components';
-import { BreakpointsContext } from './providers/BreakpointsProvider';
-import { modAttrs } from './utils/react';
-import { useContextStyles } from './providers/StylesProvider';
+import { BreakpointsContext } from '../providers/BreakpointsProvider';
+import { modAttrs } from '../utils/react';
+import { useContextStyles } from '../providers/StylesProvider';
 import {
   AllBaseProps,
   BaseStyleProps,
   StyledProps,
   GlobalStyledProps,
-} from './components/types';
-import { renderStyles } from './utils/renderStyles';
-import { pointsToZones } from './utils/responsive';
-import { Styles, StylesInterface } from './styles/types';
-import { BASE_STYLES } from './styles/list';
-import { ResponsiveStyleValue } from './utils/styles';
-import { mergeStyles } from './utils/mergeStyles';
-import { deprecationWarning } from './utils/warnings';
+} from '../components/types';
+import { renderStyles } from '../utils/renderStyles';
+import { pointsToZones } from '../utils/responsive';
+import { Styles, StylesInterface } from '../styles/types';
+import { BASE_STYLES } from '../styles/list';
+import { ResponsiveStyleValue } from '../utils/styles';
+import { mergeStyles } from '../utils/mergeStyles';
+import { deprecationWarning } from '../utils/warnings';
 
 export type AllBasePropsWithMods<K extends (keyof StylesInterface)[]> =
   AllBaseProps & {
     [key in K[number]]?: ResponsiveStyleValue<StylesInterface[key]>;
   } & BaseStyleProps;
 
-type StyledPropsWithDefaults<Props, DefaultProps> =
-  keyof DefaultProps extends never
-    ? Props
-    : {
-        [key in keyof DefaultProps]?: DefaultProps[key];
-      } & {
-        [key in keyof Omit<Props, keyof DefaultProps>]: Props[key];
-      };
+type StyledPropsWithDefaults<
+  Props extends { styles?: Styles },
+  DefaultProps extends Partial<Props>,
+> = keyof DefaultProps extends never
+  ? Props
+  : {
+      [key in Extract<keyof Props, keyof DefaultProps>]?: Props[key];
+    } & {
+      [key in keyof Omit<Props, keyof DefaultProps>]: Props[key];
+    };
 
 type EitherLegacyPropsOrInlined<
   K extends (keyof StylesInterface)[],
@@ -63,12 +65,13 @@ function styled<
   K extends (keyof StylesInterface)[],
   C = Record<string, unknown>,
 >(Component, options) {
-  deprecationWarning(options?.props == null, {
+  deprecationWarning(options?.props == null && Component.props == null, {
     property: 'props',
     name: 'styled api',
     betterAlternative:
       "inline props directly in styled(), eg: styled({ type: 'confirm' })",
   });
+
   if (typeof Component === 'string') {
     let selector = Component;
     let styles = options;
@@ -107,7 +110,7 @@ function styled<
 
       const mergedStyles: Styles | undefined = useMemo(() => {
         if (extendStyles != null && styles != null) {
-          return mergeStyles(styles, extendStyles);
+          return mergeStyles(extendStyles, styles);
         }
 
         return extendStyles;
