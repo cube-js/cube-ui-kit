@@ -14,6 +14,9 @@ jobs:
         with:
           node-version: 16
           cache: 'yarn'
-      - run: yarn --frozen-lockfile
+      - name: Install dependencies
+        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
+        run: yarn --frozen-lockfile
+
       - run: yarn build
       - run: GH_TOKEN=${{ secrets.GITHUB_TOKEN }} node ./scripts/ci/measure-size.mjs

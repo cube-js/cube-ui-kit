@@ -14,6 +14,7 @@ jobs:
           node-version: "14"
           cache: 'yarn'
       - name: Install dependencies
+        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
         run: yarn --frozen-lockfile
 
       - name: Run the lint
