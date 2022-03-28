@@ -8,23 +8,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
       - name: Setup Nodejs and npm
         uses: actions/setup-node@v2
         with:
           node-version: "14"
           cache: 'yarn'
-      - name: Setup yarn
-        run: npm install -g yarn
-
-      - name: Setup Nodejs with yarn caching
-        uses: actions/setup-node@v2
-        with:
-          node-version: "14"
-          cache: yarn
-
       - name: Install dependencies
-        run: yarn
+        run: yarn --frozen-lockfile
 
       - name: Run the lint
         run: yarn lint
