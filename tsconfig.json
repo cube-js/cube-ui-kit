@@ -5,7 +5,6 @@
     "lib": ["dom", "esnext"],
     "declaration": true,
     "noEmitOnError": false,
-    "sourceMap": true,
     "allowJs": true,
     "checkJs": true,
     "jsx": "react-jsx",
@@ -20,10 +19,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noImplicitAny": false,
-    "target": "es5",
-    "noEmit": true,
-    "downlevelIteration": true
+    "target": "es2021",
+    "noEmit": true
   },
   "include": ["src/**/*"],
-  "exclude": ["src/**/*.stories.tsx", "src/**/*.stories.ts", "src/**/*.test.tsx", "src/**/*.test.ts", "src/antd.js", "src/storybook.tsx"]
+  "exclude": ["src/**/*.stories.tsx", "src/**/*.stories.ts", "src/**/*.test.tsx", "src/**/*.test.ts", "src/antd.js", "src/storybook.tsx", "src/App.tsx", "src/script.js"]
 }

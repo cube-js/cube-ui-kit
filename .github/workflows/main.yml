@@ -11,21 +11,30 @@ jobs:
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
           node-version: 14
-      - run: yarn
+          cache: 'yarn'
+
+      - name: Install dependencies
+        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
+        run: yarn --frozen-lockfile
+
       - run: yarn build
-      - name: Building storybook
-        run: yarn build-storybook
-      - name: Publishing storybook
-        run: npx netlify-cli deploy --dir=./storybook-static -p
       - id: publish
         uses: JS-DevTools/npm-publish@v1
         with:
           token: ${{ secrets.NPM_TOKEN }}
           access: public
           check-version: true
+      - if: steps.publish.outputs.type == 'none'
+        run: |
+          echo "Version didn't changed, skipping publishing
       - if: steps.publish.outputs.type != 'none'
         run: |
           echo "Version changed: ${{ steps.publish.outputs.old-version }} => ${{ steps.publish.outputs.version }}"
+      - if: steps.publish.outputs.type != 'none'
+        name: Publish storybook
+        run: |
+          yarn build-storybook
+          npx netlify-cli deploy --dir=./storybook-static -p
