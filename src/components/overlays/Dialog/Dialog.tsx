@@ -23,7 +23,7 @@ import {
   BlockStyleProps,
   DimensionStyleProps,
 } from '../../types';
-import { AriaDialogProps } from '@react-types/dialog';
+import type { AriaDialogProps } from '@react-types/dialog';
 import { DOMRef } from '@react-types/shared';
 
 const STYLES_LIST = [...BASE_STYLES, ...DIMENSION_STYLES, ...BLOCK_STYLES];

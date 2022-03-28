@@ -12,7 +12,7 @@ import { Base } from '../../Base';
 import { useContextStyles } from '../../../providers/StylesProvider';
 import { FieldWrapper } from '../FieldWrapper';
 import { BaseProps } from '../../types';
-import { AriaCheckboxGroupProps } from '@react-types/checkbox';
+import type { AriaCheckboxGroupProps } from '@react-types/checkbox';
 import { FormFieldProps } from '../../../shared';
 import {
   castNullableArrayValue,

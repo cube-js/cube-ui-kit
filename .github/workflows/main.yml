@@ -29,7 +29,7 @@ jobs:
           check-version: true
       - if: steps.publish.outputs.type == 'none'
         run: |
-          echo "Version didn't changed, skipping publishing
+          echo "Version didn't changed, skipping publishing"
       - if: steps.publish.outputs.type != 'none'
         run: |
           echo "Version changed: ${{ steps.publish.outputs.old-version }} => ${{ steps.publish.outputs.version }}"

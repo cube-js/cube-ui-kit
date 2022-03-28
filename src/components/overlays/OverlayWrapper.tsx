@@ -1,9 +1,7 @@
 import { OverlayTransitionCSSProps } from '../../utils/transitions';
 import { CSSTransition } from 'react-transition-group';
-import { ReactNode } from 'react';
-import { createPortal } from 'react-dom';
-import { useProviderProps } from '../../provider';
-import { Props } from '../types';
+import { ReactNode, useRef } from 'react';
+import { Portal } from '../portal';
 
 export interface CubeOverlayWrapperProps {
   isOpen?: boolean;
@@ -11,7 +9,7 @@ export interface CubeOverlayWrapperProps {
   children: ReactNode;
   minOffset?: string | number;
   minScale?: string;
-  container?: Element;
+  container?: HTMLElement | null;
 }
 
 export function OverlayWrapper({
@@ -20,10 +18,9 @@ export function OverlayWrapper({
   minOffset,
   minScale,
   children,
-  container,
+  container = null,
 }: CubeOverlayWrapperProps) {
-  let { root } = useProviderProps({} as Props);
-
+  const containerRef = useRef(container);
   const options: OverlayTransitionCSSProps = {};
 
   if (typeof minOffset === 'number') {
@@ -53,5 +50,5 @@ export function OverlayWrapper({
     </CSSTransition>
   );
 
-  return createPortal(contents, root || container || document.body);
+  return <Portal root={containerRef}>{contents}</Portal>;
 }

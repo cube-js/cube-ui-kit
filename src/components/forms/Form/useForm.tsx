@@ -33,7 +33,7 @@ export class CubeFormInstance {
   private initialFields = {};
   private fields: { [key: string]: CubeFieldData } = {};
   public ref = {};
-  public isSubmitting: boolean = false;
+  public isSubmitting = false;
   public onValuesChange: (CubeFormData) => void | Promise<any> = () => {};
   public onSubmit: (CubeFormData) => void | Promise<any> = () => {};
 

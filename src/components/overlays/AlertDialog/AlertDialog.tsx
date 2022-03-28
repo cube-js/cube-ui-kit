@@ -15,7 +15,9 @@ export interface CubeAlertDialogActionsProps {
   cancel?: CubeButtonProps | boolean;
 }
 
-export interface CubeAlertDialogProps extends CubeDialogProps {
+export interface CubeAlertDialogProps
+  extends Omit<CubeDialogProps, 'children'> {
+  content: JSX.Element | JSX.Element[];
   /** Whether the dialog is an important prompt */
   danger?: boolean;
   actions?: CubeAlertDialogActionsProps;
@@ -35,27 +37,27 @@ const DEFAULT_CANCEL_PROPS: CubeButtonProps = {
  * AlertDialogs are a specific type of Dialog. They display important information that users need to acknowledge.
  */
 function AlertDialog(props: CubeAlertDialogProps, ref) {
-  let { onClose = () => {} } = useContext(DialogContext) || {};
+  const { onClose = () => {} } = useContext(DialogContext) ?? {};
 
-  let { danger, children, actions, title, styles, noActions, ...otherProps }
-    = props;
+  const { danger, actions, title, styles, noActions, content, ...otherProps } =
+    props;
 
   let {
     confirm: confirmProps,
     secondary: secondaryProps,
     cancel: cancelProps,
-  } = actions || {};
+  } = actions ?? {};
 
-  // confirm button is present by default
-  confirmProps
-    = confirmProps !== false
+  // the confirm button is present by default
+  confirmProps =
+    confirmProps !== false
       ? {
           ...DEFAULT_CONFIRM_PROPS,
           ...(typeof confirmProps === 'object' ? confirmProps : null),
         }
       : undefined;
 
-  // confirm button is hidden by default
+  // the cancel button is hidden by default
   cancelProps = cancelProps
     ? {
         ...DEFAULT_CANCEL_PROPS,
@@ -70,7 +72,7 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
           <Title>{title}</Title>
         </Header>
       ) : null}
-      {children ? <Content>{children}</Content> : null}
+      <Content>{content}</Content>
       {!noActions ? (
         <Footer>
           <ButtonGroup align="end">
@@ -114,5 +116,5 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
 /**
  * AlertDialogs are a specific type of Dialog. They display important information that users need to acknowledge.
  */
-let _AlertDialog = forwardRef(AlertDialog);
+const _AlertDialog = forwardRef(AlertDialog);
 export { _AlertDialog as AlertDialog };

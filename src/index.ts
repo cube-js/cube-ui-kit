@@ -139,8 +139,11 @@ export { CopySnippet } from './components/organisms/CopySnippet/CopySnippet';
 export type { CubeCopySnippetProps } from './components/organisms/CopySnippet/CopySnippet';
 export { StatsCard } from './components/organisms/StatsCard/StatsCard';
 export type { CubeStatsCard } from './components/organisms/StatsCard/StatsCard';
-export { AlertDialog } from './components/overlays/AlertDialog/AlertDialog';
-export type { CubeAlertDialogProps } from './components/overlays/AlertDialog/AlertDialog';
+export {
+  AlertDialog,
+  useAlertDialogAPI,
+} from './components/overlays/AlertDialog';
+export type { CubeAlertDialogProps } from './components/overlays/AlertDialog';
 export { SearchResults } from './components/organisms/SearchResults/SearchResults';
 export type { CubeSearchResultsProps } from './components/organisms/SearchResults/SearchResults';
 
@@ -163,7 +166,8 @@ export { useContextStyles, StyleProvider } from './providers/StylesProvider';
 
 export { Provider } from './provider';
 export type { useProviderProps } from './provider';
-
+export { Portal } from './components/portal';
+export type { PortalProps } from './components/portal';
 export * from './components/forms';
 
 export type {

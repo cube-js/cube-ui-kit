@@ -9,7 +9,7 @@ import { useContextStyles } from '../../../providers/StylesProvider';
 import { Styles } from '../../../styles/types';
 import { BaseProps, Props } from '../../types';
 import { mergeProps } from '../../../utils/react';
-import { ModalProps } from '@react-types/overlays';
+import type { ModalProps } from '@react-types/overlays';
 
 export const OVERLAY_WRAPPER_STYLES: Styles = {
   position: 'fixed',
@@ -58,7 +58,8 @@ const MODAL_STYLES: Styles = {
   },
 };
 
-export interface CubeModalProps extends ModalProps {
+export interface CubeModalProps extends Omit<ModalProps, 'container'> {
+  container?: HTMLElement;
   qa?: BaseProps['qa'];
   onClose?: (action?: string) => void;
   type?: 'modal' | 'fullscreen' | 'fullscreenTakeover';
@@ -99,7 +100,10 @@ interface ModalWrapperProps {
   onClose?: () => void;
 }
 
-let ModalWrapper = forwardRef(function(props: ModalWrapperProps, ref) {
+let ModalWrapper = forwardRef(function ModalWrapper(
+  props: ModalWrapperProps,
+  ref,
+) {
   let {
     qa,
     children,

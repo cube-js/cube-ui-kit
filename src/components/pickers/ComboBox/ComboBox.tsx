@@ -28,12 +28,12 @@ import { DEFAULT_INPUT_STYLES } from '../../forms/TextInput/TextInputBase';
 import { useOverlayPosition } from '@react-aria/overlays';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import { Styles } from '../../../styles/types';
-import {
+import type {
   CollectionBase,
   KeyboardDelegate,
   LoadingState,
 } from '@react-types/shared';
-import { ComboBoxProps } from '@react-types/combobox';
+import type { ComboBoxProps } from '@react-types/combobox';
 
 const CaretDownIcon = () => (
   <svg
@@ -194,7 +194,6 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
     targetRef: triggerRef,
     overlayRef: popoverRef,
     scrollRef: listBoxRef,
-    // @ts-ignore
     placement: `${direction} end`,
     shouldFlip: shouldFlip,
     isOpen: state.isOpen,

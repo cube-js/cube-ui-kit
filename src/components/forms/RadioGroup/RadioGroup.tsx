@@ -13,7 +13,7 @@ import { useContextStyles } from '../../../providers/StylesProvider';
 import { FieldWrapper } from '../FieldWrapper';
 import { Styles } from '../../../styles/types';
 import { BaseProps } from '../../types';
-import { AriaRadioGroupProps } from '@react-types/radio';
+import type { AriaRadioGroupProps } from '@react-types/radio';
 import { FormFieldProps } from '../../../shared';
 import {
   castNullableStringValue,

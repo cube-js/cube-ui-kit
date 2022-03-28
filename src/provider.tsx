@@ -24,8 +24,7 @@ export interface ProviderProps extends Props {
   root?: ForwardedRef<any>;
 }
 
-export interface ProviderInsideProps
-  extends Omit<ProviderProps, 'styles' | 'breakpoints'> {}
+export type ProviderInsideProps = Omit<ProviderProps, 'styles' | 'breakpoints'>;
 
 export const UIKitContext = createContext<ProviderInsideProps>({});
 

@@ -95,6 +95,8 @@ export interface CubeModalProps extends CubeCardProps {
 }
 
 /**
+ * @deprecated Prefer using Dialog instead
+ *
  * DEPRECATED Modal component
  * Designed after AntD Modal component and almost duplicate its API.
  * Use Dialog component instead

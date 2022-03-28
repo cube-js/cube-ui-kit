@@ -1,3 +1,4 @@
+/* eslint-disable */
 // @ts-nocheck
 // Convert complex js object to dot notation js object
 // url: https://github.com/vardars/dotize
@@ -11,16 +12,16 @@ export const dotize = {
     array: 'ARRAY',
   },
 
-  getValType: function(val) {
+  getValType: function (val) {
     if (!val || typeof val != 'object' || Array.isArray(val))
       return dotize.valTypes.primitive;
     if (typeof val == 'object') return dotize.valTypes.object;
   },
 
-  getPathType: function(arrPath) {
-    var arrPathTypes = [];
-    for (var path in arrPath) {
-      var pathVal = arrPath[path];
+  getPathType: function (arrPath) {
+    let arrPathTypes = [];
+    for (let path in arrPath) {
+      let pathVal = arrPath[path];
       if (!pathVal) arrPathTypes.push(dotize.valTypes.none);
       else if (dotize.isNumber(pathVal))
         arrPathTypes.push(dotize.valTypes.array);
@@ -29,45 +30,45 @@ export const dotize = {
     return arrPathTypes;
   },
 
-  isUndefined: function(obj) {
+  isUndefined: function (obj) {
     return typeof obj == 'undefined';
   },
 
-  isNumber: function(f) {
+  isNumber: function (f) {
     return !isNaN(parseInt(f));
   },
 
-  isEmptyObj: function(obj) {
-    for (var prop in obj) {
+  isEmptyObj: function (obj) {
+    for (let prop in obj) {
       if (Object.hasOwnProperty.call(obj, prop)) return false;
     }
 
     return JSON.stringify(obj) === JSON.stringify({});
   },
 
-  isNotObject: function(obj) {
+  isNotObject: function (obj) {
     return !obj || typeof obj != 'object';
   },
 
-  isEmptyArray: function(arr) {
+  isEmptyArray: function (arr) {
     return Array.isArray(arr) && arr.length == 0;
   },
 
-  isNotArray: function(arr) {
+  isNotArray: function (arr) {
     return Array.isArray(arr) == false;
   },
 
-  removeEmptyArrayItem: function(arr) {
-    return arr.filter(function(el) {
+  removeEmptyArrayItem: function (arr) {
+    return arr.filter(function (el) {
       return el != null && el != '';
     });
   },
 
-  getFieldName: function(field, prefix, isRoot, isArrayItem, isArray) {
+  getFieldName: function (field, prefix, isRoot, isArrayItem, isArray) {
     if (isArray)
       return (
-        (prefix ? prefix : '')
-        + (dotize.isNumber(field)
+        (prefix ? prefix : '') +
+        (dotize.isNumber(field)
           ? '[' + field + ']'
           : (isRoot && !prefix ? '' : '.') + field)
       );
@@ -75,12 +76,12 @@ export const dotize = {
     else return (prefix ? prefix + '.' : '') + field;
   },
 
-  startsWith: function(val, valToSearch) {
+  startsWith: function (val, valToSearch) {
     return val.indexOf(valToSearch) == 0;
   },
 
-  convert: function(obj, prefix = '') {
-    var newObj = {};
+  convert: function (obj, prefix = '') {
+    let newObj = {};
 
     // primitives
     if (dotize.isNotObject(obj)) {
@@ -93,13 +94,13 @@ export const dotize = {
     }
 
     return (function recurse(o, p, isRoot) {
-      var isArrayItem = Array.isArray(o);
-      for (var f in o) {
-        var currentProp = o[f];
+      let isArrayItem = Array.isArray(o);
+      for (let f in o) {
+        let currentProp = o[f];
         if (
-          currentProp
-          && typeof currentProp === 'object'
-          && !Array.isArray(currentProp)
+          currentProp &&
+          typeof currentProp === 'object' &&
+          !Array.isArray(currentProp)
         ) {
           if (isArrayItem && dotize.isEmptyObj(currentProp) == false) {
             newObj = recurse(
@@ -109,8 +110,8 @@ export const dotize = {
           } else if (dotize.isEmptyObj(currentProp) == false) {
             newObj = recurse(currentProp, dotize.getFieldName(f, p, isRoot)); // object
           } else if (dotize.isEmptyObj(currentProp)) {
-            newObj[dotize.getFieldName(f, p, isRoot, isArrayItem)]
-              = currentProp;
+            newObj[dotize.getFieldName(f, p, isRoot, isArrayItem)] =
+              currentProp;
           }
         } else {
           if (isArrayItem || dotize.isNumber(f)) {
@@ -125,9 +126,9 @@ export const dotize = {
     })(obj, prefix, true);
   },
 
-  backward: function(obj, prefix) {
-    var newObj = {};
-    var arStartRegex = /\[(\d+)\]/g;
+  backward: function (obj, prefix) {
+    let newObj = {};
+    let arStartRegex = /\[(\d+)\]/g;
 
     // primitives
     if (dotize.isNotObject(obj) && dotize.isNotArray(obj)) {
@@ -138,11 +139,11 @@ export const dotize = {
       }
     }
 
-    for (var tProp in obj) {
-      var tPropVal = obj[tProp];
+    for (let tProp in obj) {
+      let tPropVal = obj[tProp];
 
       if (prefix) {
-        var prefixRegex = new RegExp('^' + prefix);
+        let prefixRegex = new RegExp('^' + prefix);
         tProp = tProp.replace(prefixRegex, '');
       }
 
@@ -155,23 +156,23 @@ export const dotize = {
 
       // has array on root
       if (
-        !dotize.isUndefined(arrPathTypes)
-        && arrPathTypes[0] == dotize.valTypes.array
-        && Array.isArray(newObj) == false
+        !dotize.isUndefined(arrPathTypes) &&
+        arrPathTypes[0] == dotize.valTypes.array &&
+        Array.isArray(newObj) == false
       ) {
         newObj = [];
       }
 
       (function recurse(rPropVal, rObj, rPropValPrev, rObjPrev) {
-        var currentPath = arrPath.shift();
-        var currentPathType = arrPathTypes.shift();
+        let currentPath = arrPath.shift();
+        let currentPathType = arrPathTypes.shift();
 
         if (typeof currentPath == 'undefined' || currentPath == '') {
           newObj = rPropVal;
           return;
         }
 
-        var isArray = currentPathType == dotize.valTypes.array;
+        let isArray = currentPathType == dotize.valTypes.array;
 
         if (dotize.isNumber(currentPath)) currentPath = parseInt(currentPath);
 
@@ -191,9 +192,9 @@ export const dotize = {
         }
 
         if (
-          currentPathType == dotize.valTypes.array
-          && rPropValPrev
-          && rObjPrev
+          currentPathType == dotize.valTypes.array &&
+          rPropValPrev &&
+          rObjPrev
         ) {
           if (Array.isArray(rObjPrev[rPropValPrev]) == false)
             rObjPrev[rPropValPrev] = [];

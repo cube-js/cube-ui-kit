@@ -5,7 +5,7 @@ import { useOverlayPosition } from '@react-aria/overlays';
 import { useTooltipTrigger } from '@react-aria/tooltip';
 import { useTooltipTriggerState } from '@react-stately/tooltip';
 import { OverlayWrapper } from '../OverlayWrapper';
-import { TooltipTriggerProps } from '@react-types/tooltip';
+import type { TooltipTriggerProps } from '@react-types/tooltip';
 import { ActiveZone } from '../../content/ActiveZone/ActiveZone';
 import { Block } from '../../Block';
 

@@ -10,7 +10,7 @@ import { useContextStyles } from '../../../providers/StylesProvider';
 import { Styles } from '../../../styles/types';
 import { BaseProps, Props } from '../../types';
 import { mergeProps } from '../../../utils/react';
-import { TrayProps } from '@react-types/overlays';
+import type { TrayProps } from '@react-types/overlays';
 
 const TRAY_STYLES: Styles = {
   zIndex: 2,
@@ -26,6 +26,7 @@ const TRAY_STYLES: Styles = {
 };
 
 export interface CubeTrayProps extends TrayProps {
+  container?: HTMLElement;
   qa?: BaseProps['qa'];
   onClose?: (action?: string) => void;
   isFixedHeight?: boolean;

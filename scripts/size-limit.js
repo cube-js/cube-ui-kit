@@ -9,7 +9,7 @@ const filePath = path.join(`${__dirname}`, '../', 'dist', '__measure.js');
 function createMeasurer() {
   fs.writeFileSync(
     filePath,
-    'import * as all from \'./es/index.js\'; console.log(all);',
+    "import * as all from './es/index.js'; console.log(all);",
     { encoding: 'utf-8' },
   );
 }

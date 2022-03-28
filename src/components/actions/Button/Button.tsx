@@ -19,7 +19,7 @@ export interface CubeButtonProps extends CubeActionProps {
     | 'outline'
     | 'neutral'
     | string;
-  size?: 'small' | 'default' | 'large' | string;
+  size?: 'small' | 'default' | 'large' | (string & {});
 }
 
 export function provideStyles({
@@ -331,9 +331,11 @@ export const Button = forwardRef(
           );
         }
       } else {
-        accessibilityWarning(
-          'If you provide no children for a Button then you should specify the `label` property to make sure the Button element stays accessible.',
-        );
+        if (!label) {
+          accessibilityWarning(
+            'If you provide no children for a Button then you should specify the `label` property to make sure the Button element stays accessible.',
+          );
+        }
       }
     }
 

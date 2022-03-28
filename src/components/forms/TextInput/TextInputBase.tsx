@@ -39,7 +39,7 @@ import {
   Props,
 } from '../../types';
 import { FormFieldProps } from '../../../shared';
-import { AriaTextFieldProps } from '@react-types/textfield';
+import type { AriaTextFieldProps } from '@react-types/textfield';
 import { mergeProps } from '../../../utils/react';
 
 const WRAPPER_STYLES: Styles = {
@@ -229,8 +229,8 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
   );
   let validation = cloneElement(validationIcon);
 
-  suffix
-    = typeof suffix === 'string' ? (
+  suffix =
+    typeof suffix === 'string' ? (
       <Block padding="1x right">{suffix}</Block>
     ) : (
       suffix

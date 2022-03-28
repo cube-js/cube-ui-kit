@@ -1,6 +1,6 @@
 import { useFocusableRef } from '@react-spectrum/utils';
 import { forwardRef, useContext, useRef } from 'react';
-import { AriaCheckboxProps } from '@react-types/checkbox';
+import type { AriaCheckboxProps } from '@react-types/checkbox';
 import { useCheckbox, useCheckboxGroupItem } from '@react-aria/checkbox';
 import { useHover } from '@react-aria/interactions';
 import { useToggleState } from '@react-stately/toggle';
@@ -20,7 +20,7 @@ import { CheckboxGroup } from './CheckboxGroup';
 import { CheckboxGroupContext } from './context';
 import { BaseProps } from '../../types';
 import { Styles } from '../../../styles/types';
-import { FocusableRef } from '@react-types/shared';
+import type { FocusableRef } from '@react-types/shared';
 import { FormFieldProps } from '../../../shared';
 import {
   castNullableIsSelected,
