@@ -58,7 +58,8 @@ const MODAL_STYLES: Styles = {
   },
 };
 
-export interface CubeModalProps extends ModalProps {
+export interface CubeModalProps extends Omit<ModalProps, 'container'> {
+  container?: HTMLDivElement;
   qa?: BaseProps['qa'];
   onClose?: (action?: string) => void;
   type?: 'modal' | 'fullscreen' | 'fullscreenTakeover';
@@ -99,7 +100,7 @@ interface ModalWrapperProps {
   onClose?: () => void;
 }
 
-let ModalWrapper = forwardRef(function(props: ModalWrapperProps, ref) {
+let ModalWrapper = forwardRef(function (props: ModalWrapperProps, ref) {
   let {
     qa,
     children,

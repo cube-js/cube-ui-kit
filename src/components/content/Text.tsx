@@ -76,7 +76,7 @@ const RawText = styled({
   styles: DEFAULT_STYLES,
 });
 
-const _Text = forwardRef((allProps: CubeTextProps, ref) => {
+const _Text = forwardRef<HTMLDivElement, CubeTextProps>((allProps, ref) => {
   let { as, qa, block, styleName, ellipsis, css, nowrap, ...props } = allProps;
 
   const styles = extractStyles(props, STYLE_LIST, {}, TEXT_PROP_MAP);
@@ -100,24 +100,42 @@ const _Text = forwardRef((allProps: CubeTextProps, ref) => {
 });
 
 const Text = Object.assign(_Text, {
-  Minor: forwardRef(function MinorText(props: CubeTextProps, ref) {
+  Minor: forwardRef<HTMLDivElement, CubeTextProps>(function MinorText(
+    props,
+    ref,
+  ) {
     return <Text ref={ref} color="#minor" {...props} />;
   }),
-  Danger: forwardRef(function DangerText(props: CubeTextProps, ref) {
+  Danger: forwardRef<HTMLDivElement, CubeTextProps>(function DangerText(
+    props,
+    ref,
+  ) {
     return <Text role="alert" ref={ref} color="#danger-text" {...props} />;
   }),
-  Success: forwardRef(function SuccessText(props: CubeTextProps, ref) {
+  Success: forwardRef<HTMLDivElement, CubeTextProps>(function SuccessText(
+    props,
+    ref,
+  ) {
     return <Text ref={ref} color="#success-text" {...props} />;
   }),
-  Strong: forwardRef(function StrongText(props: CubeTextProps, ref) {
+  Strong: forwardRef<HTMLDivElement, CubeTextProps>(function StrongText(
+    props,
+    ref,
+  ) {
     return (
       <Text as="strong" preset="strong" ref={ref} color="#dark" {...props} />
     );
   }),
-  Emphasis: forwardRef(function EmphasisText(props: CubeTextProps, ref) {
+  Emphasis: forwardRef<HTMLDivElement, CubeTextProps>(function EmphasisText(
+    props,
+    ref,
+  ) {
     return <Text as="em" preset="em" ref={ref} {...props} />;
   }),
-  Selection: forwardRef(function SelectionText(props: CubeTextProps, ref) {
+  Selection: forwardRef<HTMLDivElement, CubeTextProps>(function SelectionText(
+    props,
+    ref,
+  ) {
     return <Text ref={ref} color="#dark" fill="#note.30" {...props} />;
   }),
 });

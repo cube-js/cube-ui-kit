@@ -25,7 +25,8 @@ const TRAY_STYLES: Styles = {
   },
 };
 
-export interface CubeTrayProps extends TrayProps {
+export interface CubeTrayProps extends Omit<TrayProps, 'container'> {
+  container?: HTMLElement;
   qa?: BaseProps['qa'];
   onClose?: (action?: string) => void;
   isFixedHeight?: boolean;
@@ -73,7 +74,7 @@ function Tray(props: CubeTrayProps, ref) {
   );
 }
 
-let TrayWrapper = forwardRef(function(props: CubeTrayWrapperProps, ref) {
+let TrayWrapper = forwardRef(function (props: CubeTrayWrapperProps, ref) {
   let {
     qa,
     children,

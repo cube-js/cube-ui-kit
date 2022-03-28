@@ -30,7 +30,8 @@ const POPOVER_STYLES: Styles = {
 
 export interface CubePopoverProps
   extends BaseProps,
-    Omit<OverlayProps, 'children'> {
+    Omit<OverlayProps, 'children' | 'container'> {
+  container?: HTMLElement;
   placement?: PlacementAxis;
   arrowProps?: HTMLAttributes<HTMLElement>;
   hideArrow?: boolean;

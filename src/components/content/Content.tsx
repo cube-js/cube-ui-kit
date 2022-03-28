@@ -29,16 +29,17 @@ export interface CubeContentProps
     ContainerStyleProps,
     TextStyleProps {}
 
-export const Content = forwardRef((props: CubeContentProps, ref) => {
-  props = useSlotProps(props, 'content');
+export const Content = forwardRef<HTMLDivElement, CubeContentProps>(
+  (props, ref) => {
+    const slottedProps = useSlotProps(props, 'content');
+    const styles = extractStyles(slottedProps, STYLE_LIST);
 
-  const styles = extractStyles(props, STYLE_LIST);
-
-  return (
-    <RawContent
-      {...filterBaseProps(props, { eventProps: true })}
-      styles={styles}
-      ref={ref}
-    />
-  );
-});
+    return (
+      <RawContent
+        ref={ref}
+        {...filterBaseProps(slottedProps, { eventProps: true })}
+        styles={styles}
+      />
+    );
+  },
+);

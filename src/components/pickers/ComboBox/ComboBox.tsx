@@ -247,9 +247,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
         focused: isFocused,
       })}
       styles={outerStyles}
-      style={{
-        zIndex: isFocused ? 1 : 'initial',
-      }}
+      style={{ zIndex: isFocused ? 1 : 'initial' }}
       data-size={size}
     >
       <Base

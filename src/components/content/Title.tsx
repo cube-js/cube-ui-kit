@@ -55,20 +55,8 @@ const RawTitle = styled({
   'data-qa': 'Title',
 });
 
-const _Title = forwardRef(
-  (
-    {
-      qa,
-      as,
-      styleName,
-      inline,
-      nowrap,
-      ellipsis,
-      level,
-      ...props
-    }: CubeTitleProps,
-    ref,
-  ) => {
+const _Title = forwardRef<HTMLDivElement, CubeTitleProps>(
+  ({ qa, as, styleName, inline, nowrap, ellipsis, level, ...props }, ref) => {
     props = useSlotProps(props, 'heading');
 
     const tag: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' = `h${level || 1}`;
@@ -79,7 +67,6 @@ const _Title = forwardRef(
         qa={qa || 'Title'}
         as={as || tag}
         styleName={styleName}
-        // @ts-ignore
         data-level={level || 1}
         mods={{
           nowrap,
@@ -95,10 +82,16 @@ const _Title = forwardRef(
 );
 
 const Title = Object.assign(_Title, {
-  Danger: forwardRef(function DangerTitle(props: CubeTitleProps, ref) {
+  Danger: forwardRef<HTMLDivElement, CubeTitleProps>(function DangerTitle(
+    props,
+    ref,
+  ) {
     return <Title ref={ref} color="#danger-text" {...props} />;
   }),
-  Success: forwardRef(function SuccessTitle(props: CubeTitleProps, ref) {
+  Success: forwardRef<HTMLDivElement, CubeTitleProps>(function SuccessTitle(
+    props,
+    ref,
+  ) {
     return <Title ref={ref} color="#success-text" {...props} />;
   }),
 });

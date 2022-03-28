@@ -24,16 +24,17 @@ export interface CubeHeaderProps
     ContainerStyleProps,
     TextStyleProps {}
 
-export const Header = forwardRef((props: CubeHeaderProps, ref) => {
-  props = useSlotProps(props, 'header');
+export const Header = forwardRef<HTMLDivElement, CubeHeaderProps>(
+  (props, ref) => {
+    props = useSlotProps(props, 'header');
+    const styles = extractStyles(props, STYLE_LIST);
 
-  const styles = extractStyles(props, STYLE_LIST);
-
-  return (
-    <RawHeader
-      {...filterBaseProps(props, { eventProps: true })}
-      styles={styles}
-      ref={ref}
-    />
-  );
-});
+    return (
+      <RawHeader
+        {...filterBaseProps(props, { eventProps: true })}
+        styles={styles}
+        ref={ref}
+      />
+    );
+  },
+);

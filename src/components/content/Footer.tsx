@@ -23,16 +23,18 @@ export interface CubeFooterProps
     ContainerStyleProps,
     TextStyleProps {}
 
-export const Footer = forwardRef((props: CubeFooterProps, ref) => {
-  props = useSlotProps(props, 'footer');
+export const Footer = forwardRef<HTMLDivElement, CubeFooterProps>(
+  (props, ref) => {
+    const slottedProps = useSlotProps(props, 'footer');
 
-  const styles = extractStyles(props, STYLE_LIST);
+    const styles = extractStyles(slottedProps, STYLE_LIST);
 
-  return (
-    <RawFooter
-      {...filterBaseProps(props, { eventProps: true })}
-      styles={styles}
-      ref={ref}
-    />
-  );
-});
+    return (
+      <RawFooter
+        {...filterBaseProps(slottedProps, { eventProps: true })}
+        styles={styles}
+        ref={ref}
+      />
+    );
+  },
+);
