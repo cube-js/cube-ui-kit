@@ -1,6 +1,6 @@
 name: Tests
 
-on: [push, pull_request]
+on: pull_request
 
 jobs:
   test:
@@ -8,23 +8,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
       - name: Setup Nodejs and npm
         uses: actions/setup-node@v2
         with:
           node-version: "14"
-
-      - name: Setup yarn
-        run: npm install -g yarn
-
-      - name: Setup Nodejs with yarn caching
-        uses: actions/setup-node@v2
-        with:
-          node-version: "14"
-          cache: yarn
-
+          cache: 'yarn'
       - name: Install dependencies
-        run: yarn
+        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
+        run: yarn --frozen-lockfile
 
       - name: Run the lint
         run: yarn lint

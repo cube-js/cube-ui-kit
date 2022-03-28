@@ -108,6 +108,7 @@ const INPUT_STYLES: Styles = {
   fontWeight: 400,
   textAlign: 'left',
   cursor: 'pointer',
+  transition: 'theme',
 } as const;
 
 const OVERLAY_STYLES: Styles = {

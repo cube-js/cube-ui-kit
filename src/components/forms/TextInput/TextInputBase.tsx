@@ -78,6 +78,7 @@ export const DEFAULT_INPUT_STYLES: Styles = {
     'invalid & focused': '#danger.50',
     'valid & focused': '#success.50',
   },
+  transition: 'theme',
   radius: true,
   padding: {
     '': '(1.25x - 1bw) 1x (1.25x - 1bw) (1.5x - 1bw)',
@@ -228,8 +229,8 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
   );
   let validation = cloneElement(validationIcon);
 
-  suffix
-    = typeof suffix === 'string' ? (
+  suffix =
+    typeof suffix === 'string' ? (
       <Block padding="1x right">{suffix}</Block>
     ) : (
       suffix

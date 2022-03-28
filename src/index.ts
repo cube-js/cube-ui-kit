@@ -1,41 +1,14 @@
 import { TextInput } from './components/forms/TextInput/TextInput';
 import { PasswordInput } from './components/forms/PasswordInput/PasswordInput';
 import { NumberInput } from './components/forms/NumberInput/NumberInput';
-import {
-  CubeFormProps,
-  Field,
-  Form as _Form,
-  useForm,
-  useFormProps,
-  CubeFormInstance,
-} from './components/forms/Form';
 
 import { CubeTextProps, Text } from './components/content/Text';
 import { CubeTitleProps, Title } from './components/content/Title';
 import { CubeParagraphProps, Paragraph } from './components/content/Paragraph';
 import { TextArea } from './components/forms/TextArea/TextArea';
-import { Button } from './components/actions/Button/Button';
-import { ButtonGroup } from './components/actions/ButtonGroup/ButtonGroup';
 import { FileInput } from './components/forms/FileInput/FileInput';
 
 import './styles/predefined';
-
-const _Button = Object.assign(
-  Button as typeof Button & {
-    Group: typeof ButtonGroup;
-  },
-  {
-    Group: ButtonGroup,
-  },
-);
-
-const Form = Object.assign(
-  _Form as typeof _Form & {
-    Item: typeof Field;
-    useForm: typeof useForm;
-  },
-  { Item: Field, useForm },
-);
 
 export { Item } from '@react-stately/collections';
 
@@ -43,8 +16,6 @@ export { Item } from '@react-stately/collections';
 export { Base } from './components/Base';
 export { Block } from './components/Block';
 export type { CubeBlockProps } from './components/Block';
-export { Action } from './components/actions/Action';
-export type { CubeActionProps } from './components/actions/Action';
 export { ActiveZone } from './components/content/ActiveZone/ActiveZone';
 export type { CubeActiveZoneProps } from './components/content/ActiveZone/ActiveZone';
 export { Grid } from './components/layout/Grid';
@@ -91,8 +62,7 @@ export { Base64Upload } from './components/other/Base64Upload/Base64Upload';
 export type { CubeBase64UploadProps } from './components/other/Base64Upload/Base64Upload';
 export { Card } from './components/content/Card/Card';
 export type { CubeCardProps } from './components/content/Card/Card';
-export { _Button as Button, ButtonGroup };
-export type { CubeButtonProps } from './components/actions/Button/Button';
+export * from './components/actions';
 export { Placeholder } from './components/content/Placeholder/Placeholder';
 export type { CubePlaceholderProps } from './components/content/Placeholder/Placeholder';
 export { Skeleton } from './components/content/Skeleton/Skeleton';
@@ -121,8 +91,6 @@ export { Switch } from './components/forms/Switch/Switch';
 export type { CubeSwitchProps } from './components/forms/Switch/Switch';
 export { Radio } from './components/forms/RadioGroup/Radio';
 export type { CubeRadioProps } from './components/forms/RadioGroup/Radio';
-export { Form, Field, useFormProps, useForm };
-export type { CubeFormProps, CubeFormInstance };
 export { ComboBox } from './components/pickers/ComboBox/ComboBox';
 export type { CubeComboBoxProps } from './components/pickers/ComboBox/ComboBox';
 export { Select, ListBoxPopup } from './components/pickers/Select/Select';
@@ -198,28 +166,9 @@ export { useContextStyles, StyleProvider } from './providers/StylesProvider';
 
 export { Provider } from './provider';
 export type { useProviderProps } from './provider';
-
 export { Portal } from './components/portal';
 export type { PortalProps } from './components/portal';
-
-const Input = Object.assign(
-  TextInput as typeof TextInput & {
-    Text: typeof TextInput;
-    Password: typeof PasswordInput;
-    Number: typeof NumberInput;
-    TextArea: typeof TextArea;
-    File: typeof FileInput;
-  },
-  {
-    Text: TextInput,
-    Password: PasswordInput,
-    Number: NumberInput,
-    TextArea: TextArea,
-    File: FileInput,
-  },
-);
-
-export { Input };
+export * from './components/forms';
 
 export type {
   TagName,
@@ -248,3 +197,4 @@ export * from './utils/react';
 export * from './styled';
 export { default as copy } from 'clipboard-copy';
 export * from '@react-aria/ssr';
+export * from './components/forms/Form';

@@ -38,4 +38,12 @@ module.exports = {
       },
     ],
   },
+  overrides: [
+    {
+      files: ['./scripts/*.js', './scripts/*.mjs'],
+      rules: {
+        '@typescript-eslint/no-var-requires': 0,
+      },
+    },
+  ],
 };
