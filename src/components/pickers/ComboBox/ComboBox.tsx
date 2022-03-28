@@ -194,7 +194,6 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
     targetRef: triggerRef,
     overlayRef: popoverRef,
     scrollRef: listBoxRef,
-    // @ts-ignore
     placement: `${direction} end`,
     shouldFlip: shouldFlip,
     isOpen: state.isOpen,
