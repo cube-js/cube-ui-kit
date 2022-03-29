@@ -85,7 +85,7 @@
     "@react-stately/toggle": "^3.2.3",
     "@react-stately/tooltip": "^3.0.5",
     "@react-stately/utils": "^3.3.0",
-    "@react-types/button": "^3.4.1",
+    "@react-types/button": "^3.4.4",
     "@react-types/checkbox": "^3.2.5",
     "@react-types/combobox": "^3.2.1",
     "@react-types/dialog": "^3.3.1",
