@@ -10,7 +10,7 @@ import { FileInput } from './components/forms/FileInput/FileInput';
 
 import './styles/predefined';
 
-export { Item } from '@react-stately/collections';
+export { Item, Section } from '@react-stately/collections';
 
 // generic components
 export { Base } from './components/Base';
@@ -93,6 +93,10 @@ export { Radio } from './components/forms/RadioGroup/Radio';
 export type { CubeRadioProps } from './components/forms/RadioGroup/Radio';
 export { ComboBox } from './components/pickers/ComboBox/ComboBox';
 export type { CubeComboBoxProps } from './components/pickers/ComboBox/ComboBox';
+export { Menu } from './components/pickers/Menu/Menu';
+export type { CubeMenuProps } from './components/pickers/Menu/Menu';
+export { MenuTrigger } from './components/pickers/Menu/MenuTrigger';
+export type { CubeMenuTriggerProps } from './components/pickers/Menu/MenuTrigger';
 export { Select, ListBoxPopup } from './components/pickers/Select/Select';
 export type {
   CubeSelectProps,
