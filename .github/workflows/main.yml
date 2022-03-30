@@ -32,7 +32,7 @@ jobs:
           echo "Version changed: ${{ steps.publish.outputs.old-version }} => ${{ steps.publish.outputs.version }}"
 
       - name: Build storybook
-        run: yarn build-storybook
+        run: yarn build-storybook --quiet
 
       - name: Publish storybook
         run: npx netlify-cli deploy --dir=./storybook-static -p
