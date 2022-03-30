@@ -60,7 +60,7 @@ const Base = function Base<K extends keyof HTMLElementTagNameMap>(
   const contextBreakpoints = useContext(BreakpointsContext);
   const zones = pointsToZones(breakpoints || contextBreakpoints);
 
-  css = `${css || ''}${renderStyles(styles, zones)}`;
+  css = `${css ?? ''}${renderStyles(styles, zones)}`;
 
   if (mods) {
     Object.assign(props, modAttrs(mods));
