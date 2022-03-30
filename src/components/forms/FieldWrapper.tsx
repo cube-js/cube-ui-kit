@@ -36,6 +36,10 @@ const FIELD_STYLES = {
   InputArea: {
     display: 'block',
     flow: 'column',
+    gridColumn: {
+      '': 'initial',
+      'has-sider': 2,
+    },
   },
 };
 
@@ -98,12 +102,6 @@ function FieldWrapper(props, ref) {
     tooltip,
     isHidden,
   } = props;
-  const mods = {
-    'has-sider': labelPosition === 'side',
-    'has-description': !!description,
-    invalid: validationState === 'invalid',
-    valid: validationState === 'valid',
-  };
 
   const labelComponent = label ? (
     <Label
@@ -140,6 +138,13 @@ function FieldWrapper(props, ref) {
     </div>
   ) : null;
 
+  const mods = {
+    'has-sider': labelPosition === 'side',
+    'has-description': !!description,
+    invalid: validationState === 'invalid',
+    valid: validationState === 'valid',
+  };
+
   return (
     <Base
       as={as || 'div'}
@@ -153,10 +158,12 @@ function FieldWrapper(props, ref) {
       }}
       {...fieldProps}
     >
-      <div data-element="LabelArea">
-        {labelComponent}
-        {descriptionComponent}
-      </div>
+      {labelComponent || descriptionComponent ? (
+        <div data-element="LabelArea">
+          {labelComponent}
+          {descriptionComponent}
+        </div>
+      ) : null}
       <div data-element="InputArea">
         {Component}
         {message && !isDisabled && (
