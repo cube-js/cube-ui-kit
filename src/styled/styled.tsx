@@ -38,7 +38,7 @@ type EitherLegacyPropsOrInlined<
   K extends (keyof StylesInterface)[],
   DefaultProps,
 > =
-  | ((Pick<StyledProps<K>, 'name' | 'tag' | 'styles'> & {
+  | ((Pick<StyledProps<K, DefaultProps>, 'name' | 'tag' | 'styles'> & {
       /**
        * @deprecated
        */
@@ -46,10 +46,11 @@ type EitherLegacyPropsOrInlined<
     }) & { [key in keyof DefaultProps]?: never })
   | ({ props?: never } & DefaultProps);
 
-function styled<K extends (keyof StylesInterface)[]>(
-  options: StyledProps<K>,
-  secondArg?: never,
-);
+function styled<
+  K extends (keyof StylesInterface)[],
+  Props,
+  DefaultProps extends Partial<Props> = Partial<Props>,
+>(options: StyledProps<K, DefaultProps>, secondArg?: never);
 function styled(selector: string, styles?: Styles);
 function styled<
   K extends (keyof StylesInterface)[],
@@ -65,7 +66,7 @@ function styled<
   K extends (keyof StylesInterface)[],
   C = Record<string, unknown>,
 >(Component, options) {
-  deprecationWarning(options?.props == null && Component.props == null, {
+  deprecationWarning(options?.props == null, {
     property: 'props',
     name: 'styled api',
     betterAlternative:

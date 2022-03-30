@@ -17,7 +17,7 @@ describe('styled() API', () => {
       .spyOn(console, 'warn')
       .mockImplementation(() => {});
 
-    styled({ props: { test: 123 } });
+    styled(Button, { props: { type: 'primary' } });
 
     expect(spiedConsole).toBeCalledTimes(1);
     expect(spiedConsole.mock.calls).toMatchSnapshot();

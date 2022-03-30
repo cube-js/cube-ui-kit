@@ -16,7 +16,7 @@ export interface GlobalStyledProps {
   breakpoints?: number[];
 }
 
-export type StyledProps<K extends (keyof StylesInterface)[]> = {
+export type StyledProps<K extends (keyof StylesInterface)[], DefaultProps> = {
   /** The name of the element. It can be used to override styles in context. */
   name?: string;
   /** The tag name of the element. */
@@ -25,10 +25,7 @@ export type StyledProps<K extends (keyof StylesInterface)[]> = {
   styles?: Styles;
   /** Default css of the element. */
   css?: string | ((props: Props) => string);
-  /**
-   * @deprecated use inline props instead
-   */
-  props?: Record<string, any>;
+  props?: DefaultProps;
   /** The list of styles that can be provided by props */
   styleProps?: K;
 };

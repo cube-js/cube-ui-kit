@@ -11,13 +11,11 @@ const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 const RawHeader = styled({
   name: 'Header',
   tag: 'header',
+  props: { 'data-id': 'Header' },
   styles: {
     display: 'block',
     gridArea: 'header',
     flow: 'column',
-  },
-  props: {
-    'data-id': 'Header',
   },
 });
 

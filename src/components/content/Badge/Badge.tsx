@@ -8,6 +8,7 @@ import { styled } from '../../../styled';
 
 const RawBadge = styled({
   name: 'Badge',
+  props: { role: 'region' },
   styles: {
     display: 'inline-flex',
     placeContent: 'center',
@@ -32,9 +33,6 @@ const RawBadge = styled({
         return map;
       }, {}),
     },
-  },
-  props: {
-    role: 'region',
   },
 });
 
