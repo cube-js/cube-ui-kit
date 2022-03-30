@@ -14,10 +14,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 14
-          cache: 'yarn'
-
       - name: Install dependencies
-        if: steps.cache-nodemodules.outputs.cache-hit != 'true'
         run: yarn --frozen-lockfile
 
       - run: yarn build
@@ -33,8 +30,7 @@ jobs:
       - if: steps.publish.outputs.type != 'none'
         run: |
           echo "Version changed: ${{ steps.publish.outputs.old-version }} => ${{ steps.publish.outputs.version }}"
-      - if: steps.publish.outputs.type != 'none'
-        name: Publish storybook
+      - name: Publish storybook
         run: |
           yarn build-storybook
           npx netlify-cli deploy --dir=./storybook-static -p
