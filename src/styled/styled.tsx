@@ -43,8 +43,12 @@ type EitherLegacyPropsOrInlined<
        * @deprecated
        */
       props?: DefaultProps;
-    }) & { [key in keyof DefaultProps]?: never })
-  | ({ props?: never } & DefaultProps);
+    }) & {
+      [key in keyof DefaultProps]?: 'You Should use either legacy props field or inline props';
+    })
+  | ({
+      props?: 'You Should use either legacy props field or inline props';
+    } & DefaultProps);
 
 function styled<
   K extends (keyof StylesInterface)[],
