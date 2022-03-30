@@ -1,4 +1,4 @@
-import React, { ReactElement, useContext } from 'react';
+import React, { ReactNode, ReactElement } from 'react';
 import { DOMRef } from '@react-types/shared';
 import { Item } from '@react-stately/collections';
 import { AriaMenuProps } from '@react-types/menu';
@@ -8,29 +8,44 @@ import { useDOMRef } from '@react-spectrum/utils';
 import { mergeProps, useSyncRef } from '@react-aria/utils';
 import { MenuSection } from './MenuSection';
 import { MenuItem } from './MenuItem';
-import { MenuContext } from './context';
+import { useMenuContext } from './context';
+import { StyledMenu, StyledMenuHeader } from './styled';
+import { extractStyles } from '../../../utils/styles';
+import { useContextStyles } from '../../../providers/StylesProvider';
 
-import { StyledMenu } from './styled';
-
-export type CubeMenuProps<T> = AriaMenuProps<T>;
+export type CubeMenuProps<T> = {
+  header?: ReactNode;
+  footer?: ReactNode;
+} & AriaMenuProps<T>;
 
 function Menu<T extends object>(
   props: CubeMenuProps<T>,
   ref: DOMRef<HTMLUListElement>,
 ) {
-  let contextProps = useContext(MenuContext);
-  let completeProps = {
-    ...mergeProps(contextProps, props),
+  const domRef = useDOMRef(ref);
+  const contextProps = useMenuContext();
+  const { header, footer } = props;
+  const completeProps = {
+    ...mergeProps(contextProps, props, {
+      mods: {
+        footer: !!footer,
+        header: !!header,
+      },
+    }),
   };
+  const state = useTreeState(completeProps);
+  const { menuProps } = useMenu(completeProps, state, domRef);
+  const styleProps = extractStyles(completeProps);
+  const menuStyles = useContextStyles('Menu', props) || {};
 
-  let domRef = useDOMRef(ref);
-  let state = useTreeState(completeProps);
-  let { menuProps } = useMenu(completeProps, state, domRef);
-  // let { styleProps } = useStyleProps(completeProps);
   useSyncRef(contextProps, domRef);
 
   return (
-    <StyledMenu {...menuProps} ref={domRef}>
+    <StyledMenu
+      {...mergeProps(menuProps, menuStyles, completeProps, styleProps)}
+      ref={domRef}
+    >
+      {header && <StyledMenuHeader>{header}</StyledMenuHeader>}
       {[...state.collection].map((item) => {
         if (item.type === 'section') {
           return (
@@ -70,6 +85,9 @@ const _Menu = React.forwardRef(Menu) as <T>(
 
 const __Menu = Object.assign(_Menu as typeof _Menu & { Item: typeof Item }, {
   Item,
+  displayName: 'Menu',
 });
+
+__Menu.displayName = 'Menu';
 
 export { __Menu as Menu };

@@ -23,12 +23,12 @@ export type CubeMenuTriggerProps = BaseTriggerProps & {
 };
 
 function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
-  let menuPopoverRef = useRef<DOMRefValue<HTMLDivElement>>(null);
-  let triggerRef = useRef<HTMLElement>();
-  let domRef = useDOMRef(ref);
-  let menuTriggerRef = domRef || triggerRef;
-  let menuRef = useRef<HTMLUListElement>(null);
-  let {
+  const menuPopoverRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLElement>();
+  const domRef = useDOMRef(ref);
+  const menuTriggerRef = domRef || triggerRef;
+  const menuRef = useRef<HTMLUListElement>(null);
+  const {
     children,
     align = 'start',
     shouldFlip = true,
@@ -38,10 +38,10 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     isDisabled,
   } = props;
 
-  let [menuTrigger, menu] = React.Children.toArray(children);
-  let state = useMenuTriggerState(props);
+  const [menuTrigger, menu] = React.Children.toArray(children);
+  const state = useMenuTriggerState(props);
 
-  let { menuTriggerProps, menuProps } = useMenuTrigger(
+  const { menuTriggerProps, menuProps } = useMenuTrigger(
     { isDisabled },
     state,
     menuTriggerRef,
@@ -63,10 +63,10 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
       initialPlacement = `${direction} ${align}` as Placement;
   }
 
-  let isMobile = useIsMobileDevice();
-  let { overlayProps: positionProps, placement } = useOverlayPosition({
+  const isMobile = useIsMobileDevice();
+  const { overlayProps: positionProps, placement } = useOverlayPosition({
     targetRef: menuTriggerRef,
-    overlayRef: unwrapDOMRef(menuPopoverRef),
+    overlayRef: menuPopoverRef,
     scrollRef: menuRef,
     placement: initialPlacement,
     shouldFlip: shouldFlip,
@@ -74,7 +74,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     onClose: state.close,
   });
 
-  let menuContext = {
+  const menuContext = {
     ...menuProps,
     ref: menuRef,
     onClose: state.close,
@@ -86,15 +86,19 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
           maxHeight: 'inherit',
         }
       : undefined,
-    styles: !isMobile ? {} : undefined,
+    mods: {
+      popover: !isMobile,
+    },
   } as MenuContextValue;
 
-  let contents = (
-    <FocusScope restoreFocus contain={isMobile}>
+  console.log('MenuTrigger', { menuTrigger, menu });
+
+  const contents = (
+    <>
       <DismissButton onDismiss={state.close} />
       {menu}
       <DismissButton onDismiss={state.close} />
-    </FocusScope>
+    </>
   );
 
   // On small screen devices, the menu is rendered in a tray, otherwise a popover.
@@ -144,4 +148,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
  * linking the Menu's open state with the trigger's press state.
  */
 let _MenuTrigger = forwardRef(MenuTrigger);
+
+_MenuTrigger.displayName = 'MenuTrigger';
+
 export { _MenuTrigger as MenuTrigger };

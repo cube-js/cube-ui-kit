@@ -29,18 +29,21 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
     elementType: 'li',
   });
 
+  const isFirstKey = item.key === state.collection.getFirstKey();
+
   return (
     <Fragment>
-      {item.key !== state.collection.getFirstKey() && (
-        <StyledDivider {...separatorProps} />
-      )}
+      {!isFirstKey && <StyledDivider {...separatorProps} />}
       <StyledMenuItem {...itemProps}>
         {item.rendered && (
-          <StyledMenuSectionHeading {...headingProps}>
+          <StyledMenuSectionHeading
+            {...headingProps}
+            mods={{ first: isFirstKey }}
+          >
             {item.rendered}
           </StyledMenuSectionHeading>
         )}
-        <StyledMenu {...groupProps}>
+        <StyledMenu {...groupProps} mods={{ section: true }}>
           {[...item.childNodes].map((node) => {
             let item = (
               <MenuItem
