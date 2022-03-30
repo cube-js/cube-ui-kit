@@ -52,7 +52,9 @@ const RawTitle = styled({
   name: 'Title',
   tag: 'h1', // it should be dynamic
   styles: DEFAULT_STYLES,
-  'data-qa': 'Title',
+  props: {
+    'data-qa': 'Title',
+  },
 });
 
 const _Title = forwardRef<HTMLDivElement, CubeTitleProps>(

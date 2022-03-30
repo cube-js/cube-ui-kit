@@ -8,8 +8,8 @@ import { CONTAINER_STYLES } from '../../../styles/list';
 const RawPre = styled({
   name: 'CodeBlock',
   tag: 'pre',
-  className: 'cube-prism-code',
   styleProps: CONTAINER_STYLES.concat([]),
+  props: { className: 'cube-prism-code' },
   styles: {
     margin: 0,
 

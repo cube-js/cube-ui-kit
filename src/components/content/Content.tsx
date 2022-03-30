@@ -21,7 +21,9 @@ const RawContent = styled({
     overflow: 'auto',
     styledScrollbar: true,
   },
-  'data-id': 'Content',
+  props: {
+    'data-id': 'Content',
+  },
 });
 
 export interface CubeContentProps

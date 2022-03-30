@@ -46,7 +46,7 @@ type EitherLegacyPropsOrInlined<
   K extends (keyof StylesInterface)[],
   DefaultProps,
 > =
-  | ((Pick<StyledProps<K>, 'name' | 'tag' | 'styles'> & {
+  | ((Pick<StyledProps<K, DefaultProps>, 'name' | 'tag' | 'styles'> & {
       /**
        * @deprecated
        */
@@ -59,7 +59,7 @@ function styled<
   Props,
   DefaultProps extends Partial<Props> = Partial<Props>,
 >(
-  options: EitherLegacyPropsOrInlined<K, DefaultProps>,
+  options: StyledProps<K, DefaultProps>,
   secondArg?: never,
 ): ForwardRefExoticComponent<
   AllBasePropsWithMods<K> & RefAttributes<HTMLDivElement>
@@ -79,7 +79,7 @@ function styled<
   K extends (keyof StylesInterface)[],
   C = Record<string, unknown>,
 >(Component, options) {
-  deprecationWarning(options?.props == null && Component.props == null, {
+  deprecationWarning(options?.props == null, {
     property: 'props',
     name: 'styled api',
     betterAlternative:

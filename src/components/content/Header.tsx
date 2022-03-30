@@ -11,12 +11,12 @@ const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 const RawHeader = styled({
   name: 'Header',
   tag: 'header',
+  props: { 'data-id': 'Header' },
   styles: {
     display: 'block',
     gridArea: 'header',
     flow: 'column',
   },
-  'data-id': 'Header',
 });
 
 export interface CubeHeaderProps

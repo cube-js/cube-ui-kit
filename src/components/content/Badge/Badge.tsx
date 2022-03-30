@@ -8,7 +8,7 @@ import { styled } from '../../../styled';
 
 const RawBadge = styled({
   name: 'Badge',
-  role: 'region',
+  props: { role: 'region' },
   styles: {
     display: 'inline-flex',
     placeContent: 'center',

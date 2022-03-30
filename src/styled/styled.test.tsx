@@ -16,7 +16,7 @@ describe('styled() API', () => {
     const spiedWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
     jest.spyOn(console, 'group').mockImplementation(() => {});
 
-    styled({ props: { test: 123 } });
+    styled(Button, { props: { type: 'primary' } });
 
     expect(spiedWarn).toBeCalledTimes(1);
     expect(spiedWarn.mock.calls).toMatchSnapshot();
