@@ -7,6 +7,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     env:
+      INPUT_TOKEN: ${{ secrets.NPM_TOKEN }}
       NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
     steps:
@@ -14,6 +15,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 14
+
       - name: Install dependencies
         run: yarn --frozen-lockfile
 
@@ -24,13 +26,13 @@ jobs:
           token: ${{ secrets.NPM_TOKEN }}
           access: public
           check-version: true
-      - if: steps.publish.outputs.type == 'none'
-        run: |
-          echo "Version didn't changed, skipping publishing"
+
       - if: steps.publish.outputs.type != 'none'
         run: |
           echo "Version changed: ${{ steps.publish.outputs.old-version }} => ${{ steps.publish.outputs.version }}"
+
+      - name: Build storybook
+        run: yarn build-storybook
+
       - name: Publish storybook
-        run: |
-          yarn build-storybook
-          npx netlify-cli deploy --dir=./storybook-static -p
+        run: npx netlify-cli deploy --dir=./storybook-static -p
