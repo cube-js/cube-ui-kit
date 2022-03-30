@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
 import { styled } from './styled';
-import { Button } from '../components/actions';
+import { Button } from '../components/actions/Button/Button';
 import { Block } from '../components/Block';
 
 describe('styled() API', () => {
