@@ -1,5 +1,5 @@
 import { styled } from '../../styled';
-import { Button } from '../../components/actions/Button/Button';
+import { Button } from '../../components/actions';
 
 export const StyledButton = styled(Button, {
   styles: {
