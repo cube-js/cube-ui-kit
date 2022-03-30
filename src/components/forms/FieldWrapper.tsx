@@ -153,10 +153,12 @@ function FieldWrapper(props, ref) {
       }}
       {...fieldProps}
     >
-      <div data-element="LabelArea">
-        {labelComponent}
-        {descriptionComponent}
-      </div>
+      {labelComponent || descriptionComponent ? (
+        <div data-element="LabelArea">
+          {labelComponent}
+          {descriptionComponent}
+        </div>
+      ) : null}
       <div data-element="InputArea">
         {Component}
         {message && !isDisabled && (
