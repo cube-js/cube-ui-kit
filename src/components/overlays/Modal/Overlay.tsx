@@ -1,8 +1,9 @@
 import { OpenTransition } from './OpenTransition';
-import { forwardRef, useCallback, useRef, useState } from 'react';
-import { Provider } from '../../../provider';
+import { forwardRef, useCallback, useState } from 'react';
+import { Provider, useProviderProps } from '../../../provider';
 import type { OverlayProps } from '@react-types/overlays';
-import { Portal } from '../../portal';
+import { createPortal } from 'react-dom';
+import { Props } from '../../types';
 
 export interface CubeOverlayProps extends Omit<OverlayProps, 'container'> {
   container?: HTMLElement | null;
@@ -21,7 +22,7 @@ function Overlay(props: CubeOverlayProps, ref) {
     onExited,
   } = props;
   let [exited, setExited] = useState(!isOpen);
-  let containerRef = useRef(container);
+  let { root } = useProviderProps({} as Props);
 
   let handleEntered = useCallback(() => {
     setExited(false);
@@ -40,26 +41,24 @@ function Overlay(props: CubeOverlayProps, ref) {
     return null;
   }
 
-  // UNSAFE_style={{background: 'transparent', isolation: 'isolate'}}
-
-  return (
-    <Portal root={containerRef}>
-      <Provider ref={ref}>
-        <OpenTransition
-          in={isOpen}
-          appear
-          onExit={onExit}
-          onExiting={onExiting}
-          onExited={handleExited}
-          onEnter={onEnter}
-          onEntering={onEntering}
-          onEntered={handleEntered}
-        >
-          {children}
-        </OpenTransition>
-      </Provider>
-    </Portal>
+  let contents = (
+    <Provider ref={ref}>
+      <OpenTransition
+        in={isOpen}
+        appear
+        onExit={onExit}
+        onExiting={onExiting}
+        onExited={handleExited}
+        onEnter={onEnter}
+        onEntering={onEntering}
+        onEntered={handleEntered}
+      >
+        {children}
+      </OpenTransition>
+    </Provider>
   );
+
+  return createPortal(contents, container || root || document.body);
 }
 
 let _Overlay = forwardRef(Overlay);
