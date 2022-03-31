@@ -6,7 +6,7 @@ import { CubeFormProps, Form } from '../../forms/Form/Form';
 import { useForm } from '../../forms/Form/useForm';
 import { Content } from '../../content/Content';
 import { Submit } from '../../actions/Button/Submit';
-import { Button, CubeButtonProps } from '../../actions/Button/Button';
+import { Button, CubeButtonProps } from '../../actions';
 import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
 import { Header } from '../../content/Header';
 
@@ -96,7 +96,7 @@ const DialogForm = (
               qa={qa || 'DialogForm'}
               form={form}
               name={name}
-              onSubmit={async(data) => {
+              onSubmit={async (data) => {
                 await onSubmit?.(data);
                 setOpen(false);
 

@@ -5,7 +5,7 @@ import {
 } from '../TextInput/TextInputBase';
 import { useProviderProps } from '../../../provider';
 import { useTextField } from '@react-aria/textfield';
-import { Button } from '../../actions/Button/Button';
+import { Button } from '../../actions';
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 import {
   castNullableStringValue,

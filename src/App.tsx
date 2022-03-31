@@ -8,7 +8,7 @@ import {
   LoadingAnimation,
   Block,
 } from './index';
-import { Button } from './components/actions/Button/Button';
+import { Button } from './components/actions';
 // import ResponsiveProvider from './providers/Responsive';
 import { color } from './utils/colors';
 import { Card } from './components/content/Card/Card';

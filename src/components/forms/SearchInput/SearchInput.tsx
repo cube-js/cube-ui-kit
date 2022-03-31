@@ -8,7 +8,7 @@ import {
   TextInputBase,
 } from '../TextInput/TextInputBase';
 import { useProviderProps } from '../../../provider';
-import { Button } from '../../actions/Button/Button';
+import { Button } from '../../actions';
 import { ariaToCubeButtonProps } from '../../../utils/react/mapProps';
 import {
   castNullableStringValue,
@@ -56,9 +56,9 @@ export const SearchInput = forwardRef(
         prefix={<SearchOutlined />}
         suffixPosition="after"
         suffix={
-          isClearable
-          && state.value !== ''
-          && !props.isReadOnly && (
+          isClearable &&
+          state.value !== '' &&
+          !props.isReadOnly && (
             <Button
               type="clear"
               {...ariaToCubeButtonProps(clearButtonProps)}

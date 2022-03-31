@@ -1,5 +1,5 @@
 import { forwardRef, useState } from 'react';
-import { Button } from '../../actions/Button/Button';
+import { Button } from '../../actions';
 import { Block } from '../../Block';
 import { Text } from '../../content/Text';
 import styled from 'styled-components';
@@ -50,7 +50,7 @@ export const Base64Upload = styled(
           return;
         }
 
-        reader.onload = function() {
+        reader.onload = function () {
           /**
            * @type {string}
            */
@@ -70,8 +70,8 @@ export const Base64Upload = styled(
             return;
           }
 
-          onInput
-            && onInput({
+          onInput &&
+            onInput({
               encoded: base64text,
               raw: JSON.parse(text),
             });

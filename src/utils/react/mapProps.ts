@@ -1,4 +1,4 @@
-import { CubeButtonProps } from '../../components/actions/Button/Button';
+import { CubeButtonProps } from '../../components/actions';
 import { AriaButtonProps } from '@react-types/button';
 
 /** Converts AriaButtonProps to CubeButtonProps */
