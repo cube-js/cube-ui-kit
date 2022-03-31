@@ -1,10 +1,11 @@
 import { chain } from '@react-aria/utils';
-import { Button, CubeButtonProps } from '../../actions/Button/Button';
+import { Button, CubeButtonProps } from '../../actions';
 import { Content } from '../../content/Content';
+import { Paragraph } from '../../content/Paragraph';
 import { CubeDialogProps, Dialog } from '../Dialog/Dialog';
 import { DialogContext } from '../Dialog/context';
 import { Title } from '../../content/Title';
-import { forwardRef, useContext } from 'react';
+import { forwardRef, ReactNode, useContext } from 'react';
 import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
 import { Header } from '../../content/Header';
 import { Footer } from '../../content/Footer';
@@ -17,7 +18,7 @@ export interface CubeAlertDialogActionsProps {
 
 export interface CubeAlertDialogProps
   extends Omit<CubeDialogProps, 'children'> {
-  content: JSX.Element | JSX.Element[];
+  content?: ReactNode;
   /** Whether the dialog is an important prompt */
   danger?: boolean;
   actions?: CubeAlertDialogActionsProps;
@@ -72,7 +73,15 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
           <Title>{title}</Title>
         </Header>
       ) : null}
-      <Content>{content}</Content>
+      {content ? (
+        <Content>
+          {typeof content === 'string' ? (
+            <Paragraph>{content}</Paragraph>
+          ) : (
+            content
+          )}
+        </Content>
+      ) : null}
       {!noActions ? (
         <Footer>
           <ButtonGroup align="end">
