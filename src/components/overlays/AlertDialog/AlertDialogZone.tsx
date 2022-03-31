@@ -1,4 +1,4 @@
-import { CubeButtonProps } from '../../actions/Button/Button';
+import { CubeButtonProps } from '../../actions';
 import { Portal } from '../../portal';
 import { DialogContainer } from '../Dialog';
 import { AlertDialog, CubeAlertDialogActionsProps } from './AlertDialog';

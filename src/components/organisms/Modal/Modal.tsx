@@ -5,7 +5,7 @@ import { Card, CubeCardProps } from '../../content/Card/Card';
 import { Flow } from '../../layout/Flow';
 import { Flex } from '../../layout/Flex';
 import { Block } from '../../Block';
-import { Button } from '../../actions/Button/Button';
+import { Button } from '../../actions';
 import { Space } from '../../layout/Space';
 import { Title } from '../../content/Title';
 import styled from 'styled-components';
@@ -177,7 +177,7 @@ export function Modal(allProps: CubeModalProps) {
     (arg) => {
       setLocalLoading(true);
 
-      (async() => {
+      (async () => {
         if (onOk) {
           try {
             if ((await onOk(arg)) === false && (onClose || onCancel)) {
@@ -338,7 +338,7 @@ const modal: ModalService = {
       items.map((item) => {
         const { id, onOk, onCancel, onClose, content, ...options } = item;
 
-        const wrapOnOk = async(arg) => {
+        const wrapOnOk = async (arg) => {
           onOk && (await onOk(arg));
 
           this.resolve(item, arg);

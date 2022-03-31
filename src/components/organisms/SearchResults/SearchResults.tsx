@@ -6,7 +6,7 @@ import {
 } from '@ant-design/icons';
 import { CubeFlexProps, Flex } from '../../layout/Flex';
 import { Action } from '../../actions/Action';
-import { Button } from '../../actions/Button/Button';
+import { Button } from '../../actions';
 import { Space } from '../../layout/Space';
 import { Block } from '../../Block';
 import { Paragraph } from '../../content/Paragraph';

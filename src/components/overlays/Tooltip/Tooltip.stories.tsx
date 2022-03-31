@@ -1,5 +1,5 @@
 import { Tooltip } from './Tooltip';
-import { Button } from '../../actions/Button/Button';
+import { Button } from '../../actions';
 import { TooltipTrigger } from './TooltipTrigger';
 import { TooltipProvider } from './TooltipProvider';
 import { Block } from '../../Block';

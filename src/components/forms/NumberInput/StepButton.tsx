@@ -1,4 +1,4 @@
-import { Button } from '../../actions/Button/Button';
+import { Button } from '../../actions';
 import { CaretDownOutlined, CaretUpOutlined } from '@ant-design/icons';
 import { Styles } from '../../../styles/types';
 
