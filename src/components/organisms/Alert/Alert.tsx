@@ -40,7 +40,7 @@ export const Alert = forwardRef((allProps: CubeAlertProps, ref) => {
 
   return (
     <Base
-      role="region"
+      role="alert"
       {...filterBaseProps(props, { eventProps: true })}
       styles={styles}
       ref={ref}
