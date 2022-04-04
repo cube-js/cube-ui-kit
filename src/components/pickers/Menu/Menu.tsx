@@ -1,6 +1,9 @@
 import React, { ReactNode, ReactElement } from 'react';
-import { DOMRef } from '@react-types/shared';
-import { Item } from '@react-stately/collections';
+import { DOMRef, ItemProps, SectionProps } from '@react-types/shared';
+import {
+  Item as BaseItem,
+  Section as BaseSection,
+} from '@react-stately/collections';
 import { AriaMenuProps } from '@react-types/menu';
 import { useMenu } from '@react-aria/menu';
 import { useTreeState } from '@react-stately/tree';
@@ -83,11 +86,28 @@ const _Menu = React.forwardRef(Menu) as <T>(
   props: CubeMenuProps<T> & { ref?: DOMRef<HTMLUListElement> },
 ) => ReactElement;
 
-const __Menu = Object.assign(_Menu as typeof _Menu & { Item: typeof Item }, {
+type ItemComponent = <T>(
+  props: ItemProps<T> & { prefix?: ReactNode; icon?: ReactNode },
+) => JSX.Element;
+type SectionComponent = <T>(props: SectionProps<T>) => JSX.Element;
+
+const Item = Object.assign(BaseItem, {
+  displayName: 'Item',
+}) as ItemComponent;
+
+const Section = Object.assign(BaseSection, {
+  displayName: 'Section',
+}) as SectionComponent;
+
+type __MenuComponent = typeof _Menu & {
+  Item: typeof Item;
+  Section: typeof Section;
+};
+
+const __Menu = Object.assign(_Menu as __MenuComponent, {
   Item,
+  Section,
   displayName: 'Menu',
 });
-
-__Menu.displayName = 'Menu';
 
 export { __Menu as Menu };

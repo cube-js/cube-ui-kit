@@ -14,9 +14,7 @@ import {
 } from '@ant-design/icons';
 import {
   Menu,
-  Section as BaseSection,
   MenuTrigger,
-  Item as BaseItem,
   Flex,
   Button,
   Text,
@@ -28,14 +26,6 @@ import {
   SearchInput,
 } from '../../../index';
 import { baseProps } from '../../../stories/lists/baseProps';
-
-const Item = Object.assign(BaseItem, {
-  displayName: 'Item',
-});
-
-const Section = Object.assign(BaseSection, {
-  displayName: 'Section',
-});
 
 const Layout = ({ children }) => <Root>{children}</Root>;
 
@@ -76,22 +66,22 @@ export const Default = ({ ...props }) => {
   );
   const menu = (
     <Menu id="menu" {...props} header={userHeader}>
-      <Section>
-        <Item key="red" icon={<DeploymentUnitOutlined />}>
+      <Menu.Section>
+        <Menu.Item key="red" icon={<DeploymentUnitOutlined />}>
           Deployments
-        </Item>
-        <Item key="orange" icon={<UsergroupAddOutlined />}>
+        </Menu.Item>
+        <Menu.Item key="orange" icon={<UsergroupAddOutlined />}>
           Team
-        </Item>
-        <Item key="yellow" icon={<FileDoneOutlined />}>
+        </Menu.Item>
+        <Menu.Item key="yellow" icon={<FileDoneOutlined />}>
           Billing
-        </Item>
-      </Section>
-      <Section>
-        <Item key="violet" icon={<LogoutOutlined />}>
+        </Menu.Item>
+      </Menu.Section>
+      <Menu.Section>
+        <Menu.Item key="violet" icon={<LogoutOutlined />}>
           Log out
-        </Item>
-      </Section>
+        </Menu.Item>
+      </Menu.Section>
     </Menu>
   );
 
@@ -139,14 +129,14 @@ export const GitActions = (props) => {
     <Layout>
       <Space gap="10x" placeContent="start start" alignItems="start">
         <Menu id="menu" {...props} header="Git Actions">
-          <Item key="red">Merge to master</Item>
-          <Item key="orange" mods={{ hovered: true }}>
+          <Menu.Item key="red">Merge to master</Menu.Item>
+          <Menu.Item key="orange" mods={{ hovered: true }}>
             Merge to master
-          </Item>
-          <Item key="yellow" postfix="Suff">
+          </Menu.Item>
+          <Menu.Item key="yellow" postfix="Suff">
             Merge to master
-          </Item>
-          <Item
+          </Menu.Item>
+          <Menu.Item
             key="green"
             postfix={
               <Flex gap="0.5x">
@@ -156,8 +146,8 @@ export const GitActions = (props) => {
             }
           >
             Merge to master
-          </Item>
-          <Item
+          </Menu.Item>
+          <Menu.Item
             key="blue"
             mods={{ pressed: true }}
             postfix={
@@ -168,32 +158,32 @@ export const GitActions = (props) => {
             }
           >
             Merge to master
-          </Item>
-          <Item key="purple" postfix={successIcon}>
+          </Menu.Item>
+          <Menu.Item key="purple" postfix={successIcon}>
             Merge to master
-          </Item>
-          <Item key="asdasd" postfix={<Flex gap="0.5x">{bulbIcon}</Flex>}>
+          </Menu.Item>
+          <Menu.Item key="asdasd" postfix={<Flex gap="0.5x">{bulbIcon}</Flex>}>
             Merge to master
-          </Item>
+          </Menu.Item>
         </Menu>
 
         <Menu id="menu-search" {...props}>
-          <Item key="red">
+          <Menu.Item key="red">
             <SearchInput
               margin="1.5x"
               isClearable
               placeholder="Search or select from list"
             />
-          </Item>
-          <Section title="Line Items">
-            <Item key="created">Created At</Item>
-            <Item key="name">Name</Item>
-            <Item key="description">Descriptions</Item>
-          </Section>
-          <Section title="Orders">
-            <Item key="status">Status</Item>
-            <Item key="completed">Completed At</Item>
-          </Section>
+          </Menu.Item>
+          <Menu.Section title="Line Items">
+            <Menu.Item key="created">Created At</Menu.Item>
+            <Menu.Item key="name">Name</Menu.Item>
+            <Menu.Item key="description">Descriptions</Menu.Item>
+          </Menu.Section>
+          <Menu.Section title="Orders">
+            <Menu.Item key="status">Status</Menu.Item>
+            <Menu.Item key="completed">Completed At</Menu.Item>
+          </Menu.Section>
         </Menu>
       </Space>
     </Layout>
@@ -205,18 +195,18 @@ export const PaymentDetails = (props) => {
     <Layout>
       <div style={{ padding: '20px', width: '340px' }}>
         <Menu id="menu" {...props} header="Payment Details">
-          <Item key="red" postfix="March, 2022">
+          <Menu.Item key="red" postfix="March, 2022">
             Invoice #16C7B3AE-000113-000113
-          </Item>
-          <Item key="orange" postfix="Jan, 2022">
+          </Menu.Item>
+          <Menu.Item key="orange" postfix="Jan, 2022">
             Invoice #16C7B3AE
-          </Item>
-          <Item key="purple" postfix="Feb, 2022">
+          </Menu.Item>
+          <Menu.Item key="purple" postfix="Feb, 2022">
             Invoice #16C7B3AE manual
-          </Item>
-          <Item key="yellow" postfix="July, 2022">
+          </Menu.Item>
+          <Menu.Item key="yellow" postfix="July, 2022">
             #16C7B3AE
-          </Item>
+          </Menu.Item>
         </Menu>
       </div>
     </Layout>
