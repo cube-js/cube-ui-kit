@@ -11,7 +11,7 @@ export const StyledMenu = styled({
     margin: '0',
     padding: '0',
     border: {
-      '': '#dark.04',
+      '': '#dark.05',
       section: '',
     },
     radius: {
@@ -32,7 +32,7 @@ export const StyledDivider = styled({
     flow: 'column',
     margin: '0',
     listStyle: 'none',
-    background: '#dark.04',
+    background: '#dark.05',
     height: '1px',
   },
 });
@@ -46,11 +46,11 @@ export const StyledMenuItem = styled({
     padding: '0',
     listStyle: 'none',
     fill: {
-      '': '',
-      disabled: '',
-      selected: '',
-      selectable: '',
-      hovered: '',
+      '': '#white',
+      disabled: '#white',
+      selected: '#light-02',
+      selectable: '#light-02',
+      hovered: '#light-02',
     },
   },
 });
@@ -59,7 +59,9 @@ export const StyledMenuSectionHeading = styled(Space, {
   tag: 'header',
   styles: {
     color: '#dark-03',
-    padding: '1.5x',
+    fontSize: '1.75x',
+    textTransform: 'uppercase',
+    padding: '1x 1.5x',
     placeContent: 'space-between',
     align: 'start',
   },
@@ -68,7 +70,8 @@ export const StyledMenuSectionHeading = styled(Space, {
 export const StyledMenuHeader = styled(Space, {
   tag: 'li',
   styles: {
-    fill: '#light',
+    fill: '#light-02',
+    color: '#dark-02',
     padding: '1.5x',
     borderBottom: '#dark.04',
     placeContent: 'space-between',
