@@ -1,6 +1,7 @@
 import { forwardRef, ReactNode } from 'react';
 import { Base } from '../Base';
 import { Label } from './Label';
+import { Flow } from '../layout/Flow';
 import { Paragraph } from '../content/Paragraph';
 import {
   LabelPosition,
@@ -11,7 +12,6 @@ import { Styles } from '../../styles/types';
 import { TooltipProvider } from '../overlays/Tooltip/TooltipProvider';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { wrapNodeIfPlain } from '../../utils/react';
-import { styled } from '../../styled';
 
 const FIELD_STYLES = {
   display: 'grid',
@@ -80,11 +80,6 @@ export type CubeFieldWrapperProps = {
   requiredMark?: boolean;
   tooltip?: ReactNode;
 };
-
-const InputArea = styled({
-  styles: { width: '100%' },
-  props: { 'data-element': 'InputArea' },
-});
 
 function FieldWrapper(props, ref) {
   const {
@@ -169,7 +164,7 @@ function FieldWrapper(props, ref) {
           {descriptionComponent}
         </div>
       ) : null}
-      <InputArea>
+      <div data-element="InputArea">
         {Component}
         {message && !isDisabled && (
           <Base
@@ -183,7 +178,7 @@ function FieldWrapper(props, ref) {
             {message}
           </Base>
         )}
-      </InputArea>
+      </div>
     </Base>
   );
 }
