@@ -27,19 +27,6 @@ export interface CubeRadioGroupProps
   groupStyles?: Styles;
 }
 
-const STYLES = {
-  display: 'grid',
-  gridColumns: {
-    '': '1fr',
-    'has-sider': 'max-content 1fr',
-  },
-  gap: {
-    '': '0',
-    'has-sider': '1x',
-  },
-  placeItems: 'baseline start',
-} as Styles;
-
 const GROUP_STYLES = {
   display: 'flex',
   placeItems: 'start',
@@ -86,7 +73,6 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
   let labelContextStyles = useContextStyles('RadioGroup_Label', props);
 
   styles = extractStyles(otherProps, OUTER_STYLES, {
-    ...STYLES,
     ...wrapperContextStyles,
     ...styles,
   });

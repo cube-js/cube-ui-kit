@@ -1,9 +1,6 @@
 import { Radio } from './Radio';
 import { baseProps } from '../../../stories/lists/baseProps';
-import {
-  IS_SELECTED_ARG,
-  TEXT_VALUE_ARG,
-} from '../../../stories/FormFieldArgs';
+import { TEXT_VALUE_ARG } from '../../../stories/FormFieldArgs';
 
 export default {
   title: 'UIKit/Forms/RadioGroup',
@@ -15,6 +12,17 @@ export default {
   },
   argTypes: {
     ...TEXT_VALUE_ARG,
+    orientation: {
+      defaultValue: undefined,
+      description: 'Orientation of the group',
+      control: {
+        type: 'radio',
+        options: [undefined, 'vertical', 'horizontal'],
+      },
+      table: {
+        type: { summary: 'boolean' },
+      },
+    },
   },
 };
 
