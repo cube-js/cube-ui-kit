@@ -10,7 +10,7 @@ import {
 import { Block } from '../../Block';
 import { Space } from '../../layout/Space';
 import { CubeFlexProps, Flex } from '../../layout/Flex';
-import { Button, CubeButtonProps } from '../../actions/Button/Button';
+import { Button, CubeButtonProps } from '../../actions';
 import { Styles } from '../../../styles/types';
 
 export interface CubeTabData {
@@ -210,8 +210,8 @@ export function LegacyTabs({
 
     setLeftFade(!!el.scrollLeft);
     setRightFade(
-      el.scrollWidth !== el.offsetWidth
-        && !!(el.scrollWidth - el.offsetWidth - el.scrollLeft),
+      el.scrollWidth !== el.offsetWidth &&
+        !!(el.scrollWidth - el.offsetWidth - el.scrollLeft),
     );
   }
 
@@ -371,8 +371,8 @@ LegacyTabs.TabPane = function TabPane({
   children,
   ...props
 }: LegacyCubeTabProps) {
-  const { addTab, removeTab, changeTab, currentTab }
-    = useContext(LegacyTabsContext);
+  const { addTab, removeTab, changeTab, currentTab } =
+    useContext(LegacyTabsContext);
 
   useEffect(() => {
     const tabData = {

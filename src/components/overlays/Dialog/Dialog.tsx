@@ -1,4 +1,4 @@
-import { Button } from '../../actions/Button/Button';
+import { Button } from '../../actions';
 import { useDOMRef } from '@react-spectrum/utils';
 import { DialogContext } from './context';
 import { DismissButton } from '@react-aria/overlays';

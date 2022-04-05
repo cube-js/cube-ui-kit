@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { Button, CubeButtonProps } from '../../actions/Button/Button';
+import { Button, CubeButtonProps } from '../../actions';
 import { FocusableRef } from '@react-types/shared';
 
 export const Link = forwardRef(

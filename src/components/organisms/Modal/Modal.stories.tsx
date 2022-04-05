@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Modal } from './Modal';
-import { Button } from '../../actions/Button/Button';
+import { Button } from '../../actions';
 
 export default {
   title: 'UIKit/Organisms/Modal',
