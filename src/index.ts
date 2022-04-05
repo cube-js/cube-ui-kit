@@ -8,8 +8,6 @@ import { CubeParagraphProps, Paragraph } from './components/content/Paragraph';
 import { TextArea } from './components/forms/TextArea/TextArea';
 import { FileInput } from './components/forms/FileInput/FileInput';
 
-import './styles/predefined';
-
 export { Item } from '@react-stately/collections';
 
 // generic components

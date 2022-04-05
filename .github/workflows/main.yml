@@ -26,6 +26,7 @@ jobs:
           token: ${{ secrets.NPM_TOKEN }}
           access: public
           check-version: true
+          package: ./dist/package.json
 
       - if: steps.publish.outputs.type != 'none'
         run: |
