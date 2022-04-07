@@ -1,12 +1,6 @@
-import { TextInput } from './components/forms/TextInput/TextInput';
-import { PasswordInput } from './components/forms/PasswordInput/PasswordInput';
-import { NumberInput } from './components/forms/NumberInput/NumberInput';
-
 import { CubeTextProps, Text } from './components/content/Text';
 import { CubeTitleProps, Title } from './components/content/Title';
 import { CubeParagraphProps, Paragraph } from './components/content/Paragraph';
-import { TextArea } from './components/forms/TextArea/TextArea';
-import { FileInput } from './components/forms/FileInput/FileInput';
 
 export { Item } from '@react-stately/collections';
 
