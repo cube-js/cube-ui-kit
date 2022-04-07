@@ -76,8 +76,8 @@ Clear.args = {
   label: 'Button',
 };
 
-export const Item = Template.bind({});
-Item.args = {
+export const Neutral = Template.bind({});
+Neutral.args = {
   label: 'Button',
   type: 'neutral',
 };
