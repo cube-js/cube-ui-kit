@@ -5,9 +5,7 @@
   "module": "dist/es/index.js",
   "main": "dist/cjs/index.js",
   "types": "dist/types/index.d.ts",
-  "sideEffects": [
-    "./**/styles/predefined.{js,ts}"
-  ],
+  "sideEffects": false,
   "exports": {
     ".": {
       "import": "./dist/es/index.js",

@@ -1,0 +1,61 @@
+name: 'pull-request'
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  pull-request:
+    runs-on: ubuntu-latest
+    env:
+      CI_JOB_NUMBER: 1
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set env
+        run: echo "SHORT_SHA=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_ENV
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn --frozen-lockfile --prefer-offline
+
+      - name: Increment canary
+        run: npm version 0.0.0-canary-$SHORT_SHA --no-git-tag-version
+
+      - name: Build project
+        run: yarn build
+
+      - name: Measure size
+        run: GH_TOKEN=${{ secrets.GITHUB_TOKEN }} node ./scripts/ci/measure-size.mjs
+
+      - name: Run the lint
+        run: yarn lint
+
+      - name: Run the tests
+        run: npm run test
+
+      - name: Publish canary
+        id: publish
+        uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          tag: pr_${{ github.event.number }}
+          access: public
+          check-version: true
+          package: ./dist/package.json
+
+      - name: PR Comment
+        if: steps.publish.outputs.type != 'none'
+        uses: actions/github-script@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.issues.createComment({
+              issue_number: ${{ github.event.number }},
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: ':package: Deployed canary version ${{ steps.publish.outputs.version }}.'
+            })
