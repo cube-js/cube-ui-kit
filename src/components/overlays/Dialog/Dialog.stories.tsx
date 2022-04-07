@@ -1,7 +1,6 @@
 import { ModalProvider } from '@react-aria/overlays';
 import {
   Button,
-  ButtonGroup,
   Content,
   Dialog,
   DialogTrigger,
@@ -57,13 +56,13 @@ const Template = ({ size, ...props }) => {
               <Paragraph>Test content</Paragraph>
             </Content>
             <Footer>
-              <ButtonGroup>
+              <Button.Group>
                 <Button onPress={close} type="primary">
                   Action
                 </Button>
                 <Button onPress={close}>Sec</Button>
                 <Button onPress={close}>Cancel</Button>
-              </ButtonGroup>
+              </Button.Group>
               <Text>Footer</Text>
             </Footer>
           </Dialog>

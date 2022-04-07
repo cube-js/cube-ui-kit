@@ -11,6 +11,13 @@ export default {
     },
   },
   argTypes: {
+    size: {
+      defaultValue: undefined,
+      control: {
+        type: 'radio',
+        options: [undefined, 'small'],
+      },
+    },
     type: {
       defaultValue: undefined,
       control: {
