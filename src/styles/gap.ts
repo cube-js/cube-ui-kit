@@ -27,34 +27,22 @@ export function gapStyle({ display, flow, gap }) {
 
   gap = values.join(' ');
 
-  if (isGrid) {
+  if (isGrid || isFlex) {
     return { gap };
   }
 
-  const isReverse = isFlex && flow.includes('reverse');
-  const gapDir
-    = gap && !isGrid
-      ? !isReverse
-        ? flow.includes('row')
-          ? 'right'
-          : 'bottom'
-        : flow.includes('row')
-        ? 'left'
-        : 'top'
-      : '';
-  const marginFirst = isReverse ? 'margin-left' : 'margin-right';
-  const marginSecond = isReverse ? 'margin-top' : 'margin-bottom';
+  const gapDir = flow.includes('row') ? 'right' : 'bottom';
 
   return isWrap
     ? [
         {
-          [marginFirst]: `calc(-1 * ${values[1] || values[0]})`,
-          [marginSecond]: `calc(-1 * ${values[0]})`,
+          'margin-right': `calc(-1 * ${values[1] || values[0]})`,
+          'margin-bottom': `calc(-1 * ${values[0]})`,
         },
         {
           $: '& > *',
-          [marginFirst]: values[1] || values[0],
-          [marginSecond]: values[0],
+          'margin-right': values[1] || values[0],
+          'margin-bottom': values[0],
         },
       ]
     : {
