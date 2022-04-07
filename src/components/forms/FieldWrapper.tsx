@@ -168,6 +168,7 @@ function FieldWrapper(props, ref) {
         {Component}
         {message && !isDisabled && (
           <Base
+            qa="Field_Message"
             mods={mods}
             styles={{
               ...MESSAGE_STYLES,
