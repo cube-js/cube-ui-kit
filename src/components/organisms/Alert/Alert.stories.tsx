@@ -24,3 +24,8 @@ export const Danger = Template.bind({});
 Danger.args = {
   type: 'danger',
 };
+
+export const Disabled = Template.bind({});
+Disabled.args = {
+  isDisabled: true,
+};

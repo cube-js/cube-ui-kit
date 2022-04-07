@@ -5,11 +5,11 @@ export default {
   component: Card,
   argTypes: {
     shadow: {
-      defaultValue: true,
+      defaultValue: undefined,
       control: {
         type: 'radio',
         options: [
-          false,
+          undefined,
           true,
           '0 1x 3x #shadow',
           '0 1x 3x #purple',
@@ -18,24 +18,24 @@ export default {
       },
     },
     radius: {
-      defaultValue: '1r',
+      defaultValue: undefined,
       control: {
         type: 'radio',
-        options: ['0', '1r', 'round'],
+        options: [undefined, '1r', 'round'],
       },
     },
     border: {
-      defaultValue: true,
+      defaultValue: undefined,
       control: {
         type: 'radio',
-        options: [false, true, '#purple'],
+        options: [undefined, true, '#purple'],
       },
     },
     padding: {
-      defaultValue: '2x',
+      defaultValue: undefined,
       control: {
         type: 'radio',
-        options: [false, '1x', '2x', '1x top'],
+        options: [undefined, '1x', '2x', '1x top'],
       },
     },
   },

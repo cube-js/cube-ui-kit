@@ -10,6 +10,30 @@ export default {
       exclude: baseProps,
     },
   },
+  argTypes: {
+    type: {
+      defaultValue: undefined,
+      control: {
+        type: 'radio',
+        options: [
+          undefined,
+          'default',
+          'primary',
+          'outline',
+          'clear',
+          'neutral',
+          'link',
+        ],
+      },
+    },
+    theme: {
+      defaultValue: undefined,
+      control: {
+        type: 'radio',
+        options: [undefined, 'danger'],
+      },
+    },
+  },
 };
 
 const Template = ({ icon, label, onClick, ...props }) => (

@@ -133,22 +133,6 @@ const DEFAULT_STYLES_BY_TYPE: { [key: string]: Styles } = {
       'pressed | hovered | [disabled]': '0 0 0 0 #purple.20',
     },
   },
-  danger: {
-    border: {
-      '': '#clear',
-      pressed: '#danger-text',
-    },
-    fill: {
-      '': '#danger',
-      pressed: '#danger',
-      hovered: '#danger-text',
-      '[disabled]': '#dark.04',
-    },
-    color: {
-      '': '#white',
-      '[disabled]': '#dark.30',
-    },
-  },
   neutral: {
     border: '0',
     fill: {

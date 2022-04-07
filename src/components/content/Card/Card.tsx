@@ -8,10 +8,11 @@ import { BaseProps, ContainerStyleProps } from '../../types';
 const DEFAULT_STYLES = {
   display: 'block',
   flow: 'column',
-  radius: '1x',
+  radius: '1r',
   fill: '#white',
   border: true,
-  padding: '3x',
+  padding: '1.5x',
+  preset: 't3',
 };
 
 export interface CubeCardProps extends BaseProps, ContainerStyleProps {}
