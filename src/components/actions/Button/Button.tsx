@@ -134,7 +134,7 @@ const DEFAULT_STYLES_BY_TYPE: { [key: string]: Styles } = {
     },
   },
   neutral: {
-    border: '0',
+    border: '#clear',
     fill: {
       '': '#dark.0',
       hovered: '#dark.04',
@@ -146,8 +146,6 @@ const DEFAULT_STYLES_BY_TYPE: { [key: string]: Styles } = {
       pressed: '#purple',
       '[disabled]': '#dark.30',
     },
-    padding: '(1x - 1px) (1.5x - 1px)',
-    height: 'min (2x + 1lh)',
   },
 };
 
