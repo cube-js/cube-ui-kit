@@ -21,6 +21,9 @@ const INLINE_MAP = {
 
 const BaseElement = styled.div(({ css }) => css);
 
+/**
+ * @deprecated consider using styled() instead
+ */
 const Base = function Base<K extends keyof HTMLElementTagNameMap>(
   allProps: AllBaseProps<K>,
   ref,
@@ -81,5 +84,8 @@ const Base = function Base<K extends keyof HTMLElementTagNameMap>(
   );
 };
 
+/**
+ * @deprecated consider using styled() instead
+ */
 const _Base = forwardRef(Base);
 export { _Base as Base };
