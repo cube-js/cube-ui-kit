@@ -78,6 +78,7 @@ const DEFAULT_STYLES_BY_TYPE: { [key: string]: Styles } = {
     },
     color: {
       '': '#purple',
+      pressed: '#purple-text',
       '[disabled]': '#dark.30',
     },
   },
@@ -93,7 +94,8 @@ const DEFAULT_STYLES_BY_TYPE: { [key: string]: Styles } = {
       '[disabled]': '#purple.0',
     },
     color: {
-      '': '#purple-text',
+      '': '#purple',
+      pressed: '#purple-text',
       '[disabled]': '#dark.30',
     },
   },
@@ -110,7 +112,8 @@ const DEFAULT_STYLES_BY_TYPE: { [key: string]: Styles } = {
       '[disabled]': '#purple.0',
     },
     color: {
-      '': '#purple-text',
+      '': '#purple',
+      pressed: '#purple-text',
       '[disabled]': '#dark.30',
     },
   },
@@ -156,6 +159,7 @@ const DANGER_STYLES_BY_TYPE: { [key: string]: Styles } = {
       pressed: '#danger-text',
     },
     fill: {
+      '': '#danger',
       hovered: '#danger-text',
       'pressed | !hovered': '#danger',
       '[disabled]': '#dark.04',
@@ -178,6 +182,7 @@ const DANGER_STYLES_BY_TYPE: { [key: string]: Styles } = {
     },
     color: {
       '': '#danger',
+      pressed: '#danger-text',
       '[disabled]': '#dark.30',
     },
   },
@@ -193,7 +198,8 @@ const DANGER_STYLES_BY_TYPE: { [key: string]: Styles } = {
       '[disabled]': '#danger.0',
     },
     color: {
-      '': '#danger-text',
+      '': '#danger',
+      pressed: '#danger-text',
       '[disabled]': '#dark.30',
     },
   },
@@ -210,7 +216,8 @@ const DANGER_STYLES_BY_TYPE: { [key: string]: Styles } = {
       '[disabled]': '#danger.0',
     },
     color: {
-      '': '#danger-text',
+      '': '#danger',
+      pressed: '#danger-text',
       '[disabled]': '#dark.30',
     },
   },
@@ -228,7 +235,7 @@ const DANGER_STYLES_BY_TYPE: { [key: string]: Styles } = {
     },
   },
   neutral: {
-    border: '0',
+    border: '#clear',
     fill: {
       '': '#dark.0',
       hovered: '#dark.04',
@@ -240,9 +247,6 @@ const DANGER_STYLES_BY_TYPE: { [key: string]: Styles } = {
       pressed: '#danger',
       '[disabled]': '#dark.30',
     },
-    textAlign: 'left',
-    padding: '(1x - 1px) (1.5x - 1px)',
-    height: 'min (2x + 1lh)',
   },
 };
 
