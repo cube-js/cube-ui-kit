@@ -10,6 +10,37 @@ export default {
       exclude: baseProps,
     },
   },
+  argTypes: {
+    size: {
+      defaultValue: undefined,
+      control: {
+        type: 'radio',
+        options: [undefined, 'small'],
+      },
+    },
+    type: {
+      defaultValue: undefined,
+      control: {
+        type: 'radio',
+        options: [
+          undefined,
+          'default',
+          'primary',
+          'outline',
+          'clear',
+          'neutral',
+          'link',
+        ],
+      },
+    },
+    theme: {
+      defaultValue: undefined,
+      control: {
+        type: 'radio',
+        options: [undefined, 'danger'],
+      },
+    },
+  },
 };
 
 const Template = ({ icon, label, onClick, ...props }) => (
@@ -45,8 +76,8 @@ Clear.args = {
   label: 'Button',
 };
 
-export const Item = Template.bind({});
-Item.args = {
+export const Neutral = Template.bind({});
+Neutral.args = {
   label: 'Button',
   type: 'neutral',
 };
