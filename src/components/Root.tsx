@@ -79,11 +79,11 @@ export const Root = (allProps: CubeRootProps) => {
             font={font}
             monospaceFont={monospaceFont}
           />
-          <PortalProvider value={ref}>
-            <AlertDialogApiProvider>
-              <ModalProvider>{children}</ModalProvider>
-            </AlertDialogApiProvider>
-          </PortalProvider>
+          <ModalProvider>
+            <PortalProvider value={ref}>
+              <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
+            </PortalProvider>
+          </ModalProvider>
         </Base>
       </StyleSheetManager>
     </Provider>
