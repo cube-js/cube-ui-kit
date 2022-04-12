@@ -15,7 +15,7 @@ export default {
       defaultValue: undefined,
       control: {
         type: 'radio',
-        options: [undefined, 'small'],
+        options: [undefined, 'small', 'large'],
       },
     },
     type: {

@@ -181,13 +181,11 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
     content: {
       styles: {
         flexGrow: 1,
-        padding: {
-          '': '@dialog-content-padding-v @dialog-padding-h 0 @dialog-padding-h',
-          ':last-child': '@dialog-content-padding-v @dialog-padding-h',
-        },
+        padding:
+          '@dialog-content-padding-v @dialog-padding-h 0 @dialog-padding-h',
         margin: {
-          '': '@dialog-content-padding-v bottom',
-          ':last-child': '0',
+          '': '0',
+          ':last-child': '@dialog-content-padding-v bottom',
         },
         gap: '@dialog-content-gap',
         height: {

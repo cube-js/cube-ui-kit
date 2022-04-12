@@ -34,8 +34,8 @@ export function provideStyles({
   children = children || icon ? children : label;
 
   return {
-    ...STYLES_BY_SIZE[size || 'default'],
     ...DEFAULT_STYLES,
+    ...STYLES_BY_SIZE[size || 'default'],
     ...(theme === 'danger' ? DANGER_STYLES_BY_TYPE : DEFAULT_STYLES_BY_TYPE)[
       type || 'default'
     ],
@@ -134,10 +134,11 @@ const DEFAULT_STYLES_BY_TYPE: { [key: string]: Styles } = {
     },
   },
   neutral: {
-    border: '0',
+    border: '#clear',
     fill: {
       '': '#dark.0',
       hovered: '#dark.04',
+      pressed: '#dark.05',
       '[disabled]': '#dark.04',
     },
     color: {
@@ -146,8 +147,6 @@ const DEFAULT_STYLES_BY_TYPE: { [key: string]: Styles } = {
       pressed: '#purple',
       '[disabled]': '#dark.30',
     },
-    padding: '(1x - 1px) (1.5x - 1px)',
-    height: 'min (2x + 1lh)',
   },
 };
 
@@ -234,6 +233,7 @@ const DANGER_STYLES_BY_TYPE: { [key: string]: Styles } = {
     fill: {
       '': '#dark.0',
       hovered: '#dark.04',
+      pressed: '#dark.05',
       '[disabled]': '#dark.04',
     },
     color: {
@@ -242,9 +242,6 @@ const DANGER_STYLES_BY_TYPE: { [key: string]: Styles } = {
       pressed: '#danger',
       '[disabled]': '#dark.30',
     },
-    textAlign: 'left',
-    padding: '(1x - 1px) (1.5x - 1px)',
-    height: 'min (2x + 1lh)',
   },
 };
 
@@ -254,6 +251,10 @@ const STYLES_BY_SIZE = {
   },
   default: {
     padding: '(1.25x - 1px) (2x - 1px)',
+  },
+  large: {
+    padding: '(1.5x - 1px) (2.5x - 1px)',
+    preset: 't2',
   },
 };
 
@@ -265,14 +266,13 @@ const DEFAULT_STYLES = {
   flow: 'column',
   radius: true,
   fontWeight: 500,
-  preset: 'default',
+  preset: 't3',
   textDecoration: 'none',
   transition: 'theme',
   whiteSpace: 'nowrap',
   '& .anticon.anticon-loading': {
     transition:
       'display .2s steps(1, start), margin .2s linear, opacity .2s linear',
-    // lineHeight: 0,
   },
 } as Styles;
 
