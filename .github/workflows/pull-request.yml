@@ -47,7 +47,6 @@ jobs:
       - name: Build & Deploy Storybook
         run: |
           yarn build-storybook --quiet
-          yarn sb extract
 
       - name: Publish storybook
         run: npx netlify-cli deploy --dir=./storybook-static
