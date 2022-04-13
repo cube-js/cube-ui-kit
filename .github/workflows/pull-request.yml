@@ -27,7 +27,9 @@ jobs:
           cache: 'yarn'
 
       - name: Install dependencies
-        run: yarn --frozen-lockfile --prefer-offline
+        run: |
+          yarn --frozen-lockfile --prefer-offline
+          yarn global add chromatic
 
       - name: Increment canary
         run: npm version 0.0.0-canary-$SHORT_SHA --no-git-tag-version
@@ -49,7 +51,8 @@ jobs:
           yarn build-storybook --quiet
 
       - name: Publish storybook
-        run: npx netlify-cli deploy --dir=./storybook-static
+        id: deploy-storybook
+        run: npx netlify-cli deploy
 
       - name: Publish canary
         id: publish
@@ -71,5 +74,5 @@ jobs:
               issue_number: ${{ github.event.number }},
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: ':package: Deployed canary version ${{ steps.publish.outputs.version }}.'
+              body: `:package: Deployed canary version ${{ steps.publish.outputs.version }}.`
             })

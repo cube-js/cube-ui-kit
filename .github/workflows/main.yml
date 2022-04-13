@@ -36,4 +36,4 @@ jobs:
         run: yarn build-storybook --quiet
 
       - name: Publish storybook
-        run: npx netlify-cli deploy --dir=./storybook-static -p
+        run: npx netlify-cli deploy -p
