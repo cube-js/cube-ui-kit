@@ -3,24 +3,35 @@ on:
   pull_request:
     branches:
       - main
+
+concurrency:
+  group: ci-pull-request=${{github.ref}}-1
+  cancel-in-progress: true
+
 jobs:
   pull-request:
     runs-on: ubuntu-latest
     env:
       CI_JOB_NUMBER: 1
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Set env
         run: echo "SHORT_SHA=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_ENV
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
           cache: 'yarn'
 
       - name: Install dependencies
-        run: yarn --frozen-lockfile --prefer-offline
+        run: |
+          yarn --frozen-lockfile --prefer-offline
+          yarn global add chromatic
 
       - name: Increment canary
         run: npm version 0.0.0-canary-$SHORT_SHA --no-git-tag-version
@@ -36,6 +47,17 @@ jobs:
 
       - name: Run the tests
         run: npm run test
+
+      - name: Build Storybook
+        run: yarn build-storybook --quiet
+
+      - name: Deploy To Netlify
+        run: npx netlify-cli deploy
+
+      - name: Publish to Chromatic
+        uses: chromaui/action@v1
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
 
       - name: Publish canary
         id: publish
@@ -57,5 +79,5 @@ jobs:
               issue_number: ${{ github.event.number }},
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: ':package: Deployed canary version ${{ steps.publish.outputs.version }}.'
+              body: `:package: Deployed canary version ${{ steps.publish.outputs.version }}.`
             })
