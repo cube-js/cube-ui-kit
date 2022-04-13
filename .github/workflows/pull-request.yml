@@ -3,6 +3,11 @@ on:
   pull_request:
     branches:
       - main
+
+concurrency:
+  group: ci-pull-request=${{github.ref}}-1
+  cancel-in-progress: true
+
 jobs:
   pull-request:
     runs-on: ubuntu-latest
@@ -16,7 +21,7 @@ jobs:
       - name: Set env
         run: echo "SHORT_SHA=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_ENV
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
           cache: 'yarn'
