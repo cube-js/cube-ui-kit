@@ -1,29 +1,13 @@
-import {
-  CaretDownOutlined,
-  DeploymentUnitOutlined,
-  FileDoneOutlined,
-  // BellOutlined,
-  LogoutOutlined,
-  UsergroupAddOutlined,
-  // AreaChartOutlined,
-  // FolderOpenOutlined,
-  // CloudOutlined,
-  // BranchesOutlined,
-  BulbOutlined,
-  CheckCircleFilled,
-} from '@ant-design/icons';
+import { useState } from 'react';
+import { BulbOutlined, CheckCircleFilled } from '@ant-design/icons';
 import {
   Menu,
   MenuTrigger,
   Flex,
   Button,
   Text,
-  Flow,
-  Block,
-  Avatar,
   Root,
   Space,
-  SearchInput,
 } from '../../../index';
 import { baseProps } from '../../../stories/lists/baseProps';
 
@@ -44,44 +28,33 @@ export default {
   },
 };
 
-export const Default = ({ ...props }) => {
-  const userHeader = (
-    <>
-      <Flow>
-        <div>
-          <Text color="dark" weight={600}>
-            Artem Keydunov
-          </Text>
-        </div>
-        <Block style={{ lineHeight: '14px' }}>
-          <Text.Minor preset="t4m" style={{ lineHeight: '14px' }}>
-            admin
-          </Text.Minor>
-        </Block>
-      </Flow>
-      <Avatar data-qa="TopBarInnerAvatar" size="5x">
-        <Text transform="uppercase">AK</Text>
-      </Avatar>
-    </>
+const MenuTemplate = (props) => {
+  return (
+    <Layout>
+      <div style={{ padding: '20px', width: '340px' }}>
+        <Menu id="menu" {...props}>
+          <Menu.Item key="1">Item 1</Menu.Item>
+          <Menu.Item key="2">Item 2</Menu.Item>
+          <Menu.Item key="3">Item 3</Menu.Item>
+          <Menu.Item key="4">Item 4</Menu.Item>
+        </Menu>
+      </div>
+    </Layout>
   );
+};
+
+export const Default = ({ ...props }) => {
   const menu = (
-    <Menu id="menu" {...props} header={userHeader}>
-      <Menu.Section>
-        <Menu.Item key="red" icon={<DeploymentUnitOutlined />}>
-          Deployments
-        </Menu.Item>
-        <Menu.Item key="orange" icon={<UsergroupAddOutlined />}>
-          Team
-        </Menu.Item>
-        <Menu.Item key="yellow" icon={<FileDoneOutlined />}>
-          Billing
-        </Menu.Item>
-      </Menu.Section>
-      <Menu.Section>
-        <Menu.Item key="violet" icon={<LogoutOutlined />}>
-          Log out
-        </Menu.Item>
-      </Menu.Section>
+    <Menu id="menu" {...props} width="320px">
+      <Menu.Item key="red" postfix="Ctr+C">
+        Copy
+      </Menu.Item>
+      <Menu.Item key="orange" postfix="Ctr+V">
+        Paste
+      </Menu.Item>
+      <Menu.Item key="yellow" postfix="Ctr+X">
+        Cut
+      </Menu.Item>
     </Menu>
   );
 
@@ -91,19 +64,30 @@ export const Default = ({ ...props }) => {
         {menu}
 
         <MenuTrigger>
-          <Button type="neutral" padding={0} border={0}>
-            <Space gap="1x">
-              <Avatar size="4x">
-                <Text transform="uppercase">AK</Text>
-              </Avatar>
-              <CaretDownOutlined
-                style={{ color: 'rgba(var(--dark-color-rgb), .75)' }}
-              />
-            </Space>
-          </Button>
+          <Button>Open Context Menu</Button>
           {menu}
         </MenuTrigger>
       </Space>
+    </Layout>
+  );
+};
+
+export const Sections = (props) => {
+  return (
+    <Layout>
+      <div style={{ padding: '20px', width: '340px' }}>
+        <Menu id="menu-search" {...props}>
+          <Menu.Section title="Line Items">
+            <Menu.Item key="created">Created At</Menu.Item>
+            <Menu.Item key="name">Name</Menu.Item>
+            <Menu.Item key="description">Descriptions</Menu.Item>
+          </Menu.Section>
+          <Menu.Section title="Orders">
+            <Menu.Item key="status">Status</Menu.Item>
+            <Menu.Item key="completed">Completed At</Menu.Item>
+          </Menu.Section>
+        </Menu>
+      </div>
     </Layout>
   );
 };
@@ -120,7 +104,7 @@ export const GitActions = (props) => {
     </Text>
   );
   const stuffText = (
-    <Text nowrap color="#dark-03">
+    <Text nowrap color="inherit">
       Suff
     </Text>
   );
@@ -131,10 +115,10 @@ export const GitActions = (props) => {
         <Menu id="menu" {...props} header="Git Actions">
           <Menu.Item key="red">Merge to master</Menu.Item>
           <Menu.Item key="orange" mods={{ hovered: true }}>
-            Merge to master
+            Merge to master (hovered)
           </Menu.Item>
-          <Menu.Item key="yellow" postfix="Suff">
-            Merge to master
+          <Menu.Item key="yellow" postfix="Suff" mods={{ disabled: true }}>
+            Merge to master (disabled)
           </Menu.Item>
           <Menu.Item
             key="green"
@@ -157,7 +141,7 @@ export const GitActions = (props) => {
               </Flex>
             }
           >
-            Merge to master
+            Merge to master (pressed)
           </Menu.Item>
           <Menu.Item key="purple" postfix={successIcon}>
             Merge to master
@@ -166,28 +150,37 @@ export const GitActions = (props) => {
             Merge to master
           </Menu.Item>
         </Menu>
-
-        <Menu id="menu-search" {...props}>
-          <Menu.Item key="red">
-            <SearchInput
-              margin="1.5x"
-              isClearable
-              placeholder="Search or select from list"
-            />
-          </Menu.Item>
-          <Menu.Section title="Line Items">
-            <Menu.Item key="created">Created At</Menu.Item>
-            <Menu.Item key="name">Name</Menu.Item>
-            <Menu.Item key="description">Descriptions</Menu.Item>
-          </Menu.Section>
-          <Menu.Section title="Orders">
-            <Menu.Item key="status">Status</Menu.Item>
-            <Menu.Item key="completed">Completed At</Menu.Item>
-          </Menu.Section>
-        </Menu>
       </Space>
     </Layout>
   );
+};
+
+export const MenuSelectableSingle = (props) => {
+  const [selectedKeys, setSelectedKeys] = useState(['1']);
+  const onSelectionChange = (key) => {
+    setSelectedKeys(key);
+  };
+
+  return MenuTemplate({
+    ...props,
+    selectionMode: 'single',
+    selectedKeys,
+    onSelectionChange,
+  });
+};
+
+export const MenuSelectableMultiple = (props) => {
+  const [selectedKeys, setSelectedKeys] = useState(['1', '2']);
+  const onSelectionChange = (key) => {
+    setSelectedKeys(key);
+  };
+
+  return MenuTemplate({
+    ...props,
+    selectionMode: 'multiple',
+    selectedKeys,
+    onSelectionChange,
+  });
 };
 
 export const PaymentDetails = (props) => {

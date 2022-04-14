@@ -7,7 +7,7 @@ import { useMenuItem } from '@react-aria/menu';
 import { mergeProps, ClearSlots, SlotProvider } from '../../../utils/react';
 import { useMenuContext } from './context';
 import { StyledMenuItem } from './styled';
-import { ActionButton } from './ActionButton';
+import { MenuButton } from './MenuButton';
 
 interface MenuItemProps<T> {
   item: Node<T>;
@@ -46,7 +46,14 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
 
   let contents =
     typeof rendered === 'string' ? (
-      <ActionButton {...itemProps}>{rendered}</ActionButton>
+      <MenuButton
+        {...itemProps}
+        isSelectable={isSelectable}
+        isSelected={isSelected}
+        isDisabled={isDisabled}
+      >
+        {rendered}
+      </MenuButton>
     ) : (
       rendered
     );

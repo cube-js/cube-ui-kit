@@ -3,13 +3,7 @@ import { MenuItem } from './MenuItem';
 import { Node } from '@react-types/shared';
 import { TreeState } from '@react-stately/tree';
 import { useMenuSection } from '@react-aria/menu';
-import { useSeparator } from '@react-aria/separator';
-import {
-  StyledDivider,
-  StyledMenu,
-  StyledMenuItem,
-  StyledMenuSectionHeading,
-} from './styled';
+import { StyledMenu, StyledMenuItem, StyledMenuSectionHeading } from './styled';
 
 export interface CubeMenuSectionProps<T> {
   item: Node<T>;
@@ -25,15 +19,10 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
     'aria-label': item['aria-label'],
   });
 
-  let { separatorProps } = useSeparator({
-    elementType: 'li',
-  });
-
   const isFirstKey = item.key === state.collection.getFirstKey();
 
   return (
     <Fragment>
-      {!isFirstKey && <StyledDivider {...separatorProps} />}
       <StyledMenuItem {...itemProps}>
         {item.rendered && (
           <StyledMenuSectionHeading

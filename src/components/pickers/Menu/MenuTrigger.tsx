@@ -91,8 +91,6 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     },
   } as MenuContextValue;
 
-  console.log('MenuTrigger', { menuTrigger, menu });
-
   const contents = (
     <>
       <DismissButton onDismiss={state.close} />

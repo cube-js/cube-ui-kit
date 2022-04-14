@@ -4,22 +4,28 @@ import {
   Item as BaseItem,
   Section as BaseSection,
 } from '@react-stately/collections';
-import { AriaMenuProps } from '@react-types/menu';
 import { useMenu } from '@react-aria/menu';
-import { useTreeState } from '@react-stately/tree';
-import { useDOMRef } from '@react-spectrum/utils';
 import { mergeProps, useSyncRef } from '@react-aria/utils';
-import { MenuSection } from './MenuSection';
-import { MenuItem } from './MenuItem';
-import { useMenuContext } from './context';
-import { StyledMenu, StyledMenuHeader } from './styled';
-import { extractStyles } from '../../../utils/styles';
-import { useContextStyles } from '../../../providers/StylesProvider';
+import { useDOMRef } from '@react-spectrum/utils';
+import { useTreeState } from '@react-stately/tree';
+import type { AriaMenuProps } from '@react-types/menu';
 
-export type CubeMenuProps<T> = {
+import { ContainerStyleProps } from '../../types';
+import { useContextStyles } from '../../../providers/StylesProvider';
+import { CONTAINER_STYLES } from '../../../styles/list';
+import { extractStyles } from '../../../utils/styles';
+import { StyledMenu, StyledMenuHeader } from './styled';
+import { MenuItem } from './MenuItem';
+import { MenuSection } from './MenuSection';
+import { MenuButtonProps } from './MenuButton';
+import { useMenuContext } from './context';
+
+export interface CubeMenuProps<T>
+  extends ContainerStyleProps,
+    AriaMenuProps<T> {
   header?: ReactNode;
   footer?: ReactNode;
-} & AriaMenuProps<T>;
+}
 
 function Menu<T extends object>(
   props: CubeMenuProps<T>,
@@ -38,7 +44,7 @@ function Menu<T extends object>(
   };
   const state = useTreeState(completeProps);
   const { menuProps } = useMenu(completeProps, state, domRef);
-  const styleProps = extractStyles(completeProps);
+  const styleProps = extractStyles(completeProps, CONTAINER_STYLES);
   const menuStyles = useContextStyles('Menu', props) || {};
 
   useSyncRef(contextProps, domRef);
@@ -86,8 +92,10 @@ const _Menu = React.forwardRef(Menu) as <T>(
   props: CubeMenuProps<T> & { ref?: DOMRef<HTMLUListElement> },
 ) => ReactElement;
 
+type PartialMenuButton = Partial<MenuButtonProps>;
+
 type ItemComponent = <T>(
-  props: ItemProps<T> & { prefix?: ReactNode; icon?: ReactNode },
+  props: ItemProps<T> & PartialMenuButton,
 ) => JSX.Element;
 type SectionComponent = <T>(props: SectionProps<T>) => JSX.Element;
 
@@ -109,5 +117,7 @@ const __Menu = Object.assign(_Menu as __MenuComponent, {
   Section,
   displayName: 'Menu',
 });
+
+__Menu.displayName = 'Menu';
 
 export { __Menu as Menu };

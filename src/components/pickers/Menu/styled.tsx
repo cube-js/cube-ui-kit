@@ -9,7 +9,10 @@ export const StyledMenu = styled({
     flow: 'column',
     fill: '#white',
     margin: '0',
-    padding: '0',
+    padding: {
+      '': '0.5x',
+      section: '0',
+    },
     border: {
       '': '#dark.05',
       section: '',
@@ -30,40 +33,10 @@ export const StyledDivider = styled({
   styles: {
     display: 'flex',
     flow: 'column',
-    margin: '0',
+    margin: '0 -0.5x',
     listStyle: 'none',
     background: '#dark.05',
     height: '1px',
-  },
-});
-
-export const StyledMenuItem = styled({
-  tag: 'li',
-  styles: {
-    display: 'flex',
-    flow: 'column',
-    margin: '0',
-    padding: '0',
-    listStyle: 'none',
-    fill: {
-      '': '#white',
-      disabled: '#white',
-      selected: '#light-02',
-      selectable: '#light-02',
-      hovered: '#light-02',
-    },
-  },
-});
-
-export const StyledMenuSectionHeading = styled(Space, {
-  tag: 'header',
-  styles: {
-    color: '#dark-03',
-    fontSize: '1.75x',
-    textTransform: 'uppercase',
-    padding: '1x 1.5x',
-    placeContent: 'space-between',
-    align: 'start',
   },
 });
 
@@ -72,11 +45,40 @@ export const StyledMenuHeader = styled(Space, {
   styles: {
     fill: '#light-02',
     color: '#dark-02',
-    padding: '1.5x',
+    padding: '0.75x 2x',
+    margin: '-0.5x -0.5x (0.5x - 1px) -0.5x',
     borderBottom: '#dark.04',
     placeContent: 'space-between',
     align: 'start',
     fontWeight: '500',
     radius: '1x 1x 0 0',
+  },
+});
+
+export const StyledMenuItem = styled({
+  tag: 'li',
+  styles: {
+    display: 'flex',
+    flow: 'column',
+    margin: '1px 0',
+    padding: '0',
+    listStyle: 'none',
+    fill: '#white',
+    color: {
+      '': 'inherit',
+      disabled: '#dark-04',
+    },
+  },
+});
+
+export const StyledMenuSectionHeading = styled(Space, {
+  tag: 'header',
+  styles: {
+    color: '#dark-04',
+    fontSize: '1.75x',
+    textTransform: 'uppercase',
+    padding: '(0.75x - 1px) (1.5x - 1px)',
+    placeContent: 'space-between',
+    align: 'start',
   },
 });
