@@ -14,12 +14,11 @@ export const StyledMenu = styled({
       section: '0',
     },
     border: {
-      '': '#dark.05',
+      '': '#dark-05',
       section: '',
     },
     radius: {
       '': '1r',
-      header: '1x 1x 1r 1r',
     },
     boxShadow: {
       '': '',
@@ -35,7 +34,7 @@ export const StyledDivider = styled({
     flow: 'column',
     margin: '0 -0.5x',
     listStyle: 'none',
-    background: '#dark.05',
+    fill: '#dark.05',
     height: '1px',
   },
 });
@@ -45,13 +44,13 @@ export const StyledMenuHeader = styled(Space, {
   styles: {
     fill: '#light-02',
     color: '#dark-02',
+    preset: 'h5s',
     padding: '0.75x 2x',
     margin: '-0.5x -0.5x (0.5x - 1px) -0.5x',
-    borderBottom: '#dark.04',
+    border: '#dark-05 bottom',
     placeContent: 'space-between',
     align: 'start',
-    fontWeight: '500',
-    radius: '1x 1x 0 0',
+    radius: '1r 1r 0 0',
   },
 });
 
@@ -75,8 +74,7 @@ export const StyledMenuSectionHeading = styled(Space, {
   tag: 'header',
   styles: {
     color: '#dark-04',
-    fontSize: '1.75x',
-    textTransform: 'uppercase',
+    preset: 'c1',
     padding: '(0.75x - 1px) (1.5x - 1px)',
     placeContent: 'space-between',
     align: 'start',

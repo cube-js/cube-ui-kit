@@ -1,5 +1,5 @@
 import React, { ReactNode, ReactElement } from 'react';
-import { DOMRef, ItemProps, SectionProps } from '@react-types/shared';
+import { DOMRef, ItemProps } from '@react-types/shared';
 import {
   Item as BaseItem,
   Section as BaseSection,
@@ -12,6 +12,7 @@ import type { AriaMenuProps } from '@react-types/menu';
 
 import { ContainerStyleProps } from '../../types';
 import { useContextStyles } from '../../../providers/StylesProvider';
+import { Styles } from '../../../styles/types';
 import { CONTAINER_STYLES } from '../../../styles/list';
 import { extractStyles } from '../../../utils/styles';
 import { StyledMenu, StyledMenuHeader } from './styled';
@@ -25,6 +26,7 @@ export interface CubeMenuProps<T>
     AriaMenuProps<T> {
   header?: ReactNode;
   footer?: ReactNode;
+  styles?: Styles;
 }
 
 function Menu<T extends object>(
@@ -33,7 +35,7 @@ function Menu<T extends object>(
 ) {
   const domRef = useDOMRef(ref);
   const contextProps = useMenuContext();
-  const { header, footer } = props;
+  const { header, footer, styles } = props;
   const completeProps = {
     ...mergeProps(contextProps, props, {
       mods: {
@@ -44,14 +46,21 @@ function Menu<T extends object>(
   };
   const state = useTreeState(completeProps);
   const { menuProps } = useMenu(completeProps, state, domRef);
-  const styleProps = extractStyles(completeProps, CONTAINER_STYLES);
+  const containerStyles = extractStyles(completeProps, CONTAINER_STYLES);
   const menuStyles = useContextStyles('Menu', props) || {};
+
+  const completeStyles = {
+    ...menuStyles,
+    ...containerStyles,
+    ...styles,
+  };
 
   useSyncRef(contextProps, domRef);
 
   return (
     <StyledMenu
-      {...mergeProps(menuProps, menuStyles, completeProps, styleProps)}
+      {...mergeProps(menuProps, completeProps)}
+      styles={completeStyles}
       ref={domRef}
     >
       {header && <StyledMenuHeader>{header}</StyledMenuHeader>}
@@ -97,7 +106,8 @@ type PartialMenuButton = Partial<MenuButtonProps>;
 type ItemComponent = <T>(
   props: ItemProps<T> & PartialMenuButton,
 ) => JSX.Element;
-type SectionComponent = <T>(props: SectionProps<T>) => JSX.Element;
+
+type SectionComponent = typeof BaseSection;
 
 const Item = Object.assign(BaseItem, {
   displayName: 'Item',

@@ -7,7 +7,7 @@ import {
 import { DismissButton, useOverlayPosition } from '@react-aria/overlays';
 import { DOMRef, DOMRefValue } from '@react-types/shared';
 import { FocusScope } from '@react-aria/focus';
-import { Placement } from '@react-types/overlays';
+import { Placement, PositionProps } from '@react-types/overlays';
 import { PressResponder } from '@react-aria/interactions';
 import { MenuTriggerProps as BaseTriggerProps } from '@react-types/menu';
 import { useMenuTrigger } from '@react-aria/menu';
@@ -16,11 +16,12 @@ import { Popover, Tray } from '../../overlays/Modal';
 import { mergeProps, SlotProvider } from '../../../utils/react';
 import { MenuContext, MenuContextValue } from './context';
 
-export type CubeMenuTriggerProps = BaseTriggerProps & {
-  trigger?: string;
-  isDisabled?: boolean;
-  children: ReactNode[];
-};
+export type CubeMenuTriggerProps = BaseTriggerProps &
+  PositionProps & {
+    trigger?: string;
+    isDisabled?: boolean;
+    children: ReactNode[];
+  };
 
 function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
   const menuPopoverRef = useRef<HTMLDivElement>(null);
@@ -72,6 +73,9 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     shouldFlip: shouldFlip,
     isOpen: state.isOpen && !isMobile,
     onClose: state.close,
+    containerPadding: props.containerPadding,
+    offset: props.offset || 8,
+    crossOffset: props.crossOffset,
   });
 
   const menuContext = {

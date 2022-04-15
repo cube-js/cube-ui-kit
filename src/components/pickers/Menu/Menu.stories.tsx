@@ -1,5 +1,9 @@
 import { useState } from 'react';
-import { BulbOutlined, CheckCircleFilled } from '@ant-design/icons';
+import {
+  BulbOutlined,
+  CheckCircleFilled,
+  MoreOutlined,
+} from '@ant-design/icons';
 import {
   Menu,
   MenuTrigger,
@@ -10,10 +14,7 @@ import {
   Space,
 } from '../../../index';
 import { baseProps } from '../../../stories/lists/baseProps';
-
-const Layout = ({ children }) => <Root>{children}</Root>;
-
-Layout.displayName = 'Root';
+import { action } from '@storybook/addon-actions';
 
 export default {
   title: 'UIKit/Pickers/Menu',
@@ -30,51 +31,66 @@ export default {
 
 const MenuTemplate = (props) => {
   return (
-    <Layout>
-      <div style={{ padding: '20px', width: '340px' }}>
-        <Menu id="menu" {...props}>
-          <Menu.Item key="1">Item 1</Menu.Item>
-          <Menu.Item key="2">Item 2</Menu.Item>
-          <Menu.Item key="3">Item 3</Menu.Item>
-          <Menu.Item key="4">Item 4</Menu.Item>
-        </Menu>
-      </div>
-    </Layout>
+    <Root>
+      <Menu id="menu" {...props} width="340px">
+        <Menu.Item key="1" onPress={action('Item 1')}>
+          Item 1
+        </Menu.Item>
+        <Menu.Item key="2" onPress={action('Item 2')}>
+          Item 2
+        </Menu.Item>
+        <Menu.Item key="3" onPress={action('Item 3')}>
+          Item 3
+        </Menu.Item>
+        <Menu.Item key="4" onPress={action('Item 4')}>
+          Item 4
+        </Menu.Item>
+      </Menu>
+    </Root>
   );
 };
 
 export const Default = ({ ...props }) => {
   const menu = (
-    <Menu id="menu" {...props} width="320px">
-      <Menu.Item key="red" postfix="Ctr+C">
+    <Menu id="menu" {...props} width="220px">
+      <Menu.Item key="red" postfix="Ctr+C" onPress={action('Ctr+C')}>
         Copy
       </Menu.Item>
-      <Menu.Item key="orange" postfix="Ctr+V">
+      <Menu.Item key="orange" postfix="Ctr+V" onPress={action('Ctr+C')}>
         Paste
       </Menu.Item>
-      <Menu.Item key="yellow" postfix="Ctr+X">
+      <Menu.Item key="yellow" postfix="Ctr+X" onPress={action('Ctr+C')}>
         Cut
       </Menu.Item>
     </Menu>
   );
 
   return (
-    <Layout>
-      <Space gap="10x" placeContent="start start" alignItems="start">
+    <Root>
+      <Space
+        gap="10x"
+        placeContent="start start"
+        alignItems="start"
+        height="400px"
+      >
         {menu}
 
         <MenuTrigger>
-          <Button>Open Context Menu</Button>
+          <Button
+            size="small"
+            icon={<MoreOutlined />}
+            aria-label="Open Context Menu"
+          />
           {menu}
         </MenuTrigger>
       </Space>
-    </Layout>
+    </Root>
   );
 };
 
 export const Sections = (props) => {
   return (
-    <Layout>
+    <Root>
       <div style={{ padding: '20px', width: '340px' }}>
         <Menu id="menu-search" {...props}>
           <Menu.Section title="Line Items">
@@ -88,7 +104,7 @@ export const Sections = (props) => {
           </Menu.Section>
         </Menu>
       </div>
-    </Layout>
+    </Root>
   );
 };
 
@@ -110,7 +126,7 @@ export const GitActions = (props) => {
   );
 
   return (
-    <Layout>
+    <Root>
       <Space gap="10x" placeContent="start start" alignItems="start">
         <Menu id="menu" {...props} header="Git Actions">
           <Menu.Item key="red">Merge to master</Menu.Item>
@@ -151,7 +167,7 @@ export const GitActions = (props) => {
           </Menu.Item>
         </Menu>
       </Space>
-    </Layout>
+    </Root>
   );
 };
 
@@ -185,7 +201,7 @@ export const MenuSelectableMultiple = (props) => {
 
 export const PaymentDetails = (props) => {
   return (
-    <Layout>
+    <Root>
       <div style={{ padding: '20px', width: '340px' }}>
         <Menu id="menu" {...props} header="Payment Details">
           <Menu.Item key="red" postfix="March, 2022">
@@ -202,6 +218,6 @@ export const PaymentDetails = (props) => {
           </Menu.Item>
         </Menu>
       </div>
-    </Layout>
+    </Root>
   );
 };

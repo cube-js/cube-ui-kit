@@ -13,15 +13,13 @@ const ACTION_BUTTON: Styles = {
   fill: {
     '': '#clear',
     hovered: '#dark.04',
-    pressed: '#purple.1',
-    selected: '#purple.1',
+    'pressed | selected': '#purple.1',
     disabled: '#clear',
   },
   color: {
     '': '#dark-02',
     hovered: '#dark-02',
-    pressed: '#purple-text',
-    selected: '#purple-text',
+    'pressed | selected': '#purple-text',
     disabled: '#dark-04',
   },
   cursor: {
@@ -41,8 +39,7 @@ const ACTION_BUTTON: Styles = {
     color: {
       '': '#dark-03',
       hovered: '#dark-03',
-      pressed: '#purple-text',
-      selected: '#purple-text',
+      'pressed | selected': '#purple-text',
       disabled: '#dark-04',
     },
   },
