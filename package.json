@@ -173,7 +173,7 @@
       "path": "./dist/__measure.js",
       "running": false,
       "webpack": false,
-      "limit": "180 kB"
+      "limit": "186 kB"
     },
     {
       "name": "Tree shaking (just a Button)",
