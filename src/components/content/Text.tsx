@@ -11,6 +11,7 @@ import {
 } from '../types';
 import { Styles } from '../../styles/types';
 import { styled } from '../../styled';
+import { useSlotProps } from '../../utils/react';
 
 const STYLE_LIST = [...BASE_STYLES, ...TEXT_STYLES, ...COLOR_STYLES] as const;
 
@@ -77,8 +78,10 @@ const RawText = styled({
 });
 
 const _Text = forwardRef((allProps: CubeTextProps, ref) => {
-  let { as, qa, block, styleName, ellipsis, css, nowrap, ...props } = allProps;
+  allProps = useSlotProps(allProps, 'text');
 
+  const { as, qa, block, styleName, ellipsis, css, nowrap, ...props } =
+    allProps;
   const styles = extractStyles(props, STYLE_LIST, {}, TEXT_PROP_MAP);
 
   return (
