@@ -22,7 +22,7 @@ export const StyledMenu = styled({
     },
     boxShadow: {
       '': '',
-      popover: '0px 5px 15px rgba(var(--dark-color-rgb), 0.05)',
+      popover: '0px 5px 15px #dark.05',
     },
   },
 });
@@ -46,7 +46,7 @@ export const StyledMenuHeader = styled(Space, {
     color: '#dark-02',
     preset: 'h5s',
     padding: '0.75x 2x',
-    margin: '-0.5x -0.5x (0.5x - 1px) -0.5x',
+    margin: '-0.5x -0.5x (0.5x - 1bw) -0.5x',
     border: '#dark-05 bottom',
     placeContent: 'space-between',
     align: 'start',
@@ -75,7 +75,7 @@ export const StyledMenuSectionHeading = styled(Space, {
   styles: {
     color: '#dark-04',
     preset: 'c1',
-    padding: '(0.75x - 1px) (1.5x - 1px)',
+    padding: '(0.75x - 1bw) (1.5x - 1bw)',
     placeContent: 'space-between',
     align: 'start',
   },
