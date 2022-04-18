@@ -24,8 +24,15 @@ export interface CubeResultProps extends BaseProps, ContainerStyleProps {
    * @default 'info'
    */
   status?: CubeResultStatus;
-  /** The subTitle */
+  /**
+   * The subTitle
+   * @deprecated The subTitle prop is deprecated and will be removed in next major release. consider using subtitle instead
+   */
   subTitle?: ReactNode;
+  /**
+   * Subtitle of the Result component
+   */
+  subtitle?: ReactNode;
   /** The title */
   title?: ReactNode;
 }
@@ -118,7 +125,10 @@ const statusIconMap: StatusIconMap = {
 };
 
 function Result(props: CubeResultProps, ref) {
-  const { children, icon, status, subTitle, title, ...otherProps } = props;
+  let { children, icon, status, subTitle, subtitle, title, ...otherProps } =
+    props;
+
+  subtitle = subtitle ?? subTitle;
 
   if (icon && status) {
     console.warn(
@@ -131,8 +141,8 @@ function Result(props: CubeResultProps, ref) {
       return icon;
     }
 
-    const { color, component: Component }
-      = status && statusIconMap.hasOwnProperty(status)
+    const { color, component: Component } =
+      status && statusIconMap.hasOwnProperty(status)
         ? statusIconMap[status]
         : statusIconMap.info;
 
@@ -152,16 +162,16 @@ function Result(props: CubeResultProps, ref) {
       styles={styles}
     >
       {iconNode}
-      {(title || subTitle) && (
+      {(title || subtitle) && (
         <div data-element="Title">
           {wrapNodeIfPlain(title, () => (
             <Title level={2} preset="h4">
               {title}
             </Title>
           ))}
-          {wrapNodeIfPlain(subTitle, () => (
+          {wrapNodeIfPlain(subtitle, () => (
             <Title level={3} preset="h5m">
-              {subTitle}
+              {subtitle}
             </Title>
           ))}
         </div>
