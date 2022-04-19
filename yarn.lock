@@ -3792,6 +3792,14 @@
     "@react-types/overlays" "^3.5.1"
     "@react-types/shared" "^3.8.0"
 
+"@react-types/tooltip@^3.1.5":
+  version "3.1.5"
+  resolved "https://registry.yarnpkg.com/@react-types/tooltip/-/tooltip-3.1.5.tgz#f0fd2c15bca9012c66fa28f1357fe715f1ed8f2e"
+  integrity sha512-bDFl4drdlAcm5D0WAK66YN7Dx97Nfgs3mBdprOASGWQmiPMDobCiUcycA7p/h9Akzua1SR5OQyYdbU0qJBO54A==
+  dependencies:
+    "@react-types/overlays" "^3.5.4"
+    "@react-types/shared" "^3.11.2"
+
 "@rollup/plugin-babel@^5.2.0":
   version "5.3.0"
   resolved "https://registry.yarnpkg.com/@rollup/plugin-babel/-/plugin-babel-5.3.0.tgz#9cb1c5146ddd6a4968ad96f209c50c62f92f9879"

@@ -97,7 +97,7 @@
     "@react-types/shared": "^3.10.1",
     "@react-types/switch": "^3.1.2",
     "@react-types/textfield": "^3.3.0",
-    "@react-types/tooltip": "^3.1.2",
+    "@react-types/tooltip": "^3.1.5",
     "clsx": "^1.1.1",
     "email-validator": "^2.0.4",
     "prismjs": "^1.25.0",
