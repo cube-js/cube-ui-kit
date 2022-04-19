@@ -3652,6 +3652,14 @@
     "@react-types/overlays" "^3.5.1"
     "@react-types/shared" "^3.8.0"
 
+"@react-types/dialog@^3.3.4":
+  version "3.3.4"
+  resolved "https://registry.yarnpkg.com/@react-types/dialog/-/dialog-3.3.4.tgz#bde08cc8f37c2c8bdfa17630e19c47f311a6c649"
+  integrity sha512-BSJuGdoblrf4N47TfH5U7R6HbBzG2qNbq0PA2Wwu+OD/oczQXFgrsYfM5AhPReEoVtr+ISstGVk+SpMnZbl/MA==
+  dependencies:
+    "@react-types/overlays" "^3.5.4"
+    "@react-types/shared" "^3.11.2"
+
 "@react-types/grid@^3.0.0":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@react-types/grid/-/grid-3.0.0.tgz#a69446e4f99623102339b1351701c371a0c95323"
