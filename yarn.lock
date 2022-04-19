@@ -3564,6 +3564,16 @@
     "@react-stately/utils" "^3.2.2"
     "@react-types/tooltip" "^3.1.2"
 
+"@react-stately/tooltip@^3.0.8":
+  version "3.0.8"
+  resolved "https://registry.yarnpkg.com/@react-stately/tooltip/-/tooltip-3.0.8.tgz#629a2fda80802979b5c97e16848c1f4006561110"
+  integrity sha512-udq97gIXNtFY9F/Fnca0PFA8zylDqRNitmIKiTjIive1lMuDH9b2xWqKLi4b6WOFpDlAX6UQTj4TjGdnAyaIbw==
+  dependencies:
+    "@babel/runtime" "^7.6.2"
+    "@react-stately/overlays" "^3.1.6"
+    "@react-stately/utils" "^3.4.1"
+    "@react-types/tooltip" "^3.1.5"
+
 "@react-stately/tree@^3.2.0":
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/@react-stately/tree/-/tree-3.2.0.tgz#151c90f161c5c8339b6876f59a4f0502be08670b"
@@ -3791,6 +3801,14 @@
   dependencies:
     "@react-types/overlays" "^3.5.1"
     "@react-types/shared" "^3.8.0"
+
+"@react-types/tooltip@^3.1.5":
+  version "3.1.5"
+  resolved "https://registry.yarnpkg.com/@react-types/tooltip/-/tooltip-3.1.5.tgz#f0fd2c15bca9012c66fa28f1357fe715f1ed8f2e"
+  integrity sha512-bDFl4drdlAcm5D0WAK66YN7Dx97Nfgs3mBdprOASGWQmiPMDobCiUcycA7p/h9Akzua1SR5OQyYdbU0qJBO54A==
+  dependencies:
+    "@react-types/overlays" "^3.5.4"
+    "@react-types/shared" "^3.11.2"
 
 "@rollup/plugin-babel@^5.2.0":
   version "5.3.0"
