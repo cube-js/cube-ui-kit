@@ -3703,6 +3703,13 @@
   dependencies:
     "@react-types/shared" "^3.9.0"
 
+"@react-types/numberfield@^3.1.3":
+  version "3.1.3"
+  resolved "https://registry.yarnpkg.com/@react-types/numberfield/-/numberfield-3.1.3.tgz#50173306dcd8564fff54c5d9dbd3675cecb31c37"
+  integrity sha512-poqAXPmdTzqIz766GTJPqydYkqS4MKfiB4GmnIk+Ft6GbIx9tn/MJ9Eq+6E/GpGGCtqJDhkjvo5K6o0lXa7URg==
+  dependencies:
+    "@react-types/shared" "^3.11.2"
+
 "@react-types/overlays@^3.5.1":
   version "3.5.1"
   resolved "https://registry.yarnpkg.com/@react-types/overlays/-/overlays-3.5.1.tgz#35350dfca639d04a8fbd973de59b141450df1b46"
