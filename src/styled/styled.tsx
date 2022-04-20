@@ -172,7 +172,7 @@ function styled<
         qa: defaultQa,
         qaVal: defaultQaVal,
         ...otherDefaultProps
-      } = defaultProps;
+      } = defaultProps ?? {};
 
       let propStyles: Styles = useMemo(
         () =>
