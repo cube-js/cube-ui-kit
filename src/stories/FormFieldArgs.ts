@@ -20,9 +20,15 @@ export const LABEL_POSITION_ARG = {
 
 export const LABEL_ARG = {
   label: {
-    // defaultValue: 'Field label',
     control: 'text',
     description: 'The content to display as the label.',
+  },
+};
+
+export const EXTRA_ARG = {
+  extra: {
+    control: 'text',
+    description: 'The extra content to display next to the label.',
   },
 };
 

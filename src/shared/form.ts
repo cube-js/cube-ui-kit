@@ -10,15 +10,17 @@ export type NecessityIndicator = 'icon' | 'label';
 /** The validation state of the field */
 export type ValidationState = 'invalid' | 'valid';
 
-/** On which event perform validation for the field */
+/** On which event perform the validation for the field */
 export type ValidateTrigger = 'onBlur' | 'onChange' | 'onSubmit';
 
 export interface OptionalFieldBaseProps {
   /** The label of the field */
   label?: string;
+  /** An additional content next to the label */
+  extra?: ReactNode;
   /** The validation state of the field */
   validationState?: ValidationState;
-  /** On which event perform validation for the field */
+  /** On which event perform the validation for the field */
   validateTrigger?: ValidateTrigger;
   necessityIndicator?: NecessityIndicator;
   necessityLabel?: ReactNode;
@@ -55,6 +57,8 @@ export interface FormFieldProps extends FormBaseProps {
   insideForm?: boolean;
   /** A text label of the field */
   label?: ReactNode;
+  /** An additional content next to the label */
+  extra?: ReactNode;
   /** Custom label props */
   labelProps?: Props;
   /** Message for the field. Some additional information or error notice */

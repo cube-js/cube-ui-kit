@@ -1,5 +1,5 @@
 import { PasswordInput } from './PasswordInput';
-import { TEXT_VALUE_ARG } from '../../../stories/FormFieldArgs';
+import { LABEL_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
@@ -11,7 +11,7 @@ export default {
     },
   },
   argTypes: {
-    ...TEXT_VALUE_ARG,
+    ...LABEL_ARG,
   },
 };
 
