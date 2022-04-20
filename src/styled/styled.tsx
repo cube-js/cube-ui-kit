@@ -233,4 +233,6 @@ function styled<
   return _StyledComponent;
 }
 
-export { styled };
+const tasty = styled;
+
+export { styled, tasty };

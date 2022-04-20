@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { getByTestId, render } from '@testing-library/react';
 import { styled } from './styled';
 import { Button } from '../components/actions';
 import { Block } from '../components/Block';
@@ -26,10 +26,10 @@ describe('styled() API', () => {
   it('should provide defaults and give ability to override', () => {
     const SButton = styled(Button, { type: 'primary' });
 
-    const { getByTestId, rerender } = render(<SButton data-testid="button" />);
+    const { getByTestId, rerender } = render(<SButton qa="button" />);
     expect(getByTestId('button').dataset.type).toBe('primary');
 
-    rerender(<SButton type="secondary" data-testid="button" />);
+    rerender(<SButton type="secondary" qa="button" />);
     expect(getByTestId('button').dataset.type).toBe('secondary');
   });
 
@@ -53,6 +53,6 @@ describe('styled() API', () => {
     const StyledBlock = styled({ props: { qa: 'Field' } });
     const { container } = render(<StyledBlock />);
 
-    expect(container).toMatchSnapshot();
+    expect(getByTestId(container, 'Field', {})).toBeDefined();
   });
 });
