@@ -198,7 +198,7 @@ export function Field(allProps: CubeFieldProps) {
     } else {
       form.createField(fieldName);
     }
-  }, [field]);
+  }, [field, rules]);
 
   if (typeof children === 'function') {
     children = children(form);
