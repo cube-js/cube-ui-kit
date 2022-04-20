@@ -48,4 +48,11 @@ describe('styled() API', () => {
 
     expect(container).toMatchSnapshot();
   });
+
+  it('should pass qa prop', () => {
+    const StyledBlock = styled({ props: { qa: 'Field' } });
+    const { container } = render(<StyledBlock />);
+
+    expect(container).toMatchSnapshot();
+  });
 });
