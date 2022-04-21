@@ -42,7 +42,7 @@ export const StyledDivider = styled({
 export const StyledMenuHeader = styled(Space, {
   tag: 'li',
   styles: {
-    fill: '#light-02',
+    fill: '#light',
     color: '#dark-02',
     preset: 'h5s',
     padding: '0.75x 2x',
