@@ -104,7 +104,8 @@ const _Menu = React.forwardRef(Menu) as <T>(
 type PartialMenuButton = Partial<MenuButtonProps>;
 
 type ItemComponent = <T>(
-  props: ItemProps<T> & PartialMenuButton,
+  props: ItemProps<T> &
+    PartialMenuButton & { wrapper?: (item: ReactElement) => ReactElement },
 ) => JSX.Element;
 
 type SectionComponent = typeof BaseSection;
