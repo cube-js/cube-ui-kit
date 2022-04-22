@@ -103,6 +103,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
   let {
     qa,
     label,
+    extra,
     labelPosition = 'top',
     labelStyles,
     isRequired,
@@ -331,6 +332,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
       {...{
         labelPosition,
         label,
+        extra,
         styles,
         isRequired,
         labelStyles,

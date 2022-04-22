@@ -1,7 +1,7 @@
 import { forwardRef, ReactNode } from 'react';
-import { Base } from '../Base';
+import { Text } from '../content/Text';
 import { Label } from './Label';
-import { Flow } from '../layout/Flow';
+import { Grid } from '../layout/Grid';
 import { Paragraph } from '../content/Paragraph';
 import {
   LabelPosition,
@@ -12,49 +12,60 @@ import { Styles } from '../../styles/types';
 import { TooltipProvider } from '../overlays/Tooltip/TooltipProvider';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { wrapNodeIfPlain } from '../../utils/react';
+import { styled } from '../../styled';
 
-const FIELD_STYLES = {
-  display: 'grid',
-  gridColumns: {
-    '': '1fr',
-    'has-sider': '@(label-width, auto) 1fr',
+const RawField = styled({
+  props: {
+    qa: 'Field',
   },
-  gap: {
-    '': '1x',
-    'has-sider': '@(column-gap, 1x)',
-  },
-  placeItems: 'baseline stretch',
+  styles: {
+    display: 'grid',
+    gridColumns: {
+      '': '1fr',
+      'has-sider': '@(label-width, auto) 1fr',
+    },
+    gap: {
+      '': '1x',
+      'has-sider': '@(column-gap, 1x)',
+    },
+    placeItems: 'baseline stretch',
 
-  LabelArea: {
-    display: 'block',
-    width: {
-      '': 'initial',
-      'has-sider': '@label-width',
+    LabelArea: {
+      display: 'block',
+      width: {
+        '': 'initial',
+        'has-sider': '@label-width',
+      },
+    },
+
+    InputArea: {
+      display: 'block',
+      flow: 'column',
+      gridColumn: {
+        '': 'initial',
+        'has-sider': 2,
+      },
     },
   },
+});
 
-  InputArea: {
-    display: 'block',
-    flow: 'column',
-    gridColumn: {
-      '': 'initial',
-      'has-sider': 2,
+const RawMessage = styled({
+  props: {
+    qa: 'Field_Message',
+  },
+  styles: {
+    preset: 'default',
+    color: {
+      '': '#dark.75',
+      invalid: '#danger-text',
+      valid: '#success-text',
+      disabled: '#dark.40',
     },
+    fontWeight: 400,
+    textAlign: 'left',
+    userSelect: 'none',
   },
-};
-
-const MESSAGE_STYLES = {
-  preset: 'default',
-  color: {
-    '': '#dark.75',
-    invalid: '#danger-text',
-    valid: '#success-text',
-    disabled: '#dark.40',
-  },
-  fontWeight: 400,
-  textAlign: 'left',
-  userSelect: 'none',
-};
+});
 
 export type CubeFieldWrapperProps = {
   as: string;
@@ -86,6 +97,7 @@ function FieldWrapper(props, ref) {
     as,
     labelPosition,
     label,
+    extra,
     styles,
     isRequired,
     isDisabled,
@@ -112,9 +124,17 @@ function FieldWrapper(props, ref) {
       isDisabled={isDisabled}
       necessityIndicator={necessityIndicator}
       validationState={validationState}
+      aria-label={label}
       {...labelProps}
     >
-      {label}
+      {extra ? (
+        <Grid placeContent="baseline space-between" flow="column">
+          <div>{label}</div>
+          <Text preset="t3">{extra}</Text>
+        </Grid>
+      ) : (
+        label
+      )}
       {tooltip ? (
         <>
           &nbsp;
@@ -146,16 +166,12 @@ function FieldWrapper(props, ref) {
   };
 
   return (
-    <Base
+    <RawField
       as={as || 'div'}
-      qa="Field"
       ref={ref}
       mods={mods}
       isHidden={isHidden}
-      styles={{
-        ...FIELD_STYLES,
-        ...styles,
-      }}
+      styles={styles}
       {...fieldProps}
     >
       {labelComponent || descriptionComponent ? (
@@ -167,20 +183,16 @@ function FieldWrapper(props, ref) {
       <div data-element="InputArea">
         {Component}
         {message && !isDisabled && (
-          <Base
-            qa="Field_Message"
+          <RawMessage
             mods={mods}
-            styles={{
-              ...MESSAGE_STYLES,
-              ...messageStyles,
-            }}
+            styles={messageStyles}
             role={validationState === 'invalid' ? 'alert' : undefined}
           >
             {message}
-          </Base>
+          </RawMessage>
         )}
       </div>
-    </Base>
+    </RawField>
   );
 }
 

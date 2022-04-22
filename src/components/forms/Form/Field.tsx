@@ -145,6 +145,7 @@ export function Field(allProps: CubeFieldProps) {
     form,
     rules,
     label,
+    extra,
     validateTrigger,
     validationState,
     necessityLabel,
@@ -156,8 +157,8 @@ export function Field(allProps: CubeFieldProps) {
     isHidden,
   } = props;
   const nonInput = !name;
-  const fieldName: string
-    = name != null ? (Array.isArray(name) ? name.join('.') : name) : '';
+  const fieldName: string =
+    name != null ? (Array.isArray(name) ? name.join('.') : name) : '';
 
   let firstRunRef = useRef(true);
   let [fieldId, setFieldId] = useState(
@@ -199,6 +200,14 @@ export function Field(allProps: CubeFieldProps) {
     }
   }, [field]);
 
+  useEffect(() => {
+    if (!form) return;
+
+    if (field) {
+      field.rules = rules;
+    }
+  }, [rules]);
+
   if (typeof children === 'function') {
     children = children(form);
   }
@@ -216,6 +225,7 @@ export function Field(allProps: CubeFieldProps) {
         necessityLabel={necessityLabel}
         isRequired={isRequired}
         label={label}
+        extra={extra}
         tooltip={tooltip}
         message={message}
         description={description}
@@ -236,8 +246,8 @@ export function Field(allProps: CubeFieldProps) {
     return null;
   }
 
-  // @ts-ignore
-  inputType = inputType || child.type.cubeInputType || 'Text';
+  inputType =
+    inputType || ((child.type as any).cubeInputType as string) || 'Text';
 
   const defaultValidateTrigger = getDefaultValidateTrigger(inputType);
 
@@ -277,8 +287,8 @@ export function Field(allProps: CubeFieldProps) {
       const fieldsValue = form.getFieldsValue();
 
       // check if we should update the value of the field
-      const shouldNotBeUpdated
-        = typeof shouldUpdate === 'boolean'
+      const shouldNotBeUpdated =
+        typeof shouldUpdate === 'boolean'
           ? !shouldUpdate
           : !shouldUpdate(fieldsValue, {
               ...fieldsValue,
@@ -293,8 +303,8 @@ export function Field(allProps: CubeFieldProps) {
     form.setFieldValue(fieldName, val, true);
 
     if (
-      validateTrigger === 'onChange'
-      || (field && field.errors && field.errors.length)
+      validateTrigger === 'onChange' ||
+      (field && field.errors && field.errors.length)
     ) {
       form.validateField(fieldName).catch(() => {}); // do nothing on fail
     }
@@ -331,6 +341,10 @@ export function Field(allProps: CubeFieldProps) {
 
   if (label) {
     newProps.label = label;
+  }
+
+  if (extra) {
+    newProps.extra = extra;
   }
 
   if (tooltip) {

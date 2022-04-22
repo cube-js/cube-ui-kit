@@ -65,6 +65,7 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
     necessityIndicator,
     necessityLabel,
     label,
+    extra,
     labelPosition = 'top',
     validationState,
     children,
@@ -126,6 +127,7 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
       {...{
         labelPosition,
         label,
+        extra,
         styles,
         isRequired,
         labelStyles,

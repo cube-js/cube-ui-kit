@@ -190,6 +190,7 @@ function Select<T extends object>(
   let {
     qa,
     label,
+    extra,
     labelPosition = 'top',
     labelStyles,
     isRequired,
@@ -348,6 +349,7 @@ function Select<T extends object>(
       {...{
         labelPosition,
         label,
+        extra,
         styles,
         isRequired,
         labelStyles,

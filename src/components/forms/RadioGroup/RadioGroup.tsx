@@ -52,6 +52,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
     isRequired,
     necessityIndicator,
     label,
+    extra,
     labelPosition = 'top',
     validationState,
     children,
@@ -116,6 +117,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
       {...{
         labelPosition,
         label,
+        extra,
         styles,
         isRequired,
         labelStyles,

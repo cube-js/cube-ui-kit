@@ -96,7 +96,7 @@ function extractContents(element, callback) {
   if (files && files.length > 0) {
     const fileReader = new FileReader();
 
-    fileReader.onload = function() {
+    fileReader.onload = function () {
       callback(fileReader.result);
     };
 
@@ -114,6 +114,7 @@ function FileInput(props: CubeFileInputProps, ref) {
     placeholder,
     inputRef,
     label,
+    extra,
     labelPosition,
     isRequired,
     necessityIndicator,
@@ -219,6 +220,7 @@ function FileInput(props: CubeFileInputProps, ref) {
       {...{
         labelPosition,
         label,
+        extra,
         styles,
         isRequired,
         labelStyles,
@@ -244,4 +246,5 @@ function FileInput(props: CubeFileInputProps, ref) {
  * upload them to the server.
  */
 const _FileInput = forwardRef(FileInput);
+
 export { _FileInput as FileInput };

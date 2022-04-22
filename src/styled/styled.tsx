@@ -148,9 +148,8 @@ function styled<
     tag = 'div',
     css: defaultCSS,
     styles: defaultStyles,
-    props: legacyDefaultProps,
+    props: defaultProps,
     styleProps,
-    ...defaultProps
   } = options;
 
   let Element = styledComponents[tag](({ css }) => css);
@@ -169,6 +168,11 @@ function styled<
         css,
         ...props
       } = allProps;
+      let {
+        qa: defaultQa,
+        qaVal: defaultQaVal,
+        ...otherDefaultProps
+      } = defaultProps ?? {};
 
       let propStyles: Styles = useMemo(
         () =>
@@ -211,10 +215,9 @@ function styled<
         <Element
           as={as ?? tag}
           data-element={element}
-          data-qa={qa}
-          data-qaval={qaVal}
-          {...legacyDefaultProps}
-          {...defaultProps}
+          data-qa={qa || defaultQa}
+          data-qaval={qaVal || defaultQaVal}
+          {...otherDefaultProps}
           {...props}
           ref={ref}
           css={css}
@@ -230,4 +233,6 @@ function styled<
   return _StyledComponent;
 }
 
-export { styled };
+const tasty = styled;
+
+export { styled, tasty };

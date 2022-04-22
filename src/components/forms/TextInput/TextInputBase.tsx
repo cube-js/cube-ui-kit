@@ -141,6 +141,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
   let {
     qa,
     label,
+    extra,
     labelPosition = 'top',
     labelStyles,
     isRequired,
@@ -314,6 +315,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
       {...{
         labelPosition,
         label,
+        extra,
         styles,
         isRequired,
         labelStyles,
