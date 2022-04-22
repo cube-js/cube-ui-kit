@@ -198,7 +198,15 @@ export function Field(allProps: CubeFieldProps) {
     } else {
       form.createField(fieldName);
     }
-  }, [field, rules]);
+  }, [field]);
+
+  useEffect(() => {
+    if (!form) return;
+
+    if (field) {
+      field.rules = rules;
+    }
+  }, [rules]);
 
   if (typeof children === 'function') {
     children = children(form);
