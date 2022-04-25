@@ -80,7 +80,7 @@ export interface StylesInterface
    */
   reset?: 'input' | 'button';
   /**
-   * Whether the element has tasty scrollbar.
+   * Whether the element has styled scrollbar.
    */
   styledScrollbar?: boolean;
   /**
