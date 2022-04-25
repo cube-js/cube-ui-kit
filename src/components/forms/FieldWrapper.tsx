@@ -12,7 +12,7 @@ import { Styles } from '../../styles/types';
 import { TooltipProvider } from '../overlays/Tooltip/TooltipProvider';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { wrapNodeIfPlain } from '../../utils/react';
-import { styled } from '../../styled';
+import { styled } from '../../tasty';
 
 const RawField = styled({
   props: {

@@ -1,4 +1,4 @@
-import { styled } from '../../../styled';
+import { styled } from '../../../tasty';
 import { Space } from '../../layout/Space';
 
 export const StyledMenu = styled({

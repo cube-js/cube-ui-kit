@@ -74,7 +74,7 @@ function styled<
     property: 'props',
     name: 'styled api',
     betterAlternative:
-      "inline props directly in styled(), eg: styled({ type: 'confirm' })",
+      "inline props directly in tasty(), eg: tasty({ type: 'confirm' })",
   });
 
   if (typeof Component === 'string') {
@@ -200,11 +200,15 @@ function styled<
 
       let contextBreakpoints = useContext(BreakpointsContext);
       let zones = pointsToZones(breakpoints ?? contextBreakpoints);
+      let renderedStyles = useMemo(
+        () => renderStyles(allStyles, zones),
+        [allStyles, zones],
+      );
 
       css = `${
         typeof defaultCSS === 'function' ? defaultCSS(props) : defaultCSS ?? ''
       }${typeof css === 'function' ? css(props) : css ?? ''}${
-        allStyles ? renderStyles(allStyles, zones) : ''
+        allStyles ? renderedStyles : ''
       }`;
 
       if (mods) {

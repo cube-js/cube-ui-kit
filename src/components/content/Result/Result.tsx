@@ -7,7 +7,7 @@ import {
 } from '@ant-design/icons';
 
 import { Title } from '../Title';
-import { styled } from '../../../styled';
+import { styled } from '../../../tasty';
 import { CONTAINER_STYLES } from '../../../styles/list';
 import { BaseProps, ContainerStyleProps } from '../../types';
 import { filterBaseProps } from '../../../utils/filterBaseProps';

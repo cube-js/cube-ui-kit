@@ -10,7 +10,7 @@ import { useNumberFieldState } from '@react-stately/numberfield';
 import { useNumberField } from '@react-aria/numberfield';
 import { StepButton } from './StepButton';
 import type { AriaNumberFieldProps } from '@react-types/numberfield';
-import { styled } from '../../../styled';
+import { styled } from '../../../tasty';
 import {
   castNullableNumberValue,
   WithNullableValue,

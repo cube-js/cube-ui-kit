@@ -10,7 +10,7 @@ import {
   PositionStyleProps,
   TagNameProps,
 } from '../types';
-import { styled } from '../../styled';
+import { styled } from '../../tasty';
 import { Styles } from '../../styles/types';
 
 const DEFAULT_STYLES: Styles = {

@@ -4,7 +4,7 @@ import { CONTAINER_STYLES, TEXT_STYLES } from '../../../styles/list';
 import { extractStyles } from '../../../utils/styles';
 import { filterBaseProps } from '../../../utils/filterBaseProps';
 import { BaseProps, ContainerStyleProps, TextStyleProps } from '../../types';
-import { styled } from '../../../styled';
+import { styled } from '../../../tasty';
 
 const RawAlert = styled({
   name: 'Alert',

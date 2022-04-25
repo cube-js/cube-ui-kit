@@ -2,7 +2,7 @@ import copy from 'clipboard-copy';
 import { Button } from '../../actions';
 import { Card, CubeCardProps } from '../../content/Card/Card';
 import { Grid } from '../../layout/Grid';
-import { styled } from '../../../styled';
+import { styled } from '../../../tasty';
 import {
   CubePrismCodeProps,
   PrismCode,

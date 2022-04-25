@@ -3,7 +3,7 @@ import { styled } from './styled';
 import { Button } from '../components/actions';
 import { Block } from '../components/Block';
 
-describe('styled() API', () => {
+describe('tasty() API', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -33,7 +33,7 @@ describe('styled() API', () => {
     expect(getByTestId('button').dataset.type).toBe('secondary');
   });
 
-  it('should pass styles from styled', () => {
+  it('should pass styles from tasty', () => {
     const StyledBlock = styled(Block, { styles: { color: '#clear.1' } });
     const { container } = render(<StyledBlock />);
 

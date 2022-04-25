@@ -4,7 +4,7 @@ import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
 import { useSlotProps } from '../../utils/react';
 import { BaseProps, ContainerStyleProps, TextStyleProps } from '../types';
-import { styled } from '../../styled';
+import { styled } from '../../tasty';
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 

@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { styled } from '../../styled';
+import { styled } from '../../tasty';
 import { CONTAINER_STYLES, TEXT_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';

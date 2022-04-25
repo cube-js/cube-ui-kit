@@ -9,7 +9,7 @@ import { Action } from '../../actions/Action';
 import { Suffix } from '../../layout/Suffix';
 import { Block } from '../../Block';
 import { CloseOutlined } from '@ant-design/icons';
-import { styled } from '../../../styled';
+import { styled } from '../../../tasty';
 
 const RawTag = styled({
   name: 'Tag',

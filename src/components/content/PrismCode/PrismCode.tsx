@@ -1,7 +1,7 @@
 import { forwardRef, useEffect } from 'react';
 import Prism from 'prismjs';
 import { BaseProps, ContainerStyleProps } from '../../types';
-import { styled } from '../../../styled';
+import { styled } from '../../../tasty';
 import { Styles } from '../../../styles/types';
 import { CONTAINER_STYLES } from '../../../styles/list';
 

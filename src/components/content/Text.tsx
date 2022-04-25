@@ -10,7 +10,7 @@ import {
   TextStyleProps,
 } from '../types';
 import { Styles } from '../../styles/types';
-import { styled } from '../../styled';
+import { styled } from '../../tasty';
 import { useSlotProps } from '../../utils/react';
 
 const STYLE_LIST = [...BASE_STYLES, ...TEXT_STYLES, ...COLOR_STYLES] as const;
