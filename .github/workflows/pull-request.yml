@@ -10,6 +10,7 @@ concurrency:
 
 jobs:
   pull-request:
+    name: 'PR build and checks'
     runs-on: ubuntu-latest
     env:
       CI_JOB_NUMBER: 1
@@ -56,7 +57,7 @@ jobs:
           check-version: true
           package: ./dist/package.json
 
-      - name: PR Comment
+      - name: Comment PR
         if: steps.publish.outputs.type != 'none'
         uses: actions/github-script@v2
         with:
@@ -65,8 +66,8 @@ jobs:
             const setMessage = require('${{ github.workspace }}/scripts/ci/set-message')
 
             await setMessage({
-              header: ":package: NPM canary release",
-              body: "Deployed canary version ${{ steps.publish.outputs.version }}.",
+              header: "## :package: NPM canary release",
+              body: "Deployed canary version [${{ steps.publish.outputs.version }}](https://www.npmjs.com/package/@cube-dev/ui-kit/v/${{ steps.publish.outputs.version }}).",
               github,
               repo: context.repo,
               prNumber: context.payload.pull_request.number
@@ -79,9 +80,10 @@ jobs:
         run: yarn lint
 
       - name: Run the tests
-        run: npm run test
+        run: yarn test --no-cache
 
-  deploy_chromatic:
+  deploy-chromatic:
+    name: 'Prepare Storybook for review & tests'
     runs-on: ubuntu-latest
     environment:
       name: Chromatic staging
@@ -116,10 +118,11 @@ jobs:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
 
   deploy-docs:
+    name: 'Prepare Docs for the Review'
     runs-on: ubuntu-latest
     environment:
       name: Docs staging
-      url: ${{ steps.publish_docs.outputs.url }}
+      url: ${{ steps.publish_docs.outputs.NETLIFY_PREVIEW_URL }}
     env:
       NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
@@ -147,4 +150,31 @@ jobs:
 
       - name: Deploy docs to Netlify
         id: publish_docs
-        run: npx netlify-cli deploy
+        run: |
+          OUTPUT=$(sh -c "npx netlify-cli deploy")
+          NETLIFY_OUTPUT=$(echo "$OUTPUT")
+          NETLIFY_PREVIEW_URL=$(echo "$OUTPUT" | grep -Eo '(http|https)://[a-zA-Z0-9./?=_-]*(--)[a-zA-Z0-9./?=_-]*') #Unique key: --
+          NETLIFY_LOGS_URL=$(echo "$OUTPUT" | grep -Eo '(http|https)://app.netlify.com/[a-zA-Z0-9./?=_-]*') #Unique key: app.netlify.com
+          NETLIFY_LIVE_URL=$(echo "$OUTPUT" | grep -Eo '(http|https)://[a-zA-Z0-9./?=_-]*' | grep -Eov "netlify.com") #Unique key: don't containr -- and app.netlify.com
+
+          echo "::set-output name=NETLIFY_OUTPUT::$NETLIFY_OUTPUT"
+          echo "::set-output name=NETLIFY_PREVIEW_URL::$NETLIFY_PREVIEW_URL"
+          echo "::set-output name=NETLIFY_LOGS_URL::$NETLIFY_LOGS_URL"
+          echo "::set-output name=NETLIFY_LIVE_URL::$NETLIFY_LIVE_URL"
+      - name: Comment PR
+        uses: actions/github-script@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const setMessage = require('${{ github.workspace }}/scripts/ci/set-message')
+
+            await setMessage({
+              header: "## 🏗 Docs are successfully deployed!",
+              body: `
+                - 👀 Preview: ${{ steps.publish_docs.outputs.NETLIFY_PREVIEW_URL }}
+                - 📄 Logs: ${{ steps.publish_docs.outputs.NETLIFY_LOGS_URL }}
+              `,
+              github,
+              repo: context.repo,
+              prNumber: context.payload.pull_request.number
+            })
