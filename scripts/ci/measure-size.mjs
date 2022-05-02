@@ -1,3 +1,4 @@
+import { context, GitHub } from '@actions/github';
 import { setFailed } from '@actions/core';
 import { exec } from '@actions/exec';
 import table from 'markdown-table';
@@ -8,6 +9,13 @@ import setMessage from './set-message.js';
 const SIZE_LIMIT_HEADING = `## size-limit report 📦 `;
 
 async function run() {
+  const { payload, repo } = context;
+  const pr = payload.pull_request;
+
+  const token = process.env.GH_TOKEN;
+
+  const github = new GitHub(token);
+
   let output = '';
 
   createMeasurer();
@@ -36,7 +44,13 @@ async function run() {
     ]),
   ]);
 
-  setMessage({ header: SIZE_LIMIT_HEADING, body: formattedTable });
+  setMessage({
+    header: SIZE_LIMIT_HEADING,
+    body: formattedTable,
+    prNumber: pr.number,
+    repo,
+    github,
+  });
 
   if (jsonOutput.some((entry) => entry.passed === false)) {
     setFailed('Size limit has been exceeded.');

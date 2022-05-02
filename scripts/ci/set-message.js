@@ -1,19 +1,17 @@
 const dedent = require('dedent');
-const { context, GitHub } = require('@actions/github');
 
-module.exports = async function setMessage({ header, body }) {
-  const { payload, repo } = context;
-  const pr = payload.pull_request;
-
-  const token = process.env.GH_TOKEN;
-
-  const octokit = new GitHub(token);
-
-  const commentList = await octokit.paginate(
+module.exports = async function setMessage({
+  header,
+  body,
+  prNumber,
+  repo,
+  github,
+}) {
+  const commentList = await github.paginate(
     'GET /repos/:owner/:repo/issues/:issue_number/comments',
     {
       ...repo,
-      issue_number: pr.number,
+      issue_number: prNumber,
     },
   );
 
@@ -28,13 +26,13 @@ module.exports = async function setMessage({ header, body }) {
   );
 
   if (!comment) {
-    await octokit.issues.createComment({
+    await github.issues.createComment({
       ...repo,
-      issue_number: pr.number,
+      issue_number: prNumber,
       body: commentBody,
     });
   } else {
-    await octokit.issues.updateComment({
+    await github.issues.updateComment({
       ...repo,
       comment_id: comment.id,
       body: commentBody,

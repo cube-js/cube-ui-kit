@@ -11,24 +11,17 @@ concurrency:
 jobs:
   pull-request:
     runs-on: ubuntu-latest
-    environment:
-      name: Chromatic staging
-      url: ${{ steps.publish_chromatic.outputs.url }}
     env:
       CI_JOB_NUMBER: 1
-      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
       INPUT_TOKEN: ${{ secrets.NPM_TOKEN }}
+    environment:
+      name: Package in NPM
+      url: https://www.npmjs.com/package/@cube-dev/ui-kit/v/${{ steps.publish.outputs.version }}
     steps:
       - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
 
       - name: Set env
         run: echo "SHORT_SHA=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_ENV
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
 
       - uses: actions/cache@v2
         id: yarn-cache
@@ -36,10 +29,9 @@ jobs:
           path: |
             **/node_modules
             **/.eslintcache
-            ${{ steps.yarn-cache-dir-path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-yarn--${{ steps.yarn-cache-dir-path.outputs.version }}-${{ hashFiles('**/yarn.lock') }}
+            ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
 
       - uses: actions/setup-node@v3
         with:
@@ -53,9 +45,6 @@ jobs:
 
       - name: Build project
         run: yarn build
-
-      - name: Measure size
-        run: GH_TOKEN=${{ secrets.GITHUB_TOKEN }} node ./scripts/ci/measure-size.mjs
 
       - name: Publish canary
         id: publish
@@ -73,23 +62,50 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const {default: setMessage} = await import('${{ github.workspace }}/scripts/ci/set-message.mjs')
+            const setMessage = require('${{ github.workspace }}/scripts/ci/set-message')
 
             await setMessage({
-              header: ":package: NPM canary release"
-              body: "Deployed canary version ${{ steps.publish.outputs.version }}."
+              header: ":package: NPM canary release",
+              body: "Deployed canary version ${{ steps.publish.outputs.version }}.",
+              github,
+              repo: context.repo,
+              prNumber: context.payload.pull_request.number
             })
+
+      - name: Measure size
+        run: GH_TOKEN=${{ secrets.GITHUB_TOKEN }} node ./scripts/ci/measure-size.mjs
+
       - name: Run the lint
         run: yarn lint
 
       - name: Run the tests
         run: npm run test
 
-      - name: Build Docs
-        run: yarn build-docs --quiet
+  deploy_chromatic:
+    runs-on: ubuntu-latest
+    environment:
+      name: Chromatic staging
+      url: ${{ steps.publish_chromatic.outputs.url }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
-      - name: Deploy docs to Netlify
-        run: npx netlify-cli deploy
+      - uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: |
+            **/node_modules
+            **/.eslintcache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn--${{ steps.yarn-cache-dir-path.outputs.version }}-${{ hashFiles('**/yarn.lock') }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Install dependencies
+        run: yarn --frozen-lockfile
 
       - name: Publish to Chromatic
         id: publish_chromatic
@@ -98,3 +114,37 @@ jobs:
           exitZeroOnChanges: true
           exitOnceUploaded: true
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+
+  deploy-docs:
+    runs-on: ubuntu-latest
+    environment:
+      name: Docs staging
+      url: ${{ steps.publish_docs.outputs.url }}
+    env:
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: |
+            **/node_modules
+            **/.eslintcache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn--${{ steps.yarn-cache-dir-path.outputs.version }}-${{ hashFiles('**/yarn.lock') }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Install dependencies
+        run: yarn --frozen-lockfile
+
+      - name: Build Docs
+        run: yarn build-docs --quiet
+
+      - name: Deploy docs to Netlify
+        id: publish_docs
+        run: npx netlify-cli deploy
