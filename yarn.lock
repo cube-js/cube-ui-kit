@@ -1869,15 +1869,15 @@
   dependencies:
     "@hapi/hoek" "^9.0.0"
 
-"@happy-dom/jest-environment@^2.50.0":
-  version "2.50.0"
-  resolved "https://registry.yarnpkg.com/@happy-dom/jest-environment/-/jest-environment-2.50.0.tgz#f4225f98508298a2254dcfbe7af1c2f7610c106c"
-  integrity sha512-JOsBXGTVFMXqP6io2rbWaPOdazLb+r7J7F7soCFZydcgV9K+kqJAyXlSXe7B8D4xmw9yzwIyCQApgE7J7pIaGQ==
+"@happy-dom/jest-environment@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@happy-dom/jest-environment/-/jest-environment-3.1.0.tgz#123f28ae6dfbd29d464d70139b26e0e6e71b00aa"
+  integrity sha512-8fZCzCvxjTmBNLkN8/4LPKPgcYAYAx8t1ikyIws4LFZRmxl8riy7tktgl53fpOXYsqE8GkWlrtPOqnAoIJ/5kw==
   dependencies:
     "@jest/environment" "^27.5.1"
     "@jest/fake-timers" "^27.5.1"
     "@jest/types" "^27.5.1"
-    happy-dom "^2.50.0"
+    happy-dom "^3.1.0"
     jest-mock "^27.5.1"
     jest-util "^27.5.1"
 
@@ -12142,19 +12142,6 @@ handlebars@^4.7.7:
     wordwrap "^1.0.0"
   optionalDependencies:
     uglify-js "^3.1.4"
-
-happy-dom@^2.50.0:
-  version "2.50.0"
-  resolved "https://registry.yarnpkg.com/happy-dom/-/happy-dom-2.50.0.tgz#c0e2db033e985bba4a96e1419297d3a70817621f"
-  integrity sha512-3boJ9i4AbSMUvI4f6N4UEuDDOdKMTCXlnsjoB7KCyhkN1VD+vR9kQEmHLLDHrIPdLn65zA/XhhaFZhCkoWoLQQ==
-  dependencies:
-    css.escape "^1.5.1"
-    he "^1.2.0"
-    node-fetch "^2.x.x"
-    sync-request "^6.1.0"
-    webidl-conversions "^7.0.0"
-    whatwg-encoding "^2.0.0"
-    whatwg-mimetype "^3.0.0"
 
 happy-dom@^3.1.0:
   version "3.1.0"
