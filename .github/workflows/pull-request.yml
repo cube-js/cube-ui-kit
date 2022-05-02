@@ -73,13 +73,12 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            github.issues.createComment({
-              issue_number: ${{ github.event.number }},
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `:package: Deployed canary version ${{ steps.publish.outputs.version }}.`
-            })
+            const {default: setMessage} = await import('${{ github.workspace }}/scripts/ci/set-message.mjs')
 
+            await setMessage({
+              header: ":package: NPM canary release"
+              body: "Deployed canary version ${{ steps.publish.outputs.version }}."
+            })
       - name: Run the lint
         run: yarn lint
 
