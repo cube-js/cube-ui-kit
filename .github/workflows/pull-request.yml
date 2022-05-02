@@ -18,6 +18,7 @@ jobs:
       CI_JOB_NUMBER: 1
       NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      INPUT_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -32,9 +33,7 @@ jobs:
           cache: 'yarn'
 
       - name: Install dependencies
-        run: |
-          yarn --frozen-lockfile --prefer-offline
-          yarn global add chromatic
+        run: yarn --frozen-lockfile
 
       - name: Increment canary
         run: npm version 0.0.0-canary-$SHORT_SHA --no-git-tag-version
@@ -44,24 +43,6 @@ jobs:
 
       - name: Measure size
         run: GH_TOKEN=${{ secrets.GITHUB_TOKEN }} node ./scripts/ci/measure-size.mjs
-
-      - name: Run the lint
-        run: yarn lint
-
-      - name: Run the tests
-        run: npm run test
-
-      - name: Build Storybook
-        run: yarn build-storybook --quiet
-
-      - name: Deploy To Netlify
-        run: npx netlify-cli deploy
-
-      - name: Publish to Chromatic
-        id: publish_chromatic
-        uses: chromaui/action@v1
-        with:
-          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
 
       - name: Publish canary
         id: publish
@@ -85,3 +66,23 @@ jobs:
               repo: context.repo.repo,
               body: `:package: Deployed canary version ${{ steps.publish.outputs.version }}.`
             })
+
+      - name: Run the lint
+        run: yarn lint
+
+      - name: Run the tests
+        run: npm run test
+
+      - name: Build Docs
+        run: yarn build-docs --quiet
+
+      - name: Deploy docs to Netlify
+        run: npx netlify-cli deploy
+
+      - name: Publish to Chromatic
+        id: publish_chromatic
+        uses: chromaui/action@v1
+        with:
+          exitZeroOnChanges: true
+          exitOnceUploaded: true
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}

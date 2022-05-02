@@ -1,5 +1,5 @@
 [build]
-  publish = "storybook-static/"
+  publish = "storybook-docs/"
 [[headers]]
   for = "*.json"
   [headers.values]

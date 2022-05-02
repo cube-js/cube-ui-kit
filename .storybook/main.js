@@ -16,7 +16,6 @@ const config = {
     '@storybook/addon-links',
     '@storybook/addon-essentials',
     '@storybook/addon-interactions',
-    'storybook-addon-pseudo-states',
   ],
   webpackFinal: async (config) => {
     config.plugins.push(new webpack.DefinePlugin({ SC_DISABLE_SPEEDY: true }));

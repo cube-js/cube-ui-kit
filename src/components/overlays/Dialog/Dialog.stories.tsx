@@ -16,7 +16,6 @@ import {
   Title,
 } from '../../../index';
 import { baseProps } from '../../../stories/lists/baseProps';
-import { wait } from '../../../test';
 
 export default {
   title: 'UIKit/Overlays/Dialog',
@@ -66,10 +65,6 @@ const Template: Story<
 export const Default: typeof Template = Template.bind({});
 Default.play = async ({ canvasElement }) => {
   const { getByRole } = within(canvasElement);
-
   await userEvent.click(getByRole('button'));
-  // waiting for animation to be done
-  await wait(1000);
-
   await expect(getByRole('dialog')).toBeInTheDocument();
 };
