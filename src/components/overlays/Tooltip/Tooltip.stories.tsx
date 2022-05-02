@@ -1,48 +1,70 @@
+import { Story, ComponentMeta } from '@storybook/react';
+import { within, userEvent, waitFor } from '@storybook/testing-library';
+import { expect } from '@storybook/jest';
 import { Tooltip } from './Tooltip';
 import { Button } from '../../actions';
-import { TooltipTrigger } from './TooltipTrigger';
-import { TooltipProvider } from './TooltipProvider';
-import { Block } from '../../Block';
+import { TooltipTrigger, CubeTooltipTriggerProps } from './TooltipTrigger';
+import { CubeTooltipProviderProps, TooltipProvider } from './TooltipProvider';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
   title: 'UIKit/Overlays/Tooltip',
   component: Tooltip,
   parameters: {
+    layout: 'centered',
     controls: {
       exclude: baseProps,
     },
   },
-};
+} as ComponentMeta<typeof Button>;
 
-const Template = (args) => (
+const Template: Story<CubeTooltipTriggerProps> = (args) => (
   <TooltipTrigger {...args}>
-    <Button margin="8x 18x">Hover to show a tooltip</Button>
+    <Button>Hover to show a tooltip</Button>
     <Tooltip>Tooltip content</Tooltip>
   </TooltipTrigger>
 );
 
-const ViaProviderTemplate = (args) => (
+const ViaProviderTemplate: Story<CubeTooltipProviderProps> = (args) => (
   <TooltipProvider title="Tooltip content" {...args}>
-    <Button margin="8x 18x">Hover to show a tooltip</Button>
+    <Button>Hover to show a tooltip</Button>
   </TooltipProvider>
 );
 
-const ViaProviderWithActiveWrapTemplate = (args) => (
-  <Block padding="8x 18x">
-    <TooltipProvider title="Tooltip content" activeWrap {...args}>
-      Hover to show a tooltip
-    </TooltipProvider>
-  </Block>
-);
+export const Default: typeof Template = Template.bind({});
+Default.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const button = await canvas.getByRole('button');
+  // this is a weird hack that makes tooltip working properly on page load
+  await userEvent.unhover(button);
+  await userEvent.hover(button);
 
-export const Default = Template.bind({});
-Default.args = {};
+  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeInTheDocument());
+};
 
-export const ViaProvider = ViaProviderTemplate.bind({});
-ViaProvider.args = {};
-
-export const ViaProviderWithActiveWrap = ViaProviderWithActiveWrapTemplate.bind(
+export const ViaProvider: typeof ViaProviderTemplate = ViaProviderTemplate.bind(
   {},
 );
-ViaProviderWithActiveWrap.args = {};
+ViaProvider.args = {};
+ViaProvider.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const button = await canvas.findByRole('button');
+  // this is a weird hack that makes tooltip working properly on page load
+  await userEvent.unhover(button);
+  await userEvent.hover(button);
+
+  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeInTheDocument());
+};
+
+export const ViaProviderWithActiveWrap: typeof ViaProviderTemplate =
+  ViaProviderTemplate.bind({});
+ViaProviderWithActiveWrap.args = { activeWrap: true };
+ViaProviderWithActiveWrap.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const button = await canvas.findByRole('button');
+  // this is a weird hack that makes tooltip working properly on page load
+  await userEvent.unhover(button);
+  await userEvent.hover(button);
+
+  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeInTheDocument());
+};

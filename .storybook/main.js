@@ -5,9 +5,19 @@ const webpack = require('webpack');
 const config = {
   staticDirs: ['../public'],
   framework: '@storybook/react',
-  features: { postcss: false, emotionAlias: false, buildStoriesJson: true },
+  features: {
+    postcss: false,
+    emotionAlias: false,
+    buildStoriesJson: true,
+    interactionsDebugger: true,
+  },
   stories: ['../src/**/*.stories.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
-  addons: ['@storybook/addon-links', '@storybook/addon-essentials'],
+  addons: [
+    '@storybook/addon-links',
+    '@storybook/addon-essentials',
+    '@storybook/addon-interactions',
+    'storybook-addon-pseudo-states',
+  ],
   webpackFinal: async (config) => {
     config.plugins.push(new webpack.DefinePlugin({ SC_DISABLE_SPEEDY: true }));
     return config;
