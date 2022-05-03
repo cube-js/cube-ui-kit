@@ -39,9 +39,7 @@
     "size": "size-limit",
     "postsize": "node -e 'require(\"./scripts/size-limit\").deleteMeasurer()'",
     "prepare": "husky install",
-    "clear": "rimraf ./dist",
-    "version": "changeset version",
-    "publish": "changeset publish"
+    "clear": "rimraf ./dist"
   },
   "publishConfig": {
     "directory": "dist"
