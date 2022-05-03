@@ -85,8 +85,9 @@ jobs:
 
   deploy-docs:
     name: 'Prepare Docs for the Review'
+    needs: publish
     runs-on: ubuntu-latest
-    if: ${{ steps.changesets.outputs.published }}
+    if: steps.changesets.outputs.published
     environment:
       name: Docs staging
       url: ${{ steps.publish_docs.outputs.NETLIFY_PREVIEW_URL }}
