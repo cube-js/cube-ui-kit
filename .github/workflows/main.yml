@@ -28,7 +28,7 @@ jobs:
             **/.eslintcache
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-yarn--${{ steps.yarn-cache-dir-path.outputs.version }}-${{ hashFiles('**/yarn.lock') }}
+            ${{ runner.os }}-yarn--${{ hashFiles('**/yarn.lock') }}
 
       - name: Install Dependencies
         run: yarn --frozen-lockfile
@@ -47,10 +47,12 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   deploy-chromatic:
-    name: 'Prepare Storybook for review & tests'
+    name: 'Deploy storybook to Chromatic'
+    needs: publish
+    if: needs.publish.outputs.published == 'false'
     runs-on: ubuntu-latest
     environment:
-      name: Chromatic staging
+      name: Chromatic Production
       url: ${{ steps.publish_chromatic.outputs.url }}
     env:
       CHROMATIC_RETRIES: 5
@@ -86,12 +88,12 @@ jobs:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
 
   deploy-docs:
-    name: 'Prepare Docs for the Review'
+    name: 'Deploy Latest documentation'
     needs: publish
-    runs-on: ubuntu-latest
     if: needs.publish.outputs.published == 'true'
+    runs-on: ubuntu-latest
     environment:
-      name: Docs staging
+      name: Docs Production
       url: ${{ steps.publish_docs.outputs.NETLIFY_PREVIEW_URL }}
     env:
       NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
