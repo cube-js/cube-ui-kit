@@ -10,58 +10,42 @@ concurrency:
 
 jobs:
   pull-request:
+    name: 'PR build and checks'
     runs-on: ubuntu-latest
     environment:
-      name: Chromatic staging
-      url: ${{ steps.publish_chromatic.outputs.url }}
+      name: Package in NPM
+      url: https://www.npmjs.com/package/@cube-dev/ui-kit/v/${{ steps.publish.outputs.version }}
     env:
       CI_JOB_NUMBER: 1
-      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      INPUT_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
 
       - name: Set env
         run: echo "SHORT_SHA=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_ENV
 
+      - uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: |
+            **/node_modules
+            **/.eslintcache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
-          cache: 'yarn'
+          node-version-file: '.nvmrc'
 
       - name: Install dependencies
-        run: |
-          yarn --frozen-lockfile --prefer-offline
-          yarn global add chromatic
+        run: yarn --frozen-lockfile
 
       - name: Increment canary
         run: npm version 0.0.0-canary-$SHORT_SHA --no-git-tag-version
 
       - name: Build project
         run: yarn build
-
-      - name: Measure size
-        run: GH_TOKEN=${{ secrets.GITHUB_TOKEN }} node ./scripts/ci/measure-size.mjs
-
-      - name: Run the lint
-        run: yarn lint
-
-      - name: Run the tests
-        run: npm run test
-
-      - name: Build Storybook
-        run: yarn build-storybook --quiet
-
-      - name: Deploy To Netlify
-        run: npx netlify-cli deploy
-
-      - name: Publish to Chromatic
-        id: publish_chromatic
-        uses: chromaui/action@v1
-        with:
-          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
 
       - name: Publish canary
         id: publish
@@ -73,15 +57,147 @@ jobs:
           check-version: true
           package: ./dist/package.json
 
-      - name: PR Comment
+      - name: Comment PR
         if: steps.publish.outputs.type != 'none'
         uses: actions/github-script@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            github.issues.createComment({
-              issue_number: ${{ github.event.number }},
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `:package: Deployed canary version ${{ steps.publish.outputs.version }}.`
+            const setMessage = require('${{ github.workspace }}/scripts/ci/set-message')
+
+            await setMessage({
+              header: "## :package: NPM canary release",
+              body: "Deployed canary version [${{ steps.publish.outputs.version }}](https://www.npmjs.com/package/@cube-dev/ui-kit/v/${{ steps.publish.outputs.version }}).",
+              github,
+              repo: context.repo,
+              prNumber: context.payload.pull_request.number
+            })
+
+      - name: Measure size
+        run: GH_TOKEN=${{ secrets.GITHUB_TOKEN }} node ./scripts/ci/measure-size.mjs
+
+      - name: Run the lint
+        run: yarn lint
+
+      - name: Run the tests
+        run: yarn test --no-cache
+
+  deploy-chromatic:
+    name: 'Prepare Storybook for review & tests'
+    runs-on: ubuntu-latest
+    environment:
+      name: Chromatic staging
+      url: ${{ steps.publish_chromatic.outputs.url }}
+    env:
+      CHROMATIC_RETRIES: 5
+      LOG_LEVEL: 'error'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: |
+            **/node_modules
+            **/.eslintcache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn--${{ steps.yarn-cache-dir-path.outputs.version }}-${{ hashFiles('**/yarn.lock') }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Install dependencies
+        run: yarn --frozen-lockfile
+
+      - name: Publish to Chromatic
+        id: publish_chromatic
+        uses: chromaui/action@v1
+        with:
+          exitZeroOnChanges: true
+          exitOnceUploaded: true
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+
+      - name: Comment PR
+        uses: actions/github-script@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const setMessage = require('${{ github.workspace }}/scripts/ci/set-message')
+
+            await setMessage({
+              header: "## 🧪 Storybook is successfully deployed!",
+              body: `
+                - 👀 Review changes: ${{ steps.publish_chromatic.outputs.url }}
+                - 👨‍🎨 Preview storybook: ${{ steps.publish_chromatic.outputs.storybookUrl }}
+              `,
+              github,
+              repo: context.repo,
+              prNumber: context.payload.pull_request.number
+            })
+
+  deploy-docs:
+    name: 'Prepare Docs for the Review'
+    runs-on: ubuntu-latest
+    environment:
+      name: Docs staging
+      url: ${{ steps.publish_docs.outputs.NETLIFY_PREVIEW_URL }}
+    env:
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: |
+            **/node_modules
+            **/.eslintcache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn--${{ steps.yarn-cache-dir-path.outputs.version }}-${{ hashFiles('**/yarn.lock') }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Install dependencies
+        run: yarn --frozen-lockfile
+
+      - name: Build Docs
+        run: yarn build-docs --quiet
+
+      - name: Deploy docs to Netlify
+        id: publish_docs
+        run: |
+          OUTPUT=$(sh -c "npx netlify-cli deploy")
+          NETLIFY_OUTPUT=$(echo "$OUTPUT")
+          NETLIFY_PREVIEW_URL=$(echo "$OUTPUT" | grep -Eo '(http|https)://[a-zA-Z0-9./?=_-]*(--)[a-zA-Z0-9./?=_-]*') #Unique key: --
+          NETLIFY_LOGS_URL=$(echo "$OUTPUT" | grep -Eo '(http|https)://app.netlify.com/[a-zA-Z0-9./?=_-]*') #Unique key: app.netlify.com
+          NETLIFY_LIVE_URL=$(echo "$OUTPUT" | grep -Eo '(http|https)://[a-zA-Z0-9./?=_-]*' | grep -Eov "netlify.com") #Unique key: don't containr -- and app.netlify.com
+
+          echo "::set-output name=NETLIFY_OUTPUT::$NETLIFY_OUTPUT"
+          echo "::set-output name=NETLIFY_PREVIEW_URL::$NETLIFY_PREVIEW_URL"
+          echo "::set-output name=NETLIFY_LOGS_URL::$NETLIFY_LOGS_URL"
+          echo "::set-output name=NETLIFY_LIVE_URL::$NETLIFY_LIVE_URL"
+      - name: Comment PR
+        uses: actions/github-script@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const setMessage = require('${{ github.workspace }}/scripts/ci/set-message')
+
+            await setMessage({
+              header: "## 🏗 Docs are successfully deployed!",
+              body: `
+                - 👀 Preview: ${{ steps.publish_docs.outputs.NETLIFY_PREVIEW_URL }}
+                - 📄 Logs: ${{ steps.publish_docs.outputs.NETLIFY_LOGS_URL }}
+              `,
+              github,
+              repo: context.repo,
+              prNumber: context.payload.pull_request.number
             })

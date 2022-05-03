@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-11.5 -10.23174 23 20.46348">
+  <rect width="1000%" height="1000%" fill="yellow" x="-500%" y="-500%"/>
+  <circle cx="0" cy="0" r="2.05" fill="#333"/>
+
+  <g xmlns="http://www.w3.org/2000/svg" stroke="#333" stroke-width="1" fill="none">
+    <ellipse rx="11" ry="4.2"/>
+    <ellipse rx="11" ry="4.2" transform="rotate(60)"/>
+    <ellipse rx="11" ry="4.2" transform="rotate(120)"/>
+  </g>
+
+  <text x="0%" y="50%" style="font-size: 14px;">🐞</text>
+</svg>

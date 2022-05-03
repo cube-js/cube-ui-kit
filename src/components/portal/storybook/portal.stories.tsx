@@ -1,10 +1,16 @@
 import { useRef } from 'react';
-import { Story } from '@storybook/react';
+import { ComponentMeta, Story } from '@storybook/react';
+
 import { Portal } from '../Portal';
 import { PortalProps } from '../types';
-import { Basic } from './templates';
+import { Basic, PortalOrderTemplate } from './templates';
 
-// eslint-disable-next-line storybook/default-exports
+export default {
+  title: 'Helpers/Portal',
+  component: Portal,
+  parameters: { layout: 'centered' },
+} as ComponentMeta<typeof Portal>;
+
 export const Default = Basic.bind({});
 
 export const Disabled = Basic.bind({});
@@ -14,9 +20,7 @@ Disabled.args = {
   isDisabled: true,
 };
 
-const CustomRootTemplate: Story<PortalProps> = function PortalWithCustomRoot(
-  args,
-) {
+export const CustomRoot: Story<PortalProps> = (args) => {
   const rootRef = useRef(null);
 
   return (
@@ -33,11 +37,10 @@ const CustomRootTemplate: Story<PortalProps> = function PortalWithCustomRoot(
   );
 };
 
-export const CustomRoot = CustomRootTemplate.bind({});
 CustomRoot.parameters = {
-  docs: {
-    source: {
-      type: 'code',
-    },
+  source: {
+    type: 'code',
   },
 };
+
+export { PortalOrderTemplate as PortalOrder };

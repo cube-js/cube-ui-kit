@@ -3,4 +3,4 @@ import '@testing-library/jest-dom/extend-expect';
 import 'jest-styled-components';
 import { configure } from '@testing-library/react';
 
-configure({ testIdAttribute: 'data-qa' });
+configure({ testIdAttribute: 'data-qa', asyncUtilTimeout: 10000 });

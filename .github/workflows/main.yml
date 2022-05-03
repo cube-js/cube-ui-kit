@@ -6,12 +6,19 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment:
+      name: Chromatic prod
+      url: ${{ steps.publish_chromatic.outputs.url }}
+
     env:
       INPUT_TOKEN: ${{ secrets.NPM_TOKEN }}
       NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
     steps:
       - uses: actions/checkout@v1
+        with:
+          fetch-depth: 0 # Required to retrieve git history
+
       - uses: actions/setup-node@v2
         with:
           node-version: 14
@@ -37,3 +44,9 @@ jobs:
 
       - name: Publish storybook
         run: npx netlify-cli deploy -p
+
+      - name: Publish to Chromatic
+        id: publish_chromatic
+        uses: chromaui/action@v1
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}

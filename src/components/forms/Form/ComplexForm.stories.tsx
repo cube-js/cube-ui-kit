@@ -1,4 +1,7 @@
 import { useRef } from 'react';
+import { Story } from '@storybook/react';
+import { expect } from '@storybook/jest';
+import { within, userEvent, waitFor } from '@storybook/testing-library';
 import {
   Paragraph,
   Text,
@@ -17,6 +20,7 @@ import {
   PasswordInput,
   Switch,
   Block,
+  CubeFormProps,
 } from '../../../index';
 import { NumberInput } from '../NumberInput/NumberInput';
 import { DialogForm } from '../../overlays/Dialog/DialogForm';
@@ -30,12 +34,10 @@ export default {
       exclude: baseProps,
     },
   },
-  argTypes: {},
 };
 
-const Template = (args) => {
+const Template: Story<CubeFormProps> = (args) => {
   const [form] = Form.useForm();
-  // const [form2] = Form.useForm();
 
   return (
     <>
@@ -44,12 +46,6 @@ const Template = (args) => {
       </Field>
       <Form
         form={form}
-        // labelStyles={
-        // {
-        // width: '200px',
-        // textAlign: 'right',
-        // }
-        // }
         {...args}
         onSubmit={(v) => {
           console.log('onSubmit:', v);
@@ -59,7 +55,6 @@ const Template = (args) => {
         }}
         defaultValues={{
           text: 'some',
-          // email: '',
           checkbox: true,
           select: {
             one: 'three',
@@ -172,119 +167,11 @@ const Template = (args) => {
         </Field>
         <Submit>Submit</Submit>
       </Form>
-      {/* testing for unique ids */}
-      {/*  <Form*/}
-      {/*  form={form2}*/}
-      {/*  isDisabled={isDisabled}*/}
-      {/*  labelPosition={labelPosition}*/}
-      {/*  requiredMark={requiredMark}*/}
-      {/*  labelStyles={{*/}
-      {/*    width: '200px',*/}
-      {/*    // textAlign: 'right',*/}
-      {/*  }}*/}
-      {/*  onSubmit={(v) => {*/}
-      {/*    console.log('onSubmit:', v);*/}
-      {/*  }}*/}
-      {/*  onValuesChange={(v) => {*/}
-      {/*    console.log('onChange', v);*/}
-      {/*  }}*/}
-      {/*  defaultValues={{*/}
-      {/*    text: 'some',*/}
-      {/*    email: '',*/}
-      {/*    checkbox: true,*/}
-      {/*    select: 'three',*/}
-      {/*    combobox: 'two',*/}
-      {/*    checkboxGroup: ['one', 'three'],*/}
-      {/*    radioGroup: 'two',*/}
-      {/*    switch: false,*/}
-      {/*  }}*/}
-      {/*>*/}
-      {/*  <Field*/}
-      {/*    name="text"*/}
-      {/*    validateTrigger="onChange"*/}
-      {/*    rules={[*/}
-      {/*      { required: true, message: 'This field is required' },*/}
-      {/*      () => ({*/}
-      {/*        validator(rule, value) {*/}
-      {/*          return value.length >= 8*/}
-      {/*            ? Promise.resolve()*/}
-      {/*            : Promise.reject(*/}
-      {/*                'This field should be at least 8 symbols long',*/}
-      {/*              );*/}
-      {/*        },*/}
-      {/*      }),*/}
-      {/*    ]}*/}
-      {/*  >*/}
-      {/*    <TextInput label="Text field" />*/}
-      {/*  </Field>*/}
-      {/*  <Field*/}
-      {/*    name="email"*/}
-      {/*    rules={[*/}
-      {/*      { required: true, message: 'This field is required' },*/}
-      {/*      {*/}
-      {/*        type: 'email',*/}
-      {/*        message: 'This field should be a valid email address',*/}
-      {/*      },*/}
-      {/*    ]}*/}
-      {/*  >*/}
-      {/*    <TextInput type="email" label="Email field" />*/}
-      {/*  </Field>*/}
-      {/*  <Field name="password">*/}
-      {/*    <PasswordInput label="Password field" />*/}
-      {/*  </Field>*/}
-      {/*  <Field name="select" label="Select field">*/}
-      {/*    <Select>*/}
-      {/*      <Item key="one">One</Item>*/}
-      {/*      <Item key="two">Two</Item>*/}
-      {/*      <Item key="three">Three</Item>*/}
-      {/*    </Select>*/}
-      {/*  </Field>*/}
-      {/*  <Field name="combobox" label="ComboBox field">*/}
-      {/*    <ComboBox>*/}
-      {/*      <Item key="one">One</Item>*/}
-      {/*      <Item key="two">Two</Item>*/}
-      {/*      <Item key="three">Three</Item>*/}
-      {/*    </ComboBox>*/}
-      {/*  </Field>*/}
-      {/*  <Field name="checkboxGroup" label="Checkbox group">*/}
-      {/*    <CheckboxGroup orientation="horizontal">*/}
-      {/*      <Checkbox value="one">One</Checkbox>*/}
-      {/*      <Checkbox value="two">Two</Checkbox>*/}
-      {/*      <Checkbox value="three">Three</Checkbox>*/}
-      {/*    </CheckboxGroup>*/}
-      {/*  </Field>*/}
-      {/*  <Field name="radioGroup" label="Radio group">*/}
-      {/*    <Radio.Group>*/}
-      {/*      <Radio value="one">One</Radio>*/}
-      {/*      <Radio value="two">Two</Radio>*/}
-      {/*      <Radio value="three">Three</Radio>*/}
-      {/*    </Radio.Group>*/}
-      {/*  </Field>*/}
-      {/*  <Field*/}
-      {/*    name="checkbox"*/}
-      {/*    rules={[{ required: true, message: 'This field is required' }]}*/}
-      {/*  >*/}
-      {/*    <Checkbox label="Checkbox field" />*/}
-      {/*  </Field>*/}
-      {/*  <Field*/}
-      {/*    name="switch"*/}
-      {/*    rules={[{ required: true, message: 'This field is required' }]}*/}
-      {/*  >*/}
-      {/*    <Switch label="Switch field" />*/}
-      {/*  </Field>*/}
-      {/*  <Field*/}
-      {/*    name="number"*/}
-      {/*    rules={[{ required: true, message: 'This field is required' }]}*/}
-      {/*  >*/}
-      {/*    <NumberInput label="Number field" />*/}
-      {/*  </Field>*/}
-      {/*  <Submit>Submit</Submit>*/}
-      {/*</Form>*/}
     </>
   );
 };
 
-const TemplateDialog = (args) => {
+const TemplateDialog: Story = (args) => {
   const deleteDeploymentFormRef = useRef(null);
 
   function onPress() {
@@ -295,12 +182,9 @@ const TemplateDialog = (args) => {
     <>
       <Button onPress={onPress}>Open Modal</Button>
       <DialogForm
+        title="Confirm delete"
         ref={deleteDeploymentFormRef}
-        onSubmit={(data) => console.log('Dialog Form Submit', data)}
-        submitProps={{
-          theme: 'danger',
-          label: 'Delete',
-        }}
+        submitProps={{ theme: 'danger', label: 'Delete' }}
       >
         <Paragraph>
           Are you sure you want to permanently delete&nbsp;
@@ -328,8 +212,13 @@ const TemplateDialog = (args) => {
   );
 };
 
-export const Default = Template.bind({});
-Default.args = {};
+export const Default: typeof Template = Template.bind({});
 
-export const FormInsideDialog = TemplateDialog.bind({});
-FormInsideDialog.args = {};
+export const FormInsideDialog: typeof TemplateDialog = TemplateDialog.bind({});
+FormInsideDialog.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const button = await canvas.findByRole('button');
+  await userEvent.click(button);
+
+  await waitFor(() => expect(canvas.getByRole('dialog')).toBeInTheDocument());
+};

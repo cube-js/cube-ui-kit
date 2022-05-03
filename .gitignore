@@ -5,6 +5,7 @@ node_modules
 .cache
 dist
 storybook-static
+storybook-docs
 build-storybook.log
 .vercel
 graph.png

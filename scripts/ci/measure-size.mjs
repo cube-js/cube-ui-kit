@@ -3,10 +3,10 @@ import { setFailed } from '@actions/core';
 import { exec } from '@actions/exec';
 import table from 'markdown-table';
 import bytes from 'bytes';
-import dedent from 'dedent';
-import { createMeasurer, deleteMeasurer } from '../size-limit.js'
+import { createMeasurer, deleteMeasurer } from '../size-limit.js';
+import setMessage from './set-message.js';
 
-const SIZE_LIMIT_HEADING = `## size-limit report 📦 `;
+const SIZE_LIMIT_HEADING = `## 🏋️ Size limit report`;
 
 async function run() {
   const { payload, repo } = context;
@@ -14,12 +14,12 @@ async function run() {
 
   const token = process.env.GH_TOKEN;
 
-  const octokit = new GitHub(token);
+  const github = new GitHub(token);
 
   let output = '';
 
   createMeasurer();
-  await exec('npx size-limit --json', [],{
+  await exec('npx size-limit --json', [], {
     ignoreReturnCode: true,
     listeners: {
       stdout: (data) => {
@@ -44,40 +44,13 @@ async function run() {
     ]),
   ]);
 
-  const commentList = await octokit.paginate(
-    'GET /repos/:owner/:repo/issues/:issue_number/comments',
-    {
-      ...repo,
-      // eslint-disable-next-line camelcase
-      issue_number: pr.number,
-    },
-  );
-
-  const commentBody = dedent`
-    ${SIZE_LIMIT_HEADING}
-
-    ${formattedTable}
-  `;
-
-  const sizeLimitComment = commentList.find((comment) =>
-    comment.body.startsWith(SIZE_LIMIT_HEADING),
-  );
-
-  if (!sizeLimitComment) {
-    await octokit.issues.createComment({
-      ...repo,
-      // eslint-disable-next-line camelcase
-      issue_number: pr.number,
-      body: commentBody,
-    });
-  } else {
-    await octokit.issues.updateComment({
-      ...repo,
-      // eslint-disable-next-line camelcase
-      comment_id: sizeLimitComment.id,
-      body: commentBody,
-    });
-  }
+  setMessage({
+    header: SIZE_LIMIT_HEADING,
+    body: formattedTable,
+    prNumber: pr.number,
+    repo,
+    github,
+  });
 
   if (jsonOutput.some((entry) => entry.passed === false)) {
     setFailed('Size limit has been exceeded.');
