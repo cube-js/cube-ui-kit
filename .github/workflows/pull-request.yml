@@ -1,8 +1,6 @@
 name: Pull Request
 on:
   pull_request:
-    branches:
-      - main
 
 concurrency:
   group: ci-pull-request=${{github.ref}}-1
@@ -13,7 +11,7 @@ jobs:
     name: 'PR build and checks'
     runs-on: ubuntu-latest
     environment:
-      name: Package in NPM
+      name: Canary package in NPM
       url: https://www.npmjs.com/package/@cube-dev/ui-kit/v/${{ steps.publish.outputs.version }}
     env:
       CI_JOB_NUMBER: 1
