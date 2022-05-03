@@ -10,6 +10,8 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 jobs:
   publish:
     runs-on: ubuntu-latest
+    outputs:
+      published: ${{ steps.changesets.outputs.published }}
     steps:
       - uses: actions/checkout@v2
 
@@ -87,7 +89,7 @@ jobs:
     name: 'Prepare Docs for the Review'
     needs: publish
     runs-on: ubuntu-latest
-    if: steps.changesets.outputs.published
+    if: needs.publish.outputs.published == 'true'
     environment:
       name: Docs staging
       url: ${{ steps.publish_docs.outputs.NETLIFY_PREVIEW_URL }}
