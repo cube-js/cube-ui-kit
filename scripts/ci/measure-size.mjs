@@ -6,7 +6,7 @@ import bytes from 'bytes';
 import { createMeasurer, deleteMeasurer } from '../size-limit.js';
 import setMessage from './set-message.js';
 
-const SIZE_LIMIT_HEADING = `## size-limit report 📦 `;
+const SIZE_LIMIT_HEADING = `## 🏋️ size-limit report`;
 
 async function run() {
   const { payload, repo } = context;
