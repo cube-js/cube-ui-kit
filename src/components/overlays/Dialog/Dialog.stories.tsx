@@ -1,4 +1,9 @@
 import { ModalProvider } from '@react-aria/overlays';
+import { within, userEvent } from '@storybook/testing-library';
+import { expect } from '@storybook/jest';
+import { Story } from '@storybook/react';
+import { CubeDialogProps } from './Dialog';
+import { CubeDialogTriggerProps } from './DialogTrigger';
 import {
   Button,
   Content,
@@ -16,37 +21,22 @@ export default {
   title: 'UIKit/Overlays/Dialog',
   component: Dialog,
   parameters: {
+    layout: 'centered',
     controls: {
       exclude: baseProps,
     },
   },
 };
 
-const Template = ({ size, ...props }) => {
+const Template: Story<
+  CubeDialogTriggerProps & { size: CubeDialogProps['size'] }
+> = ({ size, ...props }) => {
   return (
     <ModalProvider>
-      <DialogTrigger
-        {...props}
-        onDismiss={() => {
-          console.log('onDismiss event');
-        }}
-        // styles={{
-        //   transform: {
-        //     '': 'translate(100%, 0)',
-        //     open: 'translate(0, 0)',
-        //   },
-        // }}
-      >
-        <Button margin="30x top">Click me!</Button>
+      <DialogTrigger {...props}>
+        <Button>Click me!</Button>
         {(close) => (
-          <Dialog
-            size={size}
-            // styles={{
-            //   width: '320px',
-            //   placeSelf: 'end',
-            //   height: '@cube-visual-viewport-height',
-            // }}
-          >
+          <Dialog size={size}>
             <Header>
               <Title>Modal title</Title>
               <Text>Header</Text>
@@ -72,5 +62,9 @@ const Template = ({ size, ...props }) => {
   );
 };
 
-export const Default = Template.bind({});
-Default.args = {};
+export const Default: typeof Template = Template.bind({});
+Default.play = async ({ canvasElement }) => {
+  const { getByRole } = within(canvasElement);
+  await userEvent.click(getByRole('button'));
+  await expect(getByRole('dialog')).toBeInTheDocument();
+};

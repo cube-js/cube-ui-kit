@@ -1,11 +1,14 @@
-import React from 'react';
+import isChromatic from 'chromatic/isChromatic';
+import { config } from 'react-transition-group';
 import { DocsContainer } from '@storybook/addon-docs';
 import { Root } from '../src';
 
+if (isChromatic()) {
+  // disabling transitions
+  config.disabled = true;
+}
+
 export const parameters = {
-  actions: { argTypesRegex: '^on[A-Z].*' },
-  viewMode: 'docs',
-  previewTabs: { 'storybook/docs/panel': { index: -1 } },
   docs: {
     container: ({ children, context }) => (
       <DocsContainer context={context}>
@@ -13,6 +16,7 @@ export const parameters = {
       </DocsContainer>
     ),
   },
+  actions: { argTypesRegex: '^on[A-Z].*' },
 };
 
 export const decorators = [
