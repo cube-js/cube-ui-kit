@@ -1,52 +1,131 @@
+name: Release
+
 on:
   push:
     branches:
       - main
 
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment:
-      name: Chromatic prod
-      url: ${{ steps.publish_chromatic.outputs.url }}
-
-    env:
-      INPUT_TOKEN: ${{ secrets.NPM_TOKEN }}
-      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
     steps:
-      - uses: actions/checkout@v1
-        with:
-          fetch-depth: 0 # Required to retrieve git history
+      - uses: actions/checkout@v2
 
-      - uses: actions/setup-node@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version-file: '.nvmrc'
+
+      - uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: |
+            **/node_modules
+            **/.eslintcache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn--${{ steps.yarn-cache-dir-path.outputs.version }}-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install Dependencies
+        run: yarn --frozen-lockfile
+
+      - name: Build project
+        run: yarn build
+
+      - name: Create Release Pull Request or Publish to npm
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: npx changeset publish
+          commit: 'chore: release'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  deploy-chromatic:
+    name: 'Prepare Storybook for review & tests'
+    runs-on: ubuntu-latest
+    environment:
+      name: Chromatic staging
+      url: ${{ steps.publish_chromatic.outputs.url }}
+    env:
+      CHROMATIC_RETRIES: 5
+      LOG_LEVEL: 'error'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: |
+            **/node_modules
+            **/.eslintcache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn--${{ steps.yarn-cache-dir-path.outputs.version }}-${{ hashFiles('**/yarn.lock') }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
 
       - name: Install dependencies
         run: yarn --frozen-lockfile
-
-      - run: yarn build
-      - id: publish
-        uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          access: public
-          check-version: true
-          package: ./dist/package.json
-
-      - if: steps.publish.outputs.type != 'none'
-        run: |
-          echo "Version changed: ${{ steps.publish.outputs.old-version }} => ${{ steps.publish.outputs.version }}"
-
-      - name: Build storybook
-        run: yarn build-storybook --quiet
-
-      - name: Publish storybook
-        run: npx netlify-cli deploy -p
 
       - name: Publish to Chromatic
         id: publish_chromatic
         uses: chromaui/action@v1
         with:
+          exitZeroOnChanges: true
+          exitOnceUploaded: true
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+
+  deploy-docs:
+    name: 'Prepare Docs for the Review'
+    runs-on: ubuntu-latest
+    if: ${{ steps.changesets.outputs.published }}
+    environment:
+      name: Docs staging
+      url: ${{ steps.publish_docs.outputs.NETLIFY_PREVIEW_URL }}
+    env:
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: |
+            **/node_modules
+            **/.eslintcache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn--${{ steps.yarn-cache-dir-path.outputs.version }}-${{ hashFiles('**/yarn.lock') }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Install dependencies
+        run: yarn --frozen-lockfile
+
+      - name: Build Docs
+        run: yarn build-docs --quiet
+
+      - name: Deploy docs to Netlify
+        id: publish_docs
+        run: |
+          OUTPUT=$(sh -c "npx netlify-cli deploy")
+          NETLIFY_OUTPUT=$(echo "$OUTPUT")
+          NETLIFY_PREVIEW_URL=$(echo "$OUTPUT" | grep -Eo '(http|https)://[a-zA-Z0-9./?=_-]*(--)[a-zA-Z0-9./?=_-]*') #Unique key: --
+          NETLIFY_LOGS_URL=$(echo "$OUTPUT" | grep -Eo '(http|https)://app.netlify.com/[a-zA-Z0-9./?=_-]*') #Unique key: app.netlify.com
+          NETLIFY_LIVE_URL=$(echo "$OUTPUT" | grep -Eo '(http|https)://[a-zA-Z0-9./?=_-]*' | grep -Eov "netlify.com") #Unique key: don't containr -- and app.netlify.com
+
+          echo "::set-output name=NETLIFY_OUTPUT::$NETLIFY_OUTPUT"
+          echo "::set-output name=NETLIFY_PREVIEW_URL::$NETLIFY_PREVIEW_URL"
+          echo "::set-output name=NETLIFY_LOGS_URL::$NETLIFY_LOGS_URL"
+          echo "::set-output name=NETLIFY_LIVE_URL::$NETLIFY_LIVE_URL"
