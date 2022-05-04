@@ -171,6 +171,39 @@ export const GitActions = (props) => {
   );
 };
 
+export const MenuScrollable = (props) => {
+  return (
+    <Root>
+      <div style={{ padding: '20px', width: '340px' }}>
+        <Menu
+          {...props}
+          header="Git Actions"
+          styles={{ height: 'max 26x', overflow: 'auto' }}
+        >
+          <Menu.Section>
+            <Menu.Item key="created">Created At</Menu.Item>
+            <Menu.Item key="name">Name</Menu.Item>
+            <Menu.Item key="description">Descriptions</Menu.Item>
+          </Menu.Section>
+          <Menu.Section title="Orders">
+            <Menu.Item key="status">Status</Menu.Item>
+            <Menu.Item key="completed">Completed At</Menu.Item>
+          </Menu.Section>
+          <Menu.Section title="Line Items">
+            <Menu.Item key="created">Created At</Menu.Item>
+            <Menu.Item key="name">Name</Menu.Item>
+            <Menu.Item key="description">Descriptions</Menu.Item>
+          </Menu.Section>
+          <Menu.Section title="Orders">
+            <Menu.Item key="status">Status</Menu.Item>
+            <Menu.Item key="completed">Completed At</Menu.Item>
+          </Menu.Section>
+        </Menu>
+      </div>
+    </Root>
+  );
+};
+
 export const MenuSelectableSingle = (props) => {
   const [selectedKeys, setSelectedKeys] = useState(['1']);
   const onSelectionChange = (key) => {

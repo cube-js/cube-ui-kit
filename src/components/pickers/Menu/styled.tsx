@@ -5,6 +5,7 @@ export const StyledMenu = styled({
   tag: 'ul',
   name: 'Menu',
   styles: {
+    position: 'relative',
     display: 'flex',
     flow: 'column',
     fill: '#white',
@@ -42,6 +43,9 @@ export const StyledDivider = styled({
 export const StyledMenuHeader = styled(Space, {
   tag: 'li',
   styles: {
+    position: 'sticky',
+    top: '-0.5x',
+    zIndex: '1',
     fill: '#light',
     color: '#dark-02',
     preset: 'h5s',
