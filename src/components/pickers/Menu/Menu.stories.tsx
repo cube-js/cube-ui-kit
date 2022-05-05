@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { within, userEvent } from '@storybook/testing-library';
 import {
   BulbOutlined,
   CheckCircleFilled,
@@ -15,6 +16,7 @@ import {
 } from '../../../index';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { action } from '@storybook/addon-actions';
+import { expect } from '@storybook/jest';
 
 export default {
   title: 'UIKit/Pickers/Menu',
@@ -177,6 +179,7 @@ export const MenuScrollable = (props) => {
       <div style={{ padding: '20px', width: '340px' }}>
         <Menu
           {...props}
+          qa="GitActions"
           header="Git Actions"
           styles={{ height: 'max 26x', overflow: 'auto' }}
         >
@@ -202,6 +205,19 @@ export const MenuScrollable = (props) => {
       </div>
     </Root>
   );
+};
+
+MenuScrollable.play = async ({ canvasElement }) => {
+  const { getByRole } = within(canvasElement);
+  const $el = getByRole('menu');
+
+  await expect($el.scrollTop).toBe(0);
+
+  $el.scrollTo({ top: 100 });
+
+  await expect($el.scrollTop).toBe(100);
+
+  await expect($el).toBeInTheDocument();
 };
 
 export const MenuSelectableSingle = (props) => {
