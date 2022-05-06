@@ -7,7 +7,10 @@ export const StyledMenu = styled({
   styles: {
     display: 'flex',
     flow: 'column',
-    gap: '1px',
+    gap: {
+      '': '1px',
+      sections: '',
+    },
     fill: '#white',
     margin: '0',
     padding: {
