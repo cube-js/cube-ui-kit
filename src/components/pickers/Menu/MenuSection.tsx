@@ -3,7 +3,11 @@ import { MenuItem } from './MenuItem';
 import { Node } from '@react-types/shared';
 import { TreeState } from '@react-stately/tree';
 import { useMenuSection } from '@react-aria/menu';
-import { StyledMenu, StyledMenuItem, StyledMenuSectionHeading } from './styled';
+import {
+  StyledMenu,
+  StyledMenuSection,
+  StyledMenuSectionHeading,
+} from './styled';
 
 export interface CubeMenuSectionProps<T> {
   item: Node<T>;
@@ -19,16 +23,11 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
     'aria-label': item['aria-label'],
   });
 
-  const isFirstKey = item.key === state.collection.getFirstKey();
-
   return (
     <Fragment>
-      <StyledMenuItem {...itemProps}>
+      <StyledMenuSection {...itemProps}>
         {item.rendered && (
-          <StyledMenuSectionHeading
-            {...headingProps}
-            mods={{ first: isFirstKey }}
-          >
+          <StyledMenuSectionHeading {...headingProps}>
             {item.rendered}
           </StyledMenuSectionHeading>
         )}
@@ -50,7 +49,7 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
             return item;
           })}
         </StyledMenu>
-      </StyledMenuItem>
+      </StyledMenuSection>
     </Fragment>
   );
 }

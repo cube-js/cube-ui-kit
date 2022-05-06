@@ -55,6 +55,23 @@ export const StyledMenuHeader = styled(Space, {
   },
 });
 
+export const StyledMenuSection = styled({
+  tag: 'li',
+  styles: {
+    display: 'flex',
+    flow: 'column',
+    gap: '1px',
+    margin: '0',
+    padding: {
+      '': '0.5x 0',
+      ':first-of-type': '0 0 0.5x 0',
+      ':last-of-type': '0.5x 0 0 0',
+    },
+    listStyle: 'none',
+    fill: '#white',
+  },
+});
+
 export const StyledMenuItem = styled({
   tag: 'li',
   styles: {
