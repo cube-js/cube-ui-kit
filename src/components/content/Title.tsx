@@ -11,30 +11,6 @@ import {
   TagNameProps,
 } from '../types';
 import { tasty } from '../../tasty';
-import { Styles } from '../../styles/types';
-
-const DEFAULT_STYLES: Styles = {
-  gridArea: 'heading',
-  display: 'block',
-  color: '#dark',
-  preset: {
-    '': 'h6m',
-    '[data-level="1"]': 'h1',
-    '[data-level="2"]': 'h2',
-    '[data-level="3"]': 'h3',
-    '[data-level="4"]': 'h4',
-    '[data-level="5"]': 'h5',
-    '[data-level="6"]': 'h6',
-  },
-  margin: '0',
-  whiteSpace: {
-    '': 'initial',
-    'nowrap | ellipsis': 'nowrap',
-  },
-  textOverflow: 'ellipsis',
-  overflow: 'hidden',
-  width: 'max 100%',
-};
 
 const STYLE_LIST = [...TEXT_STYLES, ...CONTAINER_STYLES];
 
@@ -51,7 +27,28 @@ export interface CubeTitleProps
 const RawTitle = tasty({
   qa: 'Title',
   as: 'h1', // it should be dynamic
-  styles: DEFAULT_STYLES,
+  styles: {
+    gridArea: 'heading',
+    display: 'block',
+    color: '#dark',
+    preset: {
+      '': 'h6m',
+      '[data-level="1"]': 'h1',
+      '[data-level="2"]': 'h2',
+      '[data-level="3"]': 'h3',
+      '[data-level="4"]': 'h4',
+      '[data-level="5"]': 'h5',
+      '[data-level="6"]': 'h6',
+    },
+    margin: '0',
+    whiteSpace: {
+      '': 'initial',
+      'nowrap | ellipsis': 'nowrap',
+    },
+    textOverflow: 'ellipsis',
+    overflow: 'hidden',
+    width: 'max 100%',
+  },
 });
 
 const _Title = forwardRef(
@@ -78,7 +75,6 @@ const _Title = forwardRef(
         qa={qa || 'Title'}
         as={as || tag}
         styleName={styleName}
-        // @ts-ignore
         data-level={level || 1}
         mods={{
           nowrap,
