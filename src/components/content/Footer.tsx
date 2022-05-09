@@ -4,19 +4,17 @@ import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
 import { useSlotProps } from '../../utils/react';
 import { BaseProps, ContainerStyleProps, TextStyleProps } from '../types';
-import { styled } from '../../tasty';
+import { tasty } from '../../tasty';
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
-const RawFooter = styled({
-  name: 'Footer',
+const RawFooter = tasty({
+  qa: 'Footer',
+  'data-id': 'Footer',
   styles: {
     gridArea: 'footer',
     display: 'block',
     flow: 'column',
-  },
-  props: {
-    'data-id': 'Footer',
   },
 });
 

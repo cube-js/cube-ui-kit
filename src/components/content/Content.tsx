@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { styled } from '../../tasty';
+import { tasty } from '../../tasty';
 import { CONTAINER_STYLES, TEXT_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
@@ -8,9 +8,9 @@ import { BaseProps, ContainerStyleProps, TextStyleProps } from '../types';
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
-const RawContent = styled({
-  name: 'Content',
-  tag: 'section',
+const RawContent = tasty({
+  qa: 'Content',
+  as: 'section',
   styles: {
     gridArea: 'content',
     preset: 'p3',
@@ -20,9 +20,6 @@ const RawContent = styled({
     gap: '2x',
     overflow: 'auto',
     styledScrollbar: true,
-  },
-  props: {
-    'data-id': 'Content',
   },
 });
 

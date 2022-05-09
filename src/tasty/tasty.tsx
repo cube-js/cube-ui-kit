@@ -3,7 +3,7 @@ import { ComponentType, FC, forwardRef, useContext, useMemo } from 'react';
 import { isValidElementType } from 'react-is';
 import { BreakpointsContext } from '../providers/BreakpointsProvider';
 import { modAttrs } from '../utils/react';
-import { AllBaseProps, BaseStyleProps } from '../components/types';
+import { AllBaseProps, BaseStyleProps, Props } from '../components/types';
 import { renderStyles } from '../utils/renderStyles';
 import { pointsToZones } from '../utils/responsive';
 import { Styles, StylesInterface } from '../styles/types';
@@ -11,7 +11,10 @@ import { BASE_STYLES } from '../styles/list';
 import { ResponsiveStyleValue } from '../utils/styles';
 import { mergeStyles } from '../utils/mergeStyles';
 
-export type TastyProps<K extends (keyof StylesInterface)[], DefaultProps> = {
+export type TastyProps<
+  K extends (keyof StylesInterface)[],
+  DefaultProps = Props,
+> = {
   /** The tag name of the element. */
   as?: string;
   /** Default styles of the element. */
@@ -42,11 +45,10 @@ type TastyPropsWithDefaults<
       [key in keyof Omit<Props, keyof DefaultProps>]: Props[key];
     };
 
-function tasty<
-  K extends (keyof StylesInterface)[],
-  Props,
-  DefaultProps extends Partial<Props> = Partial<Props>,
->(options: TastyProps<K, DefaultProps>, secondArg?: never);
+function tasty<K extends (keyof StylesInterface)[]>(
+  options: TastyProps<K>,
+  secondArg?: never,
+);
 function tasty(selector: string, styles?: Styles);
 function tasty<
   K extends (keyof StylesInterface)[],

@@ -10,7 +10,7 @@ import { useNumberFieldState } from '@react-stately/numberfield';
 import { useNumberField } from '@react-aria/numberfield';
 import { StepButton } from './StepButton';
 import type { AriaNumberFieldProps } from '@react-types/numberfield';
-import { styled } from '../../../tasty';
+import { tasty } from '../../../tasty';
 import {
   castNullableNumberValue,
   WithNullableValue,
@@ -23,7 +23,7 @@ export interface CubeNumberInputProps
   hideStepper?: boolean;
 }
 
-const StepperContainer = styled({
+const StepperContainer = tasty({
   styles: {
     display: 'grid',
     gridColumns: '1fr',

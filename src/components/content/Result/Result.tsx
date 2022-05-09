@@ -7,7 +7,7 @@ import {
 } from '@ant-design/icons';
 
 import { Title } from '../Title';
-import { styled } from '../../../tasty';
+import { tasty } from '../../../tasty';
 import { CONTAINER_STYLES } from '../../../styles/list';
 import { BaseProps, ContainerStyleProps } from '../../types';
 import { filterBaseProps } from '../../../utils/filterBaseProps';
@@ -54,8 +54,8 @@ type StatusIconMap = Record<
   }
 >;
 
-const Container = styled({
-  name: 'ResultContainer',
+const Container = tasty({
+  qa: 'Result_Container',
   tag: 'section',
   styles: {
     display: 'flex',
@@ -78,7 +78,7 @@ const Container = styled({
   },
 });
 
-const IconWrapper = styled({
+const IconWrapper = tasty({
   styles: {
     fontSize: '10x',
   },

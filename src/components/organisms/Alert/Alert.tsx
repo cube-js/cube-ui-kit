@@ -4,10 +4,11 @@ import { CONTAINER_STYLES, TEXT_STYLES } from '../../../styles/list';
 import { extractStyles } from '../../../utils/styles';
 import { filterBaseProps } from '../../../utils/filterBaseProps';
 import { BaseProps, ContainerStyleProps, TextStyleProps } from '../../types';
-import { styled } from '../../../tasty';
+import { tasty } from '../../../tasty';
 
-const RawAlert = styled({
-  name: 'Alert',
+const RawAlert = tasty({
+  role: 'alert',
+  qa: 'Alert',
   styles: {
     display: 'block',
     flow: 'column',
@@ -34,10 +35,6 @@ const RawAlert = styled({
         return map;
       }, {}),
     },
-  },
-  props: {
-    role: 'alert',
-    qa: 'Alert',
   },
 });
 

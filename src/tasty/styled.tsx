@@ -7,8 +7,8 @@ import { useContextStyles } from '../providers/StylesProvider';
 import {
   AllBaseProps,
   BaseStyleProps,
-  StyledProps,
   GlobalStyledProps,
+  Props,
 } from '../components/types';
 import { renderStyles } from '../utils/renderStyles';
 import { pointsToZones } from '../utils/responsive';
@@ -17,6 +17,20 @@ import { BASE_STYLES } from '../styles/list';
 import { ResponsiveStyleValue } from '../utils/styles';
 import { mergeStyles } from '../utils/mergeStyles';
 import { deprecationWarning } from '../utils/warnings';
+
+export type StyledProps<K extends (keyof StylesInterface)[], DefaultProps> = {
+  /** The name of the element. It can be used to override styles in context. */
+  name?: string;
+  /** The tag name of the element. */
+  tag?: string;
+  /** Default styles of the element. */
+  styles?: Styles;
+  /** Default css of the element. */
+  css?: string | ((props: Props) => string);
+  props?: DefaultProps;
+  /** The list of styles that can be provided by props */
+  styleProps?: K;
+};
 
 export type AllBasePropsWithMods<K extends (keyof StylesInterface)[]> =
   AllBaseProps & {
@@ -237,6 +251,4 @@ function styled<
   return _StyledComponent;
 }
 
-const tasty = styled;
-
-export { styled, tasty };
+export { styled };

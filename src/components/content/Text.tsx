@@ -9,35 +9,10 @@ import {
   TagNameProps,
   TextStyleProps,
 } from '../types';
-import { Styles } from '../../styles/types';
-import { styled } from '../../tasty';
+import { tasty } from '../../tasty';
 import { useSlotProps } from '../../utils/react';
 
 const STYLE_LIST = [...BASE_STYLES, ...TEXT_STYLES, ...COLOR_STYLES] as const;
-
-const DEFAULT_STYLES: Styles = {
-  display: {
-    '': 'inline',
-    ellipsis: 'block',
-  },
-  margin: '0',
-  whiteSpace: {
-    '': 'inherit',
-    'nowrap | ellipsis': 'nowrap',
-  },
-  textOverflow: {
-    '': false,
-    ellipsis: 'ellipsis',
-  },
-  overflow: {
-    '': false,
-    ellipsis: 'hidden',
-  },
-  width: {
-    '': false,
-    ellipsis: 'max 100%',
-  },
-};
 
 export const TEXT_PROP_MAP = {
   transform: 'textTransform',
@@ -71,10 +46,32 @@ export interface CubeTextProps
   transform?: ResponsiveStyleValue<CSSProperties['textTransform']>;
 }
 
-const RawText = styled({
-  name: 'Text',
-  tag: 'span',
-  styles: DEFAULT_STYLES,
+const RawText = tasty({
+  qa: 'Text',
+  as: 'span',
+  styles: {
+    display: {
+      '': 'inline',
+      ellipsis: 'block',
+    },
+    margin: '0',
+    whiteSpace: {
+      '': 'inherit',
+      'nowrap | ellipsis': 'nowrap',
+    },
+    textOverflow: {
+      '': false,
+      ellipsis: 'ellipsis',
+    },
+    overflow: {
+      '': false,
+      ellipsis: 'hidden',
+    },
+    width: {
+      '': false,
+      ellipsis: 'max 100%',
+    },
+  },
 });
 
 const _Text = forwardRef((allProps: CubeTextProps, ref) => {

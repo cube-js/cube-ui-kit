@@ -2,7 +2,7 @@ import copy from 'clipboard-copy';
 import { Button } from '../../actions';
 import { Card, CubeCardProps } from '../../content/Card/Card';
 import { Grid } from '../../layout/Grid';
-import { styled } from '../../../tasty';
+import { tasty } from '../../../tasty';
 import {
   CubePrismCodeProps,
   PrismCode,
@@ -22,7 +22,7 @@ const POSITION_ACTION: CSSProperties = {
   zIndex: 1,
 };
 
-const StyledBlock = styled({
+const StyledBlock = tasty({
   styles: {
     position: 'relative',
     overflow: {
@@ -45,7 +45,7 @@ const StyledBlock = styled({
   },
 });
 
-const ButtonContainer = styled({
+const ButtonContainer = tasty({
   styles: {
     position: 'relative',
 

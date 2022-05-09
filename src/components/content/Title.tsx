@@ -10,7 +10,7 @@ import {
   PositionStyleProps,
   TagNameProps,
 } from '../types';
-import { styled } from '../../tasty';
+import { tasty } from '../../tasty';
 import { Styles } from '../../styles/types';
 
 const DEFAULT_STYLES: Styles = {
@@ -48,13 +48,10 @@ export interface CubeTitleProps
   level?: 1 | 2 | 3 | 4 | 5 | 6;
 }
 
-const RawTitle = styled({
-  name: 'Title',
-  tag: 'h1', // it should be dynamic
+const RawTitle = tasty({
+  qa: 'Title',
+  as: 'h1', // it should be dynamic
   styles: DEFAULT_STYLES,
-  props: {
-    'data-qa': 'Title',
-  },
 });
 
 const _Title = forwardRef(

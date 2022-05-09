@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { styled } from '../../tasty';
+import { tasty } from '../../tasty';
 import { CONTAINER_STYLES, TEXT_STYLES } from '../../styles/list';
 import { extractStyles } from '../../utils/styles';
 import { filterBaseProps } from '../../utils/filterBaseProps';
@@ -8,10 +8,9 @@ import { BaseProps, ContainerStyleProps, TextStyleProps } from '../types';
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
-const RawHeader = styled({
-  name: 'Header',
+const RawHeader = tasty({
+  qa: 'Header',
   tag: 'header',
-  props: { 'data-id': 'Header' },
   styles: {
     display: 'block',
     gridArea: 'header',

@@ -4,11 +4,11 @@ import { CONTAINER_STYLES } from '../../../styles/list';
 import { extractStyles } from '../../../utils/styles';
 import { filterBaseProps } from '../../../utils/filterBaseProps';
 import { BaseProps, ContainerStyleProps } from '../../types';
-import { styled } from '../../../tasty';
+import { tasty } from '../../../tasty';
 
-const RawBadge = styled({
-  name: 'Badge',
-  props: { role: 'region' },
+const RawBadge = tasty({
+  qa: 'Badge',
+  role: 'region',
   styles: {
     display: 'inline-flex',
     placeContent: 'center',
