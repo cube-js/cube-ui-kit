@@ -12,10 +12,8 @@ Let's look at styled API:
 import { tasty } from '@cube-dev/ui-kit';
 
 const Element = tasty({
-  /** The name of the element. It can be used to override styles in context. */
-  name: 'Article',
   /** The tag name of the element. */
-  tag: 'span',
+  as: 'span',
   /** Default styles of the element. */
   styles: {
     // tokens
@@ -60,10 +58,8 @@ You can use `tasty()` function to extend styling of the existing component.
 
 ```typescript jsx
 const CustomElement = tasty(Element, {
-  /** Change style name */
-  name: 'BigBlock',
   /** Change tag name */
-  tag: 'input',
+  as: 'input',
   /** Extend or rewrite styles */
   styles: {
     color: '#purple',

@@ -6,8 +6,8 @@ import { Styles } from '../../../styles/types';
 import { CONTAINER_STYLES } from '../../../styles/list';
 
 const RawPre = tasty({
+  as: 'pre',
   qa: 'CodeBlock',
-  tag: 'pre',
   styleProps: CONTAINER_STYLES.concat([]),
   className: 'cube-prism-code',
   styles: {

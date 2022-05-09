@@ -7,6 +7,10 @@ export const StyledMenu = tasty({
   styles: {
     display: 'flex',
     flow: 'column',
+    gap: {
+      '': '1px',
+      sections: '',
+    },
     fill: '#white',
     margin: '0',
     padding: {
@@ -54,12 +58,30 @@ export const StyledMenuHeader = tasty(Space, {
   },
 });
 
+export const StyledMenuSection = tasty({
+  as: 'li',
+  styles: {
+    display: 'flex',
+    flow: 'column',
+    gap: '1px',
+    margin: '0',
+    padding: {
+      '': '0.5x 0',
+      ':first-of-type': '0 0 0.5x 0',
+      ':last-of-type': '0.5x 0 0 0',
+    },
+    listStyle: 'none',
+    fill: '#white',
+  },
+});
+
 export const StyledMenuItem = tasty({
   as: 'li',
   styles: {
     display: 'flex',
     flow: 'column',
-    margin: '1px 0',
+    gap: '1px',
+    margin: '0',
     padding: '0',
     listStyle: 'none',
     fill: '#white',
@@ -73,7 +95,7 @@ export const StyledMenuItem = tasty({
 export const StyledMenuSectionHeading = tasty(Space, {
   as: 'header',
   styles: {
-    color: '#dark-04',
+    color: '#dark-03',
     preset: 'c1',
     padding: '(0.75x - 1bw) (1.5x - 1bw)',
     placeContent: 'space-between',

@@ -10,7 +10,7 @@ const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
 const RawHeader = tasty({
   qa: 'Header',
-  tag: 'header',
+  as: 'header',
   styles: {
     display: 'block',
     gridArea: 'header',
