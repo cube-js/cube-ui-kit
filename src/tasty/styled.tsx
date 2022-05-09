@@ -64,12 +64,21 @@ type EitherLegacyPropsOrInlined<
       props?: 'You Should use either legacy props field or inline props';
     } & DefaultProps);
 
+/**
+ * @deprecated Use `tasty()` helper instead.
+ */
 function styled<
   K extends (keyof StylesInterface)[],
   Props,
   DefaultProps extends Partial<Props> = Partial<Props>,
 >(options: StyledProps<K, DefaultProps>, secondArg?: never);
+/**
+ * @deprecated Use `tasty()` helper instead.
+ */
 function styled(selector: string, styles?: Styles);
+/**
+ * @deprecated Use `tasty()` helper instead.
+ */
 function styled<
   K extends (keyof StylesInterface)[],
   Props extends { styles?: Styles },
