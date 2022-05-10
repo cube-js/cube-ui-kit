@@ -77,8 +77,7 @@ const RawText = tasty({
 const _Text = forwardRef((allProps: CubeTextProps, ref) => {
   allProps = useSlotProps(allProps, 'text');
 
-  const { as, qa, block, styleName, ellipsis, css, nowrap, ...props } =
-    allProps;
+  const { as, qa, block, styleName, ellipsis, nowrap, ...props } = allProps;
   const styles = extractStyles(props, STYLE_LIST, {}, TEXT_PROP_MAP);
 
   return (
@@ -91,7 +90,6 @@ const _Text = forwardRef((allProps: CubeTextProps, ref) => {
         ellipsis,
       }}
       block={!!(block || ellipsis)}
-      css={css}
       {...filterBaseProps(props, { eventProps: true })}
       styles={styles}
       ref={ref}

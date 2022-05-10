@@ -19,11 +19,9 @@ export type TastyProps<
   as?: string;
   /** Default styles of the element. */
   styles?: Styles;
-  /** Default css of the element. */
-  css?: string;
   /** The list of styles that can be provided by props */
   styleProps?: K;
-} & Omit<DefaultProps, 'as' | 'styles' | 'css' | 'styleProps'>;
+} & Omit<DefaultProps, 'as' | 'styles' | 'styleProps'>;
 
 export interface GlobalTastyProps {
   breakpoints?: number[];
@@ -51,12 +49,11 @@ function tasty<K extends (keyof StylesInterface)[]>(
 );
 function tasty(selector: string, styles?: Styles);
 function tasty<
-  K extends (keyof StylesInterface)[],
   Props extends { styles?: Styles },
   DefaultProps extends Partial<Props> = Partial<Props>,
 >(
   Component: ComponentType<Props>,
-  options?: TastyProps<K, Props>,
+  options?: TastyProps<never, Props>,
 ): ComponentType<TastyPropsWithDefaults<Props, DefaultProps>>;
 
 // Implementation
@@ -96,29 +93,32 @@ function tasty<
   }
 
   if (isValidElementType(Component)) {
-    let {
-      styles: extendStyles,
-      as: extendTag,
-      ...defaultProps
-    } = options ?? {};
+    let { as: extendTag, ...defaultProps } = options ?? {};
 
-    const _WrappedComponent = forwardRef((props: C, ref) => {
-      const { styles, as, ...restProps } = props as AllBasePropsWithMods<K>;
+    let propsWithStyles = ['styles'].concat(
+      Object.keys(defaultProps).filter((prop) => prop.endsWith('Styles')),
+    );
 
-      const mergedStyles: Styles | undefined = useMemo(() => {
-        if (extendStyles != null && styles != null) {
-          return mergeStyles(extendStyles, styles);
-        }
+    let _WrappedComponent = forwardRef((props: C, ref) => {
+      const { as, ...restProps } = props as AllBasePropsWithMods<K>;
+      const propsWithStylesValues = propsWithStyles.map((prop) => props[prop]);
 
-        return extendStyles;
-      }, [styles]);
+      const mergedStylesMap: Styles | undefined = useMemo(() => {
+        return propsWithStylesValues.reduce((map, prop) => {
+          if (restProps[prop] != null && defaultProps[prop] != null) {
+            map[prop] = mergeStyles(restProps[prop], defaultProps[prop]);
+          }
+
+          return map;
+        }, {});
+      }, propsWithStylesValues);
 
       return (
         <Component
           ref={ref}
           {...defaultProps}
           {...restProps}
-          styles={mergedStyles}
+          {...mergedStylesMap}
           as={as ?? extendTag}
         />
       );
@@ -139,7 +139,6 @@ function tasty<
 
   let {
     as: originalAs = 'div',
-    css: defaultCSS,
     styles: defaultStyles,
     styleProps,
     ...defaultProps
@@ -148,17 +147,8 @@ function tasty<
   let Element = styledComponents[originalAs](({ css }) => css);
 
   let _TastyComponent = forwardRef((allProps: AllBasePropsWithMods<K>, ref) => {
-    let {
-      as,
-      styles,
-      breakpoints,
-      mods,
-      element,
-      qa,
-      qaVal,
-      css,
-      ...otherProps
-    } = allProps;
+    let { as, styles, breakpoints, mods, element, qa, qaVal, ...otherProps } =
+      allProps;
 
     let {
       qa: defaultQa,
@@ -197,11 +187,6 @@ function tasty<
       [allStyles, breakpoints],
     );
 
-    css = useMemo(
-      () => `${defaultCSS ?? ''}${css ?? ''}${renderedStyles}`,
-      [css, renderedStyles],
-    );
-
     if (mods) {
       Object.assign(otherProps, modAttrs(mods));
     }
@@ -215,7 +200,7 @@ function tasty<
         {...otherDefaultProps}
         {...otherProps}
         ref={ref}
-        css={css}
+        css={renderedStyles}
       />
     );
   });

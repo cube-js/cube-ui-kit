@@ -15,12 +15,35 @@ exports[`tasty() API should be able to override styles 1`] = `
   --current-color-rgb: var(--black-color-rgb);
 }
 
-@media (min-width:980px) {
+<div>
+  <div
+    class="c0"
+  />
+</div>
+`;
 
+exports[`tasty() API should create responsive styles 1`] = `
+.c0 {
+  outline: none;
+}
+
+.c0[hidden] {
+  display: none !important;
+}
+
+@media (min-width:980px) {
+  .c0 {
+    display: grid;
+  }
 }
 
 @media (max-width:979px) {
-
+  .c0 {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+  }
 }
 
 <div>
@@ -43,14 +66,6 @@ exports[`tasty() API should pass styles from tasty 1`] = `
   color: rgba(var(--clear-color-rgb),0.1);
   --current-color: var(--clear-color,clear);
   --current-color-rgb: var(--clear-color-rgb);
-}
-
-@media (min-width:980px) {
-
-}
-
-@media (max-width:979px) {
-
 }
 
 <div>

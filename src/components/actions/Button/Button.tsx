@@ -278,18 +278,8 @@ const DEFAULT_STYLES = {
 
 export const Button = forwardRef(
   (allProps: CubeButtonProps, ref: FocusableRef<HTMLElement>) => {
-    let {
-      type,
-      size,
-      label,
-      styles,
-      children,
-      theme,
-      css,
-      icon,
-      mods,
-      ...props
-    } = allProps;
+    let { type, size, label, styles, children, theme, icon, mods, ...props } =
+      allProps;
 
     const isDisabled = props.isDisabled;
     const isLoading = props.isLoading;
@@ -339,7 +329,6 @@ export const Button = forwardRef(
     return (
       <Action
         as={props.to ? 'a' : undefined}
-        css={css}
         {...props}
         ref={ref}
         isDisabled={isLoading || isDisabled}

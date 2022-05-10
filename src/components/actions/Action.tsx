@@ -65,8 +65,8 @@ export function parseTo(to): {
 } {
   const newTab = to && typeof to === 'string' && to.startsWith('!');
   const nativeRoute = to && typeof to === 'string' && to.startsWith('@');
-  const href: string | undefined
-    = to && typeof to === 'string'
+  const href: string | undefined =
+    to && typeof to === 'string'
       ? newTab || nativeRoute
         ? to.slice(1)
         : to
@@ -142,7 +142,6 @@ export const Action = forwardRef(
       htmlType,
       label,
       theme,
-      css,
       mods,
       onPress,
       ...props
@@ -209,7 +208,6 @@ export const Action = forwardRef(
         styles={styles}
         target={target}
         href={href}
-        css={css}
       />
     );
   },
