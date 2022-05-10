@@ -1,17 +1,21 @@
 import styledComponents, { createGlobalStyle } from 'styled-components';
 import { ComponentType, FC, forwardRef, useContext, useMemo } from 'react';
 import { isValidElementType } from 'react-is';
-import { BreakpointsContext } from './providers/BreakpointsProvider';
-import { modAttrs } from './utils/modAttrs';
-import { useContextStyles } from './providers/StylesProvider';
-import { AllBaseProps, BaseStyleProps, GlobalStyledProps } from './types';
-import { renderStyles } from './utils/renderStyles';
-import { pointsToZones } from './utils/responsive';
-import { Styles, StylesInterface } from './styles/types';
-import { BASE_STYLES } from './styles/list';
-import { ResponsiveStyleValue } from './utils/styles';
-import { mergeStyles } from './utils/mergeStyles';
-import { deprecationWarning } from './utils/warnings';
+import { BreakpointsContext } from '../tasty/providers/BreakpointsProvider';
+import { modAttrs } from '../tasty/utils/modAttrs';
+import { useContextStyles } from '../tasty/providers/StylesProvider';
+import {
+  AllBaseProps,
+  BaseStyleProps,
+  GlobalStyledProps,
+} from '../tasty/types';
+import { renderStyles } from '../tasty/utils/renderStyles';
+import { pointsToZones } from '../tasty/utils/responsive';
+import { Styles, StylesInterface } from '../tasty/styles/types';
+import { BASE_STYLES } from '../tasty/styles/list';
+import { ResponsiveStyleValue } from '../tasty/utils/styles';
+import { mergeStyles } from '../tasty/utils/mergeStyles';
+import { deprecationWarning } from '../tasty/utils/warnings';
 
 export type StyledProps<K extends (keyof StylesInterface)[], DefaultProps> = {
   /** The name of the element. It can be used to override styles in context. */

@@ -1,3 +1,3 @@
-export * from './styled';
+export * from '../styled/styled';
 export { tasty } from './tasty';
 export type { TastyProps, GlobalTastyProps } from './tasty';
