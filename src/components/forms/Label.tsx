@@ -57,28 +57,30 @@ export const INLINE_LABEL_STYLES: Styles = {
   whiteSpace: 'nowrap',
 } as const;
 
+export const LABEL_STYLES: Styles = {
+  display: 'block',
+  fontWeight: 600,
+  preset: 'default',
+  padding: {
+    '': '0',
+    side: '(1x - 1bw) top',
+  },
+  color: {
+    '': '#dark',
+    invalid: '#danger-text',
+    disabled: '#dark.30',
+  },
+  whiteSpace: 'nowrap',
+  width: {
+    '': 'initial',
+    side: '@(label-width, initial)',
+  },
+};
+
 const RawLabel = tasty({
   as: 'label',
   qa: 'Label',
-  styles: {
-    display: 'block',
-    fontWeight: 600,
-    preset: 'default',
-    padding: {
-      '': '0',
-      side: '(1x - 1bw) top',
-    },
-    color: {
-      '': '#dark',
-      invalid: '#danger-text',
-      disabled: '#dark.30',
-    },
-    whiteSpace: 'nowrap',
-    width: {
-      '': 'initial',
-      side: '@(label-width, initial)',
-    },
-  },
+  styles: LABEL_STYLES,
 });
 
 export interface CubeLabelProps
