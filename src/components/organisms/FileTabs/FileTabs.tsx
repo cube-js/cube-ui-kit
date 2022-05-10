@@ -12,7 +12,7 @@ import { Block } from '../../Block';
 import { Action, CubeActionProps } from '../../actions/Action';
 import { Space } from '../../layout/Space';
 import { Flex, CubeFlexProps } from '../../layout/Flex';
-import { Styles } from '../../../styles/types';
+import { Styles } from '../../../tasty/styles/types';
 import { tasty } from '../../../tasty';
 
 interface TabData {

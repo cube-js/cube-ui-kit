@@ -10,11 +10,11 @@ import { useDOMRef } from '@react-spectrum/utils';
 import { useTreeState } from '@react-stately/tree';
 import type { AriaMenuProps } from '@react-types/menu';
 
-import { ContainerStyleProps } from '../../types';
-import { useContextStyles } from '../../../providers/StylesProvider';
-import { Styles } from '../../../styles/types';
-import { CONTAINER_STYLES } from '../../../styles/list';
-import { extractStyles } from '../../../utils/styles';
+import { ContainerStyleProps } from '../../../tasty/types';
+import { useContextStyles } from '../../../tasty/providers/StylesProvider';
+import { Styles } from '../../../tasty/styles/types';
+import { CONTAINER_STYLES } from '../../../tasty/styles/list';
+import { extractStyles } from '../../../tasty/utils/styles';
 import { StyledMenu, StyledMenuHeader } from './styled';
 import { MenuItem } from './MenuItem';
 import { MenuSection } from './MenuSection';

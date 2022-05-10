@@ -1,7 +1,7 @@
 import { forwardRef, HTMLAttributes } from 'react';
 import { Base } from '../../Base';
-import { useContextStyles } from '../../../providers/StylesProvider';
-import { Styles } from '../../../styles/types';
+import { useContextStyles } from '../../../tasty/providers/StylesProvider';
+import { Styles } from '../../../tasty/styles/types';
 
 const UNDERLAY_STYLES: Styles = {
   position: 'fixed',

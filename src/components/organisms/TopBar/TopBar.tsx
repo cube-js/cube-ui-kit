@@ -1,11 +1,11 @@
 import { Base } from '../../Base';
 import { CloudLogo } from '../../other/CloudLogo/CloudLogo';
 import { Space } from '../../layout/Space';
-import { CONTAINER_STYLES } from '../../../styles/list';
-import { extractStyles } from '../../../utils/styles';
-import { Styles } from '../../../styles/types';
-import { BaseProps, ContainerStyleProps } from '../../types';
-import { filterBaseProps } from '../../../utils/filterBaseProps';
+import { CONTAINER_STYLES } from '../../../tasty/styles/list';
+import { extractStyles } from '../../../tasty/utils/styles';
+import { Styles } from '../../../tasty/styles/types';
+import { BaseProps, ContainerStyleProps } from '../../../tasty/types';
+import { filterBaseProps } from '../../../tasty/utils/filterBaseProps';
 
 const DEFAULT_STYLES: Styles = {
   display: 'flex',

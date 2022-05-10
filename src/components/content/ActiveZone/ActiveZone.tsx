@@ -1,21 +1,21 @@
 import { forwardRef, MouseEventHandler } from 'react';
 import { useHover } from '@react-aria/interactions';
 import { mergeProps } from '../../../utils/react';
-import { CONTAINER_STYLES, TEXT_STYLES } from '../../../styles/list';
+import { CONTAINER_STYLES, TEXT_STYLES } from '../../../tasty/styles/list';
 import { Base } from '../../Base';
-import { extractStyles } from '../../../utils/styles';
-import { filterBaseProps } from '../../../utils/filterBaseProps';
+import { extractStyles } from '../../../tasty/utils/styles';
+import { filterBaseProps } from '../../../tasty/utils/filterBaseProps';
 import {
   BaseProps,
   BaseStyleProps,
   ContainerStyleProps,
   TagNameProps,
   TextStyleProps,
-} from '../../types';
-import { Styles } from '../../../styles/types';
+} from '../../../tasty/types';
+import { Styles } from '../../../tasty/styles/types';
 import { useFocusableRef } from '@react-spectrum/utils';
 import { FocusableOptions, useFocusable } from '@react-aria/focus';
-import { useFocus } from '../../../utils/interactions';
+import { useFocus } from '../../../utils/react/interactions';
 
 export interface CubeActiveZoneProps
   extends BaseProps,

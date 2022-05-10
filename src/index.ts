@@ -147,7 +147,7 @@ export type { CubeSearchResultsProps } from './components/organisms/SearchResult
 export { notification } from './services/notification';
 export type { CubeNotificationOptions } from './services/notification';
 
-export * from './providers/BreakpointsProvider';
+export * from './tasty/providers/BreakpointsProvider';
 
 export const Typography = {
   Text,
@@ -158,7 +158,10 @@ export const Typography = {
 export { Text, Title, Paragraph };
 export type { CubeTextProps, CubeTitleProps, CubeParagraphProps };
 
-export { useContextStyles, StyleProvider } from './providers/StylesProvider';
+export {
+  useContextStyles,
+  StyleProvider,
+} from './tasty/providers/StylesProvider';
 
 export { Provider } from './provider';
 export type { useProviderProps } from './provider';
@@ -183,10 +186,10 @@ export type {
   Props,
   FlowStyleProps,
   ShortGridStyles,
-} from './components/types';
-export * from './styles/types';
-export * from './styles/list';
-export * from './styles/index';
+} from './tasty/types';
+export * from './tasty/styles/types';
+export * from './tasty/styles/list';
+export * from './tasty/styles/index';
 
 export { ModalProvider } from '@react-aria/overlays';
 export * from './utils/react';

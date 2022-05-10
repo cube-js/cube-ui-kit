@@ -1,18 +1,22 @@
 import { useDOMRef } from '@react-spectrum/utils';
 import { forwardRef, MouseEventHandler } from 'react';
 import { useProviderProps } from '../../provider';
-import { extractStyles } from '../../utils/styles';
-import { CONTAINER_STYLES } from '../../styles/list';
+import { extractStyles } from '../../tasty/utils/styles';
+import { CONTAINER_STYLES } from '../../tasty/styles/list';
 import { Base } from '../Base';
-import { useContextStyles } from '../../providers/StylesProvider';
-import { filterBaseProps } from '../../utils/filterBaseProps';
-import { BaseProps, ContainerStyleProps, TagNameProps } from '../types';
+import { useContextStyles } from '../../tasty/providers/StylesProvider';
+import { filterBaseProps } from '../../tasty/utils/filterBaseProps';
+import {
+  BaseProps,
+  ContainerStyleProps,
+  TagNameProps,
+} from '../../tasty/types';
 import {
   LabelPosition,
   NecessityIndicator,
   ValidationState,
 } from '../../shared';
-import { Styles } from '../../styles/types';
+import { Styles } from '../../tasty/styles/types';
 import { tasty } from '../../tasty';
 
 const REQUIRED_ICON = (

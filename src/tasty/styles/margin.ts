@@ -35,9 +35,9 @@ export function marginStyle({
     const index = DIRECTIONS.indexOf(dir);
 
     if (
-      ((!!(index % 2) && marginInline == null)
-        || (!(index % 2) && marginBlock == null))
-      && marginDirs[index] == null
+      ((!!(index % 2) && marginInline == null) ||
+        (!(index % 2) && marginBlock == null)) &&
+      marginDirs[index] == null
     ) {
       styles[`margin-${dir}`] = values[index] || values[index % 2] || values[0];
     }

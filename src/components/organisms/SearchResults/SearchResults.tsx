@@ -11,7 +11,7 @@ import { Space } from '../../layout/Space';
 import { Block } from '../../Block';
 import { Paragraph } from '../../content/Paragraph';
 import { Text } from '../../content/Text';
-import { Styles } from '../../../styles/types';
+import { Styles } from '../../../tasty/styles/types';
 
 export type CubeSearchFileData = {
   title?: string;

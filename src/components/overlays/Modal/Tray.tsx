@@ -6,9 +6,9 @@ import { Underlay } from './Underlay';
 import { useModal, useOverlay, usePreventScroll } from '@react-aria/overlays';
 import { OVERLAY_WRAPPER_STYLES } from './Modal';
 import { Base } from '../../Base';
-import { useContextStyles } from '../../../providers/StylesProvider';
-import { Styles } from '../../../styles/types';
-import { BaseProps, Props } from '../../types';
+import { useContextStyles } from '../../../tasty/providers/StylesProvider';
+import { Styles } from '../../../tasty/styles/types';
+import { BaseProps, Props } from '../../../tasty/types';
 import { mergeProps } from '../../../utils/react';
 import type { TrayProps } from '@react-types/overlays';
 
@@ -74,7 +74,7 @@ function Tray(props: CubeTrayProps, ref) {
   );
 }
 
-let TrayWrapper = forwardRef(function(props: CubeTrayWrapperProps, ref) {
+let TrayWrapper = forwardRef(function (props: CubeTrayWrapperProps, ref) {
   let {
     qa,
     children,

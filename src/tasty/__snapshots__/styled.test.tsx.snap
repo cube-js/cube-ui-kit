@@ -47,7 +47,7 @@ exports[`styled() API should pass styles from tasty 1`] = `
 exports[`styled() API should warn about deprecated API 1`] = `
 Array [
   Array [
-    "CubeUIKit:",
+    "Tasty:",
     "\\"props\\" is deprecated, consider better alternative: inline props directly in styled(), eg: styled({ type: 'confirm' })",
   ],
 ]

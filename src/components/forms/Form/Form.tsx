@@ -9,15 +9,15 @@ import {
   useEffect,
 } from 'react';
 import { Base } from '../../Base';
-import { extractStyles } from '../../../utils/styles';
-import { CONTAINER_STYLES } from '../../../styles/list';
-import { filterBaseProps } from '../../../utils/filterBaseProps';
+import { extractStyles } from '../../../tasty/utils/styles';
+import { CONTAINER_STYLES } from '../../../tasty/styles/list';
+import { filterBaseProps } from '../../../tasty/utils/filterBaseProps';
 import { CubeFormInstance, useForm, CubeFormData } from './useForm';
 import { useCombinedRefs } from '../../../utils/react';
 import { timeout } from '../../../utils/promise';
-import { BaseProps, ContainerStyleProps } from '../../types';
+import { BaseProps, ContainerStyleProps } from '../../../tasty/types';
 import { FormBaseProps } from '../../../shared';
-import { Styles } from '../../../styles/types';
+import { Styles } from '../../../tasty/styles/types';
 
 export const FormContext = createContext({});
 
@@ -107,8 +107,8 @@ function Form(props: CubeFormProps, ref) {
           const evt = e.nativeEvent;
 
           if (
-            evt.submitter
-            && evt.submitter.getAttribute('type') !== 'submit'
+            evt.submitter &&
+            evt.submitter.getAttribute('type') !== 'submit'
           ) {
             return;
           }
@@ -116,7 +116,7 @@ function Form(props: CubeFormProps, ref) {
       }
 
       return form?.validateFields().then(
-        async() => {
+        async () => {
           await timeout();
 
           if (form && !form.isSubmitting) {
@@ -128,7 +128,7 @@ function Form(props: CubeFormProps, ref) {
             }
           }
         },
-        async(e) => {
+        async (e) => {
           await timeout();
           if (e instanceof Error) {
             throw e;

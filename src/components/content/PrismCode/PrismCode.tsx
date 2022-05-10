@@ -1,9 +1,9 @@
 import { forwardRef, useEffect } from 'react';
 import Prism from 'prismjs';
-import { BaseProps, ContainerStyleProps } from '../../types';
+import { BaseProps, ContainerStyleProps } from '../../../tasty/types';
 import { tasty } from '../../../tasty';
-import { Styles } from '../../../styles/types';
-import { CONTAINER_STYLES } from '../../../styles/list';
+import { Styles } from '../../../tasty/styles/types';
+import { CONTAINER_STYLES } from '../../../tasty/styles/list';
 
 const RawPre = tasty({
   as: 'pre',

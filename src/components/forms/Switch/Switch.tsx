@@ -4,20 +4,24 @@ import { useSwitch } from '@react-aria/switch';
 import { useHover } from '@react-aria/interactions';
 import { useToggleState } from '@react-stately/toggle';
 import { useProviderProps } from '../../../provider';
-import { BLOCK_STYLES, OUTER_STYLES } from '../../../styles/list';
-import { extractStyles } from '../../../utils/styles';
+import { BLOCK_STYLES, OUTER_STYLES } from '../../../tasty/styles/list';
+import { extractStyles } from '../../../tasty/utils/styles';
 import { Base } from '../../Base';
-import { useFocus } from '../../../utils/interactions';
+import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react';
-import { filterBaseProps } from '../../../utils/filterBaseProps';
-import { useContextStyles } from '../../../providers/StylesProvider';
+import { filterBaseProps } from '../../../tasty/utils/filterBaseProps';
+import { useContextStyles } from '../../../tasty/providers/StylesProvider';
 import { HiddenInput } from '../../HiddenInput';
 import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../Label';
 import { LoadingOutlined } from '@ant-design/icons';
 import { useFormProps } from '../Form/Form';
 import { FieldWrapper } from '../FieldWrapper';
-import { Styles } from '../../../styles/types';
-import { BaseProps, BlockStyleProps, OuterStyleProps } from '../../types';
+import { Styles } from '../../../tasty/styles/types';
+import {
+  BaseProps,
+  BlockStyleProps,
+  OuterStyleProps,
+} from '../../../tasty/types';
 import type { AriaSwitchProps } from '@react-types/switch';
 import { FormFieldProps } from '../../../shared';
 import {

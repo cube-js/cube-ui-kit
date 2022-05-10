@@ -8,7 +8,7 @@ import {
   DIMENSION_STYLES,
   TEXT_STYLES,
   POSITION_STYLES,
-} from '../../styles/list';
+} from '../../tasty/styles/list';
 
 const allStyles: string[] = Array.from(
   new Set([

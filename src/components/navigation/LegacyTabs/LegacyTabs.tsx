@@ -11,7 +11,7 @@ import { Block } from '../../Block';
 import { Space } from '../../layout/Space';
 import { CubeFlexProps, Flex } from '../../layout/Flex';
 import { Button, CubeButtonProps } from '../../actions';
-import { Styles } from '../../../styles/types';
+import { Styles } from '../../../tasty/styles/types';
 
 export interface CubeTabData {
   id: string | number;

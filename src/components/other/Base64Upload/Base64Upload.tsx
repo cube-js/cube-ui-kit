@@ -3,12 +3,12 @@ import { Button } from '../../actions';
 import { Block } from '../../Block';
 import { Text } from '../../content/Text';
 import styled from 'styled-components';
-import { extractStyles } from '../../../utils/styles';
-import { POSITION_STYLES } from '../../../styles/list';
-import { filterBaseProps } from '../../../utils/filterBaseProps';
-import { BaseProps, PositionStyleProps } from '../../types';
+import { extractStyles } from '../../../tasty/utils/styles';
+import { POSITION_STYLES } from '../../../tasty/styles/list';
+import { filterBaseProps } from '../../../tasty/utils/filterBaseProps';
+import { BaseProps, PositionStyleProps } from '../../../tasty/types';
 import { FocusableRef } from '@react-types/shared';
-import { Styles } from '../../../styles/types';
+import { Styles } from '../../../tasty/styles/types';
 
 const DEFAULT_STYLES: Styles = {
   display: 'inline-flex',

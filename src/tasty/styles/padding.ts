@@ -35,12 +35,12 @@ export function paddingStyle({
     const index = DIRECTIONS.indexOf(dir);
 
     if (
-      ((!!(index % 2) && paddingInline == null)
-        || (!(index % 2) && paddingBlock == null))
-      && paddingDirs[index] == null
+      ((!!(index % 2) && paddingInline == null) ||
+        (!(index % 2) && paddingBlock == null)) &&
+      paddingDirs[index] == null
     ) {
-      styles[`padding-${dir}`]
-        = values[index] || values[index % 2] || values[0];
+      styles[`padding-${dir}`] =
+        values[index] || values[index % 2] || values[0];
     }
 
     return styles;

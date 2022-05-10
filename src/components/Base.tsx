@@ -1,11 +1,11 @@
 import { forwardRef, useContext } from 'react';
 import styled from 'styled-components';
-import { BreakpointsContext } from '../providers/BreakpointsProvider';
-import { pointsToZones } from '../utils/responsive';
-import { renderStyles } from '../utils/renderStyles';
+import { BreakpointsContext } from '../tasty/providers/BreakpointsProvider';
+import { pointsToZones } from '../tasty/utils/responsive';
+import { renderStyles } from '../tasty/utils/renderStyles';
 import { modAttrs } from '../utils/react';
-import { AllBaseProps } from './types';
-import { Styles } from '../styles/types';
+import { AllBaseProps } from '../tasty/types';
+import { Styles } from '../tasty/styles/types';
 
 const BLOCK_MAP = {
   inline: 'block',

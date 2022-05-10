@@ -26,21 +26,21 @@ import { useFormProps } from '../../forms/Form/Form';
 import { useFocus as useAriaFocus, useHover } from '@react-aria/interactions';
 import { useProviderProps } from '../../../provider';
 import { Base } from '../../Base';
-import { extractStyles } from '../../../utils/styles';
-import { BLOCK_STYLES, OUTER_STYLES } from '../../../styles/list';
-import { useFocus } from '../../../utils/interactions';
-import { useContextStyles } from '../../../providers/StylesProvider';
+import { extractStyles } from '../../../tasty/utils/styles';
+import { BLOCK_STYLES, OUTER_STYLES } from '../../../tasty/styles/list';
+import { useFocus } from '../../../utils/react/interactions';
+import { useContextStyles } from '../../../tasty/providers/StylesProvider';
 import { useCombinedRefs } from '../../../utils/react';
 import { FieldWrapper } from '../../forms/FieldWrapper';
 import { Item } from '@react-stately/collections';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
-import { Styles } from '../../../styles/types';
+import { Styles } from '../../../tasty/styles/types';
 import {
   BasePropsWithoutChildren,
   BlockStyleProps,
   OuterStyleProps,
   Props,
-} from '../../types';
+} from '../../../tasty/types';
 import type { AriaSelectProps } from '@react-types/select';
 import { DOMRef } from '@react-types/shared';
 import { FormFieldProps } from '../../../shared';

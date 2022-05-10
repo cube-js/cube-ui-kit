@@ -9,7 +9,7 @@ import {
 } from '../../content/PrismCode/PrismCode';
 import { notification } from '../../../services/notification';
 import { CopyOutlined } from '@ant-design/icons';
-import { Styles } from '../../../styles/types';
+import { Styles } from '../../../tasty/styles/types';
 import { CSSProperties } from 'react';
 import { TooltipTrigger } from '../../overlays/Tooltip/TooltipTrigger';
 import { Action } from '../../actions/Action';

@@ -17,27 +17,27 @@ import { useFormProps } from '../Form/Form';
 import { useHover } from '@react-aria/interactions';
 import { useProviderProps } from '../../../provider';
 import { Base } from '../../Base';
-import { extractStyles } from '../../../utils/styles';
+import { extractStyles } from '../../../tasty/utils/styles';
 import {
   BLOCK_STYLES,
   POSITION_STYLES,
   DIMENSION_STYLES,
-} from '../../../styles/list';
-import { useFocus } from '../../../utils/interactions';
+} from '../../../tasty/styles/list';
+import { useFocus } from '../../../utils/react/interactions';
 import { Prefix } from '../../layout/Prefix';
 import { Suffix } from '../../layout/Suffix';
-import { useContextStyles } from '../../../providers/StylesProvider';
+import { useContextStyles } from '../../../tasty/providers/StylesProvider';
 import { FieldWrapper } from '../FieldWrapper';
 import { Space } from '../../layout/Space';
 import { Block } from '../../Block';
-import { Styles } from '../../../styles/types';
+import { Styles } from '../../../tasty/styles/types';
 import {
   BaseProps,
   BlockStyleProps,
   DimensionStyleProps,
   PositionStyleProps,
   Props,
-} from '../../types';
+} from '../../../tasty/types';
 import { FormFieldProps } from '../../../shared';
 import type { AriaTextFieldProps } from '@react-types/textfield';
 import { mergeProps } from '../../../utils/react';

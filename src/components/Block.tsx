@@ -1,8 +1,8 @@
 import { forwardRef } from 'react';
-import { CONTAINER_STYLES } from '../styles/list';
-import { extractStyles } from '../utils/styles';
-import { filterBaseProps } from '../utils/filterBaseProps';
-import { AllBaseProps, ContainerStyleProps } from './types';
+import { CONTAINER_STYLES } from '../tasty/styles/list';
+import { extractStyles } from '../tasty/utils/styles';
+import { filterBaseProps } from '../tasty/utils/filterBaseProps';
+import { AllBaseProps, ContainerStyleProps } from '../tasty/types';
 import { tasty } from '../tasty';
 
 const RawBlock = tasty({

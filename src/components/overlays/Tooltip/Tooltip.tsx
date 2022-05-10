@@ -4,12 +4,12 @@ import { createDOMRef } from '@react-spectrum/utils';
 import { TooltipContext } from './context';
 import { useTooltip } from '@react-aria/tooltip';
 import { Base } from '../../Base';
-import { extractStyles } from '../../../utils/styles';
-import { CONTAINER_STYLES } from '../../../styles/list';
-import { useContextStyles } from '../../../providers/StylesProvider';
+import { extractStyles } from '../../../tasty/utils/styles';
+import { CONTAINER_STYLES } from '../../../tasty/styles/list';
+import { useContextStyles } from '../../../tasty/providers/StylesProvider';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
-import { Styles } from '../../../styles/types';
-import { BaseProps, ContainerStyleProps } from '../../types';
+import { Styles } from '../../../tasty/styles/types';
+import { BaseProps, ContainerStyleProps } from '../../../tasty/types';
 import type { AriaTooltipProps } from '@react-types/tooltip';
 import { PlacementAxis } from '../../../shared';
 

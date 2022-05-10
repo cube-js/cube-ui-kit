@@ -3,7 +3,7 @@ import {
   BaseStyleProps,
   BlockStyleProps,
   DimensionStyleProps,
-} from '../../types';
+} from '../../../tasty/types';
 import { AriaDialogProps } from '@react-types/dialog';
 import { ReactNode } from 'react';
 import { CubeDialogContainerProps } from '../Dialog';

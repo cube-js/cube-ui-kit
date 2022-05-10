@@ -8,7 +8,7 @@ import {
   NecessityIndicator,
   ValidationState,
 } from '../../shared';
-import { Styles } from '../../styles/types';
+import { Styles } from '../../tasty/styles/types';
 import { TooltipProvider } from '../overlays/Tooltip/TooltipProvider';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { wrapNodeIfPlain } from '../../utils/react';

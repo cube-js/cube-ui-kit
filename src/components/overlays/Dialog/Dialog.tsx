@@ -8,21 +8,21 @@ import { useDialog } from '@react-aria/dialog';
 import { useMessageFormatter } from '@react-aria/i18n';
 import { Base } from '../../Base';
 import { CloseOutlined } from '@ant-design/icons';
-import { extractStyles } from '../../../utils/styles';
+import { extractStyles } from '../../../tasty/utils/styles';
 import {
   BASE_STYLES,
   BLOCK_STYLES,
   DIMENSION_STYLES,
-} from '../../../styles/list';
+} from '../../../tasty/styles/list';
 import { mergeProps, SlotProvider } from '../../../utils/react';
-import { useContextStyles } from '../../../providers/StylesProvider';
-import { Styles } from '../../../styles/types';
+import { useContextStyles } from '../../../tasty/providers/StylesProvider';
+import { Styles } from '../../../tasty/styles/types';
 import {
   BaseProps,
   BaseStyleProps,
   BlockStyleProps,
   DimensionStyleProps,
-} from '../../types';
+} from '../../../tasty/types';
 import type { AriaDialogProps } from '@react-types/dialog';
 import { DOMRef } from '@react-types/shared';
 

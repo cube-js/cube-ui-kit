@@ -1,15 +1,15 @@
 import styledComponents, { createGlobalStyle } from 'styled-components';
 import { ComponentType, FC, forwardRef, useContext, useMemo } from 'react';
 import { isValidElementType } from 'react-is';
-import { BreakpointsContext } from '../providers/BreakpointsProvider';
-import { modAttrs } from '../utils/react';
-import { AllBaseProps, BaseStyleProps, Props } from '../components/types';
-import { renderStyles } from '../utils/renderStyles';
-import { pointsToZones } from '../utils/responsive';
-import { Styles, StylesInterface } from '../styles/types';
-import { BASE_STYLES } from '../styles/list';
-import { ResponsiveStyleValue } from '../utils/styles';
-import { mergeStyles } from '../utils/mergeStyles';
+import { BreakpointsContext } from './providers/BreakpointsProvider';
+import { modAttrs } from './utils/modAttrs';
+import { AllBaseProps, BaseStyleProps, Props } from './types';
+import { renderStyles } from './utils/renderStyles';
+import { pointsToZones } from './utils/responsive';
+import { Styles, StylesInterface } from './styles/types';
+import { BASE_STYLES } from './styles/list';
+import { ResponsiveStyleValue } from './utils/styles';
+import { mergeStyles } from './utils/mergeStyles';
 
 export type TastyProps<
   K extends (keyof StylesInterface)[],

@@ -1,6 +1,6 @@
 import { Button } from '../../actions';
 import { CaretDownOutlined, CaretUpOutlined } from '@ant-design/icons';
-import { Styles } from '../../../styles/types';
+import { Styles } from '../../../tasty/styles/types';
 
 const STEP_BUTTON_STYLES: Styles = {
   padding: '0 .5x',

@@ -11,7 +11,7 @@ import { Action } from '../../actions/Action';
 import { Button } from '../../actions';
 import { Space } from '../../layout/Space';
 import { Block } from '../../Block';
-import { Styles } from '../../../styles/types';
+import { Styles } from '../../../tasty/styles/types';
 
 export type CubeFileTree = CubeFileTreeItem[];
 

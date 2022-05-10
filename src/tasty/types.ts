@@ -1,5 +1,5 @@
 import { AllHTMLAttributes, CSSProperties } from 'react';
-import { Styles } from '../styles/types';
+import { Styles } from './styles/types';
 import {
   BASE_STYLES,
   BLOCK_STYLES,
@@ -10,7 +10,7 @@ import {
   OUTER_STYLES,
   POSITION_STYLES,
   TEXT_STYLES,
-} from '../styles/list';
+} from './styles/list';
 
 export interface GlobalStyledProps {
   breakpoints?: number[];

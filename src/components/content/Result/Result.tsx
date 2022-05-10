@@ -8,10 +8,10 @@ import {
 
 import { Title } from '../Title';
 import { tasty } from '../../../tasty';
-import { CONTAINER_STYLES } from '../../../styles/list';
-import { BaseProps, ContainerStyleProps } from '../../types';
-import { filterBaseProps } from '../../../utils/filterBaseProps';
-import { extractStyles } from '../../../utils/styles';
+import { CONTAINER_STYLES } from '../../../tasty/styles/list';
+import { BaseProps, ContainerStyleProps } from '../../../tasty/types';
+import { filterBaseProps } from '../../../tasty/utils/filterBaseProps';
+import { extractStyles } from '../../../tasty/utils/styles';
 import { wrapNodeIfPlain } from '../../../utils/react';
 
 export interface CubeResultProps extends BaseProps, ContainerStyleProps {
