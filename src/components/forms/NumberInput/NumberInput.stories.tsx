@@ -4,7 +4,7 @@ import { baseProps } from '../../../stories/lists/baseProps';
 import { NUMBER_VALUE_ARG } from '../../../stories/FormFieldArgs';
 
 export default {
-  title: 'UIKit/Forms/NumberInput',
+  title: 'Forms/NumberInput',
   component: NumberInput,
   parameters: {
     controls: {

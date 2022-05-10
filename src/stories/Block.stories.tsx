@@ -1,7 +1,7 @@
 import { Block } from '../components/Block';
 
 export default {
-  title: 'UIKit/Generic/Block',
+  title: 'Generic/Block',
   component: Block,
   argTypes: {
     shadow: {

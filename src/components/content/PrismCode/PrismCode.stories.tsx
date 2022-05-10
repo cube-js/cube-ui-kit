@@ -2,7 +2,7 @@ import { PrismCode } from './PrismCode';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
-  title: 'UIKit/Content/PrismCode',
+  title: 'Content/PrismCode',
   component: PrismCode,
   parameters: {
     controls: {

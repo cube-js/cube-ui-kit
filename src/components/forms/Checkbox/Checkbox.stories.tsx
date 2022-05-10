@@ -6,7 +6,7 @@ import {
 } from '../../../stories/FormFieldArgs';
 
 export default {
-  title: 'UIKit/Forms/Checkbox',
+  title: 'Forms/Checkbox',
   component: Checkbox,
   parameters: {
     controls: {

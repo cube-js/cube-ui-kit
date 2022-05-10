@@ -1,6 +1,6 @@
 import copy from 'clipboard-copy';
 import { Button } from '../../actions';
-import { Card, CubeCardProps } from '../../content/Card/Card';
+import { Card, CubeCardProps } from '../Card/Card';
 import { Grid } from '../../layout/Grid';
 import { styled } from '../../../styled';
 import {
@@ -12,7 +12,7 @@ import { CopyOutlined } from '@ant-design/icons';
 import { Styles } from '../../../styles/types';
 import { CSSProperties } from 'react';
 import { TooltipTrigger } from '../../overlays/Tooltip/TooltipTrigger';
-import { Action } from '../../actions/Action';
+import { Action } from '../../actions';
 import { Tooltip } from '../../overlays/Tooltip/Tooltip';
 
 const POSITION_ACTION: CSSProperties = {

@@ -2,7 +2,7 @@ import { LoadingAnimation } from './LoadingAnimation';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
-  title: 'UIKit/Status/LoadingAnimation',
+  title: 'Status/LoadingAnimation',
   component: LoadingAnimation,
   parameters: {
     controls: {

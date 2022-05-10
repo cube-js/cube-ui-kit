@@ -4,7 +4,7 @@ import { TEXT_VALUE_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
-  title: 'UIKit/Forms/TextInput',
+  title: 'Forms/TextInput',
   component: TextInput,
   parameters: {
     controls: {

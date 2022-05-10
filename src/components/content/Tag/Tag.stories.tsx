@@ -1,7 +1,7 @@
 import { Tag } from './Tag';
 
 export default {
-  title: 'UIKit/Content/Tag',
+  title: 'Content/Tag',
   component: Tag,
   argTypes: {
     type: {

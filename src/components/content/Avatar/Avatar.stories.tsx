@@ -3,7 +3,7 @@ import { DollarCircleOutlined } from '@ant-design/icons';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
-  title: 'UIKit/Content/Avatar',
+  title: 'Content/Avatar',
   component: Avatar,
   parameters: {
     controls: {

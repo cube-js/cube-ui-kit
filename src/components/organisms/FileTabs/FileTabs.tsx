@@ -190,6 +190,9 @@ const TAB_CSS = `
   }
 `;
 
+/**
+ * @deprecated consider using <Tabs /> instead
+ */
 export interface FileTabProps extends Omit<CubeActionProps, 'id'> {
   isDirty?: boolean;
   isDisabled?: boolean;
@@ -288,8 +291,8 @@ export function FileTabs({
 
     setLeftFade(!!el.scrollLeft);
     setRightFade(
-      el.scrollWidth !== el.offsetWidth
-        && !!(el.scrollWidth - el.offsetWidth - el.scrollLeft),
+      el.scrollWidth !== el.offsetWidth &&
+        !!(el.scrollWidth - el.offsetWidth - el.scrollLeft),
     );
   }
 
@@ -449,8 +452,8 @@ export interface CubeFileTabProps extends FileTabProps {
 
 FileTabs.TabPane = function FileTabPane(allProps: CubeFileTabProps) {
   let { id, title, isDirty, children, ...props } = allProps;
-  const { addTab, removeTab, currentTab, setDirtyTab }
-    = useContext(FileTabsContext);
+  const { addTab, removeTab, currentTab, setDirtyTab } =
+    useContext(FileTabsContext);
 
   useEffect(() => {
     const tabData = {

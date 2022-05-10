@@ -1,8 +1,18 @@
 import { Meta, Story, Canvas } from '@storybook/addon-docs';
-import { Button, Root, Space, Card, Text, Block, Paragraph, Flow, Flex } from '../index';
+import {
+  Button,
+  Root,
+  Space,
+  Card,
+  Text,
+  Block,
+  Paragraph,
+  Flow,
+  Flex,
+} from '../index';
 import { StyledButton, GlobalStyledHeading } from './components/StyledButton';
 
-<Meta title="UIKit/Styled API" />
+<Meta title="Styled API" />
 
 # Styled API
 
@@ -47,10 +57,12 @@ Now you can use this element inside your React App:
 
 ```typescript jsx
 export default function Component({ title, children }) {
-  return <>
-    <Heading>{title}</Heading>
-    <Element>{children}</Element>
-  </>;
+  return (
+    <>
+      <Heading>{title}</Heading>
+      <Element>{children}</Element>
+    </>
+  );
 }
 ```
 
@@ -116,6 +128,6 @@ The `div` is used only for demonstration purposes. Do not use `div`s as buttons!
 <Canvas>
   <Story name="Globally Styled Button">
     <div className="myButton">Styled Button</div>
-    <GlobalStyledHeading/>
+    <GlobalStyledHeading />
   </Story>
 </Canvas>

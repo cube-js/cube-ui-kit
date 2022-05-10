@@ -1,3 +1,20 @@
+type BasePropsList =
+  | 'role'
+  | 'as'
+  | 'css'
+  | 'qa'
+  | 'mods'
+  | 'qaVal'
+  | 'hidden'
+  | 'isHidden'
+  | 'disabled'
+  | 'isDisabled'
+  | 'children'
+  | 'style'
+  | 'className'
+  | 'href'
+  | 'target';
+
 const DOMPropNames = new Set(['id']);
 
 const labelablePropNames = new Set([
@@ -47,21 +64,24 @@ interface PropsFilterOptions {
  * @param props - The component props to be filtered.
  * @param opts - Props to override.
  */
-export function filterBaseProps(props, opts: PropsFilterOptions = {}) {
+export function filterBaseProps<Props extends Record<string, any>>(
+  props: Props,
+  opts: PropsFilterOptions = {},
+): { [key in keyof Pick<Props, BasePropsList>]: Props[key] } {
   let { labelable, propNames, eventProps } = opts;
-  let filteredProps = {};
+  let filteredProps: any = {};
 
   for (const prop in props) {
     if (
-      Object.prototype.hasOwnProperty.call(props, prop)
-      && (DOMPropNames.has(prop)
-        || BasePropNames.has(prop)
-        || (labelable && labelablePropNames.has(prop))
-        || (eventProps
-          && eventRe.test(prop)
-          && !ignoreEventPropsNames.has(prop))
-        || propNames?.has(prop)
-        || propRe.test(prop))
+      Object.prototype.hasOwnProperty.call(props, prop) &&
+      (DOMPropNames.has(prop) ||
+        BasePropNames.has(prop) ||
+        (labelable && labelablePropNames.has(prop)) ||
+        (eventProps &&
+          eventRe.test(prop) &&
+          !ignoreEventPropsNames.has(prop)) ||
+        propNames?.has(prop) ||
+        propRe.test(prop))
     ) {
       filteredProps[prop] = props[prop];
     }

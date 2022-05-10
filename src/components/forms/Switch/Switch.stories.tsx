@@ -3,7 +3,7 @@ import { IS_SELECTED_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
-  title: 'UIKit/Forms/Switch',
+  title: 'Forms/Switch',
   component: Switch,
   parameters: {
     controls: {

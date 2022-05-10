@@ -17,7 +17,7 @@ import { baseProps } from '../../../stories/lists/baseProps';
 import { action } from '@storybook/addon-actions';
 
 export default {
-  title: 'UIKit/Pickers/Menu',
+  title: 'Pickers/Menu',
   component: Menu,
   parameters: {
     controls: {

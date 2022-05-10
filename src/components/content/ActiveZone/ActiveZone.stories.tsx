@@ -4,7 +4,7 @@ import { Tooltip } from '../../overlays/Tooltip/Tooltip';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
-  title: 'UIKit/Content/ActiveZone',
+  title: 'Content/ActiveZone',
   component: ActiveZone,
   parameters: {
     controls: {
