@@ -73,10 +73,18 @@ function tasty<
       breakpoints,
     }) => {
       let contextBreakpoints = useContext(BreakpointsContext);
-      let zones = pointsToZones(breakpoints || contextBreakpoints);
+
+      breakpoints = breakpoints ?? contextBreakpoints;
+
       let css = useMemo(
-        () => (styles ? `\n{}${selector}{${renderStyles(styles, zones)}}` : ''),
-        [zones.join(',')],
+        () =>
+          styles
+            ? `\n{}${selector}{${renderStyles(
+                styles,
+                pointsToZones(breakpoints || contextBreakpoints),
+              )}}`
+            : '',
+        [breakpoints.join(',')],
       );
 
       return <Element css={css} />;
@@ -158,23 +166,19 @@ function tasty<
       ...otherDefaultProps
     } = defaultProps ?? {};
 
-    let propStyles: Styles = useMemo(
-      () =>
-        (
-          (styleProps
-            ? (styleProps as (keyof StylesInterface)[]).concat(BASE_STYLES)
-            : BASE_STYLES) as (keyof StylesInterface)[]
-        ).reduce((map, prop) => {
-          if (prop in otherProps) {
-            map[prop] = otherProps[prop];
+    let propStyles: Styles = (
+      (styleProps
+        ? (styleProps as (keyof StylesInterface)[]).concat(BASE_STYLES)
+        : BASE_STYLES) as (keyof StylesInterface)[]
+    ).reduce((map, prop) => {
+      if (prop in otherProps) {
+        map[prop] = otherProps[prop];
 
-            delete otherProps[prop];
-          }
+        delete otherProps[prop];
+      }
 
-          return map;
-        }, {}),
-      [otherProps],
-    );
+      return map;
+    }, {});
 
     let allStyles: Styles = useMemo(
       () => mergeStyles(defaultStyles, styles, propStyles),
@@ -182,15 +186,21 @@ function tasty<
     );
 
     let contextBreakpoints = useContext(BreakpointsContext);
-    let zones = pointsToZones(breakpoints ?? contextBreakpoints);
 
-    css = `${
-      typeof defaultCSS === 'function'
-        ? defaultCSS(otherProps)
-        : defaultCSS ?? ''
-    }${typeof css === 'function' ? css(otherProps) : css ?? ''}${
-      allStyles ? renderStyles(allStyles, zones) : ''
-    }`;
+    breakpoints = breakpoints ?? contextBreakpoints;
+
+    let renderedStyles = useMemo(
+      () =>
+        allStyles
+          ? renderStyles(allStyles, pointsToZones(breakpoints as number[]))
+          : '',
+      [allStyles, breakpoints],
+    );
+
+    css = useMemo(
+      () => `${defaultCSS ?? ''}${css ?? ''}${renderedStyles}`,
+      [css, renderedStyles],
+    );
 
     if (mods) {
       Object.assign(otherProps, modAttrs(mods));

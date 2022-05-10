@@ -32,10 +32,8 @@ const Element = tasty({
   css: `
     appearance: none;
   `,
-  /** Default attributes */
-  props: {
-    role: 'article',
-  },
+  /** Default attributes (example) */
+  role: 'article',
   /** The list of styles that can be provided by props */
   styleProps: ['align'],
 });
@@ -65,9 +63,7 @@ const CustomElement = tasty(Element, {
     color: '#purple',
   },
   /** Add more default properties/attributes */
-  props: {
-    role: 'article',
-  },
+  role: 'article',
 });
 ```
 

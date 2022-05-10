@@ -13,6 +13,7 @@ import {
   ValidationState,
 } from '../../shared';
 import { Styles } from '../../styles/types';
+import { tasty } from '../../tasty';
 
 const REQUIRED_ICON = (
   <svg
@@ -56,25 +57,29 @@ export const INLINE_LABEL_STYLES: Styles = {
   whiteSpace: 'nowrap',
 } as const;
 
-export const LABEL_STYLES: Styles = {
-  display: 'block',
-  fontWeight: 600,
-  preset: 'default',
-  padding: {
-    '': '0',
-    side: '(1x - 1bw) top',
+const RawLabel = tasty({
+  as: 'label',
+  qa: 'Label',
+  styles: {
+    display: 'block',
+    fontWeight: 600,
+    preset: 'default',
+    padding: {
+      '': '0',
+      side: '(1x - 1bw) top',
+    },
+    color: {
+      '': '#dark',
+      invalid: '#danger-text',
+      disabled: '#dark.30',
+    },
+    whiteSpace: 'nowrap',
+    width: {
+      '': 'initial',
+      side: '@(label-width, initial)',
+    },
   },
-  color: {
-    '': '#dark',
-    invalid: '#danger-text',
-    disabled: '#dark.30',
-  },
-  whiteSpace: 'nowrap',
-  width: {
-    '': 'initial',
-    side: '@(label-width, initial)',
-  },
-} as const;
+});
 
 export interface CubeLabelProps
   extends BaseProps,
@@ -113,10 +118,11 @@ function Label(props: CubeLabelProps, ref) {
 
   const contextStyles = useContextStyles('Label', otherProps);
 
-  const styles = extractStyles(otherProps, CONTAINER_STYLES, {
-    ...LABEL_STYLES,
-    ...contextStyles,
-  });
+  const styles = extractStyles(
+    otherProps,
+    CONTAINER_STYLES,
+    contextStyles || {},
+  );
 
   let formatMessage = (message) => INTL_MESSAGES[message];
   let necessityLabel = isRequired
@@ -135,9 +141,7 @@ function Label(props: CubeLabelProps, ref) {
   );
 
   return (
-    <Base
-      as={as || 'label'}
-      qa={qa || 'Label'}
+    <RawLabel
       {...filterBaseProps(otherProps)}
       onClick={onClick}
       ref={domRef}
@@ -155,9 +159,9 @@ function Label(props: CubeLabelProps, ref) {
       ) : (
         <>
           {children}
-          {(necessityIndicator === 'label'
-            || (necessityIndicator === 'icon' && isRequired))
-            && ' \u200b'}
+          {(necessityIndicator === 'label' ||
+            (necessityIndicator === 'icon' && isRequired)) &&
+            ' \u200b'}
           {/* necessityLabel is hidden to screen readers if the field is required because
            * aria-required is set on the field in that case. That will already be announced,
            * so no need to duplicate it here. If optional, we do want it to be announced here. */}
@@ -175,7 +179,7 @@ function Label(props: CubeLabelProps, ref) {
           {necessityIndicator === 'icon' && isRequired && icon}
         </>
       )}
-    </Base>
+    </RawLabel>
   );
 }
 

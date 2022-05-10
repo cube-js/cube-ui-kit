@@ -1,0 +1,61 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`tasty() API should be able to override styles 1`] = `
+.c0 {
+  outline: none;
+}
+
+.c0[hidden] {
+  display: none !important;
+}
+
+.c0 {
+  color: rgba(var(--black-color-rgb),0.1);
+  --current-color: var(--black-color,black);
+  --current-color-rgb: var(--black-color-rgb);
+}
+
+@media (min-width:980px) {
+
+}
+
+@media (max-width:979px) {
+
+}
+
+<div>
+  <div
+    class="c0"
+  />
+</div>
+`;
+
+exports[`tasty() API should pass styles from tasty 1`] = `
+.c0 {
+  outline: none;
+}
+
+.c0[hidden] {
+  display: none !important;
+}
+
+.c0 {
+  color: rgba(var(--clear-color-rgb),0.1);
+  --current-color: var(--clear-color,clear);
+  --current-color-rgb: var(--clear-color-rgb);
+}
+
+@media (min-width:980px) {
+
+}
+
+@media (max-width:979px) {
+
+}
+
+<div>
+  <div
+    class="c0"
+  />
+</div>
+`;

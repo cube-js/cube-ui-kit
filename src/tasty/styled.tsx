@@ -26,7 +26,7 @@ export type StyledProps<K extends (keyof StylesInterface)[], DefaultProps> = {
   /** Default styles of the element. */
   styles?: Styles;
   /** Default css of the element. */
-  css?: string | ((props: Props) => string);
+  css?: string;
   props?: DefaultProps;
   /** The list of styles that can be provided by props */
   styleProps?: K;
@@ -97,7 +97,7 @@ function styled<
     property: 'props',
     name: 'styled api',
     betterAlternative:
-      "inline props directly in tasty(), eg: tasty({ type: 'confirm' })",
+      "inline props directly in styled(), eg: styled({ type: 'confirm' })",
   });
 
   if (typeof Component === 'string') {
@@ -228,11 +228,7 @@ function styled<
         [allStyles, zones],
       );
 
-      css = `${
-        typeof defaultCSS === 'function' ? defaultCSS(props) : defaultCSS ?? ''
-      }${typeof css === 'function' ? css(props) : css ?? ''}${
-        allStyles ? renderedStyles : ''
-      }`;
+      css = `${defaultCSS ?? ''}${css ?? ''}${allStyles ? renderedStyles : ''}`;
 
       if (mods) {
         Object.assign(props, modAttrs(mods));
