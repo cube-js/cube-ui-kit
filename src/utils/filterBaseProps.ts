@@ -1,20 +1,3 @@
-type BasePropsList =
-  | 'role'
-  | 'as'
-  | 'css'
-  | 'qa'
-  | 'mods'
-  | 'qaVal'
-  | 'hidden'
-  | 'isHidden'
-  | 'disabled'
-  | 'isDisabled'
-  | 'children'
-  | 'style'
-  | 'className'
-  | 'href'
-  | 'target';
-
 const DOMPropNames = new Set(['id']);
 
 const labelablePropNames = new Set([
@@ -64,12 +47,9 @@ interface PropsFilterOptions {
  * @param props - The component props to be filtered.
  * @param opts - Props to override.
  */
-export function filterBaseProps<Props extends Record<string, any>>(
-  props: Props,
-  opts: PropsFilterOptions = {},
-): { [key in keyof Pick<Props, BasePropsList>]: Props[key] } {
+export function filterBaseProps(props, opts: PropsFilterOptions = {}) {
   let { labelable, propNames, eventProps } = opts;
-  let filteredProps: any = {};
+  let filteredProps = {};
 
   for (const prop in props) {
     if (
