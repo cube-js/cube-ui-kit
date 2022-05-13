@@ -7,11 +7,14 @@ import {
 } from '@ant-design/icons';
 
 import { Title } from '../Title';
-import { tasty } from '../../../tasty';
-import { CONTAINER_STYLES } from '../../../tasty/styles/list';
-import { BaseProps, ContainerStyleProps } from '../../../tasty/types';
-import { filterBaseProps } from '../../../tasty/utils/filterBaseProps';
-import { extractStyles } from '../../../tasty/utils/styles';
+import {
+  BaseProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  tasty,
+} from '../../../tasty';
 import { wrapNodeIfPlain } from '../../../utils/react';
 
 export interface CubeResultProps extends BaseProps, ContainerStyleProps {

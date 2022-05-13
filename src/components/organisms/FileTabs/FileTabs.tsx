@@ -11,9 +11,8 @@ import { CloseOutlined } from '@ant-design/icons';
 import { Block } from '../../Block';
 import { Action, CubeActionProps } from '../../actions/Action';
 import { Space } from '../../layout/Space';
-import { Flex, CubeFlexProps } from '../../layout/Flex';
-import { Styles } from '../../../tasty/styles/types';
-import { tasty } from '../../../tasty';
+import { CubeFlexProps, Flex } from '../../layout/Flex';
+import { Styles, tasty } from '../../../tasty';
 
 interface TabData {
   id: string | number;
@@ -197,6 +196,9 @@ const TAB_CSS = `
   }
 `;
 
+/**
+ * @deprecated consider using <Tabs /> instead
+ */
 export interface FileTabProps extends Omit<CubeActionProps, 'id'> {
   isDirty?: boolean;
   isDisabled?: boolean;

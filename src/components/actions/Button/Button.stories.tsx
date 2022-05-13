@@ -3,7 +3,7 @@ import { Button } from './Button';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
-  title: 'UIKit/Actions/Button',
+  title: 'Actions/Button',
   component: Button,
   parameters: {
     controls: {

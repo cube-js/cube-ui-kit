@@ -8,19 +8,19 @@ import {
 } from 'react';
 import { useProviderProps } from '../../../provider';
 import { Action } from '../../actions/Action';
-import { Styles } from '../../../tasty/styles/types';
 import {
   BaseProps,
   BlockStyleProps,
+  CONTAINER_STYLES,
+  extractStyles,
   PositionStyleProps,
-} from '../../../tasty/types';
+  Styles,
+  useContextStyles,
+} from '../../../tasty';
 import type { AriaTextFieldProps } from '@react-types/textfield';
 import { FormFieldProps } from '../../../shared';
 import { createFocusableRef } from '@react-spectrum/utils';
 import { FieldWrapper } from '../FieldWrapper';
-import { extractStyles } from '../../../tasty/utils/styles';
-import { CONTAINER_STYLES } from '../../../tasty/styles/list';
-import { useContextStyles } from '../../../tasty/providers/StylesProvider';
 
 const DEFAULT_WRAPPER_STYLES: Styles = {
   display: 'inline-flex',

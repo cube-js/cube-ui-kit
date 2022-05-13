@@ -27,7 +27,7 @@ import { DialogForm } from '../../overlays/Dialog/DialogForm';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
-  title: 'UIKit/Forms/ComplexForm',
+  title: 'Forms/ComplexForm',
   component: Form,
   parameters: {
     controls: {

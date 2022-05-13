@@ -1,23 +1,22 @@
 import { useDOMRef } from '@react-spectrum/utils';
 import { forwardRef, MouseEventHandler } from 'react';
 import { useProviderProps } from '../../provider';
-import { extractStyles } from '../../tasty/utils/styles';
-import { CONTAINER_STYLES } from '../../tasty/styles/list';
-import { Base } from '../Base';
-import { useContextStyles } from '../../tasty/providers/StylesProvider';
-import { filterBaseProps } from '../../tasty/utils/filterBaseProps';
 import {
   BaseProps,
+  CONTAINER_STYLES,
   ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  Styles,
   TagNameProps,
-} from '../../tasty/types';
+  tasty,
+  useContextStyles,
+} from '../../tasty';
 import {
   LabelPosition,
   NecessityIndicator,
   ValidationState,
 } from '../../shared';
-import { Styles } from '../../tasty/styles/types';
-import { tasty } from '../../tasty';
 
 const REQUIRED_ICON = (
   <svg

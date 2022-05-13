@@ -1,18 +1,16 @@
 import copy from 'clipboard-copy';
-import { Button } from '../../actions';
-import { Card, CubeCardProps } from '../../content/Card/Card';
+import { Action, Button } from '../../actions';
+import { Card, CubeCardProps } from '../Card/Card';
 import { Grid } from '../../layout/Grid';
-import { tasty } from '../../../tasty';
+import { Styles, tasty } from '../../../tasty';
 import {
   CubePrismCodeProps,
   PrismCode,
 } from '../../content/PrismCode/PrismCode';
 import { notification } from '../../../services/notification';
 import { CopyOutlined } from '@ant-design/icons';
-import { Styles } from '../../../tasty/styles/types';
 import { CSSProperties } from 'react';
 import { TooltipTrigger } from '../../overlays/Tooltip/TooltipTrigger';
-import { Action } from '../../actions/Action';
 import { Tooltip } from '../../overlays/Tooltip/Tooltip';
 
 const POSITION_ACTION: CSSProperties = {

@@ -8,11 +8,10 @@ import {
   NecessityIndicator,
   ValidationState,
 } from '../../shared';
-import { Styles } from '../../tasty/styles/types';
+import { Styles, tasty } from '../../tasty';
 import { TooltipProvider } from '../overlays/Tooltip/TooltipProvider';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { wrapNodeIfPlain } from '../../utils/react';
-import { tasty } from '../../tasty';
 
 const RawField = tasty({
   qa: 'Field',

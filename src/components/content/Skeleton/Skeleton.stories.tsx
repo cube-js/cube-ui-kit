@@ -2,7 +2,7 @@ import { Skeleton } from './Skeleton';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
-  title: 'UIKit/Content/Skeleton',
+  title: 'Content/Skeleton',
   component: Skeleton,
   parameters: {
     controls: {

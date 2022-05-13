@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { dotize } from '../../../tasty/utils/dotize';
+import { dotize } from '../../../tasty';
 import { applyRules } from './validation';
 
 export type CubeFormData = { [key: string]: any };

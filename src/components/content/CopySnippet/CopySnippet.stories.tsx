@@ -1,17 +1,20 @@
-import { CopySnippet } from './CopySnippet';
+import { ComponentMeta, Story } from '@storybook/react';
+import { CopySnippet, CubeCopySnippetProps } from './CopySnippet';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
-  title: 'UIKit/Organisms/CopySnippet',
+  title: 'Content/CopySnippet',
   component: CopySnippet,
   parameters: {
     controls: {
       exclude: baseProps,
     },
   },
-};
+} as ComponentMeta<typeof CopySnippet>;
 
-const Template = (args) => <CopySnippet {...args} />;
+const Template: Story<CubeCopySnippetProps> = (args) => (
+  <CopySnippet {...args} />
+);
 
 export const OneLine = Template.bind({});
 OneLine.args = {

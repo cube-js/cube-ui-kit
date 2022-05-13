@@ -4,10 +4,12 @@ import {
   PropsWithChildren,
   useContext,
 } from 'react';
-import { StyleProvider } from './tasty/providers/StylesProvider';
-import { BreakpointsProvider } from './tasty/providers/BreakpointsProvider';
-import { ResponsiveStyleValue } from './tasty/utils/styles';
-import { Props } from './tasty/types';
+import {
+  BreakpointsProvider,
+  Props,
+  ResponsiveStyleValue,
+  StyleProvider,
+} from './tasty';
 
 export interface ProviderProps extends Props {
   breakpoints?: number[];

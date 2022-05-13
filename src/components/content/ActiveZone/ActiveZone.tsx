@@ -1,18 +1,19 @@
 import { forwardRef, MouseEventHandler } from 'react';
 import { useHover } from '@react-aria/interactions';
 import { mergeProps } from '../../../utils/react';
-import { CONTAINER_STYLES, TEXT_STYLES } from '../../../tasty/styles/list';
-import { Base } from '../../Base';
-import { extractStyles } from '../../../tasty/utils/styles';
-import { filterBaseProps } from '../../../tasty/utils/filterBaseProps';
 import {
   BaseProps,
   BaseStyleProps,
+  CONTAINER_STYLES,
   ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  Styles,
   TagNameProps,
+  TEXT_STYLES,
   TextStyleProps,
-} from '../../../tasty/types';
-import { Styles } from '../../../tasty/styles/types';
+} from '../../../tasty';
+import { Base } from '../../Base';
 import { useFocusableRef } from '@react-spectrum/utils';
 import { FocusableOptions, useFocusable } from '@react-aria/focus';
 import { useFocus } from '../../../utils/react/interactions';

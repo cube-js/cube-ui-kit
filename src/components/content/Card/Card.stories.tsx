@@ -1,7 +1,7 @@
 import { Card } from './Card';
 
 export default {
-  title: 'UIKit/Content/Card',
+  title: 'Content/Card',
   component: Card,
   argTypes: {
     shadow: {

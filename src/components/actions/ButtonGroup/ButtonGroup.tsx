@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 import { useSlotProps } from '../../../utils/react';
-import { Space, CubeSpaceProps } from '../../layout/Space';
-import { useContextStyles } from '../../../tasty/providers/StylesProvider';
+import { CubeSpaceProps, Space } from '../../layout/Space';
+import { useContextStyles } from '../../../tasty';
 
 export const ButtonGroup = forwardRef((props: CubeSpaceProps, ref) => {
   let { styles, ...otherProps } = useSlotProps(props, 'buttonGroup');

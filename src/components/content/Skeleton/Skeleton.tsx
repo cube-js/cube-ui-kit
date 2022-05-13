@@ -2,7 +2,7 @@ import { CubePlaceholderProps, Placeholder } from '../Placeholder/Placeholder';
 import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
 import { CubeGridProps, Grid } from '../../layout/Grid';
-import { BaseProps, ContainerStyleProps } from '../../../tasty/types';
+import { BaseProps, ContainerStyleProps } from '../../../tasty';
 
 const LAYOUT_MAP = {
   page({ lines, children, ...props }) {

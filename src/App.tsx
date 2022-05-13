@@ -1,24 +1,15 @@
 import { useState } from 'react';
-import {
-  Base,
-  Grid,
-  TopBar,
-  Title,
-  Space,
-  LoadingAnimation,
-  Block,
-} from './index';
+import { Base, Block, Grid, LoadingAnimation, Space, Title } from './index';
 import { Button } from './components/actions';
 // import ResponsiveProvider from './providers/Responsive';
-import { color } from './tasty/utils/colors';
+// import { Modal } from './components/organisms/Modal/Modal';
+// import { notification } from './services/notification';
+import { color, StyleProvider } from './tasty';
 import { Card } from './components/content/Card/Card';
 import { Flex } from './components/layout/Flex';
 import { Base64Upload } from './components/other/Base64Upload/Base64Upload';
 import { Link } from './components/navigation/Link/Link';
-// import { Modal } from './components/organisms/Modal/Modal';
-// import { notification } from './services/notification';
-import { StyleProvider } from './tasty/providers/StylesProvider';
-import { Form, useForm, Field } from './components/forms/Form';
+import { Field, Form, useForm } from './components/forms/Form';
 import { TextInput } from './components/forms/TextInput/TextInput';
 import { Provider } from './provider';
 import { GridProvider } from './components/GridProvider';
@@ -145,7 +136,6 @@ function App() {
         <Link to="!https://cube.dev">Cube.dev</Link>
       </Space>
       <Provider breakpoints={[1200, 640]}>
-        <TopBar onLogoPress={() => {}} />
         <Flex
           styles={{
             placeContent: ['start', 'center', 'start'],

@@ -1,14 +1,14 @@
 import {
   BASE_STYLES,
-  CONTAINER_STYLES,
   BLOCK_STYLES,
   COLOR_STYLES,
+  CONTAINER_STYLES,
+  DIMENSION_STYLES,
   FLOW_STYLES,
   OUTER_STYLES,
-  DIMENSION_STYLES,
-  TEXT_STYLES,
   POSITION_STYLES,
-} from '../../tasty/styles/list';
+  TEXT_STYLES,
+} from '../../tasty';
 
 const allStyles: string[] = Array.from(
   new Set([

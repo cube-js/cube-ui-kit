@@ -1,14 +1,15 @@
 import { forwardRef } from 'react';
 import { Base } from '../Base';
 import {
-  OUTER_STYLES,
   BASE_STYLES,
+  BaseProps,
   COLOR_STYLES,
-} from '../../tasty/styles/list';
-import { extractStyles } from '../../tasty/utils/styles';
-import { filterBaseProps } from '../../tasty/utils/filterBaseProps';
+  extractStyles,
+  filterBaseProps,
+  OUTER_STYLES,
+  OuterStyleProps,
+} from '../../tasty';
 import { useSlotProps } from '../../utils/react';
-import { BaseProps, OuterStyleProps } from '../../tasty/types';
 
 const STYLE_LIST = [...OUTER_STYLES, ...BASE_STYLES, ...COLOR_STYLES];
 

@@ -1,11 +1,15 @@
 import { CSSProperties, forwardRef, useEffect } from 'react';
 import { Base } from '../Base';
-import { CONTAINER_STYLES } from '../../tasty/styles/list';
-import { extractStyles, parseStyle } from '../../tasty/utils/styles';
-import { filterBaseProps } from '../../tasty/utils/filterBaseProps';
+import {
+  BaseProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  parseStyle,
+  Styles,
+} from '../../tasty';
 import { useCombinedRefs } from '../../utils/react';
-import { BaseProps, ContainerStyleProps } from '../../tasty/types';
-import { Styles } from '../../tasty/styles/types';
 
 const DEFAULT_STYLES: Styles = {
   position: 'absolute',

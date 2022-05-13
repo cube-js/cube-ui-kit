@@ -1,19 +1,18 @@
 import { CSSProperties, forwardRef } from 'react';
 import {
   BASE_STYLES,
-  COLOR_STYLES,
-  TEXT_STYLES,
-} from '../../tasty/styles/list';
-import { extractStyles, ResponsiveStyleValue } from '../../tasty/utils/styles';
-import { filterBaseProps } from '../../tasty/utils/filterBaseProps';
-import {
   BaseProps,
   BaseStyleProps,
+  COLOR_STYLES,
   ColorStyleProps,
+  extractStyles,
+  filterBaseProps,
+  ResponsiveStyleValue,
   TagNameProps,
+  tasty,
+  TEXT_STYLES,
   TextStyleProps,
-} from '../../tasty/types';
-import { tasty } from '../../tasty';
+} from '../../tasty';
 import { useSlotProps } from '../../utils/react';
 
 const STYLE_LIST = [...BASE_STYLES, ...TEXT_STYLES, ...COLOR_STYLES] as const;

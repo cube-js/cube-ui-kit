@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Button, CubeButtonProps } from '../../actions';
 import { Text } from '../../content/Text';
-import { Styles } from '../../../tasty/styles/types';
+import { Styles } from '../../../tasty';
 import { Space } from '../../layout/Space';
 import { CheckOutlined } from '@ant-design/icons';
 

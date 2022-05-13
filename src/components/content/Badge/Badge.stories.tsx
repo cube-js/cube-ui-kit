@@ -2,7 +2,7 @@ import { Badge } from './Badge';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
-  title: 'UIKit/Content/Badge',
+  title: 'Content/Badge',
   component: Badge,
   parameters: {
     controls: {

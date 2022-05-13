@@ -6,13 +6,16 @@ import { useRadioGroup } from '@react-aria/radio';
 import { useRadioGroupState } from '@react-stately/radio';
 import { FormContext, useFormProps } from '../Form/Form';
 import { RadioContext } from './context';
-import { extractStyles } from '../../../tasty/utils/styles';
-import { BLOCK_STYLES, OUTER_STYLES } from '../../../tasty/styles/list';
+import {
+  BaseProps,
+  BLOCK_STYLES,
+  extractStyles,
+  OUTER_STYLES,
+  Styles,
+  useContextStyles,
+} from '../../../tasty';
 import { Base } from '../../Base';
-import { useContextStyles } from '../../../tasty/providers/StylesProvider';
 import { FieldWrapper } from '../FieldWrapper';
-import { Styles } from '../../../tasty/styles/types';
-import { BaseProps } from '../../../tasty/types';
 import type { AriaRadioGroupProps } from '@react-types/radio';
 import { FormFieldProps } from '../../../shared';
 import {

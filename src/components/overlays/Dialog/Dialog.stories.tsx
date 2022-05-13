@@ -18,7 +18,7 @@ import {
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
-  title: 'UIKit/Overlays/Dialog',
+  title: 'Overlays/Dialog',
   component: Dialog,
   parameters: {
     layout: 'centered',

@@ -5,7 +5,7 @@ import { useMediaQuery } from '@react-spectrum/utils';
 import { useOverlayPosition, useOverlayTrigger } from '@react-aria/overlays';
 import { DialogContext } from './context';
 import { Modal, Popover, Tray } from '../Modal';
-import { Styles } from '../../../tasty/styles/types';
+import { Styles } from '../../../tasty';
 
 export type CubeDialogClose = (close: () => void) => ReactElement;
 

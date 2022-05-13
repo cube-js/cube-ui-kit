@@ -3,7 +3,7 @@ import {
   BaseStyleProps,
   BlockStyleProps,
   DimensionStyleProps,
-} from '../../../tasty/types';
+} from '../../../tasty';
 import { AriaDialogProps } from '@react-types/dialog';
 import { ReactNode } from 'react';
 import { CubeDialogContainerProps } from '../Dialog';
@@ -13,6 +13,7 @@ export interface Dialog {
   props: DialogProps;
   meta: AlertDialogMeta;
 }
+
 export interface DialogProps
   extends Omit<CubeDialogContainerProps, 'onDismiss' | 'children'>,
     Omit<CubeAlertDialogProps, 'type' | 'id' | 'content'> {

@@ -8,7 +8,7 @@ import { CubeTooltipProviderProps, TooltipProvider } from './TooltipProvider';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
-  title: 'UIKit/Overlays/Tooltip',
+  title: 'Overlays/Tooltip',
   component: Tooltip,
   parameters: {
     layout: 'centered',

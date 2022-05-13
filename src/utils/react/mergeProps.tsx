@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { chain, mergeIds } from '@react-aria/utils';
-import { Props } from '../../tasty/types';
+import { Props } from '../../tasty';
 
 /**
  * Merges multiple props objects together. Event handlers are chained,

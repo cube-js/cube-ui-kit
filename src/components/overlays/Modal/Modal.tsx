@@ -5,9 +5,7 @@ import { forwardRef, ReactNode } from 'react';
 import { Underlay } from './Underlay';
 import { useModal, useOverlay, usePreventScroll } from '@react-aria/overlays';
 import { Base } from '../../Base';
-import { useContextStyles } from '../../../tasty/providers/StylesProvider';
-import { Styles } from '../../../tasty/styles/types';
-import { BaseProps, Props } from '../../../tasty/types';
+import { BaseProps, Props, Styles, useContextStyles } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import type { ModalProps } from '@react-types/overlays';
 

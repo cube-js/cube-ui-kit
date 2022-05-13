@@ -10,6 +10,7 @@ export { Block } from './components/Block';
 export type { CubeBlockProps } from './components/Block';
 export { ActiveZone } from './components/content/ActiveZone/ActiveZone';
 export type { CubeActiveZoneProps } from './components/content/ActiveZone/ActiveZone';
+export * from './components/content/CopySnippet';
 export { Grid } from './components/layout/Grid';
 export type { CubeGridProps } from './components/layout/Grid';
 export { Flex } from './components/layout/Flex';
@@ -118,21 +119,16 @@ export type { CubeTooltipTriggerProps } from './components/overlays/Tooltip/Tool
 export { TooltipProvider } from './components/overlays/Tooltip/TooltipProvider';
 export type { CubeTooltipProviderProps } from './components/overlays/Tooltip/TooltipProvider';
 
+export * from './components/content/CopySnippet';
+export * from './components/content/Alert';
+
 // molecules
-export { TopBar } from './components/organisms/TopBar/TopBar';
-export type { CubeTopbarProps } from './components/organisms/TopBar/TopBar';
-export { Alert } from './components/organisms/Alert/Alert';
-export type { CubeAlertProps } from './components/organisms/Alert/Alert';
-export { DirectoryTree } from './components/organisms/DirectoryTree/DirectoryTree';
-export type { CubeDirectoryTreeProps } from './components/organisms/DirectoryTree/DirectoryTree';
 export { LegacyTabs } from './components/navigation/LegacyTabs/LegacyTabs';
 export type { CubeTabsProps } from './components/navigation/LegacyTabs/LegacyTabs';
 export { FileTabs } from './components/organisms/FileTabs/FileTabs';
 export type { CubeFileTabProps } from './components/organisms/FileTabs/FileTabs';
 export { Modal } from './components/organisms/Modal/Modal';
 export type { CubeModalProps } from './components/organisms/Modal/Modal';
-export { CopySnippet } from './components/organisms/CopySnippet/CopySnippet';
-export type { CubeCopySnippetProps } from './components/organisms/CopySnippet/CopySnippet';
 export { StatsCard } from './components/organisms/StatsCard/StatsCard';
 export type { CubeStatsCard } from './components/organisms/StatsCard/StatsCard';
 export {
@@ -140,14 +136,12 @@ export {
   useAlertDialogAPI,
 } from './components/overlays/AlertDialog';
 export type { CubeAlertDialogProps } from './components/overlays/AlertDialog';
-export { SearchResults } from './components/organisms/SearchResults/SearchResults';
-export type { CubeSearchResultsProps } from './components/organisms/SearchResults/SearchResults';
 
 // services
 export { notification } from './services/notification';
 export type { CubeNotificationOptions } from './services/notification';
 
-export * from './tasty/providers/BreakpointsProvider';
+export * from './tasty';
 
 export const Typography = {
   Text,
@@ -158,10 +152,7 @@ export const Typography = {
 export { Text, Title, Paragraph };
 export type { CubeTextProps, CubeTitleProps, CubeParagraphProps };
 
-export {
-  useContextStyles,
-  StyleProvider,
-} from './tasty/providers/StylesProvider';
+export { useContextStyles, StyleProvider } from './tasty';
 
 export { Provider } from './provider';
 export type { useProviderProps } from './provider';
@@ -186,13 +177,12 @@ export type {
   Props,
   FlowStyleProps,
   ShortGridStyles,
-} from './tasty/types';
-export * from './tasty/styles/types';
-export * from './tasty/styles/list';
-export * from './tasty/styles/index';
+} from './tasty';
+export * from './tasty';
 
 export { ModalProvider } from '@react-aria/overlays';
 export * from './utils/react';
+export * from './styled';
 export * from './tasty';
 export { default as copy } from 'clipboard-copy';
 export * from '@react-aria/ssr';

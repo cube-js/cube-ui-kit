@@ -1,10 +1,13 @@
 import { forwardRef, ReactNode } from 'react';
 import { Base } from '../../Base';
-import { CONTAINER_STYLES } from '../../../tasty/styles/list';
-import { extractStyles } from '../../../tasty/utils/styles';
-import { filterBaseProps } from '../../../tasty/utils/filterBaseProps';
-import { BaseProps, ContainerStyleProps } from '../../../tasty/types';
-import { Styles } from '../../../tasty/styles/types';
+import {
+  BaseProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  Styles,
+} from '../../../tasty';
 
 const DEFAULT_STYLES = {
   display: 'grid',

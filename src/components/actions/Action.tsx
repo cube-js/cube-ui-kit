@@ -1,22 +1,23 @@
-import { forwardRef, MouseEventHandler, useContext, useCallback } from 'react';
-import { CONTAINER_STYLES, TEXT_STYLES } from '../../tasty/styles/list';
+import { forwardRef, MouseEventHandler, useCallback, useContext } from 'react';
+import {
+  BaseProps,
+  BaseStyleProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  Styles,
+  TagNameProps,
+  TEXT_STYLES,
+  TextStyleProps,
+} from '../../tasty';
 import { Base } from '../Base';
 import { useHover } from '@react-aria/interactions';
 import { useFocus } from '../../utils/react/interactions';
 import { useButton } from '@react-aria/button';
 import { mergeProps } from '../../utils/react';
-import { extractStyles } from '../../tasty/utils/styles';
-import { filterBaseProps } from '../../tasty/utils/filterBaseProps';
 import { UIKitContext } from '../../provider';
-import {
-  BaseProps,
-  BaseStyleProps,
-  ContainerStyleProps,
-  TagNameProps,
-  TextStyleProps,
-} from '../../tasty/types';
 import { AriaButtonProps } from '@react-types/button';
-import { Styles } from '../../tasty/styles/types';
 import { useFocusableRef } from '@react-spectrum/utils';
 import { FocusableRef } from '@react-types/shared';
 

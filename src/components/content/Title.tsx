@@ -1,16 +1,17 @@
 import { forwardRef } from 'react';
 import { CubeTextProps, TEXT_PROP_MAP } from './Text';
-import { CONTAINER_STYLES, TEXT_STYLES } from '../../tasty/styles/list';
-import { extractStyles } from '../../tasty/utils/styles';
-import { filterBaseProps } from '../../tasty/utils/filterBaseProps';
-import { useSlotProps } from '../../utils/react';
 import {
   BaseProps,
+  CONTAINER_STYLES,
   ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
   PositionStyleProps,
   TagNameProps,
-} from '../../tasty/types';
-import { tasty } from '../../tasty';
+  tasty,
+  TEXT_STYLES,
+} from '../../tasty';
+import { useSlotProps } from '../../utils/react';
 
 const STYLE_LIST = [...TEXT_STYLES, ...CONTAINER_STYLES];
 

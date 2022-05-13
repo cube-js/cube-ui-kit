@@ -33,7 +33,7 @@ describe('styled() API', () => {
     expect(getByTestId('button').dataset.type).toBe('secondary');
   });
 
-  it('should pass styles from tasty', () => {
+  it('should pass styles from styled', () => {
     const StyledBlock = styled(Block, { styles: { color: '#clear.1' } });
     const { container } = render(<StyledBlock />);
 

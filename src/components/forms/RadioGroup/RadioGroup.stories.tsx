@@ -3,7 +3,7 @@ import { baseProps } from '../../../stories/lists/baseProps';
 import { TEXT_VALUE_ARG } from '../../../stories/FormFieldArgs';
 
 export default {
-  title: 'UIKit/Forms/RadioGroup',
+  title: 'Forms/RadioGroup',
   component: Radio.Group,
   parameters: {
     controls: {

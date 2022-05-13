@@ -5,7 +5,7 @@ import { useAlertDialogAPI } from './AlertDialogApiProvider';
 import { useEffect, useState } from 'react';
 
 export default {
-  title: 'UIKit/Overlays/AlertDialog',
+  title: 'Overlays/AlertDialog',
   component: AlertDialog,
   parameters: {
     controls: {

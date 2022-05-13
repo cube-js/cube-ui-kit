@@ -1,4 +1,4 @@
-import React, { ReactNode, ReactElement } from 'react';
+import React, { ReactElement, ReactNode } from 'react';
 import { DOMRef, ItemProps } from '@react-types/shared';
 import {
   Item as BaseItem,
@@ -10,11 +10,13 @@ import { useDOMRef } from '@react-spectrum/utils';
 import { useTreeState } from '@react-stately/tree';
 import type { AriaMenuProps } from '@react-types/menu';
 
-import { ContainerStyleProps } from '../../../tasty/types';
-import { useContextStyles } from '../../../tasty/providers/StylesProvider';
-import { Styles } from '../../../tasty/styles/types';
-import { CONTAINER_STYLES } from '../../../tasty/styles/list';
-import { extractStyles } from '../../../tasty/utils/styles';
+import {
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  Styles,
+  useContextStyles,
+} from '../../../tasty';
 import { StyledMenu, StyledMenuHeader } from './styled';
 import { MenuItem } from './MenuItem';
 import { MenuSection } from './MenuSection';

@@ -1,14 +1,15 @@
 import { forwardRef } from 'react';
-import { tasty } from '../../tasty';
-import { CONTAINER_STYLES, TEXT_STYLES } from '../../tasty/styles/list';
-import { extractStyles } from '../../tasty/utils/styles';
-import { filterBaseProps } from '../../tasty/utils/filterBaseProps';
-import { useSlotProps } from '../../utils/react';
 import {
   BaseProps,
+  CONTAINER_STYLES,
   ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  tasty,
+  TEXT_STYLES,
   TextStyleProps,
-} from '../../tasty/types';
+} from '../../tasty';
+import { useSlotProps } from '../../utils/react';
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 

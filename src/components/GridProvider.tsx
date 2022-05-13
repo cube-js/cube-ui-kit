@@ -1,8 +1,7 @@
 import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react';
-import { filterBaseProps } from '../tasty/utils/filterBaseProps';
+import { filterBaseProps, Styles } from '../tasty';
 import { useCombinedRefs } from '../utils/react';
 import { Base } from './Base';
-import { Styles } from '../tasty/styles/types';
 
 const DEFAULT_STYLES = {
   display: 'contents',

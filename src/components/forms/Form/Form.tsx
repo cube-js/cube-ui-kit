@@ -2,22 +2,25 @@ import { useDOMRef } from '@react-spectrum/utils';
 import { Provider, useProviderProps } from '../../../provider';
 import {
   createContext,
-  useContext,
-  useRef,
-  forwardRef,
   FormHTMLAttributes,
+  forwardRef,
+  useContext,
   useEffect,
+  useRef,
 } from 'react';
 import { Base } from '../../Base';
-import { extractStyles } from '../../../tasty/utils/styles';
-import { CONTAINER_STYLES } from '../../../tasty/styles/list';
-import { filterBaseProps } from '../../../tasty/utils/filterBaseProps';
-import { CubeFormInstance, useForm, CubeFormData } from './useForm';
+import {
+  BaseProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  Styles,
+} from '../../../tasty';
+import { CubeFormData, CubeFormInstance, useForm } from './useForm';
 import { useCombinedRefs } from '../../../utils/react';
 import { timeout } from '../../../utils/promise';
-import { BaseProps, ContainerStyleProps } from '../../../tasty/types';
 import { FormBaseProps } from '../../../shared';
-import { Styles } from '../../../tasty/styles/types';
 
 export const FormContext = createContext({});
 
