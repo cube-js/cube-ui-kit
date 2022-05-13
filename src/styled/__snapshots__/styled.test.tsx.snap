@@ -22,7 +22,7 @@ exports[`styled() API should be able to override styles 1`] = `
 </div>
 `;
 
-exports[`styled() API should pass styles from tasty 1`] = `
+exports[`styled() API should pass styles from styled 1`] = `
 .c0 {
   outline: none;
 }
