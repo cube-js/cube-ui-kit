@@ -39,17 +39,13 @@ const RawAlert = styled({
   },
 });
 
-export const Alert = forwardRef(
-  (props: CubeAlertProps, ref: ForwardedRef<HTMLDivElement>) => {
-    const { styles, theme, filteredProps } = useAlert(props);
+export const Alert = forwardRef(function Alert(
+  props: CubeAlertProps,
+  ref: ForwardedRef<HTMLDivElement>,
+) {
+  const { styles, theme, filteredProps } = useAlert(props);
 
-    return (
-      <RawAlert
-        {...filteredProps}
-        data-type={theme}
-        styles={styles}
-        ref={ref}
-      />
-    );
-  },
-);
+  return (
+    <RawAlert {...filteredProps} data-type={theme} styles={styles} ref={ref} />
+  );
+});
