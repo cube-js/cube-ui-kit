@@ -19,13 +19,11 @@ import { StyledButton, GlobalStyledHeading } from './components/StyledButton';
 Let's look at styled API:
 
 ```typescript jsx
-import { styled } from '@cube-dev/ui-kit';
+import { tasty } from '@cube-dev/ui-kit';
 
-const Element = styled({
-  /** The name of the element. It can be used to override styles in context. */
-  name: 'Article',
+const Element = tasty({
   /** The tag name of the element. */
-  tag: 'span',
+  as: 'span',
   /** Default styles of the element. */
   styles: {
     // tokens
@@ -44,10 +42,8 @@ const Element = styled({
   css: `
     appearance: none;
   `,
-  /** Default attributes */
-  props: {
-    role: 'article',
-  },
+  /** Default attributes (example) */
+  role: 'article',
   /** The list of styles that can be provided by props */
   styleProps: ['align'],
 });
@@ -68,22 +64,18 @@ export default function Component({ title, children }) {
 
 ## Extend base options
 
-You can use `styled()` function to extend styling of the existing component.
+You can use `tasty()` function to extend styling of the existing component.
 
 ```typescript jsx
-const CustomElement = styled(Element, {
-  /** Change style name */
-  name: 'BigBlock',
+const CustomElement = tasty(Element, {
   /** Change tag name */
-  tag: 'input',
+  as: 'input',
   /** Extend or rewrite styles */
   styles: {
     color: '#purple',
   },
   /** Add more default properties/attributes */
-  props: {
-    role: 'article',
-  },
+  role: 'article',
 });
 ```
 
@@ -93,7 +85,7 @@ An example of styled component.
 import { styled } from '../../styled';
 import { Button } from '../../components/actions';
 
-const StyledButton = styled(Button, {
+const StyledButton = tasty(Button, {
   styles: {
     padding: '3x 6x',
     preset: 't1',
@@ -109,12 +101,12 @@ const StyledButton = styled(Button, {
 
 ## Define global styles
 
-Use `styled()` to define global styles for elements:
+Use `tasty()` to define global styles for elements:
 
 ```typescript jsx
-import { styled } from '../../styled';
+import { tasty } from '../../styled';
 
-const GlobalStyledHeading = styled('div.myButton', {
+const GlobalStyledHeading = tasty('div.myButton', {
   display: 'inline-block',
   padding: '1x 2x',
   preset: 't2',

@@ -7,11 +7,14 @@ import {
 } from '@ant-design/icons';
 
 import { Title } from '../Title';
-import { styled } from '../../../styled';
-import { CONTAINER_STYLES } from '../../../styles/list';
-import { BaseProps, ContainerStyleProps } from '../../types';
-import { filterBaseProps } from '../../../utils/filterBaseProps';
-import { extractStyles } from '../../../utils/styles';
+import {
+  BaseProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  tasty,
+} from '../../../tasty';
 import { wrapNodeIfPlain } from '../../../utils/react';
 
 export interface CubeResultProps extends BaseProps, ContainerStyleProps {
@@ -54,9 +57,9 @@ type StatusIconMap = Record<
   }
 >;
 
-const Container = styled({
-  name: 'ResultContainer',
-  tag: 'section',
+const Container = tasty({
+  qa: 'Result_Container',
+  as: 'section',
   styles: {
     display: 'flex',
     flow: 'column',
@@ -78,7 +81,7 @@ const Container = styled({
   },
 });
 
-const IconWrapper = styled({
+const IconWrapper = tasty({
   styles: {
     fontSize: '10x',
   },

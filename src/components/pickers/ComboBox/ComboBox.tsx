@@ -13,10 +13,14 @@ import { useHover } from '@react-aria/interactions';
 import { useProviderProps } from '../../../provider';
 import { useFilter } from '@react-aria/i18n';
 import { Base } from '../../Base';
-import { extractStyles } from '../../../utils/styles';
-import { BLOCK_STYLES, OUTER_STYLES } from '../../../styles/list';
-import { useFocus } from '../../../utils/interactions';
-import { useContextStyles } from '../../../providers/StylesProvider';
+import {
+  BLOCK_STYLES,
+  extractStyles,
+  OUTER_STYLES,
+  Styles,
+  useContextStyles,
+} from '../../../tasty';
+import { useFocus } from '../../../utils/react/interactions';
 import { modAttrs, useCombinedRefs } from '../../../utils/react';
 import { FieldWrapper } from '../../forms/FieldWrapper';
 import { CubeSelectBaseProps, ListBoxPopup } from '../Select/Select';
@@ -27,7 +31,6 @@ import { Item } from '@react-stately/collections';
 import { DEFAULT_INPUT_STYLES } from '../../forms/TextInput/TextInputBase';
 import { useOverlayPosition } from '@react-aria/overlays';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
-import { Styles } from '../../../styles/types';
 import type {
   CollectionBase,
   KeyboardDelegate,

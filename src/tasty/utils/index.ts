@@ -31,7 +31,7 @@ export function getModCombinations(array: string[], allowEmpty?: boolean) {
     return result.concat([array]);
   }
 
-  const f = function(prefix: string[] = [], array: string[]) {
+  const f = function (prefix: string[] = [], array: string[]) {
     for (let i = 0; i < array.length; i++) {
       result.push([...prefix, array[i]]);
       f([...prefix, array[i]], array.slice(i + 1));

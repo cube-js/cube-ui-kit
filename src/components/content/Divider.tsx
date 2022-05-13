@@ -1,10 +1,15 @@
 import { forwardRef } from 'react';
 import { Base } from '../Base';
-import { OUTER_STYLES, BASE_STYLES, COLOR_STYLES } from '../../styles/list';
-import { extractStyles } from '../../utils/styles';
-import { filterBaseProps } from '../../utils/filterBaseProps';
+import {
+  BASE_STYLES,
+  BaseProps,
+  COLOR_STYLES,
+  extractStyles,
+  filterBaseProps,
+  OUTER_STYLES,
+  OuterStyleProps,
+} from '../../tasty';
 import { useSlotProps } from '../../utils/react';
-import { BaseProps, OuterStyleProps } from '../types';
 
 const STYLE_LIST = [...OUTER_STYLES, ...BASE_STYLES, ...COLOR_STYLES];
 

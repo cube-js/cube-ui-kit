@@ -1,14 +1,17 @@
 import { forwardRef } from 'react';
 import THEMES from '../../../data/themes';
-import { CONTAINER_STYLES } from '../../../styles/list';
-import { extractStyles } from '../../../utils/styles';
-import { filterBaseProps } from '../../../utils/filterBaseProps';
-import { BaseProps, ContainerStyleProps } from '../../types';
-import { styled } from '../../../styled';
+import {
+  BaseProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  tasty,
+} from '../../../tasty';
 
-const RawBadge = styled({
-  name: 'Badge',
-  props: { role: 'region' },
+const RawBadge = tasty({
+  qa: 'Badge',
+  role: 'region',
   styles: {
     display: 'inline-flex',
     placeContent: 'center',

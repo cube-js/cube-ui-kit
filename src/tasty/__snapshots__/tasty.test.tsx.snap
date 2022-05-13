@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`styled() API should be able to override styles 1`] = `
+exports[`tasty() API should be able to override styles 1`] = `
 .c0 {
   outline: none;
 }
@@ -22,7 +22,38 @@ exports[`styled() API should be able to override styles 1`] = `
 </div>
 `;
 
-exports[`styled() API should pass styles from styled 1`] = `
+exports[`tasty() API should create responsive styles 1`] = `
+.c0 {
+  outline: none;
+}
+
+.c0[hidden] {
+  display: none !important;
+}
+
+@media (min-width:980px) {
+  .c0 {
+    display: grid;
+  }
+}
+
+@media (max-width:979px) {
+  .c0 {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+  }
+}
+
+<div>
+  <div
+    class="c0"
+  />
+</div>
+`;
+
+exports[`tasty() API should pass styles from tasty 1`] = `
 .c0 {
   outline: none;
 }
@@ -42,13 +73,4 @@ exports[`styled() API should pass styles from styled 1`] = `
     class="c0"
   />
 </div>
-`;
-
-exports[`styled() API should warn about deprecated API 1`] = `
-Array [
-  Array [
-    "Tasty:",
-    "\\"props\\" is deprecated, consider better alternative: inline props directly in styled(), eg: styled({ type: 'confirm' })",
-  ],
-]
 `;

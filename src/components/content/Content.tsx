@@ -1,16 +1,21 @@
 import { forwardRef } from 'react';
-import { styled } from '../../styled';
-import { CONTAINER_STYLES, TEXT_STYLES } from '../../styles/list';
-import { extractStyles } from '../../utils/styles';
-import { filterBaseProps } from '../../utils/filterBaseProps';
+import {
+  BaseProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  tasty,
+  TEXT_STYLES,
+  TextStyleProps,
+} from '../../tasty';
 import { useSlotProps } from '../../utils/react';
-import { BaseProps, ContainerStyleProps, TextStyleProps } from '../types';
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
-const RawContent = styled({
-  name: 'Content',
-  tag: 'section',
+const RawContent = tasty({
+  qa: 'Content',
+  as: 'section',
   styles: {
     gridArea: 'content',
     preset: 'p3',
@@ -20,9 +25,6 @@ const RawContent = styled({
     gap: '2x',
     overflow: 'auto',
     styledScrollbar: true,
-  },
-  props: {
-    'data-id': 'Content',
   },
 });
 

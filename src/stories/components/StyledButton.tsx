@@ -1,14 +1,14 @@
-import { styled } from '../../styled';
+import { tasty } from '../../tasty';
 import { Button } from '../../components/actions';
 
-export const StyledButton = styled(Button, {
+export const StyledButton = tasty(Button, {
   styles: {
     padding: '3x 6x',
     preset: 't1',
   },
 });
 
-export const GlobalStyledHeading = styled('div.myButton', {
+export const GlobalStyledHeading = tasty('div.myButton', {
   display: 'inline-block',
   padding: '1x 2x',
   preset: 't2',

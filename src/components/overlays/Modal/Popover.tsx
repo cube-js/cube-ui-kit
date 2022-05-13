@@ -3,11 +3,9 @@ import { Overlay } from './Overlay';
 import { forwardRef, HTMLAttributes } from 'react';
 import { useModal, useOverlay } from '@react-aria/overlays';
 import { Base } from '../../Base';
-import { useContextStyles } from '../../../providers/StylesProvider';
+import { BaseProps, Styles, useContextStyles } from '../../../tasty';
 import { OverlayProps } from '@react-types/overlays';
-import { BaseProps } from '../../types';
 import { PlacementAxis } from '../../../shared';
-import { Styles } from '../../../styles/types';
 
 const POPOVER_STYLES: Styles = {
   pointerEvents: 'auto',

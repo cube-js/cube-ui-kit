@@ -1,10 +1,13 @@
 import { forwardRef } from 'react';
 import { Base } from '../../Base';
-import { CONTAINER_STYLES } from '../../../styles/list';
-import { extractStyles } from '../../../utils/styles';
-import { filterBaseProps } from '../../../utils/filterBaseProps';
-import { Styles } from '../../../styles/types';
-import { BaseProps, ContainerStyleProps } from '../../types';
+import {
+  BaseProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  Styles,
+} from '../../../tasty';
 
 const DEFAULT_STYLES: Styles = {
   display: 'block',

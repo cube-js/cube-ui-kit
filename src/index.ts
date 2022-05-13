@@ -141,7 +141,7 @@ export type { CubeAlertDialogProps } from './components/overlays/AlertDialog';
 export { notification } from './services/notification';
 export type { CubeNotificationOptions } from './services/notification';
 
-export * from './providers/BreakpointsProvider';
+export * from './tasty';
 
 export const Typography = {
   Text,
@@ -152,7 +152,7 @@ export const Typography = {
 export { Text, Title, Paragraph };
 export type { CubeTextProps, CubeTitleProps, CubeParagraphProps };
 
-export { useContextStyles, StyleProvider } from './providers/StylesProvider';
+export { useContextStyles, StyleProvider } from './tasty';
 
 export { Provider } from './provider';
 export type { useProviderProps } from './provider';
@@ -177,14 +177,13 @@ export type {
   Props,
   FlowStyleProps,
   ShortGridStyles,
-} from './components/types';
-export * from './styles/types';
-export * from './styles/list';
-export * from './styles/index';
+} from './tasty';
+export * from './tasty';
 
 export { ModalProvider } from '@react-aria/overlays';
 export * from './utils/react';
 export * from './styled';
+export * from './tasty';
 export { default as copy } from 'clipboard-copy';
 export * from '@react-aria/ssr';
 export * from './components/forms/Form';

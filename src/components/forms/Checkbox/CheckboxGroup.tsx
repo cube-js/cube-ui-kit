@@ -6,12 +6,15 @@ import { useCheckboxGroup } from '@react-aria/checkbox';
 import { useCheckboxGroupState } from '@react-stately/checkbox';
 import { FormContext, useFormProps } from '../Form/Form';
 import { CheckboxGroupContext } from './context';
-import { extractStyles } from '../../../utils/styles';
-import { BLOCK_STYLES, OUTER_STYLES } from '../../../styles/list';
+import {
+  BaseProps,
+  BLOCK_STYLES,
+  extractStyles,
+  OUTER_STYLES,
+  useContextStyles,
+} from '../../../tasty';
 import { Base } from '../../Base';
-import { useContextStyles } from '../../../providers/StylesProvider';
 import { FieldWrapper } from '../FieldWrapper';
-import { BaseProps } from '../../types';
 import type { AriaCheckboxGroupProps } from '@react-types/checkbox';
 import { FormFieldProps } from '../../../shared';
 import {

@@ -155,15 +155,17 @@ export function renderStyles(
           responsiveStyles[i] += rules || '';
         });
       } else {
-        rawStyles
-          += handler(styleMap as StyleValueStateMap<string>, suffix) || '';
+        rawStyles +=
+          handler(styleMap as StyleValueStateMap<string>, suffix) || '';
       }
     });
 
     STYLE_CACHE[
       cacheKey
     ] = `outline: none;\n&[hidden]{display: none !important;}${rawStyles}${
-      responsive && responsive.length
+      responsive &&
+      responsive.length &&
+      responsiveStyles.filter((s) => s).length
         ? mediaWrapper(responsiveStyles, zones)
         : ''
     }${innerStyles}`;

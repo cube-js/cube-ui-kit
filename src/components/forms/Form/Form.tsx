@@ -2,22 +2,25 @@ import { useDOMRef } from '@react-spectrum/utils';
 import { Provider, useProviderProps } from '../../../provider';
 import {
   createContext,
-  useContext,
-  useRef,
-  forwardRef,
   FormHTMLAttributes,
+  forwardRef,
+  useContext,
   useEffect,
+  useRef,
 } from 'react';
 import { Base } from '../../Base';
-import { extractStyles } from '../../../utils/styles';
-import { CONTAINER_STYLES } from '../../../styles/list';
-import { filterBaseProps } from '../../../utils/filterBaseProps';
-import { CubeFormInstance, useForm, CubeFormData } from './useForm';
+import {
+  BaseProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  Styles,
+} from '../../../tasty';
+import { CubeFormData, CubeFormInstance, useForm } from './useForm';
 import { useCombinedRefs } from '../../../utils/react';
 import { timeout } from '../../../utils/promise';
-import { BaseProps, ContainerStyleProps } from '../../types';
 import { FormBaseProps } from '../../../shared';
-import { Styles } from '../../../styles/types';
 
 export const FormContext = createContext({});
 
@@ -107,8 +110,8 @@ function Form(props: CubeFormProps, ref) {
           const evt = e.nativeEvent;
 
           if (
-            evt.submitter
-            && evt.submitter.getAttribute('type') !== 'submit'
+            evt.submitter &&
+            evt.submitter.getAttribute('type') !== 'submit'
           ) {
             return;
           }
@@ -116,7 +119,7 @@ function Form(props: CubeFormProps, ref) {
       }
 
       return form?.validateFields().then(
-        async() => {
+        async () => {
           await timeout();
 
           if (form && !form.isSubmitting) {
@@ -128,7 +131,7 @@ function Form(props: CubeFormProps, ref) {
             }
           }
         },
-        async(e) => {
+        async (e) => {
           await timeout();
           if (e instanceof Error) {
             throw e;

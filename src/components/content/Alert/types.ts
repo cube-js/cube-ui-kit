@@ -1,4 +1,4 @@
-import { BaseProps, ContainerStyleProps, TextStyleProps } from '../../types';
+import { BaseProps, ContainerStyleProps, TextStyleProps } from '../../../tasty';
 import THEMES from '../../../data/themes';
 
 export interface CubeAlertProps

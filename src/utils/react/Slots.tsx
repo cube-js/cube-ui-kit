@@ -1,4 +1,4 @@
-import { mergeProps } from '../../utils/react/mergeProps';
+import { mergeProps } from './mergeProps';
 import {
   createContext,
   Children,

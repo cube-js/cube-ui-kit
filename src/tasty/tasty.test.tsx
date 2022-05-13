@@ -1,9 +1,9 @@
 import { getByTestId, render } from '@testing-library/react';
-import { styled } from './styled';
+import { tasty } from './tasty';
 import { Button } from '../components/actions';
 import { Block } from '../components/Block';
 
-describe('styled() API', () => {
+describe('tasty() API', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -12,36 +12,27 @@ describe('styled() API', () => {
     jest.restoreAllMocks();
   });
 
-  it('should warn about deprecated API', () => {
-    const spiedConsole = jest
-      .spyOn(console, 'warn')
-      .mockImplementation(() => {});
-
-    styled(Button, { props: { type: 'primary' } });
-
-    expect(spiedConsole).toBeCalledTimes(1);
-    expect(spiedConsole.mock.calls).toMatchSnapshot();
-  });
-
   it('should provide defaults and give ability to override', () => {
-    const SButton = styled(Button, { type: 'primary' });
+    const SButton = tasty(Button, { type: 'primary' });
 
-    const { getByTestId, rerender } = render(<SButton qa="button" />);
+    const { getByTestId, rerender } = render(
+      <SButton qa="button" label="Button" />,
+    );
     expect(getByTestId('button').dataset.type).toBe('primary');
 
-    rerender(<SButton type="secondary" qa="button" />);
+    rerender(<SButton type="secondary" qa="button" label="Button" />);
     expect(getByTestId('button').dataset.type).toBe('secondary');
   });
 
-  it('should pass styles from styled', () => {
-    const StyledBlock = styled(Block, { styles: { color: '#clear.1' } });
+  it('should pass styles from tasty', () => {
+    const StyledBlock = tasty(Block, { styles: { color: '#clear.1' } });
     const { container } = render(<StyledBlock />);
 
     expect(container).toMatchSnapshot();
   });
 
   it('should be able to override styles', () => {
-    const StyledBlock = styled(Block, { styles: { color: '#clear.1' } });
+    const StyledBlock = tasty(Block, { styles: { color: '#clear.1' } });
     const { container } = render(
       <StyledBlock styles={{ color: '#black.1' }} />,
     );
@@ -50,9 +41,16 @@ describe('styled() API', () => {
   });
 
   it('should pass qa prop', () => {
-    const StyledBlock = styled({ props: { qa: 'Field' } });
+    const StyledBlock = tasty({ qa: 'Field' });
     const { container } = render(<StyledBlock />);
 
     expect(getByTestId(container, 'Field', {})).toBeDefined();
+  });
+
+  it('should create responsive styles', () => {
+    const StyledBlock = tasty(Block, { styles: { display: ['grid', 'flex'] } });
+    const { container } = render(<StyledBlock />);
+
+    expect(container).toMatchSnapshot();
   });
 });

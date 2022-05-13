@@ -2,7 +2,7 @@ import { CubePlaceholderProps, Placeholder } from '../Placeholder/Placeholder';
 import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
 import { CubeGridProps, Grid } from '../../layout/Grid';
-import { BaseProps, ContainerStyleProps } from '../../types';
+import { BaseProps, ContainerStyleProps } from '../../../tasty';
 
 const LAYOUT_MAP = {
   page({ lines, children, ...props }) {
@@ -13,8 +13,8 @@ const LAYOUT_MAP = {
           <Placeholder width="50px 10% 150px" />
         </Space>
         <Flow gap="2x">
-          {children
-            || Array(lines || 5)
+          {children ||
+            Array(lines || 5)
               .fill(0)
               .map((item, i) => <Placeholder key={i} />)}
         </Flow>
@@ -24,8 +24,8 @@ const LAYOUT_MAP = {
   content({ children, lines, ...props }) {
     return (
       <Flow gap="2x" {...props}>
-        {children
-          || Array(lines || 5)
+        {children ||
+          Array(lines || 5)
             .fill(0)
             .map((item, i) => <Placeholder key={i} />)}
       </Flow>
@@ -92,8 +92,8 @@ const LAYOUT_MAP = {
             ))}
         </Space>
         <Flow gap="2x">
-          {children
-            || Array(lines || 5)
+          {children ||
+            Array(lines || 5)
               .fill(0)
               .map((item, i) => <Placeholder key={i} />)}
         </Flow>

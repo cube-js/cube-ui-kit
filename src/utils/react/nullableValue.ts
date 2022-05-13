@@ -1,4 +1,4 @@
-import { Props } from '../../components/types';
+import { Props } from '../../tasty';
 
 export function castNullableStringValue<T>(props: T): T {
   return castNullableField(props, ['value', 'defaultValue'], 'string', (v) =>

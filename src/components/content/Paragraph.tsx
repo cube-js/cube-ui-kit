@@ -1,9 +1,12 @@
 import { forwardRef } from 'react';
 import { CubeTextProps, Text } from './Text';
-import { CONTAINER_STYLES, TEXT_STYLES } from '../../styles/list';
-import { extractStyles } from '../../utils/styles';
-import { ContainerStyleProps } from '../types';
-import { Styles } from '../../styles/types';
+import {
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  Styles,
+  TEXT_STYLES,
+} from '../../tasty';
 
 const DEFAULT_STYLES: Styles = {
   preset: 'p3',

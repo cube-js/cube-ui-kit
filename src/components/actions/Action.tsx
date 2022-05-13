@@ -1,22 +1,23 @@
-import { forwardRef, MouseEventHandler, useContext, useCallback } from 'react';
-import { CONTAINER_STYLES, TEXT_STYLES } from '../../styles/list';
-import { Base } from '../Base';
-import { useHover } from '@react-aria/interactions';
-import { useFocus } from '../../utils/interactions';
-import { useButton } from '@react-aria/button';
-import { mergeProps } from '../../utils/react';
-import { extractStyles } from '../../utils/styles';
-import { filterBaseProps } from '../../utils/filterBaseProps';
-import { UIKitContext } from '../../provider';
+import { forwardRef, MouseEventHandler, useCallback, useContext } from 'react';
 import {
   BaseProps,
   BaseStyleProps,
+  CONTAINER_STYLES,
   ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  Styles,
   TagNameProps,
+  TEXT_STYLES,
   TextStyleProps,
-} from '../types';
+} from '../../tasty';
+import { Base } from '../Base';
+import { useHover } from '@react-aria/interactions';
+import { useFocus } from '../../utils/react/interactions';
+import { useButton } from '@react-aria/button';
+import { mergeProps } from '../../utils/react';
+import { UIKitContext } from '../../provider';
 import { AriaButtonProps } from '@react-types/button';
-import { Styles } from '../../styles/types';
 import { useFocusableRef } from '@react-spectrum/utils';
 import { FocusableRef } from '@react-types/shared';
 
@@ -65,8 +66,8 @@ export function parseTo(to): {
 } {
   const newTab = to && typeof to === 'string' && to.startsWith('!');
   const nativeRoute = to && typeof to === 'string' && to.startsWith('@');
-  const href: string | undefined
-    = to && typeof to === 'string'
+  const href: string | undefined =
+    to && typeof to === 'string'
       ? newTab || nativeRoute
         ? to.slice(1)
         : to
@@ -142,7 +143,6 @@ export const Action = forwardRef(
       htmlType,
       label,
       theme,
-      css,
       mods,
       onPress,
       ...props
@@ -209,7 +209,6 @@ export const Action = forwardRef(
         styles={styles}
         target={target}
         href={href}
-        css={css}
       />
     );
   },

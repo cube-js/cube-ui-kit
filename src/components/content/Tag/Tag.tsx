@@ -1,18 +1,21 @@
 import { forwardRef } from 'react';
 import THEMES from '../../../data/themes';
-import { CONTAINER_STYLES } from '../../../styles/list';
-import { extractStyles } from '../../../utils/styles';
-import { filterBaseProps } from '../../../utils/filterBaseProps';
-import { BaseProps, ContainerStyleProps } from '../../types';
-import { Styles } from '../../../styles/types';
+import {
+  BaseProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  tasty,
+} from '../../../tasty';
 import { Action } from '../../actions/Action';
 import { Suffix } from '../../layout/Suffix';
 import { Block } from '../../Block';
 import { CloseOutlined } from '@ant-design/icons';
-import { styled } from '../../../styled';
 
-const RawTag = styled({
-  name: 'Tag',
+const RawTag = tasty({
+  qa: 'Tag',
+  role: 'status',
   styles: {
     position: 'relative',
     display: 'inline-flex',
@@ -53,28 +56,32 @@ const RawTag = styled({
       }, {}),
     },
   },
-  props: { role: 'status' },
 });
 
-const DEFAULT_CONTENT_STYLES: Styles = {
-  width: 'max 100%',
-  textOverflow: 'ellipsis',
-  overflow: 'hidden',
-  pointerEvents: 'none',
-} as const;
-
-const DEFAULT_CLOSE_STYLES: Styles = {
-  display: 'grid',
-  placeItems: 'center',
-  color: true,
-  placeSelf: 'center',
-  opacity: {
-    '': 0.85,
-    'pressed | hovered': 1,
+const RawContent = tasty(Block, {
+  styles: {
+    width: 'max 100%',
+    textOverflow: 'ellipsis',
+    overflow: 'hidden',
+    pointerEvents: 'none',
   },
-  transition: 'opacity',
-  padding: '0 .5x',
-} as const;
+});
+
+const CloseAction = tasty(Action, {
+  label: 'Close',
+  styles: {
+    display: 'grid',
+    placeItems: 'center',
+    color: true,
+    placeSelf: 'center',
+    opacity: {
+      '': 0.85,
+      'pressed | hovered': 1,
+    },
+    transition: 'opacity',
+    padding: '0 .5x',
+  },
+});
 
 export interface CubeTagProps extends BaseProps, ContainerStyleProps {
   type?: keyof typeof THEMES | string;
@@ -95,18 +102,16 @@ const Tag = (allProps: CubeTagProps, ref) => {
       mods={{ closable: isClosable }}
       ref={ref}
     >
-      <Block mods={{ closable: isClosable }} styles={DEFAULT_CONTENT_STYLES}>
-        {children}
-      </Block>
+      <RawContent mods={{ closable: isClosable }}>{children}</RawContent>
       {isClosable ? (
         <Suffix outerGap="0">
-          <Action onPress={onClose} styles={DEFAULT_CLOSE_STYLES} label="Close">
+          <CloseAction onPress={onClose}>
             <CloseOutlined
               style={{
                 fontSize: 'calc(var(--font-size) - (var(--border-width) * 2))',
               }}
             />
-          </Action>
+          </CloseAction>
         </Suffix>
       ) : undefined}
     </RawTag>

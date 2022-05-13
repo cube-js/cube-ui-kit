@@ -11,8 +11,8 @@ import { CloseOutlined } from '@ant-design/icons';
 import { Block } from '../../Block';
 import { Action, CubeActionProps } from '../../actions/Action';
 import { Space } from '../../layout/Space';
-import { Flex, CubeFlexProps } from '../../layout/Flex';
-import { Styles } from '../../../styles/types';
+import { CubeFlexProps, Flex } from '../../layout/Flex';
+import { Styles, tasty } from '../../../tasty';
 
 interface TabData {
   id: string | number;
@@ -107,13 +107,19 @@ const TABS_CONTAINER_CSS = `
   }
 `;
 
-const DIRTY_BADGE_CSS = `
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  transition: all .2s linear;
-`;
+const DirtyBadge = tasty({
+  styles: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    transition: 'all .2s linear',
+    width: '1x',
+    height: '1x',
+    fill: '#dark.30',
+    radius: 'round',
+  },
+});
 
 const TAB_STYLES: Styles = {
   radius: '1r 1r 0 0',
@@ -232,16 +238,7 @@ const Tab = ({
             ) : (
               <div></div>
             )}
-            {isDirty ? (
-              <Block
-                className="file-tab-dirty-badge"
-                css={DIRTY_BADGE_CSS}
-                width="1x"
-                height="1x"
-                fill="#dark.30"
-                radius="round"
-              />
-            ) : null}
+            {isDirty ? <DirtyBadge className="file-tab-dirty-badge" /> : null}
           </Flex>
         )}
       </Space>

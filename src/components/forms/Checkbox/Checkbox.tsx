@@ -5,21 +5,24 @@ import { useCheckbox, useCheckboxGroupItem } from '@react-aria/checkbox';
 import { useHover } from '@react-aria/interactions';
 import { useToggleState } from '@react-stately/toggle';
 import { useProviderProps } from '../../../provider';
-import { BLOCK_STYLES, OUTER_STYLES } from '../../../styles/list';
-import { extractStyles } from '../../../utils/styles';
+import {
+  BaseProps,
+  BLOCK_STYLES,
+  extractStyles,
+  filterBaseProps,
+  OUTER_STYLES,
+  Styles,
+  useContextStyles,
+} from '../../../tasty';
 import { Base } from '../../Base';
-import { useFocus } from '../../../utils/interactions';
+import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react';
-import { filterBaseProps } from '../../../utils/filterBaseProps';
-import { useContextStyles } from '../../../providers/StylesProvider';
 import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../Label';
 import { HiddenInput } from '../../HiddenInput';
 import { useFormProps } from '../Form/Form';
 import { FieldWrapper } from '../FieldWrapper';
 import { CheckboxGroup } from './CheckboxGroup';
 import { CheckboxGroupContext } from './context';
-import { BaseProps } from '../../types';
-import { Styles } from '../../../styles/types';
 import type { FocusableRef } from '@react-types/shared';
 import { FormFieldProps } from '../../../shared';
 import {

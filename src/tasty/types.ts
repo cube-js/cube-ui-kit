@@ -1,5 +1,5 @@
 import { AllHTMLAttributes, CSSProperties } from 'react';
-import { Styles, StylesInterface } from '../styles/types';
+import { Styles } from './styles/types';
 import {
   BASE_STYLES,
   BLOCK_STYLES,
@@ -10,25 +10,11 @@ import {
   OUTER_STYLES,
   POSITION_STYLES,
   TEXT_STYLES,
-} from '../styles/list';
+} from './styles/list';
 
 export interface GlobalStyledProps {
   breakpoints?: number[];
 }
-
-export type StyledProps<K extends (keyof StylesInterface)[], DefaultProps> = {
-  /** The name of the element. It can be used to override styles in context. */
-  name?: string;
-  /** The tag name of the element. */
-  tag?: string;
-  /** Default styles of the element. */
-  styles?: Styles;
-  /** Default css of the element. */
-  css?: string | ((props: Props) => string);
-  props?: DefaultProps;
-  /** The list of styles that can be provided by props */
-  styleProps?: K;
-};
 
 export interface BasePropsWithoutChildren
   extends Pick<AllHTMLAttributes<HTMLElement>, 'className' | 'role' | 'id'> {
@@ -53,7 +39,7 @@ export interface BasePropsWithoutChildren
   /** Whether the element is disabled (`disabled` attribute is set) */
   isDisabled?: boolean;
   /** Plain css for the element */
-  css?: string | ((props: Props) => string);
+  css?: string;
   /** The element name for using in style overriding */
   styleName?: string;
   /** The CSS style map */

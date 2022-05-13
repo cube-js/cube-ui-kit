@@ -1,15 +1,18 @@
 import { forwardRef, useEffect } from 'react';
 import Prism from 'prismjs';
-import { BaseProps, ContainerStyleProps } from '../../types';
-import { styled } from '../../../styled';
-import { Styles } from '../../../styles/types';
-import { CONTAINER_STYLES } from '../../../styles/list';
+import {
+  BaseProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  Styles,
+  tasty,
+} from '../../../tasty';
 
-const RawPre = styled({
-  name: 'CodeBlock',
-  tag: 'pre',
+const RawPre = tasty({
+  as: 'pre',
+  qa: 'CodeBlock',
   styleProps: CONTAINER_STYLES.concat([]),
-  props: { className: 'cube-prism-code' },
+  className: 'cube-prism-code',
   styles: {
     margin: 0,
 

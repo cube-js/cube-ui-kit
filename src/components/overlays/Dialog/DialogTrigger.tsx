@@ -5,7 +5,7 @@ import { useMediaQuery } from '@react-spectrum/utils';
 import { useOverlayPosition, useOverlayTrigger } from '@react-aria/overlays';
 import { DialogContext } from './context';
 import { Modal, Popover, Tray } from '../Modal';
-import { Styles } from '../../../styles/types';
+import { Styles } from '../../../tasty';
 
 export type CubeDialogClose = (close: () => void) => ReactElement;
 
@@ -86,9 +86,9 @@ function DialogTrigger(props) {
   useEffect(() => {
     return () => {
       if (
-        (wasOpen.current || isExiting.current)
-        && type !== 'popover'
-        && type !== 'tray'
+        (wasOpen.current || isExiting.current) &&
+        type !== 'popover' &&
+        type !== 'tray'
       ) {
         console.warn(
           'CubeUIKit: A DialogTrigger unmounted while open. This is likely due to being placed within a trigger that unmounts or inside a conditional. Consider using a DialogContainer instead.',
@@ -266,10 +266,10 @@ function DialogTriggerBase(props) {
         {...triggerProps}
         onPress={state.toggle}
         isPressed={
-          state.isOpen
-          && type !== 'modal'
-          && type !== 'fullscreen'
-          && type !== 'fullscreenTakeover'
+          state.isOpen &&
+          type !== 'modal' &&
+          type !== 'fullscreen' &&
+          type !== 'fullscreenTakeover'
         }
       >
         {trigger}

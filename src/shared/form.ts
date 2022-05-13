@@ -1,5 +1,4 @@
-import { Props } from '../components/types';
-import { Styles } from '../styles/types';
+import { Props, Styles } from '../tasty';
 import { ReactNode } from 'react';
 
 /** Where to place label relative to input */

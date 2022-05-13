@@ -8,16 +8,13 @@ import {
   NecessityIndicator,
   ValidationState,
 } from '../../shared';
-import { Styles } from '../../styles/types';
+import { Styles, tasty } from '../../tasty';
 import { TooltipProvider } from '../overlays/Tooltip/TooltipProvider';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { wrapNodeIfPlain } from '../../utils/react';
-import { styled } from '../../styled';
 
-const RawField = styled({
-  props: {
-    qa: 'Field',
-  },
+const RawField = tasty({
+  qa: 'Field',
   styles: {
     display: 'grid',
     gridColumns: {
@@ -49,10 +46,8 @@ const RawField = styled({
   },
 });
 
-const RawMessage = styled({
-  props: {
-    qa: 'Field_Message',
-  },
+const RawMessage = tasty({
+  qa: 'Field_Message',
   styles: {
     preset: 'default',
     color: {

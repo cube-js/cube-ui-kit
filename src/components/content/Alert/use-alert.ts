@@ -1,8 +1,11 @@
-import { extractStyles } from '../../../utils/styles';
+import {
+  CONTAINER_STYLES,
+  extractStyles,
+  filterBaseProps,
+  TEXT_STYLES,
+} from '../../../tasty';
 import { useDeprecationWarning } from '../../../_internal';
 import { CubeAlertProps } from './types';
-import { CONTAINER_STYLES, TEXT_STYLES } from '../../../styles/list';
-import { filterBaseProps } from '../../../utils/filterBaseProps';
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES] as const;
 

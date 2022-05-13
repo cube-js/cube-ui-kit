@@ -1,9 +1,8 @@
 import { forwardRef, ReactNode } from 'react';
 import { Action, CubeActionProps } from '../Action';
 import { LoadingOutlined } from '@ant-design/icons';
-import { useContextStyles } from '../../../providers/StylesProvider';
+import { Styles, useContextStyles } from '../../../tasty';
 import { FocusableRef } from '@react-types/shared';
-import { Styles } from '../../../styles/types';
 import { accessibilityWarning } from '../../../utils/warnings';
 
 export interface CubeButtonProps extends CubeActionProps {
@@ -278,18 +277,8 @@ const DEFAULT_STYLES = {
 
 export const Button = forwardRef(
   (allProps: CubeButtonProps, ref: FocusableRef<HTMLElement>) => {
-    let {
-      type,
-      size,
-      label,
-      styles,
-      children,
-      theme,
-      css,
-      icon,
-      mods,
-      ...props
-    } = allProps;
+    let { type, size, label, styles, children, theme, icon, mods, ...props } =
+      allProps;
 
     const isDisabled = props.isDisabled;
     const isLoading = props.isLoading;
@@ -339,7 +328,6 @@ export const Button = forwardRef(
     return (
       <Action
         as={props.to ? 'a' : undefined}
-        css={css}
         {...props}
         ref={ref}
         isDisabled={isLoading || isDisabled}

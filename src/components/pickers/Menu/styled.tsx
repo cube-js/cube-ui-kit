@@ -1,9 +1,9 @@
-import { styled } from '../../../styled';
+import { tasty } from '../../../tasty';
 import { Space } from '../../layout/Space';
 
-export const StyledMenu = styled({
-  tag: 'ul',
-  name: 'Menu',
+export const StyledMenu = tasty({
+  as: 'ul',
+  qa: 'Menu',
   styles: {
     display: 'flex',
     flow: 'column',
@@ -31,8 +31,8 @@ export const StyledMenu = styled({
   },
 });
 
-export const StyledDivider = styled({
-  tag: 'li',
+export const StyledDivider = tasty({
+  as: 'li',
   styles: {
     display: 'flex',
     flow: 'column',
@@ -43,8 +43,8 @@ export const StyledDivider = styled({
   },
 });
 
-export const StyledMenuHeader = styled(Space, {
-  tag: 'li',
+export const StyledMenuHeader = tasty(Space, {
+  as: 'li',
   styles: {
     fill: '#light',
     color: '#dark-02',
@@ -58,8 +58,8 @@ export const StyledMenuHeader = styled(Space, {
   },
 });
 
-export const StyledMenuSection = styled({
-  tag: 'li',
+export const StyledMenuSection = tasty({
+  as: 'li',
   styles: {
     display: 'flex',
     flow: 'column',
@@ -75,8 +75,8 @@ export const StyledMenuSection = styled({
   },
 });
 
-export const StyledMenuItem = styled({
-  tag: 'li',
+export const StyledMenuItem = tasty({
+  as: 'li',
   styles: {
     display: 'flex',
     flow: 'column',
@@ -92,8 +92,8 @@ export const StyledMenuItem = styled({
   },
 });
 
-export const StyledMenuSectionHeading = styled(Space, {
-  tag: 'header',
+export const StyledMenuSectionHeading = tasty(Space, {
+  as: 'header',
   styles: {
     color: '#dark-03',
     preset: 'c1',
