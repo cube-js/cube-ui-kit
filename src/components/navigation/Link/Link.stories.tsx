@@ -2,7 +2,7 @@ import { Link } from './Link';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
-  title: 'UIKit/Navigation/Link',
+  title: 'Navigation/Link',
   component: Link,
   parameters: {
     controls: {

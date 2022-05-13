@@ -2,7 +2,7 @@ import { FileInput } from './FileInput';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
-  title: 'UIKit/Forms/FileInput',
+  title: 'Forms/FileInput',
   component: FileInput,
   parameters: {
     controls: {

@@ -4,7 +4,7 @@ import { SELECTED_KEY_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
-  title: 'UIKit/Pickers/Select',
+  title: 'Pickers/Select',
   component: Select,
   parameters: {
     controls: {

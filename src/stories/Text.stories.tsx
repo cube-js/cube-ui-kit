@@ -2,7 +2,7 @@ import { Text } from '../components/content/Text';
 import { baseProps } from './lists/baseProps';
 
 export default {
-  title: 'UIKit/Generic/Text',
+  title: 'Generic/Text',
   component: Text,
   parameters: {
     controls: {

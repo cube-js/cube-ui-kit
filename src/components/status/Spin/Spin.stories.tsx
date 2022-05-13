@@ -2,7 +2,7 @@ import { Spin } from './Spin';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
-  title: 'UIKit/Status/Spin',
+  title: 'Status/Spin',
   component: Spin,
   parameters: {
     controls: {

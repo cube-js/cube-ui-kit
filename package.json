@@ -133,13 +133,12 @@
     "@swc/jest": "0.2.20",
     "@testing-library/jest-dom": "^5.16.1",
     "@testing-library/react": "^12.1.2",
+    "@testing-library/react-hooks": "^8.0.0",
     "@types/react": "^17.0.38",
     "@types/react-dom": "^17.0.11",
     "@types/react-test-renderer": "17.0.1",
     "@typescript-eslint/eslint-plugin": "^5.8.1",
     "@typescript-eslint/parser": "^5.8.1",
-    "@web/test-runner": "^0.13.23",
-    "babel-eslint": "^10.1.0",
     "bytes": "^3.1.0",
     "chromatic": "^6.3.3",
     "cross-env": "^7.0.3",
@@ -147,7 +146,6 @@
     "eslint": "^8.5.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-config-react-app": "^7.0.0",
-    "eslint-plugin-flowtype": "^8.0.3",
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-jsx-a11y": "^6.5.1",
     "eslint-plugin-react": "^7.28.0",
@@ -169,7 +167,6 @@
     "react-test-renderer": "^17.0.2",
     "rimraf": "^3.0.2",
     "size-limit": "^7.0.5",
-    "storybook-addon-styled-component-theme": "^2.0.0",
     "styled-components": "5.3.0",
     "typescript": "^4.5.4"
   },
@@ -194,7 +191,6 @@
     }
   ],
   "browserslist": [
-    "iOS 10",
     "last 10 Chrome versions",
     "last 5 Firefox versions",
     "last 3 Safari versions"

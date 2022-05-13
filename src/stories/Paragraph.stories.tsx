@@ -1,7 +1,7 @@
 import { Paragraph } from '../components/content/Paragraph';
 
 export default {
-  title: 'UIKit/Generic/Paragraph',
+  title: 'Generic/Paragraph',
   component: Paragraph,
   argTypes: {
     italic: {

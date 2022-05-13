@@ -61,7 +61,7 @@ export interface BasePropsWithoutChildren
     | CSSProperties
     | (CSSProperties & { [key: string]: string | number | null });
   /** User-defined theme for the element. Mapped to data-theme attribute. Use `default`, or `danger`, or any custom string value you need. */
-  theme?: 'default' | 'danger' | string;
+  theme?: 'default' | 'danger' | (string & {});
 }
 
 export interface BaseProps

@@ -10,6 +10,9 @@ const config = {
     emotionAlias: false,
     buildStoriesJson: true,
     interactionsDebugger: true,
+    argTypeTargetsV7: true,
+    storyStoreV7: true,
+    modernInlineRender: true,
   },
   stories: ['../src/**/*.stories.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
   addons: [

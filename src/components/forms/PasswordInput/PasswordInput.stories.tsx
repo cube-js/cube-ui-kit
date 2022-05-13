@@ -3,7 +3,7 @@ import { LABEL_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
-  title: 'UIKit/Forms/PasswordInput',
+  title: 'Forms/PasswordInput',
   component: PasswordInput,
   parameters: {
     controls: {

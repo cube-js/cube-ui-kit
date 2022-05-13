@@ -3,7 +3,7 @@ import { baseProps } from '../../../stories/lists/baseProps';
 import { MULTIPLE_VALUE_ARG } from '../../../stories/FormFieldArgs';
 
 export default {
-  title: 'UIKit/Forms/CheckboxGroup',
+  title: 'Forms/CheckboxGroup',
   component: Checkbox.Group,
   parameters: {
     controls: {

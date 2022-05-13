@@ -59,7 +59,7 @@ export interface StylesInterface
     | `rgb(${string})`
     | `rgba(${string})`
     | boolean
-    | string;
+    | (string & {});
   /** Set the text (current) color of the element
    * ```
    * color="#{name_of_the_color}"
