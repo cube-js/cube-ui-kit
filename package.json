@@ -118,15 +118,15 @@
     "@commitlint/cli": "16.1.0",
     "@commitlint/config-conventional": "16.0.0",
     "@happy-dom/jest-environment": "^3.1.0",
-    "@size-limit/esbuild": "^7.0.8",
-    "@size-limit/preset-big-lib": "^7.0.5",
-    "@size-limit/webpack-why": "^7.0.5",
-    "@storybook/addon-actions": "^6.4.9",
-    "@storybook/addon-essentials": "^6.4.9",
-    "@storybook/addon-interactions": "^6.4.22",
-    "@storybook/addon-links": "^6.4.9",
+    "@size-limit/file": "7.0.5",
+    "@size-limit/webpack": "7.0.5",
+    "@size-limit/webpack-why": "7.0.5",
+    "@storybook/addon-actions": "6.4.22",
+    "@storybook/addon-essentials": "6.4.22",
+    "@storybook/addon-interactions": "6.4.22",
+    "@storybook/addon-links": "6.4.22",
     "@storybook/jest": "^0.0.10",
-    "@storybook/react": "^6.4.9",
+    "@storybook/react": "^6.4.22",
     "@storybook/test-runner": "^0.0.8",
     "@storybook/testing-library": "^0.0.11",
     "@swc/core": "1.2.148",
@@ -157,10 +157,8 @@
     "jest-styled-components": "^7.0.8",
     "lint-staged": ">=10",
     "markdown-table": "^2.0.0",
-    "netlify-cli": "^8.6.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.5.1",
-    "prettier-eslint": "^13.0.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "react-router": "^6.2.1",
@@ -171,22 +169,21 @@
     "typescript": "^4.5.4"
   },
   "resolutions": {
-    "es5-ext": "0.10.53"
+    "es5-ext": "0.10.53",
+    "prettier": "2.5.1"
   },
   "size-limit": [
     {
       "name": "All",
       "path": "./dist/__measure.js",
-      "running": false,
-      "webpack": false,
+      "webpack": true,
       "limit": "186 kB"
     },
     {
       "name": "Tree shaking (just a Button)",
       "path": "./dist/es/index.js",
+      "webpack": true,
       "import": "{ Button }",
-      "running": false,
-      "webpack": false,
       "limit": "40 kB"
     }
   ],
