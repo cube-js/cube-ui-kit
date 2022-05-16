@@ -35,11 +35,10 @@ async function run() {
   const jsonOutput = JSON.parse(output);
 
   const formattedTable = table([
-    ['Name', 'Size', 'Time', 'Passed?'],
+    ['Name', 'Size', 'Passed?'],
     ...jsonOutput.map((entry) => [
       entry.name,
       formatBytes(entry.size),
-      formatTime(entry.loading),
       entry.passed ? '🎉' : '👎',
     ]),
   ]);
@@ -55,14 +54,6 @@ async function run() {
   if (jsonOutput.some((entry) => entry.passed === false)) {
     setFailed('Size limit has been exceeded.');
   }
-}
-
-function formatTime(seconds) {
-  if (seconds >= 1) {
-    return `${Math.ceil(seconds * 10) / 10} s`;
-  }
-
-  return `${Math.ceil(seconds * 1000)} ms`;
 }
 
 function formatBytes(size) {
