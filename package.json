@@ -110,9 +110,9 @@
     "valid-url": "^1.0.9"
   },
   "devDependencies": {
-    "@actions/core": "^1.2.6",
-    "@actions/exec": "^1.0.3",
-    "@actions/github": "^2.1.1",
+    "@actions/core": "^1.8.2",
+    "@actions/exec": "^1.1.1",
+    "@actions/github": "^5.0.3",
     "@changesets/changelog-github": "^0.4.4",
     "@changesets/cli": "^2.22.0",
     "@commitlint/cli": "16.1.0",
@@ -121,6 +121,7 @@
     "@size-limit/file": "7.0.5",
     "@size-limit/webpack": "7.0.5",
     "@size-limit/webpack-why": "7.0.5",
+    "@statoscope/cli": "5.20.1",
     "@storybook/addon-actions": "6.5.3",
     "@storybook/addon-essentials": "6.5.3",
     "@storybook/addon-interactions": "6.5.3",
@@ -176,21 +177,6 @@
     "es5-ext": "0.10.53",
     "prettier": "2.5.1"
   },
-  "size-limit": [
-    {
-      "name": "All",
-      "path": "./dist/__measure.js",
-      "webpack": true,
-      "limit": "186 kB"
-    },
-    {
-      "name": "Tree shaking (just a Button)",
-      "path": "./dist/es/index.js",
-      "webpack": true,
-      "import": "{ Button }",
-      "limit": "40 kB"
-    }
-  ],
   "browserslist": [
     "last 10 Chrome versions",
     "last 5 Firefox versions",
