@@ -1,5 +1,5 @@
 import { createContext, useContext, ReactNode } from 'react';
-import { Styles } from '../styles/types';
+import { Styles } from '../tasty/styles/types';
 
 export const StyleContext = createContext<any>({});
 

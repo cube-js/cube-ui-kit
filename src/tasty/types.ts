@@ -16,6 +16,34 @@ export interface GlobalStyledProps {
   breakpoints?: number[];
 }
 
+type Caps =
+  | 'A'
+  | 'B'
+  | 'C'
+  | 'D'
+  | 'E'
+  | 'F'
+  | 'G'
+  | 'H'
+  | 'I'
+  | 'J'
+  | 'K'
+  | 'L'
+  | 'M'
+  | 'N'
+  | 'O'
+  | 'P'
+  | 'Q'
+  | 'R'
+  | 'S'
+  | 'T'
+  | 'U'
+  | 'V'
+  | 'W'
+  | 'X'
+  | 'Y'
+  | 'Z';
+
 export interface BasePropsWithoutChildren
   extends Pick<AllHTMLAttributes<HTMLElement>, 'className' | 'role' | 'id'> {
   /** QA ID for e2e testing. An alias for `data-qa` attribute. */
@@ -23,7 +51,7 @@ export interface BasePropsWithoutChildren
   /** QA value for e2e testing. An alias for `data-qaval` attribute. */
   qaVal?: string | number;
   /** Inner element name */
-  element?: string;
+  element?: `${Caps}${string}`;
   /** The style map */
   styles?: Styles;
   /** The list of responsive points in pixels */
