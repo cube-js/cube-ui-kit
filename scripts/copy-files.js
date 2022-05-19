@@ -1,14 +1,26 @@
 const fs = require('fs');
+const { copy } = require('fs-extra');
 const path = require('path');
 
-function copyRequiredFiles() {
-  copyPackageJson();
-  ['./README.md'].forEach((file) => includeFileInBuild(file));
+const rootDir = path.resolve(__dirname, '../');
+const outputFolder = path.resolve(rootDir, './dist/');
+
+async function copyRequiredFiles() {
+  ['./README.md', './CHANGELOG.md'].forEach((file) => includeFileInBuild(file));
+
+  await copyPackageJson();
+  await copyFonts();
 }
 
-function copyPackageJson() {
+async function copyFonts() {
+  const fontsFolder = path.resolve(rootDir, 'public/fonts');
+
+  return copy(fontsFolder, path.resolve(outputFolder, 'fonts'));
+}
+
+async function copyPackageJson() {
   const packageData = fs.readFileSync(
-    path.resolve(__dirname, '../package.json'),
+    path.resolve(rootDir, 'package.json'),
     'utf8',
   );
   const {
@@ -42,28 +54,21 @@ function copyPackageJson() {
         import: './es/index.js',
         require: './cjs/index.js',
       },
+      './fonts': {
+        default: './fonts',
+      },
     },
     private: false,
   };
-  const targetPath = path.resolve(
-    __dirname,
-    '../',
-    './dist/',
-    './package.json',
-  );
+  const targetPath = path.resolve(outputFolder, './package.json');
 
   fs.writeFileSync(targetPath, JSON.stringify(newPackageData, null, 2), 'utf8');
   console.log(`Created package.json in ${targetPath}`);
 }
 
 function includeFileInBuild(file) {
-  const sourcePath = path.resolve(__dirname, '../', file);
-  const targetPath = path.resolve(
-    __dirname,
-    '../',
-    './dist/',
-    path.basename(file),
-  );
+  const sourcePath = path.resolve(rootDir, file);
+  const targetPath = path.resolve(outputFolder, path.basename(file));
 
   fs.copyFileSync(sourcePath, targetPath);
 
