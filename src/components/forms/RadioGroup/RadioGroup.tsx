@@ -38,7 +38,10 @@ const GROUP_STYLES = {
     '': 'column',
     horizontal: 'row wrap',
   },
-  gap: '1x',
+  gap: {
+    '': '1x',
+    horizontal: '1x 2x',
+  },
   padding: '(1x - 1bw) 0',
 } as Styles;
 
