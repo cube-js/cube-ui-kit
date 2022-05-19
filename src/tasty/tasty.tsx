@@ -3,7 +3,7 @@ import { ComponentType, FC, forwardRef, useContext, useMemo } from 'react';
 import { isValidElementType } from 'react-is';
 import { BreakpointsContext } from './providers/BreakpointsProvider';
 import { modAttrs } from './utils/modAttrs';
-import { AllBaseProps, BaseStyleProps, Props } from './types';
+import { AllBaseProps, BaseProps, BaseStyleProps, Props } from './types';
 import { renderStyles } from './utils/renderStyles';
 import { pointsToZones } from './utils/responsive';
 import { Styles, StylesInterface } from './styles/types';
@@ -21,6 +21,7 @@ export type TastyProps<
   styles?: Styles;
   /** The list of styles that can be provided by props */
   styleProps?: K;
+  element?: BaseProps['element'];
 } & Omit<DefaultProps, 'as' | 'styles' | 'styleProps'>;
 
 export interface GlobalTastyProps {
@@ -93,14 +94,18 @@ function tasty<
   }
 
   if (isValidElementType(Component)) {
-    let { as: extendTag, ...defaultProps } = options ?? {};
+    let {
+      as: extendTag,
+      element: extendElement,
+      ...defaultProps
+    } = options ?? {};
 
     let propsWithStyles = ['styles'].concat(
       Object.keys(defaultProps).filter((prop) => prop.endsWith('Styles')),
     );
 
     let _WrappedComponent = forwardRef((props: C, ref) => {
-      const { as, ...restProps } = props as AllBasePropsWithMods<K>;
+      const { as, element, ...restProps } = props as AllBasePropsWithMods<K>;
       const propsWithStylesValues = propsWithStyles.map((prop) => props[prop]);
 
       const mergedStylesMap: Styles | undefined = useMemo(() => {
@@ -120,6 +125,7 @@ function tasty<
           {...restProps}
           {...mergedStylesMap}
           as={as ?? extendTag}
+          element={element || extendElement}
         />
       );
     });
@@ -139,6 +145,7 @@ function tasty<
 
   let {
     as: originalAs = 'div',
+    element: defaultElement,
     styles: defaultStyles,
     styleProps,
     ...defaultProps
@@ -194,7 +201,7 @@ function tasty<
     return (
       <Element
         as={as ?? originalAs}
-        data-element={element}
+        data-element={element || defaultElement}
         data-qa={qa || defaultQa}
         data-qaval={qaVal || defaultQaVal}
         {...otherDefaultProps}
