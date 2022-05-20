@@ -152,7 +152,7 @@ export const Typography = {
 export { Text, Title, Paragraph };
 export type { CubeTextProps, CubeTitleProps, CubeParagraphProps };
 
-export { useContextStyles, StyleProvider } from './providers/StylesProvider';
+export { useContextStyles, StyleProvider } from './providers/StyleProvider';
 
 export { Provider } from './provider';
 export type { useProviderProps } from './provider';
