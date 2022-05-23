@@ -254,7 +254,8 @@ export function Modal(allProps: CubeModalProps) {
                 <Button
                   data-qa={'ConfirmButton'}
                   isDisabled={isDisabled}
-                  type={okType === 'danger' ? 'danger' : 'primary'}
+                  type="primary"
+                  theme={okType === 'danger' ? 'danger' : undefined}
                   isLoading={isLoading || localLoading}
                   onPress={handleOk}
                 >
