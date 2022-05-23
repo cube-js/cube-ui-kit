@@ -1,5 +1,5 @@
 import { createContext, useContext, ReactNode } from 'react';
-import { Styles } from '../styles/types';
+import { Styles } from '../tasty';
 
 export const StyleContext = createContext<any>({});
 
@@ -8,6 +8,9 @@ interface StyleProviderProps {
   [key: string]: any;
 }
 
+/**
+ * @deprecated
+ */
 export function StyleProvider({ children, ...props }: StyleProviderProps) {
   const styles = Object.assign({}, useContext(StyleContext));
 

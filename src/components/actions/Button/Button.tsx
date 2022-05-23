@@ -137,7 +137,7 @@ const DEFAULT_STYLES_BY_TYPE: { [key: string]: Styles } = {
     fill: {
       '': '#dark.0',
       hovered: '#dark.04',
-      pressed: '#dark.05',
+      pressed: '#purple.10',
       '[disabled]': '#dark.04',
     },
     color: {
