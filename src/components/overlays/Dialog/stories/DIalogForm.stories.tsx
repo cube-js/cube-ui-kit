@@ -9,10 +9,10 @@ import { DialogForm, CubeDialogFormProps } from '../DialogForm';
 import { Button } from '../../../actions';
 import { Paragraph } from '../../../content/Paragraph';
 import { Text } from '../../../content/Text';
-import { Form } from '../../../forms/Form';
-import { TextInput } from '../../../forms';
+import { Input } from '../../../forms';
 import { DialogTrigger } from '../DialogTrigger';
 import { baseProps } from '../../../../stories/lists/baseProps';
+import { Form } from '../../../forms/Form';
 
 export default {
   title: 'Overlays/DialogForm',
@@ -53,7 +53,7 @@ AsyncExample.args = {
           },
         ]}
       >
-        <TextInput
+        <Input.Text
           placeholder="Enter deployment"
           data-qa="DeleteDeploymentName"
         />
