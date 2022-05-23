@@ -113,7 +113,7 @@ export interface CubeDialogProps
     BlockStyleProps,
     DimensionStyleProps {
   /** The size of the dialog */
-  size?: 'S' | 'M' | 'L';
+  size?: 'S' | 'M' | 'L' | 'small' | 'medium' | 'large';
   /** Whether the dialog is dismissable */
   isDismissable?: boolean;
   /** Trigger when the dialog is dismissed */
@@ -178,12 +178,7 @@ export const Dialog = forwardRef(function Dialog(
     content: {
       styles: {
         flexGrow: 1,
-        padding:
-          '@dialog-content-padding-v @dialog-padding-h 0 @dialog-padding-h',
-        margin: {
-          '': '0',
-          ':last-child': '@dialog-content-padding-v bottom',
-        },
+        padding: '@dialog-content-padding-v @dialog-padding-h',
         gap: '@dialog-content-gap',
         height: {
           '': 'max (100% - (2 * @dialog-content-padding-v))',
@@ -211,8 +206,7 @@ export const Dialog = forwardRef(function Dialog(
         flow: 'row',
         placeItems: 'baseline stretch',
         placeContent: 'space-between',
-        padding:
-          '@dialog-content-padding-v @dialog-padding-h @dialog-footer-v @dialog-padding-h',
+        padding: '@dialog-footer-v @dialog-padding-h',
       },
     },
   };
