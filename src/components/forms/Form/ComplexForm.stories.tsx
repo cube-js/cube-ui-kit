@@ -1,16 +1,9 @@
-import { useRef } from 'react';
-import { Story } from '@storybook/react';
-import { expect } from '@storybook/jest';
-import { within, userEvent, waitFor } from '@storybook/testing-library';
+import { StoryFn } from '@storybook/react';
 import {
-  Paragraph,
-  Text,
   Submit,
-  Button,
   TextInput,
   Select,
   ComboBox,
-  Input,
   Form,
   Radio,
   Item,
@@ -20,23 +13,19 @@ import {
   PasswordInput,
   Switch,
   Block,
-  CubeFormProps,
 } from '../../../index';
 import { NumberInput } from '../NumberInput/NumberInput';
-import { DialogForm } from '../../overlays/Dialog/DialogForm';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Button } from '../../actions';
+import { linkTo } from '@storybook/addon-links';
 
 export default {
   title: 'Forms/ComplexForm',
   component: Form,
-  parameters: {
-    controls: {
-      exclude: baseProps,
-    },
-  },
+  parameters: { controls: { exclude: baseProps } },
 };
 
-const Template: Story<CubeFormProps> = (args) => {
+const Template: StoryFn<typeof Form> = (args) => {
   const [form] = Form.useForm();
 
   return (
@@ -171,54 +160,12 @@ const Template: Story<CubeFormProps> = (args) => {
   );
 };
 
-const TemplateDialog: Story = (args) => {
-  const deleteDeploymentFormRef = useRef(null);
-
-  function onPress() {
-    deleteDeploymentFormRef?.current?.open();
-  }
-
+export const FormInsideDialog: StoryFn = () => {
   return (
-    <>
-      <Button onPress={onPress}>Open Modal</Button>
-      <DialogForm
-        title="Confirm delete"
-        ref={deleteDeploymentFormRef}
-        submitProps={{ theme: 'danger', label: 'Delete' }}
-      >
-        <Paragraph>
-          Are you sure you want to permanently delete&nbsp;
-          <Text.Strong style={{ whiteSpace: 'pre' }}>deployment</Text.Strong>?
-        </Paragraph>
-        <Form.Item
-          name="name"
-          rules={[
-            {
-              validator(rule, value) {
-                return value === 'deployment'
-                  ? Promise.resolve()
-                  : Promise.reject('Please enter your deployment name!');
-              },
-            },
-          ]}
-        >
-          <Input
-            placeholder="ENTER DEPLOYMENT NAME"
-            data-qa="DeleteDeploymentName"
-          />
-        </Form.Item>
-      </DialogForm>
-    </>
+    <Button onPress={linkTo('Overlays/DialogForm')}>
+      Moved to a Dialog Form Page
+    </Button>
   );
 };
 
-export const Default: typeof Template = Template.bind({});
-
-export const FormInsideDialog: typeof TemplateDialog = TemplateDialog.bind({});
-FormInsideDialog.play = async ({ canvasElement }) => {
-  const canvas = within(canvasElement);
-  const button = await canvas.findByRole('button');
-  await userEvent.click(button);
-
-  await waitFor(() => expect(canvas.getByRole('dialog')).toBeInTheDocument());
-};
+export const Default = Template.bind({});

@@ -1,9 +1,9 @@
 import { Button } from '../../actions';
 import { useDOMRef } from '@react-spectrum/utils';
-import { DialogContext } from './context';
+import { useDialogContext } from './context';
 import { DismissButton } from '@react-aria/overlays';
 import { FocusScope } from '@react-aria/focus';
-import { forwardRef, ReactNode, useContext } from 'react';
+import { forwardRef, ReactNode } from 'react';
 import { useDialog } from '@react-aria/dialog';
 import { useMessageFormatter } from '@react-aria/i18n';
 import { Base } from '../../Base';
@@ -112,14 +112,6 @@ export interface CubeDialogProps
     BaseStyleProps,
     BlockStyleProps,
     DimensionStyleProps {
-  /** The type of the dialog. It affects its size and position. */
-  type?:
-    | 'modal'
-    | 'popover'
-    | 'fullscreen'
-    | 'fullscreenTakeover'
-    | 'panel'
-    | 'tray';
   /** The size of the dialog */
   size?: 'S' | 'M' | 'L';
   /** Whether the dialog is dismissable */
@@ -130,8 +122,15 @@ export interface CubeDialogProps
   closeIcon?: ReactNode;
 }
 
-function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
-  let { type = 'modal', ...contextProps } = useContext(DialogContext) || {};
+/**
+ * Dialogs are windows containing contextual information, tasks, or workflows that appear over the user interface.
+ * Depending on the kind of Dialog, further interactions may be blocked until the Dialog is acknowledged.
+ */
+export const Dialog = forwardRef(function Dialog(
+  props: CubeDialogProps,
+  ref: DOMRef<HTMLDivElement>,
+) {
+  let { type = 'modal', ...contextProps } = useDialogContext();
 
   let {
     qa,
@@ -234,6 +233,7 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
         ref={domRef}
       >
         {dismissButton}
+
         <SlotProvider slots={slots}>
           {isDismissable && (
             <Button
@@ -250,11 +250,4 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
       </Base>
     </FocusScope>
   );
-}
-
-/**
- * Dialogs are windows containing contextual information, tasks, or workflows that appear over the user interface.
- * Depending on the kind of Dialog, further interactions may be blocked until the Dialog is acknowledged.
- */
-let _Dialog = forwardRef(Dialog);
-export { _Dialog as Dialog };
+});

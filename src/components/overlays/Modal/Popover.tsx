@@ -77,7 +77,10 @@ function Popover(props: CubePopoverProps, ref) {
   );
 }
 
-const PopoverWrapper = forwardRef((props: CubePopoverProps, ref) => {
+const PopoverWrapper = forwardRef(function PopoverWrapper(
+  props: CubePopoverProps,
+  ref,
+) {
   let {
     qa,
     children,

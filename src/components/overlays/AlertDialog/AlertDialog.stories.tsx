@@ -1,158 +1,113 @@
-import { AlertDialog, Button, DialogTrigger, Paragraph } from '../../../index';
-import { ModalProvider } from '@react-aria/overlays';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { expect } from '@storybook/jest';
+import { ComponentMeta, Story } from '@storybook/react';
+import { userEvent, within } from '@storybook/testing-library';
+import { action } from '@storybook/addon-actions';
+import { AlertDialog, CubeAlertDialogProps } from './AlertDialog';
 import { useAlertDialogAPI } from './AlertDialogApiProvider';
-import { useEffect, useState } from 'react';
+import { baseProps } from '../../../stories/lists/baseProps';
+import { DialogTrigger } from '../Dialog/DialogTrigger';
+import { Button } from '../../actions';
+import { DialogProps } from './types';
+import { Paragraph } from '../../content/Paragraph';
 
 export default {
   title: 'Overlays/AlertDialog',
   component: AlertDialog,
-  parameters: {
-    controls: {
-      exclude: baseProps,
-    },
+  args: {
+    content: (
+      <Paragraph>
+        Lorem ipsum dolor sit amet, consectetur adipisicing elit. A animi
+        aperiam cupiditate eius est illo inventore quis rem! At cupiditate
+        molestias placeat quasi reprehenderit similique voluptatibus voluptatum.
+        Alias atque, distinctio.
+      </Paragraph>
+    ),
   },
-};
+  parameters: { controls: { exclude: baseProps } },
+} as ComponentMeta<typeof AlertDialog>;
 
-const Template = (props) => {
-  const {
-    content,
-    type,
-    mobileType,
-    placement,
-    isDismissable,
-    primaryProps,
-    secondaryProps,
-    cancelProps,
-    ...args
-  } = props;
-  const triggerProps = {
-    type,
-    mobileType,
-    placement,
-    isDismissable,
-  };
-
+const Template: Story<CubeAlertDialogProps> = (args) => {
   return (
-    <ModalProvider>
-      <DialogTrigger
-        {...triggerProps}
-        onDismiss={(action) => console.log('onDismiss event', action)}
-      >
-        <Button>Open Modal</Button>
-        {(close) => (
-          <AlertDialog
-            title="Title"
-            {...args}
-            primaryProps={{
-              ...primaryProps,
-              onPress() {
-                console.log('primary');
-                close();
-              },
-            }}
-            secondaryProps={
-              secondaryProps
-                ? {
-                    ...secondaryProps,
-                    onPress() {
-                      console.log('secondary');
-                      close();
-                    },
-                  }
-                : null
-            }
-            cancelProps={
-              cancelProps
-                ? {
-                    ...cancelProps,
-                    onPress() {
-                      console.log('cancel');
-                      close();
-                    },
-                  }
-                : null
-            }
-          >
-            {content}
-          </AlertDialog>
-        )}
-      </DialogTrigger>
-    </ModalProvider>
+    <DialogTrigger
+      isDismissable
+      placement="top"
+      onDismiss={(action) => console.log('onDismiss event', action)}
+    >
+      <Button>Open Modal</Button>
+
+      {() => <AlertDialog title="Title" {...args} />}
+    </DialogTrigger>
   );
 };
 
 export const Default = Template.bind({});
 Default.args = {};
+Default.play = async ({ canvasElement }) => {
+  const { getByRole } = within(canvasElement);
+  await userEvent.click(getByRole('button'));
+  await expect(getByRole('alertdialog')).toBeInTheDocument();
+};
 
-const ApiTemplate = (args) => {
+export const UsingApi: Story<DialogProps> = (args) => {
   const dialogAPI = useAlertDialogAPI();
 
   return (
     <Button
       {...args}
+      onPress={async () =>
+        dialogAPI
+          .open(args)
+          .then(action('DialogClosed'))
+          .catch(action('DialogClosedWithReject'))
+      }
+    >
+      Open Modal
+    </Button>
+  );
+};
+UsingApi.play = async ({ canvasElement }) => {
+  const { getByRole } = within(canvasElement);
+  await userEvent.click(getByRole('button'));
+
+  await expect(getByRole('alertdialog')).toBeInTheDocument();
+};
+
+export const UsingApiWithCancel: Story<DialogProps> = (args) => {
+  const dialogAPI = useAlertDialogAPI();
+
+  return (
+    <Button
       onPress={() => {
-        const promise = dialogAPI.open({
-          title: 'Main Header',
-          actions: { cancel: true },
-          content: <Paragraph>Test content</Paragraph>,
-        });
+        const cancelDialog = new AbortController();
 
-        dialogAPI.open({ content: <Paragraph>Test content 2</Paragraph> });
+        const openedDialog = dialogAPI.open(
+          {
+            ...args,
+            actions: {
+              confirm: {
+                qa: 'CancelToken',
+                onPress: () => cancelDialog.abort(),
+                children: 'Click to close via cancel token',
+              },
+            },
+          },
+          { cancelToken: cancelDialog.signal },
+        );
 
-        promise.then((status) => {
-          console.log(`closed, ${status}`);
-        });
+        openedDialog
+          .then(action('DialogClosed'))
+          .catch(action('DialogClosedWithReject'));
       }}
     >
       Open Modal
     </Button>
   );
 };
+UsingApiWithCancel.play = async ({ canvasElement }) => {
+  const { getByRole, getByTestId, queryByRole } = within(canvasElement);
 
-const ApiCancelTemplate = (args) => {
-  const [, setState] = useState(0);
-  const dialogAPI = useAlertDialogAPI();
-
-  useEffect(() => {
-    const cancelDialog = new AbortController();
-
-    const openedDialog = dialogAPI.open(
-      {
-        title: 'Test',
-        content: <Paragraph>Test Content</Paragraph>,
-      },
-      { cancelToken: cancelDialog.signal },
-    );
-
-    openedDialog
-      .then((status) => console.log(`closed, ${status}`))
-      .catch((e) => console.log(`failed, ${e}`));
-
-    return () => cancelDialog.abort();
-  });
-
-  useEffect(() => {
-    const id = setInterval(() => setState((current) => current + 1), 5000);
-
-    return () => clearInterval(id);
-  }, []);
-
-  return (
-    <Button
-      {...args}
-      onPress={() => {
-        const promise = dialogAPI.open({
-          content: <Paragraph>Test content</Paragraph>,
-        });
-
-        promise.then(() => console.log('closed'));
-      }}
-    >
-      Open Modal
-    </Button>
-  );
+  await userEvent.click(getByRole('button'));
+  await expect(queryByRole('alertdialog')).toBeInTheDocument();
+  await userEvent.click(getByTestId('CancelToken'));
+  await expect(queryByRole('alertdialog')).not.toBeInTheDocument();
 };
-
-export const UsingApi = ApiTemplate.bind({});
-// export const UsingApiWithCancel = ApiCancelTemplate.bind({});
