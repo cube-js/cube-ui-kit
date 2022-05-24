@@ -5,6 +5,9 @@ const webpack = require('webpack');
 const config = {
   staticDirs: ['../public'],
   framework: '@storybook/react',
+  core: {
+    builder: { name: 'webpack5' },
+  },
   features: {
     postcss: false,
     emotionAlias: false,

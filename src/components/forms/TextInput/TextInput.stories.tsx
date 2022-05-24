@@ -1,7 +1,8 @@
-import { TextInput } from './TextInput';
+import { TextInput, CubeTextInputProps } from './TextInput';
 import { DollarCircleOutlined } from '@ant-design/icons';
 import { TEXT_VALUE_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { StoryFn } from '@storybook/react';
 
 export default {
   title: 'Forms/TextInput',
@@ -16,7 +17,10 @@ export default {
   },
 };
 
-const Template = ({ icon, ...props }) => (
+const Template: StoryFn<CubeTextInputProps & { icon?: boolean }> = ({
+  icon,
+  ...props
+}) => (
   <TextInput
     prefix={icon ? <DollarCircleOutlined /> : null}
     {...props}

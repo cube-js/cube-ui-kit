@@ -82,7 +82,6 @@ function DialogTrigger(props) {
 
   wasOpen.current = state.isOpen;
 
-  // eslint-disable-next-line arrow-body-style
   useEffect(() => {
     return () => {
       if (
@@ -236,6 +235,7 @@ function PopoverTrigger(allProps) {
       triggerProps={triggerPropsWithRef}
       dialogProps={overlayProps}
       trigger={trigger}
+      onClose={onClose}
       overlay={overlay}
     />
   );

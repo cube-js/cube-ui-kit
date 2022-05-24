@@ -1,12 +1,11 @@
+import { forwardRef, ReactNode } from 'react';
 import { chain } from '@react-aria/utils';
-import { Button, CubeButtonProps } from '../../actions';
+import { Button, CubeButtonProps, ButtonGroup } from '../../actions';
 import { Content } from '../../content/Content';
 import { Paragraph } from '../../content/Paragraph';
 import { CubeDialogProps, Dialog } from '../Dialog/Dialog';
-import { DialogContext } from '../Dialog/context';
+import { useDialogContext } from '../Dialog/context';
 import { Title } from '../../content/Title';
-import { forwardRef, ReactNode, useContext } from 'react';
-import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
 import { Header } from '../../content/Header';
 import { Footer } from '../../content/Footer';
 
@@ -38,7 +37,7 @@ const DEFAULT_CANCEL_PROPS: CubeButtonProps = {
  * AlertDialogs are a specific type of Dialog. They display important information that users need to acknowledge.
  */
 function AlertDialog(props: CubeAlertDialogProps, ref) {
-  const { onClose = () => {} } = useContext(DialogContext) ?? {};
+  const { onClose } = useDialogContext();
 
   const { danger, actions, title, styles, noActions, content, ...otherProps } =
     props;
@@ -92,7 +91,7 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
               onPress={(e) =>
                 chain(
                   (confirmProps as CubeButtonProps)?.onPress?.(e),
-                  onClose('confirm'),
+                  onClose?.('confirm'),
                 )
               }
             />
@@ -100,7 +99,7 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
               <Button
                 {...secondaryProps}
                 onPress={(e) =>
-                  chain(secondaryProps?.onPress?.(e), onClose('secondary'))
+                  chain(secondaryProps?.onPress?.(e), onClose?.('secondary'))
                 }
               />
             )}
@@ -110,7 +109,7 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
                 onPress={(e) =>
                   chain(
                     (cancelProps as CubeButtonProps)?.onPress?.(e),
-                    onClose('cancel'),
+                    onClose?.('cancel'),
                   )
                 }
               />

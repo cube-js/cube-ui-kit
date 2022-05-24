@@ -2,8 +2,8 @@ import { ModalProvider } from '@react-aria/overlays';
 import { within, userEvent } from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
 import { Story } from '@storybook/react';
-import { CubeDialogProps } from './Dialog';
-import { CubeDialogTriggerProps } from './DialogTrigger';
+import { CubeDialogProps } from '../Dialog';
+import { CubeDialogTriggerProps } from '../DialogTrigger';
 import {
   Button,
   Content,
@@ -14,8 +14,8 @@ import {
   Header,
   Paragraph,
   Title,
-} from '../../../index';
-import { baseProps } from '../../../stories/lists/baseProps';
+} from '../../../../index';
+import { baseProps } from '../../../../stories/lists/baseProps';
 
 export default {
   title: 'Overlays/Dialog',

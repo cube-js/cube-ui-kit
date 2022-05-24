@@ -20,7 +20,7 @@ export function useAlert(props: CubeAlertProps) {
     betterAlternative: 'theme',
   });
 
-  const _theme = isDisabled ? 'disabled' : theme ?? type ?? 'note'; //?
+  const _theme = isDisabled ? 'disabled' : theme ?? type ?? 'note';
 
   return {
     styles,
