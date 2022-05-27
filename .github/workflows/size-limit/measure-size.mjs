@@ -3,7 +3,7 @@ import { setFailed, setOutput } from '@actions/core';
 import { getExecOutput } from '@actions/exec';
 import table from 'markdown-table';
 import bytes from 'bytes';
-import { createMeasurer, deleteMeasurer } from '../size-limit.js';
+import { createMeasurer, deleteMeasurer } from '../../../scripts/size-limit.js';
 
 async function run() {
   /**
