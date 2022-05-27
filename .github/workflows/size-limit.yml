@@ -1,0 +1,94 @@
+name: Measure size of the library
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ci-size-limit=${{github.ref}}-1
+  cancel-in-progress: true
+
+jobs:
+  size-limit:
+    name: 'Measure size of the library'
+    runs-on: ubuntu-latest
+    env:
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_STATOSCOPE }}
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache@v2
+        name: Download yarn cache
+        id: yarn-cache
+        with:
+          path: |
+            **/node_modules
+            **/.eslintcache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+            ${{ runner.os }}-yarn
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Install dependencies
+        run: yarn --frozen-lockfile
+
+      - name: Build project
+        run: yarn build
+
+      - name: Download baseline stats
+        uses: dawidd6/action-download-artifact@v2
+        if: github.event.number
+        with:
+          workflow: size-limit.yml
+          branch: ${{ github.event.pull_request.base.ref }}
+          path: ./size-limit-compare
+
+      - name: Measure size
+        id: measure_size
+        continue-on-error: true
+        run: BASELINE='./size-limit-compare/output.json' node ./scripts/ci/measure-size.mjs
+
+      - name: Upload bundle
+        uses: actions/upload-artifact@v2
+        with:
+          name: size-limit-report
+          path: ./size-limit-report
+
+      - name: Build Statoscope Report
+        if: github.event.number
+        run: npx statoscope generate -i ./size-limit-report/stats.json -r ./size-limit-report-compare/stats.json --output ./size-limit-report/report.html
+
+      - name: Deploy report
+        id: deploy_report
+        if: github.event.number
+        run: |
+          OUTPUT=$(sh -c "npx netlify-cli deploy --dir=./size-limit-report/")
+          
+          NETLIFY_PREVIEW_URL=$(echo "$OUTPUT" | grep -Eo '(http|https)://[a-zA-Z0-9./?=_-]*(--)[a-zA-Z0-9./?=_-]*') #Unique key: --
+          
+          echo "::set-output name=NETLIFY_PREVIEW_URL::$NETLIFY_PREVIEW_URL"
+
+      - name: Comment PR
+        uses: actions/github-script@v6
+        if: github.event.number
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const setMessage = require('${{ github.workspace }}/scripts/ci/set-message')
+            
+            await setMessage({
+              header: "## 🏋️ Size limit report",
+              body: `
+                ${{ steps.measure_size.outputs.table }}
+                ---
+                [Click here if you want to find out what is changed in this build](${{ steps.deploy_report.outputs.NETLIFY_PREVIEW_URL }}/report.html)
+              `,
+              github,
+              prNumber: context.payload.pull_request.number
+            })

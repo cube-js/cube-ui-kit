@@ -26,13 +26,13 @@ module.exports = async function setMessage({
   );
 
   if (!comment) {
-    await github.issues.createComment({
+    await github.rest.issues.createComment({
       ...repo,
       issue_number: prNumber,
       body: commentBody,
     });
   } else {
-    await github.issues.updateComment({
+    await github.rest.issues.updateComment({
       ...repo,
       comment_id: comment.id,
       body: commentBody,
