@@ -1,5 +1,5 @@
 import { forwardRef, useRef } from 'react';
-import { useFormProps } from '../Form/Form';
+import { useFormProps } from '../Form';
 import { useProviderProps } from '../../../provider';
 import { useLocale } from '@react-aria/i18n';
 import {
@@ -10,7 +10,7 @@ import { useNumberFieldState } from '@react-stately/numberfield';
 import { useNumberField } from '@react-aria/numberfield';
 import { StepButton } from './StepButton';
 import type { AriaNumberFieldProps } from '@react-types/numberfield';
-import { styled } from '../../../styled';
+import { tasty } from '../../../tasty';
 import {
   castNullableNumberValue,
   WithNullableValue,
@@ -23,7 +23,7 @@ export interface CubeNumberInputProps
   hideStepper?: boolean;
 }
 
-const StepperContainer = styled({
+const StepperContainer = tasty({
   styles: {
     display: 'grid',
     gridColumns: '1fr',

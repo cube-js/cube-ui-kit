@@ -10,21 +10,9 @@ exports[`styled() API should be able to override styles 1`] = `
 }
 
 .c0 {
-  display: block;
-}
-
-.c0 {
-  color: var(--black-color);
+  color: rgba(var(--black-color-rgb),0.1);
   --current-color: var(--black-color,black);
   --current-color-rgb: var(--black-color-rgb);
-}
-
-@media (min-width:980px) {
-
-}
-
-@media (max-width:979px) {
-
 }
 
 <div>
@@ -44,21 +32,9 @@ exports[`styled() API should pass styles from styled 1`] = `
 }
 
 .c0 {
-  display: block;
-}
-
-.c0 {
   color: rgba(var(--clear-color-rgb),0.1);
   --current-color: var(--clear-color,clear);
   --current-color-rgb: var(--clear-color-rgb);
-}
-
-@media (min-width:980px) {
-
-}
-
-@media (max-width:979px) {
-
 }
 
 <div>
@@ -71,7 +47,7 @@ exports[`styled() API should pass styles from styled 1`] = `
 exports[`styled() API should warn about deprecated API 1`] = `
 Array [
   Array [
-    "CubeUIKit:",
+    "Tasty:",
     "\\"props\\" is deprecated, consider better alternative: inline props directly in styled(), eg: styled({ type: 'confirm' })",
   ],
 ]

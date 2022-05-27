@@ -1,14 +1,14 @@
-import { useState, forwardRef, useImperativeHandle, ForwardedRef } from 'react';
-import { DialogContainer } from './DialogContainer';
+import { useImperativeHandle } from 'react';
 import { Dialog, CubeDialogProps } from './Dialog';
 import { Title } from '../../content/Title';
 import { CubeFormProps, Form } from '../../forms/Form/Form';
-import { useForm } from '../../forms/Form/useForm';
+import { useForm } from '../../forms/Form';
 import { Content } from '../../content/Content';
 import { Submit } from '../../actions/Button/Submit';
 import { Button, CubeButtonProps } from '../../actions';
-import { ButtonGroup } from '../../actions/ButtonGroup/ButtonGroup';
+import { ButtonGroup } from '../../actions';
 import { Header } from '../../content/Header';
+import { useDialogContext } from './context';
 
 export interface CubeDialogFormProps
   extends CubeDialogProps,
@@ -32,10 +32,10 @@ export interface CubeDialogFormRef {
   close: () => void;
 }
 
-const DialogForm = (
-  props: CubeDialogFormProps,
-  ref: ForwardedRef<CubeDialogFormRef>,
-) => {
+/**
+ * DialogForms are a specific type of Dialog. They contain forms to fill.
+ */
+export const DialogForm = function DialogForm(props: CubeDialogFormProps) {
   let {
     qa,
     name,
@@ -63,89 +63,79 @@ const DialogForm = (
     title,
     size,
     closeIcon,
+    ...dialogProps
   } = props;
 
   [form] = useForm(form);
 
-  const [open, setOpen] = useState(false);
-
-  useImperativeHandle(ref, () => ({
-    open() {
-      setOpen(true);
-    },
-    close() {
-      setOpen(false);
-    },
-  }));
+  const { onClose } = useDialogContext();
 
   function onLocalDismiss() {
+    onClose?.();
     onDismiss?.();
-    form?.resetFields();
-    setOpen(false);
+
+    if (!preserve) {
+      form?.resetFields();
+    }
   }
 
   return (
-    <DialogContainer onDismiss={onLocalDismiss} isDismissable>
-      {open && (
-        <Dialog qa={`${qa || ''}Dialog`} size={size} closeIcon={closeIcon}>
-          <Header>
-            <Title>{title}</Title>
-          </Header>
-          <Content>
-            <Form
-              qa={qa || 'DialogForm'}
-              form={form}
-              name={name}
-              onSubmit={async (data) => {
-                await onSubmit?.(data);
-                setOpen(false);
+    <Dialog
+      qa={`${qa || ''}Dialog`}
+      size={size}
+      closeIcon={closeIcon}
+      {...dialogProps}
+    >
+      <Header>
+        <Title>{title}</Title>
+      </Header>
+      <Content>
+        <Form
+          qa={qa || 'DialogForm'}
+          form={form}
+          name={name}
+          onSubmit={async (data) => {
+            await onSubmit?.(data);
 
-                if (!preserve && form) {
-                  form.resetFields();
-                }
-              }}
-              onSubmitFailed={onSubmitFailed}
-              defaultValues={defaultValues}
-              onValuesChange={onValuesChange}
-              labelStyles={labelStyles}
-              labelPosition={labelPosition}
-              requiredMark={requiredMark}
-              isRequired={isRequired}
-              necessityIndicator={necessityIndicator}
-              necessityLabel={necessityLabel}
-              isReadOnly={isReadOnly}
-              validationState={validationState}
-              validateTrigger={validateTrigger}
-            >
-              {typeof children === 'function'
-                ? children(onLocalDismiss)
-                : children}
-              {!noActions ? (
-                <ButtonGroup>
-                  <Submit
-                    qa={`${qa || ''}SubmitButton`}
-                    theme={danger ? 'danger' : undefined}
-                    label="Submit"
-                    {...(submitProps || {})}
-                  />
-                  <Button
-                    qa={`${qa || ''}CancelButton`}
-                    onPress={onLocalDismiss}
-                    label="Cancel"
-                    {...(cancelProps || {})}
-                  />
-                </ButtonGroup>
-              ) : undefined}
-            </Form>
-          </Content>
-        </Dialog>
-      )}
-    </DialogContainer>
+            onClose?.();
+
+            if (!preserve) {
+              form?.resetFields();
+            }
+          }}
+          onSubmitFailed={onSubmitFailed}
+          defaultValues={defaultValues}
+          onValuesChange={onValuesChange}
+          labelStyles={labelStyles}
+          labelPosition={labelPosition}
+          requiredMark={requiredMark}
+          isRequired={isRequired}
+          necessityIndicator={necessityIndicator}
+          necessityLabel={necessityLabel}
+          isReadOnly={isReadOnly}
+          validationState={validationState}
+          validateTrigger={validateTrigger}
+        >
+          {typeof children === 'function' ? children(onLocalDismiss) : children}
+
+          {!noActions ? (
+            <ButtonGroup>
+              <Submit
+                qa={`${qa || ''}SubmitButton`}
+                theme={danger ? 'danger' : undefined}
+                label="Submit"
+                {...(submitProps || {})}
+              />
+              <Button
+                qa={`${qa || ''}CancelButton`}
+                onPress={onLocalDismiss}
+                label="Cancel"
+                {...(cancelProps || {})}
+              />
+            </ButtonGroup>
+          ) : undefined}
+        </Form>
+      </Content>
+    </Dialog>
   );
 };
-
-/**
- * DialogForms are a specific type of Dialog. They contain forms to fill.
- */
-let _DialogForm = forwardRef(DialogForm);
-export { _DialogForm as DialogForm };

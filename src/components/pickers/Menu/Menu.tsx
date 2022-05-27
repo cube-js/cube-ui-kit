@@ -1,4 +1,4 @@
-import React, { ReactNode, ReactElement } from 'react';
+import React, { ReactElement, ReactNode } from 'react';
 import { DOMRef, ItemProps } from '@react-types/shared';
 import {
   Item as BaseItem,
@@ -10,11 +10,13 @@ import { useDOMRef } from '@react-spectrum/utils';
 import { useTreeState } from '@react-stately/tree';
 import type { AriaMenuProps } from '@react-types/menu';
 
-import { ContainerStyleProps } from '../../types';
-import { useContextStyles } from '../../../providers/StylesProvider';
-import { Styles } from '../../../styles/types';
-import { CONTAINER_STYLES } from '../../../styles/list';
-import { extractStyles } from '../../../utils/styles';
+import {
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  Styles,
+  useContextStyles,
+} from '../../../tasty';
 import { StyledMenu, StyledMenuHeader } from './styled';
 import { MenuItem } from './MenuItem';
 import { MenuSection } from './MenuSection';
@@ -33,38 +35,41 @@ function Menu<T extends object>(
   props: CubeMenuProps<T>,
   ref: DOMRef<HTMLUListElement>,
 ) {
+  const { header, footer, styles } = props;
   const domRef = useDOMRef(ref);
   const contextProps = useMenuContext();
-  const { header, footer, styles } = props;
-  const completeProps = {
-    ...mergeProps(contextProps, props, {
-      mods: {
-        footer: !!footer,
-        header: !!header,
-      },
-    }),
-  };
-  const state = useTreeState(completeProps);
-  const { menuProps } = useMenu(completeProps, state, domRef);
-  const containerStyles = extractStyles(completeProps, CONTAINER_STYLES);
-  const menuStyles = useContextStyles('Menu', props) || {};
+  const completeProps = mergeProps(contextProps, props);
 
-  const completeStyles = {
-    ...menuStyles,
-    ...containerStyles,
-    ...styles,
+  const state = useTreeState(completeProps);
+  const items = [...state.collection];
+  const hasSections = items.some((item) => item.type === 'section');
+
+  const { menuProps } = useMenu(completeProps, state, domRef);
+  const menuStyles = useContextStyles('Menu', props) || {};
+  const containerStyles = extractStyles(completeProps, CONTAINER_STYLES);
+
+  const baseProps = {
+    styles: {
+      ...menuStyles,
+      ...containerStyles,
+      ...styles,
+    },
+    mods: {
+      sections: hasSections,
+      footer: !!footer,
+      header: !!header,
+    },
   };
 
   useSyncRef(contextProps, domRef);
 
   return (
     <StyledMenu
-      {...mergeProps(menuProps, completeProps)}
-      styles={completeStyles}
+      {...mergeProps(menuProps, completeProps, baseProps)}
       ref={domRef}
     >
       {header && <StyledMenuHeader>{header}</StyledMenuHeader>}
-      {[...state.collection].map((item) => {
+      {items.map((item) => {
         if (item.type === 'section') {
           return (
             <MenuSection

@@ -2,7 +2,7 @@ import { Placeholder } from './Placeholder';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
-  title: 'UIKit/Content/Placeholder',
+  title: 'Content/Placeholder',
   component: Placeholder,
   parameters: {
     controls: {

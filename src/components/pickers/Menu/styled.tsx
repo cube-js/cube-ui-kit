@@ -1,13 +1,17 @@
-import { styled } from '../../../styled';
+import { tasty } from '../../../tasty';
 import { Space } from '../../layout/Space';
 
-export const StyledMenu = styled({
-  tag: 'ul',
-  name: 'Menu',
+export const StyledMenu = tasty({
+  as: 'ul',
+  qa: 'Menu',
   styles: {
     position: 'relative',
     display: 'flex',
     flow: 'column',
+    gap: {
+      '': '1px',
+      sections: '',
+    },
     fill: '#white',
     margin: '0',
     padding: {
@@ -28,8 +32,8 @@ export const StyledMenu = styled({
   },
 });
 
-export const StyledDivider = styled({
-  tag: 'li',
+export const StyledDivider = tasty({
+  as: 'li',
   styles: {
     display: 'flex',
     flow: 'column',
@@ -40,8 +44,8 @@ export const StyledDivider = styled({
   },
 });
 
-export const StyledMenuHeader = styled(Space, {
-  tag: 'li',
+export const StyledMenuHeader = tasty(Space, {
+  as: 'li',
   styles: {
     position: 'sticky',
     top: '-0.5x',
@@ -58,12 +62,30 @@ export const StyledMenuHeader = styled(Space, {
   },
 });
 
-export const StyledMenuItem = styled({
-  tag: 'li',
+export const StyledMenuSection = tasty({
+  as: 'li',
   styles: {
     display: 'flex',
     flow: 'column',
-    margin: '1px 0',
+    gap: '1px',
+    margin: '0',
+    padding: {
+      '': '0.5x 0',
+      ':first-of-type': '0 0 0.5x 0',
+      ':last-of-type': '0.5x 0 0 0',
+    },
+    listStyle: 'none',
+    fill: '#white',
+  },
+});
+
+export const StyledMenuItem = tasty({
+  as: 'li',
+  styles: {
+    display: 'flex',
+    flow: 'column',
+    gap: '1px',
+    margin: '0',
     padding: '0',
     listStyle: 'none',
     fill: '#white',
@@ -74,10 +96,10 @@ export const StyledMenuItem = styled({
   },
 });
 
-export const StyledMenuSectionHeading = styled(Space, {
-  tag: 'header',
+export const StyledMenuSectionHeading = tasty(Space, {
+  as: 'header',
   styles: {
-    color: '#dark-04',
+    color: '#dark-03',
     preset: 'c1',
     padding: '(0.75x - 1bw) (1.5x - 1bw)',
     placeContent: 'space-between',

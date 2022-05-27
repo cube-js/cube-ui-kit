@@ -3,7 +3,7 @@ import {
   LoadingOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
-import { mergeProps } from '../../../utils/react';
+import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import {
   cloneElement,
   forwardRef,
@@ -26,21 +26,21 @@ import { useFormProps } from '../../forms/Form/Form';
 import { useFocus as useAriaFocus, useHover } from '@react-aria/interactions';
 import { useProviderProps } from '../../../provider';
 import { Base } from '../../Base';
-import { extractStyles } from '../../../utils/styles';
-import { BLOCK_STYLES, OUTER_STYLES } from '../../../styles/list';
-import { useFocus } from '../../../utils/interactions';
-import { useContextStyles } from '../../../providers/StylesProvider';
-import { useCombinedRefs } from '../../../utils/react';
+import {
+  BasePropsWithoutChildren,
+  BLOCK_STYLES,
+  BlockStyleProps,
+  extractStyles,
+  OUTER_STYLES,
+  OuterStyleProps,
+  Props,
+  Styles,
+  useContextStyles,
+} from '../../../tasty';
+import { useFocus } from '../../../utils/react/interactions';
 import { FieldWrapper } from '../../forms/FieldWrapper';
 import { Item } from '@react-stately/collections';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
-import { Styles } from '../../../styles/types';
-import {
-  BasePropsWithoutChildren,
-  BlockStyleProps,
-  OuterStyleProps,
-  Props,
-} from '../../types';
 import type { AriaSelectProps } from '@react-types/select';
 import { DOMRef } from '@react-types/shared';
 import { FormFieldProps } from '../../../shared';

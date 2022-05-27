@@ -1,7 +1,16 @@
 import { Meta, Canvas, Story } from '@storybook/addon-docs';
-import { Paragraph, Title, Text, Link, Flow, Root, Space, Card } from '../index';
+import {
+  Paragraph,
+  Title,
+  Text,
+  Link,
+  Flow,
+  Root,
+  Space,
+  Card,
+} from '../index';
 
-<Meta title="UIKit/Typography" />
+<Meta title="Typography" />
 
 # Typography
 
@@ -32,10 +41,12 @@ Paragraphs with gaps between them.
   <Story name="Paragraph">
     <Flow gap="2x">
       <Paragraph width="320px">
-        There are many ways to create typography elements like text labels and headings.
+        There are many ways to create typography elements like text labels and
+        headings.
       </Paragraph>
       <Paragraph>
-        You can use complete components, presets or low-level styles to get exact text label you want.
+        You can use complete components, presets or low-level styles to get
+        exact text label you want.
       </Paragraph>
     </Flow>
   </Story>
@@ -61,15 +72,28 @@ Paragraphs with gaps between them.
 Use `!` prefix to open link in new tab.
 
 ```jsx
-<Link to="https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit</Link>
-| <Link to="!https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit in new tab</Link>
+(
+  <Link to="https://cube-uikit-storybook.netlify.app/">
+    Open Cube Cloud UI Kit
+  </Link>
+) |
+  (
+    <Link to="!https://cube-uikit-storybook.netlify.app/">
+      Open Cube Cloud UI Kit in new tab
+    </Link>
+  );
 ```
 
 <Canvas>
   <Story name="External link">
     <Paragraph>
-      <Link to="https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit</Link>&nbsp;
-      | <Link to="!https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit in new tab</Link>
+      <Link to="https://cube-uikit-storybook.netlify.app/">
+        Open Cube Cloud UI Kit
+      </Link>
+      &nbsp; |{' '}
+      <Link to="!https://cube-uikit-storybook.netlify.app/">
+        Open Cube Cloud UI Kit in new tab
+      </Link>
     </Paragraph>
   </Story>
 </Canvas>
@@ -77,15 +101,14 @@ Use `!` prefix to open link in new tab.
 Use `@` prefix to navigate to the new page without using the Router.
 
 ```jsx
-<Link to="@">Reload this page</Link>
-| <Link to="@/">Move to the Main Page</Link>
+<Link to="@">Reload this page</Link> |
+<Link to="@/">Move to the Main Page</Link>;
 ```
 
 <Canvas>
   <Story name="Link without using router">
     <Paragraph>
-      <Link to="@">Reload the current page</Link>
-    | <Link to="@/">Move to the Main Page</Link>
+      <Link to="@">Reload the current page</Link>| <Link to="@/">Move to the Main Page</Link>
     </Paragraph>
   </Story>
 </Canvas>

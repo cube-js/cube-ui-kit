@@ -2,7 +2,7 @@ import { Notification } from './Notification';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
-  title: 'UIKit/Overlays/Notification',
+  title: 'Overlays/Notification',
   component: Notification,
   parameters: {
     controls: {

@@ -1,15 +1,14 @@
 import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react';
-import { filterBaseProps } from '../utils/filterBaseProps';
+import { filterBaseProps, Styles } from '../tasty';
 import { useCombinedRefs } from '../utils/react';
 import { Base } from './Base';
-import { Styles } from '../styles/types';
 
 const DEFAULT_STYLES = {
   display: 'contents',
 };
 
-const COLUMN_WIDTH
-  = '((@grid-width - (@column-gap * (@columns-amount - 1))) / @columns-amount)';
+const COLUMN_WIDTH =
+  '((@grid-width - (@column-gap * (@columns-amount - 1))) / @columns-amount)';
 
 export interface CubeGridProviderProps {
   children: ReactNode;
@@ -41,10 +40,10 @@ export const GridProvider = forwardRef(
       if (!el) return;
 
       const computedStyle = getComputedStyle(el);
-      const containerWidth
-        = el.clientWidth
-        - parseFloat(computedStyle.paddingLeft)
-        - parseFloat(computedStyle.paddingRight);
+      const containerWidth =
+        el.clientWidth -
+        parseFloat(computedStyle.paddingLeft) -
+        parseFloat(computedStyle.paddingRight);
 
       setWidth(`${containerWidth}px`);
     }, [ref, columns, gap]);

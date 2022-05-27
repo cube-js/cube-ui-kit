@@ -2,12 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import { GlobalStyles } from './GlobalStyles';
 import { Base } from './Base';
 import { PortalProvider } from './portal';
-import { BASE_STYLES, BLOCK_STYLES } from '../styles/list';
-import { extractStyles } from '../utils/styles';
-import { filterBaseProps } from '../utils/filterBaseProps';
+import {
+  BASE_STYLES,
+  BaseProps,
+  BLOCK_STYLES,
+  extractStyles,
+  filterBaseProps,
+} from '../tasty';
 import { Provider } from '../provider';
 import { ModalProvider } from '@react-aria/overlays';
-import { BaseProps } from './types';
 import { StyleSheetManager } from 'styled-components';
 import { TOKENS } from '../tokens';
 import { AlertDialogApiProvider } from './overlays/AlertDialog';

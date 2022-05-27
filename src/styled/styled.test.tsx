@@ -43,7 +43,7 @@ describe('styled() API', () => {
   it('should be able to override styles', () => {
     const StyledBlock = styled(Block, { styles: { color: '#clear.1' } });
     const { container } = render(
-      <StyledBlock styles={{ color: '#black.1000' }} />,
+      <StyledBlock styles={{ color: '#black.1' }} />,
     );
 
     expect(container).toMatchSnapshot();

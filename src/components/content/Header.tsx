@@ -1,17 +1,21 @@
 import { forwardRef } from 'react';
-import { styled } from '../../styled';
-import { CONTAINER_STYLES, TEXT_STYLES } from '../../styles/list';
-import { extractStyles } from '../../utils/styles';
-import { filterBaseProps } from '../../utils/filterBaseProps';
+import {
+  BaseProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  tasty,
+  TEXT_STYLES,
+  TextStyleProps,
+} from '../../tasty';
 import { useSlotProps } from '../../utils/react';
-import { BaseProps, ContainerStyleProps, TextStyleProps } from '../types';
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
-const RawHeader = styled({
-  name: 'Header',
-  tag: 'header',
-  props: { 'data-id': 'Header' },
+const RawHeader = tasty({
+  qa: 'Header',
+  as: 'header',
   styles: {
     display: 'block',
     gridArea: 'header',

@@ -144,6 +144,11 @@ const TOKENS = {
   't3m-line-height': '20px',
   't3m-letter-spacing': '0.015em',
   't3m-font-weight': '500',
+  // t3s
+  't3s-font-size': '14px',
+  't3s-line-height': '20px',
+  't3s-letter-spacing': '0.015em',
+  't3s-font-weight': '600',
   // t4
   't4-font-size': '12px',
   't4-line-height': '18px',

@@ -1,22 +1,36 @@
 import styledComponents, { createGlobalStyle } from 'styled-components';
 import { ComponentType, FC, forwardRef, useContext, useMemo } from 'react';
 import { isValidElementType } from 'react-is';
-import { BreakpointsContext } from '../providers/BreakpointsProvider';
-import { modAttrs } from '../utils/react';
-import { useContextStyles } from '../providers/StylesProvider';
 import {
   AllBaseProps,
+  BASE_STYLES,
   BaseStyleProps,
-  StyledProps,
+  BreakpointsContext,
   GlobalStyledProps,
-} from '../components/types';
-import { renderStyles } from '../utils/renderStyles';
-import { pointsToZones } from '../utils/responsive';
-import { Styles, StylesInterface } from '../styles/types';
-import { BASE_STYLES } from '../styles/list';
-import { ResponsiveStyleValue } from '../utils/styles';
-import { mergeStyles } from '../utils/mergeStyles';
-import { deprecationWarning } from '../utils/warnings';
+  modAttrs,
+  pointsToZones,
+  renderStyles,
+  ResponsiveStyleValue,
+  Styles,
+  StylesInterface,
+  useContextStyles,
+} from '../tasty';
+import { mergeStyles } from '../tasty';
+import { deprecationWarning } from '../tasty';
+
+export type StyledProps<K extends (keyof StylesInterface)[], DefaultProps> = {
+  /** The name of the element. It can be used to override styles in context. */
+  name?: string;
+  /** The tag name of the element. */
+  tag?: string;
+  /** Default styles of the element. */
+  styles?: Styles;
+  /** Default css of the element. */
+  css?: string;
+  props?: DefaultProps;
+  /** The list of styles that can be provided by props */
+  styleProps?: K;
+};
 
 export type AllBasePropsWithMods<K extends (keyof StylesInterface)[]> =
   AllBaseProps & {
@@ -50,12 +64,21 @@ type EitherLegacyPropsOrInlined<
       props?: 'You Should use either legacy props field or inline props';
     } & DefaultProps);
 
+/**
+ * @deprecated Use `tasty()` helper instead.
+ */
 function styled<
   K extends (keyof StylesInterface)[],
   Props,
   DefaultProps extends Partial<Props> = Partial<Props>,
 >(options: StyledProps<K, DefaultProps>, secondArg?: never);
+/**
+ * @deprecated Use `tasty()` helper instead.
+ */
 function styled(selector: string, styles?: Styles);
+/**
+ * @deprecated Use `tasty()` helper instead.
+ */
 function styled<
   K extends (keyof StylesInterface)[],
   Props extends { styles?: Styles },
@@ -200,12 +223,12 @@ function styled<
 
       let contextBreakpoints = useContext(BreakpointsContext);
       let zones = pointsToZones(breakpoints ?? contextBreakpoints);
+      let renderedStyles = useMemo(
+        () => renderStyles(allStyles, zones),
+        [allStyles, zones],
+      );
 
-      css = `${
-        typeof defaultCSS === 'function' ? defaultCSS(props) : defaultCSS ?? ''
-      }${typeof css === 'function' ? css(props) : css ?? ''}${
-        allStyles ? renderStyles(allStyles, zones) : ''
-      }`;
+      css = `${defaultCSS ?? ''}${css ?? ''}${allStyles ? renderedStyles : ''}`;
 
       if (mods) {
         Object.assign(props, modAttrs(mods));
@@ -233,6 +256,4 @@ function styled<
   return _StyledComponent;
 }
 
-const tasty = styled;
-
-export { styled, tasty };
+export { styled };

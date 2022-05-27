@@ -1,28 +1,26 @@
 import { Button } from '../../actions';
 import { useDOMRef } from '@react-spectrum/utils';
-import { DialogContext } from './context';
+import { useDialogContext } from './context';
 import { DismissButton } from '@react-aria/overlays';
 import { FocusScope } from '@react-aria/focus';
-import { forwardRef, ReactNode, useContext } from 'react';
+import { forwardRef, ReactNode } from 'react';
 import { useDialog } from '@react-aria/dialog';
 import { useMessageFormatter } from '@react-aria/i18n';
 import { Base } from '../../Base';
 import { CloseOutlined } from '@ant-design/icons';
-import { extractStyles } from '../../../utils/styles';
 import {
   BASE_STYLES,
-  BLOCK_STYLES,
-  DIMENSION_STYLES,
-} from '../../../styles/list';
-import { mergeProps, SlotProvider } from '../../../utils/react';
-import { useContextStyles } from '../../../providers/StylesProvider';
-import { Styles } from '../../../styles/types';
-import {
   BaseProps,
   BaseStyleProps,
+  BLOCK_STYLES,
   BlockStyleProps,
+  DIMENSION_STYLES,
   DimensionStyleProps,
-} from '../../types';
+  extractStyles,
+  Styles,
+  useContextStyles,
+} from '../../../tasty';
+import { mergeProps, SlotProvider } from '../../../utils/react';
 import type { AriaDialogProps } from '@react-types/dialog';
 import { DOMRef } from '@react-types/shared';
 
@@ -114,16 +112,8 @@ export interface CubeDialogProps
     BaseStyleProps,
     BlockStyleProps,
     DimensionStyleProps {
-  /** The type of the dialog. It affects its size and position. */
-  type?:
-    | 'modal'
-    | 'popover'
-    | 'fullscreen'
-    | 'fullscreenTakeover'
-    | 'panel'
-    | 'tray';
   /** The size of the dialog */
-  size?: 'S' | 'M' | 'L';
+  size?: 'S' | 'M' | 'L' | 'small' | 'medium' | 'large';
   /** Whether the dialog is dismissable */
   isDismissable?: boolean;
   /** Trigger when the dialog is dismissed */
@@ -132,8 +122,15 @@ export interface CubeDialogProps
   closeIcon?: ReactNode;
 }
 
-function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
-  let { type = 'modal', ...contextProps } = useContext(DialogContext) || {};
+/**
+ * Dialogs are windows containing contextual information, tasks, or workflows that appear over the user interface.
+ * Depending on the kind of Dialog, further interactions may be blocked until the Dialog is acknowledged.
+ */
+export const Dialog = forwardRef(function Dialog(
+  props: CubeDialogProps,
+  ref: DOMRef<HTMLDivElement>,
+) {
+  let { type = 'modal', ...contextProps } = useDialogContext();
 
   let {
     qa,
@@ -181,12 +178,7 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
     content: {
       styles: {
         flexGrow: 1,
-        padding:
-          '@dialog-content-padding-v @dialog-padding-h 0 @dialog-padding-h',
-        margin: {
-          '': '0',
-          ':last-child': '@dialog-content-padding-v bottom',
-        },
+        padding: '@dialog-content-padding-v @dialog-padding-h',
         gap: '@dialog-content-gap',
         height: {
           '': 'max (100% - (2 * @dialog-content-padding-v))',
@@ -214,8 +206,7 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
         flow: 'row',
         placeItems: 'baseline stretch',
         placeContent: 'space-between',
-        padding:
-          '@dialog-content-padding-v @dialog-padding-h @dialog-footer-v @dialog-padding-h',
+        padding: '@dialog-footer-v @dialog-padding-h',
       },
     },
   };
@@ -236,6 +227,7 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
         ref={domRef}
       >
         {dismissButton}
+
         <SlotProvider slots={slots}>
           {isDismissable && (
             <Button
@@ -252,11 +244,4 @@ function Dialog(props: CubeDialogProps, ref: DOMRef<HTMLDivElement>) {
       </Base>
     </FocusScope>
   );
-}
-
-/**
- * Dialogs are windows containing contextual information, tasks, or workflows that appear over the user interface.
- * Depending on the kind of Dialog, further interactions may be blocked until the Dialog is acknowledged.
- */
-let _Dialog = forwardRef(Dialog);
-export { _Dialog as Dialog };
+});

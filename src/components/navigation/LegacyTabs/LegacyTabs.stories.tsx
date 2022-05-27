@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { LegacyTabs } from './LegacyTabs';
 
 export default {
-  title: 'UIKit/Navigation/Tabs',
+  title: 'Navigation/Tabs',
   component: LegacyTabs,
   argTypes: {},
 };

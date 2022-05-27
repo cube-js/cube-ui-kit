@@ -1,11 +1,13 @@
 import { forwardRef, useContext } from 'react';
 import styled from 'styled-components';
-import { BreakpointsContext } from '../providers/BreakpointsProvider';
-import { pointsToZones } from '../utils/responsive';
-import { renderStyles } from '../utils/renderStyles';
-import { modAttrs } from '../utils/react';
-import { AllBaseProps } from './types';
-import { Styles } from '../styles/types';
+import {
+  AllBaseProps,
+  BreakpointsContext,
+  modAttrs,
+  pointsToZones,
+  renderStyles,
+  Styles,
+} from '../tasty';
 
 const BLOCK_MAP = {
   inline: 'block',
@@ -22,7 +24,7 @@ const INLINE_MAP = {
 const BaseElement = styled.div(({ css }) => css);
 
 /**
- * @deprecated consider using styled() instead
+ * @deprecated consider using tasty() instead
  */
 const Base = function Base<K extends keyof HTMLElementTagNameMap>(
   allProps: AllBaseProps<K>,
@@ -85,7 +87,7 @@ const Base = function Base<K extends keyof HTMLElementTagNameMap>(
 };
 
 /**
- * @deprecated consider using styled() instead
+ * @deprecated consider using tasty() instead
  */
 const _Base = forwardRef(Base);
 export { _Base as Base };

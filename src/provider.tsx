@@ -4,10 +4,7 @@ import {
   PropsWithChildren,
   useContext,
 } from 'react';
-import { StyleProvider } from './providers/StylesProvider';
-import { BreakpointsProvider } from './providers/BreakpointsProvider';
-import { ResponsiveStyleValue } from './utils/styles';
-import { Props } from './components/types';
+import { BreakpointsProvider, Props } from './tasty';
 
 export interface ProviderProps extends Props {
   breakpoints?: number[];
@@ -17,9 +14,6 @@ export interface ProviderProps extends Props {
   isRequired?: boolean;
   validationState?: string;
   router?: Function;
-  styles?: {
-    [key: string]: { [key: string]: ResponsiveStyleValue } | Function;
-  };
   ref?: JSX.Element;
   root?: ForwardedRef<any>;
 }
@@ -38,14 +32,9 @@ export function Provider(allProps: PropsWithChildren<ProviderProps>) {
     isRequired,
     validationState,
     router,
-    styles,
     root,
     ref,
   } = allProps;
-
-  if (styles) {
-    children = <StyleProvider {...styles}>{children}</StyleProvider>;
-  }
 
   if (breakpoints) {
     children = (

@@ -3,7 +3,7 @@ import { forwardRef, useCallback, useState } from 'react';
 import { Provider, useProviderProps } from '../../../provider';
 import type { OverlayProps } from '@react-types/overlays';
 import { createPortal } from 'react-dom';
-import { Props } from '../../types';
+import { Props } from '../../../tasty';
 
 export interface CubeOverlayProps extends Omit<OverlayProps, 'container'> {
   container?: HTMLElement | null;

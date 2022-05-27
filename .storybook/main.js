@@ -5,11 +5,17 @@ const webpack = require('webpack');
 const config = {
   staticDirs: ['../public'],
   framework: '@storybook/react',
+  core: {
+    builder: { name: 'webpack5' },
+  },
   features: {
     postcss: false,
     emotionAlias: false,
     buildStoriesJson: true,
     interactionsDebugger: true,
+    argTypeTargetsV7: true,
+    storyStoreV7: true,
+    modernInlineRender: true,
   },
   stories: ['../src/**/*.stories.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
   addons: [
