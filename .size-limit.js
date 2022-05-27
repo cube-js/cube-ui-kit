@@ -1,7 +1,7 @@
 const StatoscopeWebpackPlugin = require('@statoscope/webpack-plugin').default;
 const { join } = require('path');
 
-const reportFolder = './size-limit-report';
+const reportFolder = process.env.REPORT_FOLDER ?? './size-limit-report';
 
 module.exports = [
   {

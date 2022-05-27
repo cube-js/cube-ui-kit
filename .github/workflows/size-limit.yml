@@ -16,6 +16,7 @@ jobs:
     env:
       NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_STATOSCOPE }}
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+      REPORT_FOLDER: './size-limit-report'
     steps:
       - uses: actions/checkout@v3
 
@@ -47,28 +48,31 @@ jobs:
         with:
           workflow: size-limit.yml
           branch: ${{ github.event.pull_request.base.ref }}
-          path: ./size-limit-compare
+          path: ./__compare
 
       - name: Measure size
         id: measure_size
         continue-on-error: true
         run: BASELINE='./size-limit-compare/output.json' node ./scripts/ci/measure-size.mjs
 
-      - name: Upload bundle
+      - name: Save stats
+        run: echo '${{ steps.measure_size.outputs.result }}' > ./size-limit-report/output.json
+
+      - name: Upload stats
         uses: actions/upload-artifact@v2
         with:
           name: size-limit-report
-          path: ./size-limit-report
+          path: ${{ env.REPORT_FOLDER }}
 
       - name: Build Statoscope Report
         if: github.event.number
-        run: npx statoscope generate -i ./size-limit-report/stats.json -r ./size-limit-report-compare/stats.json --output ./size-limit-report/report.html
+        run: npx statoscope generate -i ${{ env.REPORT_FOLDER }}/stats.json -r ./__compare/${{ env.REPORT_FOLDER }}/stats.json --output ${{ env.REPORT_FOLDER }}/report.html
 
       - name: Deploy report
         id: deploy_report
         if: github.event.number
         run: |
-          OUTPUT=$(sh -c "npx netlify-cli deploy --dir=./size-limit-report/")
+          OUTPUT=$(sh -c "npx netlify-cli deploy --dir=${{ env.REPORT_FOLDER }}")
           
           NETLIFY_PREVIEW_URL=$(echo "$OUTPUT" | grep -Eo '(http|https)://[a-zA-Z0-9./?=_-]*(--)[a-zA-Z0-9./?=_-]*') #Unique key: --
           
@@ -90,5 +94,6 @@ jobs:
                 [Click here if you want to find out what is changed in this build](${{ steps.deploy_report.outputs.NETLIFY_PREVIEW_URL }}/report.html)
               `,
               github,
+              repo: context.repo,
               prNumber: context.payload.pull_request.number
             })
