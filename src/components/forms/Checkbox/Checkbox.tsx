@@ -12,7 +12,6 @@ import {
   filterBaseProps,
   OUTER_STYLES,
   Styles,
-  useContextStyles,
 } from '../../../tasty';
 import { Base } from '../../Base';
 import { useFocus } from '../../../utils/react/interactions';
@@ -29,6 +28,7 @@ import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
+import { useContextStyles } from '../../../providers/StyleProvider';
 
 export interface CubeCheckboxProps
   extends BaseProps,

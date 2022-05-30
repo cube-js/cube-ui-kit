@@ -6,9 +6,10 @@ import { Underlay } from './Underlay';
 import { useModal, useOverlay, usePreventScroll } from '@react-aria/overlays';
 import { OVERLAY_WRAPPER_STYLES } from './Modal';
 import { Base } from '../../Base';
-import { BaseProps, Props, Styles, useContextStyles } from '../../../tasty';
+import { BaseProps, Props, Styles } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import type { TrayProps } from '@react-types/overlays';
+import { useContextStyles } from '../../../providers/StyleProvider';
 
 const TRAY_STYLES: Styles = {
   zIndex: 2,

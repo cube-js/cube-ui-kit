@@ -28,6 +28,9 @@ export function StyleProvider({ children, ...props }: StyleProviderProps) {
   );
 }
 
+/**
+ * @deprecated
+ */
 export function useContextStyles(
   name: string,
   props?: Record<string, any>,

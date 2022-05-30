@@ -10,13 +10,13 @@ import {
   Styles,
   TagNameProps,
   tasty,
-  useContextStyles,
 } from '../../tasty';
 import {
   LabelPosition,
   NecessityIndicator,
   ValidationState,
 } from '../../shared';
+import { useContextStyles } from '../../providers/StyleProvider';
 
 const REQUIRED_ICON = (
   <svg

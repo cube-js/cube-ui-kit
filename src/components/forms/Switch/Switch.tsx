@@ -13,7 +13,6 @@ import {
   OUTER_STYLES,
   OuterStyleProps,
   Styles,
-  useContextStyles,
 } from '../../../tasty';
 import { Base } from '../../Base';
 import { useFocus } from '../../../utils/react/interactions';
@@ -29,6 +28,7 @@ import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
+import { useContextStyles } from '../../../providers/StyleProvider';
 
 const STYLES: Styles = {
   position: 'relative',

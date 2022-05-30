@@ -35,7 +35,6 @@ import {
   OuterStyleProps,
   Props,
   Styles,
-  useContextStyles,
 } from '../../../tasty';
 import { useFocus } from '../../../utils/react/interactions';
 import { FieldWrapper } from '../../forms/FieldWrapper';
@@ -45,6 +44,7 @@ import type { AriaSelectProps } from '@react-types/select';
 import { DOMRef } from '@react-types/shared';
 import { FormFieldProps } from '../../../shared';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
+import { useContextStyles } from '../../../providers/StyleProvider';
 
 const CaretDownIcon = () => (
   <svg

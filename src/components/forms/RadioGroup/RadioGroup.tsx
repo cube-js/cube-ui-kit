@@ -12,7 +12,6 @@ import {
   extractStyles,
   OUTER_STYLES,
   Styles,
-  useContextStyles,
 } from '../../../tasty';
 import { Base } from '../../Base';
 import { FieldWrapper } from '../FieldWrapper';
@@ -22,6 +21,7 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { useContextStyles } from '../../../providers/StyleProvider';
 
 export interface CubeRadioGroupProps
   extends BaseProps,

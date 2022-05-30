@@ -10,11 +10,11 @@ import {
   ContainerStyleProps,
   extractStyles,
   Styles,
-  useContextStyles,
 } from '../../../tasty';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
 import type { AriaTooltipProps } from '@react-types/tooltip';
 import { PlacementAxis } from '../../../shared';
+import { useContextStyles } from '../../../providers/StyleProvider';
 
 const TOOLTIP_STYLES: Styles = {
   display: 'block',

@@ -15,12 +15,12 @@ import {
   extractStyles,
   PositionStyleProps,
   Styles,
-  useContextStyles,
 } from '../../../tasty';
 import type { AriaTextFieldProps } from '@react-types/textfield';
 import { FormFieldProps } from '../../../shared';
 import { createFocusableRef } from '@react-spectrum/utils';
 import { FieldWrapper } from '../FieldWrapper';
+import { useContextStyles } from '../../../providers/StyleProvider';
 
 const DEFAULT_WRAPPER_STYLES: Styles = {
   display: 'inline-flex',

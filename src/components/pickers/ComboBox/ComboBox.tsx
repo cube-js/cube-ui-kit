@@ -18,7 +18,6 @@ import {
   extractStyles,
   OUTER_STYLES,
   Styles,
-  useContextStyles,
 } from '../../../tasty';
 import { useFocus } from '../../../utils/react/interactions';
 import { modAttrs, useCombinedRefs } from '../../../utils/react';
@@ -37,6 +36,7 @@ import type {
   LoadingState,
 } from '@react-types/shared';
 import type { ComboBoxProps } from '@react-types/combobox';
+import { useContextStyles } from '../../../providers/StyleProvider';
 
 const CaretDownIcon = () => (
   <svg
