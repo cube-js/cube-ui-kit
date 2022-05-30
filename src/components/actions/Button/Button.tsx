@@ -1,9 +1,10 @@
 import { forwardRef, ReactNode } from 'react';
 import { Action, CubeActionProps } from '../Action';
 import { LoadingOutlined } from '@ant-design/icons';
-import { Styles, useContextStyles } from '../../../tasty';
+import { Styles } from '../../../tasty';
 import { FocusableRef } from '@react-types/shared';
 import { accessibilityWarning } from '../../../utils/warnings';
+import { useContextStyles } from '../../../providers/StyleProvider';
 
 export interface CubeButtonProps extends CubeActionProps {
   icon?: ReactNode;

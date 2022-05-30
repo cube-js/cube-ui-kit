@@ -19,7 +19,6 @@ import { useProviderProps } from '../../../provider';
 import { Base } from '../../Base';
 import {
   extractStyles,
-  useContextStyles,
   BaseProps,
   BlockStyleProps,
   DimensionStyleProps,
@@ -39,6 +38,7 @@ import { Block } from '../../Block';
 import { FormFieldProps } from '../../../shared';
 import type { AriaTextFieldProps } from '@react-types/textfield';
 import { mergeProps } from '../../../utils/react';
+import { useContextStyles } from '../../../providers/StyleProvider';
 
 const WRAPPER_STYLES: Styles = {
   display: 'grid',

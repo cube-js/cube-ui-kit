@@ -1,4 +1,3 @@
-export * from '../styled/styled';
 export { tasty } from './tasty';
 export * from './utils/filterBaseProps';
 export * from './utils/colors';
@@ -9,7 +8,6 @@ export * from './utils/renderStyles';
 export * from './utils/dotize';
 export * from './styles/list';
 export * from './providers/BreakpointsProvider';
-export * from '../providers/StyleProvider';
 export * from './utils/mergeStyles';
 export * from './utils/warnings';
 export type {

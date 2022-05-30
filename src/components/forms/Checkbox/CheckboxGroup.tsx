@@ -11,7 +11,6 @@ import {
   BLOCK_STYLES,
   extractStyles,
   OUTER_STYLES,
-  useContextStyles,
 } from '../../../tasty';
 import { Base } from '../../Base';
 import { FieldWrapper } from '../FieldWrapper';
@@ -21,6 +20,7 @@ import {
   castNullableArrayValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { useContextStyles } from '../../../providers/StyleProvider';
 
 const STYLES = {
   display: 'grid',

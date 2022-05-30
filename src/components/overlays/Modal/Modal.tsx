@@ -5,9 +5,10 @@ import { forwardRef, ReactNode } from 'react';
 import { Underlay } from './Underlay';
 import { useModal, useOverlay, usePreventScroll } from '@react-aria/overlays';
 import { Base } from '../../Base';
-import { BaseProps, Props, Styles, useContextStyles } from '../../../tasty';
+import { BaseProps, Props, Styles } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import type { ModalProps } from '@react-types/overlays';
+import { useContextStyles } from '../../../providers/StyleProvider';
 
 export const OVERLAY_WRAPPER_STYLES: Styles = {
   position: 'fixed',

@@ -18,11 +18,11 @@ import {
   DimensionStyleProps,
   extractStyles,
   Styles,
-  useContextStyles,
 } from '../../../tasty';
 import { mergeProps, SlotProvider } from '../../../utils/react';
 import type { AriaDialogProps } from '@react-types/dialog';
 import { DOMRef } from '@react-types/shared';
+import { useContextStyles } from '../../../providers/StyleProvider';
 
 const STYLES_LIST = [...BASE_STYLES, ...DIMENSION_STYLES, ...BLOCK_STYLES];
 

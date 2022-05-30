@@ -13,10 +13,10 @@ import {
   ResponsiveStyleValue,
   Styles,
   StylesInterface,
-  useContextStyles,
 } from '../tasty';
 import { mergeStyles } from '../tasty';
 import { deprecationWarning } from '../tasty';
+import { useContextStyles } from '../providers/StyleProvider';
 
 export type StyledProps<K extends (keyof StylesInterface)[], DefaultProps> = {
   /** The name of the element. It can be used to override styles in context. */
@@ -32,7 +32,7 @@ export type StyledProps<K extends (keyof StylesInterface)[], DefaultProps> = {
   styleProps?: K;
 };
 
-export type AllBasePropsWithMods<K extends (keyof StylesInterface)[]> =
+type AllBasePropsWithMods<K extends (keyof StylesInterface)[]> =
   AllBaseProps & {
     [key in K[number]]?: ResponsiveStyleValue<StylesInterface[key]>;
   } & BaseStyleProps;

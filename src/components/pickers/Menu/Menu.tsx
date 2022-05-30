@@ -15,13 +15,13 @@ import {
   ContainerStyleProps,
   extractStyles,
   Styles,
-  useContextStyles,
 } from '../../../tasty';
 import { StyledMenu, StyledMenuHeader } from './styled';
 import { MenuItem } from './MenuItem';
 import { MenuSection } from './MenuSection';
 import { MenuButtonProps } from './MenuButton';
 import { useMenuContext } from './context';
+import { useContextStyles } from '../../../providers/StyleProvider';
 
 export interface CubeMenuProps<T>
   extends ContainerStyleProps,
