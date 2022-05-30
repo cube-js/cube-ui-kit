@@ -1,4 +1,3 @@
-export * from '../styled/styled';
 export { tasty } from './tasty';
 export * from './utils/filterBaseProps';
 export * from './utils/colors';
