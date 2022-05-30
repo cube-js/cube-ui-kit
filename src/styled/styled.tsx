@@ -32,7 +32,7 @@ export type StyledProps<K extends (keyof StylesInterface)[], DefaultProps> = {
   styleProps?: K;
 };
 
-export type AllBasePropsWithMods<K extends (keyof StylesInterface)[]> =
+type AllBasePropsWithMods<K extends (keyof StylesInterface)[]> =
   AllBaseProps & {
     [key in K[number]]?: ResponsiveStyleValue<StylesInterface[key]>;
   } & BaseStyleProps;
