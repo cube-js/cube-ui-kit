@@ -26,7 +26,6 @@ jobs:
         with:
           path: |
             **/node_modules
-            **/.eslintcache
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
@@ -68,15 +67,17 @@ jobs:
         if: github.event.number
         run: npx statoscope generate -i ${{ env.REPORT_FOLDER }}/stats.json -r ./__compare/${{ env.REPORT_FOLDER }}/stats.json --output ${{ env.REPORT_FOLDER }}/report.html
 
-      - name: Deploy report
+      - name: Deploy Report
         id: deploy_report
         if: github.event.number
-        run: |
-          OUTPUT=$(sh -c "npx netlify-cli deploy --dir=${{ env.REPORT_FOLDER }}")
-          
-          NETLIFY_PREVIEW_URL=$(echo "$OUTPUT" | grep -Eo '(http|https)://[a-zA-Z0-9./?=_-]*(--)[a-zA-Z0-9./?=_-]*') #Unique key: --
-          
-          echo "::set-output name=NETLIFY_PREVIEW_URL::$NETLIFY_PREVIEW_URL"
+        uses: South-Paw/action-netlify-deploy@v1.2.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          netlify-auth-token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          netlify-site-id: ${{ secrets.NETLIFY_SITE_ID }}
+          draft: true
+          build-dir: ${{ env.REPORT_FOLDER }}
+          comment-on-commit: false
 
       - name: Comment PR
         uses: actions/github-script@v6
@@ -91,7 +92,7 @@ jobs:
               body: `
                 ${{ steps.measure_size.outputs.table }}
                 ---
-                [Click here if you want to find out what is changed in this build](${{ steps.deploy_report.outputs.NETLIFY_PREVIEW_URL }}/report.html)
+                [Click here if you want to find out what is changed in this build](${{ steps.deploy_report.outputs.preview-url }}/report.html)
               `,
               github,
               repo: context.repo,
