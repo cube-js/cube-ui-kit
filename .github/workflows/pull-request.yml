@@ -22,19 +22,10 @@ jobs:
         with:
           path: |
             **/node_modules
-            **/.eslintcache
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
             ${{ runner.os }}-yarn
-
-      - uses: actions/cache@v2
-        name: Create build cache
-        id: build-cache
-        with:
-          path: |
-            **/dist
-          key: ${{ runner.os }}-dist-${{ github.run_id }}
 
       - uses: actions/setup-node@v3
         with:
@@ -89,11 +80,16 @@ jobs:
         with:
           path: |
             **/node_modules
-            **/.eslintcache
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
             ${{ runner.os }}-yarn
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            **/.eslintcache
+          key: ${{ runner.os }}-eslint
 
       - uses: actions/setup-node@v3
         with:
@@ -127,11 +123,16 @@ jobs:
         with:
           path: |
             **/node_modules
-            **/.eslintcache
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-yarn--${{ hashFiles('**/yarn.lock') }}
+            ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
             ${{ runner.os }}-yarn
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            **/node_modules/.cache
+          key: ${{ runner.os }}-storybook
 
       - uses: actions/setup-node@v3
         with:
@@ -183,11 +184,16 @@ jobs:
         with:
           path: |
             **/node_modules
-            **/.eslintcache
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-yarn--${{ hashFiles('**/yarn.lock') }}
+            ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
             ${{ runner.os }}-yarn
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            **/node_modules/.cache
+          key: ${{ runner.os }}-storybook
 
       - uses: actions/setup-node@v3
         with:
