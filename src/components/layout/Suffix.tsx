@@ -1,5 +1,4 @@
 import { CSSProperties, forwardRef, useEffect } from 'react';
-import { Base } from '../Base';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -7,23 +6,26 @@ import {
   extractStyles,
   filterBaseProps,
   parseStyle,
-  Styles,
+  tasty,
 } from '../../tasty';
 import { useCombinedRefs } from '../../utils/react';
 
-const DEFAULT_STYLES: Styles = {
-  position: 'absolute',
-  display: 'grid',
-  placeContent: 'stretch',
-  placeItems: 'center',
-  flow: 'column',
-  gap: 0,
-  right: '@suffix-gap',
-  top: '@suffix-gap',
-  bottom: '@suffix-gap',
-  color: '#dark.75',
-  height: '(100% - (2 * @suffix-gap))',
-};
+const SuffixElement = tasty({
+  element: 'Suffix',
+  styles: {
+    position: 'absolute',
+    display: 'grid',
+    placeContent: 'stretch',
+    placeItems: 'center',
+    flow: 'column',
+    gap: 0,
+    right: '@suffix-gap',
+    top: '@suffix-gap',
+    bottom: '@suffix-gap',
+    color: '#dark.75',
+    height: '(100% - (2 * @suffix-gap))',
+  },
+});
 
 export interface CubeSuffixProps extends BaseProps, ContainerStyleProps {
   onWidthChange?: Function;
@@ -32,7 +34,7 @@ export interface CubeSuffixProps extends BaseProps, ContainerStyleProps {
 
 export const Suffix = forwardRef((allProps: CubeSuffixProps, outerRef) => {
   let { onWidthChange, outerGap = '1bw', children, ...props } = allProps;
-  const styles = extractStyles(props, CONTAINER_STYLES, DEFAULT_STYLES);
+  const styles = extractStyles(props, CONTAINER_STYLES);
   const ref = useCombinedRefs(outerRef);
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export const Suffix = forwardRef((allProps: CubeSuffixProps, outerRef) => {
   }, [children, ref, onWidthChange]);
 
   return (
-    <Base
+    <SuffixElement
       {...filterBaseProps(props, { eventProps: true })}
       styles={styles}
       ref={ref}
@@ -51,6 +53,6 @@ export const Suffix = forwardRef((allProps: CubeSuffixProps, outerRef) => {
       }}
     >
       {children}
-    </Base>
+    </SuffixElement>
   );
 });

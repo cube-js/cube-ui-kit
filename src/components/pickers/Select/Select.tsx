@@ -25,7 +25,6 @@ import {
 import { useFormProps } from '../../forms/Form/Form';
 import { useFocus as useAriaFocus, useHover } from '@react-aria/interactions';
 import { useProviderProps } from '../../../provider';
-import { Base } from '../../Base';
 import {
   BasePropsWithoutChildren,
   BLOCK_STYLES,
@@ -35,6 +34,7 @@ import {
   OuterStyleProps,
   Props,
   Styles,
+  tasty,
 } from '../../../tasty';
 import { useFocus } from '../../../utils/react/interactions';
 import { FieldWrapper } from '../../forms/FieldWrapper';
@@ -44,7 +44,6 @@ import type { AriaSelectProps } from '@react-types/select';
 import { DOMRef } from '@react-types/shared';
 import { FormFieldProps } from '../../../shared';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
-import { useContextStyles } from '../../../providers/StyleProvider';
 
 const CaretDownIcon = () => (
   <svg
@@ -61,94 +60,109 @@ const CaretDownIcon = () => (
   </svg>
 );
 
-const SELECT_STYLES: Styles = {
-  display: 'grid',
-  position: 'relative',
-} as const;
+const SelectWrapperElement = tasty({
+  styles: {
+    display: 'grid',
+    position: 'relative',
+  },
+});
 
-const INPUT_STYLES: Styles = {
-  display: 'grid',
-  flow: 'column',
-  gridColumns: {
-    '': '1fr auto',
-    'with-prefix': 'auto 1fr auto',
+const SelectElement = tasty({
+  as: 'button',
+  qa: 'Button',
+  styles: {
+    display: 'grid',
+    flow: 'column',
+    gridColumns: {
+      '': '1fr auto',
+      'with-prefix': 'auto 1fr auto',
+    },
+    placeItems: 'center stretch',
+    placeContent: 'center stretch',
+    gap: '1x',
+    padding: {
+      '': '(1.25x - 1bw) 1x (1.25x - 1bw) (1.5x - 1bw)',
+      '[data-size="small"]': '(.75x - 1px) 1x (.75x - 1px)  (1.5x - 1px)',
+    },
+    border: {
+      '': true,
+      invalid: '#danger-text.50',
+      valid: '#success-text.50',
+      focused: true,
+    },
+    radius: true,
+    reset: 'input',
+    preset: 'default',
+    outline: {
+      '': '#purple-03.0',
+      focused: '#purple-03',
+    },
+    color: {
+      '': '#dark.85',
+      invalid: '#danger-text',
+      focused: '#dark.85',
+      disabled: '#dark.30',
+    },
+    fill: {
+      '': '#purple.0',
+      hovered: '#dark.04',
+      pressed: '#dark.08',
+      disabled: '#dark.04',
+    },
+    fontWeight: 400,
+    textAlign: 'left',
+    cursor: 'pointer',
+    transition: 'theme',
   },
-  placeItems: 'center stretch',
-  placeContent: 'center stretch',
-  gap: '1x',
-  padding: {
-    '': '(1.25x - 1bw) 1x (1.25x - 1bw) (1.5x - 1bw)',
-    '[data-size="small"]': '(.75x - 1px) 1x (.75x - 1px)  (1.5x - 1px)',
-  },
-  border: {
-    '': true,
-    invalid: '#danger-text.50',
-    valid: '#success-text.50',
-    focused: true,
-  },
-  radius: true,
-  reset: 'input',
-  preset: 'default',
-  outline: {
-    '': '#purple-03.0',
-    focused: '#purple-03',
-  },
-  color: {
-    '': '#dark.85',
-    invalid: '#danger-text',
-    focused: '#dark.85',
-    disabled: '#dark.30',
-  },
-  fill: {
-    '': '#purple.0',
-    hovered: '#dark.04',
-    pressed: '#dark.08',
-    disabled: '#dark.04',
-  },
-  fontWeight: 400,
-  textAlign: 'left',
-  cursor: 'pointer',
-  transition: 'theme',
-} as const;
+});
 
-const OVERLAY_STYLES: Styles = {
-  position: 'absolute',
-} as const;
-
-const LISTBOX_STYLES: Styles = {
-  display: 'flex',
-  gap: '.5x',
-  flow: 'column',
-  margin: '0',
-  padding: '.5x',
-  listStyle: 'none',
-  radius: true,
-  fill: '#white',
-  shadow: '0px 4px 16px #shadow',
-  height: 'initial 30x',
-  overflow: 'hidden auto',
-  styledScrollbar: true,
-} as const;
-
-const OPTION_STYLES: Styles = {
-  display: 'block',
-  padding: '(1x - 1px) (1.5x - 1px)',
-  cursor: 'pointer',
-  radius: true,
-  fill: {
-    '': '#white',
-    focused: '#dark.04',
-    selected: '#purple',
-    'focused & selected': '#purple-text',
-    disabled: '#dark.04',
+const ListBoxElement = tasty({
+  as: 'ul',
+  styles: {
+    display: 'flex',
+    gap: '.5x',
+    flow: 'column',
+    margin: '0',
+    padding: '.5x',
+    listStyle: 'none',
+    radius: true,
+    fill: '#white',
+    shadow: '0px 4px 16px #shadow',
+    height: 'initial 30x',
+    overflow: 'hidden auto',
+    styledScrollbar: true,
   },
-  color: {
-    '': '#dark.85',
-    selected: '#white',
-    disabled: '#dark.30',
+});
+
+const OptionElement = tasty({
+  as: 'li',
+  styles: {
+    display: 'block',
+    padding: '(1x - 1px) (1.5x - 1px)',
+    cursor: 'pointer',
+    radius: true,
+    fill: {
+      '': '#white',
+      focused: '#dark.04',
+      selected: '#purple',
+      'focused & selected': '#purple-text',
+      disabled: '#dark.04',
+    },
+    color: {
+      '': '#dark.85',
+      selected: '#white',
+      disabled: '#dark.30',
+    },
+    preset: 't3m',
   },
-  preset: 't3m',
-} as const;
+});
+
+const OverlayElement = tasty({
+  styles: {
+    position: 'absolute',
+    width: 'min @overlay-min-width',
+  },
+});
 
 export interface CubeSelectBaseProps<T>
   extends BasePropsWithoutChildren,
@@ -224,20 +238,9 @@ function Select<T extends object>(
   } = props;
   let state = useSelectState(props);
 
-  const outerStyles = extractStyles(otherProps, OUTER_STYLES, {
-    ...SELECT_STYLES,
-    ...useContextStyles('Select_Wrapper', otherProps),
-    ...styles,
-  });
+  const outerStyles = extractStyles(otherProps, OUTER_STYLES, styles);
 
-  inputStyles = extractStyles(otherProps, BLOCK_STYLES, {
-    ...INPUT_STYLES,
-    ...useContextStyles('Select', otherProps),
-    ...inputStyles,
-  });
-
-  if (styles) {
-  }
+  inputStyles = extractStyles(otherProps, BLOCK_STYLES, inputStyles);
 
   ref = useCombinedRefs(ref);
   triggerRef = useCombinedRefs(triggerRef);
@@ -280,8 +283,8 @@ function Select<T extends object>(
   let triggerWidth = triggerRef?.current?.offsetWidth;
 
   let selectField = (
-    <Base
-      qa="SelectWrapper"
+    <SelectWrapperElement
+      qa={qa || 'Select'}
       mods={{
         invalid: isInvalid,
         valid: validationState === 'valid',
@@ -298,9 +301,7 @@ function Select<T extends object>(
         label={props.label}
         name={props.name}
       />
-      <Base
-        qa={qa || 'Select'}
-        as="button"
+      <SelectElement
         {...mergeProps(buttonProps, hoverProps, focusProps)}
         ref={triggerRef}
         styles={inputStyles}
@@ -326,7 +327,7 @@ function Select<T extends object>(
           </div>
         )}
         <CaretDownIcon />
-      </Base>
+      </SelectElement>
       <OverlayWrapper isOpen={state.isOpen && !isDisabled}>
         <ListBoxPopup
           {...menuProps}
@@ -341,7 +342,7 @@ function Select<T extends object>(
           minWidth={triggerWidth}
         />
       </OverlayWrapper>
-    </Base>
+    </SelectWrapperElement>
   );
 
   return (
@@ -392,12 +393,6 @@ export function ListBoxPopup({
     listBoxRef,
   );
 
-  listBoxStyles = {
-    ...LISTBOX_STYLES,
-    ...useContextStyles('ListBoxPopup'),
-    ...listBoxStyles,
-  };
-
   // Handle events that should cause the popup to close,
   // e.g. blur, clicking outside, or pressing the escape key.
   let { overlayProps } = useOverlay(
@@ -415,11 +410,10 @@ export function ListBoxPopup({
   // <DismissButton> components at the start and end of the list
   // to allow screen reader users to dismiss the popup easily.
   return (
-    <Base
-      styles={{
-        minWidth: minWidth ? `${minWidth}px` : 'initial',
-        ...OVERLAY_STYLES,
-        overlayStyles,
+    <OverlayElement
+      styles={overlayStyles}
+      style={{
+        '--overlay-min-width': minWidth ? `${minWidth}px` : 'initial',
       }}
       {...parentOverlayProps}
       {...overlayProps}
@@ -429,8 +423,7 @@ export function ListBoxPopup({
     >
       <FocusScope restoreFocus>
         <DismissButton onDismiss={() => state.close()} />
-        <Base
-          as="ul"
+        <ListBoxElement
           styles={listBoxStyles}
           {...mergeProps(listBoxProps, otherProps)}
           ref={listBoxRef}
@@ -444,10 +437,10 @@ export function ListBoxPopup({
               shouldUseVirtualFocus={shouldUseVirtualFocus}
             />
           ))}
-        </Base>
+        </ListBoxElement>
         <DismissButton onDismiss={() => state.close()} />
       </FocusScope>
-    </Base>
+    </OverlayElement>
   );
 }
 
@@ -456,12 +449,6 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
   let isDisabled = state.disabledKeys.has(item.key);
   let isSelected = state.selectionManager.isSelected(item.key);
   let isVirtualFocused = state.selectionManager.focusedKey === item.key;
-
-  styles = {
-    ...OPTION_STYLES,
-    ...useContextStyles('Option'),
-    ...styles,
-  };
 
   let { optionProps } = useOption(
     {
@@ -482,8 +469,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
   let { focusProps } = useAriaFocus({ onFocusChange: setFocused });
 
   return (
-    <Base
-      as="li"
+    <OptionElement
       {...mergeProps(optionProps, focusProps)}
       ref={ref}
       mods={{
@@ -496,7 +482,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
       key={item.key}
     >
       {item.rendered}
-    </Base>
+    </OptionElement>
   );
 }
 

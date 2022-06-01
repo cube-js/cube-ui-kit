@@ -3,7 +3,7 @@ import { Story, Canvas, ArgsTable } from '@storybook/addon-docs';
 import { BulbFilled, LockFilled } from '@ant-design/icons';
 
 import { baseProps } from './lists/baseProps';
-import { Base, Button, Result, Space, Text, Title } from '../index';
+import { Element, Button, Result, Space, Text, Title } from '../index';
 
 <Meta title="Content/Result" component={Result} />
 
@@ -104,9 +104,9 @@ Use when important operations need to inform the user to process the results and
       title: 'Access is denied!',
       subtitle: 'Request access from the administrator.',
       icon: (
-        <Base styles={{ color: '#note', fontSize: '10x' }}>
+        <Element styles={{ color: '#note', fontSize: '10x' }}>
           <LockFilled />
-        </Base>
+        </Element>
       ),
       children: <Button type="default">Request</Button>,
     }}
@@ -132,9 +132,9 @@ Use when important operations need to inform the user to process the results and
         </Text.Selection>
       ),
       icon: (
-        <Base styles={{ color: '#purple', fontSize: '12x' }}>
+        <Element styles={{ color: '#purple', fontSize: '12x' }}>
           <BulbFilled />
-        </Base>
+        </Element>
       ),
       children: <Button type="primary">Complete Now</Button>,
     }}

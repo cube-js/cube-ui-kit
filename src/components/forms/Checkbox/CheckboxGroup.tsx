@@ -1,6 +1,5 @@
 import { forwardRef } from 'react';
 import { useDOMRef } from '@react-spectrum/utils';
-import { LABEL_STYLES } from '../Label';
 import { useProviderProps } from '../../../provider';
 import { useCheckboxGroup } from '@react-aria/checkbox';
 import { useCheckboxGroupState } from '@react-stately/checkbox';
@@ -11,8 +10,9 @@ import {
   BLOCK_STYLES,
   extractStyles,
   OUTER_STYLES,
+  tasty,
 } from '../../../tasty';
-import { Base } from '../../Base';
+
 import { FieldWrapper } from '../FieldWrapper';
 import type { AriaCheckboxGroupProps } from '@react-types/checkbox';
 import { FormFieldProps } from '../../../shared';
@@ -20,9 +20,8 @@ import {
   castNullableArrayValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { useContextStyles } from '../../../providers/StyleProvider';
 
-const STYLES = {
+const WRAPPER_STYLES = {
   display: 'grid',
   gridColumns: {
     '': '1fr',
@@ -35,20 +34,23 @@ const STYLES = {
   placeItems: 'baseline start',
 };
 
-const GROUP_STYLES = {
-  display: 'flex',
-  placeItems: 'start',
-  placeContent: 'start',
-  flow: {
-    '': 'column',
-    horizontal: 'row wrap',
+const CheckGroupElement = tasty({
+  qa: 'CheckboxGroup',
+  styles: {
+    display: 'flex',
+    placeItems: 'start',
+    placeContent: 'start',
+    flow: {
+      '': 'column',
+      horizontal: 'row wrap',
+    },
+    gap: {
+      '': '1x',
+      horizontal: '1x 2x',
+    },
+    padding: '(1x - 1bw) 0',
   },
-  gap: {
-    '': '1x',
-    horizontal: '1x 2x',
-  },
-  padding: '(1x - 1bw) 0',
-};
+});
 
 export interface CubeCheckboxGroupProps
   extends BaseProps,
@@ -82,31 +84,14 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
   } = props;
   let domRef = useDOMRef(ref);
 
-  let wrapperContextStyles = useContextStyles('CheckboxGroup_Wrapper', props);
-  let groupContextStyles = useContextStyles('CheckboxGroup', props);
-  let labelContextStyles = useContextStyles('CheckboxGroup_Label', props);
-
-  let styles = extractStyles(otherProps, OUTER_STYLES, {
-    ...STYLES,
-    ...wrapperContextStyles,
-  });
-  let groupStyles = extractStyles(otherProps, BLOCK_STYLES, {
-    ...GROUP_STYLES,
-    ...groupContextStyles,
-  });
-
-  labelStyles = {
-    ...LABEL_STYLES,
-    ...labelContextStyles,
-    ...labelStyles,
-  };
+  let styles = extractStyles(otherProps, OUTER_STYLES, WRAPPER_STYLES);
+  let groupStyles = extractStyles(otherProps, BLOCK_STYLES);
 
   let state = useCheckboxGroupState(props);
   let { groupProps, labelProps } = useCheckboxGroup(props, state);
 
   let radioGroup = (
-    <Base
-      qa="CheckboxGroup"
+    <CheckGroupElement
       styles={groupStyles}
       mods={{
         horizontal: orientation === 'horizontal',
@@ -122,7 +107,7 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
           {children}
         </CheckboxGroupContext.Provider>
       </FormContext.Provider>
-    </Base>
+    </CheckGroupElement>
   );
 
   return (

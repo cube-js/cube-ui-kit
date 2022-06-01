@@ -1,27 +1,29 @@
 import { forwardRef } from 'react';
-import { Base } from '../Base';
 import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
   extractStyles,
   filterBaseProps,
+  tasty,
 } from '../../tasty';
 
-const DEFAULT_STYLES = {
-  display: 'block',
-  flow: 'column',
-};
+const FlowElement = tasty({
+  styles: {
+    display: 'block',
+    flow: 'column',
+  },
+});
 
 const STYLE_PROPS = CONTAINER_STYLES;
 
 export interface CubeFlowProps extends BaseProps, ContainerStyleProps {}
 
 export const Flow = forwardRef((props: CubeFlowProps, ref) => {
-  const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
+  const styles = extractStyles(props, STYLE_PROPS);
 
   return (
-    <Base
+    <FlowElement
       {...filterBaseProps(props, { eventProps: true })}
       styles={styles}
       ref={ref}

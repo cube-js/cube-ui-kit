@@ -10,6 +10,7 @@ import {
   filterBaseProps,
   OUTER_STYLES,
   Styles,
+  tasty,
 } from '../../../tasty';
 import { Base } from '../../Base';
 import { useFocus } from '../../../utils/react/interactions';
@@ -23,85 +24,104 @@ import type { AriaRadioProps } from '@react-types/radio';
 import { FormFieldProps } from '../../../shared';
 import { useContextStyles } from '../../../providers/StyleProvider';
 
-const STYLES: Styles = {
-  position: 'relative',
-  display: 'grid',
-  placeItems: 'center start',
-  gap: '1x',
-  flow: 'column',
-  preset: 'default',
-  width: 'min-content',
-};
+const RadioWrapperElement = tasty({
+  as: 'label',
+  qa: 'RadioWrapper',
+  styles: {
+    position: 'relative',
+    display: 'grid',
+    placeItems: 'center start',
+    gap: '1x',
+    flow: 'column',
+    preset: 'default',
+    width: 'min-content',
+  },
+});
 
-const BUTTON_STYLES: Styles = {
-  radius: true,
-  fill: {
-    '': '#white',
-    hovered: '#purple-text.04',
-    disabled: '#dark.04',
+const RadioButtonElement = tasty({
+  styles: {
+    radius: true,
+    fill: {
+      '': '#white',
+      hovered: '#purple-text.04',
+      disabled: '#dark.04',
+    },
+    color: {
+      '': '#dark.85',
+      invalid: '#danger-text',
+      disabled: '#dark.40',
+    },
+    fontWeight: 500,
+    preset: 'default',
+    border: {
+      '': true,
+      checked: '#purple-text',
+      'invalid & checked': '#danger-text',
+      'disabled & checked': '#dark.40',
+      disabled: '#border',
+    },
+    padding: '(1x - 1bw) (1.5x - 1bw)',
+    cursor: 'pointer',
+    opacity: {
+      '': 1,
+      disabled: 0.5,
+    },
+    outline: {
+      '': '#purple-03.0',
+      focused: '#purple-03',
+    },
   },
-  color: {
-    '': '#dark.85',
-    invalid: '#danger-text',
-    disabled: '#dark.40',
-  },
-  fontWeight: 500,
-  preset: 'default',
-  border: {
-    '': true,
-    checked: '#purple-text',
-    'invalid & checked': '#danger-text',
-    'disabled & checked': '#dark.40',
-    disabled: '#border',
-  },
-  padding: '(1x - 1bw) (1.5x - 1bw)',
-  cursor: 'pointer',
-  opacity: {
-    '': 1,
-    disabled: 0.5,
-  },
-  outline: {
-    '': '#purple-03.0',
-    focused: '#purple-03',
-  },
-};
+});
 
-const INPUT_STYLES: Styles = {
-  display: 'grid',
-  placeItems: 'center',
-  radius: 'round',
-  fill: {
-    '': '#white',
-    disabled: '#dark.04',
-  },
-  color: {
-    checked: '#purple-text',
-    'invalid & checked': '#danger-text',
-    'disabled | !checked': '#clear',
-    'disabled & checked': '#dark.12',
-  },
-  border: {
-    '': '#dark.30',
-    checked: '#purple-text',
-    invalid: '#danger-text.50',
-    disabled: '#dark.12',
-  },
-  width: '2x',
-  height: '2x',
-  outline: {
-    '': '#purple-03.0',
-    focused: '#purple-03',
-  },
-  transition: 'theme',
-};
+const RadioNormalElement = tasty({
+  styles: {
+    display: 'grid',
+    placeItems: 'center',
+    radius: 'round',
+    fill: {
+      '': '#white',
+      disabled: '#dark.04',
+    },
+    color: {
+      checked: '#purple-text',
+      'invalid & checked': '#danger-text',
+      'disabled | !checked': '#clear',
+      'disabled & checked': '#dark.12',
+    },
+    border: {
+      '': '#dark.30',
+      checked: '#purple-text',
+      invalid: '#danger-text.50',
+      disabled: '#dark.12',
+    },
+    width: '2x',
+    height: '2x',
+    outline: {
+      '': '#purple-03.0',
+      focused: '#purple-03',
+    },
+    transition: 'theme',
 
-const CIRCLE_STYLES: Styles = {
-  radius: 'round',
-  width: '1x',
-  height: '1x',
-  fill: 'currentColor',
-  transition: 'theme',
-};
+    RadioCircle: {
+      display: 'block',
+      radius: 'round',
+      width: '1x',
+      height: '1x',
+      fill: 'currentColor',
+      transition: 'theme',
+    },
+  },
+});
+
+const RadioCircleElement = <div data-element="RadioCircle" />;
+
+const RadioLabelElement = tasty({
+  qa: 'RadioLabel',
+  styles: {
+    ...INLINE_LABEL_STYLES,
+    fontWeight: 400,
+  },
+});
 
 export interface CubeRadioProps
   extends BaseProps,
@@ -135,21 +155,13 @@ function Radio(props: CubeRadioProps, ref) {
 
   label = label || children;
 
-  let styles = extractStyles(otherProps, OUTER_STYLES, {
-    ...STYLES,
-    ...useContextStyles('Radio_Wrapper', props),
-  });
+  let styles = extractStyles(otherProps, OUTER_STYLES);
 
-  inputStyles = extractStyles(otherProps, BLOCK_STYLES, {
-    ...(isButton ? BUTTON_STYLES : INPUT_STYLES),
-    ...useContextStyles(isButton ? 'RadioButton' : 'Radio', props),
-    ...inputStyles,
-  });
+  const RadioElement = isButton ? RadioButtonElement : RadioNormalElement;
 
   labelStyles = {
     ...INLINE_LABEL_STYLES,
     fontWeight: 400,
-    ...useContextStyles('Radio_Label', props),
     ...labelStyles,
   };
 
@@ -175,8 +187,7 @@ function Radio(props: CubeRadioProps, ref) {
   );
 
   return (
-    <Base
-      as="label"
+    <RadioWrapperElement
       styles={styles}
       {...hoverProps}
       ref={domRef}
@@ -194,7 +205,7 @@ function Radio(props: CubeRadioProps, ref) {
         isButton={isButton}
         ref={inputRef}
       />
-      <Base
+      <RadioElement
         mods={{
           checked: inputProps.checked,
           invalid: validationState === 'invalid',
@@ -205,23 +216,10 @@ function Radio(props: CubeRadioProps, ref) {
         }}
         styles={inputStyles}
       >
-        {!isButton ? (
-          <Base
-            styles={CIRCLE_STYLES}
-            mods={{
-              checked: inputProps.checked,
-              invalid: validationState === 'invalid',
-              valid: validationState === 'valid',
-            }}
-          />
-        ) : (
-          children
-        )}
-      </Base>
+        {!isButton ? RadioCircleElement : children}
+      </RadioElement>
       {label && !isButton && (
-        <Base
-          qa="RadioLabel"
-          styles={labelStyles}
+        <RadioLabelElement
           mods={{
             invalid: validationState === 'invalid',
             valid: validationState === 'valid',
@@ -230,9 +228,9 @@ function Radio(props: CubeRadioProps, ref) {
           {...filterBaseProps(labelProps)}
         >
           {label}
-        </Base>
+        </RadioLabelElement>
       )}
-    </Base>
+    </RadioWrapperElement>
   );
 }
 

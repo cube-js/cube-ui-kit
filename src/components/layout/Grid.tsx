@@ -1,5 +1,4 @@
 import { forwardRef } from 'react';
-import { Base } from '../Base';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -7,13 +6,15 @@ import {
   extractStyles,
   filterBaseProps,
   ShortGridStyles,
+  tasty,
 } from '../../tasty';
 
-const DEFAULT_STYLES = {
-  display: 'grid',
-  flow: 'row',
-  gap: '@(column-gap, 0)',
-};
+const GridElement = tasty({
+  styles: {
+    display: 'grid',
+    flow: 'row',
+  },
+});
 
 export interface CubeGridProps
   extends BaseProps,
@@ -28,15 +29,10 @@ const PROP_MAP = {
 } as const;
 
 export const Grid = forwardRef((props: CubeGridProps, ref) => {
-  const styles = extractStyles(
-    props,
-    CONTAINER_STYLES,
-    DEFAULT_STYLES,
-    PROP_MAP,
-  );
+  const styles = extractStyles(props, CONTAINER_STYLES, undefined, PROP_MAP);
 
   return (
-    <Base
+    <GridElement
       {...filterBaseProps(props, { eventProps: true })}
       styles={styles}
       ref={ref}

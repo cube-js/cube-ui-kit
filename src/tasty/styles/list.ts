@@ -1,3 +1,5 @@
+import { StylesInterface } from './types';
+
 export const BASE_STYLES = [
   'display',
   'font',

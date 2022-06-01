@@ -11,10 +11,11 @@ import { BASE_STYLES } from './styles/list';
 import { ResponsiveStyleValue } from './utils/styles';
 import { mergeStyles } from './utils/mergeStyles';
 
-export type TastyProps<
-  K extends (keyof StylesInterface)[],
-  DefaultProps = Props,
-> = {
+type StyleList = readonly (keyof {
+  [key in keyof StylesInterface]: StylesInterface[key];
+})[];
+
+export type TastyProps<K extends StyleList, DefaultProps = Props> = {
   /** The tag name of the element. */
   as?: string;
   /** Default styles of the element. */
@@ -28,10 +29,9 @@ export interface GlobalTastyProps {
   breakpoints?: number[];
 }
 
-export type AllBasePropsWithMods<K extends (keyof StylesInterface)[]> =
-  AllBaseProps & {
-    [key in K[number]]?: ResponsiveStyleValue<StylesInterface[key]>;
-  } & BaseStyleProps;
+export type AllBasePropsWithMods<K extends StyleList> = AllBaseProps & {
+  [key in K[number]]?: ResponsiveStyleValue<StylesInterface[key]>;
+} & BaseStyleProps;
 
 type TastyPropsWithDefaults<
   Props extends { styles?: Styles },
@@ -44,10 +44,7 @@ type TastyPropsWithDefaults<
       [key in keyof Omit<Props, keyof DefaultProps>]: Props[key];
     };
 
-function tasty<K extends (keyof StylesInterface)[]>(
-  options: TastyProps<K>,
-  secondArg?: never,
-);
+function tasty<K extends StyleList>(options: TastyProps<K>, secondArg?: never);
 function tasty(selector: string, styles?: Styles);
 function tasty<
   Props extends { styles?: Styles },
@@ -58,10 +55,10 @@ function tasty<
 ): ComponentType<TastyPropsWithDefaults<Props, DefaultProps>>;
 
 // Implementation
-function tasty<
-  K extends (keyof StylesInterface)[],
-  C = Record<string, unknown>,
->(Component, options) {
+function tasty<K extends StyleList, C = Record<string, unknown>>(
+  Component,
+  options,
+) {
   if (typeof Component === 'string') {
     let selector = Component;
     let styles = options;
@@ -105,7 +102,8 @@ function tasty<
     );
 
     let _WrappedComponent = forwardRef((props: C, ref) => {
-      const { as, element, ...restProps } = props as AllBasePropsWithMods<K>;
+      const { as, element, ...restProps } =
+        props as unknown as AllBasePropsWithMods<K>;
       const propsWithStylesValues = propsWithStyles.map((prop) => props[prop]);
 
       const mergedStylesMap: Styles | undefined = useMemo(() => {
@@ -165,8 +163,8 @@ function tasty<
 
     let propStyles: Styles = (
       (styleProps
-        ? (styleProps as (keyof StylesInterface)[]).concat(BASE_STYLES)
-        : BASE_STYLES) as (keyof StylesInterface)[]
+        ? (styleProps as StyleList).concat(BASE_STYLES)
+        : BASE_STYLES) as StyleList
     ).reduce((map, prop) => {
       if (prop in otherProps) {
         map[prop] = otherProps[prop];
@@ -219,4 +217,6 @@ function tasty<
   return _TastyComponent;
 }
 
-export { tasty };
+const Element = tasty({});
+
+export { tasty, Element };
