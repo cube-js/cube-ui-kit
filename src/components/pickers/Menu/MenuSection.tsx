@@ -7,24 +7,23 @@ import {
   StyledMenuSectionHeading,
 } from './styled';
 
-export interface CubeMenuSectionProps<T> extends MenuItemProps<T> {
-  isFirst?: boolean;
-}
+export type CubeMenuSectionProps<T> = MenuItemProps<T>;
 
 /** @private */
 export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
-  let { isFirst, item, state, onAction } = props;
-  let { itemProps, headingProps, groupProps } = useMenuSection({
-    heading: item.rendered,
+  const { item, state, onAction } = props;
+  const heading = item.rendered;
+  const { itemProps, headingProps, groupProps } = useMenuSection({
+    heading,
     'aria-label': item['aria-label'],
   });
 
   return (
     <>
       <StyledMenuSection {...itemProps}>
-        {item.rendered && (
-          <StyledMenuSectionHeading {...headingProps} mods={{ first: isFirst }}>
-            {item.rendered}
+        {heading && (
+          <StyledMenuSectionHeading {...headingProps}>
+            {heading}
           </StyledMenuSectionHeading>
         )}
         <StyledMenu {...groupProps} mods={{ section: true }}>

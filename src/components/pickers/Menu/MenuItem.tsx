@@ -12,7 +12,6 @@ import { MenuButton } from './MenuButton';
 export interface MenuItemProps<T> {
   item: Node<T>;
   state: TreeState<T>;
-  isFirst?: boolean;
   isVirtualized?: boolean;
   onAction?: (key: Key) => void;
 }
