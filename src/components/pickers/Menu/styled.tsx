@@ -99,7 +99,7 @@ export const StyledMenuSectionHeading = tasty(Space, {
     color: '#dark-03',
     fill: '#light',
     preset: 'c2',
-    padding: '(1x - 1bw) (1.5x - 1bw)',
+    padding: '(1x - 1bw) (2x - 1bw)',
     placeContent: 'space-between',
     align: 'start',
   },
