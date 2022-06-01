@@ -15,7 +15,12 @@ export const StyledMenu = tasty({
     margin: '0',
     padding: {
       '': '0.5x',
-      section: '0',
+      section: '0.5x', // section menu
+      sections: '0', // has sections inside
+    },
+    overflow: {
+      '': 'hidden',
+      section: '',
     },
     border: {
       '': '#dark-05',
@@ -65,11 +70,7 @@ export const StyledMenuSection = tasty({
     flow: 'column',
     gap: '1px',
     margin: '0',
-    padding: {
-      '': '0.5x 0',
-      ':first-of-type': '0 0 0.5x 0',
-      ':last-of-type': '0.5x 0 0 0',
-    },
+    padding: '0',
     listStyle: 'none',
     fill: '#white',
   },
@@ -96,8 +97,9 @@ export const StyledMenuSectionHeading = tasty(Space, {
   as: 'header',
   styles: {
     color: '#dark-03',
-    preset: 'c1',
-    padding: '(0.75x - 1bw) (1.5x - 1bw)',
+    fill: '#light',
+    preset: 'c2',
+    padding: '(1x - 1bw) (1.5x - 1bw)',
     placeContent: 'space-between',
     align: 'start',
   },

@@ -1,7 +1,5 @@
-import React, { Fragment, Key } from 'react';
-import { MenuItem } from './MenuItem';
-import { Node } from '@react-types/shared';
-import { TreeState } from '@react-stately/tree';
+import React from 'react';
+import { MenuItem, MenuItemProps } from './MenuItem';
 import { useMenuSection } from '@react-aria/menu';
 import {
   StyledMenu,
@@ -9,25 +7,23 @@ import {
   StyledMenuSectionHeading,
 } from './styled';
 
-export interface CubeMenuSectionProps<T> {
-  item: Node<T>;
-  state: TreeState<T>;
-  onAction?: (key: Key) => void;
+export interface CubeMenuSectionProps<T> extends MenuItemProps<T> {
+  isFirst?: boolean;
 }
 
 /** @private */
 export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
-  let { item, state, onAction } = props;
+  let { isFirst, item, state, onAction } = props;
   let { itemProps, headingProps, groupProps } = useMenuSection({
     heading: item.rendered,
     'aria-label': item['aria-label'],
   });
 
   return (
-    <Fragment>
+    <>
       <StyledMenuSection {...itemProps}>
         {item.rendered && (
-          <StyledMenuSectionHeading {...headingProps}>
+          <StyledMenuSectionHeading {...headingProps} mods={{ first: isFirst }}>
             {item.rendered}
           </StyledMenuSectionHeading>
         )}
@@ -50,6 +46,6 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
           })}
         </StyledMenu>
       </StyledMenuSection>
-    </Fragment>
+    </>
   );
 }

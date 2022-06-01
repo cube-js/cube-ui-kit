@@ -9,9 +9,10 @@ import { useMenuContext } from './context';
 import { StyledMenuItem } from './styled';
 import { MenuButton } from './MenuButton';
 
-interface MenuItemProps<T> {
+export interface MenuItemProps<T> {
   item: Node<T>;
   state: TreeState<T>;
+  isFirst?: boolean;
   isVirtualized?: boolean;
   onAction?: (key: Key) => void;
 }
