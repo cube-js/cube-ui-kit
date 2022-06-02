@@ -10,7 +10,7 @@ import {
 } from '../../tasty';
 import { useSlotProps } from '../../utils/react';
 
-const RawDivider = tasty({
+const DividerElement = tasty({
   styles: {
     gridArea: 'divider',
     display: {
@@ -49,7 +49,7 @@ export const Divider = forwardRef((props: CubeDividerProps, ref) => {
   );
 
   return (
-    <RawDivider
+    <DividerElement
       as={children ? 'div' : 'hr'}
       role={children ? 'separator' : undefined}
       mods={{
@@ -67,6 +67,6 @@ export const Divider = forwardRef((props: CubeDividerProps, ref) => {
           <div data-element="Line"></div>
         </>
       )}
-    </RawDivider>
+    </DividerElement>
   );
 });

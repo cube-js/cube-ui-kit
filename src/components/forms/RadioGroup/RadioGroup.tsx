@@ -28,7 +28,7 @@ export interface CubeRadioGroupProps
   groupStyles?: Styles;
 }
 
-const RawRadioGroup = tasty({
+const RadioGroupElement = tasty({
   qa: 'RadioGroup',
   styles: {
     display: 'flex',
@@ -80,7 +80,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
   let { radioGroupProps: fieldProps, labelProps } = useRadioGroup(props, state);
 
   let radioGroup = (
-    <RawRadioGroup
+    <RadioGroupElement
       styles={groupStyles}
       mods={{
         horizontal: orientation === 'horizontal',
@@ -95,7 +95,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
       >
         <RadioContext.Provider value={state}>{children}</RadioContext.Provider>
       </FormContext.Provider>
-    </RawRadioGroup>
+    </RadioGroupElement>
   );
 
   return (

@@ -3,7 +3,7 @@ import { filterBaseProps, Styles } from '../tasty';
 import { useCombinedRefs } from '../utils/react';
 import { tasty } from '../tasty';
 
-const RawGrid = tasty({
+const GridElement = tasty({
   styled: {
     display: 'contents',
   },
@@ -79,7 +79,7 @@ export const GridProvider = forwardRef(
     }, [resizeCallback]);
 
     return (
-      <RawGrid
+      <GridElement
         {...filterBaseProps(props, { eventProps: true })}
         styles={{
           '--grid-width': width,
@@ -90,7 +90,7 @@ export const GridProvider = forwardRef(
         ref={ref}
       >
         {children}
-      </RawGrid>
+      </GridElement>
     );
   },
 );

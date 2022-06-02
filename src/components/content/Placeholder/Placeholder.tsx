@@ -9,7 +9,7 @@ import {
 } from '../../../tasty';
 import styled from 'styled-components';
 
-const RawPlaceholder = tasty({
+const PlaceholderElement = tasty({
   role: 'alert',
   'aria-live': 'polite',
   'aria-label': 'Content is loading',
@@ -22,7 +22,7 @@ const RawPlaceholder = tasty({
   styleProps: CONTAINER_STYLES,
 });
 
-const StyledPlaceholder = styled(RawPlaceholder)`
+const StyledPlaceholder = styled(PlaceholderElement)`
   --placeholder-animation-time: 1.4s;
   --placeholder-animation-size: calc((180rem + 100vw) / 3);
   background-image: linear-gradient(

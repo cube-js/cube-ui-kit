@@ -80,7 +80,7 @@ export const LABEL_STYLES: Styles = {
   },
 };
 
-const RawLabel = tasty({
+const LabelElement = tasty({
   as: 'label',
   qa: 'Label',
   styles: LABEL_STYLES,
@@ -146,7 +146,7 @@ function Label(props: CubeLabelProps, ref) {
   );
 
   return (
-    <RawLabel
+    <LabelElement
       {...filterBaseProps(otherProps)}
       onClick={onClick}
       ref={domRef}
@@ -184,7 +184,7 @@ function Label(props: CubeLabelProps, ref) {
           {necessityIndicator === 'icon' && isRequired && icon}
         </>
       )}
-    </RawLabel>
+    </LabelElement>
   );
 }
 

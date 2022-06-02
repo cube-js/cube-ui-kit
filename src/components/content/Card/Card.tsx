@@ -7,7 +7,7 @@ import {
   tasty,
 } from '../../../tasty';
 
-const RawCard = tasty({
+const CardElement = tasty({
   role: 'region',
   styles: {
     display: 'block',
@@ -25,7 +25,7 @@ export interface CubeCardProps extends BaseProps, ContainerStyleProps {}
 
 export const Card = forwardRef((props: CubeCardProps, ref) => {
   return (
-    <RawCard
+    <CardElement
       {...filterBaseProps(props, { eventProps: true })}
       styles={props.styles}
       ref={ref}

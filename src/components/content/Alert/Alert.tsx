@@ -4,7 +4,7 @@ import { styled } from '../../../styled';
 import { CubeAlertProps } from './types';
 import { useAlert } from './use-alert';
 
-const RawAlert = styled({
+const AlertElement = styled({
   name: 'Alert',
   styles: {
     display: 'block',
@@ -46,6 +46,11 @@ export const Alert = forwardRef(function Alert(
   const { styles, theme, filteredProps } = useAlert(props);
 
   return (
-    <RawAlert {...filteredProps} data-type={theme} styles={styles} ref={ref} />
+    <AlertElement
+      {...filteredProps}
+      data-type={theme}
+      styles={styles}
+      ref={ref}
+    />
   );
 });

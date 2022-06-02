@@ -15,7 +15,7 @@ import { StyleSheetManager } from 'styled-components';
 import { TOKENS } from '../tokens';
 import { AlertDialogApiProvider } from './overlays/AlertDialog';
 
-const RawRoot = tasty({
+const RootElement = tasty({
   id: 'cube-ui-kit-root',
   className: 'root',
 });
@@ -72,7 +72,7 @@ export const Root = (allProps: CubeRootProps) => {
   return (
     <Provider router={router} root={rootRef}>
       <StyleSheetManager disableVendorPrefixes>
-        <RawRoot
+        <RootElement
           ref={ref}
           {...filterBaseProps(props, { eventProps: true })}
           styles={styles}
@@ -90,7 +90,7 @@ export const Root = (allProps: CubeRootProps) => {
               <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
             </PortalProvider>
           </ModalProvider>
-        </RawRoot>
+        </RootElement>
       </StyleSheetManager>
     </Provider>
   );

@@ -9,7 +9,7 @@ import {
   tasty,
 } from '../../../tasty';
 
-const RawBadge = tasty({
+const BadgeElement = tasty({
   qa: 'Badge',
   role: 'region',
   styles: {
@@ -49,7 +49,7 @@ export const Badge = forwardRef((allProps: CubeBadgeProps, ref) => {
   const styles = extractStyles(props, CONTAINER_STYLES);
 
   return (
-    <RawBadge
+    <BadgeElement
       {...filterBaseProps(props, { eventProps: true })}
       data-type={type}
       mods={{
@@ -60,6 +60,6 @@ export const Badge = forwardRef((allProps: CubeBadgeProps, ref) => {
       ref={ref}
     >
       {children}
-    </RawBadge>
+    </BadgeElement>
   );
 });

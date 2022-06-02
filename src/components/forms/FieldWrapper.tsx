@@ -13,7 +13,7 @@ import { TooltipProvider } from '../overlays/Tooltip/TooltipProvider';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { wrapNodeIfPlain } from '../../utils/react';
 
-const RawField = tasty({
+const FieldElement = tasty({
   qa: 'Field',
   styles: {
     display: 'grid',
@@ -46,7 +46,7 @@ const RawField = tasty({
   },
 });
 
-const RawMessage = tasty({
+const MessageElement = tasty({
   qa: 'Field_Message',
   styles: {
     preset: 'default',
@@ -161,7 +161,7 @@ function FieldWrapper(props, ref) {
   };
 
   return (
-    <RawField
+    <FieldElement
       as={as || 'div'}
       ref={ref}
       mods={mods}
@@ -178,16 +178,16 @@ function FieldWrapper(props, ref) {
       <div data-element="InputArea">
         {Component}
         {message && !isDisabled && (
-          <RawMessage
+          <MessageElement
             mods={mods}
             styles={messageStyles}
             role={validationState === 'invalid' ? 'alert' : undefined}
           >
             {message}
-          </RawMessage>
+          </MessageElement>
         )}
       </div>
-    </RawField>
+    </FieldElement>
   );
 }
 
