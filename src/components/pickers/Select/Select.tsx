@@ -19,6 +19,7 @@ import { useButton } from '@react-aria/button';
 import { FocusScope } from '@react-aria/focus';
 import {
   DismissButton,
+  PositionAria,
   useOverlay,
   useOverlayPosition,
 } from '@react-aria/overlays';
@@ -44,6 +45,7 @@ import type { AriaSelectProps } from '@react-types/select';
 import { DOMRef } from '@react-types/shared';
 import { FormFieldProps } from '../../../shared';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
+import styled from 'styled-components';
 
 const CaretDownIcon = () => (
   <svg
@@ -154,6 +156,7 @@ const OptionElement = tasty({
       disabled: '#dark.30',
     },
     preset: 't3m',
+    transition: 'theme',
   },
 });
 
@@ -163,6 +166,11 @@ const OverlayElement = tasty({
     width: 'min @overlay-min-width',
   },
 });
+const StyledOverlayElement = styled(OverlayElement)`
+  ${(props) => {
+    return getOverlayTransitionCSS({ placement: props?.['data-position'] });
+  }}
+`;
 
 export interface CubeSelectBaseProps<T>
   extends BasePropsWithoutChildren,
@@ -193,6 +201,13 @@ export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
   listBoxRef?: RefObject<HTMLElement>;
   size?: 'small' | 'default' | 'large' | string;
 }
+
+const PLACEMENT_MAP = {
+  bottom: 'top',
+  top: 'bottom',
+  left: 'right',
+  right: 'left',
+};
 
 function Select<T extends object>(
   props: CubeSelectProps<T>,
@@ -317,7 +332,9 @@ function Select<T extends object>(
       >
         {prefix}
         <span {...valueProps}>
-          {state.selectedItem ? state.selectedItem.rendered : placeholder}
+          {state.selectedItem
+            ? state.selectedItem.rendered
+            : placeholder || <>&nbsp;</>}
         </span>
         {(validationState || isLoading || suffix) && (
           <div>
@@ -410,14 +427,14 @@ export function ListBoxPopup({
   // <DismissButton> components at the start and end of the list
   // to allow screen reader users to dismiss the popup easily.
   return (
-    <OverlayElement
+    <StyledOverlayElement
+      {...overlayProps}
+      {...parentOverlayProps}
       styles={overlayStyles}
       style={{
         '--overlay-min-width': minWidth ? `${minWidth}px` : 'initial',
+        ...parentOverlayProps?.style,
       }}
-      {...parentOverlayProps}
-      {...overlayProps}
-      css={getOverlayTransitionCSS({ placement })}
       data-position={placement}
       ref={popoverRef}
     >
@@ -440,7 +457,7 @@ export function ListBoxPopup({
         </ListBoxElement>
         <DismissButton onDismiss={() => state.close()} />
       </FocusScope>
-    </OverlayElement>
+    </StyledOverlayElement>
   );
 }
 

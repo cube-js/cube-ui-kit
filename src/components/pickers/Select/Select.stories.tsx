@@ -36,6 +36,7 @@ const Template = ({
   defaultSelectedKey,
   validationState,
   size,
+  ...props
 }) => {
   return (
     <Select
@@ -49,6 +50,7 @@ const Template = ({
       defaultSelectedKey={defaultSelectedKey}
       onSelectionChange={(query) => console.log('change', query)}
       size={size}
+      {...props}
     >
       {options.map((option) => {
         return <Select.Item key={option}>{option}</Select.Item>;
