@@ -107,9 +107,11 @@ function tasty<K extends StyleList, C = Record<string, unknown>>(
       const propsWithStylesValues = propsWithStyles.map((prop) => props[prop]);
 
       const mergedStylesMap: Styles | undefined = useMemo(() => {
-        return propsWithStylesValues.reduce((map, prop) => {
+        return propsWithStyles.reduce((map, prop) => {
           if (restProps[prop] != null && defaultProps[prop] != null) {
             map[prop] = mergeStyles(restProps[prop], defaultProps[prop]);
+          } else {
+            map[prop] = restProps[prop] || defaultProps[prop];
           }
 
           return map;

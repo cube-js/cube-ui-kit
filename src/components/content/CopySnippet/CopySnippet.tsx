@@ -1,7 +1,6 @@
 import copy from 'clipboard-copy';
 import { Action, Button } from '../../actions';
 import { Card, CubeCardProps } from '../Card/Card';
-import { Grid } from '../../layout/Grid';
 import { Styles, tasty } from '../../../tasty';
 import {
   CubePrismCodeProps,
@@ -9,16 +8,16 @@ import {
 } from '../../content/PrismCode/PrismCode';
 import { notification } from '../../../services/notification';
 import { CopyOutlined } from '@ant-design/icons';
-import { CSSProperties } from 'react';
 import { TooltipTrigger } from '../../overlays/Tooltip/TooltipTrigger';
 import { Tooltip } from '../../overlays/Tooltip/Tooltip';
 
-const POSITION_ACTION: CSSProperties = {
-  position: 'absolute',
-  right: 0,
-  top: 0,
-  zIndex: 1,
-};
+const ActionElement = tasty(Action, {
+  styles: {
+    display: 'block',
+    cursor: 'default',
+    width: '100%',
+  },
+});
 
 const StyledBlock = tasty({
   styles: {
@@ -61,6 +60,52 @@ const ButtonContainer = tasty({
       backgroundImage:
         'linear-gradient(to right,rgba(var(--context-fill-color-rgb),0),rgba(var(--context-fill-color-rgb),1))',
     },
+  },
+});
+
+const CopySnippetElement = tasty(Card, {
+  qa: 'CopySnippet',
+  styles: {
+    fill: '#grey-light',
+    radius: '1r',
+    border: 0,
+    padding: 0,
+
+    Grid: {
+      display: 'grid',
+      flow: 'row',
+      gridColumns: 'minmax(0, 1fr) 5x',
+      width: 'min 20x',
+      radius: '1r',
+      position: 'relative',
+      overflow: 'hidden',
+    },
+  },
+});
+
+const CopyButton = tasty(Button, {
+  type: 'clear',
+  icon: <CopyOutlined />,
+  styles: {
+    padding: '1x 1.5x',
+    fontWeight: 500,
+    radius: {
+      '': '0 1r 1r 0',
+      'multiline | with-scroll': '0 1r',
+    },
+    placeSelf: {
+      '': 'none',
+      '!multiline & !with-scroll': 'stretch',
+    },
+    border: '#clear',
+    outline: {
+      '': '#purple-03.0',
+      'focused & focus-visible': '#purple-03 inset',
+    },
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    zIndex: 1,
   },
 });
 
@@ -127,21 +172,8 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
   } as Styles;
 
   const Snippet = (
-    <Card
-      data-qa="CopySnippet"
-      fill="#grey-light"
-      radius="1r"
-      border={0}
-      padding={0}
-      styles={styles}
-      {...props}
-    >
-      <Grid
-        columns="minmax(0, 1fr) 5x"
-        width="min 20x"
-        radius="1r"
-        style={{ position: 'relative', overflow: 'hidden' }}
-      >
+    <CopySnippetElement styles={styles} {...props}>
+      <div data-element="Grid">
         <StyledBlock
           mods={{
             nowrap,
@@ -160,35 +192,24 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
         <ButtonContainer
           styles={{ padding } as Styles}
           mods={{ overlay: showOverlay }}
-        />
-        <Button
-          label={`Copy ${codeTitle}`}
-          type="clear"
-          styles={{
-            padding: '1x 1.5x',
-            fontWeight: 500,
-            radius: multiline || showScroll ? '0 1r' : '0 1r 1r 0',
-            placeSelf: !multiline && !showScroll ? 'stretch' : 'none',
-            border: '#clear',
-            outline: {
-              '': '#purple-03.0',
-              'focused & focus-visible': '#purple-03 inset',
-            },
-          }}
-          style={POSITION_ACTION}
-          onPress={onCopy}
-          icon={<CopyOutlined />}
-        />
-      </Grid>
-    </Card>
+        >
+          <CopyButton
+            label={`Copy ${codeTitle}`}
+            mods={{
+              multiline,
+              'with-scroll': showScroll,
+            }}
+            onPress={onCopy}
+          />
+        </ButtonContainer>
+      </div>
+    </CopySnippetElement>
   );
 
   if (showTooltip) {
     return (
       <TooltipTrigger>
-        <Action styles={{ display: 'block', cursor: 'default', width: '100%' }}>
-          {Snippet}
-        </Action>
+        <ActionElement>{Snippet}</ActionElement>
         <Tooltip>{formattedCode}</Tooltip>
       </TooltipTrigger>
     );

@@ -10,9 +10,9 @@ exports[`tasty() API should be able to override styles 1`] = `
 }
 
 .c0 {
-  color: rgba(var(--black-color-rgb),0.1);
-  --current-color: var(--black-color,black);
-  --current-color-rgb: var(--black-color-rgb);
+  color: rgba(var(--clear-color-rgb),0.1);
+  --current-color: var(--clear-color,clear);
+  --current-color-rgb: var(--clear-color-rgb);
 }
 
 <div>
