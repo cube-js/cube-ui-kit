@@ -1,7 +1,6 @@
 import { Action } from '../../actions/Action';
 import { Card, CubeCardProps } from '../../content/Card/Card';
 import { Block } from '../../Block';
-import { Flex } from '../../layout/Flex';
 import THEMES from '../../../data/themes';
 import {
   CheckOutlined,
@@ -9,20 +8,73 @@ import {
   ExclamationOutlined,
   InfoOutlined,
 } from '@ant-design/icons';
+import { tasty } from '../../../tasty';
 
 export interface CubeNotificationProps extends CubeCardProps {
   type?: 'success' | 'note' | 'danger';
   onClose?: () => void;
 }
 
-export function Notification(allProps: CubeNotificationProps) {
-  let { type, children, onClose, ...props } = allProps;
+const NotificationElement = tasty(Card, {
+  role: 'region',
+  styles: {
+    display: 'grid',
+    color: '#dark',
+    padding: '.5x',
+    shadow: '0 5px 15px #dark.10',
+    border: false,
+    margin: '1x bottom',
+    radius: '1.5r',
+    gridColumns: 'auto 1fr auto',
+    placeItems: 'center start',
+    gap: '2x',
+    preset: 't3',
 
-  type = type || 'note';
+    Icon: {
+      display: 'flex',
+      radius: '1r',
+      width: '5x',
+      height: '5x',
+      placeContent: 'center',
+      placeItems: 'center',
+      preset: 't2',
+      color: {
+        '': '#dark.75',
+        ...Object.keys(THEMES).reduce((map, theme) => {
+          map[`[data-theme="${theme}"]`] = THEMES[theme].color;
+
+          return map;
+        }, {}),
+      },
+      fill: {
+        '': '#clear',
+        ...Object.keys(THEMES).reduce((map, theme) => {
+          map[`[data-theme="${theme}"]`] = THEMES[theme].fill;
+
+          return map;
+        }, {}),
+      },
+    },
+  },
+});
+
+const CloseButton = tasty(Action, {
+  styles: {
+    color: { '': '#dark.75', hovered: '#purple' },
+    width: '5x',
+    height: '5x',
+    label: 'Close',
+  },
+});
+
+export function Notification(allProps: CubeNotificationProps) {
+  let { theme, type, children, onClose, ...props } = allProps;
+
+  theme = theme || type || 'note';
 
   let Icon;
 
-  switch (type) {
+  switch (theme) {
     case 'success':
       Icon = CheckOutlined;
       break;
@@ -35,43 +87,14 @@ export function Notification(allProps: CubeNotificationProps) {
   }
 
   return (
-    <Card
-      display="grid"
-      role="region"
-      color="#dark"
-      padding=".5x"
-      shadow="0 5px 15px #dark.10"
-      border={false}
-      margin="1x bottom"
-      radius="1.5r"
-      styles={{
-        gridColumns: 'auto 1fr auto',
-        placeItems: 'center start',
-        gap: '2x',
-      }}
-      {...props}
-    >
-      <Flex
-        radius="1r"
-        width="5x"
-        height="5x"
-        placeContent="center"
-        placeItems="center"
-        fill={THEMES[type] ? THEMES[type].fill : '#clear'}
-        color={THEMES[type] ? THEMES[type].color : '#dark.75'}
-      >
-        <Icon style={{ fontSize: 16 }} />
-      </Flex>
+    <NotificationElement {...props} data-theme={theme}>
+      <div data-element="Icon">
+        <Icon />
+      </div>
       <Block>{children}</Block>
-      <Action
-        color={{ '': '#dark.75', hovered: '#purple' }}
-        width="5x"
-        height="5x"
-        onPress={onClose}
-        label="Close"
-      >
+      <CloseButton onPress={onClose}>
         <CloseOutlined />
-      </Action>
-    </Card>
+      </CloseButton>
+    </NotificationElement>
   );
 }
