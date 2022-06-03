@@ -3,6 +3,7 @@ import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
+  extractStyles,
   filterBaseProps,
   Styles,
   tasty,
@@ -19,7 +20,6 @@ const PlaceholderElement = tasty({
     height: '2x',
     opacity: '.35',
   },
-  styleProps: CONTAINER_STYLES,
 });
 
 const StyledPlaceholder = styled(PlaceholderElement)`
@@ -56,7 +56,9 @@ export interface CubePlaceholderProps extends BaseProps, ContainerStyleProps {
 }
 
 export const Placeholder = forwardRef((allProps: CubePlaceholderProps, ref) => {
-  let { size = '2x', circle, styles, ...props } = allProps;
+  let { size = '2x', circle, ...props } = allProps;
+
+  let styles = extractStyles(props, CONTAINER_STYLES);
 
   return (
     <StyledPlaceholder
