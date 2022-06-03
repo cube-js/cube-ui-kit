@@ -86,11 +86,34 @@ export const Link = Template.bind({});
 Link.args = {
   label: 'Link',
   type: 'link',
-  selected: true,
 };
 
-export const WithIcon = Template.bind({});
-WithIcon.args = {
+export const Small = Template.bind({});
+Small.args = {
+  label: 'Button',
+  size: 'small',
+};
+
+export const Large = Template.bind({});
+Large.args = {
+  label: 'Button',
+  size: 'large',
+};
+
+export const Danger = Template.bind({});
+Danger.args = {
+  label: 'Button',
+  theme: 'danger',
+};
+
+export const IconAndText = Template.bind({});
+IconAndText.args = {
+  label: 'Button',
+  icon: true,
+};
+
+export const OnlyIcon = Template.bind({});
+OnlyIcon.args = {
   icon: true,
 };
 
@@ -98,5 +121,5 @@ export const Loading = Template.bind({});
 Loading.args = {
   icon: true,
   isLoading: true,
-  label: '',
+  label: 'Button',
 };

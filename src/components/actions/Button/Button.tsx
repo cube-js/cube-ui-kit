@@ -254,7 +254,7 @@ const STYLES_BY_SIZE = {
   },
   large: {
     padding: '(1.5x - 1px) (2.5x - 1px)',
-    preset: 't2',
+    preset: 't2m',
   },
 };
 
