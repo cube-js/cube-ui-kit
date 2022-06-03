@@ -31,6 +31,36 @@ describe('tasty() API', () => {
     expect(container).toMatchSnapshot();
   });
 
+  it('should merge styles', () => {
+    const Block = tasty({
+      styles: {
+        color: { '': '#dark', modified: '#purple' },
+        fill: '#white',
+      },
+    });
+    const StyledBlock = tasty(Block, {
+      styles: { fill: '#black' },
+    });
+    const { container } = render(<StyledBlock />);
+
+    expect(container).toMatchSnapshot();
+  });
+
+  it('should merge styles in custom prop', () => {
+    const Block = tasty({
+      inputStyles: {
+        color: { '': '#dark', modified: '#purple' },
+        fill: '#white',
+      },
+    });
+    const StyledBlock = tasty(Block, {
+      inputStyles: { fill: '#black' },
+    });
+    const { container } = render(<StyledBlock />);
+
+    expect(container).toMatchSnapshot();
+  });
+
   it('should be able to override styles', () => {
     const StyledBlock = tasty(Block, { styles: { color: '#clear.1' } });
     const { container } = render(
@@ -49,6 +79,32 @@ describe('tasty() API', () => {
 
   it('should create responsive styles', () => {
     const StyledBlock = tasty(Block, { styles: { display: ['grid', 'flex'] } });
+    const { container } = render(<StyledBlock />);
+
+    expect(container).toMatchSnapshot();
+  });
+
+  it('should create element styles', () => {
+    const Block = tasty({
+      styles: { Element: { color: { '': '#dark', modified: '#purple' } } },
+    });
+    const { container } = render(<Block />);
+
+    expect(container).toMatchSnapshot();
+  });
+
+  it('should merge element styles', () => {
+    const Block = tasty({
+      styles: {
+        Element: {
+          color: { '': '#dark', modified: '#purple' },
+          fill: '#white',
+        },
+      },
+    });
+    const StyledBlock = tasty(Block, {
+      styles: { Element: { fill: '#black' } },
+    });
     const { container } = render(<StyledBlock />);
 
     expect(container).toMatchSnapshot();
