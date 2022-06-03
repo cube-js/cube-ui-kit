@@ -19,7 +19,6 @@ import { useButton } from '@react-aria/button';
 import { FocusScope } from '@react-aria/focus';
 import {
   DismissButton,
-  PositionAria,
   useOverlay,
   useOverlayPosition,
 } from '@react-aria/overlays';
@@ -201,13 +200,6 @@ export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
   listBoxRef?: RefObject<HTMLElement>;
   size?: 'small' | 'default' | 'large' | string;
 }
-
-const PLACEMENT_MAP = {
-  bottom: 'top',
-  top: 'bottom',
-  left: 'right',
-  right: 'left',
-};
 
 function Select<T extends object>(
   props: CubeSelectProps<T>,

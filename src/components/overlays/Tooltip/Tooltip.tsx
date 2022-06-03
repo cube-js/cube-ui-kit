@@ -3,7 +3,6 @@ import { mergeProps } from '../../../utils/react';
 import { createDOMRef } from '@react-spectrum/utils';
 import { TooltipContext } from './context';
 import { useTooltip } from '@react-aria/tooltip';
-import { Base } from '../../Base';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -15,7 +14,7 @@ import {
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
 import type { AriaTooltipProps } from '@react-types/tooltip';
 import { PlacementAxis } from '../../../shared';
-import { useContextStyles } from '../../../providers/StyleProvider';
+import styled from 'styled-components';
 
 const TooltipElement = tasty({
   styles: {
@@ -73,6 +72,16 @@ const TooltipTipElement = tasty({
   },
 });
 
+const StyledTooltipElement = styled(TooltipElement)`
+  ${(props) => {
+    return getOverlayTransitionCSS({
+      placement: props?.['data-position'],
+      minOffset: props?.['data-min-offset'],
+      minScale: props?.['data-min-scale'],
+    });
+  }}
+`;
+
 export interface CubeTooltipProps
   extends BaseProps,
     ContainerStyleProps,
@@ -127,15 +136,16 @@ function Tooltip(props: CubeTooltipProps, ref) {
   }
 
   return (
-    <TooltipElement
+    <StyledTooltipElement
       {...tooltipProps}
       {...overlayProps}
-      css={getOverlayTransitionCSS({ placement, minOffset, minScale })}
       styles={styles}
       mods={{
         open: isOpen,
         material: isMaterial,
       }}
+      data-min-offset={minOffset}
+      data-min-slale={minScale}
       data-placement={placement}
       ref={overlayRef}
     >
@@ -145,7 +155,7 @@ function Tooltip(props: CubeTooltipProps, ref) {
         styles={tipStyles}
         {...arrowProps}
       />
-    </TooltipElement>
+    </StyledTooltipElement>
   );
 }
 
