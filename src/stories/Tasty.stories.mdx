@@ -78,8 +78,7 @@ const CustomElement = tasty(Element, {
 An example of styled component.
 
 ```typescript jsx
-import { styled } from '../../styled';
-import { Button } from '../../components/actions';
+import { Button, tasty } from '@cube-dev/ui-kit';
 
 const StyledButton = tasty(Button, {
   styles: {
@@ -100,7 +99,7 @@ const StyledButton = tasty(Button, {
 Use `tasty()` to define global styles for elements:
 
 ```typescript jsx
-import { tasty } from '../../styled';
+import { tasty } from '@cube-dev/ui-kit';
 
 const GlobalStyledHeading = tasty('div.myButton', {
   display: 'inline-block',
