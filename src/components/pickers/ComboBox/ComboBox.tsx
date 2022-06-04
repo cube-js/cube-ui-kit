@@ -81,6 +81,8 @@ const TriggerElement = tasty({
     padding: '0 1x',
     color: 'inherit',
     border: 0,
+    reset: 'button',
+    margin: 0,
     fill: {
       '': '#purple.0',
       hovered: '#dark.04',
