@@ -6,7 +6,6 @@ import { FocusScope } from '@react-aria/focus';
 import { forwardRef, ReactNode } from 'react';
 import { useDialog } from '@react-aria/dialog';
 import { useMessageFormatter } from '@react-aria/i18n';
-import { Base } from '../../Base';
 import { CloseOutlined } from '@ant-design/icons';
 import {
   BASE_STYLES,
@@ -23,7 +22,6 @@ import {
 import { mergeProps, SlotProvider } from '../../../utils/react';
 import type { AriaDialogProps } from '@react-types/dialog';
 import { DOMRef } from '@react-types/shared';
-import { useContextStyles } from '../../../providers/StyleProvider';
 
 const STYLES_LIST = [...BASE_STYLES, ...DIMENSION_STYLES, ...BLOCK_STYLES];
 

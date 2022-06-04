@@ -16,7 +16,6 @@ import {
   NecessityIndicator,
   ValidationState,
 } from '../../shared';
-import { useContextStyles } from '../../providers/StyleProvider';
 
 const REQUIRED_ICON = (
   <svg
@@ -121,13 +120,7 @@ function Label(props: CubeLabelProps, ref) {
 
   let domRef = useDOMRef(ref);
 
-  const contextStyles = useContextStyles('Label', otherProps);
-
-  const styles = extractStyles(
-    otherProps,
-    CONTAINER_STYLES,
-    contextStyles || {},
-  );
+  const styles = extractStyles(otherProps, CONTAINER_STYLES);
 
   let formatMessage = (message) => INTL_MESSAGES[message];
   let necessityLabel = isRequired

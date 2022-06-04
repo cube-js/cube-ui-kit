@@ -5,14 +5,12 @@ import { useRadio } from '@react-aria/radio';
 import { useRadioProvider } from './context';
 import {
   BaseProps,
-  BLOCK_STYLES,
   extractStyles,
   filterBaseProps,
   OUTER_STYLES,
   Styles,
   tasty,
 } from '../../../tasty';
-import { Base } from '../../Base';
 import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react';
 import { useProviderProps } from '../../../provider';
@@ -22,7 +20,6 @@ import { RadioGroup } from './RadioGroup';
 import { useFormProps } from '../Form/Form';
 import type { AriaRadioProps } from '@react-types/radio';
 import { FormFieldProps } from '../../../shared';
-import { useContextStyles } from '../../../providers/StyleProvider';
 
 const RadioWrapperElement = tasty({
   as: 'label',

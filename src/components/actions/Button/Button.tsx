@@ -4,7 +4,6 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { Styles } from '../../../tasty';
 import { FocusableRef } from '@react-types/shared';
 import { accessibilityWarning } from '../../../utils/warnings';
-import { useContextStyles } from '../../../providers/StyleProvider';
 
 export interface CubeButtonProps extends CubeActionProps {
   icon?: ReactNode;
@@ -295,7 +294,6 @@ export const Button = forwardRef(
       icon,
       children,
     };
-    const contextStyles = useContextStyles('Button', propsForStyles);
 
     if (!children) {
       if (icon) {
@@ -317,7 +315,6 @@ export const Button = forwardRef(
 
     styles = {
       ...provideStyles(propsForStyles),
-      ...contextStyles,
       ...styles,
     };
 
