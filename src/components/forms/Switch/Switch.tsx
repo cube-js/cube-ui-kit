@@ -140,10 +140,6 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
 
   label = label || children;
 
-  const SwitchWrapperElementToUse = insideForm
-    ? BaseSwitchWrapperElement
-    : SwitchWrapperElement;
-
   let styles = extractStyles(props, OUTER_STYLES);
 
   inputStyles = extractStyles(props, BLOCK_STYLES, inputStyles);
@@ -166,7 +162,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   let { inputProps } = useSwitch(props, useToggleState(props), inputRef);
 
   const switchField = (
-    <SwitchWrapperElement qa={qa || 'Switch'}>
+    <BaseSwitchWrapperElement qa={qa || 'Switch'}>
       <HiddenInput
         data-qa="HiddenInput"
         {...mergeProps(inputProps, focusProps)}
@@ -190,7 +186,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
           }}
         />
       </SwitchElement>
-    </SwitchWrapperElement>
+    </BaseSwitchWrapperElement>
   );
 
   if (insideForm) {
@@ -218,7 +214,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   }
 
   return (
-    <Element
+    <SwitchWrapperElement
       as="label"
       styles={styles}
       {...hoverProps}
@@ -243,7 +239,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
           ) : null}
         </Element>
       )}
-    </Element>
+    </SwitchWrapperElement>
   );
 }
 
