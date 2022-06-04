@@ -1,11 +1,13 @@
 import { ForwardedRef, forwardRef } from 'react';
 import THEMES from '../../../data/themes';
-import { styled } from '../../../styled';
 import { CubeAlertProps } from './types';
 import { useAlert } from './use-alert';
+import { tasty } from '../../../tasty';
 
-const AlertElement = styled({
+const AlertElement = tasty({
   name: 'Alert',
+  role: 'alert',
+  qa: 'Alert',
   styles: {
     display: 'block',
     flow: 'column',
@@ -32,10 +34,6 @@ const AlertElement = styled({
         return map;
       }, {}),
     },
-  },
-  props: {
-    role: 'alert',
-    qa: 'Alert',
   },
 });
 
