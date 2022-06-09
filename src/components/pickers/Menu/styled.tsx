@@ -8,7 +8,7 @@ export const StyledMenu = tasty({
     display: 'flex',
     flow: 'column',
     gap: {
-      '': '1px',
+      '': '1bw',
       sections: '',
     },
     fill: '#white',
@@ -44,7 +44,7 @@ export const StyledDivider = tasty({
     margin: '0 -0.5x',
     listStyle: 'none',
     fill: '#dark.05',
-    height: '1px',
+    height: '1bw',
   },
 });
 
@@ -80,7 +80,7 @@ export const StyledMenuItem = tasty({
   styles: {
     display: 'flex',
     flow: 'column',
-    gap: '1px',
+    gap: '1bw',
     margin: '0',
     padding: '0',
     listStyle: 'none',
