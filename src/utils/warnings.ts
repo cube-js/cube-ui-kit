@@ -50,14 +50,6 @@ export function deprecationWarning(
 ) {
   if (condition) return;
 
-  return warn(
-    `DEPRECATION ${name} "${property}" -> ${
-      typeof betterAlternative === 'function'
-        ? betterAlternative()
-        : betterAlternative
-    }`,
-  );
-
   // we can make deprecations even better if we add the md syntax in the console.
   // anyway, everything down below will be stripped in the production build
   console.group(`⚠️ ${PREFIX}: Deprecation in ${name}`);
