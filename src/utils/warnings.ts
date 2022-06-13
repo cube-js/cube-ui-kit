@@ -50,6 +50,8 @@ export function deprecationWarning(
 ) {
   if (condition) return;
 
+  if (!devMode) return;
+
   // we can make deprecations even better if we add the md syntax in the console.
   // anyway, everything down below will be stripped in the production build
   console.group(`⚠️ ${PREFIX}: Deprecation in ${name}`);
