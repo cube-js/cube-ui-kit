@@ -6,7 +6,10 @@ const config = {
   staticDirs: ['../public'],
   framework: '@storybook/react',
   core: {
-    builder: { name: 'webpack5' },
+    builder: {
+      name: 'webpack5',
+      options: { fsCache: true, lazyCompilation: true },
+    },
   },
   features: {
     postcss: false,
