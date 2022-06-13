@@ -1,5 +1,4 @@
 import { CSSProperties, forwardRef, useEffect } from 'react';
-import { Base } from '../Base';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -7,23 +6,26 @@ import {
   extractStyles,
   filterBaseProps,
   parseStyle,
-  Styles,
+  tasty,
 } from '../../tasty';
 import { useCombinedRefs } from '../../utils/react';
 
-const DEFAULT_STYLES: Styles = {
-  position: 'absolute',
-  display: 'grid',
-  placeContent: 'stretch',
-  placeItems: 'center',
-  flow: 'column',
-  gap: 0,
-  left: '@prefix-gap',
-  top: '@prefix-gap',
-  bottom: '@prefix-gap',
-  color: '#dark.75',
-  height: '(100% - (2 * @prefix-gap))',
-};
+const PrefixElement = tasty({
+  element: 'Prefix',
+  styles: {
+    position: 'absolute',
+    display: 'grid',
+    placeContent: 'stretch',
+    placeItems: 'center',
+    flow: 'column',
+    gap: 0,
+    left: '@prefix-gap',
+    top: '@prefix-gap',
+    bottom: '@prefix-gap',
+    color: '#dark.75',
+    height: '(100% - (2 * @prefix-gap))',
+  },
+});
 
 export interface CubePrefixProps extends BaseProps, ContainerStyleProps {
   onWidthChange?: Function;
@@ -33,7 +35,7 @@ export interface CubePrefixProps extends BaseProps, ContainerStyleProps {
 export const Prefix = forwardRef((allProps: CubePrefixProps, outerRef) => {
   let { onWidthChange, outerGap = '1bw', children, ...props } = allProps;
 
-  const styles = extractStyles(props, CONTAINER_STYLES, DEFAULT_STYLES);
+  const styles = extractStyles(props, CONTAINER_STYLES);
   const ref = useCombinedRefs(outerRef);
 
   useEffect(() => {
@@ -43,7 +45,7 @@ export const Prefix = forwardRef((allProps: CubePrefixProps, outerRef) => {
   }, [children, ref, onWidthChange]);
 
   return (
-    <Base
+    <PrefixElement
       {...filterBaseProps(props, { eventProps: true })}
       styles={styles}
       ref={ref}
@@ -53,6 +55,6 @@ export const Prefix = forwardRef((allProps: CubePrefixProps, outerRef) => {
       }}
     >
       {children}
-    </Base>
+    </PrefixElement>
   );
 });

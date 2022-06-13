@@ -27,7 +27,7 @@ const Spin = (
       ref={ref}
       role="img"
       aria-label="Loading animation"
-      height="1em"
+      height="1em 1em"
       opacity=".8"
       style={{
         fontSize: localSize * 8,

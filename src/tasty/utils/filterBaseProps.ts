@@ -10,6 +10,7 @@ const labelablePropNames = new Set([
 const BasePropNames = new Set([
   'role',
   'as',
+  'element',
   'css',
   'qa',
   'mods',

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Base, Block, Grid, LoadingAnimation, Space, Title } from './index';
+import { Block, Element, Grid, LoadingAnimation, Space, Title } from './index';
 import { Button } from './components/actions';
 // import ResponsiveProvider from './providers/Responsive';
 // import { Modal } from './components/organisms/Modal/Modal';
@@ -147,9 +147,9 @@ function App() {
           <button>4</button>
         </Flex>
         <Grid columns="auto 1fr" gap="1x" styles={{ height: '100px' }}>
-          <Base styles={{ fill: color('purple', 0.1), width: '200px' }}>
+          <Element styles={{ fill: color('purple', 0.1), width: '200px' }}>
             Without padding
-          </Base>
+          </Element>
           <Card
             styles={{
               fill: '#purple.50',

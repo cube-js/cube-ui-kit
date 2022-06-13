@@ -2,30 +2,31 @@ import { mergeProps } from '../../../utils/react';
 import { Overlay } from './Overlay';
 import { forwardRef, HTMLAttributes } from 'react';
 import { useModal, useOverlay } from '@react-aria/overlays';
-import { Base } from '../../Base';
-import { BaseProps, Styles } from '../../../tasty';
+import { BaseProps, tasty } from '../../../tasty';
 import { OverlayProps } from '@react-types/overlays';
 import { PlacementAxis } from '../../../shared';
-import { useContextStyles } from '../../../providers/StyleProvider';
 
-const POPOVER_STYLES: Styles = {
-  pointerEvents: 'auto',
-  position: 'absolute',
-  transition:
-    'opacity .120s linear, visibility 0ms linear, transform .120s ease-in-out',
-  transform: {
-    '': 'scale(1, .9)',
-    open: 'scale(1, 1)',
+const PopoverElement = tasty({
+  role: 'presentation',
+  styles: {
+    pointerEvents: 'auto',
+    position: 'absolute',
+    transition:
+      'opacity .120s linear, visibility 0ms linear, transform .120s ease-in-out',
+    transform: {
+      '': 'scale(1, .9)',
+      open: 'scale(1, 1)',
+    },
+    opacity: {
+      '': 0,
+      open: '.9999',
+    },
+    transformOrigin: {
+      '': 'top center',
+      '[data-placement="top"]': 'bottom center',
+    },
   },
-  opacity: {
-    '': 0,
-    open: '.9999',
-  },
-  transformOrigin: {
-    '': 'top center',
-    '[data-placement="top"]': 'bottom center',
-  },
-};
+});
 
 export interface CubePopoverProps
   extends BaseProps,
@@ -105,14 +106,8 @@ const PopoverWrapper = forwardRef(function PopoverWrapper(
     isDisabled: isNonModal,
   });
 
-  styles = {
-    ...POPOVER_STYLES,
-    ...useContextStyles('Popover', props),
-    ...styles,
-  };
-
   return (
-    <Base
+    <PopoverElement
       qa={qa || 'Popover'}
       {...mergeProps(otherProps, overlayProps, modalProps)}
       styles={styles}
@@ -121,11 +116,10 @@ const PopoverWrapper = forwardRef(function PopoverWrapper(
         open: isOpen,
       }}
       data-placement={placement}
-      role="presentation"
       style={style}
     >
       {children}
-    </Base>
+    </PopoverElement>
   );
 });
 

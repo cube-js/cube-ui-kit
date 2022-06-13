@@ -13,7 +13,7 @@ import { useSlotProps } from '../../utils/react';
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
-const RawHeader = tasty({
+const HeaderElement = tasty({
   qa: 'Header',
   as: 'header',
   styles: {
@@ -34,7 +34,7 @@ export const Header = forwardRef((props: CubeHeaderProps, ref) => {
   const styles = extractStyles(props, STYLE_LIST);
 
   return (
-    <RawHeader
+    <HeaderElement
       {...filterBaseProps(props, { eventProps: true })}
       styles={styles}
       ref={ref}

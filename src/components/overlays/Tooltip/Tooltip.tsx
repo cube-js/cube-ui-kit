@@ -1,67 +1,93 @@
-import { forwardRef, useContext, useImperativeHandle, useRef } from 'react';
+import {
+  ForwardedRef,
+  forwardRef,
+  useContext,
+  useImperativeHandle,
+  useRef,
+} from 'react';
 import { mergeProps } from '../../../utils/react';
 import { createDOMRef } from '@react-spectrum/utils';
 import { TooltipContext } from './context';
 import { useTooltip } from '@react-aria/tooltip';
-import { Base } from '../../Base';
 import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
   extractStyles,
   Styles,
+  tasty,
 } from '../../../tasty';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
 import type { AriaTooltipProps } from '@react-types/tooltip';
 import { PlacementAxis } from '../../../shared';
-import { useContextStyles } from '../../../providers/StyleProvider';
+import styled from 'styled-components';
+import { DOMRefValue } from '@react-types/shared';
 
-const TOOLTIP_STYLES: Styles = {
-  display: 'block',
-  fill: '#dark.85',
-  color: '#white',
-  width: 'initial 36x max-content',
-  radius: true,
-  padding: '.75x 1x',
-  preset: 't3',
-  backdropFilter: 'blur(.5x)',
-  whiteSpace: 'pre-line',
-};
+const TooltipElement = tasty({
+  styles: {
+    display: 'block',
+    fill: '#dark.85',
+    color: '#white',
+    width: 'initial 36x max-content',
+    radius: true,
+    padding: '.75x 1x',
+    preset: 't3',
+    backdropFilter: 'blur(.5x)',
+    whiteSpace: 'pre-line',
+    pointerEvents: {
+      '': 'none',
+      material: 'auto',
+    },
+  },
+});
 
-const TIP_STYLES: Styles = {
-  position: 'absolute',
-  width: '1px',
-  height: '1px',
-  border: '.5x #clear',
-  borderTop: '.5x solid #dark.85',
-  borderBottom: '0',
-  top: {
-    '': 'initial',
-    '[data-placement="left"] | [data-placement="right"]': '50%',
-    '[data-placement="top"]': '100%',
+const TooltipTipElement = tasty({
+  styles: {
+    position: 'absolute',
+    width: '1px',
+    height: '1px',
+    border: '.5x #clear',
+    borderTop: '.5x solid #dark.85',
+    borderBottom: '0',
+    top: {
+      '': 'initial',
+      '[data-placement="left"] | [data-placement="right"]': '50%',
+      '[data-placement="top"]': '100%',
+    },
+    left: {
+      '': 'initial',
+      '[data-placement="top"] | [data-placement="bottom"]': '50%',
+      '[data-placement="left"]': '100%',
+    },
+    right: {
+      '': 'initial',
+      '[data-placement="right"]': '100%',
+    },
+    bottom: {
+      '': 'initial',
+      '[data-placement="bottom"]': '100%',
+    },
+    transform: {
+      '': 'translate((-.375x - 1px), 0)',
+      '[data-placement="bottom"]':
+        'translate((-.375x - 1px), 0) rotate(180deg)',
+      '[data-placement="left"]':
+        'translate(-.375x, (-.375x - 1px)) rotate(270deg)',
+      '[data-placement="right"]':
+        'translate(.375x, (-.375x - 1px)) rotate(90deg)',
+    },
   },
-  left: {
-    '': 'initial',
-    '[data-placement="top"] | [data-placement="bottom"]': '50%',
-    '[data-placement="left"]': '100%',
-  },
-  right: {
-    '': 'initial',
-    '[data-placement="right"]': '100%',
-  },
-  bottom: {
-    '': 'initial',
-    '[data-placement="bottom"]': '100%',
-  },
-  transform: {
-    '': 'translate((-.375x - 1px), 0)',
-    '[data-placement="bottom"]': 'translate((-.375x - 1px), 0) rotate(180deg)',
-    '[data-placement="left"]':
-      'translate(-.375x, (-.375x - 1px)) rotate(270deg)',
-    '[data-placement="right"]':
-      'translate(.375x, (-.375x - 1px)) rotate(90deg)',
-  },
-};
+});
+
+const StyledTooltipElement = styled(TooltipElement)`
+  ${(props) => {
+    return getOverlayTransitionCSS({
+      placement: props?.['data-position'],
+      minOffset: props?.['data-min-offset'],
+      minScale: props?.['data-min-scale'],
+    });
+  }}
+`;
 
 export interface CubeTooltipProps
   extends BaseProps,
@@ -73,7 +99,10 @@ export interface CubeTooltipProps
   isMaterial?: boolean;
 }
 
-function Tooltip(props: CubeTooltipProps, ref) {
+function Tooltip(
+  props: CubeTooltipProps,
+  ref: ForwardedRef<DOMRefValue<HTMLDivElement>>,
+) {
   let {
     ref: overlayRef,
     arrowProps,
@@ -86,7 +115,7 @@ function Tooltip(props: CubeTooltipProps, ref) {
 
   let defaultRef = useRef<HTMLDivElement>(null);
 
-  overlayRef = overlayRef || defaultRef;
+  const finalOverlayRef = overlayRef ?? defaultRef;
 
   props = mergeProps(props, tooltipProviderProps);
 
@@ -99,24 +128,12 @@ function Tooltip(props: CubeTooltipProps, ref) {
     ...otherProps
   } = props;
 
-  const styles = extractStyles(otherProps, CONTAINER_STYLES, {
-    ...TOOLTIP_STYLES,
-    pointerEvents: isMaterial ? 'auto' : 'none',
-    ...useContextStyles('Tooltip', props),
-  });
-
-  tipStyles = {
-    ...TIP_STYLES,
-    ...useContextStyles('Tooltip_Tip'),
-    ...tipStyles,
-  };
+  const styles = extractStyles(otherProps, CONTAINER_STYLES);
 
   let { tooltipProps } = useTooltip(props, state);
 
   // Sync ref with overlayRef from context.
-  useImperativeHandle(ref, () =>
-    overlayRef ? createDOMRef(overlayRef) : null,
-  );
+  useImperativeHandle(ref, () => createDOMRef(finalOverlayRef));
 
   if (typeof minOffset === 'number') {
     minOffset = `${minOffset}px`;
@@ -127,20 +144,26 @@ function Tooltip(props: CubeTooltipProps, ref) {
   }
 
   return (
-    <Base
+    <StyledTooltipElement
       {...tooltipProps}
       {...overlayProps}
-      css={getOverlayTransitionCSS({ placement, minOffset, minScale })}
       styles={styles}
       mods={{
         open: isOpen,
+        material: isMaterial,
       }}
+      data-min-offset={minOffset}
+      data-min-slale={minScale}
       data-placement={placement}
       ref={overlayRef}
     >
       {props.children}
-      <Base data-placement={placement} styles={tipStyles} {...arrowProps} />
-    </Base>
+      <TooltipTipElement
+        data-placement={placement}
+        styles={tipStyles}
+        {...arrowProps}
+      />
+    </StyledTooltipElement>
   );
 }
 

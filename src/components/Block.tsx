@@ -8,7 +8,7 @@ import {
   tasty,
 } from '../tasty';
 
-const RawBlock = tasty({
+const BlockElement = tasty({
   styled: {
     display: 'block',
   },
@@ -22,7 +22,7 @@ export const Block = forwardRef((props: CubeBlockProps, ref) => {
   const styles = extractStyles(props, CONTAINER_STYLES);
 
   return (
-    <RawBlock
+    <BlockElement
       {...filterBaseProps(props, { eventProps: true })}
       styles={styles}
       ref={ref}

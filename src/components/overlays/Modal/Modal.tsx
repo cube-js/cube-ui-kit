@@ -4,11 +4,9 @@ import { Overlay } from './Overlay';
 import { forwardRef, ReactNode } from 'react';
 import { Underlay } from './Underlay';
 import { useModal, useOverlay, usePreventScroll } from '@react-aria/overlays';
-import { Base } from '../../Base';
-import { BaseProps, Props, Styles } from '../../../tasty';
+import { BaseProps, Props, Styles, tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import type { ModalProps } from '@react-types/overlays';
-import { useContextStyles } from '../../../providers/StyleProvider';
 
 export const OVERLAY_WRAPPER_STYLES: Styles = {
   position: 'fixed',
@@ -28,34 +26,41 @@ export const OVERLAY_WRAPPER_STYLES: Styles = {
   transition: 'visibility 0ms linear .13s',
 };
 
-const MODAL_STYLES: Styles = {
-  display: 'grid',
-  zIndex: 2,
-  height: {
-    '': 'max (@cube-visual-viewport-height * .9)',
-    '[data-type="fullscreenTakeover"] | [data-type="panel"]':
-      '@cube-visual-viewport-height @cube-visual-viewport-height',
-    '[data-type="fullscreen"]':
-      '(@cube-visual-viewport-height * .9) (@cube-visual-viewport-height * .9)',
-    '[data-type="fullscreenTakeover"]':
-      '@cube-visual-viewport-height @cube-visual-viewport-height',
+const ModalWrapperElement = tasty({
+  qa: 'ModalWrapper',
+  styles: OVERLAY_WRAPPER_STYLES,
+});
+
+const ModalElement = tasty({
+  styles: {
+    display: 'grid',
+    zIndex: 2,
+    height: {
+      '': 'max (@cube-visual-viewport-height * .9)',
+      '[data-type="fullscreenTakeover"] | [data-type="panel"]':
+        '@cube-visual-viewport-height @cube-visual-viewport-height',
+      '[data-type="fullscreen"]':
+        '(@cube-visual-viewport-height * .9) (@cube-visual-viewport-height * .9)',
+      '[data-type="fullscreenTakeover"]':
+        '@cube-visual-viewport-height @cube-visual-viewport-height',
+    },
+    width: {
+      width: '288px 90vw',
+    },
+    pointerEvents: 'none',
+    transition:
+      'opacity .25s linear, visibility 0ms linear, transform .25s ease-in-out',
+    transform: {
+      '': 'translate(0, 0) scale(1, 1)',
+      '[data-type="modal"] & !open': 'translate(0, -3x) scale(1, 1)',
+      '[data-type^="fullscreen"] & !open': 'translate(0, 0) scale(1.02, 1.02)',
+    },
+    opacity: {
+      '': 0,
+      open: 0.9999,
+    },
   },
-  width: {
-    width: '288px 90vw',
-  },
-  pointerEvents: 'none',
-  transition:
-    'opacity .25s linear, visibility 0ms linear, transform .25s ease-in-out',
-  transform: {
-    '': 'translate(0, 0) scale(1, 1)',
-    '[data-type="modal"] & !open': 'translate(0, -3x) scale(1, 1)',
-    '[data-type^="fullscreen"] & !open': 'translate(0, 0) scale(1.02, 1.02)',
-  },
-  opacity: {
-    '': 0,
-    open: 0.9999,
-  },
-};
+});
 
 export interface CubeModalProps extends Omit<ModalProps, 'container'> {
   container?: HTMLElement;
@@ -114,12 +119,6 @@ let ModalWrapper = forwardRef(function ModalWrapper(
     ...otherProps
   } = props;
 
-  styles = {
-    ...MODAL_STYLES,
-    ...useContextStyles('Modal', props),
-    ...styles,
-  };
-
   usePreventScroll();
 
   let { modalProps } = useModal();
@@ -129,15 +128,13 @@ let ModalWrapper = forwardRef(function ModalWrapper(
   };
 
   return (
-    <Base
-      qa="ModalWrapper"
+    <ModalWrapperElement
       mods={{ open: isOpen }}
       data-type={type}
       data-placement={placement}
-      styles={OVERLAY_WRAPPER_STYLES}
       style={style}
     >
-      <Base
+      <ModalElement
         qa={qa || 'Modal'}
         styles={styles}
         mods={{ open: isOpen }}
@@ -147,8 +144,8 @@ let ModalWrapper = forwardRef(function ModalWrapper(
         ref={ref}
       >
         {children}
-      </Base>
-    </Base>
+      </ModalElement>
+    </ModalWrapperElement>
   );
 });
 

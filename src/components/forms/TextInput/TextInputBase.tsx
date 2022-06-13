@@ -16,18 +16,18 @@ import {
 import { useFormProps } from '../Form/Form';
 import { useHover } from '@react-aria/interactions';
 import { useProviderProps } from '../../../provider';
-import { Base } from '../../Base';
 import {
-  extractStyles,
   BaseProps,
-  BlockStyleProps,
-  DimensionStyleProps,
-  PositionStyleProps,
   BLOCK_STYLES,
+  BlockStyleProps,
   DIMENSION_STYLES,
+  DimensionStyleProps,
+  extractStyles,
   POSITION_STYLES,
+  PositionStyleProps,
   Props,
   Styles,
+  tasty,
 } from '../../../tasty';
 import { useFocus } from '../../../utils/react/interactions';
 import { Prefix } from '../../layout/Prefix';
@@ -38,12 +38,24 @@ import { Block } from '../../Block';
 import { FormFieldProps } from '../../../shared';
 import type { AriaTextFieldProps } from '@react-types/textfield';
 import { mergeProps } from '../../../utils/react';
-import { useContextStyles } from '../../../providers/StyleProvider';
 
-const WRAPPER_STYLES: Styles = {
-  display: 'grid',
-  position: 'relative',
-};
+const InputWrapperElement = tasty({
+  styles: {
+    display: 'grid',
+    position: 'relative',
+
+    Prefix: {
+      padding: {
+        '': '0 1x 0 1.5x',
+        'text-prefix': '0 1x 0 2.5x',
+      },
+    },
+
+    Suffix: {
+      padding: '.5x left',
+    },
+  },
+});
 
 const STYLE_LIST = [...POSITION_STYLES, ...DIMENSION_STYLES];
 
@@ -90,6 +102,10 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   margin: 0,
   resize: 'none',
 };
+
+const InputElement = tasty({
+  styles: DEFAULT_INPUT_STYLES,
+});
 
 export interface CubeTextInputBaseProps
   extends BaseProps,
@@ -177,18 +193,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
   let styles = extractStyles(otherProps, STYLE_LIST);
   let type = otherProps.type;
 
-  let contextStyles = useContextStyles('Input', otherProps);
-
-  inputStyles = extractStyles(otherProps, INPUT_STYLE_PROPS_LIST, {
-    ...DEFAULT_INPUT_STYLES,
-    ...contextStyles,
-    ...inputStyles,
-  });
-
-  wrapperStyles = {
-    ...WRAPPER_STYLES,
-    ...wrapperStyles,
-  };
+  inputStyles = extractStyles(otherProps, INPUT_STYLE_PROPS_LIST, inputStyles);
 
   if (prefix) {
     inputStyles.paddingLeft = `${prefixWidth}px`;
@@ -245,21 +250,22 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
   }
 
   let textField = (
-    <Base
+    <InputWrapperElement
       ref={wrapperRef}
-      qa={`${qa || 'TextInput'}Wrapper`}
+      qa={qa || 'TextInput'}
       mods={{
         invalid: isInvalid,
         valid: validationState === 'valid',
         loadable: !!loadingIndicator,
         multiline: multiLine,
+        'text-prefix': prefix === 'string',
       }}
       data-size={size}
       styles={wrapperStyles}
       {...wrapperProps}
     >
-      <Base
-        qa={qa || 'TextInput'}
+      <InputElement
+        qa="Input"
         as={ElementType}
         {...mergeProps(inputProps, focusProps, hoverProps)}
         ref={inputRef}
@@ -280,19 +286,13 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
         styles={inputStyles}
       />
       <Prefix
-        padding="0 1x 0 1.5x"
         onWidthChange={setPrefixWidth}
         opacity={isDisabled ? '@disabled-opacity' : false}
         placeItems="center"
       >
-        {typeof prefix === 'string' ? (
-          <Block padding="1x left">{prefix}</Block>
-        ) : (
-          prefix
-        )}
+        {prefix}
       </Prefix>
       <Suffix
-        padding=".5x left"
         onWidthChange={setSuffixWidth}
         opacity={isDisabled ? '@disabled-opacity' : false}
       >
@@ -305,7 +305,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
         ) : null}
         {suffixPosition === 'after' ? suffix : null}
       </Suffix>
-    </Base>
+    </InputWrapperElement>
   );
 
   return (

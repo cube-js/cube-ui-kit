@@ -5,24 +5,33 @@ import { forwardRef, useEffect, useRef, useState } from 'react';
 import { Underlay } from './Underlay';
 import { useModal, useOverlay, usePreventScroll } from '@react-aria/overlays';
 import { OVERLAY_WRAPPER_STYLES } from './Modal';
-import { Base } from '../../Base';
-import { BaseProps, Props, Styles } from '../../../tasty';
+import { BaseProps, Props, Styles, tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import type { TrayProps } from '@react-types/overlays';
-import { useContextStyles } from '../../../providers/StyleProvider';
 
-const TRAY_STYLES: Styles = {
-  zIndex: 2,
-  height: 'max (@cube-visual-viewport-height * .9)',
-  width: '288px 90vw',
-  pointerEvents: 'auto',
-  transition:
-    'transform .25s ease-in-out, opacity .25s linear, visibility 0ms linear',
-  opacity: {
-    '': 0,
-    open: '.9999',
+const TrayWrapperElement = tasty({
+  qa: 'TrayWrapper',
+  styles: {
+    ...OVERLAY_WRAPPER_STYLES,
+    placeContent: 'end center',
+    placeItems: 'end center',
   },
-};
+});
+
+const TrayElement = tasty({
+  styles: {
+    zIndex: 2,
+    height: 'max (@cube-visual-viewport-height * .9)',
+    width: '288px 90vw',
+    pointerEvents: 'auto',
+    transition:
+      'transform .25s ease-in-out, opacity .25s linear, visibility 0ms linear',
+    opacity: {
+      '': 0,
+      open: '.9999',
+    },
+  },
+});
 
 export interface CubeTrayProps extends TrayProps {
   container?: HTMLElement;
@@ -89,12 +98,6 @@ let TrayWrapper = forwardRef(function (props: CubeTrayWrapperProps, ref) {
     isDisabled: isNonModal,
   });
 
-  styles = {
-    ...TRAY_STYLES,
-    ...useContextStyles('Tray', props),
-    ...styles,
-  };
-
   // We need to measure the window's height in JS rather than using percentages in CSS
   // so that contents (e.g. menu) can inherit the max-height properly. Using percentages
   // does not work properly because there is nothing to base the percentage on.
@@ -131,19 +134,13 @@ let TrayWrapper = forwardRef(function (props: CubeTrayWrapperProps, ref) {
   let domProps = mergeProps(otherProps, overlayProps);
 
   return (
-    <Base
-      qa="TrayWrapper"
+    <TrayWrapperElement
       mods={{
         open: isOpen,
       }}
-      styles={{
-        ...OVERLAY_WRAPPER_STYLES,
-        placeContent: 'end center',
-        placeItems: 'end center',
-      }}
       style={wrapperStyle}
     >
-      <Base
+      <TrayElement
         qa={qa || 'Tray'}
         styles={styles}
         mods={{
@@ -155,8 +152,8 @@ let TrayWrapper = forwardRef(function (props: CubeTrayWrapperProps, ref) {
         ref={ref}
       >
         {children}
-      </Base>
-    </Base>
+      </TrayElement>
+    </TrayWrapperElement>
   );
 });
 

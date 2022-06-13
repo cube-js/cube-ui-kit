@@ -12,12 +12,11 @@ import { useFormProps } from '../../forms/Form';
 import { useHover } from '@react-aria/interactions';
 import { useProviderProps } from '../../../provider';
 import { useFilter } from '@react-aria/i18n';
-import { Base } from '../../Base';
 import {
   BLOCK_STYLES,
   extractStyles,
   OUTER_STYLES,
-  Styles,
+  tasty,
 } from '../../../tasty';
 import { useFocus } from '../../../utils/react/interactions';
 import { modAttrs, useCombinedRefs } from '../../../utils/react';
@@ -36,7 +35,6 @@ import type {
   LoadingState,
 } from '@react-types/shared';
 import type { ComboBoxProps } from '@react-types/combobox';
-import { useContextStyles } from '../../../providers/StyleProvider';
 
 const CaretDownIcon = () => (
   <svg
@@ -53,33 +51,47 @@ const CaretDownIcon = () => (
   </svg>
 );
 
-const COMBOBOX_STYLES: Styles = {
-  position: 'relative',
-  display: 'grid',
-} as const;
-
-const INPUT_STYLES: Styles = {
-  ...DEFAULT_INPUT_STYLES,
-  width: '100%',
-} as const;
-
-const TRIGGER_STYLES: Styles = {
-  display: 'grid',
-  placeItems: 'center',
-  placeContent: 'center',
-  placeSelf: 'stretch',
-  radius: 'right',
-  padding: '0 1x',
-  color: 'inherit',
-  border: 0,
-  fill: {
-    '': '#purple.0',
-    hovered: '#dark.04',
-    pressed: '#dark.08',
-    disabled: '#clear',
+const ComboBoxWrapperElement = tasty({
+  styles: {
+    position: 'relative',
+    display: 'grid',
+    zIndex: {
+      '': 'initial',
+      focused: 1,
+    },
   },
-  cursor: 'pointer',
-} as const;
+});
+
+const InputElement = tasty({
+  as: 'input',
+  styles: {
+    ...DEFAULT_INPUT_STYLES,
+    width: '100%',
+  },
+});
+
+const TriggerElement = tasty({
+  as: 'button',
+  styles: {
+    display: 'grid',
+    placeItems: 'center',
+    placeContent: 'center',
+    placeSelf: 'stretch',
+    radius: 'right',
+    padding: '0 1x',
+    color: 'inherit',
+    border: 0,
+    reset: 'button',
+    margin: 0,
+    fill: {
+      '': '#purple.0',
+      hovered: '#dark.04',
+      pressed: '#dark.08',
+      disabled: '#clear',
+    },
+    cursor: 'pointer',
+  },
+});
 
 export interface CubeComboBoxProps<T>
   extends Omit<CubeSelectBaseProps<T>, 'onOpenChange'>,
@@ -153,23 +165,9 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
     allowsEmptyCollection: isAsync,
   });
 
-  const outerStyles = extractStyles(otherProps, OUTER_STYLES, {
-    ...COMBOBOX_STYLES,
-    ...useContextStyles('ComboBox_Wrapper', props),
-    ...styles,
-  });
+  const outerStyles = extractStyles(otherProps, OUTER_STYLES, styles);
 
-  inputStyles = extractStyles(otherProps, BLOCK_STYLES, {
-    ...INPUT_STYLES,
-    ...useContextStyles('ComboBox', props),
-    ...inputStyles,
-  });
-
-  triggerStyles = {
-    ...TRIGGER_STYLES,
-    ...useContextStyles('ComboBox_Trigger', props),
-    ...triggerStyles,
-  };
+  inputStyles = extractStyles(otherProps, BLOCK_STYLES, inputStyles);
 
   ref = useCombinedRefs(ref);
   inputRef = useCombinedRefs(inputRef);
@@ -239,9 +237,9 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
   let comboBoxWidth = inputRef?.current?.offsetWidth;
 
   let comboBoxField = (
-    <Base
+    <ComboBoxWrapperElement
       ref={ref}
-      qa="ComboBoxWrapper"
+      qa={qa || 'ComboBox'}
       {...modAttrs({
         invalid: isInvalid,
         valid: validationState === 'valid',
@@ -255,9 +253,8 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
       }}
       data-size={size}
     >
-      <Base
-        qa={qa || 'ComboBox'}
-        as="input"
+      <InputElement
+        qa="Input"
         {...mergeProps(inputProps, hoverProps, focusProps)}
         ref={inputRef}
         autoComplete={autoComplete}
@@ -294,8 +291,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
         ) : null}
         {suffix}
         {!hideTrigger ? (
-          <Base
-            as="button"
+          <TriggerElement
             {...mergeProps(buttonProps, triggerFocusProps, triggerHoverProps)}
             {...modAttrs({
               pressed: isTriggerPressed,
@@ -309,7 +305,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
             styles={triggerStyles}
           >
             <CaretDownIcon />
-          </Base>
+          </TriggerElement>
         ) : null}
       </Suffix>
       <OverlayWrapper isOpen={state.isOpen && !isDisabled}>
@@ -327,7 +323,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
           minWidth={comboBoxWidth}
         />
       </OverlayWrapper>
-    </Base>
+    </ComboBoxWrapperElement>
   );
 
   return (

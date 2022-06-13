@@ -16,7 +16,6 @@ import {
   NecessityIndicator,
   ValidationState,
 } from '../../shared';
-import { useContextStyles } from '../../providers/StyleProvider';
 
 const REQUIRED_ICON = (
   <svg
@@ -80,7 +79,7 @@ export const LABEL_STYLES: Styles = {
   },
 };
 
-const RawLabel = tasty({
+const LabelElement = tasty({
   as: 'label',
   qa: 'Label',
   styles: LABEL_STYLES,
@@ -121,13 +120,7 @@ function Label(props: CubeLabelProps, ref) {
 
   let domRef = useDOMRef(ref);
 
-  const contextStyles = useContextStyles('Label', otherProps);
-
-  const styles = extractStyles(
-    otherProps,
-    CONTAINER_STYLES,
-    contextStyles || {},
-  );
+  const styles = extractStyles(otherProps, CONTAINER_STYLES);
 
   let formatMessage = (message) => INTL_MESSAGES[message];
   let necessityLabel = isRequired
@@ -146,7 +139,7 @@ function Label(props: CubeLabelProps, ref) {
   );
 
   return (
-    <RawLabel
+    <LabelElement
       {...filterBaseProps(otherProps)}
       onClick={onClick}
       ref={domRef}
@@ -184,7 +177,7 @@ function Label(props: CubeLabelProps, ref) {
           {necessityIndicator === 'icon' && isRequired && icon}
         </>
       )}
-    </RawLabel>
+    </LabelElement>
   );
 }
 

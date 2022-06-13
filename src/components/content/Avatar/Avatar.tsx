@@ -1,9 +1,9 @@
 import { forwardRef, ReactNode } from 'react';
-import { Base } from '../../Base';
 import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
+  Element,
   extractStyles,
   filterBaseProps,
   Styles,
@@ -37,7 +37,7 @@ export const Avatar = forwardRef(
     });
 
     return (
-      <Base
+      <Element
         {...filterBaseProps(props, { eventProps: true })}
         styles={styles}
         ref={ref}
@@ -45,7 +45,7 @@ export const Avatar = forwardRef(
       >
         {icon}
         {children}
-      </Base>
+      </Element>
     );
   },
 );
