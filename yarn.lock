@@ -2758,7 +2758,7 @@
     "@react-types/shared" "^3.11.2"
     dom-helpers "^3.3.1"
 
-"@react-aria/overlays@^3.9.0":
+"@react-aria/overlays@^3.7.5":
   version "3.9.0"
   resolved "https://registry.yarnpkg.com/@react-aria/overlays/-/overlays-3.9.0.tgz#950a9025e8d4086ce3840a97c52d0eb21d9c85c1"
   integrity sha512-YeZ+/0yfBAcqhuRF/Aas5ga9rZWff3EkhisEy1yXjOrf5veedqb05CsyjRkefZzmUeUggfq/AmqX0DJBlZFbxg==
@@ -3244,7 +3244,7 @@
   dependencies:
     "@react-types/shared" "^3.11.2"
 
-"@react-types/overlays@^3.6.0":
+"@react-types/overlays@^3.5.5", "@react-types/overlays@^3.6.0":
   version "3.6.0"
   resolved "https://registry.yarnpkg.com/@react-types/overlays/-/overlays-3.6.0.tgz#2aed36e3cbdf6eab355dec094ea4934b9f559945"
   integrity sha512-atoRgctzNHxWE4qhI2YLI/0Y9bicsib3EnaliV0jUQf2oJMr0S8yKVwwx+K0ENh9Ah00XBEFQxkjgP1q3xQQYw==
