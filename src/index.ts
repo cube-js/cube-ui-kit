@@ -47,10 +47,7 @@ export { FieldWrapper } from './components/forms/FieldWrapper';
 export type { CubeFieldWrapperProps } from './components/forms/FieldWrapper';
 
 // atoms
-export { LoadingAnimation } from './components/status/LoadingAnimation/LoadingAnimation';
-export type { CubeLoadingAnimationProps } from './components/status/LoadingAnimation/LoadingAnimation';
-export { Spin } from './components/status/Spin/Spin';
-export type { CubeSpinProps } from './components/status/Spin/Spin';
+export * from './components/status';
 export { Base64Upload } from './components/other/Base64Upload/Base64Upload';
 export type { CubeBase64UploadProps } from './components/other/Base64Upload/Base64Upload';
 export { Card } from './components/content/Card/Card';

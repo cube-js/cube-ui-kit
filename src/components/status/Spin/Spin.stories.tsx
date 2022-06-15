@@ -1,17 +1,28 @@
+import { Meta, Story } from '@storybook/react';
+import { Paragraph } from '../../content/Paragraph';
 import { Spin } from './Spin';
-import { baseProps } from '../../../stories/lists/baseProps';
+import { CubeSpinProps } from './types';
 
 export default {
   title: 'Status/Spin',
   component: Spin,
-  parameters: {
-    controls: {
-      exclude: baseProps,
-    },
-  },
-};
+} as Meta<CubeSpinProps>;
 
-const Template = ({ size }) => <Spin size={size} />;
+const Template: Story<CubeSpinProps> = (args) => <Spin {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {};
+
+export const Small = Template.bind({});
+Small.args = {
+  size: 'small',
+};
+export const Large = Template.bind({});
+Large.args = {
+  size: 'large',
+};
+export const WithChildren = Template.bind({});
+WithChildren.args = {
+  spinning: false,
+  children: <Paragraph>Hello</Paragraph>,
+};
