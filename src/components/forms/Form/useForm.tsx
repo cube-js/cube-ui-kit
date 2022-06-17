@@ -141,15 +141,12 @@ export class CubeFormInstance {
     }, {});
   }
 
-  setFieldValue(
-    name: string,
-    value: any,
-    touched = false,
-    skipRender?: boolean,
-  ) {
+  setFieldValue(name: string, value: any, touched = false, skipRender = false) {
     const field = this.fields[name];
 
-    if (!field || isEqual(value, field.value)) return;
+    if (!field || isEqual(value, field.value)) {
+      return;
+    }
 
     field.value = value;
 
@@ -158,6 +155,8 @@ export class CubeFormInstance {
     }
 
     if (!skipRender) {
+      field.errors = [];
+
       this.forceReRender();
     }
 
@@ -346,14 +345,14 @@ export function useForm(
     }
 
     form.ref = ref;
+  }
 
-    if (onSubmit) {
-      form.onSubmit = onSubmit;
-    }
+  if (onSubmit) {
+    formRef.current.onSubmit = onSubmit;
+  }
 
-    if (onValuesChange) {
-      form.onValuesChange = onValuesChange;
-    }
+  if (onValuesChange) {
+    formRef.current.onValuesChange = onValuesChange;
   }
 
   return [formRef.current];
