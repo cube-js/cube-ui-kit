@@ -105,7 +105,7 @@ const SelectElement = tasty({
       disabled: '#dark.30',
     },
     fill: {
-      '': '#purple.0',
+      '': '#white',
       hovered: '#dark.04',
       pressed: '#dark.08',
       disabled: '#dark.04',
