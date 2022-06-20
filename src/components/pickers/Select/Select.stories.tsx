@@ -63,7 +63,7 @@ export const WithIcon = Template.bind({});
 WithIcon.args = { icon: true };
 
 export const OverTheCustomBG = Template.bind({});
-OverTheCustomBG.parameters = { backgrounds: { default: '#f4f4f4' } };
+OverTheCustomBG.parameters = { backgrounds: { default: 'gray' } };
 
 // export const Multiple = Template.bind({});
 // Multiple.args = { icon: true, defaultSelectedKeys: ['red', 'violet'] };

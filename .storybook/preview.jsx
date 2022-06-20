@@ -20,6 +20,13 @@ export const parameters = {
     ),
   },
   actions: { argTypesRegex: '^on[A-Z].*' },
+  backgrounds: {
+    default: 'transparent',
+    values: [
+      { name: 'transparent', value: 'transparent' },
+      { name: 'gray', value: 'rgba(243,243,250, 1)' },
+    ],
+  },
 };
 
 export const decorators = [
