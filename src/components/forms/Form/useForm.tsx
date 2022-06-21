@@ -2,9 +2,9 @@ import { useRef, useState } from 'react';
 import { dotize } from '../../../tasty';
 import { applyRules } from './validation';
 
-export type CubeFormData = { [key: string]: any };
+export type CubeFormData = { [key: string]: unknown };
 export type CubeFieldData = {
-  value?: any;
+  value?: unknown;
   name: string;
   errors: string[];
   touched?: boolean;
@@ -66,7 +66,7 @@ export class CubeFormInstance {
   }
 
   setFieldsValue(
-    newData: { [key: string]: any },
+    newData: { [key: string]: unknown },
     touched?: boolean,
     skipRender?: boolean,
     createFields = false,
@@ -110,7 +110,7 @@ export class CubeFormInstance {
     }
   }
 
-  getFieldValue(name): any {
+  getFieldValue(name): unknown {
     return this.fields[name] && this.fields[name].value;
   }
 
@@ -141,7 +141,12 @@ export class CubeFormInstance {
     }, {});
   }
 
-  setFieldValue(name: string, value: any, touched = false, skipRender = false) {
+  setFieldValue(
+    name: string,
+    value: unknown,
+    touched = false,
+    skipRender = false,
+  ) {
     const field = this.fields[name];
 
     if (!field || isEqual(value, field.value)) {
@@ -169,7 +174,7 @@ export class CubeFormInstance {
     return this.fields[name];
   }
 
-  setInitialFieldsValue(values: { [key: string]: any }): void {
+  setInitialFieldsValue(values: { [key: string]: unknown }): void {
     this.initialFields = dotize.convert(values) || {};
   }
 
