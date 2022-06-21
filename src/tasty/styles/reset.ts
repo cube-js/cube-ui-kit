@@ -37,8 +37,6 @@ line-height: inherit;
     {
       $: '[disabled]',
       css: `
-color: inherit;
-background: transparent;
 -webkit-opacity: 1;
 `,
     },

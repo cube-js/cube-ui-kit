@@ -44,6 +44,7 @@ const Template = ({
       defaultSelectedKey={defaultSelectedKey}
       onSelectionChange={(query) => console.log('change', query)}
       size={size}
+      width="200px"
       {...props}
     >
       {options.map((option) => {
