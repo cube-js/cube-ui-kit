@@ -12,27 +12,27 @@
 Before you create a Pull Request, please check whether your commits comply with
 the commit conventions used in this repository.
 
-When you create a commit we kindly ask you to follow the convention
+When you create a commit, we kindly ask you to follow the convention
 `category: message` in your commit message while using one of
 the following categories:
 
-- `feat / feature`: all changes that introduce completely new code or new
+- `feat/feature`: all changes that introduce completely new code or new
   features
-- `fix`: changes that fix a bug (ideally you will additionally reference an
+- `fix`: changes that fix a bug (ideally, you will additionally reference an
   issue if present)
-- `refactor`: any code related change that is not a fix nor a feature
+- `refactor`: any code-related change that is not a fix nor a feature
 - `docs`: changing existing or creating new documentation (i.e. README, docs for
-  usage of a lib or cli usage)
+  usage of lib or CLI usage)
 - `build`: all changes regarding the build of the software, changes to
   dependencies or the addition of new dependencies
 - `test`: all changes regarding tests (adding new tests or changing existing
   ones)
 - `ci`: all changes regarding the configuration of continuous integration (i.e.
-  github actions, ci system)
+  GitHub actions, ci system)
 - `chore`: all changes to the repository that do not fit into any of the above
   categories
 
-If you are interested in the detailed specification you can visit
+If you are interested in the detailed specification, you can visit
 https://www.conventionalcommits.org/ or check out the
 [Angular Commit Message Guidelines](https://github.com/angular/angular/blob/22b96b9/CONTRIBUTING.md#-commit-message-guidelines).
 
@@ -42,19 +42,16 @@ https://www.conventionalcommits.org/ or check out the
    `[type/(task-name | scope)]`. For example `fix/CUK-1` or `docs/menu-typo`. `type`
    can be either `docs`, `fix`, `feat`, `build`, or any other conventional
    commit type. `scope` is just a short id that describes the scope of work.
-
 2. Make and commit your changes following the
-   [commit convention](https://github.com/chakra-ui/chakra-ui/blob/main/CONTRIBUTING.md#commit-convention).
-   As you develop, you can run `yarn pkg <module> build` and
-   `yarn pkg <module> test` to make sure everything works as expected. Please
-   note that you might have to run `yarn boot` first in order to build all
-   dependencies.
+   [commit convention](https://github.com/cube-js/cube-ui-kit/blob/main/CONTRIBUTING.md#commit-convention).
+   As you develop, you can run `yarn build` and
+   `yarn test` to make sure everything works as expected.
 3. Run `yarn changeset` to create a detailed description of your changes. This
    will be used to generate a changelog when we publish an update.
    [Learn more about Changeset](https://github.com/atlassian/changesets/tree/master/packages/cli).
-   > You can make it earlier after you have created a PR. 
-   > Click on a link in the Changeset bot message
-   >  and write the changes you want to. Then commit these changes.
+   > You can make it earlier after you have created a PR.
+   > Click on a link in the Changeset's bot message
+   >  and write the changes you want to make. Then commit these changes.
 
 4. Also, if you provide `jsx` snippets to the changeset, please turn off the
    live preview by doing the following at the beginning of the snippet:
@@ -66,5 +63,5 @@ https://www.conventionalcommits.org/ or check out the
 
 ### Tests
 
-All commits that fix bugs or add features need a test. 
-We use jest to write unit tests and storybook to make a visual regression tests.
+All commits that fix bugs or add features need a test.
+We use jest to write unit tests and storybook to make visual regression tests.
