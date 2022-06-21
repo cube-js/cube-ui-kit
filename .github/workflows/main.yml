@@ -37,7 +37,7 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: yarn build && npx changeset publish
+          publish: yarn release
           commit: 'chore: release'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -68,6 +68,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
             ${{ runner.os }}-yarn
+
+      - uses: actions/cache@v2
+        name: Download storybook cache
+        with:
+          path: |
+            **/node_modules/.cache
+          key: ${{ runner.os }}-storybook
 
       - uses: actions/setup-node@v3
         with:
@@ -108,6 +115,13 @@ jobs:
             ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
             ${{ runner.os }}-yarn
 
+      - uses: actions/cache@v2
+        name: Download storybook cache
+        with:
+          path: |
+            **/node_modules/.cache
+          key: ${{ runner.os }}-storybook
+
       - uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
@@ -119,15 +133,9 @@ jobs:
         run: yarn build-docs --quiet
 
       - name: Deploy docs to Netlify
-        id: publish_docs
-        run: |
-          OUTPUT=$(sh -c "npx netlify-cli deploy -p")
-          NETLIFY_OUTPUT=$(echo "$OUTPUT")
-          NETLIFY_PREVIEW_URL=$(echo "$OUTPUT" | grep -Eo '(http|https)://[a-zA-Z0-9./?=_-]*(--)[a-zA-Z0-9./?=_-]*') #Unique key: --
-          NETLIFY_LOGS_URL=$(echo "$OUTPUT" | grep -Eo '(http|https)://app.netlify.com/[a-zA-Z0-9./?=_-]*') #Unique key: app.netlify.com
-          NETLIFY_LIVE_URL=$(echo "$OUTPUT" | grep -Eo '(http|https)://[a-zA-Z0-9./?=_-]*' | grep -Eov "netlify.com") #Unique key: don't containr -- and app.netlify.com
-
-          echo "::set-output name=NETLIFY_OUTPUT::$NETLIFY_OUTPUT"
-          echo "::set-output name=NETLIFY_PREVIEW_URL::$NETLIFY_PREVIEW_URL"
-          echo "::set-output name=NETLIFY_LOGS_URL::$NETLIFY_LOGS_URL"
-          echo "::set-output name=NETLIFY_LIVE_URL::$NETLIFY_LIVE_URL"
+        uses: South-Paw/action-netlify-deploy@v1.2.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          netlify-auth-token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          netlify-site-id: ${{ secrets.NETLIFY_SITE_ID }}
+          build-dir: ./storybook-docs
