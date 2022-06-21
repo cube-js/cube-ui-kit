@@ -20,7 +20,7 @@ Before taking this PR from the draft, please, make sure you have done the follow
 - [ ] You have passed the threshold of the library size
 - [ ] Commit message follows [commit guidelines](https://github.com/cube-js/cube-ui-kit/blob/main/CONTRIBUTING.md)
 
-Closes: CUK-77
+Closes: <!-- Please add tickets id's which are relevant to current pr, e.g. CUK-1, CUK-2 ... CUK-XX--> N/A 
 
 #
 
