@@ -66,10 +66,7 @@ const SelectWrapperElement = tasty({
     display: 'grid',
     position: 'relative',
     radius: true,
-    fill: {
-      '': '#dark.0',
-      'hovered | disabled': '#dark.04',
-    },
+    fill: '#white',
     color: {
       '': '#dark.85',
       invalid: '#danger-text',
@@ -111,7 +108,10 @@ const SelectElement = tasty({
       focused: '#purple-03',
     },
     color: 'inherit',
-    fill: 'transparent',
+    fill: {
+      '': '#dark.0',
+      'hovered | disabled': '#dark.04',
+    },
     fontWeight: 400,
     textAlign: 'left',
     cursor: 'pointer',
