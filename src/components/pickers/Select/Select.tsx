@@ -65,6 +65,14 @@ const SelectWrapperElement = tasty({
   styles: {
     display: 'grid',
     position: 'relative',
+    radius: true,
+    fill: '#white',
+    color: {
+      '': '#dark.85',
+      invalid: '#danger-text',
+      focused: '#dark.85',
+      disabled: '#dark.30',
+    },
   },
 });
 
@@ -91,24 +99,18 @@ const SelectElement = tasty({
       valid: '#success-text.50',
       focused: true,
     },
-    radius: true,
-    reset: 'input',
+    radius: '@context-radius',
+    reset: 'button',
+    margin: 0,
     preset: 'default',
     outline: {
       '': '#purple-03.0',
       focused: '#purple-03',
     },
-    color: {
-      '': '#dark.85',
-      invalid: '#danger-text',
-      focused: '#dark.85',
-      disabled: '#dark.30',
-    },
+    color: 'inherit',
     fill: {
-      '': '#purple.0',
-      hovered: '#dark.04',
-      pressed: '#dark.08',
-      disabled: '#dark.04',
+      '': '#dark.0',
+      'hovered | disabled': '#dark.04',
     },
     fontWeight: 400,
     textAlign: 'left',
