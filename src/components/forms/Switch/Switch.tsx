@@ -33,6 +33,9 @@ import {
 
 const BaseSwitchWrapperElement = tasty({
   qa: 'SwitchWrapper',
+  styles: {
+    position: 'relative',
+  },
 });
 
 const SwitchWrapperElement = tasty({

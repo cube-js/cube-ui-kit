@@ -187,26 +187,21 @@ export function Field(allProps: CubeFieldProps) {
 
   let field = form?.getFieldInstance(fieldName);
 
+  if (field) {
+    field.rules = rules;
+  }
+
   let isRequired = rules && !!rules.find((rule) => rule.required);
 
   useEffect(() => {
     if (!form) return;
 
     if (field) {
-      field.rules = rules;
       form.forceReRender();
     } else {
       form.createField(fieldName);
     }
   }, [field]);
-
-  useEffect(() => {
-    if (!form) return;
-
-    if (field) {
-      field.rules = rules;
-    }
-  }, [rules]);
 
   if (typeof children === 'function') {
     children = children(form);

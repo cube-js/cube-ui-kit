@@ -244,7 +244,6 @@ function Select<T extends object>(
     ...otherProps
   } = props;
   let state = useSelectState(props);
-
   const outerStyles = extractStyles(otherProps, OUTER_STYLES, styles);
 
   inputStyles = extractStyles(otherProps, BLOCK_STYLES, inputStyles);
@@ -264,7 +263,6 @@ function Select<T extends object>(
     targetRef: triggerRef,
     overlayRef: popoverRef,
     scrollRef: listBoxRef,
-    // @ts-ignore
     placement: `${direction} end`,
     shouldFlip: shouldFlip,
     isOpen: state.isOpen,
