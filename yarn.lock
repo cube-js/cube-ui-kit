@@ -2981,7 +2981,7 @@
     "@react-types/button" "^3.4.1"
     "@react-types/shared" "^3.8.0"
 
-"@react-aria/ssr@^3.0.3", "@react-aria/ssr@^3.1.0", "@react-aria/ssr@^3.1.2":
+"@react-aria/ssr@^3.0.3", "@react-aria/ssr@^3.1.2":
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/@react-aria/ssr/-/ssr-3.1.2.tgz#665a6fd56385068c7417922af2d0d71b0618e52d"
   integrity sha512-amXY11ImpokvkTMeKRHjsSsG7v1yzzs6yeqArCyBIk60J3Yhgxwx9Cah+Uu/804ATFwqzN22AXIo7SdtIaMP+g==
@@ -3338,6 +3338,16 @@
     "@react-stately/utils" "^3.2.2"
     "@react-types/tooltip" "^3.1.2"
 
+"@react-stately/tooltip@^3.0.8":
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/@react-stately/tooltip/-/tooltip-3.1.1.tgz#e4b7297668eece60ff434721517b3605f5c6d317"
+  integrity sha512-Y+qyIrmnVTLKD+JaePEKx3AZ634+dcJPDLCA4KkmKqVPRIUW3s4N3BE0Jw+uFlBi+xl5tLEdID+bQGd0fl7avA==
+  dependencies:
+    "@babel/runtime" "^7.6.2"
+    "@react-stately/overlays" "^3.3.1"
+    "@react-stately/utils" "^3.5.0"
+    "@react-types/tooltip" "^3.2.1"
+
 "@react-stately/tree@^3.2.3":
   version "3.2.3"
   resolved "https://registry.yarnpkg.com/@react-stately/tree/-/tree-3.2.3.tgz#70cce984496c0d513f5d2b256149d1c0f1cb1e82"
@@ -3426,6 +3436,14 @@
     "@react-types/overlays" "^3.5.1"
     "@react-types/shared" "^3.8.0"
 
+"@react-types/dialog@^3.3.4":
+  version "3.4.1"
+  resolved "https://registry.yarnpkg.com/@react-types/dialog/-/dialog-3.4.1.tgz#67394846c3b3348887699619f28939e99d15f221"
+  integrity sha512-tB/zDF4sR0l8GhTz0hl6bZGAYyxbF7UtTHRVVPW1XSDgjM7nuZiJrWb300S8KICj4933+ZmB5DCuzCzEKjIV6g==
+  dependencies:
+    "@react-types/overlays" "^3.6.1"
+    "@react-types/shared" "^3.13.1"
+
 "@react-types/grid@^3.0.0":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@react-types/grid/-/grid-3.0.0.tgz#a69446e4f99623102339b1351701c371a0c95323"
@@ -3483,6 +3501,13 @@
   integrity sha512-+QfvGqWD/QWOIyOCRDX/KyyV6QWdA/BQZKVpkFd0Vyy11GGT0eiKGyBevlN22/mwQkHbu53smVrRKXlHdB1tUQ==
   dependencies:
     "@react-types/shared" "^3.9.0"
+
+"@react-types/numberfield@^3.1.3":
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/@react-types/numberfield/-/numberfield-3.3.1.tgz#7108c77ed5ed466723e476fc2bebd36e5b1d289e"
+  integrity sha512-xeP/oo9QXTAtzJukahGcR2r26AqPSYlshWPw8wHBKLDqFu2PVIMJmiNblhSUyOxTQ8/OfoyCCkerojjh6uZCAw==
+  dependencies:
+    "@react-types/shared" "^3.13.1"
 
 "@react-types/overlays@^3.5.1", "@react-types/overlays@^3.5.4":
   version "3.5.4"
@@ -3578,6 +3603,14 @@
   dependencies:
     "@react-types/overlays" "^3.5.1"
     "@react-types/shared" "^3.8.0"
+
+"@react-types/tooltip@^3.1.5", "@react-types/tooltip@^3.2.1":
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/@react-types/tooltip/-/tooltip-3.2.1.tgz#b09f57e9ccb7fce7b909b552014337314baabe4f"
+  integrity sha512-1YkpJaIvcVevYbQlOvPqPua5fdwAMrRm4BkLtVRbUL0DerCazCrB/osdQINGOU67XmLU1JIv/xTBMK0Say5Jvg==
+  dependencies:
+    "@react-types/overlays" "^3.6.1"
+    "@react-types/shared" "^3.13.1"
 
 "@rushstack/eslint-patch@^1.1.0":
   version "1.1.0"
