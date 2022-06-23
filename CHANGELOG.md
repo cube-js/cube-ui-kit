@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.10.4
+
+### Patch Changes
+
+- [#119](https://github.com/cube-js/cube-ui-kit/pull/119) [`bdccbf8`](https://github.com/cube-js/cube-ui-kit/commit/bdccbf8d0bd4762659185b9571efbdc1c1e97f09) Thanks [@tenphi](https://github.com/tenphi)! - Allow `tasty` to extend components with required properties.
+
 ## 0.10.3
 
 ### Patch Changes
