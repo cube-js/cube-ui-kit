@@ -1,3 +1,4 @@
+import { StoryFn } from '@storybook/react';
 import { Field, TextInput } from '../../../index';
 import { baseProps } from '../../../stories/lists/baseProps';
 
@@ -7,7 +8,7 @@ export default {
   parameters: { controls: { exclude: baseProps } },
 };
 
-const Template = (args) => {
+const Template: StoryFn<typeof Field> = (args) => {
   return (
     <Field label="Field name" {...args}>
       <TextInput />
@@ -15,26 +16,26 @@ const Template = (args) => {
   );
 };
 
-export const Default = Template.bind({});
+export const Default: StoryFn<typeof Field> = Template.bind({});
 Default.args = {};
 
-export const WithTooltip = Template.bind({});
+export const WithTooltip: StoryFn<typeof Field> = Template.bind({});
 WithTooltip.args = {
   tooltip: 'Long description',
 };
 
-export const WithMessage = Template.bind({});
+export const WithMessage: StoryFn<typeof Field> = Template.bind({});
 WithMessage.args = {
   message: 'Inline description of the field',
 };
 
-export const WithErrorMessage = Template.bind({});
+export const WithErrorMessage: StoryFn<typeof Field> = Template.bind({});
 WithErrorMessage.args = {
   message: 'This field is required',
   validationState: 'error',
 };
 
-export const Styled = Template.bind({});
+export const Styled: StoryFn<typeof Field> = Template.bind({});
 Styled.args = {
   styles: {
     width: '30x',
