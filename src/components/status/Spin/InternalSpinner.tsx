@@ -1,7 +1,10 @@
 import { memo } from 'react';
-import { SpinCube } from './SpinCube';
-import { SpinWrap } from './SpinWrap';
+import { Cube } from './Cube';
+import { SpinsContainer } from './SpinsContainer';
 import { InternalSpinnerProps, SpinSize } from './types';
+import { tasty } from '../../../tasty';
+
+const SpinsBox = tasty({ styles: { position: 'relative', width: '100%' } });
 
 export const InternalSpinner = memo(function InternalSpinner(
   props: InternalSpinnerProps,
@@ -9,11 +12,13 @@ export const InternalSpinner = memo(function InternalSpinner(
   const { size } = props;
 
   return (
-    <SpinWrap ownSize={CUBE_SIZE_MAP[size]}>
-      <SpinCube position="top" />
-      <SpinCube position="right" />
-      <SpinCube position="bottom" />
-    </SpinWrap>
+    <SpinsContainer ownSize={CUBE_SIZE_MAP[size]}>
+      <SpinsBox>
+        <Cube position="top" />
+        <Cube position="right" />
+        <Cube position="bottom" />
+      </SpinsBox>
+    </SpinsContainer>
   );
 });
 
