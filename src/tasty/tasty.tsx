@@ -23,7 +23,7 @@ export type TastyProps<K extends StyleList, DefaultProps = Props> = {
   /** The list of styles that can be provided by props */
   styleProps?: K;
   element?: BaseProps['element'];
-} & Omit<DefaultProps, 'as' | 'styles' | 'styleProps'>;
+} & Partial<Omit<DefaultProps, 'as' | 'styles' | 'styleProps'>>;
 
 export interface GlobalTastyProps {
   breakpoints?: number[];
