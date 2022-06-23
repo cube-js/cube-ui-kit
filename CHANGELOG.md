@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.10.3
+
+### Patch Changes
+
+- [#120](https://github.com/cube-js/cube-ui-kit/pull/120) [`6aa6e26`](https://github.com/cube-js/cube-ui-kit/commit/6aa6e2645fc92bd8d7d6ed86f4e2ddff5fc7df62) Thanks [@tenphi](https://github.com/tenphi)! - Fix the display style default value in gap style generator.
+
 ## 0.10.2
 
 ### Patch Changes
