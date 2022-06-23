@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.10.2
+
+### Patch Changes
+
+- [#116](https://github.com/cube-js/cube-ui-kit/pull/116) [`3967bd0`](https://github.com/cube-js/cube-ui-kit/commit/3967bd05c7a810ab4d83b71236b33f9382f00329) Thanks [@tenphi](https://github.com/tenphi)! - Pass `styles` prop to Field component.
+  Add stories for Field component.
+  Export `CubeRadioGroupProps` type.
+
 ## 0.10.1
 
 ### Patch Changes
