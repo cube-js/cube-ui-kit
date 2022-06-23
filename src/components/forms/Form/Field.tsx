@@ -12,6 +12,7 @@ import { mergeProps } from '../../../utils/react';
 import { OptionalFieldBaseProps, ValidationRule } from '../../../shared';
 import { CubeFormInstance } from './useForm';
 import { FieldWrapper } from '../FieldWrapper';
+import { Styles } from '../../../tasty';
 
 const ID_MAP = {};
 
@@ -118,6 +119,7 @@ export interface CubeFieldProps extends OptionalFieldBaseProps {
   name?: string[] | string;
   /** Whether the field is hidden. */
   isHidden?: boolean;
+  styles?: Styles;
 }
 
 interface CubeFullFieldProps extends CubeFieldProps {
@@ -155,6 +157,7 @@ export function Field(allProps: CubeFieldProps) {
     description,
     tooltip,
     isHidden,
+    styles,
   } = props;
   const nonInput = !name;
   const fieldName: string =
@@ -225,6 +228,7 @@ export function Field(allProps: CubeFieldProps) {
         message={message}
         description={description}
         Component={child}
+        styles={styles}
       />
     );
   }

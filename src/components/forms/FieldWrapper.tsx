@@ -8,7 +8,7 @@ import {
   NecessityIndicator,
   ValidationState,
 } from '../../shared';
-import { Styles, tasty } from '../../tasty';
+import { Props, Styles, tasty } from '../../tasty';
 import { TooltipProvider } from '../overlays/Tooltip/TooltipProvider';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { wrapNodeIfPlain } from '../../utils/react';
@@ -73,8 +73,8 @@ export type CubeFieldWrapperProps = {
   /** Whether the input is disabled */
   isDisabled?: boolean;
   necessityIndicator?: NecessityIndicator;
-  labelProps?: any;
-  fieldProps?: any;
+  labelProps?: Props;
+  fieldProps?: Props;
   /** Custom message for the field. It will be placed below the label and the input */
   message?: string | ReactNode;
   /** Styles for the message */
