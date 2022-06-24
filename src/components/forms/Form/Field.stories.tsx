@@ -37,7 +37,8 @@ WithErrorMessage.args = {
 
 export const Styled = Template.bind({});
 Styled.args = {
+  // labelPosition: 'side',
   styles: {
-    width: '30x',
+    placeItems: 'end',
   },
 };
