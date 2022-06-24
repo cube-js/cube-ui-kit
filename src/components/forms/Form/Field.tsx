@@ -138,6 +138,7 @@ interface CubeReplaceFieldProps extends CubeFieldProps {
   onSelectionChange?: (any) => void;
   onBlur: () => void;
   onInputChange?: (any) => void;
+  labelPosition?: LabelPosition;
 }
 
 export function Field(allProps: CubeFieldProps) {
