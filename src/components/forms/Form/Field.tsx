@@ -125,7 +125,6 @@ export interface CubeFieldProps extends OptionalFieldBaseProps {
   isHidden?: boolean;
   styles?: Styles;
   labelPosition?: LabelPosition;
-  labelStyles?: Styles;
 }
 
 interface CubeFullFieldProps extends CubeFieldProps {
@@ -138,6 +137,7 @@ interface CubeReplaceFieldProps extends CubeFieldProps {
   onSelectionChange?: (any) => void;
   onBlur: () => void;
   onInputChange?: (any) => void;
+  labelPosition?: LabelPosition;
 }
 
 export function Field(allProps: CubeFieldProps) {
@@ -165,7 +165,6 @@ export function Field(allProps: CubeFieldProps) {
     isHidden,
     styles,
     labelPosition,
-    labelStyles,
   } = props;
   const nonInput = !name;
   const fieldName: string =
@@ -238,7 +237,6 @@ export function Field(allProps: CubeFieldProps) {
         Component={child}
         styles={styles}
         labelPosition={labelPosition}
-        labelStyles={labelStyles}
       />
     );
   }
