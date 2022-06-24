@@ -2,6 +2,7 @@ import { getByTestId, render } from '@testing-library/react';
 import { tasty } from './tasty';
 import { Button } from '../components/actions';
 import { Block } from '../components/Block';
+import { CONTAINER_STYLES } from './styles/list';
 
 describe('tasty() API', () => {
   beforeEach(() => {
@@ -106,6 +107,19 @@ describe('tasty() API', () => {
       styles: { Element: { fill: '#black' } },
     });
     const { container } = render(<StyledBlock />);
+
+    expect(container).toMatchSnapshot();
+  });
+
+  it('should define style props', () => {
+    const Block = tasty({
+      styles: {
+        border: '2bw',
+      },
+      styleProps: CONTAINER_STYLES,
+    });
+
+    const { container } = render(<Block border={true} />);
 
     expect(container).toMatchSnapshot();
   });
