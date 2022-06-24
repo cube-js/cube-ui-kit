@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.10.8
+
+### Patch Changes
+
+- [#131](https://github.com/cube-js/cube-ui-kit/pull/131) [`0f4e39a`](https://github.com/cube-js/cube-ui-kit/commit/0f4e39a98e469ee0ed0757d6fc76a2a0eb9591e1) Thanks [@tenphi](https://github.com/tenphi)! - fix(Field): pass labelStyles prop
+
 ## 0.10.7
 
 ### Patch Changes
