@@ -9,7 +9,11 @@ import {
 } from 'react';
 import { useFormProps } from './Form';
 import { mergeProps } from '../../../utils/react';
-import { OptionalFieldBaseProps, ValidationRule } from '../../../shared';
+import {
+  LabelPosition,
+  OptionalFieldBaseProps,
+  ValidationRule,
+} from '../../../shared';
 import { CubeFormInstance } from './useForm';
 import { FieldWrapper } from '../FieldWrapper';
 import { Styles } from '../../../tasty';
@@ -120,6 +124,7 @@ export interface CubeFieldProps extends OptionalFieldBaseProps {
   /** Whether the field is hidden. */
   isHidden?: boolean;
   styles?: Styles;
+  labelPosition?: LabelPosition;
 }
 
 interface CubeFullFieldProps extends CubeFieldProps {
@@ -132,6 +137,7 @@ interface CubeReplaceFieldProps extends CubeFieldProps {
   onSelectionChange?: (any) => void;
   onBlur: () => void;
   onInputChange?: (any) => void;
+  labelPosition?: LabelPosition;
 }
 
 export function Field(allProps: CubeFieldProps) {
@@ -158,6 +164,7 @@ export function Field(allProps: CubeFieldProps) {
     tooltip,
     isHidden,
     styles,
+    labelPosition,
   } = props;
   const nonInput = !name;
   const fieldName: string =
@@ -229,6 +236,7 @@ export function Field(allProps: CubeFieldProps) {
         description={description}
         Component={child}
         styles={styles}
+        labelPosition={labelPosition}
       />
     );
   }
