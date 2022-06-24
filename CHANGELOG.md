@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.10.6
+
+### Patch Changes
+
+- [#127](https://github.com/cube-js/cube-ui-kit/pull/127) [`3c875d6`](https://github.com/cube-js/cube-ui-kit/commit/3c875d60e4bc41be17e12926648c9dcfd2ca858c) Thanks [@tenphi](https://github.com/tenphi)! - fix(Field): pass labelPosition prop
+
 ## 0.10.5
 
 ### Patch Changes
