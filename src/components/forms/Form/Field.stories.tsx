@@ -41,3 +41,10 @@ Styled.args = {
     width: '30x',
   },
 };
+
+export const StyledLabel = Template.bind({});
+StyledLabel.args = {
+  labelStyles: {
+    preset: 't2m',
+  },
+};
