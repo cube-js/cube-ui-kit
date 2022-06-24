@@ -37,7 +37,7 @@ WithErrorMessage.args = {
 
 export const Styled = Template.bind({});
 Styled.args = {
-  // labelPosition: 'side',
+  labelPosition: 'side',
   styles: {
     placeItems: 'end',
   },
@@ -47,12 +47,5 @@ export const StyledLabel = Template.bind({});
 StyledLabel.args = {
   labelStyles: {
     preset: 't2m',
-  },
-};
-
-export const StyledLabel = Template.bind({});
-StyledLabel.args = {
-  labelStyles: {
-    preset: 't1',
   },
 };
