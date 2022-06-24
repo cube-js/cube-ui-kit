@@ -53,6 +53,6 @@ StyledLabel.args = {
 export const StyledLabel = Template.bind({});
 StyledLabel.args = {
   labelStyles: {
-    preset: 't2m',
+    preset: 't1',
   },
 };
