@@ -616,18 +616,13 @@ export function extractStyles(
 
   Object.keys(props).forEach((prop) => {
     const propName = propMap ? propMap[prop] || prop : prop;
+    const isPropExist = prop in props;
     const value = props[prop];
 
     if (ignoreList && ignoreList.includes(prop)) {
       // do nothing
-    } else if (styleList.includes(propName)) {
-      // If value is not nullish then map it to the styles
-      if (value != null && value !== false) {
-        styles[propName] = value;
-        // If value is nullish then erase the default value of the style
-      } else if (propName in styles) {
-        delete styles[propName];
-      }
+    } else if (styleList.includes(propName) && isPropExist) {
+      styles[propName] = value;
     }
   }, {});
 

@@ -1,6 +1,7 @@
 import {
   applyStates,
   computeState,
+  extractStyles,
   replaceStateValues,
   styleMapToStyleMapStateList,
 } from './styles';
@@ -371,6 +372,37 @@ describe('styleMapToStyleMapStateList', () => {
             value: { one: 'one' },
           },
         ],
+      },
+    ]);
+  });
+});
+
+describe('extractStyles', () => {
+  function checkExtraction(list) {
+    list.forEach((obj, i) => {
+      it(`to list ${i}`, () => {
+        // @ts-ignore
+        expect(extractStyles(...obj.input)).toEqual(obj.output);
+      });
+    });
+  }
+
+  describe('Should extract styles from props', () => {
+    checkExtraction([
+      {
+        input: [
+          {
+            fill: '#black',
+            border: false,
+            styles: { fill: '#clear', border: true, color: '#dark' },
+          },
+          ['fill', 'border'],
+        ],
+        output: {
+          fill: '#black',
+          border: false,
+          color: '#dark',
+        },
       },
     ]);
   });

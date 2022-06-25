@@ -25,13 +25,17 @@ const FieldElement = tasty({
       '': '1x',
       'has-sider': '@(column-gap, 1x)',
     },
-    placeItems: 'baseline stretch',
+    placeItems: 'start stretch',
 
     LabelArea: {
       display: 'block',
       width: {
         '': 'initial',
         'has-sider': '@label-width',
+      },
+      padding: {
+        '': 'initial',
+        'has-sider': '1.25x top',
       },
     },
 
