@@ -2755,7 +2755,7 @@
     "@react-types/listbox" "^3.2.1"
     "@react-types/shared" "^3.10.0"
 
-"@react-aria/listbox@^3.5.1":
+"@react-aria/listbox@^3.5.0", "@react-aria/listbox@^3.5.1":
   version "3.5.1"
   resolved "https://registry.yarnpkg.com/@react-aria/listbox/-/listbox-3.5.1.tgz#feaa0c59db98c2d7068df674c159bce113c8be49"
   integrity sha512-+wZYQs1M+hrLB8UKPV9aOOhyFa0dC/HrG8ET6uE0nVzYZGcfsR1oDyHCDjB74QCYzmmyTqbzcDruRapheAuXXA==
