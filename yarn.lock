@@ -3428,6 +3428,13 @@
   dependencies:
     "@react-types/shared" "^3.10.1"
 
+"@react-types/combobox@^3.5.0":
+  version "3.5.1"
+  resolved "https://registry.yarnpkg.com/@react-types/combobox/-/combobox-3.5.1.tgz#6a3af5b688334e53e516935486e55dc38495f4ea"
+  integrity sha512-UQe59EU6fFj2kXGpss1BByMVFBbFC8MhJWfMqvDR1l+UlhE+lmGPQjASmh2eKQXSmBdbd+NgOL6y8E1HRDeC2A==
+  dependencies:
+    "@react-types/shared" "^3.13.1"
+
 "@react-types/dialog@^3.3.1":
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/@react-types/dialog/-/dialog-3.3.1.tgz#eb07e3d703643f7967243d56951d58a2cf77096f"
