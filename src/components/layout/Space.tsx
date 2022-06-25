@@ -16,9 +16,9 @@ const SpaceElement = tasty({
       '': 'row',
       vertical: 'column',
     },
-    alignItems: {
-      '': 'center',
-      vertical: 'stretch',
+    placeItems: {
+      '': 'center initial',
+      vertical: 'stretch initial',
     },
   },
 });
