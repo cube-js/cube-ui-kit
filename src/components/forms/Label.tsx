@@ -63,10 +63,6 @@ export const LABEL_STYLES: Styles = {
   display: 'block',
   fontWeight: 600,
   preset: 'default',
-  padding: {
-    '': '0',
-    side: '(1x - 1bw) top',
-  },
   color: {
     '': '#dark',
     invalid: '#danger-text',
