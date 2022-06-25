@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.10.10
+
+### Patch Changes
+
+- [#140](https://github.com/cube-js/cube-ui-kit/pull/140) [`2b12419`](https://github.com/cube-js/cube-ui-kit/commit/2b12419446e001eb69d923ba0ec4523a87999452) Thanks [@tenphi](https://github.com/tenphi)! - fix(Space): items alignment
+
 ## 0.10.9
 
 ### Patch Changes
