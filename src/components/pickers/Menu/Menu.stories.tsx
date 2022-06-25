@@ -70,7 +70,7 @@ export const Default = ({ ...props }) => {
       <Space
         gap="10x"
         placeContent="start start"
-        alignItems="start"
+        placeItems="start"
         height="400px"
       >
         {menu}
