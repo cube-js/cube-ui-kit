@@ -1,5 +1,12 @@
 # @cube-dev/ui-kit
 
+## 0.10.9
+
+### Patch Changes
+
+- [#138](https://github.com/cube-js/cube-ui-kit/pull/138) [`e7861d3`](https://github.com/cube-js/cube-ui-kit/commit/e7861d33fd480439a9bbbab3a1a0659ec3af8422) Thanks [@tenphi](https://github.com/tenphi)! - Fix extractStyles() logic.
+  Fix label position inside a field.
+
 ## 0.10.8
 
 ### Patch Changes
