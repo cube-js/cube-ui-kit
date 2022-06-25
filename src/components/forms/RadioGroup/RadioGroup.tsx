@@ -42,7 +42,10 @@ const RadioGroupElement = tasty({
       '': '1x',
       horizontal: '1x 2x',
     },
-    padding: '1.5x 0',
+    padding: {
+      '': 0,
+      'inside-form & side-label': '1.5x 0',
+    },
   },
 });
 
@@ -69,6 +72,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
     isHidden,
     styles,
     groupStyles,
+    insideForm,
     ...otherProps
   } = props;
   let domRef = useDOMRef(ref);
@@ -84,6 +88,8 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
       styles={groupStyles}
       mods={{
         horizontal: orientation === 'horizontal',
+        'inside-form': insideForm,
+        'side-label': labelPosition === 'side',
       }}
     >
       <FormContext.Provider
