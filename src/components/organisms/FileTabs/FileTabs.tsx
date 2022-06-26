@@ -14,7 +14,6 @@ import { Space } from '../../layout/Space';
 import { CubeFlexProps, Flex } from '../../layout/Flex';
 import { Styles, tasty } from '../../../tasty';
 import styled from 'styled-components';
-import { Flow } from '../../layout/Flow';
 import { Button } from '../../actions';
 
 interface TabData {
