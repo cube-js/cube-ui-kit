@@ -15,6 +15,7 @@ import { CubeFlexProps, Flex } from '../../layout/Flex';
 import { Styles, tasty } from '../../../tasty';
 import styled from 'styled-components';
 import { Flow } from '../../layout/Flow';
+import { Button } from '../../actions';
 
 interface TabData {
   id: string | number;
@@ -70,17 +71,16 @@ const StyledTabsPanelElement = styled(TabsPanelElement)`
   }
 `;
 
-const TabsContainerElement = tasty(Flow, {
+const TabsContainerElement = tasty(Flex, {
   styles: {
     flow: 'column',
     height: 'max 100%',
     width: 'max 100%',
+    position: 'relative',
   },
 });
 
 const StyledTabsContainerElement = styled(TabsContainerElement)`
-  position: relative;
-
   &::before {
     content: '';
     display: block;
@@ -126,12 +126,12 @@ const StyledTabsContainerElement = styled(TabsContainerElement)`
 `;
 
 const DirtyBadge = tasty({
+  element: 'DirtyBadge',
   styles: {
     position: 'absolute',
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    transition: 'all .2s linear',
     width: '1x',
     height: '1x',
     fill: '#dark.30',
@@ -167,49 +167,42 @@ const TabElement = tasty(Action, {
       '': 'inset #purple-03.0',
       'focused & focus-visible': 'inset #purple-03',
     },
+    transform: {
+      '': 'translate(0, 0)',
+      '[disabled]': 'translate(0, 1bw)',
+    },
+    transition: 'theme 0.2s',
+    margin: '1bw bottom',
+
+    DirtyBadge: {
+      opacity: {
+        '': 1,
+        'dirty & hovered': 0,
+      },
+      pointerEvents: {
+        '': 'auto',
+        'dirty & hovered': 'none',
+      },
+    },
+
+    CloseButton: {
+      opacity: {
+        '': 0,
+        '!dirty | hovered': 1,
+      },
+    },
   },
 });
 
-const StyledTabElement = styled(TabElement)`
-  margin-bottom: var(--border-width);
-  transform: translate(0, 0);
-  transition: color 0.2s linear, background-color 0.2s linear;
-
-  &[disabled] {
-    transform: translate(0, var(--border-width));
-  }
-
-  &.file-tab--dirty {
-    &:hover {
-      & .file-tab-dirty-badge {
-        opacity: 0;
-        pointer-events: none;
-      }
-
-      & .file-tab-close {
-        opacity: 1;
-      }
-    }
-
-    &:not(:hover) {
-      & .file-tab-dirty-badge {
-        opacity: 1;
-      }
-
-      & .file-tab-close {
-        opacity: 0;
-      }
-    }
-  }
-`;
-
-const CloseButton = tasty({
+const CloseButton = tasty(Button, {
+  element: 'CloseButton',
+  type: 'neutral',
   styles: {
     color: {
       '': '#dark.50',
       hovered: '#dark',
     },
-    padding: '0 .25x',
+    padding: '.25x',
     outline: {
       '': '#purple-03.0',
       'focused & focus-visible': '#purple-03',
@@ -239,7 +232,9 @@ const Tab = ({
 }: FileTabProps) => {
   return (
     <TabElement
-      className={isDirty ? 'file-tab--dirty' : ''}
+      mods={{
+        dirty: isDirty,
+      }}
       isDisabled={isDisabled}
       {...props}
     >
@@ -248,13 +243,13 @@ const Tab = ({
         {(isClosable || isDirty) && (
           <Flex placeItems="center" style={{ position: 'relative' }}>
             {isClosable ? (
-              <CloseButton onPress={onClose} className="file-tab-close">
+              <CloseButton onPress={onClose}>
                 <CloseOutlined />
               </CloseButton>
             ) : (
               <div></div>
             )}
-            {isDirty ? <DirtyBadge className="file-tab-dirty-badge" /> : null}
+            {isDirty ? <DirtyBadge /> : null}
           </Flex>
         )}
       </Space>
