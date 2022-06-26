@@ -79,7 +79,7 @@
     "@react-spectrum/utils": "^3.6.3",
     "@react-stately/checkbox": "^3.1.0",
     "@react-stately/collections": "^3.3.4",
-    "@react-stately/combobox": "^3.0.1",
+    "@react-stately/combobox": "^3.1.0",
     "@react-stately/numberfield": "^3.0.2",
     "@react-stately/overlays": "^3.1.6",
     "@react-stately/radio": "^3.3.2",
