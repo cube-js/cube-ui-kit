@@ -16,7 +16,8 @@ import {
 } from '../../../shared';
 import { CubeFormInstance } from './useForm';
 import { FieldWrapper } from '../FieldWrapper';
-import { Styles, warn } from '../../../tasty';
+import { warn } from '../../../utils/warnings';
+import { Styles } from '../../../tasty';
 
 const ID_MAP = {};
 
