@@ -123,6 +123,7 @@ const TOKENS = {
   // h6 (unused)
   'h6-font-size': '14px',
   'h6-line-height': '20px',
+  'h6-letter-spacing': '0',
   'h6-font-weight': '700',
   // t1
   't1-font-size': '18px',
