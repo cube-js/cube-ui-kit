@@ -3,6 +3,7 @@ import { tasty } from './tasty';
 import { Button } from '../components/actions';
 import { Block } from '../components/Block';
 import { CONTAINER_STYLES } from './styles/list';
+import { Card } from '../components/content/Card/Card';
 
 describe('tasty() API', () => {
   beforeEach(() => {

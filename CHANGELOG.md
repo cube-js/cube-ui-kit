@@ -1,5 +1,18 @@
 # @cube-dev/ui-kit
 
+## 0.10.10
+
+### Patch Changes
+
+- [#140](https://github.com/cube-js/cube-ui-kit/pull/140) [`2b12419`](https://github.com/cube-js/cube-ui-kit/commit/2b12419446e001eb69d923ba0ec4523a87999452) Thanks [@tenphi](https://github.com/tenphi)! - fix(Space): items alignment
+
+## 0.10.9
+
+### Patch Changes
+
+- [#138](https://github.com/cube-js/cube-ui-kit/pull/138) [`e7861d3`](https://github.com/cube-js/cube-ui-kit/commit/e7861d33fd480439a9bbbab3a1a0659ec3af8422) Thanks [@tenphi](https://github.com/tenphi)! - Fix extractStyles() logic.
+  Fix label position inside a field.
+
 ## 0.10.8
 
 ### Patch Changes

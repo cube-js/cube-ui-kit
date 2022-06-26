@@ -2755,7 +2755,7 @@
     "@react-types/listbox" "^3.2.1"
     "@react-types/shared" "^3.10.0"
 
-"@react-aria/listbox@^3.5.1":
+"@react-aria/listbox@^3.5.0", "@react-aria/listbox@^3.5.1":
   version "3.5.1"
   resolved "https://registry.yarnpkg.com/@react-aria/listbox/-/listbox-3.5.1.tgz#feaa0c59db98c2d7068df674c159bce113c8be49"
   integrity sha512-+wZYQs1M+hrLB8UKPV9aOOhyFa0dC/HrG8ET6uE0nVzYZGcfsR1oDyHCDjB74QCYzmmyTqbzcDruRapheAuXXA==
@@ -3129,6 +3129,16 @@
     "@react-stately/utils" "^3.4.1"
     "@react-types/checkbox" "^3.2.5"
 
+"@react-stately/checkbox@^3.1.0":
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/@react-stately/checkbox/-/checkbox-3.1.1.tgz#b104af8e0454c656b322bcfb24b6aa5decd96517"
+  integrity sha512-IxqZ6NYe3GV4RZ4ZGBJLuDuVg8/jaWj9eT2QW9YauFDzZvlFFP5tt6w+easWg7X2wG17wHo6VKoIxnKmY82K4A==
+  dependencies:
+    "@babel/runtime" "^7.6.2"
+    "@react-stately/toggle" "^3.3.1"
+    "@react-stately/utils" "^3.5.0"
+    "@react-types/checkbox" "^3.3.1"
+
 "@react-stately/collections@^3.3.3", "@react-stately/collections@^3.3.4", "@react-stately/collections@^3.3.7":
   version "3.3.7"
   resolved "https://registry.yarnpkg.com/@react-stately/collections/-/collections-3.3.7.tgz#d548ac4f352aefa9d89f6f4b800f4810bef79eb3"
@@ -3341,6 +3351,16 @@
     "@react-types/checkbox" "^3.2.5"
     "@react-types/shared" "^3.11.1"
 
+"@react-stately/toggle@^3.3.1":
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/@react-stately/toggle/-/toggle-3.3.1.tgz#ad09ff0886c8c14ac479047423b01932f4ea04b2"
+  integrity sha512-JIOPfeZ46vfQqfBygCmyIRL0KJwdHdVQ5PSii5YM0qs/kzaHm3SLGf/iiGjwcRCOsnL50zN9U5YNDtRAEbsncg==
+  dependencies:
+    "@babel/runtime" "^7.6.2"
+    "@react-stately/utils" "^3.5.0"
+    "@react-types/checkbox" "^3.3.1"
+    "@react-types/shared" "^3.13.1"
+
 "@react-stately/tooltip@^3.0.5":
   version "3.0.5"
   resolved "https://registry.yarnpkg.com/@react-stately/tooltip/-/tooltip-3.0.5.tgz#0cb716791ef3242acd810794162d651b1c47a328"
@@ -3433,6 +3453,13 @@
   integrity sha512-QP1+g/Fu3EageMGI7doWT6t4J/pFKOHoWoQIj3AXrFx6pljX8pA9eRhgTznF4uT+4e34TK/xDoEssPAWq24s2A==
   dependencies:
     "@react-types/shared" "^3.11.1"
+
+"@react-types/checkbox@^3.3.1":
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/@react-types/checkbox/-/checkbox-3.3.1.tgz#2d088fa84e89ef47ad7c80c1f990517d3b24db7c"
+  integrity sha512-6PlyvfqisuObrltmJdBx88t143NaQ/ibkvuDdsEaiMlJbHKU4m0dbxaYNhGNQ0Jm4AK/x9Rig0tbpMeXjBXaDA==
+  dependencies:
+    "@react-types/shared" "^3.13.1"
 
 "@react-types/combobox@^3.0.1", "@react-types/combobox@^3.2.1":
   version "3.2.1"

@@ -16,7 +16,7 @@ import {
 } from '../../../shared';
 import { CubeFormInstance } from './useForm';
 import { FieldWrapper } from '../FieldWrapper';
-import { Styles } from '../../../tasty';
+import { Styles, warn } from '../../../tasty';
 
 const ID_MAP = {};
 
@@ -244,14 +244,10 @@ export function Field(allProps: CubeFieldProps) {
     );
   }
 
-  if (!fieldName) {
-    console.error('invalid form name:', fieldName);
-
-    return null;
-  }
-
   if (!form) {
-    console.error('form field requires declared form instance');
+    warn(
+      'Form Field requires declared form instance if field name is specified',
+    );
 
     return null;
   }
