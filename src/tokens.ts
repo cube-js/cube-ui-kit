@@ -207,7 +207,8 @@ const TOKENS = {
   'strong-letter-spacing': 'inherit',
   'strong-font-family': 'inherit',
   'strong-font-style': 'inherit',
-  'strong-font-weight': 'var(--bold-font-weight, var(--default-font-weight))',
+  'strong-font-weight':
+    'var(--bold-font-weight, var(--default-bold-font-weight, 600))',
   // em
   'em-font-size': 'inherit',
   'em-line-height': 'inherit',
