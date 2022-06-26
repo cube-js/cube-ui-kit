@@ -177,18 +177,18 @@ const TabElement = tasty(Action, {
     DirtyBadge: {
       opacity: {
         '': 1,
-        'dirty & hovered': 0,
+        'dirty & :hover': 0,
       },
       pointerEvents: {
         '': 'auto',
-        'dirty & hovered': 'none',
+        'dirty & :hover': 'none',
       },
     },
 
     CloseButton: {
       opacity: {
         '': 0,
-        '!dirty | hovered': 1,
+        '!dirty | :hover': 1,
       },
     },
   },
