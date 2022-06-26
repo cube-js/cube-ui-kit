@@ -3,7 +3,6 @@ import { tasty } from './tasty';
 import { Button } from '../components/actions';
 import { Block } from '../components/Block';
 import { CONTAINER_STYLES } from './styles/list';
-import { Card } from '../components/content/Card/Card';
 
 describe('tasty() API', () => {
   beforeEach(() => {
@@ -121,6 +120,34 @@ describe('tasty() API', () => {
     });
 
     const { container } = render(<Block border={true} />);
+
+    expect(container).toMatchSnapshot();
+  });
+
+  it('should allow multiple wrapping', () => {
+    const Block = tasty({
+      styles: {
+        position: 'relative',
+        padding: '1x top',
+        border: true,
+      },
+      styleProps: CONTAINER_STYLES,
+    });
+    const SecondBlock = tasty(Block, {
+      styles: {
+        border: false,
+      },
+    });
+    const ThirdBlock = tasty(SecondBlock, {
+      styles: {
+        position: 'static',
+        padding: '2x top',
+        color: '#white',
+        border: '#black',
+      },
+    });
+
+    const { container } = render(<ThirdBlock display="flex" />);
 
     expect(container).toMatchSnapshot();
   });

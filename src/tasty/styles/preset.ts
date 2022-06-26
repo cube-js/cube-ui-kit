@@ -1,4 +1,21 @@
 import { parseStyle } from '../utils/styles';
+import { Styles } from './types';
+
+function setCSSValue(
+  styles: Styles,
+  styleName: string,
+  presetName: string,
+  isPropOnly = false,
+) {
+  styles[`--${styleName}`] =
+    presetName === 'inherit'
+      ? 'inherit'
+      : `var(--${presetName}-${styleName}, var(--default-${styleName}, inherit))`;
+
+  if (!isPropOnly) {
+    styles[styleName] = styles[`--${styleName}`];
+  }
+}
 
 export function presetStyle({
   preset,
@@ -18,49 +35,37 @@ export function presetStyle({
 
   const name = mods[0] || 'default';
 
-  const styles: Record<string, any> = {};
+  const styles: Styles = {};
 
   if (!fontSize) {
-    styles['font-size'] = styles[
-      '--font-size'
-    ] = `var(--${name}-font-size, var(--initial-font-size, inherit))`;
+    setCSSValue(styles, 'font-size', name);
   }
 
   if (!lineHeight) {
-    styles['line-height'] = styles[
-      '--line-height'
-    ] = `var(--${name}-line-height, var(--initial-line-height, 1.5))`;
+    setCSSValue(styles, 'line-height', name);
   }
 
   if (!letterSpacing) {
-    styles['letter-spacing'] = styles[
-      '--letter-spacing'
-    ] = `var(--${name}-letter-spacing, var(--initial-letter-spacing, 0))`;
+    setCSSValue(styles, 'letter-spacing', name);
   }
 
   if (!fontWeight) {
-    styles['font-weight'] = styles[
-      '--font-weight'
-    ] = `var(--${name}-font-weight, var(--initial-font-weight, 400))`;
+    setCSSValue(styles, 'font-weight', name);
   }
 
   if (!fontStyle) {
-    styles['font-style'] = styles[
-      '--font-style'
-    ] = `var(--${name}-font-style, var(--initial-font-style, normal))`;
+    setCSSValue(styles, 'font-style', name);
   }
 
   if (!textTransform) {
-    styles['text-transform'] = styles[
-      '--text-transform'
-    ] = `var(--${name}-text-transform, var(--initial-text-transform, none))`;
+    setCSSValue(styles, 'text-transform', name);
   }
 
   if (!font) {
-    styles['font-family'] = styles[
-      '--font-family'
-    ] = `var(--${name}-font-family, var(--font))`;
+    setCSSValue(styles, 'font-family', name);
   }
+
+  setCSSValue(styles, 'bold-font-weight', name, true);
 
   return styles;
 }

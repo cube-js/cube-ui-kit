@@ -84,6 +84,10 @@ export interface StylesInterface
    */
   styledScrollbar?: boolean;
   /**
+   * Set font weight for bold texts.
+   */
+  boldFontWeight?: number;
+  /**
    * Whether the element is hidden using `display: none`.
    */
   hide?: boolean;
