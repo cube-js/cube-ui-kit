@@ -10,7 +10,7 @@ function setCSSValue(
   styles[`--${styleName}`] =
     presetName === 'inherit'
       ? 'inherit'
-      : `var(--${presetName}-${styleName}, var(--initial-${styleName}, inherit))`;
+      : `var(--${presetName}-${styleName}, var(--default-${styleName}, inherit))`;
 
   if (!isPropOnly) {
     styles[styleName] = styles[`--${styleName}`];
