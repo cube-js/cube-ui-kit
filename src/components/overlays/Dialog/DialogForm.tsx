@@ -1,4 +1,4 @@
-import { useImperativeHandle } from 'react';
+import { ReactNode, useImperativeHandle } from 'react';
 import { Dialog, CubeDialogProps } from './Dialog';
 import { Title } from '../../content/Title';
 import { CubeFormProps, Form } from '../../forms/Form/Form';
@@ -11,8 +11,8 @@ import { Header } from '../../content/Header';
 import { useDialogContext } from './context';
 
 export interface CubeDialogFormProps
-  extends CubeDialogProps,
-    Omit<CubeFormProps, 'role'> {
+  extends Omit<CubeDialogProps, 'children'>,
+    Omit<CubeFormProps, 'role' | 'children'> {
   /** Whether the submit button has a `danger` theme */
   danger?: boolean;
   /** Properties for submit button. Use `label` to change text. */
@@ -25,6 +25,7 @@ export interface CubeDialogFormProps
   noActions?: boolean;
   /** The title of the dialog */
   title?: string;
+  children?: ReactNode | ((onDismiss: () => void) => ReactNode);
 }
 
 export interface CubeDialogFormRef {

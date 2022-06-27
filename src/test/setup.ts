@@ -5,6 +5,7 @@ import { configure } from '@testing-library/react';
 import { config } from 'react-transition-group';
 import { AbortController } from 'node-abort-controller';
 
+// @ts-expect-error
 global.AbortController = AbortController;
 config.disabled = true;
 

@@ -58,7 +58,7 @@ function Overlay(props: CubeOverlayProps, ref) {
     </Provider>
   );
 
-  return createPortal(contents, container || root || document.body);
+  return <>{createPortal(contents, container || root || document.body)}</>;
 }
 
 let _Overlay = forwardRef(Overlay);

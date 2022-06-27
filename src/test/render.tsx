@@ -5,6 +5,6 @@ import { Root } from '../components/Root';
 export function renderWithRoot(
   ui: React.ReactElement,
   options?: Omit<RenderOptions, 'queries' | 'wrapper'>,
-) {
+): ReturnType<typeof render> {
   return render(ui, { ...options, wrapper: Root });
 }
