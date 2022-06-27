@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.10.12
+
+### Patch Changes
+
+- [#149](https://github.com/cube-js/cube-ui-kit/pull/149) [`3ea195c`](https://github.com/cube-js/cube-ui-kit/commit/3ea195c713f880e7d4e45e19b72cc6f4a1b4d5b4) Thanks [@tenphi](https://github.com/tenphi)! - fix(Combobox): error on trigger
+
 ## 0.10.11
 
 ### Patch Changes
