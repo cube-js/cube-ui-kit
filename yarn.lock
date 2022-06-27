@@ -3534,7 +3534,7 @@
     "@react-types/overlays" "^3.5.4"
     "@react-types/shared" "^3.11.2"
 
-"@react-types/menu@^3.6.1":
+"@react-types/menu@^3.6.0", "@react-types/menu@^3.6.1":
   version "3.6.1"
   resolved "https://registry.yarnpkg.com/@react-types/menu/-/menu-3.6.1.tgz#971b265ec2db15b306ae1c7579cd115387ba699e"
   integrity sha512-W8ClaYd0t/he5tjg2l/E4bPqUFov041MYKGuTIOTL9dfMsB4eHeV7zmXKA2Li8DJL+E7CkTuaYqTJcP9pcfTzg==
