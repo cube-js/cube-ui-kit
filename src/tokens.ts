@@ -51,7 +51,7 @@ const TOKENS = {
   'minor-color': color('dark', 0.65),
   'success-bg-color': 'rgba(41, 190, 110, .1)',
   'note-bg-color': color('note', 0.1),
-  'note-text-color': color('dark', 0.65),
+  'note-text-color': color('note', 0.65),
   'danger-bg-color': color('danger', 0.05),
   'danger-bg-hover-color': color('danger', 0.1),
   'primary-1': color('purple', 0.9),

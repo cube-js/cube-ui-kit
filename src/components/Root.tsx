@@ -14,6 +14,7 @@ import { ModalProvider } from '@react-aria/overlays';
 import { StyleSheetManager } from 'styled-components';
 import { TOKENS } from '../tokens';
 import { AlertDialogApiProvider } from './overlays/AlertDialog';
+import { NotificationsProvider } from './overlays/NewNotifications';
 
 const RootElement = tasty({
   id: 'cube-ui-kit-root',
@@ -87,7 +88,9 @@ export const Root = (allProps: CubeRootProps) => {
           />
           <ModalProvider>
             <PortalProvider value={ref}>
-              <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
+              <NotificationsProvider>
+                <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
+              </NotificationsProvider>
             </PortalProvider>
           </ModalProvider>
         </RootElement>
