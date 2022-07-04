@@ -11,7 +11,9 @@ import { Block } from '../../Block';
 import { Space } from '../../layout/Space';
 import { CubeFlexProps, Flex } from '../../layout/Flex';
 import { Button, CubeButtonProps } from '../../actions';
-import { Styles } from '../../../tasty';
+import { Styles, tasty } from '../../../tasty';
+import styled from 'styled-components';
+import { Flow } from '../../layout/Flow';
 
 export interface CubeTabData {
   id: string | number;
@@ -36,43 +38,53 @@ const LegacyTabsContext = createContext<LegacyCubeTabsContextValue>({
   changeTab() {},
 });
 
-const TAB_STYLES = {
-  color: {
-    '': '#dark',
-    'selected, hovered': '#purple-text',
-    disabled: '#dark.50',
+const TabElement = tasty(Button, {
+  type: 'tab',
+  styles: {
+    color: {
+      '': '#dark',
+      'selected, hovered': '#purple-text',
+      disabled: '#dark.50',
+    },
+    fill: '#purple.0',
+    textAlign: 'center',
+    fontWeight: 600,
+    padding: '(1x - 1px) (1x - 1px)',
+    radius: '1r 1r 0 0',
+    border: 0,
   },
-  fill: '#purple.0',
-  textAlign: 'center',
-  fontWeight: 600,
-  padding: '(1x - 1px) (1x - 1px)',
-  radius: '1r 1r 0 0',
-  border: 0,
-} as const;
+});
 
-const TAB_CSS = `
-&::before {
-  --outline-size: 0px;
-  content: '';
-  display: block;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  box-shadow: inset 0 calc(-1 * var(--outline-size)) 0 var(--purple-color);
-  pointer-events: none;
-  transition: opacity linear .2s, box-shadow linear .2s;
-}
-&[data-is-selected]::before {
-  --outline-size: 2px;
-}
-&:not([data-is-selected]):not([disabled])[data-is-hovered]::before {
-  --outline-size: 1px;
-}
+const StyledTabElement = styled(TabElement)`
+  &::before {
+    --outline-size: 0px;
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    box-shadow: inset 0 calc(-1 * var(--outline-size)) 0 var(--purple-color);
+    pointer-events: none;
+    transition: opacity linear 0.2s, box-shadow linear 0.2s;
+  }
+  &[data-is-selected]::before {
+    --outline-size: 2px;
+  }
+  &:not([data-is-selected]):not([disabled])[data-is-hovered]::before {
+    --outline-size: 1px;
+  }
 `;
 
-const TABS_PANEL_CSS = `
+const TabsPanelElement = tasty(Space, {
+  styles: {
+    gap: '1x',
+    flexShrink: 0,
+  },
+});
+
+const StyledTabsPanelElement = styled(TabsPanelElement)`
   position: relative;
   overflow: auto hidden;
   top: 1px;
@@ -98,7 +110,15 @@ const TABS_PANEL_CSS = `
   }
 `;
 
-const TABS_CONTAINER_CSS = `
+const TabsContainerElement = tasty(Flow, {
+  styles: {
+    flow: 'column',
+    height: 'max 100%',
+    width: 'max 100%',
+  },
+});
+
+const StyledTabsContainerElement = styled(TabsContainerElement)`
   position: relative;
 
   &::before {
@@ -111,7 +131,7 @@ const TABS_CONTAINER_CSS = `
     pointer-events: none;
     width: 32px;
     height: 37px;
-    transition: all .15s linear;
+    transition: all 0.15s linear;
     background-image: linear-gradient(
       to left,
       rgba(255, 255, 255, 0),
@@ -130,7 +150,7 @@ const TABS_CONTAINER_CSS = `
     width: 32px;
     height: 37px;
     pointer-events: none;
-    transition: all .15s linear;
+    transition: all 0.15s linear;
     background-image: linear-gradient(
       to right,
       rgba(255, 255, 255, 0),
@@ -139,7 +159,8 @@ const TABS_CONTAINER_CSS = `
     z-index: 10;
   }
 
-  &[data-is-left-fade]::before, &[data-is-right-fade]::after {
+  &[data-is-left-fade]::before,
+  &[data-is-right-fade]::after {
     opacity: 1;
   }
 `;
@@ -159,14 +180,7 @@ const Tab = ({
   ...props
 }: Omit<LegacyCubeTabProps, 'id'>) => {
   return (
-    <Button
-      type="tab"
-      styles={TAB_STYLES}
-      css={TAB_CSS}
-      isSelected={isSelected}
-      isHidden={isHidden}
-      {...props}
-    />
+    <StyledTabElement isSelected={isSelected} isHidden={isHidden} {...props} />
   );
 };
 
@@ -313,13 +327,9 @@ export function LegacyTabs({
   }
 
   return (
-    <Flex
-      flow="column"
-      height="max 100%"
-      width="max 100%"
+    <StyledTabsContainerElement
       data-is-left-fade={leftFade || null}
       data-is-right-fade={rightFade || null}
-      css={TABS_CONTAINER_CSS}
       {...props}
     >
       <LegacyTabsContext.Provider
@@ -332,7 +342,7 @@ export function LegacyTabs({
         }}
       >
         <Space gap=".5x" placeContent="center space-between">
-          <Space ref={tabsRef} gap="1x" flexShrink={0} css={TABS_PANEL_CSS}>
+          <StyledTabsPanelElement ref={tabsRef}>
             {tabs.map((tab) => {
               return (
                 <Tab
@@ -347,7 +357,7 @@ export function LegacyTabs({
                 </Tab>
               );
             })}
-          </Space>
+          </StyledTabsPanelElement>
           {extra}
         </Space>
         <Flex
@@ -358,7 +368,7 @@ export function LegacyTabs({
           {children}
         </Flex>
       </LegacyTabsContext.Provider>
-    </Flex>
+    </StyledTabsContainerElement>
   );
 }
 

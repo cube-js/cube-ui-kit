@@ -9,6 +9,7 @@ import { DialogTrigger } from '../Dialog/DialogTrigger';
 import { Button } from '../../actions';
 import { DialogProps } from './types';
 import { Paragraph } from '../../content/Paragraph';
+import { wait } from '../../../test';
 
 export default {
   title: 'Overlays/AlertDialog',
@@ -109,5 +110,6 @@ UsingApiWithCancel.play = async ({ canvasElement }) => {
   await userEvent.click(getByRole('button'));
   await expect(queryByRole('alertdialog')).toBeInTheDocument();
   await userEvent.click(getByTestId('CancelToken'));
+  await wait(300);
   await expect(queryByRole('alertdialog')).not.toBeInTheDocument();
 };

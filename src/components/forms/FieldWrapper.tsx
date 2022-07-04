@@ -8,12 +8,12 @@ import {
   NecessityIndicator,
   ValidationState,
 } from '../../shared';
-import { Styles, tasty } from '../../tasty';
+import { Props, Styles, tasty } from '../../tasty';
 import { TooltipProvider } from '../overlays/Tooltip/TooltipProvider';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { wrapNodeIfPlain } from '../../utils/react';
 
-const RawField = tasty({
+const FieldElement = tasty({
   qa: 'Field',
   styles: {
     display: 'grid',
@@ -25,13 +25,17 @@ const RawField = tasty({
       '': '1x',
       'has-sider': '@(column-gap, 1x)',
     },
-    placeItems: 'baseline stretch',
+    placeItems: 'start stretch',
 
     LabelArea: {
       display: 'block',
       width: {
         '': 'initial',
         'has-sider': '@label-width',
+      },
+      padding: {
+        '': 'initial',
+        'has-sider': '1.25x top',
       },
     },
 
@@ -46,7 +50,7 @@ const RawField = tasty({
   },
 });
 
-const RawMessage = tasty({
+const MessageElement = tasty({
   qa: 'Field_Message',
   styles: {
     preset: 'default',
@@ -73,8 +77,8 @@ export type CubeFieldWrapperProps = {
   /** Whether the input is disabled */
   isDisabled?: boolean;
   necessityIndicator?: NecessityIndicator;
-  labelProps?: any;
-  fieldProps?: any;
+  labelProps?: Props;
+  fieldProps?: Props;
   /** Custom message for the field. It will be placed below the label and the input */
   message?: string | ReactNode;
   /** Styles for the message */
@@ -161,7 +165,7 @@ function FieldWrapper(props, ref) {
   };
 
   return (
-    <RawField
+    <FieldElement
       as={as || 'div'}
       ref={ref}
       mods={mods}
@@ -178,16 +182,16 @@ function FieldWrapper(props, ref) {
       <div data-element="InputArea">
         {Component}
         {message && !isDisabled && (
-          <RawMessage
+          <MessageElement
             mods={mods}
             styles={messageStyles}
             role={validationState === 'invalid' ? 'alert' : undefined}
           >
             {message}
-          </RawMessage>
+          </MessageElement>
         )}
       </div>
-    </RawField>
+    </FieldElement>
   );
 }
 

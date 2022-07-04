@@ -1,6 +1,7 @@
 import { DollarCircleOutlined } from '@ant-design/icons';
 import { Button } from './Button';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Space } from '../../layout/Space';
 
 export default {
   title: 'Actions/Button',
@@ -53,44 +54,127 @@ const Template = ({ icon, label, onClick, ...props }) => (
   </Button>
 );
 
+const TemplateStates = ({ label, mods, ...props }) => (
+  <Space>
+    <Button
+      {...props}
+      mods={{
+        hovered: false,
+        pressed: false,
+        focused: false,
+        disabled: false,
+      }}
+    >
+      {label || 'Default'}
+    </Button>
+    <Button
+      {...props}
+      mods={{
+        hovered: true,
+        pressed: false,
+        focused: false,
+        disabled: false,
+      }}
+    >
+      {label || 'Hovered'}
+    </Button>
+    <Button
+      {...props}
+      mods={{
+        hovered: false,
+        pressed: true,
+        focused: false,
+        disabled: false,
+      }}
+    >
+      {label || 'Pressed'}
+    </Button>
+    <Button
+      {...props}
+      mods={{
+        hovered: false,
+        pressed: false,
+        focused: true,
+        disabled: false,
+      }}
+    >
+      {label || 'Focused'}
+    </Button>
+    <Button
+      {...props}
+      isDisabled
+      mods={{
+        hovered: false,
+        pressed: false,
+        focused: false,
+      }}
+    >
+      {label || 'Disabled'}
+    </Button>
+  </Space>
+);
+
 export const Default = Template.bind({});
 Default.args = {
   label: 'Button',
 };
 
-export const Primary = Template.bind({});
-Primary.args = {
+export const SecondaryStates = TemplateStates.bind({});
+SecondaryStates.args = {
+  type: 'default',
+};
+
+export const PrimaryStates = TemplateStates.bind({});
+PrimaryStates.args = {
   type: 'primary',
-  label: 'Button',
 };
 
-export const Outline = Template.bind({});
-Outline.args = {
+export const OutlineStates = TemplateStates.bind({});
+OutlineStates.args = {
   type: 'outline',
-  label: 'Button',
 };
 
-export const Clear = Template.bind({});
-Clear.args = {
+export const ClearStates = TemplateStates.bind({});
+ClearStates.args = {
   type: 'clear',
-  label: 'Button',
 };
 
-export const Neutral = Template.bind({});
-Neutral.args = {
-  label: 'Button',
+export const NeutralStates = TemplateStates.bind({});
+NeutralStates.args = {
   type: 'neutral',
 };
 
-export const Link = Template.bind({});
-Link.args = {
-  label: 'Link',
+export const LinkStates = TemplateStates.bind({});
+LinkStates.args = {
   type: 'link',
-  selected: true,
 };
 
-export const WithIcon = Template.bind({});
-WithIcon.args = {
+export const Small = Template.bind({});
+Small.args = {
+  label: 'Button',
+  size: 'small',
+};
+
+export const Large = Template.bind({});
+Large.args = {
+  label: 'Button',
+  size: 'large',
+};
+
+export const Danger = Template.bind({});
+Danger.args = {
+  label: 'Button',
+  theme: 'danger',
+};
+
+export const IconAndText = Template.bind({});
+IconAndText.args = {
+  label: 'Button',
+  icon: true,
+};
+
+export const OnlyIcon = Template.bind({});
+OnlyIcon.args = {
   icon: true,
 };
 
@@ -98,5 +182,5 @@ export const Loading = Template.bind({});
 Loading.args = {
   icon: true,
   isLoading: true,
-  label: '',
+  label: 'Button',
 };

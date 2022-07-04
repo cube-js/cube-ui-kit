@@ -49,7 +49,7 @@ export interface CubeTextProps
   transform?: ResponsiveStyleValue<CSSProperties['textTransform']>;
 }
 
-const RawText = tasty({
+const TextElement = tasty({
   qa: 'Text',
   as: 'span',
   styles: {
@@ -84,7 +84,7 @@ const _Text = forwardRef(function Text(allProps: CubeTextProps, ref) {
   const styles = extractStyles(props, STYLE_LIST, {}, TEXT_PROP_MAP);
 
   return (
-    <RawText
+    <TextElement
       as={as || 'span'}
       qa={qa || 'Text'}
       styleName={styleName}

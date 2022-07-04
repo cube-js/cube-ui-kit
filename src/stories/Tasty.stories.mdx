@@ -12,9 +12,9 @@ import {
 } from '../index';
 import { StyledButton, GlobalStyledHeading } from './components/StyledButton';
 
-<Meta title="Styled API" />
+<Meta title="Tasty API" />
 
-# Styled API
+# Tasty API
 
 Let's look at styled API:
 
@@ -38,10 +38,6 @@ const Element = tasty({
       blue: 'blue',
     }, // use color token
   },
-  /** Default raw css of the element. */
-  css: `
-    appearance: none;
-  `,
   /** Default attributes (example) */
   role: 'article',
   /** The list of styles that can be provided by props */
@@ -82,8 +78,7 @@ const CustomElement = tasty(Element, {
 An example of styled component.
 
 ```typescript jsx
-import { styled } from '../../styled';
-import { Button } from '../../components/actions';
+import { Button, tasty } from '@cube-dev/ui-kit';
 
 const StyledButton = tasty(Button, {
   styles: {
@@ -104,7 +99,7 @@ const StyledButton = tasty(Button, {
 Use `tasty()` to define global styles for elements:
 
 ```typescript jsx
-import { tasty } from '../../styled';
+import { tasty } from '@cube-dev/ui-kit';
 
 const GlobalStyledHeading = tasty('div.myButton', {
   display: 'inline-block',

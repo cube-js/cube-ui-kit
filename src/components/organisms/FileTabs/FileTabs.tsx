@@ -13,6 +13,8 @@ import { Action, CubeActionProps } from '../../actions/Action';
 import { Space } from '../../layout/Space';
 import { CubeFlexProps, Flex } from '../../layout/Flex';
 import { Styles, tasty } from '../../../tasty';
+import styled from 'styled-components';
+import { Button } from '../../actions';
 
 interface TabData {
   id: string | number;
@@ -35,7 +37,14 @@ const FileTabsContext = createContext<FileTabContextValue>({
   setDirtyTab() {},
 });
 
-const TABS_PANEL_CSS = `
+const TabsPanelElement = tasty(Space, {
+  styles: {
+    gap: '.5x',
+    flexShrink: 0,
+  },
+});
+
+const StyledTabsPanelElement = styled(TabsPanelElement)`
   position: relative;
   overflow: auto hidden;
   top: 1px;
@@ -61,9 +70,16 @@ const TABS_PANEL_CSS = `
   }
 `;
 
-const TABS_CONTAINER_CSS = `
-  position: relative;
+const TabsContainerElement = tasty(Flex, {
+  styles: {
+    flow: 'column',
+    height: 'max 100%',
+    width: 'max 100%',
+    position: 'relative',
+  },
+});
 
+const StyledTabsContainerElement = styled(TabsContainerElement)`
   &::before {
     content: '';
     display: block;
@@ -74,7 +90,7 @@ const TABS_CONTAINER_CSS = `
     pointer-events: none;
     width: 32px;
     height: 37px;
-    transition: all .15s linear;
+    transition: all 0.15s linear;
     background-image: linear-gradient(
       to left,
       rgba(255, 255, 255, 0),
@@ -93,7 +109,7 @@ const TABS_CONTAINER_CSS = `
     width: 32px;
     height: 37px;
     pointer-events: none;
-    transition: all .15s linear;
+    transition: all 0.15s linear;
     background-image: linear-gradient(
       to right,
       rgba(255, 255, 255, 0),
@@ -102,18 +118,19 @@ const TABS_CONTAINER_CSS = `
     z-index: 10;
   }
 
-  &[data-is-left-fade]::before, &[data-is-right-fade]::after {
+  &[data-is-left-fade]::before,
+  &[data-is-right-fade]::after {
     opacity: 1;
   }
 `;
 
 const DirtyBadge = tasty({
+  element: 'DirtyBadge',
   styles: {
     position: 'absolute',
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    transition: 'all .2s linear',
     width: '1x',
     height: '1x',
     fill: '#dark.30',
@@ -121,80 +138,77 @@ const DirtyBadge = tasty({
   },
 });
 
-const TAB_STYLES: Styles = {
-  radius: '1r 1r 0 0',
-  padding: '1x 1.5x',
-  border: {
-    '': 'left top right #clear',
-    disabled: 'left top right rgb(227, 227, 233)',
-  },
-  fill: {
-    '': '#dark.04',
-    hovered: '#dark.08',
-    'disabled, disabled & hover': '#white',
-  },
-  color: {
-    '': '#dark.75',
-    'disabled, hovered, hovered & disabled': '#dark',
-  },
-  cursor: {
-    '': 'pointer',
-    disabled: 'default',
-  },
-  fontWeight: 500,
-  opacity: 1,
-  preset: 'default',
-  outline: {
-    '': 'inset #purple-03.0',
-    'focused & focus-visible': 'inset #purple-03',
-  },
-};
+const TabElement = tasty(Action, {
+  styles: {
+    radius: '1r 1r 0 0',
+    padding: '1x 1.5x',
+    border: {
+      '': 'left top right #clear',
+      disabled: 'left top right rgb(227, 227, 233)',
+    },
+    fill: {
+      '': '#dark.04',
+      hovered: '#dark.08',
+      'disabled, disabled & hover': '#white',
+    },
+    color: {
+      '': '#dark.75',
+      'disabled, hovered, hovered & disabled': '#dark',
+    },
+    cursor: {
+      '': 'pointer',
+      disabled: 'default',
+    },
+    fontWeight: 500,
+    opacity: 1,
+    preset: 'default',
+    outline: {
+      '': 'inset #purple-03.0',
+      'focused & focus-visible': 'inset #purple-03',
+    },
+    transform: {
+      '': 'translate(0, 0)',
+      '[disabled]': 'translate(0, 1bw)',
+    },
+    transition: 'theme 0.2s',
+    margin: '1bw bottom',
 
-const CLOSE_STYLES = {
-  color: {
-    '': '#dark.50',
-    hovered: '#dark',
+    DirtyBadge: {
+      opacity: {
+        '': 1,
+        'dirty & :hover': 0,
+      },
+      pointerEvents: {
+        '': 'auto',
+        'dirty & :hover': 'none',
+      },
+    },
+
+    CloseButton: {
+      opacity: {
+        '': 0,
+        '!dirty | :hover': 1,
+      },
+    },
   },
-  padding: '0 .25x',
-  outline: {
-    '': '#purple-03.0',
-    'focused & focus-visible': '#purple-03',
+});
+
+const CloseButton = tasty(Button, {
+  element: 'CloseButton',
+  type: 'neutral',
+  styles: {
+    color: {
+      '': '#dark.50',
+      hovered: '#dark',
+    },
+    padding: '.25x',
+    outline: {
+      '': '#purple-03.0',
+      'focused & focus-visible': '#purple-03',
+    },
+    radius: '1r',
   },
-  radius: '1r',
-};
-
-const TAB_CSS = `
-  margin-bottom: var(--border-width);
-  transform: translate(0, 0);
-  transition: color .2s linear, background-color .2s linear;
-
-  &[disabled] {
-    transform: translate(0, var(--border-width));
-  }
-
-  &.file-tab--dirty {
-    &:hover {
-      & .file-tab-dirty-badge {
-        opacity: 0;
-        pointer-events: none;
-      }
-
-      & .file-tab-close {
-        opacity: 1;
-      }
-    }
-
-    &:not(:hover) {
-      & .file-tab-dirty-badge {
-        opacity: 1;
-      }
-
-      & .file-tab-close {
-        opacity: 0;
-      }
-    }
-  }
-`;
+});
 
 /**
  * @deprecated consider using <Tabs /> instead
@@ -216,10 +230,10 @@ const Tab = ({
   ...props
 }: FileTabProps) => {
   return (
-    <Action
-      className={isDirty ? 'file-tab--dirty' : ''}
-      css={TAB_CSS}
-      styles={TAB_STYLES}
+    <TabElement
+      mods={{
+        dirty: isDirty,
+      }}
       isDisabled={isDisabled}
       {...props}
     >
@@ -228,21 +242,17 @@ const Tab = ({
         {(isClosable || isDirty) && (
           <Flex placeItems="center" style={{ position: 'relative' }}>
             {isClosable ? (
-              <Action
-                onPress={onClose}
-                className="file-tab-close"
-                styles={CLOSE_STYLES}
-              >
+              <CloseButton onPress={onClose}>
                 <CloseOutlined />
-              </Action>
+              </CloseButton>
             ) : (
               <div></div>
             )}
-            {isDirty ? <DirtyBadge className="file-tab-dirty-badge" /> : null}
+            {isDirty ? <DirtyBadge /> : null}
           </Flex>
         )}
       </Space>
-    </Action>
+    </TabElement>
   );
 };
 
@@ -396,13 +406,9 @@ export function FileTabs({
   }
 
   return (
-    <Flex
-      flow="column"
-      height="max 100%"
-      width="max 100%"
+    <StyledTabsContainerElement
       data-is-left-fade={leftFade || null}
       data-is-right-fade={rightFade || null}
-      css={TABS_CONTAINER_CSS}
       {...props}
     >
       <FileTabsContext.Provider
@@ -414,7 +420,7 @@ export function FileTabs({
           currentTab: activeKey,
         }}
       >
-        <Space ref={tabsRef} gap=".5x" flexShrink={0} css={TABS_PANEL_CSS}>
+        <StyledTabsPanelElement ref={tabsRef}>
           {tabs.map((tab) => {
             return (
               <Tab
@@ -429,7 +435,7 @@ export function FileTabs({
               </Tab>
             );
           })}
-        </Space>
+        </StyledTabsPanelElement>
         <Flex
           flexGrow={1}
           border="top rgb(227, 227, 233)"
@@ -438,7 +444,7 @@ export function FileTabs({
           {children}
         </Flex>
       </FileTabsContext.Provider>
-    </Flex>
+    </StyledTabsContainerElement>
   );
 }
 

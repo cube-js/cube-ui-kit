@@ -123,6 +123,7 @@ const TOKENS = {
   // h6 (unused)
   'h6-font-size': '14px',
   'h6-line-height': '20px',
+  'h6-letter-spacing': '0',
   'h6-font-weight': '700',
   // t1
   't1-font-size': '18px',
@@ -134,6 +135,11 @@ const TOKENS = {
   't2-line-height': '22px',
   't2-letter-spacing': '0.01em',
   't2-font-weight': '400',
+  // t2m
+  't2m-font-size': '16px',
+  't2m-line-height': '22px',
+  't2m-letter-spacing': '0.005em',
+  't2m-font-weight': '500',
   // t3
   't3-font-size': '14px',
   't3-line-height': '20px',
@@ -202,7 +208,8 @@ const TOKENS = {
   'strong-letter-spacing': 'inherit',
   'strong-font-family': 'inherit',
   'strong-font-style': 'inherit',
-  'strong-font-weight': 600,
+  'strong-font-weight':
+    'var(--bold-font-weight, var(--default-bold-font-weight, 600))',
   // em
   'em-font-size': 'inherit',
   'em-line-height': 'inherit',
@@ -215,6 +222,7 @@ const TOKENS = {
   'default-line-height': 'var(--t3-line-height)',
   'default-letter-spacing': 'var(--t3-letter-spacing)',
   'default-font-weight': 'var(--t3-font-weight)',
+  'default-bold-font-weight': '600',
   // scrollbar colors
   'scrollbar-width': '1.5x',
   'scrollbar-outline-width': '1ow',

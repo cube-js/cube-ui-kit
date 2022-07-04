@@ -13,7 +13,7 @@ import { useSlotProps } from '../../utils/react';
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
-const RawContent = tasty({
+const ContentElement = tasty({
   qa: 'Content',
   as: 'section',
   styles: {
@@ -39,7 +39,7 @@ export const Content = forwardRef((props: CubeContentProps, ref) => {
   const styles = extractStyles(props, STYLE_LIST);
 
   return (
-    <RawContent
+    <ContentElement
       {...filterBaseProps(props, { eventProps: true })}
       styles={styles}
       ref={ref}

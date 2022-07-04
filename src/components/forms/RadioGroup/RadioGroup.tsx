@@ -1,6 +1,5 @@
 import { forwardRef } from 'react';
 import { useDOMRef } from '@react-spectrum/utils';
-import { LABEL_STYLES } from '../Label';
 import { useProviderProps } from '../../../provider';
 import { useRadioGroup } from '@react-aria/radio';
 import { useRadioGroupState } from '@react-stately/radio';
@@ -12,8 +11,8 @@ import {
   extractStyles,
   OUTER_STYLES,
   Styles,
+  tasty,
 } from '../../../tasty';
-import { Base } from '../../Base';
 import { FieldWrapper } from '../FieldWrapper';
 import type { AriaRadioGroupProps } from '@react-types/radio';
 import { FormFieldProps } from '../../../shared';
@@ -21,7 +20,6 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { useContextStyles } from '../../../providers/StyleProvider';
 
 export interface CubeRadioGroupProps
   extends BaseProps,
@@ -30,20 +28,26 @@ export interface CubeRadioGroupProps
   groupStyles?: Styles;
 }
 
-const GROUP_STYLES = {
-  display: 'flex',
-  placeItems: 'start',
-  placeContent: 'start',
-  flow: {
-    '': 'column',
-    horizontal: 'row wrap',
+const RadioGroupElement = tasty({
+  qa: 'RadioGroup',
+  styles: {
+    display: 'flex',
+    placeItems: 'start',
+    placeContent: 'start',
+    flow: {
+      '': 'column',
+      horizontal: 'row wrap',
+    },
+    gap: {
+      '': '1x',
+      horizontal: '1x 2x',
+    },
+    padding: {
+      '': 0,
+      'inside-form & side-label': '1.5x 0',
+    },
   },
-  gap: {
-    '': '1x',
-    horizontal: '1x 2x',
-  },
-  padding: '(1x - 1bw) 0',
-} as Styles;
+});
 
 function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
   props = castNullableStringValue(props);
@@ -68,39 +72,24 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
     isHidden,
     styles,
     groupStyles,
+    insideForm,
     ...otherProps
   } = props;
   let domRef = useDOMRef(ref);
 
-  let wrapperContextStyles = useContextStyles('RadioGroup_Wrapper', props);
-  let groupContextStyles = useContextStyles('RadioGroup', props);
-  let labelContextStyles = useContextStyles('RadioGroup_Label', props);
-
-  styles = extractStyles(otherProps, OUTER_STYLES, {
-    ...wrapperContextStyles,
-    ...styles,
-  });
-  groupStyles = extractStyles(otherProps, BLOCK_STYLES, {
-    ...GROUP_STYLES,
-    ...groupContextStyles,
-    ...groupStyles,
-  });
-
-  labelStyles = {
-    ...LABEL_STYLES,
-    ...labelContextStyles,
-    ...labelStyles,
-  };
+  styles = extractStyles(otherProps, OUTER_STYLES, styles);
+  groupStyles = extractStyles(otherProps, BLOCK_STYLES, groupStyles);
 
   let state = useRadioGroupState(props);
   let { radioGroupProps: fieldProps, labelProps } = useRadioGroup(props, state);
 
   let radioGroup = (
-    <Base
-      qa="RadioGroup"
+    <RadioGroupElement
       styles={groupStyles}
       mods={{
         horizontal: orientation === 'horizontal',
+        'inside-form': insideForm,
+        'side-label': labelPosition === 'side',
       }}
     >
       <FormContext.Provider
@@ -112,7 +101,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
       >
         <RadioContext.Provider value={state}>{children}</RadioContext.Provider>
       </FormContext.Provider>
-    </Base>
+    </RadioGroupElement>
   );
 
   return (

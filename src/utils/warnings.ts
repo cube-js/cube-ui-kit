@@ -5,6 +5,7 @@ const SUGGESTED_PROP_MAP = {
 };
 
 const PREFIX = 'CubeUIKit';
+const devMode = process.env.NODE_ENV !== 'production';
 
 export function propDeprecationWarning(name, props, propList) {
   propList.forEach((prop) => {
@@ -21,11 +22,15 @@ export function propDeprecationWarning(name, props, propList) {
 }
 
 export function accessibilityWarning(...args) {
-  console.warn(`${PREFIX} accessibility issue:`, ...args);
+  if (devMode) {
+    console.warn(`${PREFIX} accessibility issue:`, ...args);
+  }
 }
 
 export function warn(...args) {
-  console.warn(`${PREFIX}:`, ...args);
+  if (devMode) {
+    console.warn(`${PREFIX}:`, ...args);
+  }
 }
 
 export function deprecationWarning(
@@ -45,15 +50,7 @@ export function deprecationWarning(
 ) {
   if (condition) return;
 
-  if (process.env.NODE_ENV === 'production') {
-    return warn(
-      `DEPRECATION ${name} "${property}" -> ${
-        typeof betterAlternative === 'function'
-          ? betterAlternative()
-          : betterAlternative
-      }`,
-    );
-  }
+  if (!devMode) return;
 
   // we can make deprecations even better if we add the md syntax in the console.
   // anyway, everything down below will be stripped in the production build
@@ -61,10 +58,15 @@ export function deprecationWarning(
   warn(
     `"${property}" is deprecated, consider better alternative: ${
       typeof betterAlternative === 'function'
-        ? betterAlternative()
+        ? (betterAlternative as () => string)()
         : betterAlternative
     }`,
   );
-  reason && warn(`Reason: ${typeof reason === 'function' ? reason() : reason}`);
+  reason &&
+    warn(
+      `Reason: ${
+        typeof reason === 'function' ? (reason as () => string)() : reason
+      }`,
+    );
   console.groupEnd();
 }

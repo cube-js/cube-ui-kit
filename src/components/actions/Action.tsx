@@ -10,8 +10,8 @@ import {
   TagNameProps,
   TEXT_STYLES,
   TextStyleProps,
+  Element,
 } from '../../tasty';
-import { Base } from '../Base';
 import { useHover } from '@react-aria/interactions';
 import { useFocus } from '../../utils/react/interactions';
 import { useButton } from '@react-aria/button';
@@ -184,7 +184,7 @@ export const Action = forwardRef(
       : {};
 
     return (
-      <Base
+      <Element
         mods={{
           hovered: isHovered && !isDisabled,
           pressed: isPressed && !isDisabled,

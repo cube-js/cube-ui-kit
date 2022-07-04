@@ -1,37 +1,43 @@
 import { forwardRef } from 'react';
-import { Base } from '../Base';
 import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
   extractStyles,
   filterBaseProps,
+  tasty,
 } from '../../tasty';
 
-const DEFAULT_STYLES = {
-  display: 'flex',
-  gap: true,
-};
+const SpaceElement = tasty({
+  styles: {
+    display: 'flex',
+    gap: true,
+    flow: {
+      '': 'row',
+      vertical: 'column',
+    },
+    placeItems: {
+      '': 'center stretch',
+      vertical: 'stretch',
+    },
+  },
+});
 
 export interface CubeSpaceProps extends BaseProps, ContainerStyleProps {
   direction?: 'vertical' | 'horizontal';
 }
 
 export const Space = forwardRef(function Space(props: CubeSpaceProps, ref) {
-  const flow = props.direction
-    ? props.direction === 'vertical'
-      ? 'column'
-      : 'row'
-    : props.flow || 'row';
-  const styles = extractStyles(props, CONTAINER_STYLES, {
-    ...DEFAULT_STYLES,
-    flow,
-    alignItems: flow === 'row' ? 'center' : 'stretch',
-  });
+  const { mods, direction, ...otherProps } = props;
+  const styles = extractStyles(otherProps, CONTAINER_STYLES);
 
   return (
-    <Base
-      {...filterBaseProps(props, { eventProps: true })}
+    <SpaceElement
+      {...filterBaseProps(otherProps, { eventProps: true })}
+      mods={{
+        vertical: direction === 'vertical' || otherProps.flow === 'column',
+        ...mods,
+      }}
       styles={styles}
       ref={ref}
     />

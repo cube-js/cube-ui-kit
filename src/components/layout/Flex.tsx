@@ -1,25 +1,27 @@
 import { forwardRef } from 'react';
-import { Base } from '../Base';
 import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
   extractStyles,
   filterBaseProps,
+  tasty,
 } from '../../tasty';
 
-const DEFAULT_STYLES = {
-  display: 'flex',
-  flow: 'row',
-};
+const FlexElement = tasty({
+  styles: {
+    display: 'flex',
+    flow: 'row',
+  },
+});
 
 export interface CubeFlexProps extends BaseProps, ContainerStyleProps {}
 
 export const Flex = forwardRef((props: CubeFlexProps, ref) => {
-  const styles = extractStyles(props, CONTAINER_STYLES, DEFAULT_STYLES);
+  const styles = extractStyles(props, CONTAINER_STYLES);
 
   return (
-    <Base
+    <FlexElement
       {...filterBaseProps(props, { eventProps: true })}
       styles={styles}
       ref={ref}

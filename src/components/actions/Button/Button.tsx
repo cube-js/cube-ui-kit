@@ -4,7 +4,6 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { Styles } from '../../../tasty';
 import { FocusableRef } from '@react-types/shared';
 import { accessibilityWarning } from '../../../utils/warnings';
-import { useContextStyles } from '../../../providers/StyleProvider';
 
 export interface CubeButtonProps extends CubeActionProps {
   icon?: ReactNode;
@@ -254,7 +253,7 @@ const STYLES_BY_SIZE = {
   },
   large: {
     padding: '(1.5x - 1px) (2.5x - 1px)',
-    preset: 't2',
+    preset: 't2m',
   },
 };
 
@@ -295,7 +294,6 @@ export const Button = forwardRef(
       icon,
       children,
     };
-    const contextStyles = useContextStyles('Button', propsForStyles);
 
     if (!children) {
       if (icon) {
@@ -317,7 +315,6 @@ export const Button = forwardRef(
 
     styles = {
       ...provideStyles(propsForStyles),
-      ...contextStyles,
       ...styles,
     };
 

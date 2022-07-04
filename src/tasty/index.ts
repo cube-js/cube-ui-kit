@@ -1,4 +1,4 @@
-export { tasty } from './tasty';
+export { tasty, Element } from './tasty';
 export * from './utils/filterBaseProps';
 export * from './utils/colors';
 export * from './utils/styles';

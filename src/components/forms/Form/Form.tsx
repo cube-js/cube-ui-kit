@@ -8,7 +8,6 @@ import {
   useEffect,
   useRef,
 } from 'react';
-import { Base } from '../../Base';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -16,6 +15,7 @@ import {
   extractStyles,
   filterBaseProps,
   Styles,
+  tasty,
 } from '../../../tasty';
 import { CubeFormData, CubeFormInstance, useForm } from './useForm';
 import { useCombinedRefs } from '../../../utils/react';
@@ -23,6 +23,17 @@ import { timeout } from '../../../utils/promise';
 import { FormBaseProps } from '../../../shared';
 
 export const FormContext = createContext({});
+
+const FormElement = tasty({
+  as: 'form',
+  qa: 'Form',
+  styles: {
+    display: 'block',
+    flow: 'column',
+    gap: '2x',
+    '@label-width': '25x',
+  },
+});
 
 export function useFormProps(props) {
   const ctx = useContext(FormContext);
@@ -37,13 +48,6 @@ const formPropNames = new Set([
   'method',
   'target',
 ]);
-
-const DEFAULT_STYLES = {
-  display: 'block',
-  flow: 'column',
-  gap: '2x',
-  '@label-width': '25x',
-};
 
 export interface CubeFormProps
   extends FormBaseProps,
@@ -92,8 +96,6 @@ function Form(props: CubeFormProps, ref) {
     onSubmitFailed,
     ...otherProps
   } = props;
-  let styles;
-
   const firstRunRef = useRef(true);
 
   ref = useCombinedRefs(ref);
@@ -152,7 +154,7 @@ function Form(props: CubeFormProps, ref) {
     onValuesChange,
   });
 
-  styles = extractStyles(otherProps, CONTAINER_STYLES, DEFAULT_STYLES);
+  let styles = extractStyles(otherProps, CONTAINER_STYLES);
 
   if (labelWidth) {
     styles['@label-width'] = labelWidth;
@@ -185,9 +187,7 @@ function Form(props: CubeFormProps, ref) {
   }, [defaultValues]);
 
   return (
-    <Base
-      as="form"
-      qa="Form"
+    <FormElement
       {...filterBaseProps(otherProps, { propNames: formPropNames })}
       onSubmit={onSubmitCallback}
       noValidate
@@ -208,7 +208,7 @@ function Form(props: CubeFormProps, ref) {
           {children}
         </Provider>
       </FormContext.Provider>
-    </Base>
+    </FormElement>
   );
 }
 

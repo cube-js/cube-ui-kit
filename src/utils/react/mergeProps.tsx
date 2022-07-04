@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { chain, mergeIds } from '@react-aria/utils';
-import { Props } from '../../tasty';
+import { mergeStyles, Props } from '../../tasty';
 
 /**
  * Merges multiple props objects together. Event handlers are chained,
@@ -32,12 +32,12 @@ export function mergeProps(...args: (Props | undefined)[]) {
       ) {
         result[key] = clsx(result.className, props.className);
       } else if (
-        key === 'styles' &&
+        (key === 'styles' || key.endsWith('Styles')) &&
         typeof result.styles === 'object' &&
         props &&
         typeof props.styles === 'object'
       ) {
-        result[key] = { ...result.styles, ...props.styles };
+        result[key] = mergeStyles(result[key], props[key]);
       } else if (key === 'id' && result.id && props?.id) {
         result.id = mergeIds(result.id, props?.id);
         // Override others

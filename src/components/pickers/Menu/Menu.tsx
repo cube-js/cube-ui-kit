@@ -21,7 +21,6 @@ import { MenuItem, MenuSelectionType } from './MenuItem';
 import { MenuSection } from './MenuSection';
 import { MenuButtonProps } from './MenuButton';
 import { useMenuContext } from './context';
-import { useContextStyles } from '../../../providers/StyleProvider';
 
 export interface CubeMenuProps<T>
   extends ContainerStyleProps,
@@ -36,7 +35,7 @@ function Menu<T extends object>(
   props: CubeMenuProps<T>,
   ref: DOMRef<HTMLUListElement>,
 ) {
-  const { header, footer, styles, selectionType } = props;
+  const { header, footer, selectionType } = props;
   const domRef = useDOMRef(ref);
   const contextProps = useMenuContext();
   const completeProps = mergeProps(contextProps, props);
@@ -46,15 +45,10 @@ function Menu<T extends object>(
   const hasSections = items.some((item) => item.type === 'section');
 
   const { menuProps } = useMenu(completeProps, state, domRef);
-  const menuStyles = useContextStyles('Menu', props) || {};
-  const containerStyles = extractStyles(completeProps, CONTAINER_STYLES);
+  const styles = extractStyles(completeProps, CONTAINER_STYLES);
 
   const baseProps = {
-    styles: {
-      ...menuStyles,
-      ...containerStyles,
-      ...styles,
-    },
+    styles,
     mods: {
       sections: hasSections,
       footer: !!footer,
