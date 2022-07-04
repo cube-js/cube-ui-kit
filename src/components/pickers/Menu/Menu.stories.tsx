@@ -199,6 +199,21 @@ export const MenuSelectableMultiple = (props) => {
   });
 };
 
+export const MenuSelectableCheckboxes = (props) => {
+  const [selectedKeys, setSelectedKeys] = useState(['1']);
+  const onSelectionChange = (key) => {
+    setSelectedKeys(key);
+  };
+
+  return MenuTemplate({
+    ...props,
+    selectionType: 'checkbox',
+    selectionMode: 'single',
+    selectedKeys,
+    onSelectionChange,
+  });
+};
+
 export const PaymentDetails = (props) => {
   return (
     <Root>

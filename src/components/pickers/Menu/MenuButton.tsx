@@ -3,7 +3,7 @@ import { Button, CubeButtonProps } from '../../actions';
 import { Text } from '../../content/Text';
 import { Styles } from '../../../tasty';
 import { Space } from '../../layout/Space';
-import { CheckOutlined } from '@ant-design/icons';
+import { CheckOutlined, CheckCircleOutlined } from '@ant-design/icons';
 
 const ACTION_BUTTON: Styles = {
   border: {
@@ -30,6 +30,8 @@ const ACTION_BUTTON: Styles = {
   padding: {
     '': '(0.75x - 1px) (1.5x - 1px)',
     'selectable & !selected':
+      '(0.75x - 1px) (1.5x - 1px) (0.75x - 1px) (1.5x - 1px)',
+    'selectionType & selectable & !selected':
       '(0.75x - 1px) (1.5x - 1px) (0.75x - 1px) (1.5x - 1px + 22px)',
   },
   display: 'flex',
@@ -54,11 +56,25 @@ const getPostfix = (postfix) =>
     postfix
   );
 
+export type MenuSelectionType = 'checkbox' | 'radio';
+
 export type MenuButtonProps = {
   postfix: ReactNode;
+  selectionType?: MenuSelectionType;
   isSelectable?: boolean;
   disabled?: boolean;
 } & CubeButtonProps;
+
+const getSelectionTypeIcon = (selectionType?: MenuSelectionType) => {
+  switch (selectionType) {
+    case 'checkbox':
+      return <CheckOutlined />;
+    case 'radio':
+      return <CheckCircleOutlined />;
+    default:
+      return null;
+  }
+};
 
 export function MenuButton({
   children,
@@ -66,10 +82,12 @@ export function MenuButton({
   postfix,
   ...props
 }: MenuButtonProps) {
-  const { isSelected, isSelectable } = props;
-  const checkIcon = isSelectable && isSelected ? <CheckOutlined /> : null;
+  const { selectionType, isSelected, isSelectable } = props;
+  const checkIcon =
+    isSelectable && isSelected ? getSelectionTypeIcon(selectionType) : null;
   const mods = {
     ...props.mods,
+    selectionType: !!selectionType,
     selectable: isSelectable,
     selected: isSelected,
   };

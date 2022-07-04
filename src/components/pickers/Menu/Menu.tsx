@@ -17,7 +17,7 @@ import {
   Styles,
 } from '../../../tasty';
 import { StyledMenu, StyledMenuHeader } from './styled';
-import { MenuItem } from './MenuItem';
+import { MenuItem, MenuSelectionType } from './MenuItem';
 import { MenuSection } from './MenuSection';
 import { MenuButtonProps } from './MenuButton';
 import { useMenuContext } from './context';
@@ -26,6 +26,7 @@ import { useContextStyles } from '../../../providers/StyleProvider';
 export interface CubeMenuProps<T>
   extends ContainerStyleProps,
     AriaMenuProps<T> {
+  selectionType?: MenuSelectionType;
   header?: ReactNode;
   footer?: ReactNode;
   styles?: Styles;
@@ -35,7 +36,7 @@ function Menu<T extends object>(
   props: CubeMenuProps<T>,
   ref: DOMRef<HTMLUListElement>,
 ) {
-  const { header, footer, styles } = props;
+  const { header, footer, styles, selectionType } = props;
   const domRef = useDOMRef(ref);
   const contextProps = useMenuContext();
   const completeProps = mergeProps(contextProps, props);
@@ -76,6 +77,7 @@ function Menu<T extends object>(
               key={item.key}
               item={item}
               state={state}
+              selectionType={selectionType}
               onAction={completeProps.onAction}
             />
           );
@@ -86,6 +88,7 @@ function Menu<T extends object>(
             key={item.key}
             item={item}
             state={state}
+            selectionType={selectionType}
             onAction={completeProps.onAction}
           />
         );

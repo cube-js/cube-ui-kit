@@ -7,18 +7,19 @@ import { useMenuItem } from '@react-aria/menu';
 import { mergeProps, ClearSlots, SlotProvider } from '../../../utils/react';
 import { useMenuContext } from './context';
 import { StyledMenuItem } from './styled';
-import { MenuButton } from './MenuButton';
+import { MenuButton, MenuSelectionType } from './MenuButton';
 
 interface MenuItemProps<T> {
   item: Node<T>;
   state: TreeState<T>;
+  selectionType?: MenuSelectionType;
   isVirtualized?: boolean;
   onAction?: (key: Key) => void;
 }
 
 /** @private */
 export function MenuItem<T>(props: MenuItemProps<T>) {
-  const { item, state, isVirtualized, onAction } = props;
+  const { item, state, selectionType, isVirtualized, onAction } = props;
   const { onClose, closeOnSelect } = useMenuContext();
   const { rendered, key, props: itemProps } = item;
 
@@ -48,6 +49,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
     typeof rendered === 'string' ? (
       <MenuButton
         {...itemProps}
+        selectionType={selectionType}
         isSelectable={isSelectable}
         isSelected={isSelected}
         isDisabled={isDisabled}

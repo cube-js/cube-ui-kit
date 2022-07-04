@@ -1,5 +1,6 @@
 import React, { Fragment, Key } from 'react';
 import { MenuItem } from './MenuItem';
+import { MenuSelectionType } from './MenuButton';
 import { Node } from '@react-types/shared';
 import { TreeState } from '@react-stately/tree';
 import { useMenuSection } from '@react-aria/menu';
@@ -12,6 +13,7 @@ import {
 export interface CubeMenuSectionProps<T> {
   item: Node<T>;
   state: TreeState<T>;
+  selectionType?: MenuSelectionType;
   onAction?: (key: Key) => void;
 }
 
