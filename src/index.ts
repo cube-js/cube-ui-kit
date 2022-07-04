@@ -81,6 +81,7 @@ export { Switch } from './components/forms/Switch/Switch';
 export type { CubeSwitchProps } from './components/forms/Switch/Switch';
 export { Radio } from './components/forms/RadioGroup/Radio';
 export type { CubeRadioProps } from './components/forms/RadioGroup/Radio';
+export type { CubeRadioGroupProps } from './components/forms/RadioGroup/RadioGroup';
 export { ComboBox } from './components/pickers/ComboBox/ComboBox';
 export type { CubeComboBoxProps } from './components/pickers/ComboBox/ComboBox';
 export { Menu } from './components/pickers/Menu/Menu';

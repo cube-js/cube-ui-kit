@@ -23,7 +23,7 @@ export type TastyProps<K extends StyleList, DefaultProps = Props> = {
   /** The list of styles that can be provided by props */
   styleProps?: K;
   element?: BaseProps['element'];
-} & Omit<DefaultProps, 'as' | 'styles' | 'styleProps'>;
+} & Partial<Omit<DefaultProps, 'as' | 'styles' | 'styleProps'>>;
 
 export interface GlobalTastyProps {
   breakpoints?: number[];
@@ -109,7 +109,7 @@ function tasty<K extends StyleList, C = Record<string, unknown>>(
       const mergedStylesMap: Styles | undefined = useMemo(() => {
         return propsWithStyles.reduce((map, prop) => {
           if (restProps[prop] != null && defaultProps[prop] != null) {
-            map[prop] = mergeStyles(restProps[prop], defaultProps[prop]);
+            map[prop] = mergeStyles(defaultProps[prop], restProps[prop]);
           } else {
             map[prop] = restProps[prop] || defaultProps[prop];
           }

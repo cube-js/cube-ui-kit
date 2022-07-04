@@ -16,7 +16,6 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { Base } from '../../Base';
 import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react';
 import { HiddenInput } from '../../HiddenInput';
@@ -31,11 +30,19 @@ import {
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
 
-const BaseSwitchWrapperElement = tasty({
+const SwitchWrapperElement = tasty({
   qa: 'SwitchWrapper',
+  styles: {
+    position: 'relative',
+    margin: {
+      '': 0,
+      'inside-form & side-label': '1x top',
+    },
+  },
 });
 
-const SwitchWrapperElement = tasty({
+const SwitchLabelElement = tasty({
+  as: 'label',
   qa: 'SwitchWrapper',
   styles: {
     position: 'relative',
@@ -70,10 +77,6 @@ const SwitchElement = tasty({
     },
     transition: 'theme',
     cursor: 'pointer',
-    marginTop: {
-      '': null,
-      'inside-form & side-label': '-3px',
-    },
     placeSelf: {
       '': null,
       'inside-form & side-label': 'start',
@@ -161,24 +164,23 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   let { inputProps } = useSwitch(props, useToggleState(props), inputRef);
 
+  const mods = {
+    'inside-form': insideForm,
+    'side-label': labelPosition === 'side',
+    checked: inputProps.checked,
+    disabled: isDisabled,
+    hovered: isHovered,
+    focused: isFocused,
+  };
+
   const switchField = (
-    <BaseSwitchWrapperElement qa={qa || 'Switch'}>
+    <SwitchWrapperElement qa={qa || 'Switch'} mods={mods}>
       <HiddenInput
         data-qa="HiddenInput"
         {...mergeProps(inputProps, focusProps)}
         ref={inputRef}
       />
-      <SwitchElement
-        mods={{
-          'inside-form': insideForm,
-          'side-label': labelPosition === 'side',
-          checked: inputProps.checked,
-          disabled: isDisabled,
-          hovered: isHovered,
-          focused: isFocused,
-        }}
-        styles={inputStyles}
-      >
+      <SwitchElement mods={mods} styles={inputStyles}>
         <SwitchThumbElement
           styles={thumbStyles}
           mods={{
@@ -186,7 +188,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
           }}
         />
       </SwitchElement>
-    </BaseSwitchWrapperElement>
+    </SwitchWrapperElement>
   );
 
   if (insideForm) {
@@ -214,9 +216,9 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   }
 
   return (
-    <SwitchWrapperElement
-      as="label"
+    <SwitchLabelElement
       styles={styles}
+      mods={mods}
       {...hoverProps}
       {...filterBaseProps(otherProps)}
       ref={domRef}
@@ -239,7 +241,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
           ) : null}
         </Element>
       )}
-    </SwitchWrapperElement>
+    </SwitchLabelElement>
   );
 }
 

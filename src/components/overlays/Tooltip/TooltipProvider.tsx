@@ -17,7 +17,7 @@ function TooltipProvider(props: CubeTooltipProviderProps) {
 
   useEffect(() => {
     setRendered(true);
-  });
+  }, []);
 
   return rendered ? (
     <TooltipTrigger {...otherProps}>

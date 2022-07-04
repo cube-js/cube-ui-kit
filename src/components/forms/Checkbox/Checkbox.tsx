@@ -60,6 +60,10 @@ const CheckboxWrapperElement = tasty({
     flow: 'row',
     preset: 'default',
     cursor: 'pointer',
+    margin: {
+      '': 0,
+      'inside-form & side-label': '1.5x top',
+    },
   },
 });
 
@@ -149,10 +153,6 @@ function Checkbox(
     labelStyles.fontWeight = 400;
   }
 
-  if (insideForm && labelPosition === 'side') {
-    inputStyles.marginTop = '1x';
-  }
-
   let { isFocused, focusProps } = useFocus({ isDisabled }, true);
   let { hoverProps, isHovered } = useHover({ isDisabled });
 
@@ -201,6 +201,8 @@ function Checkbox(
     disabled: isDisabled,
     hovered: isHovered,
     focused: isFocused,
+    'side-label': labelPosition === 'side',
+    'inside-form': insideForm,
   };
 
   const checkboxField = (

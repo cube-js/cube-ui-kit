@@ -16,8 +16,8 @@ const SpaceElement = tasty({
       '': 'row',
       vertical: 'column',
     },
-    alignItems: {
-      '': 'center',
+    placeItems: {
+      '': 'center stretch',
       vertical: 'stretch',
     },
   },
@@ -35,7 +35,7 @@ export const Space = forwardRef(function Space(props: CubeSpaceProps, ref) {
     <SpaceElement
       {...filterBaseProps(otherProps, { eventProps: true })}
       mods={{
-        vertical: direction === 'vertical',
+        vertical: direction === 'vertical' || otherProps.flow === 'column',
         ...mods,
       }}
       styles={styles}
