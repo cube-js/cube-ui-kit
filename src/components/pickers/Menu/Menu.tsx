@@ -17,9 +17,9 @@ import {
   Styles,
 } from '../../../tasty';
 import { StyledMenu, StyledMenuHeader } from './styled';
-import { MenuItem, MenuSelectionType } from './MenuItem';
+import { MenuItem } from './MenuItem';
 import { MenuSection } from './MenuSection';
-import { MenuButtonProps } from './MenuButton';
+import { MenuButtonProps, MenuSelectionType } from './MenuButton';
 import { useMenuContext } from './context';
 
 export interface CubeMenuProps<T>
