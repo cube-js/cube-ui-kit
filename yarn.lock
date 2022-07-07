@@ -2598,7 +2598,7 @@
     "@react-stately/toggle" "^3.2.5"
     "@react-types/checkbox" "^3.2.5"
 
-"@react-aria/combobox@^3.2.1":
+"@react-aria/combobox@3.2.1":
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/@react-aria/combobox/-/combobox-3.2.1.tgz#dab1504b1ba77b224b59d89f4e7ab99c71e28806"
   integrity sha512-1wWZZfmlSjede8d0o3kNMfr6KDTgZuaKLmkzZ5NOwAip76HQ1u+sJdZrT+6xZrN1QPGM+MLZbBfQJBSEZsoHOA==
@@ -3155,7 +3155,7 @@
     "@babel/runtime" "^7.6.2"
     "@react-types/shared" "^3.13.1"
 
-"@react-stately/combobox@3.0.1":
+"@react-stately/combobox@3.0.1", "@react-stately/combobox@^3.0.1":
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/@react-stately/combobox/-/combobox-3.0.1.tgz#b94f395ec751cfd038ee281032c9c5f3f86cb9a2"
   integrity sha512-kUzlFz7ZtgE6JtxAR6f42KA/cwiJoQyBojz3jew3CQMiPmzdsqcrnVrOSrWm78IprYW1fBgnyydsLXVUTgGnfQ==
@@ -3167,19 +3167,6 @@
     "@react-stately/utils" "^3.2.2"
     "@react-types/combobox" "^3.0.1"
     "@react-types/shared" "^3.8.0"
-
-"@react-stately/combobox@^3.0.1":
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/@react-stately/combobox/-/combobox-3.1.1.tgz#a58ab8f3b289cbe2668046ce99c1f76af9a83c28"
-  integrity sha512-O0f6eNt5jbtLi/RDgO/4qAHShrubxb3vaH281fblwksxP8FTLQdSgkQRm+mxCIq16LFlW3yOgh4nJ3UouJGy1w==
-  dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-stately/list" "^3.5.1"
-    "@react-stately/menu" "^3.3.1"
-    "@react-stately/select" "^3.2.1"
-    "@react-stately/utils" "^3.5.0"
-    "@react-types/combobox" "^3.5.1"
-    "@react-types/shared" "^3.13.1"
 
 "@react-stately/layout@^3.4.0":
   version "3.4.2"
@@ -3447,14 +3434,7 @@
   dependencies:
     "@react-types/shared" "^3.13.1"
 
-"@react-types/combobox@^3.0.1", "@react-types/combobox@^3.5.1":
-  version "3.5.1"
-  resolved "https://registry.yarnpkg.com/@react-types/combobox/-/combobox-3.5.1.tgz#6a3af5b688334e53e516935486e55dc38495f4ea"
-  integrity sha512-UQe59EU6fFj2kXGpss1BByMVFBbFC8MhJWfMqvDR1l+UlhE+lmGPQjASmh2eKQXSmBdbd+NgOL6y8E1HRDeC2A==
-  dependencies:
-    "@react-types/shared" "^3.13.1"
-
-"@react-types/combobox@^3.2.1":
+"@react-types/combobox@3.2.1", "@react-types/combobox@^3.0.1", "@react-types/combobox@^3.2.1":
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/@react-types/combobox/-/combobox-3.2.1.tgz#6947e67df67957d9f82a8072106045308a9ec1ed"
   integrity sha512-YBlbIK7von3A+cS4mq2bqknp87O+pmyuJ4KDIpVu9keogeUtEpqfo1iW9+iEKBAK8bTI6MQW2Z7oaEHLDRMIMw==
