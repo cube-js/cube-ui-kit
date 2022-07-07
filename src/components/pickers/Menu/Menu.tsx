@@ -19,12 +19,13 @@ import {
 import { StyledMenu, StyledMenuHeader } from './styled';
 import { MenuItem } from './MenuItem';
 import { MenuSection } from './MenuSection';
-import { MenuButtonProps } from './MenuButton';
+import { MenuButtonProps, MenuSelectionType } from './MenuButton';
 import { useMenuContext } from './context';
 
 export interface CubeMenuProps<T>
   extends ContainerStyleProps,
     AriaMenuProps<T> {
+  selectionIcon?: MenuSelectionType;
   header?: ReactNode;
   footer?: ReactNode;
   styles?: Styles;
@@ -34,7 +35,7 @@ function Menu<T extends object>(
   props: CubeMenuProps<T>,
   ref: DOMRef<HTMLUListElement>,
 ) {
-  const { header, footer } = props;
+  const { header, footer, selectionIcon } = props;
   const domRef = useDOMRef(ref);
   const contextProps = useMenuContext();
   const completeProps = mergeProps(contextProps, props);
@@ -70,6 +71,7 @@ function Menu<T extends object>(
               key={item.key}
               item={item}
               state={state}
+              selectionIcon={selectionIcon}
               onAction={completeProps.onAction}
             />
           );
@@ -80,6 +82,7 @@ function Menu<T extends object>(
             key={item.key}
             item={item}
             state={state}
+            selectionIcon={selectionIcon}
             onAction={completeProps.onAction}
           />
         );
