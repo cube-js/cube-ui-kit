@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Button, CubeButtonProps } from '../../actions';
 import { Text } from '../../content/Text';
-import { Styles } from '../../../tasty';
+import { Styles, tasty } from '../../../tasty';
 import { Space } from '../../layout/Space';
 import { CheckOutlined, CheckCircleOutlined } from '@ant-design/icons';
 
@@ -31,7 +31,7 @@ const ACTION_BUTTON: Styles = {
     '': '(0.75x - 1px) (1.5x - 1px)',
     'selectable & !selected':
       '(0.75x - 1px) (1.5x - 1px) (0.75x - 1px) (1.5x - 1px)',
-    'selectionType & selectable & !selected':
+    'selectionIcon & selectable & !selected':
       '(0.75x - 1px) (1.5x - 1px) (0.75x - 1px) (1.5x - 1px + 22px)',
   },
   display: 'flex',
@@ -47,6 +47,23 @@ const ACTION_BUTTON: Styles = {
   },
 };
 
+const RadioIcon = tasty({
+  styles: {
+    display: 'flex',
+    width: '1.875x',
+    placeContent: 'center',
+
+    '&::before': {
+      display: 'block',
+      content: '""',
+      width: '1x',
+      height: '1x',
+      radius: 'round',
+      fill: '#current',
+    },
+  },
+});
+
 const getPostfix = (postfix) =>
   typeof postfix === 'string' ? (
     <Text nowrap color="inherit" data-element="Postfix">
@@ -60,17 +77,17 @@ export type MenuSelectionType = 'checkbox' | 'radio';
 
 export type MenuButtonProps = {
   postfix: ReactNode;
-  selectionType?: MenuSelectionType;
+  selectionIcon?: MenuSelectionType;
   isSelectable?: boolean;
   disabled?: boolean;
 } & CubeButtonProps;
 
-const getSelectionTypeIcon = (selectionType?: MenuSelectionType) => {
-  switch (selectionType) {
+const getSelectionTypeIcon = (selectionIcon?: MenuSelectionType) => {
+  switch (selectionIcon) {
     case 'checkbox':
       return <CheckOutlined />;
     case 'radio':
-      return <CheckCircleOutlined />;
+      return <RadioIcon />;
     default:
       return null;
   }
@@ -82,12 +99,12 @@ export function MenuButton({
   postfix,
   ...props
 }: MenuButtonProps) {
-  const { selectionType, isSelected, isSelectable } = props;
+  const { selectionIcon, isSelected, isSelectable } = props;
   const checkIcon =
-    isSelectable && isSelected ? getSelectionTypeIcon(selectionType) : null;
+    isSelectable && isSelected ? getSelectionTypeIcon(selectionIcon) : null;
   const mods = {
     ...props.mods,
-    selectionType: !!selectionType,
+    selectionIcon: !!selectionIcon,
     selectable: isSelectable,
     selected: isSelected,
   };

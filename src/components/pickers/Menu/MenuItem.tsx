@@ -12,14 +12,14 @@ import { MenuButton, MenuSelectionType } from './MenuButton';
 export interface MenuItemProps<T> {
   item: Node<T>;
   state: TreeState<T>;
-  selectionType?: MenuSelectionType;
+  selectionIcon?: MenuSelectionType;
   isVirtualized?: boolean;
   onAction?: (key: Key) => void;
 }
 
 /** @private */
 export function MenuItem<T>(props: MenuItemProps<T>) {
-  const { item, state, selectionType, isVirtualized, onAction } = props;
+  const { item, state, selectionIcon, isVirtualized, onAction } = props;
   const { onClose, closeOnSelect } = useMenuContext();
   const { rendered, key, props: itemProps } = item;
 
@@ -49,7 +49,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
     typeof rendered === 'string' ? (
       <MenuButton
         {...itemProps}
-        selectionType={selectionType}
+        selectionIcon={selectionIcon}
         isSelectable={isSelectable}
         isSelected={isSelected}
         isDisabled={isDisabled}

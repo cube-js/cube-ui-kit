@@ -207,7 +207,22 @@ export const MenuSelectableCheckboxes = (props) => {
 
   return MenuTemplate({
     ...props,
-    selectionType: 'checkbox',
+    selectionIcon: 'checkbox',
+    selectionMode: 'multiple',
+    selectedKeys,
+    onSelectionChange,
+  });
+};
+
+export const MenuSelectableRadio = (props) => {
+  const [selectedKeys, setSelectedKeys] = useState(['1']);
+  const onSelectionChange = (key) => {
+    setSelectedKeys(key);
+  };
+
+  return MenuTemplate({
+    ...props,
+    selectionIcon: 'radio',
     selectionMode: 'single',
     selectedKeys,
     onSelectionChange,
