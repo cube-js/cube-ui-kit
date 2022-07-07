@@ -1,5 +1,20 @@
 # @cube-dev/ui-kit
 
+## 0.10.13
+
+### Patch Changes
+
+- [#151](https://github.com/cube-js/cube-ui-kit/pull/151) [`e3eaeba`](https://github.com/cube-js/cube-ui-kit/commit/e3eaebac88a3826ad7b1bb542e72e25af563d367) Thanks [@nikolaykost](https://github.com/nikolaykost)! - Adds prop `selectionType` for `Menu` component. That stands for values `checkbox` or `radio`.
+
+  ```jsx
+  <Menu selectionType="checkbox" selectionMode="single">
+    <Item key="1">Item 1</Item>
+    <Item key="2">Item 2</Item>
+  </Menu>
+  ```
+
+- [#111](https://github.com/cube-js/cube-ui-kit/pull/111) [`f45b927`](https://github.com/cube-js/cube-ui-kit/commit/f45b927bb34dbc9bd0374a5d55c039bd37fa899e) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - [CC-677](https://cubedevinc.atlassian.net/browse/CC-677) significantly improved performance of the `Spin` component in all browsers.
+
 ## 0.10.12
 
 ### Patch Changes
