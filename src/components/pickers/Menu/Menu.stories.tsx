@@ -200,7 +200,7 @@ export const MenuSelectableMultiple = (props) => {
 };
 
 export const MenuSelectableCheckboxes = (props) => {
-  const [selectedKeys, setSelectedKeys] = useState(['1']);
+  const [selectedKeys, setSelectedKeys] = useState(['1', '2']);
   const onSelectionChange = (key) => {
     setSelectedKeys(key);
   };
