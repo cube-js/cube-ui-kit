@@ -1,8 +1,9 @@
-export * from './Notification';
-export * from './NotificationsProvider';
-export * from './use-notifications';
-export * from './NotificationsBar';
-export type {
-  CubeNotificationActionProps,
-  CubeNotificationProps,
-} from './types';
+export {
+  NotificationsProvider,
+  useNotifications,
+} from './NotificationsProvider';
+export * from './NotificationsList';
+export { NotificationAction } from './Notification';
+
+export type { NotificationActionProps } from './Notification';
+export type { CubeNotificationProps } from './types';

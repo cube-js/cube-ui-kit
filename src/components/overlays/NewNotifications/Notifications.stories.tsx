@@ -1,9 +1,15 @@
 import { Meta, Story } from '@storybook/react';
-import { Notification } from './Notification';
+import { Notification, NotificationAction } from './Notification';
 import { CubeNotificationProps } from './types';
 import { Button } from '../../actions';
-import { useNotifications } from './use-notifications';
+import { useNotifications } from './NotificationsProvider';
 import { NotificationsList } from './NotificationsList';
+import { useRef } from 'react';
+import { BellFilled } from '@ant-design/icons';
+import {
+  NotificationsDialog,
+  NotificationsDialogTrigger,
+} from './NotificationsDialog/NotificationsDialogTrigger';
 
 export default {
   title: 'Overlays/Notifications',
@@ -12,16 +18,20 @@ export default {
     header: 'Development mode available',
     description: 'Edit and test your schema without affecting the production.',
   },
-  subcomponents: { NotificationAction: Notification.Action },
+  subcomponents: { NotificationAction: NotificationAction },
 } as Meta<CubeNotificationProps>;
 
 const ActionTemplate: Story<CubeNotificationProps> = (args) => {
+  const pressesRef = useRef(0);
   const { notify } = useNotifications();
 
   return (
     <Button
       onPress={() => {
-        notify({ ...args });
+        notify({
+          ...args,
+          header: `Development mode available ${pressesRef.current++}`,
+        });
       }}
     >
       Click Me!
@@ -42,20 +52,53 @@ export const WithActions = StandaloneNotification.bind({});
 WithActions.args = {
   actions: (
     <>
-      <Notification.Action>Activate</Notification.Action>
-      <Notification.Action type="secondary">
+      <NotificationAction>Activate</NotificationAction>
+      <NotificationAction type="secondary">
         Don't show this again
-      </Notification.Action>
+      </NotificationAction>
     </>
   ),
 };
 
-export const List: Story<CubeNotificationProps> = (args) => {
+export const List: Story<CubeNotificationProps> = (args) => (
+  <NotificationsList>
+    <NotificationsList.Item {...args} />
+    <NotificationsList.Item {...args} />
+    <NotificationsList.Item {...args} />
+  </NotificationsList>
+);
+
+List.args = {
+  actions: (
+    <>
+      <NotificationAction>Activate</NotificationAction>
+      <NotificationAction type="secondary">
+        Don't show this again
+      </NotificationAction>
+    </>
+  ),
+};
+
+export const NotificationsInModal: Story<CubeNotificationProps> = (args) => {
   return (
-    <NotificationsList>
-      <NotificationsList.Item {...args} />
-      <NotificationsList.Item {...args} />
-      <NotificationsList.Item {...args} />
-    </NotificationsList>
+    <NotificationsDialogTrigger>
+      <Button icon={<BellFilled />} type="clear" />
+      <NotificationsDialog>
+        <NotificationsList>
+          <NotificationsList.Item {...args} />
+        </NotificationsList>
+      </NotificationsDialog>
+    </NotificationsDialogTrigger>
   );
+};
+
+NotificationsInModal.args = {
+  actions: (
+    <>
+      <NotificationAction>Activate</NotificationAction>
+      <NotificationAction type="secondary">
+        Don't show this again
+      </NotificationAction>
+    </>
+  ),
 };

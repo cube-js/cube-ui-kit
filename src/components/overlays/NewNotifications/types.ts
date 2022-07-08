@@ -1,9 +1,9 @@
-import { ReactNode, ReactElement, Key } from 'react';
-import { NotificationAction } from './Notification/NotificationAction';
+import { Key, ReactElement, ReactNode } from 'react';
+import { NotificationAction, NotificationActionProps } from './Notification';
 
 export type NotificationType = 'success' | 'danger' | 'attention';
 export type NotificationActionType = ReactElement<
-  CubeNotificationActionProps,
+  NotificationActionProps,
   typeof NotificationAction
 >;
 
@@ -43,17 +43,12 @@ export type CubeNotificationProps = {
 
 type NotificationWithHeader = {
   header: string;
+  description?: string;
 };
 
 type NotificationWithDescription = {
+  header?: string;
   description: string;
 };
 
-export type CubeNotificationActionProps = {
-  onPress: () => void;
-};
-
-export type NotificationIconProps = {
-  type: NotificationType;
-  icon?: ReactNode;
-};
+export type CubeNotifyApiProps = CubeNotificationProps;

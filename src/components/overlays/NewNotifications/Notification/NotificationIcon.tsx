@@ -1,5 +1,5 @@
 import { memo, ReactNode } from 'react';
-import { NotificationIconProps } from '../types';
+import { NotificationIconProps } from './types';
 import { tasty } from '../../../../tasty';
 import { Danger, Success, Attention } from '../../../../icons';
 

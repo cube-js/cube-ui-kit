@@ -1,19 +1,17 @@
-import { memo } from 'react';
+import { HTMLAttributes, memo } from 'react';
 import { tasty } from '../../../../tasty';
 import { Paragraph } from '../../../content/Paragraph';
 
 export type NotificationDescriptionProps = {
   description: string;
-};
+} & HTMLAttributes<HTMLElement>;
 
-const Description = tasty(Paragraph, {
-  gridArea: 'description',
-});
+const Description = tasty(Paragraph, { gridArea: 'description' });
 
 export const NotificationDescription = memo(function NotificationDescription(
   props: NotificationDescriptionProps,
 ) {
-  const { description } = props;
+  const { description, ...descriptionProps } = props;
 
-  return <Description>{description}</Description>;
+  return <Description {...descriptionProps}>{description}</Description>;
 });
