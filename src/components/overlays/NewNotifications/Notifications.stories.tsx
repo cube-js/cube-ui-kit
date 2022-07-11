@@ -82,9 +82,14 @@ List.args = {
 export const NotificationsInModal: Story<CubeNotificationProps> = (args) => {
   return (
     <NotificationsDialogTrigger>
-      <Button icon={<BellFilled />} type="clear" />
+      <Button icon={<BellFilled />} type="clear" label="Open Notifications" />
+
       <NotificationsDialog>
         <NotificationsList>
+          <NotificationsList.Item {...args} />
+          <NotificationsList.Item {...args} />
+          <NotificationsList.Item {...args} />
+          <NotificationsList.Item {...args} />
           <NotificationsList.Item {...args} />
         </NotificationsList>
       </NotificationsDialog>

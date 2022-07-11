@@ -1,6 +1,7 @@
 // @ts-check
 const webpack = require('webpack');
 
+/** @type {import('@swc/core').Config} */
 const swcConfig = {
   jsc: {
     parser: { syntax: 'typescript', tsx: true },
@@ -44,6 +45,8 @@ const config = {
   ],
   webpackFinal: (config) => {
     config.plugins.push(new webpack.DefinePlugin({ SC_DISABLE_SPEEDY: true }));
+    config.performance.hints = false;
+
     return config;
   },
 };
