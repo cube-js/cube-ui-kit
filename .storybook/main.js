@@ -1,7 +1,10 @@
 // @ts-check
 const webpack = require('webpack');
 
-/** @type {import('@swc/core').Config} */
+/**
+ * @readonly
+ * @type {import('@swc/core').Config}
+ */
 const swcConfig = {
   jsc: {
     parser: { syntax: 'typescript', tsx: true },

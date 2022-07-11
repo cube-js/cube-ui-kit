@@ -37,6 +37,7 @@ export const NotificationCloseButton = memo(function NotificationCloseButton(
 
   return (
     <CloseButton
+      qa="notification-close-button"
       type="neutral"
       mods={{ show: isHovered || isFocused }}
       onPress={onPress}

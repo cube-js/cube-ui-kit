@@ -1,13 +1,20 @@
-import { Key, memo } from 'react';
+import { Key, KeyboardEventHandler, memo, useRef } from 'react';
+import { useChainedCallback, useEvent, useTimer } from '../../../../_internal';
 import { tasty } from '../../../../tasty';
-import { useChainedCallback } from '../../../../_internal';
-import { CubeNotifyApiProps } from '../types';
+import { CubeNotifyApiPropsWithID } from '../types';
 import { Notification } from '../Notification';
+import {
+  NotificationItemNode,
+  NotificationsListState,
+  useNotificationListItem,
+} from '../hooks';
 
 export type FloatingNotificationProps = {
+  isDisabledTimer: boolean;
   id: Key;
-  notificationProps: CubeNotifyApiProps;
   onRemoveToast: (id: Key) => void;
+  item: NotificationItemNode<CubeNotifyApiPropsWithID>;
+  state: NotificationsListState<CubeNotifyApiPropsWithID>;
 };
 
 const NotificationContainer = tasty({
@@ -17,19 +24,44 @@ const NotificationContainer = tasty({
 export const FloatingNotification = memo(function FloatingNotification(
   props: FloatingNotificationProps,
 ): JSX.Element {
-  const { notificationProps, id, onRemoveToast } = props;
+  const { item, state, onRemoveToast, id, isDisabledTimer } = props;
+  const { props: notificationProps, key } = item;
 
+  const ref = useRef<HTMLDivElement | null>(null);
   const chainedOnClose = useChainedCallback(notificationProps.onClose, () =>
     onRemoveToast(id),
   );
 
+  const { itemProps } = useNotificationListItem({ key, ref, state });
+
+  const { timer } = useTimer({
+    callback: chainedOnClose,
+    delay: notificationProps.duration,
+    isDisabled: isDisabledTimer,
+  });
+
+  const onKeyDown = useEvent<KeyboardEventHandler<HTMLElement>>(({ key }) => {
+    const closeKeys = ['Delete', 'Backspace', 'Escape'];
+
+    if (closeKeys.includes(key)) {
+      chainedOnClose();
+    }
+  });
+
   return (
-    <NotificationContainer data-qa="floating-notification">
+    <NotificationContainer>
       <Notification
+        ref={ref}
         {...notificationProps}
-        duration={null}
+        timer={timer}
+        attributes={{
+          ...itemProps,
+          onKeyDown,
+          role: 'status',
+          'aria-atomic': 'true',
+        }}
         onClose={chainedOnClose}
-        attributes={{ role: 'status', 'aria-atomic': 'true' }}
+        qa="floating-notification"
       />
     </NotificationContainer>
   );

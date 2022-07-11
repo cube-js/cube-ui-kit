@@ -29,6 +29,7 @@
     "format": "prettier --write \"src/**/*.{js,jsx}\"",
     "lint": "eslint --cache src && prettier --check \"src/**/*.{js,jsx}\"",
     "fix": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\" && eslint --fix --cache src --ext .js,.ts,.jsx,.tsx",
+    "compile": "babel src -d dist --copy-files",
     "storybook": "STORYBOOK_MODE=stories start-storybook -p 6006",
     "build-storybook": "STORYBOOK_MODE=stories build-storybook",
     "build-docs": "STORYBOOK_MODE=docs build-storybook --docs -o storybook-docs",
@@ -117,7 +118,6 @@
     "@changesets/cli": "^2.22.0",
     "@commitlint/cli": "16.1.0",
     "@commitlint/config-conventional": "16.0.0",
-    "@happy-dom/jest-environment": "4.0.0",
     "@size-limit/file": "7.0.5",
     "@size-limit/webpack": "7.0.5",
     "@size-limit/webpack-why": "7.0.5",
@@ -127,11 +127,11 @@
     "@storybook/addon-interactions": "6.5.9",
     "@storybook/addon-links": "6.5.9",
     "@storybook/builder-webpack5": "6.5.9",
-    "@storybook/jest": "^0.0.10",
     "@storybook/manager-webpack5": "6.5.9",
     "@storybook/react": "6.5.9",
-    "@storybook/test-runner": "^0.1.1",
-    "@storybook/testing-library": "^0.0.11",
+    "@storybook/jest": "0.0.10",
+    "@storybook/test-runner": "0.3.0",
+    "@storybook/testing-library": "0.0.13",
     "@swc/core": "1.2.148",
     "@swc/jest": "0.2.20",
     "@testing-library/jest-dom": "^5.16.1",
@@ -156,7 +156,6 @@
     "eslint-plugin-react": "^7.28.0",
     "eslint-plugin-react-hooks": "^4.3.0",
     "eslint-plugin-storybook": "^0.5.12",
-    "happy-dom": "4.0.0",
     "husky": ">=6",
     "jest": "27.5.1",
     "jest-styled-components": "^7.0.8",
@@ -178,7 +177,8 @@
   },
   "resolutions": {
     "es5-ext": "0.10.53",
-    "prettier": "2.5.1"
+    "prettier": "2.5.1",
+    "@testing-library/user-event": "14.2.0"
   },
   "browserslist": [
     "last 2 Chrome versions",

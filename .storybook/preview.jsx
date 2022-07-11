@@ -1,3 +1,4 @@
+import { StrictMode } from 'react';
 import { DocsContainer } from '@storybook/addon-docs';
 import { configure } from '@storybook/testing-library';
 import isChromatic from 'chromatic/isChromatic';

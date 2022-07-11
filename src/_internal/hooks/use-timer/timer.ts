@@ -6,7 +6,17 @@ export class Timer {
   private timerId: ReturnType<typeof setTimeout> | null = null;
   private startTime: number | null = null;
 
-  constructor(callback: () => void, delay: number) {
+  private _status: 'stopped' | 'paused' | 'running' = 'stopped';
+
+  public get status() {
+    return this._status;
+  }
+
+  private set status(status) {
+    this._status = status;
+  }
+
+  constructor(callback: () => unknown, delay: number) {
     this.callback = callback;
     this.delay = delay;
     this.remaining = delay;
@@ -14,30 +24,40 @@ export class Timer {
     this.resume();
   }
 
-  reset = () => {
+  reset() {
     this.clear();
     this.remaining = this.delay;
-  };
+    this.status = 'stopped';
+  }
 
-  pause = () => {
+  pause() {
     if (this.timerId === null || this.startTime === null) {
       return;
     }
 
     this.clear();
     this.remaining -= Date.now() - this.startTime;
-  };
+    this.status = 'paused';
+  }
 
-  resume = () => {
+  resume() {
     this.startTime = Date.now();
     this.clear();
-    this.timerId = setTimeout(this.callback, this.remaining);
-  };
+
+    this.timerId = setTimeout(() => {
+      this.reset();
+      this.callback();
+    }, this.remaining);
+
+    this.status = 'running';
+  }
 
   private clear() {
-    if (this.timerId) {
-      clearTimeout(this.timerId);
-      this.timerId = null;
+    if (this.timerId === null) {
+      return;
     }
+
+    clearTimeout(this.timerId);
+    this.timerId = null;
   }
 }

@@ -1,37 +1,55 @@
 import { useRef } from 'react';
 import { Item } from '@react-stately/collections';
-import { useListState } from '@react-stately/list';
-import { ListState } from '@react-stately/list';
-import { useSelectableItem, useSelectableList } from '@react-aria/selection';
-import type { CollectionChildren, Node } from '@react-types/shared';
+import { CollectionElement } from '@react-types/shared';
 import { tasty } from '../../../tasty';
 import { Notification } from './Notification';
 import type { CubeNotificationProps } from './types';
+import {
+  CollectionChildren,
+  NotificationItemNode,
+  NotificationsListState,
+  useNotificationListItem,
+  useNotificationsList,
+} from './hooks';
 
-export type NotificationsListProps = {
-  children: CollectionChildren<CubeNotificationProps>;
+export type NotificationsListProps<T> = {
+  items?: T[] | readonly T[];
+  children: CollectionChildren<T>;
+} & (NotificationsListFactory<T> | NotificationsListStatic);
+
+export type NotificationsListFactory<T> = {
+  items: T[] | readonly T[];
+  children: (item: T) => CollectionElement<CubeNotificationProps>;
 };
 
-const NotificationListContainer = tasty({});
+export type NotificationsListStatic = {
+  items?: 'You must either use factory or static children';
+  children:
+    | CollectionElement<CubeNotificationProps>
+    | CollectionElement<CubeNotificationProps>[];
+};
 
-export function NotificationsList(props: NotificationsListProps): JSX.Element {
-  const listRef = useRef<HTMLDivElement | null>(null);
-  const state = useListState({ selectionMode: 'none', ...props });
-  const { listProps } = useSelectableList({
-    ref: listRef,
-    allowsTabNavigation: true,
-    ...props,
-    ...state,
+const NotificationListContainer = tasty({
+  styles: { boxSizing: 'border-box', width: '100%' },
+});
+
+export function NotificationsList<T extends object>(
+  props: NotificationsListProps<T>,
+): JSX.Element {
+  const { items, children } = props;
+
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  const { state, listProps } = useNotificationsList({
+    items,
+    children,
+    ref,
   });
 
   return (
-    <NotificationListContainer ref={listRef} {...listProps}>
+    <NotificationListContainer ref={ref} {...listProps}>
       {[...state.collection].map((item) => (
-        <NotificationListItem
-          key={item.key}
-          item={item as NotificationItemNode}
-          state={state}
-        />
+        <NotificationListItem key={item.key} item={item} state={state} />
       ))}
     </NotificationListContainer>
   );
@@ -41,38 +59,28 @@ NotificationsList.Item = Item as unknown as (
   props: CubeNotificationProps,
 ) => null;
 
-type NotificationItemNode = Omit<Node<CubeNotificationProps>, 'props'> & {
-  props: CubeNotificationProps;
-};
-
 type NotificationListItemProps = {
-  item: NotificationItemNode;
-  state: ListState<CubeNotificationProps>;
+  item: NotificationItemNode<CubeNotificationProps>;
+  state: NotificationsListState<CubeNotificationProps>;
 };
 
-const NotificationItemContainer = tasty({
-  styles: { borderBottom: { '': '1bw solid #border', ':last-child': 'none' } },
-});
+const notificationStyles = { '': '1bw solid #border', ':last-child': 'none' };
 
 function NotificationListItem(props: NotificationListItemProps) {
   const { item, state } = props;
   const { key, props: notificationProps } = item;
 
   const ref = useRef<HTMLDivElement>(null);
-  let { itemProps } = useSelectableItem({
-    ref,
-    key,
-    selectionManager: state.selectionManager,
-  });
+
+  const { itemProps } = useNotificationListItem({ ref, key, state });
 
   return (
-    <NotificationItemContainer>
-      <Notification
-        ref={ref}
-        isClosable={false}
-        attributes={itemProps}
-        {...notificationProps}
-      />
-    </NotificationItemContainer>
+    <Notification
+      ref={ref}
+      isClosable={false}
+      attributes={itemProps}
+      styles={notificationStyles}
+      {...notificationProps}
+    />
   );
 }

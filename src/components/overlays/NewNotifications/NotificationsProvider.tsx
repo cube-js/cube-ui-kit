@@ -9,8 +9,9 @@ import {
 } from 'react';
 import invariant from 'tiny-invariant';
 import { NotificationsBar } from './Bar';
-import { CubeNotifyApiProps } from './types';
+import { CubeNotifyApiProps, CubeNotifyApiPropsWithID } from './types';
 import { useEvent } from '../../../_internal';
+import { Portal } from '../../portal';
 
 type NotificationApi = {
   notify: (props: CubeNotifyApiProps) => {
@@ -22,7 +23,9 @@ type NotificationApi = {
   remove: (id: Key) => void;
 };
 
-const NotificationsContext = createContext<NotificationApi | null>(null);
+const NotificationsContext = createContext<{ api: NotificationApi } | null>(
+  null,
+);
 
 export function useNotifications() {
   const context = useContext(NotificationsContext);
@@ -32,22 +35,25 @@ export function useNotifications() {
     "You can't use Notifications outside of the <Root /> component. Please, check if your component is descendant of <Root/> component",
   );
 
-  return context;
+  return context.api;
 }
 
 export function NotificationsProvider(
-  props: PropsWithChildren<{}>,
+  props: PropsWithChildren<Record<string, unknown>>,
 ): JSX.Element {
   const { children } = props;
   const idRef = useRef(0);
-  const [toasts, setToasts] = useState<Map<Key, CubeNotifyApiProps>>(new Map());
+  const [toasts, setToasts] = useState<Map<Key, CubeNotifyApiPropsWithID>>(
+    new Map(),
+  );
 
   const addToast = useEvent((props: CubeNotifyApiProps) => {
-    const { id = ++idRef.current, ...rest } = props;
+    const nextID = idRef.current++;
+    const { id = nextID, duration = 5_000, ...rest } = props;
 
     setToasts((toasts) => {
       const newToasts = new Map(toasts);
-      newToasts.set(id, rest);
+      newToasts.set(id, { id, duration, ...rest });
 
       return newToasts;
     });
@@ -66,10 +72,7 @@ export function NotificationsProvider(
 
         if (currentToast) {
           const newToasts = new Map(toasts);
-          newToasts.set(id, {
-            ...currentToast,
-            ...props,
-          } as CubeNotifyApiProps);
+          newToasts.set(id, { ...currentToast, ...props });
           return newToasts;
         }
 
@@ -95,9 +98,21 @@ export function NotificationsProvider(
     [],
   );
 
+  const providerValue = useMemo(() => ({ api }), []);
+
   return (
-    <NotificationsContext.Provider value={api}>
-      <NotificationsBar toasts={toasts} onRemoveToast={removeToast} />
+    <NotificationsContext.Provider value={providerValue}>
+      <Portal>
+        <NotificationsBar
+          items={[...toasts.values()]}
+          onRemoveToast={removeToast}
+        >
+          {(notification) => (
+            <NotificationsBar.Item key={notification.id} {...notification} />
+          )}
+        </NotificationsBar>
+      </Portal>
+
       {children}
     </NotificationsContext.Provider>
   );

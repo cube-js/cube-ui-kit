@@ -38,7 +38,10 @@ export type CubeNotificationProps = {
   /**
    * Custom Actions in the notification
    */
-  actions?: NotificationActionType | NotificationActionType[];
+  actions?:
+    | NotificationActionType
+    | [NotificationActionType]
+    | [NotificationActionType, NotificationActionType];
 } & (NotificationWithHeader | NotificationWithDescription);
 
 type NotificationWithHeader = {
@@ -52,3 +55,7 @@ type NotificationWithDescription = {
 };
 
 export type CubeNotifyApiProps = CubeNotificationProps;
+
+export type CubeNotifyApiPropsWithID = CubeNotificationProps & {
+  id: NonNullable<CubeNotificationProps['id']>;
+};

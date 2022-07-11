@@ -6,7 +6,10 @@ export type NotificationDescriptionProps = {
   description: string;
 } & HTMLAttributes<HTMLElement>;
 
-const Description = tasty(Paragraph, { gridArea: 'description' });
+const Description = tasty(Paragraph, {
+  as: 'div',
+  styles: { gridArea: 'description' },
+});
 
 export const NotificationDescription = memo(function NotificationDescription(
   props: NotificationDescriptionProps,
