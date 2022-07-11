@@ -4,7 +4,6 @@ const webpack = require('webpack');
 const swcConfig = {
   jsc: {
     parser: { syntax: 'typescript', tsx: true },
-    target: 'es2021',
     transform: { react: { runtime: 'automatic' } },
   },
 };
@@ -18,6 +17,7 @@ const config = {
       name: 'webpack5',
       options: { fsCache: true, lazyCompilation: true },
     },
+    disableTelemetry: true,
   },
   features: {
     postcss: false,
@@ -42,7 +42,7 @@ const config = {
       },
     },
   ],
-  webpackFinal: async (config) => {
+  webpackFinal: (config) => {
     config.plugins.push(new webpack.DefinePlugin({ SC_DISABLE_SPEEDY: true }));
     return config;
   },

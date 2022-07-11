@@ -1,8 +1,8 @@
+import { DocsContainer } from '@storybook/addon-docs';
+import { configure } from '@storybook/testing-library';
 import isChromatic from 'chromatic/isChromatic';
 import { config } from 'react-transition-group';
-import { DocsContainer } from '@storybook/addon-docs';
 import { Root } from '../src';
-import { configure } from '@storybook/testing-library';
 
 configure({ testIdAttribute: 'data-qa', asyncUtilTimeout: 10000 });
 

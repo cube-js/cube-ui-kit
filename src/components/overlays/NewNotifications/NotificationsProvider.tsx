@@ -36,7 +36,7 @@ export function useNotifications() {
 }
 
 export function NotificationsProvider(
-  props: PropsWithChildren<Record<string, never>>,
+  props: PropsWithChildren<{}>,
 ): JSX.Element {
   const { children } = props;
   const idRef = useRef(0);
