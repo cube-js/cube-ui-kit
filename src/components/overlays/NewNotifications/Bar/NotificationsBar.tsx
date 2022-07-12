@@ -58,10 +58,13 @@ export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
   const { focusProps, isFocusVisible } = useFocusRing({ within: true });
 
   const moveFocus = useEvent((key: Key) => {
-    const nextKey = state.collection.getKeyAfter(key);
+    const nextKey =
+      state.collection.getKeyBefore(key.toString()) ??
+      state.collection.getKeyAfter(key.toString()) ??
+      state.collection.getLastKey();
 
     const elementToFocus = ref.current?.querySelector(
-      `[data-key="${nextKey}"]`,
+      `[data-id="${nextKey}"]`,
     ) as HTMLElement;
 
     if (elementToFocus) {
