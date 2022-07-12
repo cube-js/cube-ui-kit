@@ -1,6 +1,5 @@
 import { expect } from '@storybook/jest';
-import { Key, useMemo, useState } from 'react';
-import { action } from '@storybook/addon-actions';
+import { Key, useState } from 'react';
 import { Meta, Story } from '@storybook/react';
 import { BellFilled, BellOutlined } from '@ant-design/icons';
 import { Button } from '../../actions';
@@ -21,7 +20,7 @@ export default {
     header: 'Development mode available',
     description: 'Edit and test your schema without affecting the production.',
   },
-  subcomponents: { Action: NotificationAction },
+  subcomponents: { NotificationAction },
 } as Meta<CubeNotificationProps>;
 
 const ActionTemplate: Story<CubeNotificationProps> = (args) => {
@@ -76,9 +75,7 @@ WithActions.args = {
   actions: (
     <>
       <NotificationAction>Activate</NotificationAction>
-      <NotificationAction type="secondary">
-        Don't show this again
-      </NotificationAction>
+      <NotificationAction>Don't show this again</NotificationAction>
     </>
   ),
 };
@@ -95,9 +92,7 @@ List.args = {
   actions: (
     <>
       <NotificationAction>Activate</NotificationAction>
-      <NotificationAction type="secondary">
-        Don't show this again
-      </NotificationAction>
+      <NotificationAction>Don't show this again</NotificationAction>
     </>
   ),
 };
@@ -175,22 +170,14 @@ export const ComplexInteraction: Story<CubeNotificationProps> = (args) => {
   const { notify } = useNotificationsApi();
 
   const [notifications, setNotifications] = useState<
-    {
-      id?: Key;
-      type: CubeNotificationProps['type'];
-    }[]
+    { id?: Key; type: CubeNotificationProps['type'] }[]
   >([
     { id: '1', type: 'attention' },
     { id: '2', type: 'danger' },
   ]);
 
-  const onCloseNotificationInBarAction = useMemo(
-    () => action('onCloseNotificationInBar'),
-    [],
-  );
-
   return (
-    <>
+    <Flex flow="column" height="100vh min">
       <Header
         display="flex"
         flow="row"
@@ -205,7 +192,6 @@ export const ComplexInteraction: Story<CubeNotificationProps> = (args) => {
               ...current,
               { id: props.id, type: props.type, ...props },
             ]);
-            onCloseNotificationInBarAction(props);
           }}
         >
           <Button
@@ -273,10 +259,13 @@ export const ComplexInteraction: Story<CubeNotificationProps> = (args) => {
       <Flex justifyContent="center" margin="8x">
         <Button onPress={() => notify(args)}>Show notification</Button>
       </Flex>
-    </>
+    </Flex>
   );
 };
 
 ComplexInteraction.args = {
   actions: <NotificationAction>Test</NotificationAction>,
+};
+ComplexInteraction.parameters = {
+  docs: { source: { type: 'code' } },
 };
