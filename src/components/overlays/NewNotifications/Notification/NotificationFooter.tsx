@@ -1,5 +1,7 @@
 import React, { memo } from 'react';
-import { CubeNotificationProps } from '../types';
+import { isElement } from 'react-is';
+import flatten from 'react-keyed-flatten-children';
+import { CubeNotificationProps, NotificationActionComponent } from '../types';
 import { tasty } from '../../../../tasty';
 import { ButtonGroup } from '../../../actions';
 
@@ -22,27 +24,25 @@ export const NotificationFooter = memo(function NotificationFooter(
 
   return (
     <FooterArea>
-      {React.Children.map(
+      {flatten(
         typeof actions === 'function'
           ? actions({ onClose, onDismiss })
           : actions,
-        (action, index) => {
-          if (action != null) {
-            const { props } = action;
+      )
+        .filter((action) => isElement(action))
+        .map((action, index) => {
+          const { props } = action as NotificationActionComponent;
+          const defaultType = index === 0 ? 'primary' : 'secondary';
 
-            return React.cloneElement(
-              action,
-              {
-                ...props,
-                type: props.type ?? index === 0 ? 'primary' : 'secondary',
-              },
-              props.children,
-            );
-          }
-
-          return action;
-        },
-      )}
+          return React.cloneElement(
+            action as NotificationActionComponent,
+            {
+              ...props,
+              type: props.type ?? defaultType,
+            },
+            props.children,
+          );
+        })}
     </FooterArea>
   );
 });
