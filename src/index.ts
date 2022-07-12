@@ -185,3 +185,4 @@ export * from './tasty';
 export { default as copy } from 'clipboard-copy';
 export * from '@react-aria/ssr';
 export * from './components/forms/Form';
+export * from './components/overlays/NewNotifications';
