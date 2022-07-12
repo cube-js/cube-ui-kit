@@ -178,7 +178,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: Docs staging
-      url: ${{ steps.publish_docs.outputs.NETLIFY_PREVIEW_URL }}
+      url: ${{ steps.publish_docs.outputs.preview-url }}
     env:
       NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
