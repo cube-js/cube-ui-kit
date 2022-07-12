@@ -64,7 +64,9 @@ type NotificationListItemProps = {
   state: NotificationsListState<CubeNotificationProps>;
 };
 
-const notificationStyles = { '': '1bw solid #border', ':last-child': 'none' };
+const notificationStyles = {
+  borderBottom: { '': '1bw solid #border', ':last-child': 'none' },
+};
 
 function NotificationListItem(props: NotificationListItemProps) {
   const { item, state } = props;
