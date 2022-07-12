@@ -8,7 +8,7 @@ export class Timer {
 
   private _status: 'stopped' | 'paused' | 'running' = 'stopped';
 
-  public get status() {
+  get status() {
     return this._status;
   }
 
@@ -41,6 +41,8 @@ export class Timer {
   }
 
   resume() {
+    if (this.timerId !== null) return;
+
     this.startTime = Date.now();
     this.clear();
 

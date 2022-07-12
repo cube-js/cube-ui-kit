@@ -7,6 +7,7 @@ describe('<NotificationsBar />', () => {
     'should close on keypress %s',
     (key) => {
       const onRemoveToast = jest.fn();
+      const onDismiss = jest.fn();
 
       renderWithRoot(
         <NotificationsBar
@@ -14,7 +15,8 @@ describe('<NotificationsBar />', () => {
             { id: '1', description: 'test' },
             { id: '2', description: 'test2' },
           ]}
-          onRemoveToast={onRemoveToast}
+          onRemoveNotification={onRemoveToast}
+          onDismissNotification={onDismiss}
         >
           {(item) => (
             <NotificationsBar.Item key={item.id} duration={null} {...item} />
@@ -25,7 +27,7 @@ describe('<NotificationsBar />', () => {
       (document.querySelector('[data-id="1"]') as HTMLElement)?.focus();
       userEvent.keyboard(`{${key}}`);
 
-      expect(onRemoveToast).toHaveBeenCalledWith('1');
+      expect(onDismiss).toHaveBeenCalledWith('1');
     },
   );
 });

@@ -11,6 +11,7 @@ import { NotificationDescription } from './NotificationDescription';
 import { NotificationFooter } from './NotificationFooter';
 import { NotificationCloseButton } from './NotificationCloseButton';
 import type { NotificationProps } from './types';
+import { NotificationProvider } from './NotificationProvider';
 
 const NotificationContainer = tasty({
   styles: {
@@ -46,64 +47,74 @@ export const Notification = forwardRef(function Notification(
     id,
     styles,
     type = 'attention',
-    isClosable = true,
+    isDismissible = true,
     duration = null,
     attributes = {},
     qa = 'notification',
     timer: propsTimer,
+    onDismiss,
   } = props;
 
   const labelID = useId();
   const descriptionID = useId();
 
   const onCloseEvent = useEvent(() => {
-    if (isClosable) {
-      onClose?.();
+    onClose?.();
+  });
+
+  const onDismissEvent = useEvent(() => {
+    if (isDismissible) {
+      onDismiss?.();
     }
   });
 
-  const { isFocusVisible, focusProps, isFocused } = useFocusRing({
-    within: true,
-  });
-
   const { hoverProps, isHovered } = useHover({});
+  const { isFocusVisible, focusProps } = useFocusRing({ within: true });
 
   useTimer({
     timer: propsTimer,
     delay: duration,
-    callback: onCloseEvent,
-    isDisabled: isFocused || isHovered,
+    callback: onDismissEvent,
+    isDisabled: isFocusVisible || isHovered || !isDismissible,
   });
 
   return (
     <ClearSlots>
-      <NotificationContainer
-        {...mergeProps(attributes, hoverProps, focusProps)}
-        styles={styles}
-        ref={ref}
-        data-id={id}
-        data-qa={qa}
-        aria-labelledby={labelID}
-        aria-describedby={descriptionID}
-        mods={{ focused: isFocusVisible }}
-      >
-        <NotificationIcon icon={icon} type={type} />
-        {header && <NotificationHeader header={header} id={labelID} />}
-        {description && (
-          <NotificationDescription
-            description={description}
-            id={descriptionID}
-          />
-        )}
-        {actions && <NotificationFooter actions={actions} />}
-        {isClosable && (
-          <NotificationCloseButton
-            onPress={onCloseEvent}
-            isHovered={isHovered}
-            isFocused={isFocusVisible}
-          />
-        )}
-      </NotificationContainer>
+      <NotificationProvider onClose={onClose}>
+        <NotificationContainer
+          {...mergeProps(attributes, hoverProps, focusProps)}
+          styles={styles}
+          ref={ref}
+          data-id={id}
+          data-qa={qa}
+          aria-labelledby={labelID}
+          aria-describedby={descriptionID}
+          mods={{ focused: isFocusVisible }}
+        >
+          <NotificationIcon icon={icon} type={type} />
+          {header && <NotificationHeader header={header} id={labelID} />}
+          {description && (
+            <NotificationDescription
+              description={description}
+              id={descriptionID}
+            />
+          )}
+          {actions && (
+            <NotificationFooter
+              actions={actions}
+              onClose={onCloseEvent}
+              onDismiss={onDismissEvent}
+            />
+          )}
+          {isDismissible && (
+            <NotificationCloseButton
+              onPress={onDismissEvent}
+              isHovered={isHovered}
+              isFocused={isFocusVisible}
+            />
+          )}
+        </NotificationContainer>
+      </NotificationProvider>
     </ClearSlots>
   );
 });

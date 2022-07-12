@@ -2,10 +2,20 @@ import { Key, ReactElement, ReactNode } from 'react';
 import { NotificationAction, NotificationActionProps } from './Notification';
 
 export type NotificationType = 'success' | 'danger' | 'attention';
-export type NotificationActionType = ReactElement<
+export type NotificationActionComponent = ReactElement<
   NotificationActionProps,
   typeof NotificationAction
 >;
+
+type NotificationActionType =
+  | NotificationActionComponent
+  | [NotificationActionComponent]
+  | [NotificationActionComponent, NotificationActionComponent];
+
+type NotificationActionCallbackArg = {
+  onClose: () => void;
+  onDismiss: () => void;
+};
 
 export type CubeNotificationProps = {
   /**
@@ -24,8 +34,8 @@ export type CubeNotificationProps = {
    * If true, notification will have the close button.
    * @default true
    */
-  isClosable?: boolean;
-  onClose?: () => void;
+  isDismissible?: boolean;
+  onDismiss?: () => void;
   /**
    * Title of the notification
    */
@@ -39,9 +49,8 @@ export type CubeNotificationProps = {
    * Custom Actions in the notification
    */
   actions?:
-    | NotificationActionType
-    | [NotificationActionType]
-    | [NotificationActionType, NotificationActionType];
+    | ((arg: NotificationActionCallbackArg) => NotificationActionType)
+    | NotificationActionType;
 } & (NotificationWithHeader | NotificationWithDescription);
 
 type NotificationWithHeader = {
@@ -58,4 +67,14 @@ export type CubeNotifyApiProps = CubeNotificationProps;
 
 export type CubeNotifyApiPropsWithID = CubeNotificationProps & {
   id: NonNullable<CubeNotificationProps['id']>;
+};
+
+export type CubeNotificationsApi = {
+  notify: (props: CubeNotifyApiProps) => {
+    id: Key;
+    update: (props: Partial<CubeNotifyApiProps>) => void;
+    remove: () => void;
+  };
+  update: (id: Key, props: Partial<CubeNotifyApiProps>) => void;
+  remove: (id: Key) => void;
 };

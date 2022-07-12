@@ -1,13 +1,18 @@
-import { Meta, Story } from '@storybook/react';
-import { Notification, NotificationAction } from './Notification';
-import { CubeNotificationProps } from './types';
-import { Button } from '../../actions';
-import { useNotifications } from './NotificationsProvider';
-import { NotificationsList } from './NotificationsList';
-import { BellFilled } from '@ant-design/icons';
-import { NotificationsDialog, NotificationsDialogTrigger } from './Dialog';
+import { expect } from '@storybook/jest';
 import { Key, useMemo, useState } from 'react';
 import { action } from '@storybook/addon-actions';
+import { Meta, Story } from '@storybook/react';
+import { BellFilled, BellOutlined } from '@ant-design/icons';
+import { Button } from '../../actions';
+import { Notification, NotificationAction } from './Notification';
+import { CubeNotificationProps } from './types';
+import { useNotificationsApi } from './hooks';
+import { NotificationsList } from './NotificationsList';
+import { NotificationsDialog, NotificationsDialogTrigger } from './Dialog';
+import { Header } from '../../content/Header';
+import { CloudLogo } from '../../other/CloudLogo/CloudLogo';
+import { Flex } from '../../layout/Flex';
+import { userEvent, within } from '@storybook/testing-library';
 
 export default {
   title: 'Overlays/Notifications',
@@ -20,12 +25,22 @@ export default {
 } as Meta<CubeNotificationProps>;
 
 const ActionTemplate: Story<CubeNotificationProps> = (args) => {
-  const { notify } = useNotifications();
+  const { notify } = useNotificationsApi();
 
   return <Button onPress={() => notify({ ...args })}>Click Me!</Button>;
 };
 
 export const DefaultAction = ActionTemplate.bind({});
+DefaultAction.play = async ({ canvasElement }) => {
+  const { getByRole, getByTestId } = within(canvasElement);
+
+  const button = getByRole('button');
+  await userEvent.click(button);
+
+  const notification = getByTestId('floating-notification');
+
+  await expect(notification).toBeInTheDocument();
+};
 
 export const StandaloneNotification: Story<CubeNotificationProps> = (args) => (
   <Notification {...args} />
@@ -38,9 +53,7 @@ export const AllTypes: Story<CubeNotificationProps> = () => (
       header="Development mode available"
       description="Edit and test your schema without affecting the production."
       actions={[
-        <NotificationAction key="edit" label="Edit">
-          Activate
-        </NotificationAction>,
+        <NotificationAction key="edit">Activate</NotificationAction>,
         <NotificationAction key="test">
           Never show this again
         </NotificationAction>,
@@ -57,9 +70,6 @@ export const AllTypes: Story<CubeNotificationProps> = () => (
     />
   </>
 );
-
-export const ClosableNotification = StandaloneNotification.bind({});
-ClosableNotification.args = { isClosable: true };
 
 export const WithActions = StandaloneNotification.bind({});
 WithActions.args = {
@@ -154,10 +164,19 @@ NotificationsInModal.args = {
   ),
 };
 
+NotificationsInModal.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+
+  await userEvent.click(canvas.getByRole('button'));
+  await expect(canvas.getByRole('dialog')).toBeInTheDocument();
+};
+
 export const ComplexInteraction: Story<CubeNotificationProps> = (args) => {
+  const { notify } = useNotificationsApi();
+
   const [notifications, setNotifications] = useState<
     {
-      id: Key;
+      id?: Key;
       type: CubeNotificationProps['type'];
     }[]
   >([
@@ -172,71 +191,92 @@ export const ComplexInteraction: Story<CubeNotificationProps> = (args) => {
 
   return (
     <>
-      <ActionTemplate {...args} />
+      <Header
+        display="flex"
+        flow="row"
+        alignItems="center"
+        justifyContent="space-between"
+      >
+        <CloudLogo />
 
-      <NotificationsDialogTrigger>
-        <Button icon={<BellFilled />} type="clear" label="Open Notifications" />
-
-        <NotificationsDialog
+        <NotificationsDialogTrigger
           onCloseNotificationInBar={(props) => {
             setNotifications((current) => [
               ...current,
-              { id: props.id ?? Math.random(), type: props.type },
+              { id: props.id, type: props.type, ...props },
             ]);
             onCloseNotificationInBarAction(props);
           }}
         >
-          <NotificationsList items={notifications}>
-            {({ id, type }) => {
-              if (type === 'attention') {
-                return (
-                  <NotificationsList.Item
-                    key={id}
-                    type="attention"
-                    header="Update available"
-                    description="Click to update your schema."
-                    actions={
-                      <>
-                        <NotificationAction>Update</NotificationAction>
-                        <NotificationAction type="secondary">
+          <Button
+            icon={<BellOutlined />}
+            type="clear"
+            label="Open Notifications"
+          />
+
+          <NotificationsDialog>
+            <NotificationsList items={notifications}>
+              {({ id, type, ...props }) => {
+                if (type === 'attention') {
+                  return (
+                    <NotificationsList.Item
+                      key={id}
+                      type="attention"
+                      header="Update available"
+                      description="Click to update your schema."
+                      actions={[
+                        <NotificationAction key="upd">
+                          Update
+                        </NotificationAction>,
+                        <NotificationAction key="hide">
                           Don't show this again
-                        </NotificationAction>
-                      </>
-                    }
-                  />
-                );
-              }
+                        </NotificationAction>,
+                      ]}
+                      {...props}
+                    />
+                  );
+                }
 
-              if (type === 'danger') {
-                return (
-                  <NotificationsList.Item
-                    key={id}
-                    type="danger"
-                    header="Error"
-                    description="Click to view the error."
-                    actions={
-                      <NotificationAction to="/">View</NotificationAction>
-                    }
-                  />
-                );
-              }
+                if (type === 'danger') {
+                  return (
+                    <NotificationsList.Item
+                      key={id}
+                      type="danger"
+                      header="Error"
+                      description="Click to view the error."
+                      actions={
+                        <NotificationAction to="/">View</NotificationAction>
+                      }
+                      {...props}
+                    />
+                  );
+                }
 
-              if (type === 'success') {
-                return (
-                  <NotificationsList.Item
-                    key={id}
-                    header="Development mode available"
-                    type="success"
-                    {...args}
-                  />
-                );
-              }
+                if (type === 'success') {
+                  return (
+                    <NotificationsList.Item
+                      key={id}
+                      header="Development mode available"
+                      type="success"
+                      {...props}
+                    />
+                  );
+                }
 
-              return <NotificationsList.Item {...args} />;
-            }}
-          </NotificationsList>
-        </NotificationsDialog>
-      </NotificationsDialogTrigger>
+                return <NotificationsList.Item {...args} />;
+              }}
+            </NotificationsList>
+          </NotificationsDialog>
+        </NotificationsDialogTrigger>
+      </Header>
+
+      <Flex justifyContent="center" margin="8x">
+        <Button onPress={() => notify(args)}>Show notification</Button>
+      </Flex>
     </>
   );
+};
+
+ComplexInteraction.args = {
+  actions: <NotificationAction>Test</NotificationAction>,
 };

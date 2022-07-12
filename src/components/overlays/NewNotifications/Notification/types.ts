@@ -8,6 +8,7 @@ export type NotificationProps = {
   attributes?: HTMLAttributes<HTMLDivElement>;
   styles?: Styles;
   timer?: Timer | null;
+  onClose?: () => void;
 } & CubeNotificationProps;
 
 export type NotificationIconProps = {

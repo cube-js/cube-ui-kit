@@ -77,7 +77,7 @@ function NotificationListItem(props: NotificationListItemProps) {
   return (
     <Notification
       ref={ref}
-      isClosable={false}
+      isDismissible={false}
       attributes={itemProps}
       styles={notificationStyles}
       {...notificationProps}

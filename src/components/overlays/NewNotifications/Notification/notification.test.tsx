@@ -19,7 +19,9 @@ describe('<Notification />', () => {
   it('should resume timer on unhover', async () => {
     const onClose = jest.fn();
 
-    render(<Notification description="test" duration={10} onClose={onClose} />);
+    render(
+      <Notification description="test" duration={10} onDismiss={onClose} />,
+    );
 
     const notification = screen.getByTestId('notification');
 
@@ -33,7 +35,7 @@ describe('<Notification />', () => {
 
   it('should close on click', async () => {
     const onClose = jest.fn();
-    render(<Notification description="test" onClose={onClose} />);
+    render(<Notification description="test" onDismiss={onClose} />);
 
     const notification = screen.getByTestId('notification');
 

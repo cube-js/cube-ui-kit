@@ -2,18 +2,25 @@ import { Key, useRef } from 'react';
 import { TransitionGroup } from 'react-transition-group';
 import { Item } from '@react-stately/collections';
 import { useHover } from '@react-aria/interactions';
-import { useFocusRing } from '@react-aria/focus';
+import {
+  useFocusRing,
+  focusSafely,
+  useFocusManager,
+  FocusScope,
+} from '@react-aria/focus';
 import { tasty } from '../../../../tasty';
 import { CubeNotifyApiPropsWithID } from '../types';
 import { TransitionComponent } from './TransitionComponent';
 import { FloatingNotification } from './FloatingNotification';
 import { useNotificationsList, CollectionChildren } from '../hooks';
 import { mergeProps } from '../../../../utils/react';
+import { useEvent } from '../../../../_internal';
 
 export type NotificationsBarProps = {
   items: Iterable<CubeNotifyApiPropsWithID>;
   children: CollectionChildren<CubeNotifyApiPropsWithID>;
-  onRemoveToast: (id: Key) => void;
+  onRemoveNotification: (id: Key) => void;
+  onDismissNotification: (id: Key) => void;
 };
 
 const NotificationsContainer = tasty({
@@ -41,13 +48,26 @@ const NotificationsContainer = tasty({
 });
 
 export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
-  const { items, children, onRemoveToast } = props;
+  const { items, children, onRemoveNotification, onDismissNotification } =
+    props;
 
   const ref = useRef<HTMLElement | null>(null);
 
   const { listProps, state } = useNotificationsList({ items, children, ref });
   const { hoverProps, isHovered } = useHover({});
   const { focusProps, isFocusVisible } = useFocusRing({ within: true });
+
+  const moveFocus = useEvent((key: Key) => {
+    const nextKey = state.collection.getKeyAfter(key);
+
+    const elementToFocus = ref.current?.querySelector(
+      `[data-key="${nextKey}"]`,
+    ) as HTMLElement;
+
+    if (elementToFocus) {
+      focusSafely(elementToFocus);
+    }
+  });
 
   return (
     <NotificationsContainer
@@ -65,7 +85,11 @@ export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
               id={notification.props.id}
               item={notification}
               state={state}
-              onRemoveToast={onRemoveToast}
+              onRemoveNotification={(key) => {
+                onRemoveNotification(key);
+                moveFocus(key);
+              }}
+              onDismissNotification={onDismissNotification}
             />
           </TransitionComponent>
         ))}

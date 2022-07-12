@@ -1,13 +1,38 @@
 import { VisuallyHidden } from '@react-aria/visually-hidden';
-import { CubeDialogProps, Dialog, DialogTrigger } from '../../Dialog';
+import {
+  CubeDialogProps,
+  CubeDialogTriggerProps,
+  Dialog,
+  DialogTrigger,
+} from '../../Dialog';
 import { tasty } from '../../../../tasty';
 import { Flex } from '../../../layout/Flex';
 import { Title } from '../../../content/Title';
 import { ClearSlots } from '../../../../utils/react';
 import { CubeNotifyApiProps } from '../types';
+import { ReactNode, useContext, useEffect } from 'react';
+import { NotificationsContext } from '../NotificationsContext';
 
-export function NotificationsDialogTrigger(props) {
-  return <DialogTrigger {...props} type="popover" />;
+export type NotificationsDialogTriggerProps = Omit<
+  CubeDialogTriggerProps,
+  'type'
+> & {
+  onCloseNotificationInBar?: (props: CubeNotifyApiProps) => void;
+};
+
+export function NotificationsDialogTrigger(
+  props: NotificationsDialogTriggerProps,
+) {
+  const { onCloseNotificationInBar, ...dialogTriggerProps } = props;
+
+  const { addOnDismissListener } = useContext(NotificationsContext) ?? {};
+
+  useEffect(
+    () => addOnDismissListener?.((args) => onCloseNotificationInBar?.(args)),
+    [addOnDismissListener],
+  );
+
+  return <DialogTrigger {...dialogTriggerProps} type="popover" />;
 }
 
 const StyledDialog = tasty(Dialog, {
@@ -26,17 +51,15 @@ const StyledDialogContent = tasty(Flex, {
   },
 });
 
-export type NotificationsDialogProps = {
-  onCloseNotificationInBar?: (props: CubeNotifyApiProps) => void;
-} & CubeDialogProps;
+export type NotificationsDialogProps = { title?: ReactNode } & CubeDialogProps;
 
 export function NotificationsDialog(props: NotificationsDialogProps) {
-  const { children, ...dialogProps } = props;
+  const { children, title = 'Notifications', ...dialogProps } = props;
 
   return (
     <StyledDialog {...dialogProps}>
       <VisuallyHidden>
-        <Title>Notifications</Title>
+        <Title>{title}</Title>
       </VisuallyHidden>
 
       <StyledDialogContent>

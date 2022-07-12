@@ -10,9 +10,10 @@ import {
 } from '../hooks';
 
 export type FloatingNotificationProps = {
-  isDisabledTimer: boolean;
   id: Key;
-  onRemoveToast: (id: Key) => void;
+  isDisabledTimer: boolean;
+  onRemoveNotification: (id: Key) => void;
+  onDismissNotification: (id: Key) => void;
   item: NotificationItemNode<CubeNotifyApiPropsWithID>;
   state: NotificationsListState<CubeNotifyApiPropsWithID>;
 };
@@ -24,28 +25,42 @@ const NotificationContainer = tasty({
 export const FloatingNotification = memo(function FloatingNotification(
   props: FloatingNotificationProps,
 ): JSX.Element {
-  const { item, state, onRemoveToast, id, isDisabledTimer } = props;
+  const {
+    item,
+    state,
+    onRemoveNotification,
+    id,
+    isDisabledTimer,
+    onDismissNotification,
+  } = props;
   const { props: notificationProps, key } = item;
 
   const ref = useRef<HTMLDivElement | null>(null);
-  const chainedOnClose = useChainedCallback(notificationProps.onClose, () =>
-    onRemoveToast(id),
+  const onCloseEvent = useEvent(() => onRemoveNotification(id));
+
+  const chainedOnDismiss = useChainedCallback(
+    () => onDismissNotification(id),
+    () => onRemoveNotification(id),
   );
+
+  const onKeyDown = useEvent<KeyboardEventHandler<HTMLElement>>(({ key }) => {
+    if (notificationProps.isDismissible === false) {
+      return;
+    }
+
+    const closeKeys = ['Delete', 'Backspace', 'Escape'];
+
+    if (closeKeys.includes(key)) {
+      chainedOnDismiss();
+    }
+  });
 
   const { itemProps } = useNotificationListItem({ key, ref, state });
 
   const { timer } = useTimer({
-    callback: chainedOnClose,
+    callback: chainedOnDismiss,
     delay: notificationProps.duration,
     isDisabled: isDisabledTimer,
-  });
-
-  const onKeyDown = useEvent<KeyboardEventHandler<HTMLElement>>(({ key }) => {
-    const closeKeys = ['Delete', 'Backspace', 'Escape'];
-
-    if (closeKeys.includes(key)) {
-      chainedOnClose();
-    }
   });
 
   return (
@@ -60,7 +75,8 @@ export const FloatingNotification = memo(function FloatingNotification(
           role: 'status',
           'aria-atomic': 'true',
         }}
-        onClose={chainedOnClose}
+        onDismiss={chainedOnDismiss}
+        onClose={onCloseEvent}
         qa="floating-notification"
       />
     </NotificationContainer>
