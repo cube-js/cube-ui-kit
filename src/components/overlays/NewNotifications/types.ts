@@ -35,7 +35,19 @@ export type CubeNotificationProps = {
    * @default true
    */
   isDismissible?: boolean;
+  /**
+   * Callback fires when a notificaiton is dismissed either by clicking the close button or the timeout.
+   */
   onDismiss?: () => void;
+  /**
+   * Callback fires when a notificaiton is closed by interacting with the notification (via actions)
+   */
+  onClose?: () => void;
+  /**
+   * When set to false, notification will not appear in `<NotificaitonsDialog />` when dismissed
+   * @default true
+   */
+  putNotificationInDropdownOnDismiss?: boolean;
   /**
    * Title of the notification
    */
@@ -51,7 +63,8 @@ export type CubeNotificationProps = {
   actions?:
     | ((arg: NotificationActionCallbackArg) => NotificationActionType)
     | NotificationActionType;
-} & (NotificationWithHeader | NotificationWithDescription);
+} & (NotificationWithHeader | NotificationWithDescription) &
+  (DismissibleNotification | NonDismissibleNotification);
 
 type NotificationWithHeader = {
   header: string;
@@ -61,6 +74,18 @@ type NotificationWithHeader = {
 type NotificationWithDescription = {
   header?: string;
   description: string;
+};
+
+type DismissibleNotification = {
+  isDismissible: true;
+  onDismiss?: () => void;
+  duration?: number;
+};
+
+type NonDismissibleNotification = {
+  isDismissible?: false;
+  onDismiss?: never;
+  duration?: never;
 };
 
 export type CubeNotifyApiProps = CubeNotificationProps;

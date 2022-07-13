@@ -36,7 +36,10 @@ export const FloatingNotification = memo(function FloatingNotification(
   const { props: notificationProps, key } = item;
 
   const ref = useRef<HTMLDivElement | null>(null);
-  const onCloseEvent = useEvent(() => onRemoveNotification(id));
+  const onCloseEvent = useChainedCallback(
+    () => onRemoveNotification(id),
+    notificationProps.onClose,
+  );
 
   const chainedOnDismiss = useChainedCallback(
     () => onDismissNotification(id),
