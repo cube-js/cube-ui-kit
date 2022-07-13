@@ -18,11 +18,15 @@ export function useNotificationToasts() {
 
   const addToast = useEvent((props: CubeNotifyApiProps) => {
     const nextID = idRef.current++;
-    const { id = nextID, duration = 5_000, ...rest } = props;
+    const { id = nextID, duration, isDismissible = true, ...rest } = props;
 
     setToasts((toasts) => {
       const newToasts = new Map(toasts);
-      newToasts.set(id, { id, duration, ...rest });
+      newToasts.set(id, {
+        id,
+        duration: isDismissible ? 5_000 : null,
+        ...rest,
+      } as CubeNotifyApiPropsWithID);
 
       return newToasts;
     });
@@ -41,7 +45,10 @@ export function useNotificationToasts() {
 
         if (currentToast) {
           const newToasts = new Map(toasts);
-          newToasts.set(id, { ...currentToast, ...props });
+          newToasts.set(id, {
+            ...currentToast,
+            ...props,
+          } as CubeNotifyApiPropsWithID);
           return newToasts;
         }
 
@@ -66,7 +73,7 @@ export function useNotificationToasts() {
   const onDismissNotification = useEvent((id: Key) => {
     const toast = toasts.get(id);
 
-    if (toast) {
+    if (toast?.putNotificationInDropdownOnDismiss) {
       document.dispatchEvent(
         new CustomEvent(DISMISS_EVENT_NAME, { detail: toast }),
       );

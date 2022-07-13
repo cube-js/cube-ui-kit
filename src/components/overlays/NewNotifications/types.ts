@@ -24,6 +24,8 @@ export type CubeNotificationProps = {
   type?: NotificationType;
   /**
    * The delay before the notification hides (in milliseconds) If set to `null`, it will never dismiss.
+   *
+   * @default 5000
    */
   duration?: number | null;
   /**
@@ -85,7 +87,7 @@ type DismissibleNotification = {
 type NonDismissibleNotification = {
   isDismissible?: false;
   onDismiss?: never;
-  duration?: never;
+  duration?: null;
 };
 
 export type CubeNotifyApiProps = CubeNotificationProps;
