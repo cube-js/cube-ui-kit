@@ -7,8 +7,14 @@ export type NotificationDescriptionProps = {
 } & HTMLAttributes<HTMLElement>;
 
 const Description = tasty(Paragraph, {
-  as: 'div',
-  styles: { gridArea: 'description' },
+  as: 'p',
+  styles: {
+    gridArea: 'description',
+    display: '-webkit-box',
+    '-webkit-line-clamp': 3,
+    '-webkit-box-orient': 'vertical',
+    overflow: 'hidden',
+  },
 });
 
 export const NotificationDescription = memo(function NotificationDescription(
