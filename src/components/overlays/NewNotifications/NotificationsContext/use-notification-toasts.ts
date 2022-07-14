@@ -1,4 +1,4 @@
-import { Key, useEffect, useMemo, useRef, useState } from 'react';
+import { Key, RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import {
   CubeNotificationsApi,
   CubeNotifyApiProps,
@@ -9,7 +9,9 @@ import { useEvent } from '../../../../_internal';
 const DISMISS_EVENT_NAME = 'cube:notification:dismiss';
 type DismissEvent = CustomEvent<CubeNotifyApiProps>;
 
-export function useNotificationToasts() {
+export function useNotificationToasts(
+  rootRef: RefObject<HTMLElement | null> | null,
+) {
   const idRef = useRef(0);
   const listeners = useRef<(() => void)[]>([]);
   const [toasts, setToasts] = useState<Map<Key, CubeNotifyApiPropsWithID>>(
@@ -73,8 +75,8 @@ export function useNotificationToasts() {
   const onDismissNotification = useEvent((id: Key) => {
     const toast = toasts.get(id);
 
-    if (toast?.putNotificationInDropdownOnDismiss) {
-      document.dispatchEvent(
+    if (toast?.putNotificationInDropdownOnDismiss !== false) {
+      rootRef?.current?.dispatchEvent(
         new CustomEvent(DISMISS_EVENT_NAME, { detail: toast }),
       );
     }
@@ -85,10 +87,10 @@ export function useNotificationToasts() {
       const callback = (e) => listener((e as DismissEvent).detail);
 
       const unsub = () =>
-        document.removeEventListener(DISMISS_EVENT_NAME, callback);
+        rootRef?.current?.removeEventListener(DISMISS_EVENT_NAME, callback);
 
       listeners.current.push(unsub);
-      document.addEventListener(DISMISS_EVENT_NAME, callback);
+      rootRef?.current?.addEventListener(DISMISS_EVENT_NAME, callback);
 
       return unsub;
     },

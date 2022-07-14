@@ -90,7 +90,9 @@ type NonDismissibleNotification = {
   duration?: null;
 };
 
-export type CubeNotifyApiProps = CubeNotificationProps;
+export type CubeNotifyApiProps = CubeNotificationProps & {
+  meta?: CubeNotificationMeta;
+};
 
 export type CubeNotifyApiPropsWithID = CubeNotificationProps & {
   id: NonNullable<CubeNotificationProps['id']>;
@@ -105,3 +107,5 @@ export type CubeNotificationsApi = {
   update: (id: Key, props: Partial<CubeNotifyApiProps>) => void;
   remove: (id: Key) => void;
 };
+
+export type CubeNotificationMeta = Record<string, unknown>;

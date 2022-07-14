@@ -4,4 +4,8 @@ export * from './hooks';
 export { NotificationAction } from './Notification';
 export * from './Dialog';
 export type { NotificationActionProps } from './Notification';
-export type { CubeNotifyApiProps, CubeNotificationsApi } from './types';
+export type {
+  CubeNotifyApiProps,
+  CubeNotificationsApi,
+  CubeNotificationMeta,
+} from './types';

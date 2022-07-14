@@ -88,7 +88,7 @@ export const Root = (allProps: CubeRootProps) => {
           />
           <ModalProvider>
             <PortalProvider value={ref}>
-              <NotificationsProvider>
+              <NotificationsProvider rootRef={ref}>
                 <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
               </NotificationsProvider>
             </PortalProvider>

@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import { VisuallyHidden } from '@react-aria/visually-hidden';
 import {
   CubeDialogProps,
@@ -10,8 +11,7 @@ import { Flex } from '../../../layout/Flex';
 import { Title } from '../../../content/Title';
 import { ClearSlots } from '../../../../utils/react';
 import { CubeNotifyApiProps } from '../types';
-import { ReactNode, useContext, useEffect } from 'react';
-import { NotificationsContext } from '../NotificationsContext';
+import { useNotificationsObserver } from '../hooks';
 
 export type NotificationsDialogTriggerProps = Omit<
   CubeDialogTriggerProps,
@@ -25,19 +25,12 @@ export function NotificationsDialogTrigger(
 ) {
   const { onCloseNotificationInBar, ...dialogTriggerProps } = props;
 
-  const { addOnDismissListener } = useContext(NotificationsContext) ?? {};
-
-  useEffect(
-    () => addOnDismissListener?.((args) => onCloseNotificationInBar?.(args)),
-    [addOnDismissListener],
-  );
+  useNotificationsObserver((args) => onCloseNotificationInBar?.(args));
 
   return <DialogTrigger {...dialogTriggerProps} type="popover" />;
 }
 
-const StyledDialog = tasty(Dialog, {
-  height: 'auto calc(100vh - 12x)',
-});
+const StyledDialog = tasty(Dialog, { height: 'auto calc(100vh - 12x)' });
 
 const StyledDialogContent = tasty(Flex, {
   styles: {

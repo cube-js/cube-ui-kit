@@ -1,4 +1,4 @@
-import { createContext, PropsWithChildren, useMemo } from 'react';
+import { createContext, PropsWithChildren, RefObject, useMemo } from 'react';
 import { Portal } from '../../../portal';
 import { NotificationsBar } from '../Bar';
 import { CubeNotificationsApi, CubeNotifyApiProps } from '../types';
@@ -12,12 +12,12 @@ export const NotificationsContext = createContext<{
 } | null>(null);
 
 export function NotificationsProvider(
-  props: PropsWithChildren<Record<string, unknown>>,
+  props: PropsWithChildren<{ rootRef: RefObject<HTMLElement | null> | null }>,
 ): JSX.Element {
-  const { children } = props;
+  const { children, rootRef } = props;
 
   const { toasts, api, addOnDismissListener, onDismissNotification } =
-    useNotificationToasts();
+    useNotificationToasts(rootRef);
 
   const providerValue = useMemo(() => ({ api, addOnDismissListener }), []);
 
