@@ -9,5 +9,7 @@ export type {
   CubeNotifyApiProps,
   CubeNotificationsApi,
   CubeNotificationMeta,
+  CubeNotificationsApiNotifyCallback,
+  CubeNotificationsApiNotifyAction,
 } from './types';
 export * from './Notification';

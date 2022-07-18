@@ -1,4 +1,4 @@
-import { Key, ReactElement, ReactNode } from 'react';
+import { Key, ReactChild, ReactElement, ReactFragment, ReactNode } from 'react';
 import {
   NotificationAction,
   NotificationActionProps,
@@ -56,8 +56,8 @@ export type CubeNotificationProps = {
   /**
    * Title of the notification
    */
-  header?: ReactNode;
-  description?: ReactNode;
+  header?: ReactChild | ReactFragment;
+  description?: ReactChild | ReactFragment;
   /**
    * Custom Icon for the notification
    */
@@ -72,13 +72,13 @@ export type CubeNotificationProps = {
   (DismissibleNotification | NonDismissibleNotification);
 
 type NotificationWithHeader = {
-  header: string;
-  description?: ReactNode;
+  header: ReactChild | ReactFragment;
+  description?: ReactChild | ReactFragment;
 };
 
 type NotificationWithDescription = {
-  header?: string;
-  description: ReactNode;
+  header?: ReactChild | ReactFragment;
+  description: ReactChild | ReactFragment;
 };
 
 type DismissibleNotification = {
@@ -101,12 +101,20 @@ export type CubeNotifyApiPropsWithID = CubeNotificationProps & {
   id: NonNullable<CubeNotificationProps['id']>;
 };
 
+export type CubeNotificationsApiNotifyCallback = (
+  props: CubeNotifyApiProps,
+) => {
+  id: Key;
+  update: (props: Partial<CubeNotifyApiProps>) => void;
+  remove: () => void;
+};
+
+export type CubeNotificationsApiNotifyAction =
+  CubeNotificationsApiNotifyCallback &
+    Record<CubeNotificationType, CubeNotificationsApiNotifyCallback>;
+
 export type CubeNotificationsApi = {
-  notify: (props: CubeNotifyApiProps) => {
-    id: Key;
-    update: (props: Partial<CubeNotifyApiProps>) => void;
-    remove: () => void;
-  };
+  notify: CubeNotificationsApiNotifyAction;
   update: (id: Key, props: Partial<CubeNotifyApiProps>) => void;
   remove: (id: Key) => void;
 };

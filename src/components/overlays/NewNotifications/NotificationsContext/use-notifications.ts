@@ -18,27 +18,37 @@ export function useNotifications(
     new Map(),
   );
 
-  const addToast = useEvent((props: CubeNotifyApiProps) => {
-    const nextID = idRef.current++;
-    const { id = nextID, duration, isDismissible = true, ...rest } = props;
+  const addToast: CubeNotificationsApi['notify'] = Object.assign(
+    useEvent((props: CubeNotifyApiProps) => {
+      const nextID = idRef.current++;
+      const { id = nextID, duration, isDismissible = true, ...rest } = props;
 
-    setToasts((toasts) => {
-      const newToasts = new Map(toasts);
-      newToasts.set(id, {
+      setToasts((toasts) => {
+        const newToasts = new Map(toasts);
+        newToasts.set(id, {
+          id,
+          duration: isDismissible ? 5_000 : null,
+          ...rest,
+        } as CubeNotifyApiPropsWithID);
+
+        return newToasts;
+      });
+
+      return {
         id,
-        duration: isDismissible ? 5_000 : null,
-        ...rest,
-      } as CubeNotifyApiPropsWithID);
-
-      return newToasts;
-    });
-
-    return {
-      id,
-      remove: () => removeToast(id),
-      update: (props: Partial<CubeNotifyApiProps>) => updateToast(id, props),
-    };
-  });
+        remove: () => removeToast(id),
+        update: (props: Partial<CubeNotifyApiProps>) => updateToast(id, props),
+      };
+    }),
+    {
+      success: (props: CubeNotifyApiProps) =>
+        addToast({ type: 'success', ...props }),
+      danger: (props: CubeNotifyApiProps) =>
+        addToast({ type: 'danger', ...props }),
+      attention: (props: CubeNotifyApiProps) =>
+        addToast({ type: 'attention', ...props }),
+    },
+  );
 
   const updateToast = useEvent(
     (id: Key, props: Partial<CubeNotifyApiProps>) => {

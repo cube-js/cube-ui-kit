@@ -11,10 +11,7 @@ export function Toast(props: CubeToastsApiProps) {
   const id = propsId ?? defaultId;
 
   useEffect(() => {
-    toast({
-      ...props,
-      id,
-    });
+    toast({ ...props, id });
 
     return () => remove(id);
   }, [id]);
