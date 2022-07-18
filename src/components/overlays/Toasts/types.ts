@@ -25,11 +25,10 @@ export type CubeToastsApiToastCallback = (
   remove: () => void;
 };
 
-export type CubeToastsApiToastShortcuts = {
-  success: CubeToastsApiToastCallback;
-  danger: CubeToastsApiToastCallback;
-  attention: CubeToastsApiToastCallback;
-};
+export type CubeToastsApiToastShortcuts = Record<
+  CubeNotificationType,
+  CubeToastsApiToastCallback
+>;
 
 export type CubeToastsApiToastAction = CubeToastsApiToastCallback &
   CubeToastsApiToastShortcuts;

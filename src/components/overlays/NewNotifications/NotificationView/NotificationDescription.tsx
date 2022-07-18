@@ -1,9 +1,10 @@
 import { HTMLAttributes, memo, ReactNode } from 'react';
 import { tasty } from '../../../../tasty';
 import { Paragraph } from '../../../content/Paragraph';
+import { NotificationProps } from './types';
 
 export type NotificationDescriptionProps = {
-  description: ReactNode;
+  description: NotificationProps['description'];
 } & HTMLAttributes<HTMLElement>;
 
 const Description = tasty(Paragraph, {
