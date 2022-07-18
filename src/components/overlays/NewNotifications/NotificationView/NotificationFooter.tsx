@@ -6,6 +6,7 @@ import { tasty } from '../../../../tasty';
 import { ButtonGroup } from '../../../actions';
 
 interface NotificationFooterProps {
+  hasDescription: boolean;
   actions: CubeNotificationProps['actions'];
   onClose: () => void;
   onDismiss: () => void;
@@ -14,16 +15,20 @@ interface NotificationFooterProps {
 const FooterArea = tasty(ButtonGroup, {
   gridArea: 'footer',
   gap: '2x',
-  styles: { '&:not(:empty)': { margin: '1x top' } },
+  styles: {
+    '&:not(:empty)': {
+      margin: { '': '0.5x top', 'has-description': '1x top' },
+    },
+  },
 });
 
 export const NotificationFooter = memo(function NotificationFooter(
   props: NotificationFooterProps,
 ): JSX.Element {
-  const { actions, onClose, onDismiss } = props;
+  const { actions, onClose, onDismiss, hasDescription } = props;
 
   return (
-    <FooterArea>
+    <FooterArea mods={{ 'has-description': hasDescription }}>
       {flatten(
         typeof actions === 'function'
           ? actions({ onClose, onDismiss })

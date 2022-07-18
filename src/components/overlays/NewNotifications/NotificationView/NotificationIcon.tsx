@@ -7,7 +7,17 @@ const IconContainer = tasty({
   styles: {
     boxSizing: 'border-box',
     display: 'flex',
+    alignSelf: 'start',
     gridArea: 'icon',
+    minHeight: '3x',
+    placeContent: 'center',
+  },
+});
+
+const IconPreset = tasty({
+  styles: {
+    boxSizing: 'border-box',
+    display: 'flex',
     fill: {
       '': '#note-bg',
       attention: '#note-bg',
@@ -38,19 +48,21 @@ export const NotificationIcon = memo(function NotificationIcon(
 ): JSX.Element {
   const { icon, type } = props;
 
-  if (icon) {
-    return <>{icon}</>;
-  }
-
   return (
-    <IconContainer
-      mods={{
-        attention: type === 'attention',
-        success: type === 'success',
-        danger: type === 'danger',
-      }}
-    >
-      {iconsByType[type]}
+    <IconContainer>
+      {icon ? (
+        icon
+      ) : (
+        <IconPreset
+          mods={{
+            attention: type === 'attention',
+            success: type === 'success',
+            danger: type === 'danger',
+          }}
+        >
+          {iconsByType[type]}
+        </IconPreset>
+      )}
     </IconContainer>
   );
 });

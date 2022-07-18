@@ -2,7 +2,7 @@ import { Key, KeyboardEventHandler, memo, useRef } from 'react';
 import { useChainedCallback, useEvent, useTimer } from '../../../../_internal';
 import { tasty } from '../../../../tasty';
 import { CubeNotifyApiPropsWithID } from '../types';
-import { Notification } from '../Notification';
+import { NotificationView } from '../NotificationView';
 import {
   NotificationItemNode,
   NotificationsListState,
@@ -68,7 +68,7 @@ export const FloatingNotification = memo(function FloatingNotification(
 
   return (
     <NotificationContainer>
-      <Notification
+      <NotificationView
         ref={ref}
         {...(notificationProps as any)}
         timer={timer}

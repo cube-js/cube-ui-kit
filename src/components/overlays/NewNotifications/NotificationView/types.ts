@@ -1,5 +1,5 @@
 import type { ReactNode, HTMLAttributes } from 'react';
-import type { NotificationType, CubeNotificationProps } from '../types';
+import type { CubeNotificationType, CubeNotificationProps } from '../types';
 import { Styles } from '../../../../tasty';
 import { Timer } from '../../../../_internal';
 
@@ -12,6 +12,6 @@ export type NotificationProps = {
 } & CubeNotificationProps;
 
 export type NotificationIconProps = {
-  type: NotificationType;
+  type: CubeNotificationType;
   icon?: ReactNode;
 };

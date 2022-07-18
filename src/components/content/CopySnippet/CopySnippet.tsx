@@ -10,6 +10,7 @@ import {
 import { TooltipTrigger } from '../../overlays/Tooltip/TooltipTrigger';
 import { Tooltip } from '../../overlays/Tooltip/Tooltip';
 import { useNotificationsApi } from '../../overlays/NewNotifications';
+import { useToastsApi } from '../../overlays/Toasts';
 
 const ActionElement = tasty(Action, {
   styles: {
@@ -148,16 +149,12 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
     ...props
   } = allProps;
 
-  const { notify } = useNotificationsApi();
+  const { toast } = useToastsApi();
 
   async function onCopy() {
     await copy(code);
 
-    notify({
-      type: 'success',
-      description: `${title} copied`,
-      putNotificationInDropdownOnDismiss: false,
-    });
+    toast.success(`${title} copied`);
   }
 
   const pristineCode = code.replace(/\n$/, '');

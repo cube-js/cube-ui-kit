@@ -1,7 +1,10 @@
 import { Key, ReactElement, ReactNode } from 'react';
-import { NotificationAction, NotificationActionProps } from './Notification';
+import {
+  NotificationAction,
+  NotificationActionProps,
+} from './NotificationView';
 
-export type NotificationType = 'success' | 'danger' | 'attention';
+export type CubeNotificationType = 'success' | 'danger' | 'attention';
 export type NotificationActionComponent = ReactElement<
   NotificationActionProps,
   typeof NotificationAction
@@ -21,7 +24,7 @@ export type CubeNotificationProps = {
   /**
    * @default 'attention'
    */
-  type?: NotificationType;
+  type?: CubeNotificationType;
   /**
    * The delay before the notification hides (in milliseconds) If set to `null`, it will never dismiss.
    *
@@ -53,8 +56,8 @@ export type CubeNotificationProps = {
   /**
    * Title of the notification
    */
-  header?: string;
-  description?: string;
+  header?: ReactNode;
+  description?: ReactNode;
   /**
    * Custom Icon for the notification
    */
@@ -70,22 +73,22 @@ export type CubeNotificationProps = {
 
 type NotificationWithHeader = {
   header: string;
-  description?: string;
+  description?: ReactNode;
 };
 
 type NotificationWithDescription = {
   header?: string;
-  description: string;
+  description: ReactNode;
 };
 
 type DismissibleNotification = {
-  isDismissible: true;
+  isDismissible?: true;
   onDismiss?: () => void;
   duration?: number;
 };
 
 type NonDismissibleNotification = {
-  isDismissible?: false;
+  isDismissible: false;
   onDismiss?: never;
   duration?: null;
 };

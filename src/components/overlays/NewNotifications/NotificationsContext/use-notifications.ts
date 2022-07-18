@@ -9,7 +9,7 @@ import { useEvent } from '../../../../_internal';
 const DISMISS_EVENT_NAME = 'cube:notification:dismiss';
 type DismissEvent = CustomEvent<CubeNotifyApiProps>;
 
-export function useNotificationToasts(
+export function useNotifications(
   rootRef: RefObject<HTMLElement | null> | null,
 ) {
   const idRef = useRef(0);

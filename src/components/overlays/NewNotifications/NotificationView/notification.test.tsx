@@ -2,13 +2,15 @@ import { render, getByTestId, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { wait } from '../../../../test';
 import { Timer } from '../../../../_internal';
-import { Notification } from './Notification';
+import { NotificationView } from './NotificationView';
 
 describe('<Notification />', () => {
   it('should stop timer on hover', async () => {
     const onClose = jest.fn();
 
-    render(<Notification description="test" duration={50} onClose={onClose} />);
+    render(
+      <NotificationView description="test" duration={50} onClose={onClose} />,
+    );
 
     await userEvent.hover(screen.getByTestId('notification'));
     await wait(100);
@@ -20,7 +22,7 @@ describe('<Notification />', () => {
     const onClose = jest.fn();
 
     render(
-      <Notification description="test" duration={10} onDismiss={onClose} />,
+      <NotificationView description="test" duration={10} onDismiss={onClose} />,
     );
 
     const notification = screen.getByTestId('notification');
@@ -35,7 +37,7 @@ describe('<Notification />', () => {
 
   it('should close on click', async () => {
     const onClose = jest.fn();
-    render(<Notification description="test" onDismiss={onClose} />);
+    render(<NotificationView description="test" onDismiss={onClose} />);
 
     const notification = screen.getByTestId('notification');
 
@@ -49,7 +51,9 @@ describe('<Notification />', () => {
   it('should kill timer on unmount', async () => {
     const onClose = jest.fn();
 
-    render(<Notification description="test" duration={10} onClose={onClose} />);
+    render(
+      <NotificationView description="test" duration={10} onClose={onClose} />,
+    );
     cleanup();
 
     await wait(100);
@@ -62,7 +66,9 @@ describe('<Notification />', () => {
     const timerCallback = jest.fn();
     const timer = new Timer(timerCallback, 100);
 
-    render(<Notification description="test" onClose={onClose} timer={timer} />);
+    render(
+      <NotificationView description="test" onClose={onClose} timer={timer} />,
+    );
 
     await wait(500);
 

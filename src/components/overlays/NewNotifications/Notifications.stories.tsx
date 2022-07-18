@@ -1,9 +1,11 @@
-import { expect } from '@storybook/jest';
 import { Key, useState } from 'react';
+import { expect } from '@storybook/jest';
+import { userEvent, within } from '@storybook/testing-library';
 import { Meta, Story } from '@storybook/react';
 import { BellFilled, BellOutlined } from '@ant-design/icons';
 import { Button } from '../../actions';
-import { Notification, NotificationAction } from './Notification';
+import { NotificationView, NotificationAction } from './NotificationView';
+import { Notification } from './Notification';
 import { CubeNotificationProps } from './types';
 import { useNotificationsApi } from './hooks';
 import { NotificationsList } from './NotificationsList';
@@ -11,11 +13,10 @@ import { NotificationsDialog, NotificationsDialogTrigger } from './Dialog';
 import { Header } from '../../content/Header';
 import { CloudLogo } from '../../other/CloudLogo/CloudLogo';
 import { Flex } from '../../layout/Flex';
-import { userEvent, within } from '@storybook/testing-library';
 
 export default {
   title: 'Overlays/Notifications',
-  component: Notification,
+  component: NotificationView,
   args: {
     header: 'Development mode available',
     description: 'Edit and test your schema without affecting the production.',
@@ -41,13 +42,43 @@ DefaultAction.play = async ({ canvasElement }) => {
   await expect(notification).toBeInTheDocument();
 };
 
+export const NotifyAsComponent: Story<CubeNotificationProps> = (args) => {
+  return (
+    <>
+      <Notification.Success {...args} />
+      <Notification.Danger {...args} />
+      <Notification.Attention {...args} />
+      <Notification
+        actions={
+          <>
+            <NotificationAction>Test</NotificationAction>
+            <NotificationAction>Alternative</NotificationAction>
+          </>
+        }
+        {...args}
+      />
+    </>
+  );
+};
+
 export const StandaloneNotification: Story<CubeNotificationProps> = (args) => (
-  <Notification {...args} />
+  <NotificationView {...args} />
 );
+
+export const WithIcon = StandaloneNotification.bind({});
+WithIcon.args = {
+  icon: <BellOutlined style={{ display: 'flex', alignSelf: 'center' }} />,
+};
+
+export const WithLongDescription = StandaloneNotification.bind({});
+WithLongDescription.args = {
+  description:
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nisl eu consectetur consectetur, nisl nisl consectetur nisl, euismod nisl nisl euismod nisl. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nisl eu consectetur consectetur, nisl nisl consectetur nisl, euismod nisl nisl euismod nisl. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nisl eu consectetur consectetur, nisl nisl consectetur nisl, euismod nisl nisl euismod nisl. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nisl eu consectetur consectetur, nisl nisl consectetur nisl, euismod nisl nisl euismod nisl.',
+};
 
 export const AllTypes: Story<CubeNotificationProps> = () => (
   <>
-    <Notification
+    <NotificationView
       type="success"
       header="Development mode available"
       description="Edit and test your schema without affecting the production."
@@ -58,11 +89,11 @@ export const AllTypes: Story<CubeNotificationProps> = () => (
         </NotificationAction>,
       ]}
     />
-    <Notification
+    <NotificationView
       type="attention"
       description="Edit and test your schema without affecting the production."
     />
-    <Notification
+    <NotificationView
       type="danger"
       header="Your Cube.js api is down"
       actions={<NotificationAction>Restart</NotificationAction>}

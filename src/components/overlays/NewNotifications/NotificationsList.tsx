@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { Item } from '@react-stately/collections';
 import { CollectionElement } from '@react-types/shared';
 import { tasty } from '../../../tasty';
-import { Notification } from './Notification';
+import { NotificationView } from './NotificationView';
 import type { CubeNotificationProps } from './types';
 import {
   CollectionChildren,
@@ -77,12 +77,12 @@ function NotificationListItem(props: NotificationListItemProps) {
   const { itemProps } = useNotificationListItem({ ref, key, state });
 
   return (
-    <Notification
+    <NotificationView
       ref={ref}
       isDismissible={false}
       attributes={itemProps}
       styles={notificationStyles}
-      {...notificationProps}
+      {...(notificationProps as any)}
     />
   );
 }

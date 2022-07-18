@@ -23,9 +23,10 @@ const NotificationContainer = tasty({
     gridAreas: `
       "icon . header"
       "icon . description"
-      "icon . footer"
+      ".    . footer"
     `,
     gridColumns: 'min-content 1x minmax(0, auto)',
+    gridRows: 'minmax(0, auto) minmax(0, auto) minmax(0, auto)',
     fill: '#white',
     boxShadow: {
       '': '0 0 0 4bw #purple-04.0 inset',
@@ -34,7 +35,7 @@ const NotificationContainer = tasty({
   },
 });
 
-export const Notification = forwardRef(function Notification(
+export const NotificationView = forwardRef(function NotificationView(
   props: NotificationProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
@@ -92,20 +93,23 @@ export const Notification = forwardRef(function Notification(
           mods={{ focused: isFocusVisible }}
         >
           <NotificationIcon icon={icon} type={type} />
+
           {header && <NotificationHeader header={header} id={labelID} />}
+
           {description && (
             <NotificationDescription
               description={description}
               id={descriptionID}
             />
           )}
-          {actions && (
-            <NotificationFooter
-              actions={actions}
-              onClose={onCloseEvent}
-              onDismiss={onDismissEvent}
-            />
-          )}
+
+          <NotificationFooter
+            hasDescription={!!description}
+            actions={actions}
+            onClose={onCloseEvent}
+            onDismiss={onDismissEvent}
+          />
+
           {isDismissible && (
             <NotificationCloseButton
               onPress={onDismissEvent}
