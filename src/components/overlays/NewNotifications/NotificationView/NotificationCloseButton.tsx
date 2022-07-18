@@ -12,8 +12,8 @@ export type NotificationCloseButtonProps = {
 const CloseButton = tasty(Button, {
   styles: {
     position: 'absolute',
-    right: 0,
-    top: 0,
+    right: '-0.75x',
+    top: '-0.75x',
     display: 'flex',
     placeItems: 'center',
     padding: '0.75x',
@@ -25,7 +25,6 @@ const CloseButton = tasty(Button, {
     borderRadius: '50%',
     visibility: { '': 'hidden', show: 'visible' },
     opacity: { '': '0', show: '1' },
-    transform: 'translate(50%, -50%)',
     transition: 'opacity, visibility 0.2s ease-in-out',
   },
 });

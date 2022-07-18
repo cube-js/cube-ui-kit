@@ -39,7 +39,7 @@ const NotificationContainer = tasty({
       position: 'absolute',
       top: '-8px',
       left: '0',
-      right: '-16px',
+      right: '-8px',
       bottom: '0',
       display: { '': 'none', 'is-dismissible': 'flex' },
     },
