@@ -20,6 +20,7 @@ const NotificationContainer = tasty({
     display: 'grid',
     width: '100%',
     padding: '1.5x 1x 1.5x 1.5x',
+    radius: '0.5x',
     gridAreas: `
       "icon . header"
       "icon . description"
@@ -31,6 +32,16 @@ const NotificationContainer = tasty({
     boxShadow: {
       '': '0 0 0 4bw #purple-04.0 inset',
       focused: '0 0 0 4bw #purple-04 inset',
+    },
+    '&::before': {
+      zIndex: 0,
+      content: '""',
+      position: 'absolute',
+      top: '-8px',
+      left: '0',
+      right: '-16px',
+      bottom: '0',
+      display: { '': 'none', 'is-dismissible': 'flex' },
     },
   },
 });
@@ -90,7 +101,7 @@ export const NotificationView = forwardRef(function NotificationView(
           data-qa={qa}
           aria-labelledby={labelID}
           aria-describedby={descriptionID}
-          mods={{ focused: isFocusVisible }}
+          mods={{ focused: isFocusVisible, 'is-dismissible': isDismissible }}
         >
           <NotificationIcon icon={icon} type={type} />
 

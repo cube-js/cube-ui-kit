@@ -1,5 +1,8 @@
-import { Key, ReactChild, ReactFragment, ReactNode } from 'react';
-import { CubeNotificationType, CubeNotifyApiProps } from '../NewNotifications';
+import type { Key, ReactChild, ReactFragment, ReactNode } from 'react';
+import type {
+  CubeNotificationType,
+  CubeNotifyApiProps,
+} from '../NewNotifications';
 
 export type CubeToastsApiProps = {
   description: ReactChild | ReactFragment;

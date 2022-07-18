@@ -10,9 +10,14 @@ import { CubeNotificationProps } from './types';
 import { useNotificationsApi } from './hooks';
 import { NotificationsList } from './NotificationsList';
 import { NotificationsDialog, NotificationsDialogTrigger } from './Dialog';
-import { Header } from '../../content/Header';
 import { CloudLogo } from '../../other/CloudLogo/CloudLogo';
 import { Flex } from '../../layout/Flex';
+import { Dialog, DialogTrigger } from '../Dialog';
+import { Paragraph } from '../../content/Paragraph';
+import { Header } from '../../content/Header';
+import { Content } from '../../content/Content';
+import { Footer } from '../../content/Footer';
+import { Title } from '../../content/Title';
 
 export default {
   title: 'Overlays/Notifications',
@@ -191,6 +196,55 @@ NotificationsInModal.args = {
 };
 
 NotificationsInModal.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+
+  await userEvent.click(canvas.getByRole('button'));
+  await expect(canvas.getByRole('dialog')).toBeInTheDocument();
+};
+
+export const NotificationWithDialog: Story<CubeNotificationProps> = (args) => (
+  <DialogTrigger>
+    <Button>Open Dialog</Button>
+
+    {(close) => (
+      <Dialog>
+        <Header>
+          <Title>Modal title</Title>
+        </Header>
+        <Content>
+          <Paragraph>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus nec
+            ante in ex ultricies faucibus ac quis turpis. Suspendisse nec
+            interdum erat, rutrum dapibus ex. Proin rutrum auctor nisi, vitae
+            congue nibh aliquam a. Vestibulum quis libero mattis, facilisis orci
+            at, consequat metus. Quisque et molestie massa. Mauris eu volutpat
+            magna, quis posuere leo. Suspendisse potenti. Morbi hendrerit rutrum
+            purus, ac accumsan erat semper a. Donec vitae sem finibus, tincidunt
+            nulla eget, accumsan nibh. Proin nec mi commodo, commodo ex ac,
+            porttitor arcu. Nullam lacinia ex eget purus suscipit pellentesque.
+            Curabitur vulputate sit amet velit eget lacinia. Sed bibendum, velit
+            in lacinia imperdiet, nibh nisi mollis urna, nec porta elit odio et
+            urna.
+          </Paragraph>
+        </Content>
+        <Footer>
+          <Button.Group>
+            <Button onPress={close} type="primary">
+              Action
+            </Button>
+            <Button onPress={close}>Cancel</Button>
+          </Button.Group>
+        </Footer>
+
+        <Notification.Success {...args} />
+        <Notification.Danger {...args} />
+        <Notification.Attention {...args} />
+      </Dialog>
+    )}
+  </DialogTrigger>
+);
+
+NotificationWithDialog.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
 
   await userEvent.click(canvas.getByRole('button'));
