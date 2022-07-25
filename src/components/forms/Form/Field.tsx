@@ -124,6 +124,10 @@ export interface CubeFieldProps extends OptionalFieldBaseProps {
   name?: string[] | string;
   /** Whether the field is hidden. */
   isHidden?: boolean;
+  /** Whether the field is disabled. */
+  isDisabled?: boolean;
+  /** Whether the field is loading. */
+  isLoading?: boolean;
   styles?: Styles;
   labelPosition?: LabelPosition;
   labelStyles?: Styles;
@@ -165,6 +169,8 @@ export function Field(allProps: CubeFieldProps) {
     description,
     tooltip,
     isHidden,
+    isDisabled,
+    isLoading,
     styles,
     labelPosition,
     labelStyles,
@@ -228,6 +234,7 @@ export function Field(allProps: CubeFieldProps) {
     return (
       <FieldWrapper
         isHidden={isHidden}
+        isDisabled={isDisabled}
         validationState={validationState}
         necessityIndicator={necessityIndicator}
         necessityLabel={necessityLabel}
@@ -364,6 +371,14 @@ export function Field(allProps: CubeFieldProps) {
 
   if (isHidden != null) {
     newProps.isHidden = isHidden;
+  }
+
+  if (isDisabled != null) {
+    newProps.isDisabled = isDisabled;
+  }
+
+  if (isLoading != null) {
+    newProps.isLoading = isLoading;
   }
 
   if (field && field.errors && field.errors.length) {
