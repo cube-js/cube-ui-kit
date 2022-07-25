@@ -271,7 +271,7 @@ export const ComplexInteraction: Story<CubeNotificationProps> = (args) => {
           onCloseNotificationInBar={(props) => {
             setNotifications((current) => [
               ...current,
-              { id: props.id, type: props.type, ...props },
+              { type: props.type, ...props },
             ]);
           }}
         >
