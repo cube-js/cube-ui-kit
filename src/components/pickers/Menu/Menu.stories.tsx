@@ -70,7 +70,7 @@ export const Default = ({ ...props }) => {
       <Space
         gap="10x"
         placeContent="start start"
-        alignItems="start"
+        placeItems="start"
         height="400px"
       >
         {menu}
@@ -194,6 +194,36 @@ export const MenuSelectableMultiple = (props) => {
   return MenuTemplate({
     ...props,
     selectionMode: 'multiple',
+    selectedKeys,
+    onSelectionChange,
+  });
+};
+
+export const MenuSelectableCheckboxes = (props) => {
+  const [selectedKeys, setSelectedKeys] = useState(['1', '2']);
+  const onSelectionChange = (key) => {
+    setSelectedKeys(key);
+  };
+
+  return MenuTemplate({
+    ...props,
+    selectionIcon: 'checkbox',
+    selectionMode: 'multiple',
+    selectedKeys,
+    onSelectionChange,
+  });
+};
+
+export const MenuSelectableRadio = (props) => {
+  const [selectedKeys, setSelectedKeys] = useState(['1']);
+  const onSelectionChange = (key) => {
+    setSelectedKeys(key);
+  };
+
+  return MenuTemplate({
+    ...props,
+    selectionIcon: 'radio',
+    selectionMode: 'single',
     selectedKeys,
     onSelectionChange,
   });

@@ -15,62 +15,64 @@ import {
   extractStyles,
   PositionStyleProps,
   Styles,
+  tasty,
 } from '../../../tasty';
 import type { AriaTextFieldProps } from '@react-types/textfield';
 import { FormFieldProps } from '../../../shared';
 import { createFocusableRef } from '@react-spectrum/utils';
 import { FieldWrapper } from '../FieldWrapper';
-import { useContextStyles } from '../../../providers/StyleProvider';
 
-const DEFAULT_WRAPPER_STYLES: Styles = {
-  display: 'inline-flex',
-  position: 'relative',
-  preset: 't3',
-  padding: '.75x 1x',
-  gap: '1x',
-  flow: 'row',
-  placeItems: 'center start',
-  fill: {
-    '': '#white',
-    'drag-hover': '#purple.16',
-  },
-  border: true,
-  radius: true,
-  cursor: 'pointer',
-  overflow: 'hidden',
-
-  Button: {
-    radius: 'round',
+const FileInputElement = tasty(Action, {
+  styles: {
+    display: 'inline-flex',
+    position: 'relative',
+    preset: 't3',
+    padding: '.75x 1x',
+    gap: '1x',
+    flow: 'row',
+    placeItems: 'center start',
     fill: {
-      '': '#light',
-      'hovered | focused | pressed': '#purple-04',
-      disabled: '#light',
+      '': '#white',
+      'drag-hover': '#purple.16',
     },
-    color: '#dark',
-    padding: '.5x 1x',
-    transition: 'fill',
-  },
-
-  Placeholder: {
-    color: '#dark-02',
-  },
-
-  Value: {
-    color: '#dark-02',
-  },
-
-  Input: {
-    position: 'absolute',
-    top: '-50px',
-    right: 0,
-    bottom: 0,
-    left: 0,
-    radius: '@content-radius',
-    // opacity: 0,
+    border: true,
+    radius: true,
     cursor: 'pointer',
-    zIndex: 10,
+    overflow: 'hidden',
+
+    Button: {
+      radius: 'round',
+      fill: {
+        '': '#light',
+        'hovered | focused | pressed': '#purple-04',
+        disabled: '#light',
+      },
+      color: '#dark',
+      padding: '.5x 1x',
+      transition: 'fill',
+    },
+
+    Placeholder: {
+      color: '#dark-02',
+    },
+
+    Value: {
+      color: '#dark-02',
+    },
+
+    Input: {
+      position: 'absolute',
+      top: '-50px',
+      right: 0,
+      bottom: 0,
+      left: 0,
+      radius: '@content-radius',
+      // opacity: 0,
+      cursor: 'pointer',
+      zIndex: 10,
+    },
   },
-};
+});
 
 export interface CubeFileInputProps
   extends BaseProps,
@@ -144,12 +146,6 @@ function FileInput(props: CubeFileInputProps, ref) {
 
   let styles = extractStyles(otherProps, CONTAINER_STYLES);
 
-  inputStyles = {
-    ...DEFAULT_WRAPPER_STYLES,
-    ...useContextStyles('FileInput', otherProps),
-    ...inputStyles,
-  };
-
   const onLocalChange = useCallback(
     (event) => {
       const value = event.target.value;
@@ -179,7 +175,7 @@ function FileInput(props: CubeFileInputProps, ref) {
   }));
 
   const fileInput = (
-    <Action
+    <FileInputElement
       qa={qa || 'FileInput'}
       styles={inputStyles}
       isDisabled={isDisabled}
@@ -216,7 +212,7 @@ function FileInput(props: CubeFileInputProps, ref) {
       <div data-element={!!value ? 'Value' : 'Placeholder'}>
         {value || placeholder || 'No file selected'}
       </div>
-    </Action>
+    </FileInputElement>
   );
 
   return (

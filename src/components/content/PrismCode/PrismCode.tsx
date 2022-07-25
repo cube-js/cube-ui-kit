@@ -8,7 +8,7 @@ import {
   tasty,
 } from '../../../tasty';
 
-const RawPre = tasty({
+const PreElement = tasty({
   as: 'pre',
   qa: 'CodeBlock',
   styleProps: CONTAINER_STYLES.concat([]),
@@ -52,11 +52,11 @@ function PrismCode(props: CubePrismCodeProps, ref) {
   });
 
   return (
-    <RawPre ref={ref} className="cube-prism-code" {...otherProps}>
+    <PreElement ref={ref} className="cube-prism-code" {...otherProps}>
       <code data-element="Code" className={`language-${language}`}>
         {code}
       </code>
-    </RawPre>
+    </PreElement>
   );
 }
 

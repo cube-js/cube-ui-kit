@@ -8,17 +8,18 @@ import { useProviderProps } from '../../../provider';
 import {
   BaseProps,
   BLOCK_STYLES,
+  Element,
   extractStyles,
   filterBaseProps,
   OUTER_STYLES,
   Styles,
+  tasty,
 } from '../../../tasty';
-import { Base } from '../../Base';
 import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react';
 import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../Label';
 import { HiddenInput } from '../../HiddenInput';
-import { useFormProps } from '../Form/Form';
+import { useFormProps } from '../Form';
 import { FieldWrapper } from '../FieldWrapper';
 import { CheckboxGroup } from './CheckboxGroup';
 import { CheckboxGroupContext } from './context';
@@ -28,7 +29,6 @@ import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
-import { useContextStyles } from '../../../providers/StyleProvider';
 
 export interface CubeCheckboxProps
   extends BaseProps,
@@ -49,44 +49,55 @@ const IndeterminateOutline = () => (
   </svg>
 );
 
-const DEFAULT_STYLES: Styles = {
-  position: 'relative',
-  display: 'flex',
-  placeItems: 'center start',
-  gap: '1x',
-  flow: 'row',
-  preset: 'default',
-  cursor: 'pointer',
-} as const;
+const CheckboxWrapperElement = tasty({
+  as: 'label',
+  qa: 'CheckboxWrapper',
+  styles: {
+    position: 'relative',
+    display: 'flex',
+    placeItems: 'center start',
+    gap: '1x',
+    flow: 'row',
+    preset: 'default',
+    cursor: 'pointer',
+    margin: {
+      '': 0,
+      'inside-form & side-label': '1.5x top',
+    },
+  },
+});
 
-const INPUT_STYLES: Styles = {
-  display: 'grid',
-  placeItems: 'center',
-  radius: '.5r',
-  fill: {
-    '': '#white',
-    'checked | indeterminate': '#purple-text',
-    'invalid & !checked': '#white',
-    'invalid & checked': '#danger-text',
-    disabled: '#dark.12',
+const CheckboxElement = tasty({
+  qa: 'Checkbox',
+  styles: {
+    display: 'grid',
+    placeItems: 'center',
+    radius: '.5r',
+    fill: {
+      '': '#white',
+      'checked | indeterminate': '#purple-text',
+      'invalid & !checked': '#white',
+      'invalid & checked': '#danger-text',
+      disabled: '#dark.12',
+    },
+    color: {
+      '': '#white',
+      'disabled & !checked & !indeterminate': '#clear',
+    },
+    border: {
+      '': '#dark.30',
+      invalid: '#danger-text.50',
+      'disabled | ((indeterminate | checked) & !invalid)': '#clear',
+    },
+    width: '(2x - 2bw)',
+    height: '(2x - 2bw)',
+    outline: {
+      '': '#purple-03.0',
+      focused: '#purple-03',
+    },
+    transition: 'theme',
   },
-  color: {
-    '': '#white',
-    'disabled & !checked & !indeterminate': '#clear',
-  },
-  border: {
-    '': '#dark.30',
-    invalid: '#danger-text.50',
-    'disabled | ((indeterminate | checked) & !invalid)': '#clear',
-  },
-  width: '(2x - 2bw)',
-  height: '(2x - 2bw)',
-  outline: {
-    '': '#purple-03.0',
-    focused: '#purple-03',
-  },
-  transition: 'theme',
-} as const;
+});
 
 function Checkbox(
   props: WithNullableSelected<CubeCheckboxProps>,
@@ -130,31 +141,16 @@ function Checkbox(
   // but since the checkbox won't move in and out of a group, it should be safe.
   let groupState = useContext(CheckboxGroupContext);
 
-  let wrapperContextStyles = useContextStyles('Checkbox_Wrapper', props);
-  let inputContextStyles = useContextStyles('Checkbox', props);
-  let labelContextStyles = useContextStyles('Checkbox_Label', props);
-
-  let styles: Styles = extractStyles(props, OUTER_STYLES, {
-    ...(insideForm && !groupState ? {} : DEFAULT_STYLES),
-    ...wrapperContextStyles,
-  });
-  let inputStyles = extractStyles(props, BLOCK_STYLES, {
-    ...INPUT_STYLES,
-    ...inputContextStyles,
-  });
+  let styles: Styles = extractStyles(props, OUTER_STYLES);
+  let inputStyles = extractStyles(props, BLOCK_STYLES);
 
   labelStyles = {
     ...(insideForm && !groupState ? LABEL_STYLES : INLINE_LABEL_STYLES),
-    ...labelContextStyles,
     ...labelStyles,
   };
 
   if (!insideForm) {
     labelStyles.fontWeight = 400;
-  }
-
-  if (insideForm && labelPosition === 'side') {
-    inputStyles.marginTop = '1x';
   }
 
   let { isFocused, focusProps } = useFocus({ isDisabled }, true);
@@ -197,10 +193,22 @@ function Checkbox(
     }
   }
 
-  let checkboxField = (
-    <Base
-      qa="CheckboxContainer"
+  const mods = {
+    checked: inputProps.checked,
+    indeterminate: isIndeterminate,
+    invalid: validationState === 'invalid',
+    valid: validationState === 'valid',
+    disabled: isDisabled,
+    hovered: isHovered,
+    focused: isFocused,
+    'side-label': labelPosition === 'side',
+    'inside-form': insideForm,
+  };
+
+  const checkboxField = (
+    <CheckboxWrapperElement
       isHidden={isHidden}
+      mods={mods}
       styles={{ position: 'relative' }}
     >
       <HiddenInput
@@ -208,22 +216,10 @@ function Checkbox(
         {...mergeProps(inputProps, focusProps)}
         ref={inputRef}
       />
-      <Base
-        qa="CheckboxIcon"
-        mods={{
-          checked: inputProps.checked,
-          indeterminate: isIndeterminate,
-          invalid: validationState === 'invalid',
-          valid: validationState === 'valid',
-          disabled: isDisabled,
-          hovered: isHovered,
-          focused: isFocused,
-        }}
-        styles={inputStyles}
-      >
+      <CheckboxElement qa="Checkbox" mods={mods} styles={inputStyles}>
         {markIcon}
-      </Base>
-    </Base>
+      </CheckboxElement>
+    </CheckboxWrapperElement>
   );
 
   if (insideForm && !groupState) {
@@ -255,7 +251,7 @@ function Checkbox(
   }
 
   return (
-    <Base
+    <CheckboxWrapperElement
       as="label"
       styles={styles}
       isHidden={isHidden}
@@ -265,7 +261,7 @@ function Checkbox(
     >
       {checkboxField}
       {label && (
-        <Base
+        <Element
           styles={labelStyles}
           mods={{
             invalid: validationState === 'invalid',
@@ -275,9 +271,9 @@ function Checkbox(
           {...filterBaseProps(labelProps)}
         >
           {label}
-        </Base>
+        </Element>
       )}
-    </Base>
+    </CheckboxWrapperElement>
   );
 }
 

@@ -52,7 +52,7 @@ const Template: StoryFn<typeof Form> = (args) => {
           combobox: 'two',
           combobox2: 'two',
           checkboxGroup: ['one', 'three'],
-          radioGroup: 'two',
+          radioGroup: 'three',
           switch: false,
         }}
       >

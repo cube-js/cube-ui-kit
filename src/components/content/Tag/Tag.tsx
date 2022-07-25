@@ -6,14 +6,14 @@ import {
   ContainerStyleProps,
   extractStyles,
   filterBaseProps,
+  Styles,
   tasty,
 } from '../../../tasty';
 import { Action } from '../../actions/Action';
 import { Suffix } from '../../layout/Suffix';
-import { Block } from '../../Block';
 import { CloseOutlined } from '@ant-design/icons';
 
-const RawTag = tasty({
+const TagElement = tasty({
   qa: 'Tag',
   role: 'status',
   styles: {
@@ -55,15 +55,14 @@ const RawTag = tasty({
         return map;
       }, {}),
     },
-  },
-});
 
-const RawContent = tasty(Block, {
-  styles: {
-    width: 'max 100%',
-    textOverflow: 'ellipsis',
-    overflow: 'hidden',
-    pointerEvents: 'none',
+    Content: {
+      display: 'block',
+      width: 'max 100%',
+      textOverflow: 'ellipsis',
+      overflow: 'hidden',
+      pointerEvents: 'none',
+    },
   },
 });
 
@@ -87,25 +86,27 @@ export interface CubeTagProps extends BaseProps, ContainerStyleProps {
   type?: keyof typeof THEMES | string;
   isClosable?: boolean;
   onClose?: () => void;
+  closeButtonStyles?: Styles;
 }
 
 const Tag = (allProps: CubeTagProps, ref) => {
-  let { type, isClosable, onClose, children, ...props } = allProps;
+  let { type, isClosable, onClose, closeButtonStyles, children, ...props } =
+    allProps;
 
   const styles = extractStyles(props, CONTAINER_STYLES);
 
   return (
-    <RawTag
+    <TagElement
       {...filterBaseProps(props, { eventProps: true })}
       styles={styles}
       data-type={type}
       mods={{ closable: isClosable }}
       ref={ref}
     >
-      <RawContent mods={{ closable: isClosable }}>{children}</RawContent>
+      <div data-element="Content">{children}</div>
       {isClosable ? (
         <Suffix outerGap="0">
-          <CloseAction onPress={onClose}>
+          <CloseAction styles={closeButtonStyles} onPress={onClose}>
             <CloseOutlined
               style={{
                 fontSize: 'calc(var(--font-size) - (var(--border-width) * 2))',
@@ -114,7 +115,7 @@ const Tag = (allProps: CubeTagProps, ref) => {
           </CloseAction>
         </Suffix>
       ) : undefined}
-    </RawTag>
+    </TagElement>
   );
 };
 

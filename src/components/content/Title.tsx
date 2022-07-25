@@ -25,7 +25,7 @@ export interface CubeTitleProps
   level?: 1 | 2 | 3 | 4 | 5 | 6;
 }
 
-const RawTitle = tasty({
+const TitleElement = tasty({
   qa: 'Title',
   as: 'h1', // it should be dynamic
   styles: {
@@ -72,7 +72,7 @@ const _Title = forwardRef(
     const styles = extractStyles(props, STYLE_LIST, {}, TEXT_PROP_MAP);
 
     return (
-      <RawTitle
+      <TitleElement
         qa={qa || 'Title'}
         as={as || tag}
         styleName={styleName}

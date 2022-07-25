@@ -1,19 +1,17 @@
 import { forwardRef } from 'react';
 import { useSlotProps } from '../../../utils/react';
 import { CubeSpaceProps, Space } from '../../layout/Space';
-import { useContextStyles } from '../../../providers/StyleProvider';
+import { tasty } from '../../../tasty';
+
+const ButtonGroupElement = tasty(Space, {
+  qa: 'ButtonGroup',
+  styles: {
+    gridArea: 'buttonGroup',
+  },
+});
 
 export const ButtonGroup = forwardRef((props: CubeSpaceProps, ref) => {
-  let { styles, ...otherProps } = useSlotProps(props, 'buttonGroup');
-
-  const contextStyles = useContextStyles('ButtonGroup', otherProps);
-
-  styles = styles
-    ? {
-        ...contextStyles,
-        ...styles,
-      }
-    : contextStyles;
-
-  return <Space gridArea="buttonGroup" styles={styles} ref={ref} {...props} />;
+  return (
+    <ButtonGroupElement ref={ref} {...useSlotProps(props, 'buttonGroup')} />
+  );
 });

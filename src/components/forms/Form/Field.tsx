@@ -9,9 +9,15 @@ import {
 } from 'react';
 import { useFormProps } from './Form';
 import { mergeProps } from '../../../utils/react';
-import { OptionalFieldBaseProps, ValidationRule } from '../../../shared';
+import {
+  LabelPosition,
+  OptionalFieldBaseProps,
+  ValidationRule,
+} from '../../../shared';
 import { CubeFormInstance } from './useForm';
 import { FieldWrapper } from '../FieldWrapper';
+import { warn } from '../../../utils/warnings';
+import { Styles } from '../../../tasty';
 
 const ID_MAP = {};
 
@@ -122,6 +128,9 @@ export interface CubeFieldProps extends OptionalFieldBaseProps {
   isDisabled?: boolean;
   /** Whether the field is loading. */
   isLoading?: boolean;
+  styles?: Styles;
+  labelPosition?: LabelPosition;
+  labelStyles?: Styles;
 }
 
 interface CubeFullFieldProps extends CubeFieldProps {
@@ -134,6 +143,7 @@ interface CubeReplaceFieldProps extends CubeFieldProps {
   onSelectionChange?: (any) => void;
   onBlur: () => void;
   onInputChange?: (any) => void;
+  labelPosition?: LabelPosition;
 }
 
 export function Field(allProps: CubeFieldProps) {
@@ -161,6 +171,9 @@ export function Field(allProps: CubeFieldProps) {
     isHidden,
     isDisabled,
     isLoading,
+    styles,
+    labelPosition,
+    labelStyles,
   } = props;
   const nonInput = !name;
   const fieldName: string =
@@ -193,26 +206,21 @@ export function Field(allProps: CubeFieldProps) {
 
   let field = form?.getFieldInstance(fieldName);
 
+  if (field) {
+    field.rules = rules;
+  }
+
   let isRequired = rules && !!rules.find((rule) => rule.required);
 
   useEffect(() => {
     if (!form) return;
 
     if (field) {
-      field.rules = rules;
       form.forceReRender();
     } else {
       form.createField(fieldName);
     }
   }, [field]);
-
-  useEffect(() => {
-    if (!form) return;
-
-    if (field) {
-      field.rules = rules;
-    }
-  }, [rules]);
 
   if (typeof children === 'function') {
     children = children(form);
@@ -237,18 +245,17 @@ export function Field(allProps: CubeFieldProps) {
         message={message}
         description={description}
         Component={child}
+        styles={styles}
+        labelPosition={labelPosition}
+        labelStyles={labelStyles}
       />
     );
   }
 
-  if (!fieldName) {
-    console.error('invalid form name:', fieldName);
-
-    return null;
-  }
-
   if (!form) {
-    console.error('form field requires declared form instance');
+    warn(
+      'Form Field requires declared form instance if field name is specified',
+    );
 
     return null;
   }

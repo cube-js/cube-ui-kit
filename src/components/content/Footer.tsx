@@ -13,7 +13,7 @@ import { useSlotProps } from '../../utils/react';
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
-const RawFooter = tasty({
+const FooterElement = tasty({
   qa: 'Footer',
   'data-id': 'Footer',
   styles: {
@@ -34,7 +34,7 @@ export const Footer = forwardRef((props: CubeFooterProps, ref) => {
   const styles = extractStyles(props, STYLE_LIST);
 
   return (
-    <RawFooter
+    <FooterElement
       {...filterBaseProps(props, { eventProps: true })}
       styles={styles}
       ref={ref}

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { GlobalStyles } from './GlobalStyles';
-import { Base } from './Base';
 import { PortalProvider } from './portal';
 import {
   BASE_STYLES,
@@ -8,12 +7,18 @@ import {
   BLOCK_STYLES,
   extractStyles,
   filterBaseProps,
+  tasty,
 } from '../tasty';
 import { Provider } from '../provider';
 import { ModalProvider } from '@react-aria/overlays';
 import { StyleSheetManager } from 'styled-components';
 import { TOKENS } from '../tokens';
 import { AlertDialogApiProvider } from './overlays/AlertDialog';
+
+const RootElement = tasty({
+  id: 'cube-ui-kit-root',
+  className: 'root',
+});
 
 const DEFAULT_STYLES = {
   display: 'block',
@@ -67,10 +72,8 @@ export const Root = (allProps: CubeRootProps) => {
   return (
     <Provider router={router} root={rootRef}>
       <StyleSheetManager disableVendorPrefixes>
-        <Base
+        <RootElement
           ref={ref}
-          id="cube-ui-kit-root"
-          className="root"
           {...filterBaseProps(props, { eventProps: true })}
           styles={styles}
         >
@@ -87,7 +90,7 @@ export const Root = (allProps: CubeRootProps) => {
               <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
             </PortalProvider>
           </ModalProvider>
-        </Base>
+        </RootElement>
       </StyleSheetManager>
     </Provider>
   );

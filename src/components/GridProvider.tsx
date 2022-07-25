@@ -1,11 +1,13 @@
 import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react';
 import { filterBaseProps, Styles } from '../tasty';
 import { useCombinedRefs } from '../utils/react';
-import { Base } from './Base';
+import { tasty } from '../tasty';
 
-const DEFAULT_STYLES = {
-  display: 'contents',
-};
+const GridElement = tasty({
+  styled: {
+    display: 'contents',
+  },
+});
 
 const COLUMN_WIDTH =
   '((@grid-width - (@column-gap * (@columns-amount - 1))) / @columns-amount)';
@@ -77,10 +79,9 @@ export const GridProvider = forwardRef(
     }, [resizeCallback]);
 
     return (
-      <Base
+      <GridElement
         {...filterBaseProps(props, { eventProps: true })}
         styles={{
-          ...DEFAULT_STYLES,
           '--grid-width': width,
           '--columns-amount': columns,
           '--column-gap': gap,
@@ -89,7 +90,7 @@ export const GridProvider = forwardRef(
         ref={ref}
       >
         {children}
-      </Base>
+      </GridElement>
     );
   },
 );

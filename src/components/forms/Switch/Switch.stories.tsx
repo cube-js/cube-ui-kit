@@ -23,7 +23,9 @@ const Template = (args) => (
 );
 
 export const Default = Template.bind({});
-Default.args = {};
+Default.args = {
+  label: 'Switch',
+};
 
 export const WithoutLabel = Template.bind({});
 WithoutLabel.args = {

@@ -6,6 +6,7 @@ import {
   BaseStyleProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
+  Element,
   extractStyles,
   filterBaseProps,
   Styles,
@@ -13,7 +14,6 @@ import {
   TEXT_STYLES,
   TextStyleProps,
 } from '../../../tasty';
-import { Base } from '../../Base';
 import { useFocusableRef } from '@react-spectrum/utils';
 import { FocusableOptions, useFocusable } from '@react-aria/focus';
 import { useFocus } from '../../../utils/react/interactions';
@@ -54,7 +54,7 @@ const ActiveZone = (
   let { focusableProps } = useFocusable(props, domRef);
 
   return (
-    <Base
+    <Element
       data-is-hovered={isHovered && !isDisabled ? '' : null}
       data-is-focused={isFocused && !isDisabled ? '' : null}
       data-is-disabled={isDisabled || null}

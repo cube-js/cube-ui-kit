@@ -98,3 +98,8 @@ jobs:
               repo: context.repo,
               prNumber: context.payload.pull_request.number
             })
+      - name: Throw error
+        if: steps.measure_size.outcome != 'success'
+        run: |
+          echo "Size limit has been exceeded"
+          exit 1

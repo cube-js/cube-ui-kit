@@ -621,13 +621,7 @@ export function extractStyles(
     if (ignoreList && ignoreList.includes(prop)) {
       // do nothing
     } else if (styleList.includes(propName)) {
-      // If value is not nullish then map it to the styles
-      if (value != null && value !== false) {
-        styles[propName] = value;
-        // If value is nullish then erase the default value of the style
-      } else if (propName in styles) {
-        delete styles[propName];
-      }
+      styles[propName] = value;
     }
   }, {});
 

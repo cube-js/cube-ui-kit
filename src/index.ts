@@ -47,10 +47,7 @@ export { FieldWrapper } from './components/forms/FieldWrapper';
 export type { CubeFieldWrapperProps } from './components/forms/FieldWrapper';
 
 // atoms
-export { LoadingAnimation } from './components/status/LoadingAnimation/LoadingAnimation';
-export type { CubeLoadingAnimationProps } from './components/status/LoadingAnimation/LoadingAnimation';
-export { Spin } from './components/status/Spin/Spin';
-export type { CubeSpinProps } from './components/status/Spin/Spin';
+export * from './components/status';
 export { Base64Upload } from './components/other/Base64Upload/Base64Upload';
 export type { CubeBase64UploadProps } from './components/other/Base64Upload/Base64Upload';
 export { Card } from './components/content/Card/Card';
@@ -84,6 +81,7 @@ export { Switch } from './components/forms/Switch/Switch';
 export type { CubeSwitchProps } from './components/forms/Switch/Switch';
 export { Radio } from './components/forms/RadioGroup/Radio';
 export type { CubeRadioProps } from './components/forms/RadioGroup/Radio';
+export type { CubeRadioGroupProps } from './components/forms/RadioGroup/RadioGroup';
 export { ComboBox } from './components/pickers/ComboBox/ComboBox';
 export type { CubeComboBoxProps } from './components/pickers/ComboBox/ComboBox';
 export { Menu } from './components/pickers/Menu/Menu';

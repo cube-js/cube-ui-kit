@@ -6,7 +6,6 @@ import { FocusScope } from '@react-aria/focus';
 import { forwardRef, ReactNode } from 'react';
 import { useDialog } from '@react-aria/dialog';
 import { useMessageFormatter } from '@react-aria/i18n';
-import { Base } from '../../Base';
 import { CloseOutlined } from '@ant-design/icons';
 import {
   BASE_STYLES,
@@ -18,73 +17,76 @@ import {
   DimensionStyleProps,
   extractStyles,
   Styles,
+  tasty,
 } from '../../../tasty';
 import { mergeProps, SlotProvider } from '../../../utils/react';
 import type { AriaDialogProps } from '@react-types/dialog';
 import { DOMRef } from '@react-types/shared';
-import { useContextStyles } from '../../../providers/StyleProvider';
 
 const STYLES_LIST = [...BASE_STYLES, ...DIMENSION_STYLES, ...BLOCK_STYLES];
 
-const DEFAULT_STYLES: Styles = {
-  pointerEvents: 'auto',
-  position: 'relative',
-  display: 'flex',
-  placeItems: 'stretch',
-  placeContent: 'stretch',
-  width: {
-    '': '288px @dialog-size 90vw',
-    '[data-type="fullscreen"]': '90vw 90vw',
-    '[data-type="fullscreenTakeover"]': '100vw 100vw',
-    '[data-type="panel"]': '100vw 100vw',
+const DialogElement = tasty({
+  as: 'section',
+  styles: {
+    pointerEvents: 'auto',
+    position: 'relative',
+    display: 'flex',
+    placeItems: 'stretch',
+    placeContent: 'stretch',
+    width: {
+      '': '288px @dialog-size 90vw',
+      '[data-type="fullscreen"]': '90vw 90vw',
+      '[data-type="fullscreenTakeover"]': '100vw 100vw',
+      '[data-type="panel"]': '100vw 100vw',
+    },
+    height: {
+      '': 'max 90vh',
+      '[data-type="fullscreenTakeover"] | [data-type="panel"]': 'max 100vh',
+    },
+    gap: 0,
+    flow: 'column',
+    radius: {
+      '': '2r',
+      '[data-type="tray"]': '2r top',
+      '[data-type="fullscreenTakeover"] | [data-type="panel"]': '0r',
+    },
+    fill: '#white',
+    shadow: {
+      '': '0 20px 30px #shadow',
+      '[data-type="popover"]': '0px 4px 16px #shadow',
+    },
+    transform: {
+      '': false,
+      '[data-type="modal"]': 'translate(0, ((50vh - 50%) / -3))',
+    },
+    placeSelf: 'stretch',
+    '@dialog-heading-padding-v': {
+      '': '2x',
+      '[data-type="popover"]': '1x',
+    },
+    '@dialog-content-padding-v': {
+      '': '3x',
+      '[data-type="popover"]': '2x',
+    },
+    '@dialog-padding-h': {
+      '': '3x',
+      '[data-type="popover"]': '2x',
+    },
+    '@dialog-footer-v': {
+      '': '2x',
+      '[data-type="popover"]': '1x',
+    },
+    '@dialog-content-gap': '3x',
   },
-  height: {
-    '': 'max 90vh',
-    '[data-type="fullscreenTakeover"] | [data-type="panel"]': 'max 100vh',
-  },
-  gap: 0,
-  flow: 'column',
-  radius: {
-    '': '2r',
-    '[data-type="tray"]': '2r top',
-    '[data-type="fullscreenTakeover"] | [data-type="panel"]': '0r',
-  },
-  fill: '#white',
-  shadow: {
-    '': '0 20px 30px #shadow',
-    '[data-type="popover"]': '0px 4px 16px #shadow',
-  },
-  transform: {
-    '': false,
-    '[data-type="modal"]': 'translate(0, ((50vh - 50%) / -3))',
-  },
-  placeSelf: 'stretch',
-  '@dialog-heading-padding-v': {
-    '': '2x',
-    '[data-type="popover"]': '1x',
-  },
-  '@dialog-content-padding-v': {
-    '': '3x',
-    '[data-type="popover"]': '2x',
-  },
-  '@dialog-padding-h': {
-    '': '3x',
-    '[data-type="popover"]': '2x',
-  },
-  '@dialog-footer-v': {
-    '': '2x',
-    '[data-type="popover"]': '1x',
-  },
-  '@dialog-content-gap': '3x',
-};
+});
 
 const CLOSE_BUTTON_STYLES: Styles = {
+  display: 'flex',
   position: 'absolute',
   top: '1x',
   right: '1x',
   width: '5x',
   height: '5x',
-  display: 'flex',
   placeContent: 'center',
 };
 
@@ -120,6 +122,7 @@ export interface CubeDialogProps
   onDismiss?: (arg?: any) => void;
   /** That you can replace the close icon with */
   closeIcon?: ReactNode;
+  closeButtonStyles?: Styles;
 }
 
 /**
@@ -139,17 +142,13 @@ export const Dialog = forwardRef(function Dialog(
     isDismissable = contextProps.isDismissable,
     onDismiss = contextProps.onClose,
     closeIcon,
+    closeButtonStyles,
     ...otherProps
   } = props;
 
   size = sizeMap[size.toUpperCase()] || size;
 
-  const styles: Styles = {
-    ...DEFAULT_STYLES,
-    ...useContextStyles('Dialog', props),
-    ...extractStyles(otherProps, STYLES_LIST),
-    '@dialog-size': `${sizePxMap[size] || 288}px`,
-  };
+  const styles: Styles = extractStyles(otherProps, STYLES_LIST);
 
   let formatMessage = useMessageFormatter(intlMessages);
 
@@ -213,7 +212,7 @@ export const Dialog = forwardRef(function Dialog(
 
   return (
     <FocusScope contain restoreFocus>
-      <Base
+      <DialogElement
         data-id="Dialog"
         data-qa={qa || 'Dialog'}
         styles={styles}
@@ -221,6 +220,9 @@ export const Dialog = forwardRef(function Dialog(
         {...dialogProps}
         mods={{
           dismissable: isDismissable,
+        }}
+        style={{
+          '--dialog-size': `${sizePxMap[size] || 288}px`,
         }}
         data-type={type}
         data-size={size}
@@ -241,7 +243,7 @@ export const Dialog = forwardRef(function Dialog(
           )}
           {children}
         </SlotProvider>
-      </Base>
+      </DialogElement>
     </FocusScope>
   );
 });
