@@ -278,6 +278,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
         autoFocus={autoFocus}
         data-size={size}
         styles={inputStyles}
+        isDisabled={isDisabled}
       />
       <Prefix
         padding="0 1x 0 1.5x"
