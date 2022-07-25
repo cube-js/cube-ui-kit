@@ -107,7 +107,7 @@ export function AlertDialogApiProvider(props) {
  * ***Important*** it's commonly a bad practice when you open multiple dialogs in a row;
  * that means this api will reject all dialogs when there is already open one
  *
- * @example Example with calling as a side effect
+ * @example calling in a side effect
  * const alertDialogAPI = useAlertDialogAPI();
  *
  * useEffect(() => {

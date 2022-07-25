@@ -1,6 +1,17 @@
 // @ts-check
 const webpack = require('webpack');
 
+/**
+ * @readonly
+ * @type {import('@swc/core').Config}
+ */
+const swcConfig = {
+  jsc: {
+    parser: { syntax: 'typescript', tsx: true },
+    transform: { react: { runtime: 'automatic' } },
+  },
+};
+
 /** @type {import('@storybook/core-common').StorybookConfig} */
 const config = {
   staticDirs: ['../public'],
@@ -10,6 +21,7 @@ const config = {
       name: 'webpack5',
       options: { fsCache: true, lazyCompilation: true },
     },
+    disableTelemetry: true,
   },
   features: {
     postcss: false,
@@ -25,9 +37,19 @@ const config = {
     '@storybook/addon-links',
     '@storybook/addon-essentials',
     '@storybook/addon-interactions',
+    {
+      name: 'storybook-addon-turbo-build',
+      options: {
+        esbuildMinifyOptions: { target: 'es2021' },
+        managerTranspiler: () => ({ loader: 'swc-loader', options: swcConfig }),
+        previewTranspiler: () => ({ loader: 'swc-loader', options: swcConfig }),
+      },
+    },
   ],
-  webpackFinal: async (config) => {
+  webpackFinal: (config) => {
     config.plugins.push(new webpack.DefinePlugin({ SC_DISABLE_SPEEDY: true }));
+    config.performance.hints = false;
+
     return config;
   },
 };

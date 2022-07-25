@@ -7,7 +7,9 @@ import {
   useMemo,
 } from 'react';
 
-let SlotContext = createContext<Object>({});
+const INITIAL_VALUE = {};
+
+let SlotContext = createContext<Object>(INITIAL_VALUE);
 
 export function useSlotProps(
   props: Record<string, any>,
@@ -43,13 +45,17 @@ export function SlotProvider(props) {
 }
 
 export function ClearSlots(props) {
-  let { children, ...otherProps } = props;
+  const { children, ...otherProps } = props;
   let content = children;
+
   if (Children.toArray(children).length <= 1) {
     if (typeof children === 'function') {
       // need to know if the node is a string or something else that react can render that doesn't get props
       content = cloneElement(Children.only(children), otherProps);
     }
   }
-  return <SlotContext.Provider value={{}}>{content}</SlotContext.Provider>;
+
+  return (
+    <SlotContext.Provider value={INITIAL_VALUE}>{content}</SlotContext.Provider>
+  );
 }
