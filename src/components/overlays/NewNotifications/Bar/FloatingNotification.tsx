@@ -70,7 +70,7 @@ export const FloatingNotification = memo(function FloatingNotification(
     <NotificationContainer>
       <NotificationView
         ref={ref}
-        {...(notificationProps as any)}
+        {...notificationProps}
         timer={timer}
         attributes={{
           ...itemProps,

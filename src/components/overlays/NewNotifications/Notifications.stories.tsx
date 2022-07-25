@@ -101,6 +101,7 @@ export const AllTypes: Story<CubeNotificationProps> = () => (
     <NotificationView
       type="danger"
       header="Your Cube.js api is down"
+      description="Please check your network connection."
       actions={<NotificationAction>Restart</NotificationAction>}
     />
   </>
@@ -322,7 +323,7 @@ export const ComplexInteraction: Story<CubeNotificationProps> = (args) => {
                   return (
                     <NotificationsList.Item
                       key={id}
-                      header="Development mode available"
+                      description="Development mode available"
                       type="success"
                       {...props}
                     />

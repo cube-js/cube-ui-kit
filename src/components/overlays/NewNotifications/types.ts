@@ -20,7 +20,7 @@ type NotificationActionCallbackArg = {
   onDismiss: () => void;
 };
 
-export type CubeNotificationProps = {
+export type BaseNotificationProps = {
   /**
    * @default 'attention'
    */
@@ -57,7 +57,7 @@ export type CubeNotificationProps = {
    * Title of the notification
    */
   header?: ReactChild | ReactFragment;
-  description?: ReactChild | ReactFragment;
+  description: ReactChild | ReactFragment;
   /**
    * Custom Icon for the notification
    */
@@ -68,18 +68,14 @@ export type CubeNotificationProps = {
   actions?:
     | ((arg: NotificationActionCallbackArg) => NotificationActionType)
     | NotificationActionType;
-} & (NotificationWithHeader | NotificationWithDescription) &
-  (DismissibleNotification | NonDismissibleNotification);
-
-type NotificationWithHeader = {
-  header: ReactChild | ReactFragment;
-  description?: ReactChild | ReactFragment;
 };
 
-type NotificationWithDescription = {
-  header?: ReactChild | ReactFragment;
-  description: ReactChild | ReactFragment;
-};
+export type CubeNotificationProps = BaseNotificationProps &
+  EitherDismissibleOrNotNotification;
+
+export type EitherDismissibleOrNotNotification =
+  | DismissibleNotification
+  | NonDismissibleNotification;
 
 type DismissibleNotification = {
   isDismissible?: true;
@@ -89,17 +85,17 @@ type DismissibleNotification = {
 
 type NonDismissibleNotification = {
   isDismissible: false;
-  onDismiss?: never;
+  onDismiss?: never | undefined;
   duration?: null;
 };
 
-export type CubeNotifyApiProps = CubeNotificationProps & {
+export type CubeNotifyApiProps = {
   meta?: CubeNotificationMeta;
-};
+} & CubeNotificationProps;
 
-export type CubeNotifyApiPropsWithID = CubeNotificationProps & {
+export type CubeNotifyApiPropsWithID = {
   id: NonNullable<CubeNotificationProps['id']>;
-};
+} & CubeNotifyApiProps;
 
 export type CubeNotificationsApiNotifyCallback = (
   props: CubeNotifyApiProps,

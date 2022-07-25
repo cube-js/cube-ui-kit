@@ -5,20 +5,18 @@ import { CubeNotifyApiProps } from './types';
 
 export function Notification(props: CubeNotifyApiProps) {
   const { id: propsId } = props;
-  const { notify, update, remove } = useNotificationsApi();
+  const { notify, update } = useNotificationsApi();
   const defaultId = useId();
 
   const id = propsId ?? defaultId;
 
   useEffect(() => {
-    notify({ id, ...props });
+    const { remove } = notify({ id, ...props });
 
-    return () => remove(id);
+    return remove;
   }, [id]);
 
-  useEffect(() => {
-    update(id, props);
-  });
+  useEffect(() => update(id, props));
 
   return null;
 }

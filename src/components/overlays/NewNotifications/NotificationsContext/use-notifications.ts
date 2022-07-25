@@ -1,13 +1,14 @@
 import { Key, RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import {
   CubeNotificationsApi,
+  CubeNotificationsApiNotifyCallback,
   CubeNotifyApiProps,
   CubeNotifyApiPropsWithID,
 } from '../types';
 import { useEvent } from '../../../../_internal';
 
 const DISMISS_EVENT_NAME = 'cube:notification:dismiss';
-type DismissEvent = CustomEvent<CubeNotifyApiProps>;
+type DismissEvent = CustomEvent<CubeNotifyApiPropsWithID>;
 
 export function useNotifications(
   rootRef: RefObject<HTMLElement | null> | null,
@@ -19,7 +20,7 @@ export function useNotifications(
   );
 
   const addToast: CubeNotificationsApi['notify'] = Object.assign(
-    useEvent((props: CubeNotifyApiProps) => {
+    useEvent<CubeNotificationsApiNotifyCallback>((props) => {
       const nextID = idRef.current++;
       const { id = nextID, duration, isDismissible = true, ...rest } = props;
 
@@ -27,6 +28,7 @@ export function useNotifications(
         const newToasts = new Map(toasts);
         newToasts.set(id, {
           id,
+          isDismissible,
           duration: isDismissible ? 5_000 : null,
           ...rest,
         } as CubeNotifyApiPropsWithID);
@@ -37,7 +39,7 @@ export function useNotifications(
       return {
         id,
         remove: () => removeToast(id),
-        update: (props: Partial<CubeNotifyApiProps>) => updateToast(id, props),
+        update: (props) => updateToast(id, props),
       };
     }),
     {
@@ -50,26 +52,25 @@ export function useNotifications(
     },
   );
 
-  const updateToast = useEvent(
-    (id: Key, props: Partial<CubeNotifyApiProps>) => {
-      setToasts((toasts) => {
-        const currentToast = toasts.get(id);
+  const updateToast = useEvent<CubeNotificationsApi['update']>((id, props) => {
+    setToasts((toasts) => {
+      const currentToast = toasts.get(id);
 
-        if (currentToast) {
-          const newToasts = new Map(toasts);
-          newToasts.set(id, {
-            ...currentToast,
-            ...props,
-          } as CubeNotifyApiPropsWithID);
-          return newToasts;
-        }
+      if (currentToast) {
+        const newToasts = new Map(toasts);
+        newToasts.set(id, {
+          ...currentToast,
+          ...props,
+        } as CubeNotifyApiPropsWithID);
 
-        return toasts;
-      });
-    },
-  );
+        return newToasts;
+      }
 
-  const removeToast = useEvent((id: Key) => {
+      return toasts;
+    });
+  });
+
+  const removeToast = useEvent<CubeNotificationsApi['remove']>((id) => {
     setToasts((toasts) => {
       if (toasts.has(id)) {
         const newToasts = new Map(toasts);
@@ -93,7 +94,7 @@ export function useNotifications(
   });
 
   const addOnDismissListener = useEvent(
-    (listener: (toast: CubeNotifyApiProps) => void) => {
+    (listener: (notification: CubeNotifyApiPropsWithID) => void) => {
       const callback = (e) => listener((e as DismissEvent).detail);
 
       const unsub = () =>

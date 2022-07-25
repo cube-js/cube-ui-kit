@@ -11,5 +11,6 @@ export type {
   CubeNotificationMeta,
   CubeNotificationsApiNotifyCallback,
   CubeNotificationsApiNotifyAction,
+  CubeNotifyApiPropsWithID,
 } from './types';
 export * from './Notification';

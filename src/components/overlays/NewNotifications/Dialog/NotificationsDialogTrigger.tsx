@@ -10,14 +10,14 @@ import { tasty } from '../../../../tasty';
 import { Flex } from '../../../layout/Flex';
 import { Title } from '../../../content/Title';
 import { ClearSlots } from '../../../../utils/react';
-import { CubeNotifyApiProps } from '../types';
+import { CubeNotifyApiPropsWithID } from '../types';
 import { useNotificationsObserver } from '../hooks';
 
 export type NotificationsDialogTriggerProps = Omit<
   CubeDialogTriggerProps,
   'type'
 > & {
-  onCloseNotificationInBar?: (props: CubeNotifyApiProps) => void;
+  onCloseNotificationInBar?: (props: CubeNotifyApiPropsWithID) => void;
 };
 
 export function NotificationsDialogTrigger(

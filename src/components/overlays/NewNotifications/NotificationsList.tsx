@@ -79,10 +79,10 @@ function NotificationListItem(props: NotificationListItemProps) {
   return (
     <NotificationView
       ref={ref}
-      isDismissible={false}
       attributes={itemProps}
       styles={notificationStyles}
-      {...(notificationProps as any)}
+      {...notificationProps}
+      isDismissible={false}
     />
   );
 }

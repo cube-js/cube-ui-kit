@@ -1,7 +1,8 @@
 import type { ReactNode, HTMLAttributes } from 'react';
-import type { CubeNotificationType, CubeNotificationProps } from '../types';
+import type { CubeNotificationType } from '../types';
 import { Styles } from '../../../../tasty';
 import { Timer } from '../../../../_internal';
+import { BaseNotificationProps } from '../types';
 
 export type NotificationProps = {
   qa?: string;
@@ -9,7 +10,7 @@ export type NotificationProps = {
   styles?: Styles;
   timer?: Timer | null;
   onClose?: () => void;
-} & CubeNotificationProps;
+} & BaseNotificationProps;
 
 export type NotificationIconProps = {
   type: CubeNotificationType;

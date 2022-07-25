@@ -25,7 +25,7 @@ export function NotificationAction(
     children,
     onPress,
     type = 'primary',
-    disableCloseOnAction = false,
+    disableCloseOnAction = type !== 'primary',
     ...buttonProps
   } = props;
   const { onClose } = useNotificationContext();
