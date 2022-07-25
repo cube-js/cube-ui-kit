@@ -31,7 +31,8 @@ const NotificationsContainer = tasty({
     height: '100vh max',
     padding: '2x',
     gap: '1x',
-    zIndex: '100',
+    /* to be sure that we're over the legacy modal */
+    zIndex: '1001',
     overflow: 'hidden',
     isolation: 'isolate',
     pointerEvents: 'none',
