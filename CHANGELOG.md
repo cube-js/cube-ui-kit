@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.11.1
+
+### Patch Changes
+
+- [#158](https://github.com/cube-js/cube-ui-kit/pull/158) [`e03992b`](https://github.com/cube-js/cube-ui-kit/commit/e03992bcbd79e2ebcfd187b1d9478ac1a4e3c18e) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Fixed bug when notifications displays below the legacy `<Modal />` component
+
 ## 0.11.0
 
 ### Minor Changes
