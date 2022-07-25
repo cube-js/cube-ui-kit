@@ -284,6 +284,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
         autoFocus={autoFocus}
         data-size={size}
         styles={inputStyles}
+        isDisabled={isDisabled}
       />
       <Prefix
         onWidthChange={setPrefixWidth}
