@@ -158,6 +158,8 @@ export const Dialog = forwardRef(function Dialog(
     domRef,
   );
 
+  // console.log(dialogProps);
+
   // If rendered in a popover or tray there won't be a visible dismiss button,
   // so we render a hidden one for screen readers.
   let dismissButton;
@@ -213,20 +215,16 @@ export const Dialog = forwardRef(function Dialog(
   return (
     <FocusScope contain restoreFocus>
       <DialogElement
+        ref={domRef}
         data-id="Dialog"
         data-qa={qa || 'Dialog'}
         styles={styles}
         as="section"
         {...dialogProps}
-        mods={{
-          dismissable: isDismissable,
-        }}
-        style={{
-          '--dialog-size': `${sizePxMap[size] || 288}px`,
-        }}
+        mods={{ dismissable: isDismissable }}
+        style={{ '--dialog-size': `${sizePxMap[size] || 288}px` }}
         data-type={type}
         data-size={size}
-        ref={domRef}
       >
         {dismissButton}
 

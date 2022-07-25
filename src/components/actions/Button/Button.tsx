@@ -17,7 +17,7 @@ export interface CubeButtonProps extends CubeActionProps {
     | 'clear'
     | 'outline'
     | 'neutral'
-    | string;
+    | (string & {});
   size?: 'small' | 'default' | 'large' | (string & {});
 }
 

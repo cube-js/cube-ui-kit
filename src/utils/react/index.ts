@@ -6,3 +6,4 @@ export { useSlotProps, SlotProvider, ClearSlots } from './Slots';
 export { useLayoutEffect } from './useLayoutEffect';
 export { useCombinedRefs } from './useCombinedRefs';
 export { wrapNodeIfPlain } from './wrapNodeIfPlain';
+export * from './get-display-name';

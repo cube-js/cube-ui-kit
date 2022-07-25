@@ -1,3 +1,4 @@
+import { CopyOutlined } from '@ant-design/icons';
 import copy from 'clipboard-copy';
 import { Action, Button } from '../../actions';
 import { Card, CubeCardProps } from '../Card/Card';
@@ -6,10 +7,10 @@ import {
   CubePrismCodeProps,
   PrismCode,
 } from '../../content/PrismCode/PrismCode';
-import { notification } from '../../../services/notification';
-import { CopyOutlined } from '@ant-design/icons';
 import { TooltipTrigger } from '../../overlays/Tooltip/TooltipTrigger';
 import { Tooltip } from '../../overlays/Tooltip/Tooltip';
+import { useNotificationsApi } from '../../overlays/NewNotifications';
+import { useToastsApi } from '../../overlays/Toasts';
 
 const ActionElement = tasty(Action, {
   styles: {
@@ -132,56 +133,44 @@ export interface CubeCopySnippetProps extends CubeCardProps {
 }
 
 export function CopySnippet(allProps: CubeCopySnippetProps) {
-  let {
-    code,
-    title,
+  const {
+    code = '',
+    title = 'Code example',
     nowrap,
-    prefix,
+    prefix = '',
     language,
     showScroll = true,
     serif,
     children,
-    padding,
+    padding = '1.125x 1.5x',
     showOverlay = true,
     showTooltip = false,
     styles,
     ...props
   } = allProps;
 
-  padding = padding || '1.125x 1.5x';
-
-  const codeTitle = title || 'Code example';
+  const { toast } = useToastsApi();
 
   async function onCopy() {
     await copy(code);
 
-    notification.success(`${codeTitle} copied`);
+    toast.success(`${title} copied`);
   }
 
-  code = (code || '').replace(/\n$/, '');
+  const pristineCode = code.replace(/\n$/, '');
 
-  const multiline = code.includes('\n') && !nowrap;
-  const formattedCode = code
+  const multiline = pristineCode.includes('\n') && !nowrap;
+  const formattedCode = pristineCode
     .split(/\n/g)
-    .map((line) => `${prefix || ''}${line} `)
+    .map((line) => `${prefix}${line} `)
     .join('\n');
 
-  styles = {
-    preset: 'default',
-    ...styles,
-  } as Styles;
-
   const Snippet = (
-    <CopySnippetElement styles={styles} {...props}>
+    <CopySnippetElement styles={{ preset: 'default', ...styles }} {...props}>
       <div data-element="Grid">
         <StyledBlock
-          mods={{
-            nowrap,
-            multiline,
-            scroll: showScroll,
-            serif,
-          }}
-          styles={{ padding } as Styles}
+          mods={{ nowrap, multiline, scroll: showScroll, serif }}
+          styles={{ padding }}
         >
           <PrismCode
             style={{ margin: 0, overflow: 'visible' }}
@@ -194,11 +183,8 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
           mods={{ overlay: showOverlay }}
         >
           <CopyButton
-            label={`Copy ${codeTitle}`}
-            mods={{
-              multiline,
-              'with-scroll': showScroll,
-            }}
+            label={`Copy ${title}`}
+            mods={{ multiline, 'with-scroll': showScroll }}
             onPress={onCopy}
           />
         </ButtonContainer>

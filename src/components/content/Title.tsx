@@ -66,10 +66,10 @@ const _Title = forwardRef(
     }: CubeTitleProps,
     ref,
   ) => {
-    props = useSlotProps(props, 'heading');
+    const propsWithSlots = useSlotProps(props, 'heading');
 
     const tag: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' = `h${level || 1}`;
-    const styles = extractStyles(props, STYLE_LIST, {}, TEXT_PROP_MAP);
+    const styles = extractStyles(propsWithSlots, STYLE_LIST, {}, TEXT_PROP_MAP);
 
     return (
       <TitleElement
@@ -82,7 +82,7 @@ const _Title = forwardRef(
           ellipsis,
         }}
         inline={inline}
-        {...filterBaseProps(props, { eventProps: true })}
+        {...filterBaseProps(propsWithSlots, { eventProps: true })}
         styles={styles}
         ref={ref}
       />

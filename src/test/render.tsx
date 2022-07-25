@@ -8,3 +8,5 @@ export function renderWithRoot(
 ) {
   return render(ui, { ...options, wrapper: Root });
 }
+
+export * from '@testing-library/react';

@@ -17,6 +17,7 @@ import {
 import { mergeStyles } from '../tasty';
 import { deprecationWarning } from '../tasty';
 import { useContextStyles } from '../providers/StyleProvider';
+import { getDisplayName } from '../utils/react';
 
 export type StyledProps<K extends (keyof StylesInterface)[], DefaultProps> = {
   /** The name of the element. It can be used to override styles in context. */
@@ -157,9 +158,7 @@ function styled<
       );
     });
 
-    _StyledComponent.displayName = `CubeStyled(${
-      Component.displayName ?? Component.name ?? 'Anonymous'
-    })`;
+    _StyledComponent.displayName = `CubeStyled(${getDisplayName(Component)})`;
 
     return _StyledComponent;
   }

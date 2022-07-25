@@ -10,6 +10,7 @@ import { Styles, StylesInterface } from './styles/types';
 import { BASE_STYLES } from './styles/list';
 import { ResponsiveStyleValue } from './utils/styles';
 import { mergeStyles } from './utils/mergeStyles';
+import { getDisplayName } from '../utils/react';
 
 type StyleList = readonly (keyof {
   [key in keyof StylesInterface]: StylesInterface[key];
@@ -130,13 +131,10 @@ function tasty<K extends StyleList, C = Record<string, unknown>>(
       );
     });
 
-    _WrappedComponent.displayName = `TastyWrappedComponent(${
-      Component.displayName ??
-      Component.name ??
-      defaultProps.qa ??
-      extendTag ??
-      'Anonymous'
-    })`;
+    _WrappedComponent.displayName = `TastyWrappedComponent(${getDisplayName(
+      Component,
+      defaultProps.qa ?? extendTag ?? 'Anonymous',
+    )})`;
 
     return _WrappedComponent;
   }
