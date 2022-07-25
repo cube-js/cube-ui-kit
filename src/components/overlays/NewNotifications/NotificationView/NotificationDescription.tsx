@@ -1,4 +1,4 @@
-import { HTMLAttributes, memo, ReactNode } from 'react';
+import { HTMLAttributes, memo } from 'react';
 import { tasty } from '../../../../tasty';
 import { Paragraph } from '../../../content/Paragraph';
 import { NotificationProps } from './types';
@@ -23,5 +23,9 @@ export const NotificationDescription = memo(function NotificationDescription(
 ) {
   const { description, ...descriptionProps } = props;
 
-  return <Description {...descriptionProps}>{description}</Description>;
+  return (
+    <Description preset="t4m" {...descriptionProps}>
+      {description}
+    </Description>
+  );
 });
