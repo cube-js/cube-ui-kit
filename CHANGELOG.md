@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.11.0
+
+### Minor Changes
+
+- [#154](https://github.com/cube-js/cube-ui-kit/pull/154) [`1555c0d`](https://github.com/cube-js/cube-ui-kit/commit/1555c0d454939cebb7dc547d8290165450a7ce5d) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - [CUK-65](https://cubedevinc.atlassian.net/browse/CUK-65) - Notification component
+
+### Patch Changes
+
+- [#154](https://github.com/cube-js/cube-ui-kit/pull/154) [`1555c0d`](https://github.com/cube-js/cube-ui-kit/commit/1555c0d454939cebb7dc547d8290165450a7ce5d) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Toast Component
+
 ## 0.10.13
 
 ### Patch Changes
