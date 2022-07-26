@@ -1,6 +1,6 @@
 import { ReactChild, ReactFragment, useMemo } from 'react';
 import { isElement, isFragment } from 'react-is';
-import { useNotificationsApi } from '../NewNotifications';
+import { CubeNotifyApiProps, useNotificationsApi } from '../NewNotifications';
 import type { CubeToastsApiProps, CubeToastsApiToastCallback } from './types';
 import { CubeToastsApiToastShortcuts } from './types';
 
@@ -10,13 +10,12 @@ export function useToastsApi() {
   const toast = useMemo(
     () =>
       Object.assign<CubeToastsApiToastCallback, CubeToastsApiToastShortcuts>(
-        (props) =>
-          notify({
-            isDismissible: true,
+        (props) => {
+          return notify({
             putNotificationInDropdownOnDismiss: false,
-            duration: 5_000,
             ...unwrapProps(props),
-          }),
+          } as CubeNotifyApiProps);
+        },
         {
           success: (props) => toast({ type: 'success', ...unwrapProps(props) }),
           danger: (props) => toast({ type: 'danger', ...unwrapProps(props) }),
@@ -32,19 +31,24 @@ export function useToastsApi() {
 
 function unwrapProps(props: CubeToastsApiProps | ReactChild | ReactFragment) {
   return {
-    ...(propsIsDescription(props)
-      ? { description: props }
-      : (props as CubeToastsApiProps)),
+    ...(propsIsToastProps(props)
+      ? {
+          isDismissible: props.duration !== null,
+          duration: 5_000,
+          ...(props as CubeToastsApiProps),
+        }
+      : { description: props, isDismissible: true, duration: 5_000 }),
   };
 }
 
-function propsIsDescription(
+function propsIsToastProps(
   props: CubeToastsApiProps | ReactChild | ReactFragment,
-) {
-  return (
+): props is CubeToastsApiProps {
+  const isReactNode =
     isElement(props) ||
     isFragment(props) ||
     typeof props === 'string' ||
-    typeof props === 'number'
-  );
+    typeof props === 'number';
+
+  return !isReactNode;
 }

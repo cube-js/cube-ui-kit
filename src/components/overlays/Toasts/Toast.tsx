@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useId } from '@react-aria/utils';
 import { useToastsApi } from './use-toasts-api';
 import { CubeToastsApiProps } from './types';
+import { CubeNotifyApiProps } from '../NewNotifications';
 
 export function Toast(props: CubeToastsApiProps) {
   const { id: propsId } = props;
@@ -17,7 +18,7 @@ export function Toast(props: CubeToastsApiProps) {
   }, [id]);
 
   useEffect(() => {
-    update(id, props);
+    update(id, props as CubeNotifyApiProps);
   });
 
   return null;

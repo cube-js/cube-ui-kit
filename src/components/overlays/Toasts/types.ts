@@ -9,7 +9,7 @@ export type CubeToastsApiProps = {
   header?: ReactChild | ReactFragment;
   id?: Key;
   onDismiss?: () => void;
-  duration?: number;
+  duration?: number | null;
   icon?: ReactNode;
   type?: CubeNotificationType;
 };
