@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.11.2
+
+### Patch Changes
+
+- [#161](https://github.com/cube-js/cube-ui-kit/pull/161) [`f5976df`](https://github.com/cube-js/cube-ui-kit/commit/f5976df3e318006ce62b325393f2f86aa9dce9e1) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Fixed description preset in notificaiton
+
+- [#156](https://github.com/cube-js/cube-ui-kit/pull/156) [`f0ac89a`](https://github.com/cube-js/cube-ui-kit/commit/f0ac89aff31626f9aea61cf99dfd397e5ccb7d1a) Thanks [@nikolaykost](https://github.com/nikolaykost)! - pass `isLoading` and `isDisabled` from `Form.Item` to childs
+
+  ```jsx
+  <Form.Item isLoading isDisabled>
+    <Input />
+  </Form.Item>
+  ```
+
 ## 0.11.1
 
 ### Patch Changes
