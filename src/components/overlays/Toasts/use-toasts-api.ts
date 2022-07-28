@@ -12,9 +12,7 @@ export function useToastsApi() {
       Object.assign<CubeToastsApiToastCallback, CubeToastsApiToastShortcuts>(
         (props) =>
           notify({
-            isDismissible: true,
             putNotificationInDropdownOnDismiss: false,
-            duration: 5_000,
             ...unwrapProps(props),
           }),
         {
@@ -32,19 +30,24 @@ export function useToastsApi() {
 
 function unwrapProps(props: CubeToastsApiProps | ReactChild | ReactFragment) {
   return {
-    ...(propsIsDescription(props)
-      ? { description: props }
-      : (props as CubeToastsApiProps)),
+    ...(propsIsToastProps(props)
+      ? {
+          isDismissible: props.duration !== null,
+          duration: 5_000,
+          ...(props as CubeToastsApiProps),
+        }
+      : { description: props, isDismissible: true, duration: 5_000 }),
   };
 }
 
-function propsIsDescription(
+function propsIsToastProps(
   props: CubeToastsApiProps | ReactChild | ReactFragment,
-) {
-  return (
+): props is CubeToastsApiProps {
+  const isReactNode =
     isElement(props) ||
     isFragment(props) ||
     typeof props === 'string' ||
-    typeof props === 'number'
-  );
+    typeof props === 'number';
+
+  return !isReactNode;
 }

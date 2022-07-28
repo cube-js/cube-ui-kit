@@ -33,16 +33,6 @@ const NotificationContainer = tasty({
       '': '0 0 0 4bw #purple-04.0 inset',
       focused: '0 0 0 4bw #purple-04 inset',
     },
-    '&::before': {
-      zIndex: 0,
-      content: '""',
-      position: 'absolute',
-      top: '-8px',
-      left: '0',
-      right: '-8px',
-      bottom: '0',
-      display: { '': 'none', 'is-dismissible': 'flex' },
-    },
   },
 });
 
@@ -105,7 +95,7 @@ export const NotificationView = forwardRef(function NotificationView(
         >
           <NotificationIcon icon={icon} type={type} />
 
-          {header && <NotificationHeader header={header} id={labelID} />}
+          <NotificationHeader header={header} id={labelID} />
 
           {description && (
             <NotificationDescription

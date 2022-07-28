@@ -70,24 +70,7 @@ export type BaseNotificationProps = {
     | NotificationActionType;
 };
 
-export type CubeNotificationProps = BaseNotificationProps &
-  EitherDismissibleOrNotNotification;
-
-export type EitherDismissibleOrNotNotification =
-  | DismissibleNotification
-  | NonDismissibleNotification;
-
-type DismissibleNotification = {
-  isDismissible?: true;
-  onDismiss?: () => void;
-  duration?: number;
-};
-
-type NonDismissibleNotification = {
-  isDismissible: false;
-  onDismiss?: never | undefined;
-  duration?: null;
-};
+export type CubeNotificationProps = BaseNotificationProps;
 
 export type CubeNotifyApiProps = {
   meta?: CubeNotificationMeta;

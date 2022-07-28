@@ -44,6 +44,7 @@ export const FloatingNotification = memo(function FloatingNotification(
   const chainedOnDismiss = useChainedCallback(
     () => onDismissNotification(id),
     () => onRemoveNotification(id),
+    notificationProps.onDismiss,
   );
 
   const onKeyDown = useEvent<KeyboardEventHandler<HTMLElement>>(({ key }) => {
