@@ -1,6 +1,6 @@
 import { ReactChild, ReactFragment, useMemo } from 'react';
 import { isElement, isFragment } from 'react-is';
-import { CubeNotifyApiProps, useNotificationsApi } from '../NewNotifications';
+import { useNotificationsApi } from '../NewNotifications';
 import type { CubeToastsApiProps, CubeToastsApiToastCallback } from './types';
 import { CubeToastsApiToastShortcuts } from './types';
 
@@ -10,12 +10,11 @@ export function useToastsApi() {
   const toast = useMemo(
     () =>
       Object.assign<CubeToastsApiToastCallback, CubeToastsApiToastShortcuts>(
-        (props) => {
-          return notify({
+        (props) =>
+          notify({
             putNotificationInDropdownOnDismiss: false,
             ...unwrapProps(props),
-          } as CubeNotifyApiProps);
-        },
+          }),
         {
           success: (props) => toast({ type: 'success', ...unwrapProps(props) }),
           danger: (props) => toast({ type: 'danger', ...unwrapProps(props) }),
