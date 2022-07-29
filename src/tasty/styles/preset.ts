@@ -11,7 +11,7 @@ function setCSSValue(
     presetName === 'inherit'
       ? 'inherit'
       : `var(--${presetName}-${styleName}, var(--default-${styleName}, var(--font, inherit)))${
-          styleName === 'font-family' ? ', var(--font)' : ''
+          styleName === 'font-family' ? ', var(--font, sans-serif)' : ''
         }`;
 
   if (!isPropOnly) {
