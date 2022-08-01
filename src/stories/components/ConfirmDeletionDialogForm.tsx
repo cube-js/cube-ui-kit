@@ -1,3 +1,4 @@
+import { FieldTypes } from 'src/components/forms/Form/types';
 import {
   DialogForm,
   Field,
@@ -7,13 +8,13 @@ import {
   CubeDialogFormProps,
 } from '../../index';
 
-interface ConfirmDeletionDialogFormProps
-  extends Pick<CubeDialogFormProps, 'onSubmit' | 'onDismiss' | 'form'> {
+interface ConfirmDeletionDialogFormProps<T extends FieldTypes>
+  extends Pick<CubeDialogFormProps<T>, 'onSubmit' | 'onDismiss' | 'form'> {
   name?: string;
 }
 
-export function ConfirmDeletionDialogForm(
-  props: ConfirmDeletionDialogFormProps,
+export function ConfirmDeletionDialogForm<T extends FieldTypes>(
+  props: ConfirmDeletionDialogFormProps<T>,
 ) {
   let { name, onSubmit, onDismiss } = props;
 

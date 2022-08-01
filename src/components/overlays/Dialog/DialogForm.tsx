@@ -1,18 +1,18 @@
-import { useImperativeHandle } from 'react';
 import { Dialog, CubeDialogProps } from './Dialog';
 import { Title } from '../../content/Title';
 import { CubeFormProps, Form } from '../../forms/Form/Form';
-import { useForm } from '../../forms/Form';
+import { useForm } from '../../forms';
 import { Content } from '../../content/Content';
 import { Submit } from '../../actions/Button/Submit';
 import { Button, CubeButtonProps } from '../../actions';
 import { ButtonGroup } from '../../actions';
 import { Header } from '../../content/Header';
 import { useDialogContext } from './context';
+import { FieldTypes } from '../../forms';
 
-export interface CubeDialogFormProps
+export interface CubeDialogFormProps<T extends FieldTypes>
   extends CubeDialogProps,
-    Omit<CubeFormProps, 'role'> {
+    Omit<CubeFormProps<T>, 'role'> {
   /** Whether the submit button has a `danger` theme */
   danger?: boolean;
   /** Properties for submit button. Use `label` to change text. */
@@ -35,7 +35,9 @@ export interface CubeDialogFormRef {
 /**
  * DialogForms are a specific type of Dialog. They contain forms to fill.
  */
-export const DialogForm = function DialogForm(props: CubeDialogFormProps) {
+export const DialogForm = function DialogForm<T extends FieldTypes>(
+  props: CubeDialogFormProps<T>,
+) {
   let {
     qa,
     name,
