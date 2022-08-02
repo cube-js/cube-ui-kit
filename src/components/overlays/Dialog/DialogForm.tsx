@@ -10,7 +10,7 @@ import { Header } from '../../content/Header';
 import { useDialogContext } from './context';
 import { FieldTypes } from '../../forms';
 
-export interface CubeDialogFormProps<T extends FieldTypes>
+export interface CubeDialogFormProps<T extends FieldTypes = FieldTypes>
   extends CubeDialogProps,
     Omit<CubeFormProps<T>, 'role'> {
   /** Whether the submit button has a `danger` theme */
@@ -35,9 +35,9 @@ export interface CubeDialogFormRef {
 /**
  * DialogForms are a specific type of Dialog. They contain forms to fill.
  */
-export const DialogForm = function DialogForm<T extends FieldTypes>(
-  props: CubeDialogFormProps<T>,
-) {
+export const DialogForm = function DialogForm<
+  T extends FieldTypes = FieldTypes,
+>(props: CubeDialogFormProps<T>) {
   let {
     qa,
     name,
@@ -92,7 +92,7 @@ export const DialogForm = function DialogForm<T extends FieldTypes>(
         <Title>{title}</Title>
       </Header>
       <Content>
-        <Form
+        <Form<T>
           qa={qa || 'DialogForm'}
           form={form}
           name={name}

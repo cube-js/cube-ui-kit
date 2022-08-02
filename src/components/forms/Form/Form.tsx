@@ -22,6 +22,7 @@ import { useCombinedRefs } from '../../../utils/react';
 import { timeout } from '../../../utils/promise';
 import { FormBaseProps } from '../../../shared';
 import { FieldTypes } from './types';
+import { DOMRef } from '@react-types/shared';
 
 export const FormContext = createContext({});
 
@@ -50,7 +51,7 @@ const formPropNames = new Set([
   'target',
 ]);
 
-export interface CubeFormProps<T extends FieldTypes>
+export interface CubeFormProps<T extends FieldTypes = FieldTypes>
   extends FormBaseProps,
     BaseProps,
     ContainerStyleProps,
@@ -61,7 +62,7 @@ export interface CubeFormProps<T extends FieldTypes>
   /** Form name */
   name?: string;
   /** Default field values */
-  defaultValues?: { [key: string]: any };
+  defaultValues?: { [K in keyof T]?: T[K] };
   /** Trigger when any value of Field changed */
   onValuesChange?: (data: CubeFormData<T>) => void | Promise<void>;
   /** Trigger when form submit and success */
@@ -69,12 +70,15 @@ export interface CubeFormProps<T extends FieldTypes>
   /** Trigger when form submit and failed */
   onSubmitFailed?: (any?) => void | Promise<any>;
   /** Set form instance created by useForm */
-  form?: CubeFormInstance<T>;
+  form?: CubeFormInstance<T, CubeFormData<T>>;
   /** The size of the side area with labels. Only for `labelPosition="side"` */
   labelWidth?: Styles['width'];
 }
 
-function Form<T extends FieldTypes>(props: CubeFormProps<T>, ref) {
+function Form<T extends FieldTypes>(
+  props: CubeFormProps<T>,
+  ref: DOMRef<HTMLFormElement>,
+) {
   props = useProviderProps(props);
   let {
     qa,
@@ -194,9 +198,7 @@ function Form<T extends FieldTypes>(props: CubeFormProps<T>, ref) {
       noValidate
       styles={styles}
       ref={domRef}
-      mods={{
-        'has-sider': labelPosition === 'side',
-      }}
+      mods={{ 'has-sider': labelPosition === 'side' }}
     >
       <FormContext.Provider value={ctx}>
         <Provider
@@ -216,5 +218,8 @@ function Form<T extends FieldTypes>(props: CubeFormProps<T>, ref) {
 /**
  * Forms allow users to enter data that can be submitted while providing alignment and styling for form fields.
  */
-const _Form = forwardRef(Form);
+const _Form = forwardRef(Form) as <T extends FieldTypes>(
+  props: CubeFormProps<T> & { ref?: DOMRef<HTMLFormElement> },
+) => JSX.Element;
+
 export { _Form as Form };
