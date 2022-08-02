@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { dotize } from '../../../tasty';
 import { applyRules } from './validation';
-import { FieldTypes, CubeFieldData } from './types';
+import { FieldTypes, CubeFieldData, SetFieldsArrType } from './types';
 
 export type CubeFormData<T extends FieldTypes> = {
   [K in keyof T]?: CubeFieldData<K, T[K]>;
@@ -289,12 +289,12 @@ export class CubeFormInstance<
     this.validateFields().catch(() => {});
   }
 
-  setFields(newFields: CubeFieldData<keyof T, T[keyof T]>[]) {
+  setFields<Names extends keyof T>(newFields: SetFieldsArrType<T, Names>[]) {
     newFields.forEach(({ name, value, errors }) => {
       this.fields[name] = this._createField(name, {
         value,
         errors,
-      } as TFormData[keyof T]);
+      } as TFormData[Names]);
     });
 
     this.forceReRender();
