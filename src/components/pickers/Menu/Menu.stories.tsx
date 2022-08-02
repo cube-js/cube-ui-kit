@@ -12,6 +12,8 @@ import {
   Text,
   Root,
   Space,
+  AlertDialog,
+  DialogContainer,
 } from '../../../index';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { action } from '@storybook/addon-actions';
@@ -85,6 +87,35 @@ export const Default = ({ ...props }) => {
         </MenuTrigger>
       </Space>
     </Root>
+  );
+};
+
+export const InsideModal = () => {
+  return (
+    <DialogContainer>
+      <AlertDialog
+        content={
+          <MenuTrigger>
+            <Button
+              size="small"
+              icon={<MoreOutlined />}
+              aria-label="Open Context Menu"
+            />
+            <Menu id="menu" width="220px" selectionMode="multiple">
+              <Menu.Item key="red" postfix="Ctr+C" onPress={action('Ctr+C')}>
+                Copy
+              </Menu.Item>
+              <Menu.Item key="orange" postfix="Ctr+V" onPress={action('Ctr+C')}>
+                Paste
+              </Menu.Item>
+              <Menu.Item key="yellow" postfix="Ctr+X" onPress={action('Ctr+C')}>
+                Cut
+              </Menu.Item>
+            </Menu>
+          </MenuTrigger>
+        }
+      />
+    </DialogContainer>
   );
 };
 
