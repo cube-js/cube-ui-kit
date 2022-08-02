@@ -323,19 +323,12 @@ export function useForm<TSourceType extends FieldTypes>(
   form?: CubeFormInstance<TSourceType, CubeFormData<TSourceType>>,
   ref?,
   options: {
-    onSubmit?: CubeFormInstance<
-      TSourceType,
-      CubeFormData<TSourceType>
-    >['onSubmit'];
-    onValuesChange?: CubeFormInstance<
-      TSourceType,
-      CubeFormData<TSourceType>
-    >['onValuesChange'];
+    onSubmit?: CubeFormInstance<TSourceType>['onSubmit'];
+    onValuesChange?: CubeFormInstance<TSourceType>['onValuesChange'];
   } = {},
-): [CubeFormInstance<TSourceType, CubeFormData<TSourceType>>] {
+): [CubeFormInstance<TSourceType>] {
   const { onSubmit, onValuesChange } = options;
-  const formRef =
-    useRef<CubeFormInstance<TSourceType, CubeFormData<TSourceType>>>();
+  const formRef = useRef<CubeFormInstance<TSourceType>>();
   const [, forceUpdate] = useState({});
 
   if (!formRef.current) {
@@ -347,10 +340,7 @@ export function useForm<TSourceType extends FieldTypes>(
         forceUpdate({});
       };
 
-      form = formRef.current = new CubeFormInstance<
-        TSourceType,
-        CubeFormData<TSourceType>
-      >(forceReRender);
+      form = formRef.current = new CubeFormInstance<TSourceType>(forceReRender);
     }
 
     form.ref = ref;
