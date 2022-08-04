@@ -70,9 +70,31 @@ export const StandaloneNotification: Story<CubeNotificationProps> = (args) => (
   <NotificationView {...args} />
 );
 
-export const WithIcon = StandaloneNotification.bind({});
-WithIcon.args = {
-  icon: <BellOutlined style={{ display: 'flex', alignSelf: 'center' }} />,
+export const WithIcon: Story<CubeNotificationProps> = (args) => {
+  return (
+    <>
+      <NotificationView
+        {...args}
+        header=""
+        icon={<BellOutlined style={{ display: 'flex', alignSelf: 'center' }} />}
+      />
+      <NotificationView
+        {...args}
+        icon={<BellOutlined style={{ display: 'flex', alignSelf: 'center' }} />}
+      />
+      <NotificationView
+        {...args}
+        icon={<BellOutlined style={{ display: 'flex', alignSelf: 'center' }} />}
+        header=""
+        actions={
+          <>
+            <NotificationAction>Test</NotificationAction>
+            <NotificationAction>Alternative</NotificationAction>
+          </>
+        }
+      />
+    </>
+  );
 };
 
 export const WithLongDescription = StandaloneNotification.bind({});
