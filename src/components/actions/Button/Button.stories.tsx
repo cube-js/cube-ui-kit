@@ -6,18 +6,11 @@ import { Space } from '../../layout/Space';
 export default {
   title: 'Actions/Button',
   component: Button,
-  parameters: {
-    controls: {
-      exclude: baseProps,
-    },
-  },
+  parameters: { controls: { exclude: baseProps } },
   argTypes: {
     size: {
       defaultValue: undefined,
-      control: {
-        type: 'radio',
-        options: [undefined, 'small', 'large'],
-      },
+      control: { type: 'radio', options: [undefined, 'small', 'large'] },
     },
     type: {
       defaultValue: undefined,
@@ -36,10 +29,7 @@ export default {
     },
     theme: {
       defaultValue: undefined,
-      control: {
-        type: 'radio',
-        options: [undefined, 'danger'],
-      },
+      control: { type: 'radio', options: [undefined, 'danger'] },
     },
   },
 };
@@ -176,6 +166,18 @@ IconAndText.args = {
 export const OnlyIcon = Template.bind({});
 OnlyIcon.args = {
   icon: true,
+};
+
+export const OnlyIconSmall = Template.bind({});
+OnlyIconSmall.args = {
+  icon: true,
+  size: 'small',
+};
+
+export const OnlyIconLarge = Template.bind({});
+OnlyIconLarge.args = {
+  icon: true,
+  size: 'large',
 };
 
 export const Loading = Template.bind({});
