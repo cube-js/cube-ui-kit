@@ -12,10 +12,14 @@ function setCSSValue(
       ? 'inherit'
       : presetName === 'default'
       ? `var(--default-${styleName}, ${
-          styleName === 'font-family' ? 'var(--font, sans-serif)' : 'inherit'
+          styleName === 'font-family'
+            ? 'var(--font, NonexistentFontName)'
+            : 'inherit'
         })${styleName === 'font-family' ? ', var(--font, sans-serif)' : ''}`
       : `var(--${presetName}-${styleName}, var(--default-${styleName}, ${
-          styleName === 'font-family' ? 'var(--font, sans-serif)' : 'inherit'
+          styleName === 'font-family'
+            ? 'var(--font, NonexistentFontName)'
+            : 'inherit'
         }))${styleName === 'font-family' ? ', var(--font, sans-serif)' : ''}`;
 
   if (!isPropOnly) {
