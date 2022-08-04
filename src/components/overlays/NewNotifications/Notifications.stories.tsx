@@ -56,8 +56,8 @@ export const NotifyAsComponent: Story<CubeNotificationProps> = (args) => {
       <Notification
         actions={
           <>
-            <NotificationAction>Test</NotificationAction>
-            <NotificationAction>Alternative</NotificationAction>
+            <NotificationAction>Check logs</NotificationAction>
+            <NotificationAction>Upload updated Cube project</NotificationAction>
           </>
         }
         {...args}
@@ -178,9 +178,9 @@ export const NotificationsInModal: Story<CubeNotificationProps> = (args) => {
                   description="Click to update your schema."
                   actions={
                     <>
-                      <NotificationAction>Update</NotificationAction>
-                      <NotificationAction type="secondary">
-                        Don't show this again
+                      <NotificationAction>Check logs</NotificationAction>
+                      <NotificationAction>
+                        Upload updated Cube project
                       </NotificationAction>
                     </>
                   }
