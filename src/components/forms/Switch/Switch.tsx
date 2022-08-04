@@ -81,25 +81,25 @@ const SwitchElement = tasty({
       '': null,
       'inside-form & side-label': 'start',
     },
-  },
-});
 
-const SwitchThumbElement = tasty({
-  'aria-hidden': 'true',
-  styles: {
-    position: 'absolute',
-    width: '2.5x',
-    height: '2.5x',
-    radius: 'round',
-    fill: 'currentColor',
-    shadow: '0px 2px 4px #dark.20;',
-    top: '.25x',
-    left: {
-      '': '.25x',
-      checked: '2.5x',
+    Thumb: {
+      position: 'absolute',
+      width: '2.5x',
+      height: '2.5x',
+      radius: 'round',
+      fill: {
+        '': 'currentColor',
+        disabled: '#white.5',
+      },
+      shadow: '0px 2px 4px #dark.20;',
+      top: '.25x',
+      left: {
+        '': '.25x',
+        checked: '2.5x',
+      },
+      transition: 'left, theme',
+      cursor: 'pointer',
     },
-    transition: 'left',
-    cursor: 'pointer',
   },
 });
 
@@ -109,7 +109,6 @@ export interface CubeSwitchProps
     BlockStyleProps,
     FormFieldProps,
     AriaSwitchProps {
-  thumbStyles?: Styles;
   inputStyles?: Styles;
   isLoading?: boolean;
 }
@@ -128,7 +127,6 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
     extra,
     labelProps,
     labelStyles,
-    thumbStyles,
     isLoading,
     insideForm,
     validationState,
@@ -181,12 +179,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
         ref={inputRef}
       />
       <SwitchElement mods={mods} styles={inputStyles}>
-        <SwitchThumbElement
-          styles={thumbStyles}
-          mods={{
-            checked: inputProps.checked,
-          }}
-        />
+        <div data-element="Thumb" />
       </SwitchElement>
     </SwitchWrapperElement>
   );
