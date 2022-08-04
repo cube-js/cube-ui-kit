@@ -34,16 +34,12 @@ export function provideStyles({
 
   return {
     ...DEFAULT_STYLES,
-    ...STYLES_BY_SIZE[size || 'default'],
+    ...STYLES_BY_SIZE[size ?? 'default'],
     ...(theme === 'danger' ? DANGER_STYLES_BY_TYPE : DEFAULT_STYLES_BY_TYPE)[
-      type || 'default'
+      type ?? 'default'
     ],
     ...((isLoading || icon) && !children
-      ? {
-          padding: '0',
-          width: '(2.5x + 1lh)',
-          height: '(2.5x + 1lh)',
-        }
+      ? ICON_ONLY_STYLES_BY_SIZE[size ?? 'default']
       : null),
   };
 }
@@ -254,6 +250,24 @@ const STYLES_BY_SIZE = {
   large: {
     padding: '(1.5x - 1px) (2.5x - 1px)',
     preset: 't2m',
+  },
+};
+
+const ICON_ONLY_STYLES_BY_SIZE = {
+  small: {
+    padding: 0,
+    height: '4x',
+    width: '4x',
+  },
+  default: {
+    padding: 0,
+    height: '5x',
+    width: '5x',
+  },
+  large: {
+    padding: 0,
+    height: '6x',
+    width: '6x',
   },
 };
 
