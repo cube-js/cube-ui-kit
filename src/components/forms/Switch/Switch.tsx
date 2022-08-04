@@ -179,7 +179,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
         ref={inputRef}
       />
       <SwitchElement mods={mods} styles={inputStyles}>
-        <div data-element="Thumb" />
+        <div data-element="Thumb" aria-hidden="true" />
       </SwitchElement>
     </SwitchWrapperElement>
   );
