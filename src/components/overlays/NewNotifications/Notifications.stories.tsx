@@ -372,3 +372,24 @@ ComplexInteraction.args = {
 ComplexInteraction.parameters = {
   docs: { source: { type: 'code' } },
 };
+
+export const WithLongActions = ActionTemplate.bind({});
+WithLongActions.args = {
+  actions: (
+    <>
+      <NotificationAction>Lorem Ipsum dolor sit amet</NotificationAction>
+      <NotificationAction>
+        Alternative very long text haha Alternative very long text haha
+      </NotificationAction>
+    </>
+  ),
+};
+
+WithLongActions.play = async ({ canvasElement }) => {
+  const { getByRole, getByTestId } = within(canvasElement);
+
+  await userEvent.click(getByRole('button'));
+  const notification = getByTestId('floating-notification');
+
+  await expect(notification).toBeInTheDocument();
+};
