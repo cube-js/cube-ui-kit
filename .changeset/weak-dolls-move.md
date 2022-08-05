@@ -2,4 +2,4 @@
 "@cube-dev/ui-kit": patch
 ---
 
-fix(menu): menu trigger behavior when inside modal
+fix(menu): Fixed bug when menu doesn't open within a modal
