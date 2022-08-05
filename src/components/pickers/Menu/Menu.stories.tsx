@@ -17,6 +17,8 @@ import {
 } from '../../../index';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { action } from '@storybook/addon-actions';
+import { userEvent, waitFor, within } from '@storybook/testing-library';
+import { expect } from '@storybook/jest';
 
 export default {
   title: 'Pickers/Menu',
@@ -99,9 +101,15 @@ export const InsideModal = () => {
             <Button
               size="small"
               icon={<MoreOutlined />}
+              data-qa="contextMenuButton"
               aria-label="Open Context Menu"
             />
-            <Menu id="menu" width="220px" selectionMode="multiple">
+            <Menu
+              data-qa="contextMenuList"
+              id="menu"
+              width="220px"
+              selectionMode="multiple"
+            >
               <Menu.Item key="red" postfix="Ctr+C" onPress={action('Ctr+C')}>
                 Copy
               </Menu.Item>
@@ -117,6 +125,17 @@ export const InsideModal = () => {
       />
     </DialogContainer>
   );
+};
+
+InsideModal.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const button = await canvas.findByTestId('contextMenuButton');
+
+  await userEvent.click(button);
+
+  const list = await canvas.findByTestId('contextMenuList');
+
+  await waitFor(() => expect(list).toBeInTheDocument());
 };
 
 export const Sections = (props) => {
