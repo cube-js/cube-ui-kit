@@ -7,20 +7,25 @@ function setCSSValue(
   presetName: string,
   isPropOnly = false,
 ) {
-  styles[`--${styleName}`] =
-    presetName === 'inherit'
-      ? 'inherit'
-      : presetName === 'default'
-      ? `var(--default-${styleName}, ${
-          styleName === 'font-family'
-            ? 'var(--font, NonexistentFontName)'
-            : 'inherit'
-        })${styleName === 'font-family' ? ', var(--font, sans-serif)' : ''}`
-      : `var(--${presetName}-${styleName}, var(--default-${styleName}, ${
-          styleName === 'font-family'
-            ? 'var(--font, NonexistentFontName)'
-            : 'inherit'
-        }))${styleName === 'font-family' ? ', var(--font, sans-serif)' : ''}`;
+  styles[`--${styleName}`] = (() => {
+    if (presetName === 'inherit') {
+      return 'inherit';
+    }
+
+    const defaultValue = `var(--default-${styleName}, ${
+      styleName === 'font-family'
+        ? 'var(--font, NonexistentFontName)'
+        : 'inherit'
+    })`;
+    const fontSuffix =
+      styleName === 'font-family' ? ', var(--font, sans-serif)' : '';
+
+    if (presetName === 'default') {
+      return `${defaultValue}${fontSuffix}`;
+    } else {
+      return `var(--${presetName}-${styleName}, ${defaultValue})${fontSuffix}`;
+    }
+  })();
 
   if (!isPropOnly) {
     styles[styleName] = styles[`--${styleName}`];
