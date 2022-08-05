@@ -13,3 +13,4 @@ const Form = Object.assign(
 export { useFormProps, Form, Field, useForm };
 export type { CubeFormProps } from './Form';
 export type { CubeFormInstance } from './useForm';
+export type { FieldTypes, Fields } from './types';

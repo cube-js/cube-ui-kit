@@ -18,6 +18,7 @@ import { CubeFormInstance } from './useForm';
 import { FieldWrapper } from '../FieldWrapper';
 import { warn } from '../../../utils/warnings';
 import { Styles } from '../../../tasty';
+import { FieldTypes } from './types';
 
 const ID_MAP = {};
 
@@ -98,7 +99,8 @@ function getValueProps(type, value?, onChange?) {
   };
 }
 
-export interface CubeFieldProps extends OptionalFieldBaseProps {
+export interface CubeFieldProps<T extends FieldTypes>
+  extends OptionalFieldBaseProps {
   /** The initial value of the input. */
   defaultValue?: any;
   /** The type of the input. `Input`, `Checkbox`, RadioGroup`, `Select`, `ComboBox` etc... */
@@ -113,7 +115,7 @@ export interface CubeFieldProps extends OptionalFieldBaseProps {
   /** Validation rules */
   rules?: ValidationRule[];
   /** The form instance */
-  form?: CubeFormInstance;
+  form?: CubeFormInstance<T>;
   /** The message for the field or text for the error */
   message?: string;
   /** The description for the field */
@@ -133,11 +135,12 @@ export interface CubeFieldProps extends OptionalFieldBaseProps {
   labelStyles?: Styles;
 }
 
-interface CubeFullFieldProps extends CubeFieldProps {
-  form: CubeFormInstance;
+interface CubeFullFieldProps<T extends FieldTypes> extends CubeFieldProps<T> {
+  form: CubeFormInstance<T>;
 }
 
-interface CubeReplaceFieldProps extends CubeFieldProps {
+interface CubeReplaceFieldProps<T extends FieldTypes>
+  extends CubeFieldProps<T> {
   isRequired?: boolean;
   onChange?: (any) => void;
   onSelectionChange?: (any) => void;
@@ -146,8 +149,8 @@ interface CubeReplaceFieldProps extends CubeFieldProps {
   labelPosition?: LabelPosition;
 }
 
-export function Field(allProps: CubeFieldProps) {
-  const props: CubeFullFieldProps = useFormProps(allProps);
+export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
+  const props: CubeFullFieldProps<T> = useFormProps(allProps);
 
   let {
     defaultValue,
@@ -324,7 +327,7 @@ export function Field(allProps: CubeFieldProps) {
     }
   }
 
-  const newProps: CubeReplaceFieldProps = {
+  const newProps: CubeReplaceFieldProps<T> = {
     id: fieldId,
     name: fieldName,
     onBlur() {
