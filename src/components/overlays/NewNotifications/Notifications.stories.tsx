@@ -56,8 +56,8 @@ export const NotifyAsComponent: Story<CubeNotificationProps> = (args) => {
       <Notification
         actions={
           <>
-            <NotificationAction>Test</NotificationAction>
-            <NotificationAction>Alternative</NotificationAction>
+            <NotificationAction>Check logs</NotificationAction>
+            <NotificationAction>Upload updated Cube project</NotificationAction>
           </>
         }
         {...args}
@@ -70,9 +70,31 @@ export const StandaloneNotification: Story<CubeNotificationProps> = (args) => (
   <NotificationView {...args} />
 );
 
-export const WithIcon = StandaloneNotification.bind({});
-WithIcon.args = {
-  icon: <BellOutlined style={{ display: 'flex', alignSelf: 'center' }} />,
+export const WithIcon: Story<CubeNotificationProps> = (args) => {
+  return (
+    <>
+      <NotificationView
+        {...args}
+        header=""
+        icon={<BellOutlined style={{ display: 'flex', alignSelf: 'center' }} />}
+      />
+      <NotificationView
+        {...args}
+        icon={<BellOutlined style={{ display: 'flex', alignSelf: 'center' }} />}
+      />
+      <NotificationView
+        {...args}
+        icon={<BellOutlined style={{ display: 'flex', alignSelf: 'center' }} />}
+        header=""
+        actions={
+          <>
+            <NotificationAction>Test</NotificationAction>
+            <NotificationAction>Alternative</NotificationAction>
+          </>
+        }
+      />
+    </>
+  );
 };
 
 export const WithLongDescription = StandaloneNotification.bind({});
@@ -156,9 +178,9 @@ export const NotificationsInModal: Story<CubeNotificationProps> = (args) => {
                   description="Click to update your schema."
                   actions={
                     <>
-                      <NotificationAction>Update</NotificationAction>
-                      <NotificationAction type="secondary">
-                        Don't show this again
+                      <NotificationAction>Check logs</NotificationAction>
+                      <NotificationAction>
+                        Upload updated Cube project
                       </NotificationAction>
                     </>
                   }
@@ -349,4 +371,25 @@ ComplexInteraction.args = {
 };
 ComplexInteraction.parameters = {
   docs: { source: { type: 'code' } },
+};
+
+export const WithLongActions = ActionTemplate.bind({});
+WithLongActions.args = {
+  actions: (
+    <>
+      <NotificationAction>Lorem Ipsum dolor sit amet</NotificationAction>
+      <NotificationAction>
+        Alternative very long text haha Alternative very long text haha
+      </NotificationAction>
+    </>
+  ),
+};
+
+WithLongActions.play = async ({ canvasElement }) => {
+  const { getByRole, getByTestId } = within(canvasElement);
+
+  await userEvent.click(getByRole('button'));
+  const notification = getByTestId('floating-notification');
+
+  await expect(notification).toBeInTheDocument();
 };

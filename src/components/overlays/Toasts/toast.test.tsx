@@ -1,9 +1,9 @@
 import { Toast } from './Toast';
-import { renderWithRoot, screen } from '../../../test';
+import { renderWithRoot, screen, wait } from '../../../test';
 
 describe('useToastsApi', () => {
-  beforeAll(() => jest.useFakeTimers('modern'));
-  afterAll(() => jest.useRealTimers());
+  beforeEach(() => jest.useFakeTimers('modern'));
+  afterEach(() => jest.useRealTimers());
 
   it('should add and dismiss toast on timeout', async () => {
     const dismiss = jest.fn();
@@ -26,5 +26,21 @@ describe('useToastsApi', () => {
     jest.runAllTimers();
     expect(screen.getByTestId('floating-notification')).toBeInTheDocument();
     expect(dismiss).not.toBeCalled();
+  });
+
+  it('should respect duration prop', async () => {
+    jest.useRealTimers();
+    const dismiss = jest.fn();
+
+    renderWithRoot(
+      <Toast description="Test" duration={10} onDismiss={dismiss} />,
+    );
+
+    await wait(100);
+
+    expect(dismiss).toBeCalled();
+    expect(
+      screen.queryByTestId('floating-notification'),
+    ).not.toBeInTheDocument();
   });
 });

@@ -2,12 +2,12 @@ import { ReactChild, ReactFragment, useMemo } from 'react';
 import { isElement, isFragment } from 'react-is';
 import { useNotificationsApi } from '../NewNotifications';
 import type { CubeToastsApiProps, CubeToastsApiToastCallback } from './types';
-import { CubeToastsApiToastShortcuts } from './types';
+import { CubeToastsApiToastAction, CubeToastsApiToastShortcuts } from './types';
 
 export function useToastsApi() {
   const { notify, update, remove } = useNotificationsApi();
 
-  const toast = useMemo(
+  const toast: CubeToastsApiToastAction = useMemo(
     () =>
       Object.assign<CubeToastsApiToastCallback, CubeToastsApiToastShortcuts>(
         (props) =>
@@ -34,7 +34,7 @@ function unwrapProps(props: CubeToastsApiProps | ReactChild | ReactFragment) {
       ? {
           isDismissible: props.duration !== null,
           duration: 5_000,
-          ...(props as CubeToastsApiProps),
+          ...props,
         }
       : { description: props, isDismissible: true, duration: 5_000 }),
   };
