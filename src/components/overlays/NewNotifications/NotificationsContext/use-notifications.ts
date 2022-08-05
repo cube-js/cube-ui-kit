@@ -29,7 +29,7 @@ export function useNotifications(
         newToasts.set(id, {
           id,
           isDismissible,
-          duration: duration ?? isDismissible ? 5_000 : null,
+          duration: duration ?? (isDismissible ? 5_000 : null),
           ...rest,
         } as CubeNotifyApiPropsWithID);
 
