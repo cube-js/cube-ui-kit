@@ -3,7 +3,13 @@ import {
   BulbOutlined,
   CheckCircleFilled,
   MoreOutlined,
+  ReloadOutlined,
+  BookOutlined,
+  PlusOutlined,
 } from '@ant-design/icons';
+import { action } from '@storybook/addon-actions';
+import { expect } from '@storybook/jest';
+import { userEvent, waitFor, within } from '@storybook/testing-library';
 import {
   Menu,
   MenuTrigger,
@@ -16,9 +22,6 @@ import {
   DialogContainer,
 } from '../../../index';
 import { baseProps } from '../../../stories/lists/baseProps';
-import { action } from '@storybook/addon-actions';
-import { userEvent, waitFor, within } from '@storybook/testing-library';
-import { expect } from '@storybook/jest';
 
 export default {
   title: 'Pickers/Menu',
@@ -294,6 +297,46 @@ export const PaymentDetails = (props) => {
             Invoice #16C7B3AE manual
           </Menu.Item>
           <Menu.Item key="yellow" postfix="July, 2022">
+            #16C7B3AE
+          </Menu.Item>
+        </Menu>
+      </div>
+    </Root>
+  );
+};
+
+export const ItemCustomIcons = (props) => {
+  const [selectedKeys, setSelectedKeys] = useState(['1']);
+  const onSelectionChange = (key) => {
+    setSelectedKeys(key);
+  };
+
+  return (
+    <Root>
+      <div style={{ padding: '20px', width: '340px' }}>
+        <Menu
+          id="menu"
+          {...props}
+          selectionIcon="checkbox"
+          selectionMode="single"
+          selectedKeys={selectedKeys}
+          header="Custom Icons"
+          onSelectionChange={onSelectionChange}
+        >
+          <Menu.Item key="red" icon={<ReloadOutlined />} postfix="March, 2022">
+            #16C7B3AE-000113-000113
+          </Menu.Item>
+          <Menu.Item key="orange" icon={<BookOutlined />} postfix="Jan, 2022">
+            #16C7B3AE
+          </Menu.Item>
+          <Menu.Item key="purple" icon={<PlusOutlined />} postfix="Feb, 2022">
+            #16C7B3AE
+          </Menu.Item>
+          <Menu.Item
+            key="yellow"
+            icon={<ReloadOutlined />}
+            postfix="July, 2022"
+          >
             #16C7B3AE
           </Menu.Item>
         </Menu>
