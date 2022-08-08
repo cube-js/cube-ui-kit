@@ -3,34 +3,50 @@ import { useNotificationsApi } from './hooks';
 import { CubeNotifyApiProps } from './types';
 import { useId } from '../../../utils/react/useId';
 
-export function Notification(props: CubeNotifyApiProps) {
-  const { id: propsId } = props;
-  const { notify, update } = useNotificationsApi();
+export type NotificationProps = {
+  /**
+   * If set to true, when the component gets unmounted, notifications will not be removed from the bar
+   *
+   * @default false
+   */
+  disableRemoveOnUnmount?: boolean;
+} & CubeNotifyApiProps;
+
+export function Notification(props: NotificationProps) {
+  const { id: propsId, disableRemoveOnUnmount = false } = props;
+
+  const { notify, update, remove } = useNotificationsApi();
   const defaultId = useId();
 
   const id = propsId ?? defaultId;
 
   useEffect(() => {
-    const { remove } = notify({ id, ...props });
-
-    return remove;
+    notify({ id, ...props });
   }, [id]);
+
+  useEffect(() => {
+    if (disableRemoveOnUnmount) {
+      return;
+    }
+
+    return () => remove(id);
+  }, []);
 
   useEffect(() => update(id, props));
 
   return null;
 }
 
-Notification.Success = function NotificationSuccess(props: CubeNotifyApiProps) {
+Notification.Success = function NotificationSuccess(props: NotificationProps) {
   return <Notification type="success" {...props} />;
 };
 
-Notification.Danger = function NotificationDanger(props: CubeNotifyApiProps) {
+Notification.Danger = function NotificationDanger(props: NotificationProps) {
   return <Notification type="danger" {...props} />;
 };
 
 Notification.Attention = function NotificationAttention(
-  props: CubeNotifyApiProps,
+  props: NotificationProps,
 ) {
   return <Notification type="attention" {...props} />;
 };

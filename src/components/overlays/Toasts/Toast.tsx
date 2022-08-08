@@ -1,37 +1,49 @@
 import { useEffect } from 'react';
 import { useToastsApi } from './use-toasts-api';
 import { CubeToastsApiProps } from './types';
-import { CubeNotifyApiProps } from '../NewNotifications';
 import { useId } from '../../../utils/react/useId';
 
-export function Toast(props: CubeToastsApiProps) {
-  const { id: propsId } = props;
+export type ToastProps = {
+  /**
+   * If set to true, when the component gets unmounted, notifications will not be removed from the bar
+   *
+   * @default false
+   */
+  disableRemoveOnUnmount?: boolean;
+} & CubeToastsApiProps;
+
+export function Toast(props: ToastProps) {
+  const { id: propsId, disableRemoveOnUnmount } = props;
   const { toast, update, remove } = useToastsApi();
   const defaultId = useId();
 
   const id = propsId ?? defaultId;
 
   useEffect(() => {
-    toast({ ...props, id });
-
-    return () => remove(id);
+    toast({ id, ...props });
   }, [id]);
 
   useEffect(() => {
-    update(id, props as CubeNotifyApiProps);
-  });
+    if (disableRemoveOnUnmount) {
+      return;
+    }
+
+    return () => remove(id);
+  }, []);
+
+  useEffect(() => update(id, props));
 
   return null;
 }
 
-Toast.Success = function ToastSuccess(props: CubeToastsApiProps) {
+Toast.Success = function ToastSuccess(props: ToastProps) {
   return <Toast type="success" {...props} />;
 };
 
-Toast.Danger = function ToastDanger(props: CubeToastsApiProps) {
+Toast.Danger = function ToastDanger(props: ToastProps) {
   return <Toast type="danger" {...props} />;
 };
 
-Toast.Attention = function ToastAttention(props: CubeToastsApiProps) {
+Toast.Attention = function ToastAttention(props: ToastProps) {
   return <Toast type="attention" {...props} />;
 };
