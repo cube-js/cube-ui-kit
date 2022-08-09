@@ -1,15 +1,10 @@
 import { useRef, useState } from 'react';
 import { dotize } from '../../../tasty';
 import { applyRules } from './validation';
+import { FieldTypes, CubeFieldData, SetFieldsArrType } from './types';
 
-export type CubeFormData = { [key: string]: unknown };
-export type CubeFieldData = {
-  value?: unknown;
-  name: string;
-  errors: string[];
-  touched?: boolean;
-  rules?: any[];
-  validating?: boolean;
+export type CubeFormData<T extends FieldTypes> = {
+  [K in keyof T]?: CubeFieldData<K, T[K]>;
 };
 
 function setValue(obj, path, value) {
@@ -28,23 +23,24 @@ function isEqual(v1, v2) {
   return JSON.stringify(v1) === JSON.stringify(v2);
 }
 
-export class CubeFormInstance {
+export class CubeFormInstance<
+  T extends FieldTypes,
+  TFormData extends CubeFormData<T> = CubeFormData<T>,
+> {
   public forceReRender: () => void = () => {};
   private initialFields = {};
-  private fields: { [key: string]: CubeFieldData } = {};
+  private fields: TFormData = {} as TFormData;
   public ref = {};
   public isSubmitting = false;
-  public onValuesChange: (CubeFormData) => void | Promise<any> = () => {};
-  public onSubmit: (CubeFormData) => void | Promise<any> = () => {};
+  public onValuesChange: (data: CubeFormData<T>) => void | Promise<void> =
+    () => {};
+  public onSubmit: (data: CubeFormData<T>) => void | Promise<void> = () => {};
 
-  constructor(forceReRender?: () => void) {
-    this.forceReRender = forceReRender || (() => {});
-    this.initialFields = {};
-    this.fields = {};
+  constructor(forceReRender: () => void = () => {}) {
+    this.forceReRender = forceReRender;
 
     this.getFieldValue = this.getFieldValue.bind(this);
     this.getFieldsValue = this.getFieldsValue.bind(this);
-    this.setFieldsValue = this.setFieldsValue.bind(this);
     this.setFieldValue = this.setFieldValue.bind(this);
     this.getFieldError = this.getFieldError.bind(this);
     this.getFieldInstance = this.getFieldInstance.bind(this);
@@ -60,20 +56,18 @@ export class CubeFormInstance {
   }
 
   async submit() {
-    if (this.onSubmit) {
-      return this.onSubmit(this.getFormData());
-    }
+    return this.onSubmit?.(this.getFormData());
   }
 
-  setFieldsValue(
-    newData: { [key: string]: unknown },
+  setFieldsValue = (
+    newData: Partial<T>,
     touched?: boolean,
     skipRender?: boolean,
     createFields = false,
-  ) {
+  ) => {
     let flag = false;
 
-    Object.keys(newData).forEach((name) => {
+    Object.keys(newData).forEach((name: keyof T) => {
       let field = this.fields[name];
 
       if (!field && createFields) {
@@ -108,26 +102,24 @@ export class CubeFormInstance {
         this.onValuesChange && this.onValuesChange(this.getFormData());
       }
     }
+  };
+
+  getFieldValue<Name extends keyof T>(name: Name): T[Name] | undefined {
+    return this.fields[name]?.value;
   }
 
-  getFieldValue(name): unknown {
-    return this.fields[name] && this.fields[name].value;
-  }
-
-  getFieldsValue(): CubeFormData {
-    const data: CubeFormData = {};
-
+  getFieldsValue(): Partial<T> {
     return Object.values(this.fields).reduce((map, field) => {
-      map[field.name] = field.value;
+      map[field.name as keyof T] = field.value as T[typeof field.name];
 
       return map;
-    }, data);
+    }, {} as T);
   }
 
   /**
    * Similar to getFieldsValue() but respects '.' notation and creates nested objects.
    */
-  getFormData(): CubeFormData {
+  getFormData(): CubeFormData<T> {
     const fieldsValue = this.getFieldsValue();
 
     return Object.keys(fieldsValue).reduce((map, field) => {
@@ -138,12 +130,12 @@ export class CubeFormInstance {
       }
 
       return map;
-    }, {});
+    }, {} as CubeFormData<T>);
   }
 
-  setFieldValue(
-    name: string,
-    value: unknown,
+  setFieldValue<Name extends keyof T>(
+    name: Name,
+    value: T[Name],
     touched = false,
     skipRender = false,
   ) {
@@ -170,15 +162,15 @@ export class CubeFormInstance {
     }
   }
 
-  getFieldInstance(name: string): CubeFieldData {
+  getFieldInstance<Name extends keyof T>(name: Name): TFormData[Name] {
     return this.fields[name];
   }
 
-  setInitialFieldsValue(values: { [key: string]: unknown }): void {
-    this.initialFields = dotize.convert(values) || {};
+  setInitialFieldsValue(values: Partial<T>): void {
+    this.initialFields = dotize.convert(values) ?? {};
   }
 
-  resetFields(names?: string[], skipRender?: boolean): void {
+  resetFields(names?: (keyof T)[], skipRender?: boolean): void {
     const fieldsValue = this.getFieldsValue();
     const fieldNames = Object.keys({ ...fieldsValue, ...this.initialFields });
     const filteredFieldNames = names
@@ -198,7 +190,7 @@ export class CubeFormInstance {
     this.setFieldsValue(values, false, skipRender, true);
   }
 
-  async validateField(name: string): Promise<any> {
+  async validateField<Name extends keyof T>(name: Name): Promise<any> {
     const field = this.getFieldInstance(name);
 
     if (!field || !field.rules) return Promise.resolve();
@@ -222,8 +214,8 @@ export class CubeFormInstance {
       });
   }
 
-  validateFields(list?: string[]): Promise<any> {
-    const fieldsList = list || Object.keys(this.fields);
+  validateFields<Names extends (keyof T)[]>(names?: Names): Promise<any> {
+    const fieldsList = names || Object.keys(this.fields);
     const errorList: { name: string; errors: string[] }[] = [];
 
     return Promise.allSettled(
@@ -243,7 +235,7 @@ export class CubeFormInstance {
     });
   }
 
-  isFieldValid(name: string): boolean {
+  isFieldValid<Name extends keyof T>(name: Name): boolean {
     const field = this.getFieldInstance(name);
 
     if (!field) return true;
@@ -251,7 +243,7 @@ export class CubeFormInstance {
     return !field.errors.length;
   }
 
-  isFieldInvalid(name: string): boolean {
+  isFieldInvalid<Name extends keyof T>(name: Name): boolean {
     const field = this.getFieldInstance(name);
 
     if (!field) return false;
@@ -259,7 +251,7 @@ export class CubeFormInstance {
     return !!field.errors.length;
   }
 
-  isFieldTouched(name: string): boolean {
+  isFieldTouched<Name extends keyof T>(name: Name): boolean {
     const field = this.getFieldInstance(name);
 
     if (!field) return false;
@@ -267,7 +259,7 @@ export class CubeFormInstance {
     return !!field.touched;
   }
 
-  getFieldError(name: string) {
+  getFieldError<Name extends keyof T>(name: Name): string[] {
     const field = this.getFieldInstance(name);
 
     if (!field) return [];
@@ -275,7 +267,7 @@ export class CubeFormInstance {
     return field.errors || [];
   }
 
-  createField(name: string, skipRender?: boolean) {
+  createField<Name extends keyof T>(name: Name, skipRender?: boolean) {
     if (!this.fields[name]) {
       this.fields[name] = this._createField(name);
     }
@@ -285,7 +277,7 @@ export class CubeFormInstance {
     }
   }
 
-  removeField(name: string, skipRender?: boolean) {
+  removeField<Name extends keyof T>(name: Name, skipRender?: boolean) {
     if (this.fields[name]) {
       delete this.fields[name];
     }
@@ -297,12 +289,12 @@ export class CubeFormInstance {
     this.validateFields().catch(() => {});
   }
 
-  setFields(newFields: CubeFieldData[]) {
+  setFields<Names extends keyof T>(newFields: SetFieldsArrType<T, Names>[]) {
     newFields.forEach(({ name, value, errors }) => {
       this.fields[name] = this._createField(name, {
         value,
         errors,
-      });
+      } as TFormData[Names]);
     });
 
     this.forceReRender();
@@ -313,28 +305,30 @@ export class CubeFormInstance {
     this.forceReRender();
   }
 
-  _createField(name, data?: Partial<CubeFieldData>): CubeFieldData {
+  _createField<Name extends keyof T, Data extends TFormData[Name]>(
+    name: Name,
+    data?: Data,
+  ): Data {
     return {
       name,
-      value: undefined,
       validating: false,
       touched: false,
       errors: [],
       ...data,
-    };
+    } as unknown as Data;
   }
 }
 
-export function useForm(
-  form?: CubeFormInstance,
+export function useForm<TSourceType extends FieldTypes>(
+  form?: CubeFormInstance<TSourceType, CubeFormData<TSourceType>>,
   ref?,
   options: {
-    onSubmit?: CubeFormInstance['onSubmit'];
-    onValuesChange?: CubeFormInstance['onValuesChange'];
+    onSubmit?: CubeFormInstance<TSourceType>['onSubmit'];
+    onValuesChange?: CubeFormInstance<TSourceType>['onValuesChange'];
   } = {},
-): [CubeFormInstance] {
+): [CubeFormInstance<TSourceType>] {
   const { onSubmit, onValuesChange } = options;
-  const formRef = useRef<CubeFormInstance>();
+  const formRef = useRef<CubeFormInstance<TSourceType>>();
   const [, forceUpdate] = useState({});
 
   if (!formRef.current) {
@@ -346,7 +340,7 @@ export function useForm(
         forceUpdate({});
       };
 
-      form = formRef.current = new CubeFormInstance(forceReRender);
+      form = formRef.current = new CubeFormInstance<TSourceType>(forceReRender);
     }
 
     form.ref = ref;

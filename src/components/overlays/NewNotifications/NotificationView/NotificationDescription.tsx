@@ -2,6 +2,7 @@ import { HTMLAttributes, memo } from 'react';
 import { tasty } from '../../../../tasty';
 import { Paragraph } from '../../../content/Paragraph';
 import { NotificationProps } from './types';
+import { mergeProps } from '../../../../utils/react';
 
 export type NotificationDescriptionProps = {
   description: NotificationProps['description'];
@@ -9,6 +10,7 @@ export type NotificationDescriptionProps = {
 
 const Description = tasty(Paragraph, {
   as: 'p',
+  preset: 't4m',
   styles: {
     gridArea: 'description',
     display: '-webkit-box',
@@ -24,7 +26,13 @@ export const NotificationDescription = memo(function NotificationDescription(
   const { description, ...descriptionProps } = props;
 
   return (
-    <Description preset="t4m" {...descriptionProps}>
+    <Description
+      {...mergeProps(descriptionProps, {
+        // To make a proper user selection
+        onPointerDown: (e) => e.stopPropagation(),
+        onMouseDown: (e) => e.stopPropagation(),
+      })}
+    >
       {description}
     </Description>
   );

@@ -64,9 +64,9 @@ type NotificationListItemProps = {
   state: NotificationsListState<CubeNotificationProps>;
 };
 
-const notificationStyles = {
-  borderBottom: { '': '1bw solid #border', ':last-child': 'none' },
-};
+const NotificationListItemWrap = tasty({
+  styles: { borderBottom: { '': '1bw solid #border', ':last-child': 'none' } },
+});
 
 function NotificationListItem(props: NotificationListItemProps) {
   const { item, state } = props;
@@ -77,12 +77,13 @@ function NotificationListItem(props: NotificationListItemProps) {
   const { itemProps } = useNotificationListItem({ ref, key, state });
 
   return (
-    <NotificationView
-      ref={ref}
-      attributes={itemProps}
-      styles={notificationStyles}
-      {...notificationProps}
-      isDismissible={false}
-    />
+    <NotificationListItemWrap>
+      <NotificationView
+        ref={ref}
+        attributes={itemProps}
+        {...notificationProps}
+        isDismissible={false}
+      />
+    </NotificationListItemWrap>
   );
 }

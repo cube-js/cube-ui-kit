@@ -13,11 +13,11 @@ import {
   ResponsiveStyleValue,
   Styles,
   StylesInterface,
+  mergeStyles,
+  deprecationWarning,
+  getDisplayName,
 } from '../tasty';
-import { mergeStyles } from '../tasty';
-import { deprecationWarning } from '../tasty';
 import { useContextStyles } from '../providers/StyleProvider';
-import { getDisplayName } from '../utils/react';
 
 export type StyledProps<K extends (keyof StylesInterface)[], DefaultProps> = {
   /** The name of the element. It can be used to override styles in context. */
