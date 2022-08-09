@@ -3,7 +3,7 @@ import { Button, CubeButtonProps } from '../../actions';
 import { Text } from '../../content/Text';
 import { Styles, tasty } from '../../../tasty';
 import { Space } from '../../layout/Space';
-import { CheckOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { CheckOutlined } from '@ant-design/icons';
 
 const ACTION_BUTTON: Styles = {
   border: {
@@ -89,7 +89,7 @@ const getSelectionTypeIcon = (selectionIcon?: MenuSelectionType) => {
     case 'radio':
       return <RadioIcon />;
     default:
-      return null;
+      return undefined;
   }
 };
 
@@ -101,7 +101,9 @@ export function MenuButton({
 }: MenuButtonProps) {
   const { selectionIcon, isSelected, isSelectable } = props;
   const checkIcon =
-    isSelectable && isSelected ? getSelectionTypeIcon(selectionIcon) : null;
+    isSelectable && isSelected
+      ? getSelectionTypeIcon(selectionIcon)
+      : undefined;
   const mods = {
     ...props.mods,
     selectionIcon: !!selectionIcon,
