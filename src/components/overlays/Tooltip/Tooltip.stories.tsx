@@ -18,6 +18,9 @@ export default {
   },
 } as ComponentMeta<typeof Button>;
 
+const timeout = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
 const Template: Story<CubeTooltipTriggerProps> = (args) => (
   <TooltipTrigger {...args}>
     <Button>Hover to show a tooltip</Button>
@@ -45,26 +48,34 @@ Default.play = async ({ canvasElement }) => {
 export const ViaProvider: typeof ViaProviderTemplate = ViaProviderTemplate.bind(
   {},
 );
-ViaProvider.args = {};
+ViaProvider.args = {
+  delay: 0,
+};
 ViaProvider.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
+  // wait for TooltipProvider setRendered to true
+  await timeout(1000);
+
   const button = await canvas.findByRole('button');
   // this is a weird hack that makes tooltip working properly on page load
   await userEvent.unhover(button);
   await userEvent.hover(button);
 
-  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeInTheDocument());
+  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeVisible());
 };
 
 export const ViaProviderWithActiveWrap: typeof ViaProviderTemplate =
   ViaProviderTemplate.bind({});
-ViaProviderWithActiveWrap.args = { activeWrap: true };
+ViaProviderWithActiveWrap.args = { activeWrap: true, delay: 0 };
 ViaProviderWithActiveWrap.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
+  // wait for TooltipProvider setRendered to true
+  await timeout(1000);
+
   const button = await canvas.findByRole('button');
   // this is a weird hack that makes tooltip working properly on page load
   await userEvent.unhover(button);
   await userEvent.hover(button);
 
-  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeInTheDocument());
+  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeVisible());
 };
