@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { Key, useEffect } from 'react';
 import { useToastsApi } from './use-toasts-api';
 import { CubeToastsApiProps } from './types';
+import { useEvent, useSyncRef } from '../../../_internal';
 import { useId } from '../../../utils/react/useId';
 
 export type ToastProps = {
@@ -14,23 +15,21 @@ export type ToastProps = {
 
 export function Toast(props: ToastProps) {
   const { id: propsId, disableRemoveOnUnmount } = props;
-  const { toast, update, remove } = useToastsApi();
+
   const defaultId = useId();
+  const disableRemoveOnUnmountRef = useSyncRef(disableRemoveOnUnmount);
+  const { toast, update, remove } = useToastsApi();
 
   const id = propsId ?? defaultId;
+
+  const removeNotification = useEvent((id: Key) =>
+    disableRemoveOnUnmountRef.current ? void 0 : remove(id),
+  );
 
   useEffect(() => {
     toast({ id, ...props });
   }, [id]);
-
-  useEffect(() => {
-    if (disableRemoveOnUnmount) {
-      return;
-    }
-
-    return () => remove(id);
-  }, []);
-
+  useEffect(() => () => removeNotification(id), [id]);
   useEffect(() => update(id, props));
 
   return null;
