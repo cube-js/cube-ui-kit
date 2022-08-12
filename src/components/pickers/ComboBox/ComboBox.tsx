@@ -241,17 +241,20 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
 
   let comboBoxWidth = inputRef?.current?.offsetWidth;
 
+  let mods = {
+    invalid: isInvalid,
+    valid: validationState === 'valid',
+    disabled: isDisabled,
+    hovered: isHovered,
+    focused: isFocused,
+    loading: isLoading,
+  };
+
   let comboBoxField = (
     <ComboBoxWrapperElement
       ref={ref}
       qa={qa || 'ComboBox'}
-      {...modAttrs({
-        invalid: isInvalid,
-        valid: validationState === 'valid',
-        disabled: isDisabled,
-        hovered: isHovered,
-        focused: isFocused,
-      })}
+      {...modAttrs(mods)}
       styles={outerStyles}
       style={{
         zIndex: isFocused ? 1 : 'initial',
@@ -264,13 +267,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
         ref={inputRef}
         autoComplete={autoComplete}
         styles={inputStyles}
-        {...modAttrs({
-          invalid: isInvalid,
-          valid: validationState === 'valid',
-          disabled: isDisabled,
-          hovered: isHovered,
-          focused: isFocused,
-        })}
+        {...modAttrs(mods)}
         data-size={size}
       />
       {prefix ? (
@@ -303,6 +300,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
               focused: isTriggerFocused,
               hovered: isTriggerHovered,
               disabled: isDisabled,
+              loading: isLoading,
             })}
             data-size={size}
             isDisabled={isDisabled}
