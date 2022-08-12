@@ -3,7 +3,6 @@ import {
   ReactNode,
   useContext,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
 } from 'react';
@@ -14,6 +13,7 @@ import { Button, CubeButtonProps } from '../../actions';
 import { Styles, tasty } from '../../../tasty';
 import styled from 'styled-components';
 import { Flow } from '../../layout/Flow';
+import { useLayoutEffect } from '../../../utils/react';
 
 export interface CubeTabData {
   id: string | number;

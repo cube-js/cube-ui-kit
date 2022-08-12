@@ -5,7 +5,7 @@ import {
   Section as BaseSection,
 } from '@react-stately/collections';
 import { useMenu } from '@react-aria/menu';
-import { mergeProps, useSyncRef } from '@react-aria/utils';
+import { useSyncRef } from '@react-aria/utils';
 import { useDOMRef } from '@react-spectrum/utils';
 import { useTreeState } from '@react-stately/tree';
 import type { AriaMenuProps } from '@react-types/menu';
@@ -21,6 +21,7 @@ import { MenuItem } from './MenuItem';
 import { MenuSection } from './MenuSection';
 import { MenuButtonProps, MenuSelectionType } from './MenuButton';
 import { useMenuContext } from './context';
+import { mergeProps } from '../../../utils/react';
 
 export interface CubeMenuProps<T>
   extends ContainerStyleProps,
