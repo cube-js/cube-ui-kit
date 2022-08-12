@@ -32,14 +32,15 @@ function TooltipTrigger(props: CubeTooltipTriggerProps) {
     isMaterial,
     offset = DEFAULT_OFFSET,
     trigger: triggerAction,
+    delay = 250,
+    isOpen,
+    onOpenChange,
+    defaultOpen,
   } = props;
 
   let [trigger, tooltip] = Children.toArray(children);
 
-  let state = useTooltipTriggerState({
-    delay: 750,
-    ...props,
-  });
+  let state = useTooltipTriggerState({ delay, ...props });
 
   let tooltipTriggerRef = useRef(null);
   let overlayRef = useRef(null);
@@ -48,6 +49,10 @@ function TooltipTrigger(props: CubeTooltipTriggerProps) {
     {
       isDisabled,
       trigger: triggerAction,
+      delay,
+      isOpen,
+      onOpenChange,
+      defaultOpen,
     },
     state,
     tooltipTriggerRef,

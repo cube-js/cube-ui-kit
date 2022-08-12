@@ -133,6 +133,8 @@ export interface CubeFieldProps<T extends FieldTypes>
   styles?: Styles;
   labelPosition?: LabelPosition;
   labelStyles?: Styles;
+  labelPrefix?: ReactNode;
+  labelSuffix?: ReactNode;
 }
 
 interface CubeFullFieldProps<T extends FieldTypes> extends CubeFieldProps<T> {
@@ -175,8 +177,10 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
     isDisabled,
     isLoading,
     styles,
-    labelPosition,
+    labelPosition = 'top',
     labelStyles,
+    labelSuffix,
+    labelPrefix,
   } = props;
   const nonInput = !name;
   const fieldName: string =
@@ -251,6 +255,8 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
         styles={styles}
         labelPosition={labelPosition}
         labelStyles={labelStyles}
+        labelPrefix={labelPrefix}
+        labelSuffix={labelSuffix}
       />
     );
   }

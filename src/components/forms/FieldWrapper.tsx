@@ -12,6 +12,7 @@ import { Props, Styles, tasty } from '../../tasty';
 import { TooltipProvider } from '../overlays/Tooltip/TooltipProvider';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { wrapNodeIfPlain } from '../../utils/react';
+import { Space } from '../layout/Space';
 
 const FieldElement = tasty({
   qa: 'Field',
@@ -67,9 +68,11 @@ const MessageElement = tasty({
 });
 
 export type CubeFieldWrapperProps = {
-  as: string;
+  as?: string;
   labelPosition: LabelPosition;
   label?: string;
+  labelSuffix?: ReactNode;
+  labelPrefix?: ReactNode;
   labelStyles?: Styles;
   styles?: Styles;
   /** Whether the input is required */
@@ -84,14 +87,17 @@ export type CubeFieldWrapperProps = {
   /** Styles for the message */
   messageStyles?: Styles;
   /** The description for the field. It will be placed below the label */
-  description?: string;
+  description?: ReactNode;
   Component?: JSX.Element;
   validationState?: ValidationState;
   requiredMark?: boolean;
   tooltip?: ReactNode;
+  extra?: ReactNode;
+  isHidden?: boolean;
+  necessityLabel?: ReactNode;
 };
 
-function FieldWrapper(props, ref) {
+function FieldWrapper(props: CubeFieldWrapperProps, ref) {
   const {
     as,
     labelPosition,
@@ -112,6 +118,8 @@ function FieldWrapper(props, ref) {
     requiredMark = true,
     tooltip,
     isHidden,
+    labelPrefix,
+    labelSuffix,
   } = props;
 
   const labelComponent = label ? (
@@ -128,11 +136,20 @@ function FieldWrapper(props, ref) {
     >
       {extra ? (
         <Grid placeContent="baseline space-between" flow="column">
-          <div>{label}</div>
+          <Space placeItems="baseline" gap="0.5x">
+            <div>{labelPrefix}</div>
+            <div>{label}</div>
+            <div>{labelSuffix}</div>
+          </Space>
+
           <Text preset="t3">{extra}</Text>
         </Grid>
       ) : (
-        label
+        <Space placeItems="baseline" gap="0.5x">
+          <div>{labelPrefix}</div>
+          <div>{label}</div>
+          <div>{labelSuffix}</div>
+        </Space>
       )}
       {tooltip ? (
         <>
