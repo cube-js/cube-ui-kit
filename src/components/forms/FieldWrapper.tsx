@@ -70,8 +70,8 @@ const MessageElement = tasty({
 
 export type CubeFieldWrapperProps = {
   as?: string;
-  labelPosition: LabelPosition;
-  label?: string;
+  labelPosition?: LabelPosition;
+  label?: ReactNode;
   labelSuffix?: ReactNode;
   labelPrefix?: ReactNode;
   labelStyles?: Styles;
@@ -101,7 +101,7 @@ export type CubeFieldWrapperProps = {
 function FieldWrapper(props: CubeFieldWrapperProps, ref) {
   const {
     as,
-    labelPosition,
+    labelPosition = 'top',
     label,
     extra,
     styles,
