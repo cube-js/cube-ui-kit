@@ -1,10 +1,9 @@
 import { ForwardedRef, forwardRef } from 'react';
 import { useHover } from '@react-aria/interactions';
 import { useFocusRing } from '@react-aria/focus';
-import { mergeProps, useId } from '@react-aria/utils';
 import { tasty } from '../../../../tasty';
 import { useEvent, useTimer } from '../../../../_internal';
-import { ClearSlots } from '../../../../utils/react';
+import { ClearSlots, mergeProps } from '../../../../utils/react';
 import { NotificationIcon } from './NotificationIcon';
 import { NotificationHeader } from './NotificationHeader';
 import { NotificationDescription } from './NotificationDescription';
@@ -12,6 +11,7 @@ import { NotificationFooter } from './NotificationFooter';
 import { NotificationCloseButton } from './NotificationCloseButton';
 import type { NotificationProps } from './types';
 import { NotificationProvider } from './NotificationProvider';
+import { useId } from '../../../../utils/react/useId';
 
 const NotificationContainer = tasty({
   styles: {

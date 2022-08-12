@@ -1,5 +1,4 @@
 import { forwardRef, ReactNode } from 'react';
-import { chain } from '@react-aria/utils';
 import { Button, CubeButtonProps, ButtonGroup } from '../../actions';
 import { Content } from '../../content/Content';
 import { Paragraph } from '../../content/Paragraph';
@@ -8,6 +7,7 @@ import { useDialogContext } from '../Dialog/context';
 import { Title } from '../../content/Title';
 import { Header } from '../../content/Header';
 import { Footer } from '../../content/Footer';
+import { chain } from '../../../utils/react';
 
 export interface CubeAlertDialogActionsProps {
   confirm?: CubeButtonProps | boolean;

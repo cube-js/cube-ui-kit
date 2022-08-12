@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import { useId } from '@react-aria/utils';
 import { useNotificationsApi } from './hooks';
 import { CubeNotifyApiProps } from './types';
+import { useId } from '../../../utils/react/useId';
 
 export function Notification(props: CubeNotifyApiProps) {
   const { id: propsId } = props;
