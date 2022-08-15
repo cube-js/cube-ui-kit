@@ -322,7 +322,7 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
       }
     }
 
-    form.setFieldValue(fieldName, val, !dontTouch);
+    form.setFieldValue(fieldName, val, !dontTouch, false, dontTouch);
 
     if (
       !dontTouch &&
@@ -402,7 +402,7 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
 
   Object.assign(
     newProps,
-    getValueProps(inputType, field?.value, onChangeHandler),
+    getValueProps(inputType, field?.inputValue, onChangeHandler),
   );
 
   const { onChange, onSelectionChange, ...childProps } = child.props;

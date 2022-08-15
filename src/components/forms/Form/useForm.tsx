@@ -64,6 +64,7 @@ export class CubeFormInstance<
     touched?: boolean,
     skipRender?: boolean,
     createFields = false,
+    inputOnly = false,
   ) => {
     let flag = false;
 
@@ -85,7 +86,11 @@ export class CubeFormInstance<
 
       flag = true;
 
-      field.value = newData[name];
+      if (!inputOnly) {
+        field.value = newData[name];
+      }
+
+      field.inputValue = newData[name];
 
       if (touched === true) {
         field.touched = touched;
@@ -98,23 +103,19 @@ export class CubeFormInstance<
     if (flag && !skipRender) {
       this.forceReRender();
 
-      if (touched) {
+      if (touched && !inputOnly) {
         this.onValuesChange && this.onValuesChange(this.getFormData());
       }
     }
   };
 
   getFieldValue<Name extends keyof T>(name: Name): T[Name] | undefined {
-    return this.fields[name]?.touched
-      ? this.fields[name]?.value
-      : this.initialFields[name];
+    return this.fields[name]?.value;
   }
 
   getFieldsValue(): Partial<T> {
     return Object.values(this.fields).reduce((map, field) => {
-      map[field.name as keyof T] = (
-        field.touched ? field.value : this.initialFields[field.name]
-      ) as T[typeof field.name];
+      map[field.name as keyof T] = field.value as T[typeof field.name];
 
       return map;
     }, {} as T);
@@ -142,6 +143,7 @@ export class CubeFormInstance<
     value: T[Name],
     touched = false,
     skipRender = false,
+    inputOnly = false,
   ) {
     const field = this.fields[name];
 
@@ -149,7 +151,11 @@ export class CubeFormInstance<
       return;
     }
 
-    field.value = value;
+    if (inputOnly) {
+      field.value = value;
+    }
+
+    field.inputValue = value;
 
     if (touched) {
       field.touched = touched;
@@ -161,7 +167,7 @@ export class CubeFormInstance<
       this.forceReRender();
     }
 
-    if (touched) {
+    if (touched && !inputOnly) {
       this.onValuesChange && this.onValuesChange(this.getFormData());
     }
   }
@@ -199,7 +205,7 @@ export class CubeFormInstance<
 
     if (!field || !field.rules) return Promise.resolve();
 
-    return applyRules(this.getFieldValue(name), field.rules, this)
+    return applyRules(field.value, field.rules, this)
       .then(() => {
         if (!field.errors || field.errors.length) {
           field.errors = [];
@@ -313,13 +319,20 @@ export class CubeFormInstance<
     name: Name,
     data?: Data,
   ): Data {
-    return {
+    let obj = {
       name,
       validating: false,
       touched: false,
       errors: [],
       ...data,
     } as unknown as Data;
+
+    if (obj) {
+      // condition is here to avoid typing issues
+      obj.inputValue = obj.value;
+    }
+
+    return obj;
   }
 }
 
