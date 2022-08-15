@@ -346,7 +346,7 @@ export const Button = forwardRef(
         'single-icon-only': singleIcon,
         ...mods,
       }),
-      [mods],
+      [mods, isDisabled, isLoading, isSelected, singleIcon],
     );
 
     return (
