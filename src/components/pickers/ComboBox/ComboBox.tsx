@@ -159,6 +159,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
     styles,
     ...otherProps
   } = props;
+
   let isAsync = loadingState != null;
   let { contains } = useFilter({ sensitivity: 'base' });
   let [suffixWidth, setSuffixWidth] = useState(0);
@@ -293,6 +294,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
         {suffix}
         {!hideTrigger ? (
           <TriggerElement
+            data-qa="ComboBox_Trigger"
             {...mergeProps(buttonProps, triggerFocusProps, triggerHoverProps)}
             {...modAttrs({
               pressed: isTriggerPressed,

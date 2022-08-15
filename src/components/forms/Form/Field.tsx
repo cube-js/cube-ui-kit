@@ -291,6 +291,7 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
       child,
       mergeProps(child.props, {
         ...getValueProps(inputType),
+        label: fieldName,
         name: fieldName,
         id: fieldId,
       }),
