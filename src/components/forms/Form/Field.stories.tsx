@@ -54,20 +54,14 @@ WithExtra.args = {
   extra: 'Extra info',
 };
 
-export const WithLabelPrefix = Template.bind({});
-WithLabelPrefix.args = {
-  labelPrefix: 'Prefix',
-};
-
 export const WithLabelSuffix = Template.bind({});
 WithLabelSuffix.args = {
   labelSuffix: 'Suffix',
 };
 
-export const WithExtraAndSuffixAndPrefix = Template.bind({});
-WithExtraAndSuffixAndPrefix.args = {
+export const WithExtraAndSuffix = Template.bind({});
+WithExtraAndSuffix.args = {
   extra: 'Extra info',
-  labelPrefix: 'Prefix',
   labelSuffix: 'Suffix',
 };
 
