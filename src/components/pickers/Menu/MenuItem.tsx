@@ -45,20 +45,17 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
       ref,
     );
 
-  let contents =
-    typeof rendered === 'string' ? (
-      <MenuButton
-        {...itemProps}
-        selectionIcon={selectionIcon}
-        isSelectable={isSelectable}
-        isSelected={isSelected}
-        isDisabled={isDisabled}
-      >
-        {rendered}
-      </MenuButton>
-    ) : (
-      rendered
-    );
+  const contents = (
+    <MenuButton
+      {...itemProps}
+      selectionIcon={selectionIcon}
+      isSelectable={isSelectable}
+      isSelected={isSelected}
+      isDisabled={isDisabled}
+    >
+      {rendered}
+    </MenuButton>
+  );
 
   return (
     <FocusRing>

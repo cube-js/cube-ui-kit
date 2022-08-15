@@ -1,4 +1,4 @@
-import { forwardRef, ReactNode } from 'react';
+import { cloneElement, forwardRef, ReactElement, useMemo } from 'react';
 import { Action, CubeActionProps } from '../Action';
 import { LoadingOutlined } from '@ant-design/icons';
 import { Styles } from '../../../tasty';
@@ -6,45 +6,28 @@ import { FocusableRef } from '@react-types/shared';
 import { accessibilityWarning } from '../../../utils/warnings';
 
 export interface CubeButtonProps extends CubeActionProps {
-  icon?: ReactNode;
+  icon?: ReactElement;
+  rightIcon?: ReactElement;
   isLoading?: boolean;
   isSelected?: boolean;
   type?:
     | 'primary'
-    | 'default'
+    | 'secondary'
     | 'danger'
     | 'link'
     | 'clear'
     | 'outline'
     | 'neutral'
     | (string & {});
-  size?: 'small' | 'default' | 'large' | (string & {});
+  size?: 'small' | 'medium' | 'large' | (string & {});
 }
 
-export function provideStyles({
-  size,
-  type,
-  theme,
-  isLoading,
-  icon,
-  children,
-  label,
-}) {
-  children = children || icon ? children : label;
-
+export function provideStyles({ type, theme }) {
   return {
     ...DEFAULT_STYLES,
-    ...STYLES_BY_SIZE[size || 'default'],
     ...(theme === 'danger' ? DANGER_STYLES_BY_TYPE : DEFAULT_STYLES_BY_TYPE)[
-      type || 'default'
+      type ?? 'secondary'
     ],
-    ...((isLoading || icon) && !children
-      ? {
-          padding: '0',
-          width: '(2.5x + 1lh)',
-          height: '(2.5x + 1lh)',
-        }
-      : null),
   };
 }
 
@@ -64,7 +47,7 @@ const DEFAULT_STYLES_BY_TYPE: { [key: string]: Styles } = {
       '[disabled]': '#dark.30',
     },
   },
-  default: {
+  secondary: {
     border: {
       '': '#clear',
       pressed: '#purple.30',
@@ -165,7 +148,7 @@ const DANGER_STYLES_BY_TYPE: { [key: string]: Styles } = {
       '[disabled]': '#dark.30',
     },
   },
-  default: {
+  secondary: {
     border: {
       '': '#clear',
       pressed: '#danger.30',
@@ -244,19 +227,6 @@ const DANGER_STYLES_BY_TYPE: { [key: string]: Styles } = {
   },
 };
 
-const STYLES_BY_SIZE = {
-  small: {
-    padding: '(.75x - 1px) (1.5x - 1px)',
-  },
-  default: {
-    padding: '(1.25x - 1px) (2x - 1px)',
-  },
-  large: {
-    padding: '(1.5x - 1px) (2.5x - 1px)',
-    preset: 't2m',
-  },
-};
-
 const DEFAULT_STYLES = {
   display: 'inline-grid',
   placeItems: 'center stretch',
@@ -265,35 +235,65 @@ const DEFAULT_STYLES = {
   flow: 'column',
   radius: true,
   fontWeight: 500,
-  preset: 't3',
+  preset: {
+    '': 't3m',
+    '[data-size="large"]': 't2m',
+  },
   textDecoration: 'none',
   transition: 'theme',
+  padding: {
+    '': '(1.25x - 1px) (2x - 1px)',
+    '[data-size="small"]': '(.75x - 1px) (1.5x - 1px)',
+    '[data-size="medium"]': '(1.25x - 1px) (2x - 1px)',
+    '[data-size="large"]': '(1.5x - 1px) (2.5x - 1px)',
+    'single-icon-only': 0,
+  },
+  width: {
+    '': 'initial',
+    '[data-size="small"] & single-icon-only': '4x',
+    '[data-size="medium"] & single-icon-only': '5x',
+    '[data-size="large"] & single-icon-only': '6x',
+  },
+  height: {
+    '': 'initial',
+    '[data-size="small"] & single-icon-only': '4x',
+    '[data-size="medium"] & single-icon-only': '5x',
+    '[data-size="large"] & single-icon-only': '6x',
+  },
   whiteSpace: 'nowrap',
-  '& .anticon.anticon-loading': {
+  '& .anticon': {
     transition:
       'display .2s steps(1, start), margin .2s linear, opacity .2s linear',
+  },
+
+  Icon: {
+    fontSize: {
+      '': 'initial',
+      '[data-size="small"]': '14px',
+      '[data-size="medium"]': '16px',
+      '[data-size="large"]': '18px',
+    },
   },
 } as Styles;
 
 export const Button = forwardRef(
   (allProps: CubeButtonProps, ref: FocusableRef<HTMLElement>) => {
-    let { type, size, label, styles, children, theme, icon, mods, ...props } =
-      allProps;
+    let {
+      type,
+      size,
+      label,
+      styles,
+      children,
+      theme,
+      icon,
+      rightIcon,
+      mods,
+      ...props
+    } = allProps;
 
     const isDisabled = props.isDisabled;
     const isLoading = props.isLoading;
     const isSelected = props.isSelected;
-    const propsForStyles = {
-      ...props,
-      label,
-      isLoading,
-      isDisabled,
-      theme,
-      size,
-      type,
-      icon,
-      children,
-    };
 
     if (!children) {
       if (icon) {
@@ -311,17 +311,43 @@ export const Button = forwardRef(
       }
     }
 
-    children = children || icon ? children : label;
+    children = children || icon || rightIcon ? children : label;
 
-    styles = {
-      ...provideStyles(propsForStyles),
-      ...styles,
-    };
+    styles = useMemo(
+      () => ({
+        ...provideStyles({ type, theme }),
+        ...styles,
+      }),
+      [type, theme, styles],
+    );
 
-    if (isLoading && !children && styles) {
-      styles.fontSize = '1em';
-      styles.lineHeight = '1em';
+    if (icon) {
+      icon = cloneElement(icon, {
+        'data-element': 'Icon',
+      });
     }
+
+    if (rightIcon) {
+      rightIcon = cloneElement(rightIcon, {
+        'data-element': 'Icon',
+      });
+    }
+
+    const singleIcon = !!(
+      ((icon && !rightIcon) || (rightIcon && !icon)) &&
+      !children
+    );
+
+    const modifiers = useMemo(
+      () => ({
+        disabled: isDisabled,
+        loading: isLoading,
+        selected: isSelected,
+        'single-icon-only': singleIcon,
+        ...mods,
+      }),
+      [mods],
+    );
 
     return (
       <Action
@@ -330,16 +356,15 @@ export const Button = forwardRef(
         ref={ref}
         isDisabled={isLoading || isDisabled}
         theme={theme}
-        data-type={type}
-        data-is-loading={isLoading ? '' : undefined}
-        data-is-selected={isSelected ? '' : undefined}
-        data-size={size}
-        mods={mods}
+        data-type={type ?? 'secondary'}
+        data-size={size ?? 'medium'}
+        mods={modifiers}
         styles={styles}
         label={label}
       >
         {icon || isLoading ? !isLoading ? icon : <LoadingOutlined /> : null}
         {children}
+        {rightIcon}
       </Action>
     );
   },

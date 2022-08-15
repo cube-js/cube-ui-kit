@@ -5,14 +5,6 @@ import { Block } from '../components/Block';
 import { CONTAINER_STYLES } from './styles/list';
 
 describe('tasty() API', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  afterAll(() => {
-    jest.restoreAllMocks();
-  });
-
   it('should provide defaults and give ability to override', () => {
     const SButton = tasty(Button, { type: 'primary' });
 

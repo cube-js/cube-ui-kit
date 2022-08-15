@@ -1,19 +1,14 @@
 import React, { ReactNode, forwardRef, Fragment, useRef } from 'react';
-import {
-  unwrapDOMRef,
-  useDOMRef,
-  useIsMobileDevice,
-} from '@react-spectrum/utils';
+import { useDOMRef, useIsMobileDevice } from '@react-spectrum/utils';
 import { DismissButton, useOverlayPosition } from '@react-aria/overlays';
-import { DOMRef, DOMRefValue } from '@react-types/shared';
-import { FocusScope } from '@react-aria/focus';
+import { DOMRef } from '@react-types/shared';
 import { Placement, PositionProps } from '@react-types/overlays';
 import { PressResponder } from '@react-aria/interactions';
 import { MenuTriggerProps as BaseTriggerProps } from '@react-types/menu';
 import { useMenuTrigger } from '@react-aria/menu';
 import { useMenuTriggerState } from '@react-stately/menu';
 import { Popover, Tray } from '../../overlays/Modal';
-import { mergeProps, SlotProvider } from '../../../utils/react';
+import { SlotProvider } from '../../../utils/react';
 import { MenuContext, MenuContextValue } from './context';
 
 export type CubeMenuTriggerProps = BaseTriggerProps &
@@ -120,7 +115,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
         placement={placement}
         hideArrow
         onClose={state.close}
-        shouldCloseOnBlur
+        isNonModal
       >
         {contents}
       </Popover>

@@ -1,6 +1,20 @@
 import clsx from 'clsx';
-import { chain, mergeIds } from '@react-aria/utils';
 import { mergeStyles, Props } from '../../tasty';
+import { chain } from './chain';
+import { mergeIds } from './useId';
+
+type TupleTypes<T> = {
+  [P in keyof T]: T[P];
+} extends {
+  [key: number]: infer V;
+}
+  ? V
+  : never;
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
+  k: infer I,
+) => void
+  ? I
+  : never;
 
 /**
  * Merges multiple props objects together. Event handlers are chained,
@@ -9,8 +23,11 @@ import { mergeStyles, Props } from '../../tasty';
  * For all other props, the last prop object overrides all previous ones.
  * @param args - Multiple sets of props to merge together.
  */
-export function mergeProps(...args: (Props | undefined)[]) {
-  let result: Props = {};
+export function mergeProps<
+  T extends (Props | undefined)[],
+  K = UnionToIntersection<TupleTypes<T>>,
+>(...args: T): K {
+  let result: any = {};
 
   for (let props of args) {
     for (let key in result) {
@@ -55,5 +72,5 @@ export function mergeProps(...args: (Props | undefined)[]) {
     }
   }
 
-  return result;
+  return result as K;
 }

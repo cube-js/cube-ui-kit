@@ -57,6 +57,9 @@ const Template = ({
 export const Default = Template.bind({});
 Default.args = {};
 
+export const WithPlaceholder = Template.bind({});
+WithPlaceholder.args = { placeholder: 'Enter a value' };
+
 export const WithDefaultValue = Template.bind({});
 WithDefaultValue.args = { defaultSelectedKey: 'purple' };
 

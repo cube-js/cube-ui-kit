@@ -1,6 +1,6 @@
 import { applyRules } from './validation';
 
-async function apply(rule, valid = [], invalid = []) {
+async function apply(rule, valid: any[] = [], invalid: any[] = []) {
   for (const validCase of valid) {
     await expect(
       applyRules(validCase, [rule], {}).catch((err) => {

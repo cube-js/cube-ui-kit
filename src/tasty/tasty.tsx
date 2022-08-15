@@ -10,7 +10,7 @@ import { Styles, StylesInterface } from './styles/types';
 import { BASE_STYLES } from './styles/list';
 import { ResponsiveStyleValue } from './utils/styles';
 import { mergeStyles } from './utils/mergeStyles';
-import { getDisplayName } from '../utils/react';
+import { getDisplayName } from './utils/get-display-name';
 
 type StyleList = readonly (keyof {
   [key in keyof StylesInterface]: StylesInterface[key];

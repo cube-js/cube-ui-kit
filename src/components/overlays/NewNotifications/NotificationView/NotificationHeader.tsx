@@ -12,6 +12,8 @@ const Header = tasty(Title, {
   preset: 'h6',
   styles: {
     gridArea: 'header',
+    cursor: 'default',
+
     '&:not(:empty)': {
       margin: '0.25x 0 0.5x',
     },

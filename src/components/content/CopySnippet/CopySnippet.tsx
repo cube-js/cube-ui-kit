@@ -9,7 +9,6 @@ import {
 } from '../../content/PrismCode/PrismCode';
 import { TooltipTrigger } from '../../overlays/Tooltip/TooltipTrigger';
 import { Tooltip } from '../../overlays/Tooltip/Tooltip';
-import { useNotificationsApi } from '../../overlays/NewNotifications';
 import { useToastsApi } from '../../overlays/Toasts';
 
 const ActionElement = tasty(Action, {

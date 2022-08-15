@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useLayoutEffect, useRef } from 'react';
+import { forwardRef, useCallback, useRef } from 'react';
 import {
   CubeTextInputBaseProps,
   TextInputBase,
@@ -6,11 +6,11 @@ import {
 import { useControlledState } from '@react-stately/utils';
 import { useProviderProps } from '../../../provider';
 import { useTextField } from '@react-aria/textfield';
-import { chain } from '@react-aria/utils';
 import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { chain, useLayoutEffect } from '../../../utils/react';
 
 export interface CubeTextAreaProps extends CubeTextInputBaseProps {
   /** Whether the textarea should change its size depends on content */

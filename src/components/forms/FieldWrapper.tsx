@@ -1,7 +1,6 @@
 import { forwardRef, ReactNode } from 'react';
 import { Text } from '../content/Text';
 import { Label } from './Label';
-import { Grid } from '../layout/Grid';
 import { Paragraph } from '../content/Paragraph';
 import {
   LabelPosition,
@@ -12,6 +11,8 @@ import { Props, Styles, tasty } from '../../tasty';
 import { TooltipProvider } from '../overlays/Tooltip/TooltipProvider';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { wrapNodeIfPlain } from '../../utils/react';
+import { Space } from '../layout/Space';
+import { Flex } from '../layout/Flex';
 
 const FieldElement = tasty({
   qa: 'Field',
@@ -67,9 +68,10 @@ const MessageElement = tasty({
 });
 
 export type CubeFieldWrapperProps = {
-  as: string;
-  labelPosition: LabelPosition;
-  label?: string;
+  as?: string;
+  labelPosition?: LabelPosition;
+  label?: ReactNode;
+  labelSuffix?: ReactNode;
   labelStyles?: Styles;
   styles?: Styles;
   /** Whether the input is required */
@@ -84,17 +86,20 @@ export type CubeFieldWrapperProps = {
   /** Styles for the message */
   messageStyles?: Styles;
   /** The description for the field. It will be placed below the label */
-  description?: string;
+  description?: ReactNode;
   Component?: JSX.Element;
   validationState?: ValidationState;
   requiredMark?: boolean;
   tooltip?: ReactNode;
+  extra?: ReactNode;
+  isHidden?: boolean;
+  necessityLabel?: ReactNode;
 };
 
-function FieldWrapper(props, ref) {
+function FieldWrapper(props: CubeFieldWrapperProps, ref) {
   const {
     as,
-    labelPosition,
+    labelPosition = 'top',
     label,
     extra,
     styles,
@@ -112,6 +117,7 @@ function FieldWrapper(props, ref) {
     requiredMark = true,
     tooltip,
     isHidden,
+    labelSuffix,
   } = props;
 
   const labelComponent = label ? (
@@ -126,26 +132,33 @@ function FieldWrapper(props, ref) {
       aria-label={label}
       {...labelProps}
     >
-      {extra ? (
-        <Grid placeContent="baseline space-between" flow="column">
+      <Flex placeContent="baseline space-between" width="100%">
+        {tooltip || labelSuffix || extra ? (
+          <Space placeItems="baseline" gap="0.5x">
+            {label ? (
+              tooltip || labelSuffix || extra ? (
+                <div>{label}</div>
+              ) : (
+                label
+              )
+            ) : null}
+            {tooltip ? (
+              <TooltipProvider
+                title={tooltip}
+                activeWrap
+                width="initial max-content 40x"
+              >
+                <InfoCircleOutlined style={{ color: 'var(--primary-color)' }} />
+              </TooltipProvider>
+            ) : null}
+            {labelSuffix && <div>{labelSuffix}</div>}
+          </Space>
+        ) : (
           <div>{label}</div>
-          <Text preset="t3">{extra}</Text>
-        </Grid>
-      ) : (
-        label
-      )}
-      {tooltip ? (
-        <>
-          &nbsp;
-          <TooltipProvider
-            title={tooltip}
-            activeWrap
-            width="initial max-content 40x"
-          >
-            <InfoCircleOutlined style={{ color: 'var(--primary-color)' }} />
-          </TooltipProvider>
-        </>
-      ) : null}
+        )}
+
+        {extra && <Text preset="t3">{extra}</Text>}
+      </Flex>
     </Label>
   ) : null;
 

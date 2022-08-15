@@ -5,7 +5,6 @@ const RESET_MAP = {
     {
       css: `
 -webkit-appearance: none;
-font-family: inherit;
 font-weight: inherit;
 word-spacing: initial;
 -webkit-text-fill-color: currentColor;

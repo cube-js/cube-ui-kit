@@ -27,7 +27,7 @@ const NotificationsContainer = tasty({
     right: 'env(safe-area-inset-right, 0)',
     display: 'flex',
     flexDirection: 'column-reverse',
-    width: 'auto 100% 45x',
+    width: 'auto 100% 50x',
     height: '100vh max',
     padding: '2x',
     gap: '1x',

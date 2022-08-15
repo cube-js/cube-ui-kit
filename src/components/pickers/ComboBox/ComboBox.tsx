@@ -3,7 +3,6 @@ import {
   LoadingOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
-import { mergeProps } from '@react-aria/utils';
 import { cloneElement, forwardRef, RefObject, useState } from 'react';
 import { useComboBoxState } from '@react-stately/combobox';
 import { useComboBox } from '@react-aria/combobox';
@@ -19,7 +18,7 @@ import {
   tasty,
 } from '../../../tasty';
 import { useFocus } from '../../../utils/react/interactions';
-import { modAttrs, useCombinedRefs } from '../../../utils/react';
+import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
 import { FieldWrapper } from '../../forms/FieldWrapper';
 import { CubeSelectBaseProps, ListBoxPopup } from '../Select/Select';
 import { Prefix } from '../../layout/Prefix';
@@ -241,17 +240,20 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
 
   let comboBoxWidth = inputRef?.current?.offsetWidth;
 
+  let mods = {
+    invalid: isInvalid,
+    valid: validationState === 'valid',
+    disabled: isDisabled,
+    hovered: isHovered,
+    focused: isFocused,
+    loading: isLoading,
+  };
+
   let comboBoxField = (
     <ComboBoxWrapperElement
       ref={ref}
       qa={qa || 'ComboBox'}
-      {...modAttrs({
-        invalid: isInvalid,
-        valid: validationState === 'valid',
-        disabled: isDisabled,
-        hovered: isHovered,
-        focused: isFocused,
-      })}
+      {...modAttrs(mods)}
       styles={outerStyles}
       style={{
         zIndex: isFocused ? 1 : 'initial',
@@ -264,13 +266,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
         ref={inputRef}
         autoComplete={autoComplete}
         styles={inputStyles}
-        {...modAttrs({
-          invalid: isInvalid,
-          valid: validationState === 'valid',
-          disabled: isDisabled,
-          hovered: isHovered,
-          focused: isFocused,
-        })}
+        {...modAttrs(mods)}
         data-size={size}
       />
       {prefix ? (
@@ -303,6 +299,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
               focused: isTriggerFocused,
               hovered: isTriggerHovered,
               disabled: isDisabled,
+              loading: isLoading,
             })}
             data-size={size}
             isDisabled={isDisabled}

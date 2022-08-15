@@ -3,7 +3,7 @@ import { useDOMRef } from '@react-spectrum/utils';
 import { useDialogContext } from './context';
 import { DismissButton } from '@react-aria/overlays';
 import { FocusScope } from '@react-aria/focus';
-import { forwardRef, ReactNode } from 'react';
+import { forwardRef, ReactElement } from 'react';
 import { useDialog } from '@react-aria/dialog';
 import { useMessageFormatter } from '@react-aria/i18n';
 import { CloseOutlined } from '@ant-design/icons';
@@ -121,7 +121,7 @@ export interface CubeDialogProps
   /** Trigger when the dialog is dismissed */
   onDismiss?: (arg?: any) => void;
   /** That you can replace the close icon with */
-  closeIcon?: ReactNode;
+  closeIcon?: ReactElement;
   closeButtonStyles?: Styles;
 }
 
