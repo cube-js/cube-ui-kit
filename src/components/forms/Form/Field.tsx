@@ -133,7 +133,6 @@ export interface CubeFieldProps<T extends FieldTypes>
   styles?: Styles;
   labelPosition?: LabelPosition;
   labelStyles?: Styles;
-  labelPrefix?: ReactNode;
   labelSuffix?: ReactNode;
 }
 
@@ -180,7 +179,6 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
     labelPosition = 'top',
     labelStyles,
     labelSuffix,
-    labelPrefix,
   } = props;
   const nonInput = !name;
   const fieldName: string =
@@ -255,7 +253,6 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
         styles={styles}
         labelPosition={labelPosition}
         labelStyles={labelStyles}
-        labelPrefix={labelPrefix}
         labelSuffix={labelSuffix}
       />
     );

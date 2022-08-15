@@ -1,7 +1,6 @@
 import { forwardRef, ReactNode } from 'react';
 import { Text } from '../content/Text';
 import { Label } from './Label';
-import { Grid } from '../layout/Grid';
 import { Paragraph } from '../content/Paragraph';
 import {
   LabelPosition,
@@ -13,6 +12,7 @@ import { TooltipProvider } from '../overlays/Tooltip/TooltipProvider';
 import { InfoCircleOutlined } from '@ant-design/icons';
 import { wrapNodeIfPlain } from '../../utils/react';
 import { Space } from '../layout/Space';
+import { Flex } from '../layout/Flex';
 
 const FieldElement = tasty({
   qa: 'Field',
@@ -72,7 +72,6 @@ export type CubeFieldWrapperProps = {
   labelPosition?: LabelPosition;
   label?: ReactNode;
   labelSuffix?: ReactNode;
-  labelPrefix?: ReactNode;
   labelStyles?: Styles;
   styles?: Styles;
   /** Whether the input is required */
@@ -118,7 +117,6 @@ function FieldWrapper(props: CubeFieldWrapperProps, ref) {
     requiredMark = true,
     tooltip,
     isHidden,
-    labelPrefix,
     labelSuffix,
   } = props;
 
@@ -134,26 +132,23 @@ function FieldWrapper(props: CubeFieldWrapperProps, ref) {
       aria-label={label}
       {...labelProps}
     >
-      <Grid placeContent="baseline space-between" flow="column" width="100%">
+      <Flex placeContent="baseline space-between" width="100%">
         <Space placeItems="baseline" gap="0.5x">
-          {labelPrefix && <div>{labelPrefix}</div>}
           {label && <div>{label}</div>}
           {tooltip ? (
-            <>
-              <TooltipProvider
-                title={tooltip}
-                activeWrap
-                width="initial max-content 40x"
-              >
-                <InfoCircleOutlined style={{ color: 'var(--primary-color)' }} />
-              </TooltipProvider>
-            </>
+            <TooltipProvider
+              title={tooltip}
+              activeWrap
+              width="initial max-content 40x"
+            >
+              <InfoCircleOutlined style={{ color: 'var(--primary-color)' }} />
+            </TooltipProvider>
           ) : null}
           {labelSuffix && <div>{labelSuffix}</div>}
         </Space>
 
         {extra && <Text preset="t3">{extra}</Text>}
-      </Grid>
+      </Flex>
     </Label>
   ) : null;
 
