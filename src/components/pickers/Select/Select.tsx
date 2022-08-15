@@ -71,7 +71,7 @@ const SelectWrapperElement = tasty({
       '': '#dark.85',
       invalid: '#danger-text',
       focused: '#dark.85',
-      disabled: '#dark.30',
+      disabled: '#dark.3',
     },
   },
 });
@@ -116,6 +116,13 @@ const SelectElement = tasty({
     textAlign: 'left',
     cursor: 'pointer',
     transition: 'theme',
+
+    Value: {
+      color: {
+        '': 'inherit',
+        placeholder: '#dark.4',
+      },
+    },
   },
 });
 
@@ -289,16 +296,21 @@ function Select<T extends object>(
 
   let triggerWidth = triggerRef?.current?.offsetWidth;
 
+  let mods = {
+    invalid: isInvalid,
+    valid: validationState === 'valid',
+    disabled: isDisabled,
+    loading: isLoading,
+    hovered: isHovered,
+    focused: isFocused,
+    placeholder: !!placeholder?.trim() && !state.selectedItem,
+    'with-prefix': !!prefix,
+  };
+
   let selectField = (
     <SelectWrapperElement
       qa={qa || 'Select'}
-      mods={{
-        invalid: isInvalid,
-        valid: validationState === 'valid',
-        disabled: isDisabled,
-        hovered: isHovered,
-        focused: isFocused,
-      }}
+      mods={mods}
       styles={outerStyles}
       data-size={size}
     >
@@ -313,17 +325,10 @@ function Select<T extends object>(
         ref={triggerRef}
         styles={inputStyles}
         data-size={size}
-        mods={{
-          invalid: isInvalid,
-          valid: validationState === 'valid',
-          disabled: isDisabled,
-          hovered: isHovered,
-          focused: isFocused,
-          'with-prefix': !!prefix,
-        }}
+        mods={mods}
       >
         {prefix}
-        <span {...valueProps}>
+        <span data-element="Value" {...valueProps}>
           {state.selectedItem
             ? state.selectedItem.rendered
             : placeholder || <>&nbsp;</>}

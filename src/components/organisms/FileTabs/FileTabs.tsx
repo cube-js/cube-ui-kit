@@ -3,7 +3,6 @@ import {
   ReactNode,
   useContext,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
 } from 'react';
@@ -15,6 +14,7 @@ import { CubeFlexProps, Flex } from '../../layout/Flex';
 import { Styles, tasty } from '../../../tasty';
 import styled from 'styled-components';
 import { Button } from '../../actions';
+import { useLayoutEffect } from '../../../utils/react';
 
 interface TabData {
   id: string | number;
