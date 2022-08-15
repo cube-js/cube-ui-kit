@@ -1,5 +1,41 @@
 # @cube-dev/ui-kit
 
+## 0.12.0
+
+### Minor Changes
+
+- [#174](https://github.com/cube-js/cube-ui-kit/pull/174) [`76a9f37`](https://github.com/cube-js/cube-ui-kit/commit/76a9f373253dea98e2099ee2a39199064da7a3d6) Thanks [@tenphi](https://github.com/tenphi)! - Rename `default` size to `medium` and `default` type to `secondary` in the Button component.
+  Add `rightIcon` property to the Button component.
+
+- [#175](https://github.com/cube-js/cube-ui-kit/pull/175) [`34b680e`](https://github.com/cube-js/cube-ui-kit/commit/34b680eae60a4fbf9d310a048a8bb53d41cbf1ce) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Added new prop `labelSuffix` in Field component. Using this prop you can add any adornment after the label.
+
+- [#176](https://github.com/cube-js/cube-ui-kit/pull/176) [`4239ef6`](https://github.com/cube-js/cube-ui-kit/commit/4239ef6889956523409c9ff67696331e5ba2229c) Thanks [@tenphi](https://github.com/tenphi)! - Add a loading modifier and `placeholder` property to Select and ComboBox components.
+
+### Patch Changes
+
+- [#163](https://github.com/cube-js/cube-ui-kit/pull/163) [`644812c`](https://github.com/cube-js/cube-ui-kit/commit/644812cef1c6ca8f9e16d614641603a45e23a42b) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Now all icon only buttons have proper sizes
+
+- [#175](https://github.com/cube-js/cube-ui-kit/pull/175) [`34b680e`](https://github.com/cube-js/cube-ui-kit/commit/34b680eae60a4fbf9d310a048a8bb53d41cbf1ce) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Reduced default delay in tooltip to 250ms
+
+- [#169](https://github.com/cube-js/cube-ui-kit/pull/169) [`fe67fcc`](https://github.com/cube-js/cube-ui-kit/commit/fe67fcc96499505dfa31a581eaff9385d06aab6d) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Add `disableRemoveOnUnmount` prop in `<Notificaiton />` and `<Toast />` components
+
+- [#171](https://github.com/cube-js/cube-ui-kit/pull/171) [`3f99948`](https://github.com/cube-js/cube-ui-kit/commit/3f999483bc1cf54f73cd9099f3226e00041eafde) Thanks [@nikolaykost](https://github.com/nikolaykost)! - Adds customization form Menu.Item.
+  Now you can pass props like `icon` even if any react element inside `Menu.Item`
+
+- [#166](https://github.com/cube-js/cube-ui-kit/pull/166) [`c9226c6`](https://github.com/cube-js/cube-ui-kit/commit/c9226c68e73f7343c69c27972253ae1e9ac7a532) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Bugfixes in `<Notification />` and `<Toast />` components:
+
+  - Fixed width of notifications in bar
+  - Nofifications and toasts now respects duration property
+  - Fixed bug when user were unable to select a text inside a description
+
+- [#162](https://github.com/cube-js/cube-ui-kit/pull/162) [`328b664`](https://github.com/cube-js/cube-ui-kit/commit/328b664faff7894f91d34cbaac6e9abaad564a44) Thanks [@tenphi](https://github.com/tenphi)! - Fix font family fallback for `preset` style.
+
+- [#173](https://github.com/cube-js/cube-ui-kit/pull/173) [`34fdefb`](https://github.com/cube-js/cube-ui-kit/commit/34fdefba170c32f091df52ac895bc08f439655a2) Thanks [@nikolaykost](https://github.com/nikolaykost)! - Fixes `childrenchildrenchildren` bug when use `TooltipProvider` component
+
+- [#165](https://github.com/cube-js/cube-ui-kit/pull/165) [`6c53550`](https://github.com/cube-js/cube-ui-kit/commit/6c535506e649c42033d3c0508c5844e8987188b5) Thanks [@nikolaykost](https://github.com/nikolaykost)! - Fixed bug when menu doesn't open within a modal
+
+- [#167](https://github.com/cube-js/cube-ui-kit/pull/167) [`89899c2`](https://github.com/cube-js/cube-ui-kit/commit/89899c220e1cf1b00395f610a17b5bbc0fbaa307) Thanks [@tenphi](https://github.com/tenphi)! - fix(Switch): thumb disabled styles
+
 ## 0.11.2
 
 ### Patch Changes
