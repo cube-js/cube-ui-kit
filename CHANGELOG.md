@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.12.1
+
+### Patch Changes
+
+- [#178](https://github.com/cube-js/cube-ui-kit/pull/178) [`932d401`](https://github.com/cube-js/cube-ui-kit/commit/932d401f5100b92b7635f51054049e6176d672ff) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Fixed bug in button when `isLoading` prop didn't affect on mods
+
 ## 0.12.0
 
 ### Minor Changes
