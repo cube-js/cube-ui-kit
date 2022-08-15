@@ -86,7 +86,7 @@ export class CubeFormInstance<
 
       flag = true;
 
-      if (!inputOnly) {
+      if (inputOnly) {
         field.value = newData[name];
       }
 
