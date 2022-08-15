@@ -70,3 +70,16 @@ WithExtraAndSuffixAndPrefix.args = {
   labelPrefix: 'Prefix',
   labelSuffix: 'Suffix',
 };
+
+export const WithSuffixAndTooltip = Template.bind({});
+WithSuffixAndTooltip.args = {
+  labelSuffix: 'Suffix',
+  tooltip: 'Long description',
+};
+
+export const WithSuffixExtraAndTooltip = Template.bind({});
+WithSuffixExtraAndTooltip.args = {
+  labelSuffix: 'Suffix',
+  extra: 'Extra info',
+  tooltip: 'Long description',
+};
