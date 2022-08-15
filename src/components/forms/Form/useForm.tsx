@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { dotize } from '../../../tasty';
 import { applyRules } from './validation';
-import { FieldTypes, CubeFieldData, SetFieldsArrType } from './types';
+import { CubeFieldData, FieldTypes, SetFieldsArrType } from './types';
 
 export type CubeFormData<T extends FieldTypes> = {
   [K in keyof T]?: CubeFieldData<K, T[K]>;
@@ -28,7 +28,7 @@ export class CubeFormInstance<
   TFormData extends CubeFormData<T> = CubeFormData<T>,
 > {
   public forceReRender: () => void = () => {};
-  private initialFields = {};
+  private initialFields: Partial<T> = {};
   private fields: TFormData = {} as TFormData;
   public ref = {};
   public isSubmitting = false;
@@ -105,12 +105,16 @@ export class CubeFormInstance<
   };
 
   getFieldValue<Name extends keyof T>(name: Name): T[Name] | undefined {
-    return this.fields[name]?.value;
+    return this.fields[name]?.touched
+      ? this.fields[name]?.value
+      : this.initialFields[name];
   }
 
   getFieldsValue(): Partial<T> {
     return Object.values(this.fields).reduce((map, field) => {
-      map[field.name as keyof T] = field.value as T[typeof field.name];
+      map[field.name as keyof T] = (
+        field.touched ? field.value : this.initialFields[field.name]
+      ) as T[typeof field.name];
 
       return map;
     }, {} as T);
@@ -195,7 +199,7 @@ export class CubeFormInstance<
 
     if (!field || !field.rules) return Promise.resolve();
 
-    return applyRules(field.value, field.rules, this)
+    return applyRules(this.getFieldValue(name), field.rules, this)
       .then(() => {
         if (!field.errors || field.errors.length) {
           field.errors = [];
