@@ -111,7 +111,7 @@ export interface CubeFieldProps<T extends FieldTypes>
   /** The id prefix for the field to avoid collisions between forms */
   idPrefix?: string;
   children?: ReactElement | ((CubeFormInstance) => ReactElement);
-  /** Function that check whether to perform update of the form state. */
+  /** Function that checks whether to perform update of the form state. */
   shouldUpdate?: boolean | ((prevValues, nextValues) => boolean);
   /** Validation rules */
   rules?: ValidationRule[];
@@ -321,7 +321,7 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
       }
     }
 
-    form.setFieldValue(fieldName, val, true);
+    form.setFieldValue(fieldName, val, !dontTouch);
 
     if (
       !dontTouch &&
