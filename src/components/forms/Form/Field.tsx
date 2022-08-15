@@ -84,7 +84,8 @@ function getValueProps(type, value?, onChange?) {
   } else if (type === 'ComboBox') {
     return {
       inputValue: value != null ? value : '',
-      onInputChange: onChange,
+      onInputChange: (val) => onChange(val, true),
+      onSelectionChange: onChange,
     };
   } else if (type === 'Select') {
     return {
@@ -300,7 +301,7 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
     validateTrigger = defaultValidateTrigger;
   }
 
-  function onChangeHandler(val) {
+  function onChangeHandler(val, dontTouch) {
     const field = form.getFieldInstance(fieldName);
 
     if (shouldUpdate) {
@@ -323,8 +324,9 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
     form.setFieldValue(fieldName, val, true);
 
     if (
-      validateTrigger === 'onChange' ||
-      (field && field.errors && field.errors.length)
+      !dontTouch &&
+      (validateTrigger === 'onChange' ||
+        (field && field.errors && field.errors.length))
     ) {
       form.validateField(fieldName).catch(() => {}); // do nothing on fail
     }
