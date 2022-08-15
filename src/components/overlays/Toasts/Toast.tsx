@@ -1,37 +1,48 @@
-import { useEffect } from 'react';
+import { Key, useEffect } from 'react';
 import { useToastsApi } from './use-toasts-api';
 import { CubeToastsApiProps } from './types';
-import { CubeNotifyApiProps } from '../NewNotifications';
+import { useEvent, useSyncRef } from '../../../_internal';
 import { useId } from '../../../utils/react/useId';
 
-export function Toast(props: CubeToastsApiProps) {
-  const { id: propsId } = props;
-  const { toast, update, remove } = useToastsApi();
+export type ToastProps = {
+  /**
+   * If set to true, when the component gets unmounted, notifications will not be removed from the bar
+   *
+   * @default false
+   */
+  disableRemoveOnUnmount?: boolean;
+} & CubeToastsApiProps;
+
+export function Toast(props: ToastProps) {
+  const { id: propsId, disableRemoveOnUnmount } = props;
+
   const defaultId = useId();
+  const disableRemoveOnUnmountRef = useSyncRef(disableRemoveOnUnmount);
+  const { toast, update, remove } = useToastsApi();
 
   const id = propsId ?? defaultId;
 
-  useEffect(() => {
-    toast({ ...props, id });
+  const removeNotification = useEvent((id: Key) =>
+    disableRemoveOnUnmountRef.current ? void 0 : remove(id),
+  );
 
-    return () => remove(id);
+  useEffect(() => {
+    toast({ id, ...props });
   }, [id]);
-
-  useEffect(() => {
-    update(id, props as CubeNotifyApiProps);
-  });
+  useEffect(() => () => removeNotification(id), [id]);
+  useEffect(() => update(id, props));
 
   return null;
 }
 
-Toast.Success = function ToastSuccess(props: CubeToastsApiProps) {
+Toast.Success = function ToastSuccess(props: ToastProps) {
   return <Toast type="success" {...props} />;
 };
 
-Toast.Danger = function ToastDanger(props: CubeToastsApiProps) {
+Toast.Danger = function ToastDanger(props: ToastProps) {
   return <Toast type="danger" {...props} />;
 };
 
-Toast.Attention = function ToastAttention(props: CubeToastsApiProps) {
+Toast.Attention = function ToastAttention(props: ToastProps) {
   return <Toast type="attention" {...props} />;
 };

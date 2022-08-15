@@ -4,6 +4,10 @@ import { Button } from '../components/actions';
 import { Block } from '../components/Block';
 
 describe('styled() API', () => {
+  beforeAll(() => {
+    jest.spyOn(console, 'group').mockImplementation(() => {});
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
   });

@@ -48,7 +48,10 @@ interface PropsFilterOptions {
  * @param props - The component props to be filtered.
  * @param opts - Props to override.
  */
-export function filterBaseProps(props, opts: PropsFilterOptions = {}) {
+export function filterBaseProps(
+  props,
+  opts: PropsFilterOptions = {},
+): Record<string, any> {
   let { labelable, propNames, eventProps } = opts;
   let filteredProps = {};
 
