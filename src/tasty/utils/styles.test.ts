@@ -10,6 +10,7 @@ describe('applyStates', () => {
   function checkAppliance(list) {
     list.forEach((obj, i) => {
       it(`to list ${i}`, () => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         expect(applyStates(...obj.input)).toEqual(obj.output);
       });
@@ -118,7 +119,6 @@ describe('computeState', () => {
     });
   }
 
-  const NOT = '!';
   const AND = '&';
   const OR = '|';
   const XOR = '^';

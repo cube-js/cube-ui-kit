@@ -17,6 +17,7 @@ export function useId(defaultId?) {
   let nextId = useRef(null);
 
   // don't memo this, we want it new each render so that the Effects always run
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   let updateValue = (val) => {
     if (!isRendering.current) {
       setValue(val);
@@ -27,7 +28,7 @@ export function useId(defaultId?) {
 
   useLayoutEffect(() => {
     isRendering.current = false;
-  }, [updateValue]);
+  });
 
   useEffect(() => {
     let newId = nextId.current;

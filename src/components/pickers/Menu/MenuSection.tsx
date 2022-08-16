@@ -1,4 +1,3 @@
-import React from 'react';
 import { MenuItem, MenuItemProps } from './MenuItem';
 import { useMenuSection } from '@react-aria/menu';
 import {

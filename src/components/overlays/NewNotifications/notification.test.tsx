@@ -1,10 +1,11 @@
 import { renderWithRoot } from '../../../test';
 import { Notification } from './Notification';
 
-const TestComponent = ({ renderNotification = true, ...notificationProps }) =>
-  renderNotification ? (
+function TestComponent({ renderNotification = true, ...notificationProps }) {
+  return renderNotification ? (
     <Notification description="Test" {...notificationProps} />
   ) : null;
+}
 
 describe('<Notification />', () => {
   beforeEach(() => jest.useFakeTimers('modern'));

@@ -29,23 +29,24 @@ export interface CubeAvatarProps extends BaseProps, ContainerStyleProps {
   size?: Styles['size'];
 }
 
-export const Avatar = forwardRef(
-  ({ size = '4x', icon, children, ...props }: CubeAvatarProps, ref) => {
-    const styles = extractStyles(props, CONTAINER_STYLES, {
-      ...DEFAULT_STYLES,
-      '--avatar-size': size,
-    });
+export const Avatar = forwardRef(function Avatar(
+  { size = '4x', icon, children, ...props }: CubeAvatarProps,
+  ref,
+) {
+  const styles = extractStyles(props, CONTAINER_STYLES, {
+    ...DEFAULT_STYLES,
+    '--avatar-size': size,
+  });
 
-    return (
-      <Element
-        {...filterBaseProps(props, { eventProps: true })}
-        styles={styles}
-        ref={ref}
-        data-theme="special"
-      >
-        {icon}
-        {children}
-      </Element>
-    );
-  },
-);
+  return (
+    <Element
+      {...filterBaseProps(props, { eventProps: true })}
+      styles={styles}
+      ref={ref}
+      data-theme="special"
+    >
+      {icon}
+      {children}
+    </Element>
+  );
+});

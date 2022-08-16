@@ -82,7 +82,10 @@ function Tray(props: CubeTrayProps, ref) {
   );
 }
 
-let TrayWrapper = forwardRef(function (props: CubeTrayWrapperProps, ref) {
+let TrayWrapper = forwardRef(function TrayWrapper(
+  props: CubeTrayWrapperProps,
+  ref,
+) {
   let {
     qa,
     children,

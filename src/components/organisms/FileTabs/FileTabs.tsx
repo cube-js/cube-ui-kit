@@ -221,14 +221,14 @@ export interface FileTabProps extends Omit<CubeActionProps, 'id'> {
   onClose?: () => void;
 }
 
-const Tab = ({
+function Tab({
   isDirty,
   isDisabled,
   children,
   isClosable,
   onClose,
   ...props
-}: FileTabProps) => {
+}: FileTabProps) {
   return (
     <TabElement
       mods={{
@@ -254,7 +254,7 @@ const Tab = ({
       </Space>
     </TabElement>
   );
-};
+}
 
 export interface CubeFileTabsProps extends CubeFlexProps {
   /** The initial active key in the tabs (uncontrolled). */

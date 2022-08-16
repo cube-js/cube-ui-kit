@@ -30,7 +30,7 @@ export interface CubeUnderlayProps extends HTMLAttributes<HTMLElement> {
   isOpen?: boolean;
 }
 
-const Underlay = ({ isOpen, ...otherProps }, ref) => {
+function Underlay({ isOpen, ...otherProps }, ref) {
   return (
     <UnderlayElement
       ref={ref}
@@ -40,7 +40,7 @@ const Underlay = ({ isOpen, ...otherProps }, ref) => {
       {...otherProps}
     />
   );
-};
+}
 
 let _Underlay = forwardRef(Underlay);
 export { _Underlay as Underlay };

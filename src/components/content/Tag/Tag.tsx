@@ -89,7 +89,7 @@ export interface CubeTagProps extends BaseProps, ContainerStyleProps {
   closeButtonStyles?: Styles;
 }
 
-const Tag = (allProps: CubeTagProps, ref) => {
+function Tag(allProps: CubeTagProps, ref) {
   let { type, isClosable, onClose, closeButtonStyles, children, ...props } =
     allProps;
 
@@ -117,7 +117,7 @@ const Tag = (allProps: CubeTagProps, ref) => {
       ) : undefined}
     </TagElement>
   );
-};
+}
 
 const _Tag = forwardRef(Tag);
 export { _Tag as Tag };

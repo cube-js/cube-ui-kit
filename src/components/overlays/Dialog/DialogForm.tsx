@@ -35,9 +35,9 @@ export interface CubeDialogFormRef {
 /**
  * DialogForms are a specific type of Dialog. They contain forms to fill.
  */
-export const DialogForm = function DialogForm<
-  T extends FieldTypes = FieldTypes,
->(props: CubeDialogFormProps<T>) {
+export function DialogForm<T extends FieldTypes = FieldTypes>(
+  props: CubeDialogFormProps<T>,
+) {
   let {
     qa,
     name,
@@ -140,4 +140,4 @@ export const DialogForm = function DialogForm<
       </Content>
     </Dialog>
   );
-};
+}

@@ -28,7 +28,7 @@ export interface CubeFooterProps
     ContainerStyleProps,
     TextStyleProps {}
 
-export const Footer = forwardRef((props: CubeFooterProps, ref) => {
+export const Footer = forwardRef(function Footer(props: CubeFooterProps, ref) {
   props = useSlotProps(props, 'footer');
 
   const styles = extractStyles(props, STYLE_LIST);

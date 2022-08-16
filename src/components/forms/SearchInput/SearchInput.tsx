@@ -31,53 +31,52 @@ const ClearButton = tasty(Button, {
   },
 });
 
-export const SearchInput = forwardRef(
-  (props: WithNullableValue<CubeSearchInputProps>, ref) => {
-    props = castNullableStringValue(props);
-    props = useProviderProps(props);
+export const SearchInput = forwardRef(function SearchInput(
+  props: WithNullableValue<CubeSearchInputProps>,
+  ref,
+) {
+  props = castNullableStringValue(props);
+  props = useProviderProps(props);
 
-    let { isClearable, value, validationState } = props;
+  let { isClearable, value, validationState } = props;
 
-    const localRef = useRef(null);
-    const combinedRef = useCombinedRefs(ref, localRef);
-    let inputRef = useRef(null);
+  const localRef = useRef(null);
+  const combinedRef = useCombinedRefs(ref, localRef);
+  let inputRef = useRef(null);
 
-    useEffect(() => {
-      const el = combinedRef && combinedRef.current;
+  useEffect(() => {
+    const el = combinedRef && combinedRef.current;
 
-      if (el && value != null && el.value !== value) {
-        el.value = value;
-      }
-    }, [combinedRef, value]);
+    if (el && value != null && el.value !== value) {
+      el.value = value;
+    }
+  }, [combinedRef, value]);
 
-    let state = useSearchFieldState(props);
-    let { inputProps, clearButtonProps } = useSearchField(
-      props,
-      state,
-      inputRef,
-    );
+  let state = useSearchFieldState(props);
+  let { inputProps, clearButtonProps } = useSearchField(props, state, inputRef);
 
-    return (
-      <TextInputBase
-        inputProps={inputProps}
-        ref={ref}
-        inputRef={inputRef}
-        type="search"
-        icon={<SearchOutlined />}
-        suffixPosition="after"
-        suffix={
-          isClearable &&
-          state.value !== '' &&
-          !props.isReadOnly && (
-            <ClearButton
-              type={validationState === 'invalid' ? 'clear' : 'neutral'}
+  return (
+    <TextInputBase
+      inputProps={inputProps}
+      ref={ref}
+      inputRef={inputRef}
+
+      type="search"
+      icon={<SearchOutlined />}
+      suffixPosition="after"
+      suffix={
+        isClearable &&
+        state.value !== '' &&
+        !props.isReadOnly && (
+          <ClearButton
+            type={validationState === 'invalid' ? 'clear' : 'neutral'}
               theme={validationState === 'invalid' ? 'danger' : undefined}
-              {...ariaToCubeButtonProps(clearButtonProps)}
-            />
-          )
-        }
-        {...props}
-      />
-    );
-  },
-);
+            {...ariaToCubeButtonProps(clearButtonProps)}
+
+          />
+        )
+      }
+      {...props}
+    />
+  );
+});

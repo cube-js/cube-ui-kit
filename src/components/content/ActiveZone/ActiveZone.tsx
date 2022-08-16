@@ -41,10 +41,10 @@ const DEFAULT_STYLES: Styles = {
 
 const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
-const ActiveZone = (
+function ActiveZone(
   { as, label, onClick, ...props }: CubeActiveZoneProps,
   ref,
-) => {
+) {
   const isDisabled = props.isDisabled;
   const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
   const domRef = useFocusableRef(ref);
@@ -72,7 +72,7 @@ const ActiveZone = (
       ref={domRef}
     />
   );
-};
+}
 
 const _ActiveZone = forwardRef(ActiveZone);
 export { _ActiveZone as ActiveZone };

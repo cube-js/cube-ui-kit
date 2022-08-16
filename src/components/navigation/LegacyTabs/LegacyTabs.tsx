@@ -173,16 +173,16 @@ export interface LegacyCubeTabProps extends Omit<CubeButtonProps, 'id'> {
   onClose?: () => void;
 }
 
-const Tab = ({
+function Tab({
   isSelected,
   isHidden,
   onClose,
   ...props
-}: Omit<LegacyCubeTabProps, 'id'>) => {
+}: Omit<LegacyCubeTabProps, 'id'>) {
   return (
     <StyledTabElement isSelected={isSelected} isHidden={isHidden} {...props} />
   );
-};
+}
 
 export interface CubeTabsProps extends CubeFlexProps {
   /** The initial active key in the tabs (uncontrolled). */

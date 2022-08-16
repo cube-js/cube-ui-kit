@@ -43,7 +43,7 @@ export interface CubeRootProps extends BaseProps {
   applyLegacyTokens?: boolean;
 }
 
-export const Root = (allProps: CubeRootProps) => {
+export function Root(allProps: CubeRootProps) {
   let {
     children,
     /** Raw css styles for body element */
@@ -97,4 +97,4 @@ export const Root = (allProps: CubeRootProps) => {
       </StyleSheetManager>
     </Provider>
   );
-};
+}

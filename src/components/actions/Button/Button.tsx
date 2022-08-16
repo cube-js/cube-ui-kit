@@ -275,97 +275,98 @@ export const DEFAULT_BUTTON_STYLES = {
   },
 } as Styles;
 
-export const Button = forwardRef(
-  (allProps: CubeButtonProps, ref: FocusableRef<HTMLElement>) => {
-    let {
-      type,
-      size,
-      label,
-      styles,
-      children,
-      theme,
-      icon,
-      rightIcon,
-      mods,
-      ...props
-    } = allProps;
+export const Button = forwardRef(function Button(
+  allProps: CubeButtonProps,
+  ref: FocusableRef<HTMLElement>,
+) {
+  let {
+    type,
+    size,
+    label,
+    styles,
+    children,
+    theme,
+    icon,
+    rightIcon,
+    mods,
+    ...props
+  } = allProps;
 
-    const isDisabled = props.isDisabled;
-    const isLoading = props.isLoading;
-    const isSelected = props.isSelected;
+  const isDisabled = props.isDisabled;
+  const isLoading = props.isLoading;
+  const isSelected = props.isSelected;
 
-    if (!children) {
-      if (icon) {
-        if (!label) {
-          accessibilityWarning(
-            'If you provide `icon` property for a Button and do not provide any children then you should specify the `label` property to make sure the Button element stays accessible.',
-          );
-        }
-      } else {
-        if (!label) {
-          accessibilityWarning(
-            'If you provide no children for a Button then you should specify the `label` property to make sure the Button element stays accessible.',
-          );
-        }
+  if (!children) {
+    if (icon) {
+      if (!label) {
+        accessibilityWarning(
+          'If you provide `icon` property for a Button and do not provide any children then you should specify the `label` property to make sure the Button element stays accessible.',
+        );
+      }
+    } else {
+      if (!label) {
+        accessibilityWarning(
+          'If you provide no children for a Button then you should specify the `label` property to make sure the Button element stays accessible.',
+        );
       }
     }
+  }
 
-    children = children || icon || rightIcon ? children : label;
+  children = children || icon || rightIcon ? children : label;
 
-    styles = useMemo(
-      () => ({
-        ...DEFAULT_BUTTON_STYLES,
+  styles = useMemo(
+    () => ({
+      ...DEFAULT_BUTTON_STYLES,
         ...provideButtonStyles({ type, theme }),
-        ...styles,
-      }),
-      [type, theme, styles],
-    );
+      ...styles,
+    }),
+    [type, theme, styles],
+  );
 
-    if (icon) {
-      icon = cloneElement(icon, {
-        'data-element': 'ButtonIcon',
-      });
-    }
+  if (icon) {
+    icon = cloneElement(icon, {
+      'data-element': 'ButtonIcon',
+    });
+  }
 
-    if (rightIcon) {
-      rightIcon = cloneElement(rightIcon, {
-        'data-element': 'ButtonIcon',
-      });
-    }
+  if (rightIcon) {
+    rightIcon = cloneElement(rightIcon, {
+      'data-element': 'ButtonIcon',
+    });
+  }
 
-    const singleIcon = !!(
-      ((icon && !rightIcon) || (rightIcon && !icon)) &&
-      !children
-    );
+  const singleIcon = !!(
+    ((icon && !rightIcon) || (rightIcon && !icon)) &&
+    !children
+  );
 
-    const modifiers = useMemo(
-      () => ({
-        disabled: isDisabled,
-        loading: isLoading,
-        selected: isSelected,
-        'single-icon-only': singleIcon,
-        ...mods,
-      }),
-      [mods, isDisabled, isLoading, isSelected, singleIcon],
-    );
+  const modifiers = useMemo(
+    () => ({
+      disabled: isDisabled,
+      loading: isLoading,
+      selected: isSelected,
+      'single-icon-only': singleIcon,
+      ...mods,
+    }),
+    [mods, isDisabled, isLoading, isSelected, singleIcon],
+  );
 
-    return (
-      <Action
-        as={props.to ? 'a' : undefined}
-        {...props}
-        ref={ref}
-        isDisabled={isLoading || isDisabled}
-        theme={theme}
-        data-type={type ?? 'secondary'}
-        data-size={size ?? 'medium'}
-        mods={modifiers}
-        styles={styles}
-        label={label}
-      >
-        {icon || isLoading ? !isLoading ? icon : <LoadingOutlined /> : null}
-        {children}
-        {rightIcon}
-      </Action>
-    );
-  },
-);
+  return (
+    <Action
+      as={props.to ? 'a' : undefined}
+      {...props}
+      ref={ref}
+      isDisabled={isLoading || isDisabled}
+      theme={theme}
+      data-type={type ?? 'secondary'}
+      data-size={size ?? 'medium'}
+      mods={modifiers}
+      styles={styles}
+      label={label}
+    >
+      {icon || isLoading ? !isLoading ? icon : <LoadingOutlined /> : null}
+      {children}
+      {rightIcon}
+    </Action>
+  );
+});

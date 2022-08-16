@@ -1,17 +1,38 @@
-module.exports = {
+// @ts-check
+
+module.exports = /** @type {import('eslint').Linter.Config} */ ({
   extends: [
     'prettier',
     'react-app',
+    'plugin:react/recommended',
+    'plugin:react/jsx-runtime',
     'plugin:storybook/recommended',
     'plugin:@typescript-eslint/recommended',
   ],
   rules: {
+    'react/boolean-prop-naming': [
+      'error',
+      {
+        rule: '^is[A-Z]([A-Za-z0-9]?)+',
+        message: 'Boolean props should have `is` prefix',
+      },
+    ],
+    'react/display-name': 'error',
+    'react/prop-types': 'warn',
+
     'import/extensions': 0,
     'import/no-unresolved': 0,
     'import/no-anonymous-default-export': 0,
-    '@typescript-eslint/ban-types': 1,
-    '@typescript-eslint/ban-ts-comment': 1,
-    '@typescript-eslint/no-empty-function': 0,
+    'import/no-extraneous-dependencies': 'error',
+    'import/no-unused-modules': 'error',
+
+    '@typescript-eslint/ban-types': 'warn',
+    '@typescript-eslint/ban-ts-comment': 'warn',
+    '@typescript-eslint/no-empty-function': 'off',
+    '@typescript-eslint/no-unused-vars': 'error',
+
+    'react-hooks/exhaustive-deps': 'warn',
+
     'prefer-const': 0,
     'comma-dangle': 0,
     'no-console': 0,
@@ -22,19 +43,6 @@ module.exports = {
     'no-mixed-operators': 0,
     'no-else-return': 0,
     'prefer-promise-reject-errors': 0,
-    'react-hooks/exhaustive-deps': 0,
-    'max-len': [
-      'error',
-      120,
-      2,
-      {
-        ignoreUrls: true,
-        ignoreComments: true,
-        ignoreRegExpLiterals: true,
-        ignoreStrings: true,
-        ignoreTemplateLiterals: true,
-      },
-    ],
   },
   overrides: [
     {
@@ -43,5 +51,22 @@ module.exports = {
         '@typescript-eslint/no-var-requires': 0,
       },
     },
+    {
+      files: ['*.stories.tsx', '**/storybook/**/*.tsx'],
+      rules: {
+        'react/function-component-definition': 0,
+        'react/boolean-prop-naming': 0,
+        'react/prop-types': 0,
+        'react/no-unescaped-entities': 0,
+      },
+    },
+    {
+      files: ['*.test.ts', '*.test.tsx'],
+      rules: {
+        '@typescript-eslint/no-unused-vars': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/ban-ts-comment': 'off',
+      },
+    },
   ],
-};
+});

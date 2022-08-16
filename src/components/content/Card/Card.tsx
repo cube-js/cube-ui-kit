@@ -24,7 +24,7 @@ const CardElement = tasty({
 
 export interface CubeCardProps extends BaseProps, ContainerStyleProps {}
 
-export const Card = forwardRef((props: CubeCardProps, ref) => {
+export const Card = forwardRef(function Card(props: CubeCardProps, ref) {
   const styles = extractStyles(props, CONTAINER_STYLES);
 
   return (

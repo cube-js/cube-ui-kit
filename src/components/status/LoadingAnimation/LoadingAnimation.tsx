@@ -124,9 +124,9 @@ const ImgElement = styled.img(
 `,
 );
 
-const Cube = (props) => {
+function Cube(props) {
   return <ImgElement role="presentation" src={cubeImage} alt="" {...props} />;
-};
+}
 
 const SIZE_MAP = {
   small: 32,

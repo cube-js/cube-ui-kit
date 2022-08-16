@@ -32,7 +32,10 @@ export interface CubeSuffixProps extends BaseProps, ContainerStyleProps {
   outerGap?: CSSProperties['gap'];
 }
 
-export const Suffix = forwardRef((allProps: CubeSuffixProps, outerRef) => {
+export const Suffix = forwardRef(function Suffix(
+  allProps: CubeSuffixProps,
+  outerRef,
+) {
   let { onWidthChange, outerGap = '1bw', children, ...props } = allProps;
   const styles = extractStyles(props, CONTAINER_STYLES);
   const ref = useCombinedRefs(outerRef);

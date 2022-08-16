@@ -42,7 +42,10 @@ const DividerElement = tasty({
 
 export interface CubeDividerProps extends BaseProps, OuterStyleProps {}
 
-export const Divider = forwardRef((props: CubeDividerProps, ref) => {
+export const Divider = forwardRef(function Divider(
+  props: CubeDividerProps,
+  ref,
+) {
   const { mods, children, styles, ...otherProps } = useSlotProps(
     props,
     'divider',

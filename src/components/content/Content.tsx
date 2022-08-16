@@ -33,7 +33,10 @@ export interface CubeContentProps
     ContainerStyleProps,
     TextStyleProps {}
 
-export const Content = forwardRef((props: CubeContentProps, ref) => {
+export const Content = forwardRef(function Content(
+  props: CubeContentProps,
+  ref,
+) {
   props = useSlotProps(props, 'content');
 
   const styles = extractStyles(props, STYLE_LIST);

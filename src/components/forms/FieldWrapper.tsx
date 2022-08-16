@@ -89,6 +89,7 @@ export type CubeFieldWrapperProps = {
   description?: ReactNode;
   Component?: JSX.Element;
   validationState?: ValidationState;
+  // eslint-disable-next-line react/boolean-prop-naming
   requiredMark?: boolean;
   tooltip?: ReactNode;
   extra?: ReactNode;

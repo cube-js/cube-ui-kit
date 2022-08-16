@@ -43,7 +43,7 @@ export interface CubeBadgeProps extends BaseProps, ContainerStyleProps {
   type?: keyof typeof THEMES | string;
 }
 
-export const Badge = forwardRef((allProps: CubeBadgeProps, ref) => {
+export const Badge = forwardRef(function Badge(allProps: CubeBadgeProps, ref) {
   let { type, children, ...props } = allProps;
 
   const styles = extractStyles(props, CONTAINER_STYLES);

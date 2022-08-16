@@ -19,7 +19,7 @@ const STYLE_PROPS = CONTAINER_STYLES;
 
 export interface CubeFlowProps extends BaseProps, ContainerStyleProps {}
 
-export const Flow = forwardRef((props: CubeFlowProps, ref) => {
+export const Flow = forwardRef(function Flow(props: CubeFlowProps, ref) {
   const styles = extractStyles(props, STYLE_PROPS);
 
   return (

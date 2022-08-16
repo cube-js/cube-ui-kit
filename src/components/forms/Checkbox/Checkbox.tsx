@@ -35,19 +35,23 @@ export interface CubeCheckboxProps
     AriaCheckboxProps,
     FormFieldProps {}
 
-const CheckOutlined = () => (
-  <svg width="10" height="8" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M3.417 7.604l-.017.018-3.4-3.4 1.433-1.433 1.985 1.985L8.192 0l1.432 1.433-6.189 6.189-.018-.018z"
-      fill="currentColor"
-    />
-  </svg>
-);
-const IndeterminateOutline = () => (
-  <svg width="9" height="3" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M0 .044v2.001l.026.025h8.063V.044H0z" fill="#fff" />
-  </svg>
-);
+function CheckOutlined() {
+  return (
+    <svg width="10" height="8" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M3.417 7.604l-.017.018-3.4-3.4 1.433-1.433 1.985 1.985L8.192 0l1.432 1.433-6.189 6.189-.018-.018z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+function IndeterminateOutline() {
+  return (
+    <svg width="9" height="3" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 .044v2.001l.026.025h8.063V.044H0z" fill="#fff" />
+    </svg>
+  );
+}
 
 const CheckboxWrapperElement = tasty({
   as: 'label',

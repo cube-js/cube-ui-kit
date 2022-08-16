@@ -41,20 +41,22 @@ import type {
 } from '@react-types/shared';
 import type { ComboBoxProps } from '@react-types/combobox';
 
-const CaretDownIcon = () => (
-  <svg
-    aria-hidden="true"
-    width="14"
-    height="14"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M11.49 4.102H2.51c-.269 0-.42.284-.253.478l4.49 5.206a.342.342 0 00.506 0l4.49-5.206c.167-.194.016-.478-.253-.478z"
-      fill="currentColor"
-    />
-  </svg>
-);
+function CaretDownIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      width="14"
+      height="14"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M11.49 4.102H2.51c-.269 0-.42.284-.253.478l4.49 5.206a.342.342 0 00.506 0l4.49-5.206c.167-.194.016-.478-.253-.478z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
 
 const ComboBoxWrapperElement = tasty({
   styles: {

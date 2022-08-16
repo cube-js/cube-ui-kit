@@ -26,7 +26,7 @@ const BaseElement = styled.div(({ css }) => css);
 /**
  * @deprecated consider using tasty() instead
  */
-const Base = function Base<K extends keyof HTMLElementTagNameMap>(
+function Base<K extends keyof HTMLElementTagNameMap>(
   allProps: AllBaseProps<K>,
   ref,
 ) {
@@ -84,7 +84,7 @@ const Base = function Base<K extends keyof HTMLElementTagNameMap>(
       css={css}
     />
   );
-};
+}
 
 /**
  * @deprecated consider using tasty() instead

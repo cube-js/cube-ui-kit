@@ -29,94 +29,95 @@ export interface CubeBase64UploadProps extends BaseProps, PositionStyleProps {
 }
 
 export const Base64Upload = styled(
-  forwardRef(
-    (allProps: CubeBase64UploadProps, ref: FocusableRef<HTMLElement>) => {
-      const { onInput, ...props } = allProps;
+  forwardRef(function Base64Upload(
+    allProps: CubeBase64UploadProps,
+    ref: FocusableRef<HTMLElement>,
+  ) {
+    const { onInput, ...props } = allProps;
 
-      const styles = extractStyles(props, POSITION_STYLES, DEFAULT_STYLES);
-      const [file, setFile] = useState();
-      const [error, setError] = useState('');
+    const styles = extractStyles(props, POSITION_STYLES, DEFAULT_STYLES);
+    const [file, setFile] = useState();
+    const [error, setError] = useState('');
 
-      function onInputFile(e) {
-        if (!e.target) return;
+    function onInputFile(e) {
+      if (!e.target) return;
 
-        const localFile = e.target.files[0];
-        const reader = new FileReader();
+      const localFile = e.target.files[0];
+      const reader = new FileReader();
 
-        setError('');
+      setError('');
 
-        if (!localFile) return;
+      if (!localFile) return;
 
-        if (!localFile.name.endsWith('.json')) {
-          setError('Incorrect format. JSON file is required');
+      if (!localFile.name.endsWith('.json')) {
+        setError('Incorrect format. JSON file is required');
+
+        return;
+      }
+
+      reader.onload = function () {
+        /**
+         * @type {string}
+         */
+        const text = String(reader.result);
+
+        let base64text: string;
+
+        try {
+          JSON.parse(text);
+
+          base64text = btoa(text);
+        } catch (e) {
+          setError('Invalid JSON file');
+
+          console.error(e);
 
           return;
         }
 
-        reader.onload = function () {
-          /**
-           * @type {string}
-           */
-          const text = String(reader.result);
+        onInput &&
+          onInput({
+            encoded: base64text,
+            raw: JSON.parse(text),
+          });
 
-          let base64text: string;
+        setFile(localFile.name);
+      };
 
-          try {
-            JSON.parse(text);
-
-            base64text = btoa(text);
-          } catch (e) {
-            setError('Invalid JSON file');
-
-            console.error(e);
-
-            return;
-          }
-
-          onInput &&
-            onInput({
-              encoded: base64text,
-              raw: JSON.parse(text),
-            });
-
-          setFile(localFile.name);
-        };
-
-        try {
-          reader.readAsText(localFile);
-        } catch (e) {
-          setError('Invalid file');
-        }
+      try {
+        reader.readAsText(localFile);
+      } catch (e) {
+        setError('Invalid file');
       }
+    }
 
-      return (
-        <>
-          <Button
-            {...filterBaseProps(props, { eventProps: true })}
-            styles={styles}
-            ref={ref}
+    return (
+      <>
+        <Button
+          {...filterBaseProps(props, { eventProps: true })}
+          styles={styles}
+          ref={ref}
+        >
+          <Block
+            radius="round"
+            fill="#purple.10"
+            color="#dark-02"
+            padding=".5x 1x"
           >
-            <Block
-              radius="round"
-              fill="#purple.10"
-              color="#dark-02"
-              padding=".5x 1x"
-            >
-              Choose file
-            </Block>
-            <Block color="#dark-04">{file || 'No file selected'}</Block>
-            <input
-              type="file"
-              name="base64"
-              onInput={onInputFile}
-              accept=".json"
-            />
-          </Button>
-          {error && <Text.Danger color="danger">{error}</Text.Danger>}
-        </>
-      );
-    },
-  ),
+            Choose file
+          </Block>
+          <Block color="#dark-04">{file || 'No file selected'}</Block>
+          <input
+            type="file"
+            name="base64"
+            onInput={onInputFile}
+            accept=".json"
+          />
+        </Button>
+        {error && <Text.Danger color="danger">{error}</Text.Danger>}
+      </>
+    );
+  }),
 )`
   appearance: none;
   cursor: pointer;

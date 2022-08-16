@@ -55,7 +55,10 @@ export interface CubePlaceholderProps extends BaseProps, ContainerStyleProps {
   circle?: boolean;
 }
 
-export const Placeholder = forwardRef((allProps: CubePlaceholderProps, ref) => {
+export const Placeholder = forwardRef(function Placeholder(
+  allProps: CubePlaceholderProps,
+  ref,
+) {
   let { size = '2x', circle, ...props } = allProps;
 
   let styles = extractStyles(props, CONTAINER_STYLES);
