@@ -54,7 +54,12 @@ function getDefaultValidateTrigger(type) {
   return type === 'Number' || type.includes('Text') ? 'onBlur' : 'onChange';
 }
 
-function getValueProps(type, value?, onChange?) {
+function getValueProps(
+  type?: string,
+  value?,
+  onChange?,
+  allowsCustomValue?: boolean,
+) {
   type = type || '';
 
   if (type === 'Number') {
@@ -84,7 +89,7 @@ function getValueProps(type, value?, onChange?) {
   } else if (type === 'ComboBox') {
     return {
       inputValue: value != null ? value : '',
-      onInputChange: (val) => onChange(val, true),
+      onInputChange: (val) => onChange(val, !allowsCustomValue),
       onSelectionChange: onChange,
     };
   } else if (type === 'Select') {
@@ -402,7 +407,12 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
 
   Object.assign(
     newProps,
-    getValueProps(inputType, field?.inputValue, onChangeHandler),
+    getValueProps(
+      inputType,
+      field?.inputValue,
+      onChangeHandler,
+      child.props.allowsCustomValue,
+    ),
   );
 
   const { onChange, onSelectionChange, ...childProps } = child.props;
