@@ -66,6 +66,19 @@ const InputElement = tasty({
   styles: {
     ...DEFAULT_INPUT_STYLES,
     width: '100%',
+    border: {
+      '': true,
+      focused: true,
+      valid: '#success-text.50',
+      invalid: '#danger-text.50',
+      disabled: true,
+    },
+    outline: {
+      '': '#purple-03.0',
+      focused: '#purple-03',
+      'invalid & focused': '#danger.50',
+      'valid & focused': '#success.50',
+    },
   },
 });
 

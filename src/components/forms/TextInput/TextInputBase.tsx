@@ -83,7 +83,7 @@ const InputWrapperElement = tasty({
       width: 'min 5x',
     },
 
-    Icon: {
+    InputIcon: {
       display: 'grid',
       placeItems: 'center',
       width: 'min 5x',
@@ -110,7 +110,6 @@ export const DEFAULT_INPUT_STYLES: Styles = {
     disabled: '#dark.04',
   },
   border: 0,
-  gridArea: 'input',
   transition: 'theme',
   radius: true,
   padding: '@vertical-padding @right-padding @vertical-padding @left-padding',
@@ -138,7 +137,10 @@ export const DEFAULT_INPUT_STYLES: Styles = {
 
 const InputElement = tasty({
   qa: 'Input',
-  styles: DEFAULT_INPUT_STYLES,
+  styles: {
+    ...DEFAULT_INPUT_STYLES,
+    gridArea: 'input',
+  },
 });
 
 export interface CubeTextInputBaseProps
@@ -270,7 +272,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
   }
 
   if (icon) {
-    icon = <div data-element="Icon">{icon}</div>;
+    icon = <div data-element="InputIcon">{icon}</div>;
 
     if (prefix) {
       prefix = (

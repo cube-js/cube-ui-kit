@@ -266,7 +266,7 @@ const DEFAULT_STYLES = {
       'display .2s steps(1, start), margin .2s linear, opacity .2s linear',
   },
 
-  Icon: {
+  ButtonIcon: {
     fontSize: {
       '': 'initial',
       '[data-size="small"]': '14px',
@@ -323,13 +323,13 @@ export const Button = forwardRef(
 
     if (icon) {
       icon = cloneElement(icon, {
-        'data-element': 'Icon',
+        'data-element': 'ButtonIcon',
       });
     }
 
     if (rightIcon) {
       rightIcon = cloneElement(rightIcon, {
-        'data-element': 'Icon',
+        'data-element': 'ButtonIcon',
       });
     }
 
