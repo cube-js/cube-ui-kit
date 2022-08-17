@@ -22,7 +22,7 @@ const Template: StoryFn<CubeTextInputProps & { icon?: boolean }> = ({
   ...props
 }) => (
   <TextInput
-    prefix={icon ? <DollarCircleOutlined /> : null}
+    icon={icon ? <DollarCircleOutlined /> : null}
     {...props}
     onChange={(query) => console.log('change', query)}
   />

@@ -27,7 +27,7 @@ const FileInputElement = tasty(Action, {
     display: 'inline-flex',
     position: 'relative',
     preset: 't3',
-    padding: '.75x 1x',
+    padding: '.5x 1x',
     gap: '1x',
     flow: 'row',
     placeItems: 'center start',
@@ -41,15 +41,23 @@ const FileInputElement = tasty(Action, {
     overflow: 'hidden',
 
     Button: {
-      radius: 'round',
-      fill: {
-        '': '#light',
-        'hovered | focused | pressed': '#purple-04',
-        disabled: '#light',
+      radius: true,
+      border: {
+        '': '#clear',
+        pressed: '#purple.30',
       },
-      color: '#dark',
-      padding: '.5x 1x',
-      transition: 'fill',
+      fill: {
+        '': '#purple.10',
+        hovered: '#purple.16',
+        pressed: '#purple.10',
+        '[disabled]': '#dark.04',
+      },
+      color: {
+        '': '#purple',
+        '[disabled]': '#dark.30',
+      },
+      padding: '.5x (1.5x - 1px)',
+      transition: 'theme',
     },
 
     Placeholder: {

@@ -53,7 +53,7 @@ export const SearchInput = forwardRef(
         inputRef={inputRef}
         inputStyles={{ paddingRight: '4x' }}
         type="search"
-        prefix={<SearchOutlined />}
+        icon={<SearchOutlined />}
         suffixPosition="after"
         suffix={
           isClearable &&
@@ -67,7 +67,8 @@ export const SearchInput = forwardRef(
                 'hovered | pressed': '#purple-text',
               }}
               radius="right (1r - 1bw)"
-              padding=".5x 1x"
+              padding="0 1x"
+              height="auto"
               placeSelf="stretch"
               icon={<CloseOutlined />}
             />

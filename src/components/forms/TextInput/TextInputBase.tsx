@@ -10,8 +10,8 @@ import {
   ReactNode,
   RefObject,
   useImperativeHandle,
+  useMemo,
   useRef,
-  useState,
 } from 'react';
 import { useFormProps } from '../Form/Form';
 import { useHover } from '@react-aria/interactions';
@@ -30,29 +30,63 @@ import {
   tasty,
 } from '../../../tasty';
 import { useFocus } from '../../../utils/react/interactions';
-import { Prefix } from '../../layout/Prefix';
-import { Suffix } from '../../layout/Suffix';
 import { FieldWrapper } from '../FieldWrapper';
 import { Space } from '../../layout/Space';
-import { Block } from '../../Block';
 import { FormFieldProps } from '../../../shared';
 import type { AriaTextFieldProps } from '@react-types/textfield';
 import { mergeProps } from '../../../utils/react';
+
+const ADD_STYLES = {
+  display: 'grid',
+  placeContent: 'stretch',
+  placeItems: 'center',
+  flow: 'column',
+  gap: 0,
+  color: '#dark.75',
+  cursor: 'text',
+  opacity: {
+    '': 1,
+    disabled: '@disabled-opacity',
+  },
+};
 
 const InputWrapperElement = tasty({
   styles: {
     display: 'grid',
     position: 'relative',
+    gridAreas: '"prefix input suffix"',
+    gridColumns: 'auto 1fr auto',
+    border: {
+      '': true,
+      focused: true,
+      valid: '#success-text.50',
+      invalid: '#danger-text.50',
+      disabled: true,
+    },
+    outline: {
+      '': '#purple-03.0',
+      focused: '#purple-03',
+      'invalid & focused': '#danger.50',
+      'valid & focused': '#success.50',
+    },
+    radius: true,
 
     Prefix: {
-      padding: {
-        '': '0 1x 0 1.5x',
-        'text-prefix': '0 1x 0 2.5x',
-      },
+      ...ADD_STYLES,
+      gridArea: 'prefix',
+      width: 'min 5x',
     },
 
     Suffix: {
-      padding: '.5x left',
+      ...ADD_STYLES,
+      gridArea: 'suffix',
+      width: 'min 5x',
+    },
+
+    Icon: {
+      display: 'grid',
+      placeItems: 'center',
+      width: 'min 5x',
     },
   },
 });
@@ -75,25 +109,11 @@ export const DEFAULT_INPUT_STYLES: Styles = {
     '': '#white',
     disabled: '#dark.04',
   },
-  border: {
-    '': true,
-    focused: true,
-    valid: '#success-text.50',
-    invalid: '#danger-text.50',
-    disabled: true,
-  },
-  outline: {
-    '': '#purple-03.0',
-    focused: '#purple-03',
-    'invalid & focused': '#danger.50',
-    'valid & focused': '#success.50',
-  },
+  border: 0,
+  gridArea: 'input',
   transition: 'theme',
   radius: true,
-  padding: {
-    '': '(1.25x - 1bw) 1x (1.25x - 1bw) (1.5x - 1bw)',
-    '[data-size="small"]': '(.75x - 1px) (1.5x - 1px)',
-  },
+  padding: '@vertical-padding @right-padding @vertical-padding @left-padding',
   fontWeight: 400,
   textAlign: 'left',
   reset: 'input',
@@ -101,6 +121,19 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   flexGrow: 1,
   margin: 0,
   resize: 'none',
+
+  '@vertical-padding': {
+    '': '(1.25x - 1bw)',
+    '[data-size="small"]': '(.75x - 1bw)',
+  },
+  '@left-padding': {
+    '': '1.5x',
+    prefix: '0',
+  },
+  '@right-padding': {
+    '': '1.5x',
+    suffix: '0',
+  },
 };
 
 const InputElement = tasty({
@@ -115,6 +148,8 @@ export interface CubeTextInputBaseProps
     BlockStyleProps,
     AriaTextFieldProps,
     FormFieldProps {
+  /** Left input icon */
+  icon?: ReactElement;
   /** Input decoration before the main input */
   prefix?: ReactNode;
   /** Input decoration after the main input */
@@ -157,6 +192,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     qa,
     label,
     extra,
+    mods,
     labelPosition = 'top',
     labelStyles,
     isRequired,
@@ -186,23 +222,13 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     isHidden,
     rows = 1,
     size,
+    icon,
     ...otherProps
   } = props;
-  let [suffixWidth, setSuffixWidth] = useState(0);
-  let [prefixWidth, setPrefixWidth] = useState(0);
-
   let styles = extractStyles(otherProps, STYLE_LIST);
   let type = otherProps.type;
 
   inputStyles = extractStyles(otherProps, INPUT_STYLE_PROPS_LIST, inputStyles);
-
-  if (prefix) {
-    inputStyles.paddingLeft = `${prefixWidth}px`;
-  }
-
-  if (validationState || isLoading || suffix) {
-    inputStyles.paddingRight = `${suffixWidth}px`;
-  }
 
   let ElementType: 'textarea' | 'input' = multiLine ? 'textarea' : 'input';
   let { isFocused, focusProps } = useFocus({ isDisabled });
@@ -234,13 +260,6 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
   );
   let validation = cloneElement(validationIcon);
 
-  suffix =
-    typeof suffix === 'string' ? (
-      <Block padding="1x right">{suffix}</Block>
-    ) : (
-      suffix
-    );
-
   // Fix safari bug: https://github.com/philipwalton/flexbugs/issues/270
   if (!inputProps?.placeholder) {
     if (!inputProps) {
@@ -250,17 +269,49 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     inputProps.placeholder = ' ';
   }
 
+  if (icon) {
+    icon = <div data-element="Icon">{icon}</div>;
+
+    if (prefix) {
+      prefix = (
+        <>
+          {icon}
+          {prefix}
+        </>
+      );
+    } else {
+      prefix = icon;
+    }
+  }
+
+  const modifiers = useMemo(
+    () => ({
+      invalid: isInvalid,
+      valid: validationState === 'valid',
+      loadable: !!loadingIndicator,
+      focused: isFocused,
+      hovered: isHovered,
+      multiline: multiLine,
+      prefix: !!prefix,
+      suffix: !!suffix,
+      ...mods,
+    }),
+    [
+      mods,
+      isInvalid,
+      validationState,
+      loadingIndicator,
+      isFocused,
+      isHovered,
+      multiLine,
+    ],
+  );
+
   let textField = (
     <InputWrapperElement
       ref={wrapperRef}
       qa={qa || 'TextInput'}
-      mods={{
-        invalid: isInvalid,
-        valid: validationState === 'valid',
-        loadable: !!loadingIndicator,
-        multiline: multiLine,
-        'text-prefix': prefix === 'string',
-      }}
+      mods={modifiers}
       data-size={size}
       styles={wrapperStyles}
       {...wrapperProps}
@@ -270,13 +321,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
         {...mergeProps(inputProps, focusProps, hoverProps)}
         ref={inputRef}
         rows={multiLine ? rows : undefined}
-        mods={{
-          invalid: isInvalid,
-          valid: validationState === 'valid',
-          disabled: isDisabled,
-          hovered: isHovered,
-          focused: isFocused,
-        }}
+        mods={modifiers}
         style={{
           WebkitTextSecurity:
             multiLine && type === 'password' ? 'disc' : 'initial',
@@ -286,17 +331,8 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
         styles={inputStyles}
         isDisabled={isDisabled}
       />
-      <Prefix
-        onWidthChange={setPrefixWidth}
-        opacity={isDisabled ? '@disabled-opacity' : false}
-        placeItems="center"
-      >
-        {prefix}
-      </Prefix>
-      <Suffix
-        onWidthChange={setSuffixWidth}
-        opacity={isDisabled ? '@disabled-opacity' : false}
-      >
+      {prefix ? <div data-element="Prefix">{prefix}</div> : null}
+      <div data-element="Suffix">
         {suffixPosition === 'before' ? suffix : null}
         {(validationState && !isLoading) || isLoading ? (
           <Space gap={false} padding={`0 ${suffix ? '1x' : '1.5x'} 0 0`}>
@@ -305,7 +341,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
           </Space>
         ) : null}
         {suffixPosition === 'after' ? suffix : null}
-      </Suffix>
+      </div>
     </InputWrapperElement>
   );
 

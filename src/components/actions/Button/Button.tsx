@@ -242,10 +242,10 @@ const DEFAULT_STYLES = {
   textDecoration: 'none',
   transition: 'theme',
   padding: {
-    '': '(1.25x - 1px) (2x - 1px)',
-    '[data-size="small"]': '(.75x - 1px) (1.5x - 1px)',
-    '[data-size="medium"]': '(1.25x - 1px) (2x - 1px)',
-    '[data-size="large"]': '(1.5x - 1px) (2.5x - 1px)',
+    '': '(1.25x - 1bw) (2x - 1bw)',
+    '[data-size="small"]': '(.75x - 1bw) (1.5x - 1bw)',
+    '[data-size="medium"]': '(1.25x - 1bw) (2x - 1bw)',
+    '[data-size="large"]': '(1.5x - 1bw) (2.5x - 1bw)',
     'single-icon-only': 0,
   },
   width: {
