@@ -42,7 +42,7 @@ DefaultAction.play = async ({ canvasElement }) => {
   const button = getByRole('button');
   await userEvent.click(button);
 
-  const notification = getByTestId('floating-notification');
+  const notification = getByTestId('FloatingNotification');
 
   await expect(notification).toBeInTheDocument();
 };
@@ -389,7 +389,7 @@ WithLongActions.play = async ({ canvasElement }) => {
   const { getByRole, getByTestId } = within(canvasElement);
 
   await userEvent.click(getByRole('button'));
-  const notification = getByTestId('floating-notification');
+  const notification = getByTestId('FloatingNotification');
 
   await expect(notification).toBeInTheDocument();
 };

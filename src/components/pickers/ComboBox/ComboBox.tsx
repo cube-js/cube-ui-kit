@@ -295,7 +295,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
         {suffix}
         {!hideTrigger ? (
           <TriggerElement
-            data-qa="ComboBox_Trigger"
+            qa="ComboBoxTrigger"
             {...mergeProps(buttonProps, triggerFocusProps, triggerHoverProps)}
             {...modAttrs({
               pressed: isTriggerPressed,

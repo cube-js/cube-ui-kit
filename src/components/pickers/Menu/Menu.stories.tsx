@@ -104,11 +104,11 @@ export const InsideModal = () => {
             <Button
               size="small"
               icon={<MoreOutlined />}
-              data-qa="contextMenuButton"
+              qa="ContextMenuButton"
               aria-label="Open Context Menu"
             />
             <Menu
-              data-qa="contextMenuList"
+              qa="ContextMenuList"
               id="menu"
               width="220px"
               selectionMode="multiple"

@@ -20,7 +20,7 @@ describe('useToastsApi', () => {
     });
 
     expect(
-      screen.queryByTestId('floating-notification'),
+      screen.queryByTestId('FloatingNotification'),
     ).not.toBeInTheDocument();
 
     expect(dismiss).toBeCalledTimes(1);
@@ -37,7 +37,7 @@ describe('useToastsApi', () => {
       jest.runAllTimers();
     });
 
-    expect(screen.getByTestId('floating-notification')).toBeInTheDocument();
+    expect(screen.getByTestId('FloatingNotification')).toBeInTheDocument();
     expect(dismiss).not.toBeCalled();
   });
 
@@ -55,14 +55,14 @@ describe('useToastsApi', () => {
 
     expect(dismiss).toBeCalled();
     expect(
-      screen.queryByTestId('floating-notification'),
+      screen.queryByTestId('FloatingNotification'),
     ).not.toBeInTheDocument();
   });
 
   it('should unmount component by default', () => {
     const { getByTestId, rerender } = renderWithRoot(<TestComponent />);
 
-    const notification = getByTestId('floating-notification');
+    const notification = getByTestId('FloatingNotification');
 
     rerender(
       <TestComponent disableRemoveOnUnmount renderNotification={false} />,
@@ -76,7 +76,7 @@ describe('useToastsApi', () => {
       <TestComponent disableRemoveOnUnmount />,
     );
 
-    const notification = getByTestId('floating-notification');
+    const notification = getByTestId('FloatingNotification');
 
     rerender(
       <TestComponent disableRemoveOnUnmount renderNotification={false} />,
