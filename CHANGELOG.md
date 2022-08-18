@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.12.2
+
+### Patch Changes
+
+- [`dcc4edc`](https://github.com/cube-js/cube-ui-kit/commit/dcc4edc3ef560d25062277b5e4f2fcee7afe4168) - Pass `labelSuffix` to all form components
+
 ## 0.12.1
 
 ### Patch Changes
