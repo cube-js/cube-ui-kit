@@ -93,7 +93,7 @@ const InputWrapperElement = tasty({
     InputIcon: {
       display: 'grid',
       placeItems: 'center',
-      width: 'min 5x',
+      width: 'min 4x',
       color: 'inherit',
     },
 
