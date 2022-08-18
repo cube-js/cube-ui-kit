@@ -48,3 +48,8 @@ export const Disabled = Template.bind({});
 Disabled.args = {
   isDisabled: true,
 };
+
+export const Invalid = Template.bind({});
+Invalid.args = {
+  validationState: 'invalid',
+};

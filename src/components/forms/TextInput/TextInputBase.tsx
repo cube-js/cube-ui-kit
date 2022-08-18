@@ -7,6 +7,7 @@ import { createFocusableRef } from '@react-spectrum/utils';
 import {
   cloneElement,
   forwardRef,
+  ReactElement,
   ReactNode,
   RefObject,
   useImperativeHandle,
@@ -31,7 +32,6 @@ import {
 } from '../../../tasty';
 import { useFocus } from '../../../utils/react/interactions';
 import { FieldWrapper } from '../FieldWrapper';
-import { Space } from '../../layout/Space';
 import { FormFieldProps } from '../../../shared';
 import type { AriaTextFieldProps } from '@react-types/textfield';
 import { mergeProps } from '../../../utils/react';
@@ -42,7 +42,6 @@ const ADD_STYLES = {
   placeItems: 'center',
   flow: 'column',
   gap: 0,
-  color: '#dark.75',
   cursor: 'text',
   opacity: {
     '': 1,
@@ -70,23 +69,41 @@ const InputWrapperElement = tasty({
       'valid & focused': '#success.50',
     },
     radius: true,
+    color: {
+      '': '#dark.85',
+      focused: '#dark.85',
+      invalid: '#danger-text',
+      disabled: '#dark.30',
+    },
 
     Prefix: {
       ...ADD_STYLES,
       gridArea: 'prefix',
-      width: 'min 5x',
     },
 
     Suffix: {
       ...ADD_STYLES,
       gridArea: 'suffix',
-      width: 'min 5x',
+    },
+
+    State: {
+      display: 'flex',
     },
 
     InputIcon: {
       display: 'grid',
       placeItems: 'center',
       width: 'min 5x',
+      color: 'inherit',
+    },
+
+    ValidationIcon: {
+      display: 'grid',
+      placeItems: 'center',
+      width: {
+        '': 'min 5x',
+        suffix: 'min 3x',
+      },
     },
   },
 });
@@ -99,12 +116,7 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   display: 'block',
   width: 'initial 100% initial',
   height: 'initial initial initial',
-  color: {
-    '': '#dark.85',
-    invalid: '#danger-text',
-    focused: '#dark.85',
-    disabled: '#dark.30',
-  },
+  color: 'inherit',
   fill: {
     '': '#white',
     disabled: '#dark.04',
@@ -126,11 +138,11 @@ export const DEFAULT_INPUT_STYLES: Styles = {
     '[data-size="small"]': '(.75x - 1bw)',
   },
   '@left-padding': {
-    '': '1.5x',
+    '': '(1.5x - 1bw)',
     prefix: '0',
   },
   '@right-padding': {
-    '': '1.5x',
+    '': '(1.5x - 1bw)',
     suffix: '0',
   },
 };
@@ -256,9 +268,15 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
   let isInvalid = validationState === 'invalid';
 
   let validationIcon = isInvalid ? (
-    <WarningOutlined style={{ color: 'var(--danger-color)' }} />
+    <WarningOutlined
+      data-element="ValidationIcon"
+      style={{ color: 'var(--danger-color)' }}
+    />
   ) : (
-    <CheckOutlined style={{ color: 'var(--success-color)' }} />
+    <CheckOutlined
+      data-element="ValidationIcon"
+      style={{ color: 'var(--success-color)' }}
+    />
   );
   let validation = cloneElement(validationIcon);
 
@@ -306,6 +324,8 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
       isFocused,
       isHovered,
       multiLine,
+      prefix,
+      suffix,
     ],
   );
 
@@ -337,10 +357,10 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
       <div data-element="Suffix">
         {suffixPosition === 'before' ? suffix : null}
         {(validationState && !isLoading) || isLoading ? (
-          <Space gap={false} padding={`0 ${suffix ? '1x' : '1.5x'} 0 0`}>
+          <div data-element="State">
             {validationState && !isLoading ? validation : null}
-            {isLoading && <LoadingOutlined />}
-          </Space>
+            {isLoading && <LoadingOutlined data-element="InputIcon" />}
+          </div>
         ) : null}
         {suffixPosition === 'after' ? suffix : null}
       </div>

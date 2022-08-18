@@ -28,3 +28,6 @@ const Template = (props) => (
 
 export const Default = Template.bind({});
 Default.args = {};
+
+export const Invalid = Template.bind({});
+Invalid.args = { validationState: 'invalid' };

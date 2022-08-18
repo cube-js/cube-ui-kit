@@ -52,3 +52,6 @@ Default.args = {};
 
 export const RadioButtons = Template.bind({});
 RadioButtons.args = { type: 'button' };
+
+export const Invalid = Template.bind({});
+Invalid.args = { validationState: 'invalid' };
