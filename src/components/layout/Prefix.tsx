@@ -8,7 +8,7 @@ import {
   parseStyle,
   tasty,
 } from '../../tasty';
-import { useCombinedRefs } from '../../utils/react';
+import { useCombinedRefs, useLayoutEffect } from '../../utils/react';
 
 const PrefixElement = tasty({
   element: 'Prefix',
@@ -38,7 +38,7 @@ export const Prefix = forwardRef((allProps: CubePrefixProps, outerRef) => {
   const styles = extractStyles(props, CONTAINER_STYLES);
   const ref = useCombinedRefs(outerRef);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (ref?.current && onWidthChange) {
       onWidthChange(ref.current.offsetWidth);
     }

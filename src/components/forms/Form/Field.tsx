@@ -343,7 +343,7 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
     name: fieldName,
     onBlur() {
       if (validateTrigger === 'onBlur') {
-        // We need timeout so the change event can be done.
+        // We need a timeout so the change event can be done.
         setTimeout(() => {
           form.validateField(fieldName).catch(() => {}); // do nothing on fail
         });
