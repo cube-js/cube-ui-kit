@@ -101,7 +101,7 @@ const InputWrapperElement = tasty({
       display: 'grid',
       placeItems: 'center',
       width: {
-        '': 'min 5x',
+        '': 'min 4x',
         suffix: 'min 3x',
       },
     },
