@@ -136,6 +136,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
     inputStyles,
     requiredMark = true,
     tooltip,
+    labelSuffix,
     ...otherProps
   } = props;
 
@@ -201,6 +202,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
           description,
           requiredMark,
           tooltip,
+          labelSuffix,
           Component: switchField,
           ref: domRef,
         }}

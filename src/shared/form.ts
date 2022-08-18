@@ -56,6 +56,7 @@ export interface FormFieldProps extends FormBaseProps {
   insideForm?: boolean;
   /** A text label of the field */
   label?: ReactNode;
+  labelSuffix?: ReactNode;
   /** An additional content next to the label */
   extra?: ReactNode;
   /** Custom label props */

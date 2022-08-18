@@ -237,6 +237,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     rows = 1,
     size,
     icon,
+    labelSuffix,
     ...otherProps
   } = props;
   let styles = extractStyles(otherProps, STYLE_LIST);
@@ -386,6 +387,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
         requiredMark,
         tooltip,
         isHidden,
+        labelSuffix,
         Component: textField,
         ref: domRef,
       }}
