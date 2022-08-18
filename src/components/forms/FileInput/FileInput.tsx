@@ -135,6 +135,7 @@ function FileInput(props: CubeFileInputProps, ref) {
     tooltip,
     isHidden,
     inputStyles,
+    labelSuffix,
     type = 'file',
     ...otherProps
   } = useProviderProps(props);
@@ -234,6 +235,7 @@ function FileInput(props: CubeFileInputProps, ref) {
         requiredMark,
         tooltip,
         isHidden,
+        labelSuffix,
         Component: fileInput,
         ref: domRef,
       }}
