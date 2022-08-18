@@ -132,11 +132,11 @@ export const InsideModal = () => {
 
 InsideModal.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
-  const button = await canvas.findByTestId('contextMenuButton');
+  const button = await canvas.findByTestId('ContextMenuButton');
 
   await userEvent.click(button);
 
-  const list = await canvas.findByTestId('contextMenuList');
+  const list = await canvas.findByTestId('ContextMenuList');
 
   await waitFor(() => expect(list).toBeInTheDocument());
 };
