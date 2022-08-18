@@ -39,9 +39,8 @@ function PasswordInput(props: WithNullableValue<CubeTextInputBaseProps>, ref) {
         onPress={toggleType}
         placeSelf="stretch"
         height="auto"
-        radius="right (1r - 1bw)"
-        padding=".5x 1x"
-        width="auto"
+        radius="right"
+        width="4x"
         label="Toggle masking"
         excludeFromTabOrder
         icon={type === 'password' ? <EyeInvisibleOutlined /> : <EyeOutlined />}

@@ -25,7 +25,7 @@ const ClearButton = tasty(Button, {
   icon: <CloseOutlined />,
   styles: {
     radius: 'right (1r - 1bw)',
-    padding: '0 1x',
+    width: '4x',
     height: 'auto',
     placeSelf: 'stretch',
   },

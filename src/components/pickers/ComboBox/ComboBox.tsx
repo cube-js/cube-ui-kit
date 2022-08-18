@@ -90,7 +90,7 @@ const TriggerElement = tasty({
     placeContent: 'center',
     placeSelf: 'stretch',
     radius: 'right',
-    padding: '0 1x',
+    width: '4x',
     color: {
       '': '#dark.75',
       hovered: '#dark.75',
