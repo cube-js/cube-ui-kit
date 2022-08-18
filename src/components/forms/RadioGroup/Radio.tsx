@@ -1,5 +1,6 @@
 import { useFocusableRef } from '@react-spectrum/utils';
 import { forwardRef, useRef } from 'react';
+import type { AriaRadioProps } from '@react-types/radio';
 import { useHover } from '@react-aria/interactions';
 import { useRadio } from '@react-aria/radio';
 import { useRadioProvider } from './context';
@@ -17,8 +18,7 @@ import { useProviderProps } from '../../../provider';
 import { INLINE_LABEL_STYLES } from '../Label';
 import { HiddenInput } from '../../HiddenInput';
 import { RadioGroup } from './RadioGroup';
-import { useFormProps } from '../Form/Form';
-import type { AriaRadioProps } from '@react-types/radio';
+import { useFormProps } from '../Form';
 import { FormFieldProps } from '../../../shared';
 
 const RadioWrapperElement = tasty({
