@@ -81,7 +81,7 @@ export const FloatingNotification = memo(function FloatingNotification(
         }}
         onDismiss={chainedOnDismiss}
         onClose={onCloseEvent}
-        qa="floating-notification"
+        qa="FloatingNotification"
       />
     </NotificationContainer>
   );
