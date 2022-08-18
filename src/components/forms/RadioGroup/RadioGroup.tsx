@@ -3,7 +3,7 @@ import { useDOMRef } from '@react-spectrum/utils';
 import { useProviderProps } from '../../../provider';
 import { useRadioGroup } from '@react-aria/radio';
 import { useRadioGroupState } from '@react-stately/radio';
-import { FormContext, useFormProps } from '../Form/Form';
+import { FormContext, useFormProps } from '../Form';
 import { RadioContext } from './context';
 import {
   BaseProps,
@@ -73,6 +73,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
     styles,
     groupStyles,
     insideForm,
+    labelSuffix,
     ...otherProps
   } = props;
   let domRef = useDOMRef(ref);
@@ -125,6 +126,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
         isHidden,
         Component: radioGroup,
         ref: domRef,
+        labelSuffix,
       }}
     />
   );

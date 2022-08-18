@@ -250,6 +250,7 @@ function Select<T extends object>(
     tooltip,
     size,
     styles,
+    labelSuffix,
     ...otherProps
   } = props;
   let state = useSelectState(props);
@@ -376,6 +377,7 @@ function Select<T extends object>(
         description,
         requiredMark,
         tooltip,
+        labelSuffix,
         Component: selectField,
         ref: ref,
       }}

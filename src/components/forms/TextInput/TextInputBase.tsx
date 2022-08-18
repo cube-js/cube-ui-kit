@@ -186,6 +186,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     isHidden,
     rows = 1,
     size,
+    labelSuffix,
     ...otherProps
   } = props;
   let [suffixWidth, setSuffixWidth] = useState(0);
@@ -328,6 +329,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
         requiredMark,
         tooltip,
         isHidden,
+        labelSuffix,
         Component: textField,
         ref: domRef,
       }}
