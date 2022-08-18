@@ -104,11 +104,11 @@ export const InsideModal = () => {
             <Button
               size="small"
               icon={<MoreOutlined />}
-              data-qa="contextMenuButton"
+              qa="ContextMenuButton"
               aria-label="Open Context Menu"
             />
             <Menu
-              data-qa="contextMenuList"
+              qa="ContextMenuList"
               id="menu"
               width="220px"
               selectionMode="multiple"
@@ -132,11 +132,11 @@ export const InsideModal = () => {
 
 InsideModal.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
-  const button = await canvas.findByTestId('contextMenuButton');
+  const button = await canvas.findByTestId('ContextMenuButton');
 
   await userEvent.click(button);
 
-  const list = await canvas.findByTestId('contextMenuList');
+  const list = await canvas.findByTestId('ContextMenuList');
 
   await waitFor(() => expect(list).toBeInTheDocument());
 };

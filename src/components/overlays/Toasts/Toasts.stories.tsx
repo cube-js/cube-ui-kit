@@ -28,7 +28,7 @@ UseToast.play = async ({ canvasElement }) => {
   const button = getByRole('button');
   await userEvent.click(button);
 
-  const notification = getByTestId('floating-notification');
+  const notification = getByTestId('FloatingNotification');
 
   await expect(notification).toBeInTheDocument();
 };

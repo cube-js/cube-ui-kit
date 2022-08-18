@@ -6,6 +6,7 @@ export type CubeFieldData<Name extends string | number | symbol, Value> = {
   readonly name: Name;
   errors: string[];
   value?: Value;
+  inputValue?: Value;
   touched?: boolean;
   rules?: any[];
   validating?: boolean;

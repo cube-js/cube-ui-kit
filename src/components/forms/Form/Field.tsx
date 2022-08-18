@@ -54,7 +54,12 @@ function getDefaultValidateTrigger(type) {
   return type === 'Number' || type.includes('Text') ? 'onBlur' : 'onChange';
 }
 
-function getValueProps(type, value?, onChange?) {
+function getValueProps(
+  type?: string,
+  value?,
+  onChange?,
+  allowsCustomValue?: boolean,
+) {
   type = type || '';
 
   if (type === 'Number') {
@@ -84,7 +89,8 @@ function getValueProps(type, value?, onChange?) {
   } else if (type === 'ComboBox') {
     return {
       inputValue: value != null ? value : '',
-      onInputChange: onChange,
+      onInputChange: (val) => onChange(val, !allowsCustomValue),
+      onSelectionChange: onChange,
     };
   } else if (type === 'Select') {
     return {
@@ -110,7 +116,7 @@ export interface CubeFieldProps<T extends FieldTypes>
   /** The id prefix for the field to avoid collisions between forms */
   idPrefix?: string;
   children?: ReactElement | ((CubeFormInstance) => ReactElement);
-  /** Function that check whether to perform update of the form state. */
+  /** Function that checks whether to perform update of the form state. */
   shouldUpdate?: boolean | ((prevValues, nextValues) => boolean);
   /** Validation rules */
   rules?: ValidationRule[];
@@ -290,6 +296,7 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
       child,
       mergeProps(child.props, {
         ...getValueProps(inputType),
+        label: fieldName,
         name: fieldName,
         id: fieldId,
       }),
@@ -300,7 +307,7 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
     validateTrigger = defaultValidateTrigger;
   }
 
-  function onChangeHandler(val) {
+  function onChangeHandler(val, dontTouch) {
     const field = form.getFieldInstance(fieldName);
 
     if (shouldUpdate) {
@@ -320,11 +327,12 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
       }
     }
 
-    form.setFieldValue(fieldName, val, true);
+    form.setFieldValue(fieldName, val, !dontTouch, false, dontTouch);
 
     if (
-      validateTrigger === 'onChange' ||
-      (field && field.errors && field.errors.length)
+      !dontTouch &&
+      (validateTrigger === 'onChange' ||
+        (field && field.errors && field.errors.length))
     ) {
       form.validateField(fieldName).catch(() => {}); // do nothing on fail
     }
@@ -399,7 +407,12 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
 
   Object.assign(
     newProps,
-    getValueProps(inputType, field?.value, onChangeHandler),
+    getValueProps(
+      inputType,
+      field?.inputValue,
+      onChangeHandler,
+      child.props.allowsCustomValue,
+    ),
   );
 
   const { onChange, onSelectionChange, ...childProps } = child.props;

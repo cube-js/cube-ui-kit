@@ -71,7 +71,7 @@ export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
   return (
     <NotificationsContainer
       ref={ref}
-      data-qa="notifications-bar"
+      qa="NotificationsBar"
       role="region"
       aria-live="polite"
       {...mergeProps(listProps, hoverProps, focusProps)}
