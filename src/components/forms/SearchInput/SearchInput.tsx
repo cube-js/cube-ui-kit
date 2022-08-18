@@ -51,7 +51,6 @@ export const SearchInput = forwardRef(
         inputProps={inputProps}
         ref={ref}
         inputRef={inputRef}
-        inputStyles={{ paddingRight: '4x' }}
         type="search"
         prefix={<SearchOutlined />}
         suffixPosition="after"
