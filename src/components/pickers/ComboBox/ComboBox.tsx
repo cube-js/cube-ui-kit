@@ -157,6 +157,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
     loadingState,
     filter,
     styles,
+    labelSuffix,
     ...otherProps
   } = props;
 
@@ -346,6 +347,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
         message,
         description,
         requiredMark,
+        labelSuffix,
         Component: comboBoxField,
         ref: ref,
       }}

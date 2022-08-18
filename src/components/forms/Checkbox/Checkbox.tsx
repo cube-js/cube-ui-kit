@@ -131,6 +131,7 @@ function Checkbox(
     requiredMark = true,
     tooltip,
     isHidden,
+    labelSuffix,
     ...otherProps
   } = props;
 
@@ -243,6 +244,7 @@ function Checkbox(
           description,
           requiredMark,
           tooltip,
+          labelSuffix,
           Component: checkboxField,
           ref: domRef,
         }}
