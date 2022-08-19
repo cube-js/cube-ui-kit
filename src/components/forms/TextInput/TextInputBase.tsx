@@ -54,7 +54,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   position: 'relative',
   gridAreas: '"prefix input suffix"',
   gridColumns: 'auto 1fr auto',
-  placeItems: 'center stretch',
+  placeItems: 'stretch',
   border: {
     '': true,
     focused: true,
@@ -76,6 +76,10 @@ export const INPUT_WRAPPER_STYLES: Styles = {
     invalid: '#danger-text',
     disabled: '#dark.30',
   },
+  zIndex: {
+    '': 'initial',
+    focused: 1,
+  },
 
   Prefix: {
     ...ADD_STYLES,
@@ -96,6 +100,11 @@ export const INPUT_WRAPPER_STYLES: Styles = {
     placeItems: 'center',
     width: 'min 4x',
     color: 'inherit',
+    fontSize: {
+      '': 'initial',
+      '[data-size="small"]': '14px',
+      '[data-size="medium"]': '16px',
+    },
   },
 
   ValidationIcon: {
@@ -104,6 +113,11 @@ export const INPUT_WRAPPER_STYLES: Styles = {
     width: {
       '': 'min 4x',
       suffix: 'min 3x',
+    },
+    fontSize: {
+      '': 'initial',
+      '[data-size="small"]': '14px',
+      '[data-size="medium"]': '16px',
     },
   },
 };

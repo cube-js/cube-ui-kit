@@ -21,7 +21,7 @@ const Template = ({ icon, ...props }) => {
     <>
       <ComboBox
         id="name"
-        prefix={icon ? <DollarCircleOutlined /> : null}
+        icon={icon ? <DollarCircleOutlined /> : undefined}
         {...props}
         onSelectionChange={(query) =>
           console.log('onSelectionChange event', query)
@@ -52,3 +52,9 @@ WithDefaultValue.args = { defaultSelectedKey: 'purple' };
 
 export const WithIcon = Template.bind({});
 WithIcon.args = { icon: true };
+
+export const Invalid = Template.bind({});
+Invalid.args = { validationState: 'invalid' };
+
+export const Valid = Template.bind({});
+Valid.args = { validationState: 'valid' };

@@ -102,7 +102,6 @@ const SelectWrapperElement = tasty({
         '': 'initial',
         '[data-size="small"]': '14px',
         '[data-size="medium"]': '16px',
-        '[data-size="large"]': '18px',
       },
     },
   },
@@ -304,9 +303,15 @@ function Select<T extends object>(
   let isInvalid = validationState === 'invalid';
 
   let validationIcon = isInvalid ? (
-    <WarningOutlined style={{ color: 'var(--danger-color)' }} />
+    <WarningOutlined
+      data-element="ValidationIcon"
+      style={{ color: 'var(--danger-color)' }}
+    />
   ) : (
-    <CheckOutlined style={{ color: 'var(--success-color)' }} />
+    <CheckOutlined
+      data-element="ValidationIcon"
+      style={{ color: 'var(--success-color)' }}
+    />
   );
   let validation = cloneElement(validationIcon);
 
@@ -328,7 +333,6 @@ function Select<T extends object>(
   }
 
   const showPlaceholder = !!placeholder?.trim() && !state.selectedItem;
-  const hasSuffix = validationState || isLoading || !!suffix;
 
   const modifiers = useMemo(
     () => ({
@@ -340,7 +344,7 @@ function Select<T extends object>(
       focused: isFocused,
       placeholder: showPlaceholder,
       prefix: !!prefix,
-      suffix: hasSuffix,
+      suffix: true,
     }),
     [
       validationState,
@@ -350,7 +354,6 @@ function Select<T extends object>(
       isFocused,
       showPlaceholder,
       prefix,
-      hasSuffix,
     ],
   );
 

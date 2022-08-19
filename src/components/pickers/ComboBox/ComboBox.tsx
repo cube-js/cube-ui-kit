@@ -3,7 +3,13 @@ import {
   LoadingOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
-import { cloneElement, forwardRef, RefObject, useState } from 'react';
+import {
+  cloneElement,
+  forwardRef,
+  ReactElement,
+  RefObject,
+  useMemo,
+} from 'react';
 import { useComboBoxState } from '@react-stately/combobox';
 import { useComboBox } from '@react-aria/combobox';
 import { useButton } from '@react-aria/button';
@@ -21,11 +27,11 @@ import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
 import { FieldWrapper } from '../../forms/FieldWrapper';
 import { CubeSelectBaseProps, ListBoxPopup } from '../Select/Select';
-import { Prefix } from '../../layout/Prefix';
-import { Suffix } from '../../layout/Suffix';
-import { Space } from '../../layout/Space';
 import { Item } from '@react-stately/collections';
-import { DEFAULT_INPUT_STYLES } from '../../forms/TextInput/TextInputBase';
+import {
+  DEFAULT_INPUT_STYLES,
+  INPUT_WRAPPER_STYLES,
+} from '../../forms/TextInput/TextInputBase';
 import { useOverlayPosition } from '@react-aria/overlays';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import type {
@@ -52,12 +58,7 @@ const CaretDownIcon = () => (
 
 const ComboBoxWrapperElement = tasty({
   styles: {
-    position: 'relative',
-    display: 'grid',
-    zIndex: {
-      '': 'initial',
-      focused: 1,
-    },
+    ...INPUT_WRAPPER_STYLES,
   },
 });
 
@@ -65,20 +66,6 @@ const InputElement = tasty({
   as: 'input',
   styles: {
     ...DEFAULT_INPUT_STYLES,
-    width: '100%',
-    border: {
-      '': true,
-      focused: true,
-      valid: '#success-text.50',
-      invalid: '#danger-text.50',
-      disabled: true,
-    },
-    outline: {
-      '': '#purple-03.0',
-      focused: '#purple-03',
-      'invalid & focused': '#danger.50',
-      'valid & focused': '#success.50',
-    },
   },
 });
 
@@ -114,8 +101,10 @@ export interface CubeComboBoxProps<T>
   extends Omit<CubeSelectBaseProps<T>, 'onOpenChange'>,
     ComboBoxProps<T>,
     CollectionBase<T> {
+  icon?: ReactElement;
   multiLine?: boolean;
   autoComplete?: string;
+  wrapperRef?: RefObject<HTMLDivElement>;
   inputRef?: RefObject<HTMLInputElement>;
   /** The ref for the list box popover. */
   popoverRef?: RefObject<HTMLDivElement>;
@@ -126,6 +115,7 @@ export interface CubeComboBoxProps<T>
   loadingState?: LoadingState;
   filter?: (val: any, str: string) => boolean;
   size?: 'small' | 'default' | 'large' | string;
+  suffixPosition?: 'before' | 'after';
 }
 
 function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
@@ -141,10 +131,12 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
     isRequired,
     necessityIndicator,
     validationState,
+    icon,
     prefix,
     isDisabled,
     multiLine,
     autoFocus,
+    wrapperRef,
     inputRef,
     triggerRef,
     popoverRef,
@@ -167,6 +159,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
     shouldFlip = true,
     requiredMark = true,
     menuTrigger = 'input',
+    suffixPosition = 'before',
     loadingState,
     filter,
     styles,
@@ -176,8 +169,6 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
 
   let isAsync = loadingState != null;
   let { contains } = useFilter({ sensitivity: 'base' });
-  let [suffixWidth, setSuffixWidth] = useState(0);
-  let [prefixWidth, setPrefixWidth] = useState(0);
   let state = useComboBoxState({
     ...props,
     defaultFilter: filter || contains,
@@ -189,6 +180,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
   inputStyles = extractStyles(otherProps, BLOCK_STYLES, inputStyles);
 
   ref = useCombinedRefs(ref);
+  wrapperRef = useCombinedRefs(wrapperRef);
   inputRef = useCombinedRefs(inputRef);
   triggerRef = useCombinedRefs(triggerRef);
   popoverRef = useCombinedRefs(popoverRef);
@@ -222,12 +214,6 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
     offset: overlayOffset,
   });
 
-  if (prefix) {
-    inputStyles.paddingLeft = `${prefixWidth}px`;
-  }
-
-  inputStyles.paddingRight = `${suffixWidth}px`;
-
   let { isFocused, focusProps } = useFocus({ isDisabled });
   let { hoverProps, isHovered } = useHover({ isDisabled });
 
@@ -247,26 +233,60 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
   let isInvalid = validationState === 'invalid';
 
   let validationIcon = isInvalid ? (
-    <WarningOutlined style={{ color: 'var(--danger-color)' }} />
+    <WarningOutlined
+      data-element="ValidationIcon"
+      style={{ color: 'var(--danger-color)' }}
+    />
   ) : (
-    <CheckOutlined style={{ color: 'var(--success-color)' }} />
+    <CheckOutlined
+      data-element="ValidationIcon"
+      style={{ color: 'var(--success-color)' }}
+    />
   );
   let validation = cloneElement(validationIcon);
 
-  let comboBoxWidth = inputRef?.current?.offsetWidth;
+  let comboBoxWidth = wrapperRef?.current?.offsetWidth;
 
-  let mods = {
-    invalid: isInvalid,
-    valid: validationState === 'valid',
-    disabled: isDisabled,
-    hovered: isHovered,
-    focused: isFocused,
-    loading: isLoading,
-  };
+  if (icon) {
+    icon = <div data-element="InputIcon">{icon}</div>;
+
+    if (prefix) {
+      prefix = (
+        <>
+          {icon}
+          {prefix}
+        </>
+      );
+    } else {
+      prefix = icon;
+    }
+  }
+
+  let mods = useMemo(
+    () => ({
+      invalid: isInvalid,
+      valid: validationState === 'valid',
+      disabled: isDisabled,
+      hovered: isHovered,
+      focused: isFocused,
+      loading: isLoading,
+      prefix: !!prefix,
+      suffix: true,
+    }),
+    [
+      isInvalid,
+      validationState,
+      isDisabled,
+      isHovered,
+      isFocused,
+      isLoading,
+      prefix,
+    ],
+  );
 
   let comboBoxField = (
     <ComboBoxWrapperElement
-      ref={ref}
+      ref={wrapperRef}
       qa={qa || 'ComboBox'}
       {...modAttrs(mods)}
       styles={outerStyles}
@@ -284,28 +304,16 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
         {...modAttrs(mods)}
         data-size={size}
       />
-      {prefix ? (
-        <Prefix
-          onWidthChange={setPrefixWidth}
-          padding="0 1x 0 1.5x"
-          opacity={isDisabled ? '@disabled-opacity' : false}
-          placeItems="center"
-          outerGap={0}
-        >
-          {prefix}
-        </Prefix>
-      ) : null}
-      <Suffix
-        onWidthChange={setSuffixWidth}
-        opacity={isDisabled ? '@disabled-opacity' : false}
-      >
+      {prefix ? <div data-element="Prefix">{prefix}</div> : null}
+      <div data-element="Suffix">
+        {suffixPosition === 'before' ? suffix : null}
         {validationState || isLoading ? (
-          <Space gap={false} padding="0 1x">
+          <>
             {validationState && !isLoading ? validation : null}
-            {isLoading && <LoadingOutlined />}
-          </Space>
+            {isLoading ? <LoadingOutlined /> : null}
+          </>
         ) : null}
-        {suffix}
+        {suffixPosition === 'after' ? suffix : null}
         {!hideTrigger ? (
           <TriggerElement
             qa="ComboBoxTrigger"
@@ -325,7 +333,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
             <CaretDownIcon />
           </TriggerElement>
         ) : null}
-      </Suffix>
+      </div>
       <OverlayWrapper isOpen={state.isOpen && !isDisabled}>
         <ListBoxPopup
           {...listBoxProps}
