@@ -41,9 +41,7 @@ describe('<Notification />', () => {
 
     const notification = screen.getByTestId('notification');
 
-    await userEvent.click(
-      getByTestId(notification, 'notification-close-button'),
-    );
+    await userEvent.click(getByTestId(notification, 'NotificationCloseButton'));
 
     expect(onClose).toBeCalledTimes(1);
   });

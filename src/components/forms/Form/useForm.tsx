@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { dotize } from '../../../tasty';
 import { applyRules } from './validation';
-import { FieldTypes, CubeFieldData, SetFieldsArrType } from './types';
+import { CubeFieldData, FieldTypes, SetFieldsArrType } from './types';
 
 export type CubeFormData<T extends FieldTypes> = {
   [K in keyof T]?: CubeFieldData<K, T[K]>;
@@ -28,7 +28,7 @@ export class CubeFormInstance<
   TFormData extends CubeFormData<T> = CubeFormData<T>,
 > {
   public forceReRender: () => void = () => {};
-  private initialFields = {};
+  private initialFields: Partial<T> = {};
   private fields: TFormData = {} as TFormData;
   public ref = {};
   public isSubmitting = false;
@@ -64,6 +64,7 @@ export class CubeFormInstance<
     touched?: boolean,
     skipRender?: boolean,
     createFields = false,
+    inputOnly = false,
   ) => {
     let flag = false;
 
@@ -85,7 +86,11 @@ export class CubeFormInstance<
 
       flag = true;
 
-      field.value = newData[name];
+      if (!inputOnly) {
+        field.value = newData[name];
+      }
+
+      field.inputValue = newData[name];
 
       if (touched === true) {
         field.touched = touched;
@@ -98,7 +103,7 @@ export class CubeFormInstance<
     if (flag && !skipRender) {
       this.forceReRender();
 
-      if (touched) {
+      if (touched && !inputOnly) {
         this.onValuesChange && this.onValuesChange(this.getFormData());
       }
     }
@@ -138,6 +143,7 @@ export class CubeFormInstance<
     value: T[Name],
     touched = false,
     skipRender = false,
+    inputOnly = false,
   ) {
     const field = this.fields[name];
 
@@ -145,7 +151,11 @@ export class CubeFormInstance<
       return;
     }
 
-    field.value = value;
+    if (!inputOnly) {
+      field.value = value;
+    }
+
+    field.inputValue = value;
 
     if (touched) {
       field.touched = touched;
@@ -157,7 +167,7 @@ export class CubeFormInstance<
       this.forceReRender();
     }
 
-    if (touched) {
+    if (touched && !inputOnly) {
       this.onValuesChange && this.onValuesChange(this.getFormData());
     }
   }
@@ -309,13 +319,20 @@ export class CubeFormInstance<
     name: Name,
     data?: Data,
   ): Data {
-    return {
+    let obj = {
       name,
       validating: false,
       touched: false,
       errors: [],
       ...data,
     } as unknown as Data;
+
+    if (obj) {
+      // condition is here to avoid typing issues
+      obj.inputValue = obj.value;
+    }
+
+    return obj;
   }
 }
 

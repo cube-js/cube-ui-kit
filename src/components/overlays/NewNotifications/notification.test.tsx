@@ -13,7 +13,7 @@ describe('<Notification />', () => {
   it('should unmount component by default', () => {
     const { getByTestId, rerender } = renderWithRoot(<TestComponent />);
 
-    const notification = getByTestId('floating-notification');
+    const notification = getByTestId('FloatingNotification');
 
     rerender(
       <TestComponent disableRemoveOnUnmount renderNotification={false} />,
@@ -27,7 +27,7 @@ describe('<Notification />', () => {
       <TestComponent disableRemoveOnUnmount />,
     );
 
-    const notification = getByTestId('floating-notification');
+    const notification = getByTestId('FloatingNotification');
 
     rerender(
       <TestComponent disableRemoveOnUnmount renderNotification={false} />,
