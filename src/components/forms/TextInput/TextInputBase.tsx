@@ -42,70 +42,74 @@ const ADD_STYLES = {
   placeItems: 'center',
   flow: 'column',
   gap: 0,
-  cursor: 'text',
+  cursor: 'inherit',
   opacity: {
     '': 1,
     disabled: '@disabled-opacity',
   },
 };
 
-const InputWrapperElement = tasty({
-  styles: {
+export const INPUT_WRAPPER_STYLES: Styles = {
+  display: 'grid',
+  position: 'relative',
+  gridAreas: '"prefix input suffix"',
+  gridColumns: 'auto 1fr auto',
+  placeItems: 'center stretch',
+  border: {
+    '': true,
+    focused: true,
+    valid: '#success-text.50',
+    invalid: '#danger-text.50',
+    disabled: true,
+  },
+  outline: {
+    '': '#purple-03.0',
+    focused: '#purple-03',
+    'invalid & focused': '#danger.50',
+    'valid & focused': '#success.50',
+  },
+  radius: true,
+  cursor: 'text',
+  color: {
+    '': '#dark.85',
+    focused: '#dark.85',
+    invalid: '#danger-text',
+    disabled: '#dark.30',
+  },
+
+  Prefix: {
+    ...ADD_STYLES,
+    gridArea: 'prefix',
+  },
+
+  Suffix: {
+    ...ADD_STYLES,
+    gridArea: 'suffix',
+  },
+
+  State: {
+    display: 'flex',
+  },
+
+  InputIcon: {
     display: 'grid',
-    position: 'relative',
-    gridAreas: '"prefix input suffix"',
-    gridColumns: 'auto 1fr auto',
-    border: {
-      '': true,
-      focused: true,
-      valid: '#success-text.50',
-      invalid: '#danger-text.50',
-      disabled: true,
-    },
-    outline: {
-      '': '#purple-03.0',
-      focused: '#purple-03',
-      'invalid & focused': '#danger.50',
-      'valid & focused': '#success.50',
-    },
-    radius: true,
-    color: {
-      '': '#dark.85',
-      focused: '#dark.85',
-      invalid: '#danger-text',
-      disabled: '#dark.30',
-    },
+    placeItems: 'center',
+    width: 'min 4x',
+    color: 'inherit',
+  },
 
-    Prefix: {
-      ...ADD_STYLES,
-      gridArea: 'prefix',
-    },
-
-    Suffix: {
-      ...ADD_STYLES,
-      gridArea: 'suffix',
-    },
-
-    State: {
-      display: 'flex',
-    },
-
-    InputIcon: {
-      display: 'grid',
-      placeItems: 'center',
-      width: 'min 4x',
-      color: 'inherit',
-    },
-
-    ValidationIcon: {
-      display: 'grid',
-      placeItems: 'center',
-      width: {
-        '': 'min 4x',
-        suffix: 'min 3x',
-      },
+  ValidationIcon: {
+    display: 'grid',
+    placeItems: 'center',
+    width: {
+      '': 'min 4x',
+      suffix: 'min 3x',
     },
   },
+};
+
+const InputWrapperElement = tasty({
+  styles: INPUT_WRAPPER_STYLES,
 });
 
 const STYLE_LIST = [...POSITION_STYLES, ...DIMENSION_STYLES];

@@ -7,8 +7,10 @@ import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import {
   cloneElement,
   forwardRef,
+  ReactElement,
   ReactNode,
   RefObject,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -45,6 +47,11 @@ import { DOMRef } from '@react-types/shared';
 import { FormFieldProps } from '../../../shared';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
 import styled from 'styled-components';
+import {
+  DEFAULT_INPUT_STYLES,
+  INPUT_WRAPPER_STYLES,
+} from '../../forms/TextInput/TextInputBase';
+import { CubeButtonProps, provideButtonStyles } from '../../actions';
 
 const CaretDownIcon = () => (
   <svg
@@ -67,11 +74,36 @@ const SelectWrapperElement = tasty({
     position: 'relative',
     radius: true,
     fill: '#white',
-    color: {
-      '': '#dark.85',
-      invalid: '#danger-text',
-      focused: '#dark.85',
-      disabled: '#dark.3',
+
+    Value: {
+      ...DEFAULT_INPUT_STYLES,
+      color: 'inherit',
+      opacity: {
+        '': 1,
+        placeholder: '.6',
+      },
+      textAlign: 'left',
+      fill: '#clear',
+    },
+
+    CaretIcon: {
+      display: 'grid',
+      placeItems: 'center',
+      width: 'min 4x',
+      cursor: 'pointer',
+    },
+
+    ButtonIcon: {
+      display: 'grid',
+      placeItems: 'center',
+      width: 'min 4x',
+      color: 'inherit',
+      fontSize: {
+        '': 'initial',
+        '[data-size="small"]': '14px',
+        '[data-size="medium"]': '16px',
+        '[data-size="large"]': '18px',
+      },
     },
   },
 });
@@ -80,48 +112,15 @@ const SelectElement = tasty({
   as: 'button',
   qa: 'Button',
   styles: {
-    display: 'grid',
-    flow: 'column',
-    gridColumns: {
-      '': '1fr auto',
-      'with-prefix': 'auto 1fr auto',
-    },
-    placeItems: 'center stretch',
-    placeContent: 'center stretch',
-    gap: '1x',
-    padding: {
-      '': '(1.25x - 1bw) 1x (1.25x - 1bw) (1.5x - 1bw)',
-      '[data-size="small"]': '(.75x - 1px) 1x (.75x - 1px)  (1.5x - 1px)',
-    },
+    ...INPUT_WRAPPER_STYLES,
+    cursor: 'pointer',
+    padding: '0',
     border: {
       '': true,
-      invalid: '#danger-text.50',
       valid: '#success-text.50',
-      focused: true,
-    },
-    radius: '@context-radius',
-    reset: 'button',
-    margin: 0,
-    preset: 'default',
-    outline: {
-      '': '#purple-03.0',
-      focused: '#purple-03',
-    },
-    color: 'inherit',
-    fill: {
-      '': '#dark.0',
-      'hovered | disabled': '#dark.04',
-    },
-    fontWeight: 400,
-    textAlign: 'left',
-    cursor: 'pointer',
-    transition: 'theme',
-
-    Value: {
-      color: {
-        '': 'inherit',
-        placeholder: '#dark.4',
-      },
+      invalid: '#danger-text.50',
+      '[data-type="clear"]': '#clear',
+      disabled: true,
     },
   },
 });
@@ -186,6 +185,7 @@ export interface CubeSelectBaseProps<T>
     FormFieldProps,
     BlockStyleProps,
     AriaSelectProps<T> {
+  icon?: ReactElement;
   prefix?: ReactNode;
   suffix?: ReactNode;
   triggerRef?: RefObject<HTMLButtonElement>;
@@ -201,6 +201,8 @@ export interface CubeSelectBaseProps<T>
   direction?: 'top' | 'bottom';
   shouldFlip?: boolean;
   inputProps?: Props;
+  type?: CubeButtonProps['type'];
+  suffixPosition?: 'before' | 'after';
 }
 
 export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
@@ -221,6 +223,7 @@ function Select<T extends object>(
     qa,
     label,
     extra,
+    icon,
     labelPosition = 'top',
     labelStyles,
     isRequired,
@@ -250,13 +253,25 @@ function Select<T extends object>(
     tooltip,
     size,
     styles,
+    type = 'neutral',
+    theme,
     labelSuffix,
+    suffixPosition = 'before',
     ...otherProps
   } = props;
   let state = useSelectState(props);
   const outerStyles = extractStyles(otherProps, OUTER_STYLES, styles);
 
-  inputStyles = extractStyles(otherProps, BLOCK_STYLES, inputStyles);
+  inputStyles = extractStyles(otherProps, BLOCK_STYLES, {
+    ...(() => {
+      let styles = provideButtonStyles({ type, theme });
+
+      delete styles['border'];
+
+      return styles;
+    })(),
+    ...inputStyles,
+  });
 
   ref = useCombinedRefs(ref);
   triggerRef = useCombinedRefs(triggerRef);
@@ -297,21 +312,52 @@ function Select<T extends object>(
 
   let triggerWidth = triggerRef?.current?.offsetWidth;
 
-  let mods = {
-    invalid: isInvalid,
-    valid: validationState === 'valid',
-    disabled: isDisabled,
-    loading: isLoading,
-    hovered: isHovered,
-    focused: isFocused,
-    placeholder: !!placeholder?.trim() && !state.selectedItem,
-    'with-prefix': !!prefix,
-  };
+  if (icon) {
+    icon = <div data-element="ButtonIcon">{icon}</div>;
+
+    if (prefix) {
+      prefix = (
+        <>
+          {icon}
+          {prefix}
+        </>
+      );
+    } else {
+      prefix = icon;
+    }
+  }
+
+  const showPlaceholder = !!placeholder?.trim() && !state.selectedItem;
+  const hasSuffix = validationState || isLoading || !!suffix;
+
+  const modifiers = useMemo(
+    () => ({
+      invalid: isInvalid,
+      valid: validationState === 'valid',
+      disabled: isDisabled,
+      loading: isLoading,
+      hovered: isHovered,
+      focused: isFocused,
+      placeholder: showPlaceholder,
+      prefix: !!prefix,
+      suffix: hasSuffix,
+    }),
+    [
+      validationState,
+      isDisabled,
+      isLoading,
+      isHovered,
+      isFocused,
+      showPlaceholder,
+      prefix,
+      hasSuffix,
+    ],
+  );
 
   let selectField = (
     <SelectWrapperElement
       qa={qa || 'Select'}
-      mods={mods}
+      mods={modifiers}
       styles={outerStyles}
       data-size={size}
     >
@@ -326,22 +372,24 @@ function Select<T extends object>(
         ref={triggerRef}
         styles={inputStyles}
         data-size={size}
-        mods={mods}
+        data-type={type || 'neutral'}
+        mods={modifiers}
       >
-        {prefix}
+        {prefix ? <div data-element="Prefix">{prefix}</div> : null}
         <span data-element="Value" {...valueProps}>
           {state.selectedItem
             ? state.selectedItem.rendered
             : placeholder || <>&nbsp;</>}
         </span>
-        {(validationState || isLoading || suffix) && (
-          <div>
-            {validationState && !isLoading ? validation : null}
-            {isLoading && <LoadingOutlined />}
-            {suffix}
+        <div data-element="Suffix">
+          {suffixPosition === 'before' ? suffix : null}
+          {validationState && !isLoading ? validation : null}
+          {isLoading && <LoadingOutlined />}
+          {suffixPosition === 'after' ? suffix : null}
+          <div data-element="CaretIcon">
+            <CaretDownIcon />
           </div>
-        )}
-        <CaretDownIcon />
+        </div>
       </SelectElement>
       <OverlayWrapper isOpen={state.isOpen && !isDisabled}>
         <ListBoxPopup

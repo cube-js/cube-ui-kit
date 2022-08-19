@@ -22,9 +22,8 @@ export interface CubeButtonProps extends CubeActionProps {
   size?: 'small' | 'medium' | 'large' | (string & {});
 }
 
-export function provideStyles({ type, theme }) {
+export function provideButtonStyles({ type, theme }) {
   return {
-    ...DEFAULT_STYLES,
     ...(theme === 'danger' ? DANGER_STYLES_BY_TYPE : DEFAULT_STYLES_BY_TYPE)[
       type ?? 'secondary'
     ],
@@ -227,7 +226,7 @@ const DANGER_STYLES_BY_TYPE: { [key: string]: Styles } = {
   },
 };
 
-const DEFAULT_STYLES = {
+export const DEFAULT_BUTTON_STYLES = {
   display: 'inline-grid',
   placeItems: 'center stretch',
   placeContent: 'center',
@@ -315,7 +314,8 @@ export const Button = forwardRef(
 
     styles = useMemo(
       () => ({
-        ...provideStyles({ type, theme }),
+        ...DEFAULT_BUTTON_STYLES,
+        ...provideButtonStyles({ type, theme }),
         ...styles,
       }),
       [type, theme, styles],
