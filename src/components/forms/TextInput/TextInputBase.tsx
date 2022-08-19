@@ -80,6 +80,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
     '': 'initial',
     focused: 1,
   },
+  boxSizing: 'border-box',
 
   Prefix: {
     ...ADD_STYLES,
