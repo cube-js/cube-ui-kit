@@ -73,7 +73,16 @@ const SelectWrapperElement = tasty({
     display: 'grid',
     position: 'relative',
     radius: true,
-    fill: '#white',
+    fill: {
+      '': '#white',
+      disabled: '#dark.04',
+    },
+    color: {
+      '': '#dark.85',
+      focused: '#dark.85',
+      invalid: '#danger-text',
+      disabled: '#dark.30',
+    },
 
     Value: {
       ...DEFAULT_INPUT_STYLES,
@@ -266,6 +275,10 @@ function Select<T extends object>(
       let styles = provideButtonStyles({ type, theme });
 
       delete styles['border'];
+
+      if (isDisabled || validationState === 'invalid') {
+        styles.color = 'inherit';
+      }
 
       return styles;
     })(),

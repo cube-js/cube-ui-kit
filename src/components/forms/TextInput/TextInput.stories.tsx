@@ -28,7 +28,7 @@ const Template: StoryFn<CubeTextInputProps & { icon?: boolean }> = ({
   ...props
 }) => (
   <TextInput
-    icon={icon ? <DollarCircleOutlined /> : null}
+    icon={icon ? <DollarCircleOutlined /> : undefined}
     {...props}
     onChange={(query) => console.log('change', query)}
   />
@@ -48,3 +48,6 @@ Password.args = { icon: true, type: 'password' };
 
 export const Invalid = Template.bind({});
 Invalid.args = { validationState: 'invalid' };
+
+export const Disabled = Template.bind({});
+Disabled.args = { isDisabled: true };

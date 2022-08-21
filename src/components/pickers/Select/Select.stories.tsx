@@ -64,10 +64,13 @@ export const Clear = Template.bind({});
 Clear.args = { type: 'clear', placeholder: 'clear' };
 
 export const Invalid = Template.bind({});
-Invalid.args = { validationState: 'invalid' };
+Invalid.args = { selectedKey: 'yellow', validationState: 'invalid' };
 
-export const Success = Template.bind({});
-Success.args = { validationState: 'valid' };
+export const Valid = Template.bind({});
+Valid.args = { selectedKey: 'yellow', validationState: 'valid' };
+
+export const Disabled = Template.bind({});
+Disabled.args = { selectedKey: 'yellow', isDisabled: true };
 
 export const WithPlaceholder = Template.bind({});
 WithPlaceholder.args = { placeholder: 'Enter a value' };

@@ -55,6 +55,10 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   gridAreas: '"prefix input suffix"',
   gridColumns: 'auto 1fr auto',
   placeItems: 'stretch',
+  fill: {
+    '': '#white',
+    disabled: '#dark.04',
+  },
   border: {
     '': true,
     focused: true,
@@ -136,10 +140,7 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   width: 'initial 100% initial',
   height: 'initial initial initial',
   color: 'inherit',
-  fill: {
-    '': '#white',
-    disabled: '#dark.04',
-  },
+  fill: '#clear',
   border: 0,
   transition: 'theme',
   radius: true,
@@ -331,6 +332,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
       loadable: !!loadingIndicator,
       focused: isFocused,
       hovered: isHovered,
+      disabled: isDisabled,
       multiline: multiLine,
       prefix: !!prefix,
       suffix: !!suffix,
@@ -342,6 +344,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
       validationState,
       loadingIndicator,
       isFocused,
+      isDisabled,
       isHovered,
       multiLine,
       prefix,

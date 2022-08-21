@@ -54,7 +54,10 @@ export const WithIcon = Template.bind({});
 WithIcon.args = { icon: true };
 
 export const Invalid = Template.bind({});
-Invalid.args = { validationState: 'invalid' };
+Invalid.args = { selectedKey: 'yellow', validationState: 'invalid' };
 
 export const Valid = Template.bind({});
-Valid.args = { validationState: 'valid' };
+Valid.args = { selectedKey: 'yellow', validationState: 'valid' };
+
+export const Disabled = Template.bind({});
+Disabled.args = { selectedKey: 'yellow', isDisabled: true };
