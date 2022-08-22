@@ -1,6 +1,10 @@
 import { TextInput, CubeTextInputProps } from './TextInput';
 import { DollarCircleOutlined } from '@ant-design/icons';
-import { TEXT_VALUE_ARG } from '../../../stories/FormFieldArgs';
+import {
+  ICON_ARG,
+  TEXT_VALUE_ARG,
+  VALIDATION_STATE_ARG,
+} from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { StoryFn } from '@storybook/react';
 
@@ -14,6 +18,8 @@ export default {
   },
   argTypes: {
     ...TEXT_VALUE_ARG,
+    ...ICON_ARG,
+    ...VALIDATION_STATE_ARG,
   },
 };
 
@@ -22,7 +28,7 @@ const Template: StoryFn<CubeTextInputProps & { icon?: boolean }> = ({
   ...props
 }) => (
   <TextInput
-    prefix={icon ? <DollarCircleOutlined /> : null}
+    icon={icon ? <DollarCircleOutlined /> : undefined}
     {...props}
     onChange={(query) => console.log('change', query)}
   />
@@ -39,3 +45,9 @@ WithIcon.args = { icon: true };
 
 export const Password = Template.bind({});
 Password.args = { icon: true, type: 'password' };
+
+export const Invalid = Template.bind({});
+Invalid.args = { validationState: 'invalid' };
+
+export const Disabled = Template.bind({});
+Disabled.args = { isDisabled: true };

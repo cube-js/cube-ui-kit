@@ -307,3 +307,17 @@ export const SELECTED_KEY_ARG = {
     },
   },
 };
+
+export const ICON_ARG = {
+  icon: {
+    // defaultValue: true,
+    description: 'Whether to show an icon on the element',
+    control: {
+      type: 'boolean',
+    },
+    table: {
+      type: { summary: 'boolean' },
+      defaultValue: { summary: true },
+    },
+  },
+};

@@ -34,7 +34,7 @@ const Template = ({
 }) => {
   return (
     <Select
-      prefix={icon ? <DollarCircleOutlined /> : null}
+      icon={icon ? <DollarCircleOutlined /> : undefined}
       label={label}
       validationState={validationState}
       labelPosition={labelPosition}
@@ -56,6 +56,21 @@ const Template = ({
 
 export const Default = Template.bind({});
 Default.args = {};
+
+export const Primary = Template.bind({});
+Primary.args = { type: 'primary', placeholder: 'primary' };
+
+export const Clear = Template.bind({});
+Clear.args = { type: 'clear', placeholder: 'clear' };
+
+export const Invalid = Template.bind({});
+Invalid.args = { selectedKey: 'yellow', validationState: 'invalid' };
+
+export const Valid = Template.bind({});
+Valid.args = { selectedKey: 'yellow', validationState: 'valid' };
+
+export const Disabled = Template.bind({});
+Disabled.args = { selectedKey: 'yellow', isDisabled: true };
 
 export const WithPlaceholder = Template.bind({});
 WithPlaceholder.args = { placeholder: 'Enter a value' };

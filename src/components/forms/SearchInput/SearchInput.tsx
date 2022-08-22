@@ -14,18 +14,29 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { tasty } from '../../../tasty';
 
 export interface CubeSearchInputProps extends CubeTextInputBaseProps {
   /** Whether the search input is clearable using ESC keyboard button or clear button inside the input */
   isClearable?: boolean;
 }
 
+const ClearButton = tasty(Button, {
+  icon: <CloseOutlined />,
+  styles: {
+    radius: 'right (1r - 1bw)',
+    width: '4x',
+    height: 'auto',
+    placeSelf: 'stretch',
+  },
+});
+
 export const SearchInput = forwardRef(
   (props: WithNullableValue<CubeSearchInputProps>, ref) => {
     props = castNullableStringValue(props);
     props = useProviderProps(props);
 
-    let { isClearable, value } = props;
+    let { isClearable, value, validationState } = props;
 
     const localRef = useRef(null);
     const combinedRef = useCombinedRefs(ref, localRef);
@@ -52,23 +63,16 @@ export const SearchInput = forwardRef(
         ref={ref}
         inputRef={inputRef}
         type="search"
-        prefix={<SearchOutlined />}
+        icon={<SearchOutlined />}
         suffixPosition="after"
         suffix={
           isClearable &&
           state.value !== '' &&
           !props.isReadOnly && (
-            <Button
-              type="clear"
+            <ClearButton
+              type={validationState === 'invalid' ? 'clear' : 'neutral'}
+              theme={validationState === 'invalid' ? 'danger' : undefined}
               {...ariaToCubeButtonProps(clearButtonProps)}
-              color={{
-                '': '#dark.50',
-                'hovered | pressed': '#purple-text',
-              }}
-              radius="right (1r - 1bw)"
-              padding=".5x 1x"
-              placeSelf="stretch"
-              icon={<CloseOutlined />}
             />
           )
         }

@@ -29,3 +29,8 @@ Clearable.args = {
 
 export const WithDefaultValue = Template.bind({});
 WithDefaultValue.args = { value: 'Back to the Future' };
+
+export const Invalid = Template.bind({});
+Invalid.args = {
+  validationState: 'invalid',
+};

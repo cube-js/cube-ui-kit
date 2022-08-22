@@ -22,9 +22,8 @@ export interface CubeButtonProps extends CubeActionProps {
   size?: 'small' | 'medium' | 'large' | (string & {});
 }
 
-export function provideStyles({ type, theme }) {
+export function provideButtonStyles({ type, theme }) {
   return {
-    ...DEFAULT_STYLES,
     ...(theme === 'danger' ? DANGER_STYLES_BY_TYPE : DEFAULT_STYLES_BY_TYPE)[
       type ?? 'secondary'
     ],
@@ -227,7 +226,7 @@ const DANGER_STYLES_BY_TYPE: { [key: string]: Styles } = {
   },
 };
 
-const DEFAULT_STYLES = {
+export const DEFAULT_BUTTON_STYLES = {
   display: 'inline-grid',
   placeItems: 'center stretch',
   placeContent: 'center',
@@ -242,10 +241,10 @@ const DEFAULT_STYLES = {
   textDecoration: 'none',
   transition: 'theme',
   padding: {
-    '': '(1.25x - 1px) (2x - 1px)',
-    '[data-size="small"]': '(.75x - 1px) (1.5x - 1px)',
-    '[data-size="medium"]': '(1.25x - 1px) (2x - 1px)',
-    '[data-size="large"]': '(1.5x - 1px) (2.5x - 1px)',
+    '': '(1.25x - 1bw) (2x - 1bw)',
+    '[data-size="small"]': '(.75x - 1bw) (1.5x - 1bw)',
+    '[data-size="medium"]': '(1.25x - 1bw) (2x - 1bw)',
+    '[data-size="large"]': '(1.5x - 1bw) (2.5x - 1bw)',
     'single-icon-only': 0,
   },
   width: {
@@ -266,7 +265,7 @@ const DEFAULT_STYLES = {
       'display .2s steps(1, start), margin .2s linear, opacity .2s linear',
   },
 
-  Icon: {
+  ButtonIcon: {
     fontSize: {
       '': 'initial',
       '[data-size="small"]': '14px',
@@ -315,7 +314,8 @@ export const Button = forwardRef(
 
     styles = useMemo(
       () => ({
-        ...provideStyles({ type, theme }),
+        ...DEFAULT_BUTTON_STYLES,
+        ...provideButtonStyles({ type, theme }),
         ...styles,
       }),
       [type, theme, styles],
@@ -323,13 +323,13 @@ export const Button = forwardRef(
 
     if (icon) {
       icon = cloneElement(icon, {
-        'data-element': 'Icon',
+        'data-element': 'ButtonIcon',
       });
     }
 
     if (rightIcon) {
       rightIcon = cloneElement(rightIcon, {
-        'data-element': 'Icon',
+        'data-element': 'ButtonIcon',
       });
     }
 

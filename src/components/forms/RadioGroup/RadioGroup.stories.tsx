@@ -47,6 +47,9 @@ const RadioButtonsTemplate: Story<CubeRadioGroupProps> = (args) => (
 export const Default = Template.bind({});
 Default.args = {};
 
+export const Invalid = Template.bind({});
+Invalid.args = { validationState: 'invalid' };
+
 export const RadioButtons = RadioButtonsTemplate.bind({});
 
 export const RadioGroupHorizontalOrientation = Template.bind({});

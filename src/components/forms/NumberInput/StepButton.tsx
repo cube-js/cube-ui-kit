@@ -3,7 +3,7 @@ import { CaretDownOutlined, CaretUpOutlined } from '@ant-design/icons';
 import { Styles } from '../../../tasty';
 
 const STEP_BUTTON_STYLES: Styles = {
-  padding: '0 .5x',
+  width: '4x',
   radius: {
     '': '0 (1r - 1bw) 0 0',
     down: '0 0 (1r - 1bw) 0',

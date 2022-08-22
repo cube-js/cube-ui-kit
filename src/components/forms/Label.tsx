@@ -66,7 +66,6 @@ export const LABEL_STYLES: Styles = {
   color: {
     '': '#dark',
     invalid: '#danger-text',
-    disabled: '#dark.30',
   },
   whiteSpace: 'nowrap',
   width: {
