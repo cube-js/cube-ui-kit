@@ -1,5 +1,6 @@
 import { useDOMRef } from '@react-spectrum/utils';
 import { forwardRef, MouseEventHandler } from 'react';
+
 import { useProviderProps } from '../../provider';
 import {
   BaseProps,
@@ -135,7 +136,6 @@ function Label(props: CubeLabelProps, ref) {
   return (
     <LabelElement
       {...filterBaseProps(otherProps)}
-      onClick={onClick}
       ref={domRef}
       styles={styles}
       htmlFor={labelFor || htmlFor}
@@ -145,6 +145,7 @@ function Label(props: CubeLabelProps, ref) {
         invalid: validationState === 'invalid',
         valid: validationState === 'valid',
       }}
+      onClick={onClick}
     >
       {typeof children !== 'string' ? (
         children

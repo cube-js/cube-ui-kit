@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useRef } from 'react';
 import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
 import { useSearchFieldState } from '@react-stately/searchfield';
 import { useSearchField } from '@react-aria/searchfield';
+
 import { useCombinedRefs } from '../../../utils/react';
 import {
   CubeTextInputBaseProps,
@@ -57,10 +58,9 @@ export const SearchInput = forwardRef(function SearchInput(
 
   return (
     <TextInputBase
-      inputProps={inputProps}
       ref={ref}
+      inputProps={inputProps}
       inputRef={inputRef}
-
       type="search"
       icon={<SearchOutlined />}
       suffixPosition="after"
@@ -70,9 +70,8 @@ export const SearchInput = forwardRef(function SearchInput(
         !props.isReadOnly && (
           <ClearButton
             type={validationState === 'invalid' ? 'clear' : 'neutral'}
-              theme={validationState === 'invalid' ? 'danger' : undefined}
+            theme={validationState === 'invalid' ? 'danger' : undefined}
             {...ariaToCubeButtonProps(clearButtonProps)}
-
           />
         )
       }

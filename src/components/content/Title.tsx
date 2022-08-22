@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { CubeTextProps, TEXT_PROP_MAP } from './Text';
+
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -12,6 +12,8 @@ import {
   TEXT_STYLES,
 } from '../../tasty';
 import { useSlotProps } from '../../utils/react';
+
+import { CubeTextProps, TEXT_PROP_MAP } from './Text';
 
 const STYLE_LIST = [...TEXT_STYLES, ...CONTAINER_STYLES];
 
@@ -82,8 +84,8 @@ const _Title = forwardRef(function Title(
       }}
       inline={inline}
       {...filterBaseProps(propsWithSlots, { eventProps: true })}
-      styles={styles}
       ref={ref}
+      styles={styles}
     />
   );
 });

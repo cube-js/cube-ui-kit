@@ -1,6 +1,7 @@
-import { Checkbox } from './Checkbox';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { MULTIPLE_VALUE_ARG } from '../../../stories/FormFieldArgs';
+
+import { Checkbox } from './Checkbox';
 
 export default {
   title: 'Forms/CheckboxGroup',

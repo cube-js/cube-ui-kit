@@ -13,10 +13,13 @@ import {
 import { useComboBoxState } from '@react-stately/combobox';
 import { useComboBox } from '@react-aria/combobox';
 import { useButton } from '@react-aria/button';
-import { useFormProps } from '../../forms/Form';
 import { useHover } from '@react-aria/interactions';
-import { useProviderProps } from '../../../provider';
 import { useFilter } from '@react-aria/i18n';
+import { Item } from '@react-stately/collections';
+import { useOverlayPosition } from '@react-aria/overlays';
+
+import { useFormProps } from '../../forms/Form';
+import { useProviderProps } from '../../../provider';
 import {
   BLOCK_STYLES,
   extractStyles,
@@ -27,13 +30,12 @@ import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
 import { FieldWrapper } from '../../forms/FieldWrapper';
 import { CubeSelectBaseProps, ListBoxPopup } from '../Select/Select';
-import { Item } from '@react-stately/collections';
 import {
   DEFAULT_INPUT_STYLES,
   INPUT_WRAPPER_STYLES,
 } from '../../forms/TextInput/TextInputBase';
-import { useOverlayPosition } from '@react-aria/overlays';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
+
 import type {
   CollectionBase,
   KeyboardDelegate,
@@ -327,9 +329,9 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
               disabled: isDisabled,
               loading: isLoading,
             })}
+            ref={triggerRef}
             data-size={size}
             isDisabled={isDisabled}
-            ref={triggerRef}
             styles={triggerStyles}
           >
             <CaretDownIcon />
@@ -339,10 +341,10 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
       <OverlayWrapper isOpen={state.isOpen && !isDisabled}>
         <ListBoxPopup
           {...listBoxProps}
+          shouldUseVirtualFocus
           listBoxRef={listBoxRef}
           popoverRef={popoverRef}
           overlayProps={overlayProps}
-          shouldUseVirtualFocus
           placement={placement}
           state={state}
           listBoxStyles={listBoxStyles}

@@ -1,8 +1,10 @@
 import { Key, useEffect } from 'react';
-import { useToastsApi } from './use-toasts-api';
-import { CubeToastsApiProps } from './types';
+
 import { useEvent, useSyncRef } from '../../../_internal';
 import { useId } from '../../../utils/react/useId';
+
+import { useToastsApi } from './use-toasts-api';
+import { CubeToastsApiProps } from './types';
 
 export type ToastProps = {
   /**

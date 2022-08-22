@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -36,8 +37,8 @@ export const Header = forwardRef(function Header(props: CubeHeaderProps, ref) {
   return (
     <HeaderElement
       {...filterBaseProps(props, { eventProps: true })}
-      styles={styles}
       ref={ref}
+      styles={styles}
     />
   );
 });

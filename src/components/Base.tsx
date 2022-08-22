@@ -1,5 +1,6 @@
 import { forwardRef, useContext } from 'react';
 import styled from 'styled-components';
+
 import {
   AllBaseProps,
   BreakpointsContext,
@@ -78,9 +79,9 @@ function Base<K extends keyof HTMLElementTagNameMap>(
       data-qa={qa}
       data-qaval={qaVal}
       {...props}
+      ref={ref}
       hidden={isHidden}
       disabled={isDisabled}
-      ref={ref}
       css={css}
     />
   );

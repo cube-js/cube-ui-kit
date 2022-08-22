@@ -1,4 +1,5 @@
 import { useContext, useEffect } from 'react';
+
 import { useEvent } from '../../../../_internal';
 import { CubeNotifyApiPropsWithID } from '../types';
 import { NotificationsContext } from '../NotificationsContext';

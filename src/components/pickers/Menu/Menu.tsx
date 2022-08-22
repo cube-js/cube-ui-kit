@@ -8,7 +8,6 @@ import { useMenu } from '@react-aria/menu';
 import { useSyncRef } from '@react-aria/utils';
 import { useDOMRef } from '@react-spectrum/utils';
 import { useTreeState } from '@react-stately/tree';
-import type { AriaMenuProps } from '@react-types/menu';
 
 import {
   BaseProps,
@@ -17,12 +16,15 @@ import {
   extractStyles,
   Styles,
 } from '../../../tasty';
+import { mergeProps } from '../../../utils/react';
+
 import { StyledMenu, StyledMenuHeader } from './styled';
 import { MenuItem } from './MenuItem';
 import { MenuSection } from './MenuSection';
 import { MenuButtonProps, MenuSelectionType } from './MenuButton';
 import { useMenuContext } from './context';
-import { mergeProps } from '../../../utils/react';
+
+import type { AriaMenuProps } from '@react-types/menu';
 
 export interface CubeMenuProps<T>
   extends ContainerStyleProps,

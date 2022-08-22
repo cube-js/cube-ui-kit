@@ -1,8 +1,10 @@
 import { forwardRef, useState } from 'react';
+import styled from 'styled-components';
+import { FocusableRef } from '@react-types/shared';
+
 import { Button } from '../../actions';
 import { Block } from '../../Block';
 import { Text } from '../../content/Text';
-import styled from 'styled-components';
 import {
   BaseProps,
   extractStyles,
@@ -11,7 +13,6 @@ import {
   PositionStyleProps,
   Styles,
 } from '../../../tasty';
-import { FocusableRef } from '@react-types/shared';
 
 const DEFAULT_STYLES: Styles = {
   display: 'inline-flex',
@@ -95,8 +96,8 @@ export const Base64Upload = styled(
       <>
         <Button
           {...filterBaseProps(props, { eventProps: true })}
-          styles={styles}
           ref={ref}
+          styles={styles}
         >
           <Block
             radius="round"
@@ -110,8 +111,8 @@ export const Base64Upload = styled(
           <input
             type="file"
             name="base64"
-            onInput={onInputFile}
             accept=".json"
+            onInput={onInputFile}
           />
         </Button>
         {error && <Text.Danger color="danger">{error}</Text.Danger>}

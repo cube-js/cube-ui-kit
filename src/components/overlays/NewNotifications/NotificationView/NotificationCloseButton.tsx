@@ -1,4 +1,5 @@
 import { memo } from 'react';
+
 import { Button } from '../../../actions';
 import { tasty } from '../../../../tasty';
 import { Cross } from '../../../../icons';
@@ -39,9 +40,9 @@ export const NotificationCloseButton = memo(function NotificationCloseButton(
       qa="NotificationCloseButton"
       type="neutral"
       mods={{ show: isHovered || isFocused }}
-      onPress={onPress}
       icon={<Cross />}
       label="Close the notification"
+      onPress={onPress}
     />
   );
 });

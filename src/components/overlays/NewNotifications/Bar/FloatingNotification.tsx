@@ -1,4 +1,5 @@
 import { Key, KeyboardEventHandler, memo, useRef } from 'react';
+
 import { useChainedCallback, useEvent, useTimer } from '../../../../_internal';
 import { tasty } from '../../../../tasty';
 import { CubeNotifyApiPropsWithID } from '../types';
@@ -79,9 +80,9 @@ export const FloatingNotification = memo(function FloatingNotification(
           role: 'status',
           'aria-atomic': 'true',
         }}
+        qa="FloatingNotification"
         onDismiss={chainedOnDismiss}
         onClose={onCloseEvent}
-        qa="FloatingNotification"
       />
     </NotificationContainer>
   );

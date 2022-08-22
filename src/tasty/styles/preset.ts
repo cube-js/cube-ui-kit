@@ -1,4 +1,5 @@
 import { parseStyle } from '../utils/styles';
+
 import { Styles } from './types';
 
 function setCSSValue(

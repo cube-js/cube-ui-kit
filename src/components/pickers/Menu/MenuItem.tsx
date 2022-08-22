@@ -4,7 +4,9 @@ import { Node } from '@react-types/shared';
 import { TreeState } from '@react-stately/tree';
 import { FocusRing } from '@react-aria/focus';
 import { useMenuItem } from '@react-aria/menu';
+
 import { mergeProps, ClearSlots, SlotProvider } from '../../../utils/react';
+
 import { useMenuContext } from './context';
 import { StyledMenuItem } from './styled';
 import { MenuButton, MenuSelectionType } from './MenuButton';

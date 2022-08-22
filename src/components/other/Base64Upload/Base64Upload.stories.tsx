@@ -1,5 +1,6 @@
-import { Base64Upload } from './Base64Upload';
 import { baseProps } from '../../../stories/lists/baseProps';
+
+import { Base64Upload } from './Base64Upload';
 
 export default {
   title: 'Other/Base64Upload',

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Block, Element, Grid, LoadingAnimation, Space, Title } from './index';
+
 import { Button } from './components/actions';
 // import ResponsiveProvider from './providers/Responsive';
 // import { Modal } from './components/organisms/Modal/Modal';
@@ -13,6 +13,8 @@ import { Field, Form, useForm } from './components/forms/Form';
 import { TextInput } from './components/forms/TextInput/TextInput';
 import { Provider } from './provider';
 import { GridProvider } from './components/GridProvider';
+
+import { Block, Element, Grid, LoadingAnimation, Space, Title } from './index';
 
 // window.notification = notification;
 //
@@ -92,7 +94,6 @@ function App() {
       {/*  /!*</Space>*!/*/}
       {/*</Modal>*/}
       <Button
-        onPress={() => setInProp(!inProp)}
         type="clear"
         styles={{
           transition: 'shadow 0.2s ease-in-out',
@@ -101,6 +102,7 @@ function App() {
             'hovered, focused, pressed': '#purple-text',
           },
         }}
+        onPress={() => setInProp(!inProp)}
       >
         Clear
       </Button>
@@ -119,8 +121,8 @@ function App() {
           <StyleProvider Button={() => ({ padding: '2x' })}>
             <Title styleName="BigTitle">Test</Title>
             <Button
-              onClick={(e) => console.log(e)}
               styles={{ padding: '2x', border: '2bw #dark.50' }}
+              onClick={(e) => console.log(e)}
             >
               Default
             </Button>

@@ -1,12 +1,14 @@
+import { AriaDialogProps } from '@react-types/dialog';
+import { ReactNode } from 'react';
+
 import {
   BaseProps,
   BaseStyleProps,
   BlockStyleProps,
   DimensionStyleProps,
 } from '../../../tasty';
-import { AriaDialogProps } from '@react-types/dialog';
-import { ReactNode } from 'react';
 import { CubeDialogContainerProps } from '../Dialog';
+
 import { CubeAlertDialogProps } from './AlertDialog';
 
 export interface Dialog {

@@ -1,5 +1,6 @@
 import { forwardRef, useEffect } from 'react';
 import Prism from 'prismjs';
+
 import {
   BaseProps,
   CONTAINER_STYLES,

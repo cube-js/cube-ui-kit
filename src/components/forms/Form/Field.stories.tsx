@@ -1,9 +1,11 @@
 import { Meta, Story } from '@storybook/react';
+import { DollarCircleFilled } from '@ant-design/icons';
+
 import { baseProps } from '../../../stories/lists/baseProps';
-import { CubeFieldProps, Field } from './Field';
 import { TextInput } from '../TextInput/TextInput';
 import { Button } from '../../actions';
-import { DollarCircleFilled } from '@ant-design/icons';
+
+import { CubeFieldProps, Field } from './Field';
 
 export default {
   title: 'Forms/Field',

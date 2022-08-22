@@ -1,5 +1,6 @@
 import { useContext } from 'react';
 import invariant from 'tiny-invariant';
+
 import { NotificationsContext } from '../NotificationsContext';
 
 export function useNotificationsApi() {

@@ -1,10 +1,12 @@
-import { mergeProps } from '../../../utils/react';
-import { Overlay } from './Overlay';
 import { forwardRef, HTMLAttributes } from 'react';
 import { useModal, useOverlay } from '@react-aria/overlays';
-import { BaseProps, tasty } from '../../../tasty';
 import { OverlayProps } from '@react-types/overlays';
+
+import { BaseProps, tasty } from '../../../tasty';
+import { mergeProps } from '../../../utils/react';
 import { PlacementAxis } from '../../../shared';
+
+import { Overlay } from './Overlay';
 
 const PopoverElement = tasty({
   role: 'presentation',
@@ -61,17 +63,17 @@ function Popover(props: CubePopoverProps, ref) {
   return (
     <Overlay {...otherProps}>
       <PopoverWrapper
-        qa={qa}
         ref={ref}
+        qa={qa}
         style={style}
         styles={styles}
         placement={placement}
         arrowProps={arrowProps}
-        onClose={onClose}
         shouldCloseOnBlur={shouldCloseOnBlur}
         isKeyboardDismissDisabled={isKeyboardDismissDisabled}
         isNonModal={isNonModal}
         isDismissable={isDismissable}
+        onClose={onClose}
       >
         {children}
       </PopoverWrapper>
@@ -110,8 +112,8 @@ const PopoverWrapper = forwardRef(function PopoverWrapper(
     <PopoverElement
       qa={qa || 'Popover'}
       {...mergeProps(otherProps, overlayProps, modalProps)}
-      styles={styles}
       ref={ref}
+      styles={styles}
       mods={{
         open: isOpen,
       }}

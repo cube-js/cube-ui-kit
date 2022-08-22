@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+
 import {
   BASE_STYLES,
   BaseProps,
@@ -60,8 +61,8 @@ export const Divider = forwardRef(function Divider(
         ...mods,
       }}
       {...filterBaseProps(otherProps, { eventProps: true })}
-      styles={styles}
       ref={ref}
+      styles={styles}
     >
       {children && (
         <>

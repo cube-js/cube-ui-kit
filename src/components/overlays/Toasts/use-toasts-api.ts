@@ -1,8 +1,11 @@
 import { ReactChild, ReactFragment, useMemo } from 'react';
 import { isElement, isFragment } from 'react-is';
+
 import { useNotificationsApi } from '../NewNotifications';
-import type { CubeToastsApiProps, CubeToastsApiToastCallback } from './types';
+
 import { CubeToastsApiToastAction, CubeToastsApiToastShortcuts } from './types';
+
+import type { CubeToastsApiProps, CubeToastsApiToastCallback } from './types';
 
 export function useToastsApi() {
   const { notify, update, remove } = useNotificationsApi();

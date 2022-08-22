@@ -1,5 +1,6 @@
-import { TOKENS } from '../tokens';
 import { createGlobalStyle } from 'styled-components';
+
+import { TOKENS } from '../tokens';
 
 interface GlobalStylesProps {
   bodyStyles?: { [key: string]: string };
@@ -107,8 +108,8 @@ export const GlobalStyles = createGlobalStyle`
 
   html {
     --font: ${({ font }: GlobalStylesProps) =>
-      font
-      || 'Inter'}, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+      font ||
+      'Inter'}, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
     --monospace-font: ${({ monospaceFont }) =>
       `${
         monospaceFont ? `${monospaceFont}, ` : ''

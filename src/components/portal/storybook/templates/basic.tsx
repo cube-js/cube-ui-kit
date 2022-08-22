@@ -1,4 +1,5 @@
 import { Story } from '@storybook/react';
+
 import { Portal } from '../../Portal';
 import { PortalProps } from '../../types';
 import { Divider } from '../../../content/Divider';

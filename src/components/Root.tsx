@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { GlobalStyles } from './GlobalStyles';
-import { PortalProvider } from './portal';
+import { ModalProvider } from '@react-aria/overlays';
+import { StyleSheetManager } from 'styled-components';
+
 import {
   BASE_STYLES,
   BaseProps,
@@ -10,9 +11,10 @@ import {
   tasty,
 } from '../tasty';
 import { Provider } from '../provider';
-import { ModalProvider } from '@react-aria/overlays';
-import { StyleSheetManager } from 'styled-components';
 import { TOKENS } from '../tokens';
+
+import { PortalProvider } from './portal';
+import { GlobalStyles } from './GlobalStyles';
 import { AlertDialogApiProvider } from './overlays/AlertDialog';
 import { NotificationsProvider } from './overlays/NewNotifications';
 

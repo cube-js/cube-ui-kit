@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { CubeTextProps, Text } from './Text';
+
 import {
   CONTAINER_STYLES,
   ContainerStyleProps,
@@ -7,6 +7,8 @@ import {
   Styles,
   TEXT_STYLES,
 } from '../../tasty';
+
+import { CubeTextProps, Text } from './Text';
 
 const DEFAULT_STYLES: Styles = {
   preset: 'p3',
@@ -26,5 +28,5 @@ export const Paragraph = forwardRef(function Paragraph(
 ) {
   const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
 
-  return <Text as="p" qa="Paragraph" {...props} styles={styles} ref={ref} />;
+  return <Text as="p" qa="Paragraph" {...props} ref={ref} styles={styles} />;
 });

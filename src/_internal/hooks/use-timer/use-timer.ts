@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+
 import { useEvent } from '../use-event';
+
 import { Timer } from './timer';
 
 export type UseTimerProps = {

@@ -1,7 +1,8 @@
-import { ActiveZone } from './ActiveZone';
 import { TooltipTrigger } from '../../overlays/Tooltip/TooltipTrigger';
 import { Tooltip } from '../../overlays/Tooltip/Tooltip';
 import { baseProps } from '../../../stories/lists/baseProps';
+
+import { ActiveZone } from './ActiveZone';
 
 export default {
   title: 'Content/ActiveZone',

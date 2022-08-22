@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+
 import {
   AllBaseProps,
   CONTAINER_STYLES,
@@ -24,8 +25,8 @@ export const Block = forwardRef(function Block(props: CubeBlockProps, ref) {
   return (
     <BlockElement
       {...filterBaseProps(props, { eventProps: true })}
-      styles={styles}
       ref={ref}
+      styles={styles}
     />
   );
 });

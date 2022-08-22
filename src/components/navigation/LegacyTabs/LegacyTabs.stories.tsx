@@ -1,4 +1,5 @@
 import { useState } from 'react';
+
 import { LegacyTabs } from './LegacyTabs';
 
 export default {
@@ -22,7 +23,7 @@ const Template = () => {
   return (
     <LegacyTabs activeKey={activeKey} onTabClose={onClose} onTabClick={onClick}>
       {arr.map((n) => (
-        <LegacyTabs.TabPane title={`Long Tab ${n}`} id={n} key={n}>
+        <LegacyTabs.TabPane key={n} title={`Long Tab ${n}`} id={n}>
           Content of tab {n}
         </LegacyTabs.TabPane>
       ))}

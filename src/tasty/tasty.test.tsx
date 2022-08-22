@@ -1,7 +1,9 @@
 import { getByTestId, render } from '@testing-library/react';
-import { tasty } from './tasty';
+
 import { Button } from '../components/actions';
 import { Block } from '../components/Block';
+
+import { tasty } from './tasty';
 import { CONTAINER_STYLES } from './styles/list';
 
 describe('tasty() API', () => {

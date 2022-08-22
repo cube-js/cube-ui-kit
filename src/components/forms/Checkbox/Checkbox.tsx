@@ -1,9 +1,9 @@
 import { useFocusableRef } from '@react-spectrum/utils';
 import { forwardRef, useContext, useRef } from 'react';
-import type { AriaCheckboxProps } from '@react-types/checkbox';
 import { useCheckbox, useCheckboxGroupItem } from '@react-aria/checkbox';
 import { useHover } from '@react-aria/interactions';
 import { useToggleState } from '@react-stately/toggle';
+
 import { useProviderProps } from '../../../provider';
 import {
   BaseProps,
@@ -21,14 +21,17 @@ import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../Label';
 import { HiddenInput } from '../../HiddenInput';
 import { useFormProps } from '../Form';
 import { FieldWrapper } from '../FieldWrapper';
-import { CheckboxGroup } from './CheckboxGroup';
-import { CheckboxGroupContext } from './context';
-import type { FocusableRef } from '@react-types/shared';
 import { FormFieldProps } from '../../../shared';
 import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
+
+import { CheckboxGroup } from './CheckboxGroup';
+import { CheckboxGroupContext } from './context';
+
+import type { FocusableRef } from '@react-types/shared';
+import type { AriaCheckboxProps } from '@react-types/checkbox';
 
 export interface CubeCheckboxProps
   extends BaseProps,

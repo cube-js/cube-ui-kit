@@ -1,7 +1,9 @@
-import { TextArea } from './TextArea';
 import { DollarCircleOutlined } from '@ant-design/icons';
+
 import { baseProps } from '../../../stories/lists/baseProps';
 import { TEXT_VALUE_ARG } from '../../../stories/FormFieldArgs';
+
+import { TextArea } from './TextArea';
 
 export default {
   title: 'Forms/TextArea',

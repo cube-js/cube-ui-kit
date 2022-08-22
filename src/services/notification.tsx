@@ -1,9 +1,10 @@
 import ReactDOM from 'react-dom';
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
+
 import {
   CubeNotificationProps,
   Notification,
 } from '../components/overlays/Notification/Notification';
-import { CSSTransition, TransitionGroup } from 'react-transition-group';
 
 let ID = 0;
 

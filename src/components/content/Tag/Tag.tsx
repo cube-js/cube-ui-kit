@@ -1,4 +1,6 @@
 import { forwardRef } from 'react';
+import { CloseOutlined } from '@ant-design/icons';
+
 import THEMES from '../../../data/themes';
 import {
   BaseProps,
@@ -11,7 +13,6 @@ import {
 } from '../../../tasty';
 import { Action } from '../../actions/Action';
 import { Suffix } from '../../layout/Suffix';
-import { CloseOutlined } from '@ant-design/icons';
 
 const TagElement = tasty({
   qa: 'Tag',
@@ -98,10 +99,10 @@ function Tag(allProps: CubeTagProps, ref) {
   return (
     <TagElement
       {...filterBaseProps(props, { eventProps: true })}
+      ref={ref}
       styles={styles}
       data-type={type}
       mods={{ closable: isClosable }}
-      ref={ref}
     >
       <div data-element="Content">{children}</div>
       {isClosable ? (

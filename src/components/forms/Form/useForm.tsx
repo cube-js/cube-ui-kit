@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react';
+
 import { dotize } from '../../../tasty';
+
 import { applyRules } from './validation';
 import { CubeFieldData, FieldTypes, SetFieldsArrType } from './types';
 

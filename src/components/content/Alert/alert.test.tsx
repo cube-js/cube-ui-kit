@@ -1,4 +1,5 @@
 import { renderHook } from '@testing-library/react-hooks';
+
 import { useAlert } from './use-alert';
 
 describe('<Alert /> component', () => {

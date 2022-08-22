@@ -1,6 +1,7 @@
-import { PasswordInput } from './PasswordInput';
 import { LABEL_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+
+import { PasswordInput } from './PasswordInput';
 
 export default {
   title: 'Forms/PasswordInput',

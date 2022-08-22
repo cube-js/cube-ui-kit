@@ -1,7 +1,9 @@
-import { Select } from './Select';
 import { DollarCircleOutlined } from '@ant-design/icons';
+
 import { SELECTED_KEY_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+
+import { Select } from './Select';
 
 export default {
   title: 'Pickers/Select',
@@ -42,9 +44,9 @@ const Template = ({
       isDisabled={isDisabled}
       isLoading={isLoading}
       defaultSelectedKey={defaultSelectedKey}
-      onSelectionChange={(query) => console.log('change', query)}
       size={size}
       width="200px"
+      onSelectionChange={(query) => console.log('change', query)}
       {...props}
     >
       {options.map((option) => {

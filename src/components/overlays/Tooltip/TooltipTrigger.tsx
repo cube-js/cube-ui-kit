@@ -1,13 +1,16 @@
 import { FocusableProvider } from '@react-aria/focus';
 import { Children, ReactElement, useRef } from 'react';
-import { TooltipContext } from './context';
 import { useOverlayPosition } from '@react-aria/overlays';
 import { useTooltipTrigger } from '@react-aria/tooltip';
 import { useTooltipTriggerState } from '@react-stately/tooltip';
+
 import { OverlayWrapper } from '../OverlayWrapper';
-import type { TooltipTriggerProps } from '@react-types/tooltip';
 import { ActiveZone } from '../../content/ActiveZone/ActiveZone';
 import { Block } from '../../Block';
+
+import { TooltipContext } from './context';
+
+import type { TooltipTriggerProps } from '@react-types/tooltip';
 
 const DEFAULT_OFFSET = 8; // Offset needed to reach 4px/5px (med/large) distance between tooltip and trigger button
 const DEFAULT_CROSS_OFFSET = 0;

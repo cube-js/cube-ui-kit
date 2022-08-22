@@ -1,8 +1,9 @@
 import { cloneElement, forwardRef, ReactElement, useMemo } from 'react';
-import { Action, CubeActionProps } from '../Action';
 import { LoadingOutlined } from '@ant-design/icons';
-import { Styles } from '../../../tasty';
 import { FocusableRef } from '@react-types/shared';
+
+import { Action, CubeActionProps } from '../Action';
+import { Styles } from '../../../tasty';
 import { accessibilityWarning } from '../../../utils/warnings';
 
 export interface CubeButtonProps extends CubeActionProps {
@@ -317,7 +318,7 @@ export const Button = forwardRef(function Button(
   styles = useMemo(
     () => ({
       ...DEFAULT_BUTTON_STYLES,
-        ...provideButtonStyles({ type, theme }),
+      ...provideButtonStyles({ type, theme }),
       ...styles,
     }),
     [type, theme, styles],

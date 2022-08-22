@@ -1,5 +1,6 @@
 import { CopyOutlined } from '@ant-design/icons';
 import copy from 'clipboard-copy';
+
 import { Action, Button } from '../../actions';
 import { Card, CubeCardProps } from '../Card/Card';
 import { Styles, tasty } from '../../../tasty';

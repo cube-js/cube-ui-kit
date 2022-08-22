@@ -1,13 +1,14 @@
-import { Action } from '../../actions/Action';
-import { Card, CubeCardProps } from '../../content/Card/Card';
-import { Block } from '../../Block';
-import THEMES from '../../../data/themes';
 import {
   CheckOutlined,
   CloseOutlined,
   ExclamationOutlined,
   InfoOutlined,
 } from '@ant-design/icons';
+
+import { Action } from '../../actions/Action';
+import { Card, CubeCardProps } from '../../content/Card/Card';
+import { Block } from '../../Block';
+import THEMES from '../../../data/themes';
 import { tasty } from '../../../tasty';
 
 export interface CubeNotificationProps extends CubeCardProps {

@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -30,8 +31,8 @@ export const Card = forwardRef(function Card(props: CubeCardProps, ref) {
   return (
     <CardElement
       {...filterBaseProps(props, { eventProps: true })}
-      styles={styles}
       ref={ref}
+      styles={styles}
     />
   );
 });

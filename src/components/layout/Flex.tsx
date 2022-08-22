@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -23,8 +24,8 @@ export const Flex = forwardRef(function Flex(props: CubeFlexProps, ref) {
   return (
     <FlexElement
       {...filterBaseProps(props, { eventProps: true })}
-      styles={styles}
       ref={ref}
+      styles={styles}
     />
   );
 });

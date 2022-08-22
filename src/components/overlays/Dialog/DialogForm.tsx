@@ -1,4 +1,3 @@
-import { Dialog, CubeDialogProps } from './Dialog';
 import { Title } from '../../content/Title';
 import { CubeFormProps, Form } from '../../forms/Form/Form';
 import { useForm } from '../../forms';
@@ -7,8 +6,10 @@ import { Submit } from '../../actions/Button/Submit';
 import { Button, CubeButtonProps } from '../../actions';
 import { ButtonGroup } from '../../actions';
 import { Header } from '../../content/Header';
-import { useDialogContext } from './context';
 import { FieldTypes } from '../../forms';
+
+import { useDialogContext } from './context';
+import { Dialog, CubeDialogProps } from './Dialog';
 
 export interface CubeDialogFormProps<T extends FieldTypes = FieldTypes>
   extends CubeDialogProps,
@@ -96,6 +97,16 @@ export function DialogForm<T extends FieldTypes = FieldTypes>(
           qa={qa || 'DialogForm'}
           form={form}
           name={name}
+          defaultValues={defaultValues}
+          labelStyles={labelStyles}
+          labelPosition={labelPosition}
+          requiredMark={requiredMark}
+          isRequired={isRequired}
+          necessityIndicator={necessityIndicator}
+          necessityLabel={necessityLabel}
+          isReadOnly={isReadOnly}
+          validationState={validationState}
+          validateTrigger={validateTrigger}
           onSubmit={async (data) => {
             await onSubmit?.(data);
 
@@ -106,17 +117,7 @@ export function DialogForm<T extends FieldTypes = FieldTypes>(
             }
           }}
           onSubmitFailed={onSubmitFailed}
-          defaultValues={defaultValues}
           onValuesChange={onValuesChange}
-          labelStyles={labelStyles}
-          labelPosition={labelPosition}
-          requiredMark={requiredMark}
-          isRequired={isRequired}
-          necessityIndicator={necessityIndicator}
-          necessityLabel={necessityLabel}
-          isReadOnly={isReadOnly}
-          validationState={validationState}
-          validateTrigger={validateTrigger}
         >
           {typeof children === 'function' ? children(onLocalDismiss) : children}
 
@@ -130,8 +131,8 @@ export function DialogForm<T extends FieldTypes = FieldTypes>(
               />
               <Button
                 qa={`${qa || ''}CancelButton`}
-                onPress={onLocalDismiss}
                 label="Cancel"
+                onPress={onLocalDismiss}
                 {...(cancelProps || {})}
               />
             </ButtonGroup>

@@ -1,4 +1,5 @@
 import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react';
+
 import { filterBaseProps, Styles } from '../tasty';
 import { useCombinedRefs } from '../utils/react';
 import { tasty } from '../tasty';
@@ -83,13 +84,13 @@ export const GridProvider = forwardRef(function GridProvider(
   return (
     <GridElement
       {...filterBaseProps(props, { eventProps: true })}
+      ref={ref}
       styles={{
         '--grid-width': width,
         '--columns-amount': columns,
         '--column-gap': gap,
         '--column-width': COLUMN_WIDTH,
       }}
-      ref={ref}
     >
       {children}
     </GridElement>

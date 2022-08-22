@@ -1,5 +1,6 @@
 import { Story } from '@storybook/react';
 import { useRef } from 'react';
+
 import { Portal } from '../../Portal';
 import { PortalProps } from '../../types';
 

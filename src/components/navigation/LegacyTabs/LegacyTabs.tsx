@@ -6,12 +6,13 @@ import {
   useRef,
   useState,
 } from 'react';
+import styled from 'styled-components';
+
 import { Block } from '../../Block';
 import { Space } from '../../layout/Space';
 import { CubeFlexProps, Flex } from '../../layout/Flex';
 import { Button, CubeButtonProps } from '../../actions';
 import { Styles, tasty } from '../../../tasty';
-import styled from 'styled-components';
 import { Flow } from '../../layout/Flow';
 import { useLayoutEffect } from '../../../utils/react';
 
@@ -346,12 +347,12 @@ export function LegacyTabs({
             {tabs.map((tab) => {
               return (
                 <Tab
-                  data-qa={tab.qa}
-                  onPress={() => onPress(tab)}
                   key={tab.id}
+                  data-qa={tab.qa}
                   isSelected={tab.id === activeKey || false}
                   isDisabled={tab.isDisabled}
                   isHidden={tab.isHidden}
+                  onPress={() => onPress(tab)}
                 >
                   {tab.title}
                 </Tab>

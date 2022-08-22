@@ -1,5 +1,8 @@
 import { forwardRef, MouseEventHandler } from 'react';
 import { useHover } from '@react-aria/interactions';
+import { useFocusableRef } from '@react-spectrum/utils';
+import { FocusableOptions, useFocusable } from '@react-aria/focus';
+
 import { mergeProps } from '../../../utils/react';
 import {
   BaseProps,
@@ -14,8 +17,6 @@ import {
   TEXT_STYLES,
   TextStyleProps,
 } from '../../../tasty';
-import { useFocusableRef } from '@react-spectrum/utils';
-import { FocusableOptions, useFocusable } from '@react-aria/focus';
 import { useFocus } from '../../../utils/react/interactions';
 
 export interface CubeActiveZoneProps
@@ -66,10 +67,10 @@ function ActiveZone(
         { onClick },
         filterBaseProps(props, { eventProps: true }),
       )}
+      ref={domRef}
       tabIndex={props.excludeFromTabOrder || isDisabled ? -1 : 0}
       as={as}
       styles={styles}
-      ref={domRef}
     />
   );
 }

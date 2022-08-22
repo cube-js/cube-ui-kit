@@ -1,7 +1,9 @@
 import { ComponentMeta, Story } from '@storybook/react';
+
+import { baseProps } from '../../../stories/lists/baseProps';
+
 import { Alert } from './Alert';
 import { CubeAlertProps } from './types';
-import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
   title: 'Content/Alert',

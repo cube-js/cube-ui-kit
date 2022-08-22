@@ -1,6 +1,6 @@
 import { forwardRef, ReactNode } from 'react';
-import { Text } from '../content/Text';
-import { Label } from './Label';
+import { InfoCircleOutlined } from '@ant-design/icons';
+
 import { Paragraph } from '../content/Paragraph';
 import {
   LabelPosition,
@@ -9,10 +9,12 @@ import {
 } from '../../shared';
 import { Props, Styles, tasty } from '../../tasty';
 import { TooltipProvider } from '../overlays/Tooltip/TooltipProvider';
-import { InfoCircleOutlined } from '@ant-design/icons';
+import { Text } from '../content/Text';
 import { wrapNodeIfPlain } from '../../utils/react';
 import { Space } from '../layout/Space';
 import { Flex } from '../layout/Flex';
+
+import { Label } from './Label';
 
 const FieldElement = tasty({
   qa: 'Field',
@@ -139,8 +141,8 @@ function FieldWrapper(props: CubeFieldWrapperProps, ref) {
 
           {tooltip ? (
             <TooltipProvider
-              title={tooltip}
               activeWrap
+              title={tooltip}
               width="initial max-content 40x"
             >
               <InfoCircleOutlined style={{ color: 'var(--primary-color)' }} />
@@ -172,8 +174,8 @@ function FieldWrapper(props: CubeFieldWrapperProps, ref) {
 
   return (
     <FieldElement
-      as={as || 'div'}
       ref={ref}
+      as={as || 'div'}
       mods={mods}
       isHidden={isHidden}
       styles={styles}

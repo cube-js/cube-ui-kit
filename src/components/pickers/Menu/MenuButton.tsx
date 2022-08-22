@@ -1,9 +1,10 @@
 import { ReactNode } from 'react';
+import { CheckOutlined } from '@ant-design/icons';
+
 import { Button, CubeButtonProps } from '../../actions';
 import { Text } from '../../content/Text';
 import { Styles, tasty } from '../../../tasty';
 import { Space } from '../../layout/Space';
-import { CheckOutlined } from '@ant-design/icons';
 
 const ACTION_BUTTON: Styles = {
   border: {
@@ -122,7 +123,7 @@ export function MenuButton({
     >
       {icon && <Text color="inherit">{icon}</Text>}
       <Space gap="1x" placeContent="space-between" overflow="auto" width="100%">
-        <Text color="inherit" ellipsis>
+        <Text ellipsis color="inherit">
           {children}
         </Text>
         {postfix && getPostfix(postfix)}

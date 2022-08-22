@@ -1,6 +1,7 @@
-import { SearchInput } from './SearchInput';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { TEXT_VALUE_ARG } from '../../../stories/FormFieldArgs';
+
+import { SearchInput } from './SearchInput';
 
 export default {
   title: 'Forms/SearchInput',

@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useButton } from '@react-aria/button';
 import { useFocusableRef } from '@react-spectrum/utils';
 import { FocusableRef } from '@react-types/shared';
+
 import { CubeButtonProps } from '../../actions';
 import { cubeToAriaButtonProps } from '../../../utils/react/mapProps';
 
@@ -33,8 +34,8 @@ function CloudLogo(
     <Button
       data-qa="HeaderCubeCloudLogo"
       {...buttonProps}
-      isLink={!!props.onPress}
       ref={domRef}
+      isLink={!!props.onPress}
       label="Logo"
     >
       <svg

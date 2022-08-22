@@ -1,4 +1,5 @@
 import { AllHTMLAttributes, CSSProperties } from 'react';
+
 import { Styles } from './styles/types';
 import {
   BASE_STYLES,

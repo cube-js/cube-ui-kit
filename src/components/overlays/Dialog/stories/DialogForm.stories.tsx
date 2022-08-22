@@ -5,6 +5,8 @@ import {
 } from '@storybook/testing-library';
 import { ComponentMeta, StoryFn } from '@storybook/react';
 import { expect } from '@storybook/jest';
+import { useState } from 'react';
+
 import { CubeDialogFormProps, DialogForm } from '../DialogForm';
 import { Button } from '../../../actions';
 import { Paragraph } from '../../../content/Paragraph';
@@ -14,7 +16,6 @@ import { DialogTrigger } from '../DialogTrigger';
 import { baseProps } from '../../../../stories/lists/baseProps';
 import { Form } from '../../../forms/Form';
 import { DialogContainer } from '../DialogContainer';
-import { useState } from 'react';
 
 export default {
   title: 'Overlays/DialogForm',

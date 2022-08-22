@@ -1,12 +1,13 @@
 import { forwardRef, useCallback, useRef, useState } from 'react';
+import { useTextField } from '@react-aria/textfield';
+import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
+
 import {
   CubeTextInputBaseProps,
   TextInputBase,
 } from '../TextInput/TextInputBase';
 import { useProviderProps } from '../../../provider';
-import { useTextField } from '@react-aria/textfield';
 import { Button } from '../../actions';
-import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 import {
   castNullableStringValue,
   WithNullableValue,
@@ -34,25 +35,25 @@ function PasswordInput(props: WithNullableValue<CubeTextInputBaseProps>, ref) {
     <>
       {suffix}
       <Button
+        excludeFromTabOrder
         type="neutral"
         htmlType="button"
-        onPress={toggleType}
         placeSelf="stretch"
         height="auto"
         radius="right"
         width="4x"
         label="Toggle masking"
-        excludeFromTabOrder
         icon={type === 'password' ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+        onPress={toggleType}
       />
     </>
   );
 
   return (
     <TextInputBase
+      ref={ref}
       labelProps={labelProps}
       inputProps={inputProps}
-      ref={ref}
       inputRef={inputRef}
       inputStyles={{ paddingRight: '4x' }}
       type={type}

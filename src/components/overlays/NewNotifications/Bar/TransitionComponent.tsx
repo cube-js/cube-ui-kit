@@ -1,7 +1,8 @@
 import { PropsWithChildren, useCallback, useRef } from 'react';
 import { CSSTransition } from 'react-transition-group';
-import type { TransitionProps } from 'react-transition-group/Transition';
 import styled from 'styled-components';
+
+import type { TransitionProps } from 'react-transition-group/Transition';
 
 const CSS_TRANSITION_CLASS_NAME = 'cube-notifications-css-transition';
 const TRANSITION_TIMEOUT = 250;

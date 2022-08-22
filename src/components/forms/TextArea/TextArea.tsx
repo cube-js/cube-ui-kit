@@ -1,11 +1,12 @@
 import { forwardRef, useCallback, useRef } from 'react';
+import { useControlledState } from '@react-stately/utils';
+import { useTextField } from '@react-aria/textfield';
+
 import {
   CubeTextInputBaseProps,
   TextInputBase,
 } from '../TextInput/TextInputBase';
-import { useControlledState } from '@react-stately/utils';
 import { useProviderProps } from '../../../provider';
-import { useTextField } from '@react-aria/textfield';
 import {
   castNullableStringValue,
   WithNullableValue,
@@ -80,10 +81,10 @@ function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
     <TextInputBase
       {...otherProps}
       ref={ref}
+      multiLine
       inputRef={inputRef}
       labelProps={labelProps}
       inputProps={inputProps}
-      multiLine
       isDisabled={isDisabled}
       isReadOnly={isReadOnly}
       isRequired={isRequired}

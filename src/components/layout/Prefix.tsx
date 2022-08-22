@@ -1,4 +1,5 @@
-import { CSSProperties, forwardRef, useEffect } from 'react';
+import { CSSProperties, forwardRef } from 'react';
+
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -50,8 +51,8 @@ export const Prefix = forwardRef(function Prefix(
   return (
     <PrefixElement
       {...filterBaseProps(props, { eventProps: true })}
-      styles={styles}
       ref={ref}
+      styles={styles}
       style={{
         // @ts-ignore
         '--prefix-gap': parseStyle(outerGap).value,

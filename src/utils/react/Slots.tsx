@@ -1,4 +1,3 @@
-import { mergeProps } from './mergeProps';
 import {
   createContext,
   Children,
@@ -6,6 +5,8 @@ import {
   useContext,
   useMemo,
 } from 'react';
+
+import { mergeProps } from './mergeProps';
 
 const INITIAL_VALUE = {};
 

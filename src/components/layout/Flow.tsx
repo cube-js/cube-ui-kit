@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -25,8 +26,8 @@ export const Flow = forwardRef(function Flow(props: CubeFlowProps, ref) {
   return (
     <FlowElement
       {...filterBaseProps(props, { eventProps: true })}
-      styles={styles}
       ref={ref}
+      styles={styles}
     />
   );
 });

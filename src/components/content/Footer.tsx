@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -36,8 +37,8 @@ export const Footer = forwardRef(function Footer(props: CubeFooterProps, ref) {
   return (
     <FooterElement
       {...filterBaseProps(props, { eventProps: true })}
-      styles={styles}
       ref={ref}
+      styles={styles}
     />
   );
 });

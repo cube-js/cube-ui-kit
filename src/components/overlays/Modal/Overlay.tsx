@@ -1,9 +1,12 @@
-import { OpenTransition } from './OpenTransition';
 import { forwardRef, useCallback, useState } from 'react';
-import { Provider, useProviderProps } from '../../../provider';
-import type { OverlayProps } from '@react-types/overlays';
 import { createPortal } from 'react-dom';
+
+import { Provider, useProviderProps } from '../../../provider';
 import { Props } from '../../../tasty';
+
+import { OpenTransition } from './OpenTransition';
+
+import type { OverlayProps } from '@react-types/overlays';
 
 export interface CubeOverlayProps extends Omit<OverlayProps, 'container'> {
   container?: HTMLElement | null;
@@ -44,8 +47,8 @@ function Overlay(props: CubeOverlayProps, ref) {
   let contents = (
     <Provider ref={ref}>
       <OpenTransition
-        in={isOpen}
         appear
+        in={isOpen}
         onExit={onExit}
         onExiting={onExiting}
         onExited={handleExited}

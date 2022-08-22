@@ -1,8 +1,10 @@
 import { Key, useEffect } from 'react';
-import { useNotificationsApi } from './hooks';
-import { CubeNotifyApiProps } from './types';
+
 import { useEvent, useSyncRef } from '../../../_internal';
 import { useId } from '../../../utils/react/useId';
+
+import { useNotificationsApi } from './hooks';
+import { CubeNotifyApiProps } from './types';
 
 export type NotificationProps = {
   /**

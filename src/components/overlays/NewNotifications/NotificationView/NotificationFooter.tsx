@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { isElement } from 'react-is';
 import flatten from 'react-keyed-flatten-children';
+
 import { CubeNotificationProps, NotificationActionComponent } from '../types';
 import { tasty } from '../../../../tasty';
 import { ButtonGroup } from '../../../actions';

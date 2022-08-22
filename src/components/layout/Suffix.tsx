@@ -1,4 +1,5 @@
 import { CSSProperties, forwardRef, useEffect } from 'react';
+
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -49,8 +50,8 @@ export const Suffix = forwardRef(function Suffix(
   return (
     <SuffixElement
       {...filterBaseProps(props, { eventProps: true })}
-      styles={styles}
       ref={ref}
+      styles={styles}
       style={{
         '--suffix-gap': parseStyle(outerGap).value,
       }}

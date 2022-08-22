@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import styled from 'styled-components';
+
 import { SpinCubeProps } from './types';
 
 const fillByPosition = {

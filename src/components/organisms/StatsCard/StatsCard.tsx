@@ -1,7 +1,8 @@
+import { ReactNode } from 'react';
+
 import { Card, CubeCardProps } from '../../content/Card/Card';
 import { Title } from '../../content/Title';
 import { Text } from '../../content/Text';
-import { ReactNode } from 'react';
 
 export interface CubeStatsCard extends CubeCardProps {
   title?: string | ReactNode;
@@ -20,7 +21,7 @@ export function StatsCard({ title, value, suffix, ...props }: CubeStatsCard) {
       padding="2.5x"
       {...props}
     >
-      <Title level={4} color="#minor" preset="default" nowrap>
+      <Title nowrap level={4} color="#minor" preset="default">
         {title}
       </Title>
       <Text.Strong preset="h3">

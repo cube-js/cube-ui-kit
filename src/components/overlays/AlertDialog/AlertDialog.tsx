@@ -1,4 +1,5 @@
 import { forwardRef, ReactNode } from 'react';
+
 import { Button, CubeButtonProps, ButtonGroup } from '../../actions';
 import { Content } from '../../content/Content';
 import { Paragraph } from '../../content/Paragraph';
@@ -66,7 +67,7 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
     : undefined;
 
   return (
-    <Dialog role="alertdialog" ref={ref} isDismissable={false} {...otherProps}>
+    <Dialog ref={ref} role="alertdialog" isDismissable={false} {...otherProps}>
       {title ? (
         <Header>
           <Title>{title}</Title>
@@ -85,8 +86,8 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
         <Footer>
           <ButtonGroup align="end">
             <Button
-              theme={danger ? 'danger' : undefined}
               autoFocus
+              theme={danger ? 'danger' : undefined}
               {...confirmProps}
               onPress={(e) =>
                 chain(

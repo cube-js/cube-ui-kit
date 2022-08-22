@@ -1,5 +1,6 @@
-import { Block, CubeBlockProps } from '../../Block';
 import styled from 'styled-components';
+
+import { Block, CubeBlockProps } from '../../Block';
 
 const POSITIONS = [
   [49, 0.5],

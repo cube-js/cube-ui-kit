@@ -1,4 +1,5 @@
 import { renderWithRoot } from '../../../test';
+
 import { Notification } from './Notification';
 
 function TestComponent({ renderNotification = true, ...notificationProps }) {

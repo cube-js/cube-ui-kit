@@ -1,5 +1,6 @@
-import { Skeleton } from './Skeleton';
 import { baseProps } from '../../../stories/lists/baseProps';
+
+import { Skeleton } from './Skeleton';
 
 export default {
   title: 'Content/Skeleton',

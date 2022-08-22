@@ -1,7 +1,9 @@
 import { CaretDownOutlined, DollarCircleOutlined } from '@ant-design/icons';
-import { Button } from './Button';
+
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Space } from '../../layout/Space';
+
+import { Button } from './Button';
 
 export default {
   title: 'Actions/Button',

@@ -1,5 +1,3 @@
-import { DialogContext } from './context';
-import { Modal } from '../Modal/Modal';
 import {
   Children,
   ReactNode,
@@ -7,6 +5,10 @@ import {
   isValidElement,
   ReactElement,
 } from 'react';
+
+import { Modal } from '../Modal/Modal';
+
+import { DialogContext } from './context';
 
 export interface CubeDialogContainerProps {
   /** The Dialog to display, if any. */
@@ -67,10 +69,10 @@ export function DialogContainer(props: CubeDialogContainerProps) {
   return (
     <Modal
       isOpen={isActuallyOpened}
-      onClose={isDismissable ? onDismiss : undefined}
       type={type}
       isDismissable={isDismissable}
       isKeyboardDismissDisabled={isKeyboardDismissDisabled}
+      onClose={isDismissable ? onDismiss : undefined}
     >
       <DialogContext.Provider value={context}>{child}</DialogContext.Provider>
     </Modal>

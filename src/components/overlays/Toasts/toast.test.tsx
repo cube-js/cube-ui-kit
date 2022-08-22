@@ -1,6 +1,8 @@
-import { Toast } from './Toast';
-import { renderWithRoot, screen, wait } from '../../../test';
 import { act } from '@testing-library/react';
+
+import { renderWithRoot, screen, wait } from '../../../test';
+
+import { Toast } from './Toast';
 
 function TestComponent({ renderNotification = true, ...notificationProps }) {
   return renderNotification ? (

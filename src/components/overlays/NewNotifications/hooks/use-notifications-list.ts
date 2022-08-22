@@ -1,8 +1,10 @@
-import type { HTMLAttributes, MutableRefObject } from 'react';
-import type { CollectionElement as ReactAriaCollectionElement } from '@react-types/shared';
 import { useListState } from '@react-stately/list';
 import { useSelectableList } from '@react-aria/selection';
+
 import { CollectionChildren, NotificationsListState } from './types';
+
+import type { CollectionElement as ReactAriaCollectionElement } from '@react-types/shared';
+import type { HTMLAttributes, MutableRefObject } from 'react';
 
 export type UseNotificationsListPropsType<T, R> = {
   items?: Iterable<T>;

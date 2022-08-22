@@ -1,5 +1,6 @@
-import { ComboBox, Item } from '../../../index';
 import { DollarCircleOutlined } from '@ant-design/icons';
+
+import { ComboBox, Item } from '../../../index';
 import { SELECTED_KEY_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 
@@ -23,11 +24,11 @@ const Template = ({ icon, ...props }) => {
         id="name"
         icon={icon ? <DollarCircleOutlined /> : undefined}
         {...props}
+        width="200px"
         onSelectionChange={(query) =>
           console.log('onSelectionChange event', query)
         }
         onInputChange={(query) => console.log('onInputChange event', query)}
-        width="200px"
       >
         <Item key="red">Red</Item>
         <Item key="orange">Orange</Item>

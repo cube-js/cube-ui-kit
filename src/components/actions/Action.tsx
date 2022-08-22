@@ -1,4 +1,13 @@
 import { forwardRef, MouseEventHandler, useCallback, useContext } from 'react';
+import { useHover } from '@react-aria/interactions';
+import { useButton } from '@react-aria/button';
+import { AriaButtonProps } from '@react-types/button';
+import { useFocusableRef } from '@react-spectrum/utils';
+import { FocusableRef } from '@react-types/shared';
+
+import { UIKitContext } from '../../provider';
+import { mergeProps } from '../../utils/react';
+import { useFocus } from '../../utils/react/interactions';
 import {
   BaseProps,
   BaseStyleProps,
@@ -12,14 +21,6 @@ import {
   TextStyleProps,
   Element,
 } from '../../tasty';
-import { useHover } from '@react-aria/interactions';
-import { useFocus } from '../../utils/react/interactions';
-import { useButton } from '@react-aria/button';
-import { mergeProps } from '../../utils/react';
-import { UIKitContext } from '../../provider';
-import { AriaButtonProps } from '@react-types/button';
-import { useFocusableRef } from '@react-spectrum/utils';
-import { FocusableRef } from '@react-types/shared';
 
 export interface CubeActionProps
   extends BaseProps,
@@ -191,9 +192,9 @@ export const Action = forwardRef(function Action(
         customProps,
         filterBaseProps(props, FILTER_OPTIONS),
       )}
+      ref={domRef}
       type={htmlType || 'button'}
       rel={as === 'a' && newTab ? 'rel="noopener noreferrer"' : undefined}
-      ref={domRef}
       as={as}
       isDisabled={isDisabled}
       styles={styles}

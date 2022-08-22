@@ -1,5 +1,6 @@
-import { Link } from './Link';
 import { baseProps } from '../../../stories/lists/baseProps';
+
+import { Link } from './Link';
 
 export default {
   title: 'Navigation/Link',
@@ -20,8 +21,8 @@ export default {
 const Template = ({ isDisabled, label }) => (
   <Link
     isDisabled={isDisabled}
-    onPress={() => console.log('Press')}
     to="!https://cube.dev"
+    onPress={() => console.log('Press')}
   >
     {label}
   </Link>

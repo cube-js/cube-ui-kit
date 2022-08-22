@@ -1,12 +1,12 @@
-import { Button } from '../../actions';
 import { useDOMRef } from '@react-spectrum/utils';
-import { useDialogContext } from './context';
 import { DismissButton } from '@react-aria/overlays';
 import { FocusScope } from '@react-aria/focus';
 import { forwardRef, ReactElement } from 'react';
 import { useDialog } from '@react-aria/dialog';
 import { useMessageFormatter } from '@react-aria/i18n';
 import { CloseOutlined } from '@ant-design/icons';
+import { DOMRef } from '@react-types/shared';
+
 import {
   BASE_STYLES,
   BaseProps,
@@ -20,8 +20,11 @@ import {
   tasty,
 } from '../../../tasty';
 import { mergeProps, SlotProvider } from '../../../utils/react';
+import { Button } from '../../actions';
+
+import { useDialogContext } from './context';
+
 import type { AriaDialogProps } from '@react-types/dialog';
-import { DOMRef } from '@react-types/shared';
 
 const STYLES_LIST = [...BASE_STYLES, ...DIMENSION_STYLES, ...BLOCK_STYLES];
 

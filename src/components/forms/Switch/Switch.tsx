@@ -3,6 +3,8 @@ import { forwardRef, useMemo, useRef } from 'react';
 import { useSwitch } from '@react-aria/switch';
 import { useHover } from '@react-aria/interactions';
 import { useToggleState } from '@react-stately/toggle';
+import { LoadingOutlined } from '@ant-design/icons';
+
 import { useProviderProps } from '../../../provider';
 import {
   BaseProps,
@@ -20,15 +22,15 @@ import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react';
 import { HiddenInput } from '../../HiddenInput';
 import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../Label';
-import { LoadingOutlined } from '@ant-design/icons';
 import { useFormProps } from '../Form/Form';
 import { FieldWrapper } from '../FieldWrapper';
-import type { AriaSwitchProps } from '@react-types/switch';
 import { FormFieldProps } from '../../../shared';
 import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
+
+import type { AriaSwitchProps } from '@react-types/switch';
 
 const SwitchWrapperElement = tasty({
   qa: 'SwitchWrapper',

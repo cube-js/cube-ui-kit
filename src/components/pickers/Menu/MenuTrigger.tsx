@@ -7,8 +7,10 @@ import { PressResponder } from '@react-aria/interactions';
 import { MenuTriggerProps as BaseTriggerProps } from '@react-types/menu';
 import { useMenuTrigger } from '@react-aria/menu';
 import { useMenuTriggerState } from '@react-stately/menu';
+
 import { Popover, Tray } from '../../overlays/Modal';
 import { SlotProvider } from '../../../utils/react';
+
 import { MenuContext, MenuContextValue } from './context';
 
 export type CubeMenuTriggerProps = BaseTriggerProps &
@@ -109,13 +111,13 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
   } else {
     overlay = (
       <Popover
+        ref={menuPopoverRef}
+        hideArrow
+        isNonModal
         isOpen={state.isOpen}
         style={positionProps.style}
-        ref={menuPopoverRef}
         placement={placement}
-        hideArrow
         onClose={state.close}
-        isNonModal
       >
         {contents}
       </Popover>

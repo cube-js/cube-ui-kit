@@ -1,4 +1,5 @@
 import { forwardRef, ReactNode } from 'react';
+
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -41,8 +42,8 @@ export const Avatar = forwardRef(function Avatar(
   return (
     <Element
       {...filterBaseProps(props, { eventProps: true })}
-      styles={styles}
       ref={ref}
+      styles={styles}
       data-theme="special"
     >
       {icon}

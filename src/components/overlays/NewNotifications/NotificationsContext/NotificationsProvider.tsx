@@ -1,7 +1,9 @@
 import { createContext, PropsWithChildren, RefObject, useMemo } from 'react';
+
 import { Portal } from '../../../portal';
 import { NotificationsBar } from '../Bar';
 import { CubeNotificationsApi, CubeNotifyApiPropsWithID } from '../types';
+
 import { useNotifications } from './use-notifications';
 
 export const NotificationsContext = createContext<{
