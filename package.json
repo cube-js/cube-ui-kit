@@ -40,7 +40,8 @@
     "postsize": "node -e 'require(\"./scripts/size-limit\").deleteMeasurer()'",
     "prepare": "husky install",
     "clear": "rimraf ./dist",
-    "release": "yarn build && changeset publish"
+    "release": "yarn build && changeset publish",
+    "postinstall": "git config blame.ignoreRevsFile .git-blame-ignore-revs"
   },
   "publishConfig": {
     "directory": "dist"
