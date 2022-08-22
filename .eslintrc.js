@@ -19,12 +19,38 @@ module.exports = /** @type {import('eslint').Linter.Config} */ ({
     ],
     'react/display-name': 'error',
     'react/prop-types': 'warn',
+    'react/jsx-sort-props': [
+      'error',
+      {
+        callbacksLast: true,
+        shorthandFirst: true,
+        shorthandLast: false,
+        noSortAlphabetically: true,
+        reservedFirst: true,
+      },
+    ],
 
     'import/extensions': 0,
     'import/no-unresolved': 0,
     'import/no-anonymous-default-export': 0,
     'import/no-extraneous-dependencies': 'error',
     'import/no-unused-modules': 'error',
+    'import/order': [
+      'error',
+      {
+        groups: [
+          'builtin',
+          'external',
+          'internal',
+          'parent',
+          'sibling',
+          'index',
+          'object',
+          'type',
+        ],
+        'newlines-between': 'always',
+      },
+    ],
 
     '@typescript-eslint/ban-types': 'warn',
     '@typescript-eslint/ban-ts-comment': 'warn',
