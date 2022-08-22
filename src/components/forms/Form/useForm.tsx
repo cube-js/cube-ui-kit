@@ -32,9 +32,9 @@ export class CubeFormInstance<
   private fields: TFormData = {} as TFormData;
   public ref = {};
   public isSubmitting = false;
-  public onValuesChange: (data: CubeFormData<T>) => void | Promise<void> =
-    () => {};
-  public onSubmit: (data: CubeFormData<T>) => void | Promise<void> = () => {};
+
+  public onValuesChange: (data: T) => void | Promise<void> = () => {};
+  public onSubmit: (data: T) => void | Promise<void> = () => {};
 
   constructor(forceReRender: () => void = () => {}) {
     this.forceReRender = forceReRender;
@@ -115,7 +115,7 @@ export class CubeFormInstance<
 
   getFieldsValue(): Partial<T> {
     return Object.values(this.fields).reduce((map, field) => {
-      map[field.name as keyof T] = field.value as T[typeof field.name];
+      map[field.name] = field.value;
 
       return map;
     }, {} as T);
@@ -124,7 +124,7 @@ export class CubeFormInstance<
   /**
    * Similar to getFieldsValue() but respects '.' notation and creates nested objects.
    */
-  getFormData(): CubeFormData<T> {
+  getFormData(): T {
     const fieldsValue = this.getFieldsValue();
 
     return Object.keys(fieldsValue).reduce((map, field) => {
@@ -135,7 +135,7 @@ export class CubeFormInstance<
       }
 
       return map;
-    }, {} as CubeFormData<T>);
+    }, {} as T);
   }
 
   setFieldValue<Name extends keyof T>(

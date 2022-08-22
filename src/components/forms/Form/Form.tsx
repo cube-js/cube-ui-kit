@@ -154,7 +154,7 @@ function Form<T extends FieldTypes>(
     };
   }
 
-  [form] = useForm(form, ref && ref.current, {
+  [form] = useForm<T>(form, ref && ref.current, {
     onSubmit: onSubmitCallback,
     onValuesChange,
   });
