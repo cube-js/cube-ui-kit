@@ -69,9 +69,6 @@ Invalid.args = { selectedKey: 'yellow', validationState: 'invalid' };
 export const Valid = Template.bind({});
 Valid.args = { selectedKey: 'yellow', validationState: 'valid' };
 
-export const Disabled = Template.bind({});
-Disabled.args = { selectedKey: 'yellow', isDisabled: true };
-
 export const WithPlaceholder = Template.bind({});
 WithPlaceholder.args = { placeholder: 'Enter a value' };
 
@@ -86,5 +83,3 @@ OverTheCustomBG.parameters = { backgrounds: { default: 'gray' } };
 
 export const Disabled = Template.bind({});
 Disabled.args = { isDisabled: true, label: 'Disabled' };
-// export const Multiple = Template.bind({});
-// Multiple.args = { icon: true, defaultSelectedKeys: ['red', 'violet'] };
