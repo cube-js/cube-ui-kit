@@ -133,7 +133,7 @@ function FieldWrapper(props: CubeFieldWrapperProps, ref) {
       {...labelProps}
     >
       <Flex placeContent="baseline space-between" width="100%">
-        <Space placeItems="center" gap="1x">
+        <Space placeItems="center" gap="0.25x">
           <div>{label}</div>
 
           {tooltip ? (
@@ -142,7 +142,9 @@ function FieldWrapper(props: CubeFieldWrapperProps, ref) {
               activeWrap
               width="initial max-content 40x"
             >
-              <InfoCircleOutlined style={{ color: 'var(--primary-color)' }} />
+              <InfoCircleOutlined
+                style={{ color: 'var(--primary-color)', margin: '0 4px' }}
+              />
             </TooltipProvider>
           ) : null}
 
