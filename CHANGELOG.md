@@ -1,5 +1,18 @@
 # @cube-dev/ui-kit
 
+## 0.12.3
+
+### Patch Changes
+
+- [#182](https://github.com/cube-js/cube-ui-kit/pull/182) [`6db0491`](https://github.com/cube-js/cube-ui-kit/commit/6db04916412cbf0150b0cc730451fd7c595571a5) Thanks [@tenphi](https://github.com/tenphi)! - Add `icon` property to Input components. You should use it instead `prefix` property to ensure your icon will have correct paddings.
+  Styles of Input components have been rewritten to improve consistency and maintenance.
+
+- [#193](https://github.com/cube-js/cube-ui-kit/pull/193) [`5c3ed68`](https://github.com/cube-js/cube-ui-kit/commit/5c3ed682a967d6bcaa26765b2c839b1d04a0f182) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Fixed alignment between label and suffix in Field component
+
+- [#177](https://github.com/cube-js/cube-ui-kit/pull/177) [`16a213a`](https://github.com/cube-js/cube-ui-kit/commit/16a213a616c4e5d328e344797323abdf910e7a53) Thanks [@tenphi](https://github.com/tenphi)! - ComboBox now respects `onSelectionChange` event while working inside a form.
+
+- [#185](https://github.com/cube-js/cube-ui-kit/pull/185) [`7a7b861`](https://github.com/cube-js/cube-ui-kit/commit/7a7b861ff2f0f50c751b0b73e4da3b4a682379c3) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Fixed types in `onSubmit` and `onValuesChange` types in `Form`
+
 ## 0.12.2
 
 ### Patch Changes
