@@ -54,7 +54,6 @@ export const INLINE_LABEL_STYLES: Styles = {
   color: {
     '': '#dark.85',
     invalid: '#danger-text',
-    disabled: '#dark.30',
   },
   whiteSpace: 'nowrap',
 } as const;

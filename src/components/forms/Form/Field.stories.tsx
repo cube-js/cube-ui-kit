@@ -2,6 +2,8 @@ import { Meta, Story } from '@storybook/react';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { CubeFieldProps, Field } from './Field';
 import { TextInput } from '../TextInput/TextInput';
+import { Button } from '../../actions';
+import { DollarCircleFilled } from '@ant-design/icons';
 
 export default {
   title: 'Forms/Field',
@@ -75,5 +77,27 @@ export const WithSuffixExtraAndTooltip = Template.bind({});
 WithSuffixExtraAndTooltip.args = {
   labelSuffix: 'Suffix',
   extra: 'Extra info',
+  tooltip: 'Long description',
+};
+
+export const WithButtonSuffix = Template.bind({});
+WithButtonSuffix.args = {
+  labelSuffix: (
+    <Button size="small" icon={<DollarCircleFilled />} placeSelf="center" />
+  ),
+};
+
+export const WithButtonSuffixAndTooltip = Template.bind({});
+WithButtonSuffixAndTooltip.args = {
+  labelSuffix: (
+    <Button
+      width="3x"
+      height="3x"
+      type="clear"
+      size="small"
+      icon={<DollarCircleFilled />}
+      placeSelf="center"
+    />
+  ),
   tooltip: 'Long description',
 };
