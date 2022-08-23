@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.12.4
+
+### Patch Changes
+
+- [#181](https://github.com/cube-js/cube-ui-kit/pull/181) [`1f6220e`](https://github.com/cube-js/cube-ui-kit/commit/1f6220eeb7fc9c28f83f02eb113e92b8542fec89) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Improve display names across all components
+
+- [#195](https://github.com/cube-js/cube-ui-kit/pull/195) [`ee8ab23`](https://github.com/cube-js/cube-ui-kit/commit/ee8ab238ac9d0ca6ed2b35c816cbf155c6eefcf8) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Reduced gap between `label` and `labelSuffix` in `<Field />`
+
 ## 0.12.3
 
 ### Patch Changes
