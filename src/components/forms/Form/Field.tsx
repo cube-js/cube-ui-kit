@@ -7,17 +7,19 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useFormProps } from './Form';
+
 import { mergeProps } from '../../../utils/react';
 import {
   LabelPosition,
   OptionalFieldBaseProps,
   ValidationRule,
 } from '../../../shared';
-import { CubeFormInstance } from './useForm';
 import { FieldWrapper } from '../FieldWrapper';
 import { warn } from '../../../utils/warnings';
 import { Styles } from '../../../tasty';
+
+import { CubeFormInstance } from './useForm';
+import { useFormProps } from './Form';
 import { FieldTypes } from './types';
 
 const ID_MAP = {};

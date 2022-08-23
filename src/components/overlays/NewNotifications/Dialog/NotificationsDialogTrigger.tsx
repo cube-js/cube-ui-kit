@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { VisuallyHidden } from '@react-aria/visually-hidden';
+
 import {
   CubeDialogProps,
   CubeDialogTriggerProps,

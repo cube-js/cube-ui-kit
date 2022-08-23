@@ -1,4 +1,5 @@
 import { Styles, StylesWithoutSelectors } from '../styles/types';
+
 import { isSelector } from './renderStyles';
 
 export function mergeStyles(...objects: (Styles | undefined | null)[]): Styles {

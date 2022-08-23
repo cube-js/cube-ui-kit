@@ -1,4 +1,5 @@
 import { MutableRefObject, useRef } from 'react';
+
 import { useLayoutEffect } from '../../utils/react';
 
 export function useSyncRef<T>(value: T): MutableRefObject<T> {

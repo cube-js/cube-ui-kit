@@ -1,9 +1,8 @@
 import { useFocusableRef } from '@react-spectrum/utils';
 import { forwardRef, useRef } from 'react';
-import type { AriaRadioProps } from '@react-types/radio';
 import { useHover } from '@react-aria/interactions';
 import { useRadio } from '@react-aria/radio';
-import { useRadioProvider } from './context';
+
 import {
   BaseProps,
   extractStyles,
@@ -17,9 +16,13 @@ import { mergeProps } from '../../../utils/react';
 import { useProviderProps } from '../../../provider';
 import { INLINE_LABEL_STYLES } from '../Label';
 import { HiddenInput } from '../../HiddenInput';
-import { RadioGroup } from './RadioGroup';
 import { useFormProps } from '../Form';
 import { FormFieldProps } from '../../../shared';
+
+import { RadioGroup } from './RadioGroup';
+import { useRadioProvider } from './context';
+
+import type { AriaRadioProps } from '@react-types/radio';
 
 const RadioWrapperElement = tasty({
   as: 'label',
@@ -199,8 +202,8 @@ function Radio(props: CubeRadioProps, ref) {
         data-qa={qa || 'Radio'}
         aria-label={ariaLabel}
         {...mergeProps(inputProps, focusProps)}
-        isButton={isButton}
         ref={inputRef}
+        isButton={isButton}
       />
       <RadioElement
         mods={{
@@ -234,7 +237,7 @@ function Radio(props: CubeRadioProps, ref) {
 function RadioButton(props: CubeRadioProps, ref) {
   const Radio = _Radio;
 
-  return <Radio {...props} type="button" ref={ref} />;
+  return <Radio {...props} ref={ref} type="button" />;
 }
 
 /**

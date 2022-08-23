@@ -1,4 +1,6 @@
 import { StoryFn } from '@storybook/react';
+import { linkTo } from '@storybook/addon-links';
+
 import {
   Submit,
   TextInput,
@@ -17,7 +19,6 @@ import {
 import { NumberInput } from '../NumberInput/NumberInput';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions';
-import { linkTo } from '@storybook/addon-links';
 
 export default {
   title: 'Forms/ComplexForm',
@@ -36,12 +37,6 @@ const Template: StoryFn<typeof Form> = (args) => {
       <Form
         form={form}
         {...args}
-        onSubmit={(v) => {
-          console.log('onSubmit:', v);
-        }}
-        onValuesChange={(v) => {
-          console.log('onChange', v);
-        }}
         defaultValues={{
           text: 'some',
           text2: 'some',
@@ -54,6 +49,12 @@ const Template: StoryFn<typeof Form> = (args) => {
           checkboxGroup: ['one', 'three'],
           radioGroup: 'three',
           switch: false,
+        }}
+        onSubmit={(v) => {
+          console.log('onSubmit:', v);
+        }}
+        onValuesChange={(v) => {
+          console.log('onChange', v);
         }}
       >
         <Field
@@ -74,10 +75,10 @@ const Template: StoryFn<typeof Form> = (args) => {
         >
           <TextInput label="Text field" />
         </Field>
-        <Field name="text2" label="Text disabled" isDisabled>
+        <Field isDisabled name="text2" label="Text disabled">
           <TextInput />
         </Field>
-        <Field name="text2" label="Text loading" isLoading>
+        <Field isLoading name="text2" label="Text loading">
           <TextInput />
         </Field>
         <Field label="Custom field" tooltip="What?">
@@ -121,7 +122,7 @@ const Template: StoryFn<typeof Form> = (args) => {
             <Item key="three">Three</Item>
           </ComboBox>
         </Field>
-        <Field name="combobox2" isLoading label="ComboBox Loading field">
+        <Field isLoading name="combobox2" label="ComboBox Loading field">
           <ComboBox>
             <Item key="one">One</Item>
             <Item key="two">Two</Item>

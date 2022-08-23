@@ -1,6 +1,8 @@
-import { Avatar } from './Avatar';
 import { DollarCircleOutlined } from '@ant-design/icons';
+
 import { baseProps } from '../../../stories/lists/baseProps';
+
+import { Avatar } from './Avatar';
 
 export default {
   title: 'Content/Avatar',

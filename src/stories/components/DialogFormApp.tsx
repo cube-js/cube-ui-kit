@@ -1,4 +1,5 @@
 import { Button, DialogTrigger } from '../../index';
+
 import { ConfirmDeletionDialogForm } from './ConfirmDeletionDialogForm';
 
 export function DialogFormApp() {

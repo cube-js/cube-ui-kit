@@ -1,4 +1,3 @@
-import { OverlayTriggerState } from '@react-stately/overlays';
 import { createContext, HTMLAttributes, useContext } from 'react';
 import invariant from 'tiny-invariant';
 

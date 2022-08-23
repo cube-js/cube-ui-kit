@@ -1,8 +1,10 @@
 import { HTMLAttributes, memo } from 'react';
+
 import { tasty } from '../../../../tasty';
 import { Paragraph } from '../../../content/Paragraph';
-import { NotificationProps } from './types';
 import { mergeProps } from '../../../../utils/react';
+
+import { NotificationProps } from './types';
 
 export type NotificationDescriptionProps = {
   description: NotificationProps['description'];

@@ -14,8 +14,9 @@ import {
   useMemo,
   useRef,
 } from 'react';
-import { useFormProps } from '../Form/Form';
 import { useHover } from '@react-aria/interactions';
+
+import { useFormProps } from '../Form/Form';
 import { useProviderProps } from '../../../provider';
 import {
   BaseProps,
@@ -33,8 +34,9 @@ import {
 import { useFocus } from '../../../utils/react/interactions';
 import { FieldWrapper } from '../FieldWrapper';
 import { FormFieldProps } from '../../../shared';
-import type { AriaTextFieldProps } from '@react-types/textfield';
 import { mergeProps } from '../../../utils/react';
+
+import type { AriaTextFieldProps } from '@react-types/textfield';
 
 const ADD_STYLES = {
   display: 'grid',

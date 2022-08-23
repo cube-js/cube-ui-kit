@@ -2,10 +2,12 @@ import { expect } from '@storybook/jest';
 import { Meta, Story } from '@storybook/react';
 import { userEvent, within } from '@storybook/testing-library';
 import { BellOutlined } from '@ant-design/icons';
+
+import { Button } from '../../actions';
+
 import { Toast } from './Toast';
 import { CubeToastsApiProps } from './types';
 import { useToastsApi } from './use-toasts-api';
-import { Button } from '../../actions';
 
 export default {
   title: 'Overlays/Toasts',

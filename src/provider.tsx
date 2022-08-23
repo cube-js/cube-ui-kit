@@ -4,6 +4,7 @@ import {
   PropsWithChildren,
   useContext,
 } from 'react';
+
 import { BreakpointsProvider, Props } from './tasty';
 
 export interface ProviderProps extends Props {

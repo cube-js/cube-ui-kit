@@ -3,13 +3,8 @@ import { expect } from '@storybook/jest';
 import { userEvent, within } from '@storybook/testing-library';
 import { Meta, Story } from '@storybook/react';
 import { BellFilled, BellOutlined } from '@ant-design/icons';
+
 import { Button } from '../../actions';
-import { NotificationView, NotificationAction } from './NotificationView';
-import { Notification } from './Notification';
-import { CubeNotificationProps } from './types';
-import { useNotificationsApi } from './hooks';
-import { NotificationsList } from './NotificationsList';
-import { NotificationsDialog, NotificationsDialogTrigger } from './Dialog';
 import { CloudLogo } from '../../other/CloudLogo/CloudLogo';
 import { Flex } from '../../layout/Flex';
 import { Dialog, DialogTrigger } from '../Dialog';
@@ -18,6 +13,13 @@ import { Header } from '../../content/Header';
 import { Content } from '../../content/Content';
 import { Footer } from '../../content/Footer';
 import { Title } from '../../content/Title';
+
+import { NotificationsDialog, NotificationsDialogTrigger } from './Dialog';
+import { NotificationsList } from './NotificationsList';
+import { useNotificationsApi } from './hooks';
+import { CubeNotificationProps } from './types';
+import { Notification } from './Notification';
+import { NotificationView, NotificationAction } from './NotificationView';
 
 export default {
   title: 'Overlays/Notifications',

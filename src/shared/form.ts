@@ -1,5 +1,6 @@
-import { Props, Styles } from '../tasty';
 import { ReactNode } from 'react';
+
+import { Props, Styles } from '../tasty';
 
 /** Where to place label relative to input */
 export type LabelPosition = 'side' | 'top';

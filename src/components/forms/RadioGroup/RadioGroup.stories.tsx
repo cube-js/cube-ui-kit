@@ -1,7 +1,9 @@
-import { Radio } from './Radio';
+import { Story } from '@storybook/react';
+
 import { baseProps } from '../../../stories/lists/baseProps';
 import { TEXT_VALUE_ARG } from '../../../stories/FormFieldArgs';
-import { Story } from '@storybook/react';
+
+import { Radio } from './Radio';
 import { CubeRadioGroupProps } from './RadioGroup';
 
 export default {

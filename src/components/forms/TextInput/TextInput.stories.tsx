@@ -1,12 +1,14 @@
-import { TextInput, CubeTextInputProps } from './TextInput';
 import { DollarCircleOutlined } from '@ant-design/icons';
+import { StoryFn } from '@storybook/react';
+
 import {
   ICON_ARG,
   TEXT_VALUE_ARG,
   VALIDATION_STATE_ARG,
 } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
-import { StoryFn } from '@storybook/react';
+
+import { TextInput, CubeTextInputProps } from './TextInput';
 
 export default {
   title: 'Forms/TextInput',

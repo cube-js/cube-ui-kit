@@ -1,6 +1,8 @@
 import { HTMLAttributes, memo } from 'react';
+
 import { Title } from '../../../content/Title';
 import { tasty } from '../../../../tasty';
+
 import { NotificationProps } from './types';
 
 export type NotificationHeaderProps = {

@@ -1,10 +1,10 @@
 import { forwardRef } from 'react';
 import { useDOMRef } from '@react-spectrum/utils';
-import { useProviderProps } from '../../../provider';
 import { useCheckboxGroup } from '@react-aria/checkbox';
 import { useCheckboxGroupState } from '@react-stately/checkbox';
+
+import { useProviderProps } from '../../../provider';
 import { FormContext, useFormProps } from '../Form/Form';
-import { CheckboxGroupContext } from './context';
 import {
   BaseProps,
   BLOCK_STYLES,
@@ -12,14 +12,16 @@ import {
   OUTER_STYLES,
   tasty,
 } from '../../../tasty';
-
 import { FieldWrapper } from '../FieldWrapper';
-import type { AriaCheckboxGroupProps } from '@react-types/checkbox';
 import { FormFieldProps } from '../../../shared';
 import {
   castNullableArrayValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+
+import { CheckboxGroupContext } from './context';
+
+import type { AriaCheckboxGroupProps } from '@react-types/checkbox';
 
 const WRAPPER_STYLES = {
   display: 'grid',

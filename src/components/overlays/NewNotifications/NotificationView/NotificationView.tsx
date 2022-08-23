@@ -1,17 +1,20 @@
 import { ForwardedRef, forwardRef } from 'react';
 import { useHover } from '@react-aria/interactions';
 import { useFocusRing } from '@react-aria/focus';
+
 import { tasty } from '../../../../tasty';
 import { useEvent, useTimer } from '../../../../_internal';
 import { ClearSlots, mergeProps } from '../../../../utils/react';
+import { useId } from '../../../../utils/react/useId';
+
 import { NotificationIcon } from './NotificationIcon';
 import { NotificationHeader } from './NotificationHeader';
 import { NotificationDescription } from './NotificationDescription';
 import { NotificationFooter } from './NotificationFooter';
 import { NotificationCloseButton } from './NotificationCloseButton';
-import type { NotificationProps } from './types';
 import { NotificationProvider } from './NotificationProvider';
-import { useId } from '../../../../utils/react/useId';
+
+import type { NotificationProps } from './types';
 
 const NotificationContainer = tasty({
   styles: {
@@ -85,8 +88,8 @@ export const NotificationView = forwardRef(function NotificationView(
       <NotificationProvider onClose={onClose}>
         <NotificationContainer
           {...mergeProps(attributes, hoverProps, focusProps)}
-          styles={styles}
           ref={ref}
+          styles={styles}
           data-id={id}
           data-qa={qa}
           aria-labelledby={labelID}
@@ -113,9 +116,9 @@ export const NotificationView = forwardRef(function NotificationView(
 
           {isDismissible && (
             <NotificationCloseButton
-              onPress={onDismissEvent}
               isHovered={isHovered}
               isFocused={isFocusVisible}
+              onPress={onDismissEvent}
             />
           )}
         </NotificationContainer>

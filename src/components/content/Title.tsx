@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { CubeTextProps, TEXT_PROP_MAP } from './Text';
+
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -12,6 +12,8 @@ import {
   TEXT_STYLES,
 } from '../../tasty';
 import { useSlotProps } from '../../utils/react';
+
+import { CubeTextProps, TEXT_PROP_MAP } from './Text';
 
 const STYLE_LIST = [...TEXT_STYLES, ...CONTAINER_STYLES];
 
@@ -52,43 +54,41 @@ const TitleElement = tasty({
   },
 });
 
-const _Title = forwardRef(
-  (
-    {
-      qa,
-      as,
-      styleName,
-      inline,
-      nowrap,
-      ellipsis,
-      level,
-      ...props
-    }: CubeTitleProps,
-    ref,
-  ) => {
-    const propsWithSlots = useSlotProps(props, 'heading');
+const _Title = forwardRef(function Title(
+  {
+    qa,
+    as,
+    styleName,
+    inline,
+    nowrap,
+    ellipsis,
+    level,
+    ...props
+  }: CubeTitleProps,
+  ref,
+) {
+  const propsWithSlots = useSlotProps(props, 'heading');
 
-    const tag: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' = `h${level || 1}`;
-    const styles = extractStyles(propsWithSlots, STYLE_LIST, {}, TEXT_PROP_MAP);
+  const tag: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' = `h${level || 1}`;
+  const styles = extractStyles(propsWithSlots, STYLE_LIST, {}, TEXT_PROP_MAP);
 
-    return (
-      <TitleElement
-        qa={qa || 'Title'}
-        as={as || tag}
-        styleName={styleName}
-        data-level={level || 1}
-        mods={{
-          nowrap,
-          ellipsis,
-        }}
-        inline={inline}
-        {...filterBaseProps(propsWithSlots, { eventProps: true })}
-        styles={styles}
-        ref={ref}
-      />
-    );
-  },
-);
+  return (
+    <TitleElement
+      qa={qa || 'Title'}
+      as={as || tag}
+      styleName={styleName}
+      data-level={level || 1}
+      mods={{
+        nowrap,
+        ellipsis,
+      }}
+      inline={inline}
+      {...filterBaseProps(propsWithSlots, { eventProps: true })}
+      ref={ref}
+      styles={styles}
+    />
+  );
+});
 
 const Title = Object.assign(_Title, {
   Danger: forwardRef(function DangerTitle(props: CubeTitleProps, ref) {

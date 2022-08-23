@@ -1,5 +1,7 @@
 import { memo } from 'react';
+
 import { tasty } from '../../../tasty';
+
 import { Cube } from './Cube';
 import { SpinsContainer } from './SpinsContainer';
 import { InternalSpinnerProps, SpinSize } from './types';

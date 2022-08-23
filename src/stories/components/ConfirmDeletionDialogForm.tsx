@@ -1,4 +1,5 @@
 import { FieldTypes } from 'src/components/forms/Form/types';
+
 import {
   DialogForm,
   Field,
@@ -21,8 +22,6 @@ export function ConfirmDeletionDialogForm<T extends FieldTypes>(
   return (
     <DialogForm
       title="Delete Deployment"
-      onSubmit={onSubmit}
-      onDismiss={onDismiss}
       submitProps={{
         label: 'Delete',
         theme: 'danger',
@@ -30,6 +29,8 @@ export function ConfirmDeletionDialogForm<T extends FieldTypes>(
       cancelProps={{
         label: 'I changed my mind',
       }}
+      onSubmit={onSubmit}
+      onDismiss={onDismiss}
     >
       <Paragraph>
         To delete the instance, please, enter its full name:{' '}

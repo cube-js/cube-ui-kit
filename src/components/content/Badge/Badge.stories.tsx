@@ -1,5 +1,6 @@
-import { Badge } from './Badge';
 import { baseProps } from '../../../stories/lists/baseProps';
+
+import { Badge } from './Badge';
 
 export default {
   title: 'Content/Badge',

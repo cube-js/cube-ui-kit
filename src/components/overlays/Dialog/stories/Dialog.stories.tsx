@@ -2,6 +2,7 @@ import { ModalProvider } from '@react-aria/overlays';
 import { within, userEvent } from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
 import { Story } from '@storybook/react';
+
 import { CubeDialogProps } from '../Dialog';
 import { CubeDialogTriggerProps } from '../DialogTrigger';
 import {
@@ -47,7 +48,7 @@ const Template: Story<
             </Content>
             <Footer>
               <Button.Group>
-                <Button onPress={close} type="primary">
+                <Button type="primary" onPress={close}>
                   Action
                 </Button>
                 <Button onPress={close}>Sec</Button>

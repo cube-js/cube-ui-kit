@@ -1,5 +1,6 @@
-import { PrismCode } from './PrismCode';
 import { baseProps } from '../../../stories/lists/baseProps';
+
+import { PrismCode } from './PrismCode';
 
 export default {
   title: 'Content/PrismCode',

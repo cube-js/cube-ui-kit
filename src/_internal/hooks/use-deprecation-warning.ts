@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+
 import { deprecationWarning } from '../../utils/warnings';
 
 export function useDeprecationWarning(

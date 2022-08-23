@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, RenderOptions } from '@testing-library/react';
+
 import { Root } from '../components/Root';
 
 export function renderWithRoot(

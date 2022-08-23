@@ -1,5 +1,6 @@
-import { Button } from '../../actions';
 import { CaretDownOutlined, CaretUpOutlined } from '@ant-design/icons';
+
+import { Button } from '../../actions';
 import { Styles } from '../../../tasty';
 
 const STEP_BUTTON_STYLES: Styles = {
@@ -19,9 +20,9 @@ const STEP_BUTTON_STYLES: Styles = {
 export function StepButton(props) {
   return (
     <Button
+      preventDefault
       type="neutral"
       styles={STEP_BUTTON_STYLES}
-      preventDefault
       icon={
         props.direction === 'up' ? <CaretUpOutlined /> : <CaretDownOutlined />
       }

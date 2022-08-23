@@ -1,20 +1,23 @@
 import { forwardRef, useRef } from 'react';
+import { useLocale } from '@react-aria/i18n';
+import { useNumberFieldState } from '@react-stately/numberfield';
+import { useNumberField } from '@react-aria/numberfield';
+
 import { useFormProps } from '../Form';
 import { useProviderProps } from '../../../provider';
-import { useLocale } from '@react-aria/i18n';
 import {
   CubeTextInputBaseProps,
   TextInputBase,
 } from '../TextInput/TextInputBase';
-import { useNumberFieldState } from '@react-stately/numberfield';
-import { useNumberField } from '@react-aria/numberfield';
-import { StepButton } from './StepButton';
-import type { AriaNumberFieldProps } from '@react-types/numberfield';
 import { tasty } from '../../../tasty';
 import {
   castNullableNumberValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+
+import { StepButton } from './StepButton';
+
+import type { AriaNumberFieldProps } from '@react-types/numberfield';
 
 export interface CubeNumberInputProps
   extends Omit<CubeTextInputBaseProps, 'defaultValue' | 'value' | 'onChange'>,
@@ -54,9 +57,9 @@ function NumberInput(props: WithNullableValue<CubeNumberInputProps>, ref) {
   return (
     <TextInputBase
       {...otherProps}
+      ref={ref}
       labelProps={labelProps}
       inputProps={inputProps}
-      ref={ref}
       inputRef={inputRef}
       wrapperProps={groupProps}
       suffixPosition="after"

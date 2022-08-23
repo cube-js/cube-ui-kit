@@ -3,13 +3,15 @@ import { TransitionGroup } from 'react-transition-group';
 import { Item } from '@react-stately/collections';
 import { useHover } from '@react-aria/interactions';
 import { useFocusRing, focusSafely } from '@react-aria/focus';
+
 import { tasty } from '../../../../tasty';
 import { CubeNotifyApiPropsWithID } from '../types';
-import { TransitionComponent } from './TransitionComponent';
-import { FloatingNotification } from './FloatingNotification';
 import { useNotificationsList, CollectionChildren } from '../hooks';
 import { mergeProps } from '../../../../utils/react';
 import { useEvent } from '../../../../_internal';
+
+import { FloatingNotification } from './FloatingNotification';
+import { TransitionComponent } from './TransitionComponent';
 
 export type NotificationsBarProps = {
   items: Iterable<CubeNotifyApiPropsWithID>;
@@ -76,7 +78,7 @@ export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
       aria-live="polite"
       {...mergeProps(listProps, hoverProps, focusProps)}
     >
-      <TransitionGroup component={null} enter exit>
+      <TransitionGroup enter exit component={null}>
         {[...state.collection].reverse().map((notification) => (
           <TransitionComponent key={notification.props.id}>
             <FloatingNotification

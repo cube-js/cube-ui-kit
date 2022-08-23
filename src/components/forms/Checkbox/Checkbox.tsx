@@ -1,9 +1,9 @@
 import { useFocusableRef } from '@react-spectrum/utils';
 import { forwardRef, useContext, useRef } from 'react';
-import type { AriaCheckboxProps } from '@react-types/checkbox';
 import { useCheckbox, useCheckboxGroupItem } from '@react-aria/checkbox';
 import { useHover } from '@react-aria/interactions';
 import { useToggleState } from '@react-stately/toggle';
+
 import { useProviderProps } from '../../../provider';
 import {
   BaseProps,
@@ -21,33 +21,40 @@ import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../Label';
 import { HiddenInput } from '../../HiddenInput';
 import { useFormProps } from '../Form';
 import { FieldWrapper } from '../FieldWrapper';
-import { CheckboxGroup } from './CheckboxGroup';
-import { CheckboxGroupContext } from './context';
-import type { FocusableRef } from '@react-types/shared';
 import { FormFieldProps } from '../../../shared';
 import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
 
+import { CheckboxGroup } from './CheckboxGroup';
+import { CheckboxGroupContext } from './context';
+
+import type { FocusableRef } from '@react-types/shared';
+import type { AriaCheckboxProps } from '@react-types/checkbox';
+
 export interface CubeCheckboxProps
   extends BaseProps,
     AriaCheckboxProps,
     FormFieldProps {}
 
-const CheckOutlined = () => (
-  <svg width="10" height="8" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M3.417 7.604l-.017.018-3.4-3.4 1.433-1.433 1.985 1.985L8.192 0l1.432 1.433-6.189 6.189-.018-.018z"
-      fill="currentColor"
-    />
-  </svg>
-);
-const IndeterminateOutline = () => (
-  <svg width="9" height="3" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M0 .044v2.001l.026.025h8.063V.044H0z" fill="#fff" />
-  </svg>
-);
+function CheckOutlined() {
+  return (
+    <svg width="10" height="8" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M3.417 7.604l-.017.018-3.4-3.4 1.433-1.433 1.985 1.985L8.192 0l1.432 1.433-6.189 6.189-.018-.018z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+function IndeterminateOutline() {
+  return (
+    <svg width="9" height="3" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 .044v2.001l.026.025h8.063V.044H0z" fill="#fff" />
+    </svg>
+  );
+}
 
 const CheckboxWrapperElement = tasty({
   as: 'label',

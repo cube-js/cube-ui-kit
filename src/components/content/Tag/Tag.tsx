@@ -1,4 +1,6 @@
 import { forwardRef } from 'react';
+import { CloseOutlined } from '@ant-design/icons';
+
 import THEMES from '../../../data/themes';
 import {
   BaseProps,
@@ -11,7 +13,6 @@ import {
 } from '../../../tasty';
 import { Action } from '../../actions/Action';
 import { Suffix } from '../../layout/Suffix';
-import { CloseOutlined } from '@ant-design/icons';
 
 const TagElement = tasty({
   qa: 'Tag',
@@ -89,7 +90,7 @@ export interface CubeTagProps extends BaseProps, ContainerStyleProps {
   closeButtonStyles?: Styles;
 }
 
-const Tag = (allProps: CubeTagProps, ref) => {
+function Tag(allProps: CubeTagProps, ref) {
   let { type, isClosable, onClose, closeButtonStyles, children, ...props } =
     allProps;
 
@@ -98,10 +99,10 @@ const Tag = (allProps: CubeTagProps, ref) => {
   return (
     <TagElement
       {...filterBaseProps(props, { eventProps: true })}
+      ref={ref}
       styles={styles}
       data-type={type}
       mods={{ closable: isClosable }}
-      ref={ref}
     >
       <div data-element="Content">{children}</div>
       {isClosable ? (
@@ -117,7 +118,7 @@ const Tag = (allProps: CubeTagProps, ref) => {
       ) : undefined}
     </TagElement>
   );
-};
+}
 
 const _Tag = forwardRef(Tag);
 export { _Tag as Tag };

@@ -6,6 +6,8 @@ import {
   useRef,
   useState,
 } from 'react';
+import { createFocusableRef } from '@react-spectrum/utils';
+
 import { useProviderProps } from '../../../provider';
 import { Action } from '../../actions/Action';
 import {
@@ -17,10 +19,10 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import type { AriaTextFieldProps } from '@react-types/textfield';
 import { FormFieldProps } from '../../../shared';
-import { createFocusableRef } from '@react-spectrum/utils';
 import { FieldWrapper } from '../FieldWrapper';
+
+import type { AriaTextFieldProps } from '@react-types/textfield';
 
 const FileInputElement = tasty(Action, {
   styles: {
@@ -185,10 +187,10 @@ function FileInput(props: CubeFileInputProps, ref) {
 
   const fileInput = (
     <FileInputElement
+      ref={domRef}
       qa={qa || 'FileInput'}
       styles={inputStyles}
       isDisabled={isDisabled}
-      ref={domRef}
       mods={{
         selected: !!value,
         'drag-hover': dragHover,
@@ -200,13 +202,13 @@ function FileInput(props: CubeFileInputProps, ref) {
       }}
     >
       <input
+        ref={inputRef}
         id={id}
         name={name}
-        ref={inputRef}
-        onChange={onLocalChange}
         data-element="Input"
         type="file"
         tabIndex={-1}
+        onChange={onLocalChange}
         onDragEnter={() => {
           setDragHover(true);
         }}

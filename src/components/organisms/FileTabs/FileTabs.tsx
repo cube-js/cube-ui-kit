@@ -7,12 +7,13 @@ import {
   useState,
 } from 'react';
 import { CloseOutlined } from '@ant-design/icons';
+import styled from 'styled-components';
+
 import { Block } from '../../Block';
 import { Action, CubeActionProps } from '../../actions/Action';
 import { Space } from '../../layout/Space';
 import { CubeFlexProps, Flex } from '../../layout/Flex';
 import { Styles, tasty } from '../../../tasty';
-import styled from 'styled-components';
 import { Button } from '../../actions';
 import { useLayoutEffect } from '../../../utils/react';
 
@@ -221,14 +222,14 @@ export interface FileTabProps extends Omit<CubeActionProps, 'id'> {
   onClose?: () => void;
 }
 
-const Tab = ({
+function Tab({
   isDirty,
   isDisabled,
   children,
   isClosable,
   onClose,
   ...props
-}: FileTabProps) => {
+}: FileTabProps) {
   return (
     <TabElement
       mods={{
@@ -254,7 +255,7 @@ const Tab = ({
       </Space>
     </TabElement>
   );
-};
+}
 
 export interface CubeFileTabsProps extends CubeFlexProps {
   /** The initial active key in the tabs (uncontrolled). */
@@ -424,12 +425,12 @@ export function FileTabs({
           {tabs.map((tab) => {
             return (
               <Tab
-                onPress={() => onPress(tab)}
                 key={tab.id}
-                onClose={() => isClosable && handleClose(tab)}
                 isClosable={isClosable}
                 isDisabled={tab.id === activeKey || false}
                 isDirty={tab.isDirty}
+                onPress={() => onPress(tab)}
+                onClose={() => isClosable && handleClose(tab)}
               >
                 {tab.title}
               </Tab>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import invariant from 'tiny-invariant';
+
 import { PortalProps } from './types';
 import { usePortalContext } from './PortalProvider';
 

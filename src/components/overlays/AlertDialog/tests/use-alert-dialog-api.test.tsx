@@ -1,8 +1,10 @@
 import { setTimeout } from 'node:timers/promises';
+
 import { act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
 import { renderWithRoot } from '../../../../test/render';
 import { useAlertDialogAPI } from '../AlertDialogApiProvider';
-import userEvent from '@testing-library/user-event';
 
 describe('useAlertDialogApi', () => {
   let prevDialogPromise: Promise<string> | null = null;

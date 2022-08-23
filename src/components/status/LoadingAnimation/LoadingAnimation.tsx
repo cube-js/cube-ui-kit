@@ -1,5 +1,6 @@
-import { Block, CubeBlockProps } from '../../Block';
 import styled from 'styled-components';
+
+import { Block, CubeBlockProps } from '../../Block';
 
 const POSITIONS = [
   [49, 0.5],
@@ -124,9 +125,9 @@ const ImgElement = styled.img(
 `,
 );
 
-const Cube = (props) => {
+function Cube(props) {
   return <ImgElement role="presentation" src={cubeImage} alt="" {...props} />;
-};
+}
 
 const SIZE_MAP = {
   small: 32,

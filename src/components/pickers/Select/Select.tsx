@@ -3,7 +3,6 @@ import {
   LoadingOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
-import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import {
   cloneElement,
   forwardRef,
@@ -24,8 +23,12 @@ import {
   useOverlay,
   useOverlayPosition,
 } from '@react-aria/overlays';
-import { useFormProps } from '../../forms/Form/Form';
 import { useFocus as useAriaFocus, useHover } from '@react-aria/interactions';
+import { Item } from '@react-stately/collections';
+import { DOMRef } from '@react-types/shared';
+import styled from 'styled-components';
+
+import { useFormProps } from '../../forms/Form/Form';
 import { useProviderProps } from '../../../provider';
 import {
   BasePropsWithoutChildren,
@@ -40,33 +43,34 @@ import {
 } from '../../../tasty';
 import { useFocus } from '../../../utils/react/interactions';
 import { FieldWrapper } from '../../forms/FieldWrapper';
-import { Item } from '@react-stately/collections';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
-import type { AriaSelectProps } from '@react-types/select';
-import { DOMRef } from '@react-types/shared';
 import { FormFieldProps } from '../../../shared';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
-import styled from 'styled-components';
+import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import {
   DEFAULT_INPUT_STYLES,
   INPUT_WRAPPER_STYLES,
 } from '../../forms/TextInput/TextInputBase';
 import { CubeButtonProps, provideButtonStyles } from '../../actions';
 
-const CaretDownIcon = () => (
-  <svg
-    aria-hidden="true"
-    width="14"
-    height="14"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M11.49 4.102H2.51c-.269 0-.42.284-.253.478l4.49 5.206a.342.342 0 00.506 0l4.49-5.206c.167-.194.016-.478-.253-.478z"
-      fill="currentColor"
-    />
-  </svg>
-);
+import type { AriaSelectProps } from '@react-types/select';
+
+function CaretDownIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      width="14"
+      height="14"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M11.49 4.102H2.51c-.269 0-.42.284-.253.478l4.49 5.206a.342.342 0 00.506 0l4.49-5.206c.167-.194.016-.478-.253-.478z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
 
 const SelectWrapperElement = tasty({
   styles: {
@@ -493,13 +497,13 @@ export function ListBoxPopup({
     <StyledOverlayElement
       {...overlayProps}
       {...parentOverlayProps}
+      ref={popoverRef}
       styles={overlayStyles}
       style={{
         '--overlay-min-width': minWidth ? `${minWidth}px` : 'initial',
         ...parentOverlayProps?.style,
       }}
       data-position={placement}
-      ref={popoverRef}
     >
       <FocusScope restoreFocus>
         <DismissButton onDismiss={() => state.close()} />
@@ -552,6 +556,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
     <OptionElement
       {...mergeProps(optionProps, focusProps)}
       ref={ref}
+      key={item.key}
       mods={{
         selected: isSelected,
         focused: shouldUseVirtualFocus ? isVirtualFocused : isFocused,
@@ -559,7 +564,6 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
       }}
       data-theme={isSelected ? 'special' : undefined}
       styles={styles}
-      key={item.key}
     >
       {item.rendered}
     </OptionElement>

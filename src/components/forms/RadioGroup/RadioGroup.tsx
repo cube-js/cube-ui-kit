@@ -1,10 +1,10 @@
 import { forwardRef } from 'react';
 import { useDOMRef } from '@react-spectrum/utils';
-import { useProviderProps } from '../../../provider';
 import { useRadioGroup } from '@react-aria/radio';
 import { useRadioGroupState } from '@react-stately/radio';
+
+import { useProviderProps } from '../../../provider';
 import { FormContext, useFormProps } from '../Form';
-import { RadioContext } from './context';
 import {
   BaseProps,
   BLOCK_STYLES,
@@ -14,12 +14,15 @@ import {
   tasty,
 } from '../../../tasty';
 import { FieldWrapper } from '../FieldWrapper';
-import type { AriaRadioGroupProps } from '@react-types/radio';
 import { FormFieldProps } from '../../../shared';
 import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+
+import { RadioContext } from './context';
+
+import type { AriaRadioGroupProps } from '@react-types/radio';
 
 export interface CubeRadioGroupProps
   extends BaseProps,

@@ -1,4 +1,6 @@
 import { forwardRef } from 'react';
+import styled from 'styled-components';
+
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -8,7 +10,6 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import styled from 'styled-components';
 
 const PlaceholderElement = tasty({
   role: 'alert',
@@ -55,7 +56,10 @@ export interface CubePlaceholderProps extends BaseProps, ContainerStyleProps {
   circle?: boolean;
 }
 
-export const Placeholder = forwardRef((allProps: CubePlaceholderProps, ref) => {
+export const Placeholder = forwardRef(function Placeholder(
+  allProps: CubePlaceholderProps,
+  ref,
+) {
   let { size = '2x', circle, ...props } = allProps;
 
   let styles = extractStyles(props, CONTAINER_STYLES);
@@ -64,13 +68,13 @@ export const Placeholder = forwardRef((allProps: CubePlaceholderProps, ref) => {
     <StyledPlaceholder
       role="region"
       {...filterBaseProps(props, { eventProps: true })}
+      ref={ref}
       styles={{
         height: size,
         width: circle ? size : false,
         radius: circle ? '9999rem' : '1r',
         ...styles,
       }}
-      ref={ref}
     />
   );
 });

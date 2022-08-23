@@ -1,5 +1,7 @@
 import clsx from 'clsx';
+
 import { mergeStyles, Props } from '../../tasty';
+
 import { chain } from './chain';
 import { mergeIds } from './useId';
 

@@ -3,9 +3,11 @@ import { useOverlayTriggerState } from '@react-stately/overlays';
 import { PressResponder } from '@react-aria/interactions';
 import { useMediaQuery } from '@react-spectrum/utils';
 import { useOverlayPosition, useOverlayTrigger } from '@react-aria/overlays';
-import { DialogContext } from './context';
+
 import { Modal, Popover, Tray } from '../Modal';
 import { Styles } from '../../../tasty';
+
+import { DialogContext } from './context';
 
 export type CubeDialogClose = (close: () => void) => ReactElement;
 
@@ -111,9 +113,9 @@ function DialogTrigger(props) {
         targetRef={targetRef}
         trigger={trigger}
         content={content}
-        onClose={onClose}
         isKeyboardDismissDisabled={isKeyboardDismissDisabled}
         hideArrow={hideArrow}
+        onClose={onClose}
       />
     );
   }
@@ -128,12 +130,12 @@ function DialogTrigger(props) {
           <Modal
             isOpen={state.isOpen}
             isDismissable={isDismissable}
-            onClose={onClose}
             type={type}
             isKeyboardDismissDisabled={isKeyboardDismissDisabled}
+            styles={styles}
+            onClose={onClose}
             onExiting={onExiting}
             onExited={onExited}
-            styles={styles}
           >
             {typeof content === 'function' ? content(state.close) : content}
           </Modal>
@@ -142,9 +144,9 @@ function DialogTrigger(props) {
         return (
           <Tray
             isOpen={state.isOpen}
-            onClose={onClose}
             isKeyboardDismissDisabled={isKeyboardDismissDisabled}
             styles={styles}
+            onClose={onClose}
           >
             {typeof content === 'function' ? content(state.close) : content}
           </Tray>
@@ -156,10 +158,10 @@ function DialogTrigger(props) {
     <DialogTriggerBase
       type={type}
       state={state}
-      onClose={onClose}
       isDismissable={isDismissable}
       trigger={trigger}
       overlay={renderOverlay()}
+      onClose={onClose}
     />
   );
 }
@@ -215,14 +217,14 @@ function PopoverTrigger(allProps) {
 
   let overlay = (
     <Popover
+      ref={overlayRef}
       isOpen={state.isOpen}
       style={popoverProps.style}
-      ref={overlayRef}
-      onClose={onClose}
       placement={placement}
       arrowProps={arrowProps}
       isKeyboardDismissDisabled={isKeyboardDismissDisabled}
       hideArrow={hideArrow}
+      onClose={onClose}
     >
       {typeof content === 'function' ? content(state.close) : content}
     </Popover>
@@ -235,8 +237,8 @@ function PopoverTrigger(allProps) {
       triggerProps={triggerPropsWithRef}
       dialogProps={overlayProps}
       trigger={trigger}
-      onClose={onClose}
       overlay={overlay}
+      onClose={onClose}
     />
   );
 }
@@ -264,13 +266,13 @@ function DialogTriggerBase(props) {
     <Fragment>
       <PressResponder
         {...triggerProps}
-        onPress={state.toggle}
         isPressed={
           state.isOpen &&
           type !== 'modal' &&
           type !== 'fullscreen' &&
           type !== 'fullscreenTakeover'
         }
+        onPress={state.toggle}
       >
         {trigger}
       </PressResponder>

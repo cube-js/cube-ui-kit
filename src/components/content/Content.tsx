@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -33,7 +34,10 @@ export interface CubeContentProps
     ContainerStyleProps,
     TextStyleProps {}
 
-export const Content = forwardRef((props: CubeContentProps, ref) => {
+export const Content = forwardRef(function Content(
+  props: CubeContentProps,
+  ref,
+) {
   props = useSlotProps(props, 'content');
 
   const styles = extractStyles(props, STYLE_LIST);
@@ -41,8 +45,8 @@ export const Content = forwardRef((props: CubeContentProps, ref) => {
   return (
     <ContentElement
       {...filterBaseProps(props, { eventProps: true })}
-      styles={styles}
       ref={ref}
+      styles={styles}
     />
   );
 });

@@ -1,5 +1,6 @@
-import { Notification } from './Notification';
 import { baseProps } from '../../../stories/lists/baseProps';
+
+import { Notification } from './Notification';
 
 export default {
   title: 'Overlays/Notification',

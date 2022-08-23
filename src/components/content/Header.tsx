@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -28,7 +29,7 @@ export interface CubeHeaderProps
     ContainerStyleProps,
     TextStyleProps {}
 
-export const Header = forwardRef((props: CubeHeaderProps, ref) => {
+export const Header = forwardRef(function Header(props: CubeHeaderProps, ref) {
   props = useSlotProps(props, 'header');
 
   const styles = extractStyles(props, STYLE_LIST);
@@ -36,8 +37,8 @@ export const Header = forwardRef((props: CubeHeaderProps, ref) => {
   return (
     <HeaderElement
       {...filterBaseProps(props, { eventProps: true })}
-      styles={styles}
       ref={ref}
+      styles={styles}
     />
   );
 });

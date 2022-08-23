@@ -1,7 +1,9 @@
 import { getByTestId, render } from '@testing-library/react';
-import { styled } from './styled';
+
 import { Button } from '../components/actions';
 import { Block } from '../components/Block';
+
+import { styled } from './styled';
 
 describe('styled() API', () => {
   beforeAll(() => {

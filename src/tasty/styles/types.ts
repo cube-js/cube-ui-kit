@@ -1,4 +1,5 @@
 import { CSSProperties } from 'react';
+
 import { ResponsiveStyleValue } from '../utils/styles';
 
 type NamedColor =

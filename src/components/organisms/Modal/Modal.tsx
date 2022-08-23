@@ -1,5 +1,9 @@
 import { ReactNode, useCallback, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
+import styled from 'styled-components';
+import { CloseOutlined } from '@ant-design/icons';
+import { CSSTransition } from 'react-transition-group';
+
 import { Action } from '../../actions/Action';
 import { Card, CubeCardProps } from '../../content/Card/Card';
 import { Flow } from '../../layout/Flow';
@@ -8,9 +12,6 @@ import { Block } from '../../Block';
 import { Button } from '../../actions';
 import { Space } from '../../layout/Space';
 import { Title } from '../../content/Title';
-import styled from 'styled-components';
-import { CloseOutlined } from '@ant-design/icons';
-import { CSSTransition } from 'react-transition-group';
 
 const Overlay = styled.div`
   position: fixed;
@@ -226,13 +227,13 @@ export function Modal(allProps: CubeModalProps) {
                 qa="ModalCloseButton"
                 width="3x"
                 height="3x"
-                onPress={onClose || onCancel}
                 color={{ '': '#dark.75', hovered: '#purple' }}
                 outline={{
                   '': '#purple-03.0',
                   'focused & focus-visible': '#purple-03',
                 }}
                 label="Close"
+                onPress={onClose || onCancel}
               >
                 <CloseOutlined style={{ fontSize: 16 }} />
               </Action>
@@ -263,8 +264,8 @@ export function Modal(allProps: CubeModalProps) {
                 </Button>
                 <Button
                   data-qa={'CancelButton'}
-                  onPress={cancel}
                   isDisabled={isLoading}
+                  onPress={cancel}
                 >
                   {cancelText || (okText === 'Yes' ? 'No' : 'Cancel')}
                 </Button>
@@ -366,10 +367,10 @@ const modal: ModalService = {
         return (
           <Modal
             {...options}
+            key={id}
             onOk={wrapOnOk}
             onCancel={wrapOnCancel}
             onClose={wrapOnClose}
-            key={id}
           >
             {content}
           </Modal>

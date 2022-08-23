@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+
 import THEMES from '../../../data/themes';
 import {
   BaseProps,
@@ -43,7 +44,7 @@ export interface CubeBadgeProps extends BaseProps, ContainerStyleProps {
   type?: keyof typeof THEMES | string;
 }
 
-export const Badge = forwardRef((allProps: CubeBadgeProps, ref) => {
+export const Badge = forwardRef(function Badge(allProps: CubeBadgeProps, ref) {
   let { type, children, ...props } = allProps;
 
   const styles = extractStyles(props, CONTAINER_STYLES);
@@ -51,13 +52,13 @@ export const Badge = forwardRef((allProps: CubeBadgeProps, ref) => {
   return (
     <BadgeElement
       {...filterBaseProps(props, { eventProps: true })}
+      ref={ref}
       data-type={type}
       mods={{
         single: typeof children === 'string' && children.length === 1,
         multiple: typeof children === 'string' && children.length === 2,
       }}
       styles={styles}
-      ref={ref}
     >
       {children}
     </BadgeElement>

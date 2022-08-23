@@ -1,7 +1,8 @@
-import { mediaWrapper, normalizeStyleZones } from './responsive';
-import { StyleHandler, StyleMap, StyleValueStateMap } from './styles';
 import { Styles, Selector } from '../styles/types';
 import { createStyle, STYLE_HANDLER_MAP } from '../styles';
+
+import { mediaWrapper, normalizeStyleZones } from './responsive';
+import { StyleHandler, StyleMap, StyleValueStateMap } from './styles';
 
 type HandlerQueueItem = {
   handler: StyleHandler;

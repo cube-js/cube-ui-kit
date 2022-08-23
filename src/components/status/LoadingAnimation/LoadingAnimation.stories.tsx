@@ -1,9 +1,11 @@
+import { Meta, Story } from '@storybook/react';
+
+import { baseProps } from '../../../stories/lists/baseProps';
+
 import {
   LoadingAnimation,
   CubeLoadingAnimationProps,
 } from './LoadingAnimation';
-import { baseProps } from '../../../stories/lists/baseProps';
-import { Meta, Story } from '@storybook/react';
 
 export default {
   title: 'Status/LoadingAnimation',

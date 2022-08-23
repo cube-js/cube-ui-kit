@@ -1,5 +1,4 @@
 import { useDOMRef } from '@react-spectrum/utils';
-import { Provider, useProviderProps } from '../../../provider';
 import {
   createContext,
   FormHTMLAttributes,
@@ -8,6 +7,9 @@ import {
   useEffect,
   useRef,
 } from 'react';
+import { DOMRef } from '@react-types/shared';
+
+import { Provider, useProviderProps } from '../../../provider';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -17,12 +19,12 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { CubeFormData, CubeFormInstance, useForm } from './useForm';
 import { useCombinedRefs } from '../../../utils/react';
 import { timeout } from '../../../utils/promise';
 import { FormBaseProps } from '../../../shared';
+
+import { CubeFormData, CubeFormInstance, useForm } from './useForm';
 import { FieldTypes } from './types';
-import { DOMRef } from '@react-types/shared';
 
 export const FormContext = createContext({});
 
@@ -194,11 +196,11 @@ function Form<T extends FieldTypes>(
   return (
     <FormElement
       {...filterBaseProps(otherProps, { propNames: formPropNames })}
-      onSubmit={onSubmitCallback}
+      ref={domRef}
       noValidate
       styles={styles}
-      ref={domRef}
       mods={{ 'has-sider': labelPosition === 'side' }}
+      onSubmit={onSubmitCallback}
     >
       <FormContext.Provider value={ctx}>
         <Provider

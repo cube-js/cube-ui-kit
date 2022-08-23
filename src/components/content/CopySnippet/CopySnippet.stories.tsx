@@ -1,6 +1,8 @@
 import { ComponentMeta, Story } from '@storybook/react';
-import { CopySnippet, CubeCopySnippetProps } from './CopySnippet';
+
 import { baseProps } from '../../../stories/lists/baseProps';
+
+import { CopySnippet, CubeCopySnippetProps } from './CopySnippet';
 
 export default {
   title: 'Content/CopySnippet',

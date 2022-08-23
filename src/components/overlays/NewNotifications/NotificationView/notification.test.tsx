@@ -1,7 +1,9 @@
 import { render, getByTestId, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+
 import { wait } from '../../../../test';
 import { Timer } from '../../../../_internal';
+
 import { NotificationView } from './NotificationView';
 
 describe('<Notification />', () => {
@@ -65,7 +67,7 @@ describe('<Notification />', () => {
     const timer = new Timer(timerCallback, 100);
 
     render(
-      <NotificationView description="test" onClose={onClose} timer={timer} />,
+      <NotificationView description="test" timer={timer} onClose={onClose} />,
     );
 
     await wait(500);

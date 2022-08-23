@@ -1,7 +1,9 @@
 import { memo, ReactNode } from 'react';
-import { NotificationIconProps } from './types';
+
 import { tasty } from '../../../../tasty';
 import { Danger, Success, Attention } from '../../../../icons';
+
+import { NotificationIconProps } from './types';
 
 const IconContainer = tasty({
   styles: {

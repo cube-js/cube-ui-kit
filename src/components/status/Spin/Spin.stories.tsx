@@ -1,5 +1,7 @@
 import { Meta, Story } from '@storybook/react';
+
 import { Paragraph } from '../../content/Paragraph';
+
 import { Spin } from './Spin';
 import { CubeSpinProps } from './types';
 

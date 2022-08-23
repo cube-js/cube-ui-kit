@@ -1,6 +1,7 @@
 import styledComponents, { createGlobalStyle } from 'styled-components';
 import { ComponentType, FC, forwardRef, useContext, useMemo } from 'react';
 import { isValidElementType } from 'react-is';
+
 import { BreakpointsContext } from './providers/BreakpointsProvider';
 import { modAttrs } from './utils/modAttrs';
 import { AllBaseProps, BaseProps, BaseStyleProps, Props } from './types';

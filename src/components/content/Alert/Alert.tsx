@@ -1,8 +1,10 @@
 import { ForwardedRef, forwardRef } from 'react';
+
 import THEMES from '../../../data/themes';
+import { tasty } from '../../../tasty';
+
 import { CubeAlertProps } from './types';
 import { useAlert } from './use-alert';
-import { tasty } from '../../../tasty';
 
 const AlertElement = tasty({
   name: 'Alert',
@@ -46,9 +48,9 @@ export const Alert = forwardRef(function Alert(
   return (
     <AlertElement
       {...filteredProps}
+      ref={ref}
       data-type={theme}
       styles={styles}
-      ref={ref}
     />
   );
 });

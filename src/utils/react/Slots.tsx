@@ -1,4 +1,3 @@
-import { mergeProps } from './mergeProps';
 import {
   createContext,
   Children,
@@ -6,6 +5,8 @@ import {
   useContext,
   useMemo,
 } from 'react';
+
+import { mergeProps } from './mergeProps';
 
 const INITIAL_VALUE = {};
 
@@ -16,14 +17,14 @@ export function useSlotProps(
   defaultSlot,
 ): Record<string, any> {
   let slot: string = props.slot || defaultSlot;
-  let allSlots = useContext(SlotContext) || {};
+  let allSlots = useContext(SlotContext) ?? INITIAL_VALUE;
   let slotProps: Record<string, any> = allSlots[slot];
 
   return mergeProps(slotProps, props);
 }
 
 export function SlotProvider(props) {
-  let parentSlots = useContext(SlotContext) || {};
+  let parentSlots = useContext(SlotContext) ?? INITIAL_VALUE;
   let { slots = {}, children } = props;
 
   // Merge props for each slot from parent context and props
@@ -34,7 +35,7 @@ export function SlotProvider(props) {
         .reduce(
           (o, p) => ({
             ...o,
-            [p]: mergeProps(parentSlots[p] || {}, slots[p] || {}),
+            [p]: mergeProps(parentSlots[p] ?? {}, slots[p] ?? {}),
           }),
           {},
         ),

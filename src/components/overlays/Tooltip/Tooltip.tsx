@@ -5,10 +5,13 @@ import {
   useImperativeHandle,
   useRef,
 } from 'react';
-import { mergeProps } from '../../../utils/react';
 import { createDOMRef } from '@react-spectrum/utils';
-import { TooltipContext } from './context';
 import { useTooltip } from '@react-aria/tooltip';
+import styled from 'styled-components';
+import { DOMRefValue } from '@react-types/shared';
+
+import { PlacementAxis } from '../../../shared';
+import { getOverlayTransitionCSS } from '../../../utils/transitions';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -17,11 +20,11 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { getOverlayTransitionCSS } from '../../../utils/transitions';
+import { mergeProps } from '../../../utils/react';
+
+import { TooltipContext } from './context';
+
 import type { AriaTooltipProps } from '@react-types/tooltip';
-import { PlacementAxis } from '../../../shared';
-import styled from 'styled-components';
-import { DOMRefValue } from '@react-types/shared';
 
 const TooltipElement = tasty({
   styles: {
@@ -147,6 +150,7 @@ function Tooltip(
     <StyledTooltipElement
       {...tooltipProps}
       {...overlayProps}
+      ref={overlayRef}
       styles={styles}
       mods={{
         open: isOpen,
@@ -155,7 +159,6 @@ function Tooltip(
       data-min-offset={minOffset}
       data-min-slale={minScale}
       data-placement={placement}
-      ref={overlayRef}
     >
       {props.children}
       <TooltipTipElement

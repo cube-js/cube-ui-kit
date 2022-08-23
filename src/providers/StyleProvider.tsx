@@ -1,4 +1,5 @@
 import { createContext, useContext, ReactNode } from 'react';
+
 import { Styles } from '../tasty';
 
 export const StyleContext = createContext<any>({});

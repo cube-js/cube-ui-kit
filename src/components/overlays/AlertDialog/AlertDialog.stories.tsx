@@ -2,14 +2,16 @@ import { expect } from '@storybook/jest';
 import { ComponentMeta, Story } from '@storybook/react';
 import { userEvent, within } from '@storybook/testing-library';
 import { action } from '@storybook/addon-actions';
-import { AlertDialog, CubeAlertDialogProps } from './AlertDialog';
-import { useAlertDialogAPI } from './AlertDialogApiProvider';
+
 import { baseProps } from '../../../stories/lists/baseProps';
 import { DialogTrigger } from '../Dialog/DialogTrigger';
 import { Button } from '../../actions';
-import { DialogProps } from './types';
 import { Paragraph } from '../../content/Paragraph';
 import { wait } from '../../../test';
+
+import { DialogProps } from './types';
+import { useAlertDialogAPI } from './AlertDialogApiProvider';
+import { AlertDialog, CubeAlertDialogProps } from './AlertDialog';
 
 export default {
   title: 'Overlays/AlertDialog',

@@ -1,9 +1,10 @@
 import { useRef } from 'react';
 import { Item } from '@react-stately/collections';
 import { CollectionElement } from '@react-types/shared';
+
 import { tasty } from '../../../tasty';
+
 import { NotificationView } from './NotificationView';
-import type { CubeNotificationProps } from './types';
 import {
   CollectionChildren,
   NotificationItemNode,
@@ -11,6 +12,8 @@ import {
   useNotificationListItem,
   useNotificationsList,
 } from './hooks';
+
+import type { CubeNotificationProps } from './types';
 
 export type NotificationsListProps<T> = {
   items?: T[] | readonly T[];

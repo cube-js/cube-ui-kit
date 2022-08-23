@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+
 import { Styles } from '../../../tasty';
 
 export type SpinSize = 'small' | 'default' | 'large';

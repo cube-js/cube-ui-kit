@@ -5,6 +5,7 @@ import {
   TEXT_STYLES,
 } from '../../../tasty';
 import { useDeprecationWarning } from '../../../_internal';
+
 import { CubeAlertProps } from './types';
 
 const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES] as const;

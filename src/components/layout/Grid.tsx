@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -28,14 +29,14 @@ const PROP_MAP = {
   areas: 'gridAreas',
 } as const;
 
-export const Grid = forwardRef((props: CubeGridProps, ref) => {
+export const Grid = forwardRef(function Grid(props: CubeGridProps, ref) {
   const styles = extractStyles(props, CONTAINER_STYLES, undefined, PROP_MAP);
 
   return (
     <GridElement
       {...filterBaseProps(props, { eventProps: true })}
-      styles={styles}
       ref={ref}
+      styles={styles}
     />
   );
 });

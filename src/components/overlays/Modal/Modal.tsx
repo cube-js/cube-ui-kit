@@ -1,11 +1,14 @@
 import { useDOMRef } from '@react-spectrum/utils';
 import { useViewportSize } from '@react-aria/utils';
-import { Overlay } from './Overlay';
 import { forwardRef, ReactNode } from 'react';
-import { Underlay } from './Underlay';
 import { useModal, useOverlay, usePreventScroll } from '@react-aria/overlays';
+
 import { BaseProps, Props, Styles, tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
+
+import { Underlay } from './Underlay';
+import { Overlay } from './Overlay';
+
 import type { ModalProps } from '@react-types/overlays';
 
 export const OVERLAY_WRAPPER_STYLES: Styles = {
@@ -80,12 +83,12 @@ function Modal(props: CubeModalProps, ref) {
     <Overlay {...otherProps}>
       {type !== 'fullscreenTakeover' && <Underlay {...underlayProps} />}
       <ModalWrapper
-        qa={qa}
-        onClose={onClose}
-        type={type}
         ref={domRef}
+        qa={qa}
+        type={type}
         overlayProps={overlayProps}
         styles={styles}
+        onClose={onClose}
       >
         {children}
       </ModalWrapper>
