@@ -2,7 +2,7 @@ import { Key, useState } from 'react';
 import { expect } from '@storybook/jest';
 import { userEvent, within } from '@storybook/testing-library';
 import { Meta, Story } from '@storybook/react';
-import { BellFilled, BellOutlined } from '@ant-design/icons';
+import { BellFilled, BellOutlined, WechatFilled } from '@ant-design/icons';
 
 import { Button } from '../../actions';
 import { CloudLogo } from '../../other/CloudLogo/CloudLogo';
@@ -34,20 +34,25 @@ export default {
 const ActionTemplate: Story<CubeNotificationProps> = (args) => {
   const { notify } = useNotificationsApi();
 
-  return <Button onPress={() => notify({ ...args })}>Click Me!</Button>;
+  return (
+    <Button qa="ClickMeButton" onPress={() => notify({ ...args })}>
+      Click Me!
+    </Button>
+  );
 };
+ActionTemplate.play = async ({ canvasElement }) => {
+  const { getByTestId } = within(canvasElement);
 
-export const DefaultAction = ActionTemplate.bind({});
-DefaultAction.play = async ({ canvasElement }) => {
-  const { getByRole, getByTestId } = within(canvasElement);
-
-  const button = getByRole('button');
+  const button = getByTestId('ClickMeButton');
   await userEvent.click(button);
 
   const notification = getByTestId('FloatingNotification');
 
   await expect(notification).toBeInTheDocument();
 };
+
+export const DefaultAction = ActionTemplate.bind({});
+DefaultAction.play = ActionTemplate.play;
 
 export const NotifyAsComponent: Story<CubeNotificationProps> = (args) => {
   return (
@@ -395,3 +400,26 @@ WithLongActions.play = async ({ canvasElement }) => {
 
   await expect(notification).toBeInTheDocument();
 };
+
+export const WithWidget: Story<CubeNotificationProps> = (args) => (
+  <>
+    <ActionTemplate {...args} />
+    <Button
+      icon={<WechatFilled />}
+      size="large"
+      style={{
+        zIndex: 2147483000,
+        position: 'fixed',
+        bottom: '20px',
+        right: '20px',
+        width: '60px',
+        height: '60px',
+        borderRadius: '50%',
+        boxShadow:
+          'rgb(0 0 0 / 6%) 0px 1px 6px 0px, rgb(0 0 0 / 16%) 0px 2px 32px 0px',
+      }}
+    />
+  </>
+);
+
+WithWidget.play = ActionTemplate.play;
