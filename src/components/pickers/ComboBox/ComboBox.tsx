@@ -61,16 +61,12 @@ function CaretDownIcon() {
 }
 
 const ComboBoxWrapperElement = tasty({
-  styles: {
-    ...INPUT_WRAPPER_STYLES,
-  },
+  styles: INPUT_WRAPPER_STYLES,
 });
 
 const InputElement = tasty({
   as: 'input',
-  styles: {
-    ...DEFAULT_INPUT_STYLES,
-  },
+  styles: DEFAULT_INPUT_STYLES,
 });
 
 const TriggerElement = tasty({
