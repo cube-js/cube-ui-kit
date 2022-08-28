@@ -28,7 +28,7 @@ import { Item } from '@react-stately/collections';
 import { DOMRef } from '@react-types/shared';
 import styled from 'styled-components';
 
-import { useFormProps } from '../../forms/Form/Form';
+import { useFormProps } from '../../forms';
 import { useProviderProps } from '../../../provider';
 import {
   BasePropsWithoutChildren,

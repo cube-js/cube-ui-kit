@@ -16,7 +16,7 @@ import {
 } from 'react';
 import { useHover } from '@react-aria/interactions';
 
-import { useFormProps } from '../Form/Form';
+import { useFormProps } from '../Form';
 import { useProviderProps } from '../../../provider';
 import {
   BaseProps,
@@ -129,9 +129,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   },
 };
 
-const InputWrapperElement = tasty({
-  styles: INPUT_WRAPPER_STYLES,
-});
+const InputWrapperElement = tasty({ styles: INPUT_WRAPPER_STYLES });
 
 const STYLE_LIST = [...POSITION_STYLES, ...DIMENSION_STYLES];
 
@@ -139,6 +137,7 @@ const INPUT_STYLE_PROPS_LIST = [...BLOCK_STYLES, 'resize'];
 
 export const DEFAULT_INPUT_STYLES: Styles = {
   display: 'block',
+  gridArea: 'input',
   width: 'initial 100% initial',
   height: 'initial initial initial',
   color: 'inherit',
@@ -169,13 +168,7 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   },
 };
 
-const InputElement = tasty({
-  qa: 'Input',
-  styles: {
-    ...DEFAULT_INPUT_STYLES,
-    gridArea: 'input',
-  },
-});
+const InputElement = tasty({ qa: 'Input', styles: DEFAULT_INPUT_STYLES });
 
 export interface CubeTextInputBaseProps
   extends BaseProps,
