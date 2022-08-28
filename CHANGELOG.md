@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.12.5
+
+### Patch Changes
+
+- [#198](https://github.com/cube-js/cube-ui-kit/pull/198) [`dec5c65`](https://github.com/cube-js/cube-ui-kit/commit/dec5c65a121a06391d0757b7aee1a43cd17342c6) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Fixed input width in `<Combobox />` and `<Select />` components
+
 ## 0.12.4
 
 ### Patch Changes
