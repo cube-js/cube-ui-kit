@@ -125,7 +125,7 @@ export interface CubeFieldProps<T extends FieldTypes>
   /** The form instance */
   form?: CubeFormInstance<T>;
   /** The message for the field or text for the error */
-  message?: string;
+  message?: ReactNode;
   /** The description for the field */
   description?: ReactNode;
   /** Tooltip for the label that explains something. */
