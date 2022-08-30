@@ -1,10 +1,12 @@
+import { ReactNode } from 'react';
+
 export type FieldTypes = {
   [key: string]: any;
 };
 
 export type CubeFieldData<Name extends string | number | symbol, Value> = {
   readonly name: Name;
-  errors: string[];
+  errors: ReactNode[];
   value?: Value;
   inputValue?: Value;
   touched?: boolean;

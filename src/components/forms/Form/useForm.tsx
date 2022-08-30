@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { ReactNode, useRef, useState } from 'react';
 
 import { dotize } from '../../../tasty';
 
@@ -216,7 +216,7 @@ export class CubeFormInstance<
         }
       })
       .catch((err) => {
-        if (!field.errors || !isEqual(field.errors, [err])) {
+        if (!field.errors) {
           field.errors = [err];
 
           this.forceReRender();
@@ -228,7 +228,7 @@ export class CubeFormInstance<
 
   validateFields<Names extends (keyof T)[]>(names?: Names): Promise<any> {
     const fieldsList = names || Object.keys(this.fields);
-    const errorList: { name: string; errors: string[] }[] = [];
+    const errorList: { name: string; errors: ReactNode[] }[] = [];
 
     return Promise.allSettled(
       fieldsList.map((name) => {
@@ -271,7 +271,7 @@ export class CubeFormInstance<
     return !!field.touched;
   }
 
-  getFieldError<Name extends keyof T>(name: Name): string[] {
+  getFieldError<Name extends keyof T>(name: Name): ReactNode[] {
     const field = this.getFieldInstance(name);
 
     if (!field) return [];
