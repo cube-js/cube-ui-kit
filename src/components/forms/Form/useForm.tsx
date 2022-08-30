@@ -297,8 +297,6 @@ export class CubeFormInstance<
     if (!skipRender) {
       this.forceReRender();
     }
-
-    this.validateFields().catch(() => {});
   }
 
   setFields<Names extends keyof T>(newFields: SetFieldsArrType<T, Names>[]) {
