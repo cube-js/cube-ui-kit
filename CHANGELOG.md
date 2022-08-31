@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.12.6
+
+### Patch Changes
+
+- [#200](https://github.com/cube-js/cube-ui-kit/pull/200) [`6b7448a`](https://github.com/cube-js/cube-ui-kit/commit/6b7448a65e8112df2c0b079dbfaae9802922d065) Thanks [@tenphi](https://github.com/tenphi)! - Form is no longer validated on field removal (bugfix)
+
+- [#200](https://github.com/cube-js/cube-ui-kit/pull/200) [`6b7448a`](https://github.com/cube-js/cube-ui-kit/commit/6b7448a65e8112df2c0b079dbfaae9802922d065) Thanks [@tenphi](https://github.com/tenphi)! - Validation rules in Form now allows to return complex markup in error messages.
+
 ## 0.12.5
 
 ### Patch Changes
