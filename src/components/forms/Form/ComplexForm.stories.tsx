@@ -2,19 +2,19 @@ import { StoryFn } from '@storybook/react';
 import { linkTo } from '@storybook/addon-links';
 
 import {
-  Submit,
-  TextInput,
-  Select,
-  ComboBox,
-  Form,
-  Radio,
-  Item,
-  Field,
+  Block,
   Checkbox,
   CheckboxGroup,
+  ComboBox,
+  Field,
+  Form,
+  Item,
   PasswordInput,
+  Radio,
+  Select,
+  Submit,
   Switch,
-  Block,
+  TextInput,
 } from '../../../index';
 import { NumberInput } from '../NumberInput/NumberInput';
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -24,6 +24,44 @@ export default {
   title: 'Forms/ComplexForm',
   component: Form,
   parameters: { controls: { exclude: baseProps } },
+};
+
+const ComplexErrorTemplate: StoryFn<typeof Form> = (args) => {
+  const [form] = Form.useForm();
+
+  return (
+    <Form
+      form={form}
+      {...args}
+      onSubmit={(v) => {
+        console.log('onSubmit:', v);
+      }}
+      onValuesChange={(v) => {
+        console.log('onChange', v);
+      }}
+    >
+      <Field
+        name="text"
+        label="Text input"
+        rules={[
+          { required: true, message: 'This field is required' },
+          () => ({
+            validator(rule, value) {
+              return value.length >= 8
+                ? Promise.resolve()
+                : Promise.reject(
+                    <>
+                      This field should be <b>at least 8 symbols</b> long
+                    </>,
+                  );
+            },
+          }),
+        ]}
+      >
+        <TextInput />
+      </Field>
+    </Form>
+  );
 };
 
 const Template: StoryFn<typeof Form> = (args) => {
@@ -185,3 +223,5 @@ export const FormInsideDialog: StoryFn = () => {
 };
 
 export const Default = Template.bind({});
+
+export const ComplexErrorMessage: StoryFn = ComplexErrorTemplate.bind({});

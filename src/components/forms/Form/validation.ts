@@ -144,11 +144,11 @@ export async function applyRules(value, rules, form) {
 
   for (let rule of rules) {
     await applyRule(value, rule, form).catch((err) => {
-      if (typeof err !== 'string') {
+      if (err instanceof Error) {
         err = err?.message || rule.message;
       }
 
-      throw err;
+      throw err || rule.message;
     });
   }
 }
