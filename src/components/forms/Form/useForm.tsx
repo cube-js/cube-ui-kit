@@ -216,11 +216,9 @@ export class CubeFormInstance<
         }
       })
       .catch((err) => {
-        if (!field.errors) {
-          field.errors = [err];
+        field.errors = [err];
 
-          this.forceReRender();
-        }
+        this.forceReRender();
 
         return Promise.reject([err]);
       });
