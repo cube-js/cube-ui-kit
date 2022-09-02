@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.12.7
+
+### Patch Changes
+
+- [#203](https://github.com/cube-js/cube-ui-kit/pull/203) [`f50b93a`](https://github.com/cube-js/cube-ui-kit/commit/f50b93aa6651f2feca7762345a3c4d54fe3d8ae4) Thanks [@tenphi](https://github.com/tenphi)! - On form submission the `isSubmitting` flag now set to true before the start of the validation.
+
+- [#202](https://github.com/cube-js/cube-ui-kit/pull/202) [`8e6767a`](https://github.com/cube-js/cube-ui-kit/commit/8e6767acc57670e0b7c3e47bcb4f0090cbb1e322) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Improve typings of `onSubmit` and `onValuesChange` callbacks in `<Form />` component. Now they properly match with `FormInstance` and `useForm`.
+
 ## 0.12.6
 
 ### Patch Changes
