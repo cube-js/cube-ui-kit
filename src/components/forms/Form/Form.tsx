@@ -110,7 +110,7 @@ function Form<T extends FieldTypes>(
   let onSubmitCallback;
 
   if ((onSubmit || onSubmitFailed) && !otherProps.action) {
-    onSubmitCallback = (e) => {
+    onSubmitCallback = async (e) => {
       if (e && e?.preventDefault) {
         e && e?.preventDefault && e?.preventDefault();
         e && e?.stopPropagation && e?.stopPropagation();
@@ -127,29 +127,28 @@ function Form<T extends FieldTypes>(
         }
       }
 
-      return form?.validateFields().then(
-        async () => {
-          await timeout();
+      if (!form) return;
 
-          if (form && !form.isSubmitting) {
-            try {
-              form.setSubmitting(true);
-              await onSubmit?.(form.getFormData());
-            } finally {
-              form.setSubmitting(false);
-            }
-          }
-        },
-        async (e) => {
-          await timeout();
-          if (e instanceof Error) {
-            throw e;
-          }
-          // errors are shown
-          // transfer errors to the callback
-          onSubmitFailed?.(e);
-        },
-      );
+      form.setSubmitting(true);
+
+      try {
+        await form.validateFields();
+        await timeout();
+
+        if (form && !form.isSubmitting) {
+          await onSubmit?.(form.getFormData());
+        }
+      } catch (e) {
+        await timeout();
+        if (e instanceof Error) {
+          throw e;
+        }
+        // errors are shown
+        // transfer errors to the callback
+        onSubmitFailed?.(e);
+      } finally {
+        form?.setSubmitting(false);
+      }
 
       // output data from form directly
       // onSubmit(Object.fromEntries(new FormData(e.target).entries()));
