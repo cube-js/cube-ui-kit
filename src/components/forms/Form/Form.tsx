@@ -127,17 +127,14 @@ function Form<T extends FieldTypes>(
         }
       }
 
-      if (!form) return;
+      if (!form || form.isSubmitting) return;
 
       form.setSubmitting(true);
 
       try {
         await form.validateFields();
         await timeout();
-
-        if (form && !form.isSubmitting) {
-          await onSubmit?.(form.getFormData());
-        }
+        await onSubmit?.(form.getFormData());
       } catch (e) {
         await timeout();
         if (e instanceof Error) {
