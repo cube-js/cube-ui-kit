@@ -64,11 +64,11 @@ export interface CubeFormProps<T extends FieldTypes = FieldTypes>
   /** Form name */
   name?: string;
   /** Default field values */
-  defaultValues?: { [K in keyof T]?: T[K] };
+  defaultValues?: Partial<T>;
   /** Trigger when any value of Field changed */
-  onValuesChange?: (data: CubeFormData<T>) => void | Promise<void>;
+  onValuesChange?: CubeFormInstance<T>['onValuesChange'];
   /** Trigger when form submit and success */
-  onSubmit?: (data: CubeFormData<T>) => void | Promise<void>;
+  onSubmit?: CubeFormInstance<T>['onSubmit'];
   /** Trigger when form submit and failed */
   onSubmitFailed?: (any?) => void | Promise<any>;
   /** Set form instance created by useForm */
