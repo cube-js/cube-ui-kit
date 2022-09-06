@@ -13,14 +13,18 @@ const ACTION_BUTTON: Styles = {
   },
   fill: {
     '': '#clear',
-    hovered: '#dark.04',
+    'hovered | focused': '#dark.04',
     'pressed | selected': '#purple.1',
+    'focused & selected': '#dark.04',
+    'focused & pressed': '#purple.1',
     disabled: '#clear',
   },
   color: {
     '': '#dark-02',
-    hovered: '#dark-02',
+    'hovered | focused': '#dark-02',
     'pressed | selected': '#purple-text',
+    'focused & selected': '#dark-02',
+    'focused & pressed': '#purple-text',
     disabled: '#dark-04',
   },
   cursor: {
@@ -41,7 +45,7 @@ const ACTION_BUTTON: Styles = {
   Postfix: {
     color: {
       '': '#dark-03',
-      hovered: '#dark-03',
+      'hovered | focused': '#dark-03',
       'pressed | selected': '#purple-text',
       disabled: '#dark-04',
     },
