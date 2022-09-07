@@ -253,6 +253,18 @@ export const MenuSelectableMultiple = (props) => {
   });
 };
 
+MenuSelectableMultiple.play = async ({ canvasElement }) => {
+  const { getByTestId } = within(canvasElement);
+
+  await userEvent.tab(getByTestId('Menu'));
+
+  await expect(getByTestId('MenuItem-1')).toHaveFocus();
+  await expect(getByTestId('MenuItem-1')).toHaveAttribute(
+    'data-is-focused',
+    '',
+  );
+};
+
 export const MenuSelectableCheckboxes = (props) => {
   const [selectedKeys, setSelectedKeys] = useState(['1', '2']);
   const onSelectionChange = (key) => {

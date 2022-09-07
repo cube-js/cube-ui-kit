@@ -57,6 +57,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
   );
 
   const buttonProps = {
+    qa: itemProps.qa ? `MenuButton-${itemProps.qa}` : `MenuButton-${key}`,
     mods: {
       ...itemProps.mods,
       hovered: isHovered,
@@ -82,6 +83,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
       <StyledMenuItem
         {...mergeProps(menuItemProps, hoverProps)}
         ref={ref}
+        data-qa={itemProps.qa ? `MenuItem-${itemProps.qa}` : `MenuItem-${key}`}
         mods={{
           disabled: isDisabled,
           selected: isSelected,
