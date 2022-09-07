@@ -25,6 +25,13 @@ import { NotificationView, NotificationAction } from './NotificationView';
 export default {
   title: 'Overlays/Notifications',
   component: NotificationView,
+  argTypes: {
+    attributes: { table: { disable: true } },
+    styles: { table: { disable: true } },
+    timer: { table: { disable: true } },
+    duration: { type: 'number' },
+    id: { type: 'string' },
+  },
   args: {
     header: 'Development mode available',
     description: 'Edit and test your schema without affecting the production.',
@@ -32,7 +39,7 @@ export default {
   subcomponents: { NotificationAction },
 } as Meta<CubeNotificationProps>;
 
-const ActionTemplate: Story<CubeNotificationProps> = (args) => {
+const ActionTemplate: Story<CubeNotificationProps> = ({ ...args }) => {
   const { notify } = useNotificationsApi();
 
   return (
