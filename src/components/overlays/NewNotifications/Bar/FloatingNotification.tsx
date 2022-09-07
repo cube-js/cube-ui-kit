@@ -21,6 +21,7 @@ export type FloatingNotificationProps = {
 
 const NotificationContainer = tasty({
   styles: {
+    overflow: 'hidden',
     radius: '0.5x',
     boxShadow: '0 0.5x 2x #shadow',
     pointerEvents: 'auto',
