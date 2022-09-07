@@ -45,6 +45,9 @@ const IconPreset = tasty({
   },
 });
 
+/**
+ * @internal This component is unstable and must not be used outside of `NotificationView`.
+ */
 export const NotificationIcon = memo(function NotificationIcon(
   props: NotificationIconProps,
 ): JSX.Element {

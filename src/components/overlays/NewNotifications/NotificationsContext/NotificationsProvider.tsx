@@ -18,7 +18,7 @@ export function NotificationsProvider(
 ): JSX.Element {
   const { children, rootRef } = props;
 
-  const { toasts, api, addOnDismissListener, onDismissNotification } =
+  const { notifications, api, addOnDismissListener, onDismissNotification } =
     useNotifications(rootRef);
 
   const providerValue = useMemo(() => ({ api, addOnDismissListener }), []);
@@ -27,7 +27,7 @@ export function NotificationsProvider(
     <NotificationsContext.Provider value={providerValue}>
       <Portal>
         <NotificationsBar
-          items={toasts}
+          items={notifications}
           onRemoveNotification={api.remove}
           onDismissNotification={onDismissNotification}
         >

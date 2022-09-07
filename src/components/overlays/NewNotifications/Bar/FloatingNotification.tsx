@@ -20,9 +20,16 @@ export type FloatingNotificationProps = {
 };
 
 const NotificationContainer = tasty({
-  styles: { boxShadow: '0 0.5x 2x #shadow', pointerEvents: 'auto' },
+  styles: {
+    radius: '0.5x',
+    boxShadow: '0 0.5x 2x #shadow',
+    pointerEvents: 'auto',
+  },
 });
 
+/**
+ * @internal This component is unstable and must not be used outside of `NotificationsBar`.
+ */
 export const FloatingNotification = memo(function FloatingNotification(
   props: FloatingNotificationProps,
 ): JSX.Element {

@@ -39,12 +39,15 @@ const NotificationsContainer = tasty({
     isolation: 'isolate',
     pointerEvents: 'none',
 
-    '@supports (-webkit-touch-callout: none)': {
-      height: '-webkit-fill-available max',
+    '@supports (height: 100dvh)': {
+      height: '100dvh max',
     },
   },
 });
 
+/**
+ * @internal Do not use it
+ */
 export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
   const { items, children, onRemoveNotification, onDismissNotification } =
     props;
