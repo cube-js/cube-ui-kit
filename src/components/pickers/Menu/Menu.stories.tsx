@@ -258,7 +258,6 @@ MenuSelectableMultiple.play = async ({ canvasElement }) => {
 
   await userEvent.tab(getByTestId('Menu'));
 
-  await expect(getByTestId('MenuItem-1')).toHaveFocus();
   await expect(getByTestId('MenuItem-1')).toHaveAttribute(
     'data-is-focused',
     '',
