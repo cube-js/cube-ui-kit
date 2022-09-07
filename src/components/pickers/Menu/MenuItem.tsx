@@ -57,7 +57,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
   );
 
   const buttonProps = {
-    qa: itemProps.qa ? `MenuButton-${itemProps.qa}` : `MenuButton-${key}`,
+    qa: itemProps.qa ? itemProps.qa : `MenuButton-${key}`,
     mods: {
       ...itemProps.mods,
       hovered: isHovered,
