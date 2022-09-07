@@ -24,10 +24,10 @@ const NotificationContainer = tasty({
     width: '100%',
     padding: '0.5x 0.5x 1.5x 1.5x',
     gridAreas: `
-      ".    . .           . close"
-      "icon . header      . close"
-      "icon . description . close"
-      ".    . footer      . ."
+      ".    . .           .      close"
+      "icon . header      .      close"
+      "icon . description .      close"
+      ".    . footer      footer footer"
     `,
     gridColumns: 'min-content 1x minmax(0, auto) 1x minmax(0, min-content)',
     gridRows: '1x minmax(0, auto) minmax(0, auto) minmax(0, auto)',
