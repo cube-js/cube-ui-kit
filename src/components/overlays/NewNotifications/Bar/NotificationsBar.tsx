@@ -30,7 +30,7 @@ const NotificationsContainer = tasty({
     display: 'flex',
     flexDirection: 'column-reverse',
     width: 'auto 100% 50x',
-    height: '100vh max',
+    height: '100dvh max',
     padding: '2x',
     gap: '1x',
     /* to be sure that we're over the legacy modal and any widget as well */
@@ -38,10 +38,6 @@ const NotificationsContainer = tasty({
     overflow: 'hidden',
     isolation: 'isolate',
     pointerEvents: 'none',
-
-    '@supports (height: 100dvh)': {
-      height: '100dvh max',
-    },
   },
 });
 
