@@ -81,7 +81,7 @@ export const CUSTOM_UNITS = {
   dvh: function dvh(num) {
     return IS_DVH_SUPPORTED
       ? `${num}dvh`
-      : `calc(var(--cube-dynamic-viewport-height) / 100 * ${num})`;
+      : `calc(var(--cube-dynamic-viewport-height, 100dvh) / 100 * ${num})`;
   },
   // span unit for GridProvider
   sp: function spanWidth(num) {
