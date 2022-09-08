@@ -253,6 +253,12 @@ export const MenuSelectableMultiple = (props) => {
   });
 };
 
+MenuSelectableMultiple.play = async ({ canvasElement }) => {
+  const { getByTestId } = within(canvasElement);
+
+  await userEvent.tab(getByTestId('Menu'));
+};
+
 export const MenuSelectableCheckboxes = (props) => {
   const [selectedKeys, setSelectedKeys] = useState(['1', '2']);
   const onSelectionChange = (key) => {
