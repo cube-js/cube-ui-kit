@@ -65,6 +65,9 @@ export type StyleStateListMap = { [key: string]: StyleStateList };
 
 const devMode = process.env.NODE_ENV !== 'production';
 
+const IS_DVH_SUPPORTED =
+  typeof CSS?.supports !== 'undefined' ? CSS.supports('height: 100dvh') : false;
+
 export const CUSTOM_UNITS = {
   r: 'var(--radius)',
   bw: 'var(--border-width)',
@@ -75,8 +78,10 @@ export const CUSTOM_UNITS = {
   rp: 'var(--rem-pixel)',
   gp: 'var(--column-gap)',
   // global setting
-  wh: function wh(num) {
-    return `calc(var(--cube-visual-viewport-height) / 100 * ${num})`;
+  dvh: function dvh(num) {
+    return IS_DVH_SUPPORTED
+      ? `${num}dvh`
+      : `calc(var(--cube-dynamic-viewport-height) / 100 * ${num})`;
   },
   // span unit for GridProvider
   sp: function spanWidth(num) {
