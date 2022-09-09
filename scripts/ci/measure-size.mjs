@@ -3,7 +3,6 @@ import { setFailed, setOutput } from '@actions/core';
 import { getExecOutput } from '@actions/exec';
 import table from 'markdown-table';
 import bytes from 'bytes';
-import { createMeasurer, deleteMeasurer } from '../size-limit.js';
 
 async function run() {
   /**
@@ -23,11 +22,9 @@ async function run() {
    * @type {{size: number, name: string, passed: boolean}[]}
    */
   const jsonOutput = await (async () => {
-    createMeasurer();
     const { stdout } = await getExecOutput('npx size-limit', ['--json'], {
       ignoreReturnCode: true,
     });
-    deleteMeasurer();
 
     return JSON.parse(stdout);
   })();
