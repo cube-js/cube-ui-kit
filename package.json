@@ -137,7 +137,6 @@
     "@storybook/jest": "0.0.10",
     "@storybook/manager-webpack5": "6.5.9",
     "@storybook/react": "6.5.9",
-    "@storybook/test-runner": "0.3.0",
     "@storybook/testing-library": "0.0.13",
     "@swc/core": "1.2.148",
     "@swc/jest": "0.2.20",

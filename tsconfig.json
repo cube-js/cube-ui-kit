@@ -19,7 +19,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noImplicitAny": false,
-    "target": "es2019",
+    "target": "es2021",
     "noEmit": true
   },
   "include": ["src/**/*"],
