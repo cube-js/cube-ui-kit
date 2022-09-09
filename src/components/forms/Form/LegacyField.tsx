@@ -107,7 +107,7 @@ function getValueProps(
   };
 }
 
-export interface CubeFieldProps<T extends FieldTypes>
+export interface CubeFieldProps<T extends FieldTypes = FieldTypes>
   extends OptionalFieldBaseProps {
   /** The initial value of the input. */
   defaultValue?: any;

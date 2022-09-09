@@ -32,9 +32,10 @@ import {
   tasty,
 } from '../../../tasty';
 import { useFocus } from '../../../utils/react/interactions';
-import { FieldWrapper } from '../FieldWrapper';
+import { extractFieldWrapperProps, FieldWrapper } from '../FieldWrapper';
 import { FormFieldProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
+import { useFieldProps } from '../Form';
 
 import type { AriaTextFieldProps } from '@react-types/textfield';
 
@@ -215,25 +216,15 @@ export interface CubeTextInputBaseProps
 function TextInputBase(props: CubeTextInputBaseProps, ref) {
   props = useProviderProps(props);
   props = useFormProps(props);
+  props = useFieldProps(props);
 
   let {
     qa,
-    label,
-    extra,
     mods,
-    labelPosition = 'top',
-    labelStyles,
-    isRequired,
-    necessityIndicator,
-    necessityLabel,
-    validationState,
-    message,
-    description,
     prefix,
     isDisabled,
     multiLine,
     autoFocus,
-    labelProps,
     inputProps,
     wrapperProps,
     inputRef,
@@ -245,20 +236,17 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     suffix,
     suffixPosition = 'before',
     wrapperRef,
-    requiredMark = true,
-    tooltip,
-    isHidden,
     rows = 1,
     size,
+    validationState,
     icon,
-    labelSuffix,
+    type,
     maxLength,
     minLength,
     ...otherProps
   } = props;
-  let styles = extractStyles(otherProps, STYLE_LIST);
-  let type = otherProps.type;
-
+  const { fieldWrapperProps, rest } = extractFieldWrapperProps(props);
+  const styles = extractStyles(rest, STYLE_LIST);
   inputStyles = extractStyles(otherProps, INPUT_STYLE_PROPS_LIST, inputStyles);
 
   let ElementType: 'textarea' | 'input' = multiLine ? 'textarea' : 'input';
@@ -396,27 +384,11 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
 
   return (
     <FieldWrapper
-      {...{
-        labelPosition,
-        label,
-        extra,
-        styles,
-        isRequired,
-        labelStyles,
-        necessityIndicator,
-        necessityLabel,
-        labelProps,
-        isDisabled,
-        validationState,
-        message,
-        description,
-        requiredMark,
-        tooltip,
-        isHidden,
-        labelSuffix,
-        Component: textField,
-        ref: domRef,
-      }}
+      {...fieldWrapperProps}
+      ref={domRef}
+      styles={styles}
+      isDisabled={isDisabled}
+      Component={textField}
     />
   );
 }

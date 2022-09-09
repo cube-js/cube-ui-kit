@@ -1,20 +1,16 @@
-import { forwardRef, ReactNode } from 'react';
+import { forwardRef } from 'react';
 import { InfoCircleOutlined } from '@ant-design/icons';
 
-import { Paragraph } from '../content/Paragraph';
-import {
-  LabelPosition,
-  NecessityIndicator,
-  ValidationState,
-} from '../../shared';
-import { Props, Styles, tasty } from '../../tasty';
-import { TooltipProvider } from '../overlays/Tooltip/TooltipProvider';
-import { Text } from '../content/Text';
-import { wrapNodeIfPlain } from '../../utils/react';
-import { Space } from '../layout/Space';
-import { Flex } from '../layout/Flex';
+import { Paragraph } from '../../content/Paragraph';
+import { tasty } from '../../../tasty';
+import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
+import { Text } from '../../content/Text';
+import { wrapNodeIfPlain } from '../../../utils/react';
+import { Space } from '../../layout/Space';
+import { Flex } from '../../layout/Flex';
+import { Label } from '../Label';
 
-import { Label } from './Label';
+import { CubeFieldWrapperProps } from './types';
 
 const FieldElement = tasty({
   qa: 'Field',
@@ -68,36 +64,9 @@ const MessageElement = tasty({
   },
 });
 
-export type CubeFieldWrapperProps = {
-  as?: string;
-  labelPosition?: LabelPosition;
-  label?: ReactNode;
-  labelSuffix?: ReactNode;
-  labelStyles?: Styles;
-  styles?: Styles;
-  /** Whether the input is required */
-  isRequired?: boolean;
-  /** Whether the input is disabled */
-  isDisabled?: boolean;
-  necessityIndicator?: NecessityIndicator;
-  labelProps?: Props;
-  fieldProps?: Props;
-  /** Custom message for the field. It will be placed below the label and the input */
-  message?: string | ReactNode;
-  /** Styles for the message */
-  messageStyles?: Styles;
-  /** The description for the field. It will be placed below the label */
-  description?: ReactNode;
-  Component?: JSX.Element;
-  validationState?: ValidationState;
-  // eslint-disable-next-line react/boolean-prop-naming
-  requiredMark?: boolean;
-  tooltip?: ReactNode;
-  extra?: ReactNode;
-  isHidden?: boolean;
-  necessityLabel?: ReactNode;
-};
-
+/**
+ * @internal Do not use this component directly.
+ */
 function FieldWrapper(props: CubeFieldWrapperProps, ref) {
   const {
     as,
@@ -176,7 +145,7 @@ function FieldWrapper(props: CubeFieldWrapperProps, ref) {
   return (
     <FieldElement
       ref={ref}
-      as={as || 'div'}
+      as={as ?? 'div'}
       mods={mods}
       isHidden={isHidden}
       styles={styles}

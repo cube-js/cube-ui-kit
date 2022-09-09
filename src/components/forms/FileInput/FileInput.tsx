@@ -9,7 +9,7 @@ import {
 import { createFocusableRef } from '@react-spectrum/utils';
 
 import { useProviderProps } from '../../../provider';
-import { Action } from '../../actions/Action';
+import { Action } from '../../actions';
 import {
   BaseProps,
   BlockStyleProps,

@@ -1,23 +1,33 @@
 import { Meta, Story } from '@storybook/react';
 import { DollarCircleFilled } from '@ant-design/icons';
+import { useMemo } from 'react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { TextInput } from '../TextInput/TextInput';
 import { Button } from '../../actions';
 
-import { CubeFieldProps, Field } from './Field';
+import { CubeFieldProps, Field } from './LegacyField';
+import { CubeFormInstance } from './useForm';
+import { Form } from './Form';
 
 export default {
   title: 'Forms/Field',
   component: Field,
   parameters: { controls: { exclude: baseProps } },
-} as Meta;
+  args: {
+    label: 'Field name',
+    children: <TextInput />,
+  },
+  decorators: [
+    (Story, context) => (
+      <Form form={useMemo(() => new CubeFormInstance(), [])}>
+        {Story(context.args)}
+      </Form>
+    ),
+  ],
+} as Meta<CubeFieldProps>;
 
-const Template: Story<CubeFieldProps<any>> = (args) => (
-  <Field label="Field name" {...args}>
-    <TextInput />
-  </Field>
-);
+const Template: Story<CubeFieldProps> = (args) => <Field {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {};
@@ -41,9 +51,7 @@ WithErrorMessage.args = {
 export const Styled = Template.bind({});
 Styled.args = {
   labelPosition: 'side',
-  styles: {
-    placeItems: 'end',
-  },
+  styles: { placeItems: 'end' },
 };
 
 export const StyledLabel = Template.bind({});

@@ -18,4 +18,5 @@ export { useFormProps, Form, Field, useForm, FormContext, SubmitError };
 export type { CubeFormProps } from './Form';
 export type { CubeFormInstance } from './useForm';
 export type { FieldTypes, Fields } from './types';
+export * from './Field';
 export type { CubeAlertProps as CubeSubmitErrorProps };
