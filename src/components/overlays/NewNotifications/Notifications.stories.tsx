@@ -15,6 +15,7 @@ import { Footer } from '../../content/Footer';
 import { Title } from '../../content/Title';
 import { range } from '../../../utils/range';
 import { wait } from '../../../test';
+import { random } from '../../../utils/random';
 
 import { NotificationsDialog, NotificationsDialogTrigger } from './Dialog';
 import { NotificationsList } from './NotificationsList';
@@ -434,6 +435,6 @@ NotificationsQueue.play = async ({ canvasElement }) => {
 
     const button = getByTestId('ClickMeButton');
     await userEvent.click(button);
-    await wait(Math.random() * 600);
+    await wait(random(500, 1000));
   }
 };
