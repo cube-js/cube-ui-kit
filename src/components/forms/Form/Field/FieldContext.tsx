@@ -14,7 +14,7 @@ export type FieldContextValue = {
     dontTouch: boolean,
     validateTrigger: ValidateTrigger,
   ) => void;
-  message?: string;
+  message?: React.ReactNode;
   isRequired?: boolean;
   onBlur: () => void;
 };

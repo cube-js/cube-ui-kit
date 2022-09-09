@@ -17,9 +17,11 @@ type UnionToArray<T, A extends unknown[] = []> = IsUnion<T> extends true
   ? UnionToArray<Exclude<T, PopUnion<T>>, [PopUnion<T>, ...A]>
   : [T, ...A];
 
-const createFieldWrapperPropsKeys = (
-  arr: UnionToArray<keyof CubeFieldWrapperProps>,
-): Set<UnionToArray<keyof CubeFieldWrapperProps>> => new Set(arr as any);
+const createFieldWrapperPropsKeys = <
+  PropKeys = UnionToArray<keyof CubeFieldWrapperProps>,
+>(
+  arr: PropKeys,
+): Set<string> => new Set(arr as unknown as string[]);
 
 const fieldWrapperPropsKeys = createFieldWrapperPropsKeys([
   'as',
@@ -29,8 +31,8 @@ const fieldWrapperPropsKeys = createFieldWrapperPropsKeys([
   'isDisabled',
   'fieldProps',
   'isHidden',
-  'labelPosition',
   'label',
+  'labelPosition',
   'labelSuffix',
   'labelStyles',
   'labelProps',
@@ -70,7 +72,7 @@ export function extractFieldWrapperProps<
   const rest = {} as RestProps;
 
   for (const [key, prop] of Object.entries(props)) {
-    if (fieldWrapperPropsKeys.has(key as any)) {
+    if (fieldWrapperPropsKeys.has(key)) {
       fieldWrapperProps[key] = prop;
     } else {
       rest[key] = prop;

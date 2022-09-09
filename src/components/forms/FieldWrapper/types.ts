@@ -18,8 +18,8 @@ export type CubeFieldWrapperProps = {
   fieldProps?: Props;
   isHidden?: boolean;
 
-  labelPosition?: LabelPosition;
   label?: ReactNode;
+  labelPosition?: LabelPosition;
   labelSuffix?: ReactNode;
   labelStyles?: Styles;
   labelProps?: Props;
