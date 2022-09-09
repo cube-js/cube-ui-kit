@@ -13,6 +13,8 @@ import { Header } from '../../content/Header';
 import { Content } from '../../content/Content';
 import { Footer } from '../../content/Footer';
 import { Title } from '../../content/Title';
+import { range } from '../../../utils/range';
+import { wait } from '../../../test';
 
 import { NotificationsDialog, NotificationsDialogTrigger } from './Dialog';
 import { NotificationsList } from './NotificationsList';
@@ -423,3 +425,15 @@ export const WithWidget: Story<CubeNotificationProps> = (args) => (
 );
 
 WithWidget.play = ActionTemplate.play;
+
+export const NotificationsQueue = ActionTemplate.bind({});
+NotificationsQueue.play = async ({ canvasElement }) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  for await (const _ of range(10)) {
+    const { getByTestId } = within(canvasElement);
+
+    const button = getByTestId('ClickMeButton');
+    await userEvent.click(button);
+    await wait(Math.random() * 600);
+  }
+};

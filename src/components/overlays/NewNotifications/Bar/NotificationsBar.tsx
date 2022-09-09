@@ -8,7 +8,7 @@ import { tasty } from '../../../../tasty';
 import { CubeNotifyApiPropsWithID } from '../types';
 import { useNotificationsList, CollectionChildren } from '../hooks';
 import { mergeProps } from '../../../../utils/react';
-import { useEvent } from '../../../../_internal';
+import { useChainedCallback, useEvent } from '../../../../_internal';
 
 import { FloatingNotification } from './FloatingNotification';
 import { TransitionComponent } from './TransitionComponent';
@@ -18,6 +18,11 @@ export type NotificationsBarProps = {
   children: CollectionChildren<CubeNotifyApiPropsWithID>;
   onRemoveNotification: (id: Key) => void;
   onDismissNotification: (id: Key) => void;
+  /**
+   * Defines the amount of notifications that can be displayed at once.
+   * @default 5
+   */
+  limit?: number;
 };
 
 const NotificationsContainer = tasty({
@@ -46,8 +51,13 @@ const NotificationsContainer = tasty({
 });
 
 export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
-  const { items, children, onRemoveNotification, onDismissNotification } =
-    props;
+  const {
+    items,
+    children,
+    onRemoveNotification,
+    onDismissNotification,
+    limit = 5,
+  } = props;
 
   const ref = useRef<HTMLElement | null>(null);
 
@@ -70,6 +80,11 @@ export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
     }
   });
 
+  const chainedOnRemoveNotification = useChainedCallback(
+    onRemoveNotification,
+    moveFocus,
+  );
+
   return (
     <NotificationsContainer
       ref={ref}
@@ -79,21 +94,21 @@ export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
       {...mergeProps(listProps, hoverProps, focusProps)}
     >
       <TransitionGroup enter exit component={null}>
-        {[...state.collection].reverse().map((notification) => (
-          <TransitionComponent key={notification.props.id}>
-            <FloatingNotification
-              isDisabledTimer={isHovered || isFocusVisible}
-              id={notification.props.id}
-              item={notification}
-              state={state}
-              onRemoveNotification={(key) => {
-                onRemoveNotification(key);
-                moveFocus(key);
-              }}
-              onDismissNotification={onDismissNotification}
-            />
-          </TransitionComponent>
-        ))}
+        {[...state.collection]
+          .slice(0, limit)
+          .reverse()
+          .map((notification) => (
+            <TransitionComponent key={notification.props.id}>
+              <FloatingNotification
+                isDisabledTimer={isHovered || isFocusVisible}
+                id={notification.props.id}
+                item={notification}
+                state={state}
+                onRemoveNotification={chainedOnRemoveNotification}
+                onDismissNotification={onDismissNotification}
+              />
+            </TransitionComponent>
+          ))}
       </TransitionGroup>
     </NotificationsContainer>
   );
