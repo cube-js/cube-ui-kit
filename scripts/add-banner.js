@@ -1,6 +1,8 @@
-const dedent = require('dedent');
 const { readdir, readFile, writeFile } = require('fs/promises');
 const { resolve } = require('path');
+
+const dedent = require('dedent');
+
 const pkg = require('../package.json');
 
 const banner = dedent`

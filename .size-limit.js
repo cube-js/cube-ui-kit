@@ -6,8 +6,9 @@ const reportFolder = process.env.REPORT_FOLDER ?? './size-limit-report';
 module.exports = [
   {
     name: 'All',
-    path: './dist/__measure.js',
+    path: './dist/es/index.js',
     webpack: true,
+    import: '*',
     modifyWebpackConfig: (webpackConfig) => {
       webpackConfig.plugins.push(
         new StatoscopeWebpackPlugin({
