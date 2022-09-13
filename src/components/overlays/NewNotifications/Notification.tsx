@@ -15,6 +15,9 @@ export type NotificationProps = {
   disableRemoveOnUnmount?: boolean;
 } & CubeNotifyApiProps;
 
+/**
+ * Declarative wrap over the `useNotificationsApi` hook
+ */
 export function Notification(props: NotificationProps) {
   const { id: propsId, disableRemoveOnUnmount = false } = props;
 
@@ -31,7 +34,7 @@ export function Notification(props: NotificationProps) {
   useEffect(() => {
     notify({ id, ...props });
   }, [id]);
-  useEffect(() => () => removeNotification(id), [id]);
+  useEffect(() => () => removeNotification(id), [id, removeNotification]);
   useEffect(() => update(id, props));
 
   return null;

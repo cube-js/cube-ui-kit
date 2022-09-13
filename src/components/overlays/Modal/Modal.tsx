@@ -1,5 +1,4 @@
 import { useDOMRef } from '@react-spectrum/utils';
-import { useViewportSize } from '@react-aria/utils';
 import { forwardRef, ReactNode } from 'react';
 import { useModal, useOverlay, usePreventScroll } from '@react-aria/overlays';
 
@@ -23,7 +22,7 @@ export const OVERLAY_WRAPPER_STYLES: Styles = {
   },
   boxSizing: 'border-box',
   width: '100vw',
-  height: '@cube-visual-viewport-height',
+  height: '100dvh',
   pointerEvents: 'none',
   zIndex: 2,
   transition: 'visibility 0ms linear .13s',
@@ -39,13 +38,10 @@ const ModalElement = tasty({
     display: 'grid',
     zIndex: 2,
     height: {
-      '': 'max (@cube-visual-viewport-height * .9)',
-      '[data-type="fullscreenTakeover"] | [data-type="panel"]':
-        '@cube-visual-viewport-height @cube-visual-viewport-height',
-      '[data-type="fullscreen"]':
-        '(@cube-visual-viewport-height * .9) (@cube-visual-viewport-height * .9)',
-      '[data-type="fullscreenTakeover"]':
-        '@cube-visual-viewport-height @cube-visual-viewport-height',
+      '': 'max 90dvh',
+      '[data-type="fullscreenTakeover"] | [data-type="panel"]': '100dvh 100dvh',
+      '[data-type="fullscreen"]': '90dvh 90dvh',
+      '[data-type="fullscreenTakeover"]': '100dvh 100dvh',
     },
     width: {
       width: '288px 90vw',
@@ -125,17 +121,12 @@ let ModalWrapper = forwardRef(function ModalWrapper(
   usePreventScroll();
 
   let { modalProps } = useModal();
-  let viewport = useViewportSize();
-  let style = {
-    '--cube-visual-viewport-height': viewport.height + 'px',
-  };
 
   return (
     <ModalWrapperElement
       mods={{ open: isOpen }}
       data-type={type}
       data-placement={placement}
-      style={style}
     >
       <ModalElement
         qa={qa || 'Modal'}

@@ -24,6 +24,9 @@ const FooterArea = tasty(ButtonGroup, {
   },
 });
 
+/**
+ * @internal This component is unstable and must not be used outside of `NotificationView`.
+ */
 export const NotificationFooter = memo(function NotificationFooter(
   props: NotificationFooterProps,
 ): JSX.Element {

@@ -22,15 +22,15 @@ const NotificationContainer = tasty({
     position: 'relative',
     display: 'grid',
     width: '100%',
-    padding: '1.5x 1x 1.5x 1.5x',
-    radius: '0.5x',
+    padding: '0.5x 0.5x 1.5x 1.5x',
     gridAreas: `
-      "icon . header"
-      "icon . description"
-      ".    . footer"
+      ".    . .           .      close"
+      "icon . header      .      close"
+      "icon . description .      close"
+      ".    . footer      footer footer"
     `,
-    gridColumns: 'min-content 1x minmax(0, auto)',
-    gridRows: 'minmax(0, auto) minmax(0, auto) minmax(0, auto)',
+    gridColumns: 'min-content 1x minmax(0, auto) 1x minmax(0, min-content)',
+    gridRows: '1x minmax(0, auto) minmax(0, auto) minmax(0, auto)',
     fill: '#white',
     boxShadow: {
       '': '0 0 0 4bw #purple-04.0 inset',
@@ -39,6 +39,9 @@ const NotificationContainer = tasty({
   },
 });
 
+/**
+ * @internal This component is unstable and is a subject to change.
+ */
 export const NotificationView = forwardRef(function NotificationView(
   props: NotificationProps,
   ref: ForwardedRef<HTMLDivElement>,
@@ -115,11 +118,7 @@ export const NotificationView = forwardRef(function NotificationView(
           />
 
           {isDismissible && (
-            <NotificationCloseButton
-              isHovered={isHovered}
-              isFocused={isFocusVisible}
-              onPress={onDismissEvent}
-            />
+            <NotificationCloseButton onPress={onDismissEvent} />
           )}
         </NotificationContainer>
       </NotificationProvider>

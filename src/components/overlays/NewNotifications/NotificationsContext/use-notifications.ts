@@ -14,18 +14,24 @@ type DismissEvent = CustomEvent<CubeNotifyApiPropsWithID>;
 export function useNotifications(
   rootRef: RefObject<HTMLElement | null> | null,
 ) {
+  const idPrefix = useMemo(() => new Date().getTime(), []);
   const idRef = useRef(0);
   const listeners = useRef<(() => void)[]>([]);
-  const [toasts, setToasts] = useState<Map<Key, CubeNotifyApiPropsWithID>>(
-    new Map(),
-  );
+  const [notifications, setNotifications] = useState<
+    Map<Key, CubeNotifyApiPropsWithID>
+  >(new Map());
 
   const addToast: CubeNotificationsApi['notify'] = Object.assign(
     useEvent<CubeNotificationsApiNotifyCallback>((props) => {
       const nextID = idRef.current++;
-      const { id = nextID, duration, isDismissible = true, ...rest } = props;
+      const {
+        id = `${idPrefix}_${nextID}`,
+        duration,
+        isDismissible = true,
+        ...rest
+      } = props;
 
-      setToasts((toasts) => {
+      setNotifications((toasts) => {
         const newToasts = new Map(toasts);
         newToasts.set(id, {
           id,
@@ -54,7 +60,7 @@ export function useNotifications(
   );
 
   const updateToast = useEvent<CubeNotificationsApi['update']>((id, props) => {
-    setToasts((toasts) => {
+    setNotifications((toasts) => {
       const currentToast = toasts.get(id);
 
       if (currentToast) {
@@ -72,7 +78,7 @@ export function useNotifications(
   });
 
   const removeToast = useEvent<CubeNotificationsApi['remove']>((id) => {
-    setToasts((toasts) => {
+    setNotifications((toasts) => {
       if (toasts.has(id)) {
         const newToasts = new Map(toasts);
         newToasts.delete(id);
@@ -85,7 +91,7 @@ export function useNotifications(
   });
 
   const onDismissNotification = useEvent((id: Key) => {
-    const toast = toasts.get(id);
+    const toast = notifications.get(id);
 
     if (toast?.putNotificationInDropdownOnDismiss !== false) {
       rootRef?.current?.dispatchEvent(
@@ -112,12 +118,14 @@ export function useNotifications(
 
   const api = useMemo<CubeNotificationsApi>(
     () => ({ notify: addToast, update: updateToast, remove: removeToast }),
+    // All deps are stable since we use `useEvent` hook
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 
   return {
     api,
-    toasts: useMemo(() => [...toasts.values()], [toasts]),
+    notifications: useMemo(() => [...notifications.values()], [notifications]),
     onDismissNotification,
     addOnDismissListener,
   } as const;

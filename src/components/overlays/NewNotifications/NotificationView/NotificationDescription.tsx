@@ -22,6 +22,9 @@ const Description = tasty(Paragraph, {
   },
 });
 
+/**
+ * @internal This component is unstable and must not be used outside of `NotificationView`.
+ */
 export const NotificationDescription = memo(function NotificationDescription(
   props: NotificationDescriptionProps,
 ) {
