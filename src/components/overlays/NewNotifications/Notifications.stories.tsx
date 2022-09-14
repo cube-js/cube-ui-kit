@@ -9,6 +9,7 @@ import { CloudLogo } from '../../other/CloudLogo/CloudLogo';
 import { Flex } from '../../layout/Flex';
 import { Dialog, DialogTrigger } from '../Dialog';
 import { Paragraph } from '../../content/Paragraph';
+import { Text } from '../../content/Text';
 import { Header } from '../../content/Header';
 import { Content } from '../../content/Content';
 import { Footer } from '../../content/Footer';
@@ -27,6 +28,13 @@ import { NotificationView, NotificationAction } from './NotificationView';
 export default {
   title: 'Overlays/Notifications',
   component: NotificationView,
+  argTypes: {
+    attributes: { table: { disable: true } },
+    styles: { table: { disable: true } },
+    timer: { table: { disable: true } },
+    duration: { type: 'number' },
+    id: { type: 'string' },
+  },
   args: {
     header: 'Development mode available',
     description: 'Edit and test your schema without affecting the production.',
@@ -34,7 +42,7 @@ export default {
   subcomponents: { NotificationAction },
 } as Meta<CubeNotificationProps>;
 
-const ActionTemplate: Story<CubeNotificationProps> = (args) => {
+const ActionTemplate: Story<CubeNotificationProps> = ({ ...args }) => {
   const { notify } = useNotificationsApi();
   const idRef = useRef(0);
 
@@ -291,8 +299,8 @@ export const ComplexInteraction: Story<CubeNotificationProps> = (args) => {
   const [notifications, setNotifications] = useState<
     { id?: Key; type: CubeNotificationProps['type'] }[]
   >([
-    { id: '1', type: 'attention' },
-    { id: '2', type: 'danger' },
+    { id: 'id1', type: 'attention' },
+    { id: 'id2', type: 'danger' },
   ]);
 
   return (
@@ -320,57 +328,70 @@ export const ComplexInteraction: Story<CubeNotificationProps> = (args) => {
           />
 
           <NotificationsDialog>
-            <NotificationsList items={notifications}>
-              {({ id, type, ...props }) => {
-                if (type === 'attention') {
-                  return (
-                    <NotificationsList.Item
-                      key={id}
-                      type="attention"
-                      header="Update available"
-                      description="Click to update your schema."
-                      actions={[
-                        <NotificationAction key="upd">
-                          Update
-                        </NotificationAction>,
-                        <NotificationAction key="hide">
-                          Don't show this again
-                        </NotificationAction>,
-                      ]}
-                      {...props}
-                    />
+            {notifications.length > 0 ? (
+              <NotificationsList
+                items={notifications}
+                onDismiss={(id) => {
+                  setNotifications((current) =>
+                    current.filter((item) => item.id !== id),
                   );
-                }
+                }}
+              >
+                {({ id, type, ...props }) => {
+                  if (type === 'attention') {
+                    return (
+                      <NotificationsList.Item
+                        key={id}
+                        type="attention"
+                        header="Update available"
+                        description="Click to update your schema."
+                        actions={[
+                          <NotificationAction key="upd">
+                            Update
+                          </NotificationAction>,
+                          <NotificationAction key="hide">
+                            Don't show this again
+                          </NotificationAction>,
+                        ]}
+                        {...props}
+                      />
+                    );
+                  }
 
-                if (type === 'danger') {
-                  return (
-                    <NotificationsList.Item
-                      key={id}
-                      type="danger"
-                      header="Error"
-                      description="Click to view the error."
-                      actions={
-                        <NotificationAction to="/">View</NotificationAction>
-                      }
-                      {...props}
-                    />
-                  );
-                }
+                  if (type === 'danger') {
+                    return (
+                      <NotificationsList.Item
+                        key={id}
+                        type="danger"
+                        header="Error"
+                        description="Click to view the error."
+                        actions={
+                          <NotificationAction to="/">View</NotificationAction>
+                        }
+                        {...props}
+                      />
+                    );
+                  }
 
-                if (type === 'success') {
-                  return (
-                    <NotificationsList.Item
-                      key={id}
-                      description="Development mode available"
-                      type="success"
-                      {...props}
-                    />
-                  );
-                }
+                  if (type === 'success') {
+                    return (
+                      <NotificationsList.Item
+                        key={id}
+                        description="Development mode available"
+                        type="success"
+                        {...props}
+                      />
+                    );
+                  }
 
-                return <NotificationsList.Item {...args} />;
-              }}
-            </NotificationsList>
+                  return <NotificationsList.Item {...args} />;
+                }}
+              </NotificationsList>
+            ) : (
+              <Flex padding="5x 4x" textAlign="center" margin="auto">
+                <Text.Minor>No notifications 🎉</Text.Minor>
+              </Flex>
+            )}
           </NotificationsDialog>
         </NotificationsDialogTrigger>
       </Header>

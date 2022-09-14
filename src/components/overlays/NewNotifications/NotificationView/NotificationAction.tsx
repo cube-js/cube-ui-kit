@@ -30,6 +30,9 @@ const Action = tasty(Button, {
   },
 });
 
+/**
+ * @internal This component is unstable and must not be used outside of `NotificationView`.
+ */
 export function NotificationAction(
   props: NotificationActionProps,
 ): JSX.Element {

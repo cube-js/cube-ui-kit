@@ -8,13 +8,13 @@
  */
 function forEachElement(elements, callback) {
   let elementsType = Object.prototype.toString.call(elements);
-  let isCollectionTyped
-    = '[object Array]' === elementsType
-    || '[object NodeList]' === elementsType
-    || '[object HTMLCollection]' === elementsType
-    || '[object Object]' === elementsType
-    || ('undefined' !== typeof jQuery && elements instanceof jQuery) //jquery
-    || ('undefined' !== typeof Elements && elements instanceof Elements); //mootools
+  let isCollectionTyped =
+    '[object Array]' === elementsType ||
+    '[object NodeList]' === elementsType ||
+    '[object HTMLCollection]' === elementsType ||
+    '[object Object]' === elementsType ||
+    ('undefined' !== typeof jQuery && elements instanceof jQuery) || //jquery
+    ('undefined' !== typeof Elements && elements instanceof Elements); //mootools
   let i = 0,
     j = elements.length;
   if (isCollectionTyped) {
@@ -53,7 +53,7 @@ function getElementSize(element) {
  * @param {Object} style
  */
 function setStyle(element, style) {
-  Object.keys(style).forEach(function(key) {
+  Object.keys(style).forEach(function (key) {
     element.style[key] = style[key];
   });
 }
@@ -66,7 +66,7 @@ function setStyle(element, style) {
  *
  * @constructor
  */
-export let ResizeSensor = function(element, callback) {
+export let ResizeSensor = function (element, callback) {
   // https://github.com/marcj/css-element-queries/blob/master/src/ResizeSensor.js
   // https://github.com/Semantic-Org/Semantic-UI/issues/3855
   // https://github.com/marcj/css-element-queries/issues/257
@@ -74,18 +74,18 @@ export let ResizeSensor = function(element, callback) {
   // Only used for the dirty checking, so the event callback count is limited to max 1 call per fps per sensor.
   // In combination with the event based resize sensor this saves cpu time, because the sensor is too fast and
   // would generate too many unnecessary events.
-  let requestAnimationFrame
-    = globalWindow.requestAnimationFrame
-    || globalWindow.mozRequestAnimationFrame
-    || globalWindow.webkitRequestAnimationFrame
-    || function(fn) {
+  let requestAnimationFrame =
+    globalWindow.requestAnimationFrame ||
+    globalWindow.mozRequestAnimationFrame ||
+    globalWindow.webkitRequestAnimationFrame ||
+    function (fn) {
       return globalWindow.setTimeout(fn, 20);
     };
-  let cancelAnimationFrame
-    = globalWindow.cancelAnimationFrame
-    || globalWindow.mozCancelAnimationFrame
-    || globalWindow.webkitCancelAnimationFrame
-    || function(timer) {
+  let cancelAnimationFrame =
+    globalWindow.cancelAnimationFrame ||
+    globalWindow.mozCancelAnimationFrame ||
+    globalWindow.webkitCancelAnimationFrame ||
+    function (timer) {
       globalWindow.clearTimeout(timer);
     };
 
@@ -98,18 +98,18 @@ export let ResizeSensor = function(element, callback) {
    */
   function EventQueue() {
     let q = [];
-    this.add = function(ev) {
+    this.add = function (ev) {
       q.push(ev);
     };
 
     let i, j;
-    this.call = function(sizeInfo) {
+    this.call = function (sizeInfo) {
       for (i = 0, j = q.length; i < j; i++) {
         q[i].call(this, sizeInfo);
       }
     };
 
-    this.remove = function(ev) {
+    this.remove = function (ev) {
       let newQueue = [];
       for (i = 0, j = q.length; i < j; i++) {
         if (q[i] !== ev) newQueue.push(q[i]);
@@ -117,7 +117,7 @@ export let ResizeSensor = function(element, callback) {
       q = newQueue;
     };
 
-    this.length = function() {
+    this.length = function () {
       return q.length;
     };
   }
@@ -188,10 +188,10 @@ export let ResizeSensor = function(element, callback) {
       ? computedStyle.getPropertyValue('position')
       : null;
     if (
-      'absolute' !== position
-      && 'relative' !== position
-      && 'fixed' !== position
-      && 'sticky' !== position
+      'absolute' !== position &&
+      'relative' !== position &&
+      'fixed' !== position &&
+      'sticky' !== position
     ) {
       element.style.position = 'relative';
     }
@@ -206,7 +206,7 @@ export let ResizeSensor = function(element, callback) {
     let initialHiddenCheck = true;
     lastAnimationFrameForInvisibleCheck = 0;
 
-    let resetExpandShrink = function() {
+    let resetExpandShrink = function () {
       let width = element.offsetWidth;
       let height = element.offsetHeight;
 
@@ -220,7 +220,7 @@ export let ResizeSensor = function(element, callback) {
       shrink.scrollTop = height + 10;
     };
 
-    let reset = function() {
+    let reset = function () {
       // Check if element is hidden
       if (initialHiddenCheck) {
         let invisible = element.offsetWidth === 0 && element.offsetHeight === 0;
@@ -228,7 +228,7 @@ export let ResizeSensor = function(element, callback) {
           // Check in next frame
           if (!lastAnimationFrameForInvisibleCheck) {
             lastAnimationFrameForInvisibleCheck = requestAnimationFrame(
-              function() {
+              function () {
                 lastAnimationFrameForInvisibleCheck = 0;
                 reset();
               },
@@ -246,7 +246,7 @@ export let ResizeSensor = function(element, callback) {
     };
     element.resizeSensor.resetSensor = reset;
 
-    let onResized = function() {
+    let onResized = function () {
       rafId = 0;
 
       if (!dirty) return;
@@ -259,7 +259,7 @@ export let ResizeSensor = function(element, callback) {
       }
     };
 
-    let onScroll = function() {
+    let onScroll = function () {
       size = getElementSize(element);
       dirty = size.width !== lastWidth || size.height !== lastHeight;
 
@@ -270,7 +270,7 @@ export let ResizeSensor = function(element, callback) {
       reset();
     };
 
-    let addEvent = function(el, name, cb) {
+    let addEvent = function (el, name, cb) {
       if (el.attachEvent) {
         el.attachEvent('on' + name, cb);
       } else {
@@ -282,17 +282,17 @@ export let ResizeSensor = function(element, callback) {
     addEvent(shrink, 'scroll', onScroll);
 
     // Fix for custom Elements and invisible elements
-    lastAnimationFrameForInvisibleCheck = requestAnimationFrame(function() {
+    lastAnimationFrameForInvisibleCheck = requestAnimationFrame(function () {
       lastAnimationFrameForInvisibleCheck = 0;
       reset();
     });
   }
 
-  forEachElement(element, function(elem) {
+  forEachElement(element, function (elem) {
     attachResizeEvent(elem, callback);
   });
 
-  this.detach = function(ev) {
+  this.detach = function (ev) {
     // clean up the unfinished animation frame to prevent a potential endless requestAnimationFrame of reset
     if (lastAnimationFrameForInvisibleCheck) {
       cancelAnimationFrame(lastAnimationFrameForInvisibleCheck);
@@ -301,7 +301,7 @@ export let ResizeSensor = function(element, callback) {
     ResizeSensor.detach(element, ev);
   };
 
-  this.reset = function() {
+  this.reset = function () {
     //To prevent invoking element.resizeSensor.resetSensor if it's undefined
     if (element.resizeSensor.resetSensor) {
       element.resizeSensor.resetSensor();
@@ -309,8 +309,8 @@ export let ResizeSensor = function(element, callback) {
   };
 };
 
-ResizeSensor.reset = function(element) {
-  forEachElement(element, function(elem) {
+ResizeSensor.reset = function (element) {
+  forEachElement(element, function (elem) {
     //To prevent invoking element.resizeSensor.resetSensor if it's undefined
     if (element.resizeSensor.resetSensor) {
       elem.resizeSensor.resetSensor();
@@ -318,8 +318,8 @@ ResizeSensor.reset = function(element) {
   });
 };
 
-ResizeSensor.detach = function(element, ev) {
-  forEachElement(element, function(elem) {
+ResizeSensor.detach = function (element, ev) {
+  forEachElement(element, function (elem) {
     if (!elem) return;
     if (elem.resizedAttached && typeof ev === 'function') {
       elem.resizedAttached.remove(ev);
@@ -336,7 +336,7 @@ ResizeSensor.detach = function(element, ev) {
 };
 
 if (typeof MutationObserver !== 'undefined') {
-  let observer = new MutationObserver(function(mutations) {
+  let observer = new MutationObserver(function (mutations) {
     for (let i in mutations) {
       if (mutations.hasOwnProperty(i)) {
         let items = mutations[i].addedNodes;
@@ -349,7 +349,7 @@ if (typeof MutationObserver !== 'undefined') {
     }
   });
 
-  document.addEventListener('DOMContentLoaded', function(event) {
+  document.addEventListener('DOMContentLoaded', function (event) {
     observer.observe(document.body, {
       childList: true,
       subtree: true,

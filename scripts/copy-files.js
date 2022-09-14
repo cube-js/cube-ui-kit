@@ -3,7 +3,7 @@ const path = require('path');
 
 function copyRequiredFiles() {
   copyPackageJson();
-  ['./README.md'].forEach((file) => includeFileInBuild(file));
+  ['./README.md', './CHANGELOG.md'].forEach((file) => includeFileInBuild(file));
 }
 
 function copyPackageJson() {

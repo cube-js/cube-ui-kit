@@ -45,6 +45,9 @@ const NotificationsContainer = tasty({
   },
 });
 
+/**
+ * @internal Do not use it
+ */
 export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
   const {
     items,
