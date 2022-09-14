@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.13.1
+
+### Patch Changes
+
+- [#213](https://github.com/cube-js/cube-ui-kit/pull/213) [`04852be`](https://github.com/cube-js/cube-ui-kit/commit/04852be0b17cb2d7ecab80c530128ec957e5cf3e) Thanks [@tenphi](https://github.com/tenphi)! - Fix that allows notifications to be dismissed correctly when they are off the display limit.
+
 ## 0.13.0
 
 ### Minor Changes
