@@ -462,6 +462,6 @@ NotificationsQueue.play = async ({ canvasElement }) => {
 
     const button = getByTestId('ClickMeButton');
     await userEvent.click(button);
-    await wait(random(500, 1000));
+    await wait(random(400, 800));
   }
 };
