@@ -103,9 +103,7 @@ export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
   // Auto-dismiss all notifications that are off the limit.
   collection
     .slice(realLimit)
-    .forEach((notification) =>
-      chainedOnRemoveNotification(notification.props.id),
-    );
+    .forEach((notification) => onDismissNotification(notification.props.id));
 
   return (
     <NotificationsContainer
