@@ -109,12 +109,14 @@ export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
     }
   }, [realLimit]);
 
-  // Auto-dismiss all notifications that are off the limit.
+  // Set the last notification that was gone off the limit
   collection.slice(realLimit).forEach((notification) => {
+    // It's safe 'cause there is always only a single notification above the limit
     lastShownIdRef.current = notification.props.id;
   });
 
   useEffect(() => {
+    // Auto-dismiss the last shown notification that was off the limit
     if (lastShownIdRef.current) {
       onDismissNotification(lastShownIdRef.current);
       onRemoveNotification(lastShownIdRef.current);
