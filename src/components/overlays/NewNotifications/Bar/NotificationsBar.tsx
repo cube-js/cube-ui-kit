@@ -1,4 +1,4 @@
-import { Key, useRef } from 'react';
+import { Key, useLayoutEffect, useRef, useState } from 'react';
 import { TransitionGroup } from 'react-transition-group';
 import { Item } from '@react-stately/collections';
 import { useHover } from '@react-aria/interactions';
@@ -8,7 +8,7 @@ import { tasty } from '../../../../tasty';
 import { CubeNotifyApiPropsWithID } from '../types';
 import { useNotificationsList, CollectionChildren } from '../hooks';
 import { mergeProps } from '../../../../utils/react';
-import { useEvent } from '../../../../_internal';
+import { useChainedCallback, useEvent } from '../../../../_internal';
 
 import { FloatingNotification } from './FloatingNotification';
 import { TransitionComponent } from './TransitionComponent';
@@ -18,12 +18,16 @@ export type NotificationsBarProps = {
   children: CollectionChildren<CubeNotifyApiPropsWithID>;
   onRemoveNotification: (id: Key) => void;
   onDismissNotification: (id: Key) => void;
+  /**
+   * Defines the amount of notifications that can be displayed at once.
+   * @default 5
+   */
+  limit?: number;
 };
 
 const NotificationsContainer = tasty({
   styles: {
     boxSizing: 'border-box',
-
     position: 'fixed',
     bottom: 'env(safe-area-inset-bottom, 0)',
     right: 'env(safe-area-inset-right, 0)',
@@ -45,10 +49,16 @@ const NotificationsContainer = tasty({
  * @internal Do not use it
  */
 export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
-  const { items, children, onRemoveNotification, onDismissNotification } =
-    props;
+  const {
+    items,
+    children,
+    onRemoveNotification,
+    onDismissNotification,
+    limit = 5,
+  } = props;
 
   const ref = useRef<HTMLElement | null>(null);
+  const [realLimit, setRealLimit] = useState(limit + 1);
 
   const { listProps, state } = useNotificationsList({ items, children, ref });
   const { hoverProps, isHovered } = useHover({});
@@ -69,6 +79,34 @@ export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
     }
   });
 
+  const chainedOnRemoveNotification = useChainedCallback(
+    onRemoveNotification,
+    moveFocus,
+  );
+
+  const collection = [...state.collection].reverse();
+  const collectionLength = collection.length;
+
+  /**
+   * Handy hack to improve animations if the limit is reached.
+   */
+  useLayoutEffect(() => {
+    setRealLimit(limit + 1);
+  }, [collectionLength]);
+
+  useLayoutEffect(() => {
+    if (realLimit > limit) {
+      setRealLimit(limit);
+    }
+  }, [realLimit]);
+
+  // Auto-dismiss all notifications that are off the limit.
+  collection
+    .slice(realLimit)
+    .forEach((notification) =>
+      chainedOnRemoveNotification(notification.props.id),
+    );
+
   return (
     <NotificationsContainer
       ref={ref}
@@ -78,17 +116,14 @@ export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
       {...mergeProps(listProps, hoverProps, focusProps)}
     >
       <TransitionGroup enter exit component={null}>
-        {[...state.collection].reverse().map((notification) => (
+        {collection.slice(0, realLimit).map((notification) => (
           <TransitionComponent key={notification.props.id}>
             <FloatingNotification
               isDisabledTimer={isHovered || isFocusVisible}
               id={notification.props.id}
               item={notification}
               state={state}
-              onRemoveNotification={(key) => {
-                onRemoveNotification(key);
-                moveFocus(key);
-              }}
+              onRemoveNotification={chainedOnRemoveNotification}
               onDismissNotification={onDismissNotification}
             />
           </TransitionComponent>

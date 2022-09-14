@@ -1,4 +1,4 @@
-import { Key, useState } from 'react';
+import { Key, useRef, useState } from 'react';
 import { expect } from '@storybook/jest';
 import { userEvent, within } from '@storybook/testing-library';
 import { Meta, Story } from '@storybook/react';
@@ -14,6 +14,9 @@ import { Header } from '../../content/Header';
 import { Content } from '../../content/Content';
 import { Footer } from '../../content/Footer';
 import { Title } from '../../content/Title';
+import { range } from '../../../utils/range';
+import { wait } from '../../../test';
+import { random } from '../../../utils/random';
 
 import { NotificationsDialog, NotificationsDialogTrigger } from './Dialog';
 import { NotificationsList } from './NotificationsList';
@@ -41,9 +44,15 @@ export default {
 
 const ActionTemplate: Story<CubeNotificationProps> = ({ ...args }) => {
   const { notify } = useNotificationsApi();
+  const idRef = useRef(0);
 
   return (
-    <Button qa="ClickMeButton" onPress={() => notify({ ...args })}>
+    <Button
+      qa="ClickMeButton"
+      onPress={() =>
+        notify({ ...args, header: args.header + ' ' + idRef.current++ })
+      }
+    >
       Click Me!
     </Button>
   );
@@ -444,3 +453,15 @@ export const WithWidget: Story<CubeNotificationProps> = (args) => (
 );
 
 WithWidget.play = ActionTemplate.play;
+
+export const NotificationsQueue = ActionTemplate.bind({});
+NotificationsQueue.play = async ({ canvasElement }) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  for await (const _ of range(10)) {
+    const { getByTestId } = within(canvasElement);
+
+    const button = getByTestId('ClickMeButton');
+    await userEvent.click(button);
+    await wait(random(500, 1000));
+  }
+};
