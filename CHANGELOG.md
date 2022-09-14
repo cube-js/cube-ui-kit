@@ -1,5 +1,32 @@
 # @cube-dev/ui-kit
 
+## 0.13.0
+
+### Minor Changes
+
+- [#207](https://github.com/cube-js/cube-ui-kit/pull/207) [`fa16cd6`](https://github.com/cube-js/cube-ui-kit/commit/fa16cd6f74190b238583312aec6343a9258bb9b4) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Redesigned close button in `<Notification />` component.
+
+  Added ability to dismiss a notification in `<NotificationList />` component.
+
+  ```typescript jsx
+  import { NotificationsList } from '@cube-dev/ui-kit';
+
+  <NotificationList onDismiss={() => console.log('dismissed')}>
+    <NotificationsList.Item
+      header="Notification title"
+      description="Notification description"
+    />
+  </NotificationList>;
+  ```
+
+  Now notifications generates more uniq ids by default.
+
+### Patch Changes
+
+- [#206](https://github.com/cube-js/cube-ui-kit/pull/206) [`11f14c3`](https://github.com/cube-js/cube-ui-kit/commit/11f14c3b8c65c39a91dd6dac6d094a7bd9bfe549) Thanks [@nikolaykost](https://github.com/nikolaykost)! - Added support of keyboard navigation inside Menu component
+
+- [#211](https://github.com/cube-js/cube-ui-kit/pull/211) [`e74374d`](https://github.com/cube-js/cube-ui-kit/commit/e74374d2e9b9bd8b52a0e80ef561815f08d185c3) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Do not render more than 5 notificaitons at the same time
+
 ## 0.12.7
 
 ### Patch Changes
