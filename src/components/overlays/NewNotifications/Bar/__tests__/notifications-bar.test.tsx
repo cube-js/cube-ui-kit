@@ -61,6 +61,6 @@ describe('<NotificationsBar />', () => {
     );
 
     expect(renderedIds).toHaveLength(5);
-    expect(renderedIds).toEqual(['5', '4', '3', '2', '1']);
+    expect(renderedIds).toEqual(['7', '6', '5', '4', '3']);
   });
 });

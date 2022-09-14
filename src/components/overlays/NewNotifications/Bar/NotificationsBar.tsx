@@ -1,4 +1,4 @@
-import { Key, useRef } from 'react';
+import { Key, useLayoutEffect, useRef, useState } from 'react';
 import { TransitionGroup } from 'react-transition-group';
 import { Item } from '@react-stately/collections';
 import { useHover } from '@react-aria/interactions';
@@ -28,14 +28,13 @@ export type NotificationsBarProps = {
 const NotificationsContainer = tasty({
   styles: {
     boxSizing: 'border-box',
-
     position: 'fixed',
     bottom: 'env(safe-area-inset-bottom, 0)',
     right: 'env(safe-area-inset-right, 0)',
     display: 'flex',
     flexDirection: 'column-reverse',
     width: 'auto 100% 50x',
-    height: '100vh max',
+    height: '100dvh max',
     padding: '2x',
     gap: '1x',
     /* to be sure that we're over the legacy modal and any widget as well */
@@ -43,10 +42,6 @@ const NotificationsContainer = tasty({
     overflow: 'hidden',
     isolation: 'isolate',
     pointerEvents: 'none',
-
-    '@supports (-webkit-touch-callout: none)': {
-      height: '-webkit-fill-available max',
-    },
   },
 });
 
@@ -60,6 +55,7 @@ export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
   } = props;
 
   const ref = useRef<HTMLElement | null>(null);
+  const [realLimit, setRealLimit] = useState(limit + 1);
 
   const { listProps, state } = useNotificationsList({ items, children, ref });
   const { hoverProps, isHovered } = useHover({});
@@ -85,6 +81,29 @@ export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
     moveFocus,
   );
 
+  const collection = [...state.collection].reverse();
+  const collectionLength = collection.length;
+
+  /**
+   * Handy hack to improve animations if the limit is reached.
+   */
+  useLayoutEffect(() => {
+    setRealLimit(limit + 1);
+  }, [collectionLength]);
+
+  useLayoutEffect(() => {
+    if (realLimit > limit) {
+      setRealLimit(limit);
+    }
+  }, [realLimit]);
+
+  // Auto-dismiss all notifications that are off the limit.
+  collection
+    .slice(realLimit)
+    .forEach((notification) =>
+      chainedOnRemoveNotification(notification.props.id),
+    );
+
   return (
     <NotificationsContainer
       ref={ref}
@@ -94,21 +113,18 @@ export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
       {...mergeProps(listProps, hoverProps, focusProps)}
     >
       <TransitionGroup enter exit component={null}>
-        {[...state.collection]
-          .slice(0, limit)
-          .reverse()
-          .map((notification) => (
-            <TransitionComponent key={notification.props.id}>
-              <FloatingNotification
-                isDisabledTimer={isHovered || isFocusVisible}
-                id={notification.props.id}
-                item={notification}
-                state={state}
-                onRemoveNotification={chainedOnRemoveNotification}
-                onDismissNotification={onDismissNotification}
-              />
-            </TransitionComponent>
-          ))}
+        {collection.slice(0, realLimit).map((notification) => (
+          <TransitionComponent key={notification.props.id}>
+            <FloatingNotification
+              isDisabledTimer={isHovered || isFocusVisible}
+              id={notification.props.id}
+              item={notification}
+              state={state}
+              onRemoveNotification={chainedOnRemoveNotification}
+              onDismissNotification={onDismissNotification}
+            />
+          </TransitionComponent>
+        ))}
       </TransitionGroup>
     </NotificationsContainer>
   );

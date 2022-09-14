@@ -1,4 +1,4 @@
-import { Key, useState } from 'react';
+import { Key, useRef, useState } from 'react';
 import { expect } from '@storybook/jest';
 import { userEvent, within } from '@storybook/testing-library';
 import { Meta, Story } from '@storybook/react';
@@ -36,9 +36,15 @@ export default {
 
 const ActionTemplate: Story<CubeNotificationProps> = (args) => {
   const { notify } = useNotificationsApi();
+  const idRef = useRef(0);
 
   return (
-    <Button qa="ClickMeButton" onPress={() => notify({ ...args })}>
+    <Button
+      qa="ClickMeButton"
+      onPress={() =>
+        notify({ ...args, header: args.header + ' ' + idRef.current++ })
+      }
+    >
       Click Me!
     </Button>
   );
