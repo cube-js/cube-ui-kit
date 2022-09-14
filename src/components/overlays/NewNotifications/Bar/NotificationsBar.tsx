@@ -1,12 +1,12 @@
-import { Key, useLayoutEffect, useRef, useState } from 'react';
+import { Key, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { TransitionGroup } from 'react-transition-group';
 import { Item } from '@react-stately/collections';
 import { useHover } from '@react-aria/interactions';
-import { useFocusRing, focusSafely } from '@react-aria/focus';
+import { focusSafely, useFocusRing } from '@react-aria/focus';
 
 import { tasty } from '../../../../tasty';
 import { CubeNotifyApiPropsWithID } from '../types';
-import { useNotificationsList, CollectionChildren } from '../hooks';
+import { CollectionChildren, useNotificationsList } from '../hooks';
 import { mergeProps } from '../../../../utils/react';
 import { useChainedCallback, useEvent } from '../../../../_internal';
 
@@ -59,6 +59,7 @@ export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
 
   const ref = useRef<HTMLElement | null>(null);
   const [realLimit, setRealLimit] = useState(limit + 1);
+  const lastShownIdRef = useRef<Key>();
 
   const { listProps, state } = useNotificationsList({ items, children, ref });
   const { hoverProps, isHovered } = useHover({});
@@ -84,8 +85,16 @@ export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
     moveFocus,
   );
 
-  const collection = [...state.collection].reverse();
+  let collection = [...state.collection].reverse();
   const collectionLength = collection.length;
+
+  const lastShownNotificationIndex = collection.findIndex(
+    (notification) => notification.props.id === lastShownIdRef.current,
+  );
+
+  if (lastShownNotificationIndex !== -1) {
+    collection = collection.slice(0, lastShownNotificationIndex);
+  }
 
   /**
    * Handy hack to improve animations if the limit is reached.
@@ -101,9 +110,22 @@ export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
   }, [realLimit]);
 
   // Auto-dismiss all notifications that are off the limit.
-  collection
-    .slice(realLimit)
-    .forEach((notification) => onDismissNotification(notification.props.id));
+  collection.slice(realLimit).forEach((notification) => {
+    lastShownIdRef.current = notification.props.id;
+  });
+
+  useEffect(() => {
+    if (lastShownIdRef.current) {
+      onDismissNotification(lastShownIdRef.current);
+      onRemoveNotification(lastShownIdRef.current);
+
+      const lastNotification = collection.find(
+        (notification) => notification.props.id === lastShownIdRef.current,
+      );
+
+      lastNotification?.props.onDismiss?.();
+    }
+  }, [lastShownIdRef.current]);
 
   return (
     <NotificationsContainer
