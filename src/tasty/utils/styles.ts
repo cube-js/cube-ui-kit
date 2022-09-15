@@ -66,7 +66,9 @@ export type StyleStateListMap = { [key: string]: StyleStateList };
 const devMode = process.env.NODE_ENV !== 'production';
 
 const IS_DVH_SUPPORTED =
-  typeof CSS?.supports !== 'undefined' ? CSS.supports('height: 100dvh') : false;
+  typeof CSS !== 'undefined' && typeof CSS?.supports === 'function'
+    ? CSS.supports('height: 100dvh')
+    : false;
 
 export const CUSTOM_UNITS = {
   r: 'var(--radius)',
