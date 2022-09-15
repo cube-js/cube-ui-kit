@@ -4,7 +4,7 @@ const DEFAULT_MIN_SIZE = 'var(--gap)';
 const DEFAULT_MAX_SIZE = '100%';
 
 function isSizingSupport(val) {
-  return typeof CSS !== 'undefined' && typeof CSS.supports !== 'undefined'
+  return typeof CSS !== 'undefined' && typeof CSS?.supports === 'function'
     ? CSS.supports('height', val)
     : false;
 }

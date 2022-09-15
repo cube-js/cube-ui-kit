@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ModalProvider } from '@react-aria/overlays';
 import { StyleSheetManager } from 'styled-components';
-import { useViewportSize } from '@react-aria/utils';
 
 import {
   BASE_STYLES,
@@ -13,6 +12,7 @@ import {
 } from '../tasty';
 import { Provider } from '../provider';
 import { TOKENS } from '../tokens';
+import { useViewportSize } from '../utils/react';
 
 import { PortalProvider } from './portal';
 import { GlobalStyles } from './GlobalStyles';
@@ -47,7 +47,9 @@ export interface CubeRootProps extends BaseProps {
 }
 
 const IS_DVH_SUPPORTED =
-  typeof CSS?.supports !== 'undefined' ? CSS.supports('height: 100dvh') : false;
+  typeof CSS !== 'undefined' && typeof CSS?.supports === 'function'
+    ? CSS.supports('height: 100dvh')
+    : false;
 
 export function Root(allProps: CubeRootProps) {
   let {
@@ -81,7 +83,7 @@ export function Root(allProps: CubeRootProps) {
   let timeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
-    if (IS_DVH_SUPPORTED) {
+    if (IS_DVH_SUPPORTED && typeof window !== 'undefined') {
       return;
     }
 
