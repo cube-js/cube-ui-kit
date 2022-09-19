@@ -149,7 +149,7 @@ export class CubeFormInstance<
   ) {
     const field = this.fields[name];
 
-    if (!field || isEqual(value, field.value)) {
+    if (!field || isEqual(value, inputOnly ? field.inputValue : field.value)) {
       return;
     }
 
