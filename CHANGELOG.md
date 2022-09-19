@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.13.2
+
+### Patch Changes
+
+- [#218](https://github.com/cube-js/cube-ui-kit/pull/218) [`121e4a0`](https://github.com/cube-js/cube-ui-kit/commit/121e4a0ebdf4ed64720cbc89ce61be8eb2fd3f8d) Thanks [@tenphi](https://github.com/tenphi)! - Set default bold font weight to 700.
+
+- [#217](https://github.com/cube-js/cube-ui-kit/pull/217) [`91092dd`](https://github.com/cube-js/cube-ui-kit/commit/91092dd81c80ab25242cd558214033dcdb7629d3) Thanks [@tenphi](https://github.com/tenphi)! - Fix the bug that didn't allow to type into a ComboBox to the initial value inside a Form.
+
+- [#215](https://github.com/cube-js/cube-ui-kit/pull/215) [`f5b707e`](https://github.com/cube-js/cube-ui-kit/commit/f5b707ebf3b26b9b8f37b5032b0417afb2c0f801) Thanks [@tenphi](https://github.com/tenphi)! - Fix SSR support
+
 ## 0.13.1
 
 ### Patch Changes
