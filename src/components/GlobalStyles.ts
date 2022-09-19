@@ -169,8 +169,8 @@ export const GlobalStyles = createGlobalStyle`
     }
   }
 
-  b {
-    font-weight: 600;
+  b, strong {
+    font-weight: var(--bold-font-weight, 700);
   }
 
   [type=reset], [type=submit], button, html [type=button] {
