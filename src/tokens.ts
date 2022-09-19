@@ -209,7 +209,7 @@ const TOKENS = {
   'strong-font-family': 'inherit',
   'strong-font-style': 'inherit',
   'strong-font-weight':
-    'var(--bold-font-weight, var(--default-bold-font-weight, 600))',
+    'var(--bold-font-weight, var(--default-bold-font-weight, 700))',
   // em
   'em-font-size': 'inherit',
   'em-line-height': 'inherit',
@@ -222,7 +222,7 @@ const TOKENS = {
   'default-line-height': 'var(--t3-line-height)',
   'default-letter-spacing': 'var(--t3-letter-spacing)',
   'default-font-weight': 'var(--t3-font-weight)',
-  'default-bold-font-weight': '600',
+  'default-bold-font-weight': '700',
   // scrollbar colors
   'scrollbar-width': '1.5x',
   'scrollbar-outline-width': '1ow',
