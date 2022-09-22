@@ -249,6 +249,25 @@ export const MULTIPLE_VALUE_ARG = {
   },
 };
 
+export const MULTIPLE_NUMBER_VALUE_ARG = {
+  value: {
+    defaultValue: undefined,
+    description: 'The multiple value in controlled mode',
+    control: 'object',
+    table: {
+      type: { summary: 'number[]' },
+    },
+  },
+  defaultValue: {
+    defaultValue: undefined,
+    description: 'The default multiple value in uncontrolled mode',
+    control: 'object',
+    table: {
+      type: { summary: 'number[]' },
+    },
+  },
+};
+
 export const IS_SELECTED_ARG = {
   isSelected: {
     defaultValue: undefined,
