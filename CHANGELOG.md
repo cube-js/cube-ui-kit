@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.13.3
+
+### Patch Changes
+
+- [#219](https://github.com/cube-js/cube-ui-kit/pull/219) [`d178c72`](https://github.com/cube-js/cube-ui-kit/commit/d178c72abf4d890c9bfbc644961a6aa5bfb2a143) Thanks [@tenphi](https://github.com/tenphi)! - Fix overlapping of LegacyTabs' fades with dialogs.
+
 ## 0.13.2
 
 ### Patch Changes
