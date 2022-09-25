@@ -14,14 +14,33 @@ export default {
 } as Meta<CubeRangeSliderProps>;
 
 const Template: Story<CubeRangeSliderProps> = (args) => (
-  <>
-    <RangeSlider {...args} />
-  </>
+  <RangeSlider {...args} />
 );
 
-export const Default = Template.bind({
+export const Single = Template.bind({});
+
+Single.args = {
+  defaultValue: 20,
+  minValue: 0,
+  maxValue: 100,
+  step: 2,
+};
+
+export const Dual = Template.bind({});
+
+Dual.args = {
   defaultValue: [20, 80],
   minValue: 0,
   maxValue: 100,
   step: 2,
-});
+};
+
+export const DualLabel = Template.bind({});
+
+DualLabel.args = {
+  label: 'Label',
+  defaultValue: [20, 80],
+  minValue: 0,
+  maxValue: 100,
+  step: 2,
+};

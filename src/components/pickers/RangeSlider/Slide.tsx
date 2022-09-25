@@ -11,15 +11,21 @@ export function Slide(props: SlideProps) {
   const { ranges, state } = props;
 
   const styles = {};
+  const mods = {
+    single: ranges.length <= 1,
+  };
 
   ranges.forEach((rangeIndex) => {
-    styles[`@thumb-${rangeIndex}-value`] = state.getThumbPercent(rangeIndex);
-    styles[`@thumb-${rangeIndex}-index`] = rangeIndex;
+    const percent = state.getThumbPercent(rangeIndex);
+
+    console.log({ rangeIndex, percent });
+
+    styles[`@thumb-${rangeIndex}-value`] = percent;
   });
 
   return (
     <StyledSlide>
-      <StyledSlideTrack styles={styles} />
+      <StyledSlideTrack styles={styles} mods={mods} />
     </StyledSlide>
   );
 }

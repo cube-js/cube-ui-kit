@@ -7,6 +7,8 @@ import { FormFieldProps } from '../../../shared';
 import {
   BasePropsWithoutChildren,
   BlockStyleProps,
+  extractStyles,
+  OUTER_STYLES,
   OuterStyleProps,
 } from '../../../tasty';
 
@@ -32,8 +34,16 @@ export interface CubeRangeSliderProps
   onChangeEnd?: (range: number[]) => void;
 }
 
+function getRanges(value) {
+  if (Array.isArray(value)) {
+    return value.map((_, idx) => idx);
+  }
+
+  return [0];
+}
+
 function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
-  const {
+  let {
     labelPosition,
     label,
     extra,
@@ -47,26 +57,34 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
     labelStyles,
     necessityIndicator,
     defaultValue,
+    value,
     gradation,
-    ranges = [0, 1],
+    step = 1,
     isDisabled,
+    orientation = 'horizontal',
     onChange,
     onChangeEnd,
+    ...otherProps
   } = props;
 
+  const ranges = getRanges(defaultValue || value || [0, 1]);
   const trackRef = useRef<HTMLElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const numberFormatter = new Intl.NumberFormat();
   const state = useSliderState({
     ...props,
+    step,
+    orientation,
     numberFormatter,
-    isDisabled: isDisabled,
+    isDisabled,
   });
 
   const { groupProps, trackProps, labelProps } = useSlider(
     {
       ...props,
-      isDisabled: isDisabled,
+      step,
+      orientation,
+      isDisabled,
       onChange(range: number | number[]) {
         if (onChange && Array.isArray(range)) {
           onChange(range);
@@ -81,6 +99,9 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
     state,
     trackRef,
   );
+
+  styles = extractStyles(otherProps, OUTER_STYLES, styles);
+  console.log({ defaultValue });
 
   const sliderField = (
     <StyledSlider {...groupProps}>
