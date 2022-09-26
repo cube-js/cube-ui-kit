@@ -9,7 +9,7 @@ export const StyledThumb = tasty({
       '': '#purple',
       hovered: '#6B4FEE',
       dragged: '#7A77FF',
-      disabled: '#A1A1B5',
+      disabled: '#dark-04',
     },
     cursor: {
       hovered: 'pointer',
@@ -34,7 +34,10 @@ export const StyledSlide = tasty({
   styles: {
     top: '1.875x',
     position: 'absolute',
-    fill: '#dark-05',
+    fill: {
+      '': '#dark-05',
+      // disabled: '#dark-04',
+    },
     height: '2px',
     width: '100%',
     radius: true,
@@ -55,7 +58,10 @@ export const StyledSlideTrack = tasty({
     left: '(@start-range * 100%)',
     right: '(@end-range * 100%)',
     height: '2px',
-    fill: '#purple',
+    fill: {
+      '': '#purple',
+      disabled: '#dark-04',
+    },
     radius: true,
   },
 });
@@ -84,5 +90,9 @@ export const StyledSlider = tasty({
     flexDirection: 'column',
     alignItems: 'center',
     width: '100%',
+    padding: {
+      '': '0',
+      sideLabel: '0.75x top',
+    },
   },
 });

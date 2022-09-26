@@ -101,12 +101,16 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
   );
 
   styles = extractStyles(otherProps, OUTER_STYLES, styles);
-  console.log({ defaultValue });
+
+  console.log('RangeSlider', props);
 
   const sliderField = (
-    <StyledSlider {...groupProps}>
+    <StyledSlider
+      {...groupProps}
+      mods={{ sideLabel: labelPosition === 'side' }}
+    >
       <StyledControls {...trackProps} ref={trackRef}>
-        <Slide state={state} ranges={ranges} />
+        <Slide state={state} ranges={ranges} isDisabled={isDisabled} />
         <Gradation state={state} ranges={ranges} values={gradation} />
         {ranges.map((thumb) => (
           <Thumb
@@ -115,6 +119,7 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
             state={state}
             inputRef={inputRef}
             trackRef={trackRef}
+            isDisabled={isDisabled}
             defaultValue={defaultValue && defaultValue[thumb]}
           />
         ))}

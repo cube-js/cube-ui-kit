@@ -37,6 +37,7 @@ export function Thumb(props: ThumbProps) {
           hovered: isHovered,
           dragged: isDragging,
           focused: isFocused,
+          disabled: isDisabled,
         }}
         {...mergeProps(thumbProps, hoverProps)}
         role="presentation"

@@ -35,10 +35,32 @@ Dual.args = {
   step: 2,
 };
 
-export const DualLabel = Template.bind({});
+export const Label = Template.bind({});
 
-DualLabel.args = {
+Label.args = {
   label: 'Label',
+  defaultValue: [20, 80],
+  minValue: 0,
+  maxValue: 100,
+  step: 2,
+};
+
+export const LabelHorizontal = Template.bind({});
+
+LabelHorizontal.args = {
+  label: 'Label',
+  labelPosition: 'side',
+  defaultValue: [20, 80],
+  minValue: 0,
+  maxValue: 100,
+  step: 2,
+};
+
+export const Disabled = Template.bind({});
+
+Disabled.args = {
+  label: 'Label',
+  isDisabled: true,
   defaultValue: [20, 80],
   minValue: 0,
   maxValue: 100,
