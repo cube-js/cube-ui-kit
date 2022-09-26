@@ -8,14 +8,14 @@ export const StyledThumb = tasty({
     fill: {
       '': '#purple',
       hovered: '#6B4FEE',
-      dragged: '#7A77FF',
+      dragged: '#purple',
       disabled: '#dark-04',
     },
     cursor: {
       hovered: 'pointer',
       dragged: 'grab',
     },
-    shadow: '0px 2px 4px rgba(20, 20, 70, 0.2)',
+    shadow: '0px 2px 4px #dark.2',
     radius: '50%',
     border: {
       focused: '3px solid #CAC9FF',

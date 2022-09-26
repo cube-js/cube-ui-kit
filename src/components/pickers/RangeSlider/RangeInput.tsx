@@ -1,8 +1,7 @@
 import { useCallback } from 'react';
 import { SliderState } from '@react-stately/slider';
 
-import { Flow } from '../../layout/Flow';
-import { CubeNumberInputProps, NumberInput } from '../../forms';
+import { Flow, CubeNumberInputProps, NumberInput } from '../../../';
 
 export interface RangeInputProps extends CubeNumberInputProps {
   index: number;
@@ -17,13 +16,13 @@ function calculateWidth(max?: number) {
   }
 
   const value = String(max).length;
-  const charWidth = 2;
+  const charWidth = 1.75;
 
   return `${value * charWidth}x`;
 }
 
 export function RangeInput(props: RangeInputProps) {
-  const { state, index, suffix, min, max, isLoading, ...otherProps } = props;
+  const { state, index, suffix, min, max, ...otherProps } = props;
 
   const value = state.values[index];
   const width = calculateWidth(max);
@@ -38,14 +37,14 @@ export function RangeInput(props: RangeInputProps) {
     <NumberInput
       {...otherProps}
       hideStepper
+      size="small"
       inputProps={{
         maxLength: max && String(max).length,
       }}
       inputStyles={{
         width,
       }}
-      isLoading={isLoading}
-      suffix={suffix && <Flow padding="0.5x">{suffix}</Flow>}
+      suffix={suffix && <Flow padding="1.5x right">{suffix}</Flow>}
       value={value}
       minValue={state.getThumbMinValue(index)}
       maxValue={state.getThumbMaxValue(index)}

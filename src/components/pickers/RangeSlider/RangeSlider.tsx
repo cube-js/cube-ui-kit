@@ -35,7 +35,6 @@ export interface CubeRangeSliderProps
   inputSuffix?: string;
   inputSuffixPosition?: 'before' | 'after';
   inputStyles?: Styles;
-  isLoading?: boolean;
   gradation?: string[];
   onChange?: (range: SliderValue) => void;
   onChangeEnd?: (range: SliderValue) => void;
@@ -68,7 +67,6 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
     gradation,
     step = 1,
     isDisabled,
-    isLoading,
     orientation = 'horizontal',
     showInput,
     inputStyles,
@@ -125,7 +123,6 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
     styles: inputStyles,
     suffixPosition: inputSuffixPosition,
     isDisabled,
-    isLoading,
   };
 
   const sliderField = (
