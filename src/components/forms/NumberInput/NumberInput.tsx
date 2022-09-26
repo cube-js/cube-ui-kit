@@ -41,7 +41,8 @@ function NumberInput(props: WithNullableValue<CubeNumberInputProps>, ref) {
   props = useProviderProps(props);
   props = useFormProps(props);
 
-  let { hideStepper, value, defaultValue, onChange, ...otherProps } = props;
+  let { hideStepper, suffix, value, defaultValue, onChange, ...otherProps } =
+    props;
   let showStepper = !hideStepper;
   let { locale } = useLocale();
   let state = useNumberFieldState({ ...props, locale });
@@ -69,7 +70,9 @@ function NumberInput(props: WithNullableValue<CubeNumberInputProps>, ref) {
             <StepButton direction="up" {...incrementButtonProps} />
             <StepButton direction="down" {...decrementButtonProps} />
           </StepperContainer>
-        ) : null
+        ) : (
+          suffix
+        )
       }
     />
   );

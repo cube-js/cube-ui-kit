@@ -15,7 +15,8 @@ import {
 import { Slide } from './Slide';
 import { Gradation } from './Gradation';
 import { Thumb } from './Thumb';
-import { StyledControls, StyledSlider } from './styled';
+import { RangeInput } from './RangeInput';
+import { StyledControls, StyledSlider, StyledContent } from './styled';
 
 import type { DOMRef } from '@react-types/shared';
 import type { AriaSliderProps } from '@react-types/slider';
@@ -27,16 +28,16 @@ export interface CubeRangeSliderProps
     OuterStyleProps,
     FormFieldProps,
     BlockStyleProps {
-  showLabels?: boolean;
+  showInput?: boolean;
+  inputSuffix?: string;
   gradation?: string[];
-  ranges?: number[];
   onChange?: (range: number[]) => void;
   onChangeEnd?: (range: number[]) => void;
 }
 
 function getRanges(value) {
   if (Array.isArray(value)) {
-    return value.map((_, idx) => idx);
+    return value.length >= 2 ? [0, 1] : [0];
   }
 
   return [0];
@@ -62,12 +63,17 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
     step = 1,
     isDisabled,
     orientation = 'horizontal',
+    showInput,
+    inputSuffix,
+    minValue,
+    maxValue,
     onChange,
     onChangeEnd,
     ...otherProps
   } = props;
 
   const ranges = getRanges(defaultValue || value || [0, 1]);
+  const isSingle = ranges.length <= 1;
   const trackRef = useRef<HTMLElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const numberFormatter = new Intl.NumberFormat();
@@ -102,28 +108,46 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
 
   styles = extractStyles(otherProps, OUTER_STYLES, styles);
 
-  console.log('RangeSlider', props);
+  const inputProps = {
+    suffix: inputSuffix,
+    state: state,
+    step,
+    min: minValue,
+    max: maxValue,
+  };
 
   const sliderField = (
     <StyledSlider
       {...groupProps}
-      mods={{ sideLabel: labelPosition === 'side' }}
+      mods={{
+        sideLabel: labelPosition === 'side',
+        inputs: showInput,
+      }}
     >
-      <StyledControls {...trackProps} ref={trackRef}>
-        <Slide state={state} ranges={ranges} isDisabled={isDisabled} />
-        <Gradation state={state} ranges={ranges} values={gradation} />
-        {ranges.map((thumb) => (
-          <Thumb
-            key={thumb}
-            index={thumb}
+      {!isSingle && showInput && <RangeInput index={0} {...inputProps} />}
+      <StyledContent>
+        <StyledControls {...trackProps} ref={trackRef}>
+          <Slide
             state={state}
-            inputRef={inputRef}
-            trackRef={trackRef}
+            ranges={ranges}
+            isSingle={isSingle}
             isDisabled={isDisabled}
-            defaultValue={defaultValue && defaultValue[thumb]}
           />
-        ))}
-      </StyledControls>
+          <Gradation state={state} ranges={ranges} values={gradation} />
+          {ranges.map((thumb) => (
+            <Thumb
+              key={thumb}
+              index={thumb}
+              state={state}
+              inputRef={inputRef}
+              trackRef={trackRef}
+              isDisabled={isDisabled}
+              defaultValue={defaultValue && defaultValue[thumb]}
+            />
+          ))}
+        </StyledControls>
+      </StyledContent>
+      {showInput && <RangeInput index={1} {...inputProps} />}
     </StyledSlider>
   );
 

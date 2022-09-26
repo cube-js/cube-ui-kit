@@ -66,3 +66,17 @@ Disabled.args = {
   maxValue: 100,
   step: 2,
 };
+
+export const Input = Template.bind({});
+
+Input.args = {
+  width: '50x',
+  label: 'Label',
+  name: 'filter',
+  showInput: true,
+  inputSuffix: 'ms',
+  defaultValue: [20, 80],
+  minValue: 0,
+  maxValue: 100,
+  step: 2,
+};

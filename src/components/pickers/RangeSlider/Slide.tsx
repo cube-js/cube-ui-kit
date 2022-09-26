@@ -1,32 +1,29 @@
 import { SliderState } from '@react-stately/slider';
 import { useMemo } from 'react';
 
-import { StyledSlideTrack, StyledSlide } from './styled';
+import { StyledSlide, StyledSlideTrack } from './styled';
 
 export type SlideProps = {
   state: SliderState;
   ranges: number[];
   isDisabled?: boolean;
+  isSingle?: boolean;
 };
 
 export function Slide(props: SlideProps) {
-  const { ranges, state, isDisabled } = props;
+  const { ranges, state, isDisabled, isSingle } = props;
 
   const styles = {};
   const mods = useMemo(
     () => ({
-      single: ranges.length <= 1,
+      single: isSingle,
       disabled: isDisabled,
     }),
-    [isDisabled, ranges.length],
+    [isDisabled, isSingle],
   );
 
   ranges.forEach((rangeIndex) => {
-    const percent = state.getThumbPercent(rangeIndex);
-
-    console.log({ rangeIndex, percent });
-
-    styles[`@thumb-${rangeIndex}-value`] = percent;
+    styles[`@thumb-${rangeIndex}-value`] = state.getThumbPercent(rangeIndex);
   });
 
   return (

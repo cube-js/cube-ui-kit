@@ -87,12 +87,28 @@ export const StyledSlider = tasty({
   styles: {
     position: 'relative',
     display: 'flex',
-    flexDirection: 'column',
+    gap: {
+      '': '0',
+      inputs: '1x',
+    },
+    flexDirection: {
+      '': 'column',
+      inputs: 'row',
+    },
     alignItems: 'center',
     width: '100%',
     padding: {
       '': '0',
       sideLabel: '0.75x top',
     },
+  },
+});
+
+export const StyledContent = tasty({
+  styles: {
+    display: 'flex',
+    alignItems: 'center',
+    flexDirection: 'column',
+    width: '100%',
   },
 });
