@@ -1,6 +1,6 @@
 import { forwardRef, useRef } from 'react';
 import { useSlider } from '@react-aria/slider';
-import { SliderStateOptions, useSliderState } from '@react-stately/slider';
+import { useSliderState } from '@react-stately/slider';
 
 import { FieldWrapper } from '../../forms/FieldWrapper';
 import { FormFieldProps } from '../../../shared';
@@ -10,6 +10,7 @@ import {
   extractStyles,
   OUTER_STYLES,
   OuterStyleProps,
+  Styles,
 } from '../../../tasty';
 
 import { Slide } from './Slide';
@@ -19,20 +20,25 @@ import { RangeInput } from './RangeInput';
 import { StyledControls, StyledSlider, StyledContent } from './styled';
 
 import type { DOMRef } from '@react-types/shared';
-import type { AriaSliderProps } from '@react-types/slider';
+import type { AriaSliderProps, SliderProps } from '@react-types/slider';
+
+type SliderValue = number[];
 
 export interface CubeRangeSliderProps
-  extends AriaSliderProps<number[]>,
-    SliderStateOptions<number[]>,
+  extends AriaSliderProps<SliderValue>,
+    SliderProps<SliderValue>,
     BasePropsWithoutChildren,
     OuterStyleProps,
     FormFieldProps,
     BlockStyleProps {
   showInput?: boolean;
   inputSuffix?: string;
+  inputSuffixPosition?: 'before' | 'after';
+  inputStyles?: Styles;
+  isLoading?: boolean;
   gradation?: string[];
-  onChange?: (range: number[]) => void;
-  onChangeEnd?: (range: number[]) => void;
+  onChange?: (range: SliderValue) => void;
+  onChangeEnd?: (range: SliderValue) => void;
 }
 
 function getRanges(value) {
@@ -62,9 +68,12 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
     gradation,
     step = 1,
     isDisabled,
+    isLoading,
     orientation = 'horizontal',
     showInput,
+    inputStyles,
     inputSuffix,
+    inputSuffixPosition,
     minValue,
     maxValue,
     onChange,
@@ -77,43 +86,46 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
   const trackRef = useRef<HTMLElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const numberFormatter = new Intl.NumberFormat();
-  const state = useSliderState({
-    ...props,
+  const baseProps = {
     step,
     orientation,
-    numberFormatter,
     isDisabled,
+    onChange(range: number | number[]) {
+      if (onChange) {
+        onChange(Array.isArray(range) ? range : [range]);
+      }
+    },
+    onChangeEnd(range) {
+      if (onChangeEnd) {
+        onChangeEnd(Array.isArray(range) ? range : [range]);
+      }
+    },
+  };
+  const state = useSliderState({
+    ...props,
+    ...baseProps,
+    numberFormatter,
   });
 
   const { groupProps, trackProps, labelProps } = useSlider(
     {
       ...props,
-      step,
-      orientation,
-      isDisabled,
-      onChange(range: number | number[]) {
-        if (onChange && Array.isArray(range)) {
-          onChange(range);
-        }
-      },
-      onChangeEnd(range) {
-        if (onChangeEnd && Array.isArray(range)) {
-          onChangeEnd(range);
-        }
-      },
+      ...baseProps,
     },
     state,
     trackRef,
   );
 
-  styles = extractStyles(otherProps, OUTER_STYLES, styles);
-
   const inputProps = {
-    suffix: inputSuffix,
-    state: state,
-    step,
     min: minValue,
     max: maxValue,
+    step,
+    state: state,
+    suffix: inputSuffix,
+    styles: inputStyles,
+    suffixPosition: inputSuffixPosition,
+    isDisabled,
+    isLoading,
   };
 
   const sliderField = (
@@ -150,6 +162,8 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
       {showInput && <RangeInput index={1} {...inputProps} />}
     </StyledSlider>
   );
+
+  styles = extractStyles(otherProps, OUTER_STYLES, styles);
 
   return (
     <FieldWrapper

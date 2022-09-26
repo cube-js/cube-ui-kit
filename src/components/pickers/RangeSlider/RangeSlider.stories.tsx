@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Meta, Story } from '@storybook/react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -61,6 +62,7 @@ export const Disabled = Template.bind({});
 Disabled.args = {
   label: 'Label',
   isDisabled: true,
+  showInput: true,
   defaultValue: [20, 80],
   minValue: 0,
   maxValue: 100,
@@ -74,9 +76,60 @@ Input.args = {
   label: 'Label',
   name: 'filter',
   showInput: true,
+  defaultValue: [20, 80],
+  minValue: 0,
+  maxValue: 100,
+  step: 2,
+};
+
+export const InputSuffix = Template.bind({});
+
+InputSuffix.args = {
+  width: '50x',
+  label: 'Label',
+  name: 'filter',
+  showInput: true,
   inputSuffix: 'ms',
   defaultValue: [20, 80],
   minValue: 0,
   maxValue: 100,
   step: 2,
+  isLoading: true,
+};
+
+export const InputPrefix = Template.bind({});
+
+InputPrefix.args = {
+  width: '50x',
+  label: 'Label',
+  name: 'filter',
+  showInput: true,
+  inputSuffix: '$',
+  inputSuffixPosition: 'before',
+  defaultValue: [20, 80],
+  minValue: 0,
+  maxValue: 100,
+  step: 2,
+  isLoading: true,
+};
+
+export const Controlled = (args) => {
+  const [value, setValue] = useState<number[]>(20 as unknown as number[]);
+
+  const props = {
+    ...args,
+    width: '50x',
+    onChange(value) {
+      args?.onChange?.(value);
+      setValue(value);
+    },
+    value,
+  };
+
+  return (
+    <>
+      <span>Value: {value}</span>
+      <RangeSlider {...props} />
+    </>
+  );
 };

@@ -11,24 +11,22 @@ export interface RangeInputProps extends CubeNumberInputProps {
   max?: number;
 }
 
-function calculateWidth(suffix?: string, max?: number) {
+function calculateWidth(max?: number) {
   if (typeof max === 'undefined') {
     return undefined;
   }
 
-  const suffixPadding = 1;
-  const suffixLen = (suffix || '').length;
   const value = String(max).length;
+  const charWidth = 2;
 
-  return `${(value + suffixLen) * 2.5 + suffixPadding}x`;
+  return `${value * charWidth}x`;
 }
 
 export function RangeInput(props: RangeInputProps) {
-  const { state, index, suffix, min, max, ...otherProps } = props;
+  const { state, index, suffix, min, max, isLoading, ...otherProps } = props;
 
   const value = state.values[index];
-  const width = calculateWidth(suffix as string, max);
-
+  const width = calculateWidth(max);
   const onChange = useCallback(
     (value: number) => {
       state.setThumbValue(index, value);
@@ -40,8 +38,14 @@ export function RangeInput(props: RangeInputProps) {
     <NumberInput
       {...otherProps}
       hideStepper
-      suffix={<Flow padding="0.5x">{suffix}</Flow>}
-      width={width}
+      inputProps={{
+        maxLength: max && String(max).length,
+      }}
+      inputStyles={{
+        width,
+      }}
+      isLoading={isLoading}
+      suffix={suffix && <Flow padding="0.5x">{suffix}</Flow>}
       value={value}
       minValue={state.getThumbMinValue(index)}
       maxValue={state.getThumbMaxValue(index)}
