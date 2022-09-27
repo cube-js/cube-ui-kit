@@ -4,6 +4,7 @@ import { useSwitch } from '@react-aria/switch';
 import { useHover } from '@react-aria/interactions';
 import { useToggleState } from '@react-stately/toggle';
 import { LoadingOutlined } from '@ant-design/icons';
+import { FocusableRef } from '@react-types/shared';
 
 import { useProviderProps } from '../../../provider';
 import {
@@ -22,13 +23,13 @@ import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react';
 import { HiddenInput } from '../../HiddenInput';
 import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../Label';
-import { useFormProps } from '../Form/Form';
 import { FieldWrapper } from '../FieldWrapper';
 import { FormFieldProps } from '../../../shared';
 import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
+import { useFieldProps } from '../Form';
 
 import type { AriaSwitchProps } from '@react-types/switch';
 
@@ -115,10 +116,23 @@ export interface CubeSwitchProps
   isLoading?: boolean;
 }
 
-function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
+/**
+ * Switches allow users to turn an individual option on or off.
+ * They are usually used to activate or deactivate a specific setting.
+ */
+export const Switch = forwardRef(function Switch(
+  props: WithNullableSelected<CubeSwitchProps>,
+  ref: FocusableRef,
+) {
   props = castNullableIsSelected(props);
   props = useProviderProps(props);
-  props = useFormProps(props);
+  props = useFieldProps(props, {
+    valuePropsMapper: ({ value, onChange }) => ({
+      isSelected: value != null ? value : false,
+      isIndeterminate: false,
+      onChange: onChange,
+    }),
+  });
 
   let {
     qa,
@@ -240,14 +254,4 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
       )}
     </SwitchLabelElement>
   );
-}
-
-/**
- * Switches allow users to turn an individual option on or off.
- * They are usually used to activate or deactivate a specific setting.
- */
-let _Switch = forwardRef(Switch);
-
-(_Switch as any).cubeInputType = 'Checkbox';
-
-export { _Switch as Switch };
+});

@@ -127,33 +127,35 @@ export function LoginForm() {
   <Story name="LoginForm">
     {(args) => (
       <Form
-        onSubmit={() => {
-          return new Promise((resolve) => {
+        onSubmit={() =>
+          new Promise((resolve) => {
             setTimeout(resolve, 1000); // 1s of submitting
-          });
-        }}
+          })
+        }
         requiredMark={false}
         {...args}
       >
         <Field
-          label="Email"
           name="email"
           rules={[
             { required: true, message: 'E-mail required' },
             { type: 'email', message: 'Please enter a valid e-mail' },
           ]}
         >
-          <Input.Text type="email" />
+          <Input.Text type="email" label="Email" autoComplete="email" />
         </Field>
         <Field
-          label="Password"
           name="password"
           rules={[
             { required: true, message: 'Password required' },
             { min: 8, message: 'The password must be at least 8 characters' },
           ]}
         >
-          <Input.Password type="password" />
+          <Input.Password
+            type="password"
+            label="Password"
+            autoComplete="current-password"
+          />
         </Field>
         <Submit>Submit</Submit>
       </Form>

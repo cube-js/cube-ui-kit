@@ -83,6 +83,7 @@ function Form<T extends FieldTypes>(
   ref: DOMRef<HTMLFormElement>,
 ) {
   props = useProviderProps(props);
+
   let {
     qa,
     name,
@@ -164,7 +165,7 @@ function Form<T extends FieldTypes>(
     };
   }
 
-  [form] = useForm<T>(form, ref && ref.current, {
+  [form] = useForm<T>(form, ref?.current, {
     onSubmit: onSubmitCallback,
     onValuesChange,
   });

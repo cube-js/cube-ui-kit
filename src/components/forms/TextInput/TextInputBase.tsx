@@ -16,8 +16,6 @@ import {
 } from 'react';
 import { useHover } from '@react-aria/interactions';
 
-import { useFormProps } from '../Form';
-import { useProviderProps } from '../../../provider';
 import {
   BaseProps,
   BLOCK_STYLES,
@@ -35,7 +33,6 @@ import { useFocus } from '../../../utils/react/interactions';
 import { extractFieldWrapperProps, FieldWrapper } from '../FieldWrapper';
 import { FormFieldProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
-import { useFieldProps } from '../Form';
 
 import type { AriaTextFieldProps } from '@react-types/textfield';
 
@@ -213,11 +210,10 @@ export interface CubeTextInputBaseProps
   size?: 'small' | 'default' | 'large' | string;
 }
 
-function TextInputBase(props: CubeTextInputBaseProps, ref) {
-  props = useProviderProps(props);
-  props = useFormProps(props);
-  props = useFieldProps(props);
-
+export const TextInputBase = forwardRef(function TextInputBase(
+  props: CubeTextInputBaseProps,
+  ref,
+) {
   let {
     qa,
     mods,
@@ -245,6 +241,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     minLength,
     ...otherProps
   } = props;
+
   const { fieldWrapperProps, rest } = extractFieldWrapperProps(props);
   const styles = extractStyles(rest, STYLE_LIST);
   inputStyles = extractStyles(otherProps, INPUT_STYLE_PROPS_LIST, inputStyles);
@@ -261,9 +258,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
   useImperativeHandle(ref, () => ({
     ...createFocusableRef(domRef, inputRef),
     select() {
-      if (inputRef?.current) {
-        inputRef.current.select();
-      }
+      inputRef?.current?.select();
     },
     getInputElement() {
       return inputRef?.current;
@@ -391,7 +386,4 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
       Component={textField}
     />
   );
-}
-
-const _TextInputBase = forwardRef(TextInputBase);
-export { _TextInputBase as TextInputBase };
+});

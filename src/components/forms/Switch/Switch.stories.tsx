@@ -1,31 +1,28 @@
-import { IS_SELECTED_ARG } from '../../../stories/FormFieldArgs';
+import { Meta, Story } from '@storybook/react';
+import { userEvent, within } from '@storybook/testing-library';
+
 import { baseProps } from '../../../stories/lists/baseProps';
 
-import { Switch } from './Switch';
+import { Switch, CubeSwitchProps } from './Switch';
 
 export default {
   title: 'Forms/Switch',
   component: Switch,
-  parameters: {
-    controls: {
-      exclude: baseProps,
-    },
+  args: {
+    label: 'Switch',
   },
-  argTypes: {
-    ...IS_SELECTED_ARG,
-  },
-};
+  parameters: { controls: { exclude: baseProps }, layout: 'centered' },
+} as Meta<CubeSwitchProps>;
 
-const Template = (args) => (
-  <Switch
-    {...args}
-    onChange={(query) => console.log('onChange event', query)}
-  />
-);
+const Template: Story<CubeSwitchProps> = (args) => <Switch {...args} />;
 
 export const Default = Template.bind({});
-Default.args = {
-  label: 'Switch',
+Default.play = async ({ canvasElement }) => {
+  const { getByRole } = within(canvasElement);
+
+  const input = getByRole('switch');
+
+  await userEvent.click(input);
 };
 
 export const WithoutLabel = Template.bind({});
@@ -41,4 +38,34 @@ Checked.args = {
 export const Disabled = Template.bind({});
 Disabled.args = {
   isDisabled: true,
+};
+
+export const DisabledChecked = Template.bind({});
+DisabledChecked.args = {
+  isDisabled: true,
+  isSelected: true,
+};
+
+export const Loading = Template.bind({});
+Loading.args = {
+  isLoading: true,
+};
+
+export const LoadingChecked = Template.bind({});
+LoadingChecked.args = {
+  isLoading: true,
+  isSelected: true,
+};
+
+export const LoadingDisabled = Template.bind({});
+LoadingDisabled.args = {
+  isLoading: true,
+  isDisabled: true,
+};
+
+export const LoadingDisabledChecked = Template.bind({});
+LoadingDisabledChecked.args = {
+  isLoading: true,
+  isDisabled: true,
+  isSelected: true,
 };

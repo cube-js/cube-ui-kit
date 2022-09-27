@@ -7,6 +7,8 @@ const webpack = require('webpack');
  */
 const swcConfig = {
   jsc: {
+    target: 'es2021',
+    loose: true,
     parser: { syntax: 'typescript', tsx: true },
     transform: { react: { runtime: 'automatic' } },
   },
@@ -43,7 +45,7 @@ const config = {
     {
       name: 'storybook-addon-turbo-build',
       options: {
-        esbuildMinifyOptions: { target: 'es2021' },
+        esbuildMinifyOptions: { target: 'es2022' },
         managerTranspiler: () => ({ loader: 'swc-loader', options: swcConfig }),
         previewTranspiler: () => ({ loader: 'swc-loader', options: swcConfig }),
       },

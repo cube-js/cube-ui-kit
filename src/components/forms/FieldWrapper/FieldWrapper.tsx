@@ -49,6 +49,10 @@ const FieldElement = tasty({
   },
 });
 
+if (process.env.NODE_ENV === 'development') {
+  FieldElement.displayName = 'FieldWrapperElement';
+}
+
 const MessageElement = tasty({
   qa: 'Field_Message',
   styles: {
@@ -65,9 +69,13 @@ const MessageElement = tasty({
 });
 
 /**
+ * A wrapper for form fields to provide additional decoration for inputs.
  * @internal Do not use this component directly.
  */
-function FieldWrapper(props: CubeFieldWrapperProps, ref) {
+export const FieldWrapper = forwardRef(function FieldWrapper(
+  props: CubeFieldWrapperProps,
+  ref,
+) {
   const {
     as,
     labelPosition = 'top',
@@ -171,10 +179,4 @@ function FieldWrapper(props: CubeFieldWrapperProps, ref) {
       </div>
     </FieldElement>
   );
-}
-
-/**
- * A wrapper for form fields to provide additional decoration for inputs.
- */
-const _FieldWrapper = forwardRef(FieldWrapper);
-export { _FieldWrapper as FieldWrapper };
+});

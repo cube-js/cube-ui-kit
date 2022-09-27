@@ -1,17 +1,16 @@
-import { forwardRef, useCallback, useRef } from 'react';
+import { ForwardedRef, forwardRef, useRef } from 'react';
 import { useControlledState } from '@react-stately/utils';
 import { useTextField } from '@react-aria/textfield';
 
-import {
-  CubeTextInputBaseProps,
-  TextInputBase,
-} from '../TextInput/TextInputBase';
+import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 import { useProviderProps } from '../../../provider';
 import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { chain, useLayoutEffect } from '../../../utils/react';
+import { useFieldProps } from '../Form';
+import { useEvent } from '../../../_internal';
 
 export interface CubeTextAreaProps extends CubeTextInputBaseProps {
   /** Whether the textarea should change its size depends on content */
@@ -21,33 +20,48 @@ export interface CubeTextAreaProps extends CubeTextInputBaseProps {
   rows?: number;
 }
 
-function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
+/**
+ * TextInputs are text inputs that allow users to input custom text entries
+ * with a keyboard. Various decorations can be displayed around the field to
+ * communicate the entry requirements.
+ */
+export const TextArea = forwardRef(function TextArea(
+  props: WithNullableValue<CubeTextAreaProps>,
+  ref: ForwardedRef<HTMLTextAreaElement>,
+) {
   props = castNullableStringValue(props);
   props = useProviderProps(props);
-  let {
+  props = useFieldProps(props, {
+    defaultValidationTrigger: 'onBlur',
+    valuePropsMapper: ({ value, onChange }) => ({
+      onChange,
+      value: value?.toString() ?? '',
+    }),
+  });
+
+  const {
     autoSize = false,
     isDisabled = false,
     isReadOnly = false,
     isRequired = false,
     onChange,
-    rows,
+    rows = 3,
     ...otherProps
   } = props;
 
-  rows = rows || 3;
-
-  let [inputValue, setInputValue] = useControlledState(
+  const [inputValue, setInputValue] = useControlledState(
     props.value,
     props.defaultValue,
     () => {},
   );
-  let inputRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  let onHeightChange = useCallback(() => {
+  const onHeightChange = useEvent(() => {
     if (autoSize && inputRef.current) {
-      let input = inputRef.current;
-      let prevAlignment = input.style.alignSelf;
-      let computedStyle = getComputedStyle(input);
+      const input = inputRef.current;
+      const prevAlignment = input.style.alignSelf;
+      const computedStyle = getComputedStyle(input);
+
       input.style.alignSelf = 'start';
       input.style.height = 'auto';
       input.style.height = input.scrollHeight
@@ -58,17 +72,16 @@ function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
             parseFloat(computedStyle.lineHeight) * (rows || 3) +
             2
           }px`;
+
       input.style.alignSelf = prevAlignment;
     }
-  }, [inputRef]);
+  });
 
   useLayoutEffect(() => {
-    if (inputRef.current) {
-      onHeightChange();
-    }
-  }, [onHeightChange, inputValue, inputRef]);
+    onHeightChange();
+  }, [onHeightChange, inputValue]);
 
-  let { labelProps, inputProps } = useTextField(
+  const { labelProps, inputProps } = useTextField(
     {
       ...props,
       onChange: chain(onChange, setInputValue),
@@ -91,15 +104,4 @@ function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
       rows={rows}
     />
   );
-}
-
-/**
- * TextInputs are text inputs that allow users to input custom text entries
- * with a keyboard. Various decorations can be displayed around the field to
- * communicate the entry requirements.
- */
-const _TextArea = forwardRef(TextArea);
-
-(_TextArea as any).cubeInputType = 'Text';
-
-export { _TextArea as TextArea };
+});

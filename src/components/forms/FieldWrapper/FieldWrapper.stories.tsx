@@ -1,36 +1,43 @@
 import { Meta, Story } from '@storybook/react';
 import { DollarCircleFilled } from '@ant-design/icons';
-import { useMemo } from 'react';
 
-import { baseProps } from '../../../stories/lists/baseProps';
-import { TextInput } from '../TextInput/TextInput';
 import { Button } from '../../actions';
+import { Text } from '../../content/Text';
 
-import { CubeFieldProps, Field } from './LegacyField';
-import { CubeFormInstance } from './useForm';
-import { Form } from './Form';
+import { FieldWrapper } from './FieldWrapper';
+
+import type { CubeFieldWrapperProps } from './types';
 
 export default {
-  title: 'Forms/Field',
-  component: Field,
-  parameters: { controls: { exclude: baseProps } },
+  title: 'Forms/FieldWrapper',
+  component: FieldWrapper,
   args: {
     label: 'Field name',
-    children: <TextInput />,
-  },
-  decorators: [
-    (Story, context) => (
-      <Form form={useMemo(() => new CubeFormInstance(), [])}>
-        {Story(context.args)}
-      </Form>
+    Component: (
+      <Text.Minor
+        fill="#minor.05"
+        styles={{
+          display: 'block',
+          padding: '1x 2x',
+          radius: true,
+          width: '40x',
+        }}
+      >
+        This slot is for a form input
+      </Text.Minor>
     ),
-  ],
-} as Meta<CubeFieldProps>;
+  },
+  parameters: {
+    layout: 'centered',
+    docs: { hidden: true },
+  },
+} as Meta<CubeFieldWrapperProps>;
 
-const Template: Story<CubeFieldProps> = (args) => <Field {...args} />;
+const Template: Story<CubeFieldWrapperProps> = (args) => (
+  <FieldWrapper {...args} />
+);
 
 export const Default = Template.bind({});
-Default.args = {};
 
 export const WithTooltip = Template.bind({});
 WithTooltip.args = {

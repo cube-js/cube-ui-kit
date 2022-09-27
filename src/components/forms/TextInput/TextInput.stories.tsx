@@ -25,16 +25,7 @@ export default {
   },
 };
 
-const Template: StoryFn<CubeTextInputProps & { icon?: boolean }> = ({
-  icon,
-  ...props
-}) => (
-  <TextInput
-    icon={icon ? <DollarCircleOutlined /> : undefined}
-    {...props}
-    onChange={(query) => console.log('change', query)}
-  />
-);
+const Template: StoryFn<CubeTextInputProps> = (args) => <TextInput {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {};
@@ -43,10 +34,10 @@ export const WithDefaultValue = Template.bind({});
 WithDefaultValue.args = { defaultValue: 'default value' };
 
 export const WithIcon = Template.bind({});
-WithIcon.args = { icon: true };
+WithIcon.args = { icon: <DollarCircleOutlined /> };
 
 export const Password = Template.bind({});
-Password.args = { icon: true, type: 'password' };
+Password.args = { icon: <DollarCircleOutlined />, type: 'password' };
 
 export const Invalid = Template.bind({});
 Invalid.args = { validationState: 'invalid' };

@@ -29,8 +29,3 @@ export interface CubeFieldProps<T extends FieldTypes> {
   /** On which event perform the validation for the field */
   validateTrigger?: ValidateTrigger;
 }
-
-export interface CubeFullFieldProps<T extends FieldTypes>
-  extends CubeFieldProps<T> {
-  form: CubeFormInstance<T>;
-}

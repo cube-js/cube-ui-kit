@@ -1,11 +1,11 @@
-import { Children, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { useFormProps } from '../Form';
 import { FieldTypes } from '../types';
-import { useEvent, useIsFirstRender, useWarn } from '../../../../_internal';
+import { useEvent, useWarn } from '../../../../_internal';
 
 import { FieldContextValue, FieldProvider } from './FieldContext';
-import { CubeFieldProps, CubeFullFieldProps } from './types';
+import { CubeFieldProps } from './types';
 
 const ID_MAP = {};
 
@@ -35,14 +35,8 @@ function removeId(name, id) {
   ID_MAP[name] = ID_MAP[name].filter((_id) => _id !== id);
 }
 
-// function getDefaultValidateTrigger(type) {
-//   type = type || '';
-//
-//   return type === 'Number' || type.includes('Text') ? 'onBlur' : 'onChange';
-// }
-
 export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
-  const finalProps: CubeFullFieldProps<T> = useFormProps(props);
+  props = useFormProps(props);
 
   let {
     defaultValue,
@@ -55,16 +49,21 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
     validateTrigger,
     validationState,
     shouldUpdate,
-  } = finalProps;
+  } = props;
 
   const nonInput = !name;
   const fieldName: string =
     name != null ? (Array.isArray(name) ? name.join('.') : name) : '';
 
-  const isFirstRender = useIsFirstRender();
   const [fieldId, setFieldId] = useState(
     id ?? (idPrefix ? `${idPrefix}_${fieldName}` : fieldName),
   );
+
+  let field = form?.getFieldInstance(fieldName);
+
+  if (!field) {
+    field = form?.createField(fieldName, true);
+  }
 
   useWarn(
     !form,
@@ -91,10 +90,12 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
     };
   }, []);
 
-  let field = form?.getFieldInstance(fieldName);
-
   if (field) {
     field.rules = rules;
+
+    if (defaultValue !== null && !field.touched) {
+      form?.setFieldValue(fieldName, defaultValue, false, true);
+    }
   }
 
   let isRequired = rules && !!rules.find((rule) => rule.required);
@@ -113,16 +114,16 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
     if (validateTrigger === 'onBlur') {
       // We need a timeout so the change event can be done.
       setTimeout(() => {
-        form.validateField(fieldName).catch(() => {}); // do nothing on fail
+        form?.validateField(fieldName).catch(() => {}); // do nothing on fail
       });
     }
   });
 
-  const onChangeHandler = useEvent((val: any, dontTouch: boolean) => {
-    const field = form.getFieldInstance(fieldName);
+  const onChangeHandler = useEvent((value: any, dontTouch: boolean) => {
+    const field = form?.getFieldInstance(fieldName);
 
     if (shouldUpdate) {
-      const fieldsValue = form.getFieldsValue();
+      const fieldsValue = form?.getFieldsValue();
 
       // check if we should update the value of the field
       const shouldNotBeUpdated =
@@ -130,7 +131,7 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
           ? !shouldUpdate
           : !shouldUpdate(fieldsValue, {
               ...fieldsValue,
-              [fieldName]: val,
+              [fieldName]: value,
             });
 
       if (shouldNotBeUpdated) {
@@ -138,13 +139,13 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
       }
     }
 
-    form.setFieldValue(fieldName, val, !dontTouch, false, dontTouch);
+    form?.setFieldValue(fieldName, value, !dontTouch, false, dontTouch);
 
     if (
       !dontTouch &&
       (validateTrigger === 'onChange' || field?.errors?.length)
     ) {
-      form.validateField(fieldName).catch(() => {}); // do nothing on fail
+      form?.validateField(fieldName).catch(() => {}); // do nothing on fail
     }
   });
 
@@ -152,9 +153,9 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
     () => ({
       id: fieldId,
       name: fieldName,
-      value: field?.inputValue ?? null,
+      value: field?.inputValue,
       validateTrigger,
-      shouldUpdate,
+
       validationState:
         validationState ?? (field?.errors?.length ? 'invalid' : undefined),
       ...(isRequired && { isRequired }),
@@ -163,40 +164,25 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
       onChange: onChangeHandler,
     }),
     [
-      isRequired,
-      shouldUpdate,
-      validateTrigger,
-      validationState,
-
-      fieldId,
-      fieldName,
       field?.errors,
       field?.inputValue,
-
+      fieldId,
+      fieldName,
+      isRequired,
       onBlurHandler,
       onChangeHandler,
+      validateTrigger,
+      validationState,
     ],
   );
 
-  const child = Children.only(
-    typeof children === 'function' ? children(form) : children,
-  );
-
-  if (!form || !child) {
+  if (!form || !children) {
     return null;
   }
 
-  if (isFirstRender && defaultValue != null) {
-    if (!field) {
-      form.createField(fieldName, true);
-    }
-
-    if (field?.value == null) {
-      form.setFieldValue(fieldName, defaultValue, false, true);
-
-      field = form?.getFieldInstance(fieldName);
-    }
-  }
-
-  return <FieldProvider value={contextValue}>{child}</FieldProvider>;
+  return (
+    <FieldProvider value={contextValue}>
+      {typeof children === 'function' ? children(form) : children}
+    </FieldProvider>
+  );
 }

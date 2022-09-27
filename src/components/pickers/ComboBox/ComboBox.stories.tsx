@@ -4,6 +4,7 @@ import { userEvent, within } from '@storybook/testing-library';
 
 import { SELECTED_KEY_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { wait } from '../../../test';
 
 import { ComboBox, CubeComboBoxProps } from './ComboBox';
 
@@ -32,6 +33,15 @@ const Template: Story<CubeComboBoxProps<any>> = (args) => (
 
 export const Default = Template.bind({});
 Default.args = {};
+Default.play = async ({ canvasElement }) => {
+  const { getByRole, getAllByRole } = within(canvasElement);
+  await userEvent.type(getByRole('combobox'), 're');
+
+  await wait(500);
+
+  const options = getAllByRole('option');
+  await userEvent.click(options[1]);
+};
 
 export const WithPlaceholder = Template.bind({});
 WithPlaceholder.args = { placeholder: 'Enter a value' };
@@ -40,7 +50,10 @@ export const WithDefaultValue = Template.bind({});
 WithDefaultValue.args = { defaultSelectedKey: 'purple' };
 
 export const WithIcon = Template.bind({});
-WithIcon.args = { icon: <DollarCircleOutlined /> };
+WithIcon.args = {
+  icon: <DollarCircleOutlined />,
+  defaultSelectedKey: 'purple',
+};
 
 export const Invalid = Template.bind({});
 Invalid.args = { selectedKey: 'yellow', validationState: 'invalid' };
@@ -50,6 +63,13 @@ Valid.args = { selectedKey: 'yellow', validationState: 'valid' };
 
 export const Disabled = Template.bind({});
 Disabled.args = { selectedKey: 'yellow', isDisabled: true };
+
+export const Expanded = Template.bind({});
+Expanded.args = { selectedKey: 'yellow' };
+Expanded.play = async ({ canvasElement }) => {
+  const { getByTestId } = within(canvasElement);
+  await userEvent.click(getByTestId('ComboBoxTrigger'));
+};
 
 export const Wide: Story<CubeComboBoxProps<any>> = (args) => (
   <ComboBox {...args}>
@@ -61,7 +81,6 @@ export const Wide: Story<CubeComboBoxProps<any>> = (args) => (
     </ComboBox.Item>
   </ComboBox>
 );
-
 Wide.args = { width: '600px', defaultSelectedKey: 'red' };
 
 export const With1LongOption: Story<CubeComboBoxProps<any>> = (args) => (

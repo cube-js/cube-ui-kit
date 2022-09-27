@@ -5,6 +5,7 @@ import {
 } from '@ant-design/icons';
 import {
   cloneElement,
+  ForwardedRef,
   forwardRef,
   ReactElement,
   RefObject,
@@ -18,7 +19,7 @@ import { useFilter } from '@react-aria/i18n';
 import { Item } from '@react-stately/collections';
 import { useOverlayPosition } from '@react-aria/overlays';
 
-import { useFormProps } from '../../forms/Form';
+import { FieldTypes, useFieldProps } from '../../forms';
 import { useProviderProps } from '../../../provider';
 import {
   BLOCK_STYLES,
@@ -123,9 +124,18 @@ export interface CubeComboBoxProps<T>
   suffixPosition?: 'before' | 'after';
 }
 
-function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
+export const ComboBox = forwardRef(function ComboBox<T extends object>(
+  props: CubeComboBoxProps<T>,
+  ref,
+) {
   props = useProviderProps(props);
-  props = useFormProps(props);
+  props = useFieldProps(props, {
+    valuePropsMapper: ({ value, onChange }) => ({
+      inputValue: value != null ? value : '',
+      onInputChange: (val) => onChange(val, !props.allowsCustomValue),
+      onSelectionChange: onChange,
+    }),
+  });
 
   let {
     qa,
@@ -385,14 +395,8 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
       }}
     />
   );
-}
+}) as unknown as (<T extends FieldTypes>(
+  props: CubeComboBoxProps<T> & { ref?: ForwardedRef<unknown> },
+) => JSX.Element) & { Item: typeof Item };
 
-const _ComboBox = forwardRef(ComboBox);
-
-const __ComboBox = Object.assign(
-  _ComboBox as typeof _ComboBox & { Item: typeof Item },
-  { Item },
-);
-(__ComboBox as any).cubeInputType = 'ComboBox';
-
-export { __ComboBox as ComboBox };
+ComboBox.Item = Item;

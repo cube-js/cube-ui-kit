@@ -6,21 +6,33 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { useFieldProps } from '../Form';
 
 import { CubeTextInputBaseProps, TextInputBase } from './TextInputBase';
 
 export type CubeTextInputProps = WithNullableValue<CubeTextInputBaseProps>;
 
+/**
+ * TextInputs are text inputs that allow users to input custom text entries
+ * with a keyboard. Various decorations can be displayed around the field to
+ * communicate the entry requirements.
+ */
 export const TextInput = forwardRef(function TextInput(
   props: CubeTextInputProps,
   ref: ForwardedRef<HTMLInputElement>,
 ) {
-  castNullableStringValue(props);
-
+  props = castNullableStringValue(props);
   props = useProviderProps(props);
+  props = useFieldProps(props, {
+    defaultValidationTrigger: 'onBlur',
+    valuePropsMapper: ({ value, onChange }) => ({
+      onChange,
+      value: value?.toString() ?? '',
+    }),
+  });
 
-  let inputRef = useRef(null);
-  let { labelProps, inputProps } = useTextField(props, inputRef);
+  const inputRef = useRef(null);
+  const { labelProps, inputProps } = useTextField(props, inputRef);
 
   return (
     <TextInputBase
@@ -32,11 +44,3 @@ export const TextInput = forwardRef(function TextInput(
     />
   );
 });
-
-/**
- * TextInputs are text inputs that allow users to input custom text entries
- * with a keyboard. Various decorations can be displayed around the field to
- * communicate the entry requirements.
- */
-
-(TextInput as any).cubeInputType = 'Text';

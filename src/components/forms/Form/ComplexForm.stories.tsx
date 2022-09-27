@@ -1,4 +1,4 @@
-import { StoryFn } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 import { linkTo } from '@storybook/addon-links';
 import { userEvent, waitFor, within } from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
@@ -30,7 +30,7 @@ export default {
   title: 'Forms/ComplexForm',
   component: Form,
   parameters: { controls: { exclude: baseProps } },
-};
+} as Meta;
 
 const UnknownSubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
   const [form] = Form.useForm();
@@ -124,19 +124,9 @@ const AsyncValidationTemplate: StoryFn<typeof Form> = (args) => {
   const [form] = Form.useForm();
 
   return (
-    <Form
-      form={form}
-      {...args}
-      onSubmit={(v) => {
-        console.log('onSubmit:', v);
-      }}
-      onValuesChange={(v) => {
-        console.log('onChange', v);
-      }}
-    >
+    <Form form={form} {...args}>
       <Field
         name="text"
-        label="Text input"
         validateTrigger="onSubmit"
         rules={[
           () => ({
@@ -154,7 +144,7 @@ const AsyncValidationTemplate: StoryFn<typeof Form> = (args) => {
           }),
         ]}
       >
-        <TextInput />
+        <TextInput label="Text input" />
       </Field>
       <Submit>Submit</Submit>
     </Form>
@@ -165,19 +155,9 @@ const ComplexErrorTemplate: StoryFn<typeof Form> = (args) => {
   const [form] = Form.useForm();
 
   return (
-    <Form
-      form={form}
-      {...args}
-      onSubmit={(v) => {
-        console.log('onSubmit:', v);
-      }}
-      onValuesChange={(v) => {
-        console.log('onChange', v);
-      }}
-    >
+    <Form form={form} {...args}>
       <Field
         name="text"
-        label="Text input"
         rules={[
           { required: true, message: 'This field is required' },
           () => ({
@@ -193,7 +173,7 @@ const ComplexErrorTemplate: StoryFn<typeof Form> = (args) => {
           }),
         ]}
       >
-        <TextInput />
+        <TextInput label="Text input" />
       </Field>
     </Form>
   );
@@ -204,8 +184,10 @@ const Template: StoryFn<typeof Form> = (args) => {
 
   return (
     <>
-      <Field label="Custom field outside the any form" tooltip="What?">
-        <Block>Some non-editable content</Block>
+      <Field>
+        <Block label="Custom field outside the any form">
+          Some non-editable content
+        </Block>
       </Field>
       <Form
         form={form}
@@ -223,12 +205,6 @@ const Template: StoryFn<typeof Form> = (args) => {
           radioGroup: 'three',
           switch: false,
           slider: [20, 40],
-        }}
-        onSubmit={(v) => {
-          console.log('onSubmit:', v);
-        }}
-        onValuesChange={(v) => {
-          console.log('onChange', v);
         }}
       >
         <Field
@@ -249,14 +225,14 @@ const Template: StoryFn<typeof Form> = (args) => {
         >
           <TextInput label="Text field" />
         </Field>
-        <Field isDisabled name="text2" label="Text disabled">
-          <TextInput />
+        <Field name="text2">
+          <TextInput isDisabled label="Text disabled" />
         </Field>
-        <Field isLoading name="text2" label="Text loading">
-          <TextInput />
+        <Field name="text2">
+          <TextInput isLoading label="Text loading" />
         </Field>
-        <Field label="Custom field" tooltip="What?">
-          <Block>Test</Block>
+        <Field>
+          <Block label="Custom field">Test</Block>
         </Field>
         <Field
           name="email"
@@ -267,37 +243,36 @@ const Template: StoryFn<typeof Form> = (args) => {
               message: 'This field should be a valid email address',
             },
           ]}
-          necessityIndicator={'label'}
           defaultValue="tenphi@gmail.com"
           shouldUpdate={({ email }) => {
             return !!email;
           }}
         >
-          <TextInput type="email" label="Email field" />
+          <TextInput
+            type="email"
+            label="Email field"
+            necessityIndicator="label"
+          />
         </Field>
         <Field name="password">
           <PasswordInput label="Password field" />
         </Field>
-        <Field
-          name={['select', 'one']}
-          label="Select field"
-          tooltip="Additional field description"
-        >
-          <Select>
+        <Field name={['select', 'one']}>
+          <Select label="Select field" tooltip="Additional field description">
             <Item key="one">One</Item>
             <Item key="two">Two</Item>
             <Item key="three">Three</Item>
           </Select>
         </Field>
-        <Field name="combobox" label="ComboBox field">
-          <ComboBox>
+        <Field name="combobox">
+          <ComboBox label="ComboBox field">
             <Item key="one">One</Item>
             <Item key="two">Two</Item>
             <Item key="three">Three</Item>
           </ComboBox>
         </Field>
-        <Field isLoading name="combobox2" label="ComboBox Loading field">
-          <ComboBox>
+        <Field name="combobox2">
+          <ComboBox isLoading label="ComboBox Loading field">
             <Item key="one">One</Item>
             <Item key="two">Two</Item>
             <Item key="three">Three</Item>
@@ -305,22 +280,18 @@ const Template: StoryFn<typeof Form> = (args) => {
         </Field>
         <Field
           name="checkboxGroup"
-          label="Checkbox group"
           rules={[
-            {
-              required: true,
-              message: 'Specify at least a single option',
-            },
+            { required: true, message: 'Specify at least a single option' },
           ]}
         >
-          <CheckboxGroup orientation="horizontal">
+          <CheckboxGroup label="Checkbox group" orientation="horizontal">
             <Checkbox value="one">One</Checkbox>
             <Checkbox value="two">Two</Checkbox>
             <Checkbox value="three">Three</Checkbox>
           </CheckboxGroup>
         </Field>
-        <Field name="radioGroup" label="Radio group">
-          <Radio.Group>
+        <Field name="radioGroup">
+          <Radio.Group label="Radio group">
             <Radio value="one">One</Radio>
             <Radio value="two">Two</Radio>
             <Radio value="three">Three</Radio>

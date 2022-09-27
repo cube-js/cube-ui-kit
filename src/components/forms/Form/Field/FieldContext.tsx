@@ -1,7 +1,8 @@
 import * as React from 'react';
 
 import { ValidateTrigger, ValidationState } from '../../../../shared';
-import { useChainedCallback } from '../../../../_internal';
+import { useChainedCallback, useEvent } from '../../../../_internal';
+import { useFormProps } from '../Form';
 
 export type FieldContextValue = {
   id: string;
@@ -32,7 +33,7 @@ export function FieldProvider(
 }
 
 export type UseFieldPropsParams = {
-  valuePropsMapper?: ({}) => any;
+  valuePropsMapper?: ({ value, onChange }) => any;
   /**
    * @default 'onBlur'
    */
@@ -44,30 +45,38 @@ export function useFieldProps<
 >(props: Props, params: UseFieldPropsParams = {}): Props {
   const { valuePropsMapper, defaultValidationTrigger = 'onBlur' } = params;
 
+  props = useFormProps(props);
   const fieldContext = React.useContext(FieldContext);
 
   const onBlurChained = useChainedCallback(fieldContext?.onBlur, props.onBlur);
+  const onChangeEvent = useEvent((value, dontTouch: boolean) => {
+    return fieldContext?.onChange?.(
+      value,
+      dontTouch,
+      fieldContext?.validateTrigger ?? defaultValidationTrigger,
+    );
+  });
 
   if (fieldContext === null) {
     return props;
   }
 
   const {
+    validateTrigger = defaultValidationTrigger,
     value,
     onChange,
-    validateTrigger = defaultValidationTrigger,
     ...rest
   } = fieldContext;
 
   return {
     ...props,
-    ...(valuePropsMapper
-      ? valuePropsMapper({
-          value,
-          onChange: (value, dontTouch) =>
-            onChange?.(value, dontTouch, validateTrigger),
-        })
-      : { value, onChange }),
+    ...(valuePropsMapper?.({
+      value: fieldContext.value,
+      onChange: onChangeEvent,
+    }) ?? {
+      value: fieldContext.value,
+      onChange: onChangeEvent,
+    }),
     ...rest,
     validateTrigger,
     onBlur: onBlurChained,
