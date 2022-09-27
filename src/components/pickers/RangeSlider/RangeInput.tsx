@@ -16,7 +16,7 @@ function calculateWidth(max?: number) {
   }
 
   const value = String(max).length;
-  const charWidth = 1.75;
+  const charWidth = 1.5;
 
   return `${value * charWidth}x`;
 }
