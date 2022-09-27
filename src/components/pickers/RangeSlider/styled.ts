@@ -7,7 +7,7 @@ export const StyledThumb = tasty({
     height: '2x',
     fill: {
       '': '#purple',
-      hovered: '#6B4FEE',
+      hovered: '#purple-text',
       dragged: '#purple',
       disabled: '#dark-04',
     },
@@ -15,16 +15,14 @@ export const StyledThumb = tasty({
       hovered: 'pointer',
       dragged: 'grab',
     },
-    shadow: '0px 2px 4px #dark.2',
+    shadow: {
+      '': '0px 2px 4px #dark.2',
+      dragged: 'inset 0 0 0 2px #purple-text, 0px 2px 4px #dark.2',
+    },
     radius: '50%',
     border: {
-      focused: '3px solid #CAC9FF',
-      dragged: '2px solid #665DE8;',
-    },
-    boxSizing: {
-      '': 'border-box',
-      focused: 'content-box',
-      dragged: 'border-box',
+      '': null,
+      focused: '3px solid #purple-04',
     },
     transition: 'theme',
   },

@@ -36,7 +36,7 @@ export function Thumb(props: ThumbProps) {
         mods={{
           hovered: isHovered,
           dragged: isDragging,
-          focused: isFocused,
+          focused: !isDragging && isFocused,
           disabled: isDisabled,
         }}
         {...mergeProps(thumbProps, hoverProps)}
