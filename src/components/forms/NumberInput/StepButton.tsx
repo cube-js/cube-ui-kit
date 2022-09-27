@@ -12,6 +12,12 @@ const STEP_BUTTON_STYLES: Styles = {
   fontSize: '12px',
   lineHeight: '12px',
   height: 'auto',
+  fill: {
+    '': '#dark.0',
+    hovered: '#dark.04',
+    pressed: '#purple.10',
+    '[disabled]': '#dark.0',
+  },
 
   '@icon-size': {
     '': '14px',

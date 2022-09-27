@@ -67,11 +67,13 @@ function NumberInput(props: WithNullableValue<CubeNumberInputProps>, ref) {
         showStepper ? (
           <StepperContainer>
             <StepButton
+              isDisabled={props.isDisabled}
               direction="up"
               {...incrementButtonProps}
               size={otherProps.size}
             />
             <StepButton
+              isDisabled={props.isDisabled}
               direction="down"
               {...decrementButtonProps}
               size={otherProps.size}

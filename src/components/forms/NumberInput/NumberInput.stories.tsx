@@ -31,3 +31,13 @@ Default.args = {};
 
 export const WithDefaultValue = Template.bind({});
 WithDefaultValue.args = { defaultValue: 5 };
+
+export const Small = Template.bind({});
+Small.args = {
+  size: 'small',
+};
+
+export const Disabled = Template.bind({});
+Disabled.args = {
+  isDisabled: true,
+};
