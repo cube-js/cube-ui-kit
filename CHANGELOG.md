@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.13.4
+
+### Patch Changes
+
+- [#222](https://github.com/cube-js/cube-ui-kit/pull/222) [`b3057c9`](https://github.com/cube-js/cube-ui-kit/commit/b3057c953c5947ed21c327acaca0dca67163f9e8) Thanks [@tenphi](https://github.com/tenphi)! - Fix for the small size of the NumberInput.
+
 ## 0.13.3
 
 ### Patch Changes
