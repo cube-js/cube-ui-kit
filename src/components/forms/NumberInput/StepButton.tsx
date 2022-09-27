@@ -9,9 +9,20 @@ const STEP_BUTTON_STYLES: Styles = {
     '': '0 (1r - 1bw) 0 0',
     down: '0 0 (1r - 1bw) 0',
   },
-  preset: 't4',
-  lineHeight: '1em',
+  fontSize: '12px',
+  lineHeight: '12px',
   height: 'auto',
+  fill: {
+    '': '#dark.0',
+    hovered: '#dark.04',
+    pressed: '#purple.10',
+    '[disabled]': '#dark.0',
+  },
+
+  '@icon-size': {
+    '': '14px',
+    '[data-size="small"]': '13px',
+  },
 };
 
 /**
@@ -24,7 +35,11 @@ export function StepButton(props) {
       type="neutral"
       styles={STEP_BUTTON_STYLES}
       icon={
-        props.direction === 'up' ? <CaretUpOutlined /> : <CaretDownOutlined />
+        props.direction === 'up' ? (
+          <CaretUpOutlined style={{ fontSize: 'var(--icon-size)' }} />
+        ) : (
+          <CaretDownOutlined style={{ fontSize: 'var(--icon-size)' }} />
+        )
       }
       mods={{
         up: props.direction === 'up',
