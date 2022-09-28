@@ -1,3 +1,4 @@
+import { Submit } from './Submit';
 import { CubeAlertProps } from '../../content/Alert';
 
 import { Field } from './Field';
@@ -10,11 +11,12 @@ const Form = Object.assign(
     Item: typeof Field;
     SubmitError: typeof SubmitError;
     useForm: typeof useForm;
+    Submit: typeof Submit;
   },
-  { Item: Field, useForm, SubmitError },
+  { Item: Field, useForm, Submit, SubmitError },
 );
 
-export { useFormProps, Form, Field, useForm, FormContext, SubmitError };
+export { useFormProps, Form, Field, useForm, FormContext, Submit, SubmitError };
 export type { CubeFormProps } from './Form';
 export type { CubeFormInstance } from './useForm';
 export type { FieldTypes, Fields } from './types';

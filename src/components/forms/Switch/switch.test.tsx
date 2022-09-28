@@ -7,7 +7,7 @@ describe('<Switch />', () => {
   it('should interop with <Form />', async () => {
     const { getByRole, formInstance } = renderWithForm(
       <Field name="test">
-        <Switch label="test" />
+        <Switch aria-label="test" />
       </Field>,
     );
 

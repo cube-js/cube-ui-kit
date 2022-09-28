@@ -2,21 +2,30 @@ import { forwardRef, useCallback, useRef, useState } from 'react';
 import { useTextField } from '@react-aria/textfield';
 import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 
-import {
-  CubeTextInputBaseProps,
-  TextInputBase,
-} from '../TextInput/TextInputBase';
+import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 import { useProviderProps } from '../../../provider';
 import { Button } from '../../actions';
 import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { useFieldProps } from '../Form';
 
-function PasswordInput(props: WithNullableValue<CubeTextInputBaseProps>, ref) {
+export type CubePasswordInputProps = WithNullableValue<CubeTextInputBaseProps>;
+
+function PasswordInput(props: CubePasswordInputProps, ref) {
   props = castNullableStringValue(props);
+  props = useProviderProps(props);
+  props = useFieldProps(props, {
+    defaultValidationTrigger: 'onBlur',
+    valuePropsMapper: ({ value, onChange }) => ({
+      value: value?.toString() ?? '',
+      onChange,
+    }),
+  });
 
-  let { suffix, multiLine, ...otherProps } = useProviderProps({ ...props });
+  const { suffix, multiLine, ...otherProps } = props;
+
   let [type, setType] = useState('password');
   let inputRef = useRef(null);
   let { labelProps, inputProps } = useTextField(
@@ -71,7 +80,5 @@ function PasswordInput(props: WithNullableValue<CubeTextInputBaseProps>, ref) {
  * communicate the entry requirements.
  */
 const _PasswordInput = forwardRef(PasswordInput);
-
-(_PasswordInput as any).cubeInputType = 'Text';
 
 export { _PasswordInput as PasswordInput };

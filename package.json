@@ -166,6 +166,7 @@
     "eslint-plugin-react": "^7.28.0",
     "eslint-plugin-react-hooks": "^4.3.0",
     "eslint-plugin-storybook": "^0.5.12",
+    "eslint-plugin-testing-library": "^5.7.0",
     "husky": ">=6",
     "jest": "27.5.1",
     "jest-styled-components": "^7.0.8",

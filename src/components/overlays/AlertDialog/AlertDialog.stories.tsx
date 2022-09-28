@@ -110,7 +110,7 @@ UsingApiWithCancel.play = async ({ canvasElement }) => {
   const { getByRole, getByTestId, queryByRole } = within(canvasElement);
 
   await userEvent.click(getByRole('button'));
-  await expect(queryByRole('alertdialog')).toBeInTheDocument();
+  await expect(getByRole('alertdialog')).toBeInTheDocument();
   await userEvent.click(getByTestId('CancelToken'));
   await wait(300);
   await expect(queryByRole('alertdialog')).not.toBeInTheDocument();

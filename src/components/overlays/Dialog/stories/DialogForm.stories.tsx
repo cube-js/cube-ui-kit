@@ -11,10 +11,9 @@ import { CubeDialogFormProps, DialogForm } from '../DialogForm';
 import { Button } from '../../../actions';
 import { Paragraph } from '../../../content/Paragraph';
 import { Text } from '../../../content/Text';
-import { Input } from '../../../forms';
 import { DialogTrigger } from '../DialogTrigger';
 import { baseProps } from '../../../../stories/lists/baseProps';
-import { Form } from '../../../forms/Form';
+import { Form, Input } from '../../../forms';
 import { DialogContainer } from '../DialogContainer';
 
 export default {
@@ -93,7 +92,7 @@ AsyncExampleTrigger.play = async ({ viewMode, canvasElement }) => {
   if (viewMode === 'docs') return;
   const screen = within(canvasElement);
   await userEvent.click(screen.getByRole('button'));
-  const dialog = await screen.getByRole('dialog');
+  const dialog = screen.getByRole('dialog');
   await expect(dialog).toBeInTheDocument();
 
   const dialogCanvas = within(dialog);
@@ -109,22 +108,4 @@ AsyncExampleTrigger.play = async ({ viewMode, canvasElement }) => {
   await expect(dialog).not.toBeInTheDocument();
 };
 
-AsyncExampleContainer.play = async ({ viewMode, canvasElement }) => {
-  if (viewMode === 'docs') return;
-  const screen = within(canvasElement);
-  await userEvent.click(screen.getByRole('button'));
-  const dialog = await screen.getByRole('dialog');
-  await expect(dialog).toBeInTheDocument();
-
-  const dialogCanvas = within(dialog);
-
-  await userEvent.type(
-    dialogCanvas.getByTestId('DeleteDeploymentName'),
-    'deployment',
-    { delay: 50 },
-  );
-
-  await userEvent.click(dialogCanvas.getByTestId('Delete'));
-  await waitForElementToBeRemoved(dialog);
-  await expect(dialog).not.toBeInTheDocument();
-};
+AsyncExampleContainer.play = AsyncExampleTrigger.play;

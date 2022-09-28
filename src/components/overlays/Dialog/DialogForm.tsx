@@ -1,12 +1,9 @@
 import { Title } from '../../content/Title';
-import { CubeFormProps, Form } from '../../forms/Form/Form';
-import { useForm } from '../../forms';
+import { CubeFormProps, Form, FieldTypes } from '../../forms';
 import { Content } from '../../content/Content';
-import { Submit } from '../../actions/Button/Submit';
 import { Button, CubeButtonProps } from '../../actions';
 import { ButtonGroup } from '../../actions';
 import { Header } from '../../content/Header';
-import { FieldTypes } from '../../forms';
 
 import { useDialogContext } from './context';
 import { Dialog, CubeDialogProps } from './Dialog';
@@ -69,7 +66,7 @@ export function DialogForm<T extends FieldTypes = FieldTypes>(
     ...dialogProps
   } = props;
 
-  [form] = useForm(form);
+  [form] = Form.useForm(form);
 
   const { onClose } = useDialogContext();
 
@@ -123,7 +120,7 @@ export function DialogForm<T extends FieldTypes = FieldTypes>(
 
           {!noActions ? (
             <ButtonGroup>
-              <Submit
+              <Form.Submit
                 qa={`${qa || ''}SubmitButton`}
                 theme={danger ? 'danger' : undefined}
                 label="Submit"

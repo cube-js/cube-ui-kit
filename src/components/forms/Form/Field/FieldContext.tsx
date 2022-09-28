@@ -38,17 +38,30 @@ export type UseFieldPropsParams = {
    * @default 'onBlur'
    */
   defaultValidationTrigger?: ValidateTrigger;
+  /**
+   * prop helps to prevent calling hook conditionally
+   */
+  isDisabled?: boolean;
 };
 
-export function useFieldProps<
-  Props extends { onBlur?: (e: React.FocusEvent) => void },
->(props: Props, params: UseFieldPropsParams = {}): Props {
-  const { valuePropsMapper, defaultValidationTrigger = 'onBlur' } = params;
+export function useFieldProps<Props>(
+  props: Props,
+  params: UseFieldPropsParams = {},
+): Props {
+  const {
+    valuePropsMapper,
+    defaultValidationTrigger = 'onBlur',
+    isDisabled,
+  } = params;
 
   props = useFormProps(props);
   const fieldContext = React.useContext(FieldContext);
 
-  const onBlurChained = useChainedCallback(fieldContext?.onBlur, props.onBlur);
+  const onBlurChained = useChainedCallback(
+    fieldContext?.onBlur,
+    // TODO: remove type casting after updating to typescipt@4.9
+    'onBlur' in props ? (props as any).onBlur : undefined,
+  );
   const onChangeEvent = useEvent((value, dontTouch: boolean) => {
     return fieldContext?.onChange?.(
       value,
@@ -57,7 +70,7 @@ export function useFieldProps<
     );
   });
 
-  if (fieldContext === null) {
+  if (fieldContext === null || isDisabled) {
     return props;
   }
 
@@ -74,8 +87,8 @@ export function useFieldProps<
       value: fieldContext.value,
       onChange: onChangeEvent,
     }) ?? {
-      value: fieldContext.value,
-      onChange: onChangeEvent,
+      value: fieldContext.value ?? null,
+      onChange,
     }),
     ...rest,
     validateTrigger,

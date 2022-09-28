@@ -3,6 +3,8 @@ import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs';
 import { Form, Field, Submit, Input, DialogForm } from '../index';
 import { DialogFormApp } from './components/DialogFormApp';
 import { DISABLE_BASE_ARGS } from './FormFieldArgs';
+import { action } from '@storybook/addon-actions';
+import { wait } from '../test';
 
 <Meta
   title="Forms/Form"
@@ -85,7 +87,7 @@ const Demo = () => {
 An example of a simple login form with validation.
 
 ```tsx
-import { Form, Field, Submit, Input } from '@cube-dev/ui-kit';
+import { Form, Field, Input } from '@cube-dev/ui-kit';
 import { Auth } from '../path/to/AuthService';
 
 // `Form.Item` is an alias for `Field`.
@@ -117,7 +119,7 @@ export function LoginForm() {
         <Input.Password type="password" />
       </Field>
 
-      <Submit>Submit</Submit>
+      <Form.Submit>Submit</Form.Submit>
     </Form>
   );
 }
@@ -127,11 +129,10 @@ export function LoginForm() {
   <Story name="LoginForm">
     {(args) => (
       <Form
-        onSubmit={() =>
-          new Promise((resolve) => {
-            setTimeout(resolve, 1000); // 1s of submitting
-          })
-        }
+        onSubmit={async (...submitArgs) => {
+          await wait(1000);
+          action('onSubmit')(...submitArgs);
+        }}
         requiredMark={false}
         {...args}
       >

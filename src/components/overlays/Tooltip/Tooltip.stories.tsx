@@ -39,12 +39,12 @@ const ViaProviderTemplate: Story<CubeTooltipProviderProps> = (args) => (
 export const Default: typeof Template = Template.bind({});
 Default.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
-  const button = await canvas.getByRole('button');
+  const button = canvas.getByRole('button');
   // this is a weird hack that makes tooltip working properly on page load
   await userEvent.unhover(button);
   await userEvent.hover(button);
 
-  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeInTheDocument());
+  await canvas.findByRole('tooltip');
 };
 
 export const ViaProvider: typeof ViaProviderTemplate = ViaProviderTemplate.bind(

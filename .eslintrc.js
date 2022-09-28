@@ -6,9 +6,9 @@ module.exports = /** @type {import('eslint').Linter.Config} */ ({
     'react-app',
     'plugin:react/recommended',
     'plugin:react/jsx-runtime',
-    'plugin:storybook/recommended',
     'plugin:@typescript-eslint/recommended',
   ],
+  plugins: [],
   rules: {
     'react/boolean-prop-naming': [
       'error',
@@ -30,9 +30,10 @@ module.exports = /** @type {import('eslint').Linter.Config} */ ({
       },
     ],
 
-    'import/extensions': 0,
-    'import/no-unresolved': 0,
-    'import/no-anonymous-default-export': 0,
+    'import/no-cycle': 'error',
+    'import/extensions': 'off',
+    'import/no-unresolved': 'off',
+    'import/no-anonymous-default-export': 'error',
     'import/no-extraneous-dependencies': 'error',
     'import/no-unused-modules': 'error',
     'import/order': [
@@ -59,34 +60,49 @@ module.exports = /** @type {import('eslint').Linter.Config} */ ({
 
     'react-hooks/exhaustive-deps': 'warn',
 
-    'prefer-const': 0,
-    'comma-dangle': 0,
-    'no-console': 0,
-    'arrow-parens': 0,
-    'no-prototype-builtins': 0,
-    'class-methods-use-this': 0,
-    'no-param-reassign': 0,
-    'no-mixed-operators': 0,
-    'no-else-return': 0,
-    'prefer-promise-reject-errors': 0,
+    'prefer-const': 'off',
+    'comma-dangle': 'off',
+    'no-console': 'off',
+    'arrow-parens': 'off',
+    'no-prototype-builtins': 'off',
+    'class-methods-use-this': 'off',
+    'no-param-reassign': 'off',
+    'no-mixed-operators': 'off',
+    'no-else-return': 'off',
+    'prefer-promise-reject-errors': 'off',
   },
   overrides: [
     {
       files: ['./scripts/**/*.js', './scripts/**/*.mjs'],
       rules: {
-        '@typescript-eslint/no-var-requires': 0,
+        '@typescript-eslint/no-var-requires': 'off',
       },
     },
     {
-      files: ['*.stories.tsx', '**/storybook/**/*.tsx'],
+      extends: ['plugin:testing-library/react', 'plugin:storybook/recommended'],
+      files: [
+        '**/storybook/**/*.jsx',
+        '**/storybook/**/*.js',
+        '**/storybook/**/*.tsx',
+        '**/storybook/**/*.ts',
+
+        '*.stories.jsx',
+        '*.stories.js',
+        '*.stories.tsx',
+        '*.stories.ts',
+      ],
       rules: {
-        'react/function-component-definition': 0,
-        'react/boolean-prop-naming': 0,
-        'react/prop-types': 0,
-        'react/no-unescaped-entities': 0,
+        'react/function-component-definition': 'off',
+        'react/boolean-prop-naming': 'off',
+        'react/prop-types': 'off',
+        'react/no-unescaped-entities': 'off',
+
+        'testing-library/prefer-screen-queries': 'off',
+        'testing-library/no-node-access': 'warn',
       },
     },
     {
+      extends: ['plugin:testing-library/react'],
       files: ['*.test.ts', '*.test.tsx'],
       rules: {
         '@typescript-eslint/no-unused-vars': 'off',
@@ -94,6 +110,10 @@ module.exports = /** @type {import('eslint').Linter.Config} */ ({
         '@typescript-eslint/ban-ts-comment': 'off',
 
         'react/prop-types': 'off',
+
+        'testing-library/prefer-screen-queries': 'off',
+        'testing-library/no-node-access': 'warn',
+        'testing-library/no-unnecessary-act': 'warn',
       },
     },
   ],

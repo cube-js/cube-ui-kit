@@ -40,10 +40,12 @@ const FormElement = tasty({
   },
 });
 
-export function useFormProps(props) {
+export function useFormProps<Props>(
+  props: Props,
+): Props & { form: CubeFormInstance<any> } {
   const ctx = useContext(FormContext);
 
-  return { ...ctx, ...props };
+  return { ...(ctx as any), ...props };
 }
 
 const formPropNames = new Set([

@@ -1,34 +1,80 @@
-import { baseProps } from '../../../stories/lists/baseProps';
-import { MULTIPLE_VALUE_ARG } from '../../../stories/FormFieldArgs';
+import { Meta, Story } from '@storybook/react';
+import { action } from '@storybook/addon-actions';
 
+import { baseProps } from '../../../stories/lists/baseProps';
+import { Form, Field } from '../Form';
+import { wait } from '../../../test';
+
+import { CubeCheckboxGroupProps } from './CheckboxGroup';
 import { Checkbox } from './Checkbox';
 
 export default {
   title: 'Forms/CheckboxGroup',
   component: Checkbox.Group,
+  subcomponents: { Checkbox },
+  args: {
+    label: 'Todo list',
+    description: 'Pick your favorite todos',
+  },
   parameters: {
     controls: {
       exclude: baseProps,
     },
   },
-  argTypes: {
-    ...MULTIPLE_VALUE_ARG,
-  },
-};
+} as Meta<CubeCheckboxGroupProps>;
 
-const Template = (props) => (
-  <Checkbox.Group
-    {...props}
-    onChange={(query) => console.log('onChange event', query)}
-  >
-    <Checkbox value="one">One</Checkbox>
-    <Checkbox value="two">Two</Checkbox>
-    <Checkbox value="three">Three</Checkbox>
+const Template: Story<CubeCheckboxGroupProps> = (props) => (
+  <Checkbox.Group {...props}>
+    <Checkbox value="one">Buy milk</Checkbox>
+    <Checkbox value="two">Buy coffee</Checkbox>
+    <Checkbox value="three">Buy bread</Checkbox>
   </Checkbox.Group>
 );
 
 export const Default = Template.bind({});
 Default.args = {};
 
+export const Horizontal = Template.bind({});
+Horizontal.args = {
+  orientation: 'horizontal',
+};
+
+export const HorizontalLabelSide = Template.bind({});
+HorizontalLabelSide.args = {
+  orientation: 'horizontal',
+  labelPosition: 'side',
+};
+
 export const Invalid = Template.bind({});
 Invalid.args = { validationState: 'invalid' };
+
+export const Valid = Template.bind({});
+Valid.args = { validationState: 'valid' };
+
+export const Disabled = Template.bind({});
+Disabled.args = { isDisabled: true };
+
+export const InvalidDisabled = Template.bind({});
+InvalidDisabled.args = { isDisabled: true, validationState: 'invalid' };
+
+export const Readonly = Template.bind({});
+Readonly.args = { isReadOnly: true };
+
+export const InsideForm: Story<CubeCheckboxGroupProps> = (props) => {
+  const onSubmit = action('onSubmit');
+
+  return (
+    <Form
+      onSubmit={async (...args) => {
+        await wait(500);
+        onSubmit(...args);
+      }}
+    >
+      <Field name="What to buy" defaultValue={['one']}>
+        <Template {...props} />
+      </Field>
+
+      <Form.Submit>Save</Form.Submit>
+    </Form>
+  );
+};

@@ -28,7 +28,7 @@ import { Item } from '@react-stately/collections';
 import { DOMRef } from '@react-types/shared';
 import styled from 'styled-components';
 
-import { useFormProps } from '../../forms';
+import { useFieldProps } from '../../forms';
 import { useProviderProps } from '../../../provider';
 import {
   BasePropsWithoutChildren,
@@ -229,7 +229,13 @@ function Select<T extends object>(
   ref: DOMRef<HTMLDivElement>,
 ) {
   props = useProviderProps(props);
-  props = useFormProps(props);
+  props = useFieldProps(props, {
+    defaultValidationTrigger: 'onChange',
+    valuePropsMapper: ({ value, onChange }) => ({
+      selectedKey: value ?? null,
+      onSelectionChange: onChange,
+    }),
+  });
 
   let {
     qa,
@@ -364,6 +370,7 @@ function Select<T extends object>(
       suffix: true,
     }),
     [
+      isInvalid,
       validationState,
       isDisabled,
       isLoading,
@@ -570,9 +577,9 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
   );
 }
 
-const _Select = forwardRef(Select);
-
-(_Select as any).cubeInputType = 'Select';
+const _Select = forwardRef(Select) as <T extends object>(
+  props: CubeSelectProps<T> & { ref?: DOMRef<HTMLDivElement> },
+) => JSX.Element;
 
 const __Select = Object.assign(
   _Select as typeof _Select & {

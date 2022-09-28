@@ -1,10 +1,9 @@
 import { forwardRef } from 'react';
-import { useDOMRef } from '@react-spectrum/utils';
 import { useCheckboxGroup } from '@react-aria/checkbox';
 import { useCheckboxGroupState } from '@react-stately/checkbox';
 
 import { useProviderProps } from '../../../provider';
-import { FormContext, useFormProps } from '../Form/Form';
+import { FormContext, useFieldProps } from '../Form';
 import {
   BaseProps,
   BLOCK_STYLES,
@@ -61,12 +60,25 @@ export interface CubeCheckboxGroupProps
   orientation?: 'vertical' | 'horizontal';
 }
 
-function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
+/**
+ * Checkbox groups allow users to select a single option from a list of mutually exclusive options.
+ * All possible options are exposed up front for users to compare.
+ */
+export const CheckboxGroup = forwardRef(function CheckboxGroup(
+  props: WithNullableValue<CubeCheckboxGroupProps>,
+  ref,
+) {
   props = castNullableArrayValue(props);
   props = useProviderProps(props);
-  props = useFormProps(props);
+  props = useFieldProps(props, {
+    defaultValidationTrigger: 'onChange',
+    valuePropsMapper: ({ value, onChange }) => ({
+      value: value != null ? value : [],
+      onChange: onChange,
+    }),
+  });
 
-  let {
+  const {
     isDisabled,
     isRequired,
     necessityIndicator,
@@ -85,27 +97,19 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
     labelSuffix,
     ...otherProps
   } = props;
-  let domRef = useDOMRef(ref);
 
-  let styles = extractStyles(otherProps, OUTER_STYLES, WRAPPER_STYLES);
-  let groupStyles = extractStyles(otherProps, BLOCK_STYLES);
+  const styles = extractStyles(otherProps, OUTER_STYLES, WRAPPER_STYLES);
+  const groupStyles = extractStyles(otherProps, BLOCK_STYLES);
 
-  let state = useCheckboxGroupState(props);
-  let { groupProps, labelProps } = useCheckboxGroup(props, state);
+  const state = useCheckboxGroupState(props);
+  const { groupProps, labelProps } = useCheckboxGroup(props, state);
 
-  let radioGroup = (
+  const radioGroup = (
     <CheckGroupElement
       styles={groupStyles}
-      mods={{
-        horizontal: orientation === 'horizontal',
-      }}
+      mods={{ horizontal: orientation === 'horizontal' }}
     >
-      <FormContext.Provider
-        value={{
-          isDisabled,
-          validationState,
-        }}
-      >
+      <FormContext.Provider value={{ isDisabled, validationState }}>
         <CheckboxGroupContext.Provider value={state}>
           {children}
         </CheckboxGroupContext.Provider>
@@ -134,18 +138,8 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
         tooltip,
         labelSuffix,
         Component: radioGroup,
-        ref: domRef,
+        ref,
       }}
     />
   );
-}
-
-/**
- * Checkbox groups allow users to select a single option from a list of mutually exclusive options.
- * All possible options are exposed up front for users to compare.
- */
-const _CheckboxGroup = forwardRef(CheckboxGroup);
-
-(_CheckboxGroup as any).cubeInputType = 'CheckboxGroup';
-
-export { _CheckboxGroup as CheckboxGroup };
+});

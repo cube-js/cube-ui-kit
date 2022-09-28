@@ -1,31 +1,17 @@
-import { baseProps } from '../../../stories/lists/baseProps';
-import {
-  IS_INDETERMINATE_ARG,
-  IS_SELECTED_ARG,
-} from '../../../stories/FormFieldArgs';
+import { Meta, Story } from '@storybook/react';
 
-import { Checkbox } from './Checkbox';
+import { baseProps } from '../../../stories/lists/baseProps';
+
+import { Checkbox, CubeCheckboxProps } from './Checkbox';
 
 export default {
   title: 'Forms/Checkbox',
   component: Checkbox,
-  parameters: {
-    controls: {
-      exclude: baseProps,
-    },
-  },
-  argTypes: {
-    ...IS_SELECTED_ARG,
-    ...IS_INDETERMINATE_ARG,
-  },
-};
+  args: { label: 'Buy milk' },
+  parameters: { layout: 'centered', controls: { exclude: baseProps } },
+} as Meta<CubeCheckboxProps>;
 
-const Template = (props) => (
-  <Checkbox
-    {...props}
-    onChange={(query) => console.log('onChange event', query)}
-  />
-);
+const Template: Story<CubeCheckboxProps> = (props) => <Checkbox {...props} />;
 
 export const Default = Template.bind({});
 Default.args = {};
@@ -53,4 +39,60 @@ Disabled.args = {
 export const Invalid = Template.bind({});
 Invalid.args = {
   validationState: 'invalid',
+  description: 'This field is required',
+};
+
+export const InvalidChecked = Template.bind({});
+InvalidChecked.args = {
+  isSelected: true,
+  validationState: 'invalid',
+  description: 'This field is required',
+};
+
+export const InvalidIntermediate = Template.bind({});
+InvalidIntermediate.args = {
+  isSelected: true,
+  isIndeterminate: true,
+  validationState: 'invalid',
+};
+
+export const InvalidDisabled = Template.bind({});
+InvalidDisabled.args = {
+  isDisabled: true,
+  validationState: 'invalid',
+  description: 'This field is required',
+};
+
+export const InvalidDisabledChecked = Template.bind({});
+InvalidDisabledChecked.args = {
+  isSelected: true,
+  isDisabled: true,
+  validationState: 'invalid',
+};
+
+export const Valid = Template.bind({});
+Valid.args = {
+  validationState: 'valid',
+  description: 'Looks good',
+};
+
+export const ValidChecked = Template.bind({});
+ValidChecked.args = {
+  isSelected: true,
+  validationState: 'valid',
+  description: 'Looks good',
+};
+
+export const ValidIntermediate = Template.bind({});
+ValidIntermediate.args = {
+  isIndeterminate: true,
+  validationState: 'valid',
+  description: 'Looks good',
+};
+
+export const ValidDisabled = Template.bind({});
+ValidDisabled.args = {
+  isDisabled: true,
+  validationState: 'valid',
+  description: 'Looks good',
 };

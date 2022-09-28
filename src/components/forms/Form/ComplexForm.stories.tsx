@@ -146,7 +146,7 @@ const AsyncValidationTemplate: StoryFn<typeof Form> = (args) => {
       >
         <TextInput label="Text input" />
       </Field>
-      <Submit>Submit</Submit>
+      <Form.Submit>Submit</Form.Submit>
     </Form>
   );
 };
@@ -321,7 +321,7 @@ const Template: StoryFn<typeof Form> = (args) => {
         >
           <RangeSlider showInput minValue={0} maxValue={100} />
         </Field>
-        <Submit>Submit</Submit>
+        <Form.Submit>Submit</Form.Submit>
       </Form>
     </>
   );
