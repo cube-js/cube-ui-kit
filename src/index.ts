@@ -64,7 +64,6 @@ export { Tag } from './components/content/Tag/Tag';
 export type { CubeTagProps } from './components/content/Tag/Tag';
 export { SearchInput } from './components/forms/SearchInput/SearchInput';
 export type { CubeSearchInputProps } from './components/forms/SearchInput/SearchInput';
-export { Submit } from './components/actions/Button/Submit';
 export type { CubeTextInputBaseProps } from './components/forms/TextInput/TextInputBase';
 export type { CubeTextInputBaseProps as CubeTextInputProps } from './components/forms/TextInput/TextInputBase';
 export { TextInput } from './components/forms/TextInput/TextInput';
@@ -186,6 +185,7 @@ export * from './styled';
 export * from './tasty';
 export { default as copy } from 'clipboard-copy';
 export * from '@react-aria/ssr';
-export * from './components/forms/Form';
+
+export * from './components/forms';
 export * from './components/overlays/NewNotifications';
 export * from './components/overlays/Toasts';
