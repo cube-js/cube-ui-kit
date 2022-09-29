@@ -27,12 +27,13 @@ export function AlertDialogApiProvider(props) {
   const api = useMemo<DialogApi>(
     () => ({
       open: (dialogProps, params = {}) => {
+        const { onDismiss, ...restProps } = dialogProps;
         const { cancelToken } = params;
         const currentId = ++id.current;
         const currentDialog = {
-          props: dialogProps,
+          props: null,
           meta: { id: currentId, isClosed: false, isVisible: true },
-        } as Dialog;
+        } as unknown as Dialog;
 
         const close = () => {
           if (currentDialog.meta.isClosed) return;
@@ -72,6 +73,14 @@ export function AlertDialogApiProvider(props) {
             reject(reason);
           };
         });
+
+        currentDialog.props = {
+          ...restProps,
+          onDismiss: (e) => {
+            onDismiss?.(e);
+            currentDialog.meta.reject(undefined);
+          },
+        };
 
         setOpenedDialog((openedDialog) => {
           // we already have opened dialog, so we reject opening another
