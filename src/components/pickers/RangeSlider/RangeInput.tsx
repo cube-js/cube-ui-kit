@@ -10,13 +10,13 @@ export interface RangeInputProps extends CubeNumberInputProps {
   max?: number;
 }
 
-function calculateWidth(max?: number) {
+function calculateWidth(max?: number, hasSuffix?: boolean) {
   if (typeof max === 'undefined') {
     return undefined;
   }
 
   const value = String(max).length;
-  const charWidth = 1.5;
+  const charWidth = hasSuffix ? 1.5 : 1.75;
 
   return `${value * charWidth}x`;
 }
@@ -25,7 +25,7 @@ export function RangeInput(props: RangeInputProps) {
   const { state, index, suffix, min, max, ...otherProps } = props;
 
   const value = state.values[index];
-  const width = calculateWidth(max);
+  const width = calculateWidth(max, !!suffix);
   const onChange = useCallback(
     (value: number) => {
       state.setThumbValue(index, value);
