@@ -41,15 +41,8 @@ function NumberInput(props: WithNullableValue<CubeNumberInputProps>, ref) {
   props = useProviderProps(props);
   props = useFormProps(props);
 
-  let {
-    hideStepper,
-    suffix,
-    suffixPosition = 'after',
-    value,
-    defaultValue,
-    onChange,
-    ...otherProps
-  } = props;
+  let { hideStepper, suffix, value, defaultValue, onChange, ...otherProps } =
+    props;
   let showStepper = !hideStepper;
   let { locale } = useLocale();
   let state = useNumberFieldState({ ...props, locale });
@@ -70,7 +63,7 @@ function NumberInput(props: WithNullableValue<CubeNumberInputProps>, ref) {
       inputProps={inputProps}
       inputRef={inputRef}
       wrapperProps={groupProps}
-      suffixPosition={suffixPosition}
+      suffixPosition="after"
       suffix={
         showStepper ? (
           <StepperContainer>
