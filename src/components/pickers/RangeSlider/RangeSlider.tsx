@@ -18,11 +18,15 @@ import { Gradation } from './Gradation';
 import { Thumb } from './Thumb';
 import { RangeInput } from './RangeInput';
 import { StyledControls, StyledSlider, StyledContent } from './styled';
+import {
+  getMinMaxValue,
+  getRanges,
+  getValidValue,
+  SliderValue,
+} from './helpers';
 
 import type { DOMRef } from '@react-types/shared';
 import type { AriaSliderProps, SliderProps } from '@react-types/slider';
-
-type SliderValue = number[];
 
 export interface CubeRangeSliderProps
   extends AriaSliderProps<SliderValue>,
@@ -37,14 +41,6 @@ export interface CubeRangeSliderProps
   gradation?: string[];
   onChange?: (range: SliderValue) => void;
   onChangeEnd?: (range: SliderValue) => void;
-}
-
-function getRanges(value) {
-  if (Array.isArray(value)) {
-    return value.length >= 2 ? [0, 1] : [0];
-  }
-
-  return [0];
 }
 
 function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
@@ -77,6 +73,7 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
     ...otherProps
   } = props;
 
+  const [min, max] = getMinMaxValue(minValue, maxValue, value || defaultValue);
   const ranges = getRanges(defaultValue || value || [0, 1]);
   const isSingle = ranges.length <= 1;
   const trackRef = useRef<HTMLElement>(null);
@@ -86,7 +83,11 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
     step,
     orientation,
     isDisabled,
-    onChange(range: number | number[]) {
+    minValue: min,
+    maxValue: max,
+    value: getValidValue(value, min, max),
+    defaultValue: getValidValue(defaultValue, min, max),
+    onChange(range) {
       if (onChange) {
         onChange(Array.isArray(range) ? range : [range]);
       }
@@ -113,13 +114,13 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
   );
 
   const inputProps = {
-    min: minValue,
-    max: maxValue,
     step,
-    state: state,
+    state,
+    isDisabled,
     suffix: inputSuffix,
     styles: inputStyles,
-    isDisabled,
+    min: baseProps.minValue,
+    max: baseProps.maxValue,
   };
 
   const sliderField = (
@@ -148,7 +149,9 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
               inputRef={inputRef}
               trackRef={trackRef}
               isDisabled={isDisabled}
-              defaultValue={defaultValue && defaultValue[thumb]}
+              defaultValue={
+                baseProps.defaultValue && baseProps.defaultValue[thumb]
+              }
             />
           ))}
         </StyledControls>

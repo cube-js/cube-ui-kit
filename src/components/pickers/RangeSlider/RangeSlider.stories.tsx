@@ -92,25 +92,22 @@ InputSuffix.args = {
   inputSuffix: 'ms',
   defaultValue: [20, 80],
   minValue: 0,
-  maxValue: 100,
+  maxValue: 200,
   step: 2,
-  isLoading: true,
 };
 
-export const InputPrefix = Template.bind({});
+export const InvalidData = Template.bind({});
 
-InputPrefix.args = {
+InvalidData.args = {
   width: '50x',
   label: 'Label',
   name: 'filter',
   showInput: true,
-  inputSuffix: '$',
-  inputSuffixPosition: 'before',
+  inputSuffix: 'ms',
   defaultValue: [20, 80],
   minValue: 0,
-  maxValue: 100,
+  maxValue: 6,
   step: 2,
-  isLoading: true,
 };
 
 export const Controlled = (args) => {

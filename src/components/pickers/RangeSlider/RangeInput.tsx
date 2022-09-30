@@ -16,7 +16,9 @@ function calculateWidth(max?: number, hasSuffix?: boolean) {
   }
 
   const value = String(max).length;
-  const charWidth = hasSuffix ? 1.5 : 1.75;
+  // for 2 digit values 1.6 is better with suffix
+  const suffixWidth = value > 2 ? 1.6 : 1.75;
+  const charWidth = hasSuffix ? suffixWidth : 2;
 
   return `${value * charWidth}x`;
 }
