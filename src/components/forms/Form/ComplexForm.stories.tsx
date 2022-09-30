@@ -15,6 +15,7 @@ import {
   Submit,
   Switch,
   TextInput,
+  RangeSlider,
 } from '../../../index';
 import { NumberInput } from '../NumberInput/NumberInput';
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -129,6 +130,7 @@ const Template: StoryFn<typeof Form> = (args) => {
           checkboxGroup: ['one', 'three'],
           radioGroup: 'three',
           switch: false,
+          slider: [20, 40],
         }}
         onSubmit={(v) => {
           console.log('onSubmit:', v);
@@ -249,6 +251,12 @@ const Template: StoryFn<typeof Form> = (args) => {
           rules={[{ required: true, message: 'This field is required' }]}
         >
           <NumberInput label="Number field" minValue={-1} />
+        </Field>
+        <Field
+          name="slider"
+          rules={[{ required: true, message: 'This field is required' }]}
+        >
+          <RangeSlider showInput minValue={0} maxValue={100} />
         </Field>
         <Submit>Submit</Submit>
       </Form>
