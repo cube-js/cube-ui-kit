@@ -13,7 +13,7 @@ export const StyledThumb = tasty({
     },
     cursor: {
       hovered: 'pointer',
-      dragged: 'grab',
+      dragged: 'pointer',
     },
     shadow: {
       '': '0px 2px 4px #dark.2',
