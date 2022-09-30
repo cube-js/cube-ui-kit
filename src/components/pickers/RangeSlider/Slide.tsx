@@ -12,8 +12,7 @@ export type SlideProps = {
 
 export function Slide(props: SlideProps) {
   const { ranges, state, isDisabled, isSingle } = props;
-
-  const styles = {};
+  const style = {};
   const mods = useMemo(
     () => ({
       single: isSingle,
@@ -23,12 +22,12 @@ export function Slide(props: SlideProps) {
   );
 
   ranges.forEach((rangeIndex) => {
-    styles[`@thumb-${rangeIndex}-value`] = state.getThumbPercent(rangeIndex);
+    style[`--thumb-${rangeIndex}-value`] = state.getThumbPercent(rangeIndex);
   });
 
   return (
     <StyledSlide mods={mods}>
-      <StyledSlideTrack styles={styles} mods={mods} />
+      <StyledSlideTrack style={style} mods={mods} />
     </StyledSlide>
   );
 }
