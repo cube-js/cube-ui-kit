@@ -7,7 +7,7 @@ import { MULTIPLE_NUMBER_VALUE_ARG } from '../../../stories/FormFieldArgs';
 import { CubeRangeSliderProps, RangeSlider } from './RangeSlider';
 
 export default {
-  title: 'Pickers/RangeSlider',
+  title: 'Forms/RangeSlider',
   component: RangeSlider,
   args: { id: 'name', width: '200px' },
   parameters: { controls: { exclude: baseProps } },
