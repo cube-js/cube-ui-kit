@@ -253,6 +253,8 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     size,
     icon,
     labelSuffix,
+    maxLength,
+    minLength,
     ...otherProps
   } = props;
   let styles = extractStyles(otherProps, STYLE_LIST);
@@ -370,6 +372,8 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
         data-size={size}
         styles={inputStyles}
         isDisabled={isDisabled}
+        maxLength={maxLength}
+        minLength={minLength}
       />
       {prefix ? <div data-element="Prefix">{prefix}</div> : null}
       <div data-element="Suffix">
