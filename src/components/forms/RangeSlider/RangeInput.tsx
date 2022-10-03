@@ -35,14 +35,13 @@ export function RangeInput(props: RangeInputProps) {
     [index, state],
   );
 
+  const maxLength = typeof max !== 'undefined' ? String(max).length : undefined;
+
   return (
     <NumberInput
       {...otherProps}
       hideStepper
       size="small"
-      inputProps={{
-        maxLength: max && String(max).length,
-      }}
       inputStyles={{
         width,
       }}
@@ -50,6 +49,7 @@ export function RangeInput(props: RangeInputProps) {
       value={value}
       minValue={state.getThumbMinValue(index)}
       maxValue={state.getThumbMaxValue(index)}
+      maxLength={maxLength}
       onChange={onChange}
     />
   );
