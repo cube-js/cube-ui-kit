@@ -11,10 +11,7 @@ export const StyledThumb = tasty({
       dragged: '#purple',
       disabled: '#dark-04',
     },
-    cursor: {
-      hovered: 'pointer',
-      dragged: 'pointer',
-    },
+    cursor: 'pointer',
     shadow: {
       '': '0px 2px 4px #dark.2',
       dragged: 'inset 0 0 0 2px #purple-text, 0px 2px 4px #dark.2',
