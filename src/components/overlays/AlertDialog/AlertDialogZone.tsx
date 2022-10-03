@@ -74,7 +74,7 @@ export function AlertDialogZone(props: DialogZoneProps): JSX.Element {
         isOpen={isVisible}
         isDismissable={isDismissable}
         type={type}
-        onDismiss={resolve}
+        onDismiss={onDismiss}
       >
         <AlertDialog
           noActions={dialogType === 'form'}
