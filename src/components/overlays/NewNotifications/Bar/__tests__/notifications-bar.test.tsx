@@ -60,6 +60,7 @@ describe('<NotificationsBar />', () => {
       (el) => el.getAttribute('data-id'),
     );
 
+    expect(onRemoveToast).toBeCalledTimes(2);
     expect(renderedIds).toHaveLength(5);
     expect(renderedIds).toEqual(['7', '6', '5', '4', '3']);
   });
