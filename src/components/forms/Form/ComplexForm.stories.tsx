@@ -1,5 +1,7 @@
 import { StoryFn } from '@storybook/react';
 import { linkTo } from '@storybook/addon-links';
+import { within, userEvent, waitFor } from '@storybook/testing-library';
+import { expect } from '@storybook/jest';
 
 import {
   Block,
@@ -8,6 +10,7 @@ import {
   ComboBox,
   Field,
   Form,
+  SubmitError,
   Item,
   PasswordInput,
   Radio,
@@ -26,6 +29,31 @@ export default {
   title: 'Forms/ComplexForm',
   component: Form,
   parameters: { controls: { exclude: baseProps } },
+};
+
+const SubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
+  const [form] = Form.useForm();
+
+  return (
+    <Form
+      form={form}
+      {...args}
+      onSubmit={(v) => {
+        console.log('onSubmit:', v);
+
+        throw <>Submission failed. Sorry for that :/</>;
+      }}
+      onValuesChange={(v) => {
+        console.log('onChange', v);
+      }}
+    >
+      <Field name="text" label="Text input">
+        <TextInput />
+      </Field>
+      <Submit>Submit</Submit>
+      <SubmitError />
+    </Form>
+  );
 };
 
 const AsyncValidationTemplate: StoryFn<typeof Form> = (args) => {
@@ -277,3 +305,14 @@ export const Default = Template.bind({});
 export const ComplexErrorMessage = ComplexErrorTemplate.bind({});
 
 export const AsyncValidation = AsyncValidationTemplate.bind({});
+
+export const ErrorMessage = SubmitErrorTemplate.bind({});
+
+ErrorMessage.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const button = await canvas.getByRole('button');
+
+  await userEvent.click(button);
+
+  await waitFor(() => expect(canvas.getByRole('alert')).toBeInTheDocument());
+};
