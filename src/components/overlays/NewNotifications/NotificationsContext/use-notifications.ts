@@ -93,6 +93,10 @@ export function useNotifications(
   const onDismissNotification = useEvent((id: Key) => {
     const toast = notifications.get(id);
 
+    if (toast == null) {
+      return;
+    }
+
     if (toast?.putNotificationInDropdownOnDismiss !== false) {
       rootRef?.current?.dispatchEvent(
         new CustomEvent(DISMISS_EVENT_NAME, { detail: toast }),

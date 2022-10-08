@@ -1,21 +1,29 @@
 import { renderHook } from '@testing-library/react-hooks';
 
-import { wait } from '../../../test';
-
 import { useTimer } from './use-timer';
 import { Timer } from './timer';
 
 describe('useTimer', () => {
   const callback = jest.fn();
 
-  beforeEach(jest.resetAllMocks);
+  beforeAll(() => {
+    jest.useFakeTimers('modern');
+  });
+
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
+  });
 
   it('should trigger callback', async () => {
     const { result } = renderHook(useTimer, {
       initialProps: { callback, delay: 100 },
     });
 
-    await wait(250);
+    jest.runAllTimers();
 
     expect(callback).toBeCalledTimes(1);
     expect(result.current.timer?.status).toBe('stopped');
@@ -33,7 +41,7 @@ describe('useTimer', () => {
       },
     });
 
-    await wait(300);
+    jest.runAllTimers();
 
     expect(result.current.timer).toBe(timer);
     expect(dummyCallback).not.toBeCalled();
@@ -46,7 +54,8 @@ describe('useTimer', () => {
     });
 
     unmount();
-    await wait(20);
+
+    jest.runAllTimers();
 
     expect(result.current.timer?.status).toBe('stopped');
     expect(callback).toBeCalledTimes(0);
@@ -59,7 +68,7 @@ describe('useTimer', () => {
 
     expect(result.current.timer?.status).toBe('stopped');
 
-    await wait(30);
+    jest.runAllTimers();
 
     expect(callback).not.toBeCalled();
     expect(result.current.timer?.status).toBe('stopped');
@@ -74,7 +83,7 @@ describe('useTimer', () => {
 
     rerender({ isDisabled: true });
 
-    await wait(30);
+    jest.runAllTimers();
 
     expect(callback).not.toBeCalled();
     expect(result.current.timer?.status).toBe('stopped');
