@@ -133,6 +133,7 @@ function Form<T extends FieldTypes>(
       if (!form || form.isSubmitting) return;
 
       setSubmitError(null);
+      form.submitError = null;
       form.setSubmitting(true);
 
       try {
@@ -147,6 +148,7 @@ function Form<T extends FieldTypes>(
         }
         // errors are shown
         setSubmitError(e as ReactNode);
+        form.submitError = e as ReactNode;
         // transfer errors to the callback
         onSubmitFailed?.(e);
       } finally {
