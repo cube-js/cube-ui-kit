@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.13.5
+
+### Patch Changes
+
+- [#224](https://github.com/cube-js/cube-ui-kit/pull/224) [`6f58989`](https://github.com/cube-js/cube-ui-kit/commit/6f58989b15fb24c0d105d3c24f909f356b925e55) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - [CC-1327](https://cubedevinc.atlassian.net/browse/CC-1327): Fixed bug when `onDismiss` doesn't trigger on `ESC` press within `AlertDialog`
+
+- [#221](https://github.com/cube-js/cube-ui-kit/pull/221) [`2721552`](https://github.com/cube-js/cube-ui-kit/commit/2721552429f06e89d05c865c391f629f81da8763) Thanks [@nikolaykost](https://github.com/nikolaykost)! - Add `RangeSlider` component
+
+  ```jsx
+  <RangeSlider defaultValue={[10, 40]} minValue={0} maxValue={100} step={2} />
+  ```
+
+- [#226](https://github.com/cube-js/cube-ui-kit/pull/226) [`7d9b2d0`](https://github.com/cube-js/cube-ui-kit/commit/7d9b2d0c814371c8e0805fdde3b63f7c7c8a128f) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - [CC-1364](https://cubedevinc.atlassian.net/browse/CC-1364) - fixed bug when useNotificationObserver calls callback with already removed notification
+
 ## 0.13.4
 
 ### Patch Changes
