@@ -1,5 +1,12 @@
 # @cube-dev/ui-kit
 
+## 0.13.6
+
+### Patch Changes
+
+- [#227](https://github.com/cube-js/cube-ui-kit/pull/227) [`19c1adf`](https://github.com/cube-js/cube-ui-kit/commit/19c1adf7b5142dca8bb81def3be1e90e378b3199) Thanks [@tenphi](https://github.com/tenphi)! - Add `SubmitError` component to display error that throws onSubmit callback.
+  Allow to manually visualize a submit error.
+
 ## 0.13.5
 
 ### Patch Changes
