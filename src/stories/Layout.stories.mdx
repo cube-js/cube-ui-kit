@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/addon-docs';
+import { Meta, Canvas, Story } from '@storybook/addon-docs';
 import {
   Button,
   Root,
@@ -18,87 +18,53 @@ import {
 
 # Layout examples
 
-Documentation is in process...
-
 ## Flow layout
 
 Flow Component is used to create gaps between blocks inside block layout.
 
-```jsx
-<Card gap>
-  <Card>
-    Card 1
-  </Card>
-  <Card>
-    Card 2
-  </Card>
-  <Card>
-    Card 3
-  </Card>
-</Flow>
-```
-
-<Root>
-  <Card gap>
-    <Card>Card 1</Card>
-    <Card>Card 2</Card>
-    <Card>Card 3</Card>
-  </Card>
-</Root>
+<Canvas>
+  <Story name="Flow">
+    <Flow gap>
+      <Card>Card 1</Card>
+      <Card>Card 2</Card>
+      <Card>Card 3</Card>
+    </Flow>
+  </Story>
+</Canvas>
 
 ## Flex layout
 
 Use Space Component to create a row or a column of elements.
 
-```jsx
-<Space flow="row">
-  <Block>horizontal space</Block>
-  <Button>One</Button>
-  <Button>Two</Button>
-</Space>
-<Space flow="column">
-  <Block>vertical space</Block>
-  <Button>One</Button>
-  <Button>Two</Button>
-</Space>
-```
-
-<Root>
-  <Card gap>
-    <Space flow="row">
-      <Block>horizontal space</Block>
-      <Button>One</Button>
-      <Button>Two</Button>
-    </Space>
-    <Space flow="column">
-      <Block>vertical space</Block>
-      <Button>One</Button>
-      <Button>Two</Button>
-    </Space>
-  </Card>
-</Root>
+<Canvas>
+  <Story name="Flex">
+    <Flow gap>
+      <Space flow="row">
+        <Block>horizontal space</Block>
+        <Button>One</Button>
+        <Button>Two</Button>
+      </Space>
+      <Space flow="column">
+        <Block>vertical space</Block>
+        <Button>One</Button>
+        <Button>Two</Button>
+      </Space>
+    </Flow>
+  </Story>
+</Canvas>
 
 Use Flex Component for more flexible layouts.
 
-```jsx
-<Flex flow="row" placeContent="space-between" placeItems="center">
-  <Button>One</Button>
-  <Button>Two</Button>
-  <Button>Three</Button>
-  <Button>Four</Button>
-</Flex>
-```
-
-<Root>
-  <Card>
+<Canvas>
+  <Story name="Flex Custom">
     <Flex flow="row" gap="4x" placeContent="space-between" placeItems="center">
       <Button>One</Button>
       <Button>Two</Button>
       <Button>Three</Button>
       <Button>Four</Button>
     </Flex>
-  </Card>
-</Root>
+  </Story>
+</Canvas>
 
 ## Grid layout
 
@@ -114,12 +80,12 @@ Use Grid Component for grid layouts.
 </Grid>
 ```
 
-<Root>
-  <Card>
+<Canvas>
+  <Story name="Grid">
     <Grid gridColumns="200px 1fr" gridRows="60px 1fr" height="500px" gap="1x">
       <Card gridColumn="1 / -1">Header</Card>
       <Card>Sidebar</Card>
       <Card>Content</Card>
     </Grid>
-  </Card>
-</Root>
+  </Story>
+</Canvas>

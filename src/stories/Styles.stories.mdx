@@ -46,6 +46,27 @@ Some properties are accessible via properties for convenience. But to access all
 <Block styles={{ fontWeight: 600 }}>Block with bold text</Block>
 ```
 
+## Color definition
+
+All color tokens are contained into the Custom Properties that ends with `-color` suffix. You can use it inside styles via short `#` syntax.
+
+```tsx
+<Block styles={{ color: '#dark' }}>Block with dark text color</Block>
+```
+
+Feel free to combine it with values or modifiers:
+
+```tsx
+<Block styles={{ border: '2bw solid #purple' }}>Block with purple border</Block>
+```
+
+Use dot nation to apply transparency:
+
+```tsx
+<Block styles={{ fill: '#dark.1' }}>Block with subtle background, opacity 10%</Block>
+<Block styles={{ fill: '#dark.04' }}>Block with subtle background, opacity 4%</Block>
+```
+
 ## Style to state bindings
 
 You can pass an object to specify what style value should be bind to specific state.

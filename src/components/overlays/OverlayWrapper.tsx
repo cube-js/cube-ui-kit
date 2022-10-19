@@ -47,7 +47,7 @@ export function OverlayWrapper({
       timeout={180}
       classNames="cube-overlay-transition"
     >
-      {children}
+      <>{children}</>
     </CSSTransition>
   );
 
