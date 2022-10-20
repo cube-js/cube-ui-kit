@@ -137,7 +137,14 @@ function Form<T extends FieldTypes>(
       form.setSubmitting(true);
 
       try {
-        await form.validateFields();
+        try {
+          await form.validateFields();
+        } catch (e) {
+          form?.setSubmitting(false);
+
+          return Promise.reject(e);
+        }
+
         await timeout();
         await onSubmit?.(form.getFormData());
       } catch (e) {

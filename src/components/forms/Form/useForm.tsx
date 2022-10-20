@@ -310,6 +310,8 @@ export class CubeFormInstance<
   }
 
   setSubmitting(isSubmitting: boolean) {
+    if (this.isSubmitting === isSubmitting) return;
+
     this.isSubmitting = isSubmitting;
     this.forceReRender();
   }
