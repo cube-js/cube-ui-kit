@@ -1,4 +1,4 @@
-import { ReactNode, useContext } from 'react';
+import { ReactNode, useContext, isValidElement } from 'react';
 
 import { Alert, CubeAlertProps } from '../../content/Alert';
 
@@ -12,10 +12,16 @@ type SubmitErrorProps = {
  * An alert that shows a form error message received from the onSubmit callback.
  */
 export function SubmitError(props: CubeAlertProps) {
-  const { submitError } = useContext(FormContext) as SubmitErrorProps;
+  let { submitError } = useContext(FormContext) as SubmitErrorProps;
 
   if (!submitError) {
     return null;
+  }
+
+  if (!isValidElement(submitError)) {
+    submitError = 'Internal error';
+
+    console.error(submitError);
   }
 
   return (
