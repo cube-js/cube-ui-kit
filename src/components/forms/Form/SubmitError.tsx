@@ -5,7 +5,7 @@ import { Alert, CubeAlertProps } from '../../content/Alert';
 import { FormContext } from './Form';
 
 type SubmitErrorProps = {
-  submitError?: ReactNode;
+  submitError?: unknown;
 };
 
 /**
@@ -18,15 +18,16 @@ export const SubmitError = memo(function SubmitError(props: CubeAlertProps) {
     return null;
   }
 
-  if (!isValidElement(submitError) && typeof submitError !== 'string') {
-    console.error(submitError);
-
+  if (
+    !isValidElement(submitError as ReactNode) &&
+    typeof submitError !== 'string'
+  ) {
     submitError = 'Internal error';
   }
 
   return (
     <Alert theme="danger" {...props}>
-      {submitError}
+      {submitError as ReactNode}
     </Alert>
   );
 });

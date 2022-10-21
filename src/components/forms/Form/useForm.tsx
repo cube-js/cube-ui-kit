@@ -34,7 +34,7 @@ export class CubeFormInstance<
   private fields: TFormData = {} as TFormData;
   public ref = {};
   public isSubmitting = false;
-  public submitError: ReactNode = null;
+  public submitError: unknown = null;
 
   public onValuesChange: (data: T) => void | Promise<void> = () => {};
   public onSubmit: (data: T) => void | Promise<void> = () => {};
