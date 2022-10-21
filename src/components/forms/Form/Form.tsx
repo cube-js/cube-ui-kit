@@ -141,7 +141,6 @@ function Form<T extends FieldTypes>(
           await form.validateFields();
         } catch (e) {
           form?.setSubmitting(false);
-          onSubmitFailed?.(e);
 
           return;
         }
@@ -158,7 +157,7 @@ function Form<T extends FieldTypes>(
         onSubmitFailed?.(e);
 
         if (e instanceof Error) {
-          console.error(e);
+          throw e;
         }
       } finally {
         form?.setSubmitting(false);

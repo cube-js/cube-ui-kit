@@ -44,6 +44,9 @@ const UnknownSubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
 
         throw new Error('Unknown error');
       }}
+      onSubmitFailed={(e) => {
+        console.log('onSubmitFailed', e);
+      }}
       onValuesChange={(v) => {
         console.log('onChange', v);
       }}
@@ -388,11 +391,13 @@ UnknownErrorMessage.play = async ({ canvasElement }) => {
 
   await userEvent.click(button);
 
-  await waitFor(() =>
-    expect(canvas.getByText('Internal error')).not.toBeInTheDocument(),
-  );
+  await waitFor(async () => {
+    const alertElement = await canvas.getByText('Internal error');
 
-  await waitFor(() =>
-    expect(canvas.getByText('Internal error')).toBeInTheDocument(),
-  );
+    await expect(alertElement).toBeInTheDocument();
+
+    await userEvent.click(button);
+
+    expect(alertElement).not.toBeInTheDocument();
+  });
 };
