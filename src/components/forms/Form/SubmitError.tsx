@@ -18,7 +18,7 @@ export const SubmitError = memo(function SubmitError(props: CubeAlertProps) {
     return null;
   }
 
-  if (!isValidElement(submitError)) {
+  if (!isValidElement(submitError) && typeof submitError !== 'string') {
     console.error(submitError);
 
     submitError = 'Internal error';
