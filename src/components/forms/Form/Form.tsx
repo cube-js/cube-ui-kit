@@ -158,7 +158,7 @@ function Form<T extends FieldTypes>(
         onSubmitFailed?.(e);
 
         if (e instanceof Error) {
-          throw e;
+          console.error(e);
         }
       } finally {
         form?.setSubmitting(false);
