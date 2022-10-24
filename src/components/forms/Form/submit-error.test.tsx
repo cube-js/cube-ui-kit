@@ -8,8 +8,9 @@ import { TextInput } from '../TextInput/TextInput';
 import { Form } from '.';
 
 describe('<SubmitError />', () => {
-  it('should trigger uncaught exception if the error is not handled properly', async () => {
-    const onSubmit = jest.fn(() => Promise.reject('Error'));
+  it('should display a submit error if onSubmit callback is failed', async () => {
+    const onSubmit = jest.fn(() => Promise.reject('Custom Error'));
+    const onSubmitFailed = jest.fn(() => {});
 
     const { getByRole, getByText } = renderWithForm(
       <>
@@ -21,7 +22,7 @@ describe('<SubmitError />', () => {
 
         <Form.SubmitError />
       </>,
-      { formProps: { onSubmit } },
+      { formProps: { onSubmit, onSubmitFailed } },
     );
 
     const submit = getByRole('button');
@@ -31,11 +32,98 @@ describe('<SubmitError />', () => {
     await userEvents.click(submit);
 
     await waitFor(() => {
+      // onSubmitFailed callback should only be called if onSubmit callback is called and failed
+      expect(onSubmitFailed).toBeCalledTimes(1);
+    });
+
+    await waitFor(() => {
       expect(onSubmit).toBeCalledTimes(1);
     });
 
     await waitFor(() => {
-      expect(getByText('Error')).toBeInTheDocument();
+      expect(getByText('Custom Error')).toBeInTheDocument();
+    });
+  });
+
+  it('should display an error placeholder if error is not handled properly', async () => {
+    const onSubmit = jest.fn(() => {
+      return Promise.reject([]); // non-valid error
+    });
+    const onSubmitFailed = jest.fn(() => {});
+
+    const { getByRole, getByText } = renderWithForm(
+      <>
+        <Form.Item name="test" label="Test">
+          <TextInput />
+        </Form.Item>
+
+        <Submit>Submit</Submit>
+
+        <Form.SubmitError />
+      </>,
+      { formProps: { onSubmit, onSubmitFailed } },
+    );
+
+    const submit = getByRole('button');
+    const input = getByRole('textbox');
+
+    await userEvents.type(input, 'test');
+    await userEvents.click(submit);
+
+    await waitFor(() => {
+      // onSubmitFailed callback should only be called if onSubmit callback is called and failed
+      expect(onSubmitFailed).toBeCalledTimes(1);
+    });
+
+    await waitFor(() => {
+      expect(onSubmit).toBeCalledTimes(1);
+    });
+
+    await waitFor(() => {
+      expect(getByText('Internal error')).toBeInTheDocument();
+    });
+  });
+
+  it('should not be displayed if validation is failed on submit', async () => {
+    const onSubmit = jest.fn(() => Promise.reject('Custom Error'));
+    const onSubmitFailed = jest.fn(() => {});
+
+    const { getByRole, formInstance } = renderWithForm(
+      <>
+        <Form.Item
+          name="test"
+          label="Test"
+          rules={[
+            {
+              validator(rule, value) {
+                return Promise.reject('invalid');
+              },
+            },
+          ]}
+        >
+          <TextInput />
+        </Form.Item>
+
+        <Submit>Submit</Submit>
+
+        <Form.SubmitError />
+      </>,
+      { formProps: { onSubmit, onSubmitFailed } },
+    );
+
+    const submit = getByRole('button');
+    const input = getByRole('textbox');
+
+    await userEvents.type(input, 'test');
+    await userEvents.click(submit);
+
+    await waitFor(() => {
+      // onSubmitFailed callback should only be called if onSubmit callback is called and failed
+      expect(onSubmitFailed).not.toBeCalled();
+    });
+
+    await waitFor(() => {
+      expect(formInstance.submitError).toBeNull();
     });
   });
 });

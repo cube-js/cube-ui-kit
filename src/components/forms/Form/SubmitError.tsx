@@ -1,18 +1,18 @@
-import { ReactNode, useContext, isValidElement, memo } from 'react';
+import { ReactNode, useContext, isValidElement } from 'react';
 
 import { Alert, CubeAlertProps } from '../../content/Alert';
 
 import { FormContext } from './Form';
 
-type SubmitErrorProps = {
+type SubmitErrorContextProps = {
   submitError?: unknown;
 };
 
 /**
  * An alert that shows a form error message received from the onSubmit callback.
  */
-export const SubmitError = memo(function SubmitError(props: CubeAlertProps) {
-  let { submitError } = useContext(FormContext) as SubmitErrorProps;
+export const SubmitError = function SubmitError(props: CubeAlertProps) {
+  let { submitError } = useContext(FormContext) as SubmitErrorContextProps;
 
   if (!submitError) {
     return null;
@@ -30,4 +30,4 @@ export const SubmitError = memo(function SubmitError(props: CubeAlertProps) {
       {submitError as ReactNode}
     </Alert>
   );
-});
+};
