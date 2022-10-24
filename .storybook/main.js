@@ -10,6 +10,9 @@ const swcConfig = {
     parser: { syntax: 'typescript', tsx: true },
     transform: { react: { runtime: 'automatic' } },
   },
+  env: {
+    targets: 'last 2 Safari major versions',
+  },
 };
 
 /** @type {import('@storybook/core-common').StorybookConfig} */
