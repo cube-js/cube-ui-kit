@@ -111,7 +111,7 @@
     "@react-types/textfield": "3.6.0",
     "@react-types/tooltip": "3.2.4",
     "clipboard-copy": "^4.0.1",
-    "clsx": "^1.1.1",
+    "clsx": "^1.2.1",
     "email-validator": "^2.0.4",
     "prismjs": "^1.25.0",
     "react-is": "^17.0.0",
