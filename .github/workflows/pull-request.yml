@@ -137,7 +137,9 @@ jobs:
         with:
           path: |
             **/node_modules/.cache
-          key: ${{ runner.os }}-storybook
+          key: ${{ runner.os }}-storybook-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-storybook
 
       - uses: actions/setup-node@v3
         with:
@@ -200,7 +202,9 @@ jobs:
         with:
           path: |
             **/node_modules/.cache
-          key: ${{ runner.os }}-storybook
+          key: ${{ runner.os }}-storybook-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-storybook
 
       - uses: actions/setup-node@v3
         with:
