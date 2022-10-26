@@ -1,5 +1,16 @@
 # @cube-dev/ui-kit
 
+## 0.14.0
+
+### Minor Changes
+
+- [#212](https://github.com/cube-js/cube-ui-kit/pull/212) [`66cece1`](https://github.com/cube-js/cube-ui-kit/commit/66cece1f6156a87f8fe16bc35a04dec54c2c2761) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Bump react-aria and react-stately to their latest versions
+
+### Patch Changes
+
+- [#230](https://github.com/cube-js/cube-ui-kit/pull/230) [`9578486`](https://github.com/cube-js/cube-ui-kit/commit/9578486f497e207bce25da4cffc84307bfb91a13) Thanks [@tenphi](https://github.com/tenphi)! - The Form component set `submitError` no more on failed validation.
+  `SubmitError` component now handles non-valid errors as `Internal error`.
+
 ## 0.13.6
 
 ### Patch Changes
