@@ -1,6 +1,11 @@
+import { Story } from '@storybook/react';
+import { userEvent, within, waitFor } from '@storybook/testing-library';
+
 import { baseProps } from '../../../stories/lists/baseProps';
 
 import { FileInput } from './FileInput';
+
+import type { CubeFileInputProps } from './FileInput';
 
 export default {
   title: 'Forms/FileInput',
@@ -12,9 +17,43 @@ export default {
   },
 };
 
-const Template = ({ icon, ...props }) => (
-  <FileInput {...props} onChange={(value) => console.log('onChange', value)} />
+const Template: Story<CubeFileInputProps> = (props) => (
+  <FileInput
+    qa="FileInput"
+    {...props}
+    onChange={(value) => console.log('onChange', value)}
+  />
 );
 
 export const Default = Template.bind({});
 Default.args = {};
+
+export const LongFilePlaceholderOverflow: typeof Template = Template.bind({});
+LongFilePlaceholderOverflow.args = {
+  inputStyles: {
+    width: '300px',
+  },
+  placeholder: 'Very long placeholder here',
+};
+
+export const LongFileNameOverflow: typeof Template = Template.bind({});
+LongFileNameOverflow.args = {
+  inputStyles: {
+    width: '300px',
+  },
+  inputProps: {
+    title: 'Test input',
+  },
+};
+
+LongFileNameOverflow.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const input = await canvas.getByTitle('Test input');
+  const file = new File(['test'], 'file-with-a-very-long-name.txt', {
+    type: 'text/plain',
+  });
+
+  await waitFor(async () => {
+    await userEvent.upload(input, file);
+  });
+};
