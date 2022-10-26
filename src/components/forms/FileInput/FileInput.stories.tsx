@@ -13,11 +13,7 @@ export default {
 };
 
 const Template = ({ icon, ...props }) => (
-  <FileInput
-    {...props}
-    inputStyles={{ width: '300px' }}
-    onChange={(query) => console.log('change', query)}
-  />
+  <FileInput {...props} onChange={(value) => console.log('onChange', value)} />
 );
 
 export const Default = Template.bind({});
