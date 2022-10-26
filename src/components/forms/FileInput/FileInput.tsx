@@ -41,6 +41,7 @@ const FileInputElement = tasty(Action, {
     radius: true,
     cursor: 'pointer',
     overflow: 'hidden',
+    whiteSpace: 'nowrap',
 
     Button: {
       radius: true,
@@ -68,6 +69,10 @@ const FileInputElement = tasty(Action, {
 
     Value: {
       color: '#dark-02',
+      whiteSpace: 'nowrap',
+      textOverflow: 'ellipsis',
+      width: 'max 100%',
+      overflow: 'hidden',
     },
 
     Input: {
@@ -77,7 +82,7 @@ const FileInputElement = tasty(Action, {
       bottom: 0,
       left: 0,
       radius: '@content-radius',
-      // opacity: 0,
+      opacity: 0.01,
       cursor: 'pointer',
       zIndex: 10,
     },
