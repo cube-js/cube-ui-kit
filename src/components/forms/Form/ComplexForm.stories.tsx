@@ -32,6 +32,44 @@ export default {
   parameters: { controls: { exclude: baseProps } },
 };
 
+const UnknownSubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
+  const [form] = Form.useForm();
+
+  return (
+    <Form
+      form={form}
+      {...args}
+      onSubmit={(v) => {
+        console.log('onSubmit:', v);
+
+        throw new Error('Unknown error');
+      }}
+      onSubmitFailed={(e) => {
+        console.log('onSubmitFailed', e);
+      }}
+      onValuesChange={(v) => {
+        console.log('onChange', v);
+      }}
+    >
+      <Field
+        name="text"
+        label="Text input"
+        rules={[
+          () => ({
+            async validator() {
+              await timeout(1000);
+            },
+          }),
+        ]}
+      >
+        <TextInput />
+      </Field>
+      <Submit>Submit</Submit>
+      <SubmitError />
+    </Form>
+  );
+};
+
 const CustomSubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
   const [form] = Form.useForm();
 
@@ -343,4 +381,23 @@ ErrorMessage.play = CustomErrorMessage.play = async ({ canvasElement }) => {
   await userEvent.click(button);
 
   await waitFor(() => expect(canvas.getByRole('alert')).toBeInTheDocument());
+};
+
+export const UnknownErrorMessage = UnknownSubmitErrorTemplate.bind({});
+
+UnknownErrorMessage.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const button = await canvas.getByRole('button');
+
+  await userEvent.click(button);
+
+  await waitFor(async () => {
+    const alertElement = await canvas.getByText('Internal error');
+
+    await expect(alertElement).toBeInTheDocument();
+
+    await userEvent.click(button);
+
+    expect(alertElement).not.toBeInTheDocument();
+  });
 };
