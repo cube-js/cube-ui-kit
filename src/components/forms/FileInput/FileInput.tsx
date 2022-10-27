@@ -14,8 +14,10 @@ import {
   BaseProps,
   BlockStyleProps,
   CONTAINER_STYLES,
+  ContainerStyleProps,
   extractStyles,
   PositionStyleProps,
+  Props,
   Styles,
   tasty,
 } from '../../../tasty';
@@ -41,6 +43,7 @@ const FileInputElement = tasty(Action, {
     radius: true,
     cursor: 'pointer',
     overflow: 'hidden',
+    whiteSpace: 'nowrap',
 
     Button: {
       radius: true,
@@ -64,10 +67,18 @@ const FileInputElement = tasty(Action, {
 
     Placeholder: {
       color: '#dark-02',
+      whiteSpace: 'nowrap',
+      textOverflow: 'ellipsis',
+      width: 'max 100%',
+      overflow: 'hidden',
     },
 
     Value: {
       color: '#dark-02',
+      whiteSpace: 'nowrap',
+      textOverflow: 'ellipsis',
+      width: 'max 100%',
+      overflow: 'hidden',
     },
 
     Input: {
@@ -77,7 +88,7 @@ const FileInputElement = tasty(Action, {
       bottom: 0,
       left: 0,
       radius: '@content-radius',
-      // opacity: 0,
+      opacity: 0.01,
       cursor: 'pointer',
       zIndex: 10,
     },
@@ -87,6 +98,7 @@ const FileInputElement = tasty(Action, {
 export interface CubeFileInputProps
   extends BaseProps,
     PositionStyleProps,
+    ContainerStyleProps,
     BlockStyleProps,
     AriaTextFieldProps,
     FormFieldProps {
@@ -104,6 +116,8 @@ export interface CubeFileInputProps
    * @default file
    */
   type?: 'file' | 'text';
+  /** Direct input props */
+  inputProps?: Props;
 }
 
 function extractContents(element, callback) {
@@ -147,6 +161,7 @@ function FileInput(props: CubeFileInputProps, ref) {
     inputStyles,
     labelSuffix,
     type = 'file',
+    inputProps,
     ...otherProps
   } = useProviderProps(props);
   const [value, setValue] = useState();
@@ -185,6 +200,11 @@ function FileInput(props: CubeFileInputProps, ref) {
     },
   }));
 
+  const fileName =
+    typeof value === 'string'
+      ? (value as string).split('\\')?.pop()
+      : undefined;
+
   const fileInput = (
     <FileInputElement
       ref={domRef}
@@ -218,10 +238,11 @@ function FileInput(props: CubeFileInputProps, ref) {
         onDrop={() => {
           setDragHover(false);
         }}
+        {...inputProps}
       />
       <div data-element="Button">Choose file</div>
-      <div data-element={!!value ? 'Value' : 'Placeholder'}>
-        {value || placeholder || 'No file selected'}
+      <div data-element={!!fileName ? 'Value' : 'Placeholder'}>
+        {fileName || placeholder || 'No file selected'}
       </div>
     </FileInputElement>
   );
