@@ -28,7 +28,7 @@ const Template: Story<CubeFileInputProps> = (props) => (
 export const Default = Template.bind({});
 Default.args = {};
 
-export const LongFilePlaceholderOverflow: typeof Template = Template.bind({});
+export const LongFilePlaceholderOverflow = Template.bind({});
 LongFilePlaceholderOverflow.args = {
   inputStyles: {
     width: '300px',
@@ -36,7 +36,7 @@ LongFilePlaceholderOverflow.args = {
   placeholder: 'Very long placeholder here',
 };
 
-export const LongFileNameOverflow: typeof Template = Template.bind({});
+export const LongFileNameOverflow = Template.bind({});
 LongFileNameOverflow.args = {
   inputStyles: {
     width: '300px',
