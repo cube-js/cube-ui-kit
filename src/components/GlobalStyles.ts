@@ -92,6 +92,12 @@ export const GlobalStyles = createGlobalStyle`
       return applyLegacyTokens
         ? Object.entries(TOKENS)
             .map(([key, value]) => {
+              // `inherit` value in custom property is reserved for inheritance behavior
+              if (value === 'inherit') {
+                // so we should rewrite it to contain the actual `inherit` value.
+                value = `var(--non-existent-${key}, inherit)`;
+              }
+
               return `--${key}: ${value};`;
             })
             .join('\n    ')
