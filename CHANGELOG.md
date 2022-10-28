@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.14.1
+
+### Patch Changes
+
+- [#239](https://github.com/cube-js/cube-ui-kit/pull/239) [`8a31e19`](https://github.com/cube-js/cube-ui-kit/commit/8a31e1970eaed1a4afd77360b8d9e2ed85934be6) Thanks [@tenphi](https://github.com/tenphi)! - Fix `inherit` token values, so they mean what is meant.
+
+- [#237](https://github.com/cube-js/cube-ui-kit/pull/237) [`c079e38`](https://github.com/cube-js/cube-ui-kit/commit/c079e38fa9cac4e89554ae7d440f175106d4286c) Thanks [@tenphi](https://github.com/tenphi)! - Add ellipsis for long filenames in FileInput and prevent wrapping.
+
+- [#233](https://github.com/cube-js/cube-ui-kit/pull/233) [`4578e97`](https://github.com/cube-js/cube-ui-kit/commit/4578e97b3ec5790b88850b5310b67a8fa983411e) Thanks [@tenphi](https://github.com/tenphi)! - [BUMP] Upgrade tiny-invariant from 1.2.0 to 1.3.1
+
 ## 0.14.0
 
 ### Minor Changes
