@@ -84,6 +84,12 @@ const fontsProvider = ({ publicUrl = '' }) => `
     src: url(${publicUrl}/fonts/JetBrainsMono-Bold.woff2) format('woff2'),
       url(${publicUrl}/fonts/JetBrainsMono-Bold.woff) format('woff');
   }
+
+  @font-face {
+    font-family: 'text-security-disc';
+    src: url(${publicUrl}/fonts/text-security-disc.woff2) format('woff2'),
+      url(${publicUrl}/fonts/text-security-disc.woff) format('woff');
+  }
 `;
 
 export const GlobalStyles = createGlobalStyle`

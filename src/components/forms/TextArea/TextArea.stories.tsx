@@ -36,4 +36,4 @@ export const WithIcon = Template.bind({});
 WithIcon.args = { icon: true };
 
 export const Password = Template.bind({});
-Password.args = { icon: true, type: 'password' };
+Password.args = { icon: true, type: 'password', defaultValue: 'hidden value' };

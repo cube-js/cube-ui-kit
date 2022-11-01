@@ -349,7 +349,16 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     ],
   );
 
-  let textField = (
+  const hasTextSecurity =
+    inputRef?.current?.value && multiLine && type === 'password';
+  const textSecurityStyles = hasTextSecurity
+    ? {
+        fontFamily: 'text-security-disc',
+        WebkitTextSecurity: 'disc',
+      }
+    : {};
+
+  const textField = (
     <InputWrapperElement
       ref={wrapperRef}
       qa={qa || 'TextInput'}
@@ -364,10 +373,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
         ref={inputRef}
         rows={multiLine ? rows : undefined}
         mods={modifiers}
-        style={{
-          WebkitTextSecurity:
-            multiLine && type === 'password' ? 'disc' : 'initial',
-        }}
+        style={textSecurityStyles}
         autoFocus={autoFocus}
         data-size={size}
         styles={inputStyles}
