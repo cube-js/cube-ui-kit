@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.14.2
+
+### Patch Changes
+
+- [#240](https://github.com/cube-js/cube-ui-kit/pull/240) [`d2369ba`](https://github.com/cube-js/cube-ui-kit/commit/d2369baae76de2abecfc865a91e2cac8d06d4d05) Thanks [@tenphi](https://github.com/tenphi)! - Add text security support in the TextArea component for Firefox
+
 ## 0.14.1
 
 ### Patch Changes
