@@ -27,7 +27,12 @@ import {
   tasty,
 } from '../../../tasty';
 import { useFocus } from '../../../utils/react/interactions';
-import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
+import {
+  mergeProps,
+  modAttrs,
+  useCombinedRefs,
+  useLayoutEffect,
+} from '../../../utils/react';
 import { FieldWrapper } from '../../forms/FieldWrapper';
 import { CubeSelectBaseProps, ListBoxPopup } from '../Select/Select';
 import {
@@ -186,6 +191,17 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
   popoverRef = useCombinedRefs(popoverRef);
   listBoxRef = useCombinedRefs(listBoxRef);
 
+  let { overlayProps, placement, updatePosition } = useOverlayPosition({
+    targetRef: triggerRef,
+    overlayRef: popoverRef,
+    scrollRef: listBoxRef,
+    placement: `${direction} end`,
+    shouldFlip: shouldFlip,
+    isOpen: state.isOpen,
+    onClose: state.close,
+    offset: overlayOffset,
+  });
+
   let {
     labelProps,
     inputProps,
@@ -203,17 +219,6 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
     state,
   );
 
-  let { overlayProps, placement } = useOverlayPosition({
-    targetRef: triggerRef,
-    overlayRef: popoverRef,
-    scrollRef: listBoxRef,
-    placement: `${direction} end`,
-    shouldFlip: shouldFlip,
-    isOpen: state.isOpen,
-    onClose: state.close,
-    offset: overlayOffset,
-  });
-
   let { isFocused, focusProps } = useFocus({ isDisabled });
   let { hoverProps, isHovered } = useHover({ isDisabled });
 
@@ -229,6 +234,12 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
     { isDisabled },
     true,
   );
+
+  useLayoutEffect(() => {
+    if (state.isOpen) {
+      updatePosition();
+    }
+  }, [updatePosition, state.isOpen, state.collection.size]);
 
   let isInvalid = validationState === 'invalid';
 
