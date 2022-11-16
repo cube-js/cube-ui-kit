@@ -14,6 +14,7 @@ import {
   CONTAINER_STYLES,
   ContainerStyleProps,
   extractStyles,
+  filterBaseProps,
   Styles,
 } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
@@ -52,7 +53,7 @@ function Menu<T extends object>(
   const { menuProps } = useMenu(completeProps, state, domRef);
   const styles = extractStyles(completeProps, CONTAINER_STYLES);
 
-  const baseProps = {
+  const defaultProps = {
     qa,
     styles,
     mods: {
@@ -66,7 +67,7 @@ function Menu<T extends object>(
 
   return (
     <StyledMenu
-      {...mergeProps(menuProps, completeProps, baseProps)}
+      {...mergeProps(defaultProps, menuProps, filterBaseProps(completeProps))}
       ref={domRef}
     >
       {header && <StyledMenuHeader>{header}</StyledMenuHeader>}
