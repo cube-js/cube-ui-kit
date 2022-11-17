@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.14.3
+
+### Patch Changes
+
+- [#245](https://github.com/cube-js/cube-ui-kit/pull/245) [`bd9d88f`](https://github.com/cube-js/cube-ui-kit/commit/bd9d88f0b52ba3e1ed09aa0208a3cb5ea14fb303) Thanks [@tenphi](https://github.com/tenphi)! - Fix incorrect custom property binding in Menu component.
+
+- [#243](https://github.com/cube-js/cube-ui-kit/pull/243) [`27b8198`](https://github.com/cube-js/cube-ui-kit/commit/27b8198db2c9a549b537a857964dca9fd590e82a) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - [CC-1616](https://cubedevinc.atlassian.net/browse/CC-1635) Recalculate position of a drodown on filter change
+
 ## 0.14.2
 
 ### Patch Changes
