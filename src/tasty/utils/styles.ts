@@ -50,6 +50,12 @@ export interface ParsedStyle {
   mods: string[];
 }
 
+export interface ParsedColor {
+  color?: string;
+  name?: string;
+  opacity?: number;
+}
+
 export type StyleStateDataList = StyleStateData[];
 
 export type StyleStateDataListMap = { [key: string]: StyleStateDataList };
@@ -148,7 +154,11 @@ const ATTR_CACHE_MODE_MAP = [
 ];
 const PREPARE_REGEXP = /calc\((\d*)\)/gi;
 
-export function createRule(prop: string, value: StyleValue, selector?: string) {
+export function createRule(
+  prop: string,
+  value: StyleValue,
+  selector?: string,
+): string {
   if (value == null) return '';
 
   if (selector) {
@@ -198,7 +208,7 @@ export function parseStyle(value: StyleValue, mode = 0): ParsedStyle {
     let calc = -1;
     let counter = 0;
     let parsedValue = '';
-    let color = '';
+    let color: string | undefined = '';
     let currentFunc = '';
     let usedFunc = '';
     let token;
@@ -400,7 +410,7 @@ export function parseStyle(value: StyleValue, mode = 0): ParsedStyle {
 /**
  * Parse color. Find it value, name and opacity.
  */
-export function parseColor(val: string, ignoreError = false) {
+export function parseColor(val: string, ignoreError = false): ParsedColor {
   val = val.trim();
 
   if (!val) return {};
