@@ -9,7 +9,7 @@ import { renderStyles } from './utils/renderStyles';
 import { pointsToZones } from './utils/responsive';
 import { Styles, StylesInterface } from './styles/types';
 import { BASE_STYLES } from './styles/list';
-import { ResponsiveStyleValue } from './utils/styles';
+import { cacheWrapper, ResponsiveStyleValue } from './utils/styles';
 import { mergeStyles } from './utils/mergeStyles';
 import { getDisplayName } from './utils/get-display-name';
 
@@ -152,6 +152,10 @@ function tasty<K extends StyleList, C = Record<string, unknown>>(
 
   let Element = styledComponents[originalAs](({ css }) => css);
 
+  const renderDefaultStyles = cacheWrapper((breakpoints) => {
+    return renderStyles(defaultStyles, pointsToZones(breakpoints));
+  });
+
   let _TastyComponent = forwardRef((allProps: AllBasePropsWithMods<K>, ref) => {
     let { as, styles, breakpoints, mods, element, qa, qaVal, ...otherProps } =
       allProps;
@@ -162,7 +166,7 @@ function tasty<K extends StyleList, C = Record<string, unknown>>(
       ...otherDefaultProps
     } = defaultProps ?? {};
 
-    let propStyles: Styles = (
+    let propStyles: Styles | null = (
       (styleProps
         ? (styleProps as StyleList).concat(BASE_STYLES)
         : BASE_STYLES) as StyleList
@@ -176,8 +180,17 @@ function tasty<K extends StyleList, C = Record<string, unknown>>(
       return map;
     }, {});
 
+    if (Object.keys(propStyles).length === 0) {
+      propStyles = null;
+    }
+
+    const useDefaultStyles = !propStyles && !styles;
+
     let allStyles: Styles = useMemo(
-      () => mergeStyles(defaultStyles, styles, propStyles),
+      () =>
+        useDefaultStyles
+          ? defaultStyles
+          : mergeStyles(defaultStyles, styles, propStyles),
       [styles, propStyles],
     );
 
@@ -187,9 +200,9 @@ function tasty<K extends StyleList, C = Record<string, unknown>>(
 
     let renderedStyles = useMemo(
       () =>
-        allStyles
-          ? renderStyles(allStyles, pointsToZones(breakpoints as number[]))
-          : '',
+        useDefaultStyles
+          ? renderDefaultStyles(breakpoints as number[])
+          : renderStyles(allStyles, pointsToZones(breakpoints as number[])),
       [allStyles, breakpoints],
     );
 
