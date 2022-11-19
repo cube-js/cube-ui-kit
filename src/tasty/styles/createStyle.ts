@@ -9,15 +9,15 @@ import { toSnakeCase } from '../utils/string';
 
 const CACHE = {};
 
-export function createStyle<T = string>(
+export function createStyle(
   styleName: string,
   cssStyle?: string,
-  converter?: (styleValue: T) => string | undefined,
+  converter?: (styleValue: string | number | true) => string | undefined,
 ) {
   const key = `${styleName}.${cssStyle ?? ''}`;
 
   if (!CACHE[key]) {
-    CACHE[key] = styleHandlerCacheWrapper((styleMap) => {
+    const styleHandler = (styleMap) => {
       let styleValue = styleMap[styleName];
 
       if (styleValue == null || styleValue === false) return;
@@ -78,9 +78,11 @@ export function createStyle<T = string>(
       const { value } = parseStyle(styleValue, 1);
 
       return { [finalCssStyle]: value };
-    });
+    };
 
-    CACHE[key].__lookupStyles = [styleName];
+    styleHandler.__lookupStyles = [styleName];
+
+    CACHE[key] = styleHandlerCacheWrapper(styleHandler);
   }
 
   return CACHE[key];

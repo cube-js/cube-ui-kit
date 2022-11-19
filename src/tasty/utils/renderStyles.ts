@@ -68,7 +68,7 @@ export function renderStyles(
       STYLE_CACHE = {};
     }
 
-    const keys = Object.keys(styles);
+    const keys = styles ? Object.keys(styles) : [];
     const selectorKeys = keys.filter((key) => isSelector(key)) as Selector[];
 
     let innerStyles = '';

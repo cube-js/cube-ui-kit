@@ -2,7 +2,7 @@ import { Styles } from '../styles/types';
 
 import { getModCombinations } from './index';
 
-export type StyleValue<T = string> = T | boolean | number | null;
+export type StyleValue<T = string> = T | boolean | number | null | undefined;
 
 export type StyleValueStateMap<T = string> = {
   [key: string]: StyleValue<T>;
@@ -18,10 +18,12 @@ export type ComputeModel = string | number;
 
 export type CSSMap = { $?: string } & { [key: string]: string | string[] };
 
+export type StyleHandlerResult = CSSMap | CSSMap[] | void;
+
 export type RawStyleHandler = (
   value: StyleValueStateMap,
   suffix?: string,
-) => CSSMap | CSSMap[] | void;
+) => StyleHandlerResult;
 
 export type StyleHandler = RawStyleHandler & {
   __lookupStyles: string[];
@@ -51,15 +53,32 @@ export interface StyleState {
   value: StyleMap;
 }
 
+export interface RenderedStyleState {
+  /** The list of mods to apply */
+  mods: string[];
+  /** The list of **not** mods to apply (e.g. `:not(:hover)`) */
+  notMods: string[];
+  /** The value to apply */
+  value: string;
+}
+
 export type ComputeUnit = string | (string | string[])[];
 
 export type StyleStateList = StyleState[];
+
+export type RenderedStyleStateList = RenderedStyleState[];
 
 export type StyleMap = { [key: string]: ResponsiveStyleValue };
 
 export type StyleStateMap = { [key: string]: StyleState };
 
+export type RenderedStyleStateMap = { [key: string]: RenderedStyleState };
+
 export type StyleStateMapList = StyleStateMap[];
+
+export type RenderedStyleStateMapList = {
+  [key: string]: RenderedStyleStateMap;
+};
 
 export type StyleStateListMap = { [key: string]: StyleStateList };
 
@@ -640,7 +659,7 @@ export function extractStyles(
  * @param styles
  * @param [selector]
  */
-export function renderStylesToSC(styles: CSSMap | CSSMap[], selector = '') {
+export function renderStylesToSC(styles: StyleHandlerResult, selector = '') {
   if (!styles) return '';
 
   if (Array.isArray(styles)) {
@@ -725,7 +744,10 @@ export function applyStates(selector: string, states, suffix = '') {
   }, '');
 }
 
-export function styleHandlerCacheWrapper(styleHandler, limit = 1000) {
+export function styleHandlerCacheWrapper(
+  styleHandler: StyleHandler,
+  limit = 1000,
+) {
   const wrappedStyleHandler = cacheWrapper((styleMap) => {
     return renderStylesToSC(styleHandler(styleMap));
   }, limit);
@@ -748,10 +770,11 @@ export function styleHandlerCacheWrapper(styleHandler, limit = 1000) {
 /**
  * Replace state values with new ones.
  * For example, if you want to replace initial values with finite CSS code.
- * @param {StyleStateList|StyleStateMapList} states
- * @param {Function} replaceFn
  */
-export function replaceStateValues(states, replaceFn) {
+export function replaceStateValues(
+  states: StyleStateList | StyleStateMapList,
+  replaceFn: (value: string) => string,
+): RenderedStyleStateList | RenderedStyleStateMapList {
   const cache = new Map();
 
   states.forEach((state) => {
@@ -762,14 +785,15 @@ export function replaceStateValues(states, replaceFn) {
     state.value = cache.get(state.value);
   });
 
-  return states;
+  return states as unknown as
+    | RenderedStyleStateList
+    | RenderedStyleStateMapList;
 }
 
 /**
- * Get all presented modes from style state list.
- * @param {StyleStateList} stateList
+ * Get all presented modes from the style state list.
  */
-export function getModesFromStyleStateList(stateList) {
+export function getModesFromStyleStateList(stateList: StyleStateList) {
   return stateList.reduce((list, state) => {
     state.mods.forEach((mod) => {
       if (!list.includes(mod)) {
@@ -778,15 +802,15 @@ export function getModesFromStyleStateList(stateList) {
     });
 
     return list;
-  }, []);
+  }, [] as string[]);
 }
 
 /**
- * Get all presented modes from style state list map.
- * @param {StyleStateMapList} stateListMap
- * @return {string[]}
+ * Get all presented modes from the style state map list.
  */
-export function getModesFromStyleStateListMap(stateListMap) {
+export function getModesFromStyleStateListMap(
+  stateListMap: StyleStateMapList,
+): string[] {
   return Object.keys(stateListMap).reduce((list: string[], style) => {
     const stateList = stateListMap[style];
 
@@ -801,14 +825,12 @@ export function getModesFromStyleStateListMap(stateListMap) {
 }
 
 /**
- * Convert style map to the normalized style map state list.
- * @param styleMap
- * @param filterKeys
+ * Convert the style map to the normalized style state list.
  */
 export function styleMapToStyleMapStateList(
   styleMap: StyleMap,
   filterKeys?: string[],
-) {
+): StyleStateList {
   const keys = filterKeys || Object.keys(styleMap);
 
   if (!keys.length) return [];
@@ -826,10 +848,10 @@ export function styleMapToStyleMapStateList(
 
   const allModsArr: string[] = Array.from(allModsSet);
 
-  const styleStateMapList: StyleStateList = [];
+  const styleStateList: StyleStateList = [];
 
   getModCombinations(allModsArr, true).forEach((combination) => {
-    styleStateMapList.push({
+    styleStateList.push({
       mods: combination,
       notMods: allModsArr.filter((mod) => !combination.includes(mod)),
       value: keys.reduce((map, key) => {
@@ -842,7 +864,7 @@ export function styleMapToStyleMapStateList(
     });
   });
 
-  return styleStateMapList;
+  return styleStateList;
 }
 
 const STATES_REGEXP =
@@ -897,20 +919,22 @@ function convertTokensToComputeUnits(tokens: any[]) {
 /**
  * Parse state notation and return tokens, modifiers and compute model.
  */
-function parseStateNotationInner(notation: string, value: any) {
+function parseStateNotationInner(notation: string, value: any): StyleStateData {
   const tokens = notation.replace(/,/g, '|').match(STATES_REGEXP);
 
   if (!tokens || !tokens.length) {
     return {
-      model: null,
+      model: undefined,
       mods: [],
-      tokens,
+      notMods: [],
+      tokens: [],
       value,
     };
   } else if (tokens.length === 1) {
     return {
       model: tokens[0],
       mods: tokens.slice(0),
+      notMods: [],
       tokens,
       value,
     };
@@ -953,6 +977,7 @@ function parseStateNotationInner(notation: string, value: any) {
   return {
     tokens,
     mods,
+    notMods: [],
     model: convertTokensToComputeUnits(operations[0]),
     value,
   };
@@ -961,19 +986,18 @@ function parseStateNotationInner(notation: string, value: any) {
 export const parseStateNotation = cacheWrapper(parseStateNotationInner);
 
 /**
- *
- * @param {StyleStateMap|string|number|boolean|null|undefined} styleStateMap
- * @return {{ states: StyleStateDataList, mods: string[] }}
+ * Parse state notation and return tokens, modifiers and compute model.
  */
 export function styleStateMapToStyleStateDataList(
   styleStateMap: StyleStateMap | ResponsiveStyleValue,
-) {
+): { states: StyleStateDataList; mods: string[] } {
   if (typeof styleStateMap !== 'object' || !styleStateMap) {
     return {
       states: [
         {
-          model: null,
+          model: undefined,
           mods: [],
+          notMods: [],
           value: styleStateMap,
         },
       ],
@@ -1029,7 +1053,7 @@ export const COMPUTE_FUNC_MAP = {
 };
 
 /**
- * Compute a result based on model and incoming map.
+ * Compute a result based on a model and incoming map.
  */
 export function computeState(
   computeModel: ComputeModel,
@@ -1082,11 +1106,16 @@ export function computeState(
   return !!func(a, b);
 }
 
-export function cacheWrapper(handler: Function, limit = 1000) {
-  let cache = {};
+/**
+ * Create a function that caches the result up to the limit.
+ */
+export function cacheWrapper<
+  T extends (firstArg: any, secondArg?: string) => any,
+>(handler: T, limit = 1000): T {
+  let cache: { string?: ReturnType<T> } = {};
   let count = 0;
 
-  return (firstArg: any, secondArg?: string) => {
+  return ((firstArg: any, secondArg?: string) => {
     const key =
       typeof firstArg === 'string' && secondArg == null
         ? firstArg
@@ -1105,5 +1134,5 @@ export function cacheWrapper(handler: Function, limit = 1000) {
     }
 
     return cache[key];
-  };
+  }) as T;
 }

@@ -1,14 +1,18 @@
 /**
  * Generate data DOM attributes from modifier map.
- * @param {Object<string,boolean>} map
- * @return {Object<string,string>}
  */
-export function modAttrs(map) {
-  return Object.keys(map).reduce((attrs, key) => {
-    if (map[key]) {
-      attrs[`data-is-${key}`] = '';
-    }
+import { AllBaseProps } from '../types';
 
-    return attrs;
-  }, {});
+export function modAttrs(
+  map: AllBaseProps['mods'],
+): Record<string, string> | null {
+  return map
+    ? Object.keys(map).reduce((attrs, key) => {
+        if (map[key]) {
+          attrs[`data-is-${key}`] = '';
+        }
+
+        return attrs;
+      }, {})
+    : null;
 }
