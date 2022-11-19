@@ -161,9 +161,9 @@ export function renderStyles(
       }
     });
 
-    STYLE_CACHE[
-      cacheKey
-    ] = `outline: none;\n&[hidden]{display: none !important;}${rawStyles}${
+    STYLE_CACHE[cacheKey] = `&${
+      suffix || ''
+    }{outline: none;\n&[hidden]{display: none !important;}}${rawStyles}${
       responsive &&
       responsive.length &&
       responsiveStyles.filter((s) => s).length
