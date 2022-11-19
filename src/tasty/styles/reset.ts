@@ -1,4 +1,4 @@
-import { parseStyle } from '../utils/styles';
+import { parseStyle, CSSMap } from '../utils/styles';
 
 const RESET_MAP = {
   input: [
@@ -87,7 +87,7 @@ export function resetStyle({ reset }) {
     }
 
     return sum;
-  }, []);
+  }, [] as CSSMap[]);
 }
 
 resetStyle.__lookupStyles = ['reset'];

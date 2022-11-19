@@ -16,7 +16,9 @@ export type ResponsiveStyleValue<T = string> =
 
 export type ComputeModel = string | number;
 
-export type CSSMap = { $?: string } & { [key: string]: string | string[] };
+export type CSSMap = { $?: string | string[] } & {
+  [key: string]: string | string[];
+};
 
 export type StyleHandlerResult = CSSMap | CSSMap[] | void;
 
@@ -37,6 +39,15 @@ export interface StyleStateData {
   mods: string[];
   /** The list of **not** mods to apply (e.g. `:not(:hover)`) */
   notMods: string[];
+}
+
+export interface ParsedStyle {
+  value: ResponsiveStyleValue;
+  values: string[];
+  all: string[];
+  color?: string;
+  /** The list of mods to apply */
+  mods: string[];
 }
 
 export type StyleStateDataList = StyleStateData[];
@@ -137,7 +148,7 @@ const ATTR_CACHE_MODE_MAP = [
 ];
 const PREPARE_REGEXP = /calc\((\d*)\)/gi;
 
-export function createRule(prop, value, selector) {
+export function createRule(prop: string, value: StyleValue, selector?: string) {
   if (value == null) return '';
 
   if (selector) {
@@ -147,7 +158,7 @@ export function createRule(prop, value, selector) {
   return `${prop}: ${value};\n`;
 }
 
-function getModSelector(modName) {
+function getModSelector(modName: string): string {
   return modName.match(/^[a-z]/) ? `[data-is-${modName}]` : modName;
 }
 
@@ -157,7 +168,7 @@ function getModSelector(modName) {
  * @param {Number} mode
  * @returns {Object<String,String|Array>}
  */
-export function parseStyle(value, mode = 0) {
+export function parseStyle(value: StyleValue, mode = 0): ParsedStyle {
   if (typeof value === 'number') {
     value = String(value);
   }
@@ -387,12 +398,9 @@ export function parseStyle(value, mode = 0) {
 }
 
 /**
- *
- * @param {String} val
- * @param {Boolean} ignoreError
- * @return {{color}|{color: string, name: *, opacity: *}|{}|{color: string, name: string, opacity: (number|number)}|{color: string, name: *}}
+ * Parse color. Find it value, name and opacity.
  */
-export function parseColor(val, ignoreError = false) {
+export function parseColor(val: string, ignoreError = false) {
   val = val.trim();
 
   if (!val) return {};
