@@ -74,10 +74,8 @@ const TooltipTipElement = tasty({
       '': 'translate((-.375x - 1px), 0)',
       '[data-placement="bottom"]':
         'translate((-.375x - 1px), 0) rotate(180deg)',
-      '[data-placement="left"]':
-        'translate(-.375x, (-.375x - 1px)) rotate(270deg)',
-      '[data-placement="right"]':
-        'translate(.375x, (-.375x - 1px)) rotate(90deg)',
+      '[data-placement="left"]': 'translate(-.375x, -.25x) rotate(270deg)',
+      '[data-placement="right"]': 'translate(.375x, -.25x) rotate(90deg)',
     },
   },
 });
@@ -157,7 +155,7 @@ function Tooltip(
         material: isMaterial,
       }}
       data-min-offset={minOffset}
-      data-min-slale={minScale}
+      data-min-scale={minScale}
       data-placement={placement}
     >
       {props.children}

@@ -21,6 +21,7 @@ import {
   Space,
   AlertDialog,
   DialogContainer,
+  TooltipProvider,
 } from '../../../index';
 import { baseProps } from '../../../stories/lists/baseProps';
 
@@ -74,25 +75,23 @@ export const Default = ({ ...props }) => {
   );
 
   return (
-    <Root>
-      <Space
-        gap="10x"
-        placeContent="start start"
-        placeItems="start"
-        height="400px"
-      >
-        {menu}
+    <Space
+      gap="10x"
+      placeContent="start start"
+      placeItems="start"
+      height="400px"
+    >
+      {menu}
 
-        <MenuTrigger>
-          <Button
-            size="small"
-            icon={<MoreOutlined />}
-            aria-label="Open Context Menu"
-          />
-          {menu}
-        </MenuTrigger>
-      </Space>
-    </Root>
+      <MenuTrigger>
+        <Button
+          size="small"
+          icon={<MoreOutlined />}
+          aria-label="Open Context Menu"
+        />
+        {menu}
+      </MenuTrigger>
+    </Space>
   );
 };
 
@@ -144,21 +143,28 @@ InsideModal.play = async ({ canvasElement }) => {
 
 export const Sections = (props) => {
   return (
-    <Root>
-      <div style={{ padding: '20px', width: '340px' }}>
-        <Menu id="menu-search" {...props}>
-          <Menu.Section title="Line Items">
-            <Menu.Item key="created">Created At</Menu.Item>
-            <Menu.Item key="name">Name</Menu.Item>
-            <Menu.Item key="description">Descriptions</Menu.Item>
-          </Menu.Section>
-          <Menu.Section title="Orders">
-            <Menu.Item key="status">Status</Menu.Item>
-            <Menu.Item key="completed">Completed At</Menu.Item>
-          </Menu.Section>
-        </Menu>
-      </div>
-    </Root>
+    <div style={{ padding: '20px', width: '340px' }}>
+      <Menu id="menu-search" {...props}>
+        <Menu.Section title="Line Items">
+          <Menu.Item
+            key="created"
+            wrapper={(item) => (
+              <TooltipProvider title="Color description" placement="right">
+                {item}
+              </TooltipProvider>
+            )}
+          >
+            Created At
+          </Menu.Item>
+          <Menu.Item key="name">Name</Menu.Item>
+          <Menu.Item key="description">Descriptions</Menu.Item>
+        </Menu.Section>
+        <Menu.Section title="Orders">
+          <Menu.Item key="status">Status</Menu.Item>
+          <Menu.Item key="completed">Completed At</Menu.Item>
+        </Menu.Section>
+      </Menu>
+    </div>
   );
 };
 
@@ -180,48 +186,46 @@ export const GitActions = (props) => {
   );
 
   return (
-    <Root>
-      <Space gap="10x" placeContent="start start" alignItems="start">
-        <Menu id="menu" {...props} header="Git Actions">
-          <Menu.Item key="red">Merge to master</Menu.Item>
-          <Menu.Item key="orange" mods={{ hovered: true }}>
-            Merge to master (hovered)
-          </Menu.Item>
-          <Menu.Item key="yellow" postfix="Suff" mods={{ disabled: true }}>
-            Merge to master (disabled)
-          </Menu.Item>
-          <Menu.Item
-            key="green"
-            postfix={
-              <Flex gap="0.5x">
-                {bulbIcon}
-                {stuffText}
-              </Flex>
-            }
-          >
-            Merge to master
-          </Menu.Item>
-          <Menu.Item
-            key="blue"
-            mods={{ pressed: true }}
-            postfix={
-              <Flex gap="0.5x">
-                {successIcon}
-                {stuffText}
-              </Flex>
-            }
-          >
-            Merge to master (pressed)
-          </Menu.Item>
-          <Menu.Item key="purple" postfix={successIcon}>
-            Merge to master
-          </Menu.Item>
-          <Menu.Item key="asdasd" postfix={<Flex gap="0.5x">{bulbIcon}</Flex>}>
-            Merge to master
-          </Menu.Item>
-        </Menu>
-      </Space>
-    </Root>
+    <Space gap="10x" placeContent="start start" alignItems="start">
+      <Menu id="menu" {...props} header="Git Actions">
+        <Menu.Item key="red">Merge to master</Menu.Item>
+        <Menu.Item key="orange" mods={{ hovered: true }}>
+          Merge to master (hovered)
+        </Menu.Item>
+        <Menu.Item key="yellow" postfix="Suff" mods={{ disabled: true }}>
+          Merge to master (disabled)
+        </Menu.Item>
+        <Menu.Item
+          key="green"
+          postfix={
+            <Flex gap="0.5x">
+              {bulbIcon}
+              {stuffText}
+            </Flex>
+          }
+        >
+          Merge to master
+        </Menu.Item>
+        <Menu.Item
+          key="blue"
+          mods={{ pressed: true }}
+          postfix={
+            <Flex gap="0.5x">
+              {successIcon}
+              {stuffText}
+            </Flex>
+          }
+        >
+          Merge to master (pressed)
+        </Menu.Item>
+        <Menu.Item key="purple" postfix={successIcon}>
+          Merge to master
+        </Menu.Item>
+        <Menu.Item key="asdasd" postfix={<Flex gap="0.5x">{bulbIcon}</Flex>}>
+          Merge to master
+        </Menu.Item>
+      </Menu>
+    </Space>
   );
 };
 
@@ -291,24 +295,22 @@ export const MenuSelectableRadio = (props) => {
 
 export const PaymentDetails = (props) => {
   return (
-    <Root>
-      <div style={{ padding: '20px', width: '340px' }}>
-        <Menu id="menu" {...props} header="Payment Details">
-          <Menu.Item key="red" postfix="March, 2022">
-            Invoice #16C7B3AE-000113-000113
-          </Menu.Item>
-          <Menu.Item key="orange" postfix="Jan, 2022">
-            Invoice #16C7B3AE
-          </Menu.Item>
-          <Menu.Item key="purple" postfix="Feb, 2022">
-            Invoice #16C7B3AE manual
-          </Menu.Item>
-          <Menu.Item key="yellow" postfix="July, 2022">
-            #16C7B3AE
-          </Menu.Item>
-        </Menu>
-      </div>
-    </Root>
+    <div style={{ padding: '20px', width: '340px' }}>
+      <Menu id="menu" {...props} header="Payment Details">
+        <Menu.Item key="red" postfix="March, 2022">
+          Invoice #16C7B3AE-000113-000113
+        </Menu.Item>
+        <Menu.Item key="orange" postfix="Jan, 2022">
+          Invoice #16C7B3AE
+        </Menu.Item>
+        <Menu.Item key="purple" postfix="Feb, 2022">
+          Invoice #16C7B3AE manual
+        </Menu.Item>
+        <Menu.Item key="yellow" postfix="July, 2022">
+          #16C7B3AE
+        </Menu.Item>
+      </Menu>
+    </div>
   );
 };
 
@@ -319,35 +321,83 @@ export const ItemCustomIcons = (props) => {
   };
 
   return (
-    <Root>
-      <div style={{ padding: '20px', width: '340px' }}>
-        <Menu
-          id="menu"
-          {...props}
-          selectionIcon="checkbox"
-          selectionMode="single"
-          selectedKeys={selectedKeys}
-          header="Custom Icons"
-          onSelectionChange={onSelectionChange}
-        >
-          <Menu.Item key="red" icon={<ReloadOutlined />} postfix="March, 2022">
-            #16C7B3AE-000113-000113
-          </Menu.Item>
-          <Menu.Item key="orange" icon={<BookOutlined />} postfix="Jan, 2022">
-            #16C7B3AE
-          </Menu.Item>
-          <Menu.Item key="purple" icon={<PlusOutlined />} postfix="Feb, 2022">
-            #16C7B3AE
-          </Menu.Item>
-          <Menu.Item
-            key="yellow"
-            icon={<ReloadOutlined />}
-            postfix="July, 2022"
-          >
-            #16C7B3AE
-          </Menu.Item>
-        </Menu>
-      </div>
-    </Root>
+    <div style={{ padding: '20px', width: '340px' }}>
+      <Menu
+        id="menu"
+        {...props}
+        selectionIcon="checkbox"
+        selectionMode="single"
+        selectedKeys={selectedKeys}
+        header="Custom Icons"
+        onSelectionChange={onSelectionChange}
+      >
+        <Menu.Item key="red" icon={<ReloadOutlined />} postfix="March, 2022">
+          #16C7B3AE-000113-000113
+        </Menu.Item>
+        <Menu.Item key="orange" icon={<BookOutlined />} postfix="Jan, 2022">
+          #16C7B3AE
+        </Menu.Item>
+        <Menu.Item key="purple" icon={<PlusOutlined />} postfix="Feb, 2022">
+          #16C7B3AE
+        </Menu.Item>
+        <Menu.Item key="yellow" icon={<ReloadOutlined />} postfix="July, 2022">
+          #16C7B3AE
+        </Menu.Item>
+      </Menu>
+    </div>
   );
+};
+
+export const ItemWithTooltip = (props) => {
+  const [selectedKeys, setSelectedKeys] = useState(['1']);
+  const onSelectionChange = (key) => {
+    setSelectedKeys(key);
+  };
+
+  return (
+    <div style={{ padding: '20px', width: '340px' }}>
+      <Menu
+        id="menu"
+        {...props}
+        selectionIcon="checkbox"
+        selectionMode="single"
+        selectedKeys={selectedKeys}
+        header="Custom Icons"
+        onSelectionChange={onSelectionChange}
+      >
+        <Menu.Item
+          key="red"
+          wrapper={(item) => (
+            <TooltipProvider title="Color description" placement="right">
+              {item}
+            </TooltipProvider>
+          )}
+          icon={<ReloadOutlined />}
+        >
+          #16C7B3AE-000113-000113
+        </Menu.Item>
+        <Menu.Item
+          key="orange"
+          wrapper={(item) => (
+            <TooltipProvider title="Color description" placement="right">
+              {item}
+            </TooltipProvider>
+          )}
+          icon={<BookOutlined />}
+        >
+          #16C7B3AE
+        </Menu.Item>
+      </Menu>
+    </div>
+  );
+};
+
+ItemWithTooltip.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const button = (await canvas.getAllByRole('button'))[0];
+  // this is a weird hack that makes tooltip working properly on a page load
+  await userEvent.unhover(button);
+  await userEvent.hover(button);
+
+  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeInTheDocument());
 };
