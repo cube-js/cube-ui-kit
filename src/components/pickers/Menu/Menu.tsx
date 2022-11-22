@@ -94,8 +94,8 @@ function Menu<T extends object>(
           />
         );
 
-        if (item.wrapper) {
-          menuItem = item.wrapper(menuItem);
+        if (item.props.wrapper) {
+          menuItem = item.props.wrapper(menuItem);
         }
 
         return menuItem;

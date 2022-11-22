@@ -37,8 +37,8 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
               />
             );
 
-            if (node.wrapper) {
-              item = node.wrapper(item);
+            if (node.props.wrapper) {
+              item = node.props.wrapper(item);
             }
 
             return item;
