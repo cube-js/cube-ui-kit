@@ -66,14 +66,17 @@ exports[`tasty() API should be able to override styles 1`] = `
 exports[`tasty() API should create element styles 1`] = `
 .c0 {
   outline: none;
-  outline: none;
 }
 
 .c0[hidden] {
   display: none !important;
 }
 
-.c0[hidden] {
+.c0 [data-element="Element"] {
+  outline: none;
+}
+
+.c0 [data-element="Element"][hidden] {
   display: none !important;
 }
 
@@ -150,14 +153,17 @@ exports[`tasty() API should define style props 1`] = `
 exports[`tasty() API should merge element styles 1`] = `
 .c0 {
   outline: none;
-  outline: none;
 }
 
 .c0[hidden] {
   display: none !important;
 }
 
-.c0[hidden] {
+.c0 [data-element="Element"] {
+  outline: none;
+}
+
+.c0 [data-element="Element"][hidden] {
   display: none !important;
 }
 
