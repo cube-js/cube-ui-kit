@@ -27,36 +27,36 @@ const BODY_STYLES = {
 
 const fontsProvider = ({ publicUrl = '' }) => `
 @font-face {
-    font-family: 'OpenSans';
+    font-family: 'Quicksand';
     font-style: normal;
     font-weight: 400;
     font-display: swap;
-    src: url(${publicUrl}/fonts/OpenSans-Regular.woff2) format('woff2'),
-      url(${publicUrl}/fonts/OpenSans-Regular.woff) format('woff');
+    src: url(${publicUrl}/fonts/Quicksand-Regular.woff2) format('woff2'),
+      url(${publicUrl}/fonts/Quicksand-Regular.woff) format('woff');
   }
   @font-face {
-    font-family: 'OpenSans';
+    font-family: 'Quicksand';
     font-style: normal;
     font-weight: 500;
     font-display: swap;
-    src: url(${publicUrl}/fonts/OpenSans-Medium.woff2) format('woff2'),
-      url(${publicUrl}/fonts/OpenSans-Medium.woff) format('woff');
+    src: url(${publicUrl}/fonts/Quicksand-Medium.woff2) format('woff2'),
+      url(${publicUrl}/fonts/Quicksand-Medium.woff) format('woff');
   }
   @font-face {
-    font-family: 'OpenSans';
+    font-family: 'Quicksand';
     font-style: normal;
     font-weight: 600;
     font-display: swap;
-    src: url(${publicUrl}/fonts/OpenSans-SemiBold.woff2) format('woff2'),
-      url(${publicUrl}/fonts/OpenSans-SemiBold.woff) format('woff');
+    src: url(${publicUrl}/fonts/Quicksand-SemiBold.woff2) format('woff2'),
+      url(${publicUrl}/fonts/Quicksand-SemiBold.woff) format('woff');
   }
   @font-face {
-    font-family: 'OpenSans';
+    font-family: 'Quicksand';
     font-style: normal;
     font-weight: 700;
     font-display: swap;
-    src: url(${publicUrl}/fonts/OpenSans-Bold.woff2) format('woff2'),
-      url(${publicUrl}/fonts/OpenSans-Bold.woff) format('woff');
+    src: url(${publicUrl}/fonts/Quicksand-Bold.woff2) format('woff2'),
+      url(${publicUrl}/fonts/Quicksand-Bold.woff) format('woff');
   }
 
   @font-face {
@@ -128,7 +128,7 @@ export const GlobalStyles = createGlobalStyle`
   html {
     --font: ${({ font }: GlobalStylesProps) =>
       font ||
-      '"OpenSans"'}, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+      'Quicksand'}, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
     --monospace-font: ${({ monospaceFont }) =>
       `${
         monospaceFont ? `${monospaceFont}, ` : ''
