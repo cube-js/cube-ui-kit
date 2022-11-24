@@ -26,6 +26,39 @@ const BODY_STYLES = {
 };
 
 const fontsProvider = ({ publicUrl = '' }) => `
+@font-face {
+    font-family: 'OpenSans';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(${publicUrl}/fonts/OpenSans-Regular.woff2) format('woff2'),
+      url(${publicUrl}/fonts/OpenSans-Regular.woff) format('woff');
+  }
+  @font-face {
+    font-family: 'OpenSans';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url(${publicUrl}/fonts/OpenSans-Medium.woff2) format('woff2'),
+      url(${publicUrl}/fonts/OpenSans-Medium.woff) format('woff');
+  }
+  @font-face {
+    font-family: 'OpenSans';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url(${publicUrl}/fonts/OpenSans-SemiBold.woff2) format('woff2'),
+      url(${publicUrl}/fonts/OpenSans-SemiBold.woff) format('woff');
+  }
+  @font-face {
+    font-family: 'OpenSans';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url(${publicUrl}/fonts/OpenSans-Bold.woff2) format('woff2'),
+      url(${publicUrl}/fonts/OpenSans-Bold.woff) format('woff');
+  }
+
   @font-face {
     font-family: 'Inter';
     font-style: normal;
@@ -57,32 +90,6 @@ const fontsProvider = ({ publicUrl = '' }) => `
     font-display: swap;
     src: url(${publicUrl}/fonts/Inter-Bold.woff2) format('woff2'),
       url(${publicUrl}/fonts/Inter-Bold.woff) format('woff');
-  }
-  @font-face {
-    font-family: 'Source Code Pro';
-    src: url('${publicUrl}/fonts/SourceCodePro-Regular.woff2') format('woff2'),
-      url('${publicUrl}/fonts/SourceCodePro-Regular.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-  }
-
-  @font-face {
-    font-family: 'JetBrains Mono';
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: url(${publicUrl}/fonts/JetBrainsMono-Regular.woff2) format('woff2'),
-      url(${publicUrl}/fonts/JetBrainsMono-Regular.woff) format('woff');
-  }
-
-  @font-face {
-    font-family: 'JetBrains Mono';
-    font-style: normal;
-    font-weight: 700;
-    font-display: swap;
-    src: url(${publicUrl}/fonts/JetBrainsMono-Bold.woff2) format('woff2'),
-      url(${publicUrl}/fonts/JetBrainsMono-Bold.woff) format('woff');
   }
 
   @font-face {
@@ -121,7 +128,7 @@ export const GlobalStyles = createGlobalStyle`
   html {
     --font: ${({ font }: GlobalStylesProps) =>
       font ||
-      'Inter'}, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+      '"OpenSans"'}, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
     --monospace-font: ${({ monospaceFont }) =>
       `${
         monospaceFont ? `${monospaceFont}, ` : ''

@@ -122,8 +122,7 @@ const DEFAULT_STYLES: Styles = {
   reset: 'button',
   position: 'relative',
   margin: 0,
-  fontFamily: 'var(--font)',
-  fontWeight: 'inherit',
+  preset: 'inherit',
   border: 0,
   padding: 0,
   outline: {
