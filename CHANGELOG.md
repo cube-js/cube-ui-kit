@@ -1,5 +1,14 @@
 # @cube-dev/ui-kit
 
+## 0.14.4
+
+### Patch Changes
+
+- [#249](https://github.com/cube-js/cube-ui-kit/pull/249) [`da3bfe8`](https://github.com/cube-js/cube-ui-kit/commit/da3bfe8a07761efadef5ff9c2cfe8185c302eccb) Thanks [@tenphi](https://github.com/tenphi)! - Fixes wrapper prop support on Menu Item.
+  Fixes styles of Tooltip's Tip to better match the geometry of a tooltip.
+
+- [#247](https://github.com/cube-js/cube-ui-kit/pull/247) [`c001216`](https://github.com/cube-js/cube-ui-kit/commit/c001216dd674b3a3e3cc66961a26c34667b1e903) Thanks [@tenphi](https://github.com/tenphi)! - Improve performance of style caching for raw tasty components.
+
 ## 0.14.3
 
 ### Patch Changes
