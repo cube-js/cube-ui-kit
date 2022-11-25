@@ -210,7 +210,7 @@ export const GlobalStyles = createGlobalStyle`
   pre[class*="language-"] {
     color: var(--dark-color);
     background: none;
-    font-family: "Source Code Pro", Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
     text-align: left;
     font-weight: normal;
     font-size: 14px;
