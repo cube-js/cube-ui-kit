@@ -22,41 +22,41 @@ const BODY_STYLES = {
   'font-size': '14px',
   'line-height': '20px',
   'letter-spacing': '0.02em',
-  'font-weight': '400',
+  'font-weight': '500',
 };
 
 const fontsProvider = ({ publicUrl = '' }) => `
 @font-face {
-    font-family: 'Quicksand';
+    font-family: 'Figtree';
     font-style: normal;
     font-weight: 400;
     font-display: swap;
-    src: url(${publicUrl}/fonts/Quicksand-Regular.woff2) format('woff2'),
-      url(${publicUrl}/fonts/Quicksand-Regular.woff) format('woff');
+    src: url(${publicUrl}/fonts/Figtree-Regular.woff2) format('woff2'),
+      url(${publicUrl}/fonts/Figtree-Regular.woff) format('woff');
   }
   @font-face {
-    font-family: 'Quicksand';
+    font-family: 'Figtree';
     font-style: normal;
     font-weight: 500;
     font-display: swap;
-    src: url(${publicUrl}/fonts/Quicksand-Medium.woff2) format('woff2'),
-      url(${publicUrl}/fonts/Quicksand-Medium.woff) format('woff');
+    src: url(${publicUrl}/fonts/Figtree-Medium.woff2) format('woff2'),
+      url(${publicUrl}/fonts/Figtree-Medium.woff) format('woff');
   }
   @font-face {
-    font-family: 'Quicksand';
+    font-family: 'Figtree';
     font-style: normal;
     font-weight: 600;
     font-display: swap;
-    src: url(${publicUrl}/fonts/Quicksand-SemiBold.woff2) format('woff2'),
-      url(${publicUrl}/fonts/Quicksand-SemiBold.woff) format('woff');
+    src: url(${publicUrl}/fonts/Figtree-SemiBold.woff2) format('woff2'),
+      url(${publicUrl}/fonts/Figtree-SemiBold.woff) format('woff');
   }
   @font-face {
-    font-family: 'Quicksand';
+    font-family: 'Figtree';
     font-style: normal;
     font-weight: 700;
     font-display: swap;
-    src: url(${publicUrl}/fonts/Quicksand-Bold.woff2) format('woff2'),
-      url(${publicUrl}/fonts/Quicksand-Bold.woff) format('woff');
+    src: url(${publicUrl}/fonts/Figtree-Bold.woff2) format('woff2'),
+      url(${publicUrl}/fonts/Figtree-Bold.woff) format('woff');
   }
 
   @font-face {
@@ -128,7 +128,7 @@ export const GlobalStyles = createGlobalStyle`
   html {
     --font: ${({ font }: GlobalStylesProps) =>
       font ||
-      'Quicksand'}, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+      'Figtree'}, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
     --monospace-font: ${({ monospaceFont }) =>
       `${
         monospaceFont ? `${monospaceFont}, ` : ''
