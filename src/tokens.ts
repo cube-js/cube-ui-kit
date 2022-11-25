@@ -181,7 +181,7 @@ const TOKENS = {
   'p3-letter-spacing': '0.02em',
   'p3-font-weight': '400',
   // p4
-  'p4-font-size': '12px',
+  'p4-font-size': '13px',
   'p4-line-height': '20px',
   'p4-letter-spacing': '0.025em',
   'p4-font-weight': '400',
@@ -192,13 +192,13 @@ const TOKENS = {
   'c1-font-weight': '500',
   'c1-text-transform': 'uppercase',
   // c2
-  'c2-font-size': '12px',
+  'c2-font-size': '13px',
   'c2-line-height': '18px',
   'c2-letter-spacing': '0.02em',
   'c2-font-weight': '500',
   'c2-text-transform': 'uppercase',
   // tag
-  'tag-font-size': '12px',
+  'tag-font-size': '13px',
   'tag-line-height': '12px',
   'tag-letter-spacing': '0.02em',
   'tag-font-weight': '500',
