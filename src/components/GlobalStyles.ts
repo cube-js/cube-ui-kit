@@ -19,10 +19,12 @@ const BODY_STYLES = {
   margin: '0',
   padding: '0',
   color: 'rgba(20, 20, 70, .75)',
-  'font-size': '14px',
+  'font-size': '15px',
   'line-height': '20px',
   'letter-spacing': '0.02em',
   'font-weight': '500',
+  'font-variant': 'initial',
+  'font-feature-settings': 'initial',
 };
 
 const fontsProvider = ({ publicUrl = '' }) => `
