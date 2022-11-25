@@ -22,7 +22,7 @@ const BODY_STYLES = {
   'font-size': '15px',
   'line-height': '20px',
   'letter-spacing': '0.02em',
-  'font-weight': '500',
+  'font-weight': '400',
   'font-variant': 'initial',
   'font-feature-settings': 'initial',
 };
