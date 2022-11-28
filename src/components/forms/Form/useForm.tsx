@@ -104,12 +104,12 @@ export class CubeFormInstance<
     });
 
     if (flag && !skipRender) {
-      this.forceReRender();
-
       if (touched && !inputOnly) {
         this.onValuesChange && this.onValuesChange(this.getFormData());
         this.submitError = null;
       }
+
+      this.forceReRender();
     }
   };
 
@@ -167,13 +167,15 @@ export class CubeFormInstance<
 
     if (!skipRender) {
       field.errors = [];
-
-      this.forceReRender();
     }
 
     if (touched && !inputOnly) {
       this.onValuesChange && this.onValuesChange(this.getFormData());
       this.submitError = null;
+    }
+
+    if (!skipRender) {
+      this.forceReRender();
     }
   }
 
