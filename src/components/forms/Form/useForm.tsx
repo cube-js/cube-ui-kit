@@ -108,6 +108,7 @@ export class CubeFormInstance<
 
       if (touched && !inputOnly) {
         this.onValuesChange && this.onValuesChange(this.getFormData());
+        this.submitError = null;
       }
     }
   };
@@ -172,6 +173,7 @@ export class CubeFormInstance<
 
     if (touched && !inputOnly) {
       this.onValuesChange && this.onValuesChange(this.getFormData());
+      this.submitError = null;
     }
   }
 
