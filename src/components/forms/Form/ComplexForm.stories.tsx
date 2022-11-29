@@ -370,9 +370,9 @@ export const ComplexErrorMessage = ComplexErrorTemplate.bind({});
 
 export const AsyncValidation = AsyncValidationTemplate.bind({});
 
-export const ErrorMessage = SubmitErrorTemplate.bind({});
-
 export const CustomErrorMessage = CustomSubmitErrorTemplate.bind({});
+
+export const ErrorMessage = SubmitErrorTemplate.bind({});
 
 ErrorMessage.play = CustomErrorMessage.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
