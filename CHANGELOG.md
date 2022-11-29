@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.14.5
+
+### Patch Changes
+
+- [#253](https://github.com/cube-js/cube-ui-kit/pull/253) [`4aba492`](https://github.com/cube-js/cube-ui-kit/commit/4aba49270a26808e4fa2173ed192571253606cf1) Thanks [@tenphi](https://github.com/tenphi)! - Fix styles for disabled option in Select & ComboBox components.
+
+- [#252](https://github.com/cube-js/cube-ui-kit/pull/252) [`fe6526d`](https://github.com/cube-js/cube-ui-kit/commit/fe6526d3cec03a1ab40cc240339e6e6eadf75f3d) Thanks [@tenphi](https://github.com/tenphi)! - SubmitError is removed when any value in the form is changed.
+
 ## 0.14.4
 
 ### Patch Changes
