@@ -55,8 +55,7 @@ const RadioButtonElement = tasty({
       invalid: '#danger-text',
       disabled: '#dark.40',
     },
-    fontWeight: 500,
-    preset: 'default',
+    preset: 't3m',
     border: {
       '': true,
       checked: '#purple-text',
@@ -64,7 +63,7 @@ const RadioButtonElement = tasty({
       'disabled & checked': '#dark.40',
       disabled: '#border',
     },
-    padding: '(1x - 1bw) (1.5x - 1bw)',
+    padding: '(.75x - 1bw) (1.5x - 1bw)',
     cursor: 'pointer',
     opacity: {
       '': 1,
@@ -121,10 +120,7 @@ const RadioCircleElement = <div data-element="RadioCircle" />;
 
 const RadioLabelElement = tasty({
   qa: 'RadioLabel',
-  styles: {
-    ...INLINE_LABEL_STYLES,
-    fontWeight: 400,
-  },
+  styles: INLINE_LABEL_STYLES,
 });
 
 export interface CubeRadioProps
