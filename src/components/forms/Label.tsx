@@ -60,7 +60,7 @@ export const INLINE_LABEL_STYLES: Styles = {
 
 export const LABEL_STYLES: Styles = {
   display: 'block',
-  preset: 't3m',
+  preset: 't3s',
   color: {
     '': '#dark',
     invalid: '#danger-text',
