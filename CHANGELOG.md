@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.14.6
+
+### Patch Changes
+
+- [#255](https://github.com/cube-js/cube-ui-kit/pull/255) [`30d52f9`](https://github.com/cube-js/cube-ui-kit/commit/30d52f97fde22374df285b00f1febec93b842ed6) Thanks [@tenphi](https://github.com/tenphi)! - Reduce the distance between radio buttons inside Radio.Group
+
 ## 0.14.5
 
 ### Patch Changes
