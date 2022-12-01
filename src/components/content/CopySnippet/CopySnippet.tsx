@@ -89,7 +89,6 @@ const CopyButton = tasty(Button, {
   icon: <CopyOutlined />,
   styles: {
     padding: '1x 1.5x',
-    fontWeight: 500,
     radius: {
       '': '0 1r 1r 0',
       'multiline | with-scroll': '0 1r',
