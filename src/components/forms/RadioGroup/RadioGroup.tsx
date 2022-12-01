@@ -41,10 +41,7 @@ const RadioGroupElement = tasty({
       '': 'column',
       horizontal: 'row wrap',
     },
-    gap: {
-      '': '1x',
-      horizontal: '1x 2x',
-    },
+    gap: '1x',
     padding: {
       '': 0,
       'inside-form & side-label': '1.5x 0',
