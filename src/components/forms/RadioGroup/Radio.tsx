@@ -35,6 +35,10 @@ const RadioWrapperElement = tasty({
     flow: 'column',
     preset: 'default',
     width: 'min-content',
+    margin: {
+      '': '1x right',
+      '[data-type="button"]': '0',
+    },
   },
 });
 
@@ -197,6 +201,7 @@ function Radio(props: CubeRadioProps, ref) {
         hovered: isHovered,
         button: isButton,
       }}
+      data-type={type || 'radio'}
     >
       <HiddenInput
         data-qa={qa || 'Radio'}
@@ -214,6 +219,7 @@ function Radio(props: CubeRadioProps, ref) {
           hovered: isHovered,
           focused: isFocused,
         }}
+        data-type={type || 'radio'}
         styles={inputStyles}
       >
         {!isButton ? RadioCircleElement : children}
