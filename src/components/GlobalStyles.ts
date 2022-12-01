@@ -28,7 +28,7 @@ const BODY_STYLES = {
 };
 
 const fontsProvider = ({ publicUrl = '' }) => `
-@font-face {
+  @font-face {
     font-family: 'Figtree';
     font-style: normal;
     font-weight: 400;
