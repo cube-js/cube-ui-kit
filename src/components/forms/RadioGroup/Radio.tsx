@@ -146,7 +146,7 @@ function Radio(props: CubeRadioProps, ref) {
     labelStyles,
     labelProps,
     inputStyles,
-    type,
+    type = 'radio',
     'aria-label': ariaLabel,
     ...otherProps
   } = props;
@@ -197,7 +197,7 @@ function Radio(props: CubeRadioProps, ref) {
         hovered: isHovered,
         button: isButton,
       }}
-      data-type={type || 'radio'}
+      data-type={type}
     >
       <HiddenInput
         data-qa={qa || 'Radio'}
@@ -215,7 +215,7 @@ function Radio(props: CubeRadioProps, ref) {
           hovered: isHovered,
           focused: isFocused,
         }}
-        data-type={type || 'radio'}
+        data-type={type}
         styles={inputStyles}
       >
         {!isButton ? RadioCircleElement : children}
