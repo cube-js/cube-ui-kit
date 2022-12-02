@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.14.7
+
+### Patch Changes
+
+- [#257](https://github.com/cube-js/cube-ui-kit/pull/257) [`cd3d251`](https://github.com/cube-js/cube-ui-kit/commit/cd3d2512c21b9a3e064edcd09825b1ca37e8645e) Thanks [@tenphi](https://github.com/tenphi)! - Fix font presets on action elements.
+
 ## 0.14.6
 
 ### Patch Changes
