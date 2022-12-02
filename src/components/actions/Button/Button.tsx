@@ -97,7 +97,6 @@ const DEFAULT_STYLES_BY_TYPE: { [key: string]: Styles } = {
     },
   },
   link: {
-    fontWeight: 500,
     padding: '0',
     radius: {
       '': '0',
@@ -234,7 +233,6 @@ export const DEFAULT_BUTTON_STYLES = {
   gap: '1x',
   flow: 'column',
   radius: true,
-  fontWeight: 500,
   preset: {
     '': 't3m',
     '[data-size="large"]': 't2m',

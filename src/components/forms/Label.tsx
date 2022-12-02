@@ -50,7 +50,7 @@ const INTL_MESSAGES = {
 };
 
 export const INLINE_LABEL_STYLES: Styles = {
-  preset: 'default',
+  preset: 't3',
   color: {
     '': '#dark.85',
     invalid: '#danger-text',

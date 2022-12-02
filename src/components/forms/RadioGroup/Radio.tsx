@@ -161,7 +161,6 @@ function Radio(props: CubeRadioProps, ref) {
 
   labelStyles = {
     ...INLINE_LABEL_STYLES,
-    fontWeight: 400,
     ...labelStyles,
   };
 
