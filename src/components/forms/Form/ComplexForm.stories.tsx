@@ -2,6 +2,7 @@ import { Meta, StoryFn } from '@storybook/react';
 import { linkTo } from '@storybook/addon-links';
 import { userEvent, waitFor, within } from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
+import { ReactNode } from 'react';
 
 import {
   Alert,
@@ -20,6 +21,7 @@ import {
   SubmitError,
   Switch,
   TextInput,
+  CubeFormProps,
 } from '../../../index';
 import { NumberInput } from '../NumberInput/NumberInput';
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -30,9 +32,9 @@ export default {
   title: 'Forms/ComplexForm',
   component: Form,
   parameters: { controls: { exclude: baseProps } },
-} as Meta;
+} as Meta<CubeFormProps>;
 
-const UnknownSubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
+const UnknownSubmitErrorTemplate: StoryFn<CubeFormProps> = (args) => {
   const [form] = Form.useForm();
 
   return (
@@ -40,20 +42,12 @@ const UnknownSubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
       form={form}
       {...args}
       onSubmit={(v) => {
-        console.log('onSubmit:', v);
-
+        args.onSubmit?.(v);
         throw new Error('Unknown error');
-      }}
-      onSubmitFailed={(e) => {
-        console.log('onSubmitFailed', e);
-      }}
-      onValuesChange={(v) => {
-        console.log('onChange', v);
       }}
     >
       <Field
         name="text"
-        label="Text input"
         rules={[
           () => ({
             async validator() {
@@ -62,7 +56,7 @@ const UnknownSubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
           }),
         ]}
       >
-        <TextInput />
+        <TextInput label="Text input" />
       </Field>
       <Submit>Submit</Submit>
       <SubmitError />
@@ -70,7 +64,7 @@ const UnknownSubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
   );
 };
 
-const CustomSubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
+const CustomSubmitErrorTemplate: StoryFn<CubeFormProps> = (args) => {
   const [form] = Form.useForm();
 
   return (
@@ -78,24 +72,21 @@ const CustomSubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
       form={form}
       {...args}
       onSubmit={(v) => {
-        console.log('onSubmit:', v);
+        args.onSubmit?.(v);
 
         throw <>Submission failed. Sorry for that :/</>;
       }}
-      onValuesChange={(v) => {
-        console.log('onChange', v);
-      }}
     >
-      <Field name="text" label="Text input">
-        <TextInput />
+      <Field name="text">
+        <TextInput label="Text input" />
       </Field>
       <Submit>Submit</Submit>
-      {form.submitError ? <Alert>{form.submitError}</Alert> : null}
+      {form.submitError ? <Alert>{form.submitError as ReactNode}</Alert> : null}
     </Form>
   );
 };
 
-const SubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
+const SubmitErrorTemplate: StoryFn<CubeFormProps> = (args) => {
   const [form] = Form.useForm();
 
   return (
@@ -111,8 +102,8 @@ const SubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
         console.log('onChange', v);
       }}
     >
-      <Field name="text" label="Text input">
-        <TextInput />
+      <Field name="text">
+        <TextInput label="Text input" />
       </Field>
       <Submit>Submit</Submit>
       <SubmitError />
@@ -347,23 +338,23 @@ export const ErrorMessage = SubmitErrorTemplate.bind({});
 
 ErrorMessage.play = CustomErrorMessage.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
-  const button = await canvas.getByRole('button');
+  const button = canvas.getByRole('button');
 
   await userEvent.click(button);
 
-  await waitFor(() => expect(canvas.getByRole('alert')).toBeInTheDocument());
+  await canvas.findByRole('alert');
 };
 
 export const UnknownErrorMessage = UnknownSubmitErrorTemplate.bind({});
 
 UnknownErrorMessage.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
-  const button = await canvas.getByRole('button');
+  const button = canvas.getByRole('button');
 
   await userEvent.click(button);
 
   await waitFor(async () => {
-    const alertElement = await canvas.getByText('Internal error');
+    const alertElement = canvas.getByText('Internal error');
 
     await expect(alertElement).toBeInTheDocument();
 

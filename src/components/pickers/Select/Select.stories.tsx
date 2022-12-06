@@ -89,7 +89,7 @@ WithDisabledOption.args = { disabledKeys: ['red'] };
 
 WithDisabledOption.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
-  const button = await canvas.getByRole('button');
+  const button = canvas.getByRole('button');
 
   await userEvent.click(button);
 };

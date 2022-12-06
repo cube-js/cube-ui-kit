@@ -394,10 +394,10 @@ export const ItemWithTooltip = (props) => {
 
 ItemWithTooltip.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
-  const button = (await canvas.getAllByRole('button'))[0];
+  const button = canvas.getAllByRole('button')[0];
   // this is a weird hack that makes tooltip working properly on a page load
   await userEvent.unhover(button);
   await userEvent.hover(button);
 
-  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeInTheDocument());
+  await canvas.findByRole('tooltip');
 };

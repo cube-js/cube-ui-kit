@@ -48,7 +48,7 @@ LongFileNameOverflow.args = {
 
 LongFileNameOverflow.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
-  const input = await canvas.getByTitle('Test input');
+  const input = canvas.getByTitle('Test input');
   const file = new File(['test'], 'file-with-a-very-long-name.txt', {
     type: 'text/plain',
   });

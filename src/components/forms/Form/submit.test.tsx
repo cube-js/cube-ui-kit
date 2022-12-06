@@ -2,8 +2,7 @@ import userEvents from '@testing-library/user-event';
 import { act, waitFor } from '@testing-library/react';
 
 import { renderWithForm } from '../../../test';
-import { Submit } from '../../actions';
-import { TextInput } from '../TextInput/TextInput';
+import { TextInput } from '../TextInput';
 
 import { Form } from '.';
 
@@ -16,7 +15,6 @@ describe('<Form />', () => {
       <>
         <Form.Item
           name="test"
-          label="Test"
           rules={[
             {
               validator(rule, value) {
@@ -25,10 +23,10 @@ describe('<Form />', () => {
             },
           ]}
         >
-          <TextInput />
+          <TextInput label="Test" />
         </Form.Item>
 
-        <Submit>Submit</Submit>
+        <Form.Submit>Submit</Form.Submit>
 
         <Form.SubmitError />
       </>,
@@ -59,11 +57,11 @@ describe('<Form />', () => {
 
     const { getByRole, getByText, formInstance } = renderWithForm(
       <>
-        <Form.Item name="test" label="Test">
-          <TextInput />
+        <Form.Item name="test">
+          <TextInput label="Test" />
         </Form.Item>
 
-        <Submit>Submit</Submit>
+        <Form.Submit>Submit</Form.Submit>
 
         <Form.SubmitError />
       </>,

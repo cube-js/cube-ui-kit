@@ -29,7 +29,11 @@ export const WithIcon = Template.bind({});
 WithIcon.args = { icon: <DollarCircleOutlined /> };
 
 export const Password = Template.bind({});
-Password.args = { icon:  <DollarCircleOutlined />, type: 'password', defaultValue: 'hidden value' };
+Password.args = {
+  icon: <DollarCircleOutlined />,
+  type: 'password',
+  defaultValue: 'hidden value',
+};
 
 export const AutoSize = Template.bind({});
 AutoSize.args = { autoSize: true };
