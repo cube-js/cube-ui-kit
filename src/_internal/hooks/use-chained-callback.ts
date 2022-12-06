@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEvent } from './use-event';
 
 export function useChainedCallback(
