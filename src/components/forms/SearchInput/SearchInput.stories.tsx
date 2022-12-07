@@ -1,7 +1,9 @@
+import { Meta, Story } from '@storybook/react';
+
 import { baseProps } from '../../../stories/lists/baseProps';
 import { TEXT_VALUE_ARG } from '../../../stories/FormFieldArgs';
 
-import { SearchInput } from './SearchInput';
+import { CubeSearchInputProps, SearchInput } from './SearchInput';
 
 export default {
   title: 'Forms/SearchInput',
@@ -14,10 +16,10 @@ export default {
   argTypes: {
     ...TEXT_VALUE_ARG,
   },
-};
+} as Meta<CubeSearchInputProps>;
 
-const Template = (args) => (
-  <SearchInput {...args} onSubmit={(query) => console.log('result', query)} />
+const Template: Story<CubeSearchInputProps> = (args) => (
+  <SearchInput {...args} />
 );
 
 export const Default = Template.bind({});

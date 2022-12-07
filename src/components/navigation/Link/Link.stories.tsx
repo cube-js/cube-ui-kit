@@ -1,3 +1,6 @@
+import { Meta, Story } from '@storybook/react';
+import { CubeButtonProps } from 'src';
+
 import { baseProps } from '../../../stories/lists/baseProps';
 
 import { Link } from './Link';
@@ -5,6 +8,10 @@ import { Link } from './Link';
 export default {
   title: 'Navigation/Link',
   component: Link,
+  args: {
+    to: '!https://cube.dev',
+    children: 'Link',
+  },
   parameters: {
     controls: {
       exclude: baseProps,
@@ -16,19 +23,8 @@ export default {
       control: 'text',
     },
   },
-};
+} as Meta<CubeButtonProps>;
 
-const Template = ({ isDisabled, label }) => (
-  <Link
-    isDisabled={isDisabled}
-    to="!https://cube.dev"
-    onPress={() => console.log('Press')}
-  >
-    {label}
-  </Link>
-);
+const Template: Story<CubeButtonProps> = (args) => <Link {...args} />;
 
 export const Default = Template.bind({});
-Default.args = {
-  label: 'Link',
-};

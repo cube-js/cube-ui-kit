@@ -1,7 +1,9 @@
-import { DollarCircleOutlined } from '@ant-design/icons';
+import { Meta, Story } from '@storybook/react';
+import { SearchOutlined } from '@ant-design/icons';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { NUMBER_VALUE_ARG } from '../../../stories/FormFieldArgs';
+import { CubeNumberInputProps } from '..';
 
 import { NumberInput } from './NumberInput';
 
@@ -16,14 +18,10 @@ export default {
   argTypes: {
     ...NUMBER_VALUE_ARG,
   },
-};
+} as Meta<CubeNumberInputProps>;
 
-const Template = ({ icon, ...props }) => (
-  <NumberInput
-    prefix={icon ? <DollarCircleOutlined /> : null}
-    {...props}
-    onChange={(query) => console.log('change', query)}
-  />
+const Template: Story<CubeNumberInputProps> = (args) => (
+  <NumberInput {...args} />
 );
 
 export const Default = Template.bind({});
@@ -40,4 +38,9 @@ Small.args = {
 export const Disabled = Template.bind({});
 Disabled.args = {
   isDisabled: true,
+};
+
+export const WithIcon = Template.bind({});
+WithIcon.args = {
+  icon: <SearchOutlined />,
 };

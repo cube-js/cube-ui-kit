@@ -74,7 +74,6 @@ export const Input = Template.bind({});
 Input.args = {
   width: '50x',
   label: 'Label',
-  name: 'filter',
   showInput: true,
   defaultValue: [20, 80],
   minValue: 0,
@@ -87,7 +86,6 @@ export const InputSuffix = Template.bind({});
 InputSuffix.args = {
   width: '50x',
   label: 'Label',
-  name: 'filter',
   showInput: true,
   inputSuffix: 'ms',
   defaultValue: [20, 80],
@@ -101,7 +99,6 @@ export const InvalidData = Template.bind({});
 InvalidData.args = {
   width: '50x',
   label: 'Label',
-  name: 'filter',
   showInput: true,
   inputSuffix: 'ms',
   defaultValue: [20, 80],
@@ -110,7 +107,7 @@ InvalidData.args = {
   step: 2,
 };
 
-export const Controlled = (args) => {
+export const Controlled: Story<CubeRangeSliderProps> = (args) => {
   const [value, setValue] = useState<number[]>(20 as unknown as number[]);
 
   const props = {

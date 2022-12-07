@@ -1,4 +1,6 @@
-import { Tag } from './Tag';
+import { Story } from '@storybook/react';
+
+import { Tag, CubeTagProps } from './Tag';
 
 export default {
   title: 'Content/Tag',
@@ -42,13 +44,9 @@ export default {
   },
 };
 
-const Template = ({ label, ...props }) => (
-  <Tag {...props} onClose={() => console.log('close')}>
-    {label}
-  </Tag>
-);
+const Template: Story<CubeTagProps> = (args) => <Tag {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {
-  label: 'Tag name or content',
+  children: 'Tag name or content',
 };

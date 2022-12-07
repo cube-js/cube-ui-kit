@@ -1,6 +1,8 @@
+import { Meta, Story } from '@storybook/react';
+
 import { baseProps } from '../../../stories/lists/baseProps';
 
-import { Notification } from './Notification';
+import { CubeNotificationProps, Notification } from './Notification';
 
 export default {
   title: 'Overlays/Notification',
@@ -16,26 +18,26 @@ export default {
       control: 'text',
     },
   },
-};
+} as Meta<CubeNotificationProps>;
 
-const Template = ({ type, label }) => (
-  <Notification type={type}>{label}</Notification>
+const Template: Story<CubeNotificationProps> = (args) => (
+  <Notification {...args} />
 );
 
 export const Note = Template.bind({});
 Note.args = {
   type: 'note',
-  label: 'Notification text',
+  children: 'Notification text',
 };
 
 export const Danger = Template.bind({});
 Danger.args = {
   type: 'danger',
-  label: 'Notification text',
+  children: 'Notification text',
 };
 
 export const Success = Template.bind({});
 Success.args = {
   type: 'success',
-  label: 'Notification text',
+  children: 'Notification text',
 };

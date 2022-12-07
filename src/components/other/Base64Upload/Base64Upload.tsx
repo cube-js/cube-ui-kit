@@ -26,7 +26,8 @@ const DEFAULT_STYLES: Styles = {
 };
 
 export interface CubeBase64UploadProps extends BaseProps, PositionStyleProps {
-  onInput?: Function;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onInput?: (params: { encoded: string; raw: any }) => void;
 }
 
 export const Base64Upload = styled(

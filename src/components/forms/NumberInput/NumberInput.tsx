@@ -3,7 +3,7 @@ import { useLocale } from '@react-aria/i18n';
 import { useNumberFieldState } from '@react-stately/numberfield';
 import { useNumberField } from '@react-aria/numberfield';
 
-import { useFieldProps } from '../Form';
+import { useField } from '../Form';
 import { useProviderProps } from '../../../provider';
 import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 import { tasty } from '../../../tasty';
@@ -42,7 +42,7 @@ export const NumberInput = forwardRef(function NumberInput(
 ) {
   props = castNullableNumberValue(props);
   props = useProviderProps(props);
-  props = useFieldProps(props, {
+  props = useField(props, {
     valuePropsMapper: ({ value, onChange }) => ({
       value: value ?? null,
       onChange,

@@ -1,9 +1,12 @@
 import { CaretDownOutlined, DollarCircleOutlined } from '@ant-design/icons';
+import { Story } from '@storybook/react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Space } from '../../layout/Space';
 
 import { Button } from './Button';
+
+import { CubeButtonProps } from '.';
 
 export default {
   title: 'Actions/Button',
@@ -36,47 +39,39 @@ export default {
   },
 };
 
-const Template = ({ icon, rightIcon, label, onClick, ...props }) => (
-  <Button
-    icon={icon ? <DollarCircleOutlined /> : undefined}
-    rightIcon={rightIcon ? <CaretDownOutlined /> : undefined}
-    {...props}
-    onPress={(e) => console.log('Press', e)}
-  >
+const Template: Story<CubeButtonProps> = ({
+  icon,
+  rightIcon,
+  label,
+  onClick,
+  ...props
+}) => (
+  <Button icon={icon ? <DollarCircleOutlined /> : undefined} {...props}>
     {label}
   </Button>
 );
 
-const TemplateSizes = ({ label, icon, rightIcon, size, ...props }) => (
+const TemplateSizes: Story<CubeButtonProps> = ({
+  label,
+  icon,
+  rightIcon,
+  size,
+  ...props
+}) => (
   <Space>
-    <Button
-      icon={icon ? <DollarCircleOutlined /> : undefined}
-      rightIcon={rightIcon ? <CaretDownOutlined /> : undefined}
-      {...props}
-      size="small"
-    >
+    <Button {...props} size="small">
       {label}
     </Button>
-    <Button
-      icon={icon ? <DollarCircleOutlined /> : undefined}
-      rightIcon={rightIcon ? <CaretDownOutlined /> : undefined}
-      {...props}
-      size="medium"
-    >
+    <Button {...props} size="medium">
       {label}
     </Button>
-    <Button
-      icon={icon ? <DollarCircleOutlined /> : undefined}
-      rightIcon={rightIcon ? <CaretDownOutlined /> : undefined}
-      {...props}
-      size="large"
-    >
+    <Button {...props} size="large">
       {label}
     </Button>
   </Space>
 );
 
-const TemplateStates = ({ label, mods, ...props }) => (
+const TemplateStates: Story<CubeButtonProps> = ({ label, mods, ...props }) => (
   <Space>
     <Button
       {...props}
@@ -192,30 +187,30 @@ Danger.args = {
 export const LeftIconAndText = TemplateSizes.bind({});
 LeftIconAndText.args = {
   label: 'Button',
-  icon: true,
+  icon: <DollarCircleOutlined />,
 };
 
 export const RightIconAndText = TemplateSizes.bind({});
 RightIconAndText.args = {
   label: 'Button',
-  rightIcon: true,
+  rightIcon: <CaretDownOutlined />,
 };
 
 export const TwoIconsAndText = TemplateSizes.bind({});
 TwoIconsAndText.args = {
   label: 'Button',
-  icon: true,
-  rightIcon: true,
+  icon: <DollarCircleOutlined />,
+  rightIcon: <CaretDownOutlined />,
 };
 
 export const OnlyIcon = TemplateSizes.bind({});
 OnlyIcon.args = {
-  icon: true,
+  icon: <DollarCircleOutlined />,
 };
 
 export const Loading = TemplateSizes.bind({});
 Loading.args = {
-  icon: true,
+  icon: <DollarCircleOutlined />,
   isLoading: true,
   label: 'Button',
 };

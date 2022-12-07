@@ -1,6 +1,8 @@
+import { Meta, Story } from '@storybook/react';
+
 import { baseProps } from '../../../stories/lists/baseProps';
 
-import { Placeholder } from './Placeholder';
+import { CubePlaceholderProps, Placeholder } from './Placeholder';
 
 export default {
   title: 'Content/Placeholder',
@@ -10,9 +12,11 @@ export default {
       exclude: baseProps,
     },
   },
-};
+} as Meta<CubePlaceholderProps>;
 
-const Template = (args) => <Placeholder {...args} />;
+const Template: Story<CubePlaceholderProps> = (args) => (
+  <Placeholder {...args} />
+);
 
 export const Box = Template.bind({});
 Box.args = {};

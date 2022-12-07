@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 
+import { useChainedCallback, useEvent, useWarn } from '../../../../_internal';
 import { useFormProps } from '../Form';
 import { FieldTypes } from '../types';
-import { useEvent, useWarn } from '../../../../_internal';
 
-import { FieldContextValue, FieldProvider } from './FieldContext';
-import { LegacyCubeFieldProps } from './types';
+import { FieldContextValue, UseFieldPropsParams } from './FieldContext';
+import { CubeFieldProps } from './types';
 
 const ID_MAP = {};
 
@@ -35,18 +35,26 @@ function removeId(name, id) {
   ID_MAP[name] = ID_MAP[name].filter((_id) => _id !== id);
 }
 
-export function Field<T extends FieldTypes>(props: LegacyCubeFieldProps<T>) {
+export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
+  props: Props,
+  params: UseFieldPropsParams,
+) {
   props = useFormProps(props);
+
+  const {
+    valuePropsMapper,
+    defaultValidationTrigger = 'onBlur',
+    isDisabled,
+  } = params;
 
   let {
     defaultValue,
     id,
     idPrefix,
-    children,
     name,
     form,
     rules,
-    validateTrigger,
+    validateTrigger = defaultValidationTrigger,
     validationState,
     shouldUpdate,
   } = props;
@@ -176,13 +184,35 @@ export function Field<T extends FieldTypes>(props: LegacyCubeFieldProps<T>) {
     ],
   );
 
-  if (!form || !children) {
-    return null;
+  const onBlurChained = useChainedCallback(
+    contextValue?.onBlur,
+    // TODO: remove type casting after updating to typescipt@4.9
+    'onBlur' in props ? (props as any).onBlur : undefined,
+  );
+  const onChangeEvent = useEvent((value, dontTouch: boolean) => {
+    return contextValue?.onChange?.(
+      value,
+      dontTouch,
+      contextValue?.validateTrigger ?? defaultValidationTrigger,
+    );
+  });
+
+  if (isDisabled) {
+    return props;
   }
 
-  return (
-    <FieldProvider value={contextValue}>
-      {typeof children === 'function' ? children(form) : children}
-    </FieldProvider>
-  );
+  return {
+    ...props,
+    ...contextValue,
+    ...(valuePropsMapper?.({
+      value: contextValue.value,
+      onChange: onChangeEvent,
+    }) ?? {
+      value: contextValue.value ?? null,
+      onChange: onChangeEvent,
+    }),
+
+    validateTrigger,
+    onBlur: onBlurChained,
+  };
 }

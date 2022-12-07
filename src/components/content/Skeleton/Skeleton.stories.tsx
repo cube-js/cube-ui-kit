@@ -1,6 +1,8 @@
+import { Meta, Story } from '@storybook/react';
+
 import { baseProps } from '../../../stories/lists/baseProps';
 
-import { Skeleton } from './Skeleton';
+import { CubeSkeletonProps, Skeleton } from './Skeleton';
 
 export default {
   title: 'Content/Skeleton',
@@ -10,11 +12,9 @@ export default {
       exclude: baseProps,
     },
   },
-};
+} as Meta<CubeSkeletonProps>;
 
-const Template = (args) => {
-  return <Skeleton {...args} />;
-};
+const Template: Story<CubeSkeletonProps> = (args) => <Skeleton {...args} />;
 
 export const Page = Template.bind({});
 Page.args = {

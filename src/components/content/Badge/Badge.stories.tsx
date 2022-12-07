@@ -1,3 +1,6 @@
+import { Meta, Story } from '@storybook/react';
+import { CubeBadgeProps } from 'src';
+
 import { baseProps } from '../../../stories/lists/baseProps';
 
 import { Badge } from './Badge';
@@ -10,11 +13,11 @@ export default {
       exclude: baseProps,
     },
   },
-};
+} as Meta<CubeBadgeProps>;
 
-const Template = ({ label, ...props }) => <Badge {...props}>{label}</Badge>;
+const Template: Story<CubeBadgeProps> = (args) => <Badge {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {
-  label: '1',
+  children: '1',
 };

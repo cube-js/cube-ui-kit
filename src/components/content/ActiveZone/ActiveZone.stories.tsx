@@ -1,36 +1,33 @@
+import { Meta, Story } from '@storybook/react';
+
 import { TooltipTrigger } from '../../overlays/Tooltip/TooltipTrigger';
 import { Tooltip } from '../../overlays/Tooltip/Tooltip';
 import { baseProps } from '../../../stories/lists/baseProps';
 
-import { ActiveZone } from './ActiveZone';
+import { ActiveZone, CubeActiveZoneProps } from './ActiveZone';
 
 export default {
   title: 'Content/ActiveZone',
   component: ActiveZone,
+  args: {
+    children: 'ActiveZone',
+  },
   parameters: {
     controls: {
       exclude: baseProps,
     },
   },
-};
+} as Meta<CubeActiveZoneProps>;
 
-const Template = ({ isDisabled, label }) => (
-  <ActiveZone isDisabled={isDisabled}>{label}</ActiveZone>
-);
+const Template: Story<CubeActiveZoneProps> = (args) => <ActiveZone {...args} />;
 
-const TooltipTemplate = ({ isDisabled, label }) => (
+const TooltipTemplate: Story<CubeActiveZoneProps> = (args) => (
   <TooltipTrigger>
-    <ActiveZone isDisabled={isDisabled}>{label}</ActiveZone>
+    <ActiveZone {...args} />
     <Tooltip>Tooltip</Tooltip>
   </TooltipTrigger>
 );
 
 export const Default = Template.bind({});
-Default.args = {
-  label: 'ActiveZone',
-};
 
 export const WithTooltip = TooltipTemplate.bind({});
-WithTooltip.args = {
-  label: 'ActiveZone',
-};

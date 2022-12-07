@@ -1,14 +1,11 @@
 import { renderWithForm, userEvent } from '../../../test';
-import { Field } from '../Form';
 
 import { PasswordInput } from './PasswordInput';
 
 describe('<PasswordInput />', () => {
   it('should interop with <Form />', async () => {
     const { getByTestId, formInstance } = renderWithForm(
-      <Field name="test">
-        <PasswordInput label="test" />
-      </Field>,
+      <PasswordInput name="test" label="test" />,
     );
 
     const passwordInput = getByTestId('Input');

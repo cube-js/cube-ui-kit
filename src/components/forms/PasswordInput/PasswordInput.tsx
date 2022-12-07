@@ -9,14 +9,14 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { useFieldProps } from '../Form';
+import { useField } from '../Form';
 
 export type CubePasswordInputProps = WithNullableValue<CubeTextInputBaseProps>;
 
 function PasswordInput(props: CubePasswordInputProps, ref) {
   props = castNullableStringValue(props);
   props = useProviderProps(props);
-  props = useFieldProps(props, {
+  props = useField(props, {
     defaultValidationTrigger: 'onBlur',
     valuePropsMapper: ({ value, onChange }) => ({
       value: value?.toString() ?? '',

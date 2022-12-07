@@ -1,6 +1,8 @@
+import { Meta, Story } from '@storybook/react';
+
 import { baseProps } from '../../../stories/lists/baseProps';
 
-import { PrismCode } from './PrismCode';
+import { CubePrismCodeProps, PrismCode } from './PrismCode';
 
 export default {
   title: 'Content/PrismCode',
@@ -10,9 +12,9 @@ export default {
       exclude: baseProps,
     },
   },
-};
+} as Meta<CubePrismCodeProps>;
 
-const Template = ({ ...args }) => <PrismCode {...args} />;
+const Template: Story<CubePrismCodeProps> = (args) => <PrismCode {...args} />;
 
 export const OneLine = Template.bind({});
 OneLine.args = {

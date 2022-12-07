@@ -1,4 +1,6 @@
-import { Text } from '../components/content/Text';
+import { Meta, Story } from '@storybook/react';
+
+import { Text, CubeTextProps } from '../components/content/Text';
 
 import { baseProps } from './lists/baseProps';
 
@@ -10,11 +12,13 @@ export default {
       exclude: baseProps,
     },
   },
-};
+} as Meta<CubeTextProps>;
 
-const Template = ({ label, ...args }) => <Text {...args}>{label}</Text>;
+const Template: Story<CubeTextProps> = ({ children, ...args }) => (
+  <Text {...args}>{children}</Text>
+);
 
 export const Default = Template.bind({});
 Default.args = {
-  label: 'Plain text',
+  children: 'Plain text',
 };

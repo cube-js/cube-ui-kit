@@ -1,14 +1,15 @@
+import { Meta, Story } from '@storybook/react';
 import { useState } from 'react';
 
-import { LegacyTabs } from './LegacyTabs';
+import { LegacyTabs, CubeTabsProps } from './LegacyTabs';
 
 export default {
   title: 'Navigation/Tabs',
   component: LegacyTabs,
   argTypes: {},
-};
+} as Meta<CubeTabsProps>;
 
-const Template = () => {
+const Template: Story<CubeTabsProps> = () => {
   const [arr, setArr] = useState([1, 2, 3, 4, 5, 6, 7]);
   const [activeKey, setActiveKey] = useState(2);
 
@@ -32,4 +33,3 @@ const Template = () => {
 };
 
 export const Basic = Template.bind({});
-Basic.args = {};
