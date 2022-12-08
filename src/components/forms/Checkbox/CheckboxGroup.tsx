@@ -143,3 +143,13 @@ export const CheckboxGroup = forwardRef(function CheckboxGroup(
     />
   );
 });
+
+/**
+ * @legacy should be removed with legacy <Field />
+ */
+Object.defineProperty(CheckboxGroup, 'cubeInputType', {
+  enumerable: false,
+  configurable: false,
+  writable: false,
+  value: 'CheckboxGroup',
+});

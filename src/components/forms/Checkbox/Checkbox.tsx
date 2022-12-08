@@ -124,7 +124,7 @@ function Checkbox(
       isIndeterminate: false,
       onChange: onChange,
     }),
-    isDisabled: !!groupState,
+    unsafe__isDisabled: !!groupState,
   });
 
   let {
@@ -152,7 +152,7 @@ function Checkbox(
     ...otherProps
   } = props;
 
-  label = label || children;
+  label = label ?? children;
 
   let styles = extractStyles(props, OUTER_STYLES);
   let inputStyles = extractStyles(props, BLOCK_STYLES);
@@ -292,6 +292,16 @@ function Checkbox(
  * or to mark one individual item as selected.
  */
 let _Checkbox = forwardRef(Checkbox);
+
+/**
+ * @legacy should be removed with legacy <Field />
+ */
+Object.defineProperty(_Checkbox, 'cubeInputType', {
+  enumerable: false,
+  configurable: false,
+  writable: false,
+  value: 'Checkbox',
+});
 
 let __Checkbox = Object.assign(
   _Checkbox as typeof _Checkbox & { Group: typeof CheckboxGroup },

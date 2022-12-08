@@ -185,6 +185,7 @@ const OverlayElement = tasty({
     width: 'min @overlay-min-width',
   },
 });
+
 const StyledOverlayElement = styled(OverlayElement)`
   ${(props) => {
     return getOverlayTransitionCSS({ placement: props?.['data-position'] });
@@ -580,6 +581,16 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
 const _Select = forwardRef(Select) as <T extends object>(
   props: CubeSelectProps<T> & { ref?: DOMRef<HTMLDivElement> },
 ) => JSX.Element;
+
+/**
+ * @legacy should be removed with legacy <Field />
+ */
+Object.defineProperty(_Select, 'cubeInputType', {
+  enumerable: false,
+  configurable: false,
+  writable: false,
+  value: 'Select',
+});
 
 const __Select = Object.assign(
   _Select as typeof _Select & {

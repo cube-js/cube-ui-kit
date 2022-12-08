@@ -138,4 +138,14 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
  */
 const _RadioGroup = forwardRef(RadioGroup);
 
+/**
+ * @legacy should be removed with legacy <Field />
+ */
+Object.defineProperty(_RadioGroup, 'cubeInputType', {
+  enumerable: false,
+  configurable: false,
+  writable: false,
+  value: 'RadioGroup',
+});
+
 export { _RadioGroup as RadioGroup };

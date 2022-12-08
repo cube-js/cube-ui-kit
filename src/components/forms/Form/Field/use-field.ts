@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { useChainedCallback, useEvent, useWarn } from '../../../../_internal';
+import { useEvent, useWarn } from '../../../../_internal';
 import { useFormProps } from '../Form';
 import { FieldTypes } from '../types';
 
-import { FieldContextValue, UseFieldPropsParams } from './FieldContext';
-import { CubeFieldProps } from './types';
+import { CubeFieldProps, FieldReturnValue } from './types';
 
 const ID_MAP = {};
 
@@ -37,15 +36,8 @@ function removeId(name, id) {
 
 export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
   props: Props,
-  params: UseFieldPropsParams,
-) {
+): FieldReturnValue<T> {
   props = useFormProps(props);
-
-  const {
-    valuePropsMapper,
-    defaultValidationTrigger = 'onBlur',
-    isDisabled,
-  } = params;
 
   let {
     defaultValue,
@@ -54,7 +46,7 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
     name,
     form,
     rules,
-    validateTrigger = defaultValidationTrigger,
+    validateTrigger,
     validationState,
     shouldUpdate,
   } = props;
@@ -74,7 +66,7 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
   }
 
   useWarn(
-    !form,
+    !form && name !== undefined,
     'Form Field requires declared form instance if field name is specified',
   );
 
@@ -157,12 +149,13 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
     }
   });
 
-  const contextValue: FieldContextValue = useMemo(
+  return useMemo(
     () => ({
       id: fieldId,
       name: fieldName,
       value: field?.inputValue,
       validateTrigger,
+      form,
 
       validationState:
         validationState ?? (field?.errors?.length ? 'invalid' : undefined),
@@ -172,6 +165,7 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
       onChange: onChangeHandler,
     }),
     [
+      form,
       field?.errors,
       field?.inputValue,
       fieldId,
@@ -183,36 +177,4 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
       validationState,
     ],
   );
-
-  const onBlurChained = useChainedCallback(
-    contextValue?.onBlur,
-    // TODO: remove type casting after updating to typescipt@4.9
-    'onBlur' in props ? (props as any).onBlur : undefined,
-  );
-  const onChangeEvent = useEvent((value, dontTouch: boolean) => {
-    return contextValue?.onChange?.(
-      value,
-      dontTouch,
-      contextValue?.validateTrigger ?? defaultValidationTrigger,
-    );
-  });
-
-  if (isDisabled) {
-    return props;
-  }
-
-  return {
-    ...props,
-    ...contextValue,
-    ...(valuePropsMapper?.({
-      value: contextValue.value,
-      onChange: onChangeEvent,
-    }) ?? {
-      value: contextValue.value ?? null,
-      onChange: onChangeEvent,
-    }),
-
-    validateTrigger,
-    onBlur: onBlurChained,
-  };
 }

@@ -5,7 +5,7 @@ const SUGGESTED_PROP_MAP = {
 };
 
 const PREFIX = 'CubeUIKit';
-const devMode = process.env.NODE_ENV !== 'production';
+const devMode = process.env.NODE_ENV === 'development';
 
 export function propDeprecationWarning(name, props, propList) {
   propList.forEach((prop) => {

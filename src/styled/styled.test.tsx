@@ -5,6 +5,9 @@ import { Block } from '../components/Block';
 
 import { styled } from './styled';
 
+import 'jest-styled-components';
+jest.unmock('styled-components');
+
 describe('styled() API', () => {
   beforeAll(() => {
     jest.spyOn(console, 'group').mockImplementation(() => {});

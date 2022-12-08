@@ -153,7 +153,7 @@ function Radio(props: CubeRadioProps, ref) {
 
   let isButton = type === 'button';
 
-  label = label || children;
+  label = label ?? children;
 
   let styles = extractStyles(otherProps, OUTER_STYLES);
 
@@ -262,6 +262,16 @@ const __Radio = Object.assign(
     Button: _RadioButton,
   },
 );
+
+/**
+ * @legacy should be removed with legacy <Field />
+ */
+Object.defineProperty(_Radio, 'cubeInputType', {
+  enumerable: false,
+  configurable: false,
+  writable: false,
+  value: 'Radio',
+});
 
 export { __Radio as Radio };
 export { _RadioButton as RadioButton };

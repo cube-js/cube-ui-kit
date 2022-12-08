@@ -71,6 +71,27 @@ describe('<Combobox />', () => {
 
     await userEvent.type(combobox, 're');
     await userEvent.click(getAllByRole('option')[0]);
+
+    expect(formInstance.getFieldValue('test')).toBe('red');
+  });
+
+  it('should interop with <Form />', async () => {
+    const { getByRole, getAllByRole, formInstance } = renderWithForm(
+      <ComboBox label="test" name="test">
+        <ComboBox.Item key="red">Red</ComboBox.Item>
+        <ComboBox.Item key="orange">Orange</ComboBox.Item>
+        <ComboBox.Item key="yellow">Yellow</ComboBox.Item>
+        <ComboBox.Item key="green">Green</ComboBox.Item>
+        <ComboBox.Item key="blue">Blue</ComboBox.Item>
+        <ComboBox.Item key="purple">Purple</ComboBox.Item>
+        <ComboBox.Item key="violet">Violet</ComboBox.Item>
+      </ComboBox>,
+    );
+
+    const combobox = getByRole('combobox');
+
+    await userEvent.type(combobox, 're');
+    await userEvent.click(getAllByRole('option')[0]);
     expect(formInstance.getFieldValue('test')).toBe('red');
   });
 });

@@ -12,6 +12,7 @@ import {
   OuterStyleProps,
   Styles,
 } from '../../../tasty';
+import { useFieldProps } from '..';
 
 import { Slide } from './Slide';
 import { Gradation } from './Gradation';
@@ -43,7 +44,12 @@ export interface CubeRangeSliderProps
   onChangeEnd?: (range: SliderValue) => void;
 }
 
-function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
+export const RangeSlider = forwardRef(function RangeSlider(
+  props: CubeRangeSliderProps,
+  ref: DOMRef<HTMLDivElement>,
+) {
+  props = useFieldProps(props, { defaultValidationTrigger: 'onChange' });
+
   let {
     labelPosition,
     label,
@@ -184,12 +190,14 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
       }}
     />
   );
-}
-
-const _RangeSlider = forwardRef(RangeSlider);
-
-const __RangeSlider = Object.assign(_RangeSlider as typeof _RangeSlider, {
-  cubeInputType: 'CheckboxGroup',
 });
 
-export { __RangeSlider as RangeSlider };
+/**
+ * @legacy should be removed with legacy <Field />
+ */
+Object.defineProperty(RangeSlider, 'cubeInputType', {
+  enumerable: false,
+  configurable: false,
+  writable: false,
+  value: 'CheckboxGroup',
+});

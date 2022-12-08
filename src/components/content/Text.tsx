@@ -93,7 +93,6 @@ const _Text = forwardRef(function Text(allProps: CubeTextProps, ref) {
         nowrap,
         ellipsis,
       }}
-      block={!!(block || ellipsis)}
       {...filterBaseProps(props, { eventProps: true })}
       ref={ref}
       styles={styles}

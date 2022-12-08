@@ -39,7 +39,7 @@ import { CubeSelectBaseProps, ListBoxPopup } from '../Select/Select';
 import {
   DEFAULT_INPUT_STYLES,
   INPUT_WRAPPER_STYLES,
-} from '../../forms/TextInput/TextInputBase';
+} from '../../forms/TextInput';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 
 import type {
@@ -400,3 +400,13 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 ) => JSX.Element) & { Item: typeof Item };
 
 ComboBox.Item = Item;
+
+/**
+ * @legacy should be removed with legacy <Field />
+ */
+Object.defineProperty(ComboBox, 'cubeInputType', {
+  enumerable: false,
+  configurable: false,
+  writable: false,
+  value: 'ComboBox',
+});

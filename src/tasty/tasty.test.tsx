@@ -6,6 +6,10 @@ import { Block } from '../components/Block';
 import { tasty } from './tasty';
 import { CONTAINER_STYLES } from './styles/list';
 
+import 'jest-styled-components';
+
+jest.unmock('styled-components');
+
 describe('tasty() API', () => {
   it('should provide defaults and give ability to override', () => {
     const SButton = tasty(Button, { type: 'primary' });
