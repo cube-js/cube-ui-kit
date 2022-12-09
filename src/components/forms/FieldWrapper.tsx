@@ -56,14 +56,13 @@ const FieldElement = tasty({
 const MessageElement = tasty({
   qa: 'Field_Message',
   styles: {
-    preset: 'default',
+    preset: 't3',
     color: {
       '': '#dark.75',
       invalid: '#danger-text',
       valid: '#success-text',
       disabled: '#dark.40',
     },
-    fontWeight: 400,
     textAlign: 'left',
     userSelect: 'none',
   },

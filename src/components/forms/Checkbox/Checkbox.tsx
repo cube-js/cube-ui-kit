@@ -157,10 +157,6 @@ function Checkbox(
     ...labelStyles,
   };
 
-  if (!insideForm) {
-    labelStyles.fontWeight = 400;
-  }
-
   let { isFocused, focusProps } = useFocus({ isDisabled }, true);
   let { hoverProps, isHovered } = useHover({ isDisabled });
 

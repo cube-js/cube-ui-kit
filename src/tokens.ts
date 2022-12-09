@@ -223,7 +223,7 @@ const TOKENS = {
   'tag-font-size': '13px',
   'tag-line-height': '12px',
   'tag-font-weight': '400',
-  'tag-font-variation-wght': '500',
+  'tag-font-variation-wght': '600',
   'tag-letter-spacing': '0',
   // strong
   'strong-font-size': 'inherit',

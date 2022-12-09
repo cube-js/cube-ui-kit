@@ -59,9 +59,11 @@ RadioGroupHorizontalOrientation.args = {
   orientation: 'horizontal',
 };
 
-export const RadioGroupVerticalOrientation = Template.bind({});
-RadioGroupVerticalOrientation.args = {
-  orientation: 'vertical',
+export const ButtonRadioGroupVerticalOrientation = RadioButtonsTemplate.bind(
+  {},
+);
+ButtonRadioGroupVerticalOrientation.args = {
+  orientation: 'horizontal',
 };
 
 export const RadioGroupWithLabel = Template.bind({});
