@@ -23,5 +23,5 @@
     "noEmit": true
   },
   "include": ["src/**/*"],
-  "exclude": ["src/stories/**/*"]
+  "exclude": ["src/stories/**/*.stories.tsx"]
 }

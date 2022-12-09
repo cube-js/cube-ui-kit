@@ -39,37 +39,19 @@ export default {
   },
 };
 
-const Template: Story<CubeButtonProps> = ({
-  icon,
-  rightIcon,
-  label,
-  onClick,
-  ...props
-}) => (
-  <Button icon={icon ? <DollarCircleOutlined /> : undefined} {...props}>
-    {label}
-  </Button>
-);
+const Template: Story<CubeButtonProps> = (args) => <Button {...args} />;
 
-const TemplateSizes: Story<CubeButtonProps> = ({
-  label,
-  icon,
-  rightIcon,
-  size,
-  ...props
-}) => (
+const TemplateSizes: Story<CubeButtonProps> = ({ ...props }) => (
   <Space>
-    <Button {...props} size="small">
-      {label}
-    </Button>
-    <Button {...props} size="medium">
-      {label}
-    </Button>
-    <Button {...props} size="large">
-      {label}
-    </Button>
+    <Button {...props} size="small" />
+    <Button {...props} size="medium" />
+    <Button {...props} size="large" />
   </Space>
 );
+
+TemplateSizes.argTypes = {
+  size: { control: { disable: true } },
+};
 
 const TemplateStates: Story<CubeButtonProps> = ({ label, mods, ...props }) => (
   <Space>
@@ -133,7 +115,7 @@ const TemplateStates: Story<CubeButtonProps> = ({ label, mods, ...props }) => (
 
 export const Default = Template.bind({});
 Default.args = {
-  label: 'Button',
+  children: 'Button',
 };
 
 export const SecondaryStates = TemplateStates.bind({});
@@ -168,37 +150,37 @@ LinkStates.args = {
 
 export const Small = Template.bind({});
 Small.args = {
-  label: 'Button',
+  children: 'Button',
   size: 'small',
 };
 
 export const Large = Template.bind({});
 Large.args = {
-  label: 'Button',
+  children: 'Button',
   size: 'large',
 };
 
 export const Danger = Template.bind({});
 Danger.args = {
-  label: 'Button',
+  children: 'Button',
   theme: 'danger',
 };
 
 export const LeftIconAndText = TemplateSizes.bind({});
 LeftIconAndText.args = {
-  label: 'Button',
+  children: 'Button',
   icon: <DollarCircleOutlined />,
 };
 
 export const RightIconAndText = TemplateSizes.bind({});
 RightIconAndText.args = {
-  label: 'Button',
+  children: 'Button',
   rightIcon: <CaretDownOutlined />,
 };
 
 export const TwoIconsAndText = TemplateSizes.bind({});
 TwoIconsAndText.args = {
-  label: 'Button',
+  children: 'Button',
   icon: <DollarCircleOutlined />,
   rightIcon: <CaretDownOutlined />,
 };
@@ -212,5 +194,5 @@ export const Loading = TemplateSizes.bind({});
 Loading.args = {
   icon: <DollarCircleOutlined />,
   isLoading: true,
-  label: 'Button',
+  children: 'Button',
 };
