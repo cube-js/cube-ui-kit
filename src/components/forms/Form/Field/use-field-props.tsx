@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { useDebugValue } from 'react';
 
 import { useChainedCallback, useEvent, useWarn } from '../../../../_internal';
 
@@ -44,7 +45,7 @@ export function useFieldProps<
     '<Field /> is deprecated, use component without <Field /> instead.',
   );
 
-  if (isInsideLegacyField || isDisabledRef.current) {
+  if (isInsideLegacyField || isDisabledRef.current || props.name == null) {
     return props;
   }
 
@@ -71,18 +72,23 @@ export function useFieldProps<
     );
   });
 
-  if (isOutsideOfForm) {
-    return props;
+  const result = isOutsideOfForm
+    ? props
+    : {
+        ...props,
+        ...field,
+        ...valuePropsMapper({
+          value: field.value,
+          onChange: onChangeEvent,
+        }),
+        validateTrigger: field.validateTrigger ?? defaultValidationTrigger,
+        onBlur: onBlurChained,
+      };
+
+  if (process.env.NODE_ENV === 'development') {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useDebugValue(result);
   }
 
-  return {
-    ...props,
-    ...field,
-    ...valuePropsMapper({
-      value: field.value,
-      onChange: onChangeEvent,
-    }),
-    validateTrigger: field.validateTrigger ?? defaultValidationTrigger,
-    onBlur: onBlurChained,
-  };
+  return result;
 }

@@ -48,7 +48,13 @@ export const RangeSlider = forwardRef(function RangeSlider(
   props: CubeRangeSliderProps,
   ref: DOMRef<HTMLDivElement>,
 ) {
-  props = useFieldProps(props, { defaultValidationTrigger: 'onChange' });
+  props = useFieldProps(props, {
+    defaultValidationTrigger: 'onChange',
+    valuePropsMapper: ({ value, onChange }) => ({
+      value: value != null ? value : [],
+      onChange: onChange,
+    }),
+  });
 
   let {
     labelPosition,

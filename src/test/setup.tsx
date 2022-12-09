@@ -22,8 +22,8 @@ jest.mock('styled-components', () => {
   };
 
   const mockProxy = new Proxy(mock, {
-    get: (target, prop) => {
-      return () => {
+    get: (_, prop) => {
+      const mocked = () => {
         const component = forwardRef((props: any, ref) => {
           const Type = props.as ?? String(prop) ?? 'div';
           const propsWithRef = { ...props, ref };
@@ -41,6 +41,16 @@ jest.mock('styled-components', () => {
 
         return component;
       };
+
+      Object.defineProperty(mocked, 'attrs', {
+        value: (...args) => {
+          console.log('attrs');
+
+          return mocked;
+        },
+      });
+
+      return mocked;
     },
   });
 
