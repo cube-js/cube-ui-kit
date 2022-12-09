@@ -27,6 +27,7 @@ import { NumberInput } from '../NumberInput/NumberInput';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions';
 import { timeout } from '../../../utils/promise';
+import { FieldWrapper } from '../FieldWrapper';
 
 export default {
   title: 'Forms/ComplexForm',
@@ -175,14 +176,14 @@ const Template: StoryFn<typeof Form> = (args) => {
 
   return (
     <>
-      <Field>
-        <Block label="Custom field outside the any form">
-          Some non-editable content
-        </Block>
-      </Field>
+      <FieldWrapper
+        label="Custom field outside the any form"
+        tooltip="What?"
+        Component={<Block>Some non-editable content</Block>}
+      />
       <Form
-        form={form}
         {...args}
+        form={form}
         defaultValues={{
           text: 'some',
           text2: 'some',
@@ -198,7 +199,8 @@ const Template: StoryFn<typeof Form> = (args) => {
           slider: [20, 40],
         }}
       >
-        <Field
+        <TextInput
+          label="Text field"
           name="text"
           validateTrigger="onChange"
           rules={[
@@ -213,19 +215,14 @@ const Template: StoryFn<typeof Form> = (args) => {
               },
             }),
           ]}
-        >
-          <TextInput label="Text field" />
-        </Field>
-        <Field name="text2">
-          <TextInput isDisabled label="Text disabled" />
-        </Field>
-        <Field name="text2">
-          <TextInput isLoading label="Text loading" />
-        </Field>
-        <Field>
-          <Block label="Custom field">Test</Block>
-        </Field>
-        <Field
+        />
+        <TextInput isDisabled name="text2" label="Text disabled" />
+        <TextInput isLoading name="text2" label="Text loading" />
+        <FieldWrapper label="Custom field" Component={<Block>Test</Block>} />
+        <TextInput
+          type="email"
+          label="Email field"
+          necessityIndicator="label"
           name="email"
           rules={[
             { required: true, message: 'This field is required' },
@@ -235,83 +232,68 @@ const Template: StoryFn<typeof Form> = (args) => {
             },
           ]}
           defaultValue="tenphi@gmail.com"
-          shouldUpdate={({ email }) => {
-            return !!email;
-          }}
+          shouldUpdate={({ email }) => !!email}
+        />
+        <PasswordInput label="Password field" name="password" />
+        <Select
+          label="Select field"
+          tooltip="Additional field description"
+          name="select.one"
         >
-          <TextInput
-            type="email"
-            label="Email field"
-            necessityIndicator="label"
-          />
-        </Field>
-        <Field name="password">
-          <PasswordInput label="Password field" />
-        </Field>
-        <Field name={['select', 'one']}>
-          <Select label="Select field" tooltip="Additional field description">
-            <Item key="one">One</Item>
-            <Item key="two">Two</Item>
-            <Item key="three">Three</Item>
-          </Select>
-        </Field>
-        <Field name="combobox">
-          <ComboBox label="ComboBox field">
-            <Item key="one">One</Item>
-            <Item key="two">Two</Item>
-            <Item key="three">Three</Item>
-          </ComboBox>
-        </Field>
-        <Field name="combobox2">
-          <ComboBox isLoading label="ComboBox Loading field">
-            <Item key="one">One</Item>
-            <Item key="two">Two</Item>
-            <Item key="three">Three</Item>
-          </ComboBox>
-        </Field>
-        <Field
+          <Item key="one">One</Item>
+          <Item key="two">Two</Item>
+          <Item key="three">Three</Item>
+        </Select>
+        <ComboBox label="ComboBox field" name="combobox">
+          <Item key="one">One</Item>
+          <Item key="two">Two</Item>
+          <Item key="three">Three</Item>
+        </ComboBox>
+        <ComboBox isLoading label="ComboBox Loading field" name="combobox2">
+          <Item key="one">One</Item>
+          <Item key="two">Two</Item>
+          <Item key="three">Three</Item>
+        </ComboBox>
+        <CheckboxGroup
+          label="Checkbox group"
+          orientation="horizontal"
           name="checkboxGroup"
           rules={[
             { required: true, message: 'Specify at least a single option' },
           ]}
         >
-          <CheckboxGroup label="Checkbox group" orientation="horizontal">
-            <Checkbox value="one">One</Checkbox>
-            <Checkbox value="two">Two</Checkbox>
-            <Checkbox value="three">Three</Checkbox>
-          </CheckboxGroup>
-        </Field>
-        <Field name="radioGroup">
-          <Radio.Group label="Radio group">
-            <Radio value="one">One</Radio>
-            <Radio value="two">Two</Radio>
-            <Radio value="three">Three</Radio>
-          </Radio.Group>
-        </Field>
-        <Field
+          <Checkbox value="one">One</Checkbox>
+          <Checkbox value="two">Two</Checkbox>
+          <Checkbox value="three">Three</Checkbox>
+        </CheckboxGroup>
+        <Radio.Group label="Radio group" name="radioGroup">
+          <Radio value="one">One</Radio>
+          <Radio value="two">Two</Radio>
+          <Radio value="three">Three</Radio>
+        </Radio.Group>
+        <Checkbox
+          label="Checkbox field"
           name="checkbox"
           rules={[{ required: true, message: 'This field is required' }]}
-        >
-          <Checkbox label="Checkbox field" />
-        </Field>
-        <Field
+        />
+        <Switch
+          label="Switch field"
           name="switch"
           rules={[{ required: true, message: 'This field is required' }]}
-        >
-          <Switch label="Switch field" />
-        </Field>
-        <Field
+        />
+        <NumberInput
+          label="Number field"
+          minValue={-1}
           name="number"
           rules={[{ required: true, message: 'This field is required' }]}
-        >
-          <NumberInput label="Number field" minValue={-1} />
-        </Field>
-        <Field
-          name="slider"
+        />
+        <RangeSlider
+          showInput
+          minValue={0}
+          maxValue={100}
           rules={[{ required: true, message: 'This field is required' }]}
-        >
-          <RangeSlider showInput minValue={0} maxValue={100} />
-        </Field>
+          name="slider"
+        />
         <Form.Submit>Submit</Form.Submit>
       </Form>
     </>

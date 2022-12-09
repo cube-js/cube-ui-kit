@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
+import { ValidateTrigger } from '../../../../shared';
 import { useEvent, useWarn } from '../../../../_internal';
 import { useFormProps } from '../Form';
 import { FieldTypes } from '../types';
@@ -34,8 +35,13 @@ function removeId(name, id) {
   ID_MAP[name] = ID_MAP[name].filter((_id) => _id !== id);
 }
 
+export type UseFieldParams = {
+  defaultValidationTrigger?: ValidateTrigger;
+};
+
 export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
   props: Props,
+  params: UseFieldParams,
 ): FieldReturnValue<T> {
   props = useFormProps(props);
 
@@ -46,14 +52,13 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
     name,
     form,
     rules,
-    validateTrigger,
+    validateTrigger = params.defaultValidationTrigger,
     validationState,
     shouldUpdate,
   } = props;
 
   const nonInput = !name;
-  const fieldName: string =
-    name != null ? (Array.isArray(name) ? name.join('.') : name) : '';
+  const fieldName: string = name ?? '';
 
   const [fieldId, setFieldId] = useState(
     id ?? (idPrefix ? `${idPrefix}_${fieldName}` : fieldName),
@@ -93,7 +98,7 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
   if (field) {
     field.rules = rules;
 
-    if (defaultValue !== null && !field.touched) {
+    if (defaultValue != null && !field.touched) {
       form?.setFieldValue(fieldName, defaultValue, false, true);
     }
   }

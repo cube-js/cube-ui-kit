@@ -127,6 +127,7 @@ export const Switch = forwardRef(function Switch(
   props = castNullableIsSelected(props);
   props = useProviderProps(props);
   props = useFieldProps(props, {
+    defaultValidationTrigger: 'onChange',
     valuePropsMapper: ({ value, onChange }) => ({
       isSelected: value != null ? value : false,
       isIndeterminate: false,

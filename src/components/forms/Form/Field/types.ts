@@ -62,7 +62,7 @@ export interface CubeFieldProps<T extends FieldTypes> {
   /** The form instance */
   form?: CubeFormInstance<T>;
   /** Field name. It's used as a key the form data. */
-  name?: string[] | string;
+  name?: string;
   /** The validation state of the field */
   validationState?: ValidationState;
   /** On which event perform the validation for the field */

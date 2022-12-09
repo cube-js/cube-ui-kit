@@ -49,7 +49,9 @@ export function useFieldProps<
   }
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const field = useField<T, Props>(props);
+  const field = useField<T, Props>(props, {
+    defaultValidationTrigger: params.defaultValidationTrigger,
+  });
 
   const isOutsideOfForm = field?.form == null;
 

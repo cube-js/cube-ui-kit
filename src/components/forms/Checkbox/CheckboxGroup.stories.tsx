@@ -2,7 +2,7 @@ import { Meta, Story } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
 
 import { baseProps } from '../../../stories/lists/baseProps';
-import { Form, Field } from '../Form';
+import { Form } from '../Form';
 import { wait } from '../../../test';
 
 import { CubeCheckboxGroupProps } from './CheckboxGroup';
@@ -70,9 +70,11 @@ export const InsideForm: Story<CubeCheckboxGroupProps> = (props) => {
         onSubmit(...args);
       }}
     >
-      <Field name="What to buy" defaultValue={['one']}>
-        <Template {...props} />
-      </Field>
+      <Checkbox.Group name="What to buy" defaultValue={['one']} {...props}>
+        <Checkbox value="one">Buy milk</Checkbox>
+        <Checkbox value="two">Buy coffee</Checkbox>
+        <Checkbox value="three">Buy bread</Checkbox>
+      </Checkbox.Group>
 
       <Form.Submit>Save</Form.Submit>
     </Form>

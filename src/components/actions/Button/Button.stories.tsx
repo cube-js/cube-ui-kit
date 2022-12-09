@@ -41,11 +41,11 @@ export default {
 
 const Template: Story<CubeButtonProps> = (args) => <Button {...args} />;
 
-const TemplateSizes: Story<CubeButtonProps> = ({ ...props }) => (
+const TemplateSizes: Story<CubeButtonProps> = (args) => (
   <Space>
-    <Button {...props} size="small" />
-    <Button {...props} size="medium" />
-    <Button {...props} size="large" />
+    <Button {...args} size="small" />
+    <Button {...args} size="medium" />
+    <Button {...args} size="large" />
   </Space>
 );
 

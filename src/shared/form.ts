@@ -50,6 +50,14 @@ export interface FormBaseProps {
   validationState?: ValidationState;
   /** On which event perform validation for the field */
   validateTrigger?: ValidateTrigger;
+  /** The unique ID of the field */
+  id?: string;
+  /** The id prefix for the field to avoid collisions between forms */
+  idPrefix?: string;
+  /** Function that checks whether to perform update of the form state. */
+  shouldUpdate?: boolean | ((prevValues, nextValues) => boolean);
+  /** Validation rules */
+  rules?: ValidationRule[];
 }
 
 export interface FormFieldProps extends FormBaseProps {
@@ -70,6 +78,8 @@ export interface FormFieldProps extends FormBaseProps {
   tooltip?: ReactNode;
   /** Whether the element should receive focus on render */
   autoFocus?: boolean;
+  /** The field name */
+  name?: `${string}.${string}` | `${string}`;
 }
 
 export type ValidationRuleBase = { [key: string]: any } & {

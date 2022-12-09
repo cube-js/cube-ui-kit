@@ -130,14 +130,13 @@ function Checkbox(
   let {
     qa,
     isIndeterminate = false,
-    isDisabled = false,
     insideForm,
     isRequired,
     autoFocus,
     children,
     label,
     extra,
-    validationState,
+    validationState = groupState?.validationState,
     labelProps,
     labelStyles,
     labelPosition,
@@ -149,6 +148,7 @@ function Checkbox(
     tooltip,
     isHidden,
     labelSuffix,
+    isDisabled = groupState?.isDisabled ?? false,
     ...otherProps
   } = props;
 

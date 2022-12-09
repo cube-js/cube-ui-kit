@@ -21,7 +21,6 @@ const allStyles: string[] = Array.from(
     ...OUTER_STYLES,
     ...DIMENSION_STYLES,
     ...TEXT_STYLES,
-    ...POSITION_STYLES,
   ]),
 );
 
