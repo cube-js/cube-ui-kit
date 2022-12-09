@@ -24,6 +24,7 @@ const colors = {
   success: '49, 195, 124',
   'success-text': '48, 166, 102',
   note: '251, 188, 5',
+  warning: '224, 86, 43',
 };
 
 function color(name, opacity = 1) {
