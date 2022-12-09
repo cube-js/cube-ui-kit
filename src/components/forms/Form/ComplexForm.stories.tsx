@@ -10,7 +10,6 @@ import {
   Checkbox,
   CheckboxGroup,
   ComboBox,
-  Field,
   Form,
   Item,
   PasswordInput,
@@ -47,7 +46,8 @@ const UnknownSubmitErrorTemplate: StoryFn<CubeFormProps> = (args) => {
         throw new Error('Unknown error');
       }}
     >
-      <Field
+      <TextInput
+        label="Text input"
         name="text"
         rules={[
           () => ({
@@ -56,9 +56,7 @@ const UnknownSubmitErrorTemplate: StoryFn<CubeFormProps> = (args) => {
             },
           }),
         ]}
-      >
-        <TextInput label="Text input" />
-      </Field>
+      />
       <Submit>Submit</Submit>
       <SubmitError />
     </Form>
@@ -78,10 +76,8 @@ const CustomSubmitErrorTemplate: StoryFn<CubeFormProps> = (args) => {
         throw <>Submission failed. Sorry for that :/</>;
       }}
     >
-      <Field name="text">
-        <TextInput label="Text input" />
-      </Field>
-      <Submit>Submit</Submit>
+      <TextInput label="Text input" name="text" />
+      <Form.Submit>Submit</Form.Submit>
       {form.submitError ? <Alert>{form.submitError as ReactNode}</Alert> : null}
     </Form>
   );
@@ -103,10 +99,8 @@ const SubmitErrorTemplate: StoryFn<CubeFormProps> = (args) => {
         console.log('onChange', v);
       }}
     >
-      <Field name="text">
-        <TextInput label="Text input" />
-      </Field>
-      <Submit>Submit</Submit>
+      <TextInput label="Text input" name="text" />
+      <Form.Submit>Submit</Form.Submit>
       <SubmitError />
     </Form>
   );
@@ -117,7 +111,8 @@ const AsyncValidationTemplate: StoryFn<typeof Form> = (args) => {
 
   return (
     <Form form={form} {...args}>
-      <Field
+      <TextInput
+        label="Text input"
         name="text"
         validateTrigger="onSubmit"
         rules={[
@@ -135,9 +130,7 @@ const AsyncValidationTemplate: StoryFn<typeof Form> = (args) => {
             },
           }),
         ]}
-      >
-        <TextInput label="Text input" />
-      </Field>
+      />
       <Form.Submit>Submit</Form.Submit>
     </Form>
   );
@@ -148,7 +141,8 @@ const ComplexErrorTemplate: StoryFn<typeof Form> = (args) => {
 
   return (
     <Form form={form} {...args}>
-      <Field
+      <TextInput
+        label="Text input"
         name="text"
         rules={[
           { required: true, message: 'This field is required' },
@@ -164,9 +158,7 @@ const ComplexErrorTemplate: StoryFn<typeof Form> = (args) => {
             },
           }),
         ]}
-      >
-        <TextInput label="Text input" />
-      </Field>
+      />
     </Form>
   );
 };
@@ -218,7 +210,11 @@ const Template: StoryFn<typeof Form> = (args) => {
         />
         <TextInput isDisabled name="text2" label="Text disabled" />
         <TextInput isLoading name="text2" label="Text loading" />
-        <FieldWrapper label="Custom field" Component={<Block>Test</Block>} />
+        <FieldWrapper
+          label="Custom field"
+          tooltip="What?"
+          Component={<Block>Test</Block>}
+        />
         <TextInput
           type="email"
           label="Email field"
