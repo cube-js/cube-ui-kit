@@ -254,7 +254,7 @@ export function Field<T extends FieldTypes>(props: LegacyCubeFieldProps<T>) {
   if (field) {
     field.rules = rules;
 
-    if (defaultValue !== null && !field.touched) {
+    if (defaultValue != null && !field.touched) {
       form?.setFieldValue(fieldName, defaultValue, false, true);
     }
   }
