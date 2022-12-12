@@ -173,7 +173,7 @@ function Result(props: CubeResultProps, ref) {
             </Title>
           ))}
           {wrapNodeIfPlain(subtitle, () => (
-            <Title level={3} preset="h5m">
+            <Title level={3} preset="t2m">
               {subtitle}
             </Title>
           ))}
