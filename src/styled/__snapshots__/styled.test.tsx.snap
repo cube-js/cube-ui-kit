@@ -9,7 +9,7 @@ exports[`styled() API should be able to override styles 1`] = `
   display: none !important;
 }
 
-.c0 {
+.c0.c0 {
   color: rgba(var(--black-color-rgb),0.1);
   --current-color: var(--black-color,black);
   --current-color-rgb: var(--black-color-rgb);
@@ -31,7 +31,7 @@ exports[`styled() API should pass styles from styled 1`] = `
   display: none !important;
 }
 
-.c0 {
+.c0.c0 {
   color: rgba(var(--clear-color-rgb),0.1);
   --current-color: var(--clear-color,clear);
   --current-color-rgb: var(--clear-color-rgb);
