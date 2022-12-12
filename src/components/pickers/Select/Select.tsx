@@ -90,7 +90,7 @@ const SelectWrapperElement = tasty({
 
     Value: {
       ...DEFAULT_INPUT_STYLES,
-      preset: 't3m',
+      preset: 't3',
       color: 'inherit',
       opacity: {
         '': 1,
@@ -176,7 +176,7 @@ const OptionElement = tasty({
       'pressed | selected': '#purple',
       disabled: '#dark.3',
     },
-    preset: 't3m',
+    preset: 't3',
     transition: 'theme',
   },
 });
