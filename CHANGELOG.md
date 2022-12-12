@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.14.9
+
+### Patch Changes
+
+- [#263](https://github.com/cube-js/cube-ui-kit/pull/263) [`1a57278`](https://github.com/cube-js/cube-ui-kit/commit/1a5727834ade61ba2b837f409d5bce789b117ea3) Thanks [@tenphi](https://github.com/tenphi)! - Apply the correct preset style to all action components.
+
 ## 0.14.8
 
 ### Patch Changes
