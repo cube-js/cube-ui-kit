@@ -7,6 +7,7 @@ import {
   Flow,
   Root,
   Space,
+  Block,
   Card,
 } from '../index';
 
@@ -21,14 +22,31 @@ There are many ways to create typography elements like text labels and headings.
 ### Headings
 
 <Canvas>
-  <Story name="Heading">
+  <Story name="Presets">
     <Flow gap="1x">
-      <Title level={1}>Heading level 1</Title>
-      <Title level={2}>Heading level 2</Title>
-      <Title level={3}>Heading level 3</Title>
-      <Title level={4}>Heading level 4</Title>
-      <Title level={5}>Heading level 5</Title>
-      <Title level={6}>Heading level 6</Title>
+      <Block preset="h1">The quick brown fox jumps over the lazy dog - h1</Block>
+      <Block preset="h2">The quick brown fox jumps over the lazy dog - h2</Block>
+      <Block preset="h3">The quick brown fox jumps over the lazy dog - h3</Block>
+      <Block preset="h4">The quick brown fox jumps over the lazy dog - h4</Block>
+      <Block preset="h5">The quick brown fox jumps over the lazy dog - h5</Block>
+      <Block preset="h5s">The quick brown fox jumps over the lazy dog - h5m - Figtree SemiBold 36-44</Block>
+      <Block preset="h5m">The quick brown fox jumps over the lazy dog - h5m - Figtree Medium 36-44</Block>
+      <Block preset="h6">The quick brown fox jumps over the lazy dog - h6</Block>
+      <Block preset="t1">The quick brown fox jumps over the lazy dog - t1</Block>
+      <Block preset="t2">The quick brown fox jumps over the lazy dog - t2</Block>
+      <Block preset="t2m">The quick brown fox jumps over the lazy dog - t2m</Block>
+      <Block preset="t3">The quick brown fox jumps over the lazy dog - t3</Block>
+      <Block preset="t3m">The quick brown fox jumps over the lazy dog - t3m</Block>
+      <Block preset="t3s">The quick brown fox jumps over the lazy dog - t3s</Block>
+      <Block preset="t4">The quick brown fox jumps over the lazy dog - t4</Block>
+      <Block preset="t4m">The quick brown fox jumps over the lazy dog - t4m</Block>
+      <Block preset="p1">The quick brown fox jumps over the lazy dog - p1</Block>
+      <Block preset="p2">The quick brown fox jumps over the lazy dog - p2</Block>
+      <Block preset="p3">The quick brown fox jumps over the lazy dog - p3</Block>
+      <Block preset="p4">The quick brown fox jumps over the lazy dog - p4</Block>
+      <Block preset="c1">The quick brown fox jumps over the lazy dog - c1</Block>
+      <Block preset="c2">The quick brown fox jumps over the lazy dog - c2</Block>
+      <Block preset="tag">The quick brown fox jumps over the lazy dog - tag</Block>
     </Flow>
   </Story>
 </Canvas>
