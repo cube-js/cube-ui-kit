@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.14.8
+
+### Patch Changes
+
+- [#260](https://github.com/cube-js/cube-ui-kit/pull/260) [`deee752`](https://github.com/cube-js/cube-ui-kit/commit/deee7526cba3a3f6925a5f3a2a15cbf8be148c8f) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Added new color token: "Warning"
+
 ## 0.14.7
 
 ### Patch Changes
