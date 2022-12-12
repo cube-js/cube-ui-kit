@@ -90,6 +90,7 @@ const SelectWrapperElement = tasty({
 
     Value: {
       ...DEFAULT_INPUT_STYLES,
+      preset: 't3m',
       color: 'inherit',
       opacity: {
         '': 1,
@@ -125,6 +126,7 @@ const SelectElement = tasty({
   qa: 'Button',
   styles: {
     ...INPUT_WRAPPER_STYLES,
+    preset: 't3m',
     cursor: 'pointer',
     padding: '0',
     border: {
