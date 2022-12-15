@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.14.10
+
+### Patch Changes
+
+- [#265](https://github.com/cube-js/cube-ui-kit/pull/265) [`e96fc55`](https://github.com/cube-js/cube-ui-kit/commit/e96fc55c16d2061039b403905cc7bc26b9419988) Thanks [@tenphi](https://github.com/tenphi)! - Increase the specificity of generated styles.
+
+- [#266](https://github.com/cube-js/cube-ui-kit/pull/266) [`abb4db7`](https://github.com/cube-js/cube-ui-kit/commit/abb4db7fd26dca35609a489548d1d0c9bfb04c97) Thanks [@tenphi](https://github.com/tenphi)! - Change preset style of the Select component and its options to `t3` to match TextInput.
+
 ## 0.14.9
 
 ### Patch Changes
