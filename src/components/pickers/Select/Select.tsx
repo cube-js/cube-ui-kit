@@ -90,7 +90,10 @@ const SelectWrapperElement = tasty({
 
     Value: {
       ...DEFAULT_INPUT_STYLES,
-      preset: 't3',
+      preset: {
+        '': 't3',
+        '[data-type="primary"]': 't3m',
+      },
       color: 'inherit',
       opacity: {
         '': 1,
@@ -382,6 +385,7 @@ function Select<T extends object>(
       mods={modifiers}
       styles={outerStyles}
       data-size={size}
+      data-type={type}
     >
       <HiddenSelect
         state={state}
@@ -394,7 +398,7 @@ function Select<T extends object>(
         ref={triggerRef}
         styles={inputStyles}
         data-size={size}
-        data-type={type || 'neutral'}
+        data-type={type}
         mods={modifiers}
       >
         {prefix ? <div data-element="Prefix">{prefix}</div> : null}
