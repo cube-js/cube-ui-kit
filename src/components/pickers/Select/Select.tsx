@@ -108,6 +108,8 @@ const SelectWrapperElement = tasty({
       placeItems: 'center',
       width: 'min 4x',
       cursor: 'pointer',
+      fontSize: 'inherit',
+      lineHeight: 'inherit',
     },
 
     ButtonIcon: {
@@ -116,6 +118,7 @@ const SelectWrapperElement = tasty({
       width: 'min 4x',
       color: 'inherit',
       fontSize: '@icon-size',
+      lineHeight: 'inherit',
     },
   },
 });

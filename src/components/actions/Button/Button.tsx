@@ -266,6 +266,7 @@ export const DEFAULT_BUTTON_STYLES = {
 
   ButtonIcon: {
     fontSize: '@icon-size',
+    lineHeight: 'inherit',
   },
 } as Styles;
 
