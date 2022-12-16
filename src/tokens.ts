@@ -243,6 +243,7 @@ const TOKENS = {
   'default-letter-spacing': 'var(--t3-letter-spacing)',
   'default-font-weight': 'var(--t3-font-weight)',
   'default-bold-font-weight': '700',
+  'default-icon-size': 'inherit',
   // scrollbar colors
   'scrollbar-width': '1.5x',
   'scrollbar-outline-width': '1ow',

@@ -118,7 +118,7 @@ const SelectWrapperElement = tasty({
       width: 'min 4x',
       color: 'inherit',
       fontSize: '@icon-size',
-      lineHeight: 'inherit',
+      lineHeight: '@icon-size',
     },
   },
 });
