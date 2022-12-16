@@ -267,7 +267,6 @@ export const DEFAULT_BUTTON_STYLES = {
   ButtonIcon: {
     display: 'grid',
     fontSize: '@icon-size',
-    lineHeight: '@icon-size',
   },
 } as Styles;
 

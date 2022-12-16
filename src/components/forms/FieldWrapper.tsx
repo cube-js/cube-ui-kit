@@ -146,7 +146,6 @@ function FieldWrapper(props: CubeFieldWrapperProps, ref) {
             >
               <InfoCircleOutlined
                 style={{
-                  fontSize: 'var(--icon-size, inherit)',
                   color: 'var(--primary-color)',
                   margin: '0 4px',
                 }}

@@ -60,7 +60,6 @@ const TagElement = tasty({
 
     Icon: {
       fontSize: '@icon-size',
-      lineHeight: '@icon-size',
     },
 
     Content: {
@@ -126,7 +125,6 @@ function Tag(allProps: CubeTagProps, ref) {
             <CloseOutlined
               style={{
                 fontSize: 'var(--font-size, inherit)',
-                lineHeight: 'var(--font-size, inherit)',
               }}
             />
           </CloseAction>
