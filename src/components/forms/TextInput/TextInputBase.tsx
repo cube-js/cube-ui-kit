@@ -87,6 +87,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
     focused: 1,
   },
   boxSizing: 'border-box',
+  transition: 'theme',
 
   Prefix: {
     ...ADD_STYLES,
@@ -146,10 +147,9 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   transition: 'theme',
   radius: true,
   padding: '@vertical-padding @right-padding @vertical-padding @left-padding',
-  fontWeight: 400,
   textAlign: 'left',
   reset: 'input',
-  preset: 'default',
+  preset: 't3',
   flexGrow: 1,
   margin: 0,
   resize: 'none',

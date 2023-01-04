@@ -24,6 +24,7 @@ const colors = {
   success: '49, 195, 124',
   'success-text': '48, 166, 102',
   note: '251, 188, 5',
+  warning: '224, 86, 43',
 };
 
 function color(name, opacity = 1) {
@@ -201,7 +202,7 @@ const TOKENS = {
   'tag-font-size': '12px',
   'tag-line-height': '12px',
   'tag-letter-spacing': '0.02em',
-  'tag-font-weight': '500',
+  'tag-font-weight': '600',
   // strong
   'strong-font-size': 'inherit',
   'strong-line-height': 'inherit',

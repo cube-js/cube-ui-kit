@@ -123,7 +123,6 @@ const DEFAULT_STYLES: Styles = {
   position: 'relative',
   margin: 0,
   fontFamily: 'var(--font)',
-  fontWeight: 'inherit',
   border: 0,
   padding: 0,
   outline: {

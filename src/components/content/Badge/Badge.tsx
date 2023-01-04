@@ -27,7 +27,6 @@ const BadgeElement = tasty({
     width: 'min 16px',
     height: '16px',
     textAlign: 'center',
-    fontWeight: 600,
     color: '#white',
     fill: {
       '': '#purple',

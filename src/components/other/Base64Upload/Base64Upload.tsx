@@ -22,7 +22,7 @@ const DEFAULT_STYLES: Styles = {
   placeItems: 'center',
   fill: '#white',
   border: true,
-  fontWeight: 400,
+  preset: 't3',
 };
 
 export interface CubeBase64UploadProps extends BaseProps, PositionStyleProps {

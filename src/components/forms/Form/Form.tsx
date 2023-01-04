@@ -7,7 +7,6 @@ import {
   useContext,
   useEffect,
   useRef,
-  useState,
 } from 'react';
 import { DOMRef } from '@react-types/shared';
 
@@ -106,7 +105,6 @@ function Form<T extends FieldTypes>(
     ...otherProps
   } = props;
   const firstRunRef = useRef(true);
-  const [submitError, setSubmitError] = useState<ReactNode>(null);
 
   ref = useCombinedRefs(ref);
 
@@ -132,7 +130,6 @@ function Form<T extends FieldTypes>(
 
       if (!form || form.isSubmitting) return;
 
-      setSubmitError(null);
       form.submitError = null;
       form.setSubmitting(true);
 
@@ -151,7 +148,6 @@ function Form<T extends FieldTypes>(
         await timeout();
 
         // errors are shown
-        setSubmitError(e as ReactNode);
         form.submitError = e as ReactNode;
         // transfer errors to the callback
         onSubmitFailed?.(e);
@@ -188,7 +184,7 @@ function Form<T extends FieldTypes>(
     validateTrigger,
     requiredMark,
     form,
-    submitError,
+    submitError: form.submitError,
     idPrefix: name,
   };
 

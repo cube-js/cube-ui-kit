@@ -85,6 +85,7 @@ export const StyledMenuItem = tasty({
     padding: '0',
     listStyle: 'none',
     fill: '#white',
+    preset: 't3m',
     color: {
       '': 'inherit',
       disabled: '#dark-04',

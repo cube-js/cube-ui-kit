@@ -1,5 +1,6 @@
 import { DollarCircleOutlined } from '@ant-design/icons';
 import { Meta, Story } from '@storybook/react';
+import { within, userEvent } from '@storybook/testing-library';
 
 import { SELECTED_KEY_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -62,6 +63,16 @@ OverTheCustomBG.parameters = { backgrounds: { default: 'gray' } };
 
 export const Disabled = Template.bind({});
 Disabled.args = { isDisabled: true, label: 'Disabled' };
+
+export const WithDisabledOption = Template.bind({});
+WithDisabledOption.args = { disabledKeys: ['red'] };
+
+WithDisabledOption.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const button = await canvas.getByRole('button');
+
+  await userEvent.click(button);
+};
 
 export const Wide: Story<CubeSelectProps<any>> = (args) => (
   <Select {...args}>

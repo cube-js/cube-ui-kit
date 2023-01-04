@@ -90,6 +90,10 @@ const SelectWrapperElement = tasty({
 
     Value: {
       ...DEFAULT_INPUT_STYLES,
+      preset: {
+        '': 't3',
+        '[data-type="primary"]': 't3m',
+      },
       color: 'inherit',
       opacity: {
         '': 1,
@@ -125,6 +129,7 @@ const SelectElement = tasty({
   qa: 'Button',
   styles: {
     ...INPUT_WRAPPER_STYLES,
+    preset: 't3m',
     cursor: 'pointer',
     padding: '0',
     border: {
@@ -166,15 +171,15 @@ const OptionElement = tasty({
       '': '#dark.0',
       'hovered | focused': '#dark.04',
       'pressed | selected': '#purple.10',
-      '[disabled]': '#dark.04',
+      disabled: '#dark.0',
     },
     color: {
       '': '#dark.75',
       'hovered | focused': '#dark.75',
       'pressed | selected': '#purple',
-      '[disabled]': '#dark.30',
+      disabled: '#dark.3',
     },
-    preset: 't3m',
+    preset: 't3',
     transition: 'theme',
   },
 });
@@ -380,6 +385,7 @@ function Select<T extends object>(
       mods={modifiers}
       styles={outerStyles}
       data-size={size}
+      data-type={type}
     >
       <HiddenSelect
         state={state}
@@ -392,7 +398,7 @@ function Select<T extends object>(
         ref={triggerRef}
         styles={inputStyles}
         data-size={size}
-        data-type={type || 'neutral'}
+        data-type={type}
         mods={modifiers}
       >
         {prefix ? <div data-element="Prefix">{prefix}</div> : null}
