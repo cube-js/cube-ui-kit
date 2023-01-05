@@ -4,8 +4,11 @@ export type StyleToken = RawStyleToken & {
   children?: StyleToken[];
 };
 
-const COLOR_FUNCTIONS = ['rgb', 'rgba', 'hsl', 'hsla'];
+const COLOR_FUNCTIONS = ['rgb', 'rgba', 'hsl', 'hsla', 'lch', 'oklch'];
 
+/**
+ * Create an AST from a flat array of style tokens.
+ */
 export function createAST(
   tokens: StyleToken[],
   startIndex = 0,

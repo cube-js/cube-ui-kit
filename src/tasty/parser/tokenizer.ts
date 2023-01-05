@@ -29,7 +29,10 @@ const TOKEN_MAP = [
   'space',
 ];
 
-export function tokenize(value: string) {
+/**
+ * Tokenize a style value into a flat array of tokens.
+ */
+export function tokenize(value: string): RawStyleToken[] {
   value = value.trim();
 
   if (!value) {
@@ -69,5 +72,7 @@ export function tokenize(value: string) {
     CACHE.set(value, tokens);
   }
 
-  return CACHE.get(value);
+  const cachedTokens = CACHE.get(value);
+
+  return cachedTokens ? cachedTokens : [];
 }
