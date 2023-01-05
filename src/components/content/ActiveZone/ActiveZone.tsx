@@ -31,7 +31,7 @@ export interface CubeActiveZoneProps
 }
 
 const DEFAULT_STYLES: Styles = {
-  display: 'inline-block',
+  display: 'inline-grid',
   position: 'relative',
   opacity: {
     '': 1,

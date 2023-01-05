@@ -265,12 +265,8 @@ export const DEFAULT_BUTTON_STYLES = {
   },
 
   ButtonIcon: {
-    fontSize: {
-      '': 'initial',
-      '[data-size="small"]': '14px',
-      '[data-size="medium"]': '16px',
-      '[data-size="large"]': '18px',
-    },
+    display: 'grid',
+    fontSize: '@icon-size',
   },
 } as Styles;
 
