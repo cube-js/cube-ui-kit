@@ -136,6 +136,66 @@ const TemplateStates = ({ label, mods, ...props }) => (
   </Space>
 );
 
+const DarkTemplateStates = ({ label, mods, ...props }) => (
+  <Space padding="2x" radius="1x" fill="#dark">
+    <Button
+      {...props}
+      mods={{
+        hovered: false,
+        pressed: false,
+        focused: false,
+        disabled: false,
+      }}
+    >
+      {label || 'Secondary'}
+    </Button>
+    <Button
+      {...props}
+      mods={{
+        hovered: true,
+        pressed: false,
+        focused: false,
+        disabled: false,
+      }}
+    >
+      {label || 'Hovered'}
+    </Button>
+    <Button
+      {...props}
+      mods={{
+        hovered: false,
+        pressed: true,
+        focused: false,
+        disabled: false,
+      }}
+    >
+      {label || 'Pressed'}
+    </Button>
+    <Button
+      {...props}
+      mods={{
+        hovered: false,
+        pressed: false,
+        focused: true,
+        disabled: false,
+      }}
+    >
+      {label || 'Focused'}
+    </Button>
+    <Button
+      {...props}
+      isDisabled
+      mods={{
+        hovered: false,
+        pressed: false,
+        focused: false,
+      }}
+    >
+      {label || 'Disabled'}
+    </Button>
+  </Space>
+);
+
 export const Default = Template.bind({});
 Default.args = {
   label: 'Button',
@@ -205,6 +265,42 @@ export const DangerLinkStates = TemplateStates.bind({});
 DangerLinkStates.args = {
   type: 'link',
   theme: 'danger',
+};
+
+export const SpecialSecondaryStates = DarkTemplateStates.bind({});
+SpecialSecondaryStates.args = {
+  type: 'secondary',
+  theme: 'special',
+};
+
+export const SpecialPrimaryStates = DarkTemplateStates.bind({});
+SpecialPrimaryStates.args = {
+  type: 'primary',
+  theme: 'special',
+};
+
+export const SpecialOutlineStates = DarkTemplateStates.bind({});
+SpecialOutlineStates.args = {
+  type: 'outline',
+  theme: 'special',
+};
+
+export const SpecialClearStates = DarkTemplateStates.bind({});
+SpecialClearStates.args = {
+  type: 'clear',
+  theme: 'special',
+};
+
+export const SpecialNeutralStates = DarkTemplateStates.bind({});
+SpecialNeutralStates.args = {
+  type: 'neutral',
+  theme: 'special',
+};
+
+export const SpecialLinkStates = DarkTemplateStates.bind({});
+SpecialLinkStates.args = {
+  type: 'link',
+  theme: 'special',
 };
 
 export const Small = Template.bind({});

@@ -20,7 +20,6 @@ describe('<NotificationList />', () => {
   });
 
   it('should handle onDismiss', async () => {
-    jest.setTimeout(10000);
     const onDismiss = jest.fn();
 
     const { getByTestId } = render(
