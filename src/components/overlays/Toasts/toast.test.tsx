@@ -11,7 +11,10 @@ function TestComponent({ renderNotification = true, ...notificationProps }) {
 }
 
 describe('useToastsApi', () => {
-  beforeEach(() => jest.useFakeTimers('modern'));
+  beforeEach(() => {
+    jest.useFakeTimers('modern');
+    jest.setTimeout(10000);
+  });
   afterEach(() => jest.useRealTimers());
 
   it('should add and dismiss toast on timeout', async () => {

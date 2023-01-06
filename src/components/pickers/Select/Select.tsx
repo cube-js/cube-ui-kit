@@ -51,7 +51,7 @@ import {
   DEFAULT_INPUT_STYLES,
   INPUT_WRAPPER_STYLES,
 } from '../../forms/TextInput/TextInputBase';
-import { CubeButtonProps, provideButtonStyles } from '../../actions';
+import { CubeButtonProps, DEFAULT_BUTTON_STYLES } from '../../actions';
 
 import type { AriaSelectProps } from '@react-types/select';
 
@@ -126,6 +126,7 @@ const SelectElement = tasty({
   qa: 'Button',
   styles: {
     ...INPUT_WRAPPER_STYLES,
+    ...DEFAULT_BUTTON_STYLES,
     preset: 't3m',
     cursor: 'pointer',
     padding: '0',
@@ -133,6 +134,7 @@ const SelectElement = tasty({
       '': true,
       valid: '#success-text.50',
       invalid: '#danger-text.50',
+      '[data-type="primary"]': '#clear',
       '[data-type="clear"]': '#clear',
       disabled: true,
     },
@@ -268,7 +270,7 @@ function Select<T extends object>(
     size,
     styles,
     type = 'neutral',
-    theme,
+    theme = 'default',
     labelSuffix,
     suffixPosition = 'before',
     ...otherProps
@@ -276,20 +278,7 @@ function Select<T extends object>(
   let state = useSelectState(props);
   const outerStyles = extractStyles(otherProps, OUTER_STYLES, styles);
 
-  inputStyles = extractStyles(otherProps, BLOCK_STYLES, {
-    ...(() => {
-      let styles = provideButtonStyles({ type, theme });
-
-      delete styles['border'];
-
-      if (isDisabled || validationState === 'invalid') {
-        styles.color = 'inherit';
-      }
-
-      return styles;
-    })(),
-    ...inputStyles,
-  });
+  inputStyles = extractStyles(otherProps, BLOCK_STYLES, inputStyles);
 
   ref = useCombinedRefs(ref);
   triggerRef = useCombinedRefs(triggerRef);
@@ -394,6 +383,7 @@ function Select<T extends object>(
         {...mergeProps(buttonProps, hoverProps, focusProps)}
         ref={triggerRef}
         styles={inputStyles}
+        data-theme={theme}
         data-size={size}
         data-type={type}
         mods={modifiers}

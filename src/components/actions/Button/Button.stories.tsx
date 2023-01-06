@@ -171,6 +171,42 @@ LinkStates.args = {
   type: 'link',
 };
 
+export const DangerSecondaryStates = TemplateStates.bind({});
+DangerSecondaryStates.args = {
+  type: 'secondary',
+  theme: 'danger',
+};
+
+export const DangerPrimaryStates = TemplateStates.bind({});
+DangerPrimaryStates.args = {
+  type: 'primary',
+  theme: 'danger',
+};
+
+export const DangerOutlineStates = TemplateStates.bind({});
+DangerOutlineStates.args = {
+  type: 'outline',
+  theme: 'danger',
+};
+
+export const DangerClearStates = TemplateStates.bind({});
+DangerClearStates.args = {
+  type: 'clear',
+  theme: 'danger',
+};
+
+export const DangerNeutralStates = TemplateStates.bind({});
+DangerNeutralStates.args = {
+  type: 'neutral',
+  theme: 'danger',
+};
+
+export const DangerLinkStates = TemplateStates.bind({});
+DangerLinkStates.args = {
+  type: 'link',
+  theme: 'danger',
+};
+
 export const Small = Template.bind({});
 Small.args = {
   label: 'Button',
@@ -181,12 +217,6 @@ export const Large = Template.bind({});
 Large.args = {
   label: 'Button',
   size: 'large',
-};
-
-export const Danger = Template.bind({});
-Danger.args = {
-  label: 'Button',
-  theme: 'danger',
 };
 
 export const LeftIconAndText = TemplateSizes.bind({});
