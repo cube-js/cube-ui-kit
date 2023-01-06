@@ -419,8 +419,6 @@ const SpecialButtonElement = tasty({
       '[data-type="primary"] & hovered': '#purple-text',
 
       '[data-type="secondary"]': '#white.12',
-      '[data-type="secondary"] & hovered': '#white.18',
-      '[data-type="secondary"] & pressed': '#white.12',
 
       '[data-type="clear"]': '#white',
       '[data-type="clear"] & hovered': '#white.94',
@@ -428,9 +426,12 @@ const SpecialButtonElement = tasty({
 
       '[disabled]': '#white.12',
 
-      '([data-type="neutral"] | [data-type="outline"])': '#white.0',
-      '([data-type="neutral"] | [data-type="outline"]) & hovered': '#white.18',
-      '([data-type="neutral"] | [data-type="outline"]) & pressed': '#white.18',
+      '([data-type="neutral"] | [data-type="outline"] | [data-type="secondary"])':
+        '#white.0',
+      '([data-type="neutral"] | [data-type="outline"] | [data-type="secondary"]) & hovered':
+        '#white.18',
+      '([data-type="neutral"] | [data-type="outline"] | [data-type="secondary"]) & pressed':
+        '#white.12',
 
       '([data-type="clear"] | [data-type="outline"]) & [disabled]': '#white.0',
     },
