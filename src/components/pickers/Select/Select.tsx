@@ -130,6 +130,7 @@ const SelectElement = tasty({
     preset: 't3m',
     cursor: 'pointer',
     padding: '0',
+    gap: '0',
     border: {
       '': true,
       valid: '#success-text.50',
@@ -137,6 +138,33 @@ const SelectElement = tasty({
       '[data-type="primary"]': '#clear',
       '[data-type="clear"]': '#clear',
       disabled: true,
+    },
+    fill: {
+      '': '#clear',
+      '[data-type="primary"]': '#purple',
+      '[data-type="primary"] & pressed': '#purple',
+      '[data-type="primary"] & hovered': '#purple-text',
+
+      '[data-type="neutral"]': '#dark.0',
+      '[data-type="neutral"] & hovered': '#dark.04',
+      '[data-type="neutral"] & pressed': '#dark.05',
+
+      '[disabled]': '#dark.04',
+
+      '([data-type="clear"] | [data-type="outline"])': '#purple.0',
+      '([data-type="clear"] | [data-type="outline"]) & hovered': '#purple.16',
+      '([data-type="clear"] | [data-type="outline"]) & pressed': '#purple.10',
+      '([data-type="clear"] | [data-type="outline"]) & [disabled]': '#purple.0',
+    },
+    color: {
+      '': '#white',
+
+      '[data-type="neutral"]': '#dark.75',
+      '[data-type="neutral"] & hovered': '#dark.75',
+      '[data-type="clear"]': '#purple-text',
+      '[data-type="neutral"] & pressed': '#purple',
+
+      '[disabled]': '#dark.30',
     },
   },
 });
