@@ -8,14 +8,14 @@ import {
   Block,
   // Checkbox,
   // CheckboxGroup,
-  ComboBox,
+  // ComboBox,
   Field,
   Form,
-  Item,
+  // Item,
   PasswordInput,
   // Radio,
   // RangeSlider,
-  Select,
+  // Select,
   Submit,
   SubmitError,
   // Switch,
@@ -270,24 +270,24 @@ const Template: StoryFn<typeof Form> = (args) => {
         <Field name="password">
           <PasswordInput label="Password field" />
         </Field>
-        <Field
-          name={['select', 'one']}
-          label="Select field"
-          tooltip="Additional field description"
-        >
-          <Select>
-            <Item key="one">One</Item>
-            <Item key="two">Two</Item>
-            <Item key="three">Three</Item>
-          </Select>
-        </Field>
-        <Field name="combobox" label="ComboBox field">
-          <ComboBox>
-            <Item key="one">One</Item>
-            <Item key="two">Two</Item>
-            <Item key="three">Three</Item>
-          </ComboBox>
-        </Field>
+        {/*<Field*/}
+        {/*  name={['select', 'one']}*/}
+        {/*  label="Select field"*/}
+        {/*  tooltip="Additional field description"*/}
+        {/*>*/}
+        {/*  <Select>*/}
+        {/*    <Item key="one">One</Item>*/}
+        {/*    <Item key="two">Two</Item>*/}
+        {/*    <Item key="three">Three</Item>*/}
+        {/*  </Select>*/}
+        {/*</Field>*/}
+        {/*<Field name="combobox" label="ComboBox field">*/}
+        {/*  <ComboBox>*/}
+        {/*    <Item key="one">One</Item>*/}
+        {/*    <Item key="two">Two</Item>*/}
+        {/*    <Item key="three">Three</Item>*/}
+        {/*  </ComboBox>*/}
+        {/*</Field>*/}
         {/*<Field*/}
         {/*  name="checkboxGroup"*/}
         {/*  label="Checkbox group"*/}
