@@ -12,7 +12,7 @@ import {
   TagNameProps,
   TEXT_STYLES,
   TextStyleProps,
-  Element,
+  tasty,
 } from '../../tasty';
 
 import { useAction } from './use-action';
@@ -32,7 +32,7 @@ export interface CubeActionProps
   onMouseLeave?: MouseEventHandler;
 }
 
-const DEFAULT_STYLES: Styles = {
+const DEFAULT_ACTION_STYLES: Styles = {
   reset: 'button',
   position: 'relative',
   margin: 0,
@@ -48,6 +48,10 @@ const DEFAULT_STYLES: Styles = {
   textDecoration: 'none',
 } as const;
 
+const ActionElement = tasty({
+  styles: DEFAULT_ACTION_STYLES,
+});
+
 const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
 export const Action = forwardRef(function Action(
@@ -59,7 +63,7 @@ export const Action = forwardRef(function Action(
     ref,
   );
 
-  const styles = extractStyles(props, STYLE_PROPS, DEFAULT_STYLES);
+  const styles = extractStyles(props, STYLE_PROPS);
 
-  return <Element data-theme={theme} {...actionProps} styles={styles} />;
+  return <ActionElement data-theme={theme} {...actionProps} styles={styles} />;
 });
