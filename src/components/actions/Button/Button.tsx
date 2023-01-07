@@ -36,6 +36,13 @@ export const DEFAULT_BUTTON_STYLES = {
   display: 'inline-grid',
   placeItems: 'center stretch',
   placeContent: 'center',
+  position: 'relative',
+  margin: 0,
+  outline: {
+    '': '#purple-03.0',
+    focused: '#purple-03',
+  },
+  cursor: 'pointer',
   gap: '1x',
   flow: 'column',
   preset: {
@@ -44,6 +51,7 @@ export const DEFAULT_BUTTON_STYLES = {
   },
   textDecoration: 'none',
   transition: 'theme',
+  reset: 'button',
   padding: {
     '': '(1.25x - 1bw) (2x - 1bw)',
     '[data-size="small"]': '(.75x - 1bw) (1.5x - 1bw)',

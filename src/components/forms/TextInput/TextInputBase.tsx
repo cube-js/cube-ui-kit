@@ -145,6 +145,8 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   flexGrow: 1,
   margin: 0,
   resize: 'none',
+  boxSizing: 'border-box',
+  userSelect: 'auto',
 
   '@vertical-padding': {
     '': '(1.25x - 1bw)',

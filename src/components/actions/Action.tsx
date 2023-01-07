@@ -45,6 +45,7 @@ const DEFAULT_STYLES: Styles = {
   },
   transition: 'theme',
   cursor: 'pointer',
+  textDecoration: 'none',
 } as const;
 
 const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
