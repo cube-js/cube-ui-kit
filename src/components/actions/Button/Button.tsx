@@ -100,8 +100,8 @@ const DefaultButtonElement = tasty({
         '0 0 0 0 #purple.20',
     },
     outline: {
-      '': '0 #purple.30',
-      focused: '@outline-width #purple.30',
+      '': '0 #purple-03.0',
+      focused: '@outline-width #purple-03',
     },
     border: {
       // default
@@ -165,8 +165,8 @@ const DangerButtonElement = tasty({
         '0 0 0 0 #danger.20',
     },
     outline: {
-      '': '0 #danger.30',
-      focused: '@outline-width #danger.30',
+      '': '0 #danger.0',
+      focused: '@outline-width #danger.50',
     },
     border: {
       '': '#clear',
@@ -227,7 +227,7 @@ const SpecialButtonElement = tasty({
         '0 0 0 0 #white.44',
     },
     outline: {
-      '': '0 #white.44',
+      '': '0 #white.0',
       focused: '@outline-width #white.44',
       '([data-type="primary"] | [data-type="clear"])': '0 #dark-03.80',
       '([data-type="primary"] | [data-type="clear"]) & focused':
