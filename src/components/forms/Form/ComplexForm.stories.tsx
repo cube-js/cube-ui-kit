@@ -6,22 +6,22 @@ import { expect } from '@storybook/jest';
 import {
   Alert,
   Block,
-  Checkbox,
-  CheckboxGroup,
+  // Checkbox,
+  // CheckboxGroup,
   ComboBox,
   Field,
   Form,
   Item,
   PasswordInput,
-  Radio,
-  RangeSlider,
+  // Radio,
+  // RangeSlider,
   Select,
   Submit,
   SubmitError,
-  Switch,
+  // Switch,
   TextInput,
 } from '../../../index';
-import { NumberInput } from '../NumberInput/NumberInput';
+// import { NumberInput } from '../NumberInput/NumberInput';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions';
 import { timeout } from '../../../utils/promise';
@@ -288,53 +288,53 @@ const Template: StoryFn<typeof Form> = (args) => {
             <Item key="three">Three</Item>
           </ComboBox>
         </Field>
-        <Field
-          name="checkboxGroup"
-          label="Checkbox group"
-          rules={[
-            {
-              required: true,
-              message: 'Specify at least a single option',
-            },
-          ]}
-        >
-          <CheckboxGroup orientation="horizontal">
-            <Checkbox value="one">One</Checkbox>
-            <Checkbox value="two">Two</Checkbox>
-            <Checkbox value="three">Three</Checkbox>
-          </CheckboxGroup>
-        </Field>
-        <Field name="radioGroup" label="Radio group">
-          <Radio.Group>
-            <Radio value="one">One</Radio>
-            <Radio value="two">Two</Radio>
-            <Radio value="three">Three</Radio>
-          </Radio.Group>
-        </Field>
-        <Field
-          name="checkbox"
-          rules={[{ required: true, message: 'This field is required' }]}
-        >
-          <Checkbox label="Checkbox field" />
-        </Field>
-        <Field
-          name="switch"
-          rules={[{ required: true, message: 'This field is required' }]}
-        >
-          <Switch label="Switch field" />
-        </Field>
-        <Field
-          name="number"
-          rules={[{ required: true, message: 'This field is required' }]}
-        >
-          <NumberInput label="Number field" minValue={-1} />
-        </Field>
-        <Field
-          name="slider"
-          rules={[{ required: true, message: 'This field is required' }]}
-        >
-          <RangeSlider showInput minValue={0} maxValue={100} />
-        </Field>
+        {/*<Field*/}
+        {/*  name="checkboxGroup"*/}
+        {/*  label="Checkbox group"*/}
+        {/*  rules={[*/}
+        {/*    {*/}
+        {/*      required: true,*/}
+        {/*      message: 'Specify at least a single option',*/}
+        {/*    },*/}
+        {/*  ]}*/}
+        {/*>*/}
+        {/*  <CheckboxGroup orientation="horizontal">*/}
+        {/*    <Checkbox value="one">One</Checkbox>*/}
+        {/*    <Checkbox value="two">Two</Checkbox>*/}
+        {/*    <Checkbox value="three">Three</Checkbox>*/}
+        {/*  </CheckboxGroup>*/}
+        {/*</Field>*/}
+        {/*<Field name="radioGroup" label="Radio group">*/}
+        {/*  <Radio.Group>*/}
+        {/*    <Radio value="one">One</Radio>*/}
+        {/*    <Radio value="two">Two</Radio>*/}
+        {/*    <Radio value="three">Three</Radio>*/}
+        {/*  </Radio.Group>*/}
+        {/*</Field>*/}
+        {/*<Field*/}
+        {/*  name="checkbox"*/}
+        {/*  rules={[{ required: true, message: 'This field is required' }]}*/}
+        {/*>*/}
+        {/*  <Checkbox label="Checkbox field" />*/}
+        {/*</Field>*/}
+        {/*<Field*/}
+        {/*  name="switch"*/}
+        {/*  rules={[{ required: true, message: 'This field is required' }]}*/}
+        {/*>*/}
+        {/*  <Switch label="Switch field" />*/}
+        {/*</Field>*/}
+        {/*<Field*/}
+        {/*  name="number"*/}
+        {/*  rules={[{ required: true, message: 'This field is required' }]}*/}
+        {/*>*/}
+        {/*  <NumberInput label="Number field" minValue={-1} />*/}
+        {/*</Field>*/}
+        {/*<Field*/}
+        {/*  name="slider"*/}
+        {/*  rules={[{ required: true, message: 'This field is required' }]}*/}
+        {/*>*/}
+        {/*  <RangeSlider showInput minValue={0} maxValue={100} />*/}
+        {/*</Field>*/}
         <Submit>Submit</Submit>
       </Form>
     </>
