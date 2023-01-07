@@ -204,21 +204,16 @@ const Template: StoryFn<typeof Form> = (args) => {
 
   return (
     <>
-      <Field label="Custom field outside the any form" tooltip="What?">
-        <Block>Some non-editable content</Block>
-      </Field>
       <Form
         form={form}
         {...args}
         defaultValues={{
           text: 'some',
-          text2: 'some',
           checkbox: true,
           select: {
-            one: 'three',
+            one: 'three', // select.one
           },
           combobox: 'two',
-          combobox2: 'two',
           checkboxGroup: ['one', 'three'],
           radioGroup: 'three',
           switch: false,
@@ -250,9 +245,6 @@ const Template: StoryFn<typeof Form> = (args) => {
           <TextInput label="Text field" />
         </Field>
         <Field isDisabled name="text2" label="Text disabled">
-          <TextInput />
-        </Field>
-        <Field isLoading name="text2" label="Text loading">
           <TextInput />
         </Field>
         <Field label="Custom field" tooltip="What?">
@@ -290,13 +282,6 @@ const Template: StoryFn<typeof Form> = (args) => {
           </Select>
         </Field>
         <Field name="combobox" label="ComboBox field">
-          <ComboBox>
-            <Item key="one">One</Item>
-            <Item key="two">Two</Item>
-            <Item key="three">Three</Item>
-          </ComboBox>
-        </Field>
-        <Field isLoading name="combobox2" label="ComboBox Loading field">
           <ComboBox>
             <Item key="one">One</Item>
             <Item key="two">Two</Item>

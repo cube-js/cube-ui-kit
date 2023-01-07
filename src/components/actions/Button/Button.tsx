@@ -111,8 +111,7 @@ const DefaultButtonElement = tasty({
       '[data-type="outline"] & [disabled]': '#dark.12',
       '([data-type="clear"] | [data-type="outline"]) & pressed':
         '#purple-text.10',
-      '[data-type="link"]': '#clear',
-      '[data-type="link"] & pressed': '#purple',
+      '[data-type="link"]': '0',
     },
     fill: {
       '': '#clear',
