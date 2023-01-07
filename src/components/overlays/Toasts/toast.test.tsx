@@ -13,7 +13,6 @@ function TestComponent({ renderNotification = true, ...notificationProps }) {
 describe('useToastsApi', () => {
   beforeEach(() => {
     jest.useFakeTimers('modern');
-    jest.setTimeout(10000);
   });
   afterEach(() => jest.useRealTimers());
 

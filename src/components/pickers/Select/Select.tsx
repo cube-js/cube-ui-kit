@@ -51,7 +51,7 @@ import {
   DEFAULT_INPUT_STYLES,
   INPUT_WRAPPER_STYLES,
 } from '../../forms/TextInput/TextInputBase';
-import { CubeButtonProps, DEFAULT_BUTTON_STYLES } from '../../actions';
+import { DEFAULT_BUTTON_STYLES } from '../../actions';
 
 import type { AriaSelectProps } from '@react-types/select';
 
@@ -245,7 +245,7 @@ export interface CubeSelectBaseProps<T>
   direction?: 'top' | 'bottom';
   shouldFlip?: boolean;
   inputProps?: Props;
-  type?: CubeButtonProps['type'];
+  type?: 'neutral' | 'clear' | 'primary' | (string & {});
   suffixPosition?: 'before' | 'after';
 }
 
