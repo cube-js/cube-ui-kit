@@ -89,6 +89,7 @@ export const DEFAULT_BUTTON_STYLES = {
 } as Styles;
 
 const DefaultButtonElement = tasty({
+  qa: 'Button',
   'data-theme': 'default',
   styles: {
     ...DEFAULT_BUTTON_STYLES,
@@ -99,8 +100,8 @@ const DefaultButtonElement = tasty({
         '0 0 0 0 #purple.20',
     },
     outline: {
-      '': '0 #purple-03.20',
-      focused: '@outline-width #purple-03.20',
+      '': '0 #purple.30',
+      focused: '@outline-width #purple.30',
     },
     border: {
       // default
@@ -153,6 +154,7 @@ const DefaultButtonElement = tasty({
 });
 
 const DangerButtonElement = tasty({
+  qa: 'Button',
   'data-theme': 'default',
   styles: {
     ...DEFAULT_BUTTON_STYLES,
@@ -163,8 +165,8 @@ const DangerButtonElement = tasty({
         '0 0 0 0 #danger.20',
     },
     outline: {
-      '': '0 #danger.20',
-      focused: '@outline-width #danger.20',
+      '': '0 #danger.30',
+      focused: '@outline-width #danger.30',
     },
     border: {
       '': '#clear',
@@ -214,6 +216,7 @@ const DangerButtonElement = tasty({
 });
 
 const SpecialButtonElement = tasty({
+  qa: 'Button',
   'data-theme': 'default',
   styles: {
     ...DEFAULT_BUTTON_STYLES,
