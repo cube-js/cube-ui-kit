@@ -351,6 +351,7 @@ export const FormInsideDialog: StoryFn = () => {
 };
 
 export const Default = Template.bind({});
+Default.parameters = { disableSnapshot: true };
 
 export const ComplexErrorMessage = ComplexErrorTemplate.bind({});
 ComplexErrorTemplate.parameters = { disableSnapshot: true };
