@@ -193,9 +193,11 @@ function tasty<K extends StyleList, C = Record<string, unknown>>(
     }
 
     const useDefaultStyles = !propStyles && !styles;
-    const styleCacheKey = `${styles ? JSON.stringify(styles) : ''}${
-      propStyles ? JSON.stringify(propStyles) : ''
-    }`;
+    const styleCacheKey = useMemo(() => {
+      return `${styles ? JSON.stringify(styles) : ''}.${
+        propStyles ? JSON.stringify(propStyles) : ''
+      }`;
+    }, [propStyles, styles]);
 
     let allStyles: Styles = useMemo(
       () =>
