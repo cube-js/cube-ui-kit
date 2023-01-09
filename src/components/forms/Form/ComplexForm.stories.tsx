@@ -6,20 +6,21 @@ import { expect } from '@storybook/jest';
 import {
   Alert,
   Block,
-  // Checkbox,
-  // CheckboxGroup,
-  // ComboBox,
+  Checkbox,
+  CheckboxGroup,
+  ComboBox,
   Field,
   Form,
-  // Item,
+  Item,
   PasswordInput,
-  // Radio,
-  // RangeSlider,
-  // Select,
+  Radio,
+  RangeSlider,
+  Select,
   Submit,
   SubmitError,
-  // Switch,
+  Switch,
   TextInput,
+  NumberInput,
 } from '../../../index';
 // import { NumberInput } from '../NumberInput/NumberInput';
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -270,71 +271,71 @@ const Template: StoryFn<typeof Form> = (args) => {
         <Field name="password">
           <PasswordInput label="Password field" />
         </Field>
-        {/*<Field*/}
-        {/*  name={['select', 'one']}*/}
-        {/*  label="Select field"*/}
-        {/*  tooltip="Additional field description"*/}
-        {/*>*/}
-        {/*  <Select>*/}
-        {/*    <Item key="one">One</Item>*/}
-        {/*    <Item key="two">Two</Item>*/}
-        {/*    <Item key="three">Three</Item>*/}
-        {/*  </Select>*/}
-        {/*</Field>*/}
-        {/*<Field name="combobox" label="ComboBox field">*/}
-        {/*  <ComboBox>*/}
-        {/*    <Item key="one">One</Item>*/}
-        {/*    <Item key="two">Two</Item>*/}
-        {/*    <Item key="three">Three</Item>*/}
-        {/*  </ComboBox>*/}
-        {/*</Field>*/}
-        {/*<Field*/}
-        {/*  name="checkboxGroup"*/}
-        {/*  label="Checkbox group"*/}
-        {/*  rules={[*/}
-        {/*    {*/}
-        {/*      required: true,*/}
-        {/*      message: 'Specify at least a single option',*/}
-        {/*    },*/}
-        {/*  ]}*/}
-        {/*>*/}
-        {/*  <CheckboxGroup orientation="horizontal">*/}
-        {/*    <Checkbox value="one">One</Checkbox>*/}
-        {/*    <Checkbox value="two">Two</Checkbox>*/}
-        {/*    <Checkbox value="three">Three</Checkbox>*/}
-        {/*  </CheckboxGroup>*/}
-        {/*</Field>*/}
-        {/*<Field name="radioGroup" label="Radio group">*/}
-        {/*  <Radio.Group>*/}
-        {/*    <Radio value="one">One</Radio>*/}
-        {/*    <Radio value="two">Two</Radio>*/}
-        {/*    <Radio value="three">Three</Radio>*/}
-        {/*  </Radio.Group>*/}
-        {/*</Field>*/}
-        {/*<Field*/}
-        {/*  name="checkbox"*/}
-        {/*  rules={[{ required: true, message: 'This field is required' }]}*/}
-        {/*>*/}
-        {/*  <Checkbox label="Checkbox field" />*/}
-        {/*</Field>*/}
-        {/*<Field*/}
-        {/*  name="switch"*/}
-        {/*  rules={[{ required: true, message: 'This field is required' }]}*/}
-        {/*>*/}
-        {/*  <Switch label="Switch field" />*/}
-        {/*</Field>*/}
-        {/*<Field*/}
-        {/*  name="number"*/}
-        {/*  rules={[{ required: true, message: 'This field is required' }]}*/}
-        {/*>*/}
-        {/*  <NumberInput label="Number field" minValue={-1} />*/}
-        {/*</Field>*/}
-        {/*<Field*/}
-        {/*  name="slider"*/}
-        {/*  rules={[{ required: true, message: 'This field is required' }]}*/}
-        {/*>*/}
-        {/*  <RangeSlider showInput minValue={0} maxValue={100} />*/}
-        {/*</Field>*/}
+        <Field
+          name={['select', 'one']}
+          label="Select field"
+          tooltip="Additional field description"
+        >
+          <Select>
+            <Item key="one">One</Item>
+            <Item key="two">Two</Item>
+            <Item key="three">Three</Item>
+          </Select>
+        </Field>
+        <Field name="combobox" label="ComboBox field">
+          <ComboBox>
+            <Item key="one">One</Item>
+            <Item key="two">Two</Item>
+            <Item key="three">Three</Item>
+          </ComboBox>
+        </Field>
+        <Field
+          name="checkboxGroup"
+          label="Checkbox group"
+          rules={[
+            {
+              required: true,
+              message: 'Specify at least a single option',
+            },
+          ]}
+        >
+          <CheckboxGroup orientation="horizontal">
+            <Checkbox value="one">One</Checkbox>
+            <Checkbox value="two">Two</Checkbox>
+            <Checkbox value="three">Three</Checkbox>
+          </CheckboxGroup>
+        </Field>
+        <Field name="radioGroup" label="Radio group">
+          <Radio.Group>
+            <Radio value="one">One</Radio>
+            <Radio value="two">Two</Radio>
+            <Radio value="three">Three</Radio>
+          </Radio.Group>
+        </Field>
+        <Field
+          name="checkbox"
+          rules={[{ required: true, message: 'This field is required' }]}
+        >
+          <Checkbox label="Checkbox field" />
+        </Field>
+        <Field
+          name="switch"
+          rules={[{ required: true, message: 'This field is required' }]}
+        >
+          <Switch label="Switch field" />
+        </Field>
+        <Field
+          name="number"
+          rules={[{ required: true, message: 'This field is required' }]}
+        >
+          <NumberInput label="Number field" minValue={-1} />
+        </Field>
+        <Field
+          name="slider"
+          rules={[{ required: true, message: 'This field is required' }]}
+        >
+          <RangeSlider showInput minValue={0} maxValue={100} />
+        </Field>
         <Submit>Submit</Submit>
       </Form>
     </>
@@ -352,6 +353,7 @@ export const FormInsideDialog: StoryFn = () => {
 export const Default = Template.bind({});
 
 export const ComplexErrorMessage = ComplexErrorTemplate.bind({});
+ComplexErrorTemplate.parameters = { disableSnapshot: true };
 
 export const AsyncValidation = AsyncValidationTemplate.bind({});
 
