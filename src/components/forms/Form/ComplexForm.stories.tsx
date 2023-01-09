@@ -351,10 +351,8 @@ export const FormInsideDialog: StoryFn = () => {
 };
 
 export const Default = Template.bind({});
-Default.parameters = { chromatic: { disableSnapshot: true } };
 
 export const ComplexErrorMessage = ComplexErrorTemplate.bind({});
-ComplexErrorTemplate.parameters = { chromatic: { disableSnapshot: true } };
 
 export const AsyncValidation = AsyncValidationTemplate.bind({});
 
