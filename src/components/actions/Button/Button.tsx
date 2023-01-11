@@ -61,15 +61,15 @@ export const DEFAULT_BUTTON_STYLES = {
   },
   width: {
     '': 'initial',
-    '[data-size="small"] & single-icon-only': '4x',
-    '[data-size="medium"] & single-icon-only': '5x',
-    '[data-size="large"] & single-icon-only': '6x',
+    '[data-size="small"] & single-icon-only': '4x 4x',
+    '[data-size="medium"] & single-icon-only': '5x 5x',
+    '[data-size="large"] & single-icon-only': '6x 6x',
   },
   height: {
     '': 'initial',
-    '[data-size="small"] & single-icon-only': '4x',
-    '[data-size="medium"] & single-icon-only': '5x',
-    '[data-size="large"] & single-icon-only': '6x',
+    '[data-size="small"] & single-icon-only': '4x 4x',
+    '[data-size="medium"] & single-icon-only': '5x 5x',
+    '[data-size="large"] & single-icon-only': '6x 6x',
   },
   whiteSpace: 'nowrap',
   radius: {
@@ -269,10 +269,7 @@ const SpecialButtonElement = tasty({
 
       '[data-type="neutral"]': '#white.75',
       '[data-type="neutral"] & hovered': '#white.75',
-      // '[data-type="primary"]': '#white',
       '[data-type="clear"]': '#purple',
-      // '[data-type="link"] & pressed': '#white',
-      // '[data-type="neutral"] & pressed': '#white',
 
       // other
       '[disabled]': '#white.30',
