@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.14.11
+
+### Patch Changes
+
+- [#269](https://github.com/cube-js/cube-ui-kit/pull/269) [`a339fa6`](https://github.com/cube-js/cube-ui-kit/commit/a339fa634c7e68b7e59fa6d5483c5b787d722293) Thanks [@tenphi](https://github.com/tenphi)! - Add support for `icon-size` property in preset style.
+
+- [#273](https://github.com/cube-js/cube-ui-kit/pull/273) [`32d062a`](https://github.com/cube-js/cube-ui-kit/commit/32d062a84d2410259911323b90bda998bdbe1bb8) Thanks [@tenphi](https://github.com/tenphi)! - Add optional ellipsis support for the `Title` component. Make it consistent with the `Text` component.
+
 ## 0.14.10
 
 ### Patch Changes
