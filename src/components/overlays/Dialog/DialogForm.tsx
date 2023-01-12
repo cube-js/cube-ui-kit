@@ -90,7 +90,7 @@ export function DialogForm<T extends FieldTypes = FieldTypes>(
       {...dialogProps}
     >
       <Header>
-        <Title>{title}</Title>
+        <Title ellipsis>{title}</Title>
       </Header>
       <Content>
         <Form<T>
