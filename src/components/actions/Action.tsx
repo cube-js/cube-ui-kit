@@ -36,7 +36,7 @@ const DEFAULT_ACTION_STYLES: Styles = {
   reset: 'button',
   position: 'relative',
   margin: 0,
-  fontFamily: 'var(--font)',
+  preset: 'inherit',
   border: 0,
   padding: 0,
   outline: {
@@ -46,9 +46,11 @@ const DEFAULT_ACTION_STYLES: Styles = {
   transition: 'theme',
   cursor: 'pointer',
   textDecoration: 'none',
+  fill: '#clear',
 } as const;
 
 const ActionElement = tasty({
+  as: 'button',
   styles: DEFAULT_ACTION_STYLES,
 });
 
