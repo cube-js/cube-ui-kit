@@ -80,6 +80,7 @@ const SelectWrapperElement = tasty({
     fill: {
       '': '#white',
       disabled: '#dark.04',
+      '[data-theme="special"]': '#clear',
     },
     color: {
       '': '#dark.85',
@@ -137,6 +138,7 @@ const SelectElement = tasty({
       invalid: '#danger-text.50',
       '[data-type="primary"]': '#clear',
       '[data-type="clear"]': '#clear',
+      '[data-theme="special"] & [data-type="secondary"] & pressed': '#white.44',
       disabled: true,
     },
     fill: {
@@ -145,9 +147,9 @@ const SelectElement = tasty({
       '[data-type="primary"] & pressed': '#purple',
       '[data-type="primary"] & hovered': '#purple-text',
 
-      '[data-type="neutral"]': '#dark.0',
-      '[data-type="neutral"] & hovered': '#dark.04',
-      '[data-type="neutral"] & pressed': '#dark.05',
+      '[data-type="secondary"]': '#dark.0',
+      '[data-type="secondary"] & hovered': '#dark.04',
+      '[data-type="secondary"] & pressed': '#dark.05',
 
       '[disabled]': '#dark.04',
 
@@ -155,16 +157,34 @@ const SelectElement = tasty({
       '([data-type="clear"] | [data-type="outline"]) & hovered': '#purple.16',
       '([data-type="clear"] | [data-type="outline"]) & pressed': '#purple.10',
       '([data-type="clear"] | [data-type="outline"]) & [disabled]': '#purple.0',
+
+      // special
+      '[data-theme="special"] & [data-type="secondary"]': '#white.12',
+
+      '[data-theme="special"] & [data-type="clear"]': '#white',
+      '[data-theme="special"] & [data-type="clear"] & hovered': '#white.94',
+      '[data-theme="special"] & [data-type="clear"] & pressed': '#white',
+
+      '[data-theme="special"] & [disabled]': '#white.12',
+
+      '[data-theme="special"] & [data-type="clear"] & [disabled]': '#white.0',
     },
     color: {
       '': '#white',
 
-      '[data-type="neutral"]': '#dark.75',
-      '[data-type="neutral"] & hovered': '#dark.75',
+      '[data-type="secondary"]': '#dark.75',
+      '[data-type="secondary"] & hovered': '#dark.75',
       '[data-type="clear"]': '#purple-text',
-      '[data-type="neutral"] & pressed': '#purple',
+      '[data-type="secondary"] & pressed': '#purple',
 
       '[disabled]': '#dark.30',
+
+      // special
+      '[data-theme="special"]': '#white',
+      '[data-theme="special"] & [data-type="clear"]': '#purple',
+
+      // other
+      '[data-theme="special"] & [disabled]': '#white.30',
     },
   },
 });
@@ -245,7 +265,7 @@ export interface CubeSelectBaseProps<T>
   direction?: 'top' | 'bottom';
   shouldFlip?: boolean;
   inputProps?: Props;
-  type?: 'neutral' | 'clear' | 'primary' | (string & {});
+  type?: 'secondary' | 'clear' | 'primary' | (string & {});
   suffixPosition?: 'before' | 'after';
 }
 
@@ -297,7 +317,7 @@ function Select<T extends object>(
     tooltip,
     size,
     styles,
-    type = 'neutral',
+    type = 'secondary',
     theme = 'default',
     labelSuffix,
     suffixPosition = 'before',
@@ -400,6 +420,7 @@ function Select<T extends object>(
       styles={outerStyles}
       data-size={size}
       data-type={type}
+      data-theme={theme}
     >
       <HiddenSelect
         state={state}
