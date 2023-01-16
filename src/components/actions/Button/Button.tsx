@@ -351,7 +351,7 @@ export const Button = forwardRef(function Button(
   const ButtonElement = ElementMap[theme];
 
   const { actionProps } = useAction(
-    { ...props, isDisabled, mods: modifiers },
+    { ...allProps, isDisabled, mods: modifiers },
     ref,
   );
 

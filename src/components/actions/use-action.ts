@@ -149,7 +149,6 @@ export const useAction = function useAction(
         disabled: isDisabled,
         ...mods,
       },
-      'aria-label': label,
       ...(mergeProps(
         buttonProps,
         hoverProps,
@@ -157,6 +156,7 @@ export const useAction = function useAction(
         customProps,
         filterBaseProps(props, FILTER_OPTIONS),
       ) as object),
+      'aria-label': label,
       ref: domRef,
       type: htmlType || 'button',
       rel: as === 'a' && newTab ? 'rel="noopener noreferrer"' : undefined,
