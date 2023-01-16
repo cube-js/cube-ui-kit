@@ -266,7 +266,7 @@ const SpecialButtonElement = tasty({
       // default
       '': '#white',
 
-      '[data-type="neutral"]': '#white.75',
+      '[data-type="neutral"]': '#white',
       '[data-type="neutral"] & hovered': '#white.75',
       '[data-type="clear"]': '#purple',
 
