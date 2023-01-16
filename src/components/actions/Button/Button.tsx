@@ -129,7 +129,7 @@ const DefaultButtonElement = tasty({
       '[data-type="neutral"] & hovered': '#dark.04',
       '[data-type="neutral"] & pressed': '#dark.05',
 
-      '[disabled]': '#dark.04',
+      '[disabled] & ![data-type="link"]': '#dark.04',
 
       '([data-type="clear"] | [data-type="outline"])': '#purple.0',
       '([data-type="clear"] | [data-type="outline"]) & hovered': '#purple.16',
@@ -192,7 +192,7 @@ const DangerButtonElement = tasty({
       '[data-type="neutral"] & hovered': '#dark.04',
       '[data-type="neutral"] & pressed': '#dark.05',
 
-      '[disabled]': '#dark.04',
+      '[disabled] & ![data-type="link"]': '#dark.04',
 
       '[data-type="clear"] | [data-type="outline"]': '#danger.0',
       '([data-type="clear"] | [data-type="outline"]) & hovered': '#danger.1',
@@ -252,7 +252,7 @@ const SpecialButtonElement = tasty({
       '[data-type="clear"] & hovered': '#white.94',
       '[data-type="clear"] & pressed': '#white',
 
-      '[disabled]': '#white.12',
+      '[disabled] & ![data-type="link"]': '#white.12',
 
       '([data-type="neutral"] | [data-type="outline"])': '#white.0',
       '([data-type="neutral"] | [data-type="outline"] | [data-type="secondary"]) & hovered':
