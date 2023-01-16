@@ -31,20 +31,26 @@ export default {
     },
     theme: {
       defaultValue: undefined,
-      control: { type: 'radio', options: [undefined, 'danger'] },
+      control: { type: 'radio', options: [undefined, 'danger', 'special'] },
     },
   },
 };
 
 const Template = ({ icon, rightIcon, label, onClick, ...props }) => (
-  <Button
-    icon={icon ? <DollarCircleOutlined /> : undefined}
-    rightIcon={rightIcon ? <CaretDownOutlined /> : undefined}
-    {...props}
-    onPress={(e) => console.log('Press', e)}
+  <Space
+    radius="1x"
+    padding={props.theme === 'special' ? '2x' : undefined}
+    fill={props.theme === 'special' ? '#dark' : undefined}
   >
-    {label}
-  </Button>
+    <Button
+      icon={icon ? <DollarCircleOutlined /> : undefined}
+      rightIcon={rightIcon ? <CaretDownOutlined /> : undefined}
+      {...props}
+      onPress={(e) => console.log('Press', e)}
+    >
+      {label}
+    </Button>
+  </Space>
 );
 
 const TemplateSizes = ({ label, icon, rightIcon, size, ...props }) => (

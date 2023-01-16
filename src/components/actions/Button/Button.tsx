@@ -254,8 +254,7 @@ const SpecialButtonElement = tasty({
 
       '[disabled]': '#white.12',
 
-      '([data-type="neutral"] | [data-type="outline"] | [data-type="secondary"])':
-        '#white.0',
+      '([data-type="neutral"] | [data-type="outline"])': '#white.0',
       '([data-type="neutral"] | [data-type="outline"] | [data-type="secondary"]) & hovered':
         '#white.18',
       '([data-type="neutral"] | [data-type="outline"] | [data-type="secondary"]) & pressed':
