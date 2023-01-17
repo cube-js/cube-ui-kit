@@ -102,9 +102,11 @@ const SelectWrapperElement = tasty({
       },
       textAlign: 'left',
       fill: '#clear',
-      width: 'max 100%',
       textOverflow: 'ellipsis',
-      overflow: 'hidden',
+      overflow: {
+        '': 'initial',
+        ellipsis: 'hidden',
+      },
     },
 
     CaretIcon: {
@@ -277,6 +279,7 @@ export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
   /** The ref for the list box. */
   listBoxRef?: RefObject<HTMLElement>;
   size?: 'small' | 'default' | 'large' | string;
+  ellipsis?: boolean;
 }
 
 function Select<T extends object>(
@@ -323,6 +326,7 @@ function Select<T extends object>(
     type = 'secondary',
     theme = 'default',
     labelSuffix,
+    ellipsis,
     suffixPosition = 'before',
     ...otherProps
   } = props;
@@ -395,6 +399,7 @@ function Select<T extends object>(
 
   const modifiers = useMemo(
     () => ({
+      ellipsis,
       invalid: isInvalid,
       valid: validationState === 'valid',
       disabled: isDisabled,
@@ -406,6 +411,7 @@ function Select<T extends object>(
       suffix: true,
     }),
     [
+      ellipsis,
       validationState,
       isDisabled,
       isLoading,

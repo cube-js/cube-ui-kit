@@ -55,7 +55,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   display: 'grid',
   position: 'relative',
   gridAreas: '"prefix input suffix"',
-  gridColumns: 'auto minmax(0, 1fr) auto',
+  gridColumns: 'auto 1fr auto',
   placeItems: 'stretch',
   fill: {
     '': '#white',
@@ -376,16 +376,18 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
         minLength={minLength}
       />
       {prefix ? <div data-element="Prefix">{prefix}</div> : null}
-      <div data-element="Suffix">
-        {suffixPosition === 'before' ? suffix : null}
-        {(validationState && !isLoading) || isLoading ? (
-          <div data-element="State">
-            {validationState && !isLoading ? validation : null}
-            {isLoading && <LoadingOutlined data-element="InputIcon" />}
-          </div>
-        ) : null}
-        {suffixPosition === 'after' ? suffix : null}
-      </div>
+      {(validationState && !isLoading) || isLoading || suffix ? (
+        <div data-element="Suffix">
+          {suffixPosition === 'before' ? suffix : null}
+          {(validationState && !isLoading) || isLoading ? (
+            <div data-element="State">
+              {validationState && !isLoading ? validation : null}
+              {isLoading && <LoadingOutlined data-element="InputIcon" />}
+            </div>
+          ) : null}
+          {suffixPosition === 'after' ? suffix : null}
+        </div>
+      ) : null}
     </InputWrapperElement>
   );
 

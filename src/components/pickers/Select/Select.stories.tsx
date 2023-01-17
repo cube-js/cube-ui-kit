@@ -106,8 +106,9 @@ export const Wide: Story<CubeSelectProps<any>> = (args) => (
 );
 Wide.args = { width: '500px', defaultSelectedKey: options[0] };
 
-export const WithLimitedWidth = Template.bind({});
-WithLimitedWidth.args = {
+export const WithEllipsis = Template.bind({});
+WithEllipsis.args = {
+  ellipsis: true,
   styles: { width: 'max 30x' },
   defaultSelectedKey: 'very-long-option-value-with-suffix',
 };
