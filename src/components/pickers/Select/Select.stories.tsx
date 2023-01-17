@@ -38,6 +38,7 @@ const options = [
   'blue',
   'purple',
   'violet',
+  'very-long-option-value-with-suffix',
 ];
 
 const Template: Story<CubeSelectProps<any>> = (args) => (
@@ -104,3 +105,9 @@ export const Wide: Story<CubeSelectProps<any>> = (args) => (
   </Select>
 );
 Wide.args = { width: '500px', defaultSelectedKey: options[0] };
+
+export const WithLimitedWidth = Template.bind({});
+WithLimitedWidth.args = {
+  styles: { width: 'max 30x' },
+  defaultSelectedKey: 'very-long-option-value-with-suffix',
+};

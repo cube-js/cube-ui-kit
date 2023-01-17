@@ -102,6 +102,9 @@ const SelectWrapperElement = tasty({
       },
       textAlign: 'left',
       fill: '#clear',
+      width: 'max 100%',
+      textOverflow: 'ellipsis',
+      overflow: 'hidden',
     },
 
     CaretIcon: {

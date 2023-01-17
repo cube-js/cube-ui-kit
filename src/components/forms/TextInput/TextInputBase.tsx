@@ -55,7 +55,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   display: 'grid',
   position: 'relative',
   gridAreas: '"prefix input suffix"',
-  gridColumns: 'auto 1fr auto',
+  gridColumns: 'auto minmax(0, 1fr) auto',
   placeItems: 'stretch',
   fill: {
     '': '#white',
