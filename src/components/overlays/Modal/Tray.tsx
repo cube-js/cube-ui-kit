@@ -8,6 +8,7 @@ import { mergeProps } from '../../../utils/react';
 import { OVERLAY_WRAPPER_STYLES } from './Modal';
 import { Underlay } from './Underlay';
 import { Overlay } from './Overlay';
+import { WithCloseBehavior } from './types';
 
 import type { TrayProps } from '@react-types/overlays';
 
@@ -35,7 +36,7 @@ const TrayElement = tasty({
   },
 });
 
-export interface CubeTrayProps extends TrayProps {
+export interface CubeTrayProps extends TrayProps, WithCloseBehavior {
   container?: HTMLElement;
   qa?: BaseProps['qa'];
   onClose?: (action?: string) => void;

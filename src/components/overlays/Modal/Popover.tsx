@@ -7,6 +7,7 @@ import { mergeProps } from '../../../utils/react';
 import { PlacementAxis } from '../../../shared';
 
 import { Overlay } from './Overlay';
+import { WithCloseBehavior } from './types';
 
 const PopoverElement = tasty({
   role: 'presentation',
@@ -32,7 +33,8 @@ const PopoverElement = tasty({
 
 export interface CubePopoverProps
   extends BaseProps,
-    Omit<OverlayProps, 'children'> {
+    Omit<OverlayProps, 'children'>,
+    WithCloseBehavior {
   container?: HTMLElement;
   placement?: PlacementAxis;
   arrowProps?: HTMLAttributes<HTMLElement>;

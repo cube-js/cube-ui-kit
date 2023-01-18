@@ -20,6 +20,10 @@ const UnderlayElement = tasty({
       '': 'none',
       open: 'auto',
     },
+    visibility: {
+      '': 'hidden',
+      open: 'visible',
+    },
     fill: '#dark.30',
     overflow: 'hidden',
     transition:

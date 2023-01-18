@@ -7,6 +7,7 @@ import { mergeProps } from '../../../utils/react';
 
 import { Underlay } from './Underlay';
 import { Overlay } from './Overlay';
+import { WithCloseBehavior } from './types';
 
 import type { ModalProps } from '@react-types/overlays';
 
@@ -26,6 +27,10 @@ export const OVERLAY_WRAPPER_STYLES: Styles = {
   pointerEvents: 'none',
   zIndex: 2,
   transition: 'visibility 0ms linear .13s',
+  visibility: {
+    '': 'hidden',
+    open: 'visible',
+  },
 };
 
 const ModalWrapperElement = tasty({
@@ -61,7 +66,9 @@ const ModalElement = tasty({
   },
 });
 
-export interface CubeModalProps extends Omit<ModalProps, 'container'> {
+export interface CubeModalProps
+  extends Omit<ModalProps, 'container'>,
+    WithCloseBehavior {
   container?: HTMLElement;
   qa?: BaseProps['qa'];
   onClose?: (action?: string) => void;

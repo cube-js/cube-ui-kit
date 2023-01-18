@@ -5,12 +5,14 @@ import { Provider, useProviderProps } from '../../../provider';
 import { Props } from '../../../tasty';
 
 import { OpenTransition } from './OpenTransition';
+import { WithCloseBehavior } from './types';
 
 import type { OverlayProps } from '@react-types/overlays';
 
-export interface CubeOverlayProps extends Omit<OverlayProps, 'container'> {
+export interface CubeOverlayProps
+  extends Omit<OverlayProps, 'container'>,
+    WithCloseBehavior {
   container?: HTMLElement | null;
-  closeBehavior?: 'hide' | 'remove';
 }
 
 function Overlay(props: CubeOverlayProps, ref) {
@@ -24,7 +26,7 @@ function Overlay(props: CubeOverlayProps, ref) {
     onExit,
     onExiting,
     onExited,
-    closeBehavior,
+    closeBehavior = 'remove',
   } = props;
   let [exited, setExited] = useState(!isOpen);
   let { root } = useProviderProps({} as Props);
