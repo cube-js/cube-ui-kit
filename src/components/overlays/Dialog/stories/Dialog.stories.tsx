@@ -61,7 +61,7 @@ const Template: Story<
 };
 
 export const Default = Template.bind({});
-Default.play = async ({ canvasElement }) => {
+Default.play = async ({ canvasElement, viewMode }) => {
   if (viewMode === 'docs') return;
 
   const { getByRole, findByRole } = within(canvasElement);
