@@ -50,7 +50,7 @@ const config = {
     },
   ],
   webpackFinal: (config) => {
-    config.plugins.push(new webpack.DefinePlugin({ SC_DISABLE_SPEEDY: true }));
+    config.plugins.push(new webpack.DefinePlugin({ SC_DISABLE_SPEEDY: false }));
     config.performance.hints = false;
 
     return config;
