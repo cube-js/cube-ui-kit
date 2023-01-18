@@ -33,7 +33,7 @@
     "eslint:errors": "npm run eslint -- --quiet",
     "lint": "npm-run-all -p eslint prettier",
     "fix": "npm-run-all -p eslint:fix prettier:fix",
-    "storybook": "STORYBOOK_MODE=stories start-storybook -p 6006",
+    "storybook": "STORYBOOK_MODE=stories start-storybook -p 6060",
     "build-storybook": "STORYBOOK_MODE=stories build-storybook",
     "build-docs": "STORYBOOK_MODE=docs build-storybook --docs -o storybook-docs",
     "size": "size-limit",
