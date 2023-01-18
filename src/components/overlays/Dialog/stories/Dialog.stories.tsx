@@ -62,6 +62,8 @@ const Template: Story<
 
 export const Default = Template.bind({});
 Default.play = async ({ canvasElement }) => {
+  if (viewMode === 'docs') return;
+
   const { getByRole, findByRole } = within(canvasElement);
   await userEvent.click(getByRole('button'));
 
@@ -126,7 +128,9 @@ export const CloseBehaviorHideDialog: typeof Template = Template.bind({});
 CloseBehaviorHideDialog.args = {
   closeBehavior: 'hide',
 };
-CloseBehaviorHideDialog.play = async ({ canvasElement }) => {
+CloseBehaviorHideDialog.play = async ({ canvasElement, viewMode }) => {
+  if (viewMode === 'docs') return;
+
   const { getByRole, findByRole } = within(canvasElement);
 
   await userEvent.click(getByRole('button'));
