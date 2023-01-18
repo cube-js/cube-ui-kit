@@ -7,3 +7,4 @@ export { useLayoutEffect } from './useLayoutEffect';
 export { useCombinedRefs } from './useCombinedRefs';
 export { wrapNodeIfPlain } from './wrapNodeIfPlain';
 export { useViewportSize } from './useViewportSize';
+export { flattenChildren } from './flattenChildren';

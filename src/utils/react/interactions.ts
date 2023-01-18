@@ -4,6 +4,7 @@ import {
   useFocus as reactAriaUseFocus,
   useFocusVisible,
 } from '@react-aria/interactions';
+import type {} from "@react-types/shared";
 
 export function useFocus({ isDisabled }: FocusProps, onlyVisible = false) {
   useEffect(() => {

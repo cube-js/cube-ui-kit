@@ -118,7 +118,7 @@ let TrayWrapper = forwardRef(function TrayWrapper(
           open: isOpen,
           'fixed-height': isFixedHeight,
         }}
-        {...domProps}
+        {...(domProps as Record<string, unknown>)}
         {...modalProps}
         ref={ref}
       >

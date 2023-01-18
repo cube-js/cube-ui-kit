@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { isElement } from 'react-is';
-import flatten from 'react-keyed-flatten-children';
+import { flattenChildren } from '../../../../utils/react';
 
 import { CubeNotificationProps, NotificationActionComponent } from '../types';
 import { tasty } from '../../../../tasty';
@@ -11,6 +11,7 @@ interface NotificationFooterProps {
   actions: CubeNotificationProps['actions'];
   onClose: () => void;
   onDismiss: () => void;
+  children?: Array<React.ReactNode>;
 }
 
 const FooterArea = tasty(ButtonGroup, {
@@ -34,7 +35,7 @@ export const NotificationFooter = memo(function NotificationFooter(
 
   return (
     <FooterArea mods={{ 'has-description': hasDescription }}>
-      {flatten(
+      {flattenChildren(
         typeof actions === 'function'
           ? actions({ onClose, onDismiss })
           : actions,
@@ -50,7 +51,7 @@ export const NotificationFooter = memo(function NotificationFooter(
               ...props,
               type: props.type ?? defaultType,
             },
-            props.children,
+            props.children
           );
         })}
     </FooterArea>
