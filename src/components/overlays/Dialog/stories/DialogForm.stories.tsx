@@ -93,7 +93,7 @@ AsyncExampleTrigger.play = async ({ viewMode, canvasElement }) => {
   if (viewMode === 'docs') return;
   const screen = within(canvasElement);
   await userEvent.click(screen.getByRole('button'));
-  const dialog = await screen.getByRole('dialog');
+  const dialog = await screen.findByRole('dialog');
   await expect(dialog).toBeInTheDocument();
 
   const dialogCanvas = within(dialog);
@@ -113,7 +113,7 @@ AsyncExampleContainer.play = async ({ viewMode, canvasElement }) => {
   if (viewMode === 'docs') return;
   const screen = within(canvasElement);
   await userEvent.click(screen.getByRole('button'));
-  const dialog = await screen.getByRole('dialog');
+  const dialog = await screen.findByRole('dialog');
   await expect(dialog).toBeInTheDocument();
 
   const dialogCanvas = within(dialog);

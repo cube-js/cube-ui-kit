@@ -1,13 +1,16 @@
 import { expect } from '@storybook/jest';
 import { ComponentMeta, Story } from '@storybook/react';
-import { userEvent, within } from '@storybook/testing-library';
+import {
+  userEvent,
+  waitForElementToBeRemoved,
+  within,
+} from '@storybook/testing-library';
 import { action } from '@storybook/addon-actions';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { DialogTrigger } from '../Dialog/DialogTrigger';
 import { Button } from '../../actions';
 import { Paragraph } from '../../content/Paragraph';
-import { wait } from '../../../test';
 
 import { DialogProps } from './types';
 import { useAlertDialogAPI } from './AlertDialogApiProvider';
@@ -46,9 +49,9 @@ const Template: Story<CubeAlertDialogProps> = (args) => {
 export const Default = Template.bind({});
 Default.args = {};
 Default.play = async ({ canvasElement }) => {
-  const { getByRole } = within(canvasElement);
-  await userEvent.click(getByRole('button'));
-  await expect(getByRole('alertdialog')).toBeInTheDocument();
+  const { findByRole } = within(canvasElement);
+  await userEvent.click(await findByRole('button'));
+  await expect(await findByRole('alertdialog')).toBeInTheDocument();
 };
 
 export const UsingApi: Story<DialogProps> = (args) => {
@@ -69,10 +72,10 @@ export const UsingApi: Story<DialogProps> = (args) => {
   );
 };
 UsingApi.play = async ({ canvasElement }) => {
-  const { getByRole } = within(canvasElement);
-  await userEvent.click(getByRole('button'));
+  const { findByRole } = within(canvasElement);
+  await userEvent.click(await findByRole('button'));
 
-  await expect(getByRole('alertdialog')).toBeInTheDocument();
+  await expect(await findByRole('alertdialog')).toBeInTheDocument();
 };
 
 export const UsingApiWithCancel: Story<DialogProps> = (args) => {
@@ -107,11 +110,16 @@ export const UsingApiWithCancel: Story<DialogProps> = (args) => {
   );
 };
 UsingApiWithCancel.play = async ({ canvasElement }) => {
-  const { getByRole, getByTestId, queryByRole } = within(canvasElement);
+  const { getByRole, getByTestId, queryByRole, findByRole } =
+    within(canvasElement);
 
   await userEvent.click(getByRole('button'));
-  await expect(queryByRole('alertdialog')).toBeInTheDocument();
+
+  const dialog = await findByRole('alertdialog');
+
+  await expect(dialog).toBeInTheDocument();
   await userEvent.click(getByTestId('CancelToken'));
-  await wait(300);
+  await waitForElementToBeRemoved(dialog);
+
   await expect(queryByRole('alertdialog')).not.toBeInTheDocument();
 };
