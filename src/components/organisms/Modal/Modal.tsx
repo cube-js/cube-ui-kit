@@ -218,7 +218,7 @@ export function Modal(allProps: CubeModalProps) {
             {typeof title === 'object' ? (
               title
             ) : (
-              <Title level={4} flexGrow={1}>
+              <Title ellipsis level={4} flexGrow={1}>
                 {title}
               </Title>
             )}

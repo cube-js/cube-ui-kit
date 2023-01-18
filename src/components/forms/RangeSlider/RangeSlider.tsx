@@ -12,6 +12,7 @@ import {
   OuterStyleProps,
   Styles,
 } from '../../../tasty';
+import { CubeNumberInputProps } from '../NumberInput/NumberInput';
 
 import { Slide } from './Slide';
 import { Gradation } from './Gradation';
@@ -29,18 +30,19 @@ import type { DOMRef } from '@react-types/shared';
 import type { AriaSliderProps, SliderProps } from '@react-types/slider';
 
 export interface CubeRangeSliderProps
-  extends AriaSliderProps<SliderValue>,
-    SliderProps<SliderValue>,
+  extends Omit<AriaSliderProps<SliderValue>, 'label'>,
+    Omit<SliderProps<SliderValue>, 'label'>,
     BasePropsWithoutChildren,
     OuterStyleProps,
     FormFieldProps,
     BlockStyleProps {
   showInput?: boolean;
-  inputSuffix?: string;
   inputStyles?: Styles;
   gradation?: string[];
   onChange?: (range: SliderValue) => void;
   onChangeEnd?: (range: SliderValue) => void;
+  inputWidth?: string;
+  formatOptions?: CubeNumberInputProps['formatOptions'];
 }
 
 function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
@@ -65,9 +67,10 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
     orientation = 'horizontal',
     showInput,
     inputStyles,
-    inputSuffix,
     minValue,
     maxValue,
+    inputWidth,
+    formatOptions,
     onChange,
     onChangeEnd,
     ...otherProps
@@ -117,7 +120,6 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
     step,
     state,
     isDisabled,
-    suffix: inputSuffix,
     styles: inputStyles,
     min: baseProps.minValue,
     max: baseProps.maxValue,
@@ -131,7 +133,14 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
         inputs: showInput,
       }}
     >
-      {!isSingle && showInput && <RangeInput index={0} {...inputProps} />}
+      {!isSingle && showInput && (
+        <RangeInput
+          formatOptions={formatOptions}
+          width={inputWidth}
+          index={0}
+          {...inputProps}
+        />
+      )}
       <StyledContent>
         <StyledControls {...trackProps} ref={trackRef}>
           <Slide
@@ -156,7 +165,14 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
           ))}
         </StyledControls>
       </StyledContent>
-      {showInput && <RangeInput index={1} {...inputProps} />}
+      {showInput && (
+        <RangeInput
+          formatOptions={formatOptions}
+          width={inputWidth}
+          index={state.values.length > 1 ? 1 : 0}
+          {...inputProps}
+        />
+      )}
     </StyledSlider>
   );
 

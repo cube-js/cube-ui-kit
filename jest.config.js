@@ -1,3 +1,5 @@
+process.env.SC_DISABLE_SPEEDY = 'false';
+
 /** @type {import('@jest/types').Config.InitialOptions} */
 const config = {
   coverageDirectory: './coverage/',

@@ -152,6 +152,10 @@ function tasty<K extends StyleList, C = Record<string, unknown>>(
 
   let Element = styledComponents[originalAs](({ css }) => css);
 
+  /**
+   * An additional optimization that allows to avoid rendering styles across various instances
+   * of the same element if no custom styles are provided via `styles` prop or direct style props.
+   */
   const renderDefaultStyles = cacheWrapper((breakpoints) => {
     return renderStyles(defaultStyles, pointsToZones(breakpoints));
   });
@@ -184,27 +188,34 @@ function tasty<K extends StyleList, C = Record<string, unknown>>(
       propStyles = null;
     }
 
+    if (!styles || (styles && Object.keys(styles).length === 0)) {
+      styles = undefined;
+    }
+
     const useDefaultStyles = !propStyles && !styles;
+    const styleCacheKey = useMemo(() => {
+      return `${styles ? JSON.stringify(styles) : ''}.${
+        propStyles ? JSON.stringify(propStyles) : ''
+      }`;
+    }, [propStyles, styles]);
 
     let allStyles: Styles = useMemo(
       () =>
         useDefaultStyles
           ? defaultStyles
           : mergeStyles(defaultStyles, styles, propStyles),
-      [styles, propStyles],
+      [styleCacheKey],
     );
 
     let contextBreakpoints = useContext(BreakpointsContext);
 
     breakpoints = breakpoints ?? contextBreakpoints;
 
-    let renderedStyles = useMemo(
-      () =>
-        useDefaultStyles
-          ? renderDefaultStyles(breakpoints as number[])
-          : renderStyles(allStyles, pointsToZones(breakpoints as number[])),
-      [allStyles, breakpoints],
-    );
+    let renderedStyles = useMemo(() => {
+      return useDefaultStyles
+        ? renderDefaultStyles(breakpoints as number[])
+        : renderStyles(allStyles, pointsToZones(breakpoints as number[]));
+    }, [allStyles, breakpoints]);
 
     if (mods) {
       Object.assign(otherProps, modAttrs(mods));

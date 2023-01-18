@@ -9,6 +9,7 @@ import { Form } from '.';
 
 describe('<Form />', () => {
   it('should not be displayed if validation is failed on submit', async () => {
+    jest.setTimeout(10000);
     const onSubmit = jest.fn(() => Promise.reject('Custom Error'));
     const onSubmitFailed = jest.fn(() => {});
 

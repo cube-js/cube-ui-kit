@@ -28,9 +28,6 @@ exports[`tasty() API should allow multiple wrapping 1`] = `
 }
 
 .c0.c0 {
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
   display: flex;
 }
 
@@ -116,9 +113,6 @@ exports[`tasty() API should create responsive styles 1`] = `
 
 @media (max-width:979px) {
   .c0.c0 {
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: -ms-flexbox;
     display: flex;
   }
 }

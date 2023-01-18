@@ -64,6 +64,7 @@ function NumberInput(props: WithNullableValue<CubeNumberInputProps>, ref) {
       inputRef={inputRef}
       wrapperProps={groupProps}
       suffixPosition="after"
+      textAlign="center"
       suffix={
         showStepper ? (
           <StepperContainer>

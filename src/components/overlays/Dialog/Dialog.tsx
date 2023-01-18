@@ -191,6 +191,7 @@ export const Dialog = forwardRef(function Dialog(
       },
     },
     header: {
+      ellipsis: true,
       styles: {
         display: 'flex',
         flow: 'row',

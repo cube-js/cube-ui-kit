@@ -145,6 +145,8 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   flexGrow: 1,
   margin: 0,
   resize: 'none',
+  boxSizing: 'border-box',
+  userSelect: 'auto',
 
   '@vertical-padding': {
     '': '(1.25x - 1bw)',
@@ -374,16 +376,18 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
         minLength={minLength}
       />
       {prefix ? <div data-element="Prefix">{prefix}</div> : null}
-      <div data-element="Suffix">
-        {suffixPosition === 'before' ? suffix : null}
-        {(validationState && !isLoading) || isLoading ? (
-          <div data-element="State">
-            {validationState && !isLoading ? validation : null}
-            {isLoading && <LoadingOutlined data-element="InputIcon" />}
-          </div>
-        ) : null}
-        {suffixPosition === 'after' ? suffix : null}
-      </div>
+      {(validationState && !isLoading) || isLoading || suffix ? (
+        <div data-element="Suffix">
+          {suffixPosition === 'before' ? suffix : null}
+          {(validationState && !isLoading) || isLoading ? (
+            <div data-element="State">
+              {validationState && !isLoading ? validation : null}
+              {isLoading && <LoadingOutlined data-element="InputIcon" />}
+            </div>
+          ) : null}
+          {suffixPosition === 'after' ? suffix : null}
+        </div>
+      ) : null}
     </InputWrapperElement>
   );
 

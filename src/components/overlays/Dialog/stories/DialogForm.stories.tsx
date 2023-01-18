@@ -77,7 +77,7 @@ export const AsyncExampleTrigger = TemplateTrigger.bind({});
 AsyncExampleTrigger.args = {
   title: 'Confirm delete',
   submitProps: { theme: 'danger', label: 'Delete', qa: 'Delete' },
-  onSubmit: () => new Promise((resolve) => setTimeout(resolve, 1_500)),
+  onSubmit: () => new Promise((resolve) => setTimeout(resolve, 500)),
   children: DIALOG_CHILDREN,
 };
 
@@ -85,7 +85,7 @@ export const AsyncExampleContainer = TemplateContainer.bind({});
 AsyncExampleContainer.args = {
   title: 'Confirm delete',
   submitProps: { theme: 'danger', label: 'Delete', qa: 'Delete' },
-  onSubmit: () => new Promise((resolve) => setTimeout(resolve, 1_500)),
+  onSubmit: () => new Promise((resolve) => setTimeout(resolve, 500)),
   children: DIALOG_CHILDREN,
 };
 

@@ -74,7 +74,18 @@ export const Input = Template.bind({});
 Input.args = {
   width: '50x',
   label: 'Label',
-  name: 'filter',
+  defaultValue: 20,
+  showInput: true,
+  minValue: 0,
+  maxValue: 100,
+  step: 2,
+};
+
+export const InputDual = Template.bind({});
+
+InputDual.args = {
+  width: '50x',
+  label: 'Label',
   showInput: true,
   defaultValue: [20, 80],
   minValue: 0,
@@ -82,14 +93,18 @@ Input.args = {
   step: 2,
 };
 
-export const InputSuffix = Template.bind({});
+export const InputFormat = Template.bind({});
 
-InputSuffix.args = {
+InputFormat.args = {
   width: '50x',
   label: 'Label',
-  name: 'filter',
   showInput: true,
-  inputSuffix: 'ms',
+  formatOptions: {
+    style: 'unit',
+    unit: 'millisecond',
+    unitDisplay: 'short',
+  },
+  inputWidth: '10x',
   defaultValue: [20, 80],
   minValue: 0,
   maxValue: 200,
@@ -101,9 +116,7 @@ export const InvalidData = Template.bind({});
 InvalidData.args = {
   width: '50x',
   label: 'Label',
-  name: 'filter',
   showInput: true,
-  inputSuffix: 'ms',
   defaultValue: [20, 80],
   minValue: 0,
   maxValue: 6,

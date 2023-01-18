@@ -1,4 +1,4 @@
-export type SliderValue = number[];
+export type SliderValue = number[] | number;
 
 export function getRanges(value) {
   if (Array.isArray(value)) {
