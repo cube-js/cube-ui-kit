@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.14.12
+
+### Patch Changes
+
+- [#271](https://github.com/cube-js/cube-ui-kit/pull/271) [`90cc2f8`](https://github.com/cube-js/cube-ui-kit/commit/90cc2f876233c3341206536b7f27f78b831e4e92) Thanks [@tenphi](https://github.com/tenphi)! - Add new `special` theme for `Button` and `Select` components.
+  Allow single input layout for `RangeSlider` component.
+  Add `ellipsis` property to `Select` component to allow text overflow of selected value.
+
 ## 0.14.11
 
 ### Patch Changes
