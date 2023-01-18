@@ -36,10 +36,10 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Install dependencies
-        run: yarn --frozen-lockfile
+        run: ./.github/composite-actions/install
 
       - name: Build project
-        run: yarn build
+        run: pnpm build
 
       - name: Download baseline stats
         uses: dawidd6/action-download-artifact@v2
@@ -86,7 +86,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const setMessage = require('${{ github.workspace }}/scripts/ci/set-message')
-            
+
             await setMessage({
               header: "## 🏋️ Size limit report",
               body: `

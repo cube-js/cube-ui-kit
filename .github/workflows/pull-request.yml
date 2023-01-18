@@ -35,7 +35,7 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Install dependencies
-        run: yarn --frozen-lockfile
+        run: ./.github/composite-actions/install
 
       - name: Set env
         run: echo "SHORT_SHA=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_ENV
@@ -44,7 +44,7 @@ jobs:
         run: npm version 0.0.0-canary-$SHORT_SHA --no-git-tag-version
 
       - name: Build project
-        run: yarn build
+        run: pnpm build
 
       - name: Publish canary
         id: publish
@@ -70,7 +70,6 @@ jobs:
               repo: context.repo,
               prNumber: context.payload.pull_request.number
             })
-
 
   tests:
     name: 'Tests & lint'
@@ -100,13 +99,13 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Install dependencies
-        run: yarn --frozen-lockfile
+        run: ./.github/composite-actions/install
 
       - name: Run the lint
-        run: yarn lint
+        run: pnpm lint
 
       - name: Run the tests
-        run: yarn test --no-cache
+        run: pnpm test --no-cache
 
   deploy-chromatic:
     name: 'Prepare Storybook for review & tests'
@@ -146,7 +145,7 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Install dependencies
-        run: yarn --frozen-lockfile
+        run: ./.github/composite-actions/install
 
       - name: Publish to Chromatic
         id: publish_chromatic
@@ -211,10 +210,10 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Install dependencies
-        run: yarn --frozen-lockfile
+        run: ./.github/composite-actions/install
 
       - name: Build Docs
-        run: yarn build-docs --quiet
+        run: pnpm build-docs --quiet
 
       - name: Deploy docs to Netlify
         id: publish_docs

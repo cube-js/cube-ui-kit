@@ -31,7 +31,7 @@ jobs:
             ${{ runner.os }}-yarn
 
       - name: Install Dependencies
-        run: yarn --frozen-lockfile
+        run: ./.github/composite-actions/install
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
@@ -82,7 +82,7 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Install dependencies
-        run: yarn --frozen-lockfile
+        run: ./.github/composite-actions/install
 
       - name: Publish to Chromatic
         id: publish_chromatic
@@ -131,10 +131,10 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Install dependencies
-        run: yarn --frozen-lockfile
+        run: ./.github/composite-actions/install
 
       - name: Build Docs
-        run: yarn build-docs --quiet
+        run: pnpm build-docs --quiet
 
       - name: Deploy docs to Netlify
         uses: South-Paw/action-netlify-deploy@v1.2.1
