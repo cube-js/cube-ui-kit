@@ -41,6 +41,7 @@ export interface CubeDialogTriggerProps {
   mobileViewport?: number;
   /** The style map for the overlay **/
   styles?: Styles;
+  closeBehavior?: 'hide' | 'remove';
 }
 
 function DialogTrigger(props) {
@@ -55,6 +56,7 @@ function DialogTrigger(props) {
     isKeyboardDismissDisabled,
     styles,
     mobileViewport = 700,
+    closeBehavior,
     ...positionProps
   } = props;
 
