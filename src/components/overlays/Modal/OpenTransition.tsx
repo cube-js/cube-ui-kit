@@ -20,6 +20,7 @@ export function OpenTransition(
             child &&
             cloneElement(child as ReactElement, {
               isOpen: !!OPEN_STATES[state],
+              transitionState: state,
             }),
         )
       }

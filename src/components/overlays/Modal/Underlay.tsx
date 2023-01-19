@@ -27,7 +27,7 @@ const UnderlayElement = tasty({
     fill: '#dark.30',
     overflow: 'hidden',
     transition:
-      'transform .25s ease-in-out, opacity .25s linear, visibility 0.13ms linear',
+      'transform .25s ease-in-out, opacity .25s linear, visibility 0.13s linear',
   },
 });
 

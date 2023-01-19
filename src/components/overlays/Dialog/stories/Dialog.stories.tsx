@@ -1,4 +1,9 @@
-import { within, userEvent, waitFor } from '@storybook/testing-library';
+import {
+  within,
+  userEvent,
+  waitFor,
+  waitForElementToBeRemoved,
+} from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
 import { Story } from '@storybook/react';
 
@@ -175,3 +180,45 @@ CloseBehaviorHidePanel.args = {
   closeBehavior: 'hide',
 };
 CloseBehaviorHidePanel.play = CloseBehaviorHideDialog.play;
+
+export const CloseOnEsc: typeof Template = Template.bind({});
+CloseOnEsc.play = async (context) => {
+  if (context.viewMode === 'docs') return;
+
+  const { findByRole } = within(context.canvasElement);
+
+  const trigger = await findByRole('button');
+
+  await userEvent.click(trigger);
+
+  const dialog = await findByRole('dialog');
+
+  await expect(dialog).toBeInTheDocument();
+  await expect(document.activeElement).toBe(dialog);
+
+  await userEvent.keyboard('{Escape}');
+
+  await waitFor(() => expect(document.activeElement).toBe(trigger));
+};
+
+export const CloseOnEscCloseBehaviorHide: typeof Template = Template.bind({});
+CloseOnEscCloseBehaviorHide.args = {
+  closeBehavior: 'hide',
+};
+CloseOnEscCloseBehaviorHide.play = CloseOnEsc.play;
+
+export const CloseOnOutsideClick: typeof Template = Template.bind({});
+CloseOnOutsideClick.play = async (context) => {
+  if (context.viewMode === 'docs') return;
+
+  await Default.play(context);
+
+  const { findByRole } = within(context.canvasElement);
+  const dialog = await findByRole('dialog');
+
+  await userEvent.click(document.body);
+
+  await waitForElementToBeRemoved(dialog);
+
+  expect(dialog).not.toBeInTheDocument();
+};

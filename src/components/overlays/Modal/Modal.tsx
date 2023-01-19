@@ -7,7 +7,7 @@ import { mergeProps } from '../../../utils/react';
 
 import { Underlay } from './Underlay';
 import { Overlay } from './Overlay';
-import { WithCloseBehavior } from './types';
+import { TransitionState, WithCloseBehavior } from './types';
 
 import type { ModalProps } from '@react-types/overlays';
 
@@ -26,10 +26,9 @@ export const OVERLAY_WRAPPER_STYLES: Styles = {
   height: '100dvh',
   pointerEvents: 'none',
   zIndex: 2,
-  transition: 'visibility 0ms linear .13s',
-  visibility: {
-    '': 'hidden',
-    open: 'visible',
+  transition: {
+    '': 'visibility .5s steps(2, start)',
+    open: 'visibility 0s linear',
   },
 };
 
@@ -40,7 +39,12 @@ const ModalWrapperElement = tasty({
 
 const ModalElement = tasty({
   styles: {
-    display: 'grid',
+    display: {
+      '': 'none',
+      'entering | entered': 'grid',
+      exiting: 'grid',
+      exited: 'none',
+    },
     zIndex: 2,
     height: {
       '': 'max 90dvh',
@@ -52,8 +56,7 @@ const ModalElement = tasty({
       width: '288px 90vw',
     },
     pointerEvents: 'none',
-    transition:
-      'opacity .25s linear, visibility 0ms linear, transform .25s ease-in-out',
+    transition: 'opacity .25s linear, transform .25s ease-in-out',
     transform: {
       '': 'translate(0, 0) scale(1, 1)',
       '[data-type="modal"] & !open': 'translate(0, -3x) scale(1, 1)',
@@ -99,7 +102,7 @@ function Modal(props: CubeModalProps, ref) {
   );
 }
 
-interface ModalWrapperProps {
+interface ModalWrapperProps extends TransitionState {
   children?: ReactNode;
   qa?: BaseProps['qa'];
   isOpen?: boolean;
@@ -122,6 +125,7 @@ let ModalWrapper = forwardRef(function ModalWrapper(
     placement,
     styles,
     overlayProps,
+    transitionState,
     ...otherProps
   } = props;
 
@@ -129,16 +133,20 @@ let ModalWrapper = forwardRef(function ModalWrapper(
 
   let { modalProps } = useModal();
 
+  console.log(isOpen, transitionState);
+
   return (
-    <ModalWrapperElement
-      mods={{ open: isOpen }}
-      data-type={type}
-      data-placement={placement}
-    >
+    <ModalWrapperElement data-type={type} data-placement={placement}>
       <ModalElement
         qa={qa || 'Modal'}
         styles={styles}
-        mods={{ open: isOpen }}
+        mods={{
+          open: isOpen,
+          entering: transitionState === 'entering',
+          exiting: transitionState === 'exiting',
+          exited: transitionState === 'exited',
+          entered: transitionState === 'entered',
+        }}
         data-type={type}
         data-placement={placement}
         {...mergeProps(otherProps, overlayProps, modalProps)}
