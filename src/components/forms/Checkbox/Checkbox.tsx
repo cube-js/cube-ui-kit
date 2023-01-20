@@ -26,6 +26,7 @@ import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
+import { Text } from '../../content/Text';
 
 import { CheckboxGroup } from './CheckboxGroup';
 import { CheckboxGroupContext } from './context';
@@ -142,8 +143,6 @@ function Checkbox(
     ...otherProps
   } = props;
 
-  label = label || children;
-
   // Swap hooks depending on whether this checkbox is inside a CheckboxGroup.
   // This is a bit unorthodox. Typically, hooks cannot be called in a conditional,
   // but since the checkbox won't move in and out of a group, it should be safe.
@@ -223,6 +222,7 @@ function Checkbox(
       <CheckboxElement qa="Checkbox" mods={mods} styles={inputStyles}>
         {markIcon}
       </CheckboxElement>
+      {children && <Text>{children}</Text>}
     </CheckboxWrapperElement>
   );
 
@@ -233,6 +233,7 @@ function Checkbox(
           as: 'label',
           labelPosition,
           label,
+          children,
           extra,
           styles,
           isRequired,
@@ -275,7 +276,7 @@ function Checkbox(
           }}
           {...filterBaseProps(labelProps)}
         >
-          {label}
+          {label || children}
         </Element>
       )}
     </CheckboxWrapperElement>
