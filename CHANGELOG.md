@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.14.13
+
+### Patch Changes
+
+- [#277](https://github.com/cube-js/cube-ui-kit/pull/277) [`86061ce`](https://github.com/cube-js/cube-ui-kit/commit/86061cea6aa42c852d46013ad168b1eda9f72345) Thanks [@tenphi](https://github.com/tenphi)! - Fix NumberInput default width
+
+- [#277](https://github.com/cube-js/cube-ui-kit/pull/277) [`86061ce`](https://github.com/cube-js/cube-ui-kit/commit/86061cea6aa42c852d46013ad168b1eda9f72345) Thanks [@tenphi](https://github.com/tenphi)! - The `border` style now explicitly sets zero-width border for all border that are not mentioned by modifiers. So that it always overrides default values.
+
 ## 0.14.12
 
 ### Patch Changes
