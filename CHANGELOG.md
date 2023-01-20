@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.14.14
+
+### Patch Changes
+
+- [#279](https://github.com/cube-js/cube-ui-kit/pull/279) [`14120c8`](https://github.com/cube-js/cube-ui-kit/commit/14120c8d6e651db1d79c22214952d7aa9befdc41) Thanks [@tenphi](https://github.com/tenphi)! - The `border` style now explicitly sets zero-width border for all border that are not mentioned by modifiers. So that it always overrides default values.
+
 ## 0.14.13
 
 ### Patch Changes
