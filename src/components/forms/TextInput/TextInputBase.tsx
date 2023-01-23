@@ -131,7 +131,7 @@ const INPUT_STYLE_PROPS_LIST = [...BLOCK_STYLES, 'resize'];
 export const DEFAULT_INPUT_STYLES: Styles = {
   display: 'block',
   gridArea: 'input',
-  width: 'initial 100% initial',
+  width: 'initial 100% 100%',
   height: 'initial initial initial',
   color: 'inherit',
   fill: '#clear',

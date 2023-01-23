@@ -28,7 +28,7 @@ export interface CubeNumberInputProps
 
 const StyledTextInputBase = tasty(TextInputBase, {
   wrapperStyles: {
-    width: '13x',
+    width: 'initial 13x 100%',
   },
 });
 
