@@ -28,10 +28,10 @@ const Template = (props) => (
 );
 
 export const Default = Template.bind({});
-Default.args = {};
+Default.args = { children: 'Checkbox' };
 
-export const WithoutLabel = Template.bind({});
-WithoutLabel.args = {
+export const WithoutValue = Template.bind({});
+WithoutValue.args = {
   label: '',
 };
 

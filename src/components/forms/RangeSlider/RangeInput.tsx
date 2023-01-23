@@ -43,9 +43,10 @@ export function RangeInput(props: RangeInputProps) {
       {...otherProps}
       hideStepper
       size="small"
-      inputStyles={{
+      wrapperStyles={{
         width: inputWidth,
       }}
+      textAlign="center"
       formatOptions={formatOptions}
       value={value}
       minValue={state.getThumbMinValue(index)}

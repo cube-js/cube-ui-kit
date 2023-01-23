@@ -316,7 +316,7 @@ const Template: StoryFn<typeof Form> = (args) => {
           name="checkbox"
           rules={[{ required: true, message: 'This field is required' }]}
         >
-          <Checkbox label="Checkbox field" />
+          <Checkbox label="Checkbox field">Checkbox value</Checkbox>
         </Field>
         <Field
           name="switch"
