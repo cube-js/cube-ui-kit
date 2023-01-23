@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.14.15
+
+### Patch Changes
+
+- [#281](https://github.com/cube-js/cube-ui-kit/pull/281) [`a30cf7d`](https://github.com/cube-js/cube-ui-kit/commit/a30cf7d8966a52a5a5c90af4875de6bd9eae1a00) Thanks [@tenphi](https://github.com/tenphi)! - Checkbox now has an abilility to have both a label and a text value inside forms.
+
 ## 0.14.14
 
 ### Patch Changes
