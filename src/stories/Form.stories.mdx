@@ -161,6 +161,48 @@ export function LoginForm() {
   </Story>
 </Canvas>
 
+Use `direction="horizontal"` property to create a horizontal form.
+
+<Canvas>
+  <Story name="HorizontalLoginForm">
+    {(args) => (
+      <Form
+        direction="horizontal"
+        labelPosition="side"
+        onSubmit={() => {
+          return new Promise((resolve) => {
+            setTimeout(resolve, 1000); // 1s of submitting
+          });
+        }}
+        requiredMark={false}
+        {...args}
+      >
+        <Field
+          label="Email"
+          name="email"
+          rules={[
+            { required: true, message: 'E-mail required' },
+            { type: 'email', message: 'Please enter a valid e-mail' },
+          ]}
+        >
+          <Input.Text type="email" size="small" />
+        </Field>
+        <Field
+          label="Password"
+          name="password"
+          rules={[
+            { required: true, message: 'Password required' },
+            { min: 8, message: 'The password must be at least 8 characters' },
+          ]}
+        >
+          <Input.Password type="password" size="small" />
+        </Field>
+        <Submit size="small">Submit</Submit>
+      </Form>
+    )}
+  </Story>
+</Canvas>
+
 ### Dialog form
 
 It's possible to create forms inside dialogs. The `DialogForm` contains all props of `Form` and `Dialog` components.

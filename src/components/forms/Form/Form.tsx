@@ -33,8 +33,18 @@ const FormElement = tasty({
   as: 'form',
   qa: 'Form',
   styles: {
-    display: 'block',
-    flow: 'column',
+    display: {
+      '': 'block',
+      horizontal: 'flex',
+    },
+    flow: {
+      '': 'column',
+      horizontal: 'row',
+    },
+    placeItems: {
+      '': 'initial',
+      horizontal: 'center',
+    },
     gap: '2x',
     '@label-width': '25x',
   },
@@ -76,6 +86,7 @@ export interface CubeFormProps<T extends FieldTypes = FieldTypes>
   form?: CubeFormInstance<T, CubeFormData<T>>;
   /** The size of the side area with labels. Only for `labelPosition="side"` */
   labelWidth?: Styles['width'];
+  direction?: 'vertical' | 'horizontal';
 }
 
 function Form<T extends FieldTypes>(
@@ -87,7 +98,8 @@ function Form<T extends FieldTypes>(
     qa,
     name,
     children,
-    labelPosition = 'top',
+    labelPosition,
+    direction,
     isRequired,
     necessityIndicator,
     isDisabled,
@@ -105,6 +117,19 @@ function Form<T extends FieldTypes>(
     ...otherProps
   } = props;
   const firstRunRef = useRef(true);
+  const isHorizontal = direction === 'horizontal';
+
+  if (!direction) {
+    direction = 'vertical';
+  }
+
+  if (!labelPosition) {
+    labelPosition = isHorizontal ? 'side' : 'top';
+  }
+
+  if (!labelWidth) {
+    labelWidth = isHorizontal ? 'auto' : undefined;
+  }
 
   ref = useCombinedRefs(ref);
 
@@ -180,6 +205,7 @@ function Form<T extends FieldTypes>(
   let ctx = {
     labelPosition,
     labelStyles,
+    direction,
     necessityIndicator,
     validateTrigger,
     requiredMark,
@@ -208,7 +234,7 @@ function Form<T extends FieldTypes>(
       ref={domRef}
       noValidate
       styles={styles}
-      mods={{ 'has-sider': labelPosition === 'side' }}
+      mods={{ 'has-sider': labelPosition === 'side', horizontal: isHorizontal }}
       onSubmit={onSubmitCallback}
     >
       <FormContext.Provider value={ctx}>
