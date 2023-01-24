@@ -31,7 +31,7 @@ const FieldElement = tasty({
     },
     placeItems: {
       '': 'start stretch',
-      horizontal: 'center',
+      horizontal: 'center stretch',
     },
 
     LabelArea: {
@@ -127,7 +127,9 @@ function FieldWrapper(props: CubeFieldWrapperProps, ref) {
     labelSuffix,
   } = props;
 
-  const { orientation } = useFormProps({});
+  let { orientation } = useFormProps(
+    props.orientation ? { orientation: props.orientation } : {},
+  );
 
   const labelComponent = label ? (
     <Label

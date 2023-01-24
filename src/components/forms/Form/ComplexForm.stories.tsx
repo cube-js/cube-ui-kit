@@ -220,6 +220,7 @@ const Template: StoryFn<typeof Form> = (args) => {
           switch: false,
           slider: [20, 40],
         }}
+        labelPosition="side"
         onSubmit={(v) => {
           console.log('onSubmit:', v);
         }}
@@ -306,10 +307,10 @@ const Template: StoryFn<typeof Form> = (args) => {
           </CheckboxGroup>
         </Field>
         <Field name="radioGroup" label="Radio group">
-          <Radio.Group>
-            <Radio value="one">One</Radio>
-            <Radio value="two">Two</Radio>
-            <Radio value="three">Three</Radio>
+          <Radio.Group orientation="horizontal">
+            <Radio.Button value="one">One</Radio.Button>
+            <Radio.Button value="two">Two</Radio.Button>
+            <Radio.Button value="three">Three</Radio.Button>
           </Radio.Group>
         </Field>
         <Field
