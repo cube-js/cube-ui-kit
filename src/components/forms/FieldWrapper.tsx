@@ -100,7 +100,7 @@ export type CubeFieldWrapperProps = {
   extra?: ReactNode;
   isHidden?: boolean;
   necessityLabel?: ReactNode;
-  direction?: 'vertical' | 'horizontal';
+  orientation?: 'vertical' | 'horizontal';
 };
 
 function FieldWrapper(props: CubeFieldWrapperProps, ref) {
@@ -127,7 +127,7 @@ function FieldWrapper(props: CubeFieldWrapperProps, ref) {
     labelSuffix,
   } = props;
 
-  const { direction } = useFormProps({});
+  const { orientation } = useFormProps({});
 
   const labelComponent = label ? (
     <Label
@@ -181,7 +181,7 @@ function FieldWrapper(props: CubeFieldWrapperProps, ref) {
     'has-description': !!description,
     invalid: validationState === 'invalid',
     valid: validationState === 'valid',
-    horizontal: direction === 'horizontal',
+    horizontal: orientation === 'horizontal',
   };
 
   return (

@@ -142,7 +142,7 @@ export interface CubeFieldProps<T extends FieldTypes>
   labelPosition?: LabelPosition;
   labelStyles?: Styles;
   labelSuffix?: ReactNode;
-  direction?: 'horizontal' | 'vertical';
+  orientation?: 'horizontal' | 'vertical';
 }
 
 interface CubeFullFieldProps<T extends FieldTypes> extends CubeFieldProps<T> {
@@ -188,7 +188,7 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
     labelPosition = 'top',
     labelStyles,
     labelSuffix,
-    direction,
+    orientation,
   } = props;
 
   const nonInput = !name;
@@ -262,7 +262,7 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
         description={description}
         Component={child}
         styles={styles}
-        direction={direction}
+        orientation={orientation}
         labelPosition={labelPosition}
         labelStyles={labelStyles}
         labelSuffix={labelSuffix}

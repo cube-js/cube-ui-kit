@@ -86,7 +86,7 @@ export interface CubeFormProps<T extends FieldTypes = FieldTypes>
   form?: CubeFormInstance<T, CubeFormData<T>>;
   /** The size of the side area with labels. Only for `labelPosition="side"` */
   labelWidth?: Styles['width'];
-  direction?: 'vertical' | 'horizontal';
+  orientation?: 'vertical' | 'horizontal';
 }
 
 function Form<T extends FieldTypes>(
@@ -99,7 +99,7 @@ function Form<T extends FieldTypes>(
     name,
     children,
     labelPosition,
-    direction,
+    orientation,
     isRequired,
     necessityIndicator,
     isDisabled,
@@ -117,10 +117,10 @@ function Form<T extends FieldTypes>(
     ...otherProps
   } = props;
   const firstRunRef = useRef(true);
-  const isHorizontal = direction === 'horizontal';
+  const isHorizontal = orientation === 'horizontal';
 
-  if (!direction) {
-    direction = 'vertical';
+  if (!orientation) {
+    orientation = 'vertical';
   }
 
   if (!labelPosition) {
@@ -205,7 +205,7 @@ function Form<T extends FieldTypes>(
   let ctx = {
     labelPosition,
     labelStyles,
-    direction,
+    orientation,
     necessityIndicator,
     validateTrigger,
     requiredMark,
