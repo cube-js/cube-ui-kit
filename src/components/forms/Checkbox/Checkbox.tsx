@@ -64,14 +64,11 @@ const CheckboxWrapperElement = tasty({
     position: 'relative',
     display: 'flex',
     placeItems: 'center start',
+    placeContent: 'baseline',
     gap: '1x',
     flow: 'row',
     preset: 'default',
     cursor: 'pointer',
-    margin: {
-      '': 0,
-      'inside-form & side-label': '1.5x top',
-    },
   },
 });
 

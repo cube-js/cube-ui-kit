@@ -34,26 +34,25 @@ import {
 import type { AriaSwitchProps } from '@react-types/switch';
 
 const SwitchWrapperElement = tasty({
-  qa: 'SwitchWrapper',
+  qa: 'Switch',
   styles: {
-    display: 'inline-flex',
+    display: 'flex',
     position: 'relative',
-    placeItems: 'baseline',
-    gap: '1x',
-    margin: {
-      '': 0,
-      'inside-form & side-label': '1x top',
+    placeItems: {
+      '': 'center stretch',
+      'side-label': 'baseline stretch',
     },
+    gap: '1x',
   },
 });
 
 const SwitchLabelElement = tasty({
   as: 'label',
-  qa: 'SwitchWrapper',
+  qa: 'SwitchLabel',
   styles: {
     position: 'relative',
     display: 'flex',
-    placeItems: 'center start',
+    placeItems: 'center',
     gap: '1x',
     flow: 'row',
     preset: 'input',
@@ -67,6 +66,7 @@ const SwitchElement = tasty({
   styles: {
     position: 'relative',
     display: 'grid',
+    verticalAlign: 'baseline',
     placeItems: 'center',
     radius: 'round',
     fill: {

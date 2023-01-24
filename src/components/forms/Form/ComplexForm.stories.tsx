@@ -220,7 +220,6 @@ const Template: StoryFn<typeof Form> = (args) => {
           switch: false,
           slider: [20, 40],
         }}
-        labelPosition="side"
         onSubmit={(v) => {
           console.log('onSubmit:', v);
         }}
@@ -332,6 +331,7 @@ const Template: StoryFn<typeof Form> = (args) => {
           <NumberInput label="Number field" minValue={-1} />
         </Field>
         <Field
+          label="Slider"
           name="slider"
           rules={[{ required: true, message: 'This field is required' }]}
         >
@@ -352,6 +352,9 @@ export const FormInsideDialog: StoryFn = () => {
 };
 
 export const Default = Template.bind({});
+
+export const ComplexFormSideLabel = Template.bind({});
+ComplexFormSideLabel.args = { labelPosition: 'side' };
 
 export const ComplexErrorMessage = ComplexErrorTemplate.bind({});
 
