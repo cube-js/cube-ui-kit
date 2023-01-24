@@ -34,7 +34,7 @@ import {
 import type { AriaSwitchProps } from '@react-types/switch';
 
 const SwitchWrapperElement = tasty({
-  qa: 'Switch',
+  qa: 'SwitchWrapper',
   styles: {
     display: 'flex',
     position: 'relative',
@@ -63,6 +63,7 @@ const SwitchLabelElement = tasty({
 });
 
 const SwitchElement = tasty({
+  qa: 'Switch',
   styles: {
     position: 'relative',
     display: 'grid',
@@ -178,13 +179,13 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   };
 
   const switchField = (
-    <SwitchWrapperElement qa={qa || 'Switch'} mods={mods}>
+    <SwitchWrapperElement mods={mods}>
       <HiddenInput
         data-qa="HiddenInput"
         {...mergeProps(inputProps, focusProps)}
         ref={inputRef}
       />
-      <SwitchElement mods={mods} styles={inputStyles}>
+      <SwitchElement qa={qa || 'Switch'} mods={mods} styles={inputStyles}>
         <div data-element="Thumb" aria-hidden="true" />
       </SwitchElement>
       {children ? <Text>{children}</Text> : null}
