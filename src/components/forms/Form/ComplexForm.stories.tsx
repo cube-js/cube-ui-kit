@@ -267,7 +267,7 @@ const Template: StoryFn<typeof Form> = (args) => {
             return !!email;
           }}
         >
-          <TextInput type="email" label="Email field" />
+          <TextInput type="email" size="small" label="Email field" />
         </Field>
         <Field name="password">
           <PasswordInput label="Password field" />
@@ -308,9 +308,9 @@ const Template: StoryFn<typeof Form> = (args) => {
         </Field>
         <Field name="radioGroup" label="Radio group">
           <Radio.Group orientation="horizontal">
-            <Radio.Button value="one">One</Radio.Button>
-            <Radio.Button value="two">Two</Radio.Button>
-            <Radio.Button value="three">Three</Radio.Button>
+            <Radio value="one">One</Radio>
+            <Radio value="two">Two</Radio>
+            <Radio value="three">Three</Radio>
           </Radio.Group>
         </Field>
         <Field
@@ -323,7 +323,7 @@ const Template: StoryFn<typeof Form> = (args) => {
           name="switch"
           rules={[{ required: true, message: 'This field is required' }]}
         >
-          <Switch label="Switch field" />
+          <Switch label="Switch field">Switch value</Switch>
         </Field>
         <Field
           name="number"

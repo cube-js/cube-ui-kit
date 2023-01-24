@@ -15,7 +15,6 @@ import { Space } from '../layout/Space';
 import { Flex } from '../layout/Flex';
 
 import { Label } from './Label';
-import { useFormProps } from './Form';
 
 const FieldElement = tasty({
   qa: 'Field',
@@ -29,20 +28,13 @@ const FieldElement = tasty({
       '': '1x',
       'has-sider': '@(column-gap, 1x)',
     },
-    placeItems: {
-      '': 'start stretch',
-      horizontal: 'center stretch',
-    },
+    placeItems: 'baseline stretch',
 
     LabelArea: {
       display: 'block',
       width: {
         '': 'initial',
         'has-sider': '@label-width',
-      },
-      padding: {
-        '': 'initial',
-        'has-sider & !horizontal': '1.25x top',
       },
     },
 
@@ -100,7 +92,6 @@ export type CubeFieldWrapperProps = {
   extra?: ReactNode;
   isHidden?: boolean;
   necessityLabel?: ReactNode;
-  orientation?: 'vertical' | 'horizontal';
 };
 
 function FieldWrapper(props: CubeFieldWrapperProps, ref) {
@@ -126,10 +117,6 @@ function FieldWrapper(props: CubeFieldWrapperProps, ref) {
     isHidden,
     labelSuffix,
   } = props;
-
-  let { orientation } = useFormProps(
-    props.orientation ? { orientation: props.orientation } : {},
-  );
 
   const labelComponent = label ? (
     <Label
@@ -183,7 +170,6 @@ function FieldWrapper(props: CubeFieldWrapperProps, ref) {
     'has-description': !!description,
     invalid: validationState === 'invalid',
     valid: validationState === 'valid',
-    horizontal: orientation === 'horizontal',
   };
 
   return (

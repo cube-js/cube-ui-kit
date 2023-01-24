@@ -266,7 +266,7 @@ function Checkbox(
       ref={domRef}
     >
       {checkboxField}
-      {label && (
+      {label || children ? (
         <Element
           styles={labelStyles}
           mods={{
@@ -278,7 +278,7 @@ function Checkbox(
         >
           {label || children}
         </Element>
-      )}
+      ) : null}
     </CheckboxWrapperElement>
   );
 }
