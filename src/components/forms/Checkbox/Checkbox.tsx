@@ -266,7 +266,7 @@ function Checkbox(
       ref={domRef}
     >
       {checkboxField}
-      {label || children ? (
+      {label ? (
         <Element
           styles={labelStyles}
           mods={{
@@ -276,7 +276,7 @@ function Checkbox(
           }}
           {...filterBaseProps(labelProps)}
         >
-          {label || children}
+          {label}
         </Element>
       ) : null}
     </CheckboxWrapperElement>

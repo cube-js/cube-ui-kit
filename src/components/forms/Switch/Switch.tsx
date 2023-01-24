@@ -226,7 +226,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
       ref={domRef}
     >
       {switchField}
-      {label || children ? (
+      {label ? (
         <Element
           styles={labelStyles}
           mods={{
@@ -234,10 +234,10 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
           }}
           {...filterBaseProps(labelProps)}
         >
-          {label || children}
+          {label}
           {isLoading ? (
             <>
-              {label || children ? <>&nbsp;</> : null}
+              {label ? <>&nbsp;</> : null}
               <LoadingOutlined />
             </>
           ) : null}
