@@ -40,6 +40,8 @@ export function RangeInput(props: RangeInputProps) {
 
   return (
     <NumberInput
+      insideForm={false}
+      labelPosition="top"
       {...otherProps}
       hideStepper
       size="small"

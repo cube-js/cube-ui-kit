@@ -29,10 +29,6 @@ const WRAPPER_STYLES = {
     '': '1fr',
     'has-sider': 'max-content 1fr',
   },
-  gap: {
-    '': '0',
-    'has-sider': '1x',
-  },
   placeItems: 'baseline start',
 };
 
