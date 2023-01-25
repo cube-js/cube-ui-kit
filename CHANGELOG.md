@@ -1,5 +1,12 @@
 # @cube-dev/ui-kit
 
+## 0.14.16
+
+### Patch Changes
+
+- [#283](https://github.com/cube-js/cube-ui-kit/pull/283) [`f07722e`](https://github.com/cube-js/cube-ui-kit/commit/f07722e11a3b61edf16a7ec67d23ba39abccee4f) Thanks [@tenphi](https://github.com/tenphi)! - Fix label positioning for side layout in Form.
+  Fix RangeSlider's usage inside forms with `labelPosition="side"`.
+
 ## 0.14.15
 
 ### Patch Changes
