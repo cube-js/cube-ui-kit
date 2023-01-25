@@ -160,15 +160,15 @@ function tasty<K extends StyleList, C = Record<string, unknown>>(
     return renderStyles(defaultStyles, pointsToZones(breakpoints));
   });
 
+  let {
+    qa: defaultQa,
+    qaVal: defaultQaVal,
+    ...otherDefaultProps
+  } = defaultProps ?? {};
+
   let _TastyComponent = forwardRef((allProps: AllBasePropsWithMods<K>, ref) => {
     let { as, styles, breakpoints, mods, element, qa, qaVal, ...otherProps } =
       allProps;
-
-    let {
-      qa: defaultQa,
-      qaVal: defaultQaVal,
-      ...otherDefaultProps
-    } = defaultProps ?? {};
 
     let propStyles: Styles | null = (
       (styleProps

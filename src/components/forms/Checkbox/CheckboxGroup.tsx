@@ -29,10 +29,6 @@ const WRAPPER_STYLES = {
     '': '1fr',
     'has-sider': 'max-content 1fr',
   },
-  gap: {
-    '': '0',
-    'has-sider': '1x',
-  },
   placeItems: 'baseline start',
 };
 
@@ -50,7 +46,6 @@ const CheckGroupElement = tasty({
       '': '1x',
       horizontal: '1x 2x',
     },
-    padding: '(1x - 1bw) 0',
   },
 });
 

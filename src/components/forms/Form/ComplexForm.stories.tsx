@@ -266,7 +266,7 @@ const Template: StoryFn<typeof Form> = (args) => {
             return !!email;
           }}
         >
-          <TextInput type="email" label="Email field" />
+          <TextInput type="email" size="small" label="Email field" />
         </Field>
         <Field name="password">
           <PasswordInput label="Password field" />
@@ -306,7 +306,7 @@ const Template: StoryFn<typeof Form> = (args) => {
           </CheckboxGroup>
         </Field>
         <Field name="radioGroup" label="Radio group">
-          <Radio.Group>
+          <Radio.Group orientation="horizontal">
             <Radio value="one">One</Radio>
             <Radio value="two">Two</Radio>
             <Radio value="three">Three</Radio>
@@ -322,7 +322,7 @@ const Template: StoryFn<typeof Form> = (args) => {
           name="switch"
           rules={[{ required: true, message: 'This field is required' }]}
         >
-          <Switch label="Switch field" />
+          <Switch label="Switch field">Switch value</Switch>
         </Field>
         <Field
           name="number"
@@ -331,6 +331,7 @@ const Template: StoryFn<typeof Form> = (args) => {
           <NumberInput label="Number field" minValue={-1} />
         </Field>
         <Field
+          label="Slider"
           name="slider"
           rules={[{ required: true, message: 'This field is required' }]}
         >
@@ -351,6 +352,9 @@ export const FormInsideDialog: StoryFn = () => {
 };
 
 export const Default = Template.bind({});
+
+export const ComplexFormSideLabel = Template.bind({});
+ComplexFormSideLabel.args = { labelPosition: 'side' };
 
 export const ComplexErrorMessage = ComplexErrorTemplate.bind({});
 

@@ -13,6 +13,7 @@ import {
   Styles,
 } from '../../../tasty';
 import { CubeNumberInputProps } from '../NumberInput/NumberInput';
+import { useFormProps } from '../Form';
 
 import { Slide } from './Slide';
 import { Gradation } from './Gradation';
@@ -45,7 +46,12 @@ export interface CubeRangeSliderProps
   formatOptions?: CubeNumberInputProps['formatOptions'];
 }
 
-function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
+function RangeSlider(
+  allProps: CubeRangeSliderProps,
+  ref: DOMRef<HTMLDivElement>,
+) {
+  const props = useFormProps(allProps);
+
   let {
     labelPosition,
     label,
@@ -64,7 +70,6 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
     gradation,
     step = 1,
     isDisabled,
-    orientation = 'horizontal',
     showInput,
     inputStyles,
     minValue,
@@ -73,8 +78,11 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
     formatOptions,
     onChange,
     onChangeEnd,
+    orientation: formOrientation,
     ...otherProps
   } = props;
+
+  let orientation = allProps.orientation || 'horizontal';
 
   const [min, max] = getMinMaxValue(minValue, maxValue, value || defaultValue);
   const ranges = getRanges(defaultValue || value || [0, 1]);

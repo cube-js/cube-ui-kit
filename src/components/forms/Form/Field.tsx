@@ -188,6 +188,7 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
     labelStyles,
     labelSuffix,
   } = props;
+
   const nonInput = !name;
   const fieldName: string =
     name != null ? (Array.isArray(name) ? name.join('.') : name) : '';

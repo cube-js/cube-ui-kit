@@ -64,14 +64,11 @@ const CheckboxWrapperElement = tasty({
     position: 'relative',
     display: 'flex',
     placeItems: 'center start',
+    placeContent: 'baseline',
     gap: '1x',
     flow: 'row',
     preset: 'default',
     cursor: 'pointer',
-    margin: {
-      '': 0,
-      'inside-form & side-label': '1.5x top',
-    },
   },
 });
 
@@ -266,7 +263,7 @@ function Checkbox(
       ref={domRef}
     >
       {checkboxField}
-      {label && (
+      {label ? (
         <Element
           styles={labelStyles}
           mods={{
@@ -276,9 +273,9 @@ function Checkbox(
           }}
           {...filterBaseProps(labelProps)}
         >
-          {label || children}
+          {label}
         </Element>
-      )}
+      ) : null}
     </CheckboxWrapperElement>
   );
 }

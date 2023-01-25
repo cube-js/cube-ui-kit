@@ -78,10 +78,12 @@ export const StyledControls = tasty({
 });
 
 export const StyledSlider = tasty({
+  qa: 'RangeSlider',
   as: 'section',
   styles: {
     position: 'relative',
-    display: 'flex',
+    display: 'inline-flex',
+    verticalAlign: 'middle',
     gap: {
       '': '0',
       inputs: '1x',
@@ -92,10 +94,6 @@ export const StyledSlider = tasty({
     },
     alignItems: 'center',
     width: '100%',
-    padding: {
-      '': '0',
-      sideLabel: '0.75x top',
-    },
   },
 });
 

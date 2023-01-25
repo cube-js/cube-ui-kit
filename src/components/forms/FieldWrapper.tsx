@@ -22,13 +22,11 @@ const FieldElement = tasty({
     display: 'grid',
     gridColumns: {
       '': '1fr',
-      'has-sider': '@(label-width, auto) 1fr',
+      'has-sider': '@(full-label-width, auto) 1fr',
     },
-    gap: {
-      '': '1x',
-      'has-sider': '@(column-gap, 1x)',
-    },
-    placeItems: 'start stretch',
+    gap: 0,
+    placeItems: 'baseline stretch',
+    '@full-label-width': '(@label-width + 1x)',
 
     LabelArea: {
       display: 'block',
@@ -36,9 +34,10 @@ const FieldElement = tasty({
         '': 'initial',
         'has-sider': '@label-width',
       },
-      padding: {
-        '': 'initial',
-        'has-sider': '1.25x top',
+      margin: {
+        '': '1x bottom',
+        'has-sider': '1x right',
+        ':empty': '0',
       },
     },
 
