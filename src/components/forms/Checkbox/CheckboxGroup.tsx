@@ -46,7 +46,6 @@ const CheckGroupElement = tasty({
       '': '1x',
       horizontal: '1x 2x',
     },
-    padding: '(1x - 1bw) 0',
   },
 });
 
