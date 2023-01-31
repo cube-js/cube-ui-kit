@@ -6,7 +6,7 @@ import { useSlider } from '@react-aria/slider';
 import { useNumberFormatter } from '@react-aria/i18n';
 
 import { FieldWrapper } from '../../forms/FieldWrapper';
-import { extractStyles, OUTER_STYLES } from '../../../tasty';
+import { extractStyles, OUTER_STYLES, tasty } from '../../../tasty';
 import { useFormProps } from '../Form';
 import { Text } from '../../content/Text';
 
@@ -22,6 +22,13 @@ export interface SliderBaseChildArguments {
 export interface SliderBaseProps<T = number[]> extends CubeSliderBaseProps<T> {
   children: (opts: SliderBaseChildArguments) => ReactNode;
 }
+
+const LabelValueElement = tasty(Text, {
+  styles: {
+    display: 'block',
+    textAlign: 'right',
+  },
+});
 
 function SliderBase(
   allProps: SliderBaseProps,
@@ -55,6 +62,7 @@ function SliderBase(
     onChange,
     onChangeEnd,
     children,
+    showValueLabel = true,
     orientation: formOrientation,
     ...otherProps
   } = props;
@@ -154,22 +162,22 @@ function SliderBase(
   }
 
   extra =
-    extra != null ? (
+    extra != null || !showValueLabel ? (
       extra
     ) : (
-      <Text
+      <LabelValueElement
         {...outputProps}
         style={
           maxLabelLength
             ? {
-                width: `${maxLabelLength}ch`,
-                minWidth: `${maxLabelLength}ch`,
+                width: `${maxLabelLength + 1}ch`,
+                minWidth: `${maxLabelLength + 1}ch`,
               }
             : undefined
         }
       >
         {displayValue}
-      </Text>
+      </LabelValueElement>
     );
 
   const sliderField = (

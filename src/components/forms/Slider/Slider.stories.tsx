@@ -33,6 +33,20 @@ WithLabel.args = {
   label: 'Slider',
 };
 
+export const WithoutValue = Template.bind({});
+WithoutValue.args = {
+  label: 'Slider',
+  showValueLabel: false,
+};
+
+export const WithCustomValue = Template.bind({});
+WithCustomValue.args = {
+  label: 'Slider',
+  getValueLabel(val) {
+    return `(${val})`;
+  },
+};
+
 export const Vertical = Template.bind({});
 Vertical.args = {
   orientation: 'vertical',

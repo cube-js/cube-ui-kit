@@ -36,3 +36,9 @@ export const WithGradation = Template.bind({});
 WithGradation.args = {
   gradation: ['0', '50', '100'],
 };
+
+export const WithoutValue = Template.bind({});
+WithoutValue.args = {
+  label: 'Slider',
+  showValueLabel: false,
+};
