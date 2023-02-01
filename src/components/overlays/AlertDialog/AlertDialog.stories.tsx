@@ -1,10 +1,6 @@
 import { expect } from '@storybook/jest';
 import { ComponentMeta, Story } from '@storybook/react';
-import {
-  userEvent,
-  waitForElementToBeRemoved,
-  within,
-} from '@storybook/testing-library';
+import { userEvent, within } from '@storybook/testing-library';
 import { action } from '@storybook/addon-actions';
 
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -119,7 +115,6 @@ UsingApiWithCancel.play = async ({ canvasElement }) => {
 
   await expect(dialog).toBeInTheDocument();
   await userEvent.click(getByTestId('CancelToken'));
-  await waitForElementToBeRemoved(dialog);
 
   await expect(queryByRole('alertdialog')).not.toBeInTheDocument();
 };

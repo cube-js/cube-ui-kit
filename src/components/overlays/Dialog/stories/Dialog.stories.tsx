@@ -1,9 +1,4 @@
-import {
-  within,
-  userEvent,
-  waitFor,
-  waitForElementToBeRemoved,
-} from '@storybook/testing-library';
+import { within, userEvent, waitFor } from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
 import { Story } from '@storybook/react';
 
@@ -217,8 +212,6 @@ CloseOnOutsideClick.play = async (context) => {
   const dialog = await findByRole('dialog');
 
   await userEvent.click(document.body);
-
-  await waitForElementToBeRemoved(dialog);
 
   expect(dialog).not.toBeInTheDocument();
 };
