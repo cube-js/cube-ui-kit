@@ -56,7 +56,7 @@ function DialogTrigger(props) {
     isKeyboardDismissDisabled,
     styles,
     mobileViewport = 700,
-    closeBehavior,
+    destroyOnClose,
     ...positionProps
   } = props;
 
@@ -111,7 +111,7 @@ function DialogTrigger(props) {
     return (
       <PopoverTrigger
         {...positionProps}
-        closeBehavior={closeBehavior}
+        destroyOnClose={destroyOnClose}
         state={state}
         targetRef={targetRef}
         trigger={trigger}
@@ -131,7 +131,7 @@ function DialogTrigger(props) {
       case 'modal':
         return (
           <Modal
-            closeBehavior={closeBehavior}
+            destroyOnClose={destroyOnClose}
             isOpen={state.isOpen}
             isDismissable={isDismissable}
             type={type}
@@ -147,7 +147,7 @@ function DialogTrigger(props) {
       case 'tray':
         return (
           <Tray
-            closeBehavior={closeBehavior}
+            destroyOnClose={destroyOnClose}
             isOpen={state.isOpen}
             isKeyboardDismissDisabled={isKeyboardDismissDisabled}
             styles={styles}
@@ -188,7 +188,7 @@ function PopoverTrigger(allProps) {
     hideArrow,
     onClose,
     isKeyboardDismissDisabled,
-    closeBehavior,
+    destroyOnClose,
     ...props
   } = allProps;
 
@@ -224,7 +224,7 @@ function PopoverTrigger(allProps) {
   let overlay = (
     <Popover
       ref={overlayRef}
-      closeBehavior={closeBehavior}
+      destroyOnClose={destroyOnClose}
       isOpen={state.isOpen}
       style={popoverProps.style}
       placement={placement}
