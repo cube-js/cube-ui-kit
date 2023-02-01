@@ -4,7 +4,7 @@ export type CloseBehavior = 'remove' | 'hide';
 export type TransitionStatus = ReactTransitionStatus;
 
 export interface WithCloseBehavior {
-  destroyOnClose?: boolean;
+  hideOnClose?: boolean;
 }
 
 export interface TransitionState {

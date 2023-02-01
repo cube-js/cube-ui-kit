@@ -26,7 +26,7 @@ function Overlay(props: CubeOverlayProps, ref) {
     onExit,
     onExiting,
     onExited,
-    destroyOnClose = true,
+    hideOnClose = false,
   } = props;
   let [exited, setExited] = useState(!isOpen);
   let { root } = useProviderProps({} as Props);
@@ -46,7 +46,7 @@ function Overlay(props: CubeOverlayProps, ref) {
 
   if (!mountOverlay) {
     // Don't bother showing anything if we don't have to.
-    if (destroyOnClose) {
+    if (!hideOnClose) {
       return null;
     }
   }
