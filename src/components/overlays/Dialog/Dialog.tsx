@@ -21,6 +21,7 @@ import {
 } from '../../../tasty';
 import { mergeProps, SlotProvider } from '../../../utils/react';
 import { Button } from '../../actions';
+import { useOpenTransitionContext } from '../Modal/OpenTransition';
 
 import { useDialogContext } from './context';
 
@@ -136,6 +137,33 @@ export const Dialog = forwardRef(function Dialog(
   props: CubeDialogProps,
   ref: DOMRef<HTMLDivElement>,
 ) {
+  const transitionContext = useOpenTransitionContext();
+
+  if (transitionContext) {
+    if (transitionContext.transitionState === 'entered') {
+      return (
+        <FocusScope key="focus" contain restoreFocus>
+          <DialogContent key="content" {...props} ref={ref} />
+        </FocusScope>
+      );
+    }
+
+    if (transitionContext.transitionState === 'exited') {
+      return <DialogContent key="content" {...props} ref={ref} />;
+    }
+  }
+
+  return (
+    <FocusScope key="focus" contain restoreFocus>
+      <DialogContent key="content" {...props} ref={ref} />
+    </FocusScope>
+  );
+});
+
+const DialogContent = forwardRef(function DialogContent(
+  props: CubeDialogProps,
+  ref: DOMRef<HTMLDivElement>,
+) {
   let { type = 'modal', ...contextProps } = useDialogContext();
 
   let {
@@ -160,8 +188,6 @@ export const Dialog = forwardRef(function Dialog(
     mergeProps(contextProps, props),
     domRef,
   );
-
-  // console.log(dialogProps);
 
   // If rendered in a popover or tray there won't be a visible dismiss button,
   // so we render a hidden one for screen readers.
@@ -216,35 +242,33 @@ export const Dialog = forwardRef(function Dialog(
   };
 
   return (
-    <FocusScope contain restoreFocus>
-      <DialogElement
-        ref={domRef}
-        data-id="Dialog"
-        data-qa={qa || 'Dialog'}
-        styles={styles}
-        as="section"
-        {...dialogProps}
-        mods={{ dismissable: isDismissable }}
-        style={{ '--dialog-size': `${sizePxMap[size] || 288}px` }}
-        data-type={type}
-        data-size={size}
-      >
-        {dismissButton}
+    <DialogElement
+      ref={domRef}
+      data-id="Dialog"
+      data-qa={qa || 'Dialog'}
+      styles={styles}
+      as="section"
+      {...dialogProps}
+      mods={{ dismissable: isDismissable }}
+      style={{ '--dialog-size': `${sizePxMap[size] || 288}px` }}
+      data-type={type}
+      data-size={size}
+    >
+      {dismissButton}
 
-        <SlotProvider slots={slots}>
-          {isDismissable && (
-            <Button
-              qa="ModalCloseButton"
-              type="neutral"
-              styles={CLOSE_BUTTON_STYLES}
-              icon={closeIcon || <CloseOutlined />}
-              label={formatMessage('dismiss')}
-              onPress={() => onDismiss && onDismiss()}
-            />
-          )}
-          {children}
-        </SlotProvider>
-      </DialogElement>
-    </FocusScope>
+      <SlotProvider slots={slots}>
+        {isDismissable && (
+          <Button
+            qa="ModalCloseButton"
+            type="neutral"
+            styles={CLOSE_BUTTON_STYLES}
+            icon={closeIcon || <CloseOutlined />}
+            label={formatMessage('dismiss')}
+            onPress={() => onDismiss && onDismiss()}
+          />
+        )}
+        {children}
+      </SlotProvider>
+    </DialogElement>
   );
 });

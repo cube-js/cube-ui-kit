@@ -129,9 +129,9 @@ let ModalWrapper = forwardRef(function ModalWrapper(
     ...otherProps
   } = props;
 
-  usePreventScroll();
+  usePreventScroll({ isDisabled: transitionState !== 'entered' });
 
-  let { modalProps } = useModal();
+  let { modalProps } = useModal({ isDisabled: transitionState !== 'entered' });
 
   console.log(isOpen, transitionState);
 

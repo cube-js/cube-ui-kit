@@ -211,7 +211,7 @@ export const CloseOnOutsideClick: typeof Template = Template.bind({});
 CloseOnOutsideClick.play = async (context) => {
   if (context.viewMode === 'docs') return;
 
-  await Default.play(context);
+  await Default.play?.(context);
 
   const { findByRole } = within(context.canvasElement);
   const dialog = await findByRole('dialog');
