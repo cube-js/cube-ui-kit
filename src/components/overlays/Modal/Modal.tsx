@@ -133,8 +133,6 @@ let ModalWrapper = forwardRef(function ModalWrapper(
 
   let { modalProps } = useModal({ isDisabled: transitionState !== 'entered' });
 
-  console.log(isOpen, transitionState);
-
   return (
     <ModalWrapperElement data-type={type} data-placement={placement}>
       <ModalElement

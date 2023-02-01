@@ -198,6 +198,7 @@ function PopoverTrigger(allProps) {
     overlayProps: popoverProps,
     placement,
     arrowProps,
+    updatePosition,
   } = useOverlayPosition({
     targetRef: targetRef || triggerRef,
     overlayRef: overlayRef,
@@ -230,6 +231,7 @@ function PopoverTrigger(allProps) {
       arrowProps={arrowProps}
       isKeyboardDismissDisabled={isKeyboardDismissDisabled}
       hideArrow={hideArrow}
+      updatePosition={updatePosition}
       onClose={onClose}
     >
       {typeof content === 'function' ? content(state.close) : content}

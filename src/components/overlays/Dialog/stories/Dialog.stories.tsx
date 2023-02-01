@@ -126,7 +126,7 @@ SizeLarge.play = Default.play;
 
 export const CloseBehaviorHideDialog: typeof Template = Template.bind({});
 CloseBehaviorHideDialog.args = {
-  closeBehavior: 'hide',
+  hideOnClose: true,
 };
 CloseBehaviorHideDialog.play = async ({ canvasElement, viewMode }) => {
   if (viewMode === 'docs') return;
@@ -143,21 +143,21 @@ CloseBehaviorHideDialog.play = async ({ canvasElement, viewMode }) => {
 export const CloseBehaviorHidePopover: typeof Template = Template.bind({});
 CloseBehaviorHidePopover.args = {
   type: 'popover',
-  closeBehavior: 'hide',
+  hideOnClose: true,
 };
 CloseBehaviorHidePopover.play = CloseBehaviorHideDialog.play;
 
 export const CloseBehaviorHideTray: typeof Template = Template.bind({});
 CloseBehaviorHideTray.args = {
   type: 'tray',
-  closeBehavior: 'hide',
+  hideOnClose: true,
 };
 CloseBehaviorHideTray.play = CloseBehaviorHideDialog.play;
 
 export const CloseBehaviorHideFullscreen: typeof Template = Template.bind({});
 CloseBehaviorHideFullscreen.args = {
   type: 'fullscreen',
-  closeBehavior: 'hide',
+  hideOnClose: true,
 };
 CloseBehaviorHideFullscreen.play = CloseBehaviorHideDialog.play;
 
@@ -165,14 +165,14 @@ export const CloseBehaviorHideFullscreenTakeover: typeof Template =
   Template.bind({});
 CloseBehaviorHideFullscreenTakeover.args = {
   type: 'fullscreenTakeover',
-  closeBehavior: 'hide',
+  hideOnClose: true,
 };
 CloseBehaviorHideFullscreenTakeover.play = CloseBehaviorHideDialog.play;
 
 export const CloseBehaviorHidePanel: typeof Template = Template.bind({});
 CloseBehaviorHidePanel.args = {
   type: 'panel',
-  closeBehavior: 'hide',
+  hideOnClose: true,
 };
 CloseBehaviorHidePanel.play = CloseBehaviorHideDialog.play;
 
@@ -198,7 +198,7 @@ CloseOnEsc.play = async (context) => {
 
 export const CloseOnEscCloseBehaviorHide: typeof Template = Template.bind({});
 CloseOnEscCloseBehaviorHide.args = {
-  closeBehavior: 'hide',
+  hideOnClose: true,
 };
 CloseOnEscCloseBehaviorHide.play = CloseOnEsc.play;
 

@@ -1,4 +1,4 @@
-import { forwardRef, HTMLAttributes } from 'react';
+import { forwardRef, HTMLAttributes, useEffect } from 'react';
 import { useModal, useOverlay } from '@react-aria/overlays';
 import { OverlayProps } from '@react-types/overlays';
 
@@ -7,11 +7,17 @@ import { mergeProps } from '../../../utils/react';
 import { PlacementAxis } from '../../../shared';
 
 import { Overlay } from './Overlay';
-import { WithCloseBehavior } from './types';
+import { TransitionState, WithCloseBehavior } from './types';
 
 const PopoverElement = tasty({
   role: 'presentation',
   styles: {
+    display: {
+      '': 'none',
+      'entering | entered': 'initial',
+      exiting: 'initial',
+      exited: 'none',
+    },
     pointerEvents: 'auto',
     position: 'absolute',
     transition:
@@ -34,7 +40,8 @@ const PopoverElement = tasty({
 export interface CubePopoverProps
   extends BaseProps,
     Omit<OverlayProps, 'children'>,
-    WithCloseBehavior {
+    WithCloseBehavior,
+    TransitionState {
   container?: HTMLElement;
   placement?: PlacementAxis;
   arrowProps?: HTMLAttributes<HTMLElement>;
@@ -44,6 +51,7 @@ export interface CubePopoverProps
   shouldCloseOnBlur?: boolean;
   isNonModal?: boolean;
   isDismissable?: boolean;
+  updatePosition?: () => void;
 }
 
 function Popover(props: CubePopoverProps, ref) {
@@ -59,6 +67,7 @@ function Popover(props: CubePopoverProps, ref) {
     isKeyboardDismissDisabled,
     isNonModal,
     isDismissable = true,
+    updatePosition,
     ...otherProps
   } = props;
 
@@ -75,6 +84,7 @@ function Popover(props: CubePopoverProps, ref) {
         isKeyboardDismissDisabled={isKeyboardDismissDisabled}
         isNonModal={isNonModal}
         isDismissable={isDismissable}
+        updatePosition={updatePosition}
         onClose={onClose}
       >
         {children}
@@ -99,6 +109,8 @@ const PopoverWrapper = forwardRef(function PopoverWrapper(
     isKeyboardDismissDisabled,
     isNonModal,
     isDismissable,
+    updatePosition,
+    transitionState,
     ...otherProps
   } = props;
   let { overlayProps } = useOverlay(
@@ -110,6 +122,12 @@ const PopoverWrapper = forwardRef(function PopoverWrapper(
     isDisabled: isNonModal,
   });
 
+  useEffect(() => {
+    if (transitionState === 'entered') {
+      updatePosition?.();
+    }
+  }, [updatePosition, transitionState]);
+
   return (
     <PopoverElement
       qa={qa || 'Popover'}
@@ -118,6 +136,10 @@ const PopoverWrapper = forwardRef(function PopoverWrapper(
       styles={styles}
       mods={{
         open: isOpen,
+        entering: transitionState === 'entering',
+        exiting: transitionState === 'exiting',
+        exited: transitionState === 'exited',
+        entered: transitionState === 'entered',
       }}
       data-placement={placement}
       style={style}

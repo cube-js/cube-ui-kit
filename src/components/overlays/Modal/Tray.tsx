@@ -8,7 +8,7 @@ import { mergeProps } from '../../../utils/react';
 import { OVERLAY_WRAPPER_STYLES } from './Modal';
 import { Underlay } from './Underlay';
 import { Overlay } from './Overlay';
-import { WithCloseBehavior } from './types';
+import { TransitionState, WithCloseBehavior } from './types';
 
 import type { TrayProps } from '@react-types/overlays';
 
@@ -23,6 +23,12 @@ const TrayWrapperElement = tasty({
 
 const TrayElement = tasty({
   styles: {
+    display: {
+      '': 'none',
+      'entering | entered': 'initial',
+      exiting: 'initial',
+      exited: 'none',
+    },
     zIndex: 2,
     height: 'max 90dvh',
     width: '288px 90vw',
@@ -45,7 +51,7 @@ export interface CubeTrayProps extends TrayProps, WithCloseBehavior {
   styles?: Styles;
 }
 
-interface CubeTrayWrapperProps extends CubeTrayProps {
+interface CubeTrayWrapperProps extends CubeTrayProps, TransitionState {
   isOpen?: boolean;
   overlayProps?: Props;
 }
@@ -97,6 +103,7 @@ let TrayWrapper = forwardRef(function TrayWrapper(
     isFixedHeight,
     isNonModal,
     overlayProps,
+    transitionState,
     ...otherProps
   } = props;
   usePreventScroll();
@@ -117,6 +124,10 @@ let TrayWrapper = forwardRef(function TrayWrapper(
         styles={styles}
         mods={{
           open: isOpen,
+          entering: transitionState === 'entering',
+          exiting: transitionState === 'exiting',
+          exited: transitionState === 'exited',
+          entered: transitionState === 'entered',
           'fixed-height': isFixedHeight,
         }}
         {...domProps}
