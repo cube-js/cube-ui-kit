@@ -88,6 +88,11 @@ function getValueProps(
       value: value != null ? value : [],
       onChange: onChange,
     };
+  } else if (type === 'RangeSlider') {
+    return {
+      value: value != null ? value : undefined,
+      onChange: onChange,
+    };
   } else if (type === 'ComboBox') {
     return {
       inputValue: value != null ? value : '',

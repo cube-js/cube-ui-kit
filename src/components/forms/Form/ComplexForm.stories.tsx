@@ -15,6 +15,7 @@ import {
   PasswordInput,
   Radio,
   RangeSlider,
+  Slider,
   Select,
   Submit,
   SubmitError,
@@ -218,7 +219,8 @@ const Template: StoryFn<typeof Form> = (args) => {
           checkboxGroup: ['one', 'three'],
           radioGroup: 'three',
           switch: false,
-          slider: [20, 40],
+          slider: 60,
+          rangeSlider: { start: 20, end: 40 },
         }}
         onSubmit={(v) => {
           console.log('onSubmit:', v);
@@ -335,7 +337,14 @@ const Template: StoryFn<typeof Form> = (args) => {
           name="slider"
           rules={[{ required: true, message: 'This field is required' }]}
         >
-          <RangeSlider showInput minValue={0} maxValue={100} />
+          <Slider minValue={0} maxValue={100} />
+        </Field>
+        <Field
+          label="Slider"
+          name="rangeSlider"
+          rules={[{ required: true, message: 'This field is required' }]}
+        >
+          <RangeSlider minValue={0} maxValue={100} />
         </Field>
         <Submit>Submit</Submit>
       </Form>

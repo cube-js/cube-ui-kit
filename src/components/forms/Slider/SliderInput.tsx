@@ -24,7 +24,7 @@ function calculateWidth(max?: number, hasSuffix?: boolean) {
   return `${value * charWidth}x`;
 }
 
-export function RangeInput(props: RangeInputProps) {
+export function SliderInput(props: RangeInputProps) {
   const { state, index, formatOptions, width, min, max, ...otherProps } = props;
 
   const inputWidth = width || calculateWidth(max);

@@ -1,6 +1,6 @@
 import { SliderState } from '@react-stately/slider';
 
-import { StyledGradation, StyledGrade } from './styled';
+import { SliderGradationElement, SliderGradeElement } from './elements';
 
 export type GradationProps = {
   state: SliderState;
@@ -22,17 +22,17 @@ export function Gradation(props: GradationProps) {
   };
 
   return (
-    <StyledGradation>
+    <SliderGradationElement>
       {values.map((value, idx) => (
-        <StyledGrade
+        <SliderGradeElement
           key={value}
           mods={{
             active: getIsActive(value, idx),
           }}
         >
           {value}
-        </StyledGrade>
+        </SliderGradeElement>
       ))}
-    </StyledGradation>
+    </SliderGradationElement>
   );
 }
