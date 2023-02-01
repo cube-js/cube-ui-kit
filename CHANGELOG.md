@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.15.0
+
+### Minor Changes
+
+- [#285](https://github.com/cube-js/cube-ui-kit/pull/285) [`01a08ac`](https://github.com/cube-js/cube-ui-kit/commit/01a08acdd83678a2072200847ccafb7da028c0db) Thanks [@tenphi](https://github.com/tenphi)! - Full rework of Slider component. Split it into two separate components: Slider and RangeSlider. Add `gradation` property. Fix styling and accessibility issues.
+
 ## 0.14.16
 
 ### Patch Changes
