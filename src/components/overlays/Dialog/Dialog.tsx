@@ -1,3 +1,4 @@
+import styled from 'styled-components';
 import { useDOMRef } from '@react-spectrum/utils';
 import { DismissButton } from '@react-aria/overlays';
 import { forwardRef, ReactElement } from 'react';
@@ -84,6 +85,10 @@ const DialogElement = tasty({
   },
 });
 
+const StyledFocusLock = styled(FocusLock)`
+  display: contents;
+`;
+
 const CLOSE_BUTTON_STYLES: Styles = {
   display: 'flex',
   position: 'absolute',
@@ -142,9 +147,9 @@ export const Dialog = forwardRef(function Dialog(
   const isEntered = transitionContext?.transitionState === 'entered';
 
   return (
-    <FocusLock returnFocus disabled={!isEntered}>
+    <StyledFocusLock returnFocus disabled={!isEntered}>
       <DialogContent key="content" {...props} ref={ref} />
-    </FocusLock>
+    </StyledFocusLock>
   );
 });
 
