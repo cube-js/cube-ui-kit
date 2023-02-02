@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.16.1
+
+### Patch Changes
+
+- [#274](https://github.com/cube-js/cube-ui-kit/pull/274) [`43b7913`](https://github.com/cube-js/cube-ui-kit/commit/43b791387f1797d3a9ec7622a63d60e8248bb3d0) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - added ability to specify the way how we'd like to hide a dialog: by unmounting or by hiding in css
+
 ## 0.16.0
 
 ### Minor Changes
