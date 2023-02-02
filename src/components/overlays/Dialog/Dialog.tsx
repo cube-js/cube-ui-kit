@@ -1,11 +1,11 @@
 import { useDOMRef } from '@react-spectrum/utils';
 import { DismissButton } from '@react-aria/overlays';
-import { FocusScope } from '@react-aria/focus';
 import { forwardRef, ReactElement } from 'react';
 import { useDialog } from '@react-aria/dialog';
 import { useMessageFormatter } from '@react-aria/i18n';
 import { CloseOutlined } from '@ant-design/icons';
 import { DOMRef } from '@react-types/shared';
+import FocusLock from 'react-focus-lock';
 
 import {
   BASE_STYLES,
@@ -139,24 +139,12 @@ export const Dialog = forwardRef(function Dialog(
 ) {
   const transitionContext = useOpenTransitionContext();
 
-  if (transitionContext) {
-    if (transitionContext.transitionState === 'entered') {
-      return (
-        <FocusScope key="focus" contain restoreFocus>
-          <DialogContent key="content" {...props} ref={ref} />
-        </FocusScope>
-      );
-    }
-
-    if (transitionContext.transitionState === 'exited') {
-      return <DialogContent key="content" {...props} ref={ref} />;
-    }
-  }
+  const isEntered = transitionContext?.transitionState === 'entered';
 
   return (
-    <FocusScope key="focus" contain restoreFocus>
+    <FocusLock returnFocus disabled={!isEntered}>
       <DialogContent key="content" {...props} ref={ref} />
-    </FocusScope>
+    </FocusLock>
   );
 });
 

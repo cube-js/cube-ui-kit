@@ -189,7 +189,7 @@ CloseOnEsc.play = async (context) => {
   const dialog = await findByRole('dialog');
 
   await expect(dialog).toBeInTheDocument();
-  await expect(document.activeElement).toBe(dialog);
+  await expect(dialog.contains(document.activeElement)).toBe(true);
 
   await userEvent.keyboard('{Escape}');
 
