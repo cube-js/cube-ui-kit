@@ -6,11 +6,10 @@ import {
 } from '../../../tasty';
 import { FormFieldProps } from '../../../shared';
 
-import type { AriaSliderProps, SliderProps } from '@react-types/slider';
+import type { AriaSliderProps } from '@react-types/slider';
 
 export interface CubeSliderBaseProps<T>
   extends Omit<AriaSliderProps<T>, 'label'>,
-    Omit<SliderProps<T>, 'label'>,
     BasePropsWithoutChildren,
     OuterStyleProps,
     FormFieldProps,
@@ -27,5 +26,5 @@ export interface CubeSliderBaseProps<T>
   /** Whether the value's label is displayed. True by default if there's a `label`, false by default if not. */
   showValueLabel?: boolean;
   /** A function that returns the content to display as the value's label. Overrides default formatted number. */
-  getValueLabel?: (value: any) => string | undefined;
+  getValueLabel?: (value: T) => string | undefined;
 }

@@ -49,8 +49,6 @@ function SliderBase(
     labelSuffix,
     labelStyles,
     necessityIndicator,
-    defaultValue,
-    value,
     gradation,
     isDisabled,
     inputStyles,
