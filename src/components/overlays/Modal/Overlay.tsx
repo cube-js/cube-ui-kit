@@ -5,10 +5,13 @@ import { Provider, useProviderProps } from '../../../provider';
 import { Props } from '../../../tasty';
 
 import { OpenTransition } from './OpenTransition';
+import { WithCloseBehavior } from './types';
 
 import type { OverlayProps } from '@react-types/overlays';
 
-export interface CubeOverlayProps extends Omit<OverlayProps, 'container'> {
+export interface CubeOverlayProps
+  extends Omit<OverlayProps, 'container'>,
+    WithCloseBehavior {
   container?: HTMLElement | null;
 }
 
@@ -23,6 +26,7 @@ function Overlay(props: CubeOverlayProps, ref) {
     onExit,
     onExiting,
     onExited,
+    hideOnClose = false,
   } = props;
   let [exited, setExited] = useState(!isOpen);
   let { root } = useProviderProps({} as Props);
@@ -39,9 +43,12 @@ function Overlay(props: CubeOverlayProps, ref) {
 
   // Don't un-render the overlay while it's transitioning out.
   let mountOverlay = isOpen || !exited;
+
   if (!mountOverlay) {
     // Don't bother showing anything if we don't have to.
-    return null;
+    if (!hideOnClose) {
+      return null;
+    }
   }
 
   let contents = (

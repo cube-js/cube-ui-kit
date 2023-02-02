@@ -4,14 +4,14 @@ import { PressResponder } from '@react-aria/interactions';
 import { useMediaQuery } from '@react-spectrum/utils';
 import { useOverlayPosition, useOverlayTrigger } from '@react-aria/overlays';
 
-import { Modal, Popover, Tray } from '../Modal';
+import { Modal, Popover, Tray, WithCloseBehavior } from '../Modal';
 import { Styles } from '../../../tasty';
 
 import { DialogContext } from './context';
 
 export type CubeDialogClose = (close: () => void) => ReactElement;
 
-export interface CubeDialogTriggerProps {
+export interface CubeDialogTriggerProps extends WithCloseBehavior {
   /** The Dialog and its trigger element. See the DialogTrigger [Content section](#content) for more information on what to provide as children. */
   children: [ReactElement, CubeDialogClose | ReactElement];
   /**
@@ -55,6 +55,7 @@ function DialogTrigger(props) {
     isKeyboardDismissDisabled,
     styles,
     mobileViewport = 700,
+    hideOnClose,
     ...positionProps
   } = props;
 
@@ -109,6 +110,7 @@ function DialogTrigger(props) {
     return (
       <PopoverTrigger
         {...positionProps}
+        hideOnClose={hideOnClose}
         state={state}
         targetRef={targetRef}
         trigger={trigger}
@@ -128,6 +130,7 @@ function DialogTrigger(props) {
       case 'modal':
         return (
           <Modal
+            hideOnClose={hideOnClose}
             isOpen={state.isOpen}
             isDismissable={isDismissable}
             type={type}
@@ -143,6 +146,7 @@ function DialogTrigger(props) {
       case 'tray':
         return (
           <Tray
+            hideOnClose={hideOnClose}
             isOpen={state.isOpen}
             isKeyboardDismissDisabled={isKeyboardDismissDisabled}
             styles={styles}
@@ -183,6 +187,7 @@ function PopoverTrigger(allProps) {
     hideArrow,
     onClose,
     isKeyboardDismissDisabled,
+    hideOnClose,
     ...props
   } = allProps;
 
@@ -193,6 +198,7 @@ function PopoverTrigger(allProps) {
     overlayProps: popoverProps,
     placement,
     arrowProps,
+    updatePosition,
   } = useOverlayPosition({
     targetRef: targetRef || triggerRef,
     overlayRef: overlayRef,
@@ -218,12 +224,14 @@ function PopoverTrigger(allProps) {
   let overlay = (
     <Popover
       ref={overlayRef}
+      hideOnClose={hideOnClose}
       isOpen={state.isOpen}
       style={popoverProps.style}
       placement={placement}
       arrowProps={arrowProps}
       isKeyboardDismissDisabled={isKeyboardDismissDisabled}
       hideArrow={hideArrow}
+      updatePosition={updatePosition}
       onClose={onClose}
     >
       {typeof content === 'function' ? content(state.close) : content}
