@@ -220,7 +220,7 @@ const Template: StoryFn<typeof Form> = (args) => {
           radioGroup: 'three',
           switch: false,
           slider: 60,
-          rangeSlider: { start: 20, end: 40 },
+          rangeSlider: [20, 40],
         }}
         onSubmit={(v) => {
           console.log('onSubmit:', v);

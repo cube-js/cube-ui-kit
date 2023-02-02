@@ -10,7 +10,7 @@ export default {
   args: {
     id: 'name',
     width: '100%',
-    defaultValue: { start: 4, end: 12 },
+    defaultValue: [4, 12],
     minValue: 0,
     maxValue: 20,
     step: 2,

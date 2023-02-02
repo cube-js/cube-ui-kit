@@ -2,15 +2,12 @@ import { forwardRef } from 'react';
 
 import { SliderThumb } from './SliderThumb';
 import { SliderTrack } from './SliderTrack';
-import {
-  SliderBase,
-  SliderBaseChildArguments,
-  SliderBaseProps,
-} from './SliderBase';
+import { SliderBase, SliderBaseChildArguments } from './SliderBase';
 import { Gradation } from './Gradation';
 
-import type { DOMRef, RangeValue } from '@react-types/shared';
+import type { DOMRef } from '@react-types/shared';
 import type { CubeSliderBaseProps } from './types';
+import type { RangeValue } from '../../../shared';
 
 export interface CubeRangeSliderProps
   extends CubeSliderBaseProps<RangeValue<number>> {
@@ -23,39 +20,10 @@ const INTL_MESSAGES = {
 };
 
 function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
-  let {
-    onChange,
-    onChangeEnd,
-    value,
-    defaultValue,
-    getValueLabel,
-    isDisabled,
-    styles,
-    gradation,
-    ...otherProps
-  } = props;
-
-  let baseProps: Omit<SliderBaseProps<number[]>, 'children'> = {
-    ...otherProps,
-    value: value != null ? [value.start, value.end] : undefined,
-    defaultValue:
-      defaultValue != null
-        ? [defaultValue.start, defaultValue.end]
-        : // make sure that useSliderState knows we have two handles
-          [props.minValue ?? 0, props.maxValue ?? 100],
-    onChange(v) {
-      onChange?.({ start: v[0], end: v[1] });
-    },
-    onChangeEnd(v) {
-      onChangeEnd?.({ start: v[0], end: v[1] });
-    },
-    getValueLabel: getValueLabel
-      ? ([start, end]) => getValueLabel?.({ start, end })
-      : undefined,
-  };
+  let { isDisabled, styles, gradation, ...otherProps } = props;
 
   return (
-    <SliderBase {...otherProps} {...baseProps}>
+    <SliderBase {...(otherProps as CubeSliderBaseProps<number[]>)}>
       {({ trackRef, inputRef, state }: SliderBaseChildArguments) => {
         return (
           <>
