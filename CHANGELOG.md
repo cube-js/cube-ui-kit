@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.16.0
+
+### Minor Changes
+
+- [#287](https://github.com/cube-js/cube-ui-kit/pull/287) [`15d83f0`](https://github.com/cube-js/cube-ui-kit/commit/15d83f0394deddaa1e2226582bde627d5943726e) Thanks [@tenphi](https://github.com/tenphi)! - Change RangeSlider API to accept only array with two numbers as a value.
+
 ## 0.15.0
 
 ### Minor Changes
