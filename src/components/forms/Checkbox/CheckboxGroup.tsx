@@ -7,9 +7,10 @@ import { useProviderProps } from '../../../provider';
 import { FormContext, useFormProps } from '../Form/Form';
 import {
   BaseProps,
-  BLOCK_STYLES,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
   extractStyles,
-  OUTER_STYLES,
+  Styles,
   tasty,
 } from '../../../tasty';
 import { FieldWrapper } from '../FieldWrapper';
@@ -29,7 +30,6 @@ const WRAPPER_STYLES = {
     '': '1fr',
     'has-sider': 'max-content 1fr',
   },
-  placeItems: 'baseline start',
 };
 
 const CheckGroupElement = tasty({
@@ -52,8 +52,10 @@ const CheckGroupElement = tasty({
 export interface CubeCheckboxGroupProps
   extends BaseProps,
     AriaCheckboxGroupProps,
-    FormFieldProps {
+    FormFieldProps,
+    ContainerStyleProps {
   orientation?: 'vertical' | 'horizontal';
+  inputStyles?: Styles;
 }
 
 function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
@@ -78,19 +80,19 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
     requiredMark = true,
     tooltip,
     labelSuffix,
+    inputStyles,
     ...otherProps
   } = props;
   let domRef = useDOMRef(ref);
 
-  let styles = extractStyles(otherProps, OUTER_STYLES, WRAPPER_STYLES);
-  let groupStyles = extractStyles(otherProps, BLOCK_STYLES);
+  let styles = extractStyles(otherProps, CONTAINER_STYLES, WRAPPER_STYLES);
 
   let state = useCheckboxGroupState(props);
   let { groupProps, labelProps } = useCheckboxGroup(props, state);
 
   let radioGroup = (
     <CheckGroupElement
-      styles={groupStyles}
+      styles={inputStyles}
       mods={{
         horizontal: orientation === 'horizontal',
       }}
