@@ -30,7 +30,6 @@ const WRAPPER_STYLES = {
     '': '1fr',
     'has-sider': 'max-content 1fr',
   },
-  placeItems: 'baseline start',
 };
 
 const CheckGroupElement = tasty({
