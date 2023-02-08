@@ -1,5 +1,12 @@
 # @cube-dev/ui-kit
 
+## 0.16.2
+
+### Patch Changes
+
+- [#290](https://github.com/cube-js/cube-ui-kit/pull/290) [`79adb32`](https://github.com/cube-js/cube-ui-kit/commit/79adb32ae90b6e65bdd1815c2eb5b679cb9abcc2) Thanks [@tenphi](https://github.com/tenphi)! - Add an `inputStyles` prop to the `CheckboxGroup` component to customize styles of a checkbox group itself.
+  Improve Tasty caching.
+
 ## 0.16.1
 
 ### Patch Changes
