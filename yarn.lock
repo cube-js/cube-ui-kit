@@ -2544,20 +2544,20 @@
     "@react-types/radio" "^3.3.0"
     "@react-types/shared" "^3.15.0"
 
-"@react-aria/searchfield@3.4.2":
-  version "3.4.2"
-  resolved "https://registry.yarnpkg.com/@react-aria/searchfield/-/searchfield-3.4.2.tgz#d37365ba1c169746d97d680687b2ffd7d8955acf"
-  integrity sha512-6AO8cG0LH+WAdlKZAZVOg+txLVBIfxfo+4uoxbaJz4YACJNMAmHdRN6xEH/utcx4vncLqPRM1PeqYlRQLYA8uQ==
+"@react-aria/searchfield@3.4.4":
+  version "3.4.4"
+  resolved "https://registry.yarnpkg.com/@react-aria/searchfield/-/searchfield-3.4.4.tgz#f77f057fcd2582534bec60b5d65db5cf84490f27"
+  integrity sha512-Z3nZI2FXrWLPNUeJ3QV2ruTKBR9eHhPoHi+Iiuq4n+e02ib5s0Jlbam29FFiOxmf6vUMhScNcEYP9p2BNANmQA==
   dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-aria/i18n" "^3.6.1"
-    "@react-aria/interactions" "^3.12.0"
-    "@react-aria/textfield" "^3.7.2"
-    "@react-aria/utils" "^3.14.0"
-    "@react-stately/searchfield" "^3.3.2"
-    "@react-types/button" "^3.6.2"
-    "@react-types/searchfield" "^3.3.4"
-    "@react-types/shared" "^3.15.0"
+    "@react-aria/i18n" "^3.6.3"
+    "@react-aria/interactions" "^3.13.1"
+    "@react-aria/textfield" "^3.8.1"
+    "@react-aria/utils" "^3.14.2"
+    "@react-stately/searchfield" "^3.3.4"
+    "@react-types/button" "^3.7.0"
+    "@react-types/searchfield" "^3.3.6"
+    "@react-types/shared" "^3.16.0"
+    "@swc/helpers" "^0.4.14"
 
 "@react-aria/select@3.8.2":
   version "3.8.2"
@@ -2665,6 +2665,18 @@
     "@react-aria/utils" "^3.14.0"
     "@react-types/shared" "^3.15.0"
     "@react-types/textfield" "^3.6.0"
+
+"@react-aria/textfield@^3.8.1":
+  version "3.8.1"
+  resolved "https://registry.yarnpkg.com/@react-aria/textfield/-/textfield-3.8.1.tgz#b6df2decc587824a3757ec33bd9b432fed1bacc5"
+  integrity sha512-jgun/B9ecuRCfBSJLX2xDuNwfuj1lL0oibMWoSv6Y++W+CSS8a7LjR1f9Kll5TDVkQiRRUm9qHwI0og9xTJrNw==
+  dependencies:
+    "@react-aria/focus" "^3.10.1"
+    "@react-aria/label" "^3.4.4"
+    "@react-aria/utils" "^3.14.2"
+    "@react-types/shared" "^3.16.0"
+    "@react-types/textfield" "^3.6.2"
+    "@swc/helpers" "^0.4.14"
 
 "@react-aria/toggle@^3.4.0":
   version "3.4.0"
@@ -2843,15 +2855,15 @@
     "@react-types/shared" "^3.16.0"
     "@swc/helpers" "^0.4.14"
 
-"@react-stately/searchfield@3.3.2", "@react-stately/searchfield@^3.3.2":
-  version "3.3.2"
-  resolved "https://registry.yarnpkg.com/@react-stately/searchfield/-/searchfield-3.3.2.tgz#bb552d4216768d95a05e10dc78c35cb3e4700926"
-  integrity sha512-4MTpoqE1M/3aWb/Feau0QpQcjOEK3i8apyA7g9ltY5OtcwHMXDXXk9i3Pg4itk2CXqOY2LuJ+vHCctSnEAm9vw==
+"@react-stately/searchfield@3.3.4", "@react-stately/searchfield@^3.3.4":
+  version "3.3.4"
+  resolved "https://registry.yarnpkg.com/@react-stately/searchfield/-/searchfield-3.3.4.tgz#a2d885fd68a3e8936d60b9d56e15f785022b448e"
+  integrity sha512-H/1evv7lsJl6PlD7/Sv7VgbCe0Yd2E2eKFihD6/tXPWO6L/ngYp5siqqhdwazjWTK2Hgw4TL0eviHGOGXKItzQ==
   dependencies:
-    "@babel/runtime" "^7.6.2"
-    "@react-stately/utils" "^3.5.1"
-    "@react-types/searchfield" "^3.3.4"
-    "@react-types/shared" "^3.15.0"
+    "@react-stately/utils" "^3.5.2"
+    "@react-types/searchfield" "^3.3.6"
+    "@react-types/shared" "^3.16.0"
+    "@swc/helpers" "^0.4.14"
 
 "@react-stately/select@3.3.2", "@react-stately/select@^3.3.2":
   version "3.3.2"
@@ -2950,6 +2962,13 @@
   dependencies:
     "@react-types/shared" "^3.15.0"
 
+"@react-types/button@^3.7.0":
+  version "3.7.0"
+  resolved "https://registry.yarnpkg.com/@react-types/button/-/button-3.7.0.tgz#774c043d8090a505e60fdf26f026d5f0cc968f0f"
+  integrity sha512-81BQO3QxSgF9PTXsVozNdNCKxBOB1lpbCWocV99dN1ws9s8uaYw8pmJJZ0LJKLiOsIECQ/3QrhQjmWTDW/qTug==
+  dependencies:
+    "@react-types/shared" "^3.16.0"
+
 "@react-types/checkbox@3.4.0", "@react-types/checkbox@^3.4.0":
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/@react-types/checkbox/-/checkbox-3.4.0.tgz#f2d6acabdf953cf2f7b8b874dab9ac8ae1c020fa"
@@ -3036,13 +3055,13 @@
   dependencies:
     "@react-types/shared" "^3.16.0"
 
-"@react-types/searchfield@^3.3.4":
-  version "3.3.4"
-  resolved "https://registry.yarnpkg.com/@react-types/searchfield/-/searchfield-3.3.4.tgz#bb128b41bb50f1d6f5fc5de4677a668a428cca2e"
-  integrity sha512-NuzNTfP80qnCn+gJJMB/Fv1AhPjrSZyB2m0fVrss0Ua5bmtScxMhXA5Pak3aTDyn3xne2r97LwcAaCdsaDnD1w==
+"@react-types/searchfield@^3.3.6":
+  version "3.3.6"
+  resolved "https://registry.yarnpkg.com/@react-types/searchfield/-/searchfield-3.3.6.tgz#8f33ef6938e2db9f80b7e4008d81fc4de65f07d3"
+  integrity sha512-DIv5eznnJVv0CM4f8SEEiptEZSzXUJWUyxRPkTzYNWt91pPPaCNbCQbmzZtyR9/R9KRJ9hlZN2bMkrtfVLvl1g==
   dependencies:
-    "@react-types/shared" "^3.15.0"
-    "@react-types/textfield" "^3.6.0"
+    "@react-types/shared" "^3.16.0"
+    "@react-types/textfield" "^3.6.2"
 
 "@react-types/select@3.6.4", "@react-types/select@^3.6.4":
   version "3.6.4"
@@ -3090,6 +3109,13 @@
   integrity sha512-fEa/lTqpWBn7ZE0cDsc700OhTBAxiy8ifm8AQcLYfZuRX4zqRoMpkXMWN0XMjYfoZzNrS0LJJ6pLBHTwrlXWWA==
   dependencies:
     "@react-types/shared" "^3.15.0"
+
+"@react-types/textfield@^3.6.2":
+  version "3.6.2"
+  resolved "https://registry.yarnpkg.com/@react-types/textfield/-/textfield-3.6.2.tgz#6cc87c2bac286a06ba04b9465d23fa9078bf280e"
+  integrity sha512-QhFcpXvmSEW1/PwkWkvHJkcjsVezLW0OAvA0kMt/FMOChQNxnO36Pha+WjfcVbiFHXMhCBl6akbY2xG9NsHJrQ==
+  dependencies:
+    "@react-types/shared" "^3.16.0"
 
 "@react-types/tooltip@3.2.4", "@react-types/tooltip@^3.2.4":
   version "3.2.4"
