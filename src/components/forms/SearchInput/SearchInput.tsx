@@ -48,8 +48,12 @@ export const SearchInput = forwardRef(function SearchInput(
   useEffect(() => {
     const el = combinedRef && combinedRef.current;
 
-    if (el && value != null && el.value !== value) {
-      el.value = value;
+    if (el && el.value !== value) {
+      if (value) {
+        el.value = value;
+      } else {
+        el.value = '';
+      }
     }
   }, [combinedRef, value]);
 
