@@ -77,13 +77,14 @@ export interface CubeModalProps
   onClose?: (action?: string) => void;
   type?: 'modal' | 'fullscreen' | 'fullscreenTakeover';
   styles?: Styles;
+  shouldCloseOnInteractOutside?: (element: Element) => boolean;
 }
 
 function Modal(props: CubeModalProps, ref) {
   let { qa, children, onClose, type, styles, ...otherProps } = props;
   let domRef = useDOMRef(ref);
 
-  let { overlayProps, underlayProps } = useOverlay(props, domRef);
+  let { overlayProps, underlayProps } = useOverlay({ ...props }, domRef);
 
   return (
     <Overlay {...otherProps}>

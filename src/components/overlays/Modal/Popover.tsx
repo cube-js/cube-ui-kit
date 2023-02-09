@@ -52,6 +52,7 @@ export interface CubePopoverProps
   isNonModal?: boolean;
   isDismissable?: boolean;
   updatePosition?: () => void;
+  shouldCloseOnInteractOutside?: (element: Element) => boolean;
 }
 
 function Popover(props: CubePopoverProps, ref) {
@@ -68,6 +69,7 @@ function Popover(props: CubePopoverProps, ref) {
     isNonModal,
     isDismissable = true,
     updatePosition,
+    shouldCloseOnInteractOutside,
     ...otherProps
   } = props;
 
@@ -85,6 +87,7 @@ function Popover(props: CubePopoverProps, ref) {
         isNonModal={isNonModal}
         isDismissable={isDismissable}
         updatePosition={updatePosition}
+        shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
         onClose={onClose}
       >
         {children}

@@ -41,6 +41,7 @@ export interface CubeDialogTriggerProps extends WithCloseBehavior {
   mobileViewport?: number;
   /** The style map for the overlay **/
   styles?: Styles;
+  shouldCloseOnInteractOutside?: (element: Element) => boolean;
 }
 
 function DialogTrigger(props) {
@@ -56,6 +57,7 @@ function DialogTrigger(props) {
     styles,
     mobileViewport = 700,
     hideOnClose,
+    shouldCloseOnInteractOutside,
     ...positionProps
   } = props;
 
@@ -117,6 +119,7 @@ function DialogTrigger(props) {
         content={content}
         isKeyboardDismissDisabled={isKeyboardDismissDisabled}
         hideArrow={hideArrow}
+        shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
         onClose={onClose}
       />
     );
@@ -136,6 +139,7 @@ function DialogTrigger(props) {
             type={type}
             isKeyboardDismissDisabled={isKeyboardDismissDisabled}
             styles={styles}
+            shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
             onClose={onClose}
             onExiting={onExiting}
             onExited={onExited}
@@ -188,6 +192,7 @@ function PopoverTrigger(allProps) {
     onClose,
     isKeyboardDismissDisabled,
     hideOnClose,
+    shouldCloseOnInteractOutside,
     ...props
   } = allProps;
 
@@ -232,6 +237,7 @@ function PopoverTrigger(allProps) {
       isKeyboardDismissDisabled={isKeyboardDismissDisabled}
       hideArrow={hideArrow}
       updatePosition={updatePosition}
+      shouldCloseOnInteractOutside={shouldCloseOnInteractOutside}
       onClose={onClose}
     >
       {typeof content === 'function' ? content(state.close) : content}

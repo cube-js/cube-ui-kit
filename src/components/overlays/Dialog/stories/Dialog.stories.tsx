@@ -1,6 +1,8 @@
 import { within, userEvent, waitFor } from '@storybook/testing-library';
 import { expect } from '@storybook/jest';
 import { Story } from '@storybook/react';
+import { useRef, useState } from 'react';
+import { FocusableRefValue } from '@react-types/shared';
 
 import { CubeDialogProps } from '../Dialog';
 import { CubeDialogTriggerProps } from '../DialogTrigger';
@@ -14,6 +16,7 @@ import {
   Header,
   Paragraph,
   Title,
+  Space,
 } from '../../../../index';
 import { baseProps } from '../../../../stories/lists/baseProps';
 
@@ -214,4 +217,55 @@ CloseOnOutsideClick.play = async (context) => {
   await userEvent.click(document.body);
 
   expect(dialog).not.toBeInTheDocument();
+};
+
+export const DoNotCloseOnClickAtParticularElement: typeof Template = () => {
+  const btnRef = useRef<FocusableRefValue<HTMLButtonElement>>(null);
+  const [itWorks, setItWorks] = useState(false);
+
+  return (
+    <>
+      <Space gap="2x">
+        <DialogTrigger
+          type="popover"
+          shouldCloseOnInteractOutside={(e) =>
+            btnRef.current?.UNSAFE_getDOMNode() !== e
+          }
+        >
+          <Button size="small">Open modal</Button>
+
+          <Dialog size="small">
+            <Header>
+              <Title>Modal title</Title>
+            </Header>
+            <Content>
+              <Paragraph>Test content</Paragraph>
+              <Paragraph>Test content</Paragraph>
+            </Content>
+          </Dialog>
+        </DialogTrigger>
+
+        <Button ref={btnRef} size="small" onPress={() => setItWorks(true)}>
+          {itWorks ? 'It works!' : 'Click me!'}
+        </Button>
+      </Space>
+    </>
+  );
+};
+DoNotCloseOnClickAtParticularElement.play = async (context) => {
+  if (context.viewMode === 'docs') return;
+
+  const { findByRole } = within(context.canvasElement);
+
+  const trigger = await findByRole('button', { name: 'Open modal' });
+  const button = await findByRole('button', { name: 'Click me!' });
+
+  await userEvent.click(trigger);
+
+  await expect(await findByRole('dialog')).toBeInTheDocument();
+
+  await userEvent.click(button);
+
+  await expect(await findByRole('dialog')).toBeInTheDocument();
+  await expect(button).toHaveTextContent('It works!');
 };
