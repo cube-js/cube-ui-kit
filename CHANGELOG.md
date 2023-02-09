@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.16.3
+
+### Patch Changes
+
+- [#292](https://github.com/cube-js/cube-ui-kit/pull/292) [`842836f`](https://github.com/cube-js/cube-ui-kit/commit/842836faf77af9e966235bed6e731527f02d5436) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Added new prop in `<DialogTrigger />` - `shouldCloseOnInteractOutside`, which gives you a chance to filter out interaction with elements that should not dismiss the overlay.
+
 ## 0.16.2
 
 ### Patch Changes
