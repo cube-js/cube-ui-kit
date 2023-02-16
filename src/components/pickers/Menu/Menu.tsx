@@ -50,6 +50,8 @@ function Menu<T extends object>(
   const items = [...state.collection];
   const hasSections = items.some((item) => item.type === 'section');
 
+  console.log('!', hasSections, items);
+
   const { menuProps } = useMenu(completeProps, state, domRef);
   const styles = extractStyles(completeProps, CONTAINER_STYLES);
 
