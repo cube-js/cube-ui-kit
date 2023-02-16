@@ -65,14 +65,6 @@ function Menu<T extends object>(
 
   useSyncRef(contextProps, domRef);
 
-  console.log(
-    '!',
-    mergeProps(defaultProps, menuProps, filterBaseProps(completeProps)),
-    defaultProps,
-    menuProps,
-    filterBaseProps(completeProps),
-  );
-
   return (
     <StyledMenu
       {...mergeProps(defaultProps, menuProps, filterBaseProps(completeProps))}
