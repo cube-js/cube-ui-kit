@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.16.4
+
+### Patch Changes
+
+- [#297](https://github.com/cube-js/cube-ui-kit/pull/297) [`67eafd9`](https://github.com/cube-js/cube-ui-kit/commit/67eafd918d50d847d9c789dec9453b7face78b19) Thanks [@tenphi](https://github.com/tenphi)! - Merge passed `mods` with the default one for all components instead of replacing it.
+
+- [#294](https://github.com/cube-js/cube-ui-kit/pull/294) [`e22815b`](https://github.com/cube-js/cube-ui-kit/commit/e22815b3623f115309ce526cfa67a60bc3e7e3bd) Thanks [@tenphi](https://github.com/tenphi)! - Fix bug when null `value` prop is passing to SearchInput component but the value remains the same.
+
 ## 0.16.3
 
 ### Patch Changes
