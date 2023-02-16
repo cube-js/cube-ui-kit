@@ -57,6 +57,8 @@ export function mergeProps<
         typeof props.styles === 'object'
       ) {
         result[key] = mergeStyles(result[key], props[key]);
+      } else if (key === 'mods' && result.mods && props?.mods) {
+        result.mods = { ...result.mods, ...props?.mods };
       } else if (key === 'id' && result.id && props?.id) {
         result.id = mergeIds(result.id, props?.id);
         // Override others
