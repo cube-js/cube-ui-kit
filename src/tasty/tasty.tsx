@@ -176,19 +176,21 @@ function tasty<
      * Create a tasty component for each variant.
      * Then return a component that receives a `variant` and chooses the right component.
      */
-    const variantComponents = Object.keys(variants).map((variant) => {
+    const variantComponents = Object.keys(variants).reduce((map, variant) => {
       const variantStyles = variants?.[variant];
 
-      return tasty({
+      map[variant] = tasty({
         as: originalAs,
         styles: mergeStyles(defaultStyles, variantStyles),
         styleProps,
         ...defaultProps,
       });
-    });
 
-    if (!('' in variantComponents)) {
-      variantComponents[''] = tasty({
+      return map;
+    }, {});
+
+    if (!variantComponents['default']) {
+      variantComponents['default'] = tasty({
         as: originalAs,
         styles: defaultStyles,
         styleProps,
@@ -201,9 +203,10 @@ function tasty<
       (allProps: AllBasePropsWithMods<K> & WithVariant<V>, ref) => {
         const { variant, ...restProps } = allProps;
 
-        const Component = variantComponents[
-          (variant as string) || ''
-        ] as ComponentType<AllBasePropsWithMods<K>>;
+        const Component = (variantComponents[variant as string] ||
+          variantComponents['default']) as ComponentType<
+          AllBasePropsWithMods<K>
+        >;
 
         return <Component {...restProps} ref={ref} />;
       },
