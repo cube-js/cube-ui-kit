@@ -1,5 +1,5 @@
 import userEvents from '@testing-library/user-event';
-import { waitFor } from '@testing-library/react';
+import { waitFor, act } from '@testing-library/react';
 
 import { renderWithForm } from '../../../test';
 import { Submit } from '../../actions';
@@ -9,8 +9,8 @@ import { Form } from '.';
 
 describe('<SubmitError />', () => {
   it('should display a submit error if onSubmit callback is failed', async () => {
-    const onSubmit = jest.fn(() => Promise.reject('Custom Error'));
-    const onSubmitFailed = jest.fn();
+    const onSubmit = vi.fn(() => Promise.reject('Custom Error'));
+    const onSubmitFailed = vi.fn();
 
     const { getByRole, getByText } = renderWithForm(
       <>
@@ -28,8 +28,10 @@ describe('<SubmitError />', () => {
     const submit = getByRole('button');
     const input = getByRole('textbox');
 
-    await userEvents.type(input, 'test');
-    await userEvents.click(submit);
+    await act(async () => {
+      await userEvents.type(input, 'test');
+      await userEvents.click(submit);
+    });
 
     await waitFor(() => {
       // onSubmitFailed callback should only be called if onSubmit callback is called and failed
@@ -46,8 +48,8 @@ describe('<SubmitError />', () => {
   });
 
   it('should clean the submit error if any value is changed', async () => {
-    const onSubmit = jest.fn(() => Promise.reject('Custom Error'));
-    const onSubmitFailed = jest.fn();
+    const onSubmit = vi.fn(() => Promise.reject('Custom Error'));
+    const onSubmitFailed = vi.fn();
 
     const { getByRole, getByText, queryByText } = renderWithForm(
       <>
@@ -65,8 +67,10 @@ describe('<SubmitError />', () => {
     const submit = getByRole('button');
     const input = getByRole('textbox');
 
-    await userEvents.type(input, 'test');
-    await userEvents.click(submit);
+    await act(async () => {
+      await userEvents.type(input, 'test');
+      await userEvents.click(submit);
+    });
 
     await waitFor(() => {
       // onSubmitFailed callback should only be called if onSubmit callback is called and failed
@@ -84,7 +88,7 @@ describe('<SubmitError />', () => {
       expect(submitErrorElement).toBeInTheDocument();
     });
 
-    await userEvents.type(input, 'changed');
+    await act(() => userEvents.type(input, 'changed'));
 
     await waitFor(() => {
       expect(submitErrorElement).not.toBeInTheDocument();
@@ -92,10 +96,10 @@ describe('<SubmitError />', () => {
   });
 
   it('should display an error placeholder if error is not handled properly', async () => {
-    const onSubmit = jest.fn(() => {
+    const onSubmit = vi.fn(() => {
       return Promise.reject([]); // non-valid error
     });
-    const onSubmitFailed = jest.fn();
+    const onSubmitFailed = vi.fn();
 
     const { getByRole, getByText } = renderWithForm(
       <>
@@ -113,8 +117,10 @@ describe('<SubmitError />', () => {
     const submit = getByRole('button');
     const input = getByRole('textbox');
 
-    await userEvents.type(input, 'test');
-    await userEvents.click(submit);
+    await act(async () => {
+      await userEvents.type(input, 'test');
+      await userEvents.click(submit);
+    });
 
     await waitFor(() => {
       // onSubmitFailed callback should only be called if onSubmit callback is called and failed

@@ -7,21 +7,19 @@ import { styled } from './styled';
 
 describe('styled() API', () => {
   beforeAll(() => {
-    jest.spyOn(console, 'group').mockImplementation(() => {});
+    vi.spyOn(console, 'group').mockImplementation(() => {});
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   afterAll(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should warn about deprecated API', () => {
-    const spiedConsole = jest
-      .spyOn(console, 'warn')
-      .mockImplementation(() => {});
+    const spiedConsole = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     styled(Button, { props: { type: 'primary' } });
 

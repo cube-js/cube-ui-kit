@@ -4,18 +4,18 @@ import { useTimer } from './use-timer';
 import { Timer } from './timer';
 
 describe('useTimer', () => {
-  const callback = jest.fn();
+  const callback = vi.fn();
 
   beforeAll(() => {
-    jest.useFakeTimers('modern');
+    vi.useFakeTimers();
   });
 
   beforeEach(() => {
-    jest.resetAllMocks();
+    vi.resetAllMocks();
   });
 
   afterAll(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('should trigger callback', async () => {
@@ -23,14 +23,14 @@ describe('useTimer', () => {
       initialProps: { callback, delay: 100 },
     });
 
-    jest.runAllTimers();
+    vi.runAllTimers();
 
     expect(callback).toBeCalledTimes(1);
     expect(result.current.timer?.status).toBe('stopped');
   });
 
   it('should override with custom timer', async () => {
-    const dummyCallback = jest.fn();
+    const dummyCallback = vi.fn();
     const timer = new Timer(callback, 100);
 
     const { result } = renderHook(useTimer, {
@@ -41,7 +41,7 @@ describe('useTimer', () => {
       },
     });
 
-    jest.runAllTimers();
+    vi.runAllTimers();
 
     expect(result.current.timer).toBe(timer);
     expect(dummyCallback).not.toBeCalled();
@@ -55,7 +55,7 @@ describe('useTimer', () => {
 
     unmount();
 
-    jest.runAllTimers();
+    vi.runAllTimers();
 
     expect(result.current.timer?.status).toBe('stopped');
     expect(callback).toBeCalledTimes(0);
@@ -68,7 +68,7 @@ describe('useTimer', () => {
 
     expect(result.current.timer?.status).toBe('stopped');
 
-    jest.runAllTimers();
+    vi.runAllTimers();
 
     expect(callback).not.toBeCalled();
     expect(result.current.timer?.status).toBe('stopped');
@@ -83,7 +83,7 @@ describe('useTimer', () => {
 
     rerender({ isDisabled: true });
 
-    jest.runAllTimers();
+    vi.runAllTimers();
 
     expect(callback).not.toBeCalled();
     expect(result.current.timer?.status).toBe('stopped');

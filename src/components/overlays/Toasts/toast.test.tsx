@@ -12,16 +12,16 @@ function TestComponent({ renderNotification = true, ...notificationProps }) {
 
 describe('useToastsApi', () => {
   beforeEach(() => {
-    jest.useFakeTimers('modern');
+    vi.useFakeTimers();
   });
-  afterEach(() => jest.useRealTimers());
+  afterEach(() => vi.useRealTimers());
 
   it('should add and dismiss toast on timeout', async () => {
-    const dismiss = jest.fn();
+    const dismiss = vi.fn();
     renderWithRoot(<Toast description="Test" onDismiss={dismiss} />);
 
     act(() => {
-      jest.runAllTimers();
+      vi.runAllTimers();
     });
 
     expect(
@@ -32,14 +32,14 @@ describe('useToastsApi', () => {
   });
 
   it('should not unmount if duration is null', async () => {
-    const dismiss = jest.fn();
+    const dismiss = vi.fn();
 
     renderWithRoot(
       <Toast description="Test" duration={null} onDismiss={dismiss} />,
     );
 
     act(() => {
-      jest.runAllTimers();
+      vi.runAllTimers();
     });
 
     expect(screen.getByTestId('FloatingNotification')).toBeInTheDocument();
@@ -47,8 +47,8 @@ describe('useToastsApi', () => {
   });
 
   it('should respect duration prop', async () => {
-    jest.useRealTimers();
-    const dismiss = jest.fn();
+    vi.useRealTimers();
+    const dismiss = vi.fn();
 
     renderWithRoot(
       <Toast description="Test" duration={10} onDismiss={dismiss} />,

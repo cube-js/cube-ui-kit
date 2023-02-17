@@ -8,7 +8,7 @@ import { NotificationView } from './NotificationView';
 
 describe('<Notification />', () => {
   it('should stop timer on hover', async () => {
-    const onClose = jest.fn();
+    const onClose = vi.fn();
 
     render(
       <NotificationView description="test" duration={50} onClose={onClose} />,
@@ -21,7 +21,7 @@ describe('<Notification />', () => {
   });
 
   it('should resume timer on unhover', async () => {
-    const onClose = jest.fn();
+    const onClose = vi.fn();
 
     render(
       <NotificationView description="test" duration={10} onDismiss={onClose} />,
@@ -38,7 +38,7 @@ describe('<Notification />', () => {
   });
 
   it('should close on click', async () => {
-    const onClose = jest.fn();
+    const onClose = vi.fn();
     render(<NotificationView description="test" onDismiss={onClose} />);
 
     const notification = screen.getByTestId('notification');
@@ -49,7 +49,7 @@ describe('<Notification />', () => {
   });
 
   it('should kill timer on unmount', async () => {
-    const onClose = jest.fn();
+    const onClose = vi.fn();
 
     render(
       <NotificationView description="test" duration={10} onClose={onClose} />,
@@ -62,8 +62,8 @@ describe('<Notification />', () => {
   });
 
   it('should work with custom timer', async () => {
-    const onClose = jest.fn();
-    const timerCallback = jest.fn();
+    const onClose = vi.fn();
+    const timerCallback = vi.fn();
     const timer = new Timer(timerCallback, 100);
 
     render(

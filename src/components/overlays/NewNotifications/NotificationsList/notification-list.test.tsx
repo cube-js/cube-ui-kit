@@ -20,7 +20,7 @@ describe('<NotificationList />', () => {
   });
 
   it('should handle onDismiss', async () => {
-    const onDismiss = jest.fn();
+    const onDismiss = vi.fn();
 
     const { getByTestId } = render(
       <NotificationsList onDismiss={onDismiss}>

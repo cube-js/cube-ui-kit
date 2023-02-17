@@ -9,9 +9,8 @@ import { Form } from '.';
 
 describe('<Form />', () => {
   it('should not be displayed if validation is failed on submit', async () => {
-    jest.setTimeout(10000);
-    const onSubmit = jest.fn(() => Promise.reject('Custom Error'));
-    const onSubmitFailed = jest.fn(() => {});
+    const onSubmit = vi.fn(() => Promise.reject('Custom Error'));
+    const onSubmitFailed = vi.fn(() => {});
 
     const { getByRole, formInstance } = renderWithForm(
       <>
@@ -50,13 +49,13 @@ describe('<Form />', () => {
     await waitFor(() => {
       expect(formInstance.submitError).toBeNull();
     });
-  });
+  }, 10000);
 
   it('should throw uncaught rejection if error is not handled', async () => {
-    const onSubmit = jest.fn(() => {
+    const onSubmit = vi.fn(() => {
       throw new Error('Custom Error');
     });
-    const onSubmitFailed = jest.fn(() => {});
+    const onSubmitFailed = vi.fn(() => {});
 
     const { getByRole, getByText, formInstance } = renderWithForm(
       <>

@@ -9,8 +9,8 @@ function TestComponent({ renderNotification = true, ...notificationProps }) {
 }
 
 describe('<Notification />', () => {
-  beforeEach(() => jest.useFakeTimers('modern'));
-  afterEach(() => jest.useRealTimers());
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
 
   it('should unmount component by default', () => {
     const { getByTestId, rerender } = renderWithRoot(<TestComponent />);

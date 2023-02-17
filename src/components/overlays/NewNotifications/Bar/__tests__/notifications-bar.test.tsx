@@ -1,4 +1,5 @@
 import userEvent from '@testing-library/user-event';
+import { act } from '@testing-library/react';
 
 import { render } from '../../../../../test';
 import { NotificationsBar } from '../NotificationsBar';
@@ -6,9 +7,9 @@ import { NotificationsBar } from '../NotificationsBar';
 describe('<NotificationsBar />', () => {
   it.each(['Delete', 'Esc', 'Backspace'])(
     'should close on keypress %s',
-    (key) => {
-      const onRemoveToast = jest.fn();
-      const onDismiss = jest.fn();
+    async (key) => {
+      const onRemoveToast = vi.fn();
+      const onDismiss = vi.fn();
 
       render(
         <NotificationsBar
@@ -25,16 +26,18 @@ describe('<NotificationsBar />', () => {
         </NotificationsBar>,
       );
 
-      (document.querySelector('[data-id="1"]') as HTMLElement)?.focus();
-      userEvent.keyboard(`{${key}}`);
+      await act(async () => {
+        (document.querySelector('[data-id="1"]') as HTMLElement)?.focus();
+        await userEvent.keyboard(`{${key}}`);
+      });
 
       expect(onDismiss).toHaveBeenCalledWith('1');
     },
   );
 
   it('should not render more than 5 notifications at the same time', () => {
-    const onRemoveToast = jest.fn(),
-      onDismiss = jest.fn();
+    const onRemoveToast = vi.fn(),
+      onDismiss = vi.fn();
 
     render(
       <NotificationsBar

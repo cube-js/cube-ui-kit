@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1
 
-exports[`styled() API should be able to override styles 1`] = `
+exports[`styled() API > should be able to override styles 1`] = `
 .c0 {
   outline: none;
 }
@@ -22,7 +22,7 @@ exports[`styled() API should be able to override styles 1`] = `
 </div>
 `;
 
-exports[`styled() API should pass styles from styled 1`] = `
+exports[`styled() API > should pass styles from styled 1`] = `
 .c0 {
   outline: none;
 }
@@ -44,9 +44,9 @@ exports[`styled() API should pass styles from styled 1`] = `
 </div>
 `;
 
-exports[`styled() API should warn about deprecated API 1`] = `
-Array [
-  Array [
+exports[`styled() API > should warn about deprecated API 1`] = `
+[
+  [
     "Tasty:",
     "\\"props\\" is deprecated, consider better alternative: inline props directly in styled(), eg: styled({ type: 'confirm' })",
   ],

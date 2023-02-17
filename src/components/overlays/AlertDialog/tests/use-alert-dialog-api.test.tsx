@@ -10,15 +10,15 @@ describe('useAlertDialogApi()', () => {
   let dialogPromise: Promise<string> | null = null;
   let abortController: AbortController | null = null;
 
-  const onResolve = jest.fn();
-  const onReject = jest.fn();
+  const onResolve = vi.fn();
+  const onReject = vi.fn();
 
   afterAll(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   function TestComponent(props: Partial<DialogProps>) {
@@ -60,14 +60,14 @@ describe('useAlertDialogApi()', () => {
 
     await userEvent.click(showDialogButton);
 
-    jest.useFakeTimers('modern');
+    vi.useFakeTimers();
 
     act(() => {
       abortController?.abort();
-      jest.runAllTimers();
+      vi.runAllTimers();
     });
 
-    jest.useRealTimers();
+    vi.useRealTimers();
 
     await userEvent.click(showDialogButton);
 
@@ -75,7 +75,7 @@ describe('useAlertDialogApi()', () => {
   });
 
   it('should reject on onDismiss', async () => {
-    const onDismiss = jest.fn();
+    const onDismiss = vi.fn();
 
     const { getByRole } = renderWithRoot(
       <TestComponent onDismiss={onDismiss} />,

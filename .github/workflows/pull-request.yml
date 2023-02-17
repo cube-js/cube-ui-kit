@@ -97,7 +97,7 @@ jobs:
         run: pnpm lint
 
       - name: Run the tests
-        run: pnpm test -- --no-cache
+        run: pnpm test
 
   deploy-chromatic:
     name: 'Prepare Storybook for review & tests'
