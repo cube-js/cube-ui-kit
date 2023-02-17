@@ -12,6 +12,7 @@ export type ToastProps = {
    *
    * @default false
    */
+  // eslint-disable-next-line react/boolean-prop-naming
   disableRemoveOnUnmount?: boolean;
 } & CubeToastsApiProps;
 
