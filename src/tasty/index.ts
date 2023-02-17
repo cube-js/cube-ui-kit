@@ -10,7 +10,7 @@ export * from './styles/list';
 export * from './providers/BreakpointsProvider';
 export * from './utils/mergeStyles';
 export * from './utils/warnings';
-export * from './utils/get-display-name';
+export * from './utils/getDisplayName';
 export type {
   TastyProps,
   GlobalTastyProps,

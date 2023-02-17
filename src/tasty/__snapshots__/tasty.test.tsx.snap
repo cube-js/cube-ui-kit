@@ -263,3 +263,90 @@ exports[`tasty() API should pass styles from tasty 1`] = `
   />
 </div>
 `;
+
+exports[`tasty() API should support camelCase modifiers 1`] = `
+.c0 {
+  outline: none;
+}
+
+.c0[hidden] {
+  display: none !important;
+}
+
+.c0.c0:not([data-is-somehow-modified]) {
+  color: var(--dark-color);
+  --current-color: var(--dark-color,dark);
+  --current-color-rgb: var(--dark-color-rgb);
+}
+
+.c0.c0[data-is-somehow-modified] {
+  color: var(--purple-color,rgba(0,0,0,1));
+  --current-color: var(--purple-color,purple);
+  --current-color-rgb: var(--purple-color-rgb);
+}
+
+<div>
+  <div
+    class="c0"
+    data-is-somehow-modified=""
+  />
+</div>
+`;
+
+exports[`tasty() API should support kebab-case modifiers 1`] = `
+.c0 {
+  outline: none;
+}
+
+.c0[hidden] {
+  display: none !important;
+}
+
+.c0.c0:not([data-is-somehow-modified]) {
+  color: var(--dark-color);
+  --current-color: var(--dark-color,dark);
+  --current-color-rgb: var(--dark-color-rgb);
+}
+
+.c0.c0[data-is-somehow-modified] {
+  color: var(--purple-color,rgba(0,0,0,1));
+  --current-color: var(--purple-color,purple);
+  --current-color-rgb: var(--purple-color-rgb);
+}
+
+<div>
+  <div
+    class="c0"
+    data-is-somehow-modified=""
+  />
+</div>
+`;
+
+exports[`tasty() API should support modifiers 1`] = `
+.c0 {
+  outline: none;
+}
+
+.c0[hidden] {
+  display: none !important;
+}
+
+.c0.c0:not([data-is-modified]) {
+  color: var(--dark-color);
+  --current-color: var(--dark-color,dark);
+  --current-color-rgb: var(--dark-color-rgb);
+}
+
+.c0.c0[data-is-modified] {
+  color: var(--purple-color,rgba(0,0,0,1));
+  --current-color: var(--purple-color,purple);
+  --current-color-rgb: var(--purple-color-rgb);
+}
+
+<div>
+  <div
+    class="c0"
+    data-is-modified=""
+  />
+</div>
+`;

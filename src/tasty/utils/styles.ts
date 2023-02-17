@@ -1,5 +1,8 @@
 import { Styles } from '../styles/types';
 
+import { camelToKebab } from './case-converter';
+import { cacheWrapper } from './cache-wrapper';
+
 import { getModCombinations } from './index';
 
 export type StyleValue<T = string> = T | boolean | number | null | undefined;
@@ -168,8 +171,17 @@ export function createRule(
   return `${prop}: ${value};\n`;
 }
 
+const MOD_NAME_CACHE = new Map();
+
 function getModSelector(modName: string): string {
-  return modName.match(/^[a-z]/) ? `[data-is-${modName}]` : modName;
+  if (!MOD_NAME_CACHE.has(modName)) {
+    MOD_NAME_CACHE.set(
+      modName,
+      modName.match(/^[a-z]/) ? `[data-is-${camelToKebab(modName)}]` : modName,
+    );
+  }
+
+  return MOD_NAME_CACHE.get(modName);
 }
 
 /**
@@ -886,7 +898,7 @@ export function styleMapToStyleMapStateList(
 }
 
 const STATES_REGEXP =
-  /([&|!^])|([()])|([a-z0-6-]+)|(:[a-z0-6-]+)|(\.[a-z0-6-]+)|(\[[^\]]+])/gi;
+  /([&|!^])|([()])|([a-z][a-z0-9-]+)|(:[a-z][a-z0-9-]+|:[a-z][a-z0-9]+\([:a-z0-9-]+\))|(\.[a-z][a-z0-9-]+)|(\[[^\]]+])/gi;
 export const STATE_OPERATORS = {
   NOT: '!',
   AND: '&',
@@ -1122,35 +1134,4 @@ export function computeState(
   }
 
   return !!func(a, b);
-}
-
-/**
- * Create a function that caches the result up to the limit.
- */
-export function cacheWrapper<
-  T extends (firstArg: any, secondArg?: string) => any,
->(handler: T, limit = 1000): T {
-  let cache: { string?: ReturnType<T> } = {};
-  let count = 0;
-
-  return ((firstArg: any, secondArg?: string) => {
-    const key =
-      typeof firstArg === 'string' && secondArg == null
-        ? firstArg
-        : JSON.stringify([firstArg, secondArg]);
-
-    if (!cache[key]) {
-      if (count > limit) {
-        cache = {};
-        count = 0;
-      }
-
-      count++;
-
-      cache[key] =
-        secondArg == null ? handler(firstArg) : handler(firstArg, secondArg);
-    }
-
-    return cache[key];
-  }) as T;
 }

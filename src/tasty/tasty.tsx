@@ -9,9 +9,10 @@ import { renderStyles } from './utils/renderStyles';
 import { pointsToZones } from './utils/responsive';
 import { Styles, StylesInterface } from './styles/types';
 import { BASE_STYLES } from './styles/list';
-import { cacheWrapper, ResponsiveStyleValue } from './utils/styles';
+import { ResponsiveStyleValue } from './utils/styles';
+import { cacheWrapper } from './utils/cache-wrapper';
 import { mergeStyles } from './utils/mergeStyles';
-import { getDisplayName } from './utils/get-display-name';
+import { getDisplayName } from './utils/getDisplayName';
 
 type StyleList = readonly (keyof {
   [key in keyof StylesInterface]: StylesInterface[key];

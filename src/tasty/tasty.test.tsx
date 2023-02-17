@@ -26,6 +26,37 @@ describe('tasty() API', () => {
     expect(container).toMatchSnapshot();
   });
 
+  it('should support modifiers', () => {
+    const StyledBlock = tasty(Block, {
+      styles: { color: { '': '#dark', modified: '#purple' } },
+    });
+    const { container } = render(<StyledBlock mods={{ modified: true }} />);
+
+    expect(container).toMatchSnapshot();
+  });
+
+  it('should support kebab-case modifiers', () => {
+    const StyledBlock = tasty(Block, {
+      styles: { color: { '': '#dark', 'somehow-modified': '#purple' } },
+    });
+    const { container } = render(
+      <StyledBlock mods={{ 'somehow-modified': true }} />,
+    );
+
+    expect(container).toMatchSnapshot();
+  });
+
+  it('should support camelCase modifiers', () => {
+    const StyledBlock = tasty(Block, {
+      styles: { color: { '': '#dark', somehowModified: '#purple' } },
+    });
+    const { container } = render(
+      <StyledBlock mods={{ somehowModified: true }} />,
+    );
+
+    expect(container).toMatchSnapshot();
+  });
+
   it('should merge styles', () => {
     const Block = tasty({
       styles: {
