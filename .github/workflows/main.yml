@@ -97,6 +97,7 @@ jobs:
       name: Docs Production
       url: ${{ steps.publish_docs.outputs.NETLIFY_PREVIEW_URL }}
     env:
+      NODE_OPTIONS: --max-old-space-size=4096
       NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
     steps:
