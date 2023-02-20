@@ -96,6 +96,37 @@ describe('tasty() API', () => {
     expect(container).toMatchSnapshot();
   });
 
+  it('should support variants', () => {
+    const StyledBlock = tasty({
+      styles: { color: '#clear' },
+      variants: {
+        custom: {
+          color: '#black',
+        },
+      },
+    });
+    const { container } = render(<StyledBlock variant="custom" />);
+
+    expect(container).toMatchSnapshot();
+  });
+
+  it('should fallback to default variant', () => {
+    const StyledBlock = tasty({
+      styles: { color: '#clear' },
+      variants: {
+        default: {
+          color: '#white',
+        },
+        custom: {
+          color: '#black',
+        },
+      },
+    });
+    const { container } = render(<StyledBlock />);
+
+    expect(container).toMatchSnapshot();
+  });
+
   it('should pass qa prop', () => {
     const StyledBlock = tasty({ qa: 'Field' });
     const { container } = render(<StyledBlock />);
