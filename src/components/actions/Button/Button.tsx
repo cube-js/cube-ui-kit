@@ -6,6 +6,7 @@ import { CubeActionProps } from '../Action';
 import {
   CONTAINER_STYLES,
   extractStyles,
+  Styles,
   tasty,
   TEXT_STYLES,
 } from '../../../tasty';
@@ -31,63 +32,65 @@ export interface CubeButtonProps extends CubeActionProps {
 
 const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
+export const DEFAULT_BUTTON_STYLES: Styles = {
+  display: 'inline-grid',
+  placeItems: 'center stretch',
+  placeContent: 'center',
+  position: 'relative',
+  margin: 0,
+  outline: {
+    '': '#purple-03.0',
+    focused: '#purple-03',
+  },
+  cursor: 'pointer',
+  gap: '1x',
+  flow: 'column',
+  preset: {
+    '': 't3m',
+    '[data-size="large"]': 't2m',
+  },
+  textDecoration: 'none',
+  transition: 'theme',
+  reset: 'button',
+  padding: {
+    '': '(1.25x - 1bw) (2x - 1bw)',
+    '[data-size="small"]': '(.75x - 1bw) (1.5x - 1bw)',
+    '[data-size="medium"]': '(1.25x - 1bw) (2x - 1bw)',
+    '[data-size="large"]': '(1.5x - 1bw) (2.5x - 1bw)',
+    'single-icon-only | [data-type="link"]': 0,
+  },
+  width: {
+    '': 'initial',
+    '[data-size="small"] & single-icon-only': '4x 4x',
+    '[data-size="medium"] & single-icon-only': '5x 5x',
+    '[data-size="large"] & single-icon-only': '6x 6x',
+  },
+  height: {
+    '': 'initial',
+    '[data-size="small"] & single-icon-only': '4x 4x',
+    '[data-size="medium"] & single-icon-only': '5x 5x',
+    '[data-size="large"] & single-icon-only': '6x 6x',
+  },
+  whiteSpace: 'nowrap',
+  radius: {
+    '': true,
+    '[data-type="link"] & !focused': 0,
+  },
+
+  '& .anticon': {
+    transition:
+      'display .2s steps(1, start), margin .2s linear, opacity .2s linear',
+  },
+
+  ButtonIcon: {
+    display: 'grid',
+    fontSize: '@icon-size',
+  },
+};
+
 const ButtonElement = tasty({
   qa: 'Button',
-  styles: {
-    display: 'inline-grid',
-    placeItems: 'center stretch',
-    placeContent: 'center',
-    position: 'relative',
-    margin: 0,
-    outline: {
-      '': '#purple-03.0',
-      focused: '#purple-03',
-    },
-    cursor: 'pointer',
-    gap: '1x',
-    flow: 'column',
-    preset: {
-      '': 't3m',
-      '[data-size="large"]': 't2m',
-    },
-    textDecoration: 'none',
-    transition: 'theme',
-    reset: 'button',
-    padding: {
-      '': '(1.25x - 1bw) (2x - 1bw)',
-      '[data-size="small"]': '(.75x - 1bw) (1.5x - 1bw)',
-      '[data-size="medium"]': '(1.25x - 1bw) (2x - 1bw)',
-      '[data-size="large"]': '(1.5x - 1bw) (2.5x - 1bw)',
-      'single-icon-only | [data-type="link"]': 0,
-    },
-    width: {
-      '': 'initial',
-      '[data-size="small"] & single-icon-only': '4x 4x',
-      '[data-size="medium"] & single-icon-only': '5x 5x',
-      '[data-size="large"] & single-icon-only': '6x 6x',
-    },
-    height: {
-      '': 'initial',
-      '[data-size="small"] & single-icon-only': '4x 4x',
-      '[data-size="medium"] & single-icon-only': '5x 5x',
-      '[data-size="large"] & single-icon-only': '6x 6x',
-    },
-    whiteSpace: 'nowrap',
-    radius: {
-      '': true,
-      '[data-type="link"] & !focused': 0,
-    },
-
-    '& .anticon': {
-      transition:
-        'display .2s steps(1, start), margin .2s linear, opacity .2s linear',
-    },
-
-    ButtonIcon: {
-      display: 'grid',
-      fontSize: '@icon-size',
-    },
-  },
+  styles: DEFAULT_BUTTON_STYLES,
   variants: {
     default: {
       shadow: {
