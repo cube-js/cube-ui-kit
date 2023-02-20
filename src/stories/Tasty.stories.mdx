@@ -118,3 +118,35 @@ The `div` is used only for demonstration purposes. Do not use `div`s as buttons!
     <GlobalStyledHeading />
   </Story>
 </Canvas>
+
+## Style variants
+
+You can reduce the amount of CSS for your component by splitting it into variants.
+
+```typescript jsx
+import { tasty } from '@cube-dev/ui-kit';
+
+const StyledButton = tasty(Button, {
+  styles: {
+    /* default styles */
+  },
+  variants: { // define themes using variants
+    default: { // default (fallback) variant
+      // define new styles for `default` variant or override default styles.
+    },
+    danger: {
+      // define new styles for `danger` variant or override default styles.
+    }
+  },
+});
+```
+
+Usage example:
+
+```typescript jsx
+<StyledButton variant="danger">Danger Button</StyledButton>
+```
+
+If the `variant` prop is not provided then the `default` variant will be used.
+
+**IMPORTANT:** It's preferred that the component will not receive any change in `variant` prop to avoid style replacement. But this case is **supported**.
