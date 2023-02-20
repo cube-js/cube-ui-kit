@@ -44,9 +44,9 @@ https://www.conventionalcommits.org/ or check out the
    commit type. `scope` is just a short id that describes the scope of work.
 2. Make and commit your changes following the
    [commit convention](https://github.com/cube-js/cube-ui-kit/blob/main/CONTRIBUTING.md#commit-convention).
-   As you develop, you can run `yarn build` and
-   `yarn test` to make sure everything works as expected.
-3. Run `yarn changeset` to create a detailed description of your changes. This
+   As you develop, you can run `pnpm build` and
+   `pnpm test` to make sure everything works as expected.
+3. Run `pnpm changeset` to create a detailed description of your changes. This
    will be used to generate a changelog when we publish an update.
    [Learn more about Changeset](https://github.com/atlassian/changesets/tree/master/packages/cli).
    > You can make it earlier after you have created a PR.
@@ -58,7 +58,7 @@ https://www.conventionalcommits.org/ or check out the
    ` ```jsx live=false`
 
 > If you made minor changes like CI config, prettier, etc, you can run
-> `yarn changeset add --empty` to generate an empty changeset file to document
+> `pnpm changeset add --empty` to generate an empty changeset file to document
 > your changes.
 
 ### Tests

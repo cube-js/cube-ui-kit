@@ -21,23 +21,18 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/cache@v2
-        name: Download yarn cache
-        id: yarn-cache
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
         with:
-          path: |
-            **/node_modules
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-            ${{ runner.os }}-yarn
+          version: 7
 
       - uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: yarn --frozen-lockfile
+        run: pnpm install
 
       - name: Set env
         run: echo "SHORT_SHA=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_ENV
@@ -46,7 +41,7 @@ jobs:
         run: npm version 0.0.0-canary-$SHORT_SHA --no-git-tag-version
 
       - name: Build project
-        run: yarn build
+        run: pnpm build
 
       - name: Publish canary
         id: publish
@@ -80,15 +75,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/cache@v2
-        id: yarn-cache
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
         with:
-          path: |
-            **/node_modules
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-            ${{ runner.os }}-yarn
+          version: 7
 
       - uses: actions/cache@v2
         name: Download eslint cache
@@ -100,15 +90,16 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: yarn --frozen-lockfile
+        run: pnpm install
 
       - name: Run the lint
-        run: yarn lint
+        run: pnpm lint
 
       - name: Run the tests
-        run: yarn test --no-cache
+        run: pnpm test -- --no-cache
 
   deploy-chromatic:
     name: 'Prepare Storybook for review & tests'
@@ -124,15 +115,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/cache@v2
-        id: yarn-cache
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
         with:
-          path: |
-            **/node_modules
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-            ${{ runner.os }}-yarn
+          version: 7
 
       - uses: actions/cache@v2
         name: Download storybook cache
@@ -146,9 +132,10 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: yarn --frozen-lockfile
+        run: pnpm install
 
       - name: Publish to Chromatic
         id: publish_chromatic
@@ -189,15 +176,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/cache@v2
-        id: yarn-cache
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
         with:
-          path: |
-            **/node_modules
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-            ${{ runner.os }}-yarn
+          version: 7
 
       - uses: actions/cache@v2
         name: Download storybook cache
@@ -211,12 +193,13 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: yarn --frozen-lockfile
+        run: pnpm install
 
       - name: Build Docs
-        run: yarn build-docs --quiet
+        run: pnpm build-docs --quiet
 
       - name: Deploy docs to Netlify
         id: publish_docs

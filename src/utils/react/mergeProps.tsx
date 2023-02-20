@@ -5,18 +5,13 @@ import { mergeStyles, Props } from '../../tasty';
 import { chain } from './chain';
 import { mergeIds } from './useId';
 
-type TupleTypes<T> = {
-  [P in keyof T]: T[P];
-} extends {
-  [key: number]: infer V;
-}
-  ? V
-  : never;
-type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
-  k: infer I,
-) => void
-  ? I
-  : never;
+type Merge<T> = T extends [infer F, ...infer R]
+  ? F extends undefined
+    ? Merge<R>
+    : F & Merge<R>
+  : T extends [infer L]
+  ? L
+  : unknown;
 
 /**
  * Merges multiple props objects together. Event handlers are chained,
@@ -25,10 +20,9 @@ type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
  * For all other props, the last prop object overrides all previous ones.
  * @param args - Multiple sets of props to merge together.
  */
-export function mergeProps<
-  T extends (Props | undefined)[],
-  K = UnionToIntersection<TupleTypes<T>>,
->(...args: T): K {
+export function mergeProps<T extends (Props | undefined)[], K = Merge<T>>(
+  ...args: T
+): K {
   let result: any = {};
 
   for (let props of args) {
