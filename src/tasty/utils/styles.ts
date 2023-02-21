@@ -173,7 +173,7 @@ export function createRule(
 
 const MOD_NAME_CACHE = new Map();
 
-function getModSelector(modName: string): string {
+function getModSelector(modName: string, negative = false): string {
   if (!MOD_NAME_CACHE.has(modName)) {
     MOD_NAME_CACHE.set(
       modName,
@@ -181,7 +181,13 @@ function getModSelector(modName: string): string {
     );
   }
 
-  return MOD_NAME_CACHE.get(modName);
+  const value = MOD_NAME_CACHE.get(modName);
+
+  if (value.startsWith(':not(')) {
+    return negative ? value.slice(5, -1) : value;
+  } else {
+    return negative ? `:not(${value})` : value;
+  }
 }
 
 /**
@@ -763,7 +769,7 @@ export function applyStates(selector: string, states, suffix = '') {
     const modifiers = `${(state.mods || []).map(getModSelector).join('')}${(
       state.notMods || []
     )
-      .map((mod) => `:not(${getModSelector(mod)})`)
+      .map((mod) => getModSelector(mod, true))
       .join('')}`;
 
     // TODO: replace `replace()` a REAL hotfix
@@ -898,7 +904,7 @@ export function styleMapToStyleMapStateList(
 }
 
 const STATES_REGEXP =
-  /([&|!^])|([()])|([a-z][a-z0-9-]+)|(:[a-z][a-z0-9-]+|:[a-z][a-z0-9]+\([:a-z0-9-]+\))|(\.[a-z][a-z0-9-]+)|(\[[^\]]+])/gi;
+  /([&|!^])|([()])|([a-z][a-z0-9-]+)|(:[a-z][a-z0-9]+\([:a-z0-9-]+\)|:[a-z][a-z0-9-]+)|(\.[a-z][a-z0-9-]+)|(\[[^\]]+])/gi;
 export const STATE_OPERATORS = {
   NOT: '!',
   AND: '&',

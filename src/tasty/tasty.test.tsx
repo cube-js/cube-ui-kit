@@ -207,4 +207,13 @@ describe('tasty() API', () => {
 
     expect(container).toMatchSnapshot();
   });
+
+  it.only('should allow nested modifiers', () => {
+    const StyledBlock = tasty(Block, {
+      styles: { color: { '': '#clear', ':not(:first-child)': '#black' } },
+    });
+    const { container } = render(<StyledBlock />);
+
+    expect(container).toMatchSnapshot();
+  });
 });

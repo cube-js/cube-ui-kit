@@ -38,6 +38,34 @@ exports[`tasty() API should allow multiple wrapping 1`] = `
 </div>
 `;
 
+exports[`tasty() API should allow nested modifiers 1`] = `
+.c0 {
+  outline: none;
+}
+
+.c0[hidden] {
+  display: none !important;
+}
+
+.c0.c0:first-child {
+  color: var(--clear-color);
+  --current-color: var(--clear-color,clear);
+  --current-color-rgb: var(--clear-color-rgb);
+}
+
+.c0.c0:not(:first-child) {
+  color: var(--black-color);
+  --current-color: var(--black-color,black);
+  --current-color-rgb: var(--black-color-rgb);
+}
+
+<div>
+  <div
+    class="c0"
+  />
+</div>
+`;
+
 exports[`tasty() API should be able to override styles 1`] = `
 .c0 {
   outline: none;
