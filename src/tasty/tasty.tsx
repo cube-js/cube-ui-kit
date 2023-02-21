@@ -18,6 +18,10 @@ type StyleList = readonly (keyof {
   [key in keyof StylesInterface]: StylesInterface[key];
 })[];
 
+export type PropsWithStyles = {
+  styles?: Styles;
+} & Omit<Props, 'styles'>;
+
 export type VariantMap = Record<string, Styles>;
 
 export type WithVariant<V extends VariantMap> = {
@@ -50,7 +54,7 @@ export type AllBasePropsWithMods<K extends StyleList> = AllBaseProps & {
 } & BaseStyleProps;
 
 type TastyComponentPropsWithDefaults<
-  Props extends { styles?: Styles },
+  Props extends PropsWithStyles,
   DefaultProps extends Partial<Props>,
 > = keyof DefaultProps extends never
   ? Props
@@ -66,7 +70,7 @@ function tasty<K extends StyleList, V extends VariantMap>(
 ): ComponentType<Omit<Props, 'variant'> & WithVariant<V>>;
 function tasty(selector: string, styles?: Styles);
 function tasty<
-  Props extends { styles?: Styles },
+  Props extends PropsWithStyles,
   DefaultProps extends Partial<Props> = Partial<Props>,
 >(
   Component: ComponentType<Props>,
