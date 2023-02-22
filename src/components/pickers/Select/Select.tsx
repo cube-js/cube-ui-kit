@@ -221,8 +221,8 @@ const OptionElement = tasty({
     radius: true,
     fill: {
       '': '#dark.0',
-      'hovered | focused': '#dark.04',
       'pressed | selected': '#purple.10',
+      'hovered | focused': '#dark.04',
       disabled: '#dark.0',
     },
     color: {
