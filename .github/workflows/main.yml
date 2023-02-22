@@ -10,6 +10,8 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: --max-old-space-size=4096
     outputs:
       published: ${{ steps.changesets.outputs.published }}
     steps:
@@ -48,6 +50,7 @@ jobs:
       name: Chromatic Production
       url: ${{ steps.publish_chromatic.outputs.url }}
     env:
+      NODE_OPTIONS: --max-old-space-size=4096
       CHROMATIC_RETRIES: 5
     steps:
       - uses: actions/checkout@v2
@@ -94,6 +97,7 @@ jobs:
       name: Docs Production
       url: ${{ steps.publish_docs.outputs.NETLIFY_PREVIEW_URL }}
     env:
+      NODE_OPTIONS: --max-old-space-size=4096
       NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
     steps:
