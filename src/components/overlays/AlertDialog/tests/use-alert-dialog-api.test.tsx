@@ -58,7 +58,7 @@ describe('useAlertDialogApi()', () => {
 
     const showDialogButton = getByRole('button');
 
-    await userEvent.click(showDialogButton);
+    await act(() => userEvent.click(showDialogButton));
 
     jest.useFakeTimers('modern');
 
@@ -69,7 +69,7 @@ describe('useAlertDialogApi()', () => {
 
     jest.useRealTimers();
 
-    await userEvent.click(showDialogButton);
+    await act(() => userEvent.click(showDialogButton));
 
     expect(getByRole('alertdialog')).toBeInTheDocument();
   });
@@ -82,8 +82,10 @@ describe('useAlertDialogApi()', () => {
     );
     const showDialogButton = getByRole('button');
 
-    await userEvent.click(showDialogButton);
-    await userEvent.keyboard('{Escape}');
+    await act(async () => {
+      await userEvent.click(showDialogButton);
+      await userEvent.keyboard('{Escape}');
+    });
 
     expect(onDismiss).toHaveBeenCalled();
     expect(onReject).toHaveBeenCalled();

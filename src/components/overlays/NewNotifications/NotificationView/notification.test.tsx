@@ -1,7 +1,7 @@
 import { render, getByTestId, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { wait } from '../../../../test';
+import { wait, act } from '../../../../test';
 import { Timer } from '../../../../_internal';
 
 import { NotificationView } from './NotificationView';
@@ -14,7 +14,7 @@ describe('<Notification />', () => {
       <NotificationView description="test" duration={50} onClose={onClose} />,
     );
 
-    await userEvent.hover(screen.getByTestId('notification'));
+    await act(() => userEvent.hover(screen.getByTestId('notification')));
     await wait(100);
 
     expect(onClose).not.toBeCalled();
@@ -29,9 +29,9 @@ describe('<Notification />', () => {
 
     const notification = screen.getByTestId('notification');
 
-    await userEvent.hover(notification);
+    await act(() => userEvent.hover(notification));
     await wait(10);
-    await userEvent.unhover(notification);
+    await act(() => userEvent.unhover(notification));
     await wait(20);
 
     expect(onClose).toBeCalledTimes(1);
@@ -43,7 +43,9 @@ describe('<Notification />', () => {
 
     const notification = screen.getByTestId('notification');
 
-    await userEvent.click(getByTestId(notification, 'NotificationCloseButton'));
+    await act(() =>
+      userEvent.click(getByTestId(notification, 'NotificationCloseButton')),
+    );
 
     expect(onClose).toBeCalledTimes(1);
   });

@@ -1,4 +1,5 @@
 import userEvent from '@testing-library/user-event';
+import { act } from '@testing-library/react';
 
 import { render } from '../../../../../test';
 import { NotificationsBar } from '../NotificationsBar';
@@ -6,7 +7,7 @@ import { NotificationsBar } from '../NotificationsBar';
 describe('<NotificationsBar />', () => {
   it.each(['Delete', 'Esc', 'Backspace'])(
     'should close on keypress %s',
-    (key) => {
+    async (key) => {
       const onRemoveToast = jest.fn();
       const onDismiss = jest.fn();
 
@@ -25,8 +26,10 @@ describe('<NotificationsBar />', () => {
         </NotificationsBar>,
       );
 
-      (document.querySelector('[data-id="1"]') as HTMLElement)?.focus();
-      userEvent.keyboard(`{${key}}`);
+      await act(async () => {
+        (document.querySelector('[data-id="1"]') as HTMLElement)?.focus();
+        await userEvent.keyboard(`{${key}}`);
+      });
 
       expect(onDismiss).toHaveBeenCalledWith('1');
     },
