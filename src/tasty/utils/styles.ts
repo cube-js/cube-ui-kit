@@ -173,7 +173,7 @@ export function createRule(
 
 const MOD_NAME_CACHE = new Map();
 
-function getModSelector(modName: string, negative = false): string {
+function getModSelector(modName: string): string {
   if (!MOD_NAME_CACHE.has(modName)) {
     MOD_NAME_CACHE.set(
       modName,
@@ -181,13 +181,7 @@ function getModSelector(modName: string, negative = false): string {
     );
   }
 
-  const value = MOD_NAME_CACHE.get(modName);
-
-  if (value.startsWith(':not(')) {
-    return negative ? value.slice(5, -1) : value;
-  } else {
-    return negative ? `:not(${value})` : value;
-  }
+  return MOD_NAME_CACHE.get(modName);
 }
 
 /**
@@ -769,7 +763,15 @@ export function applyStates(selector: string, states, suffix = '') {
     const modifiers = `${(state.mods || []).map(getModSelector).join('')}${(
       state.notMods || []
     )
-      .map((mod) => getModSelector(mod, true))
+      .map((mod) => {
+        let selector = getModSelector(mod);
+
+        if (selector.startsWith(':not(')) {
+          return selector.slice(5, -1);
+        } else {
+          return `:not(${selector})`;
+        }
+      })
       .join('')}`;
 
     // TODO: replace `replace()` a REAL hotfix
