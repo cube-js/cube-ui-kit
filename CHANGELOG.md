@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.17.0
+
+### Minor Changes
+
+- [#300](https://github.com/cube-js/cube-ui-kit/pull/300) [`c631c5b`](https://github.com/cube-js/cube-ui-kit/commit/c631c5b5070739fa592c22a84dd90758d2cb175c) Thanks [@tenphi](https://github.com/tenphi)! - Variants API, camelCase support for mods, nested mods support.
+
+### Patch Changes
+
+- [#296](https://github.com/cube-js/cube-ui-kit/pull/296) [`3e23428`](https://github.com/cube-js/cube-ui-kit/commit/3e234289aa707ea8dcaac28e08a938cd71e26005) Thanks [@dangreen](https://github.com/dangreen)! - @react-stately/selection added as a direct dependency
+
 ## 0.16.4
 
 ### Patch Changes
