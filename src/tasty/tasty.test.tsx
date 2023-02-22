@@ -1,4 +1,6 @@
 import { getByTestId, render } from '@testing-library/react';
+import renderer from 'react-test-renderer';
+import { expect } from '@storybook/jest';
 
 import { Button } from '../components/actions';
 import { Block } from '../components/Block';
@@ -142,6 +144,57 @@ describe('tasty() API', () => {
     });
 
     const { container } = render(<ThirdBlock display="flex" />);
+
+    expect(container).toMatchSnapshot();
+  });
+
+  it('should not loose border-radius', () => {
+    const Component = tasty({
+      qa: 'Component',
+      styles: {
+        fill: {
+          '': '#purple-04',
+          '[data-variant="waiting"]': '#purple-04.1',
+          '[data-variant="processing"] & [data-theme="purple"]':
+            '#purple-highlight',
+          '[data-variant="processing"] & [data-theme="purple"] & hover':
+            '#purple-highlight-hover',
+          '[data-variant="processing"] & [data-theme="green"]':
+            '#green-highlight',
+          '[data-variant="processing"] & [data-theme="green"] & hover':
+            '#green-highlight-hover',
+          '[data-variant="processing"] & [data-theme="pink"]':
+            '#pink-highlight',
+          '[data-variant="processing"] & [data-theme="pink"] & hover':
+            '#pink-highlight-hover',
+          '[data-variant="processing"] & [data-theme="ocean"]':
+            '#ocean-highlight',
+          '[data-variant="processing"] & [data-theme="ocean"] & hover':
+            '#ocean-highlight-hover',
+        },
+
+        border: {
+          '': '1px left #purple.0',
+          '[data-variant="waiting"] & [data-theme="purple"]':
+            '1px left #purple-highlight-hover',
+          '[data-variant="waiting"] & [data-theme="green"]':
+            '1px left #green-highlight-hover',
+          '[data-variant="waiting"] & [data-theme="pink]':
+            '1px left #pink-highlight-hover',
+          '[data-variant="waiting"] & [data-theme="ocean"]':
+            '1px left #ocean-highlight-hover',
+        },
+
+        radius: {
+          '': '0',
+          '[data-variant="processing"]': '0.5x right',
+        },
+      },
+    });
+
+    const { container, getByTestId } = render(
+      <Component data-theme="purple" data-variant="processing" />,
+    );
 
     expect(container).toMatchSnapshot();
   });

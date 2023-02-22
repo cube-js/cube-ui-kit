@@ -242,6 +242,309 @@ exports[`tasty() API should merge styles in custom prop 1`] = `
 </div>
 `;
 
+exports[`tasty() API should not loose border-radius 1`] = `
+.c0 {
+  outline: none;
+}
+
+.c0[hidden] {
+  display: none !important;
+}
+
+.c0.c0:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"]) {
+  background-color: var(--purple-04-color,rgba(0,0,0,1));
+}
+
+.c0.c0:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"])>* {
+  --context-fill-color: var(--purple-04-color,rgba(0,0,0,1));
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0[data-variant="processing"]:not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"]) {
+  background-color: var(--purple-04-color,rgba(0,0,0,1));
+}
+
+.c0.c0[data-variant="processing"]:not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"])>* {
+  --context-fill-color: var(--purple-04-color,rgba(0,0,0,1));
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0[data-variant="processing"][data-theme="ocean"]:not([data-is-hover]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"]) {
+  background-color: var(--ocean-highlight-color,rgba(0,0,0,1));
+}
+
+.c0.c0[data-variant="processing"][data-theme="ocean"]:not([data-is-hover]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"])>* {
+  --context-fill-color: var(--ocean-highlight-color,rgba(0,0,0,1));
+  --context-fill-color-rgb: var(--ocean-highlight-color-rgb);
+}
+
+.c0.c0[data-variant="processing"][data-theme="ocean"][data-is-hover]:not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"]) {
+  background-color: var(--ocean-highlight-hover-color,rgba(0,0,0,1));
+}
+
+.c0.c0[data-variant="processing"][data-theme="ocean"][data-is-hover]:not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"])>* {
+  --context-fill-color: var(--ocean-highlight-hover-color,rgba(0,0,0,1));
+  --context-fill-color-rgb: var(--ocean-highlight-hover-color-rgb);
+}
+
+.c0.c0[data-variant="processing"][data-is-hover]:not([data-theme="ocean"]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"]) {
+  background-color: var(--purple-04-color,rgba(0,0,0,1));
+}
+
+.c0.c0[data-variant="processing"][data-is-hover]:not([data-theme="ocean"]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"])>* {
+  --context-fill-color: var(--purple-04-color,rgba(0,0,0,1));
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0[data-variant="processing"][data-is-hover][data-theme="pink"]:not([data-theme="ocean"]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"]) {
+  background-color: var(--pink-highlight-hover-color,rgba(0,0,0,1));
+}
+
+.c0.c0[data-variant="processing"][data-is-hover][data-theme="pink"]:not([data-theme="ocean"]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"])>* {
+  --context-fill-color: var(--pink-highlight-hover-color,rgba(0,0,0,1));
+  --context-fill-color-rgb: var(--pink-highlight-hover-color-rgb);
+}
+
+.c0.c0[data-variant="processing"][data-is-hover][data-theme="green"]:not([data-theme="ocean"]):not([data-theme="pink"]):not([data-theme="purple"]):not([data-variant="waiting"]) {
+  background-color: var(--green-highlight-hover-color,rgba(0,0,0,1));
+}
+
+.c0.c0[data-variant="processing"][data-is-hover][data-theme="green"]:not([data-theme="ocean"]):not([data-theme="pink"]):not([data-theme="purple"]):not([data-variant="waiting"])>* {
+  --context-fill-color: var(--green-highlight-hover-color,rgba(0,0,0,1));
+  --context-fill-color-rgb: var(--green-highlight-hover-color-rgb);
+}
+
+.c0.c0[data-variant="processing"][data-is-hover][data-theme="purple"]:not([data-theme="ocean"]):not([data-theme="pink"]):not([data-theme="green"]):not([data-variant="waiting"]) {
+  background-color: var(--purple-highlight-hover-color,rgba(0,0,0,1));
+}
+
+.c0.c0[data-variant="processing"][data-is-hover][data-theme="purple"]:not([data-theme="ocean"]):not([data-theme="pink"]):not([data-theme="green"]):not([data-variant="waiting"])>* {
+  --context-fill-color: var(--purple-highlight-hover-color,rgba(0,0,0,1));
+  --context-fill-color-rgb: var(--purple-highlight-hover-color-rgb);
+}
+
+.c0.c0[data-variant="processing"][data-theme="pink"]:not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"]) {
+  background-color: var(--pink-highlight-color,rgba(0,0,0,1));
+}
+
+.c0.c0[data-variant="processing"][data-theme="pink"]:not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"])>* {
+  --context-fill-color: var(--pink-highlight-color,rgba(0,0,0,1));
+  --context-fill-color-rgb: var(--pink-highlight-color-rgb);
+}
+
+.c0.c0[data-variant="processing"][data-theme="green"]:not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="purple"]):not([data-variant="waiting"]) {
+  background-color: var(--green-highlight-color,rgba(0,0,0,1));
+}
+
+.c0.c0[data-variant="processing"][data-theme="green"]:not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="purple"]):not([data-variant="waiting"])>* {
+  --context-fill-color: var(--green-highlight-color,rgba(0,0,0,1));
+  --context-fill-color-rgb: var(--green-highlight-color-rgb);
+}
+
+.c0.c0[data-variant="processing"][data-theme="purple"]:not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="green"]):not([data-variant="waiting"]) {
+  background-color: var(--purple-highlight-color,rgba(0,0,0,1));
+}
+
+.c0.c0[data-variant="processing"][data-theme="purple"]:not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="green"]):not([data-variant="waiting"])>* {
+  --context-fill-color: var(--purple-highlight-color,rgba(0,0,0,1));
+  --context-fill-color-rgb: var(--purple-highlight-color-rgb);
+}
+
+.c0.c0[data-theme="ocean"]:not([data-variant="processing"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"]) {
+  background-color: var(--purple-04-color,rgba(0,0,0,1));
+}
+
+.c0.c0[data-theme="ocean"]:not([data-variant="processing"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"])>* {
+  --context-fill-color: var(--purple-04-color,rgba(0,0,0,1));
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0[data-theme="ocean"][data-is-hover]:not([data-variant="processing"]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"]) {
+  background-color: var(--purple-04-color,rgba(0,0,0,1));
+}
+
+.c0.c0[data-theme="ocean"][data-is-hover]:not([data-variant="processing"]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"])>* {
+  --context-fill-color: var(--purple-04-color,rgba(0,0,0,1));
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0[data-theme="ocean"][data-is-hover][data-variant="waiting"]:not([data-variant="processing"]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"]) {
+  background-color: rgba(var(--purple-04-color-rgb),0.1);
+}
+
+.c0.c0[data-theme="ocean"][data-is-hover][data-variant="waiting"]:not([data-variant="processing"]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"])>* {
+  --context-fill-color: rgba(var(--purple-04-color-rgb),0.1);
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0[data-theme="ocean"][data-variant="waiting"]:not([data-variant="processing"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"]) {
+  background-color: rgba(var(--purple-04-color-rgb),0.1);
+}
+
+.c0.c0[data-theme="ocean"][data-variant="waiting"]:not([data-variant="processing"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"])>* {
+  --context-fill-color: rgba(var(--purple-04-color-rgb),0.1);
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0[data-is-hover]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"]) {
+  background-color: var(--purple-04-color,rgba(0,0,0,1));
+}
+
+.c0.c0[data-is-hover]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"])>* {
+  --context-fill-color: var(--purple-04-color,rgba(0,0,0,1));
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0[data-is-hover][data-theme="pink"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"]) {
+  background-color: var(--purple-04-color,rgba(0,0,0,1));
+}
+
+.c0.c0[data-is-hover][data-theme="pink"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"])>* {
+  --context-fill-color: var(--purple-04-color,rgba(0,0,0,1));
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0[data-is-hover][data-theme="pink"][data-variant="waiting"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-theme="green"]):not([data-theme="purple"]) {
+  background-color: rgba(var(--purple-04-color-rgb),0.1);
+}
+
+.c0.c0[data-is-hover][data-theme="pink"][data-variant="waiting"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-theme="green"]):not([data-theme="purple"])>* {
+  --context-fill-color: rgba(var(--purple-04-color-rgb),0.1);
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0[data-is-hover][data-theme="green"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-theme="pink"]):not([data-theme="purple"]):not([data-variant="waiting"]) {
+  background-color: var(--purple-04-color,rgba(0,0,0,1));
+}
+
+.c0.c0[data-is-hover][data-theme="green"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-theme="pink"]):not([data-theme="purple"]):not([data-variant="waiting"])>* {
+  --context-fill-color: var(--purple-04-color,rgba(0,0,0,1));
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0[data-is-hover][data-theme="green"][data-variant="waiting"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-theme="pink"]):not([data-theme="purple"]) {
+  background-color: rgba(var(--purple-04-color-rgb),0.1);
+}
+
+.c0.c0[data-is-hover][data-theme="green"][data-variant="waiting"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-theme="pink"]):not([data-theme="purple"])>* {
+  --context-fill-color: rgba(var(--purple-04-color-rgb),0.1);
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0[data-is-hover][data-theme="purple"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-theme="pink"]):not([data-theme="green"]):not([data-variant="waiting"]) {
+  background-color: var(--purple-04-color,rgba(0,0,0,1));
+}
+
+.c0.c0[data-is-hover][data-theme="purple"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-theme="pink"]):not([data-theme="green"]):not([data-variant="waiting"])>* {
+  --context-fill-color: var(--purple-04-color,rgba(0,0,0,1));
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0[data-is-hover][data-theme="purple"][data-variant="waiting"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-theme="pink"]):not([data-theme="green"]) {
+  background-color: rgba(var(--purple-04-color-rgb),0.1);
+}
+
+.c0.c0[data-is-hover][data-theme="purple"][data-variant="waiting"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-theme="pink"]):not([data-theme="green"])>* {
+  --context-fill-color: rgba(var(--purple-04-color-rgb),0.1);
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0[data-is-hover][data-variant="waiting"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"]) {
+  background-color: rgba(var(--purple-04-color-rgb),0.1);
+}
+
+.c0.c0[data-is-hover][data-variant="waiting"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"])>* {
+  --context-fill-color: rgba(var(--purple-04-color-rgb),0.1);
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0[data-theme="pink"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"]) {
+  background-color: var(--purple-04-color,rgba(0,0,0,1));
+}
+
+.c0.c0[data-theme="pink"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="green"]):not([data-theme="purple"]):not([data-variant="waiting"])>* {
+  --context-fill-color: var(--purple-04-color,rgba(0,0,0,1));
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0[data-theme="pink"][data-variant="waiting"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="green"]):not([data-theme="purple"]) {
+  background-color: rgba(var(--purple-04-color-rgb),0.1);
+}
+
+.c0.c0[data-theme="pink"][data-variant="waiting"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="green"]):not([data-theme="purple"])>* {
+  --context-fill-color: rgba(var(--purple-04-color-rgb),0.1);
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0[data-theme="green"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="purple"]):not([data-variant="waiting"]) {
+  background-color: var(--purple-04-color,rgba(0,0,0,1));
+}
+
+.c0.c0[data-theme="green"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="purple"]):not([data-variant="waiting"])>* {
+  --context-fill-color: var(--purple-04-color,rgba(0,0,0,1));
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0[data-theme="green"][data-variant="waiting"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="purple"]) {
+  background-color: rgba(var(--purple-04-color-rgb),0.1);
+}
+
+.c0.c0[data-theme="green"][data-variant="waiting"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="purple"])>* {
+  --context-fill-color: rgba(var(--purple-04-color-rgb),0.1);
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0[data-theme="purple"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="green"]):not([data-variant="waiting"]) {
+  background-color: var(--purple-04-color,rgba(0,0,0,1));
+}
+
+.c0.c0[data-theme="purple"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="green"]):not([data-variant="waiting"])>* {
+  --context-fill-color: var(--purple-04-color,rgba(0,0,0,1));
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0[data-theme="purple"][data-variant="waiting"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="green"]) {
+  background-color: rgba(var(--purple-04-color-rgb),0.1);
+}
+
+.c0.c0[data-theme="purple"][data-variant="waiting"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="green"])>* {
+  --context-fill-color: rgba(var(--purple-04-color-rgb),0.1);
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0[data-variant="waiting"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"]) {
+  background-color: rgba(var(--purple-04-color-rgb),0.1);
+}
+
+.c0.c0[data-variant="waiting"]:not([data-variant="processing"]):not([data-theme="ocean"]):not([data-is-hover]):not([data-theme="pink"]):not([data-theme="green"]):not([data-theme="purple"])>* {
+  --context-fill-color: rgba(var(--purple-04-color-rgb),0.1);
+  --context-fill-color-rgb: var(--purple-04-color-rgb);
+}
+
+.c0.c0:not([data-variant="waiting"]):not([data-theme="ocean"]):not([data-theme="pink]):not([data-theme="green"]):not([data-theme="purple"]) {
+  border-top: 0 solid rgba(var(--purple-color-rgb), 0);
+  border-right: 0 solid rgba(var(--purple-color-rgb), 0);
+  border-bottom: 0 solid rgba(var(--purple-color-rgb), 0);
+  border-left: 1px solid rgba(var(--purple-color-rgb), 0);
+}
+
+.c0.c0[data-variant="waiting"]:not([data-theme="ocean"]):not([data-theme="pink]):not([data-theme="green"]):not([data-theme="purple"]) {
+  border-top: 0 solid rgba(var(--purple-color-rgb),0);
+  border-right: 0 solid rgba(var(--purple-color-rgb),0);
+  border-bottom: 0 solid rgba(var(--purple-color-rgb),0);
+  border-left: 1px solid rgba(var(--purple-color-rgb),0);
+}
+
+<div>
+  <div
+    class="c0"
+    data-qa="Component"
+    data-theme="purple"
+    data-variant="processing"
+  />
+</div>
+`;
+
 exports[`tasty() API should pass styles from tasty 1`] = `
 .c0 {
   outline: none;
