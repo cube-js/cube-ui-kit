@@ -1,4 +1,4 @@
-import React, { ReactElement, ReactNode } from 'react';
+import React, { ReactElement, ReactNode, cloneElement } from 'react';
 import { DOMRef, ItemProps } from '@react-types/shared';
 import {
   Item as BaseItem,
@@ -98,7 +98,9 @@ function Menu<T extends object>(
           menuItem = item.props.wrapper(menuItem);
         }
 
-        return menuItem;
+        return cloneElement(menuItem, {
+          key: item.key,
+        });
       })}
     </StyledMenu>
   );

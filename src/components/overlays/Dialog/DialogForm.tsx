@@ -12,8 +12,8 @@ import { useDialogContext } from './context';
 import { Dialog, CubeDialogProps } from './Dialog';
 
 export interface CubeDialogFormProps<T extends FieldTypes = FieldTypes>
-  extends CubeDialogProps,
-    Omit<CubeFormProps<T>, 'role'> {
+  extends Omit<CubeDialogProps, 'children'>,
+    Omit<CubeFormProps<T>, 'role' | 'children'> {
   /** Whether the submit button has a `danger` theme */
   danger?: boolean;
   /** Properties for submit button. Use `label` to change text. */
@@ -26,6 +26,10 @@ export interface CubeDialogFormProps<T extends FieldTypes = FieldTypes>
   noActions?: boolean;
   /** The title of the dialog */
   title?: string;
+  /** Children nodes or render function  */
+  children?:
+    | CubeFormProps['children']
+    | ((onLocalDismiss: () => void) => CubeFormProps['children']);
 }
 
 export interface CubeDialogFormRef {

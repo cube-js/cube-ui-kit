@@ -39,8 +39,10 @@ describe('<Form />', () => {
     const submit = getByRole('button');
     const input = getByRole('textbox');
 
-    await userEvents.type(input, 'test');
-    await userEvents.click(submit);
+    await act(async () => {
+      await userEvents.type(input, 'test');
+      await userEvents.click(submit);
+    });
 
     await waitFor(() => {
       // onSubmitFailed callback should only be called if onSubmit callback is called and failed
@@ -73,9 +75,8 @@ describe('<Form />', () => {
 
     const input = getByRole('textbox');
 
-    await userEvents.type(input, 'test');
-
     await act(async () => {
+      await userEvents.type(input, 'test');
       await expect(formInstance.submit()).rejects.toThrow('Custom Error');
     });
 
