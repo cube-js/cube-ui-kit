@@ -74,11 +74,12 @@ export function parseTo(to): {
 export function performClickHandler(evt, { router, to, onPress, tracking }) {
   const { newTab, nativeRoute, href } = parseTo(to);
   const ref = evt.target;
+  const qa = ref?.getAttribute('data-qa');
 
   onPress?.(evt);
 
   if (!to) {
-    tracking.event(BUTTON_PRESS_EVENT, {}, ref);
+    tracking.event(BUTTON_PRESS_EVENT, { qa }, ref);
 
     return;
   }
@@ -86,19 +87,23 @@ export function performClickHandler(evt, { router, to, onPress, tracking }) {
   if (evt.shiftKey || evt.metaKey || newTab) {
     openLink(href, true);
 
-    tracking.event(LINK_PRESS_EVENT, { href, type: 'tab' }, ref);
+    tracking.event(LINK_PRESS_EVENT, { qa, href, type: 'tab' }, ref);
 
     return;
   }
 
   if (nativeRoute) {
     openLink(href || window.location.href);
-    tracking.event(LINK_PRESS_EVENT, { href, type: 'native' }, ref);
+    tracking.event(LINK_PRESS_EVENT, { qa, href, type: 'native' }, ref);
   } else if (href && href.startsWith('#')) {
     const id = href.slice(1);
     const element = document.getElementById(id);
 
-    tracking.event(LINK_PRESS_EVENT, { href, type: 'hash', target: id }, ref);
+    tracking.event(
+      LINK_PRESS_EVENT,
+      { qa, href, type: 'hash', target: id },
+      ref,
+    );
 
     if (element) {
       element.scrollIntoView({
@@ -112,10 +117,10 @@ export function performClickHandler(evt, { router, to, onPress, tracking }) {
   }
 
   if (router) {
-    tracking.event(LINK_PRESS_EVENT, { href, type: 'router' }, ref);
+    tracking.event(LINK_PRESS_EVENT, { qa, href, type: 'router' }, ref);
     router.push(href);
   } else if (href) {
-    tracking.event(LINK_PRESS_EVENT, { href, type: 'native' }, ref);
+    tracking.event(LINK_PRESS_EVENT, { qa, href, type: 'native' }, ref);
     window.location.href = href;
   }
 }
