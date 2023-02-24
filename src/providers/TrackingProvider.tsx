@@ -10,9 +10,6 @@ export interface TrackingProps {
 
 export const TrackingContext = createContext<TrackingProps>({
   event(name, data, ref) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Tracking event registered', name, data, ref);
-    }
     // noop
   },
 });
