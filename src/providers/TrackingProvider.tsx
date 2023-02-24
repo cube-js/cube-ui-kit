@@ -1,4 +1,10 @@
-import { createContext, useContext, ReactNode, RefObject } from 'react';
+import {
+  createContext,
+  ReactNode,
+  RefObject,
+  useContext,
+  useMemo,
+} from 'react';
 
 export interface TrackingProps {
   event?: (
@@ -22,10 +28,12 @@ export function TrackingProvider({
   children,
   event,
 }: CubeTrackingProviderProps) {
+  const tracking = useMemo(() => ({ event }), [event]);
+
   if (!event) return <>{children}</>;
 
   return (
-    <TrackingContext.Provider value={{ event }}>
+    <TrackingContext.Provider value={tracking}>
       {children}
     </TrackingContext.Provider>
   );
