@@ -13,6 +13,7 @@ import {
 import { Provider } from '../provider';
 import { TOKENS } from '../tokens';
 import { useViewportSize } from '../utils/react';
+import { TrackingProps, TrackingProvider } from '../providers/TrackingProvider';
 
 import { PortalProvider } from './portal';
 import { GlobalStyles } from './GlobalStyles';
@@ -44,6 +45,7 @@ export interface CubeRootProps extends BaseProps {
   font?: string;
   monospaceFont?: string;
   applyLegacyTokens?: boolean;
+  tracking?: TrackingProps;
 }
 
 const IS_DVH_SUPPORTED =
@@ -62,6 +64,7 @@ export function Root(allProps: CubeRootProps) {
     font,
     monospaceFont,
     applyLegacyTokens,
+    tracking,
     ...props
   } = allProps;
 
@@ -118,32 +121,36 @@ export function Root(allProps: CubeRootProps) {
 
   return (
     <Provider router={router} root={rootRef}>
-      <StyleSheetManager disableVendorPrefixes>
-        <RootElement
-          ref={ref}
-          {...filterBaseProps(props, { eventProps: true })}
-          styles={styles}
-          style={{
-            '--cube-dynamic-viewport-height': height ? height + 'px' : '100dvh',
-          }}
-        >
-          <GlobalStyles
-            bodyStyles={bodyStyles}
-            applyLegacyTokens={applyLegacyTokens}
-            publicUrl={publicUrl}
-            fonts={fonts}
-            font={font}
-            monospaceFont={monospaceFont}
-          />
-          <ModalProvider>
-            <PortalProvider value={ref}>
-              <NotificationsProvider rootRef={ref}>
-                <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
-              </NotificationsProvider>
-            </PortalProvider>
-          </ModalProvider>
-        </RootElement>
-      </StyleSheetManager>
+      <TrackingProvider event={tracking?.event}>
+        <StyleSheetManager disableVendorPrefixes>
+          <RootElement
+            ref={ref}
+            {...filterBaseProps(props, { eventProps: true })}
+            styles={styles}
+            style={{
+              '--cube-dynamic-viewport-height': height
+                ? height + 'px'
+                : '100dvh',
+            }}
+          >
+            <GlobalStyles
+              bodyStyles={bodyStyles}
+              applyLegacyTokens={applyLegacyTokens}
+              publicUrl={publicUrl}
+              fonts={fonts}
+              font={font}
+              monospaceFont={monospaceFont}
+            />
+            <ModalProvider>
+              <PortalProvider value={ref}>
+                <NotificationsProvider rootRef={ref}>
+                  <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
+                </NotificationsProvider>
+              </PortalProvider>
+            </ModalProvider>
+          </RootElement>
+        </StyleSheetManager>
+      </TrackingProvider>
     </Provider>
   );
 }

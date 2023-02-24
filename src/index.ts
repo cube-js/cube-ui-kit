@@ -154,8 +154,6 @@ export const Typography = {
 export { Text, Title, Paragraph };
 export type { CubeTextProps, CubeTitleProps, CubeParagraphProps };
 
-export { useContextStyles, StyleProvider } from './providers/StyleProvider';
-
 export { Provider } from './provider';
 export type { useProviderProps } from './provider';
 export { Portal } from './components/portal';
@@ -184,7 +182,6 @@ export * from './tasty';
 
 export { ModalProvider } from '@react-aria/overlays';
 export * from './utils/react';
-export * from './styled';
 export * from './tasty';
 export { default as copy } from 'clipboard-copy';
 export * from '@react-aria/ssr';
