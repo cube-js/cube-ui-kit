@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.18.0
+
+### Minor Changes
+
+- [#305](https://github.com/cube-js/cube-ui-kit/pull/305) [`89c18da`](https://github.com/cube-js/cube-ui-kit/commit/89c18da9c457e5ed4d19a94d73e40f71ceb4bf20) Thanks [@tenphi](https://github.com/tenphi)! - Remove legacy `styled` and `StyleProvider`. Add `TrackingProvider` for analytics purposes.
+
+### Patch Changes
+
+- [#304](https://github.com/cube-js/cube-ui-kit/pull/304) [`c663fd1`](https://github.com/cube-js/cube-ui-kit/commit/c663fd1c0e0d8cd1e53f94f9ee2a4a2c02b0cf36) Thanks [@dangreen](https://github.com/dangreen)! - upgrade production dependencies
+
 ## 0.17.0
 
 ### Minor Changes
