@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.18.1
+
+### Patch Changes
+
+- [#308](https://github.com/cube-js/cube-ui-kit/pull/308) [`d044698`](https://github.com/cube-js/cube-ui-kit/commit/d044698a9b8d303b409fad9df4c0493458c38e7d) Thanks [@tenphi](https://github.com/tenphi)! - Fix TrackingProvider api to pass element instead of ref.
+
 ## 0.18.0
 
 ### Minor Changes
