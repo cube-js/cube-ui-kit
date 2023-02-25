@@ -159,6 +159,8 @@ function Checkbox(
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
 
+  const toggleState = useToggleState(props);
+
   let { inputProps } = groupState // eslint-disable-next-line react-hooks/rules-of-hooks
     ? useCheckboxGroupItem(
         {
@@ -174,7 +176,16 @@ function Checkbox(
         groupState,
         inputRef,
       ) // eslint-disable-next-line react-hooks/rules-of-hooks
-    : useCheckbox(props, useToggleState(props), inputRef);
+    : useCheckbox(
+        {
+          ...props,
+          ...(typeof label === 'string' && label.trim()
+            ? { 'aria-label': label }
+            : {}),
+        },
+        toggleState,
+        inputRef,
+      );
 
   let markIcon = isIndeterminate ? <IndeterminateOutline /> : <CheckOutlined />;
 
