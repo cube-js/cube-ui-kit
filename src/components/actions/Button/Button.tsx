@@ -286,23 +286,25 @@ export const Button = forwardRef(function Button(
   const isLoading = props.isLoading;
   const isSelected = props.isSelected;
 
+  children = children || icon || rightIcon ? children : label;
+
   if (!children) {
     if (icon) {
       if (!label) {
         accessibilityWarning(
           'If you provide `icon` property for a Button and do not provide any children then you should specify the `label` property to make sure the Button element stays accessible.',
         );
+        label = 'Unnamed'; // fix to avoid warning in production
       }
     } else {
       if (!label) {
         accessibilityWarning(
           'If you provide no children for a Button then you should specify the `label` property to make sure the Button element stays accessible.',
         );
+        label = 'Unnamed'; // fix to avoid warning in production
       }
     }
   }
-
-  children = children || icon || rightIcon ? children : label;
 
   if (icon) {
     icon = cloneElement(icon, {
@@ -332,7 +334,7 @@ export const Button = forwardRef(function Button(
   );
 
   const { actionProps } = useAction(
-    { ...allProps, isDisabled, mods: modifiers },
+    { ...allProps, isDisabled, mods: modifiers, ...(label ? { label } : {}) },
     ref,
   );
 

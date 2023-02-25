@@ -144,6 +144,7 @@ export const useAction = function useAction(
 
   let { buttonProps, isPressed } = useButton(
     {
+      'aria-label': label,
       ...props,
       onPress: customOnPress,
     },
@@ -176,7 +177,6 @@ export const useAction = function useAction(
         customProps,
         filterBaseProps(props, FILTER_OPTIONS),
       ) as object),
-      'aria-label': label,
       ref: domRef,
       type: htmlType || 'button',
       rel: as === 'a' && newTab ? 'rel="noopener noreferrer"' : undefined,
