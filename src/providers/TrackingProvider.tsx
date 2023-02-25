@@ -1,15 +1,15 @@
-import { createContext, useContext, ReactNode, RefObject } from 'react';
+import { createContext, ReactNode, useContext, useMemo } from 'react';
 
 export interface TrackingProps {
   event?: (
     name: string,
     data?: Record<string, any>,
-    ref?: RefObject<HTMLElement>,
+    element?: HTMLElement,
   ) => void;
 }
 
 export const TrackingContext = createContext<TrackingProps>({
-  event(name, data, ref) {
+  event() {
     // noop
   },
 });
@@ -22,10 +22,12 @@ export function TrackingProvider({
   children,
   event,
 }: CubeTrackingProviderProps) {
+  const tracking = useMemo(() => ({ event }), [event]);
+
   if (!event) return <>{children}</>;
 
   return (
-    <TrackingContext.Provider value={{ event }}>
+    <TrackingContext.Provider value={tracking}>
       {children}
     </TrackingContext.Provider>
   );
