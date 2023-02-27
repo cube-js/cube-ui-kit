@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.18.2
+
+### Patch Changes
+
+- [#311](https://github.com/cube-js/cube-ui-kit/pull/311) [`3cf56c8`](https://github.com/cube-js/cube-ui-kit/commit/3cf56c86584cf4435f5d98304791055d4edda9c1) Thanks [@tenphi](https://github.com/tenphi)! - Limit the size of the Field items to avoid overflow in the real layouts.
+
 ## 0.18.1
 
 ### Patch Changes
