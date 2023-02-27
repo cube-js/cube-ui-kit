@@ -21,8 +21,8 @@ const FieldElement = tasty({
   styles: {
     display: 'grid',
     gridColumns: {
-      '': '1fr',
-      'has-sider': '@(full-label-width, auto) 1fr',
+      '': 'minmax(0, 1fr)',
+      'has-sider': '@(full-label-width, auto) minmax(0, 1fr)',
     },
     gap: 0,
     placeItems: 'baseline stretch',

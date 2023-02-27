@@ -24,14 +24,6 @@ import { CheckboxGroupContext } from './context';
 
 import type { AriaCheckboxGroupProps } from '@react-types/checkbox';
 
-const WRAPPER_STYLES = {
-  display: 'grid',
-  gridColumns: {
-    '': '1fr',
-    'has-sider': 'max-content 1fr',
-  },
-};
-
 const CheckGroupElement = tasty({
   qa: 'CheckboxGroup',
   styles: {
@@ -85,7 +77,7 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
   } = props;
   let domRef = useDOMRef(ref);
 
-  let styles = extractStyles(otherProps, CONTAINER_STYLES, WRAPPER_STYLES);
+  let styles = extractStyles(otherProps, CONTAINER_STYLES);
 
   let state = useCheckboxGroupState(props);
   let { groupProps, labelProps } = useCheckboxGroup(props, state);
