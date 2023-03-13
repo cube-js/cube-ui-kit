@@ -117,7 +117,7 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
       }
     }
 
-    if (!field?.touched) {
+    if (!field?.touched && defaultValue != null) {
       form.setFieldValue(fieldName, defaultValue, false, true);
     }
   }

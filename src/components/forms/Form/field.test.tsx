@@ -99,4 +99,24 @@ describe('Legacy <Field />', () => {
     expect(input).toHaveValue('Hello, World!');
     expect(formInstance.getFieldValue('test')).toBe('Hello, World!');
   });
+
+  it('should infer default value from <Form />', () => {
+    const { getByRole, formInstance } = renderWithForm(
+      <Field name="test">
+        <TextInput label="test" />
+      </Field>,
+      {
+        formProps: {
+          defaultValues: {
+            test: 'Hello, World!',
+          },
+        },
+      },
+    );
+
+    const input = getByRole('textbox');
+
+    expect(formInstance.getFieldValue('test')).toBe('Hello, World!');
+    expect(input).toHaveValue('Hello, World!');
+  });
 });
