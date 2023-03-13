@@ -290,6 +290,8 @@ export class CubeFormInstance<
     if (!skipRender) {
       this.forceReRender();
     }
+
+    return this.fields[name];
   }
 
   removeField<Name extends keyof T>(name: Name, skipRender?: boolean) {
