@@ -175,7 +175,7 @@ const ButtonElement = tasty({
       },
       fill: {
         '': '#clear',
-        '[data-type="primary"]': '#danger-text',
+        '[data-type="primary"]': '#danger',
         '[data-type="primary"] & hovered': '#danger-text',
         '[data-type="primary"] & pressed': '#danger',
 
