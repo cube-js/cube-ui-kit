@@ -111,7 +111,7 @@ export interface CubeFieldProps<T extends FieldTypes>
   /** Tooltip for the label that explains something. */
   tooltip?: ReactNode;
   /** Field name. It's used as a key the form data. */
-  name?: string;
+  name?: string | string[];
   /** Whether the field is hidden. */
   isHidden?: boolean;
   /** Whether the field is disabled. */

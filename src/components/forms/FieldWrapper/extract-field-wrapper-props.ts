@@ -30,20 +30,17 @@ const fieldWrapperPropsKeys = createFieldWrapperPropsKeys([
   'Component',
 ]);
 
+type WrapperProps<Props extends CubeFieldWrapperProps> = {
+  [K in keyof Pick<
+    Props,
+    keyof CubeFieldWrapperProps
+  >]: CubeFieldWrapperProps[K];
+};
+
 export function extractFieldWrapperProps<
   Props extends CubeFieldWrapperProps,
   FieldWrapperKeys extends keyof CubeFieldWrapperProps = keyof CubeFieldWrapperProps,
-  ActualWrapperProps extends {
-    [K in keyof Pick<
-      Props,
-      keyof CubeFieldWrapperProps
-    >]: CubeFieldWrapperProps[K];
-  } = {
-    [K in keyof Pick<
-      Props,
-      keyof CubeFieldWrapperProps
-    >]: CubeFieldWrapperProps[K];
-  },
+  ActualWrapperProps extends WrapperProps<Props> = WrapperProps<Props>,
   RestProps extends Omit<Props, FieldWrapperKeys> = Omit<
     Props,
     FieldWrapperKeys
