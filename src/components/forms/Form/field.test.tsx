@@ -1,4 +1,8 @@
+import { useState } from 'react';
+import { expect } from '@storybook/jest';
+
 import { renderWithForm, userEvent, act } from '../../../test';
+import { Radio } from '../RadioGroup/Radio';
 import { TextInput } from '../TextInput/TextInput';
 
 import { Field } from './Field';
@@ -118,5 +122,35 @@ describe('Legacy <Field />', () => {
 
     expect(formInstance.getFieldValue('test')).toBe('Hello, World!');
     expect(input).toHaveValue('Hello, World!');
+  });
+
+  it('should work without <Field /> in conrolled mode', async () => {
+    function Content() {
+      const [deployMode, setDeployMode] = useState('cli');
+
+      return (
+        <Radio.Group
+          label="Deploy mode"
+          name="deployMode"
+          value={deployMode}
+          onChange={setDeployMode}
+        >
+          <Radio value="cli">Deploy with CLI</Radio>
+          <Radio value="git">Deploy with GIT</Radio>
+        </Radio.Group>
+      );
+    }
+    const { getByRole } = renderWithForm(<Content />);
+
+    const cliRadio = getByRole('radio', { name: 'Deploy with CLI' });
+    const gitRadio = getByRole('radio', { name: 'Deploy with GIT' });
+
+    expect(cliRadio).toBeChecked();
+
+    await act(async () => {
+      await userEvent.click(gitRadio);
+    });
+
+    expect(gitRadio).toBeChecked();
   });
 });

@@ -60,7 +60,7 @@ describe('useAlertDialogApi()', () => {
 
     await act(() => userEvent.click(showDialogButton));
 
-    jest.useFakeTimers('modern');
+    jest.useFakeTimers();
 
     act(() => {
       abortController?.abort();

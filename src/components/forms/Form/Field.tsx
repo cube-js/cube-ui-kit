@@ -138,9 +138,6 @@ interface CubeReplaceFieldProps<T extends FieldTypes>
   labelPosition?: LabelPosition;
 }
 
-/**
- * @deprecated You can safely remove this component from your code. It's not used anymore.
- */
 export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
   const allProps: CubeFullFieldProps<T> = useFormProps(props);
 
