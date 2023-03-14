@@ -55,10 +55,21 @@ WithErrorMessage.args = {
   validationState: 'invalid',
 };
 
-export const Styled = Template.bind({});
-Styled.args = {
+export const SideLabel = Template.bind({});
+SideLabel.args = {
   labelPosition: 'side',
-  styles: { placeItems: 'end' },
+};
+
+export const SideLabelWithTooltip = Template.bind({});
+SideLabelWithTooltip.args = {
+  labelPosition: 'side',
+  tooltip: 'Long description',
+};
+
+export const SideLabelWithMessage = Template.bind({});
+SideLabelWithMessage.args = {
+  labelPosition: 'side',
+  message: 'Inline description of the field',
 };
 
 export const StyledLabel = Template.bind({});
