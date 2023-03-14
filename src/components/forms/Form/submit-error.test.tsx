@@ -51,7 +51,7 @@ describe('<SubmitError />', () => {
     const onSubmit = jest.fn(() => Promise.reject('Custom Error'));
     const onSubmitFailed = jest.fn();
 
-    const { getByRole, getByText, queryByText } = renderWithForm(
+    const { getByRole, getByText } = renderWithForm(
       <>
         <Form.Item name="test" label="Test">
           <TextInput />

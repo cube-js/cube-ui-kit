@@ -1,11 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Children,
   cloneElement,
+  createContext,
+  PropsWithChildren,
   ReactElement,
   ReactNode,
-  useEffect,
-  useRef,
-  useState,
+  useContext,
+  useMemo,
 } from 'react';
 
 import { mergeProps } from '../../../utils/react';
@@ -21,34 +23,7 @@ import { Styles } from '../../../tasty';
 import { CubeFormInstance } from './useForm';
 import { useFormProps } from './Form';
 import { FieldTypes } from './types';
-
-const ID_MAP = {};
-
-function createId(name) {
-  if (!name) return;
-
-  if (!ID_MAP[name]) {
-    ID_MAP[name] = [];
-  }
-
-  let i = 0;
-  let id;
-
-  do {
-    id = i ? `${name}_${i}` : name;
-    i++;
-  } while (ID_MAP[name].includes(id));
-
-  ID_MAP[name].push(id);
-
-  return id;
-}
-
-function removeId(name, id) {
-  if (!ID_MAP[name]) return;
-
-  ID_MAP[name] = ID_MAP[name].filter((_id) => _id !== id);
-}
+import { useField } from './use-field';
 
 function getDefaultValidateTrigger(type) {
   type = type || '';
@@ -136,7 +111,7 @@ export interface CubeFieldProps<T extends FieldTypes>
   /** Tooltip for the label that explains something. */
   tooltip?: ReactNode;
   /** Field name. It's used as a key the form data. */
-  name?: string[] | string;
+  name?: string | string[];
   /** Whether the field is hidden. */
   isHidden?: boolean;
   /** Whether the field is disabled. */
@@ -163,25 +138,18 @@ interface CubeReplaceFieldProps<T extends FieldTypes>
   labelPosition?: LabelPosition;
 }
 
-export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
-  const props: CubeFullFieldProps<T> = useFormProps(allProps);
+export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
+  const allProps: CubeFullFieldProps<T> = useFormProps(props);
 
   let {
-    defaultValue,
     type: inputType,
-    id,
-    idPrefix,
     children,
-    name,
     form,
-    rules,
     label,
     extra,
-    validateTrigger,
     validationState,
     necessityLabel,
     necessityIndicator,
-    shouldUpdate,
     message,
     description,
     tooltip,
@@ -192,83 +160,46 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
     labelPosition = 'top',
     labelStyles,
     labelSuffix,
-  } = props;
-
-  const nonInput = !name;
-  const fieldName: string =
-    name != null ? (Array.isArray(name) ? name.join('.') : name) : '';
-
-  let firstRunRef = useRef(true);
-  let [fieldId, setFieldId] = useState(
-    id || (idPrefix ? `${idPrefix}_${fieldName}` : fieldName),
-  );
-
-  useEffect(() => {
-    let newId;
-
-    if (!id && !nonInput) {
-      newId = createId(fieldId);
-
-      setFieldId(newId);
-    }
-
-    return () => {
-      if (!id) {
-        removeId(idPrefix ? `${idPrefix}_${fieldName}` : fieldName, newId);
-      }
-
-      if (fieldName && form) {
-        form.removeField(fieldName);
-      }
-    };
-  }, []);
-
-  let field = form?.getFieldInstance(fieldName);
-
-  if (field) {
-    field.rules = rules;
-  }
-
-  let isRequired = rules && !!rules.find((rule) => rule.required);
-
-  useEffect(() => {
-    if (!form) return;
-
-    if (field) {
-      form.forceReRender();
-    } else {
-      form.createField(fieldName);
-    }
-  }, [field]);
+  } = allProps;
 
   if (typeof children === 'function') {
     children = children(form);
   }
 
-  if (!children) return null;
-
   let child = Children.only(children);
 
-  if (nonInput) {
+  inputType = inputType ?? (child?.type as any).cubeInputType ?? 'Text';
+
+  const __props = useField<T, CubeFullFieldProps<T>>(allProps, {
+    defaultValidationTrigger: getDefaultValidateTrigger(inputType),
+  });
+
+  const { field, isRequired, name, id } = __props;
+
+  if (!child) return null;
+
+  if (__props.nonInput) {
     return (
-      <FieldWrapper
-        isHidden={isHidden}
-        isDisabled={isDisabled}
-        validationState={validationState}
-        necessityIndicator={necessityIndicator}
-        necessityLabel={necessityLabel}
-        isRequired={isRequired}
-        label={label}
-        extra={extra}
-        tooltip={tooltip}
-        message={message}
-        description={description}
-        Component={child}
-        styles={styles}
-        labelPosition={labelPosition}
-        labelStyles={labelStyles}
-        labelSuffix={labelSuffix}
-      />
+      <LegacyFieldProvider>
+        <FieldWrapper
+          isHidden={isHidden}
+          isDisabled={isDisabled}
+          validationState={validationState}
+          necessityIndicator={necessityIndicator}
+          necessityLabel={necessityLabel}
+          isRequired={isRequired}
+          label={label}
+          extra={extra}
+          tooltip={tooltip}
+          message={message}
+          description={description}
+          Component={child}
+          styles={styles}
+          labelPosition={labelPosition}
+          labelStyles={labelStyles}
+          labelSuffix={labelSuffix}
+        />
+      </LegacyFieldProvider>
     );
   }
 
@@ -280,83 +211,26 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
     return null;
   }
 
-  inputType =
-    inputType || ((child.type as any).cubeInputType as string) || 'Text';
-
-  const defaultValidateTrigger = getDefaultValidateTrigger(inputType);
-
-  if (firstRunRef.current && defaultValue != null) {
-    if (!field) {
-      form.createField(fieldName, true);
-    }
-
-    if (field?.value == null) {
-      form.setFieldValue(fieldName, defaultValue, false, true);
-
-      field = form?.getFieldInstance(fieldName);
-    }
-  }
-
-  firstRunRef.current = false;
-
-  if (!field) {
-    return cloneElement(
-      child,
-      mergeProps(child.props, {
-        ...getValueProps(inputType),
-        label: fieldName,
-        name: fieldName,
-        id: fieldId,
-      }),
+  if (!__props.field) {
+    return (
+      <LegacyFieldProvider>
+        {cloneElement(
+          child,
+          mergeProps(child.props, {
+            ...getValueProps(inputType),
+            label: name,
+            name,
+            id,
+          }),
+        )}
+      </LegacyFieldProvider>
     );
   }
 
-  if (!validateTrigger) {
-    validateTrigger = defaultValidateTrigger;
-  }
-
-  function onChangeHandler(val, dontTouch) {
-    const field = form.getFieldInstance(fieldName);
-
-    if (shouldUpdate) {
-      const fieldsValue = form.getFieldsValue();
-
-      // check if we should update the value of the field
-      const shouldNotBeUpdated =
-        typeof shouldUpdate === 'boolean'
-          ? !shouldUpdate
-          : !shouldUpdate(fieldsValue, {
-              ...fieldsValue,
-              [fieldName]: val,
-            });
-
-      if (shouldNotBeUpdated) {
-        return;
-      }
-    }
-
-    form.setFieldValue(fieldName, val, !dontTouch, false, dontTouch);
-
-    if (
-      !dontTouch &&
-      (validateTrigger === 'onChange' ||
-        (field && field.errors && field.errors.length))
-    ) {
-      form.validateField(fieldName).catch(() => {}); // do nothing on fail
-    }
-  }
-
   const newProps: CubeReplaceFieldProps<T> = {
-    id: fieldId,
-    name: fieldName,
-    onBlur() {
-      if (validateTrigger === 'onBlur') {
-        // We need a timeout so the change event can be done.
-        setTimeout(() => {
-          form.validateField(fieldName).catch(() => {}); // do nothing on fail
-        });
-      }
-    },
+    id,
+    name,
+    onBlur: __props.onBlur,
   };
 
   if (necessityIndicator != null) {
@@ -403,7 +277,7 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
     newProps.isLoading = isLoading;
   }
 
-  if (field && field.errors && field.errors.length) {
+  if (field?.errors?.length) {
     if (!validationState) {
       newProps.validationState = 'invalid';
     }
@@ -417,8 +291,8 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
     newProps,
     getValueProps(
       inputType,
-      field?.inputValue,
-      onChangeHandler,
+      __props.field?.inputValue,
+      __props.onChange,
       child.props.allowsCustomValue,
     ),
   );
@@ -426,13 +300,40 @@ export function Field<T extends FieldTypes>(allProps: CubeFieldProps<T>) {
   const { onChange, onSelectionChange, ...childProps } = child.props;
 
   // onChange event passed to the child should be executed after Form onChange logic
-  return cloneElement(
-    child,
-    mergeProps(
-      childProps,
-      newProps,
-      onChange ? { onChange } : {},
-      onSelectionChange ? { onSelectionChange } : {},
-    ),
+  return (
+    <LegacyFieldProvider>
+      {cloneElement(
+        child,
+        mergeProps(
+          childProps,
+          newProps,
+          onChange ? { onChange: __props.onChange } : {},
+          onSelectionChange ? { onSelectionChange: __props.onChange } : {},
+        ),
+      )}
+    </LegacyFieldProvider>
   );
+}
+
+type LegacyFieldContextValue = {
+  insideLegacyField: boolean;
+};
+
+const LegacyFieldContext = createContext<LegacyFieldContextValue>({
+  insideLegacyField: false,
+});
+
+function LegacyFieldProvider(props: PropsWithChildren<unknown>) {
+  const value = useMemo(() => ({ insideLegacyField: true }), []);
+  return (
+    <LegacyFieldContext.Provider value={value}>
+      {props.children}
+    </LegacyFieldContext.Provider>
+  );
+}
+
+export function useInsideLegacyField() {
+  const { insideLegacyField } = useContext(LegacyFieldContext);
+
+  return insideLegacyField;
 }

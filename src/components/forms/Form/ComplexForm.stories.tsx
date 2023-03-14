@@ -295,10 +295,7 @@ const Template: StoryFn<typeof Form> = (args) => {
           name="checkboxGroup"
           label="Checkbox group"
           rules={[
-            {
-              required: true,
-              message: 'Specify at least a single option',
-            },
+            { required: true, message: 'Specify at least a single option' },
           ]}
         >
           <CheckboxGroup orientation="horizontal">

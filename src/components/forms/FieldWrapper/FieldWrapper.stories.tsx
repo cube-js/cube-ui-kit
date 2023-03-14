@@ -1,26 +1,43 @@
 import { Meta, Story } from '@storybook/react';
 import { DollarCircleFilled } from '@ant-design/icons';
 
-import { baseProps } from '../../../stories/lists/baseProps';
-import { TextInput } from '../TextInput/TextInput';
 import { Button } from '../../actions';
+import { Text } from '../../content/Text';
 
-import { CubeFieldProps, Field } from './Field';
+import { FieldWrapper } from './FieldWrapper';
+
+import type { CubeFieldWrapperProps } from './types';
 
 export default {
-  title: 'Forms/Field',
-  component: Field,
-  parameters: { controls: { exclude: baseProps } },
-} as Meta;
+  title: 'Forms/FieldWrapper',
+  component: FieldWrapper,
+  args: {
+    label: 'Field name',
+    Component: (
+      <Text.Minor
+        fill="#minor.05"
+        styles={{
+          display: 'block',
+          padding: '1x 2x',
+          radius: true,
+          width: '40x',
+        }}
+      >
+        This slot is for a form input
+      </Text.Minor>
+    ),
+  },
+  parameters: {
+    layout: 'centered',
+    docs: { hidden: true },
+  },
+} as Meta<CubeFieldWrapperProps>;
 
-const Template: Story<CubeFieldProps<any>> = (args) => (
-  <Field label="Field name" {...args}>
-    <TextInput />
-  </Field>
+const Template: Story<CubeFieldWrapperProps> = (args) => (
+  <FieldWrapper {...args} />
 );
 
 export const Default = Template.bind({});
-Default.args = {};
 
 export const WithTooltip = Template.bind({});
 WithTooltip.args = {
@@ -38,12 +55,21 @@ WithErrorMessage.args = {
   validationState: 'invalid',
 };
 
-export const Styled = Template.bind({});
-Styled.args = {
+export const SideLabel = Template.bind({});
+SideLabel.args = {
   labelPosition: 'side',
-  styles: {
-    placeItems: 'end',
-  },
+};
+
+export const SideLabelWithTooltip = Template.bind({});
+SideLabelWithTooltip.args = {
+  labelPosition: 'side',
+  tooltip: 'Long description',
+};
+
+export const SideLabelWithMessage = Template.bind({});
+SideLabelWithMessage.args = {
+  labelPosition: 'side',
+  message: 'Inline description of the field',
 };
 
 export const StyledLabel = Template.bind({});

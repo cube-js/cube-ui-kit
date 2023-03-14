@@ -9,7 +9,7 @@ function TestComponent({ renderNotification = true, ...notificationProps }) {
 }
 
 describe('<Notification />', () => {
-  beforeEach(() => jest.useFakeTimers('modern'));
+  beforeEach(() => jest.useFakeTimers());
   afterEach(() => jest.useRealTimers());
 
   it('should unmount component by default', () => {
