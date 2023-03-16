@@ -53,7 +53,7 @@ export const StyledMenuHeader = tasty(Space, {
   styles: {
     fill: '#light',
     color: '#dark-02',
-    preset: 'h5s',
+    preset: 't2m',
     padding: '0.75x 2x',
     margin: '-0.5x -0.5x (0.5x - 1bw) -0.5x',
     border: '#dark-05 bottom',

@@ -24,7 +24,7 @@ const TagElement = tasty({
     placeContent: 'center start',
     placeItems: 'center start',
     radius: '1r',
-    preset: 't4m',
+    preset: 'tag',
     width: '16px max-content max-content',
     height: 'min-content',
     textAlign: 'left',

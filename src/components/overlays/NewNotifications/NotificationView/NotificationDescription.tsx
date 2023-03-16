@@ -12,7 +12,7 @@ export type NotificationDescriptionProps = {
 
 const Description = tasty(Paragraph, {
   as: 'p',
-  preset: 't4m',
+  preset: 't4',
   styles: {
     gridArea: 'description',
     display: '-webkit-box',
