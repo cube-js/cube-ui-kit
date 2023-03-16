@@ -1,34 +1,28 @@
-import { forwardRef, ReactNode } from 'react';
+import { forwardRef } from 'react';
 import { InfoCircleOutlined } from '@ant-design/icons';
 
-import { Paragraph } from '../content/Paragraph';
-import {
-  LabelPosition,
-  NecessityIndicator,
-  ValidationState,
-} from '../../shared';
-import { Props, Styles, tasty } from '../../tasty';
-import { TooltipProvider } from '../overlays/Tooltip/TooltipProvider';
-import { Text } from '../content/Text';
-import { wrapNodeIfPlain } from '../../utils/react';
-import { Space } from '../layout/Space';
-import { Flex } from '../layout/Flex';
+import { Paragraph } from '../../content/Paragraph';
+import { tasty } from '../../../tasty';
+import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
+import { Text } from '../../content/Text';
+import { wrapNodeIfPlain } from '../../../utils/react';
+import { Space } from '../../layout/Space';
+import { Flex } from '../../layout/Flex';
+import { Label } from '../Label';
 
-import { Label } from './Label';
+import { CubeFieldWrapperProps } from './types';
 
 const FieldElement = tasty({
   qa: 'Field',
   styles: {
     display: 'grid',
     gridColumns: {
-      '': '1fr',
-      'has-sider': '@(label-width, auto) 1fr',
+      '': 'minmax(0, 1fr)',
+      'has-sider': '@(full-label-width, auto) minmax(0, 1fr)',
     },
-    gap: {
-      '': '1x',
-      'has-sider': '@(column-gap, 1x)',
-    },
-    placeItems: 'start stretch',
+    gap: 0,
+    placeItems: 'baseline stretch',
+    '@full-label-width': '(@label-width + 1x)',
 
     LabelArea: {
       display: 'block',
@@ -36,9 +30,10 @@ const FieldElement = tasty({
         '': 'initial',
         'has-sider': '@label-width',
       },
-      padding: {
-        '': 'initial',
-        'has-sider': '1.25x top',
+      margin: {
+        '': '1x bottom',
+        'has-sider': '1x right',
+        ':empty': '0',
       },
     },
 
@@ -52,6 +47,10 @@ const FieldElement = tasty({
     },
   },
 });
+
+if (process.env.NODE_ENV === 'development') {
+  FieldElement.displayName = 'FieldWrapperElement';
+}
 
 const MessageElement = tasty({
   qa: 'Field_Message',
@@ -68,37 +67,14 @@ const MessageElement = tasty({
   },
 });
 
-export type CubeFieldWrapperProps = {
-  as?: string;
-  labelPosition?: LabelPosition;
-  label?: ReactNode;
-  labelSuffix?: ReactNode;
-  labelStyles?: Styles;
-  styles?: Styles;
-  /** Whether the input is required */
-  isRequired?: boolean;
-  /** Whether the input is disabled */
-  isDisabled?: boolean;
-  necessityIndicator?: NecessityIndicator;
-  labelProps?: Props;
-  fieldProps?: Props;
-  /** Custom message for the field. It will be placed below the label and the input */
-  message?: string | ReactNode;
-  /** Styles for the message */
-  messageStyles?: Styles;
-  /** The description for the field. It will be placed below the label */
-  description?: ReactNode;
-  Component?: JSX.Element;
-  validationState?: ValidationState;
-  // eslint-disable-next-line react/boolean-prop-naming
-  requiredMark?: boolean;
-  tooltip?: ReactNode;
-  extra?: ReactNode;
-  isHidden?: boolean;
-  necessityLabel?: ReactNode;
-};
-
-function FieldWrapper(props: CubeFieldWrapperProps, ref) {
+/**
+ * A wrapper for form fields to provide additional decoration for inputs.
+ * @internal Do not use this component directly.
+ */
+export const FieldWrapper = forwardRef(function FieldWrapper(
+  props: CubeFieldWrapperProps,
+  ref,
+) {
   const {
     as,
     labelPosition = 'top',
@@ -145,7 +121,10 @@ function FieldWrapper(props: CubeFieldWrapperProps, ref) {
               width="initial max-content 40x"
             >
               <InfoCircleOutlined
-                style={{ color: 'var(--primary-color)', margin: '0 4px' }}
+                style={{
+                  color: 'var(--primary-color)',
+                  margin: '0 4px',
+                }}
               />
             </TooltipProvider>
           ) : null}
@@ -176,7 +155,7 @@ function FieldWrapper(props: CubeFieldWrapperProps, ref) {
   return (
     <FieldElement
       ref={ref}
-      as={as || 'div'}
+      as={as ?? 'div'}
       mods={mods}
       isHidden={isHidden}
       styles={styles}
@@ -202,10 +181,4 @@ function FieldWrapper(props: CubeFieldWrapperProps, ref) {
       </div>
     </FieldElement>
   );
-}
-
-/**
- * A wrapper for form fields to provide additional decoration for inputs.
- */
-const _FieldWrapper = forwardRef(FieldWrapper);
-export { _FieldWrapper as FieldWrapper };
+});

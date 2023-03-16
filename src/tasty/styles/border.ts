@@ -38,8 +38,14 @@ export function borderStyle({ border }) {
     return { border: styleValue };
   }
 
-  return mods.reduce((styles, dir) => {
-    styles[`border-${dir}`] = styleValue;
+  const zeroValue = [0, type, borderColor].join(' ');
+
+  return DIRECTIONS.reduce((styles, dir) => {
+    if (mods.includes(dir)) {
+      styles[`border-${dir}`] = styleValue;
+    } else {
+      styles[`border-${dir}`] = zeroValue;
+    }
 
     return styles;
   }, {});

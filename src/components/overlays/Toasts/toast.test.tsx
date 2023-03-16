@@ -1,6 +1,6 @@
 import { act } from '@testing-library/react';
 
-import { renderWithRoot, screen, wait } from '../../../test';
+import { renderWithRoot, screen, waitFor } from '../../../test';
 
 import { Toast } from './Toast';
 
@@ -11,7 +11,9 @@ function TestComponent({ renderNotification = true, ...notificationProps }) {
 }
 
 describe('useToastsApi', () => {
-  beforeEach(() => jest.useFakeTimers('modern'));
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
   afterEach(() => jest.useRealTimers());
 
   it('should add and dismiss toast on timeout', async () => {
@@ -45,21 +47,22 @@ describe('useToastsApi', () => {
   });
 
   it('should respect duration prop', async () => {
-    jest.useRealTimers();
     const dismiss = jest.fn();
 
     renderWithRoot(
       <Toast description="Test" duration={10} onDismiss={dismiss} />,
     );
 
-    await act(async () => {
-      await wait(100);
+    act(() => {
+      jest.runAllTimers();
     });
 
-    expect(dismiss).toBeCalled();
-    expect(
-      screen.queryByTestId('FloatingNotification'),
-    ).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(dismiss).toBeCalled();
+      expect(
+        screen.queryByTestId('FloatingNotification'),
+      ).not.toBeInTheDocument();
+    });
   });
 
   it('should unmount component by default', () => {

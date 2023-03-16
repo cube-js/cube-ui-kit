@@ -31,20 +31,26 @@ export default {
     },
     theme: {
       defaultValue: undefined,
-      control: { type: 'radio', options: [undefined, 'danger'] },
+      control: { type: 'radio', options: [undefined, 'danger', 'special'] },
     },
   },
 };
 
 const Template = ({ icon, rightIcon, label, onClick, ...props }) => (
-  <Button
-    icon={icon ? <DollarCircleOutlined /> : undefined}
-    rightIcon={rightIcon ? <CaretDownOutlined /> : undefined}
-    {...props}
-    onPress={(e) => console.log('Press', e)}
+  <Space
+    radius="1x"
+    padding={props.theme === 'special' ? '2x' : undefined}
+    fill={props.theme === 'special' ? '#dark' : undefined}
   >
-    {label}
-  </Button>
+    <Button
+      icon={icon ? <DollarCircleOutlined /> : undefined}
+      rightIcon={rightIcon ? <CaretDownOutlined /> : undefined}
+      {...props}
+      onPress={(e) => console.log('Press', e)}
+    >
+      {label}
+    </Button>
+  </Space>
 );
 
 const TemplateSizes = ({ label, icon, rightIcon, size, ...props }) => (
@@ -78,6 +84,66 @@ const TemplateSizes = ({ label, icon, rightIcon, size, ...props }) => (
 
 const TemplateStates = ({ label, mods, ...props }) => (
   <Space>
+    <Button
+      {...props}
+      mods={{
+        hovered: false,
+        pressed: false,
+        focused: false,
+        disabled: false,
+      }}
+    >
+      {label || 'Secondary'}
+    </Button>
+    <Button
+      {...props}
+      mods={{
+        hovered: true,
+        pressed: false,
+        focused: false,
+        disabled: false,
+      }}
+    >
+      {label || 'Hovered'}
+    </Button>
+    <Button
+      {...props}
+      mods={{
+        hovered: false,
+        pressed: true,
+        focused: false,
+        disabled: false,
+      }}
+    >
+      {label || 'Pressed'}
+    </Button>
+    <Button
+      {...props}
+      mods={{
+        hovered: false,
+        pressed: false,
+        focused: true,
+        disabled: false,
+      }}
+    >
+      {label || 'Focused'}
+    </Button>
+    <Button
+      {...props}
+      isDisabled
+      mods={{
+        hovered: false,
+        pressed: false,
+        focused: false,
+      }}
+    >
+      {label || 'Disabled'}
+    </Button>
+  </Space>
+);
+
+const DarkTemplateStates = ({ label, mods, ...props }) => (
+  <Space padding="2x" radius="1x" fill="#dark">
     <Button
       {...props}
       mods={{
@@ -171,6 +237,78 @@ LinkStates.args = {
   type: 'link',
 };
 
+export const DangerSecondaryStates = TemplateStates.bind({});
+DangerSecondaryStates.args = {
+  type: 'secondary',
+  theme: 'danger',
+};
+
+export const DangerPrimaryStates = TemplateStates.bind({});
+DangerPrimaryStates.args = {
+  type: 'primary',
+  theme: 'danger',
+};
+
+export const DangerOutlineStates = TemplateStates.bind({});
+DangerOutlineStates.args = {
+  type: 'outline',
+  theme: 'danger',
+};
+
+export const DangerClearStates = TemplateStates.bind({});
+DangerClearStates.args = {
+  type: 'clear',
+  theme: 'danger',
+};
+
+export const DangerNeutralStates = TemplateStates.bind({});
+DangerNeutralStates.args = {
+  type: 'neutral',
+  theme: 'danger',
+};
+
+export const DangerLinkStates = TemplateStates.bind({});
+DangerLinkStates.args = {
+  type: 'link',
+  theme: 'danger',
+};
+
+export const SpecialSecondaryStates = DarkTemplateStates.bind({});
+SpecialSecondaryStates.args = {
+  type: 'secondary',
+  theme: 'special',
+};
+
+export const SpecialPrimaryStates = DarkTemplateStates.bind({});
+SpecialPrimaryStates.args = {
+  type: 'primary',
+  theme: 'special',
+};
+
+export const SpecialOutlineStates = DarkTemplateStates.bind({});
+SpecialOutlineStates.args = {
+  type: 'outline',
+  theme: 'special',
+};
+
+export const SpecialClearStates = DarkTemplateStates.bind({});
+SpecialClearStates.args = {
+  type: 'clear',
+  theme: 'special',
+};
+
+export const SpecialNeutralStates = DarkTemplateStates.bind({});
+SpecialNeutralStates.args = {
+  type: 'neutral',
+  theme: 'special',
+};
+
+export const SpecialLinkStates = DarkTemplateStates.bind({});
+SpecialLinkStates.args = {
+  type: 'link',
+  theme: 'special',
+};
+
 export const Small = Template.bind({});
 Small.args = {
   label: 'Button',
@@ -181,12 +319,6 @@ export const Large = Template.bind({});
 Large.args = {
   label: 'Button',
   size: 'large',
-};
-
-export const Danger = Template.bind({});
-Danger.args = {
-  label: 'Button',
-  theme: 'danger',
 };
 
 export const LeftIconAndText = TemplateSizes.bind({});

@@ -5,12 +5,8 @@ const RESET_MAP = {
     {
       css: `
 -webkit-appearance: none;
-font-weight: inherit;
 word-spacing: initial;
 -webkit-text-fill-color: currentColor;
-box-sizing: border-box;
-user-select: auto;
-resize: none;
 `,
     },
     {
@@ -62,12 +58,7 @@ display: none;
   button: [
     {
       css: `
-transition: all var(--transition) linear;
-background: transparent;
-border: none;
-outline: none;
 appearance: none;
-position: relative;
 touch-action: manipulation;
 -webkit-tap-highlight-color: transparent;
 text-decoration: none;

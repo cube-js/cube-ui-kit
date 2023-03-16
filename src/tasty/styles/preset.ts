@@ -82,6 +82,7 @@ export function presetStyle({
   }
 
   setCSSValue(styles, 'bold-font-weight', name, true);
+  setCSSValue(styles, 'icon-size', name, true);
 
   return styles;
 }

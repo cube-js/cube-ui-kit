@@ -42,10 +42,6 @@ const RadioGroupElement = tasty({
       horizontal: 'row wrap',
     },
     gap: '1x',
-    padding: {
-      '': 0,
-      'inside-form & side-label': '1.5x 0',
-    },
   },
 });
 
@@ -124,6 +120,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
         requiredMark,
         tooltip,
         isHidden,
+        orientation,
         Component: radioGroup,
         ref: domRef,
         labelSuffix,

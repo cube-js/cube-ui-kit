@@ -26,6 +26,7 @@ import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
+import { Text } from '../../content/Text';
 
 import { CheckboxGroup } from './CheckboxGroup';
 import { CheckboxGroupContext } from './context';
@@ -63,14 +64,11 @@ const CheckboxWrapperElement = tasty({
     position: 'relative',
     display: 'flex',
     placeItems: 'center start',
+    placeContent: 'baseline',
     gap: '1x',
     flow: 'row',
     preset: 'default',
     cursor: 'pointer',
-    margin: {
-      '': 0,
-      'inside-form & side-label': '1.5x top',
-    },
   },
 });
 
@@ -142,8 +140,6 @@ function Checkbox(
     ...otherProps
   } = props;
 
-  label = label || children;
-
   // Swap hooks depending on whether this checkbox is inside a CheckboxGroup.
   // This is a bit unorthodox. Typically, hooks cannot be called in a conditional,
   // but since the checkbox won't move in and out of a group, it should be safe.
@@ -163,6 +159,8 @@ function Checkbox(
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
 
+  const toggleState = useToggleState(props);
+
   let { inputProps } = groupState // eslint-disable-next-line react-hooks/rules-of-hooks
     ? useCheckboxGroupItem(
         {
@@ -178,7 +176,16 @@ function Checkbox(
         groupState,
         inputRef,
       ) // eslint-disable-next-line react-hooks/rules-of-hooks
-    : useCheckbox(props, useToggleState(props), inputRef);
+    : useCheckbox(
+        {
+          ...props,
+          ...(typeof label === 'string' && label.trim()
+            ? { 'aria-label': label }
+            : {}),
+        },
+        toggleState,
+        inputRef,
+      );
 
   let markIcon = isIndeterminate ? <IndeterminateOutline /> : <CheckOutlined />;
 
@@ -223,6 +230,7 @@ function Checkbox(
       <CheckboxElement qa="Checkbox" mods={mods} styles={inputStyles}>
         {markIcon}
       </CheckboxElement>
+      {children && <Text>{children}</Text>}
     </CheckboxWrapperElement>
   );
 
@@ -233,6 +241,7 @@ function Checkbox(
           as: 'label',
           labelPosition,
           label,
+          children,
           extra,
           styles,
           isRequired,
@@ -265,7 +274,7 @@ function Checkbox(
       ref={domRef}
     >
       {checkboxField}
-      {label && (
+      {label ? (
         <Element
           styles={labelStyles}
           mods={{
@@ -277,7 +286,7 @@ function Checkbox(
         >
           {label}
         </Element>
-      )}
+      ) : null}
     </CheckboxWrapperElement>
   );
 }

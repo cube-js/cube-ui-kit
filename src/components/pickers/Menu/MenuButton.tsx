@@ -84,6 +84,7 @@ export type MenuButtonProps = {
   postfix: ReactNode;
   selectionIcon?: MenuSelectionType;
   isSelectable?: boolean;
+  // eslint-disable-next-line react/boolean-prop-naming
   disabled?: boolean;
 } & CubeButtonProps;
 

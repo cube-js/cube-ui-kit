@@ -26,6 +26,12 @@ export interface CubeNumberInputProps
   hideStepper?: boolean;
 }
 
+const StyledTextInputBase = tasty(TextInputBase, {
+  wrapperStyles: {
+    width: 'initial 13x 100%',
+  },
+});
+
 const StepperContainer = tasty({
   styles: {
     display: 'grid',
@@ -56,7 +62,7 @@ function NumberInput(props: WithNullableValue<CubeNumberInputProps>, ref) {
   } = useNumberField(props, state, inputRef);
 
   return (
-    <TextInputBase
+    <StyledTextInputBase
       {...otherProps}
       ref={ref}
       labelProps={labelProps}

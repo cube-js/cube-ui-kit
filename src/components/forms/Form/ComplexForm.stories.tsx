@@ -15,13 +15,15 @@ import {
   PasswordInput,
   Radio,
   RangeSlider,
+  Slider,
   Select,
   Submit,
   SubmitError,
   Switch,
   TextInput,
+  NumberInput,
 } from '../../../index';
-import { NumberInput } from '../NumberInput/NumberInput';
+// import { NumberInput } from '../NumberInput/NumberInput';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions';
 import { timeout } from '../../../utils/promise';
@@ -204,25 +206,21 @@ const Template: StoryFn<typeof Form> = (args) => {
 
   return (
     <>
-      <Field label="Custom field outside the any form" tooltip="What?">
-        <Block>Some non-editable content</Block>
-      </Field>
       <Form
         form={form}
         {...args}
         defaultValues={{
           text: 'some',
-          text2: 'some',
           checkbox: true,
           select: {
-            one: 'three',
+            one: 'three', // select.one
           },
           combobox: 'two',
-          combobox2: 'two',
           checkboxGroup: ['one', 'three'],
           radioGroup: 'three',
           switch: false,
-          slider: [20, 40],
+          slider: 60,
+          rangeSlider: [20, 40],
         }}
         onSubmit={(v) => {
           console.log('onSubmit:', v);
@@ -252,9 +250,6 @@ const Template: StoryFn<typeof Form> = (args) => {
         <Field isDisabled name="text2" label="Text disabled">
           <TextInput />
         </Field>
-        <Field isLoading name="text2" label="Text loading">
-          <TextInput />
-        </Field>
         <Field label="Custom field" tooltip="What?">
           <Block>Test</Block>
         </Field>
@@ -273,7 +268,7 @@ const Template: StoryFn<typeof Form> = (args) => {
             return !!email;
           }}
         >
-          <TextInput type="email" label="Email field" />
+          <TextInput type="email" size="small" label="Email field" />
         </Field>
         <Field name="password">
           <PasswordInput label="Password field" />
@@ -296,21 +291,11 @@ const Template: StoryFn<typeof Form> = (args) => {
             <Item key="three">Three</Item>
           </ComboBox>
         </Field>
-        <Field isLoading name="combobox2" label="ComboBox Loading field">
-          <ComboBox>
-            <Item key="one">One</Item>
-            <Item key="two">Two</Item>
-            <Item key="three">Three</Item>
-          </ComboBox>
-        </Field>
         <Field
           name="checkboxGroup"
           label="Checkbox group"
           rules={[
-            {
-              required: true,
-              message: 'Specify at least a single option',
-            },
+            { required: true, message: 'Specify at least a single option' },
           ]}
         >
           <CheckboxGroup orientation="horizontal">
@@ -320,7 +305,7 @@ const Template: StoryFn<typeof Form> = (args) => {
           </CheckboxGroup>
         </Field>
         <Field name="radioGroup" label="Radio group">
-          <Radio.Group>
+          <Radio.Group orientation="horizontal">
             <Radio value="one">One</Radio>
             <Radio value="two">Two</Radio>
             <Radio value="three">Three</Radio>
@@ -330,13 +315,13 @@ const Template: StoryFn<typeof Form> = (args) => {
           name="checkbox"
           rules={[{ required: true, message: 'This field is required' }]}
         >
-          <Checkbox label="Checkbox field" />
+          <Checkbox label="Checkbox field">Checkbox value</Checkbox>
         </Field>
         <Field
           name="switch"
           rules={[{ required: true, message: 'This field is required' }]}
         >
-          <Switch label="Switch field" />
+          <Switch label="Switch field">Switch value</Switch>
         </Field>
         <Field
           name="number"
@@ -345,10 +330,18 @@ const Template: StoryFn<typeof Form> = (args) => {
           <NumberInput label="Number field" minValue={-1} />
         </Field>
         <Field
+          label="Slider"
           name="slider"
           rules={[{ required: true, message: 'This field is required' }]}
         >
-          <RangeSlider showInput minValue={0} maxValue={100} />
+          <Slider minValue={0} maxValue={100} />
+        </Field>
+        <Field
+          label="Slider"
+          name="rangeSlider"
+          rules={[{ required: true, message: 'This field is required' }]}
+        >
+          <RangeSlider minValue={0} maxValue={100} />
         </Field>
         <Submit>Submit</Submit>
       </Form>
@@ -365,6 +358,9 @@ export const FormInsideDialog: StoryFn = () => {
 };
 
 export const Default = Template.bind({});
+
+export const ComplexFormSideLabel = Template.bind({});
+ComplexFormSideLabel.args = { labelPosition: 'side' };
 
 export const ComplexErrorMessage = ComplexErrorTemplate.bind({});
 

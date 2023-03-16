@@ -82,8 +82,10 @@ export type { CubeSwitchProps } from './components/forms/Switch/Switch';
 export { Radio } from './components/forms/RadioGroup/Radio';
 export type { CubeRadioProps } from './components/forms/RadioGroup/Radio';
 export type { CubeRadioGroupProps } from './components/forms/RadioGroup/RadioGroup';
-export { RangeSlider } from './components/forms/RangeSlider/RangeSlider';
-export type { CubeRangeSliderProps } from './components/forms/RangeSlider/RangeSlider';
+export { RangeSlider } from './components/forms/Slider/RangeSlider';
+export type { CubeRangeSliderProps } from './components/forms/Slider/RangeSlider';
+export { Slider } from './components/forms/Slider/Slider';
+export type { CubeSliderProps } from './components/forms/Slider/Slider';
 export { ComboBox } from './components/pickers/ComboBox/ComboBox';
 export type { CubeComboBoxProps } from './components/pickers/ComboBox/ComboBox';
 export { Menu } from './components/pickers/Menu/Menu';
@@ -152,8 +154,6 @@ export const Typography = {
 export { Text, Title, Paragraph };
 export type { CubeTextProps, CubeTitleProps, CubeParagraphProps };
 
-export { useContextStyles, StyleProvider } from './providers/StyleProvider';
-
 export { Provider } from './provider';
 export type { useProviderProps } from './provider';
 export { Portal } from './components/portal';
@@ -182,7 +182,6 @@ export * from './tasty';
 
 export { ModalProvider } from '@react-aria/overlays';
 export * from './utils/react';
-export * from './styled';
 export * from './tasty';
 export { default as copy } from 'clipboard-copy';
 export * from '@react-aria/ssr';

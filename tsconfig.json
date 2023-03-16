@@ -18,10 +18,10 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "preserveSymlinks": true,
     "noImplicitAny": false,
     "target": "es2021",
     "noEmit": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["src/**/*.stories.tsx", "src/**/*.stories.ts", "src/**/*.test.tsx", "src/**/*.test.ts", "src/antd.js", "src/storybook.tsx", "src/App.tsx", "src/script.js"]
+  "include": ["src/**/*"]
 }

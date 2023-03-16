@@ -22,17 +22,24 @@ export default {
 
 const Template = (props) => (
   <Checkbox
+    aria-label="Checkbox"
     {...props}
     onChange={(query) => console.log('onChange event', query)}
   />
 );
 
 export const Default = Template.bind({});
-Default.args = {};
+Default.args = { children: 'Checkbox' };
 
-export const WithoutLabel = Template.bind({});
-WithoutLabel.args = {
+export const WithoutValue = Template.bind({});
+WithoutValue.args = {
   label: '',
+};
+
+export const WithLabel = Template.bind({});
+WithLabel.args = {
+  label: 'Checkbox',
+  'aria-label': undefined,
 };
 
 export const Checked = Template.bind({});

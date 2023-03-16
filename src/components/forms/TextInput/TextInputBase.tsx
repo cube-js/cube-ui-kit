@@ -87,6 +87,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
     focused: 1,
   },
   boxSizing: 'border-box',
+  transition: 'theme',
 
   Prefix: {
     ...ADD_STYLES,
@@ -107,11 +108,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
     placeItems: 'center',
     width: 'min 4x',
     color: 'inherit',
-    fontSize: {
-      '': 'initial',
-      '[data-size="small"]': '14px',
-      '[data-size="medium"]': '16px',
-    },
+    fontSize: '@icon-size',
   },
 
   ValidationIcon: {
@@ -121,11 +118,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
       '': 'min 4x',
       suffix: 'min 3x',
     },
-    fontSize: {
-      '': 'initial',
-      '[data-size="small"]': '14px',
-      '[data-size="medium"]': '16px',
-    },
+    fontSize: '@icon-size',
   },
 };
 
@@ -138,7 +131,7 @@ const INPUT_STYLE_PROPS_LIST = [...BLOCK_STYLES, 'resize'];
 export const DEFAULT_INPUT_STYLES: Styles = {
   display: 'block',
   gridArea: 'input',
-  width: 'initial 100% initial',
+  width: 'initial 100% 100%',
   height: 'initial initial initial',
   color: 'inherit',
   fill: '#clear',
@@ -152,6 +145,8 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   flexGrow: 1,
   margin: 0,
   resize: 'none',
+  boxSizing: 'border-box',
+  userSelect: 'auto',
 
   '@vertical-padding': {
     '': '(1.25x - 1bw)',
@@ -381,16 +376,18 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
         minLength={minLength}
       />
       {prefix ? <div data-element="Prefix">{prefix}</div> : null}
-      <div data-element="Suffix">
-        {suffixPosition === 'before' ? suffix : null}
-        {(validationState && !isLoading) || isLoading ? (
-          <div data-element="State">
-            {validationState && !isLoading ? validation : null}
-            {isLoading && <LoadingOutlined data-element="InputIcon" />}
-          </div>
-        ) : null}
-        {suffixPosition === 'after' ? suffix : null}
-      </div>
+      {(validationState && !isLoading) || isLoading || suffix ? (
+        <div data-element="Suffix">
+          {suffixPosition === 'before' ? suffix : null}
+          {(validationState && !isLoading) || isLoading ? (
+            <div data-element="State">
+              {validationState && !isLoading ? validation : null}
+              {isLoading && <LoadingOutlined data-element="InputIcon" />}
+            </div>
+          ) : null}
+          {suffixPosition === 'after' ? suffix : null}
+        </div>
+      ) : null}
     </InputWrapperElement>
   );
 

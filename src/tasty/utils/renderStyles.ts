@@ -47,8 +47,8 @@ const CACHE_LIMIT = 1000;
  * @return {string}
  */
 export function renderStyles(
-  styles: Styles,
-  responsive: number[],
+  styles?: Styles,
+  responsive: number[] = [],
   suffix?: string,
 ) {
   const zones = responsive;
@@ -78,7 +78,7 @@ export function renderStyles(
         const addSuffix = getSelector(key);
 
         innerStyles += renderStyles(
-          styles[key] as Styles,
+          styles?.[key] as Styles,
           responsive,
           addSuffix,
         );
@@ -101,7 +101,7 @@ export function renderStyles(
         let isResponsive = false;
         const lookupStyles = STYLE.__lookupStyles;
         const filteredStyleMap = lookupStyles.reduce((map, name) => {
-          map[name] = styles[name];
+          map[name] = styles?.[name];
 
           if (Array.isArray(map[name])) {
             if (map[name].length === 0) {
