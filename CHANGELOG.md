@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.19.0
+
+### Minor Changes
+
+- [#267](https://github.com/cube-js/cube-ui-kit/pull/267) [`86a2f11`](https://github.com/cube-js/cube-ui-kit/commit/86a2f118e09e0a37cdfe3ea2dd7a27ac780138f3) Thanks [@tenphi](https://github.com/tenphi)! - Change letter spacing in typography presets. Remove `h5s`, `h5m`, `t3s` and `t4m` presets for good.
+
+### Patch Changes
+
+- [#314](https://github.com/cube-js/cube-ui-kit/pull/314) [`c59fa27`](https://github.com/cube-js/cube-ui-kit/commit/c59fa27911dfbbb058842dc2f3ba2a2af8e0f97b) Thanks [@tenphi](https://github.com/tenphi)! - Fix danger primary text color for Button.
+
+- [#316](https://github.com/cube-js/cube-ui-kit/pull/316) [`c09a431`](https://github.com/cube-js/cube-ui-kit/commit/c09a4317a0330558c74b59fedec0dd8a06b1af5c) Thanks [@tenphi](https://github.com/tenphi)! - Add the small size to the Switch component.
+
 ## 0.18.2
 
 ### Patch Changes
