@@ -22,8 +22,8 @@ const Template: Story<CubeRangeSliderProps> = (args) => (
   <RangeSlider {...args} />
 );
 
-export const Single = Template.bind({});
-Single.args = {
+export const Default = Template.bind({});
+Default.args = {
   label: 'Slider',
 };
 

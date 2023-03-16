@@ -56,7 +56,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
     '': '(1.25x - 1bw) (2x - 1bw)',
     '[data-size="small"]': '(.75x - 1bw) (1.5x - 1bw)',
     '[data-size="medium"]': '(1.25x - 1bw) (2x - 1bw)',
-    '[data-size="large"]': '(1.5x - 1bw) (2.5x - 1bw)',
+    '[data-size="large"]': '1.5x (2.5x - 1bw)',
     'single-icon-only | [data-type="link"]': 0,
   },
   width: {

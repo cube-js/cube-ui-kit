@@ -28,6 +28,12 @@ Default.args = {
   label: 'Switch',
 };
 
+export const Small = Template.bind({});
+Small.args = {
+  label: 'Switch',
+  size: 'small',
+};
+
 export const WithoutLabel = Template.bind({});
 WithoutLabel.args = {
   label: '',

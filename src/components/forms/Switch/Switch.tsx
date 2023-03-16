@@ -77,8 +77,14 @@ const SwitchElement = tasty({
     },
     color: '#white',
     border: false,
-    width: '5.25x 5.25x',
-    height: '3x 3x',
+    width: {
+      '': '5.25x 5.25x',
+      '[data-size="small"]': '3.5x 3.5x',
+    },
+    height: {
+      '': '3x 3x',
+      '[data-size="small"]': '2x 2x',
+    },
     outline: {
       '': '#purple-03.0',
       focused: '#purple-03',
@@ -92,8 +98,14 @@ const SwitchElement = tasty({
 
     Thumb: {
       position: 'absolute',
-      width: '2.5x',
-      height: '2.5x',
+      width: {
+        '': '2.5x 2.5x',
+        '[data-size="small"]': '1.5x 1.5x',
+      },
+      height: {
+        '': '2.5x 2.5x',
+        '[data-size="small"]': '1.5x 1.5x',
+      },
       radius: 'round',
       fill: {
         '': 'currentColor',
@@ -104,6 +116,7 @@ const SwitchElement = tasty({
       left: {
         '': '.25x',
         checked: '2.5x',
+        'checked & [data-size="small"]': '1.75x',
       },
       transition: 'left, theme',
       cursor: 'pointer',
@@ -119,6 +132,7 @@ export interface CubeSwitchProps
     AriaSwitchProps {
   inputStyles?: Styles;
   isLoading?: boolean;
+  size?: 'large' | 'small';
 }
 
 function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
@@ -145,6 +159,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
     requiredMark = true,
     tooltip,
     labelSuffix,
+    size = 'large',
     ...otherProps
   } = props;
 
@@ -179,13 +194,18 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   };
 
   const switchField = (
-    <SwitchWrapperElement mods={mods}>
+    <SwitchWrapperElement mods={mods} data-size={size}>
       <HiddenInput
         data-qa="HiddenInput"
         {...mergeProps(inputProps, focusProps)}
         ref={inputRef}
       />
-      <SwitchElement qa={qa || 'Switch'} mods={mods} styles={inputStyles}>
+      <SwitchElement
+        qa={qa || 'Switch'}
+        mods={mods}
+        data-size={size}
+        styles={inputStyles}
+      >
         <div data-element="Thumb" aria-hidden="true" />
       </SwitchElement>
       {children ? <Text>{children}</Text> : null}
