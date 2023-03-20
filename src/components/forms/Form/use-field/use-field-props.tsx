@@ -3,6 +3,7 @@ import { useDebugValue } from 'react';
 
 import { useChainedCallback, useEvent, useWarn } from '../../../../_internal';
 import { useInsideLegacyField } from '../Field';
+import { chain } from '../../../../utils/react';
 
 import { useField } from './use-field';
 
@@ -45,7 +46,11 @@ export function useFieldProps<
     '<Field /> is deprecated, use component without <Field /> instead.',
   );
 
-  if (isInsideLegacyField || isDisabledRef.current || props.name == null) {
+  if (
+    isInsideLegacyField === true ||
+    isDisabledRef.current === true ||
+    props.name == null
+  ) {
     return props;
   }
 
@@ -64,23 +69,38 @@ export function useFieldProps<
   );
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const onChangeEvent = useEvent((value, dontTouch: boolean) => {
-    return field?.onChange?.(
+  const onChangeEvent = useEvent((value, dontTouch: boolean) =>
+    field?.onChange?.(
       value,
       dontTouch,
       field?.validateTrigger ?? defaultValidationTrigger,
-    );
+    ),
+  );
+
+  const mapped = valuePropsMapper({
+    value: field.value,
+    onChange: onChangeEvent,
   });
+
+  const mappedKeys = Object.keys(mapped).filter(
+    (key) => typeof mapped[key] === 'function',
+  );
+
+  for (const mappedKey of mappedKeys) {
+    const prop = props[mappedKey];
+    const mappedProp = mapped[mappedKey];
+
+    if (typeof prop !== 'undefined') {
+      mapped[mappedKey] = chain(prop, mappedProp);
+    }
+  }
 
   const result = isOutsideOfForm
     ? props
     : {
         ...props,
         ...field,
-        ...valuePropsMapper({
-          value: field.value,
-          onChange: onChangeEvent,
-        }),
+        ...mapped,
         validateTrigger: field.validateTrigger ?? defaultValidationTrigger,
         onBlur: onBlurChained,
       };

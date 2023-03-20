@@ -16,7 +16,7 @@ import {
 } from 'react';
 import { useHover } from '@react-aria/interactions';
 
-import { useFormProps } from '../Form';
+import { useFieldProps, useFormProps } from '../Form';
 import { useProviderProps } from '../../../provider';
 import {
   BaseProps,
@@ -210,6 +210,16 @@ export interface CubeTextInputBaseProps
 function TextInputBase(props: CubeTextInputBaseProps, ref) {
   props = useProviderProps(props);
   props = useFormProps(props);
+  props = useFieldProps(props, {
+    defaultValidationTrigger: 'onBlur',
+    valuePropsMapper: ({ value, onChange }) => ({
+      value:
+        typeof value === 'string' || typeof value === 'number'
+          ? String(value)
+          : '',
+      onChange,
+    }),
+  });
 
   let {
     qa,

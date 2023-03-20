@@ -15,7 +15,9 @@ const Form = Object.assign(
 );
 
 export { useFormProps, Form, Field, useForm, FormContext, SubmitError };
+export { useFieldProps } from './use-field';
 export type { CubeFormProps } from './Form';
 export type { CubeFormInstance } from './useForm';
 export type { FieldTypes, Fields } from './types';
+export type { UseFieldParams, UseFieldPropsParams } from './use-field';
 export type { CubeAlertProps as CubeSubmitErrorProps };
