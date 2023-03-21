@@ -29,7 +29,7 @@ import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
-import { useFieldProps } from '../Form';
+import { useFieldProps, useFormProps } from '../Form';
 
 import type { AriaSwitchProps } from '@react-types/switch';
 
@@ -138,6 +138,7 @@ export interface CubeSwitchProps
 function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   props = castNullableIsSelected(props);
   props = useProviderProps(props);
+  props = useFormProps(props);
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onChange',
     valuePropsMapper: ({ value, onChange }) => ({

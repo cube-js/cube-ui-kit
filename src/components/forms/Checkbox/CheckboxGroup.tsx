@@ -18,7 +18,7 @@ import {
   castNullableArrayValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { useFieldProps, FormContext } from '../Form';
+import { useFieldProps, FormContext, useFormProps } from '../Form';
 
 import { CheckboxGroupContext } from './context';
 
@@ -53,6 +53,7 @@ export interface CubeCheckboxGroupProps
 function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
   props = castNullableArrayValue(props);
   props = useProviderProps(props);
+  props = useFormProps(props);
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onChange',
     valuePropsMapper: ({ value, onChange }) => ({

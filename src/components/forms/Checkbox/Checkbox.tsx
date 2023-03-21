@@ -19,7 +19,7 @@ import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react';
 import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../Label';
 import { HiddenInput } from '../../HiddenInput';
-import { useFieldProps } from '../Form';
+import { useFieldProps, useFormProps } from '../Form';
 import { FieldWrapper } from '../FieldWrapper';
 import { FormFieldProps } from '../../../shared';
 import {
@@ -118,6 +118,7 @@ function Checkbox(
   let originalProps = props;
 
   props = useProviderProps(props);
+  props = useFormProps(props);
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onChange',
     valuePropsMapper: ({ value, onChange }) => ({
