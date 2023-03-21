@@ -6,6 +6,7 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { useFieldProps } from '../Form';
 
 import { CubeTextInputBaseProps, TextInputBase } from './TextInputBase';
 
@@ -15,9 +16,15 @@ export const TextInput = forwardRef(function TextInput(
   props: CubeTextInputProps,
   ref: ForwardedRef<HTMLInputElement>,
 ) {
-  castNullableStringValue(props);
-
+  props = castNullableStringValue(props);
   props = useProviderProps(props);
+  props = useFieldProps(props, {
+    defaultValidationTrigger: 'onBlur',
+    valuePropsMapper: ({ value, onChange }) => ({
+      onChange,
+      value: value?.toString() ?? '',
+    }),
+  });
 
   let inputRef = useRef(null);
   let { labelProps, inputProps } = useTextField(props, inputRef);

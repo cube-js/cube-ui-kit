@@ -5,9 +5,9 @@ import { SliderState, useSliderState } from '@react-stately/slider';
 import { useSlider } from '@react-aria/slider';
 import { useNumberFormatter } from '@react-aria/i18n';
 
-import { FieldWrapper } from '../../forms/FieldWrapper';
+import { FieldWrapper } from '../FieldWrapper';
 import { extractStyles, OUTER_STYLES, tasty } from '../../../tasty';
-import { useFormProps } from '../Form';
+import { useFieldProps } from '../Form';
 import { Text } from '../../content/Text';
 
 import { SliderControlsElement, SliderElement } from './elements';
@@ -30,11 +30,14 @@ const LabelValueElement = tasty(Text, {
   },
 });
 
-function SliderBase(
-  allProps: SliderBaseProps,
-  ref: FocusableRef<HTMLDivElement>,
-) {
-  const props = useFormProps(allProps);
+function SliderBase(props: SliderBaseProps, ref: FocusableRef<HTMLDivElement>) {
+  props = useFieldProps(props, {
+    defaultValidationTrigger: 'onChange',
+    valuePropsMapper: ({ value, onChange }) => ({
+      value: value != null ? value : undefined,
+      onChange: onChange,
+    }),
+  });
 
   let {
     labelPosition,
@@ -65,7 +68,7 @@ function SliderBase(
     ...otherProps
   } = props;
 
-  let orientation = allProps.orientation || 'horizontal';
+  let orientation = props.orientation || 'horizontal';
 
   // `Math.abs(Math.sign(a) - Math.sign(b)) === 2` is true if the values have a different sign.
   let alwaysDisplaySign =

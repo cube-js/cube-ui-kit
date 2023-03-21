@@ -168,7 +168,7 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
     () => ({
       id: fieldId,
       name: fieldName,
-      value: field?.value,
+      value: field?.inputValue,
       validateTrigger,
       form,
       field,
@@ -184,7 +184,7 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
     [
       form,
       field,
-      field?.value,
+      field?.inputValue,
       fieldId,
       fieldName,
       isRequired,

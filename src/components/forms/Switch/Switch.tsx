@@ -22,7 +22,6 @@ import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react';
 import { HiddenInput } from '../../HiddenInput';
 import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../Label';
-import { useFormProps } from '../Form/Form';
 import { Text } from '../../content/Text';
 import { FieldWrapper } from '../FieldWrapper';
 import { FormFieldProps } from '../../../shared';
@@ -30,6 +29,7 @@ import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
+import { useFieldProps } from '../Form';
 
 import type { AriaSwitchProps } from '@react-types/switch';
 
@@ -138,7 +138,14 @@ export interface CubeSwitchProps
 function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   props = castNullableIsSelected(props);
   props = useProviderProps(props);
-  props = useFormProps(props);
+  props = useFieldProps(props, {
+    defaultValidationTrigger: 'onChange',
+    valuePropsMapper: ({ value, onChange }) => ({
+      isSelected: value != null ? value : false,
+      isIndeterminate: false,
+      onChange: onChange,
+    }),
+  });
 
   let {
     qa,

@@ -19,7 +19,7 @@ import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react';
 import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../Label';
 import { HiddenInput } from '../../HiddenInput';
-import { useFormProps } from '../Form';
+import { useFieldProps } from '../Form';
 import { FieldWrapper } from '../FieldWrapper';
 import { FormFieldProps } from '../../../shared';
 import {
@@ -108,12 +108,25 @@ function Checkbox(
   props: WithNullableSelected<CubeCheckboxProps>,
   ref: FocusableRef,
 ) {
+  // Swap hooks depending on whether this checkbox is inside a CheckboxGroup.
+  // This is a bit unorthodox. Typically, hooks cannot be called in a conditional,
+  // but since the checkbox won't move in and out of a group, it should be safe.
+  let groupState = useContext(CheckboxGroupContext);
+
   props = castNullableIsSelected(props);
 
   let originalProps = props;
 
   props = useProviderProps(props);
-  props = useFormProps(props);
+  props = useFieldProps(props, {
+    defaultValidationTrigger: 'onChange',
+    valuePropsMapper: ({ value, onChange }) => ({
+      isSelected: value ?? false,
+      isIndeterminate: false,
+      onChange: onChange,
+    }),
+    unsafe__isDisabled: !!groupState,
+  });
 
   let {
     qa,
@@ -139,11 +152,6 @@ function Checkbox(
     labelSuffix,
     ...otherProps
   } = props;
-
-  // Swap hooks depending on whether this checkbox is inside a CheckboxGroup.
-  // This is a bit unorthodox. Typically, hooks cannot be called in a conditional,
-  // but since the checkbox won't move in and out of a group, it should be safe.
-  let groupState = useContext(CheckboxGroupContext);
 
   let styles: Styles = extractStyles(props, OUTER_STYLES);
   let inputStyles = extractStyles(props, BLOCK_STYLES);

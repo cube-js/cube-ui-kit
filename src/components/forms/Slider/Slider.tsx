@@ -11,15 +11,15 @@ import {
 } from './SliderBase';
 import { Gradation } from './Gradation';
 
-import type { DOMRef } from '@react-types/shared';
+import type { FocusableRef } from '@react-types/shared';
 import type { CubeSliderBaseProps } from './types';
 
 export interface CubeSliderProps extends CubeSliderBaseProps<number> {
   gradation?: string[];
 }
 
-function Slider(props: CubeSliderProps, ref: DOMRef<HTMLDivElement>) {
-  let {
+function Slider(props: CubeSliderProps, ref: FocusableRef<HTMLDivElement>) {
+  const {
     onChange,
     onChangeEnd,
     value,
@@ -43,17 +43,18 @@ function Slider(props: CubeSliderProps, ref: DOMRef<HTMLDivElement>) {
     onChangeEnd: (v: number[]): void => {
       onChangeEnd?.(v[0]);
     },
-    getValueLabel: getValueLabel ? ([v]) => getValueLabel?.(v) : undefined,
+    getValueLabel: getValueLabel ? ([v]) => getValueLabel(v) : undefined,
   };
 
-  styles = extractStyles(otherProps, OUTER_STYLES, styles);
+  const extractedStyles = extractStyles(otherProps, OUTER_STYLES, styles);
 
   return (
     <SliderBase
       {...otherProps}
       {...baseProps}
+      ref={ref}
       orientation={orientation}
-      styles={styles}
+      styles={extractedStyles}
     >
       {({ trackRef, inputRef, state }: SliderBaseChildArguments) => {
         return (

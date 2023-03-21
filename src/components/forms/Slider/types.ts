@@ -26,5 +26,5 @@ export interface CubeSliderBaseProps<T>
   /** Whether the value's label is displayed. True by default if there's a `label`, false by default if not. */
   showValueLabel?: boolean;
   /** A function that returns the content to display as the value's label. Overrides default formatted number. */
-  getValueLabel?: (value: T) => string | undefined;
+  getValueLabel?: (value: T) => string;
 }

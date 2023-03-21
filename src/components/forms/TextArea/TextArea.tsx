@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useRef } from 'react';
+import { forwardRef, useRef } from 'react';
 import { useControlledState } from '@react-stately/utils';
 import { useTextField } from '@react-aria/textfield';
 
@@ -12,6 +12,8 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { chain, useLayoutEffect } from '../../../utils/react';
+import { useFieldProps } from '../Form';
+import { useEvent } from '../../../_internal';
 
 export interface CubeTextAreaProps extends CubeTextInputBaseProps {
   /** Whether the textarea should change its size depends on content */
@@ -24,17 +26,22 @@ export interface CubeTextAreaProps extends CubeTextInputBaseProps {
 function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
   props = castNullableStringValue(props);
   props = useProviderProps(props);
+  props = useFieldProps(props, {
+    defaultValidationTrigger: 'onBlur',
+    valuePropsMapper: ({ value, onChange }) => ({
+      onChange,
+      value: value?.toString() ?? '',
+    }),
+  });
   let {
     autoSize = false,
     isDisabled = false,
     isReadOnly = false,
     isRequired = false,
     onChange,
-    rows,
+    rows = 3,
     ...otherProps
   } = props;
-
-  rows = rows || 3;
 
   let [inputValue, setInputValue] = useControlledState(
     props.value,
@@ -43,7 +50,7 @@ function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
   );
   let inputRef = useRef<HTMLTextAreaElement>(null);
 
-  let onHeightChange = useCallback(() => {
+  let onHeightChange = useEvent(() => {
     if (autoSize && inputRef.current) {
       let input = inputRef.current;
       let prevAlignment = input.style.alignSelf;
@@ -60,7 +67,7 @@ function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
           }px`;
       input.style.alignSelf = prevAlignment;
     }
-  }, [inputRef]);
+  });
 
   useLayoutEffect(() => {
     if (inputRef.current) {
