@@ -3,7 +3,7 @@ import { useDebugValue } from 'react';
 
 import { useChainedCallback, useEvent, useWarn } from '../../../../_internal';
 import { useInsideLegacyField } from '../Field';
-import { chain } from '../../../../utils/react';
+import { mergeProps } from '../../../../utils/react';
 
 import { useField } from './use-field';
 
@@ -77,33 +77,17 @@ export function useFieldProps<
     ),
   );
 
-  const mapped = valuePropsMapper({
-    value: field.value,
-    onChange: onChangeEvent,
-  });
-
-  const mappedKeys = Object.keys(mapped).filter(
-    (key) => typeof mapped[key] === 'function',
-  );
-
-  for (const mappedKey of mappedKeys) {
-    const prop = props[mappedKey];
-    const mappedProp = mapped[mappedKey];
-
-    if (typeof prop !== 'undefined') {
-      mapped[mappedKey] = chain(prop, mappedProp);
-    }
-  }
-
   const result = isOutsideOfForm
     ? props
-    : {
-        ...props,
-        ...field,
-        ...mapped,
-        validateTrigger: field.validateTrigger ?? defaultValidationTrigger,
-        onBlur: onBlurChained,
-      };
+    : mergeProps(
+        props,
+        field,
+        valuePropsMapper({ value: field.value, onChange: onChangeEvent }),
+        {
+          validateTrigger: field.validateTrigger ?? defaultValidationTrigger,
+          onBlur: onBlurChained,
+        },
+      );
 
   if (process.env.NODE_ENV === 'development') {
     // eslint-disable-next-line react-hooks/rules-of-hooks
