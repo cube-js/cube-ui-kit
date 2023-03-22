@@ -3,6 +3,7 @@ import {
   IS_INDETERMINATE_ARG,
   IS_SELECTED_ARG,
 } from '../../../stories/FormFieldArgs';
+import { Flow } from '../../layout/Flow';
 
 import { Checkbox } from './Checkbox';
 
@@ -21,11 +22,20 @@ export default {
 };
 
 const Template = (props) => (
-  <Checkbox
-    aria-label="Checkbox"
-    {...props}
-    onChange={(query) => console.log('onChange event', query)}
-  />
+  <Flow gap="2x">
+    <Checkbox
+      aria-label="Checkbox"
+      {...props}
+      defaultSelected={true}
+      onChange={(query) => console.log('onChange event', query)}
+    />
+    <Checkbox
+      aria-label="Checkbox"
+      {...props}
+      defaultSelected={false}
+      onChange={(query) => console.log('onChange event', query)}
+    />
+  </Flow>
 );
 
 export const Default = Template.bind({});
@@ -36,17 +46,6 @@ WithoutValue.args = {
   label: '',
 };
 
-export const WithLabel = Template.bind({});
-WithLabel.args = {
-  label: 'Checkbox',
-  'aria-label': undefined,
-};
-
-export const Checked = Template.bind({});
-Checked.args = {
-  isSelected: true,
-};
-
 export const Intermediate = Template.bind({});
 Intermediate.args = {
   isIndeterminate: true,
@@ -55,9 +54,11 @@ Intermediate.args = {
 export const Disabled = Template.bind({});
 Disabled.args = {
   isDisabled: true,
+  label: 'Checkbox',
 };
 
 export const Invalid = Template.bind({});
 Invalid.args = {
   validationState: 'invalid',
+  label: 'Checkbox',
 };
