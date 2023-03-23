@@ -44,6 +44,7 @@ export const SearchInput = forwardRef(function SearchInput(
 
   let state = useSearchFieldState(props);
   let { inputProps, clearButtonProps } = useSearchField(props, state, inputRef);
+  let showClearButton = isClearable && state.value !== '' && !props.isReadOnly;
 
   return (
     <TextInputBase
@@ -55,16 +56,18 @@ export const SearchInput = forwardRef(function SearchInput(
       suffixPosition="after"
       {...props}
       suffix={
-        <>
-          {props.suffix}
-          {isClearable && state.value !== '' && !props.isReadOnly && (
-            <ClearButton
-              type={validationState === 'invalid' ? 'clear' : 'neutral'}
-              theme={validationState === 'invalid' ? 'danger' : undefined}
-              {...ariaToCubeButtonProps(clearButtonProps)}
-            />
-          )}
-        </>
+        props.suffix || showClearButton ? (
+          <>
+            {props.suffix}
+            {showClearButton && (
+              <ClearButton
+                type={validationState === 'invalid' ? 'clear' : 'neutral'}
+                theme={validationState === 'invalid' ? 'danger' : undefined}
+                {...ariaToCubeButtonProps(clearButtonProps)}
+              />
+            )}
+          </>
+        ) : undefined
       }
     />
   );
