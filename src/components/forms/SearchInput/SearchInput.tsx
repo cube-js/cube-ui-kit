@@ -53,18 +53,19 @@ export const SearchInput = forwardRef(function SearchInput(
       type="search"
       icon={<SearchOutlined />}
       suffixPosition="after"
-      suffix={
-        isClearable &&
-        state.value !== '' &&
-        !props.isReadOnly && (
-          <ClearButton
-            type={validationState === 'invalid' ? 'clear' : 'neutral'}
-            theme={validationState === 'invalid' ? 'danger' : undefined}
-            {...ariaToCubeButtonProps(clearButtonProps)}
-          />
-        )
-      }
       {...props}
+      suffix={
+        <>
+          {props.suffix}
+          {isClearable && state.value !== '' && !props.isReadOnly && (
+            <ClearButton
+              type={validationState === 'invalid' ? 'clear' : 'neutral'}
+              theme={validationState === 'invalid' ? 'danger' : undefined}
+              {...ariaToCubeButtonProps(clearButtonProps)}
+            />
+          )}
+        </>
+      }
     />
   );
 });
