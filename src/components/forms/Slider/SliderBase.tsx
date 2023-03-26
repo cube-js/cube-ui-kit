@@ -5,9 +5,9 @@ import { SliderState, useSliderState } from '@react-stately/slider';
 import { useSlider } from '@react-aria/slider';
 import { useNumberFormatter } from '@react-aria/i18n';
 
-import { FieldWrapper } from '../../forms/FieldWrapper';
+import { FieldWrapper } from '../FieldWrapper';
 import { extractStyles, OUTER_STYLES, tasty } from '../../../tasty';
-import { useFormProps } from '../Form';
+import { useFieldProps, useFormProps } from '../Form';
 import { Text } from '../../content/Text';
 
 import { SliderControlsElement, SliderElement } from './elements';
@@ -34,7 +34,14 @@ function SliderBase(
   allProps: SliderBaseProps,
   ref: FocusableRef<HTMLDivElement>,
 ) {
-  const props = useFormProps(allProps);
+  let props = useFormProps(allProps);
+  props = useFieldProps(props, {
+    defaultValidationTrigger: 'onChange',
+    valuePropsMapper: ({ value, onChange }) => ({
+      value: value != null ? value : undefined,
+      onChange: onChange,
+    }),
+  });
 
   let {
     labelPosition,

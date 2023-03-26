@@ -4,7 +4,7 @@ import { useRadioGroup } from '@react-aria/radio';
 import { useRadioGroupState } from '@react-stately/radio';
 
 import { useProviderProps } from '../../../provider';
-import { FormContext, useFormProps } from '../Form';
+import { FormContext, useFieldProps, useFormProps } from '../Form';
 import {
   BaseProps,
   BLOCK_STYLES,
@@ -49,6 +49,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
   props = castNullableStringValue(props);
   props = useProviderProps(props);
   props = useFormProps(props);
+  props = useFieldProps(props, { defaultValidationTrigger: 'onChange' });
 
   let {
     isDisabled,

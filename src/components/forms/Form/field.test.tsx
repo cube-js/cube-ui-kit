@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { expect } from '@storybook/jest';
 
 import { renderWithForm, userEvent, act } from '../../../test';
 import { Radio } from '../RadioGroup/Radio';
@@ -124,16 +123,15 @@ describe('Legacy <Field />', () => {
     expect(input).toHaveValue('Hello, World!');
   });
 
-  it('should work without <Field /> in conrolled mode', async () => {
+  it('should work without <Field /> in controlled mode, when name is null', async () => {
     function Content() {
       const [deployMode, setDeployMode] = useState('cli');
 
       return (
         <Radio.Group
           label="Deploy mode"
-          name="deployMode"
           value={deployMode}
-          onChange={setDeployMode}
+          onChange={(v) => setDeployMode(v)}
         >
           <Radio value="cli">Deploy with CLI</Radio>
           <Radio value="git">Deploy with GIT</Radio>
@@ -152,5 +150,54 @@ describe('Legacy <Field />', () => {
     });
 
     expect(gitRadio).toBeChecked();
+  });
+
+  it('should ignore value in form-controlled mode, when name != null', async () => {
+    function Content() {
+      const [deployMode] = useState('git');
+
+      return (
+        <Radio.Group
+          defaultValue="cli"
+          label="Deploy mode"
+          name="test"
+          value={deployMode}
+        >
+          <Radio value="cli">Deploy with CLI</Radio>
+          <Radio value="git">Deploy with GIT</Radio>
+        </Radio.Group>
+      );
+    }
+    const { getByRole, formInstance } = renderWithForm(<Content />);
+
+    const cliRadio = getByRole('radio', { name: 'Deploy with CLI' });
+    const gitRadio = getByRole('radio', { name: 'Deploy with GIT' });
+
+    expect(cliRadio).toBeChecked();
+
+    await act(async () => {
+      await userEvent.click(gitRadio);
+    });
+
+    expect(formInstance.getFieldValue('test')).toBe('git');
+    expect(gitRadio).toBeChecked();
+  });
+
+  it("shouldn't override onChange in component", async () => {
+    const onChange = jest.fn();
+
+    const { getByRole, formInstance } = renderWithForm(
+      <Radio.Group label="Deploy mode" name="test" onChange={onChange}>
+        <Radio value="cli">Deploy with CLI</Radio>
+        <Radio value="git">Deploy with GIT</Radio>
+      </Radio.Group>,
+    );
+
+    const cliRadio = getByRole('radio', { name: 'Deploy with CLI' });
+
+    await act(async () => await userEvent.click(cliRadio));
+
+    expect(formInstance.getFieldValue('test')).toBe('cli');
+    expect(onChange).toHaveBeenCalled();
   });
 });
