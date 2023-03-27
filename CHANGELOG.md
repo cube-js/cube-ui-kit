@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.20.0
+
+### Minor Changes
+
+- [#317](https://github.com/cube-js/cube-ui-kit/pull/317) [`5487b12`](https://github.com/cube-js/cube-ui-kit/commit/5487b12ddcca823a5efc5954244720e1687bc1bf) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - [CUK-5](https://cubedevinc.atlassian.net/browse/CC-1485) Migrate all form components on new `useFieldProps` hook
+
+### Patch Changes
+
+- [#319](https://github.com/cube-js/cube-ui-kit/pull/319) [`a53cedf`](https://github.com/cube-js/cube-ui-kit/commit/a53cedf8ffdc283bc0d280a82689835f210c6c4d) Thanks [@tenphi](https://github.com/tenphi)! - Show the Clear Button in the SearchInput component even if the `suffix` prop provided.
+
+- [#318](https://github.com/cube-js/cube-ui-kit/pull/318) [`e3afdbe`](https://github.com/cube-js/cube-ui-kit/commit/e3afdbe2e872db4f03160ff4d25d28bdeaaf8900) Thanks [@tenphi](https://github.com/tenphi)! - Draw range connection link for RangeSlider component.
+
 ## 0.19.0
 
 ### Minor Changes
