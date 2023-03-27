@@ -216,7 +216,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
       >
         <div data-element="Thumb" aria-hidden="true" />
       </SwitchElement>
-      {children ? <Text>{children}</Text> : null}
+      {children ? <Text nowrap>{children}</Text> : null}
     </SwitchWrapperElement>
   );
 

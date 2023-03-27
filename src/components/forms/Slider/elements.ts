@@ -50,6 +50,20 @@ export const SliderTrackContainerElement = tasty({
       horizontal: '100%',
     },
     radius: true,
+
+    '&::before': {
+      content: '""',
+      display: {
+        '': 'none',
+        range: 'block',
+      },
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      fill: '#purple',
+      left: '@slider-range-start',
+      width: '(@slider-range-end - @slider-range-start)',
+    },
   },
 });
 
