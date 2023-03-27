@@ -35,3 +35,10 @@ export const Invalid = Template.bind({});
 Invalid.args = {
   validationState: 'invalid',
 };
+
+export const ClearableWithSuffix = Template.bind({});
+ClearableWithSuffix.args = {
+  isClearable: true,
+  defaultValue: 'Back to the Future',
+  suffix: 'suffix',
+};
