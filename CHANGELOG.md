@@ -1,5 +1,14 @@
 # @cube-dev/ui-kit
 
+## 0.20.1
+
+### Patch Changes
+
+- [#321](https://github.com/cube-js/cube-ui-kit/pull/321) [`c8784ab`](https://github.com/cube-js/cube-ui-kit/commit/c8784ab98e5b1816d6bdc3f861d22044af9f7f5e) Thanks [@tenphi](https://github.com/tenphi)! - Show the Clear Button in the SearchInput component even if the `suffix` prop provided.
+
+- [#321](https://github.com/cube-js/cube-ui-kit/pull/321) [`c8784ab`](https://github.com/cube-js/cube-ui-kit/commit/c8784ab98e5b1816d6bdc3f861d22044af9f7f5e) Thanks [@tenphi](https://github.com/tenphi)! - Add the `hideText` property to hide parts of `CodeSnippet` text.
+  Add the `actions` property and `CodeSnippet.Button` component to allow adding new actions to the `CodeSnippet` compoonent.
+
 ## 0.20.0
 
 ### Minor Changes
