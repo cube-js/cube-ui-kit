@@ -4,7 +4,6 @@ import { useCheckboxGroup } from '@react-aria/checkbox';
 import { useCheckboxGroupState } from '@react-stately/checkbox';
 
 import { useProviderProps } from '../../../provider';
-import { FormContext, useFormProps } from '../Form/Form';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -13,12 +12,13 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { FieldWrapper } from '../FieldWrapper';
+import { extractFieldWrapperProps, FieldWrapper } from '../FieldWrapper';
 import { FormFieldProps } from '../../../shared';
 import {
   castNullableArrayValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { useFieldProps, FormContext, useFormProps } from '../Form';
 
 import { CheckboxGroupContext } from './context';
 
@@ -54,6 +54,13 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
   props = castNullableArrayValue(props);
   props = useProviderProps(props);
   props = useFormProps(props);
+  props = useFieldProps(props, {
+    defaultValidationTrigger: 'onChange',
+    valuePropsMapper: ({ value, onChange }) => ({
+      value: value != null ? value : [],
+      onChange: onChange,
+    }),
+  });
 
   let {
     isDisabled,
@@ -62,14 +69,12 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
     necessityLabel,
     label,
     extra,
-    labelPosition = 'top',
     validationState,
     children,
     orientation = 'vertical',
     message,
     description,
     labelStyles,
-    requiredMark = true,
     tooltip,
     labelSuffix,
     inputStyles,
@@ -78,6 +83,7 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
   let domRef = useDOMRef(ref);
 
   let styles = extractStyles(otherProps, CONTAINER_STYLES);
+  let { fieldWrapperProps } = extractFieldWrapperProps(props);
 
   let state = useCheckboxGroupState(props);
   let { groupProps, labelProps } = useCheckboxGroup(props, state);
@@ -104,27 +110,12 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
 
   return (
     <FieldWrapper
-      {...{
-        labelPosition,
-        label,
-        extra,
-        styles,
-        isRequired,
-        labelStyles,
-        necessityIndicator,
-        necessityLabel,
-        labelProps,
-        fieldProps: groupProps,
-        isDisabled,
-        validationState,
-        message,
-        description,
-        requiredMark,
-        tooltip,
-        labelSuffix,
-        Component: radioGroup,
-        ref: domRef,
-      }}
+      {...fieldWrapperProps}
+      ref={domRef}
+      Component={radioGroup}
+      fieldProps={groupProps}
+      labelProps={labelProps}
+      styles={styles}
     />
   );
 }

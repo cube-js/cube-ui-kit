@@ -3,6 +3,7 @@ import { useDebugValue } from 'react';
 
 import { useChainedCallback, useEvent, useWarn } from '../../../../_internal';
 import { useInsideLegacyField } from '../Field';
+import { mergeProps } from '../../../../utils/react';
 
 import { useField } from './use-field';
 
@@ -45,7 +46,11 @@ export function useFieldProps<
     '<Field /> is deprecated, use component without <Field /> instead.',
   );
 
-  if (isInsideLegacyField || isDisabledRef.current || props.name == null) {
+  if (
+    isInsideLegacyField === true ||
+    isDisabledRef.current === true ||
+    props.name == null
+  ) {
     return props;
   }
 
@@ -64,26 +69,25 @@ export function useFieldProps<
   );
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const onChangeEvent = useEvent((value, dontTouch: boolean) => {
-    return field?.onChange?.(
+  const onChangeEvent = useEvent((value, dontTouch: boolean) =>
+    field?.onChange?.(
       value,
       dontTouch,
       field?.validateTrigger ?? defaultValidationTrigger,
-    );
-  });
+    ),
+  );
 
   const result = isOutsideOfForm
     ? props
-    : {
-        ...props,
-        ...field,
-        ...valuePropsMapper({
-          value: field.value,
-          onChange: onChangeEvent,
-        }),
-        validateTrigger: field.validateTrigger ?? defaultValidationTrigger,
-        onBlur: onBlurChained,
-      };
+    : mergeProps(
+        props,
+        field,
+        valuePropsMapper({ value: field.value, onChange: onChangeEvent }),
+        {
+          validateTrigger: field.validateTrigger ?? defaultValidationTrigger,
+          onBlur: onBlurChained,
+        },
+      );
 
   if (process.env.NODE_ENV === 'development') {
     // eslint-disable-next-line react-hooks/rules-of-hooks

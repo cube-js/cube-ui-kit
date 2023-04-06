@@ -184,6 +184,7 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
     [
       form,
       field,
+      field?.inputValue,
       fieldId,
       fieldName,
       isRequired,

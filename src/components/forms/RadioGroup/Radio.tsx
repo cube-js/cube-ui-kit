@@ -16,7 +16,7 @@ import { mergeProps } from '../../../utils/react';
 import { useProviderProps } from '../../../provider';
 import { INLINE_LABEL_STYLES } from '../Label';
 import { HiddenInput } from '../../HiddenInput';
-import { useFormProps } from '../Form';
+import { useFieldProps, useFormProps } from '../Form';
 import { FormFieldProps } from '../../../shared';
 
 import { RadioGroup } from './RadioGroup';
@@ -135,6 +135,7 @@ export interface CubeRadioProps
 function Radio(props: CubeRadioProps, ref) {
   props = useProviderProps(props);
   props = useFormProps(props);
+  props = useFieldProps(props, { defaultValidationTrigger: 'onChange' });
 
   let {
     qa,

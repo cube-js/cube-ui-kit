@@ -10,14 +10,31 @@ export type SliderTrackProps = {
 };
 
 export function SliderTrack(props: SliderTrackProps) {
-  const { isDisabled, orientation = 'horizontal' } = props;
+  const { isDisabled, state, orientation = 'horizontal' } = props;
+  const selectedTrack = [state.getThumbPercent(0), state.getThumbPercent(1)];
+
+  const showRangeTrack = !Number.isNaN(selectedTrack[1]);
+
   const mods = useMemo(
     () => ({
       disabled: isDisabled,
       horizontal: orientation === 'horizontal',
+      range: showRangeTrack,
     }),
-    [isDisabled],
+    [isDisabled, showRangeTrack],
   );
 
-  return <SliderTrackContainerElement mods={mods} />;
+  return (
+    <SliderTrackContainerElement
+      mods={mods}
+      style={
+        showRangeTrack
+          ? {
+              '--slider-range-start': `${selectedTrack[0] * 100}%`,
+              '--slider-range-end': `${selectedTrack[1] * 100}%`,
+            }
+          : {}
+      }
+    />
+  );
 }

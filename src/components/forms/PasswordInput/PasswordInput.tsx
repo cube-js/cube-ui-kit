@@ -12,22 +12,32 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { useFieldProps } from '../Form';
 
 function PasswordInput(props: WithNullableValue<CubeTextInputBaseProps>, ref) {
   props = castNullableStringValue(props);
+  props = useProviderProps(props);
+  props = useFieldProps(props, {
+    defaultValidationTrigger: 'onBlur',
+    valuePropsMapper: ({ value, onChange }) => ({
+      value: value?.toString() ?? '',
+      onChange,
+    }),
+  });
 
-  let { suffix, multiLine, ...otherProps } = useProviderProps({ ...props });
   let [type, setType] = useState('password');
   let inputRef = useRef(null);
   let { labelProps, inputProps } = useTextField(
     {
-      ...otherProps,
+      ...props,
       type,
     },
     inputRef,
   );
 
-  const toggleType = useCallback((e) => {
+  const { suffix, multiLine, ...rest } = props;
+
+  const toggleType = useCallback(() => {
     setType((type) => (type === 'password' ? 'text' : 'password'));
   }, []);
 
@@ -60,7 +70,7 @@ function PasswordInput(props: WithNullableValue<CubeTextInputBaseProps>, ref) {
       suffixPosition="after"
       suffix={wrappedSuffix}
       multiLine={multiLine}
-      {...otherProps}
+      {...rest}
     />
   );
 }

@@ -28,7 +28,7 @@ import { Item } from '@react-stately/collections';
 import { DOMRef } from '@react-types/shared';
 import styled from 'styled-components';
 
-import { useFormProps } from '../../forms';
+import { useFieldProps, useFormProps } from '../../forms';
 import { useProviderProps } from '../../../provider';
 import {
   BasePropsWithoutChildren,
@@ -288,6 +288,13 @@ function Select<T extends object>(
 ) {
   props = useProviderProps(props);
   props = useFormProps(props);
+  props = useFieldProps(props, {
+    defaultValidationTrigger: 'onChange',
+    valuePropsMapper: ({ value, onChange }) => ({
+      selectedKey: value ?? null,
+      onSelectionChange: onChange,
+    }),
+  });
 
   let {
     qa,

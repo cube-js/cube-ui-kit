@@ -18,7 +18,7 @@ import { useFilter } from '@react-aria/i18n';
 import { Item } from '@react-stately/collections';
 import { useOverlayPosition } from '@react-aria/overlays';
 
-import { useFormProps } from '../../forms/Form';
+import { useFieldProps, useFormProps } from '../../forms';
 import { useProviderProps } from '../../../provider';
 import {
   BLOCK_STYLES,
@@ -126,6 +126,13 @@ export interface CubeComboBoxProps<T>
 function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
   props = useProviderProps(props);
   props = useFormProps(props);
+  props = useFieldProps(props, {
+    valuePropsMapper: ({ value, onChange }) => ({
+      inputValue: value != null ? value : '',
+      onInputChange: (val) => onChange(val, !props.allowsCustomValue),
+      onSelectionChange: onChange,
+    }),
+  });
 
   let {
     qa,
