@@ -1,4 +1,5 @@
 import { ComponentMeta, Story } from '@storybook/react';
+import { SettingOutlined } from '@ant-design/icons';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 
@@ -24,10 +25,44 @@ OneLine.args = {
   prefix: '$ ',
 };
 
+export const WithCustomButton = Template.bind({});
+WithCustomButton.args = {
+  code: 'npm install -g cubejs-cli',
+  prefix: '$ ',
+  actions: <CopySnippet.Button icon={<SettingOutlined />} />,
+};
+
+export const Hidden = Template.bind({});
+Hidden.args = {
+  code: 'f8eh53jr8sdnzv%rsk',
+  hideText: true,
+};
+
+export const PartiallyHidden = Template.bind({});
+PartiallyHidden.args = {
+  code: 'ssh -l admin -p f8eh53jr8sdnzv%rsk',
+  hideText: 'f8eh53jr8sdnzv%rsk',
+};
+
+export const PartiallyHiddenMultipleParts = Template.bind({});
+PartiallyHiddenMultipleParts.args = {
+  code: 'ssh -l admin -p f8eh53jr8sdnzv%rsk && ssh -l admin -p fdse3kr*3%ftgs',
+  hideText: ['f8eh53jr8sdnzv%rsk', 'fdse3kr*3%ftgs'],
+};
+
 export const MultiLine = Template.bind({});
 MultiLine.args = {
   code: 'npm install -g cubejs-cli\ncubejs deploy',
   prefix: '$ ',
+};
+
+export const WithScroll = Template.bind({});
+WithScroll.args = {
+  code: 'npm install -g cubejs-cli && cubejs deploy && npm install -g cubejs-cli && cubejs deploy && npm install -g cubejs-cli && cubejs deploy && npm install -g cubejs-cli && cubejs deploy',
+  prefix: '$ ',
+  styles: {
+    width: 'max 300px',
+  },
 };
 
 export const JavascriptSyntax = Template.bind({});
