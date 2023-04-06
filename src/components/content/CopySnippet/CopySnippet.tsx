@@ -1,4 +1,9 @@
-import { CopyOutlined } from '@ant-design/icons';
+import { ReactNode, useState } from 'react';
+import {
+  CopyOutlined,
+  EyeInvisibleOutlined,
+  EyeOutlined,
+} from '@ant-design/icons';
 import copy from 'clipboard-copy';
 
 import { Action, Button } from '../../actions';
@@ -46,6 +51,9 @@ const StyledBlock = tasty({
 const ButtonContainer = tasty({
   styles: {
     position: 'relative',
+    display: 'grid',
+    gridAutoFlow: 'column',
+    margin: '(-1x - 1bw) -1.5x (-1x - 1bw) -1x',
 
     '&::after': {
       display: {
@@ -55,7 +63,7 @@ const ButtonContainer = tasty({
       content: '""',
       width: '2x',
       position: 'absolute',
-      left: '-2x',
+      left: '-1x',
       top: 0,
       bottom: 0,
       backgroundImage:
@@ -67,6 +75,7 @@ const ButtonContainer = tasty({
 const CopySnippetElement = tasty(Card, {
   qa: 'CopySnippet',
   styles: {
+    display: 'block',
     fill: '#grey-light',
     radius: '1r',
     border: 0,
@@ -75,7 +84,7 @@ const CopySnippetElement = tasty(Card, {
     Grid: {
       display: 'grid',
       flow: 'row',
-      gridColumns: 'minmax(0, 1fr) 5x',
+      gridColumns: 'minmax(0, 1fr) auto',
       width: 'min 20x',
       radius: '1r',
       position: 'relative',
@@ -84,15 +93,11 @@ const CopySnippetElement = tasty(Card, {
   },
 });
 
-const CopyButton = tasty(Button, {
+const ActionButton = tasty(Button, {
   type: 'clear',
-  icon: <CopyOutlined />,
   styles: {
     padding: '1x 1.5x',
-    radius: {
-      '': '0 1r 1r 0',
-      'multiline | with-scroll': '0 1r',
-    },
+    radius: 0,
     placeSelf: {
       '': 'none',
       '!multiline & !with-scroll': 'stretch',
@@ -102,10 +107,24 @@ const CopyButton = tasty(Button, {
       '': '#purple-03.0',
       'focused & focus-visible': '#purple-03 inset',
     },
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    zIndex: 1,
+  },
+});
+
+const CopyButton = tasty(ActionButton, {
+  icon: <CopyOutlined />,
+  'aria-label': 'Copy to clipboard',
+  styles: {
+    radius: {
+      '': '0 1r 1r 0',
+      'multiline | with-scroll': '0 1r 0 0',
+    },
+  },
+});
+
+const ShowButton = tasty(ActionButton, {
+  'aria-label': 'Show hidden parts',
+  styles: {
+    radius: 0,
   },
 });
 
@@ -129,9 +148,14 @@ export interface CubeCopySnippetProps extends CubeCardProps {
   showScroll?: boolean;
   /** Whether to show the tooltip with the full content */
   showTooltip?: boolean;
+  hideText?: string[] | string | boolean;
+  actions?: ReactNode;
 }
 
-export function CopySnippet(allProps: CubeCopySnippetProps) {
+// const HIDDEN_SYMBOL = '●';
+const HIDDEN_SYMBOL = '•';
+
+function CopySnippet(allProps: CubeCopySnippetProps) {
   const {
     code = '',
     title = 'Code example',
@@ -140,15 +164,18 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
     language,
     showScroll = true,
     serif,
-    children,
+    actions,
     padding = '1.125x 1.5x',
     showOverlay = true,
     showTooltip = false,
     styles,
+    hideText,
     ...props
   } = allProps;
 
   const { toast } = useToastsApi();
+
+  const [showHidden, setShowHidden] = useState(false);
 
   async function onCopy() {
     await copy(code);
@@ -159,10 +186,37 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
   const pristineCode = code.replace(/\n$/, '');
 
   const multiline = pristineCode.includes('\n') && !nowrap;
-  const formattedCode = pristineCode
+  let formattedCode = pristineCode
     .split(/\n/g)
     .map((line) => `${prefix}${line} `)
     .join('\n');
+
+  if (!showHidden) {
+    if (hideText === true) {
+      formattedCode = formattedCode
+        .split('')
+        .map((s) => HIDDEN_SYMBOL)
+        .join('');
+    } else if (typeof hideText === 'string') {
+      formattedCode = formattedCode.replaceAll(
+        hideText,
+        hideText
+          .split('')
+          .map((s) => HIDDEN_SYMBOL)
+          .join(''),
+      );
+    } else if (Array.isArray(hideText)) {
+      hideText.forEach((text) => {
+        formattedCode = formattedCode.replaceAll(
+          text,
+          text
+            .split('')
+            .map((s) => HIDDEN_SYMBOL)
+            .join(''),
+        );
+      });
+    }
+  }
 
   const Snippet = (
     <CopySnippetElement styles={{ preset: 'default', ...styles }} {...props}>
@@ -181,9 +235,17 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
           styles={{ padding } as Styles}
           mods={{ overlay: showOverlay }}
         >
+          {actions}
+          {hideText && (
+            <ShowButton
+              icon={showHidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+              mods={{ multiline, withScroll: showScroll }}
+              onPress={() => setShowHidden(!showHidden)}
+            />
+          )}
           <CopyButton
             label={`Copy ${title}`}
-            mods={{ multiline, 'with-scroll': showScroll }}
+            mods={{ multiline, withScroll: showScroll, hidden: !!hideText }}
             onPress={onCopy}
           />
         </ButtonContainer>
@@ -202,3 +264,14 @@ export function CopySnippet(allProps: CubeCopySnippetProps) {
 
   return Snippet;
 }
+
+const _CopySnippet = Object.assign(
+  CopySnippet as typeof CopySnippet & {
+    Button: typeof ActionButton;
+  },
+  {
+    Button: ActionButton,
+  },
+);
+
+export { _CopySnippet as CopySnippet };
