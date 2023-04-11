@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.20.2
+
+### Patch Changes
+
+- [#323](https://github.com/cube-js/cube-ui-kit/pull/323) [`40b4401`](https://github.com/cube-js/cube-ui-kit/commit/40b4401472fbb074306c1cfd168eeaf40afa9370) Thanks [@tenphi](https://github.com/tenphi)! - Fix aria-label passing in CopySnippet component
+
 ## 0.20.1
 
 ### Patch Changes
