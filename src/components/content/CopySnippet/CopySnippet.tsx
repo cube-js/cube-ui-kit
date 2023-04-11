@@ -244,7 +244,7 @@ function CopySnippet(allProps: CubeCopySnippetProps) {
             />
           )}
           <CopyButton
-            label={`Copy ${title}`}
+            aria-label={`Copy ${title}`}
             mods={{ multiline, withScroll: showScroll, hidden: !!hideText }}
             onPress={onCopy}
           />
