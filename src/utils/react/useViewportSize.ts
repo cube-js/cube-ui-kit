@@ -5,13 +5,20 @@ interface ViewportSize {
   height: number;
 }
 
-// @ts-ignore
 let visualViewport = typeof window !== 'undefined' && window.visualViewport;
 
-export function useViewportSize(): ViewportSize {
+export type ViewportSizeParams = {
+  isDisabled?: boolean;
+};
+export function useViewportSize(params: ViewportSizeParams = {}): ViewportSize {
+  const { isDisabled } = params;
+
   let [size, setSize] = useState(() => getViewportSize());
 
   useEffect(() => {
+    if (isDisabled) {
+      return;
+    }
     // Use visualViewport api to track available height even on iOS virtual keyboard opening
     let onResize = () => {
       setSize((size) => {
@@ -24,9 +31,9 @@ export function useViewportSize(): ViewportSize {
     };
 
     if (!visualViewport) {
-      window.addEventListener('resize', onResize);
+      window.addEventListener('resize', onResize, { passive: true });
     } else {
-      visualViewport.addEventListener('resize', onResize);
+      visualViewport.addEventListener('resize', onResize, { passive: true });
     }
 
     return () => {
@@ -36,7 +43,7 @@ export function useViewportSize(): ViewportSize {
         visualViewport.removeEventListener('resize', onResize);
       }
     };
-  }, []);
+  }, [isDisabled]);
 
   return size;
 }
