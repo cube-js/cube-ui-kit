@@ -31,9 +31,9 @@ export function useViewportSize(params: ViewportSizeParams = {}): ViewportSize {
     };
 
     if (!visualViewport) {
-      window.addEventListener('resize', onResize, { passive: true });
+      window.addEventListener('resize', onResize);
     } else {
-      visualViewport.addEventListener('resize', onResize, { passive: true });
+      visualViewport.addEventListener('resize', onResize);
     }
 
     return () => {
