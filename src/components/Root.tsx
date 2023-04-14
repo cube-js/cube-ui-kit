@@ -79,7 +79,7 @@ export function Root(allProps: CubeRootProps) {
   // when the address bar/bottom toolbars show and hide on scroll and vh units are fixed.
   // Also, the visual viewport is smaller than the layout viewport when the virtual keyboard
   // is up, so use the VisualViewport API to ensure the tray is displayed above the keyboard.
-  let viewport = useViewportSize();
+  let viewport = useViewportSize({ isDisabled: IS_DVH_SUPPORTED });
   let [height, setHeight] = useState(
     IS_DVH_SUPPORTED ? undefined : viewport.height,
   );
