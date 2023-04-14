@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.20.3
+
+### Patch Changes
+
+- [#325](https://github.com/cube-js/cube-ui-kit/pull/325) [`01ca4c4`](https://github.com/cube-js/cube-ui-kit/commit/01ca4c48506cd5d17d18839c151db40753768d1a) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Fix rerenders of window resize
+
 ## 0.20.2
 
 ### Patch Changes
