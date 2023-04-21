@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.20.5
+
+### Patch Changes
+
+- [#331](https://github.com/cube-js/cube-ui-kit/pull/331) [`9b06ba7`](https://github.com/cube-js/cube-ui-kit/commit/9b06ba7400f8cbfbc145357d647c723380c42109) Thanks [@tenphi](https://github.com/tenphi)! - Update CloudLogo to support dark schema in Safari
+
 ## 0.20.4
 
 ### Patch Changes
