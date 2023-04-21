@@ -30,6 +30,7 @@ function CloudLogo(
         width="25"
         height="36"
         viewBox="0 0 25 27"
+        data-type="image"
       >
         <path
           fill="#ff6492"
