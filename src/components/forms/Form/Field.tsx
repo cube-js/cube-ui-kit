@@ -166,9 +166,9 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
     children = children(form);
   }
 
-  let child = Children.only(children);
+  let child = children == null ? null : Children.only(children);
 
-  inputType = inputType ?? (child?.type as any).cubeInputType ?? 'Text';
+  inputType = inputType ?? (child?.type as any)?.cubeInputType ?? 'Text';
 
   const __props = useField<T, CubeFullFieldProps<T>>(allProps, {
     defaultValidationTrigger: getDefaultValidateTrigger(inputType),
