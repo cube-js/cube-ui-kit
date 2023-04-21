@@ -27,9 +27,9 @@ function CloudLogo(
     <StyledLogoButton {...props} ref={ref}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        width="26"
+        width="25"
         height="36"
-        viewBox="0 0 26 27"
+        viewBox="0 0 25 27"
       >
         <path
           fill="#ff6492"
