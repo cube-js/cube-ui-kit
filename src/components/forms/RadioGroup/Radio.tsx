@@ -73,6 +73,7 @@ const RadioButtonElement = tasty({
       '': '#purple-03.0',
       focused: '#purple-03',
     },
+    transition: 'theme',
   },
 });
 
