@@ -200,4 +200,15 @@ describe('Legacy <Field />', () => {
     expect(formInstance.getFieldValue('test')).toBe('cli');
     expect(onChange).toHaveBeenCalled();
   });
+
+  it('should work if children == null', () => {
+    expect(() =>
+      renderWithForm(
+        <Field name="test">
+          {/* @ts-expect-error */}
+          {null}
+        </Field>,
+      ),
+    ).not.toThrow();
+  });
 });
