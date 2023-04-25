@@ -16,5 +16,15 @@ const Template = ({ label, ...props }) => <Badge {...props}>{label}</Badge>;
 
 export const Default = Template.bind({});
 Default.args = {
-  label: '1',
+  label: '8',
+};
+
+export const TwoDigit = Template.bind({});
+TwoDigit.args = {
+  label: '88',
+};
+
+export const Long = Template.bind({});
+Long.args = {
+  label: 'label',
 };

@@ -19,13 +19,12 @@ const BadgeElement = tasty({
     placeItems: 'center',
     padding: {
       '': '0',
-      single: '0 1px',
-      multiple: '0 2px',
+      long: '0 .5x',
     },
     radius: 'round',
     preset: 'tag',
     width: 'min 16px',
-    height: '16px',
+    height: '16px 16px',
     textAlign: 'center',
     color: '#white',
     fill: {
@@ -54,8 +53,7 @@ export const Badge = forwardRef(function Badge(allProps: CubeBadgeProps, ref) {
       ref={ref}
       data-type={type}
       mods={{
-        single: typeof children === 'string' && children.length === 1,
-        multiple: typeof children === 'string' && children.length === 2,
+        long: typeof children !== 'string' || children.length > 1,
       }}
       styles={styles}
     >
