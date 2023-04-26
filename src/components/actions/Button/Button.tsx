@@ -289,15 +289,17 @@ export const Button = forwardRef(function Button(
   children = children || icon || rightIcon ? children : label;
 
   if (!children) {
+    const specifiedLabel =
+      label ?? props['aria-label'] ?? props['aria-labelledby'];
     if (icon) {
-      if (!label) {
+      if (!specifiedLabel) {
         accessibilityWarning(
           'If you provide `icon` property for a Button and do not provide any children then you should specify the `label` property to make sure the Button element stays accessible.',
         );
         label = 'Unnamed'; // fix to avoid warning in production
       }
     } else {
-      if (!label) {
+      if (!specifiedLabel) {
         accessibilityWarning(
           'If you provide no children for a Button then you should specify the `label` property to make sure the Button element stays accessible.',
         );
