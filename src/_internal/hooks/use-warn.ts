@@ -1,15 +1,15 @@
-import * as React from 'react';
+import { useEffect } from 'react';
 
 import { warn } from '../../utils/warnings';
 
+const WARNED = new Set<string>();
+
 export function useWarn<T>(condition: T, ...args: Parameters<typeof warn>) {
-  const didWarn = React.useRef(false);
+  useEffect(() => {
+    if (WARNED.has(args[0])) return;
 
-  React.useEffect(() => {
-    if (didWarn.current) return;
-
-    didWarn.current = true;
     if (condition) {
+      WARNED.add(args[0]);
       warn(...args);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
