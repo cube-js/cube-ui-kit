@@ -119,6 +119,10 @@ export interface CubeComboBoxProps<T>
   /** An optional keyboard delegate implementation, to override the default. */
   keyboardDelegate?: KeyboardDelegate;
   loadingState?: LoadingState;
+  /**
+   * The filter function used to determine if a option should be included in the combo box list.
+   * Has no effect when `items` is provided.
+   */
   filter?: FilterFn;
   size?: 'small' | 'default' | 'large' | string;
   suffixPosition?: 'before' | 'after';
