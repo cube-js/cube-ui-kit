@@ -96,9 +96,47 @@ describe('<Combobox />', () => {
 
     await act(async () => {
       await userEvent.type(combobox, 're');
+    });
+
+    const listbox = getByRole('listbox');
+    const options = getAllByRole('option', listbox);
+
+    expect(options).toHaveLength(2);
+
+    await act(async () => {
       await userEvent.click(getAllByRole('option')[0]);
     });
 
     expect(formInstance.getFieldValue('test')).toBe('red');
+  });
+
+  it('should support custom filter', async () => {
+    const filterFn = jest.fn((textValue, inputValue) =>
+      textValue.toLowerCase().startsWith(inputValue.toLowerCase()),
+    );
+
+    const { getByRole, getAllByRole } = renderWithForm(
+      <ComboBox label="test" name="test" filter={filterFn}>
+        <ComboBox.Item key="red">Red</ComboBox.Item>
+        <ComboBox.Item key="orange">Orange</ComboBox.Item>
+        <ComboBox.Item key="yellow">Yellow</ComboBox.Item>
+        <ComboBox.Item key="green">Green</ComboBox.Item>
+        <ComboBox.Item key="blue">Blue</ComboBox.Item>
+        <ComboBox.Item key="purple">Purple</ComboBox.Item>
+        <ComboBox.Item key="violet">Violet</ComboBox.Item>
+      </ComboBox>,
+    );
+
+    const combobox = getByRole('combobox');
+
+    await act(async () => {
+      await userEvent.type(combobox, 're');
+    });
+
+    const listbox = getByRole('listbox');
+    const options = getAllByRole('option', listbox);
+
+    expect(filterFn).toHaveBeenCalled();
+    expect(options).toHaveLength(1);
   });
 });
