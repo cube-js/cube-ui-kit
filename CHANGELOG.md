@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.20.6
+
+### Patch Changes
+
+- [#337](https://github.com/cube-js/cube-ui-kit/pull/337) [`62280c4`](https://github.com/cube-js/cube-ui-kit/commit/62280c4c84bfb6c9819662ba01056b162aaf8e22) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Fixed false positive a11y warnings in Button component
+
+- [#333](https://github.com/cube-js/cube-ui-kit/pull/333) [`79b72a1`](https://github.com/cube-js/cube-ui-kit/commit/79b72a199983b73d626ef15a2c189bd6551fe5be) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Fix regression when Field's childen might be nullish
+
+- [#335](https://github.com/cube-js/cube-ui-kit/pull/335) [`8e2c86a`](https://github.com/cube-js/cube-ui-kit/commit/8e2c86ab7d9ae231e229a8806c533c14011da0f4) Thanks [@tenphi](https://github.com/tenphi)! - Fix paddings for the Badge component.
+
+- [#336](https://github.com/cube-js/cube-ui-kit/pull/336) [`a6ce43d`](https://github.com/cube-js/cube-ui-kit/commit/a6ce43de18707a13b4339483b0627348eed3b6dc) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Fix types of Combobox
+
+- [#336](https://github.com/cube-js/cube-ui-kit/pull/336) [`a6ce43d`](https://github.com/cube-js/cube-ui-kit/commit/a6ce43de18707a13b4339483b0627348eed3b6dc) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Fix filtering in Combobox
+
 ## 0.20.5
 
 ### Patch Changes
