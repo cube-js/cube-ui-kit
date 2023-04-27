@@ -3,6 +3,8 @@ import { Field } from '../Form';
 
 import { TextInput } from './TextInput';
 
+jest.mock('../../../_internal/hooks/use-warn');
+
 describe('<TextInput />', () => {
   it('should work without form', async () => {
     const { getByRole } = render(<TextInput label="test" />);

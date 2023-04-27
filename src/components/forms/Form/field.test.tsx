@@ -6,6 +6,8 @@ import { TextInput } from '../TextInput/TextInput';
 
 import { Field } from './Field';
 
+jest.mock('../../../_internal/hooks/use-warn');
+
 describe('Legacy <Field />', () => {
   it('should set default value as value', () => {
     const { getByRole, formInstance } = renderWithForm(

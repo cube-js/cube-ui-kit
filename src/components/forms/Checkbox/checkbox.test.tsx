@@ -5,6 +5,8 @@ import { Field } from '../Form';
 
 import { Checkbox } from './Checkbox';
 
+jest.mock('../../../_internal/hooks/use-warn');
+
 describe('<Checkbox />', () => {
   it('should work without form', async () => {
     const { getByRole } = render(<Checkbox>Test</Checkbox>);

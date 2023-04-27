@@ -41,10 +41,10 @@ export function useFieldProps<
 
   const isInsideLegacyField = useInsideLegacyField();
 
-  useWarn(
-    isInsideLegacyField,
-    '<Field /> is deprecated, use component without <Field /> instead.',
-  );
+  useWarn(isInsideLegacyField, {
+    key: 'use-field-props',
+    args: ['<Field /> is deprecated, use component without <Field /> instead.'],
+  });
 
   if (
     isInsideLegacyField === true ||

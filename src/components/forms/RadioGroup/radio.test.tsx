@@ -8,6 +8,8 @@ import {
 
 import { Radio } from './Radio';
 
+jest.mock('../../../_internal/hooks/use-warn');
+
 describe('<Radio /> and <RadioGroup />', () => {
   it('should work without form', async () => {
     const { getAllByRole } = renderWithRoot(

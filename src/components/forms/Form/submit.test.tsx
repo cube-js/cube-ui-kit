@@ -7,6 +7,8 @@ import { TextInput } from '../TextInput/TextInput';
 
 import { Form } from '.';
 
+jest.mock('../../../_internal/hooks/use-warn');
+
 describe('<Form />', () => {
   it('should not be displayed if validation is failed on submit', async () => {
     jest.setTimeout(10000);
