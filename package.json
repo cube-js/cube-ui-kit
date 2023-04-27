@@ -130,6 +130,7 @@
     "@changesets/cli": "^2.22.0",
     "@commitlint/cli": "^17.4.4",
     "@commitlint/config-conventional": "^17.4.4",
+    "@jest/types": "^29.5.0",
     "@size-limit/file": "^8.2.4",
     "@size-limit/webpack": "^8.2.4",
     "@size-limit/webpack-why": "^8.2.4",

@@ -3,6 +3,8 @@ import { Field } from '../Form';
 
 import { TextArea } from './TextArea';
 
+jest.mock('../../../_internal/hooks/use-warn');
+
 describe('<TextArea />', () => {
   it('should work without form', async () => {
     const { getByRole } = render(<TextArea label="test" />);

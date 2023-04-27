@@ -5,6 +5,8 @@ import { Field } from '../Form';
 
 import { PasswordInput } from './PasswordInput';
 
+jest.mock('../../../_internal/hooks/use-warn');
+
 describe('<PasswordInput />', () => {
   it('should work without form', async () => {
     const { getByTestId } = renderWithRoot(<PasswordInput label="test" />);

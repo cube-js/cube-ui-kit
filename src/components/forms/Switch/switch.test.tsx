@@ -3,6 +3,8 @@ import { Field } from '../Form';
 
 import { Switch } from './Switch';
 
+jest.mock('../../../_internal/hooks/use-warn');
+
 describe('<Switch />', () => {
   it('should work without form', async () => {
     const { getByRole } = render(<Switch aria-label="test" />);

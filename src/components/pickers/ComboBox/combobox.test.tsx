@@ -13,6 +13,8 @@ const items = [
   { key: 'violet', children: 'Violet' },
 ];
 
+jest.mock('../../../_internal/hooks/use-warn');
+
 describe('<Combobox />', () => {
   it('should provide suggestions', async () => {
     const { getByRole, getAllByRole } = renderWithRoot(

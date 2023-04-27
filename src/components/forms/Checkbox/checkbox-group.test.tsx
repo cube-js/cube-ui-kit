@@ -3,6 +3,8 @@ import { Field } from '../Form';
 
 import { Checkbox } from './Checkbox';
 
+jest.mock('../../../_internal/hooks/use-warn');
+
 describe('<CheckboxGroup />', () => {
   it('should respect defaultValue prop', () => {
     const { getAllByRole } = render(

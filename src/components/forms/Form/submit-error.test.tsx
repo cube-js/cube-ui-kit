@@ -14,9 +14,7 @@ describe('<SubmitError />', () => {
 
     const { getByRole, getByText } = renderWithForm(
       <>
-        <Form.Item name="test" label="Test">
-          <TextInput />
-        </Form.Item>
+        <TextInput name="test" label="Test" />
 
         <Submit>Submit</Submit>
 
@@ -53,9 +51,7 @@ describe('<SubmitError />', () => {
 
     const { getByRole, getByText } = renderWithForm(
       <>
-        <Form.Item name="test" label="Test">
-          <TextInput />
-        </Form.Item>
+        <TextInput name="test" label="Test" />
 
         <Submit>Submit</Submit>
 
@@ -103,9 +99,7 @@ describe('<SubmitError />', () => {
 
     const { getByRole, getByText } = renderWithForm(
       <>
-        <Form.Item name="test" label="Test">
-          <TextInput />
-        </Form.Item>
+        <TextInput name="test" label="Test" />
 
         <Submit>Submit</Submit>
 
