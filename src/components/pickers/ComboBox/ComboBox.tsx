@@ -191,6 +191,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   let { contains } = useFilter({ sensitivity: 'base' });
 
   const comboboxProps = {
+    ...otherProps,
     inputValue: props.inputValue,
     defaultInputValue: props.defaultInputValue,
     defaultItems: props.defaultItems,
