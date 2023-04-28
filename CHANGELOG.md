@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.20.7
+
+### Patch Changes
+
+- [#338](https://github.com/cube-js/cube-ui-kit/pull/338) [`ba4a73f`](https://github.com/cube-js/cube-ui-kit/commit/ba4a73fbde7d7556e211793289851a6b1b9eeba1) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Fixed missing data-\* attribiutes on `<Combobox />` component
+
 ## 0.20.6
 
 ### Patch Changes
