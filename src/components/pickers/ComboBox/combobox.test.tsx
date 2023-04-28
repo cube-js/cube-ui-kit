@@ -131,4 +131,28 @@ describe('<Combobox />', () => {
     expect(filterFn).toHaveBeenCalled();
     expect(options).toHaveLength(1);
   });
+
+  it('should have qa', () => {
+    const { getByTestId } = renderWithRoot(
+      <ComboBox label="test" qa="test">
+        {items.map((item) => (
+          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+    );
+
+    expect(getByTestId('test')).toBeInTheDocument();
+  });
+
+  it('should have data-qa', () => {
+    const { getByTestId } = renderWithRoot(
+      <ComboBox label="test" data-qa="test">
+        {items.map((item) => (
+          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+    );
+
+    expect(getByTestId('test')).toBeInTheDocument();
+  });
 });
