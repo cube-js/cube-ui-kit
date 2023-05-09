@@ -6,6 +6,7 @@ import { FocusRing } from '@react-aria/focus';
 import { useMenuItem } from '@react-aria/menu';
 
 import { mergeProps, ClearSlots, SlotProvider } from '../../../utils/react';
+import { Styles } from '../../../tasty';
 
 import { useMenuContext } from './context';
 import { StyledMenuItem } from './styled';
@@ -14,6 +15,7 @@ import { MenuButton, MenuSelectionType } from './MenuButton';
 export interface MenuItemProps<T> {
   item: Node<T>;
   state: TreeState<T>;
+  styles?: Styles;
   selectionIcon?: MenuSelectionType;
   isVirtualized?: boolean;
   isDisabled?: boolean;
@@ -22,7 +24,7 @@ export interface MenuItemProps<T> {
 
 /** @private */
 export function MenuItem<T>(props: MenuItemProps<T>) {
-  const { item, state, selectionIcon, isVirtualized, onAction } = props;
+  const { item, state, styles, selectionIcon, isVirtualized, onAction } = props;
   const { onClose, closeOnSelect } = useMenuContext();
   const { rendered, key, props: itemProps } = item;
 
@@ -69,6 +71,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
   const contents = (
     <MenuButton
       {...mergeProps(itemProps, buttonProps)}
+      styles={styles}
       selectionIcon={selectionIcon}
       isSelectable={isSelectable}
       isSelected={isSelected}

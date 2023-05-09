@@ -145,17 +145,8 @@ export const Sections = (props) => {
   return (
     <div style={{ padding: '20px', width: '340px' }}>
       <Menu id="menu-search" {...props}>
-        <Menu.Section title="Line Items">
-          <Menu.Item
-            key="created"
-            wrapper={(item) => (
-              <TooltipProvider title="Color description" placement="right">
-                {item}
-              </TooltipProvider>
-            )}
-          >
-            Created At
-          </Menu.Item>
+        <Menu.Section key="line-items" title="Line Items">
+          <Menu.Item key="created">Created At</Menu.Item>
           <Menu.Item key="name">Name</Menu.Item>
           <Menu.Item key="description">Descriptions</Menu.Item>
         </Menu.Section>
@@ -166,6 +157,29 @@ export const Sections = (props) => {
       </Menu>
     </div>
   );
+};
+
+export const StyledSectionsAndItems = (props) => {
+  return (
+    <div style={{ padding: '20px', width: '340px' }}>
+      <Menu id="menu-search" {...props}>
+        <Menu.Section key="line-items" title="Line Items">
+          <Menu.Item key="created">Created At</Menu.Item>
+          <Menu.Item key="name">Name</Menu.Item>
+          <Menu.Item key="description">Descriptions</Menu.Item>
+        </Menu.Section>
+        <Menu.Section title="Orders">
+          <Menu.Item key="status">Status</Menu.Item>
+          <Menu.Item key="completed">Completed At</Menu.Item>
+        </Menu.Section>
+      </Menu>
+    </div>
+  );
+};
+StyledSectionsAndItems.args = {
+  itemStyles: { color: 'red' },
+  sectionHeadingStyles: { color: 'blue' },
+  sectionStyles: { padding: '1x' },
 };
 
 export const GitActions = (props) => {

@@ -1,5 +1,7 @@
 import { useMenuSection } from '@react-aria/menu';
 
+import { Styles } from '../../../tasty';
+
 import { MenuItem, MenuItemProps } from './MenuItem';
 import {
   StyledMenu,
@@ -7,11 +9,14 @@ import {
   StyledMenuSectionHeading,
 } from './styled';
 
-export type CubeMenuSectionProps<T> = MenuItemProps<T>;
+export interface CubeMenuSectionProps<T> extends MenuItemProps<T> {
+  itemStyles?: Styles;
+  headingStyles?: Styles;
+}
 
 /** @private */
 export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
-  const { item, state, onAction } = props;
+  const { item, state, styles, itemStyles, headingStyles, onAction } = props;
   const heading = item.rendered;
   const { itemProps, headingProps, groupProps } = useMenuSection({
     heading,
@@ -20,9 +25,9 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
 
   return (
     <>
-      <StyledMenuSection {...itemProps}>
+      <StyledMenuSection {...itemProps} styles={styles}>
         {heading && (
-          <StyledMenuSectionHeading {...headingProps}>
+          <StyledMenuSectionHeading {...headingProps} styles={headingStyles}>
             {heading}
           </StyledMenuSectionHeading>
         )}
@@ -32,6 +37,7 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
               <MenuItem
                 key={node.key}
                 item={node}
+                styles={itemStyles}
                 state={state}
                 onAction={onAction}
               />
