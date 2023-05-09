@@ -430,3 +430,4 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
 
 const _TextInputBase = forwardRef(TextInputBase);
 export { _TextInputBase as TextInputBase };
+export { AriaTextFieldProps };

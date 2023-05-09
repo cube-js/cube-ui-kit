@@ -65,7 +65,10 @@ export type { CubeTagProps } from './components/content/Tag/Tag';
 export { SearchInput } from './components/forms/SearchInput/SearchInput';
 export type { CubeSearchInputProps } from './components/forms/SearchInput/SearchInput';
 export { Submit } from './components/actions/Button/Submit';
-export type { CubeTextInputBaseProps } from './components/forms/TextInput/TextInputBase';
+export type {
+  CubeTextInputBaseProps,
+  AriaTextFieldProps,
+} from './components/forms/TextInput/TextInputBase';
 export type { CubeTextInputBaseProps as CubeTextInputProps } from './components/forms/TextInput/TextInputBase';
 export { TextInput } from './components/forms/TextInput/TextInput';
 export { TextArea } from './components/forms/TextArea/TextArea';
