@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.20.8
+
+### Patch Changes
+
+- [#340](https://github.com/cube-js/cube-ui-kit/pull/340) [`2cf93ce`](https://github.com/cube-js/cube-ui-kit/commit/2cf93ce0db9b3c6d95e33ef6a1cd383f62f9747d) Thanks [@tenphi](https://github.com/tenphi)! - Improve styles in PrismCode component.
+
+- [#341](https://github.com/cube-js/cube-ui-kit/pull/341) [`24a6ce9`](https://github.com/cube-js/cube-ui-kit/commit/24a6ce9e2ecbd28bd5f6dfabefba287174174f89) Thanks [@tenphi](https://github.com/tenphi)! - Add styling properties for the Menu component: `itemStyles`, `sectionStyles` and `sectionHeadingStyles`.
+
 ## 0.20.7
 
 ### Patch Changes
