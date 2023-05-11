@@ -46,4 +46,8 @@ const Template = ({ label, ...args }) => <Block {...args}>{label}</Block>;
 export const Default = Template.bind({});
 Default.args = {
   label: 'Block content',
+  shadow: true,
+  radius: '1r',
+  padding: '2x',
+  border: true,
 };
