@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.21.0
+
+### Minor Changes
+
+- [#344](https://github.com/cube-js/cube-ui-kit/pull/344) [`2ea241e`](https://github.com/cube-js/cube-ui-kit/commit/2ea241e2a902c858b3bbcab00c609458123d3622) Thanks [@tenphi](https://github.com/tenphi)! - Update Storybook to version 7
+
 ## 0.20.8
 
 ### Patch Changes
