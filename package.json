@@ -35,7 +35,7 @@
     "fix": "npm-run-all -p eslint:fix prettier:fix",
     "storybook": "STORYBOOK_MODE=stories storybook dev -p 6060",
     "build-storybook": "STORYBOOK_MODE=stories storybook build",
-    "build-docs": "STORYBOOK_MODE=docs build-storybook --docs -o storybook-docs",
+    "build-docs": "STORYBOOK_MODE=docs storybook build --docs -o storybook-docs",
     "size": "size-limit",
     "prepare": "husky install",
     "clear": "pnpm clear:dist && rimraf ./storybook-docs ./storybook-static ./node_modules/.cache",
