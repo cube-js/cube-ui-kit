@@ -1,4 +1,7 @@
-export { NotificationsProvider } from './NotificationsContext';
+export {
+  NotificationsProvider,
+  NotificationsContext,
+} from './NotificationsContext';
 export * from './NotificationsList';
 export * from './hooks';
 export { NotificationAction } from './NotificationView';
