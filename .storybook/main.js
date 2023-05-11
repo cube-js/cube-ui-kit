@@ -1,5 +1,4 @@
 // @ts-check
-const webpack = require('webpack');
 
 /**
  * @readonly
@@ -18,14 +17,7 @@ const swcConfig = {
 /** @type {import('@storybook/core-common').StorybookConfig} */
 const config = {
   staticDirs: ['../public'],
-  framework: '@storybook/react',
-  core: {
-    builder: {
-      name: 'webpack5',
-      options: { fsCache: true, lazyCompilation: true },
-    },
-    disableTelemetry: true,
-  },
+  framework: { name: '@storybook/react-vite', options: {} },
   features: {
     postcss: false,
     emotionAlias: false,
@@ -49,14 +41,9 @@ const config = {
       },
     },
   ],
-  webpackFinal: (config) => {
-    config.plugins.push(
-      new webpack.DefinePlugin({ SC_DISABLE_SPEEDY: 'false' }),
-    );
-    config.performance.hints = false;
-
-    return config;
+  docs: {
+    autodocs: true,
   },
 };
 
-module.exports = config;
+export default config;
