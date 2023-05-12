@@ -3,7 +3,10 @@
 /** @type {import('@storybook/core-common').StorybookConfig} */
 const config = {
   staticDirs: ['../public'],
-  framework: { name: '@storybook/react-vite', options: {} },
+  framework: {
+    name: '@storybook/react-vite',
+    options: {},
+  },
   features: {
     postcss: false,
     emotionAlias: false,
@@ -21,13 +24,15 @@ const config = {
     {
       name: 'storybook-addon-turbo-build',
       options: {
-        esbuildMinifyOptions: { target: 'es2021' },
+        esbuildMinifyOptions: {
+          target: 'es2021',
+        },
       },
     },
+    '@storybook/addon-mdx-gfm',
   ],
   docs: {
     autodocs: true,
   },
 };
-
 export default config;
