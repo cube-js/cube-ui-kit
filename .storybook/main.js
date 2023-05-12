@@ -1,23 +1,12 @@
 // @ts-check
 
-/**
- * @readonly
- * @type {import('@swc/core').Config}
- */
-const swcConfig = {
-  jsc: {
-    parser: { syntax: 'typescript', tsx: true },
-    transform: { react: { runtime: 'automatic' } },
-  },
-  env: {
-    targets: 'last 2 Safari major versions',
-  },
-};
-
 /** @type {import('@storybook/core-common').StorybookConfig} */
 const config = {
   staticDirs: ['../public'],
-  framework: { name: '@storybook/react-vite', options: {} },
+  framework: {
+    name: '@storybook/react-vite',
+    options: {},
+  },
   features: {
     postcss: false,
     emotionAlias: false,
@@ -35,15 +24,15 @@ const config = {
     {
       name: 'storybook-addon-turbo-build',
       options: {
-        esbuildMinifyOptions: { target: 'es2021' },
-        managerTranspiler: () => ({ loader: 'swc-loader', options: swcConfig }),
-        previewTranspiler: () => ({ loader: 'swc-loader', options: swcConfig }),
+        esbuildMinifyOptions: {
+          target: 'es2021',
+        },
       },
     },
+    '@storybook/addon-mdx-gfm',
   ],
   docs: {
     autodocs: true,
   },
 };
-
 export default config;
