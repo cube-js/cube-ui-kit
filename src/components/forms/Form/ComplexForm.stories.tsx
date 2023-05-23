@@ -317,12 +317,13 @@ const Template: StoryFn<typeof Form> = (args) => {
         >
           <Checkbox label="Checkbox field">Checkbox value</Checkbox>
         </Field>
-        <Field
+        <Switch
           name="switch"
+          label="Switch field"
           rules={[{ required: true, message: 'This field is required' }]}
         >
-          <Switch label="Switch field">Switch value</Switch>
-        </Field>
+          Switch value
+        </Switch>
         <Field
           name="number"
           rules={[{ required: true, message: 'This field is required' }]}

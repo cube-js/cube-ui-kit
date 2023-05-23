@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { useDebugValue } from 'react';
 
-import { useChainedCallback, useEvent, useWarn } from '../../../../_internal';
+import { useChainedCallback, useEvent } from '../../../../_internal';
 import { useInsideLegacyField } from '../Field';
 import { mergeProps } from '../../../../utils/react';
 
@@ -41,10 +41,10 @@ export function useFieldProps<
 
   const isInsideLegacyField = useInsideLegacyField();
 
-  useWarn(isInsideLegacyField, {
-    key: 'use-field-props',
-    args: ['<Field /> is deprecated, use component without <Field /> instead.'],
-  });
+  // useWarn(isInsideLegacyField, {
+  //   key: 'use-field-props',
+  //   args: ['<Field /> is deprecated, use component without <Field /> instead.'],
+  // });
 
   if (
     isInsideLegacyField === true ||

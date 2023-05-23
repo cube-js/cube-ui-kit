@@ -44,7 +44,7 @@ import {
 import { useFocus } from '../../../utils/react/interactions';
 import { FieldWrapper } from '../../forms/FieldWrapper';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
-import { FormFieldProps } from '../../../shared';
+import { FieldBaseProps } from '../../../shared';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import {
@@ -251,7 +251,7 @@ const StyledOverlayElement = styled(OverlayElement)`
 export interface CubeSelectBaseProps<T>
   extends BasePropsWithoutChildren,
     OuterStyleProps,
-    FormFieldProps,
+    FieldBaseProps,
     BlockStyleProps,
     AriaSelectProps<T> {
   icon?: ReactElement;
