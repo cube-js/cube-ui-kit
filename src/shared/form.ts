@@ -39,10 +39,6 @@ export interface FieldBaseProps extends FormBaseProps {
   tooltip?: ReactNode;
   /** Whether the element should receive focus on render */
   autoFocus?: boolean;
-  /** The initial value of the input. */
-  defaultValue?: any;
-  /** The type of the input. `Input`, `Checkbox`, RadioGroup`, `Select`, `ComboBox` etc... */
-  type?: string;
   /** The unique ID of the field */
   id?: string;
   /** The id prefix for the field to avoid collisions between forms */

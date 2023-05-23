@@ -83,6 +83,8 @@ function getValueProps(
 }
 
 export interface CubeFieldProps<T extends FieldTypes> extends FieldBaseProps {
+  /** The initial value of the input. */
+  defaultValue?: any;
   styles?: Styles;
   children?: ReactElement | ((CubeFormInstance) => ReactElement);
   /** The form instance */
