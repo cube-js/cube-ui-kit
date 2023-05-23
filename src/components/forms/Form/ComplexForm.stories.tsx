@@ -274,7 +274,7 @@ const Template: StoryFn<typeof Form> = (args) => {
           <PasswordInput label="Password field" />
         </Field>
         <Field
-          name={['select', 'one']}
+          name="select.one"
           label="Select field"
           tooltip="Additional field description"
         >
