@@ -24,7 +24,7 @@ import { HiddenInput } from '../../HiddenInput';
 import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../Label';
 import { Text } from '../../content/Text';
 import { FieldWrapper } from '../FieldWrapper';
-import { FormFieldProps } from '../../../shared';
+import { FieldBaseProps } from '../../../shared';
 import {
   castNullableIsSelected,
   WithNullableSelected,
@@ -128,7 +128,7 @@ export interface CubeSwitchProps
   extends BaseProps,
     OuterStyleProps,
     BlockStyleProps,
-    FormFieldProps,
+    FieldBaseProps,
     AriaSwitchProps {
   inputStyles?: Styles;
   isLoading?: boolean;

@@ -14,7 +14,7 @@ import {
   tasty,
 } from '../../../tasty';
 import { FieldWrapper } from '../FieldWrapper';
-import { FormFieldProps } from '../../../shared';
+import { FieldBaseProps } from '../../../shared';
 import {
   castNullableStringValue,
   WithNullableValue,
@@ -27,7 +27,7 @@ import type { AriaRadioGroupProps } from '@react-types/radio';
 export interface CubeRadioGroupProps
   extends BaseProps,
     AriaRadioGroupProps,
-    FormFieldProps {
+    FieldBaseProps {
   groupStyles?: Styles;
 }
 

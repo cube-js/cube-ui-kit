@@ -4,7 +4,7 @@ import {
   OuterStyleProps,
   Styles,
 } from '../../../tasty';
-import { FormFieldProps } from '../../../shared';
+import { FieldBaseProps } from '../../../shared';
 
 import type { AriaSliderProps } from '@react-types/slider';
 
@@ -12,7 +12,7 @@ export interface CubeSliderBaseProps<T>
   extends Omit<AriaSliderProps<T>, 'label'>,
     BasePropsWithoutChildren,
     OuterStyleProps,
-    FormFieldProps,
+    FieldBaseProps,
     BlockStyleProps {
   inputStyles?: Styles;
   gradation?: string[];

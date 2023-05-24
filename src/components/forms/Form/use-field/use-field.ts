@@ -58,8 +58,7 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
   } = props;
 
   const nonInput = !name;
-  const fieldName: string =
-    name != null ? (Array.isArray(name) ? name.join('.') : name) : '';
+  const fieldName: string = name != null ? name : '';
 
   const isFirstRender = useIsFirstRender();
   let [fieldId, setFieldId] = useState(
@@ -184,6 +183,7 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
     [
       form,
       field,
+      field?.errors?.length,
       field?.inputValue,
       fieldId,
       fieldName,

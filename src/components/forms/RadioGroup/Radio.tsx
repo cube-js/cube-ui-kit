@@ -17,7 +17,7 @@ import { useProviderProps } from '../../../provider';
 import { INLINE_LABEL_STYLES } from '../Label';
 import { HiddenInput } from '../../HiddenInput';
 import { useFieldProps, useFormProps } from '../Form';
-import { FormFieldProps } from '../../../shared';
+import { FieldBaseProps } from '../../../shared';
 
 import { RadioGroup } from './RadioGroup';
 import { useRadioProvider } from './context';
@@ -127,7 +127,7 @@ const RadioLabelElement = tasty({
 export interface CubeRadioProps
   extends BaseProps,
     AriaRadioProps,
-    FormFieldProps {
+    FieldBaseProps {
   inputStyles?: Styles;
   /* The visual type of the radio button */
   type?: 'button' | 'radio';

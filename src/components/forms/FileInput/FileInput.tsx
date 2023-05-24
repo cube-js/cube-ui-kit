@@ -21,7 +21,7 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { FormFieldProps } from '../../../shared';
+import { FieldBaseProps } from '../../../shared';
 import { FieldWrapper } from '../FieldWrapper';
 
 import type { AriaTextFieldProps } from '@react-types/textfield';
@@ -101,7 +101,7 @@ export interface CubeFileInputProps
     ContainerStyleProps,
     BlockStyleProps,
     AriaTextFieldProps,
-    FormFieldProps {
+    FieldBaseProps {
   /**
    * The size of the input
    * @default default
