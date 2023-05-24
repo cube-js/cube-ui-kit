@@ -232,6 +232,7 @@ const Template: StoryFn<typeof Form> = (args) => {
         <Field
           name="text"
           validateTrigger="onChange"
+          validationDelay={1000}
           rules={[
             { required: true, message: 'This field is required' },
             () => ({

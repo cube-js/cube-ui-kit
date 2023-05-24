@@ -24,6 +24,8 @@ export interface FieldBaseProps extends FormBaseProps {
   extra?: ReactNode;
   /** The validation state of the field */
   validationState?: ValidationState;
+  /** Debounce in milliseconds for validation */
+  validationDelay?: number;
   /** On which event perform the validation for the field */
   validateTrigger?: ValidateTrigger;
   necessityIndicator?: NecessityIndicator;

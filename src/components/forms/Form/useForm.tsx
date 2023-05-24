@@ -5,8 +5,12 @@ import { dotize } from '../../../tasty';
 import { applyRules } from './validation';
 import { CubeFieldData, FieldTypes, SetFieldsArrType } from './types';
 
+type PartialString<T> = {
+  [P in keyof T & string]?: T[P];
+};
+
 export type CubeFormData<T extends FieldTypes> = {
-  [K in keyof T]?: CubeFieldData<K, T[K]>;
+  [K in keyof T & string]?: CubeFieldData<K, T[K]>;
 };
 
 function setValue(obj, path, value) {
@@ -30,7 +34,7 @@ export class CubeFormInstance<
   TFormData extends CubeFormData<T> = CubeFormData<T>,
 > {
   public forceReRender: () => void = () => {};
-  private initialFields: Partial<T> = {};
+  private initialFields: PartialString<T> = {};
   private fields: TFormData = {} as TFormData;
   public ref = {};
   public isSubmitting = false;
@@ -63,7 +67,7 @@ export class CubeFormInstance<
   }
 
   setFieldsValue = (
-    newData: Partial<T>,
+    newData: PartialString<T>,
     touched?: boolean,
     skipRender?: boolean,
     createFields = false,
@@ -71,7 +75,7 @@ export class CubeFormInstance<
   ) => {
     let flag = false;
 
-    Object.keys(newData).forEach((name: keyof T) => {
+    Object.keys(newData).forEach((name: keyof T & string) => {
       let field = this.fields[name];
 
       if (!field && createFields) {
@@ -113,16 +117,20 @@ export class CubeFormInstance<
     }
   };
 
-  getFieldValue<Name extends keyof T>(name: Name): T[Name] | undefined {
+  getFieldValue<Name extends keyof T & string>(
+    name: Name,
+  ): T[Name] | undefined {
     return this.fields[name]?.value;
   }
 
-  getFieldsValue(): Partial<T> {
+  getFieldsValue(): PartialString<T> {
     return Object.values(this.fields).reduce((map, field) => {
-      map[field.name] = field.value;
+      if (field && map) {
+        map[field.name as keyof T & string] = field.value;
+      }
 
       return map;
-    }, {} as T);
+    }, {} as PartialString<T>);
   }
 
   /**
@@ -142,7 +150,7 @@ export class CubeFormInstance<
     }, {} as T);
   }
 
-  setFieldValue<Name extends keyof T>(
+  setFieldValue<Name extends keyof T & string>(
     name: Name,
     value: T[Name],
     touched = false,
@@ -179,15 +187,15 @@ export class CubeFormInstance<
     }
   }
 
-  getFieldInstance<Name extends keyof T>(name: Name): TFormData[Name] {
+  getFieldInstance<Name extends keyof T & string>(name: Name): TFormData[Name] {
     return this.fields[name];
   }
 
-  setInitialFieldsValue(values: Partial<T>): void {
+  setInitialFieldsValue(values: PartialString<T>): void {
     this.initialFields = dotize.convert(values) ?? {};
   }
 
-  resetFields(names?: (keyof T)[], skipRender?: boolean): void {
+  resetFields(names?: (keyof T & string)[], skipRender?: boolean): void {
     const fieldsValue = this.getFieldsValue();
     const fieldNames = Object.keys({ ...fieldsValue, ...this.initialFields });
     const filteredFieldNames = names
@@ -207,23 +215,41 @@ export class CubeFormInstance<
     this.setFieldsValue(values, false, skipRender, true);
   }
 
-  async validateField<Name extends keyof T>(name: Name): Promise<any> {
+  async validateField<Name extends keyof T & string>(name: Name): Promise<any> {
     const field = this.getFieldInstance(name);
 
     if (!field || !field.rules) return Promise.resolve();
 
-    return applyRules(field.value, field.rules, this)
+    field.validating = true;
+
+    if (!field.validationId) {
+      field.validationId = 1;
+    } else {
+      field.validationId++;
+    }
+
+    const validationId = field.validationId;
+
+    // store validation to make sure there is no race condition.
+    return applyRules(field, this, validationId)
       .then(() => {
+        if (field.validationId !== validationId) return;
+
+        field.validating = false;
+
         if (!field.errors || field.errors.length) {
           field.errors = [];
+        }
+
+        this.forceReRender();
+      })
+      .catch((err) => {
+        if (field.validationId === validationId) {
+          field.errors = [err];
+          field.validating = false;
 
           this.forceReRender();
         }
-      })
-      .catch((err) => {
-        field.errors = [err];
-
-        this.forceReRender();
 
         return Promise.reject([err]);
       });
@@ -250,7 +276,7 @@ export class CubeFormInstance<
     });
   }
 
-  isFieldValid<Name extends keyof T>(name: Name): boolean {
+  isFieldValid<Name extends keyof T & string>(name: Name): boolean {
     const field = this.getFieldInstance(name);
 
     if (!field) return true;
@@ -258,7 +284,7 @@ export class CubeFormInstance<
     return !field.errors.length;
   }
 
-  isFieldInvalid<Name extends keyof T>(name: Name): boolean {
+  isFieldInvalid<Name extends keyof T & string>(name: Name): boolean {
     const field = this.getFieldInstance(name);
 
     if (!field) return false;
@@ -266,7 +292,7 @@ export class CubeFormInstance<
     return !!field.errors.length;
   }
 
-  isFieldTouched<Name extends keyof T>(name: Name): boolean {
+  isFieldTouched<Name extends keyof T & string>(name: Name): boolean {
     const field = this.getFieldInstance(name);
 
     if (!field) return false;
@@ -274,7 +300,7 @@ export class CubeFormInstance<
     return !!field.touched;
   }
 
-  getFieldError<Name extends keyof T>(name: Name): ReactNode[] {
+  getFieldError<Name extends keyof T & string>(name: Name): ReactNode[] {
     const field = this.getFieldInstance(name);
 
     if (!field) return [];
@@ -282,7 +308,7 @@ export class CubeFormInstance<
     return field.errors || [];
   }
 
-  createField<Name extends keyof T>(name: Name, skipRender?: boolean) {
+  createField<Name extends keyof T & string>(name: Name, skipRender?: boolean) {
     if (!this.fields[name]) {
       this.fields[name] = this._createField(name);
     }
@@ -294,7 +320,7 @@ export class CubeFormInstance<
     return this.fields[name];
   }
 
-  removeField<Name extends keyof T>(name: Name, skipRender?: boolean) {
+  removeField<Name extends keyof T & string>(name: Name, skipRender?: boolean) {
     if (this.fields[name]) {
       delete this.fields[name];
     }
@@ -304,7 +330,9 @@ export class CubeFormInstance<
     }
   }
 
-  setFields<Names extends keyof T>(newFields: SetFieldsArrType<T, Names>[]) {
+  setFields<Names extends keyof T & string>(
+    newFields: SetFieldsArrType<T, Names>[],
+  ) {
     newFields.forEach(({ name, value, errors }) => {
       this.fields[name] = this._createField(name, {
         value,
@@ -322,7 +350,7 @@ export class CubeFormInstance<
     this.forceReRender();
   }
 
-  _createField<Name extends keyof T, Data extends TFormData[Name]>(
+  _createField<Name extends keyof T & string, Data extends TFormData[Name]>(
     name: Name,
     data?: Data,
   ): Data {
@@ -331,6 +359,7 @@ export class CubeFormInstance<
       validating: false,
       touched: false,
       errors: [],
+      validation: 0,
       ...data,
     } as unknown as Data;
 

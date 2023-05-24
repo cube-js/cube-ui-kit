@@ -4,6 +4,7 @@ import { ValidateTrigger } from '../../../../shared';
 import { useEvent, useIsFirstRender } from '../../../../_internal';
 import { useFormProps } from '../Form';
 import { FieldTypes } from '../types';
+import { delayValidationRule } from '../validation';
 
 import { CubeFieldProps, FieldReturnValue } from './types';
 
@@ -54,8 +55,13 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
     rules,
     validateTrigger = params.defaultValidationTrigger,
     validationState,
+    validationDelay,
     shouldUpdate,
   } = props;
+
+  if (rules && rules.length && validationDelay) {
+    rules.unshift(delayValidationRule(validationDelay));
+  }
 
   const nonInput = !name;
   const fieldName: string = name != null ? name : '';

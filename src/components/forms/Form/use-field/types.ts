@@ -23,6 +23,8 @@ export interface CubeFieldProps<T extends FieldTypes> {
   name?: string;
   /** The validation state of the field */
   validationState?: ValidationState;
+  /** Debounce in milliseconds for validation */
+  validationDelay?: number;
   /** On which event perform the validation for the field */
   validateTrigger?: ValidateTrigger;
 }
@@ -43,5 +45,5 @@ export type FieldReturnValue<T extends FieldTypes> = {
   isRequired?: boolean;
   onBlur: () => void;
   nonInput: boolean;
-  field?: CubeFieldData<keyof FieldTypes, T[keyof FieldTypes]>;
+  field?: CubeFieldData<keyof FieldTypes & string, T[keyof FieldTypes]>;
 };
