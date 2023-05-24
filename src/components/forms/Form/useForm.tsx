@@ -235,12 +235,13 @@ export class CubeFormInstance<
       .then(() => {
         if (field.validationId !== validationId) return;
 
+        field.validating = false;
+
         if (!field.errors || field.errors.length) {
           field.errors = [];
-          field.validating = false;
-
-          this.forceReRender();
         }
+
+        this.forceReRender();
       })
       .catch((err) => {
         if (field.validationId === validationId) {
