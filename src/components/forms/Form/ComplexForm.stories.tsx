@@ -22,7 +22,6 @@ import {
   Switch,
   TextInput,
   NumberInput,
-  debounceValidation,
 } from '../../../index';
 // import { NumberInput } from '../NumberInput/NumberInput';
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -233,8 +232,8 @@ const Template: StoryFn<typeof Form> = (args) => {
         <Field
           name="text"
           validateTrigger="onChange"
+          validationDelay={1000}
           rules={[
-            debounceValidation(1000),
             { required: true, message: 'This field is required' },
             () => ({
               validator(rule, value) {
