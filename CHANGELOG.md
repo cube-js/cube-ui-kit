@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.22.0
+
+### Minor Changes
+
+- [#347](https://github.com/cube-js/cube-ui-kit/pull/347) [`34410df`](https://github.com/cube-js/cube-ui-kit/commit/34410dfe1771d1285a8a0a4dd1f9b3ef170ded1a) Thanks [@tenphi](https://github.com/tenphi)! - Fix support of field props on input elements.
+
+- [#348](https://github.com/cube-js/cube-ui-kit/pull/348) [`7da9b7b`](https://github.com/cube-js/cube-ui-kit/commit/7da9b7ba7931240e046e38af40c9a1c2bb1cd9d6) Thanks [@tenphi](https://github.com/tenphi)! - Add support for debounce in async validation via `validationDelay` property.
+
 ## 0.21.0
 
 ### Minor Changes
