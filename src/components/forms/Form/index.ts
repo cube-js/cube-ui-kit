@@ -16,6 +16,7 @@ const Form = Object.assign(
 
 export { useFormProps, Form, Field, useForm, FormContext, SubmitError };
 export { useFieldProps } from './use-field';
+export { debounceValidation } from './validation';
 export type { CubeFormProps } from './Form';
 export type { CubeFormInstance } from './useForm';
 export type { FieldTypes, Fields } from './types';
