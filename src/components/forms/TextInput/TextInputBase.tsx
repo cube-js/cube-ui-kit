@@ -33,7 +33,7 @@ import {
 } from '../../../tasty';
 import { useFocus } from '../../../utils/react/interactions';
 import { FieldWrapper } from '../FieldWrapper';
-import { FormFieldProps } from '../../../shared';
+import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 
 import type { AriaTextFieldProps } from '@react-types/textfield';
@@ -170,7 +170,7 @@ export interface CubeTextInputBaseProps
     DimensionStyleProps,
     BlockStyleProps,
     AriaTextFieldProps,
-    FormFieldProps {
+    FieldBaseProps {
   /** Left input icon */
   icon?: ReactElement;
   /** Input decoration before the main input */

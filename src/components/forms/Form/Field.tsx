@@ -5,17 +5,12 @@ import {
   createContext,
   PropsWithChildren,
   ReactElement,
-  ReactNode,
   useContext,
   useMemo,
 } from 'react';
 
 import { mergeProps } from '../../../utils/react';
-import {
-  LabelPosition,
-  OptionalFieldBaseProps,
-  ValidationRule,
-} from '../../../shared';
+import { FieldBaseProps, LabelPosition } from '../../../shared';
 import { FieldWrapper } from '../FieldWrapper';
 import { warn } from '../../../utils/warnings';
 import { Styles } from '../../../tasty';
@@ -87,41 +82,13 @@ function getValueProps(
   };
 }
 
-export interface CubeFieldProps<T extends FieldTypes>
-  extends OptionalFieldBaseProps {
+export interface CubeFieldProps<T extends FieldTypes> extends FieldBaseProps {
   /** The initial value of the input. */
   defaultValue?: any;
-  /** The type of the input. `Input`, `Checkbox`, RadioGroup`, `Select`, `ComboBox` etc... */
-  type?: string;
-  /** The unique ID of the field */
-  id?: string;
-  /** The id prefix for the field to avoid collisions between forms */
-  idPrefix?: string;
+  styles?: Styles;
   children?: ReactElement | ((CubeFormInstance) => ReactElement);
-  /** Function that checks whether to perform update of the form state. */
-  shouldUpdate?: boolean | ((prevValues, nextValues) => boolean);
-  /** Validation rules */
-  rules?: ValidationRule[];
   /** The form instance */
   form?: CubeFormInstance<T>;
-  /** The message for the field or text for the error */
-  message?: ReactNode;
-  /** The description for the field */
-  description?: ReactNode;
-  /** Tooltip for the label that explains something. */
-  tooltip?: ReactNode;
-  /** Field name. It's used as a key the form data. */
-  name?: string | string[];
-  /** Whether the field is hidden. */
-  isHidden?: boolean;
-  /** Whether the field is disabled. */
-  isDisabled?: boolean;
-  /** Whether the field is loading. */
-  isLoading?: boolean;
-  styles?: Styles;
-  labelPosition?: LabelPosition;
-  labelStyles?: Styles;
-  labelSuffix?: ReactNode;
 }
 
 interface CubeFullFieldProps<T extends FieldTypes> extends CubeFieldProps<T> {
@@ -142,7 +109,6 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
   const allProps: CubeFullFieldProps<T> = useFormProps(props);
 
   let {
-    type: inputType,
     children,
     form,
     label,
@@ -168,7 +134,7 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
 
   let child = children == null ? null : Children.only(children);
 
-  inputType = inputType ?? (child?.type as any)?.cubeInputType ?? 'Text';
+  const inputType = (child?.type as any)?.cubeInputType ?? 'Text';
 
   const __props = useField<T, CubeFullFieldProps<T>>(allProps, {
     defaultValidationTrigger: getDefaultValidateTrigger(inputType),

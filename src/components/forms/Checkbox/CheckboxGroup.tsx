@@ -13,7 +13,7 @@ import {
   tasty,
 } from '../../../tasty';
 import { extractFieldWrapperProps, FieldWrapper } from '../FieldWrapper';
-import { FormFieldProps } from '../../../shared';
+import { FieldBaseProps } from '../../../shared';
 import {
   castNullableArrayValue,
   WithNullableValue,
@@ -44,7 +44,7 @@ const CheckGroupElement = tasty({
 export interface CubeCheckboxGroupProps
   extends BaseProps,
     AriaCheckboxGroupProps,
-    FormFieldProps,
+    FieldBaseProps,
     ContainerStyleProps {
   orientation?: 'vertical' | 'horizontal';
   inputStyles?: Styles;

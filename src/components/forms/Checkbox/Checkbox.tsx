@@ -21,7 +21,7 @@ import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../Label';
 import { HiddenInput } from '../../HiddenInput';
 import { useFieldProps, useFormProps } from '../Form';
 import { FieldWrapper } from '../FieldWrapper';
-import { FormFieldProps } from '../../../shared';
+import { FieldBaseProps } from '../../../shared';
 import {
   castNullableIsSelected,
   WithNullableSelected,
@@ -37,7 +37,7 @@ import type { AriaCheckboxProps } from '@react-types/checkbox';
 export interface CubeCheckboxProps
   extends BaseProps,
     AriaCheckboxProps,
-    FormFieldProps {}
+    FieldBaseProps {}
 
 function CheckOutlined() {
   return (
