@@ -43,5 +43,5 @@ export type FieldReturnValue<T extends FieldTypes> = {
   isRequired?: boolean;
   onBlur: () => void;
   nonInput: boolean;
-  field?: CubeFieldData<keyof FieldTypes, T[keyof FieldTypes]>;
+  field?: CubeFieldData<keyof FieldTypes & string, T[keyof FieldTypes]>;
 };
