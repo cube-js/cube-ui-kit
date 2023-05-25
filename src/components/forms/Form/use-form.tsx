@@ -220,7 +220,7 @@ export class CubeFormInstance<
     const field = this.getFieldInstance(name);
 
     if (
-      // if there are not rules for such field
+      // if there are no rules for such field
       !field ||
       !field.rules ||
       // or field is already validated and valid

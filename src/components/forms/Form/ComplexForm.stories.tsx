@@ -230,6 +230,7 @@ const Template: StoryFn<typeof Form> = (args) => {
         }}
       >
         <Field
+          showValid
           name="text"
           validateTrigger="onChange"
           validationDelay={1000}

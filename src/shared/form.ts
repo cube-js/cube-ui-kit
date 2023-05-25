@@ -78,6 +78,8 @@ export interface FormBaseProps {
   validationState?: ValidationState;
   /** On which event perform validation for the field */
   validateTrigger?: ValidateTrigger;
+  /** Whether to show valid state */
+  showValid?: boolean;
 }
 
 export type ValidationRuleBase = { [key: string]: any } & {

@@ -15,7 +15,7 @@ import { FieldWrapper } from '../FieldWrapper';
 import { warn } from '../../../utils/warnings';
 import { Styles } from '../../../tasty';
 
-import { CubeFormInstance } from './useForm';
+import { CubeFormInstance } from './use-form';
 import { useFormProps } from './Form';
 import { FieldTypes } from './types';
 import { useField } from './use-field';
@@ -113,10 +113,8 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
     form,
     label,
     extra,
-    validationState,
     necessityLabel,
     necessityIndicator,
-    message,
     description,
     tooltip,
     isHidden,
@@ -140,7 +138,7 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
     defaultValidationTrigger: getDefaultValidateTrigger(inputType),
   });
 
-  const { field, isRequired, name, id } = __props;
+  const { validationState, message, isRequired, name, id } = __props;
 
   if (!child) return null;
 
@@ -150,7 +148,7 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
         <FieldWrapper
           isHidden={isHidden}
           isDisabled={isDisabled}
-          validationState={validationState}
+          validationState={__props.validationState}
           necessityIndicator={necessityIndicator}
           necessityLabel={necessityLabel}
           isRequired={isRequired}
@@ -241,16 +239,6 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
 
   if (isLoading != null) {
     newProps.isLoading = isLoading;
-  }
-
-  if (field?.errors?.length) {
-    if (!validationState) {
-      newProps.validationState = 'invalid';
-    }
-
-    if (!message) {
-      newProps.message = field.errors[0];
-    }
   }
 
   Object.assign(
