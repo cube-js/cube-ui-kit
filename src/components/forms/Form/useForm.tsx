@@ -165,6 +165,7 @@ export class CubeFormInstance<
 
     if (!inputOnly) {
       field.value = value;
+      field.status = undefined; // reset validation status
     }
 
     field.inputValue = value;
@@ -218,7 +219,18 @@ export class CubeFormInstance<
   async validateField<Name extends keyof T & string>(name: Name): Promise<any> {
     const field = this.getFieldInstance(name);
 
-    if (!field || !field.rules) return Promise.resolve();
+    if (
+      // if there are not rules for such field
+      !field ||
+      !field.rules ||
+      // or field is already validated and valid
+      field.status === 'valid'
+    ) {
+      return Promise.resolve();
+      // or field is already validated and invalid
+    } else if (field.status === 'invalid') {
+      return Promise.reject(field.errors[0]);
+    }
 
     field.validating = true;
 
@@ -241,12 +253,15 @@ export class CubeFormInstance<
           field.errors = [];
         }
 
+        field.status = 'valid';
+
         this.forceReRender();
       })
       .catch((err) => {
         if (field.validationId === validationId) {
           field.errors = [err];
           field.validating = false;
+          field.status = 'invalid';
 
           this.forceReRender();
         }
