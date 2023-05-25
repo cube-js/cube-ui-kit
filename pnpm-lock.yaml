@@ -23,8 +23,8 @@ dependencies:
     specifier: 3.10.1
     version: 3.10.1(react@17.0.2)
   '@react-aria/i18n':
-    specifier: 3.6.3
-    version: 3.6.3(react@17.0.2)
+    specifier: 3.7.2
+    version: 3.7.2(react@17.0.2)
   '@react-aria/interactions':
     specifier: 3.13.1
     version: 3.13.1(react@17.0.2)
@@ -3018,7 +3018,7 @@ packages:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
       react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
     dependencies:
-      '@react-aria/i18n': 3.6.3(react@17.0.2)
+      '@react-aria/i18n': 3.7.2(react@17.0.2)
       '@react-aria/interactions': 3.13.1(react@17.0.2)
       '@react-aria/listbox': 3.7.2(react@17.0.2)
       '@react-aria/live-announcer': 3.3.0
@@ -3078,22 +3078,6 @@ packages:
       '@react-types/shared': 3.18.1(react@17.0.2)
       '@swc/helpers': 0.4.14
       clsx: 1.1.1
-      react: 17.0.2
-    dev: false
-
-  /@react-aria/i18n@3.6.3(react@17.0.2):
-    resolution: {integrity: sha512-cDWl8FXJIXsw/raWcThywBueCJ5ncoogq81wYVS6hfZVmSyncONIB3bwUL12cojmjX1VEP31sN0ujT/83QP95Q==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
-    dependencies:
-      '@internationalized/date': 3.2.0
-      '@internationalized/message': 3.1.0
-      '@internationalized/number': 3.2.0
-      '@internationalized/string': 3.1.0
-      '@react-aria/ssr': 3.4.1(react@17.0.2)
-      '@react-aria/utils': 3.14.2(react@17.0.2)
-      '@react-types/shared': 3.16.0(react@17.0.2)
-      '@swc/helpers': 0.4.14
       react: 17.0.2
     dev: false
 
@@ -3178,7 +3162,7 @@ packages:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
       react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
     dependencies:
-      '@react-aria/i18n': 3.6.3(react@17.0.2)
+      '@react-aria/i18n': 3.7.2(react@17.0.2)
       '@react-aria/interactions': 3.13.1(react@17.0.2)
       '@react-aria/overlays': 3.12.1(react-dom@17.0.2)(react@17.0.2)
       '@react-aria/selection': 3.12.1(react@17.0.2)
@@ -3200,7 +3184,7 @@ packages:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
       react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
     dependencies:
-      '@react-aria/i18n': 3.6.3(react@17.0.2)
+      '@react-aria/i18n': 3.7.2(react@17.0.2)
       '@react-aria/interactions': 3.13.1(react@17.0.2)
       '@react-aria/live-announcer': 3.3.0
       '@react-aria/spinbutton': 3.4.1(react-dom@17.0.2)(react@17.0.2)
@@ -3223,7 +3207,7 @@ packages:
       react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
     dependencies:
       '@react-aria/focus': 3.10.1(react@17.0.2)
-      '@react-aria/i18n': 3.6.3(react@17.0.2)
+      '@react-aria/i18n': 3.7.2(react@17.0.2)
       '@react-aria/interactions': 3.13.1(react@17.0.2)
       '@react-aria/ssr': 3.4.1(react@17.0.2)
       '@react-aria/utils': 3.14.2(react@17.0.2)
@@ -3243,7 +3227,7 @@ packages:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
     dependencies:
       '@react-aria/focus': 3.10.1(react@17.0.2)
-      '@react-aria/i18n': 3.6.3(react@17.0.2)
+      '@react-aria/i18n': 3.7.2(react@17.0.2)
       '@react-aria/interactions': 3.13.1(react@17.0.2)
       '@react-aria/label': 3.5.2(react@17.0.2)
       '@react-aria/utils': 3.14.2(react@17.0.2)
@@ -3259,7 +3243,7 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
     dependencies:
-      '@react-aria/i18n': 3.6.3(react@17.0.2)
+      '@react-aria/i18n': 3.7.2(react@17.0.2)
       '@react-aria/interactions': 3.13.1(react@17.0.2)
       '@react-aria/textfield': 3.8.1(react@17.0.2)
       '@react-aria/utils': 3.14.2(react@17.0.2)
@@ -3277,7 +3261,7 @@ packages:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
       react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
     dependencies:
-      '@react-aria/i18n': 3.6.3(react@17.0.2)
+      '@react-aria/i18n': 3.7.2(react@17.0.2)
       '@react-aria/interactions': 3.13.1(react@17.0.2)
       '@react-aria/label': 3.5.2(react@17.0.2)
       '@react-aria/listbox': 3.7.2(react@17.0.2)
@@ -3300,7 +3284,7 @@ packages:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
     dependencies:
       '@react-aria/focus': 3.10.1(react@17.0.2)
-      '@react-aria/i18n': 3.6.3(react@17.0.2)
+      '@react-aria/i18n': 3.7.2(react@17.0.2)
       '@react-aria/interactions': 3.13.1(react@17.0.2)
       '@react-aria/utils': 3.14.2(react@17.0.2)
       '@react-stately/collections': 3.5.1(react@17.0.2)
@@ -3327,7 +3311,7 @@ packages:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
     dependencies:
       '@react-aria/focus': 3.10.1(react@17.0.2)
-      '@react-aria/i18n': 3.6.3(react@17.0.2)
+      '@react-aria/i18n': 3.7.2(react@17.0.2)
       '@react-aria/interactions': 3.13.1(react@17.0.2)
       '@react-aria/label': 3.5.2(react@17.0.2)
       '@react-aria/utils': 3.14.2(react@17.0.2)
@@ -3475,7 +3459,7 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
     dependencies:
-      '@react-aria/i18n': 3.6.3(react@17.0.2)
+      '@react-aria/i18n': 3.7.2(react@17.0.2)
       '@react-aria/ssr': 3.4.1(react@17.0.2)
       '@react-aria/utils': 3.14.2(react@17.0.2)
       '@react-types/shared': 3.16.0(react@17.0.2)
@@ -3679,7 +3663,7 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
     dependencies:
-      '@react-aria/i18n': 3.6.3(react@17.0.2)
+      '@react-aria/i18n': 3.7.2(react@17.0.2)
       '@react-aria/utils': 3.14.2(react@17.0.2)
       '@react-stately/utils': 3.5.2(react@17.0.2)
       '@react-types/shared': 3.16.0(react@17.0.2)
