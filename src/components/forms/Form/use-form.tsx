@@ -374,8 +374,10 @@ export class CubeFormInstance<
       validating: false,
       touched: false,
       errors: [],
-      validation: 0,
+      validationId: 0,
       ...data,
+      // it should be impossible to define or override status value
+      status: data?.errors?.length ? 'invalid' : undefined,
     } as unknown as Data;
 
     if (obj) {
