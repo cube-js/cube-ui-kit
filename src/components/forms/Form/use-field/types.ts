@@ -1,10 +1,12 @@
+import { ReactNode } from 'react';
+
 import { CubeFieldData, FieldTypes } from '../types';
 import {
   ValidateTrigger,
   ValidationRule,
   ValidationState,
 } from '../../../../shared';
-import { CubeFormInstance } from '../useForm';
+import { CubeFormInstance } from '../use-form';
 
 export interface CubeFieldProps<T extends FieldTypes> {
   /** The initial value of the input. */
@@ -25,8 +27,12 @@ export interface CubeFieldProps<T extends FieldTypes> {
   validationState?: ValidationState;
   /** Debounce in milliseconds for validation */
   validationDelay?: number;
+  /** Whether to show valid state */
+  showValid?: boolean;
   /** On which event perform the validation for the field */
   validateTrigger?: ValidateTrigger;
+  /** Message for the field. Some additional information or error notice */
+  message?: ReactNode;
 }
 
 export type FieldReturnValue<T extends FieldTypes> = {

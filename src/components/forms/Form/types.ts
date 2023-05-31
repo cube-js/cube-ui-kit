@@ -12,7 +12,8 @@ export type CubeFieldData<Name extends string, Value> = {
   touched?: boolean;
   rules?: any[];
   validating?: boolean;
-  validationId: number;
+  validationId?: number;
+  status?: 'valid' | 'invalid';
 };
 
 export type Fields = Record<keyof FieldTypes, CubeFieldData<string, any>>;

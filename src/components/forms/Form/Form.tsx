@@ -24,7 +24,7 @@ import { useCombinedRefs } from '../../../utils/react';
 import { timeout } from '../../../utils/promise';
 import { FormBaseProps } from '../../../shared';
 
-import { CubeFormData, CubeFormInstance, useForm } from './useForm';
+import { CubeFormData, CubeFormInstance, useForm } from './use-form';
 import { FieldTypes } from './types';
 
 export const FormContext = createContext({});
@@ -107,6 +107,7 @@ function Form<T extends FieldTypes>(
     validationState,
     labelStyles,
     validateTrigger,
+    showValid,
     defaultValues,
     onValuesChange,
     requiredMark = true,
@@ -209,6 +210,7 @@ function Form<T extends FieldTypes>(
     necessityIndicator,
     validateTrigger,
     requiredMark,
+    showValid,
     form,
     submitError: form.submitError,
     idPrefix: name,

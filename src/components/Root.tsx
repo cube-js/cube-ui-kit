@@ -18,7 +18,7 @@ import { TrackingProps, TrackingProvider } from '../providers/TrackingProvider';
 import { PortalProvider } from './portal';
 import { GlobalStyles } from './GlobalStyles';
 import { AlertDialogApiProvider } from './overlays/AlertDialog';
-import { NotificationsProvider } from './overlays/NewNotifications';
+import { NotificationsProvider } from './overlays/NewNotifications/NotificationsContext/NotificationsProvider';
 
 const RootElement = tasty({
   id: 'cube-ui-kit-root',

@@ -5,7 +5,7 @@ import { useProviderProps } from '../../../../provider';
 import { useFormProps } from '../Form';
 import { Button, CubeButtonProps } from '../../../actions';
 import { FieldTypes } from '../types';
-import { CubeFormInstance } from '../useForm';
+import { CubeFormInstance } from '../use-form';
 
 export interface CubeSubmitProps<T extends FieldTypes = FieldTypes>
   extends CubeButtonProps {
