@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.22.1
+
+### Patch Changes
+
+- [#350](https://github.com/cube-js/cube-ui-kit/pull/350) [`53ea3fe`](https://github.com/cube-js/cube-ui-kit/commit/53ea3feddd0afc5ead0b14c5847dcf2daa594a8d) Thanks [@tenphi](https://github.com/tenphi)! - Add `showValid` prop to Form and Field component. If `true` the field shows its valid status.
+
+- [#350](https://github.com/cube-js/cube-ui-kit/pull/350) [`53ea3fe`](https://github.com/cube-js/cube-ui-kit/commit/53ea3feddd0afc5ead0b14c5847dcf2daa594a8d) Thanks [@tenphi](https://github.com/tenphi)! - Optimize forms to avoid unnecessary field validations.
+
 ## 0.22.0
 
 ### Minor Changes
