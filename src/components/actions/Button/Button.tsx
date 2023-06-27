@@ -351,7 +351,13 @@ export const Button = forwardRef(function Button(
       data-size={size ?? 'medium'}
       styles={styles}
     >
-      {icon || isLoading ? !isLoading ? icon : <LoadingOutlined /> : null}
+      {icon || isLoading ? (
+        !isLoading ? (
+          icon
+        ) : (
+          <LoadingOutlined data-element="ButtonIcon" />
+        )
+      ) : null}
       {children}
       {rightIcon}
     </ButtonElement>
