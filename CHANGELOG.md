@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.22.2
+
+### Patch Changes
+
+- [#352](https://github.com/cube-js/cube-ui-kit/pull/352) [`f302128`](https://github.com/cube-js/cube-ui-kit/commit/f3021284abc7b2c7e3d5a0523737adf4c19a96bf) Thanks [@tenphi](https://github.com/tenphi)! - Add element attribute for loading icon in the Button component to fix styling.
+
 ## 0.22.1
 
 ### Patch Changes
