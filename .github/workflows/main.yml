@@ -83,6 +83,7 @@ jobs:
         id: publish_chromatic
         uses: chromaui/action@v1
         with:
+          onlyChanged: true
           exitZeroOnChanges: true
           exitOnceUploaded: true
           autoAcceptChanges: true
