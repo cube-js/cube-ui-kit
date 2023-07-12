@@ -163,6 +163,7 @@ function Form<T extends FieldTypes>(
         try {
           await form.validateFields();
         } catch (e) {
+          console.error('!', e);
           form?.setSubmitting(false);
 
           return;
