@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.22.3
+
+### Patch Changes
+
+- [#355](https://github.com/cube-js/cube-ui-kit/pull/355) [`20387c7`](https://github.com/cube-js/cube-ui-kit/commit/20387c752f36c1923b6dac806160ffd055ecc696) Thanks [@tenphi](https://github.com/tenphi)! - Avoid creating form fields with empty names.
+
 ## 0.22.2
 
 ### Patch Changes
