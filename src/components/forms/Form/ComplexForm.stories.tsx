@@ -92,7 +92,7 @@ const CustomSubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
         <TextInput />
       </Field>
       <Submit>Submit</Submit>
-      {form.submitError ? <Alert>{form.submitError}</Alert> : null}
+      {form.submitError ? <Alert>{form.submitError as string}</Alert> : null}
     </Form>
   );
 };
