@@ -324,6 +324,11 @@ export class CubeFormInstance<
   }
 
   createField<Name extends keyof T & string>(name: Name, skipRender?: boolean) {
+    // passing an empty name is incorrect, but we have to return a valid object to avoid inconsistency
+    if (!name) {
+      return this._createField(name);
+    }
+
     if (!this.fields[name]) {
       this.fields[name] = this._createField(name);
     }
@@ -369,7 +374,6 @@ export class CubeFormInstance<
     name: Name,
     data?: Data,
   ): Data {
-    console.error('! create field', name, data);
     let obj = {
       name,
       validating: false,
