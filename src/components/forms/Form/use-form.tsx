@@ -369,6 +369,7 @@ export class CubeFormInstance<
     name: Name,
     data?: Data,
   ): Data {
+    console.error('! create field', name, data);
     let obj = {
       name,
       validating: false,
