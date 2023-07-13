@@ -1,5 +1,6 @@
 import { IS_SELECTED_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Flow } from '../../layout/Flow';
 
 import { Switch } from './Switch';
 
@@ -17,10 +18,18 @@ export default {
 };
 
 const Template = (args) => (
-  <Switch
-    {...args}
-    onChange={(query) => console.log('onChange event', query)}
-  />
+  <Flow gap="2x">
+    <Switch
+      {...args}
+      defaultSelected={false}
+      onChange={(query) => console.log('onChange event', query)}
+    />
+    <Switch
+      {...args}
+      defaultSelected={true}
+      onChange={(query) => console.log('onChange event', query)}
+    />
+  </Flow>
 );
 
 export const Default = Template.bind({});
@@ -28,14 +37,15 @@ Default.args = {
   label: 'Switch',
 };
 
+export const Small = Template.bind({});
+Small.args = {
+  label: 'Switch',
+  size: 'small',
+};
+
 export const WithoutLabel = Template.bind({});
 WithoutLabel.args = {
   label: '',
-};
-
-export const Checked = Template.bind({});
-Checked.args = {
-  isSelected: true,
 };
 
 export const Disabled = Template.bind({});

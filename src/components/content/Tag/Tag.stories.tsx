@@ -1,3 +1,5 @@
+import { DollarCircleOutlined } from '@ant-design/icons';
+
 import { Tag } from './Tag';
 
 export default {
@@ -51,4 +53,16 @@ const Template = ({ label, ...props }) => (
 export const Default = Template.bind({});
 Default.args = {
   label: 'Tag name or content',
+};
+
+export const WithIcon = Template.bind({});
+WithIcon.args = {
+  icon: <DollarCircleOutlined />,
+  label: 'Tag name or content',
+};
+
+export const Closable = Template.bind({});
+Closable.args = {
+  label: 'Tag name or content',
+  isClosable: true,
 };

@@ -1,11 +1,12 @@
+import styled from 'styled-components';
 import { useDOMRef } from '@react-spectrum/utils';
 import { DismissButton } from '@react-aria/overlays';
-import { FocusScope } from '@react-aria/focus';
 import { forwardRef, ReactElement } from 'react';
 import { useDialog } from '@react-aria/dialog';
 import { useMessageFormatter } from '@react-aria/i18n';
 import { CloseOutlined } from '@ant-design/icons';
 import { DOMRef } from '@react-types/shared';
+import FocusLock from 'react-focus-lock';
 
 import {
   BASE_STYLES,
@@ -21,6 +22,7 @@ import {
 } from '../../../tasty';
 import { mergeProps, SlotProvider } from '../../../utils/react';
 import { Button } from '../../actions';
+import { useOpenTransitionContext } from '../Modal/OpenTransition';
 
 import { useDialogContext } from './context';
 
@@ -83,6 +85,10 @@ const DialogElement = tasty({
   },
 });
 
+const StyledFocusLock = styled(FocusLock)`
+  display: contents;
+`;
+
 const CLOSE_BUTTON_STYLES: Styles = {
   display: 'flex',
   position: 'absolute',
@@ -136,6 +142,21 @@ export const Dialog = forwardRef(function Dialog(
   props: CubeDialogProps,
   ref: DOMRef<HTMLDivElement>,
 ) {
+  const transitionContext = useOpenTransitionContext();
+
+  const isEntered = transitionContext?.transitionState === 'entered';
+
+  return (
+    <StyledFocusLock returnFocus disabled={!isEntered}>
+      <DialogContent key="content" {...props} ref={ref} />
+    </StyledFocusLock>
+  );
+});
+
+const DialogContent = forwardRef(function DialogContent(
+  props: CubeDialogProps,
+  ref: DOMRef<HTMLDivElement>,
+) {
   let { type = 'modal', ...contextProps } = useDialogContext();
 
   let {
@@ -160,8 +181,6 @@ export const Dialog = forwardRef(function Dialog(
     mergeProps(contextProps, props),
     domRef,
   );
-
-  // console.log(dialogProps);
 
   // If rendered in a popover or tray there won't be a visible dismiss button,
   // so we render a hidden one for screen readers.
@@ -191,6 +210,7 @@ export const Dialog = forwardRef(function Dialog(
       },
     },
     header: {
+      ellipsis: true,
       styles: {
         display: 'flex',
         flow: 'row',
@@ -216,35 +236,33 @@ export const Dialog = forwardRef(function Dialog(
   };
 
   return (
-    <FocusScope contain restoreFocus>
-      <DialogElement
-        ref={domRef}
-        data-id="Dialog"
-        data-qa={qa || 'Dialog'}
-        styles={styles}
-        as="section"
-        {...dialogProps}
-        mods={{ dismissable: isDismissable }}
-        style={{ '--dialog-size': `${sizePxMap[size] || 288}px` }}
-        data-type={type}
-        data-size={size}
-      >
-        {dismissButton}
+    <DialogElement
+      ref={domRef}
+      data-id="Dialog"
+      data-qa={qa || 'Dialog'}
+      styles={styles}
+      as="section"
+      {...dialogProps}
+      mods={{ dismissable: isDismissable }}
+      style={{ '--dialog-size': `${sizePxMap[size] || 288}px` }}
+      data-type={type}
+      data-size={size}
+    >
+      {dismissButton}
 
-        <SlotProvider slots={slots}>
-          {isDismissable && (
-            <Button
-              qa="ModalCloseButton"
-              type="neutral"
-              styles={CLOSE_BUTTON_STYLES}
-              icon={closeIcon || <CloseOutlined />}
-              label={formatMessage('dismiss')}
-              onPress={() => onDismiss && onDismiss()}
-            />
-          )}
-          {children}
-        </SlotProvider>
-      </DialogElement>
-    </FocusScope>
+      <SlotProvider slots={slots}>
+        {isDismissable && (
+          <Button
+            qa="ModalCloseButton"
+            type="neutral"
+            styles={CLOSE_BUTTON_STYLES}
+            icon={closeIcon || <CloseOutlined />}
+            label={formatMessage('dismiss')}
+            onPress={() => onDismiss && onDismiss()}
+          />
+        )}
+        {children}
+      </SlotProvider>
+    </DialogElement>
   );
 });

@@ -3,16 +3,16 @@ import { applyRules } from './validation';
 async function apply(rule, valid: any[] = [], invalid: any[] = []) {
   for (const validCase of valid) {
     await expect(
-      applyRules(validCase, [rule], {}).catch((err) => {
+      applyRules({ value: validCase, rules: [rule] }, {}).catch((err) => {
         console.error('fails with', err);
       }),
     ).resolves.toBeEmpty;
   }
 
   for (const invalidCase of invalid) {
-    await expect(applyRules(invalidCase, [rule], {})).rejects.toEqual(
-      rule.message,
-    );
+    await expect(
+      applyRules({ value: invalidCase, rules: [rule] }, {}),
+    ).rejects.toEqual(rule.message);
   }
 }
 

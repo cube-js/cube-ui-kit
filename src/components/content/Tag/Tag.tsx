@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, ReactNode } from 'react';
 import { CloseOutlined } from '@ant-design/icons';
 
 import THEMES from '../../../data/themes';
@@ -11,7 +11,7 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { Action } from '../../actions/Action';
+import { Action } from '../../actions';
 import { Suffix } from '../../layout/Suffix';
 
 const TagElement = tasty({
@@ -20,10 +20,11 @@ const TagElement = tasty({
   styles: {
     position: 'relative',
     display: 'inline-flex',
+    gap: '1x',
     placeContent: 'center start',
     placeItems: 'center start',
     radius: '1r',
-    preset: 't4m',
+    preset: 'tag',
     width: '16px max-content max-content',
     height: 'min-content',
     textAlign: 'left',
@@ -57,6 +58,10 @@ const TagElement = tasty({
       }, {}),
     },
 
+    Icon: {
+      fontSize: '@icon-size',
+    },
+
     Content: {
       display: 'block',
       width: 'max 100%',
@@ -88,11 +93,19 @@ export interface CubeTagProps extends BaseProps, ContainerStyleProps {
   isClosable?: boolean;
   onClose?: () => void;
   closeButtonStyles?: Styles;
+  icon?: ReactNode;
 }
 
 function Tag(allProps: CubeTagProps, ref) {
-  let { type, isClosable, onClose, closeButtonStyles, children, ...props } =
-    allProps;
+  let {
+    type,
+    icon,
+    isClosable,
+    onClose,
+    closeButtonStyles,
+    children,
+    ...props
+  } = allProps;
 
   const styles = extractStyles(props, CONTAINER_STYLES);
 
@@ -104,13 +117,14 @@ function Tag(allProps: CubeTagProps, ref) {
       data-type={type}
       mods={{ closable: isClosable }}
     >
+      {icon ? <div data-element="TagIcon">{icon}</div> : null}
       <div data-element="Content">{children}</div>
       {isClosable ? (
         <Suffix outerGap="0">
           <CloseAction styles={closeButtonStyles} onPress={onClose}>
             <CloseOutlined
               style={{
-                fontSize: 'calc(var(--font-size) - (var(--border-width) * 2))',
+                fontSize: 'var(--font-size, inherit)',
               }}
             />
           </CloseAction>

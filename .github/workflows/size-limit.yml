@@ -17,29 +17,25 @@ jobs:
       NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_STATOSCOPE }}
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
       REPORT_FOLDER: './size-limit-report'
+      NODE_OPTIONS: --max-old-space-size=4096
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/cache@v2
-        name: Download yarn cache
-        id: yarn-cache
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
         with:
-          path: |
-            **/node_modules
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-            ${{ runner.os }}-yarn
+          version: 8
 
       - uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: yarn --frozen-lockfile
+        run: pnpm install
 
       - name: Build project
-        run: yarn build
+        run: pnpm build
 
       - name: Download baseline stats
         uses: dawidd6/action-download-artifact@v2

@@ -288,7 +288,7 @@ NotificationWithDialog.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
 
   await userEvent.click(canvas.getByRole('button'));
-  await expect(canvas.getByRole('dialog')).toBeInTheDocument();
+  await expect(await canvas.findByRole('dialog')).toBeInTheDocument();
 };
 
 export const ComplexInteraction: Story<CubeNotificationProps> = (args) => {

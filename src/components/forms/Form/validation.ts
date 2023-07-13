@@ -139,10 +139,14 @@ export async function applyRule(value, rule, form) {
   }
 }
 
-export async function applyRules(value, rules, form) {
+export async function applyRules(field, form, validationId = 0) {
+  const { value, rules } = field;
+
   if (!rules || !rules.length) return;
 
   for (let rule of rules) {
+    if (field.validationId && validationId !== field.validationId) return;
+
     await applyRule(value, rule, form).catch((err) => {
       if (err instanceof Error) {
         err = err?.message || rule.message;
@@ -152,3 +156,26 @@ export async function applyRules(value, rules, form) {
     });
   }
 }
+
+export const delayValidationRule = (timeout = 500) => {
+  let timeoutId: NodeJS.Timeout;
+  let storedResolve: () => void;
+
+  return {
+    async validator(): Promise<void> {
+      clearTimeout(timeoutId);
+
+      if (storedResolve) {
+        storedResolve();
+      }
+
+      return new Promise((resolve) => {
+        storedResolve = resolve;
+
+        timeoutId = setTimeout(() => {
+          resolve();
+        }, timeout);
+      });
+    },
+  };
+};

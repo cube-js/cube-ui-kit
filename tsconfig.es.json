@@ -4,5 +4,17 @@
     "declarationDir": "dist/types",
     "outDir": "./dist/es",
     "noEmit": false
-  }
+  },
+  "exclude": [
+    "src/**/__mocks__/**/*",
+    "src/**/*.stories.tsx",
+    "src/**/*.stories.ts",
+    "src/test/**/*",
+    "src/**/*.test.tsx",
+    "src/**/*.test.ts",
+    "src/antd.js",
+    "src/storybook.tsx",
+    "src/App.tsx",
+    "src/script.js"
+  ]
 }

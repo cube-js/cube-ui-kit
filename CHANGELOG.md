@@ -1,5 +1,258 @@
 # @cube-dev/ui-kit
 
+## 0.22.3
+
+### Patch Changes
+
+- [#355](https://github.com/cube-js/cube-ui-kit/pull/355) [`20387c7`](https://github.com/cube-js/cube-ui-kit/commit/20387c752f36c1923b6dac806160ffd055ecc696) Thanks [@tenphi](https://github.com/tenphi)! - Avoid creating form fields with empty names.
+
+## 0.22.2
+
+### Patch Changes
+
+- [#352](https://github.com/cube-js/cube-ui-kit/pull/352) [`f302128`](https://github.com/cube-js/cube-ui-kit/commit/f3021284abc7b2c7e3d5a0523737adf4c19a96bf) Thanks [@tenphi](https://github.com/tenphi)! - Add element attribute for loading icon in the Button component to fix styling.
+
+## 0.22.1
+
+### Patch Changes
+
+- [#350](https://github.com/cube-js/cube-ui-kit/pull/350) [`53ea3fe`](https://github.com/cube-js/cube-ui-kit/commit/53ea3feddd0afc5ead0b14c5847dcf2daa594a8d) Thanks [@tenphi](https://github.com/tenphi)! - Add `showValid` prop to Form and Field component. If `true` the field shows its valid status.
+
+- [#350](https://github.com/cube-js/cube-ui-kit/pull/350) [`53ea3fe`](https://github.com/cube-js/cube-ui-kit/commit/53ea3feddd0afc5ead0b14c5847dcf2daa594a8d) Thanks [@tenphi](https://github.com/tenphi)! - Optimize forms to avoid unnecessary field validations.
+
+## 0.22.0
+
+### Minor Changes
+
+- [#347](https://github.com/cube-js/cube-ui-kit/pull/347) [`34410df`](https://github.com/cube-js/cube-ui-kit/commit/34410dfe1771d1285a8a0a4dd1f9b3ef170ded1a) Thanks [@tenphi](https://github.com/tenphi)! - Fix support of field props on input elements.
+
+- [#348](https://github.com/cube-js/cube-ui-kit/pull/348) [`7da9b7b`](https://github.com/cube-js/cube-ui-kit/commit/7da9b7ba7931240e046e38af40c9a1c2bb1cd9d6) Thanks [@tenphi](https://github.com/tenphi)! - Add support for debounce in async validation via `validationDelay` property.
+
+## 0.21.0
+
+### Minor Changes
+
+- [#344](https://github.com/cube-js/cube-ui-kit/pull/344) [`2ea241e`](https://github.com/cube-js/cube-ui-kit/commit/2ea241e2a902c858b3bbcab00c609458123d3622) Thanks [@tenphi](https://github.com/tenphi)! - Update Storybook to version 7
+
+## 0.20.8
+
+### Patch Changes
+
+- [#340](https://github.com/cube-js/cube-ui-kit/pull/340) [`2cf93ce`](https://github.com/cube-js/cube-ui-kit/commit/2cf93ce0db9b3c6d95e33ef6a1cd383f62f9747d) Thanks [@tenphi](https://github.com/tenphi)! - Improve styles in PrismCode component.
+
+- [#341](https://github.com/cube-js/cube-ui-kit/pull/341) [`24a6ce9`](https://github.com/cube-js/cube-ui-kit/commit/24a6ce9e2ecbd28bd5f6dfabefba287174174f89) Thanks [@tenphi](https://github.com/tenphi)! - Add styling properties for the Menu component: `itemStyles`, `sectionStyles` and `sectionHeadingStyles`.
+
+## 0.20.7
+
+### Patch Changes
+
+- [#338](https://github.com/cube-js/cube-ui-kit/pull/338) [`ba4a73f`](https://github.com/cube-js/cube-ui-kit/commit/ba4a73fbde7d7556e211793289851a6b1b9eeba1) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Fixed missing data-\* attribiutes on `<Combobox />` component
+
+## 0.20.6
+
+### Patch Changes
+
+- [#337](https://github.com/cube-js/cube-ui-kit/pull/337) [`62280c4`](https://github.com/cube-js/cube-ui-kit/commit/62280c4c84bfb6c9819662ba01056b162aaf8e22) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Fixed false positive a11y warnings in Button component
+
+- [#333](https://github.com/cube-js/cube-ui-kit/pull/333) [`79b72a1`](https://github.com/cube-js/cube-ui-kit/commit/79b72a199983b73d626ef15a2c189bd6551fe5be) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Fix regression when Field's childen might be nullish
+
+- [#335](https://github.com/cube-js/cube-ui-kit/pull/335) [`8e2c86a`](https://github.com/cube-js/cube-ui-kit/commit/8e2c86ab7d9ae231e229a8806c533c14011da0f4) Thanks [@tenphi](https://github.com/tenphi)! - Fix paddings for the Badge component.
+
+- [#336](https://github.com/cube-js/cube-ui-kit/pull/336) [`a6ce43d`](https://github.com/cube-js/cube-ui-kit/commit/a6ce43de18707a13b4339483b0627348eed3b6dc) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Fix types of Combobox
+
+- [#336](https://github.com/cube-js/cube-ui-kit/pull/336) [`a6ce43d`](https://github.com/cube-js/cube-ui-kit/commit/a6ce43de18707a13b4339483b0627348eed3b6dc) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Fix filtering in Combobox
+
+## 0.20.5
+
+### Patch Changes
+
+- [#331](https://github.com/cube-js/cube-ui-kit/pull/331) [`9b06ba7`](https://github.com/cube-js/cube-ui-kit/commit/9b06ba7400f8cbfbc145357d647c723380c42109) Thanks [@tenphi](https://github.com/tenphi)! - Update CloudLogo to support dark schema in Safari
+
+## 0.20.4
+
+### Patch Changes
+
+- [#327](https://github.com/cube-js/cube-ui-kit/pull/327) [`ab9564d`](https://github.com/cube-js/cube-ui-kit/commit/ab9564d8e378df1d355746a4478aed797b7c3bc9) Thanks [@tenphi](https://github.com/tenphi)! - Add dark schema support for CloudLogo.
+
+## 0.20.3
+
+### Patch Changes
+
+- [#325](https://github.com/cube-js/cube-ui-kit/pull/325) [`01ca4c4`](https://github.com/cube-js/cube-ui-kit/commit/01ca4c48506cd5d17d18839c151db40753768d1a) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Fix rerenders of window resize
+
+## 0.20.2
+
+### Patch Changes
+
+- [#323](https://github.com/cube-js/cube-ui-kit/pull/323) [`40b4401`](https://github.com/cube-js/cube-ui-kit/commit/40b4401472fbb074306c1cfd168eeaf40afa9370) Thanks [@tenphi](https://github.com/tenphi)! - Fix aria-label passing in CopySnippet component
+
+## 0.20.1
+
+### Patch Changes
+
+- [#321](https://github.com/cube-js/cube-ui-kit/pull/321) [`c8784ab`](https://github.com/cube-js/cube-ui-kit/commit/c8784ab98e5b1816d6bdc3f861d22044af9f7f5e) Thanks [@tenphi](https://github.com/tenphi)! - Show the Clear Button in the SearchInput component even if the `suffix` prop provided.
+
+- [#321](https://github.com/cube-js/cube-ui-kit/pull/321) [`c8784ab`](https://github.com/cube-js/cube-ui-kit/commit/c8784ab98e5b1816d6bdc3f861d22044af9f7f5e) Thanks [@tenphi](https://github.com/tenphi)! - Add the `hideText` property to hide parts of `CodeSnippet` text.
+  Add the `actions` property and `CodeSnippet.Button` component to allow adding new actions to the `CodeSnippet` compoonent.
+
+## 0.20.0
+
+### Minor Changes
+
+- [#317](https://github.com/cube-js/cube-ui-kit/pull/317) [`5487b12`](https://github.com/cube-js/cube-ui-kit/commit/5487b12ddcca823a5efc5954244720e1687bc1bf) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - [CUK-5](https://cubedevinc.atlassian.net/browse/CC-1485) Migrate all form components on new `useFieldProps` hook
+
+### Patch Changes
+
+- [#319](https://github.com/cube-js/cube-ui-kit/pull/319) [`a53cedf`](https://github.com/cube-js/cube-ui-kit/commit/a53cedf8ffdc283bc0d280a82689835f210c6c4d) Thanks [@tenphi](https://github.com/tenphi)! - Show the Clear Button in the SearchInput component even if the `suffix` prop provided.
+
+- [#318](https://github.com/cube-js/cube-ui-kit/pull/318) [`e3afdbe`](https://github.com/cube-js/cube-ui-kit/commit/e3afdbe2e872db4f03160ff4d25d28bdeaaf8900) Thanks [@tenphi](https://github.com/tenphi)! - Draw range connection link for RangeSlider component.
+
+## 0.19.0
+
+### Minor Changes
+
+- [#267](https://github.com/cube-js/cube-ui-kit/pull/267) [`86a2f11`](https://github.com/cube-js/cube-ui-kit/commit/86a2f118e09e0a37cdfe3ea2dd7a27ac780138f3) Thanks [@tenphi](https://github.com/tenphi)! - Change letter spacing in typography presets. Remove `h5s`, `h5m`, `t3s` and `t4m` presets for good.
+
+### Patch Changes
+
+- [#314](https://github.com/cube-js/cube-ui-kit/pull/314) [`c59fa27`](https://github.com/cube-js/cube-ui-kit/commit/c59fa27911dfbbb058842dc2f3ba2a2af8e0f97b) Thanks [@tenphi](https://github.com/tenphi)! - Fix danger primary text color for Button.
+
+- [#316](https://github.com/cube-js/cube-ui-kit/pull/316) [`c09a431`](https://github.com/cube-js/cube-ui-kit/commit/c09a4317a0330558c74b59fedec0dd8a06b1af5c) Thanks [@tenphi](https://github.com/tenphi)! - Add the small size to the Switch component.
+
+## 0.18.2
+
+### Patch Changes
+
+- [#311](https://github.com/cube-js/cube-ui-kit/pull/311) [`3cf56c8`](https://github.com/cube-js/cube-ui-kit/commit/3cf56c86584cf4435f5d98304791055d4edda9c1) Thanks [@tenphi](https://github.com/tenphi)! - Limit the size of the Field items to avoid overflow in the real layouts.
+
+## 0.18.1
+
+### Patch Changes
+
+- [#308](https://github.com/cube-js/cube-ui-kit/pull/308) [`d044698`](https://github.com/cube-js/cube-ui-kit/commit/d044698a9b8d303b409fad9df4c0493458c38e7d) Thanks [@tenphi](https://github.com/tenphi)! - Fix TrackingProvider api to pass element instead of ref.
+
+## 0.18.0
+
+### Minor Changes
+
+- [#305](https://github.com/cube-js/cube-ui-kit/pull/305) [`89c18da`](https://github.com/cube-js/cube-ui-kit/commit/89c18da9c457e5ed4d19a94d73e40f71ceb4bf20) Thanks [@tenphi](https://github.com/tenphi)! - Remove legacy `styled` and `StyleProvider`. Add `TrackingProvider` for analytics purposes.
+
+### Patch Changes
+
+- [#304](https://github.com/cube-js/cube-ui-kit/pull/304) [`c663fd1`](https://github.com/cube-js/cube-ui-kit/commit/c663fd1c0e0d8cd1e53f94f9ee2a4a2c02b0cf36) Thanks [@dangreen](https://github.com/dangreen)! - upgrade production dependencies
+
+## 0.17.0
+
+### Minor Changes
+
+- [#300](https://github.com/cube-js/cube-ui-kit/pull/300) [`c631c5b`](https://github.com/cube-js/cube-ui-kit/commit/c631c5b5070739fa592c22a84dd90758d2cb175c) Thanks [@tenphi](https://github.com/tenphi)! - Variants API, camelCase support for mods, nested mods support.
+
+### Patch Changes
+
+- [#296](https://github.com/cube-js/cube-ui-kit/pull/296) [`3e23428`](https://github.com/cube-js/cube-ui-kit/commit/3e234289aa707ea8dcaac28e08a938cd71e26005) Thanks [@dangreen](https://github.com/dangreen)! - @react-stately/selection added as a direct dependency
+
+## 0.16.4
+
+### Patch Changes
+
+- [#297](https://github.com/cube-js/cube-ui-kit/pull/297) [`67eafd9`](https://github.com/cube-js/cube-ui-kit/commit/67eafd918d50d847d9c789dec9453b7face78b19) Thanks [@tenphi](https://github.com/tenphi)! - Merge passed `mods` with the default one for all components instead of replacing it.
+
+- [#294](https://github.com/cube-js/cube-ui-kit/pull/294) [`e22815b`](https://github.com/cube-js/cube-ui-kit/commit/e22815b3623f115309ce526cfa67a60bc3e7e3bd) Thanks [@tenphi](https://github.com/tenphi)! - Fix bug when null `value` prop is passing to SearchInput component but the value remains the same.
+
+## 0.16.3
+
+### Patch Changes
+
+- [#292](https://github.com/cube-js/cube-ui-kit/pull/292) [`842836f`](https://github.com/cube-js/cube-ui-kit/commit/842836faf77af9e966235bed6e731527f02d5436) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Added new prop in `<DialogTrigger />` - `shouldCloseOnInteractOutside`, which gives you a chance to filter out interaction with elements that should not dismiss the overlay.
+
+## 0.16.2
+
+### Patch Changes
+
+- [#290](https://github.com/cube-js/cube-ui-kit/pull/290) [`79adb32`](https://github.com/cube-js/cube-ui-kit/commit/79adb32ae90b6e65bdd1815c2eb5b679cb9abcc2) Thanks [@tenphi](https://github.com/tenphi)! - Add an `inputStyles` prop to the `CheckboxGroup` component to customize styles of a checkbox group itself.
+  Improve Tasty caching.
+
+## 0.16.1
+
+### Patch Changes
+
+- [#274](https://github.com/cube-js/cube-ui-kit/pull/274) [`43b7913`](https://github.com/cube-js/cube-ui-kit/commit/43b791387f1797d3a9ec7622a63d60e8248bb3d0) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - added ability to specify the way how we'd like to hide a dialog: by unmounting or by hiding in css
+
+## 0.16.0
+
+### Minor Changes
+
+- [#287](https://github.com/cube-js/cube-ui-kit/pull/287) [`15d83f0`](https://github.com/cube-js/cube-ui-kit/commit/15d83f0394deddaa1e2226582bde627d5943726e) Thanks [@tenphi](https://github.com/tenphi)! - Change RangeSlider API to accept only array with two numbers as a value.
+
+## 0.15.0
+
+### Minor Changes
+
+- [#285](https://github.com/cube-js/cube-ui-kit/pull/285) [`01a08ac`](https://github.com/cube-js/cube-ui-kit/commit/01a08acdd83678a2072200847ccafb7da028c0db) Thanks [@tenphi](https://github.com/tenphi)! - Full rework of Slider component. Split it into two separate components: Slider and RangeSlider. Add `gradation` property. Fix styling and accessibility issues.
+
+## 0.14.16
+
+### Patch Changes
+
+- [#283](https://github.com/cube-js/cube-ui-kit/pull/283) [`f07722e`](https://github.com/cube-js/cube-ui-kit/commit/f07722e11a3b61edf16a7ec67d23ba39abccee4f) Thanks [@tenphi](https://github.com/tenphi)! - Fix label positioning for side layout in Form.
+  Fix RangeSlider's usage inside forms with `labelPosition="side"`.
+
+## 0.14.15
+
+### Patch Changes
+
+- [#281](https://github.com/cube-js/cube-ui-kit/pull/281) [`a30cf7d`](https://github.com/cube-js/cube-ui-kit/commit/a30cf7d8966a52a5a5c90af4875de6bd9eae1a00) Thanks [@tenphi](https://github.com/tenphi)! - Checkbox now has an abilility to have both a label and a text value inside forms.
+
+## 0.14.14
+
+### Patch Changes
+
+- [#279](https://github.com/cube-js/cube-ui-kit/pull/279) [`14120c8`](https://github.com/cube-js/cube-ui-kit/commit/14120c8d6e651db1d79c22214952d7aa9befdc41) Thanks [@tenphi](https://github.com/tenphi)! - The `border` style now explicitly sets zero-width border for all border that are not mentioned by modifiers. So that it always overrides default values.
+
+## 0.14.13
+
+### Patch Changes
+
+- [#277](https://github.com/cube-js/cube-ui-kit/pull/277) [`86061ce`](https://github.com/cube-js/cube-ui-kit/commit/86061cea6aa42c852d46013ad168b1eda9f72345) Thanks [@tenphi](https://github.com/tenphi)! - Fix NumberInput default width
+
+- [#277](https://github.com/cube-js/cube-ui-kit/pull/277) [`86061ce`](https://github.com/cube-js/cube-ui-kit/commit/86061cea6aa42c852d46013ad168b1eda9f72345) Thanks [@tenphi](https://github.com/tenphi)! - The `border` style now explicitly sets zero-width border for all border that are not mentioned by modifiers. So that it always overrides default values.
+
+## 0.14.12
+
+### Patch Changes
+
+- [#271](https://github.com/cube-js/cube-ui-kit/pull/271) [`90cc2f8`](https://github.com/cube-js/cube-ui-kit/commit/90cc2f876233c3341206536b7f27f78b831e4e92) Thanks [@tenphi](https://github.com/tenphi)! - Add new `special` theme for `Button` and `Select` components.
+  Allow single input layout for `RangeSlider` component.
+  Add `ellipsis` property to `Select` component to allow text overflow of selected value.
+
+## 0.14.11
+
+### Patch Changes
+
+- [#269](https://github.com/cube-js/cube-ui-kit/pull/269) [`a339fa6`](https://github.com/cube-js/cube-ui-kit/commit/a339fa634c7e68b7e59fa6d5483c5b787d722293) Thanks [@tenphi](https://github.com/tenphi)! - Add support for `icon-size` property in preset style.
+
+- [#273](https://github.com/cube-js/cube-ui-kit/pull/273) [`32d062a`](https://github.com/cube-js/cube-ui-kit/commit/32d062a84d2410259911323b90bda998bdbe1bb8) Thanks [@tenphi](https://github.com/tenphi)! - Add optional ellipsis support for the `Title` component. Make it consistent with the `Text` component.
+
+## 0.14.10
+
+### Patch Changes
+
+- [#265](https://github.com/cube-js/cube-ui-kit/pull/265) [`e96fc55`](https://github.com/cube-js/cube-ui-kit/commit/e96fc55c16d2061039b403905cc7bc26b9419988) Thanks [@tenphi](https://github.com/tenphi)! - Increase the specificity of generated styles.
+
+- [#266](https://github.com/cube-js/cube-ui-kit/pull/266) [`abb4db7`](https://github.com/cube-js/cube-ui-kit/commit/abb4db7fd26dca35609a489548d1d0c9bfb04c97) Thanks [@tenphi](https://github.com/tenphi)! - Change preset style of the Select component and its options to `t3` to match TextInput.
+
+## 0.14.9
+
+### Patch Changes
+
+- [#263](https://github.com/cube-js/cube-ui-kit/pull/263) [`1a57278`](https://github.com/cube-js/cube-ui-kit/commit/1a5727834ade61ba2b837f409d5bce789b117ea3) Thanks [@tenphi](https://github.com/tenphi)! - Apply the correct preset style to all action components.
+
+## 0.14.8
+
+### Patch Changes
+
+- [#260](https://github.com/cube-js/cube-ui-kit/pull/260) [`deee752`](https://github.com/cube-js/cube-ui-kit/commit/deee7526cba3a3f6925a5f3a2a15cbf8be148c8f) Thanks [@MrFlashAccount](https://github.com/MrFlashAccount)! - Added new color token: "Warning"
+
 ## 0.14.7
 
 ### Patch Changes

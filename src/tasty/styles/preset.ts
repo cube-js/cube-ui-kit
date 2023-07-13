@@ -107,6 +107,7 @@ export function presetStyle({
   setVariationSetting(styles, 'wght', name);
 
   setCSSValue(styles, 'bold-font-weight', name, true);
+  setCSSValue(styles, 'icon-size', name, true);
 
   return styles;
 }

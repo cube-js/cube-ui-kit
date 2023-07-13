@@ -4,7 +4,7 @@ import { useRadioGroup } from '@react-aria/radio';
 import { useRadioGroupState } from '@react-stately/radio';
 
 import { useProviderProps } from '../../../provider';
-import { FormContext, useFormProps } from '../Form';
+import { FormContext, useFieldProps, useFormProps } from '../Form';
 import {
   BaseProps,
   BLOCK_STYLES,
@@ -14,7 +14,7 @@ import {
   tasty,
 } from '../../../tasty';
 import { FieldWrapper } from '../FieldWrapper';
-import { FormFieldProps } from '../../../shared';
+import { FieldBaseProps } from '../../../shared';
 import {
   castNullableStringValue,
   WithNullableValue,
@@ -27,7 +27,7 @@ import type { AriaRadioGroupProps } from '@react-types/radio';
 export interface CubeRadioGroupProps
   extends BaseProps,
     AriaRadioGroupProps,
-    FormFieldProps {
+    FieldBaseProps {
   groupStyles?: Styles;
 }
 
@@ -42,10 +42,6 @@ const RadioGroupElement = tasty({
       horizontal: 'row wrap',
     },
     gap: '1x',
-    padding: {
-      '': 0,
-      'inside-form & side-label': '1.5x 0',
-    },
   },
 });
 
@@ -53,6 +49,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
   props = castNullableStringValue(props);
   props = useProviderProps(props);
   props = useFormProps(props);
+  props = useFieldProps(props, { defaultValidationTrigger: 'onChange' });
 
   let {
     isDisabled,
@@ -124,6 +121,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
         requiredMark,
         tooltip,
         isHidden,
+        orientation,
         Component: radioGroup,
         ref: domRef,
         labelSuffix,

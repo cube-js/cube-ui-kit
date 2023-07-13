@@ -1,9 +1,8 @@
-import { forwardRef, useEffect, useRef } from 'react';
+import { forwardRef, useRef } from 'react';
 import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
 import { useSearchFieldState } from '@react-stately/searchfield';
 import { useSearchField } from '@react-aria/searchfield';
 
-import { useCombinedRefs } from '../../../utils/react';
 import {
   CubeTextInputBaseProps,
   TextInputBase,
@@ -39,22 +38,13 @@ export const SearchInput = forwardRef(function SearchInput(
   props = castNullableStringValue(props);
   props = useProviderProps(props);
 
-  let { isClearable, value, validationState } = props;
+  let { isClearable, validationState } = props;
 
-  const localRef = useRef(null);
-  const combinedRef = useCombinedRefs(ref, localRef);
   let inputRef = useRef(null);
-
-  useEffect(() => {
-    const el = combinedRef && combinedRef.current;
-
-    if (el && value != null && el.value !== value) {
-      el.value = value;
-    }
-  }, [combinedRef, value]);
 
   let state = useSearchFieldState(props);
   let { inputProps, clearButtonProps } = useSearchField(props, state, inputRef);
+  let showClearButton = isClearable && state.value !== '' && !props.isReadOnly;
 
   return (
     <TextInputBase
@@ -64,18 +54,21 @@ export const SearchInput = forwardRef(function SearchInput(
       type="search"
       icon={<SearchOutlined />}
       suffixPosition="after"
-      suffix={
-        isClearable &&
-        state.value !== '' &&
-        !props.isReadOnly && (
-          <ClearButton
-            type={validationState === 'invalid' ? 'clear' : 'neutral'}
-            theme={validationState === 'invalid' ? 'danger' : undefined}
-            {...ariaToCubeButtonProps(clearButtonProps)}
-          />
-        )
-      }
       {...props}
+      suffix={
+        props.suffix || showClearButton ? (
+          <>
+            {props.suffix}
+            {showClearButton && (
+              <ClearButton
+                type={validationState === 'invalid' ? 'clear' : 'neutral'}
+                theme={validationState === 'invalid' ? 'danger' : undefined}
+                {...ariaToCubeButtonProps(clearButtonProps)}
+              />
+            )}
+          </>
+        ) : undefined
+      }
     />
   );
 });

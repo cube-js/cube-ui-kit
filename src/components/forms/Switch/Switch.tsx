@@ -1,5 +1,5 @@
-import { useFocusableRef } from '@react-spectrum/utils';
 import { forwardRef, useMemo, useRef } from 'react';
+import { useFocusableRef } from '@react-spectrum/utils';
 import { useSwitch } from '@react-aria/switch';
 import { useHover } from '@react-aria/interactions';
 import { useToggleState } from '@react-stately/toggle';
@@ -22,46 +22,52 @@ import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react';
 import { HiddenInput } from '../../HiddenInput';
 import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../Label';
-import { useFormProps } from '../Form/Form';
+import { Text } from '../../content/Text';
 import { FieldWrapper } from '../FieldWrapper';
-import { FormFieldProps } from '../../../shared';
+import { FieldBaseProps } from '../../../shared';
 import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
+import { useFieldProps, useFormProps } from '../Form';
 
 import type { AriaSwitchProps } from '@react-types/switch';
 
 const SwitchWrapperElement = tasty({
   qa: 'SwitchWrapper',
   styles: {
+    display: 'flex',
     position: 'relative',
-    margin: {
-      '': 0,
-      'inside-form & side-label': '1x top',
+    placeItems: {
+      '': 'center stretch',
+      'side-label': 'baseline stretch',
     },
+    gap: '1x',
   },
 });
 
 const SwitchLabelElement = tasty({
   as: 'label',
-  qa: 'SwitchWrapper',
+  qa: 'SwitchLabel',
   styles: {
     position: 'relative',
     display: 'flex',
-    placeItems: 'center start',
+    placeItems: 'center',
     gap: '1x',
     flow: 'row',
     preset: 'input',
     width: 'min-content',
     cursor: 'pointer',
+    verticalAlign: 'baseline',
   },
 });
 
 const SwitchElement = tasty({
+  qa: 'Switch',
   styles: {
     position: 'relative',
     display: 'grid',
+    verticalAlign: 'baseline',
     placeItems: 'center',
     radius: 'round',
     fill: {
@@ -71,8 +77,14 @@ const SwitchElement = tasty({
     },
     color: '#white',
     border: false,
-    width: '5.25x 5.25x',
-    height: '3x 3x',
+    width: {
+      '': '5.25x 5.25x',
+      '[data-size="small"]': '3.5x 3.5x',
+    },
+    height: {
+      '': '3x 3x',
+      '[data-size="small"]': '2x 2x',
+    },
     outline: {
       '': '#purple-03.0',
       focused: '#purple-03',
@@ -86,8 +98,14 @@ const SwitchElement = tasty({
 
     Thumb: {
       position: 'absolute',
-      width: '2.5x',
-      height: '2.5x',
+      width: {
+        '': '2.5x 2.5x',
+        '[data-size="small"]': '1.5x 1.5x',
+      },
+      height: {
+        '': '2.5x 2.5x',
+        '[data-size="small"]': '1.5x 1.5x',
+      },
       radius: 'round',
       fill: {
         '': 'currentColor',
@@ -98,6 +116,7 @@ const SwitchElement = tasty({
       left: {
         '': '.25x',
         checked: '2.5x',
+        'checked & [data-size="small"]': '1.75x',
       },
       transition: 'left, theme',
       cursor: 'pointer',
@@ -109,16 +128,25 @@ export interface CubeSwitchProps
   extends BaseProps,
     OuterStyleProps,
     BlockStyleProps,
-    FormFieldProps,
+    FieldBaseProps,
     AriaSwitchProps {
   inputStyles?: Styles;
   isLoading?: boolean;
+  size?: 'large' | 'small';
 }
 
 function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   props = castNullableIsSelected(props);
   props = useProviderProps(props);
   props = useFormProps(props);
+  props = useFieldProps(props, {
+    defaultValidationTrigger: 'onChange',
+    valuePropsMapper: ({ value, onChange }) => ({
+      isSelected: value != null ? value : false,
+      isIndeterminate: false,
+      onChange: onChange,
+    }),
+  });
 
   let {
     qa,
@@ -139,10 +167,9 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
     requiredMark = true,
     tooltip,
     labelSuffix,
+    size = 'large',
     ...otherProps
   } = props;
-
-  label = label || children;
 
   let styles = extractStyles(props, OUTER_STYLES);
 
@@ -175,15 +202,21 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   };
 
   const switchField = (
-    <SwitchWrapperElement qa={qa || 'Switch'} mods={mods}>
+    <SwitchWrapperElement mods={mods} data-size={size}>
       <HiddenInput
         data-qa="HiddenInput"
         {...mergeProps(inputProps, focusProps)}
         ref={inputRef}
       />
-      <SwitchElement mods={mods} styles={inputStyles}>
+      <SwitchElement
+        qa={qa || 'Switch'}
+        mods={mods}
+        data-size={size}
+        styles={inputStyles}
+      >
         <div data-element="Thumb" aria-hidden="true" />
       </SwitchElement>
+      {children ? <Text nowrap>{children}</Text> : null}
     </SwitchWrapperElement>
   );
 
@@ -201,6 +234,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
           isDisabled,
           validationState,
           message,
+          children,
           description,
           requiredMark,
           tooltip,
@@ -221,7 +255,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
       ref={domRef}
     >
       {switchField}
-      {label && (
+      {label ? (
         <Element
           styles={labelStyles}
           mods={{
@@ -237,7 +271,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
             </>
           ) : null}
         </Element>
-      )}
+      ) : null}
     </SwitchLabelElement>
   );
 }

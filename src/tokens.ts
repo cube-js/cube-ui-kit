@@ -24,6 +24,7 @@ const colors = {
   success: '49, 195, 124',
   'success-text': '48, 166, 102',
   note: '251, 188, 5',
+  warning: '224, 86, 43',
 };
 
 function color(name, opacity = 1) {
@@ -133,33 +134,47 @@ const TOKENS = {
   'h6-letter-spacing': '0',
   'h6-font-weight': '400',
   'h6-font-variation-wght': '700',
+  'h5-icon-size': '18px',
+  // h6
+  'h6-font-size': '14px',
+  'h6-line-height': '20px',
+  'h6-letter-spacing': '0.01em',
+  'h6-font-weight': '600',
+  'h6-icon-size': '16px',
   // t1
   't1-font-size': '19px',
   't1-line-height': '24px',
   't1-letter-spacing': '0',
   't1-font-weight': '400',
   't1-font-variation-wght': '400',
+  't1-icon-size': '20px',
   // t2
   't2-font-size': '17px',
   't2-line-height': '22px',
   't2-font-weight': '400',
   't2-font-variation-wght': '400',
   't2-letter-spacing': '0',
+  't2-letter-spacing': '0',
+  't2-icon-size': '18px',
   // t2m
   't2m-font-size': '17px',
   't2m-line-height': '22px',
   't2m-font-weight': '400',
   't2m-font-variation-wght': '500',
   't2m-letter-spacing': '0',
+  't2m-font-weight': '500',
+  't2m-icon-size': '18px',
   // t3
   't3-font-size': '15px',
   't3-line-height': '20px',
   't3-font-weight': '400',
   't3-font-variation-wght': '400',
   't3-letter-spacing': '0',
+  't3-icon-size': '16px',
   // t3m
   't3m-font-size': '15px',
   't3m-line-height': '20px',
+
   't3m-font-weight': '400',
   't3m-font-variation-wght': '500',
   't3m-letter-spacing': '0',
@@ -169,6 +184,9 @@ const TOKENS = {
   't3s-font-weight': '400',
   't3s-font-variation-wght': '600',
   't3s-letter-spacing': '0',
+  't3m-letter-spacing': '0',
+  't3m-font-weight': '500',
+  't3m-icon-size': '16px',
   // t4
   't4-font-size': '13px',
   't4-line-height': '18px',
@@ -181,30 +199,37 @@ const TOKENS = {
   't4m-font-weight': '400',
   't4m-font-variation-wght': '500',
   't4m-letter-spacing': '0',
+  't4-letter-spacing': '0',
+  't4-font-weight': '500',
+  't4-icon-size': '14px',
   // p1
   'p1-font-size': '19px',
   'p1-line-height': '28px',
   'p1-letter-spacing': '0',
   'p1-font-weight': '400',
   'p1-font-variation-wght': '400',
+  'p1-icon-size': '20px',
   // p2
   'p2-font-size': '17px',
   'p2-line-height': '24px',
   'p2-font-weight': '400',
   'p2-font-variation-wght': '400',
   'p2-letter-spacing': '0',
+  'p2-icon-size': '18px',
   // p3
   'p3-font-size': '15px',
   'p3-line-height': '22px',
   'p3-font-weight': '400',
   'p3-font-variation-wght': '400',
   'p3-letter-spacing': '0',
+  'p3-icon-size': '16px',
   // p4
   'p4-font-size': '13px',
   'p4-line-height': '20px',
   'p4-font-weight': '400',
   'p4-font-variation-wght': '400',
   'p4-letter-spacing': '0',
+  'p4-icon-size': '14px',
   // c1
   'c1-font-size': '15px',
   'c1-line-height': '20px',
@@ -212,6 +237,7 @@ const TOKENS = {
   'c1-font-variation-wght': '500',
   'c1-letter-spacing': '0',
   'c1-text-transform': 'uppercase',
+  'c1-icon-size': '16px',
   // c2
   'c2-font-size': '13px',
   'c2-line-height': '18px',
@@ -219,6 +245,7 @@ const TOKENS = {
   'c2-font-variation-wght': '500',
   'c2-letter-spacing': '0',
   'c2-text-transform': 'uppercase',
+  'c2-icon-size': '14px',
   // tag
   'tag-font-size': '13px',
   'tag-line-height': '12px',
@@ -247,6 +274,7 @@ const TOKENS = {
   'default-font-weight': 'var(--t3-font-weight)',
   'default-bold-font-weight': '400',
   'default-font-variation-weight': '400',
+  'default-icon-size': 'inherit',
   // scrollbar colors
   'scrollbar-width': '1.5x',
   'scrollbar-outline-width': '1ow',

@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { setFailed, setOutput } from '@actions/core';
 import { getExecOutput } from '@actions/exec';
-import table from 'markdown-table';
+import { markdownTable } from 'markdown-table';
 import bytes from 'bytes';
 
 async function run() {
@@ -29,7 +29,7 @@ async function run() {
     return JSON.parse(stdout);
   })();
 
-  const formattedTable = table([
+  const formattedTable = markdownTable([
     ['Name', 'Size', 'Passed?'],
     ...jsonOutput.map((entry) => {
       const currentBaselineEntry = baselineOutputs?.find(

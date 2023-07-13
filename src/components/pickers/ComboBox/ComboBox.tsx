@@ -5,12 +5,13 @@ import {
 } from '@ant-design/icons';
 import {
   cloneElement,
+  ForwardedRef,
   forwardRef,
   ReactElement,
   RefObject,
   useMemo,
 } from 'react';
-import { useComboBoxState } from '@react-stately/combobox';
+import { FilterFn, useComboBoxState } from '@react-stately/combobox';
 import { useComboBox } from '@react-aria/combobox';
 import { useButton } from '@react-aria/button';
 import { useHover } from '@react-aria/interactions';
@@ -18,7 +19,7 @@ import { useFilter } from '@react-aria/i18n';
 import { Item } from '@react-stately/collections';
 import { useOverlayPosition } from '@react-aria/overlays';
 
-import { useFormProps } from '../../forms/Form';
+import { useFieldProps, useFormProps } from '../../forms';
 import { useProviderProps } from '../../../provider';
 import {
   BLOCK_STYLES,
@@ -118,14 +119,28 @@ export interface CubeComboBoxProps<T>
   /** An optional keyboard delegate implementation, to override the default. */
   keyboardDelegate?: KeyboardDelegate;
   loadingState?: LoadingState;
-  filter?: (val: any, str: string) => boolean;
+  /**
+   * The filter function used to determine if a option should be included in the combo box list.
+   * Has no effect when `items` is provided.
+   */
+  filter?: FilterFn;
   size?: 'small' | 'default' | 'large' | string;
   suffixPosition?: 'before' | 'after';
 }
 
-function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
+export const ComboBox = forwardRef(function ComboBox<T extends object>(
+  props: CubeComboBoxProps<T>,
+  ref: ForwardedRef<HTMLDivElement>,
+) {
   props = useProviderProps(props);
   props = useFormProps(props);
+  props = useFieldProps(props, {
+    valuePropsMapper: ({ value, onChange }) => ({
+      inputValue: value != null ? value : '',
+      onInputChange: (val) => onChange(val, !props.allowsCustomValue),
+      onSelectionChange: onChange,
+    }),
+  });
 
   let {
     qa,
@@ -174,8 +189,43 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
 
   let isAsync = loadingState != null;
   let { contains } = useFilter({ sensitivity: 'base' });
+
+  const comboboxProps = {
+    ...otherProps,
+    inputValue: props.inputValue,
+    defaultInputValue: props.defaultInputValue,
+    defaultItems: props.defaultItems,
+    defaultSelectedKey: props.defaultSelectedKey,
+    children: props.children,
+    items: props.items,
+    selectedKey: props.selectedKey,
+    label: props.label,
+    isDisabled: props.isDisabled,
+    validationState: props.validationState,
+    placeholder: props.placeholder,
+    description: props.description,
+    autoFocus: props.autoFocus,
+    isRequired: props.isRequired,
+    allowsCustomValue: props.allowsCustomValue,
+    menuTrigger,
+    disabledKeys: props.disabledKeys,
+    name: props.name,
+    onInputChange: props.onInputChange,
+    errorMessage: props.errorMessage,
+    isReadOnly: props.isReadOnly,
+    onBlur: props.onBlur,
+    onFocus: props.onFocus,
+    onSelectionChange: props.onSelectionChange,
+    onFocusChange: props.onFocusChange,
+    onKeyDown: props.onKeyDown,
+    onKeyUp: props.onKeyUp,
+    onOpenChange: props.onOpenChange,
+    defaultFilter: filter || contains,
+    allowsEmptyCollection: isAsync,
+  } as const;
+
   let state = useComboBoxState({
-    ...props,
+    ...comboboxProps,
     defaultFilter: filter || contains,
     allowsEmptyCollection: isAsync,
   });
@@ -209,7 +259,7 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
     buttonProps: triggerProps,
   } = useComboBox(
     {
-      ...props,
+      ...comboboxProps,
       inputRef,
       buttonRef: triggerRef,
       listBoxRef,
@@ -385,14 +435,13 @@ function ComboBox<T extends object>(props: CubeComboBoxProps<T>, ref) {
       }}
     />
   );
-}
+}) as unknown as (<T>(
+  props: CubeComboBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },
+) => JSX.Element) & { Item: typeof Item };
 
-const _ComboBox = forwardRef(ComboBox);
-
-const __ComboBox = Object.assign(
-  _ComboBox as typeof _ComboBox & { Item: typeof Item },
-  { Item },
-);
-(__ComboBox as any).cubeInputType = 'ComboBox';
-
-export { __ComboBox as ComboBox };
+ComboBox.Item = Item;
+Object.defineProperty(ComboBox, 'cubeInputType', {
+  value: 'ComboBox',
+  enumerable: false,
+  configurable: false,
+});

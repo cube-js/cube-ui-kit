@@ -3,6 +3,7 @@ import {
   ForwardedRef,
   PropsWithChildren,
   useContext,
+  useMemo,
 } from 'react';
 
 import { BreakpointsProvider, Props } from './tasty';
@@ -37,31 +38,50 @@ export function Provider(allProps: PropsWithChildren<ProviderProps>) {
     ref,
   } = allProps;
 
+  const parentContext = useContext(UIKitContext);
+
   if (breakpoints) {
     children = (
       <BreakpointsProvider value={breakpoints}>{children}</BreakpointsProvider>
     );
   }
 
-  const parentContext = useContext(UIKitContext);
-  const props = {
-    ref,
-    breakpoints,
-    insideForm,
-    isDisabled,
-    isReadOnly,
-    isRequired,
-    validationState,
-    router,
-    root,
-  };
-  const newValue = Object.assign({}, parentContext);
+  const props = useMemo(
+    () => ({
+      ref,
+      breakpoints,
+      insideForm,
+      isDisabled,
+      isReadOnly,
+      isRequired,
+      validationState,
+      router,
+      root,
+    }),
+    [
+      ref,
+      breakpoints,
+      insideForm,
+      isDisabled,
+      isReadOnly,
+      isRequired,
+      validationState,
+      router,
+      root,
+    ],
+  );
 
-  Object.keys(props).forEach((key) => {
-    if (props[key] != null) {
-      newValue[key] = props[key];
-    }
-  });
+  const newValue = useMemo(() => {
+    let newValue = Object.assign({}, parentContext);
+
+    Object.keys(props).forEach((key) => {
+      if (props[key] != null) {
+        newValue[key] = props[key];
+      }
+    });
+
+    return newValue;
+  }, [parentContext, props]);
 
   return (
     <UIKitContext.Provider value={newValue}>{children}</UIKitContext.Provider>

@@ -2,7 +2,7 @@ import { CubeAlertProps } from '../../content/Alert';
 
 import { Field } from './Field';
 import { SubmitError } from './SubmitError';
-import { useForm } from './useForm';
+import { useForm } from './use-form';
 import { useFormProps, FormContext, Form as _Form } from './Form';
 
 const Form = Object.assign(
@@ -15,7 +15,9 @@ const Form = Object.assign(
 );
 
 export { useFormProps, Form, Field, useForm, FormContext, SubmitError };
+export { useFieldProps } from './use-field';
 export type { CubeFormProps } from './Form';
-export type { CubeFormInstance } from './useForm';
+export type { CubeFormInstance } from './use-form';
 export type { FieldTypes, Fields } from './types';
+export type { UseFieldParams, UseFieldPropsParams } from './use-field';
 export type { CubeAlertProps as CubeSubmitErrorProps };

@@ -13,11 +13,12 @@ import {
 import { Provider } from '../provider';
 import { TOKENS } from '../tokens';
 import { useViewportSize } from '../utils/react';
+import { TrackingProps, TrackingProvider } from '../providers/TrackingProvider';
 
 import { PortalProvider } from './portal';
 import { GlobalStyles } from './GlobalStyles';
 import { AlertDialogApiProvider } from './overlays/AlertDialog';
-import { NotificationsProvider } from './overlays/NewNotifications';
+import { NotificationsProvider } from './overlays/NewNotifications/NotificationsContext/NotificationsProvider';
 
 const RootElement = tasty({
   id: 'cube-ui-kit-root',
@@ -44,6 +45,7 @@ export interface CubeRootProps extends BaseProps {
   font?: string;
   monospaceFont?: string;
   applyLegacyTokens?: boolean;
+  tracking?: TrackingProps;
 }
 
 const IS_DVH_SUPPORTED =
@@ -62,6 +64,7 @@ export function Root(allProps: CubeRootProps) {
     font,
     monospaceFont,
     applyLegacyTokens,
+    tracking,
     ...props
   } = allProps;
 
@@ -76,7 +79,7 @@ export function Root(allProps: CubeRootProps) {
   // when the address bar/bottom toolbars show and hide on scroll and vh units are fixed.
   // Also, the visual viewport is smaller than the layout viewport when the virtual keyboard
   // is up, so use the VisualViewport API to ensure the tray is displayed above the keyboard.
-  let viewport = useViewportSize();
+  let viewport = useViewportSize({ isDisabled: IS_DVH_SUPPORTED });
   let [height, setHeight] = useState(
     IS_DVH_SUPPORTED ? undefined : viewport.height,
   );
@@ -118,32 +121,36 @@ export function Root(allProps: CubeRootProps) {
 
   return (
     <Provider router={router} root={rootRef}>
-      <StyleSheetManager disableVendorPrefixes>
-        <RootElement
-          ref={ref}
-          {...filterBaseProps(props, { eventProps: true })}
-          styles={styles}
-          style={{
-            '--cube-dynamic-viewport-height': height ? height + 'px' : '100dvh',
-          }}
-        >
-          <GlobalStyles
-            bodyStyles={bodyStyles}
-            applyLegacyTokens={applyLegacyTokens}
-            publicUrl={publicUrl}
-            fonts={fonts}
-            font={font}
-            monospaceFont={monospaceFont}
-          />
-          <ModalProvider>
-            <PortalProvider value={ref}>
-              <NotificationsProvider rootRef={ref}>
-                <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
-              </NotificationsProvider>
-            </PortalProvider>
-          </ModalProvider>
-        </RootElement>
-      </StyleSheetManager>
+      <TrackingProvider event={tracking?.event}>
+        <StyleSheetManager disableVendorPrefixes>
+          <RootElement
+            ref={ref}
+            {...filterBaseProps(props, { eventProps: true })}
+            styles={styles}
+            style={{
+              '--cube-dynamic-viewport-height': height
+                ? height + 'px'
+                : '100dvh',
+            }}
+          >
+            <GlobalStyles
+              bodyStyles={bodyStyles}
+              applyLegacyTokens={applyLegacyTokens}
+              publicUrl={publicUrl}
+              fonts={fonts}
+              font={font}
+              monospaceFont={monospaceFont}
+            />
+            <ModalProvider>
+              <PortalProvider value={ref}>
+                <NotificationsProvider rootRef={ref}>
+                  <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
+                </NotificationsProvider>
+              </PortalProvider>
+            </ModalProvider>
+          </RootElement>
+        </StyleSheetManager>
+      </TrackingProvider>
     </Provider>
   );
 }

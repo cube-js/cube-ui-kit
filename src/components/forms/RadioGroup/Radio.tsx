@@ -16,8 +16,8 @@ import { mergeProps } from '../../../utils/react';
 import { useProviderProps } from '../../../provider';
 import { INLINE_LABEL_STYLES } from '../Label';
 import { HiddenInput } from '../../HiddenInput';
-import { useFormProps } from '../Form';
-import { FormFieldProps } from '../../../shared';
+import { useFieldProps, useFormProps } from '../Form';
+import { FieldBaseProps } from '../../../shared';
 
 import { RadioGroup } from './RadioGroup';
 import { useRadioProvider } from './context';
@@ -73,6 +73,7 @@ const RadioButtonElement = tasty({
       '': '#purple-03.0',
       focused: '#purple-03',
     },
+    transition: 'theme',
   },
 });
 
@@ -126,7 +127,7 @@ const RadioLabelElement = tasty({
 export interface CubeRadioProps
   extends BaseProps,
     AriaRadioProps,
-    FormFieldProps {
+    FieldBaseProps {
   inputStyles?: Styles;
   /* The visual type of the radio button */
   type?: 'button' | 'radio';
@@ -135,6 +136,7 @@ export interface CubeRadioProps
 function Radio(props: CubeRadioProps, ref) {
   props = useProviderProps(props);
   props = useFormProps(props);
+  props = useFieldProps(props, { defaultValidationTrigger: 'onChange' });
 
   let {
     qa,

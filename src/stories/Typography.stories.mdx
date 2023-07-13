@@ -23,7 +23,7 @@ There are many ways to create typography elements like text labels and headings.
 
 <Canvas>
   <Story name="Presets">
-    <Flow gap="1x">
+    <Flow gap="1x" color="#dark">
       <Block preset="h1">The quick brown fox jumps over the lazy dog - h1</Block>
       <Block preset="h2">The quick brown fox jumps over the lazy dog - h2</Block>
       <Block preset="h3">The quick brown fox jumps over the lazy dog - h3</Block>
@@ -105,13 +105,9 @@ Use `!` prefix to open link in new tab.
 <Canvas>
   <Story name="External link">
     <Paragraph>
-      <Link to="https://cube-uikit-storybook.netlify.app/">
-        Open Cube Cloud UI Kit
-      </Link>
+      <Link to="https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit</Link>
       &nbsp; |{' '}
-      <Link to="!https://cube-uikit-storybook.netlify.app/">
-        Open Cube Cloud UI Kit in new tab
-      </Link>
+      <Link to="!https://cube-uikit-storybook.netlify.app/">Open Cube Cloud UI Kit in new tab</Link>
     </Paragraph>
   </Story>
 </Canvas>

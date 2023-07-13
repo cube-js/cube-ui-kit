@@ -65,7 +65,10 @@ export type { CubeTagProps } from './components/content/Tag/Tag';
 export { SearchInput } from './components/forms/SearchInput/SearchInput';
 export type { CubeSearchInputProps } from './components/forms/SearchInput/SearchInput';
 export { Submit } from './components/actions/Button/Submit';
-export type { CubeTextInputBaseProps } from './components/forms/TextInput/TextInputBase';
+export type {
+  CubeTextInputBaseProps,
+  AriaTextFieldProps,
+} from './components/forms/TextInput/TextInputBase';
 export type { CubeTextInputBaseProps as CubeTextInputProps } from './components/forms/TextInput/TextInputBase';
 export { TextInput } from './components/forms/TextInput/TextInput';
 export { TextArea } from './components/forms/TextArea/TextArea';
@@ -82,8 +85,10 @@ export type { CubeSwitchProps } from './components/forms/Switch/Switch';
 export { Radio } from './components/forms/RadioGroup/Radio';
 export type { CubeRadioProps } from './components/forms/RadioGroup/Radio';
 export type { CubeRadioGroupProps } from './components/forms/RadioGroup/RadioGroup';
-export { RangeSlider } from './components/forms/RangeSlider/RangeSlider';
-export type { CubeRangeSliderProps } from './components/forms/RangeSlider/RangeSlider';
+export { RangeSlider } from './components/forms/Slider/RangeSlider';
+export type { CubeRangeSliderProps } from './components/forms/Slider/RangeSlider';
+export { Slider } from './components/forms/Slider/Slider';
+export type { CubeSliderProps } from './components/forms/Slider/Slider';
 export { ComboBox } from './components/pickers/ComboBox/ComboBox';
 export type { CubeComboBoxProps } from './components/pickers/ComboBox/ComboBox';
 export { Menu } from './components/pickers/Menu/Menu';
@@ -152,8 +157,6 @@ export const Typography = {
 export { Text, Title, Paragraph };
 export type { CubeTextProps, CubeTitleProps, CubeParagraphProps };
 
-export { useContextStyles, StyleProvider } from './providers/StyleProvider';
-
 export { Provider } from './provider';
 export type { useProviderProps } from './provider';
 export { Portal } from './components/portal';
@@ -182,7 +185,6 @@ export * from './tasty';
 
 export { ModalProvider } from '@react-aria/overlays';
 export * from './utils/react';
-export * from './styled';
 export * from './tasty';
 export { default as copy } from 'clipboard-copy';
 export * from '@react-aria/ssr';

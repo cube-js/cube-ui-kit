@@ -16,6 +16,7 @@ const PreElement = tasty({
   className: 'cube-prism-code',
   styles: {
     margin: 0,
+    padding: 0,
 
     Code: {
       display: 'block',

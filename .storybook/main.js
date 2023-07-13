@@ -1,30 +1,11 @@
 // @ts-check
-const webpack = require('webpack');
-
-/**
- * @readonly
- * @type {import('@swc/core').Config}
- */
-const swcConfig = {
-  jsc: {
-    parser: { syntax: 'typescript', tsx: true },
-    transform: { react: { runtime: 'automatic' } },
-  },
-  env: {
-    targets: 'last 2 Safari major versions',
-  },
-};
 
 /** @type {import('@storybook/core-common').StorybookConfig} */
 const config = {
   staticDirs: ['../public'],
-  framework: '@storybook/react',
-  core: {
-    builder: {
-      name: 'webpack5',
-      options: { fsCache: true, lazyCompilation: true },
-    },
-    disableTelemetry: true,
+  framework: {
+    name: '@storybook/react-vite',
+    options: {},
   },
   features: {
     postcss: false,
@@ -43,18 +24,15 @@ const config = {
     {
       name: 'storybook-addon-turbo-build',
       options: {
-        esbuildMinifyOptions: { target: 'es2021' },
-        managerTranspiler: () => ({ loader: 'swc-loader', options: swcConfig }),
-        previewTranspiler: () => ({ loader: 'swc-loader', options: swcConfig }),
+        esbuildMinifyOptions: {
+          target: 'es2021',
+        },
       },
     },
+    '@storybook/addon-mdx-gfm',
   ],
-  webpackFinal: (config) => {
-    config.plugins.push(new webpack.DefinePlugin({ SC_DISABLE_SPEEDY: true }));
-    config.performance.hints = false;
-
-    return config;
+  docs: {
+    autodocs: true,
   },
 };
-
-module.exports = config;
+export default config;

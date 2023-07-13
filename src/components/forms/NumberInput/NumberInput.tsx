@@ -3,7 +3,7 @@ import { useLocale } from '@react-aria/i18n';
 import { useNumberFieldState } from '@react-stately/numberfield';
 import { useNumberField } from '@react-aria/numberfield';
 
-import { useFormProps } from '../Form';
+import { useFieldProps } from '../Form';
 import { useProviderProps } from '../../../provider';
 import {
   CubeTextInputBaseProps,
@@ -26,6 +26,12 @@ export interface CubeNumberInputProps
   hideStepper?: boolean;
 }
 
+const StyledTextInputBase = tasty(TextInputBase, {
+  wrapperStyles: {
+    width: 'initial 13x 100%',
+  },
+});
+
 const StepperContainer = tasty({
   styles: {
     display: 'grid',
@@ -39,7 +45,7 @@ const StepperContainer = tasty({
 function NumberInput(props: WithNullableValue<CubeNumberInputProps>, ref) {
   props = castNullableNumberValue(props);
   props = useProviderProps(props);
-  props = useFormProps(props);
+  props = useFieldProps(props);
 
   let { hideStepper, suffix, value, defaultValue, onChange, ...otherProps } =
     props;
@@ -56,7 +62,7 @@ function NumberInput(props: WithNullableValue<CubeNumberInputProps>, ref) {
   } = useNumberField(props, state, inputRef);
 
   return (
-    <TextInputBase
+    <StyledTextInputBase
       {...otherProps}
       ref={ref}
       labelProps={labelProps}

@@ -8,7 +8,7 @@ export const StyledButton = tasty(Button, {
   },
 });
 
-export const GlobalStyledHeading = tasty('div.myButton', {
+export const GlobalStyledHeading = tasty('.myButton', {
   display: 'inline-block',
   padding: '1x 2x',
   preset: 't2',

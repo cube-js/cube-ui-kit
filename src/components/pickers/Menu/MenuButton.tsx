@@ -3,54 +3,56 @@ import { CheckOutlined } from '@ant-design/icons';
 
 import { Button, CubeButtonProps } from '../../actions';
 import { Text } from '../../content/Text';
-import { Styles, tasty } from '../../../tasty';
+import { tasty } from '../../../tasty';
 import { Space } from '../../layout/Space';
 
-const ACTION_BUTTON: Styles = {
-  border: {
-    '': '#clear',
-    pressed: '#clear',
-  },
-  fill: {
-    '': '#clear',
-    'hovered | focused': '#dark.04',
-    'pressed | selected': '#purple.10',
-    'focused & selected': '##purple.16',
-    'focused & pressed': '#purple.10',
-    disabled: '#clear',
-  },
-  color: {
-    '': '#dark-02',
-    'hovered | focused': '#dark-02',
-    'pressed | selected': '#purple-text',
-    'focused & selected': '#purple-text',
-    'focused & pressed': '#purple-text',
-    disabled: '#dark-04',
-  },
-  cursor: {
-    '': 'pointer',
-    disabled: 'default',
-  },
-  shadow: '#clear',
-  padding: {
-    '': '(0.75x - 1px) (1.5x - 1px)',
-    'selectable & !selected':
-      '(0.75x - 1px) (1.5x - 1px) (0.75x - 1px) (1.5x - 1px)',
-    'selectionIcon & selectable & !selected':
-      '(0.75x - 1px) (1.5x - 1px) (0.75x - 1px) (1.5x - 1px + 22px)',
-  },
-  display: 'flex',
-  flow: 'row',
-  justifyContent: 'start',
-  Postfix: {
+const StyledButton = tasty(Button, {
+  styles: {
+    border: {
+      '': '#clear',
+      pressed: '#clear',
+    },
+    fill: {
+      '': '#clear',
+      'hovered | focused': '#dark.04',
+      'pressed | selected': '#purple.10',
+      'focused & selected': '##purple.16',
+      'focused & pressed': '#purple.10',
+      disabled: '#clear',
+    },
     color: {
-      '': '#dark-03',
-      'hovered | focused': '#dark-03',
+      '': '#dark-02',
+      'hovered | focused': '#dark-02',
       'pressed | selected': '#purple-text',
+      'focused & selected': '#purple-text',
+      'focused & pressed': '#purple-text',
       disabled: '#dark-04',
     },
+    cursor: {
+      '': 'pointer',
+      disabled: 'default',
+    },
+    shadow: '#clear',
+    padding: {
+      '': '(0.75x - 1px) (1.5x - 1px)',
+      'selectable & !selected':
+        '(0.75x - 1px) (1.5x - 1px) (0.75x - 1px) (1.5x - 1px)',
+      'selectionIcon & selectable & !selected':
+        '(0.75x - 1px) (1.5x - 1px) (0.75x - 1px) (1.5x - 1px + 22px)',
+    },
+    display: 'flex',
+    flow: 'row',
+    justifyContent: 'start',
+    Postfix: {
+      color: {
+        '': '#dark-03',
+        'hovered | focused': '#dark-03',
+        'pressed | selected': '#purple-text',
+        disabled: '#dark-04',
+      },
+    },
   },
-};
+});
 
 const RadioIcon = tasty({
   styles: {
@@ -84,6 +86,7 @@ export type MenuButtonProps = {
   postfix: ReactNode;
   selectionIcon?: MenuSelectionType;
   isSelectable?: boolean;
+  // eslint-disable-next-line react/boolean-prop-naming
   disabled?: boolean;
 } & CubeButtonProps;
 
@@ -117,10 +120,9 @@ export function MenuButton({
   };
 
   return (
-    <Button
+    <StyledButton
       type="neutral"
       size="small"
-      styles={ACTION_BUTTON}
       {...props}
       icon={checkIcon}
       mods={mods}
@@ -132,6 +134,6 @@ export function MenuButton({
         </Text>
         {postfix && getPostfix(postfix)}
       </Space>
-    </Button>
+    </StyledButton>
   );
 }

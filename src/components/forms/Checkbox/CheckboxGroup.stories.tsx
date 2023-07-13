@@ -18,6 +18,7 @@ export default {
 
 const Template = (props) => (
   <Checkbox.Group
+    aria-label="Checkbox Group"
     {...props}
     onChange={(query) => console.log('onChange event', query)}
   >
@@ -32,3 +33,6 @@ Default.args = {};
 
 export const Invalid = Template.bind({});
 Invalid.args = { validationState: 'invalid' };
+
+export const WithLabel = Template.bind({});
+WithLabel.args = { label: 'Checkbox Group', 'aria-label': undefined };

@@ -10,34 +10,32 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: --max-old-space-size=4096
     outputs:
       published: ${{ steps.changesets.outputs.published }}
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-
-      - uses: actions/cache@v2
-        id: yarn-cache
-        with:
-          path: |
-            **/node_modules
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-            ${{ runner.os }}-yarn
+          cache: 'pnpm'
 
       - name: Install Dependencies
-        run: yarn --frozen-lockfile
+        run: pnpm install
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: yarn release
+          publish: pnpm release
           commit: 'chore: release'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -52,21 +50,17 @@ jobs:
       name: Chromatic Production
       url: ${{ steps.publish_chromatic.outputs.url }}
     env:
+      NODE_OPTIONS: --max-old-space-size=4096
       CHROMATIC_RETRIES: 5
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
-      - uses: actions/cache@v2
-        id: yarn-cache
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
         with:
-          path: |
-            **/node_modules
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-            ${{ runner.os }}-yarn
+          version: 8
 
       - uses: actions/cache@v2
         name: Download storybook cache
@@ -80,14 +74,16 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: yarn --frozen-lockfile
+        run: pnpm install
 
       - name: Publish to Chromatic
         id: publish_chromatic
         uses: chromaui/action@v1
         with:
+          onlyChanged: true
           exitZeroOnChanges: true
           exitOnceUploaded: true
           autoAcceptChanges: true
@@ -102,20 +98,16 @@ jobs:
       name: Docs Production
       url: ${{ steps.publish_docs.outputs.NETLIFY_PREVIEW_URL }}
     env:
+      NODE_OPTIONS: --max-old-space-size=4096
       NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
       NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/cache@v2
-        id: yarn-cache
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
         with:
-          path: |
-            **/node_modules
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-            ${{ runner.os }}-yarn
+          version: 8
 
       - uses: actions/cache@v2
         name: Download storybook cache
@@ -129,12 +121,13 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: yarn --frozen-lockfile
+        run: pnpm install
 
       - name: Build Docs
-        run: yarn build-docs --quiet
+        run: pnpm build-docs --quiet
 
       - name: Deploy docs to Netlify
         uses: South-Paw/action-netlify-deploy@v1.2.1

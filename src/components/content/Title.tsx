@@ -45,12 +45,21 @@ const TitleElement = tasty({
     },
     margin: '0',
     whiteSpace: {
-      '': 'initial',
+      '': 'inherit',
       'nowrap | ellipsis': 'nowrap',
     },
-    textOverflow: 'ellipsis',
-    overflow: 'hidden',
-    width: 'max 100%',
+    textOverflow: {
+      '': false,
+      ellipsis: 'ellipsis',
+    },
+    overflow: {
+      '': false,
+      ellipsis: 'hidden',
+    },
+    width: {
+      '': false,
+      ellipsis: 'max 100%',
+    },
   },
 });
 

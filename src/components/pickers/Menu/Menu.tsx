@@ -1,4 +1,4 @@
-import React, { ReactElement, ReactNode } from 'react';
+import React, { cloneElement, ReactElement, ReactNode } from 'react';
 import { DOMRef, ItemProps } from '@react-types/shared';
 import {
   Item as BaseItem,
@@ -31,9 +31,13 @@ export interface CubeMenuProps<T>
   extends ContainerStyleProps,
     AriaMenuProps<T> {
   selectionIcon?: MenuSelectionType;
+  // @deprecated
   header?: ReactNode;
   footer?: ReactNode;
   styles?: Styles;
+  itemStyles?: Styles;
+  sectionStyles?: Styles;
+  sectionHeadingStyles?: Styles;
   qa?: BaseProps['qa'];
 }
 
@@ -41,7 +45,15 @@ function Menu<T extends object>(
   props: CubeMenuProps<T>,
   ref: DOMRef<HTMLUListElement>,
 ) {
-  const { header, footer, selectionIcon, qa } = props;
+  const {
+    header,
+    footer,
+    itemStyles,
+    sectionStyles,
+    sectionHeadingStyles,
+    selectionIcon,
+    qa,
+  } = props;
   const domRef = useDOMRef(ref);
   const contextProps = useMenuContext();
   const completeProps = mergeProps(contextProps, props);
@@ -78,6 +90,9 @@ function Menu<T extends object>(
               key={item.key}
               item={item}
               state={state}
+              styles={sectionStyles}
+              itemStyles={itemStyles}
+              headingStyles={sectionHeadingStyles}
               selectionIcon={selectionIcon}
               onAction={completeProps.onAction}
             />
@@ -89,6 +104,7 @@ function Menu<T extends object>(
             key={item.key}
             item={item}
             state={state}
+            styles={itemStyles}
             selectionIcon={selectionIcon}
             onAction={completeProps.onAction}
           />
@@ -98,7 +114,9 @@ function Menu<T extends object>(
           menuItem = item.props.wrapper(menuItem);
         }
 
-        return menuItem;
+        return cloneElement(menuItem, {
+          key: item.key,
+        });
       })}
     </StyledMenu>
   );

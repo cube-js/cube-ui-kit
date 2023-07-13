@@ -75,7 +75,7 @@ const Demo = () => {
   - Arrays inside form data are not supported.
 - Field component
   - It's a virtual wrapper.
-  - Nested properties are handled via field names with `.` notation. Also, you can specify the name via array like `name={['user', 'email']}`.
+  - Nested properties are handled via field names with `.` notation.
   - Do not support `validating` state. (But validation rules can be async)
 
 ## Usage
@@ -156,6 +156,48 @@ export function LoginForm() {
           <Input.Password type="password" />
         </Field>
         <Submit>Submit</Submit>
+      </Form>
+    )}
+  </Story>
+</Canvas>
+
+Use `orientation="horizontal"` property to create a horizontal form.
+
+<Canvas>
+  <Story name="HorizontalLoginForm">
+    {(args) => (
+      <Form
+        orientation="horizontal"
+        labelPosition="side"
+        onSubmit={() => {
+          return new Promise((resolve) => {
+            setTimeout(resolve, 1000); // 1s of submitting
+          });
+        }}
+        requiredMark={false}
+        {...args}
+      >
+        <Field
+          label="Email"
+          name="email"
+          rules={[
+            { required: true, message: 'E-mail required' },
+            { type: 'email', message: 'Please enter a valid e-mail' },
+          ]}
+        >
+          <Input.Text type="email" size="small" />
+        </Field>
+        <Field
+          label="Password"
+          name="password"
+          rules={[
+            { required: true, message: 'Password required' },
+            { min: 8, message: 'The password must be at least 8 characters' },
+          ]}
+        >
+          <Input.Password type="password" size="small" />
+        </Field>
+        <Submit size="small">Submit</Submit>
       </Form>
     )}
   </Story>
