@@ -128,19 +128,13 @@ const TOKENS = {
   'h5m-font-weight': '500',
   'h5m-font-variation-wght': '500',
   'h5m-letter-spacing': '0',
-  // h6 (unused)
+  // h6
   'h6-font-size': '15px',
   'h6-line-height': '20px',
   'h6-letter-spacing': '0',
   'h6-font-weight': '400',
-  'h6-font-variation-wght': '700',
+  'h6-font-variation-wght': '600',
   'h5-icon-size': '18px',
-  // h6
-  'h6-font-size': '14px',
-  'h6-line-height': '20px',
-  'h6-letter-spacing': '0.01em',
-  'h6-font-weight': '600',
-  'h6-icon-size': '16px',
   // t1
   't1-font-size': '19px',
   't1-line-height': '24px',
@@ -154,7 +148,6 @@ const TOKENS = {
   't2-font-weight': '400',
   't2-font-variation-wght': '400',
   't2-letter-spacing': '0',
-  't2-letter-spacing': '0',
   't2-icon-size': '18px',
   // t2m
   't2m-font-size': '17px',
@@ -162,7 +155,6 @@ const TOKENS = {
   't2m-font-weight': '400',
   't2m-font-variation-wght': '500',
   't2m-letter-spacing': '0',
-  't2m-font-weight': '500',
   't2m-icon-size': '18px',
   // t3
   't3-font-size': '15px',
@@ -184,8 +176,6 @@ const TOKENS = {
   't3s-font-weight': '400',
   't3s-font-variation-wght': '600',
   't3s-letter-spacing': '0',
-  't3m-letter-spacing': '0',
-  't3m-font-weight': '500',
   't3m-icon-size': '16px',
   // t4
   't4-font-size': '13px',
@@ -199,8 +189,6 @@ const TOKENS = {
   't4m-font-weight': '400',
   't4m-font-variation-wght': '500',
   't4m-letter-spacing': '0',
-  't4-letter-spacing': '0',
-  't4-font-weight': '500',
   't4-icon-size': '14px',
   // p1
   'p1-font-size': '19px',
