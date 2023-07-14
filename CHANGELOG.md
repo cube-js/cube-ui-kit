@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.22.4
+
+### Patch Changes
+
+- [#357](https://github.com/cube-js/cube-ui-kit/pull/357) [`4f5f4d6`](https://github.com/cube-js/cube-ui-kit/commit/4f5f4d660fa2955b19f1333932caeff5e13dd3c4) Thanks [@tenphi](https://github.com/tenphi)! - Fix suffix support in NumberInput.
+
 ## 0.22.3
 
 ### Patch Changes
