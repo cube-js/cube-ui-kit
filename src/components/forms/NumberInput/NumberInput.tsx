@@ -61,6 +61,23 @@ function NumberInput(props: WithNullableValue<CubeNumberInputProps>, ref) {
     decrementButtonProps,
   } = useNumberField(props, state, inputRef);
 
+  const steppers = showStepper ? (
+    <StepperContainer>
+      <StepButton
+        isDisabled={props.isDisabled}
+        direction="up"
+        {...incrementButtonProps}
+        size={otherProps.size}
+      />
+      <StepButton
+        isDisabled={props.isDisabled}
+        direction="down"
+        {...decrementButtonProps}
+        size={otherProps.size}
+      />
+    </StepperContainer>
+  ) : undefined;
+
   return (
     <StyledTextInputBase
       {...otherProps}
@@ -72,20 +89,17 @@ function NumberInput(props: WithNullableValue<CubeNumberInputProps>, ref) {
       suffixPosition="after"
       suffix={
         showStepper ? (
-          <StepperContainer>
-            <StepButton
-              isDisabled={props.isDisabled}
-              direction="up"
-              {...incrementButtonProps}
-              size={otherProps.size}
-            />
-            <StepButton
-              isDisabled={props.isDisabled}
-              direction="down"
-              {...decrementButtonProps}
-              size={otherProps.size}
-            />
-          </StepperContainer>
+          props.suffixPosition === 'before' ? (
+            <>
+              {suffix}
+              {steppers}
+            </>
+          ) : (
+            <>
+              {steppers}
+              {suffix}
+            </>
+          )
         ) : (
           suffix
         )
