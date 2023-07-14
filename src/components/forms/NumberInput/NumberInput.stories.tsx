@@ -41,3 +41,15 @@ export const Disabled = Template.bind({});
 Disabled.args = {
   isDisabled: true,
 };
+
+export const WithSuffixBefore = Template.bind({});
+WithSuffixBefore.args = {
+  suffix: <div>suffix</div>,
+  suffixPosition: 'before',
+};
+
+export const WithSuffixAfter = Template.bind({});
+WithSuffixAfter.args = {
+  suffix: <div>suffix</div>,
+  suffixPosition: 'after',
+};
