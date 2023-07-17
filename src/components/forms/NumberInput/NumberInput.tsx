@@ -1,4 +1,4 @@
-import { forwardRef, RefObject, useMemo, useRef } from 'react';
+import { forwardRef } from 'react';
 import { useLocale } from '@react-aria/i18n';
 import { useNumberFieldState } from '@react-stately/numberfield';
 import { useNumberField } from '@react-aria/numberfield';
@@ -14,6 +14,7 @@ import {
   castNullableNumberValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { useCombinedRefs } from '../../../utils/react';
 
 import { StepButton } from './StepButton';
 
@@ -59,19 +60,14 @@ function NumberInput(props: WithNullableValue<CubeNumberInputProps>, ref) {
   let showStepper = !hideStepper;
   let { locale } = useLocale();
   let state = useNumberFieldState({ ...props, locale });
-  let localInputRef = useRef<HTMLInputElement>(null);
-  let finalInputRef = useMemo(() => {
-    return (
-      (inputRef as RefObject<HTMLInputElement> | undefined) || localInputRef
-    );
-  }, []);
+  let localInputRef = useCombinedRefs(inputRef);
   let {
     groupProps,
     labelProps,
     inputProps,
     incrementButtonProps,
     decrementButtonProps,
-  } = useNumberField(props, state, finalInputRef);
+  } = useNumberField(props, state, localInputRef);
 
   const steppers = showStepper ? (
     <StepperContainer>
