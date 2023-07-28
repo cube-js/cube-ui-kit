@@ -58,7 +58,7 @@ const ModalElement = tasty({
     pointerEvents: 'none',
     transition: 'opacity .25s linear, transform .25s ease-in-out',
     transform: {
-      '': 'translate(0, 0) scale(1, 1)',
+      '': 'initial',
       '[data-type="modal"] & !open': 'translate(0, -3x) scale(1, 1)',
       '[data-type^="fullscreen"] & !open': 'translate(0, 0) scale(1.02, 1.02)',
     },
