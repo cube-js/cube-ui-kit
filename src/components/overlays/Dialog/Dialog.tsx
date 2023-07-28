@@ -60,9 +60,9 @@ const DialogElement = tasty({
       '': '0 20px 30px #shadow',
       '[data-type="popover"]': '0px 4px 16px #shadow',
     },
-    transform: {
+    top: {
       '': false,
-      '[data-type="modal"]': 'translate(0, ((50vh - 50%) / -3))',
+      '[data-type="modal"]': '((50vh - 50%) / -3)',
     },
     placeSelf: 'stretch',
     '@dialog-heading-padding-v': {

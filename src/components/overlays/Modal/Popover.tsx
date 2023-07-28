@@ -24,7 +24,7 @@ const PopoverElement = tasty({
       'opacity .120s linear, visibility 0ms linear, transform .120s ease-in-out',
     transform: {
       '': 'scale(1, .9)',
-      open: 'scale(1, 1)',
+      open: 'initial',
     },
     opacity: {
       '': 0,
