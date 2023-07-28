@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.22.5
+
+### Patch Changes
+
+- [#359](https://github.com/cube-js/cube-ui-kit/pull/359) [`2a07328`](https://github.com/cube-js/cube-ui-kit/commit/2a0732876c2352831acdd52f8f5f7097ff6f1244) Thanks [@tenphi](https://github.com/tenphi)! - Fix the `inputRef` prop in the NumberInput component.
+
+- [#361](https://github.com/cube-js/cube-ui-kit/pull/361) [`3759837`](https://github.com/cube-js/cube-ui-kit/commit/3759837dd49283a285aa87ee58d31e3dc477fb21) Thanks [@tenphi](https://github.com/tenphi)! - Remove transform in the base state for all modal components. That fixes `fixed` positioning inside.
+
 ## 0.22.4
 
 ### Patch Changes
