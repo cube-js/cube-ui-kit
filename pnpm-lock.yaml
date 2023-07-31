@@ -1,5 +1,9 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 overrides:
   '@testing-library/user-event': 14.2.0
 
@@ -208,6 +212,9 @@ dependencies:
   valid-url:
     specifier: ^1.0.9
     version: 1.0.9
+  vercel-action@v20:
+    specifier: link:amondnet/vercel-action@v20
+    version: link:amondnet/vercel-action@v20
   vite:
     specifier: ^4.3.5
     version: 4.3.5(@types/node@18.14.0)

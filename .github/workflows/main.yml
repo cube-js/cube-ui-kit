@@ -94,13 +94,8 @@ jobs:
     needs: publish
     if: needs.publish.outputs.published == 'true'
     runs-on: ubuntu-latest
-    environment:
-      name: Docs Production
-      url: ${{ steps.publish_docs.outputs.NETLIFY_PREVIEW_URL }}
     env:
       NODE_OPTIONS: --max-old-space-size=4096
-      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
     steps:
       - uses: actions/checkout@v2
 
@@ -129,10 +124,13 @@ jobs:
       - name: Build Docs
         run: pnpm build-docs --quiet
 
-      - name: Deploy docs to Netlify
-        uses: South-Paw/action-netlify-deploy@v1.2.1
+      - name: Deploy docs to Vercel
+        id: publish_docs
+        uses: amondnet/vercel-action@v20
         with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          netlify-auth-token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          netlify-site-id: ${{ secrets.NETLIFY_SITE_ID }}
+          vercel-org-id: cube-dev
+          vercel-project-id: cube-ui-kit
+          vercel-args: '--prod'
           build-dir: ./storybook-docs
