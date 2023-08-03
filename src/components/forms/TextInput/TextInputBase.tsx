@@ -1,8 +1,4 @@
-import {
-  CheckOutlined,
-  LoadingOutlined,
-  WarningOutlined,
-} from '@ant-design/icons';
+import { LoadingOutlined } from '@ant-design/icons';
 import { createFocusableRef } from '@react-spectrum/utils';
 import {
   cloneElement,
@@ -32,9 +28,11 @@ import {
   tasty,
 } from '../../../tasty';
 import { useFocus } from '../../../utils/react/interactions';
-import { FieldWrapper } from '../FieldWrapper';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
+import { wrapWithField } from '../wrapper';
+import { InvalidIcon } from '../../shared/InvalidIcon';
+import { ValidIcon } from '../../shared/ValidIcon';
 
 import type { AriaTextFieldProps } from '@react-types/textfield';
 
@@ -181,7 +179,7 @@ export interface CubeTextInputBaseProps
   suffixPosition?: 'before' | 'after';
   /** Whether the input is multiline */
   multiLine?: boolean;
-  /** Whether the input should have auto focus */
+  /** Whether the input should have autofocus */
   autoFocus?: boolean;
   /** Direct input props */
   inputProps?: Props;
@@ -204,7 +202,7 @@ export interface CubeTextInputBaseProps
   /** The resize CSS property sets whether an element is resizable, and if so, in which directions. */
   resize?: Styles['resize'];
   /** The size of the input */
-  size?: 'small' | 'default' | 'large' | string;
+  size?: 'small' | 'default' | 'large' | (string & {});
 }
 
 function TextInputBase(props: CubeTextInputBaseProps, ref) {
@@ -223,22 +221,12 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
 
   let {
     qa,
-    label,
-    extra,
     mods,
-    labelPosition = 'top',
-    labelStyles,
-    isRequired,
-    necessityIndicator,
-    necessityLabel,
     validationState,
-    message,
-    description,
     prefix,
     isDisabled,
     multiLine,
     autoFocus,
-    labelProps,
     inputProps,
     wrapperProps,
     inputRef,
@@ -250,13 +238,10 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     suffix,
     suffixPosition = 'before',
     wrapperRef,
-    requiredMark = true,
     tooltip,
-    isHidden,
     rows = 1,
     size,
     icon,
-    labelSuffix,
     maxLength,
     minLength,
     ...otherProps
@@ -288,18 +273,7 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
   }));
 
   let isInvalid = validationState === 'invalid';
-
-  let validationIcon = isInvalid ? (
-    <WarningOutlined
-      data-element="ValidationIcon"
-      style={{ color: 'var(--danger-color)' }}
-    />
-  ) : (
-    <CheckOutlined
-      data-element="ValidationIcon"
-      style={{ color: 'var(--success-color)' }}
-    />
-  );
+  let validationIcon = isInvalid ? InvalidIcon : ValidIcon;
   let validation = cloneElement(validationIcon);
 
   // Fix safari bug: https://github.com/philipwalton/flexbugs/issues/270
@@ -401,31 +375,10 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
     </InputWrapperElement>
   );
 
-  return (
-    <FieldWrapper
-      {...{
-        labelPosition,
-        label,
-        extra,
-        styles,
-        isRequired,
-        labelStyles,
-        necessityIndicator,
-        necessityLabel,
-        labelProps,
-        isDisabled,
-        validationState,
-        message,
-        description,
-        requiredMark,
-        tooltip,
-        isHidden,
-        labelSuffix,
-        Component: textField,
-        ref: domRef,
-      }}
-    />
-  );
+  return wrapWithField(textField, domRef, {
+    ...props,
+    styles,
+  });
 }
 
 const _TextInputBase = forwardRef(TextInputBase);

@@ -1,0 +1,107 @@
+import { useRef } from 'react';
+import { DateFieldState, DateSegment } from '@react-stately/datepicker';
+import { DatePickerBase, DateValue } from '@react-types/datepicker';
+import { useDateSegment } from '@react-aria/datepicker';
+
+import { tasty } from '../../../tasty';
+
+interface DatePickerSegmentProps extends DatePickerBase<DateValue> {
+  segment: DateSegment;
+  state: DateFieldState;
+}
+
+interface LiteralSegmentProps {
+  segment: DateSegment;
+}
+
+const LiteralSegmentElement = tasty({
+  qa: 'LiteralSegment',
+  as: 'span',
+  'aria-hidden': 'true',
+  styles: {},
+});
+
+const EditableSegmentElement = tasty({
+  qa: 'EditableSegment',
+  styles: {
+    padding: '0 1bw',
+    fontVariantNumeric: 'tabular-nums',
+    textAlign: 'center',
+    letterSpacing: '1bw',
+    color: {
+      '': '#dark',
+      placeholder: '#placeholder',
+      ':focus': '#white',
+    },
+    fill: {
+      '': '#clear',
+      ':focus': '#purple',
+    },
+    radius: '.5r',
+
+    Placeholder: {
+      opacity: '#disabled-opacity',
+    },
+  },
+});
+
+export function DatePickerSegment({
+  segment,
+  state,
+  ...otherProps
+}: DatePickerSegmentProps) {
+  switch (segment.type) {
+    // A separator, e.g. punctuation
+    case 'literal':
+      return <LiteralSegment segment={segment} />;
+
+    // Editable segment
+    default:
+      return (
+        <EditableSegment segment={segment} state={state} {...otherProps} />
+      );
+  }
+}
+
+function LiteralSegment({ segment }: LiteralSegmentProps) {
+  return (
+    <LiteralSegmentElement
+      data-type={segment.type === 'literal' ? undefined : segment.type}
+    >
+      {segment.text}
+    </LiteralSegmentElement>
+  );
+}
+
+function EditableSegment({ segment, state }: DatePickerSegmentProps) {
+  let ref = useRef(null);
+  let { segmentProps } = useDateSegment(segment, state, ref);
+  return (
+    <EditableSegmentElement
+      {...segmentProps}
+      ref={ref}
+      mods={{
+        placeholder: segment.isPlaceholder,
+        'read-only': !segment.isEditable,
+      }}
+      style={{
+        ...segmentProps.style,
+        minWidth:
+          segment.maxValue != null
+            ? `calc(${String(segment.maxValue).length + 'ch'} + ${
+                3 * Math.max(String(segment.maxValue).length - 1, 0)
+              }px)`
+            : undefined,
+      }}
+      data-testid={segment.type}
+    >
+      {segment.isPlaceholder ? (
+        <span data-element="Placeholder" aria-hidden="true">
+          {segment.placeholder}
+        </span>
+      ) : (
+        segment.text
+      )}
+    </EditableSegmentElement>
+  );
+}
