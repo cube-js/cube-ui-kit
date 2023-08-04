@@ -2,27 +2,36 @@ import { useCalendarGrid } from '@react-aria/calendar';
 import { getWeeksInMonth } from '@internationalized/date';
 import { useLocale } from '@react-aria/i18n';
 
+import { tasty } from '../../../tasty';
+
 import { CalendarCell } from './CalendarCell';
+
+const TableElement = tasty({
+  as: 'table',
+  styles: {
+    borderCollapse: 'collapse',
+  },
+});
 
 export function CalendarGrid({ state, ...props }) {
   let { locale } = useLocale();
   let { gridProps, headerProps, weekDays } = useCalendarGrid(props, state);
 
-  // Get the number of weeks in the month so we can render the proper number of rows.
+  // Get the number of weeks in the month, so we can render the proper number of rows.
   let weeksInMonth = getWeeksInMonth(state.visibleRange.start, locale);
 
   return (
-    <table {...gridProps}>
-      <thead {...headerProps}>
-        <tr>
+    <TableElement {...gridProps}>
+      <thead data-element="Head" {...headerProps}>
+        <tr data-element="HeadRow">
           {weekDays.map((day, index) => (
             <th key={index}>{day}</th>
           ))}
         </tr>
       </thead>
-      <tbody>
+      <tbody data-element="Body">
         {[...new Array(weeksInMonth).keys()].map((weekIndex) => (
-          <tr key={weekIndex}>
+          <tr key={weekIndex} data-element="Row">
             {state
               .getDatesInWeek(weekIndex)
               .map((date, i) =>
@@ -35,6 +44,6 @@ export function CalendarGrid({ state, ...props }) {
           </tr>
         ))}
       </tbody>
-    </table>
+    </TableElement>
   );
 }

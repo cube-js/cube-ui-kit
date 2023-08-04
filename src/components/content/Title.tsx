@@ -35,7 +35,7 @@ const TitleElement = tasty({
     display: 'block',
     color: '#dark',
     preset: {
-      '': 'h6m',
+      '': 'h6',
       '[data-level="1"]': 'h1',
       '[data-level="2"]': 'h2',
       '[data-level="3"]': 'h3',

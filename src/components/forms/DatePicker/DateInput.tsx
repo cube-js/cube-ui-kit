@@ -11,7 +11,9 @@ import { wrapWithField } from '../wrapper';
 import {
   BaseProps,
   BlockStyleProps,
+  CONTAINER_STYLES,
   DimensionStyleProps,
+  extractStyles,
   PositionStyleProps,
   Styles,
 } from '../../../tasty';
@@ -47,7 +49,16 @@ function DateInput<T extends DateValue>(
     defaultValidationTrigger: 'onBlur',
   });
 
-  let { autoFocus, isDisabled, isReadOnly, isRequired } = props;
+  let {
+    autoFocus,
+    isDisabled,
+    inputStyles,
+    wrapperStyles,
+    isReadOnly,
+    isRequired,
+  } = props;
+
+  let styles = extractStyles(props, CONTAINER_STYLES);
 
   let domRef = useFocusManagerRef(ref);
   let { locale } = useLocale();
@@ -67,6 +78,8 @@ function DateInput<T extends DateValue>(
       isDisabled={isDisabled}
       autoFocus={autoFocus}
       validationState={state.validationState}
+      styles={wrapperStyles}
+      inputStyles={inputStyles}
     >
       {state.segments.map((segment, i) => (
         <DatePickerSegment
@@ -83,7 +96,8 @@ function DateInput<T extends DateValue>(
 
   return wrapWithField(component, domRef, {
     ...props,
-    ...mergeProps(props.labelProps, labelProps),
+    styles,
+    labelProps: mergeProps(props.labelProps, labelProps),
   });
 }
 

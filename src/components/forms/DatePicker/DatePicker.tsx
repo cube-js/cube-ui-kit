@@ -24,6 +24,7 @@ import { Button } from '../../actions';
 import { Calendar } from '../../other/Calendar/Calendar';
 
 import { DateInput } from './DateInput';
+import { useFocusManagerRef } from './utils';
 
 export interface CubeDatePickerProps<T extends DateValue = DateValue>
   extends AriaDatePickerProps<T>,
@@ -37,6 +38,7 @@ export interface CubeDatePickerProps<T extends DateValue = DateValue>
   styles?: Styles;
   size?: 'small' | 'medium' | 'large' | (string & {});
   validationState?: ValidationState;
+  maxVisibleMonths?: number;
 }
 
 function DatePicker<T extends DateValue>(
@@ -49,8 +51,14 @@ function DatePicker<T extends DateValue>(
     defaultValidationTrigger: 'onBlur',
   });
 
-  let state = useDatePickerState(props);
-  let domRef = useRef(null);
+  let { size } = props;
+  let targetRef = useRef<HTMLDivElement>(null);
+  let state = useDatePickerState({
+    ...props,
+    shouldCloseOnSelect: () => !state.hasTime,
+  });
+  let { isOpen, setOpen } = state;
+  let domRef = useFocusManagerRef(ref);
   let {
     groupProps,
     labelProps,
@@ -58,23 +66,53 @@ function DatePicker<T extends DateValue>(
     buttonProps,
     dialogProps,
     calendarProps,
-  } = useDatePicker(props, state, domRef);
+  } = useDatePicker(props, state, targetRef);
+
+  // let placeholder: DateValue = placeholderValue;
+  // let timePlaceholder =
+  //   placeholder && 'hour' in placeholder ? placeholder : null;
+  // let timeMinValue =
+  //   props.minValue && 'hour' in props.minValue ? props.minValue : null;
+  // let timeMaxValue =
+  //   props.maxValue && 'hour' in props.maxValue ? props.maxValue : null;
+  // let timeGranularity =
+  //   state.granularity === 'hour' ||
+  //   state.granularity === 'minute' ||
+  //   state.granularity === 'second'
+  //     ? state.granularity
+  //     : null;
+  // let showTimeField = !!timeGranularity;
+  //
+  // let visibleMonths = useVisibleMonths(maxVisibleMonths);
 
   const component = (
     <Block>
-      <Space gap=".5x">
-        <DateInput {...fieldProps} />
-        <Button {...buttonProps}>
-          <CalendarOutlined />
-        </Button>
-      </Space>
-      {state.isOpen && (
-        <DialogTrigger state={state} triggerRef={ref} placement="bottom">
-          <Dialog {...dialogProps}>
+      <Space gap="0">
+        <DateInput
+          size={size}
+          wrapperStyles={{ radius: '1r left', border: 'top left bottom' }}
+          {...fieldProps}
+        />
+        <DialogTrigger
+          hideArrow
+          type="popover"
+          mobileType="tray"
+          placement="bottom left"
+          targetRef={targetRef}
+          isOpen={isOpen}
+          onOpenChange={setOpen}
+        >
+          <Button
+            size={size}
+            radius="1r right"
+            icon={<CalendarOutlined />}
+            {...buttonProps}
+          />
+          <Dialog {...dialogProps} width="max-content">
             <Calendar {...calendarProps} />
           </Dialog>
         </DialogTrigger>
-      )}
+      </Space>
     </Block>
   );
 
