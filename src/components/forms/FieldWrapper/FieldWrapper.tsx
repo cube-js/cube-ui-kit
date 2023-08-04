@@ -76,7 +76,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
   ref,
 ) {
   const {
-    as = 'label',
+    as,
     labelPosition = 'top',
     label,
     extra,
