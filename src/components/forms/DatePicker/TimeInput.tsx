@@ -15,6 +15,7 @@ import {
   Styles,
 } from '../../../tasty';
 import { FieldBaseProps, ValidationState } from '../../../shared';
+import { useFieldProps, useFormProps } from '../Form';
 
 import { Input } from './Input';
 import { DatePickerSegment } from './DatePickerSegment';
@@ -39,6 +40,10 @@ function TimeInput<T extends TimeValue>(
   ref: FocusableRef<HTMLElement>,
 ) {
   props = useProviderProps(props);
+  props = useFormProps(props);
+  props = useFieldProps(props, {
+    defaultValidationTrigger: 'onBlur',
+  });
 
   let {
     inputStyles,

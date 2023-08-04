@@ -17,6 +17,9 @@ dependencies:
   '@react-aria/button':
     specifier: 3.6.4
     version: 3.6.4(react@17.0.2)
+  '@react-aria/calendar':
+    specifier: ^3.4.0
+    version: 3.4.0(react-dom@17.0.2)(react@17.0.2)
   '@react-aria/checkbox':
     specifier: 3.7.1
     version: 3.7.1(react@17.0.2)
@@ -89,6 +92,9 @@ dependencies:
   '@react-spectrum/utils':
     specifier: 3.8.1
     version: 3.8.1(react@17.0.2)
+  '@react-stately/calendar':
+    specifier: ^3.3.0
+    version: 3.3.0(react@17.0.2)
   '@react-stately/checkbox':
     specifier: 3.3.2
     version: 3.3.2(react@17.0.2)
@@ -143,6 +149,9 @@ dependencies:
   '@react-types/button':
     specifier: 3.7.0
     version: 3.7.0(react@17.0.2)
+  '@react-types/calendar':
+    specifier: ^3.3.0
+    version: 3.3.0(react@17.0.2)
   '@react-types/checkbox':
     specifier: 3.4.1
     version: 3.4.1(react@17.0.2)
@@ -3031,6 +3040,26 @@ packages:
       react: 17.0.2
     dev: false
 
+  /@react-aria/calendar@3.4.0(react-dom@17.0.2)(react@17.0.2):
+    resolution: {integrity: sha512-Ly+9KsOXWZTlOYDZeIYCWNuMZg7ZiJC497Z4U3SqaWmDsZaqwU8ZnLmZ1xUWq1cYvK9rnWPnnpby1JUgttY9RA==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
+      react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
+    dependencies:
+      '@internationalized/date': 3.3.0
+      '@react-aria/i18n': 3.8.0(react@17.0.2)
+      '@react-aria/interactions': 3.16.0(react@17.0.2)
+      '@react-aria/live-announcer': 3.3.1
+      '@react-aria/utils': 3.18.0(react@17.0.2)
+      '@react-stately/calendar': 3.3.0(react@17.0.2)
+      '@react-types/button': 3.7.3(react@17.0.2)
+      '@react-types/calendar': 3.3.0(react@17.0.2)
+      '@react-types/shared': 3.18.1(react@17.0.2)
+      '@swc/helpers': 0.5.1
+      react: 17.0.2
+      react-dom: 17.0.2(react@17.0.2)
+    dev: false
+
   /@react-aria/checkbox@3.7.1(react@17.0.2):
     resolution: {integrity: sha512-3KRg/KrTRwQdw5Yg7gpbIKWWVt57PbGSEXAS/diQvRf9pTXbOuChTES8uVlcwF8q+3mKXc4ppzE3gsNQ5jOMqg==}
     peerDependencies:
@@ -3623,6 +3652,20 @@ packages:
       '@react-types/shared': 3.16.0(react@17.0.2)
       '@swc/helpers': 0.4.14
       clsx: 1.1.1
+      react: 17.0.2
+    dev: false
+
+  /@react-stately/calendar@3.3.0(react@17.0.2):
+    resolution: {integrity: sha512-fnqdxCTlkikgldEyW8ciPNUWhqaUsQKTx6X6XGob6VCwK59k0LmdlgZX+dXj0q2ezC+w4lnvz8TzpoRQ7GY8lw==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0
+    dependencies:
+      '@internationalized/date': 3.3.0
+      '@react-stately/utils': 3.7.0(react@17.0.2)
+      '@react-types/calendar': 3.3.0(react@17.0.2)
+      '@react-types/datepicker': 3.4.0(react@17.0.2)
+      '@react-types/shared': 3.18.1(react@17.0.2)
+      '@swc/helpers': 0.5.1
       react: 17.0.2
     dev: false
 

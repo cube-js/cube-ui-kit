@@ -46,8 +46,21 @@ export const dotize = {
     return JSON.stringify(obj) === JSON.stringify({});
   },
 
+  isPlainObject: function (obj) {
+    if (typeof obj !== 'object' || obj === null) return false;
+
+    // If has modified constructor
+    let proto = obj;
+    while (Object.getPrototypeOf(proto) !== null) {
+      proto = Object.getPrototypeOf(proto);
+    }
+
+    // If null prototype
+    return Object.getPrototypeOf(obj) === proto;
+  },
+
   isNotObject: function (obj) {
-    return !obj || typeof obj != 'object';
+    return !obj || !this.isPlainObject(obj);
   },
 
   isEmptyArray: function (arr) {

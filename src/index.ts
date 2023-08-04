@@ -3,6 +3,7 @@ import { CubeTitleProps, Title } from './components/content/Title';
 import { CubeParagraphProps, Paragraph } from './components/content/Paragraph';
 
 export { Item, Section } from '@react-stately/collections';
+export * from '@internationalized/date';
 
 // generic components
 export { Base } from './components/Base';
