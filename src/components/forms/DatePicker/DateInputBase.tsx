@@ -44,7 +44,7 @@ interface CubeDateAtomInputProps {
   isLoading?: boolean;
 }
 
-function Input(props: CubeDateAtomInputProps, ref) {
+function DateInputBase(props: CubeDateAtomInputProps, ref) {
   let inputRef = useRef(null);
   let {
     isDisabled,
@@ -87,7 +87,6 @@ function Input(props: CubeDateAtomInputProps, ref) {
         <DateInputElement
           ref={mergeRefs(ref, inputRef)}
           data-size={size}
-          data-element="Contents"
           role="presentation"
           styles={inputStyles}
         >
@@ -99,5 +98,5 @@ function Input(props: CubeDateAtomInputProps, ref) {
   );
 }
 
-const _Input = React.forwardRef(Input);
-export { _Input as Input };
+const _DateInputBase = React.forwardRef(DateInputBase);
+export { _DateInputBase as DateInputBase };

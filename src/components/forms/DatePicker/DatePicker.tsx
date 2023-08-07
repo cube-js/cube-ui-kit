@@ -4,6 +4,7 @@ import { FocusableRef } from '@react-types/shared';
 import { useDatePicker } from '@react-aria/datepicker';
 import { useDatePickerState } from '@react-stately/datepicker';
 import { CalendarOutlined } from '@ant-design/icons';
+import { useLocalizedStringFormatter } from '@react-aria/i18n';
 
 import { useProviderProps } from '../../../provider';
 import { wrapWithField } from '../wrapper';
@@ -23,8 +24,10 @@ import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 import { Button } from '../../actions';
 import { Calendar } from '../../other/Calendar/Calendar';
 
-import { DateInput } from './DateInput';
 import { useFocusManagerRef } from './utils';
+import { DateInputBase } from './DateInputBase';
+import { DatePickerInput } from './DatePickerInput';
+import { TimeInput } from './TimeInput';
 
 export interface CubeDatePickerProps<T extends DateValue = DateValue>
   extends AriaDatePickerProps<T>,
@@ -39,7 +42,16 @@ export interface CubeDatePickerProps<T extends DateValue = DateValue>
   size?: 'small' | 'medium' | 'large' | (string & {});
   validationState?: ValidationState;
   maxVisibleMonths?: number;
+  shouldFlip?: boolean;
 }
+
+const intlMessages = {
+  'en-US': {
+    time: 'Time',
+    startTime: 'Start time',
+    endTime: 'End time',
+  },
+};
 
 function DatePicker<T extends DateValue>(
   props: CubeDatePickerProps<T>,
@@ -51,7 +63,8 @@ function DatePicker<T extends DateValue>(
     defaultValidationTrigger: 'onBlur',
   });
 
-  let { size } = props;
+  let { size, shouldFlip, placeholderValue, isDisabled, validationState } =
+    props;
   let targetRef = useRef<HTMLDivElement>(null);
   let state = useDatePickerState({
     ...props,
@@ -59,6 +72,8 @@ function DatePicker<T extends DateValue>(
   });
   let { isOpen, setOpen } = state;
   let domRef = useFocusManagerRef(ref);
+  let stringFormatter = useLocalizedStringFormatter(intlMessages);
+
   let {
     groupProps,
     labelProps,
@@ -68,31 +83,34 @@ function DatePicker<T extends DateValue>(
     calendarProps,
   } = useDatePicker(props, state, targetRef);
 
-  // let placeholder: DateValue = placeholderValue;
-  // let timePlaceholder =
-  //   placeholder && 'hour' in placeholder ? placeholder : null;
-  // let timeMinValue =
-  //   props.minValue && 'hour' in props.minValue ? props.minValue : null;
-  // let timeMaxValue =
-  //   props.maxValue && 'hour' in props.maxValue ? props.maxValue : null;
-  // let timeGranularity =
-  //   state.granularity === 'hour' ||
-  //   state.granularity === 'minute' ||
-  //   state.granularity === 'second'
-  //     ? state.granularity
-  //     : null;
-  // let showTimeField = !!timeGranularity;
+  let placeholder: DateValue | undefined = placeholderValue;
+  let timePlaceholder =
+    placeholder && 'hour' in placeholder ? placeholder : undefined;
+  let timeMinValue =
+    props.minValue && 'hour' in props.minValue ? props.minValue : undefined;
+  let timeMaxValue =
+    props.maxValue && 'hour' in props.maxValue ? props.maxValue : undefined;
+  let timeGranularity =
+    state.granularity === 'hour' ||
+    state.granularity === 'minute' ||
+    state.granularity === 'second'
+      ? state.granularity
+      : null;
+  let showTimeField = !!timeGranularity;
   //
   // let visibleMonths = useVisibleMonths(maxVisibleMonths);
 
   const component = (
     <Block>
       <Space gap="0">
-        <DateInput
-          size={size}
-          wrapperStyles={{ radius: '1r left', border: 'top left bottom' }}
-          {...fieldProps}
-        />
+        <DateInputBase
+          disableFocusRing
+          styles={{ radius: 'left', border: 'top left bottom' }}
+          isDisabled={isDisabled}
+          validationState={validationState}
+        >
+          <DatePickerInput {...fieldProps} />
+        </DateInputBase>
         <DialogTrigger
           hideArrow
           type="popover"
@@ -100,6 +118,8 @@ function DatePicker<T extends DateValue>(
           placement="bottom left"
           targetRef={targetRef}
           isOpen={isOpen}
+          offset={8}
+          shouldFlip={shouldFlip}
           onOpenChange={setOpen}
         >
           <Button
@@ -110,6 +130,19 @@ function DatePicker<T extends DateValue>(
           />
           <Dialog {...dialogProps} width="max-content">
             <Calendar {...calendarProps} />
+            {showTimeField && (
+              <TimeInput
+                label={stringFormatter.format('time')}
+                value={state.timeValue}
+                placeholderValue={timePlaceholder}
+                granularity={timeGranularity}
+                minValue={timeMinValue}
+                maxValue={timeMaxValue}
+                hourCycle={props.hourCycle}
+                hideTimeZone={props.hideTimeZone}
+                onChange={state.setTimeValue}
+              />
+            )}
           </Dialog>
         </DialogTrigger>
       </Space>

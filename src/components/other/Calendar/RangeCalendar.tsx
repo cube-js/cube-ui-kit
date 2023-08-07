@@ -1,9 +1,9 @@
 import { forwardRef, useImperativeHandle, useRef } from 'react';
-import { useCalendar } from '@react-aria/calendar';
-import { useCalendarState } from '@react-stately/calendar';
+import { useRangeCalendar } from '@react-aria/calendar';
+import { useRangeCalendarState } from '@react-stately/calendar';
 import { createCalendar } from '@internationalized/date';
 import { useLocale } from '@react-aria/i18n';
-import { AriaCalendarProps, DateValue } from '@react-types/calendar';
+import { AriaRangeCalendarProps, DateValue } from '@react-types/calendar';
 import { FocusableRef } from '@react-types/shared';
 import { createDOMRef } from '@react-spectrum/utils';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
@@ -31,14 +31,14 @@ const CalendarHeaderElement = tasty({
   },
 });
 
-function Calendar<T extends DateValue>(
-  props: AriaCalendarProps<T>,
+function RangeCalendar<T extends DateValue>(
+  props: AriaRangeCalendarProps<T>,
   ref: FocusableRef<HTMLElement>,
 ) {
   props = useProviderProps(props);
 
   let { locale } = useLocale();
-  let state = useCalendarState({
+  let state = useRangeCalendarState({
     ...props,
     locale,
     createCalendar,
@@ -52,13 +52,11 @@ function Calendar<T extends DateValue>(
     },
   }));
 
-  let { calendarProps, prevButtonProps, nextButtonProps, title } = useCalendar(
-    props,
-    state,
-  );
+  let { calendarProps, prevButtonProps, nextButtonProps, title } =
+    useRangeCalendar(props, state, domRef);
 
   return (
-    <CalendarElement {...calendarProps}>
+    <CalendarElement ref={domRef} {...calendarProps}>
       <CalendarHeaderElement>
         <Title level={6} preset="h6">
           {title}
@@ -73,7 +71,7 @@ function Calendar<T extends DateValue>(
   );
 }
 
-const _Calendar = forwardRef(Calendar);
-export { _Calendar as Calendar };
+const _RangeCalendar = forwardRef(RangeCalendar);
+export { _RangeCalendar as RangeCalendar };
 
-export type { AriaCalendarProps as CubeCalendarProps };
+export type { AriaRangeCalendarProps as CubeRangeCalendarProps };

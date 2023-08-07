@@ -22,7 +22,7 @@ import { mergeProps } from '../../../utils/react';
 import { useFieldProps, useFormProps } from '../Form';
 
 import { useFocusManagerRef } from './utils';
-import { Input } from './Input';
+import { DateInputBase } from './DateInputBase';
 import { DatePickerSegment } from './DatePickerSegment';
 
 export interface CubeDateInputProps<T extends DateValue = DateValue>
@@ -72,7 +72,7 @@ function DateInput<T extends DateValue>(
   let { labelProps, fieldProps } = useDateField(props, state, fieldRef);
 
   const component = (
-    <Input
+    <DateInputBase
       ref={fieldRef}
       fieldProps={fieldProps}
       isDisabled={isDisabled}
@@ -91,7 +91,7 @@ function DateInput<T extends DateValue>(
           isRequired={isRequired}
         />
       ))}
-    </Input>
+    </DateInputBase>
   );
 
   return wrapWithField(component, domRef, {

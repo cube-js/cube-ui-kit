@@ -17,7 +17,7 @@ import {
 import { FieldBaseProps, ValidationState } from '../../../shared';
 import { useFieldProps, useFormProps } from '../Form';
 
-import { Input } from './Input';
+import { DateInputBase } from './DateInputBase';
 import { DatePickerSegment } from './DatePickerSegment';
 import { useFocusManagerRef } from './utils';
 
@@ -67,7 +67,7 @@ function TimeInput<T extends TimeValue>(
   let { labelProps, fieldProps } = useTimeField(props, state, fieldRef);
 
   const timeInput = (
-    <Input
+    <DateInputBase
       ref={fieldRef}
       size={size}
       fieldProps={fieldProps}
@@ -87,7 +87,7 @@ function TimeInput<T extends TimeValue>(
           isRequired={isRequired}
         />
       ))}
-    </Input>
+    </DateInputBase>
   );
 
   return wrapWithField(timeInput, domRef, {

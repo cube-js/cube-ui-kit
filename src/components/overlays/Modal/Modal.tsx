@@ -70,12 +70,12 @@ const ModalElement = tasty({
 });
 
 export interface CubeModalProps
-  extends Omit<ModalProps, 'container'>,
+  extends Omit<ModalProps, 'container' | 'type'>,
     WithCloseBehavior {
   container?: HTMLElement;
   qa?: BaseProps['qa'];
   onClose?: (action?: string) => void;
-  type?: 'modal' | 'fullscreen' | 'fullscreenTakeover';
+  type?: 'modal' | 'fullscreen' | 'fullscreenTakeover' | 'panel';
   styles?: Styles;
   shouldCloseOnInteractOutside?: (element: Element) => boolean;
 }
@@ -107,7 +107,7 @@ interface ModalWrapperProps extends TransitionState {
   children?: ReactNode;
   qa?: BaseProps['qa'];
   isOpen?: boolean;
-  type?: 'modal' | 'fullscreen' | 'fullscreenTakeover';
+  type?: 'modal' | 'fullscreen' | 'fullscreenTakeover' | 'panel';
   placement?: 'top' | 'bottom';
   styles?: Styles;
   overlayProps?: Props;
