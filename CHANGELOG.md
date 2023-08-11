@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.22.7
+
+### Patch Changes
+
+- [#369](https://github.com/cube-js/cube-ui-kit/pull/369) [`3d702c9`](https://github.com/cube-js/cube-ui-kit/commit/3d702c9d58b66e9871d129270e49bb278b46c64c) Thanks [@tenphi](https://github.com/tenphi)! - Fix DialogTrigger's `type` prop typing.
+
 ## 0.22.6
 
 ### Patch Changes
