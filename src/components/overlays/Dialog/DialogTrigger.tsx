@@ -30,7 +30,13 @@ export interface CubeDialogTriggerProps
     | 'fullscreenTakeover'
     | 'panel';
   /** The type of Dialog that should be rendered when on a mobile device. See DialogTrigger [types section](#dialog-types) for an explanation on each. */
-  mobileType?: 'modal' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel';
+  mobileType?:
+    | 'modal'
+    | 'tray'
+    | 'fullscreen'
+    | 'fullscreenTakeover'
+    | 'panel'
+    | 'popover';
   /**
    * Whether a popover type Dialog's arrow should be hidden.
    */
