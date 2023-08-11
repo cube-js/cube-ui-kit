@@ -3,6 +3,7 @@ import { useOverlayTriggerState } from '@react-stately/overlays';
 import { PressResponder } from '@react-aria/interactions';
 import { useMediaQuery } from '@react-spectrum/utils';
 import { useOverlayPosition, useOverlayTrigger } from '@react-aria/overlays';
+import { OverlayTriggerProps, PositionProps } from '@react-types/overlays';
 
 import { Modal, Popover, Tray, WithCloseBehavior } from '../Modal';
 import { Styles } from '../../../tasty';
@@ -11,7 +12,10 @@ import { DialogContext } from './context';
 
 export type CubeDialogClose = (close: () => void) => ReactElement;
 
-export interface CubeDialogTriggerProps extends WithCloseBehavior {
+export interface CubeDialogTriggerProps
+  extends OverlayTriggerProps,
+    PositionProps,
+    WithCloseBehavior {
   /** The Dialog and its trigger element. See the DialogTrigger [Content section](#content) for more information on what to provide as children. */
   children: [ReactElement, CubeDialogClose | ReactElement];
   /**
@@ -33,7 +37,7 @@ export interface CubeDialogTriggerProps extends WithCloseBehavior {
   hideArrow?: boolean;
   /** The ref of the element the Dialog should visually attach itself to. Defaults to the trigger button if not defined. */
   targetRef?: RefObject<HTMLElement>;
-  /** Whether a modal type Dialog should be dismissable. */
+  /** Whether a modal type Dialog should be dismissible. */
   isDismissable?: boolean;
   /** Whether pressing the escape key to close the dialog should be disabled. */
   isKeyboardDismissDisabled?: boolean;
@@ -42,9 +46,10 @@ export interface CubeDialogTriggerProps extends WithCloseBehavior {
   /** The style map for the overlay **/
   styles?: Styles;
   shouldCloseOnInteractOutside?: (element: Element) => boolean;
+  onDismiss?: (action?: string) => void;
 }
 
-function DialogTrigger(props) {
+function DialogTrigger(props: CubeDialogTriggerProps) {
   let {
     children,
     type = 'modal',
@@ -193,6 +198,7 @@ function PopoverTrigger(allProps) {
     isKeyboardDismissDisabled,
     hideOnClose,
     shouldCloseOnInteractOutside,
+    keepOpenOnScroll,
     ...props
   } = allProps;
 
@@ -215,9 +221,15 @@ function PopoverTrigger(allProps) {
     isOpen: state.isOpen,
   });
 
+  let overlayTriggerState = state;
+
+  if (keepOpenOnScroll) {
+    overlayTriggerState = { ...state, close: updatePosition };
+  }
+
   let { triggerProps, overlayProps } = useOverlayTrigger(
     { type: 'dialog' },
-    state,
+    overlayTriggerState,
     triggerRef,
   );
 
