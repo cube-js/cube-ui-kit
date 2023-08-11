@@ -37,7 +37,7 @@ export interface CubeDialogTriggerProps
   hideArrow?: boolean;
   /** The ref of the element the Dialog should visually attach itself to. Defaults to the trigger button if not defined. */
   targetRef?: RefObject<HTMLElement>;
-  /** Whether a modal type Dialog should be dismissible. */
+  /** Whether a modal type Dialog should be dismissable. */
   isDismissable?: boolean;
   /** Whether pressing the escape key to close the dialog should be disabled. */
   isKeyboardDismissDisabled?: boolean;
