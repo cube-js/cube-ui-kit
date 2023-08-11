@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.22.6
+
+### Patch Changes
+
+- [#367](https://github.com/cube-js/cube-ui-kit/pull/367) [`611336d`](https://github.com/cube-js/cube-ui-kit/commit/611336d07acb5ad1dd436b9384135f119e40b30c) Thanks [@tenphi](https://github.com/tenphi)! - Allow scrolling inside the Menu component.
+
 ## 0.22.5
 
 ### Patch Changes
