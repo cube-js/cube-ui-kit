@@ -12,6 +12,7 @@ interface GlobalStylesProps {
 }
 
 const BODY_STYLES = {
+  'overscroll-behavior-y': 'none',
   'background-color': 'white !important',
   'font-family': 'var(--font)',
   '-webkit-font-smoothing': 'antialiased',
@@ -119,6 +120,7 @@ export const GlobalStyles = createGlobalStyle`
   }
 
   html {
+    overscroll-behavior-y: none;
     --font: ${({ font }: GlobalStylesProps) =>
       font ||
       'Inter'}, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
