@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.22.8
+
+### Patch Changes
+
+- [#371](https://github.com/cube-js/cube-ui-kit/pull/371) [`2b2e45d`](https://github.com/cube-js/cube-ui-kit/commit/2b2e45d1d1e6b1b1e777b67050fa61dd644591af) Thanks [@tenphi](https://github.com/tenphi)! - Bundle styles that disable overflow behavior.
+
 ## 0.22.7
 
 ### Patch Changes
