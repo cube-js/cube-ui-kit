@@ -13,9 +13,9 @@ import { DialogContext } from './context';
 export type CubeDialogClose = (close: () => void) => ReactElement;
 
 export interface CubeDialogTriggerProps
-  extends WithCloseBehavior,
-    OverlayTriggerProps,
-    PositionProps {
+  extends OverlayTriggerProps,
+    PositionProps,
+    WithCloseBehavior {
   /** The Dialog and its trigger element. See the DialogTrigger [Content section](#content) for more information on what to provide as children. */
   children: [ReactElement, CubeDialogClose | ReactElement];
   /**
@@ -30,7 +30,13 @@ export interface CubeDialogTriggerProps
     | 'fullscreenTakeover'
     | 'panel';
   /** The type of Dialog that should be rendered when on a mobile device. See DialogTrigger [types section](#dialog-types) for an explanation on each. */
-  mobileType?: 'modal' | 'tray' | 'fullscreen' | 'fullscreenTakeover' | 'panel';
+  mobileType?:
+    | 'modal'
+    | 'tray'
+    | 'fullscreen'
+    | 'fullscreenTakeover'
+    | 'panel'
+    | 'popover';
   /**
    * Whether a popover type Dialog's arrow should be hidden.
    */
@@ -198,6 +204,7 @@ function PopoverTrigger(allProps) {
     isKeyboardDismissDisabled,
     hideOnClose,
     shouldCloseOnInteractOutside,
+    keepOpenOnScroll,
     ...props
   } = allProps;
 
@@ -220,9 +227,15 @@ function PopoverTrigger(allProps) {
     isOpen: state.isOpen,
   });
 
+  let overlayTriggerState = state;
+
+  if (keepOpenOnScroll) {
+    overlayTriggerState = { ...state, close: updatePosition };
+  }
+
   let { triggerProps, overlayProps } = useOverlayTrigger(
     { type: 'dialog' },
-    state,
+    overlayTriggerState,
     triggerRef,
   );
 

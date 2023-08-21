@@ -1,5 +1,23 @@
 # @cube-dev/ui-kit
 
+## 0.22.8
+
+### Patch Changes
+
+- [#371](https://github.com/cube-js/cube-ui-kit/pull/371) [`2b2e45d`](https://github.com/cube-js/cube-ui-kit/commit/2b2e45d1d1e6b1b1e777b67050fa61dd644591af) Thanks [@tenphi](https://github.com/tenphi)! - Bundle styles that disable overflow behavior.
+
+## 0.22.7
+
+### Patch Changes
+
+- [#369](https://github.com/cube-js/cube-ui-kit/pull/369) [`3d702c9`](https://github.com/cube-js/cube-ui-kit/commit/3d702c9d58b66e9871d129270e49bb278b46c64c) Thanks [@tenphi](https://github.com/tenphi)! - Fix DialogTrigger's `type` prop typing.
+
+## 0.22.6
+
+### Patch Changes
+
+- [#367](https://github.com/cube-js/cube-ui-kit/pull/367) [`611336d`](https://github.com/cube-js/cube-ui-kit/commit/611336d07acb5ad1dd436b9384135f119e40b30c) Thanks [@tenphi](https://github.com/tenphi)! - Allow scrolling inside the Menu component.
+
 ## 0.22.5
 
 ### Patch Changes

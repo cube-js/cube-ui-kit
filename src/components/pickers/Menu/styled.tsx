@@ -19,7 +19,7 @@ export const StyledMenu = tasty({
       sections: '0', // has sections inside
     },
     overflow: {
-      '': 'hidden',
+      '': 'auto',
       section: '',
     },
     border: {
@@ -33,6 +33,7 @@ export const StyledMenu = tasty({
       '': '',
       popover: '0px 5px 15px #dark.05',
     },
+    styledScrollbar: true,
   },
 });
 
