@@ -9,9 +9,9 @@ import { wrapWithField } from '../wrapper';
 import { useProviderProps } from '../../../provider';
 import {
   BaseProps,
-  BlockStyleProps,
-  DimensionStyleProps,
-  PositionStyleProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
   Styles,
 } from '../../../tasty';
 import { FieldBaseProps, ValidationState } from '../../../shared';
@@ -24,9 +24,7 @@ import { useFocusManagerRef } from './utils';
 export interface CubeTimeInputProps<T extends TimeValue = TimeValue>
   extends AriaTimeFieldProps<T>,
     BaseProps,
-    PositionStyleProps,
-    DimensionStyleProps,
-    BlockStyleProps,
+    ContainerStyleProps,
     FieldBaseProps {
   wrapperStyles?: Styles;
   inputStyles?: Styles;
@@ -44,6 +42,8 @@ function TimeInput<T extends TimeValue>(
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onBlur',
   });
+
+  let styles = extractStyles(props, CONTAINER_STYLES);
 
   let {
     inputStyles,
@@ -92,6 +92,7 @@ function TimeInput<T extends TimeValue>(
 
   return wrapWithField(timeInput, domRef, {
     ...props,
+    styles,
     labelProps,
   });
 }

@@ -72,6 +72,7 @@ export type {
 } from './components/forms/TextInput/TextInputBase';
 export type { CubeTextInputBaseProps as CubeTextInputProps } from './components/forms/TextInput/TextInputBase';
 export { TextInput } from './components/forms/TextInput/TextInput';
+export * from './components/forms/DatePicker';
 export { TextArea } from './components/forms/TextArea/TextArea';
 export type { CubeTextAreaProps } from './components/forms/TextArea/TextArea';
 export { FileInput } from './components/forms/FileInput/FileInput';

@@ -1,5 +1,4 @@
 import { StoryFn } from '@storybook/react';
-import { parseDate } from '@internationalized/date';
 
 import {
   ICON_ARG,
@@ -9,6 +8,7 @@ import {
 import { baseProps } from '../../../stories/lists/baseProps';
 
 import { DatePicker, CubeDatePickerProps } from './DatePicker';
+import { parseAbsoluteDate } from './parseDate';
 
 export default {
   title: 'Forms/DatePicker',
@@ -28,7 +28,7 @@ export default {
 const Template: StoryFn<CubeDatePickerProps> = ({ ...props }) => {
   try {
     if (props.defaultValue) {
-      props.defaultValue = parseDate(props.defaultValue);
+      props.defaultValue = parseAbsoluteDate(props.defaultValue);
     }
   } catch (e) {
     props.defaultValue = undefined;
@@ -36,7 +36,7 @@ const Template: StoryFn<CubeDatePickerProps> = ({ ...props }) => {
 
   try {
     if (props.value) {
-      props.value = parseDate(props.value);
+      props.value = parseAbsoluteDate(props.value);
     }
   } catch (e) {
     props.value = undefined;
@@ -66,3 +66,9 @@ Disabled.args = { isDisabled: true };
 
 export const Small = Template.bind({});
 Small.args = { size: 'small' };
+
+export const WithLimitedRange = Template.bind({});
+WithLimitedRange.args = {
+  minValue: parseAbsoluteDate('2023-10-04'),
+  maxValue: parseAbsoluteDate('2023-12-15'),
+};

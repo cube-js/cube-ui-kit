@@ -2,7 +2,14 @@ import { mergeProps, mergeRefs } from '@react-aria/utils';
 import React, { cloneElement, useRef } from 'react';
 import { useFocusRing } from '@react-aria/focus';
 
-import { Props, Styles, tasty } from '../../../tasty';
+import {
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  Props,
+  Styles,
+  tasty,
+} from '../../../tasty';
 import {
   DEFAULT_INPUT_STYLES,
   INPUT_WRAPPER_STYLES,
@@ -30,7 +37,7 @@ const DateInputElement = tasty({
   },
 });
 
-interface CubeDateAtomInputProps {
+interface CubeDateAtomInputProps extends ContainerStyleProps {
   isDisabled?: boolean;
   children?: React.ReactNode;
   fieldProps?: Props;
@@ -54,11 +61,12 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
     style,
     disableFocusRing,
     autoFocus,
-    styles,
     validationState,
     isLoading,
     size = 'medium',
   } = props;
+
+  let styles = extractStyles(props, CONTAINER_STYLES);
 
   let { focusProps, isFocusVisible, isFocused } = useFocusRing({
     isTextInput: true,

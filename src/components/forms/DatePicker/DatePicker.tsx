@@ -3,41 +3,39 @@ import { AriaDatePickerProps, DateValue } from '@react-types/datepicker';
 import { FocusableRef } from '@react-types/shared';
 import { useDatePicker } from '@react-aria/datepicker';
 import { useDatePickerState } from '@react-stately/datepicker';
-import { CalendarOutlined } from '@ant-design/icons';
 import { useLocalizedStringFormatter } from '@react-aria/i18n';
 
 import { useProviderProps } from '../../../provider';
 import { wrapWithField } from '../wrapper';
 import {
   BaseProps,
-  BlockStyleProps,
-  DimensionStyleProps,
-  PositionStyleProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
   Styles,
 } from '../../../tasty';
 import { FieldBaseProps, ValidationState } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { useFieldProps, useFormProps } from '../Form';
 import { Space } from '../../layout/Space';
-import { Block } from '../../Block';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
-import { Button } from '../../actions';
 import { Calendar } from '../../other/Calendar/Calendar';
 
 import { useFocusManagerRef } from './utils';
 import { DateInputBase } from './DateInputBase';
 import { DatePickerInput } from './DatePickerInput';
 import { TimeInput } from './TimeInput';
+import { DatePickerButton } from './DatePickerButton';
+import { DEFAULT_DATE_PROPS } from './props';
 
 export interface CubeDatePickerProps<T extends DateValue = DateValue>
   extends AriaDatePickerProps<T>,
     BaseProps,
-    PositionStyleProps,
-    DimensionStyleProps,
-    BlockStyleProps,
+    ContainerStyleProps,
     FieldBaseProps {
   wrapperStyles?: Styles;
   inputStyles?: Styles;
+  triggerStyles?: Styles;
   styles?: Styles;
   size?: 'small' | 'medium' | 'large' | (string & {});
   validationState?: ValidationState;
@@ -62,11 +60,15 @@ function DatePicker<T extends DateValue>(
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onBlur',
   });
+  props = Object.assign({}, DEFAULT_DATE_PROPS, props);
+
+  let styles = extractStyles(props, CONTAINER_STYLES);
 
   let { size, shouldFlip, placeholderValue, isDisabled, validationState } =
     props;
   let targetRef = useRef<HTMLDivElement>(null);
   let state = useDatePickerState({
+    ...DEFAULT_DATE_PROPS,
     ...props,
     shouldCloseOnSelect: () => !state.hasTime,
   });
@@ -101,57 +103,54 @@ function DatePicker<T extends DateValue>(
   // let visibleMonths = useVisibleMonths(maxVisibleMonths);
 
   const component = (
-    <Block>
-      <Space gap="0">
-        <DateInputBase
-          disableFocusRing
-          styles={{ radius: 'left', border: 'top left bottom' }}
-          isDisabled={isDisabled}
-          validationState={validationState}
-        >
-          <DatePickerInput {...fieldProps} />
-        </DateInputBase>
-        <DialogTrigger
-          hideArrow
-          type="popover"
-          mobileType="tray"
-          placement="bottom left"
-          targetRef={targetRef}
-          isOpen={isOpen}
-          offset={8}
-          shouldFlip={shouldFlip}
-          onOpenChange={setOpen}
-        >
-          <Button
-            size={size}
-            radius="1r right"
-            icon={<CalendarOutlined />}
-            {...buttonProps}
-          />
-          <Dialog {...dialogProps} width="max-content">
-            <Calendar {...calendarProps} />
-            {showTimeField && (
-              <TimeInput
-                label={stringFormatter.format('time')}
-                value={state.timeValue}
-                placeholderValue={timePlaceholder}
-                granularity={timeGranularity}
-                minValue={timeMinValue}
-                maxValue={timeMaxValue}
-                hourCycle={props.hourCycle}
-                hideTimeZone={props.hideTimeZone}
-                onChange={state.setTimeValue}
-              />
-            )}
-          </Dialog>
-        </DialogTrigger>
-      </Space>
-    </Block>
+    <Space gap="0" styles={props.wrapperStyles}>
+      <DateInputBase
+        disableFocusRing
+        radius="left"
+        border="top left bottom"
+        isDisabled={isDisabled}
+        validationState={validationState}
+        size={size}
+      >
+        <DatePickerInput {...fieldProps} />
+      </DateInputBase>
+      <DialogTrigger
+        hideArrow
+        type="popover"
+        mobileType="tray"
+        placement="bottom left"
+        targetRef={targetRef}
+        isOpen={isOpen}
+        offset={8}
+        shouldFlip={shouldFlip}
+        onOpenChange={setOpen}
+      >
+        <DatePickerButton size={size} {...buttonProps} />
+        <Dialog {...dialogProps} width="max-content">
+          <Calendar {...calendarProps} />
+          {showTimeField && (
+            <TimeInput
+              padding="1x"
+              label={stringFormatter.format('time')}
+              value={state.timeValue}
+              placeholderValue={timePlaceholder}
+              granularity={timeGranularity}
+              minValue={timeMinValue}
+              maxValue={timeMaxValue}
+              hourCycle={props.hourCycle}
+              hideTimeZone={props.hideTimeZone}
+              onChange={state.setTimeValue}
+            />
+          )}
+        </Dialog>
+      </DialogTrigger>
+    </Space>
   );
 
   return wrapWithField(component, domRef, {
     ...props,
-    ...mergeProps(props.labelProps, labelProps),
+    styles,
+    labelProps: mergeProps(props.labelProps, labelProps),
     fieldProps: groupProps,
   });
 }

@@ -25,9 +25,9 @@ const EditableSegmentElement = tasty({
   qa: 'EditableSegment',
   styles: {
     padding: '0 1bw',
-    fontVariantNumeric: 'tabular-nums',
-    textAlign: 'center',
-    letterSpacing: '1bw',
+    fontVariantNumeric: 'tabular-nums lining-nums',
+    textAlign: 'right',
+    font: 'monospace',
     color: {
       '': '#dark',
       placeholder: '#placeholder',
@@ -88,9 +88,7 @@ function EditableSegment({ segment, state }: DatePickerSegmentProps) {
         ...segmentProps.style,
         minWidth:
           segment.maxValue != null
-            ? `calc(${String(segment.maxValue).length + 'ch'} + ${
-                3 * Math.max(String(segment.maxValue).length - 1, 0)
-              }px)`
+            ? `calc(${String(segment.maxValue).length + 'ch'})`
             : undefined,
       }}
       data-testid={segment.type}

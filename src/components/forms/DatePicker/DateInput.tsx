@@ -10,11 +10,9 @@ import { useProviderProps } from '../../../provider';
 import { wrapWithField } from '../wrapper';
 import {
   BaseProps,
-  BlockStyleProps,
   CONTAINER_STYLES,
-  DimensionStyleProps,
+  ContainerStyleProps,
   extractStyles,
-  PositionStyleProps,
   Styles,
 } from '../../../tasty';
 import { FieldBaseProps, ValidationState } from '../../../shared';
@@ -28,9 +26,7 @@ import { DatePickerSegment } from './DatePickerSegment';
 export interface CubeDateInputProps<T extends DateValue = DateValue>
   extends AriaDateFieldProps<T>,
     BaseProps,
-    PositionStyleProps,
-    DimensionStyleProps,
-    BlockStyleProps,
+    ContainerStyleProps,
     FieldBaseProps {
   wrapperStyles?: Styles;
   inputStyles?: Styles;
@@ -58,7 +54,7 @@ function DateInput<T extends DateValue>(
     isRequired,
   } = props;
 
-  let styles = extractStyles(props, CONTAINER_STYLES);
+  let styles = extractStyles(props, CONTAINER_STYLES, wrapperStyles);
 
   let domRef = useFocusManagerRef(ref);
   let { locale } = useLocale();

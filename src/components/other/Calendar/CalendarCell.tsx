@@ -18,14 +18,25 @@ const CalendarButtonElement = tasty({
     placeItems: 'center',
     width: '3.5x',
     height: '3.5x',
+    fill: {
+      '': '#purple.0',
+      ':hover': '#purple.16',
+      pressed: '#purple.10',
+
+      selected: '#purple',
+      'selected & :hover': '#purple-text',
+      'selected & pressed': '#purple',
+
+      'disabled | unavailable': '#purple.0',
+    },
     color: {
       '': '#dark',
       selected: '#white',
+      'disabled | unavailable': '#dark.30',
     },
-    fill: {
-      '': '#white',
-      ':hover': '#purple.2',
-      selected: '#purple',
+    outline: {
+      '': '0 #purple-03.0',
+      focused: '@outline-width #purple-03',
     },
     radius: true,
     cursor: 'pointer',
@@ -38,6 +49,9 @@ export function CalendarCell({ state, date }) {
     cellProps,
     buttonProps,
     isSelected,
+    isPressed,
+    isFocused,
+    isInvalid,
     isOutsideVisibleRange,
     isDisabled,
     isUnavailable,
@@ -52,6 +66,9 @@ export function CalendarCell({ state, date }) {
         hidden={isOutsideVisibleRange}
         mods={{
           selected: isSelected,
+          pressed: isPressed,
+          focused: isFocused,
+          invalid: isInvalid,
           disabled: isDisabled,
           unavailable: isUnavailable,
         }}

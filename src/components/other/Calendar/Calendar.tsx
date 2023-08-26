@@ -25,7 +25,7 @@ const CalendarElement = tasty({
 const CalendarHeaderElement = tasty({
   styles: {
     display: 'flex',
-    placeContent: 'end',
+    placeContent: 'center space-between',
     placeItems: 'center',
     gap: '1.5x',
   },
