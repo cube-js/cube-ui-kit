@@ -44,7 +44,7 @@ const TOKENS = {
   'border-width': '1px',
   radius: '4px',
   'leaf-sharp-radius': '0px',
-  transition: '120ms',
+  transition: '80ms',
   'clear-color': 'transparent',
   'border-color': color('dark', 0.1),
   'shadow-color': color('dark-03', 0.1),

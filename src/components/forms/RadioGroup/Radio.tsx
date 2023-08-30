@@ -112,7 +112,6 @@ const RadioNormalElement = tasty({
       width: '1x',
       height: '1x',
       fill: 'currentColor',
-      transition: 'theme',
     },
   },
 });
