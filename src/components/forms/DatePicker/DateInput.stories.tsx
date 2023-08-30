@@ -7,12 +7,12 @@ import {
 } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 
-import { TimeInput, CubeTimeInputProps } from './TimeInput';
+import { DateInput, CubeDateInputProps } from './DateInput';
 import { parseAbsoluteDate } from './parseDate';
 
 export default {
-  title: 'Forms/TimeInput',
-  component: TimeInput,
+  title: 'Forms/DateInput',
+  component: DateInput,
   parameters: {
     controls: {
       exclude: baseProps,
@@ -25,7 +25,7 @@ export default {
   },
 };
 
-const Template: StoryFn<CubeTimeInputProps> = ({ ...props }) => {
+const Template: StoryFn<CubeDateInputProps> = ({ ...props }) => {
   try {
     if (props.defaultValue) {
       props.defaultValue = parseAbsoluteDate(props.defaultValue);
@@ -43,8 +43,8 @@ const Template: StoryFn<CubeTimeInputProps> = ({ ...props }) => {
   }
 
   return (
-    <TimeInput
-      aria-label="TimeInput"
+    <DateInput
+      aria-label="DateInput"
       wrapperStyles={{ width: 'max-content' }}
       {...props}
       onChange={(query) => console.log('change', query)}
@@ -57,6 +57,12 @@ Default.args = {};
 
 export const WithDefaultValue = Template.bind({});
 WithDefaultValue.args = { defaultValue: new Date() };
+
+export const WithSecondGranularity = Template.bind({});
+WithSecondGranularity.args = {
+  defaultValue: new Date('2023-10-04 12:14'),
+  granularity: 'second',
+};
 
 export const Invalid = Template.bind({});
 Invalid.args = { validationState: 'invalid' };

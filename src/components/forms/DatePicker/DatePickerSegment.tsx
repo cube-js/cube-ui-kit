@@ -29,8 +29,7 @@ const EditableSegmentElement = tasty({
     textAlign: 'right',
     font: 'monospace',
     color: {
-      '': '#dark',
-      placeholder: '#placeholder',
+      '': 'inherit',
       ':focus': '#white',
     },
     fill: {

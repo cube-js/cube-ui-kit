@@ -125,7 +125,11 @@ function DatePicker<T extends DateValue>(
         shouldFlip={shouldFlip}
         onOpenChange={setOpen}
       >
-        <DatePickerButton size={size} {...buttonProps} />
+        <DatePickerButton
+          size={size}
+          {...buttonProps}
+          isDisabled={isDisabled}
+        />
         <Dialog {...dialogProps} width="max-content">
           <Calendar {...calendarProps} />
           {showTimeField && (

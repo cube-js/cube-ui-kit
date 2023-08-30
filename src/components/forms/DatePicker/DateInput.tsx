@@ -22,6 +22,8 @@ import { useFieldProps, useFormProps } from '../Form';
 import { useFocusManagerRef } from './utils';
 import { DateInputBase } from './DateInputBase';
 import { DatePickerSegment } from './DatePickerSegment';
+import { DEFAULT_DATE_PROPS } from './props';
+import { parseAbsoluteDate } from './parseDate';
 
 export interface CubeDateInputProps<T extends DateValue = DateValue>
   extends AriaDateFieldProps<T>,
@@ -43,6 +45,10 @@ function DateInput<T extends DateValue>(
   props = useFormProps(props);
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onBlur',
+    valuePropsMapper: ({ value, onChange }) => ({
+      value: typeof value === 'string' ? parseAbsoluteDate(value) : value,
+      onChange,
+    }),
   });
 
   let {
@@ -59,6 +65,7 @@ function DateInput<T extends DateValue>(
   let domRef = useFocusManagerRef(ref);
   let { locale } = useLocale();
   let state = useDateFieldState({
+    ...DEFAULT_DATE_PROPS,
     ...props,
     locale,
     createCalendar,

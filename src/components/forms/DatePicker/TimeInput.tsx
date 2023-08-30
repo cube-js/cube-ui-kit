@@ -20,6 +20,7 @@ import { useFieldProps, useFormProps } from '../Form';
 import { DateInputBase } from './DateInputBase';
 import { DatePickerSegment } from './DatePickerSegment';
 import { useFocusManagerRef } from './utils';
+import { DEFAULT_TIME_PROPS } from './props';
 
 export interface CubeTimeInputProps<T extends TimeValue = TimeValue>
   extends AriaTimeFieldProps<T>,
@@ -59,6 +60,7 @@ function TimeInput<T extends TimeValue>(
   let domRef = useFocusManagerRef(ref);
   let { locale } = useLocale();
   let state = useTimeFieldState({
+    ...DEFAULT_TIME_PROPS,
     ...props,
     locale,
   });

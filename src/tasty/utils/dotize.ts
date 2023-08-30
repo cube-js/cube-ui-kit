@@ -49,14 +49,7 @@ export const dotize = {
   isPlainObject: function (obj) {
     if (typeof obj !== 'object' || obj === null) return false;
 
-    // If has modified constructor
-    let proto = obj;
-    while (Object.getPrototypeOf(proto) !== null) {
-      proto = Object.getPrototypeOf(proto);
-    }
-
-    // If null prototype
-    return Object.getPrototypeOf(obj) === proto;
+    return Object.getPrototypeOf(obj) === Object.prototype;
   },
 
   isNotObject: function (obj) {
@@ -113,7 +106,8 @@ export const dotize = {
         if (
           currentProp &&
           typeof currentProp === 'object' &&
-          !Array.isArray(currentProp)
+          !Array.isArray(currentProp) &&
+          dotize.isPlainObject(currentProp)
         ) {
           if (isArrayItem && dotize.isEmptyObj(currentProp) == false) {
             newObj = recurse(

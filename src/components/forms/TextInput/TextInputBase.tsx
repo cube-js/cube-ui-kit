@@ -86,6 +86,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   },
   boxSizing: 'border-box',
   transition: 'theme',
+  backgroundClip: 'content-box',
 
   Prefix: {
     ...ADD_STYLES,
