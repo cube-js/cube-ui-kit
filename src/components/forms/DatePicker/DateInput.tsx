@@ -50,6 +50,7 @@ function DateInput<T extends DateValue>(
       onChange,
     }),
   });
+  props = Object.assign({}, DEFAULT_DATE_PROPS, props);
 
   let {
     autoFocus,
@@ -66,7 +67,6 @@ function DateInput<T extends DateValue>(
   let domRef = useFocusManagerRef(ref);
   let { locale } = useLocale();
   let state = useDateFieldState({
-    ...DEFAULT_DATE_PROPS,
     ...props,
     locale,
     createCalendar,

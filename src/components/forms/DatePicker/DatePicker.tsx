@@ -60,7 +60,6 @@ function DatePicker<T extends DateValue>(
     props;
   let targetRef = useRef<HTMLDivElement>(null);
   let state = useDatePickerState({
-    ...DEFAULT_DATE_PROPS,
     ...props,
     shouldCloseOnSelect: () => !state.hasTime,
   });
