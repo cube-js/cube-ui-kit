@@ -58,6 +58,7 @@ function DateInput<T extends DateValue>(
     wrapperStyles,
     isReadOnly,
     isRequired,
+    size = 'medium',
   } = props;
 
   let styles = extractStyles(props, CONTAINER_STYLES, wrapperStyles);
@@ -77,6 +78,7 @@ function DateInput<T extends DateValue>(
   const component = (
     <DateInputBase
       ref={fieldRef}
+      size={size}
       fieldProps={fieldProps}
       isDisabled={isDisabled}
       autoFocus={autoFocus}
