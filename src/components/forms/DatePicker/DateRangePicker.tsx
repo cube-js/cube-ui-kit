@@ -3,7 +3,6 @@ import { AriaDateRangePickerProps, DateValue } from '@react-types/datepicker';
 import { FocusableRef } from '@react-types/shared';
 import { useDateRangePicker } from '@react-aria/datepicker';
 import { useDateRangePickerState } from '@react-stately/datepicker';
-import { useLocalizedStringFormatter } from '@react-aria/i18n';
 
 import { useProviderProps } from '../../../provider';
 import { wrapWithField } from '../wrapper';
@@ -28,6 +27,7 @@ import { DatePickerInput } from './DatePickerInput';
 import { TimeInput } from './TimeInput';
 import { DatePickerButton } from './DatePickerButton';
 import { DEFAULT_DATE_PROPS } from './props';
+import { dateMessages } from './intl';
 
 const DateRangeDash = tasty({
   'aria-hidden': 'true',
@@ -52,14 +52,6 @@ export interface CubeDateRangePickerProps<T extends DateValue = DateValue>
   shouldFlip?: boolean;
 }
 
-const intlMessages = {
-  'en-US': {
-    time: 'Time',
-    startTime: 'Start time',
-    endTime: 'End time',
-  },
-};
-
 function DateRangePicker<T extends DateValue>(
   props: CubeDateRangePickerProps<T>,
   ref: FocusableRef<HTMLElement>,
@@ -82,7 +74,6 @@ function DateRangePicker<T extends DateValue>(
   });
   let { isOpen, setOpen } = state;
   let domRef = useFocusManagerRef(ref);
-  let stringFormatter = useLocalizedStringFormatter(intlMessages);
 
   let {
     groupProps,
@@ -142,18 +133,32 @@ function DateRangePicker<T extends DateValue>(
         <Dialog {...dialogProps} width="max-content">
           <RangeCalendar {...calendarProps} />
           {showTimeField && (
-            <TimeInput
-              padding="1x"
-              label={stringFormatter.format('time')}
-              value={state.timeValue}
-              placeholderValue={timePlaceholder}
-              granularity={timeGranularity}
-              minValue={timeMinValue}
-              maxValue={timeMaxValue}
-              hourCycle={props.hourCycle}
-              hideTimeZone={props.hideTimeZone}
-              onChange={state.setTimeValue}
-            />
+            <Space>
+              <TimeInput
+                padding="1x"
+                label={dateMessages['startTime']}
+                value={state.timeRange?.start || null}
+                placeholderValue={timePlaceholder}
+                granularity={timeGranularity}
+                minValue={timeMinValue}
+                maxValue={timeMaxValue}
+                hourCycle={props.hourCycle}
+                hideTimeZone={props.hideTimeZone}
+                onChange={(v) => state.setTime('start', v)}
+              />
+              <TimeInput
+                padding="1x"
+                label={dateMessages['endTime']}
+                value={state.timeRange?.end || null}
+                placeholderValue={timePlaceholder}
+                granularity={timeGranularity}
+                minValue={timeMinValue}
+                maxValue={timeMaxValue}
+                hourCycle={props.hourCycle}
+                hideTimeZone={props.hideTimeZone}
+                onChange={(v) => state.setTime('end', v)}
+              />
+            </Space>
           )}
         </Dialog>
       </DialogTrigger>

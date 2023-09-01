@@ -42,6 +42,15 @@ WithDefaultValue.args = {
   },
 };
 
+export const WithSecondGranularity = Template.bind({});
+WithSecondGranularity.args = {
+  defaultValue: {
+    start: parseAbsoluteDate(new Date('2020-09-10 18:19')),
+    end: parseAbsoluteDate(new Date('2020-10-02 14:12')),
+  },
+  granularity: 'second',
+};
+
 export const Invalid = Template.bind({});
 Invalid.args = { validationState: 'invalid' };
 

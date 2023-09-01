@@ -3,7 +3,6 @@ import { AriaDatePickerProps, DateValue } from '@react-types/datepicker';
 import { FocusableRef } from '@react-types/shared';
 import { useDatePicker } from '@react-aria/datepicker';
 import { useDatePickerState } from '@react-stately/datepicker';
-import { useLocalizedStringFormatter } from '@react-aria/i18n';
 
 import { useProviderProps } from '../../../provider';
 import { wrapWithField } from '../wrapper';
@@ -27,6 +26,7 @@ import { DatePickerInput } from './DatePickerInput';
 import { TimeInput } from './TimeInput';
 import { DatePickerButton } from './DatePickerButton';
 import { DEFAULT_DATE_PROPS } from './props';
+import { dateMessages } from './intl';
 
 export interface CubeDatePickerProps<T extends DateValue = DateValue>
   extends AriaDatePickerProps<T>,
@@ -42,14 +42,6 @@ export interface CubeDatePickerProps<T extends DateValue = DateValue>
   maxVisibleMonths?: number;
   shouldFlip?: boolean;
 }
-
-const intlMessages = {
-  'en-US': {
-    time: 'Time',
-    startTime: 'Start time',
-    endTime: 'End time',
-  },
-};
 
 function DatePicker<T extends DateValue>(
   props: CubeDatePickerProps<T>,
@@ -74,7 +66,6 @@ function DatePicker<T extends DateValue>(
   });
   let { isOpen, setOpen } = state;
   let domRef = useFocusManagerRef(ref);
-  let stringFormatter = useLocalizedStringFormatter(intlMessages);
 
   let {
     groupProps,
@@ -135,7 +126,7 @@ function DatePicker<T extends DateValue>(
           {showTimeField && (
             <TimeInput
               padding="1x"
-              label={stringFormatter.format('time')}
+              label={dateMessages['time']}
               value={state.timeValue}
               placeholderValue={timePlaceholder}
               granularity={timeGranularity}
