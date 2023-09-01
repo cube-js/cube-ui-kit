@@ -1,6 +1,10 @@
 import { parseAbsolute } from '@internationalized/date';
 
 export function parseAbsoluteDate(val: string | Date) {
+  if (!val || (typeof val === 'string' && val.trim() === '')) {
+    return undefined;
+  }
+
   if (val instanceof Date) {
     return parseAbsolute(val.toISOString(), 'UTC');
   }
@@ -12,7 +16,7 @@ export function parseAbsoluteDate(val: string | Date) {
       return parseAbsolute(new Date(val).toISOString(), 'UTC');
     } else {
       console.error('Invalid date format', val);
-      return null;
+      return undefined;
     }
   }
 }
