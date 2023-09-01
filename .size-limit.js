@@ -19,7 +19,7 @@ module.exports = [
         }),
       );
     },
-    limit: '200kB',
+    limit: '210kB',
   },
   {
     name: 'Tree shaking (just a Button)',

@@ -46,8 +46,14 @@ export const dotize = {
     return JSON.stringify(obj) === JSON.stringify({});
   },
 
+  isPlainObject: function (obj) {
+    if (typeof obj !== 'object' || obj === null) return false;
+
+    return Object.getPrototypeOf(obj) === Object.prototype;
+  },
+
   isNotObject: function (obj) {
-    return !obj || typeof obj != 'object';
+    return !obj || !this.isPlainObject(obj);
   },
 
   isEmptyArray: function (arr) {
@@ -100,7 +106,8 @@ export const dotize = {
         if (
           currentProp &&
           typeof currentProp === 'object' &&
-          !Array.isArray(currentProp)
+          !Array.isArray(currentProp) &&
+          dotize.isPlainObject(currentProp)
         ) {
           if (isArrayItem && dotize.isEmptyObj(currentProp) == false) {
             newObj = recurse(

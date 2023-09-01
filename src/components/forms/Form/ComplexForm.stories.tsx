@@ -20,8 +20,10 @@ import {
   Submit,
   SubmitError,
   Switch,
+  DateInput,
   TextInput,
   NumberInput,
+  parseAbsoluteDate,
 } from '../../../index';
 // import { NumberInput } from '../NumberInput/NumberInput';
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -221,6 +223,7 @@ const Template: StoryFn<typeof Form> = (args) => {
           switch: false,
           slider: 60,
           rangeSlider: [20, 40],
+          date: parseAbsoluteDate(new Date()),
         }}
         onSubmit={(v) => {
           console.log('onSubmit:', v);
@@ -275,6 +278,7 @@ const Template: StoryFn<typeof Form> = (args) => {
         <Field name="password">
           <PasswordInput label="Password field" />
         </Field>
+        <DateInput name="date" label="Date field" />
         <Field
           name="select.one"
           label="Select field"

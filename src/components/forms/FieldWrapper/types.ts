@@ -40,4 +40,6 @@ export type CubeFieldWrapperProps = {
   messageStyles?: Styles;
 
   Component?: JSX.Element;
+  /** Custom components that should go outside the field and should not be visible by default. For example: Dialogs */
+  children?: ReactNode;
 };

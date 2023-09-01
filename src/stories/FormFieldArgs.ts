@@ -211,6 +211,44 @@ export const TEXT_VALUE_ARG = {
   },
 };
 
+export const DATE_VALUE_ARG = {
+  value: {
+    defaultValue: undefined,
+    description: 'The text date in controlled mode',
+    control: 'date',
+    table: {
+      type: { summary: 'date' },
+    },
+  },
+  defaultValue: {
+    defaultValue: undefined,
+    description: 'The default date value in uncontrolled mode',
+    control: 'date',
+    table: {
+      type: { summary: 'date' },
+    },
+  },
+};
+
+export const TIME_VALUE_ARG = {
+  value: {
+    defaultValue: undefined,
+    description: 'The text time in controlled mode',
+    control: 'text',
+    table: {
+      type: { summary: 'string' },
+    },
+  },
+  defaultValue: {
+    defaultValue: undefined,
+    description: 'The default time value in uncontrolled mode',
+    control: 'text',
+    table: {
+      type: { summary: 'string' },
+    },
+  },
+};
+
 export const NUMBER_VALUE_ARG = {
   value: {
     defaultValue: undefined,

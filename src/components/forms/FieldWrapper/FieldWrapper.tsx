@@ -96,6 +96,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     tooltip,
     isHidden,
     labelSuffix,
+    children,
   } = props;
 
   const labelComponent = label ? (
@@ -153,32 +154,35 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
   };
 
   return (
-    <FieldElement
-      ref={ref}
-      as={as ?? 'div'}
-      mods={mods}
-      isHidden={isHidden}
-      styles={styles}
-      {...fieldProps}
-    >
-      {labelComponent || descriptionComponent ? (
-        <div data-element="LabelArea">
-          {labelComponent}
-          {descriptionComponent}
+    <>
+      <FieldElement
+        ref={ref}
+        as={as ?? 'div'}
+        mods={mods}
+        isHidden={isHidden}
+        styles={styles}
+        {...fieldProps}
+      >
+        {labelComponent || descriptionComponent ? (
+          <div data-element="LabelArea">
+            {labelComponent}
+            {descriptionComponent}
+          </div>
+        ) : null}
+        <div data-element="InputArea">
+          {Component}
+          {message && !isDisabled && (
+            <MessageElement
+              mods={mods}
+              styles={messageStyles}
+              role={validationState === 'invalid' ? 'alert' : undefined}
+            >
+              {message}
+            </MessageElement>
+          )}
         </div>
-      ) : null}
-      <div data-element="InputArea">
-        {Component}
-        {message && !isDisabled && (
-          <MessageElement
-            mods={mods}
-            styles={messageStyles}
-            role={validationState === 'invalid' ? 'alert' : undefined}
-          >
-            {message}
-          </MessageElement>
-        )}
-      </div>
-    </FieldElement>
+      </FieldElement>
+      {children}
+    </>
   );
 });
