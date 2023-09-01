@@ -56,7 +56,7 @@ export const Default = Template.bind({});
 Default.args = {};
 
 export const WithDefaultValue = Template.bind({});
-WithDefaultValue.args = { defaultValue: new Date() };
+WithDefaultValue.args = { defaultValue: new Date('2023-10-04 12:14') };
 
 export const WithSecondGranularity = Template.bind({});
 WithSecondGranularity.args = {
