@@ -1,5 +1,12 @@
 # @cube-dev/ui-kit
 
+## 0.23.0
+
+### Minor Changes
+
+- [#373](https://github.com/cube-js/cube-ui-kit/pull/373) [`a204af6`](https://github.com/cube-js/cube-ui-kit/commit/a204af648b411b79a151e69f255045918b968ffc) Thanks [@tenphi](https://github.com/tenphi)! - Add date & time inputs: DateInput, TimeInput, DatePicker, DateRangePicker.
+  Change default transition time from 120ms to 80ms.
+
 ## 0.22.8
 
 ### Patch Changes
