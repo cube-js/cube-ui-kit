@@ -1,6 +1,6 @@
 import { parseAbsolute } from '@internationalized/date';
 
-export function parseAbsoluteDate(val: string | Date) {
+export function parseAbsoluteDate(val: string | Date | undefined) {
   if (!val || (typeof val === 'string' && val.trim() === '')) {
     return undefined;
   }
