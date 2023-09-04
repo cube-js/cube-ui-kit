@@ -56,8 +56,7 @@ function DatePicker<T extends DateValue>(
 
   let styles = extractStyles(props, CONTAINER_STYLES);
 
-  let { size, shouldFlip, placeholderValue, isDisabled, validationState } =
-    props;
+  let { size, placeholderValue, isDisabled, validationState } = props;
   let targetRef = useRef<HTMLDivElement>(null);
   let state = useDatePickerState({
     ...props,
@@ -93,7 +92,7 @@ function DatePicker<T extends DateValue>(
   // let visibleMonths = useVisibleMonths(maxVisibleMonths);
 
   const component = (
-    <Space gap="0" styles={props.wrapperStyles}>
+    <Space ref={targetRef} gap="0" styles={props.wrapperStyles}>
       <DateInputBase
         disableFocusRing
         radius="left"
@@ -108,11 +107,10 @@ function DatePicker<T extends DateValue>(
         hideArrow
         type="popover"
         mobileType="tray"
-        placement="bottom left"
+        placement="bottom right"
         targetRef={targetRef}
         isOpen={isOpen}
-        offset={8}
-        shouldFlip={shouldFlip}
+        shouldFlip={props.shouldFlip}
         onOpenChange={setOpen}
       >
         <DatePickerButton

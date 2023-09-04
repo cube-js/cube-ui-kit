@@ -103,7 +103,7 @@ function DateRangePicker<T extends DateValue>(
   // let visibleMonths = useVisibleMonths(maxVisibleMonths);
 
   const component = (
-    <Space gap="0" styles={props.wrapperStyles}>
+    <Space ref={targetRef} gap="0" styles={props.wrapperStyles}>
       <DateInputBase
         disableFocusRing
         isDisabled={isDisabled}
