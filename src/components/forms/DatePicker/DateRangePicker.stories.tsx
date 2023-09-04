@@ -1,4 +1,5 @@
 import { StoryFn } from '@storybook/react';
+import { userEvent, within } from '@storybook/testing-library';
 
 import { ICON_ARG, VALIDATION_STATE_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -42,12 +43,18 @@ WithDefaultValue.args = {
   },
 };
 
+export const WithDefaultValueOpen = Template.bind({});
+WithDefaultValueOpen.args = WithDefaultValue.args;
+WithDefaultValueOpen.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const button = await canvas.getByRole('button');
+
+  await userEvent.click(button);
+};
+
 export const WithSecondGranularity = Template.bind({});
 WithSecondGranularity.args = {
-  defaultValue: {
-    start: parseAbsoluteDate(new Date('2020-09-10 18:19')),
-    end: parseAbsoluteDate(new Date('2020-10-02 14:12')),
-  },
+  ...WithDefaultValue.args,
   granularity: 'second',
 };
 

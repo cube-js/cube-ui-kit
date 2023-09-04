@@ -119,7 +119,7 @@ function DateRangePicker<T extends DateValue>(
         hideArrow
         type="popover"
         mobileType="tray"
-        placement="bottom left"
+        placement="bottom right"
         targetRef={targetRef}
         isOpen={isOpen}
         shouldFlip={shouldFlip}
