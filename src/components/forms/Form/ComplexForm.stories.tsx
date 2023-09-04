@@ -223,7 +223,7 @@ const Template: StoryFn<typeof Form> = (args) => {
           switch: false,
           slider: 60,
           rangeSlider: [20, 40],
-          date: parseAbsoluteDate(new Date()),
+          date: parseAbsoluteDate('2023-10-04'),
         }}
         onSubmit={(v) => {
           console.log('onSubmit:', v);

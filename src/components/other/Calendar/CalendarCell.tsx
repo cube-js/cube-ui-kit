@@ -35,8 +35,12 @@ const CalendarButtonElement = tasty({
       'disabled | unavailable': '#dark.30',
     },
     outline: {
-      '': '0 #purple-03.0',
-      focused: '@outline-width #purple-03',
+      '': '(1ow - 1bw) #purple-03.0',
+      focused: '(1ow - 1bw) #purple-03',
+    },
+    shadow: {
+      '': '0 0 0 1bw #purple-03.0 inset',
+      focused: '0 0 0 1bw #purple-03 inset',
     },
     radius: true,
     cursor: 'pointer',

@@ -1,4 +1,5 @@
 import { StoryFn } from '@storybook/react';
+import { userEvent, within } from '@storybook/testing-library';
 
 import {
   ICON_ARG,
@@ -57,6 +58,15 @@ Default.args = {};
 
 export const WithDefaultValue = Template.bind({});
 WithDefaultValue.args = { defaultValue: new Date('2023-10-04 12:14') };
+
+export const WithDefaultValueOpen = Template.bind({});
+WithDefaultValueOpen.args = WithDefaultValue.args;
+WithDefaultValueOpen.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const button = await canvas.getByRole('button');
+
+  await userEvent.click(button);
+};
 
 export const Invalid = Template.bind({});
 Invalid.args = { validationState: 'invalid' };
