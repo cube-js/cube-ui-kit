@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.23.1
+
+### Patch Changes
+
+- [#375](https://github.com/cube-js/cube-ui-kit/pull/375) [`28ca840`](https://github.com/cube-js/cube-ui-kit/commit/28ca8401c31396f8a08e3ae4cdb95ccf6ac91dba) Thanks [@tenphi](https://github.com/tenphi)! - Fix popover position of DatePicker and DateRangePicker
+
 ## 0.23.0
 
 ### Minor Changes
