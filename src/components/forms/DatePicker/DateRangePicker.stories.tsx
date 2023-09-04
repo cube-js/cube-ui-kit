@@ -54,7 +54,10 @@ WithDefaultValueOpen.play = async ({ canvasElement }) => {
 
 export const WithSecondGranularity = Template.bind({});
 WithSecondGranularity.args = {
-  ...WithDefaultValue.args,
+  defaultValue: {
+    start: parseAbsoluteDate(new Date('2020-09-10 18:19')),
+    end: parseAbsoluteDate(new Date('2020-10-02 14:12')),
+  },
   granularity: 'second',
 };
 
