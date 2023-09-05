@@ -15,7 +15,7 @@ export const parameters = {
   docs: {
     container: ({ children, context }) => (
       <DocsContainer context={context}>
-        <Root>{children}</Root>
+        <Root fontDisplay="block">{children}</Root>
       </DocsContainer>
     ),
   },
@@ -31,7 +31,7 @@ export const parameters = {
 
 export const decorators = [
   (Story) => (
-    <Root>
+    <Root fontDisplay="block">
       <Story />
     </Root>
   ),
