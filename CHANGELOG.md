@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.23.2
+
+### Patch Changes
+
+- [#377](https://github.com/cube-js/cube-ui-kit/pull/377) [`ad00f76`](https://github.com/cube-js/cube-ui-kit/commit/ad00f762d8f3d8a5270afbfd815a3d0518c80b68) Thanks [@tenphi](https://github.com/tenphi)! - Remove label duplicates passed via the `children` property from Checkbox and Switch components.
+
 ## 0.23.1
 
 ### Patch Changes
