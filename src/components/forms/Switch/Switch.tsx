@@ -234,7 +234,6 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
           isDisabled,
           validationState,
           message,
-          children,
           description,
           requiredMark,
           tooltip,

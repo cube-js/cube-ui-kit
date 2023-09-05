@@ -250,7 +250,6 @@ function Checkbox(
           as: 'label',
           labelPosition,
           label,
-          children,
           extra,
           styles,
           isRequired,
