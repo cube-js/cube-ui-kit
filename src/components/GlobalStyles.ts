@@ -5,6 +5,7 @@ import { TOKENS } from '../tokens';
 interface GlobalStylesProps {
   bodyStyles?: { [key: string]: string };
   fonts?: boolean;
+  fontDisplay?: 'auto' | 'block' | 'swap' | 'fallback' | 'optional';
   publicUrl?: string;
   font?: string;
   monospaceFont?: string;
@@ -26,12 +27,12 @@ const BODY_STYLES = {
   'font-weight': '400',
 };
 
-const fontsProvider = ({ publicUrl = '' }) => `
+const fontsProvider = ({ publicUrl = '', fontDisplay = 'swap' }) => `
   @font-face {
     font-family: 'Inter';
     font-style: normal;
     font-weight: 400;
-    font-display: swap;
+    font-display: ${fontDisplay};
     src: url(${publicUrl}/fonts/Inter-Regular.woff2) format('woff2'),
       url(${publicUrl}/fonts/Inter-Regular.woff) format('woff');
   }
@@ -39,7 +40,7 @@ const fontsProvider = ({ publicUrl = '' }) => `
     font-family: 'Inter';
     font-style: normal;
     font-weight: 500;
-    font-display: swap;
+    font-display: ${fontDisplay};
     src: url(${publicUrl}/fonts/Inter-Medium.woff2) format('woff2'),
       url(${publicUrl}/fonts/Inter-Medium.woff) format('woff');
   }
@@ -47,7 +48,7 @@ const fontsProvider = ({ publicUrl = '' }) => `
     font-family: 'Inter';
     font-style: normal;
     font-weight: 600;
-    font-display: swap;
+    font-display: ${fontDisplay};
     src: url(${publicUrl}/fonts/Inter-SemiBold.woff2) format('woff2'),
       url(${publicUrl}/fonts/Inter-SemiBold.woff) format('woff');
   }
@@ -55,7 +56,7 @@ const fontsProvider = ({ publicUrl = '' }) => `
     font-family: 'Inter';
     font-style: normal;
     font-weight: 700;
-    font-display: swap;
+    font-display: ${fontDisplay};
     src: url(${publicUrl}/fonts/Inter-Bold.woff2) format('woff2'),
       url(${publicUrl}/fonts/Inter-Bold.woff) format('woff');
   }
@@ -65,14 +66,14 @@ const fontsProvider = ({ publicUrl = '' }) => `
       url('${publicUrl}/fonts/SourceCodePro-Regular.woff') format('woff');
     font-weight: normal;
     font-style: normal;
-    font-display: swap;
+    font-display: ${fontDisplay};
   }
 
   @font-face {
     font-family: 'JetBrains Mono';
     font-style: normal;
     font-weight: 400;
-    font-display: swap;
+    font-display: ${fontDisplay};
     src: url(${publicUrl}/fonts/JetBrainsMono-Regular.woff2) format('woff2'),
       url(${publicUrl}/fonts/JetBrainsMono-Regular.woff) format('woff');
   }
@@ -81,7 +82,7 @@ const fontsProvider = ({ publicUrl = '' }) => `
     font-family: 'JetBrains Mono';
     font-style: normal;
     font-weight: 700;
-    font-display: swap;
+    font-display: ${fontDisplay};
     src: url(${publicUrl}/fonts/JetBrainsMono-Bold.woff2) format('woff2'),
       url(${publicUrl}/fonts/JetBrainsMono-Bold.woff) format('woff');
   }
@@ -195,8 +196,10 @@ export const GlobalStyles = createGlobalStyle`
     font-family: var(--monospace-font);
   }
 
-  ${({ fonts, publicUrl }: GlobalStylesProps) =>
-    fonts === false ? '' : fontsProvider({ publicUrl })}
+  ${({ fonts, publicUrl, fontDisplay }: GlobalStylesProps) =>
+    fonts === false
+      ? ''
+      : fontsProvider({ publicUrl, ...(fontDisplay ? { fontDisplay } : {}) })}
 
   // Prism Code
   code[class*="language-"],

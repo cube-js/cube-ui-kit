@@ -39,6 +39,7 @@ const STYLES = [...BASE_STYLES, ...BLOCK_STYLES];
 export interface CubeRootProps extends BaseProps {
   tokens?: { [key: string]: string };
   bodyStyles?: { [key: string]: string };
+  fontDisplay?: 'auto' | 'block' | 'swap' | 'fallback' | 'optional';
   fonts?: boolean;
   publicUrl?: string;
   router?: any;
@@ -58,6 +59,7 @@ export function Root(allProps: CubeRootProps) {
     children,
     /** Raw css styles for body element */
     bodyStyles,
+    fontDisplay = 'swap',
     fonts,
     publicUrl,
     router,
@@ -125,6 +127,7 @@ export function Root(allProps: CubeRootProps) {
         <StyleSheetManager disableVendorPrefixes>
           <RootElement
             ref={ref}
+            data-font-display={fontDisplay}
             {...filterBaseProps(props, { eventProps: true })}
             styles={styles}
             style={{
@@ -140,6 +143,7 @@ export function Root(allProps: CubeRootProps) {
               fonts={fonts}
               font={font}
               monospaceFont={monospaceFont}
+              fontDisplay={fontDisplay}
             />
             <ModalProvider>
               <PortalProvider value={ref}>
