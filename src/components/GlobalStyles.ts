@@ -20,76 +20,20 @@ const BODY_STYLES = {
   margin: '0',
   padding: '0',
   color: 'rgba(20, 20, 70, .75)',
-  'font-size': '14px',
+  'font-size': '15px',
   'line-height': '20px',
   'letter-spacing': '0.02em',
   'font-weight': '400',
+  'font-variant': 'initial',
+  'font-feature-settings': 'initial',
 };
 
 const fontsProvider = ({ publicUrl = '' }) => `
   @font-face {
-    font-family: 'Inter';
-    font-style: normal;
-    font-weight: 400;
+    font-family: 'Figtree';
     font-display: swap;
-    src: url(${publicUrl}/fonts/Inter-Regular.woff2) format('woff2'),
-      url(${publicUrl}/fonts/Inter-Regular.woff) format('woff');
-  }
-  @font-face {
-    font-family: 'Inter';
-    font-style: normal;
-    font-weight: 500;
-    font-display: swap;
-    src: url(${publicUrl}/fonts/Inter-Medium.woff2) format('woff2'),
-      url(${publicUrl}/fonts/Inter-Medium.woff) format('woff');
-  }
-  @font-face {
-    font-family: 'Inter';
-    font-style: normal;
-    font-weight: 600;
-    font-display: swap;
-    src: url(${publicUrl}/fonts/Inter-SemiBold.woff2) format('woff2'),
-      url(${publicUrl}/fonts/Inter-SemiBold.woff) format('woff');
-  }
-  @font-face {
-    font-family: 'Inter';
-    font-style: normal;
-    font-weight: 700;
-    font-display: swap;
-    src: url(${publicUrl}/fonts/Inter-Bold.woff2) format('woff2'),
-      url(${publicUrl}/fonts/Inter-Bold.woff) format('woff');
-  }
-  @font-face {
-    font-family: 'Source Code Pro';
-    src: url('${publicUrl}/fonts/SourceCodePro-Regular.woff2') format('woff2'),
-      url('${publicUrl}/fonts/SourceCodePro-Regular.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-  }
-
-  @font-face {
-    font-family: 'JetBrains Mono';
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: url(${publicUrl}/fonts/JetBrainsMono-Regular.woff2) format('woff2'),
-      url(${publicUrl}/fonts/JetBrainsMono-Regular.woff) format('woff');
-  }
-
-  @font-face {
-    font-family: 'JetBrains Mono';
-    font-style: normal;
-    font-weight: 700;
-    font-display: swap;
-    src: url(${publicUrl}/fonts/JetBrainsMono-Bold.woff2) format('woff2'),
-      url(${publicUrl}/fonts/JetBrainsMono-Bold.woff) format('woff');
-  }
-
-  @font-face {
-    font-family: 'text-security-disc';
-    src: url(${publicUrl}/fonts/text-security-disc.woff2) format('woff2'),
-      url(${publicUrl}/fonts/text-security-disc.woff) format('woff');
+    src: url(${publicUrl}/fonts/Figtree.woff2) format('woff2'),
+      url(${publicUrl}/fonts/Figtree.woff) format('woff');
   }
 `;
 
@@ -123,7 +67,7 @@ export const GlobalStyles = createGlobalStyle`
     overscroll-behavior-y: none;
     --font: ${({ font }: GlobalStylesProps) =>
       font ||
-      'Inter'}, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+      'Figtree'}, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
     --monospace-font: ${({ monospaceFont }) =>
       `${
         monospaceFont ? `${monospaceFont}, ` : ''
@@ -203,7 +147,7 @@ export const GlobalStyles = createGlobalStyle`
   pre[class*="language-"] {
     color: var(--dark-color);
     background: none;
-    font-family: "Source Code Pro", Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
     text-align: left;
     font-weight: normal;
     font-size: 14px;

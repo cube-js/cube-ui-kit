@@ -33,6 +33,28 @@ function setCSSValue(
   }
 }
 
+const SETTINGS_DEFAULT_MAP = {
+  wght: 400,
+};
+function setVariationSetting(
+  styles: Styles,
+  setting: string,
+  presetName: string,
+  isPropOnly = false,
+) {
+  styles[
+    `--font-variation-${setting}`
+  ] = `var(--${presetName}-font-variation-${setting}, var(--default-font-variation-${setting}, ${
+    SETTINGS_DEFAULT_MAP[setting] || 'initial'
+  }))`;
+
+  if (!isPropOnly) {
+    styles[
+      'font-variation-settings'
+    ] = `'${setting}' var(--font-variation-${setting}, 400)`;
+  }
+}
+
 export function presetStyle({
   preset,
   fontSize,
@@ -41,6 +63,7 @@ export function presetStyle({
   letterSpacing,
   fontWeight,
   fontStyle,
+  fontVariationWeight,
   font,
 }) {
   if (!preset) return '';
@@ -81,6 +104,8 @@ export function presetStyle({
     setCSSValue(styles, 'font-family', name);
   }
 
+  setVariationSetting(styles, 'wght', name);
+
   setCSSValue(styles, 'bold-font-weight', name, true);
   setCSSValue(styles, 'icon-size', name, true);
 
@@ -94,6 +119,7 @@ presetStyle.__lookupStyles = [
   'letterSpacing',
   'textTransform',
   'fontWeight',
+  'fontVariationWeight',
   'fontStyle',
   'font',
 ];
