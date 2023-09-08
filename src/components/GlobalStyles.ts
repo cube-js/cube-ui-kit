@@ -129,6 +129,17 @@ export const GlobalStyles = createGlobalStyle`
       `${
         monospaceFont ? `${monospaceFont}, ` : ''
       }Menlo, Monaco, Consolas, 'Courier New', monospace;}`}
+  }
+
+  kbd {
+    font-family: var(--c2-font-family);
+    font-weight: var(--c2-font-weight);
+    font-size: var(--c2-font-size);
+    border: var(--border-width) solid var(--dark-04-color);
+    background-color: white;
+    border-radius: var(--radius);
+    padding: 0 var(--outline-width);
+  }
 
   .cube-notification-container {
     min-width: 288px;

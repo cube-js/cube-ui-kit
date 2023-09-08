@@ -24,6 +24,7 @@ const BasePropNames = new Set([
   'className',
   'href',
   'target',
+  'tabIndex',
 ]);
 
 const ignoreEventPropsNames = new Set([
