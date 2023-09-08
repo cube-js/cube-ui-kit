@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.24.0
+
+### Minor Changes
+
+- [#380](https://github.com/cube-js/cube-ui-kit/pull/380) [`ca81a3a`](https://github.com/cube-js/cube-ui-kit/commit/ca81a3af4f91e53abd07dfcb133169d5c095c083) Thanks [@tenphi](https://github.com/tenphi)! - Add CopyPasteBlock component
+
 ## 0.23.2
 
 ### Patch Changes
