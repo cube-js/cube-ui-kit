@@ -113,7 +113,7 @@ export interface CubeCopyPasteBlockProps
     PositionStyleProps {
   padding?: Styles['padding'];
   /** The code snippet */
-  value: string;
+  value?: string;
   placeholder?: ReactNode;
   /** The title of the snippet */
   title?: string;
