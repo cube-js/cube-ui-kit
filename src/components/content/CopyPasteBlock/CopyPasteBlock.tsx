@@ -1,4 +1,4 @@
-import { forwardRef, ReactNode, useState } from 'react';
+import { ForwardedRef, forwardRef, ReactNode, useState } from 'react';
 import { TextDropItem, useClipboard } from '@react-aria/dnd';
 import { CopyOutlined } from '@ant-design/icons';
 import copy from 'clipboard-copy';
@@ -97,7 +97,10 @@ export interface CubeCopyPasteBlockProps
   size?: 'small' | 'medium' | 'large';
 }
 
-function CopyPasteBlock(allProps: CubeCopyPasteBlockProps) {
+function CopyPasteBlock(
+  allProps: CubeCopyPasteBlockProps,
+  ref: ForwardedRef<HTMLDivElement>,
+) {
   const {
     value = '',
     onPaste,
@@ -161,6 +164,7 @@ function CopyPasteBlock(allProps: CubeCopyPasteBlockProps) {
 
   return (
     <CopyPasteBlockElement
+      ref={ref}
       mods={{ error: !!error }}
       data-size={size}
       styles={styles}
