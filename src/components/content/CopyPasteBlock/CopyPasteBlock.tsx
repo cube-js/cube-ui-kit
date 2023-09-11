@@ -1,31 +1,43 @@
-import { ReactNode, useState } from 'react';
-import { useClipboard, TextDropItem } from '@react-aria/dnd';
+import { ForwardedRef, forwardRef, ReactNode, useState } from 'react';
+import { TextDropItem, useClipboard } from '@react-aria/dnd';
 import { CopyOutlined } from '@ant-design/icons';
 import copy from 'clipboard-copy';
 
 import { Button } from '../../actions';
 import { Card, CubeCardProps } from '../Card/Card';
-import { Styles, tasty } from '../../../tasty';
+import {
+  extractStyles,
+  POSITION_STYLES,
+  PositionStyleProps,
+  Styles,
+  tasty,
+} from '../../../tasty';
 import { useToastsApi } from '../../overlays/Toasts';
 import { useTimer } from '../../../_internal';
 
 const StyledBlock = tasty({
   styles: {
+    display: 'grid',
+    flow: 'column',
+    placeContent: 'center space-between',
+    placeItems: 'center stretch',
+    gap: '1x',
     position: 'relative',
     maxWidth: '100%',
     color: 'inherit',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-});
+    padding: '0 1.5x',
+    height: {
+      '': '5x',
+      '[data-size="small"]': '4x',
+      '[data-size="large"]': '6x',
+    },
+    userSelect: 'none',
 
-const ButtonContainer = tasty({
-  styles: {
-    position: 'relative',
-    display: 'grid',
-    gridAutoFlow: 'column',
-    margin: '(-1x - 1bw) -1.5x (-1x - 1bw) -1x',
+    Label: {
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+    },
   },
 });
 
@@ -41,30 +53,46 @@ const CopyPasteBlockElement = tasty(Card, {
       error: '#danger-text',
     },
     border: {
-      '': true,
-      ':focus': '#purple',
-      'error & :focus': '#danger',
+      '': 'dashed #dark-04',
+      ':focus': 'dashed #purple',
+      error: 'dashed #danger',
     },
     transition: 'theme',
     cursor: 'pointer',
+    preset: {
+      '': 't3',
+      '[data-size="large"]': 't2',
+    },
+    height: {
+      '': '5x',
+      '[data-size="small"]': '4x',
+      '[data-size="large"]': '6x',
+    },
 
     Grid: {
       display: 'grid',
       flow: 'row',
-      gridColumns: 'minmax(0, 1fr) auto',
+      gridColumns: 'minmax(0, 1fr) min-content',
+      placeContent: 'center stretch',
       width: 'min 20x',
       radius: '1r',
       position: 'relative',
-      overflow: 'hidden',
+    },
+
+    Shortcut: {
+      display: {
+        '': 'none',
+        ':focus & !error': 'inline',
+      },
     },
   },
 });
 
-const ActionButton = tasty(Button, {
+const CopyButton = tasty(Button, {
   type: 'clear',
+  icon: <CopyOutlined />,
+  'aria-label': 'Copy to clipboard',
   styles: {
-    padding: '1x 1.5x',
-    radius: 0,
     placeSelf: {
       '': 'none',
       '!multiline & !with-scroll': 'stretch',
@@ -74,13 +102,6 @@ const ActionButton = tasty(Button, {
       '': '#purple-03.0',
       'focused & focus-visible': '#purple-03 inset',
     },
-  },
-});
-
-const CopyButton = tasty(ActionButton, {
-  icon: <CopyOutlined />,
-  'aria-label': 'Copy to clipboard',
-  styles: {
     radius: {
       '': '0 1r 1r 0',
       'multiline | with-scroll': '0 1r 0 0',
@@ -88,28 +109,36 @@ const CopyButton = tasty(ActionButton, {
   },
 });
 
-export interface CubeCopyPasteBlockProps extends CubeCardProps {
+export interface CubeCopyPasteBlockProps
+  extends CubeCardProps,
+    PositionStyleProps {
   padding?: Styles['padding'];
   /** The code snippet */
-  value: string;
+  value?: string;
   placeholder?: ReactNode;
   /** The title of the snippet */
   title?: string;
   onPaste?: (text: string) => void | Promise<void | string>;
   onCopy?: () => void;
+  size?: 'small' | 'medium' | 'large';
 }
 
-function CopyPasteBlock(allProps: CubeCopyPasteBlockProps) {
+function CopyPasteBlock(
+  allProps: CubeCopyPasteBlockProps,
+  ref: ForwardedRef<HTMLDivElement>,
+) {
   const {
     value = '',
     onPaste,
     placeholder,
-    padding = '1.125x 1.5x',
     title,
-    styles,
+    size = 'medium',
     ...props
   } = allProps;
+  const styles = extractStyles(props, POSITION_STYLES);
+
   const [error, setError] = useState<string | null>(null);
+
   const { clipboardProps } = useClipboard({
     async onPaste(items) {
       let pasted = await Promise.all(
@@ -161,49 +190,46 @@ function CopyPasteBlock(allProps: CubeCopyPasteBlockProps) {
 
   return (
     <CopyPasteBlockElement
+      ref={ref}
       mods={{ error: !!error }}
-      styles={{ preset: 'default', ...styles }}
+      data-size={size}
+      styles={styles}
       tabIndex="0"
       {...props}
       {...clipboardProps}
     >
       <div data-element="Grid">
         <StyledBlock
+          data-size={size}
           mods={{
             placeholder: !!placeholder || !value,
           }}
-          styles={{ padding }}
         >
-          {error != null ? (
-            error || 'Invalid data'
-          ) : value ? (
-            pristineValue
-          ) : (
-            <>
-              {placeholder ? placeholder : 'Select and paste'} <kbd>Cmd</kbd> +{' '}
-              <kbd>V</kbd>
-            </>
-          )}
+          <div data-element="Label">
+            {error != null ? (
+              error || 'Invalid data'
+            ) : value ? (
+              pristineValue
+            ) : (
+              <>{placeholder ? placeholder : 'Select and paste'}</>
+            )}
+          </div>
+          <span data-element="Shortcut">
+            <kbd>Cmd</kbd> + <kbd>V</kbd>
+          </span>
         </StyledBlock>
-        <ButtonContainer styles={{ padding } as Styles}>
+        {value && !error && (
           <CopyButton
-            isDisabled={!value}
+            size={size}
             aria-label={`Copy ${title}`}
             onPress={onCopy}
           />
-        </ButtonContainer>
+        )}
       </div>
     </CopyPasteBlockElement>
   );
 }
 
-const _CopyPasteBlock = Object.assign(
-  CopyPasteBlock as typeof CopyPasteBlock & {
-    Button: typeof ActionButton;
-  },
-  {
-    Button: ActionButton,
-  },
-);
+const _CopyPasteBlock = forwardRef(CopyPasteBlock);
 
 export { _CopyPasteBlock as CopyPasteBlock };

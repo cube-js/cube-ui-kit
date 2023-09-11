@@ -12,6 +12,7 @@ export type { CubeBlockProps } from './components/Block';
 export { ActiveZone } from './components/content/ActiveZone/ActiveZone';
 export type { CubeActiveZoneProps } from './components/content/ActiveZone/ActiveZone';
 export * from './components/content/CopySnippet';
+export * from './components/content/CopyPasteBlock';
 export { Grid } from './components/layout/Grid';
 export type { CubeGridProps } from './components/layout/Grid';
 export { Flex } from './components/layout/Flex';
@@ -126,7 +127,6 @@ export type { CubeTooltipTriggerProps } from './components/overlays/Tooltip/Tool
 export { TooltipProvider } from './components/overlays/Tooltip/TooltipProvider';
 export type { CubeTooltipProviderProps } from './components/overlays/Tooltip/TooltipProvider';
 
-export * from './components/content/CopySnippet';
 export * from './components/content/Alert';
 
 // molecules

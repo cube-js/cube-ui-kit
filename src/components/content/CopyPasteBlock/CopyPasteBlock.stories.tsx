@@ -36,21 +36,29 @@ const Template: StoryFn<CubeCopyPasteBlockProps> = (args) => {
 };
 
 export const Empty = Template.bind({});
-Empty.args = {
-  prefix: '$ ',
-};
+Empty.args = {};
 
 export const WithValue = Template.bind({});
 WithValue.args = {
   value: 'some long text',
-  prefix: '$ ',
+};
+
+export const Small = Template.bind({});
+Small.args = {
+  value: 'some long text',
+  size: 'small',
+};
+
+export const Large = Template.bind({});
+Large.args = {
+  value: 'some long text',
+  size: 'large',
 };
 
 export const WithLongValue = Template.bind({});
 WithLongValue.args = {
   value:
     'some long text some long text some long text some long text some long text some long text some long text some long text some long text some long text some long text some long text some long text some long text some long text some long text some long text some long text some long text some long text some long text',
-  prefix: '$ ',
 };
 
 export const MultiLineNowrap = Template.bind({});
