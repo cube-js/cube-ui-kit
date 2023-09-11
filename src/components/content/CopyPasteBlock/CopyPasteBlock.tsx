@@ -55,7 +55,7 @@ const CopyPasteBlockElement = tasty(Card, {
     border: {
       '': true,
       ':focus': '#purple',
-      'error & :focus': '#danger',
+      error: '#danger',
     },
     transition: 'theme',
     cursor: 'pointer',
@@ -82,7 +82,7 @@ const CopyPasteBlockElement = tasty(Card, {
     Shortcut: {
       display: {
         '': 'none',
-        ':focus': 'inline',
+        ':focus & !error': 'inline',
       },
     },
   },
@@ -218,7 +218,7 @@ function CopyPasteBlock(
             <kbd>Cmd</kbd> + <kbd>V</kbd>
           </span>
         </StyledBlock>
-        {value && (
+        {value && !error && (
           <CopyButton
             size={size}
             aria-label={`Copy ${title}`}
