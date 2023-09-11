@@ -17,13 +17,26 @@ import { useTimer } from '../../../_internal';
 
 const StyledBlock = tasty({
   styles: {
+    display: 'grid',
+    flow: 'column',
+    placeContent: 'center space-between',
+    placeItems: 'center stretch',
+    gap: '1x',
     position: 'relative',
     maxWidth: '100%',
     color: 'inherit',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
     padding: '0 1.5x',
+    height: {
+      '': '5x',
+      '[data-size="small"]': '4x',
+      '[data-size="large"]': '6x',
+    },
+
+    Label: {
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+    },
   },
 });
 
@@ -49,15 +62,27 @@ const CopyPasteBlockElement = tasty(Card, {
       '': 't3',
       '[data-size="large"]': 't2',
     },
+    height: {
+      '': '5x',
+      '[data-size="small"]': '4x',
+      '[data-size="large"]': '6x',
+    },
 
     Grid: {
       display: 'grid',
       flow: 'row',
-      gridColumns: 'auto min-content',
-      placeItems: 'center stretch',
+      gridColumns: 'minmax(0, 1fr) min-content',
+      placeContent: 'center stretch',
       width: 'min 20x',
       radius: '1r',
       position: 'relative',
+    },
+
+    Shortcut: {
+      display: {
+        '': 'none',
+        ':focus': 'inline',
+      },
     },
   },
 });
@@ -179,23 +204,26 @@ function CopyPasteBlock(
             placeholder: !!placeholder || !value,
           }}
         >
-          {error != null ? (
-            error || 'Invalid data'
-          ) : value ? (
-            pristineValue
-          ) : (
-            <>
-              {placeholder ? placeholder : 'Select and paste'} <kbd>Cmd</kbd> +{' '}
-              <kbd>V</kbd>
-            </>
-          )}
+          <div data-element="Label">
+            {error != null ? (
+              error || 'Invalid data'
+            ) : value ? (
+              pristineValue
+            ) : (
+              <>{placeholder ? placeholder : 'Select and paste'}</>
+            )}
+          </div>
+          <span data-element="Shortcut">
+            <kbd>Cmd</kbd> + <kbd>V</kbd>
+          </span>
         </StyledBlock>
-        <CopyButton
-          isDisabled={!value}
-          size={size}
-          aria-label={`Copy ${title}`}
-          onPress={onCopy}
-        />
+        {value && (
+          <CopyButton
+            size={size}
+            aria-label={`Copy ${title}`}
+            onPress={onCopy}
+          />
+        )}
       </div>
     </CopyPasteBlockElement>
   );
