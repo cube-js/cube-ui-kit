@@ -31,6 +31,7 @@ const StyledBlock = tasty({
       '[data-size="small"]': '4x',
       '[data-size="large"]': '6x',
     },
+    userSelect: 'none',
 
     Label: {
       whiteSpace: 'nowrap',
