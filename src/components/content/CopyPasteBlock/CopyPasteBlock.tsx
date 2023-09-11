@@ -27,9 +27,9 @@ const StyledBlock = tasty({
     color: 'inherit',
     padding: '0 1.5x',
     height: {
-      '': '5x',
-      '[data-size="small"]': '4x',
-      '[data-size="large"]': '6x',
+      '': '4.5x',
+      '[data-size="small"]': '3.5x',
+      '[data-size="large"]': '5.5x',
     },
     userSelect: 'none',
 
@@ -53,9 +53,9 @@ const CopyPasteBlockElement = tasty(Card, {
       error: '#danger-text',
     },
     border: {
-      '': 'dashed #dark-04',
-      ':focus': 'dashed #purple',
-      error: 'dashed #danger',
+      '': '2px dashed #dark-04',
+      ':focus': '2px dashed #purple-text',
+      error: '2px dashed #danger',
     },
     transition: 'theme',
     cursor: 'pointer',
@@ -68,6 +68,7 @@ const CopyPasteBlockElement = tasty(Card, {
       '[data-size="small"]': '4x',
       '[data-size="large"]': '6x',
     },
+    boxSizing: 'border-box',
 
     Grid: {
       display: 'grid',
@@ -105,6 +106,11 @@ const CopyButton = tasty(Button, {
     radius: {
       '': '0 1r 1r 0',
       'multiline | with-scroll': '0 1r 0 0',
+    },
+    height: {
+      '': '4.5x',
+      '[data-size="small"]': '3.5x',
+      '[data-size="large"]': '4.5x',
     },
   },
 });
