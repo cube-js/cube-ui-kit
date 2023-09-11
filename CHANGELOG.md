@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.24.1
+
+### Patch Changes
+
+- [#382](https://github.com/cube-js/cube-ui-kit/pull/382) [`eec5e0e`](https://github.com/cube-js/cube-ui-kit/commit/eec5e0e534f195ec8a3fb47775d1af0bcd8f2aeb) Thanks [@tenphi](https://github.com/tenphi)! - Add `size` property and position style properties for the CopyPasteBlock component.
+
 ## 0.24.0
 
 ### Minor Changes
