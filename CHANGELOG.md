@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.24.2
+
+### Patch Changes
+
+- [#385](https://github.com/cube-js/cube-ui-kit/pull/385) [`b85b0b2`](https://github.com/cube-js/cube-ui-kit/commit/b85b0b260c035dddca39cade68e8875e65095336) Thanks [@tenphi](https://github.com/tenphi)! - Fix styles for the CopyPasteBlock component.
+
 ## 0.24.1
 
 ### Patch Changes
