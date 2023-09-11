@@ -29,7 +29,6 @@ const config = {
         },
       },
     },
-    '@storybook/addon-mdx-gfm',
   ],
   docs: {
     autodocs: true,
