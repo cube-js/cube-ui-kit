@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.24.3
+
+### Patch Changes
+
+- [#387](https://github.com/cube-js/cube-ui-kit/pull/387) [`446801f`](https://github.com/cube-js/cube-ui-kit/commit/446801f9be024b61f0c31709d5d4874b855a59b4) Thanks [@tenphi](https://github.com/tenphi)! - Fix `kbd` tag text color style.
+
 ## 0.24.2
 
 ### Patch Changes
