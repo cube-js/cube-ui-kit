@@ -30,8 +30,8 @@ const config = {
       },
     },
   ],
-  docs: {
-    autodocs: true,
-  },
+  // docs: {
+  //   autodocs: true,
+  // },
 };
 export default config;

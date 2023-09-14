@@ -137,6 +137,7 @@ export const GlobalStyles = createGlobalStyle`
     font-size: var(--c2-font-size);
     border: var(--border-width) solid var(--dark-04-color);
     background-color: white;
+    color: var(--dark-color);
     border-radius: var(--radius);
     padding: 0 var(--outline-width);
   }
