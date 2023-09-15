@@ -353,8 +353,8 @@ devDependencies:
     specifier: ^3.1.0
     version: 3.1.0
   chromatic:
-    specifier: ^6.3.3
-    version: 6.3.3
+    specifier: ^7.1.0
+    version: 7.1.0
   cross-env:
     specifier: ^7.0.3
     version: 7.0.3
@@ -7483,8 +7483,8 @@ packages:
     engines: {node: '>=10'}
     dev: false
 
-  /chromatic@6.3.3:
-    resolution: {integrity: sha512-d2l/jkD2VCxNXT69qRxuv/+7cEl5ZNR169GCG2D6HuiuyplbEF0NR/0Da2KGmAvu8KEWVJDR/HjEg0/OYCC9aQ==}
+  /chromatic@7.1.0:
+    resolution: {integrity: sha512-4hvWVxj2TxsgmzQK7zsAIVapxF+mzAXFuYIoAKKACdKtI+kjz0GfKJYpnzD4xciY3SGaySsis6gWxJ9q8GIxiQ==}
     hasBin: true
     dev: true
 
