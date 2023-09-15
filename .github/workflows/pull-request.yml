@@ -145,7 +145,6 @@ jobs:
           exitOnceUploaded: true
           onlyChanged: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          workingDir: storybook-static
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
 
       - name: Comment PR
