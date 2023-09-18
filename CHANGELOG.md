@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.24.4
+
+### Patch Changes
+
+- [#389](https://github.com/cube-js/cube-ui-kit/pull/389) [`b60f790`](https://github.com/cube-js/cube-ui-kit/commit/b60f790a0e4590ddc22a6afda4c6382fea426b7e) Thanks [@tenphi](https://github.com/tenphi)! - Move Vite and some storybook addons to dev dependencies.
+
+- [#390](https://github.com/cube-js/cube-ui-kit/pull/390) [`e0c0fc1`](https://github.com/cube-js/cube-ui-kit/commit/e0c0fc190b3509b21c4002e4d92ca4f0aee677e0) Thanks [@tenphi](https://github.com/tenphi)! - Do not wrap text inside Radio.Group
+
 ## 0.24.3
 
 ### Patch Changes
