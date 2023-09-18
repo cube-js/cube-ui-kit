@@ -42,6 +42,7 @@ const RadioGroupElement = tasty({
       horizontal: 'row wrap',
     },
     gap: '1x',
+    whiteSpace: 'nowrap',
   },
 });
 
