@@ -78,7 +78,7 @@ const CloseAction = tasty(Action, {
     display: 'grid',
     placeItems: 'center',
     color: true,
-    placeSelf: 'center',
+    placeSelf: 'stretch',
     opacity: {
       '': 0.85,
       'pressed | hovered': 1,

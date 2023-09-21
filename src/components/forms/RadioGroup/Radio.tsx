@@ -1,5 +1,5 @@
 import { useFocusableRef } from '@react-spectrum/utils';
-import { forwardRef, useRef } from 'react';
+import { forwardRef, useMemo, useRef } from 'react';
 import { useHover } from '@react-aria/interactions';
 import { useRadio } from '@react-aria/radio';
 
@@ -186,17 +186,32 @@ function Radio(props: CubeRadioProps, ref) {
     inputRef,
   );
 
+  const mods = useMemo(
+    () => ({
+      checked: inputProps.checked,
+      invalid: validationState === 'invalid',
+      valid: validationState === 'valid',
+      disabled: isDisabled,
+      hovered: isHovered,
+      button: isButton,
+      focused: isFocused,
+    }),
+    [
+      inputProps.checked,
+      validationState,
+      isDisabled,
+      isHovered,
+      isButton,
+      isFocused,
+    ],
+  );
+
   return (
     <RadioWrapperElement
       styles={styles}
       {...hoverProps}
       ref={domRef}
-      mods={{
-        disabled: isDisabled,
-        invalid: validationState === 'invalid',
-        hovered: isHovered,
-        button: isButton,
-      }}
+      mods={mods}
       data-type={type}
     >
       <HiddenInput
@@ -206,18 +221,7 @@ function Radio(props: CubeRadioProps, ref) {
         ref={inputRef}
         isButton={isButton}
       />
-      <RadioElement
-        mods={{
-          checked: inputProps.checked,
-          invalid: validationState === 'invalid',
-          valid: validationState === 'valid',
-          disabled: isDisabled,
-          hovered: isHovered,
-          focused: isFocused,
-        }}
-        data-type={type}
-        styles={inputStyles}
-      >
+      <RadioElement mods={mods} data-type={type} styles={inputStyles}>
         {!isButton ? RadioCircleElement : children}
       </RadioElement>
       {label && !isButton && (
