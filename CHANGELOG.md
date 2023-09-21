@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.25.0
+
+### Minor Changes
+
+- [#393](https://github.com/cube-js/cube-ui-kit/pull/393) [`bff7e10`](https://github.com/cube-js/cube-ui-kit/commit/bff7e10ad2d2076c9d4dd15019a8b27387271365) Thanks [@tenphi](https://github.com/tenphi)! - Add solid type of radio button group.
+
+### Patch Changes
+
+- [#393](https://github.com/cube-js/cube-ui-kit/pull/393) [`bff7e10`](https://github.com/cube-js/cube-ui-kit/commit/bff7e10ad2d2076c9d4dd15019a8b27387271365) Thanks [@tenphi](https://github.com/tenphi)! - Share mods between Radio wrapper and the input elements. So now you can change styles of wrapper depending on checked state
+
 ## 0.24.4
 
 ### Patch Changes
