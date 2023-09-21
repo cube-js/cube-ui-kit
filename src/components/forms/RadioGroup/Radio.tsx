@@ -66,6 +66,7 @@ const RadioButtonElement = tasty({
     fill: {
       '': '#white',
       hovered: '#purple-text.04',
+      checked: '#white',
       disabled: '#dark.04',
     },
     color: {
