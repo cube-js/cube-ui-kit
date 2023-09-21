@@ -48,6 +48,7 @@ const RadioWrapperElement = tasty({
       radius: {
         '': 'round',
         button: true,
+        'button & solid': 0,
         'button & solid & :first-child': '1r 0 0 1r',
         'button & solid & :last-child': '0 1r 1r 0',
       },

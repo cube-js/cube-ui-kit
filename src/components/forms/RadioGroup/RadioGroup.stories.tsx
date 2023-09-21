@@ -47,9 +47,10 @@ const RadioButtonsTemplate: StoryFn<CubeRadioGroupProps> = (args) => (
 );
 
 const SolidRadioButtonsTemplate: StoryFn<CubeRadioGroupProps> = (args) => (
-  <Radio.ButtonGroup {...args} defaultValue="yes">
+  <Radio.ButtonGroup {...args} defaultValue="no">
     <Radio.Button value="yes">Yes</Radio.Button>
     <Radio.Button value="no">No</Radio.Button>
+    <Radio.Button value="maybe">Maybe</Radio.Button>
   </Radio.ButtonGroup>
 );
 
