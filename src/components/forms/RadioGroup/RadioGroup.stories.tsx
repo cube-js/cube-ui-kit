@@ -46,6 +46,13 @@ const RadioButtonsTemplate: Story<CubeRadioGroupProps> = (args) => (
   </Radio.Group>
 );
 
+const SolidRadioButtonsTemplate: Story<CubeRadioGroupProps> = (args) => (
+  <Radio.ButtonGroup {...args} defaultValue="yes">
+    <Radio.Button value="yes">Yes</Radio.Button>
+    <Radio.Button value="no">No</Radio.Button>
+  </Radio.ButtonGroup>
+);
+
 export const Default = Template.bind({});
 Default.args = {};
 
@@ -89,3 +96,5 @@ RadioGroupWithLabelAndSuffix.args = {
   label: 'Radio Group',
   labelSuffix: 'Suffix',
 };
+
+export const SolidRadioButtons = SolidRadioButtonsTemplate.bind({});
