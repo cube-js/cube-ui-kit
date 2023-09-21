@@ -1,5 +1,5 @@
 import { useFocusableRef } from '@react-spectrum/utils';
-import { forwardRef, useRef } from 'react';
+import { forwardRef, useMemo, useRef } from 'react';
 import { useHover } from '@react-aria/interactions';
 import { useRadio } from '@react-aria/radio';
 
@@ -39,15 +39,34 @@ const RadioWrapperElement = tasty({
       '': '1x right',
       '[data-type="button"]': '0',
     },
+    zIndex: {
+      '': 'initial',
+      checked: 1,
+    },
+
+    Input: {
+      radius: {
+        '': 'round',
+        button: true,
+        'button & solid': 0,
+        'button & solid & :first-child': '1r 0 0 1r',
+        'button & solid & :last-child': '0 1r 1r 0',
+      },
+      margin: {
+        '': 'initial',
+        'button & solid': '-1bw right',
+        'button & solid & :last-child': 0,
+      },
+    },
   },
 });
 
 const RadioButtonElement = tasty({
   styles: {
-    radius: true,
     fill: {
       '': '#white',
       hovered: '#purple-text.04',
+      checked: '#white',
       disabled: '#dark.04',
     },
     color: {
@@ -186,17 +205,34 @@ function Radio(props: CubeRadioProps, ref) {
     inputRef,
   );
 
+  const mods = useMemo(
+    () => ({
+      checked: inputProps.checked,
+      invalid: validationState === 'invalid',
+      valid: validationState === 'valid',
+      disabled: isDisabled,
+      hovered: isHovered,
+      button: isButton,
+      focused: isFocused,
+      solid: !!state?.isSolid,
+    }),
+    [
+      inputProps.checked,
+      validationState,
+      isDisabled,
+      isHovered,
+      isButton,
+      isFocused,
+      state?.isSolid,
+    ],
+  );
+
   return (
     <RadioWrapperElement
       styles={styles}
       {...hoverProps}
       ref={domRef}
-      mods={{
-        disabled: isDisabled,
-        invalid: validationState === 'invalid',
-        hovered: isHovered,
-        button: isButton,
-      }}
+      mods={mods}
       data-type={type}
     >
       <HiddenInput
@@ -207,14 +243,8 @@ function Radio(props: CubeRadioProps, ref) {
         isButton={isButton}
       />
       <RadioElement
-        mods={{
-          checked: inputProps.checked,
-          invalid: validationState === 'invalid',
-          valid: validationState === 'valid',
-          disabled: isDisabled,
-          hovered: isHovered,
-          focused: isFocused,
-        }}
+        data-element="Input"
+        mods={mods}
         data-type={type}
         styles={inputStyles}
       >
@@ -222,11 +252,8 @@ function Radio(props: CubeRadioProps, ref) {
       </RadioElement>
       {label && !isButton && (
         <RadioLabelElement
-          mods={{
-            invalid: validationState === 'invalid',
-            valid: validationState === 'valid',
-            disabled: isDisabled,
-          }}
+          mods={mods}
+          styles={labelStyles}
           {...filterBaseProps(labelProps)}
         >
           {label}
@@ -253,14 +280,20 @@ const _Radio = forwardRef(Radio);
  */
 const _RadioButton = forwardRef(RadioButton);
 
+const ButtonGroup = tasty(RadioGroup, {
+  isSolid: true,
+});
+
 const __Radio = Object.assign(
   _Radio as typeof _Radio & {
     Group: typeof RadioGroup;
     Button: typeof _RadioButton;
+    ButtonGroup: typeof ButtonGroup;
   },
   {
     Group: RadioGroup,
     Button: _RadioButton,
+    ButtonGroup,
   },
 );
 

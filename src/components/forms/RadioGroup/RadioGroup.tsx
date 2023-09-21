@@ -29,6 +29,7 @@ export interface CubeRadioGroupProps
     AriaRadioGroupProps,
     FieldBaseProps {
   groupStyles?: Styles;
+  isSolid?: boolean;
 }
 
 const RadioGroupElement = tasty({
@@ -40,8 +41,12 @@ const RadioGroupElement = tasty({
     flow: {
       '': 'column',
       horizontal: 'row wrap',
+      'horizontal & solid': 'row',
     },
-    gap: '1x',
+    gap: {
+      '': '1x',
+      solid: 0,
+    },
     whiteSpace: 'nowrap',
   },
 });
@@ -61,7 +66,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
     labelPosition = 'top',
     validationState,
     children,
-    orientation = 'vertical',
+    orientation,
     message,
     description,
     labelStyles,
@@ -72,6 +77,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
     groupStyles,
     insideForm,
     labelSuffix,
+    isSolid,
     ...otherProps
   } = props;
   let domRef = useDOMRef(ref);
@@ -80,6 +86,11 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
   groupStyles = extractStyles(otherProps, BLOCK_STYLES, groupStyles);
 
   let state = useRadioGroupState(props);
+
+  if (orientation == null) {
+    orientation = isSolid ? 'horizontal' : 'vertical';
+  }
+
   let { radioGroupProps: fieldProps, labelProps } = useRadioGroup(props, state);
 
   let radioGroup = (
@@ -89,6 +100,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
         horizontal: orientation === 'horizontal',
         'inside-form': insideForm,
         'side-label': labelPosition === 'side',
+        solid: !!isSolid,
       }}
     >
       <FormContext.Provider
@@ -98,7 +110,9 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
           isDisabled,
         }}
       >
-        <RadioContext.Provider value={state}>{children}</RadioContext.Provider>
+        <RadioContext.Provider value={{ ...state, isSolid }}>
+          {children}
+        </RadioContext.Provider>
       </FormContext.Provider>
     </RadioGroupElement>
   );

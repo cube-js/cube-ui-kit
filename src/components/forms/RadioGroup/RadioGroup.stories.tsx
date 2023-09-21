@@ -1,4 +1,4 @@
-import { Story } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { TEXT_VALUE_ARG } from '../../../stories/FormFieldArgs';
@@ -30,20 +30,28 @@ export default {
   },
 };
 
-const Template: Story<CubeRadioGroupProps> = (args) => (
+const Template: StoryFn<CubeRadioGroupProps> = (args) => (
   <Radio.Group {...args}>
     <Radio value="yes">Yes</Radio>
     <Radio value="no">No</Radio>
   </Radio.Group>
 );
 
-const RadioButtonsTemplate: Story<CubeRadioGroupProps> = (args) => (
+const RadioButtonsTemplate: StoryFn<CubeRadioGroupProps> = (args) => (
   <Radio.Group {...args}>
     <Radio.Button value="yes">Yes</Radio.Button>
     <Radio type="button" value="no">
       No
     </Radio>
   </Radio.Group>
+);
+
+const SolidRadioButtonsTemplate: StoryFn<CubeRadioGroupProps> = (args) => (
+  <Radio.ButtonGroup {...args} defaultValue="no">
+    <Radio.Button value="yes">Yes</Radio.Button>
+    <Radio.Button value="no">No</Radio.Button>
+    <Radio.Button value="maybe">Maybe</Radio.Button>
+  </Radio.ButtonGroup>
 );
 
 export const Default = Template.bind({});
@@ -89,3 +97,5 @@ RadioGroupWithLabelAndSuffix.args = {
   label: 'Radio Group',
   labelSuffix: 'Suffix',
 };
+
+export const SolidRadioButtons = SolidRadioButtonsTemplate.bind({});

@@ -1,8 +1,12 @@
 import { createContext, useContext } from 'react';
 import { RadioGroupState } from '@react-stately/radio';
 
-export const RadioContext = createContext<RadioGroupState | null>(null);
+interface CubeRadioGroupState extends RadioGroupState {
+  isSolid?: boolean;
+}
 
-export function useRadioProvider(): RadioGroupState | null {
+export const RadioContext = createContext<CubeRadioGroupState | null>(null);
+
+export function useRadioProvider(): CubeRadioGroupState | null {
   return useContext(RadioContext);
 }
