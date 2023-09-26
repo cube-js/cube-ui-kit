@@ -6,6 +6,7 @@ import { useDateFormatter } from '@react-aria/i18n';
 import { useDisplayNames } from '@react-aria/datepicker';
 import { useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useLayoutEffect } from '@react-aria/utils';
+import { DateSegment } from '@react-stately/datepicker';
 
 export function useFormatHelpText(
   props: Pick<SpectrumDatePickerBase, 'description' | 'showFormatHelpText'>,
@@ -72,4 +73,43 @@ export function useFocusManagerRef(ref: FocusableRef<HTMLElement>) {
     },
   }));
   return domRef;
+}
+
+export function formatSegments(segments: DateSegment[]) {
+  segments = JSON.parse(JSON.stringify(segments));
+
+  segments.forEach((segment) => {
+    if (segment.type === 'literal') {
+      if (segment.text === '/') {
+        segment.text = '-';
+      }
+
+      if (segment.text === ', ') {
+        segment.text = ' ';
+      }
+    }
+  });
+
+  const year = segments.find((s) => s.type === 'year');
+
+  if (year) {
+    segments.splice(segments.indexOf(year), 1);
+    segments.unshift(year);
+  }
+
+  const month = segments.find((s) => s.type === 'month');
+
+  if (month) {
+    segments.splice(segments.indexOf(month), 1);
+    segments.splice(2, 0, month);
+  }
+
+  const day = segments.find((s) => s.type === 'day');
+
+  if (day) {
+    segments.splice(segments.indexOf(day), 1);
+    segments.splice(4, 0, day);
+  }
+
+  return segments;
 }

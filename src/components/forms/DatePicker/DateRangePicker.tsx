@@ -32,7 +32,7 @@ import { dateMessages } from './intl';
 const DateRangeDash = tasty({
   'aria-hidden': 'true',
   'data-qa': 'DateRangeDash',
-  children: '–',
+  children: '––',
   styles: {
     padding: '0 .5x',
   },
@@ -50,6 +50,7 @@ export interface CubeDateRangePickerProps<T extends DateValue = DateValue>
   validationState?: ValidationState;
   maxVisibleMonths?: number;
   shouldFlip?: boolean;
+  useLocale?: boolean;
 }
 
 function DateRangePicker<T extends DateValue>(
@@ -65,8 +66,14 @@ function DateRangePicker<T extends DateValue>(
 
   let styles = extractStyles(props, CONTAINER_STYLES);
 
-  let { size, shouldFlip, placeholderValue, isDisabled, validationState } =
-    props;
+  let {
+    size,
+    shouldFlip,
+    placeholderValue,
+    isDisabled,
+    validationState,
+    useLocale: useLocaleProp,
+  } = props;
   let targetRef = useRef<HTMLDivElement>(null);
   let state = useDateRangePickerState({
     ...props,
@@ -111,9 +118,9 @@ function DateRangePicker<T extends DateValue>(
         size={size}
         styles={{ radius: 'left', border: 'top left bottom' }}
       >
-        <DatePickerInput {...startFieldProps} />
+        <DatePickerInput useLocale={useLocaleProp} {...startFieldProps} />
         <DateRangeDash />
-        <DatePickerInput {...endFieldProps} />
+        <DatePickerInput useLocale={useLocaleProp} {...endFieldProps} />
       </DateInputBase>
       <DialogTrigger
         hideArrow

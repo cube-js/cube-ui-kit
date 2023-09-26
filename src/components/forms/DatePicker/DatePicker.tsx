@@ -41,6 +41,7 @@ export interface CubeDatePickerProps<T extends DateValue = DateValue>
   validationState?: ValidationState;
   maxVisibleMonths?: number;
   shouldFlip?: boolean;
+  useLocale?: boolean;
 }
 
 function DatePicker<T extends DateValue>(
@@ -56,7 +57,13 @@ function DatePicker<T extends DateValue>(
 
   let styles = extractStyles(props, CONTAINER_STYLES);
 
-  let { size, placeholderValue, isDisabled, validationState } = props;
+  let {
+    size,
+    placeholderValue,
+    isDisabled,
+    validationState,
+    useLocale: useLocaleProp,
+  } = props;
   let targetRef = useRef<HTMLDivElement>(null);
   let state = useDatePickerState({
     ...props,
@@ -101,7 +108,7 @@ function DatePicker<T extends DateValue>(
         validationState={validationState}
         size={size}
       >
-        <DatePickerInput {...fieldProps} />
+        <DatePickerInput useLocale={useLocaleProp} {...fieldProps} />
       </DateInputBase>
       <DialogTrigger
         hideArrow

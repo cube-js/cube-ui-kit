@@ -69,3 +69,6 @@ Disabled.args = { isDisabled: true };
 
 export const Small = Template.bind({});
 Small.args = { size: 'small' };
+
+export const WithLocale = Template.bind({});
+WithLocale.args = { useLocale: true };
