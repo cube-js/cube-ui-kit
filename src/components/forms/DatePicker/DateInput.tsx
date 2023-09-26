@@ -19,7 +19,7 @@ import { FieldBaseProps, ValidationState } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
 import { useFieldProps, useFormProps } from '../Form';
 
-import { useFocusManagerRef } from './utils';
+import { formatSegments, useFocusManagerRef } from './utils';
 import { DateInputBase } from './DateInputBase';
 import { DatePickerSegment } from './DatePickerSegment';
 import { DEFAULT_DATE_PROPS } from './props';
@@ -35,6 +35,7 @@ export interface CubeDateInputProps<T extends DateValue = DateValue>
   styles?: Styles;
   size?: 'small' | 'medium' | 'large' | (string & {});
   validationState?: ValidationState;
+  useLocale?: boolean;
 }
 
 function DateInput<T extends DateValue>(
@@ -60,6 +61,7 @@ function DateInput<T extends DateValue>(
     isReadOnly,
     isRequired,
     size = 'medium',
+    useLocale: useLocaleProp,
   } = props;
 
   let styles = extractStyles(props, CONTAINER_STYLES, wrapperStyles);
@@ -71,6 +73,10 @@ function DateInput<T extends DateValue>(
     locale,
     createCalendar,
   });
+
+  if (!useLocaleProp) {
+    state.segments = formatSegments(state.segments);
+  }
 
   let fieldRef = useRef(null);
   let { labelProps, fieldProps } = useDateField(props, state, fieldRef);

@@ -78,3 +78,6 @@ WithLimitedRange.args = {
   minValue: parseAbsoluteDate('2023-10-04'),
   maxValue: parseAbsoluteDate('2023-12-15'),
 };
+
+export const WithLocale = Template.bind({});
+WithLocale.args = { useLocale: true };

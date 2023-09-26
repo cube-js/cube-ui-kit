@@ -8,6 +8,7 @@ import { useLocale } from '@react-aria/i18n';
 import { tasty } from '../../../tasty';
 
 import { DatePickerSegment } from './DatePickerSegment';
+import { formatSegments } from './utils';
 
 const DateInputElement = tasty({
   role: 'presentation',
@@ -22,12 +23,13 @@ interface CubeDatePickerInputProps<T extends DateValue>
   extends SpectrumDatePickerProps<T> {
   hideValidationIcon?: boolean;
   maxGranularity?: SpectrumDatePickerProps<T>['granularity'];
+  useLocale?: boolean;
 }
 
 export function DatePickerInput<T extends DateValue>(
   props: CubeDatePickerInputProps<T>,
 ) {
-  let { isDisabled, isReadOnly, isRequired } = props;
+  let { isDisabled, isReadOnly, isRequired, useLocale: useLocaleProp } = props;
   let ref = useRef(null);
   let { locale } = useLocale();
   let state = useDateFieldState({
@@ -35,6 +37,10 @@ export function DatePickerInput<T extends DateValue>(
     locale,
     createCalendar,
   });
+
+  if (!useLocaleProp) {
+    state.segments = formatSegments(state.segments);
+  }
 
   let { fieldProps } = useDateField(props, state, ref);
 
