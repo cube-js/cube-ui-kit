@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.26.0
+
+### Minor Changes
+
+- [#395](https://github.com/cube-js/cube-ui-kit/pull/395) [`e6c5f09`](https://github.com/cube-js/cube-ui-kit/commit/e6c5f0944aee83b471aa8106c714da04a22b0afb) Thanks [@tenphi](https://github.com/tenphi)! - Use standard date format for all date inputs.
+
 ## 0.25.0
 
 ### Minor Changes
