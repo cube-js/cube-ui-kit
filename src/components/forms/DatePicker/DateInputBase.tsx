@@ -1,5 +1,5 @@
 import { mergeProps, mergeRefs } from '@react-aria/utils';
-import React, { cloneElement, FocusEvent, useRef } from 'react';
+import React, { cloneElement, useRef } from 'react';
 import { useFocusRing } from '@react-aria/focus';
 
 import {
@@ -49,7 +49,6 @@ interface CubeDateAtomInputProps extends ContainerStyleProps {
   size?: 'small' | 'medium' | 'large' | (string & {});
   validationState?: ValidationState;
   isLoading?: boolean;
-  onBlur?: (e: FocusEvent<Element, Element>) => void;
 }
 
 function DateInputBase(props: CubeDateAtomInputProps, ref) {
@@ -65,12 +64,11 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
     validationState,
     isLoading,
     size = 'medium',
-    onBlur,
   } = props;
 
   let styles = extractStyles(props, CONTAINER_STYLES);
 
-  let { focusProps, isFocusVisible, isFocused } = useFocusRing({
+  let { focusProps, isFocused } = useFocusRing({
     isTextInput: true,
     within: true,
     autoFocus,
@@ -86,13 +84,11 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
       data-size={size}
       mods={{
         disabled: isDisabled,
-        focused: isFocused,
+        focused: isFocused && !disableFocusRing,
         invalid: isInvalid,
-        'focus-ring': isFocusVisible && !disableFocusRing,
       }}
       {...mergeProps(fieldProps ?? {}, focusProps)}
       style={style}
-      onBlur={onBlur}
     >
       <div data-element="Contents" role="presentation">
         <DateInputElement

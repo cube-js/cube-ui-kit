@@ -3,6 +3,7 @@ import { AriaDateRangePickerProps, DateValue } from '@react-types/datepicker';
 import { FocusableRef } from '@react-types/shared';
 import { useDateRangePicker } from '@react-aria/datepicker';
 import { useDateRangePickerState } from '@react-stately/datepicker';
+import { useFocusRing } from '@react-aria/focus';
 
 import { useProviderProps } from '../../../provider';
 import { wrapWithField } from '../wrapper';
@@ -28,6 +29,7 @@ import { TimeInput } from './TimeInput';
 import { DatePickerButton } from './DatePickerButton';
 import { DEFAULT_DATE_PROPS } from './props';
 import { dateMessages } from './intl';
+import { DatePickerElement } from './DatePickerElement';
 
 const DateRangeDash = tasty({
   'aria-hidden': 'true',
@@ -73,6 +75,7 @@ function DateRangePicker<T extends DateValue>(
     isDisabled,
     validationState,
     useLocale: useLocaleProp,
+    autoFocus,
   } = props;
   let targetRef = useRef<HTMLDivElement>(null);
   let state = useDateRangePickerState({
@@ -80,6 +83,20 @@ function DateRangePicker<T extends DateValue>(
     shouldCloseOnSelect: () => !state.hasTime,
   });
   let { isOpen, setOpen } = state;
+
+  let { isFocused, focusProps } = useFocusRing({
+    within: true,
+    isTextInput: true,
+    autoFocus,
+  });
+
+  let { isFocused: isFocusedButton, focusProps: focusPropsButton } =
+    useFocusRing({
+      within: false,
+      isTextInput: false,
+      autoFocus,
+    });
+
   let domRef = useFocusManagerRef(ref);
 
   let {
@@ -110,7 +127,12 @@ function DateRangePicker<T extends DateValue>(
   // let visibleMonths = useVisibleMonths(maxVisibleMonths);
 
   const component = (
-    <Space ref={targetRef} gap="0" styles={props.wrapperStyles}>
+    <DatePickerElement
+      ref={targetRef}
+      styles={props.wrapperStyles}
+      mods={{ focused: isFocused && !isFocusedButton }}
+      {...focusProps}
+    >
       <DateInputBase
         disableFocusRing
         isDisabled={isDisabled}
@@ -134,7 +156,7 @@ function DateRangePicker<T extends DateValue>(
       >
         <DatePickerButton
           size={size}
-          {...buttonProps}
+          {...mergeProps(buttonProps, focusPropsButton)}
           isDisabled={isDisabled}
         />
         <Dialog {...dialogProps} width="max-content">
@@ -169,7 +191,7 @@ function DateRangePicker<T extends DateValue>(
           )}
         </Dialog>
       </DialogTrigger>
-    </Space>
+    </DatePickerElement>
   );
 
   return wrapWithField(component, domRef, {
