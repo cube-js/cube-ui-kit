@@ -1,5 +1,5 @@
 import { mergeProps, mergeRefs } from '@react-aria/utils';
-import React, { cloneElement, useRef } from 'react';
+import React, { cloneElement, FocusEvent, useRef } from 'react';
 import { useFocusRing } from '@react-aria/focus';
 
 import {
