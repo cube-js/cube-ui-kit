@@ -49,6 +49,7 @@ interface CubeDateAtomInputProps extends ContainerStyleProps {
   size?: 'small' | 'medium' | 'large' | (string & {});
   validationState?: ValidationState;
   isLoading?: boolean;
+  onBlur?: () => void;
 }
 
 function DateInputBase(props: CubeDateAtomInputProps, ref) {
@@ -64,6 +65,7 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
     validationState,
     isLoading,
     size = 'medium',
+    onBlur,
   } = props;
 
   let styles = extractStyles(props, CONTAINER_STYLES);
@@ -90,6 +92,7 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
       }}
       {...mergeProps(fieldProps ?? {}, focusProps)}
       style={style}
+      onBlur={onBlur}
     >
       <div data-element="Contents" role="presentation">
         <DateInputElement

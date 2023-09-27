@@ -91,6 +91,7 @@ function DateInput<T extends DateValue>(
       validationState={state.validationState}
       styles={wrapperStyles}
       inputStyles={inputStyles}
+      onBlur={props.onBlur}
     >
       {state.segments.map((segment, i) => (
         <DatePickerSegment
