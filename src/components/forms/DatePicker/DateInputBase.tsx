@@ -49,7 +49,7 @@ interface CubeDateAtomInputProps extends ContainerStyleProps {
   size?: 'small' | 'medium' | 'large' | (string & {});
   validationState?: ValidationState;
   isLoading?: boolean;
-  onBlur?: () => void;
+  onBlur?: (e: FocusEvent<Element, Element>) => void;
 }
 
 function DateInputBase(props: CubeDateAtomInputProps, ref) {
