@@ -68,7 +68,7 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
 
   let styles = extractStyles(props, CONTAINER_STYLES);
 
-  let { focusProps, isFocusVisible, isFocused } = useFocusRing({
+  let { focusProps, isFocused } = useFocusRing({
     isTextInput: true,
     within: true,
     autoFocus,
@@ -84,9 +84,8 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
       data-size={size}
       mods={{
         disabled: isDisabled,
-        focused: isFocused,
+        focused: isFocused && !disableFocusRing,
         invalid: isInvalid,
-        'focus-ring': isFocusVisible && !disableFocusRing,
       }}
       {...mergeProps(fieldProps ?? {}, focusProps)}
       style={style}
