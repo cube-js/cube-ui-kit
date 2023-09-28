@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.26.1
+
+### Patch Changes
+
+- [#397](https://github.com/cube-js/cube-ui-kit/pull/397) [`4fb9227`](https://github.com/cube-js/cube-ui-kit/commit/4fb9227634f74a03898d5ddc62e8a11eb00cb9e6) Thanks [@tenphi](https://github.com/tenphi)! - Improve focus ring behaviour on DatePicker and DateRangePicker.
+
+- [#399](https://github.com/cube-js/cube-ui-kit/pull/399) [`67b8af3`](https://github.com/cube-js/cube-ui-kit/commit/67b8af384a8a4b0c4272fff9dcdc8977b4b868c8) Thanks [@tenphi](https://github.com/tenphi)! - Increase `zIndex` style for Modals.
+
 ## 0.26.0
 
 ### Minor Changes
