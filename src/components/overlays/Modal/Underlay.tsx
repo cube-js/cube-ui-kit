@@ -10,7 +10,7 @@ const UnderlayElement = tasty({
     right: 0,
     bottom: 0,
     left: 0,
-    zIndex: 1,
+    zIndex: 9,
     transitionDelay: '0ms',
     opacity: {
       '': 0,
