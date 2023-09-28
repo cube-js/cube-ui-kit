@@ -25,7 +25,7 @@ export const OVERLAY_WRAPPER_STYLES: Styles = {
   width: '100vw',
   height: '100dvh',
   pointerEvents: 'none',
-  zIndex: 2,
+  zIndex: 10,
   transition: {
     '': 'visibility .5s steps(2, start)',
     open: 'visibility 0s linear',
@@ -45,7 +45,7 @@ const ModalElement = tasty({
       exiting: 'grid',
       exited: 'none',
     },
-    zIndex: 2,
+    zIndex: 10,
     height: {
       '': 'max 90dvh',
       '[data-type="fullscreenTakeover"] | [data-type="panel"]': '100dvh 100dvh',

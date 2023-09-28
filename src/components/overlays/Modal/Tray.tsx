@@ -29,7 +29,7 @@ const TrayElement = tasty({
       exiting: 'initial',
       exited: 'none',
     },
-    zIndex: 2,
+    zIndex: 10,
     height: 'max 90dvh',
     width: '288px 90vw',
     pointerEvents: 'auto',
