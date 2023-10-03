@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.26.2
+
+### Patch Changes
+
+- [#400](https://github.com/cube-js/cube-ui-kit/pull/400) [`fcb2b6d`](https://github.com/cube-js/cube-ui-kit/commit/fcb2b6db7fcc307b9dfac4f451f4909c21f2d5f6) Thanks [@tenphi](https://github.com/tenphi)! - Change field tooltip color to `#purple-text`.
+
 ## 0.26.1
 
 ### Patch Changes
