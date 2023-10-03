@@ -43,7 +43,7 @@ export interface CubeBadgeProps extends BaseProps, ContainerStyleProps {
 }
 
 export const Badge = forwardRef(function Badge(allProps: CubeBadgeProps, ref) {
-  let { type, children, ...props } = allProps;
+  let { type, children, mods, ...props } = allProps;
 
   const styles = extractStyles(props, CONTAINER_STYLES);
 
@@ -54,6 +54,7 @@ export const Badge = forwardRef(function Badge(allProps: CubeBadgeProps, ref) {
       data-type={type}
       mods={{
         long: typeof children !== 'string' || children.length > 1,
+        ...mods,
       }}
       styles={styles}
     >
