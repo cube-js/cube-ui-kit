@@ -123,7 +123,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
             >
               <InfoCircleOutlined
                 style={{
-                  color: 'var(--primary-color)',
+                  color: 'var(--purple-text-color)',
                   margin: '0 4px',
                 }}
               />
