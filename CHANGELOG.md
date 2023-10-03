@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.26.3
+
+### Patch Changes
+
+- [#402](https://github.com/cube-js/cube-ui-kit/pull/402) [`a9674c2`](https://github.com/cube-js/cube-ui-kit/commit/a9674c26de7f36aab137cc086d590d5bf06836a6) Thanks [@tenphi](https://github.com/tenphi)! - Add ability to customize mods for the Badge component.
+
 ## 0.26.2
 
 ### Patch Changes
