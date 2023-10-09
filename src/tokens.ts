@@ -154,7 +154,7 @@ const TOKENS = {
   't4-letter-spacing': '0',
   't4-font-weight': '500',
   't4-icon-size': '14px',
-  // t4
+  // t4m
   't4m-font-size': '12px',
   't4m-line-height': '18px',
   't4m-letter-spacing': '0',
