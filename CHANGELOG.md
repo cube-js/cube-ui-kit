@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.26.4
+
+### Patch Changes
+
+- [#405](https://github.com/cube-js/cube-ui-kit/pull/405) [`9201d17`](https://github.com/cube-js/cube-ui-kit/commit/9201d17faffdfdba10783d8a6717a96fed6db68e) Thanks [@tenphi](https://github.com/tenphi)! - Return name attribute of input element in Radio component.
+
 ## 0.26.3
 
 ### Patch Changes
