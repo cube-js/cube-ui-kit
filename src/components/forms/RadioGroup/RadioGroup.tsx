@@ -110,7 +110,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
           isDisabled,
         }}
       >
-        <RadioContext.Provider value={{ ...state, isSolid }}>
+        <RadioContext.Provider value={{ state, name: props.name, isSolid }}>
           {children}
         </RadioContext.Provider>
       </FormContext.Provider>

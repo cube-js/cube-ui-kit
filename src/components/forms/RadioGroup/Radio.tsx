@@ -184,7 +184,11 @@ function Radio(props: CubeRadioProps, ref) {
     ...labelStyles,
   };
 
-  let state = useRadioProvider();
+  let radioGroupProps = useRadioProvider();
+
+  let state = radioGroupProps && radioGroupProps.state;
+  let name = radioGroupProps && radioGroupProps.name;
+  let isSolid = (radioGroupProps && radioGroupProps.isSolid) || false;
 
   if (!state) {
     throw new Error('CubeUI: The Radio button is used outside the RadioGroup.');
@@ -196,8 +200,13 @@ function Radio(props: CubeRadioProps, ref) {
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
 
-  let { inputProps } = useRadio(
+  let {
+    inputProps,
+    isDisabled: isRadioDisabled,
+    isSelected: isRadioSelected,
+  } = useRadio(
     {
+      name,
       ...props,
       isDisabled,
     },
@@ -207,23 +216,23 @@ function Radio(props: CubeRadioProps, ref) {
 
   const mods = useMemo(
     () => ({
-      checked: inputProps.checked,
+      checked: isRadioSelected,
       invalid: validationState === 'invalid',
       valid: validationState === 'valid',
-      disabled: isDisabled,
+      disabled: isRadioDisabled,
       hovered: isHovered,
       button: isButton,
       focused: isFocused,
-      solid: !!state?.isSolid,
+      solid: isSolid,
     }),
     [
-      inputProps.checked,
+      isRadioSelected,
       validationState,
-      isDisabled,
+      isRadioDisabled,
       isHovered,
       isButton,
       isFocused,
-      state?.isSolid,
+      isSolid,
     ],
   );
 
