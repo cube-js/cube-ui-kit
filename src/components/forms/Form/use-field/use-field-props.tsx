@@ -4,12 +4,13 @@ import { useDebugValue } from 'react';
 import { useChainedCallback, useEvent } from '../../../../_internal';
 import { useInsideLegacyField } from '../Field';
 import { mergeProps } from '../../../../utils/react';
+import { warn } from '../../../../utils/warnings';
 
 import { useField } from './use-field';
 
-import type { ValidateTrigger } from '../../../../shared';
 import type { CubeFieldProps } from './types';
 import type { FieldTypes } from '../types';
+import type { ValidateTrigger } from '../../../../shared';
 
 export type UseFieldPropsParams = {
   valuePropsMapper?: ({ value, onChange }) => any;
@@ -23,6 +24,19 @@ export type UseFieldPropsParams = {
    */
   unsafe__isDisabled?: boolean;
 };
+
+const VALUE_PROPERTIES = [
+  'value',
+  'defaultValue',
+  'isSelected',
+  'defaultSelected',
+  'isIndeterminate',
+  'defaultIndeterminate',
+  'selectedKey',
+  'defaultSelectedKey',
+  'selectedKeys',
+  'defaultSelectedKeys',
+];
 
 export function useFieldProps<
   T extends FieldTypes,
@@ -76,6 +90,22 @@ export function useFieldProps<
       field?.validateTrigger ?? defaultValidationTrigger,
     ),
   );
+
+  if (props.rules && !props.name) {
+    warn(
+      `The "rules" prop is not suitable for fields that are not part of a form. Use "name" prop to link the field to a form.`,
+    );
+  }
+
+  if (isOutsideOfForm) {
+    for (const valuePropName of VALUE_PROPERTIES) {
+      if (valuePropName in props) {
+        warn(
+          `The "${valuePropName}" property is not suitable for fields that are part of a form. To set default values, please use the "defaultValues" property of the form component instead. To unlink the field from the form, remove the "name" property from the field.`,
+        );
+      }
+    }
+  }
 
   const result = isOutsideOfForm
     ? props
