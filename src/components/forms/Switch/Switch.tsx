@@ -190,7 +190,16 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   let domRef = useFocusableRef(ref, inputRef);
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  let { inputProps } = useSwitch(props, useToggleState(props), inputRef);
+  let { inputProps } = useSwitch(
+    {
+      ...props,
+      ...(typeof label === 'string' && label.trim()
+        ? { 'aria-label': label }
+        : {}),
+    },
+    useToggleState(props),
+    inputRef,
+  );
 
   const mods = {
     'inside-form': insideForm,

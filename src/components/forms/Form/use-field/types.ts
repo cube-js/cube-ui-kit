@@ -7,6 +7,7 @@ import {
   ValidationState,
 } from '../../../../shared';
 import { CubeFormInstance } from '../use-form';
+import { Props } from '../../../../tasty';
 
 export interface CubeFieldProps<T extends FieldTypes> {
   /** The initial value of the input. */
@@ -33,6 +34,7 @@ export interface CubeFieldProps<T extends FieldTypes> {
   validateTrigger?: ValidateTrigger;
   /** Message for the field. Some additional information or error notice */
   message?: ReactNode;
+  labelProps?: Props;
 }
 
 export type FieldReturnValue<T extends FieldTypes> = {
