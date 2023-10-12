@@ -107,7 +107,7 @@ export function useFieldProps<
     }
   }
 
-  const result = isOutsideOfForm
+  const result: Props = isOutsideOfForm
     ? props
     : mergeProps(
         props,
@@ -118,6 +118,16 @@ export function useFieldProps<
           onBlur: onBlurChained,
         },
       );
+
+  if (result.id) {
+    if (!result.labelProps) {
+      result.labelProps = {};
+    }
+
+    if (result.labelProps) {
+      result.labelProps.for = result.id;
+    }
+  }
 
   if (process.env.NODE_ENV === 'development') {
     // eslint-disable-next-line react-hooks/rules-of-hooks
