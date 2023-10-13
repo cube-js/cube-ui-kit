@@ -117,8 +117,9 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
         field = form.createField(fieldName, true);
       }
 
-      if (field?.value == null) {
+      if (field?.value == null && defaultValue != null) {
         form.setFieldValue(fieldName, defaultValue, false, true);
+        form.updateInitialFieldsValue({ [fieldName]: defaultValue });
 
         field = form?.getFieldInstance(fieldName);
       }

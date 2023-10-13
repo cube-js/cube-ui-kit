@@ -31,11 +31,6 @@ const VALUE_PROPERTIES = [
   'isSelected',
   'defaultSelected',
   'isIndeterminate',
-  'defaultIndeterminate',
-  'selectedKey',
-  'defaultSelectedKey',
-  'selectedKeys',
-  'defaultSelectedKeys',
 ];
 
 export function useFieldProps<
@@ -95,19 +90,20 @@ export function useFieldProps<
   );
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const onChangeEvent = useEvent((value, dontTouch: boolean) =>
-    field?.onChange?.(
-      value,
-      dontTouch,
-      field?.validateTrigger ?? defaultValidationTrigger,
-    ),
+  const onChangeEvent = useEvent(
+    (value, dontTouch: boolean) =>
+      field?.onChange?.(
+        value,
+        dontTouch,
+        field?.validateTrigger ?? defaultValidationTrigger,
+      ),
   );
 
   if (!isOutsideOfForm) {
     for (const valuePropName of VALUE_PROPERTIES) {
       if (valuePropName in props) {
         warn(
-          `The "${valuePropName}" property is not suitable for the "${props.name}" field that is linked to a form. To set default values, please use the "defaultValues" property of the form component instead. To unlink the field from the form, remove the "name" property from the field.`,
+          `The "${valuePropName}" property is not suitable for the "${props.name}" field that is linked to a form. To unlink the field from the form, remove the "name" property from the field.`,
         );
       }
     }

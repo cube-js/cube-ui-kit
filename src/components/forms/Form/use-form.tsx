@@ -196,6 +196,10 @@ export class CubeFormInstance<
     this.initialFields = dotize.convert(values) ?? {};
   }
 
+  updateInitialFieldsValue(values: FieldTypes): void {
+    this.initialFields = { ...this.initialFields, ...dotize.convert(values) };
+  }
+
   resetFields(names?: (keyof T & string)[], skipRender?: boolean): void {
     const fieldsValue = this.getFieldsValue();
     const fieldNames = Object.keys({ ...fieldsValue, ...this.initialFields });
