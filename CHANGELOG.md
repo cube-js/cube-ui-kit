@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.27.0
+
+### Minor Changes
+
+- [#409](https://github.com/cube-js/cube-ui-kit/pull/409) [`9289732`](https://github.com/cube-js/cube-ui-kit/commit/928973274ee6f748b3475ab3adb29dc1d43552cf) Thanks [@tenphi](https://github.com/tenphi)! - Add support for initial value properties for fields that are linked to a form.
+
+### Patch Changes
+
+- [#407](https://github.com/cube-js/cube-ui-kit/pull/407) [`886e521`](https://github.com/cube-js/cube-ui-kit/commit/886e52195d8db6f8fa3fea514e6921d333770dc5) Thanks [@tenphi](https://github.com/tenphi)! - Fix "for" attribute in field labels.
+
+- [#407](https://github.com/cube-js/cube-ui-kit/pull/407) [`886e521`](https://github.com/cube-js/cube-ui-kit/commit/886e52195d8db6f8fa3fea514e6921d333770dc5) Thanks [@tenphi](https://github.com/tenphi)! - Show warning if a field is linked to a form but default value is provided. And in case when a field is unlinked but validation rules are provided.'
+
 ## 0.26.4
 
 ### Patch Changes
