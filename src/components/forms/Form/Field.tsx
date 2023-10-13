@@ -287,7 +287,7 @@ function LegacyFieldProvider(props: PropsWithChildren<unknown>) {
 }
 
 export function useInsideLegacyField() {
-  const { insideLegacyField } = useContext(LegacyFieldContext);
+  const { insideLegacyField = false } = useContext(LegacyFieldContext);
 
   return insideLegacyField;
 }
