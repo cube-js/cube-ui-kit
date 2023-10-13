@@ -70,9 +70,11 @@ const StyledTabElement = styled(TabElement)`
     pointer-events: none;
     transition: opacity linear 0.2s, box-shadow linear 0.2s;
   }
+
   &[data-is-selected]::before {
     --outline-size: 2px;
   }
+
   &:not([data-is-selected]):not([disabled])[data-is-hovered]::before {
     --outline-size: 1px;
   }
