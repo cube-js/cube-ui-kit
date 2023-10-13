@@ -27,10 +27,10 @@ export type UseFieldPropsParams = {
 
 const VALUE_PROPERTIES = [
   'value',
-  'defaultValue',
   'isSelected',
-  'defaultSelected',
   'isIndeterminate',
+  'selectedKey',
+  'selectedKeys',
 ];
 
 export function useFieldProps<
