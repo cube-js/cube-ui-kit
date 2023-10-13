@@ -25,19 +25,6 @@ export type UseFieldPropsParams = {
   unsafe__isDisabled?: boolean;
 };
 
-const VALUE_PROPERTIES = [
-  'value',
-  'defaultValue',
-  'isSelected',
-  'defaultSelected',
-  'isIndeterminate',
-  'defaultIndeterminate',
-  'selectedKey',
-  'defaultSelectedKey',
-  'selectedKeys',
-  'defaultSelectedKeys',
-];
-
 export function useFieldProps<
   T extends FieldTypes,
   Props extends CubeFieldProps<T>,
@@ -60,8 +47,14 @@ export function useFieldProps<
   //   args: ['<Field /> is deprecated, use component without <Field /> instead.'],
   // });
 
+  if (props.rules && !props.name) {
+    warn(
+      `The "rules" prop is not suitable for fields that are not part of a form. Use "name" prop to link the field to a form.`,
+    );
+  }
+
   if (
-    isInsideLegacyField === true ||
+    isInsideLegacyField ||
     isDisabledRef.current === true ||
     props.name == null
   ) {
@@ -74,6 +67,12 @@ export function useFieldProps<
   });
 
   const isOutsideOfForm = field?.form == null;
+
+  if (props.rules && isOutsideOfForm) {
+    warn(
+      `The "rules" prop is not supported for fields that are not part of a form. The "${props.name}" field is placed outside the form.`,
+    );
+  }
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const onBlurChained = useChainedCallback(
@@ -91,17 +90,19 @@ export function useFieldProps<
     ),
   );
 
-  if (props.rules && !props.name) {
-    warn(
-      `The "rules" prop is not suitable for fields that are not part of a form. Use "name" prop to link the field to a form.`,
-    );
-  }
+  const valueProps = !isOutsideOfForm
+    ? valuePropsMapper({ value: field.value, onChange: onChangeEvent })
+    : {};
 
-  if (isOutsideOfForm) {
-    for (const valuePropName of VALUE_PROPERTIES) {
+  if (isInsideLegacyField && !isOutsideOfForm) {
+    const valuePropEventNames = !isOutsideOfForm
+      ? Object.keys(valueProps).filter((name) => name.startsWith('on'))
+      : [];
+
+    for (const valuePropName of valuePropEventNames) {
       if (valuePropName in props) {
         warn(
-          `The "${valuePropName}" property is not suitable for fields that are part of a form. To set default values, please use the "defaultValues" property of the form component instead. To unlink the field from the form, remove the "name" property from the field.`,
+          `The "${valuePropName}" listener is not supported for input "${props.name}" that is linked to a form via a <Field> component. Remove the <Field> component and move its properties to the input itself.`,
         );
       }
     }
@@ -109,15 +110,10 @@ export function useFieldProps<
 
   const result: Props = isOutsideOfForm
     ? props
-    : mergeProps(
-        props,
-        field,
-        valuePropsMapper({ value: field.value, onChange: onChangeEvent }),
-        {
-          validateTrigger: field.validateTrigger ?? defaultValidationTrigger,
-          onBlur: onBlurChained,
-        },
-      );
+    : mergeProps(props, field, valueProps, {
+        validateTrigger: field.validateTrigger ?? defaultValidationTrigger,
+        onBlur: onBlurChained,
+      });
 
   if (result.id) {
     if (!result.labelProps) {
