@@ -25,14 +25,6 @@ export type UseFieldPropsParams = {
   unsafe__isDisabled?: boolean;
 };
 
-const VALUE_PROPERTIES = [
-  'value',
-  'isSelected',
-  'isIndeterminate',
-  'selectedKey',
-  'selectedKeys',
-];
-
 export function useFieldProps<
   T extends FieldTypes,
   Props extends CubeFieldProps<T>,
@@ -78,7 +70,7 @@ export function useFieldProps<
 
   if (props.rules && isOutsideOfForm) {
     warn(
-      `The "rules" prop is not suitable for fields that are not part of a form. The "${props.name}" field is placed outside the form.`,
+      `The "rules" prop is not supported for fields that are not part of a form. The "${props.name}" field is placed outside the form.`,
     );
   }
 
@@ -98,16 +90,6 @@ export function useFieldProps<
         field?.validateTrigger ?? defaultValidationTrigger,
       ),
   );
-
-  if (!isOutsideOfForm) {
-    for (const valuePropName of VALUE_PROPERTIES) {
-      if (valuePropName in props) {
-        warn(
-          `The "${valuePropName}" property is not suitable for the "${props.name}" field that is linked to a form. To unlink the field from the form, remove the "name" property from the field.`,
-        );
-      }
-    }
-  }
 
   const valueProps = !isOutsideOfForm
     ? valuePropsMapper({ value: field.value, onChange: onChangeEvent })
