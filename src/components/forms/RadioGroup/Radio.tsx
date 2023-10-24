@@ -76,11 +76,11 @@ const RadioButtonElement = tasty({
     },
     preset: 't3m',
     border: {
-      '': true,
+      '': '#dark-05',
       checked: '#purple-text',
       'invalid & checked': '#danger-text',
       'disabled & checked': '#dark.40',
-      disabled: '#border',
+      disabled: '#dark-05',
     },
     padding: '(.75x - 1bw) (1.5x - 1bw)',
     cursor: 'pointer',
