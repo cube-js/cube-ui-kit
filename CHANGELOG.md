@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.27.1
+
+### Patch Changes
+
+- [#410](https://github.com/cube-js/cube-ui-kit/pull/410) [`f4c958a`](https://github.com/cube-js/cube-ui-kit/commit/f4c958a0fd625ba651d4d6bcfea933afbd95571b) Thanks [@tenphi](https://github.com/tenphi)! - Fixes border colors in the hover state for solid Radio Buttons.
+
 ## 0.27.0
 
 ### Minor Changes
