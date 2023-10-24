@@ -51,8 +51,8 @@
   ],
   "author": "Cube Dev Team",
   "peerDependencies": {
-    "react": ">= 18.0.0",
-    "react-dom": ">= 18.0.0",
+    "react": ">= 17.0.0",
+    "react-dom": ">= 17.0.0",
     "styled-components": ">= 5.3.0"
   },
   "dependencies": {
