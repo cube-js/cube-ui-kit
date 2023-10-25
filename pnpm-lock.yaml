@@ -416,10 +416,10 @@ devDependencies:
     specifier: ^2.5.1
     version: 2.8.8
   react:
-    specifier: ^18.0.2
+    specifier: ^18.0.0
     version: 18.2.0
   react-dom:
-    specifier: ^18.0.2
+    specifier: ^18.0.0
     version: 18.2.0(react@18.2.0)
   react-router:
     specifier: ^6.2.1
