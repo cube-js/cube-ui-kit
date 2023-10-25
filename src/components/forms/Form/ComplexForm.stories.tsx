@@ -304,14 +304,14 @@ const Template: StoryFn<typeof Form> = (args) => {
             { required: true, message: 'Specify at least a single option' },
           ]}
         >
-          <CheckboxGroup orientation="horizontal">
+          <CheckboxGroup orientation="vertical">
             <Checkbox value="one">One</Checkbox>
             <Checkbox value="two">Two</Checkbox>
             <Checkbox value="three">Three</Checkbox>
           </CheckboxGroup>
         </Field>
         <Field name="radioGroup" label="Radio group">
-          <Radio.Group orientation="horizontal">
+          <Radio.Group orientation="vertical">
             <Radio value="one">One</Radio>
             <Radio value="two">Two</Radio>
             <Radio value="three">Three</Radio>
