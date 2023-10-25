@@ -1,4 +1,4 @@
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 
 import {
@@ -68,7 +68,13 @@ export const notification: NotificationService = {
       items = this.items;
     }
 
-    ReactDOM.render(
+    if (!this.root) {
+      return;
+    }
+
+    const root = createRoot(this.root);
+
+    root.render(
       <TransitionGroup className="cube-notifications">
         {items.map((item) => (
           <CSSTransition
@@ -82,7 +88,6 @@ export const notification: NotificationService = {
           </CSSTransition>
         ))}
       </TransitionGroup>,
-      this.root,
     );
   },
   show(type, message, options = {}) {
