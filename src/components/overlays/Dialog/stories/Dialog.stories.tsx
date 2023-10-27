@@ -19,6 +19,7 @@ import {
   Space,
 } from '../../../../index';
 import { baseProps } from '../../../../stories/lists/baseProps';
+import { timeout } from '../../../../utils/promise';
 
 export default {
   title: 'Overlays/Dialog',
@@ -67,8 +68,9 @@ export const Default = Template.bind({});
 Default.play = async ({ canvasElement, viewMode }) => {
   if (viewMode === 'docs') return;
 
-  const { getByRole, findByRole } = within(canvasElement);
-  await userEvent.click(getByRole('button'));
+  const { findByRole } = within(canvasElement);
+
+  await userEvent.click(await findByRole('button'));
 
   await expect(await findByRole('dialog')).toBeInTheDocument();
 };
@@ -192,6 +194,9 @@ CloseOnEsc.play = async (context) => {
   const dialog = await findByRole('dialog');
 
   await expect(dialog).toBeInTheDocument();
+
+  await timeout(150);
+
   await expect(dialog.contains(document.activeElement)).toBe(true);
 
   await userEvent.keyboard('{Escape}');
@@ -211,10 +216,14 @@ CloseOnOutsideClick.play = async (context) => {
 
   await Default.play?.(context);
 
+  await timeout(200);
+
   const { findByRole } = within(context.canvasElement);
   const dialog = await findByRole('dialog');
 
   await userEvent.click(document.body);
+
+  await timeout(500);
 
   expect(dialog).not.toBeInTheDocument();
 };
