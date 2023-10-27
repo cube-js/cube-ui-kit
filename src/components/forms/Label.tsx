@@ -67,7 +67,7 @@ export const LABEL_STYLES: Styles = {
   },
   whiteSpace: 'nowrap',
   width: {
-    '': 'initial',
+    '': 'initial max-content',
     side: '@(label-width, initial)',
   },
 };

@@ -53,7 +53,7 @@ function CheckOutlined() {
 }
 function IndeterminateOutline() {
   return (
-    <svg width="9" height="3" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="8" height="2" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M0 .044v2.001l.026.025h8.063V.044H0z" fill="#fff" />
     </svg>
   );
@@ -151,7 +151,7 @@ function Checkbox(
 
   let styles: Styles = extractStyles(props, OUTER_STYLES);
 
-  inputStyles = extractStyles(props, BLOCK_STYLES);
+  inputStyles = extractStyles(props, BLOCK_STYLES, inputStyles);
 
   labelStyles = useMemo(
     () => ({

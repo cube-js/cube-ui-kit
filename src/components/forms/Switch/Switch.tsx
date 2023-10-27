@@ -155,6 +155,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
     isLoading,
     labelPosition,
     inputStyles,
+    validationState,
     size = 'large',
     ...otherProps
   } = props;
@@ -190,12 +191,14 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   );
 
   const mods = {
-    'inside-form': insideForm,
-    'side-label': labelPosition === 'side',
     checked: inputProps.checked,
     disabled: isDisabled,
     hovered: isHovered,
     focused: isFocused,
+    invalid: validationState === 'invalid',
+    valid: validationState === 'valid',
+    'inside-form': insideForm,
+    'side-label': labelPosition === 'side',
   };
 
   const switchField = (
