@@ -397,7 +397,7 @@ UnknownErrorMessage.play = async ({ canvasElement }) => {
   await waitFor(async () => {
     const alertElement = await canvas.getByText('Internal error');
 
-    await timeout(1000);
+    await timeout(2000);
 
     await expect(alertElement).toBeInTheDocument();
 

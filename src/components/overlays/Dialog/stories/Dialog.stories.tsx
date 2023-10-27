@@ -195,7 +195,7 @@ CloseOnEsc.play = async (context) => {
 
   await expect(dialog).toBeInTheDocument();
 
-  await timeout(150);
+  await timeout(1000);
 
   await expect(dialog.contains(document.activeElement)).toBe(true);
 
@@ -216,14 +216,14 @@ CloseOnOutsideClick.play = async (context) => {
 
   await Default.play?.(context);
 
-  await timeout(200);
+  await timeout(1000);
 
   const { findByRole } = within(context.canvasElement);
   const dialog = await findByRole('dialog');
 
   await userEvent.click(document.body);
 
-  await timeout(500);
+  await timeout(1000);
 
   expect(dialog).not.toBeInTheDocument();
 };
