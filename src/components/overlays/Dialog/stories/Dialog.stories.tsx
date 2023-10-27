@@ -203,6 +203,8 @@ CloseOnEsc.play = async (context) => {
 
   await timeout(500);
 
+  await expect(dialog).not.toBeInTheDocument();
+
   await waitFor(() => expect(document.activeElement).toBe(trigger));
 };
 
@@ -210,7 +212,31 @@ export const CloseOnEscCloseBehaviorHide: typeof Template = Template.bind({});
 CloseOnEscCloseBehaviorHide.args = {
   hideOnClose: true,
 };
-CloseOnEscCloseBehaviorHide.play = CloseOnEsc.play;
+CloseOnEscCloseBehaviorHide.play = async (context) => {
+  if (context.viewMode === 'docs') return;
+
+  const { findByRole } = within(context.canvasElement);
+
+  const trigger = await findByRole('button');
+
+  await userEvent.click(trigger);
+
+  const dialog = await findByRole('dialog');
+
+  await expect(dialog).toBeInTheDocument();
+
+  await timeout(500);
+
+  await expect(dialog.contains(document.activeElement)).toBe(true);
+
+  await userEvent.keyboard('{Escape}');
+
+  await timeout(500);
+
+  await expect(dialog).toBeInTheDocument();
+
+  await waitFor(() => expect(document.activeElement).toBe(trigger));
+};
 
 export const CloseOnOutsideClick: typeof Template = Template.bind({});
 CloseOnOutsideClick.play = async (context) => {
