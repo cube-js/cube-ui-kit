@@ -61,6 +61,7 @@ export const StyledMenuHeader = tasty(Space, {
     placeContent: 'space-between',
     align: 'start',
     radius: '1r 1r 0 0',
+    whiteSpace: 'nowrap',
   },
 });
 
@@ -91,6 +92,7 @@ export const StyledMenuItem = tasty({
       '': 'inherit',
       disabled: '#dark-04',
     },
+    whiteSpace: 'nowrap',
   },
 });
 
