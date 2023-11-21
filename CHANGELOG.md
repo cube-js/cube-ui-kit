@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.27.2
+
+### Patch Changes
+
+- [#414](https://github.com/cube-js/cube-ui-kit/pull/414) [`ec4f294`](https://github.com/cube-js/cube-ui-kit/commit/ec4f294c6fa8e264f69188e2a9fdaf012db99c62) Thanks [@tenphi](https://github.com/tenphi)! - Disable text wrapping inside Menu elements.
+
 ## 0.27.1
 
 ### Patch Changes
