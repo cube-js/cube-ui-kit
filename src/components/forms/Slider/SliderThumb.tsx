@@ -1,8 +1,7 @@
 import { RefObject, useRef } from 'react';
-import { AriaSliderThumbOptions, useSliderThumb } from '@react-aria/slider';
-import { useHover } from '@react-aria/interactions';
-import { SliderState } from '@react-stately/slider';
-import { VisuallyHidden } from '@react-aria/visually-hidden';
+import { useSliderThumb, useHover, VisuallyHidden } from 'react-aria';
+import { AriaSliderThumbOptions } from '@react-aria/slider';
+import { SliderState } from 'react-stately';
 
 import { mergeProps } from '../../../utils/react';
 

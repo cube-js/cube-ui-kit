@@ -1,8 +1,7 @@
 import { FocusableProvider } from '@react-aria/focus';
 import { Children, ReactElement, useRef } from 'react';
-import { useOverlayPosition } from '@react-aria/overlays';
-import { useTooltipTrigger } from '@react-aria/tooltip';
-import { useTooltipTriggerState } from '@react-stately/tooltip';
+import { useOverlayPosition, useTooltipTrigger } from 'react-aria';
+import { useTooltipTriggerState } from 'react-stately';
 
 import { OverlayWrapper } from '../OverlayWrapper';
 import { ActiveZone } from '../../content/ActiveZone/ActiveZone';

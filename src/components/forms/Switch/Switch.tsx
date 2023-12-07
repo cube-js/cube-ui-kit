@@ -1,8 +1,7 @@
 import { forwardRef, useMemo, useRef } from 'react';
 import { useFocusableRef } from '@react-spectrum/utils';
-import { useSwitch } from '@react-aria/switch';
-import { useHover } from '@react-aria/interactions';
-import { useToggleState } from '@react-stately/toggle';
+import { useSwitch, useHover } from 'react-aria';
+import { useToggleState } from 'react-stately';
 import { LoadingOutlined } from '@ant-design/icons';
 
 import { useProviderProps } from '../../../provider';

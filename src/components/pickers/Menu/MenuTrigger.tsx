@@ -1,12 +1,11 @@
 import React, { ReactNode, forwardRef, Fragment, useRef } from 'react';
 import { useDOMRef, useIsMobileDevice } from '@react-spectrum/utils';
-import { DismissButton, useOverlayPosition } from '@react-aria/overlays';
+import { DismissButton, useOverlayPosition, useMenuTrigger } from 'react-aria';
 import { DOMRef } from '@react-types/shared';
+import { MenuTriggerProps as BaseTriggerProps } from '@react-types/menu';
 import { Placement, PositionProps } from '@react-types/overlays';
 import { PressResponder } from '@react-aria/interactions';
-import { MenuTriggerProps as BaseTriggerProps } from '@react-types/menu';
-import { useMenuTrigger } from '@react-aria/menu';
-import { useMenuTriggerState } from '@react-stately/menu';
+import { useMenuTriggerState } from 'react-stately';
 
 import { Popover, Tray } from '../../overlays/Modal';
 import { SlotProvider } from '../../../utils/react';

@@ -1,7 +1,7 @@
 import { forwardRef, useRef } from 'react';
 import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
-import { useSearchFieldState } from '@react-stately/searchfield';
-import { useSearchField } from '@react-aria/searchfield';
+import { useSearchFieldState } from 'react-stately';
+import { useSearchField } from 'react-aria';
 
 import {
   CubeTextInputBaseProps,

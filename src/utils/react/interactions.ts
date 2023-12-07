@@ -3,7 +3,7 @@ import {
   FocusProps,
   useFocus as reactAriaUseFocus,
   useFocusVisible,
-} from '@react-aria/interactions';
+} from 'react-aria';
 
 export function useFocus({ isDisabled }: FocusProps, onlyVisible = false) {
   useEffect(() => {

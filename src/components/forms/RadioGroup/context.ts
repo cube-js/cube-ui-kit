@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import { RadioGroupState } from '@react-stately/radio';
+import { RadioGroupState } from 'react-stately';
 
 interface CubeRadioGroupState {
   isSolid?: boolean;

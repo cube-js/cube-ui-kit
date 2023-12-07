@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 import { useDOMRef } from '@react-spectrum/utils';
-import { useCheckboxGroup } from '@react-aria/checkbox';
-import { useCheckboxGroupState } from '@react-stately/checkbox';
+import { useCheckboxGroup } from 'react-aria';
+import { useCheckboxGroupState } from 'react-stately';
 
 import { useProviderProps } from '../../../provider';
 import {

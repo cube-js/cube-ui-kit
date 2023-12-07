@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 import { useDOMRef } from '@react-spectrum/utils';
-import { useRadioGroup } from '@react-aria/radio';
-import { useRadioGroupState } from '@react-stately/radio';
+import { useRadioGroup } from 'react-aria';
+import { useRadioGroupState } from 'react-stately';
 
 import { useProviderProps } from '../../../provider';
 import { FormContext, useFieldProps, useFormProps } from '../Form';

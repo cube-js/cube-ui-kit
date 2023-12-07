@@ -1,9 +1,8 @@
 import { forwardRef, ReactElement, useRef } from 'react';
 import { FocusableRef } from '@react-types/shared';
 import { TimeValue } from '@react-types/datepicker';
-import { useLocale } from '@react-aria/i18n';
-import { AriaTimeFieldProps, useTimeField } from '@react-aria/datepicker';
-import { useTimeFieldState } from '@react-stately/datepicker';
+import { useLocale, AriaTimeFieldProps, useTimeField } from 'react-aria';
+import { useTimeFieldState } from 'react-stately';
 
 import { wrapWithField } from '../wrapper';
 import { useProviderProps } from '../../../provider';

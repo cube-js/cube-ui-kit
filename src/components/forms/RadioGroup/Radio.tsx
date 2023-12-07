@@ -1,7 +1,6 @@
 import { useFocusableRef } from '@react-spectrum/utils';
 import { forwardRef, useMemo, useRef } from 'react';
-import { useHover } from '@react-aria/interactions';
-import { useRadio } from '@react-aria/radio';
+import { useHover, useRadio } from 'react-aria';
 
 import {
   BaseProps,

@@ -1,9 +1,8 @@
 import { useRef } from 'react';
 import { createCalendar } from '@internationalized/date';
 import { DateValue, SpectrumDatePickerProps } from '@react-types/datepicker';
-import { useDateField } from '@react-aria/datepicker';
-import { useDateFieldState } from '@react-stately/datepicker';
-import { useLocale } from '@react-aria/i18n';
+import { useDateField, useLocale } from 'react-aria';
+import { useDateFieldState } from 'react-stately';
 
 import { tasty } from '../../../tasty';
 

@@ -2,7 +2,8 @@ import { CubeTextProps, Text } from './components/content/Text';
 import { CubeTitleProps, Title } from './components/content/Title';
 import { CubeParagraphProps, Paragraph } from './components/content/Paragraph';
 
-export { Item, Section } from '@react-stately/collections';
+export { Item, Section } from 'react-stately';
+
 export * from '@internationalized/date';
 
 // generic components
@@ -185,7 +186,7 @@ export type {
 } from './tasty';
 export * from './tasty';
 
-export { ModalProvider } from '@react-aria/overlays';
+export { ModalProvider } from 'react-aria';
 export * from './utils/react';
 export * from './tasty';
 export { default as copy } from 'clipboard-copy';

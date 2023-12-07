@@ -1,9 +1,8 @@
 import { MouseEventHandler, useContext } from 'react';
-import { useHover } from '@react-aria/interactions';
-import { useButton } from '@react-aria/button';
-import { AriaButtonProps } from '@react-types/button';
 import { useFocusableRef } from '@react-spectrum/utils';
+import { useHover, useButton } from 'react-aria';
 import { FocusableRef, PressEvent } from '@react-types/shared';
+import { AriaButtonProps } from '@react-types/button';
 
 import { UIKitContext } from '../../provider';
 import { mergeProps } from '../../utils/react';

@@ -11,13 +11,14 @@ import {
   RefObject,
   useMemo,
 } from 'react';
-import { FilterFn, useComboBoxState } from '@react-stately/combobox';
-import { useComboBox } from '@react-aria/combobox';
-import { useButton } from '@react-aria/button';
-import { useHover } from '@react-aria/interactions';
-import { useFilter } from '@react-aria/i18n';
-import { Item } from '@react-stately/collections';
-import { useOverlayPosition } from '@react-aria/overlays';
+import {
+  useComboBox,
+  useButton,
+  useHover,
+  useFilter,
+  useOverlayPosition,
+} from 'react-aria';
+import { Item, useComboBoxState } from 'react-stately';
 
 import { useFieldProps, useFormProps } from '../../forms';
 import { useProviderProps } from '../../../provider';
@@ -48,6 +49,8 @@ import type {
   LoadingState,
 } from '@react-types/shared';
 import type { ComboBoxProps } from '@react-types/combobox';
+
+type FilterFn = (textValue: string, inputValue: string) => boolean;
 
 function CaretDownIcon() {
   return (

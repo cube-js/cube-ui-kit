@@ -13,18 +13,21 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useSelectState } from '@react-stately/select';
-import { HiddenSelect, useSelect } from '@react-aria/select';
-import { useListBox, useOption } from '@react-aria/listbox';
-import { useButton } from '@react-aria/button';
-import { FocusScope } from '@react-aria/focus';
+import { useSelectState } from 'react-stately';
 import {
+  HiddenSelect,
+  useSelect,
+  useListBox,
+  useOption,
+  useButton,
+  FocusScope,
   DismissButton,
   useOverlay,
   useOverlayPosition,
-} from '@react-aria/overlays';
-import { useFocus as useAriaFocus, useHover } from '@react-aria/interactions';
-import { Item } from '@react-stately/collections';
+  useFocus as useAriaFocus,
+  useHover,
+} from 'react-aria';
+import { Item } from 'react-stately';
 import { DOMRef } from '@react-types/shared';
 import styled from 'styled-components';
 

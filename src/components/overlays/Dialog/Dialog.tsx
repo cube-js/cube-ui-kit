@@ -1,9 +1,8 @@
 import styled from 'styled-components';
 import { useDOMRef } from '@react-spectrum/utils';
-import { DismissButton } from '@react-aria/overlays';
+import { DismissButton } from 'react-aria';
 import { forwardRef, ReactElement } from 'react';
-import { useDialog } from '@react-aria/dialog';
-import { useMessageFormatter } from '@react-aria/i18n';
+import { useDialog, useMessageFormatter } from 'react-aria';
 import { CloseOutlined } from '@ant-design/icons';
 import { DOMRef } from '@react-types/shared';
 import FocusLock from 'react-focus-lock';

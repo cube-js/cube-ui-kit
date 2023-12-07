@@ -1,12 +1,12 @@
 import { createDOMRef } from '@react-spectrum/utils';
 import { createFocusManager } from '@react-aria/focus';
-import { FocusableRef } from '@react-types/shared';
 import { SpectrumDatePickerBase } from '@react-types/datepicker';
-import { useDateFormatter } from '@react-aria/i18n';
+import { FocusableRef } from '@react-types/shared';
+import { useDateFormatter } from 'react-aria';
 import { useDisplayNames } from '@react-aria/datepicker';
 import { useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useLayoutEffect } from '@react-aria/utils';
-import { DateSegment } from '@react-stately/datepicker';
+import { DateSegment } from 'react-stately';
 
 export function useFormatHelpText(
   props: Pick<SpectrumDatePickerBase, 'description' | 'showFormatHelpText'>,

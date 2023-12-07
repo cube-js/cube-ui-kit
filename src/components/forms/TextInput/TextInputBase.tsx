@@ -10,7 +10,7 @@ import {
   useMemo,
   useRef,
 } from 'react';
-import { useHover } from '@react-aria/interactions';
+import { useHover } from 'react-aria';
 
 import { useFieldProps, useFormProps } from '../Form';
 import { useProviderProps } from '../../../provider';
