@@ -61,7 +61,7 @@
     "@react-aria/datepicker": "^3.9.0",
     "@react-aria/focus": "3.10.1",
     "@react-aria/i18n": "3.7.2",
-    "@react-aria/interactions": "3.13.1",
+    "@react-aria/interactions": "3.20.0",
     "@react-aria/selection": "^3.17.2",
     "@react-aria/slider": "^3.7.3",
     "@react-aria/ssr": "^3.9.0",
