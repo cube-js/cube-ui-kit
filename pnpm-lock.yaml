@@ -14,9 +14,6 @@ dependencies:
   '@internationalized/date':
     specifier: ^3.3.0
     version: 3.3.0
-  '@react-aria/datepicker':
-    specifier: ^3.9.0
-    version: 3.9.0(react-dom@17.0.2)(react@17.0.2)
   '@react-aria/focus':
     specifier: 3.10.1
     version: 3.10.1(react@17.0.2)
@@ -29,9 +26,6 @@ dependencies:
   '@react-aria/selection':
     specifier: ^3.17.2
     version: 3.17.2(react-dom@17.0.2)(react@17.0.2)
-  '@react-aria/slider':
-    specifier: ^3.7.3
-    version: 3.7.3(react@17.0.2)
   '@react-aria/ssr':
     specifier: ^3.9.0
     version: 3.9.0(react@17.0.2)

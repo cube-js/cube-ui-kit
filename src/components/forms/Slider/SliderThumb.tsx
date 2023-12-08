@@ -1,6 +1,10 @@
 import { RefObject, useRef } from 'react';
-import { useSliderThumb, useHover, VisuallyHidden } from 'react-aria';
-import { AriaSliderThumbOptions } from '@react-aria/slider';
+import {
+  AriaSliderThumbOptions,
+  useHover,
+  useSliderThumb,
+  VisuallyHidden,
+} from 'react-aria';
 import { SliderState } from 'react-stately';
 
 import { mergeProps } from '../../../utils/react';
