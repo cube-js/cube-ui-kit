@@ -16,6 +16,7 @@ export interface SliderThumbProps extends AriaSliderThumbOptions {
   isDisabled?: boolean;
   trackRef: RefObject<HTMLElement>;
   inputRef: RefObject<HTMLInputElement>;
+  index: number;
 }
 
 export function SliderThumb(props: SliderThumbProps) {
