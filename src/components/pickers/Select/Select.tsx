@@ -11,23 +11,20 @@ import {
   RefObject,
   useMemo,
   useRef,
-  useState,
 } from 'react';
-import { useSelectState } from 'react-stately';
+import { Item, useSelectState } from 'react-stately';
 import {
+  DismissButton,
+  FocusScope,
   HiddenSelect,
-  useSelect,
+  useButton,
+  useHover,
   useListBox,
   useOption,
-  useButton,
-  FocusScope,
-  DismissButton,
   useOverlay,
   useOverlayPosition,
-  useFocus as useAriaFocus,
-  useHover,
+  useSelect,
 } from 'react-aria';
-import { Item } from 'react-stately';
 import { DOMRef } from '@react-types/shared';
 import styled from 'styled-components';
 
@@ -610,8 +607,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
 
   // Handle focus events so we can apply highlighted
   // style to the focused option
-  let [isFocused, setFocused] = useState(false);
-  let { focusProps } = useAriaFocus({ onFocusChange: setFocused });
+  let { isFocused, focusProps } = useFocus({ isDisabled });
 
   return (
     <OptionElement
