@@ -107,9 +107,13 @@ const TriggerElement = tasty({
 });
 
 export interface CubeComboBoxProps<T>
-  extends Omit<CubeSelectBaseProps<T>, 'onOpenChange'>,
+  extends Omit<
+      CubeSelectBaseProps<T>,
+      'onOpenChange' | 'onBlur' | 'onFocus' | 'validate'
+    >,
     ComboBoxProps<T>,
     CollectionBase<T> {
+  validate?: ComboBoxProps<T>['validate'];
   icon?: ReactElement;
   multiLine?: boolean;
   autoComplete?: string;

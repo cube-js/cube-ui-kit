@@ -39,7 +39,7 @@ const PopoverElement = tasty({
 
 export interface CubePopoverProps
   extends BaseProps,
-    Omit<OverlayProps, 'children'>,
+    Omit<OverlayProps, 'children' | 'nodeRef'>,
     WithCloseBehavior,
     TransitionState {
   container?: HTMLElement;

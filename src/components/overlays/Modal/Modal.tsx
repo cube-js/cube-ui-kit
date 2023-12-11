@@ -70,7 +70,7 @@ const ModalElement = tasty({
 });
 
 export interface CubeModalProps
-  extends Omit<ModalProps, 'container' | 'type'>,
+  extends Omit<ModalProps, 'container' | 'type' | 'nodeRef'>,
     WithCloseBehavior {
   container?: HTMLElement;
   qa?: BaseProps['qa'];

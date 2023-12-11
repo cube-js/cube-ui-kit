@@ -14,9 +14,12 @@ import { MenuContext, MenuContextValue } from './context';
 
 export type CubeMenuTriggerProps = BaseTriggerProps &
   PositionProps & {
-    trigger?: string;
     isDisabled?: boolean;
     children: ReactNode[];
+    direction?: Placement;
+    align?: 'start' | 'end';
+    // eslint-disable-next-line
+    closeOnSelect?: boolean;
   };
 
 function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {

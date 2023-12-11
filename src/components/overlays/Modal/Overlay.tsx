@@ -10,7 +10,7 @@ import { WithCloseBehavior } from './types';
 import type { OverlayProps } from '@react-types/overlays';
 
 export interface CubeOverlayProps
-  extends Omit<OverlayProps, 'container'>,
+  extends Omit<OverlayProps, 'container' | 'nodeRef'>,
     WithCloseBehavior {
   container?: HTMLElement | null;
 }

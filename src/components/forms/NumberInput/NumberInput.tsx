@@ -20,7 +20,7 @@ import type { AriaNumberFieldProps } from '@react-types/numberfield';
 
 export interface CubeNumberInputProps
   extends Omit<CubeTextInputBaseProps, 'defaultValue' | 'value' | 'onChange'>,
-    AriaNumberFieldProps {
+    Omit<AriaNumberFieldProps, 'validate'> {
   /** Whether or to hide stepper */
   hideStepper?: boolean;
 }
