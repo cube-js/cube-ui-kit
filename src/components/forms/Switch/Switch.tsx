@@ -22,13 +22,13 @@ import { mergeProps } from '../../../utils/react';
 import { HiddenInput } from '../../HiddenInput';
 import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../Label';
 import { Text } from '../../content/Text';
-import { FieldWrapper } from '../FieldWrapper';
 import { FieldBaseProps } from '../../../shared';
 import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
 import { useFieldProps, useFormProps } from '../Form';
+import { wrapWithField } from '../wrapper';
 
 import type { AriaSwitchProps } from '@react-types/switch';
 
@@ -42,6 +42,7 @@ const SwitchWrapperElement = tasty({
       'side-label': 'baseline stretch',
     },
     gap: '1x',
+    width: 'max max-content',
   },
 });
 
@@ -65,9 +66,8 @@ const SwitchElement = tasty({
   qa: 'Switch',
   styles: {
     position: 'relative',
-    display: 'grid',
     verticalAlign: 'baseline',
-    placeItems: 'center',
+    placeSelf: 'center',
     radius: 'round',
     fill: {
       '': '#dark.50',
@@ -90,10 +90,6 @@ const SwitchElement = tasty({
     },
     transition: 'theme',
     cursor: 'pointer',
-    placeSelf: {
-      '': null,
-      'inside-form & side-label': 'start',
-    },
 
     Thumb: {
       position: 'absolute',
@@ -150,22 +146,15 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   let {
     qa,
     isDisabled = false,
-    autoFocus,
     children,
     label,
-    extra,
     labelProps,
     labelStyles,
-    isLoading,
     insideForm,
-    validationState,
-    message,
-    description,
+    isLoading,
     labelPosition,
     inputStyles,
-    requiredMark = true,
-    tooltip,
-    labelSuffix,
+    validationState,
     size = 'large',
     ...otherProps
   } = props;
@@ -201,12 +190,14 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   );
 
   const mods = {
-    'inside-form': insideForm,
-    'side-label': labelPosition === 'side',
     checked: inputProps.checked,
     disabled: isDisabled,
     hovered: isHovered,
     focused: isFocused,
+    invalid: validationState === 'invalid',
+    valid: validationState === 'valid',
+    'inside-form': insideForm,
+    'side-label': labelPosition === 'side',
   };
 
   const switchField = (
@@ -229,28 +220,13 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   );
 
   if (insideForm) {
-    return (
-      <FieldWrapper
-        {...{
-          as: 'label',
-          labelPosition,
-          label,
-          extra,
-          styles,
-          labelStyles,
-          labelProps,
-          isDisabled,
-          validationState,
-          message,
-          description,
-          requiredMark,
-          tooltip,
-          labelSuffix,
-          Component: switchField,
-          ref: domRef,
-        }}
-      />
-    );
+    return wrapWithField(switchField, domRef, {
+      ...props,
+      children: null,
+      labelStyles,
+      inputStyles,
+      styles,
+    });
   }
 
   return (
