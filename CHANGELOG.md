@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.28.0
+
+### Minor Changes
+
+- [#419](https://github.com/cube-js/cube-ui-kit/pull/419) [`910a8d4`](https://github.com/cube-js/cube-ui-kit/commit/910a8d424330c38941b0a86585c13baffc1016f4) Thanks [@tenphi](https://github.com/tenphi)! - Migration to the combined `react-aria` and `react-stately` packages.
+
+### Patch Changes
+
+- [#413](https://github.com/cube-js/cube-ui-kit/pull/413) [`76d9fd7`](https://github.com/cube-js/cube-ui-kit/commit/76d9fd70b51efa7108456df2611d981e5a2a22b4) Thanks [@tenphi](https://github.com/tenphi)! - Fix Field label sizing.
+
 ## 0.27.2
 
 ### Patch Changes
