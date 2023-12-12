@@ -1,9 +1,8 @@
 import { forwardRef, ReactElement, useRef } from 'react';
 import { AriaDateRangePickerProps, DateValue } from '@react-types/datepicker';
 import { FocusableRef } from '@react-types/shared';
-import { useDateRangePicker } from '@react-aria/datepicker';
-import { useDateRangePickerState } from '@react-stately/datepicker';
-import { useFocusRing } from '@react-aria/focus';
+import { useDateRangePicker, useFocusRing } from 'react-aria';
+import { useDateRangePickerState } from 'react-stately';
 
 import { useProviderProps } from '../../../provider';
 import { wrapWithField } from '../wrapper';

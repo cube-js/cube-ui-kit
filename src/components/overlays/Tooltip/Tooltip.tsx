@@ -6,7 +6,7 @@ import {
   useRef,
 } from 'react';
 import { createDOMRef } from '@react-spectrum/utils';
-import { useTooltip } from '@react-aria/tooltip';
+import { useTooltip } from 'react-aria';
 import styled from 'styled-components';
 import { DOMRefValue } from '@react-types/shared';
 

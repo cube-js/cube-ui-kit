@@ -1,7 +1,6 @@
 import { forwardRef, MouseEventHandler } from 'react';
-import { useHover } from '@react-aria/interactions';
+import { useHover, FocusableOptions, useFocusable } from 'react-aria';
 import { useFocusableRef } from '@react-spectrum/utils';
-import { FocusableOptions, useFocusable } from '@react-aria/focus';
 
 import { mergeProps } from '../../../utils/react';
 import {

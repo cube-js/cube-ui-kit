@@ -1,6 +1,6 @@
 import { useDOMRef } from '@react-spectrum/utils';
 import { forwardRef } from 'react';
-import { useModal, useOverlay, usePreventScroll } from '@react-aria/overlays';
+import { useModal, useOverlay, usePreventScroll } from 'react-aria';
 
 import { BaseProps, Props, Styles, tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';

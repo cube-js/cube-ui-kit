@@ -1,6 +1,5 @@
 import { ForwardedRef, forwardRef } from 'react';
-import { useHover } from '@react-aria/interactions';
-import { useFocusRing } from '@react-aria/focus';
+import { useHover, useFocusRing } from 'react-aria';
 
 import { tasty } from '../../../../tasty';
 import { useEvent, useTimer } from '../../../../_internal';

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ModalProvider } from '@react-aria/overlays';
+import { ModalProvider } from 'react-aria';
 import { StyleSheetManager } from 'styled-components';
 
 import {

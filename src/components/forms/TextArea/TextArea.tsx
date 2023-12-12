@@ -1,6 +1,6 @@
 import { forwardRef, useRef } from 'react';
 import { useControlledState } from '@react-stately/utils';
-import { useTextField } from '@react-aria/textfield';
+import { useTextField } from 'react-aria';
 
 import {
   CubeTextInputBaseProps,

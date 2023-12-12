@@ -1,8 +1,7 @@
 import { useFocusableRef } from '@react-spectrum/utils';
 import { forwardRef, useContext, useMemo, useRef } from 'react';
-import { useCheckbox, useCheckboxGroupItem } from '@react-aria/checkbox';
-import { useHover } from '@react-aria/interactions';
-import { useToggleState } from '@react-stately/toggle';
+import { useCheckbox, useCheckboxGroupItem, useHover } from 'react-aria';
+import { useToggleState } from 'react-stately';
 
 import { useProviderProps } from '../../../provider';
 import {

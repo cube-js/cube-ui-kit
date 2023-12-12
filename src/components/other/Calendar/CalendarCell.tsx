@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { useCalendarCell } from '@react-aria/calendar';
+import { useCalendarCell } from 'react-aria';
 
 import { tasty } from '../../../tasty';
 

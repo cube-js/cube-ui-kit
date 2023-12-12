@@ -1,8 +1,8 @@
 import { Fragment, ReactElement, RefObject, useEffect, useRef } from 'react';
-import { useOverlayTriggerState } from '@react-stately/overlays';
+import { useOverlayTriggerState } from 'react-stately';
 import { PressResponder } from '@react-aria/interactions';
 import { useMediaQuery } from '@react-spectrum/utils';
-import { useOverlayPosition, useOverlayTrigger } from '@react-aria/overlays';
+import { useOverlayPosition, useOverlayTrigger } from 'react-aria';
 import { OverlayTriggerProps, PositionProps } from '@react-types/overlays';
 
 import { Modal, Popover, Tray, WithCloseBehavior } from '../Modal';

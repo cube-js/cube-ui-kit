@@ -1,4 +1,4 @@
-import { useListState } from '@react-stately/list';
+import { useListState } from 'react-stately';
 import { useSelectableList } from '@react-aria/selection';
 
 import { CollectionChildren, NotificationsListState } from './types';

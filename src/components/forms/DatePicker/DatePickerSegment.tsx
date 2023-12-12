@@ -1,7 +1,7 @@
 import { useRef } from 'react';
-import { DateFieldState, DateSegment } from '@react-stately/datepicker';
+import { DateFieldState, DateSegment } from 'react-stately';
 import { DatePickerBase, DateValue } from '@react-types/datepicker';
-import { useDateSegment } from '@react-aria/datepicker';
+import { useDateSegment } from 'react-aria';
 
 import { tasty } from '../../../tasty';
 

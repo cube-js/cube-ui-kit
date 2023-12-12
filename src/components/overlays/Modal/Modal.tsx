@@ -1,6 +1,6 @@
 import { useDOMRef } from '@react-spectrum/utils';
 import { forwardRef, ReactNode } from 'react';
-import { useModal, useOverlay, usePreventScroll } from '@react-aria/overlays';
+import { useModal, useOverlay, usePreventScroll } from 'react-aria';
 
 import { BaseProps, Props, Styles, tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
@@ -70,7 +70,7 @@ const ModalElement = tasty({
 });
 
 export interface CubeModalProps
-  extends Omit<ModalProps, 'container' | 'type'>,
+  extends Omit<ModalProps, 'container' | 'type' | 'nodeRef'>,
     WithCloseBehavior {
   container?: HTMLElement;
   qa?: BaseProps['qa'];

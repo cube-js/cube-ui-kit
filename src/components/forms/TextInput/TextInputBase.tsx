@@ -10,7 +10,7 @@ import {
   useMemo,
   useRef,
 } from 'react';
-import { useHover } from '@react-aria/interactions';
+import { AriaNumberFieldProps, useHover } from 'react-aria';
 
 import { useFieldProps, useFormProps } from '../Form';
 import { useProviderProps } from '../../../provider';
@@ -168,8 +168,9 @@ export interface CubeTextInputBaseProps
     PositionStyleProps,
     DimensionStyleProps,
     BlockStyleProps,
-    AriaTextFieldProps,
+    Omit<AriaTextFieldProps, 'validate'>,
     FieldBaseProps {
+  validate?: AriaTextFieldProps['validate'] | AriaNumberFieldProps['validate'];
   /** Left input icon */
   icon?: ReactElement;
   /** Input decoration before the main input */

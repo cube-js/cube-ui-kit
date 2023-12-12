@@ -1,9 +1,8 @@
 import { RefObject, forwardRef, useRef, ReactNode } from 'react';
 import { useFocusableRef } from '@react-spectrum/utils';
 import { FocusableRef } from '@react-types/shared';
-import { SliderState, useSliderState } from '@react-stately/slider';
-import { useSlider } from '@react-aria/slider';
-import { useNumberFormatter } from '@react-aria/i18n';
+import { SliderState, useSliderState } from 'react-stately';
+import { useSlider, useNumberFormatter } from 'react-aria';
 
 import { FieldWrapper } from '../FieldWrapper';
 import { extractStyles, OUTER_STYLES, tasty } from '../../../tasty';

@@ -1,4 +1,4 @@
-import { SliderState } from '@react-stately/slider';
+import { SliderState } from 'react-stately';
 
 import { SliderGradationElement, SliderGradeElement } from './elements';
 

@@ -1,9 +1,7 @@
 import { Key, useRef } from 'react';
-import { useHover } from '@react-aria/interactions';
+import { useHover, FocusRing, useMenuItem } from 'react-aria';
 import { Node } from '@react-types/shared';
-import { TreeState } from '@react-stately/tree';
-import { FocusRing } from '@react-aria/focus';
-import { useMenuItem } from '@react-aria/menu';
+import { TreeState } from 'react-stately';
 
 import { mergeProps, ClearSlots, SlotProvider } from '../../../utils/react';
 import { Styles } from '../../../tasty';
