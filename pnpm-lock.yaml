@@ -12,8 +12,8 @@ dependencies:
     specifier: ^5.0.1
     version: 5.0.1(react-dom@17.0.2)(react@17.0.2)
   '@internationalized/date':
-    specifier: ^3.3.0
-    version: 3.3.0
+    specifier: ^3.5.0
+    version: 3.5.0
   '@react-aria/focus':
     specifier: ^3.15.0
     version: 3.15.0(react@17.0.2)
@@ -2842,12 +2842,6 @@ packages:
   /@humanwhocodes/object-schema@1.2.1:
     resolution: {integrity: sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==}
     dev: true
-
-  /@internationalized/date@3.3.0:
-    resolution: {integrity: sha512-qfRd7jCIgUjabI8RxeAsxhLDRS1u8eUPX96GB5uBp1Tpm6YY6dVveE7YwsTEV6L4QOp5LKFirFHHGsL/XQwJIA==}
-    dependencies:
-      '@swc/helpers': 0.5.1
-    dev: false
 
   /@internationalized/date@3.5.0:
     resolution: {integrity: sha512-nw0Q+oRkizBWMioseI8+2TeUPEyopJVz5YxoYVzR0W1v+2YytiYah7s/ot35F149q/xAg4F1gT/6eTd+tsUpFQ==}
