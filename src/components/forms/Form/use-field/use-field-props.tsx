@@ -120,9 +120,7 @@ export function useFieldProps<
       result.labelProps = {};
     }
 
-    if (result.labelProps) {
-      result.labelProps.for = result.id;
-    }
+    result.labelProps.for = result.id;
   }
 
   if (process.env.NODE_ENV === 'development') {

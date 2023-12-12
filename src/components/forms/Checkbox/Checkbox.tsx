@@ -1,5 +1,5 @@
 import { useFocusableRef } from '@react-spectrum/utils';
-import { forwardRef, useContext, useRef } from 'react';
+import { forwardRef, useContext, useMemo, useRef } from 'react';
 import { useCheckbox, useCheckboxGroupItem } from '@react-aria/checkbox';
 import { useHover } from '@react-aria/interactions';
 import { useToggleState } from '@react-stately/toggle';
@@ -20,13 +20,13 @@ import { mergeProps } from '../../../utils/react';
 import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../Label';
 import { HiddenInput } from '../../HiddenInput';
 import { useFieldProps, useFormProps } from '../Form';
-import { FieldWrapper } from '../FieldWrapper';
 import { FieldBaseProps } from '../../../shared';
 import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
 import { Text } from '../../content/Text';
+import { wrapWithField } from '../wrapper';
 
 import { CheckboxGroup } from './CheckboxGroup';
 import { CheckboxGroupContext } from './context';
@@ -37,7 +37,9 @@ import type { AriaCheckboxProps } from '@react-types/checkbox';
 export interface CubeCheckboxProps
   extends BaseProps,
     AriaCheckboxProps,
-    FieldBaseProps {}
+    FieldBaseProps {
+  inputStyles?: Styles;
+}
 
 function CheckOutlined() {
   return (
@@ -51,7 +53,7 @@ function CheckOutlined() {
 }
 function IndeterminateOutline() {
   return (
-    <svg width="9" height="3" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="8" height="2" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M0 .044v2.001l.026.025h8.063V.044H0z" fill="#fff" />
     </svg>
   );
@@ -69,6 +71,7 @@ const CheckboxWrapperElement = tasty({
     flow: 'row',
     preset: 'default',
     cursor: 'pointer',
+    width: 'max max-content',
   },
 });
 
@@ -135,32 +138,28 @@ function Checkbox(
     isDisabled = false,
     insideForm,
     isRequired,
-    autoFocus,
     children,
     label,
-    extra,
     validationState,
     labelProps,
     labelStyles,
     labelPosition,
-    necessityLabel,
-    necessityIndicator,
-    message,
-    description,
-    requiredMark = true,
-    tooltip,
+    inputStyles,
     isHidden,
-    labelSuffix,
     ...otherProps
   } = props;
 
   let styles: Styles = extractStyles(props, OUTER_STYLES);
-  let inputStyles = extractStyles(props, BLOCK_STYLES);
 
-  labelStyles = {
-    ...(insideForm && !groupState ? LABEL_STYLES : INLINE_LABEL_STYLES),
-    ...labelStyles,
-  };
+  inputStyles = extractStyles(props, BLOCK_STYLES, inputStyles);
+
+  labelStyles = useMemo(
+    () => ({
+      ...(insideForm ? LABEL_STYLES : INLINE_LABEL_STYLES),
+      ...labelStyles,
+    }),
+    [insideForm, labelStyles],
+  );
 
   let { isFocused, focusProps } = useFocus({ isDisabled }, true);
   let { hoverProps, isHovered } = useHover({ isDisabled });
@@ -232,44 +231,25 @@ function Checkbox(
       styles={{ position: 'relative' }}
     >
       <HiddenInput
-        data-qa={qa || 'Checkbox'}
+        data-qa="HiddenInput"
         {...mergeProps(inputProps, focusProps)}
         ref={inputRef}
       />
-      <CheckboxElement qa="Checkbox" mods={mods} styles={inputStyles}>
+      <CheckboxElement qa={qa || 'Checkbox'} mods={mods} styles={inputStyles}>
         {markIcon}
       </CheckboxElement>
-      {children && <Text>{children}</Text>}
+      {children && <Text nowrap>{children}</Text>}
     </CheckboxWrapperElement>
   );
 
   if (insideForm && !groupState) {
-    return (
-      <FieldWrapper
-        {...{
-          as: 'label',
-          labelPosition,
-          label,
-          extra,
-          styles,
-          isRequired,
-          labelStyles,
-          isHidden,
-          labelProps,
-          isDisabled,
-          validationState,
-          necessityLabel,
-          necessityIndicator,
-          message,
-          description,
-          requiredMark,
-          tooltip,
-          labelSuffix,
-          Component: checkboxField,
-          ref: domRef,
-        }}
-      />
-    );
+    return wrapWithField(checkboxField, domRef, {
+      ...props,
+      children: null,
+      labelStyles,
+      inputStyles,
+      styles,
+    });
   }
 
   return (
