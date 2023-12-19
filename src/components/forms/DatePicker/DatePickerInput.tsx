@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { createCalendar } from '@internationalized/date';
 import { DateValue, SpectrumDatePickerProps } from '@react-types/datepicker';
-import { useDateField, useFocusWithin } from 'react-aria';
+import { useDateField, useFocusWithin, useLocale } from 'react-aria';
 import { DateSegment, useDateFieldState } from 'react-stately';
 
 import { tasty } from '../../../tasty';
@@ -33,10 +33,10 @@ export function DatePickerInput<T extends DateValue>(
 ) {
   let { isDisabled, isReadOnly, isRequired, useLocale: useLocaleProp } = props;
   let ref = useRef(null);
-  // let { locale } = useLocale();
+  let { locale } = useLocale();
   let state = useDateFieldState({
     ...props,
-    locale: useLocaleProp || 'en-US',
+    locale: useLocaleProp ? locale : 'en-US',
     createCalendar,
   });
 

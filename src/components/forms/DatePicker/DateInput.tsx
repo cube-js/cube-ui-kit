@@ -2,7 +2,7 @@ import { forwardRef, ReactElement, useRef } from 'react';
 import { createCalendar } from '@internationalized/date';
 import { AriaDateFieldProps, DateValue } from '@react-types/datepicker';
 import { FocusableRef } from '@react-types/shared';
-import { useDateField } from 'react-aria';
+import { useDateField, useLocale } from 'react-aria';
 import { useDateFieldState } from 'react-stately';
 
 import { useProviderProps } from '../../../provider';
@@ -66,14 +66,14 @@ function DateInput<T extends DateValue>(
   let styles = extractStyles(props, CONTAINER_STYLES, wrapperStyles);
 
   let domRef = useFocusManagerRef(ref);
-  // let { locale } = useLocale();
+  let { locale } = useLocale();
   let state = useDateFieldState({
     ...props,
-    locale: useLocaleProp ?? 'en-US',
+    locale: useLocaleProp ? locale : 'en-US',
     createCalendar,
   });
 
-  if (useLocaleProp != null) {
+  if (!useLocaleProp) {
     state.segments = formatSegments(state.segments);
   }
 
