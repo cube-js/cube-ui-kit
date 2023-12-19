@@ -143,6 +143,7 @@ function DateRangeSeparatedPicker<T extends DateValue>(
 
       state.setValue(newRange);
       startProps.calendarProps.onChange(value);
+      startState.setOpen(false);
     } else {
       const newRange = { ...state.value, end: value };
 
@@ -156,6 +157,7 @@ function DateRangeSeparatedPicker<T extends DateValue>(
 
       state.setValue(newRange);
       endProps.calendarProps.onChange(value);
+      endState.setOpen(false);
     }
   }
 
