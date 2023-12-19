@@ -79,21 +79,18 @@ function DateRangeSeparatedPicker<T extends DateValue>(
 
   let state = useDateRangePickerState({
     ...props,
-    shouldCloseOnSelect: () => !state.hasTime,
   });
 
   let startState = useDatePickerState({
     ...props,
     onChange: null,
     value: state.value?.start,
-    shouldCloseOnSelect: () => !startState.hasTime,
   });
 
   let endState = useDatePickerState({
-    id: null,
+    ...props,
     onChange: null,
     value: state.value?.end,
-    shouldCloseOnSelect: () => !endState.hasTime,
   });
 
   let startFocusProps = useFocusRing({
