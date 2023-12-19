@@ -122,7 +122,6 @@ function DateRangePicker<T extends DateValue>(
       ? state.granularity
       : null;
   let showTimeField = !!timeGranularity;
-  //
   // let visibleMonths = useVisibleMonths(maxVisibleMonths);
 
   const component = (
