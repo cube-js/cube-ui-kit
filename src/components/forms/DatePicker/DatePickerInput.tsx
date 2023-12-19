@@ -40,7 +40,7 @@ export function DatePickerInput<T extends DateValue>(
     createCalendar,
   });
 
-  if (useLocaleProp != null) {
+  if (useLocaleProp == null) {
     state.segments = formatSegments(state.segments);
   }
 

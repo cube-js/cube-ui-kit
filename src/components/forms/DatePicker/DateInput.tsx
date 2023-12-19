@@ -73,7 +73,7 @@ function DateInput<T extends DateValue>(
     createCalendar,
   });
 
-  if (!useLocaleProp) {
+  if (useLocaleProp == null) {
     state.segments = formatSegments(state.segments);
   }
 

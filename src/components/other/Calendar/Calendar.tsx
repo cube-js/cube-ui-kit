@@ -30,10 +30,14 @@ const CalendarHeaderElement = tasty({
   },
 });
 
-function Calendar<T extends DateValue>(
-  props: AriaCalendarProps<T>,
-  ref: FocusableRef<HTMLElement>,
-) {
+export interface CubeCalendarProps extends AriaCalendarProps<DateValue> {
+  selectedRange?: {
+    start: DateValue;
+    end: DateValue;
+  };
+}
+
+function Calendar(props: CubeCalendarProps, ref: FocusableRef<HTMLElement>) {
   props = useProviderProps(props);
 
   let { locale } = useLocale();
@@ -67,12 +71,10 @@ function Calendar<T extends DateValue>(
           <Button size="small" {...nextButtonProps} icon={<RightOutlined />} />
         </Button.Group>
       </CalendarHeaderElement>
-      <CalendarGrid state={state} />
+      <CalendarGrid state={state} selectedRange={props.selectedRange} />
     </CalendarElement>
   );
 }
 
 const _Calendar = forwardRef(Calendar);
 export { _Calendar as Calendar };
-
-export type { AriaCalendarProps as CubeCalendarProps };
