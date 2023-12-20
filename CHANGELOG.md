@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.29.0
+
+### Minor Changes
+
+- [#421](https://github.com/cube-js/cube-ui-kit/pull/421) [`c6ce743`](https://github.com/cube-js/cube-ui-kit/commit/c6ce743fab1db7d0daeb9bd017e1338b8cdd565a) Thanks [@tenphi](https://github.com/tenphi)! - Added new DateRangeSeparatedPicker component for better UX while selecting date ranges
+
 ## 0.28.0
 
 ### Minor Changes
