@@ -81,7 +81,10 @@ const Container = tasty({
       '': '3x',
       compact: '2x 1x',
     },
-    padding: '6x 4x',
+    padding: {
+      '': '6x 4x',
+      compact: '0',
+    },
     textAlign: {
       '': 'center',
       compact: 'left',
