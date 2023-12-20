@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.29.1
+
+### Patch Changes
+
+- [#423](https://github.com/cube-js/cube-ui-kit/pull/423) [`d40fc1f`](https://github.com/cube-js/cube-ui-kit/commit/d40fc1f290d54935382b55017d4de5cc5977cbf7) Thanks [@tenphi](https://github.com/tenphi)! - Add a compact view for the Result component
+
 ## 0.29.0
 
 ### Minor Changes
