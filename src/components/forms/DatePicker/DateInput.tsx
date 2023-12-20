@@ -69,11 +69,11 @@ function DateInput<T extends DateValue>(
   let { locale } = useLocale();
   let state = useDateFieldState({
     ...props,
-    locale,
+    locale: useLocaleProp ? locale : 'en-US',
     createCalendar,
   });
 
-  if (!useLocaleProp) {
+  if (useLocaleProp == null) {
     state.segments = formatSegments(state.segments);
   }
 

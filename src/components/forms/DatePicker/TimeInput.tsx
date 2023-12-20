@@ -1,12 +1,7 @@
 import { forwardRef, ReactElement, useRef } from 'react';
 import { FocusableRef } from '@react-types/shared';
 import { Granularity, TimeValue } from '@react-types/datepicker';
-import {
-  useLocale,
-  AriaTimeFieldProps,
-  useTimeField,
-  DateValue,
-} from 'react-aria';
+import { AriaTimeFieldProps, useTimeField, DateValue } from 'react-aria';
 import { useTimeFieldState } from 'react-stately';
 
 import { wrapWithField } from '../wrapper';
@@ -82,10 +77,10 @@ function TimeInput<T extends TimeValue>(
   } = props;
 
   let domRef = useFocusManagerRef(ref);
-  let { locale } = useLocale();
+  // let { locale } = useLocale();
   let state = useTimeFieldState({
     ...props,
-    locale,
+    locale: 'en-US',
   });
 
   let fieldRef = useRef(null);

@@ -47,7 +47,7 @@ const CalendarButtonElement = tasty({
   },
 });
 
-export function CalendarCell({ state, date }) {
+export function CalendarCell({ state, selectedRange, date }) {
   let ref = useRef(null);
   let {
     cellProps,
@@ -62,6 +62,11 @@ export function CalendarCell({ state, date }) {
     formattedDate,
   } = useCalendarCell({ date }, state, ref);
 
+  const isFinalSelected = selectedRange
+    ? date.compare(selectedRange.start) >= 0 &&
+      date.compare(selectedRange.end) <= 0
+    : isSelected;
+
   return (
     <CalendarCellElement {...cellProps}>
       <CalendarButtonElement
@@ -69,7 +74,7 @@ export function CalendarCell({ state, date }) {
         ref={ref}
         hidden={isOutsideVisibleRange}
         mods={{
-          selected: isSelected,
+          selected: isFinalSelected,
           pressed: isPressed,
           focused: isFocused,
           invalid: isInvalid,
