@@ -203,6 +203,40 @@ const ComplexErrorTemplate: StoryFn<typeof Form> = (args) => {
   );
 };
 
+const CastingTemplate: StoryFn<typeof Form> = (args) => {
+  const [form] = Form.useForm();
+
+  return (
+    <>
+      <Form
+        form={form}
+        {...args}
+        defaultValues={{
+          select: 3,
+        }}
+        onSubmit={(v) => {
+          console.log('onSubmit:', v);
+        }}
+        onValuesChange={(v) => {
+          console.log('onChange', v);
+        }}
+      >
+        <Select
+          name="select"
+          label="Select field"
+          tooltip="Additional field description"
+          casting="number"
+        >
+          <Item key="1">One</Item>
+          <Item key="2">Two</Item>
+          <Item key="3">Three</Item>
+        </Select>
+        <Submit>Submit</Submit>
+      </Form>
+    </>
+  );
+};
+
 const Template: StoryFn<typeof Form> = (args) => {
   const [form] = Form.useForm();
 
@@ -405,3 +439,5 @@ UnknownErrorMessage.play = async ({ canvasElement }) => {
     expect(alertElement).not.toBeInTheDocument();
   });
 };
+
+export const ValueCasting = CastingTemplate.bind({});

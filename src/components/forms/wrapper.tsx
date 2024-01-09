@@ -22,6 +22,7 @@ export function wrapWithField<T extends WrapWithFieldProps>(
     labelStyles,
     isRequired,
     isDisabled,
+    casting,
     necessityIndicator,
     message,
     messageStyles,
@@ -40,13 +41,13 @@ export function wrapWithField<T extends WrapWithFieldProps>(
   return (
     <FieldWrapper
       {...{
-        labelPosition,
         label,
         extra,
-        styles,
+        labelPosition,
+        labelStyles,
         isRequired,
         isDisabled,
-        labelStyles,
+        casting,
         necessityIndicator,
         labelProps,
         fieldProps,
@@ -58,6 +59,7 @@ export function wrapWithField<T extends WrapWithFieldProps>(
         tooltip,
         isHidden,
         labelSuffix,
+        styles,
         children,
         Component: component,
         ref,
