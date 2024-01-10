@@ -22,7 +22,7 @@ const INLINE_MAP = {
   flex: 'inline-flex',
 } as const;
 
-const BaseElement = styled.div(({ css }) => css);
+const BaseElement = styled.div(({ $css }) => $css);
 
 /**
  * @deprecated consider using tasty() instead
@@ -82,7 +82,7 @@ function Base<K extends keyof HTMLElementTagNameMap>(
       ref={ref}
       hidden={isHidden}
       disabled={isDisabled}
-      css={css}
+      $css={css}
     />
   );
 }

@@ -86,7 +86,7 @@ function tasty<
   if (typeof Component === 'string') {
     let selector = Component;
     let styles = options;
-    let Element = createGlobalStyle`${(css) => css}`;
+    let Element = createGlobalStyle`${({ $css }) => $css}`;
 
     const _StyleDeclarationComponent: FC<GlobalTastyProps> = ({
       breakpoints,
@@ -106,7 +106,7 @@ function tasty<
         [breakpoints.join(',')],
       );
 
-      return <Element css={css} />;
+      return <Element $css={css} />;
     };
 
     _StyleDeclarationComponent.displayName = `TastyStyleDeclaration(${Component})`;
@@ -216,7 +216,7 @@ function tasty<
       },
     );
   } else {
-    let Element = styledComponents[originalAs](({ css }) => css);
+    let Element = styledComponents[originalAs](({ $css }) => $css);
 
     /**
      * An additional optimization that allows to avoid rendering styles across various instances
@@ -313,7 +313,7 @@ function tasty<
             {...otherDefaultProps}
             {...otherProps}
             ref={ref}
-            css={renderedStyles}
+            $css={renderedStyles}
           />
         );
       },
