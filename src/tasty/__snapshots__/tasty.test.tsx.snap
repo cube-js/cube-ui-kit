@@ -47,15 +47,19 @@ exports[`tasty() API should allow nested modifiers 1`] = `
   display: none !important;
 }
 
+.c0.c0 {
+  display: block;
+}
+
 .c0.c0:first-child {
   color: var(--clear-color);
-  --current-color: var(--clear-color,clear);
+  --current-color: var(--clear-color, clear);
   --current-color-rgb: var(--clear-color-rgb);
 }
 
 .c0.c0:not(:first-child) {
   color: var(--black-color);
-  --current-color: var(--black-color,black);
+  --current-color: var(--black-color, black);
   --current-color-rgb: var(--black-color-rgb);
 }
 
