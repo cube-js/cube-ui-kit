@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-export const HiddenInput = styled.input`
+export const HiddenInput = styled.input<{ $isButton: boolean }>`
   &&&&& {
     display: block;
     font-family: inherit;
@@ -17,9 +17,8 @@ export const HiddenInput = styled.input`
     bottom: 0;
     opacity: 0.0001;
     z-index: 1;
-    cursor: ${({ isButton }) => (isButton ? 'pointer' : 'default')};
     width: 100%;
     height: 100%;
-    cursor: pointer;
+    cursor: ${({ $isButton }) => ($isButton ? 'pointer' : 'default')};
   }
 `;
