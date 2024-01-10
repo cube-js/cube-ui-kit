@@ -14,6 +14,10 @@ import { cacheWrapper } from './utils/cache-wrapper';
 import { mergeStyles } from './utils/mergeStyles';
 import { getDisplayName } from './utils/getDisplayName';
 
+type StyledElementProps = {
+  $css: string;
+};
+
 type StyleList = readonly (keyof {
   [key in keyof StylesInterface]: StylesInterface[key];
 })[];
@@ -86,7 +90,7 @@ function tasty<
   if (typeof Component === 'string') {
     let selector = Component;
     let styles = options;
-    let Element = createGlobalStyle`${({ $css }) => $css}`;
+    let Element = createGlobalStyle<StyledElementProps>`${({ $css }) => $css}`;
 
     const _StyleDeclarationComponent: FC<GlobalTastyProps> = ({
       breakpoints,
@@ -95,15 +99,17 @@ function tasty<
 
       breakpoints = breakpoints ?? contextBreakpoints;
 
+      const breakpointsHash = breakpoints.join(',');
+
       let css = useMemo(
         () =>
           styles
             ? `\n{}${selector}{${renderStyles(
                 styles,
-                pointsToZones(breakpoints || contextBreakpoints),
+                pointsToZones(breakpoints),
               )}}`
             : '',
-        [breakpoints.join(',')],
+        [breakpointsHash],
       );
 
       return <Element $css={css} />;
@@ -140,7 +146,7 @@ function tasty<
 
           return map;
         }, {});
-      }, propsWithStylesValues);
+      }, [propsWithStylesValues]);
 
       return (
         <Component

@@ -54,7 +54,7 @@ function PrismCode(props: CubePrismCodeProps, ref) {
   });
 
   return (
-    <PreElement ref={ref} className="cube-prism-code" {...otherProps}>
+    <PreElement ref={ref} {...otherProps}>
       <code data-element="Code" className={`language-${language}`}>
         {code}
       </code>
