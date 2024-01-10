@@ -10,7 +10,7 @@ import {
 } from '../tasty';
 
 const BlockElement = tasty({
-  styled: {
+  styles: {
     display: 'block',
   },
 });
