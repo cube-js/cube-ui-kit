@@ -106,7 +106,7 @@ function tasty<
           styles
             ? `\n{}${selector}{${renderStyles(
                 styles,
-                pointsToZones(breakpoints),
+                pointsToZones(breakpoints || [980]),
               )}}`
             : '',
         [breakpointsHash],

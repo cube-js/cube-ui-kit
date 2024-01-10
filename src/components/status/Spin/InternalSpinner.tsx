@@ -15,11 +15,15 @@ export const InternalSpinner = memo(function InternalSpinner(
 
   return (
     // Even though using size as a key resets the animation, it helps safari to resize the cubes.
-    <SpinsContainer key={size} ownSize={CUBE_SIZE_MAP[size]}>
+    <SpinsContainer
+      key={size}
+      // @ts-ignore
+      style={{ '--cube-spin-size': `${CUBE_SIZE_MAP[size]}px` }}
+    >
       <SpinsBox>
-        <Cube position="top" />
-        <Cube position="right" />
-        <Cube position="bottom" />
+        <Cube $position="top" />
+        <Cube $position="right" />
+        <Cube $position="bottom" />
       </SpinsBox>
     </SpinsContainer>
   );
