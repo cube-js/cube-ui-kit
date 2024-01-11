@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.30.0
+
+### Minor Changes
+
+- [#426](https://github.com/cube-js/cube-ui-kit/pull/426) [`b20cb7f`](https://github.com/cube-js/cube-ui-kit/commit/b20cb7f91c07a933e524477b274a96ac144985cf) Thanks [@tenphi](https://github.com/tenphi)! - Add support for `styled-components` v6.
+
 ## 0.29.1
 
 ### Patch Changes
