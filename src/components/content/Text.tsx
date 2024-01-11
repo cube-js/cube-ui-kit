@@ -56,7 +56,7 @@ const TextElement = tasty({
   styles: {
     display: {
       '': 'inline',
-      ellipsis: 'block',
+      'ellipsis | block': 'block',
     },
     margin: '0',
     whiteSpace: {
@@ -91,9 +91,9 @@ const _Text = forwardRef(function Text(allProps: CubeTextProps, ref) {
       styleName={styleName}
       mods={{
         nowrap,
-        ellipsis,
+        ellipsis: !!ellipsis,
+        block: !!block,
       }}
-      block={!!(block || ellipsis)}
       {...filterBaseProps(props, { eventProps: true })}
       ref={ref}
       styles={styles}

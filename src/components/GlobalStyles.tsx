@@ -12,6 +12,16 @@ interface GlobalStylesProps {
   applyLegacyTokens?: boolean;
 }
 
+interface GlobalStylesElementProps {
+  $bodyStyles?: { [key: string]: string };
+  $fonts?: boolean;
+  $fontDisplay?: 'auto' | 'block' | 'swap' | 'fallback' | 'optional';
+  $publicUrl?: string;
+  $font?: string;
+  $monospaceFont?: string;
+  $applyLegacyTokens?: boolean;
+}
+
 const BODY_STYLES = {
   'overscroll-behavior-y': 'none',
   'background-color': 'white !important',
@@ -94,10 +104,10 @@ const fontsProvider = ({ publicUrl = '', fontDisplay = 'swap' }) => `
   }
 `;
 
-export const GlobalStyles = createGlobalStyle`
+const GlobalStylesElement = createGlobalStyle<GlobalStylesElementProps>`
   body {
-    ${({ applyLegacyTokens }: GlobalStylesProps) => {
-      return applyLegacyTokens
+    ${({ $applyLegacyTokens }) => {
+      return $applyLegacyTokens
         ? Object.entries(TOKENS)
             .map(([key, value]) => {
               // `inherit` value in custom property is reserved for inheritance behavior
@@ -111,8 +121,8 @@ export const GlobalStyles = createGlobalStyle`
             .join('\n    ')
         : '';
     }}
-    ${({ bodyStyles }: GlobalStylesProps) => {
-      return Object.entries({ ...BODY_STYLES, ...bodyStyles })
+    ${({ $bodyStyles }) => {
+      return Object.entries({ ...BODY_STYLES, ...$bodyStyles })
         .map(([key, value]) => {
           return `${key}: ${value};`;
         })
@@ -122,13 +132,13 @@ export const GlobalStyles = createGlobalStyle`
 
   html {
     overscroll-behavior-y: none;
-    --font: ${({ font }: GlobalStylesProps) =>
-      font ||
+    --font: ${({ $font }) =>
+      $font ||
       'Inter'}, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-    --monospace-font: ${({ monospaceFont }) =>
+    --monospace-font: ${({ $monospaceFont }) =>
       `${
-        monospaceFont ? `${monospaceFont}, ` : ''
-      }Menlo, Monaco, Consolas, 'Courier New', monospace;}`}
+        $monospaceFont ? `${$monospaceFont}, ` : ''
+      }Menlo, Monaco, Consolas, 'Courier New', monospace;`}
   }
 
   kbd {
@@ -208,12 +218,14 @@ export const GlobalStyles = createGlobalStyle`
     font-family: var(--monospace-font);
   }
 
-  ${({ fonts, publicUrl, fontDisplay }: GlobalStylesProps) =>
-    fonts === false
+  ${({ $fonts, $publicUrl, $fontDisplay }) =>
+    $fonts === false
       ? ''
-      : fontsProvider({ publicUrl, ...(fontDisplay ? { fontDisplay } : {}) })}
-
-  // Prism Code
+      : fontsProvider({
+          publicUrl: $publicUrl,
+          ...($fontDisplay ? { fontDisplay: $fontDisplay } : {}),
+        })}
+    // Prism Code
   code[class*="language-"],
   pre[class*="language-"] {
     color: var(--dark-color);
@@ -355,3 +367,15 @@ export const GlobalStyles = createGlobalStyle`
     cursor: help;
   }
 `;
+
+export const GlobalStyles = (props: GlobalStylesProps) => {
+  const newProps: GlobalStylesElementProps = {};
+
+  Object.entries(props).forEach(([key, value]) => {
+    if (value !== undefined) {
+      newProps[`$${key}`] = value;
+    }
+  });
+
+  return <GlobalStylesElement {...newProps} />;
+};

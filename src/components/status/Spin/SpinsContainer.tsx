@@ -1,9 +1,10 @@
+import { CSSProperties } from 'react';
 import styled from 'styled-components';
 
-export const SpinsContainer = styled.div.attrs<{ ownSize: number }>(
-  ({ ownSize }) => ({
+export const SpinsContainer = styled.div.attrs<{ $ownSize: number }>(
+  ({ $ownSize }) => ({
     role: 'presentation',
-    style: { '--cube-spin-size': `${ownSize}px` },
+    style: { '--cube-spin-size': `${$ownSize}px` } as CSSProperties,
   }),
 )`
   box-sizing: border-box;

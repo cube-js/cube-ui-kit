@@ -248,7 +248,7 @@ function Radio(props: CubeRadioProps, ref) {
         aria-label={ariaLabel}
         {...mergeProps(inputProps, focusProps)}
         ref={inputRef}
-        isButton={isButton}
+        $isButton={isButton}
       />
       <RadioElement
         data-element="Input"

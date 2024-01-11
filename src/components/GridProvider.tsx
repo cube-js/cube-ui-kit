@@ -5,7 +5,7 @@ import { useCombinedRefs } from '../utils/react';
 import { tasty } from '../tasty';
 
 const GridElement = tasty({
-  styled: {
+  styles: {
     display: 'contents',
   },
 });

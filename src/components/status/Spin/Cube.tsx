@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, CSSProperties } from 'react';
 import styled from 'styled-components';
 
 import { SpinCubeProps } from './types';
@@ -9,12 +9,12 @@ const fillByPosition = {
   bottom: '#ff6492',
 } as const;
 
-export const Cube = memo(styled.div.attrs<SpinCubeProps>(({ position }) => ({
+export const Cube = memo(styled.div.attrs<SpinCubeProps>(({ $position }) => ({
   role: 'presentation',
   style: {
-    '--cube-spin-animation-name': `cube-spin-${position}`,
-    '--cube-spin-fill': fillByPosition[position],
-  },
+    '--cube-spin-animation-name': `cube-spin-${$position}`,
+    '--cube-spin-fill': fillByPosition[$position],
+  } as CSSProperties,
 }))`
   --cube-spin-cube-border-width: calc(4 / 100 * var(--cube-spin-size));
   --cube-spin-cube-border-compensation: calc(

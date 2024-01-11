@@ -7,7 +7,6 @@ export { Item, Section } from 'react-stately';
 export * from '@internationalized/date';
 
 // generic components
-export { Base } from './components/Base';
 export { Block } from './components/Block';
 export type { CubeBlockProps } from './components/Block';
 export { ActiveZone } from './components/content/ActiveZone/ActiveZone';
