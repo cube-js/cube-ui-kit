@@ -2,6 +2,8 @@ import { forwardRef, HTMLAttributes } from 'react';
 
 import { tasty } from '../../../tasty';
 
+import { TransitionState } from './types';
+
 const UnderlayElement = tasty({
   qa: 'Underlay',
   styles: {
@@ -29,9 +31,10 @@ const UnderlayElement = tasty({
 
 export interface CubeUnderlayProps extends HTMLAttributes<HTMLElement> {
   isOpen?: boolean;
+  transitionState?: TransitionState;
 }
 
-function Underlay({ isOpen, ...otherProps }, ref) {
+function Underlay({ isOpen, transitionState, ...otherProps }, ref) {
   return (
     <UnderlayElement
       ref={ref}

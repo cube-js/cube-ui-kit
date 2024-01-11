@@ -553,7 +553,7 @@ export function ListBoxPopup({
         <DismissButton onDismiss={() => state.close()} />
         <ListBoxElement
           styles={listBoxStyles}
-          {...mergeProps(listBoxProps, otherProps)}
+          {...listBoxProps}
           ref={listBoxRef}
         >
           {Array.from(state.collection).map((item: any) => (
@@ -591,7 +591,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
     ref,
   );
 
-  // Handle focus events so we can apply highlighted
+  // Handle focus events, so we can apply highlighted
   // style to the focused option
   let { isFocused, focusProps } = useFocus({ isDisabled });
 

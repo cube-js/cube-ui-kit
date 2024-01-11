@@ -341,10 +341,14 @@ export const Button = forwardRef(function Button(
   );
 
   const styles = extractStyles(props, STYLE_PROPS);
+  const isDisabledElement = actionProps.isDisabled;
+
+  delete actionProps.isDisabled;
 
   return (
     <ButtonElement
       {...actionProps}
+      disabled={isDisabledElement}
       variant={theme as 'default' | 'danger' | 'special'}
       data-theme={theme}
       data-type={type ?? 'secondary'}
