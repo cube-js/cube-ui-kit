@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.30.1
+
+### Patch Changes
+
+- [#428](https://github.com/cube-js/cube-ui-kit/pull/428) [`95c56f7`](https://github.com/cube-js/cube-ui-kit/commit/95c56f7877140eef58014c12d2824d9fa0c69355) Thanks [@tenphi](https://github.com/tenphi)! - Add `isStatic` property to active static mode without animation in Placeholder and Skeleton components.
+
 ## 0.30.0
 
 ### Minor Changes
