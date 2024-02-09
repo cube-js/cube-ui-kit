@@ -143,7 +143,6 @@ jobs:
         with:
           exitZeroOnChanges: true
           exitOnceUploaded: true
-          onlyChanged: true
           debug: true
           token: ${{ secrets.GITHUB_TOKEN }}
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}

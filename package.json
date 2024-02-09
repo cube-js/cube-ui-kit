@@ -34,7 +34,7 @@
     "lint": "npm-run-all -p eslint prettier",
     "fix": "npm-run-all -p eslint:fix prettier:fix",
     "storybook": "STORYBOOK_MODE=stories storybook dev -p 6060",
-    "build-storybook": "STORYBOOK_MODE=stories storybook build --webpack-stats-json",
+    "build-storybook": "STORYBOOK_MODE=stories storybook build",
     "build-docs": "STORYBOOK_MODE=docs storybook build --docs -o storybook-docs",
     "size": "size-limit",
     "prepare": "husky install",
