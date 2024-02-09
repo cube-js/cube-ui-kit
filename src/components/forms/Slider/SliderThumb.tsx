@@ -1,8 +1,11 @@
 import { RefObject, useRef } from 'react';
-import { AriaSliderThumbOptions, useSliderThumb } from '@react-aria/slider';
-import { useHover } from '@react-aria/interactions';
-import { SliderState } from '@react-stately/slider';
-import { VisuallyHidden } from '@react-aria/visually-hidden';
+import {
+  AriaSliderThumbOptions,
+  useHover,
+  useSliderThumb,
+  VisuallyHidden,
+} from 'react-aria';
+import { SliderState } from 'react-stately';
 
 import { mergeProps } from '../../../utils/react';
 
@@ -13,6 +16,7 @@ export interface SliderThumbProps extends AriaSliderThumbOptions {
   isDisabled?: boolean;
   trackRef: RefObject<HTMLElement>;
   inputRef: RefObject<HTMLInputElement>;
+  index: number;
 }
 
 export function SliderThumb(props: SliderThumbProps) {

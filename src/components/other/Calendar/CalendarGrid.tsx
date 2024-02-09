@@ -1,6 +1,5 @@
-import { useCalendarGrid } from '@react-aria/calendar';
+import { useCalendarGrid, useLocale } from 'react-aria';
 import { getWeeksInMonth } from '@internationalized/date';
-import { useLocale } from '@react-aria/i18n';
 
 import { tasty } from '../../../tasty';
 
@@ -36,7 +35,12 @@ export function CalendarGrid({ state, ...props }) {
               .getDatesInWeek(weekIndex)
               .map((date, i) =>
                 date ? (
-                  <CalendarCell key={i} state={state} date={date} />
+                  <CalendarCell
+                    key={i}
+                    state={state}
+                    date={date}
+                    selectedRange={props.selectedRange}
+                  />
                 ) : (
                   <td key={i} />
                 ),

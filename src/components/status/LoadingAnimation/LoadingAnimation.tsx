@@ -16,25 +16,25 @@ function pos(index) {
   return `transform: translate(${POSITIONS[index][0]}%, ${POSITIONS[index][1]}%);`;
 }
 
-const ImgElement = styled.img(
-  ({ index }) => `
+const ImgElement = styled.img<{ $index: number }>(
+  ({ $index }) => `
   display: block;
   position: absolute;
   width: 50%;
   height: 50%;
 
   ${
-    index != null
+    $index != null
       ? `
-  animation-name: dice${index};
+  animation-name: dice${$index};
   animation-duration: 2s;
   animation-iteration-count: infinite;
   animation-timing-function: ease;
   z-index: 0;
 
-  @keyframes dice${index} {
+  @keyframes dice${$index} {
     ${
-      index === 0
+      $index === 0
         ? `
     from {
       ${pos(0)}
@@ -68,7 +68,7 @@ const ImgElement = styled.img(
     }
 
     ${
-      index === 1
+      $index === 1
         ? `
     from {
       ${pos(1)}
@@ -94,7 +94,7 @@ const ImgElement = styled.img(
     }
 
     ${
-      index === 2
+      $index === 2
         ? `
     from {
       ${pos(3)}
@@ -157,9 +157,9 @@ export function LoadingAnimation({
       <Cube style={{ transform: 'translate(0%, 72.5%)' }} />
       <Cube style={{ transform: 'translate(98%, 72.5%)' }} />
       <Cube style={{ transform: 'translate(49%, 96.5%)' }} />
-      <Cube index={0} />
-      <Cube index={1} />
-      <Cube index={2} />
+      <Cube $index={0} />
+      <Cube $index={1} />
+      <Cube $index={2} />
     </Block>
   );
 }

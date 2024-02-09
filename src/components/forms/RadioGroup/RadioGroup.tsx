@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 import { useDOMRef } from '@react-spectrum/utils';
-import { useRadioGroup } from '@react-aria/radio';
-import { useRadioGroupState } from '@react-stately/radio';
+import { useRadioGroup } from 'react-aria';
+import { useRadioGroupState } from 'react-stately';
 
 import { useProviderProps } from '../../../provider';
 import { FormContext, useFieldProps, useFormProps } from '../Form';
@@ -13,12 +13,13 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { FieldWrapper } from '../FieldWrapper';
 import { FieldBaseProps } from '../../../shared';
 import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { mergeProps } from '../../../utils/react';
+import { wrapWithField } from '../wrapper';
 
 import { RadioContext } from './context';
 
@@ -60,23 +61,14 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
   let {
     isDisabled,
     isRequired,
-    necessityIndicator,
-    label,
-    extra,
     labelPosition = 'top',
     validationState,
     children,
     orientation,
-    message,
-    description,
-    labelStyles,
-    requiredMark = true,
-    tooltip,
-    isHidden,
     styles,
     groupStyles,
     insideForm,
-    labelSuffix,
+    labelProps: baseLabelProps,
     isSolid,
     ...otherProps
   } = props;
@@ -117,32 +109,13 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
     </RadioGroupElement>
   );
 
-  return (
-    <FieldWrapper
-      {...{
-        labelPosition,
-        label,
-        extra,
-        styles,
-        isRequired,
-        labelStyles,
-        necessityIndicator,
-        labelProps,
-        fieldProps,
-        isDisabled,
-        validationState,
-        message,
-        description,
-        requiredMark,
-        tooltip,
-        isHidden,
-        orientation,
-        Component: radioGroup,
-        ref: domRef,
-        labelSuffix,
-      }}
-    />
-  );
+  return wrapWithField(radioGroup, domRef, {
+    ...props,
+    children: null,
+    fieldProps,
+    labelProps: mergeProps(baseLabelProps, labelProps),
+    styles,
+  });
 }
 
 /**

@@ -11,20 +11,20 @@ import {
   RefObject,
   useMemo,
   useRef,
-  useState,
 } from 'react';
-import { useSelectState } from '@react-stately/select';
-import { HiddenSelect, useSelect } from '@react-aria/select';
-import { useListBox, useOption } from '@react-aria/listbox';
-import { useButton } from '@react-aria/button';
-import { FocusScope } from '@react-aria/focus';
+import { Item, useSelectState } from 'react-stately';
 import {
   DismissButton,
+  FocusScope,
+  HiddenSelect,
+  useButton,
+  useHover,
+  useListBox,
+  useOption,
   useOverlay,
   useOverlayPosition,
-} from '@react-aria/overlays';
-import { useFocus as useAriaFocus, useHover } from '@react-aria/interactions';
-import { Item } from '@react-stately/collections';
+  useSelect,
+} from 'react-aria';
 import { DOMRef } from '@react-types/shared';
 import styled from 'styled-components';
 
@@ -567,7 +567,7 @@ export function ListBoxPopup({
         <DismissButton onDismiss={() => state.close()} />
         <ListBoxElement
           styles={listBoxStyles}
-          {...mergeProps(listBoxProps, otherProps)}
+          {...listBoxProps}
           ref={listBoxRef}
         >
           {Array.from(state.collection).map((item: any) => (
@@ -605,10 +605,9 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
     ref,
   );
 
-  // Handle focus events so we can apply highlighted
+  // Handle focus events, so we can apply highlighted
   // style to the focused option
-  let [isFocused, setFocused] = useState(false);
-  let { focusProps } = useAriaFocus({ onFocusChange: setFocused });
+  let { isFocused, focusProps } = useFocus({ isDisabled });
 
   return (
     <OptionElement

@@ -1,4 +1,4 @@
-import { useMenuSection } from '@react-aria/menu';
+import { useMenuSection } from 'react-aria';
 
 import { Styles } from '../../../tasty';
 

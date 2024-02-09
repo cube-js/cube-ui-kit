@@ -1,5 +1,5 @@
 import { ForwardedRef, forwardRef, ReactNode, useState } from 'react';
-import { TextDropItem, useClipboard } from '@react-aria/dnd';
+import { TextDropItem, useClipboard } from 'react-aria';
 import { CopyOutlined } from '@ant-design/icons';
 import copy from 'clipboard-copy';
 

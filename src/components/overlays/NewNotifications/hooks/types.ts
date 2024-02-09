@@ -1,4 +1,4 @@
-import type { ListState } from '@react-stately/list';
+import type { ListState } from 'react-stately';
 import type { Collection, CollectionElement, Node } from '@react-types/shared';
 import type { CubeNotificationProps } from '../types';
 

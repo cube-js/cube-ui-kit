@@ -1,5 +1,5 @@
 import React, { HTMLAttributes, RefObject } from 'react';
-import { TooltipTriggerState } from '@react-stately/tooltip';
+import { TooltipTriggerState } from 'react-stately';
 
 import { PlacementAxis } from '../../../shared';
 import { Props } from '../../../tasty';

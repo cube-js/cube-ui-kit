@@ -31,7 +31,7 @@ Default.args = {};
 export const LongFilePlaceholderOverflow = Template.bind({});
 LongFilePlaceholderOverflow.args = {
   inputStyles: {
-    width: '300px',
+    width: '280px',
   },
   placeholder: 'Very long placeholder here',
 };

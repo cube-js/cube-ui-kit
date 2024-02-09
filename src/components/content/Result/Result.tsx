@@ -15,7 +15,7 @@ import {
   filterBaseProps,
   tasty,
 } from '../../../tasty';
-import { wrapNodeIfPlain } from '../../../utils/react';
+import { mergeProps, wrapNodeIfPlain } from '../../../utils/react';
 
 export interface CubeResultProps extends BaseProps, ContainerStyleProps {
   /** Additional block content. For example, a set of buttons */
@@ -38,6 +38,8 @@ export interface CubeResultProps extends BaseProps, ContainerStyleProps {
   subtitle?: ReactNode;
   /** The title */
   title?: ReactNode;
+  /** Whether the result component has a compact presentation */
+  isCompact?: boolean;
 }
 
 export type CubeResultStatus =
@@ -61,65 +63,90 @@ const Container = tasty({
   qa: 'Result_Container',
   as: 'section',
   styles: {
-    display: 'flex',
+    display: {
+      '': 'flex',
+      compact: 'grid',
+    },
+    gridAreas: '"icon title" "content content"',
     flow: 'column',
-    placeItems: 'center',
-    gap: '3x',
-    padding: '6x 4x',
-    textAlign: 'center',
+    placeContent: {
+      '': 'center',
+      compact: 'start',
+    },
+    placeItems: {
+      '': 'center',
+      compact: 'start',
+    },
+    gap: {
+      '': '3x',
+      compact: '2x 1x',
+    },
+    padding: {
+      '': '6x 4x',
+      compact: '0',
+    },
+    textAlign: {
+      '': 'center',
+      compact: 'left',
+    },
+
+    Icon: {
+      gridArea: 'icon',
+      fontSize: {
+        '': '10x',
+        compact: '4x',
+      },
+    },
 
     Content: {
+      gridArea: 'content',
       display: 'block',
     },
 
     Title: {
+      gridArea: 'title',
       display: 'flex',
       flow: 'column',
       placeItems: 'inherit',
       gap: '1x',
+      placeSelf: 'center',
     },
-  },
-});
-
-const IconWrapper = tasty({
-  styles: {
-    fontSize: '10x',
   },
 });
 
 const statusIconMap: StatusIconMap = {
   success: {
-    color: '#success',
+    color: 'success',
     component: CheckCircleFilled,
   },
   error: {
-    color: '#danger',
+    color: 'danger',
     component: CloseCircleFilled,
   },
   info: {
-    color: '#purple',
+    color: 'purple',
     component: InfoCircleFilled,
   },
   warning: {
-    color: '#note',
+    color: 'note',
     component: WarningFilled,
   },
   404: {
-    color: '#purple',
+    color: 'purple',
     component: () => {
       // TODO: Needs to be implemented in the future
       return null;
     },
   },
   403: {
-    color: '#purple',
+    color: 'purple',
     component: () => {
       // TODO: Needs to be implemented in the future
       return null;
     },
   },
   500: {
-    color: '#purple',
+    color: 'purple',
     component: () => {
       // TODO: Needs to be implemented in the future
       return null;
@@ -128,8 +155,16 @@ const statusIconMap: StatusIconMap = {
 };
 
 function Result(props: CubeResultProps, ref) {
-  let { children, icon, status, subTitle, subtitle, title, ...otherProps } =
-    props;
+  let {
+    children,
+    isCompact,
+    icon,
+    status,
+    subTitle,
+    subtitle,
+    title,
+    ...otherProps
+  } = props;
 
   subtitle = subtitle ?? subTitle;
 
@@ -150,9 +185,9 @@ function Result(props: CubeResultProps, ref) {
         : statusIconMap.info;
 
     return (
-      <IconWrapper data-element="IconWrapper" styles={{ color }}>
+      <div data-element="Icon" style={{ color: `var(--${color}-color)` }}>
         <Component data-element="Icon" />
-      </IconWrapper>
+      </div>
     );
   }, [icon, status]);
 
@@ -160,7 +195,9 @@ function Result(props: CubeResultProps, ref) {
 
   return (
     <Container
-      {...filterBaseProps(otherProps, { eventProps: true })}
+      {...mergeProps(filterBaseProps(otherProps, { eventProps: true }), {
+        mods: { compact: isCompact },
+      })}
       ref={ref}
       styles={styles}
     >
@@ -168,12 +205,12 @@ function Result(props: CubeResultProps, ref) {
       {(title || subtitle) && (
         <div data-element="Title">
           {wrapNodeIfPlain(title, () => (
-            <Title level={2} preset="h4">
+            <Title level={2} preset={isCompact ? 'h5' : 'h4'}>
               {title}
             </Title>
           ))}
           {wrapNodeIfPlain(subtitle, () => (
-            <Title level={3} preset="t2m">
+            <Title level={3} preset={isCompact ? 't3m' : 't2m'}>
               {subtitle}
             </Title>
           ))}

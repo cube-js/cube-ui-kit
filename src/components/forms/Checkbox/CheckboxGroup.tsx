@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 import { useDOMRef } from '@react-spectrum/utils';
-import { useCheckboxGroup } from '@react-aria/checkbox';
-import { useCheckboxGroupState } from '@react-stately/checkbox';
+import { useCheckboxGroup } from 'react-aria';
+import { useCheckboxGroupState } from 'react-stately';
 
 import { useProviderProps } from '../../../provider';
 import {
@@ -12,13 +12,14 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { extractFieldWrapperProps, FieldWrapper } from '../FieldWrapper';
 import { FieldBaseProps } from '../../../shared';
 import {
   castNullableArrayValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { useFieldProps, FormContext, useFormProps } from '../Form';
+import { mergeProps } from '../../../utils/react';
+import { wrapWithField } from '../wrapper';
 
 import { CheckboxGroupContext } from './context';
 
@@ -76,6 +77,7 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
     description,
     labelStyles,
     tooltip,
+    labelProps: baseLabelProps,
     labelSuffix,
     inputStyles,
     ...otherProps
@@ -83,7 +85,6 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
   let domRef = useDOMRef(ref);
 
   let styles = extractStyles(otherProps, CONTAINER_STYLES);
-  let { fieldWrapperProps } = extractFieldWrapperProps(props);
 
   let state = useCheckboxGroupState(props);
   let { groupProps, labelProps } = useCheckboxGroup(props, state);
@@ -108,16 +109,13 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
     </CheckGroupElement>
   );
 
-  return (
-    <FieldWrapper
-      {...fieldWrapperProps}
-      ref={domRef}
-      Component={radioGroup}
-      fieldProps={groupProps}
-      labelProps={labelProps}
-      styles={styles}
-    />
-  );
+  return wrapWithField(radioGroup, domRef, {
+    ...props,
+    children: null,
+    fieldProps: groupProps,
+    labelProps: mergeProps(baseLabelProps, labelProps),
+    styles,
+  });
 }
 
 /**

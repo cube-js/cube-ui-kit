@@ -1,7 +1,6 @@
 import { forwardRef, RefObject, useRef } from 'react';
-import { useLocale } from '@react-aria/i18n';
-import { useNumberFieldState } from '@react-stately/numberfield';
-import { useNumberField } from '@react-aria/numberfield';
+import { useLocale, useNumberField } from 'react-aria';
+import { useNumberFieldState } from 'react-stately';
 
 import { useFieldProps } from '../Form';
 import { useProviderProps } from '../../../provider';
@@ -21,7 +20,7 @@ import type { AriaNumberFieldProps } from '@react-types/numberfield';
 
 export interface CubeNumberInputProps
   extends Omit<CubeTextInputBaseProps, 'defaultValue' | 'value' | 'onChange'>,
-    AriaNumberFieldProps {
+    Omit<AriaNumberFieldProps, 'validate'> {
   /** Whether or to hide stepper */
   hideStepper?: boolean;
 }

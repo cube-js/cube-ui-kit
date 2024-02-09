@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { SliderState } from '@react-stately/slider';
+import { SliderState } from 'react-stately';
 
 import { CubeNumberInputProps, NumberInput } from '../../../';
 

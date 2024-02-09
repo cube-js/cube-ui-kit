@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ModalProvider } from '@react-aria/overlays';
+import { ModalProvider } from 'react-aria';
 import { StyleSheetManager } from 'styled-components';
 
 import {
@@ -124,7 +124,7 @@ export function Root(allProps: CubeRootProps) {
   return (
     <Provider router={router} root={rootRef}>
       <TrackingProvider event={tracking?.event}>
-        <StyleSheetManager disableVendorPrefixes>
+        <StyleSheetManager>
           <RootElement
             ref={ref}
             data-font-display={fontDisplay}

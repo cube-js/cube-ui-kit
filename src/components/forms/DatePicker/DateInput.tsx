@@ -2,9 +2,8 @@ import { forwardRef, ReactElement, useRef } from 'react';
 import { createCalendar } from '@internationalized/date';
 import { AriaDateFieldProps, DateValue } from '@react-types/datepicker';
 import { FocusableRef } from '@react-types/shared';
-import { useDateField } from '@react-aria/datepicker';
-import { useDateFieldState } from '@react-stately/datepicker';
-import { useLocale } from '@react-aria/i18n';
+import { useDateField, useLocale } from 'react-aria';
+import { useDateFieldState } from 'react-stately';
 
 import { useProviderProps } from '../../../provider';
 import { wrapWithField } from '../wrapper';
@@ -70,11 +69,11 @@ function DateInput<T extends DateValue>(
   let { locale } = useLocale();
   let state = useDateFieldState({
     ...props,
-    locale,
+    locale: useLocaleProp ? locale : 'en-US',
     createCalendar,
   });
 
-  if (!useLocaleProp) {
+  if (useLocaleProp == null) {
     state.segments = formatSegments(state.segments);
   }
 

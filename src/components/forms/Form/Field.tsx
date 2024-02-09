@@ -121,6 +121,7 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
     isDisabled,
     isLoading,
     styles,
+    labelProps,
     labelPosition = 'top',
     labelStyles,
     labelSuffix,
@@ -142,6 +143,14 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
 
   if (!child) return null;
 
+  if (id) {
+    if (!labelProps) {
+      labelProps = {};
+    }
+
+    labelProps.for = id;
+  }
+
   if (__props.nonInput) {
     return (
       <LegacyFieldProvider>
@@ -153,6 +162,7 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
           necessityLabel={necessityLabel}
           isRequired={isRequired}
           label={label}
+          labelProps={labelProps}
           extra={extra}
           tooltip={tooltip}
           message={message}

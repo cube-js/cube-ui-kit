@@ -1,8 +1,8 @@
 import { Key, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { TransitionGroup } from 'react-transition-group';
-import { Item } from '@react-stately/collections';
-import { useHover } from '@react-aria/interactions';
-import { focusSafely, useFocusRing } from '@react-aria/focus';
+import { Item } from 'react-stately';
+import { useHover, useFocusRing } from 'react-aria';
+import { focusSafely } from '@react-aria/focus';
 
 import { tasty } from '../../../../tasty';
 import { CubeNotifyApiPropsWithID } from '../types';

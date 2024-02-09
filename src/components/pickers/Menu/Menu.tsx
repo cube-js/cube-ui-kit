@@ -3,11 +3,11 @@ import { DOMRef, ItemProps } from '@react-types/shared';
 import {
   Item as BaseItem,
   Section as BaseSection,
-} from '@react-stately/collections';
-import { useMenu } from '@react-aria/menu';
+  useTreeState,
+} from 'react-stately';
+import { useMenu } from 'react-aria';
 import { useSyncRef } from '@react-aria/utils';
 import { useDOMRef } from '@react-spectrum/utils';
-import { useTreeState } from '@react-stately/tree';
 
 import {
   BaseProps,

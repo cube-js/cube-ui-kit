@@ -1,5 +1,5 @@
 import { DatePickerProps } from '@react-types/datepicker';
-import { DateValue } from '@react-aria/calendar';
+import { DateValue } from 'react-aria';
 
 export const DEFAULT_DATE_PROPS: Partial<DatePickerProps<DateValue>> = {
   granularity: 'day',

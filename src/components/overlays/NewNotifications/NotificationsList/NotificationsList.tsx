@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Item } from '@react-stately/collections';
+import { Item } from 'react-stately';
 
 import { tasty } from '../../../../tasty';
 import { useNotificationsList } from '../hooks';

@@ -1,11 +1,11 @@
 import { useRef } from 'react';
 import { createCalendar } from '@internationalized/date';
 import { DateValue, SpectrumDatePickerProps } from '@react-types/datepicker';
-import { useDateField } from '@react-aria/datepicker';
-import { useDateFieldState } from '@react-stately/datepicker';
-import { useLocale } from '@react-aria/i18n';
+import { useDateField, useFocusWithin, useLocale } from 'react-aria';
+import { DateSegment, useDateFieldState } from 'react-stately';
 
 import { tasty } from '../../../tasty';
+import { mergeProps } from '../../../utils/react';
 
 import { DatePickerSegment } from './DatePickerSegment';
 import { formatSegments } from './utils';
@@ -24,6 +24,8 @@ interface CubeDatePickerInputProps<T extends DateValue>
   hideValidationIcon?: boolean;
   maxGranularity?: SpectrumDatePickerProps<T>['granularity'];
   useLocale?: boolean;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }
 
 export function DatePickerInput<T extends DateValue>(
@@ -34,19 +36,29 @@ export function DatePickerInput<T extends DateValue>(
   let { locale } = useLocale();
   let state = useDateFieldState({
     ...props,
-    locale,
+    locale: useLocaleProp ? locale : 'en-US',
     createCalendar,
   });
 
-  if (!useLocaleProp) {
+  if (useLocaleProp == null) {
     state.segments = formatSegments(state.segments);
   }
+
+  const focusWithinProps = useFocusWithin({
+    onFocusWithinChange: (isFocused) => {
+      if (isFocused) {
+        props.onFocus?.();
+      } else {
+        props.onBlur?.();
+      }
+    },
+  });
 
   let { fieldProps } = useDateField(props, state, ref);
 
   return (
-    <DateInputElement ref={ref} {...fieldProps}>
-      {state.segments.map((segment, i) => (
+    <DateInputElement ref={ref} {...mergeProps(fieldProps, focusWithinProps)}>
+      {state.segments.map((segment: DateSegment, i: number) => (
         <DatePickerSegment
           key={i}
           segment={segment}

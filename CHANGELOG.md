@@ -1,5 +1,45 @@
 # @cube-dev/ui-kit
 
+## 0.30.0
+
+### Minor Changes
+
+- [#426](https://github.com/cube-js/cube-ui-kit/pull/426) [`b20cb7f`](https://github.com/cube-js/cube-ui-kit/commit/b20cb7f91c07a933e524477b274a96ac144985cf) Thanks [@tenphi](https://github.com/tenphi)! - Add support for `styled-components` v6.
+
+## 0.29.1
+
+### Patch Changes
+
+- [#423](https://github.com/cube-js/cube-ui-kit/pull/423) [`d40fc1f`](https://github.com/cube-js/cube-ui-kit/commit/d40fc1f290d54935382b55017d4de5cc5977cbf7) Thanks [@tenphi](https://github.com/tenphi)! - Add a compact view for the Result component
+
+## 0.29.0
+
+### Minor Changes
+
+- [#421](https://github.com/cube-js/cube-ui-kit/pull/421) [`c6ce743`](https://github.com/cube-js/cube-ui-kit/commit/c6ce743fab1db7d0daeb9bd017e1338b8cdd565a) Thanks [@tenphi](https://github.com/tenphi)! - Added new DateRangeSeparatedPicker component for better UX while selecting date ranges
+
+## 0.28.0
+
+### Minor Changes
+
+- [#419](https://github.com/cube-js/cube-ui-kit/pull/419) [`910a8d4`](https://github.com/cube-js/cube-ui-kit/commit/910a8d424330c38941b0a86585c13baffc1016f4) Thanks [@tenphi](https://github.com/tenphi)! - Migration to the combined `react-aria` and `react-stately` packages.
+
+### Patch Changes
+
+- [#413](https://github.com/cube-js/cube-ui-kit/pull/413) [`76d9fd7`](https://github.com/cube-js/cube-ui-kit/commit/76d9fd70b51efa7108456df2611d981e5a2a22b4) Thanks [@tenphi](https://github.com/tenphi)! - Fix Field label sizing.
+
+## 0.27.2
+
+### Patch Changes
+
+- [#414](https://github.com/cube-js/cube-ui-kit/pull/414) [`ec4f294`](https://github.com/cube-js/cube-ui-kit/commit/ec4f294c6fa8e264f69188e2a9fdaf012db99c62) Thanks [@tenphi](https://github.com/tenphi)! - Disable text wrapping inside Menu elements.
+
+## 0.27.1
+
+### Patch Changes
+
+- [#410](https://github.com/cube-js/cube-ui-kit/pull/410) [`f4c958a`](https://github.com/cube-js/cube-ui-kit/commit/f4c958a0fd625ba651d4d6bcfea933afbd95571b) Thanks [@tenphi](https://github.com/tenphi)! - Fixes border colors in the hover state for solid Radio Buttons.
+
 ## 0.27.0
 
 ### Minor Changes

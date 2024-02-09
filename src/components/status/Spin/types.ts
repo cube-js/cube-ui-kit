@@ -20,7 +20,7 @@ export type CubeSpinProps = {
 };
 
 export type SpinCubeProps = {
-  position: 'top' | 'right' | 'bottom';
+  $position: 'top' | 'right' | 'bottom';
 };
 
 export type InternalSpinnerProps = {

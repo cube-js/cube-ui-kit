@@ -1,7 +1,7 @@
 import { useSelectableItem, SelectableItemAria } from '@react-aria/selection';
 
 import type { Key, MutableRefObject } from 'react';
-import type { ListState } from '@react-stately/list';
+import type { ListState } from 'react-stately';
 
 export type UseNotificationListItemPropsType<T extends object> = {
   key: Key;
