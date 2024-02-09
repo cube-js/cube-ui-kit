@@ -6,6 +6,7 @@ import { AbortController } from 'node-abort-controller';
 
 // @ts-expect-error Setup AbortController for test environment
 global.AbortController = AbortController;
+
 config.disabled = true;
 
 configure({ testIdAttribute: 'data-qa', asyncUtilTimeout: 10000 });
