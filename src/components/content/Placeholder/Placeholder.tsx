@@ -26,20 +26,27 @@ const PlaceholderElement = tasty({
 const StyledPlaceholder = styled(PlaceholderElement)`
   --placeholder-animation-time: 1.4s;
   --placeholder-animation-size: calc((180rem + 100vw) / 3);
-  background-image: linear-gradient(
-    135deg,
-    rgba(var(--dark-color-rgb), 0.15) 0%,
-    rgba(var(--dark-color-rgb), 0.15) 5%,
-    rgba(var(--dark-color-rgb), 0) 35%,
-    rgba(var(--dark-03-color-rgb), 0.2) 50%,
-    rgba(var(--dark-03-color-rgb), 0) 65%,
-    rgba(var(--dark-color-rgb), 0.15) 95%,
-    rgba(var(--dark-color-rgb), 0.15) 100%
-  );
   background-repeat: repeat;
   background-size: var(--placeholder-animation-size);
-  animation: placeholder-animation var(--placeholder-animation-time) linear
-    infinite;
+
+  && {
+    background-color: rgba(var(--dark-color-rgb), 0.15);
+  }
+
+  &[data-is-animated] {
+    animation: placeholder-animation var(--placeholder-animation-time) linear
+      infinite;
+    background-image: linear-gradient(
+      135deg,
+      rgba(var(--dark-color-rgb), 0.15) 0%,
+      rgba(var(--dark-color-rgb), 0.15) 5%,
+      rgba(var(--dark-color-rgb), 0) 35%,
+      rgba(var(--dark-03-color-rgb), 0.2) 50%,
+      rgba(var(--dark-03-color-rgb), 0) 65%,
+      rgba(var(--dark-color-rgb), 0.15) 95%,
+      rgba(var(--dark-color-rgb), 0.15) 100%
+    );
+  }
 
   @keyframes placeholder-animation {
     0% {
@@ -54,13 +61,14 @@ const StyledPlaceholder = styled(PlaceholderElement)`
 export interface CubePlaceholderProps extends BaseProps, ContainerStyleProps {
   size?: Styles['fontSize'];
   circle?: boolean;
+  isStatic?: boolean;
 }
 
 export const Placeholder = forwardRef(function Placeholder(
   allProps: CubePlaceholderProps,
   ref,
 ) {
-  let { size = '2x', circle, ...props } = allProps;
+  let { size = '2x', isStatic, circle, ...props } = allProps;
 
   let styles = extractStyles(props, CONTAINER_STYLES);
 
@@ -69,6 +77,7 @@ export const Placeholder = forwardRef(function Placeholder(
       role="region"
       {...filterBaseProps(props, { eventProps: true })}
       ref={ref}
+      mods={{ animated: !isStatic }}
       styles={{
         height: size,
         width: circle ? size : false,

@@ -27,3 +27,6 @@ Circle.args = {
   circle: true,
   size: '6x',
 };
+
+export const Static = Template.bind({});
+Static.args = { isStatic: true };
