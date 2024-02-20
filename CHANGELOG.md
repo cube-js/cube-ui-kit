@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.31.0
+
+### Minor Changes
+
+- [#432](https://github.com/cube-js/cube-ui-kit/pull/432) [`46b8354`](https://github.com/cube-js/cube-ui-kit/commit/46b8354457c24807e0920993be4ff1e445aeb86c) Thanks [@tenphi](https://github.com/tenphi)! - Add license field to the published package.json
+
 ## 0.30.1
 
 ### Patch Changes
