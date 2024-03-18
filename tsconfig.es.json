@@ -12,9 +12,5 @@
     "src/test/**/*",
     "src/**/*.test.tsx",
     "src/**/*.test.ts",
-    "src/antd.js",
-    "src/storybook.tsx",
-    "src/App.tsx",
-    "src/script.js"
   ]
 }

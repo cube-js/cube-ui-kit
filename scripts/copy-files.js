@@ -43,6 +43,7 @@ function copyPackageJson() {
       '.': {
         import: './es/index.js',
         require: './cjs/index.js',
+        types: './types/index.d.ts',
       },
     },
     private: false,
