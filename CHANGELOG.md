@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.31.1
+
+### Patch Changes
+
+- [#435](https://github.com/cube-js/cube-ui-kit/pull/435) [`902c1f9`](https://github.com/cube-js/cube-ui-kit/commit/902c1f9fdf393fbacc851247c122ea714f674f59) Thanks [@tenphi](https://github.com/tenphi)! - Add correct type exports to the published package.
+
 ## 0.31.0
 
 ### Minor Changes
