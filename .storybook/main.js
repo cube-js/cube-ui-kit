@@ -30,6 +30,9 @@ const config = {
       },
     },
   ],
+  reactOptions: {
+    strictMode: true,
+  },
   // docs: {
   //   autodocs: true,
   // },
