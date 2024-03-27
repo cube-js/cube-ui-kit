@@ -1,4 +1,7 @@
-import { StyledButton as StyledButtonComponent } from './components/StyledButton';
+import {
+  StyledButton as StyledButtonComponent,
+  GlobalStyledHeading,
+} from './components/StyledButton';
 
 export default {
   title: 'Tasty API',
@@ -9,5 +12,10 @@ export const StyledButton = {
 };
 
 export const GloballyStyledButton = {
-  render: () => <div className="myButton">Styled Button</div>,
+  render: () => (
+    <>
+      <GlobalStyledHeading />
+      <div className="myButton">Styled Button</div>
+    </>
+  ),
 };

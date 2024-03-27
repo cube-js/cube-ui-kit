@@ -108,7 +108,7 @@ export const ExternalLink = {
     <UIKitParagraph>
       <Link to="https://cube-uikit-storybook.netlify.app/">
         Open Cube Cloud UI Kit
-      </Link>
+      </Link>{' '}
       |{' '}
       <Link to="!https://cube-uikit-storybook.netlify.app/">
         Open Cube Cloud UI Kit in new tab
@@ -120,7 +120,7 @@ export const ExternalLink = {
 export const LinkWithoutUsingRouter = {
   render: () => (
     <UIKitParagraph>
-      <Link to="@">Reload the current page</Link>|
+      <Link to="@">Reload the current page</Link> |{' '}
       <Link to="@/">Move to the Main Page</Link>
     </UIKitParagraph>
   ),
