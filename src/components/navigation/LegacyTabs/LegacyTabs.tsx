@@ -68,7 +68,9 @@ const StyledTabElement = styled(TabElement)`
     right: 0;
     box-shadow: inset 0 calc(-1 * var(--outline-size)) 0 var(--purple-color);
     pointer-events: none;
-    transition: opacity linear 0.2s, box-shadow linear 0.2s;
+    transition:
+      opacity linear 0.2s,
+      box-shadow linear 0.2s;
   }
 
   &[data-is-selected]::before {
