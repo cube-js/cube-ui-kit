@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 
@@ -13,7 +13,7 @@ export default {
   parameters: { controls: { exclude: baseProps } },
 } as Meta<CubeLoadingAnimationProps>;
 
-const Template: Story<CubeLoadingAnimationProps> = (args) => (
+const Template: StoryFn<CubeLoadingAnimationProps> = (args) => (
   <LoadingAnimation {...args} />
 );
 

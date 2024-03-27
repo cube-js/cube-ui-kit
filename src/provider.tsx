@@ -15,7 +15,7 @@ export interface ProviderProps extends Props {
   isReadOnly?: boolean;
   isRequired?: boolean;
   validationState?: string;
-  router?: Function;
+  router?: any;
   ref?: JSX.Element;
   root?: ForwardedRef<any>;
 }

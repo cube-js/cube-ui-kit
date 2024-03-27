@@ -16,12 +16,12 @@ const MOZ_FILL_AVAILABLE = '-moz-fill-available';
 const STRETCH_SIZE = isSizingSupport(STRETCH)
   ? STRETCH
   : isSizingSupport(FILL_AVAILABLE)
-  ? FILL_AVAILABLE
-  : isSizingSupport(WEBKIT_FILL_AVAILABLE)
-  ? WEBKIT_FILL_AVAILABLE
-  : isSizingSupport(MOZ_FILL_AVAILABLE)
-  ? MOZ_FILL_AVAILABLE
-  : null;
+    ? FILL_AVAILABLE
+    : isSizingSupport(WEBKIT_FILL_AVAILABLE)
+      ? WEBKIT_FILL_AVAILABLE
+      : isSizingSupport(MOZ_FILL_AVAILABLE)
+        ? MOZ_FILL_AVAILABLE
+        : null;
 const INTRINSIC_MODS = ['max-content', 'min-content', 'fit-content', 'stretch'];
 
 export function dimensionStyle(name) {

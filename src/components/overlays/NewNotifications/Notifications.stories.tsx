@@ -1,7 +1,7 @@
 import { Key, useRef, useState } from 'react';
-import { expect } from '@storybook/jest';
-import { userEvent, within } from '@storybook/testing-library';
-import { Meta, Story } from '@storybook/react';
+import { expect } from '@storybook/test';
+import { userEvent, within } from '@storybook/test';
+import { Meta, StoryFn } from '@storybook/react';
 import { BellFilled, BellOutlined, WechatFilled } from '@ant-design/icons';
 
 import { Button } from '../../actions';
@@ -40,7 +40,7 @@ export default {
   subcomponents: { NotificationAction },
 } as Meta<CubeNotificationProps>;
 
-const ActionTemplate: Story<CubeNotificationProps> = ({ ...args }) => {
+const ActionTemplate: StoryFn<CubeNotificationProps> = ({ ...args }) => {
   const { notify } = useNotificationsApi();
   const idRef = useRef(0);
 
@@ -48,7 +48,10 @@ const ActionTemplate: Story<CubeNotificationProps> = ({ ...args }) => {
     <Button
       qa="ClickMeButton"
       onPress={() =>
-        notify({ ...args, header: args.header + ' ' + idRef.current++ })
+        notify({
+          ...args,
+          header: args.header + ' ' + idRef.current++,
+        } as CubeNotificationProps)
       }
     >
       Click Me!
@@ -69,7 +72,7 @@ ActionTemplate.play = async ({ canvasElement }) => {
 export const DefaultAction = ActionTemplate.bind({});
 DefaultAction.play = ActionTemplate.play;
 
-export const NotifyAsComponent: Story<CubeNotificationProps> = (args) => {
+export const NotifyAsComponent: StoryFn<CubeNotificationProps> = (args) => {
   return (
     <>
       <Notification.Success {...args} />
@@ -88,11 +91,11 @@ export const NotifyAsComponent: Story<CubeNotificationProps> = (args) => {
   );
 };
 
-export const StandaloneNotification: Story<CubeNotificationProps> = (args) => (
-  <NotificationView {...args} />
-);
+export const StandaloneNotification: StoryFn<CubeNotificationProps> = (
+  args,
+) => <NotificationView {...args} />;
 
-export const WithIcon: Story<CubeNotificationProps> = (args) => {
+export const WithIcon: StoryFn<CubeNotificationProps> = (args) => {
   return (
     <>
       <NotificationView
@@ -125,7 +128,7 @@ WithLongDescription.args = {
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nisl eu consectetur consectetur, nisl nisl consectetur nisl, euismod nisl nisl euismod nisl. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nisl eu consectetur consectetur, nisl nisl consectetur nisl, euismod nisl nisl euismod nisl. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nisl eu consectetur consectetur, nisl nisl consectetur nisl, euismod nisl nisl euismod nisl. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nisl eu consectetur consectetur, nisl nisl consectetur nisl, euismod nisl nisl euismod nisl.',
 };
 
-export const AllTypes: Story<CubeNotificationProps> = () => (
+export const AllTypes: StoryFn<CubeNotificationProps> = () => (
   <>
     <NotificationView
       type="success"
@@ -161,7 +164,7 @@ WithActions.args = {
   ),
 };
 
-export const List: Story<CubeNotificationProps> = (args) => (
+export const List: StoryFn<CubeNotificationProps> = (args) => (
   <NotificationsList>
     <NotificationsList.Item {...args} />
     <NotificationsList.Item {...args} />
@@ -178,7 +181,7 @@ List.args = {
   ),
 };
 
-export const NotificationsInModal: Story<CubeNotificationProps> = (args) => {
+export const NotificationsInModal: StoryFn<CubeNotificationProps> = (args) => {
   return (
     <NotificationsDialogTrigger>
       <Button icon={<BellFilled />} type="clear" label="Open Notifications" />
@@ -247,7 +250,9 @@ NotificationsInModal.play = async ({ canvasElement }) => {
   await expect(canvas.getByRole('dialog')).toBeInTheDocument();
 };
 
-export const NotificationWithDialog: Story<CubeNotificationProps> = (args) => (
+export const NotificationWithDialog: StoryFn<CubeNotificationProps> = (
+  args,
+) => (
   <DialogTrigger>
     <Button>Open Dialog</Button>
 
@@ -291,7 +296,7 @@ NotificationWithDialog.play = async ({ canvasElement }) => {
   await expect(await canvas.findByRole('dialog')).toBeInTheDocument();
 };
 
-export const ComplexInteraction: Story<CubeNotificationProps> = (args) => {
+export const ComplexInteraction: StoryFn<CubeNotificationProps> = (args) => {
   const { notify } = useNotificationsApi();
 
   const [notifications, setNotifications] = useState<
@@ -429,7 +434,7 @@ WithLongActions.play = async ({ canvasElement }) => {
   await expect(notification).toBeInTheDocument();
 };
 
-export const WithWidget: Story<CubeNotificationProps> = (args) => (
+export const WithWidget: StoryFn<CubeNotificationProps> = (args) => (
   <>
     <ActionTemplate {...args} />
     <Button

@@ -1,16 +1,11 @@
 import { baseProps } from './lists/baseProps';
-import { Meta, Story, Canvas, ArgsTable } from '@storybook/addon-docs';
+import { Meta, Story, Canvas, Controls } from '@storybook/blocks';
 import { Form, Field, Submit, Input, DialogForm } from '../index';
 import { DialogFormApp } from './components/DialogFormApp';
 import { DISABLE_BASE_ARGS } from './FormFieldArgs';
+import * as FormStories from './Form.stories';
 
-<Meta
-  title="Forms/Form"
-  component={Form}
-  argTypes={{
-    ...DISABLE_BASE_ARGS,
-  }}
-/>
+<Meta of={FormStories} />
 
 # Form management
 
@@ -20,11 +15,11 @@ Cube UI Kit Forms are designed after AntD Forms and [rc-field-form](https://fiel
 
 ### Form (CubeFormProps)
 
-<ArgsTable of={Form} exclude={baseProps} />
+<Controls />
 
 ### Field (CubeFieldProps)
 
-<ArgsTable of={Field} exclude={baseProps} />
+<Controls />
 
 ### useForm
 
@@ -42,41 +37,41 @@ const Demo = () => {
 | Prop            | Description                                | Type                                                     | Default |
 | --------------- | ------------------------------------------ | -------------------------------------------------------- | ------- |
 | getFieldValue   | Get field value by name path               | (name: NamePath) => any                                  |
-| getFieldsValue  | Get list of field values by name path list | (nameList?: (NamePath[]) => any) &vert; true             |
-| getFieldError   | Get field errors by name path              | (name: NamePath) => string[]                             |
-| getFieldsError  | Get list of field errors by name path list | (nameList?: NamePath[]) => FieldError[]                  |
-| isFieldsTouched | Check if list of fields are touched        | (nameList?: NamePath[], allTouched?: boolean) => boolean |
+| getFieldsValue  | Get list of field values by name path list | (nameList?: (NamePath\[]) => any) | true             |
+| getFieldError   | Get field errors by name path              | (name: NamePath) => string\[]                             |
+| getFieldsError  | Get list of field errors by name path list | (nameList?: NamePath\[]) => FieldError\[]                  |
+| isFieldsTouched | Check if list of fields are touched        | (nameList?: NamePath\[], allTouched?: boolean) => boolean |
 | isFieldTouched  | Check if a field is touched                | (name: NamePath) => boolean                              |
 | isFieldValid    | Check if a field is valid                  | (name: NamePath) => boolean                              |
-| resetFields     | Reset fields status                        | (fields?: NamePath[]) => void                            |
-| setFields       | Set fields status                          | (fields: CubeFieldData[]) => void                        |
+| resetFields     | Reset fields status                        | (fields?: NamePath\[]) => void                            |
+| setFields       | Set fields status                          | (fields: CubeFieldData\[]) => void                        |
 | setFieldsValue  | Set fields value                           | (values) => void                                         |
 | submit          | Trigger form to validate and submit        | () => void                                               |
-| validateFields  | Trigger fields to validate                 | (nameList?: NamePath[]) => Promise                       |
+| validateFields  | Trigger fields to validate                 | (nameList?: NamePath\[]) => Promise                       |
 
 #### CubeFieldData interface
 
 | Prop    | Type                                                 |
 | ------- | ---------------------------------------------------- |
 | touched | boolean                                              |
-| errors  | string[]                                             |
-| name    | string &vert; number &vert; (string &vert; number)[] |
+| errors  | string\[]                                             |
+| name    | string | number | (string | number)\[] |
 | value   | any                                                  |
-| rules   | CubeValidationRule[]                                 |
+| rules   | CubeValidationRule\[]                                 |
 
 ## Known differences with AntD Forms
 
-- Form component
-  - `preserve` property is not yet implemented.
-  - `onSubmit` instead of `onSuccess`.
-  - `onSubmitFailed` instead of `onFailed`.
-  - `initialValues` instead of `defaultValues`.
-  - `onSubmit` can return promise. In that case the form and the submit button are in loading state until the promise is resolved.
-  - Arrays inside form data are not supported.
-- Field component
-  - It's a virtual wrapper.
-  - Nested properties are handled via field names with `.` notation.
-  - Do not support `validating` state. (But validation rules can be async)
+* Form component
+  * `preserve` property is not yet implemented.
+  * `onSubmit` instead of `onSuccess`.
+  * `onSubmitFailed` instead of `onFailed`.
+  * `initialValues` instead of `defaultValues`.
+  * `onSubmit` can return promise. In that case the form and the submit button are in loading state until the promise is resolved.
+  * Arrays inside form data are not supported.
+* Field component
+  * It's a virtual wrapper.
+  * Nested properties are handled via field names with `.` notation.
+  * Do not support `validating` state. (But validation rules can be async)
 
 ## Usage
 
@@ -124,90 +119,20 @@ export function LoginForm() {
 ```
 
 <Canvas>
-  <Story name="LoginForm">
-    {(args) => (
-      <Form
-        onSubmit={() => {
-          return new Promise((resolve) => {
-            setTimeout(resolve, 1000); // 1s of submitting
-          });
-        }}
-        requiredMark={false}
-        {...args}
-      >
-        <Field
-          label="Email"
-          name="email"
-          rules={[
-            { required: true, message: 'E-mail required' },
-            { type: 'email', message: 'Please enter a valid e-mail' },
-          ]}
-        >
-          <Input.Text type="email" />
-        </Field>
-        <Field
-          label="Password"
-          name="password"
-          rules={[
-            { required: true, message: 'Password required' },
-            { min: 8, message: 'The password must be at least 8 characters' },
-          ]}
-        >
-          <Input.Password type="password" />
-        </Field>
-        <Submit>Submit</Submit>
-      </Form>
-    )}
-  </Story>
+  <Story of={FormStories.LoginForm} />
 </Canvas>
 
 Use `orientation="horizontal"` property to create a horizontal form.
 
 <Canvas>
-  <Story name="HorizontalLoginForm">
-    {(args) => (
-      <Form
-        orientation="horizontal"
-        labelPosition="side"
-        onSubmit={() => {
-          return new Promise((resolve) => {
-            setTimeout(resolve, 1000); // 1s of submitting
-          });
-        }}
-        requiredMark={false}
-        {...args}
-      >
-        <Field
-          label="Email"
-          name="email"
-          rules={[
-            { required: true, message: 'E-mail required' },
-            { type: 'email', message: 'Please enter a valid e-mail' },
-          ]}
-        >
-          <Input.Text type="email" size="small" />
-        </Field>
-        <Field
-          label="Password"
-          name="password"
-          rules={[
-            { required: true, message: 'Password required' },
-            { min: 8, message: 'The password must be at least 8 characters' },
-          ]}
-        >
-          <Input.Password type="password" size="small" />
-        </Field>
-        <Submit size="small">Submit</Submit>
-      </Form>
-    )}
-  </Story>
+  <Story of={FormStories.HorizontalLoginForm} />
 </Canvas>
 
 ### Dialog form
 
 It's possible to create forms inside dialogs. The `DialogForm` contains all props of `Form` and `Dialog` components.
 
-<ArgsTable of={DialogForm} exclude={baseProps} />
+<Controls />
 
 Here is the example of usage:
 
@@ -315,7 +240,5 @@ export function DialogFormApp() {
 ```
 
 <Canvas>
-  <Story name="DialogFormApp">
-    <DialogFormApp />
-  </Story>
+  <Story of={FormStories.DialogFormApp} />
 </Canvas>

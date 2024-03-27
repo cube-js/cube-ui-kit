@@ -151,7 +151,7 @@ export type { CubeNotificationOptions } from './services/notification';
 export * from './tasty';
 
 export const Typography = {
-  Text,
+  Text: Text,
   Title,
   Paragraph,
 };

@@ -1,10 +1,10 @@
-import { Story } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 
 import { Block } from '../../../Block';
 import { Portal } from '../../Portal';
 import { PortalProps } from '../../types';
 
-export const PortalOrderTemplate: Story<PortalProps> = (args) => (
+export const PortalOrderTemplate: StoryFn<PortalProps> = (args) => (
   <>
     <Portal {...args}>
       <Block>Portal 1</Block>

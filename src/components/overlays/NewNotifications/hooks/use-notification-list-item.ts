@@ -18,5 +18,6 @@ export function useNotificationListItem<T extends object>(
     state: { selectionManager },
   } = props;
 
+  // @ts-ignore
   return useSelectableItem({ ref, key, selectionManager });
 }

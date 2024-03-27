@@ -1,0 +1,79 @@
+import { Meta } from '@storybook/blocks';
+import { Story, Canvas, Controls } from '@storybook/blocks';
+import { BulbFilled, LockFilled } from '@ant-design/icons';
+import * as ResultStories from './Result.stories';
+
+import { baseProps } from './lists/baseProps';
+import { Element, Button, Result, Space, Text, Title } from '../index';
+
+<Meta of={ResultStories} />
+
+export const Template = ({ children, ...props }) => {
+  return <Result {...props}>{children}</Result>;
+};
+
+# Result
+
+Used to feed back the results of a series of operational tasks.
+
+## When To Use
+
+Use when important operations need to inform the user to process the results and the feedback is more complicated.
+
+## Examples
+
+### Success
+
+<Canvas>
+  <Story of={ResultStories.Success} />
+</Canvas>
+
+### Info
+
+<Canvas>
+  <Story of={ResultStories.Info} />
+</Canvas>
+
+### Warning
+
+<Canvas>
+  <Story of={ResultStories.Warning} />
+</Canvas>
+
+### Error
+
+<Canvas>
+  <Story of={ResultStories.Error} />
+</Canvas>
+
+### Custom Icon
+
+<Canvas>
+  <Story of={ResultStories.CustomIcon} />
+</Canvas>
+
+### Custom Title
+
+<Canvas>
+  <Story of={ResultStories.CustomTitle} />
+</Canvas>
+
+### Compact
+
+<Canvas>
+  <Story of={ResultStories.Compact} />
+</Canvas>
+
+## API
+
+<Controls />
+
+## Differences from Ant Design
+
+| There are differences | Ant Design property | Cube UIKit property |
+| :-------------------: | :-----------------: | :-----------------: |
+|          No           |      `status`       |      `status`       |
+|          No           |       `title`       |       `title`       |
+|          Yes          |     `subTitle`      |     `subtitle`      |
+|          No           |       `icon`        |       `icon`        |
+|          Yes          |       `extra`       |     `children`      |

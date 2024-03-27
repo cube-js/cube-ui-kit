@@ -1,6 +1,6 @@
-import { Key, useRef } from 'react';
+import { useRef } from 'react';
 import { useHover, FocusRing, useMenuItem } from 'react-aria';
-import { Node } from '@react-types/shared';
+import { Node, Key } from '@react-types/shared';
 import { TreeState } from 'react-stately';
 
 import { mergeProps, ClearSlots, SlotProvider } from '../../../utils/react';

@@ -1,10 +1,10 @@
-import { Story } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 import { useRef } from 'react';
 
 import { Portal } from '../../Portal';
 import { PortalProps } from '../../types';
 
-export const CustomRootTemplate: Story<PortalProps> = (args) => {
+export const CustomRootTemplate: StoryFn<PortalProps> = (args) => {
   const rootRef = useRef(null);
 
   return (

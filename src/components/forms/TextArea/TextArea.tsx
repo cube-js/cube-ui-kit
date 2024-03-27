@@ -86,8 +86,8 @@ function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
 
   return (
     <TextInputBase
-      {...otherProps}
       ref={ref}
+      {...otherProps}
       multiLine
       inputRef={inputRef}
       labelProps={labelProps}

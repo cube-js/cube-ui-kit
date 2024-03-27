@@ -1,4 +1,4 @@
-import { ComponentMeta, Story } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 
@@ -10,9 +10,9 @@ export default {
   component: Alert,
   parameters: { controls: { exclude: baseProps } },
   args: { children: 'Card content' },
-} as ComponentMeta<typeof Alert>;
+} as Meta<typeof Alert>;
 
-const Template: Story<CubeAlertProps> = (args) => <Alert {...args} />;
+const Template: StoryFn<CubeAlertProps> = (args) => <Alert {...args} />;
 
 export const Default = Template.bind({});
 

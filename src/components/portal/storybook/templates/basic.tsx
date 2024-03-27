@@ -1,10 +1,10 @@
-import { Story } from '@storybook/react';
+import { StoryFn } from '@storybook/react';
 
 import { Portal } from '../../Portal';
 import { PortalProps } from '../../types';
 import { Divider } from '../../../content/Divider';
 
-export const Basic: Story<PortalProps> = (args) => (
+export const Basic: StoryFn<PortalProps> = (args) => (
   <>
     By default, Portal content should be there {' -> '}
     <Portal {...args}>

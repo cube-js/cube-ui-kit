@@ -1,4 +1,4 @@
-import { ComponentMeta, Story } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 import { SettingOutlined } from '@ant-design/icons';
 
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -13,9 +13,9 @@ export default {
       exclude: baseProps,
     },
   },
-} as ComponentMeta<typeof CopySnippet>;
+} as Meta<typeof CopySnippet>;
 
-const Template: Story<CubeCopySnippetProps> = (args) => (
+const Template: StoryFn<CubeCopySnippetProps> = (args) => (
   <CopySnippet {...args} />
 );
 

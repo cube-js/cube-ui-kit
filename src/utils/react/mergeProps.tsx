@@ -10,8 +10,8 @@ type Merge<T> = T extends [infer F, ...infer R]
     ? Merge<R>
     : F & Merge<R>
   : T extends [infer L]
-  ? L
-  : unknown;
+    ? L
+    : unknown;
 
 /**
  * Merges multiple props objects together. Event handlers are chained,

@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 
 import { Paragraph } from '../../content/Paragraph';
 
@@ -11,7 +11,7 @@ export default {
   excludeStories: ['StressTest'],
 } as Meta<CubeSpinProps>;
 
-const Template: Story<CubeSpinProps> = (args) => <Spin {...args} />;
+const Template: StoryFn<CubeSpinProps> = (args) => <Spin {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {};

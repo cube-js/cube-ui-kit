@@ -1,5 +1,3 @@
-// @ts-check
-
 module.exports = /** @type {import('eslint').Linter.Config} */ ({
   extends: [
     'prettier',
@@ -94,6 +92,18 @@ module.exports = /** @type {import('eslint').Linter.Config} */ ({
         '@typescript-eslint/ban-ts-comment': 'off',
 
         'react/prop-types': 'off',
+      },
+    },
+    {
+      files: ['*.ts', '*.tsx'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'off',
+
+        'react/prop-types': 'off',
+        'react-hooks/exhaustive-deps': 'off',
+        'react/boolean-prop-naming': 'off',
+        '@typescript-eslint/ban-ts-comment': 'off',
+        '@typescript-eslint/ban-types': 'off',
       },
     },
   ],

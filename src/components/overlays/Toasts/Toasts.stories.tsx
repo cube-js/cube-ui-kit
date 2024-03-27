@@ -1,6 +1,6 @@
-import { expect } from '@storybook/jest';
-import { Meta, Story } from '@storybook/react';
-import { userEvent, within } from '@storybook/testing-library';
+import { expect } from '@storybook/test';
+import { Meta, StoryFn } from '@storybook/react';
+import { userEvent, within } from '@storybook/test';
 import { BellOutlined } from '@ant-design/icons';
 
 import { Button } from '../../actions';
@@ -18,7 +18,7 @@ export default {
   },
 } as Meta<CubeToastsApiProps>;
 
-export const UseToast: Story<CubeToastsApiProps> = (args) => {
+export const UseToast: StoryFn<CubeToastsApiProps> = (args) => {
   const { toast } = useToastsApi();
 
   return <Button onPress={() => toast({ ...args })}>Click Me!</Button>;
@@ -35,11 +35,11 @@ UseToast.play = async ({ canvasElement }) => {
   await expect(notification).toBeInTheDocument();
 };
 
-export const AsComponent: Story<CubeToastsApiProps> = (args) => {
+export const AsComponent: StoryFn<CubeToastsApiProps> = (args) => {
   return <Toast {...args} />;
 };
 
-export const AllTypes: Story<CubeToastsApiProps> = () => (
+export const AllTypes: StoryFn<CubeToastsApiProps> = () => (
   <>
     <Toast.Success description="Copied to clipboard" />
     <Toast.Danger description="Copied to clipboard" />

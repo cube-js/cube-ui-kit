@@ -27,7 +27,7 @@ describe('<Combobox />', () => {
 
     const combobox = getByRole('combobox');
 
-    await act(async () => await userEvent.type(combobox, 're'));
+    await userEvent.type(combobox, 're');
 
     const listbox = getByRole('listbox');
     const options = getAllByRole('option', listbox);
@@ -48,10 +48,8 @@ describe('<Combobox />', () => {
 
     const combobox = getByRole('combobox');
 
-    await act(async () => {
-      await userEvent.type(combobox, 're');
-      await userEvent.click(getAllByRole('option')[0]);
-    });
+    await userEvent.type(combobox, 're');
+    await userEvent.click(getAllByRole('option')[0]);
 
     expect(combobox).toHaveValue('Red');
     expect(combobox).toHaveAttribute('aria-expanded', 'false');
@@ -71,10 +69,8 @@ describe('<Combobox />', () => {
 
     const combobox = getByRole('combobox');
 
-    await act(async () => {
-      await userEvent.type(combobox, 're');
-      await userEvent.click(getAllByRole('option')[0]);
-    });
+    await userEvent.type(combobox, 're');
+    await userEvent.click(getAllByRole('option')[0]);
 
     expect(formInstance.getFieldValue('test')).toBe('red');
   });
@@ -90,18 +86,14 @@ describe('<Combobox />', () => {
 
     const combobox = getByRole('combobox');
 
-    await act(async () => {
-      await userEvent.type(combobox, 're');
-    });
+    await userEvent.type(combobox, 're');
 
     const listbox = getByRole('listbox');
     const options = getAllByRole('option', listbox);
 
     expect(options).toHaveLength(2);
 
-    await act(async () => {
-      await userEvent.click(getAllByRole('option')[0]);
-    });
+    await userEvent.click(getAllByRole('option')[0]);
 
     expect(formInstance.getFieldValue('test')).toBe('red');
   });
@@ -121,9 +113,7 @@ describe('<Combobox />', () => {
 
     const combobox = getByRole('combobox');
 
-    await act(async () => {
-      await userEvent.type(combobox, 're');
-    });
+    await userEvent.type(combobox, 're');
 
     const listbox = getByRole('listbox');
     const options = getAllByRole('option', listbox);

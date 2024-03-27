@@ -207,7 +207,7 @@ export interface CubeTextInputBaseProps
   size?: 'small' | 'default' | 'large' | (string & {});
 }
 
-function TextInputBase(props: CubeTextInputBaseProps, ref) {
+function _TextInputBase(props: CubeTextInputBaseProps, ref) {
   props = useProviderProps(props);
   props = useFormProps(props);
   props = useFieldProps(props, {
@@ -383,6 +383,6 @@ function TextInputBase(props: CubeTextInputBaseProps, ref) {
   });
 }
 
-const _TextInputBase = forwardRef(TextInputBase);
-export { _TextInputBase as TextInputBase };
+const TextInputBase = forwardRef(_TextInputBase);
+export { TextInputBase };
 export { AriaTextFieldProps };

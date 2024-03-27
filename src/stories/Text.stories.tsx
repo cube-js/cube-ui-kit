@@ -1,4 +1,6 @@
-import { Text } from '../components/content/Text';
+import { StoryFn } from '@storybook/react';
+
+import { CubeTextProps, Text } from '../index';
 
 import { baseProps } from './lists/baseProps';
 
@@ -12,7 +14,9 @@ export default {
   },
 };
 
-const Template = ({ label, ...args }) => <Text {...args}>{label}</Text>;
+const Template: StoryFn<CubeTextProps> = ({ label, ...args }) => (
+  <Text {...args}>{label}</Text>
+);
 
 export const Default = Template.bind({});
 Default.args = {

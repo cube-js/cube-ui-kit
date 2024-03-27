@@ -5,8 +5,8 @@ export function fontStyle({ font }) {
     font === 'monospace'
       ? 'var(--monospace-font)'
       : font === true
-      ? 'var(--font)'
-      : `${font}, var(--font)`;
+        ? 'var(--font)'
+        : `${font}, var(--font)`;
 
   return {
     'font-family': fontFamily,

@@ -1,6 +1,6 @@
 import { DollarCircleOutlined } from '@ant-design/icons';
-import { Meta, Story } from '@storybook/react';
-import { within, userEvent } from '@storybook/testing-library';
+import { Meta, StoryFn } from '@storybook/react';
+import { within, userEvent } from '@storybook/test';
 
 import { SELECTED_KEY_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -41,7 +41,7 @@ const options = [
   'very-long-option-value-with-suffix',
 ];
 
-const Template: Story<CubeSelectProps<any>> = (args) => (
+const Template: StoryFn<CubeSelectProps<any>> = (args) => (
   <Space
     radius="1x"
     padding={args.theme === 'special' ? '2x' : undefined}
@@ -95,7 +95,7 @@ WithDisabledOption.play = async ({ canvasElement }) => {
   await userEvent.click(button);
 };
 
-export const Wide: Story<CubeSelectProps<any>> = (args) => (
+export const Wide: StoryFn<CubeSelectProps<any>> = (args) => (
   <Select {...args}>
     {options.map((option) => (
       <Select.Item key={option}>
