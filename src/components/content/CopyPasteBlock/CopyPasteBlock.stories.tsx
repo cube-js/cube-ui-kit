@@ -27,7 +27,7 @@ const Template: StoryFn<CubeCopyPasteBlockProps> = (args) => {
         if (!text.includes(' ')) {
           setValue(text);
         } else {
-          throw 'The string should not contain spaces';
+          throw new Error('The string should not contain spaces');
         }
       }}
       onCopy={() => console.log('! copied', value)}

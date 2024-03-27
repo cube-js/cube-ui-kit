@@ -8,8 +8,8 @@ import {
   PlusOutlined,
 } from '@ant-design/icons';
 import { action } from '@storybook/addon-actions';
-import { expect } from '@storybook/jest';
-import { userEvent, waitFor, within } from '@storybook/testing-library';
+import { expect } from '@storybook/test';
+import { userEvent, waitFor, within } from '@storybook/test';
 
 import {
   Menu,

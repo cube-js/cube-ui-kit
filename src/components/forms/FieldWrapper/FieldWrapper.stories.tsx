@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 import { DollarCircleFilled } from '@ant-design/icons';
 
 import { Button } from '../../actions';
@@ -33,7 +33,7 @@ export default {
   },
 } as Meta<CubeFieldWrapperProps>;
 
-const Template: Story<CubeFieldWrapperProps> = (args) => (
+const Template: StoryFn<CubeFieldWrapperProps> = (args) => (
   <FieldWrapper {...args} />
 );
 

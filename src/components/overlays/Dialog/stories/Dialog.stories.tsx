@@ -1,5 +1,5 @@
-import { within, userEvent, waitFor } from '@storybook/testing-library';
-import { expect } from '@storybook/jest';
+import { within, userEvent, waitFor } from '@storybook/test';
+import { expect } from '@storybook/test';
 import { Story } from '@storybook/react';
 import { useRef, useState } from 'react';
 import { FocusableRefValue } from '@react-types/shared';
