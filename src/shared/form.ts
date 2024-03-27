@@ -13,7 +13,7 @@ export type ValidationState = 'invalid' | 'valid';
 /** On which event perform the validation for the field */
 export type ValidateTrigger = 'onBlur' | 'onChange' | 'onSubmit';
 
-export interface FieldBaseProps extends FormBaseProps {
+export interface FieldBaseProps<T = unknown> extends FormBaseProps {
   /** The field name */
   name?: string;
   /** The label of the field */
@@ -57,6 +57,14 @@ export interface FieldBaseProps extends FormBaseProps {
   labelStyles?: Styles;
   /** Whether the field is inside the form. Private field. */
   insideForm?: boolean;
+  fieldProps?: Props;
+  messageStyles?: Styles;
+  casting?:
+    | 'number'
+    | [
+        (inputValue: T) => string | null | undefined,
+        (outputValue: string) => T | null | undefined,
+      ];
 }
 
 export interface FormBaseProps {

@@ -22,7 +22,7 @@ import {
   tasty,
 } from '../../../tasty';
 import { FieldBaseProps } from '../../../shared';
-import { FieldWrapper } from '../FieldWrapper';
+import { wrapWithField } from '../wrapper';
 
 import type { AriaTextFieldProps } from '@react-types/textfield';
 
@@ -135,6 +135,8 @@ function extractContents(element, callback) {
 }
 
 function FileInput(props: CubeFileInputProps, ref) {
+  props = useProviderProps(props);
+
   let {
     id,
     name,
@@ -163,11 +165,14 @@ function FileInput(props: CubeFileInputProps, ref) {
     type = 'file',
     inputProps,
     ...otherProps
-  } = useProviderProps(props);
+  } = props;
+
   const [value, setValue] = useState();
   const [dragHover, setDragHover] = useState(false);
+
   let domRef = useRef(null);
   let defaultInputRef = useRef(null);
+
   inputRef = inputRef || defaultInputRef;
 
   let styles = extractStyles(otherProps, CONTAINER_STYLES);
@@ -247,31 +252,10 @@ function FileInput(props: CubeFileInputProps, ref) {
     </FileInputElement>
   );
 
-  return (
-    <FieldWrapper
-      {...{
-        labelPosition,
-        label,
-        extra,
-        styles,
-        isRequired,
-        labelStyles,
-        necessityIndicator,
-        necessityLabel,
-        labelProps,
-        isDisabled,
-        validationState,
-        message,
-        description,
-        requiredMark,
-        tooltip,
-        isHidden,
-        labelSuffix,
-        Component: fileInput,
-        ref: domRef,
-      }}
-    />
-  );
+  return wrapWithField(fileInput, domRef, {
+    ...props,
+    styles,
+  });
 }
 
 /**

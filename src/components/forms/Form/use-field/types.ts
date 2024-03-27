@@ -9,7 +9,7 @@ import {
 import { CubeFormInstance } from '../use-form';
 import { Props } from '../../../../tasty';
 
-export interface CubeFieldProps<T extends FieldTypes> {
+export interface CubeFieldProps<T extends FieldTypes, K = unknown> {
   /** The initial value of the input. */
   defaultValue?: any;
   /** The unique ID of the field */
@@ -35,6 +35,12 @@ export interface CubeFieldProps<T extends FieldTypes> {
   /** Message for the field. Some additional information or error notice */
   message?: ReactNode;
   labelProps?: Props;
+  casting?:
+    | 'number'
+    | [
+        (inputValue: K) => string | null | undefined,
+        (outputValue: string) => K | null | undefined,
+      ];
 }
 
 export type FieldReturnValue<T extends FieldTypes> = {

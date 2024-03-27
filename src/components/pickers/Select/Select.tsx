@@ -25,8 +25,8 @@ import {
   useOverlayPosition,
   useSelect,
 } from 'react-aria';
-import { DOMRef } from '@react-types/shared';
 import styled from 'styled-components';
+import { DOMRef } from '@react-types/shared';
 
 import { useFieldProps, useFormProps } from '../../forms';
 import { useProviderProps } from '../../../provider';
@@ -42,7 +42,6 @@ import {
   tasty,
 } from '../../../tasty';
 import { useFocus } from '../../../utils/react/interactions';
-import { FieldWrapper } from '../../forms/FieldWrapper';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import { FieldBaseProps } from '../../../shared';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
@@ -52,6 +51,7 @@ import {
   INPUT_WRAPPER_STYLES,
 } from '../../forms/TextInput/TextInputBase';
 import { DEFAULT_BUTTON_STYLES } from '../../actions';
+import { wrapWithField } from '../../forms/wrapper';
 
 import type { AriaSelectProps } from '@react-types/select';
 
@@ -301,7 +301,6 @@ function Select<T extends object>(
     label,
     extra,
     icon,
-    labelPosition = 'top',
     labelStyles,
     isRequired,
     necessityIndicator,
@@ -325,7 +324,6 @@ function Select<T extends object>(
     description,
     direction = 'bottom',
     shouldFlip = true,
-    requiredMark = true,
     placeholder,
     tooltip,
     size,
@@ -486,28 +484,16 @@ function Select<T extends object>(
     </SelectWrapperElement>
   );
 
-  return (
-    <FieldWrapper
-      {...{
-        labelPosition,
-        label,
-        extra,
+  return wrapWithField(
+    selectField,
+    ref,
+    mergeProps(
+      {
+        ...props,
         styles,
-        isRequired,
-        labelStyles,
-        necessityIndicator,
-        labelProps,
-        isDisabled,
-        validationState,
-        message,
-        description,
-        requiredMark,
-        tooltip,
-        labelSuffix,
-        Component: selectField,
-        ref: ref,
-      }}
-    />
+      },
+      { labelProps },
+    ),
   );
 }
 
