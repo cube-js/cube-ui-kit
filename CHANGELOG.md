@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.31.2
+
+### Patch Changes
+
+- [#437](https://github.com/cube-js/cube-ui-kit/pull/437) [`5411b86`](https://github.com/cube-js/cube-ui-kit/commit/5411b86a40139bbb68cee322ef3642a3e96486c5) Thanks [@ovr](https://github.com/ovr)! - fix(deps): Make storybook as dev dependencies
+
 ## 0.31.1
 
 ### Patch Changes
