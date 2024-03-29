@@ -1,6 +1,6 @@
-import { expect } from '@storybook/jest';
-import { ComponentMeta, Story } from '@storybook/react';
-import { userEvent, within } from '@storybook/testing-library';
+import { expect } from '@storybook/test';
+import { Meta, StoryFn } from '@storybook/react';
+import { userEvent, within } from '@storybook/test';
 import { action } from '@storybook/addon-actions';
 
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -26,9 +26,9 @@ export default {
     ),
   },
   parameters: { controls: { exclude: baseProps } },
-} as ComponentMeta<typeof AlertDialog>;
+} as Meta<typeof AlertDialog>;
 
-const Template: Story<CubeAlertDialogProps> = (args) => {
+const Template: StoryFn<CubeAlertDialogProps> = (args) => {
   return (
     <DialogTrigger
       isDismissable
@@ -50,7 +50,7 @@ Default.play = async ({ canvasElement }) => {
   await expect(await findByRole('alertdialog')).toBeInTheDocument();
 };
 
-export const UsingApi: Story<DialogProps> = (args) => {
+export const UsingApi: StoryFn<DialogProps> = (args) => {
   const dialogAPI = useAlertDialogAPI();
 
   return (
@@ -74,7 +74,7 @@ UsingApi.play = async ({ canvasElement }) => {
   await expect(await findByRole('alertdialog')).toBeInTheDocument();
 };
 
-export const UsingApiWithCancel: Story<DialogProps> = (args) => {
+export const UsingApiWithCancel: StoryFn<DialogProps> = (args) => {
   const dialogAPI = useAlertDialogAPI();
 
   return (

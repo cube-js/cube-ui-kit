@@ -1,7 +1,7 @@
 import { StoryFn } from '@storybook/react';
 import { linkTo } from '@storybook/addon-links';
-import { userEvent, waitFor, within } from '@storybook/testing-library';
-import { expect } from '@storybook/jest';
+import { userEvent, waitFor, within } from '@storybook/test';
+import { expect } from '@storybook/test';
 
 import {
   Alert,
@@ -84,7 +84,7 @@ const CustomSubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
       onSubmit={(v) => {
         console.log('onSubmit:', v);
 
-        throw <>Submission failed. Sorry for that :/</>;
+        return Promise.reject(<>Submission failed. Sorry for that :/</>);
       }}
       onValuesChange={(v) => {
         console.log('onChange', v);
@@ -109,7 +109,7 @@ const SubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
       onSubmit={(v) => {
         console.log('onSubmit:', v);
 
-        throw <>Submission failed. Sorry for that :/</>;
+        return Promise.reject(<>Submission failed. Sorry for that :/</>);
       }}
       onValuesChange={(v) => {
         console.log('onChange', v);
@@ -397,6 +397,8 @@ UnknownErrorMessage.play = async ({ canvasElement }) => {
 
   await waitFor(async () => {
     const alertElement = await canvas.getByText('Internal error');
+
+    await timeout(2000);
 
     await expect(alertElement).toBeInTheDocument();
 

@@ -63,7 +63,7 @@ const TitleElement = tasty({
   },
 });
 
-const _Title = forwardRef(function Title(
+const Title = forwardRef(function CubeTitle(
   {
     qa,
     as,
@@ -99,7 +99,7 @@ const _Title = forwardRef(function Title(
   );
 });
 
-const Title = Object.assign(_Title, {
+const _Title = Object.assign(Title, {
   Danger: forwardRef(function DangerTitle(props: CubeTitleProps, ref) {
     return <Title ref={ref} color="#danger-text" {...props} />;
   }),
@@ -108,4 +108,4 @@ const Title = Object.assign(_Title, {
   }),
 });
 
-export { Title };
+export { _Title as Title };

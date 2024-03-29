@@ -193,7 +193,7 @@ function tasty<
         as: originalAs,
         styles: mergeStyles(defaultStyles, variantStyles),
         styleProps,
-        ...defaultProps,
+        ...(defaultProps as Props),
       });
 
       return map;
@@ -204,7 +204,7 @@ function tasty<
         as: originalAs,
         styles: defaultStyles,
         styleProps,
-        ...defaultProps,
+        ...(defaultProps as Props),
       });
     }
 
@@ -218,7 +218,13 @@ function tasty<
           AllBasePropsWithMods<K>
         >;
 
-        return <Component {...restProps} ref={ref} />;
+        return (
+          <Component
+            // @ts-ignore
+            ref={ref}
+            {...(restProps as Props)}
+          />
+        );
       },
     );
   } else {

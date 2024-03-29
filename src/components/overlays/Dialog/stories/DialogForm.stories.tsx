@@ -1,10 +1,6 @@
-import {
-  userEvent,
-  waitForElementToBeRemoved,
-  within,
-} from '@storybook/testing-library';
+import { userEvent, waitForElementToBeRemoved, within } from '@storybook/test';
 import { ComponentMeta, StoryFn } from '@storybook/react';
-import { expect } from '@storybook/jest';
+import { expect } from '@storybook/test';
 import { useState } from 'react';
 
 import { CubeDialogFormProps, DialogForm } from '../DialogForm';

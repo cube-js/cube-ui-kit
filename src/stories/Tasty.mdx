@@ -1,4 +1,4 @@
-import { Meta, Story, Canvas } from '@storybook/addon-docs';
+import { Meta, Story, Canvas } from '@storybook/blocks';
 import {
   Button,
   Root,
@@ -11,8 +11,9 @@ import {
   Flex,
 } from '../index';
 import { StyledButton, GlobalStyledHeading } from './components/StyledButton';
+import * as TastyStories from './Tasty.stories';
 
-<Meta title="Tasty API" />
+<Meta of={TastyStories} />
 
 # Tasty API
 
@@ -89,9 +90,7 @@ const StyledButton = tasty(Button, {
 ```
 
 <Canvas>
-  <Story name="Styled Button">
-    <StyledButton>Styled Button</StyledButton>
-  </Story>
+  <Story of={TastyStories.StyledButton} />
 </Canvas>
 
 ## Define global styles
@@ -113,10 +112,7 @@ const GlobalStyledHeading = tasty('.myButton', {
 The `div` is used only for demonstration purposes. Do not use `div`s as buttons!
 
 <Canvas>
-  <Story name="Globally Styled Button">
-    <div className="myButton">Styled Button</div>
-    <GlobalStyledHeading />
-  </Story>
+  <Story of={TastyStories.GloballyStyledButton} />
 </Canvas>
 
 ## Style variants

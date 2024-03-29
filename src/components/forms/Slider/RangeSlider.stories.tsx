@@ -1,4 +1,4 @@
-import { Meta, Story } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 
@@ -18,7 +18,7 @@ export default {
   parameters: { controls: { exclude: baseProps } },
 } as Meta<CubeRangeSliderProps>;
 
-const Template: Story<CubeRangeSliderProps> = (args) => (
+const Template: StoryFn<CubeRangeSliderProps> = (args) => (
   <RangeSlider {...args} />
 );
 

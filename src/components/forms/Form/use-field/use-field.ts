@@ -187,8 +187,8 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
         (field?.errors?.length
           ? 'invalid'
           : showValid && field?.status === 'valid'
-          ? 'valid'
-          : undefined),
+            ? 'valid'
+            : undefined),
       ...(isRequired && { isRequired }),
       message: message ?? (field?.status === 'invalid' && field?.errors?.[0]),
       onBlur: onBlurHandler,

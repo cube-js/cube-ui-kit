@@ -1,4 +1,4 @@
-import { Meta } from '@storybook/addon-docs';
+import { Meta } from '@storybook/blocks';
 import {
   Button,
   Root,
@@ -84,13 +84,10 @@ You can pass an object to specify what style value should be bind to specific st
 ```
 
 <Root>
-  <Button
-    fill={{
-      '': '#purple', // default state
-      hovered: '#purple-text', // if hovered modifier is set
-    }}
-    color="#white"
-  >Custom button</Button>
+  <Button fill={{
+        '': '#purple', // default state
+        hovered: '#purple-text', // if hovered modifier is set
+      }} color="#white">Custom button</Button>
 </Root>
 
 ...
@@ -221,9 +218,9 @@ It allows to specify responsive break points. Inside this declaration you can de
 
 This style declaration means:
 
-- Use gap "2.5x" for screen size equal or above 1200px
-- Use gap "2x" for screen size equal or above 640px and below 1200px
-- Use gap "1x" for screen size below 640px
+* Use gap "2.5x" for screen size equal or above 1200px
+* Use gap "2x" for screen size equal or above 640px and below 1200px
+* Use gap "1x" for screen size below 640px
 
 If some values in array are not specified then the previous value will be used.
 
@@ -247,22 +244,22 @@ Native styles are direct binding to CSS properties. There is no additional synta
 
 Here is the list:
 
-- display
-- content -> place-content
-- items -> place-items
-- place -> place-self
-- grow -> flex-grow
-- shrink -> flex-shrink
-- row -> grid-row
-- column -> grid-column
-- order
-- cursor
-- opacity
-- textAlign
-- fontWeight
-- fontFamily
-- textTransform
-- z -> z-index
+* display
+* content -> place-content
+* items -> place-items
+* place -> place-self
+* grow -> flex-grow
+* shrink -> flex-shrink
+* row -> grid-row
+* column -> grid-column
+* order
+* cursor
+* opacity
+* textAlign
+* fontWeight
+* fontFamily
+* textTransform
+* z -> z-index
 
 ## Text styles
 
@@ -301,6 +298,7 @@ Here is the list:
     <Paragraph italic>Italic text</Paragraph>
     <Paragraph font={true}>The default font set applied.</Paragraph>
     <Paragraph font="monospace">The monospace font set applied.</Paragraph>
+
     <Paragraph font="Tahoma">
       Custom font applied with the fallback to the default font.
     </Paragraph>
@@ -337,6 +335,7 @@ The same applies to `height` property.
     <Paragraph border={true} padding="2x">
       Text inside
     </Paragraph>
+
     <Paragraph border={true} margin="2x">
       Text inside
     </Paragraph>
@@ -359,12 +358,15 @@ The `gap` property can be used in flex, grid and even block layouts. If it's use
     <Block border padding>
       Default border
     </Block>
+
     <Block border="2bw #dark.20" padding>
       Border size of two default border sizes
     </Block>
+
     <Block border="bottom" padding>
       Default border only at the bottom
     </Block>
+
     <Block border="2bw bottom left right #dark.50" padding>
       Complex border
     </Block>
@@ -385,12 +387,15 @@ The `gap` property can be used in flex, grid and even block layouts. If it's use
     <Block radius border padding>
       The default radius
     </Block>
+
     <Block radius="2r" border padding>
       Radius size of two default radii
     </Block>
+
     <Block radius="round" border padding>
       Round radius
     </Block>
+
     <Block radius="ellipse" border padding>
       Ellipse radius
     </Block>
@@ -409,6 +414,7 @@ The `gap` property can be used in flex, grid and even block layouts. If it's use
     <Block shadow padding>
       Default shadow
     </Block>
+
     <Block shadow="5px 5px 10px #dark.20" padding>
       Custom shadow
     </Block>
@@ -430,9 +436,11 @@ Outline API is similar to border but implemented via `box-shadow`.
     <Block outline padding radius>
       Default outline
     </Block>
+
     <Block outline="2bw #dark.20" padding radius>
       Custom outline
     </Block>
+
     <Block outline="2bw #dark.20 inset" padding radius>
       Custom inset outline
     </Block>
@@ -479,6 +487,7 @@ Change flow of the layout by using `flow` property.
       <Button>One</Button>
       <Button>Two</Button>
     </Flex>
+
     <Flex flow="column" gap>
       <Block>Column flow</Block>
       <Button>One</Button>

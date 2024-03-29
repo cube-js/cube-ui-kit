@@ -1,0 +1,60 @@
+import { Meta, Canvas, Story } from '@storybook/blocks';
+import {
+  Button,
+  Root,
+  Space,
+  Card,
+  Text,
+  Block,
+  Paragraph,
+  Flow,
+  Flex,
+  Grid,
+} from '../index';
+import * as LayoutStories from './Layout.stories';
+
+<Meta of={LayoutStories} />
+
+<Root />
+
+# Layout examples
+
+## Flow layout
+
+Flow Component is used to create gaps between blocks inside block layout.
+
+<Canvas>
+  <Story of={LayoutStories.Flow} />
+</Canvas>
+
+## Flex layout
+
+Use Space Component to create a row or a column of elements.
+
+<Canvas>
+  <Story of={LayoutStories.Flex} />
+</Canvas>
+
+Use Flex Component for more flexible layouts.
+
+<Canvas>
+  <Story of={LayoutStories.FlexCustom} />
+</Canvas>
+
+## Grid layout
+
+Use Grid Component for grid layouts.
+
+### Simple layout with side bar.
+
+```jsx
+<Grid gridColumns="200px 1fr" gridRows="60px 1fr" height="500px">
+  <Card gridColumn="1 / -1">Header</Card>
+  <Card>Sidebar</Card>
+  <Card>Content</Card>
+</Grid>
+```
+
+<Canvas>
+  <Story of={LayoutStories.Grid} />
+</Canvas>

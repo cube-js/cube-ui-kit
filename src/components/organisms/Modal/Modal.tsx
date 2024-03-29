@@ -1,5 +1,5 @@
 import { ReactNode, useCallback, useEffect, useState } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import styled from 'styled-components';
 import { CloseOutlined } from '@ant-design/icons';
 import { CSSTransition } from 'react-transition-group';
@@ -320,6 +320,7 @@ const modal: ModalService = {
 
     this.root = document.createElement('div');
 
+    // @ts-ignore
     this.root.classList.add('cube-modal-container');
 
     document.body.appendChild(this.root);
@@ -336,7 +337,11 @@ const modal: ModalService = {
       items = this.items;
     }
 
-    ReactDOM.render(
+    if (!this.root) return;
+
+    const root = createRoot(this.root);
+
+    root.render(
       items.map((item) => {
         const { id, onOk, onCancel, onClose, content, ...options } = item;
 
@@ -376,7 +381,6 @@ const modal: ModalService = {
           </Modal>
         );
       }),
-      this.root,
     );
   },
   open(item) {
