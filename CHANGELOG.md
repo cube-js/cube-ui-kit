@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.32.0
+
+### Minor Changes
+
+- [#440](https://github.com/cube-js/cube-ui-kit/pull/440) [`853e3e2`](https://github.com/cube-js/cube-ui-kit/commit/853e3e2692b1bd5adb158f825e4f816df1758548) Thanks [@tenphi](https://github.com/tenphi)! - Add full React 18 support. UI Kit now requires React 18 to run.
+
 ## 0.31.2
 
 ### Patch Changes
