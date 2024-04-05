@@ -6,7 +6,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import { CloseOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
 
 import { Block } from '../../Block';
@@ -16,6 +15,7 @@ import { CubeFlexProps, Flex } from '../../layout/Flex';
 import { Styles, tasty } from '../../../tasty';
 import { Button } from '../../actions';
 import { useLayoutEffect } from '../../../utils/react';
+import { CloseIcon } from '../../../icons';
 
 interface TabData {
   id: string | number;
@@ -244,7 +244,7 @@ function Tab({
           <Flex placeItems="center" style={{ position: 'relative' }}>
             {isClosable ? (
               <CloseButton onPress={onClose}>
-                <CloseOutlined />
+                <CloseIcon />
               </CloseButton>
             ) : (
               <div></div>

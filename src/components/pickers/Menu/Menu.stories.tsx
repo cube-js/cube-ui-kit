@@ -2,10 +2,8 @@ import { useState } from 'react';
 import {
   BulbOutlined,
   CheckCircleFilled,
-  MoreOutlined,
   ReloadOutlined,
   BookOutlined,
-  PlusOutlined,
 } from '@ant-design/icons';
 import { action } from '@storybook/addon-actions';
 import { expect } from '@storybook/test';
@@ -24,6 +22,7 @@ import {
   TooltipProvider,
 } from '../../../index';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { MoreIcon, PlusIcon } from '../../../icons';
 
 export default {
   title: 'Pickers/Menu',
@@ -86,7 +85,7 @@ export const Default = ({ ...props }) => {
       <MenuTrigger>
         <Button
           size="small"
-          icon={<MoreOutlined />}
+          icon={<MoreIcon />}
           aria-label="Open Context Menu"
         />
         {menu}
@@ -103,7 +102,7 @@ export const InsideModal = () => {
           <MenuTrigger>
             <Button
               size="small"
-              icon={<MoreOutlined />}
+              icon={<MoreIcon />}
               qa="ContextMenuButton"
               aria-label="Open Context Menu"
             />
@@ -351,7 +350,7 @@ export const ItemCustomIcons = (props) => {
         <Menu.Item key="orange" icon={<BookOutlined />} postfix="Jan, 2022">
           #16C7B3AE
         </Menu.Item>
-        <Menu.Item key="purple" icon={<PlusOutlined />} postfix="Feb, 2022">
+        <Menu.Item key="purple" icon={<PlusIcon />} postfix="Feb, 2022">
           #16C7B3AE
         </Menu.Item>
         <Menu.Item key="yellow" icon={<ReloadOutlined />} postfix="July, 2022">
