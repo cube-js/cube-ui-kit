@@ -3,7 +3,6 @@ import { useDOMRef } from '@react-spectrum/utils';
 import { DismissButton } from 'react-aria';
 import { forwardRef, ReactElement } from 'react';
 import { useDialog, useMessageFormatter } from 'react-aria';
-import { CloseOutlined } from '@ant-design/icons';
 import { DOMRef } from '@react-types/shared';
 import FocusLock from 'react-focus-lock';
 
@@ -22,6 +21,7 @@ import {
 import { mergeProps, SlotProvider } from '../../../utils/react';
 import { Button } from '../../actions';
 import { useOpenTransitionContext } from '../Modal/OpenTransition';
+import { CloseIcon } from '../../../icons';
 
 import { useDialogContext } from './context';
 
@@ -255,7 +255,7 @@ const DialogContent = forwardRef(function DialogContent(
             qa="ModalCloseButton"
             type="neutral"
             styles={CLOSE_BUTTON_STYLES}
-            icon={closeIcon || <CloseOutlined />}
+            icon={closeIcon || <CloseIcon />}
             label={formatMessage('dismiss')}
             onPress={() => onDismiss && onDismiss()}
           />

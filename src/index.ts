@@ -193,3 +193,5 @@ export * from '@react-aria/ssr';
 export * from './components/forms/Form';
 export * from './components/overlays/NewNotifications';
 export * from './components/overlays/Toasts';
+export * from './shared';
+export * from './icons';

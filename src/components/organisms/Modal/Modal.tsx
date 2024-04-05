@@ -1,7 +1,6 @@
 import { ReactNode, useCallback, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import styled from 'styled-components';
-import { CloseOutlined } from '@ant-design/icons';
 import { CSSTransition } from 'react-transition-group';
 
 import { Action } from '../../actions/Action';
@@ -12,6 +11,7 @@ import { Block } from '../../Block';
 import { Button } from '../../actions';
 import { Space } from '../../layout/Space';
 import { Title } from '../../content/Title';
+import { CloseIcon } from '../../../icons';
 
 const Overlay = styled.div`
   position: fixed;
@@ -29,7 +29,7 @@ const Overlay = styled.div`
   .cube-modal {
     --enter-transition-time: 250ms;
     --leave-transition-time: 160ms;
-    --base-translate: ((50vh - 50%) / -3);
+    --base-translate: calc((50vh - 50%) / -3);
     transform: translate(0, calc(var(--base-translate)));
   }
 
@@ -235,7 +235,7 @@ export function Modal(allProps: CubeModalProps) {
                 label="Close"
                 onPress={onClose || onCancel}
               >
-                <CloseOutlined style={{ fontSize: 16 }} />
+                <CloseIcon size={16} />
               </Action>
             ) : null}
           </Flex>

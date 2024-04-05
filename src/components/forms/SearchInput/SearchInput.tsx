@@ -1,7 +1,7 @@
 import { forwardRef, useRef } from 'react';
-import { CloseOutlined, SearchOutlined } from '@ant-design/icons';
 import { useSearchFieldState } from 'react-stately';
 import { useSearchField } from 'react-aria';
+import { SearchOutlined } from '@ant-design/icons';
 
 import {
   CubeTextInputBaseProps,
@@ -15,6 +15,7 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { tasty } from '../../../tasty';
+import { CloseIcon } from '../../../icons';
 
 export interface CubeSearchInputProps extends CubeTextInputBaseProps {
   /** Whether the search input is clearable using ESC keyboard button or clear button inside the input */
@@ -22,7 +23,7 @@ export interface CubeSearchInputProps extends CubeTextInputBaseProps {
 }
 
 const ClearButton = tasty(Button, {
-  icon: <CloseOutlined />,
+  icon: <CloseIcon />,
   styles: {
     radius: 'right (1r - 1bw)',
     width: '4x',

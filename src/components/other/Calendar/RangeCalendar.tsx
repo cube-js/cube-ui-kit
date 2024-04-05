@@ -5,12 +5,12 @@ import { createCalendar } from '@internationalized/date';
 import { AriaRangeCalendarProps, DateValue } from '@react-types/calendar';
 import { FocusableRef } from '@react-types/shared';
 import { createDOMRef } from '@react-spectrum/utils';
-import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 
 import { Button } from '../../actions';
 import { tasty } from '../../../tasty';
 import { Title } from '../../content/Title';
 import { useProviderProps } from '../../../provider';
+import { LeftIcon, RightIcon } from '../../../icons';
 
 import { CalendarGrid } from './CalendarGrid';
 
@@ -61,8 +61,8 @@ function RangeCalendar<T extends DateValue>(
           {title}
         </Title>
         <Button.Group gap=".5x">
-          <Button size="small" {...prevButtonProps} icon={<LeftOutlined />} />
-          <Button size="small" {...nextButtonProps} icon={<RightOutlined />} />
+          <Button size="small" {...prevButtonProps} icon={<LeftIcon />} />
+          <Button size="small" {...nextButtonProps} icon={<RightIcon />} />
         </Button.Group>
       </CalendarHeaderElement>
       <CalendarGrid state={state} />
