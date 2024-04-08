@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.33.0
+
+### Minor Changes
+
+- [#442](https://github.com/cube-js/cube-ui-kit/pull/442) [`d887177`](https://github.com/cube-js/cube-ui-kit/commit/d887177d0684fd994e92b1638ed5b7f1f3e95bae) Thanks [@tenphi](https://github.com/tenphi)! - Add icon set. Import icons like components: `CloseIcon`, `PlusIcon`, etc.
+
+- [#443](https://github.com/cube-js/cube-ui-kit/pull/443) [`c2701c2`](https://github.com/cube-js/cube-ui-kit/commit/c2701c2e8dfc9ee073501bb99ffe100149b9f32e) Thanks [@tenphi](https://github.com/tenphi)! - Fix tip position for Tooltip component in right/left placement.
+
 ## 0.32.0
 
 ### Minor Changes
