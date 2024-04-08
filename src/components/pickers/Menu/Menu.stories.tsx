@@ -1,5 +1,10 @@
 import { useState } from 'react';
-import { BulbOutlined, ReloadOutlined, BookOutlined } from '@ant-design/icons';
+import {
+  BulbOutlined,
+  ReloadOutlined,
+  BookOutlined,
+  CheckCircleFilled,
+} from '@ant-design/icons';
 import { action } from '@storybook/addon-actions';
 import { expect } from '@storybook/test';
 import { userEvent, waitFor, within } from '@storybook/test';
@@ -18,18 +23,6 @@ import {
 } from '../../../index';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { MoreIcon, PlusIcon } from '../../../icons';
-import { wrapIcon } from '../../../icons/wrap-icon';
-
-const SuccessIcon = wrapIcon(
-  'SuccessIcon',
-  <svg
-    fill="currentColor"
-    viewBox="0 0 16 16"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="m13.67 5.88-5.8 5.8a1.1 1.1 0 0 1-1.55 0l-3-3a1.1 1.1 0 0 1 1.56-1.55l2.21 2.21 5.03-5.02a1.1 1.1 0 0 1 1.55 1.56Z" />
-  </svg>,
-);
 
 export default {
   title: 'Pickers/Menu',
@@ -194,7 +187,11 @@ export const GitActions = (props) => {
       <BulbOutlined />
     </Text>
   );
-  const successIcon = <SuccessIcon color="#success" />;
+  const successIcon = (
+    <Text color="#success">
+      <CheckCircleFilled />
+    </Text>
+  );
   const stuffText = (
     <Text nowrap color="inherit">
       Suff
