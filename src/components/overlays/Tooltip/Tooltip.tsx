@@ -74,9 +74,10 @@ const TooltipTipElement = tasty({
       '': 'translate((-.375x - 1px), 0)',
       '[data-placement="bottom"]':
         'translate((-.375x - 1px), 0) rotate(180deg)',
-      '[data-placement="left"]': 'translate(-.375x, -.25x) rotate(270deg)',
-      '[data-placement="right"]': 'translate(.375x, -.25x) rotate(90deg)',
+      '[data-placement="left"]': 'translate(-.25x, -.25x) rotate(270deg)',
+      '[data-placement="right"]': 'translate(.25x, -.25x) rotate(90deg)',
     },
+    transition: 'theme',
   },
 });
 
@@ -84,8 +85,8 @@ const StyledTooltipElement = styled(TooltipElement)`
   ${(props) => {
     return getOverlayTransitionCSS({
       placement: props?.['data-position'],
-      minOffset: props?.['data-min-offset'],
-      minScale: props?.['data-min-scale'],
+      minOffset: '0',
+      minScale: 1,
     });
   }}
 `;
