@@ -20,7 +20,7 @@ import { KeyIcon as _KeyIcon } from './KeyIcon';
 import { LeftIcon as _LeftIcon } from './LeftIcon';
 import { LineChartIcon as _LineChartIcon } from './LineChartIcon';
 import { LockFilledIcon as _LockFilledIcon } from './LockFilledIcon';
-import { LockFilledIcon as _LockIcon } from './LockFilledIcon';
+import { LockIcon as _LockIcon } from './LockIcon';
 import { MoreIcon as _MoreIcon } from './MoreIcon';
 import { NumberIcon as _NumberIcon } from './NumberIcon';
 import { PieChartIcon as _PieChartIcon } from './PieChartIcon';
