@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import {
   BulbOutlined,
-  CheckCircleFilled,
   ReloadOutlined,
   BookOutlined,
+  CheckCircleFilled,
 } from '@ant-design/icons';
 import { action } from '@storybook/addon-actions';
 import { expect } from '@storybook/test';
@@ -223,10 +223,10 @@ export const GitActions = (props) => {
           key="blue"
           mods={{ pressed: true }}
           postfix={
-            <Flex gap="0.5x">
+            <Space gap="0.5x">
               {successIcon}
               {stuffText}
-            </Flex>
+            </Space>
           }
         >
           Merge to master (pressed)
