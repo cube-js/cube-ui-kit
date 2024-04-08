@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.33.1
+
+### Patch Changes
+
+- [#445](https://github.com/cube-js/cube-ui-kit/pull/445) [`0b7f5fe`](https://github.com/cube-js/cube-ui-kit/commit/0b7f5fe6e8f6f7b5eed152223205cf54a75c948f) Thanks [@tenphi](https://github.com/tenphi)! - Fix LockIcon component.
+
 ## 0.33.0
 
 ### Minor Changes
