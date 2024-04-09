@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.33.2
+
+### Patch Changes
+
+- [#448](https://github.com/cube-js/cube-ui-kit/pull/448) [`9d60269`](https://github.com/cube-js/cube-ui-kit/commit/9d60269d6bfc33c6953eef5ad5d2e591ba7aae89) Thanks [@tenphi](https://github.com/tenphi)! - Add aria-hidden to all icons.
+
+- [#448](https://github.com/cube-js/cube-ui-kit/pull/448) [`9d60269`](https://github.com/cube-js/cube-ui-kit/commit/9d60269d6bfc33c6953eef5ad5d2e591ba7aae89) Thanks [@tenphi](https://github.com/tenphi)! - Make all icons spans and change layout to inline-grid.
+
 ## 0.33.1
 
 ### Patch Changes
