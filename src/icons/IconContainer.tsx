@@ -13,8 +13,10 @@ import {
 } from '../tasty';
 
 const IconContainerElement = tasty({
+  as: 'span',
   styles: {
-    display: 'grid',
+    display: 'inline-grid',
+    verticalAlign: 'middle',
     width: '1em 1em',
     height: '1em 1em',
 
