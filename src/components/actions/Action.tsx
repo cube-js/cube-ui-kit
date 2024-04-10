@@ -27,6 +27,7 @@ export interface CubeActionProps
   to?: string;
   label?: string;
   htmlType?: 'button' | 'submit' | 'reset' | undefined;
+  download?: string;
   onClick?: MouseEventHandler;
   onMouseEnter?: MouseEventHandler;
   onMouseLeave?: MouseEventHandler;
@@ -57,7 +58,17 @@ const ActionElement = tasty({
 const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
 export const Action = forwardRef(function Action(
-  { to, as, htmlType, label, theme, mods, onPress, ...props }: CubeActionProps,
+  {
+    to,
+    as,
+    download,
+    htmlType,
+    label,
+    theme,
+    mods,
+    onPress,
+    ...props
+  }: CubeActionProps,
   ref: FocusableRef<HTMLElement>,
 ) {
   const { actionProps } = useAction(
@@ -67,5 +78,12 @@ export const Action = forwardRef(function Action(
 
   const styles = extractStyles(props, STYLE_PROPS);
 
-  return <ActionElement data-theme={theme} {...actionProps} styles={styles} />;
+  return (
+    <ActionElement
+      data-theme={theme}
+      download={download}
+      {...actionProps}
+      styles={styles}
+    />
+  );
 });
