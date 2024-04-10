@@ -279,6 +279,7 @@ export const Button = forwardRef(function Button(
     icon,
     rightIcon,
     mods,
+    download,
     ...props
   } = allProps;
 
@@ -347,6 +348,7 @@ export const Button = forwardRef(function Button(
 
   return (
     <ButtonElement
+      download={download}
       {...actionProps}
       disabled={isDisabledElement}
       variant={theme as 'default' | 'danger' | 'special'}
