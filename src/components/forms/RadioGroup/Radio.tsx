@@ -7,6 +7,7 @@ import {
   extractStyles,
   filterBaseProps,
   OUTER_STYLES,
+  OuterStyleProps,
   Styles,
   tasty,
 } from '../../../tasty';
@@ -144,7 +145,8 @@ const RadioLabelElement = tasty({
 export interface CubeRadioProps
   extends BaseProps,
     AriaRadioProps,
-    FieldBaseProps {
+    FieldBaseProps,
+    OuterStyleProps {
   inputStyles?: Styles;
   /* The visual type of the radio button */
   type?: 'button' | 'radio';
