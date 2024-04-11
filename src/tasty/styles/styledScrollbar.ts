@@ -36,7 +36,7 @@ export function styledScrollbarStyle({ styledScrollbar: val }) {
       'background-color': 'var(--scrollbar-corner-color)',
     },
     {
-      'scrollbar-width': 'thin',
+      'scrollbar-width': 'initial',
       'scrollbar-color':
         'var(--scrollbar-bg-color) var(--scrollbar-thumb-color)',
     },
