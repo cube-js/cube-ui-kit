@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.33.3
+
+### Patch Changes
+
+- [#450](https://github.com/cube-js/cube-ui-kit/pull/450) [`70ada53`](https://github.com/cube-js/cube-ui-kit/commit/70ada5326791bf73c16f3fa137fac720eef7cde3) Thanks [@tenphi](https://github.com/tenphi)! - Support `download` attribute in Button and Link components.
+
+- [#451](https://github.com/cube-js/cube-ui-kit/pull/451) [`889660f`](https://github.com/cube-js/cube-ui-kit/commit/889660f2cb4f084ea93d6157456a7046af46ebc0) Thanks [@tenphi](https://github.com/tenphi)! - Fix styled scrollbar styles to return background.
+
+- [#451](https://github.com/cube-js/cube-ui-kit/pull/451) [`889660f`](https://github.com/cube-js/cube-ui-kit/commit/889660f2cb4f084ea93d6157456a7046af46ebc0) Thanks [@tenphi](https://github.com/tenphi)! - Add typings for outer style props in the Radio component.
+
 ## 0.33.2
 
 ### Patch Changes
