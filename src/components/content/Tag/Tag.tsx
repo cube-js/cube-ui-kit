@@ -122,7 +122,7 @@ function Tag(allProps: CubeTagProps, ref) {
       {isClosable ? (
         <Suffix outerGap="0">
           <CloseAction styles={closeButtonStyles} onPress={onClose}>
-            <CloseIcon />
+            <CloseIcon size={12} />
           </CloseAction>
         </Suffix>
       ) : undefined}

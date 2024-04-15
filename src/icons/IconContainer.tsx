@@ -19,6 +19,7 @@ const IconContainerElement = tasty({
     verticalAlign: 'middle',
     width: '1em 1em',
     height: '1em 1em',
+    fontSize: 'var(--icon-size, var(--font-size))',
 
     '& svg': {
       width: '1em 1em',
