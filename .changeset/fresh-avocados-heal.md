@@ -2,4 +2,4 @@
 '@cube-dev/ui-kit': patch
 ---
 
-Use smaller horizontal paddings for the small-sized buttons.
+Use smaller horizontal paddings buttons.
