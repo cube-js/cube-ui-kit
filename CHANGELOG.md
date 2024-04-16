@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.33.4
+
+### Patch Changes
+
+- [#453](https://github.com/cube-js/cube-ui-kit/pull/453) [`cc85ee4`](https://github.com/cube-js/cube-ui-kit/commit/cc85ee4c5c1dc032526cfa178ca9b0b9b8c979b7) Thanks [@tenphi](https://github.com/tenphi)! - Use smaller horizontal paddings buttons.
+
+- [#455](https://github.com/cube-js/cube-ui-kit/pull/455) [`d72f96c`](https://github.com/cube-js/cube-ui-kit/commit/d72f96c7086dca45499fe8b8e96f40740effb017) Thanks [@tenphi](https://github.com/tenphi)! - Set default gap inside Button layout to 6px instead of 8px.
+
+- [#453](https://github.com/cube-js/cube-ui-kit/pull/453) [`cc85ee4`](https://github.com/cube-js/cube-ui-kit/commit/cc85ee4c5c1dc032526cfa178ca9b0b9b8c979b7) Thanks [@tenphi](https://github.com/tenphi)! - Use --icon-size property as the default size for the icon set.
+
 ## 0.33.3
 
 ### Patch Changes
