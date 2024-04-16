@@ -43,7 +43,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
     focused: '#purple-03',
   },
   cursor: 'pointer',
-  gap: '1x',
+  gap: '.75x',
   flow: 'column',
   preset: {
     '': 't3m',
