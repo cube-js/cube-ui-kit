@@ -1,10 +1,12 @@
+import { StoryFn } from '@storybook/react';
+
 import { baseProps } from '../stories/lists/baseProps';
 import { Grid } from '../components/layout/Grid';
 import { Space } from '../components/layout/Space';
 import { Title } from '../components/content/Title';
 import { Flow } from '../components/layout/Flow';
 
-import { IconContainer } from './IconContainer';
+import { CubeIconProps, IconContainer } from './IconContainer';
 
 import * as Icons from './index';
 
@@ -18,7 +20,7 @@ export default {
   },
 };
 
-const Template = (name) => {
+const Template: StoryFn<CubeIconProps> = (name) => {
   return (
     <Flow gap="2x">
       <Title>16px</Title>

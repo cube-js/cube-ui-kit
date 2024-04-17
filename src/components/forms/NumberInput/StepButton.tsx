@@ -1,7 +1,6 @@
-import { CaretDownOutlined, CaretUpOutlined } from '@ant-design/icons';
-
 import { Button } from '../../actions';
 import { Styles } from '../../../tasty';
+import { CaretDownIcon, CaretUpIcon } from '../../../icons';
 
 const STEP_BUTTON_STYLES: Styles = {
   width: '4x',
@@ -34,13 +33,7 @@ export function StepButton(props) {
       preventDefault
       type="neutral"
       styles={STEP_BUTTON_STYLES}
-      icon={
-        props.direction === 'up' ? (
-          <CaretUpOutlined style={{ fontSize: 'var(--icon-size)' }} />
-        ) : (
-          <CaretDownOutlined style={{ fontSize: 'var(--icon-size)' }} />
-        )
-      }
+      icon={props.direction === 'up' ? <CaretUpIcon /> : <CaretDownIcon />}
       mods={{
         up: props.direction === 'up',
         down: props.direction === 'down',

@@ -10,7 +10,7 @@ import { BarChartIcon as _BarChartIcon } from './BarChartIcon';
 import { BooleanIcon as _BooleanIcon } from './BooleanIcon';
 import { CountIcon as _CountIcon } from './CountIcon';
 import { CubeIcon as _CubeIcon } from './CubeIcon';
-import { DateIcon as _DateIcon } from './DateIcon';
+import { CalendarIcon as _CalendarIcon } from './CalendarIcon';
 import { DonutIcon as _DonutIcon } from './DonutIcon';
 import { DownIcon as _DownIcon } from './DownIcon';
 import { FilterIcon as _FilterIcon } from './FilterIcon';
@@ -32,6 +32,21 @@ import { ThunderboltFilledIcon as _ThunderboltFilledIcon } from './ThunderboltFi
 import { TimeIcon as _TimeIcon } from './TimeIcon';
 import { UpIcon as _UpIcon } from './UpIcon';
 import { ViewIcon as _ViewIcon } from './ViewIcon';
+import { BellIcon as _BellIcon } from './BellIcon';
+import { BellFilledIcon as _BellFilledIcon } from './BellFilledIcon';
+import { CaretDownIcon as _CaretDownIcon } from './CaretDownIcon';
+import { CaretUpIcon as _CaretUpIcon } from './CaretUpIcon';
+import { CheckCircleIcon as _CheckCircleIcon } from './CheckCircleIcon';
+import { CopyIcon as _CopyIcon } from './CopyIcon';
+import { EyeIcon as _EyeIcon } from './EyeIcon';
+import { EyeInvisibleIcon as _EyeInvisibleIcon } from './EyeInvisibleIcon';
+import { InfoCircleIcon as _InfoCircleIcon } from './InfoCircleIcon';
+import { InfoIcon as _InfoIcon } from './InfoIcon';
+import { LoadingIcon as _LoadingIcon } from './LoadingIcon';
+import { ReloadIcon as _ReloadIcon } from './ReloadIcon';
+import { SettingsIcon as _SettingsIcon } from './SettingsIcon';
+import { WarningIcon as _WarningIcon } from './WarningIcon';
+import { WarningFilledIcon as _WarningFilledIcon } from './WarningFilledIcon';
 
 export const CloseIcon = wrapIcon('CloseIcon', _CloseIcon);
 export const ExclamationIcon = wrapIcon('ExclamationIcon', _ExclamationIcon);
@@ -44,7 +59,7 @@ export const BarChartIcon = wrapIcon('BarChartIcon', _BarChartIcon);
 export const BooleanIcon = wrapIcon('BooleanIcon', _BooleanIcon);
 export const CountIcon = wrapIcon('CountIcon', _CountIcon);
 export const CubeIcon = wrapIcon('CubeIcon', _CubeIcon);
-export const DateIcon = wrapIcon('DateIcon', _DateIcon);
+export const CalendarIcon = wrapIcon('CalendarIcon', _CalendarIcon);
 export const DonutIcon = wrapIcon('DonutIcon', _DonutIcon);
 export const DownIcon = wrapIcon('DownIcon', _DownIcon);
 export const FilterIcon = wrapIcon('FilterIcon', _FilterIcon);
@@ -72,7 +87,25 @@ export const ThunderboltFilledIcon = wrapIcon(
 export const TimeIcon = wrapIcon('TimeIcon', _TimeIcon);
 export const UpIcon = wrapIcon('UpIcon', _UpIcon);
 export const ViewIcon = wrapIcon('ViewIcon', _ViewIcon);
+export const BellIcon = wrapIcon('BellIcon', _BellIcon);
+export const BellFilledIcon = wrapIcon('BellFilledIcon', _BellFilledIcon);
+export const CaretDownIcon = wrapIcon('CaretDownIcon', _CaretDownIcon);
+export const CaretUpIcon = wrapIcon('CaretUpIcon', _CaretUpIcon);
+export const CheckCircleIcon = wrapIcon('CheckCircleIcon', _CheckCircleIcon);
+export const CopyIcon = wrapIcon('CopyIcon', _CopyIcon);
+export const EyeIcon = wrapIcon('EyeIcon', _EyeIcon);
+export const EyeInvisibleIcon = wrapIcon('EyeFilledIcon', _EyeInvisibleIcon);
+export const InfoCircleIcon = wrapIcon('InfoCircleIcon', _InfoCircleIcon);
+export const InfoIcon = wrapIcon('InfoIcon', _InfoIcon);
+export const LoadingIcon = wrapIcon('LoadingIcon', _LoadingIcon);
+export const ReloadIcon = wrapIcon('ReloadIcon', _ReloadIcon);
+export const SettingsIcon = wrapIcon('SettingsIcon', _SettingsIcon);
+export const WarningIcon = wrapIcon('WarningIcon', _WarningIcon);
+export const WarningFilledIcon = wrapIcon(
+  'WarningFilledIcon',
+  _WarningFilledIcon,
+);
 
 export { IconContainer } from './IconContainer';
 
-export type { IconContainerProps } from './IconContainer';
+export type { CubeIconProps } from './IconContainer';

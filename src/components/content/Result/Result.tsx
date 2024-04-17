@@ -3,7 +3,6 @@ import {
   CheckCircleFilled,
   CloseCircleFilled,
   InfoCircleFilled,
-  WarningFilled,
 } from '@ant-design/icons';
 
 import { Title } from '../Title';
@@ -16,6 +15,7 @@ import {
   tasty,
 } from '../../../tasty';
 import { mergeProps, wrapNodeIfPlain } from '../../../utils/react';
+import { WarningFilledIcon } from '../../../icons';
 
 export interface CubeResultProps extends BaseProps, ContainerStyleProps {
   /** Additional block content. For example, a set of buttons */
@@ -129,7 +129,7 @@ const statusIconMap: StatusIconMap = {
   },
   warning: {
     color: 'note',
-    component: WarningFilled,
+    component: WarningFilledIcon,
   },
   404: {
     color: 'purple',

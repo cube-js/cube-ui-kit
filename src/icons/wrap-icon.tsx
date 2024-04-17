@@ -1,9 +1,9 @@
 import { ReactNode } from 'react';
 
-import { IconContainerProps, IconContainer } from './IconContainer';
+import { CubeIconProps, IconContainer } from './IconContainer';
 
 export function wrapIcon(name: string, icon: ReactNode) {
-  function Icon(props: IconContainerProps) {
+  function Icon(props: CubeIconProps) {
     return (
       <IconContainer qa={name} aria-hidden="true" {...props}>
         {icon}
