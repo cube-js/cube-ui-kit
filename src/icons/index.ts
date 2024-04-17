@@ -109,3 +109,5 @@ export const WarningFilledIcon = wrapIcon(
 export { IconContainer } from './IconContainer';
 
 export type { CubeIconProps } from './IconContainer';
+
+export { wrapIcon };
