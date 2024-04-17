@@ -1,9 +1,10 @@
 import { CaretDownOutlined, DollarCircleOutlined } from '@ant-design/icons';
+import { StoryFn } from '@storybook/react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Space } from '../../layout/Space';
 
-import { Button } from './Button';
+import { Button, CubeButtonProps } from './Button';
 
 export default {
   title: 'Actions/Button',
@@ -36,7 +37,13 @@ export default {
   },
 };
 
-const Template = ({ icon, rightIcon, label, onClick, ...props }) => (
+const Template: StoryFn<CubeButtonProps> = ({
+  icon,
+  rightIcon,
+  label,
+  onClick,
+  ...props
+}) => (
   <Space
     radius="1x"
     padding={props.theme === 'special' ? '2x' : undefined}
@@ -53,7 +60,13 @@ const Template = ({ icon, rightIcon, label, onClick, ...props }) => (
   </Space>
 );
 
-const TemplateSizes = ({ label, icon, rightIcon, size, ...props }) => (
+const TemplateSizes: StoryFn<CubeButtonProps> = ({
+  label,
+  icon,
+  rightIcon,
+  size,
+  ...props
+}) => (
   <Space>
     <Button
       icon={icon ? <DollarCircleOutlined /> : undefined}
@@ -82,7 +95,11 @@ const TemplateSizes = ({ label, icon, rightIcon, size, ...props }) => (
   </Space>
 );
 
-const TemplateStates = ({ label, mods, ...props }) => (
+const TemplateStates: StoryFn<CubeButtonProps> = ({
+  label,
+  mods,
+  ...props
+}) => (
   <Space>
     <Button
       {...props}
@@ -142,7 +159,11 @@ const TemplateStates = ({ label, mods, ...props }) => (
   </Space>
 );
 
-const DarkTemplateStates = ({ label, mods, ...props }) => (
+const DarkTemplateStates: StoryFn<CubeButtonProps> = ({
+  label,
+  mods,
+  ...props
+}) => (
   <Space padding="2x" radius="1x" fill="#dark">
     <Button
       {...props}

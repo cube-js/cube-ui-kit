@@ -1,5 +1,4 @@
 import { forwardRef } from 'react';
-import { InfoCircleOutlined } from '@ant-design/icons';
 
 import { Paragraph } from '../../content/Paragraph';
 import { tasty } from '../../../tasty';
@@ -9,6 +8,7 @@ import { wrapNodeIfPlain } from '../../../utils/react';
 import { Space } from '../../layout/Space';
 import { Flex } from '../../layout/Flex';
 import { Label } from '../Label';
+import { InfoCircleIcon } from '../../../icons';
 
 import { CubeFieldWrapperProps } from './types';
 
@@ -121,7 +121,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
               title={tooltip}
               width="initial max-content 40x"
             >
-              <InfoCircleOutlined
+              <InfoCircleIcon
                 style={{
                   color: 'var(--purple-text-color)',
                   margin: '0 4px',

@@ -1,9 +1,4 @@
 import { ReactNode, useState } from 'react';
-import {
-  CopyOutlined,
-  EyeInvisibleOutlined,
-  EyeOutlined,
-} from '@ant-design/icons';
 import copy from 'clipboard-copy';
 
 import { Action, Button } from '../../actions';
@@ -16,6 +11,7 @@ import {
 import { TooltipTrigger } from '../../overlays/Tooltip/TooltipTrigger';
 import { Tooltip } from '../../overlays/Tooltip/Tooltip';
 import { useToastsApi } from '../../overlays/Toasts';
+import { CopyIcon, EyeIcon, EyeInvisibleIcon } from '../../../icons';
 
 const ActionElement = tasty(Action, {
   styles: {
@@ -111,7 +107,7 @@ const ActionButton = tasty(Button, {
 });
 
 const CopyButton = tasty(ActionButton, {
-  icon: <CopyOutlined />,
+  icon: <CopyIcon />,
   'aria-label': 'Copy to clipboard',
   styles: {
     radius: {
@@ -238,7 +234,7 @@ function CopySnippet(allProps: CubeCopySnippetProps) {
           {actions}
           {hideText && (
             <ShowButton
-              icon={showHidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+              icon={showHidden ? <EyeInvisibleIcon /> : <EyeIcon />}
               mods={{ multiline, withScroll: showScroll }}
               onPress={() => setShowHidden(!showHidden)}
             />

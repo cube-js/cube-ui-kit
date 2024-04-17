@@ -1,8 +1,4 @@
-import {
-  CheckOutlined,
-  LoadingOutlined,
-  WarningOutlined,
-} from '@ant-design/icons';
+import { CheckOutlined } from '@ant-design/icons';
 import {
   cloneElement,
   forwardRef,
@@ -52,6 +48,7 @@ import {
   INPUT_WRAPPER_STYLES,
 } from '../../forms/TextInput/TextInputBase';
 import { DEFAULT_BUTTON_STYLES } from '../../actions';
+import { LoadingIcon, WarningIcon } from '../../../icons';
 
 import type { AriaSelectProps } from '@react-types/select';
 
@@ -373,10 +370,7 @@ function Select<T extends object>(
   let isInvalid = validationState === 'invalid';
 
   let validationIcon = isInvalid ? (
-    <WarningOutlined
-      data-element="ValidationIcon"
-      style={{ color: 'var(--danger-color)' }}
-    />
+    <WarningIcon data-element="ValidationIcon" color="#danger" />
   ) : (
     <CheckOutlined
       data-element="ValidationIcon"
@@ -462,7 +456,7 @@ function Select<T extends object>(
         <div data-element="Suffix">
           {suffixPosition === 'before' ? suffix : null}
           {validationState && !isLoading ? validation : null}
-          {isLoading && <LoadingOutlined />}
+          {isLoading && <LoadingIcon />}
           {suffixPosition === 'after' ? suffix : null}
           <div data-element="CaretIcon">
             <CaretDownIcon />

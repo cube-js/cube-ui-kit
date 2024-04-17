@@ -172,7 +172,7 @@ export interface CubeTextInputBaseProps
     FieldBaseProps {
   validate?: AriaTextFieldProps['validate'] | AriaNumberFieldProps['validate'];
   /** Left input icon */
-  icon?: ReactElement;
+  icon?: ReactElement | null;
   /** Input decoration before the main input */
   prefix?: ReactNode;
   /** Input decoration after the main input */

@@ -1,5 +1,4 @@
 import { cloneElement, forwardRef, ReactElement, useMemo } from 'react';
-import { LoadingOutlined } from '@ant-design/icons';
 import { FocusableRef } from '@react-types/shared';
 
 import { CubeActionProps } from '../Action';
@@ -11,6 +10,7 @@ import {
   TEXT_STYLES,
 } from '../../../tasty';
 import { accessibilityWarning } from '../../../utils/warnings';
+import { LoadingIcon } from '../../../icons';
 import { useAction } from '../use-action';
 
 export interface CubeButtonProps extends CubeActionProps {
@@ -361,7 +361,7 @@ export const Button = forwardRef(function Button(
         !isLoading ? (
           icon
         ) : (
-          <LoadingOutlined data-element="ButtonIcon" />
+          <LoadingIcon data-element="ButtonIcon" />
         )
       ) : null}
       {children}

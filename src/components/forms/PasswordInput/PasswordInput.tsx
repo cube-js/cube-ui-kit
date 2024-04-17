@@ -1,6 +1,5 @@
 import { forwardRef, useCallback, useRef, useState } from 'react';
 import { useTextField } from 'react-aria';
-import { EyeInvisibleOutlined, EyeOutlined } from '@ant-design/icons';
 
 import {
   CubeTextInputBaseProps,
@@ -13,6 +12,7 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { useFieldProps } from '../Form';
+import { EyeIcon, EyeInvisibleIcon } from '../../../icons';
 
 function PasswordInput(props: WithNullableValue<CubeTextInputBaseProps>, ref) {
   props = castNullableStringValue(props);
@@ -53,7 +53,7 @@ function PasswordInput(props: WithNullableValue<CubeTextInputBaseProps>, ref) {
         radius="right"
         width="4x"
         label="Toggle masking"
-        icon={type === 'password' ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+        icon={type === 'password' ? <EyeInvisibleIcon /> : <EyeIcon />}
         onPress={toggleType}
       />
     </>

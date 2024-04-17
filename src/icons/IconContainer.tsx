@@ -29,7 +29,7 @@ const IconContainerElement = tasty({
   styleProps: [...OUTER_STYLES, ...BASE_STYLES, ...COLOR_STYLES],
 });
 
-export interface IconContainerProps
+export interface CubeIconProps
   extends BaseProps,
     OuterStyleProps,
     ColorStyleProps,
@@ -37,9 +37,7 @@ export interface IconContainerProps
   size?: Styles['fontSize'];
 }
 
-export const IconContainer = memo(function IconContainer(
-  props: IconContainerProps,
-) {
+export const IconContainer = memo(function IconContainer(props: CubeIconProps) {
   const { size, ...rest } = props;
 
   return (
