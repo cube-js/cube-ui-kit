@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.34.0
+
+### Minor Changes
+
+- [#456](https://github.com/cube-js/cube-ui-kit/pull/456) [`6371914`](https://github.com/cube-js/cube-ui-kit/commit/6371914e3a03f55b1ff57f1db715480cec5c6970) Thanks [@tenphi](https://github.com/tenphi)! - Add a new set icons.
+
 ## 0.33.4
 
 ### Patch Changes
