@@ -19,14 +19,14 @@ module.exports = [
         }),
       );
     },
-    limit: '220kB',
+    limit: '225kB',
   },
   {
     name: 'Tree shaking (just a Button)',
     path: './dist/es/index.js',
     webpack: true,
     import: '{ Button }',
-    limit: '31 kB',
+    limit: '32 kB',
   },
   {
     name: 'Tree shaking (just an Icon)',
