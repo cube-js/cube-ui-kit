@@ -1,8 +1,5 @@
-import { CheckOutlined } from '@ant-design/icons';
+import { CheckIcon } from '../../icons';
 
 export const ValidIcon = (
-  <CheckOutlined
-    data-element="ValidationIcon"
-    style={{ color: 'var(--success-color)' }}
-  />
+  <CheckIcon data-element="ValidationIcon" color="#success" />
 );

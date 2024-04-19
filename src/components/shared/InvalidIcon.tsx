@@ -1,8 +1,5 @@
-import { WarningOutlined } from '@ant-design/icons';
+import { WarningIcon } from '../../icons';
 
 export const InvalidIcon = (
-  <WarningOutlined
-    data-element="ValidationIcon"
-    style={{ color: 'var(--danger-color)' }}
-  />
+  <WarningIcon data-element="ValidationIcon" color="#danger" />
 );

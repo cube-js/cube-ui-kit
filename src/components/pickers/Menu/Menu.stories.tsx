@@ -273,6 +273,7 @@ export const MenuSelectableMultiple = (props) => {
 MenuSelectableMultiple.play = async ({ canvasElement }) => {
   const { getByTestId } = within(canvasElement);
 
+  // @ts-ignore
   await userEvent.tab(getByTestId('Menu'));
 };
 
