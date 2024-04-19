@@ -1,10 +1,10 @@
 import { ReactNode } from 'react';
-import { CheckOutlined } from '@ant-design/icons';
 
 import { Button, CubeButtonProps } from '../../actions';
 import { Text } from '../../content/Text';
 import { tasty } from '../../../tasty';
 import { Space } from '../../layout/Space';
+import { CheckIcon } from '../../../icons';
 
 const StyledButton = tasty(Button, {
   styles: {
@@ -93,7 +93,7 @@ export type MenuButtonProps = {
 const getSelectionTypeIcon = (selectionIcon?: MenuSelectionType) => {
   switch (selectionIcon) {
     case 'checkbox':
-      return <CheckOutlined />;
+      return <CheckIcon />;
     case 'radio':
       return <RadioIcon />;
     default:

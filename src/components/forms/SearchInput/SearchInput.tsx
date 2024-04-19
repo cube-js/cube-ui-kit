@@ -1,7 +1,6 @@
 import { forwardRef, useRef } from 'react';
 import { useSearchFieldState } from 'react-stately';
 import { useSearchField } from 'react-aria';
-import { SearchOutlined } from '@ant-design/icons';
 
 import {
   CubeTextInputBaseProps,
@@ -15,7 +14,7 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { tasty } from '../../../tasty';
-import { CloseIcon } from '../../../icons';
+import { CloseIcon, SearchIcon } from '../../../icons';
 
 export interface CubeSearchInputProps extends CubeTextInputBaseProps {
   /** Whether the search input is clearable using ESC keyboard button or clear button inside the input */
@@ -53,7 +52,7 @@ export const SearchInput = forwardRef(function SearchInput(
       inputProps={inputProps}
       inputRef={inputRef}
       type="search"
-      icon={<SearchOutlined />}
+      icon={<SearchIcon />}
       suffixPosition="after"
       {...props}
       suffix={

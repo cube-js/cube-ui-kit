@@ -1,4 +1,4 @@
-export const PlusIcon = (
+export const SearchIcon = (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="16"
@@ -9,7 +9,7 @@ export const PlusIcon = (
     <path
       fill="currentColor"
       fillRule="evenodd"
-      d="M8.65 2a.65.65 0 1 0-1.3 0v5.35H2a.65.65 0 1 0 0 1.3h5.35V14a.65.65 0 1 0 1.3 0V8.65H14a.65.65 0 1 0 0-1.3H8.65z"
+      d="M10.7 6.5a4.2 4.2 0 1 1-8.4 0 4.2 4.2 0 0 1 8.4 0m-.798 4.322a5.5 5.5 0 1 1 .92-.92l3.638 3.638a.65.65 0 1 1-.92.92z"
       clipRule="evenodd"
     />
   </svg>

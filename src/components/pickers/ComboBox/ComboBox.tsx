@@ -1,9 +1,4 @@
 import {
-  CheckOutlined,
-  LoadingOutlined,
-  WarningOutlined,
-} from '@ant-design/icons';
-import {
   cloneElement,
   ForwardedRef,
   forwardRef,
@@ -12,10 +7,10 @@ import {
   useMemo,
 } from 'react';
 import {
-  useComboBox,
   useButton,
-  useHover,
+  useComboBox,
   useFilter,
+  useHover,
   useOverlayPosition,
 } from 'react-aria';
 import { Item, useComboBoxState } from 'react-stately';
@@ -37,11 +32,11 @@ import {
 } from '../../../utils/react';
 import { FieldWrapper } from '../../forms/FieldWrapper';
 import { CubeSelectBaseProps, ListBoxPopup } from '../Select/Select';
-import {
-  DEFAULT_INPUT_STYLES,
-  INPUT_WRAPPER_STYLES,
-} from '../../forms/TextInput/TextInputBase';
+import { DEFAULT_INPUT_STYLES, INPUT_WRAPPER_STYLES } from '../../forms';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
+import { LoadingIcon } from '../../../icons';
+import { InvalidIcon } from '../../shared/InvalidIcon';
+import { ValidIcon } from '../../shared/ValidIcon';
 
 import type {
   CollectionBase,
@@ -300,17 +295,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
   let isInvalid = validationState === 'invalid';
 
-  let validationIcon = isInvalid ? (
-    <WarningOutlined
-      data-element="ValidationIcon"
-      style={{ color: 'var(--danger-color)' }}
-    />
-  ) : (
-    <CheckOutlined
-      data-element="ValidationIcon"
-      style={{ color: 'var(--success-color)' }}
-    />
-  );
+  let validationIcon = isInvalid ? InvalidIcon : ValidIcon;
   let validation = cloneElement(validationIcon);
 
   let comboBoxWidth = wrapperRef?.current?.offsetWidth;
@@ -378,7 +363,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         {validationState || isLoading ? (
           <>
             {validationState && !isLoading ? validation : null}
-            {isLoading ? <LoadingOutlined /> : null}
+            {isLoading ? <LoadingIcon /> : null}
           </>
         ) : null}
         {suffixPosition === 'after' ? suffix : null}

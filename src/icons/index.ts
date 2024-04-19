@@ -47,6 +47,9 @@ import { ReloadIcon as _ReloadIcon } from './ReloadIcon';
 import { SettingsIcon as _SettingsIcon } from './SettingsIcon';
 import { WarningIcon as _WarningIcon } from './WarningIcon';
 import { WarningFilledIcon as _WarningFilledIcon } from './WarningFilledIcon';
+import { SearchIcon as _SearchIcon } from './SearchIcon';
+import { SwitchIcon as _SwitchIcon } from './SwitchIcon';
+import { CheckIcon as _CheckIcon } from './CheckIcon';
 
 export const CloseIcon = wrapIcon('CloseIcon', _CloseIcon);
 export const ExclamationIcon = wrapIcon('ExclamationIcon', _ExclamationIcon);
@@ -105,6 +108,9 @@ export const WarningFilledIcon = wrapIcon(
   'WarningFilledIcon',
   _WarningFilledIcon,
 );
+export const SearchIcon = wrapIcon('SearchIcon', _SearchIcon);
+export const SwitchIcon = wrapIcon('SwitchIcon', _SwitchIcon);
+export const CheckIcon = wrapIcon('CheckIcon', _CheckIcon);
 
 export { IconContainer } from './IconContainer';
 

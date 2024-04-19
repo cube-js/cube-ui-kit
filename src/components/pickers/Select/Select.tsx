@@ -1,4 +1,3 @@
-import { CheckOutlined } from '@ant-design/icons';
 import {
   cloneElement,
   forwardRef,
@@ -43,12 +42,11 @@ import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import { FieldBaseProps } from '../../../shared';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
-import {
-  DEFAULT_INPUT_STYLES,
-  INPUT_WRAPPER_STYLES,
-} from '../../forms/TextInput/TextInputBase';
+import { DEFAULT_INPUT_STYLES, INPUT_WRAPPER_STYLES } from '../../forms';
 import { DEFAULT_BUTTON_STYLES } from '../../actions';
-import { LoadingIcon, WarningIcon } from '../../../icons';
+import { LoadingIcon } from '../../../icons';
+import { InvalidIcon } from '../../shared/InvalidIcon';
+import { ValidIcon } from '../../shared/ValidIcon';
 
 import type { AriaSelectProps } from '@react-types/select';
 
@@ -369,14 +367,7 @@ function Select<T extends object>(
 
   let isInvalid = validationState === 'invalid';
 
-  let validationIcon = isInvalid ? (
-    <WarningIcon data-element="ValidationIcon" color="#danger" />
-  ) : (
-    <CheckOutlined
-      data-element="ValidationIcon"
-      style={{ color: 'var(--success-color)' }}
-    />
-  );
+  let validationIcon = isInvalid ? InvalidIcon : ValidIcon;
   let validation = cloneElement(validationIcon);
 
   let triggerWidth = triggerRef?.current?.offsetWidth;
