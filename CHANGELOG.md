@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.35.0
+
+### Minor Changes
+
+- [#460](https://github.com/cube-js/cube-ui-kit/pull/460) [`de511ca`](https://github.com/cube-js/cube-ui-kit/commit/de511ca4e83fdd659888e8c7e058b293774ef45e) Thanks [@tenphi](https://github.com/tenphi)! - Add even more icons.
+
+### Patch Changes
+
+- [#460](https://github.com/cube-js/cube-ui-kit/pull/460) [`de511ca`](https://github.com/cube-js/cube-ui-kit/commit/de511ca4e83fdd659888e8c7e058b293774ef45e) Thanks [@tenphi](https://github.com/tenphi)! - Allow icons to fill all available vertical space in complex layouts.
+
+- [#458](https://github.com/cube-js/cube-ui-kit/pull/458) [`4740e98`](https://github.com/cube-js/cube-ui-kit/commit/4740e987ab71ce20ee7d2a4a6affd15c0f117e0b) Thanks [@tenphi](https://github.com/tenphi)! - Export wrapIcon helper.
+
 ## 0.34.0
 
 ### Minor Changes
