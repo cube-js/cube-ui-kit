@@ -18,12 +18,12 @@ const IconContainerElement = tasty({
     display: 'inline-grid',
     verticalAlign: 'middle',
     width: '1em 1em',
-    height: '1em 1em',
+    height: 'min 1em',
     fontSize: 'var(--icon-size, var(--font-size))',
 
     '& svg': {
       width: '1em 1em',
-      height: '1em 1em',
+      height: 'min 1em',
     },
   },
   styleProps: [...OUTER_STYLES, ...BASE_STYLES, ...COLOR_STYLES],
