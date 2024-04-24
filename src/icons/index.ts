@@ -50,6 +50,7 @@ import { WarningFilledIcon as _WarningFilledIcon } from './WarningFilledIcon';
 import { SearchIcon as _SearchIcon } from './SearchIcon';
 import { SwitchIcon as _SwitchIcon } from './SwitchIcon';
 import { CheckIcon as _CheckIcon } from './CheckIcon';
+import { SlashIcon as _SlashIcon } from './SlashIcon';
 
 export const CloseIcon = wrapIcon('CloseIcon', _CloseIcon);
 export const ExclamationIcon = wrapIcon('ExclamationIcon', _ExclamationIcon);
@@ -111,6 +112,7 @@ export const WarningFilledIcon = wrapIcon(
 export const SearchIcon = wrapIcon('SearchIcon', _SearchIcon);
 export const SwitchIcon = wrapIcon('SwitchIcon', _SwitchIcon);
 export const CheckIcon = wrapIcon('CheckIcon', _CheckIcon);
+export const SlashIcon = wrapIcon('SlashIcon', _SlashIcon);
 
 export { IconContainer } from './IconContainer';
 
