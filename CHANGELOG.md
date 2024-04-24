@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.35.1
+
+### Patch Changes
+
+- [#461](https://github.com/cube-js/cube-ui-kit/pull/461) [`820de13`](https://github.com/cube-js/cube-ui-kit/commit/820de130bbd27077b3067496e2d21602dcdfd847) Thanks [@tenphi](https://github.com/tenphi)! - Add SlashIcon.
+
 ## 0.35.0
 
 ### Minor Changes
