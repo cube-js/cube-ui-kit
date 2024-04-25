@@ -59,6 +59,7 @@ export function Root(allProps: CubeRootProps) {
     children,
     /** Raw css styles for body element */
     bodyStyles,
+    breakpoints = [980],
     fontDisplay = 'swap',
     fonts,
     publicUrl,
@@ -122,7 +123,7 @@ export function Root(allProps: CubeRootProps) {
   const styles = extractStyles(props, STYLES, DEFAULT_STYLES);
 
   return (
-    <Provider router={router} root={rootRef}>
+    <Provider router={router} root={rootRef} breakpoints={breakpoints}>
       <TrackingProvider event={tracking?.event}>
         <StyleSheetManager>
           <RootElement
