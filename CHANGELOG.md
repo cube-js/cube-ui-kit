@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.35.2
+
+### Patch Changes
+
+- [#465](https://github.com/cube-js/cube-ui-kit/pull/465) [`3597635`](https://github.com/cube-js/cube-ui-kit/commit/3597635b770a57be18f8388fab07251cec5c227a) Thanks [@tenphi](https://github.com/tenphi)! - Fix passing breakpoints property to the Root component.
+
+- [#463](https://github.com/cube-js/cube-ui-kit/pull/463) [`bc3acb1`](https://github.com/cube-js/cube-ui-kit/commit/bc3acb147966e8bbaf2b8b3f3325cd423a11cd9d) Thanks [@tenphi](https://github.com/tenphi)! - Change icon container inner placement to center. Suitable for icons that are smaller than default size.
+
+- [#463](https://github.com/cube-js/cube-ui-kit/pull/463) [`bc3acb1`](https://github.com/cube-js/cube-ui-kit/commit/bc3acb147966e8bbaf2b8b3f3325cd423a11cd9d) Thanks [@tenphi](https://github.com/tenphi)! - Fix passing styles from DialogTrigger to Popver component.
+
 ## 0.35.1
 
 ### Patch Changes
