@@ -16,6 +16,7 @@ const IconContainerElement = tasty({
   as: 'span',
   styles: {
     display: 'inline-grid',
+    placeContent: 'center',
     verticalAlign: 'middle',
     width: '1em 1em',
     height: 'min 1em',
