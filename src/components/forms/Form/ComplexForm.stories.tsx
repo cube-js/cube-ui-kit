@@ -405,5 +405,7 @@ UnknownErrorMessage.play = async ({ canvasElement }) => {
     await userEvent.click(button);
 
     expect(alertElement).not.toBeInTheDocument();
+
+    await timeout(1000);
   });
 };
