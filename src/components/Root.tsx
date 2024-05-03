@@ -68,6 +68,7 @@ export function Root(allProps: CubeRootProps) {
     monospaceFont,
     applyLegacyTokens,
     tracking,
+    style,
     ...props
   } = allProps;
 
@@ -135,6 +136,7 @@ export function Root(allProps: CubeRootProps) {
               '--cube-dynamic-viewport-height': height
                 ? height + 'px'
                 : '100dvh',
+              ...style,
             }}
           >
             <GlobalStyles
