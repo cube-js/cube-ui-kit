@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.35.3
+
+### Patch Changes
+
+- [#468](https://github.com/cube-js/cube-ui-kit/pull/468) [`2bd3b1d`](https://github.com/cube-js/cube-ui-kit/commit/2bd3b1d383c83f65be411dcf445cbce712fe11c9) Thanks [@tenphi](https://github.com/tenphi)! - Fix Root component so it can accept style object.'
+
 ## 0.35.2
 
 ### Patch Changes
