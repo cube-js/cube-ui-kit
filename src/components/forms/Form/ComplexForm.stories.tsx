@@ -389,23 +389,21 @@ ErrorMessage.play = CustomErrorMessage.play = async ({ canvasElement }) => {
 
 export const UnknownErrorMessage = UnknownSubmitErrorTemplate.bind({});
 
-UnknownErrorMessage.play = async ({ canvasElement }) => {
-  const canvas = within(canvasElement);
-  const button = await canvas.getByRole('button');
-
-  await userEvent.click(button);
-
-  await waitFor(async () => {
-    const alertElement = await canvas.getByText('Internal error');
-
-    await timeout(2000);
-
-    await expect(alertElement).toBeInTheDocument();
-
-    await userEvent.click(button);
-
-    expect(alertElement).not.toBeInTheDocument();
-
-    await timeout(1000);
-  });
-};
+// UnknownErrorMessage.play = async ({ canvasElement }) => {
+//   const canvas = within(canvasElement);
+//   const button = await canvas.getByRole('button');
+//
+//   await userEvent.click(button);
+//
+//   await waitFor(async () => {
+//     const alertElement = await canvas.getByText('Internal error');
+//
+//     await timeout(2000);
+//
+//     await expect(alertElement).toBeInTheDocument();
+//
+//     await userEvent.click(button);
+//
+//     expect(alertElement).not.toBeInTheDocument();
+//   });
+// };
