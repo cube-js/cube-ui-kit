@@ -51,6 +51,8 @@ import { SearchIcon as _SearchIcon } from './SearchIcon';
 import { SwitchIcon as _SwitchIcon } from './SwitchIcon';
 import { CheckIcon as _CheckIcon } from './CheckIcon';
 import { SlashIcon as _SlashIcon } from './SlashIcon';
+import { ThumbsUpIcon as _ThumbsUpIcon } from './ThumbsUpIcon';
+import { ThumbsDownIcon as _ThumbsDownIcon } from './ThumbsDownIcon';
 
 export const CloseIcon = wrapIcon('CloseIcon', _CloseIcon);
 export const ExclamationIcon = wrapIcon('ExclamationIcon', _ExclamationIcon);
@@ -113,6 +115,8 @@ export const SearchIcon = wrapIcon('SearchIcon', _SearchIcon);
 export const SwitchIcon = wrapIcon('SwitchIcon', _SwitchIcon);
 export const CheckIcon = wrapIcon('CheckIcon', _CheckIcon);
 export const SlashIcon = wrapIcon('SlashIcon', _SlashIcon);
+export const ThumbsUpIcon = wrapIcon('ThumbsUpIcon', _ThumbsUpIcon);
+export const ThumbsDownIcon = wrapIcon('ThumbsDownIcon', _ThumbsDownIcon);
 
 export { IconContainer } from './IconContainer';
 
