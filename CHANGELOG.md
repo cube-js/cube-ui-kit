@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.35.4
+
+### Patch Changes
+
+- [#470](https://github.com/cube-js/cube-ui-kit/pull/470) [`66a69c7`](https://github.com/cube-js/cube-ui-kit/commit/66a69c7ced6cada44cc76344749c66ceb37ba691) Thanks [@tenphi](https://github.com/tenphi)! - Add ThumbsUp and ThumbsDown icons.
+
 ## 0.35.3
 
 ### Patch Changes
