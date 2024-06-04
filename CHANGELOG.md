@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.35.5
+
+### Patch Changes
+
+- [#472](https://github.com/cube-js/cube-ui-kit/pull/472) [`70782a2`](https://github.com/cube-js/cube-ui-kit/commit/70782a2310e51cee946232c3c39dd06add9ffeac) Thanks [@tenphi](https://github.com/tenphi)! - Add Sparkles icon.
+
 ## 0.35.4
 
 ### Patch Changes
