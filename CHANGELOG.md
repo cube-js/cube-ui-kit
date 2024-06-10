@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.35.6
+
+### Patch Changes
+
+- [#474](https://github.com/cube-js/cube-ui-kit/pull/474) [`827ca5b`](https://github.com/cube-js/cube-ui-kit/commit/827ca5b111e0def5546252a211b106ca7f3f6d95) Thanks [@tenphi](https://github.com/tenphi)! - Add StringIcon component.
+
 ## 0.35.5
 
 ### Patch Changes
