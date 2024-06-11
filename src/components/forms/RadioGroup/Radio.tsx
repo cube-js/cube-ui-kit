@@ -98,6 +98,7 @@ const RadioButtonElement = tasty({
       focused: '#purple-03',
     },
     transition: 'theme',
+    whiteSpace: 'nowrap',
   },
 });
 
@@ -129,6 +130,7 @@ const RadioNormalElement = tasty({
       focused: '#purple-03',
     },
     transition: 'theme',
+    whiteSpace: 'nowrap',
 
     RadioCircle: {
       display: 'block',
