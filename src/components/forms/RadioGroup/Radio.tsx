@@ -32,7 +32,7 @@ const RadioWrapperElement = tasty({
     display: 'grid',
     placeItems: {
       '': 'center start',
-      '[data-type="button"]': 'stretch',
+      button: 'stretch',
     },
     gap: '1x',
     flow: 'column',
@@ -40,7 +40,7 @@ const RadioWrapperElement = tasty({
     width: 'min-content',
     margin: {
       '': '1x right',
-      '[data-type="button"]': '0',
+      button: '0',
     },
     zIndex: {
       '': 'initial',
@@ -66,6 +66,8 @@ const RadioWrapperElement = tasty({
 
 const RadioButtonElement = tasty({
   styles: {
+    display: 'grid',
+    placeItems: 'center',
     fill: {
       '': '#white',
       hovered: '#purple-text.04',
