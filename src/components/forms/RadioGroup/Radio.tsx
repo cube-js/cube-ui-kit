@@ -30,7 +30,10 @@ const RadioWrapperElement = tasty({
   styles: {
     position: 'relative',
     display: 'grid',
-    placeItems: 'center start',
+    placeItems: {
+      '': 'center start',
+      '[data-type="button"]': 'stretch',
+    },
     gap: '1x',
     flow: 'column',
     preset: 'default',
