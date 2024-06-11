@@ -160,7 +160,7 @@ export { Text, Title, Paragraph };
 export type { CubeTextProps, CubeTitleProps, CubeParagraphProps };
 
 export { Provider } from './provider';
-export type { useProviderProps } from './provider';
+export { useProviderProps } from './provider';
 export { Portal } from './components/portal';
 export type { PortalProps } from './components/portal';
 export * from './components/forms';
