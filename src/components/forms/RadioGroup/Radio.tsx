@@ -68,6 +68,7 @@ const RadioButtonElement = tasty({
   styles: {
     display: 'grid',
     placeItems: 'center',
+    flexGrow: 1,
     fill: {
       '': '#white',
       hovered: '#purple-text.04',
