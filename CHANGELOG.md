@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.35.7
+
+### Patch Changes
+
+- [#476](https://github.com/cube-js/cube-ui-kit/pull/476) [`5bf114c`](https://github.com/cube-js/cube-ui-kit/commit/5bf114c636f380e4ac17b1472197e0409b09d2ed) Thanks [@tenphi](https://github.com/tenphi)! - Export useProviderProps hook.
+
 ## 0.35.6
 
 ### Patch Changes
