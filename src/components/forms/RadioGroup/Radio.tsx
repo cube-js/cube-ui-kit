@@ -46,6 +46,7 @@ const RadioWrapperElement = tasty({
       '': 'initial',
       checked: 1,
     },
+    flexGrow: 1,
 
     Input: {
       radius: {
@@ -68,7 +69,6 @@ const RadioButtonElement = tasty({
   styles: {
     display: 'grid',
     placeItems: 'center',
-    flexGrow: 1,
     fill: {
       '': '#white',
       hovered: '#purple-text.04',
