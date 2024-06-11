@@ -88,7 +88,7 @@ export function Provider(allProps: PropsWithChildren<ProviderProps>) {
   );
 }
 
-export function useProviderProps<T extends Props = Props>(props: T): T {
+export function useProviderProps<T extends ProviderProps = Props>(props: T): T {
   const contextProps = useContext(UIKitContext);
 
   return { ...contextProps, ...props } as T;
