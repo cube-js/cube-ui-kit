@@ -70,6 +70,7 @@ const RadioButtonElement = tasty({
     display: 'grid',
     flow: 'column',
     placeItems: 'center',
+    gap: '.75x',
     fill: {
       '': '#white',
       hovered: '#purple-text.04',
