@@ -68,6 +68,7 @@ const RadioWrapperElement = tasty({
 const RadioButtonElement = tasty({
   styles: {
     display: 'grid',
+    flow: 'column',
     placeItems: 'center',
     fill: {
       '': '#white',
