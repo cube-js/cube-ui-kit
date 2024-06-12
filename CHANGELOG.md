@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.35.9
+
+### Patch Changes
+
+- [#481](https://github.com/cube-js/cube-ui-kit/pull/481) [`c02d7ea`](https://github.com/cube-js/cube-ui-kit/commit/c02d7eaf05714e9afd64705ead4cb8f775c1aecc) Thanks [@tenphi](https://github.com/tenphi)! - Fix RadioButton layout flow.
+
 ## 0.35.8
 
 ### Patch Changes
