@@ -159,8 +159,8 @@ export const Typography = {
 export { Text, Title, Paragraph };
 export type { CubeTextProps, CubeTitleProps, CubeParagraphProps };
 
-export { Provider } from './provider';
-export { useProviderProps } from './provider';
+export { Provider, useProviderProps } from './provider';
+export type { ProviderProps } from './provider';
 export { Portal } from './components/portal';
 export type { PortalProps } from './components/portal';
 export * from './components/forms';
