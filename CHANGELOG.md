@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.35.8
+
+### Patch Changes
+
+- [#479](https://github.com/cube-js/cube-ui-kit/pull/479) [`f31f3cc`](https://github.com/cube-js/cube-ui-kit/commit/f31f3cce82304389efc22c8c6f99d81c8acc9e91) Thanks [@tenphi](https://github.com/tenphi)! - Export useProviderProps and UIKitContext.
+
+- [#479](https://github.com/cube-js/cube-ui-kit/pull/479) [`f31f3cc`](https://github.com/cube-js/cube-ui-kit/commit/f31f3cce82304389efc22c8c6f99d81c8acc9e91) Thanks [@tenphi](https://github.com/tenphi)! - Improve styles for Radio.Button
+
+- [#479](https://github.com/cube-js/cube-ui-kit/pull/479) [`f31f3cc`](https://github.com/cube-js/cube-ui-kit/commit/f31f3cce82304389efc22c8c6f99d81c8acc9e91) Thanks [@tenphi](https://github.com/tenphi)! - Export useProviderProps hook.
+
 ## 0.35.7
 
 ### Patch Changes
