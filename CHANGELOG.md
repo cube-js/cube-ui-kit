@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.35.10
+
+### Patch Changes
+
+- [#483](https://github.com/cube-js/cube-ui-kit/pull/483) [`e8e9a7e`](https://github.com/cube-js/cube-ui-kit/commit/e8e9a7e4ba43261f5a562932a404f719d9e2a41b) Thanks [@tenphi](https://github.com/tenphi)! - Export ProviderProps type.
+
 ## 0.35.9
 
 ### Patch Changes
