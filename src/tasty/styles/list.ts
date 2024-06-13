@@ -17,6 +17,8 @@ export const POSITION_STYLES = [
   'justifySelf',
   'zIndex',
   'margin',
+  'inset',
+  'position',
 ] as const;
 
 export const BLOCK_STYLES = [
@@ -35,7 +37,7 @@ export const BLOCK_STYLES = [
   'textAlign',
 ] as const;
 
-export const COLOR_STYLES = ['color', 'fill'] as const;
+export const COLOR_STYLES = ['color', 'fill', 'fade'] as const;
 
 export const TEXT_STYLES = [
   'textTransform',
