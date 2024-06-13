@@ -9,6 +9,12 @@ concurrency:
   group: ci-pull-request=${{github.ref}}-1
   cancel-in-progress: true
 
+permissions:
+  contents: read  # Read-only access to repository contents
+  issues: write   # Write access to issues
+  pull-requests: write  # Write access to pull requests
+  statuses: write  # Write access to commit statuses
+
 jobs:
   build:
     name: 'Build & canary release'
