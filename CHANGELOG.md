@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.36.0
+
+### Minor Changes
+
+- [#485](https://github.com/cube-js/cube-ui-kit/pull/485) [`8104857`](https://github.com/cube-js/cube-ui-kit/commit/8104857cc27223977fc35ca324341ed342e1aa0b) Thanks [@tenphi](https://github.com/tenphi)! - Add `fade` and `inset` styles.
+
+### Patch Changes
+
+- [#485](https://github.com/cube-js/cube-ui-kit/pull/485) [`8104857`](https://github.com/cube-js/cube-ui-kit/commit/8104857cc27223977fc35ca324341ed342e1aa0b) Thanks [@tenphi](https://github.com/tenphi)! - Add `position` style to `position` style list.
+
 ## 0.35.10
 
 ### Patch Changes
