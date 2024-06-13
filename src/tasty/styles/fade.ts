@@ -26,7 +26,7 @@ export function fadeStyle({ fade }) {
   }[direction];
 
   return {
-    maskImage: `linear-gradient(${gradientDirection}, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) ${size})`,
+    'mask-image': `linear-gradient(${gradientDirection}, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) ${size})`,
   };
 }
 

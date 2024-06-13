@@ -7,14 +7,14 @@ export function insetStyle({ inset }) {
 
   if (!inset) return '';
 
-  if (inset === true) inset = '1x';
+  if (inset === true) inset = '0 0 0 0';
 
   let { values, mods } = parseStyle(inset);
 
   let directions = filterMods(mods, DIRECTIONS);
 
   if (!values.length) {
-    values = ['var(--gap)'];
+    values = ['0'];
   }
 
   if (!directions.length) {

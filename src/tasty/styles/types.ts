@@ -75,6 +75,7 @@ export interface StylesInterface
     | `rgba(${string})`
     | boolean
     | string;
+  fade?: 'top' | 'right' | 'bottom' | 'left' | string;
   /**
    * Whether styles of the element should be reset.
    * Possible values: `input`, `button`.
@@ -175,6 +176,7 @@ export interface StylesInterface
    * Shorthand for justify-items and justify-content.
    */
   justify?: CSSProperties['justifyItems'] | CSSProperties['justifyContent'];
+  inset?: 'top' | 'right' | 'bottom' | 'left' | string | CSSProperties['inset'];
 }
 
 export type SuffixForSelector =
