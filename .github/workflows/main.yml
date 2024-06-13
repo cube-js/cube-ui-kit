@@ -8,7 +8,7 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 permissions:
-  contents: read  # Read-only access to repository contents
+  contents: write  # Read-only access to repository contents
   issues: write   # Write access to issues
   pull-requests: write  # Write access to pull requests
   statuses: write  # Write access to commit statuses
