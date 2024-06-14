@@ -55,6 +55,16 @@ import { ThumbsUpIcon as _ThumbsUpIcon } from './ThumbsUpIcon';
 import { ThumbsDownIcon as _ThumbsDownIcon } from './ThumbsDownIcon';
 import { SparklesIcon as _SparklesIcon } from './SparklesIcon';
 import { StringIcon as _StringIcon } from './StringIcon';
+import { DashboardIcon as _DashboardIcon } from './DashboardIcon';
+import { CheckCircleFilledIcon as _CheckCircleFilledIcon } from './CheckCircleFilledIcon';
+import { CircleFilledIcon as _CircleFilledIcon } from './CircleFilledIcon';
+import { CloseCircleFilledIcon as _CloseCircleFilledIcon } from './CloseCircleFilledIcon';
+import { CloseCircleIcon as _CloseCircleIcon } from './CloseCircleIcon';
+import { ExclamationCircleFilledIcon as _ExclamationCircleFilledIcon } from './ExclamationCircleFilledIcon';
+import { ExclamationCircleIcon as _ExclamationCircleIcon } from './ExclamationCircleIcon';
+import { NotAllowedIcon as _NotAllowedIcon } from './NotAllowedIcon';
+import { PauseCircleFilledIcon as _PauseCircleFilledIcon } from './PauseCircleFilledIcon';
+import { PauseCircleIcon as _PauseCircleIcon } from './PauseCircleIcon';
 
 export const CloseIcon = wrapIcon('CloseIcon', _CloseIcon);
 export const ExclamationIcon = wrapIcon('ExclamationIcon', _ExclamationIcon);
@@ -121,6 +131,31 @@ export const ThumbsUpIcon = wrapIcon('ThumbsUpIcon', _ThumbsUpIcon);
 export const ThumbsDownIcon = wrapIcon('ThumbsDownIcon', _ThumbsDownIcon);
 export const SparklesIcon = wrapIcon('SparklesIcon', _SparklesIcon);
 export const StringIcon = wrapIcon('StringIcon', _StringIcon);
+export const DashboardIcon = wrapIcon('DashboardIcon', _DashboardIcon);
+export const CheckCircleFilledIcon = wrapIcon(
+  'CheckCircleFilledIcon',
+  _CheckCircleFilledIcon,
+);
+export const CircleFilledIcon = wrapIcon('CircleFilledIcon', _CircleFilledIcon);
+export const CloseCircleFilledIcon = wrapIcon(
+  'CloseCircleFilledIcon',
+  _CloseCircleFilledIcon,
+);
+export const CloseCircleIcon = wrapIcon('CloseCircleIcon', _CloseCircleIcon);
+export const ExclamationCircleFilledIcon = wrapIcon(
+  'ExclamationCircleFilledIcon',
+  _ExclamationCircleFilledIcon,
+);
+export const ExclamationCircleIcon = wrapIcon(
+  'ExclamationCircleIcon',
+  _ExclamationCircleIcon,
+);
+export const NotAllowedIcon = wrapIcon('NotAllowedIcon', _NotAllowedIcon);
+export const PauseCircleFilledIcon = wrapIcon(
+  'PauseCircleFilledIcon',
+  _PauseCircleFilledIcon,
+);
+export const PauseCircleIcon = wrapIcon('PauseCircleIcon', _PauseCircleIcon);
 
 export { IconContainer } from './IconContainer';
 
