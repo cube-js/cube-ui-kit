@@ -142,3 +142,33 @@ export const FadeCustomTop = {
     },
   },
 };
+
+export const FadeHorizontal = {
+  render: FadeTemplate.bind({}),
+
+  args: {
+    styles: {
+      fade: 'left right',
+    },
+  },
+};
+
+export const FadeVertical = {
+  render: FadeTemplate.bind({}),
+
+  args: {
+    styles: {
+      fade: 'top bottom',
+    },
+  },
+};
+
+export const FadeAllDirections = {
+  render: FadeTemplate.bind({}),
+
+  args: {
+    styles: {
+      fade: true,
+    },
+  },
+};

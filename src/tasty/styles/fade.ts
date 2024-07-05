@@ -1,5 +1,12 @@
 import { parseStyle, DIRECTIONS, filterMods } from '../utils/styles';
 
+const DIRECTION_MAP = {
+  right: 'to left',
+  left: 'to right',
+  top: 'to bottom',
+  bottom: 'to top',
+};
+
 export function fadeStyle({ fade }) {
   if (!fade) return '';
 
@@ -12,21 +19,18 @@ export function fadeStyle({ fade }) {
   }
 
   if (!directions.length) {
-    directions = ['right'];
+    directions = ['top', 'right', 'bottom', 'left'];
   }
 
-  const size = values[0];
-  const direction = directions[0];
-
-  const gradientDirection = {
-    right: 'to left',
-    left: 'to right',
-    top: 'to bottom',
-    bottom: 'to top',
-  }[direction];
-
   return {
-    'mask-image': `linear-gradient(${gradientDirection}, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) ${size})`,
+    mask: directions
+      .map((direction: (typeof DIRECTIONS)[number], index: number) => {
+        const size = values[index] || values[index % 2] || values[0];
+
+        return `linear-gradient(${DIRECTION_MAP[direction]}, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) ${size})`;
+      })
+      .join(', '),
+    'mask-composite': 'intersect',
   };
 }
 
