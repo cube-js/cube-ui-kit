@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.37.1
+
+### Patch Changes
+
+- [#492](https://github.com/cube-js/cube-ui-kit/pull/492) [`84002df`](https://github.com/cube-js/cube-ui-kit/commit/84002df9f8bbbacd48e4cac51ae568749f8781e9) Thanks [@tenphi](https://github.com/tenphi)! - Support multiple directions in fade style.
+
 ## 0.37.0
 
 ### Minor Changes
