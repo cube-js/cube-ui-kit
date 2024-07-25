@@ -65,6 +65,7 @@ import { ExclamationCircleIcon as _ExclamationCircleIcon } from './ExclamationCi
 import { NotAllowedIcon as _NotAllowedIcon } from './NotAllowedIcon';
 import { PauseCircleFilledIcon as _PauseCircleFilledIcon } from './PauseCircleFilledIcon';
 import { PauseCircleIcon as _PauseCircleIcon } from './PauseCircleIcon';
+import { StatsIcon as _StatsIcon } from './StatsIcon';
 
 export const CloseIcon = wrapIcon('CloseIcon', _CloseIcon);
 export const ExclamationIcon = wrapIcon('ExclamationIcon', _ExclamationIcon);
@@ -156,6 +157,7 @@ export const PauseCircleFilledIcon = wrapIcon(
   _PauseCircleFilledIcon,
 );
 export const PauseCircleIcon = wrapIcon('PauseCircleIcon', _PauseCircleIcon);
+export const StatsIcon = wrapIcon('StatsIcon', _StatsIcon);
 
 export { IconContainer } from './IconContainer';
 
