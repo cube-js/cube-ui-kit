@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.37.2
+
+### Patch Changes
+
+- [#495](https://github.com/cube-js/cube-ui-kit/pull/495) [`743d5fa`](https://github.com/cube-js/cube-ui-kit/commit/743d5fa8b242bd60acd55d94d3d01450bd7bcbfb) Thanks [@tenphi](https://github.com/tenphi)! - Add StatsIcon.
+
 ## 0.37.1
 
 ### Patch Changes
