@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.37.3
+
+### Patch Changes
+
+- [#498](https://github.com/cube-js/cube-ui-kit/pull/498) [`77e7ab7`](https://github.com/cube-js/cube-ui-kit/commit/77e7ab77c2797e1f5f986e0e6b40c760689eb25c) Thanks [@tenphi](https://github.com/tenphi)! - Pass `qa` prop for fields.
+
 ## 0.37.2
 
 ### Patch Changes
