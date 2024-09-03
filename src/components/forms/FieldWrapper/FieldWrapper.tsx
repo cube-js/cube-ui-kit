@@ -77,6 +77,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
 ) {
   const {
     as,
+    qa,
     labelPosition = 'top',
     label,
     extra,
@@ -157,6 +158,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     <>
       <FieldElement
         ref={ref}
+        qa={qa}
         as={as ?? 'div'}
         mods={mods}
         isHidden={isHidden}
