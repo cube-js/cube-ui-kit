@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.37.4
+
+### Patch Changes
+
+- [#501](https://github.com/cube-js/cube-ui-kit/pull/501) [`90cfd16`](https://github.com/cube-js/cube-ui-kit/commit/90cfd1601924f49f5393d8a712ad10e5dba5f6fc) Thanks [@tenphi](https://github.com/tenphi)! - Add CalendarEditIcon
+
 ## 0.37.3
 
 ### Patch Changes
