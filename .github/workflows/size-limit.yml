@@ -44,7 +44,7 @@ jobs:
         run: pnpm build
 
       - name: Download baseline stats
-        uses: dawidd6/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@v4
         if: github.event.number
         with:
           workflow: size-limit.yml
@@ -60,7 +60,7 @@ jobs:
         run: echo '${{ steps.measure_size.outputs.result }}' > ./size-limit-report/output.json
 
       - name: Upload stats
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: size-limit-report
           path: ${{ env.REPORT_FOLDER }}

@@ -10,7 +10,6 @@ import { Props, Styles } from '../../../tasty';
 // ADDING NEW PROPS TO THIS INTERFACE REQUIRES ADDING THEM TO createFieldWrapperPropsKeys FUNCTION
 
 export type CubeFieldWrapperProps = {
-  qa?: string;
   as?: string;
   validationState?: ValidationState;
   styles?: Styles;
