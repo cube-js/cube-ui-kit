@@ -15,7 +15,6 @@ import {
   Flex,
   Button,
   Text,
-  Root,
   Space,
   AlertDialog,
   DialogContainer,
@@ -39,22 +38,20 @@ export default {
 
 const MenuTemplate = (props) => {
   return (
-    <Root>
-      <Menu id="menu" {...props} width="340px">
-        <Menu.Item key="1" onPress={action('Item 1')}>
-          Item 1
-        </Menu.Item>
-        <Menu.Item key="2" onPress={action('Item 2')}>
-          Item 2
-        </Menu.Item>
-        <Menu.Item key="3" onPress={action('Item 3')}>
-          Item 3
-        </Menu.Item>
-        <Menu.Item key="4" onPress={action('Item 4')}>
-          Item 4
-        </Menu.Item>
-      </Menu>
-    </Root>
+    <Menu id="menu" {...props} width="340px">
+      <Menu.Item key="1" onPress={action('Item 1')}>
+        Item 1
+      </Menu.Item>
+      <Menu.Item key="2" onPress={action('Item 2')}>
+        Item 2
+      </Menu.Item>
+      <Menu.Item key="3" onPress={action('Item 3')}>
+        Item 3
+      </Menu.Item>
+      <Menu.Item key="4" onPress={action('Item 4')}>
+        Item 4
+      </Menu.Item>
+    </Menu>
   );
 };
 
