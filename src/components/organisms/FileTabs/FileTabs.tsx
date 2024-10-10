@@ -482,6 +482,7 @@ FileTabs.TabPane = function FileTabPane(allProps: CubeFileTabProps) {
   return (
     <Block
       style={{ display: isCurrent ? 'block' : 'none' }}
+      width="max 100%"
       flexGrow={1}
       {...props}
     >
