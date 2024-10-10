@@ -6,6 +6,7 @@ import { TransitionState } from './types';
 
 const UnderlayElement = tasty({
   qa: 'Underlay',
+  'data-type': 'primary',
   styles: {
     position: 'fixed',
     top: 0,
