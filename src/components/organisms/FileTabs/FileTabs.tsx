@@ -45,6 +45,7 @@ const TabsPanelElement = tasty(Space, {
     flexShrink: 0,
     whiteSpace: 'nowrap',
     styledScrollbar: true,
+    padding: '1ow 1ow 0 1ow',
   },
 });
 
@@ -59,7 +60,6 @@ const TabsContainerElement = tasty(Flex, {
       '[data-is-left-fade]': '3x left',
       '[data-is-right-fade]': '3x right',
     },
-    padding: '1ow 1ow 0 1ow',
     '--scrollbar-radius': '1ow',
     '--scrollbar-width': '.75x',
     '--scrollbar-outline-width': '1px',
