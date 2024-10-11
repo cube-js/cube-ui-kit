@@ -6,7 +6,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import styled from 'styled-components';
 
 import { Block } from '../../Block';
 import { Action, Button, CubeActionProps } from '../../actions';
@@ -55,53 +54,13 @@ const TabsContainerElement = tasty(Flex, {
     height: 'max 100%',
     width: 'max 100%',
     position: 'relative',
+    fade: {
+      '': false,
+      '[data-is-left-fade]': '3x left',
+      '[data-is-right-fade]': '3x right',
+    },
   },
 });
-
-const StyledTabsContainerElement = styled(TabsContainerElement)`
-  &::before {
-    content: '';
-    display: block;
-    opacity: 0;
-    position: absolute;
-    top: 0;
-    left: 0;
-    pointer-events: none;
-    width: 32px;
-    height: 37px;
-    transition: all 0.15s linear;
-    background-image: linear-gradient(
-      to left,
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 1)
-    );
-    z-index: 1;
-  }
-
-  &::after {
-    content: '';
-    display: block;
-    opacity: 0;
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 32px;
-    height: 37px;
-    pointer-events: none;
-    transition: all 0.15s linear;
-    background-image: linear-gradient(
-      to right,
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 1)
-    );
-    z-index: 1;
-  }
-
-  &[data-is-left-fade]::before,
-  &[data-is-right-fade]::after {
-    opacity: 1;
-  }
-`;
 
 const DirtyBadge = tasty({
   element: 'DirtyBadge',
@@ -385,7 +344,7 @@ export function FileTabs({
   }
 
   return (
-    <StyledTabsContainerElement
+    <TabsContainerElement
       data-is-left-fade={leftFade || null}
       data-is-right-fade={rightFade || null}
       {...props}
@@ -423,7 +382,7 @@ export function FileTabs({
           {children}
         </Flex>
       </FileTabsContext.Provider>
-    </StyledTabsContainerElement>
+    </TabsContainerElement>
   );
 }
 
