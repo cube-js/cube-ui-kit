@@ -46,15 +46,6 @@ const TabsPanelElement = tasty(Space, {
     whiteSpace: 'nowrap',
     styledScrollbar: true,
     padding: '1ow 1ow 0 1ow',
-  },
-});
-
-const TabsContainerElement = tasty(Flex, {
-  styles: {
-    flow: 'column',
-    height: 'max 100%',
-    width: 'max 100%',
-    position: 'relative',
     fade: {
       '': false,
       '[data-is-left-fade]': '3x left',
@@ -65,6 +56,15 @@ const TabsContainerElement = tasty(Flex, {
     '--scrollbar-radius': '1ow',
     '--scrollbar-width': '.75x',
     '--scrollbar-outline-width': '1px',
+  },
+});
+
+const TabsContainerElement = tasty(Flex, {
+  styles: {
+    flow: 'column',
+    height: 'max 100%',
+    width: 'max 100%',
+    position: 'relative',
   },
 });
 
@@ -350,11 +350,7 @@ export function FileTabs({
   }
 
   return (
-    <TabsContainerElement
-      data-is-left-fade={leftFade || null}
-      data-is-right-fade={rightFade || null}
-      {...props}
-    >
+    <TabsContainerElement {...props}>
       <FileTabsContext.Provider
         value={{
           addTab,
@@ -364,7 +360,11 @@ export function FileTabs({
           currentTab: activeKey,
         }}
       >
-        <TabsPanelElement ref={tabsRef}>
+        <TabsPanelElement
+          ref={tabsRef}
+          data-is-left-fade={leftFade || null}
+          data-is-right-fade={rightFade || null}
+        >
           {tabs.map((tab) => {
             return (
               <Tab
