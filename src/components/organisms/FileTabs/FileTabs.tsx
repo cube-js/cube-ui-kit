@@ -266,7 +266,7 @@ export interface CubeFileTabsProps extends CubeFlexProps {
   onTabClick?: (string) => void;
   /** Handler that is called when the tab is closed. */
   onTabClose?: (string) => void;
-  /** Styles for the each tab pane */
+  /** Styles for each tab pane */
   paneStyles?: Styles;
   /** Whether the tabs are closable */
   isClosable?: boolean;
@@ -481,8 +481,7 @@ FileTabs.TabPane = function FileTabPane(allProps: CubeFileTabProps) {
 
   return (
     <Block
-      style={{ display: isCurrent ? 'block' : 'none' }}
-      width="max 100%"
+      style={{ display: isCurrent ? 'block' : 'none', maxWidth: '100%' }}
       flexGrow={1}
       {...props}
     >
