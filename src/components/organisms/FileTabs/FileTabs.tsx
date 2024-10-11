@@ -59,7 +59,7 @@ const TabsContainerElement = tasty(Flex, {
       '[data-is-left-fade]': '3x left',
       '[data-is-right-fade]': '3x right',
     },
-    padding: '3x 0 0 0',
+    padding: '1ow 1ow 0 1ow',
     '--scrollbar-radius': '1ow',
     '--scrollbar-width': '.75x',
     '--scrollbar-outline-width': '1px',
