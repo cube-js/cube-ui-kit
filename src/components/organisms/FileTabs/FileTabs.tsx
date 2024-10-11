@@ -9,11 +9,10 @@ import {
 import styled from 'styled-components';
 
 import { Block } from '../../Block';
-import { Action, CubeActionProps } from '../../actions/Action';
+import { Action, Button, CubeActionProps } from '../../actions';
 import { Space } from '../../layout/Space';
 import { CubeFlexProps, Flex } from '../../layout/Flex';
 import { Styles, tasty } from '../../../tasty';
-import { Button } from '../../actions';
 import { useLayoutEffect } from '../../../utils/react';
 import { CloseIcon } from '../../../icons';
 
