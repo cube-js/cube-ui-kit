@@ -39,36 +39,15 @@ const FileTabsContext = createContext<FileTabContextValue>({
 
 const TabsPanelElement = tasty(Space, {
   styles: {
+    position: 'relative',
+    overflow: 'auto hidden',
+    top: '1bw',
     gap: '.5x',
     flexShrink: 0,
+    whiteSpace: 'nowrap',
+    styledScrollbar: true,
   },
 });
-
-const StyledTabsPanelElement = styled(TabsPanelElement)`
-  position: relative;
-  overflow: auto hidden;
-  top: 1px;
-  white-space: nowrap;
-
-  ::-webkit-scrollbar-track {
-    background: var(--grey-light-color);
-  }
-
-  ::-webkit-scrollbar-thumb {
-    border-radius: 1px;
-    background: var(--dark-04-color);
-    background-clip: padding-box;
-  }
-
-  ::-webkit-scrollbar-corner {
-    background-color: transparent;
-  }
-
-  ::-webkit-scrollbar {
-    width: 3px;
-    height: 3px;
-  }
-`;
 
 const TabsContainerElement = tasty(Flex, {
   styles: {
@@ -420,7 +399,7 @@ export function FileTabs({
           currentTab: activeKey,
         }}
       >
-        <StyledTabsPanelElement ref={tabsRef}>
+        <TabsPanelElement ref={tabsRef}>
           {tabs.map((tab) => {
             return (
               <Tab
@@ -435,7 +414,7 @@ export function FileTabs({
               </Tab>
             );
           })}
-        </StyledTabsPanelElement>
+        </TabsPanelElement>
         <Flex
           flexGrow={1}
           border="top rgb(227, 227, 233)"
