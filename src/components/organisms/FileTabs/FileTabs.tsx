@@ -37,6 +37,7 @@ const FileTabsContext = createContext<FileTabContextValue>({
 });
 
 const TabsPanelElement = tasty(Space, {
+  qa: 'TabsPanel',
   styles: {
     position: 'relative',
     overflow: 'auto hidden',
@@ -60,6 +61,7 @@ const TabsPanelElement = tasty(Space, {
 });
 
 const TabsContainerElement = tasty(Flex, {
+  qa: 'TabsContainer',
   styles: {
     flow: 'column',
     height: 'max 100%',
