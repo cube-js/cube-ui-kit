@@ -15,6 +15,7 @@ export function wrapWithField<T extends WrapWithFieldProps>(
   props: T,
 ) {
   let {
+    qa,
     label,
     extra,
     labelPosition = 'top',
@@ -38,6 +39,7 @@ export function wrapWithField<T extends WrapWithFieldProps>(
   return (
     <FieldWrapper
       {...{
+        qa,
         labelPosition,
         label,
         extra,
