@@ -6,14 +6,12 @@ import {
   useRef,
   useState,
 } from 'react';
-import styled from 'styled-components';
 
 import { Block } from '../../Block';
-import { Action, CubeActionProps } from '../../actions/Action';
+import { Action, Button, CubeActionProps } from '../../actions';
 import { Space } from '../../layout/Space';
 import { CubeFlexProps, Flex } from '../../layout/Flex';
 import { Styles, tasty } from '../../../tasty';
-import { Button } from '../../actions';
 import { useLayoutEffect } from '../../../utils/react';
 import { CloseIcon } from '../../../icons';
 
@@ -39,39 +37,31 @@ const FileTabsContext = createContext<FileTabContextValue>({
 });
 
 const TabsPanelElement = tasty(Space, {
+  qa: 'TabsPanel',
   styles: {
+    position: 'relative',
+    overflow: 'auto hidden',
+    top: '1bw',
     gap: '.5x',
     flexShrink: 0,
+    whiteSpace: 'nowrap',
+    styledScrollbar: true,
+    padding: '1ow 1ow 0 1ow',
+    fade: {
+      '': false,
+      '[data-is-left-fade]': '3x left',
+      '[data-is-right-fade]': '3x right',
+      '[data-is-right-fade] & [data-is-left-fade]': '3x left right',
+    },
+    transition: 'fade',
+    '--scrollbar-radius': '1ow',
+    '--scrollbar-width': '.75x',
+    '--scrollbar-outline-width': '1px',
   },
 });
 
-const StyledTabsPanelElement = styled(TabsPanelElement)`
-  position: relative;
-  overflow: auto hidden;
-  top: 1px;
-  white-space: nowrap;
-
-  ::-webkit-scrollbar-track {
-    background: var(--grey-light-color);
-  }
-
-  ::-webkit-scrollbar-thumb {
-    border-radius: 1px;
-    background: var(--dark-04-color);
-    background-clip: padding-box;
-  }
-
-  ::-webkit-scrollbar-corner {
-    background-color: transparent;
-  }
-
-  ::-webkit-scrollbar {
-    width: 3px;
-    height: 3px;
-  }
-`;
-
 const TabsContainerElement = tasty(Flex, {
+  qa: 'TabsContainer',
   styles: {
     flow: 'column',
     height: 'max 100%',
@@ -79,51 +69,6 @@ const TabsContainerElement = tasty(Flex, {
     position: 'relative',
   },
 });
-
-const StyledTabsContainerElement = styled(TabsContainerElement)`
-  &::before {
-    content: '';
-    display: block;
-    opacity: 0;
-    position: absolute;
-    top: 0;
-    left: 0;
-    pointer-events: none;
-    width: 32px;
-    height: 37px;
-    transition: all 0.15s linear;
-    background-image: linear-gradient(
-      to left,
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 1)
-    );
-    z-index: 1;
-  }
-
-  &::after {
-    content: '';
-    display: block;
-    opacity: 0;
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 32px;
-    height: 37px;
-    pointer-events: none;
-    transition: all 0.15s linear;
-    background-image: linear-gradient(
-      to right,
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 1)
-    );
-    z-index: 1;
-  }
-
-  &[data-is-left-fade]::before,
-  &[data-is-right-fade]::after {
-    opacity: 1;
-  }
-`;
 
 const DirtyBadge = tasty({
   element: 'DirtyBadge',
@@ -266,7 +211,7 @@ export interface CubeFileTabsProps extends CubeFlexProps {
   onTabClick?: (string) => void;
   /** Handler that is called when the tab is closed. */
   onTabClose?: (string) => void;
-  /** Styles for the each tab pane */
+  /** Styles for each tab pane */
   paneStyles?: Styles;
   /** Whether the tabs are closable */
   isClosable?: boolean;
@@ -407,11 +352,7 @@ export function FileTabs({
   }
 
   return (
-    <StyledTabsContainerElement
-      data-is-left-fade={leftFade || null}
-      data-is-right-fade={rightFade || null}
-      {...props}
-    >
+    <TabsContainerElement {...props}>
       <FileTabsContext.Provider
         value={{
           addTab,
@@ -421,7 +362,11 @@ export function FileTabs({
           currentTab: activeKey,
         }}
       >
-        <StyledTabsPanelElement ref={tabsRef}>
+        <TabsPanelElement
+          ref={tabsRef}
+          data-is-left-fade={leftFade || null}
+          data-is-right-fade={rightFade || null}
+        >
           {tabs.map((tab) => {
             return (
               <Tab
@@ -436,7 +381,7 @@ export function FileTabs({
               </Tab>
             );
           })}
-        </StyledTabsPanelElement>
+        </TabsPanelElement>
         <Flex
           flexGrow={1}
           border="top rgb(227, 227, 233)"
@@ -445,7 +390,7 @@ export function FileTabs({
           {children}
         </Flex>
       </FileTabsContext.Provider>
-    </StyledTabsContainerElement>
+    </TabsContainerElement>
   );
 }
 
@@ -481,7 +426,7 @@ FileTabs.TabPane = function FileTabPane(allProps: CubeFileTabProps) {
 
   return (
     <Block
-      style={{ display: isCurrent ? 'block' : 'none' }}
+      style={{ display: isCurrent ? 'block' : 'none', maxWidth: '100%' }}
       flexGrow={1}
       {...props}
     >

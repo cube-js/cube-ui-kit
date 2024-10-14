@@ -1,6 +1,7 @@
 import { parseStyle } from '../utils/styles';
 
 const MAP = {
+  fade: ['mask'],
   move: ['transform'],
   rotate: ['transform'],
   scale: ['transform'],
