@@ -1,5 +1,6 @@
 import { ReactElement, ReactNode } from 'react';
 
+import { DEFAULT_BUTTON_STYLES } from '../../actions/index';
 import { Block, CubeBlockProps } from '../../Block';
 import { Text } from '../../content/Text';
 import { tasty } from '../../../tasty';
@@ -8,6 +9,7 @@ import { CheckIcon } from '../../../icons';
 
 const StyledButton = tasty(Block, {
   styles: {
+    ...DEFAULT_BUTTON_STYLES,
     border: {
       '': '#clear',
       pressed: '#clear',
