@@ -134,7 +134,7 @@ export function MenuButton({
   };
 
   return (
-    <StyledButton {...props} disabled={isDisabled ? '' : undefined} mods={mods}>
+    <StyledButton {...props} mods={mods}>
       {checkIcon ? <div data-element="ButtonIcon">{checkIcon}</div> : null}
       {icon ? <div data-element="ButtonIcon">{icon}</div> : null}
       <Space gap="1x" placeContent="space-between" overflow="clip" width="100%">
