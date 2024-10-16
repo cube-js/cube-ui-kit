@@ -42,8 +42,8 @@ const StyledButton = tasty(Block, {
       'selectionIcon & selectable & !selected':
         '(0.75x - 1px) (1.5x - 1px) (0.75x - 1px) (1.5x - 1px + 22px)',
     },
-    display: 'grid',
-    flow: 'column',
+    display: 'flex',
+    flow: 'row',
     justifyContent: 'start',
     gap: '.75x',
 
