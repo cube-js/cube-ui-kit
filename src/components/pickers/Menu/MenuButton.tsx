@@ -1,12 +1,12 @@
-import { ReactNode } from 'react';
+import { ReactElement, ReactNode } from 'react';
 
-import { Button, CubeButtonProps } from '../../actions';
+import { Block, CubeBlockProps } from '../../Block';
 import { Text } from '../../content/Text';
 import { tasty } from '../../../tasty';
 import { Space } from '../../layout/Space';
 import { CheckIcon } from '../../../icons';
 
-const StyledButton = tasty(Button, {
+const StyledButton = tasty(Block, {
   styles: {
     border: {
       '': '#clear',
@@ -40,9 +40,20 @@ const StyledButton = tasty(Button, {
       'selectionIcon & selectable & !selected':
         '(0.75x - 1px) (1.5x - 1px) (0.75x - 1px) (1.5x - 1px + 22px)',
     },
-    display: 'flex',
-    flow: 'row',
+    display: 'grid',
+    flow: 'column',
     justifyContent: 'start',
+    gap: '.75x',
+
+    ButtonIcon: {
+      display: 'grid',
+      fontSize: '@icon-size',
+      width: '@icon-size',
+      height: '@icon-size',
+      placeSelf: 'center',
+      placeItems: 'center',
+    },
+
     Postfix: {
       color: {
         '': '#dark-03',
@@ -86,9 +97,9 @@ export type MenuButtonProps = {
   postfix: ReactNode;
   selectionIcon?: MenuSelectionType;
   isSelectable?: boolean;
-  // eslint-disable-next-line react/boolean-prop-naming
-  disabled?: boolean;
-} & CubeButtonProps;
+  isSelected?: boolean;
+  icon?: ReactElement;
+} & CubeBlockProps;
 
 const getSelectionTypeIcon = (selectionIcon?: MenuSelectionType) => {
   switch (selectionIcon) {
@@ -120,14 +131,9 @@ export function MenuButton({
   };
 
   return (
-    <StyledButton
-      type="neutral"
-      size="small"
-      {...props}
-      icon={checkIcon}
-      mods={mods}
-    >
-      {icon && <Text color="inherit">{icon}</Text>}
+    <StyledButton {...props} mods={mods}>
+      {checkIcon ? <div data-element="ButtonIcon">{checkIcon}</div> : null}
+      {icon ? <div data-element="ButtonIcon">{icon}</div> : null}
       <Space gap="1x" placeContent="space-between" overflow="auto" width="100%">
         <Text ellipsis color="inherit">
           {children}

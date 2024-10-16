@@ -58,13 +58,13 @@ const MenuTemplate = (props) => {
 export const Default = ({ ...props }) => {
   const menu = (
     <Menu id="menu" {...props} width="220px">
-      <Menu.Item key="red" postfix="Ctr+C" onPress={action('Ctr+C')}>
+      <Menu.Item key="red" postfix="Ctr+C">
         Copy
       </Menu.Item>
-      <Menu.Item key="orange" postfix="Ctr+V" onPress={action('Ctr+C')}>
+      <Menu.Item key="orange" postfix="Ctr+V">
         Paste
       </Menu.Item>
-      <Menu.Item key="yellow" postfix="Ctr+X" onPress={action('Ctr+C')}>
+      <Menu.Item key="yellow" postfix="Ctr+X">
         Cut
       </Menu.Item>
     </Menu>
