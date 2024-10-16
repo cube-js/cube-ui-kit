@@ -38,11 +38,7 @@ import { LoadingIcon } from '../../../icons';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
 
-import type {
-  CollectionBase,
-  KeyboardDelegate,
-  LoadingState,
-} from '@react-types/shared';
+import type { KeyboardDelegate, LoadingState } from '@react-types/shared';
 import type { ComboBoxProps } from '@react-types/combobox';
 
 type FilterFn = (textValue: string, inputValue: string) => boolean;
@@ -104,10 +100,9 @@ const TriggerElement = tasty({
 export interface CubeComboBoxProps<T>
   extends Omit<
       CubeSelectBaseProps<T>,
-      'onOpenChange' | 'onBlur' | 'onFocus' | 'validate'
+      'onOpenChange' | 'onBlur' | 'onFocus' | 'validate' | 'onSelectionChange'
     >,
-    ComboBoxProps<T>,
-    CollectionBase<T> {
+    ComboBoxProps<T> {
   validate?: ComboBoxProps<T>['validate'];
   icon?: ReactElement;
   multiLine?: boolean;
