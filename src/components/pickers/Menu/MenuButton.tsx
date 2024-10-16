@@ -101,6 +101,7 @@ export type MenuButtonProps = {
   isSelectable?: boolean;
   isSelected?: boolean;
   icon?: ReactElement;
+  onAction?: () => void;
 } & CubeBlockProps;
 
 const getSelectionTypeIcon = (selectionIcon?: MenuSelectionType) => {

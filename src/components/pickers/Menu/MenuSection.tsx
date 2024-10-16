@@ -16,7 +16,7 @@ export interface CubeMenuSectionProps<T> extends MenuItemProps<T> {
 
 /** @private */
 export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
-  const { item, state, styles, itemStyles, headingStyles, onAction } = props;
+  const { item, state, styles, itemStyles, headingStyles } = props;
   const heading = item.rendered;
   const { itemProps, headingProps, groupProps } = useMenuSection({
     heading,
@@ -39,7 +39,8 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
                 item={node}
                 styles={itemStyles}
                 state={state}
-                onAction={onAction}
+                // @ts-ignore
+                onAction={node.onAction}
               />
             );
 
