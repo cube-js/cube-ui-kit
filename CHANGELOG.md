@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.38.0
+
+### Minor Changes
+
+- [#507](https://github.com/cube-js/cube-ui-kit/pull/507) [`c2b126e`](https://github.com/cube-js/cube-ui-kit/commit/c2b126e3b6d9e46a75025c334066f777acd8106c) Thanks [@tenphi](https://github.com/tenphi)! - Change MenuItem API to support isDisabled and onAction props.
+
+### Patch Changes
+
+- [#507](https://github.com/cube-js/cube-ui-kit/pull/507) [`c2b126e`](https://github.com/cube-js/cube-ui-kit/commit/c2b126e3b6d9e46a75025c334066f777acd8106c) Thanks [@tenphi](https://github.com/tenphi)! - Fix unresponsive Menu Item on tap to click.
+
 ## 0.37.5
 
 ### Patch Changes
