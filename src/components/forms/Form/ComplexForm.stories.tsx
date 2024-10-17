@@ -1,7 +1,7 @@
 import { StoryFn } from '@storybook/react';
 import { linkTo } from '@storybook/addon-links';
-import { userEvent, waitFor, within } from '@storybook/testing-library';
-import { expect } from '@storybook/jest';
+import { userEvent, waitFor, within } from '@storybook/test';
+import { expect } from '@storybook/test';
 
 import {
   Alert,
@@ -84,7 +84,7 @@ const CustomSubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
       onSubmit={(v) => {
         console.log('onSubmit:', v);
 
-        throw <>Submission failed. Sorry for that :/</>;
+        return Promise.reject(<>Submission failed. Sorry for that :/</>);
       }}
       onValuesChange={(v) => {
         console.log('onChange', v);
@@ -109,7 +109,7 @@ const SubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
       onSubmit={(v) => {
         console.log('onSubmit:', v);
 
-        throw <>Submission failed. Sorry for that :/</>;
+        return Promise.reject(<>Submission failed. Sorry for that :/</>);
       }}
       onValuesChange={(v) => {
         console.log('onChange', v);
@@ -200,40 +200,6 @@ const ComplexErrorTemplate: StoryFn<typeof Form> = (args) => {
         <TextInput />
       </Field>
     </Form>
-  );
-};
-
-const CastingTemplate: StoryFn<typeof Form> = (args) => {
-  const [form] = Form.useForm();
-
-  return (
-    <>
-      <Form
-        form={form}
-        {...args}
-        defaultValues={{
-          select: 3,
-        }}
-        onSubmit={(v) => {
-          console.log('onSubmit:', v);
-        }}
-        onValuesChange={(v) => {
-          console.log('onChange', v);
-        }}
-      >
-        <Select
-          name="select"
-          label="Select field"
-          tooltip="Additional field description"
-          casting="number"
-        >
-          <Item key="1">One</Item>
-          <Item key="2">Two</Item>
-          <Item key="3">Three</Item>
-        </Select>
-        <Submit>Submit</Submit>
-      </Form>
-    </>
   );
 };
 
@@ -432,6 +398,8 @@ UnknownErrorMessage.play = async ({ canvasElement }) => {
   await waitFor(async () => {
     const alertElement = await canvas.getByText('Internal error');
 
+    await timeout(2000);
+
     await expect(alertElement).toBeInTheDocument();
 
     await userEvent.click(button);
@@ -439,5 +407,3 @@ UnknownErrorMessage.play = async ({ canvasElement }) => {
     expect(alertElement).not.toBeInTheDocument();
   });
 };
-
-export const ValueCasting = CastingTemplate.bind({});

@@ -31,6 +31,8 @@ import { styledScrollbarStyle } from './styledScrollbar';
 import { displayStyle } from './display';
 import { alignStyle } from './align';
 import { justifyStyle } from './justify';
+import { fadeStyle } from './fade';
+import { insetStyle } from './inset';
 import { createStyle } from './createStyle';
 
 const numberConverter = (val) => {
@@ -171,6 +173,8 @@ export function predefine() {
     fontStyleStyle,
     groupRadiusAttr,
     styledScrollbarStyle,
+    fadeStyle,
+    insetStyle,
   ]
     // @ts-ignore
     .forEach((handler) => defineCustomStyle(handler));

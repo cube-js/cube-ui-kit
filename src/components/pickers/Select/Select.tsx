@@ -1,9 +1,4 @@
 import {
-  CheckOutlined,
-  LoadingOutlined,
-  WarningOutlined,
-} from '@ant-design/icons';
-import {
   cloneElement,
   forwardRef,
   ReactElement,
@@ -46,12 +41,12 @@ import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import { FieldBaseProps } from '../../../shared';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
-import {
-  DEFAULT_INPUT_STYLES,
-  INPUT_WRAPPER_STYLES,
-} from '../../forms/TextInput/TextInputBase';
+import { DEFAULT_INPUT_STYLES, INPUT_WRAPPER_STYLES } from '../../forms';
 import { DEFAULT_BUTTON_STYLES } from '../../actions';
 import { wrapWithField } from '../../forms/wrapper';
+import { LoadingIcon } from '../../../icons';
+import { InvalidIcon } from '../../shared/InvalidIcon';
+import { ValidIcon } from '../../shared/ValidIcon';
 
 import type { AriaSelectProps } from '@react-types/select';
 
@@ -370,17 +365,7 @@ function Select<T extends object>(
 
   let isInvalid = validationState === 'invalid';
 
-  let validationIcon = isInvalid ? (
-    <WarningOutlined
-      data-element="ValidationIcon"
-      style={{ color: 'var(--danger-color)' }}
-    />
-  ) : (
-    <CheckOutlined
-      data-element="ValidationIcon"
-      style={{ color: 'var(--success-color)' }}
-    />
-  );
+  let validationIcon = isInvalid ? InvalidIcon : ValidIcon;
   let validation = cloneElement(validationIcon);
 
   let triggerWidth = triggerRef?.current?.offsetWidth;
@@ -460,7 +445,7 @@ function Select<T extends object>(
         <div data-element="Suffix">
           {suffixPosition === 'before' ? suffix : null}
           {validationState && !isLoading ? validation : null}
-          {isLoading && <LoadingOutlined />}
+          {isLoading && <LoadingIcon />}
           {suffixPosition === 'after' ? suffix : null}
           <div data-element="CaretIcon">
             <CaretDownIcon />
@@ -484,7 +469,7 @@ function Select<T extends object>(
     </SelectWrapperElement>
   );
 
-  return wrapWithField(
+  return wrapWithField<Omit<CubeSelectProps<T>, 'children'>>(
     selectField,
     ref,
     mergeProps(

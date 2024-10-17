@@ -1,6 +1,5 @@
 import { ForwardedRef, forwardRef, ReactNode, useState } from 'react';
 import { TextDropItem, useClipboard } from 'react-aria';
-import { CopyOutlined } from '@ant-design/icons';
 import copy from 'clipboard-copy';
 
 import { Button } from '../../actions';
@@ -14,6 +13,7 @@ import {
 } from '../../../tasty';
 import { useToastsApi } from '../../overlays/Toasts';
 import { useTimer } from '../../../_internal';
+import { CopyIcon } from '../../../icons';
 
 const StyledBlock = tasty({
   styles: {
@@ -93,7 +93,7 @@ const CopyPasteBlockElement = tasty(Card, {
 
 const CopyButton = tasty(Button, {
   type: 'clear',
-  icon: <CopyOutlined />,
+  icon: <CopyIcon />,
   'aria-label': 'Copy to clipboard',
   styles: {
     placeSelf: 'stretch',

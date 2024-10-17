@@ -1,8 +1,9 @@
 import { DollarCircleOutlined } from '@ant-design/icons';
+import { StoryFn } from '@storybook/react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 
-import { Avatar } from './Avatar';
+import { Avatar, CubeAvatarProps } from './Avatar';
 
 export default {
   title: 'Content/Avatar',
@@ -14,7 +15,7 @@ export default {
   },
 };
 
-const Template = ({ label, icon, ...args }) => (
+const Template: StoryFn<CubeAvatarProps> = ({ label, icon, ...args }) => (
   <Avatar {...args} icon={icon ? <DollarCircleOutlined /> : null}>
     {label}
   </Avatar>

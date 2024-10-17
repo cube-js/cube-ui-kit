@@ -1,6 +1,6 @@
 import { Story, ComponentMeta } from '@storybook/react';
-import { within, userEvent, waitFor } from '@storybook/testing-library';
-import { expect } from '@storybook/jest';
+import { within, userEvent, waitFor } from '@storybook/test';
+import { expect } from '@storybook/test';
 
 import { Button } from '../../actions';
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -38,6 +38,17 @@ const ViaProviderTemplate: Story<CubeTooltipProviderProps> = (args) => (
 
 export const Default: typeof Template = Template.bind({});
 Default.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const button = await canvas.getByRole('button');
+  // this is a weird hack that makes tooltip working properly on page load
+  await userEvent.unhover(button);
+  await userEvent.hover(button);
+
+  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeInTheDocument());
+};
+
+export const Side: typeof Template = Template.bind({ placement: 'right' });
+Side.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
   const button = await canvas.getByRole('button');
   // this is a weird hack that makes tooltip working properly on page load

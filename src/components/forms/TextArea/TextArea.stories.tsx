@@ -1,9 +1,10 @@
 import { DollarCircleOutlined } from '@ant-design/icons';
+import { StoryFn } from '@storybook/react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { TEXT_VALUE_ARG } from '../../../stories/FormFieldArgs';
 
-import { TextArea } from './TextArea';
+import { CubeTextAreaProps, TextArea } from './TextArea';
 
 export default {
   title: 'Forms/TextArea',
@@ -18,7 +19,7 @@ export default {
   },
 };
 
-const Template = ({ icon, ...props }) => (
+const Template: StoryFn<CubeTextAreaProps> = ({ icon, ...props }) => (
   <TextArea
     icon={icon ? <DollarCircleOutlined /> : null}
     {...props}

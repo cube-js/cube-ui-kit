@@ -1,13 +1,15 @@
-import { ReactNode } from 'react';
-import { CheckOutlined } from '@ant-design/icons';
+import { ReactElement, ReactNode } from 'react';
 
-import { Button, CubeButtonProps } from '../../actions';
+import { DEFAULT_BUTTON_STYLES } from '../../actions/index';
+import { Block, CubeBlockProps } from '../../Block';
 import { Text } from '../../content/Text';
 import { tasty } from '../../../tasty';
 import { Space } from '../../layout/Space';
+import { CheckIcon } from '../../../icons';
 
-const StyledButton = tasty(Button, {
+const StyledButton = tasty(Block, {
   styles: {
+    ...DEFAULT_BUTTON_STYLES,
     border: {
       '': '#clear',
       pressed: '#clear',
@@ -43,6 +45,17 @@ const StyledButton = tasty(Button, {
     display: 'flex',
     flow: 'row',
     justifyContent: 'start',
+    gap: '.75x',
+
+    ButtonIcon: {
+      display: 'grid',
+      fontSize: '@icon-size',
+      width: '@icon-size',
+      height: '@icon-size',
+      placeSelf: 'center',
+      placeItems: 'center',
+    },
+
     Postfix: {
       color: {
         '': '#dark-03',
@@ -86,14 +99,15 @@ export type MenuButtonProps = {
   postfix: ReactNode;
   selectionIcon?: MenuSelectionType;
   isSelectable?: boolean;
-  // eslint-disable-next-line react/boolean-prop-naming
-  disabled?: boolean;
-} & CubeButtonProps;
+  isSelected?: boolean;
+  icon?: ReactElement;
+  onAction?: () => void;
+} & CubeBlockProps;
 
 const getSelectionTypeIcon = (selectionIcon?: MenuSelectionType) => {
   switch (selectionIcon) {
     case 'checkbox':
-      return <CheckOutlined />;
+      return <CheckIcon />;
     case 'radio':
       return <RadioIcon />;
     default:
@@ -107,7 +121,7 @@ export function MenuButton({
   postfix,
   ...props
 }: MenuButtonProps) {
-  const { selectionIcon, isSelected, isSelectable } = props;
+  const { selectionIcon, isSelected, isSelectable, isDisabled } = props;
   const checkIcon =
     isSelectable && isSelected
       ? getSelectionTypeIcon(selectionIcon)
@@ -117,18 +131,14 @@ export function MenuButton({
     selectionIcon: !!selectionIcon,
     selectable: isSelectable,
     selected: isSelected,
+    disabled: isDisabled,
   };
 
   return (
-    <StyledButton
-      type="neutral"
-      size="small"
-      {...props}
-      icon={checkIcon}
-      mods={mods}
-    >
-      {icon && <Text color="inherit">{icon}</Text>}
-      <Space gap="1x" placeContent="space-between" overflow="auto" width="100%">
+    <StyledButton {...props} mods={mods}>
+      {checkIcon ? <div data-element="ButtonIcon">{checkIcon}</div> : null}
+      {icon ? <div data-element="ButtonIcon">{icon}</div> : null}
+      <Space gap="1x" placeContent="space-between" overflow="clip" width="100%">
         <Text ellipsis color="inherit">
           {children}
         </Text>

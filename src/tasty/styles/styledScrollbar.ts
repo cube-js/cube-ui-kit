@@ -35,11 +35,12 @@ export function styledScrollbarStyle({ styledScrollbar: val }) {
       $: '::-webkit-scrollbar-corner',
       'background-color': 'var(--scrollbar-corner-color)',
     },
-    {
-      'scrollbar-width': 'thin',
-      'scrollbar-color':
-        'var(--scrollbar-bg-color) var(--scrollbar-thumb-color)',
-    },
+    // Breaks the scrollbar in the latest Chromium browsers
+    // {
+    //   'scrollbar-width': 'thin',
+    //   'scrollbar-color':
+    //     'var(--scrollbar-bg-color) var(--scrollbar-thumb-color)',
+    // },
   ];
 }
 

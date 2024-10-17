@@ -59,15 +59,7 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
     validationDelay,
     showValid,
     shouldUpdate,
-    casting,
   } = props;
-
-  if (casting === 'number') {
-    casting = [
-      (inputValue: unknown) => String(inputValue) ?? null,
-      (outputValue: string) => Number(outputValue) ?? null,
-    ];
-  }
 
   if (rules && rules.length && validationDelay) {
     rules.unshift(delayValidationRule(validationDelay));
@@ -143,14 +135,6 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
 
     const field = form.getFieldInstance(fieldName);
 
-    if (
-      casting?.[1] &&
-      typeof val === 'string' &&
-      typeof casting?.[1] === 'function'
-    ) {
-      val = casting[1](val);
-    }
-
     if (shouldUpdate) {
       const fieldsValue = form.getFieldsValue();
 
@@ -190,10 +174,6 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
 
   let inputValue = field?.inputValue;
 
-  if (casting?.[0] && inputValue) {
-    inputValue = casting[0](inputValue);
-  }
-
   return useMemo(
     () => ({
       id: fieldId,
@@ -209,8 +189,8 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
         (field?.errors?.length
           ? 'invalid'
           : showValid && field?.status === 'valid'
-          ? 'valid'
-          : undefined),
+            ? 'valid'
+            : undefined),
       ...(isRequired && { isRequired }),
       message: message ?? (field?.status === 'invalid' && field?.errors?.[0]),
       onBlur: onBlurHandler,

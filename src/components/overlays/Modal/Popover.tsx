@@ -114,6 +114,7 @@ const PopoverWrapper = forwardRef(function PopoverWrapper(
     isDismissable,
     updatePosition,
     transitionState,
+    shouldCloseOnInteractOutside,
     ...otherProps
   } = props;
   let { overlayProps } = useOverlay(

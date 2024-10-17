@@ -152,6 +152,19 @@ const GlobalStylesElement = createGlobalStyle<GlobalStylesElementProps>`
     padding: 0 var(--outline-width);
   }
 
+  .cube-animation-spin {
+    animation: cube-animation-spin 1s linear infinite;
+  }
+
+  @keyframes cube-animation-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+  }
+
   .cube-notification-container {
     min-width: 288px;
     max-width: 340px;

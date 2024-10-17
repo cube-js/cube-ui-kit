@@ -22,6 +22,7 @@ function copyPackageJson() {
     keywords,
     repository,
     sideEffects,
+    license,
   } = JSON.parse(packageData);
   const newPackageData = {
     name,
@@ -34,6 +35,7 @@ function copyPackageJson() {
     sideEffects,
     peerDependencies,
     dependencies,
+    license,
     module: './es/index.js',
     types: './types/index.d.ts',
     main: './cjs/index.js',
@@ -41,6 +43,7 @@ function copyPackageJson() {
       '.': {
         import: './es/index.js',
         require: './cjs/index.js',
+        types: './types/index.d.ts',
       },
     },
     private: false,

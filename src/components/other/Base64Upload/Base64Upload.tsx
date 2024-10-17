@@ -26,7 +26,7 @@ const DEFAULT_STYLES: Styles = {
 };
 
 export interface CubeBase64UploadProps extends BaseProps, PositionStyleProps {
-  onInput?: Function;
+  onInput?: (arg?: any) => void;
 }
 
 export const Base64Upload = styled(
@@ -44,6 +44,7 @@ export const Base64Upload = styled(
       if (!e.target) return;
 
       const localFile = e.target.files[0];
+
       const reader = new FileReader();
 
       setError('');

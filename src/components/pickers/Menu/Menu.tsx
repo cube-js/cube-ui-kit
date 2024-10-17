@@ -94,7 +94,6 @@ function Menu<T extends object>(
               itemStyles={itemStyles}
               headingStyles={sectionHeadingStyles}
               selectionIcon={selectionIcon}
-              onAction={completeProps.onAction}
             />
           );
         }
@@ -106,7 +105,7 @@ function Menu<T extends object>(
             state={state}
             styles={itemStyles}
             selectionIcon={selectionIcon}
-            onAction={completeProps.onAction}
+            onAction={item.onAction}
           />
         );
 

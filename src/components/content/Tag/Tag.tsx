@@ -1,5 +1,4 @@
 import { forwardRef, ReactNode } from 'react';
-import { CloseOutlined } from '@ant-design/icons';
 
 import THEMES from '../../../data/themes';
 import {
@@ -13,6 +12,7 @@ import {
 } from '../../../tasty';
 import { Action } from '../../actions';
 import { Suffix } from '../../layout/Suffix';
+import { CloseIcon } from '../../../icons';
 
 const TagElement = tasty({
   qa: 'Tag',
@@ -122,11 +122,7 @@ function Tag(allProps: CubeTagProps, ref) {
       {isClosable ? (
         <Suffix outerGap="0">
           <CloseAction styles={closeButtonStyles} onPress={onClose}>
-            <CloseOutlined
-              style={{
-                fontSize: 'var(--font-size, inherit)',
-              }}
-            />
+            <CloseIcon size={12} />
           </CloseAction>
         </Suffix>
       ) : undefined}

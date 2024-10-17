@@ -1,6 +1,7 @@
 import { DollarCircleOutlined } from '@ant-design/icons';
+import { StoryFn } from '@storybook/react';
 
-import { Tag } from './Tag';
+import { CubeTagProps, Tag } from './Tag';
 
 export default {
   title: 'Content/Tag',
@@ -44,7 +45,7 @@ export default {
   },
 };
 
-const Template = ({ label, ...props }) => (
+const Template: StoryFn<CubeTagProps> = ({ label, ...props }) => (
   <Tag {...props} onClose={() => console.log('close')}>
     {label}
   </Tag>

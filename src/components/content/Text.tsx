@@ -78,7 +78,7 @@ const TextElement = tasty({
   },
 });
 
-const _Text = forwardRef(function Text(allProps: CubeTextProps, ref) {
+const Text = forwardRef(function CubeText(allProps: CubeTextProps, ref) {
   allProps = useSlotProps(allProps, 'text');
 
   const { as, qa, block, styleName, ellipsis, nowrap, ...props } = allProps;
@@ -101,27 +101,27 @@ const _Text = forwardRef(function Text(allProps: CubeTextProps, ref) {
   );
 });
 
-const Text = Object.assign(_Text, {
+const _Text = Object.assign(Text, {
   Minor: forwardRef(function MinorText(props: CubeTextProps, ref) {
-    return <_Text ref={ref} color="#minor" {...props} />;
+    return <Text ref={ref} color="#minor" {...props} />;
   }),
   Danger: forwardRef(function DangerText(props: CubeTextProps, ref) {
-    return <_Text ref={ref} role="alert" color="#danger-text" {...props} />;
+    return <Text ref={ref} role="alert" color="#danger-text" {...props} />;
   }),
   Success: forwardRef(function SuccessText(props: CubeTextProps, ref) {
-    return <_Text ref={ref} color="#success-text" {...props} />;
+    return <Text ref={ref} color="#success-text" {...props} />;
   }),
   Strong: forwardRef(function StrongText(props: CubeTextProps, ref) {
     return (
-      <_Text ref={ref} as="strong" preset="strong" color="#dark" {...props} />
+      <Text ref={ref} as="strong" preset="strong" color="#dark" {...props} />
     );
   }),
   Emphasis: forwardRef(function EmphasisText(props: CubeTextProps, ref) {
-    return <_Text ref={ref} as="em" preset="em" {...props} />;
+    return <Text ref={ref} as="em" preset="em" {...props} />;
   }),
   Selection: forwardRef(function SelectionText(props: CubeTextProps, ref) {
-    return <_Text ref={ref} color="#dark" fill="#note.30" {...props} />;
+    return <Text ref={ref} color="#dark" fill="#note.30" {...props} />;
   }),
 });
 
-export { Text };
+export { _Text as Text };

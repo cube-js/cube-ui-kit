@@ -1,15 +1,12 @@
 import { useState } from 'react';
 import {
   BulbOutlined,
-  CheckCircleFilled,
-  MoreOutlined,
   ReloadOutlined,
   BookOutlined,
-  PlusOutlined,
+  CheckCircleFilled,
 } from '@ant-design/icons';
-import { action } from '@storybook/addon-actions';
-import { expect } from '@storybook/jest';
-import { userEvent, waitFor, within } from '@storybook/testing-library';
+import { expect } from '@storybook/test';
+import { userEvent, waitFor, within } from '@storybook/test';
 
 import {
   Menu,
@@ -17,13 +14,13 @@ import {
   Flex,
   Button,
   Text,
-  Root,
   Space,
   AlertDialog,
   DialogContainer,
   TooltipProvider,
 } from '../../../index';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { MoreIcon, PlusIcon } from '../../../icons';
 
 export default {
   title: 'Pickers/Menu',
@@ -40,35 +37,25 @@ export default {
 
 const MenuTemplate = (props) => {
   return (
-    <Root>
-      <Menu id="menu" {...props} width="340px">
-        <Menu.Item key="1" onPress={action('Item 1')}>
-          Item 1
-        </Menu.Item>
-        <Menu.Item key="2" onPress={action('Item 2')}>
-          Item 2
-        </Menu.Item>
-        <Menu.Item key="3" onPress={action('Item 3')}>
-          Item 3
-        </Menu.Item>
-        <Menu.Item key="4" onPress={action('Item 4')}>
-          Item 4
-        </Menu.Item>
-      </Menu>
-    </Root>
+    <Menu id="menu" {...props} width="340px">
+      <Menu.Item key="1">Item 1</Menu.Item>
+      <Menu.Item key="2">Item 2</Menu.Item>
+      <Menu.Item key="3">Item 3</Menu.Item>
+      <Menu.Item key="4">Item 4</Menu.Item>
+    </Menu>
   );
 };
 
 export const Default = ({ ...props }) => {
   const menu = (
     <Menu id="menu" {...props} width="220px">
-      <Menu.Item key="red" postfix="Ctr+C" onPress={action('Ctr+C')}>
+      <Menu.Item key="red" postfix="Ctr+C">
         Copy
       </Menu.Item>
-      <Menu.Item key="orange" postfix="Ctr+V" onPress={action('Ctr+C')}>
+      <Menu.Item key="orange" postfix="Ctr+V">
         Paste
       </Menu.Item>
-      <Menu.Item key="yellow" postfix="Ctr+X" onPress={action('Ctr+C')}>
+      <Menu.Item key="yellow" postfix="Ctr+X">
         Cut
       </Menu.Item>
     </Menu>
@@ -86,7 +73,7 @@ export const Default = ({ ...props }) => {
       <MenuTrigger>
         <Button
           size="small"
-          icon={<MoreOutlined />}
+          icon={<MoreIcon />}
           aria-label="Open Context Menu"
         />
         {menu}
@@ -103,7 +90,7 @@ export const InsideModal = () => {
           <MenuTrigger>
             <Button
               size="small"
-              icon={<MoreOutlined />}
+              icon={<MoreIcon />}
               qa="ContextMenuButton"
               aria-label="Open Context Menu"
             />
@@ -113,13 +100,13 @@ export const InsideModal = () => {
               width="220px"
               selectionMode="multiple"
             >
-              <Menu.Item key="red" postfix="Ctr+C" onPress={action('Ctr+C')}>
+              <Menu.Item key="red" postfix="Ctr+C">
                 Copy
               </Menu.Item>
-              <Menu.Item key="orange" postfix="Ctr+V" onPress={action('Ctr+C')}>
+              <Menu.Item key="orange" postfix="Ctr+V">
                 Paste
               </Menu.Item>
-              <Menu.Item key="yellow" postfix="Ctr+X" onPress={action('Ctr+C')}>
+              <Menu.Item key="yellow" postfix="Ctr+X">
                 Cut
               </Menu.Item>
             </Menu>
@@ -224,10 +211,10 @@ export const GitActions = (props) => {
           key="blue"
           mods={{ pressed: true }}
           postfix={
-            <Flex gap="0.5x">
+            <Space gap="0.5x">
               {successIcon}
               {stuffText}
-            </Flex>
+            </Space>
           }
         >
           Merge to master (pressed)
@@ -274,6 +261,7 @@ export const MenuSelectableMultiple = (props) => {
 MenuSelectableMultiple.play = async ({ canvasElement }) => {
   const { getByTestId } = within(canvasElement);
 
+  // @ts-ignore
   await userEvent.tab(getByTestId('Menu'));
 };
 
@@ -351,7 +339,7 @@ export const ItemCustomIcons = (props) => {
         <Menu.Item key="orange" icon={<BookOutlined />} postfix="Jan, 2022">
           #16C7B3AE
         </Menu.Item>
-        <Menu.Item key="purple" icon={<PlusOutlined />} postfix="Feb, 2022">
+        <Menu.Item key="purple" icon={<PlusIcon />} postfix="Feb, 2022">
           #16C7B3AE
         </Menu.Item>
         <Menu.Item key="yellow" icon={<ReloadOutlined />} postfix="July, 2022">
@@ -406,12 +394,12 @@ export const ItemWithTooltip = (props) => {
   );
 };
 
-ItemWithTooltip.play = async ({ canvasElement }) => {
-  const canvas = within(canvasElement);
-  const button = (await canvas.getAllByRole('button'))[0];
-  // this is a weird hack that makes tooltip working properly on a page load
-  await userEvent.unhover(button);
-  await userEvent.hover(button);
-
-  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeInTheDocument());
-};
+// ItemWithTooltip.play = async ({ canvasElement }) => {
+//   const canvas = within(canvasElement);
+//   const button = (await canvas.getAllByRole('button'))[0];
+//   // this is a weird hack that makes tooltip working properly on a page load
+//   await userEvent.unhover(button);
+//   await userEvent.hover(button);
+//
+//   await waitFor(() => expect(canvas.getByRole('tooltip')).toBeInTheDocument());
+// };

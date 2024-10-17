@@ -51,3 +51,9 @@ Chart.args = {
   layout: 'chart',
   columns: 16,
 };
+
+export const StaticPage = Template.bind({});
+StaticPage.args = {
+  layout: 'page',
+  isStatic: true,
+};

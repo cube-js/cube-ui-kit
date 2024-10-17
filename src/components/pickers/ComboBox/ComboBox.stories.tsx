@@ -1,6 +1,6 @@
 import { DollarCircleOutlined } from '@ant-design/icons';
-import { Meta, Story } from '@storybook/react';
-import { userEvent, within } from '@storybook/testing-library';
+import { Meta, StoryFn } from '@storybook/react';
+import { userEvent, within } from '@storybook/test';
 
 import { SELECTED_KEY_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -16,7 +16,9 @@ export default {
   argTypes: { ...SELECTED_KEY_ARG },
 } as Meta<CubeComboBoxProps<any>>;
 
-const Template: Story<CubeComboBoxProps<any>> = (args) => (
+const Template: StoryFn<CubeComboBoxProps<any>> = (
+  args: CubeComboBoxProps<any>,
+) => (
   <>
     <ComboBox {...args}>
       <ComboBox.Item key="red">Red</ComboBox.Item>
@@ -51,7 +53,9 @@ Valid.args = { selectedKey: 'yellow', validationState: 'valid' };
 export const Disabled = Template.bind({});
 Disabled.args = { selectedKey: 'yellow', isDisabled: true };
 
-export const Wide: Story<CubeComboBoxProps<any>> = (args) => (
+export const Wide: StoryFn<CubeComboBoxProps<any>> = (
+  args: CubeComboBoxProps<any>,
+) => (
   <ComboBox {...args}>
     <ComboBox.Item key="red">
       Red lorem ipsum dolor sit amet, consectetur adipiscing elit.
@@ -64,7 +68,9 @@ export const Wide: Story<CubeComboBoxProps<any>> = (args) => (
 
 Wide.args = { width: '600px', defaultSelectedKey: 'red' };
 
-export const With1LongOption: Story<CubeComboBoxProps<any>> = (args) => (
+export const With1LongOption: StoryFn<CubeComboBoxProps<any>> = (
+  args: CubeComboBoxProps<any>,
+) => (
   <ComboBox {...args}>
     <ComboBox.Item key="red">Red</ComboBox.Item>
     <ComboBox.Item key="orange">Orange</ComboBox.Item>

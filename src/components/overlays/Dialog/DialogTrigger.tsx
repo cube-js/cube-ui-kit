@@ -125,6 +125,7 @@ function DialogTrigger(props: CubeDialogTriggerProps) {
         {...positionProps}
         hideOnClose={hideOnClose}
         state={state}
+        styles={styles}
         targetRef={targetRef}
         trigger={trigger}
         content={content}
@@ -196,6 +197,7 @@ export { _DialogTrigger as DialogTrigger };
 function PopoverTrigger(allProps) {
   let {
     state,
+    styles,
     targetRef,
     trigger,
     content,
@@ -247,6 +249,7 @@ function PopoverTrigger(allProps) {
   let overlay = (
     <Popover
       ref={overlayRef}
+      styles={styles}
       hideOnClose={hideOnClose}
       isOpen={state.isOpen}
       style={popoverProps.style}

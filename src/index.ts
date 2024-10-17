@@ -151,7 +151,7 @@ export type { CubeNotificationOptions } from './services/notification';
 export * from './tasty';
 
 export const Typography = {
-  Text,
+  Text: Text,
   Title,
   Paragraph,
 };
@@ -159,8 +159,8 @@ export const Typography = {
 export { Text, Title, Paragraph };
 export type { CubeTextProps, CubeTitleProps, CubeParagraphProps };
 
-export { Provider } from './provider';
-export type { useProviderProps } from './provider';
+export { Provider, useProviderProps } from './provider';
+export type { ProviderProps } from './provider';
 export { Portal } from './components/portal';
 export type { PortalProps } from './components/portal';
 export * from './components/forms';
@@ -193,3 +193,5 @@ export * from '@react-aria/ssr';
 export * from './components/forms/Form';
 export * from './components/overlays/NewNotifications';
 export * from './components/overlays/Toasts';
+export * from './shared';
+export * from './icons';

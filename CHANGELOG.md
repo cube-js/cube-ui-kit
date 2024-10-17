@@ -1,5 +1,223 @@
 # @cube-dev/ui-kit
 
+## 0.38.0
+
+### Minor Changes
+
+- [#507](https://github.com/cube-js/cube-ui-kit/pull/507) [`c2b126e`](https://github.com/cube-js/cube-ui-kit/commit/c2b126e3b6d9e46a75025c334066f777acd8106c) Thanks [@tenphi](https://github.com/tenphi)! - Change MenuItem API to support isDisabled and onAction props.
+
+### Patch Changes
+
+- [#507](https://github.com/cube-js/cube-ui-kit/pull/507) [`c2b126e`](https://github.com/cube-js/cube-ui-kit/commit/c2b126e3b6d9e46a75025c334066f777acd8106c) Thanks [@tenphi](https://github.com/tenphi)! - Fix unresponsive Menu Item on tap to click.
+
+## 0.37.5
+
+### Patch Changes
+
+- [#504](https://github.com/cube-js/cube-ui-kit/pull/504) [`b83122e`](https://github.com/cube-js/cube-ui-kit/commit/b83122e01f9cc1ff1febf4eaa451044106b8c202) Thanks [@tenphi](https://github.com/tenphi)! - Add support for dark schema for Underlay.
+
+- [#504](https://github.com/cube-js/cube-ui-kit/pull/504) [`b83122e`](https://github.com/cube-js/cube-ui-kit/commit/b83122e01f9cc1ff1febf4eaa451044106b8c202) Thanks [@tenphi](https://github.com/tenphi)! - Fix FileTabs Pane max size.
+
+- [#504](https://github.com/cube-js/cube-ui-kit/pull/504) [`b83122e`](https://github.com/cube-js/cube-ui-kit/commit/b83122e01f9cc1ff1febf4eaa451044106b8c202) Thanks [@tenphi](https://github.com/tenphi)! - Fix typings for SearchInput to support onSubmit and onClear callbacks.
+
+## 0.37.4
+
+### Patch Changes
+
+- [#501](https://github.com/cube-js/cube-ui-kit/pull/501) [`90cfd16`](https://github.com/cube-js/cube-ui-kit/commit/90cfd1601924f49f5393d8a712ad10e5dba5f6fc) Thanks [@tenphi](https://github.com/tenphi)! - Add CalendarEditIcon
+
+## 0.37.3
+
+### Patch Changes
+
+- [#498](https://github.com/cube-js/cube-ui-kit/pull/498) [`77e7ab7`](https://github.com/cube-js/cube-ui-kit/commit/77e7ab77c2797e1f5f986e0e6b40c760689eb25c) Thanks [@tenphi](https://github.com/tenphi)! - Pass `qa` prop for fields.
+
+## 0.37.2
+
+### Patch Changes
+
+- [#495](https://github.com/cube-js/cube-ui-kit/pull/495) [`743d5fa`](https://github.com/cube-js/cube-ui-kit/commit/743d5fa8b242bd60acd55d94d3d01450bd7bcbfb) Thanks [@tenphi](https://github.com/tenphi)! - Add StatsIcon.
+
+## 0.37.1
+
+### Patch Changes
+
+- [#492](https://github.com/cube-js/cube-ui-kit/pull/492) [`84002df`](https://github.com/cube-js/cube-ui-kit/commit/84002df9f8bbbacd48e4cac51ae568749f8781e9) Thanks [@tenphi](https://github.com/tenphi)! - Support multiple directions in fade style.
+
+## 0.37.0
+
+### Minor Changes
+
+- [#487](https://github.com/cube-js/cube-ui-kit/pull/487) [`07350da`](https://github.com/cube-js/cube-ui-kit/commit/07350da1032b59659b6d207548ad23eb2c4d0bbe) Thanks [@tenphi](https://github.com/tenphi)! - Add lots of new icons.
+
+## 0.36.0
+
+### Minor Changes
+
+- [#485](https://github.com/cube-js/cube-ui-kit/pull/485) [`8104857`](https://github.com/cube-js/cube-ui-kit/commit/8104857cc27223977fc35ca324341ed342e1aa0b) Thanks [@tenphi](https://github.com/tenphi)! - Add `fade` and `inset` styles.
+
+### Patch Changes
+
+- [#485](https://github.com/cube-js/cube-ui-kit/pull/485) [`8104857`](https://github.com/cube-js/cube-ui-kit/commit/8104857cc27223977fc35ca324341ed342e1aa0b) Thanks [@tenphi](https://github.com/tenphi)! - Add `position` style to `position` style list.
+
+## 0.35.10
+
+### Patch Changes
+
+- [#483](https://github.com/cube-js/cube-ui-kit/pull/483) [`e8e9a7e`](https://github.com/cube-js/cube-ui-kit/commit/e8e9a7e4ba43261f5a562932a404f719d9e2a41b) Thanks [@tenphi](https://github.com/tenphi)! - Export ProviderProps type.
+
+## 0.35.9
+
+### Patch Changes
+
+- [#481](https://github.com/cube-js/cube-ui-kit/pull/481) [`c02d7ea`](https://github.com/cube-js/cube-ui-kit/commit/c02d7eaf05714e9afd64705ead4cb8f775c1aecc) Thanks [@tenphi](https://github.com/tenphi)! - Fix RadioButton layout flow.
+
+## 0.35.8
+
+### Patch Changes
+
+- [#479](https://github.com/cube-js/cube-ui-kit/pull/479) [`f31f3cc`](https://github.com/cube-js/cube-ui-kit/commit/f31f3cce82304389efc22c8c6f99d81c8acc9e91) Thanks [@tenphi](https://github.com/tenphi)! - Export useProviderProps and UIKitContext.
+
+- [#479](https://github.com/cube-js/cube-ui-kit/pull/479) [`f31f3cc`](https://github.com/cube-js/cube-ui-kit/commit/f31f3cce82304389efc22c8c6f99d81c8acc9e91) Thanks [@tenphi](https://github.com/tenphi)! - Improve styles for Radio.Button
+
+- [#479](https://github.com/cube-js/cube-ui-kit/pull/479) [`f31f3cc`](https://github.com/cube-js/cube-ui-kit/commit/f31f3cce82304389efc22c8c6f99d81c8acc9e91) Thanks [@tenphi](https://github.com/tenphi)! - Export useProviderProps hook.
+
+## 0.35.7
+
+### Patch Changes
+
+- [#476](https://github.com/cube-js/cube-ui-kit/pull/476) [`5bf114c`](https://github.com/cube-js/cube-ui-kit/commit/5bf114c636f380e4ac17b1472197e0409b09d2ed) Thanks [@tenphi](https://github.com/tenphi)! - Export useProviderProps hook.
+
+## 0.35.6
+
+### Patch Changes
+
+- [#474](https://github.com/cube-js/cube-ui-kit/pull/474) [`827ca5b`](https://github.com/cube-js/cube-ui-kit/commit/827ca5b111e0def5546252a211b106ca7f3f6d95) Thanks [@tenphi](https://github.com/tenphi)! - Add StringIcon component.
+
+## 0.35.5
+
+### Patch Changes
+
+- [#472](https://github.com/cube-js/cube-ui-kit/pull/472) [`70782a2`](https://github.com/cube-js/cube-ui-kit/commit/70782a2310e51cee946232c3c39dd06add9ffeac) Thanks [@tenphi](https://github.com/tenphi)! - Add Sparkles icon.
+
+## 0.35.4
+
+### Patch Changes
+
+- [#470](https://github.com/cube-js/cube-ui-kit/pull/470) [`66a69c7`](https://github.com/cube-js/cube-ui-kit/commit/66a69c7ced6cada44cc76344749c66ceb37ba691) Thanks [@tenphi](https://github.com/tenphi)! - Add ThumbsUp and ThumbsDown icons.
+
+## 0.35.3
+
+### Patch Changes
+
+- [#468](https://github.com/cube-js/cube-ui-kit/pull/468) [`2bd3b1d`](https://github.com/cube-js/cube-ui-kit/commit/2bd3b1d383c83f65be411dcf445cbce712fe11c9) Thanks [@tenphi](https://github.com/tenphi)! - Fix Root component so it can accept style object.'
+
+## 0.35.2
+
+### Patch Changes
+
+- [#465](https://github.com/cube-js/cube-ui-kit/pull/465) [`3597635`](https://github.com/cube-js/cube-ui-kit/commit/3597635b770a57be18f8388fab07251cec5c227a) Thanks [@tenphi](https://github.com/tenphi)! - Fix passing breakpoints property to the Root component.
+
+- [#463](https://github.com/cube-js/cube-ui-kit/pull/463) [`bc3acb1`](https://github.com/cube-js/cube-ui-kit/commit/bc3acb147966e8bbaf2b8b3f3325cd423a11cd9d) Thanks [@tenphi](https://github.com/tenphi)! - Change icon container inner placement to center. Suitable for icons that are smaller than default size.
+
+- [#463](https://github.com/cube-js/cube-ui-kit/pull/463) [`bc3acb1`](https://github.com/cube-js/cube-ui-kit/commit/bc3acb147966e8bbaf2b8b3f3325cd423a11cd9d) Thanks [@tenphi](https://github.com/tenphi)! - Fix passing styles from DialogTrigger to Popver component.
+
+## 0.35.1
+
+### Patch Changes
+
+- [#461](https://github.com/cube-js/cube-ui-kit/pull/461) [`820de13`](https://github.com/cube-js/cube-ui-kit/commit/820de130bbd27077b3067496e2d21602dcdfd847) Thanks [@tenphi](https://github.com/tenphi)! - Add SlashIcon.
+
+## 0.35.0
+
+### Minor Changes
+
+- [#460](https://github.com/cube-js/cube-ui-kit/pull/460) [`de511ca`](https://github.com/cube-js/cube-ui-kit/commit/de511ca4e83fdd659888e8c7e058b293774ef45e) Thanks [@tenphi](https://github.com/tenphi)! - Add even more icons.
+
+### Patch Changes
+
+- [#460](https://github.com/cube-js/cube-ui-kit/pull/460) [`de511ca`](https://github.com/cube-js/cube-ui-kit/commit/de511ca4e83fdd659888e8c7e058b293774ef45e) Thanks [@tenphi](https://github.com/tenphi)! - Allow icons to fill all available vertical space in complex layouts.
+
+- [#458](https://github.com/cube-js/cube-ui-kit/pull/458) [`4740e98`](https://github.com/cube-js/cube-ui-kit/commit/4740e987ab71ce20ee7d2a4a6affd15c0f117e0b) Thanks [@tenphi](https://github.com/tenphi)! - Export wrapIcon helper.
+
+## 0.34.0
+
+### Minor Changes
+
+- [#456](https://github.com/cube-js/cube-ui-kit/pull/456) [`6371914`](https://github.com/cube-js/cube-ui-kit/commit/6371914e3a03f55b1ff57f1db715480cec5c6970) Thanks [@tenphi](https://github.com/tenphi)! - Add a new set icons.
+
+## 0.33.4
+
+### Patch Changes
+
+- [#453](https://github.com/cube-js/cube-ui-kit/pull/453) [`cc85ee4`](https://github.com/cube-js/cube-ui-kit/commit/cc85ee4c5c1dc032526cfa178ca9b0b9b8c979b7) Thanks [@tenphi](https://github.com/tenphi)! - Use smaller horizontal paddings buttons.
+
+- [#455](https://github.com/cube-js/cube-ui-kit/pull/455) [`d72f96c`](https://github.com/cube-js/cube-ui-kit/commit/d72f96c7086dca45499fe8b8e96f40740effb017) Thanks [@tenphi](https://github.com/tenphi)! - Set default gap inside Button layout to 6px instead of 8px.
+
+- [#453](https://github.com/cube-js/cube-ui-kit/pull/453) [`cc85ee4`](https://github.com/cube-js/cube-ui-kit/commit/cc85ee4c5c1dc032526cfa178ca9b0b9b8c979b7) Thanks [@tenphi](https://github.com/tenphi)! - Use --icon-size property as the default size for the icon set.
+
+## 0.33.3
+
+### Patch Changes
+
+- [#450](https://github.com/cube-js/cube-ui-kit/pull/450) [`70ada53`](https://github.com/cube-js/cube-ui-kit/commit/70ada5326791bf73c16f3fa137fac720eef7cde3) Thanks [@tenphi](https://github.com/tenphi)! - Support `download` attribute in Button and Link components.
+
+- [#451](https://github.com/cube-js/cube-ui-kit/pull/451) [`889660f`](https://github.com/cube-js/cube-ui-kit/commit/889660f2cb4f084ea93d6157456a7046af46ebc0) Thanks [@tenphi](https://github.com/tenphi)! - Fix styled scrollbar styles to return background.
+
+- [#451](https://github.com/cube-js/cube-ui-kit/pull/451) [`889660f`](https://github.com/cube-js/cube-ui-kit/commit/889660f2cb4f084ea93d6157456a7046af46ebc0) Thanks [@tenphi](https://github.com/tenphi)! - Add typings for outer style props in the Radio component.
+
+## 0.33.2
+
+### Patch Changes
+
+- [#448](https://github.com/cube-js/cube-ui-kit/pull/448) [`9d60269`](https://github.com/cube-js/cube-ui-kit/commit/9d60269d6bfc33c6953eef5ad5d2e591ba7aae89) Thanks [@tenphi](https://github.com/tenphi)! - Add aria-hidden to all icons.
+
+- [#448](https://github.com/cube-js/cube-ui-kit/pull/448) [`9d60269`](https://github.com/cube-js/cube-ui-kit/commit/9d60269d6bfc33c6953eef5ad5d2e591ba7aae89) Thanks [@tenphi](https://github.com/tenphi)! - Make all icons spans and change layout to inline-grid.
+
+## 0.33.1
+
+### Patch Changes
+
+- [#445](https://github.com/cube-js/cube-ui-kit/pull/445) [`0b7f5fe`](https://github.com/cube-js/cube-ui-kit/commit/0b7f5fe6e8f6f7b5eed152223205cf54a75c948f) Thanks [@tenphi](https://github.com/tenphi)! - Fix LockIcon component.
+
+## 0.33.0
+
+### Minor Changes
+
+- [#442](https://github.com/cube-js/cube-ui-kit/pull/442) [`d887177`](https://github.com/cube-js/cube-ui-kit/commit/d887177d0684fd994e92b1638ed5b7f1f3e95bae) Thanks [@tenphi](https://github.com/tenphi)! - Add icon set. Import icons like components: `CloseIcon`, `PlusIcon`, etc.
+
+- [#443](https://github.com/cube-js/cube-ui-kit/pull/443) [`c2701c2`](https://github.com/cube-js/cube-ui-kit/commit/c2701c2e8dfc9ee073501bb99ffe100149b9f32e) Thanks [@tenphi](https://github.com/tenphi)! - Fix tip position for Tooltip component in right/left placement.
+
+## 0.32.0
+
+### Minor Changes
+
+- [#440](https://github.com/cube-js/cube-ui-kit/pull/440) [`853e3e2`](https://github.com/cube-js/cube-ui-kit/commit/853e3e2692b1bd5adb158f825e4f816df1758548) Thanks [@tenphi](https://github.com/tenphi)! - Add full React 18 support. UI Kit now requires React 18 to run.
+
+## 0.31.2
+
+### Patch Changes
+
+- [#437](https://github.com/cube-js/cube-ui-kit/pull/437) [`5411b86`](https://github.com/cube-js/cube-ui-kit/commit/5411b86a40139bbb68cee322ef3642a3e96486c5) Thanks [@ovr](https://github.com/ovr)! - fix(deps): Make storybook as dev dependencies
+
+## 0.31.1
+
+### Patch Changes
+
+- [#435](https://github.com/cube-js/cube-ui-kit/pull/435) [`902c1f9`](https://github.com/cube-js/cube-ui-kit/commit/902c1f9fdf393fbacc851247c122ea714f674f59) Thanks [@tenphi](https://github.com/tenphi)! - Add correct type exports to the published package.
+
+## 0.31.0
+
+### Minor Changes
+
+- [#432](https://github.com/cube-js/cube-ui-kit/pull/432) [`46b8354`](https://github.com/cube-js/cube-ui-kit/commit/46b8354457c24807e0920993be4ff1e445aeb86c) Thanks [@tenphi](https://github.com/tenphi)! - Add license field to the published package.json
+
+## 0.30.1
+
+### Patch Changes
+
+- [#428](https://github.com/cube-js/cube-ui-kit/pull/428) [`95c56f7`](https://github.com/cube-js/cube-ui-kit/commit/95c56f7877140eef58014c12d2824d9fa0c69355) Thanks [@tenphi](https://github.com/tenphi)! - Add `isStatic` property to active static mode without animation in Placeholder and Skeleton components.
+
 ## 0.30.0
 
 ### Minor Changes

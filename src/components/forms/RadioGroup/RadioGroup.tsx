@@ -49,6 +49,10 @@ const RadioGroupElement = tasty({
       solid: 0,
     },
     whiteSpace: 'nowrap',
+    flexGrow: {
+      '': 'initial',
+      solid: 1,
+    },
   },
 });
 

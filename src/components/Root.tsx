@@ -59,6 +59,7 @@ export function Root(allProps: CubeRootProps) {
     children,
     /** Raw css styles for body element */
     bodyStyles,
+    breakpoints = [980],
     fontDisplay = 'swap',
     fonts,
     publicUrl,
@@ -67,6 +68,7 @@ export function Root(allProps: CubeRootProps) {
     monospaceFont,
     applyLegacyTokens,
     tracking,
+    style,
     ...props
   } = allProps;
 
@@ -122,7 +124,7 @@ export function Root(allProps: CubeRootProps) {
   const styles = extractStyles(props, STYLES, DEFAULT_STYLES);
 
   return (
-    <Provider router={router} root={rootRef}>
+    <Provider router={router} root={rootRef} breakpoints={breakpoints}>
       <TrackingProvider event={tracking?.event}>
         <StyleSheetManager>
           <RootElement
@@ -134,6 +136,7 @@ export function Root(allProps: CubeRootProps) {
               '--cube-dynamic-viewport-height': height
                 ? height + 'px'
                 : '100dvh',
+              ...style,
             }}
           >
             <GlobalStyles

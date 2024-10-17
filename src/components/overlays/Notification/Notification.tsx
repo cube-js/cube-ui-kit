@@ -1,15 +1,14 @@
-import {
-  CheckOutlined,
-  CloseOutlined,
-  ExclamationOutlined,
-  InfoOutlined,
-} from '@ant-design/icons';
-
-import { Action } from '../../actions/Action';
+import { Action } from '../../actions';
 import { Card, CubeCardProps } from '../../content/Card/Card';
 import { Block } from '../../Block';
 import THEMES from '../../../data/themes';
 import { tasty } from '../../../tasty';
+import {
+  CheckIcon,
+  CloseIcon,
+  ExclamationIcon,
+  InfoIcon,
+} from '../../../icons';
 
 export interface CubeNotificationProps extends CubeCardProps {
   type?: 'success' | 'note' | 'danger';
@@ -77,13 +76,13 @@ export function Notification(allProps: CubeNotificationProps) {
 
   switch (theme) {
     case 'success':
-      Icon = CheckOutlined;
+      Icon = CheckIcon;
       break;
     case 'danger':
-      Icon = ExclamationOutlined;
+      Icon = ExclamationIcon;
       break;
     default:
-      Icon = InfoOutlined;
+      Icon = InfoIcon;
       break;
   }
 
@@ -94,7 +93,7 @@ export function Notification(allProps: CubeNotificationProps) {
       </div>
       <Block>{children}</Block>
       <CloseButton onPress={onClose}>
-        <CloseOutlined />
+        <CloseIcon />
       </CloseButton>
     </NotificationElement>
   );

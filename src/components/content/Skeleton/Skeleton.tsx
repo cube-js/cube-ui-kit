@@ -5,33 +5,33 @@ import { CubeGridProps, Grid } from '../../layout/Grid';
 import { BaseProps, ContainerStyleProps } from '../../../tasty';
 
 const LAYOUT_MAP = {
-  page({ lines, children, ...props }) {
+  page({ lines, children, isStatic = false, ...props }: CubeSkeletonProps) {
     return (
       <Flow gap="4x" {...props}>
         <Space placeContent="space-between">
-          <Placeholder width="100px 25% 300px" />
-          <Placeholder width="50px 10% 150px" />
+          <Placeholder isStatic={isStatic} width="100px 25% 300px" />
+          <Placeholder isStatic={isStatic} width="50px 10% 150px" />
         </Space>
         <Flow gap="2x">
           {children ||
             Array(lines || 5)
               .fill(0)
-              .map((item, i) => <Placeholder key={i} />)}
+              .map((item, i) => <Placeholder key={i} isStatic={isStatic} />)}
         </Flow>
       </Flow>
     );
   },
-  content({ children, lines, ...props }) {
+  content({ children, lines, isStatic = false, ...props }: CubeSkeletonProps) {
     return (
       <Flow gap="2x" {...props}>
         {children ||
           Array(lines || 5)
             .fill(0)
-            .map((item, i) => <Placeholder key={i} />)}
+            .map((item, i) => <Placeholder key={i} isStatic={isStatic} />)}
       </Flow>
     );
   },
-  topbar(props) {
+  topbar({ isStatic = false, ...props }: CubeSkeletonProps) {
     return (
       <Space
         gap="4x"
@@ -42,29 +42,29 @@ const LAYOUT_MAP = {
         {...props}
       >
         <Space>
-          <Placeholder circle size="4x" />
-          <Placeholder width="20x" />
+          <Placeholder circle isStatic={isStatic} size="4x" />
+          <Placeholder isStatic={isStatic} width="20x" />
         </Space>
 
         <Space>
-          <Placeholder width="10x" />
-          <Placeholder circle size="4x" />
+          <Placeholder isStatic={isStatic} width="10x" />
+          <Placeholder circle isStatic={isStatic} size="4x" />
         </Space>
       </Space>
     );
   },
-  menu({ lines, ...props }) {
+  menu({ lines, isStatic = false, ...props }: CubeSkeletonProps) {
     return (
       <Flow gap="3.25x" {...props} padding="3x 1x">
         {Array(lines || 5)
           .fill(0)
           .map((item, i) => (
-            <Placeholder key={i} />
+            <Placeholder key={i} isStatic={isStatic} />
           ))}
       </Flow>
     );
   },
-  stats({ cards, ...props }) {
+  stats({ cards, isStatic = false, ...props }: CubeSkeletonProps) {
     return (
       <Space gap="4x" {...props}>
         {Array(cards || 3)
@@ -72,6 +72,7 @@ const LAYOUT_MAP = {
           .map((item, i) => (
             <Placeholder
               key={i}
+              isStatic={isStatic}
               radius="1x"
               width="20x"
               height="12x"
@@ -81,26 +82,32 @@ const LAYOUT_MAP = {
       </Space>
     );
   },
-  tabs({ tabs, children, lines, ...props }) {
+  tabs({
+    tabs,
+    children,
+    lines,
+    isStatic = false,
+    ...props
+  }: CubeSkeletonProps) {
     return (
       <Flow gap="4x" {...props}>
         <Space>
           {Array(tabs || 3)
             .fill(0)
             .map((item, i) => (
-              <Placeholder key={i} width="15x" />
+              <Placeholder key={i} isStatic={isStatic} width="15x" />
             ))}
         </Space>
         <Flow gap="2x">
           {children ||
             Array(lines || 5)
               .fill(0)
-              .map((item, i) => <Placeholder key={i} />)}
+              .map((item, i) => <Placeholder key={i} isStatic={isStatic} />)}
         </Flow>
       </Flow>
     );
   },
-  table({ rows, columns, ...props }) {
+  table({ rows, columns, isStatic = false, ...props }: CubeSkeletonProps) {
     columns = columns || 5;
     rows = rows || 5;
 
@@ -118,14 +125,18 @@ const LAYOUT_MAP = {
               .fill(0)
               .map((item, j) => {
                 return (
-                  <Placeholder key={`${i}.${j}`} size={!i ? '3x' : '2x'} />
+                  <Placeholder
+                    key={`${i}.${j}`}
+                    isStatic={isStatic}
+                    size={!i ? '3x' : '2x'}
+                  />
                 );
               });
           })}
       </Grid>
     );
   },
-  chart({ columns, ...props }) {
+  chart({ columns, isStatic = false, ...props }: CubeSkeletonProps) {
     columns = columns || 12;
 
     const heightMap = [1, 4, 2, 5, 8, 9, 5, 3, 4, 2, 6, 7, 2];
@@ -145,6 +156,7 @@ const LAYOUT_MAP = {
             return (
               <Placeholder
                 key={i}
+                isStatic={isStatic}
                 height={`${heightMap[i % 12] * 10}%`}
                 width="max 6x"
               />
@@ -172,13 +184,15 @@ export interface CubeSkeletonProps
   tabs?: number;
   /** The number of cards */
   cards?: number;
+  /** The static mode */
+  isStatic?: boolean;
 }
 
-export function Skeleton({ layout, ...props }: CubeSkeletonProps) {
+export function Skeleton({ layout, isStatic, ...props }: CubeSkeletonProps) {
   layout = layout || 'page';
 
   return LAYOUT_MAP[layout] ? (
-    LAYOUT_MAP[layout]({ ...props, qa: 'Skeleton' })
+    LAYOUT_MAP[layout]({ isStatic, ...props, qa: 'Skeleton' })
   ) : (
     <Placeholder {...props} />
   );

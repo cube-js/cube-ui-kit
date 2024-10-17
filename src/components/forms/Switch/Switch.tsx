@@ -2,7 +2,6 @@ import { forwardRef, useMemo, useRef } from 'react';
 import { useFocusableRef } from '@react-spectrum/utils';
 import { useSwitch, useHover } from 'react-aria';
 import { useToggleState } from 'react-stately';
-import { LoadingOutlined } from '@ant-design/icons';
 
 import { useProviderProps } from '../../../provider';
 import {
@@ -29,6 +28,7 @@ import {
 } from '../../../utils/react/nullableValue';
 import { useFieldProps, useFormProps } from '../Form';
 import { wrapWithField } from '../wrapper';
+import { LoadingIcon } from '../../../icons';
 
 import type { AriaSwitchProps } from '@react-types/switch';
 
@@ -250,7 +250,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
           {isLoading ? (
             <>
               {label ? <>&nbsp;</> : null}
-              <LoadingOutlined />
+              <LoadingIcon />
             </>
           ) : null}
         </Element>

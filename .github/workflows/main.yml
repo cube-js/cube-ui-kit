@@ -7,6 +7,12 @@ on:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
+permissions:
+  contents: write  # Read-only access to repository contents
+  issues: write   # Write access to issues
+  pull-requests: write  # Write access to pull requests
+  statuses: write  # Write access to commit statuses
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -83,7 +89,6 @@ jobs:
         id: publish_chromatic
         uses: chromaui/action@v1
         with:
-          onlyChanged: true
           exitZeroOnChanges: true
           exitOnceUploaded: true
           autoAcceptChanges: true

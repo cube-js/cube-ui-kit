@@ -1,5 +1,4 @@
 import { cloneElement, forwardRef, ReactElement, useMemo } from 'react';
-import { LoadingOutlined } from '@ant-design/icons';
 import { FocusableRef } from '@react-types/shared';
 
 import { CubeActionProps } from '../Action';
@@ -11,6 +10,7 @@ import {
   TEXT_STYLES,
 } from '../../../tasty';
 import { accessibilityWarning } from '../../../utils/warnings';
+import { LoadingIcon } from '../../../icons';
 import { useAction } from '../use-action';
 
 export interface CubeButtonProps extends CubeActionProps {
@@ -43,7 +43,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
     focused: '#purple-03',
   },
   cursor: 'pointer',
-  gap: '1x',
+  gap: '.75x',
   flow: 'column',
   preset: {
     '': 't3m',
@@ -54,9 +54,9 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
   reset: 'button',
   padding: {
     '': '(1.25x - 1bw) (2x - 1bw)',
-    '[data-size="small"]': '(.75x - 1bw) (1.5x - 1bw)',
-    '[data-size="medium"]': '(1.25x - 1bw) (2x - 1bw)',
-    '[data-size="large"]': '1.5x (2.5x - 1bw)',
+    '[data-size="small"]': '(.75x - 1bw) (1.25x - 1bw)',
+    '[data-size="medium"]': '(1.25x - 1bw) (1.75x - 1bw)',
+    '[data-size="large"]': '1.5x (2.25x - 1bw)',
     'single-icon-only | [data-type="link"]': 0,
   },
   width: {
@@ -279,6 +279,7 @@ export const Button = forwardRef(function Button(
     icon,
     rightIcon,
     mods,
+    download,
     ...props
   } = allProps;
 
@@ -347,6 +348,7 @@ export const Button = forwardRef(function Button(
 
   return (
     <ButtonElement
+      download={download}
       {...actionProps}
       disabled={isDisabledElement}
       variant={theme as 'default' | 'danger' | 'special'}
@@ -359,7 +361,7 @@ export const Button = forwardRef(function Button(
         !isLoading ? (
           icon
         ) : (
-          <LoadingOutlined data-element="ButtonIcon" />
+          <LoadingIcon data-element="ButtonIcon" />
         )
       ) : null}
       {children}

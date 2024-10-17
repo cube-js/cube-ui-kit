@@ -39,7 +39,8 @@ type WrapperProps<Props extends CubeFieldWrapperProps> = {
 
 export function extractFieldWrapperProps<
   Props extends CubeFieldWrapperProps,
-  FieldWrapperKeys extends keyof CubeFieldWrapperProps = keyof CubeFieldWrapperProps,
+  FieldWrapperKeys extends
+    keyof CubeFieldWrapperProps = keyof CubeFieldWrapperProps,
   ActualWrapperProps extends WrapperProps<Props> = WrapperProps<Props>,
   RestProps extends Omit<Props, FieldWrapperKeys> = Omit<
     Props,

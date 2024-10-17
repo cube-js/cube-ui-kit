@@ -7,6 +7,7 @@ import {
   extractStyles,
   filterBaseProps,
   OUTER_STYLES,
+  OuterStyleProps,
   Styles,
   tasty,
 } from '../../../tasty';
@@ -29,19 +30,23 @@ const RadioWrapperElement = tasty({
   styles: {
     position: 'relative',
     display: 'grid',
-    placeItems: 'center start',
+    placeItems: {
+      '': 'center start',
+      button: 'stretch',
+    },
     gap: '1x',
     flow: 'column',
     preset: 'default',
     width: 'min-content',
     margin: {
       '': '1x right',
-      '[data-type="button"]': '0',
+      button: '0',
     },
     zIndex: {
       '': 'initial',
       checked: 1,
     },
+    flexGrow: 1,
 
     Input: {
       radius: {
@@ -62,6 +67,10 @@ const RadioWrapperElement = tasty({
 
 const RadioButtonElement = tasty({
   styles: {
+    display: 'grid',
+    flow: 'column',
+    placeItems: 'center',
+    gap: '.75x',
     fill: {
       '': '#white',
       hovered: '#purple-text.04',
@@ -81,7 +90,7 @@ const RadioButtonElement = tasty({
       'disabled & checked': '#dark.40',
       disabled: '#dark-05',
     },
-    padding: '(.75x - 1bw) (1.5x - 1bw)',
+    padding: '(.75x - 1bw) (1.25x - 1bw)',
     cursor: 'pointer',
     opacity: {
       '': 1,
@@ -92,6 +101,7 @@ const RadioButtonElement = tasty({
       focused: '#purple-03',
     },
     transition: 'theme',
+    whiteSpace: 'nowrap',
   },
 });
 
@@ -123,6 +133,7 @@ const RadioNormalElement = tasty({
       focused: '#purple-03',
     },
     transition: 'theme',
+    whiteSpace: 'nowrap',
 
     RadioCircle: {
       display: 'block',
@@ -144,7 +155,8 @@ const RadioLabelElement = tasty({
 export interface CubeRadioProps
   extends BaseProps,
     AriaRadioProps,
-    FieldBaseProps {
+    FieldBaseProps,
+    OuterStyleProps {
   inputStyles?: Styles;
   /* The visual type of the radio button */
   type?: 'button' | 'radio';

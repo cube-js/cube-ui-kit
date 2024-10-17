@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { ComponentMeta, Story } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 
 import { Portal } from '../Portal';
 import { PortalProps } from '../types';
@@ -10,7 +10,7 @@ export default {
   title: 'Helpers/Portal',
   component: Portal,
   parameters: { layout: 'centered' },
-} as ComponentMeta<typeof Portal>;
+} as Meta<typeof Portal>;
 
 export const Default = Basic.bind({});
 
@@ -21,7 +21,7 @@ Disabled.args = {
   isDisabled: true,
 };
 
-export const CustomRoot: Story<PortalProps> = (args) => {
+export const CustomRoot: StoryFn<PortalProps> = (args) => {
   const rootRef = useRef(null);
 
   return (
