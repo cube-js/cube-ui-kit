@@ -39,8 +39,7 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
                 item={node}
                 styles={itemStyles}
                 state={state}
-                // @ts-ignore
-                onAction={node.onAction}
+                onAction={(node as unknown as MenuItemProps<T>).onAction}
               />
             );
 
