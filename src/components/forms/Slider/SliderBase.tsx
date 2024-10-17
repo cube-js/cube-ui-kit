@@ -4,10 +4,11 @@ import { FocusableRef } from '@react-types/shared';
 import { SliderState, useSliderState } from 'react-stately';
 import { useSlider, useNumberFormatter } from 'react-aria';
 
-import { FieldWrapper } from '../FieldWrapper';
 import { extractStyles, OUTER_STYLES, tasty } from '../../../tasty';
 import { useFieldProps, useFormProps } from '../Form';
 import { Text } from '../../content/Text';
+import { mergeProps } from '../../../utils/react';
+import { wrapWithField } from '../wrapper';
 
 import { SliderControlsElement, SliderElement } from './elements';
 import { CubeSliderBaseProps } from './types';
@@ -211,27 +212,17 @@ function SliderBase(
 
   styles = extractStyles(otherProps, OUTER_STYLES, styles);
 
-  return (
-    <FieldWrapper
-      {...{
-        labelPosition,
-        label,
-        extra,
+  return wrapWithField(
+    sliderField,
+    ref,
+    mergeProps(
+      {
+        ...props,
         styles,
-        isRequired,
-        labelStyles,
-        necessityIndicator,
-        labelProps,
-        isDisabled,
-        validationState,
-        message,
-        description,
-        requiredMark,
-        labelSuffix,
-        Component: sliderField,
-        ref: ref,
-      }}
-    />
+        extra,
+      },
+      { labelProps },
+    ),
   );
 }
 

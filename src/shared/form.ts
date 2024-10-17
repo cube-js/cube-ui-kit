@@ -57,6 +57,8 @@ export interface FieldBaseProps extends FormBaseProps {
   labelStyles?: Styles;
   /** Whether the field is inside the form. Private field. */
   insideForm?: boolean;
+  fieldProps?: Props;
+  messageStyles?: Styles;
 }
 
 export interface FormBaseProps {

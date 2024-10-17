@@ -77,7 +77,6 @@ export function useFieldProps<
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const onBlurChained = useChainedCallback(
     field?.onBlur,
-    // TODO: remove type casting after updating to typescipt@4.9
     'onBlur' in props ? (props as any).onBlur : undefined,
   );
 
