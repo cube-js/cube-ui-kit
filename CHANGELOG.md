@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.39.0
+
+### Minor Changes
+
+- [#425](https://github.com/cube-js/cube-ui-kit/pull/425) [`d31976e`](https://github.com/cube-js/cube-ui-kit/commit/d31976eccdfba4517057c699bbc921a00b02d9c5) Thanks [@tenphi](https://github.com/tenphi)! - Add casting property to Field component to cast Field value to different type that input allows
+
 ## 0.38.0
 
 ### Minor Changes
