@@ -267,6 +267,7 @@ export interface CubeSelectBaseProps<T>
   inputProps?: Props;
   type?: 'secondary' | 'clear' | 'primary' | (string & {});
   suffixPosition?: 'before' | 'after';
+  wrapperProps?: Props;
 }
 
 export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
@@ -328,6 +329,7 @@ function Select<T extends object>(
     labelSuffix,
     ellipsis,
     suffixPosition = 'before',
+    wrapperProps,
     ...otherProps
   } = props;
   let state = useSelectState(props);
@@ -414,12 +416,13 @@ function Select<T extends object>(
 
   let selectField = (
     <SelectWrapperElement
-      qa={qa || 'Select'}
+      qa="SelectWrapper"
       mods={modifiers}
       styles={outerStyles}
       data-size={size}
       data-type={type}
       data-theme={theme}
+      wrapperProps={wrapperProps}
     >
       <HiddenSelect
         state={state}
@@ -430,6 +433,7 @@ function Select<T extends object>(
       <SelectElement
         {...mergeProps(buttonProps, hoverProps, focusProps)}
         ref={triggerRef}
+        qa="Select"
         styles={inputStyles}
         data-theme={theme}
         data-size={size}
