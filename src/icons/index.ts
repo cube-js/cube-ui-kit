@@ -11,6 +11,7 @@ import { BooleanIcon as _BooleanIcon } from './BooleanIcon';
 import { CountIcon as _CountIcon } from './CountIcon';
 import { CubeIcon as _CubeIcon } from './CubeIcon';
 import { CalendarIcon as _CalendarIcon } from './CalendarIcon';
+import { CalendarEditIcon as _CalendarEditIcon } from './CalendarEditIcon';
 import { DonutIcon as _DonutIcon } from './DonutIcon';
 import { DownIcon as _DownIcon } from './DownIcon';
 import { FilterIcon as _FilterIcon } from './FilterIcon';
@@ -65,6 +66,7 @@ import { ExclamationCircleIcon as _ExclamationCircleIcon } from './ExclamationCi
 import { NotAllowedIcon as _NotAllowedIcon } from './NotAllowedIcon';
 import { PauseCircleFilledIcon as _PauseCircleFilledIcon } from './PauseCircleFilledIcon';
 import { PauseCircleIcon as _PauseCircleIcon } from './PauseCircleIcon';
+import { StatsIcon as _StatsIcon } from './StatsIcon';
 
 export const CloseIcon = wrapIcon('CloseIcon', _CloseIcon);
 export const ExclamationIcon = wrapIcon('ExclamationIcon', _ExclamationIcon);
@@ -78,6 +80,7 @@ export const BooleanIcon = wrapIcon('BooleanIcon', _BooleanIcon);
 export const CountIcon = wrapIcon('CountIcon', _CountIcon);
 export const CubeIcon = wrapIcon('CubeIcon', _CubeIcon);
 export const CalendarIcon = wrapIcon('CalendarIcon', _CalendarIcon);
+export const CalendarEditIcon = wrapIcon('CalendarEditIcon', _CalendarEditIcon);
 export const DonutIcon = wrapIcon('DonutIcon', _DonutIcon);
 export const DownIcon = wrapIcon('DownIcon', _DownIcon);
 export const FilterIcon = wrapIcon('FilterIcon', _FilterIcon);
@@ -156,6 +159,7 @@ export const PauseCircleFilledIcon = wrapIcon(
   _PauseCircleFilledIcon,
 );
 export const PauseCircleIcon = wrapIcon('PauseCircleIcon', _PauseCircleIcon);
+export const StatsIcon = wrapIcon('StatsIcon', _StatsIcon);
 
 export { IconContainer } from './IconContainer';
 

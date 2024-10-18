@@ -5,7 +5,6 @@ import {
   BookOutlined,
   CheckCircleFilled,
 } from '@ant-design/icons';
-import { action } from '@storybook/addon-actions';
 import { expect } from '@storybook/test';
 import { userEvent, waitFor, within } from '@storybook/test';
 
@@ -15,7 +14,6 @@ import {
   Flex,
   Button,
   Text,
-  Root,
   Space,
   AlertDialog,
   DialogContainer,
@@ -39,35 +37,25 @@ export default {
 
 const MenuTemplate = (props) => {
   return (
-    <Root>
-      <Menu id="menu" {...props} width="340px">
-        <Menu.Item key="1" onPress={action('Item 1')}>
-          Item 1
-        </Menu.Item>
-        <Menu.Item key="2" onPress={action('Item 2')}>
-          Item 2
-        </Menu.Item>
-        <Menu.Item key="3" onPress={action('Item 3')}>
-          Item 3
-        </Menu.Item>
-        <Menu.Item key="4" onPress={action('Item 4')}>
-          Item 4
-        </Menu.Item>
-      </Menu>
-    </Root>
+    <Menu id="menu" {...props} width="340px">
+      <Menu.Item key="1">Item 1</Menu.Item>
+      <Menu.Item key="2">Item 2</Menu.Item>
+      <Menu.Item key="3">Item 3</Menu.Item>
+      <Menu.Item key="4">Item 4</Menu.Item>
+    </Menu>
   );
 };
 
 export const Default = ({ ...props }) => {
   const menu = (
     <Menu id="menu" {...props} width="220px">
-      <Menu.Item key="red" postfix="Ctr+C" onPress={action('Ctr+C')}>
+      <Menu.Item key="red" postfix="Ctr+C">
         Copy
       </Menu.Item>
-      <Menu.Item key="orange" postfix="Ctr+V" onPress={action('Ctr+C')}>
+      <Menu.Item key="orange" postfix="Ctr+V">
         Paste
       </Menu.Item>
-      <Menu.Item key="yellow" postfix="Ctr+X" onPress={action('Ctr+C')}>
+      <Menu.Item key="yellow" postfix="Ctr+X">
         Cut
       </Menu.Item>
     </Menu>
@@ -112,13 +100,13 @@ export const InsideModal = () => {
               width="220px"
               selectionMode="multiple"
             >
-              <Menu.Item key="red" postfix="Ctr+C" onPress={action('Ctr+C')}>
+              <Menu.Item key="red" postfix="Ctr+C">
                 Copy
               </Menu.Item>
-              <Menu.Item key="orange" postfix="Ctr+V" onPress={action('Ctr+C')}>
+              <Menu.Item key="orange" postfix="Ctr+V">
                 Paste
               </Menu.Item>
-              <Menu.Item key="yellow" postfix="Ctr+X" onPress={action('Ctr+C')}>
+              <Menu.Item key="yellow" postfix="Ctr+X">
                 Cut
               </Menu.Item>
             </Menu>

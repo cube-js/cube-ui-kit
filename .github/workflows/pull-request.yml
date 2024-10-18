@@ -30,7 +30,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 9
 
       - uses: actions/setup-node@v3
         with:
@@ -84,7 +84,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 9
 
       - uses: actions/cache@v2
         name: Download eslint cache
@@ -124,7 +124,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 9
 
       - uses: actions/cache@v2
         name: Download storybook cache
@@ -186,7 +186,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 9
 
       - uses: actions/cache@v2
         name: Download storybook cache

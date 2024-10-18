@@ -1,5 +1,43 @@
 # @cube-dev/ui-kit
 
+## 0.38.0
+
+### Minor Changes
+
+- [#507](https://github.com/cube-js/cube-ui-kit/pull/507) [`c2b126e`](https://github.com/cube-js/cube-ui-kit/commit/c2b126e3b6d9e46a75025c334066f777acd8106c) Thanks [@tenphi](https://github.com/tenphi)! - Change MenuItem API to support isDisabled and onAction props.
+
+### Patch Changes
+
+- [#507](https://github.com/cube-js/cube-ui-kit/pull/507) [`c2b126e`](https://github.com/cube-js/cube-ui-kit/commit/c2b126e3b6d9e46a75025c334066f777acd8106c) Thanks [@tenphi](https://github.com/tenphi)! - Fix unresponsive Menu Item on tap to click.
+
+## 0.37.5
+
+### Patch Changes
+
+- [#504](https://github.com/cube-js/cube-ui-kit/pull/504) [`b83122e`](https://github.com/cube-js/cube-ui-kit/commit/b83122e01f9cc1ff1febf4eaa451044106b8c202) Thanks [@tenphi](https://github.com/tenphi)! - Add support for dark schema for Underlay.
+
+- [#504](https://github.com/cube-js/cube-ui-kit/pull/504) [`b83122e`](https://github.com/cube-js/cube-ui-kit/commit/b83122e01f9cc1ff1febf4eaa451044106b8c202) Thanks [@tenphi](https://github.com/tenphi)! - Fix FileTabs Pane max size.
+
+- [#504](https://github.com/cube-js/cube-ui-kit/pull/504) [`b83122e`](https://github.com/cube-js/cube-ui-kit/commit/b83122e01f9cc1ff1febf4eaa451044106b8c202) Thanks [@tenphi](https://github.com/tenphi)! - Fix typings for SearchInput to support onSubmit and onClear callbacks.
+
+## 0.37.4
+
+### Patch Changes
+
+- [#501](https://github.com/cube-js/cube-ui-kit/pull/501) [`90cfd16`](https://github.com/cube-js/cube-ui-kit/commit/90cfd1601924f49f5393d8a712ad10e5dba5f6fc) Thanks [@tenphi](https://github.com/tenphi)! - Add CalendarEditIcon
+
+## 0.37.3
+
+### Patch Changes
+
+- [#498](https://github.com/cube-js/cube-ui-kit/pull/498) [`77e7ab7`](https://github.com/cube-js/cube-ui-kit/commit/77e7ab77c2797e1f5f986e0e6b40c760689eb25c) Thanks [@tenphi](https://github.com/tenphi)! - Pass `qa` prop for fields.
+
+## 0.37.2
+
+### Patch Changes
+
+- [#495](https://github.com/cube-js/cube-ui-kit/pull/495) [`743d5fa`](https://github.com/cube-js/cube-ui-kit/commit/743d5fa8b242bd60acd55d94d3d01450bd7bcbfb) Thanks [@tenphi](https://github.com/tenphi)! - Add StatsIcon.
+
 ## 0.37.1
 
 ### Patch Changes

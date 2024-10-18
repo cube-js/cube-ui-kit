@@ -172,11 +172,13 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
     }
   });
 
+  let inputValue = field?.inputValue;
+
   return useMemo(
     () => ({
       id: fieldId,
       name: fieldName,
-      value: field?.inputValue,
+      value: inputValue,
       validateTrigger,
       form,
       field,
