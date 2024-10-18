@@ -341,7 +341,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
   const textField = (
     <InputWrapperElement
       ref={wrapperRef}
-      qa={qa || 'TextInput'}
+      qa="TextInput"
       mods={modifiers}
       data-size={size}
       styles={wrapperStyles}

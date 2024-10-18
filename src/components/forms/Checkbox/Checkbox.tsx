@@ -228,13 +228,14 @@ function Checkbox(
       isHidden={isHidden}
       mods={mods}
       styles={{ position: 'relative' }}
+      qa="CheckboxWrapper"
     >
       <HiddenInput
         data-qa="HiddenInput"
         {...mergeProps(inputProps, focusProps)}
         ref={inputRef}
       />
-      <CheckboxElement qa={qa || 'Checkbox'} mods={mods} styles={inputStyles}>
+      <CheckboxElement qa="Checkbox" mods={mods} styles={inputStyles}>
         {markIcon}
       </CheckboxElement>
       {children && <Text nowrap>{children}</Text>}

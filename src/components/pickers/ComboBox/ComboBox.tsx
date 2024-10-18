@@ -21,6 +21,7 @@ import {
   BLOCK_STYLES,
   extractStyles,
   OUTER_STYLES,
+  Props,
   tasty,
 } from '../../../tasty';
 import { useFocus } from '../../../utils/react/interactions';
@@ -116,6 +117,7 @@ export interface CubeComboBoxProps<T>
   /** An optional keyboard delegate implementation, to override the default. */
   keyboardDelegate?: KeyboardDelegate;
   loadingState?: LoadingState;
+  wrapperProps?: Props;
   /**
    * The filter function used to determine if a option should be included in the combo box list.
    * Has no effect when `items` is provided.
@@ -179,6 +181,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     filter,
     styles,
     labelSuffix,
+    wrapperProps,
     ...otherProps
   } = props;
 
@@ -333,16 +336,17 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   let comboBoxField = (
     <ComboBoxWrapperElement
       ref={wrapperRef}
-      qa={qa || 'ComboBox'}
+      qa="ComboBoxWrapper"
       {...modAttrs(mods)}
       styles={outerStyles}
       style={{
         zIndex: isFocused ? 1 : 'initial',
       }}
       data-size={size}
+      wrapperProps={wrapperProps}
     >
       <InputElement
-        qa="Input"
+        qa="ComboBoxInput"
         {...mergeProps(inputProps, hoverProps, focusProps)}
         ref={inputRef}
         autoComplete={autoComplete}
