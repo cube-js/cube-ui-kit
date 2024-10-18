@@ -30,10 +30,10 @@ import {
   useCombinedRefs,
   useLayoutEffect,
 } from '../../../utils/react';
-import { FieldWrapper } from '../../forms/FieldWrapper';
 import { CubeSelectBaseProps, ListBoxPopup } from '../Select/Select';
 import { DEFAULT_INPUT_STYLES, INPUT_WRAPPER_STYLES } from '../../forms';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
+import { wrapWithField } from '../../forms/wrapper';
 import { LoadingIcon } from '../../../icons';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
@@ -143,7 +143,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     qa,
     label,
     extra,
-    labelPosition = 'top',
     labelStyles,
     isRequired,
     necessityIndicator,
@@ -174,7 +173,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     autoComplete = 'off',
     direction = 'bottom',
     shouldFlip = true,
-    requiredMark = true,
     menuTrigger = 'input',
     suffixPosition = 'before',
     loadingState,
@@ -400,31 +398,14 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     </ComboBoxWrapperElement>
   );
 
-  return (
-    <FieldWrapper
-      {...{
-        labelPosition,
-        label,
-        extra,
-        styles,
-        isRequired,
-        labelStyles,
-        necessityIndicator,
-        labelProps,
-        isDisabled,
-        validationState,
-        message,
-        description,
-        requiredMark,
-        labelSuffix,
-        Component: comboBoxField,
-        ref: ref,
-      }}
-    />
+  return wrapWithField<Omit<CubeComboBoxProps<T>, 'children'>>(
+    comboBoxField,
+    ref,
+    mergeProps({ ...props, styles }, { labelProps }),
   );
 }) as unknown as (<T>(
   props: CubeComboBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },
-) => JSX.Element) & { Item: typeof Item };
+) => ReactElement) & { Item: typeof Item };
 
 ComboBox.Item = Item;
 Object.defineProperty(ComboBox, 'cubeInputType', {
