@@ -1,5 +1,5 @@
 import { forwardRef, useRef } from 'react';
-import { useSearchFieldState } from 'react-stately';
+import { SearchFieldProps, useSearchFieldState } from 'react-stately';
 import { useSearchField } from 'react-aria';
 
 import {
@@ -16,7 +16,9 @@ import {
 import { tasty } from '../../../tasty';
 import { CloseIcon, SearchIcon } from '../../../icons';
 
-export interface CubeSearchInputProps extends CubeTextInputBaseProps {
+export interface CubeSearchInputProps
+  extends CubeTextInputBaseProps,
+    SearchFieldProps {
   /** Whether the search input is clearable using ESC keyboard button or clear button inside the input */
   isClearable?: boolean;
 }

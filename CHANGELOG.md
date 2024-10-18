@@ -1,5 +1,31 @@
 # @cube-dev/ui-kit
 
+## 0.39.0
+
+### Minor Changes
+
+- [#425](https://github.com/cube-js/cube-ui-kit/pull/425) [`d31976e`](https://github.com/cube-js/cube-ui-kit/commit/d31976eccdfba4517057c699bbc921a00b02d9c5) Thanks [@tenphi](https://github.com/tenphi)! - Add casting property to Field component to cast Field value to different type that input allows
+
+## 0.38.0
+
+### Minor Changes
+
+- [#507](https://github.com/cube-js/cube-ui-kit/pull/507) [`c2b126e`](https://github.com/cube-js/cube-ui-kit/commit/c2b126e3b6d9e46a75025c334066f777acd8106c) Thanks [@tenphi](https://github.com/tenphi)! - Change MenuItem API to support isDisabled and onAction props.
+
+### Patch Changes
+
+- [#507](https://github.com/cube-js/cube-ui-kit/pull/507) [`c2b126e`](https://github.com/cube-js/cube-ui-kit/commit/c2b126e3b6d9e46a75025c334066f777acd8106c) Thanks [@tenphi](https://github.com/tenphi)! - Fix unresponsive Menu Item on tap to click.
+
+## 0.37.5
+
+### Patch Changes
+
+- [#504](https://github.com/cube-js/cube-ui-kit/pull/504) [`b83122e`](https://github.com/cube-js/cube-ui-kit/commit/b83122e01f9cc1ff1febf4eaa451044106b8c202) Thanks [@tenphi](https://github.com/tenphi)! - Add support for dark schema for Underlay.
+
+- [#504](https://github.com/cube-js/cube-ui-kit/pull/504) [`b83122e`](https://github.com/cube-js/cube-ui-kit/commit/b83122e01f9cc1ff1febf4eaa451044106b8c202) Thanks [@tenphi](https://github.com/tenphi)! - Fix FileTabs Pane max size.
+
+- [#504](https://github.com/cube-js/cube-ui-kit/pull/504) [`b83122e`](https://github.com/cube-js/cube-ui-kit/commit/b83122e01f9cc1ff1febf4eaa451044106b8c202) Thanks [@tenphi](https://github.com/tenphi)! - Fix typings for SearchInput to support onSubmit and onClear callbacks.
+
 ## 0.37.4
 
 ### Patch Changes
