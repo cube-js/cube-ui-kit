@@ -6,6 +6,7 @@
   "main": "dist/cjs/index.js",
   "types": "dist/types/index.d.ts",
   "sideEffects": false,
+  "packageManager": "pnpm@9.12.2",
   "exports": {
     ".": {
       "import": "./dist/es/index.js",
@@ -185,6 +186,6 @@
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0",
-    "pnpm": "^8.6.10"
+    "pnpm": "^9.0.0"
   }
 }
