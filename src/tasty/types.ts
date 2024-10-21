@@ -1,4 +1,4 @@
-import { AllHTMLAttributes, CSSProperties } from 'react';
+import { AllHTMLAttributes, CSSProperties, PropsWithChildren } from 'react';
 
 import { Styles } from './styles/types';
 import {
@@ -80,8 +80,7 @@ export interface BasePropsWithoutChildren
 }
 
 export interface BaseProps
-  extends BasePropsWithoutChildren,
-    Pick<AllHTMLAttributes<HTMLElementTagNameMap['div']>, 'children'> {}
+  extends PropsWithChildren<BasePropsWithoutChildren> {}
 
 export interface AllBaseProps<K extends keyof HTMLElementTagNameMap = 'div'>
   extends BaseProps,
