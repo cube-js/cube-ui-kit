@@ -118,6 +118,8 @@ export interface CubeFileInputProps
   type?: 'file' | 'text';
   /** Direct input props */
   inputProps?: Props;
+  /** The file types that the input should accept */
+  accept?: string;
 }
 
 function extractContents(element, callback) {
@@ -164,6 +166,7 @@ function FileInput(props: CubeFileInputProps, ref) {
     labelSuffix,
     type = 'file',
     inputProps,
+    accept,
     ...otherProps
   } = props;
 
@@ -230,6 +233,7 @@ function FileInput(props: CubeFileInputProps, ref) {
         ref={inputRef}
         id={id}
         name={name}
+        accept={accept}
         data-element="Input"
         type="file"
         tabIndex={-1}
