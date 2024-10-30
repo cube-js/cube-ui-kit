@@ -9,7 +9,7 @@ import {
 import { createFocusableRef } from '@react-spectrum/utils';
 
 import { useProviderProps } from '../../../provider';
-import { Action } from '../../actions/Action';
+import { Action } from '../../actions';
 import {
   BaseProps,
   BlockStyleProps,
@@ -233,6 +233,7 @@ function FileInput(props: CubeFileInputProps, ref) {
         accept={accept}
         data-element="Input"
         type="file"
+        multiple={false}
         tabIndex={-1}
         onDragEnter={() => {
           setDragHover(true);
