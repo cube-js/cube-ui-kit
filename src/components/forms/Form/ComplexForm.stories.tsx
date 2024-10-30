@@ -24,6 +24,7 @@ import {
   TextInput,
   NumberInput,
   parseAbsoluteDate,
+  FileInput,
 } from '../../../index';
 // import { NumberInput } from '../NumberInput/NumberInput';
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -279,6 +280,7 @@ const Template: StoryFn<typeof Form> = (args) => {
           <PasswordInput label="Password field" />
         </Field>
         <DateInput name="date" label="Date field" />
+        <FileInput name="fileContent" label="File field" />
         <Field
           name="select.one"
           label="Select field"

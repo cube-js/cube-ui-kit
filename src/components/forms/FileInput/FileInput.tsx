@@ -22,6 +22,7 @@ import {
   tasty,
 } from '../../../tasty';
 import { FieldBaseProps } from '../../../shared';
+import { useFieldProps, useFormProps } from '../Form/index';
 import { wrapWithField } from '../wrapper';
 
 import type { AriaTextFieldProps } from '@react-types/textfield';
@@ -138,32 +139,43 @@ function extractContents(element, callback) {
 
 function FileInput(props: CubeFileInputProps, ref) {
   props = useProviderProps(props);
+  props = useFormProps(props);
+
+  const onLocalChange = useCallback(
+    (event) => {
+      const value = event.target.value;
+
+      if (type === 'file') {
+        onChange?.(value);
+      } else if (onChange) {
+        extractContents(event.target, onChange);
+      }
+
+      setValue(value);
+    },
+    [props.onChange],
+  );
+
+  props = useFieldProps(
+    { ...props, onChange: onLocalChange },
+    {
+      defaultValidationTrigger: 'onChange',
+      valuePropsMapper: ({ value, onChange }) => ({
+        onChange,
+        value: undefined,
+      }),
+    },
+  );
 
   let {
     id,
     name,
     qa,
-    qaVal,
     onChange,
     placeholder,
     inputRef,
-    label,
-    extra,
-    labelPosition,
-    isRequired,
-    necessityIndicator,
-    necessityLabel,
-    labelStyles,
-    labelProps,
     isDisabled,
-    validationState,
-    message,
-    description,
-    requiredMark,
-    tooltip,
-    isHidden,
     inputStyles,
-    labelSuffix,
     type = 'file',
     inputProps,
     accept,
@@ -179,21 +191,6 @@ function FileInput(props: CubeFileInputProps, ref) {
   inputRef = inputRef || defaultInputRef;
 
   let styles = extractStyles(otherProps, CONTAINER_STYLES);
-
-  const onLocalChange = useCallback(
-    (event) => {
-      const value = event.target.value;
-
-      if (type === 'file') {
-        onChange?.(value);
-      } else if (onChange) {
-        extractContents(event.target, onChange);
-      }
-
-      setValue(value);
-    },
-    [onChange],
-  );
 
   // Expose imperative interface for ref
   useImperativeHandle(ref, () => ({
@@ -216,7 +213,7 @@ function FileInput(props: CubeFileInputProps, ref) {
   const fileInput = (
     <FileInputElement
       ref={domRef}
-      qa={qa || 'FileInput'}
+      qa="FileInput"
       styles={inputStyles}
       isDisabled={isDisabled}
       mods={{
@@ -237,7 +234,6 @@ function FileInput(props: CubeFileInputProps, ref) {
         data-element="Input"
         type="file"
         tabIndex={-1}
-        onChange={onLocalChange}
         onDragEnter={() => {
           setDragHover(true);
         }}
