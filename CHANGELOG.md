@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.39.1
+
+### Patch Changes
+
+- [#512](https://github.com/cube-js/cube-ui-kit/pull/512) [`0a1d52e`](https://github.com/cube-js/cube-ui-kit/commit/0a1d52ef8249e892a6b242bbcc2a586e20718315) Thanks [@tenphi](https://github.com/tenphi)! - Add UnlockIcon.
+
 ## 0.39.0
 
 ### Minor Changes
