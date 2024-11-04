@@ -162,7 +162,7 @@ function FileInput(props: CubeFileInputProps, ref) {
       defaultValidationTrigger: 'onChange',
       valuePropsMapper: ({ value, onChange }) => ({
         onChange,
-        value: undefined,
+        value,
       }),
     },
   );
