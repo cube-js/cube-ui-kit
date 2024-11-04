@@ -91,7 +91,7 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
         form.removeField(fieldName);
       }
     };
-  }, []);
+  }, [fieldName]);
 
   let field = form?.getFieldInstance(fieldName);
 
