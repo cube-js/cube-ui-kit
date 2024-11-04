@@ -3,6 +3,7 @@ import {
   RefObject,
   useCallback,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -137,32 +138,22 @@ function extractContents(element, callback) {
   }
 }
 
+function extractFileNameFromValue(value?: string) {
+  return typeof value === 'string'
+    ? (value as string).split('\\')?.pop()
+    : undefined;
+}
+
 function FileInput(props: CubeFileInputProps, ref) {
   props = useProviderProps(props);
   props = useFormProps(props);
-
-  const onLocalChange = useCallback(
-    (event) => {
-      const value = event.target.value;
-
-      if (type === 'file') {
-        onChange?.(value);
-      } else if (onChange) {
-        extractContents(event.target, onChange);
-      }
-
-      setValue(value);
-    },
-    [props.onChange],
-  );
-
   props = useFieldProps(
-    { ...props, onChange: onLocalChange },
+    { ...props },
     {
       defaultValidationTrigger: 'onChange',
       valuePropsMapper: ({ value, onChange }) => ({
         onChange,
-        value,
+        value: type === 'file' ? value : undefined,
       }),
     },
   );
@@ -171,6 +162,7 @@ function FileInput(props: CubeFileInputProps, ref) {
     id,
     name,
     qa,
+    value,
     onChange,
     placeholder,
     inputRef,
@@ -182,13 +174,36 @@ function FileInput(props: CubeFileInputProps, ref) {
     ...otherProps
   } = props;
 
-  const [value, setValue] = useState();
   const [dragHover, setDragHover] = useState(false);
+  const defaultValue = useMemo(
+    () => (type === 'file' ? value : undefined),
+    [type, value],
+  );
+  const defaultFileName = useMemo(
+    () => extractFileNameFromValue(defaultValue),
+    [],
+  );
+  const [fileName, setFileName] = useState<string | undefined>(defaultFileName);
 
   let domRef = useRef(null);
   let defaultInputRef = useRef(null);
 
   inputRef = inputRef || defaultInputRef;
+
+  const onLocalChange = useCallback(
+    (event: any) => {
+      const value = event.target.value;
+
+      setFileName(extractFileNameFromValue(value));
+
+      if (type === 'file') {
+        onChange?.(value);
+      } else {
+        extractContents(event.target, onChange);
+      }
+    },
+    [onChange],
+  );
 
   let styles = extractStyles(otherProps, CONTAINER_STYLES);
 
@@ -204,11 +219,6 @@ function FileInput(props: CubeFileInputProps, ref) {
       return inputRef?.current;
     },
   }));
-
-  const fileName =
-    typeof value === 'string'
-      ? (value as string).split('\\')?.pop()
-      : undefined;
 
   const fileInput = (
     <FileInputElement
@@ -235,6 +245,7 @@ function FileInput(props: CubeFileInputProps, ref) {
         type="file"
         multiple={false}
         tabIndex={-1}
+        onChange={onLocalChange}
         onDragEnter={() => {
           setDragHover(true);
         }}

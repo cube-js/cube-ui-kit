@@ -57,3 +57,26 @@ LongFileNameOverflow.play = async ({ canvasElement }) => {
     await userEvent.upload(input, file);
   });
 };
+
+export const ExtractText = Template.bind({});
+ExtractText.args = {
+  type: 'text',
+  inputStyles: {
+    width: '300px',
+  },
+  inputProps: {
+    title: 'Test input',
+  },
+};
+
+ExtractText.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const input = await canvas.getByTitle('Test input');
+  const file = new File(['test'], 'file-with-a-very-long-name.txt', {
+    type: 'text/plain',
+  });
+
+  await waitFor(async () => {
+    await userEvent.upload(input, file);
+  });
+};
