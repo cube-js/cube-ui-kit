@@ -319,6 +319,10 @@ export class CubeFormInstance<
     return !!field.touched;
   }
 
+  get isTouched(): boolean {
+    return Object.values(this.fields).some((field) => field?.touched);
+  }
+
   getFieldError<Name extends keyof T & string>(name: Name): ReactNode[] {
     const field = this.getFieldInstance(name);
 
