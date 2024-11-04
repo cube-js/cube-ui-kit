@@ -329,8 +329,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     ],
   );
 
-  const hasTextSecurity =
-    inputRef?.current?.value && multiLine && type === 'password';
+  const hasTextSecurity = multiLine && type === 'password';
   const textSecurityStyles = hasTextSecurity
     ? {
         fontFamily: 'text-security-disc',
