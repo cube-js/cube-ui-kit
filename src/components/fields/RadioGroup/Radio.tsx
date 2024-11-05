@@ -1,6 +1,6 @@
 import { useFocusableRef } from '@react-spectrum/utils';
 import { forwardRef, useMemo, useRef } from 'react';
-import { useHover, useRadio, AriaRadioProps } from 'react-aria';
+import { useHover, useRadio } from 'react-aria';
 
 import {
   BaseProps,
@@ -20,6 +20,8 @@ import { FieldBaseProps } from '../../../shared';
 
 import { RadioGroup } from './RadioGroup';
 import { useRadioProvider } from './context';
+
+import type { AriaRadioProps } from 'react-aria';
 
 export { AriaRadioProps };
 export { useRadio };

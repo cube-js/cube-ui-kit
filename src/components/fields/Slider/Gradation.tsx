@@ -1,6 +1,6 @@
-import { SliderState } from 'react-stately';
-
 import { SliderGradationElement, SliderGradeElement } from './elements';
+
+import type { SliderState } from 'react-stately';
 
 export type GradationProps = {
   state: SliderState;

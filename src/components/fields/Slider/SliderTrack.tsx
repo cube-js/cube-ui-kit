@@ -1,7 +1,8 @@
-import { SliderState } from 'react-stately';
 import { useMemo } from 'react';
 
 import { SliderTrackContainerElement } from './elements';
+
+import type { SliderState } from 'react-stately';
 
 export type SliderTrackProps = {
   state: SliderState;

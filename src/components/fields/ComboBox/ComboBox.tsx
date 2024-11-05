@@ -13,38 +13,37 @@ import {
   useHover,
   useOverlayPosition,
   AriaComboBoxProps,
+  AriaTextFieldProps,
 } from 'react-aria';
 import { Item, useComboBoxState } from 'react-stately';
 
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { DEFAULT_INPUT_STYLES, INPUT_WRAPPER_STYLES } from '../index';
 import { useProviderProps } from '../../../provider';
 import {
   BLOCK_STYLES,
   extractStyles,
   OUTER_STYLES,
   tasty,
-} from '../../../tasty/index';
+} from '../../../tasty';
 import { useFocus } from '../../../utils/react/interactions';
 import {
   mergeProps,
   modAttrs,
   useCombinedRefs,
   useLayoutEffect,
-} from '../../../utils/react/index';
+} from '../../../utils/react';
 import { CubeSelectBaseProps, ListBoxPopup } from '../Select';
-import { DEFAULT_INPUT_STYLES, INPUT_WRAPPER_STYLES } from '../index';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
-import { LoadingIcon } from '../../../icons/index';
+import { LoadingIcon } from '../../../icons';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
 
 import type { KeyboardDelegate, LoadingState } from '@react-types/shared';
 
-export type MenuTriggerAction = 'focus' | 'input' | 'manual';
-
-export type { AriaComboBoxProps };
-
 type FilterFn = (textValue: string, inputValue: string) => boolean;
+
+export type MenuTriggerAction = 'focus' | 'input' | 'manual';
 
 function CaretDownIcon() {
   return (
@@ -105,7 +104,8 @@ export interface CubeComboBoxProps<T>
       CubeSelectBaseProps<T>,
       'onOpenChange' | 'onBlur' | 'onFocus' | 'validate' | 'onSelectionChange'
     >,
-    AriaComboBoxProps<T> {
+    AriaComboBoxProps<T>,
+    AriaTextFieldProps {
   icon?: ReactElement;
   multiLine?: boolean;
   autoComplete?: string;
@@ -189,14 +189,27 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   let isAsync = loadingState != null;
   let { contains } = useFilter({ sensitivity: 'base' });
 
-  const comboBoxProps = {
+  const comboboxProps = {
     ...props,
+    children: props.children,
+    items: props.items,
+    label: props.label,
+    isDisabled: props.isDisabled,
+    validationState: props.validationState,
+    description: props.description,
+    autoFocus: props.autoFocus,
+    isRequired: props.isRequired,
+    allowsCustomValue: props.allowsCustomValue,
+    menuTrigger,
+    disabledKeys: props.disabledKeys,
+    name: props.name,
+    isReadOnly: props.isReadOnly,
     defaultFilter: filter || contains,
     allowsEmptyCollection: isAsync,
-  };
+  } as const;
 
   let state = useComboBoxState({
-    comboBoxProps,
+    ...comboboxProps,
     defaultFilter: filter || contains,
     allowsEmptyCollection: isAsync,
   });
@@ -230,7 +243,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     buttonProps: triggerProps,
   } = useComboBox(
     {
-      ...comboBoxProps,
+      ...comboboxProps,
       inputRef,
       buttonRef: triggerRef,
       listBoxRef,

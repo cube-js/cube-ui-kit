@@ -5,11 +5,12 @@ import {
   useSliderThumb,
   VisuallyHidden,
 } from 'react-aria';
-import { SliderState } from 'react-stately';
 
 import { mergeProps } from '../../../utils/react';
 
 import { SliderThumbElement } from './elements';
+
+import type { SliderState } from 'react-stately';
 
 export interface SliderThumbProps extends AriaSliderThumbOptions {
   state: SliderState;

@@ -1,7 +1,8 @@
 import { useCallback } from 'react';
-import { SliderState } from 'react-stately';
 
 import { CubeNumberInputProps, NumberInput } from '../../../';
+
+import type { SliderState } from 'react-stately';
 
 export interface RangeInputProps extends CubeNumberInputProps {
   index: number;

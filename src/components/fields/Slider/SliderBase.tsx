@@ -1,7 +1,7 @@
 import { RefObject, forwardRef, useRef, ReactNode } from 'react';
 import { useFocusableRef } from '@react-spectrum/utils';
 import { FocusableRef } from '@react-types/shared';
-import { SliderState, useSliderState } from 'react-stately';
+import { useSliderState } from 'react-stately';
 import { useSlider, useNumberFormatter } from 'react-aria';
 
 import { extractStyles, OUTER_STYLES, tasty } from '../../../tasty';
@@ -10,7 +10,9 @@ import { Text } from '../../content/Text';
 import { mergeProps } from '../../../utils/react';
 
 import { SliderControlsElement, SliderElement } from './elements';
-import { CubeSliderBaseProps } from './types';
+
+import type { SliderState } from 'react-stately';
+import type { CubeSliderBaseProps } from './types';
 
 export interface SliderBaseChildArguments {
   inputRef: RefObject<HTMLInputElement>;

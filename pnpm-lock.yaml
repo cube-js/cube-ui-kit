@@ -11338,7 +11338,7 @@ snapshots:
       get-npm-tarball-url: 2.0.3
       giget: 1.1.2
       globby: 11.1.0
-      jscodeshift: 0.15.2(@babel/preset-env@7.24.3(@babel/core@7.25.8))
+      jscodeshift: 0.15.2(@babel/preset-env@7.24.3(@babel/core@7.24.3))
       leven: 3.1.0
       ora: 5.4.1
       prettier: 3.2.5
@@ -11374,7 +11374,7 @@ snapshots:
       '@types/cross-spawn': 6.0.6
       cross-spawn: 7.0.3
       globby: 11.1.0
-      jscodeshift: 0.15.2(@babel/preset-env@7.24.3(@babel/core@7.25.8))
+      jscodeshift: 0.15.2(@babel/preset-env@7.24.3(@babel/core@7.24.3))
       lodash: 4.17.21
       prettier: 3.2.5
       recast: 0.23.6
@@ -15029,7 +15029,7 @@ snapshots:
     dependencies:
       argparse: 2.0.1
 
-  jscodeshift@0.15.2(@babel/preset-env@7.24.3(@babel/core@7.25.8)):
+  jscodeshift@0.15.2(@babel/preset-env@7.24.3(@babel/core@7.24.3)):
     dependencies:
       '@babel/core': 7.24.3
       '@babel/parser': 7.24.1

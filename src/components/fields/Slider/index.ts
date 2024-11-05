@@ -1,4 +1,5 @@
 export * from './RangeSlider';
 export * from './Slider';
 export * from './types';
-export { SliderState, useSliderState } from 'react-stately';
+export { useSliderState } from 'react-stately';
+export type { SliderState } from 'react-stately';
