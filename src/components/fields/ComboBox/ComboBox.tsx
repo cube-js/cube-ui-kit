@@ -192,6 +192,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   let state = useComboBoxState({
     ...props,
     defaultFilter: filter || contains,
+    filter: undefined,
     allowsEmptyCollection: isAsync,
     menuTrigger,
   });
