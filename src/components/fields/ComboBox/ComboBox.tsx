@@ -189,8 +189,14 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   let isAsync = loadingState != null;
   let { contains } = useFilter({ sensitivity: 'base' });
 
+  const comboBoxProps = {
+    ...props,
+    defaultFilter: filter || contains,
+    allowsEmptyCollection: isAsync,
+  };
+
   let state = useComboBoxState({
-    props,
+    comboBoxProps,
     defaultFilter: filter || contains,
     allowsEmptyCollection: isAsync,
   });
@@ -224,7 +230,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     buttonProps: triggerProps,
   } = useComboBox(
     {
-      ...props,
+      ...comboBoxProps,
       inputRef,
       buttonRef: triggerRef,
       listBoxRef,
