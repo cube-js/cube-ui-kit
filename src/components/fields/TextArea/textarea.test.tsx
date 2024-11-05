@@ -1,5 +1,5 @@
 import { renderWithForm, userEvent, render, act } from '../../../test';
-import { Field } from '../../form/Form';
+import { Field } from '../../form';
 
 import { TextArea } from './TextArea';
 

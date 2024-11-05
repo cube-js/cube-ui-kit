@@ -1,14 +1,13 @@
-import { DatePickerProps } from '@react-types/datepicker';
-import { DateValue } from 'react-aria';
+import { DateValue, AriaDatePickerProps } from 'react-aria';
 
-export const DEFAULT_DATE_PROPS: Partial<DatePickerProps<DateValue>> = {
+export const DEFAULT_DATE_PROPS: Partial<AriaDatePickerProps<DateValue>> = {
   granularity: 'day',
   hideTimeZone: true,
   hourCycle: 24,
   shouldForceLeadingZeros: true,
 };
 
-export const DEFAULT_TIME_PROPS: Partial<DatePickerProps<DateValue>> = {
+export const DEFAULT_TIME_PROPS: Partial<AriaDatePickerProps<DateValue>> = {
   hideTimeZone: true,
   hourCycle: 24,
   shouldForceLeadingZeros: true,

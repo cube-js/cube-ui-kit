@@ -9,7 +9,7 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { chain, useLayoutEffect } from '../../../utils/react';
-import { useFieldProps } from '../../form/Form';
+import { useFieldProps } from '../../form';
 import { useEvent } from '../../../_internal';
 
 export interface CubeTextAreaProps extends CubeTextInputBaseProps {

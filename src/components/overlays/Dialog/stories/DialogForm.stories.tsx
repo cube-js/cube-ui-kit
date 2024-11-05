@@ -1,5 +1,5 @@
 import { userEvent, waitForElementToBeRemoved, within } from '@storybook/test';
-import { ComponentMeta, StoryFn } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 import { expect } from '@storybook/test';
 import { useState } from 'react';
 
@@ -10,14 +10,14 @@ import { Text } from '../../../content/Text';
 import { Input } from '../../../fields';
 import { DialogTrigger } from '../DialogTrigger';
 import { baseProps } from '../../../../stories/lists/baseProps';
-import { Form } from '../../../form/Form';
+import { Form } from '../../../form';
 import { DialogContainer } from '../DialogContainer';
 
 export default {
   title: 'Overlays/DialogForm',
   component: DialogForm,
   parameters: { controls: { exclude: baseProps } },
-} as ComponentMeta<typeof DialogForm>;
+} as Meta<typeof DialogForm>;
 
 const TemplateTrigger: StoryFn<CubeDialogFormProps> = (args) => {
   return (

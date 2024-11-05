@@ -12,7 +12,7 @@ import {
 } from 'react';
 import { AriaNumberFieldProps, AriaTextFieldProps, useHover } from 'react-aria';
 
-import { useFieldProps, useFormProps } from '../../form/Form';
+import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { useProviderProps } from '../../../provider';
 import {
   BaseProps,
@@ -30,7 +30,6 @@ import {
 import { useFocus } from '../../../utils/react/interactions';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
-import { wrapWithField } from '../../form';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
 

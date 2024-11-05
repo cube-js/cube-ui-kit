@@ -1,11 +1,12 @@
 import { useRef } from 'react';
 import { DateFieldState, DateSegment } from 'react-stately';
-import { DatePickerBase, DateValue } from '@react-types/datepicker';
-import { useDateSegment } from 'react-aria';
+import { useDateSegment, DateValue } from 'react-aria';
 
 import { tasty } from '../../../tasty';
 
-interface DatePickerSegmentProps extends DatePickerBase<DateValue> {
+import { DateFieldBase } from './types';
+
+interface DatePickerSegmentProps extends DateFieldBase<DateValue> {
   segment: DateSegment;
   state: DateFieldState;
 }

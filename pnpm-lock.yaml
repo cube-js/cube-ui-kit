@@ -43,54 +43,9 @@ importers:
       '@react-stately/utils':
         specifier: ^3.10.4
         version: 3.10.4(react@18.2.0)
-      '@react-types/button':
-        specifier: ^3.10.0
-        version: 3.10.0(react@18.2.0)
-      '@react-types/calendar':
-        specifier: ^3.4.10
-        version: 3.4.10(react@18.2.0)
-      '@react-types/checkbox':
-        specifier: ^3.8.4
-        version: 3.8.4(react@18.2.0)
-      '@react-types/combobox':
-        specifier: ^3.13.0
-        version: 3.13.0(react@18.2.0)
-      '@react-types/datepicker':
-        specifier: ^3.8.3
-        version: 3.8.3(react@18.2.0)
-      '@react-types/dialog':
-        specifier: ^3.5.13
-        version: 3.5.13(react@18.2.0)
-      '@react-types/menu':
-        specifier: ^3.9.12
-        version: 3.9.12(react@18.2.0)
-      '@react-types/numberfield':
-        specifier: ^3.8.6
-        version: 3.8.6(react@18.2.0)
-      '@react-types/overlays':
-        specifier: ^3.8.10
-        version: 3.8.10(react@18.2.0)
-      '@react-types/radio':
-        specifier: ^3.8.4
-        version: 3.8.4(react@18.2.0)
-      '@react-types/select':
-        specifier: ^3.9.7
-        version: 3.9.7(react@18.2.0)
       '@react-types/shared':
         specifier: ^3.25.0
         version: 3.25.0(react@18.2.0)
-      '@react-types/slider':
-        specifier: ^3.7.6
-        version: 3.7.6(react@18.2.0)
-      '@react-types/switch':
-        specifier: ^3.5.6
-        version: 3.5.6(react@18.2.0)
-      '@react-types/textfield':
-        specifier: ^3.9.7
-        version: 3.9.7(react@18.2.0)
-      '@react-types/tooltip':
-        specifier: ^3.4.12
-        version: 3.4.12(react@18.2.0)
       '@vitejs/plugin-react':
         specifier: ^4.3.2
         version: 4.3.2(vite@5.2.6(@types/node@18.19.26)(terser@5.31.1))

@@ -1,13 +1,19 @@
 import { useRef } from 'react';
 import { createCalendar } from '@internationalized/date';
-import { DateValue, SpectrumDatePickerProps } from '@react-types/datepicker';
-import { useDateField, useFocusWithin, useLocale } from 'react-aria';
+import {
+  useDateField,
+  useFocusWithin,
+  useLocale,
+  DateValue,
+  AriaDatePickerProps,
+} from 'react-aria';
 import { DateSegment, useDateFieldState } from 'react-stately';
 
 import { tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 
 import { DatePickerSegment } from './DatePickerSegment';
+import { DateFieldBase, Granularity } from './types';
 import { formatSegments } from './utils';
 
 const DateInputElement = tasty({
@@ -20,9 +26,10 @@ const DateInputElement = tasty({
 });
 
 interface CubeDatePickerInputProps<T extends DateValue>
-  extends SpectrumDatePickerProps<T> {
+  extends AriaDatePickerProps<T>,
+    DateFieldBase<T> {
   hideValidationIcon?: boolean;
-  maxGranularity?: SpectrumDatePickerProps<T>['granularity'];
+  maxGranularity?: Granularity;
   useLocale?: boolean;
   onFocus?: () => void;
   onBlur?: () => void;

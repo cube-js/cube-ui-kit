@@ -1,7 +1,7 @@
 import userEvent from '@testing-library/user-event';
 
 import { act, render, renderWithForm } from '../../../test';
-import { Field } from '../../form/Form';
+import { Field } from '../../form';
 
 import { Checkbox } from './Checkbox';
 

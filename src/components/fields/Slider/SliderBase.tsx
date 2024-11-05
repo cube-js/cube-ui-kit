@@ -5,10 +5,9 @@ import { SliderState, useSliderState } from 'react-stately';
 import { useSlider, useNumberFormatter } from 'react-aria';
 
 import { extractStyles, OUTER_STYLES, tasty } from '../../../tasty';
-import { useFieldProps, useFormProps } from '../../form/Form';
+import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { Text } from '../../content/Text';
 import { mergeProps } from '../../../utils/react';
-import { wrapWithField } from '../../form/wrapper';
 
 import { SliderControlsElement, SliderElement } from './elements';
 import { CubeSliderBaseProps } from './types';

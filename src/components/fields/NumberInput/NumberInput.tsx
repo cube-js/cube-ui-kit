@@ -2,7 +2,7 @@ import { forwardRef, RefObject, useRef } from 'react';
 import { useLocale, useNumberField, AriaNumberFieldProps } from 'react-aria';
 import { useNumberFieldState } from 'react-stately';
 
-import { useFieldProps } from '../../form/Form';
+import { useFieldProps } from '../../form';
 import { useProviderProps } from '../../../provider';
 import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 import { tasty } from '../../../tasty';

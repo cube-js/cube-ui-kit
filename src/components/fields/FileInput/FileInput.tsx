@@ -25,7 +25,7 @@ import {
 import { FieldBaseProps } from '../../../shared';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 
-import type { AriaTextFieldProps } from '@react-types/textfield';
+import type { AriaTextFieldProps } from 'react-aria';
 
 const FileInputElement = tasty(Action, {
   styles: {
@@ -121,6 +121,9 @@ export interface CubeFileInputProps
   inputProps?: Props;
   /** The file types that the input should accept */
   accept?: string;
+  value?: string;
+  onChange?: (value: string) => void;
+  placeholder?: string;
 }
 
 function extractContents(element, callback) {

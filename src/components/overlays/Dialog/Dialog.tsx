@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { useDOMRef } from '@react-spectrum/utils';
 import { DismissButton } from 'react-aria';
 import { forwardRef, ReactElement } from 'react';
-import { useDialog, useMessageFormatter } from 'react-aria';
+import { useDialog, useMessageFormatter, AriaDialogProps } from 'react-aria';
 import { DOMRef } from '@react-types/shared';
 import FocusLock from 'react-focus-lock';
 
@@ -24,8 +24,6 @@ import { useOpenTransitionContext } from '../Modal/OpenTransition';
 import { CloseIcon } from '../../../icons';
 
 import { useDialogContext } from './context';
-
-import type { AriaDialogProps } from '@react-types/dialog';
 
 const STYLES_LIST = [...BASE_STYLES, ...DIMENSION_STYLES, ...BLOCK_STYLES];
 
@@ -131,6 +129,7 @@ export interface CubeDialogProps
   /** That you can replace the close icon with */
   closeIcon?: ReactElement;
   closeButtonStyles?: Styles;
+  role?: 'dialog' | 'alertdialog';
 }
 
 /**

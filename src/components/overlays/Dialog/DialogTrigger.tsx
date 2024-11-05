@@ -2,8 +2,13 @@ import { Fragment, ReactElement, RefObject, useEffect, useRef } from 'react';
 import { useOverlayTriggerState } from 'react-stately';
 import { PressResponder } from '@react-aria/interactions';
 import { useMediaQuery } from '@react-spectrum/utils';
-import { useOverlayPosition, useOverlayTrigger } from 'react-aria';
-import { OverlayTriggerProps, PositionProps } from '@react-types/overlays';
+import {
+  useOverlayPosition,
+  useOverlayTrigger,
+  OverlayTriggerProps,
+  PositionProps,
+  Placement,
+} from 'react-aria';
 
 import { Modal, Popover, Tray, WithCloseBehavior } from '../Modal';
 import { Styles } from '../../../tasty';
@@ -37,6 +42,7 @@ export interface CubeDialogTriggerProps
     | 'fullscreenTakeover'
     | 'panel'
     | 'popover';
+  placement?: Placement;
   /**
    * Whether a popover type Dialog's arrow should be hidden.
    */
@@ -53,6 +59,10 @@ export interface CubeDialogTriggerProps
   styles?: Styles;
   shouldCloseOnInteractOutside?: (element: Element) => boolean;
   onDismiss?: (action?: string) => void;
+  isOpen?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
+  defaultOpen?: boolean;
+  shouldFlip?: boolean;
 }
 
 function DialogTrigger(props: CubeDialogTriggerProps) {

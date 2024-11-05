@@ -1,10 +1,15 @@
 import { forwardRef } from 'react';
 import { useDOMRef } from '@react-spectrum/utils';
-import { useRadioGroup } from 'react-aria';
+import { useRadioGroup, AriaRadioGroupProps } from 'react-aria';
 import { useRadioGroupState } from 'react-stately';
 
 import { useProviderProps } from '../../../provider';
-import { FormContext, useFieldProps, useFormProps } from '../../form/Form';
+import {
+  FormContext,
+  useFieldProps,
+  useFormProps,
+  wrapWithField,
+} from '../../form';
 import {
   BaseProps,
   BLOCK_STYLES,
@@ -19,11 +24,8 @@ import {
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { mergeProps } from '../../../utils/react';
-import { wrapWithField } from '../../form/wrapper';
 
 import { RadioContext } from './context';
-
-import type { AriaRadioGroupProps } from '@react-types/radio';
 
 export interface CubeRadioGroupProps
   extends BaseProps,
@@ -31,6 +33,7 @@ export interface CubeRadioGroupProps
     FieldBaseProps {
   groupStyles?: Styles;
   isSolid?: boolean;
+  orientation?: 'horizontal' | 'vertical';
 }
 
 const RadioGroupElement = tasty({

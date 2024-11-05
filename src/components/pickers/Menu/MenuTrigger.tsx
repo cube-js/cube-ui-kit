@@ -1,9 +1,14 @@
 import React, { ReactNode, forwardRef, Fragment, useRef } from 'react';
+import { AriaMenuTriggerProps } from 'react-aria';
 import { useDOMRef, useIsMobileDevice } from '@react-spectrum/utils';
-import { DismissButton, useOverlayPosition, useMenuTrigger } from 'react-aria';
+import {
+  DismissButton,
+  useOverlayPosition,
+  useMenuTrigger,
+  Placement,
+  PositionProps,
+} from 'react-aria';
 import { DOMRef } from '@react-types/shared';
-import { MenuTriggerProps as BaseTriggerProps } from '@react-types/menu';
-import { Placement, PositionProps } from '@react-types/overlays';
 import { PressResponder } from '@react-aria/interactions';
 import { useMenuTriggerState } from 'react-stately';
 
@@ -12,7 +17,9 @@ import { SlotProvider } from '../../../utils/react';
 
 import { MenuContext, MenuContextValue } from './context';
 
-export type CubeMenuTriggerProps = BaseTriggerProps &
+export type { AriaMenuTriggerProps };
+
+export type CubeMenuTriggerProps = AriaMenuTriggerProps &
   PositionProps & {
     isDisabled?: boolean;
     children: ReactNode[];

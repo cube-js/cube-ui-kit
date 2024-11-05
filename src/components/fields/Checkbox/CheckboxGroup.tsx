@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import { useDOMRef } from '@react-spectrum/utils';
-import { useCheckboxGroup } from 'react-aria';
+import { useCheckboxGroup, AriaCheckboxGroupProps } from 'react-aria';
 import { useCheckboxGroupState } from 'react-stately';
 
 import { useProviderProps } from '../../../provider';
@@ -17,13 +17,15 @@ import {
   castNullableArrayValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { useFieldProps, FormContext, useFormProps } from '../../form/Form';
+import {
+  useFieldProps,
+  FormContext,
+  useFormProps,
+  wrapWithField,
+} from '../../form';
 import { mergeProps } from '../../../utils/react';
-import { wrapWithField } from '../../form/wrapper';
 
 import { CheckboxGroupContext } from './context';
-
-import type { AriaCheckboxGroupProps } from '@react-types/checkbox';
 
 const CheckGroupElement = tasty({
   qa: 'CheckboxGroup',

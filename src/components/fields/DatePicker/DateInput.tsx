@@ -1,12 +1,16 @@
 import { forwardRef, ReactElement, useRef } from 'react';
 import { createCalendar } from '@internationalized/date';
-import { AriaDateFieldProps, DateValue } from '@react-types/datepicker';
 import { FocusableRef } from '@react-types/shared';
-import { useDateField, useLocale } from 'react-aria';
+import {
+  useDateField,
+  useLocale,
+  AriaDateFieldProps,
+  DateValue,
+} from 'react-aria';
 import { useDateFieldState } from 'react-stately';
 
 import { useProviderProps } from '../../../provider';
-import { wrapWithField } from '../../form/wrapper';
+import { wrapWithField, useFieldProps, useFormProps } from '../../form';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -16,7 +20,6 @@ import {
 } from '../../../tasty';
 import { FieldBaseProps, ValidationState } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
-import { useFieldProps, useFormProps } from '../../form/Form';
 
 import { formatSegments, useFocusManagerRef } from './utils';
 import { DateInputBase } from './DateInputBase';

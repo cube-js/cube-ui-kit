@@ -21,9 +21,13 @@ import {
 } from '../../../tasty';
 import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react';
-import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../../form/Label';
 import { HiddenInput } from '../../HiddenInput';
-import { useFieldProps, useFormProps } from '../../form/Form';
+import {
+  useFieldProps,
+  useFormProps,
+  INLINE_LABEL_STYLES,
+  LABEL_STYLES,
+} from '../../form';
 import { FieldBaseProps } from '../../../shared';
 import {
   castNullableIsSelected,

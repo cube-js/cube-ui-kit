@@ -14,9 +14,8 @@ import {
 import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react';
 import { useProviderProps } from '../../../provider';
-import { INLINE_LABEL_STYLES } from '../../form/Label';
 import { HiddenInput } from '../../HiddenInput';
-import { useFieldProps, useFormProps } from '../../form/Form';
+import { useFieldProps, useFormProps, INLINE_LABEL_STYLES } from '../../form';
 import { FieldBaseProps } from '../../../shared';
 
 import { RadioGroup } from './RadioGroup';

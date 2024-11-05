@@ -7,9 +7,7 @@ import { mergeProps } from '../../../utils/react';
 
 import { Underlay } from './Underlay';
 import { Overlay } from './Overlay';
-import { TransitionState, WithCloseBehavior } from './types';
-
-import type { ModalProps } from '@react-types/overlays';
+import { ModalProps, TransitionState, WithCloseBehavior } from './types';
 
 export const OVERLAY_WRAPPER_STYLES: Styles = {
   position: 'fixed',

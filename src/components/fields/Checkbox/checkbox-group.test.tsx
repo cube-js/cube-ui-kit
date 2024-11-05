@@ -1,7 +1,5 @@
 import { act, render, renderWithForm, userEvent } from '../../../test';
-import { Field } from '../../form/Form';
-
-import { Checkbox } from './Checkbox';
+import { Field, Checkbox } from '../../../index';
 
 jest.mock('../../../_internal/hooks/use-warn');
 

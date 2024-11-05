@@ -1,6 +1,5 @@
 import { Title } from '../../content/Title';
-import { CubeFormProps, Form } from '../../form/Form/Form';
-import { useForm, FieldTypes } from '../../form';
+import { CubeFormProps, Form, useForm, FieldTypes } from '../../form';
 import { Content } from '../../content/Content';
 import { Submit } from '../../actions/Button/Submit';
 import { Button, CubeButtonProps } from '../../actions';

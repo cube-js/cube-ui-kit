@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { act, renderWithForm, renderWithRoot, userEvent } from '../../../test';
-import { Field } from '../../form/Form';
+import { Field } from '../../form';
 
 import { PasswordInput } from './PasswordInput';
 

@@ -1,11 +1,15 @@
 import { forwardRef, ReactElement, useRef } from 'react';
-import { AriaDateRangePickerProps, DateValue } from '@react-types/datepicker';
 import { FocusableRef } from '@react-types/shared';
-import { useDatePicker, useDateRangePicker, useFocusRing } from 'react-aria';
+import {
+  useDatePicker,
+  useDateRangePicker,
+  useFocusRing,
+  AriaDateRangePickerProps,
+  DateValue,
+} from 'react-aria';
 import { useDatePickerState, useDateRangePickerState } from 'react-stately';
 
 import { useProviderProps } from '../../../provider';
-import { wrapWithField } from '../../form/wrapper';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -16,7 +20,7 @@ import {
 } from '../../../tasty';
 import { FieldBaseProps, ValidationState } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
-import { useFieldProps, useFormProps } from '../../form/Form';
+import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 import { Calendar } from '../../other/Calendar/Calendar';
 
@@ -28,6 +32,7 @@ import { DatePickerButton } from './DatePickerButton';
 import { DEFAULT_DATE_PROPS } from './props';
 import { dateMessages } from './intl';
 import { DatePickerElement } from './DatePickerElement';
+import { DateFieldBase } from './types';
 
 const DateRangeDash = tasty({
   'aria-hidden': 'true',
@@ -43,6 +48,7 @@ export interface CubeDateRangeSeparatedPickerProps<
 > extends AriaDateRangePickerProps<T>,
     BaseProps,
     ContainerStyleProps,
+    DateFieldBase<T>,
     FieldBaseProps {
   wrapperStyles?: Styles;
   inputStyles?: Styles;

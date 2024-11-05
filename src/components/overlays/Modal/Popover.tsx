@@ -1,6 +1,5 @@
 import { forwardRef, HTMLAttributes, useEffect } from 'react';
-import { useModal, useOverlay } from 'react-aria';
-import { OverlayProps } from '@react-types/overlays';
+import { useModal, useOverlay, OverlayProps } from 'react-aria';
 
 import { BaseProps, tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';

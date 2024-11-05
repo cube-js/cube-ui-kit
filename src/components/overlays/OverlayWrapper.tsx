@@ -1,12 +1,13 @@
 import { CSSTransition } from 'react-transition-group';
 import { ReactNode, useRef } from 'react';
+import { Placement } from 'react-aria';
 
 import { OverlayTransitionCSSProps } from '../../utils/transitions';
 import { Portal } from '../portal';
 
 export interface CubeOverlayWrapperProps {
   isOpen?: boolean;
-  placement?: 'start' | 'end' | 'right' | 'left' | 'top' | 'bottom';
+  placement?: Placement;
   children: ReactNode;
   minOffset?: string | number;
   minScale?: string;

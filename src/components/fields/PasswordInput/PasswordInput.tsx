@@ -8,7 +8,7 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { useFieldProps } from '../../form/Form';
+import { useFieldProps } from '../../form';
 import { EyeIcon, EyeInvisibleIcon } from '../../../icons';
 
 export interface CubePasswordInputProps

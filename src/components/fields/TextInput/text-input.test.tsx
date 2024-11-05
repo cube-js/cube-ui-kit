@@ -1,7 +1,5 @@
 import { renderWithForm, userEvent, render, act } from '../../../test';
-import { Field } from '../../form/Form';
-
-import { TextInput } from './TextInput';
+import { Field, TextInput } from '../../../index';
 
 jest.mock('../../../_internal/hooks/use-warn');
 

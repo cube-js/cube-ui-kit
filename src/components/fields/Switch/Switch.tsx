@@ -19,15 +19,19 @@ import {
 import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react';
 import { HiddenInput } from '../../HiddenInput';
-import { INLINE_LABEL_STYLES, LABEL_STYLES } from '../../form/Label';
 import { Text } from '../../content/Text';
 import { FieldBaseProps } from '../../../shared';
 import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
-import { useFieldProps, useFormProps } from '../../form/Form';
-import { wrapWithField } from '../../form';
+import {
+  useFieldProps,
+  useFormProps,
+  wrapWithField,
+  INLINE_LABEL_STYLES,
+  LABEL_STYLES,
+} from '../../form';
 import { LoadingIcon } from '../../../icons';
 
 const SwitchWrapperElement = tasty({

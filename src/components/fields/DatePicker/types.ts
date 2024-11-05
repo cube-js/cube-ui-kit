@@ -25,4 +25,7 @@ export interface DateFieldBase<T extends DateValue> {
    * By default, this is determined by the user's locale.
    */
   shouldForceLeadingZeros?: boolean;
+  isDisabled?: boolean;
+  isReadOnly?: boolean;
+  isRequired?: boolean;
 }

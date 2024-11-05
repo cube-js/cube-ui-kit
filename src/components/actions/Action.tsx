@@ -1,5 +1,5 @@
 import { forwardRef, MouseEventHandler } from 'react';
-import { AriaButtonProps } from '@react-types/button';
+import { AriaButtonProps } from 'react-aria';
 import { FocusableRef } from '@react-types/shared';
 
 import {
