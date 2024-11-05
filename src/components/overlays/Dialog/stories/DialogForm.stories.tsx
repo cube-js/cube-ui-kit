@@ -7,10 +7,10 @@ import { CubeDialogFormProps, DialogForm } from '../DialogForm';
 import { Button } from '../../../actions';
 import { Paragraph } from '../../../content/Paragraph';
 import { Text } from '../../../content/Text';
-import { Input } from '../../../forms';
+import { Input } from '../../../fields';
 import { DialogTrigger } from '../DialogTrigger';
 import { baseProps } from '../../../../stories/lists/baseProps';
-import { Form } from '../../../forms/Form';
+import { Form } from '../../../form/Form';
 import { DialogContainer } from '../DialogContainer';
 
 export default {
