@@ -189,29 +189,11 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   let isAsync = loadingState != null;
   let { contains } = useFilter({ sensitivity: 'base' });
 
-  const comboboxProps = {
-    ...props,
-    children: props.children,
-    items: props.items,
-    label: props.label,
-    isDisabled: props.isDisabled,
-    validationState: props.validationState,
-    description: props.description,
-    autoFocus: props.autoFocus,
-    isRequired: props.isRequired,
-    allowsCustomValue: props.allowsCustomValue,
-    menuTrigger,
-    disabledKeys: props.disabledKeys,
-    name: props.name,
-    isReadOnly: props.isReadOnly,
-    defaultFilter: filter || contains,
-    allowsEmptyCollection: isAsync,
-  } as const;
-
   let state = useComboBoxState({
-    ...comboboxProps,
+    ...props,
     defaultFilter: filter || contains,
     allowsEmptyCollection: isAsync,
+    menuTrigger,
   });
 
   const outerStyles = extractStyles(otherProps, OUTER_STYLES, styles);
@@ -243,7 +225,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     buttonProps: triggerProps,
   } = useComboBox(
     {
-      ...comboboxProps,
+      ...props,
       inputRef,
       buttonRef: triggerRef,
       listBoxRef,
