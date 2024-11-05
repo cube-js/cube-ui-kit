@@ -4,7 +4,7 @@ import {
   renderWithRoot,
   userEvent,
 } from '../../../test/index';
-import { Field } from '../index';
+import { Field } from '../../form';
 
 import { Select } from './Select';
 

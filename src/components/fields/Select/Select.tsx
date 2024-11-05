@@ -22,7 +22,7 @@ import {
   AriaSelectProps,
 } from 'react-aria';
 import styled from 'styled-components';
-import { DOMRef } from '@react-types/shared';
+import { CollectionBase, DOMRef } from '@react-types/shared';
 
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { useProviderProps } from '../../../provider';
@@ -246,6 +246,7 @@ export interface CubeSelectBaseProps<T>
     OuterStyleProps,
     FieldBaseProps,
     BlockStyleProps,
+    CollectionBase<T>,
     AriaSelectProps<T> {
   icon?: ReactElement;
   prefix?: ReactNode;

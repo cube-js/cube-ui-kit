@@ -1,10 +1,5 @@
-import {
-  act,
-  renderWithForm,
-  renderWithRoot,
-  userEvent,
-} from '../../../test/index';
-import { Field } from '../index';
+import { renderWithForm, renderWithRoot, userEvent } from '../../../test/index';
+import { Field } from '../../form';
 
 import { ComboBox } from './ComboBox';
 
