@@ -34,6 +34,9 @@ export interface CubeRadioGroupProps
   groupStyles?: Styles;
   isSolid?: boolean;
   orientation?: 'horizontal' | 'vertical';
+  value?: string;
+  defaultValue?: string;
+  onChange?: (value: string) => void;
 }
 
 const RadioGroupElement = tasty({
