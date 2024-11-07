@@ -1,5 +1,21 @@
 # @cube-dev/ui-kit
 
+## 0.40.0
+
+### Minor Changes
+
+- [#511](https://github.com/cube-js/cube-ui-kit/pull/511) [`384b41a`](https://github.com/cube-js/cube-ui-kit/commit/384b41a087d2965bbd4dc815c73435ed357ca576) Thanks [@tenphi](https://github.com/tenphi)! - Add field support for FileInput.
+
+- [#511](https://github.com/cube-js/cube-ui-kit/pull/511) [`384b41a`](https://github.com/cube-js/cube-ui-kit/commit/384b41a087d2965bbd4dc815c73435ed357ca576) Thanks [@tenphi](https://github.com/tenphi)! - Remove @react-types typings and rely solely on react-aria package.
+
+### Patch Changes
+
+- [#511](https://github.com/cube-js/cube-ui-kit/pull/511) [`384b41a`](https://github.com/cube-js/cube-ui-kit/commit/384b41a087d2965bbd4dc815c73435ed357ca576) Thanks [@tenphi](https://github.com/tenphi)! - Add isTouched flag to Form.
+
+- [#511](https://github.com/cube-js/cube-ui-kit/pull/511) [`384b41a`](https://github.com/cube-js/cube-ui-kit/commit/384b41a087d2965bbd4dc815c73435ed357ca576) Thanks [@tenphi](https://github.com/tenphi)! - Support "accept" attribute in FileInput component.
+
+- [#511](https://github.com/cube-js/cube-ui-kit/pull/511) [`384b41a`](https://github.com/cube-js/cube-ui-kit/commit/384b41a087d2965bbd4dc815c73435ed357ca576) Thanks [@tenphi](https://github.com/tenphi)! - Reinitialize Field on name change.
+
 ## 0.39.1
 
 ### Patch Changes
