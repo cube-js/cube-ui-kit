@@ -7,7 +7,7 @@ import { Props } from '../../../tasty';
 import { OpenTransition } from './OpenTransition';
 import { WithCloseBehavior } from './types';
 
-import type { OverlayProps } from '@react-types/overlays';
+import type { OverlayProps } from 'react-aria';
 
 export interface CubeOverlayProps
   extends Omit<OverlayProps, 'container' | 'nodeRef'>,

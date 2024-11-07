@@ -3,7 +3,7 @@ import { forwardRef, ReactNode } from 'react';
 import { Button, CubeButtonProps, ButtonGroup } from '../../actions';
 import { Content } from '../../content/Content';
 import { Paragraph } from '../../content/Paragraph';
-import { CubeDialogProps, Dialog } from '../Dialog/Dialog';
+import { CubeDialogProps, Dialog } from '../Dialog';
 import { useDialogContext } from '../Dialog/context';
 import { Title } from '../../content/Title';
 import { Header } from '../../content/Header';

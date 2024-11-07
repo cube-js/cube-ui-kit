@@ -56,7 +56,7 @@ export function AlertDialogZone(props: DialogZoneProps): JSX.Element {
           onPress?.(e);
           resolve(status);
         },
-      } as T;
+      } as unknown as T;
     };
 
     if (typeof actions === 'undefined') return {};

@@ -1,6 +1,11 @@
 import { useDOMRef } from '@react-spectrum/utils';
-import { forwardRef } from 'react';
-import { useModal, useOverlay, usePreventScroll } from 'react-aria';
+import { forwardRef, ReactNode } from 'react';
+import {
+  useModal,
+  useOverlay,
+  usePreventScroll,
+  OverlayProps,
+} from 'react-aria';
 
 import { BaseProps, Props, Styles, tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
@@ -9,8 +14,6 @@ import { OVERLAY_WRAPPER_STYLES } from './Modal';
 import { Underlay } from './Underlay';
 import { Overlay } from './Overlay';
 import { TransitionState, WithCloseBehavior } from './types';
-
-import type { TrayProps } from '@react-types/overlays';
 
 const TrayWrapperElement = tasty({
   qa: 'TrayWrapper',
@@ -42,13 +45,18 @@ const TrayElement = tasty({
   },
 });
 
-export interface CubeTrayProps extends TrayProps, WithCloseBehavior {
+export interface CubeTrayProps extends OverlayProps, WithCloseBehavior {
   container?: HTMLElement;
   qa?: BaseProps['qa'];
   onClose?: (action?: string) => void;
   isFixedHeight?: boolean;
   isNonModal?: boolean;
   styles?: Styles;
+  children?: ReactNode;
+  isKeyboardDismissDisabled?: boolean;
+  isOpen?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
+  defaultOpen?: boolean;
 }
 
 interface CubeTrayWrapperProps extends CubeTrayProps, TransitionState {

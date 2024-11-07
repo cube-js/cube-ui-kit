@@ -1,8 +1,12 @@
 import { forwardRef, useImperativeHandle, useRef } from 'react';
-import { useRangeCalendar, useLocale } from 'react-aria';
+import {
+  useRangeCalendar,
+  useLocale,
+  AriaRangeCalendarProps,
+  DateValue,
+} from 'react-aria';
 import { useRangeCalendarState } from 'react-stately';
 import { createCalendar } from '@internationalized/date';
-import { AriaRangeCalendarProps, DateValue } from '@react-types/calendar';
 import { FocusableRef } from '@react-types/shared';
 import { createDOMRef } from '@react-spectrum/utils';
 

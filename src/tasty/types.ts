@@ -1,3 +1,4 @@
+import { AriaLabelingProps } from '@react-types/shared';
 import { AllHTMLAttributes, CSSProperties } from 'react';
 
 import { Styles } from './styles/types';
@@ -80,7 +81,8 @@ export interface BasePropsWithoutChildren
 }
 
 export interface BaseProps
-  extends BasePropsWithoutChildren,
+  extends AriaLabelingProps,
+    BasePropsWithoutChildren,
     Pick<AllHTMLAttributes<HTMLElementTagNameMap['div']>, 'children'> {}
 
 export interface AllBaseProps<K extends keyof HTMLElementTagNameMap = 'div'>

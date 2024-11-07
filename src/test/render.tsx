@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 
-import { Form, CubeFormInstance, CubeFormProps } from '../components/forms';
+import { Form, CubeFormInstance, CubeFormProps } from '../components/form';
 import { Root } from '../components/Root';
 
 export function renderWithRoot(

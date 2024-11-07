@@ -1,4 +1,4 @@
-import { AriaDialogProps } from '@react-types/dialog';
+import { AriaDialogProps } from 'react-aria';
 import { ReactNode } from 'react';
 
 import {

@@ -6,7 +6,7 @@ import {
   useRef,
 } from 'react';
 import { createDOMRef } from '@react-spectrum/utils';
-import { useTooltip } from 'react-aria';
+import { useTooltip, AriaTooltipProps } from 'react-aria';
 import styled from 'styled-components';
 import { DOMRefValue } from '@react-types/shared';
 
@@ -24,7 +24,7 @@ import { mergeProps } from '../../../utils/react';
 
 import { TooltipContext } from './context';
 
-import type { AriaTooltipProps } from '@react-types/tooltip';
+export type { AriaTooltipProps };
 
 const TooltipElement = tasty({
   styles: {
@@ -99,6 +99,10 @@ export interface CubeTooltipProps
   showIcon?: boolean;
   placement?: PlacementAxis;
   isMaterial?: boolean;
+  isOpen?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
+  defaultOpen?: boolean;
+  shouldFlip?: boolean;
 }
 
 function Tooltip(

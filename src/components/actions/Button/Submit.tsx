@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 
 import { useProviderProps } from '../../../provider';
-import { useFormProps } from '../../forms/Form/Form';
+import { useFormProps } from '../../form';
 
 import { Button } from './Button';
 

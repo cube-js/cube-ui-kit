@@ -1,11 +1,10 @@
-import { FieldTypes } from 'src/components/forms/Form/types';
-
 import {
   DialogForm,
-  Field,
   Paragraph,
   Input,
   Text,
+  Field,
+  FieldTypes,
   CubeDialogFormProps,
 } from '../../index';
 

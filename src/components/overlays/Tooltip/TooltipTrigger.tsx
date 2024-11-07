@@ -1,6 +1,11 @@
 import { FocusableProvider } from '@react-aria/focus';
 import { Children, ReactElement, useRef } from 'react';
-import { useOverlayPosition, useTooltipTrigger } from 'react-aria';
+import {
+  useOverlayPosition,
+  useTooltipTrigger,
+  TooltipTriggerProps,
+  Placement,
+} from 'react-aria';
 import { useTooltipTriggerState } from 'react-stately';
 
 import { OverlayWrapper } from '../OverlayWrapper';
@@ -9,8 +14,6 @@ import { Block } from '../../Block';
 
 import { TooltipContext } from './context';
 
-import type { TooltipTriggerProps } from '@react-types/tooltip';
-
 const DEFAULT_OFFSET = 8; // Offset needed to reach 4px/5px (med/large) distance between tooltip and trigger button
 const DEFAULT_CROSS_OFFSET = 0;
 
@@ -18,11 +21,32 @@ export interface CubeTooltipTriggerProps extends TooltipTriggerProps {
   children: [ReactElement | string, ReactElement];
   crossOffset?: number;
   offset?: number;
-  placement?: 'start' | 'end' | 'right' | 'left' | 'top' | 'bottom';
+  placement?: Placement;
   isMaterial?: boolean;
   /** Whether the trigger should have an ActiveZone wrap to make sure it's focusable and hoverable.
    * Otherwise, tooltip won't work. */
   activeWrap?: boolean;
+  isOpen?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
+  defaultOpen?: boolean;
+  /**
+   * Whether the tooltip should be disabled, independent of the trigger.
+   */
+  isDisabled?: boolean;
+  /**
+   * The delay time for the tooltip to show up.
+   * @default 1500
+   */
+  delay?: number;
+  /**
+   * The delay time for the tooltip to close.
+   * @default 500
+   */
+  closeDelay?: number;
+  /**
+   * By default, opens for both focus and hover. Can be made to open only for focus.
+   */
+  trigger?: 'focus';
 }
 
 function TooltipTrigger(props: CubeTooltipTriggerProps) {
