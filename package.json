@@ -21,7 +21,7 @@
   ],
   "scripts": {
     "start": "pnpm storybook",
-    "build": "npm-run-all clear:dist -p build:* && node ./scripts/copy-files.js && node scripts/add-banner.js && node -e \"const { version } = require('./package.json'); require('child_process').execSync('find dist -name \\\"*.js\\\" -exec sed -i \\\"\\\" \\\"s/__UIKIT_VERSION__/\\\\\\\"' + version + '\\\\\\\"/g\\\" {} +');\"",
+    "build": "npm-run-all clear:dist -p build:* && node ./scripts/copy-files.js && node scripts/add-banner.js && node scripts/replace-version.js",
     "build:esm": "tsc -p tsconfig.es.json",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "watch": "pnpm build:esm --watch",
