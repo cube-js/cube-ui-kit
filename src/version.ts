@@ -11,8 +11,9 @@ if (!window.CubeUIKit || !Array.isArray(window.CubeUIKit)) {
   };
 }
 
-if (typeof process !== 'undefined' && process.env?.VERSION) {
-  window.CubeUIKit.version.push(process.env.VERSION as string);
+// @ts-ignore
+if ('__UIKIT_VERSION__') {
+  window.CubeUIKit.version.push('__UIKIT_VERSION__');
 }
 
 if (window.CubeUIKit.version.length > 1) {
