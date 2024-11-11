@@ -11,7 +11,9 @@ if (!window.CubeUIKit || !Array.isArray(window.CubeUIKit)) {
   };
 }
 
-window.CubeUIKit.version.push(process.env.VERSION as string);
+if (typeof process !== 'undefined' && process.env?.VERSION) {
+  window.CubeUIKit.version.push(process.env.VERSION as string);
+}
 
 if (window.CubeUIKit.version.length > 1) {
   console.error('More than one version of CubeUIKit is loaded');
