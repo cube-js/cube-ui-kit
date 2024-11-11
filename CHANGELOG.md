@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.41.0
+
+### Minor Changes
+
+- [#515](https://github.com/cube-js/cube-ui-kit/pull/515) [`79ae983`](https://github.com/cube-js/cube-ui-kit/commit/79ae9839878232e4654441fe8ffb986a79189ccc) Thanks [@tenphi](https://github.com/tenphi)! - Declare uikit version globally.
+
 ## 0.40.0
 
 ### Minor Changes
