@@ -21,7 +21,7 @@
   ],
   "scripts": {
     "start": "pnpm storybook",
-    "build": "npm-run-all clear:dist -p build:* && node ./scripts/copy-files.js && node scripts/add-banner.js",
+    "build": "npm-run-all clear:dist -p build:* && node ./scripts/copy-files.js && node scripts/add-banner.js && node scripts/replace-version.js",
     "build:esm": "tsc -p tsconfig.es.json",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "watch": "pnpm build:esm --watch",
