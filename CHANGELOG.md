@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.41.1
+
+### Patch Changes
+
+- [#517](https://github.com/cube-js/cube-ui-kit/pull/517) [`6e17c77`](https://github.com/cube-js/cube-ui-kit/commit/6e17c77b94ab81c3b1aef9da071d6623f9d83057) Thanks [@tenphi](https://github.com/tenphi)! - Fix version declaration.
+
+- [#517](https://github.com/cube-js/cube-ui-kit/pull/517) [`6e17c77`](https://github.com/cube-js/cube-ui-kit/commit/6e17c77b94ab81c3b1aef9da071d6623f9d83057) Thanks [@tenphi](https://github.com/tenphi)! - Fix warning about incorrectly rendered component in SliderBase.
+
+- [#517](https://github.com/cube-js/cube-ui-kit/pull/517) [`6e17c77`](https://github.com/cube-js/cube-ui-kit/commit/6e17c77b94ab81c3b1aef9da071d6623f9d83057) Thanks [@tenphi](https://github.com/tenphi)! - Correctly pass focusWithinProps in Slider.
+
+- [#517](https://github.com/cube-js/cube-ui-kit/pull/517) [`6e17c77`](https://github.com/cube-js/cube-ui-kit/commit/6e17c77b94ab81c3b1aef9da071d6623f9d83057) Thanks [@tenphi](https://github.com/tenphi)! - Do not pass invalid isDisabled prop in Action.
+
 ## 0.41.0
 
 ### Minor Changes
