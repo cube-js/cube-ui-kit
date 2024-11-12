@@ -1,4 +1,4 @@
-import { RefObject, forwardRef, useRef, ReactNode } from 'react';
+import { RefObject, forwardRef, useRef, ReactNode, useMemo } from 'react';
 import { useFocusableRef } from '@react-spectrum/utils';
 import { FocusableRef } from '@react-types/shared';
 import { useSliderState } from 'react-stately';
@@ -7,7 +7,6 @@ import { useSlider, useNumberFormatter } from 'react-aria';
 import { extractStyles, OUTER_STYLES, tasty } from '../../../tasty';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { Text } from '../../content/Text';
-import { mergeProps } from '../../../utils/react';
 
 import { SliderControlsElement, SliderElement } from './elements';
 
@@ -186,22 +185,17 @@ function SliderBase(
       </LabelValueElement>
     );
 
+  const mods = useMemo(
+    () => ({
+      'side-label': labelPosition === 'side',
+      horizontal: orientation === 'horizontal',
+    }),
+    [labelPosition, orientation],
+  );
+
   const sliderField = (
-    <SliderElement
-      ref={domRef}
-      {...groupProps}
-      mods={{
-        'side-label': labelPosition === 'side',
-        horizontal: orientation === 'horizontal',
-      }}
-    >
-      <SliderControlsElement
-        {...trackProps}
-        ref={trackRef}
-        mods={{
-          horizontal: orientation === 'horizontal',
-        }}
-      >
+    <SliderElement ref={domRef} {...groupProps} mods={mods}>
+      <SliderControlsElement {...trackProps} ref={trackRef} mods={mods}>
         {children({
           trackRef,
           inputRef,
@@ -213,18 +207,13 @@ function SliderBase(
 
   styles = extractStyles(otherProps, OUTER_STYLES, styles);
 
-  return wrapWithField(
-    sliderField,
-    ref,
-    mergeProps(
-      {
-        ...props,
-        styles,
-        extra,
-      },
-      { labelProps },
-    ),
-  );
+  return wrapWithField(sliderField, ref, {
+    ...props,
+    children: undefined,
+    styles,
+    extra,
+    labelProps,
+  });
 }
 
 const _SliderBase = forwardRef(SliderBase);

@@ -1,4 +1,4 @@
-import { RefObject, useRef } from 'react';
+import { RefObject, useMemo, useRef } from 'react';
 import {
   AriaSliderThumbOptions,
   useHover,
@@ -37,14 +37,18 @@ export function SliderThumb(props: SliderThumbProps) {
 
   const { hoverProps, isHovered } = useHover({ isDisabled });
 
+  const mods = useMemo(() => {
+    return {
+      hovered: isHovered,
+      dragged: isDragging,
+      focused: !isDragging && isFocused,
+      disabled: isDisabled,
+    };
+  }, [isHovered, isDragging, isFocused, isDisabled]);
+
   return (
     <SliderThumbElement
-      mods={{
-        hovered: isHovered,
-        dragged: isDragging,
-        focused: !isDragging && isFocused,
-        disabled: isDisabled,
-      }}
+      mods={mods}
       {...mergeProps(thumbProps, hoverProps)}
       role="presentation"
     >

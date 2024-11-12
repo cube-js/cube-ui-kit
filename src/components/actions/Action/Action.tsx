@@ -13,9 +13,8 @@ import {
   TEXT_STYLES,
   TextStyleProps,
   tasty,
-} from '../../tasty';
-
-import { useAction } from './use-action';
+} from '../../../tasty';
+import { useAction } from '../use-action';
 
 export interface CubeActionProps
   extends BaseProps,
@@ -83,6 +82,7 @@ export const Action = forwardRef(function Action(
       data-theme={theme}
       download={download}
       {...actionProps}
+      isDisabled={undefined}
       styles={styles}
     />
   );

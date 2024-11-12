@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import styled from 'styled-components';
 import { CSSTransition } from 'react-transition-group';
 
-import { Action } from '../../actions/Action';
+import { Action } from '../../actions/Action/Action';
 import { Card, CubeCardProps } from '../../content/Card/Card';
 import { Flow } from '../../layout/Flow';
 import { Flex } from '../../layout/Flex';

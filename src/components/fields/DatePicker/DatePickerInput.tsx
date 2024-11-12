@@ -51,7 +51,7 @@ export function DatePickerInput<T extends DateValue>(
     state.segments = formatSegments(state.segments);
   }
 
-  const focusWithinProps = useFocusWithin({
+  const { focusWithinProps } = useFocusWithin({
     onFocusWithinChange: (isFocused) => {
       if (isFocused) {
         props.onFocus?.();
