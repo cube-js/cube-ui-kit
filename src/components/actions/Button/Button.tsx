@@ -1,7 +1,7 @@
 import { cloneElement, forwardRef, ReactElement, useMemo } from 'react';
 import { FocusableRef } from '@react-types/shared';
 
-import { CubeActionProps } from '../Action';
+import { CubeActionProps } from '../Action/Action';
 import {
   CONTAINER_STYLES,
   extractStyles,

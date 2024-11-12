@@ -9,6 +9,6 @@ const Button = Object.assign(
 );
 
 export * from './Button';
-export * from './Action';
+export * from './Action/Action';
 export * from './use-action';
 export { Button, ButtonGroup };

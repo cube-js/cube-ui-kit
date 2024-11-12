@@ -1,6 +1,7 @@
 import { forwardRef } from 'react';
 
 import { extractStyles, OUTER_STYLES } from '../../../tasty';
+import { mergeProps } from '../../../utils/react/index';
 
 import { SliderThumb } from './SliderThumb';
 import { SliderTrack } from './SliderTrack';
@@ -50,8 +51,7 @@ function Slider(props: CubeSliderProps, ref: FocusableRef<HTMLDivElement>) {
 
   return (
     <SliderBase
-      {...otherProps}
-      {...baseProps}
+      {...mergeProps(otherProps, baseProps)}
       ref={ref}
       orientation={orientation}
       styles={extractedStyles}
