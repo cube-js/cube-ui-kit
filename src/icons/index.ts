@@ -68,6 +68,8 @@ import { PauseCircleFilledIcon as _PauseCircleFilledIcon } from './PauseCircleFi
 import { PauseCircleIcon as _PauseCircleIcon } from './PauseCircleIcon';
 import { StatsIcon as _StatsIcon } from './StatsIcon';
 import { UnlockIcon as _UnlockIcon } from './UnlockIcon';
+import { UserIcon as _UserIcon } from './UserIcon';
+import { UserGroupIcon as _UserGroupIcon } from './UserGroupIcon';
 
 export const CloseIcon = wrapIcon('CloseIcon', _CloseIcon);
 export const ExclamationIcon = wrapIcon('ExclamationIcon', _ExclamationIcon);
@@ -162,6 +164,8 @@ export const PauseCircleFilledIcon = wrapIcon(
 export const PauseCircleIcon = wrapIcon('PauseCircleIcon', _PauseCircleIcon);
 export const StatsIcon = wrapIcon('StatsIcon', _StatsIcon);
 export const UnlockIcon = wrapIcon('UnlockIcon', _UnlockIcon);
+export const UserIcon = wrapIcon('UserIcon', _UserIcon);
+export const UserGroupIcon = wrapIcon('UserGroupIcon', _UserGroupIcon);
 
 export { IconContainer } from './IconContainer';
 
