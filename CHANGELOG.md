@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.41.2
+
+### Patch Changes
+
+- [#519](https://github.com/cube-js/cube-ui-kit/pull/519) [`b7505ee`](https://github.com/cube-js/cube-ui-kit/commit/b7505ee615ed36c73eb5f5d04890f90590ae2578) Thanks [@tenphi](https://github.com/tenphi)! - Add UserIcon and UserGroupIcon.
+
 ## 0.41.1
 
 ### Patch Changes
