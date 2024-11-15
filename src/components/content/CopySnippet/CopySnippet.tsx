@@ -185,21 +185,24 @@ function CopySnippet(allProps: CubeCopySnippetProps) {
   let formattedCode = pristineCode
     .split(/\n/g)
     .map((line) => `${prefix}${line} `)
-    .join('\n');
+    .join('\n')
+    .trim();
 
   if (!showHidden) {
     if (hideText === true) {
       formattedCode = formattedCode
         .split('')
         .map((s) => HIDDEN_SYMBOL)
-        .join('');
+        .join('')
+        .trim();
     } else if (typeof hideText === 'string') {
       formattedCode = formattedCode.replaceAll(
         hideText,
         hideText
           .split('')
           .map((s) => HIDDEN_SYMBOL)
-          .join(''),
+          .join('')
+          .trim(),
       );
     } else if (Array.isArray(hideText)) {
       hideText.forEach((text) => {
@@ -208,7 +211,8 @@ function CopySnippet(allProps: CubeCopySnippetProps) {
           text
             .split('')
             .map((s) => HIDDEN_SYMBOL)
-            .join(''),
+            .join('')
+            .trim(),
         );
       });
     }
