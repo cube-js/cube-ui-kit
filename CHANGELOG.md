@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.41.3
+
+### Patch Changes
+
+- [#521](https://github.com/cube-js/cube-ui-kit/pull/521) [`6f6737f`](https://github.com/cube-js/cube-ui-kit/commit/6f6737fde7ce84ba1c0d4641ffe1623070cf66fd) Thanks [@tenphi](https://github.com/tenphi)! - Remove trailing space in CopySnippet.
+
 ## 0.41.2
 
 ### Patch Changes
