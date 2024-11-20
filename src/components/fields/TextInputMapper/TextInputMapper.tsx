@@ -30,8 +30,8 @@ export interface CubeTextInputMapperProps extends FieldBaseProps {
   value?: Record<string, string>;
   onChange?: (value: Record<string, string> | undefined) => void;
   ValueComponent?: ComponentType<CubeTextInputMapperInputProps>;
-  keyProps?: CubeTextInputMapperInputProps;
-  valueProps?: CubeTextInputMapperInputProps;
+  keyProps?: Partial<CubeTextInputMapperInputProps>;
+  valueProps?: Partial<CubeTextInputMapperInputProps>;
 }
 
 // remove duplicates in mappings
