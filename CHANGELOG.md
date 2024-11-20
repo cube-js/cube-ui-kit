@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.42.1
+
+### Patch Changes
+
+- [#525](https://github.com/cube-js/cube-ui-kit/pull/525) [`4846f53`](https://github.com/cube-js/cube-ui-kit/commit/4846f53906f3054b9699efa6a2e45c5479fdbb45) Thanks [@tenphi](https://github.com/tenphi)! - Improve TextInputMapper styles inside Form.'
+
 ## 0.42.0
 
 ### Minor Changes
