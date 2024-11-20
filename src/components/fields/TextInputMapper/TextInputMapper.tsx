@@ -9,6 +9,7 @@ import {
 
 import { useEvent } from '../../../_internal/hooks';
 import { FieldBaseProps } from '../../../shared';
+import { mergeProps } from '../../../utils/react/index';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { CloseIcon, PlusIcon } from '../../../icons';
 import { Button } from '../../actions';
@@ -33,6 +34,19 @@ export interface CubeTextInputMapperProps extends FieldBaseProps {
   keyProps?: Partial<CubeTextInputMapperInputProps>;
   valueProps?: Partial<CubeTextInputMapperInputProps>;
 }
+
+// Rewrites upper level field component styles
+// @TODO: Remove this after the release of new Element API
+const PROPS_GRID_HACK = {
+  styles: {
+    InputArea: {
+      gridColumn: {
+        '': 'auto',
+        'has-sider': 'auto',
+      },
+    },
+  },
+};
 
 // remove duplicates in mappings
 function removeDuplicates(mappings: Mapping[]) {
@@ -254,7 +268,7 @@ function TextInputMapperInput(props: CubeTextInputMapperInputProps) {
     <TextInput
       qa="AddMapping"
       width="auto"
-      {...rest}
+      {...mergeProps(rest, PROPS_GRID_HACK)}
       id={undefined}
       value={value}
       labelPosition="top"
