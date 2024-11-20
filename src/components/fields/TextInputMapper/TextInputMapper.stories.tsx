@@ -1,4 +1,5 @@
 import { StoryFn } from '@storybook/react';
+import { userEvent, within } from '@storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Submit } from '../../actions';
@@ -48,6 +49,16 @@ Default.args = {};
 
 export const WithValue = Template.bind({});
 WithValue.args = { value: { name: 'value' } };
+
+export const WithValueAndNewMapping = Template.bind({});
+WithValueAndNewMapping.args = { value: { name: 'value' } };
+
+WithValueAndNewMapping.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const button = await canvas.getByText('Mapping');
+
+  await userEvent.click(button);
+};
 
 export const WithinForm = FormTemplate.bind({});
 WithinForm.args = {};

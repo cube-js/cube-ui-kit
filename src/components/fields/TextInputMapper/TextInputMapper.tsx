@@ -242,6 +242,7 @@ function TextInputMapperInput(props: CubeTextInputMapperInputProps) {
 
   return (
     <TextInput
+      qa="AddMapping"
       width="auto"
       {...rest}
       id={undefined}
