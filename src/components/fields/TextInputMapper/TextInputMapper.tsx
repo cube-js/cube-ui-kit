@@ -29,9 +29,9 @@ export interface CubeTextInputMapperProps extends FieldBaseProps {
   isDisabled?: boolean;
   value?: Record<string, string>;
   onChange?: (value: Record<string, string> | undefined) => void;
-  InputComponent?: ComponentType<CubeTextInputMapperInputProps>;
-  keyPlaceholder?: string;
-  valuePlaceholder?: string;
+  ValueComponent?: ComponentType<CubeTextInputMapperInputProps>;
+  keyProps?: CubeTextInputMapperInputProps;
+  valueProps?: CubeTextInputMapperInputProps;
 }
 
 // remove duplicates in mappings
@@ -61,7 +61,15 @@ function TextInputMapper(props: CubeTextInputMapperProps, ref: any) {
 
   const counterRef = useRef(0);
 
-  let { isDisabled, actionLabel, value, onChange, InputComponent } = props;
+  let {
+    isDisabled,
+    actionLabel,
+    value,
+    onChange,
+    keyProps,
+    valueProps,
+    ValueComponent,
+  } = props;
 
   function extractLocalValues(
     value: Record<string, string>,
@@ -128,7 +136,7 @@ function TextInputMapper(props: CubeTextInputMapperProps, ref: any) {
     );
   }, [mappings]);
 
-  InputComponent = InputComponent ?? TextInputMapperInput;
+  ValueComponent = ValueComponent ?? TextInputMapperInput;
 
   const onKeyChange = useEvent((id: number, value: string) => {
     mappings.find((mapping) => {
@@ -169,18 +177,20 @@ function TextInputMapper(props: CubeTextInputMapperProps, ref: any) {
             isDisabled={isDisabled}
             type="name"
             value={key}
-            placeholder={props.keyPlaceholder || 'Key'}
+            placeholder="Key"
             onChange={onKeyChange}
             onSubmit={onSubmit}
+            {...keyProps}
           />
-          <InputComponent
+          <ValueComponent
             id={id}
             type="value"
             isDisabled={!key || isDisabled}
             value={value}
-            placeholder={props.valuePlaceholder || 'Value'}
+            placeholder="Value"
             onChange={onValueChange}
             onSubmit={onSubmit}
+            {...valueProps}
           />
           <Button
             aria-label="Remove mapping"

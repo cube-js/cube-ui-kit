@@ -51,7 +51,11 @@ export const WithValue = Template.bind({});
 WithValue.args = { value: { name: 'value' } };
 
 export const WithValueAndNewMapping = Template.bind({});
-WithValueAndNewMapping.args = { value: { name: 'value' } };
+WithValueAndNewMapping.args = {
+  value: { name: 'value' },
+  keyProps: { placeholder: 'Key placeholder' },
+  valueProps: { placeholder: 'Value placeholder' },
+};
 
 WithValueAndNewMapping.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
