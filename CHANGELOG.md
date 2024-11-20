@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.42.0
+
+### Minor Changes
+
+- [#523](https://github.com/cube-js/cube-ui-kit/pull/523) [`e684da6`](https://github.com/cube-js/cube-ui-kit/commit/e684da698ab6ac28ba97daab0d69ce4c47fab8b3) Thanks [@tenphi](https://github.com/tenphi)! - Add support for object values in Form.
+
+- [#523](https://github.com/cube-js/cube-ui-kit/pull/523) [`e684da6`](https://github.com/cube-js/cube-ui-kit/commit/e684da698ab6ac28ba97daab0d69ce4c47fab8b3) Thanks [@tenphi](https://github.com/tenphi)! - Add TextInputMapper component.
+
 ## 0.41.3
 
 ### Patch Changes
