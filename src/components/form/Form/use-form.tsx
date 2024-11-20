@@ -139,21 +139,23 @@ export class CubeFormInstance<
   getFormData(): T {
     const fieldsValue = this.getFieldsValue();
 
-    return Object.keys(fieldsValue).reduce((map, field) => {
-      setValue(map, field, fieldsValue[field]);
+    return Object.keys(fieldsValue)
+      .sort()
+      .reduce((map, field) => {
+        setValue(map, field, fieldsValue[field]);
 
-      if (field.includes('.')) {
-        delete map[field];
-      }
+        if (field.includes('.')) {
+          delete map[field];
+        }
 
-      return map;
-    }, {} as T);
+        return map;
+      }, {} as T);
   }
 
   setFieldValue<Name extends keyof T & string>(
     name: Name,
     value: T[Name],
-    touched = false,
+    isTouched = false,
     skipRender = false,
     inputOnly = false,
   ) {
@@ -166,19 +168,29 @@ export class CubeFormInstance<
     if (!inputOnly) {
       field.value = value;
       field.status = undefined; // reset validation status
+
+      if (typeof value === 'object' && !Array.isArray(value)) {
+        Object.keys(this.fields)
+          .filter((key) => key.startsWith(`${name}.`))
+          .forEach((key) => {
+            const objKey = key.replace(`${name}.`, '');
+
+            this.setFieldValue(key, value[objKey] ?? null, isTouched, false);
+          });
+      }
     }
 
     field.inputValue = value;
 
-    if (touched) {
-      field.touched = touched;
+    if (isTouched) {
+      field.touched = isTouched;
     }
 
     if (!skipRender) {
       field.errors = [];
     }
 
-    if (touched && !inputOnly) {
+    if (isTouched && !inputOnly) {
       this.onValuesChange && this.onValuesChange(this.getFormData());
       this.submitError = null;
     }
@@ -193,11 +205,15 @@ export class CubeFormInstance<
   }
 
   setInitialFieldsValue(values: PartialString<T>): void {
-    this.initialFields = dotize.convert(values) ?? {};
+    this.initialFields = { ...values, ...dotize.convert(values) };
   }
 
   updateInitialFieldsValue(values: FieldTypes): void {
-    this.initialFields = { ...this.initialFields, ...dotize.convert(values) };
+    this.initialFields = {
+      ...this.initialFields,
+      ...values,
+      ...dotize.convert(values),
+    };
   }
 
   resetFields(names?: (keyof T & string)[], skipRender?: boolean): void {
