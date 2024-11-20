@@ -121,7 +121,8 @@ export function MenuButton({
   postfix,
   ...props
 }: MenuButtonProps) {
-  const { selectionIcon, isSelected, isSelectable, isDisabled } = props;
+  const { selectionIcon, isSelected, isSelectable, isDisabled, ...rest } =
+    props;
   const checkIcon =
     isSelectable && isSelected
       ? getSelectionTypeIcon(selectionIcon)
@@ -135,7 +136,7 @@ export function MenuButton({
   };
 
   return (
-    <StyledButton {...props} mods={mods}>
+    <StyledButton {...rest} mods={mods}>
       {checkIcon ? <div data-element="ButtonIcon">{checkIcon}</div> : null}
       {icon ? <div data-element="ButtonIcon">{icon}</div> : null}
       <Space gap="1x" placeContent="space-between" overflow="clip" width="100%">
