@@ -1,6 +1,8 @@
 import {
   ComponentType,
+  ForwardedRef,
   forwardRef,
+  KeyboardEvent,
   useEffect,
   useMemo,
   useRef,
@@ -9,7 +11,7 @@ import {
 
 import { useEvent } from '../../../_internal/hooks';
 import { FieldBaseProps } from '../../../shared';
-import { mergeProps } from '../../../utils/react/index';
+import { mergeProps, useCombinedRefs } from '../../../utils/react/index';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { CloseIcon, PlusIcon } from '../../../icons';
 import { Button } from '../../actions';
@@ -63,7 +65,12 @@ function removeDuplicates(mappings: Mapping[]) {
   });
 }
 
-function TextInputMapper(props: CubeTextInputMapperProps, ref: any) {
+function TextInputMapper(
+  props: CubeTextInputMapperProps,
+  ref: ForwardedRef<HTMLDivElement>,
+) {
+  ref = useCombinedRefs(ref);
+
   props = useFormProps(props);
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onChange',
@@ -122,7 +129,7 @@ function TextInputMapper(props: CubeTextInputMapperProps, ref: any) {
   const onMappingsChange = useEvent((newMappings: Mapping[]) => {
     const newValue = newMappings.reduce(
       (acc, { key, value }) => {
-        acc[key] = value;
+        acc[key.trim()] = value.trim();
 
         return acc;
       },
@@ -136,7 +143,24 @@ function TextInputMapper(props: CubeTextInputMapperProps, ref: any) {
     } else {
       onChange?.(newValue);
     }
+
+    const updatedMappings = extractLocalValues(newValue ?? {}, newMappings);
+
+    if (JSON.stringify(updatedMappings) !== JSON.stringify(mappings)) {
+      setMappings(updatedMappings);
+    }
   });
+
+  // useEffect(() => {
+  //   // focus on the last non-disabled input
+  //   setTimeout(() => {
+  //     (
+  //       ref?.current?.querySelector(
+  //         '[data-qa="Mapping"]:last-child input:not([disabled])',
+  //       ) as HTMLInputElement
+  //     )?.focus();
+  //   }, 100);
+  // }, [mappings.length]);
 
   const addNewMapping = useEvent(() => {
     setMappings((prev) => {
@@ -176,17 +200,26 @@ function TextInputMapper(props: CubeTextInputMapperProps, ref: any) {
     onMappingsChange(mappings);
   });
 
+  const onKeyDown = useEvent((e: KeyboardEvent<HTMLDivElement>) => {
+    // if Ctrl+Enter or Cmd+Enter is pressed then add new mapping if that's enabled
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && showNewButton) {
+      addNewMapping();
+    }
+  });
+
   const renderedMappings = useMemo(() => {
-    return mappings.map((mapping) => {
+    return mappings.map((mapping, index) => {
       const { key, value, id } = mapping;
 
       return (
         <Grid
           key={id}
+          qa="Mapping"
           columns="minmax(0, 1fr) minmax(0, 1fr) min-content"
           gap="1x"
         >
           <TextInputMapperInput
+            autoFocus={index === mappings.length - 1}
             id={id}
             isDisabled={isDisabled}
             type="name"
@@ -222,8 +255,10 @@ function TextInputMapper(props: CubeTextInputMapperProps, ref: any) {
   }, [JSON.stringify(mappings)]);
 
   const element = (
-    <Flow gap="1x">
-      {[...renderedMappings]}
+    <Flow ref={ref} gap="1x">
+      <Flow gap="1x" onKeyDown={onKeyDown}>
+        {[...renderedMappings]}
+      </Flow>
       {showNewButton ? (
         <Space gap={0}>
           {/** Hotfix for inconsistent alignment with the label **/}
@@ -251,6 +286,7 @@ export interface CubeTextInputMapperInputProps {
   onChange?: (id: number, newValue: string) => void;
   onSubmit?: (id: number) => void;
   isDisabled?: boolean;
+  autoFocus?: boolean;
 }
 
 function TextInputMapperInput(props: CubeTextInputMapperInputProps) {

@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 
 import {
-  BaseProps,
+  AllBaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
   extractStyles,
@@ -18,7 +18,7 @@ const FlowElement = tasty({
 
 const STYLE_PROPS = CONTAINER_STYLES;
 
-export interface CubeFlowProps extends BaseProps, ContainerStyleProps {}
+export interface CubeFlowProps extends AllBaseProps, ContainerStyleProps {}
 
 export const Flow = forwardRef(function Flow(props: CubeFlowProps, ref) {
   const styles = extractStyles(props, STYLE_PROPS);
