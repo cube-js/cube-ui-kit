@@ -111,12 +111,10 @@ const _Text = Object.assign(Text, {
     return <Text ref={ref} color="#success-text" {...props} />;
   }),
   Strong: forwardRef(function StrongText(props: CubeTextProps<'strong'>, ref) {
-    return (
-      <Text ref={ref} as="strong" preset="strong" color="#dark" {...props} />
-    );
+    return <Text ref={ref} as="strong" preset="strong" {...props} />;
   }),
   Emphasis: forwardRef(function StrongText(props: CubeTextProps<'em'>, ref) {
-    return <Text ref={ref} as="em" preset="em" color="#dark" {...props} />;
+    return <Text ref={ref} as="em" preset="em" {...props} />;
   }),
   Selection: forwardRef(function SelectionText(props: CubeTextProps, ref) {
     return <Text ref={ref} color="#dark" fill="#note.30" {...props} />;
