@@ -255,10 +255,8 @@ function TextInputMapper(
   }, [JSON.stringify(mappings)]);
 
   const element = (
-    <Flow ref={ref} gap="1x">
-      <Flow gap="1x" onKeyDown={onKeyDown}>
-        {[...renderedMappings]}
-      </Flow>
+    <Flow ref={ref} gap="1x" onKeyDown={onKeyDown}>
+      {[...renderedMappings]}
       {showNewButton ? (
         <Space gap={0}>
           {/** Hotfix for inconsistent alignment with the label **/}
