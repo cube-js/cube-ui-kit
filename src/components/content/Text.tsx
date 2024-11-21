@@ -115,6 +115,9 @@ const _Text = Object.assign(Text, {
       <Text ref={ref} as="strong" preset="strong" color="#dark" {...props} />
     );
   }),
+  Emphasis: forwardRef(function StrongText(props: CubeTextProps<'em'>, ref) {
+    return <Text ref={ref} as="em" preset="em" color="#dark" {...props} />;
+  }),
   Selection: forwardRef(function SelectionText(props: CubeTextProps, ref) {
     return <Text ref={ref} color="#dark" fill="#note.30" {...props} />;
   }),
