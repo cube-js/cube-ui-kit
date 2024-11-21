@@ -39,6 +39,22 @@ const FormTemplate: StoryFn<CubeTextInputMapperProps> = ({ ...props }) => (
       {...props}
       onChange={(value) => console.log('! onChange', value)}
     />
+    <Submit>Submit</Submit>
+  </Form>
+);
+
+const FormTemplateSync: StoryFn<CubeTextInputMapperProps> = ({ ...props }) => (
+  <Form
+    defaultValues={{ field: { name: 'value' } }}
+    labelPosition="top"
+    onSubmit={(data) => console.log('! onSubmit', data)}
+  >
+    <TextInputMapper
+      name="field"
+      label="Field Mapper"
+      {...props}
+      onChange={(value) => console.log('! onChange', value)}
+    />
     <TextInput name="field.name" label="TextInput" />
     <Submit>Submit</Submit>
   </Form>
@@ -66,3 +82,6 @@ WithValueAndNewMapping.play = async ({ canvasElement }) => {
 
 export const WithinForm = FormTemplate.bind({});
 WithinForm.args = {};
+
+export const WithinFormInputSync = FormTemplateSync.bind({});
+WithinFormInputSync.args = {};

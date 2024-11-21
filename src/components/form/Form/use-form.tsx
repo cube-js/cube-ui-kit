@@ -34,7 +34,7 @@ export class CubeFormInstance<
   TFormData extends CubeFormData<T> = CubeFormData<T>,
 > {
   public forceReRender: () => void = () => {};
-  private initialFields: PartialString<T> = {};
+  private defaultValues: PartialString<T> = {};
   private fields: TFormData = {} as TFormData;
   public ref = {};
   public isSubmitting = false;
@@ -70,17 +70,17 @@ export class CubeFormInstance<
     newData: PartialString<T>,
     touched?: boolean,
     skipRender?: boolean,
-    createFields = false,
     inputOnly = false,
   ) => {
     let flag = false;
 
+    newData = { ...newData, ...dotize.convert(newData) };
+
     Object.keys(newData).forEach((name: keyof T & string) => {
       let field = this.fields[name];
 
-      if (!field && createFields) {
-        this.createField(name, skipRender);
-        field = this.fields[name];
+      if (!field) {
+        return;
       }
 
       if (!field || isEqual(field.value, newData[name])) {
@@ -205,12 +205,12 @@ export class CubeFormInstance<
   }
 
   setInitialFieldsValue(values: PartialString<T>): void {
-    this.initialFields = { ...values, ...dotize.convert(values) };
+    this.defaultValues = { ...values, ...dotize.convert(values) };
   }
 
   updateInitialFieldsValue(values: FieldTypes): void {
-    this.initialFields = {
-      ...this.initialFields,
+    this.defaultValues = {
+      ...this.defaultValues,
       ...values,
       ...dotize.convert(values),
     };
@@ -218,14 +218,14 @@ export class CubeFormInstance<
 
   resetFields(names?: (keyof T & string)[], skipRender?: boolean): void {
     const fieldsValue = this.getFieldsValue();
-    const fieldNames = Object.keys({ ...fieldsValue, ...this.initialFields });
+    const fieldNames = Object.keys({ ...fieldsValue, ...this.defaultValues });
     const filteredFieldNames = names
       ? fieldNames.filter((name) => names.includes(name))
       : fieldNames;
 
     const values = filteredFieldNames.reduce((map, name) => {
-      if (name in this.initialFields) {
-        map[name] = this.initialFields[name];
+      if (name in this.defaultValues) {
+        map[name] = this.defaultValues[name];
       } else {
         map[name] = undefined;
       }
@@ -233,7 +233,7 @@ export class CubeFormInstance<
       return map;
     }, {});
 
-    this.setFieldsValue(values, false, skipRender, true);
+    this.setFieldsValue(values, false, skipRender);
   }
 
   async validateField<Name extends keyof T & string>(name: Name): Promise<any> {
@@ -404,6 +404,7 @@ export class CubeFormInstance<
       touched: false,
       errors: [],
       validationId: 0,
+      value: this.defaultValues[name],
       ...data,
       // it should be impossible to define or override status value
       status: data?.errors?.length ? 'invalid' : undefined,
