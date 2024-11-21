@@ -97,6 +97,8 @@ export interface AllBaseProps<K extends keyof HTMLElementTagNameMap = 'div'>
       | 'color'
       | 'height'
       | 'width'
+      | 'content'
+      | 'translate'
     > {
   as?: K;
 }
