@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.43.0
+
+### Minor Changes
+
+- [#527](https://github.com/cube-js/cube-ui-kit/pull/527) [`3aad044`](https://github.com/cube-js/cube-ui-kit/commit/3aad044eef077b19a82f2422f2e929ee2358aee3) Thanks [@tenphi](https://github.com/tenphi)! - Do not create field instance for non-exist fields in Form. Use default values from Form when creating new fields.
+
+### Patch Changes
+
+- [#527](https://github.com/cube-js/cube-ui-kit/pull/527) [`3aad044`](https://github.com/cube-js/cube-ui-kit/commit/3aad044eef077b19a82f2422f2e929ee2358aee3) Thanks [@tenphi](https://github.com/tenphi)! - Add input trimming and keyboard interaction for TextInputMapper.
+
+- [#527](https://github.com/cube-js/cube-ui-kit/pull/527) [`3aad044`](https://github.com/cube-js/cube-ui-kit/commit/3aad044eef077b19a82f2422f2e929ee2358aee3) Thanks [@tenphi](https://github.com/tenphi)! - Add support for all html attributes in basic components.
+
 ## 0.42.1
 
 ### Patch Changes
