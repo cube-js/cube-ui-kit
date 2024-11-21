@@ -138,7 +138,6 @@ export * from './components/fields';
 
 export type {
   TagName,
-  TagNameProps,
   AllBaseProps,
   BaseProps,
   BaseStyleProps,

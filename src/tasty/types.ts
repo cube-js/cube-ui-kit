@@ -46,8 +46,9 @@ type Caps =
   | 'Y'
   | 'Z';
 
-export interface BasePropsWithoutChildren
+export interface BasePropsWithoutChildren<K extends TagName = TagName>
   extends Pick<AllHTMLAttributes<HTMLElement>, 'className' | 'role' | 'id'> {
+  as?: K;
   /** QA ID for e2e testing. An alias for `data-qa` attribute. */
   qa?: string;
   /** QA value for e2e testing. An alias for `data-qaval` attribute. */
@@ -80,13 +81,13 @@ export interface BasePropsWithoutChildren
   theme?: 'default' | 'danger' | 'special' | (string & {});
 }
 
-export interface BaseProps<K extends keyof HTMLElementTagNameMap = 'div'>
+export interface BaseProps<K extends TagName = TagName>
   extends AriaLabelingProps,
-    BasePropsWithoutChildren,
+    BasePropsWithoutChildren<K>,
     Pick<AllHTMLAttributes<HTMLElementTagNameMap[K]>, 'children'> {}
 
-export interface AllBaseProps<K extends keyof HTMLElementTagNameMap = 'div'>
-  extends BaseProps,
+export interface AllBaseProps<K extends TagName = TagName>
+  extends BaseProps<K>,
     Omit<
       AllHTMLAttributes<HTMLElementTagNameMap[K]>,
       | 'style'
@@ -99,9 +100,9 @@ export interface AllBaseProps<K extends keyof HTMLElementTagNameMap = 'div'>
       | 'width'
       | 'content'
       | 'translate'
-    > {
-  as?: K;
-}
+      | 'as'
+      | 'form'
+    > {}
 
 export type BaseStyleProps = Pick<Styles, (typeof BASE_STYLES)[number]>;
 export type PositionStyleProps = Pick<Styles, (typeof POSITION_STYLES)[number]>;
@@ -131,8 +132,3 @@ export interface Props {
 }
 
 export type TagName = keyof HTMLElementTagNameMap;
-
-export interface TagNameProps {
-  /** The tag name you want to use for the element */
-  as?: TagName;
-}

@@ -32,7 +32,6 @@ export type {
   FlowStyleProps,
   ShortGridStyles,
   GlobalStyledProps,
-  TagNameProps,
   TagName,
 } from './types';
 export type {

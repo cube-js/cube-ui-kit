@@ -22,7 +22,7 @@ import {
   AriaSelectProps,
 } from 'react-aria';
 import styled from 'styled-components';
-import { CollectionBase, DOMRef } from '@react-types/shared';
+import { AriaLabelingProps, CollectionBase, DOMRef } from '@react-types/shared';
 
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { useProviderProps } from '../../../provider';
@@ -243,6 +243,7 @@ const StyledOverlayElement = styled(OverlayElement)`
 
 export interface CubeSelectBaseProps<T>
   extends BasePropsWithoutChildren,
+    AriaLabelingProps,
     OuterStyleProps,
     FieldBaseProps,
     BlockStyleProps,

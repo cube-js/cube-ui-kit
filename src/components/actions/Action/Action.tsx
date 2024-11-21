@@ -1,15 +1,14 @@
-import { forwardRef, MouseEventHandler } from 'react';
+import { forwardRef } from 'react';
 import { AriaButtonProps } from 'react-aria';
 import { FocusableRef } from '@react-types/shared';
 
 import {
-  BaseProps,
+  AllBaseProps,
   BaseStyleProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
   extractStyles,
   Styles,
-  TagNameProps,
   TEXT_STYLES,
   TextStyleProps,
   tasty,
@@ -17,8 +16,7 @@ import {
 import { useAction } from '../use-action';
 
 export interface CubeActionProps
-  extends BaseProps,
-    TagNameProps,
+  extends Omit<AllBaseProps, 'htmlType'>,
     BaseStyleProps,
     ContainerStyleProps,
     TextStyleProps,
@@ -27,9 +25,6 @@ export interface CubeActionProps
   label?: string;
   htmlType?: 'button' | 'submit' | 'reset' | undefined;
   download?: string;
-  onClick?: MouseEventHandler;
-  onMouseEnter?: MouseEventHandler;
-  onMouseLeave?: MouseEventHandler;
 }
 
 const DEFAULT_ACTION_STYLES: Styles = {

@@ -6,16 +6,15 @@ import { FocusableRef, PressEvent } from '@react-types/shared';
 import { UIKitContext } from '../../provider';
 import { mergeProps } from '../../utils/react';
 import { useFocus } from '../../utils/react/interactions';
-import { BaseProps, filterBaseProps, TagNameProps } from '../../tasty';
+import { AllBaseProps, filterBaseProps, TagName } from '../../tasty';
 import { useTracking } from '../../providers/TrackingProvider';
 import { useEvent } from '../../_internal';
 
 const LINK_PRESS_EVENT = 'Link Press';
 const BUTTON_PRESS_EVENT = 'Button Press';
 
-export interface CubeUseActionProps
-  extends BaseProps,
-    TagNameProps,
+export interface CubeUseActionProps<T extends TagName = TagName>
+  extends AllBaseProps<T>,
     Omit<AriaButtonProps, 'type'> {
   to?: string;
   label?: string;

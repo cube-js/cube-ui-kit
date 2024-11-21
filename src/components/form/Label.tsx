@@ -9,7 +9,6 @@ import {
   extractStyles,
   filterBaseProps,
   Styles,
-  TagNameProps,
   tasty,
 } from '../../tasty/index';
 import {
@@ -78,10 +77,7 @@ const LabelElement = tasty({
   styles: LABEL_STYLES,
 });
 
-export interface CubeLabelProps
-  extends BaseProps,
-    TagNameProps,
-    ContainerStyleProps {
+export interface CubeLabelProps extends BaseProps, ContainerStyleProps {
   labelPosition?: LabelPosition;
   necessityIndicator?: NecessityIndicator;
   isRequired?: boolean;
