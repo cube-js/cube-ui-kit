@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 
 import {
-  BaseProps,
+  AllBaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
   extractStyles,
@@ -18,7 +18,7 @@ const GridElement = tasty({
 });
 
 export interface CubeGridProps
-  extends BaseProps,
+  extends Omit<AllBaseProps, 'rows'>,
     ContainerStyleProps,
     ShortGridStyles {}
 

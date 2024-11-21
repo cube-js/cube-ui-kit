@@ -80,10 +80,10 @@ export interface BasePropsWithoutChildren
   theme?: 'default' | 'danger' | 'special' | (string & {});
 }
 
-export interface BaseProps
+export interface BaseProps<K extends keyof HTMLElementTagNameMap = 'div'>
   extends AriaLabelingProps,
     BasePropsWithoutChildren,
-    Pick<AllHTMLAttributes<HTMLElementTagNameMap['div']>, 'children'> {}
+    Pick<AllHTMLAttributes<HTMLElementTagNameMap[K]>, 'children'> {}
 
 export interface AllBaseProps<K extends keyof HTMLElementTagNameMap = 'div'>
   extends BaseProps,
@@ -97,8 +97,10 @@ export interface AllBaseProps<K extends keyof HTMLElementTagNameMap = 'div'>
       | 'color'
       | 'height'
       | 'width'
+      | 'content'
+      | 'translate'
     > {
-  as?: string;
+  as?: K;
 }
 
 export type BaseStyleProps = Pick<Styles, (typeof BASE_STYLES)[number]>;

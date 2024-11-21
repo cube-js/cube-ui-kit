@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 
 import {
-  BaseProps,
+  AllBaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
   extractStyles,
@@ -24,7 +24,7 @@ const SpaceElement = tasty({
   },
 });
 
-export interface CubeSpaceProps extends BaseProps, ContainerStyleProps {
+export interface CubeSpaceProps extends AllBaseProps, ContainerStyleProps {
   direction?: 'vertical' | 'horizontal';
 }
 
