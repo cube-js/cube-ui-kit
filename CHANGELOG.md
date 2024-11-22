@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.44.0
+
+### Minor Changes
+
+- [#529](https://github.com/cube-js/cube-ui-kit/pull/529) [`dfc6298`](https://github.com/cube-js/cube-ui-kit/commit/dfc62981a1940d5053222228347617e4e60588ba) Thanks [@tenphi](https://github.com/tenphi)! - Add support for more complex selectors in mods.
+
+- [#529](https://github.com/cube-js/cube-ui-kit/pull/529) [`dfc6298`](https://github.com/cube-js/cube-ui-kit/commit/dfc62981a1940d5053222228347617e4e60588ba) Thanks [@tenphi](https://github.com/tenphi)! - Improve typings and add support for the most html attributes and event handlers.
+
+### Patch Changes
+
+- [#529](https://github.com/cube-js/cube-ui-kit/pull/529) [`dfc6298`](https://github.com/cube-js/cube-ui-kit/commit/dfc62981a1940d5053222228347617e4e60588ba) Thanks [@tenphi](https://github.com/tenphi)! - Futher improvement of typings.
+
 ## 0.43.0
 
 ### Minor Changes
