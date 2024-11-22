@@ -12,11 +12,13 @@ import {
   TEXT_STYLES,
   TextStyleProps,
   tasty,
+  TagName,
 } from '../../../tasty';
 import { useAction } from '../use-action';
 
-export interface CubeActionProps
-  extends Omit<AllBaseProps, 'htmlType'>,
+export interface CubeActionProps<
+  T extends TagName = 'a' | 'button' | 'span' | 'div',
+> extends Omit<AllBaseProps<T>, 'htmlType'>,
     BaseStyleProps,
     ContainerStyleProps,
     TextStyleProps,

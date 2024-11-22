@@ -1,5 +1,5 @@
 import { useDOMRef } from '@react-spectrum/utils';
-import { forwardRef, MouseEventHandler } from 'react';
+import { forwardRef } from 'react';
 
 import { useProviderProps } from '../../provider';
 import {
@@ -85,7 +85,6 @@ export interface CubeLabelProps extends BaseProps, ContainerStyleProps {
   htmlFor?: string;
   for?: string;
   validationState?: ValidationState;
-  onClick?: MouseEventHandler;
 }
 
 function Label(props: CubeLabelProps, ref) {
@@ -103,7 +102,6 @@ function Label(props: CubeLabelProps, ref) {
     isDisabled,
     validationState,
     for: labelFor,
-    onClick,
     ...otherProps
   } = props;
 
@@ -139,7 +137,6 @@ function Label(props: CubeLabelProps, ref) {
         invalid: validationState === 'invalid',
         valid: validationState === 'valid',
       }}
-      onClick={onClick}
     >
       {typeof children !== 'string' ? (
         children

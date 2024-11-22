@@ -91,17 +91,22 @@ export interface AllBaseProps<K extends TagName = TagName>
     Omit<
       AllHTMLAttributes<HTMLElementTagNameMap[K]>,
       | 'style'
-      | 'size'
       | 'disabled'
       | 'hidden'
       | 'css'
-      | 'color'
-      | 'height'
-      | 'width'
       | 'content'
       | 'translate'
       | 'as'
       | 'form'
+      | 'bgcolor'
+      | 'background'
+      | 'align'
+      | 'border'
+      | 'color'
+      | 'height'
+      | 'size'
+      | 'width'
+      | 'prefix'
     > {}
 
 export type BaseStyleProps = Pick<Styles, (typeof BASE_STYLES)[number]>;

@@ -1,4 +1,4 @@
-import { MouseEventHandler, useContext } from 'react';
+import { useContext } from 'react';
 import { useFocusableRef } from '@react-spectrum/utils';
 import { useHover, useButton, AriaButtonProps } from 'react-aria';
 import { FocusableRef, PressEvent } from '@react-types/shared';
@@ -13,15 +13,13 @@ import { useEvent } from '../../_internal';
 const LINK_PRESS_EVENT = 'Link Press';
 const BUTTON_PRESS_EVENT = 'Button Press';
 
-export interface CubeUseActionProps<T extends TagName = TagName>
-  extends AllBaseProps<T>,
+export interface CubeUseActionProps<
+  T extends TagName = 'a' | 'button' | 'span' | 'div',
+> extends AllBaseProps<T>,
     Omit<AriaButtonProps, 'type'> {
   to?: string;
   label?: string;
   htmlType?: 'button' | 'submit' | 'reset' | undefined;
-  onClick?: MouseEventHandler;
-  onMouseEnter?: MouseEventHandler;
-  onMouseLeave?: MouseEventHandler;
 }
 
 const FILTER_OPTIONS = { propNames: new Set(['onMouseEnter', 'onMouseLeave']) };

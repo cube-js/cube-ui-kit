@@ -41,7 +41,6 @@ const Template: StoryFn<CubeButtonProps> = ({
   icon,
   rightIcon,
   label,
-  onClick,
   ...props
 }) => (
   <Space
