@@ -12,7 +12,6 @@ import {
   extractStyles,
   filterBaseProps,
   Styles,
-  TagNameProps,
   TEXT_STYLES,
   TextStyleProps,
 } from '../../../tasty';
@@ -20,7 +19,6 @@ import { useFocus } from '../../../utils/react/interactions';
 
 export interface CubeActiveZoneProps
   extends BaseProps,
-    TagNameProps,
     BaseStyleProps,
     ContainerStyleProps,
     TextStyleProps,

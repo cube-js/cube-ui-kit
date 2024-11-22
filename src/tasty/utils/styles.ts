@@ -906,7 +906,7 @@ export function styleMapToStyleMapStateList(
 }
 
 const STATES_REGEXP =
-  /([&|!^])|([()])|([a-z][a-z0-9-]+)|(:[a-z][a-z0-9-]+\([:a-z0-9-]+\)|:[a-z][a-z0-9-]+)|(\.[a-z][a-z0-9-]+)|(\[[^\]]+])/gi;
+  /([&|!^])|([()])|([a-z][a-z0-9-]+)|(:[a-z][a-z0-9-]+\([^)]+\)|:[a-z][a-z0-9-]+)|(\.[a-z][a-z0-9-]+)|(\[[^\]]+])/gi;
 export const STATE_OPERATORS = {
   NOT: '!',
   AND: '&',

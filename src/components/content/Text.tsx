@@ -2,14 +2,14 @@ import { CSSProperties, forwardRef } from 'react';
 
 import {
   BASE_STYLES,
-  BaseProps,
+  AllBaseProps,
   BaseStyleProps,
   COLOR_STYLES,
   ColorStyleProps,
   extractStyles,
   filterBaseProps,
   ResponsiveStyleValue,
-  TagNameProps,
+  TagName,
   tasty,
   TEXT_STYLES,
   TextStyleProps,
@@ -24,9 +24,8 @@ export const TEXT_PROP_MAP = {
   italic: 'fontStyle',
 } as const;
 
-export interface CubeTextProps
-  extends BaseProps,
-    TagNameProps,
+export interface CubeTextProps<T extends TagName = TagName>
+  extends AllBaseProps<T>,
     TextStyleProps,
     BaseStyleProps,
     ColorStyleProps {
@@ -111,12 +110,10 @@ const _Text = Object.assign(Text, {
   Success: forwardRef(function SuccessText(props: CubeTextProps, ref) {
     return <Text ref={ref} color="#success-text" {...props} />;
   }),
-  Strong: forwardRef(function StrongText(props: CubeTextProps, ref) {
-    return (
-      <Text ref={ref} as="strong" preset="strong" color="#dark" {...props} />
-    );
+  Strong: forwardRef(function StrongText(props: CubeTextProps<'strong'>, ref) {
+    return <Text ref={ref} as="strong" preset="strong" {...props} />;
   }),
-  Emphasis: forwardRef(function EmphasisText(props: CubeTextProps, ref) {
+  Emphasis: forwardRef(function StrongText(props: CubeTextProps<'em'>, ref) {
     return <Text ref={ref} as="em" preset="em" {...props} />;
   }),
   Selection: forwardRef(function SelectionText(props: CubeTextProps, ref) {

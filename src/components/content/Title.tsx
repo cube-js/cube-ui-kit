@@ -7,7 +7,6 @@ import {
   extractStyles,
   filterBaseProps,
   PositionStyleProps,
-  TagNameProps,
   tasty,
   TEXT_STYLES,
 } from '../../tasty';
@@ -20,7 +19,6 @@ const STYLE_LIST = [...TEXT_STYLES, ...CONTAINER_STYLES];
 export interface CubeTitleProps
   extends BaseProps,
     CubeTextProps,
-    TagNameProps,
     ContainerStyleProps,
     PositionStyleProps {
   /** The level of the heading **/

@@ -1,5 +1,5 @@
 import { useDOMRef } from '@react-spectrum/utils';
-import { forwardRef, MouseEventHandler } from 'react';
+import { forwardRef } from 'react';
 
 import { useProviderProps } from '../../provider';
 import {
@@ -9,7 +9,6 @@ import {
   extractStyles,
   filterBaseProps,
   Styles,
-  TagNameProps,
   tasty,
 } from '../../tasty/index';
 import {
@@ -78,10 +77,7 @@ const LabelElement = tasty({
   styles: LABEL_STYLES,
 });
 
-export interface CubeLabelProps
-  extends BaseProps,
-    TagNameProps,
-    ContainerStyleProps {
+export interface CubeLabelProps extends BaseProps, ContainerStyleProps {
   labelPosition?: LabelPosition;
   necessityIndicator?: NecessityIndicator;
   isRequired?: boolean;
@@ -89,7 +85,6 @@ export interface CubeLabelProps
   htmlFor?: string;
   for?: string;
   validationState?: ValidationState;
-  onClick?: MouseEventHandler;
 }
 
 function Label(props: CubeLabelProps, ref) {
@@ -107,7 +102,6 @@ function Label(props: CubeLabelProps, ref) {
     isDisabled,
     validationState,
     for: labelFor,
-    onClick,
     ...otherProps
   } = props;
 
@@ -143,7 +137,6 @@ function Label(props: CubeLabelProps, ref) {
         invalid: validationState === 'invalid',
         valid: validationState === 'valid',
       }}
-      onClick={onClick}
     >
       {typeof children !== 'string' ? (
         children
