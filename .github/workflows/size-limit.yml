@@ -44,7 +44,7 @@ jobs:
         run: pnpm build
 
       - name: Download baseline stats
-        uses: dawidd6/action-download-artifact@v4
+        uses: dawidd6/action-download-artifact@v6
         if: github.event.number
         with:
           workflow: size-limit.yml
