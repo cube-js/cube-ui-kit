@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { ValidateTrigger } from '../../../../shared/index';
-import { useEvent, useIsFirstRender } from '../../../../_internal/index';
+import { useEvent } from '../../../../_internal/index';
 import { useFormProps } from '../Form';
 import { FieldTypes } from '../types';
 import { delayValidationRule } from '../validation';
@@ -47,7 +47,6 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
   props = useFormProps(props);
 
   let {
-    defaultValue,
     id,
     idPrefix,
     name,
@@ -60,15 +59,9 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
     showValid,
     shouldUpdate,
   } = props;
-
-  if (rules && rules.length && validationDelay) {
-    rules.unshift(delayValidationRule(validationDelay));
-  }
-
   const nonInput = !name;
   const fieldName: string = name != null ? name : '';
 
-  const isFirstRender = useIsFirstRender();
   let [fieldId, setFieldId] = useState(
     id || (idPrefix ? `${idPrefix}_${fieldName}` : fieldName),
   );
@@ -95,40 +88,21 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
 
   let field = form?.getFieldInstance(fieldName);
 
-  if (field) {
+  if (form) {
+    if (!field) {
+      field = form.createField(fieldName, true);
+    }
+  }
+
+  if (field && field.rules !== rules) {
     field.rules = rules;
+
+    if (field.rules && field.rules.length && validationDelay) {
+      field.rules.unshift(delayValidationRule(validationDelay));
+    }
   }
 
   let isRequired = rules && !!rules.find((rule) => rule.required);
-
-  useEffect(() => {
-    if (!form) return;
-
-    if (field) {
-      form.forceReRender();
-    } else {
-      form.createField(fieldName);
-    }
-  }, [field]);
-
-  if (form) {
-    if (isFirstRender) {
-      if (!field) {
-        field = form.createField(fieldName, true);
-      }
-
-      if (field?.value == null && defaultValue != null) {
-        form.setFieldValue(fieldName, defaultValue, false, true);
-        form.updateInitialFieldsValue({ [fieldName]: defaultValue });
-
-        field = form?.getFieldInstance(fieldName);
-      }
-    }
-
-    if (!field?.touched && defaultValue != null) {
-      form.setFieldValue(fieldName, defaultValue, false, true);
-    }
-  }
 
   const onChangeHandler = useEvent((val: any, dontTouch: boolean) => {
     if (!form) return;
