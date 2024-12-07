@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ValidateTrigger } from '../../../../shared/index';
 import { useEvent, useWarn } from '../../../../_internal/index';
@@ -127,16 +127,6 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
 
     const field = form.getFieldInstance(fieldName);
 
-    console.log(
-      '! uikit set field before',
-      fieldName,
-      val,
-      !dontTouch,
-      false,
-      dontTouch,
-      shouldUpdate,
-    );
-
     if (shouldUpdate) {
       const fieldsValue = form.getFieldsValue();
 
@@ -155,15 +145,6 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
     }
 
     form.setFieldValue(fieldName, val, !dontTouch, false, dontTouch);
-
-    console.log(
-      '! uikit set field after',
-      fieldName,
-      val,
-      !dontTouch,
-      false,
-      dontTouch,
-    );
 
     if (
       !dontTouch &&
@@ -185,43 +166,25 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
 
   let inputValue = field?.inputValue;
 
-  return useMemo(
-    () => ({
-      id: fieldId,
-      name: fieldName,
-      value: inputValue,
-      validateTrigger,
-      form,
-      field,
-      nonInput,
+  return {
+    id: fieldId,
+    name: fieldName,
+    value: inputValue,
+    validateTrigger,
+    form,
+    field,
+    nonInput,
 
-      validationState:
-        validationState ??
-        (field?.errors?.length
-          ? 'invalid'
-          : showValid && field?.status === 'valid'
-            ? 'valid'
-            : undefined),
-      ...(isRequired && { isRequired }),
-      message: message ?? (field?.status === 'invalid' && field?.errors?.[0]),
-      onBlur: onBlurHandler,
-      onChange: onChangeHandler,
-    }),
-    [
-      form,
-      field,
-      field?.errors?.length,
-      field?.status,
-      inputValue,
-      fieldId,
-      fieldName,
-      isRequired,
-      onBlurHandler,
-      onChangeHandler,
-      validateTrigger,
-      validationState,
-      showValid,
-      nonInput,
-    ],
-  );
+    validationState:
+      validationState ??
+      (field?.errors?.length
+        ? 'invalid'
+        : showValid && field?.status === 'valid'
+          ? 'valid'
+          : undefined),
+    ...(isRequired && { isRequired }),
+    message: message ?? (field?.status === 'invalid' && field?.errors?.[0]),
+    onBlur: onBlurHandler,
+    onChange: onChangeHandler,
+  };
 }

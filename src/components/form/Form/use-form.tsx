@@ -162,10 +162,7 @@ export class CubeFormInstance<
     const field = this.fields[name];
 
     if (!field || isEqual(value, inputOnly ? field.inputValue : field.value)) {
-      console.log('! uikit equal', field, value, inputOnly);
       return;
-    } else {
-      console.log('! uikit setting', field, value, inputOnly);
     }
 
     if (!inputOnly) {
