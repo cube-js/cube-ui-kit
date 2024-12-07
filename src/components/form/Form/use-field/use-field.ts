@@ -127,6 +127,16 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
 
     const field = form.getFieldInstance(fieldName);
 
+    console.log(
+      '! uikit set field before',
+      fieldName,
+      val,
+      !dontTouch,
+      false,
+      dontTouch,
+      shouldUpdate,
+    );
+
     if (shouldUpdate) {
       const fieldsValue = form.getFieldsValue();
 
@@ -144,16 +154,16 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
       }
     }
 
+    form.setFieldValue(fieldName, val, !dontTouch, false, dontTouch);
+
     console.log(
-      '! uikit set field',
+      '! uikit set field after',
       fieldName,
       val,
       !dontTouch,
       false,
       dontTouch,
     );
-
-    form.setFieldValue(fieldName, val, !dontTouch, false, dontTouch);
 
     if (
       !dontTouch &&
