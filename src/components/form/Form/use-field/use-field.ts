@@ -212,7 +212,7 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
       field,
       field?.errors?.length,
       field?.status,
-      field?.inputValue,
+      inputValue,
       fieldId,
       fieldName,
       isRequired,
