@@ -21,10 +21,10 @@ describe('<Select />', () => {
     );
 
     const select = getByRole('button');
-    await act(async () => await userEvent.click(select));
+    await userEvent.click(select);
 
     const options = getAllByRole('option');
-    await act(async () => await userEvent.click(options[1]));
+    await userEvent.click(options[1]);
 
     expect(select).toHaveTextContent('Red');
   });
@@ -41,10 +41,10 @@ describe('<Select />', () => {
     );
 
     const select = getByRole('button');
-    await act(async () => await userEvent.click(select));
+    await userEvent.click(select);
 
     const options = getAllByRole('option');
-    await act(async () => await userEvent.click(options[1]));
+    await userEvent.click(options[1]);
 
     expect(select).toHaveTextContent('Red');
     expect(formInstance.getFieldValue('test')).toBe('2');
@@ -60,10 +60,10 @@ describe('<Select />', () => {
     );
 
     const select = getByRole('button');
-    await act(async () => await userEvent.click(select));
+    await userEvent.click(select);
 
     const options = getAllByRole('option');
-    await act(async () => await userEvent.click(options[1]));
+    await userEvent.click(options[1]);
 
     expect(select).toHaveTextContent('Red');
     expect(formInstance.getFieldValue('test')).toBe('2');

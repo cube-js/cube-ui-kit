@@ -26,10 +26,8 @@ describe('<NotificationsBar />', () => {
         </NotificationsBar>,
       );
 
-      await act(async () => {
-        (document.querySelector('[data-id="1"]') as HTMLElement)?.focus();
-        await userEvent.keyboard(`{${key}}`);
-      });
+      (document.querySelector('[data-id="1"]') as HTMLElement)?.focus();
+      await userEvent.keyboard(`{${key}}`);
 
       expect(onDismiss).toHaveBeenCalledWith('1');
     },
