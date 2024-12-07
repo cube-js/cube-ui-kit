@@ -8,7 +8,7 @@ describe('<Switch />', () => {
     const { getByRole } = render(<Switch aria-label="test" />);
     const switchElement = getByRole('switch');
 
-    await userEvent.click(switchElement);
+    await act(async () => await userEvent.click(switchElement));
 
     expect(switchElement).toBeChecked();
   });
@@ -22,7 +22,7 @@ describe('<Switch />', () => {
 
     const switchElement = getByRole('switch');
 
-    await userEvent.click(switchElement);
+    await act(async () => await userEvent.click(switchElement));
 
     expect(switchElement).toBeChecked();
     expect(formInstance.getFieldValue('test')).toBe(true);
@@ -35,7 +35,7 @@ describe('<Switch />', () => {
 
     const switchElement = getByRole('switch');
 
-    await userEvent.click(switchElement);
+    await act(async () => await userEvent.click(switchElement));
 
     expect(switchElement).toBeChecked();
     expect(formInstance.getFieldValue('test')).toBe(true);
