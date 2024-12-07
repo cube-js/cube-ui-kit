@@ -12,7 +12,7 @@ describe('<Checkbox />', () => {
     const { getByRole } = render(<Checkbox>Test</Checkbox>);
     const checkboxElement = getByRole('checkbox');
 
-    await userEvent.click(checkboxElement);
+    await act(async () => await userEvent.click(checkboxElement));
 
     expect(checkboxElement).toBeChecked();
   });
@@ -24,7 +24,7 @@ describe('<Checkbox />', () => {
 
     const checkboxElement = getByRole('checkbox');
 
-    await userEvent.click(checkboxElement);
+    await act(async () => await userEvent.click(checkboxElement));
 
     expect(checkboxElement).toBeChecked();
     expect(formInstance.getFieldValue('test')).toBe(true);
@@ -39,7 +39,7 @@ describe('<Checkbox />', () => {
 
     const checkboxElement = getByRole('checkbox');
 
-    await userEvent.click(checkboxElement);
+    await act(async () => await userEvent.click(checkboxElement));
 
     expect(checkboxElement).toBeChecked();
     expect(formInstance.getFieldValue('test')).toBe(true);

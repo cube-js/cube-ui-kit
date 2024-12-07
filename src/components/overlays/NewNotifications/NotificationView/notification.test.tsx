@@ -23,7 +23,7 @@ describe('<Notification />', () => {
       <NotificationView description="test" duration={50} onClose={onClose} />,
     );
 
-    await userEvent.hover(screen.getByTestId('notification'));
+    await act(() => userEvent.hover(screen.getByTestId('notification')));
     jest.useFakeTimers();
     jest.runAllTimers();
 
@@ -39,13 +39,13 @@ describe('<Notification />', () => {
 
     const notification = screen.getByTestId('notification');
 
-    await userEvent.hover(notification);
+    await act(() => userEvent.hover(notification));
 
     jest.useFakeTimers();
     jest.runAllTimers();
     jest.useRealTimers();
 
-    await userEvent.unhover(notification);
+    await act(() => userEvent.unhover(notification));
 
     jest.useFakeTimers();
     jest.runAllTimers();
@@ -60,7 +60,9 @@ describe('<Notification />', () => {
 
     const notification = screen.getByTestId('notification');
 
-    await userEvent.click(getByTestId(notification, 'NotificationCloseButton'));
+    await act(() =>
+      userEvent.click(getByTestId(notification, 'NotificationCloseButton')),
+    );
 
     expect(onClose).toBeCalledTimes(1);
   });

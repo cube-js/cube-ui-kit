@@ -19,7 +19,7 @@ describe('<Radio /> and <RadioGroup />', () => {
       </Radio.Group>,
     );
     const radio = getAllByRole('radio');
-    await userEvent.click(radio[0]);
+    await act(async () => await userEvent.click(radio[0]));
 
     expect(radio[0]).toBeChecked();
   });
@@ -33,7 +33,7 @@ describe('<Radio /> and <RadioGroup />', () => {
     );
     const radio = screen.getAllByRole('radio');
 
-    await userEvent.click(radio[0]);
+    await act(async () => await userEvent.click(radio[0]));
 
     expect(radio[0]).toBeChecked();
 

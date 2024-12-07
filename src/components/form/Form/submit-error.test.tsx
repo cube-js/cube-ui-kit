@@ -26,8 +26,10 @@ describe('<SubmitError />', () => {
     const submit = getByRole('button');
     const input = getByRole('textbox');
 
-    await userEvents.type(input, 'test');
-    await userEvents.click(submit);
+    await act(async () => {
+      await userEvents.type(input, 'test');
+      await userEvents.click(submit);
+    });
 
     await waitFor(() => {
       // onSubmitFailed callback should only be called if onSubmit callback is called and failed
@@ -61,8 +63,10 @@ describe('<SubmitError />', () => {
     const submit = getByRole('button');
     const input = getByRole('textbox');
 
-    await userEvents.type(input, 'test');
-    await userEvents.click(submit);
+    await act(async () => {
+      await userEvents.type(input, 'test');
+      await userEvents.click(submit);
+    });
 
     await waitFor(() => {
       // onSubmitFailed callback should only be called if onSubmit callback is called and failed
@@ -80,7 +84,7 @@ describe('<SubmitError />', () => {
       expect(submitErrorElement).toBeInTheDocument();
     });
 
-    await userEvents.type(input, 'changed');
+    await act(() => userEvents.type(input, 'changed'));
 
     await waitFor(() => {
       expect(submitErrorElement).not.toBeInTheDocument();
@@ -107,8 +111,10 @@ describe('<SubmitError />', () => {
     const submit = getByRole('button');
     const input = getByRole('textbox');
 
-    await userEvents.type(input, 'test');
-    await userEvents.click(submit);
+    await act(async () => {
+      await userEvents.type(input, 'test');
+      await userEvents.click(submit);
+    });
 
     await waitFor(() => {
       // onSubmitFailed callback should only be called if onSubmit callback is called and failed
