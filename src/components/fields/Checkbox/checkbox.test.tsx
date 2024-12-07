@@ -1,6 +1,6 @@
 import userEvent from '@testing-library/user-event';
 
-import { act, render, renderWithForm } from '../../../test';
+import { render, renderWithForm } from '../../../test';
 import { Field } from '../../form';
 
 import { Checkbox } from './Checkbox';
@@ -12,7 +12,7 @@ describe('<Checkbox />', () => {
     const { getByRole } = render(<Checkbox>Test</Checkbox>);
     const checkboxElement = getByRole('checkbox');
 
-    await act(async () => await userEvent.click(checkboxElement));
+    await userEvent.click(checkboxElement);
 
     expect(checkboxElement).toBeChecked();
   });
@@ -24,7 +24,7 @@ describe('<Checkbox />', () => {
 
     const checkboxElement = getByRole('checkbox');
 
-    await act(async () => await userEvent.click(checkboxElement));
+    await userEvent.click(checkboxElement);
 
     expect(checkboxElement).toBeChecked();
     expect(formInstance.getFieldValue('test')).toBe(true);
@@ -39,7 +39,7 @@ describe('<Checkbox />', () => {
 
     const checkboxElement = getByRole('checkbox');
 
-    await act(async () => await userEvent.click(checkboxElement));
+    await userEvent.click(checkboxElement);
 
     expect(checkboxElement).toBeChecked();
     expect(formInstance.getFieldValue('test')).toBe(true);

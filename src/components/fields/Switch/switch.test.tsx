@@ -1,4 +1,4 @@
-import { renderWithForm, userEvent, render, act } from '../../../test';
+import { renderWithForm, userEvent, render } from '../../../test';
 import { Field, Switch } from '../../../index';
 
 jest.mock('../../../_internal/hooks/use-warn');
@@ -8,7 +8,7 @@ describe('<Switch />', () => {
     const { getByRole } = render(<Switch aria-label="test" />);
     const switchElement = getByRole('switch');
 
-    await act(async () => await userEvent.click(switchElement));
+    await userEvent.click(switchElement);
 
     expect(switchElement).toBeChecked();
   });
@@ -22,7 +22,7 @@ describe('<Switch />', () => {
 
     const switchElement = getByRole('switch');
 
-    await act(async () => await userEvent.click(switchElement));
+    await userEvent.click(switchElement);
 
     expect(switchElement).toBeChecked();
     expect(formInstance.getFieldValue('test')).toBe(true);
@@ -35,7 +35,7 @@ describe('<Switch />', () => {
 
     const switchElement = getByRole('switch');
 
-    await act(async () => await userEvent.click(switchElement));
+    await userEvent.click(switchElement);
 
     expect(switchElement).toBeChecked();
     expect(formInstance.getFieldValue('test')).toBe(true);
