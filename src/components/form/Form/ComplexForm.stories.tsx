@@ -259,8 +259,11 @@ const Template: StoryFn<typeof Form> = (args) => {
         <Field label="Custom field" tooltip="What?">
           <Block>Test</Block>
         </Field>
-        <Field
+        <TextInput
           name="email"
+          label="Email field"
+          type="email"
+          size="small"
           rules={[
             { required: true, message: 'This field is required' },
             {
@@ -269,13 +272,8 @@ const Template: StoryFn<typeof Form> = (args) => {
             },
           ]}
           necessityIndicator={'label'}
-          defaultValue="tenphi@gmail.com"
-          shouldUpdate={({ email }) => {
-            return !!email;
-          }}
-        >
-          <TextInput type="email" size="small" label="Email field" />
-        </Field>
+          shouldUpdate={(prevValues, { email }) => !!email}
+        />
         <Field name="password">
           <PasswordInput label="Password field" />
         </Field>
