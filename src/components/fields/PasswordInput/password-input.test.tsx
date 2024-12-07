@@ -13,7 +13,7 @@ describe('<PasswordInput />', () => {
 
     const passwordInput = getByTestId('Input');
 
-    await act(async () => await userEvent.type(passwordInput, 'test'));
+    await userEvent.type(passwordInput, 'test');
 
     expect(passwordInput).toHaveValue('test');
   });
@@ -25,7 +25,7 @@ describe('<PasswordInput />', () => {
 
     const passwordInput = getByTestId('Input');
 
-    await act(async () => await userEvent.type(passwordInput, 'test'));
+    await userEvent.type(passwordInput, 'test');
 
     expect(passwordInput).toHaveValue('test');
     expect(formInstance.getFieldValue('test')).toBe('test');
@@ -40,7 +40,7 @@ describe('<PasswordInput />', () => {
 
     const passwordInput = getByTestId('Input');
 
-    await act(async () => await userEvent.type(passwordInput, 'test'));
+    await userEvent.type(passwordInput, 'test');
 
     expect(passwordInput).toHaveValue('test');
     expect(formInstance.getFieldValue('test')).toBe('test');

@@ -28,7 +28,7 @@ describe('<NotificationList />', () => {
       </NotificationsList>,
     );
 
-    await act(() => userEvent.click(getByTestId('NotificationCloseButton')));
+    await userEvent.click(getByTestId('NotificationCloseButton'));
 
     expect(onDismiss).toHaveBeenCalled();
   });

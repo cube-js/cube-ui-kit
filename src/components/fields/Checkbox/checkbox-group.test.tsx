@@ -30,7 +30,7 @@ describe('<CheckboxGroup />', () => {
     expect(checkbox[0]).toBeChecked();
     expect(checkbox[1]).not.toBeChecked();
 
-    await act(async () => await userEvent.click(checkbox[1]));
+    await userEvent.click(checkbox[1]);
 
     expect(checkbox[0]).toBeChecked();
     expect(checkbox[1]).toBeChecked();
@@ -50,7 +50,7 @@ describe('<CheckboxGroup />', () => {
     );
 
     const checkbox = getAllByRole('checkbox');
-    await act(async () => await userEvent.click(checkbox[0]));
+    await userEvent.click(checkbox[0]);
 
     expect(checkbox[0]).toBeChecked();
     expect(checkbox[1]).toBeChecked();

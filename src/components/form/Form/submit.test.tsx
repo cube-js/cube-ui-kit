@@ -41,9 +41,7 @@ describe('<Form />', () => {
     const submit = getByRole('button');
     const input = getByRole('textbox');
 
-    await act(async () => {
-      await userEvents.type(input, 'test');
-    });
+    await userEvents.type(input, 'test');
 
     await userEvents.click(submit);
 
@@ -78,10 +76,8 @@ describe('<Form />', () => {
 
     const input = getByRole('textbox');
 
-    await act(async () => {
-      await userEvents.type(input, 'test');
-      await expect(formInstance.submit()).rejects.toThrow('Custom Error');
-    });
+    await userEvents.type(input, 'test');
+    await expect(formInstance.submit()).rejects.toThrow('Custom Error');
 
     await expect(onSubmitFailed).toBeCalledTimes(1);
     await expect(onSubmit).toBeCalledTimes(1);

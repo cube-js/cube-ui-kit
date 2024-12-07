@@ -10,7 +10,7 @@ describe('<TextArea />', () => {
     const { getByRole } = render(<TextArea label="test" />);
     const input = getByRole('textbox');
 
-    await act(async () => await userEvent.type(input, 'Hello, World!'));
+    await userEvent.type(input, 'Hello, World!');
 
     expect(input).toHaveValue('Hello, World!');
   });
@@ -22,7 +22,7 @@ describe('<TextArea />', () => {
 
     const input = getByRole('textbox');
 
-    await act(async () => await userEvent.type(input, 'Hello, World!'));
+    await userEvent.type(input, 'Hello, World!');
 
     expect(input).toHaveValue('Hello, World!');
     expect(formInstance.getFieldValue('test')).toEqual('Hello, World!');
@@ -37,7 +37,7 @@ describe('<TextArea />', () => {
 
     const input = getByRole('textbox');
 
-    await act(async () => await userEvent.type(input, 'Hello, World!'));
+    await userEvent.type(input, 'Hello, World!');
 
     expect(input).toHaveValue('Hello, World!');
     expect(formInstance.getFieldValue('test')).toEqual('Hello, World!');
