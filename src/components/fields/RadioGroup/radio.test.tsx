@@ -1,5 +1,4 @@
 import {
-  act,
   renderWithForm,
   renderWithRoot,
   screen,
@@ -19,7 +18,7 @@ describe('<Radio /> and <RadioGroup />', () => {
       </Radio.Group>,
     );
     const radio = getAllByRole('radio');
-    await act(async () => await userEvent.click(radio[0]));
+    await userEvent.click(radio[0]);
 
     expect(radio[0]).toBeChecked();
   });
@@ -33,7 +32,7 @@ describe('<Radio /> and <RadioGroup />', () => {
     );
     const radio = screen.getAllByRole('radio');
 
-    await act(async () => await userEvent.click(radio[0]));
+    await userEvent.click(radio[0]);
 
     expect(radio[0]).toBeChecked();
 

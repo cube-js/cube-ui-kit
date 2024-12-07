@@ -81,13 +81,13 @@ export function useFieldProps<
   );
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const onChangeEvent = useEvent((value, dontTouch: boolean) =>
-    field?.onChange?.(
+  const onChangeEvent = useEvent((value, dontTouch: boolean) => {
+    return field?.onChange?.(
       value,
       dontTouch,
       field?.validateTrigger ?? defaultValidationTrigger,
-    ),
-  );
+    );
+  });
 
   const valueProps = !isOutsideOfForm
     ? valuePropsMapper({ value: field.value, onChange: onChangeEvent })

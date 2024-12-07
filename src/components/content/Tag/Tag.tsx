@@ -34,7 +34,7 @@ const TagElement = tasty({
       closable: '0 (2.5x - 1bw) 0 (1x - 1bw)',
     },
     fill: {
-      '': '#dark.04',
+      '': '#light',
       ...Object.keys(THEMES).reduce((map, type) => {
         map[`[data-type="${type}"]`] = THEMES[type].fill;
 

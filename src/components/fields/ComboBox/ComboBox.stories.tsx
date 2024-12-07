@@ -4,6 +4,7 @@ import { userEvent, within } from '@storybook/test';
 
 import { SELECTED_KEY_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Form, useForm } from '../../form/index';
 
 import { ComboBox, CubeComboBoxProps } from './ComboBox';
 
@@ -31,6 +32,26 @@ const Template: StoryFn<CubeComboBoxProps<any>> = (
     </ComboBox>
   </>
 );
+
+const FormTemplate: StoryFn<CubeComboBoxProps<any>> = (
+  args: CubeComboBoxProps<any>,
+) => {
+  const [form] = useForm();
+
+  return (
+    <Form form={form}>
+      <ComboBox name="combobox" {...args}>
+        <ComboBox.Item key="red">Red</ComboBox.Item>
+        <ComboBox.Item key="orange">Orange</ComboBox.Item>
+        <ComboBox.Item key="yellow">Yellow</ComboBox.Item>
+        <ComboBox.Item key="green">Green</ComboBox.Item>
+        <ComboBox.Item key="blue">Blue</ComboBox.Item>
+        <ComboBox.Item key="purple">Purple</ComboBox.Item>
+        <ComboBox.Item key="violet">Violet</ComboBox.Item>
+      </ComboBox>
+    </Form>
+  );
+};
 
 export const Default = Template.bind({});
 Default.args = {};
@@ -101,3 +122,5 @@ With1LongOptionFiltered.play = async ({ canvasElement }) => {
 
   await userEvent.type(combobox, 'Red');
 };
+
+export const WithinForm = FormTemplate.bind({});

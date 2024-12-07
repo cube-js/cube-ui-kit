@@ -162,6 +162,8 @@ export interface CubeRadioProps
   inputStyles?: Styles;
   /* The visual type of the radio button */
   type?: 'button' | 'radio';
+  value?: string;
+  onChange?: (value: string) => void;
 }
 
 function Radio(props: CubeRadioProps, ref) {
