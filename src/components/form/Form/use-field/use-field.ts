@@ -144,6 +144,15 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
       }
     }
 
+    console.log(
+      '! uikit set field',
+      fieldName,
+      val,
+      !dontTouch,
+      false,
+      dontTouch,
+    );
+
     form.setFieldValue(fieldName, val, !dontTouch, false, dontTouch);
 
     if (
