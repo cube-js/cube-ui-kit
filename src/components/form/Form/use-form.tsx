@@ -437,7 +437,6 @@ export function useForm<TSourceType extends FieldTypes>(
     } else {
       // Create a new FormInstance if not provided
       const forceReRender = () => {
-        console.log('! rerender');
         forceUpdate({});
       };
 
