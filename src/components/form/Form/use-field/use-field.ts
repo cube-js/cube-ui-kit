@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { ValidateTrigger } from '../../../../shared/index';
-import { useEvent } from '../../../../_internal/index';
+import { useEvent, useWarn } from '../../../../_internal/index';
 import { useFormProps } from '../Form';
 import { FieldTypes } from '../types';
 import { delayValidationRule } from '../validation';
@@ -36,6 +36,12 @@ function removeId(name, id) {
   ID_MAP[name] = ID_MAP[name].filter((_id) => _id !== id);
 }
 
+const UNCONTROLLED_FIELDS = [
+  'defaultValue',
+  'defaultSelectedKey',
+  'defaultSelected',
+];
+
 export type UseFieldParams = {
   defaultValidationTrigger?: ValidateTrigger;
 };
@@ -66,6 +72,17 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
     id || (idPrefix ? `${idPrefix}_${fieldName}` : fieldName),
   );
 
+  const uncontrolledKey = Object.keys(props).find((key) =>
+    UNCONTROLLED_FIELDS.includes(key),
+  );
+
+  useWarn(uncontrolledKey && fieldName, {
+    key: uncontrolledKey,
+    args: [
+      "It's not allowed to use field in uncontrolled mode if it's connected to the form. Use 'defaultValues' prop on Form component to set the default value for each field. You can also disconnect the input from the form by removing 'name' property.",
+    ],
+  });
+
   useEffect(() => {
     let newId;
 
@@ -88,15 +105,16 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
 
   let field = form?.getFieldInstance(fieldName);
 
-  if (form) {
-    if (!field) {
-      field = form.createField(fieldName, true);
-    }
+  // if there is no field
+  if (form && !field && fieldName) {
+    field = form.createField(fieldName, true);
   }
 
-  if (field && field.rules !== rules) {
-    field.rules = rules;
+  if (field) {
+    // copy rules to the field rules
+    field.rules = [...(rules ?? [])];
 
+    // if there are some rules and a delay then add a rule that delays the validation
     if (field.rules && field.rules.length && validationDelay) {
       field.rules.unshift(delayValidationRule(validationDelay));
     }
