@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.45.0
+
+### Minor Changes
+
+- [#533](https://github.com/cube-js/cube-ui-kit/pull/533) [`e6246bd`](https://github.com/cube-js/cube-ui-kit/commit/e6246bd8fdefa98bf37ec5f23c88435c60d33fe8) Thanks [@tenphi](https://github.com/tenphi)! - Fix for Combobox input inside Form.
+
 ## 0.44.0
 
 ### Minor Changes
