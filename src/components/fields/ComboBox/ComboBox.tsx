@@ -5,6 +5,7 @@ import {
   ReactElement,
   RefObject,
   useMemo,
+  useState,
 } from 'react';
 import {
   useButton,
@@ -133,12 +134,17 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   props: CubeComboBoxProps<T>,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
+  const [, rerender] = useState({});
+
   props = useProviderProps(props);
   props = useFormProps(props);
   props = useFieldProps(props, {
     valuePropsMapper: ({ value, onChange }) => ({
       inputValue: value != null ? value : '',
-      onInputChange: (val) => onChange(val, !props.allowsCustomValue),
+      onInputChange: (val) => {
+        onChange(val, !props.allowsCustomValue);
+        rerender({});
+      },
       onSelectionChange: onChange,
     }),
   });
