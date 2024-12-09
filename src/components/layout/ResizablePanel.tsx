@@ -15,7 +15,7 @@ import { Panel, CubePanelProps, PanelContext } from './Panel';
 
 type Direction = 'top' | 'right' | 'bottom' | 'left';
 
-export interface ResizablePanelProps extends CubePanelProps {
+export interface CubeResizablePanelProps extends CubePanelProps {
   handlerStyles?: Styles;
   direction: Direction;
   size?: number;
@@ -163,7 +163,7 @@ const PanelElement = tasty(Panel, {
 });
 
 function ResizablePanel(
-  props: ResizablePanelProps,
+  props: CubeResizablePanelProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
   const panelContext = useContext(PanelContext);

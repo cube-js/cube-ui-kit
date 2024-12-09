@@ -2,22 +2,22 @@ import { Meta, StoryFn } from '@storybook/react';
 import { useState } from 'react';
 
 import { Panel } from './Panel';
-import { ResizablePanel, ResizablePanelProps } from './ResizablePanel';
+import { ResizablePanel, CubeResizablePanelProps } from './ResizablePanel';
 
 export default {
   title: 'Layout/ResizablePanel',
   component: ResizablePanel,
   args: {},
-} as Meta<ResizablePanelProps>;
+} as Meta<CubeResizablePanelProps>;
 
-const TemplateRight: StoryFn<ResizablePanelProps> = (args) => (
+const TemplateRight: StoryFn<CubeResizablePanelProps> = (args) => (
   <Panel isFlex isStretched height="min 30x" fill="#white">
     <ResizablePanel {...args} />
     <Panel fill="#light"></Panel>
   </Panel>
 );
 
-const TemplateLeft: StoryFn<ResizablePanelProps> = (args) => {
+const TemplateLeft: StoryFn<CubeResizablePanelProps> = (args) => {
   return (
     <Panel isFlex isStretched height="min 30x" fill="#white">
       <Panel fill="#light"></Panel>
@@ -26,14 +26,14 @@ const TemplateLeft: StoryFn<ResizablePanelProps> = (args) => {
   );
 };
 
-const TemplateBottom: StoryFn<ResizablePanelProps> = (args) => (
+const TemplateBottom: StoryFn<CubeResizablePanelProps> = (args) => (
   <Panel isFlex isStretched flow="column" height="min 30x" fill="#white">
     <ResizablePanel {...args} />
     <Panel fill="#light"></Panel>
   </Panel>
 );
 
-const TemplateTop: StoryFn<ResizablePanelProps> = (args) => {
+const TemplateTop: StoryFn<CubeResizablePanelProps> = (args) => {
   return (
     <Panel isFlex isStretched flow="column" height="min 30x" fill="#white">
       <Panel fill="#light"></Panel>
@@ -42,7 +42,7 @@ const TemplateTop: StoryFn<ResizablePanelProps> = (args) => {
   );
 };
 
-const TemplateControllable: StoryFn<ResizablePanelProps> = (args) => {
+const TemplateControllable: StoryFn<CubeResizablePanelProps> = (args) => {
   const [size, setSize] = useState(200);
 
   return (
