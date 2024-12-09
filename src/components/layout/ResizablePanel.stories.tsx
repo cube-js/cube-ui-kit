@@ -1,4 +1,5 @@
 import { Meta, StoryFn } from '@storybook/react';
+import { useState } from 'react';
 
 import { Panel } from './Panel';
 import { ResizablePanel, ResizablePanelProps } from './ResizablePanel';
@@ -41,6 +42,21 @@ const TemplateTop: StoryFn<ResizablePanelProps> = (args) => {
   );
 };
 
+const TemplateControllable: StoryFn<ResizablePanelProps> = (args) => {
+  const [size, setSize] = useState(200);
+
+  return (
+    <ResizablePanel
+      size={size}
+      flow="column"
+      height="min 30x"
+      fill="#light"
+      onSizeChange={(size) => setSize(Math.min(500, Math.max(100, size)))}
+      {...args}
+    ></ResizablePanel>
+  );
+};
+
 export const ResizeRight = TemplateRight.bind({});
 ResizeRight.args = {
   direction: 'right',
@@ -59,4 +75,14 @@ ResizeBottom.args = {
 export const ResizeTop = TemplateTop.bind({});
 ResizeTop.args = {
   direction: 'top',
+};
+
+export const Controllable = TemplateControllable.bind({});
+Controllable.args = {
+  direction: 'right',
+};
+
+export const Disabled = TemplateRight.bind({});
+Disabled.args = {
+  isDisabled: true,
 };

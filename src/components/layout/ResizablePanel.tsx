@@ -1,4 +1,10 @@
-import { ForwardedRef, forwardRef, useContext, useState } from 'react';
+import {
+  ForwardedRef,
+  forwardRef,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { useHover, useMove } from 'react-aria';
 
 import { useWarn } from '../../_internal/index';
@@ -12,8 +18,11 @@ type Direction = 'top' | 'right' | 'bottom' | 'left';
 export interface ResizablePanelProps extends CubePanelProps {
   handlerStyles?: Styles;
   direction: Direction;
+  size?: number;
+  onSizeChange?: (size: number) => void;
   minSize?: string | number;
   maxSize?: string | number;
+  isDisabled?: boolean;
 }
 
 const HandlerElement = tasty({
@@ -49,7 +58,10 @@ const HandlerElement = tasty({
     },
     position: 'absolute',
     zIndex: 1,
-    cursor: 'col-resize',
+    cursor: {
+      '': 'col-resize',
+      disabled: 'not-allowed',
+    },
     fill: {
       '': '#clear',
       drag: '#purple-02',
@@ -74,7 +86,7 @@ const HandlerElement = tasty({
       },
       fill: {
         '': '#border-opaque',
-        'hovered | drag': '#purple-03',
+        '(hovered | drag) & !disabled': '#purple-03',
       },
       transition: 'theme',
     },
@@ -92,6 +104,7 @@ const HandlerElement = tasty({
       fill: {
         '': '#dark-03',
         'hovered | drag': '#dark-02',
+        disabled: '#dark-04',
       },
       inset: {
         '': '3px 50% auto auto',
@@ -108,7 +121,7 @@ interface HandlerProps extends BasePropsWithoutChildren {
 }
 
 const Handler = (props: HandlerProps) => {
-  const { direction = 'right' } = props;
+  const { direction = 'right', isDisabled } = props;
   const { hoverProps, isHovered } = useHover({});
   const isHorizontal = direction === 'left' || direction === 'right';
 
@@ -120,6 +133,7 @@ const Handler = (props: HandlerProps) => {
           mods: {
             hovered: isHovered,
             horizontal: isHorizontal,
+            disabled: isDisabled,
           },
           'data-direction': direction,
         },
@@ -162,16 +176,43 @@ function ResizablePanel(
     ],
   });
 
-  const { direction = 'right', minSize = '15%', maxSize = '35%' } = props;
+  const isControllable = typeof props.size === 'number';
+  const {
+    isDisabled,
+    direction = 'right',
+    size: providedSize,
+    onSizeChange,
+    minSize = 200,
+    maxSize = isControllable ? undefined : 400,
+  } = props;
+
   const [isDragging, setIsDragging] = useState(false);
   const isHorizontal = direction === 'left' || direction === 'right';
 
   ref = useCombinedRefs(ref);
 
-  let [size, setSize] = useState<number>(200);
+  function clamp(size: number) {
+    if (typeof maxSize === 'number') {
+      size = Math.min(maxSize, size);
+    }
+
+    if (typeof minSize === 'number' || !minSize) {
+      size = Math.max((minSize as number) || 0, size);
+    }
+
+    return Math.max(size, 0);
+  }
+
+  let [size, setSize] = useState<number>(
+    providedSize != null ? clamp(providedSize) : 200,
+  );
 
   let { moveProps } = useMove({
     onMoveStart(e) {
+      if (isDisabled) {
+        return;
+      }
+
       setIsDragging(true);
 
       const offsetProp = isHorizontal ? 'offsetWidth' : 'offsetHeight';
@@ -182,6 +223,10 @@ function ResizablePanel(
     },
     onMove(e) {
       setSize((size) => {
+        if (isDisabled) {
+          return;
+        }
+
         if (e.pointerType === 'keyboard') {
           return size;
         }
@@ -190,7 +235,7 @@ function ResizablePanel(
           ? e.deltaX * (direction === 'right' ? 1 : -1)
           : e.deltaY * (direction === 'bottom' ? 1 : -1);
 
-        return size;
+        return clamp(size);
       });
     },
     onMoveEnd(e) {
@@ -198,15 +243,30 @@ function ResizablePanel(
     },
   });
 
+  useEffect(() => {
+    onSizeChange?.(size);
+  }, [size]);
+
+  useEffect(() => {
+    if (providedSize) {
+      setSize(providedSize);
+    }
+  }, [providedSize]);
+
   return (
     <PanelElement
       ref={ref}
       data-direction={direction}
       extra={
         <Handler
+          isDisabled={isDisabled}
           direction={direction}
           {...moveProps}
-          mods={{ drag: isDragging, horizontal: isHorizontal }}
+          mods={{
+            drag: isDragging,
+            horizontal: isHorizontal,
+            disabled: isDisabled,
+          }}
         />
       }
       {...mergeProps(props, {
