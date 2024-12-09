@@ -48,6 +48,7 @@ const TOKENS = {
   transition: '80ms',
   'clear-color': 'transparent',
   'border-color': color('dark', 0.1),
+  'border-opaque-color': 'rgb(227, 227, 233)',
   'shadow-color': color('dark-03', 0.1),
   'draft-color': color('dark', 0.2),
   'minor-color': color('dark', 0.65),
