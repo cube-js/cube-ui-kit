@@ -224,7 +224,7 @@ function ResizablePanel(
     onMove(e) {
       setSize((size) => {
         if (isDisabled) {
-          return;
+          return size;
         }
 
         if (e.pointerType === 'keyboard') {
