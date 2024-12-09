@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.46.0
+
+### Minor Changes
+
+- [#536](https://github.com/cube-js/cube-ui-kit/pull/536) [`b10e55e`](https://github.com/cube-js/cube-ui-kit/commit/b10e55ee6adca81763280f5a72dde7c2e4ad1534) Thanks [@tenphi](https://github.com/tenphi)! - Add Panel component.
+
+- [#536](https://github.com/cube-js/cube-ui-kit/pull/536) [`b10e55e`](https://github.com/cube-js/cube-ui-kit/commit/b10e55ee6adca81763280f5a72dde7c2e4ad1534) Thanks [@tenphi](https://github.com/tenphi)! - Add ResizablePanel component.
+
 ## 0.45.0
 
 ### Minor Changes
