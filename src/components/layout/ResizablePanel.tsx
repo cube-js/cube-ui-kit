@@ -275,6 +275,9 @@ function ResizablePanel(
           '--min-size': typeof minSize === 'number' ? `${minSize}px` : minSize,
           '--max-size': typeof maxSize === 'number' ? `${maxSize}px` : maxSize,
         },
+        innerStyles: {
+          margin: `5px ${direction}`,
+        },
       })}
     />
   );
