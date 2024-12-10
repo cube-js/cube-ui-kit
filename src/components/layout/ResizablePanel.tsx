@@ -223,7 +223,7 @@ function ResizablePanel(
     },
     onMoveEnd(e) {
       setIsDragging(false);
-      setSize((size) => Math.round(size));
+      setSize((size) => clamp(Math.round(size)));
     },
   });
 
