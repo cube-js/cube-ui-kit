@@ -1,17 +1,10 @@
-import {
-  ForwardedRef,
-  forwardRef,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import { ForwardedRef, forwardRef, useEffect, useState } from 'react';
 import { useHover, useMove } from 'react-aria';
 
-import { useWarn } from '../../_internal/index';
 import { BasePropsWithoutChildren, Styles, tasty } from '../../tasty/index';
 import { mergeProps, useCombinedRefs } from '../../utils/react/index';
 
-import { Panel, CubePanelProps, PanelContext } from './Panel';
+import { Panel, CubePanelProps } from './Panel';
 
 type Direction = 'top' | 'right' | 'bottom' | 'left';
 
@@ -166,16 +159,6 @@ function ResizablePanel(
   props: CubeResizablePanelProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  const panelContext = useContext(PanelContext);
-
-  useWarn(panelContext.layout !== 'flex', {
-    once: true,
-    key: 'resizable panel layout requirement',
-    args: [
-      'ResizablePanel can only be used inside a flex layout. Use Panel with `isFlex` property to create one.',
-    ],
-  });
-
   const isControllable = typeof props.size === 'number';
   const {
     isDisabled,
@@ -240,16 +223,19 @@ function ResizablePanel(
     },
     onMoveEnd(e) {
       setIsDragging(false);
+      setSize((size) => clamp(Math.round(size)));
     },
   });
 
   useEffect(() => {
-    onSizeChange?.(size);
+    if (providedSize == null || Math.abs(providedSize - size) > 0.5) {
+      onSizeChange?.(size);
+    }
   }, [size]);
 
   useEffect(() => {
-    if (providedSize) {
-      setSize(providedSize);
+    if (providedSize && Math.abs(providedSize - size) > 0.5) {
+      setSize(clamp(providedSize));
     }
   }, [providedSize]);
 
