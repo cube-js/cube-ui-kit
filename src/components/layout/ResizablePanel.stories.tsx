@@ -57,6 +57,13 @@ const TemplateControllable: StoryFn<CubeResizablePanelProps> = (args) => {
   );
 };
 
+const GridTemplate: StoryFn<CubeResizablePanelProps> = (args) => (
+  <Panel isStretched height="min 30x" fill="#white" gridColumns="auto 1fr">
+    <ResizablePanel size={300} {...args} />
+    <Panel fill="#light"></Panel>
+  </Panel>
+);
+
 export const ResizeRight = TemplateRight.bind({});
 ResizeRight.args = {
   direction: 'right',
@@ -85,4 +92,10 @@ Controllable.args = {
 export const Disabled = TemplateRight.bind({});
 Disabled.args = {
   isDisabled: true,
+};
+
+export const InGridLayout = GridTemplate.bind({});
+InGridLayout.args = {
+  direction: 'right',
+  maxSize: 500,
 };
