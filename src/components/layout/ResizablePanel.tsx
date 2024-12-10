@@ -228,7 +228,9 @@ function ResizablePanel(
   });
 
   useEffect(() => {
-    onSizeChange?.(size);
+    if (providedSize == null || Math.abs(providedSize - size) > 0.5) {
+      onSizeChange?.(size);
+    }
   }, [size]);
 
   useEffect(() => {
