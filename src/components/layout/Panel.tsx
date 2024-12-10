@@ -1,10 +1,4 @@
-import {
-  createContext,
-  ForwardedRef,
-  forwardRef,
-  ReactNode,
-  useMemo,
-} from 'react';
+import { ForwardedRef, forwardRef, ReactNode, useMemo } from 'react';
 
 import {
   BASE_STYLES,
@@ -20,14 +14,6 @@ import {
   Styles,
   tasty,
 } from '../../tasty';
-
-export interface PanelContextData {
-  layout: 'grid' | 'flex';
-}
-
-export const PanelContext = createContext<PanelContextData>({
-  layout: 'grid',
-});
 
 const PanelElement = tasty({
   as: 'section',
@@ -164,25 +150,19 @@ function Panel(props: CubePanelProps, ref: ForwardedRef<HTMLDivElement>) {
   );
 
   return (
-    <PanelContext.Provider
-      value={{
-        layout: isFlex ? 'flex' : 'grid',
-      }}
+    <PanelElement
+      ref={ref}
+      qa={qa}
+      mods={appliedMods}
+      styles={styles}
+      style={style}
+      {...otherProps}
     >
-      <PanelElement
-        ref={ref}
-        qa={qa}
-        mods={appliedMods}
-        styles={styles}
-        style={style}
-        {...otherProps}
-      >
-        <PanelInnerElement mods={appliedMods} styles={innerStyles}>
-          {children}
-        </PanelInnerElement>
-        {extra}
-      </PanelElement>
-    </PanelContext.Provider>
+      <PanelInnerElement mods={appliedMods} styles={innerStyles}>
+        {children}
+      </PanelInnerElement>
+      {extra}
+    </PanelElement>
   );
 }
 
