@@ -257,7 +257,7 @@ function ResizablePanel(
       }
       {...mergeProps(props, {
         style: {
-          '--size': `${size}px`,
+          '--size': `${Math.round(size)}px`,
           '--min-size': typeof minSize === 'number' ? `${minSize}px` : minSize,
           '--max-size': typeof maxSize === 'number' ? `${maxSize}px` : maxSize,
         },
