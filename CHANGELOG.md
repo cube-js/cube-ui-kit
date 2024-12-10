@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.46.1
+
+### Patch Changes
+
+- [#538](https://github.com/cube-js/cube-ui-kit/pull/538) [`7ba6e5e`](https://github.com/cube-js/cube-ui-kit/commit/7ba6e5e5066ceaae6f119eb6dab0264ae3e74ad2) Thanks [@tenphi](https://github.com/tenphi)! - Stabilize ResizablePanel & remove requirement for the flex layout.
+
 ## 0.46.0
 
 ### Minor Changes
