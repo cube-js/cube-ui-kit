@@ -235,7 +235,7 @@ function ResizablePanel(
 
   useEffect(() => {
     if (providedSize && Math.abs(providedSize - size) > 0.5) {
-      setSize(providedSize);
+      setSize(clamp(providedSize));
     }
   }, [providedSize]);
 
