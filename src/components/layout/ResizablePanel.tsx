@@ -269,8 +269,9 @@ function ResizablePanel(
 
   useEffect(() => {
     if (
-      (providedSize == null || Math.abs(providedSize - visualSize) > 0.5) &&
-      !isDragging
+      !isDragging &&
+      visualSize != null &&
+      (providedSize == null || Math.abs(providedSize - visualSize) > 0.5)
     ) {
       onSizeChange?.(Math.round(visualSize));
     }
