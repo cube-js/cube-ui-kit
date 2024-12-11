@@ -268,12 +268,16 @@ function ResizablePanel(
   });
 
   useEffect(() => {
-    if (providedSize == null || Math.abs(providedSize - size) > 0.5) {
+    if (
+      (providedSize == null || Math.abs(providedSize - size) > 0.5) &&
+      visualSize != null &&
+      !isDragging
+    ) {
       setTimeout(() => {
-        onSizeChange?.(Math.round(size));
+        onSizeChange?.(Math.round(visualSize));
       });
     }
-  }, [size]);
+  }, [visualSize]);
 
   useEffect(() => {
     if (providedSize && Math.abs(providedSize - size) > 0.5) {
