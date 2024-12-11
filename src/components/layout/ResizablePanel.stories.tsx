@@ -13,30 +13,30 @@ export default {
 const TemplateRight: StoryFn<CubeResizablePanelProps> = (args) => (
   <Panel isFlex isStretched height="min 30x" fill="#white">
     <ResizablePanel {...args} />
-    <Panel fill="#light"></Panel>
+    <Panel fill="#purple-04.10"></Panel>
   </Panel>
 );
 
 const TemplateLeft: StoryFn<CubeResizablePanelProps> = (args) => {
   return (
     <Panel isFlex isStretched height="min 30x" fill="#white">
-      <Panel fill="#light"></Panel>
+      <Panel fill="#purple-04.10"></Panel>
       <ResizablePanel {...args} />
     </Panel>
   );
 };
 
 const TemplateBottom: StoryFn<CubeResizablePanelProps> = (args) => (
-  <Panel isFlex isStretched flow="column" height="min 30x" fill="#white">
+  <Panel isFlex isStretched flow="column" fill="#white">
     <ResizablePanel {...args} />
-    <Panel fill="#light"></Panel>
+    <Panel fill="#purple-04.10"></Panel>
   </Panel>
 );
 
 const TemplateTop: StoryFn<CubeResizablePanelProps> = (args) => {
   return (
-    <Panel isFlex isStretched flow="column" height="min 30x" fill="#white">
-      <Panel fill="#light"></Panel>
+    <Panel isFlex isStretched flow="column" fill="#white">
+      <Panel fill="#purple-04.10"></Panel>
       <ResizablePanel {...args} />
     </Panel>
   );
@@ -60,7 +60,14 @@ const TemplateControllable: StoryFn<CubeResizablePanelProps> = (args) => {
 const GridTemplate: StoryFn<CubeResizablePanelProps> = (args) => (
   <Panel isStretched height="min 30x" fill="#white" gridColumns="auto 1fr">
     <ResizablePanel size={300} {...args} />
-    <Panel fill="#light"></Panel>
+    <Panel fill="#purple-04.10"></Panel>
+  </Panel>
+);
+
+const TemplateDisabled: StoryFn<CubeResizablePanelProps> = (args) => (
+  <Panel isFlex isStretched height="min 30x" fill="#white">
+    <ResizablePanel {...args} />
+    <Panel fill="#purple-04.10"></Panel>
   </Panel>
 );
 
@@ -87,9 +94,10 @@ ResizeTop.args = {
 export const Controllable = TemplateControllable.bind({});
 Controllable.args = {
   direction: 'right',
+  maxSize: 500,
 };
 
-export const Disabled = TemplateRight.bind({});
+export const Disabled = TemplateDisabled.bind({});
 Disabled.args = {
   isDisabled: true,
 };
