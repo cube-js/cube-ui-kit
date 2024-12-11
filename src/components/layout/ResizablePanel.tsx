@@ -1,4 +1,4 @@
-import { ForwardedRef, forwardRef, useEffect, useState } from 'react';
+import { ForwardedRef, forwardRef, useEffect, useMemo, useState } from 'react';
 import { useHover, useMove } from 'react-aria';
 
 import { BasePropsWithoutChildren, Styles, tasty } from '../../tasty/index';
@@ -19,35 +19,45 @@ export interface CubeResizablePanelProps extends CubePanelProps {
 }
 
 const HandlerElement = tasty({
+  qa: 'ResizeHandler',
   styles: {
     // The real size is slightly bigger than the visual one.
     width: {
-      '': 'auto',
+      '': 'initial',
       horizontal: '9px',
+      'disabled & horizontal': '1bw',
     },
     height: {
       '': '9px',
-      horizontal: 'auto',
+      horizontal: 'initial',
+      'disabled & !horizontal': '1bw',
     },
     top: {
-      '': 'initial',
-      horizontal: 0,
-      '[data-direction="top"]': -2,
+      '': 0,
+      '[data-direction="top"]': 'initial',
     },
     bottom: {
-      '': 'initial',
-      horizontal: 0,
-      '[data-direction="bottom"]': -2,
+      '': 0,
+      '[data-direction="bottom"]': 'initial',
     },
     right: {
       '': 0,
-      horizontal: 'initial',
-      '[data-direction="right"]': -2,
+      '[data-direction="right"]': 'initial',
     },
     left: {
       '': 0,
-      horizontal: 'initial',
-      '[data-direction="left"]': -2,
+      '[data-direction="left"]': 'initial',
+    },
+    // Transform requires a separate visual size property to respect size boundaries
+    transform: {
+      '[data-direction="top"]':
+        'translate(0, (@size-compensation - @visual-size))',
+      '[data-direction="right"]':
+        'translate((@visual-size - @size-compensation), 0)',
+      '[data-direction="bottom"]':
+        'translate(0, (@visual-size - @size-compensation))',
+      '[data-direction="left"]':
+        'translate((@size-compensation - @visual-size), 0)',
     },
     position: 'absolute',
     zIndex: 1,
@@ -62,20 +72,27 @@ const HandlerElement = tasty({
     padding: 0,
     boxSizing: 'border-box',
     transition: 'theme',
+    '--size-compensation': {
+      '': '7px',
+      disabled: '1bw',
+    },
 
     Track: {
       width: {
         '': 'initial',
         horizontal: '5px',
+        'disabled & horizontal': '1px',
       },
       height: {
         '': '5px',
         horizontal: 'initial',
+        'disabled & !horizontal': '1px',
       },
       position: 'absolute',
       inset: {
         '': '2px 0',
         horizontal: '0 2px',
+        disabled: '0 0',
       },
       fill: {
         '': '#border-opaque',
@@ -85,6 +102,10 @@ const HandlerElement = tasty({
     },
 
     Drag: {
+      hide: {
+        '': false,
+        disabled: true,
+      },
       width: {
         '': '3x',
         horizontal: '3px',
@@ -152,6 +173,11 @@ const PanelElement = tasty(Panel, {
     },
     placeSelf: 'stretch',
     touchAction: 'none',
+
+    '--indent-compensation': {
+      '': '5px',
+      disabled: '1bw',
+    },
   },
 });
 
@@ -166,7 +192,7 @@ function ResizablePanel(
     size: providedSize,
     onSizeChange,
     minSize = 200,
-    maxSize = isControllable ? undefined : 400,
+    maxSize = isControllable ? undefined : 'min(50%, 400px)',
   } = props;
 
   const [isDragging, setIsDragging] = useState(false);
@@ -189,6 +215,20 @@ function ResizablePanel(
   let [size, setSize] = useState<number>(
     providedSize != null ? clamp(providedSize) : 200,
   );
+  let [visualSize, setVisualSize] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (ref.current) {
+      const offsetProp = isHorizontal ? 'offsetWidth' : 'offsetHeight';
+      const containerSize = ref.current[offsetProp];
+
+      if (Math.abs(containerSize - size) < 1 && !isDisabled) {
+        setVisualSize(size);
+      } else {
+        setVisualSize(containerSize);
+      }
+    }
+  }, [size, isDisabled]);
 
   let { moveProps } = useMove({
     onMoveStart(e) {
@@ -239,30 +279,39 @@ function ResizablePanel(
     }
   }, [providedSize]);
 
+  const mods = useMemo(() => {
+    return {
+      drag: isDragging,
+      horizontal: isHorizontal,
+      disabled: isDisabled,
+    };
+  }, [isDragging, isHorizontal, isDisabled]);
+
   return (
     <PanelElement
       ref={ref}
       data-direction={direction}
+      mods={mods}
       extra={
         <Handler
-          isDisabled={isDisabled}
+          isDisabled={isDisabled || visualSize == null}
           direction={direction}
           {...moveProps}
-          mods={{
-            drag: isDragging,
-            horizontal: isHorizontal,
-            disabled: isDisabled,
-          }}
+          mods={mods}
         />
       }
       {...mergeProps(props, {
         style: {
-          '--size': `${Math.round(size)}px`,
+          // We set a current size further via width/min-width/max-width styles to respect size boundaries
+          '--size': `${size}px`,
+          // We use a separate visual size to paint the handler for smoother experience
+          '--visual-size': `${visualSize}px`,
           '--min-size': typeof minSize === 'number' ? `${minSize}px` : minSize,
           '--max-size': typeof maxSize === 'number' ? `${maxSize}px` : maxSize,
         },
         innerStyles: {
-          margin: `5px ${direction}`,
+          // The panel inner space compensation for the handler
+          margin: `@indent-compensation ${direction}`,
         },
       })}
     />
