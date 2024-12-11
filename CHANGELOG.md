@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.46.2
+
+### Patch Changes
+
+- [#541](https://github.com/cube-js/cube-ui-kit/pull/541) [`40c6072`](https://github.com/cube-js/cube-ui-kit/commit/40c607213543557359c3fe9ee976cd42d85331ea) Thanks [@tenphi](https://github.com/tenphi)! - Smoother transition for ResizablePanel.'
+
+- [#541](https://github.com/cube-js/cube-ui-kit/pull/541) [`40c6072`](https://github.com/cube-js/cube-ui-kit/commit/40c607213543557359c3fe9ee976cd42d85331ea) Thanks [@tenphi](https://github.com/tenphi)! - Round the output size style in ResizablePanel.
+
 ## 0.46.1
 
 ### Patch Changes
