@@ -200,8 +200,8 @@ function ResizablePanel(
 
       const offsetProp = isHorizontal ? 'offsetWidth' : 'offsetHeight';
 
-      if (ref.current && Math.abs(ref.current[offsetProp] - size) > 1) {
-        setSize(ref.current[offsetProp]);
+      if (ref.current && Math.abs(ref.current[offsetProp] - size) >= 1) {
+        setSize(Math.round(ref.current[offsetProp]));
       }
     },
     onMove(e) {
@@ -229,7 +229,7 @@ function ResizablePanel(
 
   useEffect(() => {
     if (providedSize == null || Math.abs(providedSize - size) > 0.5) {
-      onSizeChange?.(size);
+      onSizeChange?.(Math.round(size));
     }
   }, [size]);
 
