@@ -217,19 +217,6 @@ function ResizablePanel(
   );
   let [visualSize, setVisualSize] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (ref.current) {
-      const offsetProp = isHorizontal ? 'offsetWidth' : 'offsetHeight';
-      const containerSize = ref.current[offsetProp];
-
-      if (Math.abs(containerSize - size) < 1 && !isDisabled) {
-        setVisualSize(size);
-      } else {
-        setVisualSize(containerSize);
-      }
-    }
-  }, [size, isDisabled]);
-
   let { moveProps } = useMove({
     onMoveStart(e) {
       if (isDisabled) {
@@ -268,13 +255,26 @@ function ResizablePanel(
   });
 
   useEffect(() => {
+    if (ref.current) {
+      const offsetProp = isHorizontal ? 'offsetWidth' : 'offsetHeight';
+      const containerSize = ref.current[offsetProp];
+
+      if (Math.abs(containerSize - size) < 1 && !isDisabled) {
+        setVisualSize(size);
+      } else {
+        setVisualSize(containerSize);
+      }
+    }
+  }, [size, isDisabled]);
+
+  useEffect(() => {
     if (
-      (providedSize == null || Math.abs(providedSize - size) > 0.5) &&
+      (providedSize == null || Math.abs(providedSize - visualSize) > 0.5) &&
       !isDragging
     ) {
-      onSizeChange?.(Math.round(size));
+      onSizeChange?.(Math.round(visualSize));
     }
-  }, [size]);
+  }, [visualSize]);
 
   useEffect(() => {
     if (providedSize && Math.abs(providedSize - size) > 0.5) {
