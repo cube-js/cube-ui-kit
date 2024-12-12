@@ -255,6 +255,9 @@ function ResizablePanel(
     },
   });
 
+  // Since we sync provided size and the local one in two ways
+  // we need a way to prevent infinite loop in some cases.
+  // We will run this in setTimeout and make sure it will get the most recent state.
   const notifyChange = useEvent(() => {
     setSize((size) => {
       if (providedSize && Math.abs(providedSize - size) > 0.5) {
