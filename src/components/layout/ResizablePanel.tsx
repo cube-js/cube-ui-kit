@@ -3,7 +3,7 @@ import { useHover, useMove } from 'react-aria';
 
 import { BasePropsWithoutChildren, Styles, tasty } from '../../tasty/index';
 import { mergeProps, useCombinedRefs } from '../../utils/react';
-import { useEvent } from '../../_internal/hooks';
+import { useDebouncedValue, useEvent } from '../../_internal/hooks';
 
 import { Panel, CubePanelProps } from './Panel';
 
@@ -156,6 +156,7 @@ const Handler = (props: HandlerProps) => {
   const { direction = 'right', isDisabled } = props;
   const { hoverProps, isHovered } = useHover({});
   const isHorizontal = direction === 'left' || direction === 'right';
+  const localIsHovered = useDebouncedValue(isHovered, 150);
 
   return (
     <HandlerElement
@@ -163,7 +164,7 @@ const Handler = (props: HandlerProps) => {
         hoverProps,
         {
           mods: {
-            hovered: isHovered,
+            hovered: localIsHovered,
             horizontal: isHorizontal,
             disabled: isDisabled,
           },

@@ -6,3 +6,4 @@ export * from './use-timer';
 export * from './use-effect-once';
 export * from './use-warn';
 export * from './use-is-first-render';
+export * from './use-debounced-value';
