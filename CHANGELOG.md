@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.46.3
+
+### Patch Changes
+
+- [#543](https://github.com/cube-js/cube-ui-kit/pull/543) [`b813f22`](https://github.com/cube-js/cube-ui-kit/commit/b813f2207f3e332160a76f483dd38305d5643c47) Thanks [@tenphi](https://github.com/tenphi)! - Prevent ResizablePanel from infinite switching state loop in controllable mode.
+
 ## 0.46.2
 
 ### Patch Changes
