@@ -2,7 +2,8 @@ import { ForwardedRef, forwardRef, useEffect, useMemo, useState } from 'react';
 import { useHover, useMove } from 'react-aria';
 
 import { BasePropsWithoutChildren, Styles, tasty } from '../../tasty/index';
-import { mergeProps, useCombinedRefs } from '../../utils/react/index';
+import { mergeProps, useCombinedRefs } from '../../utils/react';
+import { useEvent } from '../../_internal/hooks';
 
 import { Panel, CubePanelProps } from './Panel';
 
@@ -245,13 +246,23 @@ function ResizablePanel(
           ? e.deltaX * (direction === 'right' ? 1 : -1)
           : e.deltaY * (direction === 'bottom' ? 1 : -1);
 
-        return clamp(size);
+        return size;
       });
     },
     onMoveEnd(e) {
       setIsDragging(false);
       setSize((size) => clamp(Math.round(size)));
     },
+  });
+
+  const notifyChange = useEvent(() => {
+    setSize((size) => {
+      if (providedSize && Math.abs(providedSize - size) > 0.5) {
+        return providedSize;
+      }
+
+      return size;
+    });
   });
 
   useEffect(() => {
@@ -278,9 +289,7 @@ function ResizablePanel(
   }, [visualSize]);
 
   useEffect(() => {
-    if (providedSize && Math.abs(providedSize - size) > 0.5) {
-      setSize(providedSize);
-    }
+    setTimeout(notifyChange);
   }, [providedSize]);
 
   const mods = useMemo(() => {
