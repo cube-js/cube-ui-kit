@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.46.4
+
+### Patch Changes
+
+- [#545](https://github.com/cube-js/cube-ui-kit/pull/545) [`8a460c3`](https://github.com/cube-js/cube-ui-kit/commit/8a460c326e1271c9fbba3b163b84142b968a440f) Thanks [@tenphi](https://github.com/tenphi)! - New drag appearance for ResizablePanel to avoid confusion with a scrollbar.
+
 ## 0.46.3
 
 ### Patch Changes
