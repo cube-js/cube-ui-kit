@@ -2,7 +2,8 @@ import { ForwardedRef, forwardRef, useEffect, useMemo, useState } from 'react';
 import { useHover, useMove } from 'react-aria';
 
 import { BasePropsWithoutChildren, Styles, tasty } from '../../tasty/index';
-import { mergeProps, useCombinedRefs } from '../../utils/react/index';
+import { mergeProps, useCombinedRefs } from '../../utils/react';
+import { useEvent } from '../../_internal/hooks';
 
 import { Panel, CubePanelProps } from './Panel';
 
@@ -217,19 +218,6 @@ function ResizablePanel(
   );
   let [visualSize, setVisualSize] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (ref.current) {
-      const offsetProp = isHorizontal ? 'offsetWidth' : 'offsetHeight';
-      const containerSize = ref.current[offsetProp];
-
-      if (Math.abs(containerSize - size) < 1 && !isDisabled) {
-        setVisualSize(size);
-      } else {
-        setVisualSize(containerSize);
-      }
-    }
-  }, [size, isDisabled]);
-
   let { moveProps } = useMove({
     onMoveStart(e) {
       if (isDisabled) {
@@ -258,7 +246,7 @@ function ResizablePanel(
           ? e.deltaX * (direction === 'right' ? 1 : -1)
           : e.deltaY * (direction === 'bottom' ? 1 : -1);
 
-        return clamp(size);
+        return size;
       });
     },
     onMoveEnd(e) {
@@ -267,16 +255,44 @@ function ResizablePanel(
     },
   });
 
-  useEffect(() => {
-    if (providedSize == null || Math.abs(providedSize - size) > 0.5) {
-      onSizeChange?.(Math.round(size));
-    }
-  }, [size]);
+  // Since we sync provided size and the local one in two ways
+  // we need a way to prevent infinite loop in some cases.
+  // We will run this in setTimeout and make sure it will get the most recent state.
+  const notifyChange = useEvent(() => {
+    setSize((size) => {
+      if (providedSize && Math.abs(providedSize - size) > 0.5) {
+        return providedSize;
+      }
+
+      return size;
+    });
+  });
 
   useEffect(() => {
-    if (providedSize && Math.abs(providedSize - size) > 0.5) {
-      setSize(clamp(providedSize));
+    if (ref.current) {
+      const offsetProp = isHorizontal ? 'offsetWidth' : 'offsetHeight';
+      const containerSize = ref.current[offsetProp];
+
+      if (Math.abs(containerSize - size) < 1 && !isDisabled) {
+        setVisualSize(size);
+      } else {
+        setVisualSize(containerSize);
+      }
     }
+  }, [size, isDisabled]);
+
+  useEffect(() => {
+    if (
+      !isDragging &&
+      visualSize != null &&
+      (providedSize == null || Math.abs(providedSize - visualSize) > 0.5)
+    ) {
+      onSizeChange?.(Math.round(visualSize));
+    }
+  }, [visualSize]);
+
+  useEffect(() => {
+    setTimeout(notifyChange);
   }, [providedSize]);
 
   const mods = useMemo(() => {

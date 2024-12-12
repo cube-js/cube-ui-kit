@@ -44,7 +44,6 @@ const TemplateTop: StoryFn<CubeResizablePanelProps> = (args) => {
 
 const TemplateControllable: StoryFn<CubeResizablePanelProps> = (args) => {
   const [size, setSize] = useState(200);
-
   return (
     <ResizablePanel
       size={size}
