@@ -103,30 +103,47 @@ const HandlerElement = tasty({
     },
 
     Drag: {
-      hide: {
-        '': false,
-        disabled: true,
+      display: 'grid',
+      gap: '2bw',
+      flow: {
+        '': 'row',
+        horizontal: 'column',
+      },
+      gridColumns: {
+        '': '3px 3px 3px 3px 3px',
+        horizontal: 'auto',
+      },
+      gridRows: {
+        '': 'auto',
+        horizontal: '3px 3px 3px 3px 3px',
       },
       width: {
-        '': '3x',
+        '': 'auto',
         horizontal: '3px',
       },
       height: {
         '': '3px',
-        horizontal: '3x',
+        horizontal: 'auto',
       },
+      inset: {
+        '': '3px 50% auto auto',
+        horizontal: '50% 3px auto auto',
+      },
+      transform: {
+        '': 'translate(-50%, 0)',
+        horizontal: 'translate(0, -50%)',
+      },
+      position: 'absolute',
+      transition: 'theme',
+    },
+
+    DragPart: {
       radius: true,
       fill: {
         '': '#dark-03',
         'hovered | drag': '#dark-02',
         disabled: '#dark-04',
       },
-      inset: {
-        '': '3px 50% auto auto',
-        horizontal: '50% 3px auto auto',
-      },
-      position: 'absolute',
-      transition: 'theme',
     },
   },
 });
@@ -156,7 +173,15 @@ const Handler = (props: HandlerProps) => {
       )}
     >
       <div data-element="Track" />
-      <div data-element="Drag" />
+      {!isDisabled ? (
+        <div data-element="Drag">
+          <div data-element="DragPart" />
+          <div data-element="DragPart" />
+          <div data-element="DragPart" />
+          <div data-element="DragPart" />
+          <div data-element="DragPart" />
+        </div>
+      ) : null}
     </HandlerElement>
   );
 };
