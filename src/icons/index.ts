@@ -70,6 +70,9 @@ import { StatsIcon as _StatsIcon } from './StatsIcon';
 import { UnlockIcon as _UnlockIcon } from './UnlockIcon';
 import { UserIcon as _UserIcon } from './UserIcon';
 import { UserGroupIcon as _UserGroupIcon } from './UserGroupIcon';
+import { UserLockIcon as _UserLockIcon } from './UserLockIcon';
+import { ShieldIcon as _ShieldIcon } from './ShieldIcon';
+import { ShieldFilledIcon as _ShieldFilledIcon } from './ShieldFilledIcon';
 
 export const CloseIcon = wrapIcon('CloseIcon', _CloseIcon);
 export const ExclamationIcon = wrapIcon('ExclamationIcon', _ExclamationIcon);
@@ -166,6 +169,9 @@ export const StatsIcon = wrapIcon('StatsIcon', _StatsIcon);
 export const UnlockIcon = wrapIcon('UnlockIcon', _UnlockIcon);
 export const UserIcon = wrapIcon('UserIcon', _UserIcon);
 export const UserGroupIcon = wrapIcon('UserGroupIcon', _UserGroupIcon);
+export const UserLockIcon = wrapIcon('UserLockIcon', _UserLockIcon);
+export const ShieldIcon = wrapIcon('ShieldIcon', _ShieldIcon);
+export const ShieldFilledIcon = wrapIcon('ShieldFilledIcon', _ShieldFilledIcon);
 
 export { IconContainer } from './IconContainer';
 
