@@ -187,7 +187,7 @@ const Handler = (props: HandlerProps) => {
   );
 };
 
-const PanelElement = tasty(Panel, {
+const StyledPanel = tasty(Panel, {
   styles: {
     flexGrow: 0,
     width: {
@@ -220,6 +220,7 @@ function ResizablePanel(
     onSizeChange,
     minSize = 200,
     maxSize = isControllable ? undefined : 'min(50%, 400px)',
+    ...restProps
   } = props;
 
   const [isDragging, setIsDragging] = useState(false);
@@ -330,7 +331,7 @@ function ResizablePanel(
   }, [isDragging, isHorizontal, isDisabled]);
 
   return (
-    <PanelElement
+    <StyledPanel
       ref={ref}
       data-direction={direction}
       mods={mods}
@@ -342,7 +343,7 @@ function ResizablePanel(
           mods={mods}
         />
       }
-      {...mergeProps(props, {
+      {...mergeProps(restProps, {
         style: {
           // We set a current size further via width/min-width/max-width styles to respect size boundaries
           '--size': `${size}px`,
