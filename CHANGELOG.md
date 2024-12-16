@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.46.5
+
+### Patch Changes
+
+- [#548](https://github.com/cube-js/cube-ui-kit/pull/548) [`bc16ca4`](https://github.com/cube-js/cube-ui-kit/commit/bc16ca4c9284227d47fe0a418399ac9b0c50a2ed) Thanks [@tenphi](https://github.com/tenphi)! - Add ShieldIcon, ShieldFilledIcon and UserLockIcon components.
+
+- [#547](https://github.com/cube-js/cube-ui-kit/pull/547) [`273f757`](https://github.com/cube-js/cube-ui-kit/commit/273f757b04962805bc9e4fdb903b29de6838d1ef) Thanks [@tenphi](https://github.com/tenphi)! - Fix props propagation in ResizablePanel.
+
 ## 0.46.4
 
 ### Patch Changes
