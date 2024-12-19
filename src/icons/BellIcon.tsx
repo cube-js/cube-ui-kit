@@ -1,4 +1,7 @@
-export const BellIcon = (
+import { wrapIcon } from './wrap-icon';
+
+export const BellIcon = wrapIcon(
+  'BellIcon',
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="16"
@@ -16,5 +19,5 @@ export const BellIcon = (
       fill="currentColor"
       d="M8 14.7c-.794 0-1.35-.584-1.35-1.2h-1.3C5.35 14.928 6.585 16 8 16s2.65-1.072 2.65-2.5h-1.3c0 .616-.556 1.2-1.35 1.2"
     />
-  </svg>
+  </svg>,
 );

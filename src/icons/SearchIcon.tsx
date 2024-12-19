@@ -1,4 +1,7 @@
-export const SearchIcon = (
+import { wrapIcon } from './wrap-icon';
+
+export const SearchIcon = wrapIcon(
+  'SearchIcon',
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="16"
@@ -12,5 +15,5 @@ export const SearchIcon = (
       d="M10.7 6.5a4.2 4.2 0 1 1-8.4 0 4.2 4.2 0 0 1 8.4 0m-.798 4.322a5.5 5.5 0 1 1 .92-.92l3.638 3.638a.65.65 0 1 1-.92.92z"
       clipRule="evenodd"
     />
-  </svg>
+  </svg>,
 );

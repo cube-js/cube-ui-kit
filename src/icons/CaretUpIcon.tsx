@@ -1,4 +1,7 @@
-export const CaretUpIcon = (
+import { wrapIcon } from './wrap-icon';
+
+export const CaretUpIcon = wrapIcon(
+  'CaretUpIcon',
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="16"
@@ -10,5 +13,5 @@ export const CaretUpIcon = (
       fill="currentColor"
       d="M7.54 5.553a.6.6 0 0 1 .92 0l3.72 4.463a.6.6 0 0 1-.461.984H4.281a.6.6 0 0 1-.46-.984z"
     />
-  </svg>
+  </svg>,
 );
