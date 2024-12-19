@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.46.7
+
+### Patch Changes
+
+- [#552](https://github.com/cube-js/cube-ui-kit/pull/552) [`2ddc0fa`](https://github.com/cube-js/cube-ui-kit/commit/2ddc0fa9205deed428bb19b56f1301a80de0e751) Thanks [@tenphi](https://github.com/tenphi)! - Optimize icon exports.
+
 ## 0.46.6
 
 ### Patch Changes
