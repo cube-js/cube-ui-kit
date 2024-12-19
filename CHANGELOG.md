@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.46.6
+
+### Patch Changes
+
+- [#550](https://github.com/cube-js/cube-ui-kit/pull/550) [`ad94f27`](https://github.com/cube-js/cube-ui-kit/commit/ad94f2740336a9b34d11337d15ced5efa28ef2d1) Thanks [@tenphi](https://github.com/tenphi)! - Add new icons: Folder, FolderFilled, FolderOpen, FolderOpenFilled, Hierarchy.
+
 ## 0.46.5
 
 ### Patch Changes
