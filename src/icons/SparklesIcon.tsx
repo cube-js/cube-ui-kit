@@ -1,4 +1,7 @@
-export const SparklesIcon = (
+import { wrapIcon } from './wrap-icon';
+
+export const SparklesIcon = wrapIcon(
+  'SparklesIcon',
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="16"
@@ -19,5 +22,5 @@ export const SparklesIcon = (
         <path fill="#fff" d="M0 0h16v16H0z" />
       </clipPath>
     </defs>
-  </svg>
+  </svg>,
 );
