@@ -73,6 +73,11 @@ import { UserGroupIcon as _UserGroupIcon } from './UserGroupIcon';
 import { UserLockIcon as _UserLockIcon } from './UserLockIcon';
 import { ShieldIcon as _ShieldIcon } from './ShieldIcon';
 import { ShieldFilledIcon as _ShieldFilledIcon } from './ShieldFilledIcon';
+import { FolderIcon as _FolderIcon } from './FolderIcon';
+import { FolderFilledIcon as _FolderFilledIcon } from './FolderFilledIcon';
+import { FolderOpenIcon as _FolderOpenIcon } from './FolderOpenIcon';
+import { FolderOpenFilledIcon as _FolderOpenFilledIcon } from './FolderOpenFilledIcon';
+import { HierarchyIcon as _HierarchyIcon } from './HierarchyIcon';
 
 export const CloseIcon = wrapIcon('CloseIcon', _CloseIcon);
 export const ExclamationIcon = wrapIcon('ExclamationIcon', _ExclamationIcon);
@@ -172,6 +177,14 @@ export const UserGroupIcon = wrapIcon('UserGroupIcon', _UserGroupIcon);
 export const UserLockIcon = wrapIcon('UserLockIcon', _UserLockIcon);
 export const ShieldIcon = wrapIcon('ShieldIcon', _ShieldIcon);
 export const ShieldFilledIcon = wrapIcon('ShieldFilledIcon', _ShieldFilledIcon);
+export const FolderIcon = wrapIcon('FolderIcon', _FolderIcon);
+export const FolderFilledIcon = wrapIcon('FolderFilledIcon', _FolderFilledIcon);
+export const FolderOpenIcon = wrapIcon('FolderOpenIcon', _FolderOpenIcon);
+export const FolderOpenFilledIcon = wrapIcon(
+  'FolderOpenFilledIcon',
+  _FolderOpenFilledIcon,
+);
+export const HierarchyIcon = wrapIcon('HierarchyIcon', _HierarchyIcon);
 
 export { IconContainer } from './IconContainer';
 
