@@ -41,8 +41,7 @@ const Template: StoryFn<CubeIconProps> = (name) => {
       <Title>32px</Title>
       <Grid columns="repeat(auto-fit, 200px)" flow="row" gap="16px">
         {Object.keys(Icons).map((iconName) => {
-          if (iconName === 'IconContainer' || iconName === 'wrapIcon')
-            return null;
+          if (iconName === 'Icon' || iconName === 'wrapIcon') return null;
 
           const Icon = Icons[iconName];
 
