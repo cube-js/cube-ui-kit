@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.48.0
+
+### Minor Changes
+
+- [#556](https://github.com/cube-js/cube-ui-kit/pull/556) [`7c70da6`](https://github.com/cube-js/cube-ui-kit/commit/7c70da6469a6db3a4446ef01ce99e3f886cc4085) Thanks [@tenphi](https://github.com/tenphi)! - Change default border radius to 6px.
+
 ## 0.47.0
 
 ### Minor Changes
