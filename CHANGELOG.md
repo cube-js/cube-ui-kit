@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.47.0
+
+### Minor Changes
+
+- [#554](https://github.com/cube-js/cube-ui-kit/pull/554) [`4c47412`](https://github.com/cube-js/cube-ui-kit/commit/4c47412d68364fc2f6f19a7df4503c6823102745) Thanks [@tenphi](https://github.com/tenphi)! - Rename IconContainer -> Icon.
+
 ## 0.46.7
 
 ### Patch Changes
