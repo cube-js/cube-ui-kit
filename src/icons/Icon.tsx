@@ -12,7 +12,7 @@ import {
   tasty,
 } from '../tasty';
 
-const IconContainerElement = tasty({
+const IconElement = tasty({
   as: 'span',
   styles: {
     display: 'inline-grid',
@@ -21,6 +21,10 @@ const IconContainerElement = tasty({
     width: '1em 1em',
     height: 'min 1em',
     fontSize: 'var(--icon-size, var(--font-size))',
+    textAlign: 'center',
+    textTransform: 'none',
+    textRendering: 'optimizeLegibility',
+    '-webkit-font-smoothing': 'antialiased',
 
     '& svg': {
       width: '1em 1em',
@@ -38,11 +42,11 @@ export interface CubeIconProps
   size?: Styles['fontSize'];
 }
 
-export const IconContainer = memo(function IconContainer(props: CubeIconProps) {
+export const Icon = memo(function Icon(props: CubeIconProps) {
   const { size, ...rest } = props;
 
   return (
-    <IconContainerElement
+    <IconElement
       qa="Icon"
       {...rest}
       styles={

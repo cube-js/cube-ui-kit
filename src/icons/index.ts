@@ -79,5 +79,5 @@ export { WarningFilledIcon } from './WarningFilledIcon';
 export { WarningIcon } from './WarningIcon';
 export { wrapIcon } from './wrap-icon';
 
-export { IconContainer } from './IconContainer';
-export type { CubeIconProps } from './IconContainer';
+export { Icon } from './Icon';
+export type { CubeIconProps } from './Icon';
