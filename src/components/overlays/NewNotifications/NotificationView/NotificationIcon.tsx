@@ -44,7 +44,7 @@ const IconPreset = tasty({
       success: '#success-text',
       danger: '#danger-text',
     },
-    borderRadius: '0.5x',
+    radius: '1r',
     width: '3x',
     height: '3x',
     padding: '0.5x',
