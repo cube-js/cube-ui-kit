@@ -24,7 +24,7 @@ const NotificationElement = tasty(Card, {
     shadow: '0 5px 15px #dark.10',
     border: false,
     margin: '1x bottom',
-    radius: '1.5r',
+    radius: '1x',
     gridColumns: 'auto 1fr auto',
     placeItems: 'center start',
     gap: '2x',

@@ -89,7 +89,7 @@ const CheckboxElement = tasty({
   styles: {
     display: 'grid',
     placeItems: 'center',
-    radius: '.5r',
+    radius: '.25x',
     fill: {
       '': '#white',
       'checked | indeterminate': '#purple-text',

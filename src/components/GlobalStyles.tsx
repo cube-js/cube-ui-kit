@@ -252,7 +252,7 @@ const GlobalStylesElement = createGlobalStyle<GlobalStylesElementProps>`
     word-spacing: normal;
     word-break: normal;
     word-wrap: normal;
-    border-radius: 4px;
+    border-radius: 6px;
     border: none;
 
     -moz-tab-size: 4;

@@ -42,7 +42,7 @@ const TOKENS = {
   gap: '8px',
   'outline-width': 'calc(1rem / 16 * 3)',
   'border-width': '1px',
-  radius: '4px',
+  radius: '6px',
   'leaf-sharp-radius': '0px',
   'fade-width': '32px',
   transition: '80ms',
