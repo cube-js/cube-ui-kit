@@ -73,7 +73,7 @@ const LAYOUT_MAP = {
             <Placeholder
               key={i}
               isStatic={isStatic}
-              radius="1x"
+              radius="1r"
               width="20x"
               height="12x"
               flexGrow={1}

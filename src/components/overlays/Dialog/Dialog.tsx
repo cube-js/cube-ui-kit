@@ -48,8 +48,8 @@ const DialogElement = tasty({
     gap: 0,
     flow: 'column',
     radius: {
-      '': '2r',
-      '[data-type="tray"]': '2r top',
+      '': '@modal-radius',
+      '[data-type="tray"]': '@modal-radius top',
       '[data-type="fullscreenTakeover"] | [data-type="panel"]': '0r',
     },
     fill: '#white',

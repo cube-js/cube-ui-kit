@@ -207,7 +207,7 @@ export function Modal(allProps: CubeModalProps) {
           padding="0"
           shadow={true}
           border={false}
-          radius="1.5r"
+          radius="1x"
           width={`288px (100% - 32px) ${
             typeof width === 'number' ? `${width}px` : width || '360px'
           }`}
