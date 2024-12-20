@@ -1,17 +1,17 @@
 import { ReactNode } from 'react';
 
-import { CubeIconProps, IconContainer } from './IconContainer';
+import { CubeIconProps, Icon } from './Icon';
 
 export function wrapIcon(name: string, icon: ReactNode) {
-  function Icon(props: CubeIconProps) {
+  function IconWrapper(props: CubeIconProps) {
     return (
-      <IconContainer qa={name} aria-hidden="true" {...props}>
+      <Icon qa={name} aria-hidden="true" {...props}>
         {icon}
-      </IconContainer>
+      </Icon>
     );
   }
 
-  Icon.displayName = name;
+  IconWrapper.displayName = name;
 
-  return Icon;
+  return IconWrapper;
 }

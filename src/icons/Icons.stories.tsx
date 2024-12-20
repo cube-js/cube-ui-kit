@@ -6,13 +6,13 @@ import { Space } from '../components/layout/Space';
 import { Title } from '../components/content/Title';
 import { Flow } from '../components/layout/Flow';
 
-import { CubeIconProps, IconContainer } from './IconContainer';
+import { CubeIconProps, Icon } from './Icon';
 
 import * as Icons from './index';
 
 export default {
   title: 'Content/Icons',
-  component: IconContainer,
+  component: Icon,
   parameters: {
     controls: {
       exclude: baseProps,
