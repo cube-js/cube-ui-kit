@@ -26,7 +26,7 @@ export const StyledMenu = tasty({
       '': '#dark-05',
       section: '',
     },
-    radius: '@modal-radius',
+    radius: '@large-radius',
     boxShadow: {
       '': '',
       popover: '0px 5px 15px #dark.05',
