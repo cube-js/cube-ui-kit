@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.48.1
+
+### Patch Changes
+
+- [#558](https://github.com/cube-js/cube-ui-kit/pull/558) [`9dc27fe`](https://github.com/cube-js/cube-ui-kit/commit/9dc27fe943ce3891d1eac40a728562492c3c5e0b) Thanks [@tenphi](https://github.com/tenphi)! - Update border radius size for Card and CopySnippet components.
+
 ## 0.48.0
 
 ### Minor Changes
