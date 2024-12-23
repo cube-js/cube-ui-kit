@@ -14,7 +14,7 @@ const CardElement = tasty({
   styles: {
     display: 'block',
     flow: 'column',
-    radius: '1r',
+    radius: '(@large-radius + 1bw)',
     fill: '#white',
     border: true,
     padding: '1.5x',
