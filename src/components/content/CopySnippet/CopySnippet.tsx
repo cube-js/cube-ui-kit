@@ -73,7 +73,7 @@ const CopySnippetElement = tasty(Card, {
   styles: {
     display: 'block',
     fill: '#grey-light',
-    radius: '1r',
+    radius: '@large-radius',
     border: 0,
     padding: 0,
 
@@ -82,7 +82,7 @@ const CopySnippetElement = tasty(Card, {
       flow: 'row',
       gridColumns: 'minmax(0, 1fr) auto',
       width: 'min 20x',
-      radius: '1r',
+      radius: '@large-radius',
       position: 'relative',
       overflow: 'hidden',
     },
@@ -151,6 +151,10 @@ export interface CubeCopySnippetProps extends CubeCardProps {
 // const HIDDEN_SYMBOL = '●';
 const HIDDEN_SYMBOL = '•';
 
+function replaceSymbolsToHidden(str: string) {
+  return HIDDEN_SYMBOL.repeat(str.length);
+}
+
 function CopySnippet(allProps: CubeCopySnippetProps) {
   const {
     code = '',
@@ -190,29 +194,17 @@ function CopySnippet(allProps: CubeCopySnippetProps) {
 
   if (!showHidden) {
     if (hideText === true) {
-      formattedCode = formattedCode
-        .split('')
-        .map((s) => HIDDEN_SYMBOL)
-        .join('')
-        .trim();
+      formattedCode = replaceSymbolsToHidden(formattedCode);
     } else if (typeof hideText === 'string') {
       formattedCode = formattedCode.replaceAll(
         hideText,
-        hideText
-          .split('')
-          .map((s) => HIDDEN_SYMBOL)
-          .join('')
-          .trim(),
+        replaceSymbolsToHidden(hideText),
       );
     } else if (Array.isArray(hideText)) {
       hideText.forEach((text) => {
         formattedCode = formattedCode.replaceAll(
           text,
-          text
-            .split('')
-            .map((s) => HIDDEN_SYMBOL)
-            .join('')
-            .trim(),
+          replaceSymbolsToHidden(text),
         );
       });
     }
