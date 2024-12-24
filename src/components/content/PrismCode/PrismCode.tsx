@@ -17,6 +17,8 @@ const PreElement = tasty({
   styles: {
     margin: 0,
     padding: 0,
+    overflow: 'auto',
+    styledScrollbar: true,
 
     Code: {
       display: 'block',
