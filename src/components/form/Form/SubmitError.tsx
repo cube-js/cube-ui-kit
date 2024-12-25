@@ -14,10 +14,7 @@ type SubmitErrorContextProps = {
   submitError?: unknown;
 };
 
-const SubmitError = function SubmitError(
-  props: CubeAlertProps,
-  ref: ForwardedRef<HTMLDivElement>,
-) {
+function SubmitError(props: CubeAlertProps, ref: ForwardedRef<HTMLDivElement>) {
   let { submitError } = useContext(FormContext) as SubmitErrorContextProps;
 
   if (!submitError) {
@@ -36,7 +33,7 @@ const SubmitError = function SubmitError(
       {submitError as ReactNode}
     </Alert>
   );
-};
+}
 
 /**
  * An alert that shows a form error message received from the onSubmit callback.

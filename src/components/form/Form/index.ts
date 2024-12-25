@@ -15,24 +15,21 @@ const Form = Object.assign(
     Reset: typeof ResetButton;
     useForm: typeof useForm;
   },
-  { Item: Field, useForm, SubmitButton, ResetButton, SubmitError },
+  {
+    Item: Field,
+    useForm,
+    Submit: SubmitButton,
+    Reset: ResetButton,
+    SubmitError,
+  },
 );
 
-export {
-  useFormProps,
-  Form,
-  Field,
-  useForm,
-  FormContext,
-  SubmitError,
-  SubmitButton,
-  ResetButton,
-};
-export { useFieldProps } from './use-field/index';
+export * from './SubmitError';
+export * from './SubmitButton';
+export * from './ResetButton';
+export * from './use-field';
+export { useFormProps, Form, Field, useForm, FormContext };
 export type { CubeFormProps } from './Form';
 export type { CubeFormInstance } from './use-form';
 export type { FieldTypes, Fields } from './types';
-export type { UseFieldParams, UseFieldPropsParams } from './use-field/index';
 export type { CubeAlertProps as CubeSubmitErrorProps };
-export type { CubeResetButtonProps } from './ResetButton';
-export type { CubeSubmitButtonProps } from './SubmitButton';

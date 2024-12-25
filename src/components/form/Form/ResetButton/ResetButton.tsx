@@ -35,7 +35,16 @@ function ResetButton(
       type="primary"
       htmlType="reset"
       isDisabled={form?.isSubmitting || !form?.isTouched}
-      {...mergeProps({ onPress, isDisabled }, otherProps)}
+      {...mergeProps(
+        {
+          onPress,
+          isDisabled:
+            isDisabled != null
+              ? isDisabled
+              : form?.isSubmitting || !form?.isTouched,
+        },
+        otherProps,
+      )}
     />
   );
 }

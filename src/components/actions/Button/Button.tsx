@@ -118,8 +118,8 @@ const ButtonElement = tasty({
         '': '#clear',
 
         '[data-type="primary"]': '#purple',
-        '[data-type="primary"] & pressed': '#purple',
         '[data-type="primary"] & hovered': '#purple-text',
+        '[data-type="primary"] & pressed': '#purple',
 
         '[data-type="secondary"]': '#purple.10',
         '[data-type="secondary"] & hovered': '#purple.16',

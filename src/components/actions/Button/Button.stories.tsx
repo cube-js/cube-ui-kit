@@ -15,21 +15,22 @@ export default {
       defaultValue: undefined,
       control: { type: 'radio', options: [undefined, 'small', 'large'] },
     },
-    type: {
-      defaultValue: undefined,
-      control: {
-        type: 'radio',
-        options: [
-          undefined,
-          'secondary',
-          'primary',
-          'outline',
-          'clear',
-          'neutral',
-          'link',
-        ],
-      },
-    },
+    // @TODO: Migrate to new API
+    // type: {
+    //   defaultValue: undefined,
+    //   control: {
+    //     type: 'radio',
+    //     options: [
+    //       undefined,
+    //       'secondary',
+    //       'primary',
+    //       'outline',
+    //       'clear',
+    //       'neutral',
+    //       'link',
+    //     ],
+    //   },
+    // },
     theme: {
       defaultValue: undefined,
       control: { type: 'radio', options: [undefined, 'danger', 'special'] },

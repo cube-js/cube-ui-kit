@@ -2,8 +2,8 @@ import userEvents from '@testing-library/user-event';
 import { act, waitFor } from '@testing-library/react';
 
 import { renderWithForm } from '../../../test/index';
-import { SubmitButton } from '../../actions/index';
-import { TextInput } from '../../fields/TextInput/TextInput';
+import { SubmitButton } from '../../form';
+import { TextInput } from '../../fields';
 
 import { Form } from './index';
 

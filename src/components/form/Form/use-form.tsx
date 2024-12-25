@@ -218,13 +218,17 @@ export class CubeFormInstance<
 
   resetFields(names?: (keyof T & string)[], skipRender?: boolean): void {
     Object.values(this.fields).forEach((field) => {
-      if (!field || !names?.includes(field.name)) {
+      if (!field || (names && !names?.includes(field.name))) {
         return;
       }
 
-      field.value = this.defaultValues[field.name] ?? undefined; // Explicit fallback
+      const defaultValue = this.defaultValues[field.name] ?? undefined;
+
+      field.value = defaultValue;
       field.errors = [];
       field.touched = false;
+      field.status = undefined;
+      field.inputValue = defaultValue;
     });
 
     if (!skipRender) {

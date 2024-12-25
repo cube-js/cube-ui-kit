@@ -2,7 +2,6 @@ import { StoryFn } from '@storybook/react';
 import { userEvent, within } from '@storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
-import { SubmitButton } from '../../actions';
 import { Form } from '../../form';
 import { TextInput } from '../TextInput/index';
 
@@ -39,7 +38,7 @@ const FormTemplate: StoryFn<CubeTextInputMapperProps> = ({ ...props }) => (
       {...props}
       onChange={(value) => console.log('! onChange', value)}
     />
-    <SubmitButton>Submit</SubmitButton>
+    <Form.Submit>Submit</Form.Submit>
   </Form>
 );
 
@@ -56,7 +55,7 @@ const FormTemplateSync: StoryFn<CubeTextInputMapperProps> = ({ ...props }) => (
       onChange={(value) => console.log('! onChange', value)}
     />
     <TextInput name="field.name" label="TextInput" />
-    <SubmitButton>Submit</SubmitButton>
+    <Form.Submit>Submit</Form.Submit>
   </Form>
 );
 
