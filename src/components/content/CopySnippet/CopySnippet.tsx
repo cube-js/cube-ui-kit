@@ -3,7 +3,7 @@ import copy from 'clipboard-copy';
 
 import { Action, Button } from '../../actions';
 import { Card, CubeCardProps } from '../Card/Card';
-import { tasty } from '../../../tasty';
+import { CONTAINER_STYLES, tasty } from '../../../tasty';
 import {
   CubePrismCodeProps,
   PrismCode,
@@ -89,6 +89,7 @@ const CopySnippetElement = tasty(Card, {
     padding: 0,
     preset: 'default',
     radius: '1r',
+    overflow: 'hidden',
 
     Grid: {
       display: 'grid',
@@ -96,11 +97,10 @@ const CopySnippetElement = tasty(Card, {
       gridColumns: 'minmax(0, 1fr) auto',
       gridRows: 'minmax(0, 1fr)',
       width: 'min 20x',
-      radius: '1r',
       position: 'relative',
-      overflow: 'hidden',
     },
   },
+  styleProps: [...CONTAINER_STYLES],
 });
 
 const ActionButton = tasty(Button, {

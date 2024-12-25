@@ -1,5 +1,4 @@
 import {
-  BASE_STYLES,
   CONTAINER_STYLES,
   TEXT_STYLES,
   extractStyles,
@@ -9,11 +8,7 @@ import { useDeprecationWarning } from '../../../_internal';
 
 import { CubeAlertProps } from './types';
 
-const STYLE_LIST = [
-  ...CONTAINER_STYLES,
-  ...BASE_STYLES,
-  ...TEXT_STYLES,
-] as const;
+const STYLE_LIST = [...CONTAINER_STYLES, ...TEXT_STYLES] as const;
 
 export function useAlert(props: CubeAlertProps) {
   const { type, isDisabled = false, theme } = props;
