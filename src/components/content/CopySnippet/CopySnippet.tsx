@@ -69,7 +69,8 @@ const ButtonContainer = tasty({
       multiline: '1r',
     },
 
-    // border: 'left',
+    // Make sure there's a small gap between buttons and the content
+    border: 'left #clear',
   },
 });
 
