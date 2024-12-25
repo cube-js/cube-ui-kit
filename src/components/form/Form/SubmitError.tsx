@@ -1,4 +1,10 @@
-import { ReactNode, useContext, isValidElement } from 'react';
+import {
+  ReactNode,
+  useContext,
+  isValidElement,
+  forwardRef,
+  ForwardedRef,
+} from 'react';
 
 import { Alert, CubeAlertProps } from '../../content/Alert/index';
 
@@ -8,10 +14,10 @@ type SubmitErrorContextProps = {
   submitError?: unknown;
 };
 
-/**
- * An alert that shows a form error message received from the onSubmit callback.
- */
-export const SubmitError = function SubmitError(props: CubeAlertProps) {
+const SubmitError = function SubmitError(
+  props: CubeAlertProps,
+  ref: ForwardedRef<HTMLDivElement>,
+) {
   let { submitError } = useContext(FormContext) as SubmitErrorContextProps;
 
   if (!submitError) {
@@ -26,8 +32,14 @@ export const SubmitError = function SubmitError(props: CubeAlertProps) {
   }
 
   return (
-    <Alert theme="danger" {...props}>
+    <Alert ref={ref} theme="danger" {...props}>
       {submitError as ReactNode}
     </Alert>
   );
 };
+
+/**
+ * An alert that shows a form error message received from the onSubmit callback.
+ */
+const _SubmitError = forwardRef(SubmitError);
+export { _SubmitError as SubmitError };
