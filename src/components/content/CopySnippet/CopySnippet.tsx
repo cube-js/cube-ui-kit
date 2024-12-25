@@ -3,7 +3,7 @@ import copy from 'clipboard-copy';
 
 import { Action, Button } from '../../actions';
 import { Card, CubeCardProps } from '../Card/Card';
-import { CONTAINER_STYLES, tasty } from '../../../tasty';
+import { tasty } from '../../../tasty';
 import {
   CubePrismCodeProps,
   PrismCode,
@@ -100,7 +100,6 @@ const CopySnippetElement = tasty(Card, {
       position: 'relative',
     },
   },
-  styleProps: [...CONTAINER_STYLES],
 });
 
 const ActionButton = tasty(Button, {
