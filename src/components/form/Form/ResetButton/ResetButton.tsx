@@ -22,12 +22,14 @@ function ResetButton(
 
   props = useFormProps(props);
 
-  const { isDisabled } = providerProps;
-  const { form, ...otherProps } = props;
+  const { isDisabled: isContextDisabled } = providerProps;
+  const { form, isDisabled, ...otherProps } = props;
 
   const onPress = useEvent(() => {
     form?.resetFields();
   });
+
+  const isSomethingDisabled = isDisabled || isContextDisabled;
 
   return (
     <Button
@@ -39,8 +41,8 @@ function ResetButton(
         {
           onPress,
           isDisabled:
-            isDisabled != null
-              ? isDisabled
+            isSomethingDisabled != null
+              ? isSomethingDisabled
               : form?.isSubmitting || !form?.isTouched,
         },
         otherProps,

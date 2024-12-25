@@ -20,11 +20,12 @@ function SubmitButton(
 
   props = useFormProps(props);
 
-  const { isDisabled } = providerProps;
+  const { isDisabled: isContextDisabled } = providerProps;
 
   props = useFormProps(props);
 
-  const { form, ...otherProps } = props;
+  const { form, isDisabled, ...otherProps } = props;
+  const isSomethingDisabled = isDisabled || isContextDisabled;
 
   return (
     <Button
@@ -32,7 +33,9 @@ function SubmitButton(
       type="primary"
       htmlType="submit"
       isLoading={form?.isSubmitting}
-      isDisabled={isDisabled != null ? isDisabled : form?.isInvalid}
+      isDisabled={
+        isSomethingDisabled != null ? isSomethingDisabled : form?.isInvalid
+      }
       {...otherProps}
     />
   );
