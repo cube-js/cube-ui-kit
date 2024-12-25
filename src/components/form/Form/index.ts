@@ -1,8 +1,8 @@
 import { CubeAlertProps } from '../../content/Alert/index';
 
 import { Field } from './Field';
-import { ResetButton } from './ResetButton/index';
-import { SubmitButton } from './SubmitButton/index';
+import { ResetButton } from './ResetButton';
+import { SubmitButton } from './SubmitButton';
 import { SubmitError } from './SubmitError';
 import { useForm } from './use-form';
 import { useFormProps, FormContext, Form as _Form } from './Form';
