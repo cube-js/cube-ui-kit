@@ -217,23 +217,19 @@ export class CubeFormInstance<
   }
 
   resetFields(names?: (keyof T & string)[], skipRender?: boolean): void {
-    const fieldsValue = this.getFieldsValue();
-    const fieldNames = Object.keys({ ...fieldsValue, ...this.defaultValues });
-    const filteredFieldNames = names
-      ? fieldNames.filter((name) => names.includes(name))
-      : fieldNames;
-
-    const values = filteredFieldNames.reduce((map, name) => {
-      if (name in this.defaultValues) {
-        map[name] = this.defaultValues[name];
-      } else {
-        map[name] = undefined;
+    Object.values(this.fields).forEach((field) => {
+      if (!field || !names?.includes(field.name)) {
+        return;
       }
 
-      return map;
-    }, {});
+      field.value = this.defaultValues[field.name] ?? undefined; // Explicit fallback
+      field.errors = [];
+      field.touched = false;
+    });
 
-    this.setFieldsValue(values, false, skipRender);
+    if (!skipRender) {
+      this.forceReRender();
+    }
   }
 
   async validateField<Name extends keyof T & string>(name: Name): Promise<any> {
@@ -337,6 +333,21 @@ export class CubeFormInstance<
 
   get isTouched(): boolean {
     return Object.values(this.fields).some((field) => field?.touched);
+  }
+
+  // True if all fields are verified and valid
+  // @IMPORTANT: This is not the same as `!isInvalid`, because it also checks if all fields are verified
+  get isValid(): boolean {
+    return Object.values(this.fields).every((field) => {
+      return field?.status === 'valid';
+    });
+  }
+
+  // True if at least one field is verified and invalid
+  get isInvalid(): boolean {
+    return Object.values(this.fields).some((field) => {
+      return field?.status === 'invalid';
+    });
   }
 
   getFieldError<Name extends keyof T & string>(name: Name): ReactNode[] {

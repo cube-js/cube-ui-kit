@@ -17,7 +17,7 @@ import {
   RangeSlider,
   Slider,
   Select,
-  Submit,
+  SubmitButton,
   SubmitError,
   Switch,
   DateInput,
@@ -94,7 +94,7 @@ const CustomSubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
       <Field name="text" label="Text input">
         <TextInput />
       </Field>
-      <Submit>Submit</Submit>
+      <SubmitButton>Submit</SubmitButton>
       {form.submitError ? <Alert>{form.submitError as string}</Alert> : null}
     </Form>
   );
@@ -119,7 +119,7 @@ const SubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
       <Field name="text" label="Text input">
         <TextInput />
       </Field>
-      <Submit>Submit</Submit>
+      <SubmitButton>Submit</SubmitButton>
       <SubmitError />
     </Form>
   );
@@ -161,7 +161,7 @@ const AsyncValidationTemplate: StoryFn<typeof Form> = (args) => {
       >
         <TextInput />
       </Field>
-      <Submit>Submit</Submit>
+      <SubmitButton>Submit</SubmitButton>
     </Form>
   );
 };
@@ -353,7 +353,7 @@ const Template: StoryFn<typeof Form> = (args) => {
         >
           <RangeSlider minValue={0} maxValue={100} />
         </Field>
-        <Submit>Submit</Submit>
+        <SubmitButton>Submit</SubmitButton>
       </Form>
     </>
   );

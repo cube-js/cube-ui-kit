@@ -2,7 +2,7 @@ import userEvents from '@testing-library/user-event';
 import { act, waitFor } from '@testing-library/react';
 
 import { renderWithForm } from '../../../test/index';
-import { Submit } from '../../actions/index';
+import { SubmitButton } from '../../actions/index';
 import { TextInput } from '../../fields/TextInput/TextInput';
 
 import { Form } from './index';
@@ -31,7 +31,7 @@ describe('<Form />', () => {
           <TextInput />
         </Form.Item>
 
-        <Submit>Submit</Submit>
+        <SubmitButton>Submit</SubmitButton>
 
         <Form.SubmitError />
       </>,
@@ -69,7 +69,7 @@ describe('<Form />', () => {
           <TextInput />
         </Form.Item>
 
-        <Submit>Submit</Submit>
+        <SubmitButton>Submit</SubmitButton>
 
         <Form.SubmitError />
       </>,

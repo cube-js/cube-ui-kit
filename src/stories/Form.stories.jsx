@@ -1,4 +1,4 @@
-import { Form, Field, Submit, Input } from '../index';
+import { Form, Field, SubmitButton, Input } from '../index';
 
 import { DialogFormApp } from './components/DialogFormApp';
 import { DISABLE_BASE_ARGS } from './FormFieldArgs';
@@ -56,7 +56,7 @@ export const LoginForm = {
       >
         <Input.Password type="password" />
       </Field>
-      <Submit>Submit</Submit>
+      <SubmitButton>Submit</SubmitButton>
     </Form>
   ),
 
@@ -109,7 +109,7 @@ export const HorizontalLoginForm = {
       >
         <Input.Password type="password" size="small" />
       </Field>
-      <Submit size="small">Submit</Submit>
+      <SubmitButton size="small">Submit</SubmitButton>
     </Form>
   ),
 

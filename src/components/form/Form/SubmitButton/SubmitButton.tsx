@@ -1,30 +1,30 @@
-import { forwardRef } from 'react';
 import { FocusableRef } from '@react-types/shared';
+import { forwardRef } from 'react';
 
 import { useProviderProps } from '../../../../provider';
-import { useFormProps } from '../Form';
 import { Button, CubeButtonProps } from '../../../actions/index';
+import { useFormProps } from '../Form';
 import { FieldTypes } from '../types';
 import { CubeFormInstance } from '../use-form';
 
-export interface CubeSubmitProps<T extends FieldTypes = FieldTypes>
+export interface CubeSubmitButtonProps<T extends FieldTypes = FieldTypes>
   extends CubeButtonProps {
   form?: CubeFormInstance<T>;
 }
 
-export const Submit = forwardRef(function Submit(
-  props: CubeSubmitProps,
+function SubmitButton(
+  props: CubeSubmitButtonProps,
   ref: FocusableRef<HTMLElement>,
 ) {
-  props = useProviderProps(props);
+  const providerProps = useProviderProps({} as CubeButtonProps);
+
+  props = useFormProps(props);
+
+  const { isDisabled } = providerProps;
+
   props = useFormProps(props);
 
   const { form, ...otherProps } = props;
-
-  const formData = form?.getFieldsValue() ?? {};
-  const isInvalid = Object.keys(formData).some(
-    (name) => form?.isFieldInvalid(name) ?? false,
-  );
 
   return (
     <Button
@@ -32,8 +32,11 @@ export const Submit = forwardRef(function Submit(
       type="primary"
       htmlType="submit"
       isLoading={form?.isSubmitting}
-      isDisabled={isInvalid}
+      isDisabled={!form?.isInvalid || isDisabled}
       {...otherProps}
     />
   );
-});
+}
+
+const _SubmitButton = forwardRef(SubmitButton);
+export { _SubmitButton as SubmitButton };

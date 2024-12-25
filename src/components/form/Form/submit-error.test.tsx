@@ -2,7 +2,7 @@ import userEvents from '@testing-library/user-event';
 import { waitFor, act } from '@testing-library/react';
 
 import { renderWithForm } from '../../../test/index';
-import { Submit } from '../../actions/index';
+import { SubmitButton } from '../../actions/index';
 import { TextInput } from '../../fields/TextInput/TextInput';
 
 import { Form } from './index';
@@ -16,7 +16,7 @@ describe('<SubmitError />', () => {
       <>
         <TextInput name="test" label="Test" />
 
-        <Submit>Submit</Submit>
+        <SubmitButton>Submit</SubmitButton>
 
         <Form.SubmitError />
       </>,
@@ -53,7 +53,7 @@ describe('<SubmitError />', () => {
       <>
         <TextInput name="test" label="Test" />
 
-        <Submit>Submit</Submit>
+        <SubmitButton>Submit</SubmitButton>
 
         <Form.SubmitError />
       </>,
@@ -101,7 +101,7 @@ describe('<SubmitError />', () => {
       <>
         <TextInput name="test" label="Test" />
 
-        <Submit>Submit</Submit>
+        <SubmitButton>Submit</SubmitButton>
 
         <Form.SubmitError />
       </>,

@@ -24,17 +24,22 @@ const ActionElement = tasty(Action, {
 const StyledBlock = tasty({
   styles: {
     position: 'relative',
-    overflow: 'auto',
-    maxWidth: '100%',
+    overflow: {
+      '': 'auto clip',
+      multiline: 'auto',
+    },
+    width: 'initial auto 100%',
+    height: {
+      '': 'max 5x',
+      multiline: 'auto',
+    },
+    boxSizing: 'border-box',
     whiteSpace: {
       '': 'initial',
       nowrap: 'nowrap',
     },
     styledScrollbar: true,
-    padding: {
-      '': '1x 1.5x 0 1x',
-      multiline: '1x 1.5x',
-    },
+    padding: '1.125x 1.5x',
     fade: {
       '': 'right 2x',
       multiline: false,
