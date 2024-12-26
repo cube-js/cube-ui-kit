@@ -397,6 +397,11 @@ export class CubeFormInstance<
     }
   }
 
+  /**
+   * @deprecated This method is not recommended. Use other ways to alter fields.
+   * You can use `setFieldValue` to change the value of a field.
+   * You can use `verifyField` to validate a field.
+   */
   setFields<Names extends keyof T & string>(
     newFields: SetFieldsArrType<T, Names>[],
   ) {
