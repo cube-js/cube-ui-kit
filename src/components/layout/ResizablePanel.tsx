@@ -325,7 +325,7 @@ function ResizablePanel(
     ) {
       onSizeChange?.(Math.round(visualSize));
     }
-  }, [visualSize]);
+  }, [visualSize, isDragging]);
 
   useEffect(() => {
     setTimeout(notifyChange);
