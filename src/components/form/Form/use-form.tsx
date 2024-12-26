@@ -229,6 +229,13 @@ export class CubeFormInstance<
       field.touched = false;
       field.status = undefined;
       field.inputValue = defaultValue;
+
+      // reject all ongoing validations
+      if (!field.validationId) {
+        field.validationId = 1;
+      } else {
+        field.validationId++;
+      }
     });
 
     if (!skipRender) {
@@ -253,6 +260,7 @@ export class CubeFormInstance<
     }
 
     field.validating = true;
+    field.status = undefined;
 
     if (!field.validationId) {
       field.validationId = 1;

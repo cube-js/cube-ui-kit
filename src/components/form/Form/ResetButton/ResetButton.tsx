@@ -26,7 +26,10 @@ function ResetButton(
   const { form, isDisabled, ...otherProps } = props;
 
   const onPress = useEvent(() => {
-    form?.resetFields();
+    // Use setTimeout to avoid conflict with onBlur handlers
+    setTimeout(() => {
+      form?.resetFields();
+    });
   });
 
   const isSomethingDisabled = isDisabled || isContextDisabled;
@@ -40,10 +43,9 @@ function ResetButton(
       {...mergeProps(
         {
           onPress,
-          isDisabled:
-            isSomethingDisabled != null
-              ? isSomethingDisabled
-              : form?.isSubmitting || !form?.isTouched,
+          isDisabled: isSomethingDisabled
+            ? true
+            : form?.isSubmitting || !form?.isTouched,
         },
         otherProps,
       )}

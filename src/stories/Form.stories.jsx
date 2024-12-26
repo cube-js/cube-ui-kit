@@ -1,4 +1,12 @@
-import { Form, Field, SubmitButton, Input } from '../index';
+import {
+  Form,
+  Field,
+  SubmitButton,
+  Input,
+  ResetButton,
+  Space,
+  TextInput,
+} from '../index';
 
 import { DialogFormApp } from './components/DialogFormApp';
 import { DISABLE_BASE_ARGS } from './FormFieldArgs';
@@ -56,11 +64,45 @@ export const LoginForm = {
       >
         <Input.Password type="password" />
       </Field>
-      <SubmitButton>Submit</SubmitButton>
+      <Space>
+        <SubmitButton>Submit</SubmitButton>
+        <ResetButton>Reset</ResetButton>
+      </Space>
     </Form>
   ),
 
   name: 'LoginForm',
+};
+
+export const SimpleValidation = {
+  render: (args) => (
+    <Form
+      onSubmit={(data) => {
+        console.log('! Submit', data);
+      }}
+      {...args}
+    >
+      <Form.Item
+        name="test"
+        label="Test"
+        rules={[
+          {
+            validator(rule, value) {
+              return value ? Promise.resolve() : Promise.reject('Required');
+            },
+          },
+        ]}
+      >
+        <TextInput />
+      </Form.Item>
+
+      <Space>
+        <SubmitButton>Submit</SubmitButton>
+        <ResetButton>Reset</ResetButton>
+      </Space>
+      <Form.SubmitError />
+    </Form>
+  ),
 };
 
 export const HorizontalLoginForm = {
