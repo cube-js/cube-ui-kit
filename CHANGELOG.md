@@ -1,5 +1,35 @@
 # @cube-dev/ui-kit
 
+## 0.49.0
+
+### Minor Changes
+
+- [#560](https://github.com/cube-js/cube-ui-kit/pull/560) [`268867e`](https://github.com/cube-js/cube-ui-kit/commit/268867efd99c14161732b0bbb42b88951ac06bf7) Thanks [@tenphi](https://github.com/tenphi)! - Rename Submit to SubmitButton.
+
+- [#560](https://github.com/cube-js/cube-ui-kit/pull/560) [`268867e`](https://github.com/cube-js/cube-ui-kit/commit/268867efd99c14161732b0bbb42b88951ac06bf7) Thanks [@tenphi](https://github.com/tenphi)! - Form's resetFields() method now resets errors and touched status as well.
+
+- [#560](https://github.com/cube-js/cube-ui-kit/pull/560) [`268867e`](https://github.com/cube-js/cube-ui-kit/commit/268867efd99c14161732b0bbb42b88951ac06bf7) Thanks [@tenphi](https://github.com/tenphi)! - Add `resetFieldsValidation()` and `setFieldError()` methods to form to replace deprecated `setFields()`.
+
+- [#560](https://github.com/cube-js/cube-ui-kit/pull/560) [`268867e`](https://github.com/cube-js/cube-ui-kit/commit/268867efd99c14161732b0bbb42b88951ac06bf7) Thanks [@tenphi](https://github.com/tenphi)! - Add ResetButton component.
+
+- [#560](https://github.com/cube-js/cube-ui-kit/pull/560) [`268867e`](https://github.com/cube-js/cube-ui-kit/commit/268867efd99c14161732b0bbb42b88951ac06bf7) Thanks [@tenphi](https://github.com/tenphi)! - Simplify API of CopySnippet and improve its design.
+
+- [#560](https://github.com/cube-js/cube-ui-kit/pull/560) [`268867e`](https://github.com/cube-js/cube-ui-kit/commit/268867efd99c14161732b0bbb42b88951ac06bf7) Thanks [@tenphi](https://github.com/tenphi)! - Allow to pass base styles to Alert as props.
+
+- [#560](https://github.com/cube-js/cube-ui-kit/pull/560) [`268867e`](https://github.com/cube-js/cube-ui-kit/commit/268867efd99c14161732b0bbb42b88951ac06bf7) Thanks [@tenphi](https://github.com/tenphi)! - Add `isInvalid` and `isValid` props to form instance. First one checks if the form has at least one field that is verified and invalid. The second one checks if ALL fields are verified and valid. Be careful: `isValid` and `!isInvalid` are not the same.
+
+- [#560](https://github.com/cube-js/cube-ui-kit/pull/560) [`268867e`](https://github.com/cube-js/cube-ui-kit/commit/268867efd99c14161732b0bbb42b88951ac06bf7) Thanks [@tenphi](https://github.com/tenphi)! - More flexible and easier control over disable state of Reset and Submit buttons.
+
+### Patch Changes
+
+- [#560](https://github.com/cube-js/cube-ui-kit/pull/560) [`268867e`](https://github.com/cube-js/cube-ui-kit/commit/268867efd99c14161732b0bbb42b88951ac06bf7) Thanks [@tenphi](https://github.com/tenphi)! - Recalculate the sidebar position on container resize.
+
+- [#560](https://github.com/cube-js/cube-ui-kit/pull/560) [`268867e`](https://github.com/cube-js/cube-ui-kit/commit/268867efd99c14161732b0bbb42b88951ac06bf7) Thanks [@tenphi](https://github.com/tenphi)! - Fix pressed state in primary type Button.
+
+- [#560](https://github.com/cube-js/cube-ui-kit/pull/560) [`268867e`](https://github.com/cube-js/cube-ui-kit/commit/268867efd99c14161732b0bbb42b88951ac06bf7) Thanks [@tenphi](https://github.com/tenphi)! - Fix bug that prevents `onSizeChange()` callback from being fired when ResizablePanel resized beyond its constraints.
+
+- [#560](https://github.com/cube-js/cube-ui-kit/pull/560) [`268867e`](https://github.com/cube-js/cube-ui-kit/commit/268867efd99c14161732b0bbb42b88951ac06bf7) Thanks [@tenphi](https://github.com/tenphi)! - Fix Radio.Button styles.
+
 ## 0.48.1
 
 ### Patch Changes
