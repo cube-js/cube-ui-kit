@@ -2,4 +2,4 @@
 '@cube-dev/ui-kit': minor
 ---
 
-Add `clearFieldsValidation()` and `setFieldError()` methods to form to replace deprecated `setFields()`.
+Add `resetFieldsValidation()` and `setFieldError()` methods to form to replace deprecated `setFields()`.

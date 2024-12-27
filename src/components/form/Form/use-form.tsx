@@ -423,7 +423,7 @@ export class CubeFormInstance<
     this.forceReRender();
   }
 
-  clearFieldsValidation(names?: (keyof T & string)[], skipRender?: boolean) {
+  resetFieldsValidation(names?: (keyof T & string)[], skipRender?: boolean) {
     (names || Object.keys(this.fields)).forEach((name) => {
       const field = this.getFieldInstance(name);
 
@@ -439,10 +439,14 @@ export class CubeFormInstance<
     }
   }
 
-  setFieldError(name: keyof T & string, error: string, skipRender?: boolean) {
+  setFieldError(
+    name: keyof T & string,
+    error: ReactNode,
+    skipRender?: boolean,
+  ) {
     const field = this.getFieldInstance(name);
 
-    if (!field || !error.trim()) return;
+    if (!field || !error) return;
 
     field.errors = [error];
     field.status = 'invalid';

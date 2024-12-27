@@ -292,7 +292,7 @@ describe('<Form />', () => {
 
     // Clear all validation errors
     await act(async () => {
-      formInstance.clearFieldsValidation();
+      formInstance.resetFieldsValidation();
     });
 
     await waitFor(() => {
@@ -308,7 +308,7 @@ describe('<Form />', () => {
 
     // Clear validation error for specific field
     await act(async () => {
-      formInstance.clearFieldsValidation(['test']);
+      formInstance.resetFieldsValidation(['test']);
     });
 
     await waitFor(() => {
