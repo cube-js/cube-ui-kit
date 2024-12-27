@@ -31,14 +31,14 @@ export default {
 };
 
 const Template: StoryFn<CubeRadioGroupProps> = (args) => (
-  <Radio.Group {...args}>
+  <Radio.Group defaultValue="yes" {...args}>
     <Radio value="yes">Yes</Radio>
     <Radio value="no">No</Radio>
   </Radio.Group>
 );
 
 const RadioButtonsTemplate: StoryFn<CubeRadioGroupProps> = (args) => (
-  <Radio.Group {...args}>
+  <Radio.Group defaultValue="yes" {...args}>
     <Radio.Button value="yes">Yes</Radio.Button>
     <Radio type="button" value="no">
       No
@@ -47,7 +47,7 @@ const RadioButtonsTemplate: StoryFn<CubeRadioGroupProps> = (args) => (
 );
 
 const SolidRadioButtonsTemplate: StoryFn<CubeRadioGroupProps> = (args) => (
-  <Radio.ButtonGroup {...args} defaultValue="no">
+  <Radio.ButtonGroup defaultValue="no" {...args}>
     <Radio.Button value="yes">Yes</Radio.Button>
     <Radio.Button value="no">No</Radio.Button>
     <Radio.Button value="maybe">Maybe</Radio.Button>
@@ -99,3 +99,6 @@ RadioGroupWithLabelAndSuffix.args = {
 };
 
 export const SolidRadioButtons = SolidRadioButtonsTemplate.bind({});
+
+export const SolidRadioButtonsDisabled = SolidRadioButtonsTemplate.bind({});
+SolidRadioButtonsDisabled.args = { isDisabled: true };
