@@ -1,3 +1,4 @@
+import { useResizeObserver } from '@react-aria/utils';
 import { ForwardedRef, forwardRef, useEffect, useMemo, useState } from 'react';
 import { useHover, useMove } from 'react-aria';
 
@@ -153,7 +154,7 @@ interface HandlerProps extends BasePropsWithoutChildren {
 }
 
 const Handler = (props: HandlerProps) => {
-  const { direction = 'right', isDisabled } = props;
+  const { direction = 'right', isDisabled, ...otherProps } = props;
   const { hoverProps, isHovered } = useHover({});
   const isHorizontal = direction === 'left' || direction === 'right';
   const localIsHovered = useDebouncedValue(isHovered, 150);
@@ -170,7 +171,7 @@ const Handler = (props: HandlerProps) => {
           },
           'data-direction': direction,
         },
-        props,
+        otherProps,
       )}
     >
       <div data-element="Track" />
@@ -222,11 +223,28 @@ function ResizablePanel(
     maxSize = isControllable ? undefined : 'min(50%, 400px)',
     ...restProps
   } = props;
-
   const [isDragging, setIsDragging] = useState(false);
   const isHorizontal = direction === 'left' || direction === 'right';
 
   ref = useCombinedRefs(ref);
+
+  const onResize = useEvent(() => {
+    if (ref?.current) {
+      const offsetProp = isHorizontal ? 'offsetWidth' : 'offsetHeight';
+      const containerSize = ref.current[offsetProp];
+
+      if (Math.abs(containerSize - size) < 1 && !isDisabled) {
+        setVisualSize(size);
+      } else {
+        setVisualSize(containerSize);
+      }
+    }
+  });
+
+  useResizeObserver({
+    ref,
+    onResize,
+  });
 
   function clamp(size: number) {
     if (typeof maxSize === 'number') {
@@ -296,16 +314,7 @@ function ResizablePanel(
   });
 
   useEffect(() => {
-    if (ref.current) {
-      const offsetProp = isHorizontal ? 'offsetWidth' : 'offsetHeight';
-      const containerSize = ref.current[offsetProp];
-
-      if (Math.abs(containerSize - size) < 1 && !isDisabled) {
-        setVisualSize(size);
-      } else {
-        setVisualSize(containerSize);
-      }
-    }
+    onResize();
   }, [size, isDisabled]);
 
   useEffect(() => {
@@ -316,7 +325,7 @@ function ResizablePanel(
     ) {
       onSizeChange?.(Math.round(visualSize));
     }
-  }, [visualSize]);
+  }, [visualSize, isDragging]);
 
   useEffect(() => {
     setTimeout(notifyChange);

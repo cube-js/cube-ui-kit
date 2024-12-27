@@ -1,6 +1,6 @@
 import { baseProps } from './lists/baseProps';
 import { Meta, Story, Canvas, Controls } from '@storybook/blocks';
-import { Form, Field, Submit, Input, DialogForm } from '../index';
+import { Form, Field, SubmitButton, Input, DialogForm } from '../index';
 import { DialogFormApp } from './components/DialogFormApp';
 import { DISABLE_BASE_ARGS } from './FormFieldArgs';
 import * as FormStories from './Form.stories';
@@ -80,7 +80,7 @@ const Demo = () => {
 An example of a simple login form with validation.
 
 ```tsx
-import { Form, Field, Submit, Input } from '@cube-dev/ui-kit';
+import { Form, Field, SubmitButton, Input } from '@cube-dev/ui-kit';
 import { Auth } from '../path/to/AuthService';
 
 // `Form.Item` is an alias for `Field`.
@@ -112,7 +112,7 @@ export function LoginForm() {
         <Input.Password type="password" />
       </Field>
 
-      <Submit>Submit</Submit>
+      <SubmitButton>Submit</SubmitButton>
     </Form>
   );
 }

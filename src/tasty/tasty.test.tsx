@@ -73,16 +73,23 @@ describe('tasty() API', () => {
   });
 
   it('should merge styles in custom prop', () => {
-    const Block = tasty({
+    const Block = tasty({});
+
+    function BlockWithInput(props) {
+      return <Block styles={props.inputStyles} />;
+    }
+
+    const StyledOnceBlock = tasty(BlockWithInput, {
       inputStyles: {
         color: { '': '#dark', modified: '#purple' },
         fill: '#white',
       },
     });
-    const StyledBlock = tasty(Block, {
+
+    const StyledTwiceBlock = tasty(StyledOnceBlock, {
       inputStyles: { fill: '#black' },
     });
-    const { container } = render(<StyledBlock />);
+    const { container } = render(<StyledTwiceBlock />);
 
     expect(container).toMatchSnapshot();
   });
@@ -208,7 +215,7 @@ describe('tasty() API', () => {
     expect(container).toMatchSnapshot();
   });
 
-  it.only('should allow nested modifiers', () => {
+  it('should allow nested modifiers', () => {
     const StyledBlock = tasty(Block, {
       styles: { color: { '': '#clear', ':not(:first-child)': '#black' } },
     });

@@ -1,7 +1,12 @@
 import { Title } from '../../content/Title';
-import { CubeFormProps, Form, useForm, FieldTypes } from '../../form';
+import {
+  CubeFormProps,
+  Form,
+  useForm,
+  SubmitButton,
+  FieldTypes,
+} from '../../form';
 import { Content } from '../../content/Content';
-import { Submit } from '../../actions/Button/Submit';
 import { Button, CubeButtonProps } from '../../actions';
 import { ButtonGroup } from '../../actions';
 import { Header } from '../../content/Header';
@@ -125,7 +130,7 @@ export function DialogForm<T extends FieldTypes = FieldTypes>(
 
           {!noActions ? (
             <ButtonGroup>
-              <Submit
+              <SubmitButton
                 qa={`${qa || ''}SubmitButton`}
                 theme={danger ? 'danger' : undefined}
                 label="Submit"

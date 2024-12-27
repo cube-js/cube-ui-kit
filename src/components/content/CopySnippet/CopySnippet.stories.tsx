@@ -115,3 +115,57 @@ JavascriptSyntax.args = {
   }
 });`,
 };
+
+export const Complex = Template.bind({});
+Complex.args = {
+  language: 'javascript',
+  height: 'max 30x',
+  hideText: 'SELECT * FROM public.line_items',
+  actions: <CopySnippet.Button icon={<SettingOutlined />} />,
+  code: `cube('LineItems', {
+  sql: \`SELECT * FROM public.line_items\`,
+
+
+  joins: {
+    Products: {
+      sql: \`\${CUBE}.product_id = \${Products}.id\`,
+      relationship: \`belongsTo\`
+    },
+
+    Orders: {
+      sql: \`\${CUBE}.order_id = \${Orders}.id\`,
+      relationship: \`belongsTo\`
+    }
+  },
+
+  measures: {
+    count: {
+      type: \`count\`,
+      drillMembers: [id, createdAt]
+    },
+
+    price: {
+      sql: \`price\`,
+      type: \`sum\`
+    },
+
+    quantity: {
+      sql: \`quantity\`,
+      type: \`sum\`
+    }
+  },
+
+  dimensions: {
+    id: {
+      sql: \`id\`,
+      type: \`number\`,
+      primaryKey: true
+    },
+
+    createdAt: {
+      sql: \`created_at\`,
+      type: \`time\`
+    }
+  }
+});`,
+};

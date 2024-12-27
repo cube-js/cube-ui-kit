@@ -217,23 +217,28 @@ export class CubeFormInstance<
   }
 
   resetFields(names?: (keyof T & string)[], skipRender?: boolean): void {
-    const fieldsValue = this.getFieldsValue();
-    const fieldNames = Object.keys({ ...fieldsValue, ...this.defaultValues });
-    const filteredFieldNames = names
-      ? fieldNames.filter((name) => names.includes(name))
-      : fieldNames;
+    names = names ?? Object.keys(this.fields);
 
-    const values = filteredFieldNames.reduce((map, name) => {
-      if (name in this.defaultValues) {
-        map[name] = this.defaultValues[name];
-      } else {
-        map[name] = undefined;
+    names.forEach((fieldName) => {
+      const field = this.fields[fieldName];
+
+      if (!field) {
+        return;
       }
 
-      return map;
-    }, {});
+      const defaultValue = this.defaultValues[fieldName] ?? undefined;
 
-    this.setFieldsValue(values, false, skipRender);
+      field.value = defaultValue;
+      field.touched = false;
+      field.inputValue = defaultValue;
+      field.errors = [];
+      field.status = undefined;
+      field.validationId = (field.validationId ?? 0) + 1;
+    });
+
+    if (!skipRender) {
+      this.forceReRender();
+    }
   }
 
   async validateField<Name extends keyof T & string>(name: Name): Promise<any> {
@@ -253,12 +258,9 @@ export class CubeFormInstance<
     }
 
     field.validating = true;
+    field.status = undefined;
 
-    if (!field.validationId) {
-      field.validationId = 1;
-    } else {
-      field.validationId++;
-    }
+    field.validationId = (field.validationId ?? 0) + 1;
 
     const validationId = field.validationId;
 
@@ -339,6 +341,27 @@ export class CubeFormInstance<
     return Object.values(this.fields).some((field) => field?.touched);
   }
 
+  /**
+   * True if all fields are verified and valid
+   * IMPORTANT: This is not the same as `!isInvalid`, because it also checks if all fields are verified.
+   */
+  get isValid(): boolean {
+    return Object.values(this.fields).every((field) => {
+      return field?.status === 'valid';
+    });
+  }
+
+  /**
+   * True if at least one field is verified and invalid.
+   * IMPORTANT: This is not the same as `!isValid`, because it only checks that at least
+   * one field is verified and invalid.
+   */
+  get isInvalid(): boolean {
+    return Object.values(this.fields).some((field) => {
+      return field?.status === 'invalid';
+    });
+  }
+
   getFieldError<Name extends keyof T & string>(name: Name): ReactNode[] {
     const field = this.getFieldInstance(name);
 
@@ -347,6 +370,9 @@ export class CubeFormInstance<
     return field.errors || [];
   }
 
+  /**
+   * @deprecated This field is not supposed to be used directly.
+   */
   createField<Name extends keyof T & string>(name: Name, skipRender?: boolean) {
     // passing an empty name is incorrect, but we have to return a valid object to avoid inconsistency
     if (!name) {
@@ -364,6 +390,9 @@ export class CubeFormInstance<
     return this.fields[name];
   }
 
+  /**
+   * @deprecated This field is not supposed to be used directly.
+   */
   removeField<Name extends keyof T & string>(name: Name, skipRender?: boolean) {
     if (this.fields[name]) {
       delete this.fields[name];
@@ -374,6 +403,13 @@ export class CubeFormInstance<
     }
   }
 
+  /**
+   * @deprecated This method is not recommended. Use other ways to alter fields.
+   * Use `setFieldValue` to change the value of a field.
+   * Use `verifyField` to validate a field.
+   * Use `setFieldError` to set an error for a field.
+   * Use `clearFieldsValidation` to clear all errors for a field.
+   */
   setFields<Names extends keyof T & string>(
     newFields: SetFieldsArrType<T, Names>[],
   ) {
@@ -385,6 +421,40 @@ export class CubeFormInstance<
     });
 
     this.forceReRender();
+  }
+
+  resetFieldsValidation(names?: (keyof T & string)[], skipRender?: boolean) {
+    (names || Object.keys(this.fields)).forEach((name) => {
+      const field = this.getFieldInstance(name);
+
+      if (!field) return;
+
+      field.errors = [];
+      field.status = undefined;
+      field.validationId = (field.validationId ?? 0) + 1;
+    });
+
+    if (!skipRender) {
+      this.forceReRender();
+    }
+  }
+
+  setFieldError(
+    name: keyof T & string,
+    error: ReactNode,
+    skipRender?: boolean,
+  ) {
+    const field = this.getFieldInstance(name);
+
+    if (!field || !error) return;
+
+    field.errors = [error];
+    field.status = 'invalid';
+    field.validationId = (field.validationId ?? 0) + 1;
+
+    if (!skipRender) {
+      this.forceReRender();
+    }
   }
 
   setSubmitting(isSubmitting: boolean) {

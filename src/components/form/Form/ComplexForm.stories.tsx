@@ -4,7 +4,6 @@ import { userEvent, waitFor, within } from '@storybook/test';
 import { expect } from '@storybook/test';
 
 import {
-  Alert,
   Block,
   Checkbox,
   CheckboxGroup,
@@ -17,18 +16,17 @@ import {
   RangeSlider,
   Slider,
   Select,
-  Submit,
-  SubmitError,
   Switch,
   DateInput,
   TextInput,
   NumberInput,
   parseAbsoluteDate,
   FileInput,
+  Space,
+  Button,
 } from '../../../index';
 // import { NumberInput } from '../NumberInput/NumberInput';
 import { baseProps } from '../../../stories/lists/baseProps';
-import { Button } from '../../actions/index';
 import { timeout } from '../../../utils/promise';
 
 export default {
@@ -69,8 +67,8 @@ export default {
 //       >
 //         <TextInput />
 //       </Field>
-//       <Submit>Submit</Submit>
-//       <SubmitError />
+//       <Form.Submit>Submit</Form.Submit>
+//       <Form.SubmitError />
 //     </Form>
 //   );
 // };
@@ -94,8 +92,8 @@ const CustomSubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
       <Field name="text" label="Text input">
         <TextInput />
       </Field>
-      <Submit>Submit</Submit>
-      {form.submitError ? <Alert>{form.submitError as string}</Alert> : null}
+      <Form.Submit>Submit</Form.Submit>
+      <Form.SubmitError />
     </Form>
   );
 };
@@ -119,8 +117,8 @@ const SubmitErrorTemplate: StoryFn<typeof Form> = (args) => {
       <Field name="text" label="Text input">
         <TextInput />
       </Field>
-      <Submit>Submit</Submit>
-      <SubmitError />
+      <Form.Submit>Submit</Form.Submit>
+      <Form.SubmitError />
     </Form>
   );
 };
@@ -161,7 +159,10 @@ const AsyncValidationTemplate: StoryFn<typeof Form> = (args) => {
       >
         <TextInput />
       </Field>
-      <Submit>Submit</Submit>
+      <Space>
+        <Form.Submit>Submit</Form.Submit>
+        <Form.Reset>Reset</Form.Reset>
+      </Space>
     </Form>
   );
 };
@@ -269,7 +270,6 @@ const Template: StoryFn<typeof Form> = (args) => {
             },
           ]}
           necessityIndicator={'label'}
-          defaultValue="tenphi@gmail.com"
           shouldUpdate={({ email }) => {
             return !!email;
           }}
@@ -353,7 +353,10 @@ const Template: StoryFn<typeof Form> = (args) => {
         >
           <RangeSlider minValue={0} maxValue={100} />
         </Field>
-        <Submit>Submit</Submit>
+        <Space>
+          <Form.Submit>Submit</Form.Submit>
+          <Form.Reset>Reset</Form.Reset>
+        </Space>
       </Form>
     </>
   );

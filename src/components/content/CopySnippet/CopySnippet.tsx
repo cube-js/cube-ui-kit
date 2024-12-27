@@ -1,9 +1,9 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useMemo, useState } from 'react';
 import copy from 'clipboard-copy';
 
 import { Action, Button } from '../../actions';
 import { Card, CubeCardProps } from '../Card/Card';
-import { Styles, tasty } from '../../../tasty';
+import { tasty } from '../../../tasty';
 import {
   CubePrismCodeProps,
   PrismCode,
@@ -25,15 +25,25 @@ const StyledBlock = tasty({
   styles: {
     position: 'relative',
     overflow: {
-      '': 'hidden',
-      scroll: 'auto hidden',
+      '': 'auto clip',
+      multiline: 'auto',
     },
-    maxWidth: '100%',
+    width: 'initial auto 100%',
+    height: {
+      '': 'max 5x',
+      multiline: 'auto',
+    },
+    boxSizing: 'border-box',
     whiteSpace: {
       '': 'initial',
       nowrap: 'nowrap',
     },
     styledScrollbar: true,
+    padding: '1.125x 1.5x',
+    fade: {
+      '': 'right 2x',
+      multiline: false,
+    },
 
     '& code': {
       font: {
@@ -47,44 +57,47 @@ const StyledBlock = tasty({
 const ButtonContainer = tasty({
   styles: {
     position: 'relative',
-    display: 'grid',
-    gridAutoFlow: 'column',
-    margin: '(-1x - 1bw) -1.5x (-1x - 1bw) -1x',
-
-    '&::after': {
-      display: {
-        '': 'none',
-        overlay: 'block',
-      },
-      content: '""',
-      width: '2x',
-      position: 'absolute',
-      left: '-1x',
-      top: 0,
-      bottom: 0,
-      backgroundImage:
-        'linear-gradient(to right,rgba(var(--context-fill-color-rgb),0),rgba(var(--context-fill-color-rgb),1))',
+    display: 'flex',
+    flow: {
+      '': 'row-reverse',
+      multiline: 'column',
     },
+    placeContent: 'start',
+
+    '@button-size': {
+      '': '5x',
+      multiline: '4x',
+    },
+
+    '@button-radius': {
+      '': '0',
+      multiline: '1r',
+    },
+
+    // Make sure there's a small gap between buttons and the content
+    border: 'left #clear',
   },
 });
 
 const CopySnippetElement = tasty(Card, {
   qa: 'CopySnippet',
   styles: {
-    display: 'block',
+    display: 'grid',
+    gridRows: 'minmax(0, 1fr)',
     fill: '#grey-light',
-    radius: '@large-radius',
     border: 0,
     padding: 0,
+    preset: 'default',
+    radius: '1r',
+    overflow: 'hidden',
 
     Grid: {
       display: 'grid',
       flow: 'row',
       gridColumns: 'minmax(0, 1fr) auto',
+      gridRows: 'minmax(0, 1fr)',
       width: 'min 20x',
-      radius: '@large-radius',
       position: 'relative',
-      overflow: 'hidden',
     },
   },
 });
@@ -92,16 +105,20 @@ const CopySnippetElement = tasty(Card, {
 const ActionButton = tasty(Button, {
   type: 'clear',
   styles: {
-    padding: '1x 1.5x',
-    radius: 0,
-    placeSelf: {
-      '': 'none',
-      '!multiline & !with-scroll': 'stretch',
-    },
+    width: '4x',
+    padding: 0,
+    placeSelf: 'stretch',
     border: '#clear',
     outline: {
       '': '#purple-03.0',
       'focused & focus-visible': '#purple-03 inset',
+    },
+    height: '@button-size',
+    radius: {
+      '': '0',
+      ':last-child': '0 0 0 @button-radius',
+      ':first-child': '0 @button-radius 0 0',
+      ':last-child & :first-child': '0 @button-radius 0 @button-radius',
     },
   },
 });
@@ -109,23 +126,13 @@ const ActionButton = tasty(Button, {
 const CopyButton = tasty(ActionButton, {
   icon: <CopyIcon />,
   'aria-label': 'Copy to clipboard',
-  styles: {
-    radius: {
-      '': '0 1r 1r 0',
-      'multiline | with-scroll': '0 1r 0 0',
-    },
-  },
 });
 
 const ShowButton = tasty(ActionButton, {
   'aria-label': 'Show hidden parts',
-  styles: {
-    radius: 0,
-  },
 });
 
 export interface CubeCopySnippetProps extends CubeCardProps {
-  padding?: Styles['padding'];
   /** The code snippet */
   code: string;
   /** The title of the snippet */
@@ -138,10 +145,6 @@ export interface CubeCopySnippetProps extends CubeCardProps {
   language?: CubePrismCodeProps['language'];
   /** Whether the snippet uses a serif font */
   serif?: boolean;
-  /** Whether the snippet uses overlay on the edge */
-  showOverlay?: boolean;
-  /** Whether the snippet is scrollable */
-  showScroll?: boolean;
   /** Whether to show the tooltip with the full content */
   showTooltip?: boolean;
   hideText?: string[] | string | boolean;
@@ -162,13 +165,9 @@ function CopySnippet(allProps: CubeCopySnippetProps) {
     nowrap,
     prefix = '',
     language,
-    showScroll = true,
     serif,
     actions,
-    padding = '1.125x 1.5x',
-    showOverlay = true,
     showTooltip = false,
-    styles,
     hideText,
     ...props
   } = allProps;
@@ -210,36 +209,34 @@ function CopySnippet(allProps: CubeCopySnippetProps) {
     }
   }
 
+  const mods = useMemo(() => {
+    return {
+      nowrap,
+      multiline,
+      serif,
+      hidden: !!hideText,
+    };
+  }, [nowrap, multiline, hideText, serif]);
+
   const Snippet = (
-    <CopySnippetElement styles={{ preset: 'default', ...styles }} {...props}>
+    <CopySnippetElement mods={mods} {...props}>
       <div data-element="Grid">
-        <StyledBlock
-          mods={{ nowrap, multiline, scroll: showScroll, serif }}
-          styles={{ padding }}
-        >
+        <StyledBlock mods={mods}>
           <PrismCode
             style={{ margin: 0, overflow: 'visible' }}
             code={formattedCode}
             language={language || 'javascript'}
           />
         </StyledBlock>
-        <ButtonContainer
-          styles={{ padding } as Styles}
-          mods={{ overlay: showOverlay }}
-        >
-          {actions}
+        <ButtonContainer mods={mods}>
+          <CopyButton aria-label={`Copy ${title}`} onPress={onCopy} />
           {hideText && (
             <ShowButton
               icon={showHidden ? <EyeInvisibleIcon /> : <EyeIcon />}
-              mods={{ multiline, withScroll: showScroll }}
               onPress={() => setShowHidden(!showHidden)}
             />
           )}
-          <CopyButton
-            aria-label={`Copy ${title}`}
-            mods={{ multiline, withScroll: showScroll, hidden: !!hideText }}
-            onPress={onCopy}
-          />
+          {actions}
         </ButtonContainer>
       </div>
     </CopySnippetElement>
