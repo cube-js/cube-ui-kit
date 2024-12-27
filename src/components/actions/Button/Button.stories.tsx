@@ -137,6 +137,17 @@ const TemplateStates: StoryFn<CubeButtonProps> = ({
     <Button
       {...props}
       mods={{
+        hovered: true,
+        pressed: true,
+        focused: false,
+        disabled: false,
+      }}
+    >
+      {label || 'Pressed & Hovered'}
+    </Button>
+    <Button
+      {...props}
+      mods={{
         hovered: false,
         pressed: false,
         focused: true,
@@ -197,6 +208,17 @@ const DarkTemplateStates: StoryFn<CubeButtonProps> = ({
       }}
     >
       {label || 'Pressed'}
+    </Button>
+    <Button
+      {...props}
+      mods={{
+        hovered: true,
+        pressed: true,
+        focused: false,
+        disabled: false,
+      }}
+    >
+      {label || 'Pressed & Hovered'}
     </Button>
     <Button
       {...props}

@@ -13,7 +13,7 @@ const AlertElement = tasty({
   styles: {
     display: 'block',
     flow: 'column',
-    radius: '1r',
+    radius: '@large-radius',
     padding: '1.5x',
     preset: 't3',
     color: {
