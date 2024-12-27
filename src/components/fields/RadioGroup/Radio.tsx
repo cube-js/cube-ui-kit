@@ -125,7 +125,7 @@ const RadioNormalElement = tasty({
       'disabled & checked': '#dark.12',
     },
     border: {
-      '': '#dark-03',
+      '': '#dark-04',
       checked: '#purple-text',
       invalid: '#danger-text.50',
       disabled: '#dark.12',
