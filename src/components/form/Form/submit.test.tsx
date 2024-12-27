@@ -250,4 +250,123 @@ describe('<Form />', () => {
       expect(resetButton).toBeDisabled();
     });
   });
+
+  it('should clear validation errors using clearFieldsValidation', async () => {
+    const onSubmit = jest.fn(() => Promise.reject('Submit Error'));
+
+    const { getByRole, getByText, formInstance } = renderWithForm(
+      <>
+        <Form.Item
+          name="test"
+          label="Test"
+          rules={[
+            {
+              validator(rule, value) {
+                return value
+                  ? Promise.resolve()
+                  : Promise.reject('Field is required');
+              },
+            },
+          ]}
+        >
+          <TextInput />
+        </Form.Item>
+
+        <SubmitButton>Submit</SubmitButton>
+      </>,
+      { formProps: { onSubmit } },
+    );
+
+    const input = getByRole('textbox');
+    const submitButton = getByRole('button', { name: 'Submit' });
+
+    // Initial state: no validation error
+    expect(() => getByText('Field is required')).toThrow();
+
+    // Click submit and check for validation error
+    await userEvents.click(submitButton);
+
+    await waitFor(() => {
+      expect(getByText('Field is required')).toBeInTheDocument();
+    });
+
+    // Clear all validation errors
+    await act(async () => {
+      formInstance.clearFieldsValidation();
+    });
+
+    await waitFor(() => {
+      expect(() => getByText('Field is required')).toThrow(); // Error should be gone
+    });
+
+    // Click submit again to re-trigger validation error
+    await userEvents.click(submitButton);
+
+    await waitFor(() => {
+      expect(getByText('Field is required')).toBeInTheDocument();
+    });
+
+    // Clear validation error for specific field
+    await act(async () => {
+      formInstance.clearFieldsValidation(['test']);
+    });
+
+    await waitFor(() => {
+      expect(() => getByText('Field is required')).toThrow(); // Error should be gone
+    });
+  });
+
+  it('should set validation error using setFieldError', async () => {
+    const onSubmit = jest.fn(() => Promise.resolve());
+
+    const { getByRole, getByText, formInstance } = renderWithForm(
+      <>
+        <Form.Item
+          name="test"
+          label="Test"
+          rules={[
+            {
+              validator(rule, value) {
+                return value
+                  ? Promise.resolve()
+                  : Promise.reject('Field is required');
+              },
+            },
+          ]}
+        >
+          <TextInput />
+        </Form.Item>
+
+        <SubmitButton>Submit</SubmitButton>
+      </>,
+      { formProps: { onSubmit } },
+    );
+
+    const input = getByRole('textbox');
+    const submitButton = getByRole('button', { name: 'Submit' });
+
+    // Initial state: no validation error
+    expect(() => getByText('Custom Error Message')).toThrow();
+
+    // Set validation error programmatically
+    await act(async () => {
+      formInstance.setFieldError('test', 'Custom Error Message');
+    });
+
+    await waitFor(() => {
+      expect(getByText('Custom Error Message')).toBeInTheDocument();
+    });
+
+    // Type into input and verify error remains
+    await act(async () => {
+      await userEvents.type(input, 'test');
+    });
+
+    // Typing remove the error
+    expect(() => getByText('Custom Error Message')).toThrow();
+
+    await userEvents.click(submitButton);
+
+    expect(() => getByText('Field is required')).toThrow();
+  });
 });

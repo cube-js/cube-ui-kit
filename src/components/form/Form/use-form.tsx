@@ -217,25 +217,23 @@ export class CubeFormInstance<
   }
 
   resetFields(names?: (keyof T & string)[], skipRender?: boolean): void {
-    Object.values(this.fields).forEach((field) => {
-      if (!field || (names && !names?.includes(field.name))) {
+    names = names ?? Object.keys(this.fields);
+
+    names.forEach((fieldName) => {
+      const field = this.fields[fieldName];
+
+      if (!field) {
         return;
       }
 
-      const defaultValue = this.defaultValues[field.name] ?? undefined;
+      const defaultValue = this.defaultValues[fieldName] ?? undefined;
 
       field.value = defaultValue;
-      field.errors = [];
       field.touched = false;
-      field.status = undefined;
       field.inputValue = defaultValue;
-
-      // reject all ongoing validations
-      if (!field.validationId) {
-        field.validationId = 1;
-      } else {
-        field.validationId++;
-      }
+      field.errors = [];
+      field.status = undefined;
+      field.validationId = (field.validationId ?? 0) + 1;
     });
 
     if (!skipRender) {
@@ -262,11 +260,7 @@ export class CubeFormInstance<
     field.validating = true;
     field.status = undefined;
 
-    if (!field.validationId) {
-      field.validationId = 1;
-    } else {
-      field.validationId++;
-    }
+    field.validationId = (field.validationId ?? 0) + 1;
 
     const validationId = field.validationId;
 
@@ -413,6 +407,36 @@ export class CubeFormInstance<
     });
 
     this.forceReRender();
+  }
+
+  clearFieldsValidation(names?: (keyof T & string)[], skipRender?: boolean) {
+    (names || Object.keys(this.fields)).forEach((name) => {
+      const field = this.getFieldInstance(name);
+
+      if (!field) return;
+
+      field.errors = [];
+      field.status = undefined;
+      field.validationId = (field.validationId ?? 0) + 1;
+    });
+
+    if (!skipRender) {
+      this.forceReRender();
+    }
+  }
+
+  setFieldError(name: keyof T & string, error: string, skipRender?: boolean) {
+    const field = this.getFieldInstance(name);
+
+    if (!field || !error.trim()) return;
+
+    field.errors = [error];
+    field.status = 'invalid';
+    field.validationId = (field.validationId ?? 0) + 1;
+
+    if (!skipRender) {
+      this.forceReRender();
+    }
   }
 
   setSubmitting(isSubmitting: boolean) {
