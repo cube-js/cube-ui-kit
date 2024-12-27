@@ -341,15 +341,21 @@ export class CubeFormInstance<
     return Object.values(this.fields).some((field) => field?.touched);
   }
 
-  // True if all fields are verified and valid
-  // @IMPORTANT: This is not the same as `!isInvalid`, because it also checks if all fields are verified
+  /**
+   * True if all fields are verified and valid
+   * IMPORTANT: This is not the same as `!isInvalid`, because it also checks if all fields are verified.
+   */
   get isValid(): boolean {
     return Object.values(this.fields).every((field) => {
       return field?.status === 'valid';
     });
   }
 
-  // True if at least one field is verified and invalid
+  /**
+   * True if at least one field is verified and invalid.
+   * IMPORTANT: This is not the same as `!isValid`, because it only checks that at least
+   * one field is verified and invalid.
+   */
   get isInvalid(): boolean {
     return Object.values(this.fields).some((field) => {
       return field?.status === 'invalid';
@@ -364,6 +370,9 @@ export class CubeFormInstance<
     return field.errors || [];
   }
 
+  /**
+   * @deprecated This field is not supposed to be used directly.
+   */
   createField<Name extends keyof T & string>(name: Name, skipRender?: boolean) {
     // passing an empty name is incorrect, but we have to return a valid object to avoid inconsistency
     if (!name) {
@@ -381,6 +390,9 @@ export class CubeFormInstance<
     return this.fields[name];
   }
 
+  /**
+   * @deprecated This field is not supposed to be used directly.
+   */
   removeField<Name extends keyof T & string>(name: Name, skipRender?: boolean) {
     if (this.fields[name]) {
       delete this.fields[name];
@@ -393,8 +405,10 @@ export class CubeFormInstance<
 
   /**
    * @deprecated This method is not recommended. Use other ways to alter fields.
-   * You can use `setFieldValue` to change the value of a field.
-   * You can use `verifyField` to validate a field.
+   * Use `setFieldValue` to change the value of a field.
+   * Use `verifyField` to validate a field.
+   * Use `setFieldError` to set an error for a field.
+   * Use `clearFieldsValidation` to clear all errors for a field.
    */
   setFields<Names extends keyof T & string>(
     newFields: SetFieldsArrType<T, Names>[],
