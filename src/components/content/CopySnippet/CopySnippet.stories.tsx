@@ -116,6 +116,13 @@ JavascriptSyntax.args = {
 });`,
 };
 
+export const DAX = Template.bind({});
+DAX.args = {
+  language: 'javascript',
+  height: 'max 30x',
+  code: 'DEFINE\r\n\tVAR __DS0FilterTable = \r\n\t\tTREATAS({"Computers",\r\n\t\t\t"Electronics",\r\n\t\t\t"Home"}, \'orders\'[product_category])\r\n\r\n\tVAR __DS0Core = \r\n\t\tSUMMARIZECOLUMNS(\r\n\t\t\tROLLUPADDISSUBTOTAL(\'orders\'[product_category], "IsGrandTotalRowTotal"),\r\n\t\t\t__DS0FilterTable,\r\n\t\t\t"revenue", \'orders\'[revenue],\r\n\t\t\t"count", \'orders\'[count],\r\n\t\t\t"completed_count", \'orders\'[completed_count],\r\n\t\t\t"completed_percentage", \'orders\'[completed_percentage]\r\n\t\t)\r\n\r\n\tVAR __DS0PrimaryWindowed = \r\n\t\tTOPN(502, __DS0Core, [IsGrandTotalRowTotal], 0, [revenue], 0, \'orders\'[product_category], 1)\r\n\r\nEVALUATE\r\n\t__DS0PrimaryWindowed\r\n\r\nORDER BY\r\n\t[IsGrandTotalRowTotal] DESC, [revenue] DESC, \'orders\'[product_category]',
+};
+
 export const Complex = Template.bind({});
 Complex.args = {
   language: 'javascript',

@@ -186,8 +186,9 @@ function CopySnippet(allProps: CubeCopySnippetProps) {
 
   const multiline = pristineCode.includes('\n') && !nowrap;
   let formattedCode = pristineCode
+    .replace(/\r/g, '')
     .split(/\n/g)
-    .map((line) => `${prefix}${line} `)
+    .map((line) => `${prefix}${line}`)
     .join('\n')
     .trim();
 

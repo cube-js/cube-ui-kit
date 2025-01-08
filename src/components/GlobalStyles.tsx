@@ -243,7 +243,7 @@ const GlobalStylesElement = createGlobalStyle<GlobalStylesElementProps>`
   pre[class*="language-"] {
     color: var(--dark-color);
     background: none;
-    font-family: "Source Code Pro", Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    font-family: var(--monospace-font);
     text-align: left;
     font-weight: normal;
     font-size: 14px;
@@ -268,13 +268,13 @@ const GlobalStylesElement = createGlobalStyle<GlobalStylesElementProps>`
   pre[class*="language-"]::-moz-selection, pre[class*="language-"] ::-moz-selection,
   code[class*="language-"]::-moz-selection, code[class*="language-"] ::-moz-selection {
     text-shadow: none;
-    /*background: #b3d4fc;*/
+    background: rgba(var(--purple-color-rgb), .2);
   }
 
   pre[class*="language-"]::selection, pre[class*="language-"] ::selection,
   code[class*="language-"]::selection, code[class*="language-"] ::selection {
     text-shadow: none;
-    /*background: #b3d4fc;*/
+    background: rgba(var(--purple-color-rgb), .2);
   }
 
   @media print {
