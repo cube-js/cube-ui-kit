@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.49.1
+
+### Patch Changes
+
+- [#562](https://github.com/cube-js/cube-ui-kit/pull/562) [`381c3bd`](https://github.com/cube-js/cube-ui-kit/commit/381c3bdf5498b681a78728cca49457dd55153293) Thanks [@tenphi](https://github.com/tenphi)! - Change PrismCode default font and add selection styles.
+
+- [#562](https://github.com/cube-js/cube-ui-kit/pull/562) [`381c3bd`](https://github.com/cube-js/cube-ui-kit/commit/381c3bdf5498b681a78728cca49457dd55153293) Thanks [@tenphi](https://github.com/tenphi)! - Improve CopySnippet formatting to clear CR symbols and remove spaces at the end of each line.
+
 ## 0.49.0
 
 ### Minor Changes
