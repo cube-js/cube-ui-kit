@@ -219,7 +219,7 @@ function Form<T extends FieldTypes>(
   if (firstRunRef.current && form) {
     if (defaultValues) {
       form.setInitialFieldsValue(defaultValues);
-      form.resetFields(undefined, true);
+      form.resetFields(undefined, false, true);
       firstRunRef.current = false;
     }
   }
@@ -227,6 +227,8 @@ function Form<T extends FieldTypes>(
   useEffect(() => {
     if (defaultValues) {
       form?.setInitialFieldsValue(defaultValues);
+      // reset non-touched fields
+      form?.resetFields(undefined, true);
     }
   }, [defaultValues]);
 
