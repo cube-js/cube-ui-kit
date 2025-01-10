@@ -2,4 +2,4 @@
 '@cube-dev/ui-kit': minor
 ---
 
-Reset non-touched fields when form default values change.
+Apply form `defaultValues` change synchronously to avoid inconsistency.

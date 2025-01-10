@@ -216,17 +216,13 @@ export class CubeFormInstance<
     };
   }
 
-  resetFields(
-    names?: (keyof T & string)[],
-    onlyNonTouched?: boolean,
-    skipRender?: boolean,
-  ): void {
+  resetFields(names?: (keyof T & string)[], skipRender?: boolean): void {
     names = names ?? Object.keys(this.fields);
 
     names.forEach((fieldName) => {
       const field = this.fields[fieldName];
 
-      if (!field || (onlyNonTouched && field.touched)) {
+      if (!field) {
         return;
       }
 
