@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { waitFor } from '@storybook/test';
+import { render } from '@testing-library/react';
+import { useEffect, useState } from 'react';
 
 import { renderWithForm, userEvent, act } from '../../../test/index';
 import { Radio } from '../../fields/RadioGroup/Radio';
 import { TextInput } from '../../fields/TextInput/TextInput';
+import { Root } from '../../Root';
 
-import { Field } from './Field';
+import { Field, Form } from './index';
 
 jest.mock('../../../_internal/hooks/use-warn');
 
@@ -212,5 +215,125 @@ describe('Legacy <Field />', () => {
         </Field>,
       ),
     ).not.toThrow();
+  });
+
+  it('should render default values correctly after form re-render', () => {
+    const TestForm = ({ defaultValues }) => {
+      const [form] = Form.useForm();
+
+      return (
+        <Root>
+          <Form form={form} defaultValues={defaultValues}>
+            <Field name="test">
+              <TextInput label="test" />
+            </Field>
+            {defaultValues.test2 && (
+              <Field name="test2">
+                <TextInput label="test2" />
+              </Field>
+            )}
+          </Form>
+        </Root>
+      );
+    };
+
+    // Initial render with a single input and default values
+    const { getByRole, rerender } = render(
+      <TestForm defaultValues={{ test: 'Hello, world!' }} />,
+    );
+
+    // Check initial input value
+    const input1 = getByRole('textbox', { name: 'test' });
+    expect(input1).toHaveValue('Hello, world!');
+
+    // Re-render with two inputs and updated default values
+    rerender(
+      <TestForm
+        defaultValues={{ test: 'Hello, world!', test2: 'Goodbye, world!' }}
+      />,
+    );
+
+    // Check both inputs for default values
+    const input2 = getByRole('textbox', { name: 'test2' });
+    expect(input1).toHaveValue('Hello, world!');
+    expect(input2).toHaveValue('Goodbye, world!');
+  });
+
+  it("shouldn't change current value after default values change in form", () => {
+    const TestForm = ({ defaultValues }) => {
+      const [form] = Form.useForm();
+
+      return (
+        <Root>
+          <Form form={form} defaultValues={defaultValues}>
+            <Field name="test">
+              <TextInput label="test" />
+            </Field>
+          </Form>
+        </Root>
+      );
+    };
+
+    // Initial render with a single input and default values
+    const { getByRole, rerender } = render(
+      <TestForm defaultValues={{ test: 'Hello, world!' }} />,
+    );
+
+    // Check initial input value
+    const input = getByRole('textbox', { name: 'test' });
+    expect(input).toHaveValue('Hello, world!');
+
+    // Re-render with two inputs and updated default values
+    rerender(<TestForm defaultValues={{ test: 'Goodbye, world!' }} />);
+
+    expect(input).toHaveValue('Hello, world!');
+  });
+
+  it('should set to new default value after its change and form reset', () => {
+    const TestForm = ({ defaultValues, forceReset = false }) => {
+      const [form] = Form.useForm();
+
+      useEffect(() => {
+        if (forceReset) {
+          form.resetFields();
+        }
+      }, []);
+
+      return (
+        <Root>
+          <Form form={form} defaultValues={defaultValues}>
+            <Field name="test">
+              <TextInput label="test" />
+            </Field>
+          </Form>
+        </Root>
+      );
+    };
+
+    // Initial render with a single input and default values
+    const { getByRole, rerender } = render(
+      <TestForm defaultValues={{ test: 'Hello, world!' }} />,
+    );
+
+    // Check initial input value
+    const input = getByRole('textbox', { name: 'test' });
+    expect(input).toHaveValue('Hello, world!');
+
+    // Re-render with two inputs and updated default values
+    rerender(<TestForm defaultValues={{ test: 'Goodbye, world!' }} />);
+
+    expect(input).toHaveValue('Hello, world!');
+
+    // Re-render with two inputs and updated default values
+    rerender(
+      <TestForm
+        defaultValues={{ test: 'Goodbye, world!', forceReset: true }}
+      />,
+    );
+
+    waitFor(() => {
+      // Check that default value is reset
+      expect(input).toHaveValue('Goodbye, world!');
+    });
   });
 });
