@@ -5,7 +5,6 @@ import {
   forwardRef,
   ReactNode,
   useContext,
-  useEffect,
   useRef,
 } from 'react';
 import { DOMRef } from '@react-types/shared';
@@ -117,6 +116,7 @@ function Form<T extends FieldTypes>(
     onSubmitFailed,
     ...otherProps
   } = props;
+  const defaultValuesRef = useRef(defaultValues);
   const firstRunRef = useRef(true);
   const isHorizontal = orientation === 'horizontal';
 
@@ -224,11 +224,10 @@ function Form<T extends FieldTypes>(
     }
   }
 
-  useEffect(() => {
-    if (defaultValues) {
-      form?.setInitialFieldsValue(defaultValues);
-    }
-  }, [defaultValues]);
+  if (defaultValuesRef.current !== defaultValues) {
+    form?.setInitialFieldsValue(defaultValues ?? {});
+    defaultValuesRef.current = defaultValues;
+  }
 
   return (
     <FormElement
