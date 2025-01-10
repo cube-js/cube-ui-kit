@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.50.0
+
+### Minor Changes
+
+- [#564](https://github.com/cube-js/cube-ui-kit/pull/564) [`106f4b2`](https://github.com/cube-js/cube-ui-kit/commit/106f4b28f47783b8e258bd4bc2fb8cdd9b6a0c88) Thanks [@tenphi](https://github.com/tenphi)! - Apply form `defaultValues` change synchronously to avoid inconsistency.
+
 ## 0.49.1
 
 ### Patch Changes
