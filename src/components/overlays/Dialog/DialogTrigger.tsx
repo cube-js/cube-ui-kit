@@ -10,6 +10,7 @@ import {
   Placement,
 } from 'react-aria';
 
+import { useCombinedRefs } from '../../../utils/react/index';
 import { Modal, Popover, Tray, WithCloseBehavior } from '../Modal';
 import { Styles } from '../../../tasty';
 
@@ -191,6 +192,7 @@ function DialogTrigger(props: CubeDialogTriggerProps) {
       isDismissable={isDismissable}
       trigger={trigger}
       overlay={renderOverlay()}
+      hideOnClose={hideOnClose}
       onClose={onClose}
     />
   );
@@ -289,6 +291,8 @@ function PopoverTrigger(allProps) {
 }
 
 function DialogTriggerBase(props) {
+  const ref = useCombinedRefs(props.ref);
+
   let {
     type,
     state,
@@ -298,18 +302,30 @@ function DialogTriggerBase(props) {
     triggerProps = {},
     overlay,
     trigger,
+    hideOnClose,
   } = props;
 
   let context = {
     type,
     onClose,
     isDismissable,
+    isOpen: state.isOpen,
     ...dialogProps,
   };
+
+  // Restore focus manually when the dialog closes and has `hideOnClose` set to true
+  useEffect(() => {
+    if (!state.isOpen && hideOnClose) {
+      setTimeout(() => {
+        ref.current?.focus();
+      });
+    }
+  }, [state.isOpen, ref.current]);
 
   return (
     <Fragment>
       <PressResponder
+        ref={ref}
         {...triggerProps}
         isPressed={
           state.isOpen &&

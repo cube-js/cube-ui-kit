@@ -19,7 +19,7 @@ export interface CubeDialogContainerProps {
    * The type of Dialog that should be rendered. See the visual options below for examples of each.
    * @default 'modal'
    */
-  type?: 'modal' | 'fullscreen' | 'fullscreenTakeover';
+  type?: 'modal' | 'fullscreen' | 'fullscreenTakeover' | 'panel';
   /** Whether the Dialog is dismissible. See the [Dialog docs](Dialog.html#dismissable-dialogs) for more details. */
   isDismissable?: boolean;
   /**
@@ -64,6 +64,7 @@ export function DialogContainer(props: CubeDialogContainerProps) {
     type,
     onClose: onDismiss,
     isDismissable,
+    isOpen,
   };
 
   return (

@@ -51,6 +51,7 @@ export { PauseCircleIcon } from './PauseCircleIcon';
 export { PieChartIcon } from './PieChartIcon';
 export { PlusIcon } from './PlusIcon';
 export { ReloadIcon } from './ReloadIcon';
+export { ReturnIcon } from './ReturnIcon';
 export { RightIcon } from './RightIcon';
 export { SearchIcon } from './SearchIcon';
 export { SettingsIcon } from './SettingsIcon';

@@ -34,12 +34,12 @@ export default {
 
 const Template: StoryFn<
   CubeDialogTriggerProps & { size: CubeDialogProps['size'] }
-> = ({ size, ...props }) => {
+> = ({ size, styles, ...props }) => {
   return (
     <DialogTrigger {...props}>
       <Button>Click me!</Button>
       {(close) => (
-        <Dialog size={size}>
+        <Dialog size={size} styles={styles}>
           <Header>
             <Title>Modal title</Title>
             <Text>Header</Text>
@@ -108,6 +108,13 @@ FullscreenTakeover.play = Default.play;
 export const Panel: typeof Template = Template.bind({});
 Panel.args = {
   type: 'panel',
+  styles: {
+    right: '2x',
+    bottom: '2x',
+    radius: true,
+    width: '320px',
+    height: '(100vh - 10x)',
+  },
 };
 Panel.play = Default.play;
 
@@ -191,12 +198,12 @@ CloseOnEsc.play = async (context) => {
 
   await userEvent.click(trigger);
 
+  await timeout(500);
+
   const dialog = await findByRole('dialog');
 
   await expect(dialog).toBeInTheDocument();
   await expect(dialog.contains(document.activeElement)).toBe(true);
-
-  await timeout(500);
 
   await userEvent.keyboard('{Escape}');
 
@@ -204,8 +211,7 @@ CloseOnEsc.play = async (context) => {
 
   await expect(dialog).not.toBeInTheDocument();
 
-  // @TODO: fix this
-  // await waitFor(() => expect(document.activeElement).toBe(trigger));
+  await waitFor(() => expect(document.activeElement).toBe(trigger));
 };
 
 export const CloseOnEscCloseBehaviorHide: typeof Template = Template.bind({});
@@ -221,11 +227,11 @@ CloseOnEscCloseBehaviorHide.play = async (context) => {
 
   await userEvent.click(trigger);
 
+  await timeout(500);
+
   const dialog = await findByRole('dialog');
 
   await expect(dialog).toBeInTheDocument();
-
-  await timeout(500);
 
   await expect(dialog.contains(document.activeElement)).toBe(true);
 
@@ -234,8 +240,6 @@ CloseOnEscCloseBehaviorHide.play = async (context) => {
   await timeout(500);
 
   await expect(dialog).toBeInTheDocument();
-
-  await timeout(500);
 
   await waitFor(() => expect(document.activeElement).toBe(trigger));
 };

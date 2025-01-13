@@ -70,7 +70,7 @@ function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
     if (inputRef.current) {
       onHeightChange();
     }
-  }, [onHeightChange, inputValue, inputRef]);
+  }, [inputValue, inputRef.current]);
 
   let { labelProps, inputProps } = useTextField(
     {
