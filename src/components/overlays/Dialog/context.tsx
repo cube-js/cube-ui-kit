@@ -11,6 +11,7 @@ export interface DialogContextValue extends HTMLAttributes<HTMLElement> {
     | 'panel';
   isDismissable?: boolean;
   onClose?: (arg?: string) => void;
+  isOpen?: boolean;
 }
 
 export const DialogContext = createContext<DialogContextValue | null>({});

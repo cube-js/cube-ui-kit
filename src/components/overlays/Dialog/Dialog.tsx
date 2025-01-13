@@ -150,11 +150,7 @@ export const Dialog = forwardRef(function Dialog(
   }, [props, ref]);
 
   return (
-    <FocusScope
-      restoreFocus
-      autoFocus={isEntered}
-      contain={isEntered && context.type !== 'panel'}
-    >
+    <FocusScope restoreFocus contain={isEntered && context.type !== 'panel'}>
       {content}
     </FocusScope>
   );
@@ -202,11 +198,15 @@ const DialogContent = forwardRef(function DialogContent(
 
   // Focus the first focusable element in the dialog when it opens
   useEffect(() => {
-    setTimeout(() => {
-      focusManager?.focusFirst();
-      setIsCloseDisabled(false);
-    });
-  }, []);
+    if (contextProps.isOpen) {
+      setTimeout(() => {
+        focusManager?.focusFirst();
+        setIsCloseDisabled(false);
+      });
+    } else {
+      setIsCloseDisabled(true);
+    }
+  }, [contextProps.isOpen]);
 
   // let hasHeader = useHasChild('[data-id="Header"]', domRef);
   // let hasFooter = useHasChild('[data-id="Footer"]', domRef);

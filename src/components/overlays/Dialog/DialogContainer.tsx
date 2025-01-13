@@ -64,6 +64,7 @@ export function DialogContainer(props: CubeDialogContainerProps) {
     type,
     onClose: onDismiss,
     isDismissable,
+    isOpen,
   };
 
   return (

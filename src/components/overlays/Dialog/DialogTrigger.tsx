@@ -309,6 +309,7 @@ function DialogTriggerBase(props) {
     type,
     onClose,
     isDismissable,
+    isOpen: state.isOpen,
     ...dialogProps,
   };
 
