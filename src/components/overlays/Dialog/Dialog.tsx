@@ -1,6 +1,6 @@
 import { useDOMRef } from '@react-spectrum/utils';
-import { DismissButton, FocusScope } from 'react-aria';
-import { forwardRef, ReactElement, useMemo } from 'react';
+import { DismissButton, FocusScope, useFocusManager } from 'react-aria';
+import { forwardRef, ReactElement, useEffect, useMemo, useState } from 'react';
 import { useDialog, useMessageFormatter, AriaDialogProps } from 'react-aria';
 import { DOMRef } from '@react-types/shared';
 
@@ -149,12 +149,12 @@ export const Dialog = forwardRef(function Dialog(
     return <DialogContent key="content" {...props} ref={ref} />;
   }, [props, ref]);
 
-  if (context.type === 'panel' || !isEntered) {
-    return content;
-  }
-
   return (
-    <FocusScope contain restoreFocus autoFocus>
+    <FocusScope
+      restoreFocus
+      autoFocus={isEntered}
+      contain={isEntered && context.type !== 'panel'}
+    >
       {content}
     </FocusScope>
   );
@@ -177,6 +177,8 @@ const DialogContent = forwardRef(function DialogContent(
     ...otherProps
   } = props;
 
+  const [isCloseDisabled, setIsCloseDisabled] = useState(true);
+
   size = sizeMap[size.toUpperCase()] || size;
 
   const styles: Styles = extractStyles(otherProps, STYLES_LIST);
@@ -195,6 +197,15 @@ const DialogContent = forwardRef(function DialogContent(
   if (type === 'popover' || type === 'tray') {
     dismissButton = <DismissButton onDismiss={onDismiss} />;
   }
+
+  const focusManager = useFocusManager();
+
+  useEffect(() => {
+    setTimeout(() => {
+      focusManager?.focusFirst();
+      setIsCloseDisabled(false);
+    });
+  }, []);
 
   // let hasHeader = useHasChild('[data-id="Header"]', domRef);
   // let hasFooter = useHasChild('[data-id="Footer"]', domRef);
@@ -261,9 +272,9 @@ const DialogContent = forwardRef(function DialogContent(
       <SlotProvider slots={slots}>
         {isDismissable && (
           <Button
+            isDisabled={isCloseDisabled}
             qa="ModalCloseButton"
             type="neutral"
-            tabIndex="-1"
             styles={CLOSE_BUTTON_STYLES}
             icon={closeIcon || <CloseIcon />}
             label={formatMessage('dismiss')}

@@ -227,11 +227,11 @@ CloseOnEscCloseBehaviorHide.play = async (context) => {
 
   await userEvent.click(trigger);
 
+  await timeout(500);
+
   const dialog = await findByRole('dialog');
 
   await expect(dialog).toBeInTheDocument();
-
-  await timeout(500);
 
   await expect(dialog.contains(document.activeElement)).toBe(true);
 
@@ -240,8 +240,6 @@ CloseOnEscCloseBehaviorHide.play = async (context) => {
   await timeout(500);
 
   await expect(dialog).toBeInTheDocument();
-
-  await timeout(500);
 
   await waitFor(() => expect(document.activeElement).toBe(trigger));
 };
