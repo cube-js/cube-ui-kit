@@ -198,12 +198,12 @@ CloseOnEsc.play = async (context) => {
 
   await userEvent.click(trigger);
 
+  await timeout(500);
+
   const dialog = await findByRole('dialog');
 
   await expect(dialog).toBeInTheDocument();
   await expect(dialog.contains(document.activeElement)).toBe(true);
-
-  await timeout(500);
 
   await userEvent.keyboard('{Escape}');
 
@@ -211,8 +211,7 @@ CloseOnEsc.play = async (context) => {
 
   await expect(dialog).not.toBeInTheDocument();
 
-  // @TODO: fix this
-  // await waitFor(() => expect(document.activeElement).toBe(trigger));
+  await waitFor(() => expect(document.activeElement).toBe(trigger));
 };
 
 export const CloseOnEscCloseBehaviorHide: typeof Template = Template.bind({});

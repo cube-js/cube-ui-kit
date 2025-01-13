@@ -154,7 +154,7 @@ export const Dialog = forwardRef(function Dialog(
   }
 
   return (
-    <FocusScope contain restoreFocus>
+    <FocusScope contain restoreFocus autoFocus>
       {content}
     </FocusScope>
   );
@@ -250,6 +250,7 @@ const DialogContent = forwardRef(function DialogContent(
       styles={styles}
       as="section"
       {...dialogProps}
+      tabIndex={undefined}
       mods={{ dismissable: isDismissable }}
       style={{ '--dialog-size': `${sizePxMap[size] || 288}px` }}
       data-type={type}
@@ -262,6 +263,7 @@ const DialogContent = forwardRef(function DialogContent(
           <Button
             qa="ModalCloseButton"
             type="neutral"
+            tabIndex="-1"
             styles={CLOSE_BUTTON_STYLES}
             icon={closeIcon || <CloseIcon />}
             label={formatMessage('dismiss')}
