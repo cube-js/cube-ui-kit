@@ -38,3 +38,6 @@ WithIcon.args = { icon: true };
 
 export const Password = Template.bind({});
 Password.args = { icon: true, type: 'password', defaultValue: 'hidden value' };
+
+export const AutoSize = Template.bind({});
+AutoSize.args = { autoSize: true, defaultValue: '1\n2\n3\n4', rows: 1 };
