@@ -241,8 +241,7 @@ CloseOnEscCloseBehaviorHide.play = async (context) => {
 
   await expect(dialog).toBeInTheDocument();
 
-  // Doesn't work because of the `hideOnClose` property that leaves the dialog alive.
-  // await waitFor(() => expect(document.activeElement).toBe(trigger));
+  await waitFor(() => expect(document.activeElement).toBe(trigger));
 };
 
 export const CloseOnOutsideClick: typeof Template = Template.bind({});
