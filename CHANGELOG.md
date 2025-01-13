@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.51.0
+
+### Minor Changes
+
+- [#567](https://github.com/cube-js/cube-ui-kit/pull/567) [`c9f76f5`](https://github.com/cube-js/cube-ui-kit/commit/c9f76f5c1400dc96774ed18769ee951be4b1a687) Thanks [@tenphi](https://github.com/tenphi)! - Remove underlay from dialogs with type `panel`.
+
+- [#567](https://github.com/cube-js/cube-ui-kit/pull/567) [`c9f76f5`](https://github.com/cube-js/cube-ui-kit/commit/c9f76f5c1400dc96774ed18769ee951be4b1a687) Thanks [@tenphi](https://github.com/tenphi)! - Add ReturnIcon component.
+
 ## 0.50.0
 
 ### Minor Changes
