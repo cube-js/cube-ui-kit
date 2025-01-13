@@ -129,7 +129,6 @@ export interface CubeDialogProps
   closeIcon?: ReactElement;
   closeButtonStyles?: Styles;
   role?: 'dialog' | 'alertdialog';
-  type?: 'modal' | 'fullscreen' | 'fullscreenTakeover' | 'panel';
 }
 
 /**
