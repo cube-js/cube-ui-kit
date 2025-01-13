@@ -1,10 +1,8 @@
-import styled from 'styled-components';
 import { useDOMRef } from '@react-spectrum/utils';
-import { DismissButton } from 'react-aria';
-import { forwardRef, ReactElement } from 'react';
+import { DismissButton, FocusScope } from 'react-aria';
+import { forwardRef, ReactElement, useMemo } from 'react';
 import { useDialog, useMessageFormatter, AriaDialogProps } from 'react-aria';
 import { DOMRef } from '@react-types/shared';
-import FocusLock from 'react-focus-lock';
 
 import {
   BASE_STYLES,
@@ -31,7 +29,10 @@ const DialogElement = tasty({
   as: 'section',
   styles: {
     pointerEvents: 'auto',
-    position: 'relative',
+    position: {
+      '': 'relative',
+      '[data-type="panel"]': 'absolute',
+    },
     display: 'flex',
     placeItems: 'stretch',
     placeContent: 'stretch',
@@ -39,27 +40,29 @@ const DialogElement = tasty({
       '': '288px @dialog-size 90vw',
       '[data-type="fullscreen"]': '90vw 90vw',
       '[data-type="fullscreenTakeover"]': '100vw 100vw',
-      '[data-type="panel"]': '100vw 100vw',
+      '[data-type="panel"]': 'auto',
     },
     height: {
       '': 'max 90vh',
       '[data-type="fullscreenTakeover"] | [data-type="panel"]': 'max 100vh',
+      '[data-type="panel"]': 'auto',
     },
     gap: 0,
     flow: 'column',
     radius: {
       '': '(@large-radius + 1bw)',
       '[data-type="tray"]': '(@large-radius + 1bw) top',
-      '[data-type="fullscreenTakeover"] | [data-type="panel"]': '0r',
+      '[data-type="fullscreenTakeover"]': '0r',
     },
     fill: '#white',
     shadow: {
-      '': '0 20px 30px #shadow',
-      '[data-type="popover"]': '0px 4px 16px #shadow',
+      '': '0 2x 4x #shadow',
+      '[data-type="popover"] | [data-type="panel"]': '0px .5x 2x #shadow',
     },
     top: {
       '': false,
       '[data-type="modal"]': '((50vh - 50%) / -3)',
+      '[data-type="panel"]': 'auto',
     },
     placeSelf: 'stretch',
     '@dialog-heading-padding-v': {
@@ -81,10 +84,6 @@ const DialogElement = tasty({
     '@dialog-content-gap': '3x',
   },
 });
-
-const StyledFocusLock = styled(FocusLock)`
-  display: contents;
-`;
 
 const CLOSE_BUTTON_STYLES: Styles = {
   display: 'flex',
@@ -130,6 +129,7 @@ export interface CubeDialogProps
   closeIcon?: ReactElement;
   closeButtonStyles?: Styles;
   role?: 'dialog' | 'alertdialog';
+  type?: 'modal' | 'fullscreen' | 'fullscreenTakeover' | 'panel';
 }
 
 /**
@@ -144,10 +144,20 @@ export const Dialog = forwardRef(function Dialog(
 
   const isEntered = transitionContext?.transitionState === 'entered';
 
+  const context = useDialogContext();
+
+  const content = useMemo(() => {
+    return <DialogContent key="content" {...props} ref={ref} />;
+  }, [props, ref]);
+
+  if (context.type === 'panel' || !isEntered) {
+    return content;
+  }
+
   return (
-    <StyledFocusLock returnFocus disabled={!isEntered}>
-      <DialogContent key="content" {...props} ref={ref} />
-    </StyledFocusLock>
+    <FocusScope contain restoreFocus>
+      {content}
+    </FocusScope>
   );
 });
 

@@ -34,12 +34,12 @@ export default {
 
 const Template: StoryFn<
   CubeDialogTriggerProps & { size: CubeDialogProps['size'] }
-> = ({ size, ...props }) => {
+> = ({ size, styles, ...props }) => {
   return (
     <DialogTrigger {...props}>
       <Button>Click me!</Button>
       {(close) => (
-        <Dialog size={size}>
+        <Dialog size={size} styles={styles}>
           <Header>
             <Title>Modal title</Title>
             <Text>Header</Text>
@@ -108,6 +108,13 @@ FullscreenTakeover.play = Default.play;
 export const Panel: typeof Template = Template.bind({});
 Panel.args = {
   type: 'panel',
+  styles: {
+    right: '2x',
+    bottom: '2x',
+    radius: true,
+    width: '320px',
+    height: '(100vh - 10x)',
+  },
 };
 Panel.play = Default.play;
 
