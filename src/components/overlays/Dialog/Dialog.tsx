@@ -200,6 +200,7 @@ const DialogContent = forwardRef(function DialogContent(
 
   const focusManager = useFocusManager();
 
+  // Focus the first focusable element in the dialog when it opens
   useEffect(() => {
     setTimeout(() => {
       focusManager?.focusFirst();
