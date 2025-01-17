@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.52.1
+
+### Patch Changes
+
+- [#571](https://github.com/cube-js/cube-ui-kit/pull/571) [`c2904de`](https://github.com/cube-js/cube-ui-kit/commit/c2904debe3310c43632515c9ec0d1913d48d16ba) Thanks [@tenphi](https://github.com/tenphi)! - Fix PrismDiffCode export.
+
 ## 0.52.0
 
 ### Minor Changes
