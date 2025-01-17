@@ -3,7 +3,7 @@ import { diffLines } from 'diff';
 import { BaseProps, Styles } from '../../../tasty/index';
 import { PrismCode } from '../PrismCode/PrismCode';
 
-export interface PrismDiffCodeProps {
+export interface CubePrismDiffCodeProps {
   style?: BaseProps['style'];
   styles?: Styles;
   /** Original code string */
@@ -30,7 +30,7 @@ export function PrismDiffCode({
   original,
   modified,
   ...props
-}: PrismDiffCodeProps) {
+}: CubePrismDiffCodeProps) {
   // Generate the diff string
   const diff = diffLines(original, modified, { newlineIsToken: true });
   const diffString = diff
