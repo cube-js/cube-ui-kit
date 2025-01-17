@@ -32,6 +32,8 @@ export { Root } from './components/Root';
 export type { CubeRootProps } from './components/Root';
 export { PrismCode } from './components/content/PrismCode/PrismCode';
 export type { CubePrismCodeProps } from './components/content/PrismCode/PrismCode';
+export { PrismDiffCode } from './components/content/PrismDiffCode/PrismDiffCode';
+export type { CubePrismDiffCodeProps } from './components/content/PrismDiffCode/PrismDiffCode';
 export { Prefix } from './components/layout/Prefix';
 export type { CubePrefixProps } from './components/layout/Prefix';
 export { Suffix } from './components/layout/Suffix';
