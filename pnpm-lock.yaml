@@ -55,6 +55,9 @@ importers:
       clsx:
         specifier: ^1.1.1
         version: 1.1.1
+      diff:
+        specifier: ^7.0.0
+        version: 7.0.0
       email-validator:
         specifier: ^2.0.4
         version: 2.0.4
@@ -4412,6 +4415,10 @@ packages:
 
   diff@4.0.2:
     resolution: {integrity: sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==}
+    engines: {node: '>=0.3.1'}
+
+  diff@7.0.0:
+    resolution: {integrity: sha512-PJWHUb1RFevKCwaFA9RlG5tCd+FO5iRh9A8HEtkmBH2Li03iJriB6m6JIN4rGz3K3JLawI7/veA1xzRKP6ISBw==}
     engines: {node: '>=0.3.1'}
 
   dir-glob@3.0.1:
@@ -11347,7 +11354,7 @@ snapshots:
       get-npm-tarball-url: 2.0.3
       giget: 1.1.2
       globby: 11.1.0
-      jscodeshift: 0.15.2(@babel/preset-env@7.24.3(@babel/core@7.24.3))
+      jscodeshift: 0.15.2(@babel/preset-env@7.24.3(@babel/core@7.25.8))
       leven: 3.1.0
       ora: 5.4.1
       prettier: 3.2.5
@@ -11383,7 +11390,7 @@ snapshots:
       '@types/cross-spawn': 6.0.6
       cross-spawn: 7.0.3
       globby: 11.1.0
-      jscodeshift: 0.15.2(@babel/preset-env@7.24.3(@babel/core@7.24.3))
+      jscodeshift: 0.15.2(@babel/preset-env@7.24.3(@babel/core@7.25.8))
       lodash: 4.17.21
       prettier: 3.2.5
       recast: 0.23.6
@@ -13341,6 +13348,8 @@ snapshots:
 
   diff@4.0.2: {}
 
+  diff@7.0.0: {}
+
   dir-glob@3.0.1:
     dependencies:
       path-type: 4.0.0
@@ -15038,7 +15047,7 @@ snapshots:
     dependencies:
       argparse: 2.0.1
 
-  jscodeshift@0.15.2(@babel/preset-env@7.24.3(@babel/core@7.24.3)):
+  jscodeshift@0.15.2(@babel/preset-env@7.24.3(@babel/core@7.25.8)):
     dependencies:
       '@babel/core': 7.24.3
       '@babel/parser': 7.24.1

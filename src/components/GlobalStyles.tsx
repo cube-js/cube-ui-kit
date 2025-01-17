@@ -304,10 +304,9 @@ const GlobalStylesElement = createGlobalStyle<GlobalStylesElementProps>`
   .token.prolog,
   .token.doctype,
   .token.cdata {
-    color: var(--dark-04-color);
+    color: var(--dark-03-color);
   }
 
-  .token.keyword,
   .token.tag,
   .token.operator,
   .token.punctuation {
@@ -322,6 +321,8 @@ const GlobalStylesElement = createGlobalStyle<GlobalStylesElementProps>`
   .token.boolean,
   .token.constant,
   .token.symbol,
+  .token.key,
+  .token.keyword,
   .token.deleted {
     color: var(--pink-color);
   }
@@ -346,7 +347,6 @@ const GlobalStylesElement = createGlobalStyle<GlobalStylesElementProps>`
     color: var(--dark-color);
   }
 
-  .token.atrule,
   .token.attr-value {
     color: var(--dark-color);
   }
@@ -378,6 +378,16 @@ const GlobalStylesElement = createGlobalStyle<GlobalStylesElementProps>`
 
   .token.entity {
     cursor: help;
+  }
+
+  .token.inserted-sign {
+    background-color: #e6ffed;
+    color: #30A666;
+  }
+
+  .token.deleted-sign {
+    background-color: #ffeef0;
+    color: (--danger-color);
   }
 `;
 
