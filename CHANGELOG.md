@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.52.0
+
+### Minor Changes
+
+- [#569](https://github.com/cube-js/cube-ui-kit/pull/569) [`ac2f4af`](https://github.com/cube-js/cube-ui-kit/commit/ac2f4af7457bf8d02410f8d079d90fe50aed18ac) Thanks [@tenphi](https://github.com/tenphi)! - Add support for diff in PrismCode and add a separate PrismDiffCode component that shows a diff between two strings.
+
 ## 0.51.0
 
 ### Minor Changes
