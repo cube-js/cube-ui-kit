@@ -72,6 +72,7 @@
     "@vitejs/plugin-react": "^4.3.2",
     "clipboard-copy": "^4.0.1",
     "clsx": "^1.1.1",
+    "diff": "^7.0.0",
     "email-validator": "^2.0.4",
     "prismjs": "^1.27.0",
     "react-aria": "^3.35.1",
