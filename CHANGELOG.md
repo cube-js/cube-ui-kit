@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.52.3
+
+### Patch Changes
+
+- [#575](https://github.com/cube-js/cube-ui-kit/pull/575) [`60eb4bf`](https://github.com/cube-js/cube-ui-kit/commit/60eb4bfca7541f8cf95a7ce77da5a53c55434b0e) Thanks [@tenphi](https://github.com/tenphi)! - Add PlayIcon, PauseIcon and StopIcon.
+
 ## 0.52.2
 
 ### Patch Changes
