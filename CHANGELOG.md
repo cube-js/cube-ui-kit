@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.52.2
+
+### Patch Changes
+
+- [#573](https://github.com/cube-js/cube-ui-kit/pull/573) [`4375c19`](https://github.com/cube-js/cube-ui-kit/commit/4375c19d4ea096c24407e103470a5d02358f4e19) Thanks [@tenphi](https://github.com/tenphi)! - Fix diff calculation in PrismDiffCode.
+
+- [#573](https://github.com/cube-js/cube-ui-kit/pull/573) [`4375c19`](https://github.com/cube-js/cube-ui-kit/commit/4375c19d4ea096c24407e103470a5d02358f4e19) Thanks [@tenphi](https://github.com/tenphi)! - Fix the bug when an empty line might appear in PrismDiffCode.
+
 ## 0.52.1
 
 ### Patch Changes
