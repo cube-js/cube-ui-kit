@@ -43,6 +43,7 @@ export function PrismDiffCode({
       }
       return ` ${part.value.trimEnd()}`;
     })
+    .filter((s) => s.trim())
     .join('\n');
 
   return <PrismCode code={diffString} {...props} />;
