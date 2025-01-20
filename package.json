@@ -1,6 +1,6 @@
 {
   "name": "@cube-dev/ui-kit",
-  "version": "0.52.2",
+  "version": "0.52.3",
   "description": "UIKit for Cube Projects",
   "module": "dist/es/index.js",
   "main": "dist/cjs/index.js",
