@@ -32,16 +32,36 @@ export function PrismDiffCode({
   ...props
 }: CubePrismDiffCodeProps) {
   // Generate the diff string
-  const diff = diffLines(original, modified, { newlineIsToken: true });
+  const diff = diffLines(original, modified);
+
   const diffString = diff
     .map((part) => {
+      const value = part.value.trimEnd();
+
       if (part.added) {
-        return `+${part.value.trimEnd()}`;
+        return value
+          .split('\n')
+          .map((val) => {
+            return val ? `+${val}` : '';
+          })
+          .join('\n');
       }
+
       if (part.removed) {
-        return `-${part.value.trimEnd()}`;
+        return value
+          .split('\n')
+          .map((val) => {
+            return val ? `-${val}` : '';
+          })
+          .join('\n');
       }
-      return ` ${part.value.trimEnd()}`;
+
+      return value
+        .split('\n')
+        .map((val) => {
+          return val ? ` ${val}` : '';
+        })
+        .join('\n');
     })
     .join('\n');
 

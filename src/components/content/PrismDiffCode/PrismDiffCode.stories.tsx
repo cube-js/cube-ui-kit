@@ -254,3 +254,12 @@ SELECT
 FROM FinalOutput fo
 ORDER BY fo.GeneratedDate, fo.UserID;`,
 };
+
+export const EmptyLineDiff = Template.bind({});
+EmptyLineDiff.args = {
+  modified:
+    "cubes:\n  - name: orders\n    sql: >\n      select 1 as id, 100 as amount, 'new' status\n      UNION ALL\n      select 2 as id, 200 as amount, 'new' status\n      UNION ALL\n      select 3 as id, 300 as amount, 'processed' status\n      UNION ALL\n      select 4 as id, 500 as amount, 'processed' status\n      UNION ALL\n      select 5 as id, 600 as amount, 'shipped' status\n\n    joins: []\n\n    dimensions:\n      - name: id\n        type: number\n\n      - name: status\n        sql: status\n\n\n    measures:\n      - name: count\n        type: count\n\n      - name: amount\n        sql: amount\n        type: sum\n\n    pre_aggregations:\n      # Pre-aggregation definitions go here.\n      # Learn more in the documentation: https://cube.dev/docs/caching/pre-aggregations/getting-started\n\n",
+  original:
+    "cubes:\n  - name: orders\n    sql: >\n      select 1 as id, 100 as amount, 'new' status\n      UNION ALL\n      select 2 as id, 200 as amount, 'new' status\n      UNION ALL\n      select 3 as id, 300 as amount, 'processed' status\n      UNION ALL\n      select 4 as id, 500 as amount, 'processed' status\n      UNION ALL\n      select 5 as id, 600 as amount, 'shipped' status\n\n    joins: []\n\n    dimensions:\n      - name: id\n\n      - name: status\n        sql: status\n\n\n    measures:\n      - name: count\n        type: count\n\n      - name: amount\n        sql: amount\n        type: sum\n\n    pre_aggregations:\n      # Pre-aggregation definitions go here.\n      # Learn more in the documentation: https://cube.dev/docs/caching/pre-aggregations/getting-started\n\n",
+  language: 'yaml',
+};
