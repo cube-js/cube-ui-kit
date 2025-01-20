@@ -39,10 +39,21 @@ export function PrismDiffCode({
       const value = part.value.trimEnd();
 
       if (part.added) {
-        return `+${value}`;
+        return value
+          .split('\n')
+          .map((val) => {
+            return val ? `+${val}` : '';
+          })
+          .join('\n');
       }
+
       if (part.removed) {
-        return `-${value}`;
+        return value
+          .split('\n')
+          .map((val) => {
+            return val ? `-${val}` : '';
+          })
+          .join('\n');
       }
 
       return value
