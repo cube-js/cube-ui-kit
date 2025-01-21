@@ -227,7 +227,7 @@ export function Modal(allProps: CubeModalProps) {
                 qa="ModalCloseButton"
                 width="3x"
                 height="3x"
-                color={{ '': '#dark.75', hovered: '#purple' }}
+                color={{ '': '#dark-02', hovered: '#purple' }}
                 outline={{
                   '': '#purple-03.0',
                   'focused & focus-visible': '#purple-03',

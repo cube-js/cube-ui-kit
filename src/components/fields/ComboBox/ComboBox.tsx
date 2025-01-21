@@ -82,8 +82,8 @@ const TriggerElement = tasty({
     radius: 'right',
     width: '4x',
     color: {
-      '': '#dark.75',
-      hovered: '#dark.75',
+      '': '#dark-02',
+      hovered: '#dark-02',
       pressed: '#purple',
       '[disabled]': '#dark.30',
     },

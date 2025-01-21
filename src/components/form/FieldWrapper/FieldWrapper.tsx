@@ -58,7 +58,7 @@ const MessageElement = tasty({
   styles: {
     preset: 't3',
     color: {
-      '': '#dark.75',
+      '': '#dark-02',
       invalid: '#danger-text',
       valid: '#success-text',
       disabled: '#dark.40',

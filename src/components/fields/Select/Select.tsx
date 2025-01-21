@@ -170,8 +170,8 @@ const SelectElement = tasty({
     color: {
       '': '#white',
 
-      '[data-type="secondary"]': '#dark.75',
-      '[data-type="secondary"] & hovered': '#dark.75',
+      '[data-type="secondary"]': '#dark-02',
+      '[data-type="secondary"] & hovered': '#dark-02',
       '[data-type="clear"]': '#purple-text',
       '[data-type="secondary"] & pressed': '#purple',
 
@@ -219,8 +219,8 @@ const OptionElement = tasty({
       disabled: '#dark.0',
     },
     color: {
-      '': '#dark.75',
-      'hovered | focused': '#dark.75',
+      '': '#dark-02',
+      'hovered | focused': '#dark-02',
       'pressed | selected': '#purple',
       disabled: '#dark.3',
     },

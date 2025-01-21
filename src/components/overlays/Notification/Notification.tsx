@@ -60,7 +60,7 @@ const NotificationElement = tasty(Card, {
 
 const CloseButton = tasty(Action, {
   styles: {
-    color: { '': '#dark.75', hovered: '#purple' },
+    color: { '': '#dark-02', hovered: '#purple' },
     width: '5x',
     height: '5x',
     label: 'Close',

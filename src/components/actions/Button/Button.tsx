@@ -144,8 +144,8 @@ const ButtonElement = tasty({
         '[data-type="clear"] | [data-type="outline"] | [data-type="link"]':
           '#purple-text',
         '[data-type="link"] & pressed': '#purple',
-        '[data-type="neutral"]': '#dark.75',
-        '[data-type="neutral"] & hovered': '#dark.75',
+        '[data-type="neutral"]': '#dark-02',
+        '[data-type="neutral"] & hovered': '#dark-02',
         '[data-type="neutral"] & pressed': '#purple',
 
         // other
@@ -198,8 +198,8 @@ const ButtonElement = tasty({
       color: {
         '': '#white',
 
-        '[data-type="neutral"]': '#dark.75',
-        '[data-type="neutral"] & hovered': '#dark.75',
+        '[data-type="neutral"]': '#dark-02',
+        '[data-type="neutral"] & hovered': '#dark-02',
         '[data-type="secondary"]': '#danger',
         '[data-type="clear"] | [data-type="outline"] | [data-type="link"]':
           '#danger-text',
