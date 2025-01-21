@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.53.0
+
+### Minor Changes
+
+- [#577](https://github.com/cube-js/cube-ui-kit/pull/577) [`5dbb99d`](https://github.com/cube-js/cube-ui-kit/commit/5dbb99d3a10ef931a6abd72a3801ffb78ce0edd4) Thanks [@tenphi](https://github.com/tenphi)! - Allow to pass numbers to {min/max}{Width/Height} styles.
+
+- [#577](https://github.com/cube-js/cube-ui-kit/pull/577) [`5dbb99d`](https://github.com/cube-js/cube-ui-kit/commit/5dbb99d3a10ef931a6abd72a3801ffb78ce0edd4) Thanks [@tenphi](https://github.com/tenphi)! - Change default font color to dark-02.
+
+### Patch Changes
+
+- [#577](https://github.com/cube-js/cube-ui-kit/pull/577) [`5dbb99d`](https://github.com/cube-js/cube-ui-kit/commit/5dbb99d3a10ef931a6abd72a3801ffb78ce0edd4) Thanks [@tenphi](https://github.com/tenphi)! - Fix style property leakage in Panel component.
+
+- [#577](https://github.com/cube-js/cube-ui-kit/pull/577) [`5dbb99d`](https://github.com/cube-js/cube-ui-kit/commit/5dbb99d3a10ef931a6abd72a3801ffb78ce0edd4) Thanks [@tenphi](https://github.com/tenphi)! - Fix transition aliases.
+
 ## 0.52.3
 
 ### Patch Changes
