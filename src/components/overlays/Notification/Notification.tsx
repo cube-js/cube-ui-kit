@@ -19,7 +19,7 @@ const NotificationElement = tasty(Card, {
   role: 'region',
   styles: {
     display: 'grid',
-    color: '#dark',
+    color: '#dark-02',
     padding: '.5x',
     shadow: '0 5px 15px #dark.10',
     border: false,
@@ -39,7 +39,7 @@ const NotificationElement = tasty(Card, {
       placeItems: 'center',
       preset: 't2',
       color: {
-        '': '#dark.75',
+        '': '#dark-02',
         ...Object.keys(THEMES).reduce((map, theme) => {
           map[`[data-theme="${theme}"]`] = THEMES[theme].color;
 

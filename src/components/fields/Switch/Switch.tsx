@@ -61,6 +61,7 @@ const SwitchLabelElement = tasty({
     width: 'min-content',
     cursor: 'pointer',
     verticalAlign: 'baseline',
+    color: '#dark-02',
   },
 });
 

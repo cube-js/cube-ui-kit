@@ -9,6 +9,10 @@ const TableElement = tasty({
   as: 'table',
   styles: {
     borderCollapse: 'collapse',
+
+    HeadRow: {
+      color: '#dark-04',
+    },
   },
 });
 

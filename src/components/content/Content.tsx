@@ -20,7 +20,7 @@ const ContentElement = tasty({
   styles: {
     gridArea: 'content',
     preset: 'p3',
-    color: '#dark.75',
+    color: '#dark-02',
     display: 'block',
     flow: 'column',
     gap: '2x',

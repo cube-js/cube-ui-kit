@@ -40,6 +40,7 @@ const DateRangeDash = tasty({
   children: '––',
   styles: {
     padding: '0 .5x',
+    color: '#dark-03',
   },
 });
 
