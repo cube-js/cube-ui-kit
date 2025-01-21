@@ -79,7 +79,7 @@ const TriggerElement = tasty({
     placeItems: 'center',
     placeContent: 'center',
     placeSelf: 'stretch',
-    radius: 'right',
+    radius: '(1r - 1bw) right',
     width: '4x',
     color: {
       '': '#dark-02',
