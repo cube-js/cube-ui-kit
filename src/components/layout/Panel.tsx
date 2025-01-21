@@ -135,6 +135,8 @@ function Panel(props: CubePanelProps, ref: ForwardedRef<HTMLDivElement>) {
   ].forEach((style) => {
     if (style in props) {
       styles = { ...styles, [style]: props[style] };
+
+      delete otherProps[style];
     }
   });
 

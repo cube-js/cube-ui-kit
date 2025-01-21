@@ -72,8 +72,8 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   radius: true,
   cursor: 'text',
   color: {
-    '': '#dark.85',
-    focused: '#dark.85',
+    '': '#dark-02',
+    focused: '#dark-02',
     invalid: '#danger-text',
     disabled: '#dark.30',
   },

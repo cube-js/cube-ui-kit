@@ -30,7 +30,7 @@ const BODY_STYLES = {
   '-moz-osx-font-smoothing': 'grayscale',
   margin: '0',
   padding: '0',
-  color: 'rgba(20, 20, 70, .75)',
+  color: 'var(--dark-02-color)',
   'font-size': '14px',
   'line-height': '20px',
   'letter-spacing': '0.02em',

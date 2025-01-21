@@ -45,6 +45,7 @@ const SwitchWrapperElement = tasty({
     },
     gap: '1x',
     width: 'max max-content',
+    color: '#dark-02',
   },
 });
 
@@ -61,6 +62,7 @@ const SwitchLabelElement = tasty({
     width: 'min-content',
     cursor: 'pointer',
     verticalAlign: 'baseline',
+    color: '#dark-02',
   },
 });
 

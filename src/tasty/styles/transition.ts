@@ -2,9 +2,9 @@ import { parseStyle } from '../utils/styles';
 
 const MAP = {
   fade: ['mask'],
-  move: ['transform'],
-  rotate: ['transform'],
-  scale: ['transform'],
+  translate: ['transform', 'translate'],
+  rotate: ['transform', 'rotate'],
+  scale: ['transform', 'scale'],
   placeSelf: ['transform', 'top', 'right', 'bottom', 'left'],
   fill: ['background-color'],
   border: ['border', 'box-shadow'],

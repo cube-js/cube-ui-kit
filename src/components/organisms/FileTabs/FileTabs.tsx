@@ -98,7 +98,7 @@ const TabElement = tasty(Action, {
       'disabled, disabled & hover': '#white',
     },
     color: {
-      '': '#dark.75',
+      '': '#dark-02',
       'disabled, hovered, hovered & disabled': '#dark',
     },
     cursor: {

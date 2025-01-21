@@ -12,7 +12,7 @@ import { CubeTextProps, Text } from './Text';
 
 const DEFAULT_STYLES: Styles = {
   preset: 'p3',
-  color: '#dark.75',
+  color: '#dark-02',
   display: 'block',
 };
 

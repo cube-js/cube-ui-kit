@@ -23,7 +23,7 @@ const PrefixElement = tasty({
     left: '@prefix-gap',
     top: '@prefix-gap',
     bottom: '@prefix-gap',
-    color: '#dark.75',
+    color: '#dark-02',
     height: '(100% - (2 * @prefix-gap))',
   },
 });

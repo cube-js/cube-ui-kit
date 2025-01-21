@@ -132,6 +132,11 @@ export function predefine() {
   defineStyleAlias('right', 'right', numberConverter);
   defineStyleAlias('bottom', 'bottom', numberConverter);
   defineStyleAlias('left', 'left', numberConverter);
+  // Dimensions
+  defineStyleAlias('minWidth', 'min-width', numberConverter);
+  defineStyleAlias('maxWidth', 'max-width', numberConverter);
+  defineStyleAlias('minHeight', 'min-height', numberConverter);
+  defineStyleAlias('maxHeight', 'max-height', numberConverter);
   // Style aliases
   defineStyleAlias('gridAreas', 'grid-template-areas');
   defineStyleAlias('gridColumns', 'grid-template-columns', columnsConverter);
