@@ -45,6 +45,7 @@ const SwitchWrapperElement = tasty({
     },
     gap: '1x',
     width: 'max max-content',
+    color: '#dark-02',
   },
 });
 
