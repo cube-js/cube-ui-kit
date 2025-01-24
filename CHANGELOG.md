@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.53.1
+
+### Patch Changes
+
+- [#580](https://github.com/cube-js/cube-ui-kit/pull/580) [`ffb2dd1`](https://github.com/cube-js/cube-ui-kit/commit/ffb2dd1fd606f0c9d09d4a4e040dc47788753ccf) Thanks [@tenphi](https://github.com/tenphi)! - Set ThumbsUpIcon and ThumbsDownIcon color to currentColor.
+
 ## 0.53.0
 
 ### Minor Changes
