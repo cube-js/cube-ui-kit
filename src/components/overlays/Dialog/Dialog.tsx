@@ -3,6 +3,7 @@ import { DismissButton, FocusScope, useFocusManager } from 'react-aria';
 import { forwardRef, ReactElement, useEffect, useMemo, useState } from 'react';
 import { useDialog, useMessageFormatter, AriaDialogProps } from 'react-aria';
 import { DOMRef } from '@react-types/shared';
+import FocusLock from 'react-focus-lock';
 
 import {
   BASE_STYLES,
@@ -43,8 +44,9 @@ const DialogElement = tasty({
       '[data-type="panel"]': 'auto',
     },
     height: {
-      '': 'max 90vh',
-      '[data-type="fullscreenTakeover"] | [data-type="panel"]': 'max 100vh',
+      '': 'auto 90vh',
+      '[data-type="fullscreen"]': '90vh 90vh',
+      '[data-type="fullscreenTakeover"] | [data-type="panel"]': '100vh 100vh',
       '[data-type="panel"]': 'auto',
     },
     gap: 0,
@@ -150,9 +152,12 @@ export const Dialog = forwardRef(function Dialog(
   }, [props, ref]);
 
   return (
-    <FocusScope restoreFocus contain={isEntered && context.type !== 'panel'}>
-      {content}
-    </FocusScope>
+    // This component is actually traps the focus inside the dialog.
+    <FocusLock returnFocus disabled={!isEntered || context.type === 'panel'}>
+      {/* FocusScope has a bug that prevents selection and blurring in the dialog. */}
+      {/* But we need it to make the autofocus work. */}
+      <FocusScope restoreFocus>{content}</FocusScope>
+    </FocusLock>
   );
 });
 
