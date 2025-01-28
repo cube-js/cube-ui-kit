@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.53.2
+
+### Patch Changes
+
+- [#582](https://github.com/cube-js/cube-ui-kit/pull/582) [`8871512`](https://github.com/cube-js/cube-ui-kit/commit/887151206646607e8fdbe1659eae5690faa435fc) Thanks [@tenphi](https://github.com/tenphi)! - Add SchemeIcon and CodeIcon.
+
+- [#582](https://github.com/cube-js/cube-ui-kit/pull/582) [`8871512`](https://github.com/cube-js/cube-ui-kit/commit/887151206646607e8fdbe1659eae5690faa435fc) Thanks [@tenphi](https://github.com/tenphi)! - Fix the bug that prevented blur and text selection inside a dialog.
+
 ## 0.53.1
 
 ### Patch Changes
