@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.53.3
+
+### Patch Changes
+
+- [#584](https://github.com/cube-js/cube-ui-kit/pull/584) [`c6bd47e`](https://github.com/cube-js/cube-ui-kit/commit/c6bd47e7c13188bba749c421ed109f5db766a30f) Thanks [@tenphi](https://github.com/tenphi)! - Fix dependency issue with @internationalized/date.
+
 ## 0.53.2
 
 ### Patch Changes
