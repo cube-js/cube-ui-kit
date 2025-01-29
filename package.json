@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^5.5.1",
-    "@internationalized/date": "^3.5.6",
+    "@internationalized/date": "^3.7.0",
     "@react-aria/focus": "^3.19.1",
     "@react-aria/i18n": "^3.12.5",
     "@react-aria/interactions": "^3.23.0",
