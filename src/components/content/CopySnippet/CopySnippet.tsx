@@ -90,6 +90,7 @@ const CopySnippetElement = tasty(Card, {
     preset: 'default',
     radius: '1r',
     overflow: 'hidden',
+    height: 'max-content',
 
     Grid: {
       display: 'grid',
