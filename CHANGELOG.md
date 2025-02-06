@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.53.4
+
+### Patch Changes
+
+- [#586](https://github.com/cube-js/cube-ui-kit/pull/586) [`7bd4103`](https://github.com/cube-js/cube-ui-kit/commit/7bd4103bb2ce2c09ac15773bb39dc49c7e7e4e1a) Thanks [@tenphi](https://github.com/tenphi)! - Fix CopySnippet height in older safari version.
+
 ## 0.53.3
 
 ### Patch Changes
