@@ -17,7 +17,7 @@ const IconElement = tasty({
   styles: {
     display: 'inline-grid',
     placeContent: 'center',
-    verticalAlign: 'middle',
+    verticalAlign: 'sub',
     width: '1em 1em',
     height: 'min 1em',
     fontSize: 'var(--icon-size, var(--font-size))',
