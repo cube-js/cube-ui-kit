@@ -5,6 +5,7 @@ import {
   Flow,
   Space,
   Block,
+  CubeIcon,
 } from '../index';
 
 export default {
@@ -15,61 +16,61 @@ export const Presets = {
   render: () => (
     <Flow gap="1x" color="#dark">
       <Block preset="h1">
-        The quick brown fox jumps over the lazy dog - h1
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - h1
       </Block>
       <Block preset="h2">
-        The quick brown fox jumps over the lazy dog - h2
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - h2
       </Block>
       <Block preset="h3">
-        The quick brown fox jumps over the lazy dog - h3
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - h3
       </Block>
       <Block preset="h4">
-        The quick brown fox jumps over the lazy dog - h4
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - h4
       </Block>
       <Block preset="h5">
-        The quick brown fox jumps over the lazy dog - h5
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - h5
       </Block>
       <Block preset="h6">
-        The quick brown fox jumps over the lazy dog - h6
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - h6
       </Block>
       <Block preset="t1">
-        The quick brown fox jumps over the lazy dog - t1
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - t1
       </Block>
       <Block preset="t2">
-        The quick brown fox jumps over the lazy dog - t2
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - t2
       </Block>
       <Block preset="t2m">
-        The quick brown fox jumps over the lazy dog - t2m
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - t2m
       </Block>
       <Block preset="t3">
-        The quick brown fox jumps over the lazy dog - t3
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - t3
       </Block>
       <Block preset="t3m">
-        The quick brown fox jumps over the lazy dog - t3m
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - t3m
       </Block>
       <Block preset="t4">
-        The quick brown fox jumps over the lazy dog - t4
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - t4
       </Block>
       <Block preset="p1">
-        The quick brown fox jumps over the lazy dog - p1
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - p1
       </Block>
       <Block preset="p2">
-        The quick brown fox jumps over the lazy dog - p2
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - p2
       </Block>
       <Block preset="p3">
-        The quick brown fox jumps over the lazy dog - p3
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - p3
       </Block>
       <Block preset="p4">
-        The quick brown fox jumps over the lazy dog - p4
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - p4
       </Block>
       <Block preset="c1">
-        The quick brown fox jumps over the lazy dog - c1
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - c1
       </Block>
       <Block preset="c2">
-        The quick brown fox jumps over the lazy dog - c2
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - c2
       </Block>
       <Block preset="tag">
-        The quick brown fox jumps over the lazy dog - tag
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - tag
       </Block>
     </Flow>
   ),

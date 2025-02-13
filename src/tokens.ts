@@ -94,21 +94,25 @@ const TOKENS = {
   'h1-line-height': '44px',
   'h1-letter-spacing': '-0.01em',
   'h1-font-weight': '700',
+  'h1-icon-size': '38px',
   // h2
   'h2-font-size': '24px',
   'h2-line-height': '36px',
   'h2-letter-spacing': '0em',
   'h2-font-weight': '700',
+  'h2-icon-size': '26px',
   // h3
   'h3-font-size': '20px',
   'h3-line-height': '28px',
   'h3-letter-spacing': '0em',
   'h3-font-weight': '700',
+  'h3-icon-size': '22px',
   // h4
   'h4-font-size': '18px',
   'h4-line-height': '24px',
   'h4-letter-spacing': '0',
   'h4-font-weight': '700',
+  'h4-icon-size': '20px',
   // h5
   'h5-font-size': '16px',
   'h5-line-height': '22px',
