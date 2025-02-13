@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.53.5
+
+### Patch Changes
+
+- [#588](https://github.com/cube-js/cube-ui-kit/pull/588) [`21c6b6a`](https://github.com/cube-js/cube-ui-kit/commit/21c6b6a10b12d56e00186f7b33d3a72056347108) Thanks [@tenphi](https://github.com/tenphi)! - Change vertical alignment of icons to sub.
+
+- [#588](https://github.com/cube-js/cube-ui-kit/pull/588) [`21c6b6a`](https://github.com/cube-js/cube-ui-kit/commit/21c6b6a10b12d56e00186f7b33d3a72056347108) Thanks [@tenphi](https://github.com/tenphi)! - Add missing icon size tokens for header presets.
+
 ## 0.53.4
 
 ### Patch Changes
