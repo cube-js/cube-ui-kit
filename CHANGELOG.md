@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.53.6
+
+### Patch Changes
+
+- [#590](https://github.com/cube-js/cube-ui-kit/pull/590) [`07dd389`](https://github.com/cube-js/cube-ui-kit/commit/07dd389e516da7929c0c7de3af5284fb3f421cf8) Thanks [@tenphi](https://github.com/tenphi)! - Fix size prop for icons.
+
 ## 0.53.5
 
 ### Patch Changes
