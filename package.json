@@ -87,9 +87,9 @@
     "valid-url": "^1.0.9"
   },
   "devDependencies": {
-    "@actions/core": "^1.9.1",
+    "@actions/core": "^1.11.1",
     "@actions/exec": "^1.1.1",
-    "@actions/github": "^5.0.3",
+    "@actions/github": "^6.0.0",
     "@changesets/changelog-github": "^0.4.4",
     "@changesets/cli": "^2.22.0",
     "@commitlint/cli": "^17.4.4",
