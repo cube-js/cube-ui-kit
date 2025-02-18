@@ -86,7 +86,7 @@ jobs:
         with:
           version: 9.12.2
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         name: Download eslint cache
         with:
           path: |
@@ -126,7 +126,7 @@ jobs:
         with:
           version: 9.12.2
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         name: Download storybook cache
         with:
           path: |
@@ -188,7 +188,7 @@ jobs:
         with:
           version: 9.12.2
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         name: Download storybook cache
         with:
           path: |

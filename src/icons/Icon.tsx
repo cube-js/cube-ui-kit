@@ -43,15 +43,13 @@ export interface CubeIconProps
 }
 
 export const Icon = memo(function Icon(props: CubeIconProps) {
-  const { size, ...rest } = props;
+  const { size, styles, ...rest } = props;
 
   return (
     <IconElement
       qa="Icon"
       {...rest}
-      styles={
-        size || props.styles ? { fontSize: size, ...props.styles } : undefined
-      }
+      styles={size ? { fontSize: size, ...styles } : styles}
     />
   );
 });
