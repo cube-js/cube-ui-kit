@@ -442,3 +442,12 @@ export const WithTriggerState = ({ ...props }) => {
     </Space>
   );
 };
+WithTriggerState.play = async ({ canvasElement, viewMode }) => {
+  if (viewMode === 'docs') return;
+
+  const { findByRole } = within(canvasElement);
+
+  await userEvent.click(await findByRole('button'));
+
+  await expect(await findByRole('menu')).toBeInTheDocument();
+};
