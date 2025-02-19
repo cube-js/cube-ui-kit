@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.54.0
+
+### Minor Changes
+
+- [#592](https://github.com/cube-js/cube-ui-kit/pull/592) [`dae9246`](https://github.com/cube-js/cube-ui-kit/commit/dae92466a220dba57472fb3c926e72958354e024) Thanks [@tenphi](https://github.com/tenphi)! - Add DirectionIcon component.
+
+### Patch Changes
+
+- [#592](https://github.com/cube-js/cube-ui-kit/pull/592) [`dae9246`](https://github.com/cube-js/cube-ui-kit/commit/dae92466a220dba57472fb3c926e72958354e024) Thanks [@tenphi](https://github.com/tenphi)! - Add a visual gap between the field input and the message below.
+
 ## 0.53.6
 
 ### Patch Changes
