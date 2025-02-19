@@ -1,5 +1,5 @@
 import { Fragment, ReactElement, RefObject, useEffect, useRef } from 'react';
-import { useOverlayTriggerState } from 'react-stately';
+import { OverlayTriggerState, useOverlayTriggerState } from 'react-stately';
 import { PressResponder } from '@react-aria/interactions';
 import { useMediaQuery } from '@react-spectrum/utils';
 import {
@@ -23,7 +23,10 @@ export interface CubeDialogTriggerProps
     PositionProps,
     WithCloseBehavior {
   /** The Dialog and its trigger element. See the DialogTrigger [Content section](#content) for more information on what to provide as children. */
-  children: [ReactElement, CubeDialogClose | ReactElement];
+  children: [
+    ReactElement | ((state: OverlayTriggerState) => ReactElement),
+    CubeDialogClose | ReactElement,
+  ];
   /**
    * The type of Dialog that should be rendered. See the DialogTrigger [types section](#dialog-types) for an explanation on each.
    * @default 'modal'
@@ -101,6 +104,10 @@ function DialogTrigger(props: CubeDialogTriggerProps) {
   }
 
   let state = useOverlayTriggerState(props);
+
+  if (typeof trigger === 'function') {
+    trigger = trigger(state);
+  }
 
   let wasOpen = useRef(false);
   let isExiting = useRef(false);

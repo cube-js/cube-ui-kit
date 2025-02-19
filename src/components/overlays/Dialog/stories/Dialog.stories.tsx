@@ -17,6 +17,7 @@ import {
   Paragraph,
   Title,
   Space,
+  DirectionIcon,
 } from '../../../../index';
 import { timeout } from '../../../../utils/promise';
 import { baseProps } from '../../../../stories/lists/baseProps';
@@ -60,6 +61,25 @@ const Template: StoryFn<
           </Footer>
         </Dialog>
       )}
+    </DialogTrigger>
+  );
+};
+
+const WithTriggerStateTemplate: StoryFn<
+  CubeDialogTriggerProps & { size: CubeDialogProps['size'] }
+> = ({ size, styles, ...props }) => {
+  return (
+    <DialogTrigger {...props} type="popover">
+      {({ isOpen }) => (
+        <Button rightIcon={<DirectionIcon to={isOpen ? 'top' : 'bottom'} />}>
+          Open modal
+        </Button>
+      )}
+      <Dialog size={size} styles={styles}>
+        <Content>
+          <Paragraph>Test content</Paragraph>
+        </Content>
+      </Dialog>
     </DialogTrigger>
   );
 };
@@ -312,3 +332,7 @@ DoNotCloseOnClickAtParticularElement.play = async (context) => {
   await expect(await findByRole('dialog')).toBeInTheDocument();
   await expect(button).toHaveTextContent('It works!');
 };
+
+export const WithTriggerState = WithTriggerStateTemplate.bind({});
+WithTriggerState.args = {};
+WithTriggerState.play = Default.play;

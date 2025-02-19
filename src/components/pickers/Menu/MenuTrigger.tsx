@@ -48,6 +48,10 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     isDisabled,
   } = props;
 
+  if (!Array.isArray(children) || children.length > 2) {
+    throw new Error('MenuTrigger must have exactly 2 children');
+  }
+
   let [menuTrigger, menu] = children;
   const state: MenuTriggerState = useMenuTriggerState(props);
 
