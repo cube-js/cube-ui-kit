@@ -1,4 +1,4 @@
-import React, { ReactNode, forwardRef, Fragment, useRef } from 'react';
+import React, { forwardRef, Fragment, useRef, ReactElement } from 'react';
 import { AriaMenuTriggerProps } from 'react-aria';
 import { useDOMRef, useIsMobileDevice } from '@react-spectrum/utils';
 import {
@@ -10,7 +10,7 @@ import {
 } from 'react-aria';
 import { DOMRef } from '@react-types/shared';
 import { PressResponder } from '@react-aria/interactions';
-import { useMenuTriggerState } from 'react-stately';
+import { MenuTriggerState, useMenuTriggerState } from 'react-stately';
 
 import { Popover, Tray } from '../../overlays/Modal';
 import { SlotProvider } from '../../../utils/react';
@@ -22,7 +22,10 @@ export type { AriaMenuTriggerProps };
 export type CubeMenuTriggerProps = AriaMenuTriggerProps &
   PositionProps & {
     isDisabled?: boolean;
-    children: ReactNode[];
+    children: [
+      ReactElement | ((state: MenuTriggerState) => ReactElement),
+      ReactElement,
+    ];
     direction?: Placement;
     align?: 'start' | 'end';
     // eslint-disable-next-line
@@ -45,8 +48,12 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     isDisabled,
   } = props;
 
-  const [menuTrigger, menu] = React.Children.toArray(children);
-  const state = useMenuTriggerState(props);
+  let [menuTrigger, menu] = React.Children.toArray(children);
+  const state: MenuTriggerState = useMenuTriggerState(props);
+
+  if (typeof menuTrigger === 'function') {
+    menuTrigger = (menuTrigger as CubeMenuTriggerProps['children'][0])(state);
+  }
 
   const { menuTriggerProps, menuProps } = useMenuTrigger(
     { isDisabled },
