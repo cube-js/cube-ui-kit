@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.54.1
+
+### Patch Changes
+
+- [#594](https://github.com/cube-js/cube-ui-kit/pull/594) [`49396dc`](https://github.com/cube-js/cube-ui-kit/commit/49396dca69fe07513b2318970e16befbcc0a2737) Thanks [@tenphi](https://github.com/tenphi)! - Allow to get a state in menu trigger.
+
 ## 0.54.0
 
 ### Minor Changes
