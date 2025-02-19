@@ -77,6 +77,7 @@ export const DirectionIcon = memo(function DirectionIcon(
 
   return (
     <StyledUpIcon
+      data-direction={direction}
       {...iconProps}
       style={{
         rotate: `${rotate}deg`,

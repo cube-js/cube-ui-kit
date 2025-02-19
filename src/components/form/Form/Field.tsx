@@ -235,7 +235,7 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
     newProps.tooltip = tooltip;
   }
 
-  if (message) {
+  if (message !== undefined) {
     newProps.message = message;
   }
 
