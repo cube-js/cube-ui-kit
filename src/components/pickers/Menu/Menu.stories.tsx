@@ -18,6 +18,7 @@ import {
   AlertDialog,
   DialogContainer,
   TooltipProvider,
+  DirectionIcon,
 } from '../../../index';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { MoreIcon, PlusIcon } from '../../../icons';
@@ -403,3 +404,41 @@ export const ItemWithTooltip = (props) => {
 //
 //   await waitFor(() => expect(canvas.getByRole('tooltip')).toBeInTheDocument());
 // };
+
+export const WithTriggerState = ({ ...props }) => {
+  const menu = (
+    <Menu id="menu" {...props} width="220px">
+      <Menu.Item key="red" postfix="Ctr+C">
+        Copy
+      </Menu.Item>
+      <Menu.Item key="orange" postfix="Ctr+V">
+        Paste
+      </Menu.Item>
+      <Menu.Item key="yellow" postfix="Ctr+X">
+        Cut
+      </Menu.Item>
+    </Menu>
+  );
+
+  return (
+    <Space
+      gap="10x"
+      placeContent="start start"
+      placeItems="start"
+      height="400px"
+    >
+      <MenuTrigger>
+        {({ isOpen }) => (
+          <Button
+            size="small"
+            rightIcon={<DirectionIcon to={isOpen ? 'top' : 'bottom'} />}
+            aria-label="Open Context Menu"
+          >
+            Menu
+          </Button>
+        )}
+        {menu}
+      </MenuTrigger>
+    </Space>
+  );
+};

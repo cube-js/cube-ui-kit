@@ -1,4 +1,4 @@
-import React, { forwardRef, Fragment, useRef, ReactElement } from 'react';
+import { forwardRef, Fragment, useRef, ReactElement } from 'react';
 import { AriaMenuTriggerProps } from 'react-aria';
 import { useDOMRef, useIsMobileDevice } from '@react-spectrum/utils';
 import {
@@ -48,7 +48,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     isDisabled,
   } = props;
 
-  let [menuTrigger, menu] = React.Children.toArray(children);
+  let [menuTrigger, menu] = children;
   const state: MenuTriggerState = useMenuTriggerState(props);
 
   if (typeof menuTrigger === 'function') {
