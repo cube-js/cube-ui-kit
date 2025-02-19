@@ -23,6 +23,7 @@ export { CountIcon } from './CountIcon';
 export { CubeIcon } from './CubeIcon';
 export { DangerIcon } from './DangerIcon';
 export { DashboardIcon } from './DashboardIcon';
+export { DirectionIcon } from './DirectionIcon';
 export { DonutIcon } from './DonutIcon';
 export { DownIcon } from './DownIcon';
 export { EditIcon } from './EditIcon';
@@ -89,3 +90,4 @@ export { wrapIcon } from './wrap-icon';
 
 export { Icon } from './Icon';
 export type { CubeIconProps } from './Icon';
+export type { DirectionIconProps } from './DirectionIcon';

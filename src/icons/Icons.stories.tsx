@@ -8,7 +8,7 @@ import { Flow } from '../components/layout/Flow';
 
 import { CubeIconProps, Icon } from './Icon';
 
-import { SparklesIcon } from './index';
+import { SparklesIcon, DirectionIcon } from './index';
 import * as Icons from './index';
 
 export default {
@@ -27,7 +27,12 @@ const Template: StoryFn<CubeIconProps> = (name) => {
       <Title>16px</Title>
       <Grid columns="repeat(auto-fit, 200px)" flow="row" gap="16px">
         {Object.keys(Icons).map((iconName) => {
-          if (iconName === 'Icon' || iconName === 'wrapIcon') return null;
+          if (
+            iconName === 'Icon' ||
+            iconName === 'wrapIcon' ||
+            iconName === 'DirectionIcon'
+          )
+            return null;
 
           const Icon = Icons[iconName];
 
@@ -42,7 +47,12 @@ const Template: StoryFn<CubeIconProps> = (name) => {
       <Title>32px</Title>
       <Grid columns="repeat(auto-fit, 200px)" flow="row" gap="16px">
         {Object.keys(Icons).map((iconName) => {
-          if (iconName === 'Icon' || iconName === 'wrapIcon') return null;
+          if (
+            iconName === 'Icon' ||
+            iconName === 'wrapIcon' ||
+            iconName === 'DirectionIcon'
+          )
+            return null;
 
           const Icon = Icons[iconName];
 
@@ -62,10 +72,19 @@ const TemplateWithSize: StoryFn<CubeIconProps> = ({ size }) => {
   return <SparklesIcon size={size} />;
 };
 
+const TemplateDirectionIcon: StoryFn<CubeIconProps> = (args) => {
+  return <DirectionIcon {...args} />;
+};
+
 export const Default = Template.bind({});
 Default.args = {};
 
 export const WithSize = TemplateWithSize.bind({});
 WithSize.args = {
   size: '8x',
+};
+
+export const Direction = TemplateDirectionIcon.bind({});
+Direction.args = {
+  to: 'bottom',
 };

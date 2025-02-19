@@ -41,6 +41,7 @@ const FieldElement = tasty({
     InputArea: {
       display: 'block',
       flow: 'column',
+      gap: '.5x',
       gridColumn: {
         '': 'initial',
         'has-sider': 2,
@@ -56,7 +57,7 @@ if (process.env.NODE_ENV === 'development') {
 const MessageElement = tasty({
   qa: 'Field_Message',
   styles: {
-    preset: 't3',
+    preset: 't4',
     color: {
       '': '#dark-02',
       invalid: '#danger-text',
