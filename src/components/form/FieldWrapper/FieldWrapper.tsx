@@ -41,6 +41,7 @@ const FieldElement = tasty({
     InputArea: {
       display: 'block',
       flow: 'column',
+      gap: '.5x',
       gridColumn: {
         '': 'initial',
         'has-sider': 2,
