@@ -8,7 +8,7 @@ import { Flow } from '../components/layout/Flow';
 
 import { CubeIconProps, Icon } from './Icon';
 
-import { SparklesIcon } from './index';
+import { SparklesIcon, DirectionIcon } from './index';
 import * as Icons from './index';
 
 export default {
@@ -62,10 +62,19 @@ const TemplateWithSize: StoryFn<CubeIconProps> = ({ size }) => {
   return <SparklesIcon size={size} />;
 };
 
+const TemplateDirectionIcon: StoryFn<CubeIconProps> = (args) => {
+  return <DirectionIcon {...args} />;
+};
+
 export const Default = Template.bind({});
 Default.args = {};
 
 export const WithSize = TemplateWithSize.bind({});
 WithSize.args = {
   size: '8x',
+};
+
+export const Direction = TemplateDirectionIcon.bind({});
+Direction.args = {
+  to: 'bottom',
 };
