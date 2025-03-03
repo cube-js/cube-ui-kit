@@ -37,7 +37,7 @@ export function SliderThumb(props: SliderThumbProps) {
 
   const { hoverProps, isHovered } = useHover({ isDisabled });
 
-  const isCollapsed = state.step === 2 && state.values[0] === state.values[1];
+  const isCollapsed = state.values[0] === state.values[1];
   const isStuck =
     state.values[index] === state.getThumbMaxValue(index) &&
     state.values[index] === state.getThumbMinValue(index);
