@@ -21,7 +21,7 @@ import { usePortal } from './usePortal';
  *    Portal will be rendered outside me!
  *
  *    <Portal>
- *      <div>some content will be showed outside of parent container</div>
+ *      <div>some content will be shown outside the parent container</div>
  *    </Portal>
  *  </div>
  * ```
