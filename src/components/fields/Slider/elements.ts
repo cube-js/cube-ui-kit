@@ -16,6 +16,10 @@ export const SliderThumbElement = tasty({
     boxShadow: '@focus-shadow, @dragged-shadow, @drop-shadow',
     radius: '50%',
     transition: 'theme',
+    zIndex: {
+      '': 0,
+      'collapsed & !stuck': 1,
+    },
 
     '@drop-shadow': '0px 2px 4px #dark.2',
     '@focus-shadow': {
