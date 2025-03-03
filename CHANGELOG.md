@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.54.2
+
+### Patch Changes
+
+- [#596](https://github.com/cube-js/cube-ui-kit/pull/596) [`4286858`](https://github.com/cube-js/cube-ui-kit/commit/4286858738b960706591c0de6887a0874031a388) Thanks [@tenphi](https://github.com/tenphi)! - Fix RangeSlider to avoid getting stuck at max or min values.
+
+- [#596](https://github.com/cube-js/cube-ui-kit/pull/596) [`4286858`](https://github.com/cube-js/cube-ui-kit/commit/4286858738b960706591c0de6887a0874031a388) Thanks [@tenphi](https://github.com/tenphi)! - Fix Underlay's zIndex so modal dialogs can be stackable.
+
 ## 0.54.1
 
 ### Patch Changes
