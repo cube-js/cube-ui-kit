@@ -181,6 +181,7 @@ export class CubeFormInstance<
     }
 
     field.inputValue = value;
+    field.status = undefined;
 
     if (isTouched) {
       field.touched = isTouched;
