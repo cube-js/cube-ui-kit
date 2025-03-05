@@ -84,8 +84,9 @@ export class CubeFormInstance<
       }
 
       if (!field || isEqual(field.value, newData[name])) {
-        if (field && touched === false) {
+        if (field) {
           field.errors = [];
+          field.status = undefined;
         }
 
         return;
@@ -98,12 +99,13 @@ export class CubeFormInstance<
       }
 
       field.inputValue = newData[name];
+      field.errors = [];
+      field.status = undefined;
 
       if (touched === true) {
         field.touched = touched;
       } else if (touched === false) {
         field.touched = false;
-        field.errors = [];
       }
     });
 
@@ -181,13 +183,11 @@ export class CubeFormInstance<
     }
 
     field.inputValue = value;
+    field.errors = [];
+    field.status = undefined;
 
     if (isTouched) {
       field.touched = isTouched;
-    }
-
-    if (!skipRender) {
-      field.errors = [];
     }
 
     if (isTouched && !inputOnly) {
