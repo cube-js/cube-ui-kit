@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.54.3
+
+### Patch Changes
+
+- [#599](https://github.com/cube-js/cube-ui-kit/pull/599) [`2e04dba`](https://github.com/cube-js/cube-ui-kit/commit/2e04dba3a5a76fddea230b999acaba923a7a6d11) Thanks [@tenphi](https://github.com/tenphi)! - Reset field status on `setFieldValue()`.
+
 ## 0.54.2
 
 ### Patch Changes
