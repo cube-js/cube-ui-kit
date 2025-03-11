@@ -114,7 +114,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
       {...labelProps}
     >
       <Flex placeContent="baseline space-between" width="100%">
-        <Space placeItems="center" gap="0.25x">
+        <Space placeItems="center" gap="0.75x">
           <div>{label}</div>
 
           {tooltip ? (
@@ -123,16 +123,11 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
               title={tooltip}
               width="initial max-content 40x"
             >
-              <InfoCircleIcon
-                style={{
-                  color: 'var(--purple-text-color)',
-                  margin: '0 4px',
-                }}
-              />
+              <InfoCircleIcon />
             </TooltipProvider>
           ) : null}
 
-          <div>{labelSuffix}</div>
+          {labelSuffix ? <div>{labelSuffix}</div> : null}
         </Space>
 
         {extra && <Text preset="t3">{extra}</Text>}
