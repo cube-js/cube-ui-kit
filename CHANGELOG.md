@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.54.4
+
+### Patch Changes
+
+- [#601](https://github.com/cube-js/cube-ui-kit/pull/601) [`26277fe`](https://github.com/cube-js/cube-ui-kit/commit/26277fe57ca004beb39c49e77b76c5a408d72e34) Thanks [@tenphi](https://github.com/tenphi)! - Unify label suffix gap in Field component.
+
 ## 0.54.3
 
 ### Patch Changes
