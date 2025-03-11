@@ -123,7 +123,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
               title={tooltip}
               width="initial max-content 40x"
             >
-              <InfoCircleIcon />
+              <InfoCircleIcon color="#purple-text" />
             </TooltipProvider>
           ) : null}
 
