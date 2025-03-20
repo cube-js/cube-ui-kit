@@ -16,7 +16,7 @@ const FieldElement = tasty({
   qa: 'Field',
   styles: {
     display: 'grid',
-    width: 'auto',
+    width: 'initial max-content 100%',
     gridColumns: {
       '': 'minmax(0, 1fr)',
       'has-sider': '@(full-label-width, auto) minmax(0, 1fr)',
