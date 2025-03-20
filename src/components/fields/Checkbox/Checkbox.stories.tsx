@@ -21,30 +21,33 @@ export default {
   },
 };
 
-const Template = (props) => (
-  <Flow gap="2x">
-    <Checkbox
-      aria-label="Checkbox"
-      {...props}
-      defaultSelected={true}
-      onChange={(query) => console.log('onChange event', query)}
-    />
-    <Checkbox
-      aria-label="Checkbox"
-      {...props}
-      defaultSelected={false}
-      onChange={(query) => console.log('onChange event', query)}
-    />
-  </Flow>
-);
+const Template = (props) => {
+  return (
+    <Flow gap="2x">
+      <Checkbox
+        aria-label="Checkbox"
+        {...props}
+        defaultSelected={true}
+        onChange={(query) => console.log('onChange event', query)}
+      />
+      <Checkbox
+        aria-label="Checkbox"
+        {...props}
+        defaultSelected={false}
+        onChange={(query) => console.log('onChange event', query)}
+      />
+    </Flow>
+  );
+};
 
 export const Default = Template.bind({});
 Default.args = { children: 'Checkbox' };
 
-export const WithoutValue = Template.bind({});
-WithoutValue.args = {
-  label: '',
-};
+export const WithLabel = Template.bind({});
+WithLabel.args = { label: 'Checkbox' };
+
+export const WithoutLabel = Template.bind({});
+WithoutLabel.args = {};
 
 export const Intermediate = Template.bind({});
 Intermediate.args = {

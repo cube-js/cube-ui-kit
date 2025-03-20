@@ -165,10 +165,10 @@ function Checkbox(
 
   labelStyles = useMemo(
     () => ({
-      ...(insideForm ? LABEL_STYLES : INLINE_LABEL_STYLES),
+      ...(!groupState ? LABEL_STYLES : INLINE_LABEL_STYLES),
       ...labelStyles,
     }),
-    [insideForm, labelStyles],
+    [groupState, labelStyles],
   );
 
   let { isFocused, focusProps } = useFocus({ isDisabled }, true);
@@ -234,12 +234,8 @@ function Checkbox(
     'inside-form': insideForm,
   };
 
-  const checkboxField = (
-    <CheckboxWrapperElement
-      isHidden={isHidden}
-      mods={mods}
-      styles={{ position: 'relative' }}
-    >
+  const checkbox = (
+    <>
       <HiddenInput
         data-qa="HiddenInput"
         {...mergeProps(inputProps, focusProps)}
@@ -248,11 +244,17 @@ function Checkbox(
       <CheckboxElement qa={qa || 'Checkbox'} mods={mods} styles={inputStyles}>
         {markIcon}
       </CheckboxElement>
+    </>
+  );
+
+  const checkboxField = (
+    <CheckboxWrapperElement isHidden={isHidden} mods={mods}>
+      {checkbox}
       {children && <Text nowrap>{children}</Text>}
     </CheckboxWrapperElement>
   );
 
-  if (insideForm && !groupState) {
+  if (!groupState) {
     return wrapWithField(checkboxField, domRef, {
       ...props,
       children: null,
@@ -264,15 +266,14 @@ function Checkbox(
 
   return (
     <CheckboxWrapperElement
-      as="label"
       styles={styles}
       isHidden={isHidden}
       {...hoverProps}
       {...filterBaseProps(otherProps)}
       ref={domRef}
     >
-      {checkboxField}
-      {label ? (
+      {checkbox}
+      {label ?? children ? (
         <Element
           styles={labelStyles}
           mods={{
@@ -282,7 +283,7 @@ function Checkbox(
           }}
           {...filterBaseProps(labelProps)}
         >
-          {label}
+          {label ?? children}
         </Element>
       ) : null}
     </CheckboxWrapperElement>
