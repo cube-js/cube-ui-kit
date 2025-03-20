@@ -47,7 +47,7 @@ export const WithLabel = Template.bind({});
 WithLabel.args = { label: 'Checkbox' };
 
 export const WithLabelAndTitle = Template.bind({});
-WithLabelAndTitle.args = { children: 'Title', label: 'Checkbox' };
+WithLabelAndTitle.args = { children: 'Title', label: 'Label' };
 
 export const WithoutLabel = Template.bind({});
 WithoutLabel.args = {};

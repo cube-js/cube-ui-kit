@@ -44,7 +44,7 @@ WithLabel.args = {
 
 export const WithLabelAndTitle = Template.bind({});
 WithLabelAndTitle.args = {
-  label: 'Switch',
+  label: 'Label',
   children: 'Title',
 };
 
