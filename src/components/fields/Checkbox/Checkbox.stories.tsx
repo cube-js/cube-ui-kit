@@ -57,11 +57,11 @@ Intermediate.args = {
 export const Disabled = Template.bind({});
 Disabled.args = {
   isDisabled: true,
-  label: 'Checkbox',
+  children: 'Checkbox',
 };
 
 export const Invalid = Template.bind({});
 Invalid.args = {
   validationState: 'invalid',
-  label: 'Checkbox',
+  children: 'Checkbox',
 };
