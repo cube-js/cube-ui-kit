@@ -34,21 +34,37 @@ const Template = (args) => (
 
 export const Default = Template.bind({});
 Default.args = {
+  children: 'Switch',
+};
+
+export const WithLabel = Template.bind({});
+WithLabel.args = {
   label: 'Switch',
 };
 
 export const Small = Template.bind({});
 Small.args = {
-  label: 'Switch',
+  children: 'Switch',
   size: 'small',
 };
 
 export const WithoutLabel = Template.bind({});
-WithoutLabel.args = {
-  label: '',
-};
+WithoutLabel.args = {};
 
 export const Disabled = Template.bind({});
 Disabled.args = {
+  children: 'Switch',
   isDisabled: true,
+};
+
+export const Invalid = Template.bind({});
+Invalid.args = {
+  children: 'Switch',
+  validationState: 'invalid',
+};
+
+export const Loading = Template.bind({});
+Loading.args = {
+  children: 'Switch',
+  isLoading: true,
 };

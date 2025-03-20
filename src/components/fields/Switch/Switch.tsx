@@ -1,4 +1,4 @@
-import { forwardRef, useMemo, useRef } from 'react';
+import { forwardRef, useRef } from 'react';
 import { useFocusableRef } from '@react-spectrum/utils';
 import { useSwitch, useHover, AriaSwitchProps } from 'react-aria';
 import { useToggleState } from 'react-stately';
@@ -8,9 +8,7 @@ import {
   BaseProps,
   BLOCK_STYLES,
   BlockStyleProps,
-  Element,
   extractStyles,
-  filterBaseProps,
   OUTER_STYLES,
   OuterStyleProps,
   Styles,
@@ -25,13 +23,7 @@ import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
-import {
-  useFieldProps,
-  useFormProps,
-  wrapWithField,
-  INLINE_LABEL_STYLES,
-  LABEL_STYLES,
-} from '../../form';
+import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { LoadingIcon } from '../../../icons';
 
 const SwitchWrapperElement = tasty({
@@ -45,23 +37,6 @@ const SwitchWrapperElement = tasty({
     },
     gap: '1x',
     width: 'max max-content',
-    color: '#dark-02',
-  },
-});
-
-const SwitchLabelElement = tasty({
-  as: 'label',
-  qa: 'SwitchLabel',
-  styles: {
-    position: 'relative',
-    display: 'flex',
-    placeItems: 'center',
-    gap: '1x',
-    flow: 'row',
-    preset: 'input',
-    width: 'min-content',
-    cursor: 'pointer',
-    verticalAlign: 'baseline',
     color: '#dark-02',
   },
 });
@@ -94,6 +69,10 @@ const SwitchElement = tasty({
     },
     transition: 'theme',
     cursor: 'pointer',
+    shadow: {
+      '': '0 0 0 0 #clear',
+      invalid: '0 0 0 1bw #white, 0 0 0 1ow #danger',
+    },
 
     Thumb: {
       position: 'absolute',
@@ -152,7 +131,6 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
     isDisabled = false,
     children,
     label,
-    labelProps,
     labelStyles,
     insideForm,
     isLoading,
@@ -160,20 +138,11 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
     inputStyles,
     validationState,
     size = 'large',
-    ...otherProps
   } = props;
 
   let styles = extractStyles(props, OUTER_STYLES);
 
   inputStyles = extractStyles(props, BLOCK_STYLES, inputStyles);
-
-  labelStyles = useMemo(
-    () => ({
-      ...(insideForm ? LABEL_STYLES : INLINE_LABEL_STYLES),
-      ...labelStyles,
-    }),
-    [insideForm, labelStyles],
-  );
 
   let { isFocused, focusProps } = useFocus({ isDisabled }, true);
   let { hoverProps, isHovered } = useHover({ isDisabled });
@@ -205,7 +174,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   };
 
   const switchField = (
-    <SwitchWrapperElement mods={mods} data-size={size}>
+    <SwitchWrapperElement mods={mods} data-size={size} {...hoverProps}>
       <HiddenInput
         data-qa="HiddenInput"
         {...mergeProps(inputProps, focusProps)}
@@ -220,47 +189,22 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
         <div data-element="Thumb" aria-hidden="true" />
       </SwitchElement>
       {children ? <Text nowrap>{children}</Text> : null}
+      {isLoading ? (
+        <>
+          {label ? <>&nbsp;</> : null}
+          <LoadingIcon />
+        </>
+      ) : null}
     </SwitchWrapperElement>
   );
 
-  if (insideForm) {
-    return wrapWithField(switchField, domRef, {
-      ...props,
-      children: null,
-      labelStyles,
-      inputStyles,
-      styles,
-    });
-  }
-
-  return (
-    <SwitchLabelElement
-      styles={styles}
-      mods={mods}
-      {...hoverProps}
-      {...filterBaseProps(otherProps)}
-      ref={domRef}
-    >
-      {switchField}
-      {label ? (
-        <Element
-          styles={labelStyles}
-          mods={{
-            disabled: isDisabled,
-          }}
-          {...filterBaseProps(labelProps)}
-        >
-          {label}
-          {isLoading ? (
-            <>
-              {label ? <>&nbsp;</> : null}
-              <LoadingIcon />
-            </>
-          ) : null}
-        </Element>
-      ) : null}
-    </SwitchLabelElement>
-  );
+  return wrapWithField(switchField, domRef, {
+    ...props,
+    children: null,
+    labelStyles,
+    inputStyles,
+    styles,
+  });
 }
 
 /**
