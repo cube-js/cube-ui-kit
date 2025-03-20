@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.55.0
+
+### Minor Changes
+
+- [#603](https://github.com/cube-js/cube-ui-kit/pull/603) [`c5c6339`](https://github.com/cube-js/cube-ui-kit/commit/c5c63391d9cd894f5f950a797dfeb98aee655e02) Thanks [@tenphi](https://github.com/tenphi)! - Always wrap Switch in a Field.
+
+- [#603](https://github.com/cube-js/cube-ui-kit/pull/603) [`c5c6339`](https://github.com/cube-js/cube-ui-kit/commit/c5c63391d9cd894f5f950a797dfeb98aee655e02) Thanks [@tenphi](https://github.com/tenphi)! - Always wrap Checkbox in a Field except checkbox group case.
+
 ## 0.54.4
 
 ### Patch Changes
