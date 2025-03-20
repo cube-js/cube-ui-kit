@@ -69,6 +69,10 @@ const SwitchElement = tasty({
     },
     transition: 'theme',
     cursor: 'pointer',
+    shadow: {
+      '': '0 0 0 0 #clear',
+      invalid: '0 0 0 1bw #white, 0 0 0 1ow #danger',
+    },
 
     Thumb: {
       position: 'absolute',

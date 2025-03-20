@@ -57,6 +57,12 @@ Disabled.args = {
   isDisabled: true,
 };
 
+export const Invalid = Template.bind({});
+Invalid.args = {
+  children: 'Switch',
+  validationState: 'invalid',
+};
+
 export const Loading = Template.bind({});
 Loading.args = {
   children: 'Switch',
