@@ -42,6 +42,12 @@ WithLabel.args = {
   label: 'Switch',
 };
 
+export const WithLabelAndTitle = Template.bind({});
+WithLabelAndTitle.args = {
+  label: 'Label',
+  children: 'Title',
+};
+
 export const Small = Template.bind({});
 Small.args = {
   children: 'Switch',
