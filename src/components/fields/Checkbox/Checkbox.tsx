@@ -90,7 +90,7 @@ const CheckboxElement = tasty({
   styles: {
     display: 'grid',
     placeItems: 'center',
-    radius: '.25x',
+    radius: '.5r',
     fill: {
       '': '#white',
       'checked | indeterminate': '#purple-text',
@@ -166,6 +166,7 @@ function Checkbox(
   labelStyles = useMemo(
     () => ({
       ...(!groupState ? LABEL_STYLES : INLINE_LABEL_STYLES),
+      color: '#dark-02',
       ...labelStyles,
     }),
     [groupState, labelStyles],
