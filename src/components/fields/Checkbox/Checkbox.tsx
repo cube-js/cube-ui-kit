@@ -166,7 +166,6 @@ function Checkbox(
   labelStyles = useMemo(
     () => ({
       ...(!groupState ? LABEL_STYLES : INLINE_LABEL_STYLES),
-      color: '#dark',
       ...labelStyles,
     }),
     [groupState, labelStyles],

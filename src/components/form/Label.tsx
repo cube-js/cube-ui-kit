@@ -51,7 +51,7 @@ const INTL_MESSAGES = {
 export const INLINE_LABEL_STYLES: Styles = {
   preset: 't3',
   color: {
-    '': '#dark.85',
+    '': '#dark-02',
     invalid: '#danger-text',
   },
   whiteSpace: 'nowrap',
