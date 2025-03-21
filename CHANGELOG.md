@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.55.1
+
+### Patch Changes
+
+- [#607](https://github.com/cube-js/cube-ui-kit/pull/607) [`5615358`](https://github.com/cube-js/cube-ui-kit/commit/56153582e5699cbc54eec18e2032d8f5b5734440) Thanks [@tenphi](https://github.com/tenphi)! - Add PlayCircle and Report icons.
+
 ## 0.55.0
 
 ### Minor Changes
