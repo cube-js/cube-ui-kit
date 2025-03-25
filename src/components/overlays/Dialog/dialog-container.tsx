@@ -1,22 +1,8 @@
-import React, { useState, useMemo, ReactElement } from 'react';
+import React, { useState, useMemo } from 'react';
 
 import { useEvent } from '../../../_internal/index';
 
 import { DialogContainer } from './DialogContainer';
-
-// Overload for dialogs that expect no props
-export function useDialogContainer(Component: React.ComponentType<{}>): {
-  open: () => void;
-  close: () => void;
-  rendered: ReactElement | null;
-};
-
-// Overload for dialogs that require props
-export function useDialogContainer<P>(Component: React.ComponentType<P>): {
-  open: (props: P) => void;
-  close: () => void;
-  rendered: ReactElement | null;
-};
 
 /**
  * Generic hook to manage a dialog component.
@@ -30,7 +16,7 @@ export function useDialogContainer<P>(Component: React.ComponentType<P>) {
 
   // 'open' accepts props required by the Component and opens the dialog
   const open = useEvent((props: P) => {
-    setComponentProps(props === undefined ? ({} as P) : props);
+    setComponentProps(props);
     setIsOpen(true);
   });
 
