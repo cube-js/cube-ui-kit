@@ -88,6 +88,7 @@ export {
   DialogTrigger,
   DialogContainer,
   DialogForm,
+  useDialogContainer,
 } from './components/overlays/Dialog';
 export type {
   CubeDialogTriggerProps,
