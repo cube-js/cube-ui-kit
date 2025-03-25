@@ -341,6 +341,15 @@ export class CubeFormInstance<
     return Object.values(this.fields).some((field) => field?.touched);
   }
 
+  get isDirty(): boolean {
+    return Object.values(this.fields).some((field) => {
+      return field && field.name
+        ? JSON.stringify(field?.value) !==
+            JSON.stringify(this.defaultValues[field?.name])
+        : false;
+    });
+  }
+
   /**
    * True if all fields are verified and valid
    * IMPORTANT: This is not the same as `!isInvalid`, because it also checks if all fields are verified.

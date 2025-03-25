@@ -369,4 +369,92 @@ describe('<Form />', () => {
 
     expect(() => getByText('Field is required')).toThrow();
   });
+
+  it('should update isTouched when an input is interacted with', async () => {
+    const onSubmit = jest.fn(() => Promise.resolve());
+    const { getByRole, formInstance } = renderWithForm(
+      <>
+        <Form.Item name="test" label="Test">
+          <TextInput />
+        </Form.Item>
+        <SubmitButton>Submit</SubmitButton>
+      </>,
+    );
+
+    // Initially, isTouched should be false
+    expect(formInstance.isTouched).toBeFalsy();
+
+    // Simulate user interaction
+    const input = getByRole('textbox');
+    await act(async () => {
+      await userEvents.type(input, 'hello');
+    });
+
+    // After typing, isTouched should be true
+    expect(formInstance.isTouched).toBeTruthy();
+  });
+
+  it('should update isDirty when input value differs from the initial value', async () => {
+    const onSubmit = jest.fn(() => Promise.resolve());
+    const defaultValues = { test: 'initial' };
+    const { getByRole, formInstance } = renderWithForm(
+      <>
+        <TextInput name="test" label="Test" />
+        <SubmitButton>Submit</SubmitButton>
+      </>,
+      { formProps: { onSubmit, defaultValues } },
+    );
+
+    // Initially, isDirty should be false because the value is same as initial
+    expect(formInstance.isDirty).toBeFalsy();
+
+    // Change the input value
+    const input = getByRole('textbox');
+    await act(async () => {
+      await userEvents.clear(input);
+      await userEvents.type(input, 'changed');
+    });
+
+    // After change, isDirty should be true
+    expect(formInstance.isDirty).toBeTruthy();
+  });
+
+  it('should maintain isTouched true but set isDirty false when input value reverts to initial', async () => {
+    const onSubmit = jest.fn(() => Promise.resolve());
+    const initialValue = { test: 'initial' };
+    const { getByRole, formInstance } = renderWithForm(
+      <>
+        <Form.Item name="test" label="Test">
+          <TextInput />
+        </Form.Item>
+        <SubmitButton>Submit</SubmitButton>
+      </>,
+      { formProps: { onSubmit, defaultValues: initialValue } },
+    );
+
+    // Initially, both isTouched and isDirty should be false
+    expect(formInstance.isTouched).toBeFalsy();
+    expect(formInstance.isDirty).toBeFalsy();
+
+    // Change the input to a different value
+    const input = getByRole('textbox');
+    await act(async () => {
+      await userEvents.clear(input);
+      await userEvents.type(input, 'changed');
+    });
+
+    // After change, both isTouched and isDirty should be true
+    expect(formInstance.isTouched).toBeTruthy();
+    expect(formInstance.isDirty).toBeTruthy();
+
+    // Revert the input back to its initial value
+    await act(async () => {
+      await userEvents.clear(input);
+      await userEvents.type(input, 'initial');
+    });
+
+    // After reverting, isTouched remains true, but isDirty should be false
+    expect(formInstance.isTouched).toBeTruthy();
+    expect(formInstance.isDirty).toBeFalsy();
+  });
 });
