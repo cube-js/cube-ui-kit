@@ -23,6 +23,7 @@ export { CountIcon } from './CountIcon';
 export { CubeIcon } from './CubeIcon';
 export { DangerIcon } from './DangerIcon';
 export { DashboardIcon } from './DashboardIcon';
+export { DatabaseIcon } from './DatabaseIcon';
 export { DirectionIcon } from './DirectionIcon';
 export { DonutIcon } from './DonutIcon';
 export { DownIcon } from './DownIcon';
