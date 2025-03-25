@@ -85,7 +85,10 @@ export function DialogForm<T extends FieldTypes = FieldTypes>(
     onDismiss?.();
 
     if (!preserve) {
-      form?.resetFields();
+      // let animations finish before resetting the form
+      setTimeout(() => {
+        form?.resetFields();
+      }, 250);
     }
   }
 
@@ -120,7 +123,10 @@ export function DialogForm<T extends FieldTypes = FieldTypes>(
             onClose?.();
 
             if (!preserve) {
-              form?.resetFields();
+              // let animations finish before resetting the form
+              setTimeout(() => {
+                form.resetFields();
+              }, 250);
             }
           }}
           onSubmitFailed={onSubmitFailed}
