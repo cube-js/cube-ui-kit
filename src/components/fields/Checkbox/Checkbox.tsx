@@ -11,11 +11,11 @@ import { useToggleState } from 'react-stately';
 import { useProviderProps } from '../../../provider';
 import {
   BaseProps,
-  BLOCK_STYLES,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
   Element,
   extractStyles,
   filterBaseProps,
-  OUTER_STYLES,
   Styles,
   tasty,
 } from '../../../tasty';
@@ -43,6 +43,7 @@ import type { FocusableRef } from '@react-types/shared';
 
 export interface CubeCheckboxProps
   extends BaseProps,
+    ContainerStyleProps,
     AriaCheckboxProps,
     FieldBaseProps {
   inputStyles?: Styles;
@@ -159,9 +160,7 @@ function Checkbox(
     ...otherProps
   } = props;
 
-  let styles: Styles = extractStyles(props, OUTER_STYLES);
-
-  inputStyles = extractStyles(props, BLOCK_STYLES, inputStyles);
+  let styles: Styles = extractStyles(props, CONTAINER_STYLES);
 
   labelStyles = useMemo(
     () => ({
