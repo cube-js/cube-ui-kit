@@ -1,5 +1,21 @@
 # @cube-dev/ui-kit
 
+## 0.56.0
+
+### Minor Changes
+
+- [#611](https://github.com/cube-js/cube-ui-kit/pull/611) [`4051fe9`](https://github.com/cube-js/cube-ui-kit/commit/4051fe90041d66c1419fdf3d2041fbd73b483160) Thanks [@tenphi](https://github.com/tenphi)! - Add useDialogContainer hook to manage dialogs.
+
+### Patch Changes
+
+- [#613](https://github.com/cube-js/cube-ui-kit/pull/613) [`7e1cffd`](https://github.com/cube-js/cube-ui-kit/commit/7e1cffd57cb67fd3259dfd7f7f3a5fae40b68519) Thanks [@tenphi](https://github.com/tenphi)! - Add DatabaseIcon.
+
+- [#609](https://github.com/cube-js/cube-ui-kit/pull/609) [`d7a7759`](https://github.com/cube-js/cube-ui-kit/commit/d7a7759cdf52e2aea01c781e606103426ccd4b47) Thanks [@tenphi](https://github.com/tenphi)! - Add `isDirty` flag to Form instances.
+
+- [#612](https://github.com/cube-js/cube-ui-kit/pull/612) [`a598267`](https://github.com/cube-js/cube-ui-kit/commit/a598267fdafd358b15e5e6515414e76da33ab4a3) Thanks [@tenphi](https://github.com/tenphi)! - Postpone form reset in DialogForm until closing transition is over.
+
+- [#609](https://github.com/cube-js/cube-ui-kit/pull/609) [`d7a7759`](https://github.com/cube-js/cube-ui-kit/commit/d7a7759cdf52e2aea01c781e606103426ccd4b47) Thanks [@tenphi](https://github.com/tenphi)! - Do not extract inputStyles from props in Checkbox.
+
 ## 0.55.1
 
 ### Patch Changes
