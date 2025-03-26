@@ -149,15 +149,15 @@ export function Root(allProps: CubeRootProps) {
               monospaceFont={monospaceFont}
               fontDisplay={fontDisplay}
             />
-            <DialogProvider>
-              <ModalProvider>
-                <PortalProvider value={ref}>
+            <ModalProvider>
+              <PortalProvider value={ref}>
+                <DialogProvider>
                   <NotificationsProvider rootRef={ref}>
                     <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
                   </NotificationsProvider>
-                </PortalProvider>
-              </ModalProvider>
-            </DialogProvider>
+                </DialogProvider>
+              </PortalProvider>
+            </ModalProvider>
           </RootElement>
         </StyleSheetManager>
       </TrackingProvider>
