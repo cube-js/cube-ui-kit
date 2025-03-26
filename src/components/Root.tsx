@@ -15,6 +15,7 @@ import { TOKENS } from '../tokens';
 import { useViewportSize } from '../utils/react';
 import { TrackingProps, TrackingProvider } from '../providers/TrackingProvider';
 
+import { DialogProvider } from './overlays/Dialog/index';
 import { PortalProvider } from './portal';
 import { GlobalStyles } from './GlobalStyles';
 import { AlertDialogApiProvider } from './overlays/AlertDialog';
@@ -148,13 +149,15 @@ export function Root(allProps: CubeRootProps) {
               monospaceFont={monospaceFont}
               fontDisplay={fontDisplay}
             />
-            <ModalProvider>
-              <PortalProvider value={ref}>
-                <NotificationsProvider rootRef={ref}>
-                  <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
-                </NotificationsProvider>
-              </PortalProvider>
-            </ModalProvider>
+            <DialogProvider>
+              <ModalProvider>
+                <PortalProvider value={ref}>
+                  <NotificationsProvider rootRef={ref}>
+                    <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
+                  </NotificationsProvider>
+                </PortalProvider>
+              </ModalProvider>
+            </DialogProvider>
           </RootElement>
         </StyleSheetManager>
       </TrackingProvider>
