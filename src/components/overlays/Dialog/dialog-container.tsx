@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo, ComponentProps, ComponentType } from 'react';
 
 import { useEvent } from '../../../_internal/index';
 
@@ -10,14 +10,24 @@ import { DialogContainer } from './DialogContainer';
  * @param Component - A React component that represents the dialog content. It must accept props of type P.
  * @returns An object with `open` function to open the dialog with provided props and `rendered` JSX element to include in your component tree.
  */
-export function useDialogContainer<P>(Component: React.ComponentType<P>) {
+export function useDialogContainer<
+  P,
+  E = ComponentProps<typeof DialogContainer>,
+>(Component: ComponentType<P>) {
   const [isOpen, setIsOpen] = useState(false);
   const [componentProps, setComponentProps] = useState<P | null>(null);
+  const [containerProps, setContainerProps] = useState<E | null>(null);
 
   // 'open' accepts props required by the Component and opens the dialog
-  const open = useEvent((props: P) => {
+  const open = useEvent((props: P, containerProps?: E) => {
     setComponentProps(props);
+    setContainerProps(containerProps ?? null);
     setIsOpen(true);
+  });
+
+  const update = useEvent((props: P, containerProps?: E) => {
+    setComponentProps(props);
+    setContainerProps(containerProps ?? null);
   });
 
   const close = useEvent(() => {
@@ -29,11 +39,15 @@ export function useDialogContainer<P>(Component: React.ComponentType<P>) {
     if (!componentProps) return null;
 
     return (
-      <DialogContainer isOpen={isOpen} onDismiss={close}>
+      <DialogContainer
+        isOpen={isOpen}
+        onDismiss={close}
+        {...(containerProps ?? {})}
+      >
         <Component {...componentProps} />
       </DialogContainer>
     );
-  }, [componentProps, isOpen]);
+  }, [componentProps, containerProps, isOpen]);
 
-  return { open, close, rendered };
+  return { open, update, close, rendered };
 }
