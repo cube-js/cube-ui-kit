@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.56.1
+
+### Patch Changes
+
+- [#615](https://github.com/cube-js/cube-ui-kit/pull/615) [`06090dc`](https://github.com/cube-js/cube-ui-kit/commit/06090dc05a465a598f9fe3b81154b35b8bfb26fa) Thanks [@tenphi](https://github.com/tenphi)! - Allow to pass props for DialogContainer in useDialogContainer hook.
+
 ## 0.56.0
 
 ### Minor Changes
