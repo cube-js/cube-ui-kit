@@ -27,12 +27,24 @@ export function useDialogContainer<
 
   // 'open' accepts props required by the Component and opens the dialog
   const open = useEvent((props: P, containerProps?: E) => {
+    if (!setupRef.current) {
+      throw new Error(
+        'useDialogContainer: DialogContainer must be rendered. Use `rendered` property to include it in your component tree.',
+      );
+    }
+
     setComponentProps(props);
     setContainerProps(containerProps ?? null);
     setIsOpen(true);
   });
 
   const update = useEvent((props: P, containerProps?: E) => {
+    if (!setupRef.current) {
+      throw new Error(
+        'useDialogContainer: DialogContainer must be rendered. Use `rendered` property to include it in your component tree.',
+      );
+    }
+
     setComponentProps(props);
     setContainerProps(containerProps ?? null);
   });
@@ -43,12 +55,6 @@ export function useDialogContainer<
 
   // Render the dialog only when componentProps is set
   const renderedDialog = useMemo(() => {
-    if (!setupRef.current) {
-      throw new Error(
-        'useDialogContainer: DialogContainer must be rendered. Use `rendered` property to include it in your component tree.',
-      );
-    }
-
     if (!componentProps) return null;
 
     return (
