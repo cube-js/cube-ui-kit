@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.56.2
+
+### Patch Changes
+
+- [#617](https://github.com/cube-js/cube-ui-kit/pull/617) [`eb37f58`](https://github.com/cube-js/cube-ui-kit/commit/eb37f58319689f5b1042ebedcf54fc369a7c98ec) Thanks [@tenphi](https://github.com/tenphi)! - Fixes false error in useDialogContainer.
+
 ## 0.56.1
 
 ### Patch Changes
