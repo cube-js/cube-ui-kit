@@ -1,4 +1,10 @@
-import { useState, useMemo, ComponentProps, ComponentType } from 'react';
+import {
+  useState,
+  useMemo,
+  ComponentProps,
+  ComponentType,
+  useRef,
+} from 'react';
 
 import { useEvent } from '../../../_internal/index';
 
@@ -17,6 +23,7 @@ export function useDialogContainer<
   const [isOpen, setIsOpen] = useState(false);
   const [componentProps, setComponentProps] = useState<P | null>(null);
   const [containerProps, setContainerProps] = useState<E | null>(null);
+  const setupRef = useRef(false);
 
   // 'open' accepts props required by the Component and opens the dialog
   const open = useEvent((props: P, containerProps?: E) => {
@@ -35,7 +42,13 @@ export function useDialogContainer<
   });
 
   // Render the dialog only when componentProps is set
-  const rendered = useMemo(() => {
+  const renderedDialog = useMemo(() => {
+    if (!setupRef.current) {
+      throw new Error(
+        'useDialogContainer: DialogContainer must be rendered. Use `rendered` property to include it in your component tree.',
+      );
+    }
+
     if (!componentProps) return null;
 
     return (
@@ -49,5 +62,14 @@ export function useDialogContainer<
     );
   }, [componentProps, containerProps, isOpen]);
 
-  return { open, update, close, rendered };
+  return {
+    open,
+    update,
+    close,
+    get rendered() {
+      setupRef.current = true;
+
+      return renderedDialog;
+    },
+  };
 }
