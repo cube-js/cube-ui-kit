@@ -31,7 +31,7 @@ const TooltipElement = tasty({
     display: 'block',
     fill: '#dark.85',
     color: '#white',
-    width: 'initial 36x max-content',
+    width: 'initial 36x fit-content',
     radius: true,
     padding: '.75x 1x',
     preset: 't3',
