@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.56.3
+
+### Patch Changes
+
+- [#620](https://github.com/cube-js/cube-ui-kit/pull/620) [`0080420`](https://github.com/cube-js/cube-ui-kit/commit/00804200a3cbb7fa64177578df4393f1fe1d1d04) Thanks [@tenphi](https://github.com/tenphi)! - Check the env before setting uikit version globally.
+
 ## 0.56.2
 
 ### Patch Changes
