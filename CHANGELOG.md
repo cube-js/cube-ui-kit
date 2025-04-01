@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.57.0
+
+### Minor Changes
+
+- [#622](https://github.com/cube-js/cube-ui-kit/pull/622) [`dbb6f35`](https://github.com/cube-js/cube-ui-kit/commit/dbb6f351c61b374087b3aeb977cd7ce578f84254) Thanks [@tenphi](https://github.com/tenphi)! - Add support for Combobox, TextArea and Password fields in TextInputMapper.
+
+### Patch Changes
+
+- [#622](https://github.com/cube-js/cube-ui-kit/pull/622) [`dbb6f35`](https://github.com/cube-js/cube-ui-kit/commit/dbb6f351c61b374087b3aeb977cd7ce578f84254) Thanks [@tenphi](https://github.com/tenphi)! - Show placeholder in TextInput or TextArea with type password.
+
+- [#622](https://github.com/cube-js/cube-ui-kit/pull/622) [`dbb6f35`](https://github.com/cube-js/cube-ui-kit/commit/dbb6f351c61b374087b3aeb977cd7ce578f84254) Thanks [@tenphi](https://github.com/tenphi)! - Add support for `autocomplete` attribute in TextInput.
+
 ## 0.56.3
 
 ### Patch Changes
