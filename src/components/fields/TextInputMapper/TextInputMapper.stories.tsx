@@ -110,5 +110,5 @@ WithPassword.args = {
 export const WithTextArea = Template.bind({});
 WithTextArea.args = {
   value: { 'Key 1': 'Line 1\nLine 2' },
-  valueProps: { inputType: 'textarea', type: 'password' },
+  valueProps: { inputType: 'textarea' },
 };
