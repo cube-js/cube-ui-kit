@@ -107,6 +107,12 @@ export interface CubeComboBoxProps<T>
     >,
     AriaComboBoxProps<T>,
     AriaTextFieldProps {
+  defaultSelectedKey?: string;
+  selectedKey?: string;
+  onSelectionChange?: (selectedKey: string) => void;
+  onInputChange?: (inputValue: string) => void;
+  inputValue?: string;
+  placeholder?: string;
   icon?: ReactElement;
   multiLine?: boolean;
   autoComplete?: string;

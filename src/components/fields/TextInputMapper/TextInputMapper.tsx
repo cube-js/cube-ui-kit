@@ -11,7 +11,7 @@ import {
 
 import { useEvent } from '../../../_internal/hooks';
 import { FieldBaseProps } from '../../../shared';
-import { mergeProps, useCombinedRefs } from '../../../utils/react/index';
+import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { CloseIcon, PlusIcon } from '../../../icons';
 import { Button } from '../../actions';
@@ -19,6 +19,9 @@ import { Block } from '../../Block';
 import { Flow } from '../../layout/Flow';
 import { Grid } from '../../layout/Grid';
 import { Space } from '../../layout/Space';
+import { ComboBox } from '../ComboBox';
+import { PasswordInput } from '../PasswordInput/PasswordInput';
+import { TextArea } from '../TextArea/index';
 import { TextInput } from '../TextInput';
 
 type Mapping = {
@@ -32,9 +35,11 @@ export interface CubeTextInputMapperProps extends FieldBaseProps {
   isDisabled?: boolean;
   value?: Record<string, string>;
   onChange?: (value: Record<string, string> | undefined) => void;
+  KeyComponent?: ComponentType<CubeTextInputMapperInputProps>;
   ValueComponent?: ComponentType<CubeTextInputMapperInputProps>;
   keyProps?: Partial<CubeTextInputMapperInputProps>;
   valueProps?: Partial<CubeTextInputMapperInputProps>;
+  allowsCustomValue?: boolean;
 }
 
 // Rewrites upper level field component styles
@@ -89,6 +94,7 @@ function TextInputMapper(
     onChange,
     keyProps,
     valueProps,
+    KeyComponent,
     ValueComponent,
   } = props;
 
@@ -174,6 +180,7 @@ function TextInputMapper(
     );
   }, [mappings]);
 
+  KeyComponent = KeyComponent ?? TextInputMapperInput;
   ValueComponent = ValueComponent ?? TextInputMapperInput;
 
   const onKeyChange = useEvent((id: number, value: string) => {
@@ -218,11 +225,11 @@ function TextInputMapper(
           columns="minmax(0, 1fr) minmax(0, 1fr) min-content"
           gap="1x"
         >
-          <TextInputMapperInput
+          <KeyComponent
             autoFocus={index === mappings.length - 1}
             id={id}
             isDisabled={isDisabled}
-            type="name"
+            fieldType="key"
             value={key}
             placeholder="Key"
             onChange={onKeyChange}
@@ -231,7 +238,7 @@ function TextInputMapper(
           />
           <ValueComponent
             id={id}
-            type="value"
+            fieldType="value"
             isDisabled={!key || isDisabled}
             value={value}
             placeholder="Value"
@@ -278,17 +285,29 @@ function TextInputMapper(
 
 export interface CubeTextInputMapperInputProps {
   id: number;
-  type: 'name' | 'value';
+  fieldType: 'key' | 'value';
+  inputType?: 'input' | 'combobox' | 'password' | 'textarea';
   value?: string;
+  options?: string[];
   placeholder?: string;
   onChange?: (id: number, newValue: string) => void;
   onSubmit?: (id: number) => void;
   isDisabled?: boolean;
   autoFocus?: boolean;
+  allowsCustomValue?: boolean;
 }
 
 function TextInputMapperInput(props: CubeTextInputMapperInputProps) {
-  const { id, type, value, placeholder, ...rest } = props;
+  const {
+    id,
+    fieldType,
+    inputType = 'input',
+    options,
+    value,
+    placeholder,
+    allowsCustomValue,
+    ...rest
+  } = props;
 
   const onChange = useEvent((newValue: string) => {
     props.onChange?.(id, newValue);
@@ -298,10 +317,51 @@ function TextInputMapperInput(props: CubeTextInputMapperInputProps) {
     props.onSubmit?.(id);
   });
 
+  const onSelectionChange = useEvent((newValue: string) => {
+    if (!allowsCustomValue && !options?.includes(newValue)) {
+      props.onChange?.(id, '');
+    } else {
+      props.onChange?.(id, newValue);
+    }
+
+    props.onSubmit?.(id);
+  });
+
+  const Component = {
+    input: TextInput,
+    textarea: TextArea,
+    password: PasswordInput,
+  }[inputType];
+
+  if (inputType === 'combobox') {
+    return (
+      <ComboBox
+        qa="AddMapping"
+        data-type={fieldType}
+        width="auto"
+        {...mergeProps(rest, PROPS_GRID_HACK)}
+        id={undefined}
+        inputValue={value}
+        selectedKey={value}
+        labelPosition="top"
+        aria-label={placeholder}
+        placeholder={placeholder}
+        onInputChange={onChange}
+        onSelectionChange={onSelectionChange}
+      >
+        {(options ?? []).map((option) => (
+          <ComboBox.Item key={option}>{option}</ComboBox.Item>
+        ))}
+      </ComboBox>
+    );
+  }
+
   return (
-    <TextInput
+    <Component
       qa="AddMapping"
+      data-type={fieldType}
       width="auto"
+      rows={1}
       {...mergeProps(rest, PROPS_GRID_HACK)}
       id={undefined}
       value={value}
