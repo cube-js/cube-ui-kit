@@ -84,3 +84,31 @@ WithinForm.args = {};
 
 export const WithinFormInputSync = FormTemplateSync.bind({});
 WithinFormInputSync.args = {};
+
+export const WithComboBoxKeyAndValue = Template.bind({});
+WithComboBoxKeyAndValue.args = {
+  value: { 'Option 1': 'Option 2' },
+  keyProps: {
+    inputType: 'combobox',
+    menuTrigger: 'focus',
+    options: ['Option 1', 'Option 2', 'Option 3'],
+  },
+  valueProps: {
+    inputType: 'combobox',
+    options: ['Option 1', 'Option 2', 'Option 3'],
+  },
+};
+WithComboBoxKeyAndValue.play = WithValueAndNewMapping.play;
+
+export const WithPassword = Template.bind({});
+WithPassword.args = {
+  value: { 'Key 1': 'Hidden' },
+  keyProps: { autocomplete: 'off' },
+  valueProps: { inputType: 'password', autocomplete: 'off' },
+};
+
+export const WithTextArea = Template.bind({});
+WithTextArea.args = {
+  value: { 'Key 1': 'Line 1\nLine 2' },
+  valueProps: { inputType: 'textarea', type: 'password' },
+};

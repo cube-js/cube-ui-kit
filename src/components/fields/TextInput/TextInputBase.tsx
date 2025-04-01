@@ -202,6 +202,7 @@ export interface CubeTextInputBaseProps
   resize?: Styles['resize'];
   /** The size of the input */
   size?: 'small' | 'default' | 'large' | (string & {});
+  autocomplete?: string;
 }
 
 function _TextInputBase(props: CubeTextInputBaseProps, ref) {
@@ -240,6 +241,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     tooltip,
     rows = 1,
     size,
+    autocomplete,
     icon,
     maxLength,
     minLength,
@@ -327,12 +329,13 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
   );
 
   const hasTextSecurity = multiLine && type === 'password';
-  const textSecurityStyles = hasTextSecurity
-    ? {
-        fontFamily: 'text-security-disc',
-        WebkitTextSecurity: 'disc',
-      }
-    : {};
+  const textSecurityStyles =
+    hasTextSecurity && value?.length
+      ? {
+          fontFamily: 'text-security-disc',
+          WebkitTextSecurity: 'disc',
+        }
+      : {};
 
   const textField = (
     <InputWrapperElement
@@ -352,6 +355,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
         style={textSecurityStyles}
         autoFocus={autoFocus}
         data-size={size}
+        autocomplete={autocomplete}
         styles={inputStyles}
         disabled={!!isDisabled}
         maxLength={maxLength}
