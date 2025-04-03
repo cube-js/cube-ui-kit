@@ -114,7 +114,7 @@
     "@testing-library/react-hooks": "^8.0.1",
     "@testing-library/user-event": "14.2.0",
     "@types/jest": "^29.5.12",
-    "@types/node": "^18.19.26",
+    "@types/node": "^18.19.86",
     "@types/react": "^18.2.70",
     "@types/react-dom": "^18.2.22",
     "@types/react-is": "^18.2.4",
@@ -169,7 +169,7 @@
   ],
   "license": "MIT",
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=18.19.86",
     "pnpm": "^9.0.0"
   }
 }
