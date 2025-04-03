@@ -95,6 +95,16 @@ const CLOSE_BUTTON_STYLES: Styles = {
   width: '5x',
   height: '5x',
   placeContent: 'center',
+  fill: {
+    '': '#dark.0',
+    hovered: '#dark.04',
+    pressed: '#dark.05',
+  },
+  color: {
+    '': '#dark-02',
+    hovered: '#dark-02',
+    pressed: '#purple',
+  },
 };
 
 const sizeMap = {
@@ -206,7 +216,9 @@ const DialogContent = forwardRef(function DialogContent(
     if (contextProps.isOpen) {
       setTimeout(() => {
         focusManager?.focusFirst();
-        setIsCloseDisabled(false);
+        setTimeout(() => {
+          setIsCloseDisabled(false);
+        }, 250);
       });
     } else {
       setIsCloseDisabled(true);
