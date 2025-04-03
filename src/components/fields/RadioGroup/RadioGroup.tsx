@@ -13,8 +13,10 @@ import {
 import {
   BaseProps,
   BLOCK_STYLES,
+  BlockStyleProps,
   extractStyles,
   OUTER_STYLES,
+  OuterStyleProps,
   Styles,
   tasty,
 } from '../../../tasty';
@@ -30,6 +32,8 @@ import { RadioContext } from './context';
 export interface CubeRadioGroupProps
   extends BaseProps,
     AriaRadioGroupProps,
+    BlockStyleProps,
+    OuterStyleProps,
     FieldBaseProps {
   groupStyles?: Styles;
   isSolid?: boolean;
