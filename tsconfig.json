@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "module": "esnext",
-    "lib": ["dom", "esnext"],
+    "module": "es2022",
+    "lib": ["dom", "es2023"],
     "declaration": true,
     "noEmitOnError": false,
     "allowJs": true,
@@ -20,9 +20,9 @@
     "isolatedModules": true,
     "preserveSymlinks": true,
     "noImplicitAny": false,
-    "target": "es2021",
+    "target": "es2022",
     "noEmit": true,
-    "types": ["node", "jest", "react", "react-dom"],
+    "types": ["jest", "react", "react-dom"],
   },
   "include": ["src/**/*"]
 }

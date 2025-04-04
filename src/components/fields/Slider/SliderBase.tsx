@@ -218,5 +218,7 @@ function SliderBase(
 
 const _SliderBase = forwardRef(SliderBase);
 
+_SliderBase.displayName = 'SliderBase';
+
 export { _SliderBase as SliderBase };
 export { useSlider };

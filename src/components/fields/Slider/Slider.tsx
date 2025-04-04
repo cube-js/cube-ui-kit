@@ -83,6 +83,7 @@ const _Slider = forwardRef(Slider);
 
 const __Slider = Object.assign(_Slider as typeof _Slider, {
   cubeInputType: 'Number',
+  displayName: 'Slider',
 });
 
 export { __Slider as Slider };

@@ -29,7 +29,7 @@ const TitleElement = tasty({
   qa: 'Title',
   as: 'h1', // it should be dynamic
   styles: {
-    gridArea: 'heading',
+    gridArea: 'title',
     display: 'block',
     color: '#dark',
     preset: {
@@ -74,7 +74,7 @@ const Title = forwardRef(function CubeTitle(
   }: CubeTitleProps,
   ref,
 ) {
-  const propsWithSlots = useSlotProps(props, 'heading');
+  const propsWithSlots = useSlotProps(props, 'title');
 
   const tag: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' = `h${level || 1}`;
   const styles = extractStyles(propsWithSlots, STYLE_LIST, {}, TEXT_PROP_MAP);
@@ -105,5 +105,7 @@ const _Title = Object.assign(Title, {
     return <Title ref={ref} color="#success-text" {...props} />;
   }),
 });
+
+_Title.displayName = 'Title';
 
 export { _Title as Title };

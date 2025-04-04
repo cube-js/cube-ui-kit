@@ -233,4 +233,6 @@ function CopyPasteBlock(
 
 const _CopyPasteBlock = forwardRef(CopyPasteBlock);
 
+_CopyPasteBlock.displayName = 'CopyPasteBlock';
+
 export { _CopyPasteBlock as CopyPasteBlock };

@@ -54,4 +54,7 @@ function ResetButton(
 }
 
 const _ResetButton = forwardRef(ResetButton);
+
+_ResetButton.displayName = 'ResetButton';
+
 export { _ResetButton as ResetButton };

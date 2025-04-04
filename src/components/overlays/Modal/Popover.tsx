@@ -152,5 +152,8 @@ const PopoverWrapper = forwardRef(function PopoverWrapper(
   );
 });
 
-let _Popover = forwardRef(Popover);
+const _Popover = forwardRef(Popover);
+
+_Popover.displayName = 'Popover';
+
 export { _Popover as Popover };

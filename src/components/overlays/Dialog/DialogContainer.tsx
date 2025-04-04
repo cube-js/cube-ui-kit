@@ -6,11 +6,11 @@ import {
   ReactElement,
 } from 'react';
 
-import { Modal } from '../Modal/Modal';
+import { WithCloseBehavior, Modal } from '../Modal';
 
 import { DialogContext } from './context';
 
-export interface CubeDialogContainerProps {
+export interface CubeDialogContainerProps extends WithCloseBehavior {
   /** The Dialog to display, if any. */
   children?: ReactNode;
   /** Handler that is called when the 'x' button of a dismissible Dialog is clicked. */
@@ -44,6 +44,7 @@ export function DialogContainer(props: CubeDialogContainerProps) {
     isDismissable,
     isKeyboardDismissDisabled,
     isOpen,
+    hideOnClose,
   } = props;
 
   const childArray = Children.toArray(children);
@@ -71,6 +72,7 @@ export function DialogContainer(props: CubeDialogContainerProps) {
     <Modal
       isOpen={isActuallyOpened}
       type={type}
+      hideOnClose={hideOnClose}
       isDismissable={isDismissable}
       isKeyboardDismissDisabled={isKeyboardDismissDisabled}
       onClose={isDismissable ? onDismiss : undefined}

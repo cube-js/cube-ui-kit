@@ -21,6 +21,7 @@ const HeaderElement = tasty({
     display: 'block',
     gridArea: 'header',
     flow: 'column',
+    boxSizing: 'border-box',
   },
 });
 

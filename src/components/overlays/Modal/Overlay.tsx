@@ -72,4 +72,7 @@ function Overlay(props: CubeOverlayProps, ref) {
 }
 
 let _Overlay = forwardRef(Overlay);
+
+_Overlay.displayName = 'Overlay';
+
 export { _Overlay as Overlay };

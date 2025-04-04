@@ -49,7 +49,12 @@ export interface CubeTooltipTriggerProps extends TooltipTriggerProps {
   trigger?: 'focus';
 }
 
-function TooltipTrigger(props: CubeTooltipTriggerProps) {
+/**
+ * TooltipTrigger wraps around a trigger element and a Tooltip. It handles opening and closing
+ * the Tooltip when the user hovers over or focuses the trigger, and positioning the Tooltip
+ * relative to the trigger.
+ */
+export function TooltipTrigger(props: CubeTooltipTriggerProps) {
   let {
     children,
     activeWrap,
@@ -135,11 +140,3 @@ function TooltipTrigger(props: CubeTooltipTriggerProps) {
     </FocusableProvider>
   );
 }
-
-/**
- * TooltipTrigger wraps around a trigger element and a Tooltip. It handles opening and closing
- * the Tooltip when the user hovers over or focuses the trigger, and positioning the Tooltip
- * relative to the trigger.
- */
-let _TooltipTrigger = TooltipTrigger;
-export { _TooltipTrigger as TooltipTrigger };

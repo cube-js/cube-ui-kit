@@ -322,5 +322,10 @@ const __Radio = Object.assign(
   },
 );
 
+__Radio.displayName = 'Radio';
+
 export { __Radio as Radio };
+
+_RadioButton.displayName = 'RadioButton';
+
 export { _RadioButton as RadioButton };

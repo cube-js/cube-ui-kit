@@ -105,5 +105,6 @@ function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
 const _TextArea = forwardRef(TextArea);
 
 (_TextArea as any).cubeInputType = 'Text';
+_TextArea.displayName = 'TextArea';
 
 export { _TextArea as TextArea };

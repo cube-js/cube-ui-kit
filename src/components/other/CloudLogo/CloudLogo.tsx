@@ -103,4 +103,7 @@ function CloudLogo(
 }
 
 const _CloudLogo = forwardRef(CloudLogo);
+
+_CloudLogo.displayName = 'CloudLogo';
+
 export { _CloudLogo as CloudLogo };

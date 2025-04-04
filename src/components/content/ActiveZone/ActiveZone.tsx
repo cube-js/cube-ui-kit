@@ -73,4 +73,7 @@ function ActiveZone(
 }
 
 const _ActiveZone = forwardRef(ActiveZone);
+
+_ActiveZone.displayName = 'ActiveZone';
+
 export { _ActiveZone as ActiveZone };

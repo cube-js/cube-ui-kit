@@ -4,6 +4,9 @@ import { userEvent, within } from '@storybook/test';
 
 import { SELECTED_KEY_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Button } from '../../actions/index';
+import { Form } from '../../form/index';
+import { Flow } from '../../layout/Flow';
 
 import { ComboBox, CubeComboBoxProps } from './ComboBox';
 
@@ -31,6 +34,29 @@ const Template: StoryFn<CubeComboBoxProps<any>> = (
     </ComboBox>
   </>
 );
+
+const TemplateForm: StoryFn<CubeComboBoxProps<any>> = (
+  args: CubeComboBoxProps<any>,
+) => {
+  const [form] = Form.useForm();
+
+  return (
+    <Flow gap="2x">
+      <Form form={form} defaultValues={{ combobox: 'red' }}>
+        <ComboBox name="combobox" {...args}>
+          <ComboBox.Item key="red">Red</ComboBox.Item>
+          <ComboBox.Item key="orange">Orange</ComboBox.Item>
+          <ComboBox.Item key="yellow">Yellow</ComboBox.Item>
+          <ComboBox.Item key="green">Green</ComboBox.Item>
+          <ComboBox.Item key="blue">Blue</ComboBox.Item>
+          <ComboBox.Item key="purple">Purple</ComboBox.Item>
+          <ComboBox.Item key="violet">Violet</ComboBox.Item>
+        </ComboBox>
+      </Form>
+      <Button>Focus</Button>
+    </Flow>
+  );
+};
 
 export const Default = Template.bind({});
 Default.args = {};
@@ -100,4 +126,15 @@ With1LongOptionFiltered.play = async ({ canvasElement }) => {
   const combobox = getByRole('combobox');
 
   await userEvent.type(combobox, 'Red');
+};
+
+export const WithForm = TemplateForm.bind({});
+WithForm.play = async ({ canvasElement }) => {
+  const { getByRole } = within(canvasElement);
+
+  const combobox = getByRole('combobox');
+  const button = getByRole('button', { name: 'Focus' });
+
+  await userEvent.click(combobox);
+  await userEvent.click(button);
 };

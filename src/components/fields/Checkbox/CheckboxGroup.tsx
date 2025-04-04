@@ -127,5 +127,6 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
 const _CheckboxGroup = forwardRef(CheckboxGroup);
 
 (_CheckboxGroup as any).cubeInputType = 'CheckboxGroup';
+_CheckboxGroup.displayName = 'CheckboxGroup';
 
 export { _CheckboxGroup as CheckboxGroup };

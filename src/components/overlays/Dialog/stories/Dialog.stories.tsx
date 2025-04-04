@@ -18,6 +18,7 @@ import {
   Title,
   Space,
   DirectionIcon,
+  TextInput,
 } from '../../../../index';
 import { timeout } from '../../../../utils/promise';
 import { baseProps } from '../../../../stories/lists/baseProps';
@@ -65,6 +66,37 @@ const Template: StoryFn<
   );
 };
 
+const TemplateWithInput: StoryFn<
+  CubeDialogTriggerProps & { size: CubeDialogProps['size'] }
+> = ({ size, styles, ...props }) => {
+  return (
+    <DialogTrigger {...props}>
+      <Button>Click me!</Button>
+      {(close) => (
+        <Dialog size={size} styles={styles}>
+          <Header>
+            <Title>Modal title</Title>
+            <Text>Header</Text>
+          </Header>
+          <Content>
+            <TextInput autoFocus label="Text input" />
+          </Content>
+          <Footer>
+            <Button.Group>
+              <Button type="primary" onPress={close}>
+                Action
+              </Button>
+              <Button onPress={close}>Sec</Button>
+              <Button onPress={close}>Cancel</Button>
+            </Button.Group>
+            <Text>Footer</Text>
+          </Footer>
+        </Dialog>
+      )}
+    </DialogTrigger>
+  );
+};
+
 const WithTriggerStateTemplate: StoryFn<
   CubeDialogTriggerProps & { size: CubeDialogProps['size'] }
 > = ({ size, styles, ...props }) => {
@@ -94,6 +126,9 @@ Default.play = async ({ canvasElement, viewMode }) => {
 
   await expect(await findByRole('dialog')).toBeInTheDocument();
 };
+
+export const WithInput = TemplateWithInput.bind({});
+WithInput.play = Default.play;
 
 export const Modal: typeof Template = Template.bind({});
 Modal.args = {

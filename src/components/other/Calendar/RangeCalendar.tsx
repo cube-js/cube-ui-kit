@@ -75,6 +75,9 @@ function RangeCalendar<T extends DateValue>(
 }
 
 const _RangeCalendar = forwardRef(RangeCalendar);
+
+_RangeCalendar.displayName = 'RangeCalendar';
+
 export { _RangeCalendar as RangeCalendar };
 
 export type { AriaRangeCalendarProps as CubeRangeCalendarProps };

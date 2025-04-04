@@ -158,7 +158,7 @@ export async function applyRules(field, form, validationId = 0) {
 }
 
 export const delayValidationRule = (timeout = 500) => {
-  let timeoutId: NodeJS.Timeout;
+  let timeoutId: ReturnType<typeof setTimeout>;
   let storedResolve: () => void;
 
   return {

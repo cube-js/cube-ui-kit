@@ -610,6 +610,9 @@ const __Select = Object.assign(
   { Item },
 );
 
+__Select.displayName = 'Select';
+
 export { __Select as Select };
+
 export type { AriaSelectProps };
 export { useSelectState };

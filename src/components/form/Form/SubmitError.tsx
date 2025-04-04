@@ -39,4 +39,7 @@ function SubmitError(props: CubeAlertProps, ref: ForwardedRef<HTMLDivElement>) {
  * An alert that shows a form error message received from the onSubmit callback.
  */
 const _SubmitError = forwardRef(SubmitError);
+
+_SubmitError.displayName = 'SubmitError';
+
 export { _SubmitError as SubmitError };

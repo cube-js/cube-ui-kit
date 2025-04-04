@@ -6,6 +6,7 @@ import {
   ResetButton,
   Space,
   TextInput,
+  SubmitError,
 } from '../index';
 
 import { DialogFormApp } from './components/DialogFormApp';
@@ -64,6 +65,7 @@ export const LoginForm = {
       >
         <Input.Password type="password" />
       </Field>
+      <SubmitError />
       <Space>
         <SubmitButton>Submit</SubmitButton>
         <ResetButton>Reset</ResetButton>

@@ -168,4 +168,7 @@ function Label(props: CubeLabelProps, ref) {
 }
 
 let _Label = forwardRef(Label);
+
+_Label.displayName = 'Label';
+
 export { _Label as Label };

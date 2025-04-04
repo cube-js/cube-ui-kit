@@ -184,7 +184,7 @@ function TextInputMapper(
   ValueComponent = ValueComponent ?? TextInputMapperInput;
 
   const onKeyChange = useEvent((id: number, value: string) => {
-    mappings.find((mapping) => {
+    mappings.forEach((mapping) => {
       if (mapping.id === id) {
         mapping.key = value;
       }
@@ -194,7 +194,7 @@ function TextInputMapper(
   });
 
   const onValueChange = useEvent((id: number, value: string) => {
-    mappings.find((mapping) => {
+    mappings.forEach((mapping) => {
       if (mapping.id === id) {
         mapping.value = value;
       }
@@ -375,5 +375,7 @@ function TextInputMapperInput(props: CubeTextInputMapperInputProps) {
 }
 
 const _TextInputMapper = forwardRef(TextInputMapper);
+
+_TextInputMapper.displayName = 'TextInputMapper';
 
 export { _TextInputMapper as TextInputMapper };

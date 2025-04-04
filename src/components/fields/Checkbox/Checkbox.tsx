@@ -301,6 +301,8 @@ let __Checkbox = Object.assign(
   { Group: CheckboxGroup },
 );
 
+__Checkbox.displayName = 'Checkbox';
+
 export { __Checkbox as Checkbox };
 export type { AriaCheckboxProps };
 export { useCheckbox };

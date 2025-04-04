@@ -131,4 +131,7 @@ function Tag(allProps: CubeTagProps, ref) {
 }
 
 const _Tag = forwardRef(Tag);
+
+_Tag.displayName = 'Tag';
+
 export { _Tag as Tag };

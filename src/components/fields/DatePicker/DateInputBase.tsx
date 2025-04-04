@@ -107,4 +107,7 @@ function DateInputBase(props: CubeDateAtomInputProps, ref) {
 }
 
 const _DateInputBase = React.forwardRef(DateInputBase);
+
+_DateInputBase.displayName = 'DateInputBase';
+
 export { _DateInputBase as DateInputBase };

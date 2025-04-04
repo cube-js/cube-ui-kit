@@ -48,4 +48,7 @@ function Underlay({ isOpen, transitionState, ...otherProps }, ref) {
 }
 
 let _Underlay = forwardRef(Underlay);
+
+_Underlay.displayName = 'Underlay';
+
 export { _Underlay as Underlay };

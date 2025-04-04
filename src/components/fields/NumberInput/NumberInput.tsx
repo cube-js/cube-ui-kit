@@ -119,5 +119,7 @@ const _NumberInput = forwardRef(NumberInput);
 
 (_NumberInput as any).cubeInputType = 'Number';
 
+_NumberInput.displayName = 'NumberInput';
+
 export { _NumberInput as NumberInput };
 export type { AriaNumberFieldProps };

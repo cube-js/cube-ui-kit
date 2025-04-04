@@ -40,4 +40,7 @@ function SubmitButton(
 }
 
 const _SubmitButton = forwardRef(SubmitButton);
+
+_SubmitButton.displayName = 'SubmitButton';
+
 export { _SubmitButton as SubmitButton };
