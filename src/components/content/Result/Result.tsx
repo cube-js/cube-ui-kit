@@ -223,4 +223,6 @@ function Result(props: CubeResultProps, ref) {
 
 const _Result = forwardRef(Result);
 
+_Result.displayName = 'Result';
+
 export { _Result as Result };

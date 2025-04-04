@@ -56,6 +56,7 @@ const _RangeSlider = forwardRef(RangeSlider);
 
 const __RangeSlider = Object.assign(_RangeSlider as typeof _RangeSlider, {
   cubeInputType: 'Number',
+  displayName: 'RangeSlider',
 });
 
 export { __RangeSlider as RangeSlider };

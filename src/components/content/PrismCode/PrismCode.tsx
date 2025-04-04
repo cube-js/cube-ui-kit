@@ -102,4 +102,7 @@ function PrismCode(props: CubePrismCodeProps, ref) {
  * Code block with syntax highlighting
  */
 const _PrismCode = forwardRef(PrismCode);
+
+_PrismCode.displayName = 'PrismCode';
+
 export { _PrismCode as PrismCode };

@@ -177,4 +177,7 @@ function Tooltip(
  * Display container for Tooltip content. Has a directional arrow dependent on its placement.
  */
 let _Tooltip = forwardRef(Tooltip);
+
+_Tooltip.displayName = 'Tooltip';
+
 export { _Tooltip as Tooltip };

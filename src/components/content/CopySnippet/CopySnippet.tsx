@@ -265,4 +265,6 @@ const _CopySnippet = Object.assign(
   },
 );
 
+_CopySnippet.displayName = 'CopySnippet';
+
 export { _CopySnippet as CopySnippet };

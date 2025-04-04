@@ -1,4 +1,4 @@
-import { forwardRef, ReactElement, useRef } from 'react';
+import { forwardRef, useRef } from 'react';
 import { FocusableRef } from '@react-types/shared';
 import {
   useDateRangePicker,
@@ -205,7 +205,8 @@ function DateRangePicker<T extends DateValue>(
   });
 }
 
-const _DateRangePicker = forwardRef(DateRangePicker) as <T extends DateValue>(
-  props: CubeDateRangePickerProps<T> & { ref?: FocusableRef<HTMLElement> },
-) => ReactElement;
+const _DateRangePicker = forwardRef(DateRangePicker);
+
+_DateRangePicker.displayName = 'DateRangePicker';
+
 export { _DateRangePicker as DateRangePicker };

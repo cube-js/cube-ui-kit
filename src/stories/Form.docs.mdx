@@ -3,7 +3,7 @@ import { Meta, Story, Canvas, Controls } from '@storybook/blocks';
 import { Form, Field, SubmitButton, Input, DialogForm } from '../index';
 import { DialogFormApp } from './components/DialogFormApp';
 import { DISABLE_BASE_ARGS } from './FormFieldArgs';
-import * as FormStories from './Form.stories';
+import * as FormStories from './Form.stories.jsx';
 
 <Meta of={FormStories} />
 
@@ -34,30 +34,32 @@ const Demo = () => {
 
 #### CubeFormInstance interface
 
-| Prop            | Description                                | Type                                                     | Default |
-| --------------- | ------------------------------------------ | -------------------------------------------------------- | ------- |
-| getFieldValue   | Get field value by name path               | (name: NamePath) => any                                  |
-| getFieldsValue  | Get list of field values by name path list | (nameList?: (NamePath\[]) => any) | true             |
-| getFieldError   | Get field errors by name path              | (name: NamePath) => string\[]                             |
-| getFieldsError  | Get list of field errors by name path list | (nameList?: NamePath\[]) => FieldError\[]                  |
-| isFieldsTouched | Check if list of fields are touched        | (nameList?: NamePath\[], allTouched?: boolean) => boolean |
-| isFieldTouched  | Check if a field is touched                | (name: NamePath) => boolean                              |
-| isFieldValid    | Check if a field is valid                  | (name: NamePath) => boolean                              |
-| resetFields     | Reset fields status                        | (fields?: NamePath\[]) => void                            |
-| setFields       | Set fields status                          | (fields: CubeFieldData\[]) => void                        |
-| setFieldsValue  | Set fields value                           | (values) => void                                         |
-| submit          | Trigger form to validate and submit        | () => void                                               |
-| validateFields  | Trigger fields to validate                 | (nameList?: NamePath\[]) => Promise                       |
+| Prop            | Description                                 | Type                                                     |
+|-----------------|---------------------------------------------|----------------------------------------------------------|
+| getFieldValue   | Get field value by name path                | (name: NamePath) => any                                  |
+| getFieldsValue  | Get list of field values by name path list  | (nameList?: NamePath[]) => any                           |
+| getFieldError   | Get field errors by name path               | (name: NamePath) => string[]                             |
+| getFieldsError  | Get list of field errors by name path list  | (nameList?: NamePath[]) => FieldError[]                  |
+| isFieldsTouched | Check if list of fields are touched         | (nameList?: NamePath[], allTouched?: boolean) => boolean |
+| isFieldTouched  | Check if a field is touched                 | (name: NamePath) => boolean                              |
+| isFieldValid    | Check if a field is valid                   | (name: NamePath) => boolean                              |
+| resetFields     | Reset fields status                         | (fields?: NamePath[]) => void                            |
+| setFields       | Set fields status                           | (fields: CubeFieldData[]) => void                        |
+| setFieldsValue  | Set fields value                            | (values) => void                                         |
+| submit          | Trigger form to validate and submit         | () => void                                               |
+| validateFields  | Trigger fields to validate                  | (nameList?: NamePath[]) => Promise                       |
+| isDirty         | Check if form is dirty                      | boolean                                                  |
+| isTouched       | Check if form has been changed at least once| boolean                                                  |
 
 #### CubeFieldData interface
 
-| Prop    | Type                                                 |
-| ------- | ---------------------------------------------------- |
-| touched | boolean                                              |
-| errors  | string\[]                                             |
-| name    | string | number | (string | number)\[] |
-| value   | any                                                  |
-| rules   | CubeValidationRule\[]                                 |
+| Prop    | Type                                  |
+|---------|---------------------------------------|
+| touched | boolean                               |
+| errors  | string[]                              |
+| name    | `string` \| `number` \| (`string` \| `number`)[] |
+| value   | any                                   |
+| rules   | CubeValidationRule[]                  |
 
 ## Known differences with AntD Forms
 
@@ -111,6 +113,8 @@ export function LoginForm() {
       >
         <Input.Password type="password" />
       </Field>
+
+      <SubmitError/>
 
       <SubmitButton>Submit</SubmitButton>
     </Form>

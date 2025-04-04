@@ -181,4 +181,7 @@ function DatePicker<T extends DateValue>(
 const _DatePicker = forwardRef(DatePicker) as <T extends DateValue>(
   props: CubeDatePickerProps<T> & { ref?: FocusableRef<HTMLElement> },
 ) => ReactElement;
+
+_DatePicker.displayName = 'DatePicker';
+
 export { _DatePicker as DatePicker };

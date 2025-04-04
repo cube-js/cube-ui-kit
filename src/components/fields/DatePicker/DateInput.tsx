@@ -1,4 +1,4 @@
-import { forwardRef, ReactElement, useRef } from 'react';
+import { forwardRef, useRef } from 'react';
 import { createCalendar } from '@internationalized/date';
 import { FocusableRef } from '@react-types/shared';
 import {
@@ -118,7 +118,8 @@ function DateInput<T extends DateValue>(
  * DateInputs allow users to enter and edit date and time values using a keyboard.
  * Each part of a date value is displayed in an individually editable segment.
  */
-const _DateInput = forwardRef(DateInput) as <T extends DateValue>(
-  props: CubeDateInputProps<T> & { ref?: FocusableRef<HTMLElement> },
-) => ReactElement;
+const _DateInput = forwardRef(DateInput);
+
+_DateInput.displayName = 'DateInput';
+
 export { _DateInput as DateInput };

@@ -139,5 +139,6 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
 const _RadioGroup = forwardRef(RadioGroup);
 
 (_RadioGroup as any).cubeInputType = 'RadioGroup';
+_RadioGroup.displayName = 'RadioGroup';
 
 export { _RadioGroup as RadioGroup };

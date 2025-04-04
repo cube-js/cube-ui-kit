@@ -70,7 +70,12 @@ export interface CubeDialogTriggerProps
   shouldFlip?: boolean;
 }
 
-function DialogTrigger(props: CubeDialogTriggerProps) {
+/**
+ * DialogTrigger serves as a wrapper around a Dialog and its associated trigger, linking the Dialog's
+ * open state with the trigger's press state. Additionally, it allows you to customize the type and
+ * positioning of the Dialog.
+ */
+export function DialogTrigger(props: CubeDialogTriggerProps) {
   let {
     children,
     type = 'modal',
@@ -205,14 +210,6 @@ function DialogTrigger(props: CubeDialogTriggerProps) {
     />
   );
 }
-
-/**
- * DialogTrigger serves as a wrapper around a Dialog and its associated trigger, linking the Dialog's
- * open state with the trigger's press state. Additionally, it allows you to customize the type and
- * positioning of the Dialog.
- */
-let _DialogTrigger = DialogTrigger;
-export { _DialogTrigger as DialogTrigger };
 
 function PopoverTrigger(allProps) {
   let {

@@ -278,4 +278,6 @@ function FileInput(props: CubeFileInputProps, ref) {
  */
 const _FileInput = forwardRef(FileInput);
 
+_FileInput.displayName = 'FileInput';
+
 export { _FileInput as FileInput };

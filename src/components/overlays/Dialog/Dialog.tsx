@@ -67,7 +67,7 @@ const DialogElement = tasty({
       '[data-type="panel"]': 'auto',
     },
     placeSelf: 'stretch',
-    '@dialog-heading-padding-v': {
+    '@dialog-title-padding-v': {
       '': '2x',
       '[data-type="popover"]': '1x',
     },
@@ -231,7 +231,7 @@ const DialogContent = forwardRef(function DialogContent(
   // let hasFooter = useHasChild('[data-id="Footer"]', domRef);
 
   let slots = {
-    heading: {
+    title: {
       level: 2,
       preset: 'h4',
       ...titleProps,
@@ -253,11 +253,12 @@ const DialogContent = forwardRef(function DialogContent(
         display: 'flex',
         flow: 'row',
         gap: '1x',
+        height: '(7x + 1bw)',
         placeItems: 'baseline stretch',
         placeContent: 'space-between',
-        padding: `@dialog-heading-padding-v ${
+        padding: `@dialog-title-padding-v ${
           isDismissable ? '(@dialog-padding-h + 4x)' : '@dialog-padding-h'
-        } @dialog-heading-padding-v @dialog-padding-h`,
+        } @dialog-title-padding-v @dialog-padding-h`,
         border: 'bottom',
       },
     },

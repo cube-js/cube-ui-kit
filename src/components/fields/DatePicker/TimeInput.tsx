@@ -128,4 +128,7 @@ function TimeInput<T extends TimeValue>(
 const _TimeInput = forwardRef(TimeInput) as <T extends TimeValue>(
   props: CubeTimeInputProps<T> & { ref?: FocusableRef<HTMLElement> },
 ) => ReactElement;
+
+_TimeInput.displayName = 'TimeInput';
+
 export { _TimeInput as TimeInput };

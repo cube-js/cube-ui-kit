@@ -315,4 +315,7 @@ const _DateRangeSeparatedPicker = forwardRef(DateRangeSeparatedPicker) as <
     ref?: FocusableRef<HTMLElement>;
   },
 ) => ReactElement;
+
+_DateRangeSeparatedPicker.displayName = 'DateRangeSeparatedPicker';
+
 export { _DateRangeSeparatedPicker as DateRangeSeparatedPicker };
