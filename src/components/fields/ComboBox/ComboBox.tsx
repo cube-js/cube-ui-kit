@@ -148,7 +148,9 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     valuePropsMapper: ({ value, onChange }) => ({
       inputValue: value != null ? value : '',
       onInputChange: (val) => {
-        onChange(val, !props.allowsCustomValue);
+        // It triggers on the blur event and passes an empty string if no changes we made
+        // So we do a fallback to the real input value
+        onChange(val || props.inputValue || '', !props.allowsCustomValue);
         rerender({});
       },
       onSelectionChange: onChange,
