@@ -1,6 +1,6 @@
 import { useDOMRef } from '@react-spectrum/utils';
-import { DismissButton, FocusScope, useFocusManager } from 'react-aria';
-import { forwardRef, ReactElement, useEffect, useMemo, useState } from 'react';
+import { DismissButton } from 'react-aria';
+import { forwardRef, ReactElement, useEffect, useMemo } from 'react';
 import { useDialog, useMessageFormatter, AriaDialogProps } from 'react-aria';
 import { DOMRef } from '@react-types/shared';
 import FocusLock from 'react-focus-lock';
@@ -166,7 +166,7 @@ export const Dialog = forwardRef(function Dialog(
     <FocusLock returnFocus disabled={!isEntered || context.type === 'panel'}>
       {/* FocusScope has a bug that prevents selection and blurring in the dialog. */}
       {/* But we need it to make the autofocus work. */}
-      <FocusScope restoreFocus>{content}</FocusScope>
+      {content}
     </FocusLock>
   );
 });
@@ -188,8 +188,6 @@ const DialogContent = forwardRef(function DialogContent(
     ...otherProps
   } = props;
 
-  const [isCloseDisabled, setIsCloseDisabled] = useState(true);
-
   size = sizeMap[size.toUpperCase()] || size;
 
   const styles: Styles = extractStyles(otherProps, STYLES_LIST);
@@ -209,19 +207,21 @@ const DialogContent = forwardRef(function DialogContent(
     dismissButton = <DismissButton onDismiss={onDismiss} />;
   }
 
-  const focusManager = useFocusManager();
-
   // Focus the first focusable element in the dialog when it opens
   useEffect(() => {
     if (contextProps.isOpen) {
       setTimeout(() => {
-        focusManager?.focusFirst();
-        setTimeout(() => {
-          setIsCloseDisabled(false);
-        }, 250);
+        if (
+          domRef.current &&
+          !domRef.current.contains(document.activeElement)
+        ) {
+          (
+            domRef.current.querySelector(
+              '[data-qa="ButtonGroup"] button[data-type="primary"]',
+            ) as HTMLButtonElement
+          )?.focus();
+        }
       });
-    } else {
-      setIsCloseDisabled(true);
     }
   }, [contextProps.isOpen]);
 
@@ -290,7 +290,6 @@ const DialogContent = forwardRef(function DialogContent(
       <SlotProvider slots={slots}>
         {isDismissable && (
           <Button
-            isDisabled={isCloseDisabled}
             qa="ModalCloseButton"
             type="neutral"
             styles={CLOSE_BUTTON_STYLES}
