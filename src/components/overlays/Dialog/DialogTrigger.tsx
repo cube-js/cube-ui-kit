@@ -10,6 +10,7 @@ import {
   Placement,
 } from 'react-aria';
 
+import { useIsFirstRender } from '../../../_internal/index';
 import { useCombinedRefs } from '../../../utils/react/index';
 import { Modal, Popover, Tray, WithCloseBehavior } from '../Modal';
 import { Styles } from '../../../tasty';
@@ -229,7 +230,7 @@ function PopoverTrigger(allProps) {
     ...props
   } = allProps;
 
-  let triggerRef = useRef<HTMLElement>(null);
+  let triggerRef = useRef<HTMLButtonElement>(null);
   let overlayRef = useRef<HTMLDivElement>(null);
 
   let {
@@ -299,6 +300,7 @@ function PopoverTrigger(allProps) {
 
 function DialogTriggerBase(props) {
   const ref = useCombinedRefs(props.ref);
+  const isFirstRender = useIsFirstRender();
 
   let {
     type,
@@ -309,7 +311,6 @@ function DialogTriggerBase(props) {
     triggerProps = {},
     overlay,
     trigger,
-    hideOnClose,
   } = props;
 
   let context = {
@@ -320,9 +321,9 @@ function DialogTriggerBase(props) {
     ...dialogProps,
   };
 
-  // Restore focus manually when the dialog closes and has `hideOnClose` set to true
+  // Restore focus manually when the dialog closes
   useEffect(() => {
-    if (!state.isOpen && hideOnClose) {
+    if (!state.isOpen && !isFirstRender) {
       setTimeout(() => {
         ref.current?.focus();
       });

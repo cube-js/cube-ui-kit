@@ -163,9 +163,11 @@ export const Dialog = forwardRef(function Dialog(
 
   return (
     // This component is actually traps the focus inside the dialog.
-    <FocusLock returnFocus disabled={!isEntered || context.type === 'panel'}>
-      {/* FocusScope has a bug that prevents selection and blurring in the dialog. */}
-      {/* But we need it to make the autofocus work. */}
+    <FocusLock
+      returnFocus
+      autoFocus={false}
+      disabled={!isEntered || context.type === 'panel'}
+    >
       {content}
     </FocusLock>
   );
@@ -217,7 +219,7 @@ const DialogContent = forwardRef(function DialogContent(
         ) {
           (
             domRef.current.querySelector(
-              '[data-qa="ButtonGroup"] button[data-type="primary"]',
+              'input[data-autofocus], [data-qa="ButtonGroup"] button[data-type="primary"]',
             ) as HTMLButtonElement
           )?.focus();
         }
