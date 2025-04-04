@@ -327,6 +327,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     >
       <InputElement
         qa="Input"
+        autoFocus={autoFocus}
+        data-autofocus={autoFocus ? '' : undefined}
         {...mergeProps(inputProps, hoverProps, focusProps)}
         ref={inputRef}
         autoComplete={autoComplete}
