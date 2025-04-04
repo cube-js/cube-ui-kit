@@ -324,9 +324,7 @@ function DialogTriggerBase(props) {
   // Restore focus manually when the dialog closes
   useEffect(() => {
     if (!state.isOpen && !isFirstRender) {
-      setTimeout(() => {
-        ref.current?.focus();
-      });
+      ref.current?.focus();
     }
   }, [state.isOpen, ref.current]);
 
