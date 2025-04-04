@@ -205,8 +205,8 @@ function DateRangePicker<T extends DateValue>(
   });
 }
 
-const _DateRangePicker = forwardRef(DateRangePicker);
+const _DateRangePicker = forwardRef(DateRangePicker) as typeof DateRangePicker;
 
-_DateRangePicker.displayName = 'DateRangePicker';
+(_DateRangePicker as any).displayName = 'DateRangePicker';
 
 export { _DateRangePicker as DateRangePicker };

@@ -256,8 +256,8 @@ function Form<T extends FieldTypes>(
 /**
  * Forms allow users to enter data that can be submitted while providing alignment and styling for form fields.
  */
-const _Form = forwardRef(Form);
+const _Form = forwardRef(Form) as typeof Form;
 
-_Form.displayName = 'Form';
+(_Form as any).displayName = 'Form';
 
 export { _Form as Form };

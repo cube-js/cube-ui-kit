@@ -118,8 +118,8 @@ function DateInput<T extends DateValue>(
  * DateInputs allow users to enter and edit date and time values using a keyboard.
  * Each part of a date value is displayed in an individually editable segment.
  */
-const _DateInput = forwardRef(DateInput);
+const _DateInput = forwardRef(DateInput) as typeof DateInput;
 
-_DateInput.displayName = 'DateInput';
+(_DateInput as any).displayName = 'DateInput';
 
 export { _DateInput as DateInput };

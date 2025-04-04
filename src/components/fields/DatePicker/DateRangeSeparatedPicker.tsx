@@ -316,6 +316,6 @@ const _DateRangeSeparatedPicker = forwardRef(DateRangeSeparatedPicker) as <
   },
 ) => ReactElement;
 
-_DateRangeSeparatedPicker.displayName = 'DateRangeSeparatedPicker';
+(_DateRangeSeparatedPicker as any).displayName = 'DateRangeSeparatedPicker';
 
 export { _DateRangeSeparatedPicker as DateRangeSeparatedPicker };
