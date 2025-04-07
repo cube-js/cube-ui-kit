@@ -325,7 +325,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     if (e.key === 'Enter' && !props.allowsCustomValue && state.isOpen) {
       const option = [...state.collection][0]?.key;
 
-      if (option) {
+      if (option && selectedKey !== option) {
         props.onSelectionChange?.(option);
 
         e.stopPropagation();
