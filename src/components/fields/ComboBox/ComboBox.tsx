@@ -4,6 +4,7 @@ import {
   forwardRef,
   ReactElement,
   RefObject,
+  useEffect,
   useMemo,
 } from 'react';
 import {
@@ -17,6 +18,7 @@ import {
 } from 'react-aria';
 import { Item, useComboBoxState } from 'react-stately';
 
+import { useEvent } from '../../../_internal/index';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { DEFAULT_INPUT_STYLES, INPUT_WRAPPER_STYLES } from '../index';
 import { useProviderProps } from '../../../provider';
@@ -318,6 +320,33 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     ],
   );
 
+  // If input is not full and the user presses Enter, pick the first option.
+  let onKeyPress = useEvent((e: KeyboardEvent) => {
+    if (e.key === 'Enter' && !props.allowsCustomValue && state.isOpen) {
+      const option = [...state.collection][0]?.key;
+
+      if (option) {
+        props.onSelectionChange?.(option);
+
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    }
+  });
+
+  useEffect(() => {
+    ref.current?.addEventListener('keydown', onKeyPress, true);
+
+    return () => {
+      ref.current?.removeEventListener('keydown', onKeyPress, true);
+    };
+  }, []);
+
+  let allInputProps = useMemo(
+    () => mergeProps(inputProps, hoverProps, focusProps),
+    [inputProps, hoverProps, focusProps],
+  );
+
   let comboBoxField = (
     <ComboBoxWrapperElement
       ref={wrapperRef}
@@ -333,7 +362,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         qa="Input"
         autoFocus={autoFocus}
         data-autofocus={autoFocus ? '' : undefined}
-        {...mergeProps(inputProps, hoverProps, focusProps)}
+        {...allInputProps}
         ref={inputRef}
         autoComplete={autoComplete}
         styles={inputStyles}

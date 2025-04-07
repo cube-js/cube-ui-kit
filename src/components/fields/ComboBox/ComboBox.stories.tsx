@@ -42,7 +42,11 @@ const TemplateForm: StoryFn<CubeComboBoxProps<any>> = (
 
   return (
     <Flow gap="2x">
-      <Form form={form} defaultValues={{ combobox: 'red' }}>
+      <Form
+        form={form}
+        defaultValues={{ combobox: 'red' }}
+        onSubmit={(data) => console.log('! submit', data)}
+      >
         <ComboBox name="combobox" {...args}>
           <ComboBox.Item key="red">Red</ComboBox.Item>
           <ComboBox.Item key="orange">Orange</ComboBox.Item>
