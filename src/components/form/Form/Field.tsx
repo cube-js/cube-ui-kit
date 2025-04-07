@@ -65,8 +65,7 @@ function getValueProps(
     };
   } else if (type === 'ComboBox') {
     return {
-      inputValue: value != null ? value : '',
-      onInputChange: (val) => onChange(val, !allowsCustomValue),
+      value: value,
       onSelectionChange: onChange,
     };
   } else if (type === 'Select') {
@@ -101,7 +100,6 @@ interface CubeReplaceFieldProps<T extends FieldTypes>
   onChange?: (any) => void;
   onSelectionChange?: (any) => void;
   onBlur: () => void;
-  onInputChange?: (any) => void;
   labelPosition?: LabelPosition;
 }
 
@@ -255,7 +253,7 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
     newProps,
     getValueProps(
       inputType,
-      __props.field?.inputValue,
+      __props.field?.value,
       __props.onChange,
       child.props.allowsCustomValue,
     ),

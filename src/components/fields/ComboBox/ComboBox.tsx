@@ -5,7 +5,6 @@ import {
   ReactElement,
   RefObject,
   useMemo,
-  useState,
 } from 'react';
 import {
   useButton,
@@ -140,21 +139,22 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   props: CubeComboBoxProps<T>,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  const [, rerender] = useState({});
-
   props = useProviderProps(props);
   props = useFormProps(props);
   props = useFieldProps(props, {
-    valuePropsMapper: ({ value, onChange }) => ({
-      inputValue: value != null ? value : '',
-      onInputChange: (val) => {
-        // It triggers on the blur event and passes an empty string if no changes we made
-        // So we do a fallback to the real input value
-        onChange(val || props.inputValue || '', !props.allowsCustomValue);
-        rerender({});
-      },
-      onSelectionChange: onChange,
-    }),
+    valuePropsMapper: ({ value, onChange }) => {
+      return {
+        selectedKey: value ?? null,
+        onSelectionChange(val: string) {
+          if (val != null) {
+            onChange(val);
+          }
+        },
+        onBlur(evt) {
+          evt?.stopPropagation();
+        },
+      };
+    },
   });
 
   let {
@@ -197,6 +197,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     filter,
     styles,
     labelSuffix,
+    selectedKey,
+    defaultSelectedKey,
     ...otherProps
   } = props;
 
@@ -270,7 +272,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     if (state.isOpen) {
       updatePosition();
     }
-  }, [updatePosition, state.isOpen, state.collection.size]);
+  }, [state.isOpen, state.collection.size]);
 
   let isInvalid = validationState === 'invalid';
 

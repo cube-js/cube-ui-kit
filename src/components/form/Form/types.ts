@@ -8,7 +8,6 @@ export type CubeFieldData<Name extends string, Value> = {
   readonly name: Name;
   errors: ReactNode[];
   value?: Value;
-  inputValue?: Value | string | undefined | null;
   touched?: boolean;
   rules?: any[];
   validating?: boolean;

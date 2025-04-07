@@ -128,8 +128,8 @@ With1LongOptionFiltered.play = async ({ canvasElement }) => {
   await userEvent.type(combobox, 'Red');
 };
 
-export const WithForm = TemplateForm.bind({});
-WithForm.play = async ({ canvasElement }) => {
+export const WithinForm = TemplateForm.bind({});
+WithinForm.play = async ({ canvasElement }) => {
   const { getByRole } = within(canvasElement);
 
   const combobox = getByRole('combobox');

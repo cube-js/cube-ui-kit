@@ -107,7 +107,7 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
     if (field) {
       form.forceReRender();
     } else {
-      form.createField(fieldName);
+      field = form.createField(fieldName);
     }
   }, [field]);
 
@@ -152,7 +152,7 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
       }
     }
 
-    form.setFieldValue(fieldName, val, !dontTouch, false, dontTouch);
+    form.setFieldValue(fieldName, val, !dontTouch);
 
     if (
       !dontTouch &&
@@ -172,13 +172,13 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
     }
   });
 
-  let inputValue = field?.inputValue;
+  let value = field?.value;
 
   return useMemo(
     () => ({
       id: fieldId,
       name: fieldName,
-      value: inputValue,
+      value,
       validateTrigger,
       form,
       field,
@@ -202,9 +202,9 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
     [
       form,
       field,
+      field?.value,
       field?.errors?.length,
       field?.status,
-      field?.inputValue,
       fieldId,
       fieldName,
       isRequired,

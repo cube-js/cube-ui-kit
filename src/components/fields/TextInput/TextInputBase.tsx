@@ -247,6 +247,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     minLength,
     ...otherProps
   } = props;
+
   let styles = extractStyles(otherProps, STYLE_LIST);
   let type = otherProps.type;
 
