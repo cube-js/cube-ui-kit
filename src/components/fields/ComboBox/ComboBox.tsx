@@ -6,6 +6,7 @@ import {
   RefObject,
   useEffect,
   useMemo,
+  useState,
 } from 'react';
 import {
   useButton,
@@ -148,6 +149,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       return {
         selectedKey: value ?? null,
         onSelectionChange(val: string) {
+          setIsEmptyStateAllowed(false);
+
           if (val != null) {
             onChange(val);
           } else {
@@ -157,6 +160,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       };
     },
   });
+
+  const [isEmptyStateAllowed, setIsEmptyStateAllowed] = useState(false);
 
   let {
     qa,
@@ -333,16 +338,31 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     }
   });
 
+  let onChange = useEvent(() => {
+    if (!inputRef?.current?.value && props.allowsCustomValue) {
+      setIsEmptyStateAllowed(true);
+    }
+  });
+
+  let onBlur = useEvent(() => {
+    setIsEmptyStateAllowed(false);
+  });
+
   useEffect(() => {
     inputRef.current?.addEventListener('keydown', onKeyPress, true);
+    inputRef.current?.addEventListener('input', onChange, true);
 
     return () => {
       inputRef.current?.removeEventListener('keydown', onKeyPress, true);
+      inputRef.current?.removeEventListener('input', onChange, true);
     };
   }, []);
 
   let allInputProps = useMemo(
-    () => mergeProps(inputProps, hoverProps, focusProps),
+    () =>
+      mergeProps(inputProps, hoverProps, focusProps, {
+        onBlur,
+      }),
     [inputProps, hoverProps, focusProps],
   );
 
@@ -363,7 +383,11 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         autoFocus={autoFocus}
         data-autofocus={autoFocus ? '' : undefined}
         {...allInputProps}
-        value={allInputProps.value || props.selectedKey}
+        value={
+          isEmptyStateAllowed || allInputProps.value || !props.allowsCustomValue
+            ? allInputProps.value
+            : selectedKey
+        }
         autoComplete={autoComplete}
         styles={inputStyles}
         {...modAttrs(mods)}
