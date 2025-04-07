@@ -44,7 +44,7 @@ const TemplateForm: StoryFn<CubeComboBoxProps<any>> = (
     <Flow gap="2x">
       <Form
         form={form}
-        defaultValues={{ combobox: 'red' }}
+        defaultValues={{ combobox: args.allowsCustomValue ? 'Unknown' : 'red' }}
         onSubmit={(data) => console.log('! submit', data)}
       >
         <ComboBox name="combobox" {...args}>
@@ -137,8 +137,15 @@ WithinForm.play = async ({ canvasElement }) => {
   const { getByRole } = within(canvasElement);
 
   const combobox = getByRole('combobox');
-  const button = getByRole('button', { name: 'Focus' });
+  // const button = getByRole('button', { name: 'Focus' });
 
   await userEvent.click(combobox);
-  await userEvent.click(button);
+  // await userEvent.click(button);
+};
+
+export const WithinFormAllosCustomValue = TemplateForm.bind({});
+WithinFormAllosCustomValue.play = WithinForm.play;
+WithinFormAllosCustomValue.args = {
+  ...TemplateForm.args,
+  allowsCustomValue: true,
 };

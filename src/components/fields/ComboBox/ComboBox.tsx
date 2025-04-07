@@ -150,10 +150,9 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         onSelectionChange(val: string) {
           if (val != null) {
             onChange(val);
+          } else {
+            onChange(inputRef?.current?.value);
           }
-        },
-        onBlur(evt) {
-          evt?.stopPropagation();
         },
       };
     },
@@ -335,10 +334,10 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   });
 
   useEffect(() => {
-    ref.current?.addEventListener('keydown', onKeyPress, true);
+    inputRef.current?.addEventListener('keydown', onKeyPress, true);
 
     return () => {
-      ref.current?.removeEventListener('keydown', onKeyPress, true);
+      inputRef.current?.removeEventListener('keydown', onKeyPress, true);
     };
   }, []);
 
@@ -359,11 +358,12 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       data-size={size}
     >
       <InputElement
+        ref={inputRef}
         qa="Input"
         autoFocus={autoFocus}
         data-autofocus={autoFocus ? '' : undefined}
         {...allInputProps}
-        ref={inputRef}
+        value={allInputProps.value || props.selectedKey}
         autoComplete={autoComplete}
         styles={inputStyles}
         {...modAttrs(mods)}
