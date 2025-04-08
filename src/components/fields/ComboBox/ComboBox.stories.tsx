@@ -5,7 +5,7 @@ import { userEvent, within } from '@storybook/test';
 import { SELECTED_KEY_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/index';
-import { Form } from '../../form/index';
+import { Field, Form } from '../../form/index';
 import { Flow } from '../../layout/Flow';
 
 import { ComboBox, CubeComboBoxProps } from './ComboBox';
@@ -56,6 +56,35 @@ const TemplateForm: StoryFn<CubeComboBoxProps<any>> = (
           <ComboBox.Item key="purple">Purple</ComboBox.Item>
           <ComboBox.Item key="violet">Violet</ComboBox.Item>
         </ComboBox>
+      </Form>
+      <Button>Focus</Button>
+    </Flow>
+  );
+};
+
+const TemplateLegacyForm: StoryFn<CubeComboBoxProps<any>> = (
+  args: CubeComboBoxProps<any>,
+) => {
+  const [form] = Form.useForm();
+
+  return (
+    <Flow gap="2x">
+      <Form
+        form={form}
+        defaultValues={{ combobox: args.allowsCustomValue ? 'Unknown' : 'red' }}
+        onSubmit={(data) => console.log('! Submit', data)}
+      >
+        <Field name="combobox">
+          <ComboBox {...args}>
+            <ComboBox.Item key="red">Red</ComboBox.Item>
+            <ComboBox.Item key="orange">Orange</ComboBox.Item>
+            <ComboBox.Item key="yellow">Yellow</ComboBox.Item>
+            <ComboBox.Item key="green">Green</ComboBox.Item>
+            <ComboBox.Item key="blue">Blue</ComboBox.Item>
+            <ComboBox.Item key="purple">Purple</ComboBox.Item>
+            <ComboBox.Item key="violet">Violet</ComboBox.Item>
+          </ComboBox>
+        </Field>
       </Form>
       <Button>Focus</Button>
     </Flow>
@@ -143,9 +172,16 @@ WithinForm.play = async ({ canvasElement }) => {
   // await userEvent.click(button);
 };
 
-export const WithinFormAllosCustomValue = TemplateForm.bind({});
-WithinFormAllosCustomValue.play = WithinForm.play;
-WithinFormAllosCustomValue.args = {
+export const WithinFormWithCustomValue = TemplateForm.bind({});
+WithinFormWithCustomValue.play = WithinForm.play;
+WithinFormWithCustomValue.args = {
+  ...TemplateForm.args,
+  allowsCustomValue: true,
+};
+
+export const WithinLegacyFormWithCustomValue = TemplateLegacyForm.bind({});
+WithinLegacyFormWithCustomValue.play = WithinForm.play;
+WithinLegacyFormWithCustomValue.args = {
   ...TemplateForm.args,
   allowsCustomValue: true,
 };
