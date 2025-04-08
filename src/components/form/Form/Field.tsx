@@ -65,7 +65,7 @@ function getValueProps(
     };
   } else if (type === 'ComboBox') {
     return {
-      selectedKey: value,
+      selectedKey: value ?? null,
       onSelectionChange: onChange,
     };
   } else if (type === 'Select') {
