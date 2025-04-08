@@ -344,16 +344,12 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         const inputValue = inputRef?.current?.value;
 
         const item = [...state.collection].find(
-          (item) => item.textValue === inputValue,
+          (item) => item.textValue.toLowerCase() === inputValue?.toLowerCase(),
         );
 
         props.onSelectionChange?.(
           item ? item.key : inputRef?.current?.value ?? '',
         );
-
-        if (item && inputRef?.current) {
-          inputRef.current.value = item.key;
-        }
       }
     }
   });
