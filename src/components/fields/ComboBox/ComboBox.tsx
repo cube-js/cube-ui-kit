@@ -109,7 +109,7 @@ export interface CubeComboBoxProps<T>
     AriaComboBoxProps<T>,
     AriaTextFieldProps {
   defaultSelectedKey?: string;
-  selectedKey?: string;
+  selectedKey?: string | null;
   onSelectionChange?: (selectedKey: string | null) => void;
   onInputChange?: (inputValue: string) => void;
   inputValue?: string;
