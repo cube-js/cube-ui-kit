@@ -179,9 +179,11 @@ WithinFormWithCustomValue.args = {
   allowsCustomValue: true,
 };
 
-export const WithinLegacyFormWithCustomValue = TemplateLegacyForm.bind({});
-WithinLegacyFormWithCustomValue.play = WithinForm.play;
-WithinLegacyFormWithCustomValue.args = {
+export const WithinFormWithLegacyFieldAndCustomValue = TemplateLegacyForm.bind(
+  {},
+);
+WithinFormWithLegacyFieldAndCustomValue.play = WithinForm.play;
+WithinFormWithLegacyFieldAndCustomValue.args = {
   ...TemplateForm.args,
   allowsCustomValue: true,
 };
