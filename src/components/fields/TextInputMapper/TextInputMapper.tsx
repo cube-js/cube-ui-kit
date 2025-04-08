@@ -347,7 +347,7 @@ function TextInputMapperInput(props: CubeTextInputMapperInputProps) {
         aria-label={placeholder}
         placeholder={placeholder}
         onInputChange={onChange}
-        onSelectionChange={onSelectionChange}
+        onSelectionChange={(val) => onSelectionChange(val ?? '')}
       >
         {(options ?? []).map((option) => (
           <ComboBox.Item key={option}>{option}</ComboBox.Item>
