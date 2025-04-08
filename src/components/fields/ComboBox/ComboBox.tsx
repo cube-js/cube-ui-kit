@@ -331,23 +331,13 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   let onKeyPress = useEvent((e: KeyboardEvent) => {
     if (e.key === 'Enter') {
       if (!props.allowsCustomValue && state.isOpen) {
-        const inputValue = inputRef?.current?.value;
+        const option = [...state.collection][0]?.key;
 
-        if (inputValue === '') {
-          state.close();
-          props.onSelectionChange?.(null);
+        if (option && selectedKey !== option) {
+          props.onSelectionChange?.(option);
 
           e.stopPropagation();
           e.preventDefault();
-        } else {
-          const option = [...state.collection][0]?.key;
-
-          if (option && selectedKey !== option) {
-            props.onSelectionChange?.(option);
-
-            e.stopPropagation();
-            e.preventDefault();
-          }
         }
         // If a custom value is allowed, we need to check if the input value is in the collection.
       } else if (props.allowsCustomValue) {
