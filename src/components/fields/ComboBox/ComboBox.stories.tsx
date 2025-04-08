@@ -44,17 +44,43 @@ const TemplateForm: StoryFn<CubeComboBoxProps<any>> = (
     <Flow gap="2x">
       <Form
         form={form}
-        defaultValues={{ combobox: args.allowsCustomValue ? 'Unknown' : 'red' }}
+        defaultValues={{ combobox: args.allowsCustomValue ? 'unknown' : 'red' }}
         onSubmit={(data) => console.log('! submit', data)}
       >
-        <ComboBox name="combobox" {...args}>
-          <ComboBox.Item key="red">Red</ComboBox.Item>
-          <ComboBox.Item key="orange">Orange</ComboBox.Item>
-          <ComboBox.Item key="yellow">Yellow</ComboBox.Item>
-          <ComboBox.Item key="green">Green</ComboBox.Item>
-          <ComboBox.Item key="blue">Blue</ComboBox.Item>
-          <ComboBox.Item key="purple">Purple</ComboBox.Item>
-          <ComboBox.Item key="violet">Violet</ComboBox.Item>
+        <ComboBox
+          name="combobox"
+          {...args}
+          rules={[
+            {
+              required: true,
+            },
+            {
+              pattern: /^[A-Za-z_][A-Za-z0-9_]*$/,
+              message: 'Please enter valid variable name',
+            },
+          ]}
+        >
+          <ComboBox.Item key="red">
+            {args.allowsCustomValue ? 'red' : 'Red'}
+          </ComboBox.Item>
+          <ComboBox.Item key="orange">
+            {args.allowsCustomValue ? 'orange' : 'Orange'}
+          </ComboBox.Item>
+          <ComboBox.Item key="yellow">
+            {args.allowsCustomValue ? 'yellow' : 'Yellow'}
+          </ComboBox.Item>
+          <ComboBox.Item key="green">
+            {args.allowsCustomValue ? 'green' : 'Green'}
+          </ComboBox.Item>
+          <ComboBox.Item key="blue">
+            {args.allowsCustomValue ? 'blue' : 'Blue'}
+          </ComboBox.Item>
+          <ComboBox.Item key="purple">
+            {args.allowsCustomValue ? 'purple' : 'Purple'}
+          </ComboBox.Item>
+          <ComboBox.Item key="violet">
+            {args.allowsCustomValue ? 'violet' : 'Violet'}
+          </ComboBox.Item>
         </ComboBox>
       </Form>
       <Button>Focus</Button>
@@ -71,18 +97,41 @@ const TemplateLegacyForm: StoryFn<CubeComboBoxProps<any>> = (
     <Flow gap="2x">
       <Form
         form={form}
-        defaultValues={{ combobox: args.allowsCustomValue ? 'Unknown' : 'red' }}
+        defaultValues={{ combobox: args.allowsCustomValue ? 'unknown' : 'red' }}
         onSubmit={(data) => console.log('! Submit', data)}
       >
-        <Field name="combobox">
+        <Field
+          name="combobox"
+          rules={[
+            {
+              required: true,
+              pattern: /^[A-Za-z_][A-Za-z0-9_]*$/,
+              message: 'Please enter valid variable name',
+            },
+          ]}
+        >
           <ComboBox {...args}>
-            <ComboBox.Item key="red">Red</ComboBox.Item>
-            <ComboBox.Item key="orange">Orange</ComboBox.Item>
-            <ComboBox.Item key="yellow">Yellow</ComboBox.Item>
-            <ComboBox.Item key="green">Green</ComboBox.Item>
-            <ComboBox.Item key="blue">Blue</ComboBox.Item>
-            <ComboBox.Item key="purple">Purple</ComboBox.Item>
-            <ComboBox.Item key="violet">Violet</ComboBox.Item>
+            <ComboBox.Item key="red">
+              {args.allowsCustomValue ? 'red' : 'Red'}
+            </ComboBox.Item>
+            <ComboBox.Item key="orange">
+              {args.allowsCustomValue ? 'orange' : 'Orange'}
+            </ComboBox.Item>
+            <ComboBox.Item key="yellow">
+              {args.allowsCustomValue ? 'yellow' : 'Yellow'}
+            </ComboBox.Item>
+            <ComboBox.Item key="green">
+              {args.allowsCustomValue ? 'green' : 'Green'}
+            </ComboBox.Item>
+            <ComboBox.Item key="blue">
+              {args.allowsCustomValue ? 'blue' : 'Blue'}
+            </ComboBox.Item>
+            <ComboBox.Item key="purple">
+              {args.allowsCustomValue ? 'purple' : 'Purple'}
+            </ComboBox.Item>
+            <ComboBox.Item key="violet">
+              {args.allowsCustomValue ? 'violet' : 'Violet'}
+            </ComboBox.Item>
           </ComboBox>
         </Field>
       </Form>

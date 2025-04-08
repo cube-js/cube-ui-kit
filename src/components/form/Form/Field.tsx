@@ -65,12 +65,26 @@ function getValueProps(
     };
   } else if (type === 'ComboBox') {
     return {
-      selectedKey: value ?? null,
-      onSelectionChange: onChange,
+      selectedKey: !allowsCustomValue ? value ?? null : undefined,
+      inputValue: allowsCustomValue ? value ?? '' : undefined,
+      onInputChange(val) {
+        if (!allowsCustomValue) {
+          return;
+        }
+
+        onChange(val);
+      },
+      onSelectionChange(val: string) {
+        if (val == null && allowsCustomValue) {
+          return;
+        }
+
+        onChange(val);
+      },
     };
   } else if (type === 'Select') {
     return {
-      selectedKey: value != null ? value : null,
+      selectedKey: value ?? null,
       onSelectionChange: onChange,
     };
   }

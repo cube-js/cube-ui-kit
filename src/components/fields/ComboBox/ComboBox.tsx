@@ -6,7 +6,6 @@ import {
   RefObject,
   useEffect,
   useMemo,
-  useState,
 } from 'react';
 import {
   useButton,
@@ -111,7 +110,7 @@ export interface CubeComboBoxProps<T>
     AriaTextFieldProps {
   defaultSelectedKey?: string;
   selectedKey?: string;
-  onSelectionChange?: (selectedKey: string) => void;
+  onSelectionChange?: (selectedKey: string | null) => void;
   onInputChange?: (inputValue: string) => void;
   inputValue?: string;
   placeholder?: string;
@@ -147,21 +146,25 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   props = useFieldProps(props, {
     valuePropsMapper: ({ value, onChange }) => {
       return {
-        selectedKey: value ?? null,
-        onSelectionChange(val: string) {
-          setIsEmptyStateAllowed(false);
-
-          if (val != null) {
-            onChange(val);
-          } else {
-            onChange(inputRef?.current?.value);
+        selectedKey: !props.allowsCustomValue ? value ?? null : undefined,
+        inputValue: props.allowsCustomValue ? value ?? '' : undefined,
+        onInputChange(val) {
+          if (!props.allowsCustomValue) {
+            return;
           }
+
+          onChange(val);
+        },
+        onSelectionChange(val: string) {
+          if (val == null && props.allowsCustomValue) {
+            return;
+          }
+
+          onChange(val);
         },
       };
     },
   });
-
-  const [isEmptyStateAllowed, setIsEmptyStateAllowed] = useState(false);
 
   let {
     qa,
@@ -326,43 +329,55 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
   // If input is not full and the user presses Enter, pick the first option.
   let onKeyPress = useEvent((e: KeyboardEvent) => {
-    if (e.key === 'Enter' && !props.allowsCustomValue && state.isOpen) {
-      const option = [...state.collection][0]?.key;
+    if (e.key === 'Enter') {
+      if (!props.allowsCustomValue && state.isOpen) {
+        const inputValue = inputRef?.current?.value;
 
-      if (option && selectedKey !== option) {
-        props.onSelectionChange?.(option);
+        if (inputValue === '') {
+          state.close();
+          props.onSelectionChange?.(null);
 
-        e.stopPropagation();
-        e.preventDefault();
+          e.stopPropagation();
+          e.preventDefault();
+        } else {
+          const option = [...state.collection][0]?.key;
+
+          if (option && selectedKey !== option) {
+            props.onSelectionChange?.(option);
+
+            e.stopPropagation();
+            e.preventDefault();
+          }
+        }
+        // If a custom value is allowed, we need to check if the input value is in the collection.
+      } else if (props.allowsCustomValue) {
+        const inputValue = inputRef?.current?.value;
+
+        const item = [...state.collection].find(
+          (item) => item.textValue === inputValue,
+        );
+
+        props.onSelectionChange?.(
+          item ? item.key : inputRef?.current?.value ?? '',
+        );
+
+        if (item && inputRef?.current) {
+          inputRef.current.value = item.key;
+        }
       }
     }
   });
 
-  let onChange = useEvent(() => {
-    if (!inputRef?.current?.value && props.allowsCustomValue) {
-      setIsEmptyStateAllowed(true);
-    }
-  });
-
-  let onBlur = useEvent(() => {
-    setIsEmptyStateAllowed(false);
-  });
-
   useEffect(() => {
     inputRef.current?.addEventListener('keydown', onKeyPress, true);
-    inputRef.current?.addEventListener('input', onChange, true);
 
     return () => {
       inputRef.current?.removeEventListener('keydown', onKeyPress, true);
-      inputRef.current?.removeEventListener('input', onChange, true);
     };
   }, []);
 
   let allInputProps = useMemo(
-    () =>
-      mergeProps(inputProps, hoverProps, focusProps, {
-        onBlur,
-      }),
+    () => mergeProps(inputProps, hoverProps, focusProps),
     [inputProps, hoverProps, focusProps],
   );
 
@@ -383,11 +398,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         autoFocus={autoFocus}
         data-autofocus={autoFocus ? '' : undefined}
         {...allInputProps}
-        value={
-          isEmptyStateAllowed || allInputProps.value || !props.allowsCustomValue
-            ? allInputProps.value
-            : selectedKey
-        }
         autoComplete={autoComplete}
         styles={inputStyles}
         {...modAttrs(mods)}
