@@ -121,4 +121,6 @@ const _Text = Object.assign(Text, {
   }),
 });
 
+_Text.displayName = 'Text';
+
 export { _Text as Text };

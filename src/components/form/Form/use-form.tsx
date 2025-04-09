@@ -70,7 +70,6 @@ export class CubeFormInstance<
     newData: PartialString<T>,
     touched?: boolean,
     skipRender?: boolean,
-    inputOnly = false,
   ) => {
     let flag = false;
 
@@ -94,11 +93,8 @@ export class CubeFormInstance<
 
       flag = true;
 
-      if (!inputOnly) {
-        field.value = newData[name];
-      }
+      field.value = newData[name];
 
-      field.inputValue = newData[name];
       field.errors = [];
       field.status = undefined;
 
@@ -110,7 +106,7 @@ export class CubeFormInstance<
     });
 
     if (flag && !skipRender) {
-      if (touched && !inputOnly) {
+      if (touched) {
         this.onValuesChange && this.onValuesChange(this.getFormData());
         this.submitError = null;
       }
@@ -159,38 +155,33 @@ export class CubeFormInstance<
     value: T[Name],
     isTouched = false,
     skipRender = false,
-    inputOnly = false,
   ) {
     const field = this.fields[name];
 
-    if (!field || isEqual(value, inputOnly ? field.inputValue : field.value)) {
+    if (!field || isEqual(value, field.value)) {
       return;
     }
 
-    if (!inputOnly) {
-      field.value = value;
-      field.status = undefined; // reset validation status
+    field.value = value;
 
-      if (typeof value === 'object' && !Array.isArray(value)) {
-        Object.keys(this.fields)
-          .filter((key) => key.startsWith(`${name}.`))
-          .forEach((key) => {
-            const objKey = key.replace(`${name}.`, '');
+    if (typeof value === 'object' && !Array.isArray(value)) {
+      Object.keys(this.fields)
+        .filter((key) => key.startsWith(`${name}.`))
+        .forEach((key) => {
+          const objKey = key.replace(`${name}.`, '');
 
-            this.setFieldValue(key, value[objKey] ?? null, isTouched, false);
-          });
-      }
+          this.setFieldValue(key, value[objKey] ?? null, isTouched, false);
+        });
     }
 
-    field.inputValue = value;
     field.errors = [];
-    field.status = undefined;
+    field.status = undefined; // reset validation status
 
     if (isTouched) {
       field.touched = isTouched;
     }
 
-    if (isTouched && !inputOnly) {
+    if (isTouched) {
       this.onValuesChange && this.onValuesChange(this.getFormData());
       this.submitError = null;
     }
@@ -230,7 +221,6 @@ export class CubeFormInstance<
 
       field.value = defaultValue;
       field.touched = false;
-      field.inputValue = defaultValue;
       field.errors = [];
       field.status = undefined;
       field.validationId = (field.validationId ?? 0) + 1;
@@ -488,11 +478,6 @@ export class CubeFormInstance<
       // it should be impossible to define or override status value
       status: data?.errors?.length ? 'invalid' : undefined,
     } as unknown as Data;
-
-    if (obj) {
-      // condition is here to avoid typing issues
-      obj.inputValue = obj.value;
-    }
 
     return obj;
   }

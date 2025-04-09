@@ -1,6 +1,6 @@
 import { useDOMRef } from '@react-spectrum/utils';
-import { DismissButton, FocusScope, useFocusManager } from 'react-aria';
-import { forwardRef, ReactElement, useEffect, useMemo, useState } from 'react';
+import { DismissButton } from 'react-aria';
+import { forwardRef, ReactElement, useEffect, useMemo } from 'react';
 import { useDialog, useMessageFormatter, AriaDialogProps } from 'react-aria';
 import { DOMRef } from '@react-types/shared';
 import FocusLock from 'react-focus-lock';
@@ -67,7 +67,7 @@ const DialogElement = tasty({
       '[data-type="panel"]': 'auto',
     },
     placeSelf: 'stretch',
-    '@dialog-heading-padding-v': {
+    '@dialog-title-padding-v': {
       '': '2x',
       '[data-type="popover"]': '1x',
     },
@@ -95,6 +95,16 @@ const CLOSE_BUTTON_STYLES: Styles = {
   width: '5x',
   height: '5x',
   placeContent: 'center',
+  fill: {
+    '': '#dark.0',
+    hovered: '#dark.04',
+    pressed: '#dark.05',
+  },
+  color: {
+    '': '#dark-02',
+    hovered: '#dark-02',
+    pressed: '#purple',
+  },
 };
 
 const sizeMap = {
@@ -153,10 +163,12 @@ export const Dialog = forwardRef(function Dialog(
 
   return (
     // This component is actually traps the focus inside the dialog.
-    <FocusLock returnFocus disabled={!isEntered || context.type === 'panel'}>
-      {/* FocusScope has a bug that prevents selection and blurring in the dialog. */}
-      {/* But we need it to make the autofocus work. */}
-      <FocusScope restoreFocus>{content}</FocusScope>
+    <FocusLock
+      returnFocus
+      autoFocus={false}
+      disabled={!isEntered || context.type === 'panel'}
+    >
+      {content}
     </FocusLock>
   );
 });
@@ -178,8 +190,6 @@ const DialogContent = forwardRef(function DialogContent(
     ...otherProps
   } = props;
 
-  const [isCloseDisabled, setIsCloseDisabled] = useState(true);
-
   size = sizeMap[size.toUpperCase()] || size;
 
   const styles: Styles = extractStyles(otherProps, STYLES_LIST);
@@ -199,17 +209,21 @@ const DialogContent = forwardRef(function DialogContent(
     dismissButton = <DismissButton onDismiss={onDismiss} />;
   }
 
-  const focusManager = useFocusManager();
-
   // Focus the first focusable element in the dialog when it opens
   useEffect(() => {
     if (contextProps.isOpen) {
       setTimeout(() => {
-        focusManager?.focusFirst();
-        setIsCloseDisabled(false);
+        if (
+          domRef.current &&
+          !domRef.current.contains(document.activeElement)
+        ) {
+          (
+            domRef.current.querySelector(
+              'input[data-autofocus], [data-qa="ButtonGroup"] button[data-type="primary"]',
+            ) as HTMLButtonElement
+          )?.focus();
+        }
       });
-    } else {
-      setIsCloseDisabled(true);
     }
   }, [contextProps.isOpen]);
 
@@ -217,7 +231,7 @@ const DialogContent = forwardRef(function DialogContent(
   // let hasFooter = useHasChild('[data-id="Footer"]', domRef);
 
   let slots = {
-    heading: {
+    title: {
       level: 2,
       preset: 'h4',
       ...titleProps,
@@ -241,9 +255,9 @@ const DialogContent = forwardRef(function DialogContent(
         gap: '1x',
         placeItems: 'baseline stretch',
         placeContent: 'space-between',
-        padding: `@dialog-heading-padding-v ${
+        padding: `@dialog-title-padding-v ${
           isDismissable ? '(@dialog-padding-h + 4x)' : '@dialog-padding-h'
-        } @dialog-heading-padding-v @dialog-padding-h`,
+        } @dialog-title-padding-v @dialog-padding-h`,
         border: 'bottom',
       },
     },
@@ -278,7 +292,6 @@ const DialogContent = forwardRef(function DialogContent(
       <SlotProvider slots={slots}>
         {isDismissable && (
           <Button
-            isDisabled={isCloseDisabled}
             qa="ModalCloseButton"
             type="neutral"
             styles={CLOSE_BUTTON_STYLES}

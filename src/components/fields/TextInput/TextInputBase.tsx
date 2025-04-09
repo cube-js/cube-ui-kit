@@ -1,4 +1,3 @@
-import { LoadingOutlined } from '@ant-design/icons';
 import { createFocusableRef } from '@react-spectrum/utils';
 import {
   cloneElement,
@@ -12,6 +11,7 @@ import {
 } from 'react';
 import { AriaNumberFieldProps, AriaTextFieldProps, useHover } from 'react-aria';
 
+import { LoadingIcon } from '../../../icons';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { useProviderProps } from '../../../provider';
 import {
@@ -247,6 +247,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     minLength,
     ...otherProps
   } = props;
+
   let styles = extractStyles(otherProps, STYLE_LIST);
   let type = otherProps.type;
 
@@ -353,6 +354,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
         rows={multiLine ? rows : undefined}
         mods={modifiers}
         style={textSecurityStyles}
+        data-autofocus={autoFocus ? '' : undefined}
         autoFocus={autoFocus}
         data-size={size}
         autocomplete={autocomplete}
@@ -368,7 +370,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
           {(validationState && !isLoading) || isLoading ? (
             <div data-element="State">
               {validationState && !isLoading ? validation : null}
-              {isLoading && <LoadingOutlined data-element="InputIcon" />}
+              {isLoading && <LoadingIcon data-element="InputIcon" />}
             </div>
           ) : null}
           {suffixPosition === 'after' ? suffix : null}

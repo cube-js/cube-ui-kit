@@ -49,7 +49,7 @@ export type FieldReturnValue<T extends FieldTypes> = {
     dontTouch: boolean,
     validateTrigger: ValidateTrigger,
   ) => void;
-  message?: React.ReactNode;
+  message?: ReactNode;
   isRequired?: boolean;
   onBlur: () => void;
   nonInput: boolean;

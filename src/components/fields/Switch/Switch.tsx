@@ -214,6 +214,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
 let _Switch = forwardRef(Switch);
 
 (_Switch as any).cubeInputType = 'Checkbox';
+_Switch.displayName = 'Switch';
 
 export { _Switch as Switch };
 export type { AriaSwitchProps };

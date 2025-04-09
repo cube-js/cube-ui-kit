@@ -1,4 +1,4 @@
-import { forwardRef, ReactElement, useRef } from 'react';
+import { forwardRef, useRef } from 'react';
 import { FocusableRef } from '@react-types/shared';
 import {
   AriaTimeFieldProps,
@@ -125,7 +125,8 @@ function TimeInput<T extends TimeValue>(
  * TimeFields allow users to enter and edit time values using a keyboard.
  * Each part of the time is displayed in an individually editable segment.
  */
-const _TimeInput = forwardRef(TimeInput) as <T extends TimeValue>(
-  props: CubeTimeInputProps<T> & { ref?: FocusableRef<HTMLElement> },
-) => ReactElement;
+const _TimeInput = forwardRef(TimeInput);
+
+_TimeInput.displayName = 'TimeInput';
+
 export { _TimeInput as TimeInput };

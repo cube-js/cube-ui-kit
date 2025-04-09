@@ -33,10 +33,12 @@ export function useFieldProps<
   const isDisabledRef = useRef(params.unsafe__isDisabled ?? false);
 
   const {
-    valuePropsMapper = ({ value, onChange }) => ({
-      value: value ?? null,
-      onChange,
-    }),
+    valuePropsMapper = ({ value, onChange }) => {
+      return {
+        value: value ?? null,
+        onChange,
+      };
+    },
     defaultValidationTrigger = 'onBlur',
   } = params;
 
@@ -81,16 +83,19 @@ export function useFieldProps<
   );
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const onChangeEvent = useEvent((value, dontTouch: boolean) =>
+  const onChangeEvent = useEvent((value, dontTouch: boolean) => {
     field?.onChange?.(
       value,
       dontTouch,
       field?.validateTrigger ?? defaultValidationTrigger,
-    ),
-  );
+    );
+  });
 
   const valueProps = !isOutsideOfForm
-    ? valuePropsMapper({ value: field.value, onChange: onChangeEvent })
+    ? valuePropsMapper({
+        value: field.value,
+        onChange: onChangeEvent,
+      })
     : {};
 
   if (isInsideLegacyField && !isOutsideOfForm) {

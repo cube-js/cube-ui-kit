@@ -149,4 +149,7 @@ let TrayWrapper = forwardRef(function TrayWrapper(
 });
 
 let _Tray = forwardRef(Tray);
+
+_Tray.displayName = 'Tray';
+
 export { _Tray as Tray };

@@ -161,4 +161,7 @@ let ModalWrapper = forwardRef(function ModalWrapper(
 });
 
 let _Modal = forwardRef(Modal);
+
+_Modal.displayName = 'Modal';
+
 export { _Modal as Modal };

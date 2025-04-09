@@ -4,8 +4,8 @@ import {
   forwardRef,
   ReactElement,
   RefObject,
+  useEffect,
   useMemo,
-  useState,
 } from 'react';
 import {
   useButton,
@@ -18,6 +18,7 @@ import {
 } from 'react-aria';
 import { Item, useComboBoxState } from 'react-stately';
 
+import { useEvent } from '../../../_internal/index';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { DEFAULT_INPUT_STYLES, INPUT_WRAPPER_STYLES } from '../index';
 import { useProviderProps } from '../../../provider';
@@ -107,9 +108,9 @@ export interface CubeComboBoxProps<T>
     >,
     AriaComboBoxProps<T>,
     AriaTextFieldProps {
-  defaultSelectedKey?: string;
-  selectedKey?: string;
-  onSelectionChange?: (selectedKey: string) => void;
+  defaultSelectedKey?: string | null;
+  selectedKey?: string | null;
+  onSelectionChange?: (selectedKey: string | null) => void;
   onInputChange?: (inputValue: string) => void;
   inputValue?: string;
   placeholder?: string;
@@ -140,19 +141,29 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   props: CubeComboBoxProps<T>,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  const [, rerender] = useState({});
-
   props = useProviderProps(props);
   props = useFormProps(props);
   props = useFieldProps(props, {
-    valuePropsMapper: ({ value, onChange }) => ({
-      inputValue: value != null ? value : '',
-      onInputChange: (val) => {
-        onChange(val, !props.allowsCustomValue);
-        rerender({});
-      },
-      onSelectionChange: onChange,
-    }),
+    valuePropsMapper: ({ value, onChange }) => {
+      return {
+        selectedKey: !props.allowsCustomValue ? value ?? null : undefined,
+        inputValue: props.allowsCustomValue ? value ?? '' : undefined,
+        onInputChange(val) {
+          if (!props.allowsCustomValue) {
+            return;
+          }
+
+          onChange(val);
+        },
+        onSelectionChange(val: string) {
+          if (val == null && props.allowsCustomValue) {
+            return;
+          }
+
+          onChange(val);
+        },
+      };
+    },
   });
 
   let {
@@ -195,6 +206,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     filter,
     styles,
     labelSuffix,
+    selectedKey,
+    defaultSelectedKey,
     ...otherProps
   } = props;
 
@@ -268,7 +281,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     if (state.isOpen) {
       updatePosition();
     }
-  }, [updatePosition, state.isOpen, state.collection.size]);
+  }, [state.isOpen, state.collection.size]);
 
   let isInvalid = validationState === 'invalid';
 
@@ -314,6 +327,46 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     ],
   );
 
+  // If input is not full and the user presses Enter, pick the first option.
+  let onKeyPress = useEvent((e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      if (!props.allowsCustomValue && state.isOpen) {
+        const option = [...state.collection][0]?.key;
+
+        if (option && selectedKey !== option) {
+          props.onSelectionChange?.(option);
+
+          e.stopPropagation();
+          e.preventDefault();
+        }
+        // If a custom value is allowed, we need to check if the input value is in the collection.
+      } else if (props.allowsCustomValue) {
+        const inputValue = inputRef?.current?.value;
+
+        const item = [...state.collection].find(
+          (item) => item.textValue.toLowerCase() === inputValue?.toLowerCase(),
+        );
+
+        props.onSelectionChange?.(
+          item ? item.key : inputRef?.current?.value ?? '',
+        );
+      }
+    }
+  });
+
+  useEffect(() => {
+    inputRef.current?.addEventListener('keydown', onKeyPress, true);
+
+    return () => {
+      inputRef.current?.removeEventListener('keydown', onKeyPress, true);
+    };
+  }, []);
+
+  let allInputProps = useMemo(
+    () => mergeProps(inputProps, hoverProps, focusProps),
+    [inputProps, hoverProps, focusProps],
+  );
+
   let comboBoxField = (
     <ComboBoxWrapperElement
       ref={wrapperRef}
@@ -326,9 +379,11 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       data-size={size}
     >
       <InputElement
-        qa="Input"
-        {...mergeProps(inputProps, hoverProps, focusProps)}
         ref={inputRef}
+        qa="Input"
+        autoFocus={autoFocus}
+        data-autofocus={autoFocus ? '' : undefined}
+        {...allInputProps}
         autoComplete={autoComplete}
         styles={inputStyles}
         {...modAttrs(mods)}

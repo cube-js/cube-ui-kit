@@ -1,4 +1,5 @@
 // @ts-check
+import remarkGfm from 'remark-gfm';
 
 /** @type {import('@storybook/core-common').StorybookConfig} */
 const config = {
@@ -18,7 +19,7 @@ const config = {
     modernInlineRender: true,
   },
 
-  stories: ['../src/**/*.stories.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
+  stories: ['../src/**/*.docs.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
 
   addons: [
     '@storybook/addon-links',
@@ -29,6 +30,16 @@ const config = {
       options: {
         esbuildMinifyOptions: {
           target: 'es2021',
+        },
+      },
+    },
+    {
+      name: '@storybook/addon-docs',
+      options: {
+        mdxPluginOptions: {
+          mdxCompileOptions: {
+            remarkPlugins: [remarkGfm],
+          },
         },
       },
     },

@@ -77,4 +77,7 @@ function Calendar(props: CubeCalendarProps, ref: FocusableRef<HTMLElement>) {
 }
 
 const _Calendar = forwardRef(Calendar);
+
+_Calendar.displayName = 'Calendar';
+
 export { _Calendar as Calendar };

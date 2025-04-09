@@ -4,6 +4,10 @@ import { userEvent, within } from '@storybook/test';
 
 import { SELECTED_KEY_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { wait } from '../../../test/utils/wait';
+import { Button } from '../../actions/index';
+import { Field, Form } from '../../form/index';
+import { Flow } from '../../layout/Flow';
 
 import { ComboBox, CubeComboBoxProps } from './ComboBox';
 
@@ -31,6 +35,111 @@ const Template: StoryFn<CubeComboBoxProps<any>> = (
     </ComboBox>
   </>
 );
+
+const TemplateForm: StoryFn<CubeComboBoxProps<any>> = (
+  args: CubeComboBoxProps<any>,
+) => {
+  const [form] = Form.useForm();
+
+  return (
+    <Flow gap="2x">
+      <Form
+        form={form}
+        defaultValues={{ combobox: args.allowsCustomValue ? 'unknown' : 'red' }}
+        onSubmit={(data) => console.log('! submit', data)}
+      >
+        <ComboBox
+          name="combobox"
+          {...args}
+          rules={[
+            {
+              required: true,
+            },
+            {
+              pattern: /^[A-Za-z_][A-Za-z0-9_]*$/,
+              message: 'Please enter valid variable name',
+            },
+          ]}
+        >
+          <ComboBox.Item key="red">
+            {args.allowsCustomValue ? 'red' : 'Red'}
+          </ComboBox.Item>
+          <ComboBox.Item key="orange">
+            {args.allowsCustomValue ? 'orange' : 'Orange'}
+          </ComboBox.Item>
+          <ComboBox.Item key="yellow">
+            {args.allowsCustomValue ? 'yellow' : 'Yellow'}
+          </ComboBox.Item>
+          <ComboBox.Item key="green">
+            {args.allowsCustomValue ? 'green' : 'Green'}
+          </ComboBox.Item>
+          <ComboBox.Item key="blue">
+            {args.allowsCustomValue ? 'blue' : 'Blue'}
+          </ComboBox.Item>
+          <ComboBox.Item key="purple">
+            {args.allowsCustomValue ? 'purple' : 'Purple'}
+          </ComboBox.Item>
+          <ComboBox.Item key="violet">
+            {args.allowsCustomValue ? 'violet' : 'Violet'}
+          </ComboBox.Item>
+        </ComboBox>
+      </Form>
+      <Button>Focus</Button>
+    </Flow>
+  );
+};
+
+const TemplateLegacyForm: StoryFn<CubeComboBoxProps<any>> = (
+  args: CubeComboBoxProps<any>,
+) => {
+  const [form] = Form.useForm();
+
+  return (
+    <Flow gap="2x">
+      <Form
+        form={form}
+        defaultValues={{ combobox: args.allowsCustomValue ? 'unknown' : 'red' }}
+        onSubmit={(data) => console.log('! Submit', data)}
+      >
+        <Field
+          name="combobox"
+          rules={[
+            {
+              required: true,
+              pattern: /^[A-Za-z_][A-Za-z0-9_]*$/,
+              message: 'Please enter valid variable name',
+            },
+          ]}
+        >
+          <ComboBox {...args}>
+            <ComboBox.Item key="red">
+              {args.allowsCustomValue ? 'red' : 'Red'}
+            </ComboBox.Item>
+            <ComboBox.Item key="orange">
+              {args.allowsCustomValue ? 'orange' : 'Orange'}
+            </ComboBox.Item>
+            <ComboBox.Item key="yellow">
+              {args.allowsCustomValue ? 'yellow' : 'Yellow'}
+            </ComboBox.Item>
+            <ComboBox.Item key="green">
+              {args.allowsCustomValue ? 'green' : 'Green'}
+            </ComboBox.Item>
+            <ComboBox.Item key="blue">
+              {args.allowsCustomValue ? 'blue' : 'Blue'}
+            </ComboBox.Item>
+            <ComboBox.Item key="purple">
+              {args.allowsCustomValue ? 'purple' : 'Purple'}
+            </ComboBox.Item>
+            <ComboBox.Item key="violet">
+              {args.allowsCustomValue ? 'violet' : 'Violet'}
+            </ComboBox.Item>
+          </ComboBox>
+        </Field>
+      </Form>
+      <Button>Focus</Button>
+    </Flow>
+  );
+};
 
 export const Default = Template.bind({});
 Default.args = {};
@@ -100,4 +209,58 @@ With1LongOptionFiltered.play = async ({ canvasElement }) => {
   const combobox = getByRole('combobox');
 
   await userEvent.type(combobox, 'Red');
+};
+
+export const WithinForm = TemplateForm.bind({});
+WithinForm.play = async ({ canvasElement }) => {
+  const { getByRole, getByTestId } = within(canvasElement);
+
+  const combobox = getByRole('combobox');
+  const trigger = getByTestId('ComboBoxTrigger');
+  const button = getByTestId('Button');
+  const input = getByTestId('Input');
+
+  await userEvent.click(combobox);
+  await userEvent.click(trigger);
+  await wait(250);
+  await userEvent.click(button);
+  await userEvent.type(
+    input,
+    '{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}blue',
+  );
+};
+
+export const WithinFormSelected = TemplateForm.bind({});
+WithinFormSelected.play = async ({ canvasElement }) => {
+  const { getByRole, getByTestId } = within(canvasElement);
+
+  const combobox = getByRole('combobox');
+  const trigger = getByTestId('ComboBoxTrigger');
+  const button = getByTestId('Button');
+  const input = getByTestId('Input');
+
+  await userEvent.click(combobox);
+  await userEvent.click(trigger);
+  await wait(250);
+  await userEvent.click(button);
+  await userEvent.type(
+    input,
+    '{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}blue{enter}',
+  );
+};
+
+export const WithinFormWithCustomValue = TemplateForm.bind({});
+WithinFormWithCustomValue.play = WithinForm.play;
+WithinFormWithCustomValue.args = {
+  ...TemplateForm.args,
+  allowsCustomValue: true,
+};
+
+export const WithinFormWithLegacyFieldAndCustomValue = TemplateLegacyForm.bind(
+  {},
+);
+WithinFormWithLegacyFieldAndCustomValue.play = WithinForm.play;
+WithinFormWithLegacyFieldAndCustomValue.args = {
+  ...TemplateForm.args,
+  allowsCustomValue: true,
 };
