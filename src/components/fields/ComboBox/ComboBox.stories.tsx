@@ -4,6 +4,7 @@ import { userEvent, within } from '@storybook/test';
 
 import { SELECTED_KEY_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { wait } from '../../../test/utils/wait';
 import { Button } from '../../actions/index';
 import { Field, Form } from '../../form/index';
 import { Flow } from '../../layout/Flow';
@@ -212,13 +213,40 @@ With1LongOptionFiltered.play = async ({ canvasElement }) => {
 
 export const WithinForm = TemplateForm.bind({});
 WithinForm.play = async ({ canvasElement }) => {
-  const { getByRole } = within(canvasElement);
+  const { getByRole, getByTestId } = within(canvasElement);
 
   const combobox = getByRole('combobox');
-  // const button = getByRole('button', { name: 'Focus' });
+  const trigger = getByTestId('ComboBoxTrigger');
+  const button = getByTestId('Button');
+  const input = getByTestId('Input');
 
   await userEvent.click(combobox);
-  // await userEvent.click(button);
+  await userEvent.click(trigger);
+  await wait(250);
+  await userEvent.click(button);
+  await userEvent.type(
+    input,
+    '{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}blue',
+  );
+};
+
+export const WithinFormSelected = TemplateForm.bind({});
+WithinFormSelected.play = async ({ canvasElement }) => {
+  const { getByRole, getByTestId } = within(canvasElement);
+
+  const combobox = getByRole('combobox');
+  const trigger = getByTestId('ComboBoxTrigger');
+  const button = getByTestId('Button');
+  const input = getByTestId('Input');
+
+  await userEvent.click(combobox);
+  await userEvent.click(trigger);
+  await wait(250);
+  await userEvent.click(button);
+  await userEvent.type(
+    input,
+    '{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}blue{enter}',
+  );
 };
 
 export const WithinFormWithCustomValue = TemplateForm.bind({});
