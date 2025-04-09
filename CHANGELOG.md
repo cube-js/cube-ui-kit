@@ -1,5 +1,23 @@
 # @cube-dev/ui-kit
 
+## 0.58.0
+
+### Minor Changes
+
+- [#624](https://github.com/cube-js/cube-ui-kit/pull/624) [`954b26c`](https://github.com/cube-js/cube-ui-kit/commit/954b26c39d1a05840016200ea712b47c85c81f8b) Thanks [@tenphi](https://github.com/tenphi)! - Remove CJS support.
+
+- [#624](https://github.com/cube-js/cube-ui-kit/pull/624) [`954b26c`](https://github.com/cube-js/cube-ui-kit/commit/954b26c39d1a05840016200ea712b47c85c81f8b) Thanks [@tenphi](https://github.com/tenphi)! - When a dialog is opened focus on the first input with autofocus or primary button.
+
+- [#624](https://github.com/cube-js/cube-ui-kit/pull/624) [`954b26c`](https://github.com/cube-js/cube-ui-kit/commit/954b26c39d1a05840016200ea712b47c85c81f8b) Thanks [@tenphi](https://github.com/tenphi)! - Fixes various issues with ComboBox input typing and selection.
+
+- [#624](https://github.com/cube-js/cube-ui-kit/pull/624) [`954b26c`](https://github.com/cube-js/cube-ui-kit/commit/954b26c39d1a05840016200ea712b47c85c81f8b) Thanks [@tenphi](https://github.com/tenphi)! - Remove inputValue abstraction from form fields.
+
+### Patch Changes
+
+- [#624](https://github.com/cube-js/cube-ui-kit/pull/624) [`954b26c`](https://github.com/cube-js/cube-ui-kit/commit/954b26c39d1a05840016200ea712b47c85c81f8b) Thanks [@tenphi](https://github.com/tenphi)! - Fix RadioGroup style typings.
+
+- [#624](https://github.com/cube-js/cube-ui-kit/pull/624) [`954b26c`](https://github.com/cube-js/cube-ui-kit/commit/954b26c39d1a05840016200ea712b47c85c81f8b) Thanks [@tenphi](https://github.com/tenphi)! - Fixes the bug when ComboBox is cleared when bluring the input without making any change.
+
 ## 0.57.0
 
 ### Minor Changes
