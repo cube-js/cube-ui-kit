@@ -253,7 +253,6 @@ const DialogContent = forwardRef(function DialogContent(
         display: 'flex',
         flow: 'row',
         gap: '1x',
-        height: '(7x + 1bw)',
         placeItems: 'baseline stretch',
         placeContent: 'space-between',
         padding: `@dialog-title-padding-v ${
