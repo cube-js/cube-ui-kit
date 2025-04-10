@@ -589,7 +589,7 @@ export function hexToRgb(hex) {
   }
 
   if (rgba.length >= 3) {
-    return `rgb(${rgba.slice(0, 3).join(', ')}${rgba.length > 3 ? ` / ${rgba[3]}` : ''})`;
+    return `rgb(${rgba.slice(0, 3).join(' ')}${rgba.length > 3 ? ` / ${rgba[3]}` : ''})`;
   }
 
   return null;

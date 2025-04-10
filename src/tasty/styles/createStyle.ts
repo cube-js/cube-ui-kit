@@ -48,7 +48,7 @@ export function createStyle(
             [finalCssStyle]: `var(--${name}-color, ${rgba})`,
             [`${finalCssStyle}-rgb`]: `var(--${name}-color-rgb, ${getRgbValuesFromRgbaString(
               rgba,
-            ).join(', ')})`,
+            ).join(' ')})`,
           };
         } else if (name) {
           if (color) {
@@ -66,7 +66,7 @@ export function createStyle(
           return {
             [finalCssStyle]: rgba,
             [`${finalCssStyle}-rgb`]:
-              getRgbValuesFromRgbaString(rgba).join(', '),
+              getRgbValuesFromRgbaString(rgba).join(' '),
           };
         }
 
