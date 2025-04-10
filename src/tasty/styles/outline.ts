@@ -1,21 +1,39 @@
-import { parseStyle } from '../utils/styles';
+import { filterMods, parseStyle } from '../utils/styles';
 
+const BORDER_STYLES = [
+  'none',
+  'hidden',
+  'dotted',
+  'dashed',
+  'solid',
+  'double',
+  'groove',
+  'ridge',
+  'inset',
+  'outset',
+];
+
+/**
+ *
+ * @param outline
+ * @return {{outline: string}|*}
+ */
 export function outlineStyle({ outline }) {
-  if (!outline && outline !== 0) return '';
+  if (!outline && outline !== 0) return;
 
   if (outline === true) outline = '1ow';
 
-  const { values, color, mods } = parseStyle(String(outline));
+  const { values, mods, color } = parseStyle(String(outline));
 
-  const inset = mods.includes('inset');
-  const size = values[0] || 'var(--outline-width)';
+  const typeMods = filterMods(mods, BORDER_STYLES);
+
+  const value = values[0] || 'var(--outline-width)';
+  const type = typeMods[0] || 'solid';
   const outlineColor = color || 'var(--outline-color)';
 
-  return {
-    '--local-outline-box-shadow': `${
-      inset ? 'inset ' : ''
-    }0 0 0 ${size} ${outlineColor}`,
-  };
+  const styleValue = [value, type, outlineColor].join(' ');
+
+  return { outline: styleValue };
 }
 
 outlineStyle.__lookupStyles = ['outline'];
