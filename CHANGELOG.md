@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.59.0
+
+### Minor Changes
+
+- [#627](https://github.com/cube-js/cube-ui-kit/pull/627) [`68e0bed`](https://github.com/cube-js/cube-ui-kit/commit/68e0bedd267fb24663ebf88e4f4f5d8432620761) Thanks [@tenphi](https://github.com/tenphi)! - Migration to modern rgb definition.
+
+### Patch Changes
+
+- [#627](https://github.com/cube-js/cube-ui-kit/pull/627) [`68e0bed`](https://github.com/cube-js/cube-ui-kit/commit/68e0bedd267fb24663ebf88e4f4f5d8432620761) Thanks [@tenphi](https://github.com/tenphi)! - Use native css outline for outline style.
+
 ## 0.58.0
 
 ### Minor Changes
