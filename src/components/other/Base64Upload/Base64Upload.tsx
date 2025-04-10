@@ -138,14 +138,14 @@ export const Base64Upload = styled(
   }
 
   && {
-    border: var(--border-width) solid rgba(var(--dark-02-color-rgb), 0.1);
+    border: var(--border-width) solid rgb(var(--dark-02-color-rgb) / 0.1);
   }
 
   &&:not([data-is-hovered]) {
-    background: rgba(var(--purple-color), 0);
+    background: rgb(var(--purple-color) / 0);
   }
 
   &&[data-is-hovered] {
-    background: rgba(var(--purple-color), 0.1);
+    background: rgb(var(--purple-color) / 0.1);
   }
 `;

@@ -237,7 +237,7 @@ const TOKENS = {
   'scrollbar-width': '1.5x',
   'scrollbar-outline-width': '1ow',
   'scrollbar-radius': '1.5r',
-  'scrollbar-thumb-color': 'rgba(var(--text-color-rgb), .5)',
+  'scrollbar-thumb-color': 'rgb(var(--text-color-rgb) / .5)',
   'scrollbar-outline-color': 'var(--clear-color)',
   'scrollbar-bg-color': 'var(--grey-light-color)',
   'scrollbar-corner-color': 'var(--clear-color)',

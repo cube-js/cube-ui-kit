@@ -30,7 +30,7 @@ const StyledPlaceholder = styled(PlaceholderElement)`
   background-size: var(--placeholder-animation-size);
 
   && {
-    background-color: rgba(var(--dark-color-rgb), 0.15);
+    background-color: rgb(var(--dark-color-rgb) / 0.15);
   }
 
   &[data-is-animated] {
@@ -38,13 +38,13 @@ const StyledPlaceholder = styled(PlaceholderElement)`
       infinite;
     background-image: linear-gradient(
       135deg,
-      rgba(var(--dark-color-rgb), 0.15) 0%,
-      rgba(var(--dark-color-rgb), 0.15) 5%,
-      rgba(var(--dark-color-rgb), 0) 35%,
-      rgba(var(--dark-03-color-rgb), 0.2) 50%,
-      rgba(var(--dark-03-color-rgb), 0) 65%,
-      rgba(var(--dark-color-rgb), 0.15) 95%,
-      rgba(var(--dark-color-rgb), 0.15) 100%
+      rgb(var(--dark-color-rgb) / 0.15) 0%,
+      rgb(var(--dark-color-rgb) / 0.15) 5%,
+      rgb(var(--dark-color-rgb) / 0) 35%,
+      rgb(var(--dark-03-color-rgb) / 0.2) 50%,
+      rgb(var(--dark-03-color-rgb) / 0) 65%,
+      rgb(var(--dark-color-rgb) / 0.15) 95%,
+      rgb(var(--dark-color-rgb) / 0.15) 100%
     );
   }
 

@@ -347,8 +347,8 @@ The `gap` property can be used in flex, grid and even block layouts. If it's use
 ## Border
 
 ```tsx
-<Block border={true} padding>Default border</Block> // border: var(--border-width) solid var(--border-color); // 1px solid rgba(20, 20, 70, 0.1)
-<Block border="2bw #dark.20" padding>Border size of two default border sizes</Block> // border-width: calc(var(--border-width) * 2) solid rgba(20, 20, 70, 0.2)
+<Block border={true} padding>Default border</Block> // border: var(--border-width) solid var(--border-color); // 1px solid rgb(20 20 70 / 0.1)
+<Block border="2bw #dark.20" padding>Border size of two default border sizes</Block> // border-width: calc(var(--border-width) * 2) solid rgb(20 20 70 / 0.2)
 <Block border="bottom" padding>Default border only at the bottom</Block> // border-bottom: var(--border-width) solid var(--border-color);
 <Block border="2bw bottom left right #dark.50" padding>Complex border</Block>
 ```
@@ -406,7 +406,7 @@ The `gap` property can be used in flex, grid and even block layouts. If it's use
 
 ```tsx
 <Block shadow padding>Default shadow</Block> // box-shadow: 0 5px 15px var(--shadow-color);
-<Block shadow="5px 5px 10px #dark.20" padding>Custom shadow</Block> // box-shadow: 0 5px 15px rgba(var(--dark-color-rgb), .2);
+<Block shadow="5px 5px 10px #dark.20" padding>Custom shadow</Block> // box-shadow: 0 5px 15px rgb(var(--dark-color-rgb) / .2);
 ```
 
 <Root>

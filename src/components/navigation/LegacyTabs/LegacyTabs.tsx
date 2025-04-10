@@ -139,8 +139,8 @@ const StyledTabsContainerElement = styled(TabsContainerElement)`
     transition: all 0.15s linear;
     background-image: linear-gradient(
       to left,
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 1)
+      rgb(255 255 255 / 0),
+      rgb(255 255 255 / 1)
     );
     z-index: 1;
   }
@@ -158,8 +158,8 @@ const StyledTabsContainerElement = styled(TabsContainerElement)`
     transition: all 0.15s linear;
     background-image: linear-gradient(
       to right,
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 1)
+      rgb(255 255 255 / 0),
+      rgb(255 255 255 / 1)
     );
     z-index: 1;
   }
