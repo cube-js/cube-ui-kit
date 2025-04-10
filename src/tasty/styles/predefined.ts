@@ -26,7 +26,6 @@ import { fontStyle } from './font';
 import { outlineStyle } from './outline';
 import { transitionStyle } from './transition';
 import { groupRadiusAttr } from './groupRadius';
-import { boxShadowCombinator } from './boxShadow.combinator';
 import { styledScrollbarStyle } from './styledScrollbar';
 import { displayStyle } from './display';
 import { alignStyle } from './align';
@@ -149,6 +148,8 @@ export function predefine() {
       .map((s, i) => (i ? columnsConverter : rowsConverter)(s))
       .join('/');
   });
+  // Other styles
+  defineStyleAlias('outlineOffset', 'outlineOffset', numberConverter);
 
   [
     displayStyle,
@@ -172,7 +173,6 @@ export function predefine() {
     alignStyle,
     justifyStyle,
     presetStyle,
-    boxShadowCombinator,
     outlineStyle,
     fontStyle,
     fontStyleStyle,

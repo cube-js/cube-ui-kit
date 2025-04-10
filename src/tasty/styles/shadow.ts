@@ -14,7 +14,7 @@ export function shadowStyle({ shadow }) {
   if (shadow === true) shadow = '0 5px 15px #shadow';
 
   return {
-    '--local-shadow-box-shadow': shadow.split(',').map(toBoxShadow).join(','),
+    'box-shadow': shadow.split(',').map(toBoxShadow).join(','),
   };
 }
 

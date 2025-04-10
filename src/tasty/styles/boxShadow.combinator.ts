@@ -1,3 +1,4 @@
+// Deprecated: left as an example
 export function boxShadowCombinator(styles) {
   const values = boxShadowCombinator.__lookupStyles.reduce(
     (list: string[], style) => {

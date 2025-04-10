@@ -108,9 +108,9 @@ const TabElement = tasty(Action, {
     fontWeight: 500,
     opacity: 1,
     preset: 'default',
-    outline: {
-      '': 'inset #purple-03.0',
-      'focused & focus-visible': 'inset #purple-03',
+    shadow: {
+      '': 'inset 0 0 0 1ow #purple-03.0',
+      'focused & focus-visible': 'inset 0 0 0 1ow #purple-03',
     },
     transform: {
       '': 'translate(0, 0)',
