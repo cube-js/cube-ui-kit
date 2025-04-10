@@ -540,11 +540,11 @@ export function rgbColorProp(
 ) {
   const fallbackValuePart = fallbackValue ? `, ${fallbackValue}` : '';
 
-  return `rgba(var(--${colorName}-color-rgb${
+  return `rgb(var(--${colorName}-color-rgb${
     fallbackColorName
       ? `, var(--${fallbackColorName}-color-rgb, ${fallbackValuePart})`
       : fallbackValuePart
-  }), ${opacity})`;
+  }) / ${opacity})`;
 }
 
 export function colorProp(colorName, fallbackColorName, fallbackValue) {
@@ -585,13 +585,11 @@ export function hexToRgb(hex) {
     .map((x, i) => parseInt(x, 16) * (i === 3 ? 1 / 255 : 1));
 
   if (Number.isNaN(rgba[0])) {
-    return 'rgba(0, 0, 0, 1)';
+    return 'rgb(0 0 0 / 1)';
   }
 
-  if (rgba.length === 3) {
-    return `rgb(${rgba.join(', ')})`;
-  } else if (rgba.length === 4) {
-    return `rgba(${rgba.join(', ')})`;
+  if (rgba.length >= 3) {
+    return `rgb(${rgba.slice(0, 3).join(', ')}${rgba.length > 3 ? ` / ${rgba[3]}` : ''})`;
   }
 
   return null;

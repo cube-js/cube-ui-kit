@@ -52,7 +52,7 @@ display: none;
     },
     {
       $: ':not([disabled])::placeholder',
-      css: '--local-placeholder-color: var(--placeholder-color, rgba(var(--dark-color-rgb), .3));\n',
+      css: '--local-placeholder-color: var(--placeholder-color, rgb(var(--dark-color-rgb) / .3));\n',
     },
   ],
   button: [
