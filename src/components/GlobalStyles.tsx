@@ -268,13 +268,13 @@ const GlobalStylesElement = createGlobalStyle<GlobalStylesElementProps>`
   pre[class*="language-"]::-moz-selection, pre[class*="language-"] ::-moz-selection,
   code[class*="language-"]::-moz-selection, code[class*="language-"] ::-moz-selection {
     text-shadow: none;
-    background: rgba(var(--purple-color-rgb), .2);
+    background: rgb(var(--purple-color-rgb) / .2);
   }
 
   pre[class*="language-"]::selection, pre[class*="language-"] ::selection,
   code[class*="language-"]::selection, code[class*="language-"] ::selection {
     text-shadow: none;
-    background: rgba(var(--purple-color-rgb), .2);
+    background: rgb(var(--purple-color-rgb) / .2);
   }
 
   @media print {

@@ -27,7 +27,7 @@ export function fadeStyle({ fade }) {
       .map((direction: (typeof DIRECTIONS)[number], index: number) => {
         const size = values[index] || values[index % 2] || values[0];
 
-        return `linear-gradient(${DIRECTION_MAP[direction]}, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) ${size})`;
+        return `linear-gradient(${DIRECTION_MAP[direction]}, rgb(0 0 0 / 0) 0%, rgb(0 0 0 / 1) ${size})`;
       })
       .join(', '),
     'mask-composite': 'intersect',

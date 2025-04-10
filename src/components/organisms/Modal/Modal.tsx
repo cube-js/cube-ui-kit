@@ -19,7 +19,7 @@ const Overlay = styled.div`
   right: 0;
   bottom: 0;
   left: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgb(0 0 0 / 0.4);
   place-content: center;
   place-items: center;
   z-index: 1000;

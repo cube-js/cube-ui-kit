@@ -22,7 +22,7 @@ exports[`tasty() API should allow multiple wrapping 1`] = `
 }
 
 .c0.c0 {
-  color: var(--white-color, rgba(0, 0, 0, 1));
+  color: var(--white-color, rgb(0 0 0 / 1));
   --current-color: var(--white-color, white);
   --current-color-rgb: var(--white-color-rgb);
 }
@@ -84,7 +84,7 @@ exports[`tasty() API should be able to override styles 1`] = `
 }
 
 .c0.c0 {
-  color: rgba(var(--black-color-rgb), 0.1);
+  color: rgb(var(--black-color-rgb) / 0.1);
   --current-color: var(--black-color, black);
   --current-color-rgb: var(--black-color-rgb);
 }
@@ -120,7 +120,7 @@ exports[`tasty() API should create element styles 1`] = `
 }
 
 .c0.c0[data-is-modified] [data-element="Element"] {
-  color: var(--purple-color, rgba(0, 0, 0, 1));
+  color: var(--purple-color, rgb(0 0 0 / 1));
   --current-color: var(--purple-color, purple);
   --current-color-rgb: var(--purple-color-rgb);
 }
@@ -190,7 +190,7 @@ exports[`tasty() API should fallback to default variant 1`] = `
 }
 
 .c0.c0 {
-  color: var(--white-color, rgba(0, 0, 0, 1));
+  color: var(--white-color, rgb(0 0 0 / 1));
   --current-color: var(--white-color, white);
   --current-color-rgb: var(--white-color-rgb);
 }
@@ -226,7 +226,7 @@ exports[`tasty() API should merge element styles 1`] = `
 }
 
 .c0.c0[data-is-modified] [data-element="Element"] {
-  color: var(--purple-color, rgba(0, 0, 0, 1));
+  color: var(--purple-color, rgb(0 0 0 / 1));
   --current-color: var(--purple-color, purple);
   --current-color-rgb: var(--purple-color-rgb);
 }
@@ -263,7 +263,7 @@ exports[`tasty() API should merge styles 1`] = `
 }
 
 .c0.c0[data-is-modified] {
-  color: var(--purple-color, rgba(0, 0, 0, 1));
+  color: var(--purple-color, rgb(0 0 0 / 1));
   --current-color: var(--purple-color, purple);
   --current-color-rgb: var(--purple-color-rgb);
 }
@@ -300,7 +300,7 @@ exports[`tasty() API should merge styles in custom prop 1`] = `
 }
 
 .c0.c0[data-is-modified] {
-  color: var(--purple-color, rgba(0, 0, 0, 1));
+  color: var(--purple-color, rgb(0 0 0 / 1));
   --current-color: var(--purple-color, purple);
   --current-color-rgb: var(--purple-color-rgb);
 }
@@ -335,7 +335,7 @@ exports[`tasty() API should pass styles from tasty 1`] = `
 }
 
 .c0.c0 {
-  color: rgba(var(--clear-color-rgb), 0.1);
+  color: rgb(var(--clear-color-rgb) / 0.1);
   --current-color: var(--clear-color, clear);
   --current-color-rgb: var(--clear-color-rgb);
 }
@@ -367,7 +367,7 @@ exports[`tasty() API should support camelCase modifiers 1`] = `
 }
 
 .c0.c0[data-is-somehow-modified] {
-  color: var(--purple-color, rgba(0, 0, 0, 1));
+  color: var(--purple-color, rgb(0 0 0 / 1));
   --current-color: var(--purple-color, purple);
   --current-color-rgb: var(--purple-color-rgb);
 }
@@ -400,7 +400,7 @@ exports[`tasty() API should support kebab-case modifiers 1`] = `
 }
 
 .c0.c0[data-is-somehow-modified] {
-  color: var(--purple-color, rgba(0, 0, 0, 1));
+  color: var(--purple-color, rgb(0 0 0 / 1));
   --current-color: var(--purple-color, purple);
   --current-color-rgb: var(--purple-color-rgb);
 }
@@ -433,7 +433,7 @@ exports[`tasty() API should support modifiers 1`] = `
 }
 
 .c0.c0[data-is-modified] {
-  color: var(--purple-color, rgba(0, 0, 0, 1));
+  color: var(--purple-color, rgb(0 0 0 / 1));
   --current-color: var(--purple-color, purple);
   --current-color-rgb: var(--purple-color-rgb);
 }
