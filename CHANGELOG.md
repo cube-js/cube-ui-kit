@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.59.1
+
+### Patch Changes
+
+- [#629](https://github.com/cube-js/cube-ui-kit/pull/629) [`d06c017`](https://github.com/cube-js/cube-ui-kit/commit/d06c017bb1dae18c60fe2d1b192c31373dcf5562) Thanks [@tenphi](https://github.com/tenphi)! - Reset the value of the ComboBox on Enter press if it's not an option and custom input is not allowed.
+
 ## 0.59.0
 
 ### Minor Changes
