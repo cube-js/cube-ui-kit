@@ -330,14 +330,26 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   // If input is not full and the user presses Enter, pick the first option.
   let onKeyPress = useEvent((e: KeyboardEvent) => {
     if (e.key === 'Enter') {
-      if (!props.allowsCustomValue && state.isOpen) {
-        const option = [...state.collection][0]?.key;
+      if (!props.allowsCustomValue) {
+        if (state.isOpen) {
+          const option = [...state.collection][0]?.key;
 
-        if (option && selectedKey !== option) {
-          props.onSelectionChange?.(option);
+          if (option && selectedKey !== option) {
+            props.onSelectionChange?.(option);
 
-          e.stopPropagation();
+            e.stopPropagation();
+            e.preventDefault();
+          }
+        } else if (
+          inputRef.current?.value &&
+          ![...state.collection]
+            .map((i) => i.textValue)
+            .includes(inputRef.current?.value)
+        ) {
+          // If the input value is not in the collection, we need to prevent the submitting of the form.
+          // Also, we reset value manually.
           e.preventDefault();
+          props.onSelectionChange?.(null);
         }
         // If a custom value is allowed, we need to check if the input value is in the collection.
       } else if (props.allowsCustomValue) {
@@ -354,11 +366,26 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     }
   });
 
+  let onBlur = useEvent((e: FocusEvent) => {
+    // If the input value is not in the collection, we need to reset the value.
+    if (
+      !props.allowsCustomValue &&
+      inputRef.current?.value &&
+      ![...state.collection]
+        .map((i) => i.textValue)
+        .includes(inputRef.current?.value)
+    ) {
+      props.onSelectionChange?.(null);
+    }
+  });
+
   useEffect(() => {
     inputRef.current?.addEventListener('keydown', onKeyPress, true);
+    inputRef.current?.addEventListener('blur', onBlur, true);
 
     return () => {
       inputRef.current?.removeEventListener('keydown', onKeyPress, true);
+      inputRef.current?.removeEventListener('blur', onBlur, true);
     };
   }, []);
 

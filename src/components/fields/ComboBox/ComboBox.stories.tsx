@@ -89,6 +89,59 @@ const TemplateForm: StoryFn<CubeComboBoxProps<any>> = (
   );
 };
 
+const TemplateFormPropagation: StoryFn<CubeComboBoxProps<any>> = (
+  args: CubeComboBoxProps<any>,
+) => {
+  const [form] = Form.useForm();
+
+  return (
+    <Flow gap="2x">
+      <Form
+        form={form}
+        defaultValues={{ combobox: args.allowsCustomValue ? 'unknown' : 'red' }}
+        onSubmit={(data) => console.log('! submit', data)}
+      >
+        <ComboBox
+          name="combobox"
+          {...args}
+          rules={[
+            {
+              required: true,
+            },
+            {
+              pattern: /^[A-Za-z_][A-Za-z0-9_]*$/,
+              message: 'Please enter valid variable name',
+            },
+          ]}
+        >
+          <ComboBox.Item key="red">
+            {args.allowsCustomValue ? 'red' : 'Red'}
+          </ComboBox.Item>
+          <ComboBox.Item key="orange">
+            {args.allowsCustomValue ? 'orange' : 'Orange'}
+          </ComboBox.Item>
+          <ComboBox.Item key="yellow">
+            {args.allowsCustomValue ? 'yellow' : 'Yellow'}
+          </ComboBox.Item>
+          <ComboBox.Item key="green">
+            {args.allowsCustomValue ? 'green' : 'Green'}
+          </ComboBox.Item>
+          <ComboBox.Item key="blue">
+            {args.allowsCustomValue ? 'blue' : 'Blue'}
+          </ComboBox.Item>
+          <ComboBox.Item key="purple">
+            {args.allowsCustomValue ? 'purple' : 'Purple'}
+          </ComboBox.Item>
+          <ComboBox.Item key="violet">
+            {args.allowsCustomValue ? 'violet' : 'Violet'}
+          </ComboBox.Item>
+        </ComboBox>
+        <Form.Submit>Submit</Form.Submit>
+      </Form>
+    </Flow>
+  );
+};
+
 const TemplateLegacyForm: StoryFn<CubeComboBoxProps<any>> = (
   args: CubeComboBoxProps<any>,
 ) => {
@@ -263,4 +316,27 @@ WithinFormWithLegacyFieldAndCustomValue.play = WithinForm.play;
 WithinFormWithLegacyFieldAndCustomValue.args = {
   ...TemplateForm.args,
   allowsCustomValue: true,
+};
+
+export const WithinFormStopEnterPropagation = TemplateFormPropagation.bind({});
+WithinFormStopEnterPropagation.play = async ({ canvasElement }) => {
+  const { getByTestId } = within(canvasElement);
+
+  const input = getByTestId('Input');
+
+  await userEvent.type(
+    input,
+    '{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}blurring{enter}',
+  );
+};
+
+export const WithinFormStopBlurPropagation = TemplateFormPropagation.bind({});
+WithinFormStopBlurPropagation.play = async ({ canvasElement }) => {
+  const { getByTestId } = within(canvasElement);
+
+  const input = getByTestId('Input');
+
+  await userEvent.type(input, '!');
+  const button = getByTestId('Button');
+  await userEvent.click(button);
 };
