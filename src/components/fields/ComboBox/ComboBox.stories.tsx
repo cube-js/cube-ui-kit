@@ -318,8 +318,8 @@ WithinFormWithLegacyFieldAndCustomValue.args = {
   allowsCustomValue: true,
 };
 
-export const WithinFormStopPropagation = TemplateFormPropagation.bind({});
-WithinFormStopPropagation.play = async ({ canvasElement }) => {
+export const WithinFormStopEnterPropagation = TemplateFormPropagation.bind({});
+WithinFormStopEnterPropagation.play = async ({ canvasElement }) => {
   const { getByTestId } = within(canvasElement);
 
   const input = getByTestId('Input');
@@ -328,4 +328,15 @@ WithinFormStopPropagation.play = async ({ canvasElement }) => {
     input,
     '{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}blurring{enter}',
   );
+};
+
+export const WithinFormStopBlurPropagation = TemplateFormPropagation.bind({});
+WithinFormStopBlurPropagation.play = async ({ canvasElement }) => {
+  const { getByTestId } = within(canvasElement);
+
+  const input = getByTestId('Input');
+
+  await userEvent.type(input, '!');
+  const button = getByTestId('Button');
+  await userEvent.click(button);
 };

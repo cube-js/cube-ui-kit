@@ -347,7 +347,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
             .includes(inputRef.current?.value)
         ) {
           // If the input value is not in the collection, we need to prevent the submitting of the form.
-          // This is because the input value is not a valid option and will be reset.
+          // Also, we reset value manually.
           e.preventDefault();
           props.onSelectionChange?.(null);
         }
@@ -367,6 +367,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   });
 
   let onBlur = useEvent((e: FocusEvent) => {
+    // If the input value is not in the collection, we need to reset the value.
     if (
       !props.allowsCustomValue &&
       inputRef.current?.value &&
