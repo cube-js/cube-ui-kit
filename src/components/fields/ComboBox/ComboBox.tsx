@@ -329,11 +329,14 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
   // If input is not full and the user presses Enter, pick the first option.
   let onKeyPress = useEvent((e: KeyboardEvent) => {
+    if (!props.onSelectionChange) {
+      return;
+    }
+
     if (e.key === 'Enter') {
       if (!props.allowsCustomValue) {
         if (state.isOpen) {
           const option = [...state.collection][0]?.key;
-
           if (option && selectedKey !== option) {
             props.onSelectionChange?.(option);
 
