@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.59.2
+
+### Patch Changes
+
+- [#631](https://github.com/cube-js/cube-ui-kit/pull/631) [`29d3499`](https://github.com/cube-js/cube-ui-kit/commit/29d3499177b817090d1994dd2aecee3c905d64c1) Thanks [@tenphi](https://github.com/tenphi)! - Fix ComboBox behavior outside the form.
+
 ## 0.59.1
 
 ### Patch Changes
