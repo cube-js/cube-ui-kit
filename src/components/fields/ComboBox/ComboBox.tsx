@@ -366,11 +366,25 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     }
   });
 
+  let onBlur = useEvent((e: FocusEvent) => {
+    if (
+      !props.allowsCustomValue &&
+      inputRef.current?.value &&
+      ![...state.collection]
+        .map((i) => i.textValue)
+        .includes(inputRef.current?.value)
+    ) {
+      props.onSelectionChange?.(null);
+    }
+  });
+
   useEffect(() => {
     inputRef.current?.addEventListener('keydown', onKeyPress, true);
+    inputRef.current?.addEventListener('blur', onBlur, true);
 
     return () => {
       inputRef.current?.removeEventListener('keydown', onKeyPress, true);
+      inputRef.current?.removeEventListener('blur', onBlur, true);
     };
   }, []);
 
