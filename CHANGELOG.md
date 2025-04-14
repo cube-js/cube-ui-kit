@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.59.3
+
+### Patch Changes
+
+- [#633](https://github.com/cube-js/cube-ui-kit/pull/633) [`7250112`](https://github.com/cube-js/cube-ui-kit/commit/7250112d571c2391fc79ebe4da0e5a636e543a3a) Thanks [@tenphi](https://github.com/tenphi)! - Fix ComboBox behavior on choosing option via Enter press.
+
 ## 0.59.2
 
 ### Patch Changes
