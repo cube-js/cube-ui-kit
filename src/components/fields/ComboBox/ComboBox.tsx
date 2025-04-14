@@ -336,7 +336,13 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     if (e.key === 'Enter') {
       if (!props.allowsCustomValue) {
         if (state.isOpen) {
+          // If there is a selected option then do nothing. It will be selected on Enter anyway.
+          if (listBoxRef.current?.querySelector('li[aria-selected="true"]')) {
+            return;
+          }
+
           const option = [...state.collection][0]?.key;
+
           if (option && selectedKey !== option) {
             props.onSelectionChange?.(option);
 
