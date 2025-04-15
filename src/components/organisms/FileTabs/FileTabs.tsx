@@ -110,7 +110,7 @@ const TabElement = tasty(Action, {
     preset: 'default',
     shadow: {
       '': 'inset 0 0 0 1ow #purple-03.0',
-      'focused & focus-visible': 'inset 0 0 0 1ow #purple-03',
+      focused: 'inset 0 0 0 1ow #purple-03',
     },
     transform: {
       '': 'translate(0, 0)',
@@ -150,7 +150,7 @@ const CloseButton = tasty(Button, {
     padding: '.25x',
     outline: {
       '': '#purple-03.0',
-      'focused & focus-visible': '#purple-03',
+      focused: '#purple-03',
     },
     radius: '1r',
   },
