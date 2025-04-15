@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.59.4
+
+### Patch Changes
+
+- [#635](https://github.com/cube-js/cube-ui-kit/pull/635) [`ac9100a`](https://github.com/cube-js/cube-ui-kit/commit/ac9100ae1e7ca0d38b9d077ccb2d63f6022e87f3) Thanks [@tenphi](https://github.com/tenphi)! - Fix outline styles after migration in various components.
+
+- [#635](https://github.com/cube-js/cube-ui-kit/pull/635) [`ac9100a`](https://github.com/cube-js/cube-ui-kit/commit/ac9100ae1e7ca0d38b9d077ccb2d63f6022e87f3) Thanks [@tenphi](https://github.com/tenphi)! - Fix border radius in Action buttons in CopySnippet.
+
 ## 0.59.3
 
 ### Patch Changes
