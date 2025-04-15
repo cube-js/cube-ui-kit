@@ -46,6 +46,10 @@ const StyledButton = tasty(Block, {
     flow: 'row',
     justifyContent: 'start',
     gap: '.75x',
+    outline: {
+      '': '#purple-03.0',
+      'focused & focus-visible': '#purple-03',
+    },
 
     ButtonIcon: {
       display: 'grid',

@@ -98,15 +98,16 @@ const CopyButton = tasty(Button, {
   styles: {
     placeSelf: 'stretch',
     border: '#clear',
-    outline: {
-      '': '#purple-03.0',
-      'focused & focus-visible': '#purple-03 inset',
+    shadow: {
+      '': '0 0 0 1ow #purple-03.0 inset',
+      focused: '0 0 0 1ow #purple-03 inset',
     },
     radius: {
       '': '0 1r 1r 0',
       'multiline | with-scroll': '0 1r 0 0',
     },
     height: 'auto',
+    outline: false,
   },
 });
 

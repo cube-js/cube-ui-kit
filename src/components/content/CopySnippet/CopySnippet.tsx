@@ -69,9 +69,19 @@ const ButtonContainer = tasty({
       multiline: '4x',
     },
 
-    '@button-radius': {
+    '@first-button-radius': {
+      '': '0 1r 1r 0',
+      multiline: '0 1r 0 0',
+    },
+
+    '@last-button-radius': {
       '': '0',
-      multiline: '1r',
+      multiline: '0 0 0 1r',
+    },
+
+    '@first-and-last-button-radius': {
+      '': '0 1r 1r 0',
+      multiline: '0 1r 0 1r',
     },
 
     // Make sure there's a small gap between buttons and the content
@@ -110,16 +120,17 @@ const ActionButton = tasty(Button, {
     padding: 0,
     placeSelf: 'stretch',
     border: '#clear',
-    outline: {
-      '': '#purple-03.0',
-      'focused & focus-visible': '#purple-03 inset',
+    shadow: {
+      '': 'inset 0 0 0 1ow #purple-03.0',
+      focused: 'inset 0 0 0 1ow #purple-03',
     },
+    outline: false,
     height: '@button-size',
     radius: {
-      '': '0',
-      ':last-child': '0 0 0 @button-radius',
-      ':first-child': '0 @button-radius 0 0',
-      ':last-child & :first-child': '0 @button-radius 0 @button-radius',
+      '': 0,
+      ':last-child': '@last-button-radius',
+      ':first-child': '@first-button-radius',
+      ':first-child & :last-child': '@first-and-last-button-radius',
     },
   },
 });
