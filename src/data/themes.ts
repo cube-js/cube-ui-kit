@@ -1,4 +1,9 @@
 export default {
+  special: {
+    fill: '#purple',
+    color: '#white',
+    border: '#purple',
+  },
   success: {
     fill: '#success-bg',
     color: '#success-text',

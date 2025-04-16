@@ -123,6 +123,8 @@ function Panel(props: CubePanelProps, ref: ForwardedRef<HTMLDivElement>) {
   STYLES.forEach((style) => {
     if (props[style]) {
       innerStyles = { ...innerStyles, [style]: props[style] };
+
+      delete otherProps[style];
     }
   });
 
