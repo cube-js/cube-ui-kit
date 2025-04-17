@@ -45,25 +45,55 @@ export default {
   },
 };
 
-const Template: StoryFn<CubeTagProps> = ({ label, ...props }) => (
-  <Tag {...props} onClose={() => console.log('close')}>
-    {label}
-  </Tag>
+const Template: StoryFn<CubeTagProps> = ({ ...props }) => (
+  <Tag {...props} onClose={() => console.log('! onClose')} />
 );
 
 export const Default = Template.bind({});
 Default.args = {
-  label: 'Tag name or content',
+  children: 'Tag name or content',
+};
+
+export const Danger = Template.bind({});
+Danger.args = {
+  children: 'Tag name or content',
+  theme: 'danger',
+};
+
+export const Success = Template.bind({});
+Success.args = {
+  children: 'Tag name or content',
+  theme: 'success',
+};
+
+export const Note = Template.bind({});
+Note.args = {
+  children: 'Tag name or content',
+  theme: 'note',
+};
+
+export const Disabled = Template.bind({});
+Disabled.args = {
+  children: 'Tag name or content',
+  theme: 'disabled',
+};
+
+export const Special = Template.bind({});
+Special.args = {
+  children: 'Tag name or content',
+  theme: 'special',
 };
 
 export const WithIcon = Template.bind({});
 WithIcon.args = {
+  children: 'Tag name or content',
   icon: <DollarCircleOutlined />,
   label: 'Tag name or content',
 };
 
 export const Closable = Template.bind({});
 Closable.args = {
+  children: 'Tag name or content',
   label: 'Tag name or content',
   isClosable: true,
 };

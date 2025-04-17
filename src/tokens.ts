@@ -24,6 +24,7 @@ const colors = {
   success: '49 195 124',
   'success-text': '48 166 102',
   note: '251 188 5',
+  'note-text': '169 125 0',
   warning: '224 86 43',
 };
 
@@ -55,7 +56,6 @@ const TOKENS = {
   'minor-color': color('dark', 0.65),
   'success-bg-color': 'rgb(41 190 110 / .1)',
   'note-bg-color': color('note', 0.1),
-  'note-text-color': color('note', 1),
   'danger-bg-color': color('danger', 0.05),
   'danger-bg-hover-color': color('danger', 0.1),
   'primary-1': color('purple', 0.9),

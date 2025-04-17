@@ -89,7 +89,9 @@ const CloseAction = tasty(Action, {
 });
 
 export interface CubeTagProps extends BaseProps, ContainerStyleProps {
+  /* @deprecated Use theme instead */
   type?: keyof typeof THEMES | string;
+  theme?: keyof typeof THEMES | string;
   isClosable?: boolean;
   onClose?: () => void;
   closeButtonStyles?: Styles;
@@ -99,11 +101,13 @@ export interface CubeTagProps extends BaseProps, ContainerStyleProps {
 function Tag(allProps: CubeTagProps, ref) {
   let {
     type,
+    theme,
     icon,
     isClosable,
     onClose,
     closeButtonStyles,
     children,
+    mods,
     ...props
   } = allProps;
 
@@ -114,8 +118,8 @@ function Tag(allProps: CubeTagProps, ref) {
       {...filterBaseProps(props, { eventProps: true })}
       ref={ref}
       styles={styles}
-      data-type={type}
-      mods={{ closable: isClosable }}
+      data-type={theme ?? type}
+      mods={{ ...mods, closable: isClosable }}
     >
       {icon ? <div data-element="TagIcon">{icon}</div> : null}
       <div data-element="Content">{children}</div>
