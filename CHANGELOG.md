@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.59.5
+
+### Patch Changes
+
+- [#637](https://github.com/cube-js/cube-ui-kit/pull/637) [`2822be0`](https://github.com/cube-js/cube-ui-kit/commit/2822be08e731d95b8a55b7ac5a699d2f8ef7a9c6) Thanks [@tenphi](https://github.com/tenphi)! - Change `note-text` to improve contrast.
+
+- [#637](https://github.com/cube-js/cube-ui-kit/pull/637) [`2822be0`](https://github.com/cube-js/cube-ui-kit/commit/2822be08e731d95b8a55b7ac5a699d2f8ef7a9c6) Thanks [@tenphi](https://github.com/tenphi)! - Add `special` theme for components that use them.
+
+- [#638](https://github.com/cube-js/cube-ui-kit/pull/638) [`267b203`](https://github.com/cube-js/cube-ui-kit/commit/267b203900dfad383556f212713de6e9b5c95c53) Thanks [@tenphi](https://github.com/tenphi)! - Throw an error if code prop in PrismCode is not a string and not falsy.
+
+- [#637](https://github.com/cube-js/cube-ui-kit/pull/637) [`2822be0`](https://github.com/cube-js/cube-ui-kit/commit/2822be08e731d95b8a55b7ac5a699d2f8ef7a9c6) Thanks [@tenphi](https://github.com/tenphi)! - Allow to set mods for Tag component.
+
 ## 0.59.4
 
 ### Patch Changes
