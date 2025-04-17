@@ -80,6 +80,12 @@ export interface CubePrismCodeProps extends ContainerStyleProps {
 function PrismCode(props: CubePrismCodeProps, ref) {
   let { code, language = 'javascript', ...otherProps } = props;
 
+  if (typeof code !== 'string' && code) {
+    throw new Error(
+      'UIKit: code prop should be a string in PrismCode. Found: ' + typeof code,
+    );
+  }
+
   const isDiff = isDiffCode(code || '');
 
   useEffect(() => {
