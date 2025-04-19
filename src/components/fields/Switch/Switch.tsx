@@ -27,6 +27,7 @@ import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { LoadingIcon } from '../../../icons';
 
 const SwitchWrapperElement = tasty({
+  as: 'label',
   qa: 'SwitchWrapper',
   styles: {
     display: 'flex',
