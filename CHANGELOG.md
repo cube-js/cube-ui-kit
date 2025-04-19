@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.59.6
+
+### Patch Changes
+
+- [#640](https://github.com/cube-js/cube-ui-kit/pull/640) [`e3bc889`](https://github.com/cube-js/cube-ui-kit/commit/e3bc8895fd578c41282d715ab3999eaa325faf15) Thanks [@tenphi](https://github.com/tenphi)! - Switch the default Switch wrapper tag to label for better accessibility and e2e testing.
+
 ## 0.59.5
 
 ### Patch Changes
