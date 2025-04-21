@@ -1,5 +1,6 @@
 import { DollarCircleOutlined } from '@ant-design/icons';
 import { Meta, StoryFn } from '@storybook/react';
+import { expect, jest } from '@storybook/jest';
 import { userEvent, within } from '@storybook/test';
 
 import { SELECTED_KEY_ARG } from '../../../stories/FormFieldArgs';
@@ -40,13 +41,20 @@ const TemplateForm: StoryFn<CubeComboBoxProps<any>> = (
   args: CubeComboBoxProps<any>,
 ) => {
   const [form] = Form.useForm();
+  const onSubmit = (data: any) => {
+    console.log('! submit', data);
+    if (args.onSubmitSpy) {
+      args.onSubmitSpy(data);
+    }
+    return data;
+  };
 
   return (
     <Flow gap="2x">
       <Form
         form={form}
         defaultValues={{ combobox: args.allowsCustomValue ? 'unknown' : 'red' }}
-        onSubmit={(data) => console.log('! submit', data)}
+        onSubmit={onSubmit}
       >
         <ComboBox
           name="combobox"
@@ -83,6 +91,9 @@ const TemplateForm: StoryFn<CubeComboBoxProps<any>> = (
             {args.allowsCustomValue ? 'violet' : 'Violet'}
           </ComboBox.Item>
         </ComboBox>
+        <Button type="submit" data-testid="SubmitButton">
+          Submit
+        </Button>
       </Form>
       <Button>Focus</Button>
     </Flow>
@@ -93,13 +104,20 @@ const TemplateFormPropagation: StoryFn<CubeComboBoxProps<any>> = (
   args: CubeComboBoxProps<any>,
 ) => {
   const [form] = Form.useForm();
+  const onSubmit = (data: any) => {
+    console.log('! submit', data);
+    if (args.onSubmitSpy) {
+      args.onSubmitSpy(data);
+    }
+    return data;
+  };
 
   return (
     <Flow gap="2x">
       <Form
         form={form}
         defaultValues={{ combobox: args.allowsCustomValue ? 'unknown' : 'red' }}
-        onSubmit={(data) => console.log('! submit', data)}
+        onSubmit={onSubmit}
       >
         <ComboBox
           name="combobox"
@@ -136,7 +154,7 @@ const TemplateFormPropagation: StoryFn<CubeComboBoxProps<any>> = (
             {args.allowsCustomValue ? 'violet' : 'Violet'}
           </ComboBox.Item>
         </ComboBox>
-        <Form.Submit>Submit</Form.Submit>
+        <Form.Submit data-testid="FormSubmit">Submit</Form.Submit>
       </Form>
     </Flow>
   );
@@ -146,13 +164,20 @@ const TemplateLegacyForm: StoryFn<CubeComboBoxProps<any>> = (
   args: CubeComboBoxProps<any>,
 ) => {
   const [form] = Form.useForm();
+  const onSubmit = (data: any) => {
+    console.log('! Submit', data);
+    if (args.onSubmitSpy) {
+      args.onSubmitSpy(data);
+    }
+    return data;
+  };
 
   return (
     <Flow gap="2x">
       <Form
         form={form}
         defaultValues={{ combobox: args.allowsCustomValue ? 'unknown' : 'red' }}
-        onSubmit={(data) => console.log('! Submit', data)}
+        onSubmit={onSubmit}
       >
         <Field
           name="combobox"
@@ -188,6 +213,9 @@ const TemplateLegacyForm: StoryFn<CubeComboBoxProps<any>> = (
             </ComboBox.Item>
           </ComboBox>
         </Field>
+        <Button type="submit" data-testid="SubmitButton">
+          Submit
+        </Button>
       </Form>
       <Button>Focus</Button>
     </Flow>
@@ -265,13 +293,17 @@ With1LongOptionFiltered.play = async ({ canvasElement }) => {
 };
 
 export const WithinForm = TemplateForm.bind({});
-WithinForm.play = async ({ canvasElement }) => {
+WithinForm.args = {
+  onSubmitSpy: jest.fn(),
+};
+WithinForm.play = async ({ canvasElement, args }) => {
   const { getByRole, getByTestId } = within(canvasElement);
 
   const combobox = getByRole('combobox');
   const trigger = getByTestId('ComboBoxTrigger');
   const button = getByTestId('Button');
   const input = getByTestId('Input');
+  const submitButton = getByTestId('SubmitButton');
 
   await userEvent.click(combobox);
   await userEvent.click(trigger);
@@ -281,16 +313,31 @@ WithinForm.play = async ({ canvasElement }) => {
     input,
     '{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}blue',
   );
+
+  // Submit the form
+  await userEvent.click(submitButton);
+
+  // Check that the onSubmit callback was called with the expected data
+  await wait(100);
+  expect(args.onSubmitSpy).toHaveBeenCalledWith(
+    expect.objectContaining({
+      combobox: 'blue',
+    }),
+  );
 };
 
 export const WithinFormSelected = TemplateForm.bind({});
-WithinFormSelected.play = async ({ canvasElement }) => {
+WithinFormSelected.args = {
+  onSubmitSpy: jest.fn(),
+};
+WithinFormSelected.play = async ({ canvasElement, args }) => {
   const { getByRole, getByTestId } = within(canvasElement);
 
   const combobox = getByRole('combobox');
   const trigger = getByTestId('ComboBoxTrigger');
   const button = getByTestId('Button');
   const input = getByTestId('Input');
+  const submitButton = getByTestId('SubmitButton');
 
   await userEvent.click(combobox);
   await userEvent.click(trigger);
@@ -300,6 +347,17 @@ WithinFormSelected.play = async ({ canvasElement }) => {
     input,
     '{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}blue{enter}',
   );
+
+  // Submit the form
+  await userEvent.click(submitButton);
+
+  // Check that the onSubmit callback was called with the expected data
+  await wait(100);
+  expect(args.onSubmitSpy).toHaveBeenCalledWith(
+    expect.objectContaining({
+      combobox: 'blue',
+    }),
+  );
 };
 
 export const WithinFormWithCustomValue = TemplateForm.bind({});
@@ -307,6 +365,7 @@ WithinFormWithCustomValue.play = WithinForm.play;
 WithinFormWithCustomValue.args = {
   ...TemplateForm.args,
   allowsCustomValue: true,
+  onSubmitSpy: jest.fn(),
 };
 
 export const WithinFormWithLegacyFieldAndCustomValue = TemplateLegacyForm.bind(
@@ -316,10 +375,14 @@ WithinFormWithLegacyFieldAndCustomValue.play = WithinForm.play;
 WithinFormWithLegacyFieldAndCustomValue.args = {
   ...TemplateForm.args,
   allowsCustomValue: true,
+  onSubmitSpy: jest.fn(),
 };
 
 export const WithinFormStopEnterPropagation = TemplateFormPropagation.bind({});
-WithinFormStopEnterPropagation.play = async ({ canvasElement }) => {
+WithinFormStopEnterPropagation.args = {
+  onSubmitSpy: jest.fn(),
+};
+WithinFormStopEnterPropagation.play = async ({ canvasElement, args }) => {
   const { getByTestId } = within(canvasElement);
 
   const input = getByTestId('Input');
@@ -328,15 +391,40 @@ WithinFormStopEnterPropagation.play = async ({ canvasElement }) => {
     input,
     '{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}blurring{enter}',
   );
+
+  // The enter key should submit the form
+  await wait(100);
+
+  // Check that the onSubmit callback was called with the expected data
+  expect(args.onSubmitSpy).toHaveBeenCalledWith(
+    expect.objectContaining({
+      combobox: 'blurring',
+    }),
+  );
 };
 
 export const WithinFormStopBlurPropagation = TemplateFormPropagation.bind({});
-WithinFormStopBlurPropagation.play = async ({ canvasElement }) => {
+WithinFormStopBlurPropagation.args = {
+  onSubmitSpy: jest.fn(),
+};
+WithinFormStopBlurPropagation.play = async ({ canvasElement, args }) => {
   const { getByTestId } = within(canvasElement);
 
   const input = getByTestId('Input');
+  const submitButton = getByTestId('Button');
 
   await userEvent.type(input, '!');
-  const button = getByTestId('Button');
-  await userEvent.click(button);
+  await userEvent.click(submitButton);
+
+  // Now submit the form
+  const formSubmit = getByTestId('FormSubmit');
+  await userEvent.click(formSubmit);
+
+  // Check that the onSubmit callback was called with the expected data
+  await wait(100);
+  expect(args.onSubmitSpy).toHaveBeenCalledWith(
+    expect.objectContaining({
+      combobox: 'red!',
+    }),
+  );
 };
