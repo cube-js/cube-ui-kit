@@ -28,7 +28,6 @@ import { LoadingIcon } from '../../../icons';
 
 const SwitchWrapperElement = tasty({
   as: 'label',
-  qa: 'SwitchWrapper',
   styles: {
     display: 'flex',
     position: 'relative',
@@ -175,14 +174,19 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   };
 
   const switchField = (
-    <SwitchWrapperElement mods={mods} data-size={size} {...hoverProps}>
+    <SwitchWrapperElement
+      qa={qa || 'SwitchWrapper'}
+      mods={mods}
+      data-size={size}
+      {...hoverProps}
+    >
       <HiddenInput
         data-qa="HiddenInput"
         {...mergeProps(inputProps, focusProps)}
         ref={inputRef}
       />
       <SwitchElement
-        qa={qa || 'Switch'}
+        qa="Switch"
         mods={mods}
         data-size={size}
         styles={inputStyles}
