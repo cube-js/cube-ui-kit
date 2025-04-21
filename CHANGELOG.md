@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.59.7
+
+### Patch Changes
+
+- [#642](https://github.com/cube-js/cube-ui-kit/pull/642) [`fe2bc40`](https://github.com/cube-js/cube-ui-kit/commit/fe2bc406e82f183f4dfdfdb5c3bfd31fbefc81fc) Thanks [@tenphi](https://github.com/tenphi)! - Move qa attribute to the root wrapper in Switch component.
+
 ## 0.59.6
 
 ### Patch Changes
