@@ -1,4 +1,4 @@
-import { forwardRef, useLayoutEffect, useRef } from 'react';
+import { forwardRef, useEffect, useLayoutEffect, useRef } from 'react';
 import { useControlledState } from '@react-stately/utils';
 import { useTextField } from 'react-aria';
 
@@ -100,23 +100,26 @@ function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
     textarea.style.height = `${totalHeight}px`;
   });
 
+  const useEnvironmentalEffect =
+    typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
   // Call adjustHeight on content change
-  useLayoutEffect(() => {
+  useEnvironmentalEffect(() => {
     adjustHeight();
   }, [inputValue]);
 
   // Also call it on window resize as that can affect wrapping
-  useLayoutEffect(() => {
-    if (!autoSize) return;
+  useEnvironmentalEffect(() => {
+    if (!autoSize || !inputRef.current) return;
 
-    const handleResize = () => {
-      adjustHeight();
-    };
+    adjustHeight();
 
-    window.addEventListener('resize', handleResize);
+    const resizeObserver = new ResizeObserver(adjustHeight);
 
-    return () => window.removeEventListener('resize', handleResize);
-  }, [adjustHeight, autoSize]);
+    resizeObserver.observe(inputRef?.current);
+
+    return () => resizeObserver.disconnect();
+  }, [autoSize, inputRef?.current]);
 
   return (
     <TextInputBase
