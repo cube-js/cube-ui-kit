@@ -1,22 +1,24 @@
-import { forwardRef, useRef } from 'react';
+import { forwardRef, useEffect, useLayoutEffect, useRef } from 'react';
 import { useControlledState } from '@react-stately/utils';
 import { useTextField } from 'react-aria';
 
+import { useEvent } from '../../../_internal/index';
 import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 import { useProviderProps } from '../../../provider';
 import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { chain, useLayoutEffect } from '../../../utils/react';
+import { chain } from '../../../utils/react';
 import { useFieldProps } from '../../form';
-import { useEvent } from '../../../_internal';
 
 export interface CubeTextAreaProps extends CubeTextInputBaseProps {
-  /** Whether the textarea should change its size depends on content */
+  /** Whether the textarea should change its size depends on the content */
   autoSize?: boolean;
-  /** The rows attribute in HTML is used to specify the number of visible text lines for the
-   * control i.e. the number of rows to display. */
+  /** Max number of visible rows when autoSize is `true`. Defaults to 10  */
+  maxRows?: number;
+  /** The `rows` attribute in HTML is used to specify the number of visible text lines for the
+   * control i.e. the number of rows to display. Defaults to 3 */
   rows?: number;
 }
 
@@ -36,41 +38,20 @@ function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
     isReadOnly = false,
     isRequired = false,
     onChange,
+    maxRows = 10,
     rows = 3,
     ...otherProps
   } = props;
 
-  let [inputValue, setInputValue] = useControlledState(
+  rows = Math.max(rows, 1);
+  maxRows = Math.max(maxRows, rows);
+
+  let [inputValue, setInputValue] = useControlledState<string>(
     props.value,
     props.defaultValue,
     () => {},
   );
   let inputRef = useRef<HTMLTextAreaElement>(null);
-
-  let onHeightChange = useEvent(() => {
-    if (autoSize && inputRef.current) {
-      let input = inputRef.current;
-      let prevAlignment = input.style.alignSelf;
-      let computedStyle = getComputedStyle(input);
-      input.style.alignSelf = 'start';
-      input.style.height = 'auto';
-      input.style.height = input.scrollHeight
-        ? `calc(${input.scrollHeight}px + (2 * var(--border-width)))`
-        : `${
-            parseFloat(computedStyle.paddingTop) +
-            parseFloat(computedStyle.paddingBottom) +
-            parseFloat(computedStyle.lineHeight) * (rows || 3) +
-            2
-          }px`;
-      input.style.alignSelf = prevAlignment;
-    }
-  });
-
-  useLayoutEffect(() => {
-    if (inputRef.current) {
-      onHeightChange();
-    }
-  }, [inputValue, inputRef.current]);
 
   let { labelProps, inputProps } = useTextField(
     {
@@ -80,6 +61,65 @@ function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
     },
     inputRef,
   );
+
+  const adjustHeight = useEvent(() => {
+    const textarea = inputRef.current;
+
+    if (!textarea || !autoSize) return;
+
+    // Reset height to get the correct scrollHeight
+    textarea.style.height = 'auto';
+
+    // Get computed styles to account for padding
+    const computedStyle = getComputedStyle(textarea);
+    const paddingTop = parseFloat(computedStyle.paddingTop) || 0;
+    const paddingBottom = parseFloat(computedStyle.paddingBottom) || 0;
+    const borderTop = parseFloat(computedStyle.borderTopWidth) || 0;
+    const borderBottom = parseFloat(computedStyle.borderBottomWidth) || 0;
+
+    // Calculate line height (approximately)
+    const lineHeight = parseInt(computedStyle.lineHeight) || 20;
+
+    // Calculate content height (excluding padding and border)
+    const contentHeight = textarea.scrollHeight - paddingTop - paddingBottom;
+
+    // Calculate rows based on content height
+    const computedRows = Math.ceil(contentHeight / lineHeight);
+
+    // Apply min/max constraints
+    const targetRows = Math.max(Math.min(computedRows, maxRows), rows);
+
+    // Set the height including padding and border
+    const totalHeight =
+      targetRows * lineHeight +
+      paddingTop +
+      paddingBottom +
+      borderTop +
+      borderBottom;
+
+    textarea.style.height = `${totalHeight}px`;
+  });
+
+  const useEnvironmentalEffect =
+    typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
+  // Call adjustHeight on content change
+  useEnvironmentalEffect(() => {
+    adjustHeight();
+  }, [inputValue]);
+
+  // Also call it on element resize as that can affect wrapping
+  useEnvironmentalEffect(() => {
+    if (!autoSize || !inputRef.current) return;
+
+    adjustHeight();
+
+    const resizeObserver = new ResizeObserver(adjustHeight);
+
+    resizeObserver.observe(inputRef?.current);
+
+    return () => resizeObserver.disconnect();
+  }, [autoSize, inputRef?.current]);
 
   return (
     <TextInputBase
