@@ -4,7 +4,6 @@ import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import storybookPlugin from 'eslint-plugin-storybook';
 import importPlugin from 'eslint-plugin-import';
 import { FlatCompat } from '@eslint/eslintrc';
-import tsParser from '@typescript-eslint/parser';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -23,6 +22,8 @@ export default [
   // Use JS recommended rules
   js.configs.recommended,
 
+  tseslint.configs.recommended,
+
   // Use legacy configs through the compatibility layer
   ...compat.extends(
     'prettier',
@@ -36,8 +37,6 @@ export default [
       ecmaVersion: 'latest',
       sourceType: 'module',
       parserOptions: {
-        parser: tsParser,
-        parserOptions: { project: './tsconfig.json' },
         ecmaFeatures: {
           jsx: true,
         },
@@ -58,7 +57,6 @@ export default [
       reportUnusedDisableDirectives: true,
     },
     rules: {
-      ...tseslint.configs.recommended.rules,
       'react/boolean-prop-naming': [
         'error',
         {
