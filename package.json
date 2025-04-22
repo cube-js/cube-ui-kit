@@ -1,6 +1,7 @@
 {
   "name": "@cube-dev/ui-kit",
   "version": "0.59.9",
+  "type": "module",
   "description": "UIKit for Cube Projects",
   "module": "dist/es/index.js",
   "types": "dist/types/index.d.ts",
@@ -121,8 +122,8 @@
     "@types/react-is": "^18.2.4",
     "@types/react-test-renderer": "^18.0.7",
     "@types/react-transition-group": "^4.4.10",
-    "@typescript-eslint/eslint-plugin": "7.3.1",
-    "@typescript-eslint/parser": "7.3.1",
+    "@typescript-eslint/eslint-plugin": "8.31.0",
+    "@typescript-eslint/parser": "8.31.0",
     "bytes": "^3.1.2",
     "chromatic": "^8.0.0",
     "cross-env": "^7.0.3",
