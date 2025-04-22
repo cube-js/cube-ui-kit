@@ -108,7 +108,7 @@ function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
     adjustHeight();
   }, [inputValue]);
 
-  // Also call it on window resize as that can affect wrapping
+  // Also call it on element resize as that can affect wrapping
   useEnvironmentalEffect(() => {
     if (!autoSize || !inputRef.current) return;
 
