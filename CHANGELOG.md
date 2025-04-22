@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.59.8
+
+### Patch Changes
+
+- [#645](https://github.com/cube-js/cube-ui-kit/pull/645) [`d3cf4a1`](https://github.com/cube-js/cube-ui-kit/commit/d3cf4a13a93a32da9021c79801fa8c387bfba5ca) Thanks [@vasilev-alex](https://github.com/vasilev-alex)! - Add maxRows prop to TextArea in control maximum visible rows in auto-size mode.
+
+- [#645](https://github.com/cube-js/cube-ui-kit/pull/645) [`d3cf4a1`](https://github.com/cube-js/cube-ui-kit/commit/d3cf4a13a93a32da9021c79801fa8c387bfba5ca) Thanks [@vasilev-alex](https://github.com/vasilev-alex)! - Improved calculation of height in auto-sized TextArea.
+
 ## 0.59.7
 
 ### Patch Changes
