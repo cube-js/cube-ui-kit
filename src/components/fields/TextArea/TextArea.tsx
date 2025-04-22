@@ -15,6 +15,8 @@ import { useEvent } from '../../../_internal';
 export interface CubeTextAreaProps extends CubeTextInputBaseProps {
   /** Whether the textarea should change its size depends on content */
   autoSize?: boolean;
+  /** Max number of visible rows when autoSize is `true`  */
+  maxVisibleRows?: number;
   /** The rows attribute in HTML is used to specify the number of visible text lines for the
    * control i.e. the number of rows to display. */
   rows?: number;
@@ -36,6 +38,7 @@ function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
     isReadOnly = false,
     isRequired = false,
     onChange,
+    maxVisibleRows,
     rows = 3,
     ...otherProps
   } = props;
@@ -50,19 +53,30 @@ function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
   let onHeightChange = useEvent(() => {
     if (autoSize && inputRef.current) {
       let input = inputRef.current;
-      let prevAlignment = input.style.alignSelf;
-      let computedStyle = getComputedStyle(input);
+      const prevAlignment = input.style.alignSelf;
+      const computedStyle = getComputedStyle(input);
+
+      const lineHeight = parseFloat(computedStyle.lineHeight);
+      const paddingTop = parseFloat(computedStyle.paddingTop);
+      const paddingBottom = parseFloat(computedStyle.paddingBottom);
+      const borderTop = parseFloat(computedStyle.borderTopWidth);
+      const borderBottom = parseFloat(computedStyle.borderBottomWidth);
+
       input.style.alignSelf = 'start';
       input.style.height = 'auto';
-      input.style.height = input.scrollHeight
-        ? `calc(${input.scrollHeight}px + (2 * var(--border-width)))`
-        : `${
-            parseFloat(computedStyle.paddingTop) +
-            parseFloat(computedStyle.paddingBottom) +
-            parseFloat(computedStyle.lineHeight) * (rows || 3) +
-            2
-          }px`;
+
+      const scrollHeight = input.scrollHeight;
+      input.style.height = `calc(${scrollHeight}px + (2 * var(--border-width)))`;
+
       input.style.alignSelf = prevAlignment;
+
+      const contentHeight =
+        scrollHeight - paddingTop - paddingBottom - borderTop - borderBottom;
+      const rowCount = Math.round(contentHeight / lineHeight);
+
+      if (autoSize && maxVisibleRows != null && rowCount > maxVisibleRows) {
+        input.style.height = `${maxVisibleRows * lineHeight + paddingTop + paddingBottom}px`;
+      }
     }
   });
 
