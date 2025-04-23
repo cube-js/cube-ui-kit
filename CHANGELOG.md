@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.59.9
+
+### Patch Changes
+
+- [#648](https://github.com/cube-js/cube-ui-kit/pull/648) [`83c7a17`](https://github.com/cube-js/cube-ui-kit/commit/83c7a172987fc82f605e293bd66f63638e97070d) Thanks [@tenphi](https://github.com/tenphi)! - Fix inputRef for text inputs.
+
 ## 0.59.8
 
 ### Patch Changes
