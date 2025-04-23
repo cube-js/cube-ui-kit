@@ -1,4 +1,10 @@
-import { forwardRef, useEffect, useLayoutEffect, useRef } from 'react';
+import {
+  ForwardedRef,
+  forwardRef,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+} from 'react';
 import { useControlledState } from '@react-stately/utils';
 import { useTextField } from 'react-aria';
 
@@ -22,7 +28,10 @@ export interface CubeTextAreaProps extends CubeTextInputBaseProps {
   rows?: number;
 }
 
-function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
+function TextArea(
+  props: WithNullableValue<CubeTextAreaProps>,
+  ref: ForwardedRef<HTMLElement>,
+) {
   props = castNullableStringValue(props);
   props = useProviderProps(props);
   props = useFieldProps(props, {
@@ -51,7 +60,8 @@ function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
     props.defaultValue,
     () => {},
   );
-  let inputRef = useRef<HTMLTextAreaElement>(null);
+  let localInputRef = useRef<HTMLTextAreaElement>(null);
+  let inputRef = props.inputRef ?? localInputRef;
 
   let { labelProps, inputProps } = useTextField(
     {

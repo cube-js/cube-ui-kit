@@ -1,3 +1,5 @@
+import { createRef } from 'react';
+
 import { renderWithForm, userEvent, render, act } from '../../../test';
 import { Field, TextInput } from '../../../index';
 
@@ -40,5 +42,18 @@ describe('<TextInput />', () => {
 
     expect(input).toHaveValue('Hello, World!');
     expect(formInstance.getFieldValue('test')).toEqual('Hello, World!');
+  });
+
+  it('should correctly assign the inputRef to the input element', () => {
+    const inputRef = createRef<HTMLInputElement>();
+
+    const { getByRole } = render(
+      <TextInput label="test" inputRef={inputRef} />,
+    );
+
+    const input = getByRole('textbox');
+
+    // Check if the ref is assigned to the input element
+    expect(inputRef.current).toBe(input);
   });
 });

@@ -16,7 +16,7 @@ export { useTextField };
 
 export const TextInput = forwardRef(function TextInput(
   props: CubeTextInputProps,
-  ref: ForwardedRef<HTMLInputElement>,
+  ref: ForwardedRef<HTMLElement>,
 ) {
   props = castNullableStringValue(props);
   props = useProviderProps(props);
@@ -28,7 +28,9 @@ export const TextInput = forwardRef(function TextInput(
     }),
   });
 
-  let inputRef = useRef(null);
+  let localInputRef = useRef<HTMLTextAreaElement | HTMLInputElement>(null);
+  let inputRef = props.inputRef ?? localInputRef;
+
   let { labelProps, inputProps } = useTextField(props, inputRef);
 
   return (
