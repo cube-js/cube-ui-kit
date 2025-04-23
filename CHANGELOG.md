@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.59.10
+
+### Patch Changes
+
+- [#647](https://github.com/cube-js/cube-ui-kit/pull/647) [`762b604`](https://github.com/cube-js/cube-ui-kit/commit/762b604b916abe20932dbd0e9b59a39c61db971b) Thanks [@tenphi](https://github.com/tenphi)! - Faster overlay transition with 120ms duration instead of 180ms.
+
+- [#647](https://github.com/cube-js/cube-ui-kit/pull/647) [`762b604`](https://github.com/cube-js/cube-ui-kit/commit/762b604b916abe20932dbd0e9b59a39c61db971b) Thanks [@tenphi](https://github.com/tenphi)! - Minor fixes for typings.
+
 ## 0.59.9
 
 ### Patch Changes
