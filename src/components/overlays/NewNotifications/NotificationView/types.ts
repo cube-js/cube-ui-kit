@@ -1,9 +1,9 @@
-import { Styles } from '../../../../tasty';
 import { Timer } from '../../../../_internal';
+import { Styles } from '../../../../tasty';
 import { BaseNotificationProps } from '../types';
 
+import type { HTMLAttributes, ReactNode } from 'react';
 import type { CubeNotificationType } from '../types';
-import type { ReactNode, HTMLAttributes } from 'react';
 
 export type NotificationProps = {
   qa?: string;

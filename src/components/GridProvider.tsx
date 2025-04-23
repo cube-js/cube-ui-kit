@@ -1,8 +1,7 @@
 import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react';
 
-import { filterBaseProps, Styles } from '../tasty';
+import { filterBaseProps, Styles, tasty } from '../tasty';
 import { useCombinedRefs } from '../utils/react';
-import { tasty } from '../tasty';
 
 const GridElement = tasty({
   styles: {

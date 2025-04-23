@@ -1,27 +1,26 @@
-import { useState } from 'react';
 import {
-  BulbOutlined,
-  ReloadOutlined,
   BookOutlined,
+  BulbOutlined,
   CheckCircleFilled,
+  ReloadOutlined,
 } from '@ant-design/icons';
-import { expect } from '@storybook/test';
-import { userEvent, waitFor, within } from '@storybook/test';
+import { expect, userEvent, waitFor, within } from '@storybook/test';
+import { useState } from 'react';
 
+import { MoreIcon, PlusIcon } from '../../../icons';
 import {
+  AlertDialog,
+  Button,
+  DialogContainer,
+  DirectionIcon,
+  Flex,
   Menu,
   MenuTrigger,
-  Flex,
-  Button,
-  Text,
   Space,
-  AlertDialog,
-  DialogContainer,
+  Text,
   TooltipProvider,
-  DirectionIcon,
 } from '../../../index';
 import { baseProps } from '../../../stories/lists/baseProps';
-import { MoreIcon, PlusIcon } from '../../../icons';
 
 export default {
   title: 'Pickers/Menu',

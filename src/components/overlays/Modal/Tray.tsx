@@ -1,19 +1,19 @@
 import { useDOMRef } from '@react-spectrum/utils';
 import { forwardRef, ReactNode } from 'react';
 import {
+  OverlayProps,
   useModal,
   useOverlay,
   usePreventScroll,
-  OverlayProps,
 } from 'react-aria';
 
 import { BaseProps, Props, Styles, tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 
 import { OVERLAY_WRAPPER_STYLES } from './Modal';
-import { Underlay } from './Underlay';
 import { Overlay } from './Overlay';
 import { TransitionState, WithCloseBehavior } from './types';
+import { Underlay } from './Underlay';
 
 const TrayWrapperElement = tasty({
   qa: 'TrayWrapper',

@@ -11,9 +11,7 @@ export type TransitionComponentProps = PropsWithChildren<
   Partial<TransitionProps>
 >;
 
-export function TransitionComponent(
-  props: TransitionComponentProps,
-): JSX.Element {
+export function TransitionComponent(props: TransitionComponentProps) {
   const { children, ...transitionProps } = props;
   const notificationRef = useRef<HTMLDivElement | null>(null);
 

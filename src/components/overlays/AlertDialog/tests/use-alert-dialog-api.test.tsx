@@ -1,8 +1,8 @@
 import userEvent from '@testing-library/user-event';
 
 import { act, renderWithRoot } from '../../../../test';
-import { useAlertDialogAPI } from '../AlertDialogApiProvider';
 import { Button } from '../../../actions';
+import { useAlertDialogAPI } from '../AlertDialogApiProvider';
 import { DialogProps } from '../types';
 
 describe('useAlertDialogApi()', () => {

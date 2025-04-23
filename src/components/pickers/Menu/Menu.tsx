@@ -1,13 +1,13 @@
-import React, { cloneElement, ReactElement, ReactNode } from 'react';
+import { useSyncRef } from '@react-aria/utils';
+import { useDOMRef } from '@react-spectrum/utils';
 import { DOMRef, ItemProps } from '@react-types/shared';
+import React, { cloneElement, ReactElement, ReactNode } from 'react';
+import { AriaMenuProps, useMenu } from 'react-aria';
 import {
   Item as BaseItem,
   Section as BaseSection,
   useTreeState,
 } from 'react-stately';
-import { useMenu, AriaMenuProps } from 'react-aria';
-import { useSyncRef } from '@react-aria/utils';
-import { useDOMRef } from '@react-spectrum/utils';
 
 import {
   BaseProps,
@@ -19,11 +19,11 @@ import {
 } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 
-import { StyledMenu, StyledMenuHeader } from './styled';
+import { useMenuContext } from './context';
+import { MenuButtonProps, MenuSelectionType } from './MenuButton';
 import { MenuItem } from './MenuItem';
 import { MenuSection } from './MenuSection';
-import { MenuButtonProps, MenuSelectionType } from './MenuButton';
-import { useMenuContext } from './context';
+import { StyledMenu, StyledMenuHeader } from './styled';
 
 export interface CubeMenuProps<T>
   extends ContainerStyleProps,
@@ -130,7 +130,7 @@ type PartialMenuButton = Partial<MenuButtonProps>;
 type ItemComponent = <T>(
   props: ItemProps<T> &
     PartialMenuButton & { wrapper?: (item: ReactElement) => ReactElement },
-) => JSX.Element;
+) => ReactElement;
 
 type SectionComponent = typeof BaseSection;
 

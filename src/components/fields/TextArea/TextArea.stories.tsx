@@ -1,8 +1,8 @@
 import { DollarCircleOutlined } from '@ant-design/icons';
 import { StoryFn } from '@storybook/react';
 
-import { baseProps } from '../../../stories/lists/baseProps';
 import { TEXT_VALUE_ARG } from '../../../stories/FormFieldArgs';
+import { baseProps } from '../../../stories/lists/baseProps';
 
 import { CubeTextAreaProps, TextArea } from './TextArea';
 

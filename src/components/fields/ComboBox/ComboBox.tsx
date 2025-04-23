@@ -8,19 +8,18 @@ import {
   useMemo,
 } from 'react';
 import {
+  AriaComboBoxProps,
+  AriaTextFieldProps,
   useButton,
   useComboBox,
   useFilter,
   useHover,
   useOverlayPosition,
-  AriaComboBoxProps,
-  AriaTextFieldProps,
 } from 'react-aria';
 import { Item, useComboBoxState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/index';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
-import { DEFAULT_INPUT_STYLES, INPUT_WRAPPER_STYLES } from '../index';
+import { LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import {
   BLOCK_STYLES,
@@ -28,20 +27,22 @@ import {
   OUTER_STYLES,
   tasty,
 } from '../../../tasty';
-import { useFocus } from '../../../utils/react/interactions';
 import {
   mergeProps,
   modAttrs,
   useCombinedRefs,
   useLayoutEffect,
 } from '../../../utils/react';
-import { CubeSelectBaseProps, ListBoxPopup } from '../Select';
+import { useFocus } from '../../../utils/react/interactions';
+import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
-import { LoadingIcon } from '../../../icons';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
+import { DEFAULT_INPUT_STYLES, INPUT_WRAPPER_STYLES } from '../index';
+import { ListBoxPopup } from '../Select';
 
 import type { KeyboardDelegate, LoadingState } from '@react-types/shared';
+import type { CubeSelectBaseProps } from '../Select';
 
 type FilterFn = (textValue: string, inputValue: string) => boolean;
 

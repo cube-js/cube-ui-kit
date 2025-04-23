@@ -1,19 +1,19 @@
-import { Fragment, ReactElement, RefObject, useEffect, useRef } from 'react';
-import { OverlayTriggerState, useOverlayTriggerState } from 'react-stately';
 import { PressResponder } from '@react-aria/interactions';
 import { useMediaQuery } from '@react-spectrum/utils';
+import { Fragment, ReactElement, RefObject, useEffect, useRef } from 'react';
 import {
+  OverlayTriggerProps,
+  Placement,
+  PositionProps,
   useOverlayPosition,
   useOverlayTrigger,
-  OverlayTriggerProps,
-  PositionProps,
-  Placement,
 } from 'react-aria';
+import { OverlayTriggerState, useOverlayTriggerState } from 'react-stately';
 
 import { useIsFirstRender } from '../../../_internal/index';
+import { Styles } from '../../../tasty';
 import { useCombinedRefs } from '../../../utils/react/index';
 import { Modal, Popover, Tray, WithCloseBehavior } from '../Modal';
-import { Styles } from '../../../tasty';
 
 import { DialogContext } from './context';
 

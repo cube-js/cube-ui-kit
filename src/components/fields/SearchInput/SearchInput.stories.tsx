@@ -1,5 +1,5 @@
-import { baseProps } from '../../../stories/lists/baseProps';
 import { TEXT_VALUE_ARG } from '../../../stories/FormFieldArgs';
+import { baseProps } from '../../../stories/lists/baseProps';
 
 import { SearchInput } from './SearchInput';
 

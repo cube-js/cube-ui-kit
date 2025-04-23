@@ -1,5 +1,5 @@
-import { forwardRef } from 'react';
 import { FocusableRef } from '@react-types/shared';
+import { forwardRef } from 'react';
 
 import { Button, CubeButtonProps } from '../../actions';
 

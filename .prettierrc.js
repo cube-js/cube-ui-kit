@@ -1,0 +1,20 @@
+export default {
+  singleQuote: true,
+  trailingComma: 'all',
+  importOrder: [
+    '<BUILTIN_MODULES>',
+    '<THIRD_PARTY_MODULES>',
+    '',
+    '^[.]{2,}',
+    '',
+    '^[.]/(?!index)',
+    '',
+    '^[./]',
+    '',
+    '<TYPES>',
+    '<TYPES>^[.]{2,}',
+    '<TYPES>^[./]',
+  ],
+  importOrderTypeScriptVersion: '5.0.0',
+  plugins: ['@ianvs/prettier-plugin-sort-imports'],
+};

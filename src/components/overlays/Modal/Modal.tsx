@@ -5,9 +5,9 @@ import { useModal, useOverlay, usePreventScroll } from 'react-aria';
 import { BaseProps, Props, Styles, tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 
-import { Underlay } from './Underlay';
 import { Overlay } from './Overlay';
 import { ModalProps, TransitionState, WithCloseBehavior } from './types';
+import { Underlay } from './Underlay';
 
 export const OVERLAY_WRAPPER_STYLES: Styles = {
   position: 'fixed',

@@ -1,14 +1,14 @@
-import { Action } from '../../actions';
-import { Card, CubeCardProps } from '../../content/Card/Card';
-import { Block } from '../../Block';
 import THEMES from '../../../data/themes';
-import { tasty } from '../../../tasty';
 import {
   CheckIcon,
   CloseIcon,
   ExclamationIcon,
   InfoIcon,
 } from '../../../icons';
+import { tasty } from '../../../tasty';
+import { Action } from '../../actions';
+import { Block } from '../../Block';
+import { Card, CubeCardProps } from '../../content/Card/Card';
 
 export interface CubeNotificationProps extends CubeCardProps {
   type?: 'success' | 'note' | 'danger';

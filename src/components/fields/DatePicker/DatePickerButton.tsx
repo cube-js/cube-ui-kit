@@ -1,6 +1,6 @@
+import { CalendarIcon } from '../../../icons';
 import { tasty } from '../../../tasty';
 import { Button } from '../../actions';
-import { CalendarIcon } from '../../../icons';
 
 export const DatePickerButton = tasty(Button, {
   icon: <CalendarIcon />,

@@ -7,7 +7,7 @@ import {
 } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 
-import { DateInput, CubeDateInputProps } from './DateInput';
+import { CubeDateInputProps, DateInput } from './DateInput';
 import { parseAbsoluteDate } from './parseDate';
 
 export default {

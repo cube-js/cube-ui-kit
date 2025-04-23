@@ -30,7 +30,7 @@ const NotificationListContainer = tasty({
  */
 export function NotificationsList<T extends object>(
   props: NotificationsListProps<T>,
-): JSX.Element {
+) {
   const { items, children, onDismiss } = props;
 
   const ref = useRef<HTMLDivElement | null>(null);

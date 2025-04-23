@@ -1,4 +1,4 @@
-import { memo, CSSProperties } from 'react';
+import { CSSProperties, memo } from 'react';
 import styled from 'styled-components';
 
 import { SpinCubeProps } from './types';

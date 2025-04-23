@@ -2,11 +2,11 @@
 import js from '@eslint/js';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import parser from '@typescript-eslint/parser';
+import importPlugin from 'eslint-plugin-import';
+import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
-import importPlugin from 'eslint-plugin-import';
 import storybookPlugin from 'eslint-plugin-storybook';
-import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
 import globals from 'globals';
 
 export default [
@@ -63,8 +63,9 @@ export default [
       'react/boolean-prop-naming': [
         'error',
         {
-          rule: '^is[A-Z]([A-Za-z0-9]?)+',
-          message: 'Boolean props should have `is` prefix',
+          rule: '^(is|use|active|should|default|show|hide|are|does|do|when|include|allow|auto|preserve|no|danger|serif|apply|fonts|disable)([A-Z]([A-Za-z0-9]?)+|)',
+          message:
+            'Boolean props should have `is|use|active|should|default|show|hide|are|does|do|when|include|allow|auto|preserve|no|danger|serif|apply|fonts|disable` prefix',
         },
       ],
       'react/display-name': 'error',
@@ -129,7 +130,7 @@ export default [
 
   // Script files override
   {
-    files: ['./scripts/**/*.{js,mjs}'],
+    files: ['./scripts/**/*.{cjs,js,mjs}'],
     rules: {
       // Cannot check since no-var-requires might be missing in the current TS ESLint plugin
       'no-var-requires': 'off',
@@ -138,7 +139,7 @@ export default [
 
   // Storybook files override
   {
-    files: ['*.stories.tsx', '**/storybook/**/*.tsx'],
+    files: ['**/*.stories.tsx', '**/storybook/**/*.tsx'],
     rules: {
       'react/function-component-definition': 0,
       'react/boolean-prop-naming': 0,
@@ -149,25 +150,31 @@ export default [
 
   // Test files override
   {
-    files: ['*.test.ts', '*.test.tsx'],
+    files: ['**/*.test.ts', '**/*.test.tsx'],
     rules: {
       'no-unused-vars': 'off',
       'react/prop-types': 'off',
+      'no-undef': 'off',
     },
   },
 
   // All TypeScript files
   {
-    files: ['*.ts', '*.tsx'],
+    files: ['**/*.ts', '**/*.tsx'],
     rules: {
       'react/prop-types': 'off',
       'react-hooks/exhaustive-deps': 'off',
       'react/boolean-prop-naming': 'off',
+      'no-redeclare': 'off',
+      '@typescript-eslint/no-redeclare': [
+        'error',
+        { ignoreDeclarationMerge: true },
+      ],
     },
   },
 
   // Apply specific ignore patterns
   {
-    ignores: ['*.js'],
+    ignores: ['*.js', '*.d.ts'],
   },
 ];

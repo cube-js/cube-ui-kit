@@ -12,8 +12,8 @@ import {
 import { AriaNumberFieldProps, AriaTextFieldProps, useHover } from 'react-aria';
 
 import { LoadingIcon } from '../../../icons';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { useProviderProps } from '../../../provider';
+import { FieldBaseProps } from '../../../shared';
 import {
   BaseProps,
   BLOCK_STYLES,
@@ -27,9 +27,9 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { useFocus } from '../../../utils/react/interactions';
-import { FieldBaseProps } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
+import { useFocus } from '../../../utils/react/interactions';
+import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
 

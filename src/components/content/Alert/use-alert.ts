@@ -1,10 +1,10 @@
+import { useDeprecationWarning } from '../../../_internal';
 import {
   CONTAINER_STYLES,
-  TEXT_STYLES,
   extractStyles,
   filterBaseProps,
+  TEXT_STYLES,
 } from '../../../tasty';
-import { useDeprecationWarning } from '../../../_internal';
 
 import { CubeAlertProps } from './types';
 

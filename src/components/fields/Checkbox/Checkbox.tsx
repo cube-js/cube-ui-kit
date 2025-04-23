@@ -1,14 +1,15 @@
 import { useFocusableRef } from '@react-spectrum/utils';
 import { forwardRef, useContext, useMemo, useRef } from 'react';
 import {
+  AriaCheckboxProps,
   useCheckbox,
   useCheckboxGroupItem,
   useHover,
-  AriaCheckboxProps,
 } from 'react-aria';
 import { useToggleState } from 'react-stately';
 
 import { useProviderProps } from '../../../provider';
+import { FieldBaseProps } from '../../../shared';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -19,22 +20,21 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react';
-import { HiddenInput } from '../../HiddenInput';
-import {
-  useFieldProps,
-  useFormProps,
-  INLINE_LABEL_STYLES,
-  LABEL_STYLES,
-} from '../../form';
-import { FieldBaseProps } from '../../../shared';
+import { useFocus } from '../../../utils/react/interactions';
 import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
 import { Text } from '../../content/Text';
-import { wrapWithField } from '../../form';
+import {
+  INLINE_LABEL_STYLES,
+  LABEL_STYLES,
+  useFieldProps,
+  useFormProps,
+  wrapWithField,
+} from '../../form';
+import { HiddenInput } from '../../HiddenInput';
 
 import { CheckboxGroup } from './CheckboxGroup';
 import { CheckboxGroupContext } from './context';
@@ -178,7 +178,7 @@ function Checkbox(
 
   const toggleState = useToggleState(props);
 
-  let { inputProps } = groupState // eslint-disable-next-line react-hooks/rules-of-hooks
+  let { inputProps } = groupState  
     ? useCheckboxGroupItem(
         {
           ...props,
@@ -192,7 +192,7 @@ function Checkbox(
         },
         groupState,
         inputRef,
-      ) // eslint-disable-next-line react-hooks/rules-of-hooks
+      )  
     : useCheckbox(
         {
           ...props,

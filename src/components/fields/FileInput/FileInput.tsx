@@ -1,3 +1,4 @@
+import { createFocusableRef } from '@react-spectrum/utils';
 import {
   forwardRef,
   RefObject,
@@ -7,10 +8,9 @@ import {
   useRef,
   useState,
 } from 'react';
-import { createFocusableRef } from '@react-spectrum/utils';
 
 import { useProviderProps } from '../../../provider';
-import { Action } from '../../actions';
+import { FieldBaseProps } from '../../../shared';
 import {
   BaseProps,
   BlockStyleProps,
@@ -22,7 +22,7 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { FieldBaseProps } from '../../../shared';
+import { Action } from '../../actions';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 
 import type { AriaTextFieldProps } from 'react-aria';
@@ -260,7 +260,7 @@ function FileInput(props: CubeFileInputProps, ref) {
         {...inputProps}
       />
       <div data-element="Button">Choose file</div>
-      <div data-element={!!fileName ? 'Value' : 'Placeholder'}>
+      <div data-element={fileName ? 'Value' : 'Placeholder'}>
         {fileName || placeholder || 'No file selected'}
       </div>
     </FileInputElement>

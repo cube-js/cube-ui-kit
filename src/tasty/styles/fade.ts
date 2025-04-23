@@ -1,4 +1,4 @@
-import { parseStyle, DIRECTIONS, filterMods } from '../utils/styles';
+import { DIRECTIONS, filterMods, parseStyle } from '../utils/styles';
 
 const DIRECTION_MAP = {
   right: 'to left',

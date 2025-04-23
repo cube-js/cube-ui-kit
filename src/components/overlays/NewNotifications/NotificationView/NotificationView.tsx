@@ -1,16 +1,16 @@
 import { ForwardedRef, forwardRef } from 'react';
-import { useHover, useFocusRing } from 'react-aria';
+import { useFocusRing, useHover } from 'react-aria';
 
-import { tasty } from '../../../../tasty';
 import { useEvent, useTimer } from '../../../../_internal';
+import { tasty } from '../../../../tasty';
 import { ClearSlots, mergeProps } from '../../../../utils/react';
 import { useId } from '../../../../utils/react/useId';
 
-import { NotificationIcon } from './NotificationIcon';
-import { NotificationHeader } from './NotificationHeader';
+import { NotificationCloseButton } from './NotificationCloseButton';
 import { NotificationDescription } from './NotificationDescription';
 import { NotificationFooter } from './NotificationFooter';
-import { NotificationCloseButton } from './NotificationCloseButton';
+import { NotificationHeader } from './NotificationHeader';
+import { NotificationIcon } from './NotificationIcon';
 import { NotificationProvider } from './NotificationProvider';
 
 import type { NotificationProps } from './types';

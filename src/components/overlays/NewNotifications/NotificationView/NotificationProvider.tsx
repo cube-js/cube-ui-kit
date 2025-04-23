@@ -12,7 +12,7 @@ const NotificationContext = createContext<NotificationContextType | null>(null);
  */
 export function NotificationProvider(
   props: PropsWithChildren<NotificationContextType>,
-): JSX.Element {
+) {
   const { children, ...value } = props;
 
   return (

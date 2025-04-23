@@ -1,12 +1,12 @@
 import { Key, RefObject, useEffect, useMemo, useRef, useState } from 'react';
 
+import { useEvent } from '../../../../_internal';
 import {
   CubeNotificationsApi,
   CubeNotificationsApiNotifyCallback,
   CubeNotifyApiProps,
   CubeNotifyApiPropsWithID,
 } from '../types';
-import { useEvent } from '../../../../_internal';
 
 const DISMISS_EVENT_NAME = 'cube:notification:dismiss';
 type DismissEvent = CustomEvent<CubeNotifyApiPropsWithID>;
@@ -123,7 +123,7 @@ export function useNotifications(
   const api = useMemo<CubeNotificationsApi>(
     () => ({ notify: addToast, update: updateToast, remove: removeToast }),
     // All deps are stable since we use `useEvent` hook
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
     [],
   );
 

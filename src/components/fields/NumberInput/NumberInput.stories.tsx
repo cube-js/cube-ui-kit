@@ -1,7 +1,7 @@
 import { DollarCircleOutlined } from '@ant-design/icons';
 
-import { baseProps } from '../../../stories/lists/baseProps';
 import { NUMBER_VALUE_ARG } from '../../../stories/FormFieldArgs';
+import { baseProps } from '../../../stories/lists/baseProps';
 
 import { NumberInput } from './NumberInput';
 

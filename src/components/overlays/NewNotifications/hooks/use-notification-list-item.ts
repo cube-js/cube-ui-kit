@@ -1,4 +1,4 @@
-import { useSelectableItem, SelectableItemAria } from '@react-aria/selection';
+import { SelectableItemAria, useSelectableItem } from '@react-aria/selection';
 
 import type { Key, MutableRefObject } from 'react';
 import type { ListState } from 'react-stately';

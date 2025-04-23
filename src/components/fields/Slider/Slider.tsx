@@ -3,14 +3,14 @@ import { forwardRef } from 'react';
 import { extractStyles, OUTER_STYLES } from '../../../tasty';
 import { mergeProps } from '../../../utils/react/index';
 
-import { SliderThumb } from './SliderThumb';
-import { SliderTrack } from './SliderTrack';
+import { Gradation } from './Gradation';
 import {
   SliderBase,
   SliderBaseChildArguments,
   SliderBaseProps,
 } from './SliderBase';
-import { Gradation } from './Gradation';
+import { SliderThumb } from './SliderThumb';
+import { SliderTrack } from './SliderTrack';
 
 import type { FocusableRef } from '@react-types/shared';
 import type { CubeSliderBaseProps } from './types';

@@ -1,4 +1,4 @@
-import { parseStyle, DIRECTIONS } from '../utils/styles';
+import { DIRECTIONS, parseStyle } from '../utils/styles';
 
 const PROP = 'var(--radius)';
 const SHARP = 'var(--leaf-sharp-radius)';

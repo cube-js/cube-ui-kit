@@ -1,8 +1,7 @@
-import { forwardRef, MouseEventHandler } from 'react';
-import { useHover, FocusableOptions, useFocusable } from 'react-aria';
 import { useFocusableRef } from '@react-spectrum/utils';
+import { forwardRef, MouseEventHandler } from 'react';
+import { FocusableOptions, useFocusable, useHover } from 'react-aria';
 
-import { mergeProps } from '../../../utils/react';
 import {
   BaseProps,
   BaseStyleProps,
@@ -15,6 +14,7 @@ import {
   TEXT_STYLES,
   TextStyleProps,
 } from '../../../tasty';
+import { mergeProps } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 
 export interface CubeActiveZoneProps

@@ -4,8 +4,8 @@ import { ICON_ARG, VALIDATION_STATE_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 import {
-  DateRangeSeparatedPicker,
   CubeDateRangeSeparatedPickerProps,
+  DateRangeSeparatedPicker,
 } from './DateRangeSeparatedPicker';
 import { parseAbsoluteDate } from './parseDate';
 

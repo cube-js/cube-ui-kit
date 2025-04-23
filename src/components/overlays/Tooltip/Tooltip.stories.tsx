@@ -1,13 +1,12 @@
-import { Story, ComponentMeta } from '@storybook/react';
-import { within, userEvent, waitFor } from '@storybook/test';
-import { expect } from '@storybook/test';
+import { ComponentMeta, Story } from '@storybook/react';
+import { expect, userEvent, waitFor, within } from '@storybook/test';
 
-import { Button } from '../../actions';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Button } from '../../actions';
 
 import { Tooltip } from './Tooltip';
-import { TooltipTrigger, CubeTooltipTriggerProps } from './TooltipTrigger';
 import { CubeTooltipProviderProps, TooltipProvider } from './TooltipProvider';
+import { CubeTooltipTriggerProps, TooltipTrigger } from './TooltipTrigger';
 
 export default {
   title: 'Overlays/Tooltip',

@@ -2,13 +2,13 @@ import { Key, KeyboardEventHandler, memo, useRef } from 'react';
 
 import { useChainedCallback, useEvent, useTimer } from '../../../../_internal';
 import { tasty } from '../../../../tasty';
-import { CubeNotifyApiPropsWithID } from '../types';
-import { NotificationView } from '../NotificationView';
 import {
   NotificationItemNode,
   NotificationsListState,
   useNotificationListItem,
 } from '../hooks';
+import { NotificationView } from '../NotificationView';
+import { CubeNotifyApiPropsWithID } from '../types';
 
 export type FloatingNotificationProps = {
   id: Key;
@@ -33,7 +33,7 @@ const NotificationContainer = tasty({
  */
 export const FloatingNotification = memo(function FloatingNotification(
   props: FloatingNotificationProps,
-): JSX.Element {
+) {
   const {
     item,
     state,

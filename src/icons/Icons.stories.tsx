@@ -1,15 +1,17 @@
 import { StoryFn } from '@storybook/react';
 
-import { baseProps } from '../stories/lists/baseProps';
-import { Grid } from '../components/layout/Grid';
-import { Space } from '../components/layout/Space';
 import { Title } from '../components/content/Title';
 import { Flow } from '../components/layout/Flow';
+import { Grid } from '../components/layout/Grid';
+import { Space } from '../components/layout/Space';
+import { baseProps } from '../stories/lists/baseProps';
 
-import { CubeIconProps, Icon } from './Icon';
+import { Icon } from './Icon';
 
-import { SparklesIcon, DirectionIcon } from './index';
 import * as Icons from './index';
+import { DirectionIcon, SparklesIcon } from './index';
+
+import type { CubeIconProps } from './Icon';
 
 export default {
   title: 'Content/Icons',

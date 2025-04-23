@@ -1,16 +1,15 @@
-import { expect } from '@storybook/test';
-import { Meta, StoryFn } from '@storybook/react';
-import { userEvent, within } from '@storybook/test';
 import { action } from '@storybook/addon-actions';
+import { Meta, StoryFn } from '@storybook/react';
+import { expect, userEvent, within } from '@storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
-import { DialogTrigger } from '../Dialog/DialogTrigger';
 import { Button } from '../../actions';
 import { Paragraph } from '../../content/Paragraph';
+import { DialogTrigger } from '../Dialog/DialogTrigger';
 
-import { DialogProps } from './types';
-import { useAlertDialogAPI } from './AlertDialogApiProvider';
 import { AlertDialog, CubeAlertDialogProps } from './AlertDialog';
+import { useAlertDialogAPI } from './AlertDialogApiProvider';
+import { DialogProps } from './types';
 
 export default {
   title: 'Overlays/AlertDialog',

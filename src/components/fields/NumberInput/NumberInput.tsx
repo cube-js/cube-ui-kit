@@ -1,15 +1,15 @@
 import { ForwardedRef, forwardRef, RefObject, useRef } from 'react';
-import { useLocale, useNumberField, AriaNumberFieldProps } from 'react-aria';
+import { AriaNumberFieldProps, useLocale, useNumberField } from 'react-aria';
 import { useNumberFieldState } from 'react-stately';
 
-import { useFieldProps } from '../../form';
 import { useProviderProps } from '../../../provider';
-import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 import { tasty } from '../../../tasty';
 import {
   castNullableNumberValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { useFieldProps } from '../../form';
+import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 
 import { StepButton } from './StepButton';
 

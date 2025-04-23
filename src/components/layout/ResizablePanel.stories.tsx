@@ -2,7 +2,7 @@ import { Meta, StoryFn } from '@storybook/react';
 import { useState } from 'react';
 
 import { Panel } from './Panel';
-import { ResizablePanel, CubeResizablePanelProps } from './ResizablePanel';
+import { CubeResizablePanelProps, ResizablePanel } from './ResizablePanel';
 
 export default {
   title: 'Layout/ResizablePanel',

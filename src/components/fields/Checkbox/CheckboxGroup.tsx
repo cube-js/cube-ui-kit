@@ -1,9 +1,10 @@
-import { forwardRef } from 'react';
 import { useDOMRef } from '@react-spectrum/utils';
-import { useCheckboxGroup, AriaCheckboxGroupProps } from 'react-aria';
+import { forwardRef } from 'react';
+import { AriaCheckboxGroupProps, useCheckboxGroup } from 'react-aria';
 import { useCheckboxGroupState } from 'react-stately';
 
 import { useProviderProps } from '../../../provider';
+import { FieldBaseProps } from '../../../shared';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -12,18 +13,17 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { FieldBaseProps } from '../../../shared';
+import { mergeProps } from '../../../utils/react';
 import {
   castNullableArrayValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import {
-  useFieldProps,
   FormContext,
+  useFieldProps,
   useFormProps,
   wrapWithField,
 } from '../../form';
-import { mergeProps } from '../../../utils/react';
 
 import { CheckboxGroupContext } from './context';
 

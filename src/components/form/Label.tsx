@@ -3,6 +3,11 @@ import { forwardRef } from 'react';
 
 import { useProviderProps } from '../../provider';
 import {
+  LabelPosition,
+  NecessityIndicator,
+  ValidationState,
+} from '../../shared/index';
+import {
   BaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
@@ -11,11 +16,6 @@ import {
   Styles,
   tasty,
 } from '../../tasty/index';
-import {
-  LabelPosition,
-  NecessityIndicator,
-  ValidationState,
-} from '../../shared/index';
 
 const REQUIRED_ICON = (
   <svg

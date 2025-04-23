@@ -2,11 +2,11 @@ import { useResizeObserver } from '@react-aria/utils';
 import { ForwardedRef, forwardRef, useEffect, useMemo, useState } from 'react';
 import { useHover, useMove } from 'react-aria';
 
+import { useDebouncedValue, useEvent } from '../../_internal/hooks';
 import { BasePropsWithoutChildren, Styles, tasty } from '../../tasty/index';
 import { mergeProps, useCombinedRefs } from '../../utils/react';
-import { useDebouncedValue, useEvent } from '../../_internal/hooks';
 
-import { Panel, CubePanelProps } from './Panel';
+import { CubePanelProps, Panel } from './Panel';
 
 type Direction = 'top' | 'right' | 'bottom' | 'left';
 

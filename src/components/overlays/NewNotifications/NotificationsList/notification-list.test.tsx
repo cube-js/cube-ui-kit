@@ -1,6 +1,6 @@
 import userEvent from '@testing-library/user-event';
 
-import { render, act } from '../../../../test';
+import { act, render } from '../../../../test';
 
 import { NotificationsList } from './NotificationsList';
 

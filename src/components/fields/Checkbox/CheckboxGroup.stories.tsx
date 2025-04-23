@@ -1,5 +1,5 @@
-import { baseProps } from '../../../stories/lists/baseProps';
 import { MULTIPLE_VALUE_ARG } from '../../../stories/FormFieldArgs';
+import { baseProps } from '../../../stories/lists/baseProps';
 
 import { Checkbox } from './Checkbox';
 

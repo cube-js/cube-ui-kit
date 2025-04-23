@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
 import { useSSRSafeId } from '@react-aria/ssr';
+import { useEffect, useRef, useState } from 'react';
 
 import { useLayoutEffect } from './useLayoutEffect';
 
@@ -18,7 +18,7 @@ export function useId(defaultId?) {
   let nextId = useRef(null);
 
   // don't memo this, we want it new each render so that the Effects always run
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   let updateValue = (val) => {
     if (!isRendering.current) {
       setValue(val);

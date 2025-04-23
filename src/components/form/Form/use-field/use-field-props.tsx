@@ -1,16 +1,15 @@
-import { useRef } from 'react';
-import { useDebugValue } from 'react';
+import { useDebugValue, useRef } from 'react';
 
 import { useChainedCallback, useEvent } from '../../../../_internal/index';
-import { useInsideLegacyField } from '../Field';
 import { mergeProps } from '../../../../utils/react/index';
 import { warn } from '../../../../utils/warnings';
+import { useInsideLegacyField } from '../Field';
 
 import { useField } from './use-field';
 
-import type { CubeFieldProps } from './types';
-import type { FieldTypes } from '../types';
 import type { ValidateTrigger } from '../../../../shared/index';
+import type { FieldTypes } from '../types';
+import type { CubeFieldProps } from './types';
 
 export type UseFieldPropsParams = {
   valuePropsMapper?: ({ value, onChange }) => any;
@@ -63,7 +62,7 @@ export function useFieldProps<
     return props;
   }
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+   
   const field = useField<T, Props>(props, {
     defaultValidationTrigger: params.defaultValidationTrigger,
   });
@@ -76,13 +75,13 @@ export function useFieldProps<
     );
   }
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+   
   const onBlurChained = useChainedCallback(
     field?.onBlur,
     'onBlur' in props ? (props as any).onBlur : undefined,
   );
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+   
   const onChangeEvent = useEvent((value, dontTouch: boolean) => {
     field?.onChange?.(
       value,
@@ -128,7 +127,7 @@ export function useFieldProps<
   }
 
   if (process.env.NODE_ENV === 'development') {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
+     
     useDebugValue(result);
   }
 

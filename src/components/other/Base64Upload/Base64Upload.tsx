@@ -1,10 +1,7 @@
+import { FocusableRef } from '@react-types/shared';
 import { forwardRef, useState } from 'react';
 import styled from 'styled-components';
-import { FocusableRef } from '@react-types/shared';
 
-import { Button } from '../../actions';
-import { Block } from '../../Block';
-import { Text } from '../../content/Text';
 import {
   BaseProps,
   extractStyles,
@@ -13,6 +10,9 @@ import {
   PositionStyleProps,
   Styles,
 } from '../../../tasty';
+import { Button } from '../../actions';
+import { Block } from '../../Block';
+import { Text } from '../../content/Text';
 
 const DEFAULT_STYLES: Styles = {
   display: 'inline-flex',

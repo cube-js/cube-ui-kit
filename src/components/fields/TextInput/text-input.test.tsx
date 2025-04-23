@@ -1,7 +1,7 @@
 import { createRef } from 'react';
 
-import { renderWithForm, userEvent, render, act } from '../../../test';
 import { Field, TextInput } from '../../../index';
+import { act, render, renderWithForm, userEvent } from '../../../test';
 
 jest.mock('../../../_internal/hooks/use-warn');
 

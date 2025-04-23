@@ -1,5 +1,5 @@
+import { act, waitFor } from '@testing-library/react';
 import userEvents from '@testing-library/user-event';
-import { waitFor, act } from '@testing-library/react';
 
 import { renderWithForm } from '../../../test/index';
 import { TextInput } from '../../fields';

@@ -1,3 +1,4 @@
+import { toSnakeCase } from '../utils/string';
 import {
   getRgbValuesFromRgbaString,
   parseColor,
@@ -5,7 +6,6 @@ import {
   strToRgb,
   styleHandlerCacheWrapper,
 } from '../utils/styles';
-import { toSnakeCase } from '../utils/string';
 
 const CACHE = {};
 

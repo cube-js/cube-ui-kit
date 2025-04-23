@@ -1,12 +1,12 @@
 import {
-  Form,
   Field,
-  SubmitButton,
+  Form,
   Input,
   ResetButton,
   Space,
-  TextInput,
+  SubmitButton,
   SubmitError,
+  TextInput,
 } from '../index';
 
 import { DialogFormApp } from './components/DialogFormApp';

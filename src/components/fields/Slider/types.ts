@@ -1,12 +1,12 @@
 import { AriaSliderProps } from 'react-aria';
 
+import { FieldBaseProps } from '../../../shared';
 import {
   BasePropsWithoutChildren,
   BlockStyleProps,
   OuterStyleProps,
   Styles,
 } from '../../../tasty';
-import { FieldBaseProps } from '../../../shared';
 
 export interface CubeSliderBaseProps<T>
   extends Omit<AriaSliderProps<T>, 'label'>,

@@ -2,6 +2,8 @@ import { useFocusableRef } from '@react-spectrum/utils';
 import { forwardRef, useMemo, useRef } from 'react';
 import { useHover, useRadio } from 'react-aria';
 
+import { useProviderProps } from '../../../provider';
+import { FieldBaseProps } from '../../../shared';
 import {
   BaseProps,
   extractStyles,
@@ -11,15 +13,13 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react';
-import { useProviderProps } from '../../../provider';
+import { useFocus } from '../../../utils/react/interactions';
+import { INLINE_LABEL_STYLES, useFieldProps, useFormProps } from '../../form';
 import { HiddenInput } from '../../HiddenInput';
-import { useFieldProps, useFormProps, INLINE_LABEL_STYLES } from '../../form';
-import { FieldBaseProps } from '../../../shared';
 
-import { RadioGroup } from './RadioGroup';
 import { useRadioProvider } from './context';
+import { RadioGroup } from './RadioGroup';
 
 import type { AriaRadioProps } from 'react-aria';
 

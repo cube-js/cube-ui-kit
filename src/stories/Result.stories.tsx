@@ -1,14 +1,14 @@
-import { StoryFn } from '@storybook/react';
 import { BulbFilled, LockFilled } from '@ant-design/icons';
+import { StoryFn } from '@storybook/react';
 
 import {
-  Element,
   Button,
+  CubeResultProps,
+  Element,
   Result,
   Space,
   Text,
   Title,
-  CubeResultProps,
 } from '../index';
 
 const Template: StoryFn<CubeResultProps> = ({ children, ...props }) => {

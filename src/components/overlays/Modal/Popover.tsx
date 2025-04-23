@@ -1,9 +1,9 @@
 import { forwardRef, HTMLAttributes, useEffect } from 'react';
-import { useModal, useOverlay, OverlayProps } from 'react-aria';
+import { OverlayProps, useModal, useOverlay } from 'react-aria';
 
+import { PlacementAxis } from '../../../shared';
 import { BaseProps, tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
-import { PlacementAxis } from '../../../shared';
 
 import { Overlay } from './Overlay';
 import { TransitionState, WithCloseBehavior } from './types';

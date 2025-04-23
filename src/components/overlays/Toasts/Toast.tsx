@@ -3,8 +3,8 @@ import { Key, useEffect } from 'react';
 import { useEvent, useSyncRef } from '../../../_internal';
 import { useId } from '../../../utils/react/useId';
 
-import { useToastsApi } from './use-toasts-api';
 import { CubeToastsApiProps } from './types';
+import { useToastsApi } from './use-toasts-api';
 
 export type ToastProps = {
   /**
@@ -12,7 +12,7 @@ export type ToastProps = {
    *
    * @default false
    */
-  // eslint-disable-next-line react/boolean-prop-naming
+   
   disableRemoveOnUnmount?: boolean;
 } & CubeToastsApiProps;
 

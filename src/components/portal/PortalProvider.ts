@@ -1,4 +1,4 @@
-import { createContext, useContext, RefObject } from 'react';
+import { createContext, RefObject, useContext } from 'react';
 
 const PortalContext = createContext<RefObject<HTMLElement | null> | null>(null);
 

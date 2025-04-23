@@ -12,9 +12,7 @@ function forEachElement(elements, callback) {
     '[object Array]' === elementsType ||
     '[object NodeList]' === elementsType ||
     '[object HTMLCollection]' === elementsType ||
-    '[object Object]' === elementsType ||
-    ('undefined' !== typeof jQuery && elements instanceof jQuery) || //jquery
-    ('undefined' !== typeof Elements && elements instanceof Elements); //mootools
+    '[object Object]' === elementsType;
   let i = 0,
     j = elements.length;
   if (isCollectionTyped) {

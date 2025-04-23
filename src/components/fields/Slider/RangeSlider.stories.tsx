@@ -2,7 +2,7 @@ import { Meta, StoryFn } from '@storybook/react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 
-import { RangeSlider, CubeRangeSliderProps } from './RangeSlider';
+import { CubeRangeSliderProps, RangeSlider } from './RangeSlider';
 
 export default {
   title: 'Forms/RangeSlider',

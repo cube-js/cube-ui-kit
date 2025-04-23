@@ -1,6 +1,7 @@
 import { forwardRef, ReactNode } from 'react';
 
 import THEMES from '../../../data/themes';
+import { CloseIcon } from '../../../icons';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -12,7 +13,6 @@ import {
 } from '../../../tasty';
 import { Action } from '../../actions';
 import { Suffix } from '../../layout/Suffix';
-import { CloseIcon } from '../../../icons';
 
 const TagElement = tasty({
   qa: 'Tag',

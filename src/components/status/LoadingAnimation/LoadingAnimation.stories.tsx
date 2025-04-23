@@ -3,8 +3,8 @@ import { Meta, StoryFn } from '@storybook/react';
 import { baseProps } from '../../../stories/lists/baseProps';
 
 import {
-  LoadingAnimation,
   CubeLoadingAnimationProps,
+  LoadingAnimation,
 } from './LoadingAnimation';
 
 export default {
