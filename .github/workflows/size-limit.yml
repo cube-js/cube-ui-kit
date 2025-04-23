@@ -87,7 +87,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const setMessage = require('${{ github.workspace }}/scripts/ci/set-message')
+            const setMessage = require('${{ github.workspace }}/scripts/ci/set-message.cjs')
             
             await setMessage({
               header: "## 🏋️ Size limit report",
