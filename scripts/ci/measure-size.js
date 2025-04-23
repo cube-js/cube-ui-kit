@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+
 import { setFailed, setOutput } from '@actions/core';
 import { getExecOutput } from '@actions/exec';
 import { markdownTable } from 'markdown-table';

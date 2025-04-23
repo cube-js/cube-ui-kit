@@ -1,45 +1,33 @@
+// eslint.config.js
 import js from '@eslint/js';
+import tseslint from '@typescript-eslint/eslint-plugin';
+import parser from '@typescript-eslint/parser';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
-import storybookPlugin from 'eslint-plugin-storybook';
 import importPlugin from 'eslint-plugin-import';
-import { FlatCompat } from '@eslint/eslintrc';
-import tseslint from '@typescript-eslint/eslint-plugin';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-// Needed for ESLint config compatibility layer
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Compatibility layer for eslintrc configs
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-});
+import storybookPlugin from 'eslint-plugin-storybook';
+import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
+import globals from 'globals';
 
 export default [
-  // Use JS recommended rules
+  // Base JS recommended rules
   js.configs.recommended,
 
-  tseslint.configs.recommended,
-
-  // Use legacy configs through the compatibility layer
-  ...compat.extends(
-    'prettier',
-    'plugin:react/recommended',
-    'plugin:react/jsx-runtime',
-  ),
-
-  // Global configuration
+  // Base configuration for all files
   {
+    files: ['**/*.{js,jsx,ts,tsx,mjs,cjs}'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
+      parser,
       parserOptions: {
         ecmaFeatures: {
           jsx: true,
         },
+      },
+      globals: {
+        ...globals.browser,
+        ...globals.node,
       },
     },
     plugins: {
@@ -47,6 +35,8 @@ export default [
       'react-hooks': reactHooksPlugin,
       storybook: storybookPlugin,
       import: importPlugin,
+      '@typescript-eslint': tseslint,
+      'jsx-a11y': jsxA11yPlugin,
     },
     settings: {
       react: {
@@ -57,6 +47,19 @@ export default [
       reportUnusedDisableDirectives: true,
     },
     rules: {
+      // Core rules
+      'prefer-const': 0,
+      'comma-dangle': 0,
+      'no-console': 0,
+      'arrow-parens': 0,
+      'no-prototype-builtins': 0,
+      'class-methods-use-this': 0,
+      'no-param-reassign': 0,
+      'no-mixed-operators': 0,
+      'no-else-return': 0,
+      'prefer-promise-reject-errors': 0,
+
+      // React rules
       'react/boolean-prop-naming': [
         'error',
         {
@@ -77,6 +80,7 @@ export default [
         },
       ],
 
+      // Import rules
       'import/extensions': 0,
       'import/no-unresolved': 0,
       'import/no-anonymous-default-export': 0,
@@ -99,33 +103,40 @@ export default [
         },
       ],
 
-      '@typescript-eslint/ban-types': 'warn',
-      '@typescript-eslint/ban-ts-comment': 'warn',
-      '@typescript-eslint/no-empty-function': 'off',
-      '@typescript-eslint/no-unused-vars': 'error',
-
+      // React Hooks rules
       'react-hooks/exhaustive-deps': 'warn',
-
-      'prefer-const': 0,
-      'comma-dangle': 0,
-      'no-console': 0,
-      'arrow-parens': 0,
-      'no-prototype-builtins': 0,
-      'class-methods-use-this': 0,
-      'no-param-reassign': 0,
-      'no-mixed-operators': 0,
-      'no-else-return': 0,
-      'prefer-promise-reject-errors': 0,
     },
   },
 
-  // File-specific overrides
+  // TypeScript files
   {
-    files: ['./scripts/**/*.js', './scripts/**/*.mjs'],
+    files: ['**/*.{ts,tsx}'],
+    languageOptions: {
+      parser,
+      parserOptions: {
+        project: './tsconfig.json',
+      },
+    },
     rules: {
-      '@typescript-eslint/no-var-requires': 0,
+      // We need to disable JS rule and enable TS-specific one
+      'no-unused-vars': 'off',
+
+      // These rules are manually set to match the original rules
+      '@typescript-eslint/no-empty-function': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
+
+  // Script files override
+  {
+    files: ['./scripts/**/*.{js,mjs}'],
+    rules: {
+      // Cannot check since no-var-requires might be missing in the current TS ESLint plugin
+      'no-var-requires': 'off',
+    },
+  },
+
+  // Storybook files override
   {
     files: ['*.stories.tsx', '**/storybook/**/*.tsx'],
     rules: {
@@ -135,28 +146,27 @@ export default [
       'react/no-unescaped-entities': 0,
     },
   },
+
+  // Test files override
   {
     files: ['*.test.ts', '*.test.tsx'],
     rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/ban-ts-comment': 'off',
+      'no-unused-vars': 'off',
       'react/prop-types': 'off',
-    },
-  },
-  {
-    files: ['*.ts', '*.tsx'],
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-      'react/prop-types': 'off',
-      'react-hooks/exhaustive-deps': 'off',
-      'react/boolean-prop-naming': 'off',
-      '@typescript-eslint/ban-ts-comment': 'off',
-      '@typescript-eslint/ban-types': 'off',
     },
   },
 
-  // Ignore patterns
+  // All TypeScript files
+  {
+    files: ['*.ts', '*.tsx'],
+    rules: {
+      'react/prop-types': 'off',
+      'react-hooks/exhaustive-deps': 'off',
+      'react/boolean-prop-naming': 'off',
+    },
+  },
+
+  // Apply specific ignore patterns
   {
     ignores: ['*.js'],
   },
