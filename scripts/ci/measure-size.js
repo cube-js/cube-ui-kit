@@ -2,8 +2,8 @@ import { readFile } from 'node:fs/promises';
 
 import { setFailed, setOutput } from '@actions/core';
 import { getExecOutput } from '@actions/exec';
-import bytes from 'bytes';
 import { markdownTable } from 'markdown-table';
+import bytes from 'bytes';
 
 async function run() {
   /**

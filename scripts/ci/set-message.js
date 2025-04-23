@@ -1,6 +1,6 @@
-import dedent from 'dedent';
+const dedent = require('dedent');
 
-export default async function setMessage({
+module.exports = async function setMessage({
   header,
   body,
   prNumber,
@@ -38,4 +38,4 @@ export default async function setMessage({
       body: commentBody,
     });
   }
-}
+};

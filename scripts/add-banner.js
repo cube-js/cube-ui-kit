@@ -1,10 +1,8 @@
-import { readdir, readFile, writeFile } from 'fs/promises';
-import { createRequire } from 'module';
-import { resolve } from 'path';
+const { readdir, readFile, writeFile } = require('fs/promises');
+const { resolve } = require('path');
 
-import dedent from 'dedent';
+const dedent = require('dedent');
 
-const require = createRequire(import.meta.url);
 const pkg = require('../package.json');
 
 const banner = dedent`
@@ -15,8 +13,7 @@ const banner = dedent`
    * Released under the ${pkg.license} license.
    */
 `;
-const distFolder =
-  resolve(new URL('.', import.meta.url).pathname, '../', 'dist') + '/';
+const distFolder = resolve(__dirname, '../', 'dist') + '/';
 
 async function getFiles(path = distFolder) {
   const entries = await readdir(path, {
@@ -45,7 +42,10 @@ getFiles().then((files) =>
   Promise.all(
     files.map(({ path }) =>
       readFile(path)
-        .then((file) => `${banner}\n\n${file.toString()}\n        `)
+        .then(
+          (file) => `${banner}\n\n${file.toString()}
+        `,
+        )
         .then((text) => writeFile(path, text, { encoding: 'utf-8' })),
     ),
   ),
