@@ -1,13 +1,13 @@
 import { ReactNode } from 'react';
 
-import { CubeFieldData, FieldTypes } from '../types';
 import {
   ValidateTrigger,
   ValidationRule,
   ValidationState,
 } from '../../../../shared/index';
-import { CubeFormInstance } from '../use-form';
 import { Props } from '../../../../tasty/index';
+import { CubeFieldData, FieldTypes } from '../types';
+import { CubeFormInstance } from '../use-form';
 
 export interface CubeFieldProps<T extends FieldTypes> {
   /** The initial value of the input. */

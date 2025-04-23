@@ -1,15 +1,10 @@
-import { forwardRef } from 'react';
 import { useDOMRef } from '@react-spectrum/utils';
-import { useRadioGroup, AriaRadioGroupProps } from 'react-aria';
+import { forwardRef } from 'react';
+import { AriaRadioGroupProps, useRadioGroup } from 'react-aria';
 import { useRadioGroupState } from 'react-stately';
 
 import { useProviderProps } from '../../../provider';
-import {
-  FormContext,
-  useFieldProps,
-  useFormProps,
-  wrapWithField,
-} from '../../form';
+import { FieldBaseProps } from '../../../shared';
 import {
   BaseProps,
   BLOCK_STYLES,
@@ -20,12 +15,17 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { FieldBaseProps } from '../../../shared';
+import { mergeProps } from '../../../utils/react';
 import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { mergeProps } from '../../../utils/react';
+import {
+  FormContext,
+  useFieldProps,
+  useFormProps,
+  wrapWithField,
+} from '../../form';
 
 import { RadioContext } from './context';
 

@@ -2,6 +2,7 @@ import {
   createContext,
   ForwardedRef,
   PropsWithChildren,
+  ReactElement,
   useContext,
   useMemo,
 } from 'react';
@@ -16,7 +17,7 @@ export interface ProviderProps extends Props {
   isRequired?: boolean;
   validationState?: string;
   router?: any;
-  ref?: JSX.Element;
+  ref?: ReactElement;
   root?: ForwardedRef<any>;
 }
 

@@ -2,7 +2,7 @@ import { Meta, StoryFn } from '@storybook/react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 
-import { Slider, CubeSliderProps } from './Slider';
+import { CubeSliderProps, Slider } from './Slider';
 
 export default {
   title: 'Forms/Slider',

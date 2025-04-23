@@ -1,7 +1,8 @@
-import React, { cloneElement, useRef } from 'react';
 import { mergeRefs } from '@react-aria/utils';
+import React, { cloneElement, useRef } from 'react';
 import { useFocusRing } from 'react-aria';
 
+import { ValidationState } from '../../../shared';
 import {
   CONTAINER_STYLES,
   ContainerStyleProps,
@@ -10,14 +11,13 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
+import { mergeProps } from '../../../utils/react';
+import { InvalidIcon } from '../../shared/InvalidIcon';
+import { ValidIcon } from '../../shared/ValidIcon';
 import {
   DEFAULT_INPUT_STYLES,
   INPUT_WRAPPER_STYLES,
 } from '../TextInput/TextInputBase';
-import { InvalidIcon } from '../../shared/InvalidIcon';
-import { ValidIcon } from '../../shared/ValidIcon';
-import { ValidationState } from '../../../shared';
-import { mergeProps } from '../../../utils/react';
 
 const DateInputWrapperElement = tasty({
   qa: 'DateInputWrapper',

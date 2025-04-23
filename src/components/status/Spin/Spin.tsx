@@ -1,8 +1,8 @@
 import { tasty } from '../../../tasty';
 import { Block } from '../../Block';
 
-import { CubeSpinProps } from './types';
 import { InternalSpinner } from './InternalSpinner';
+import { CubeSpinProps } from './types';
 
 const SpinContainer = tasty(Block, { styles: { lineHeight: '0' } });
 

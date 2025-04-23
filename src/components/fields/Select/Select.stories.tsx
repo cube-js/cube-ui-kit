@@ -1,12 +1,12 @@
 import { DollarCircleOutlined } from '@ant-design/icons';
 import { Meta, StoryFn } from '@storybook/react';
-import { within, userEvent } from '@storybook/test';
+import { userEvent, within } from '@storybook/test';
 
 import { SELECTED_KEY_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Space } from '../../layout/Space';
 
-import { Select, CubeSelectProps } from './Select';
+import { CubeSelectProps, Select } from './Select';
 
 export default {
   title: 'Pickers/Select',

@@ -1,5 +1,5 @@
-import { renderWithForm, userEvent, render, act } from '../../../test';
 import { Field, Switch } from '../../../index';
+import { act, render, renderWithForm, userEvent } from '../../../test';
 
 jest.mock('../../../_internal/hooks/use-warn');
 

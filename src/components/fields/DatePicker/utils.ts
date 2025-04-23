@@ -1,5 +1,5 @@
-import { createDOMRef } from '@react-spectrum/utils';
 import { createFocusManager } from '@react-aria/focus';
+import { createDOMRef } from '@react-spectrum/utils';
 import { FocusableRef } from '@react-types/shared';
 import { useImperativeHandle, useRef } from 'react';
 import { DateSegment } from 'react-stately';

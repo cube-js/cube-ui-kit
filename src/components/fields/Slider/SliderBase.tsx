@@ -1,12 +1,12 @@
-import { RefObject, forwardRef, useRef, ReactNode, useMemo } from 'react';
 import { useFocusableRef } from '@react-spectrum/utils';
 import { FocusableRef } from '@react-types/shared';
+import { forwardRef, ReactNode, RefObject, useMemo, useRef } from 'react';
+import { useNumberFormatter, useSlider } from 'react-aria';
 import { useSliderState } from 'react-stately';
-import { useSlider, useNumberFormatter } from 'react-aria';
 
 import { extractStyles, OUTER_STYLES, tasty } from '../../../tasty';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { Text } from '../../content/Text';
+import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 
 import { SliderControlsElement, SliderElement } from './elements';
 

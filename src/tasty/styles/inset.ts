@@ -1,4 +1,4 @@
-import { parseStyle, DIRECTIONS, filterMods } from '../utils/styles';
+import { DIRECTIONS, filterMods, parseStyle } from '../utils/styles';
 
 export function insetStyle({ inset }) {
   if (typeof inset === 'number') {

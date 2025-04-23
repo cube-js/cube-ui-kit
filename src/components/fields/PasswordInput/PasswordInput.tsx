@@ -1,15 +1,15 @@
 import { ForwardedRef, forwardRef, useCallback, useRef, useState } from 'react';
 import { useTextField } from 'react-aria';
 
-import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
+import { EyeIcon, EyeInvisibleIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
-import { Button } from '../../actions';
 import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { Button } from '../../actions';
 import { useFieldProps } from '../../form';
-import { EyeIcon, EyeInvisibleIcon } from '../../../icons';
+import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 
 export interface CubePasswordInputProps
   extends WithNullableValue<CubeTextInputBaseProps> {}

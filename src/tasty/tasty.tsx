@@ -1,18 +1,18 @@
-import styledComponents, { createGlobalStyle } from 'styled-components';
 import { ComponentType, FC, forwardRef, useContext, useMemo } from 'react';
 import { isValidElementType } from 'react-is';
+import styledComponents, { createGlobalStyle } from 'styled-components';
 
 import { BreakpointsContext } from './providers/BreakpointsProvider';
-import { modAttrs } from './utils/modAttrs';
+import { BASE_STYLES } from './styles/list';
+import { Styles, StylesInterface } from './styles/types';
 import { AllBaseProps, BaseProps, BaseStyleProps, Props } from './types';
+import { cacheWrapper } from './utils/cache-wrapper';
+import { getDisplayName } from './utils/getDisplayName';
+import { mergeStyles } from './utils/mergeStyles';
+import { modAttrs } from './utils/modAttrs';
 import { renderStyles } from './utils/renderStyles';
 import { pointsToZones } from './utils/responsive';
-import { Styles, StylesInterface } from './styles/types';
-import { BASE_STYLES } from './styles/list';
 import { ResponsiveStyleValue } from './utils/styles';
-import { cacheWrapper } from './utils/cache-wrapper';
-import { mergeStyles } from './utils/mergeStyles';
-import { getDisplayName } from './utils/getDisplayName';
 
 type StyledElementProps = {
   $css: string;

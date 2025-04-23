@@ -14,5 +14,4 @@ stats.html
 .eslintcache
 yarn-error.log
 coverage
-size-limit-report
-size-limit-report-compare
+size-limit-report/stats.json

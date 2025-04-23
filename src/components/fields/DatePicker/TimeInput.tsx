@@ -1,14 +1,15 @@
-import { forwardRef, useRef } from 'react';
 import { FocusableRef } from '@react-types/shared';
+import { forwardRef, useRef } from 'react';
 import {
   AriaTimeFieldProps,
-  useTimeField,
   DateValue,
   TimeValue,
+  useTimeField,
 } from 'react-aria';
 import { useTimeFieldState } from 'react-stately';
 
 import { useProviderProps } from '../../../provider';
+import { FieldBaseProps, ValidationState } from '../../../shared';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -16,14 +17,13 @@ import {
   extractStyles,
   Styles,
 } from '../../../tasty';
-import { FieldBaseProps, ValidationState } from '../../../shared';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 
 import { DateInputBase } from './DateInputBase';
 import { DatePickerSegment } from './DatePickerSegment';
-import { useFocusManagerRef } from './utils';
 import { DEFAULT_TIME_PROPS } from './props';
 import { Granularity } from './types';
+import { useFocusManagerRef } from './utils';
 
 export interface CubeTimeInputProps<T extends TimeValue = TimeValue>
   extends AriaTimeFieldProps<T>,

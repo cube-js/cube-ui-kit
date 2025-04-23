@@ -1,17 +1,21 @@
-import { userEvent, waitForElementToBeRemoved, within } from '@storybook/test';
 import { Meta, StoryFn } from '@storybook/react';
-import { expect } from '@storybook/test';
+import {
+  expect,
+  userEvent,
+  waitForElementToBeRemoved,
+  within,
+} from '@storybook/test';
 import { useState } from 'react';
 
-import { CubeDialogFormProps, DialogForm } from '../DialogForm';
+import { baseProps } from '../../../../stories/lists/baseProps';
 import { Button } from '../../../actions';
 import { Paragraph } from '../../../content/Paragraph';
 import { Text } from '../../../content/Text';
 import { Input } from '../../../fields';
-import { DialogTrigger } from '../DialogTrigger';
-import { baseProps } from '../../../../stories/lists/baseProps';
 import { Form } from '../../../form';
 import { DialogContainer } from '../DialogContainer';
+import { CubeDialogFormProps, DialogForm } from '../DialogForm';
+import { DialogTrigger } from '../DialogTrigger';
 
 export default {
   title: 'Overlays/DialogForm',

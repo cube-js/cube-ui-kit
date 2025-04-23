@@ -2,9 +2,9 @@ import React, { memo } from 'react';
 import { isElement } from 'react-is';
 import flatten from 'react-keyed-flatten-children';
 
-import { CubeNotificationProps, NotificationActionComponent } from '../types';
 import { tasty } from '../../../../tasty';
 import { ButtonGroup } from '../../../actions';
+import { CubeNotificationProps, NotificationActionComponent } from '../types';
 
 interface NotificationFooterProps {
   hasDescription: boolean;
@@ -29,7 +29,7 @@ const FooterArea = tasty(ButtonGroup, {
  */
 export const NotificationFooter = memo(function NotificationFooter(
   props: NotificationFooterProps,
-): JSX.Element {
+) {
   const { actions, onClose, onDismiss, hasDescription } = props;
 
   return (

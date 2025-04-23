@@ -1,8 +1,8 @@
 import { CSSProperties, forwardRef } from 'react';
 
 import {
-  BASE_STYLES,
   AllBaseProps,
+  BASE_STYLES,
   BaseStyleProps,
   COLOR_STYLES,
   ColorStyleProps,

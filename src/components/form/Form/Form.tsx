@@ -1,4 +1,5 @@
 import { useDOMRef } from '@react-spectrum/utils';
+import { DOMRef } from '@react-types/shared';
 import {
   createContext,
   FormHTMLAttributes,
@@ -7,9 +8,9 @@ import {
   useContext,
   useRef,
 } from 'react';
-import { DOMRef } from '@react-types/shared';
 
 import { Provider, useProviderProps } from '../../../provider';
+import { FormBaseProps } from '../../../shared/index';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -19,12 +20,11 @@ import {
   Styles,
   tasty,
 } from '../../../tasty/index';
-import { useCombinedRefs } from '../../../utils/react/index';
 import { timeout } from '../../../utils/promise';
-import { FormBaseProps } from '../../../shared/index';
+import { useCombinedRefs } from '../../../utils/react/index';
 
-import { CubeFormData, CubeFormInstance, useForm } from './use-form';
 import { FieldTypes } from './types';
+import { CubeFormData, CubeFormInstance, useForm } from './use-form';
 
 export const FormContext = createContext({});
 

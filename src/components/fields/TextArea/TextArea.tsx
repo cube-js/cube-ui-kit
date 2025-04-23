@@ -1,3 +1,4 @@
+import { useControlledState } from '@react-stately/utils';
 import {
   ForwardedRef,
   forwardRef,
@@ -5,18 +6,17 @@ import {
   useLayoutEffect,
   useRef,
 } from 'react';
-import { useControlledState } from '@react-stately/utils';
 import { useTextField } from 'react-aria';
 
 import { useEvent } from '../../../_internal/index';
-import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 import { useProviderProps } from '../../../provider';
+import { chain } from '../../../utils/react';
 import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { chain } from '../../../utils/react';
 import { useFieldProps } from '../../form';
+import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 
 export interface CubeTextAreaProps extends CubeTextInputBaseProps {
   /** Whether the textarea should change its size depends on the content */

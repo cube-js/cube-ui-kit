@@ -2,7 +2,7 @@ import { waitFor } from '@storybook/test';
 import { render } from '@testing-library/react';
 import { useEffect, useState } from 'react';
 
-import { renderWithForm, userEvent, act } from '../../../test/index';
+import { act, renderWithForm, userEvent } from '../../../test/index';
 import { Radio } from '../../fields/RadioGroup/Radio';
 import { TextInput } from '../../fields/TextInput/TextInput';
 import { Root } from '../../Root';

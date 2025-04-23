@@ -1,8 +1,8 @@
-import { baseProps } from '../../../stories/lists/baseProps';
 import {
   IS_INDETERMINATE_ARG,
   IS_SELECTED_ARG,
 } from '../../../stories/FormFieldArgs';
+import { baseProps } from '../../../stories/lists/baseProps';
 import { Flow } from '../../layout/Flow';
 
 import { Checkbox } from './Checkbox';

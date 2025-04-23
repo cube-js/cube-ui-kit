@@ -1,14 +1,14 @@
 import { forwardRef } from 'react';
 
-import { Paragraph } from '../../content/Paragraph';
-import { tasty } from '../../../tasty/index';
-import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
-import { Text } from '../../content/Text';
-import { wrapNodeIfPlain } from '../../../utils/react/index';
-import { Space } from '../../layout/Space';
-import { Flex } from '../../layout/Flex';
-import { Label } from '../Label';
 import { InfoCircleIcon } from '../../../icons/index';
+import { tasty } from '../../../tasty/index';
+import { wrapNodeIfPlain } from '../../../utils/react/index';
+import { Paragraph } from '../../content/Paragraph';
+import { Text } from '../../content/Text';
+import { Flex } from '../../layout/Flex';
+import { Space } from '../../layout/Space';
+import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
+import { Label } from '../Label';
 
 import { CubeFieldWrapperProps } from './types';
 

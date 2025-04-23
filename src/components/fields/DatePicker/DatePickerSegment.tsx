@@ -1,6 +1,6 @@
 import { useRef } from 'react';
+import { DateValue, useDateSegment } from 'react-aria';
 import { DateFieldState, DateSegment } from 'react-stately';
-import { useDateSegment, DateValue } from 'react-aria';
 
 import { tasty } from '../../../tasty';
 

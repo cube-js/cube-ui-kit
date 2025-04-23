@@ -1,5 +1,5 @@
-import { AriaDialogProps } from 'react-aria';
 import { ReactNode } from 'react';
+import { AriaDialogProps } from 'react-aria';
 
 import {
   BaseProps,

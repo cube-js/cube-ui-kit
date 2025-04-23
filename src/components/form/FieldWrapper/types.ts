@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactElement, ReactNode } from 'react';
 
 import {
   LabelPosition,
@@ -28,7 +28,7 @@ export type CubeFieldWrapperProps = {
   labelProps?: CubeLabelProps;
   /** The description for the field. It will be placed below the label */
   description?: ReactNode;
-  // eslint-disable-next-line react/boolean-prop-naming
+
   requiredMark?: boolean;
   tooltip?: ReactNode;
   extra?: ReactNode;
@@ -40,7 +40,7 @@ export type CubeFieldWrapperProps = {
   /** Styles for the message */
   messageStyles?: Styles;
 
-  Component?: JSX.Element;
+  Component?: ReactElement;
   /** Custom components that should go outside the field and should not be visible by default. For example: Dialogs */
   children?: ReactNode;
 };

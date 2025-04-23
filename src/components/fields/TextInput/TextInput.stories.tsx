@@ -8,7 +8,7 @@ import {
 } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 
-import { TextInput, CubeTextInputProps } from './TextInput';
+import { CubeTextInputProps, TextInput } from './TextInput';
 
 export default {
   title: 'Forms/TextInput',

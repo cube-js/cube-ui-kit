@@ -1,17 +1,17 @@
 import { ReactNode, useCallback, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import styled from 'styled-components';
 import { CSSTransition } from 'react-transition-group';
+import styled from 'styled-components';
 
-import { Action } from '../../actions/Action/Action';
-import { Card, CubeCardProps } from '../../content/Card/Card';
-import { Flow } from '../../layout/Flow';
-import { Flex } from '../../layout/Flex';
-import { Block } from '../../Block';
-import { Button } from '../../actions';
-import { Space } from '../../layout/Space';
-import { Title } from '../../content/Title';
 import { CloseIcon } from '../../../icons';
+import { Button } from '../../actions';
+import { Action } from '../../actions/Action/Action';
+import { Block } from '../../Block';
+import { Card, CubeCardProps } from '../../content/Card/Card';
+import { Title } from '../../content/Title';
+import { Flex } from '../../layout/Flex';
+import { Flow } from '../../layout/Flow';
+import { Space } from '../../layout/Space';
 
 const Overlay = styled.div`
   position: fixed;
@@ -186,6 +186,7 @@ export function Modal(allProps: CubeModalProps) {
               (onClose || onCancel)();
             }
           } catch (e) {
+            // do nothing
           } finally {
             setLocalLoading(false);
           }

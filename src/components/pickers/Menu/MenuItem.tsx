@@ -1,14 +1,14 @@
+import { Key, Node } from '@react-types/shared';
 import { useRef } from 'react';
-import { useHover, FocusRing, useMenuItem } from 'react-aria';
-import { Node, Key } from '@react-types/shared';
+import { FocusRing, useHover, useMenuItem } from 'react-aria';
 import { TreeState } from 'react-stately';
 
-import { mergeProps, ClearSlots, SlotProvider } from '../../../utils/react';
 import { Styles } from '../../../tasty';
+import { ClearSlots, mergeProps, SlotProvider } from '../../../utils/react';
 
 import { useMenuContext } from './context';
-import { StyledMenuItem } from './styled';
 import { MenuButton, MenuSelectionType } from './MenuButton';
+import { StyledMenuItem } from './styled';
 
 export interface MenuItemProps<T> {
   item: Node<T>;

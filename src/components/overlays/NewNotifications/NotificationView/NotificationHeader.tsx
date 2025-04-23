@@ -1,7 +1,7 @@
 import { HTMLAttributes, memo } from 'react';
 
-import { Title } from '../../../content/Title';
 import { tasty } from '../../../../tasty';
+import { Title } from '../../../content/Title';
 
 import { NotificationProps } from './types';
 
@@ -27,7 +27,7 @@ const Header = tasty(Title, {
  */
 export const NotificationHeader = memo(function NotificationHeader(
   props: NotificationHeaderProps,
-): JSX.Element {
+) {
   const { header, ...headerProps } = props;
 
   return <Header {...headerProps}>{header}</Header>;

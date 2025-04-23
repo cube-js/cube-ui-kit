@@ -41,7 +41,7 @@ export const getOverlayTransitionCSS = ({
     };
     --overlay-translate-visible: translate(0px, 0px);
     --overlay-translate-hidden: ${TRANSLATE_MAP[placement]};
-    --overlay-transition: 180ms;
+    --overlay-transition: 120ms;
     --overlay-hidden-scale: scale(var(--overlay-hidden-x-scale), var(--overlay-hidden-y-scale));
     --overlay-normal-scale: scale(1, 1);
   }

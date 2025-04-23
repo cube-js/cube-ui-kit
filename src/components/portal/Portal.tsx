@@ -26,7 +26,7 @@ import { usePortal } from './usePortal';
  *  </div>
  * ```
  */
-export function Portal(props: PortalProps): JSX.Element | null {
+export function Portal(props: PortalProps) {
   const { children, mountRoot, isDisabled } = usePortal(props);
 
   if (isDisabled) return <>{children}</>;

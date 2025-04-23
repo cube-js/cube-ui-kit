@@ -1,9 +1,9 @@
+import copy from 'clipboard-copy';
 import { ForwardedRef, forwardRef, ReactNode, useState } from 'react';
 import { TextDropItem, useClipboard } from 'react-aria';
-import copy from 'clipboard-copy';
 
-import { Button } from '../../actions';
-import { Card, CubeCardProps } from '../Card/Card';
+import { useTimer } from '../../../_internal';
+import { CopyIcon } from '../../../icons';
 import {
   extractStyles,
   POSITION_STYLES,
@@ -11,9 +11,9 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
+import { Button } from '../../actions';
 import { useToastsApi } from '../../overlays/Toasts';
-import { useTimer } from '../../../_internal';
-import { CopyIcon } from '../../../icons';
+import { Card, CubeCardProps } from '../Card/Card';
 
 const StyledBlock = tasty({
   styles: {

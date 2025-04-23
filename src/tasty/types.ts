@@ -1,7 +1,6 @@
 import { AriaLabelingProps } from '@react-types/shared';
 import { AllHTMLAttributes, CSSProperties } from 'react';
 
-import { Styles } from './styles/types';
 import {
   BASE_STYLES,
   BLOCK_STYLES,
@@ -13,6 +12,7 @@ import {
   POSITION_STYLES,
   TEXT_STYLES,
 } from './styles/list';
+import { Styles } from './styles/types';
 
 export interface GlobalStyledProps {
   breakpoints?: number[];

@@ -2,8 +2,8 @@ import { ReactNode, useRef, useState } from 'react';
 
 import { dotize } from '../../../tasty/index';
 
-import { applyRules } from './validation';
 import { CubeFieldData, FieldTypes, SetFieldsArrType } from './types';
+import { applyRules } from './validation';
 
 type PartialString<T> = {
   [P in keyof T & string]?: T[P];

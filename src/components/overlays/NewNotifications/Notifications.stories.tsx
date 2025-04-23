@@ -1,27 +1,26 @@
-import { Key, useRef, useState } from 'react';
-import { expect } from '@storybook/test';
-import { userEvent, within } from '@storybook/test';
-import { Meta, StoryFn } from '@storybook/react';
 import { BellFilled, BellOutlined, WechatFilled } from '@ant-design/icons';
+import { Meta, StoryFn } from '@storybook/react';
+import { expect, userEvent, within } from '@storybook/test';
+import { Key, useRef, useState } from 'react';
 
+import { wait } from '../../../test';
 import { Button } from '../../actions';
-import { CloudLogo } from '../../other/CloudLogo/CloudLogo';
-import { Flex } from '../../layout/Flex';
-import { Dialog, DialogTrigger } from '../Dialog';
-import { Paragraph } from '../../content/Paragraph';
-import { Text } from '../../content/Text';
-import { Header } from '../../content/Header';
 import { Content } from '../../content/Content';
 import { Footer } from '../../content/Footer';
+import { Header } from '../../content/Header';
+import { Paragraph } from '../../content/Paragraph';
+import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
-import { wait } from '../../../test';
+import { Flex } from '../../layout/Flex';
+import { CloudLogo } from '../../other/CloudLogo/CloudLogo';
+import { Dialog, DialogTrigger } from '../Dialog';
 
 import { NotificationsDialog, NotificationsDialogTrigger } from './Dialog';
-import { NotificationsList } from './NotificationsList';
 import { useNotificationsApi } from './hooks';
-import { CubeNotificationProps } from './types';
 import { Notification } from './Notification';
-import { NotificationView, NotificationAction } from './NotificationView';
+import { NotificationsList } from './NotificationsList';
+import { NotificationAction, NotificationView } from './NotificationView';
+import { CubeNotificationProps } from './types';
 
 export default {
   title: 'Overlays/Notifications',

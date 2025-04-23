@@ -1,4 +1,4 @@
-import { parseStyle, CSSMap } from '../utils/styles';
+import { CSSMap, parseStyle } from '../utils/styles';
 
 const RESET_MAP = {
   input: [

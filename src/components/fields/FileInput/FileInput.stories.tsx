@@ -1,5 +1,5 @@
 import { Story } from '@storybook/react';
-import { userEvent, within, waitFor } from '@storybook/test';
+import { userEvent, waitFor, within } from '@storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 

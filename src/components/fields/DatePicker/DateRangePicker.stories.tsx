@@ -4,7 +4,7 @@ import { userEvent, within } from '@storybook/test';
 import { ICON_ARG, VALIDATION_STATE_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 
-import { DateRangePicker, CubeDateRangePickerProps } from './DateRangePicker';
+import { CubeDateRangePickerProps, DateRangePicker } from './DateRangePicker';
 import { parseAbsoluteDate } from './parseDate';
 
 export default {

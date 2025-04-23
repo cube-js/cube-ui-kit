@@ -1,11 +1,11 @@
 import { ReactElement, ReactNode } from 'react';
 
+import { CheckIcon } from '../../../icons';
+import { tasty } from '../../../tasty';
 import { DEFAULT_BUTTON_STYLES } from '../../actions/index';
 import { Block, CubeBlockProps } from '../../Block';
 import { Text } from '../../content/Text';
-import { tasty } from '../../../tasty';
 import { Space } from '../../layout/Space';
-import { CheckIcon } from '../../../icons';
 
 const StyledButton = tasty(Block, {
   styles: {

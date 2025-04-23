@@ -1,10 +1,10 @@
 import {
-  Button,
-  Space,
-  Card,
   Block,
-  Flow as UIKitFlow,
+  Button,
+  Card,
+  Space,
   Flex as UIKitFlex,
+  Flow as UIKitFlow,
   Grid as UIKitGrid,
 } from '../index';
 

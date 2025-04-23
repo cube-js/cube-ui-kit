@@ -1,5 +1,5 @@
-import { Key } from 'react';
 import { CollectionElement } from '@react-types/shared';
+import { Key } from 'react';
 
 import {
   CollectionChildren,

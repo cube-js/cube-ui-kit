@@ -64,7 +64,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const setMessage = require('${{ github.workspace }}/scripts/ci/set-message')
+            const setMessage = require('${{ github.workspace }}/scripts/ci/set-message.cjs')
 
             await setMessage({
               header: "## :package: NPM canary release",
@@ -158,7 +158,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const setMessage = require('${{ github.workspace }}/scripts/ci/set-message')
+            const setMessage = require('${{ github.workspace }}/scripts/ci/set-message.cjs')
 
             await setMessage({
               header: "## 🧪 Storybook is successfully deployed!",
@@ -224,7 +224,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const setMessage = require('${{ github.workspace }}/scripts/ci/set-message')
+            const setMessage = require('${{ github.workspace }}/scripts/ci/set-message.cjs')
 
             await setMessage({
               header: "## 🏗 Docs are successfully deployed!",

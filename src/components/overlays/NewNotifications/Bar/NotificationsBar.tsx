@@ -1,14 +1,14 @@
-import { Key, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { TransitionGroup } from 'react-transition-group';
-import { Item } from 'react-stately';
-import { useHover, useFocusRing } from 'react-aria';
 import { focusSafely } from '@react-aria/focus';
+import { Key, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useFocusRing, useHover } from 'react-aria';
+import { Item } from 'react-stately';
+import { TransitionGroup } from 'react-transition-group';
 
-import { tasty } from '../../../../tasty';
-import { CubeNotifyApiPropsWithID } from '../types';
-import { CollectionChildren, useNotificationsList } from '../hooks';
-import { mergeProps } from '../../../../utils/react';
 import { useChainedCallback, useEvent } from '../../../../_internal';
+import { tasty } from '../../../../tasty';
+import { mergeProps } from '../../../../utils/react';
+import { CollectionChildren, useNotificationsList } from '../hooks';
+import { CubeNotifyApiPropsWithID } from '../types';
 
 import { FloatingNotification } from './FloatingNotification';
 import { TransitionComponent } from './TransitionComponent';
@@ -48,7 +48,7 @@ const NotificationsContainer = tasty({
 /**
  * @internal Do not use it
  */
-export function NotificationsBar(props: NotificationsBarProps): JSX.Element {
+export function NotificationsBar(props: NotificationsBarProps) {
   const {
     items,
     children,

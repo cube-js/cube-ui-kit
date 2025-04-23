@@ -1,19 +1,19 @@
-import { forwardRef, Fragment, useRef, ReactElement } from 'react';
-import { AriaMenuTriggerProps } from 'react-aria';
+import { PressResponder } from '@react-aria/interactions';
 import { useDOMRef, useIsMobileDevice } from '@react-spectrum/utils';
+import { DOMRef } from '@react-types/shared';
+import { forwardRef, Fragment, ReactElement, useRef } from 'react';
 import {
+  AriaMenuTriggerProps,
   DismissButton,
-  useOverlayPosition,
-  useMenuTrigger,
   Placement,
   PositionProps,
+  useMenuTrigger,
+  useOverlayPosition,
 } from 'react-aria';
-import { DOMRef } from '@react-types/shared';
-import { PressResponder } from '@react-aria/interactions';
 import { MenuTriggerState, useMenuTriggerState } from 'react-stately';
 
-import { Popover, Tray } from '../../overlays/Modal';
 import { SlotProvider } from '../../../utils/react';
+import { Popover, Tray } from '../../overlays/Modal';
 
 import { MenuContext, MenuContextValue } from './context';
 
@@ -28,7 +28,7 @@ export type CubeMenuTriggerProps = AriaMenuTriggerProps &
     ];
     direction?: Placement;
     align?: 'start' | 'end';
-    // eslint-disable-next-line
+
     closeOnSelect?: boolean;
   };
 

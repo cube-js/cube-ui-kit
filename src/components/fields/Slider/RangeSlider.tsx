@@ -1,13 +1,13 @@
 import { forwardRef } from 'react';
 
+import { Gradation } from './Gradation';
+import { SliderBase, SliderBaseChildArguments } from './SliderBase';
 import { SliderThumb } from './SliderThumb';
 import { SliderTrack } from './SliderTrack';
-import { SliderBase, SliderBaseChildArguments } from './SliderBase';
-import { Gradation } from './Gradation';
 
 import type { DOMRef } from '@react-types/shared';
-import type { CubeSliderBaseProps } from './types';
 import type { RangeValue } from '../../../shared';
+import type { CubeSliderBaseProps } from './types';
 
 export interface CubeRangeSliderProps
   extends CubeSliderBaseProps<RangeValue<number>> {

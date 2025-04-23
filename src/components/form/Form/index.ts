@@ -1,11 +1,11 @@
 import { CubeAlertProps } from '../../content/Alert/index';
 
 import { Field } from './Field';
+import { Form as _Form, FormContext, useFormProps } from './Form';
 import { ResetButton } from './ResetButton';
 import { SubmitButton } from './SubmitButton';
 import { SubmitError } from './SubmitError';
 import { useForm } from './use-form';
-import { useFormProps, FormContext, Form as _Form } from './Form';
 
 const Form = Object.assign(
   _Form as typeof _Form & {

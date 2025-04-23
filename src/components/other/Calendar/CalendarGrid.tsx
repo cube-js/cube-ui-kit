@@ -1,5 +1,5 @@
-import { useCalendarGrid, useLocale } from 'react-aria';
 import { getWeeksInMonth } from '@internationalized/date';
+import { useCalendarGrid, useLocale } from 'react-aria';
 
 import { tasty } from '../../../tasty';
 

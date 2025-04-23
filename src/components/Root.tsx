@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { ModalProvider } from 'react-aria';
 import { StyleSheetManager } from 'styled-components';
 
+import { Provider } from '../provider';
+import { TrackingProps, TrackingProvider } from '../providers/TrackingProvider';
 import {
   BASE_STYLES,
   BaseProps,
@@ -10,15 +12,13 @@ import {
   filterBaseProps,
   tasty,
 } from '../tasty';
-import { Provider } from '../provider';
 import { TOKENS } from '../tokens';
 import { useViewportSize } from '../utils/react';
-import { TrackingProps, TrackingProvider } from '../providers/TrackingProvider';
 
-import { PortalProvider } from './portal';
 import { GlobalStyles } from './GlobalStyles';
 import { AlertDialogApiProvider } from './overlays/AlertDialog';
 import { NotificationsProvider } from './overlays/NewNotifications/NotificationsContext/NotificationsProvider';
+import { PortalProvider } from './portal';
 
 const RootElement = tasty({
   id: 'cube-ui-kit-root',

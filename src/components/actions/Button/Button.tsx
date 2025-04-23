@@ -1,7 +1,7 @@
-import { cloneElement, forwardRef, ReactElement, useMemo } from 'react';
 import { FocusableRef } from '@react-types/shared';
+import { cloneElement, forwardRef, ReactElement, useMemo } from 'react';
 
-import { CubeActionProps } from '../Action/Action';
+import { LoadingIcon } from '../../../icons';
 import {
   CONTAINER_STYLES,
   extractStyles,
@@ -10,7 +10,7 @@ import {
   TEXT_STYLES,
 } from '../../../tasty';
 import { accessibilityWarning } from '../../../utils/warnings';
-import { LoadingIcon } from '../../../icons';
+import { CubeActionProps } from '../Action/Action';
 import { useAction } from '../use-action';
 
 export interface CubeButtonProps extends CubeActionProps {

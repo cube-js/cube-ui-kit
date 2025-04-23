@@ -1,9 +1,9 @@
 import { PressEvent } from '@react-types/shared/src/events';
 import { PropsWithChildren } from 'react';
 
+import { useEvent } from '../../../../_internal';
 import { tasty } from '../../../../tasty';
 import { Button, CubeButtonProps } from '../../../actions';
-import { useEvent } from '../../../../_internal';
 
 import { useNotificationContext } from './NotificationProvider';
 
@@ -33,9 +33,7 @@ const Action = tasty(Button, {
 /**
  * @internal This component is unstable and must not be used outside of `NotificationView`.
  */
-export function NotificationAction(
-  props: NotificationActionProps,
-): JSX.Element {
+export function NotificationAction(props: NotificationActionProps) {
   const {
     children,
     onPress,

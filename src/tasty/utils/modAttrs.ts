@@ -3,8 +3,8 @@
  */
 import { AllBaseProps } from '../types';
 
-import { camelToKebab } from './case-converter';
 import { cacheWrapper } from './cache-wrapper';
+import { camelToKebab } from './case-converter';
 
 function modAttrs(map: AllBaseProps['mods']): Record<string, string> | null {
   return map

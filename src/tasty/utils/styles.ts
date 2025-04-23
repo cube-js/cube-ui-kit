@@ -1,9 +1,8 @@
 import { Styles } from '../styles/types';
 
-import { camelToKebab } from './case-converter';
 import { cacheWrapper } from './cache-wrapper';
-
-import { getModCombinations } from './index';
+import { camelToKebab } from './case-converter';
+import { getModCombinations } from './getModCombinations';
 
 export type StyleValue<T = string> = T | boolean | number | null | undefined;
 
@@ -981,11 +980,12 @@ function parseStateNotationInner(notation: string, value: any): StyleStateData {
   let operations: any[][] = [[]];
   let list = operations[0];
   let position = 0;
+  let operation: any[];
 
   tokens.forEach((token) => {
     switch (token) {
       case '(':
-        const operation = [];
+        operation = [];
         position++;
         list = operations[position] = operation;
         break;

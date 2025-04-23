@@ -1,17 +1,17 @@
 import { forwardRef, useRef } from 'react';
-import { SearchFieldProps, useSearchFieldState } from 'react-stately';
 import { useSearchField } from 'react-aria';
+import { SearchFieldProps, useSearchFieldState } from 'react-stately';
 
-import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
+import { CloseIcon, SearchIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
-import { Button } from '../../actions';
+import { tasty } from '../../../tasty';
 import { ariaToCubeButtonProps } from '../../../utils/react/mapProps';
 import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { tasty } from '../../../tasty';
-import { CloseIcon, SearchIcon } from '../../../icons';
+import { Button } from '../../actions';
+import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 
 export { useSearchFieldState, useSearchField };
 export type { SearchFieldProps };

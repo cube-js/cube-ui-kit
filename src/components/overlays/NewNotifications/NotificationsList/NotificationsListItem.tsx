@@ -1,8 +1,8 @@
 import { useRef } from 'react';
 
-import { useNotificationListItem } from '../hooks';
-import { tasty } from '../../../../tasty';
 import { useEvent } from '../../../../_internal';
+import { tasty } from '../../../../tasty';
+import { useNotificationListItem } from '../hooks';
 import { NotificationView } from '../NotificationView';
 
 import { NotificationListItemProps } from './types';

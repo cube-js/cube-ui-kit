@@ -1,6 +1,6 @@
-import { Button } from '../../actions';
-import { Styles } from '../../../tasty';
 import { CaretDownIcon, CaretUpIcon } from '../../../icons';
+import { Styles } from '../../../tasty';
+import { Button } from '../../actions';
 
 const STEP_BUTTON_STYLES: Styles = {
   width: '4x',
