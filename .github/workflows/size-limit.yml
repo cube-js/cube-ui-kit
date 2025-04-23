@@ -54,7 +54,7 @@ jobs:
       - name: Measure size
         id: measure_size
         continue-on-error: true
-        run: BASELINE='./__compare/${{ env.REPORT_FOLDER }}/output.json' node ./scripts/ci/measure-size.cjs
+        run: BASELINE='./__compare/${{ env.REPORT_FOLDER }}/output.json' node ./scripts/ci/measure-size.js
 
       - name: Save stats
         run: echo '${{ steps.measure_size.outputs.result }}' > ./size-limit-report/output.json
