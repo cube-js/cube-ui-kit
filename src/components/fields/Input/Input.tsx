@@ -15,7 +15,7 @@ type CubeInput = typeof TextInput & {
 };
 
 export const Input: CubeInput = Object.assign(
-  forwardRef(function Input(props, ref: ForwardedRef<HTMLInputElement>) {
+  forwardRef(function Input(props, ref: ForwardedRef<HTMLElement>) {
     return <TextInput ref={ref} {...props} />;
   }),
   {
