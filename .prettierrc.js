@@ -3,6 +3,7 @@ export default {
   trailingComma: 'all',
   importOrder: [
     '<BUILTIN_MODULES>',
+    '',
     '<THIRD_PARTY_MODULES>',
     '',
     '^[.]{2,}',
