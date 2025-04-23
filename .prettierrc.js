@@ -2,6 +2,7 @@ export default {
   singleQuote: true,
   trailingComma: 'all',
   importOrder: [
+    '^:node',
     '<BUILTIN_MODULES>',
     '',
     '<THIRD_PARTY_MODULES>',

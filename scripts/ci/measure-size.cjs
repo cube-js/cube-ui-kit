@@ -1,9 +1,41 @@
-import { readFile } from 'node:fs/promises';
+const { readFile } = require('node:fs/promises');
 
-import { setFailed, setOutput } from '@actions/core';
-import { getExecOutput } from '@actions/exec';
-import { markdownTable } from 'markdown-table';
-import bytes from 'bytes';
+const { setFailed, setOutput } = require('@actions/core');
+const { getExecOutput } = require('@actions/exec');
+const { markdownTable } = require('markdown-table');
+const bytes = require('bytes');
+
+/**
+ * @param size {number}
+ * @return {string | null}
+ */
+function formatBytes(size) {
+  return bytes.format(size, { unitSeparator: ' ' });
+}
+
+/**
+ * @param current {number}
+ * @param baseline {number}
+ * @return {string}
+ */
+function compareSizeWithBaseline(current, baseline) {
+  if (baseline === 0) {
+    return '+100% 🔺';
+  }
+
+  const value = ((current - baseline) / baseline) * 100;
+  const formatted = (Math.sign(value) * Math.ceil(Math.abs(value) * 100)) / 100;
+
+  if (value > 0) {
+    return `+${formatted}% 🔺`;
+  }
+
+  if (value === 0) {
+    return `${formatted}% 🟰`;
+  }
+
+  return `${formatted}% 🔽👏`;
+}
 
 async function run() {
   /**
@@ -57,36 +89,8 @@ async function run() {
   }
 }
 
-/**
- * @param size {number}
- * @return {string | null}
- */
-function formatBytes(size) {
-  return bytes.format(size, { unitSeparator: ' ' });
-}
-
-/**
- * @param current {number}
- * @param baseline {number}
- * @return {string}
- */
-function compareSizeWithBaseline(current, baseline) {
-  if (baseline === 0) {
-    return '+100% 🔺';
-  }
-
-  const value = ((current - baseline) / baseline) * 100;
-  const formatted = (Math.sign(value) * Math.ceil(Math.abs(value) * 100)) / 100;
-
-  if (value > 0) {
-    return `+${formatted}% 🔺`;
-  }
-
-  if (value === 0) {
-    return `${formatted}% 🟰`;
-  }
-
-  return `${formatted}% 🔽👏`;
-}
-
-await run();
+// Replace top-level await with function call that handles the promise
+run().catch((error) => {
+  console.error(error);
+  setFailed(error.message);
+});
