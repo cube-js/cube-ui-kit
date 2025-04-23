@@ -123,7 +123,7 @@ export function useNotifications(
   const api = useMemo<CubeNotificationsApi>(
     () => ({ notify: addToast, update: updateToast, remove: removeToast }),
     // All deps are stable since we use `useEvent` hook
-     
+
     [],
   );
 

@@ -150,7 +150,6 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
 
-   
   let { inputProps } = useSwitch(
     {
       ...props,

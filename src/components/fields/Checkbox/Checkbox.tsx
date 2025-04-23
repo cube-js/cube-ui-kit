@@ -178,7 +178,7 @@ function Checkbox(
 
   const toggleState = useToggleState(props);
 
-  let { inputProps } = groupState  
+  let { inputProps } = groupState
     ? useCheckboxGroupItem(
         {
           ...props,
@@ -192,7 +192,7 @@ function Checkbox(
         },
         groupState,
         inputRef,
-      )  
+      )
     : useCheckbox(
         {
           ...props,

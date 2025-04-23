@@ -62,7 +62,6 @@ export function useFieldProps<
     return props;
   }
 
-   
   const field = useField<T, Props>(props, {
     defaultValidationTrigger: params.defaultValidationTrigger,
   });
@@ -75,13 +74,11 @@ export function useFieldProps<
     );
   }
 
-   
   const onBlurChained = useChainedCallback(
     field?.onBlur,
     'onBlur' in props ? (props as any).onBlur : undefined,
   );
 
-   
   const onChangeEvent = useEvent((value, dontTouch: boolean) => {
     field?.onChange?.(
       value,
@@ -127,7 +124,6 @@ export function useFieldProps<
   }
 
   if (process.env.NODE_ENV === 'development') {
-     
     useDebugValue(result);
   }
 

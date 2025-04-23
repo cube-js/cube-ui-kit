@@ -28,7 +28,7 @@ export type CubeFieldWrapperProps = {
   labelProps?: CubeLabelProps;
   /** The description for the field. It will be placed below the label */
   description?: ReactNode;
-   
+
   requiredMark?: boolean;
   tooltip?: ReactNode;
   extra?: ReactNode;

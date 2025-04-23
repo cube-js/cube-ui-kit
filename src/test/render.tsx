@@ -19,7 +19,6 @@ export function renderWithForm(
 ) {
   const { formProps, ...testingLibraryOptions } = options ?? {};
 
-   
   let formInstance: CubeFormInstance<any>;
 
   return {

@@ -12,7 +12,7 @@ export type ToastProps = {
    *
    * @default false
    */
-   
+
   disableRemoveOnUnmount?: boolean;
 } & CubeToastsApiProps;
 

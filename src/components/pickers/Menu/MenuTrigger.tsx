@@ -28,7 +28,7 @@ export type CubeMenuTriggerProps = AriaMenuTriggerProps &
     ];
     direction?: Placement;
     align?: 'start' | 'end';
-     
+
     closeOnSelect?: boolean;
   };
 
