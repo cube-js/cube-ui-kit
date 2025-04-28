@@ -210,7 +210,7 @@ export interface CubeSkeletonLayoutProps {
   cards?: number;
   /** The static mode */
   isStatic?: boolean;
-  rootProps: CubeSkeletonRootProps;
+  rootProps?: CubeSkeletonRootProps;
   children?: ReactNode;
 }
 
