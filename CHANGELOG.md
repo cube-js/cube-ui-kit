@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.59.11
+
+### Patch Changes
+
+- [#651](https://github.com/cube-js/cube-ui-kit/pull/651) [`ae277a7`](https://github.com/cube-js/cube-ui-kit/commit/ae277a785afeba0e5e580f2ef7882b8962ef6094) Thanks [@vasilev-alex](https://github.com/vasilev-alex)! - Pass props to the skeleton layout root.
+
 ## 0.59.10
 
 ### Patch Changes
