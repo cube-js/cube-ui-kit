@@ -1,4 +1,8 @@
-import { BaseProps, ContainerStyleProps } from '../../../tasty';
+import {
+  BaseProps,
+  ContainerStyleProps,
+  filterBaseProps,
+} from '../../../tasty';
 import { Flow } from '../../layout/Flow';
 import { CubeGridProps, Grid } from '../../layout/Grid';
 import { Space } from '../../layout/Space';
@@ -192,7 +196,7 @@ export function Skeleton({ layout, isStatic, ...props }: CubeSkeletonProps) {
   layout = layout || 'page';
 
   return LAYOUT_MAP[layout] ? (
-    LAYOUT_MAP[layout]({ isStatic, qa: 'Skeleton', ...props })
+    LAYOUT_MAP[layout]({ isStatic, qa: 'Skeleton', ...filterBaseProps(props) })
   ) : (
     <Placeholder {...props} />
   );
