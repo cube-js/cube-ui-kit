@@ -67,7 +67,7 @@ const LAYOUT_MAP = {
   },
   menu({ lines, isStatic = false, rootProps }: CubeSkeletonLayoutProps) {
     return (
-      <Flow gap="3.25x" {...rootProps} padding="3x 1x">
+      <Flow gap="3.25x" padding="3x 1x" {...rootProps}>
         {Array(lines || 5)
           .fill(0)
           .map((item, i) => (
@@ -132,8 +132,8 @@ const LAYOUT_MAP = {
       <Grid
         columns={`repeat(${columns}, 1fr)`}
         gap="3x"
-        {...rootProps}
         padding="1x 0"
+        {...rootProps}
       >
         {Array(rows)
           .fill(0)
