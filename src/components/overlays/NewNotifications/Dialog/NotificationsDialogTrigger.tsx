@@ -1,18 +1,18 @@
 import { ReactNode } from 'react';
 import { VisuallyHidden } from 'react-aria';
 
+import { tasty } from '../../../../tasty';
+import { ClearSlots } from '../../../../utils/react';
+import { Title } from '../../../content/Title';
+import { Flex } from '../../../layout/Flex';
 import {
   CubeDialogProps,
   CubeDialogTriggerProps,
   Dialog,
   DialogTrigger,
 } from '../../Dialog';
-import { tasty } from '../../../../tasty';
-import { Flex } from '../../../layout/Flex';
-import { Title } from '../../../content/Title';
-import { ClearSlots } from '../../../../utils/react';
-import { CubeNotifyApiPropsWithID } from '../types';
 import { useNotificationsObserver } from '../hooks';
+import { CubeNotifyApiPropsWithID } from '../types';
 
 export type NotificationsDialogTriggerProps = Omit<
   CubeDialogTriggerProps,

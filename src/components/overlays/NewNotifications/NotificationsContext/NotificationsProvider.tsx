@@ -15,7 +15,7 @@ export const NotificationsContext = createContext<{
 
 export function NotificationsProvider(
   props: PropsWithChildren<{ rootRef: RefObject<HTMLElement | null> | null }>,
-): JSX.Element {
+) {
   const { children, rootRef } = props;
 
   const { notifications, api, addOnDismissListener, onDismissNotification } =

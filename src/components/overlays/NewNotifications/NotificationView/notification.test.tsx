@@ -1,14 +1,14 @@
 import {
-  render,
-  getByTestId,
-  screen,
   cleanup,
+  getByTestId,
+  render,
+  screen,
   waitFor,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { act } from '../../../../test';
 import { Timer } from '../../../../_internal';
+import { act } from '../../../../test';
 
 import { NotificationView } from './NotificationView';
 

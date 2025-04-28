@@ -1,17 +1,17 @@
-import { ReactNode, useMemo, useState } from 'react';
 import copy from 'clipboard-copy';
+import { ReactNode, useMemo, useState } from 'react';
 
-import { Action, Button } from '../../actions';
-import { Card, CubeCardProps } from '../Card/Card';
+import { CopyIcon, EyeIcon, EyeInvisibleIcon } from '../../../icons';
 import { tasty } from '../../../tasty';
+import { Action, Button } from '../../actions';
 import {
   CubePrismCodeProps,
   PrismCode,
 } from '../../content/PrismCode/PrismCode';
-import { TooltipTrigger } from '../../overlays/Tooltip/TooltipTrigger';
-import { Tooltip } from '../../overlays/Tooltip/Tooltip';
 import { useToastsApi } from '../../overlays/Toasts';
-import { CopyIcon, EyeIcon, EyeInvisibleIcon } from '../../../icons';
+import { Tooltip } from '../../overlays/Tooltip/Tooltip';
+import { TooltipTrigger } from '../../overlays/Tooltip/TooltipTrigger';
+import { Card, CubeCardProps } from '../Card/Card';
 
 const ActionElement = tasty(Action, {
   styles: {

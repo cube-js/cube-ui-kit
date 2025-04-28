@@ -1,5 +1,5 @@
-import { Meta, StoryFn } from '@storybook/react';
 import { SettingOutlined } from '@ant-design/icons';
+import { Meta, StoryFn } from '@storybook/react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 

@@ -1,15 +1,15 @@
-import { forwardRef, RefObject, useRef } from 'react';
-import { useLocale, useNumberField, AriaNumberFieldProps } from 'react-aria';
+import { ForwardedRef, forwardRef, RefObject, useRef } from 'react';
+import { AriaNumberFieldProps, useLocale, useNumberField } from 'react-aria';
 import { useNumberFieldState } from 'react-stately';
 
-import { useFieldProps } from '../../form';
 import { useProviderProps } from '../../../provider';
-import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 import { tasty } from '../../../tasty';
 import {
   castNullableNumberValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { useFieldProps } from '../../form';
+import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 
 import { StepButton } from './StepButton';
 
@@ -36,7 +36,10 @@ const StepperContainer = tasty({
   },
 });
 
-function NumberInput(props: WithNullableValue<CubeNumberInputProps>, ref) {
+function NumberInput(
+  props: WithNullableValue<CubeNumberInputProps>,
+  ref: ForwardedRef<HTMLElement>,
+) {
   props = castNullableNumberValue(props);
   props = useProviderProps(props);
   props = useFieldProps(props);
@@ -53,9 +56,9 @@ function NumberInput(props: WithNullableValue<CubeNumberInputProps>, ref) {
   let showStepper = !hideStepper;
   let { locale } = useLocale();
   let state = useNumberFieldState({ ...props, locale });
-  let defaultInputRef = useRef(null);
+  let localInputRef = useRef<HTMLInputElement>(null);
 
-  inputRef = inputRef || defaultInputRef;
+  inputRef = inputRef ?? localInputRef;
 
   let {
     groupProps,
@@ -113,7 +116,7 @@ function NumberInput(props: WithNullableValue<CubeNumberInputProps>, ref) {
 }
 
 /**
- * NumberFields allow users to enter a number, and increment or decrement the value using stepper buttons.
+ * NumberFields allow users to enter a number and increment or decrement the value using stepper buttons.
  */
 const _NumberInput = forwardRef(NumberInput);
 

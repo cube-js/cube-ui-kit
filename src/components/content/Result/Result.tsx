@@ -1,11 +1,11 @@
-import { ComponentType, forwardRef, ReactNode, useMemo } from 'react';
 import {
   CheckCircleFilled,
   CloseCircleFilled,
   InfoCircleFilled,
 } from '@ant-design/icons';
+import { ComponentType, forwardRef, ReactNode, useMemo } from 'react';
 
-import { Title } from '../Title';
+import { WarningFilledIcon } from '../../../icons';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -15,7 +15,7 @@ import {
   tasty,
 } from '../../../tasty';
 import { mergeProps, wrapNodeIfPlain } from '../../../utils/react';
-import { WarningFilledIcon } from '../../../icons';
+import { Title } from '../Title';
 
 export interface CubeResultProps extends BaseProps, ContainerStyleProps {
   /** Additional block content. For example, a set of buttons */

@@ -1,3 +1,4 @@
+import { AriaLabelingProps, CollectionBase, DOMRef } from '@react-types/shared';
 import {
   cloneElement,
   forwardRef,
@@ -7,8 +8,8 @@ import {
   useMemo,
   useRef,
 } from 'react';
-import { Item, useSelectState } from 'react-stately';
 import {
+  AriaSelectProps,
   DismissButton,
   FocusScope,
   HiddenSelect,
@@ -19,13 +20,13 @@ import {
   useOverlay,
   useOverlayPosition,
   useSelect,
-  AriaSelectProps,
 } from 'react-aria';
+import { Item, useSelectState } from 'react-stately';
 import styled from 'styled-components';
-import { AriaLabelingProps, CollectionBase, DOMRef } from '@react-types/shared';
 
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { LoadingIcon } from '../../../icons/index';
 import { useProviderProps } from '../../../provider';
+import { FieldBaseProps } from '../../../shared/index';
 import {
   BasePropsWithoutChildren,
   BLOCK_STYLES,
@@ -37,16 +38,15 @@ import {
   Styles,
   tasty,
 } from '../../../tasty/index';
-import { useFocus } from '../../../utils/react/interactions';
-import { OverlayWrapper } from '../../overlays/OverlayWrapper';
-import { FieldBaseProps } from '../../../shared/index';
-import { getOverlayTransitionCSS } from '../../../utils/transitions';
 import { mergeProps, useCombinedRefs } from '../../../utils/react/index';
-import { DEFAULT_INPUT_STYLES, INPUT_WRAPPER_STYLES } from '../index';
+import { useFocus } from '../../../utils/react/interactions';
+import { getOverlayTransitionCSS } from '../../../utils/transitions';
 import { DEFAULT_BUTTON_STYLES } from '../../actions/index';
-import { LoadingIcon } from '../../../icons/index';
+import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
+import { DEFAULT_INPUT_STYLES, INPUT_WRAPPER_STYLES } from '../index';
 
 function CaretDownIcon() {
   return (

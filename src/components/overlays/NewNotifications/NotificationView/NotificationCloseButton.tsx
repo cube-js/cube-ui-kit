@@ -1,8 +1,8 @@
 import { memo } from 'react';
 
-import { Button } from '../../../actions';
-import { tasty } from '../../../../tasty';
 import { CloseIcon } from '../../../../icons';
+import { tasty } from '../../../../tasty';
+import { Button } from '../../../actions';
 
 export type NotificationCloseButtonProps = {
   onPress: () => void;
@@ -19,7 +19,7 @@ const CloseButton = tasty(Button, {
 
 export const NotificationCloseButton = memo(function NotificationCloseButton(
   props: NotificationCloseButtonProps,
-): JSX.Element {
+) {
   const { onPress } = props;
 
   return <CloseButton onPress={onPress} />;

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { ValidateTrigger } from '../../../../shared/index';
 import { useEvent, useIsFirstRender } from '../../../../_internal/index';
+import { ValidateTrigger } from '../../../../shared/index';
 import { useFormProps } from '../Form';
 import { FieldTypes } from '../types';
 import { delayValidationRule } from '../validation';

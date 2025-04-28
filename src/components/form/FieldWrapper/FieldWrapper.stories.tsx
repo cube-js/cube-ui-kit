@@ -1,5 +1,5 @@
-import { Meta, StoryFn } from '@storybook/react';
 import { DollarCircleFilled } from '@ant-design/icons';
+import { Meta, StoryFn } from '@storybook/react';
 
 import { Button } from '../../actions/index';
 import { Text } from '../../content/Text';

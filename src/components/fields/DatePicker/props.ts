@@ -1,4 +1,4 @@
-import { DateValue, AriaDatePickerProps } from 'react-aria';
+import { AriaDatePickerProps, DateValue } from 'react-aria';
 
 export const DEFAULT_DATE_PROPS: Partial<AriaDatePickerProps<DateValue>> = {
   granularity: 'day',

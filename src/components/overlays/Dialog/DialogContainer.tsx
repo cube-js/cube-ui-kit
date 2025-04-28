@@ -1,12 +1,12 @@
 import {
   Children,
-  ReactNode,
-  useRef,
   isValidElement,
   ReactElement,
+  ReactNode,
+  useRef,
 } from 'react';
 
-import { WithCloseBehavior, Modal } from '../Modal';
+import { Modal, WithCloseBehavior } from '../Modal';
 
 import { DialogContext } from './context';
 

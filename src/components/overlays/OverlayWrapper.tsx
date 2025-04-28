@@ -1,6 +1,6 @@
-import { CSSTransition } from 'react-transition-group';
 import { ReactNode, useRef } from 'react';
 import { Placement } from 'react-aria';
+import { CSSTransition } from 'react-transition-group';
 
 import { OverlayTransitionCSSProps } from '../../utils/transitions';
 import { Portal } from '../portal';
@@ -45,7 +45,7 @@ export function OverlayWrapper({
     <CSSTransition
       unmountOnExit
       in={isOpen}
-      timeout={180}
+      timeout={120}
       classNames="cube-overlay-transition"
     >
       <>{children}</>

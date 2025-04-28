@@ -8,13 +8,13 @@ import {
 } from 'react';
 import styled from 'styled-components';
 
-import { Block } from '../../Block';
-import { Space } from '../../layout/Space';
-import { CubeFlexProps, Flex } from '../../layout/Flex';
-import { Button, CubeButtonProps } from '../../actions';
 import { Styles, tasty } from '../../../tasty';
-import { Flow } from '../../layout/Flow';
 import { useLayoutEffect } from '../../../utils/react';
+import { Button, CubeButtonProps } from '../../actions';
+import { Block } from '../../Block';
+import { CubeFlexProps, Flex } from '../../layout/Flex';
+import { Flow } from '../../layout/Flow';
+import { Space } from '../../layout/Space';
 
 export interface CubeTabData {
   id: string | number;

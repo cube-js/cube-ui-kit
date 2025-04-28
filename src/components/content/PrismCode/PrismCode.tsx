@@ -1,9 +1,10 @@
-import { forwardRef, useEffect } from 'react';
 import Prism from 'prismjs';
-import 'prismjs/components/prism-yaml';
-import 'prismjs/components/prism-sql';
-import 'prismjs/components/prism-javascript';
+import { forwardRef, useEffect } from 'react';
+
 import 'prismjs/components/prism-diff';
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-sql';
+import 'prismjs/components/prism-yaml';
 import 'prismjs/plugins/diff-highlight/prism-diff-highlight';
 
 import {

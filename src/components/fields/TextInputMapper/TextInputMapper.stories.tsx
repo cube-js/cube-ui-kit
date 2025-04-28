@@ -5,7 +5,7 @@ import { baseProps } from '../../../stories/lists/baseProps';
 import { Form } from '../../form';
 import { TextInput } from '../TextInput/index';
 
-import { TextInputMapper, CubeTextInputMapperProps } from './TextInputMapper';
+import { CubeTextInputMapperProps, TextInputMapper } from './TextInputMapper';
 
 export default {
   title: 'Forms/TextInputMapper',

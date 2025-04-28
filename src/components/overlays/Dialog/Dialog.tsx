@@ -1,10 +1,15 @@
 import { useDOMRef } from '@react-spectrum/utils';
-import { DismissButton } from 'react-aria';
-import { forwardRef, ReactElement, useEffect, useMemo } from 'react';
-import { useDialog, useMessageFormatter, AriaDialogProps } from 'react-aria';
 import { DOMRef } from '@react-types/shared';
+import { forwardRef, ReactElement, useEffect, useMemo } from 'react';
+import {
+  AriaDialogProps,
+  DismissButton,
+  useDialog,
+  useMessageFormatter,
+} from 'react-aria';
 import FocusLock from 'react-focus-lock';
 
+import { CloseIcon } from '../../../icons';
 import {
   BASE_STYLES,
   BaseProps,
@@ -20,7 +25,6 @@ import {
 import { mergeProps, SlotProvider } from '../../../utils/react';
 import { Button } from '../../actions';
 import { useOpenTransitionContext } from '../Modal/OpenTransition';
-import { CloseIcon } from '../../../icons';
 
 import { useDialogContext } from './context';
 

@@ -1,5 +1,5 @@
-import { Styles, Selector } from '../styles/types';
 import { createStyle, STYLE_HANDLER_MAP } from '../styles';
+import { Selector, Styles } from '../styles/types';
 
 import { mediaWrapper, normalizeStyleZones } from './responsive';
 import { StyleHandler, StyleMap, StyleValueStateMap } from './styles';

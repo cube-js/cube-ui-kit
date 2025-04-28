@@ -14,7 +14,7 @@ const PORTAL_KEY = 'AlertDialogZone';
 /**
  * @internal Do not use it
  */
-export function AlertDialogZone(props: DialogZoneProps): JSX.Element {
+export function AlertDialogZone(props: DialogZoneProps) {
   const { openedDialog } = props;
 
   if (openedDialog === null) return <Portal key={PORTAL_KEY} />;

@@ -1,8 +1,8 @@
 import { StoryFn } from '@storybook/react';
 
+import { Divider } from '../../../content/Divider';
 import { Portal } from '../../Portal';
 import { PortalProps } from '../../types';
-import { Divider } from '../../../content/Divider';
 
 export const Basic: StoryFn<PortalProps> = (args) => (
   <>

@@ -7,8 +7,8 @@ import {
 } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 
-import { TimeInput, CubeTimeInputProps } from './TimeInput';
 import { parseAbsoluteDate } from './parseDate';
+import { CubeTimeInputProps, TimeInput } from './TimeInput';
 
 export default {
   title: 'Forms/TimeInput',

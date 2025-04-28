@@ -1,9 +1,11 @@
-import { forwardRef, useRef } from 'react';
 import { useFocusableRef } from '@react-spectrum/utils';
-import { useSwitch, useHover, AriaSwitchProps } from 'react-aria';
+import { forwardRef, useRef } from 'react';
+import { AriaSwitchProps, useHover, useSwitch } from 'react-aria';
 import { useToggleState } from 'react-stately';
 
+import { LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
+import { FieldBaseProps } from '../../../shared';
 import {
   BaseProps,
   BLOCK_STYLES,
@@ -14,17 +16,15 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { useFocus } from '../../../utils/react/interactions';
 import { mergeProps } from '../../../utils/react';
-import { HiddenInput } from '../../HiddenInput';
-import { Text } from '../../content/Text';
-import { FieldBaseProps } from '../../../shared';
+import { useFocus } from '../../../utils/react/interactions';
 import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
+import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
-import { LoadingIcon } from '../../../icons';
+import { HiddenInput } from '../../HiddenInput';
 
 const SwitchWrapperElement = tasty({
   as: 'label',
@@ -150,7 +150,6 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   let { inputProps } = useSwitch(
     {
       ...props,

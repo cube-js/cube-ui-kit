@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react-hooks';
 
-import { useTimer } from './use-timer';
 import { Timer } from './timer';
+import { useTimer } from './use-timer';
 
 describe('useTimer', () => {
   const callback = jest.fn();

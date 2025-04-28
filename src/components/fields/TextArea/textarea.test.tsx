@@ -1,4 +1,4 @@
-import { renderWithForm, userEvent, render, act } from '../../../test';
+import { act, render, renderWithForm, userEvent } from '../../../test';
 import { Field } from '../../form';
 
 import { TextArea } from './TextArea';

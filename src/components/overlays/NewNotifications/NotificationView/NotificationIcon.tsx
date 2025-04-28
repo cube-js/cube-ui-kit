@@ -1,8 +1,8 @@
 import { memo, ReactNode } from 'react';
 
-import { tasty } from '../../../../tasty';
 import { DangerIcon, ExclamationIcon } from '../../../../icons';
 import { wrapIcon } from '../../../../icons/wrap-icon';
+import { tasty } from '../../../../tasty';
 
 import { NotificationIconProps } from './types';
 
@@ -62,7 +62,7 @@ const IconPreset = tasty({
  */
 export const NotificationIcon = memo(function NotificationIcon(
   props: NotificationIconProps,
-): JSX.Element {
+) {
   const { icon, type } = props;
 
   return (

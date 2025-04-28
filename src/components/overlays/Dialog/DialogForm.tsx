@@ -1,18 +1,17 @@
+import { Button, ButtonGroup, CubeButtonProps } from '../../actions';
+import { Content } from '../../content/Content';
+import { Header } from '../../content/Header';
 import { Title } from '../../content/Title';
 import {
   CubeFormProps,
-  Form,
-  useForm,
-  SubmitButton,
   FieldTypes,
+  Form,
+  SubmitButton,
+  useForm,
 } from '../../form';
-import { Content } from '../../content/Content';
-import { Button, CubeButtonProps } from '../../actions';
-import { ButtonGroup } from '../../actions';
-import { Header } from '../../content/Header';
 
 import { useDialogContext } from './context';
-import { Dialog, CubeDialogProps } from './Dialog';
+import { CubeDialogProps, Dialog } from './Dialog';
 
 export interface CubeDialogFormProps<T extends FieldTypes = FieldTypes>
   extends Omit<CubeDialogProps, 'children'>,

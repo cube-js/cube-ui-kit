@@ -1,16 +1,16 @@
-import { forwardRef, useRef } from 'react';
 import { createCalendar } from '@internationalized/date';
 import { FocusableRef } from '@react-types/shared';
+import { forwardRef, useRef } from 'react';
 import {
-  useDateField,
-  useLocale,
   AriaDateFieldProps,
   DateValue,
+  useDateField,
+  useLocale,
 } from 'react-aria';
 import { useDateFieldState } from 'react-stately';
 
 import { useProviderProps } from '../../../provider';
-import { wrapWithField, useFieldProps, useFormProps } from '../../form';
+import { FieldBaseProps, ValidationState } from '../../../shared';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -18,14 +18,14 @@ import {
   extractStyles,
   Styles,
 } from '../../../tasty';
-import { FieldBaseProps, ValidationState } from '../../../shared';
 import { mergeProps } from '../../../utils/react';
+import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 
-import { formatSegments, useFocusManagerRef } from './utils';
 import { DateInputBase } from './DateInputBase';
 import { DatePickerSegment } from './DatePickerSegment';
-import { DEFAULT_DATE_PROPS } from './props';
 import { parseAbsoluteDate } from './parseDate';
+import { DEFAULT_DATE_PROPS } from './props';
+import { formatSegments, useFocusManagerRef } from './utils';
 
 export interface CubeDateInputProps<T extends DateValue = DateValue>
   extends AriaDateFieldProps<T>,

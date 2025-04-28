@@ -1,8 +1,8 @@
-import './version';
-
+import { CubeParagraphProps, Paragraph } from './components/content/Paragraph';
 import { CubeTextProps, Text } from './components/content/Text';
 import { CubeTitleProps, Title } from './components/content/Title';
-import { CubeParagraphProps, Paragraph } from './components/content/Paragraph';
+
+import './version';
 
 export { Item, Section } from 'react-stately';
 

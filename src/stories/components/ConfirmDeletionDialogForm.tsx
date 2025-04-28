@@ -1,11 +1,11 @@
 import {
+  CubeDialogFormProps,
   DialogForm,
-  Paragraph,
-  Input,
-  Text,
   Field,
   FieldTypes,
-  CubeDialogFormProps,
+  Input,
+  Paragraph,
+  Text,
 } from '../../index';
 
 interface ConfirmDeletionDialogFormProps<T extends FieldTypes>

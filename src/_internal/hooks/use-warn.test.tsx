@@ -1,4 +1,4 @@
-import { renderHook, render } from '../../test';
+import { render, renderHook } from '../../test';
 
 import { useWarn } from './use-warn';
 

@@ -7,13 +7,13 @@ import {
   useState,
 } from 'react';
 
-import { Block } from '../../Block';
-import { Action, Button, CubeActionProps } from '../../actions';
-import { Space } from '../../layout/Space';
-import { CubeFlexProps, Flex } from '../../layout/Flex';
+import { CloseIcon } from '../../../icons';
 import { Styles, tasty } from '../../../tasty';
 import { useLayoutEffect } from '../../../utils/react';
-import { CloseIcon } from '../../../icons';
+import { Action, Button, CubeActionProps } from '../../actions';
+import { Block } from '../../Block';
+import { CubeFlexProps, Flex } from '../../layout/Flex';
+import { Space } from '../../layout/Space';
 
 interface TabData {
   id: string | number;

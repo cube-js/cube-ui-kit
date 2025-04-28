@@ -1,8 +1,8 @@
 import { HTMLAttributes, memo } from 'react';
 
 import { tasty } from '../../../../tasty';
-import { Paragraph } from '../../../content/Paragraph';
 import { mergeProps } from '../../../../utils/react';
+import { Paragraph } from '../../../content/Paragraph';
 
 import { NotificationProps } from './types';
 

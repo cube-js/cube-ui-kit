@@ -1,27 +1,26 @@
-import { within, userEvent, waitFor } from '@storybook/test';
-import { expect } from '@storybook/test';
-import { StoryFn } from '@storybook/react';
-import { useRef, useState } from 'react';
 import { FocusableRefValue } from '@react-types/shared';
+import { StoryFn } from '@storybook/react';
+import { expect, userEvent, waitFor, within } from '@storybook/test';
+import { useRef, useState } from 'react';
 
-import { CubeDialogProps } from '../Dialog';
-import { CubeDialogTriggerProps } from '../DialogTrigger';
 import {
   Button,
   Content,
   Dialog,
   DialogTrigger,
-  Text,
+  DirectionIcon,
   Footer,
   Header,
   Paragraph,
-  Title,
   Space,
-  DirectionIcon,
+  Text,
   TextInput,
+  Title,
 } from '../../../../index';
-import { timeout } from '../../../../utils/promise';
 import { baseProps } from '../../../../stories/lists/baseProps';
+import { timeout } from '../../../../utils/promise';
+import { CubeDialogProps } from '../Dialog';
+import { CubeDialogTriggerProps } from '../DialogTrigger';
 
 export default {
   title: 'Overlays/Dialog',

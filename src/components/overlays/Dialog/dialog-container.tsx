@@ -1,9 +1,9 @@
 import {
-  useState,
-  useMemo,
   ComponentProps,
   ComponentType,
+  useMemo,
   useRef,
+  useState,
 } from 'react';
 
 import { useEvent } from '../../../_internal/index';

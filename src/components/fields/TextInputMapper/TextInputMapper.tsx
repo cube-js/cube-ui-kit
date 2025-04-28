@@ -10,12 +10,12 @@ import {
 } from 'react';
 
 import { useEvent } from '../../../_internal/hooks';
+import { CloseIcon, PlusIcon } from '../../../icons';
 import { FieldBaseProps } from '../../../shared';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
-import { CloseIcon, PlusIcon } from '../../../icons';
 import { Button } from '../../actions';
 import { Block } from '../../Block';
+import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { Flow } from '../../layout/Flow';
 import { Grid } from '../../layout/Grid';
 import { Space } from '../../layout/Space';

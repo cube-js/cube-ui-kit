@@ -1,5 +1,5 @@
-import type { ListState } from 'react-stately';
 import type { Collection, CollectionElement, Node } from '@react-types/shared';
+import type { ListState } from 'react-stately';
 import type { CubeNotificationProps } from '../types';
 
 export type CollectionChildren<T, R = T> =

@@ -1,11 +1,11 @@
 import {
-  Paragraph as UIKitParagraph,
-  Text as UIKitText,
-  Link,
-  Flow,
-  Space,
   Block,
   CubeIcon,
+  Flow,
+  Link,
+  Space,
+  Paragraph as UIKitParagraph,
+  Text as UIKitText,
 } from '../index';
 
 export default {

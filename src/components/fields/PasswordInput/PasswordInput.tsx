@@ -1,20 +1,23 @@
-import { forwardRef, useCallback, useRef, useState } from 'react';
+import { ForwardedRef, forwardRef, useCallback, useRef, useState } from 'react';
 import { useTextField } from 'react-aria';
 
-import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
+import { EyeIcon, EyeInvisibleIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
-import { Button } from '../../actions';
 import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { Button } from '../../actions';
 import { useFieldProps } from '../../form';
-import { EyeIcon, EyeInvisibleIcon } from '../../../icons';
+import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 
 export interface CubePasswordInputProps
   extends WithNullableValue<CubeTextInputBaseProps> {}
 
-function PasswordInput(props: CubePasswordInputProps, ref) {
+function PasswordInput(
+  props: CubePasswordInputProps,
+  ref: ForwardedRef<HTMLElement>,
+) {
   props = castNullableStringValue(props);
   props = useProviderProps(props);
   props = useFieldProps(props, {
@@ -26,7 +29,8 @@ function PasswordInput(props: CubePasswordInputProps, ref) {
   });
 
   let [type, setType] = useState('password');
-  let inputRef = useRef(null);
+  let localInputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+  let inputRef = props.inputRef ?? localInputRef;
   let { labelProps, inputProps } = useTextField(
     {
       ...props,

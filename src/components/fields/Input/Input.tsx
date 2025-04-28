@@ -1,10 +1,10 @@
 import { ForwardedRef, forwardRef } from 'react';
 
-import { TextInput } from '../TextInput';
-import { PasswordInput } from '../PasswordInput/PasswordInput';
-import { NumberInput } from '../NumberInput/NumberInput';
 import { FileInput } from '../FileInput/FileInput';
+import { NumberInput } from '../NumberInput/NumberInput';
+import { PasswordInput } from '../PasswordInput/PasswordInput';
 import { TextArea } from '../TextArea/TextArea';
+import { TextInput } from '../TextInput';
 
 type CubeInput = typeof TextInput & {
   Text: typeof TextInput;
@@ -15,7 +15,7 @@ type CubeInput = typeof TextInput & {
 };
 
 export const Input: CubeInput = Object.assign(
-  forwardRef(function Input(props, ref: ForwardedRef<HTMLInputElement>) {
+  forwardRef(function Input(props, ref: ForwardedRef<HTMLElement>) {
     return <TextInput ref={ref} {...props} />;
   }),
   {

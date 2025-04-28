@@ -25,7 +25,7 @@ Large.args = { size: 'large' };
 export const WithChildren = Template.bind({});
 WithChildren.args = { spinning: false, children: <Paragraph>Hello</Paragraph> };
 
-export const StressTest: Story<CubeSpinProps> = (args) => (
+export const StressTest: StoryFn<CubeSpinProps> = (args) => (
   <>
     {Array.from({ length: 500 }).map((_, i) => (
       <Spin key={i} {...args} styles={{ display: 'inline-flex' }} />

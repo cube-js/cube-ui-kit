@@ -1,5 +1,5 @@
-import validUrl from 'valid-url';
 import { validate as validateEmail } from 'email-validator';
+import validUrl from 'valid-url';
 
 const TYPE_CHECKERS = {
   string(v) {
@@ -48,7 +48,7 @@ const TYPE_LIST = Object.keys(TYPE_CHECKERS);
 const VALIDATORS = {
   async required(value) {
     if (Array.isArray(value)) {
-      return !!value.length ? Promise.resolve() : Promise.reject();
+      return value.length ? Promise.resolve() : Promise.reject();
     }
 
     return !!value || value === 0 ? Promise.resolve() : Promise.reject();

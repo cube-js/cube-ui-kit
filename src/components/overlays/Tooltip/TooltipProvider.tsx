@@ -2,8 +2,8 @@ import { ReactNode, useEffect, useState } from 'react';
 
 import { Styles } from '../../../tasty';
 
-import { CubeTooltipTriggerProps, TooltipTrigger } from './TooltipTrigger';
 import { CubeTooltipProps, Tooltip } from './Tooltip';
+import { CubeTooltipTriggerProps, TooltipTrigger } from './TooltipTrigger';
 
 export interface CubeTooltipProviderProps
   extends Omit<CubeTooltipTriggerProps, 'children'> {

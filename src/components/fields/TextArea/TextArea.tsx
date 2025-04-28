@@ -1,16 +1,22 @@
-import { forwardRef, useEffect, useLayoutEffect, useRef } from 'react';
 import { useControlledState } from '@react-stately/utils';
+import {
+  ForwardedRef,
+  forwardRef,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+} from 'react';
 import { useTextField } from 'react-aria';
 
 import { useEvent } from '../../../_internal/index';
-import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 import { useProviderProps } from '../../../provider';
+import { chain } from '../../../utils/react';
 import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { chain } from '../../../utils/react';
 import { useFieldProps } from '../../form';
+import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 
 export interface CubeTextAreaProps extends CubeTextInputBaseProps {
   /** Whether the textarea should change its size depends on the content */
@@ -22,7 +28,10 @@ export interface CubeTextAreaProps extends CubeTextInputBaseProps {
   rows?: number;
 }
 
-function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
+function TextArea(
+  props: WithNullableValue<CubeTextAreaProps>,
+  ref: ForwardedRef<HTMLElement>,
+) {
   props = castNullableStringValue(props);
   props = useProviderProps(props);
   props = useFieldProps(props, {
@@ -51,7 +60,8 @@ function TextArea(props: WithNullableValue<CubeTextAreaProps>, ref) {
     props.defaultValue,
     () => {},
   );
-  let inputRef = useRef<HTMLTextAreaElement>(null);
+  let localInputRef = useRef<HTMLTextAreaElement>(null);
+  let inputRef = props.inputRef ?? localInputRef;
 
   let { labelProps, inputProps } = useTextField(
     {

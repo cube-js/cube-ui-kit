@@ -1,3 +1,5 @@
+import { createDOMRef } from '@react-spectrum/utils';
+import { DOMRefValue } from '@react-types/shared';
 import {
   ForwardedRef,
   forwardRef,
@@ -5,13 +7,10 @@ import {
   useImperativeHandle,
   useRef,
 } from 'react';
-import { createDOMRef } from '@react-spectrum/utils';
-import { useTooltip, AriaTooltipProps } from 'react-aria';
+import { AriaTooltipProps, useTooltip } from 'react-aria';
 import styled from 'styled-components';
-import { DOMRefValue } from '@react-types/shared';
 
 import { PlacementAxis } from '../../../shared';
-import { getOverlayTransitionCSS } from '../../../utils/transitions';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -21,6 +20,7 @@ import {
   tasty,
 } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
+import { getOverlayTransitionCSS } from '../../../utils/transitions';
 
 import { TooltipContext } from './context';
 

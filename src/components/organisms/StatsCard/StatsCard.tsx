@@ -1,8 +1,8 @@
 import { ReactNode } from 'react';
 
 import { Card, CubeCardProps } from '../../content/Card/Card';
-import { Title } from '../../content/Title';
 import { Text } from '../../content/Text';
+import { Title } from '../../content/Title';
 
 export interface CubeStatsCard extends CubeCardProps {
   title?: string | ReactNode;

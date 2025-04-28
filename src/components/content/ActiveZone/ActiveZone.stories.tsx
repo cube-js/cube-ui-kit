@@ -1,6 +1,6 @@
-import { TooltipTrigger } from '../../overlays/Tooltip/TooltipTrigger';
-import { Tooltip } from '../../overlays/Tooltip/Tooltip';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Tooltip } from '../../overlays/Tooltip/Tooltip';
+import { TooltipTrigger } from '../../overlays/Tooltip/TooltipTrigger';
 
 import { ActiveZone } from './ActiveZone';
 

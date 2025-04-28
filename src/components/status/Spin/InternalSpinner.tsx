@@ -10,7 +10,7 @@ const SpinsBox = tasty({ styles: { position: 'relative', blockSize: '100%' } });
 
 export const InternalSpinner = memo(function InternalSpinner(
   props: InternalSpinnerProps,
-): JSX.Element {
+) {
   const { size } = props;
 
   return (

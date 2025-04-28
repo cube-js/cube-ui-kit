@@ -1,5 +1,5 @@
-import userEvent from '@testing-library/user-event';
 import { act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { render } from '../../../../../test';
 import { NotificationsBar } from '../NotificationsBar';

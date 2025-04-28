@@ -54,7 +54,7 @@ jobs:
       - name: Measure size
         id: measure_size
         continue-on-error: true
-        run: BASELINE='./__compare/${{ env.REPORT_FOLDER }}/output.json' node ./scripts/ci/measure-size.mjs
+        run: BASELINE='./__compare/${{ env.REPORT_FOLDER }}/output.json' node ./scripts/ci/measure-size.js
 
       - name: Save stats
         run: echo '${{ steps.measure_size.outputs.result }}' > ./size-limit-report/output.json
@@ -87,7 +87,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const setMessage = require('${{ github.workspace }}/scripts/ci/set-message')
+            const setMessage = require('${{ github.workspace }}/scripts/ci/set-message.cjs')
             
             await setMessage({
               header: "## 🏋️ Size limit report",

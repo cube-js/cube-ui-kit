@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Children,
   cloneElement,
@@ -9,16 +8,16 @@ import {
   useMemo,
 } from 'react';
 
-import { mergeProps } from '../../../utils/react/index';
 import { FieldBaseProps, LabelPosition } from '../../../shared/index';
-import { FieldWrapper } from '../FieldWrapper/index';
-import { warn } from '../../../utils/warnings';
 import { Styles } from '../../../tasty/index';
+import { mergeProps } from '../../../utils/react/index';
+import { warn } from '../../../utils/warnings';
+import { FieldWrapper } from '../FieldWrapper/index';
 
-import { CubeFormInstance } from './use-form';
 import { useFormProps } from './Form';
 import { FieldTypes } from './types';
 import { useField } from './use-field/index';
+import { CubeFormInstance } from './use-form';
 
 function getDefaultValidateTrigger(type) {
   type = type || '';

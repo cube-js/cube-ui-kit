@@ -8,7 +8,7 @@ import {
 } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 
-import { DatePicker, CubeDatePickerProps } from './DatePicker';
+import { CubeDatePickerProps, DatePicker } from './DatePicker';
 import { parseAbsoluteDate } from './parseDate';
 
 export default {

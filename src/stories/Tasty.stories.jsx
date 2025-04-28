@@ -1,6 +1,6 @@
 import {
-  StyledButton as StyledButtonComponent,
   GlobalStyledHeading,
+  StyledButton as StyledButtonComponent,
 } from './components/StyledButton';
 
 export default {
