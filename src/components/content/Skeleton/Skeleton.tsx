@@ -1,17 +1,20 @@
-import {
-  BaseProps,
-  ContainerStyleProps,
-  filterBaseProps,
-} from '../../../tasty';
+import { ReactNode } from 'react';
+
+import { BaseProps, ContainerStyleProps } from '../../../tasty';
 import { Flow } from '../../layout/Flow';
 import { CubeGridProps, Grid } from '../../layout/Grid';
 import { Space } from '../../layout/Space';
 import { CubePlaceholderProps, Placeholder } from '../Placeholder/Placeholder';
 
 const LAYOUT_MAP = {
-  page({ lines, children, isStatic = false, ...props }: CubeSkeletonProps) {
+  page({
+    lines,
+    children,
+    isStatic = false,
+    rootProps,
+  }: CubeSkeletonLayoutProps) {
     return (
-      <Flow gap="4x" {...props}>
+      <Flow gap="4x" {...rootProps}>
         <Space placeContent="space-between">
           <Placeholder isStatic={isStatic} width="100px 25% 300px" />
           <Placeholder isStatic={isStatic} width="50px 10% 150px" />
@@ -25,9 +28,14 @@ const LAYOUT_MAP = {
       </Flow>
     );
   },
-  content({ children, lines, isStatic = false, ...props }: CubeSkeletonProps) {
+  content({
+    children,
+    lines,
+    isStatic = false,
+    rootProps,
+  }: CubeSkeletonLayoutProps) {
     return (
-      <Flow gap="2x" {...props}>
+      <Flow gap="2x" {...rootProps}>
         {children ||
           Array(lines || 5)
             .fill(0)
@@ -35,7 +43,7 @@ const LAYOUT_MAP = {
       </Flow>
     );
   },
-  topbar({ isStatic = false, ...props }: CubeSkeletonProps) {
+  topbar({ isStatic = false, rootProps }: CubeSkeletonProps) {
     return (
       <Space
         gap="4x"
@@ -43,7 +51,7 @@ const LAYOUT_MAP = {
         height="6x"
         padding="1x"
         border="bottom"
-        {...props}
+        {...rootProps}
       >
         <Space>
           <Placeholder circle isStatic={isStatic} size="4x" />
@@ -57,9 +65,9 @@ const LAYOUT_MAP = {
       </Space>
     );
   },
-  menu({ lines, isStatic = false, ...props }: CubeSkeletonProps) {
+  menu({ lines, isStatic = false, rootProps }: CubeSkeletonLayoutProps) {
     return (
-      <Flow gap="3.25x" {...props} padding="3x 1x">
+      <Flow gap="3.25x" {...rootProps} padding="3x 1x">
         {Array(lines || 5)
           .fill(0)
           .map((item, i) => (
@@ -68,9 +76,9 @@ const LAYOUT_MAP = {
       </Flow>
     );
   },
-  stats({ cards, isStatic = false, ...props }: CubeSkeletonProps) {
+  stats({ cards, isStatic = false, rootProps }: CubeSkeletonLayoutProps) {
     return (
-      <Space gap="4x" {...props}>
+      <Space gap="4x" {...rootProps}>
         {Array(cards || 3)
           .fill(0)
           .map((item, i) => (
@@ -91,10 +99,10 @@ const LAYOUT_MAP = {
     children,
     lines,
     isStatic = false,
-    ...props
-  }: CubeSkeletonProps) {
+    rootProps,
+  }: CubeSkeletonLayoutProps) {
     return (
-      <Flow gap="4x" {...props}>
+      <Flow gap="4x" {...rootProps}>
         <Space>
           {Array(tabs || 3)
             .fill(0)
@@ -111,7 +119,12 @@ const LAYOUT_MAP = {
       </Flow>
     );
   },
-  table({ rows, columns, isStatic = false, ...props }: CubeSkeletonProps) {
+  table({
+    rows,
+    columns,
+    isStatic = false,
+    rootProps,
+  }: CubeSkeletonLayoutProps) {
     columns = columns || 5;
     rows = rows || 5;
 
@@ -119,7 +132,7 @@ const LAYOUT_MAP = {
       <Grid
         columns={`repeat(${columns}, 1fr)`}
         gap="3x"
-        {...props}
+        {...rootProps}
         padding="1x 0"
       >
         {Array(rows)
@@ -140,7 +153,7 @@ const LAYOUT_MAP = {
       </Grid>
     );
   },
-  chart({ columns, isStatic = false, ...props }: CubeSkeletonProps) {
+  chart({ columns, isStatic = false, rootProps }: CubeSkeletonLayoutProps) {
     columns = columns || 12;
 
     const heightMap = [1, 4, 2, 5, 8, 9, 5, 3, 4, 2, 6, 7, 2];
@@ -152,7 +165,7 @@ const LAYOUT_MAP = {
         padding="1x 0"
         placeItems="end stretch"
         height="40x"
-        {...props}
+        {...rootProps}
       >
         {Array(columns)
           .fill(0)
@@ -172,15 +185,22 @@ const LAYOUT_MAP = {
 } as const;
 
 export interface CubeSkeletonProps
-  extends CubeGridProps,
-    CubePlaceholderProps,
-    BaseProps,
-    ContainerStyleProps {
+  extends CubeSkeletonRootProps,
+    CubeSkeletonLayoutProps {
   /** The type of the layout */
   layout?: keyof typeof LAYOUT_MAP;
-  /** The number of columns for table layout */
+}
+
+export interface CubeSkeletonRootProps
+  extends Omit<CubeGridProps, 'columns' | 'rows'>,
+    CubePlaceholderProps,
+    BaseProps,
+    ContainerStyleProps {}
+
+export interface CubeSkeletonLayoutProps {
+  /** The number of columns for the table layout */
   columns?: number;
-  /** The number of rows for table layout */
+  /** The number of rows for the table layout */
   rows?: number;
   /** The number of placeholder lines */
   lines?: number;
@@ -190,14 +210,34 @@ export interface CubeSkeletonProps
   cards?: number;
   /** The static mode */
   isStatic?: boolean;
+  rootProps: CubeSkeletonRootProps;
+  children?: ReactNode;
 }
 
-export function Skeleton({ layout, isStatic, ...props }: CubeSkeletonProps) {
+export function Skeleton({
+  layout,
+  isStatic,
+  columns,
+  rows,
+  lines,
+  tabs,
+  cards,
+  ...props
+}: CubeSkeletonProps) {
   layout = layout || 'page';
 
   return LAYOUT_MAP[layout] ? (
-    LAYOUT_MAP[layout]({ isStatic, qa: 'Skeleton', ...filterBaseProps(props) })
+    LAYOUT_MAP[layout]({
+      isStatic,
+      qa: 'Skeleton',
+      columns,
+      rows,
+      lines,
+      tabs,
+      cards,
+      rootProps: props,
+    })
   ) : (
-    <Placeholder {...props} />
+    <Placeholder qa="Skeleton" isStatic={isStatic} {...props} />
   );
 }
