@@ -192,7 +192,7 @@ export function Skeleton({ layout, isStatic, ...props }: CubeSkeletonProps) {
   layout = layout || 'page';
 
   return LAYOUT_MAP[layout] ? (
-    LAYOUT_MAP[layout]({ isStatic, ...props, qa: 'Skeleton' })
+    LAYOUT_MAP[layout]({ isStatic, qa: 'Skeleton', ...props })
   ) : (
     <Placeholder {...props} />
   );
