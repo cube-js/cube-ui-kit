@@ -186,7 +186,7 @@ const LAYOUT_MAP = {
 
 export interface CubeSkeletonProps
   extends CubeSkeletonRootProps,
-    CubeSkeletonLayoutProps {
+    Omit<CubeSkeletonLayoutProps, 'rootProps'> {
   /** The type of the layout */
   layout?: keyof typeof LAYOUT_MAP;
 }
