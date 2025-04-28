@@ -43,7 +43,7 @@ const LAYOUT_MAP = {
       </Flow>
     );
   },
-  topbar({ isStatic = false, rootProps }: CubeSkeletonProps) {
+  topbar({ isStatic = false, rootProps }: CubeSkeletonLayoutProps) {
     return (
       <Space
         gap="4x"
