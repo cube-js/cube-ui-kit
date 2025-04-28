@@ -229,13 +229,12 @@ export function Skeleton({
   return LAYOUT_MAP[layout] ? (
     LAYOUT_MAP[layout]({
       isStatic,
-      qa: 'Skeleton',
       columns,
       rows,
       lines,
       tabs,
       cards,
-      rootProps: props,
+      rootProps: { qa: 'Skeleton', ...props },
     })
   ) : (
     <Placeholder qa="Skeleton" isStatic={isStatic} {...props} />
