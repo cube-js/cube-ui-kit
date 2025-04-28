@@ -19,6 +19,7 @@ const Template = (args) => {
 export const Page = Template.bind({});
 Page.args = {
   layout: 'page',
+  qa: 'CustomSkeleton',
 };
 
 export const Topbar = Template.bind({});
