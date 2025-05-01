@@ -64,7 +64,8 @@ const HandlerElement = tasty({
     position: 'absolute',
     zIndex: 1,
     cursor: {
-      '': 'col-resize',
+      '': 'row-resize',
+      horizontal: 'col-resize',
       disabled: 'not-allowed',
     },
     fill: {
