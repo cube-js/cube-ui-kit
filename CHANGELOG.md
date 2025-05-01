@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.59.12
+
+### Patch Changes
+
+- [#653](https://github.com/cube-js/cube-ui-kit/pull/653) [`6cefdcc`](https://github.com/cube-js/cube-ui-kit/commit/6cefdcc8c92b215d118986dec22a1b1e640f6ea7) Thanks [@tenphi](https://github.com/tenphi)! - Fix the cursor type for resizing ResizablePanel in vertical direction.
+
 ## 0.59.11
 
 ### Patch Changes
