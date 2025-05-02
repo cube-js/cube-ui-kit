@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.59.13
+
+### Patch Changes
+
+- [#655](https://github.com/cube-js/cube-ui-kit/pull/655) [`14986ac`](https://github.com/cube-js/cube-ui-kit/commit/14986acdd81006cc689d417ff09cac03a0f144fc) Thanks [@tenphi](https://github.com/tenphi)! - Fix minimum dialog size.
+
 ## 0.59.12
 
 ### Patch Changes
