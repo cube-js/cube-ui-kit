@@ -166,7 +166,7 @@ const GlobalStylesElement = createGlobalStyle<GlobalStylesElementProps>`
   }
 
   .cube-notification-container {
-    min-width: 288px;
+    min-width: var(--min-dialog-size);
     max-width: 340px;
     width: calc(100vw - 32px);
     position: fixed;

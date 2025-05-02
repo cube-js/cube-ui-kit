@@ -52,7 +52,7 @@ const ModalElement = tasty({
       '[data-type="panel"]': 'auto',
     },
     width: {
-      '': '288px 90vw',
+      '': '@min-dialog-size 90vw',
       '[data-type="panel"]': 'auto',
     },
     pointerEvents: 'none',
