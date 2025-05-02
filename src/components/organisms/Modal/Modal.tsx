@@ -209,7 +209,7 @@ export function Modal(allProps: CubeModalProps) {
           shadow={true}
           border={false}
           radius="1x"
-          width={`288px (100% - 32px) ${
+          width={`@min-dialog-size (100% - 32px) ${
             typeof width === 'number' ? `${width}px` : width || '360px'
           }`}
           style={{ textAlign: 'left' }}

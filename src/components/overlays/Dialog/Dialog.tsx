@@ -42,7 +42,7 @@ const DialogElement = tasty({
     placeItems: 'stretch',
     placeContent: 'stretch',
     width: {
-      '': '288px @dialog-size 90vw',
+      '': '@min-dialog-size @dialog-size 90vw',
       '[data-type="fullscreen"]': '90vw 90vw',
       '[data-type="fullscreenTakeover"]': '100vw 100vw',
       '[data-type="panel"]': 'auto',
@@ -287,7 +287,7 @@ const DialogContent = forwardRef(function DialogContent(
       {...dialogProps}
       tabIndex={undefined}
       mods={{ dismissable: isDismissable }}
-      style={{ '--dialog-size': `${sizePxMap[size] || 288}px` }}
+      style={{ '--dialog-size': `${sizePxMap[size] || sizePxMap.small}px` }}
       data-type={type}
       data-size={size}
     >
