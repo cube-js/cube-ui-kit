@@ -110,6 +110,7 @@ const IS_DVH_SUPPORTED =
 
 export const CUSTOM_UNITS = {
   r: 'var(--radius)',
+  cr: 'var(--card-raduis)',
   bw: 'var(--border-width)',
   ow: 'var(--outline-width)',
   x: 'var(--gap)',

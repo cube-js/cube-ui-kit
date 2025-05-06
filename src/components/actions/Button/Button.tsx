@@ -100,8 +100,8 @@ const ButtonElement = tasty({
           '0 0 0 0 #purple.20',
       },
       outline: {
-        '': '0 #purple-03.0',
-        focused: '@outline-width #purple-03',
+        '': '0 #focus.0',
+        focused: '@outline-width #focus',
       },
       border: {
         // default
@@ -205,6 +205,64 @@ const ButtonElement = tasty({
           '#danger-text',
         '[data-type="link"] & pressed': '#danger',
         '[data-type="neutral"] & pressed': '#danger',
+
+        '[disabled]': '#dark.30',
+      },
+    },
+    success: {
+      shadow: {
+        '': false,
+        '[data-type="link"]': '0 @border-width 0 0 #success.20',
+        '[data-type="link"] & (pressed | hovered | [disabled])':
+          '0 0 0 0 #success.20',
+      },
+      outline: {
+        '': '0 #success.0',
+        focused: '@outline-width #success.50',
+      },
+      border: {
+        '': '#clear',
+        '[data-type="primary"] & pressed': '#success-text',
+        '[data-type="secondary"] & pressed': '#success.3',
+        '[data-type="outline"]': '#success-text.3',
+        '([data-type="clear"] | [data-type="outline"]) & pressed':
+          '#success-text.10',
+        '[data-type="outline"] & pressed': '#success.3',
+        '[data-type="link"]': '#clear',
+      },
+      fill: {
+        '': '#clear',
+        '[data-type="primary"]': '#success',
+        '[data-type="primary"] & hovered': '#success-text',
+        '[data-type="primary"] & pressed': '#success',
+
+        '[data-type="secondary"]': '#success.05',
+        '[data-type="secondary"] & hovered': '#success.1',
+        '[data-type="secondary"] & pressed': '#success.05',
+
+        '[data-type="neutral"]': '#dark.0',
+        '[data-type="neutral"] & hovered': '#dark.04',
+        '[data-type="neutral"] & pressed': '#dark.05',
+
+        '[disabled] & ![data-type="link"]': '#dark.04',
+
+        '[data-type="clear"] | [data-type="outline"]': '#success.0',
+        '([data-type="clear"] | [data-type="outline"]) & hovered': '#success.1',
+        '([data-type="clear"] | [data-type="outline"]) & pressed':
+          '#success.05',
+        '([data-type="clear"] | [data-type="outline"]) & [disabled]':
+          '#success.0',
+      },
+      color: {
+        '': '#white',
+
+        '[data-type="neutral"]': '#dark-02',
+        '[data-type="neutral"] & hovered': '#dark-02',
+        '[data-type="secondary"]': '#success',
+        '[data-type="clear"] | [data-type="outline"] | [data-type="link"]':
+          '#success-text',
+        '[data-type="link"] & pressed': '#success',
+        '[data-type="neutral"] & pressed': '#success',
 
         '[disabled]': '#dark.30',
       },

@@ -196,7 +196,7 @@ const ListBoxElement = tasty({
     margin: '0',
     padding: '.5x',
     listStyle: 'none',
-    radius: '@large-radius',
+    radius: '1cr',
     fill: '#white',
     shadow: '0px 4px 16px #shadow',
     height: 'initial 30x',

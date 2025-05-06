@@ -316,6 +316,42 @@ DangerLinkStates.args = {
   theme: 'danger',
 };
 
+export const SuccessSecondaryStates = TemplateStates.bind({});
+SuccessSecondaryStates.args = {
+  type: 'secondary',
+  theme: 'success',
+};
+
+export const SuccessPrimaryStates = TemplateStates.bind({});
+SuccessPrimaryStates.args = {
+  type: 'primary',
+  theme: 'success',
+};
+
+export const SuccessOutlineStates = TemplateStates.bind({});
+SuccessOutlineStates.args = {
+  type: 'outline',
+  theme: 'success',
+};
+
+export const SuccessClearStates = TemplateStates.bind({});
+SuccessClearStates.args = {
+  type: 'clear',
+  theme: 'success',
+};
+
+export const SuccessNeutralStates = TemplateStates.bind({});
+SuccessNeutralStates.args = {
+  type: 'neutral',
+  theme: 'success',
+};
+
+export const SuccessLinkStates = TemplateStates.bind({});
+SuccessLinkStates.args = {
+  type: 'link',
+  theme: 'success',
+};
+
 export const SpecialSecondaryStates = DarkTemplateStates.bind({});
 SpecialSecondaryStates.args = {
   type: 'secondary',
