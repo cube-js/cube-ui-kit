@@ -334,7 +334,6 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     hasTextSecurity && inputProps.value?.length
       ? {
           fontFamily: 'text-security-disc',
-          WebkitTextSecurity: 'disc',
         }
       : {};
 
