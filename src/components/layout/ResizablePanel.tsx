@@ -301,7 +301,7 @@ function ResizablePanel(
     },
   });
 
-  // Since we sync provided size and the local one in two ways
+  // Since we sync provided size and the local one in two ways,
   // we need a way to prevent infinite loop in some cases.
   // We will run this in setTimeout and make sure it will get the most recent state.
   const notifyChange = useEvent(() => {
@@ -329,7 +329,7 @@ function ResizablePanel(
   }, [visualSize, isDragging]);
 
   useEffect(() => {
-    setTimeout(notifyChange);
+    requestIdleCallback(notifyChange);
   }, [providedSize]);
 
   const mods = useMemo(() => {
@@ -355,9 +355,9 @@ function ResizablePanel(
       }
       {...mergeProps(restProps, {
         style: {
-          // We set a current size further via width/min-width/max-width styles to respect size boundaries
+          // We set the current size further via width/min-width/max-width styles to respect size boundaries
           '--size': `${size}px`,
-          // We use a separate visual size to paint the handler for smoother experience
+          // We use a separate visual size to paint the handler for a smoother experience
           '--visual-size': `${visualSize}px`,
           '--min-size': typeof minSize === 'number' ? `${minSize}px` : minSize,
           '--max-size': typeof maxSize === 'number' ? `${maxSize}px` : maxSize,
