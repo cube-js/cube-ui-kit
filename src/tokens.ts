@@ -3,6 +3,8 @@ const colors = {
   'pink-02': '255 131 168',
   purple: '113 110 238',
   'purple-text': '105 103 227',
+  'purple-bg': '241 239 250',
+  'purple-icon': '142, 134, 237',
   'purple-01': '122 119 255',
   'purple-02': '149 146 255',
   'purple-03': '175 173 255',
@@ -23,12 +25,15 @@ const colors = {
   danger: '227 70 75',
   'danger-text': '208 57 56',
   'danger-bg': '253 237 235',
-  success: '53 143 95',
-  'success-text': '41 132 86',
+  'danger-icon': '245 101 99',
+  success: '9 145 88',
+  'success-text': '12 135 82',
+  'success-icon': '40 165 104',
   'success-bg': '227 245 233',
   note: '158 119 19',
   'note-text': '150 112 8',
   'note-bg': '251 239 219',
+  'note-icon': '181 140 44',
 };
 
 function color(name, opacity = 1) {
