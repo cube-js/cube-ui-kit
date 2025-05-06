@@ -98,7 +98,7 @@ const TOKENS = {
   'h1-icon-size': '38px',
   // h2
   'h2-font-size': '24px',
-  'h2-line-height': '36px',
+  'h2-line-height': '32px',
   'h2-letter-spacing': '0em',
   'h2-font-weight': '700',
   'h2-icon-size': '26px',
