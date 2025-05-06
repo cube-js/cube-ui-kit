@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.59.14
+
+### Patch Changes
+
+- [#657](https://github.com/cube-js/cube-ui-kit/pull/657) [`d7939cf`](https://github.com/cube-js/cube-ui-kit/commit/d7939cf3d6b6edf4ffece545e8c4604c0272f8d9) Thanks [@tenphi](https://github.com/tenphi)! - Fix drift in Resizable Panel in controllable state.
+
 ## 0.59.13
 
 ### Patch Changes
