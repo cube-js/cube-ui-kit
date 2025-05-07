@@ -55,8 +55,10 @@ export const Icon = memo(
     const mergedProps =
       size != null || stroke != null
         ? mergeProps(rest, {
-            ...(size ? { fontSize: size } : {}),
-            ...(stroke ? { '@stroke-width': stroke } : {}),
+            styles: {
+              ...(size ? { fontSize: size } : {}),
+              ...(stroke ? { '@stroke-width': stroke } : {}),
+            },
           })
         : rest;
 
