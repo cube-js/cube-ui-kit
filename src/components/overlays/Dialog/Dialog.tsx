@@ -121,7 +121,6 @@ const CloseButton = tasty(Button, {
       hovered: '#dark-02',
       pressed: '#purple',
     },
-    border: 0,
   },
 });
 
