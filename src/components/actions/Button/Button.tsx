@@ -73,6 +73,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
     '[data-size="small"]': '4x 4x',
     '[data-size="medium"]': '5x 5x',
     '[data-size="large"]': '6x 6x',
+    '[data-type="link"]': 'auto',
   },
   whiteSpace: 'nowrap',
   radius: {
@@ -413,7 +414,7 @@ export const Button = forwardRef(function Button(
       download={download}
       {...actionProps}
       disabled={isDisabledElement}
-      variant={theme as 'default' | 'danger' | 'special'}
+      variant={theme as 'default' | 'danger' | 'special' | 'success'}
       data-theme={theme}
       data-type={type ?? 'secondary'}
       data-size={size ?? 'medium'}
