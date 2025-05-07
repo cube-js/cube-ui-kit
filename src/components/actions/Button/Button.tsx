@@ -43,7 +43,10 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
     focused: '#purple-03',
   },
   cursor: 'pointer',
-  gap: '.75x',
+  gap: {
+    '': '.75x',
+    '[data-size="small"]': '.5x',
+  },
   flow: 'column',
   preset: {
     '': 't3m',
@@ -53,10 +56,10 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
   transition: 'theme',
   reset: 'button',
   padding: {
-    '': '(1.25x - 1bw) (2x - 1bw)',
-    '[data-size="small"]': '(.75x - 1bw) (1.25x - 1bw)',
-    '[data-size="medium"]': '(1.25x - 1bw) (1.75x - 1bw)',
-    '[data-size="large"]': '1.5x (2.25x - 1bw)',
+    '': '0 (2x - 1bw)',
+    '[data-size="small"]': '0 (1x - 1bw)',
+    '[data-size="medium"]': '0 (1.75x - 1bw)',
+    '[data-size="large"]': '0 (2.25x - 1bw)',
     'single-icon-only | [data-type="link"]': 0,
   },
   width: {
@@ -67,9 +70,9 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
   },
   height: {
     '': 'initial',
-    '[data-size="small"] & single-icon-only': '4x 4x',
-    '[data-size="medium"] & single-icon-only': '5x 5x',
-    '[data-size="large"] & single-icon-only': '6x 6x',
+    '[data-size="small"]': '4x 4x',
+    '[data-size="medium"]': '5x 5x',
+    '[data-size="large"]': '6x 6x',
   },
   whiteSpace: 'nowrap',
   radius: {
@@ -388,6 +391,7 @@ export const Button = forwardRef(function Button(
     () => ({
       loading: isLoading,
       selected: isSelected,
+      'with-icons': !!icon || !!rightIcon,
       'single-icon-only': singleIcon,
       ...mods,
     }),
