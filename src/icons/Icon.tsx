@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { ForwardedRef, forwardRef, memo } from 'react';
 
 import {
   BASE_STYLES,
@@ -11,6 +11,7 @@ import {
   Styles,
   tasty,
 } from '../tasty';
+import { mergeProps } from '../utils/react/index';
 
 const IconElement = tasty({
   as: 'span',
@@ -29,6 +30,7 @@ const IconElement = tasty({
     '& svg': {
       width: '1em 1em',
       height: 'min 1em',
+      strokeWidth: '@stroke-width',
     },
   },
   styleProps: [...OUTER_STYLES, ...BASE_STYLES, ...COLOR_STYLES],
@@ -40,16 +42,24 @@ export interface CubeIconProps
     ColorStyleProps,
     BaseStyleProps {
   size?: Styles['fontSize'];
+  stroke?: number;
 }
 
-export const Icon = memo(function Icon(props: CubeIconProps) {
-  const { size, styles, ...rest } = props;
+export const Icon = memo(
+  forwardRef(function Icon(
+    props: CubeIconProps,
+    ref: ForwardedRef<HTMLSpanElement>,
+  ) {
+    const { size, styles, stroke, ...rest } = props;
 
-  return (
-    <IconElement
-      qa="Icon"
-      {...rest}
-      styles={size ? { fontSize: size, ...styles } : styles}
-    />
-  );
-});
+    const mergedProps =
+      size != null && stroke != null
+        ? mergeProps(rest, {
+            ...(size ? { fontSize: size } : {}),
+            ...(stroke ? { '@stroke-width': stroke } : {}),
+          })
+        : rest;
+
+    return <IconElement ref={ref} qa="Icon" {...mergedProps} />;
+  }),
+);
