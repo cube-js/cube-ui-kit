@@ -5,7 +5,7 @@ import { CubeIconProps, Icon } from './Icon';
 export function wrapIcon(name: string, icon: ReactNode) {
   function IconWrapper(props: CubeIconProps) {
     return (
-      <Icon qa={name} aria-hidden="true" {...props}>
+      <Icon qa={name} aria-hidden="true" size="(@icon-size - 2px)" {...props}>
         {icon}
       </Icon>
     );
