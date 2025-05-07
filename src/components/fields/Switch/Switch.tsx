@@ -103,7 +103,7 @@ const SwitchElement = tasty({
       left: {
         '': '.375x',
         '[data-size="small"]': '.375x',
-        checked: '2.75x',
+        checked: '2.875x',
         'checked & [data-size="small"]': '1.5x',
       },
       transition: 'left, theme',

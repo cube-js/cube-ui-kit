@@ -17,7 +17,7 @@ const AlertElement = tasty({
     padding: '1.5x',
     preset: 't3',
     color: {
-      '': '#dark',
+      '': '#dark-02',
       '[data-type="disabled"]': THEMES.disabled.color,
     },
     fill: {
