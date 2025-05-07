@@ -83,7 +83,7 @@ const DialogElement = tasty({
       '': '2x',
       '[data-type="popover"]': '1x',
     },
-    '@dialog-content-gap': '3x',
+    '@dialog-content-gap': '2x',
 
     DialogContainer: {
       position: 'relative',
