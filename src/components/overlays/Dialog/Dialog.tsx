@@ -41,7 +41,7 @@ const DialogElement = tasty({
     },
     padding: {
       '': '1ow',
-      '[data-type="overlay"]': 0,
+      '[data-type="popover"]': 0,
     },
     width: {
       '': '@min-dialog-size @dialog-size 90vw',
