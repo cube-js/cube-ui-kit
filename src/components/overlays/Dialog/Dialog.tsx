@@ -102,25 +102,28 @@ const DialogElement = tasty({
   },
 });
 
-const CLOSE_BUTTON_STYLES: Styles = {
-  display: 'flex',
-  position: 'absolute',
-  top: '1x',
-  right: '1x',
-  width: '5x',
-  height: '5x',
-  placeContent: 'center',
-  fill: {
-    '': '#dark.0',
-    hovered: '#dark.04',
-    pressed: '#dark.05',
+const CloseButton = tasty(Button, {
+  qa: 'ModalCloseButton',
+  type: 'neutral',
+  styles: {
+    display: 'flex',
+    position: 'absolute',
+    top: '1x',
+    right: '1x',
+    placeContent: 'center',
+    fill: {
+      '': '#dark.0',
+      hovered: '#dark.04',
+      pressed: '#dark.05',
+    },
+    color: {
+      '': '#dark-02',
+      hovered: '#dark-02',
+      pressed: '#purple',
+    },
+    border: 0,
   },
-  color: {
-    '': '#dark-02',
-    hovered: '#dark-02',
-    pressed: '#purple',
-  },
-};
+});
 
 const sizeMap = {
   S: 'small',
@@ -307,10 +310,7 @@ const DialogContent = forwardRef(function DialogContent(
 
         <SlotProvider slots={slots}>
           {isDismissable && (
-            <Button
-              qa="ModalCloseButton"
-              type="neutral"
-              styles={CLOSE_BUTTON_STYLES}
+            <CloseButton
               icon={closeIcon || <CloseIcon />}
               label={formatMessage('dismiss')}
               onPress={() => onDismiss && onDismiss()}
