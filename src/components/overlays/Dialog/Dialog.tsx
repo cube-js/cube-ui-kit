@@ -38,9 +38,7 @@ const DialogElement = tasty({
       '': 'relative',
       '[data-type="panel"]': 'absolute',
     },
-    display: 'flex',
-    placeItems: 'stretch',
-    placeContent: 'stretch',
+    padding: '1ow',
     width: {
       '': '@min-dialog-size @dialog-size 90vw',
       '[data-type="fullscreen"]': '90vw 90vw',
@@ -54,10 +52,9 @@ const DialogElement = tasty({
       '[data-type="panel"]': 'auto',
     },
     gap: 0,
-    flow: 'column',
     radius: {
-      '': '(1cr + 1bw)',
-      '[data-type="tray"]': '(1cr + 1bw) top',
+      '': '1cr',
+      '[data-type="tray"]': '1cr top',
       '[data-type="fullscreenTakeover"]': '0r',
     },
     fill: '#white',
@@ -70,7 +67,6 @@ const DialogElement = tasty({
       '[data-type="modal"]': '((50vh - 50%) / -3)',
       '[data-type="panel"]': 'auto',
     },
-    placeSelf: 'stretch',
     '@dialog-title-padding-v': {
       '': '2x',
       '[data-type="popover"]': '1x',
@@ -88,6 +84,19 @@ const DialogElement = tasty({
       '[data-type="popover"]': '1x',
     },
     '@dialog-content-gap': '3x',
+
+    DialogContainer: {
+      display: 'flex',
+      flow: 'column',
+      placeItems: 'stretch',
+      placeContent: 'stretch',
+      placeSelf: 'stretch',
+      border: {
+        '': '1bw solid #light-border',
+        '[data-type="popover"]': 0,
+      },
+      radius: { '': '(1cr - 1ow)', '[data-type="popover"]': '1cr' },
+    },
   },
 });
 
@@ -291,21 +300,23 @@ const DialogContent = forwardRef(function DialogContent(
       data-type={type}
       data-size={size}
     >
-      {dismissButton}
+      <div data-element="DialogContainer">
+        {dismissButton}
 
-      <SlotProvider slots={slots}>
-        {isDismissable && (
-          <Button
-            qa="ModalCloseButton"
-            type="neutral"
-            styles={CLOSE_BUTTON_STYLES}
-            icon={closeIcon || <CloseIcon />}
-            label={formatMessage('dismiss')}
-            onPress={() => onDismiss && onDismiss()}
-          />
-        )}
-        {children}
-      </SlotProvider>
+        <SlotProvider slots={slots}>
+          {isDismissable && (
+            <Button
+              qa="ModalCloseButton"
+              type="neutral"
+              styles={CLOSE_BUTTON_STYLES}
+              icon={closeIcon || <CloseIcon />}
+              label={formatMessage('dismiss')}
+              onPress={() => onDismiss && onDismiss()}
+            />
+          )}
+          {children}
+        </SlotProvider>
+      </div>
     </DialogElement>
   );
 });

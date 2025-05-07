@@ -102,36 +102,42 @@ const TOKENS = {
   'h1-line-height': '44px',
   'h1-letter-spacing': '-0.01em',
   'h1-font-weight': '600',
+  'h1-bold-font-weight': '700',
   'h1-icon-size': '40px',
   // h2
   'h2-font-size': '24px',
   'h2-line-height': '32px',
   'h2-letter-spacing': '0em',
   'h2-font-weight': '600',
+  'h2-bold-font-weight': '700',
   'h2-icon-size': '28px',
   // h3
   'h3-font-size': '20px',
   'h3-line-height': '28px',
   'h3-letter-spacing': '0em',
   'h3-font-weight': '600',
+  'h3-bold-font-weight': '700',
   'h3-icon-size': '24px',
   // h4
   'h4-font-size': '18px',
   'h4-line-height': '24px',
   'h4-letter-spacing': '0',
   'h4-font-weight': '600',
+  'h4-bold-font-weight': '700',
   'h4-icon-size': '22px',
   // h5
   'h5-font-size': '16px',
   'h5-line-height': '22px',
   'h5-letter-spacing': '0',
   'h5-font-weight': '600',
+  'h5-bold-font-weight': '700',
   'h5-icon-size': '20px',
   // h6
   'h6-font-size': '14px',
   'h6-line-height': '20px',
   'h6-letter-spacing': '0.01em',
   'h6-font-weight': '600',
+  'h6-bold-font-weight': '700',
   'h6-icon-size': '20px',
   // t1
   't1-font-size': '18px',
@@ -174,6 +180,7 @@ const TOKENS = {
   't4m-line-height': '18px',
   't4m-letter-spacing': '0',
   't4m-font-weight': '600',
+  't4m-bold-font-weight': '700',
   't4m-icon-size': '16px',
   // p1
   'p1-font-size': '18px',
@@ -218,6 +225,7 @@ const TOKENS = {
   'tag-line-height': '18px',
   'tag-letter-spacing': '0.01em',
   'tag-font-weight': '600',
+  'tag-bold-font-weight': '700',
   'tag-icon-size': '16px',
   // strong
   'strong-font-size': 'inherit',
