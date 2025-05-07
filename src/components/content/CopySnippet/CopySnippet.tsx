@@ -94,7 +94,7 @@ const CopySnippetElement = tasty(Card, {
   styles: {
     display: 'grid',
     gridRows: 'minmax(0, 1fr)',
-    fill: '#grey-light',
+    fill: '#dark-bg',
     border: 0,
     padding: 0,
     preset: 'default',

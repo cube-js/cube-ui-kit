@@ -45,7 +45,7 @@ const CopyPasteBlockElement = tasty(Card, {
   qa: 'CopyPasteBlock',
   styles: {
     display: 'grid',
-    fill: '#grey-light',
+    fill: '#dark-bg',
     radius: '1r',
     padding: {
       '': '0 1px',

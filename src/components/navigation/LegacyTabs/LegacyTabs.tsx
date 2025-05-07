@@ -96,7 +96,7 @@ const StyledTabsPanelElement = styled(TabsPanelElement)`
   white-space: nowrap;
 
   ::-webkit-scrollbar-track {
-    background: var(--grey-light-color);
+    background: var(--dark-bg-color);
   }
 
   ::-webkit-scrollbar-thumb {

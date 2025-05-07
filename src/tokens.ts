@@ -17,12 +17,10 @@ const colors = {
   'dark-03': '115 114 139',
   'dark-04': '161 161 178',
   'dark-05': '213 213 222',
-  'dark-bg': '248 248 249',
-  'grey-light': '248 248 249',
+  'dark-bg': '249 249 251',
   light: '246 246 248',
   white: '255 255 255',
   black: '0 0 0',
-  'light-grey': '248 248 249',
   danger: '227 70 75',
   'danger-text': '208 57 56',
   'danger-bg': '253 237 235',
@@ -35,6 +33,8 @@ const colors = {
   'note-text': '150 112 8',
   'note-bg': '251 239 219',
   'note-icon': '181 140 44',
+  border: '227 227 233',
+  'light-border': '238 238 241',
 };
 
 function color(name, opacity = 1) {
@@ -60,7 +60,6 @@ const TOKENS = {
   transition: '80ms',
   'min-dialog-size': 'min(288px, calc(100vw - (2 * var(--gap))))',
   'clear-color': 'transparent',
-  'border-color': color('dark', 0.1),
   'border-opaque-color': 'rgb(227 227 233)',
   'shadow-color': color('dark-03', 0.1),
   'draft-color': color('dark', 0.2),
@@ -247,7 +246,7 @@ const TOKENS = {
   'scrollbar-radius': '1.5r',
   'scrollbar-thumb-color': 'rgb(var(--text-color-rgb) / .5)',
   'scrollbar-outline-color': 'var(--clear-color)',
-  'scrollbar-bg-color': 'var(--grey-light-color)',
+  'scrollbar-bg-color': 'var(--dark-bg-color)',
   'scrollbar-corner-color': 'var(--clear-color)',
 };
 
