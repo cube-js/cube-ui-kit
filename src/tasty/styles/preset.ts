@@ -47,7 +47,15 @@ export function presetStyle({
 
   if (preset === true) preset = '';
 
-  const { mods } = parseStyle(preset);
+  let { mods } = parseStyle(preset);
+
+  const isStrong = mods.includes('strong');
+  const isItalic = mods.includes('italic');
+  const isIcon = mods.includes('icon');
+
+  mods = mods.filter(
+    (mod) => mod !== 'bold' && mod !== 'italic' && mod !== 'icon',
+  );
 
   const name = mods[0] || 'default';
 
@@ -83,6 +91,19 @@ export function presetStyle({
 
   setCSSValue(styles, 'bold-font-weight', name, true);
   setCSSValue(styles, 'icon-size', name, true);
+
+  if (isStrong) {
+    styles['font-weight'] = 'var(--bold-font-weight)';
+  }
+
+  if (isItalic) {
+    styles['font-style'] = 'italic';
+  }
+
+  if (isIcon) {
+    styles['font-size'] = 'var(--icon-size)';
+    styles['line-height'] = 'var(--icon-size)';
+  }
 
   return styles;
 }

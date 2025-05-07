@@ -28,8 +28,8 @@ const IconElement = tasty({
     '-webkit-font-smoothing': 'antialiased',
 
     '& svg': {
-      width: '1em 1em',
-      height: 'min 1em',
+      width: 'min 1em',
+      height: '1em 1em',
       strokeWidth: '@stroke-width',
     },
   },
@@ -53,7 +53,7 @@ export const Icon = memo(
     const { size, stroke, ...rest } = props;
 
     const mergedProps =
-      size != null && stroke != null
+      size != null || stroke != null
         ? mergeProps(rest, {
             ...(size ? { fontSize: size } : {}),
             ...(stroke ? { '@stroke-width': stroke } : {}),

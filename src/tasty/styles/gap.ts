@@ -10,7 +10,7 @@ export function gapStyle({ display = 'block', flow, gap }) {
   }
 
   if (gap === true) {
-    gap = '1.5x';
+    gap = '1x';
   }
 
   const isGrid = display.includes('grid');
