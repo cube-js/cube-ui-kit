@@ -109,11 +109,10 @@ const ButtonElement = tasty({
         '[data-type="primary"] & pressed': '#purple-text',
         '[data-type="secondary"]': '#purple.15',
         '[data-type="secondary"] & pressed': '#purple.3',
-        '[data-type="outline"]': '#border',
-        '[data-type="outline"] & [disabled]': '#dark.12',
         '[data-type="clear"]': '#clear',
-        '([data-type="clear"] | [data-type="outline"]) & pressed':
-          '#purple-text.10',
+        '[data-type="outline"]': '#border',
+        '[data-type="clear"] & pressed': '#purple-text.10',
+        '[data-type="outline"] | [disabled]': '#dark.12',
         focused: '#purple-text',
         '[data-type="link"]': '0',
       },
@@ -129,9 +128,9 @@ const ButtonElement = tasty({
         '[data-type="secondary"] & pressed': '#purple-text.10',
 
         '[data-type="neutral"] | [data-type="outline"]': '#dark.0',
-        '([data-type="neutral"] | [data-type="outline"]) & hovered': '#dark-bg',
-        '([data-type="neutral"] | [data-type="outline"]) & pressed':
-          '#light-border',
+        '([data-type="neutral"] | [data-type="outline"]) & hovered': '#dark.03',
+        '([data-type="neutral"] | [data-type="outline"]) & (pressed | selected)':
+          '#dark.06',
 
         '[disabled] & ![data-type="link"]': '#dark.04',
 

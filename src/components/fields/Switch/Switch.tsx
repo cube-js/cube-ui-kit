@@ -44,6 +44,7 @@ const SwitchWrapperElement = tasty({
 const SwitchElement = tasty({
   qa: 'Switch',
   styles: {
+    boxSizing: 'content-box',
     position: 'relative',
     verticalAlign: 'baseline',
     placeSelf: 'center',
