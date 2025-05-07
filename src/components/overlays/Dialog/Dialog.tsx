@@ -33,6 +33,7 @@ const STYLES_LIST = [...BASE_STYLES, ...DIMENSION_STYLES, ...BLOCK_STYLES];
 const DialogElement = tasty({
   as: 'section',
   styles: {
+    fill: '#border',
     pointerEvents: 'auto',
     position: {
       '': 'relative',
@@ -57,7 +58,6 @@ const DialogElement = tasty({
       '[data-type="tray"]': '1cr top',
       '[data-type="fullscreenTakeover"]': '0r',
     },
-    fill: '#white',
     shadow: {
       '': '0 2x 4x #shadow',
       '[data-type="popover"] | [data-type="panel"]': '0px .5x 2x #shadow',
@@ -72,11 +72,11 @@ const DialogElement = tasty({
       '[data-type="popover"]': '1x',
     },
     '@dialog-content-padding-v': {
-      '': '3x',
+      '': '2x',
       '[data-type="popover"]': '2x',
     },
     '@dialog-padding-h': {
-      '': '3x',
+      '': '2x',
       '[data-type="popover"]': '2x',
     },
     '@dialog-footer-v': {
@@ -86,13 +86,15 @@ const DialogElement = tasty({
     '@dialog-content-gap': '3x',
 
     DialogContainer: {
+      position: 'relative',
       display: 'flex',
       flow: 'column',
       placeItems: 'stretch',
       placeContent: 'stretch',
       placeSelf: 'stretch',
+      fill: '#white',
       border: {
-        '': '1bw solid #light-border',
+        '': '1bw solid #dark-05',
         '[data-type="popover"]': 0,
       },
       radius: { '': '(1cr - 1ow)', '[data-type="popover"]': '1cr' },

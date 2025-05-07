@@ -149,7 +149,7 @@ export function predefine() {
       .join('/');
   });
   // Other styles
-  defineStyleAlias('outlineOffset', 'outlineOffset', numberConverter);
+  defineStyleAlias('outlineOffset', 'outline-offset', numberConverter);
 
   [
     displayStyle,

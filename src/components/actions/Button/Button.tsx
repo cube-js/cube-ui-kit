@@ -55,6 +55,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
   textDecoration: 'none',
   transition: 'theme',
   reset: 'button',
+  outlineOffset: 1,
   padding: {
     '': '0 (2x - 1bw)',
     '[data-size="small"]': '0 (1x - 1bw)',
@@ -97,25 +98,23 @@ const ButtonElement = tasty({
   styles: DEFAULT_BUTTON_STYLES,
   variants: {
     default: {
-      shadow: {
-        '': false,
-        '[data-type="link"]': '0 @border-width 0 0 #purple.20',
-        '[data-type="link"] & (pressed | hovered | [disabled])':
-          '0 0 0 0 #purple.20',
-      },
       outline: {
-        '': '0 #focus.0',
-        focused: '@outline-width #focus',
+        '': '0 #purple-text.0',
+        'focused & ([data-type="primary"] | [data-type="link"])':
+          '1bw #purple-text',
       },
       border: {
-        // default
-        '': '#clear',
+        '': '#border',
+        '[data-type="primary"]': '#clear',
         '[data-type="primary"] & pressed': '#purple-text',
+        '[data-type="secondary"]': '#purple.15',
         '[data-type="secondary"] & pressed': '#purple.3',
-        '[data-type="outline"]': '#purple.3',
+        '[data-type="outline"]': '#border',
         '[data-type="outline"] & [disabled]': '#dark.12',
+        '[data-type="clear"]': '#clear',
         '([data-type="clear"] | [data-type="outline"]) & pressed':
           '#purple-text.10',
+        focused: '#purple-text',
         '[data-type="link"]': '0',
       },
       fill: {
@@ -129,52 +128,48 @@ const ButtonElement = tasty({
         '[data-type="secondary"] & hovered': '#purple.16',
         '[data-type="secondary"] & pressed': '#purple-text.10',
 
-        '[data-type="neutral"]': '#dark.0',
-        '[data-type="neutral"] & hovered': '#dark.04',
-        '[data-type="neutral"] & pressed': '#dark.05',
+        '[data-type="neutral"] | [data-type="outline"]': '#dark.0',
+        '([data-type="neutral"] | [data-type="outline"]) & hovered': '#dark-bg',
+        '([data-type="neutral"] | [data-type="outline"]) & pressed':
+          '#light-border',
 
         '[disabled] & ![data-type="link"]': '#dark.04',
 
-        '([data-type="clear"] | [data-type="outline"])': '#purple.0',
-        '([data-type="clear"] | [data-type="outline"]) & hovered': '#purple.16',
-        '([data-type="clear"] | [data-type="outline"]) & pressed': '#purple.10',
-        '([data-type="clear"] | [data-type="outline"]) & [disabled]':
-          '#purple.0',
+        '[data-type="clear"]': '#purple.0',
+        '[data-type="clear"] & hovered': '#purple.16',
+        '[data-type="clear"] & pressed': '#purple.10',
+        '[data-type="clear"] & [disabled]': '#purple.0',
       },
       color: {
         // default
         '': '#white',
         '[data-type="secondary"]': '#purple',
-        '[data-type="clear"] | [data-type="outline"] | [data-type="link"]':
-          '#purple-text',
+        '[data-type="clear"] | [data-type="link"]': '#purple-text',
         '[data-type="link"] & pressed': '#purple',
-        '[data-type="neutral"]': '#dark-02',
-        '[data-type="neutral"] & hovered': '#dark-02',
-        '[data-type="neutral"] & pressed': '#purple',
+        '[data-type="neutral"] | [data-type="outline"]': '#dark-02',
+        '([data-type="neutral"] | [data-type="outline"]) & hovered': '#dark-02',
+        '([data-type="neutral"] | [data-type="outline"]) & pressed': '#dark',
 
         // other
         '[disabled]': '#dark.30',
       },
     },
     danger: {
-      shadow: {
-        '': false,
-        '[data-type="link"]': '0 @border-width 0 0 #danger.20',
-        '[data-type="link"] & (pressed | hovered | [disabled])':
-          '0 0 0 0 #danger.20',
-      },
       outline: {
-        '': '0 #danger.0',
-        focused: '@outline-width #danger.50',
+        '': '0 #danger-text.0',
+        'focused & ([data-type="primary"] | [data-type="link"])':
+          '1bw #danger-text',
       },
       border: {
-        '': '#clear',
+        '': '#border',
+        '[data-type="primary"]': '#clear',
         '[data-type="primary"] & pressed': '#danger-text',
+        '[data-type="secondary"]': '#danger.15',
         '[data-type="secondary"] & pressed': '#danger.3',
-        '[data-type="outline"]': '#danger-text.3',
-        '([data-type="clear"] | [data-type="outline"]) & pressed':
-          '#danger-text.10',
+        '[data-type="clear"]': '#clear',
+        '[data-type="outline"]': '#danger.15',
         '[data-type="outline"] & pressed': '#danger.3',
+        focused: '#danger-text',
         '[data-type="link"]': '#clear',
       },
       fill: {
@@ -214,24 +209,21 @@ const ButtonElement = tasty({
       },
     },
     success: {
-      shadow: {
-        '': false,
-        '[data-type="link"]': '0 @border-width 0 0 #success.20',
-        '[data-type="link"] & (pressed | hovered | [disabled])':
-          '0 0 0 0 #success.20',
-      },
       outline: {
-        '': '0 #success.0',
-        focused: '@outline-width #success.50',
+        '': '0 #success-text.0',
+        'focused & ([data-type="primary"] | [data-type="link"])':
+          '1bw #success-text',
       },
       border: {
-        '': '#clear',
+        '': '#border',
+        '[data-type="primary"]': '#clear',
         '[data-type="primary"] & pressed': '#success-text',
+        '[data-type="secondary"]': '#success.15',
         '[data-type="secondary"] & pressed': '#success.3',
-        '[data-type="outline"]': '#success-text.3',
-        '([data-type="clear"] | [data-type="outline"]) & pressed':
-          '#success-text.10',
+        '[data-type="clear"]': '#clear',
+        '[data-type="outline"]': '#success.15',
         '[data-type="outline"] & pressed': '#success.3',
+        focused: '#success-text',
         '[data-type="link"]': '#clear',
       },
       fill: {
@@ -272,24 +264,20 @@ const ButtonElement = tasty({
       },
     },
     special: {
-      shadow: {
-        '': false,
-        '[data-type="link"]': '0 @border-width 0 0 #white.44',
-        '[data-type="link"] & (pressed | hovered | [disabled])':
-          '0 0 0 0 #white.44',
-      },
       outline: {
         '': '0 #white.0',
-        focused: '@outline-width #white.44',
-        '([data-type="primary"] | [data-type="clear"])': '0 #dark-03.80',
-        '([data-type="primary"] | [data-type="clear"]) & focused':
-          '@outline-width #purple-03.80',
+        'focused & ([data-type="primary"] | [data-type="link"] | [data-type="clear"])':
+          '1bw #white',
       },
       border: {
         '': '#clear',
         '[data-type="primary"] & pressed': '#purple-03',
-        '[data-type="secondary"] & pressed': '#white.44',
-        '[data-type="outline"] & !pressed': '#white.44',
+        '[data-type="secondary"]': '#white.3',
+        '[data-type="secondary"] & pressed': '#white.4',
+        '([data-type="outline"] | [data-type="neutral"]) & !pressed':
+          '#white.3',
+        '![data-type="primary"] & focused': '#white',
+        '[data-type="link"]': false,
       },
       fill: {
         '': '#clear',
@@ -416,7 +404,7 @@ export const Button = forwardRef(function Button(
       disabled={isDisabledElement}
       variant={theme as 'default' | 'danger' | 'special' | 'success'}
       data-theme={theme}
-      data-type={type ?? 'secondary'}
+      data-type={type ?? 'outline'}
       data-size={size ?? 'medium'}
       styles={styles}
     >
