@@ -50,7 +50,7 @@ export const Icon = memo(
     props: CubeIconProps,
     ref: ForwardedRef<HTMLSpanElement>,
   ) {
-    const { size, styles, stroke, ...rest } = props;
+    const { size, stroke, ...rest } = props;
 
     const mergedProps =
       size != null && stroke != null

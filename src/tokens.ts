@@ -34,7 +34,7 @@ const colors = {
   'note-bg': '251 239 219',
   'note-icon': '181 140 44',
   border: '227 227 233',
-  'light-border': '238 238 241',
+  'light-border': '237 237 240',
 };
 
 function color(name, opacity = 1) {
@@ -50,6 +50,7 @@ const TOKENS = {
   'input-letter-spacing': '0.02em',
   'disabled-opacity': '.4',
   gap: '8px',
+  'stroke-width': 1.5,
   'outline-width': 'calc(1rem / 16 * 3)',
   'border-width': '1px',
   radius: '6px',
