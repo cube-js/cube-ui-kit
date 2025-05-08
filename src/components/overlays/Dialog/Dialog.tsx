@@ -33,6 +33,8 @@ const STYLES_LIST = [...BASE_STYLES, ...DIMENSION_STYLES, ...BLOCK_STYLES];
 const DialogElement = tasty({
   as: 'section',
   styles: {
+    display: 'grid',
+    gridRows: 'minmax(0, 1fr)',
     fill: '#border',
     pointerEvents: 'auto',
     position: {
