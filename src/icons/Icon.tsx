@@ -56,7 +56,7 @@ export const Icon = memo(
     props: CubeIconProps,
     ref: ForwardedRef<HTMLSpanElement>,
   ) {
-    const { size, stroke, ...rest } = props;
+    let { size, styles, stroke, ...rest } = props;
 
     const icon = rest.children
       ? cloneElement(rest.children, {
@@ -65,13 +65,21 @@ export const Icon = memo(
         })
       : rest.children;
 
+    if (size) {
+      styles = {
+        ...styles,
+        fontSize: size,
+      };
+    }
+    if (stroke) {
+      styles = {
+        ...styles,
+        '@stroke-width': stroke,
+      };
+    }
+
     return (
-      <IconElement
-        ref={ref}
-        qa="Icon"
-        {...rest}
-        styles={size ? { fontSize: size, ...rest.styles } : rest.styles}
-      >
+      <IconElement ref={ref} qa="Icon" {...rest} styles={styles}>
         {icon}
       </IconElement>
     );
