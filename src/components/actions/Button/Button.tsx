@@ -87,8 +87,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
       'display .2s steps(1, start), margin .2s linear, opacity .2s linear',
   },
 
-  ButtonIcon: {
-    display: 'grid',
+  '& [data-element="ButtonIcon"]:not([data-qa="Icon"])': {
     fontSize: '@icon-size',
   },
 };
