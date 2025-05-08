@@ -87,7 +87,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
       'display .2s steps(1, start), margin .2s linear, opacity .2s linear',
   },
 
-  '& [data-element="ButtonIcon"]:not([data-qa="Icon"])': {
+  '& [data-element="ButtonIcon"]:not(:has(.tabler-icon))': {
     fontSize: '@icon-size',
   },
 };
