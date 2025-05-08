@@ -70,7 +70,7 @@ export const Icon = memo(
         ref={ref}
         qa="Icon"
         {...rest}
-        styles={{ fontSize: size, ...rest.styles }}
+        styles={size ? { fontSize: size, ...rest.styles } : rest.styles}
       >
         {icon}
       </IconElement>
