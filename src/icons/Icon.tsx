@@ -48,7 +48,7 @@ export interface CubeIconProps
     BaseStyleProps {
   size?: Styles['fontSize'];
   stroke?: number;
-  children: ReactElement;
+  children?: ReactElement;
 }
 
 export const Icon = memo(
@@ -58,10 +58,12 @@ export const Icon = memo(
   ) {
     const { size, stroke, ...rest } = props;
 
-    const icon = cloneElement(rest.children, {
-      size: typeof size === 'number' ? size : undefined,
-      stroke,
-    });
+    const icon = rest.children
+      ? cloneElement(rest.children, {
+          size: typeof size === 'number' ? size : undefined,
+          stroke,
+        })
+      : rest.children;
 
     return (
       <IconElement
