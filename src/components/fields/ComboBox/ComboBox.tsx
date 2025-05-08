@@ -22,7 +22,8 @@ import { useEvent } from '../../../_internal/index';
 import { LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import {
-  BLOCK_STYLES,
+  BASE_STYLES,
+  COLOR_STYLES,
   extractStyles,
   OUTER_STYLES,
   tasty,
@@ -138,6 +139,8 @@ export interface CubeComboBoxProps<T>
   allowsCustomValue?: boolean;
 }
 
+const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
+
 export const ComboBox = forwardRef(function ComboBox<T extends object>(
   props: CubeComboBoxProps<T>,
   ref: ForwardedRef<HTMLDivElement>,
@@ -191,9 +194,10 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     inputStyles,
     optionStyles,
     triggerStyles,
-    suffix,
     listBoxStyles,
     overlayStyles,
+    wrapperStyles,
+    suffix,
     hideTrigger,
     message,
     description,
@@ -223,9 +227,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     menuTrigger,
   });
 
-  const outerStyles = extractStyles(otherProps, OUTER_STYLES, styles);
-
-  inputStyles = extractStyles(otherProps, BLOCK_STYLES, inputStyles);
+  styles = extractStyles(otherProps, PROP_STYLES, styles);
 
   ref = useCombinedRefs(ref);
   wrapperRef = useCombinedRefs(wrapperRef);
@@ -409,7 +411,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       ref={wrapperRef}
       qa={qa || 'ComboBox'}
       {...modAttrs(mods)}
-      styles={outerStyles}
+      styles={wrapperStyles}
       style={{
         zIndex: isFocused ? 1 : 'initial',
       }}

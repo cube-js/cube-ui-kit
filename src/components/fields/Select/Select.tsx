@@ -28,9 +28,11 @@ import { LoadingIcon } from '../../../icons/index';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared/index';
 import {
+  BASE_STYLES,
   BasePropsWithoutChildren,
-  BLOCK_STYLES,
-  BlockStyleProps,
+  BaseStyleProps,
+  COLOR_STYLES,
+  ColorStyleProps,
   extractStyles,
   OUTER_STYLES,
   OuterStyleProps,
@@ -244,9 +246,10 @@ const StyledOverlayElement = styled(OverlayElement)`
 export interface CubeSelectBaseProps<T>
   extends BasePropsWithoutChildren,
     AriaLabelingProps,
+    BaseStyleProps,
     OuterStyleProps,
+    ColorStyleProps,
     FieldBaseProps,
-    BlockStyleProps,
     CollectionBase<T>,
     AriaSelectProps<T> {
   icon?: ReactElement;
@@ -262,6 +265,7 @@ export interface CubeSelectBaseProps<T>
   triggerStyles?: Styles;
   listBoxStyles?: Styles;
   overlayStyles?: Styles;
+  wrapperStyles?: Styles;
   direction?: 'top' | 'bottom';
   shouldFlip?: boolean;
   inputProps?: Props;
@@ -277,6 +281,8 @@ export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
   ellipsis?: boolean;
   placeholder?: string;
 }
+
+const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
 
 function Select<T extends object>(
   props: CubeSelectProps<T>,
@@ -313,9 +319,10 @@ function Select<T extends object>(
     overlayOffset = 8,
     inputStyles,
     optionStyles,
-    suffix,
+    wrapperStyles,
     listBoxStyles,
     overlayStyles,
+    suffix,
     message,
     description,
     direction = 'bottom',
@@ -332,9 +339,8 @@ function Select<T extends object>(
     ...otherProps
   } = props;
   let state = useSelectState(props);
-  const outerStyles = extractStyles(otherProps, OUTER_STYLES, styles);
 
-  inputStyles = extractStyles(otherProps, BLOCK_STYLES, inputStyles);
+  styles = extractStyles(otherProps, PROP_STYLES, styles);
 
   ref = useCombinedRefs(ref);
   triggerRef = useCombinedRefs(triggerRef);
@@ -417,7 +423,7 @@ function Select<T extends object>(
     <SelectWrapperElement
       qa={qa || 'Select'}
       mods={modifiers}
-      styles={outerStyles}
+      styles={wrapperStyles}
       data-size={size}
       data-type={type}
       data-theme={theme}
