@@ -26,7 +26,12 @@ const IconElement = tasty({
     verticalAlign: 'sub',
     width: '1em 1em',
     height: 'min 1em',
-    fontSize: 'var(--icon-size, var(--font-size))',
+    fontSize: {
+      // legacy icons
+      '': 'calc(var(--icon-size, calc(var(--font-size) + 4px)) - 2px)',
+      // tabler icons
+      ':has(.tabler-icon)': 'var(--icon-size, var(--font-size))',
+    },
     textAlign: 'center',
     textTransform: 'none',
     textRendering: 'optimizeLegibility',

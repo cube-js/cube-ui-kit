@@ -6,7 +6,7 @@ export function wrapIcon(name: string, icon: ReactElement) {
   function IconWrapper(props: CubeIconProps) {
     return (
       // use custom size to support legacy icons
-      <Icon qa={name} aria-hidden="true" size="(@icon-size - 2px)" {...props}>
+      <Icon qa={name} aria-hidden="true" {...props}>
         {icon}
       </Icon>
     );
