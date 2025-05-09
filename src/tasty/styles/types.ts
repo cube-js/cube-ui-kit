@@ -52,11 +52,7 @@ type OpaquePercentage = '' | `.${Digit}` | `.${Digit}${Digit}` | '.100';
 export type NoType = false | null | undefined;
 
 export interface StylesInterface
-  extends Omit<
-    CSSProperties,
-    'color' | 'fill' | 'font' | 'outline' | 'type',
-    'flexDirection'
-  > {
+  extends Omit<CSSProperties, 'color' | 'fill' | 'font' | 'outline' | 'type'> {
   /**
    * @deprecated Use `flow` style instead.
    */
