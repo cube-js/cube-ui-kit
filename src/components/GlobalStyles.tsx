@@ -98,6 +98,7 @@ const GlobalStylesElement = createGlobalStyle<GlobalStylesElementProps>`
     min-width: var(--icon-size);
     min-height: var(--icon-size);
     max-height: var(--icon-size);
+    stroke-width: var(--border-width);
   }
 
   .cube-animation-spin {
