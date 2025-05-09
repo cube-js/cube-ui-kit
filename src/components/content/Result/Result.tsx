@@ -89,12 +89,10 @@ const Container = tasty({
       '': 'center',
       compact: 'left',
     },
-    '--icon-size': {
-      '': '6x',
-      compact: '4x',
-    },
+    '--icon-size': '6x',
 
     Icon: {
+      display: 'grid',
       gridArea: 'icon',
     },
 
