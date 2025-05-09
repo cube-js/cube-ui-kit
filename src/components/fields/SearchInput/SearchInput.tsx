@@ -27,7 +27,10 @@ const ClearButton = tasty(Button, {
   icon: <CloseIcon />,
   styles: {
     radius: 'right (1r - 1bw)',
-    width: '4x',
+    width: {
+      '': '4x',
+      '[data-size="small"]': '3x',
+    },
     height: 'auto',
     placeSelf: 'stretch',
   },
@@ -63,6 +66,7 @@ export const SearchInput = forwardRef(function SearchInput(
             {props.suffix}
             {showClearButton && (
               <ClearButton
+                size={props.size}
                 type={validationState === 'invalid' ? 'clear' : 'neutral'}
                 theme={validationState === 'invalid' ? 'danger' : undefined}
                 {...ariaToCubeButtonProps(clearButtonProps)}

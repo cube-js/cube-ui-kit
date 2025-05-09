@@ -1,6 +1,6 @@
-import { BellFilled, BellOutlined, WechatFilled } from '@ant-design/icons';
 import { Meta, StoryFn } from '@storybook/react';
 import { expect, userEvent, within } from '@storybook/test';
+import { IconBell, IconBellFilled, IconBrandWechat } from '@tabler/icons-react';
 import { Key, useRef, useState } from 'react';
 
 import { wait } from '../../../test';
@@ -100,15 +100,15 @@ export const WithIcon: StoryFn<CubeNotificationProps> = (args) => {
       <NotificationView
         {...args}
         header=""
-        icon={<BellOutlined style={{ display: 'flex', alignSelf: 'center' }} />}
+        icon={<IconBell style={{ display: 'flex', alignSelf: 'center' }} />}
       />
       <NotificationView
         {...args}
-        icon={<BellOutlined style={{ display: 'flex', alignSelf: 'center' }} />}
+        icon={<IconBell style={{ display: 'flex', alignSelf: 'center' }} />}
       />
       <NotificationView
         {...args}
-        icon={<BellOutlined style={{ display: 'flex', alignSelf: 'center' }} />}
+        icon={<IconBell style={{ display: 'flex', alignSelf: 'center' }} />}
         header=""
         actions={
           <>
@@ -183,7 +183,11 @@ List.args = {
 export const NotificationsInModal: StoryFn<CubeNotificationProps> = (args) => {
   return (
     <NotificationsDialogTrigger>
-      <Button icon={<BellFilled />} type="clear" label="Open Notifications" />
+      <Button
+        icon={<IconBellFilled />}
+        type="clear"
+        label="Open Notifications"
+      />
 
       <NotificationsDialog>
         <NotificationsList
@@ -323,11 +327,7 @@ export const ComplexInteraction: StoryFn<CubeNotificationProps> = (args) => {
             ]);
           }}
         >
-          <Button
-            icon={<BellOutlined />}
-            type="clear"
-            label="Open Notifications"
-          />
+          <Button icon={<IconBell />} type="clear" label="Open Notifications" />
 
           <NotificationsDialog>
             {notifications.length > 0 ? (
@@ -437,7 +437,7 @@ export const WithWidget: StoryFn<CubeNotificationProps> = (args) => (
   <>
     <ActionTemplate {...args} />
     <Button
-      icon={<WechatFilled />}
+      icon={<IconBrandWechat />}
       size="large"
       style={{
         zIndex: 2147483000,

@@ -44,24 +44,32 @@ const SwitchWrapperElement = tasty({
 const SwitchElement = tasty({
   qa: 'Switch',
   styles: {
+    boxSizing: 'border-box',
     position: 'relative',
     verticalAlign: 'baseline',
     placeSelf: 'center',
     radius: 'round',
     fill: {
-      '': '#dark.50',
+      '': '#white',
       checked: '#purple',
-      disabled: '#dark.12',
+      disabled: '#border',
     },
-    color: '#white',
-    border: false,
+    color: {
+      '': '#dark-03',
+      checked: '#white',
+    },
+    border: {
+      '': '#dark-05',
+      checked: '#purple',
+      disabled: '#dark-05',
+    },
     width: {
       '': '5.25x 5.25x',
-      '[data-size="small"]': '3.5x 3.5x',
+      '[data-size="small"]': '4x 4x',
     },
     height: {
       '': '3x 3x',
-      '[data-size="small"]': '2x 2x',
+      '[data-size="small"]': '2.5x 2.5x',
     },
     outline: {
       '': '#purple-03.0',
@@ -77,22 +85,25 @@ const SwitchElement = tasty({
     Thumb: {
       position: 'absolute',
       width: {
-        '': '2.5x 2.5x',
+        '': '2x 2x',
         '[data-size="small"]': '1.5x 1.5x',
       },
       height: {
-        '': '2.5x 2.5x',
+        '': '2x 2x',
         '[data-size="small"]': '1.5x 1.5x',
       },
       radius: 'round',
       fill: {
         '': 'currentColor',
-        disabled: '#white.5',
+        disabled: '#white.7',
       },
-      shadow: '0px 2px 4px #dark.20;',
-      top: '.25x',
+      top: {
+        '': '.375x',
+        '[data-size="small"]': '.375x',
+      },
       left: {
-        '': '.25x',
+        '': '.375x',
+        '[data-size="small"]': '.375x',
         checked: '2.5x',
         'checked & [data-size="small"]': '1.75x',
       },

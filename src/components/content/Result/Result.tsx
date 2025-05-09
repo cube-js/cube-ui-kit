@@ -1,11 +1,11 @@
 import {
-  CheckCircleFilled,
-  CloseCircleFilled,
-  InfoCircleFilled,
-} from '@ant-design/icons';
+  IconAlertTriangleFilled,
+  IconCircleCheckFilled,
+  IconCircleXFilled,
+  IconInfoCircleFilled,
+} from '@tabler/icons-react';
 import { ComponentType, forwardRef, ReactNode, useMemo } from 'react';
 
-import { WarningFilledIcon } from '../../../icons';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -89,13 +89,11 @@ const Container = tasty({
       '': 'center',
       compact: 'left',
     },
+    '--icon-size': '6x',
 
     Icon: {
+      display: 'grid',
       gridArea: 'icon',
-      fontSize: {
-        '': '10x',
-        compact: '4x',
-      },
     },
 
     Content: {
@@ -117,19 +115,19 @@ const Container = tasty({
 const statusIconMap: StatusIconMap = {
   success: {
     color: 'success',
-    component: CheckCircleFilled,
+    component: () => <IconCircleCheckFilled />,
   },
   error: {
     color: 'danger',
-    component: CloseCircleFilled,
+    component: () => <IconCircleXFilled />,
   },
   info: {
     color: 'purple',
-    component: InfoCircleFilled,
+    component: () => <IconInfoCircleFilled />,
   },
   warning: {
     color: 'note',
-    component: WarningFilledIcon,
+    component: () => <IconAlertTriangleFilled />,
   },
   404: {
     color: 'purple',

@@ -138,17 +138,12 @@ const TabElement = tasty(Action, {
 const CloseButton = tasty(Button, {
   element: 'CloseButton',
   type: 'neutral',
+  size: 'small',
+  icon: <CloseIcon />,
   styles: {
-    color: {
-      '': '#dark.50',
-      hovered: '#dark',
-    },
-    padding: '.25x',
-    outline: {
-      '': '#purple-03.0',
-      focused: '#purple-03',
-    },
-    radius: '1r',
+    width: '3x',
+    height: '3x',
+    padding: 0,
   },
 });
 
@@ -183,13 +178,7 @@ function Tab({
         <Block>{children}</Block>
         {(isClosable || isDirty) && (
           <Flex placeItems="center" style={{ position: 'relative' }}>
-            {isClosable ? (
-              <CloseButton onPress={onClose}>
-                <CloseIcon />
-              </CloseButton>
-            ) : (
-              <div></div>
-            )}
+            {isClosable ? <CloseButton onPress={onClose} /> : <div></div>}
             {isDirty ? <DirtyBadge /> : null}
           </Flex>
         )}

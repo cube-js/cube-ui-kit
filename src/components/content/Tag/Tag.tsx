@@ -20,7 +20,7 @@ const TagElement = tasty({
   styles: {
     position: 'relative',
     display: 'inline-flex',
-    gap: '1x',
+    gap: '.5x',
     placeContent: 'center start',
     placeItems: 'center start',
     radius: '1r',
@@ -30,8 +30,8 @@ const TagElement = tasty({
     textAlign: 'left',
     whiteSpace: 'nowrap',
     padding: {
-      '': '0 (1x - 1bw)',
-      closable: '0 (2.5x - 1bw) 0 (1x - 1bw)',
+      '': '0 (.75x - 1bw)',
+      closable: '0 (2.5x - 1bw) 0 (.75x - 1bw)',
     },
     fill: {
       '': '#dark.04',
@@ -56,10 +56,6 @@ const TagElement = tasty({
 
         return map;
       }, {}),
-    },
-
-    Icon: {
-      fontSize: '@icon-size',
     },
 
     Content: {
@@ -121,7 +117,7 @@ function Tag(allProps: CubeTagProps, ref) {
       data-type={theme ?? type}
       mods={{ ...mods, closable: isClosable }}
     >
-      {icon ? <div data-element="TagIcon">{icon}</div> : null}
+      {icon}
       <div data-element="Content">{children}</div>
       {isClosable ? (
         <Suffix outerGap="0">

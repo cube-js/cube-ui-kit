@@ -1,6 +1,6 @@
-import { BellOutlined } from '@ant-design/icons';
 import { Meta, StoryFn } from '@storybook/react';
 import { expect, userEvent, within } from '@storybook/test';
+import { IconBell } from '@tabler/icons-react';
 
 import { Button } from '../../actions';
 
@@ -48,5 +48,5 @@ export const AllTypes: StoryFn<CubeToastsApiProps> = () => (
 
 export const CustomIcon = AsComponent.bind({});
 CustomIcon.args = {
-  icon: <BellOutlined style={{ display: 'flex', alignSelf: 'center' }} />,
+  icon: <IconBell style={{ display: 'flex', alignSelf: 'center' }} />,
 };

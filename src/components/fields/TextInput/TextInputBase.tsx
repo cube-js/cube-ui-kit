@@ -125,10 +125,8 @@ const STYLE_LIST = [...POSITION_STYLES, ...DIMENSION_STYLES];
 const INPUT_STYLE_PROPS_LIST = [...BLOCK_STYLES, 'resize'];
 
 export const DEFAULT_INPUT_STYLES: Styles = {
-  display: 'block',
   gridArea: 'input',
   width: 'initial 100% 100%',
-  height: 'initial initial initial',
   color: 'inherit',
   fill: '#clear',
   border: 0,
@@ -149,11 +147,13 @@ export const DEFAULT_INPUT_STYLES: Styles = {
     '[data-size="small"]': '(.75x - 1bw)',
   },
   '@left-padding': {
-    '': '(1.5x - 1bw)',
+    '': '(1.25x - 1bw)',
+    '[data-size="small"]': '(1x - 1bw)',
     prefix: '0',
   },
   '@right-padding': {
-    '': '(1.5x - 1bw)',
+    '': '(1.25x - 1bw)',
+    '[data-size="small"]': '(1x - 1bw)',
     suffix: '0',
   },
 };
@@ -334,7 +334,6 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     hasTextSecurity && inputProps.value?.length
       ? {
           fontFamily: 'text-security-disc',
-          WebkitTextSecurity: 'disc',
         }
       : {};
 

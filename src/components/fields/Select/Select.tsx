@@ -24,13 +24,15 @@ import {
 import { Item, useSelectState } from 'react-stately';
 import styled from 'styled-components';
 
-import { LoadingIcon } from '../../../icons/index';
+import { DownIcon, LoadingIcon } from '../../../icons/index';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared/index';
 import {
+  BASE_STYLES,
   BasePropsWithoutChildren,
-  BLOCK_STYLES,
-  BlockStyleProps,
+  BaseStyleProps,
+  COLOR_STYLES,
+  ColorStyleProps,
   extractStyles,
   OUTER_STYLES,
   OuterStyleProps,
@@ -47,23 +49,6 @@ import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
 import { DEFAULT_INPUT_STYLES, INPUT_WRAPPER_STYLES } from '../index';
-
-function CaretDownIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      width="14"
-      height="14"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M11.49 4.102H2.51c-.269 0-.42.284-.253.478l4.49 5.206a.342.342 0 00.506 0l4.49-5.206c.167-.194.016-.478-.253-.478z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
 
 const SelectWrapperElement = tasty({
   styles: {
@@ -105,7 +90,10 @@ const SelectWrapperElement = tasty({
     CaretIcon: {
       display: 'grid',
       placeItems: 'center',
-      width: 'min 4x',
+      width: {
+        '': '4x',
+        '[data-size="small"]': '3x',
+      },
       cursor: 'pointer',
       fontSize: 'inherit',
     },
@@ -196,7 +184,7 @@ const ListBoxElement = tasty({
     margin: '0',
     padding: '.5x',
     listStyle: 'none',
-    radius: '@large-radius',
+    radius: '1cr',
     fill: '#white',
     shadow: '0px 4px 16px #shadow',
     height: 'initial 30x',
@@ -244,9 +232,10 @@ const StyledOverlayElement = styled(OverlayElement)`
 export interface CubeSelectBaseProps<T>
   extends BasePropsWithoutChildren,
     AriaLabelingProps,
+    BaseStyleProps,
     OuterStyleProps,
+    ColorStyleProps,
     FieldBaseProps,
-    BlockStyleProps,
     CollectionBase<T>,
     AriaSelectProps<T> {
   icon?: ReactElement;
@@ -262,6 +251,7 @@ export interface CubeSelectBaseProps<T>
   triggerStyles?: Styles;
   listBoxStyles?: Styles;
   overlayStyles?: Styles;
+  wrapperStyles?: Styles;
   direction?: 'top' | 'bottom';
   shouldFlip?: boolean;
   inputProps?: Props;
@@ -277,6 +267,8 @@ export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
   ellipsis?: boolean;
   placeholder?: string;
 }
+
+const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
 
 function Select<T extends object>(
   props: CubeSelectProps<T>,
@@ -313,9 +305,10 @@ function Select<T extends object>(
     overlayOffset = 8,
     inputStyles,
     optionStyles,
-    suffix,
+    wrapperStyles,
     listBoxStyles,
     overlayStyles,
+    suffix,
     message,
     description,
     direction = 'bottom',
@@ -332,9 +325,8 @@ function Select<T extends object>(
     ...otherProps
   } = props;
   let state = useSelectState(props);
-  const outerStyles = extractStyles(otherProps, OUTER_STYLES, styles);
 
-  inputStyles = extractStyles(otherProps, BLOCK_STYLES, inputStyles);
+  styles = extractStyles(otherProps, PROP_STYLES, styles);
 
   ref = useCombinedRefs(ref);
   triggerRef = useCombinedRefs(triggerRef);
@@ -417,7 +409,7 @@ function Select<T extends object>(
     <SelectWrapperElement
       qa={qa || 'Select'}
       mods={modifiers}
-      styles={outerStyles}
+      styles={wrapperStyles}
       data-size={size}
       data-type={type}
       data-theme={theme}
@@ -449,7 +441,7 @@ function Select<T extends object>(
           {isLoading && <LoadingIcon />}
           {suffixPosition === 'after' ? suffix : null}
           <div data-element="CaretIcon">
-            <CaretDownIcon />
+            <DownIcon />
           </div>
         </div>
       </SelectElement>

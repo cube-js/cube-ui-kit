@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { ForwardedRef, forwardRef, memo, ReactElement } from 'react';
 
 import {
   BASE_STYLES,
@@ -20,15 +20,27 @@ const IconElement = tasty({
     verticalAlign: 'sub',
     width: '1em 1em',
     height: 'min 1em',
-    fontSize: 'var(--icon-size, var(--font-size))',
+    fontSize: '@icon-size',
+    transition: 'theme, width, height',
     textAlign: 'center',
     textTransform: 'none',
     textRendering: 'optimizeLegibility',
     '-webkit-font-smoothing': 'antialiased',
 
     '& svg': {
-      width: '1em 1em',
-      height: 'min 1em',
+      transition: 'all',
+    },
+
+    '& svg.tabler-icon': {
+      width: 'min 1em',
+      height: '1em 1em',
+      strokeWidth: '@stroke-width',
+    },
+
+    '& svg:not(.tabler-icon)': {
+      width: 'min (1em - 2px)',
+      height: '(1em - 2px) (1em - 2px)',
+      strokeWidth: '@stroke-width',
     },
   },
   styleProps: [...OUTER_STYLES, ...BASE_STYLES, ...COLOR_STYLES],
@@ -40,16 +52,30 @@ export interface CubeIconProps
     ColorStyleProps,
     BaseStyleProps {
   size?: Styles['fontSize'];
+  stroke?: number;
+  children?: ReactElement;
 }
 
-export const Icon = memo(function Icon(props: CubeIconProps) {
-  const { size, styles, ...rest } = props;
+export const Icon = memo(
+  forwardRef(function Icon(
+    props: CubeIconProps,
+    ref: ForwardedRef<HTMLSpanElement>,
+  ) {
+    let { size, styles, stroke, ...rest } = props;
 
-  return (
-    <IconElement
-      qa="Icon"
-      {...rest}
-      styles={size ? { fontSize: size, ...styles } : styles}
-    />
-  );
-});
+    if (size) {
+      styles = {
+        ...styles,
+        fontSize: size,
+      };
+    }
+    if (stroke) {
+      styles = {
+        ...styles,
+        '@stroke-width': stroke,
+      };
+    }
+
+    return <IconElement ref={ref} qa="Icon" {...rest} styles={styles} />;
+  }),
+);

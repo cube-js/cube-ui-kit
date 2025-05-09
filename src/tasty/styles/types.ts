@@ -5,6 +5,8 @@ import { ResponsiveStyleValue } from '../utils/styles';
 type NamedColor =
   | 'purple'
   | 'purple-text'
+  | 'purple-icon'
+  | 'purple-bg'
   | 'purple-01'
   | 'purple-02'
   | 'purple-03'
@@ -15,6 +17,7 @@ type NamedColor =
   | 'dark-03'
   | 'dark-04'
   | 'dark-05'
+  | 'dark-bg'
   | 'text'
   | 'primary'
   | 'disabled'
@@ -23,12 +26,15 @@ type NamedColor =
   | 'danger'
   | 'danger-bg'
   | 'danger-text'
+  | 'danger-icon'
   | 'success'
   | 'success-bg'
   | 'success-text'
+  | 'success-icon'
   | 'note'
   | 'note-bg'
   | 'note-text'
+  | 'note-icon'
   | 'white'
   | 'light'
   | 'light-grey'
@@ -47,6 +53,10 @@ export type NoType = false | null | undefined;
 
 export interface StylesInterface
   extends Omit<CSSProperties, 'color' | 'fill' | 'font' | 'outline' | 'type'> {
+  /**
+   * @deprecated Use `flow` style instead.
+   */
+  flexDirection: CSSProperties['flexDirection'];
   /** Set the background color of the element.
    * ```
    * fill="#{name_of_the_color}"

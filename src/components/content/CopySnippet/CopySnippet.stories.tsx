@@ -1,5 +1,5 @@
-import { SettingOutlined } from '@ant-design/icons';
 import { Meta, StoryFn } from '@storybook/react';
+import { IconSettings } from '@tabler/icons-react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 
@@ -29,7 +29,7 @@ export const WithCustomButton = Template.bind({});
 WithCustomButton.args = {
   code: 'npm install -g cubejs-cli',
   prefix: '$ ',
-  actions: <CopySnippet.Button icon={<SettingOutlined />} />,
+  actions: <CopySnippet.Button icon={<IconSettings />} />,
 };
 
 export const Hidden = Template.bind({});
@@ -128,7 +128,7 @@ Complex.args = {
   language: 'javascript',
   height: 'max 30x',
   hideText: 'SELECT * FROM public.line_items',
-  actions: <CopySnippet.Button icon={<SettingOutlined />} />,
+  actions: <CopySnippet.Button icon={<IconSettings />} />,
   code: `cube('LineItems', {
   sql: \`SELECT * FROM public.line_items\`,
 

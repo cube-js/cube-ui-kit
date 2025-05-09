@@ -19,10 +19,11 @@ import {
 import { Item, useComboBoxState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/index';
-import { LoadingIcon } from '../../../icons';
+import { DownIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import {
-  BLOCK_STYLES,
+  BASE_STYLES,
+  COLOR_STYLES,
   extractStyles,
   OUTER_STYLES,
   tasty,
@@ -48,23 +49,6 @@ type FilterFn = (textValue: string, inputValue: string) => boolean;
 
 export type MenuTriggerAction = 'focus' | 'input' | 'manual';
 
-function CaretDownIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      width="14"
-      height="14"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M11.49 4.102H2.51c-.269 0-.42.284-.253.478l4.49 5.206a.342.342 0 00.506 0l4.49-5.206c.167-.194.016-.478-.253-.478z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
 const ComboBoxWrapperElement = tasty({
   styles: INPUT_WRAPPER_STYLES,
 });
@@ -76,13 +60,17 @@ const InputElement = tasty({
 
 const TriggerElement = tasty({
   as: 'button',
+  type: 'neutral',
   styles: {
     display: 'grid',
     placeItems: 'center',
     placeContent: 'center',
     placeSelf: 'stretch',
     radius: '(1r - 1bw) right',
-    width: '4x',
+    width: {
+      '': '4x',
+      '[data-size="small"]': '3x',
+    },
     color: {
       '': '#dark-02',
       hovered: '#dark-02',
@@ -138,6 +126,8 @@ export interface CubeComboBoxProps<T>
   allowsCustomValue?: boolean;
 }
 
+const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
+
 export const ComboBox = forwardRef(function ComboBox<T extends object>(
   props: CubeComboBoxProps<T>,
   ref: ForwardedRef<HTMLDivElement>,
@@ -191,9 +181,10 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     inputStyles,
     optionStyles,
     triggerStyles,
-    suffix,
     listBoxStyles,
     overlayStyles,
+    wrapperStyles,
+    suffix,
     hideTrigger,
     message,
     description,
@@ -223,9 +214,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     menuTrigger,
   });
 
-  const outerStyles = extractStyles(otherProps, OUTER_STYLES, styles);
-
-  inputStyles = extractStyles(otherProps, BLOCK_STYLES, inputStyles);
+  styles = extractStyles(otherProps, PROP_STYLES, styles);
 
   ref = useCombinedRefs(ref);
   wrapperRef = useCombinedRefs(wrapperRef);
@@ -409,7 +398,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       ref={wrapperRef}
       qa={qa || 'ComboBox'}
       {...modAttrs(mods)}
-      styles={outerStyles}
+      styles={wrapperStyles}
       style={{
         zIndex: isFocused ? 1 : 'initial',
       }}
@@ -452,7 +441,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
             isDisabled={isDisabled}
             styles={triggerStyles}
           >
-            <CaretDownIcon />
+            <DownIcon />
           </TriggerElement>
         ) : null}
       </div>

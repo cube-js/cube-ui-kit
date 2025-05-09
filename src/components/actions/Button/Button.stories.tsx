@@ -1,5 +1,5 @@
-import { CaretDownOutlined, DollarCircleOutlined } from '@ant-design/icons';
 import { StoryFn } from '@storybook/react';
+import { IconCaretDown, IconCoin } from '@tabler/icons-react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Space } from '../../layout/Space';
@@ -50,8 +50,8 @@ const Template: StoryFn<CubeButtonProps> = ({
     fill={props.theme === 'special' ? '#dark' : undefined}
   >
     <Button
-      icon={icon ? <DollarCircleOutlined /> : undefined}
-      rightIcon={rightIcon ? <CaretDownOutlined /> : undefined}
+      icon={icon ? <IconCoin /> : undefined}
+      rightIcon={rightIcon ? <IconCaretDown /> : undefined}
       {...props}
       onPress={(e) => console.log('Press', e)}
     >
@@ -69,24 +69,24 @@ const TemplateSizes: StoryFn<CubeButtonProps> = ({
 }) => (
   <Space>
     <Button
-      icon={icon ? <DollarCircleOutlined /> : undefined}
-      rightIcon={rightIcon ? <CaretDownOutlined /> : undefined}
+      icon={icon ? <IconCoin /> : undefined}
+      rightIcon={rightIcon ? <IconCaretDown /> : undefined}
       {...props}
       size="small"
     >
       {label}
     </Button>
     <Button
-      icon={icon ? <DollarCircleOutlined /> : undefined}
-      rightIcon={rightIcon ? <CaretDownOutlined /> : undefined}
+      icon={icon ? <IconCoin /> : undefined}
+      rightIcon={rightIcon ? <IconCaretDown /> : undefined}
       {...props}
       size="medium"
     >
       {label}
     </Button>
     <Button
-      icon={icon ? <DollarCircleOutlined /> : undefined}
-      rightIcon={rightIcon ? <CaretDownOutlined /> : undefined}
+      icon={icon ? <IconCoin /> : undefined}
+      rightIcon={rightIcon ? <IconCaretDown /> : undefined}
       {...props}
       size="large"
     >
@@ -314,6 +314,42 @@ export const DangerLinkStates = TemplateStates.bind({});
 DangerLinkStates.args = {
   type: 'link',
   theme: 'danger',
+};
+
+export const SuccessSecondaryStates = TemplateStates.bind({});
+SuccessSecondaryStates.args = {
+  type: 'secondary',
+  theme: 'success',
+};
+
+export const SuccessPrimaryStates = TemplateStates.bind({});
+SuccessPrimaryStates.args = {
+  type: 'primary',
+  theme: 'success',
+};
+
+export const SuccessOutlineStates = TemplateStates.bind({});
+SuccessOutlineStates.args = {
+  type: 'outline',
+  theme: 'success',
+};
+
+export const SuccessClearStates = TemplateStates.bind({});
+SuccessClearStates.args = {
+  type: 'clear',
+  theme: 'success',
+};
+
+export const SuccessNeutralStates = TemplateStates.bind({});
+SuccessNeutralStates.args = {
+  type: 'neutral',
+  theme: 'success',
+};
+
+export const SuccessLinkStates = TemplateStates.bind({});
+SuccessLinkStates.args = {
+  type: 'link',
+  theme: 'success',
 };
 
 export const SpecialSecondaryStates = DarkTemplateStates.bind({});

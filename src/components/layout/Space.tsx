@@ -37,7 +37,10 @@ export const Space = forwardRef(function Space(props: CubeSpaceProps, ref) {
       {...filterBaseProps(otherProps, { eventProps: true })}
       ref={ref}
       mods={{
-        vertical: direction === 'vertical' || otherProps.flow === 'column',
+        vertical:
+          direction === 'vertical' ||
+          otherProps.flow === 'column' ||
+          styles.flow === 'column',
         ...mods,
       }}
       styles={styles}

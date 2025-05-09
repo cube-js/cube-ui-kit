@@ -1,4 +1,5 @@
 const StatoscopeWebpackPlugin = require('@statoscope/webpack-plugin').default;
+
 const { join } = require('path');
 
 const reportFolder = process.env.REPORT_FOLDER ?? './size-limit-report';
@@ -19,7 +20,7 @@ module.exports = [
         }),
       );
     },
-    limit: '245kB',
+    limit: '247kB',
   },
   {
     name: 'Tree shaking (just a Button)',
@@ -33,6 +34,6 @@ module.exports = [
     path: './dist/es/index.js',
     webpack: true,
     import: '{ AiIcon }',
-    limit: '11 kB',
+    limit: '12 kB',
   },
 ];

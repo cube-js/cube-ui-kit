@@ -33,14 +33,14 @@ const STYLES_LIST = [...BASE_STYLES, ...DIMENSION_STYLES, ...BLOCK_STYLES];
 const DialogElement = tasty({
   as: 'section',
   styles: {
+    display: 'flex',
+    flow: 'column',
+    fill: '#white',
     pointerEvents: 'auto',
     position: {
       '': 'relative',
       '[data-type="panel"]': 'absolute',
     },
-    display: 'flex',
-    placeItems: 'stretch',
-    placeContent: 'stretch',
     width: {
       '': '@min-dialog-size @dialog-size 90vw',
       '[data-type="fullscreen"]': '90vw 90vw',
@@ -54,13 +54,11 @@ const DialogElement = tasty({
       '[data-type="panel"]': 'auto',
     },
     gap: 0,
-    flow: 'column',
     radius: {
-      '': '(@large-radius + 1bw)',
-      '[data-type="tray"]': '(@large-radius + 1bw) top',
+      '': '1cr',
+      '[data-type="tray"]': '1cr top',
       '[data-type="fullscreenTakeover"]': '0r',
     },
-    fill: '#white',
     shadow: {
       '': '0 2x 4x #shadow',
       '[data-type="popover"] | [data-type="panel"]': '0px .5x 2x #shadow',
@@ -70,46 +68,47 @@ const DialogElement = tasty({
       '[data-type="modal"]': '((50vh - 50%) / -3)',
       '[data-type="panel"]': 'auto',
     },
-    placeSelf: 'stretch',
     '@dialog-title-padding-v': {
       '': '2x',
       '[data-type="popover"]': '1x',
     },
     '@dialog-content-padding-v': {
-      '': '3x',
+      '': '2x',
       '[data-type="popover"]': '2x',
     },
     '@dialog-padding-h': {
-      '': '3x',
+      '': '2x',
       '[data-type="popover"]': '2x',
     },
     '@dialog-footer-v': {
       '': '2x',
       '[data-type="popover"]': '1x',
     },
-    '@dialog-content-gap': '3x',
+    '@dialog-content-gap': '2x',
   },
 });
 
-const CLOSE_BUTTON_STYLES: Styles = {
-  display: 'flex',
-  position: 'absolute',
-  top: '1x',
-  right: '1x',
-  width: '5x',
-  height: '5x',
-  placeContent: 'center',
-  fill: {
-    '': '#dark.0',
-    hovered: '#dark.04',
-    pressed: '#dark.05',
+const CloseButton = tasty(Button, {
+  qa: 'ModalCloseButton',
+  type: 'neutral',
+  styles: {
+    display: 'flex',
+    position: 'absolute',
+    top: '1x',
+    right: '1x',
+    placeContent: 'center',
+    fill: {
+      '': '#dark.0',
+      hovered: '#dark.04',
+      pressed: '#dark.05',
+    },
+    color: {
+      '': '#dark-02',
+      hovered: '#dark-02',
+      pressed: '#purple',
+    },
   },
-  color: {
-    '': '#dark-02',
-    hovered: '#dark-02',
-    pressed: '#purple',
-  },
-};
+});
 
 const sizeMap = {
   S: 'small',
@@ -295,10 +294,7 @@ const DialogContent = forwardRef(function DialogContent(
 
       <SlotProvider slots={slots}>
         {isDismissable && (
-          <Button
-            qa="ModalCloseButton"
-            type="neutral"
-            styles={CLOSE_BUTTON_STYLES}
+          <CloseButton
             icon={closeIcon || <CloseIcon />}
             label={formatMessage('dismiss')}
             onPress={() => onDismiss && onDismiss()}

@@ -111,21 +111,21 @@ export function defineStyleAlias(
 export function predefine() {
   // Manually define styles that are used in other custom styles.
   // Otherwise, they won't be handled as expected.
-  defineStyleAlias('fontSize');
-  defineStyleAlias('lineHeight');
-  defineStyleAlias('fontWeight');
+  defineStyleAlias('fontSize', 'font-size', numberConverter);
+  defineStyleAlias('lineHeight', 'line-height', numberConverter);
+  defineStyleAlias('fontWeight', 'font-weight', numberConverter);
   defineStyleAlias('fontStyle');
-  defineStyleAlias('letterSpacing');
+  defineStyleAlias('letterSpacing', 'letter-spacing', numberConverter);
   defineStyleAlias('textTransform');
   defineStyleAlias('fontFamily');
-  defineStyleAlias('paddingTop');
-  defineStyleAlias('paddingRight');
-  defineStyleAlias('paddingBottom');
-  defineStyleAlias('paddingLeft');
-  defineStyleAlias('marginTop');
-  defineStyleAlias('marginRight');
-  defineStyleAlias('marginBottom');
-  defineStyleAlias('marginLeft');
+  defineStyleAlias('paddingTop', 'padding-top', numberConverter);
+  defineStyleAlias('paddingRight', 'padding-right', numberConverter);
+  defineStyleAlias('paddingBottom', 'padding-bottom', numberConverter);
+  defineStyleAlias('paddingLeft', 'padding-left', numberConverter);
+  defineStyleAlias('marginTop', 'margin-top', numberConverter);
+  defineStyleAlias('marginRight', 'margin-right', numberConverter);
+  defineStyleAlias('marginBottom', 'margin-bottom', numberConverter);
+  defineStyleAlias('marginLeft', 'margin-left', numberConverter);
   // Coordinates
   defineStyleAlias('top', 'top', numberConverter);
   defineStyleAlias('right', 'right', numberConverter);
@@ -149,7 +149,7 @@ export function predefine() {
       .join('/');
   });
   // Other styles
-  defineStyleAlias('outlineOffset', 'outlineOffset', numberConverter);
+  defineStyleAlias('outlineOffset', 'outline-offset', numberConverter);
 
   [
     displayStyle,

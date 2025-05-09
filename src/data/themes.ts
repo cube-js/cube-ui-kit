@@ -7,21 +7,21 @@ export default {
   success: {
     fill: '#success-bg',
     color: '#success-text',
-    border: '#success.40',
+    border: '#success.20',
   },
   danger: {
     fill: '#danger-bg',
     color: '#danger-text',
-    border: '#danger.40',
+    border: '#danger.20',
   },
   note: {
     fill: '#note-bg',
     color: '#note-text',
-    border: '#note.40',
+    border: '#note.20',
   },
   disabled: {
-    fill: '#dark.10',
-    color: '#dark.40',
+    fill: '#dark-bg',
+    color: '#dark-03',
     border: '#dark.20',
   },
 } as const;

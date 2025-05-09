@@ -13,11 +13,11 @@ const AlertElement = tasty({
   styles: {
     display: 'block',
     flow: 'column',
-    radius: '@large-radius',
+    radius: '1cr',
     padding: '1.5x',
     preset: 't3',
     color: {
-      '': '#dark',
+      '': '#dark-02',
       '[data-type="disabled"]': THEMES.disabled.color,
     },
     fill: {

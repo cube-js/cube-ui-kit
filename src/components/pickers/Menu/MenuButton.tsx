@@ -2,7 +2,10 @@ import { ReactElement, ReactNode } from 'react';
 
 import { CheckIcon } from '../../../icons';
 import { tasty } from '../../../tasty';
-import { DEFAULT_BUTTON_STYLES } from '../../actions/index';
+import {
+  DEFAULT_BUTTON_STYLES,
+  DEFAULT_THEME_STYLES,
+} from '../../actions/index';
 import { Block, CubeBlockProps } from '../../Block';
 import { Text } from '../../content/Text';
 import { Space } from '../../layout/Space';
@@ -10,25 +13,17 @@ import { Space } from '../../layout/Space';
 const StyledButton = tasty(Block, {
   styles: {
     ...DEFAULT_BUTTON_STYLES,
+    ...DEFAULT_THEME_STYLES,
     border: {
       '': '#clear',
       pressed: '#clear',
+      'focused & !hovered': '#purple-text',
     },
     fill: {
       '': '#clear',
-      'hovered | focused': '#dark.04',
-      'pressed | selected': '#purple.10',
-      'focused & selected': '##purple.16',
-      'focused & pressed': '#purple.10',
-      disabled: '#clear',
-    },
-    color: {
-      '': '#dark-02',
-      'hovered | focused': '#dark-02',
-      'pressed | selected': '#purple-text',
-      'focused & selected': '#purple-text',
-      'focused & pressed': '#purple-text',
-      disabled: '#dark-04',
+      hovered: '#dark.03',
+      'pressed | selected': '#dark.06',
+      '[disabled] & ![data-type="link"]': '#dark.04',
     },
     cursor: {
       '': 'pointer',
@@ -36,11 +31,10 @@ const StyledButton = tasty(Block, {
     },
     shadow: '#clear',
     padding: {
-      '': '(0.75x - 1px) (1.5x - 1px)',
-      'selectable & !selected':
-        '(0.75x - 1px) (1.5x - 1px) (0.75x - 1px) (1.5x - 1px)',
+      '': '0 (1.5x - 1px)',
+      'selectable & !selected': '0 (1.5x - 1px) 0 (1.5x - 1px)',
       'selectionIcon & selectable & !selected':
-        '(0.75x - 1px) (1.5x - 1px) (0.75x - 1px) (1.5x - 1px + 22px)',
+        '0 (1.5x - 1px) 0 (1.5x - 1px + 22px)',
     },
     display: 'flex',
     flow: 'row',
@@ -140,7 +134,7 @@ export function MenuButton({
   };
 
   return (
-    <StyledButton {...rest} mods={mods}>
+    <StyledButton data-type="neutral" data-size="small" {...rest} mods={mods}>
       {checkIcon ? <div data-element="ButtonIcon">{checkIcon}</div> : null}
       {icon ? <div data-element="ButtonIcon">{icon}</div> : null}
       <Space gap="1x" placeContent="space-between" overflow="clip" width="100%">
