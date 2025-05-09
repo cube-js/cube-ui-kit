@@ -44,7 +44,7 @@ const SwitchWrapperElement = tasty({
 const SwitchElement = tasty({
   qa: 'Switch',
   styles: {
-    boxSizing: 'content-box',
+    boxSizing: 'border-box',
     position: 'relative',
     verticalAlign: 'baseline',
     placeSelf: 'center',
@@ -64,12 +64,12 @@ const SwitchElement = tasty({
       disabled: '#dark-05',
     },
     width: {
-      '': '5.5x 5.5x',
-      '[data-size="small"]': '3.5x 3.5x',
+      '': '5.25x 5.25x',
+      '[data-size="small"]': '4x 4x',
     },
     height: {
       '': '3x 3x',
-      '[data-size="small"]': '2.25x 2.25x',
+      '[data-size="small"]': '2.5x 2.5x',
     },
     outline: {
       '': '#purple-03.0',
@@ -85,11 +85,11 @@ const SwitchElement = tasty({
     Thumb: {
       position: 'absolute',
       width: {
-        '': '2.25x 2.25x',
+        '': '2x 2x',
         '[data-size="small"]': '1.5x 1.5x',
       },
       height: {
-        '': '2.25x 2.25x',
+        '': '2x 2x',
         '[data-size="small"]': '1.5x 1.5x',
       },
       radius: 'round',
@@ -104,8 +104,8 @@ const SwitchElement = tasty({
       left: {
         '': '.375x',
         '[data-size="small"]': '.375x',
-        checked: '2.875x',
-        'checked & [data-size="small"]': '1.5x',
+        checked: '2.5x',
+        'checked & [data-size="small"]': '1.75x',
       },
       transition: 'left, theme',
       cursor: 'pointer',
