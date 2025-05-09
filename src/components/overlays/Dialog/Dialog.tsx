@@ -33,9 +33,7 @@ const STYLES_LIST = [...BASE_STYLES, ...DIMENSION_STYLES, ...BLOCK_STYLES];
 const DialogElement = tasty({
   as: 'section',
   styles: {
-    display: 'grid',
-    gridRows: 'minmax(0, 1fr)',
-    fill: '#border',
+    fill: '#white',
     pointerEvents: 'auto',
     position: {
       '': 'relative',
@@ -89,21 +87,6 @@ const DialogElement = tasty({
       '[data-type="popover"]': '1x',
     },
     '@dialog-content-gap': '2x',
-
-    DialogContainer: {
-      position: 'relative',
-      display: 'flex',
-      flow: 'column',
-      placeItems: 'stretch',
-      placeContent: 'stretch',
-      placeSelf: 'stretch',
-      fill: '#white',
-      border: {
-        '': '1bw solid #dark-05',
-        '[data-type="popover"]': 0,
-      },
-      radius: { '': '(1cr - 1ow)', '[data-type="popover"]': '1cr' },
-    },
   },
 });
 
