@@ -1,13 +1,14 @@
-import {
-  BookOutlined,
-  BulbOutlined,
-  CheckCircleFilled,
-  ReloadOutlined,
-} from '@ant-design/icons';
 import { expect, userEvent, waitFor, within } from '@storybook/test';
+import {
+  IconBook,
+  IconBulb,
+  IconCircleCheckFilled,
+  IconPlus,
+  IconReload,
+} from '@tabler/icons-react';
 import { useState } from 'react';
 
-import { MoreIcon, PlusIcon } from '../../../icons';
+import { MoreIcon } from '../../../icons';
 import {
   AlertDialog,
   Button,
@@ -172,12 +173,12 @@ StyledSectionsAndItems.args = {
 export const GitActions = (props) => {
   const bulbIcon = (
     <Text>
-      <BulbOutlined />
+      <IconBulb />
     </Text>
   );
   const successIcon = (
     <Text color="#success">
-      <CheckCircleFilled />
+      <IconCircleCheckFilled />
     </Text>
   );
   const stuffText = (
@@ -333,16 +334,16 @@ export const ItemCustomIcons = (props) => {
         header="Custom Icons"
         onSelectionChange={onSelectionChange}
       >
-        <Menu.Item key="red" icon={<ReloadOutlined />} postfix="March, 2022">
+        <Menu.Item key="red" icon={<IconReload />} postfix="March, 2022">
           #16C7B3AE-000113-000113
         </Menu.Item>
-        <Menu.Item key="orange" icon={<BookOutlined />} postfix="Jan, 2022">
+        <Menu.Item key="orange" icon={<IconBook />} postfix="Jan, 2022">
           #16C7B3AE
         </Menu.Item>
-        <Menu.Item key="purple" icon={<PlusIcon />} postfix="Feb, 2022">
+        <Menu.Item key="purple" icon={<IconPlus />} postfix="Feb, 2022">
           #16C7B3AE
         </Menu.Item>
-        <Menu.Item key="yellow" icon={<ReloadOutlined />} postfix="July, 2022">
+        <Menu.Item key="yellow" icon={<IconReload />} postfix="July, 2022">
           #16C7B3AE
         </Menu.Item>
       </Menu>
@@ -374,7 +375,7 @@ export const ItemWithTooltip = (props) => {
               {item}
             </TooltipProvider>
           )}
-          icon={<ReloadOutlined />}
+          icon={<IconReload />}
         >
           #16C7B3AE-000113-000113
         </Menu.Item>
@@ -385,7 +386,7 @@ export const ItemWithTooltip = (props) => {
               {item}
             </TooltipProvider>
           )}
-          icon={<BookOutlined />}
+          icon={<IconBook />}
         >
           #16C7B3AE
         </Menu.Item>

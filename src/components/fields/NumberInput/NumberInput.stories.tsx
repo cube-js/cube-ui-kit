@@ -1,4 +1,4 @@
-import { DollarCircleOutlined } from '@ant-design/icons';
+import { IconCoin } from '@tabler/icons-react';
 
 import { NUMBER_VALUE_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -20,7 +20,7 @@ export default {
 
 const Template = ({ icon, ...props }) => (
   <NumberInput
-    prefix={icon ? <DollarCircleOutlined /> : null}
+    prefix={icon ? <IconCoin /> : null}
     {...props}
     onChange={(query) => console.log('change', query)}
   />

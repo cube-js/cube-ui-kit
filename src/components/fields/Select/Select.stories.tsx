@@ -1,6 +1,6 @@
-import { DollarCircleOutlined } from '@ant-design/icons';
 import { Meta, StoryFn } from '@storybook/react';
 import { userEvent, within } from '@storybook/test';
+import { IconCoin } from '@tabler/icons-react';
 
 import { SELECTED_KEY_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -77,7 +77,7 @@ export const WithDefaultValue = Template.bind({});
 WithDefaultValue.args = { defaultSelectedKey: 'purple' };
 
 export const WithIcon = Template.bind({});
-WithIcon.args = { icon: <DollarCircleOutlined /> };
+WithIcon.args = { icon: <IconCoin /> };
 
 export const OverTheCustomBG = Template.bind({});
 OverTheCustomBG.parameters = { backgrounds: { default: 'gray' } };

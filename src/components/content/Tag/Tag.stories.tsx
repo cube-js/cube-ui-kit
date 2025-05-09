@@ -1,5 +1,5 @@
-import { DollarCircleOutlined } from '@ant-design/icons';
 import { StoryFn } from '@storybook/react';
+import { IconCoin } from '@tabler/icons-react';
 
 import { CubeTagProps, Tag } from './Tag';
 
@@ -87,7 +87,7 @@ Special.args = {
 export const WithIcon = Template.bind({});
 WithIcon.args = {
   children: 'Tag name or content',
-  icon: <DollarCircleOutlined />,
+  icon: <IconCoin />,
   label: 'Tag name or content',
 };
 

@@ -1,5 +1,5 @@
-import { DollarCircleOutlined } from '@ant-design/icons';
 import { StoryFn } from '@storybook/react';
+import { IconCoin } from '@tabler/icons-react';
 
 import { TEXT_VALUE_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -21,7 +21,7 @@ export default {
 
 const Template: StoryFn<CubeTextAreaProps> = ({ icon, ...props }) => (
   <TextArea
-    icon={icon ? <DollarCircleOutlined /> : null}
+    icon={icon ? <IconCoin /> : null}
     {...props}
     onChange={(query) => console.log('change', query)}
   />

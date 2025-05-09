@@ -93,6 +93,13 @@ const GlobalStylesElement = createGlobalStyle<GlobalStylesElementProps>`
     padding: 0 var(--outline-width);
   }
 
+  :not([data-qa="Icon"]) .tabler-icon {
+    max-width: var(--icon-size);
+    min-width: var(--icon-size);
+    min-height: var(--icon-size);
+    max-height: var(--icon-size);
+  }
+
   .cube-animation-spin {
     animation: cube-animation-spin 1s linear infinite;
   }

@@ -1,4 +1,5 @@
 import { useFocusableRef } from '@react-spectrum/utils';
+import { IconCheck, IconMinus } from '@tabler/icons-react';
 import { forwardRef, useContext, useMemo, useRef } from 'react';
 import {
   AriaCheckboxProps,
@@ -8,6 +9,7 @@ import {
 } from 'react-aria';
 import { useToggleState } from 'react-stately';
 
+import { Icon } from '../../../icons/index';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import {
@@ -49,24 +51,6 @@ export interface CubeCheckboxProps
   inputStyles?: Styles;
   isIndeterminate?: boolean;
   value?: string;
-}
-
-function CheckOutlined() {
-  return (
-    <svg width="10" height="8" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M3.417 7.604l-.017.018-3.4-3.4 1.433-1.433 1.985 1.985L8.192 0l1.432 1.433-6.189 6.189-.018-.018z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-function IndeterminateOutline() {
-  return (
-    <svg width="8" height="2" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M0 .044v2.001l.026.025h8.063V.044H0z" fill="#fff" />
-    </svg>
-  );
 }
 
 const CheckboxWrapperElement = tasty({
@@ -204,7 +188,15 @@ function Checkbox(
         inputRef,
       );
 
-  let markIcon = isIndeterminate ? <IndeterminateOutline /> : <CheckOutlined />;
+  let markIcon = isIndeterminate ? (
+    <Icon size={12} stroke={3}>
+      <IconMinus />
+    </Icon>
+  ) : (
+    <Icon size={12} stroke={3}>
+      <IconCheck />
+    </Icon>
+  );
 
   if (groupState) {
     for (let key of ['isSelected', 'defaultSelected', 'isEmphasized']) {
