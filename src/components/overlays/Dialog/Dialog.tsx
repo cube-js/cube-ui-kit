@@ -292,20 +292,18 @@ const DialogContent = forwardRef(function DialogContent(
       data-type={type}
       data-size={size}
     >
-      <div data-element="DialogContainer">
-        {dismissButton}
+      {dismissButton}
 
-        <SlotProvider slots={slots}>
-          {isDismissable && (
-            <CloseButton
-              icon={closeIcon || <CloseIcon />}
-              label={formatMessage('dismiss')}
-              onPress={() => onDismiss && onDismiss()}
-            />
-          )}
-          {children}
-        </SlotProvider>
-      </div>
+      <SlotProvider slots={slots}>
+        {isDismissable && (
+          <CloseButton
+            icon={closeIcon || <CloseIcon />}
+            label={formatMessage('dismiss')}
+            onPress={() => onDismiss && onDismiss()}
+          />
+        )}
+        {children}
+      </SlotProvider>
     </DialogElement>
   );
 });
