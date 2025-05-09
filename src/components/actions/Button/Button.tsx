@@ -265,9 +265,9 @@ const ButtonElement = tasty({
         '[data-type="primary"] & pressed': '#purple-03',
         '[data-type="secondary"]': '#white.3',
         '[data-type="secondary"] & pressed': '#white.4',
-        '([data-type="outline"] | [data-type="neutral"]) & !pressed':
-          '#white.3',
+        '[data-type="outline"] & !pressed': '#white.3',
         '![data-type="primary"] & focused': '#white',
+        '[data-type="neutral"] & !pressed': 0,
         '[disabled]': '#white.3',
         '[data-type="link"]': 0,
       },

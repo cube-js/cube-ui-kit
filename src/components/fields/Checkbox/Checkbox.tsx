@@ -80,7 +80,7 @@ const CheckboxElement = tasty({
       '': '#white',
       'checked | indeterminate': '#purple-text',
       'invalid & !checked': '#white',
-      'invalid & checked': '#danger-text',
+      'invalid & checked': '#danger',
       disabled: '#dark.12',
     },
     color: {
@@ -89,7 +89,7 @@ const CheckboxElement = tasty({
     },
     border: {
       '': '#dark.30',
-      invalid: '#danger-text.50',
+      invalid: '#danger',
       'disabled | ((indeterminate | checked) & !invalid)': '#clear',
     },
     width: '(2x - 2bw)',

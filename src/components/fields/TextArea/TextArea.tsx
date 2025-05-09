@@ -18,15 +18,6 @@ import {
 import { useFieldProps } from '../../form';
 import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 
-const DEFAULT_PROPS = {
-  inputStyles: {
-    '@vertical-padding': {
-      '': '(1.25x - 1bw)',
-      '[data-size="small"]': '(.75x - 1bw)',
-    },
-  },
-};
-
 export interface CubeTextAreaProps extends CubeTextInputBaseProps {
   /** Whether the textarea should change its size depends on the content */
   autoSize?: boolean;
@@ -143,7 +134,7 @@ function TextArea(
   return (
     <TextInputBase
       ref={ref}
-      {...mergeProps(DEFAULT_PROPS, otherProps)}
+      {...otherProps}
       multiLine
       inputRef={inputRef}
       labelProps={labelProps}
