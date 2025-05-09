@@ -26,7 +26,7 @@ export default {
 const Template: StoryFn<CubeIconProps> = (name) => {
   return (
     <Flow gap="2x">
-      <Title>16px</Title>
+      <Title>18px (base size)</Title>
       <Grid columns="repeat(auto-fit, 200px)" flow="row" gap="16px">
         {Object.keys(Icons).map((iconName) => {
           if (
@@ -40,13 +40,13 @@ const Template: StoryFn<CubeIconProps> = (name) => {
 
           return (
             <Space key={iconName} gap="1x">
-              <Icon size="16px" />
+              <Icon size={18} />
               <span>{iconName}</span>
             </Space>
           );
         })}
       </Grid>
-      <Title>32px</Title>
+      <Title>36px (double-sized)</Title>
       <Grid columns="repeat(auto-fit, 200px)" flow="row" gap="16px">
         {Object.keys(Icons).map((iconName) => {
           if (
@@ -60,7 +60,7 @@ const Template: StoryFn<CubeIconProps> = (name) => {
 
           return (
             <Space key={iconName} gap="1x">
-              <Icon size="32px" />
+              <Icon size={36} />
               <span>{iconName}</span>
             </Space>
           );

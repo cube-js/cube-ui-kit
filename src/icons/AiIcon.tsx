@@ -1,13 +1,5 @@
+import { IconSparkles } from '@tabler/icons-react';
+
 import { wrapIcon } from './wrap-icon';
 
-export const AiIcon = wrapIcon(
-  'AiIcon',
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none">
-    <path
-      fill="currentColor"
-      fillRule="evenodd"
-      d="M9.704 3.88a.6.6 0 0 1-1.2 0V1.468a.6.6 0 0 1 1.2 0V3.88ZM8.662 6.454a.625.625 0 0 1 .884.884l-7.468 7.468a.625.625 0 1 1-.884-.884l7.468-7.468Zm.442 6.47a.6.6 0 0 0 .6-.6V9.912a.6.6 0 0 0-1.2 0v2.412a.6.6 0 0 0 .6.6ZM6.088 6.296a.6.6 0 0 1 0 1.2H3.676a.6.6 0 1 1 0-1.2h2.412Zm9.044.6a.6.6 0 0 0-.6-.6H12.12a.6.6 0 1 0 0 1.2h2.412a.6.6 0 0 0 .6-.6ZM11.66 5.188a.6.6 0 1 1-.848-.849l1.705-1.705a.6.6 0 1 1 .849.848L11.66 5.188Zm-4.264 0a.6.6 0 0 0 0-.849L5.69 2.634a.6.6 0 1 0-.848.848l1.705 1.706a.6.6 0 0 0 .849 0Zm5.97 5.122a.6.6 0 1 1-.848.848l-1.706-1.705a.6.6 0 0 1 .849-.849l1.705 1.706Z"
-      clipRule="evenodd"
-    />
-  </svg>,
-);
+export const AiIcon = wrapIcon('AiIcon', <IconSparkles />);

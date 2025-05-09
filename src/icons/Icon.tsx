@@ -39,10 +39,19 @@ const IconElement = tasty({
     '-webkit-font-smoothing': 'antialiased',
 
     '& svg': {
+      transition: 'all',
+    },
+
+    '& svg.tabler-icon': {
       width: 'min 1em',
       height: '1em 1em',
       strokeWidth: '@stroke-width',
-      transition: 'theme, width, height',
+    },
+
+    '& svg:not(.tabler-icon)': {
+      width: 'min (1em - 2px)',
+      height: '(1em - 2px) (1em - 2px)',
+      strokeWidth: '@stroke-width',
     },
   },
   styleProps: [...OUTER_STYLES, ...BASE_STYLES, ...COLOR_STYLES],
@@ -65,13 +74,6 @@ export const Icon = memo(
   ) {
     let { size, styles, stroke, ...rest } = props;
 
-    const icon = rest.children
-      ? cloneElement(rest.children, {
-          size: typeof size === 'number' ? size : undefined,
-          stroke,
-        })
-      : rest.children;
-
     if (size) {
       styles = {
         ...styles,
@@ -85,10 +87,6 @@ export const Icon = memo(
       };
     }
 
-    return (
-      <IconElement ref={ref} qa="Icon" {...rest} styles={styles}>
-        {icon}
-      </IconElement>
-    );
+    return <IconElement ref={ref} qa="Icon" {...rest} styles={styles} />;
   }),
 );
