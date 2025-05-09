@@ -1,10 +1,4 @@
-import {
-  cloneElement,
-  ForwardedRef,
-  forwardRef,
-  memo,
-  ReactElement,
-} from 'react';
+import { ForwardedRef, forwardRef, memo, ReactElement } from 'react';
 
 import {
   BASE_STYLES,
@@ -26,12 +20,7 @@ const IconElement = tasty({
     verticalAlign: 'sub',
     width: '1em 1em',
     height: 'min 1em',
-    fontSize: {
-      // legacy icons
-      '': 'calc(var(--icon-size, calc(var(--font-size) + 4px)) - 2px)',
-      // tabler icons
-      ':has(.tabler-icon)': 'var(--icon-size, var(--font-size))',
-    },
+    fontSize: '@icon-size',
     transition: 'theme, width, height',
     textAlign: 'center',
     textTransform: 'none',

@@ -81,15 +81,6 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
     '': true,
     '[data-type="link"] & !focused': 0,
   },
-
-  '& .anticon': {
-    transition:
-      'display .2s steps(1, start), margin .2s linear, opacity .2s linear',
-  },
-
-  '& [data-element="ButtonIcon"]:has(.anticon)': {
-    fontSize: '@icon-size',
-  },
 };
 
 const ButtonElement = tasty({
