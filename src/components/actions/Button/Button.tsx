@@ -32,7 +32,7 @@ export interface CubeButtonProps extends CubeActionProps {
 
 const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
-export const DEFAULT_BUTTON_STYLES: Styles = {
+export const DEFAULT_BUTTON_STYLES = {
   display: 'inline-grid',
   placeItems: 'center stretch',
   placeContent: 'center',
@@ -82,68 +82,70 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
     '': true,
     '[data-type="link"] & !focused': 0,
   },
-};
+} as const;
+
+export const DEFAULT_THEME_STYLES = {
+  outline: {
+    '': '0 #purple-text.0',
+    'focused & ([data-type="primary"] | [data-type="link"])':
+      '1bw #purple-text',
+  },
+  border: {
+    '': '#border',
+    '[data-type="primary"]': '#clear',
+    '[data-type="primary"] & pressed': '#purple-text',
+    '[data-type="secondary"]': '#purple.15',
+    '[data-type="secondary"] & pressed': '#purple.3',
+    '[data-type="clear"]': '#clear',
+    '[data-type="clear"] & pressed': '#purple-text.10',
+    '[data-type="outline"]': '#dark.12',
+    '[data-type="neutral"] | [disabled]': '#clear',
+    focused: '#purple-text',
+    '[data-type="link"]': '0',
+  },
+  fill: {
+    '': '#clear',
+
+    '[data-type="primary"]': '#purple',
+    '[data-type="primary"] & hovered': '#purple-text',
+    '[data-type="primary"] & pressed': '#purple',
+
+    '[data-type="secondary"]': '#purple.10',
+    '[data-type="secondary"] & hovered': '#purple.16',
+    '[data-type="secondary"] & pressed': '#purple-text.10',
+
+    '[data-type="neutral"] | [data-type="outline"]': '#dark.0',
+    '([data-type="neutral"] | [data-type="outline"]) & hovered': '#dark.03',
+    '([data-type="neutral"] | [data-type="outline"]) & (pressed | selected)':
+      '#dark.06',
+
+    '[disabled] & ![data-type="link"]': '#dark.04',
+
+    '[data-type="clear"]': '#purple.0',
+    '[data-type="clear"] & hovered': '#purple.16',
+    '[data-type="clear"] & pressed': '#purple.10',
+    '[data-type="clear"] & [disabled]': '#purple.0',
+  },
+  color: {
+    // default
+    '': '#white',
+    '[data-type="secondary"]': '#purple',
+    '[data-type="clear"] | [data-type="link"]': '#purple-text',
+    '[data-type="link"] & pressed': '#purple',
+    '[data-type="neutral"] | [data-type="outline"]': '#dark-02',
+    '([data-type="neutral"] | [data-type="outline"]) & hovered': '#dark-02',
+    '([data-type="neutral"] | [data-type="outline"]) & pressed': '#dark',
+
+    // other
+    '[disabled]': '#dark.30',
+  },
+} as const;
 
 const ButtonElement = tasty({
   qa: 'Button',
   styles: DEFAULT_BUTTON_STYLES,
   variants: {
-    default: {
-      outline: {
-        '': '0 #purple-text.0',
-        'focused & ([data-type="primary"] | [data-type="link"])':
-          '1bw #purple-text',
-      },
-      border: {
-        '': '#border',
-        '[data-type="primary"]': '#clear',
-        '[data-type="primary"] & pressed': '#purple-text',
-        '[data-type="secondary"]': '#purple.15',
-        '[data-type="secondary"] & pressed': '#purple.3',
-        '[data-type="clear"]': '#clear',
-        '[data-type="clear"] & pressed': '#purple-text.10',
-        '[data-type="outline"]': '#dark.12',
-        '[data-type="neutral"] | [disabled]': '#clear',
-        focused: '#purple-text',
-        '[data-type="link"]': '0',
-      },
-      fill: {
-        '': '#clear',
-
-        '[data-type="primary"]': '#purple',
-        '[data-type="primary"] & hovered': '#purple-text',
-        '[data-type="primary"] & pressed': '#purple',
-
-        '[data-type="secondary"]': '#purple.10',
-        '[data-type="secondary"] & hovered': '#purple.16',
-        '[data-type="secondary"] & pressed': '#purple-text.10',
-
-        '[data-type="neutral"] | [data-type="outline"]': '#dark.0',
-        '([data-type="neutral"] | [data-type="outline"]) & hovered': '#dark.03',
-        '([data-type="neutral"] | [data-type="outline"]) & (pressed | selected)':
-          '#dark.06',
-
-        '[disabled] & ![data-type="link"]': '#dark.04',
-
-        '[data-type="clear"]': '#purple.0',
-        '[data-type="clear"] & hovered': '#purple.16',
-        '[data-type="clear"] & pressed': '#purple.10',
-        '[data-type="clear"] & [disabled]': '#purple.0',
-      },
-      color: {
-        // default
-        '': '#white',
-        '[data-type="secondary"]': '#purple',
-        '[data-type="clear"] | [data-type="link"]': '#purple-text',
-        '[data-type="link"] & pressed': '#purple',
-        '[data-type="neutral"] | [data-type="outline"]': '#dark-02',
-        '([data-type="neutral"] | [data-type="outline"]) & hovered': '#dark-02',
-        '([data-type="neutral"] | [data-type="outline"]) & pressed': '#dark',
-
-        // other
-        '[disabled]': '#dark.30',
-      },
-    },
+    default: DEFAULT_THEME_STYLES,
     danger: {
       outline: {
         '': '0 #danger-text.0',
