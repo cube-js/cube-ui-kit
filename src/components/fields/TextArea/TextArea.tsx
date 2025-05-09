@@ -10,13 +10,22 @@ import { useTextField } from 'react-aria';
 
 import { useEvent } from '../../../_internal/index';
 import { useProviderProps } from '../../../provider';
-import { chain } from '../../../utils/react';
+import { chain, mergeProps } from '../../../utils/react';
 import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
 import { useFieldProps } from '../../form';
 import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
+
+const DEFAULT_PROPS = {
+  inputStyles: {
+    '@vertical-padding': {
+      '': '(1.25x - 1bw)',
+      '[data-size="small"]': '(.75x - 1bw)',
+    },
+  },
+};
 
 export interface CubeTextAreaProps extends CubeTextInputBaseProps {
   /** Whether the textarea should change its size depends on the content */
@@ -134,7 +143,7 @@ function TextArea(
   return (
     <TextInputBase
       ref={ref}
-      {...otherProps}
+      {...mergeProps(DEFAULT_PROPS, otherProps)}
       multiLine
       inputRef={inputRef}
       labelProps={labelProps}

@@ -59,7 +59,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
   padding: {
     '': '0 (2x - 1bw)',
     '[data-size="small"]': '0 (1x - 1bw)',
-    '[data-size="medium"]': '0 (1.75x - 1bw)',
+    '[data-size="medium"]': '0 (1.5x - 1bw)',
     '[data-size="large"]': '0 (2.25x - 1bw)',
     'single-icon-only | [data-type="link"]': 0,
   },

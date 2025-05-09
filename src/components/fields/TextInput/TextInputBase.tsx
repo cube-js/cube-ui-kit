@@ -125,10 +125,14 @@ const STYLE_LIST = [...POSITION_STYLES, ...DIMENSION_STYLES];
 const INPUT_STYLE_PROPS_LIST = [...BLOCK_STYLES, 'resize'];
 
 export const DEFAULT_INPUT_STYLES: Styles = {
-  display: 'block',
+  display: 'grid',
+  placeItems: 'center start',
   gridArea: 'input',
   width: 'initial 100% 100%',
-  height: 'initial initial initial',
+  height: {
+    '': '5x',
+    '[data-size="small"]': '4x',
+  },
   color: 'inherit',
   fill: '#clear',
   border: 0,
@@ -144,16 +148,15 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   boxSizing: 'border-box',
   userSelect: 'auto',
 
-  '@vertical-padding': {
-    '': '(1.25x - 1bw)',
-    '[data-size="small"]': '(.75x - 1bw)',
-  },
+  '@vertical-padding': 0,
   '@left-padding': {
-    '': '(1.5x - 1bw)',
+    '': '(1.25x - 1bw)',
+    '[data-size="small"]': '(1x - 1bw)',
     prefix: '0',
   },
   '@right-padding': {
-    '': '(1.5x - 1bw)',
+    '': '(1.25x - 1bw)',
+    '[data-size="small"]': '(1x - 1bw)',
     suffix: '0',
   },
 };

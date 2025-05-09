@@ -58,6 +58,9 @@ const Template: StoryFn<CubeSelectProps<any>> = (args) => (
 export const Default = Template.bind({});
 Default.args = {};
 
+export const Small = Template.bind({});
+Small.args = { placeholder: 'small', size: 'small' };
+
 export const Primary = Template.bind({});
 Primary.args = { type: 'primary', placeholder: 'primary' };
 
