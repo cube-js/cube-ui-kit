@@ -8,7 +8,7 @@ import {
 } from '@tabler/icons-react';
 import { useState } from 'react';
 
-import { MoreIcon } from '../../../icons';
+import { Icon, MoreIcon } from '../../../icons';
 import {
   AlertDialog,
   Button,
@@ -171,15 +171,11 @@ StyledSectionsAndItems.args = {
 };
 
 export const GitActions = (props) => {
-  const bulbIcon = (
-    <Text>
-      <IconBulb />
-    </Text>
-  );
+  const bulbIcon = <IconBulb />;
   const successIcon = (
-    <Text color="#success">
+    <Icon color="#success">
       <IconCircleCheckFilled />
-    </Text>
+    </Icon>
   );
   const stuffText = (
     <Text nowrap color="inherit">
