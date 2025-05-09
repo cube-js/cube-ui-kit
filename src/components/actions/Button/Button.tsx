@@ -269,7 +269,7 @@ const ButtonElement = tasty({
           '#white.3',
         '![data-type="primary"] & focused': '#white',
         '[disabled]': '#white.3',
-        '[data-type="link"]': false,
+        '[data-type="link"]': 0,
       },
       fill: {
         '': '#clear',
