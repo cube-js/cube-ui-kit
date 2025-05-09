@@ -182,6 +182,24 @@ const TOKENS = {
   't4m-font-weight': '600',
   't4m-bold-font-weight': '700',
   't4m-icon-size': '16px',
+  // m1
+  'm1-font-size': '18px',
+  'm1-line-height': '32px',
+  'm1-letter-spacing': '0',
+  'm1-font-weight': '400',
+  'm1-icon-size': '22px',
+  // m2
+  'm2-font-size': '16px',
+  'm2-line-height': '28px',
+  'm2-letter-spacing': '0',
+  'm2-font-weight': '400',
+  'm2-icon-size': '20px',
+  // m2
+  'm3-font-size': '14px',
+  'm3-line-height': '24px',
+  'm3-letter-spacing': '0',
+  'm3-font-weight': '400',
+  'm3-icon-size': '20px',
   // p1
   'p1-font-size': '18px',
   'p1-line-height': '28px',

@@ -60,6 +60,15 @@ export const Presets = {
       <Block preset="p3">
         <CubeIcon /> The quick brown fox jumps over the lazy dog - p3
       </Block>
+      <Block preset="m1">
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - m1
+      </Block>
+      <Block preset="m2">
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - m2
+      </Block>
+      <Block preset="m3">
+        <CubeIcon /> The quick brown fox jumps over the lazy dog - m3
+      </Block>
       <Block preset="p4">
         <CubeIcon /> The quick brown fox jumps over the lazy dog - p4
       </Block>
