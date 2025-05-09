@@ -38,6 +38,7 @@ export const DEFAULT_BUTTON_STYLES: Styles = {
   placeContent: 'center',
   position: 'relative',
   margin: 0,
+  boxSizing: 'border-box',
   outline: {
     '': '#purple-03.0',
     focused: '#purple-03',
