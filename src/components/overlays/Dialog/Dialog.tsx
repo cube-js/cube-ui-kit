@@ -33,6 +33,8 @@ const STYLES_LIST = [...BASE_STYLES, ...DIMENSION_STYLES, ...BLOCK_STYLES];
 const DialogElement = tasty({
   as: 'section',
   styles: {
+    display: 'flex',
+    flow: 'column',
     fill: '#white',
     pointerEvents: 'auto',
     position: {
