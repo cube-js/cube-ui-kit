@@ -39,10 +39,6 @@ const DialogElement = tasty({
       '': 'relative',
       '[data-type="panel"]': 'absolute',
     },
-    padding: {
-      '': '1ow',
-      '[data-type="popover"]': 0,
-    },
     width: {
       '': '@min-dialog-size @dialog-size 90vw',
       '[data-type="fullscreen"]': '90vw 90vw',
