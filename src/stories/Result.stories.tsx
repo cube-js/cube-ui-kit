@@ -4,7 +4,7 @@ import { IconBulb, IconLock } from '@tabler/icons-react';
 import {
   Button,
   CubeResultProps,
-  Element,
+  Icon,
   Result,
   Space,
   Text,
@@ -84,14 +84,9 @@ export const CustomIcon = {
     subtitle: 'Request access from the administrator.',
 
     icon: (
-      <Element
-        styles={{
-          color: '#note',
-          fontSize: '10x',
-        }}
-      >
+      <Icon color="#note">
         <IconLock />
-      </Element>
+      </Icon>
     ),
 
     children: <Button type="secondary">Request</Button>,
@@ -113,16 +108,7 @@ export const CustomTitle = {
       </Text.Selection>
     ),
 
-    icon: (
-      <Element
-        styles={{
-          color: '#purple',
-          fontSize: '12x',
-        }}
-      >
-        <IconBulb />
-      </Element>
-    ),
+    icon: <IconBulb />,
 
     children: <Button type="primary">Complete Now</Button>,
   },

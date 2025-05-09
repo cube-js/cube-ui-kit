@@ -6,7 +6,6 @@ import {
 } from '@tabler/icons-react';
 import { ComponentType, forwardRef, ReactNode, useMemo } from 'react';
 
-import { Icon } from '../../../icons';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -90,13 +89,13 @@ const Container = tasty({
       '': 'center',
       compact: 'left',
     },
+    '--icon-size': {
+      '': '6x',
+      compact: '4x',
+    },
 
     Icon: {
       gridArea: 'icon',
-      fontSize: {
-        '': '10x',
-        compact: '4x',
-      },
     },
 
     Content: {
@@ -118,35 +117,19 @@ const Container = tasty({
 const statusIconMap: StatusIconMap = {
   success: {
     color: 'success',
-    component: () => (
-      <Icon size={48}>
-        <IconCircleCheckFilled />
-      </Icon>
-    ),
+    component: () => <IconCircleCheckFilled />,
   },
   error: {
     color: 'danger',
-    component: () => (
-      <Icon size={48}>
-        <IconCircleXFilled />
-      </Icon>
-    ),
+    component: () => <IconCircleXFilled />,
   },
   info: {
     color: 'purple',
-    component: () => (
-      <Icon size={48}>
-        <IconInfoCircleFilled />
-      </Icon>
-    ),
+    component: () => <IconInfoCircleFilled />,
   },
   warning: {
     color: 'note',
-    component: () => (
-      <Icon size={48}>
-        <IconAlertTriangleFilled />
-      </Icon>
-    ),
+    component: () => <IconAlertTriangleFilled />,
   },
   404: {
     color: 'purple',
