@@ -197,6 +197,9 @@ const TemplateLegacyForm: StoryFn<CubeComboBoxProps<any>> = (
 export const Default = Template.bind({});
 Default.args = {};
 
+export const Small = Template.bind({});
+Small.args = { size: 'small' };
+
 export const WithPlaceholder = Template.bind({});
 WithPlaceholder.args = { placeholder: 'Enter a value' };
 

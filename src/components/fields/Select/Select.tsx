@@ -24,7 +24,7 @@ import {
 import { Item, useSelectState } from 'react-stately';
 import styled from 'styled-components';
 
-import { LoadingIcon } from '../../../icons/index';
+import { DownIcon, LoadingIcon } from '../../../icons/index';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared/index';
 import {
@@ -49,23 +49,6 @@ import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
 import { DEFAULT_INPUT_STYLES, INPUT_WRAPPER_STYLES } from '../index';
-
-function CaretDownIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      width="14"
-      height="14"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M11.49 4.102H2.51c-.269 0-.42.284-.253.478l4.49 5.206a.342.342 0 00.506 0l4.49-5.206c.167-.194.016-.478-.253-.478z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
 
 const SelectWrapperElement = tasty({
   styles: {
@@ -107,7 +90,10 @@ const SelectWrapperElement = tasty({
     CaretIcon: {
       display: 'grid',
       placeItems: 'center',
-      width: 'min 4x',
+      width: {
+        '': '4x',
+        '[data-size="small"]': '3x',
+      },
       cursor: 'pointer',
       fontSize: 'inherit',
     },
@@ -455,7 +441,7 @@ function Select<T extends object>(
           {isLoading && <LoadingIcon />}
           {suffixPosition === 'after' ? suffix : null}
           <div data-element="CaretIcon">
-            <CaretDownIcon />
+            <DownIcon />
           </div>
         </div>
       </SelectElement>
