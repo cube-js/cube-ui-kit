@@ -1,5 +1,37 @@
 # @cube-dev/ui-kit
 
+## 0.60.0
+
+### Minor Changes
+
+- [#659](https://github.com/cube-js/cube-ui-kit/pull/659) [`2dfa908`](https://github.com/cube-js/cube-ui-kit/commit/2dfa908d16befd4eef0cf0acb957a4e35803959b) Thanks [@tenphi](https://github.com/tenphi)! - Add success theme for Button component.
+
+- [#659](https://github.com/cube-js/cube-ui-kit/pull/659) [`2dfa908`](https://github.com/cube-js/cube-ui-kit/commit/2dfa908d16befd4eef0cf0acb957a4e35803959b) Thanks [@tenphi](https://github.com/tenphi)! - Decrease the line height of the h2 headers to 32px.
+
+- [#659](https://github.com/cube-js/cube-ui-kit/pull/659) [`2dfa908`](https://github.com/cube-js/cube-ui-kit/commit/2dfa908d16befd4eef0cf0acb957a4e35803959b) Thanks [@tenphi](https://github.com/tenphi)! - Improved design of Switch component.
+
+- [#659](https://github.com/cube-js/cube-ui-kit/pull/659) [`2dfa908`](https://github.com/cube-js/cube-ui-kit/commit/2dfa908d16befd4eef0cf0acb957a4e35803959b) Thanks [@tenphi](https://github.com/tenphi)! - Replace most of the icons with Tabler icons.
+
+- [#659](https://github.com/cube-js/cube-ui-kit/pull/659) [`2dfa908`](https://github.com/cube-js/cube-ui-kit/commit/2dfa908d16befd4eef0cf0acb957a4e35803959b) Thanks [@tenphi](https://github.com/tenphi)! - Remove default custom fonts.
+
+- [#659](https://github.com/cube-js/cube-ui-kit/pull/659) [`2dfa908`](https://github.com/cube-js/cube-ui-kit/commit/2dfa908d16befd4eef0cf0acb957a4e35803959b) Thanks [@tenphi](https://github.com/tenphi)! - Replace most of the colors by more contrast and consistent versions.
+
+- [#659](https://github.com/cube-js/cube-ui-kit/pull/659) [`2dfa908`](https://github.com/cube-js/cube-ui-kit/commit/2dfa908d16befd4eef0cf0acb957a4e35803959b) Thanks [@tenphi](https://github.com/tenphi)! - Change neutral and outline types visually for Button component and set outline as the default type.
+
+- [#659](https://github.com/cube-js/cube-ui-kit/pull/659) [`2dfa908`](https://github.com/cube-js/cube-ui-kit/commit/2dfa908d16befd4eef0cf0acb957a4e35803959b) Thanks [@tenphi](https://github.com/tenphi)! - Rework of all color palette.
+
+- [#659](https://github.com/cube-js/cube-ui-kit/pull/659) [`2dfa908`](https://github.com/cube-js/cube-ui-kit/commit/2dfa908d16befd4eef0cf0acb957a4e35803959b) Thanks [@tenphi](https://github.com/tenphi)! - Improve Select and ComboBox styles and the size of their chevron icons.
+
+- [#659](https://github.com/cube-js/cube-ui-kit/pull/659) [`2dfa908`](https://github.com/cube-js/cube-ui-kit/commit/2dfa908d16befd4eef0cf0acb957a4e35803959b) Thanks [@tenphi](https://github.com/tenphi)! - Add wrapperStyles to Select and ComboBox components and fix style props extraction.
+
+### Patch Changes
+
+- [#659](https://github.com/cube-js/cube-ui-kit/pull/659) [`2dfa908`](https://github.com/cube-js/cube-ui-kit/commit/2dfa908d16befd4eef0cf0acb957a4e35803959b) Thanks [@tenphi](https://github.com/tenphi)! - Allow numbers in more styles.
+
+- [#659](https://github.com/cube-js/cube-ui-kit/pull/659) [`2dfa908`](https://github.com/cube-js/cube-ui-kit/commit/2dfa908d16befd4eef0cf0acb957a4e35803959b) Thanks [@tenphi](https://github.com/tenphi)! - Improve Dialog outline except for popovers.
+
+- [#659](https://github.com/cube-js/cube-ui-kit/pull/659) [`2dfa908`](https://github.com/cube-js/cube-ui-kit/commit/2dfa908d16befd4eef0cf0acb957a4e35803959b) Thanks [@tenphi](https://github.com/tenphi)! - Add basic transitions for icons.
+
 ## 0.59.14
 
 ### Patch Changes
