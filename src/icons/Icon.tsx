@@ -32,6 +32,7 @@ const IconElement = tasty({
       // tabler icons
       ':has(.tabler-icon)': 'var(--icon-size, var(--font-size))',
     },
+    transition: 'theme, width, height',
     textAlign: 'center',
     textTransform: 'none',
     textRendering: 'optimizeLegibility',
