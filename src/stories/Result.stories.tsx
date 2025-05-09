@@ -1,5 +1,5 @@
-import { BulbFilled, LockFilled } from '@ant-design/icons';
 import { StoryFn } from '@storybook/react';
+import { IconBulb, IconLock } from '@tabler/icons-react';
 
 import {
   Button,
@@ -90,7 +90,7 @@ export const CustomIcon = {
           fontSize: '10x',
         }}
       >
-        <LockFilled />
+        <IconLock />
       </Element>
     ),
 
@@ -120,7 +120,7 @@ export const CustomTitle = {
           fontSize: '12x',
         }}
       >
-        <BulbFilled />
+        <IconBulb />
       </Element>
     ),
 
