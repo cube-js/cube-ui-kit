@@ -41,6 +41,7 @@ const LegacyTabsContext = createContext<LegacyCubeTabsContextValue>({
 
 const TabElement = tasty(Button, {
   type: 'tab',
+  size: 'small',
   styles: {
     color: {
       '': '#dark',
@@ -50,7 +51,6 @@ const TabElement = tasty(Button, {
     fill: '#purple.0',
     textAlign: 'center',
     fontWeight: 600,
-    padding: '(1x - 1px) (1x - 1px)',
     radius: '1r 1r 0 0',
     border: 0,
   },
