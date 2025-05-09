@@ -1,5 +1,5 @@
-import { IconFileSearch } from '@tabler/icons-react';
+import { IconFileReport } from '@tabler/icons-react';
 
 import { wrapIcon } from './wrap-icon';
 
-export const ReportIcon = wrapIcon('ReportIcon', <IconFileSearch />);
+export const ReportIcon = wrapIcon('ReportIcon', <IconFileReport />);
