@@ -60,7 +60,6 @@ const InputElement = tasty({
 
 const TriggerElement = tasty({
   as: 'button',
-  icon: <DownIcon />,
   type: 'neutral',
   styles: {
     display: 'grid',
@@ -441,7 +440,9 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
             data-size={size}
             isDisabled={isDisabled}
             styles={triggerStyles}
-          />
+          >
+            <DownIcon />
+          </TriggerElement>
         ) : null}
       </div>
       <OverlayWrapper isOpen={state.isOpen && !isDisabled}>
