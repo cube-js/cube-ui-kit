@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.60.1
+
+### Patch Changes
+
+- [#661](https://github.com/cube-js/cube-ui-kit/pull/661) [`6c18b43`](https://github.com/cube-js/cube-ui-kit/commit/6c18b43e680dfb927a79912bd6ad16f8996afead) Thanks [@tenphi](https://github.com/tenphi)! - Fixes Menu Item disabled styles.
+
 ## 0.60.0
 
 ### Minor Changes
