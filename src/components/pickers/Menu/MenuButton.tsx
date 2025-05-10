@@ -4,7 +4,7 @@ import { CheckIcon } from '../../../icons';
 import { tasty } from '../../../tasty';
 import {
   DEFAULT_BUTTON_STYLES,
-  DEFAULT_THEME_STYLES,
+  DEFAULT_NEUTRAL_STYLES,
 } from '../../actions/index';
 import { Block, CubeBlockProps } from '../../Block';
 import { Text } from '../../content/Text';
@@ -13,7 +13,7 @@ import { Space } from '../../layout/Space';
 const StyledButton = tasty(Block, {
   styles: {
     ...DEFAULT_BUTTON_STYLES,
-    ...DEFAULT_THEME_STYLES,
+    ...DEFAULT_NEUTRAL_STYLES,
     border: {
       '': '#clear',
       pressed: '#clear',
@@ -134,7 +134,7 @@ export function MenuButton({
   };
 
   return (
-    <StyledButton data-type="neutral" data-size="small" {...rest} mods={mods}>
+    <StyledButton data-size="small" {...rest} mods={mods}>
       {checkIcon ? <div data-element="ButtonIcon">{checkIcon}</div> : null}
       {icon ? <div data-element="ButtonIcon">{icon}</div> : null}
       <Space gap="1x" placeContent="space-between" overflow="clip" width="100%">
