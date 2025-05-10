@@ -60,7 +60,13 @@ const StyledButton = tasty(Block, {
       placeItems: 'center',
     },
 
-    Postfix: {},
+    Postfix: {
+      color: {
+        '': '#dark-03',
+        pressed: '#dark-02',
+        disabled: '#dark-04',
+      },
+    },
   },
 });
 
