@@ -26,7 +26,8 @@ import { MenuSection } from './MenuSection';
 import { StyledMenu, StyledMenuHeader } from './styled';
 
 export interface CubeMenuProps<T>
-  extends ContainerStyleProps,
+  extends BaseProps,
+    ContainerStyleProps,
     AriaMenuProps<T> {
   selectionIcon?: MenuSelectionType;
   // @deprecated
@@ -51,10 +52,11 @@ function Menu<T extends object>(
     sectionHeadingStyles,
     selectionIcon,
     qa,
+    ...rest
   } = props;
   const domRef = useDOMRef(ref);
   const contextProps = useMenuContext();
-  const completeProps = mergeProps(contextProps, props);
+  const completeProps = mergeProps(contextProps, rest);
 
   const state = useTreeState(completeProps);
   const items = [...state.collection];
