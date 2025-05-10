@@ -83,6 +83,42 @@ export const Default = ({ ...props }) => {
   );
 };
 
+export const DisabledKeys = ({ ...props }) => {
+  const menu = (
+    <Menu id="menu" disabledKeys={['red', 'yellow']} {...props} width="220px">
+      <Menu.Item key="red" postfix="Ctr+C">
+        Copy
+      </Menu.Item>
+      <Menu.Item key="orange" postfix="Ctr+V">
+        Paste
+      </Menu.Item>
+      <Menu.Item key="yellow" postfix="Ctr+X">
+        Cut
+      </Menu.Item>
+    </Menu>
+  );
+
+  return (
+    <Space
+      gap="10x"
+      placeContent="start start"
+      placeItems="start"
+      height="400px"
+    >
+      {menu}
+
+      <MenuTrigger>
+        <Button
+          size="small"
+          icon={<MoreIcon />}
+          aria-label="Open Context Menu"
+        />
+        {menu}
+      </MenuTrigger>
+    </Space>
+  );
+};
+
 export const InsideModal = () => {
   return (
     <DialogContainer>

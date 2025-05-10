@@ -23,7 +23,13 @@ const StyledButton = tasty(Block, {
       '': '#clear',
       hovered: '#dark.03',
       'pressed | selected': '#dark.06',
-      '[disabled] & ![data-type="link"]': '#dark.04',
+      disabled: '#dark.04',
+    },
+    color: {
+      '': '#dark-02',
+      hovered: '#dark-02',
+      pressed: '#dark',
+      disabled: '#dark-04',
     },
     cursor: {
       '': 'pointer',
@@ -57,8 +63,7 @@ const StyledButton = tasty(Block, {
     Postfix: {
       color: {
         '': '#dark-03',
-        'hovered | focused': '#dark-03',
-        'pressed | selected': '#purple-text',
+        pressed: '#dark-02',
         disabled: '#dark-04',
       },
     },
