@@ -54,6 +54,7 @@ export interface CubeIconProps
   size?: Styles['fontSize'];
   stroke?: number;
   children?: ReactElement;
+  title?: string;
 }
 
 export const Icon = memo(
