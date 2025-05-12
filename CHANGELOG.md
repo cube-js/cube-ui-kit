@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.60.3
+
+### Patch Changes
+
+- [#666](https://github.com/cube-js/cube-ui-kit/pull/666) [`bb8ad4e`](https://github.com/cube-js/cube-ui-kit/commit/bb8ad4e881299b213fa31f06f0acdce15ea86ab5) Thanks [@tenphi](https://github.com/tenphi)! - Fix focus state for multiple input components.
+
 ## 0.60.2
 
 ### Patch Changes
