@@ -101,9 +101,10 @@ const RadioButtonElement = tasty({
       disabled: 0.5,
     },
     outline: {
-      '': '#purple-03.0',
-      focused: '#purple-03',
+      '': '#purple-text.0',
+      focused: '1bw #purple-text',
     },
+    outlineOffset: 1,
     transition: 'theme',
     whiteSpace: 'nowrap',
   },
@@ -133,9 +134,10 @@ const RadioNormalElement = tasty({
     width: '2x',
     height: '2x',
     outline: {
-      '': '#purple-03.0',
-      focused: '#purple-03',
+      '': '#purple-text.0',
+      focused: '1bw #purple-text',
     },
+    outlineOffset: 1,
     transition: 'theme',
     whiteSpace: 'nowrap',
 

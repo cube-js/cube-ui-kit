@@ -43,7 +43,21 @@ import {
 import { mergeProps, useCombinedRefs } from '../../../utils/react/index';
 import { useFocus } from '../../../utils/react/interactions';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
-import { DEFAULT_BUTTON_STYLES } from '../../actions/index';
+import {
+  DEFAULT_BUTTON_STYLES,
+  DEFAULT_CLEAR_STYLES,
+  DEFAULT_LINK_STYLES,
+  DEFAULT_NEUTRAL_STYLES,
+  DEFAULT_OUTLINE_STYLES,
+  DEFAULT_PRIMARY_STYLES,
+  DEFAULT_SECONDARY_STYLES,
+  SPECIAL_CLEAR_STYLES,
+  SPECIAL_LINK_STYLES,
+  SPECIAL_NEUTRAL_STYLES,
+  SPECIAL_OUTLINE_STYLES,
+  SPECIAL_PRIMARY_STYLES,
+  SPECIAL_SECONDARY_STYLES,
+} from '../../actions/index';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import { InvalidIcon } from '../../shared/InvalidIcon';
@@ -108,70 +122,56 @@ const SelectWrapperElement = tasty({
   },
 });
 
+type VariantType =
+  | 'default.primary'
+  | 'default.secondary'
+  | 'default.outline'
+  | 'default.neutral'
+  | 'default.clear'
+  | 'default.link'
+  | 'special.primary'
+  | 'special.secondary'
+  | 'special.outline'
+  | 'special.neutral'
+  | 'special.clear'
+  | 'special.link';
+
+function WithValidationState(styles: Styles) {
+  return {
+    ...styles,
+    border: {
+      ...(typeof styles.border === 'object' ? styles.border : {}),
+      invalid: '#danger-text',
+      valid: '#success-text',
+    },
+  };
+}
+
 const SelectElement = tasty({
   as: 'button',
   qa: 'Button',
   styles: {
     ...INPUT_WRAPPER_STYLES,
     ...DEFAULT_BUTTON_STYLES,
-    preset: 't3m',
-    cursor: 'pointer',
-    padding: '0',
-    gap: '0',
-    border: {
-      '': true,
-      valid: '#success-text.50',
-      invalid: '#danger-text.50',
-      '[data-type="primary"]': '#clear',
-      '[data-type="clear"]': '#clear',
-      '[data-theme="special"] & [data-type="secondary"] & pressed': '#white.44',
-      disabled: true,
-    },
-    fill: {
-      '': '#clear',
-      '[data-type="primary"]': '#purple',
-      '[data-type="primary"] & pressed': '#purple',
-      '[data-type="primary"] & hovered': '#purple-text',
+    padding: 0,
+    gap: 0,
+  },
+  variants: {
+    // Default theme
+    'default.primary': DEFAULT_PRIMARY_STYLES,
+    'default.secondary': DEFAULT_SECONDARY_STYLES,
+    'default.outline': WithValidationState(DEFAULT_OUTLINE_STYLES),
+    'default.neutral': WithValidationState(DEFAULT_NEUTRAL_STYLES),
+    'default.clear': WithValidationState(DEFAULT_CLEAR_STYLES),
+    'default.link': DEFAULT_LINK_STYLES,
 
-      '[data-type="secondary"]': '#dark.0',
-      '[data-type="secondary"] & hovered': '#dark.04',
-      '[data-type="secondary"] & pressed': '#dark.05',
-
-      '[disabled]': '#dark.04',
-
-      '([data-type="clear"] | [data-type="outline"])': '#purple.0',
-      '([data-type="clear"] | [data-type="outline"]) & hovered': '#purple.16',
-      '([data-type="clear"] | [data-type="outline"]) & pressed': '#purple.10',
-      '([data-type="clear"] | [data-type="outline"]) & [disabled]': '#purple.0',
-
-      // special
-      '[data-theme="special"] & [data-type="secondary"]': '#white.12',
-
-      '[data-theme="special"] & [data-type="clear"]': '#white',
-      '[data-theme="special"] & [data-type="clear"] & hovered': '#white.94',
-      '[data-theme="special"] & [data-type="clear"] & pressed': '#white',
-
-      '[data-theme="special"] & [disabled]': '#white.12',
-
-      '[data-theme="special"] & [data-type="clear"] & [disabled]': '#white.0',
-    },
-    color: {
-      '': '#white',
-
-      '[data-type="secondary"]': '#dark-02',
-      '[data-type="secondary"] & hovered': '#dark-02',
-      '[data-type="clear"]': '#purple-text',
-      '[data-type="secondary"] & pressed': '#purple',
-
-      '[disabled]': '#dark.30',
-
-      // special
-      '[data-theme="special"]': '#white',
-      '[data-theme="special"] & [data-type="clear"]': '#purple',
-
-      // other
-      '[data-theme="special"] & [disabled]': '#white.30',
-    },
+    // Special theme
+    'special.primary': SPECIAL_PRIMARY_STYLES,
+    'special.secondary': SPECIAL_SECONDARY_STYLES,
+    'special.outline': WithValidationState(SPECIAL_OUTLINE_STYLES),
+    'special.neutral': WithValidationState(SPECIAL_NEUTRAL_STYLES),
+    'special.clear': WithValidationState(SPECIAL_CLEAR_STYLES),
+    'special.link': SPECIAL_LINK_STYLES,
   },
 });
 
@@ -255,8 +255,9 @@ export interface CubeSelectBaseProps<T>
   direction?: 'top' | 'bottom';
   shouldFlip?: boolean;
   inputProps?: Props;
-  type?: 'secondary' | 'clear' | 'primary' | (string & {});
+  type?: 'outline' | 'clear' | 'primary' | (string & {});
   suffixPosition?: 'before' | 'after';
+  theme?: 'default' | 'special';
 }
 
 export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
@@ -317,7 +318,7 @@ function Select<T extends object>(
     tooltip,
     size,
     styles,
-    type = 'secondary',
+    type = 'outline',
     theme = 'default',
     labelSuffix,
     ellipsis,
@@ -424,6 +425,7 @@ function Select<T extends object>(
         {...mergeProps(buttonProps, hoverProps, focusProps)}
         ref={triggerRef}
         styles={inputStyles}
+        variant={`${theme}.${type}` as VariantType}
         data-theme={theme}
         data-size={size}
         data-type={type}

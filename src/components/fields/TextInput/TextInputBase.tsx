@@ -58,16 +58,14 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   },
   border: {
     '': true,
-    focused: true,
+    focused: '#purple-text',
     valid: '#success-text.50',
     invalid: '#danger-text.50',
     disabled: true,
   },
   outline: {
     '': '#purple-03.0',
-    focused: '#purple-03',
     'invalid & focused': '#danger.50',
-    'valid & focused': '#success.50',
   },
   radius: true,
   cursor: 'text',

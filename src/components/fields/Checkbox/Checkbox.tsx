@@ -95,9 +95,10 @@ const CheckboxElement = tasty({
     width: '(2x - 2bw)',
     height: '(2x - 2bw)',
     outline: {
-      '': '#purple-03.0',
-      focused: '#purple-03',
+      '': '#purple-text.0',
+      focused: '1bw #purple-text',
     },
+    outlineOffset: 1,
     transition: 'theme',
   },
 });

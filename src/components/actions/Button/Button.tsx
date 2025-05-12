@@ -30,7 +30,7 @@ export interface CubeButtonProps extends CubeActionProps {
   size?: 'small' | 'medium' | 'large' | (string & {});
 }
 
-type ButtonVariant =
+export type ButtonVariant =
   | 'default.primary'
   | 'default.secondary'
   | 'default.outline'

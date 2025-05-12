@@ -13,22 +13,16 @@ export const SliderThumbElement = tasty({
       disabled: '#dark-04',
     },
     cursor: 'pointer',
-    boxShadow: '@focus-shadow, @dragged-shadow, @drop-shadow',
+    outline: {
+      '': '#purple-text.0',
+      focused: '1bw #purple-text',
+    },
+    outlineOffset: 1,
     radius: '50%',
     transition: 'theme',
     zIndex: {
       '': 0,
       'collapsed & !stuck': 1,
-    },
-
-    '@drop-shadow': '0px 2px 4px #dark.2',
-    '@focus-shadow': {
-      '': '0 0 0 0 #purple-03.80',
-      focused: '0 0 0 3px #purple-03.80',
-    },
-    '@dragged-shadow': {
-      '': 'inset 0 0 0 0 #purple-text',
-      dragged: 'inset 0 0 0 2px #purple-text',
     },
   },
 });
