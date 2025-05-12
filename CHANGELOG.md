@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.60.2
+
+### Patch Changes
+
+- [#664](https://github.com/cube-js/cube-ui-kit/pull/664) [`c7fdfb4`](https://github.com/cube-js/cube-ui-kit/commit/c7fdfb422c8d819f4078d08df25e9c27f14c0018) Thanks [@tenphi](https://github.com/tenphi)! - Fix Menu children typing.
+
 ## 0.60.1
 
 ### Patch Changes
