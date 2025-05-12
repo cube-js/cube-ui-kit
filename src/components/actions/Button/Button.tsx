@@ -193,7 +193,7 @@ export const DEFAULT_LINK_STYLES: Styles = {
   },
   color: {
     '': '#purple-text',
-    pressed: '#purple',
+    'hovered & !pressed': '#purple',
     '[disabled]': '#dark.30',
   },
 } as const;
@@ -306,7 +306,7 @@ export const DANGER_LINK_STYLES: Styles = {
   },
   color: {
     '': '#danger-text',
-    pressed: '#danger',
+    'hovered & !pressed': '#danger',
     '[disabled]': '#dark.30',
   },
 } as const;
@@ -419,7 +419,7 @@ export const SUCCESS_LINK_STYLES: Styles = {
   },
   color: {
     '': '#success-text',
-    pressed: '#success',
+    'hovered & !pressed': '#success',
     '[disabled]': '#dark.30',
   },
 } as const;
@@ -532,6 +532,7 @@ export const SPECIAL_LINK_STYLES: Styles = {
   },
   color: {
     '': '#white',
+    'hovered & !pressed': '#white.9',
     '[disabled]': '#white.30',
   },
 } as const;
