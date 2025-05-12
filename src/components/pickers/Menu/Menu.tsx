@@ -11,6 +11,7 @@ import {
 
 import {
   BaseProps,
+  BasePropsWithoutChildren,
   CONTAINER_STYLES,
   ContainerStyleProps,
   extractStyles,
@@ -26,7 +27,7 @@ import { MenuSection } from './MenuSection';
 import { StyledMenu, StyledMenuHeader } from './styled';
 
 export interface CubeMenuProps<T>
-  extends BaseProps,
+  extends BasePropsWithoutChildren,
     ContainerStyleProps,
     AriaMenuProps<T> {
   selectionIcon?: MenuSelectionType;
