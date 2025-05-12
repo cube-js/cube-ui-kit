@@ -5,38 +5,13 @@ import { LoadingIcon } from '../../../icons';
 import {
   CONTAINER_STYLES,
   extractStyles,
+  Styles,
   tasty,
   TEXT_STYLES,
 } from '../../../tasty';
 import { accessibilityWarning } from '../../../utils/warnings';
 import { CubeActionProps } from '../Action/Action';
 import { useAction } from '../use-action';
-
-type ButtonVariant =
-  | 'default.primary'
-  | 'default.secondary'
-  | 'default.outline'
-  | 'default.neutral'
-  | 'default.clear'
-  | 'default.link'
-  | 'danger.primary'
-  | 'danger.secondary'
-  | 'danger.outline'
-  | 'danger.neutral'
-  | 'danger.clear'
-  | 'danger.link'
-  | 'success.primary'
-  | 'success.secondary'
-  | 'success.outline'
-  | 'success.neutral'
-  | 'success.clear'
-  | 'success.link'
-  | 'special.primary'
-  | 'special.secondary'
-  | 'special.outline'
-  | 'special.neutral'
-  | 'special.clear'
-  | 'special.link';
 
 export interface CubeButtonProps extends CubeActionProps {
   icon?: ReactElement;
@@ -64,7 +39,6 @@ export const DEFAULT_BUTTON_STYLES = {
   position: 'relative',
   margin: 0,
   boxSizing: 'border-box',
-  outline: 0,
   cursor: 'pointer',
   gap: {
     '': '.75x',
@@ -106,8 +80,8 @@ export const DEFAULT_BUTTON_STYLES = {
   },
 } as const;
 
-// DEFAULT THEME STYLES (6 types)
-export const DEFAULT_PRIMARY_STYLES = {
+// ---------- DEFAULT THEME ----------
+export const DEFAULT_PRIMARY_STYLES: Styles = {
   outline: {
     '': '0 #purple-text.0',
     focused: '1bw #purple-text',
@@ -116,11 +90,13 @@ export const DEFAULT_PRIMARY_STYLES = {
     '': '#clear',
     pressed: '#purple-text',
     focused: '#purple-text',
+    '[disabled]': '#border',
   },
   fill: {
     '': '#purple',
     hovered: '#purple-text',
     pressed: '#purple',
+    '[disabled]': '#dark.04',
   },
   color: {
     '': '#white',
@@ -128,12 +104,12 @@ export const DEFAULT_PRIMARY_STYLES = {
   },
 } as const;
 
-export const DEFAULT_SECONDARY_STYLES = {
-  // No outline for secondary
+export const DEFAULT_SECONDARY_STYLES: Styles = {
   border: {
     '': '#purple.15',
     pressed: '#purple.3',
     focused: '#purple-text',
+    '[disabled]': '#border',
   },
   fill: {
     '': '#purple.10',
@@ -147,11 +123,11 @@ export const DEFAULT_SECONDARY_STYLES = {
   },
 } as const;
 
-export const DEFAULT_OUTLINE_STYLES = {
-  // No outline for outline type
+export const DEFAULT_OUTLINE_STYLES: Styles = {
   border: {
     '': '#dark.12',
     focused: '#purple-text',
+    '[disabled]': '#border',
   },
   fill: {
     '': '#dark.0',
@@ -167,11 +143,11 @@ export const DEFAULT_OUTLINE_STYLES = {
   },
 } as const;
 
-export const DEFAULT_NEUTRAL_STYLES = {
-  // No outline for neutral
+export const DEFAULT_NEUTRAL_STYLES: Styles = {
   border: {
     '': '#clear',
     focused: '#purple-text',
+    '[disabled]': '#border',
   },
   fill: {
     '': '#dark.0',
@@ -187,18 +163,18 @@ export const DEFAULT_NEUTRAL_STYLES = {
   },
 } as const;
 
-export const DEFAULT_CLEAR_STYLES = {
-  // No outline for clear
+export const DEFAULT_CLEAR_STYLES: Styles = {
   border: {
     '': '#clear',
     pressed: '#purple-text.10',
     focused: '#purple-text',
+    '[disabled]': '#border',
   },
   fill: {
     '': '#purple.0',
     hovered: '#purple.16',
     pressed: '#purple.10',
-    '[disabled]': '#purple.0',
+    '[disabled]': '#dark.04',
   },
   color: {
     '': '#purple-text',
@@ -206,7 +182,7 @@ export const DEFAULT_CLEAR_STYLES = {
   },
 } as const;
 
-export const DEFAULT_LINK_STYLES = {
+export const DEFAULT_LINK_STYLES: Styles = {
   outline: {
     '': '0 #purple-text.0',
     focused: '1bw #purple-text',
@@ -222,21 +198,20 @@ export const DEFAULT_LINK_STYLES = {
   },
 } as const;
 
-// DANGER THEME STYLES (6 types)
-export const DANGER_PRIMARY_STYLES = {
+// ---------- DANGER THEME ----------
+export const DANGER_PRIMARY_STYLES: Styles = {
   outline: {
     '': '0 #danger-text.0',
     focused: '1bw #danger-text',
   },
   border: {
     '': '#clear',
-    pressed: '#danger-text',
-    focused: '#danger-text',
+    'pressed | focused': '#danger-text',
+    '[disabled]': '#border',
   },
   fill: {
     '': '#danger',
-    hovered: '#danger-text',
-    pressed: '#danger',
+    'hovered & !pressed': '#danger-text',
     '[disabled]': '#dark.04',
   },
   color: {
@@ -245,49 +220,48 @@ export const DANGER_PRIMARY_STYLES = {
   },
 } as const;
 
-export const DANGER_SECONDARY_STYLES = {
-  // No outline for secondary
+export const DANGER_SECONDARY_STYLES: Styles = {
   border: {
     '': '#danger.15',
     pressed: '#danger.3',
     focused: '#danger-text',
+    '[disabled]': '#border',
   },
   fill: {
     '': '#danger.05',
-    hovered: '#danger.1',
-    pressed: '#danger.05',
+    'hovered & !pressed': '#danger.1',
     '[disabled]': '#dark.04',
   },
   color: {
-    '': '#danger', // Added color
+    '': '#danger',
     '[disabled]': '#dark.30',
   },
 } as const;
 
-export const DANGER_OUTLINE_STYLES = {
-  // No outline for outline type
+export const DANGER_OUTLINE_STYLES: Styles = {
   border: {
     '': '#danger.15',
     pressed: '#danger.3',
     focused: '#danger-text',
+    '[disabled]': '#border',
   },
   fill: {
     '': '#danger.0',
     hovered: '#danger.1',
     pressed: '#danger.05',
-    '[disabled]': '#danger.0',
+    '[disabled]': '#dark.04',
   },
   color: {
-    '': '#danger-text', // Added color
+    '': '#danger-text',
     '[disabled]': '#dark.30',
   },
 } as const;
 
-export const DANGER_NEUTRAL_STYLES = {
-  // No outline for neutral
+export const DANGER_NEUTRAL_STYLES: Styles = {
   border: {
     '': '#clear',
     focused: '#danger-text',
+    '[disabled]': '#border',
   },
   fill: {
     '': '#dark.0',
@@ -296,61 +270,61 @@ export const DANGER_NEUTRAL_STYLES = {
     '[disabled]': '#dark.04',
   },
   color: {
-    '': '#danger-text', // Added color
+    '': '#dark-02',
+    pressed: '#dark',
     '[disabled]': '#dark.30',
   },
 } as const;
 
-export const DANGER_CLEAR_STYLES = {
-  // No outline for clear
+export const DANGER_CLEAR_STYLES: Styles = {
   border: {
     '': '#clear',
+    pressed: '#danger.05',
     focused: '#danger-text',
+    '[disabled]': '#border',
   },
   fill: {
     '': '#danger.0',
     hovered: '#danger.1',
     pressed: '#danger.05',
-    '[disabled]': '#danger.0',
+    '[disabled]': '#dark.04',
   },
   color: {
-    '': '#danger-text', // Added color
+    '': '#danger-text',
     '[disabled]': '#dark.30',
   },
 } as const;
 
-export const DANGER_LINK_STYLES = {
+export const DANGER_LINK_STYLES: Styles = {
   outline: {
     '': '0 #danger-text.0',
     focused: '1bw #danger-text',
   },
-  border: '0',
+  border: 0,
   fill: {
     '': '#clear',
-    '[disabled]': '#dark.04',
   },
   color: {
-    '': '#danger-text', // Added color
+    '': '#danger-text',
     pressed: '#danger',
     '[disabled]': '#dark.30',
   },
 } as const;
 
-// SUCCESS THEME STYLES (6 types)
-export const SUCCESS_PRIMARY_STYLES = {
+// ---------- SUCCESS THEME ----------
+export const SUCCESS_PRIMARY_STYLES: Styles = {
   outline: {
     '': '0 #success-text.0',
     focused: '1bw #success-text',
   },
   border: {
     '': '#clear',
-    pressed: '#success-text',
-    focused: '#success-text',
+    'pressed | focused': '#success-text',
+    '[disabled]': '#border',
   },
   fill: {
     '': '#success',
-    hovered: '#success-text',
-    pressed: '#success',
+    'hovered & !pressed': '#success-text',
     '[disabled]': '#dark.04',
   },
   color: {
@@ -359,17 +333,16 @@ export const SUCCESS_PRIMARY_STYLES = {
   },
 } as const;
 
-export const SUCCESS_SECONDARY_STYLES = {
-  // No outline for secondary
+export const SUCCESS_SECONDARY_STYLES: Styles = {
   border: {
     '': '#success.15',
     pressed: '#success.3',
     focused: '#success-text',
+    '[disabled]': '#border',
   },
   fill: {
     '': '#success.05',
-    hovered: '#success.1',
-    pressed: '#success.05',
+    'hovered & !pressed': '#success.1',
     '[disabled]': '#dark.04',
   },
   color: {
@@ -378,18 +351,18 @@ export const SUCCESS_SECONDARY_STYLES = {
   },
 } as const;
 
-export const SUCCESS_OUTLINE_STYLES = {
-  // No outline for outline type
+export const SUCCESS_OUTLINE_STYLES: Styles = {
   border: {
     '': '#success.15',
     pressed: '#success.3',
     focused: '#success-text',
+    '[disabled]': '#border',
   },
   fill: {
     '': '#success.0',
     hovered: '#success.1',
     pressed: '#success.05',
-    '[disabled]': '#success.0',
+    '[disabled]': '#dark.04',
   },
   color: {
     '': '#success-text',
@@ -397,11 +370,11 @@ export const SUCCESS_OUTLINE_STYLES = {
   },
 } as const;
 
-export const SUCCESS_NEUTRAL_STYLES = {
-  // No outline for neutral
+export const SUCCESS_NEUTRAL_STYLES: Styles = {
   border: {
     '': '#clear',
     focused: '#success-text',
+    '[disabled]': '#border',
   },
   fill: {
     '': '#dark.0',
@@ -412,22 +385,23 @@ export const SUCCESS_NEUTRAL_STYLES = {
   color: {
     '': '#dark-02',
     hovered: '#dark-02',
-    pressed: '#success',
+    pressed: '#dark',
     '[disabled]': '#dark.30',
   },
 } as const;
 
-export const SUCCESS_CLEAR_STYLES = {
-  // No outline for clear
+export const SUCCESS_CLEAR_STYLES: Styles = {
   border: {
     '': '#clear',
+    pressed: '#success.05',
     focused: '#success-text',
+    '[disabled]': '#border',
   },
   fill: {
     '': '#success.0',
     hovered: '#success.1',
     pressed: '#success.05',
-    '[disabled]': '#success.0',
+    '[disabled]': '#dark.04',
   },
   color: {
     '': '#success-text',
@@ -435,7 +409,7 @@ export const SUCCESS_CLEAR_STYLES = {
   },
 } as const;
 
-export const SUCCESS_LINK_STYLES = {
+export const SUCCESS_LINK_STYLES: Styles = {
   outline: {
     '': '0 #success-text.0',
     focused: '1bw #success-text',
@@ -443,7 +417,6 @@ export const SUCCESS_LINK_STYLES = {
   border: '0',
   fill: {
     '': '#clear',
-    '[disabled]': '#dark.04',
   },
   color: {
     '': '#success-text',
@@ -452,8 +425,8 @@ export const SUCCESS_LINK_STYLES = {
   },
 } as const;
 
-// SPECIAL THEME STYLES (6 types)
-export const SPECIAL_PRIMARY_STYLES = {
+// ---------- SPECIAL THEME ----------
+export const SPECIAL_PRIMARY_STYLES: Styles = {
   outline: {
     '': '0 #white.0',
     focused: '1bw #white',
@@ -461,11 +434,11 @@ export const SPECIAL_PRIMARY_STYLES = {
   border: {
     '': '#clear',
     pressed: '#purple-03',
+    '[disabled]': '#white.3',
   },
   fill: {
     '': '#purple',
-    pressed: '#purple',
-    hovered: '#purple-text',
+    'hovered & !pressed': '#purple-text',
     '[disabled]': '#white.12',
   },
   color: {
@@ -474,8 +447,7 @@ export const SPECIAL_PRIMARY_STYLES = {
   },
 } as const;
 
-export const SPECIAL_SECONDARY_STYLES = {
-  // No outline for secondary
+export const SPECIAL_SECONDARY_STYLES: Styles = {
   border: {
     '': '#white.3',
     pressed: '#white.4',
@@ -483,8 +455,7 @@ export const SPECIAL_SECONDARY_STYLES = {
   },
   fill: {
     '': '#white.12',
-    hovered: '#white.18',
-    pressed: '#white.12',
+    'hovered & !pressed': '#white.18',
     '[disabled]': '#white.12',
   },
   color: {
@@ -493,33 +464,11 @@ export const SPECIAL_SECONDARY_STYLES = {
   },
 } as const;
 
-export const SPECIAL_OUTLINE_STYLES = {
-  // No outline for outline type
+export const SPECIAL_OUTLINE_STYLES: Styles = {
   border: {
     '': '#white.3',
-    '!pressed': '#white.3',
-    focused: '#white',
-    '[disabled]': '#white.3',
-  },
-  fill: {
-    '': '#white.0',
-    hovered: '#white.18',
     pressed: '#white.12',
-    '[disabled]': '#white.0',
-  },
-  color: {
-    '': '#white',
-    '[disabled]': '#white.30',
-  },
-} as const;
-
-export const SPECIAL_NEUTRAL_STYLES = {
-  // No outline for neutral
-  border: {
-    '': '#clear',
-    '!pressed': 0,
     focused: '#white',
-    '[disabled]': '#white.3',
   },
   fill: {
     '': '#white.0',
@@ -533,22 +482,36 @@ export const SPECIAL_NEUTRAL_STYLES = {
   },
 } as const;
 
-export const SPECIAL_CLEAR_STYLES = {
+export const SPECIAL_NEUTRAL_STYLES: Styles = {
+  border: {
+    '': 0,
+    focused: '#white',
+    '[disabled]': '#white.3',
+  },
+  fill: {
+    '': '#white.0',
+    hovered: '#white.18',
+    'pressed | [disabled]': '#white.12',
+  },
+  color: {
+    '': '#white',
+    '[disabled]': '#white.30',
+  },
+} as const;
+
+export const SPECIAL_CLEAR_STYLES: Styles = {
   outline: {
-    // Special case: outline for clear type in special theme
-    '': '0 #white.0',
     focused: '1bw #white',
   },
   border: {
     '': '#clear',
-    focused: '#white',
+    'pressed | focused': '#white',
     '[disabled]': '#white.3',
   },
   fill: {
     '': '#white',
-    hovered: '#white.94',
-    pressed: '#white',
-    '[disabled]': '#white.0',
+    'hovered & !pressed': '#white.94',
+    '[disabled]': '#white.12',
   },
   color: {
     '': '#purple',
@@ -556,7 +519,7 @@ export const SPECIAL_CLEAR_STYLES = {
   },
 } as const;
 
-export const SPECIAL_LINK_STYLES = {
+export const SPECIAL_LINK_STYLES: Styles = {
   outline: {
     '': '0 #white.0',
     focused: '1bw #white',
@@ -564,7 +527,6 @@ export const SPECIAL_LINK_STYLES = {
   border: '0',
   fill: {
     '': '#clear',
-    '[disabled]': '#white.12',
   },
   color: {
     '': '#white',
@@ -576,6 +538,7 @@ const ButtonElement = tasty({
   qa: 'Button',
   styles: DEFAULT_BUTTON_STYLES,
   variants: {
+    // Default theme
     'default.primary': DEFAULT_PRIMARY_STYLES,
     'default.secondary': DEFAULT_SECONDARY_STYLES,
     'default.outline': DEFAULT_OUTLINE_STYLES,
@@ -583,6 +546,7 @@ const ButtonElement = tasty({
     'default.clear': DEFAULT_CLEAR_STYLES,
     'default.link': DEFAULT_LINK_STYLES,
 
+    // Danger theme
     'danger.primary': DANGER_PRIMARY_STYLES,
     'danger.secondary': DANGER_SECONDARY_STYLES,
     'danger.outline': DANGER_OUTLINE_STYLES,
@@ -590,6 +554,7 @@ const ButtonElement = tasty({
     'danger.clear': DANGER_CLEAR_STYLES,
     'danger.link': DANGER_LINK_STYLES,
 
+    // Success theme
     'success.primary': SUCCESS_PRIMARY_STYLES,
     'success.secondary': SUCCESS_SECONDARY_STYLES,
     'success.outline': SUCCESS_OUTLINE_STYLES,
@@ -597,6 +562,7 @@ const ButtonElement = tasty({
     'success.clear': SUCCESS_CLEAR_STYLES,
     'success.link': SUCCESS_LINK_STYLES,
 
+    // Special theme
     'special.primary': SPECIAL_PRIMARY_STYLES,
     'special.secondary': SPECIAL_SECONDARY_STYLES,
     'special.outline': SPECIAL_OUTLINE_STYLES,
@@ -611,7 +577,7 @@ export const Button = forwardRef(function Button(
   ref: FocusableRef<HTMLElement>,
 ) {
   let {
-    type = 'outline',
+    type,
     size,
     label,
     children,
@@ -687,16 +653,14 @@ export const Button = forwardRef(function Button(
 
   delete actionProps.isDisabled;
 
-  const variantName = `${theme}.${type}` as ButtonVariant;
-
   return (
     <ButtonElement
       download={download}
       {...actionProps}
       disabled={isDisabledElement}
-      variant={variantName}
+      variant={`${theme}.${type ?? 'outline'}`}
       data-theme={theme}
-      data-type={type}
+      data-type={type ?? 'outline'}
       data-size={size ?? 'medium'}
       styles={styles}
     >
