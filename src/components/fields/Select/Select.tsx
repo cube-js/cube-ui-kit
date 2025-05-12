@@ -136,13 +136,11 @@ type VariantType =
   | 'special.clear'
   | 'special.link';
 
-function WithValidationState(
-  styles: Styles & { border?: Record<string, string> },
-) {
+function WithValidationState(styles: Styles) {
   return {
     ...styles,
     border: {
-      ...('border' in styles ? styles.border : {}),
+      ...(typeof styles.border === 'object' ? styles.border : {}),
       invalid: '#danger-text',
       valid: '#success-text',
     },
