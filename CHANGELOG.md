@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.60.1
+
+### Patch Changes
+
+- [#662](https://github.com/cube-js/cube-ui-kit/pull/662) [`a72f42f`](https://github.com/cube-js/cube-ui-kit/commit/a72f42f41c6a622aaea9b5454c0f9de6eed634d0) Thanks [@tenphi](https://github.com/tenphi)! - Optimize Button style generation via more variants.
+
+- [#661](https://github.com/cube-js/cube-ui-kit/pull/661) [`6c18b43`](https://github.com/cube-js/cube-ui-kit/commit/6c18b43e680dfb927a79912bd6ad16f8996afead) Thanks [@tenphi](https://github.com/tenphi)! - Fixes Menu Item disabled styles.
+
 ## 0.60.0
 
 ### Minor Changes
