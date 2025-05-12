@@ -156,6 +156,17 @@ const TemplateStates: StoryFn<CubeButtonProps> = ({
     >
       {label || 'Focused'}
     </Button>
+    <Button
+      {...props}
+      isDisabled
+      mods={{
+        hovered: false,
+        pressed: false,
+        focused: false,
+      }}
+    >
+      {label || 'Disabled'}
+    </Button>
     {['outline', 'neutral', 'clear'].includes(props.type) || !props.type ? (
       <Button
         {...props}
@@ -169,17 +180,6 @@ const TemplateStates: StoryFn<CubeButtonProps> = ({
         {label || 'Selected'}
       </Button>
     ) : null}
-    <Button
-      {...props}
-      isDisabled
-      mods={{
-        hovered: false,
-        pressed: false,
-        focused: false,
-      }}
-    >
-      {label || 'Disabled'}
-    </Button>
   </Space>
 );
 
@@ -244,6 +244,17 @@ const DarkTemplateStates: StoryFn<CubeButtonProps> = ({
     >
       {label || 'Focused'}
     </Button>
+    <Button
+      {...props}
+      isDisabled
+      mods={{
+        hovered: false,
+        pressed: false,
+        focused: false,
+      }}
+    >
+      {label || 'Disabled'}
+    </Button>
     {['outline', 'neutral'].includes(props.type) || !props.type ? (
       <Button
         {...props}
@@ -257,17 +268,6 @@ const DarkTemplateStates: StoryFn<CubeButtonProps> = ({
         {label || 'Selected'}
       </Button>
     ) : null}
-    <Button
-      {...props}
-      isDisabled
-      mods={{
-        hovered: false,
-        pressed: false,
-        focused: false,
-      }}
-    >
-      {label || 'Disabled'}
-    </Button>
   </Space>
 );
 

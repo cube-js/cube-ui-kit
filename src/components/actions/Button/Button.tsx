@@ -489,8 +489,9 @@ export const SPECIAL_NEUTRAL_STYLES: Styles = {
   },
   fill: {
     '': '#white.0',
-    hovered: '#white.18',
-    'pressed | selected | [disabled]': '#white.12',
+    hovered: '#white.12',
+    'pressed | selected': '#white.18',
+    '[disabled]': 'white.12',
   },
   color: {
     '': '#white',
