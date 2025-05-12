@@ -44,12 +44,6 @@ import { mergeProps, useCombinedRefs } from '../../../utils/react/index';
 import { useFocus } from '../../../utils/react/interactions';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
 import {
-  DANGER_CLEAR_STYLES,
-  DANGER_LINK_STYLES,
-  DANGER_NEUTRAL_STYLES,
-  DANGER_OUTLINE_STYLES,
-  DANGER_PRIMARY_STYLES,
-  DANGER_SECONDARY_STYLES,
   DEFAULT_BUTTON_STYLES,
   DEFAULT_CLEAR_STYLES,
   DEFAULT_LINK_STYLES,
@@ -63,12 +57,6 @@ import {
   SPECIAL_OUTLINE_STYLES,
   SPECIAL_PRIMARY_STYLES,
   SPECIAL_SECONDARY_STYLES,
-  SUCCESS_CLEAR_STYLES,
-  SUCCESS_LINK_STYLES,
-  SUCCESS_NEUTRAL_STYLES,
-  SUCCESS_OUTLINE_STYLES,
-  SUCCESS_PRIMARY_STYLES,
-  SUCCESS_SECONDARY_STYLES,
 } from '../../actions/index';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
@@ -148,7 +136,9 @@ type VariantType =
   | 'special.clear'
   | 'special.link';
 
-function WithValidationState(styles: Styles & { border?: Styles['border'] }) {
+function WithValidationState(
+  styles: Styles & { border?: Record<string, string> },
+) {
   return {
     ...styles,
     border: {
