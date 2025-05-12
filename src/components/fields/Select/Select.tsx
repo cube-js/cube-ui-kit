@@ -148,6 +148,17 @@ type VariantType =
   | 'special.clear'
   | 'special.link';
 
+function WithValidationState(styles: Styles & { border?: Styles['border'] }) {
+  return {
+    ...styles,
+    border: {
+      ...('border' in styles ? styles.border : {}),
+      invalid: '#danger-text',
+      valid: '#success-text',
+    },
+  };
+}
+
 const SelectElement = tasty({
   as: 'button',
   qa: 'Button',
@@ -161,17 +172,17 @@ const SelectElement = tasty({
     // Default theme
     'default.primary': DEFAULT_PRIMARY_STYLES,
     'default.secondary': DEFAULT_SECONDARY_STYLES,
-    'default.outline': DEFAULT_OUTLINE_STYLES,
-    'default.neutral': DEFAULT_NEUTRAL_STYLES,
-    'default.clear': DEFAULT_CLEAR_STYLES,
+    'default.outline': WithValidationState(DEFAULT_OUTLINE_STYLES),
+    'default.neutral': WithValidationState(DEFAULT_NEUTRAL_STYLES),
+    'default.clear': WithValidationState(DEFAULT_CLEAR_STYLES),
     'default.link': DEFAULT_LINK_STYLES,
 
     // Special theme
     'special.primary': SPECIAL_PRIMARY_STYLES,
     'special.secondary': SPECIAL_SECONDARY_STYLES,
-    'special.outline': SPECIAL_OUTLINE_STYLES,
-    'special.neutral': SPECIAL_NEUTRAL_STYLES,
-    'special.clear': SPECIAL_CLEAR_STYLES,
+    'special.outline': WithValidationState(SPECIAL_OUTLINE_STYLES),
+    'special.neutral': WithValidationState(SPECIAL_NEUTRAL_STYLES),
+    'special.clear': WithValidationState(SPECIAL_CLEAR_STYLES),
     'special.link': SPECIAL_LINK_STYLES,
   },
 });
