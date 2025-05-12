@@ -64,10 +64,7 @@ export const DEFAULT_BUTTON_STYLES = {
   position: 'relative',
   margin: 0,
   boxSizing: 'border-box',
-  outline: {
-    '': '#purple-03.0',
-    focused: '#purple-03',
-  },
+  outline: 0,
   cursor: 'pointer',
   gap: {
     '': '.75x',
@@ -132,10 +129,7 @@ export const DEFAULT_PRIMARY_STYLES = {
 } as const;
 
 export const DEFAULT_SECONDARY_STYLES = {
-  outline: {
-    '': '0 #purple-text.0',
-    focused: '1bw #purple-text',
-  },
+  // No outline for secondary
   border: {
     '': '#purple.15',
     pressed: '#purple.3',
@@ -154,10 +148,7 @@ export const DEFAULT_SECONDARY_STYLES = {
 } as const;
 
 export const DEFAULT_OUTLINE_STYLES = {
-  outline: {
-    '': '0 #purple-text.0',
-    focused: '1bw #purple-text',
-  },
+  // No outline for outline type
   border: {
     '': '#dark.12',
     focused: '#purple-text',
@@ -177,10 +168,7 @@ export const DEFAULT_OUTLINE_STYLES = {
 } as const;
 
 export const DEFAULT_NEUTRAL_STYLES = {
-  outline: {
-    '': '0 #purple-text.0',
-    focused: '1bw #purple-text',
-  },
+  // No outline for neutral
   border: {
     '': '#clear',
     focused: '#purple-text',
@@ -200,10 +188,7 @@ export const DEFAULT_NEUTRAL_STYLES = {
 } as const;
 
 export const DEFAULT_CLEAR_STYLES = {
-  outline: {
-    '': '0 #purple-text.0',
-    focused: '1bw #purple-text',
-  },
+  // No outline for clear
   border: {
     '': '#clear',
     pressed: '#purple-text.10',
@@ -226,10 +211,7 @@ export const DEFAULT_LINK_STYLES = {
     '': '0 #purple-text.0',
     focused: '1bw #purple-text',
   },
-  border: {
-    '': '0',
-    focused: '#purple-text',
-  },
+  border: '0',
   fill: {
     '': '#clear',
   },
@@ -264,10 +246,7 @@ export const DANGER_PRIMARY_STYLES = {
 } as const;
 
 export const DANGER_SECONDARY_STYLES = {
-  outline: {
-    '': '0 #danger-text.0',
-    focused: '1bw #danger-text',
-  },
+  // No outline for secondary
   border: {
     '': '#danger.15',
     pressed: '#danger.3',
@@ -280,16 +259,13 @@ export const DANGER_SECONDARY_STYLES = {
     '[disabled]': '#dark.04',
   },
   color: {
-    '': '#white',
+    '': '#danger', // Added color
     '[disabled]': '#dark.30',
   },
 } as const;
 
 export const DANGER_OUTLINE_STYLES = {
-  outline: {
-    '': '0 #danger-text.0',
-    focused: '1bw #danger-text',
-  },
+  // No outline for outline type
   border: {
     '': '#danger.15',
     pressed: '#danger.3',
@@ -302,16 +278,13 @@ export const DANGER_OUTLINE_STYLES = {
     '[disabled]': '#danger.0',
   },
   color: {
-    '': '#white',
+    '': '#danger-text', // Added color
     '[disabled]': '#dark.30',
   },
 } as const;
 
 export const DANGER_NEUTRAL_STYLES = {
-  outline: {
-    '': '0 #danger-text.0',
-    focused: '1bw #danger-text',
-  },
+  // No outline for neutral
   border: {
     '': '#clear',
     focused: '#danger-text',
@@ -323,16 +296,13 @@ export const DANGER_NEUTRAL_STYLES = {
     '[disabled]': '#dark.04',
   },
   color: {
-    '': '#white',
+    '': '#danger-text', // Added color
     '[disabled]': '#dark.30',
   },
 } as const;
 
 export const DANGER_CLEAR_STYLES = {
-  outline: {
-    '': '0 #danger-text.0',
-    focused: '1bw #danger-text',
-  },
+  // No outline for clear
   border: {
     '': '#clear',
     focused: '#danger-text',
@@ -344,7 +314,7 @@ export const DANGER_CLEAR_STYLES = {
     '[disabled]': '#danger.0',
   },
   color: {
-    '': '#white',
+    '': '#danger-text', // Added color
     '[disabled]': '#dark.30',
   },
 } as const;
@@ -354,16 +324,14 @@ export const DANGER_LINK_STYLES = {
     '': '0 #danger-text.0',
     focused: '1bw #danger-text',
   },
-  border: {
-    '': '#clear',
-    focused: '#danger-text',
-  },
+  border: '0',
   fill: {
     '': '#clear',
     '[disabled]': '#dark.04',
   },
   color: {
-    '': '#white',
+    '': '#danger-text', // Added color
+    pressed: '#danger',
     '[disabled]': '#dark.30',
   },
 } as const;
@@ -392,10 +360,7 @@ export const SUCCESS_PRIMARY_STYLES = {
 } as const;
 
 export const SUCCESS_SECONDARY_STYLES = {
-  outline: {
-    '': '0 #success-text.0',
-    focused: '1bw #success-text',
-  },
+  // No outline for secondary
   border: {
     '': '#success.15',
     pressed: '#success.3',
@@ -414,10 +379,7 @@ export const SUCCESS_SECONDARY_STYLES = {
 } as const;
 
 export const SUCCESS_OUTLINE_STYLES = {
-  outline: {
-    '': '0 #success-text.0',
-    focused: '1bw #success-text',
-  },
+  // No outline for outline type
   border: {
     '': '#success.15',
     pressed: '#success.3',
@@ -436,10 +398,7 @@ export const SUCCESS_OUTLINE_STYLES = {
 } as const;
 
 export const SUCCESS_NEUTRAL_STYLES = {
-  outline: {
-    '': '0 #success-text.0',
-    focused: '1bw #success-text',
-  },
+  // No outline for neutral
   border: {
     '': '#clear',
     focused: '#success-text',
@@ -459,10 +418,7 @@ export const SUCCESS_NEUTRAL_STYLES = {
 } as const;
 
 export const SUCCESS_CLEAR_STYLES = {
-  outline: {
-    '': '0 #success-text.0',
-    focused: '1bw #success-text',
-  },
+  // No outline for clear
   border: {
     '': '#clear',
     focused: '#success-text',
@@ -484,10 +440,7 @@ export const SUCCESS_LINK_STYLES = {
     '': '0 #success-text.0',
     focused: '1bw #success-text',
   },
-  border: {
-    '': '#clear',
-    focused: '#success-text',
-  },
+  border: '0',
   fill: {
     '': '#clear',
     '[disabled]': '#dark.04',
@@ -522,10 +475,7 @@ export const SPECIAL_PRIMARY_STYLES = {
 } as const;
 
 export const SPECIAL_SECONDARY_STYLES = {
-  outline: {
-    '': '0 #white.0',
-    focused: '1bw #white',
-  },
+  // No outline for secondary
   border: {
     '': '#white.3',
     pressed: '#white.4',
@@ -544,10 +494,7 @@ export const SPECIAL_SECONDARY_STYLES = {
 } as const;
 
 export const SPECIAL_OUTLINE_STYLES = {
-  outline: {
-    '': '0 #white.0',
-    focused: '1bw #white',
-  },
+  // No outline for outline type
   border: {
     '': '#white.3',
     '!pressed': '#white.3',
@@ -567,10 +514,7 @@ export const SPECIAL_OUTLINE_STYLES = {
 } as const;
 
 export const SPECIAL_NEUTRAL_STYLES = {
-  outline: {
-    '': '0 #white.0',
-    focused: '1bw #white',
-  },
+  // No outline for neutral
   border: {
     '': '#clear',
     '!pressed': 0,
@@ -591,6 +535,7 @@ export const SPECIAL_NEUTRAL_STYLES = {
 
 export const SPECIAL_CLEAR_STYLES = {
   outline: {
+    // Special case: outline for clear type in special theme
     '': '0 #white.0',
     focused: '1bw #white',
   },
@@ -616,11 +561,7 @@ export const SPECIAL_LINK_STYLES = {
     '': '0 #white.0',
     focused: '1bw #white',
   },
-  border: {
-    '': 0,
-    focused: '#white',
-    '[disabled]': '#white.3',
-  },
+  border: '0',
   fill: {
     '': '#clear',
     '[disabled]': '#white.12',
