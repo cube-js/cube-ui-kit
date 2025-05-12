@@ -110,7 +110,7 @@ const TemplateStates: StoryFn<CubeButtonProps> = ({
         disabled: false,
       }}
     >
-      {label || 'Secondary'}
+      {label || 'Default'}
     </Button>
     <Button
       {...props}
@@ -167,6 +167,19 @@ const TemplateStates: StoryFn<CubeButtonProps> = ({
     >
       {label || 'Disabled'}
     </Button>
+    {['outline', 'neutral', 'clear'].includes(props.type) || !props.type ? (
+      <Button
+        {...props}
+        mods={{
+          pressed: false,
+          focused: false,
+          disabled: false,
+          selected: true,
+        }}
+      >
+        {label || 'Selected'}
+      </Button>
+    ) : null}
   </Space>
 );
 
@@ -242,6 +255,19 @@ const DarkTemplateStates: StoryFn<CubeButtonProps> = ({
     >
       {label || 'Disabled'}
     </Button>
+    {['outline', 'neutral'].includes(props.type) || !props.type ? (
+      <Button
+        {...props}
+        mods={{
+          pressed: false,
+          focused: false,
+          disabled: false,
+          selected: true,
+        }}
+      >
+        {label || 'Selected'}
+      </Button>
+    ) : null}
   </Space>
 );
 
