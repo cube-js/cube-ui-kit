@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.60.5
+
+### Patch Changes
+
+- [#670](https://github.com/cube-js/cube-ui-kit/pull/670) [`927897d`](https://github.com/cube-js/cube-ui-kit/commit/927897d9bd12cc0075eee3aa33d51fe264efa65b) Thanks [@tenphi](https://github.com/tenphi)! - Thinner resizable panel handler.
+
+- [#670](https://github.com/cube-js/cube-ui-kit/pull/670) [`927897d`](https://github.com/cube-js/cube-ui-kit/commit/927897d9bd12cc0075eee3aa33d51fe264efa65b) Thanks [@tenphi](https://github.com/tenphi)! - Fix issue in Panel component when style property could be applied to both outer and inner containers.
+
 ## 0.60.4
 
 ### Patch Changes
