@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.60.4
+
+### Patch Changes
+
+- [#668](https://github.com/cube-js/cube-ui-kit/pull/668) [`177339c`](https://github.com/cube-js/cube-ui-kit/commit/177339cff21176f640e53df5def47afcc5ddd183) Thanks [@tenphi](https://github.com/tenphi)! - Fix issue that throws an error if ResizablePanel is used in Safari.
+
 ## 0.60.3
 
 ### Patch Changes
