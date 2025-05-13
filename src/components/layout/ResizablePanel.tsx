@@ -337,11 +337,13 @@ function ResizablePanel(
   }, [visualSize, isDragging]);
 
   useEffect(() => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
-
     timerRef.current = setTimeout(notifyChange, 500);
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
   }, [providedSize]);
 
   const mods = useMemo(() => {
