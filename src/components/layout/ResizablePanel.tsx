@@ -75,33 +75,29 @@ const HandlerElement = tasty({
       horizontal: 'col-resize',
       disabled: 'not-allowed',
     },
-    fill: {
-      '': '#clear',
-      drag: '#purple-02',
-    },
     padding: 0,
     boxSizing: 'border-box',
     transition: 'theme',
     '--size-compensation': {
-      '': '7px',
+      '': '6px',
       disabled: '1bw',
     },
 
     Track: {
       width: {
         '': 'initial',
-        horizontal: '5px',
+        horizontal: '3px',
         'disabled & horizontal': '1px',
       },
       height: {
-        '': '5px',
+        '': '3px',
         horizontal: 'initial',
         'disabled & !horizontal': '1px',
       },
       position: 'absolute',
       inset: {
-        '': '2px 0',
-        horizontal: '0 2px',
+        '': '3px 0',
+        horizontal: '0 3px',
         disabled: '0 0',
       },
       fill: {
@@ -109,6 +105,11 @@ const HandlerElement = tasty({
         '(hovered | drag) & !disabled': '#purple-03',
       },
       transition: 'theme',
+      outline: {
+        '': '1bw #purple-text.0',
+        drag: '1bw #purple-text',
+      },
+      outlineOffset: 1,
     },
 
     Drag: {
@@ -128,15 +129,15 @@ const HandlerElement = tasty({
       },
       width: {
         '': 'auto',
-        horizontal: '3px',
+        horizontal: '1px',
       },
       height: {
-        '': '3px',
+        '': '1px',
         horizontal: 'auto',
       },
       inset: {
-        '': '3px 50% auto auto',
-        horizontal: '50% 3px auto auto',
+        '': '4px 50% auto auto',
+        horizontal: '50% 4px auto auto',
       },
       transform: {
         '': 'translate(-50%, 0)',
@@ -211,7 +212,7 @@ const StyledPanel = tasty(Panel, {
     touchAction: 'none',
 
     '--indent-compensation': {
-      '': '5px',
+      '': '3px',
       disabled: '1bw',
     },
   },
