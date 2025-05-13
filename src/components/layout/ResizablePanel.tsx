@@ -1,5 +1,12 @@
 import { useResizeObserver } from '@react-aria/utils';
-import { ForwardedRef, forwardRef, useEffect, useMemo, useState } from 'react';
+import {
+  ForwardedRef,
+  forwardRef,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useHover, useMove } from 'react-aria';
 
 import { useDebouncedValue, useEvent } from '../../_internal/hooks';
@@ -214,6 +221,7 @@ function ResizablePanel(
   props: CubeResizablePanelProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
   const isControllable = typeof props.size === 'number';
   const {
     isDisabled,
@@ -329,7 +337,13 @@ function ResizablePanel(
   }, [visualSize, isDragging]);
 
   useEffect(() => {
-    requestIdleCallback(notifyChange);
+    timerRef.current = setTimeout(notifyChange, 500);
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
   }, [providedSize]);
 
   const mods = useMemo(() => {
