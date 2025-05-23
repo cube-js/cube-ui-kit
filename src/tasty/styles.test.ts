@@ -120,6 +120,15 @@ describe('Tasty style tests', () => {
     expect(scrollbarStyle({})).toBeUndefined();
   });
 
+  it('should return correct styles for two colors', () => {
+    expect(scrollbarStyle({ scrollbar: '#dark #clear' })).toEqual({
+      'scrollbar-color': 'var(--dark-color) var(--clear-color)',
+      '&::-webkit-scrollbar-corner': {
+        background: 'var(--clear-color)',
+      },
+    });
+  });
+
   it('should return correct styles for `thin` scrollbar', () => {
     expect(scrollbarStyle({ scrollbar: 'thin' })).toEqual({
       'scrollbar-width': 'thin',

@@ -48,6 +48,7 @@ export interface ParsedStyle {
   values: string[];
   all: string[];
   colors: string[];
+  color?: string;
   /** The list of mods to apply */
   mods: string[];
 }
@@ -479,28 +480,26 @@ export function parseColor(val: string, ignoreError = false): ParsedColor {
     };
   }
 
-  let { values, mods, colors } = parseStyle(val);
+  let { values, mods, color } = parseStyle(val);
 
   let name, opacity;
 
-  if (colors.length > 0) {
+  if (color) {
     return {
-      color:
-        (!colors[0].startsWith('var(') ? strToRgb(colors[0]) : colors[0]) ||
-        colors[0],
+      color: (!color.startsWith('var(') ? strToRgb(color) : color) || color,
     };
   }
 
   values.forEach((token) => {
     if (token.match(/^((var|rgb|rgba|hsl|hsla)\(|#[0-9a-f]{3,6})/)) {
-      colors[0] = !token.startsWith('var') ? strToRgb(token) : token;
+      color = !token.startsWith('var') ? strToRgb(token) : token;
     } else if (token.endsWith('%')) {
       opacity = parseInt(token);
     }
   });
 
-  if (colors.length > 0) {
-    return { color: colors[0] };
+  if (color) {
+    return { color };
   }
 
   name = name || mods[0];
