@@ -79,6 +79,13 @@ describe('Tasty style tests', () => {
         'var(--t3-letter-spacing, var(--default-letter-spacing, inherit))',
       '--line-height':
         'var(--t3-line-height, var(--default-line-height, inherit))',
+      '--bold-font-weight':
+        'var(--t3-bold-font-weight, var(--default-bold-font-weight, inherit))',
+      '--font-family':
+        'var(--t3-font-family, var(--default-font-family, var(--font, NonexistentFontName))), var(--font, sans-serif)',
+      '--icon-size': 'var(--t3-icon-size, var(--default-icon-size, inherit))',
+      '--text-transform':
+        'var(--t3-text-transform, var(--default-text-transform, inherit))',
       'font-size': 'var(--t3-font-size, var(--default-font-size, inherit))',
       'font-style': 'var(--t3-font-style, var(--default-font-style, inherit))',
       'font-weight':
@@ -87,6 +94,10 @@ describe('Tasty style tests', () => {
         'var(--t3-letter-spacing, var(--default-letter-spacing, inherit))',
       'line-height':
         'var(--t3-line-height, var(--default-line-height, inherit))',
+      'font-family':
+        'var(--t3-font-family, var(--default-font-family, var(--font, NonexistentFontName))), var(--font, sans-serif)',
+      'text-transform':
+        'var(--t3-text-transform, var(--default-text-transform, inherit))',
     });
   });
 
