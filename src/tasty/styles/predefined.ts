@@ -119,6 +119,7 @@ export function predefine() {
   defineStyleAlias('letterSpacing', 'letter-spacing', numberConverter);
   defineStyleAlias('textTransform');
   defineStyleAlias('fontFamily');
+  defineStyleAlias('overflow');
   defineStyleAlias('paddingTop', 'padding-top', numberConverter);
   defineStyleAlias('paddingRight', 'padding-right', numberConverter);
   defineStyleAlias('paddingBottom', 'padding-bottom', numberConverter);

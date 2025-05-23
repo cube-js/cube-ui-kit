@@ -1,15 +1,5 @@
 import { parseStyle } from '../utils/styles';
 
-const SCROLLBAR_MODS = [
-  'thin',
-  'none',
-  'auto',
-  'stable',
-  'both-edges',
-  'styled',
-  'always',
-];
-
 export function scrollbarStyle({
   scrollbar,
   overflow,
