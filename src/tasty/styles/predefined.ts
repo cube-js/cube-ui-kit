@@ -29,6 +29,7 @@ import { paddingInlineStyle } from './paddingInline';
 import { presetStyle } from './preset';
 import { radiusStyle } from './radius';
 import { resetStyle } from './reset';
+import { scrollbarStyle } from './scrollbar';
 import { shadowStyle } from './shadow';
 import { styledScrollbarStyle } from './styledScrollbar';
 import { transitionStyle } from './transition';
@@ -118,6 +119,7 @@ export function predefine() {
   defineStyleAlias('letterSpacing', 'letter-spacing', numberConverter);
   defineStyleAlias('textTransform');
   defineStyleAlias('fontFamily');
+  defineStyleAlias('overflow');
   defineStyleAlias('paddingTop', 'padding-top', numberConverter);
   defineStyleAlias('paddingRight', 'padding-right', numberConverter);
   defineStyleAlias('paddingBottom', 'padding-bottom', numberConverter);
@@ -177,7 +179,9 @@ export function predefine() {
     fontStyle,
     fontStyleStyle,
     groupRadiusAttr,
+    // DEPRECATED: `styledScrollbar` is deprecated, use `scrollbar` instead
     styledScrollbarStyle,
+    scrollbarStyle,
     fadeStyle,
     insetStyle,
   ]

@@ -297,7 +297,7 @@ function PopoverTrigger(allProps) {
 
 function DialogTriggerBase(props) {
   const ref = useCombinedRefs(props.ref);
-  const isFirstRender = useIsFirstRender();
+  const wasOpenRef = useRef(false);
 
   let {
     type,
@@ -320,10 +320,13 @@ function DialogTriggerBase(props) {
 
   // Restore focus manually when the dialog closes
   useEffect(() => {
-    if (!state.isOpen && !isFirstRender) {
+    if (!state.isOpen && wasOpenRef.current) {
+      wasOpenRef.current = false;
       ref.current?.focus();
+    } else if (state.isOpen) {
+      wasOpenRef.current = true;
     }
-  }, [state.isOpen, ref.current]);
+  }, [state.isOpen]);
 
   return (
     <Fragment>

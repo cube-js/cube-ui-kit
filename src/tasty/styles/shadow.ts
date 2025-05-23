@@ -1,9 +1,9 @@
 import { parseStyle } from '../utils/styles';
 
 function toBoxShadow(shadow) {
-  const { values, mods, color } = parseStyle(shadow);
+  const { values, mods, colors } = parseStyle(shadow);
   const mod = mods[0] || '';
-  const shadowColor = color || 'var(--shadow-color)';
+  const shadowColor = (colors && colors[0]) || 'var(--shadow-color)';
 
   return [mod, ...values, shadowColor].join(' ');
 }

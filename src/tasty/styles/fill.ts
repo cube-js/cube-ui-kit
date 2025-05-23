@@ -4,7 +4,7 @@ export function fillStyle({ fill }) {
   if (!fill) return '';
 
   if (fill.startsWith('#')) {
-    fill = parseStyle(fill).color || fill;
+    fill = parseStyle(fill).colors[0] || fill;
   }
 
   const match = fill.match(/var\(--(.+?)-color/);

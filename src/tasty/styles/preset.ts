@@ -42,6 +42,15 @@ export function presetStyle({
   fontWeight,
   fontStyle,
   font,
+}: {
+  preset?: string | boolean;
+  fontSize?: string | number;
+  lineHeight?: string | number;
+  textTransform?: string;
+  letterSpacing?: string | number;
+  fontWeight?: string | number;
+  fontStyle?: string;
+  font?: string;
 }) {
   if (!preset) return '';
 

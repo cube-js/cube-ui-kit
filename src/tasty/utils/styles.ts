@@ -47,6 +47,7 @@ export interface ParsedStyle {
   value: ResponsiveStyleValue;
   values: string[];
   all: string[];
+  colors: string[];
   color?: string;
   /** The list of mods to apply */
   mods: string[];
@@ -201,6 +202,7 @@ export function parseStyle(value: StyleValue, mode = 0): ParsedStyle {
       mods: [],
       all: [],
       value: '',
+      colors: [],
     };
   }
 
@@ -214,6 +216,7 @@ export function parseStyle(value: StyleValue, mode = 0): ParsedStyle {
     const mods: string[] = [];
     const all: string[] = [];
     const values: string[] = [];
+    const colors: string[] = [];
     const autoCalc = mode !== 1;
 
     let currentValue = '';
@@ -253,11 +256,13 @@ export function parseStyle(value: StyleValue, mode = 0): ParsedStyle {
         currentValue += func;
         counter++;
       } else if (hashColor) {
-        // currentValue += `${hashColor} `;
         if (mode === 2) {
           color = hashColor;
         } else {
           color = parseColor(hashColor, false).color;
+        }
+        if (color) {
+          colors.push(color);
         }
       } else if (mod) {
         // ignore mods inside brackets
@@ -411,6 +416,7 @@ export function parseStyle(value: StyleValue, mode = 0): ParsedStyle {
       values,
       mods,
       all,
+      colors,
       value: `${parsedValue} ${color}`.trim(),
       color,
     });

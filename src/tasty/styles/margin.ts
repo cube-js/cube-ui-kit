@@ -8,6 +8,14 @@ export function marginStyle({
   marginRight,
   marginBottom,
   marginLeft,
+}: {
+  margin?: string | number | boolean;
+  marginBlock?: string;
+  marginInline?: string;
+  marginTop?: string;
+  marginRight?: string;
+  marginBottom?: string;
+  marginLeft?: string;
 }) {
   if (typeof margin === 'number') {
     margin = `${margin}px`;

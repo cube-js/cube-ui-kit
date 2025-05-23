@@ -7,6 +7,7 @@ import {
 } from 'react';
 
 import { useEvent } from '../../../_internal/index';
+import { mergeProps } from '../../../utils/react/index';
 
 import { DialogContainer } from './DialogContainer';
 
@@ -19,7 +20,10 @@ import { DialogContainer } from './DialogContainer';
 export function useDialogContainer<
   P,
   E = ComponentProps<typeof DialogContainer>,
->(Component: ComponentType<P>) {
+>(
+  Component: ComponentType<P>,
+  defaultContainerProps?: ComponentProps<typeof DialogContainer>,
+) {
   const [isOpen, setIsOpen] = useState(false);
   const [componentProps, setComponentProps] = useState<P | null>(null);
   const [containerProps, setContainerProps] = useState<E | null>(null);
@@ -63,7 +67,7 @@ export function useDialogContainer<
         onDismiss={close}
         {...(containerProps ?? {})}
       >
-        <Component {...componentProps} />
+        <Component {...mergeProps(defaultContainerProps, componentProps)} />
       </DialogContainer>
     );
   }, [componentProps, containerProps, isOpen]);
