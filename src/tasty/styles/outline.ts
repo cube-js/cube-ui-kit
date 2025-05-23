@@ -23,15 +23,22 @@ export function outlineStyle({ outline }) {
 
   if (outline === true) outline = '1ow';
 
-  const { values, mods, color } = parseStyle(String(outline));
+  const { values, mods, colors } = parseStyle(String(outline));
 
   const typeMods = filterMods(mods, BORDER_STYLES);
 
   const value = values[0] || 'var(--outline-width)';
   const type = typeMods[0] || 'solid';
-  const outlineColor = color || 'var(--outline-color)';
+  const outlineColor = colors?.[0] || 'var(--outline-color)';
 
   const styleValue = [value, type, outlineColor].join(' ');
+
+  if (values.length > 1) {
+    return {
+      outline: styleValue,
+      'outline-offset': values[1],
+    };
+  }
 
   return { outline: styleValue };
 }
