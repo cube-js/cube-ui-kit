@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.61.0
+
+### Minor Changes
+
+- [#673](https://github.com/cube-js/cube-ui-kit/pull/673) [`2f12b93`](https://github.com/cube-js/cube-ui-kit/commit/2f12b93ae673403b640854f41cc906711fa3249d) Thanks [@tenphi](https://github.com/tenphi)! - Add `scrollbar` style deprecating `styledScrollbar` style.
+
+### Patch Changes
+
+- [#673](https://github.com/cube-js/cube-ui-kit/pull/673) [`2f12b93`](https://github.com/cube-js/cube-ui-kit/commit/2f12b93ae673403b640854f41cc906711fa3249d) Thanks [@tenphi](https://github.com/tenphi)! - Add support for the `offset` value in the `outline` style.
+
+- [#673](https://github.com/cube-js/cube-ui-kit/pull/673) [`2f12b93`](https://github.com/cube-js/cube-ui-kit/commit/2f12b93ae673403b640854f41cc906711fa3249d) Thanks [@tenphi](https://github.com/tenphi)! - Add support for default container props in `useDialogContainer`.
+
 ## 0.60.5
 
 ### Patch Changes
