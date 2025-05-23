@@ -10,7 +10,14 @@ const SCROLLBAR_MODS = [
   'always',
 ];
 
-export function scrollbarStyle({ scrollbar, overflow }) {
+export function scrollbarStyle({
+  scrollbar,
+  overflow,
+}: {
+  scrollbar?: string | boolean | number;
+  overflow?: string;
+}) {
+  // Check if scrollbar is defined
   if (!scrollbar && scrollbar !== 0) return;
 
   // Support true as alias for thin

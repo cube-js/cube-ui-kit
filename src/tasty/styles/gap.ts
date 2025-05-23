@@ -1,6 +1,14 @@
 import { parseStyle } from '../utils/styles';
 
-export function gapStyle({ display = 'block', flow, gap }) {
+export function gapStyle({
+  display = 'block',
+  flow,
+  gap,
+}: {
+  display?: string;
+  flow?: string;
+  gap?: string | number | boolean;
+}) {
   if (typeof gap === 'number') {
     gap = `${gap}px`;
   }
@@ -31,7 +39,7 @@ export function gapStyle({ display = 'block', flow, gap }) {
     return { gap };
   }
 
-  const gapDir = flow.includes('row') ? 'right' : 'bottom';
+  const gapDir = flow?.includes('row') ? 'right' : 'bottom';
 
   return isWrap
     ? [

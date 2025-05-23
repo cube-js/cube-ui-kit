@@ -47,7 +47,7 @@ export interface ParsedStyle {
   value: ResponsiveStyleValue;
   values: string[];
   all: string[];
-  colors?: string[]; // changed from color?: string
+  colors: string[];
   /** The list of mods to apply */
   mods: string[];
 }
@@ -200,8 +200,8 @@ export function parseStyle(value: StyleValue, mode = 0): ParsedStyle {
       values: [],
       mods: [],
       all: [],
-      colors: [],
       value: '',
+      colors: [],
     };
   }
 
@@ -255,12 +255,14 @@ export function parseStyle(value: StyleValue, mode = 0): ParsedStyle {
         currentValue += func;
         counter++;
       } else if (hashColor) {
-        let foundColor =
-          mode === 2 ? hashColor : parseColor(hashColor, false).color;
-        if (foundColor) {
-          colors.push(foundColor);
+        if (mode === 2) {
+          color = hashColor;
+        } else {
+          color = parseColor(hashColor, false).color;
         }
-        color = foundColor;
+        if (color) {
+          colors.push(color);
+        }
       } else if (mod) {
         // ignore mods inside brackets
         if (counter || IGNORE_MODS.includes(mod)) {
@@ -372,15 +374,11 @@ export function parseStyle(value: StyleValue, mode = 0): ParsedStyle {
         let prepared = prepareParsedValue(currentValue);
 
         if (COLOR_FUNCS.includes(usedFunc)) {
-          colors.push(prepared);
           color = prepared;
         } else if (prepared.startsWith('color(')) {
           prepared = prepared.slice(6, -1);
-          let parsed = parseColor(prepared).color;
-          if (parsed) {
-            colors.push(parsed);
-            color = parsed;
-          }
+
+          color = parseColor(prepared).color;
         } else {
           if (prepared !== ',') {
             values.push(prepared);
@@ -401,11 +399,8 @@ export function parseStyle(value: StyleValue, mode = 0): ParsedStyle {
 
       if (prepared.startsWith('color(')) {
         prepared = prepared.slice(6, -1);
-        let parsed = parseColor(prepared).color;
-        if (parsed) {
-          colors.push(parsed);
-          color = parsed;
-        }
+
+        color = parseColor(prepared).color;
       } else {
         if (prepared !== ',') {
           values.push(prepared);
@@ -422,6 +417,7 @@ export function parseStyle(value: StyleValue, mode = 0): ParsedStyle {
       all,
       colors,
       value: `${parsedValue} ${color}`.trim(),
+      color,
     });
   }
 
@@ -455,54 +451,56 @@ export function parseColor(val: string, ignoreError = false): ParsedColor {
       }
     }
 
-    let name = tmp[0];
+    const name = tmp[0];
+
     let color;
 
-    if (!opacity || opacity === 100) {
-      color =
-        name === 'current'
-          ? 'currentColor'
-          : name === 'inherit'
-            ? 'inherit'
-            : name !== 'transparent' && name !== 'currentColor'
-              ? `var(--${name}-color, ${name})`
-              : name;
+    if (name === 'current') {
+      color = 'currentColor';
+    } else {
+      if (opacity > 100) {
+        opacity = 100;
+      } else if (opacity < 0) {
+        opacity = 0;
+      }
+    }
 
-      return {
-        name,
-        color,
-        opacity,
-      };
+    if (!color) {
+      color =
+        opacity !== 100
+          ? rgbColorProp(name, Math.round(opacity) / 100)
+          : colorProp(name, null, strToRgb(`#${name}`));
     }
 
     return {
-      color: rgbColorProp(name, Math.round(opacity) / 100),
+      color,
       name,
-      opacity,
+      opacity: opacity != null ? opacity : 100,
     };
   }
 
-  const { values, mods, colors } = parseStyle(val);
+  let { values, mods, colors } = parseStyle(val);
 
   let name, opacity;
-  let color = (colors && colors[0]) || undefined;
 
-  if (color) {
+  if (colors.length > 0) {
     return {
-      color: (!color.startsWith('var(') ? strToRgb(color) : color) || color,
+      color:
+        (!colors[0].startsWith('var(') ? strToRgb(colors[0]) : colors[0]) ||
+        colors[0],
     };
   }
 
   values.forEach((token) => {
     if (token.match(/^((var|rgb|rgba|hsl|hsla)\(|#[0-9a-f]{3,6})/)) {
-      color = !token.startsWith('var') ? strToRgb(token) : token;
+      colors[0] = !token.startsWith('var') ? strToRgb(token) : token;
     } else if (token.endsWith('%')) {
       opacity = parseInt(token);
     }
   });
 
-  if (color) {
-    return { color };
+  if (colors.length > 0) {
+    return { color: colors[0] };
   }
 
   name = name || mods[0];

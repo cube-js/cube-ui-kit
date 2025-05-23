@@ -8,7 +8,24 @@ export function paddingStyle({
   paddingRight,
   paddingBottom,
   paddingLeft,
+}: {
+  padding?: string | number | boolean | string[];
+  paddingBlock?: string;
+  paddingInline?: string;
+  paddingTop?: string;
+  paddingRight?: string;
+  paddingBottom?: string;
+  paddingLeft?: string;
 }) {
+  if (Array.isArray(padding)) {
+    return {
+      'padding-top': padding[0],
+      'padding-right': padding[1] || padding[0],
+      'padding-bottom': padding[2] || padding[0],
+      'padding-left': padding[3] || padding[1] || padding[0],
+    };
+  }
+
   if (typeof padding === 'number') {
     padding = `${padding}px`;
   }
