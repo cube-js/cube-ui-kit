@@ -47,7 +47,7 @@ export interface ParsedStyle {
   value: ResponsiveStyleValue;
   values: string[];
   all: string[];
-  color?: string;
+  colors?: string[]; // changed from color?: string
   /** The list of mods to apply */
   mods: string[];
 }
@@ -200,6 +200,7 @@ export function parseStyle(value: StyleValue, mode = 0): ParsedStyle {
       values: [],
       mods: [],
       all: [],
+      colors: [],
       value: '',
     };
   }
@@ -214,6 +215,7 @@ export function parseStyle(value: StyleValue, mode = 0): ParsedStyle {
     const mods: string[] = [];
     const all: string[] = [];
     const values: string[] = [];
+    const colors: string[] = [];
     const autoCalc = mode !== 1;
 
     let currentValue = '';
@@ -253,12 +255,12 @@ export function parseStyle(value: StyleValue, mode = 0): ParsedStyle {
         currentValue += func;
         counter++;
       } else if (hashColor) {
-        // currentValue += `${hashColor} `;
-        if (mode === 2) {
-          color = hashColor;
-        } else {
-          color = parseColor(hashColor, false).color;
+        let foundColor =
+          mode === 2 ? hashColor : parseColor(hashColor, false).color;
+        if (foundColor) {
+          colors.push(foundColor);
         }
+        color = foundColor;
       } else if (mod) {
         // ignore mods inside brackets
         if (counter || IGNORE_MODS.includes(mod)) {
@@ -370,11 +372,15 @@ export function parseStyle(value: StyleValue, mode = 0): ParsedStyle {
         let prepared = prepareParsedValue(currentValue);
 
         if (COLOR_FUNCS.includes(usedFunc)) {
+          colors.push(prepared);
           color = prepared;
         } else if (prepared.startsWith('color(')) {
           prepared = prepared.slice(6, -1);
-
-          color = parseColor(prepared).color;
+          let parsed = parseColor(prepared).color;
+          if (parsed) {
+            colors.push(parsed);
+            color = parsed;
+          }
         } else {
           if (prepared !== ',') {
             values.push(prepared);
@@ -395,8 +401,11 @@ export function parseStyle(value: StyleValue, mode = 0): ParsedStyle {
 
       if (prepared.startsWith('color(')) {
         prepared = prepared.slice(6, -1);
-
-        color = parseColor(prepared).color;
+        let parsed = parseColor(prepared).color;
+        if (parsed) {
+          colors.push(parsed);
+          color = parsed;
+        }
       } else {
         if (prepared !== ',') {
           values.push(prepared);
@@ -411,8 +420,8 @@ export function parseStyle(value: StyleValue, mode = 0): ParsedStyle {
       values,
       mods,
       all,
+      colors,
       value: `${parsedValue} ${color}`.trim(),
-      color,
     });
   }
 
@@ -446,37 +455,37 @@ export function parseColor(val: string, ignoreError = false): ParsedColor {
       }
     }
 
-    const name = tmp[0];
-
+    let name = tmp[0];
     let color;
 
-    if (name === 'current') {
-      color = 'currentColor';
-    } else {
-      if (opacity > 100) {
-        opacity = 100;
-      } else if (opacity < 0) {
-        opacity = 0;
-      }
-    }
-
-    if (!color) {
+    if (!opacity || opacity === 100) {
       color =
-        opacity !== 100
-          ? rgbColorProp(name, Math.round(opacity) / 100)
-          : colorProp(name, null, strToRgb(`#${name}`));
+        name === 'current'
+          ? 'currentColor'
+          : name === 'inherit'
+            ? 'inherit'
+            : name !== 'transparent' && name !== 'currentColor'
+              ? `var(--${name}-color, ${name})`
+              : name;
+
+      return {
+        name,
+        color,
+        opacity,
+      };
     }
 
     return {
-      color,
+      color: rgbColorProp(name, Math.round(opacity) / 100),
       name,
-      opacity: opacity != null ? opacity : 100,
+      opacity,
     };
   }
 
-  let { values, mods, color } = parseStyle(val);
+  const { values, mods, colors } = parseStyle(val);
 
   let name, opacity;
+  let color = (colors && colors[0]) || undefined;
 
   if (color) {
     return {

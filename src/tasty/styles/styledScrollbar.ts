@@ -1,3 +1,6 @@
+/**
+ * @deprecated `styledScrollbar` is deprecated. Use `scrollbar` instead.
+ */
 export function styledScrollbarStyle({ styledScrollbar: val }) {
   if (val == null) return null;
 

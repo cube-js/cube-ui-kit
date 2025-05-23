@@ -5,7 +5,7 @@ export function colorStyle({ color }) {
 
   if (color === true) color = 'currentColor';
 
-  if (color.startsWith('#')) {
+  if (typeof color === 'string' && color.startsWith('#')) {
     color = parseColor(color).color || color;
   }
 

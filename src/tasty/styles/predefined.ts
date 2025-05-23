@@ -29,6 +29,7 @@ import { paddingInlineStyle } from './paddingInline';
 import { presetStyle } from './preset';
 import { radiusStyle } from './radius';
 import { resetStyle } from './reset';
+import { scrollbarStyle } from './scrollbar';
 import { shadowStyle } from './shadow';
 import { styledScrollbarStyle } from './styledScrollbar';
 import { transitionStyle } from './transition';
@@ -177,7 +178,9 @@ export function predefine() {
     fontStyle,
     fontStyleStyle,
     groupRadiusAttr,
+    // DEPRECATED: `styledScrollbar` is deprecated, use `scrollbar` instead
     styledScrollbarStyle,
+    scrollbarStyle,
     fadeStyle,
     insetStyle,
   ]

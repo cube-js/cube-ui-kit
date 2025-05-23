@@ -1,10 +1,10 @@
-import { parseStyle } from '../utils/styles';
+import { parseColor, parseStyle } from '../utils/styles';
 
 export function fillStyle({ fill }) {
   if (!fill) return '';
 
   if (fill.startsWith('#')) {
-    fill = parseStyle(fill).color || fill;
+    fill = parseColor(fill).color || fill;
   }
 
   const match = fill.match(/var\(--(.+?)-color/);
