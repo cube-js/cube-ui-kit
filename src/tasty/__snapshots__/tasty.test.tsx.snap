@@ -18,11 +18,11 @@ exports[`tasty() API should allow multiple wrapping 1`] = `
 }
 
 .c0.c0 {
-  border: var(--border-width) solid var(--black-color);
+  border: var(--border-width) solid var(--black-color, black);
 }
 
 .c0.c0 {
-  color: var(--white-color, rgb(0 0 0 / 1));
+  color: var(--white-color, white);
   --current-color: var(--white-color, white);
   --current-color-rgb: var(--white-color-rgb);
 }
@@ -52,13 +52,13 @@ exports[`tasty() API should allow nested modifiers 1`] = `
 }
 
 .c0.c0:first-child {
-  color: var(--clear-color);
+  color: var(--clear-color, clear);
   --current-color: var(--clear-color, clear);
   --current-color-rgb: var(--clear-color-rgb);
 }
 
 .c0.c0:not(:first-child) {
-  color: var(--black-color);
+  color: var(--black-color, black);
   --current-color: var(--black-color, black);
   --current-color-rgb: var(--black-color-rgb);
 }
@@ -114,13 +114,13 @@ exports[`tasty() API should create element styles 1`] = `
 }
 
 .c0.c0:not([data-is-modified]) [data-element="Element"] {
-  color: var(--dark-color);
+  color: var(--dark-color, dark);
   --current-color: var(--dark-color, dark);
   --current-color-rgb: var(--dark-color-rgb);
 }
 
 .c0.c0[data-is-modified] [data-element="Element"] {
-  color: var(--purple-color, rgb(0 0 0 / 1));
+  color: var(--purple-color, purple);
   --current-color: var(--purple-color, purple);
   --current-color-rgb: var(--purple-color-rgb);
 }
@@ -190,7 +190,7 @@ exports[`tasty() API should fallback to default variant 1`] = `
 }
 
 .c0.c0 {
-  color: var(--white-color, rgb(0 0 0 / 1));
+  color: var(--white-color, white);
   --current-color: var(--white-color, white);
   --current-color-rgb: var(--white-color-rgb);
 }
@@ -220,23 +220,23 @@ exports[`tasty() API should merge element styles 1`] = `
 }
 
 .c0.c0:not([data-is-modified]) [data-element="Element"] {
-  color: var(--dark-color);
+  color: var(--dark-color, dark);
   --current-color: var(--dark-color, dark);
   --current-color-rgb: var(--dark-color-rgb);
 }
 
 .c0.c0[data-is-modified] [data-element="Element"] {
-  color: var(--purple-color, rgb(0 0 0 / 1));
+  color: var(--purple-color, purple);
   --current-color: var(--purple-color, purple);
   --current-color-rgb: var(--purple-color-rgb);
 }
 
 .c0.c0 [data-element="Element"] {
-  background-color: var(--black-color);
+  background-color: var(--black-color, black);
 }
 
 .c0.c0 [data-element="Element"]>* {
-  --context-fill-color: var(--black-color);
+  --context-fill-color: var(--black-color, black);
   --context-fill-color-rgb: var(--black-color-rgb);
 }
 
@@ -257,23 +257,23 @@ exports[`tasty() API should merge styles 1`] = `
 }
 
 .c0.c0:not([data-is-modified]) {
-  color: var(--dark-color);
+  color: var(--dark-color, dark);
   --current-color: var(--dark-color, dark);
   --current-color-rgb: var(--dark-color-rgb);
 }
 
 .c0.c0[data-is-modified] {
-  color: var(--purple-color, rgb(0 0 0 / 1));
+  color: var(--purple-color, purple);
   --current-color: var(--purple-color, purple);
   --current-color-rgb: var(--purple-color-rgb);
 }
 
 .c0.c0 {
-  background-color: var(--black-color);
+  background-color: var(--black-color, black);
 }
 
 .c0.c0>* {
-  --context-fill-color: var(--black-color);
+  --context-fill-color: var(--black-color, black);
   --context-fill-color-rgb: var(--black-color-rgb);
 }
 
@@ -294,23 +294,23 @@ exports[`tasty() API should merge styles in custom prop 1`] = `
 }
 
 .c0.c0:not([data-is-modified]) {
-  color: var(--dark-color);
+  color: var(--dark-color, dark);
   --current-color: var(--dark-color, dark);
   --current-color-rgb: var(--dark-color-rgb);
 }
 
 .c0.c0[data-is-modified] {
-  color: var(--purple-color, rgb(0 0 0 / 1));
+  color: var(--purple-color, purple);
   --current-color: var(--purple-color, purple);
   --current-color-rgb: var(--purple-color-rgb);
 }
 
 .c0.c0 {
-  background-color: var(--black-color);
+  background-color: var(--black-color, black);
 }
 
 .c0.c0>* {
-  --context-fill-color: var(--black-color);
+  --context-fill-color: var(--black-color, black);
   --context-fill-color-rgb: var(--black-color-rgb);
 }
 
@@ -361,13 +361,13 @@ exports[`tasty() API should support camelCase modifiers 1`] = `
 }
 
 .c0.c0:not([data-is-somehow-modified]) {
-  color: var(--dark-color);
+  color: var(--dark-color, dark);
   --current-color: var(--dark-color, dark);
   --current-color-rgb: var(--dark-color-rgb);
 }
 
 .c0.c0[data-is-somehow-modified] {
-  color: var(--purple-color, rgb(0 0 0 / 1));
+  color: var(--purple-color, purple);
   --current-color: var(--purple-color, purple);
   --current-color-rgb: var(--purple-color-rgb);
 }
@@ -394,13 +394,13 @@ exports[`tasty() API should support kebab-case modifiers 1`] = `
 }
 
 .c0.c0:not([data-is-somehow-modified]) {
-  color: var(--dark-color);
+  color: var(--dark-color, dark);
   --current-color: var(--dark-color, dark);
   --current-color-rgb: var(--dark-color-rgb);
 }
 
 .c0.c0[data-is-somehow-modified] {
-  color: var(--purple-color, rgb(0 0 0 / 1));
+  color: var(--purple-color, purple);
   --current-color: var(--purple-color, purple);
   --current-color-rgb: var(--purple-color-rgb);
 }
@@ -427,13 +427,13 @@ exports[`tasty() API should support modifiers 1`] = `
 }
 
 .c0.c0:not([data-is-modified]) {
-  color: var(--dark-color);
+  color: var(--dark-color, dark);
   --current-color: var(--dark-color, dark);
   --current-color-rgb: var(--dark-color-rgb);
 }
 
 .c0.c0[data-is-modified] {
-  color: var(--purple-color, rgb(0 0 0 / 1));
+  color: var(--purple-color, purple);
   --current-color: var(--purple-color, purple);
   --current-color-rgb: var(--purple-color-rgb);
 }
@@ -456,7 +456,7 @@ exports[`tasty() API should support variants 1`] = `
 }
 
 .c0.c0 {
-  color: var(--black-color);
+  color: var(--black-color, black);
   --current-color: var(--black-color, black);
   --current-color-rgb: var(--black-color-rgb);
 }
