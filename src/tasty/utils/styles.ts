@@ -590,8 +590,8 @@ export function hexToRgb(hex) {
     .match(/.{2}/g)
     .map((x, i) => parseInt(x, 16) * (i === 3 ? 1 / 255 : 1));
 
-  if (Number.isNaN(rgba[0])) {
-    return 'rgb(0 0 0 / 1)';
+  if (rgba.some((v) => Number.isNaN(v))) {
+    return null;
   }
 
   if (rgba.length >= 3) {

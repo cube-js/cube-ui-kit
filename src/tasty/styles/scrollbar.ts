@@ -1,41 +1,63 @@
 import { parseStyle } from '../utils/styles';
 
-export function scrollbarStyle({
-  scrollbar,
-  overflow,
-}: {
+interface ScrollbarStyleProps {
   scrollbar?: string | boolean | number;
   overflow?: string;
-}) {
+}
+
+/**
+ * Creates cross-browser compatible scrollbar styles
+ *
+ * Supports both Firefox (scrollbar-width, scrollbar-color) and
+ * WebKit/Chromium browsers (::-webkit-scrollbar)
+ */
+export function scrollbarStyle({ scrollbar, overflow }: ScrollbarStyleProps) {
   // Check if scrollbar is defined
   if (!scrollbar && scrollbar !== 0) return;
 
   // Support true as alias for thin
-  let value = scrollbar === true ? 'thin' : scrollbar;
+  const value = scrollbar === true || scrollbar === '' ? 'thin' : scrollbar;
   const { mods, colors, values } = parseStyle(String(value));
   const style = {};
 
-  style['scrollbar-color'] = 'var(--scrollbar-thumb-color) transparent';
+  // Default colors for scrollbar
+  const defaultThumbColor = 'var(--scrollbar-thumb-color)';
+  const defaultTrackColor = 'var(--scrollbar-track-color, transparent)';
 
-  // Modifiers
+  // Setup default Firefox scrollbar style
+  style['scrollbar-color'] = `${defaultThumbColor} transparent`;
+
+  // Default scrollbar size
+  const defaultSize = '8px';
+  const sizeValue = values[0] || defaultSize;
+
+  // Process modifiers
   if (mods.includes('thin')) {
     style['scrollbar-width'] = 'thin';
-  }
-  if (mods.includes('none')) {
+  } else if (values.includes('none')) {
     style['scrollbar-width'] = 'none';
     style['scrollbar-color'] = 'transparent transparent';
-  }
-  if (mods.includes('auto')) {
+    // Also hide WebKit scrollbars
+    style['&::-webkit-scrollbar'] = {
+      width: '0px',
+      height: '0px',
+      display: 'none',
+    };
+
+    return style;
+  } else if (mods.includes('auto')) {
     style['scrollbar-width'] = 'auto';
   }
+
+  // Handle scrollbar gutter behavior
   if (mods.includes('stable') || mods.includes('both-edges')) {
+    // scrollbar-gutter is supported in newer browsers only
     style['scrollbar-gutter'] = mods.includes('both-edges')
       ? 'stable both-edges'
       : 'stable';
   }
 
-  // Custom size (all values are sizes)
-  const sizeValue = values[0];
+  // Custom size setup for WebKit
   if (sizeValue) {
     style['&::-webkit-scrollbar'] = {
       ...(style['&::-webkit-scrollbar'] || {}),
@@ -44,25 +66,57 @@ export function scrollbarStyle({
     };
   }
 
-  // Colors (support up to 3: thumb, track, corner)
+  // Extract colors (support up to 3: thumb, track, corner)
+  // These will be used in various places throughout the function
+  const thumbColor = colors && colors[0] ? colors[0] : defaultThumbColor;
+  const trackColor = colors && colors[1] ? colors[1] : defaultTrackColor;
+  const cornerColor = colors && colors[2] ? colors[2] : trackColor;
+
+  // Apply colors if they are specified
   if (colors && colors.length) {
-    const thumb = colors[0] || 'var(--scrollbar-thumb-color)';
-    const track = colors[1] || 'var(--scrollbar-track-color)';
-    const corner = colors[2] || track;
-    style['scrollbar-color'] = `${thumb} ${track}`;
-    if (!style['&::-webkit-scrollbar-corner']) {
-      style['&::-webkit-scrollbar-corner'] = {};
+    // Firefox
+    style['scrollbar-color'] = `${thumbColor} ${trackColor}`;
+
+    // WebKit - always set these for consistency
+    if (!style['&::-webkit-scrollbar']) {
+      style['&::-webkit-scrollbar'] = {};
     }
-    style['&::-webkit-scrollbar-corner'].background = corner;
+    style['&::-webkit-scrollbar']['background'] = trackColor;
+
+    style['&::-webkit-scrollbar-track'] = {
+      ...(style['&::-webkit-scrollbar-track'] || {}),
+      background: trackColor,
+    };
+
+    style['&::-webkit-scrollbar-thumb'] = {
+      ...(style['&::-webkit-scrollbar-thumb'] || {}),
+      background: thumbColor,
+    };
+
+    style['&::-webkit-scrollbar-corner'] = {
+      ...(style['&::-webkit-scrollbar-corner'] || {}),
+      background: cornerColor,
+    };
   }
 
-  // always: force scrollbars to show (requires overflow)
+  // Handle 'always' mode: force scrollbars to show
   if (mods.includes('always')) {
     style['overflow'] = overflow || 'scroll';
-    style['scrollbar-gutter'] = style['scrollbar-gutter'] || 'always';
+
+    // Use auto for WebKit browsers since they don't support 'always'
+    // This is closer to the expected behavior
+    if (!style['scrollbar-gutter']) {
+      style['scrollbar-gutter'] = 'stable';
+    }
+
+    // Ensure scrollbars appear in WebKit even with little content
+    if (!style['&::-webkit-scrollbar']) {
+      style['&::-webkit-scrollbar'] = {};
+    }
+    style['&::-webkit-scrollbar']['display'] = 'block';
   }
 
-  // Legacy styled mod
+  // Enhanced 'styled' mode with better transitions and appearance
   if (mods.includes('styled')) {
     const baseTransition = [
       'background var(--transition)',
@@ -72,27 +126,39 @@ export function scrollbarStyle({
       'height var(--transition)',
       'border var(--transition)',
     ].join(', ');
+
+    // Firefox
     style['scrollbar-width'] = style['scrollbar-width'] || 'thin';
     style['scrollbar-color'] =
-      style['scrollbar-color'] ||
-      'var(--scrollbar-thumb-color) var(--scrollbar-track-color)';
+      style['scrollbar-color'] || `${defaultThumbColor} ${defaultTrackColor}`;
+
+    // WebKit
     style['&::-webkit-scrollbar'] = {
+      width: sizeValue,
+      height: sizeValue,
+      transition: baseTransition,
+      background: defaultTrackColor,
       ...(style['&::-webkit-scrollbar'] || {}),
-      width: sizeValue || '8px',
-      height: sizeValue || '8px',
-      background: 'var(--scrollbar-track-color)',
-      transition: baseTransition,
     };
+
     style['&::-webkit-scrollbar-thumb'] = {
-      background: 'var(--scrollbar-thumb-color)',
-      borderRadius: '8px',
-      minHeight: '24px',
+      'border-radius': '8px',
+      'min-height': '24px',
       transition: baseTransition,
+      background: defaultThumbColor,
+      ...(style['&::-webkit-scrollbar-thumb'] || {}),
     };
-    style['&::-webkit-scrollbar-corner'] = {
-      ...(style['&::-webkit-scrollbar-corner'] || {}),
-      background: 'var(--scrollbar-track-color)',
+
+    style['&::-webkit-scrollbar-track'] = {
+      background: defaultTrackColor,
       transition: baseTransition,
+      ...(style['&::-webkit-scrollbar-track'] || {}),
+    };
+
+    style['&::-webkit-scrollbar-corner'] = {
+      background: defaultTrackColor,
+      transition: baseTransition,
+      ...(style['&::-webkit-scrollbar-corner'] || {}),
     };
   }
 
