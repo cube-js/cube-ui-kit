@@ -84,7 +84,7 @@ exports[`tasty() API should be able to override styles 1`] = `
 }
 
 .c0.c0 {
-  color: rgb(var(--black-color-rgb) / 0.1);
+  color: rgb(var(--black-color-rgb) / .1);
   --current-color: var(--black-color, black);
   --current-color-rgb: var(--black-color-rgb);
 }
@@ -335,7 +335,7 @@ exports[`tasty() API should pass styles from tasty 1`] = `
 }
 
 .c0.c0 {
-  color: rgb(var(--clear-color-rgb) / 0.1);
+  color: rgb(var(--clear-color-rgb) / .1);
   --current-color: var(--clear-color, clear);
   --current-color-rgb: var(--clear-color-rgb);
 }

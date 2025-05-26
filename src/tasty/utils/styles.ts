@@ -259,112 +259,38 @@ export function flattenStyleDetails(processed: ProcessedStyle) {
  * Parse color. Find it value, name and opacity.
  */
 export function parseColor(val: string, ignoreError = false): ParsedColor {
-  val = val.trim();
-
+  val = (val ?? '').trim();
   if (!val) return {};
 
-  if (val.startsWith('#')) {
-    val = val.slice(1);
+  // Utilize the new parser to extract the first color token.
+  const processed = parseStyle(val as any);
+  const firstColor = processed.groups.find((g) => g.colors.length)?.colors[0];
 
-    const tmp = val.split('.');
-
-    let opacity = 100;
-
-    if (tmp.length > 1) {
-      if (tmp[1].length === 1) {
-        opacity = Number(tmp[1]) * 10;
-      } else {
-        opacity = Number(tmp[1]);
-      }
-
-      if (Number.isNaN(opacity)) {
-        opacity = 100;
-      }
-    }
-
-    const name = tmp[0];
-
-    let color;
-
-    if (name === 'current') {
-      color = 'currentColor';
-    } else {
-      if (opacity > 100) {
-        opacity = 100;
-      } else if (opacity < 0) {
-        opacity = 0;
-      }
-    }
-
-    if (!color) {
-      color =
-        opacity !== 100
-          ? rgbColorProp(name, Math.round(opacity) / 100)
-          : colorProp(name, null, strToRgb(`#${name}`));
-    }
-
-    return {
-      color,
-      name,
-      opacity: opacity != null ? opacity : 100,
-    };
-  }
-
-  const flat = flattenStyleDetails(parseStyle(val));
-  let { values, mods, color } = flat;
-
-  let name, opacity;
-
-  if (color) {
-    return {
-      color: (!color.startsWith('var(') ? strToRgb(color) : color) || color,
-    };
-  }
-
-  values.forEach((token) => {
-    if (token.match(/^((var|rgb|rgba|hsl|hsla)\(|#[0-9a-f]{3,6})/)) {
-      color = !token.startsWith('var') ? strToRgb(token) : token;
-    } else if (token.endsWith('%')) {
-      opacity = parseInt(token);
-    }
-  });
-
-  if (color) {
-    return { color };
-  }
-
-  name = name || mods[0];
-
-  if (!name) {
+  if (!firstColor) {
     if (!ignoreError && devMode) {
-      console.warn('CubeUIKit: incorrect color value:', val);
+      console.warn('CubeUIKit: unable to parse color:', val);
     }
-
     return {};
   }
 
-  if (!opacity) {
-    let color;
+  // Extract color name (if present) from variable pattern.
+  let nameMatch = firstColor.match(/var\(--([a-z0-9-]+)-color/);
+  if (!nameMatch) {
+    nameMatch = firstColor.match(/var\(--([a-z0-9-]+)-color-rgb/);
+  }
 
-    if (name === 'current') {
-      color = 'currentColor';
-    } else if (name === 'inherit') {
-      color = 'inherit';
-    } else if (name !== 'transparent' && name !== 'currentColor') {
-      color = `var(--${name}-color, ${name})`;
-    } else {
-      color = name;
+  let opacity: number | undefined;
+  if (firstColor.startsWith('rgb')) {
+    const alphaMatch = firstColor.match(/\/\s*([0-9.]+)\)/);
+    if (alphaMatch) {
+      const v = parseFloat(alphaMatch[1]);
+      if (!isNaN(v)) opacity = v * 100;
     }
-
-    return {
-      name,
-      color,
-    };
   }
 
   return {
-    color: rgbColorProp(name, Math.round(opacity) / 100),
-    name,
+    color: firstColor,
+    name: nameMatch ? nameMatch[1] : undefined,
     opacity,
   };
 }

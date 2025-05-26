@@ -11,13 +11,13 @@ import { radiusStyle } from './styles/radius';
 describe('Tasty style tests', () => {
   it('should handle border styles', () => {
     expect(borderStyle({ border: '1px solid #000' })).toEqual({
-      border: '1px solid var(--000-color, rgb(var(--000-color-rgb)))',
+      border: '1px solid var(--000-color, #000)',
     });
   });
 
   it('should handle outline styles', () => {
     expect(outlineStyle({ outline: '2px dashed #f00' })).toEqual({
-      outline: '2px dashed var(--f00-color, rgb(var(--f00-color-rgb)))',
+      outline: '2px dashed var(--f00-color, #f00)',
     });
   });
 

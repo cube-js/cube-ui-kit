@@ -37,9 +37,9 @@ describe('StyleProcessor', () => {
     );
     expect(result.groups[0].colors).toEqual([
       'var(--dark-color)',
-      'rgb(var(--purple-color-rgb), 0)',
-      'rgb(var(--purple-color-rgb), .5)',
-      'rgb(var(--purple-color-rgb), .05)',
+      'rgb(var(--purple-color-rgb) / 0)',
+      'rgb(var(--purple-color-rgb) / .5)',
+      'rgb(var(--purple-color-rgb) / .05)',
       'rgb(10,20,30)',
       'hsl(10,20%,30%)',
     ]);
@@ -152,5 +152,19 @@ describe('StyleProcessor', () => {
       'calc(-2 * var(--gap))',
       'calc(-0.5 * var(--radius))',
     ]);
+  });
+
+  test('treats custom var/@ colors as colors', () => {
+    const res = parser.process('@clear-color var(--clear-color)');
+    expect(res.groups[0].colors).toEqual([
+      'var(--clear-color)',
+      'var(--clear-color)',
+    ]);
+  });
+
+  test('recognises transparent keyword as color', () => {
+    const r = parser.process('transparent 1x');
+    expect(r.groups[0].colors).toEqual(['transparent']);
+    expect(r.groups[0].values).toContain('var(--gap)');
   });
 });

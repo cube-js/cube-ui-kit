@@ -16,6 +16,12 @@ export function classify(
   const token = raw.trim();
   if (!token) return { bucket: Bucket.Mod, processed: '' };
 
+  // 0. Direct var(--*-color) token
+  const varColorMatch = token.match(/^var\(--([a-z0-9-]+)-color\)$/);
+  if (varColorMatch) {
+    return { bucket: Bucket.Color, processed: token };
+  }
+
   // 1. URL
   if (token.startsWith('url(')) {
     return { bucket: Bucket.Value, processed: token };
@@ -34,9 +40,12 @@ export function classify(
     }
     const identMatch = token.match(/^@([a-z0-9-_]+)$/);
     if (identMatch) {
+      const name = identMatch[1];
+      const processed = `var(--${name})`;
+      const bucketType = name.endsWith('-color') ? Bucket.Color : Bucket.Value;
       return {
-        bucket: Bucket.Value,
-        processed: `var(--${identMatch[1]})`,
+        bucket: bucketType,
+        processed,
       };
     }
     // invalid custom property → modifier
@@ -60,10 +69,9 @@ export function classify(
     // hyphen variant e.g., #dark-05 → treat as base color
     const hyphenMatch = token.match(/^#([a-z0-9-]+?)-[0-9]+$/i);
     if (hyphenMatch) {
-      const base = hyphenMatch[1];
       return {
         bucket: Bucket.Color,
-        processed: `var(--${base}-color, rgb(var(--${base}-color-rgb)))`,
+        processed: `var(--${hyphenMatch[1]}-color)`,
       };
     }
 
@@ -76,10 +84,7 @@ export function classify(
       };
     }
     // simple color name token → css variable lookup with rgb fallback
-    return {
-      bucket: Bucket.Color,
-      processed: `var(--${name}-color, rgb(var(--${name}-color-rgb)))`,
-    };
+    return { bucket: Bucket.Color, processed: `var(--${name}-color)` };
   }
 
   // 4 & 5. Functions
@@ -156,6 +161,11 @@ export function classify(
   // 8. Literal value keywords
   if (VALUE_KEYWORDS.has(token)) {
     return { bucket: Bucket.Value, processed: token };
+  }
+
+  // 8b. Special keyword colors
+  if (token === 'transparent' || token === 'currentcolor') {
+    return { bucket: Bucket.Color, processed: token };
   }
 
   // 9. Fallback modifier
