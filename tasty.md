@@ -283,6 +283,7 @@ const StyledButton = tasty(Button, {
 
 - Use the `@` prefix to reference custom properties or tokens defined in your theme or component.
 - Example: `padding: '@local-padding'` uses the value of the `@local-padding` property.
+- Use brackets to define the fallback value: `padding: '@(local-padding, 1x)'`.
 - Define custom tokens in the `styles` object:
 
 ```jsx
