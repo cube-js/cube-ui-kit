@@ -38,7 +38,7 @@ const StyledBlock = tasty({
       '': 'initial',
       nowrap: 'nowrap',
     },
-    styledScrollbar: true,
+    scrollbar: 'styled',
     padding: '1.125x 1.5x',
     fade: {
       '': 'right 2x',

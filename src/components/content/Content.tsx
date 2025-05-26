@@ -25,7 +25,7 @@ const ContentElement = tasty({
     flow: 'column',
     gap: '2x',
     overflow: 'auto',
-    styledScrollbar: true,
+    scrollbar: 'styled',
   },
 });
 

@@ -57,6 +57,14 @@ export interface StylesInterface
    * @deprecated Use `flow` style instead.
    */
   flexDirection: CSSProperties['flexDirection'];
+  /**
+   * @deprecated Use `placeContent`, `placeItems`, `gridColumns`, `gridRows`, and `gridTemplate` styles instead.
+   */
+  grid: CSSProperties['grid'];
+  /**
+   * @deprecated Use `flexShrink`, `flexGrow`, and `flexBasis` styles instead.
+   */
+  flex: CSSProperties['flex'];
   /** Set the background color of the element.
    * ```
    * fill="#{name_of_the_color}"
@@ -92,6 +100,7 @@ export interface StylesInterface
    */
   reset?: 'input' | 'button';
   /**
+   * @deprecated Use `scrollbar` style instead.
    * Whether the element has styled scrollbar.
    */
   styledScrollbar?: boolean;
