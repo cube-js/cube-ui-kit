@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.61.3
+
+### Patch Changes
+
+- [#679](https://github.com/cube-js/cube-ui-kit/pull/679) [`ad55f41`](https://github.com/cube-js/cube-ui-kit/commit/ad55f4118ecaebf87ad05a482b1f0780b2090d6b) Thanks [@tenphi](https://github.com/tenphi)! - Migrate to `scrollbar` style.
+
 ## 0.61.2
 
 ### Patch Changes
