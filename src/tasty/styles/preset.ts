@@ -56,7 +56,8 @@ export function presetStyle({
 
   if (preset === true) preset = '';
 
-  let { mods } = parseStyle(preset);
+  const processed = parseStyle(preset);
+  let { mods } = processed.groups[0] ?? ({ mods: [] } as any);
 
   const isStrong = mods.includes('strong');
   const isItalic = mods.includes('italic');

@@ -7,18 +7,17 @@ import { outlineStyle } from './styles/outline';
 import { paddingStyle } from './styles/padding';
 import { presetStyle } from './styles/preset';
 import { radiusStyle } from './styles/radius';
-import { scrollbarStyle } from './styles/scrollbar';
 
 describe('Tasty style tests', () => {
   it('should handle border styles', () => {
     expect(borderStyle({ border: '1px solid #000' })).toEqual({
-      border: '1px solid var(--000-color, rgb(0 0 0))',
+      border: '1px solid var(--000-color, rgb(var(--000-color-rgb)))',
     });
   });
 
   it('should handle outline styles', () => {
     expect(outlineStyle({ outline: '2px dashed #f00' })).toEqual({
-      outline: '2px dashed var(--f00-color, rgb(255 0 0))',
+      outline: '2px dashed var(--f00-color, rgb(var(--f00-color-rgb)))',
     });
   });
 

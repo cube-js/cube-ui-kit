@@ -25,7 +25,9 @@ export function marginStyle({
 
   if (margin === true) margin = '1x';
 
-  let { values, mods } = parseStyle(margin);
+  const processed = parseStyle(margin);
+  let { values, mods } =
+    processed.groups[0] ?? ({ values: [], mods: [] } as any);
 
   let directions = filterMods(mods, DIRECTIONS);
 

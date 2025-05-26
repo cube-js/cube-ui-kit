@@ -1,4 +1,10 @@
-import { COLOR_FUNCS, RE_HEX, RE_UNIT_NUM, VALUE_KEYWORDS } from './const';
+import {
+  COLOR_FUNCS,
+  RE_HEX,
+  RE_NUMBER,
+  RE_UNIT_NUM,
+  VALUE_KEYWORDS,
+} from './const';
 import { StyleParser } from './parser';
 import { Bucket, ParserOptions, ProcessedStyle, StyleDetails } from './types';
 
@@ -47,16 +53,17 @@ export function classify(
       else alpha = `.${rawAlpha}`;
       return {
         bucket: Bucket.Color,
-        processed: `rgb(var(--${base}-color-rgb), ${alpha})`,
+        processed: `rgb(var(--${base}-color-rgb) / ${alpha})`,
       };
     }
 
     // hyphen variant e.g., #dark-05 → treat as base color
     const hyphenMatch = token.match(/^#([a-z0-9-]+?)-[0-9]+$/i);
     if (hyphenMatch) {
+      const base = hyphenMatch[1];
       return {
         bucket: Bucket.Color,
-        processed: `var(--${hyphenMatch[1]}-color)`,
+        processed: `var(--${base}-color, rgb(var(--${base}-color-rgb)))`,
       };
     }
 
@@ -68,8 +75,11 @@ export function classify(
         processed: `var(--${name}-color, #${name})`,
       };
     }
-    // simple color token → css variable lookup
-    return { bucket: Bucket.Color, processed: `var(--${name}-color)` };
+    // simple color name token → css variable lookup with rgb fallback
+    return {
+      bucket: Bucket.Color,
+      processed: `var(--${name}-color, rgb(var(--${name}-color-rgb)))`,
+    };
   }
 
   // 4 & 5. Functions
@@ -134,6 +144,12 @@ export function classify(
 
   // 7b. Unknown numeric+unit → treat as literal value (e.g., 1fr)
   if (/^[+-]?(?:\d*\.\d+|\d+)[a-z%]+$/.test(token)) {
+    return { bucket: Bucket.Value, processed: token };
+  }
+
+  // 7c. Plain unit-less numbers should be treated as value tokens so that
+  // code such as `scrollbar={10}` resolves correctly.
+  if (RE_NUMBER.test(token)) {
     return { bucket: Bucket.Value, processed: token };
   }
 

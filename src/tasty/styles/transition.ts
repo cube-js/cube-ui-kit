@@ -47,7 +47,12 @@ function getTiming(name) {
 export function transitionStyle({ transition }) {
   if (!transition) return;
 
-  const tokens = parseStyle(transition).all;
+  const processed = parseStyle(transition);
+  const tokens: string[] = [];
+  processed.groups.forEach((g, idx) => {
+    tokens.push(...g.all);
+    if (idx < processed.groups.length - 1) tokens.push(',');
+  });
 
   if (!tokens) return;
 

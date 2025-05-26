@@ -43,7 +43,9 @@ export function dimensionStyle(name) {
       [maxStyle]: 'initial',
     };
 
-    const { mods, values } = parseStyle(val);
+    const processed = parseStyle(val);
+    const { mods, values } =
+      processed.groups[0] ?? ({ mods: [], values: [] } as any);
 
     transferMods(INTRINSIC_MODS, mods, values);
 
