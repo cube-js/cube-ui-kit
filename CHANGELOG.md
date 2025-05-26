@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.61.2
+
+### Patch Changes
+
+- [#677](https://github.com/cube-js/cube-ui-kit/pull/677) [`f397cf2`](https://github.com/cube-js/cube-ui-kit/commit/f397cf2e602d1360e6ecd6af771392bf76dc2e83) Thanks [@tenphi](https://github.com/tenphi)! - Use native scrolls in Panel by default.
+
+- [#677](https://github.com/cube-js/cube-ui-kit/pull/677) [`f397cf2`](https://github.com/cube-js/cube-ui-kit/commit/f397cf2e602d1360e6ecd6af771392bf76dc2e83) Thanks [@tenphi](https://github.com/tenphi)! - Apply various fixes to the new scrollbar style.
+
 ## 0.61.1
 
 ### Patch Changes
