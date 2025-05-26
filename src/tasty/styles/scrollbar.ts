@@ -22,7 +22,7 @@ export function scrollbarStyle({ scrollbar, overflow }: ScrollbarStyleProps) {
 
   // Default colors for scrollbar
   const defaultThumbColor = 'var(--scrollbar-thumb-color)';
-  const defaultTrackColor = 'var(--scrollbar-track-color)';
+  const defaultTrackColor = 'var(--scrollbar-track-color, transparent)';
 
   // Setup default Firefox scrollbar style
   style['scrollbar-color'] = `${defaultThumbColor} transparent`;

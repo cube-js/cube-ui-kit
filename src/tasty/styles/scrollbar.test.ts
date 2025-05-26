@@ -58,7 +58,7 @@ describe('scrollbarStyle', () => {
     const result = scrollbarStyle({ scrollbar: 'thin styled #red' });
     expect(result['scrollbar-width']).toBe('thin');
     expect(result['scrollbar-color']).toBe(
-      'var(--red-color) var(--scrollbar-track-color)',
+      'var(--red-color) var(--scrollbar-track-color, transparent)',
     );
     expect(result['&::-webkit-scrollbar-thumb']['background']).toBe(
       'var(--red-color)',
@@ -90,13 +90,13 @@ describe('scrollbarStyle', () => {
     const result = scrollbarStyle({ scrollbar: 'styled #danger' });
     // Only thumb color specified, track should use default
     expect(result['scrollbar-color']).toBe(
-      'var(--danger-color) var(--scrollbar-track-color)',
+      'var(--danger-color) var(--scrollbar-track-color, transparent)',
     );
     expect(result['&::-webkit-scrollbar-thumb']['background']).toBe(
       'var(--danger-color)',
     );
     expect(result['&::-webkit-scrollbar-track']['background']).toBe(
-      'var(--scrollbar-track-color)',
+      'var(--scrollbar-track-color, transparent)',
     );
   });
 
