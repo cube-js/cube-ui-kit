@@ -66,14 +66,7 @@ export function classify(
       };
     }
 
-    // hyphen variant e.g., #dark-05 → treat as base color
-    const hyphenMatch = token.match(/^#([a-z0-9-]+?)-[0-9]+$/i);
-    if (hyphenMatch) {
-      return {
-        bucket: Bucket.Color,
-        processed: `var(--${hyphenMatch[1]}-color)`,
-      };
-    }
+    // hyphenated names like #dark-05 should keep full name
 
     const name = token.slice(1);
     // valid hex → treat as hex literal with fallback

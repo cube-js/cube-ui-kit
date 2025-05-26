@@ -86,9 +86,9 @@ describe('StyleProcessor', () => {
     expect(result.groups[0].values).toEqual(['calc(1 * var(--border-width))']);
     expect(result.groups[0].colors).toEqual(['var(--purple-color)']);
     expect(result.groups[1].values).toEqual(['calc(1 * var(--outline-width))']);
-    expect(result.groups[1].colors).toEqual(['var(--dark-color)']);
+    expect(result.groups[1].colors).toEqual(['var(--dark-05-color)']);
     expect(result.output).toEqual(
-      'calc(1 * var(--border-width)) top var(--purple-color), calc(1 * var(--outline-width)) right var(--dark-color)',
+      'calc(1 * var(--border-width)) top var(--purple-color), calc(1 * var(--outline-width)) right var(--dark-05-color)',
     );
     expect(result.groups[0].mods).toEqual(['top']);
     expect(result.groups[1].mods).toEqual(['right']);
@@ -166,5 +166,10 @@ describe('StyleProcessor', () => {
     const r = parser.process('transparent 1x');
     expect(r.groups[0].colors).toEqual(['transparent']);
     expect(r.groups[0].values).toContain('var(--gap)');
+  });
+
+  test('handles hyphenated #color names', () => {
+    const r = parser.process('#dark-02');
+    expect(r.groups[0].colors).toEqual(['var(--dark-02-color)']);
   });
 });
