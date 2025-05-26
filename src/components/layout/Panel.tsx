@@ -52,7 +52,7 @@ const PanelInnerElement = tasty({
     right: 0,
     bottom: 0,
     overflow: 'auto',
-    styledScrollbar: true,
+    scrollbar: 'thin #dark.2',
     gridColumns: 'minmax(100%, 100%)',
     gridRows: {
       '': 'initial',
