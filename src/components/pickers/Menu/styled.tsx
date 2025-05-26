@@ -31,7 +31,7 @@ export const StyledMenu = tasty({
       '': '',
       popover: '0px 5px 15px #dark.05',
     },
-    styledScrollbar: true,
+    scrollbar: 'styled',
   },
 });
 

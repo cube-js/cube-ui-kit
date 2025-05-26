@@ -37,7 +37,7 @@ const StyledDialogContent = tasty(Flex, {
   styles: {
     flow: 'column',
     placeItems: 'start start',
-    styledScrollbar: true,
+    scrollbar: 'styled',
     height: '100%',
     border: '1bw solid #border',
     radius: '0.5x',

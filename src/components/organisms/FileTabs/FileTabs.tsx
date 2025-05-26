@@ -45,7 +45,7 @@ const TabsPanelElement = tasty(Space, {
     gap: '.5x',
     flexShrink: 0,
     whiteSpace: 'nowrap',
-    styledScrollbar: true,
+    scrollbar: 'styled',
     padding: '1ow 1ow 0 1ow',
     fade: {
       '': false,
