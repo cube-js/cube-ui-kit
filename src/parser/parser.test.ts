@@ -55,7 +55,7 @@ describe('StyleProcessor', () => {
 
   test('parses value modifiers', () => {
     const result = parser.process(
-      'none auto max-content min-content fit-content stretch',
+      'none auto max-content min-content fit-content stretch space-between',
     );
     expect(result.groups[0].values).toEqual([
       'none',
@@ -63,8 +63,9 @@ describe('StyleProcessor', () => {
       'max-content',
       'min-content',
       'fit-content',
+      'stretch',
     ]);
-    expect(result.groups[0].mods).toEqual(['stretch']);
+    expect(result.groups[0].mods).toEqual(['space-between']);
   });
 
   test('parses modifiers', () => {

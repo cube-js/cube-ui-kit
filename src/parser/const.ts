@@ -4,6 +4,7 @@ export const VALUE_KEYWORDS = new Set([
   'max-content',
   'min-content',
   'fit-content',
+  'stretch',
 ]);
 
 export const COLOR_FUNCS = new Set([

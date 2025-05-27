@@ -6,7 +6,7 @@ import {
   VALUE_KEYWORDS,
 } from './const';
 import { StyleParser } from './parser';
-import { Bucket, ParserOptions, ProcessedStyle, StyleDetails } from './types';
+import { Bucket, ParserOptions, ProcessedStyle } from './types';
 
 export function classify(
   raw: string,
