@@ -65,7 +65,11 @@ export function dimensionStyle(name) {
     }
 
     if (styles[name] === 'stretch') {
-      styles[name] = ['stretch', '-webkit-fill-available', '-moz-available'];
+      if (name === 'width') {
+        styles[name] = ['stretch', '-webkit-fill-available', '-moz-available'];
+      } else {
+        styles[name] = 'auto';
+      }
     }
 
     return styles;

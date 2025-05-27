@@ -53,7 +53,7 @@ export const Suffix = forwardRef(function Suffix(
       ref={ref}
       styles={styles}
       style={{
-        '--suffix-gap': parseStyle(outerGap).value,
+        '--suffix-gap': parseStyle(outerGap).output,
       }}
     >
       {children}

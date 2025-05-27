@@ -32,6 +32,13 @@ describe('dimensionStyle – width & height helpers', () => {
     expect(res['max-width']).toBe('calc(2 * var(--gap))');
   });
 
+  test('width three args', () => {
+    const res = widthStyle({ width: 'initial 36x max-content' }) as any;
+    expect(res.width).toBe('calc(36 * var(--gap))');
+    expect(res['min-width']).toBe('initial');
+    expect(res['max-width']).toBe('max-content');
+  });
+
   test('stretch width keyword', () => {
     const res = widthStyle({ width: 'stretch' }) as any;
     expect(res.width).toEqual([
@@ -60,7 +67,7 @@ describe('dimensionStyle – width & height helpers', () => {
     expect(res['max-height']).toBe('initial');
   });
 
-  test('min value height three args', () => {
+  test('height three args', () => {
     const res = heightStyle({ height: '1x 5x 10x' }) as any;
     expect(res.height).toBe('calc(5 * var(--gap))');
     expect(res['min-height']).toBe('var(--gap)');
@@ -69,6 +76,11 @@ describe('dimensionStyle – width & height helpers', () => {
 
   test('boolean true height (auto)', () => {
     const res = heightStyle({ height: true }) as any;
+    expect(res.height).toBe('auto');
+  });
+
+  test('stretch height keyword', () => {
+    const res = heightStyle({ height: 'stretch' }) as any;
     expect(res.height).toBe('auto');
   });
 });
