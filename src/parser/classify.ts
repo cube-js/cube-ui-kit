@@ -16,6 +16,14 @@ export function classify(
   const token = raw.trim();
   if (!token) return { bucket: Bucket.Mod, processed: '' };
 
+  // Quoted string literals should be treated as value tokens (e.g., "" for content)
+  if (
+    (token.startsWith('"') && token.endsWith('"')) ||
+    (token.startsWith("'") && token.endsWith("'"))
+  ) {
+    return { bucket: Bucket.Value, processed: token };
+  }
+
   // 0. Direct var(--*-color) token
   const varColorMatch = token.match(/^var\(--([a-z0-9-]+)-color\)$/);
   if (varColorMatch) {

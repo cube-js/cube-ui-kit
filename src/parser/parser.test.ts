@@ -173,4 +173,17 @@ describe('StyleProcessor', () => {
     const r = parser.process('#dark-02');
     expect(r.groups[0].colors).toEqual(['var(--dark-02-color)']);
   });
+
+  test('parses empty string literal', () => {
+    const res = parser.process('""');
+    expect(res.groups[0].values).toEqual(['""']);
+  });
+
+  test('parses calc with custom props inside parentheses', () => {
+    const expr = '(@slider-range-end - @slider-range-start)';
+    const res = parser.process(expr);
+    expect(res.groups[0].values).toEqual([
+      'calc(var(--slider-range-end) - var(--slider-range-start))',
+    ]);
+  });
 });
