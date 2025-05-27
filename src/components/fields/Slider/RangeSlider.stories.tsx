@@ -42,3 +42,9 @@ WithoutValue.args = {
   label: 'Slider',
   showValueLabel: false,
 };
+
+export const Vertical = Template.bind({});
+Vertical.args = {
+  label: 'Slider',
+  orientation: 'vertical',
+};

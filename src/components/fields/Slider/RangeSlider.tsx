@@ -28,7 +28,11 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
         return (
           <>
             <Gradation state={state} ranges={[0, 1]} values={gradation} />
-            <SliderTrack state={state} isDisabled={isDisabled} />
+            <SliderTrack
+              state={state}
+              isDisabled={isDisabled}
+              orientation={props.orientation}
+            />
             <SliderThumb
               index={0}
               aria-label={INTL_MESSAGES['minimum']}
