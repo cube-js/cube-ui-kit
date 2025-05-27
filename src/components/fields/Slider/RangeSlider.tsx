@@ -1,11 +1,11 @@
-import { forwardRef } from 'react';
+import { forwardRef, useRef } from 'react';
 
 import { Gradation } from './Gradation';
 import { SliderBase, SliderBaseChildArguments } from './SliderBase';
 import { SliderThumb } from './SliderThumb';
 import { SliderTrack } from './SliderTrack';
 
-import type { DOMRef } from '@react-types/shared';
+import type { FocusableRef } from '@react-types/shared';
 import type { RangeValue } from '../../../shared';
 import type { CubeSliderBaseProps } from './types';
 
@@ -19,11 +19,18 @@ const INTL_MESSAGES = {
   maximum: 'Maximum',
 };
 
-function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
+function RangeSlider(
+  props: CubeRangeSliderProps,
+  ref: FocusableRef<HTMLDivElement>,
+) {
   let { isDisabled, styles, gradation, ...otherProps } = props;
 
+  // Create separate refs for each thumb to enable proper focus management
+  const minThumbInputRef = useRef<HTMLInputElement>(null);
+  const maxThumbInputRef = useRef<HTMLInputElement>(null);
+
   return (
-    <SliderBase {...(otherProps as CubeSliderBaseProps<number[]>)}>
+    <SliderBase ref={ref} {...(otherProps as CubeSliderBaseProps<number[]>)}>
       {({ trackRef, inputRef, state }: SliderBaseChildArguments) => {
         return (
           <>
@@ -37,7 +44,7 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
               index={0}
               aria-label={INTL_MESSAGES['minimum']}
               state={state}
-              inputRef={inputRef}
+              inputRef={minThumbInputRef}
               trackRef={trackRef}
               isDisabled={isDisabled}
             />
@@ -45,7 +52,7 @@ function RangeSlider(props: CubeRangeSliderProps, ref: DOMRef<HTMLDivElement>) {
               index={1}
               aria-label={INTL_MESSAGES['maximum']}
               state={state}
-              inputRef={inputRef}
+              inputRef={maxThumbInputRef}
               trackRef={trackRef}
               isDisabled={isDisabled}
             />
