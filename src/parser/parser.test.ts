@@ -58,14 +58,13 @@ describe('StyleProcessor', () => {
       'none auto max-content min-content fit-content stretch space-between',
     );
     expect(result.groups[0].values).toEqual([
-      'none',
       'auto',
       'max-content',
       'min-content',
       'fit-content',
       'stretch',
     ]);
-    expect(result.groups[0].mods).toEqual(['space-between']);
+    expect(result.groups[0].mods).toEqual(['none', 'space-between']);
   });
 
   test('parses modifiers', () => {
