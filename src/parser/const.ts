@@ -1,5 +1,4 @@
 export const VALUE_KEYWORDS = new Set([
-  'none',
   'auto',
   'max-content',
   'min-content',

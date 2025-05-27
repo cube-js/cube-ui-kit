@@ -139,7 +139,7 @@ Each `StyleParser` instance maintains its own LRU cache.
 | 5     | User / other function – `ident(` not in color list; parse args recursively, hand off to `funcs[name]` if provided; else rebuild with processed args. | value    |
 | 6     | Auto-calc group – parentheses not preceded by identifier. See §6.                          | value    |
 | 7     | Numeric + custom unit – regex `^[+-]?(\d*.\d+ \d+)([a-z][a-z0-9]*)$` and unit key exists.  |          |
-| 8     | Literal value keyword – exactly `none`, `auto`, `max-content`, `min-content`, `fit-content`. | value    |
+| 8     | Literal value keyword – exactly `auto`, `max-content`, `min-content`, `fit-content`, `stretch`. | value    |
 | 9     | Fallback                                                                                   | modifier |
 
 Each processed string is inserted into its bucket and into `all` in source order.
