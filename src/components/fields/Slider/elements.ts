@@ -1,6 +1,7 @@
 import { tasty } from '../../../tasty';
 
 export const SliderThumbElement = tasty({
+  qa: 'SliderThumb',
   styles: {
     top: '@slider-thumb-offset-top',
     left: '@slider-thumb-offset-left',
@@ -28,6 +29,7 @@ export const SliderThumbElement = tasty({
 });
 
 export const SliderTrackContainerElement = tasty({
+  qa: 'SliderTrackContainer',
   styles: {
     top: {
       '': '0',
@@ -51,21 +53,25 @@ export const SliderTrackContainerElement = tasty({
 
     '&::before': {
       content: '""',
-      display: {
-        '': 'none',
-        range: 'block',
-      },
+      display: 'block',
       position: 'absolute',
       top: 0,
       bottom: 0,
       fill: '#purple',
-      left: '@slider-range-start',
-      width: '(@slider-range-end - @slider-range-start)',
+      left: {
+        '': '0',
+        range: '@slider-range-start',
+      },
+      width: {
+        '': '@slider-percent-value',
+        range: '(@slider-range-end - @slider-range-start)',
+      },
     },
   },
 });
 
 export const SliderGradationElement = tasty({
+  qa: 'SliderGradation',
   styles: {
     position: 'absolute',
     top: '2x',
@@ -78,6 +84,7 @@ export const SliderGradationElement = tasty({
 });
 
 export const SliderGradeElement = tasty({
+  qa: 'SliderGrade',
   styles: {
     display: 'grid',
     width: 'max 0',
@@ -88,6 +95,7 @@ export const SliderGradeElement = tasty({
 });
 
 export const SliderControlsElement = tasty({
+  qa: 'SliderControls',
   styles: {
     position: 'relative',
     height: {
@@ -96,7 +104,7 @@ export const SliderControlsElement = tasty({
     },
     width: {
       '': '2x',
-      horizontal: '100% - 2x',
+      horizontal: '(100% - 2x)',
     },
 
     '@slider-thumb-offset-top': {
@@ -130,7 +138,7 @@ export const SliderElement = tasty({
     },
 
     alignItems: 'center',
-    flexDirection: {
+    flow: {
       '': 'column',
       inputs: 'row',
     },

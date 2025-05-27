@@ -34,7 +34,9 @@ export function SliderTrack(props: SliderTrackProps) {
               '--slider-range-start': `${selectedTrack[0] * 100}%`,
               '--slider-range-end': `${selectedTrack[1] * 100}%`,
             }
-          : {}
+          : {
+              '--slider-percent-value': `${selectedTrack[0] * 100}%`,
+            }
       }
     />
   );
