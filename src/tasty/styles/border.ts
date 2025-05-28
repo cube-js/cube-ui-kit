@@ -23,7 +23,9 @@ export function borderStyle({ border }) {
 
   if (border === true) border = '1bw';
 
-  const { values, mods, colors } = parseStyle(String(border));
+  const processed = parseStyle(String(border));
+  const { values, mods, colors } =
+    processed.groups[0] ?? ({ values: [], mods: [], colors: [] } as any);
 
   const directions = filterMods(mods, DIRECTIONS);
   const typeMods = filterMods(mods, BORDER_STYLES);
