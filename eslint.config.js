@@ -58,6 +58,10 @@ export default [
       'no-mixed-operators': 0,
       'no-else-return': 0,
       'prefer-promise-reject-errors': 0,
+      'padding-line-between-statements': [
+        'error',
+        { blankLine: 'always', prev: '*', next: 'return' },
+      ],
 
       // React rules
       'react/boolean-prop-naming': [
