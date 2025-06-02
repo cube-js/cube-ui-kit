@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.61.6
+
+### Patch Changes
+
+- [#685](https://github.com/cube-js/cube-ui-kit/pull/685) [`eeaf472`](https://github.com/cube-js/cube-ui-kit/commit/eeaf472f5c561feec8557939e7152458ad2b3011) Thanks [@tenphi](https://github.com/tenphi)! - Add light version for Tooltip component. Use `isLight` prop to activate it.
+
 ## 0.61.5
 
 ### Patch Changes
