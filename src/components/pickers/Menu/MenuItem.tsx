@@ -1,6 +1,6 @@
 import { Key, Node } from '@react-types/shared';
 import { useRef } from 'react';
-import { FocusRing, useHover, useMenuItem } from 'react-aria';
+import { FocusRing, useFocusVisible, useHover, useMenuItem } from 'react-aria';
 import { TreeState } from 'react-stately';
 
 import { Styles } from '../../../tasty';
@@ -32,6 +32,9 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
   const ref = useRef<HTMLLIElement>(null);
   const { hoverProps, isHovered } = useHover({ isDisabled: isDisabledKey });
 
+  // Determine if focus should be shown (keyboard modality only)
+  const { isFocusVisible } = useFocusVisible({});
+
   const {
     menuItemProps,
     labelProps,
@@ -56,12 +59,15 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
     ref,
   );
 
+  // Show focused state only when focus is keyboard-visible
+  const isKeyboardFocused = isFocused && isFocusVisible;
+
   const buttonProps = {
     qa: itemProps.qa ? itemProps.qa : `MenuButton-${key}`,
     mods: {
       ...itemProps.mods,
       hovered: isHovered,
-      focused: isFocused,
+      focused: isKeyboardFocused,
       pressed: isPressed,
     },
   };
@@ -90,7 +96,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
           selected: isSelected,
           selectable: isSelectable,
           hovered: isHovered,
-          focused: isFocused,
+          focused: isKeyboardFocused,
         }}
       >
         <ClearSlots>

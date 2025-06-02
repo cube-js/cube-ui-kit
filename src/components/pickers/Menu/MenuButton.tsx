@@ -17,7 +17,7 @@ const StyledButton = tasty(Block, {
     border: {
       '': '#clear',
       pressed: '#clear',
-      'focused & !hovered': '#purple-text',
+      focused: '#purple-text',
     },
     fill: {
       '': '#clear',
