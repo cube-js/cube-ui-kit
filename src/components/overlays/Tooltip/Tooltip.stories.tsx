@@ -69,7 +69,7 @@ ViaProvider.play = async ({ canvasElement }) => {
   await timeout(1000);
 
   const button = await canvas.findByRole('button');
-  // this is a weird hack that makes tooltip working properly on page load
+  // this is hack that makes tooltip working properly on page load
   await userEvent.unhover(button);
   await userEvent.hover(button);
 
@@ -91,3 +91,7 @@ ViaProviderWithActiveWrap.play = async ({ canvasElement }) => {
 
   await waitFor(() => expect(canvas.getByRole('tooltip')).toBeVisible());
 };
+
+export const Light: typeof Template = Template.bind({});
+Light.args = { isLight: true };
+Light.play = Default.play;
