@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.61.5
+
+### Patch Changes
+
+- [#683](https://github.com/cube-js/cube-ui-kit/pull/683) [`e73acd5`](https://github.com/cube-js/cube-ui-kit/commit/e73acd5e27cec6ed5075cada06967c166465ef5d) Thanks [@tenphi](https://github.com/tenphi)! - Fix focused state styles on Menu items.
+
 ## 0.61.4
 
 ### Patch Changes
