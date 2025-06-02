@@ -23,6 +23,7 @@ export interface CubeTooltipTriggerProps extends TooltipTriggerProps {
   offset?: number;
   placement?: Placement;
   isMaterial?: boolean;
+  isLight?: boolean;
   /** Whether the trigger should have an ActiveZone wrap to make sure it's focusable and hoverable.
    * Otherwise, tooltip won't work. */
   activeWrap?: boolean;
@@ -61,6 +62,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
     crossOffset = DEFAULT_CROSS_OFFSET,
     isDisabled,
     isMaterial,
+    isLight,
     offset = DEFAULT_OFFSET,
     trigger: triggerAction,
     delay = 250,
@@ -127,6 +129,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
           minOffset: 'var(--gap)',
           minScale: '1',
           isMaterial,
+          isLight,
           ...tooltipProps,
         }}
       >
