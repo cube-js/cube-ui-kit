@@ -140,6 +140,7 @@ const CloseButton = tasty(Button, {
   type: 'neutral',
   size: 'small',
   icon: <CloseIcon />,
+  label: 'Close Tab',
   styles: {
     width: '3x',
     height: '3x',
