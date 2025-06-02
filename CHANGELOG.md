@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.61.4
+
+### Patch Changes
+
+- [`56f9304`](https://github.com/cube-js/cube-ui-kit/commit/56f9304f8af3a9d88456ded269e7983e0dfed861) Thanks [@tenphi](https://github.com/tenphi)! - Fix missing aria-label on Close button in FileTabs.
+
 ## 0.61.3
 
 ### Patch Changes
