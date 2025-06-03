@@ -1,11 +1,6 @@
-import Prism from 'prismjs';
-import { forwardRef, useEffect } from 'react';
-
-import 'prismjs/components/prism-diff';
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-sql';
-import 'prismjs/components/prism-yaml';
-import 'prismjs/plugins/diff-highlight/prism-diff-highlight';
+// prism-react-renderer
+import { Highlight, Prism as RendererPrism } from 'prism-react-renderer';
+import { forwardRef } from 'react';
 
 import {
   BaseProps,
@@ -14,6 +9,21 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
+
+// Bridge the Prism instance used by `prism-react-renderer` **before** we load
+// any additional grammars so that those grammars augment this exact object.
+(globalThis as any).Prism = RendererPrism;
+
+// Vite will pre-bundle these. The `@vite-ignore` keeps it from trying to
+// statically analyze the variable `path`.
+await Promise.all([
+  import('prismjs/components/prism-diff'),
+  import('prismjs/components/prism-sql'),
+  import('prismjs/plugins/diff-highlight/prism-diff-highlight'),
+  // already bundled in most cases, but kept for completeness
+  import('prismjs/components/prism-javascript'),
+  import('prismjs/components/prism-yaml'),
+]);
 
 const PreElement = tasty({
   as: 'pre',
@@ -79,7 +89,7 @@ export interface CubePrismCodeProps extends ContainerStyleProps {
 }
 
 function PrismCode(props: CubePrismCodeProps, ref) {
-  let { code, language = 'javascript', ...otherProps } = props;
+  const { code = '', language = 'javascript', ...otherProps } = props;
 
   if (typeof code !== 'string' && code) {
     throw new Error(
@@ -89,18 +99,51 @@ function PrismCode(props: CubePrismCodeProps, ref) {
 
   const isDiff = isDiffCode(code || '');
 
-  useEffect(() => {
-    Prism.highlightAll();
-  });
+  // For diff snippets we rely on the `diff` grammar. We still keep the
+  // original language as a suffix (e.g. diff-javascript) so that the diff
+  // plugin can colour the inserted / deleted signs while the inner tokens are
+  // still highlighted correctly.
+  const grammarLang = isDiff ? `diff-${language}` : language;
 
   return (
     <PreElement ref={ref} {...otherProps}>
-      <code
-        data-element="Code"
-        className={`language${isDiff ? '-diff' : ''}-${language}${isDiff ? ' diff-highlight' : ''}`}
+      <Highlight
+        prism={RendererPrism}
+        code={code}
+        language={grammarLang as any}
       >
-        {code}
-      </code>
+        {({ className, tokens, getLineProps, getTokenProps }) => (
+          <code
+            data-element="Code"
+            className={`${className}${isDiff ? ' diff-highlight' : ''}`}
+          >
+            {tokens.map((line, i) => (
+              <span
+                key={i}
+                {...getLineProps({ line, key: i })}
+                style={undefined}
+              >
+                {line.map((token, key) => {
+                  const props = getTokenProps({ token, key });
+
+                  return (
+                    <span
+                      key={key}
+                      {...props}
+                      style={{
+                        ...props.style,
+                        color: undefined,
+                        backgroundColor: undefined,
+                      }}
+                    />
+                  );
+                })}
+                {'\n'}
+              </span>
+            ))}
+          </code>
+        )}
+      </Highlight>
     </PreElement>
   );
 }
