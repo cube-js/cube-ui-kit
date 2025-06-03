@@ -113,7 +113,7 @@ RendererPrism.languages.sql = {
     /<\/?(?!\d)[^\s>\/=$<%]+(?:\s(?:\s*[^\s>\/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s'">=]+(?=[\s>]))|(?=[\s/>])))+)?\s*\/?>/g;
   //this will match a line plus the line break while ignoring the line breaks HTML tags may contain.
   var HTML_LINE = RegExp(
-    /(?:__|[^\r\n<])*(?:\r\n?|\n|(?:__|[^\r\n<])(?![^\r\n]))/.source.replace(
+    /(?:__|[^_\r\n<])*(?:\r\n?|\n|(?:__|[^_\r\n<])(?![^\r\n]))/.source.replace(
       /__/g,
       function () {
         return HTML_TAG.source;
