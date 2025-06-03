@@ -9,7 +9,7 @@ import {
   tasty,
 } from '../../../tasty';
 
-import { Prism } from './prismSetup';
+import { ensureYamlSqlExtensions, Prism } from './prismSetup';
 
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-yaml';
@@ -32,6 +32,28 @@ const PreElement = tasty({
     },
   },
 });
+
+export interface CubePrismCodeProps extends ContainerStyleProps {
+  /** The CSS style map */
+  style?: BaseProps['style'];
+  styles?: Styles;
+  /** The code snippet */
+  code?: string;
+  /** The language of the code snippet */
+  language?:
+    | 'javascript'
+    | 'css'
+    | 'sql'
+    | 'less'
+    | 'html'
+    | 'json'
+    | 'yaml'
+    | 'bash'
+    | 'editorconfig'
+    | 'php'
+    | 'python'
+    | 'typescript';
+}
 
 function isDiffCode(code: string): boolean {
   // Split the code into lines
@@ -57,28 +79,6 @@ function isDiffCode(code: string): boolean {
   return false;
 }
 
-export interface CubePrismCodeProps extends ContainerStyleProps {
-  /** The CSS style map */
-  style?: BaseProps['style'];
-  styles?: Styles;
-  /** The code snippet */
-  code?: string;
-  /** The language of the code snippet */
-  language?:
-    | 'javascript'
-    | 'css'
-    | 'sql'
-    | 'less'
-    | 'html'
-    | 'json'
-    | 'yaml'
-    | 'bash'
-    | 'editorconfig'
-    | 'php'
-    | 'python'
-    | 'typescript';
-}
-
 function PrismCode(props: CubePrismCodeProps, ref) {
   const { code = '', language = 'javascript', ...otherProps } = props;
 
@@ -95,6 +95,11 @@ function PrismCode(props: CubePrismCodeProps, ref) {
   // Ensure the diff language exists before rendering
   if (isDiff && !Prism.languages[grammarLang]) {
     Prism.languages[grammarLang] = Prism.languages.diff;
+  }
+
+  // Ensure YAML SQL extensions are applied for YAML content
+  if (language === 'yaml' || grammarLang === 'diff-yaml') {
+    ensureYamlSqlExtensions();
   }
 
   return (

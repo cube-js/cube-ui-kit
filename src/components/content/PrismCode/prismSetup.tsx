@@ -183,20 +183,29 @@ import { Prism as RendererPrism } from 'prism-react-renderer';
   });
 })(RendererPrism);
 
-// Extend YAML to support SQL syntax highlighting in sql: fields
-(function (Prism) {
-  if (Prism.languages.yaml && Prism.languages.sql) {
+// Function to ensure YAML SQL extensions are applied
+function ensureYamlSqlExtensions() {
+  // Check if extensions are already applied
+  if (
+    RendererPrism.languages.yaml &&
+    RendererPrism.languages.yaml['sql-scalar']
+  ) {
+    return; // Already applied
+  }
+
+  // Apply extensions if both YAML and SQL grammars are available
+  if (RendererPrism.languages.yaml && RendererPrism.languages.sql) {
     // Insert SQL patterns before existing YAML patterns for higher priority
-    Prism.languages.insertBefore('yaml', 'key', {
+    RendererPrism.languages.insertBefore('yaml', 'key', {
       'sql-inline': {
         pattern: /((?:^|\n)\s*sql\s*:\s*)([^\n\r|>]+)/,
         lookbehind: true,
-        inside: Prism.languages.sql,
+        inside: RendererPrism.languages.sql,
       },
     });
 
     // Handle multiline SQL blocks with proper indentation
-    Prism.languages.insertBefore('yaml', 'key', {
+    RendererPrism.languages.insertBefore('yaml', 'key', {
       'sql-multiline': {
         pattern:
           /((?:^|\n)\s*sql\s*:\s*[|>][-+]?\s*\n)((?:\s{2,}[^\n\r]+(?:\n|$))+)/,
@@ -208,7 +217,7 @@ import { Prism as RendererPrism } from 'prism-react-renderer';
               indent: /^\s+/,
               'sql-code': {
                 pattern: /.+/,
-                inside: Prism.languages.sql,
+                inside: RendererPrism.languages.sql,
               },
             },
           },
@@ -217,14 +226,15 @@ import { Prism as RendererPrism } from 'prism-react-renderer';
     });
 
     // Handle YAML scalar content that follows sql: > or sql: | indicators
-    Prism.languages.insertBefore('yaml', 'scalar', {
+    RendererPrism.languages.insertBefore('yaml', 'scalar', {
       'sql-scalar': {
         pattern:
           /^\s*(SELECT|INSERT|UPDATE|DELETE|WITH|CREATE|DROP|ALTER|UNION|FROM|WHERE|JOIN|GROUP|ORDER|HAVING)[\s\S]*$/im,
-        inside: Prism.languages.sql,
+        inside: RendererPrism.languages.sql,
       },
     });
   }
-})(RendererPrism);
+}
 
 export { RendererPrism as Prism };
+export { ensureYamlSqlExtensions };
