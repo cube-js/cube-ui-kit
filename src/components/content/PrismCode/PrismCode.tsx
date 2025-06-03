@@ -33,8 +33,8 @@ function isDiffCode(code: string): boolean {
   const lines = code.split('\n');
 
   // Define patterns to check for diff characteristics
-  const additionPattern = /^\+/; // Lines starting with '+' (allow indent)
-  const deletionPattern = /^-+/; // Lines starting with '-' (allow indent)
+  const additionPattern = /^\+/; // Lines starting with '+'
+  const deletionPattern = /^-+/; // Lines starting with '-'
   const headerPattern = /^(diff --git|---|\+\+\+)/; // Diff headers
 
   // Check each line for diff-specific patterns

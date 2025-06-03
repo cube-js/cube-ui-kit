@@ -219,13 +219,4 @@ RendererPrism.languages.sql = {
   });
 })(RendererPrism);
 
-// Ensure all diff-* languages are registered after grammars load
-const diffLanguagePattern = /^diff-(.+)$/;
-Object.keys(Prism.languages).forEach((lang) => {
-  const diffLang = `diff-${lang}`;
-  if (!Prism.languages[diffLang] && !diffLanguagePattern.test(lang)) {
-    Prism.languages[diffLang] = Prism.languages.diff;
-  }
-});
-
 export { RendererPrism as Prism };
