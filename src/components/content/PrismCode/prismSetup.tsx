@@ -4,10 +4,6 @@
 // Its content is mostly vanilla JS copied from Prism, so type-checking is disabled above.
 import { Prism as RendererPrism } from 'prism-react-renderer';
 
-// Bridge the Prism instance used by `prism-react-renderer` **before** we load
-// any additional grammars so that those grammars augment this exact object.
-(globalThis as any).Prism = RendererPrism;
-
 RendererPrism.languages.sql = {
   comment: {
     pattern: /(^|[^\\])(?:\/\*[\s\S]*?\*\/|(?:--|\/\/|#).*)/,
