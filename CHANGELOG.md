@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.61.7
+
+### Patch Changes
+
+- [#687](https://github.com/cube-js/cube-ui-kit/pull/687) [`d6820d0`](https://github.com/cube-js/cube-ui-kit/commit/d6820d09d10aca57527a3578efddcf77f03c283e) Thanks [@tenphi](https://github.com/tenphi)! - Use react renderer for PrismCode.
+
 ## 0.61.6
 
 ### Patch Changes
