@@ -117,6 +117,14 @@ describe('StyleProcessor', () => {
     );
   });
 
+  test('parses drop shadow value', () => {
+    const dropShadow = 'drop-shadow(1x 2x 3x #dark.5)';
+    const result = parser.process(dropShadow);
+    expect(result.groups[0].values[0]).toEqual(
+      'drop-shadow(var(--gap) calc(2 * var(--gap)) calc(3 * var(--gap)) rgb(var(--dark-color-rgb) / .5))',
+    );
+  });
+
   test('parses background value with url and gradient', () => {
     const background =
       'url(image.png) no-repeat center/cover, linear-gradient(45deg, red, blue)';
