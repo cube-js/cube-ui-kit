@@ -11,6 +11,10 @@ import {
 
 import { Prism } from './prismSetup';
 
+import 'prismjs/components/prism-javascript';
+import 'prismjs/components/prism-yaml';
+import 'prismjs/components/prism-bash';
+
 const PreElement = tasty({
   as: 'pre',
   qa: 'CodeBlock',

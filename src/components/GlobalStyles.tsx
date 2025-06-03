@@ -249,6 +249,16 @@ const GlobalStylesElement = createGlobalStyle<GlobalStylesElementProps>`
     white-space: normal;
   }
 
+  .token.inserted-sign {
+    background-color: #e6ffed;
+    color: #30A666;
+  }
+
+  .token.deleted-sign {
+    background-color: #ffeef0;
+    color: (--danger-color);
+  }
+
   .token.comment,
   .token.prolog,
   .token.doctype,
@@ -277,7 +287,8 @@ const GlobalStylesElement = createGlobalStyle<GlobalStylesElementProps>`
   }
 
   .token.entity,
-  .token.number {
+  .token.number,
+  .token.inserted {
     color: #30A666;
   }
 
@@ -285,8 +296,7 @@ const GlobalStylesElement = createGlobalStyle<GlobalStylesElementProps>`
   .token.attr-name,
   .token.string,
   .token.char,
-  .token.builtin,
-  .token.inserted {
+  .token.builtin {
     color: var(--purple-text-color);
   }
 
@@ -327,16 +337,6 @@ const GlobalStylesElement = createGlobalStyle<GlobalStylesElementProps>`
 
   .token.entity {
     cursor: help;
-  }
-
-  .token.inserted-sign {
-    background-color: #e6ffed;
-    color: #30A666;
-  }
-
-  .token.deleted-sign {
-    background-color: #ffeef0;
-    color: (--danger-color);
   }
 `;
 

@@ -16,11 +16,13 @@ const Template = ({ ...args }) => <PrismCode {...args} />;
 
 export const OneLine = Template.bind({});
 OneLine.args = {
+  language: 'bash',
   code: '$ npm install -g cubejs-cli',
 };
 
 export const MultiLine = Template.bind({});
 MultiLine.args = {
+  language: 'bash',
   code: '$ npm install -g cubejs-cli\n$ cubejs deploy',
 };
 
