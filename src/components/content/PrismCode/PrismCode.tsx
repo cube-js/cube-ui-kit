@@ -1,5 +1,4 @@
-// prism-react-renderer
-import { Highlight, Prism as RendererPrism } from 'prism-react-renderer';
+import { Highlight } from 'prism-react-renderer';
 import { forwardRef } from 'react';
 
 import {
@@ -10,16 +9,7 @@ import {
   tasty,
 } from '../../../tasty';
 
-// Bridge the Prism instance used by `prism-react-renderer` **before** we load
-// any additional grammars so that those grammars augment this exact object.
-(globalThis as any).Prism = RendererPrism;
-
-import('prismjs/components/prism-diff');
-import('prismjs/components/prism-sql');
-import('prismjs/plugins/diff-highlight/prism-diff-highlight');
-// already bundled in most cases, but kept for completeness
-import('prismjs/components/prism-javascript');
-import('prismjs/components/prism-yaml');
+import { Prism } from './prismSetup';
 
 const PreElement = tasty({
   as: 'pre',
@@ -103,11 +93,7 @@ function PrismCode(props: CubePrismCodeProps, ref) {
 
   return (
     <PreElement ref={ref} {...otherProps}>
-      <Highlight
-        prism={RendererPrism}
-        code={code}
-        language={grammarLang as any}
-      >
+      <Highlight prism={Prism} code={code} language={grammarLang as any}>
         {({ className, tokens, getLineProps, getTokenProps }) => (
           <code
             data-element="Code"
