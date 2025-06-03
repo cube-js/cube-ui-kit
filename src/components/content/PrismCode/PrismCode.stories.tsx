@@ -184,7 +184,7 @@ FinalOutput AS (
     CROSS JOIN RecursiveCTE r
     WHERE r.GeneratedDate <= GETDATE()
 )
--- Final query to output the results
+ -- Final query to output the results
 SELECT
     fo.UserID,
     fo.UserName,

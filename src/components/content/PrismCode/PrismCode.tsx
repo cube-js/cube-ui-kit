@@ -1,5 +1,4 @@
-import { Highlight } from 'prism-react-renderer';
-import { forwardRef } from 'react';
+import { forwardRef, lazy, Suspense } from 'react';
 
 import {
   BaseProps,
@@ -28,13 +27,30 @@ const PreElement = tasty({
   },
 });
 
+const AsyncHighlight = lazy(async () => {
+  // import the grammars you need **first**
+  await Promise.all([import('prismjs/components/prism-sql')]);
+
+  // Ensure all diff-* languages are registered after grammars load
+  const diffLanguagePattern = /^diff-(.+)$/;
+  Object.keys(Prism.languages).forEach((lang) => {
+    const diffLang = `diff-${lang}`;
+    if (!Prism.languages[diffLang] && !diffLanguagePattern.test(lang)) {
+      Prism.languages[diffLang] = Prism.languages.diff;
+    }
+  });
+
+  // then provide the module that React.lazy expects
+  return import('prism-react-renderer').then((m) => ({ default: m.Highlight }));
+});
+
 function isDiffCode(code: string): boolean {
   // Split the code into lines
   const lines = code.split('\n');
 
   // Define patterns to check for diff characteristics
-  const additionPattern = /^\+/; // Lines starting with '+'
-  const deletionPattern = /^-/; // Lines starting with '-'
+  const additionPattern = /^\+/; // Lines starting with '+' (allow indent)
+  const deletionPattern = /^-+/; // Lines starting with '-' (allow indent)
   const headerPattern = /^(diff --git|---|\+\+\+)/; // Diff headers
 
   // Check each line for diff-specific patterns
@@ -85,56 +101,64 @@ function PrismCode(props: CubePrismCodeProps, ref) {
 
   const isDiff = isDiffCode(code || '');
 
-  // For diff snippets we rely on the `diff` grammar. We still keep the
-  // original language as a suffix (e.g. diff-javascript) so that the diff
-  // plugin can colour the inserted / deleted signs while the inner tokens are
-  // still highlighted correctly.
   const grammarLang = isDiff ? `diff-${language}` : language;
+
+  // Ensure the diff language exists before rendering
+  if (isDiff && !Prism.languages[grammarLang]) {
+    Prism.languages[grammarLang] = Prism.languages.diff;
+  }
 
   return (
     <PreElement ref={ref} {...otherProps}>
-      <Highlight prism={Prism} code={code} language={grammarLang as any}>
-        {({ className, style, tokens, getLineProps, getTokenProps }) => (
-          <code
-            data-element="Code"
-            className={`${className}${isDiff ? ' diff-highlight' : ''}`}
-            style={{ ...style, color: undefined, backgroundColor: undefined }}
-          >
-            {tokens.map((line, i) => {
-              const props = getLineProps({ line, key: i });
+      <Suspense fallback={<code>{code}</code>}>
+        <AsyncHighlight prism={Prism} code={code} language={grammarLang as any}>
+          {({ className, style, tokens, getLineProps, getTokenProps }) => {
+            return (
+              <code
+                data-element="Code"
+                className={`${className}${isDiff ? ' diff-highlight' : ''}`}
+                style={{
+                  ...style,
+                  color: undefined,
+                  backgroundColor: undefined,
+                }}
+              >
+                {tokens.map((line, i) => {
+                  const props = getLineProps({ line, key: i });
 
-              return (
-                <span
-                  key={i}
-                  {...props}
-                  style={{
-                    ...props.style,
-                    color: undefined,
-                    backgroundColor: undefined,
-                  }}
-                >
-                  {line.map((token, key) => {
-                    const props = getTokenProps({ token, key });
+                  return (
+                    <span
+                      key={i}
+                      {...props}
+                      style={{
+                        ...props.style,
+                        color: undefined,
+                      }}
+                    >
+                      {line.map((token, key) => {
+                        const props = getTokenProps({ token, key });
 
-                    return (
-                      <span
-                        key={key}
-                        {...props}
-                        style={{
-                          ...props.style,
-                          color: undefined,
-                          backgroundColor: undefined,
-                        }}
-                      />
-                    );
-                  })}
-                  {'\n'}
-                </span>
-              );
-            })}
-          </code>
-        )}
-      </Highlight>
+                        return (
+                          <span
+                            key={key}
+                            {...props}
+                            style={{
+                              ...props.style,
+                              color: undefined,
+                              backgroundColor: undefined,
+                            }}
+                          />
+                        );
+                      })}
+                      {'\n'}
+                    </span>
+                  );
+                })}
+              </code>
+            );
+          }}
+        </AsyncHighlight>
+      </Suspense>
     </PreElement>
   );
 }
