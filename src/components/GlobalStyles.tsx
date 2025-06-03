@@ -254,9 +254,17 @@ const GlobalStylesElement = createGlobalStyle<GlobalStylesElementProps>`
     color: #30A666;
   }
 
+  .token.inserted {
+    color: #30A666;
+  }
+
   .token.deleted-sign {
     background-color: #ffeef0;
     color: (--danger-color);
+  }
+
+  .token.deleted {
+    color: var(--pink-color);
   }
 
   .token.comment,
@@ -281,14 +289,12 @@ const GlobalStylesElement = createGlobalStyle<GlobalStylesElementProps>`
   .token.constant,
   .token.symbol,
   .token.key,
-  .token.keyword,
-  .token.deleted {
+  .token.keyword {
     color: var(--pink-color);
   }
 
   .token.entity,
-  .token.number,
-  .token.inserted {
+  .token.number {
     color: #30A666;
   }
 
