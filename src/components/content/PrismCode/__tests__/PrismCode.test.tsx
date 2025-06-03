@@ -1,5 +1,6 @@
 import { render } from '@testing-library/react';
 import React from 'react';
+import { act } from 'react-dom/test-utils';
 
 import { PrismDiffCode } from '../../PrismDiffCode/PrismDiffCode';
 import { PrismCode } from '../PrismCode';
@@ -18,7 +19,9 @@ describe('PrismCode component', () => {
     );
 
     // Wait for async highlight component to load
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    });
 
     const codeElement = container.querySelector('code');
     expect(codeElement).toBeInTheDocument();
@@ -48,7 +51,9 @@ describe('PrismCode component', () => {
     );
 
     // Wait for async highlight component to load
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    });
 
     const codeElement = container.querySelector('code');
     expect(codeElement).toBeInTheDocument();
