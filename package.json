@@ -79,6 +79,7 @@
     "diff": "^7.0.0",
     "email-validator": "^2.0.4",
     "globals": "^16.0.0",
+    "prism-react-renderer": "^2.4.1",
     "prismjs": "^1.30.0",
     "react-aria": "^3.37.0",
     "react-focus-lock": "^2.13.5",

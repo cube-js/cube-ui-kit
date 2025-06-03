@@ -12,22 +12,29 @@ export default {
   },
 };
 
-const Template = ({ ...args }) => <PrismCode {...args} />;
+const Template = (args: any) => <PrismCode {...args} />;
 
-export const OneLine = Template.bind({});
-OneLine.args = {
-  code: '$ npm install -g cubejs-cli',
+export const OneLine = {
+  render: Template,
+  args: {
+    language: 'bash',
+    code: '$ npm install -g cubejs-cli',
+  },
 };
 
-export const MultiLine = Template.bind({});
-MultiLine.args = {
-  code: '$ npm install -g cubejs-cli\n$ cubejs deploy',
+export const MultiLine = {
+  render: Template,
+  args: {
+    language: 'bash',
+    code: '$ npm install -g cubejs-cli\n$ cubejs deploy',
+  },
 };
 
-export const JavascriptSyntax = Template.bind({});
-JavascriptSyntax.args = {
-  language: 'javascript',
-  code: `cube('LineItems', {
+export const JavascriptSyntax = {
+  render: Template,
+  args: {
+    language: 'javascript',
+    code: `cube('LineItems', {
   sql: \`SELECT * FROM public.line_items\`,
 
 
@@ -73,12 +80,14 @@ JavascriptSyntax.args = {
     }
   }
 });`,
+  },
 };
 
-export const YamlSyntax = Template.bind({});
-YamlSyntax.args = {
-  language: 'yaml',
-  code: `cubes:
+export const YamlSyntax = {
+  render: Template,
+  args: {
+    language: 'yaml',
+    code: `cubes:
   # Define the Orders cube
   - name: Orders
     sql: SELECT * FROM public.orders
@@ -136,12 +145,14 @@ YamlSyntax.args = {
       - cube: Orders
         sql: \${Customers.id} = \${Orders.customer_id}
         relationship: one_to_many # One customer can have many orders`,
+  },
 };
 
-export const SqlSyntax = Template.bind({});
-SqlSyntax.args = {
-  language: 'sql',
-  code: `WITH RecursiveCTE AS (
+export const SqlSyntax = {
+  render: Template,
+  args: {
+    language: 'sql',
+    code: `WITH RecursiveCTE AS (
     -- Recursive CTE to generate a sequence of numbers
     SELECT 1 AS Level, CAST('2025-01-01' AS DATE) AS GeneratedDate
     UNION ALL
@@ -184,7 +195,7 @@ FinalOutput AS (
     CROSS JOIN RecursiveCTE r
     WHERE r.GeneratedDate <= GETDATE()
 )
--- Final query to output the results
+ -- Final query to output the results
 SELECT
     fo.UserID,
     fo.UserName,
@@ -194,13 +205,16 @@ SELECT
     fo.GeneratedDate
 FROM FinalOutput fo
 ORDER BY fo.GeneratedDate, fo.UserID;`,
+  },
 };
 
-export const DiffSyntax = Template.bind({});
-DiffSyntax.args = {
-  language: 'javascript',
-  code: `  console.log('Hello, world!');
+export const DiffSyntax = {
+  render: Template,
+  args: {
+    language: 'javascript',
+    code: `  console.log('Hello, world!');
 + console.log('This line was added!');
   console.log('Another unchanged line');
 - console.log('This line was removed.');`,
+  },
 };
