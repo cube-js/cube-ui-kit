@@ -14,16 +14,12 @@ import {
 // any additional grammars so that those grammars augment this exact object.
 (globalThis as any).Prism = RendererPrism;
 
-// Vite will pre-bundle these. The `@vite-ignore` keeps it from trying to
-// statically analyze the variable `path`.
-await Promise.all([
-  import('prismjs/components/prism-diff'),
-  import('prismjs/components/prism-sql'),
-  import('prismjs/plugins/diff-highlight/prism-diff-highlight'),
-  // already bundled in most cases, but kept for completeness
-  import('prismjs/components/prism-javascript'),
-  import('prismjs/components/prism-yaml'),
-]);
+import('prismjs/components/prism-diff');
+import('prismjs/components/prism-sql');
+import('prismjs/plugins/diff-highlight/prism-diff-highlight');
+// already bundled in most cases, but kept for completeness
+import('prismjs/components/prism-javascript');
+import('prismjs/components/prism-yaml');
 
 const PreElement = tasty({
   as: 'pre',
