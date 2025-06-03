@@ -1,4 +1,3 @@
-/* eslint-disable */
 // @ts-nocheck
 // Convert complex js object to dot notation js object
 // url: https://github.com/vardars/dotize

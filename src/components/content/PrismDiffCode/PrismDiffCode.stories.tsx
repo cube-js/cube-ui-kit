@@ -2,6 +2,8 @@ import { baseProps } from '../../../stories/lists/baseProps';
 
 import { PrismDiffCode } from './PrismDiffCode';
 
+import type { CubePrismDiffCodeProps } from './PrismDiffCode';
+
 export default {
   title: 'Content/PrismDiffCode',
   component: PrismDiffCode,
@@ -12,7 +14,7 @@ export default {
   },
 };
 
-const Template = ({ ...args }) => <PrismDiffCode {...args} />;
+const Template = (args: CubePrismDiffCodeProps) => <PrismDiffCode {...args} />;
 
 // export const JavascriptSyntax = Template.bind({});
 // JavascriptSyntax.args = {
@@ -20,10 +22,11 @@ const Template = ({ ...args }) => <PrismDiffCode {...args} />;
 //   code: ``,
 // };
 
-export const YamlSyntax = Template.bind({});
-YamlSyntax.args = {
-  language: 'yaml',
-  original: `cubes:
+export const YamlSyntax = {
+  render: Template,
+  args: {
+    language: 'yaml',
+    original: `cubes:
   # Define the Orders cube
   - name: Orders
     sql: SELECT * FROM public.orders
@@ -81,7 +84,7 @@ YamlSyntax.args = {
       - cube: Orders
         sql: \${Customers.id} = \${Orders.customer_id}
         relationship: one_to_many # One customer can have many orders`,
-  modified: `cubes:
+    modified: `cubes:
   # Define the Orders cube
   - name: Orders
     sql: SELECT * FROM public.orders
@@ -144,12 +147,14 @@ YamlSyntax.args = {
       - cube: Orders
         sql: \${Customers.id} = \${Orders.customer_id}
         relationship: one_to_many # One customer can have multiple orders`,
+  },
 };
 
-export const SqlSyntax = Template.bind({});
-SqlSyntax.args = {
-  language: 'sql',
-  original: `WITH RecursiveCTE AS (
+export const SqlSyntax = {
+  render: Template,
+  args: {
+    language: 'sql',
+    original: `WITH RecursiveCTE AS (
     -- Recursive CTE to generate a sequence of numbers
     SELECT 1 AS Level, CAST('2025-01-01' AS DATE) AS GeneratedDate
     UNION ALL
@@ -202,7 +207,7 @@ SELECT
     fo.GeneratedDate
 FROM FinalOutput fo
 ORDER BY fo.GeneratedDate, fo.UserID;`,
-  modified: `WITH RecursiveDates AS (
+    modified: `WITH RecursiveDates AS (
     -- Generate a sequence of dates starting from 2025-01-01
     SELECT 1 AS DayNumber, CAST('2025-01-01' AS DATE) AS GeneratedDate
     UNION ALL
@@ -253,13 +258,16 @@ SELECT
     fo.GeneratedDate
 FROM FinalOutput fo
 ORDER BY fo.GeneratedDate, fo.UserID;`,
+  },
 };
 
-export const EmptyLineDiff = Template.bind({});
-EmptyLineDiff.args = {
-  modified:
-    "cubes:\n  - name: orders\n    sql: >\n      select 1 as id, 100 as amount, 'new' status\n      UNION ALL\n      select 2 as id, 200 as amount, 'new' status\n      UNION ALL\n      select 3 as id, 300 as amount, 'processed' status\n      UNION ALL\n      select 4 as id, 500 as amount, 'processed' status\n      UNION ALL\n      select 5 as id, 600 as amount, 'shipped' status\n\n    joins: []\n\n    dimensions:\n      - name: id\n        type: number\n\n      - name: status\n        sql: status\n\n\n    measures:\n      - name: count\n        type: count\n\n      - name: amount\n        sql: amount\n        type: sum\n\n    pre_aggregations:\n      # Pre-aggregation definitions go here.\n      # Learn more in the documentation: https://cube.dev/docs/caching/pre-aggregations/getting-started\n\n",
-  original:
-    "cubes:\n  - name: orders\n    sql: >\n      select 1 as id, 100 as amount, 'new' status\n      UNION ALL\n      select 2 as id, 200 as amount, 'new' status\n      UNION ALL\n      select 3 as id, 300 as amount, 'processed' status\n      UNION ALL\n      select 4 as id, 500 as amount, 'processed' status\n      UNION ALL\n      select 5 as id, 600 as amount, 'shipped' status\n\n    joins: []\n\n    dimensions:\n      - name: id\n\n      - name: status\n        sql: status\n\n\n    measures:\n      - name: count\n        type: count\n\n      - name: amount\n        sql: amount\n        type: sum\n\n    pre_aggregations:\n      # Pre-aggregation definitions go here.\n      # Learn more in the documentation: https://cube.dev/docs/caching/pre-aggregations/getting-started\n\n",
-  language: 'yaml',
+export const EmptyLineDiff = {
+  render: Template,
+  args: {
+    modified:
+      "cubes:\n  - name: orders\n    sql: >\n      select 1 as id, 100 as amount, 'new' status\n      UNION ALL\n      select 2 as id, 200 as amount, 'new' status\n      UNION ALL\n      select 3 as id, 300 as amount, 'processed' status\n      UNION ALL\n      select 4 as id, 500 as amount, 'processed' status\n      UNION ALL\n      select 5 as id, 600 as amount, 'shipped' status\n\n    joins: []\n\n    dimensions:\n      - name: id\n        type: number\n\n      - name: status\n        sql: status\n\n\n    measures:\n      - name: count\n        type: count\n\n      - name: amount\n        sql: amount\n        type: sum\n\n    pre_aggregations:\n      # Pre-aggregation definitions go here.\n      # Learn more in the documentation: https://cube.dev/docs/caching/pre-aggregations/getting-started\n\n",
+    original:
+      "cubes:\n  - name: orders\n    sql: >\n      select 1 as id, 100 as amount, 'new' status\n      UNION ALL\n      select 2 as id, 200 as amount, 'new' status\n      UNION ALL\n      select 3 as id, 300 as amount, 'processed' status\n      UNION ALL\n      select 4 as id, 500 as amount, 'processed' status\n      UNION ALL\n      select 5 as id, 600 as amount, 'shipped' status\n\n    joins: []\n\n    dimensions:\n      - name: id\n\n      - name: status\n        sql: status\n\n\n    measures:\n      - name: count\n        type: count\n\n      - name: amount\n        sql: amount\n        type: sum\n\n    pre_aggregations:\n      # Pre-aggregation definitions go here.\n      # Learn more in the documentation: https://cube.dev/docs/caching/pre-aggregations/getting-started\n\n",
+    language: 'yaml',
+  },
 };

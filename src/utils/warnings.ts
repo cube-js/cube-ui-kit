@@ -34,7 +34,6 @@ export function warn(...args) {
 }
 
 export function deprecationWarning(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   condition: any,
   {
     property,

@@ -219,4 +219,48 @@ RendererPrism.languages.sql = {
   });
 })(RendererPrism);
 
+// Extend YAML to support SQL syntax highlighting in sql: fields
+(function (Prism) {
+  if (Prism.languages.yaml && Prism.languages.sql) {
+    // Insert SQL patterns before existing YAML patterns for higher priority
+    Prism.languages.insertBefore('yaml', 'key', {
+      'sql-inline': {
+        pattern: /((?:^|\n)\s*sql\s*:\s*)([^\n\r|>]+)/,
+        lookbehind: true,
+        inside: Prism.languages.sql,
+      },
+    });
+
+    // Handle multiline SQL blocks with proper indentation
+    Prism.languages.insertBefore('yaml', 'key', {
+      'sql-multiline': {
+        pattern:
+          /((?:^|\n)\s*sql\s*:\s*[|>][-+]?\s*\n)((?:\s{2,}[^\n\r]+(?:\n|$))+)/,
+        lookbehind: true,
+        inside: {
+          'sql-content': {
+            pattern: /^(\s+)(.+)/gm,
+            inside: {
+              indent: /^\s+/,
+              'sql-code': {
+                pattern: /.+/,
+                inside: Prism.languages.sql,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // Handle YAML scalar content that follows sql: > or sql: | indicators
+    Prism.languages.insertBefore('yaml', 'scalar', {
+      'sql-scalar': {
+        pattern:
+          /^\s*(SELECT|INSERT|UPDATE|DELETE|WITH|CREATE|DROP|ALTER|UNION|FROM|WHERE|JOIN|GROUP|ORDER|HAVING)[\s\S]*$/im,
+        inside: Prism.languages.sql,
+      },
+    });
+  }
+})(RendererPrism);
+
 export { RendererPrism as Prism };

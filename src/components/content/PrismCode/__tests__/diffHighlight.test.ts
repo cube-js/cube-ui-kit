@@ -221,4 +221,44 @@ describe('Prism diff-highlight plugin', () => {
 
     expect(hasNestedSql).toBe(true);
   });
+
+  test('YAML grammar supports SQL highlighting in sql fields', () => {
+    const yamlCode = `cubes:
+  - name: orders
+    sql: SELECT id, name FROM orders WHERE active = 1
+    measures:
+      - name: count
+        sql: COUNT(*)`;
+
+    const tokens = Prism.tokenize(yamlCode, Prism.languages.yaml, 'yaml');
+
+    // Check if SQL tokens are present
+    const hasKeywords = JSON.stringify(tokens).includes('"keyword"');
+    const hasSqlKeywords =
+      JSON.stringify(tokens).includes('SELECT') ||
+      JSON.stringify(tokens).includes('COUNT');
+
+    expect(hasKeywords).toBe(true);
+    expect(hasSqlKeywords).toBe(true);
+  });
+
+  test('YAML grammar supports SQL highlighting in multiline folded blocks', () => {
+    const yamlCode = `cubes:
+  - name: orders
+    sql: >
+      SELECT 1 as id, 100 as amount, 'new' status
+      UNION ALL
+      SELECT 2 as id, 200 as amount, 'new' status`;
+
+    const tokens = Prism.tokenize(yamlCode, Prism.languages.yaml, 'yaml');
+
+    // Check if SQL tokens are present in the multiline block
+    const hasKeywords = JSON.stringify(tokens).includes('"keyword"');
+    const hasSqlKeywords =
+      JSON.stringify(tokens).includes('SELECT') ||
+      JSON.stringify(tokens).includes('UNION');
+
+    expect(hasKeywords).toBe(true);
+    expect(hasSqlKeywords).toBe(true);
+  });
 });
