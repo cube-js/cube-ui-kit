@@ -164,7 +164,11 @@ RendererPrism.languages.sql = {
     // one of the diff tokens without any nested tokens
     if (PREFIXES && env.type in PREFIXES) {
       /** @type {string} */
-      var content = env.content.replace(HTML_TAG, ''); // remove all HTML tags
+      var content;
+      do {
+        content = env.content;
+        env.content = env.content.replace(HTML_TAG, ''); // remove all HTML tags
+      } while (env.content !== content);
 
       /** @type {string} */
       var decoded = content.replace(/&lt;/g, '<').replace(/&amp;/g, '&');
