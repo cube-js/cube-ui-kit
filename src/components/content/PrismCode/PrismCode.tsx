@@ -94,35 +94,44 @@ function PrismCode(props: CubePrismCodeProps, ref) {
   return (
     <PreElement ref={ref} {...otherProps}>
       <Highlight prism={Prism} code={code} language={grammarLang as any}>
-        {({ className, tokens, getLineProps, getTokenProps }) => (
+        {({ className, style, tokens, getLineProps, getTokenProps }) => (
           <code
             data-element="Code"
             className={`${className}${isDiff ? ' diff-highlight' : ''}`}
+            style={{ ...style, color: undefined, backgroundColor: undefined }}
           >
-            {tokens.map((line, i) => (
-              <span
-                key={i}
-                {...getLineProps({ line, key: i })}
-                style={undefined}
-              >
-                {line.map((token, key) => {
-                  const props = getTokenProps({ token, key });
+            {tokens.map((line, i) => {
+              const props = getLineProps({ line, key: i });
 
-                  return (
-                    <span
-                      key={key}
-                      {...props}
-                      style={{
-                        ...props.style,
-                        color: undefined,
-                        backgroundColor: undefined,
-                      }}
-                    />
-                  );
-                })}
-                {'\n'}
-              </span>
-            ))}
+              return (
+                <span
+                  key={i}
+                  {...props}
+                  style={{
+                    ...props.style,
+                    color: undefined,
+                    backgroundColor: undefined,
+                  }}
+                >
+                  {line.map((token, key) => {
+                    const props = getTokenProps({ token, key });
+
+                    return (
+                      <span
+                        key={key}
+                        {...props}
+                        style={{
+                          ...props.style,
+                          color: undefined,
+                          backgroundColor: undefined,
+                        }}
+                      />
+                    );
+                  })}
+                  {'\n'}
+                </span>
+              );
+            })}
           </code>
         )}
       </Highlight>
