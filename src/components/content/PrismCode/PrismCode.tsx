@@ -1,4 +1,5 @@
-import { forwardRef, lazy, Suspense } from 'react';
+import { Highlight } from 'prism-react-renderer';
+import { forwardRef } from 'react';
 
 import {
   BaseProps,
@@ -25,23 +26,6 @@ const PreElement = tasty({
       display: 'block',
     },
   },
-});
-
-const AsyncHighlight = lazy(async () => {
-  // import the grammars you need **first**
-  await Promise.all([import('prismjs/components/prism-sql')]);
-
-  // Ensure all diff-* languages are registered after grammars load
-  const diffLanguagePattern = /^diff-(.+)$/;
-  Object.keys(Prism.languages).forEach((lang) => {
-    const diffLang = `diff-${lang}`;
-    if (!Prism.languages[diffLang] && !diffLanguagePattern.test(lang)) {
-      Prism.languages[diffLang] = Prism.languages.diff;
-    }
-  });
-
-  // then provide the module that React.lazy expects
-  return import('prism-react-renderer').then((m) => ({ default: m.Highlight }));
 });
 
 function isDiffCode(code: string): boolean {
@@ -110,55 +94,53 @@ function PrismCode(props: CubePrismCodeProps, ref) {
 
   return (
     <PreElement ref={ref} {...otherProps}>
-      <Suspense fallback={<code>{code}</code>}>
-        <AsyncHighlight prism={Prism} code={code} language={grammarLang as any}>
-          {({ className, style, tokens, getLineProps, getTokenProps }) => {
-            return (
-              <code
-                data-element="Code"
-                className={`${className}${isDiff ? ' diff-highlight' : ''}`}
-                style={{
-                  ...style,
-                  color: undefined,
-                  backgroundColor: undefined,
-                }}
-              >
-                {tokens.map((line, i) => {
-                  const props = getLineProps({ line, key: i });
+      <Highlight prism={Prism} code={code} language={grammarLang as any}>
+        {({ className, style, tokens, getLineProps, getTokenProps }) => {
+          return (
+            <code
+              data-element="Code"
+              className={`${className}${isDiff ? ' diff-highlight' : ''}`}
+              style={{
+                ...style,
+                color: undefined,
+                backgroundColor: undefined,
+              }}
+            >
+              {tokens.map((line, i) => {
+                const props = getLineProps({ line, key: i });
 
-                  return (
-                    <span
-                      key={i}
-                      {...props}
-                      style={{
-                        ...props.style,
-                        color: undefined,
-                      }}
-                    >
-                      {line.map((token, key) => {
-                        const props = getTokenProps({ token, key });
+                return (
+                  <span
+                    key={i}
+                    {...props}
+                    style={{
+                      ...props.style,
+                      color: undefined,
+                    }}
+                  >
+                    {line.map((token, key) => {
+                      const props = getTokenProps({ token, key });
 
-                        return (
-                          <span
-                            key={key}
-                            {...props}
-                            style={{
-                              ...props.style,
-                              color: undefined,
-                              backgroundColor: undefined,
-                            }}
-                          />
-                        );
-                      })}
-                      {'\n'}
-                    </span>
-                  );
-                })}
-              </code>
-            );
-          }}
-        </AsyncHighlight>
-      </Suspense>
+                      return (
+                        <span
+                          key={key}
+                          {...props}
+                          style={{
+                            ...props.style,
+                            color: undefined,
+                            backgroundColor: undefined,
+                          }}
+                        />
+                      );
+                    })}
+                    {'\n'}
+                  </span>
+                );
+              })}
+            </code>
+          );
+        }}
+      </Highlight>
     </PreElement>
   );
 }
