@@ -14,6 +14,7 @@ import { Prism } from './prismSetup';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-yaml';
 import 'prismjs/components/prism-bash';
+import 'prismjs/components/prism-sql';
 
 const PreElement = tasty({
   as: 'pre',
