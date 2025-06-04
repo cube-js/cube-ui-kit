@@ -82,7 +82,7 @@ function AlertDialog(props: CubeAlertDialogProps, ref) {
           )}
         </Content>
       ) : null}
-      {!noActions || (!confirmProps && !secondaryProps && !cancelProps) ? (
+      {!noActions && (confirmProps || secondaryProps || cancelProps) ? (
         <Footer>
           <ButtonGroup align="end">
             {confirmProps && (
