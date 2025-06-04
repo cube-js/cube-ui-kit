@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.61.8
+
+### Patch Changes
+
+- [#689](https://github.com/cube-js/cube-ui-kit/pull/689) [`dc2d451`](https://github.com/cube-js/cube-ui-kit/commit/dc2d451b8cd6df98f867659b55740ab29a90bd6c) Thanks [@tenphi](https://github.com/tenphi)! - Do not render the footer in AlertDialog if all button props are falsy
+
 ## 0.61.7
 
 ### Patch Changes
