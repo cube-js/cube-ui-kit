@@ -25,7 +25,7 @@ export function borderStyle({ border }) {
 
   const processed = parseStyle(String(border));
   const { values, mods, colors } =
-    processed.groups[0] ?? ({ values: [], mods: [], colors: [] } as any);
+    processed.groups[0] ?? ({ values: [], mods: [], colors: [] } as ProcessedGroup);
 
   const directions = filterMods(mods, DIRECTIONS);
   const typeMods = filterMods(mods, BORDER_STYLES);
