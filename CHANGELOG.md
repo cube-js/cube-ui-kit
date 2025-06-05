@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.61.9
+
+### Patch Changes
+
+- [#691](https://github.com/cube-js/cube-ui-kit/pull/691) [`31425c9`](https://github.com/cube-js/cube-ui-kit/commit/31425c9259eb968d844acfda15203b96ce0a1457) Thanks [@tenphi](https://github.com/tenphi)! - Fix `defaultContainerProps` in `useDialogContainer` hook.
+
 ## 0.61.8
 
 ### Patch Changes
