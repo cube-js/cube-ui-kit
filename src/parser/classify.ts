@@ -16,6 +16,40 @@ export function classify(
   const token = raw.trim();
   if (!token) return { bucket: Bucket.Mod, processed: '' };
 
+  // Early-out: if the token contains unmatched parentheses treat it as invalid
+  // and skip it. This avoids cases like `drop-shadow(` that are missing a
+  // closing parenthesis (e.g., a user-typo in CSS). We count paren depth while
+  // ignoring everything inside string literals to avoid false positives.
+  {
+    let depth = 0;
+    let inQuote: string | 0 = 0;
+    for (let i = 0; i < token.length; i++) {
+      const ch = token[i];
+
+      // track quote context so parentheses inside quotes are ignored
+      if (inQuote) {
+        if (ch === inQuote && token[i - 1] !== '\\') inQuote = 0;
+        continue;
+      }
+      if (ch === '"' || ch === "'") {
+        inQuote = ch;
+        continue;
+      }
+
+      if (ch === '(') depth++;
+      else if (ch === ')') depth = Math.max(0, depth - 1);
+    }
+
+    if (depth !== 0) {
+      // Unbalanced parens → treat as invalid token (skipped).
+      console.warn(
+        'tasty: skipped invalid function token with unmatched parentheses:',
+        token,
+      );
+      return { bucket: Bucket.Mod, processed: '' };
+    }
+  }
+
   // Quoted string literals should be treated as value tokens (e.g., "" for content)
   if (
     (token.startsWith('"') && token.endsWith('"')) ||

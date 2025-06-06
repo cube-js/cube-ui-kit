@@ -193,4 +193,17 @@ describe('StyleProcessor', () => {
       'calc(var(--slider-range-end) - var(--slider-range-start))',
     ]);
   });
+
+  test('skips invalid functions while parsing (for example missing closing parenthesis)', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const expr =
+      'blur(10px) drop-shadow(0 0 1px rgb(var(--dark-color-rgb) / 20%)';
+    const res = parser.process(expr);
+
+    expect(res.groups[0].values).toEqual(['blur(10px)']);
+    expect(warnSpy).toHaveBeenCalled();
+
+    warnSpy.mockRestore();
+  });
 });

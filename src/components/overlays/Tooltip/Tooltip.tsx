@@ -50,7 +50,7 @@ const TooltipElement = tasty({
     },
     filter: {
       '': false,
-      light: 'drop-shadow(0 0 1px rgb(var(--dark-color-rgb) / 20%)',
+      light: 'drop-shadow(0 0 1px #dark.2)',
     },
   },
 });
