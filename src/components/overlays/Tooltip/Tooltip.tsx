@@ -5,6 +5,7 @@ import {
   forwardRef,
   useContext,
   useImperativeHandle,
+  useMemo,
   useRef,
 } from 'react';
 import { AriaTooltipProps, useTooltip } from 'react-aria';
@@ -29,8 +30,14 @@ export type { AriaTooltipProps };
 const TooltipElement = tasty({
   styles: {
     display: 'block',
-    fill: '#dark.85',
-    color: '#white',
+    fill: {
+      '': '#dark.85',
+      light: '#white',
+    },
+    color: {
+      '': '#white',
+      light: '#dark-02',
+    },
     width: 'initial 36x max-content',
     radius: true,
     padding: '.75x 1x',
@@ -41,6 +48,10 @@ const TooltipElement = tasty({
       '': 'none',
       material: 'auto',
     },
+    filter: {
+      '': false,
+      light: 'drop-shadow(0 0 1px rgb(var(--dark-color-rgb) / 20%)',
+    },
   },
 });
 
@@ -50,7 +61,10 @@ const TooltipTipElement = tasty({
     width: '1px',
     height: '1px',
     border: '.5x #clear',
-    borderTop: '.5x solid #dark.85',
+    borderTop: {
+      '': '.5x solid #dark.85',
+      light: '.5x solid #white',
+    },
     borderBottom: '0',
     top: {
       '': 'initial',
@@ -100,6 +114,7 @@ export interface CubeTooltipProps
   placement?: PlacementAxis;
   isMaterial?: boolean;
   isOpen?: boolean;
+  isLight?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
   defaultOpen?: boolean;
   shouldFlip?: boolean;
@@ -116,6 +131,8 @@ function Tooltip(
     overlayProps,
     minOffset,
     minScale,
+    isMaterial: isMaterialContext,
+    isLight: isLightContext,
     ...tooltipProviderProps
   } = useContext(TooltipContext);
 
@@ -130,7 +147,8 @@ function Tooltip(
     isOpen,
     tipStyles,
     showIcon,
-    isMaterial,
+    isMaterial = isMaterialContext,
+    isLight = isLightContext,
     ...otherProps
   } = props;
 
@@ -149,16 +167,21 @@ function Tooltip(
     minScale = String(minScale);
   }
 
+  const mods = useMemo(() => {
+    return {
+      material: isMaterial,
+      light: isLight,
+      open: isOpen,
+    };
+  }, [isMaterial, isOpen, isLight]);
+
   return (
     <StyledTooltipElement
       {...tooltipProps}
       {...overlayProps}
       ref={overlayRef}
       styles={styles}
-      mods={{
-        open: isOpen,
-        material: isMaterial,
-      }}
+      mods={mods}
       data-min-offset={minOffset}
       data-min-scale={minScale}
       data-placement={placement}
@@ -167,6 +190,7 @@ function Tooltip(
       <TooltipTipElement
         data-placement={placement}
         styles={tipStyles}
+        mods={mods}
         {...arrowProps}
       />
     </StyledTooltipElement>

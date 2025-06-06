@@ -13,6 +13,7 @@ interface TooltipContextProps {
   minScale?: string | number;
   minOffset?: string | number;
   isMaterial?: boolean;
+  isLight?: boolean;
 }
 
 export const TooltipContext = React.createContext<TooltipContextProps>({});

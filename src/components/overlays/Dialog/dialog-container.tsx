@@ -15,6 +15,7 @@ import { DialogContainer } from './DialogContainer';
  * Generic hook to manage a dialog component.
  *
  * @param Component - A React component that represents the dialog content. It must accept props of type P.
+ * @param defaultContainerProps - Default props to pass to the DialogContainer.
  * @returns An object with `open` function to open the dialog with provided props and `rendered` JSX element to include in your component tree.
  */
 export function useDialogContainer<
@@ -65,12 +66,12 @@ export function useDialogContainer<
       <DialogContainer
         isOpen={isOpen}
         onDismiss={close}
-        {...(containerProps ?? {})}
+        {...mergeProps(defaultContainerProps, containerProps || undefined)}
       >
-        <Component {...mergeProps(defaultContainerProps, componentProps)} />
+        <Component {...componentProps} />
       </DialogContainer>
     );
-  }, [componentProps, containerProps, isOpen]);
+  }, [componentProps, containerProps, isOpen, defaultContainerProps]);
 
   return {
     open,

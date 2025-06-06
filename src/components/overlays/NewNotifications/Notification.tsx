@@ -12,7 +12,7 @@ export type NotificationProps = {
    *
    * @default false
    */
-  // eslint-disable-next-line react/boolean-prop-naming
+
   disableRemoveOnUnmount?: boolean;
 } & CubeNotifyApiProps;
 
@@ -35,7 +35,6 @@ export function Notification(props: NotificationProps) {
   useEffect(() => {
     notify({ id, ...props });
     // We can safety ignore props, bc we update notification in the another effect, this effect only mounts a notification.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
   useEffect(() => () => removeNotification(id), [id, removeNotification]);
   useEffect(() => update(id, props));

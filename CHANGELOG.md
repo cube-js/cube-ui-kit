@@ -1,5 +1,47 @@
 # @cube-dev/ui-kit
 
+## 0.61.10
+
+### Patch Changes
+
+- [#693](https://github.com/cube-js/cube-ui-kit/pull/693) [`9b52be6`](https://github.com/cube-js/cube-ui-kit/commit/9b52be68eed3d9335a2b61889e98e8845dd4341e) Thanks [@tenphi](https://github.com/tenphi)! - Allow PrismCode to accept nullish values if they are passed.
+
+## 0.61.9
+
+### Patch Changes
+
+- [#691](https://github.com/cube-js/cube-ui-kit/pull/691) [`31425c9`](https://github.com/cube-js/cube-ui-kit/commit/31425c9259eb968d844acfda15203b96ce0a1457) Thanks [@tenphi](https://github.com/tenphi)! - Fix `defaultContainerProps` in `useDialogContainer` hook.
+
+## 0.61.8
+
+### Patch Changes
+
+- [#689](https://github.com/cube-js/cube-ui-kit/pull/689) [`dc2d451`](https://github.com/cube-js/cube-ui-kit/commit/dc2d451b8cd6df98f867659b55740ab29a90bd6c) Thanks [@tenphi](https://github.com/tenphi)! - Do not render the footer in AlertDialog if all button props are falsy
+
+## 0.61.7
+
+### Patch Changes
+
+- [#687](https://github.com/cube-js/cube-ui-kit/pull/687) [`d6820d0`](https://github.com/cube-js/cube-ui-kit/commit/d6820d09d10aca57527a3578efddcf77f03c283e) Thanks [@tenphi](https://github.com/tenphi)! - Use react renderer for PrismCode.
+
+## 0.61.6
+
+### Patch Changes
+
+- [#685](https://github.com/cube-js/cube-ui-kit/pull/685) [`eeaf472`](https://github.com/cube-js/cube-ui-kit/commit/eeaf472f5c561feec8557939e7152458ad2b3011) Thanks [@tenphi](https://github.com/tenphi)! - Add light version for Tooltip component. Use `isLight` prop to activate it.
+
+## 0.61.5
+
+### Patch Changes
+
+- [#683](https://github.com/cube-js/cube-ui-kit/pull/683) [`e73acd5`](https://github.com/cube-js/cube-ui-kit/commit/e73acd5e27cec6ed5075cada06967c166465ef5d) Thanks [@tenphi](https://github.com/tenphi)! - Fix focused state styles on Menu items.
+
+## 0.61.4
+
+### Patch Changes
+
+- [`56f9304`](https://github.com/cube-js/cube-ui-kit/commit/56f9304f8af3a9d88456ded269e7983e0dfed861) Thanks [@tenphi](https://github.com/tenphi)! - Fix missing aria-label on Close button in FileTabs.
+
 ## 0.61.3
 
 ### Patch Changes
