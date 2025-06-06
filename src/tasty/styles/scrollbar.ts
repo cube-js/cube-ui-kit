@@ -36,7 +36,7 @@ export function scrollbarStyle({ scrollbar, overflow }: ScrollbarStyleProps) {
   // Process modifiers
   if (mods.includes('thin')) {
     style['scrollbar-width'] = 'thin';
-  } else if (values.includes('none')) {
+  } else if (mods.includes('none')) {
     style['scrollbar-width'] = 'none';
     style['scrollbar-color'] = 'transparent transparent';
     // Also hide WebKit scrollbars
