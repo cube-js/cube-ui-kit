@@ -75,9 +75,8 @@ export function createStyle(
         };
       }
 
-      const { value } = parseStyle(styleValue, 1);
-
-      return { [finalCssStyle]: value };
+      const processed = parseStyle(styleValue as any);
+      return { [finalCssStyle]: processed.output };
     };
 
     styleHandler.__lookupStyles = [styleName];

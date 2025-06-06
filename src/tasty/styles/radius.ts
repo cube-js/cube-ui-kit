@@ -12,7 +12,9 @@ export function radiusStyle({ radius }) {
 
   if (radius === true) radius = '1r';
 
-  let { mods, values } = parseStyle(radius, 1);
+  const processed = parseStyle(radius);
+  let { mods, values } =
+    processed.groups[0] ?? ({ mods: [], values: [] } as any);
 
   if (mods.includes('round')) {
     values = ['9999rem'];

@@ -13,7 +13,8 @@ export function marginBlockStyle({
 
   if (margin === true) margin = '1x';
 
-  let { values } = parseStyle(margin);
+  const processed = parseStyle(margin);
+  let { values } = processed.groups[0] ?? ({ values: [] } as any);
 
   if (!values.length) {
     values = ['var(--gap)'];

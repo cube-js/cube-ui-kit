@@ -10,7 +10,9 @@ const DIRECTION_MAP = {
 export function fadeStyle({ fade }) {
   if (!fade) return '';
 
-  let { values, mods } = parseStyle(fade);
+  const processed = parseStyle(fade);
+  let { values, mods } =
+    processed.groups[0] ?? ({ values: [], mods: [] } as any);
 
   let directions = filterMods(mods, DIRECTIONS);
 
