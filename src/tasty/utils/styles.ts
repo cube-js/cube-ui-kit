@@ -138,29 +138,6 @@ export const CUSTOM_UNITS = {
 
 export const DIRECTIONS = ['top', 'right', 'bottom', 'left'];
 
-const COLOR_FUNCS = ['rgb', 'rgba'];
-const IGNORE_MODS = [
-  'auto',
-  'max-content',
-  'min-content',
-  'none',
-  'subgrid',
-  'initial',
-];
-
-const ATTR_REGEXP =
-  /("[^"]*")|('[^']*')|([a-z-]+\()|(#[a-z0-9.-]{2,}(?![a-f0-9[-]))|(--[a-z0-9-]+|@[a-z0-9-]+)|([a-z][a-z0-9-]*)|(([0-9]+(?![0-9.])|[0-9-.]{2,}|[0-9-]{2,}|[0-9.-]{3,})([a-z%]{0,3}))|([*/+-])|([()])|(,)/gi;
-const ATTR_CACHE = new Map();
-const ATTR_CACHE_AUTOCALC = new Map();
-const ATTR_CACHE_IGNORE_COLOR = new Map();
-const MAX_CACHE = 10000;
-const ATTR_CACHE_MODE_MAP = [
-  ATTR_CACHE_AUTOCALC,
-  ATTR_CACHE,
-  ATTR_CACHE_IGNORE_COLOR,
-];
-const PREPARE_REGEXP = /calc\((\d*)\)/gi;
-
 export function createRule(
   prop: string,
   value: StyleValue,
@@ -188,8 +165,6 @@ function getModSelector(modName: string): string {
   return MOD_NAME_CACHE.get(modName);
 }
 
-// ---------------------------------------------------------------------------
-// New style-parser integration
 // Keep a single shared instance across the whole library so that the cache of
 // the new StyleParser keeps working and custom functions/units can be updated
 // at runtime.
@@ -206,7 +181,6 @@ export function customFunc(
   __tastyFuncs[name] = fn;
   __tastyParser.setFuncs(__tastyFuncs);
 }
-// ---------------------------------------------------------------------------
 
 /**
  *
@@ -214,7 +188,7 @@ export function customFunc(
  * @param {Number} mode
  * @returns {Object<String,String|Array>}
  */
-export function parseStyle(value: StyleValue, mode = 0): ProcessedStyle {
+export function parseStyle(value: StyleValue): ProcessedStyle {
   let str: string;
 
   if (typeof value === 'string') {
@@ -226,7 +200,6 @@ export function parseStyle(value: StyleValue, mode = 0): ProcessedStyle {
     str = '';
   }
 
-  // Ignore `mode` – kept only for backward-compatible signature.
   return __tastyParser.process(str);
 }
 
@@ -365,10 +338,6 @@ export function transferMods(mods, from, to) {
       from.splice(from.indexOf(mod), 1);
     }
   });
-}
-
-function prepareParsedValue(val) {
-  return val.trim().replace(PREPARE_REGEXP, (s, inner) => inner);
 }
 
 export function filterMods(mods, allowedMods) {
