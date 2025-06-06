@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.61.10
+
+### Patch Changes
+
+- [#693](https://github.com/cube-js/cube-ui-kit/pull/693) [`9b52be6`](https://github.com/cube-js/cube-ui-kit/commit/9b52be68eed3d9335a2b61889e98e8845dd4341e) Thanks [@tenphi](https://github.com/tenphi)! - Allow PrismCode to accept nullish values if they are passed.
+
 ## 0.61.9
 
 ### Patch Changes
