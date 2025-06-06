@@ -80,7 +80,11 @@ function isDiffCode(code: string): boolean {
 }
 
 function PrismCode(props: CubePrismCodeProps, ref) {
-  const { code = '', language = 'javascript', ...otherProps } = props;
+  let { code = '', language = 'javascript', ...otherProps } = props;
+
+  if (!code) {
+    code = '';
+  }
 
   if (typeof code !== 'string' && code) {
     throw new Error(
