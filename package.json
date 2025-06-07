@@ -10,7 +10,6 @@
   "module": "dist/es/index.js",
   "types": "dist/types/index.d.ts",
   "sideEffects": false,
-  "packageManager": "pnpm@9.12.2",
   "exports": {
     ".": {
       "import": "./dist/es/index.js",
