@@ -593,7 +593,6 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
     <OptionElement
       {...mergeProps(optionProps, focusProps)}
       ref={ref}
-      key={item.key}
       mods={{
         selected: isSelected,
         focused: shouldUseVirtualFocus ? isVirtualFocused : isFocused,
