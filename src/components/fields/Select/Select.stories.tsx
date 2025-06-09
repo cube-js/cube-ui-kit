@@ -65,7 +65,7 @@ export const Primary = Template.bind({});
 Primary.args = { type: 'primary', placeholder: 'primary' };
 
 export const Clear = Template.bind({});
-Clear.args = { type: 'clear', placeholder: 'clear', width: 'min-content' };
+Clear.args = { type: 'clear', placeholder: 'clear', width: 'max-content' };
 
 export const Invalid = Template.bind({});
 Invalid.args = { selectedKey: 'yellow', validationState: 'invalid' };
