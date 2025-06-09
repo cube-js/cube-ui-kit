@@ -95,10 +95,7 @@ const SelectWrapperElement = tasty({
       textAlign: 'left',
       fill: '#clear',
       textOverflow: 'ellipsis',
-      overflow: {
-        '': 'initial',
-        ellipsis: 'hidden',
-      },
+      overflow: 'hidden',
     },
 
     CaretIcon: {
@@ -179,7 +176,7 @@ const ListBoxElement = tasty({
   as: 'ul',
   styles: {
     display: 'flex',
-    gap: '.5x',
+    gap: '1bw',
     flow: 'column',
     margin: '0',
     padding: '.5x',
@@ -196,7 +193,9 @@ const ListBoxElement = tasty({
 const OptionElement = tasty({
   as: 'li',
   styles: {
-    display: 'block',
+    display: 'flex',
+    flow: 'column',
+    gap: '0',
     padding: '(1x - 1px) (1.5x - 1px)',
     cursor: 'pointer',
     radius: true,
@@ -214,6 +213,23 @@ const OptionElement = tasty({
     },
     preset: 't3',
     transition: 'theme',
+    width: 'max 100%',
+
+    Label: {
+      preset: 't3',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      width: 'max 100%',
+    },
+
+    Description: {
+      preset: 't4',
+      color: '#dark-03',
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+      textOverflow: 'ellipsis',
+      width: 'max 100%',
+    },
   },
 });
 
@@ -265,7 +281,6 @@ export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
   /** The ref for the list box. */
   listBoxRef?: RefObject<HTMLElement>;
   size?: 'small' | 'default' | 'large' | string;
-  ellipsis?: boolean;
   placeholder?: string;
 }
 
@@ -321,7 +336,6 @@ function Select<T extends object>(
     type = 'outline',
     theme = 'default',
     labelSuffix,
-    ellipsis,
     suffixPosition = 'before',
     ...otherProps
   } = props;
@@ -383,7 +397,6 @@ function Select<T extends object>(
 
   const modifiers = useMemo(
     () => ({
-      ellipsis,
       invalid: isInvalid,
       valid: validationState === 'valid',
       disabled: isDisabled,
@@ -395,7 +408,6 @@ function Select<T extends object>(
       suffix: true,
     }),
     [
-      ellipsis,
       validationState,
       isDisabled,
       isLoading,
@@ -575,11 +587,12 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
   // style to the focused option
   let { isFocused, focusProps } = useFocus({ isDisabled });
 
+  const description = (item as any)?.props?.description;
+
   return (
     <OptionElement
       {...mergeProps(optionProps, focusProps)}
       ref={ref}
-      key={item.key}
       mods={{
         selected: isSelected,
         focused: shouldUseVirtualFocus ? isVirtualFocused : isFocused,
@@ -588,7 +601,8 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
       data-theme={isSelected ? 'special' : undefined}
       styles={styles}
     >
-      {item.rendered}
+      <div data-element="Label">{item.rendered}</div>
+      {description ? <div data-element="Description">{description}</div> : null}
     </OptionElement>
   );
 }
@@ -601,7 +615,12 @@ const __Select = Object.assign(
   _Select as typeof _Select & {
     Item: typeof Item;
   },
-  { Item },
+  {
+    Item: Item as unknown as (props: {
+      description?: ReactNode;
+      [key: string]: any;
+    }) => null,
+  },
 );
 
 __Select.displayName = 'Select';
