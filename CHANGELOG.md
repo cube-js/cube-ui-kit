@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.62.0
+
+### Minor Changes
+
+- [#695](https://github.com/cube-js/cube-ui-kit/pull/695) [`81281f1`](https://github.com/cube-js/cube-ui-kit/commit/81281f1b8f06d34f063f4e9ed899114b6f046078) Thanks [@tenphi](https://github.com/tenphi)! - Remove `ellipsis` flag from `<Select/>`. Text overflow ellipsis is now always used.
+
+### Patch Changes
+
+- [#695](https://github.com/cube-js/cube-ui-kit/pull/695) [`81281f1`](https://github.com/cube-js/cube-ui-kit/commit/81281f1b8f06d34f063f4e9ed899114b6f046078) Thanks [@tenphi](https://github.com/tenphi)! - Add support for description in `Select.Item`.
+
 ## 0.61.10
 
 ### Patch Changes
