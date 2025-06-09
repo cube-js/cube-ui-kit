@@ -107,11 +107,33 @@ export const Wide: StoryFn<CubeSelectProps<any>> = (args) => (
     ))}
   </Select>
 );
-Wide.args = { width: '500px', defaultSelectedKey: options[0] };
+Wide.args = { width: 'max-content', defaultSelectedKey: options[0] };
 
 export const WithEllipsis = Template.bind({});
 WithEllipsis.args = {
-  ellipsis: true,
   styles: { width: 'max 30x' },
   defaultSelectedKey: 'very-long-option-value-with-suffix',
 };
+
+export const WithDescription: StoryFn<CubeSelectProps<any>> = (args) => (
+  <Select
+    {...args}
+    placeholder="Select a color"
+    listBoxStyles={{ width: 'max 30x' }}
+  >
+    <Select.Item key="red" description="The color of fire">
+      Red
+    </Select.Item>
+    <Select.Item key="green" description="The color of nature">
+      Green
+    </Select.Item>
+    <Select.Item
+      key="blue"
+      description="The color of the sky (very long description)"
+    >
+      Blue
+    </Select.Item>
+  </Select>
+);
+WithDescription.args = {};
+WithDescription.play = WithDisabledOption.play;
