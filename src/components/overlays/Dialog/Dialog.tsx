@@ -54,6 +54,10 @@ const DialogElement = tasty({
       '[data-type="panel"]': 'auto',
     },
     gap: 0,
+    border: {
+      '': false,
+      '[data-type="popover"]': true,
+    },
     radius: {
       '': '1cr',
       '[data-type="tray"]': '1cr top',
