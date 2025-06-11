@@ -360,3 +360,10 @@ export const ItemsWithDescriptions: StoryFn<CubeComboBoxProps<any>> = (
   </ComboBox>
 );
 ItemsWithDescriptions.args = {};
+ItemsWithDescriptions.play = async ({ canvasElement }) => {
+  const { getByTestId } = within(canvasElement);
+
+  const trigger = getByTestId('ComboBoxTrigger');
+
+  await userEvent.click(trigger);
+};
