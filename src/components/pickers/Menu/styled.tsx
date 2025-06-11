@@ -23,7 +23,7 @@ export const StyledMenu = tasty({
       section: '',
     },
     border: {
-      '': '#dark-05',
+      '': '#border',
       section: '',
     },
     radius: '(1cr + 1bw)',
