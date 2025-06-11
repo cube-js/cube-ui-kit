@@ -14,6 +14,7 @@ import {
   Button,
   DialogContainer,
   DirectionIcon,
+  Divider,
   Flex,
   Menu,
   MenuTrigger,
@@ -41,6 +42,7 @@ const MenuTemplate = (props) => {
     <Menu id="menu" {...props} width="340px">
       <Menu.Item key="1">Item 1</Menu.Item>
       <Menu.Item key="2">Item 2</Menu.Item>
+      <Divider />
       <Menu.Item key="3">Item 3</Menu.Item>
       <Menu.Item key="4">Item 4</Menu.Item>
     </Menu>
@@ -482,4 +484,20 @@ WithTriggerState.play = async ({ canvasElement, viewMode }) => {
   await userEvent.click(await findByRole('button'));
 
   await expect(await findByRole('menu')).toBeInTheDocument();
+};
+
+export const ItemsWithDescriptions = (props) => {
+  return (
+    <div style={{ padding: '20px', width: '340px' }}>
+      <Menu id="menu" {...props} header="Items with descriptions">
+        <Menu.Item key="1" description="Additional item details here">
+          First item
+        </Menu.Item>
+        <Menu.Item key="2" description="Second description line">
+          Second item
+        </Menu.Item>
+        <Menu.Item key="3">Item without description</Menu.Item>
+      </Menu>
+    </div>
+  );
 };

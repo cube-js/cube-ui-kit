@@ -1,6 +1,6 @@
 import { useSyncRef } from '@react-aria/utils';
 import { useDOMRef } from '@react-spectrum/utils';
-import { DOMRef, ItemProps } from '@react-types/shared';
+import { DOMRef, ItemProps, Key } from '@react-types/shared';
 import React, { cloneElement, ReactElement, ReactNode } from 'react';
 import { AriaMenuProps, useMenu } from 'react-aria';
 import {
@@ -19,12 +19,13 @@ import {
   Styles,
 } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
+import { Divider as BaseDivider } from '../../content/Divider';
 
 import { useMenuContext } from './context';
 import { MenuButtonProps, MenuSelectionType } from './MenuButton';
 import { MenuItem } from './MenuItem';
 import { MenuSection } from './MenuSection';
-import { StyledMenu, StyledMenuHeader } from './styled';
+import { StyledDivider, StyledMenu, StyledMenuHeader } from './styled';
 
 export interface CubeMenuProps<T>
   extends BasePropsWithoutChildren,
@@ -39,6 +40,12 @@ export interface CubeMenuProps<T>
   sectionStyles?: Styles;
   sectionHeadingStyles?: Styles;
   qa?: BaseProps['qa'];
+  /** Menu accepts <Menu.Item>, <Menu.Section>, and <Divider> as children */
+  children?: React.ReactNode;
+  /** Keys that should appear disabled */
+  disabledKeys?: Iterable<Key>;
+  /** Selection mode for the menu: 'single' | 'multiple' */
+  selectionMode?: 'single' | 'multiple';
 }
 
 function Menu<T extends object>(
@@ -59,11 +66,29 @@ function Menu<T extends object>(
   const contextProps = useMenuContext();
   const completeProps = mergeProps(contextProps, rest);
 
-  const state = useTreeState(completeProps);
-  const items = [...state.collection];
-  const hasSections = items.some((item) => item.type === 'section');
+  // Filter out Divider elements for collection creation.
+  const filteredChildren = React.Children.toArray(
+    completeProps.children,
+  ).filter(
+    (child) =>
+      !(
+        React.isValidElement(child) &&
+        // @ts-ignore
+        child.type === BaseDivider
+      ),
+  );
 
-  const { menuProps } = useMenu(completeProps, state, domRef);
+  // Props used for collection building (exclude dividers).
+  const treeProps = {
+    ...completeProps,
+    children: filteredChildren,
+  } as typeof completeProps;
+
+  const state = useTreeState(treeProps);
+  const collectionItems = [...state.collection];
+  const hasSections = collectionItems.some((item) => item.type === 'section');
+
+  const { menuProps } = useMenu(treeProps, state, domRef);
   const styles = extractStyles(completeProps, CONTAINER_STYLES);
 
   const defaultProps = {
@@ -84,40 +109,70 @@ function Menu<T extends object>(
       ref={domRef}
     >
       {header && <StyledMenuHeader>{header}</StyledMenuHeader>}
-      {items.map((item) => {
-        if (item.type === 'section') {
-          return (
-            <MenuSection
+      {(() => {
+        // Render children in the same order as they were provided, but leverage
+        // react-stately collection for interactive Menu items and sections.
+        let itemIndex = 0;
+        const children = React.Children.toArray(completeProps.children);
+
+        return children.map((child, index) => {
+          // Divider handling
+          if (
+            // Valid React element and its type equals to our Divider component
+            React.isValidElement(child) &&
+            // @ts-ignore – comparing component types is acceptable here
+            child.type === BaseDivider
+          ) {
+            return (
+              <StyledDivider
+                // "li" is required inside <ul> to be valid HTML.
+                key={`divider-${index}`}
+                as="li"
+                role="separator"
+                aria-orientation="horizontal"
+              />
+            );
+          }
+
+          // Handle items/sections coming from react-stately collection
+          const item = collectionItems[itemIndex++];
+
+          if (!item) return null;
+
+          if (item.type === 'section') {
+            return (
+              <MenuSection
+                key={item.key}
+                item={item}
+                state={state}
+                styles={sectionStyles}
+                itemStyles={itemStyles}
+                headingStyles={sectionHeadingStyles}
+                selectionIcon={selectionIcon}
+              />
+            );
+          }
+
+          let menuItem = (
+            <MenuItem
               key={item.key}
               item={item}
               state={state}
-              styles={sectionStyles}
-              itemStyles={itemStyles}
-              headingStyles={sectionHeadingStyles}
+              styles={itemStyles}
               selectionIcon={selectionIcon}
+              onAction={item.onAction}
             />
           );
-        }
 
-        let menuItem = (
-          <MenuItem
-            key={item.key}
-            item={item}
-            state={state}
-            styles={itemStyles}
-            selectionIcon={selectionIcon}
-            onAction={item.onAction}
-          />
-        );
+          if (item.props.wrapper) {
+            menuItem = item.props.wrapper(menuItem);
+          }
 
-        if (item.props.wrapper) {
-          menuItem = item.props.wrapper(menuItem);
-        }
-
-        return cloneElement(menuItem, {
-          key: item.key,
+          return cloneElement(menuItem, {
+            key: item.key,
+          });
         });
-      })}
+      })()}
     </StyledMenu>
   );
 }
@@ -132,7 +187,10 @@ type PartialMenuButton = Partial<MenuButtonProps>;
 
 type ItemComponent = <T>(
   props: ItemProps<T> &
-    PartialMenuButton & { wrapper?: (item: ReactElement) => ReactElement },
+    PartialMenuButton & {
+      description?: ReactNode;
+      wrapper?: (item: ReactElement) => ReactElement;
+    },
 ) => ReactElement;
 
 type SectionComponent = typeof BaseSection;
@@ -151,7 +209,10 @@ type __MenuComponent = typeof _Menu & {
 };
 
 const __Menu = Object.assign(_Menu as __MenuComponent, {
-  Item,
+  Item: Item as unknown as (props: {
+    description?: ReactNode;
+    [key: string]: any;
+  }) => ReactElement,
   Section,
   displayName: 'Menu',
 });

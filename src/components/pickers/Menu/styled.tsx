@@ -40,9 +40,9 @@ export const StyledDivider = tasty({
   styles: {
     display: 'flex',
     flow: 'column',
-    margin: '0 -0.5x',
+    margin: '.5x',
     listStyle: 'none',
-    fill: '#dark.05',
+    fill: '#border',
     height: '1bw',
   },
 });

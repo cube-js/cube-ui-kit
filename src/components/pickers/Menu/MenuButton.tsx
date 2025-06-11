@@ -14,6 +14,7 @@ const StyledButton = tasty(Block, {
   styles: {
     ...DEFAULT_BUTTON_STYLES,
     ...DEFAULT_NEUTRAL_STYLES,
+    height: 'min 4x',
     border: {
       '': '#clear',
       pressed: '#clear',
@@ -67,6 +68,11 @@ const StyledButton = tasty(Block, {
         disabled: '#dark-04',
       },
     },
+
+    Description: {
+      preset: 't4',
+      color: '#dark-03',
+    },
   },
 });
 
@@ -99,7 +105,9 @@ const getPostfix = (postfix) =>
 export type MenuSelectionType = 'checkbox' | 'radio';
 
 export type MenuButtonProps = {
-  postfix: ReactNode;
+  postfix?: ReactNode;
+  /** Optional description shown under the main label */
+  description?: ReactNode;
   selectionIcon?: MenuSelectionType;
   isSelectable?: boolean;
   isSelected?: boolean;
@@ -122,6 +130,7 @@ export function MenuButton({
   children,
   icon,
   postfix,
+  description,
   ...props
 }: MenuButtonProps) {
   const { selectionIcon, isSelected, isSelectable, isDisabled, ...rest } =
@@ -143,9 +152,22 @@ export function MenuButton({
       {checkIcon ? <div data-element="ButtonIcon">{checkIcon}</div> : null}
       {icon ? <div data-element="ButtonIcon">{icon}</div> : null}
       <Space gap="1x" placeContent="space-between" overflow="clip" width="100%">
-        <Text ellipsis color="inherit">
-          {children}
-        </Text>
+        <Space flow="column" gap="0" width="100%">
+          <Text ellipsis color="inherit">
+            {children}
+          </Text>
+          {description ? (
+            <Text
+              nowrap
+              ellipsis
+              data-element="Description"
+              preset="t4"
+              color="#dark-03"
+            >
+              {description}
+            </Text>
+          ) : null}
+        </Space>
         {postfix && getPostfix(postfix)}
       </Space>
     </StyledButton>
