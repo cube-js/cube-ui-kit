@@ -31,7 +31,8 @@ export function gapStyle({
     flow = isFlex ? 'row' : 'column';
   }
 
-  const { values } = parseStyle(gap);
+  const processed = parseStyle(gap);
+  const { values } = processed.groups[0] ?? ({ values: [] } as any);
 
   gap = values.join(' ');
 
