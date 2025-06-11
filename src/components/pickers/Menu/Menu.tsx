@@ -78,10 +78,27 @@ function Menu<T extends object>(
       ),
   );
 
+  // React may prefix keys with '.$' when accessing them via Children.toArray.
+  // Strip that prefix so selection/disabled logic receives the original keys.
+  const normalizedChildren = filteredChildren.map((child) => {
+    if (
+      React.isValidElement(child) &&
+      child.key &&
+      typeof child.key === 'string'
+    ) {
+      const cleanKey = child.key.replace(/^\.\$/, '');
+      // Only clone if the key actually changed to avoid unnecessary work.
+      return cleanKey !== child.key
+        ? React.cloneElement(child, { key: cleanKey })
+        : child;
+    }
+    return child;
+  });
+
   // Props used for collection building (exclude dividers).
   const treeProps = {
     ...completeProps,
-    children: filteredChildren,
+    children: normalizedChildren,
   } as typeof completeProps;
 
   const state = useTreeState(treeProps);
