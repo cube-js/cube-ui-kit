@@ -3,6 +3,7 @@ import {
   ForwardedRef,
   forwardRef,
   ReactElement,
+  ReactNode,
   RefObject,
   useEffect,
   useMemo,
@@ -472,7 +473,12 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   props: CubeComboBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },
 ) => ReactElement) & { Item: typeof Item };
 
-ComboBox.Item = Item;
+// Extend typing on Item to accept optional `description` prop like Select does.
+ComboBox.Item = Item as unknown as (props: {
+  description?: ReactNode;
+  [key: string]: any;
+}) => ReactElement;
+
 Object.defineProperty(ComboBox, 'cubeInputType', {
   value: 'ComboBox',
   enumerable: false,

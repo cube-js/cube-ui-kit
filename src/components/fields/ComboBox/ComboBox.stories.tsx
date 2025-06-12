@@ -343,3 +343,27 @@ WithinFormStopBlurPropagation.play = async ({ canvasElement }) => {
   const button = getByTestId('Button');
   await userEvent.click(button);
 };
+
+export const ItemsWithDescriptions: StoryFn<CubeComboBoxProps<any>> = (
+  args,
+) => (
+  <ComboBox {...args} width="300px" label="Choose an item">
+    <ComboBox.Item key="red" description="Strawberries, tomatoes">
+      Red
+    </ComboBox.Item>
+    <ComboBox.Item key="orange" description="Oranges, carrots">
+      Orange
+    </ComboBox.Item>
+    <ComboBox.Item key="yellow" description="Bananas, lemons">
+      Yellow
+    </ComboBox.Item>
+  </ComboBox>
+);
+ItemsWithDescriptions.args = {};
+ItemsWithDescriptions.play = async ({ canvasElement }) => {
+  const { getByTestId } = within(canvasElement);
+
+  const trigger = getByTestId('ComboBoxTrigger');
+
+  await userEvent.click(trigger);
+};

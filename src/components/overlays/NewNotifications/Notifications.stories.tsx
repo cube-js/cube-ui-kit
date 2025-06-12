@@ -3,7 +3,7 @@ import { expect, userEvent, within } from '@storybook/test';
 import { IconBell, IconBellFilled, IconBrandWechat } from '@tabler/icons-react';
 import { Key, useRef, useState } from 'react';
 
-import { wait } from '../../../test';
+import { wait } from '../../../test/utils/wait';
 import { Button } from '../../actions';
 import { Content } from '../../content/Content';
 import { Footer } from '../../content/Footer';

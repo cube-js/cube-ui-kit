@@ -10,6 +10,7 @@ import type { CubeNotificationProps } from '../types';
 import type { NotificationsListProps } from './types';
 
 const NotificationListContainer = tasty({
+  qa: 'NotificationsList',
   styles: { boxSizing: 'border-box', width: '100%' },
 });
 
