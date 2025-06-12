@@ -1,5 +1,21 @@
 # @cube-dev/ui-kit
 
+## 0.62.1
+
+### Patch Changes
+
+- [#697](https://github.com/cube-js/cube-ui-kit/pull/697) [`408ea7b`](https://github.com/cube-js/cube-ui-kit/commit/408ea7bb027c5214d161ec8ef4d5ea72d391d07b) Thanks [@tenphi](https://github.com/tenphi)! - Add support for `description` item prop inside `<Menu/>`.
+
+- [#697](https://github.com/cube-js/cube-ui-kit/pull/697) [`408ea7b`](https://github.com/cube-js/cube-ui-kit/commit/408ea7bb027c5214d161ec8ef4d5ea72d391d07b) Thanks [@tenphi](https://github.com/tenphi)! - Add support for `description` item prop in `<ComboBox/>`.
+
+- [#697](https://github.com/cube-js/cube-ui-kit/pull/697) [`408ea7b`](https://github.com/cube-js/cube-ui-kit/commit/408ea7bb027c5214d161ec8ef4d5ea72d391d07b) Thanks [@tenphi](https://github.com/tenphi)! - Change disabled state of clear and neutral buttons.
+
+- [#697](https://github.com/cube-js/cube-ui-kit/pull/697) [`408ea7b`](https://github.com/cube-js/cube-ui-kit/commit/408ea7bb027c5214d161ec8ef4d5ea72d391d07b) Thanks [@tenphi](https://github.com/tenphi)! - Add border to dialogs with popover type.
+
+- [#697](https://github.com/cube-js/cube-ui-kit/pull/697) [`408ea7b`](https://github.com/cube-js/cube-ui-kit/commit/408ea7bb027c5214d161ec8ef4d5ea72d391d07b) Thanks [@tenphi](https://github.com/tenphi)! - Add border to popover of `<Select/>` and `<Combobox/>`.
+
+- [#697](https://github.com/cube-js/cube-ui-kit/pull/697) [`408ea7b`](https://github.com/cube-js/cube-ui-kit/commit/408ea7bb027c5214d161ec8ef4d5ea72d391d07b) Thanks [@tenphi](https://github.com/tenphi)! - Add support for `<Divider/>` inside `<Menu/>`.
+
 ## 0.62.0
 
 ### Minor Changes
