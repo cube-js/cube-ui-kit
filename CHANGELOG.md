@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.62.2
+
+### Patch Changes
+
+- [#699](https://github.com/cube-js/cube-ui-kit/pull/699) [`71d5328`](https://github.com/cube-js/cube-ui-kit/commit/71d5328bec048c4c6a054bd544d67ffc9b674ebe) Thanks [@tenphi](https://github.com/tenphi)! - Fix Menu with spread function inside.
+
 ## 0.62.1
 
 ### Patch Changes
