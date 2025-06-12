@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.62.3
+
+### Patch Changes
+
+- [#701](https://github.com/cube-js/cube-ui-kit/pull/701) [`9fc76b5`](https://github.com/cube-js/cube-ui-kit/commit/9fc76b5101bc98c102535a492b59f79334c494f4) Thanks [@tenphi](https://github.com/tenphi)! - Fix Menu type.
+
 ## 0.62.2
 
 ### Patch Changes
