@@ -501,3 +501,73 @@ export const ItemsWithDescriptions = (props) => {
     </div>
   );
 };
+
+export const DynamicCollection = (props) => {
+  const items = [
+    { id: 'copy', label: 'Copy', icon: '📋', shortcut: 'Ctrl+C' },
+    { id: 'paste', label: 'Paste', icon: '📄', shortcut: 'Ctrl+V' },
+    { id: 'cut', label: 'Cut', icon: '✂️', shortcut: 'Ctrl+X' },
+    { id: 'delete', label: 'Delete', icon: '🗑️', shortcut: 'Del' },
+  ];
+
+  return (
+    <div style={{ padding: '20px', width: '340px' }}>
+      <Menu id="menu" {...props} items={items} header="Dynamic Collection">
+        {(item) => (
+          <Menu.Item
+            key={item.id}
+            icon={<span style={{ fontSize: '16px' }}>{item.icon}</span>}
+            postfix={item.shortcut}
+          >
+            {item.label}
+          </Menu.Item>
+        )}
+      </Menu>
+    </div>
+  );
+};
+
+export const DynamicCollectionWithSections = (props) => {
+  const items = [
+    {
+      name: 'File Operations',
+      children: [
+        { id: 'new', label: 'New File', icon: '📄', shortcut: 'Ctrl+N' },
+        { id: 'open', label: 'Open', icon: '📂', shortcut: 'Ctrl+O' },
+        { id: 'save', label: 'Save', icon: '💾', shortcut: 'Ctrl+S' },
+      ],
+    },
+    {
+      name: 'Edit Operations',
+      children: [
+        { id: 'undo', label: 'Undo', icon: '↩️', shortcut: 'Ctrl+Z' },
+        { id: 'redo', label: 'Redo', icon: '↪️', shortcut: 'Ctrl+Y' },
+        { id: 'find', label: 'Find', icon: '🔍', shortcut: 'Ctrl+F' },
+      ],
+    },
+  ];
+
+  return (
+    <div style={{ padding: '20px', width: '340px' }}>
+      <Menu id="menu" {...props} items={items} header="Dynamic Sections">
+        {(section) => (
+          <Menu.Section
+            key={section.name}
+            items={section.children}
+            title={section.name}
+          >
+            {(item) => (
+              <Menu.Item
+                key={item.id}
+                icon={<span style={{ fontSize: '16px' }}>{item.icon}</span>}
+                postfix={item.shortcut}
+              >
+                {item.label}
+              </Menu.Item>
+            )}
+          </Menu.Section>
+        )}
+      </Menu>
+    </div>
+  );
+};

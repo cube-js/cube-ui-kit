@@ -66,42 +66,50 @@ function Menu<T extends object>(
   const contextProps = useMenuContext();
   const completeProps = mergeProps(contextProps, rest);
 
-  // Filter out Divider elements for collection creation.
-  const filteredChildren = React.Children.toArray(
-    completeProps.children,
-  ).filter(
-    (child) =>
-      !(
-        React.isValidElement(child) &&
-        // @ts-ignore
-        child.type === BaseDivider
-      ),
-  );
+  // Check if children is a function (dynamic collection)
+  const isDynamicCollection = typeof completeProps.children === 'function';
 
-  // React may prefix keys with '.$' when accessing them via Children.toArray.
-  // Strip that prefix so selection/disabled logic receives the original keys.
-  const normalizedChildren = filteredChildren.map((child) => {
-    if (
-      React.isValidElement(child) &&
-      child.key &&
-      typeof child.key === 'string'
-    ) {
-      const cleanKey = child.key.replace(/^\.\$/, '');
-      // Only clone if the key actually changed to avoid unnecessary work.
-      return cleanKey !== child.key
-        ? React.cloneElement(child, { key: cleanKey })
-        : child;
-    }
-    return child;
-  });
+  // For dynamic collections, pass children directly to useTreeState
+  // For static collections, filter out Dividers and normalize keys
+  const treeProps = isDynamicCollection
+    ? completeProps
+    : (() => {
+        // Filter out Divider elements for collection creation.
+        const filteredChildren = React.Children.toArray(
+          completeProps.children,
+        ).filter(
+          (child) =>
+            !(
+              React.isValidElement(child) &&
+              // @ts-ignore
+              child.type === BaseDivider
+            ),
+        );
 
-  // Props used for collection building (exclude dividers).
-  const treeProps = {
-    ...completeProps,
-    children: normalizedChildren,
-  } as typeof completeProps;
+        // React may prefix keys with '.$' when accessing them via Children.toArray.
+        // Strip that prefix so selection/disabled logic receives the original keys.
+        const normalizedChildren = filteredChildren.map((child) => {
+          if (
+            React.isValidElement(child) &&
+            child.key &&
+            typeof child.key === 'string'
+          ) {
+            const cleanKey = child.key.replace(/^\.\$/, '');
+            // Only clone if the key actually changed to avoid unnecessary work.
+            return cleanKey !== child.key
+              ? React.cloneElement(child, { key: cleanKey })
+              : child;
+          }
+          return child;
+        });
 
-  const state = useTreeState(treeProps);
+        return {
+          ...completeProps,
+          children: normalizedChildren,
+        };
+      })();
+
+  const state = useTreeState(treeProps as typeof completeProps);
   const collectionItems = [...state.collection];
   const hasSections = collectionItems.some((item) => item.type === 'section');
 
@@ -127,8 +135,46 @@ function Menu<T extends object>(
     >
       {header && <StyledMenuHeader>{header}</StyledMenuHeader>}
       {(() => {
-        // Render children in the same order as they were provided, but leverage
-        // react-stately collection for interactive Menu items and sections.
+        // For dynamic collections, just render items from the collection
+        if (isDynamicCollection) {
+          return collectionItems.map((item) => {
+            if (item.type === 'section') {
+              return (
+                <MenuSection
+                  key={item.key}
+                  item={item}
+                  state={state}
+                  styles={sectionStyles}
+                  itemStyles={itemStyles}
+                  headingStyles={sectionHeadingStyles}
+                  selectionIcon={selectionIcon}
+                />
+              );
+            }
+
+            let menuItem = (
+              <MenuItem
+                key={item.key}
+                item={item}
+                state={state}
+                styles={itemStyles}
+                selectionIcon={selectionIcon}
+                onAction={item.onAction}
+              />
+            );
+
+            if (item.props.wrapper) {
+              menuItem = item.props.wrapper(menuItem);
+            }
+
+            return cloneElement(menuItem, {
+              key: item.key,
+            });
+          });
+        }
+
+        // For static collections, render children in the same order as they were provided,
+        // but leverage react-stately collection for interactive Menu items and sections.
         let itemIndex = 0;
         const children = React.Children.toArray(completeProps.children);
 
