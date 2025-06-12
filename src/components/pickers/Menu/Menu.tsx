@@ -40,8 +40,8 @@ export interface CubeMenuProps<T>
   sectionStyles?: Styles;
   sectionHeadingStyles?: Styles;
   qa?: BaseProps['qa'];
-  /** Menu accepts <Menu.Item>, <Menu.Section>, and <Divider> as children */
-  children?: React.ReactNode;
+  /** Menu accepts <Menu.Item>, <Menu.Section>, and <Divider> as children, or a function for dynamic collections */
+  children?: React.ReactNode | ((item: T) => React.ReactElement);
   /** Keys that should appear disabled */
   disabledKeys?: Iterable<Key>;
   /** Selection mode for the menu: 'single' | 'multiple' */
