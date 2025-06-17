@@ -102,7 +102,7 @@ export const StyledSectionHeading = tasty(Space, {
   styles: {
     color: '#dark-04',
     preset: 'c2',
-    padding: '1x 1.5x 0',
+    padding: '.5x 1.5x',
     height: '3x',
     placeContent: 'center space-between',
     align: 'start',
