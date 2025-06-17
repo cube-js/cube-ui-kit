@@ -36,6 +36,7 @@ export const StyledMenu = tasty({
 });
 
 export const StyledDivider = tasty({
+  qa: 'MenuDivider',
   as: 'li',
   styles: {
     display: 'flex',
@@ -48,9 +49,9 @@ export const StyledDivider = tasty({
 });
 
 export const StyledMenuHeader = tasty(Space, {
+  qa: 'MenuHeader',
   as: 'li',
   styles: {
-    fill: '#light',
     color: '#dark-02',
     preset: 't2m',
     padding: '0.75x 2x',
@@ -64,6 +65,7 @@ export const StyledMenuHeader = tasty(Space, {
 });
 
 export const StyledMenuSection = tasty({
+  qa: 'MenuSection',
   as: 'li',
   styles: {
     display: 'flex',
@@ -76,6 +78,7 @@ export const StyledMenuSection = tasty({
 });
 
 export const StyledMenuItem = tasty({
+  qa: 'MenuItem',
   as: 'li',
   styles: {
     display: 'flex',
@@ -95,13 +98,13 @@ export const StyledMenuItem = tasty({
 });
 
 export const StyledMenuSectionHeading = tasty(Space, {
-  as: 'header',
+  as: 'MenuSectionHeading',
   styles: {
-    color: '#dark-03',
-    fill: '#light',
+    color: '#dark-04',
     preset: 'c2',
-    padding: '(1x - 1bw) 2x',
-    placeContent: 'space-between',
+    padding: '1x 2x 0',
+    height: '3x',
+    placeContent: 'center space-between',
     align: 'start',
   },
 });
