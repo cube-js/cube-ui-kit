@@ -70,7 +70,8 @@ text-decoration: none;
 export function resetStyle({ reset }) {
   if (!reset) return;
 
-  const { mods } = parseStyle(reset, 1);
+  const processed = parseStyle(reset);
+  const { mods } = processed.groups[0] ?? ({ mods: [] } as any);
 
   return mods.reduce((sum, mod) => {
     if (RESET_MAP[mod]) {

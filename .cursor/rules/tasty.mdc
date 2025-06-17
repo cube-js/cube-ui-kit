@@ -1,0 +1,6 @@
+---
+description: If it requires the understanding of `tasty` helper API.
+globs: 
+alwaysApply: false
+---
+The API of `tasty` helper is described in [tasty.md](mdc:tasty.md)
