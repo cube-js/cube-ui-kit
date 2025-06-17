@@ -391,6 +391,7 @@ export const SectionsStatic: StoryFn<CubeComboBoxProps<any>> = (args) => (
 );
 
 SectionsStatic.storyName = 'Sections – static items';
+SectionsStatic.play = ItemsWithDescriptions.play;
 
 export const SectionsDynamic: StoryFn<CubeComboBoxProps<any>> = (args) => {
   const groups = [
@@ -435,3 +436,4 @@ export const SectionsDynamic: StoryFn<CubeComboBoxProps<any>> = (args) => {
 };
 
 SectionsDynamic.storyName = 'Sections – dynamic collection';
+SectionsDynamic.play = ItemsWithDescriptions.play;

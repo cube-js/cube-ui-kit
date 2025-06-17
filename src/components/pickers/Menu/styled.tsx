@@ -15,8 +15,7 @@ export const StyledMenu = tasty({
     margin: 0,
     padding: {
       '': '0.5x',
-      section: 9, // section menu
-      sections: 9, // has sections inside
+      section: 0, // section menu
     },
     overflow: {
       '': 'auto',
@@ -103,7 +102,7 @@ export const StyledSectionHeading = tasty(Space, {
   styles: {
     color: '#dark-04',
     preset: 'c2',
-    padding: '1x 2x 0',
+    padding: '1x 1.5x 0',
     height: '3x',
     placeContent: 'center space-between',
     align: 'start',

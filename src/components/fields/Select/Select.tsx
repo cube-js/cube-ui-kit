@@ -182,15 +182,12 @@ export const ListBoxElement = tasty({
   as: 'ul',
   styles: {
     display: 'flex',
-    gap: {
-      '': '1bw',
-      sections: 0,
-    },
+    gap: '1bw',
     flow: 'column',
     margin: '0',
     padding: {
       '': '.5x',
-      sections: 0,
+      section: 0,
     },
     listStyle: 'none',
     radius: {
