@@ -24,7 +24,7 @@ import { useMenuContext } from './context';
 import { MenuButtonProps, MenuSelectionType } from './MenuButton';
 import { MenuItem } from './MenuItem';
 import { MenuSection } from './MenuSection';
-import { StyledDivider, StyledMenu, StyledMenuHeader } from './styled';
+import { StyledDivider, StyledHeader, StyledMenu } from './styled';
 
 export interface CubeMenuProps<T>
   extends BasePropsWithoutChildren,
@@ -90,7 +90,7 @@ function Menu<T extends object>(
       {...mergeProps(defaultProps, menuProps, filterBaseProps(completeProps))}
       ref={domRef}
     >
-      {header && <StyledMenuHeader>{header}</StyledMenuHeader>}
+      {header && <StyledHeader>{header}</StyledHeader>}
       {(() => {
         // Build the list of menu elements, automatically inserting dividers between sections.
         const renderedItems: React.ReactNode[] = [];
