@@ -416,7 +416,7 @@ export const SectionsDynamic: StoryFn<CubeComboBoxProps<any>> = (args) => {
   return (
     <ComboBox
       {...args}
-      items={groups}
+      defaultItems={groups}
       width="280px"
       placeholder="Select an item"
     >
