@@ -215,14 +215,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     menuTrigger,
   };
 
-  if (props.items && !isAsync) {
-    comboBoxStateProps = {
-      ...comboBoxStateProps,
-      defaultItems: props.items,
-      items: undefined,
-    };
-  }
-
   let state = useComboBoxState(comboBoxStateProps);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
