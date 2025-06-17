@@ -14,7 +14,7 @@ import { ComboBox, CubeComboBoxProps } from './ComboBox';
 export default {
   title: 'Pickers/ComboBox',
   component: ComboBox,
-  subcomponents: { Item: ComboBox.Item },
+  subcomponents: { Item: ComboBox.Item, Section: ComboBox.Section },
   args: { id: 'name', width: '200px', label: 'Choose your favourite color' },
   parameters: { controls: { exclude: baseProps } },
   argTypes: { ...SELECTED_KEY_ARG },
@@ -367,3 +367,71 @@ ItemsWithDescriptions.play = async ({ canvasElement }) => {
 
   await userEvent.click(trigger);
 };
+
+// ---------------------------------
+// Section stories for ComboBox
+// ---------------------------------
+
+export const SectionsStatic: StoryFn<CubeComboBoxProps<any>> = (args) => (
+  <ComboBox {...args} width="280px" placeholder="Select a color">
+    <ComboBox.Section title="Warm colors">
+      <ComboBox.Item key="red">Red</ComboBox.Item>
+      <ComboBox.Item key="orange">Orange</ComboBox.Item>
+      <ComboBox.Item key="yellow">Yellow</ComboBox.Item>
+    </ComboBox.Section>
+    <ComboBox.Section>
+      <ComboBox.Item key="teal">Teal</ComboBox.Item>
+      <ComboBox.Item key="cyan">Cyan</ComboBox.Item>
+    </ComboBox.Section>
+    <ComboBox.Section title="Cool colors">
+      <ComboBox.Item key="blue">Blue</ComboBox.Item>
+      <ComboBox.Item key="purple">Purple</ComboBox.Item>
+    </ComboBox.Section>
+  </ComboBox>
+);
+
+SectionsStatic.storyName = 'Sections – static items';
+
+export const SectionsDynamic: StoryFn<CubeComboBoxProps<any>> = (args) => {
+  const groups = [
+    {
+      name: 'Fruits',
+      children: [
+        { id: 'apple', label: 'Apple' },
+        { id: 'orange', label: 'Orange' },
+        { id: 'banana', label: 'Banana' },
+      ],
+    },
+    {
+      name: 'Vegetables',
+      children: [
+        { id: 'carrot', label: 'Carrot' },
+        { id: 'peas', label: 'Peas' },
+        { id: 'broccoli', label: 'Broccoli' },
+      ],
+    },
+  ];
+
+  return (
+    <ComboBox
+      {...args}
+      items={groups}
+      width="280px"
+      placeholder="Select an item"
+    >
+      {(group: any) => (
+        <ComboBox.Section
+          key={group.name}
+          title={group.name}
+          items={group.children}
+        >
+          {(item: any) => (
+            <ComboBox.Item key={item.id}>{item.label}</ComboBox.Item>
+          )}
+        </ComboBox.Section>
+      )}
+    </ComboBox>
+  );
+};
+
+SectionsDynamic.storyName = 'Sections – dynamic collection';

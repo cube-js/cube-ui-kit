@@ -706,15 +706,17 @@ function SelectSection<T>(props: SelectSectionProps<T>) {
         </ListSectionHeading>
       )}
       <ListBoxElement {...groupProps} mods={{ section: true }}>
-        {[...item.childNodes].map((node: any) => (
-          <Option
-            key={node.key}
-            item={node}
-            state={state}
-            styles={optionStyles}
-            shouldUseVirtualFocus={shouldUseVirtualFocus}
-          />
-        ))}
+        {[...item.childNodes]
+          .filter((node: any) => state.collection.getItem(node.key))
+          .map((node: any) => (
+            <Option
+              key={node.key}
+              item={node}
+              state={state}
+              styles={optionStyles}
+              shouldUseVirtualFocus={shouldUseVirtualFocus}
+            />
+          ))}
       </ListBoxElement>
     </ListSectionWrapper>
   );
