@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.63.0
+
+### Minor Changes
+
+- [#703](https://github.com/cube-js/cube-ui-kit/pull/703) [`79ab3db`](https://github.com/cube-js/cube-ui-kit/commit/79ab3db8ab185da4615312e3c0daf03cd288a588) Thanks [@tenphi](https://github.com/tenphi)! - Add sections support for Select.
+
+- [#703](https://github.com/cube-js/cube-ui-kit/pull/703) [`79ab3db`](https://github.com/cube-js/cube-ui-kit/commit/79ab3db8ab185da4615312e3c0daf03cd288a588) Thanks [@tenphi](https://github.com/tenphi)! - Remove divider support in Menu but add dividers between sections.
+
 ## 0.62.3
 
 ### Patch Changes
