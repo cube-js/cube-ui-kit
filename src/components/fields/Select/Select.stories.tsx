@@ -12,7 +12,7 @@ export default {
   title: 'Pickers/Select',
   component: Select,
   args: { width: '200px' },
-  subcomponents: { Item: Select.Item },
+  subcomponents: { Item: Select.Item, Section: Select.Section },
   parameters: { controls: { exclude: baseProps } },
   argTypes: {
     ...SELECTED_KEY_ARG,
@@ -137,3 +137,66 @@ export const WithDescription: StoryFn<CubeSelectProps<any>> = (args) => (
 );
 WithDescription.args = {};
 WithDescription.play = WithDisabledOption.play;
+
+// ------------------------------
+// Section stories
+// ------------------------------
+
+export const SectionsStatic: StoryFn<CubeSelectProps<any>> = (args) => (
+  <Select {...args} placeholder="Pick something" width="260px">
+    <Select.Section title="Warm colors">
+      <Select.Item key="red">Red</Select.Item>
+      <Select.Item key="orange">Orange</Select.Item>
+      <Select.Item key="yellow">Yellow</Select.Item>
+    </Select.Section>
+    <Select.Section>
+      <Select.Item key="cyan">Cyan</Select.Item>
+      <Select.Item key="teal">Teal</Select.Item>
+    </Select.Section>
+    <Select.Section title="Cool colors">
+      <Select.Item key="blue">Blue</Select.Item>
+      <Select.Item key="purple">Purple</Select.Item>
+    </Select.Section>
+  </Select>
+);
+
+SectionsStatic.storyName = 'Sections – static items';
+SectionsStatic.play = WithDisabledOption.play;
+
+export const SectionsDynamic: StoryFn<CubeSelectProps<any>> = (args) => {
+  const groups = [
+    {
+      name: 'Fruits',
+      children: [
+        { id: 'apple', label: 'Apple' },
+        { id: 'orange', label: 'Orange' },
+        { id: 'banana', label: 'Banana' },
+      ],
+    },
+    {
+      name: 'Vegetables',
+      children: [
+        { id: 'carrot', label: 'Carrot' },
+        { id: 'peas', label: 'Peas' },
+        { id: 'broccoli', label: 'Broccoli' },
+      ],
+    },
+  ];
+
+  return (
+    <Select {...args} items={groups} width="260px" placeholder="Choose an item">
+      {(group: any) => (
+        <Select.Section
+          key={group.name}
+          title={group.name}
+          items={group.children}
+        >
+          {(item: any) => <Select.Item key={item.id}>{item.label}</Select.Item>}
+        </Select.Section>
+      )}
+    </Select>
+  );
+};
+
+SectionsDynamic.storyName = 'Sections – dynamic collection';
+SectionsDynamic.play = WithDisabledOption.play;

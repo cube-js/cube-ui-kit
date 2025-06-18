@@ -14,7 +14,6 @@ import {
   Button,
   DialogContainer,
   DirectionIcon,
-  Divider,
   Flex,
   Menu,
   MenuTrigger,
@@ -42,7 +41,6 @@ const MenuTemplate = (props) => {
     <Menu id="menu" {...props} width="340px">
       <Menu.Item key="1">Item 1</Menu.Item>
       <Menu.Item key="2">Item 2</Menu.Item>
-      <Divider />
       <Menu.Item key="3">Item 3</Menu.Item>
       <Menu.Item key="4">Item 4</Menu.Item>
     </Menu>
@@ -175,6 +173,10 @@ export const Sections = (props) => {
           <Menu.Item key="created">Created At</Menu.Item>
           <Menu.Item key="name">Name</Menu.Item>
           <Menu.Item key="description">Descriptions</Menu.Item>
+        </Menu.Section>
+        <Menu.Section key="without-title">
+          <Menu.Item key="paste">Paste</Menu.Item>
+          <Menu.Item key="copy">Copy</Menu.Item>
         </Menu.Section>
         <Menu.Section title="Orders">
           <Menu.Item key="status">Status</Menu.Item>

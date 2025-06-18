@@ -3,11 +3,7 @@ import { useMenuSection } from 'react-aria';
 import { Styles } from '../../../tasty';
 
 import { MenuItem, MenuItemProps } from './MenuItem';
-import {
-  StyledMenu,
-  StyledMenuSection,
-  StyledMenuSectionHeading,
-} from './styled';
+import { StyledMenu, StyledSection, StyledSectionHeading } from './styled';
 
 export interface CubeMenuSectionProps<T> extends MenuItemProps<T> {
   itemStyles?: Styles;
@@ -25,11 +21,11 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
 
   return (
     <>
-      <StyledMenuSection {...itemProps} styles={styles}>
+      <StyledSection {...itemProps} styles={styles}>
         {heading && (
-          <StyledMenuSectionHeading {...headingProps} styles={headingStyles}>
+          <StyledSectionHeading {...headingProps} styles={headingStyles}>
             {heading}
-          </StyledMenuSectionHeading>
+          </StyledSectionHeading>
         )}
         <StyledMenu {...groupProps} mods={{ section: true }}>
           {[...item.childNodes].map((node) => {
@@ -50,7 +46,7 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
             return item;
           })}
         </StyledMenu>
-      </StyledMenuSection>
+      </StyledSection>
     </>
   );
 }

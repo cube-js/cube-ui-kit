@@ -228,14 +228,16 @@ const TOKENS = {
   'c1-font-size': '14px',
   'c1-line-height': '20px',
   'c1-letter-spacing': '0',
-  'c1-font-weight': '500',
+  'c1-font-weight': '600',
+  'c1-font-bold-weight': '700',
   'c1-text-transform': 'uppercase',
   'c1-icon-size': '18px',
   // c2
   'c2-font-size': '12px',
   'c2-line-height': '18px',
   'c2-letter-spacing': '0.01em',
-  'c2-font-weight': '500',
+  'c2-font-weight': '600',
+  'c2-font-bold-weight': '700',
   'c2-text-transform': 'uppercase',
   'c2-icon-size': '16px',
   // tag

@@ -8,7 +8,7 @@ import { ClearSlots, mergeProps, SlotProvider } from '../../../utils/react';
 
 import { useMenuContext } from './context';
 import { MenuButton, MenuSelectionType } from './MenuButton';
-import { StyledMenuItem } from './styled';
+import { StyledItem } from './styled';
 
 export interface MenuItemProps<T> {
   item: Node<T>;
@@ -87,7 +87,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
 
   return (
     <FocusRing>
-      <StyledMenuItem
+      <StyledItem
         {...mergeProps(menuItemProps, hoverProps)}
         ref={ref}
         data-qa={itemProps.qa ? `MenuItem-${itemProps.qa}` : `MenuItem-${key}`}
@@ -112,7 +112,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
             {contents}
           </SlotProvider>
         </ClearSlots>
-      </StyledMenuItem>
+      </StyledItem>
     </FocusRing>
   );
 }

@@ -17,7 +17,7 @@ import {
   useHover,
   useOverlayPosition,
 } from 'react-aria';
-import { Item, useComboBoxState } from 'react-stately';
+import { Section as BaseSection, Item, useComboBoxState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/index';
 import { DownIcon, LoadingIcon } from '../../../icons';
@@ -207,13 +207,15 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   let isAsync = loadingState != null;
   let { contains } = useFilter({ sensitivity: 'base' });
 
-  let state = useComboBoxState({
+  let comboBoxStateProps: any = {
     ...props,
     defaultFilter: filter || contains,
     filter: undefined,
     allowsEmptyCollection: isAsync,
     menuTrigger,
-  });
+  };
+
+  let state = useComboBoxState(comboBoxStateProps);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
@@ -242,7 +244,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     buttonProps: triggerProps,
   } = useComboBox(
     {
-      ...props,
+      ...comboBoxStateProps,
       inputRef,
       buttonRef: triggerRef,
       listBoxRef,
@@ -471,13 +473,20 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   );
 }) as unknown as (<T>(
   props: CubeComboBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },
-) => ReactElement) & { Item: typeof Item };
+) => ReactElement) & { Item: typeof Item; Section: typeof BaseSection };
 
-// Extend typing on Item to accept optional `description` prop like Select does.
+type SectionComponentCB = typeof BaseSection;
+
+const ComboBoxSectionComponent = Object.assign(BaseSection, {
+  displayName: 'Section',
+}) as SectionComponentCB;
+
 ComboBox.Item = Item as unknown as (props: {
   description?: ReactNode;
   [key: string]: any;
 }) => ReactElement;
+
+ComboBox.Section = ComboBoxSectionComponent;
 
 Object.defineProperty(ComboBox, 'cubeInputType', {
   value: 'ComboBox',

@@ -1,5 +1,5 @@
 import { AriaLabelingProps, CollectionBase, DOMRef } from '@react-types/shared';
-import {
+import React, {
   cloneElement,
   forwardRef,
   ReactElement,
@@ -16,12 +16,13 @@ import {
   useButton,
   useHover,
   useListBox,
+  useListBoxSection,
   useOption,
   useOverlay,
   useOverlayPosition,
   useSelect,
 } from 'react-aria';
-import { Item, useSelectState } from 'react-stately';
+import { Section as BaseSection, Item, useSelectState } from 'react-stately';
 import styled from 'styled-components';
 
 import { DownIcon, LoadingIcon } from '../../../icons/index';
@@ -60,6 +61,11 @@ import {
 } from '../../actions/index';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
+import {
+  StyledDivider as ListDivider,
+  StyledSectionHeading as ListSectionHeading,
+  StyledSection as ListSectionWrapper,
+} from '../../pickers/Menu/styled';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
 import { DEFAULT_INPUT_STYLES, INPUT_WRAPPER_STYLES } from '../index';
@@ -172,20 +178,32 @@ const SelectElement = tasty({
   },
 });
 
-const ListBoxElement = tasty({
+export const ListBoxElement = tasty({
   as: 'ul',
   styles: {
     display: 'flex',
     gap: '1bw',
     flow: 'column',
     margin: '0',
-    padding: '.5x',
+    padding: {
+      '': '.5x',
+      section: 0,
+    },
     listStyle: 'none',
-    radius: '1cr',
-    border: true,
+    radius: {
+      '': '1cr',
+      section: '0',
+    },
+    border: {
+      '': true,
+      section: false,
+    },
     fill: '#white',
-    shadow: '0px 4px 16px #shadow',
-    height: 'initial 30x',
+    shadow: {
+      '': '0px 4px 16px #shadow',
+      section: false,
+    },
+    height: 'initial max-content (50vh - 4x)',
     overflow: 'clip auto',
     scrollbar: 'styled',
   },
@@ -544,21 +562,64 @@ export function ListBoxPopup({
     >
       <FocusScope restoreFocus>
         <DismissButton onDismiss={() => state.close()} />
-        <ListBoxElement
-          styles={listBoxStyles}
-          {...listBoxProps}
-          ref={listBoxRef}
-        >
-          {Array.from(state.collection).map((item: any) => (
-            <Option
-              key={item.key}
-              item={item}
-              state={state}
-              styles={optionStyles}
-              shouldUseVirtualFocus={shouldUseVirtualFocus}
-            />
-          ))}
-        </ListBoxElement>
+        {(() => {
+          const hasSections = Array.from(state.collection).some(
+            (i: any) => i.type === 'section',
+          );
+
+          const renderedItems: React.ReactNode[] = [];
+          let isFirstSection = true;
+
+          for (const item of state.collection) {
+            if (item.type === 'section') {
+              if (!isFirstSection) {
+                renderedItems.push(
+                  <ListDivider
+                    key={`divider-${String(item.key)}`}
+                    as="li"
+                    role="separator"
+                    aria-orientation="horizontal"
+                  />,
+                );
+              }
+
+              renderedItems.push(
+                <SelectSection
+                  key={item.key}
+                  item={item}
+                  state={state}
+                  optionStyles={optionStyles}
+                  headingStyles={undefined}
+                  sectionStyles={undefined}
+                  shouldUseVirtualFocus={shouldUseVirtualFocus}
+                />,
+              );
+
+              isFirstSection = false;
+            } else {
+              renderedItems.push(
+                <Option
+                  key={item.key}
+                  item={item}
+                  state={state}
+                  styles={optionStyles}
+                  shouldUseVirtualFocus={shouldUseVirtualFocus}
+                />,
+              );
+            }
+          }
+
+          return (
+            <ListBoxElement
+              styles={listBoxStyles}
+              {...listBoxProps}
+              ref={listBoxRef}
+              mods={{ sections: hasSections }}
+            >
+              {renderedItems}
+            </ListBoxElement>
+          );
+        })()}
         <DismissButton onDismiss={() => state.close()} />
       </FocusScope>
     </StyledOverlayElement>
@@ -608,19 +669,77 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
   );
 }
 
+interface SelectSectionProps<T> {
+  item: any; // react-stately Node<T>
+  state: any; // TreeState<T>
+  optionStyles?: Styles;
+  headingStyles?: Styles;
+  sectionStyles?: Styles;
+  shouldUseVirtualFocus?: boolean;
+}
+
+function SelectSection<T>(props: SelectSectionProps<T>) {
+  const {
+    item,
+    state,
+    optionStyles,
+    headingStyles,
+    sectionStyles,
+    shouldUseVirtualFocus,
+  } = props;
+
+  const heading = item.rendered;
+
+  const { itemProps, headingProps, groupProps } = useListBoxSection({
+    heading,
+    'aria-label': item['aria-label'],
+  });
+
+  return (
+    <ListSectionWrapper {...itemProps} styles={sectionStyles}>
+      {heading && (
+        <ListSectionHeading {...headingProps} styles={headingStyles}>
+          {heading}
+        </ListSectionHeading>
+      )}
+      <ListBoxElement {...groupProps} mods={{ section: true }}>
+        {[...item.childNodes]
+          .filter((node: any) => state.collection.getItem(node.key))
+          .map((node: any) => (
+            <Option
+              key={node.key}
+              item={node}
+              state={state}
+              styles={optionStyles}
+              shouldUseVirtualFocus={shouldUseVirtualFocus}
+            />
+          ))}
+      </ListBoxElement>
+    </ListSectionWrapper>
+  );
+}
+
 const _Select = forwardRef(Select);
 
 (_Select as any).cubeInputType = 'Select';
 
+type SectionComponent = typeof BaseSection;
+
+const SelectSectionComponent = Object.assign(BaseSection, {
+  displayName: 'Section',
+}) as SectionComponent;
+
 const __Select = Object.assign(
   _Select as typeof _Select & {
     Item: typeof Item;
+    Section: typeof SelectSectionComponent;
   },
   {
     Item: Item as unknown as (props: {
       description?: ReactNode;
       [key: string]: any;
-    }) => null,
+    }) => ReactElement,
+    Section: SelectSectionComponent,
   },
 );
 

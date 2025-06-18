@@ -19,13 +19,12 @@ import {
   Styles,
 } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
-import { Divider as BaseDivider } from '../../content/Divider';
 
 import { useMenuContext } from './context';
 import { MenuButtonProps, MenuSelectionType } from './MenuButton';
 import { MenuItem } from './MenuItem';
 import { MenuSection } from './MenuSection';
-import { StyledDivider, StyledMenu, StyledMenuHeader } from './styled';
+import { StyledDivider, StyledHeader, StyledMenu } from './styled';
 
 export interface CubeMenuProps<T>
   extends BasePropsWithoutChildren,
@@ -40,8 +39,6 @@ export interface CubeMenuProps<T>
   sectionStyles?: Styles;
   sectionHeadingStyles?: Styles;
   qa?: BaseProps['qa'];
-  /** Menu accepts <Menu.Item>, <Menu.Section>, and <Divider> as children, or a function for dynamic collections */
-  children?: React.ReactNode | ((item: T) => React.ReactElement);
   /** Keys that should appear disabled */
   disabledKeys?: Iterable<Key>;
   /** Selection mode for the menu: 'single' | 'multiple' */
@@ -66,48 +63,8 @@ function Menu<T extends object>(
   const contextProps = useMenuContext();
   const completeProps = mergeProps(contextProps, rest);
 
-  // Check if children is a function (dynamic collection)
-  const isDynamicCollection = typeof completeProps.children === 'function';
-
-  // For dynamic collections, pass children directly to useTreeState
-  // For static collections, filter out Dividers and normalize keys
-  const treeProps = isDynamicCollection
-    ? completeProps
-    : (() => {
-        // Filter out Divider elements for collection creation.
-        const filteredChildren = React.Children.toArray(
-          completeProps.children,
-        ).filter(
-          (child) =>
-            !(
-              React.isValidElement(child) &&
-              // @ts-ignore
-              child.type === BaseDivider
-            ),
-        );
-
-        // React may prefix keys with '.$' when accessing them via Children.toArray.
-        // Strip that prefix so selection/disabled logic receives the original keys.
-        const normalizedChildren = filteredChildren.map((child) => {
-          if (
-            React.isValidElement(child) &&
-            child.key &&
-            typeof child.key === 'string'
-          ) {
-            const cleanKey = child.key.replace(/^\.\$/, '');
-            // Only clone if the key actually changed to avoid unnecessary work.
-            return cleanKey !== child.key
-              ? React.cloneElement(child, { key: cleanKey })
-              : child;
-          }
-          return child;
-        });
-
-        return {
-          ...completeProps,
-          children: normalizedChildren,
-        };
-      })();
+  // Props used for collection building.
+  const treeProps = completeProps as typeof completeProps;
 
   const state = useTreeState(treeProps as typeof completeProps);
   const collectionItems = [...state.collection];
@@ -133,77 +90,27 @@ function Menu<T extends object>(
       {...mergeProps(defaultProps, menuProps, filterBaseProps(completeProps))}
       ref={domRef}
     >
-      {header && <StyledMenuHeader>{header}</StyledMenuHeader>}
+      {header && <StyledHeader>{header}</StyledHeader>}
       {(() => {
-        // For dynamic collections, just render items from the collection
-        if (isDynamicCollection) {
-          return collectionItems.map((item) => {
-            if (item.type === 'section') {
-              return (
-                <MenuSection
-                  key={item.key}
-                  item={item}
-                  state={state}
-                  styles={sectionStyles}
-                  itemStyles={itemStyles}
-                  headingStyles={sectionHeadingStyles}
-                  selectionIcon={selectionIcon}
-                />
+        // Build the list of menu elements, automatically inserting dividers between sections.
+        const renderedItems: React.ReactNode[] = [];
+        let isFirstSection = true;
+
+        collectionItems.forEach((item) => {
+          if (item.type === 'section') {
+            // Insert a visual separator before every section except the first one.
+            if (!isFirstSection) {
+              renderedItems.push(
+                <StyledDivider
+                  key={`divider-${String(item.key)}`}
+                  as="li"
+                  role="separator"
+                  aria-orientation="horizontal"
+                />,
               );
             }
 
-            let menuItem = (
-              <MenuItem
-                key={item.key}
-                item={item}
-                state={state}
-                styles={itemStyles}
-                selectionIcon={selectionIcon}
-                onAction={item.onAction}
-              />
-            );
-
-            if (item.props.wrapper) {
-              menuItem = item.props.wrapper(menuItem);
-            }
-
-            return cloneElement(menuItem, {
-              key: item.key,
-            });
-          });
-        }
-
-        // For static collections, render children in the same order as they were provided,
-        // but leverage react-stately collection for interactive Menu items and sections.
-        let itemIndex = 0;
-        const children = React.Children.toArray(completeProps.children);
-
-        return children.map((child, index) => {
-          // Divider handling
-          if (
-            // Valid React element and its type equals to our Divider component
-            React.isValidElement(child) &&
-            // @ts-ignore – comparing component types is acceptable here
-            child.type === BaseDivider
-          ) {
-            return (
-              <StyledDivider
-                // "li" is required inside <ul> to be valid HTML.
-                key={`divider-${index}`}
-                as="li"
-                role="separator"
-                aria-orientation="horizontal"
-              />
-            );
-          }
-
-          // Handle items/sections coming from react-stately collection
-          const item = collectionItems[itemIndex++];
-
-          if (!item) return null;
-
-          if (item.type === 'section') {
-            return (
+            renderedItems.push(
               <MenuSection
                 key={item.key}
                 item={item}
@@ -212,8 +119,11 @@ function Menu<T extends object>(
                 itemStyles={itemStyles}
                 headingStyles={sectionHeadingStyles}
                 selectionIcon={selectionIcon}
-              />
+              />,
             );
+
+            isFirstSection = false;
+            return;
           }
 
           let menuItem = (
@@ -231,10 +141,14 @@ function Menu<T extends object>(
             menuItem = item.props.wrapper(menuItem);
           }
 
-          return cloneElement(menuItem, {
-            key: item.key,
-          });
+          renderedItems.push(
+            cloneElement(menuItem, {
+              key: item.key,
+            }),
+          );
         });
+
+        return renderedItems;
       })()}
     </StyledMenu>
   );
