@@ -1,0 +1,153 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
+import { Dialog } from './Dialog';
+import * as DialogStories from './stories/Dialog.stories';
+
+<Meta of={DialogStories} />
+
+# Dialog
+
+A Dialog is a window that appears above the main content to display contextual information, tasks, or workflows. It can block further interaction until dismissed, or serve as a non-blocking panel.
+
+## When to Use
+
+- Display important information or actions that require user attention
+- Confirm or cancel user actions
+- Collect user input in a focused context
+- Show workflows or forms in a modal or panel
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<Dialog>
+  <Header>
+    <Title>Dialog Title</Title>
+  </Header>
+  <Content>
+    Dialog content goes here.
+  </Content>
+  <Footer>
+    <Button onPress={close}>Close</Button>
+  </Footer>
+</Dialog>
+```
+
+### Dismissable Dialog
+
+```jsx
+<Dialog isDismissable onDismiss={close}>
+  <Header>
+    <Title>Dismissable Dialog</Title>
+  </Header>
+  <Content>
+    You can close this dialog with the close button or Escape key.
+  </Content>
+</Dialog>
+```
+
+### Custom Size
+
+```jsx
+<Dialog size="large">
+  <Header>
+    <Title>Large Dialog</Title>
+  </Header>
+  <Content>
+    This dialog is larger than the default.
+  </Content>
+</Dialog>
+```
+
+## Properties
+
+<Canvas>
+    <Story of={DialogStories.Default} />
+</Canvas>
+
+<Controls />
+
+### Base Properties
+
+Supports [Base properties](/base-properties.md)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root element of the component.
+
+#### closeButtonStyles
+
+Customizes the close button.
+
+### Style Properties
+
+These properties allow direct styling without using the `styles` prop: `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `reset`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `opacity`, `overflow`, `scrollbar`, `hide`, `outline`, `textAlign`, `resize`.
+
+### Modifiers
+
+The `mods` prop accepts the following modifiers you can override:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| dismissable | `boolean` | Shows the close button and allows Escape key to dismiss. |
+
+## Variants
+
+### Types
+
+- `dialog` – Standard dialog (default)
+- `alertdialog` – For alert dialogs
+
+### Sizes
+
+- `small` / `S` – Compact dialog
+- `medium` / `M` – Standard dialog
+- `large` / `L` – Large dialog
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` – Moves focus between interactive elements
+- `Escape` – Dismisses the dialog if `isDismissable`
+
+### Screen Reader Support
+
+- Announces role "dialog" or "alertdialog"
+- Announces label, description, and validation messages
+- State changes like "invalid" or "required" are announced
+
+### ARIA Properties
+
+- `aria-label`, `aria-labelledby` – Accessible name for the dialog
+- `aria-describedby` – Links to description and error messages
+- `aria-modal` – Set automatically for modal dialogs
+
+## Best Practices
+
+1. **Do**: Provide clear titles and actionable buttons
+   ```jsx
+   <Dialog>
+     <Header>
+       <Title>Dialog Title</Title>
+     </Header>
+     <Footer>
+       <Button onPress={close}>OK</Button>
+     </Footer>
+   </Dialog>
+   ```
+2. **Don't**: Use dialogs for trivial notifications
+3. **Accessibility**: Always provide a title for screen readers
+4. **Dismissal**: Use `isDismissable` for dialogs that can be closed by the user
+
+## Integration with Overlays
+
+Dialog is typically used within `DialogTrigger` or `Modal` for overlay management.
+
+## Related Components
+
+- [DialogTrigger](/components/DialogTrigger) – Manages dialog open/close state
+- [Modal](/components/Modal) – Modal overlay for dialogs
+- [Popover](/components/Popover) – Non-blocking overlay for lightweight dialogs
