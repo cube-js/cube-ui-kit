@@ -1,5 +1,6 @@
 import { StoryFn } from '@storybook/react';
 
+import { Text } from '../components/content/Text';
 import { Title } from '../components/content/Title';
 import { Flow } from '../components/layout/Flow';
 import { Grid } from '../components/layout/Grid';
@@ -41,12 +42,12 @@ const Template: StoryFn<CubeIconProps> = (name) => {
           return (
             <Space key={iconName} gap="1x">
               <Icon size={18} />
-              <span>{iconName}</span>
+              <Text preset="t4">{iconName}</Text>
             </Space>
           );
         })}
       </Grid>
-      <Title>36px (double-sized)</Title>
+      <Title>24px (full-size)</Title>
       <Grid columns="repeat(auto-fit, 200px)" flow="row" gap="16px">
         {Object.keys(Icons).map((iconName) => {
           if (
@@ -60,8 +61,8 @@ const Template: StoryFn<CubeIconProps> = (name) => {
 
           return (
             <Space key={iconName} gap="1x">
-              <Icon size={36} />
-              <span>{iconName}</span>
+              <Icon size={24} />
+              <Text preset="t4">{iconName}</Text>
             </Space>
           );
         })}
