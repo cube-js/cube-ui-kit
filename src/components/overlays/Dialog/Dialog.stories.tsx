@@ -16,11 +16,12 @@ import {
   Text,
   TextInput,
   Title,
-} from '../../../../index';
-import { baseProps } from '../../../../stories/lists/baseProps';
-import { timeout } from '../../../../utils/promise';
-import { CubeDialogProps } from '../Dialog';
-import { CubeDialogTriggerProps } from '../DialogTrigger';
+} from '../../../index';
+import { baseProps } from '../../../stories/lists/baseProps';
+import { timeout } from '../../../utils/promise';
+
+import { CubeDialogProps } from './Dialog';
+import { CubeDialogTriggerProps } from './DialogTrigger';
 
 export default {
   title: 'Overlays/Dialog',
