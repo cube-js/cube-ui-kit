@@ -1,25 +1,25 @@
 import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
-import { TextInput } from './TextInput';
-import * as TextInputStories from './TextInput.stories';
+import { NumberInput } from './NumberInput';
+import * as NumberInputStories from './NumberInput.stories';
 
-<Meta of={TextInputStories} />
+<Meta of={NumberInputStories} />
 
-# TextInput
+# NumberInput
 
-A text input component that allows users to input custom text entries with a keyboard. Built with React Aria's `useTextField` hook for full accessibility and the Cube `tasty` style system for theming.
+A number input component that allows users to enter numeric values and increment or decrement them using stepper buttons. Built with React Aria's `useNumberField` for accessibility and the Cube `tasty` style system for theming.
 
 ## When to Use
 
-- Collect single-line text input from users (names, emails, URLs)
-- Create multiline text areas for longer content
+- Collect numeric input (quantities, prices, ages, etc.)
+- Allow users to increment/decrement values with stepper controls
+- Enforce min/max/step constraints on numbers
 - Build forms with validation and field decoration
-- Implement search inputs with icons and prefixes
-- Handle password inputs with proper masking
+- Support both controlled and uncontrolled usage
 
 ## Component
 
 <Canvas>
-    <Story of={TextInputStories.Default} />
+    <Story of={NumberInputStories.Default} />
 </Canvas>
 
 ### Properties
@@ -74,12 +74,7 @@ The `mods` prop accepts the following modifiers you can override:
 
 ### Types
 
-- `text` – Standard text input (default)
-- `password` – Masked password input
-- `email` – Email input with validation
-- `url` – URL input with validation
-- `tel` – Telephone number input
-- `search` – Search input styling
+- `number` – Standard number input (default)
 
 ### Sizes
 
@@ -92,45 +87,28 @@ The `mods` prop accepts the following modifiers you can override:
 ### Basic Usage
 
 ```jsx
-<TextInput 
-  label="Name" 
-  placeholder="Enter your name"
-  onChange={(value) => console.log(value)}
-/>
+<NumberInput label="Quantity" placeholder="Enter a number" />
 ```
 
-### With Icon
+### With Stepper Hidden
 
 ```jsx
-import { IconMail } from '@tabler/icons-react';
-
-<TextInput 
-  label="Email"
-  type="email"
-  icon={<IconMail />}
-  placeholder="Enter your email"
-/>
+<NumberInput label="Amount" hideStepper />
 ```
 
-### Multiline Text Area
+### With Min/Max/Step
 
 ```jsx
-<TextInput 
-  label="Description"
-  multiLine
-  rows={4}
-  placeholder="Enter description..."
-/>
+<NumberInput label="Age" minValue={0} maxValue={120} step={1} />
 ```
 
 ### With Validation
 
 ```jsx
-<TextInput 
-  label="Username"
-  isRequired
-  validationState="invalid"
-  message="Username must be at least 3 characters"
+<NumberInput 
+  label="Price" 
+  validationState="invalid" 
+  message="Price must be positive" 
 />
 ```
 
@@ -140,12 +118,15 @@ import { IconMail } from '@tabler/icons-react';
 
 - `Tab` – Moves focus to the input field
 - `Shift + Tab` – Moves focus away from the input
-- Standard text editing shortcuts (Ctrl+A, Ctrl+C, etc.)
+- Arrow keys – Increment/decrement value
+- `Home`/`End` – Set to min/max value
+- Standard text editing shortcuts
 
 ### Screen Reader Support
 
-- Announces role "textbox" or "searchbox" for search inputs
+- Announces role "spinbutton"
 - Announces label, description, and validation messages
+- Announces min/max/step constraints
 - State changes like "invalid" or "required" are announced
 - Loading state is announced to screen readers
 
@@ -155,19 +136,19 @@ import { IconMail } from '@tabler/icons-react';
 - `aria-describedby` – Links to description and error messages
 - `aria-invalid` – Managed automatically based on `validationState`
 - `aria-required` – Set when `isRequired` is true
-- Additional ARIA attributes supported by React Aria's `useTextField`
+- Additional ARIA attributes supported by React Aria's `useNumberField`
 
 ## Best Practices
 
 1. **Do**: Provide clear labels and helpful placeholder text
    ```jsx
-   <TextInput label="Email Address" placeholder="you@example.com" />
+   <NumberInput label="Quantity" placeholder="0" />
    ```
 
 2. **Don't**: Use placeholder text as the only label
    ```jsx
    {/* Avoid this */}
-   <TextInput placeholder="Enter your email" />
+   <NumberInput placeholder="Enter a number" />
    ```
 
 3. **Accessibility**: Always provide proper labels for screen readers
@@ -181,13 +162,12 @@ This component supports all [Field properties](/field-properties.md) when used w
 ## Suggested Improvements
 
 - Add `autoComplete` prop mapping for better browser integration
-- Provide `maxLength` indicator with character count
+- Provide `maxValue`/`minValue` indicator with value range
 - Support for input masks and formatting
 - Built-in debouncing for onChange events
 
 ## Related Components
 
-- [TextArea](/components/TextArea) – Dedicated multiline text input
-- [SearchInput](/components/SearchInput) – Specialized search input with clear button
-- [PasswordInput](/components/PasswordInput) – Enhanced password input with show/hide toggle
-- [NumberInput](/components/NumberInput) – Numeric input with increment/decrement controls 
+- [TextInput](/components/TextInput) – Single-line or multiline text input
+- [Slider](/components/Slider) – For selecting a value from a range
+- [RangeInput](/components/RangeInput) – For selecting a numeric range
