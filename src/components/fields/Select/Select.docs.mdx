@@ -1,0 +1,264 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
+import { Select } from './Select';
+import * as SelectStories from './Select.stories.tsx';
+
+<Meta of={SelectStories} />
+
+# Select
+
+A select allows users to choose a single option from a list of predefined choices. It provides a compact interface for selection with a dropdown menu that displays available options when activated.
+
+## When to Use
+
+- Allow users to select one option from a predefined list
+- Provide selection in forms where space is limited
+- Offer choices where only one selection is allowed
+- Create dropdown menus for navigation or filtering
+- Present structured options in a compact interface
+
+## Component
+
+<Story of={SelectStories.Default} />
+
+### Properties
+
+<Controls of={SelectStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/base-properties.md)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root wrapper element of the component.
+
+**Sub-elements:**
+- `Value` - The displayed selected value text
+- `CaretIcon` - The dropdown indicator icon
+- `ButtonIcon` - Icons displayed within the select button
+
+#### listBoxStyles
+
+Customizes the dropdown options container.
+
+#### optionStyles
+
+Customizes individual option items in the dropdown.
+
+### Style Properties
+
+The Select component supports all standard style properties:
+
+`display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `reset`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`, `textAlign`, `color`, `fill`, `fade`, `textTransform`, `fontWeight`, `fontStyle`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| opened | `boolean` | Whether the dropdown is open |
+| focused | `boolean` | Whether the select has focus |
+| disabled | `boolean` | Whether the select is disabled |
+| invalid | `boolean` | Whether the select has validation errors |
+| valid | `boolean` | Whether the select is valid |
+| placeholder | `boolean` | Whether showing placeholder text |
+| hovered | `boolean` | Whether the select is being hovered |
+| inside-form | `boolean` | Whether the select is inside a form field |
+
+## Variants
+
+### Themes
+
+- `default` - Standard select appearance
+- `special` - Alternative styling for special contexts
+
+### Types
+
+- `primary` - Primary emphasis styling
+- `secondary` - Secondary emphasis styling
+- `outline` - Outlined appearance
+- `neutral` - Neutral appearance
+- `clear` - Minimal appearance
+- `link` - Link-like appearance
+
+### Sizes
+
+- `small` - Compact size for dense interfaces
+- `default` - Standard size
+- `large` - Emphasized size for important selections
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<Select label="Choose an option">
+  <Select.Item key="option1">Option 1</Select.Item>
+  <Select.Item key="option2">Option 2</Select.Item>
+  <Select.Item key="option3">Option 3</Select.Item>
+</Select>
+```
+
+### With Default Selection
+
+```jsx
+<Select label="Size" defaultSelectedKey="medium">
+  <Select.Item key="small">Small</Select.Item>
+  <Select.Item key="medium">Medium</Select.Item>
+  <Select.Item key="large">Large</Select.Item>
+</Select>
+```
+
+### With Placeholder
+
+```jsx
+<Select 
+  label="Country"
+  placeholder="Select a country"
+>
+  <Select.Item key="us">United States</Select.Item>
+  <Select.Item key="ca">Canada</Select.Item>
+  <Select.Item key="uk">United Kingdom</Select.Item>
+</Select>
+```
+
+### Small Size
+
+```jsx
+<Select 
+  label="Priority"
+  size="small"
+  defaultSelectedKey="medium"
+>
+  <Select.Item key="low">Low</Select.Item>
+  <Select.Item key="medium">Medium</Select.Item>
+  <Select.Item key="high">High</Select.Item>
+</Select>
+```
+
+### With Validation
+
+```jsx
+<Select 
+  label="Required field"
+  isRequired
+  validationState="invalid"
+  errorMessage="Please select an option"
+>
+  <Select.Item key="yes">Yes</Select.Item>
+  <Select.Item key="no">No</Select.Item>
+</Select>
+```
+
+### Disabled State
+
+```jsx
+<Select 
+  label="Disabled select"
+  isDisabled
+  selectedKey="option1"
+>
+  <Select.Item key="option1">Cannot change</Select.Item>
+  <Select.Item key="option2">Option 2</Select.Item>
+</Select>
+```
+
+### Special Theme
+
+```jsx
+<Select 
+  label="Special styling"
+  theme="special"
+  type="outline"
+>
+  <Select.Item key="value1">Value 1</Select.Item>
+  <Select.Item key="value2">Value 2</Select.Item>
+</Select>
+```
+
+### With Sections
+
+```jsx
+<Select label="Category">
+  <Select.Section title="Primary">
+    <Select.Item key="primary1">Primary Option 1</Select.Item>
+    <Select.Item key="primary2">Primary Option 2</Select.Item>
+  </Select.Section>
+  <Select.Section title="Secondary">
+    <Select.Item key="secondary1">Secondary Option 1</Select.Item>
+    <Select.Item key="secondary2">Secondary Option 2</Select.Item>
+  </Select.Section>
+</Select>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the select
+- `Space/Enter` - Opens the dropdown
+- `Arrow Down` - Opens dropdown and moves to first/next option
+- `Arrow Up` - Moves to previous option (when open)
+- `Home` - Moves to first option
+- `End` - Moves to last option
+- `Escape` - Closes dropdown without selecting
+- `Enter` - Selects focused option and closes dropdown
+- Typing - Navigates to options starting with typed character
+
+### Screen Reader Support
+
+- Component announces as "combobox" or "listbox" to screen readers
+- Current selection is announced when changed
+- Available options are announced during navigation
+- Dropdown state (open/closed) is communicated
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label when no visible label exists
+- `aria-labelledby` - References external label elements
+- `aria-describedby` - References additional descriptive text
+- `aria-expanded` - Indicates if dropdown is open
+- `aria-activedescendant` - References the currently focused option
+- `aria-required` - Indicates if selection is required
+- `aria-invalid` - Indicates validation state
+
+## Best Practices
+
+1. **Do**: Provide clear, descriptive labels and meaningful option text
+   ```jsx
+   <Select label="Shipping method">
+     <Select.Item key="standard">Standard (5-7 days)</Select.Item>
+     <Select.Item key="express">Express (2-3 days)</Select.Item>
+   </Select>
+   ```
+
+2. **Don't**: Use select for very long lists (use ComboBox with search instead)
+   ```jsx
+   <Select label="Country"> {/* Consider ComboBox for 50+ options */}
+   ```
+
+3. **Grouping**: Use sections for logically grouped options
+4. **Validation**: Provide clear error messages for validation failures
+5. **Default Selection**: Consider providing sensible defaults when appropriate
+6. **Loading**: Show loading state when options are being fetched
+
+## Integration with Forms
+
+This component supports all [Field properties](/field-properties.md) when used within a Form.
+
+## Suggested Improvements
+
+- Add support for multi-selection mode
+- Implement virtual scrolling for very large option lists
+- Add option filtering/search capabilities
+- Consider adding option descriptions or secondary text
+- Implement async loading of options
+
+## Related Components
+
+- [ComboBox](/components/ComboBox) - For searchable selection with large option lists
+- [RadioGroup](/components/RadioGroup) - For visible selection options
+- [Checkbox](/components/Checkbox) - For multiple selection scenarios

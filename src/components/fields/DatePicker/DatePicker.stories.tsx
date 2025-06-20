@@ -20,9 +20,140 @@ export default {
     },
   },
   argTypes: {
-    ...TIME_VALUE_ARG,
-    ...ICON_ARG,
-    ...VALIDATION_STATE_ARG,
+    /* Content */
+    label: {
+      control: { type: 'text' },
+      description: 'Label for the date picker',
+    },
+    description: {
+      control: { type: 'text' },
+      description: 'Additional descriptive text',
+    },
+    placeholder: {
+      control: { type: 'text' },
+      description: 'Placeholder text when no date is selected',
+    },
+
+    /* Value */
+    value: {
+      control: { type: 'date' },
+      description: 'The current date value (controlled)',
+    },
+    defaultValue: {
+      control: { type: 'date' },
+      description: 'The default date value (uncontrolled)',
+    },
+    placeholderValue: {
+      control: { type: 'date' },
+      description: 'Date used as placeholder when calendar opens',
+    },
+
+    /* Date Constraints */
+    minValue: {
+      control: { type: 'date' },
+      description: 'The minimum allowed date',
+    },
+    maxValue: {
+      control: { type: 'date' },
+      description: 'The maximum allowed date',
+    },
+    granularity: {
+      options: ['day', 'hour', 'minute', 'second'],
+      control: { type: 'radio' },
+      description: 'Determines the smallest selectable unit',
+      table: {
+        defaultValue: { summary: 'day' },
+      },
+    },
+
+    /* Presentation */
+    size: {
+      options: ['small', 'medium', 'large'],
+      control: { type: 'radio' },
+      description: 'DatePicker size',
+      table: {
+        defaultValue: { summary: 'medium' },
+      },
+    },
+    showMonthAndYearPickers: {
+      control: { type: 'boolean' },
+      description: 'Whether to show month and year picker dropdowns',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    useLocale: {
+      control: { type: 'boolean' },
+      description: 'Whether to use locale-specific date formatting',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    maxVisibleMonths: {
+      control: { type: 'number', min: 1, max: 3 },
+      description: 'Maximum number of months to display in calendar',
+      table: {
+        defaultValue: { summary: 1 },
+      },
+    },
+
+    /* State */
+    isDisabled: {
+      control: { type: 'boolean' },
+      description: 'Whether the date picker is disabled',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isReadOnly: {
+      control: { type: 'boolean' },
+      description: 'Whether the date picker can be focused but not changed',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isRequired: {
+      control: { type: 'boolean' },
+      description: 'Whether date selection is required before form submission',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    validationState: {
+      options: [undefined, 'valid', 'invalid'],
+      control: { type: 'radio' },
+      description:
+        'Whether the date picker should display valid or invalid visual styling',
+    },
+    autoFocus: {
+      control: { type: 'boolean' },
+      description: 'Whether the element should receive focus on render',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+
+    /* Events */
+    onChange: {
+      action: 'change',
+      description: 'Callback fired when the date value changes',
+      control: { type: null },
+    },
+    onBlur: {
+      action: 'blur',
+      description: 'Callback fired when the date picker loses focus',
+      control: { type: null },
+    },
+    onFocus: {
+      action: 'focus',
+      description: 'Callback fired when the date picker receives focus',
+      control: { type: null },
+    },
+    onOpenChange: {
+      action: 'open-change',
+      description: 'Callback fired when the calendar opens or closes',
+      control: { type: null },
+    },
   },
 };
 
@@ -48,7 +179,6 @@ const Template: StoryFn<CubeDatePickerProps> = ({ ...props }) => {
       aria-label="DatePicker"
       wrapperStyles={{ width: 'max-content' }}
       {...props}
-      onChange={(query) => console.log('change', query)}
     />
   );
 };

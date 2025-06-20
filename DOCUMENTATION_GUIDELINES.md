@@ -24,7 +24,7 @@ Every component documentation file should follow this structure:
 ```mdx
 import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
 import { ComponentName } from './ComponentName';
-import * as ComponentStories from './ComponentName.stories.tsx';
+import * as ComponentStories from './ComponentName.stories';
 
 <Meta of={ComponentStories} />
 
@@ -48,7 +48,7 @@ Brief description of what the component is and its primary purpose.
 
 ### Base Properties
 
-Supports [Base properties](/base-properties.md)
+Supports [Base properties](/BaseProperties)
 
 ### Styling Properties
 
@@ -174,12 +174,13 @@ This component supports all [Field properties](/field-properties.md) when used w
 
 #### Styling Properties
 - Document each `styles` or `*Styles` property separately
-- For each styling property, list all available sub-elements with descriptions
+- For each styling property, list all available tasty sub-elements with descriptions. Count only those sub-elements that are mentioned in tasty styles in the root element inside component and can be overrided by passing an object with a specific key (sub-element name) to `styles` property
 - Format: `ElementName` - Description of what this element represents
 
 #### Style Properties
 - List all properties that can be used for direct styling (e.g., `width`, `height`, `padding`)
 - These are properties that map to `tasty` styles without using the `styles` prop
+- Use `src/tasty/styles/list.ts` file to understand how it works.
 
 #### React Aria Properties
 - Document all React Aria properties with clear descriptions

@@ -1,0 +1,191 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
+import { FileInput } from './FileInput';
+import * as FileInputStories from './FileInput.stories.tsx';
+
+<Meta of={FileInputStories} />
+
+# FileInput
+
+A file input component that allows users to select and upload files through a customizable interface. It supports drag-and-drop functionality, file type restrictions, and multiple file selection.
+
+## When to Use
+
+- Allow users to upload documents, images, or other files
+- Provide drag-and-drop file upload functionality
+- Enable multiple file selection for batch uploads
+- Restrict file types and sizes for specific use cases
+- Create a more accessible alternative to the native file input
+
+## Component
+
+<Story of={FileInputStories.Default} />
+
+### Properties
+
+<Controls of={FileInputStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/base-properties.md)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root element of the component.
+
+**Sub-elements:**
+- `Button` - The clickable button element for file selection
+- `Placeholder` - Text shown when no file is selected
+- `Value` - Text showing the selected file name(s)
+- `Input` - The hidden native file input element
+
+### Style Properties
+
+The FileInput component supports all standard style properties:
+
+`display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `reset`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`, `textAlign`, `color`, `fill`, `fade`, `textTransform`, `fontWeight`, `fontStyle`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| drag-hover | `boolean` | Whether files are being dragged over the component |
+| disabled | `boolean` | Whether the file input is disabled |
+| invalid | `boolean` | Whether the file input has validation errors |
+| valid | `boolean` | Whether the file input is valid |
+| focused | `boolean` | Whether the file input has focus |
+| inside-form | `boolean` | Whether the file input is inside a form field |
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<FileInput label="Upload document" />
+```
+
+### Multiple Files
+
+```jsx
+<FileInput 
+  label="Upload images"
+  multiple
+  accept="image/*"
+/>
+```
+
+### With File Type Restrictions
+
+```jsx
+<FileInput 
+  label="Upload PDF"
+  accept=".pdf"
+  placeholder="Select PDF file..."
+/>
+```
+
+### Custom Button Text
+
+```jsx
+<FileInput 
+  label="Profile picture"
+  buttonText="Choose Photo"
+  accept="image/jpeg,image/png"
+/>
+```
+
+### With Validation
+
+```jsx
+<FileInput 
+  label="Required document"
+  isRequired
+  validationState="invalid"
+  errorMessage="Please select a file"
+/>
+```
+
+### Disabled State
+
+```jsx
+<FileInput 
+  label="Disabled file input"
+  isDisabled
+  buttonText="Upload"
+/>
+```
+
+### Custom Placeholder
+
+```jsx
+<FileInput 
+  label="Document upload"
+  placeholder="Drag files here or click to browse..."
+  buttonText="Browse"
+/>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the file input button
+- `Space/Enter` - Opens the file selection dialog
+- Screen readers can access the hidden file input directly
+
+### Screen Reader Support
+
+- Component announces as "button" for file selection
+- Selected file names are announced when changed
+- File type restrictions and requirements are communicated
+- Validation errors are announced when present
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label when no visible label exists
+- `aria-labelledby` - References external label elements
+- `aria-describedby` - References additional descriptive text
+- `aria-required` - Indicates if file selection is required
+- `aria-invalid` - Indicates validation state
+
+## Best Practices
+
+1. **Do**: Provide clear file type and size requirements
+   ```jsx
+   <FileInput 
+     label="Upload resume"
+     accept=".pdf,.doc,.docx"
+     description="PDF or Word document, max 5MB"
+   />
+   ```
+
+2. **Don't**: Use unclear button text or placeholders
+   ```jsx
+   <FileInput buttonText="Click" /> {/* What does clicking do? */}
+   ```
+
+3. **File Types**: Always specify accepted file types for better UX
+4. **Size Limits**: Implement file size validation for uploads
+5. **Multiple Files**: Clearly indicate when multiple files are allowed
+6. **Error Handling**: Provide helpful feedback for invalid files
+
+## Integration with Forms
+
+This component supports all [Field properties](/field-properties.md) when used within a Form.
+
+## Suggested Improvements
+
+- Add visual progress indicators for file uploads
+- Implement file preview functionality for images
+- Add support for file size and type validation messages
+- Consider adding file removal functionality for selected files
+- Implement custom drag-and-drop visual feedback
+
+## Related Components
+
+- [Button](/components/Button) - For triggering file dialogs programmatically
+- [Field](/components/Field) - For form integration and validation
+- [ProgressBar](/components/ProgressBar) - For showing upload progress

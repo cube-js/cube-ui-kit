@@ -1,0 +1,64 @@
+import { Meta, Canvas, ArgTypes, Source } from '@storybook/blocks';
+import { Badge } from '@storybook/components';
+import * as TextInputMapperStories from './TextInputMapper.stories';
+
+<Meta of={TextInputMapperStories} />
+
+# TextInputMapper
+
+<Badge variant="neutral">Form component</Badge>
+
+The TextInputMapper component allows users to create and manage key-value pairs dynamically. It provides an interface for adding, editing, and removing mappings with customizable input components for both keys and values.
+
+<Canvas of={TextInputMapperStories.Default} />
+
+## Examples
+
+### With Label
+
+<Canvas of={TextInputMapperStories.WithLabel} />
+
+### With Default Value
+
+<Canvas of={TextInputMapperStories.WithDefaultValue} />
+
+### Disabled State
+
+<Canvas of={TextInputMapperStories.Disabled} />
+
+### Custom Components
+
+<Canvas of={TextInputMapperStories.CustomComponents} />
+
+## Properties
+
+<ArgTypes of={TextInputMapperStories} />
+
+## Sub-elements
+
+The TextInputMapper component is a complex compound component that doesn't expose styled sub-elements via the `styles` prop. Instead, it uses internal layout components and delegates styling to its key and value input components.
+
+## Style Properties
+
+The TextInputMapper component supports all standard style properties:
+
+`display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `reset`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`, `textAlign`, `color`, `fill`, `fade`, `textTransform`, `fontWeight`, `fontStyle`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+
+## Accessibility
+
+The TextInputMapper component follows WAI-ARIA guidelines:
+
+- Uses semantic form controls for key-value inputs
+- Provides clear labeling for all interactive elements
+- Supports keyboard navigation between fields and actions
+- Announces changes when mappings are added or removed
+- Associates labels with input elements using appropriate ARIA attributes
+
+## Best Practices
+
+- Use descriptive labels that clearly indicate the purpose of the key-value pairs
+- Provide appropriate `actionLabel` text for the add button
+- Consider using custom components for specialized input types
+- Set appropriate validation on both key and value inputs
+- Use `allowsCustomValue` when users need flexibility in value selection
+- Provide clear feedback when validation fails on individual pairs

@@ -1,105 +1,339 @@
-import { Meta, Story, Canvas } from '@storybook/blocks';
-import {
-  Button,
-  Root,
-  Space,
-  Card,
-  Text,
-  Block,
-  Paragraph,
-  Flow,
-  Flex,
-} from '../index';
-import { StyledButton, GlobalStyledHeading } from './components/StyledButton';
-import * as TastyStories from './Tasty.stories.jsx';
+import { Meta } from '@storybook/blocks';
 
-<Meta of={TastyStories} />
+<Meta title="tasty/API" />
 
-# Tasty API
+# Tasty style helper API
 
-Let's look at styled API:
+`tasty` is a utility for defining styled React components with a powerful, declarative API. It enables you to create, extend, and theme components with consistent, maintainable styles and variants. This guide provides clear, actionable rules and best practices for using `tasty` effectively, including advanced features and performance notes.
 
-```typescript jsx
+---
+
+## Table of Contents
+
+1. [Basic Usage](#1-basic-usage)
+2. [Styled Components](#2-styled-components)
+3. [Best Practices](#3-best-practices)
+4. [Modifiers and Data Attributes](#4-modifiers-and-data-attributes)
+5. [Complex State Bindings](#5-complex-state-bindings)
+6. [Responsive & State-based Styles](#6-responsive--state-based-styles)
+7. [Selector & Sub-element Syntax](#7-selector--sub-element-syntax)
+8. [Variants (Themes)](#8-variants-themes)
+9. [Custom Units](#9-custom-units)
+10. [Color Syntax and Tokens](#10-color-syntax-and-tokens)
+11. [Custom Properties](#11-custom-properties)
+12. [Extending Components](#12-extending-components)
+13. [Global Styles](#13-global-styles)
+14. [Full Example: Custom Button](#14-full-example-custom-button)
+15. [Native `style` Prop & Performance](#15-native-style-prop--performance)
+
+---
+
+## 1. Basic Usage
+
+Create a styled element or extend an existing component:
+
+```jsx
 import { tasty } from '@cube-dev/ui-kit';
 
 const Element = tasty({
-  /** The tag name of the element. */
   as: 'span',
-  /** Default styles of the element. */
   styles: {
-    // tokens
-    '@local-padding': ['2x', '1x'], // responsive styles
+    '@local-padding': ['2x', '1x'],
     '@text-color': 'rgb(255 0 0)',
-    // styles
     padding: '@local-padding',
     color: {
-      // the default color
       '': '#text',
-      // the color if `blue` mod is specified
-      blue: 'blue',
-    }, // use color token
+      blue: 'blue', // mod-based style
+    },
   },
-  /** Default attributes (example) */
   role: 'article',
-  /** The list of styles that can be provided by props */
-  styleProps: ['align'],
+  styleProps: ['align'], // allows <Element align="center" />
 });
 ```
 
-Now you can use this element inside your React App:
+---
 
-```typescript jsx
-export default function Component({ title, children }) {
-  return (
-    <>
-      <Heading>{title}</Heading>
-      <Element>{children}</Element>
-    </>
-  );
-}
-```
+## 2. Styled Components
 
-## Extend base options
+> **Best Practice:** Always prefer creating styled wrappers with `tasty` over using the `styles` prop directly. This ensures consistency and maintainability.
 
-You can use `tasty()` function to extend styling of the existing component.
-
-```typescript jsx
-const CustomElement = tasty(Element, {
-  /** Change tag name */
-  as: 'input',
-  /** Extend or rewrite styles */
-  styles: {
-    color: '#purple',
-  },
-  /** Add more default properties/attributes */
-  role: 'article',
-});
-```
-
-An example of styled component.
-
-```typescript jsx
-import { Button, tasty } from '@cube-dev/ui-kit';
-
+**Recommended:**
+```jsx
 const StyledButton = tasty(Button, {
   styles: {
     padding: '3x 6x',
     preset: 't1',
   },
 });
+
+// Usage
+<StyledButton>Click me</StyledButton>
 ```
 
-<Canvas>
-  <Story of={TastyStories.StyledButton} />
-</Canvas>
+**Avoid:**
+```jsx
+<Button styles={{ padding: '3x 6x' }}>Click me</Button> // Not recommended
+```
 
-## Define global styles
+---
 
-Use `tasty()` to define global styles for elements:
+## 3. Best Practices
 
-```typescript jsx
-import { tasty } from '@cube-dev/ui-kit';
+- **Always prefer styled wrappers with `tasty` over the `styles` prop directly.**
+- Use variants for theming and state-based styles for interactivity.
+- Keep style logic declarative; avoid inline style overrides.
+- Use tokens, custom units, and responsive arrays for consistency.
+- Place more specific or overriding rules last in style objects for correct precedence.
 
+---
+
+## 4. Modifiers and Data Attributes
+
+Modifiers let you declaratively control component states and style them accordingly. When you pass a modifier (such as `hovered`, `active`, `disabled`, etc.) to a component via the `mods` prop, it is automatically translated into a `data-is-<modifier>` attribute on the DOM element. This attribute is then used in style-to-state bindings.
+
+**How it works:**
+- The `mods` prop is an object where each key is a modifier name and the value is a boolean.
+- If a modifier is `true`, the corresponding `data-is-<modifier>` attribute is added to the element.
+- In your styles, you can bind styles to these modifiers using the modifier name as a key (e.g., `hovered`, `active`).
+- **Built-in states** (such as `disabled`, `checked`, etc.) must be targeted using the full attribute selector (e.g., `[disabled]`), not the simplified modifier key.
+
+**Example:**
+```jsx
+const MyButton = tasty({
+  styles: {
+    color: {
+      '': '#dark',
+      hovered: '#purple', // applies when data-is-hovered is present
+      '[disabled]': '#gray', // applies when the element is disabled
+    },
+    border: {
+      '': '#border',
+      active: '#purple', // applies when data-is-active is present
+    },
+  },
+});
+
+<MyButton mods={{ hovered: true, active: false }} disabled />
+// Renders: <div data-is-hovered disabled class="...">...</div>
+```
+
+- Modifiers can be combined in style-to-state bindings using logical operators (see Complex State Bindings).
+- This system enables clean, declarative, and maintainable state-based styling without relying on CSS pseudo-classes or manual class management.
+- **Summary:**
+  - Use `[disabled]`, `[checked]`, etc. for built-in states.
+  - Use simplified keys (e.g., `hovered`, `active`) only for custom modifiers set via `mods`.
+
+---
+
+## 5. Complex State Bindings
+
+Combine multiple modifiers using logical operators to target specific states or combinations:
+
+- `!` — NOT
+- `&` — AND
+- `|` — OR
+- `^` — XOR
+
+> **Note:** Rules are applied in reverse order—the last line in the object is checked first. Place more specific or overriding rules last for correct precedence.
+
+**Example:**
+```jsx
+color: {
+  '': 'yellow', // default
+  blue: 'blue', // if `blue` mod is present
+  '!blue & :hover': 'purple', // if not `blue` and hovered
+  'success | green': 'green', // if `success` or `green` mod is present
+  'success ^ green': 'green', // if either `success` or `green` (but not both)
+}
+```
+
+You can also use built-in CSS pseudo-classes and custom data attributes as modifiers:
+
+```jsx
+color: {
+  ':hover': '#purple', // when hovered
+  '[data-theme="danger"]': '#danger', // when data-theme="danger" attribute is present
+  '.custom-class': '#success', // when element has class "custom-class"
+  '[disabled]': '#gray', // when the element is disabled (built-in state)
+}
+```
+
+> **Important:** To style built-in states like `disabled`, always use the full attribute selector (e.g., `[disabled]`). The simplified modifier keys (e.g., `disabled`) are only for use with the `mods` prop and custom data attributes.
+
+---
+
+## 6. Responsive & State-based Styles
+
+- Use arrays for responsive values: `padding: ['2x', '1x']`.
+- Responsive styles are applied from largest to smallest screen zones. Each array value corresponds to a zone between breakpoints, starting from the largest. For two breakpoints, you have three zones.
+- Customize breakpoints by wrapping your app (or subtree) with `BreakpointsProvider`:
+
+```jsx
+import { BreakpointsProvider } from '@cube-dev/ui-kit';
+
+<BreakpointsProvider value={[1200, 640]}>
+  <Block padding={["4x", "2x", "1x"]} />
+</BreakpointsProvider>
+```
+
+- `padding` is `4x` for screens ≥ 1200px
+- `padding` is `2x` for screens ≥ 640px and < 1200px
+- `padding` is `1x` for screens < 640px
+
+- Use objects for state/modifier-based styles:
+  ```jsx
+  color: {
+    '': '#text', // default
+    hovered: '#blue',
+    pressed: '#red',
+  }
+  ```
+
+---
+
+## 7. Selector & Sub-element Syntax
+
+To style inner elements, use the sub-element name as a key in the `styles` object. These styles apply to any inner element with the corresponding `data-element="ElementName"` attribute. The root element's modifiers (states) are used for sub-element state-based styling, ensuring consistency.
+
+**Example:**
+```jsx
+styles: {
+  Label: { color: '#purple' }, // styles for data-element="Label"
+  Icon: {
+    color: {
+      '': '#dark',
+      hovered: '#purple', // uses root element's hovered state
+    },
+  },
+}
+```
+
+You can use custom selectors for advanced cases:
+
+```jsx
+styles: {
+  '& > div': { margin: '1x' }, // direct child divs (not recommended)
+  '&::after': { content: '""', display: 'block' }, // after pseudo-element
+}
+```
+
+> **Warning:** Avoid custom selectors like `& > div` and state selectors like `&:hover`. Prefer sub-element syntax and named elements (`data-element="..."`) for maintainable, predictable styles. Use custom selectors only for edge cases.
+
+---
+
+## 8. Variants (Themes)
+
+Variants let you define multiple style themes for a component:
+
+```jsx
+const StyledButton = tasty(Button, {
+  styles: { /* default styles */ },
+  variants: {
+    default: { /* default variant styles */ },
+    danger: { /* danger variant styles */ },
+  },
+});
+
+// Usage
+<StyledButton variant="danger">Danger</StyledButton>
+```
+
+- If `variant` is not provided, the `default` variant is used.
+- Avoid changing the `variant` prop dynamically to prevent style replacement, but this is supported if needed.
+
+---
+
+## 9. Custom Units
+
+`tasty` supports concise, semantic units for consistent styling. Units are expanded to CSS variables or expressions:
+
+| Unit | Meaning | Example | Result |
+|------|---------|---------|--------|
+| `r`  | Border radius | `2r` | `calc(var(--radius) * 2)` |
+| `cr` | Card radius   | `1cr`| `var(--card-radius)` |
+| `bw` | Border width  | `2bw`| `calc(var(--border-width) * 2)` |
+| `ow` | Outline width | `1ow`| `var(--outline-width)` |
+| `x`  | Gap           | `4x` | `calc(var(--gap) * 4)` |
+| `fs` | Font size     | `1fs`| `var(--font-size)` |
+| `lh` | Line height   | `1lh`| `var(--line-height)` |
+| `rp` | Rem pixel     | `1rp`| `var(--rem-pixel)` |
+| `gp` | Column gap    | `1gp`| `var(--column-gap)` |
+| `dvh`| Dynamic viewport height | `100dvh` | Uses `dvh` if supported, else fallback |
+| `sp` | Grid span     | `2sp`| Grid span calculation |
+
+**Example:**
+```jsx
+<Block padding="2x 1r" /> // padding: calc(var(--gap) * 2) calc(var(--radius) * 1)
+```
+
+---
+
+## 10. Color Syntax and Tokens
+
+- Use `#token` for predefined color tokens (e.g., `#purple`, `#danger-text`).
+- Add `.opacity` for alpha (e.g., `#dark.04` for 4% opacity, `#dark.4` for 40%). Only 1 or 2 digits are supported.
+- Use color functions: `rgb()`, `rgba()`, or CSS color names.
+- Predefined tokens: `#purple`, `#danger`, `#success`, `#dark`, `#white`, `#border`, `#shadow`, etc.
+- Combine with other values: `border: '2bw solid #purple'`.
+
+**Example:**
+```jsx
+<Block styles={{ color: '#dark', fill: '#purple.10' }} />
+```
+
+---
+
+## 11. Custom Properties
+
+- Use the `@` prefix to reference custom properties or tokens defined in your theme or component.
+- Example: `padding: '@local-padding'` uses the value of the `@local-padding` property.
+- Use brackets to define the fallback value: `padding: '@(local-padding, 1x)'`.
+- Define custom tokens in the `styles` object:
+
+```jsx
+const MyBlock = tasty({
+  styles: {
+    '@my-gap': '2x',
+    gap: '@my-gap',
+  },
+});
+```
+
+- Define custom colors using the `@` prefix. Use `'@custom-color': 'rgb(255 128 0)'` (no commas in rgb values). Prefer opaque colors for best results.
+
+**Example:**
+```jsx
+const MyBlock = tasty({
+  styles: {
+    '@custom-color': 'rgb(255 128 0)',
+    color: '@custom-color',
+  },
+});
+```
+
+---
+
+## 12. Extending Components
+
+Extend an existing component’s styles and attributes:
+
+```jsx
+const CustomElement = tasty(Element, {
+  as: 'input',
+  styles: {
+    color: '#purple',
+  },
+  role: 'article',
+});
+```
+
+---
+
+## 13. Global Styles
+
+Define global styles for selectors:
+
+```jsx
 const GlobalStyledHeading = tasty('.myButton', {
   display: 'inline-block',
   padding: '1x 2x',
@@ -109,40 +343,50 @@ const GlobalStyledHeading = tasty('.myButton', {
 });
 ```
 
-The `div` is used only for demonstration purposes. Do not use `div`s as buttons!
+---
 
-<Canvas>
-  <Story of={TastyStories.GloballyStyledButton} />
-</Canvas>
+## 14. Full Example: Custom Button
 
-## Style variants
-
-You can reduce the amount of CSS for your component by splitting it into variants.
-
-```typescript jsx
-import { tasty } from '@cube-dev/ui-kit';
-
-const StyledButton = tasty(Button, {
+```jsx
+const MyButton = tasty(Button, {
   styles: {
-    /* default styles */
-  },
-  variants: { // define themes using variants
-    default: { // default (fallback) variant
-      // define new styles for `default` variant or override default styles.
+    padding: ['2x', '1x'],
+    color: {
+      '': '#white',
+      hovered: '#purple',
     },
+    border: '2bw #purple',
+  },
+  variants: {
     danger: {
-      // define new styles for `danger` variant or override default styles.
-    }
+      color: '#danger',
+    },
   },
 });
 ```
 
-Usage example:
+---
 
-```typescript jsx
-<StyledButton variant="danger">Danger Button</StyledButton>
+## 15. Native `style` Prop & Performance
+
+You can use the native React `style` property on `tasty` components. This only supports standard React style object syntax and is intended for backward compatibility and dynamic use cases.
+
+> **Performance Note:** Changing the `styles` prop at runtime triggers a full style recalculation and may impact performance. For dynamic styles or custom properties that change frequently, prefer the native `style` prop.
+
+**Example:**
+```jsx
+const MyBox = tasty({
+  styles: {
+    padding: '2x',
+    color: '#custom',
+    '@custom-color': '#purple', // fallback
+  },
+});
+
+<MyBox style={{ '--custom-color': 'var(--danger-color)' }} />
 ```
+In this example, the `color` style uses a CSS custom property (`--custom-color`). You can override it dynamically at runtime using the native `style` prop, which is efficient and avoids unnecessary re-renders or style recalculations.
 
-If the `variant` prop is not provided then the `default` variant will be used.
+---
 
-**IMPORTANT:** It's preferred that the component will not receive any change in `variant` prop to avoid style replacement. But this case is **supported**.
+To learn more about specific tasty styles, see [Styles](/docs/tasty-styles--docs) documentation.
