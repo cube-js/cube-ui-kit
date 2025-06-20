@@ -19,8 +19,6 @@ export const parameters = {
       const aTitle = a.title || a.kind || '';
       const bTitle = b.title || b.kind || '';
 
-      console.log('Sorting:', { aTitle, bTitle }); // Debug log
-
       // Check if either story is in the 'tasty' section
       const aIsTasty =
         aTitle.toLowerCase().includes('tasty') || aTitle.startsWith('Tasty');
