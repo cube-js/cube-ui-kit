@@ -53,7 +53,7 @@ export const parameters = {
   },
   actions: {
     // Disable only while the test runner is active
-    disable: process.env.NODE_ENV === 'test',
+    disable: isChromatic() || process.env.NODE_ENV === 'test',
   },
 };
 
