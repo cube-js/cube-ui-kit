@@ -135,12 +135,12 @@ export default {
       control: { type: null },
     },
     onBlur: {
-      action: 'blur',
+      action: (e) => ({ type: 'blur', target: e?.target?.tagName }),
       description: 'Callback fired when the input loses focus',
       control: { type: null },
     },
     onFocus: {
-      action: 'focus',
+      action: (e) => ({ type: 'focus', target: e?.target?.tagName }),
       description: 'Callback fired when the input receives focus',
       control: { type: null },
     },
