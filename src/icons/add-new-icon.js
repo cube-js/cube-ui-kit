@@ -35,7 +35,7 @@ import prettier from 'prettier';
       const svgTag = svgTagMatch[0];
       if (!/viewBox=/.test(svgTag)) {
         // Insert viewBox attribute right after <svg
-        const newSvgTag = svgTag.replace('<svg', '<svg viewBox="0 0 16 16"');
+        const newSvgTag = svgTag.replace('<svg', '<svg viewBox="0 0 24 24"');
         svgContent = svgContent.replace(svgTag, newSvgTag);
       }
     } else {

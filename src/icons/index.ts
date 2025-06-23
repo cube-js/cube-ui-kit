@@ -1,3 +1,5 @@
+export { AdjustmentsHorizontalIcon } from './AdjustmentsHorizontalIcon';
+export { AdjustmentsIcon } from './AdjustmentsIcon';
 export { AiIcon } from './AiIcon';
 export { AreaChartIcon } from './AreaChartIcon';
 export { BackwardIcon } from './BackwardIcon';
@@ -13,6 +15,7 @@ export { ChartBarGroupedIcon } from './ChartBarGroupedIcon';
 export { ChartBarLineIcon } from './ChartBarLineIcon';
 export { ChartBarStackedIcon } from './ChartBarStackedIcon';
 export { ChartBarStackedPercentageIcon } from './ChartBarStackedPercentageIcon';
+export { ChartBoxPlot2Icon } from './ChartBoxPlot2Icon';
 export { ChartBoxPlotIcon } from './ChartBoxPlotIcon';
 export { ChartBubbleIcon } from './ChartBubbleIcon';
 export { ChartDonut2Icon } from './ChartDonut2Icon';
