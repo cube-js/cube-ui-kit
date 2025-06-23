@@ -51,6 +51,10 @@ export const parameters = {
       { name: 'gray', value: 'rgba(243,243,250, 1)' },
     ],
   },
+  actions: {
+    // Disable only while the test runner is active
+    disable: process.env.NODE_ENV === 'test',
+  },
 };
 
 export const decorators = [

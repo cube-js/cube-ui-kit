@@ -2,7 +2,6 @@ import { StoryFn } from '@storybook/react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Block } from '../../Block';
-import { TextInput } from '../../fields/TextInput';
 
 import { Field } from './Field';
 import { CubeFieldProps } from './use-field/types';
@@ -149,12 +148,6 @@ Default.args = {
   label: 'Field Label',
   description: 'This is a field description',
 };
-
-export const WithInput = () => (
-  <Field isRequired label="Email" name="email">
-    <TextInput placeholder="Enter your email" />
-  </Field>
-);
 
 export const ReadOnlyContent = Template.bind({});
 ReadOnlyContent.args = {
