@@ -140,3 +140,74 @@ Disabled.args = {
   children: 'Disabled checkbox',
   isDisabled: true,
 };
+
+// Stories showing both checked and unchecked states for visual testing
+const MultiStateTemplate: StoryFn<CubeCheckboxProps> = (props) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Checkbox
+      {...props}
+      isSelected={false}
+      onChange={(isSelected) => console.log('unchecked change', isSelected)}
+    >
+      {props.children} (unchecked)
+    </Checkbox>
+    <Checkbox
+      {...props}
+      isSelected={true}
+      onChange={(isSelected) => console.log('checked change', isSelected)}
+    >
+      {props.children} (checked)
+    </Checkbox>
+  </div>
+);
+
+export const AllStates = MultiStateTemplate.bind({});
+AllStates.args = {
+  children: 'Checkbox',
+};
+
+export const AllStatesDisabled = MultiStateTemplate.bind({});
+AllStatesDisabled.args = {
+  children: 'Disabled checkbox',
+  isDisabled: true,
+};
+
+export const AllStatesInvalid = MultiStateTemplate.bind({});
+AllStatesInvalid.args = {
+  children: 'Invalid checkbox',
+  validationState: 'invalid',
+  isRequired: true,
+};
+
+const IndeterminateMultiStateTemplate: StoryFn<CubeCheckboxProps> = (props) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Checkbox
+      {...props}
+      isSelected={false}
+      onChange={(isSelected) => console.log('unchecked change', isSelected)}
+    >
+      {props.children} (unchecked)
+    </Checkbox>
+    <Checkbox
+      {...props}
+      isIndeterminate={true}
+      onChange={(isSelected) => console.log('indeterminate change', isSelected)}
+    >
+      {props.children} (indeterminate)
+    </Checkbox>
+    <Checkbox
+      {...props}
+      isSelected={true}
+      onChange={(isSelected) => console.log('checked change', isSelected)}
+    >
+      {props.children} (checked)
+    </Checkbox>
+  </div>
+);
+
+export const AllStatesWithIndeterminate = IndeterminateMultiStateTemplate.bind(
+  {},
+);
+AllStatesWithIndeterminate.args = {
+  children: 'Select items',
+};

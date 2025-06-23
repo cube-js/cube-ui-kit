@@ -151,3 +151,53 @@ Loading.args = {
   children: 'Loading switch',
   isLoading: true,
 };
+
+// Stories showing both selected and unselected states for visual testing
+const MultiStateTemplate: StoryFn<CubeSwitchProps> = (props) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Switch
+      {...props}
+      isSelected={false}
+      onChange={(isSelected) => console.log('unselected change', isSelected)}
+    >
+      {props.children} (unselected)
+    </Switch>
+    <Switch
+      {...props}
+      isSelected={true}
+      onChange={(isSelected) => console.log('selected change', isSelected)}
+    >
+      {props.children} (selected)
+    </Switch>
+  </div>
+);
+
+export const AllStates = MultiStateTemplate.bind({});
+AllStates.args = {
+  children: 'Switch',
+};
+
+export const AllStatesSmall = MultiStateTemplate.bind({});
+AllStatesSmall.args = {
+  children: 'Small switch',
+  size: 'small',
+};
+
+export const AllStatesDisabled = MultiStateTemplate.bind({});
+AllStatesDisabled.args = {
+  children: 'Disabled switch',
+  isDisabled: true,
+};
+
+export const AllStatesInvalid = MultiStateTemplate.bind({});
+AllStatesInvalid.args = {
+  children: 'Invalid switch',
+  validationState: 'invalid',
+  isRequired: true,
+};
+
+export const AllStatesLoading = MultiStateTemplate.bind({});
+AllStatesLoading.args = {
+  children: 'Loading switch',
+  isLoading: true,
+};
