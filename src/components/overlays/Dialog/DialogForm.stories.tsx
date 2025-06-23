@@ -7,15 +7,16 @@ import {
 } from '@storybook/test';
 import { useState } from 'react';
 
-import { baseProps } from '../../../../stories/lists/baseProps';
-import { Button } from '../../../actions';
-import { Paragraph } from '../../../content/Paragraph';
-import { Text } from '../../../content/Text';
-import { Input } from '../../../fields';
-import { Form } from '../../../form';
-import { DialogContainer } from '../DialogContainer';
-import { CubeDialogFormProps, DialogForm } from '../DialogForm';
-import { DialogTrigger } from '../DialogTrigger';
+import { baseProps } from '../../../stories/lists/baseProps';
+import { Button } from '../../actions';
+import { Paragraph } from '../../content/Paragraph';
+import { Text } from '../../content/Text';
+import { Input } from '../../fields';
+import { Form } from '../../form';
+
+import { DialogContainer } from './DialogContainer';
+import { CubeDialogFormProps, DialogForm } from './DialogForm';
+import { DialogTrigger } from './DialogTrigger';
 
 export default {
   title: 'Overlays/DialogForm',

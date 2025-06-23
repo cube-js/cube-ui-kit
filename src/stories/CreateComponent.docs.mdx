@@ -1,0 +1,419 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="tasty/Create Component" />
+
+# Create Component
+
+This guide explains how to create components using the `tasty` style helper and React Aria Hooks. Components in the Cube UI Kit follow consistent patterns for styling, accessibility, and functionality.
+
+## Overview
+
+Creating a component involves several optional but recommended elements:
+
+- **Base properties** handling using `filterBaseProps`
+- **Style properties** for direct styling capabilities
+- **Modifiers (`mods`)** for state-based styling
+- **Additional style properties** for styling inner elements
+- **Sub-elements** for targeted styling within components
+- **React Aria integration** for accessibility
+
+Everything is optional - you can create simplified components without all features, but exported UI Kit components should be feature-rich and consistent.
+
+## Core Concepts
+
+### 1. Base Properties with `filterBaseProps`
+
+The `filterBaseProps` helper ensures only valid DOM properties are passed to elements, filtering out design system properties and unsupported event handlers.
+
+```tsx
+import { filterBaseProps, AllBaseProps } from '../tasty';
+
+interface MyComponentProps extends AllBaseProps {
+  customProp?: string;
+}
+
+function MyComponent(props: MyComponentProps) {
+  return (
+    <div {...filterBaseProps(props, { eventProps: true })}>
+      {props.children}
+    </div>
+  );
+}
+```
+
+**Filter options:**
+- `eventProps: true` - Include standard DOM event handlers (onClick, onFocus, etc.)
+- `labelable: true` - Include ARIA labeling properties
+- `propNames: Set<string>` - Include specific additional properties
+
+### 2. Style Properties
+
+Style properties allow direct styling without using the `styles` prop. Use predefined style property sets from `/src/tasty/styles/list.ts`:
+
+```tsx
+import {
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  BASE_STYLES,
+  BaseStyleProps,
+  TEXT_STYLES,
+  TextStyleProps,
+  extractStyles,
+} from '../tasty';
+
+interface MyComponentProps 
+  extends AllBaseProps,
+    ContainerStyleProps,  // All container styles
+    TextStyleProps {      // Text-specific styles
+  // Component-specific props
+}
+
+function MyComponent(props: MyComponentProps) {
+  const styles = extractStyles(props, [...CONTAINER_STYLES, ...TEXT_STYLES]);
+  
+  return <Element styles={styles} />;
+}
+```
+
+**Available style property sets:**
+
+- `BASE_STYLES` - `display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`
+- `POSITION_STYLES` - `gridArea`, `order`, `margin`, `inset`, `position`, `zIndex`, etc.
+- `BLOCK_STYLES` - `padding`, `border`, `radius`, `shadow`, `overflow`, etc.
+- `COLOR_STYLES` - `color`, `fill`, `fade`
+- `TEXT_STYLES` - `textTransform` (for other text styling, use `preset`)
+- `DIMENSION_STYLES` - `width`, `height`, `flex`, `flexBasis`, etc.
+- `FLOW_STYLES` - `flow`, `gap`, `align`, `justify`, `gridColumns`, etc.
+- `CONTAINER_STYLES` - Combination of all above styles
+- `OUTER_STYLES` - Position and dimension styles only
+
+### 3. Modifiers (`mods`) Property
+
+Modifiers enable state-based styling through the `mods` prop, which creates `data-is-*` attributes:
+
+```tsx
+interface MyComponentProps extends AllBaseProps {
+  isLoading?: boolean;
+}
+
+function MyComponent({ isLoading, mods, ...props }: MyComponentProps) {
+  return (
+    <Element
+      mods={{
+        loading: isLoading,
+        ...mods, // Allow external mods to override
+      }}
+      styles={{
+        color: {
+          '': '#dark',
+          loading: '#gray',
+          'loading & hovered': '#light-gray',
+        }
+      }}
+    />
+  );
+}
+```
+
+**Usage:**
+```tsx
+<MyComponent mods={{ custom: true, highlighted: isHighlighted }} />
+// Renders: <div data-is-custom data-is-highlighted class="...">
+```
+
+### 4. Sub-elements for Targeted Styling
+
+Sub-elements allow styling inner parts through the main `styles` prop. They automatically inherit the parent's state and modifiers, making them ideal for tightly coupled UI elements.
+
+```tsx
+const MyElement = tasty({
+  styles: {
+    display: 'flex',
+    gap: '1x',
+    
+    // Sub-element styles
+    Icon: {
+      preset: 'h3',
+      color: '#purple',
+    },
+    Label: {
+      preset: 'default bold',
+    },
+  },
+});
+
+function MyComponent(props) {
+  return (
+    <MyElement {...props}>
+      <span data-element="Icon">🎉</span>
+      <span data-element="Label">{props.children}</span>
+    </MyElement>
+  );
+}
+```
+
+**Usage with style overrides:**
+```tsx
+<MyComponent
+  styles={{
+    Icon: { color: '#red' },      // Override icon color
+    Label: { preset: 'h4' }, // Override label size
+  }}
+>
+  Custom styled content
+</MyComponent>
+```
+
+**When to use sub-elements:**
+- Elements that should share the parent's state (hover, focus, disabled, etc.)
+- Tightly coupled UI parts (icon + label, title + subtitle)
+- When you want a single `styles` prop to control everything
+- Simpler components with predictable inner structure
+
+### 5. Additional Style Properties
+
+Create dedicated style properties for styling inner elements independently. This approach gives more control and allows inner elements to have their own state.
+
+```tsx
+import { Styles } from '../tasty';
+
+interface MyComponentProps extends AllBaseProps {
+  styles?: Styles;
+  iconStyles?: Styles; // Additional style property
+  labelStyles?: Styles; // Another additional style property
+}
+
+function MyComponent({ iconStyles, labelStyles, ...props }: MyComponentProps) {
+  const styles = extractStyles(props, CONTAINER_STYLES);
+  
+  return (
+    <Element styles={styles}>
+      <IconElement styles={iconStyles} />
+      <LabelElement styles={labelStyles} />
+    </Element>
+  );
+}
+```
+
+**When to use additional style properties:**
+- Inner elements need independent state management (separate hover, focus behaviors)
+- Complex components with multiple logical sections
+- Components that need fine-grained styling control
+- When different parts of the component might have different interaction patterns
+
+### 6. React Aria Integration
+
+Use React Aria hooks for accessibility and behavior:
+
+```tsx
+import { useButton } from 'react-aria';
+import { useRef } from 'react';
+
+function MyButton(props) {
+  const ref = useRef();
+  const { buttonProps } = useButton(props, ref);
+  
+  return (
+    <Element
+      {...buttonProps}
+      ref={ref}
+      styles={extractStyles(props, CONTAINER_STYLES)}
+    />
+  );
+}
+```
+
+## Examples
+
+### Example 1: Block Component (Basic)
+
+This demonstrates a basic component with:
+- Base properties support
+- All container style properties
+- Clean, minimal implementation
+
+```tsx
+import { forwardRef } from 'react';
+import {
+  AllBaseProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  tasty,
+} from '../tasty';
+
+const BlockElement = tasty({
+  styles: {
+    display: 'block',
+  },
+});
+
+export interface CubeBlockProps
+  extends Omit<AllBaseProps, keyof ContainerStyleProps | 'as'>,
+    ContainerStyleProps {}
+
+export const Block = forwardRef(function Block(props: CubeBlockProps, ref) {
+  const styles = extractStyles(props, CONTAINER_STYLES);
+
+  return (
+    <BlockElement
+      {...filterBaseProps(props, { eventProps: true })}
+      ref={ref}
+      styles={styles}
+    />
+  );
+});
+```
+
+### Example 2: Action Component (Advanced)
+
+This demonstrates advanced features:
+- React Aria integration (`useButton`)
+- Complex modifier handling
+- Multiple style property sets
+- Custom behavior logic
+
+```tsx
+import { FocusableRef } from '@react-types/shared';
+import { forwardRef } from 'react';
+import { AriaButtonProps, useButton, useHover } from 'react-aria';
+import {
+  AllBaseProps,
+  BaseStyleProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  Styles,
+  TagName,
+  tasty,
+  TEXT_STYLES,
+  TextStyleProps,
+} from '../tasty';
+
+export interface CubeActionProps<T extends TagName = 'button'>
+  extends Omit<AllBaseProps<T>, 'htmlType'>,
+    BaseStyleProps,
+    ContainerStyleProps,
+    TextStyleProps,
+    Omit<AriaButtonProps, 'type'> {
+  to?: string;
+  label?: string;
+  htmlType?: 'button' | 'submit' | 'reset';
+}
+
+const DEFAULT_ACTION_STYLES: Styles = {
+  reset: 'button',
+  position: 'relative',
+  margin: 0,
+  preset: 'inherit',
+  border: 0,
+  padding: 0,
+  outline: {
+    '': '#purple-03.0',
+    focused: '#purple-03',
+  },
+  transition: 'theme',
+  cursor: 'pointer',
+  textDecoration: 'none',
+  fill: '#clear',
+} as const;
+
+const ActionElement = tasty({
+  as: 'button',
+  styles: DEFAULT_ACTION_STYLES,
+});
+
+const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
+
+export const Action = forwardRef(function Action(
+  {
+    to,
+    as = 'button',
+    htmlType,
+    label,
+    theme,
+    mods,
+    onPress,
+    isDisabled,
+    ...props
+  }: CubeActionProps,
+  ref: FocusableRef<HTMLElement>,
+) {
+  const domRef = useRef();
+  const { buttonProps, isPressed } = useButton(
+    {
+      'aria-label': label,
+      onPress,
+      isDisabled,
+      ...props,
+    },
+    domRef,
+  );
+  
+  const { hoverProps, isHovered } = useHover({ isDisabled });
+
+  const styles = extractStyles(props, STYLE_PROPS);
+
+  return (
+    <ActionElement
+      data-theme={theme}
+      {...buttonProps}
+      {...hoverProps}
+      mods={{
+        hovered: isHovered && !isDisabled,
+        pressed: isPressed && !isDisabled,
+        disabled: isDisabled,
+        ...mods, // Allow external mods to override
+      }}
+      ref={domRef}
+      type={htmlType || 'button'}
+      as={as}
+      styles={styles}
+    />
+  );
+});
+```
+
+## Form Integration
+
+For input components that need to integrate with forms, see the [Field documentation](/docs/forms-field--docs) for comprehensive guidance on:
+
+- Form state management
+- Validation integration  
+- Label and help text handling
+- Error state management
+- Accessibility requirements for form controls
+
+## Best Practices
+
+1. **Always support base properties**: Use `filterBaseProps` and extend `AllBaseProps`
+
+2. **Provide appropriate style properties**: Choose the right combination of style property sets for your component's needs
+
+3. **Design for extensibility**: Allow `mods` overrides and provide additional style properties for inner elements
+
+4. **Use React Aria**: Integrate appropriate React Aria hooks for accessibility and standard behavior
+
+5. **Follow naming conventions**: Use `Cube[ComponentName]Props` for interfaces and descriptive names for sub-elements
+
+6. **Document sub-elements**: Clearly document what sub-elements are available for styling
+
+7. **Keep it simple when appropriate**: Not every component needs all features - use what makes sense for your use case
+
+## Component Checklist
+
+When creating a new component, consider:
+
+- [ ] Base properties support (`AllBaseProps`, `filterBaseProps`)
+- [ ] Appropriate style property sets
+- [ ] Modifier (`mods`) support for state-based styling  
+- [ ] Additional style properties for inner elements
+- [ ] Sub-element definitions for targeted styling
+- [ ] React Aria integration for accessibility
+- [ ] TypeScript interfaces following naming conventions
+- [ ] forwardRef for ref passing
+- [ ] Default styles and theme support
+- [ ] Documentation following UI Kit standards
+
+Remember: Start simple and add features as needed. A basic, working component is better than an over-engineered one!

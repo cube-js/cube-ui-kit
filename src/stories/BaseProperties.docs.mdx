@@ -1,0 +1,131 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Tasty/Base Properties" />
+
+# Base Properties
+
+Base properties are common properties available to all components in the Cube UI Kit. These properties provide fundamental functionality for styling, accessibility, testing, and DOM integration.
+
+## Core Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `as` | `TagName` | Changes the underlying HTML element. Useful for semantic markup (e.g., `as="button"` for a clickable div) |
+| `qa` | `string` | QA ID for e2e testing. An alias for `data-qa` attribute |
+| `qaVal` | `string \| number` | QA value for e2e testing. An alias for `data-qaval` attribute |
+| `element` | `string` | Inner element name for styling purposes. Format: capitalized string (e.g., "Label", "Icon") |
+| `styles` | `Styles` | The style map for customizing component appearance using the `tasty` style system |
+| `breakpoints` | `number[]` | The list of responsive breakpoints in pixels for this component |
+| `block` | `boolean` | Whether the element has block layout outside (display: block) |
+| `inline` | `boolean` | Whether the element has inline layout outside (display: inline) |
+| `mods` | `{ [key: string]: boolean \| undefined \| null }` | The list of element modifiers for state-based styling |
+| `isHidden` | `boolean` | Whether the element is hidden (`hidden` attribute is set) |
+| `isDisabled` | `boolean` | Whether the element is disabled (`disabled` attribute is set) |
+| `css` | `string` | Plain CSS string for the element |
+| `styleName` | `string` | The element name for use in style overriding |
+| `style` | `CSSProperties` | The CSS style map (native React style object) |
+
+## Standard HTML Properties
+
+All components also support standard HTML attributes that are relevant to their underlying element:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `className` | `string` | CSS class name for custom styling |
+| `role` | `string` | ARIA role attribute |
+| `id` | `string` | Unique identifier for the element |
+| `children` | `ReactNode` | Child elements to render inside the component |
+
+## Event Properties
+
+Components support all standard React event handlers (e.g., `onClick`, `onFocus`, `onBlur`, etc.) that are appropriate for their underlying HTML element.
+
+## Data Attributes
+
+Components automatically support any prop that starts with `data-`, allowing you to add custom data attributes for styling, testing, or other purposes.
+
+## Accessibility Properties
+
+All components support React Aria's labeling properties:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `aria-label` | `string` | Accessible label when no visible label exists |
+| `aria-labelledby` | `string` | ID of element(s) that label this component |
+| `aria-describedby` | `string` | ID of element(s) that describe this component |
+| `aria-details` | `string` | ID of element(s) that provide additional details |
+
+## Usage Examples
+
+### Basic Styling
+```jsx
+<Button
+  styles={{ padding: '2x', fill: '#purple' }}
+>
+  Click me
+</Button>
+```
+
+### Testing Properties
+```jsx
+<Button
+  qa="submit-button"
+  qaVal="primary-action"
+>
+  Submit
+</Button>
+```
+
+### Modifiers for State-based Styling
+```jsx
+<Button
+  mods={{ loading: isLoading, success: isSuccess }}
+  styles={{
+    color: {
+      '': '#dark',
+      'loading': '#gray',
+      'success': '#green'
+    }
+  }}
+>
+  Submit
+</Button>
+```
+
+### Responsive Design
+```jsx
+<Block
+  breakpoints={[1200, 768]}
+  styles={{
+    padding: ['4x', '2x', '1x'], // Large, medium, small screens
+    display: ['flex', 'block'] // Flex on larger screens, block on smaller
+  }}
+>
+  Content
+</Block>
+```
+
+### Semantic HTML
+```jsx
+<Block as="section" role="banner">
+  <Block as="h1" preset="h1">Page Title</Block>
+</Block>
+```
+
+## Best Practices
+
+1. **Use `qa` properties for testing**: Always add `qa` attributes to components that users interact with for reliable e2e testing.
+
+2. **Prefer `styles` over `style`**: Use the `styles` prop with `tasty` syntax for design system consistency. Reserve `style` for dynamic values or CSS custom properties.
+
+3. **Leverage modifiers**: Use the `mods` prop for state-based styling instead of conditional class names or inline styles.
+
+4. **Choose semantic elements**: Use the `as` prop to ensure proper semantic HTML structure for accessibility.
+
+5. **Provide accessible labels**: Always include proper labeling using `aria-label` or `aria-labelledby` when component content doesn't provide clear context.
+
+## Notes
+
+- Properties filtered by the `filterBaseProps` helper ensure only valid DOM properties and design system properties are passed to the underlying element
+- Custom event handlers like `onPress` from React Aria are supported but filtered out from DOM props to prevent console warnings
+- The `element` prop is used internally by the styling system to create targetable sub-elements with `data-element` attributes

@@ -16,11 +16,12 @@ import {
   Text,
   TextInput,
   Title,
-} from '../../../../index';
-import { baseProps } from '../../../../stories/lists/baseProps';
-import { timeout } from '../../../../utils/promise';
-import { CubeDialogProps } from '../Dialog';
-import { CubeDialogTriggerProps } from '../DialogTrigger';
+} from '../../../index';
+import { baseProps } from '../../../stories/lists/baseProps';
+import { timeout } from '../../../utils/promise';
+
+import { CubeDialogProps } from './Dialog';
+import { CubeDialogTriggerProps } from './DialogTrigger';
 
 export default {
   title: 'Overlays/Dialog',
@@ -29,6 +30,67 @@ export default {
     layout: 'centered',
     controls: {
       exclude: baseProps,
+    },
+  },
+  argTypes: {
+    /* Content */
+    children: {
+      control: { type: null },
+      description: 'Dialog content (Header, Content, Footer, etc.)',
+    },
+    /* Presentation */
+    size: {
+      options: ['small', 'medium', 'large', 'S', 'M', 'L'],
+      control: { type: 'radio' },
+      description: 'Dialog size',
+      table: {
+        defaultValue: { summary: 'S' },
+      },
+    },
+    styles: {
+      control: { type: null },
+      description: 'Custom styles for the dialog root',
+    },
+    closeButtonStyles: {
+      control: { type: null },
+      description: 'Custom styles for the close button',
+    },
+    /* State */
+    isDismissable: {
+      control: { type: 'boolean' },
+      description:
+        'Whether the dialog is dismissable (shows close button, allows Escape key)',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    onDismiss: {
+      action: 'dismiss',
+      description: 'Callback fired when the dialog is dismissed',
+      control: { type: null },
+    },
+    closeIcon: {
+      control: { type: null },
+      description: 'Custom close icon element',
+    },
+    role: {
+      options: ['dialog', 'alertdialog'],
+      control: { type: 'radio' },
+      description: 'ARIA role for the dialog',
+      table: {
+        defaultValue: { summary: 'dialog' },
+      },
+    },
+    /* Events */
+    onBlur: {
+      action: 'blur',
+      description: 'Callback fired when the dialog loses focus',
+      control: { type: null },
+    },
+    onFocus: {
+      action: 'focus',
+      description: 'Callback fired when the dialog receives focus',
+      control: { type: null },
     },
   },
 };

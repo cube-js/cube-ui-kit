@@ -17,7 +17,134 @@ export default {
   subcomponents: { Item: ComboBox.Item, Section: ComboBox.Section },
   args: { id: 'name', width: '200px', label: 'Choose your favourite color' },
   parameters: { controls: { exclude: baseProps } },
-  argTypes: { ...SELECTED_KEY_ARG },
+  argTypes: {
+    /* Content */
+    children: {
+      control: { type: null },
+      description: 'ComboBox.Item elements that define the available options',
+    },
+    placeholder: {
+      control: { type: 'text' },
+      description: 'Placeholder text when input is empty',
+    },
+    icon: {
+      control: { type: null },
+      description: 'Icon element rendered before the input',
+    },
+    inputValue: {
+      control: { type: 'text' },
+      description: 'The current text value in controlled mode',
+    },
+    defaultInputValue: {
+      control: { type: 'text' },
+      description: 'The default text value in uncontrolled mode',
+    },
+
+    /* Selection */
+    selectedKey: {
+      control: { type: 'text' },
+      description: 'The currently selected key (controlled)',
+    },
+    defaultSelectedKey: {
+      control: { type: 'text' },
+      description: 'The key of the initially selected item (uncontrolled)',
+    },
+    allowsCustomValue: {
+      control: { type: 'boolean' },
+      description: 'Whether the combo box allows custom values to be entered',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+
+    /* Behavior */
+    menuTrigger: {
+      options: ['focus', 'input', 'manual'],
+      control: { type: 'radio' },
+      description: 'How the menu is triggered',
+      table: {
+        defaultValue: { summary: 'input' },
+      },
+    },
+    loadingState: {
+      options: [undefined, 'loading', 'filtering', 'loadingMore'],
+      control: { type: 'radio' },
+      description: 'The current loading state of the ComboBox',
+    },
+
+    /* Presentation */
+    size: {
+      options: ['small', 'default', 'large'],
+      control: { type: 'radio' },
+      description: 'ComboBox size',
+      table: {
+        defaultValue: { summary: 'default' },
+      },
+    },
+
+    /* State */
+    isDisabled: {
+      control: { type: 'boolean' },
+      description: 'Whether the input is disabled',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isReadOnly: {
+      control: { type: 'boolean' },
+      description: 'Whether the input can be selected but not changed',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isRequired: {
+      control: { type: 'boolean' },
+      description: 'Whether user input is required before form submission',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    validationState: {
+      options: [undefined, 'valid', 'invalid'],
+      control: { type: 'radio' },
+      description:
+        'Whether the input should display valid or invalid visual styling',
+    },
+    autoFocus: {
+      control: { type: 'boolean' },
+      description: 'Whether the element should receive focus on render',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+
+    /* Events */
+    onSelectionChange: {
+      action: 'selection-change',
+      description: 'Callback fired when the selected option changes',
+      control: { type: null },
+    },
+    onInputChange: {
+      action: 'input-change',
+      description: 'Callback fired when the input text changes',
+      control: { type: null },
+    },
+    onOpenChange: {
+      action: 'open-change',
+      description: 'Callback fired when the dropdown opens or closes',
+      control: { type: null },
+    },
+    onBlur: {
+      action: (e) => ({ type: 'blur', target: e?.target?.tagName }),
+      description: 'Callback fired when the input loses focus',
+      control: { type: null },
+    },
+    onFocus: {
+      action: (e) => ({ type: 'focus', target: e?.target?.tagName }),
+      description: 'Callback fired when the input receives focus',
+      control: { type: null },
+    },
+  },
 } as Meta<CubeComboBoxProps<any>>;
 
 const Template: StoryFn<CubeComboBoxProps<any>> = (

@@ -11,29 +11,77 @@ export default {
   component: Button,
   parameters: { controls: { exclude: baseProps } },
   argTypes: {
-    size: {
-      defaultValue: undefined,
-      control: { type: 'radio', options: [undefined, 'small', 'large'] },
+    /* Visual presentation */
+    type: {
+      options: ['primary', 'secondary', 'outline', 'neutral', 'clear', 'link'],
+      control: { type: 'radio' },
+      description: 'Visual style variant of the button',
+      table: {
+        defaultValue: { summary: 'outline' },
+      },
     },
-    // @TODO: Migrate to new API
-    // type: {
-    //   defaultValue: undefined,
-    //   control: {
-    //     type: 'radio',
-    //     options: [
-    //       undefined,
-    //       'secondary',
-    //       'primary',
-    //       'outline',
-    //       'clear',
-    //       'neutral',
-    //       'link',
-    //     ],
-    //   },
-    // },
     theme: {
-      defaultValue: undefined,
-      control: { type: 'radio', options: [undefined, 'danger', 'special'] },
+      options: ['default', 'danger', 'success', 'special'],
+      control: { type: 'radio' },
+      description: 'Semantic colour palette theme',
+      table: {
+        defaultValue: { summary: 'default' },
+      },
+    },
+    size: {
+      options: ['small', 'medium', 'large'],
+      control: { type: 'radio' },
+      description: 'Button size',
+      table: {
+        defaultValue: { summary: 'medium' },
+      },
+    },
+
+    /* Content */
+    icon: {
+      control: { type: null },
+      description: 'Icon element rendered before the content',
+    },
+    rightIcon: {
+      control: { type: null },
+      description: 'Icon element rendered after the content',
+    },
+    children: {
+      control: { type: 'text' },
+      description: 'Button label or custom content',
+    },
+
+    /* State */
+    isLoading: {
+      control: { type: 'boolean' },
+      description:
+        'Show loading spinner and disable interactions (default: false)',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isSelected: {
+      control: { type: 'boolean' },
+      description:
+        'Marks the button as pressed / selected (toggle) (default: false)',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+
+    /* Navigation */
+    to: {
+      control: { type: 'text' },
+      description:
+        'Destination URL or route; prefix with `!` to open in new tab, `@` to bypass router',
+    },
+
+    /* Events */
+    onPress: {
+      action: 'press',
+      description:
+        'Callback fired when the button is activated by mouse, touch, or keyboard',
+      control: { type: null },
     },
   },
 };
@@ -41,7 +89,7 @@ export default {
 const Template: StoryFn<CubeButtonProps> = ({
   icon,
   rightIcon,
-  label,
+  children,
   ...props
 }) => (
   <Space
@@ -50,53 +98,37 @@ const Template: StoryFn<CubeButtonProps> = ({
     fill={props.theme === 'special' ? '#dark' : undefined}
   >
     <Button
-      icon={icon ? <IconCoin /> : undefined}
-      rightIcon={rightIcon ? <IconCaretDown /> : undefined}
+      icon={icon}
+      rightIcon={rightIcon}
       {...props}
       onPress={(e) => console.log('Press', e)}
     >
-      {label}
+      {children}
     </Button>
   </Space>
 );
 
 const TemplateSizes: StoryFn<CubeButtonProps> = ({
-  label,
+  children,
   icon,
   rightIcon,
-  size,
   ...props
 }) => (
   <Space>
-    <Button
-      icon={icon ? <IconCoin /> : undefined}
-      rightIcon={rightIcon ? <IconCaretDown /> : undefined}
-      {...props}
-      size="small"
-    >
-      {label}
+    <Button icon={icon} rightIcon={rightIcon} {...props} size="small">
+      {children}
     </Button>
-    <Button
-      icon={icon ? <IconCoin /> : undefined}
-      rightIcon={rightIcon ? <IconCaretDown /> : undefined}
-      {...props}
-      size="medium"
-    >
-      {label}
+    <Button icon={icon} rightIcon={rightIcon} {...props} size="medium">
+      {children}
     </Button>
-    <Button
-      icon={icon ? <IconCoin /> : undefined}
-      rightIcon={rightIcon ? <IconCaretDown /> : undefined}
-      {...props}
-      size="large"
-    >
-      {label}
+    <Button icon={icon} rightIcon={rightIcon} {...props} size="large">
+      {children}
     </Button>
   </Space>
 );
 
 const TemplateStates: StoryFn<CubeButtonProps> = ({
-  label,
+  children,
   mods,
   ...props
 }) => (
@@ -110,7 +142,7 @@ const TemplateStates: StoryFn<CubeButtonProps> = ({
         disabled: false,
       }}
     >
-      {label || 'Default'}
+      {children || 'Default'}
     </Button>
     <Button
       {...props}
@@ -121,7 +153,7 @@ const TemplateStates: StoryFn<CubeButtonProps> = ({
         disabled: false,
       }}
     >
-      {label || 'Hovered'}
+      {children || 'Hovered'}
     </Button>
     <Button
       {...props}
@@ -132,7 +164,7 @@ const TemplateStates: StoryFn<CubeButtonProps> = ({
         disabled: false,
       }}
     >
-      {label || 'Pressed'}
+      {children || 'Pressed'}
     </Button>
     <Button
       {...props}
@@ -143,7 +175,7 @@ const TemplateStates: StoryFn<CubeButtonProps> = ({
         disabled: false,
       }}
     >
-      {label || 'Pressed & Hovered'}
+      {children || 'Pressed & Hovered'}
     </Button>
     <Button
       {...props}
@@ -154,7 +186,7 @@ const TemplateStates: StoryFn<CubeButtonProps> = ({
         disabled: false,
       }}
     >
-      {label || 'Focused'}
+      {children || 'Focused'}
     </Button>
     <Button
       {...props}
@@ -165,7 +197,7 @@ const TemplateStates: StoryFn<CubeButtonProps> = ({
         focused: false,
       }}
     >
-      {label || 'Disabled'}
+      {children || 'Disabled'}
     </Button>
     {['outline', 'neutral', 'clear'].includes(props.type) || !props.type ? (
       <Button
@@ -177,14 +209,14 @@ const TemplateStates: StoryFn<CubeButtonProps> = ({
           selected: true,
         }}
       >
-        {label || 'Selected'}
+        {children || 'Selected'}
       </Button>
     ) : null}
   </Space>
 );
 
 const DarkTemplateStates: StoryFn<CubeButtonProps> = ({
-  label,
+  children,
   mods,
   ...props
 }) => (
@@ -198,7 +230,7 @@ const DarkTemplateStates: StoryFn<CubeButtonProps> = ({
         disabled: false,
       }}
     >
-      {label || 'Secondary'}
+      {children || 'Secondary'}
     </Button>
     <Button
       {...props}
@@ -209,7 +241,7 @@ const DarkTemplateStates: StoryFn<CubeButtonProps> = ({
         disabled: false,
       }}
     >
-      {label || 'Hovered'}
+      {children || 'Hovered'}
     </Button>
     <Button
       {...props}
@@ -220,7 +252,7 @@ const DarkTemplateStates: StoryFn<CubeButtonProps> = ({
         disabled: false,
       }}
     >
-      {label || 'Pressed'}
+      {children || 'Pressed'}
     </Button>
     <Button
       {...props}
@@ -231,7 +263,7 @@ const DarkTemplateStates: StoryFn<CubeButtonProps> = ({
         disabled: false,
       }}
     >
-      {label || 'Pressed & Hovered'}
+      {children || 'Pressed & Hovered'}
     </Button>
     <Button
       {...props}
@@ -242,7 +274,7 @@ const DarkTemplateStates: StoryFn<CubeButtonProps> = ({
         disabled: false,
       }}
     >
-      {label || 'Focused'}
+      {children || 'Focused'}
     </Button>
     <Button
       {...props}
@@ -253,7 +285,7 @@ const DarkTemplateStates: StoryFn<CubeButtonProps> = ({
         focused: false,
       }}
     >
-      {label || 'Disabled'}
+      {children || 'Disabled'}
     </Button>
     {['outline', 'neutral'].includes(props.type) || !props.type ? (
       <Button
@@ -265,7 +297,7 @@ const DarkTemplateStates: StoryFn<CubeButtonProps> = ({
           selected: true,
         }}
       >
-        {label || 'Selected'}
+        {children || 'Selected'}
       </Button>
     ) : null}
   </Space>
@@ -273,7 +305,7 @@ const DarkTemplateStates: StoryFn<CubeButtonProps> = ({
 
 export const Default = Template.bind({});
 Default.args = {
-  label: 'Button',
+  children: 'Button',
 };
 
 export const SecondaryStates = TemplateStates.bind({});
@@ -416,43 +448,43 @@ SpecialLinkStates.args = {
 
 export const Small = Template.bind({});
 Small.args = {
-  label: 'Button',
+  children: 'Button',
   size: 'small',
 };
 
 export const Large = Template.bind({});
 Large.args = {
-  label: 'Button',
+  children: 'Button',
   size: 'large',
 };
 
 export const LeftIconAndText = TemplateSizes.bind({});
 LeftIconAndText.args = {
-  label: 'Button',
-  icon: true,
+  children: 'Button',
+  icon: <IconCoin />,
 };
 
 export const RightIconAndText = TemplateSizes.bind({});
 RightIconAndText.args = {
-  label: 'Button',
-  rightIcon: true,
+  children: 'Button',
+  rightIcon: <IconCaretDown />,
 };
 
 export const TwoIconsAndText = TemplateSizes.bind({});
 TwoIconsAndText.args = {
-  label: 'Button',
-  icon: true,
-  rightIcon: true,
+  children: 'Button',
+  icon: <IconCoin />,
+  rightIcon: <IconCaretDown />,
 };
 
 export const OnlyIcon = TemplateSizes.bind({});
 OnlyIcon.args = {
-  icon: true,
+  icon: <IconCoin />,
 };
 
 export const Loading = TemplateSizes.bind({});
 Loading.args = {
-  icon: true,
+  icon: <IconCoin />,
   isLoading: true,
-  label: 'Button',
+  children: 'Button',
 };

@@ -1,0 +1,199 @@
+import { Meta, Controls } from '@storybook/blocks';
+import * as DialogContainerStories from './DialogContainer.stories';
+
+<Meta of={DialogContainerStories} />
+
+# DialogContainer
+
+A DialogContainer accepts a single Dialog as a child, and manages to show and hide it in a modal. Useful in cases where there is no trigger element or when the trigger unmounts while the dialog is open.
+
+## When to Use
+
+- When you need to display a dialog without a specific trigger element
+- To prevent dialog closure when the trigger component unmounts
+- For programmatically controlled dialogs in complex application flows
+- When managing dialog state externally from the component hierarchy
+- For dialogs that need to persist across route changes or component updates
+
+## Component
+
+### Properties
+
+<Controls of={DialogContainerStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/docs/tasty-base-properties--docs)
+
+### Styling Properties
+
+DialogContainer has no styling capabilities.
+
+## Variants
+
+### Types
+
+- `modal` - Standard modal dialog with backdrop (default)
+- `fullscreen` - Takes up entire screen with padding
+- `fullscreenTakeover` - Fullscreen without padding
+- `panel` - Side panel overlay
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<DialogContainer isOpen={isDialogOpen} onDismiss={() => setIsDialogOpen(false)}>
+  <Dialog>
+    <Header>
+      <Title>Dialog Title</Title>
+    </Header>
+    <Content>
+      <Paragraph>Dialog content goes here.</Paragraph>
+    </Content>
+  </Dialog>
+</DialogContainer>
+```
+
+### Controlled Dialog
+
+```jsx
+function ControlledDialogExample() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      <Button onPress={() => setIsOpen(true)}>Open Dialog</Button>
+      <DialogContainer
+        isOpen={isOpen}
+        isDismissable
+        onDismiss={() => setIsOpen(false)}
+      >
+        <Dialog>
+          <Header>
+            <Title>Controlled Dialog</Title>
+          </Header>
+          <Content>
+            <Paragraph>This dialog is controlled externally.</Paragraph>
+          </Content>
+          <Footer>
+            <Button onPress={() => setIsOpen(false)}>Close</Button>
+          </Footer>
+        </Dialog>
+      </DialogContainer>
+    </>
+  );
+}
+```
+
+### Conditional Dialog
+
+```jsx
+function ConditionalDialog() {
+  const [showDialog, setShowDialog] = useState(false);
+  const [dialogContent, setDialogContent] = useState(null);
+
+  const openDialog = (content) => {
+    setDialogContent(content);
+    setShowDialog(true);
+  };
+
+  return (
+    <DialogContainer isOpen={showDialog} onDismiss={() => setShowDialog(false)}>
+      {dialogContent && (
+        <Dialog>
+          <Header>
+            <Title>Dynamic Dialog</Title>
+          </Header>
+          <Content>
+            {dialogContent}
+          </Content>
+        </Dialog>
+      )}
+    </DialogContainer>
+  );
+}
+```
+
+### Non-dismissable Dialog
+
+```jsx
+<DialogContainer isOpen={isOpen} isDismissable={false}>
+  <Dialog>
+    <Header>
+      <Title>Important Notice</Title>
+    </Header>
+    <Content>
+      <Paragraph>This dialog requires user action to close.</Paragraph>
+    </Content>
+    <Footer>
+      <Button type="primary" onPress={handleAction}>
+        Take Action
+      </Button>
+    </Footer>
+  </Dialog>
+</DialogContainer>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus between interactive elements within the dialog
+- `Shift + Tab` - Moves focus backward between interactive elements
+- `Escape` - Closes the dialog if `isDismissable` is true and `isKeyboardDismissDisabled` is false
+
+### Screen Reader Support
+
+- Dialog announces as "dialog" to screen readers
+- Focus is trapped within the dialog when open
+- Focus management is handled automatically
+- Modal state is properly communicated to assistive technologies
+
+### ARIA Properties
+
+- `aria-modal` - Set to true to indicate modal behavior
+- `aria-labelledby` - Links dialog to its title automatically
+- `aria-describedby` - Links dialog to its description content
+- `role` - Set to "dialog" for proper semantic meaning
+
+## Best Practices
+
+1. **Do**: Use DialogContainer for dialogs without specific triggers
+   ```jsx
+   <DialogContainer isOpen={showErrorDialog} onDismiss={clearError}>
+     <Dialog>
+       <Header>
+         <Title>Error</Title>
+       </Header>
+       <Content>
+         <Paragraph>{errorMessage}</Paragraph>
+       </Content>
+     </Dialog>
+   </DialogContainer>
+   ```
+
+2. **Don't**: Use DialogContainer when DialogTrigger is more appropriate
+   ```jsx
+   {/* Prefer DialogTrigger when you have a specific trigger */}
+   <DialogContainer isOpen={buttonPressed}>
+     <Dialog>...</Dialog>
+   </DialogContainer>
+   ```
+
+3. **State Management**: Always control the `isOpen` state externally
+4. **Single Child**: Only pass one Dialog as a child to DialogContainer
+5. **Cleanup**: Ensure proper cleanup of dialog state when component unmounts
+
+## Suggested Improvements
+
+- Enhancement 1: Add support for dialog stacking and z-index management
+- Enhancement 2: Implement automatic focus restoration after dialog closes
+- Enhancement 3: Add support for custom backdrop click behavior
+
+## Related Components
+
+- [DialogTrigger](/components/DialogTrigger) - Use when you have a specific trigger element
+- [Dialog](/components/Dialog) - The content component used within DialogContainer
+- [Modal](/components/Modal) - Lower-level modal overlay component
+- [Button](/components/Button) - Common element for dialog actions

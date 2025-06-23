@@ -9,7 +9,7 @@ import {
 } from '../index';
 
 export default {
-  title: 'Typography',
+  title: 'Content/Typography',
 };
 
 export const Presets = {

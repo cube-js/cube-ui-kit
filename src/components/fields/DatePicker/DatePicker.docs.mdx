@@ -1,0 +1,216 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
+import { DatePicker } from './DatePicker';
+import * as DatePickerStories from './DatePicker.stories.tsx';
+
+<Meta of={DatePickerStories} />
+
+# DatePicker
+
+A date picker combines a text input with a calendar interface, allowing users to select dates through typing or graphical selection. It supports various date formats, validation, and internationalization features.
+
+## When to Use
+
+- Allow users to select a specific date from a calendar interface
+- Provide date input with visual calendar for better user experience
+- Enable date range selection for booking or filtering scenarios
+- Support various date formats and locales for international applications
+- Offer accessible date entry for users with different abilities
+
+## Component
+
+<Story of={DatePickerStories.Default} />
+
+### Properties
+
+<Controls of={DatePickerStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/docs/tasty-base-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root wrapper element of the component.
+
+**Sub-elements:**
+- `Prefix` - Element displayed before the input (icon area)
+- `Suffix` - Element displayed after the input (calendar button area)
+- `State` - Container for validation state indicators
+- `InputIcon` - Icon displayed within the input area
+- `ValidationIcon` - Icon displayed for validation state
+
+#### inputStyles
+
+Customizes the date input field specifically.
+
+#### wrapperStyles
+
+Customizes the input wrapper container.
+
+#### triggerStyles
+
+Customizes the calendar trigger button.
+
+### Style Properties
+
+The DatePicker component supports all standard style properties:
+
+`display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `reset`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`, `textAlign`, `color`, `fill`, `fade`, `textTransform`, `fontWeight`, `fontStyle`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| opened | `boolean` | Whether the calendar is open |
+| focused | `boolean` | Whether the input has focus |
+| disabled | `boolean` | Whether the date picker is disabled |
+| invalid | `boolean` | Whether the date picker has validation errors |
+| valid | `boolean` | Whether the date picker is valid |
+| hovered | `boolean` | Whether the date picker is being hovered |
+| inside-form | `boolean` | Whether the date picker is inside a form field |
+
+## Variants
+
+### Sizes
+
+- `small` - Compact size for dense interfaces
+- `medium` - Standard size
+- `large` - Emphasized size for important date selections
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<DatePicker label="Select date" />
+```
+
+### With Default Value
+
+```jsx
+<DatePicker
+  label="Appointment date"
+  defaultValue={today(getLocalTimeZone())}
+/>
+```
+
+### Date Range
+
+```jsx
+<DatePicker
+  label="Start date"
+  minValue={today(getLocalTimeZone())}
+  maxValue={today(getLocalTimeZone()).add({months: 6})}
+/>
+```
+
+### With Time
+
+```jsx
+<DatePicker
+  label="Event datetime"
+  granularity="minute"
+  defaultValue={now(getLocalTimeZone())}
+/>
+```
+
+### Custom Format
+
+```jsx
+<DatePicker
+  label="Birth date"
+  showMonthAndYearPickers
+  maxValue={today(getLocalTimeZone())}
+/>
+```
+
+### With Validation
+
+```jsx
+<DatePicker
+  label="Required date"
+  isRequired
+  validationState="invalid"
+  errorMessage="Please select a date"
+/>
+```
+
+### Disabled State
+
+```jsx
+<DatePicker
+  label="Disabled date picker"
+  isDisabled
+  value={today(getLocalTimeZone())}
+/>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the date picker
+- `Space/Enter` - Opens the calendar popup when focused on trigger button
+- `Arrow Keys` - Navigate between date segments in the input
+- `Arrow Keys` - Navigate calendar dates when calendar is open
+- `Enter` - Selects the focused date in calendar
+- `Escape` - Closes the calendar without selecting
+- `Home/End` - Navigate to start/end of month in calendar
+- `Page Up/Down` - Navigate to previous/next month
+
+### Screen Reader Support
+
+- Component announces as "date picker" to screen readers
+- Selected date and format are clearly announced
+- Calendar navigation and date selection are properly communicated
+- Validation errors and requirements are announced
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label when no visible label exists
+- `aria-labelledby` - References external label elements
+- `aria-describedby` - References additional descriptive text
+- `aria-expanded` - Indicates if calendar is open
+- `aria-invalid` - Indicates validation state
+- `aria-required` - Indicates if date selection is required
+
+## Best Practices
+
+1. **Do**: Provide clear labels and format hints
+   ```jsx
+   <DatePicker
+     label="Event date"
+     description="Format: MM/DD/YYYY"
+   />
+   ```
+
+2. **Don't**: Use date picker for approximate dates
+   ```jsx
+   <DatePicker label="Approximately when?" /> {/* Use text input instead */}
+   ```
+
+3. **Validation**: Set appropriate min/max values for date ranges
+4. **Format**: Use consistent date formats throughout your application
+5. **Accessibility**: Always provide meaningful labels and descriptions
+6. **Internationalization**: Support user's locale and date format preferences
+
+## Integration with Forms
+
+This component supports all [Field properties](/docs/forms-field--docs) when used within a Form.
+
+## Suggested Improvements
+
+- Add support for date shortcuts (today, tomorrow, next week)
+- Implement preset date ranges for quick selection
+- Add support for multiple date selection modes
+- Consider adding time zone selection capabilities
+- Implement custom calendar themes and styling
+
+## Related Components
+
+- [DateRangePicker](/docs/forms-daterangepicker--docs) - For selecting date ranges
+- [TimeInput](/docs/forms-timeinput--docs) - For time-only selection

@@ -4,7 +4,7 @@ import {
 } from './components/StyledButton';
 
 export default {
-  title: 'Tasty API',
+  title: 'Styling/Global Styles',
 };
 
 export const StyledButton = {

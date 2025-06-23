@@ -1,0 +1,328 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
+import { Badge } from '@storybook/components';
+import * as FieldStories from './Field.stories';
+
+<Meta of={FieldStories} />
+
+# Field
+
+The Field component is a **legacy wrapper** for form inputs that provides field-specific styling and behavior. **In modern usage, all input components have built-in field support**, so you should pass field properties directly to input components instead of using the Field wrapper.
+
+## When to Use
+
+- **❌ Don't use** for regular input components (TextInput, Select, etc.) - they have built-in field support
+- **✅ Use only** when wrapping read-only content to make it appear as a form field
+- **✅ Use only** when wrapping custom components that don't have built-in field support
+
+## Component
+
+<Story of={FieldStories.Default} />
+
+### Properties
+
+<Controls of={FieldStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/docs/tasty-base-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customizes the field wrapper element.
+
+**Sub-elements:**
+- `Label` - The field label element
+- `Description` - The field description text
+- `Message` - Error or help message text
+- `Extra` - Additional information area
+
+#### labelStyles
+
+Customizes the field label specifically.
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop: `display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `color`, `fill`, `fade`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `reset`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`, `textAlign`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`.
+
+### Field Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `name` | `string` | Field name for form data |
+| `label` | `ReactNode` | Field label text |
+| `description` | `ReactNode` | Field description text |
+| `extra` | `ReactNode` | Additional information displayed below help text |
+| `tooltip` | `ReactNode` | Tooltip content for the field label |
+| `message` | `ReactNode` | Error or help message |
+| `defaultValue` | `any` | Default field value |
+| `rules` | `ValidationRule[]` | Validation rules array |
+
+### Presentation Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `labelPosition` | `'top' \| 'side'` | Position of the field label |
+| `necessityIndicator` | `'icon' \| 'label'` | Type of necessity indicator |
+| `necessityLabel` | `string` | Custom necessity label text |
+| `labelProps` | `object` | Additional props for the label element |
+| `labelSuffix` | `ReactNode` | Content to display after the label |
+
+### State Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `isRequired` | `boolean` | Whether the field is required |
+| `isDisabled` | `boolean` | Whether the field is disabled |
+| `isLoading` | `boolean` | Whether the field is in loading state |
+| `isHidden` | `boolean` | Whether the field is hidden |
+| `validationState` | `'valid' \| 'invalid'` | Validation state of the field |
+
+### Advanced Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `form` | `CubeFormInstance` | Form instance (automatically provided within Form) |
+| `children` | `ReactElement \| (form) => ReactElement` | Field content or render function |
+
+## Modern Usage (Recommended)
+
+**✅ Use input components directly with built-in field support:**
+
+```jsx
+import { Form, TextInput, Select } from '@cube-dev/ui-kit';
+
+function ModernForm() {
+  return (
+    <Form onSubmit={handleSubmit}>
+      {/* Pass field properties directly to input components */}
+      <TextInput
+        name="email"
+        label="Email Address"
+        placeholder="Enter your email"
+        isRequired
+        rules={[{ required: true, type: 'email' }]}
+      />
+
+      <Select
+        name="country"
+        label="Country"
+        placeholder="Select country"
+        isRequired
+      >
+        <Select.Item key="us">United States</Select.Item>
+        <Select.Item key="uk">United Kingdom</Select.Item>
+      </Select>
+
+      <Form.Submit>Submit</Form.Submit>
+    </Form>
+  );
+}
+```
+
+## Legacy Usage (Deprecated)
+
+**❌ Avoid using Field wrapper for input components:**
+
+```jsx
+// Don't do this - Field wrapper is unnecessary
+<Field name="email" label="Email" isRequired>
+  <TextInput placeholder="Enter your email" />
+</Field>
+
+// Do this instead - direct field properties
+<TextInput
+  name="email"
+  label="Email"
+  placeholder="Enter your email"
+  isRequired
+/>
+```
+
+## Valid Use Cases
+
+### Wrapping Read-only Content
+
+<Story of={FieldStories.ReadOnlyContent} />
+
+```jsx
+<Field label="Current Status" description="System operational status">
+  <Block padding="2x" border="#success-text.20" radius="1r">
+    <Text color="#success-text">System Online</Text>
+  </Block>
+</Field>
+```
+
+### Custom Components Without Field Support
+
+```jsx
+<Field
+  name="customWidget"
+  label="Custom Widget"
+  rules={[{ required: true }]}
+>
+  <MyCustomComponent />
+</Field>
+```
+
+## Creating Custom Input Components
+
+To create your own input component with built-in field support, use `useFieldProps` and `useFormProps`:
+
+```jsx
+import { forwardRef, useRef } from 'react';
+import { tasty } from '@cube-dev/ui-kit/tasty';
+import { useFieldProps, useFormProps } from '@cube-dev/ui-kit';
+
+// Simple styled input wrapper
+const InputElement = tasty({
+  as: 'input',
+  styles: {
+    display: 'block',
+    width: '100%',
+    padding: '1x 1.5x',
+    border: true,
+    radius: '1r',
+    fill: '#white',
+    color: '#dark-02',
+    transition: 'theme',
+
+    '&:focus': {
+      outline: '#purple-03',
+      border: '#purple-text',
+    },
+
+    '&:invalid': {
+      border: '#danger-text',
+    },
+  },
+});
+
+const CustomTextInput = forwardRef(function CustomTextInput(props, ref) {
+  // Apply form context (inherits form-level properties)
+  props = useFormProps(props);
+
+  // Apply field behavior (validation, form integration, etc.)
+  props = useFieldProps(props, {
+    defaultValidationTrigger: 'onBlur',
+    valuePropsMapper: ({ value, onChange }) => ({
+      value: value?.toString() ?? '',
+      onChange: (e) => onChange(e.target.value),
+    }),
+  });
+
+  const inputRef = useRef(null);
+
+  return (
+    <InputElement
+      {...props}
+      ref={ref}
+      type="text"
+      // Add ARIA attributes for accessibility
+      aria-invalid={props.validationState === 'invalid'}
+      aria-describedby={props.message ? `${props.id}-message` : undefined}
+    />
+  );
+});
+
+// Usage in forms - works exactly like built-in components
+function MyForm() {
+  return (
+    <Form onSubmit={handleSubmit}>
+      <CustomTextInput
+        name="customField"
+        label="Custom Field"
+        placeholder="Enter text..."
+        isRequired
+        rules={[{ required: true, min: 3 }]}
+      />
+    </Form>
+  );
+}
+```
+
+### Key Integration Points
+
+1. **`useFormProps`** - Inherits form-level properties (labelPosition, validation settings, etc.)
+2. **`useFieldProps`** - Provides field behavior (validation, form integration, state management)
+3. **`valuePropsMapper`** - Maps form values to component props (customize for different input types)
+4. **`defaultValidationTrigger`** - When validation should occur ('onBlur', 'onChange', 'onSubmit')
+
+### Value Mappers for Different Input Types
+
+```jsx
+// Text inputs
+valuePropsMapper: ({ value, onChange }) => ({
+  value: value?.toString() ?? '',
+  onChange: (e) => onChange(e.target.value),
+})
+
+// Checkbox inputs
+valuePropsMapper: ({ value, onChange }) => ({
+  isSelected: Boolean(value),
+  onChange: (isSelected) => onChange(isSelected),
+})
+
+// Select inputs
+valuePropsMapper: ({ value, onChange }) => ({
+  selectedKey: value ?? null,
+  onSelectionChange: onChange,
+})
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- Field labels are properly associated with their inputs via `id` and `for` attributes
+- Required fields are indicated to screen readers
+- Validation errors are announced when they appear
+
+### Screen Reader Support
+
+- Field labels are announced as associated with their inputs
+- Validation state changes are communicated
+- Help text and descriptions are properly associated via `aria-describedby`
+
+### ARIA Properties
+
+- `aria-invalid` - Indicates validation state
+- `aria-describedby` - Associates help text and error messages
+- `aria-required` - Indicates required fields
+
+## Best Practices
+
+1. **✅ Do**: Use input components directly with field properties
+   ```jsx
+   <TextInput name="email" label="Email" isRequired />
+   ```
+
+2. **❌ Don't**: Wrap input components in Field unnecessarily
+   ```jsx
+   <Field name="email" label="Email">
+     <TextInput />
+   </Field>
+   ```
+
+3. **✅ Do**: Use Field only for read-only content or custom components
+   ```jsx
+   <Field label="Status">
+     <StatusDisplay />
+   </Field>
+   ```
+
+4. **✅ Do**: Implement `useFieldProps` in custom input components for consistency
+
+## Integration with Forms
+
+The Field component automatically integrates with Form when used within a Form context. All field properties are inherited from the Form configuration and can be overridden at the field level.
+
+When creating custom input components, using `useFieldProps` ensures they work seamlessly with Form validation, state management, and submission.
+
+## Related Components
+
+- [Form](/docs/forms-form--docs) - Form container with validation and state management
+- [TextInput](/docs/forms-textinput--docs) - Text input with built-in field support
+- [Select](/docs/pickers-select--docs) - Select input with built-in field support
+- [FieldWrapper](/docs/forms-fieldwrapper--docs) - Internal component used by Field for styling
