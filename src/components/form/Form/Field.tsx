@@ -126,7 +126,6 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
     extra,
     necessityLabel,
     necessityIndicator,
-    description,
     tooltip,
     isHidden,
     isDisabled,
@@ -150,7 +149,15 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
     defaultValidationTrigger: getDefaultValidateTrigger(inputType),
   });
 
-  const { validationState, message, isRequired, name, id } = __props;
+  const {
+    validationState,
+    message,
+    description,
+    errorMessage,
+    isRequired,
+    name,
+    id,
+  } = __props;
 
   if (!child) return null;
 
@@ -178,6 +185,7 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
           tooltip={tooltip}
           message={message}
           description={description}
+          errorMessage={errorMessage}
           Component={child}
           styles={styles}
           labelPosition={labelPosition}
@@ -248,6 +256,14 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
 
   if (message !== undefined) {
     newProps.message = message;
+  }
+
+  if (errorMessage !== undefined) {
+    newProps.errorMessage = errorMessage;
+  }
+
+  if (description !== undefined) {
+    newProps.description = description;
   }
 
   if (isHidden != null) {

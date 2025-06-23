@@ -32,9 +32,9 @@ export default {
       control: { type: 'text' },
       description: 'Tooltip content for the field label',
     },
-    message: {
+    errorMessage: {
       control: { type: 'text' },
-      description: 'Error or help message',
+      description: 'Error message',
     },
 
     /* Field Properties */
@@ -160,5 +160,5 @@ export const WithError = Template.bind({});
 WithError.args = {
   label: 'Error Field',
   validationState: 'invalid',
-  message: 'This field has an error',
+  errorMessage: 'This field has an error',
 };

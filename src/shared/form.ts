@@ -33,10 +33,15 @@ export interface FieldBaseProps extends FormBaseProps {
   labelSuffix?: ReactNode;
   /** Custom label props */
   labelProps?: Props;
-  /** Message for the field. Some additional information or error notice */
+  /**
+   * @deprecated Use `errorMessage` for error messages and `description` for field descriptions instead.
+   * Message for the field. Some additional information or error notice
+   */
   message?: ReactNode;
   /** Description for the field. Will be placed below the label */
   description?: ReactNode;
+  /** Error message for the field. Always displayed in danger state regardless of validation state */
+  errorMessage?: ReactNode;
   /** A tooltip that is shown inside the label */
   tooltip?: ReactNode;
   /** Whether the element should receive focus on render */
