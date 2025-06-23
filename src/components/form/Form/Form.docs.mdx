@@ -27,7 +27,7 @@ Forms allow users to enter data that can be submitted while providing alignment 
 
 ### Base Properties
 
-Supports [Base properties](/base-properties.md)
+Supports [Base properties](/docs/tasty-base-properties--docs)
 
 ### Styling Properties
 
@@ -102,7 +102,7 @@ The Form component provides several static methods for form functionality:
 const [form] = Form.useForm();
 ```
 
-Creates a form instance for programmatic control. See [FormInstance documentation](/docs/forminstance) for detailed API.
+Creates a form instance for programmatic control. See [FormInstance documentation](/docs/forms-forminstance--docs) for detailed API.
 
 ### Form.Submit (SubmitButton)
 
@@ -146,9 +146,9 @@ The Field component should only be used when wrapping read-only content to make 
 
 ```jsx
 // ✅ Recommended - Direct field properties
-<Input.Text 
-  name="email" 
-  label="Email" 
+<Input.Text
+  name="email"
+  label="Email"
   rules={[{ required: true, type: 'email' }]}
   placeholder="Enter your email"
 />
@@ -189,9 +189,9 @@ function BasicForm() {
 
   return (
     <Form onSubmit={handleSubmit}>
-      <Input.Text 
-        name="email" 
-        label="Email" 
+      <Input.Text
+        name="email"
+        label="Email"
         type="email"
         rules={[
           { required: true, message: 'Email is required' },
@@ -199,17 +199,17 @@ function BasicForm() {
         ]}
         placeholder="Enter your email"
       />
-      
-      <Input.Password 
-        name="password" 
-        label="Password" 
+
+      <Input.Password
+        name="password"
+        label="Password"
         rules={[
           { required: true, message: 'Password is required' },
           { min: 6, message: 'Password must be at least 6 characters' }
         ]}
         placeholder="Enter your password"
       />
-      
+
       <SubmitButton>Submit</SubmitButton>
     </Form>
   );
@@ -222,17 +222,17 @@ function BasicForm() {
 
 ```jsx
 <Form orientation="horizontal" labelPosition="side">
-  <Input.Text 
-    name="email" 
-    label="Email" 
+  <Input.Text
+    name="email"
+    label="Email"
     type="email"
     size="small"
     rules={[{ required: true, type: 'email' }]}
     placeholder="Enter your email"
   />
-  <Input.Password 
-    name="password" 
-    label="Password" 
+  <Input.Password
+    name="password"
+    label="Password"
     size="small"
     rules={[{ required: true }]}
     placeholder="Enter your password"
@@ -246,7 +246,7 @@ function BasicForm() {
 <Canvas of={FormStories.WithDefaultValues} />
 
 ```jsx
-<Form 
+<Form
   defaultValues={{
     email: 'user@example.com',
     name: 'John Doe'
@@ -267,22 +267,22 @@ function BasicForm() {
 
 ```jsx
 <Form onSubmit={handleSubmit}>
-  <Input.Text 
-    name="username" 
-    label="Username" 
+  <Input.Text
+    name="username"
+    label="Username"
     rules={[{ required: true, min: 3 }]}
     placeholder="Enter username"
   />
-  
-  <Input.Password 
-    name="password" 
-    label="Password" 
+
+  <Input.Password
+    name="password"
+    label="Password"
     rules={[{ required: true, min: 8 }]}
   />
-  
-  <Select 
-    name="country" 
-    label="Country" 
+
+  <Select
+    name="country"
+    label="Country"
     rules={[{ required: true }]}
     options={[
       { value: 'us', label: 'United States' },
@@ -290,13 +290,13 @@ function BasicForm() {
       { value: 'ca', label: 'Canada' }
     ]}
   />
-  
-  <Checkbox 
-    name="agree" 
+
+  <Checkbox
+    name="agree"
     label="I agree to the terms and conditions"
     rules={[{ required: true, message: 'You must agree to continue' }]}
   />
-  
+
   <SubmitButton>Register</SubmitButton>
 </Form>
 ```
@@ -309,12 +309,12 @@ The Field component should **only** be used when wrapping read-only content or c
 <Form onSubmit={handleSubmit}>
   {/* Regular inputs - use built-in field support */}
   <Input.Text name="name" label="Name" rules={[{ required: true }]} />
-  
+
   {/* Read-only content - use Field wrapper */}
   <Field name="readonly" label="Read-only Information">
     <div>This is some read-only content that should look like a field</div>
   </Field>
-  
+
   {/* Custom component without field support - use Field wrapper */}
   <Field name="custom" label="Custom Component" rules={[{ required: true }]}>
     <CustomComponent />
@@ -353,7 +353,7 @@ The Field component should **only** be used when wrapping read-only content or c
    ```jsx
    // ✅ Recommended
    <Input.Text name="email" label="Email" type="email" rules={[{ required: true }]} />
-   
+
    // ❌ Deprecated
    <Field name="email" label="Email" rules={[{ required: true }]}>
      <Input.Text type="email" />
@@ -367,8 +367,8 @@ The Field component should **only** be used when wrapping read-only content or c
 
 3. **Use appropriate validation**: Implement both client-side and server-side validation
    ```jsx
-   <Input.Text 
-     name="email" 
+   <Input.Text
+     name="email"
      label="Email"
      type="email"
      rules={[
@@ -422,7 +422,7 @@ function ControlledForm() {
     <Form form={form} onSubmit={handleSubmit}>
       <Input.Text name="email" label="Email" type="email" />
       <Input.Text name="name" label="Name" />
-      
+
       <Space>
         <SubmitButton>Submit</SubmitButton>
         <Button onPress={handleReset}>Reset</Button>
@@ -461,10 +461,10 @@ Field properties can be passed directly to any input component:
 
 ## Related Components
 
-- [FormInstance](/docs/forminstance) - Programmatic form control API
-- [Input.Text](/docs/input-text) - Text input field
-- [Input.Password](/docs/input-password) - Password input field
-- [Select](/docs/select) - Dropdown selection field
-- [Checkbox](/docs/checkbox) - Checkbox input field
-- [Field](/docs/field) - Field wrapper (deprecated for regular use)
-- [DialogForm](/docs/dialog-form) - Form within a dialog
+- [FormInstance](/docs/forms-forminstance--docs) - Programmatic form control API
+- [Input.Text](/docs/forms-textinput--docs) - Text input field
+- [Input.Password](/docs/forms-passwordinput--docs) - Password input field
+- [Select](/docs/pickers-select--docs) - Dropdown selection field
+- [Checkbox](/docs/forms-checkbox--docs) - Checkbox input field
+- [Field](/docs/forms-field--docs) - Field wrapper (deprecated for regular use)
+- [DialogForm](/docs/overlays-dialogform--docs) - Form within a dialog

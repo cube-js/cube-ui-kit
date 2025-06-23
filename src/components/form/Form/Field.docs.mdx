@@ -24,7 +24,7 @@ The Field component is a **legacy wrapper** for form inputs that provides field-
 
 ### Base Properties
 
-Supports [Base properties](/docs/base-properties--docs)
+Supports [Base properties](/docs/tasty-base-properties--docs)
 
 ### Styling Properties
 
@@ -97,15 +97,15 @@ function ModernForm() {
   return (
     <Form onSubmit={handleSubmit}>
       {/* Pass field properties directly to input components */}
-      <TextInput 
+      <TextInput
         name="email"
         label="Email Address"
         placeholder="Enter your email"
         isRequired
         rules={[{ required: true, type: 'email' }]}
       />
-      
-      <Select 
+
+      <Select
         name="country"
         label="Country"
         placeholder="Select country"
@@ -114,7 +114,7 @@ function ModernForm() {
         <Select.Item key="us">United States</Select.Item>
         <Select.Item key="uk">United Kingdom</Select.Item>
       </Select>
-      
+
       <Form.Submit>Submit</Form.Submit>
     </Form>
   );
@@ -132,11 +132,11 @@ function ModernForm() {
 </Field>
 
 // Do this instead - direct field properties
-<TextInput 
-  name="email" 
-  label="Email" 
-  placeholder="Enter your email" 
-  isRequired 
+<TextInput
+  name="email"
+  label="Email"
+  placeholder="Enter your email"
+  isRequired
 />
 ```
 
@@ -157,9 +157,9 @@ function ModernForm() {
 ### Custom Components Without Field Support
 
 ```jsx
-<Field 
-  name="customWidget" 
-  label="Custom Widget" 
+<Field
+  name="customWidget"
+  label="Custom Widget"
   rules={[{ required: true }]}
 >
   <MyCustomComponent />
@@ -187,12 +187,12 @@ const InputElement = tasty({
     fill: '#white',
     color: '#dark-02',
     transition: 'theme',
-    
+
     '&:focus': {
       outline: '#purple-03',
       border: '#purple-text',
     },
-    
+
     '&:invalid': {
       border: '#danger-text',
     },
@@ -202,7 +202,7 @@ const InputElement = tasty({
 const CustomTextInput = forwardRef(function CustomTextInput(props, ref) {
   // Apply form context (inherits form-level properties)
   props = useFormProps(props);
-  
+
   // Apply field behavior (validation, form integration, etc.)
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onBlur',
@@ -211,9 +211,9 @@ const CustomTextInput = forwardRef(function CustomTextInput(props, ref) {
       onChange: (e) => onChange(e.target.value),
     }),
   });
-  
+
   const inputRef = useRef(null);
-  
+
   return (
     <InputElement
       {...props}
@@ -230,7 +230,7 @@ const CustomTextInput = forwardRef(function CustomTextInput(props, ref) {
 function MyForm() {
   return (
     <Form onSubmit={handleSubmit}>
-      <CustomTextInput 
+      <CustomTextInput
         name="customField"
         label="Custom Field"
         placeholder="Enter text..."
@@ -322,7 +322,7 @@ When creating custom input components, using `useFieldProps` ensures they work s
 
 ## Related Components
 
-- [Form](/components/Form) - Form container with validation and state management
-- [TextInput](/components/TextInput) - Text input with built-in field support
-- [Select](/components/Select) - Select input with built-in field support
-- [FieldWrapper](/components/FieldWrapper) - Internal component used by Field for styling
+- [Form](/docs/forms-form--docs) - Form container with validation and state management
+- [TextInput](/docs/forms-textinput--docs) - Text input with built-in field support
+- [Select](/docs/pickers-select--docs) - Select input with built-in field support
+- [FieldWrapper](/docs/forms-fieldwrapper--docs) - Internal component used by Field for styling

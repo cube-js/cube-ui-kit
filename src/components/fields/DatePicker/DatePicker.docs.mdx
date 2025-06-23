@@ -26,7 +26,7 @@ A date picker combines a text input with a calendar interface, allowing users to
 
 ### Base Properties
 
-Supports [Base properties](/base-properties.md)
+Supports [Base properties](/docs/tasty-base-properties--docs)
 
 ### Styling Properties
 
@@ -92,7 +92,7 @@ The `mods` property accepts the following modifiers you can override:
 ### With Default Value
 
 ```jsx
-<DatePicker 
+<DatePicker
   label="Appointment date"
   defaultValue={today(getLocalTimeZone())}
 />
@@ -101,7 +101,7 @@ The `mods` property accepts the following modifiers you can override:
 ### Date Range
 
 ```jsx
-<DatePicker 
+<DatePicker
   label="Start date"
   minValue={today(getLocalTimeZone())}
   maxValue={today(getLocalTimeZone()).add({months: 6})}
@@ -111,7 +111,7 @@ The `mods` property accepts the following modifiers you can override:
 ### With Time
 
 ```jsx
-<DatePicker 
+<DatePicker
   label="Event datetime"
   granularity="minute"
   defaultValue={now(getLocalTimeZone())}
@@ -121,7 +121,7 @@ The `mods` property accepts the following modifiers you can override:
 ### Custom Format
 
 ```jsx
-<DatePicker 
+<DatePicker
   label="Birth date"
   showMonthAndYearPickers
   maxValue={today(getLocalTimeZone())}
@@ -131,7 +131,7 @@ The `mods` property accepts the following modifiers you can override:
 ### With Validation
 
 ```jsx
-<DatePicker 
+<DatePicker
   label="Required date"
   isRequired
   validationState="invalid"
@@ -142,7 +142,7 @@ The `mods` property accepts the following modifiers you can override:
 ### Disabled State
 
 ```jsx
-<DatePicker 
+<DatePicker
   label="Disabled date picker"
   isDisabled
   value={today(getLocalTimeZone())}
@@ -182,7 +182,7 @@ The `mods` property accepts the following modifiers you can override:
 
 1. **Do**: Provide clear labels and format hints
    ```jsx
-   <DatePicker 
+   <DatePicker
      label="Event date"
      description="Format: MM/DD/YYYY"
    />
@@ -200,7 +200,7 @@ The `mods` property accepts the following modifiers you can override:
 
 ## Integration with Forms
 
-This component supports all [Field properties](/field-properties.md) when used within a Form.
+This component supports all [Field properties](/docs/forms-field--docs) when used within a Form.
 
 ## Suggested Improvements
 
@@ -212,6 +212,5 @@ This component supports all [Field properties](/field-properties.md) when used w
 
 ## Related Components
 
-- [DateRangePicker](/components/DateRangePicker) - For selecting date ranges
-- [TimeInput](/components/TimeInput) - For time-only selection
-- [Calendar](/components/Calendar) - For standalone calendar displays
+- [DateRangePicker](/docs/forms-daterangepicker--docs) - For selecting date ranges
+- [TimeInput](/docs/forms-timeinput--docs) - For time-only selection

@@ -28,7 +28,7 @@ A text input component that allows users to input custom text entries with a key
 
 ### Base Properties
 
-Supports [Base properties](/base-properties.md)
+Supports [Base properties](/docs/tasty-base-properties--docs)
 
 ### Styling Properties
 
@@ -94,8 +94,8 @@ The `mods` prop accepts the following modifiers you can override:
 ### Basic Usage
 
 ```jsx
-<TextInput 
-  label="Name" 
+<TextInput
+  label="Name"
   placeholder="Enter your name"
   onChange={(value) => console.log(value)}
 />
@@ -106,7 +106,7 @@ The `mods` prop accepts the following modifiers you can override:
 ```jsx
 import { IconMail } from '@tabler/icons-react';
 
-<TextInput 
+<TextInput
   label="Email"
   type="email"
   icon={<IconMail />}
@@ -117,7 +117,7 @@ import { IconMail } from '@tabler/icons-react';
 ### Multiline Text Area
 
 ```jsx
-<TextInput 
+<TextInput
   label="Description"
   multiLine
   rows={4}
@@ -128,7 +128,7 @@ import { IconMail } from '@tabler/icons-react';
 ### With Validation
 
 ```jsx
-<TextInput 
+<TextInput
   label="Username"
   isRequired
   validationState="invalid"
@@ -178,7 +178,7 @@ import { IconMail } from '@tabler/icons-react';
 
 ## Integration with Forms
 
-This component supports all [Field properties](/field-properties.md) when used within a Form.
+This component supports all [Field properties](/docs/forms-field--docs) when used within a Form.
 
 ## Suggested Improvements
 
@@ -189,7 +189,7 @@ This component supports all [Field properties](/field-properties.md) when used w
 
 ## Related Components
 
-- [TextArea](/components/TextArea) – Dedicated multiline text input
-- [SearchInput](/components/SearchInput) – Specialized search input with clear button
-- [PasswordInput](/components/PasswordInput) – Enhanced password input with show/hide toggle
-- [NumberInput](/components/NumberInput) – Numeric input with increment/decrement controls 
+- [TextArea](/docs/forms-textarea--docs) – Dedicated multiline text input
+- [SearchInput](/docs/forms-searchinput--docs) – Specialized search input with clear button
+- [PasswordInput](/docs/forms-passwordinput--docs) – Enhanced password input with show/hide toggle
+- [NumberInput](/docs/forms-numberinput--docs) – Numeric input with increment/decrement controls

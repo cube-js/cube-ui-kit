@@ -22,7 +22,7 @@ DialogTrigger serves as a wrapper around a Dialog and its associated trigger, li
 
 ### Base Properties
 
-Supports [Base properties](/base-properties.md)
+Supports [Base properties](/docs/tasty-base-properties--docs)
 
 ### Styling Properties
 
@@ -106,7 +106,7 @@ DialogTrigger has no styling capabilities.
 ```jsx
 function ControlledDialog() {
   const [isOpen, setIsOpen] = useState(false);
-  
+
   return (
     <DialogTrigger isOpen={isOpen} onOpenChange={setIsOpen}>
       <Button>Open Dialog</Button>

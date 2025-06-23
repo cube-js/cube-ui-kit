@@ -26,7 +26,7 @@ A search input provides a specialized text field for search functionality, featu
 
 ### Base Properties
 
-Supports [Base properties](/base-properties.md)
+Supports [Base properties](/docs/tasty-base-properties--docs)
 
 ### Styling Properties
 
@@ -77,7 +77,7 @@ The `mods` property accepts the following modifiers you can override:
 ### Basic Usage
 
 ```jsx
-<SearchInput 
+<SearchInput
   label="Search"
   placeholder="Search products..."
 />
@@ -86,7 +86,7 @@ The `mods` property accepts the following modifiers you can override:
 ### With Clear Button
 
 ```jsx
-<SearchInput 
+<SearchInput
   label="Filter items"
   placeholder="Type to filter..."
   isClearable={true}
@@ -98,7 +98,7 @@ The `mods` property accepts the following modifiers you can override:
 ```jsx
 const [searchValue, setSearchValue] = useState('');
 
-<SearchInput 
+<SearchInput
   label="Search"
   value={searchValue}
   onChange={setSearchValue}
@@ -109,7 +109,7 @@ const [searchValue, setSearchValue] = useState('');
 ### With Description
 
 ```jsx
-<SearchInput 
+<SearchInput
   label="Search Library"
   description="Search by title, author, or ISBN"
   placeholder="Enter search terms..."
@@ -119,7 +119,7 @@ const [searchValue, setSearchValue] = useState('');
 ### Small Size
 
 ```jsx
-<SearchInput 
+<SearchInput
   size="small"
   placeholder="Quick search..."
   aria-label="Quick search"
@@ -129,7 +129,7 @@ const [searchValue, setSearchValue] = useState('');
 ### With Validation
 
 ```jsx
-<SearchInput 
+<SearchInput
   label="Search Query"
   validationState="invalid"
   errorMessage="Search query too short"
@@ -140,7 +140,7 @@ const [searchValue, setSearchValue] = useState('');
 ### Disabled State
 
 ```jsx
-<SearchInput 
+<SearchInput
   label="Search (Offline)"
   isDisabled
   placeholder="Search unavailable"
@@ -150,7 +150,7 @@ const [searchValue, setSearchValue] = useState('');
 ### With Custom Suffix
 
 ```jsx
-<SearchInput 
+<SearchInput
   label="Advanced Search"
   placeholder="Search with filters..."
   suffix={<FilterButton />}
@@ -201,7 +201,7 @@ const [searchValue, setSearchValue] = useState('');
 
 ## Integration with Forms
 
-This component supports all [Field properties](/field-properties.md) when used within a Form.
+This component supports all [Field properties](/docs/forms-field--docs) when used within a Form.
 
 ## Suggested Improvements
 
@@ -213,6 +213,6 @@ This component supports all [Field properties](/field-properties.md) when used w
 
 ## Related Components
 
-- [TextInput](/components/TextInput) - For general text input
-- [ComboBox](/components/ComboBox) - For searchable selection with predefined options
-- [Select](/components/Select) - For selection without search functionality
+- [TextInput](/docs/forms-textinput--docs) - For general text input
+- [ComboBox](/docs/pickers-combobox--docs) - For searchable selection with predefined options
+- [Select](/docs/pickers-select--docs) - For selection without search functionality
