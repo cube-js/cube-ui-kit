@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.63.3
+
+### Patch Changes
+
+- [#706](https://github.com/cube-js/cube-ui-kit/pull/706) [`d440c1e`](https://github.com/cube-js/cube-ui-kit/commit/d440c1e4408cd12ac02291d76d2dcf8c099c550e) Thanks [@tenphi](https://github.com/tenphi)! - Add more documentations for various components and concepts.
+
 ## 0.63.2
 
 ### Patch Changes
