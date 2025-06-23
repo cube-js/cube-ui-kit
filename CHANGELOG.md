@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.63.2
+
+### Patch Changes
+
+- [#708](https://github.com/cube-js/cube-ui-kit/pull/708) [`e7dad8d`](https://github.com/cube-js/cube-ui-kit/commit/e7dad8d639495934844f5361c715eab694dcd5ba) Thanks [@tenphi](https://github.com/tenphi)! - Update ChartBoxPlot and add Adjustment icons.
+
 ## 0.63.1
 
 ### Patch Changes
