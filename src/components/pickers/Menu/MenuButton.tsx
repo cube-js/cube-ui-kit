@@ -24,7 +24,7 @@ const StyledButton = tasty(Block, {
       '': '#clear',
       hovered: '#dark.03',
       'pressed | selected': '#dark.06',
-      disabled: '#dark.04',
+      disabled: '#clear',
     },
     color: {
       '': '#dark-02',

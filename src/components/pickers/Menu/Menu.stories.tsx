@@ -24,7 +24,7 @@ import {
 import { baseProps } from '../../../stories/lists/baseProps';
 
 export default {
-  title: 'Pickers/Menu',
+  title: 'Actions/Menu',
   component: Menu,
   parameters: {
     controls: {

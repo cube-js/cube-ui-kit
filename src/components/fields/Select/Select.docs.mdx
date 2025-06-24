@@ -68,6 +68,28 @@ The `mods` property accepts the following modifiers you can override:
 | hovered | `boolean` | Whether the select is being hovered |
 | inside-form | `boolean` | Whether the select is inside a form field |
 
+## Sub-components
+
+### Select.Item
+
+Individual option items within the select dropdown.
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| key | `string \| number` | - | Unique identifier for the item (required) |
+| textValue | `string` | - | Text representation for accessibility and filtering |
+| description | `ReactNode` | - | Secondary text displayed below the main label |
+| children | `ReactNode` | - | The content to display as the option label |
+
+### Select.Section
+
+Groups related options together with an optional heading.
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| title | `ReactNode` | - | Optional heading text for the section |
+| children | `Select.Item[]` | - | Collection of Select.Item components |
+
 ## Variants
 
 ### Themes
