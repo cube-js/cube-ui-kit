@@ -35,10 +35,16 @@ export type CubeFieldWrapperProps = {
   necessityLabel?: ReactNode;
   necessityIndicator?: NecessityIndicator;
 
-  /** Custom message for the field. It will be placed below the label and the input */
+  /**
+   * @deprecated Use `errorMessage` for error messages and `description` for field descriptions instead.
+   * Custom message for the field. It will be placed below the label and the input
+   */
   message?: string | ReactNode;
   /** Styles for the message */
   messageStyles?: Styles;
+
+  /** Error message for the field. Always displayed in danger state regardless of validation state */
+  errorMessage?: string | ReactNode;
 
   Component?: ReactElement;
   /** Custom components that should go outside the field and should not be visible by default. For example: Dialogs */

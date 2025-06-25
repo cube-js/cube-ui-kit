@@ -1,4 +1,4 @@
-import { Meta, Controls } from '@storybook/blocks';
+import { Meta, Story, Controls } from '@storybook/blocks';
 import * as DialogContainerStories from './DialogContainer.stories';
 
 <Meta of={DialogContainerStories} />
@@ -16,6 +16,10 @@ A DialogContainer accepts a single Dialog as a child, and manages to show and hi
 - For dialogs that need to persist across route changes or component updates
 
 ## Component
+
+<Story of={DialogContainerStories.Default} />
+
+---
 
 ### Properties
 

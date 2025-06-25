@@ -44,14 +44,9 @@ WithTooltip.args = {
   tooltip: 'Long description',
 };
 
-export const WithMessage = Template.bind({});
-WithMessage.args = {
-  message: 'Inline description of the field',
-};
-
 export const WithErrorMessage = Template.bind({});
 WithErrorMessage.args = {
-  message: 'This field is required',
+  errorMessage: 'This field is required',
   validationState: 'invalid',
 };
 
@@ -69,7 +64,7 @@ SideLabelWithTooltip.args = {
 export const SideLabelWithMessage = Template.bind({});
 SideLabelWithMessage.args = {
   labelPosition: 'side',
-  message: 'Inline description of the field',
+  description: 'Inline description of the field',
 };
 
 export const StyledLabel = Template.bind({});
@@ -126,4 +121,47 @@ WithButtonSuffixAndTooltip.args = {
     />
   ),
   tooltip: 'Long description',
+};
+
+// New stories for description and errorMessage functionality
+
+export const WithDescription = Template.bind({});
+WithDescription.args = {
+  description:
+    'This is a helpful description that explains what this field is for',
+};
+
+export const WithDescriptionAndErrorMessage = Template.bind({});
+WithDescriptionAndErrorMessage.args = {
+  description:
+    'This is a helpful description that explains what this field is for',
+  errorMessage: 'This field has an error that needs to be fixed',
+};
+
+export const SideLabelWithDescription = Template.bind({});
+SideLabelWithDescription.args = {
+  labelPosition: 'side',
+  description:
+    'This is a helpful description that explains what this field is for',
+};
+
+export const SideLabelWithDescriptionAndErrorMessage = Template.bind({});
+SideLabelWithDescriptionAndErrorMessage.args = {
+  labelPosition: 'side',
+  description:
+    'This is a helpful description that explains what this field is for',
+  errorMessage: 'This field has an error that needs to be fixed',
+};
+
+export const BackwardCompatibilityMessage = Template.bind({});
+BackwardCompatibilityMessage.args = {
+  message: 'This is the old message prop (deprecated but still works)',
+  validationState: 'invalid',
+};
+
+export const ErrorMessageOverridesMessage = Template.bind({});
+ErrorMessageOverridesMessage.args = {
+  message: 'This message will not be shown',
+  errorMessage: 'This error message takes precedence',
+  description: 'Description is shown alongside error message',
 };
