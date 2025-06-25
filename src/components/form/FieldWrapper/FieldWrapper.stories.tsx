@@ -44,14 +44,9 @@ WithTooltip.args = {
   tooltip: 'Long description',
 };
 
-export const WithMessage = Template.bind({});
-WithMessage.args = {
-  message: 'Inline description of the field',
-};
-
 export const WithErrorMessage = Template.bind({});
 WithErrorMessage.args = {
-  message: 'This field is required',
+  errorMessage: 'This field is required',
   validationState: 'invalid',
 };
 
@@ -69,7 +64,7 @@ SideLabelWithTooltip.args = {
 export const SideLabelWithMessage = Template.bind({});
 SideLabelWithMessage.args = {
   labelPosition: 'side',
-  message: 'Inline description of the field',
+  description: 'Inline description of the field',
 };
 
 export const StyledLabel = Template.bind({});
