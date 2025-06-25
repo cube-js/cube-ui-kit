@@ -296,7 +296,8 @@ export const ValidationStates: StoryFn<CubeListBoxProps<any>> = () => (
       label="Invalid Selection"
       validationState="invalid"
       selectionMode="single"
-      message="Please select a valid option"
+      defaultSelectedKey="option1"
+      errorMessage="Please select a valid option"
     >
       <ListBox.Item key="option1">Option 1</ListBox.Item>
       <ListBox.Item key="option2">Option 2</ListBox.Item>

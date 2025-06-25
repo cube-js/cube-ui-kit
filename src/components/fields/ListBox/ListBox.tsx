@@ -116,11 +116,15 @@ const OptionElement = tasty({
       '': '#dark-02',
       selected: '#dark',
       disabled: '#dark-04',
+      valid: '#success-text',
+      invalid: '#danger-text',
     },
     fill: {
       '': '#clear',
       focused: '#dark.03',
       selected: '#dark.06',
+      valid: '#success-bg',
+      invalid: '#danger-bg',
       disabled: '#clear',
     },
 
@@ -563,6 +567,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                   headingStyles={headingStyles}
                   sectionStyles={sectionStyles}
                   isParentDisabled={isDisabled}
+                  validationState={validationState}
                 />,
               );
 
@@ -575,6 +580,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                   state={listState}
                   styles={optionStyles}
                   isParentDisabled={isDisabled}
+                  validationState={validationState}
                 />,
               );
             }
@@ -604,7 +610,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   props: CubeListBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },
 ) => ReactElement) & { Item: typeof Item; Section: typeof BaseSection };
 
-function Option({ item, state, styles, isParentDisabled }) {
+function Option({ item, state, styles, isParentDisabled, validationState }) {
   const ref = useRef<HTMLLIElement>(null);
   const isDisabled = isParentDisabled || state.disabledKeys.has(item.key);
   const isSelected = state.selectionManager.isSelected(item.key);
@@ -634,6 +640,8 @@ function Option({ item, state, styles, isParentDisabled }) {
         focused: isFocused,
         disabled: isDisabled,
         pressed: isPressed,
+        valid: isSelected && validationState === 'valid',
+        invalid: isSelected && validationState === 'invalid',
       }}
       styles={styles}
     >
@@ -650,6 +658,7 @@ interface ListBoxSectionProps<T> {
   headingStyles?: Styles;
   sectionStyles?: Styles;
   isParentDisabled?: boolean;
+  validationState?: any;
 }
 
 function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
@@ -660,6 +669,7 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
     headingStyles,
     sectionStyles,
     isParentDisabled,
+    validationState,
   } = props;
   const heading = item.rendered;
 
@@ -685,6 +695,7 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
               state={state}
               styles={optionStyles}
               isParentDisabled={isParentDisabled}
+              validationState={validationState}
             />
           ))}
       </SectionListElement>
