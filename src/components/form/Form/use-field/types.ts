@@ -32,8 +32,15 @@ export interface CubeFieldProps<T extends FieldTypes> {
   showValid?: boolean;
   /** On which event perform the validation for the field */
   validateTrigger?: ValidateTrigger;
-  /** Message for the field. Some additional information or error notice */
+  /**
+   * @deprecated Use `errorMessage` for error messages and `description` for field descriptions instead.
+   * Message for the field. Some additional information or error notice
+   */
   message?: ReactNode;
+  /** Description for the field. Will be placed below the label */
+  description?: ReactNode;
+  /** Error message for the field. Always displayed in danger state regardless of validation state */
+  errorMessage?: ReactNode;
   labelProps?: Props;
 }
 
@@ -49,7 +56,15 @@ export type FieldReturnValue<T extends FieldTypes> = {
     dontTouch: boolean,
     validateTrigger: ValidateTrigger,
   ) => void;
+  /**
+   * @deprecated Use `errorMessage` for error messages and `description` for field descriptions instead.
+   * Message for the field. Some additional information or error notice
+   */
   message?: ReactNode;
+  /** Description for the field. Will be placed below the label */
+  description?: ReactNode;
+  /** Error message for the field. Always displayed in danger state regardless of validation state */
+  errorMessage?: ReactNode;
   isRequired?: boolean;
   onBlur: () => void;
   nonInput: boolean;
