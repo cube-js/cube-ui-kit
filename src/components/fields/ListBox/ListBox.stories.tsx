@@ -67,9 +67,9 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    isSearchLoading: {
+    SearchLoadingState: {
       control: { type: 'boolean' },
-      description: 'Whether the search input is loading',
+      description: 'Whether the listbox is loading. Works only with search.',
       table: {
         defaultValue: { summary: false },
       },
@@ -278,7 +278,7 @@ SearchLoadingState.args = {
   label: 'Loading ListBox',
   isSearchable: true,
   searchPlaceholder: 'Search...',
-  isSearchLoading: true,
+  isLoading: true,
   selectionMode: 'single',
 };
 

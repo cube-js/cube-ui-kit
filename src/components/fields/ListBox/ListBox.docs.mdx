@@ -1,12 +1,12 @@
 import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
 import { ListBox } from './ListBox';
-import * as ListBoxStories from './ListBox.stories.tsx';
+import * as ListBoxStories from './ListBox.stories';
 
 <Meta of={ListBoxStories} />
 
 # ListBox
 
-A list box component that allows users to select one or more items from a list of options. It supports sections, descriptions, optional search functionality, and full keyboard navigation. Built with React Aria's `useListBox` for accessibility and the Cube `tasty` style system for theming.
+A list box component that allows users to select one or more items from a list of options. It supports sections, descriptions, optional search functionality, and full keyboard navigation with virtual focus. Built with React Aria's `useListBox` for accessibility and the Cube `tasty` style system for theming.
 
 ## When to Use
 
@@ -243,13 +243,14 @@ const [selectedKey, setSelectedKey] = useState('apple');
 </ListBox>
 ```
 
-### Loading State
+### Search with Loading State
 
-<Story of={ListBoxStories.LoadingState} />
+<Story of={ListBoxStories.SearchLoadingState} />
 
 ```jsx
 <ListBox
-  label="Loading ListBox"
+  label="Searching ListBox"
+  isSearchable={true}
   isLoading={true}
   selectionMode="single"
 >
@@ -261,15 +262,19 @@ const [selectedKey, setSelectedKey] = useState('apple');
 
 ### Keyboard Navigation
 
+#### Search Field Navigation (when `isSearchable` is true)
+
+- `Tab` - Moves focus to the search input
+- `Arrow Down/Up` - Moves virtual focus through options while keeping input focused
+- `Enter` - Selects the currently highlighted option
+- `Space` - In multiple selection mode, toggles selection of the highlighted option
+- `Left/Right Arrow` - Moves text cursor within the search input (normal text editing)
+- `Escape` - Clears the search input
+
+#### Direct ListBox Navigation (when search is not used)
+
 - `Tab` - Moves focus to the ListBox
 - `Arrow Down/Up` - Moves focus to the next/previous option
-- `Home` - Moves focus to the first option
-- `End` - Moves focus to the last option
-- `Page Down/Up` - Moves focus by page in long lists
-- `Space` - Selects the focused option (single selection) or toggles selection (multiple)
-- `Enter` - Selects the focused option and can close associated popovers
-- `A-Z` - Moves focus to the next option starting with the typed letter
-- `Escape` - Clears search input when searchable
 
 ### Screen Reader Support
 
@@ -277,7 +282,8 @@ const [selectedKey, setSelectedKey] = useState('apple');
 - Current selection and total options are announced
 - Section headings are properly associated with their options
 - Option descriptions are read along with option labels
-- Search functionality is announced when available
+- When using search, the currently highlighted option is announced via `aria-activedescendant`
+- Virtual focus ensures smooth navigation without focus jumps
 - Loading and validation states are communicated
 
 ### ARIA Properties
@@ -286,8 +292,8 @@ const [selectedKey, setSelectedKey] = useState('apple');
 - `aria-labelledby` - References external label elements
 - `aria-describedby` - References additional descriptive text
 - `aria-multiselectable` - Indicates if multiple selection is allowed
-- `aria-activedescendant` - References the currently focused option
-- `aria-expanded` - Used with search functionality
+- `aria-activedescendant` - References the currently highlighted option (especially with search)
+- `aria-controls` - Links the search input to the listbox it controls
 - `aria-required` - Indicates if selection is required
 - `aria-invalid` - Indicates validation state
 
@@ -315,6 +321,8 @@ const [selectedKey, setSelectedKey] = useState('apple');
 5. **Descriptions**: Provide helpful descriptions for complex or technical options
 6. **Validation**: Provide clear error messages for validation failures
 7. **Selection**: Consider multiple selection for scenarios where users might need several options
+8. **Search Experience**: When using search, ensure the virtual focus behavior feels natural to users
+9. **Keyboard Users**: Test that arrow key navigation works smoothly with the search input
 
 ## Integration with Forms
 
@@ -355,6 +363,8 @@ This component supports all [Field properties](/docs/forms-field--docs) when use
 - Implement async loading with pagination for dynamic data
 - Add support for option icons and avatars
 - Consider adding keyboard shortcuts for common actions (select all, clear all)
+- Enhance search with fuzzy matching and highlighting of matched text
+- Add support for custom filtering functions beyond simple text matching
 
 ## Related Components
 

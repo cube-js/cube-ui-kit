@@ -202,8 +202,8 @@ export interface CubeListBoxProps<T>
   headingStyles?: Styles;
   /** Whether the ListBox is disabled */
   isDisabled?: boolean;
-  /** Whether the search is loading */
-  isSearchLoading?: boolean;
+  /** Whether the ListBox as a whole is loading (generic loading indicator) */
+  isLoading?: boolean;
   /** The selected key(s) */
   selectedKey?: Key | null;
   selectedKeys?: Key[] | 'all';
@@ -272,7 +272,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     validationState,
     isDisabled,
     isLoading,
-    isSearchLoading = false,
     isSearchable = false,
     searchPlaceholder = 'Search...',
     filter,
@@ -489,6 +488,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       ...props,
       'aria-label': props['aria-label'] || label?.toString(),
       isDisabled,
+      shouldUseVirtualFocus: isSearchable,
+      shouldFocusWrap: true,
     },
     listState,
     listRef,
@@ -497,16 +498,13 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   const { isFocused, focusProps } = useFocus({ isDisabled });
   const isInvalid = validationState === 'invalid';
 
-  const validationIcon = isInvalid ? InvalidIcon : ValidIcon;
-  const validation = cloneElement(validationIcon);
-
   const mods = useMemo(
     () => ({
       invalid: isInvalid,
       valid: validationState === 'valid',
       disabled: isDisabled,
       focused: isFocused,
-      loading: isSearchLoading,
+      loading: isLoading,
       searchable: isSearchable,
     }),
     [
@@ -514,7 +512,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       validationState,
       isDisabled,
       isFocused,
-      isSearchLoading,
+      isLoading,
       isSearchable,
     ],
   );
@@ -530,12 +528,58 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         disabled={isDisabled}
         styles={searchInputStyles}
         data-size="small"
+        aria-controls={listBoxProps.id}
+        aria-activedescendant={
+          listState.selectionManager.focusedKey != null
+            ? `${listBoxProps.id}-option-${listState.selectionManager.focusedKey}`
+            : undefined
+        }
         onChange={(e) => setSearchValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+
+            const keyGetter =
+              e.key === 'ArrowDown'
+                ? listState.collection.getKeyAfter.bind(listState.collection)
+                : listState.collection.getKeyBefore.bind(listState.collection);
+
+            const firstKey =
+              e.key === 'ArrowDown'
+                ? listState.collection.getFirstKey()
+                : listState.collection.getLastKey();
+
+            let nextKey;
+            const currentKey = listState.selectionManager.focusedKey;
+            if (currentKey == null) {
+              nextKey = firstKey;
+            } else {
+              nextKey = keyGetter(currentKey) ?? firstKey;
+            }
+
+            if (nextKey != null) {
+              listState.selectionManager.setFocusedKey(nextKey);
+            }
+          } else if (
+            e.key === 'Enter' ||
+            (e.key === ' ' && props.selectionMode === 'multiple')
+          ) {
+            const focusedKey = listState.selectionManager.focusedKey;
+            if (focusedKey != null) {
+              e.preventDefault();
+              if (props.selectionMode === 'multiple') {
+                (listState.selectionManager as any).toggleSelection(focusedKey);
+              } else {
+                (listState.selectionManager as any).select(focusedKey);
+              }
+            }
+          }
+        }}
         {...modAttrs(mods)}
       />
       <div data-element="Prefix">
         <div data-element="InputIcon">
-          {isSearchLoading ? <LoadingIcon /> : <SearchIcon />}
+          {isLoading ? <LoadingIcon /> : <SearchIcon />}
         </div>
       </div>
     </SearchWrapperElement>
@@ -620,7 +664,11 @@ function Option({ item, state, styles, isParentDisabled, validationState }) {
   const isDisabled = isParentDisabled || state.disabledKeys.has(item.key);
   const isSelected = state.selectionManager.isSelected(item.key);
 
-  const { optionProps, isPressed } = useOption(
+  const {
+    optionProps,
+    isPressed,
+    isFocused: optionFocused,
+  } = useOption(
     {
       key: item.key,
       isDisabled,
@@ -632,17 +680,15 @@ function Option({ item, state, styles, isParentDisabled, validationState }) {
     ref,
   );
 
-  const { isFocused, focusProps } = useFocus({ isDisabled });
-
   const description = (item as any)?.props?.description;
 
   return (
     <OptionElement
-      {...mergeProps(optionProps, focusProps)}
+      {...optionProps}
       ref={ref}
       mods={{
         selected: isSelected,
-        focused: isFocused,
+        focused: optionFocused,
         disabled: isDisabled,
         pressed: isPressed,
         valid: isSelected && validationState === 'valid',
