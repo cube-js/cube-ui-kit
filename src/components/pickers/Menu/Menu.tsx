@@ -38,7 +38,6 @@ export interface CubeMenuProps<T>
   itemStyles?: Styles;
   sectionStyles?: Styles;
   sectionHeadingStyles?: Styles;
-  qa?: BaseProps['qa'];
   /** Keys that should appear disabled */
   disabledKeys?: Iterable<Key>;
   /** Selection mode for the menu: 'single' | 'multiple' */

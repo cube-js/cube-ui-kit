@@ -1,8 +1,8 @@
 import { StoryFn } from '@storybook/react';
 import { useState } from 'react';
 
-import { baseProps } from '../../stories/lists/baseProps';
-import { Form } from '../form';
+import { baseProps } from '../../../stories/lists/baseProps';
+import { Form } from '../../form';
 
 import { CubeListBoxProps, ListBox } from './ListBox';
 
@@ -252,35 +252,6 @@ MultipleSelection.args = {
   selectionMode: 'multiple',
   isSearchable: true,
   searchPlaceholder: 'Search skills...',
-};
-
-export const SmallSize: StoryFn<CubeListBoxProps<any>> = (args) => (
-  <ListBox {...args}>
-    <ListBox.Item key="xs">Extra Small</ListBox.Item>
-    <ListBox.Item key="sm">Small</ListBox.Item>
-    <ListBox.Item key="md">Medium</ListBox.Item>
-    <ListBox.Item key="lg">Large</ListBox.Item>
-    <ListBox.Item key="xl">Extra Large</ListBox.Item>
-  </ListBox>
-);
-SmallSize.args = {
-  label: 'Select size',
-  size: 'small',
-  selectionMode: 'single',
-};
-
-export const LargeSize: StoryFn<CubeListBoxProps<any>> = (args) => (
-  <ListBox {...args}>
-    <ListBox.Item key="low">Low Priority</ListBox.Item>
-    <ListBox.Item key="medium">Medium Priority</ListBox.Item>
-    <ListBox.Item key="high">High Priority</ListBox.Item>
-    <ListBox.Item key="urgent">Urgent</ListBox.Item>
-  </ListBox>
-);
-LargeSize.args = {
-  label: 'Select priority',
-  size: 'large',
-  selectionMode: 'single',
 };
 
 export const DisabledState: StoryFn<CubeListBoxProps<any>> = (args) => (

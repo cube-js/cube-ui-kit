@@ -6,6 +6,7 @@ import {
   ReactElement,
   ReactNode,
   RefObject,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -19,8 +20,8 @@ import {
 } from 'react-aria';
 import { Section as BaseSection, Item, useListState } from 'react-stately';
 
-import { SearchIcon } from '../../icons';
-import { useProviderProps } from '../../provider';
+import { SearchIcon } from '../../../icons';
+import { useProviderProps } from '../../../provider';
 import {
   BASE_STYLES,
   COLOR_STYLES,
@@ -28,20 +29,19 @@ import {
   OUTER_STYLES,
   Styles,
   tasty,
-} from '../../tasty';
-import { mergeProps, modAttrs, useCombinedRefs } from '../../utils/react';
-import { useFocus } from '../../utils/react/interactions';
-import { useFieldProps, useFormProps, wrapWithField } from '../form';
-import { InvalidIcon } from '../shared/InvalidIcon';
-import { ValidIcon } from '../shared/ValidIcon';
-
+} from '../../../tasty';
+import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
+import { useFocus } from '../../../utils/react/interactions';
+import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { InvalidIcon } from '../../shared/InvalidIcon';
+import { ValidIcon } from '../../shared/ValidIcon';
 import {
   DEFAULT_INPUT_STYLES,
   INPUT_WRAPPER_STYLES,
-} from './TextInput/TextInputBase';
+} from '../TextInput/TextInputBase';
 
 import type { CollectionBase, Key } from '@react-types/shared';
-import type { FieldBaseProps } from '../../shared';
+import type { FieldBaseProps } from '../../../shared';
 
 type FilterFn = (textValue: string, inputValue: string) => boolean;
 
@@ -206,7 +206,7 @@ export interface CubeListBoxProps<T>
   defaultSelectedKey?: Key | null;
   defaultSelectedKeys?: Set<Key> | 'all';
   /** Selection change handler */
-  onSelectionChange?: (key: Key | null) => void;
+  onSelectionChange?: (key: Key | null | Set<Key>) => void;
   /** Ref for the search input */
   searchInputRef?: RefObject<HTMLInputElement>;
   /** Ref for the list */
@@ -374,30 +374,91 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     return undefined;
   }, [isSearchable, searchValue, props.items, filter, contains]);
 
-  // Wrap onSelectionChange to prevent selection when disabled
-  const wrappedOnSelectionChange = useMemo(() => {
-    if (!onSelectionChange) return undefined;
+  // Wrap onSelectionChange to prevent selection when disabled and handle React Aria's Set format
+  const externalSelectionHandler = onSelectionChange || (props as any).onChange;
 
-    return (key: any) => {
+  const wrappedOnSelectionChange = useMemo(() => {
+    if (!externalSelectionHandler) return undefined;
+
+    return (keys: any) => {
       // Don't allow selection changes when disabled
       if (isDisabled) {
         return;
       }
-      onSelectionChange(key);
-    };
-  }, [onSelectionChange, isDisabled]);
 
-  const listState = useListState({
+      // React Aria always passes a Set for selection changes
+      // For single selection mode, we extract the first (and only) key
+      if (keys instanceof Set) {
+        if (keys.size === 0) {
+          externalSelectionHandler(null);
+        } else if (props.selectionMode === 'multiple') {
+          externalSelectionHandler(keys); // Return the Set for multiple selection
+        } else {
+          // Single selection - extract the first key
+          externalSelectionHandler(Array.from(keys)[0]);
+        }
+      } else {
+        externalSelectionHandler(keys);
+      }
+    };
+  }, [externalSelectionHandler, isDisabled, props.selectionMode]);
+
+  // Prepare props for useListState with correct selection props
+  const listStateProps: any = {
     ...props,
     items: filteredItems,
     children: filteredChildren,
-    selectedKey,
-    defaultSelectedKey,
-    selectedKeys,
-    defaultSelectedKeys,
     onSelectionChange: wrappedOnSelectionChange,
     isDisabled,
-  });
+    selectionMode: props.selectionMode || 'single',
+  };
+
+  // Set selection props based on mode
+  if (listStateProps.selectionMode === 'multiple') {
+    if (selectedKeys !== undefined) {
+      listStateProps.selectedKeys = selectedKeys;
+    }
+    if (defaultSelectedKeys !== undefined) {
+      listStateProps.defaultSelectedKeys = defaultSelectedKeys;
+    }
+    // Remove single-selection props if any
+    delete listStateProps.selectedKey;
+    delete listStateProps.defaultSelectedKey;
+  } else {
+    if (selectedKey !== undefined) {
+      listStateProps.selectedKey = selectedKey;
+    }
+    if (defaultSelectedKey !== undefined) {
+      listStateProps.defaultSelectedKey = defaultSelectedKey;
+    }
+    // Remove set-based props if any
+    delete listStateProps.selectedKeys;
+    delete listStateProps.defaultSelectedKeys;
+  }
+
+  const listState = useListState(listStateProps);
+
+  // Manually sync controlled selection if needed
+  useEffect(() => {
+    if (selectedKey !== undefined) {
+      const currentSelection = listState.selectionManager.selectedKeys;
+      const expectedSelection =
+        selectedKey !== null ? new Set([selectedKey]) : new Set();
+
+      // Check if the current selection matches the expected selection
+      const currentKeys = Array.from(currentSelection);
+      const expectedKeys = Array.from(expectedSelection);
+
+      const selectionChanged =
+        currentKeys.length !== expectedKeys.length ||
+        currentKeys.some((key) => !expectedSelection.has(key)) ||
+        expectedKeys.some((key) => !currentSelection.has(key));
+
+      if (selectionChanged) {
+        listState.selectionManager.setSelectedKeys(expectedSelection);
+      }
+    }
+  }, [selectedKey, listState.selectionManager]);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
