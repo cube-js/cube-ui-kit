@@ -67,9 +67,9 @@ export default {
         defaultValue: { summary: false },
       },
     },
-    isLoading: {
+    isSearchLoading: {
       control: { type: 'boolean' },
-      description: 'Whether the ListBox is in loading state',
+      description: 'Whether the search input is loading',
       table: {
         defaultValue: { summary: false },
       },
@@ -267,16 +267,18 @@ DisabledState.args = {
   selectionMode: 'single',
 };
 
-export const LoadingState: StoryFn<CubeListBoxProps<any>> = (args) => (
+export const SearchLoadingState: StoryFn<CubeListBoxProps<any>> = (args) => (
   <ListBox {...args}>
     <ListBox.Item key="option1">Option 1</ListBox.Item>
     <ListBox.Item key="option2">Option 2</ListBox.Item>
     <ListBox.Item key="option3">Option 3</ListBox.Item>
   </ListBox>
 );
-LoadingState.args = {
+SearchLoadingState.args = {
   label: 'Loading ListBox',
-  isLoading: true,
+  isSearchable: true,
+  searchPlaceholder: 'Search...',
+  isSearchLoading: true,
   selectionMode: 'single',
 };
 

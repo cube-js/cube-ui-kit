@@ -142,21 +142,21 @@ describe('<ListBox />', () => {
       await userEvent.click(appleOption);
     });
 
-    // Check first call - should be Set with 'apple'
+    // Check first call - should be array with 'apple'
     expect(onSelectionChange).toHaveBeenCalledTimes(1);
     const firstCall = onSelectionChange.mock.calls[0][0];
-    expect(firstCall).toBeInstanceOf(Set);
-    expect(Array.from(firstCall)).toEqual(['apple']);
+    expect(Array.isArray(firstCall)).toBe(true);
+    expect(firstCall).toEqual(['apple']);
 
     await act(async () => {
       await userEvent.click(bananaOption);
     });
 
-    // Check second call - should be Set with both items
+    // Check second call - should be array with both items
     expect(onSelectionChange).toHaveBeenCalledTimes(2);
     const secondCall = onSelectionChange.mock.calls[1][0];
-    expect(secondCall).toBeInstanceOf(Set);
-    expect(Array.from(secondCall).sort()).toEqual(['apple', 'banana']);
+    expect(Array.isArray(secondCall)).toBe(true);
+    expect(secondCall.sort()).toEqual(['apple', 'banana']);
   });
 
   it('should support search functionality', async () => {
@@ -294,14 +294,18 @@ describe('<ListBox />', () => {
     expect(listbox.closest('[data-is-valid]')).toBeInTheDocument();
   });
 
-  it('should handle loading state', () => {
-    const { getByText } = render(
-      <ListBox isLoading label="Select a fruit">
+  it('should handle search loading state', () => {
+    const { container } = render(
+      <ListBox isSearchable isSearchLoading label="Select a fruit">
         {basicItems}
       </ListBox>,
     );
 
-    expect(getByText('Loading...')).toBeInTheDocument();
+    // Check that LoadingIcon is rendered instead of SearchIcon
+    const loadingIcon = container.querySelector(
+      '[data-element="InputIcon"] svg',
+    );
+    expect(loadingIcon).toBeInTheDocument();
   });
 
   it('should filter sections when searching', async () => {
@@ -419,5 +423,20 @@ describe('<ListBox />', () => {
 
     // Form should be updated
     expect(formInstance.getFieldValue('fruit')).toEqual('banana');
+  });
+
+  it('should pre-select option based on defaultSelectedKey', () => {
+    const { getByText } = render(
+      <ListBox label="Select a fruit" defaultSelectedKey="banana">
+        {basicItems}
+      </ListBox>,
+    );
+
+    const bananaOption = getByText('Banana');
+    const appleOption = getByText('Apple');
+
+    // Banana should be aria-selected=true, others false
+    expect(bananaOption.closest('li')).toHaveAttribute('aria-selected', 'true');
+    expect(appleOption.closest('li')).toHaveAttribute('aria-selected', 'false');
   });
 });

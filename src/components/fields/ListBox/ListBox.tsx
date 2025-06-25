@@ -1,4 +1,5 @@
 import {
+  Children,
   cloneElement,
   ForwardedRef,
   forwardRef,
@@ -20,7 +21,7 @@ import {
 } from 'react-aria';
 import { Section as BaseSection, Item, useListState } from 'react-stately';
 
-import { SearchIcon } from '../../../icons';
+import { LoadingIcon, SearchIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import {
   BASE_STYLES,
@@ -201,16 +202,16 @@ export interface CubeListBoxProps<T>
   headingStyles?: Styles;
   /** Whether the ListBox is disabled */
   isDisabled?: boolean;
-  /** Whether the ListBox is loading */
-  isLoading?: boolean;
+  /** Whether the search is loading */
+  isSearchLoading?: boolean;
   /** The selected key(s) */
   selectedKey?: Key | null;
-  selectedKeys?: Set<Key> | 'all';
+  selectedKeys?: Key[] | 'all';
   /** Default selected key(s) */
   defaultSelectedKey?: Key | null;
-  defaultSelectedKeys?: Set<Key> | 'all';
+  defaultSelectedKeys?: Key[] | 'all';
   /** Selection change handler */
-  onSelectionChange?: (key: Key | null | Set<Key>) => void;
+  onSelectionChange?: (key: Key | null | Key[]) => void;
   /** Ref for the search input */
   searchInputRef?: RefObject<HTMLInputElement>;
   /** Ref for the list */
@@ -227,25 +228,37 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   props = useFormProps(props);
   props = useFieldProps(props, {
     valuePropsMapper: ({ value, onChange }) => {
-      return {
-        selectedKey: value ?? null,
-        onSelectionChange: (key: any) => {
-          // React Aria always passes a Set for selection changes
-          // For single selection mode, we extract the first (and only) key
+      const fieldProps: any = {};
+
+      if (props.selectionMode === 'multiple') {
+        fieldProps.selectedKeys = Array.isArray(value)
+          ? value
+          : value
+            ? [value]
+            : [];
+      } else {
+        fieldProps.selectedKey = value ?? null;
+      }
+
+      fieldProps.onSelectionChange = (key: any) => {
+        if (props.selectionMode === 'multiple') {
+          if (Array.isArray(key)) {
+            onChange(key);
+          } else if (key instanceof Set) {
+            onChange(Array.from(key));
+          } else {
+            onChange(key ? [key] : []);
+          }
+        } else {
           if (key instanceof Set) {
-            if (key.size === 0) {
-              onChange(null);
-            } else if (props.selectionMode === 'multiple') {
-              onChange(key); // Return the Set for multiple selection
-            } else {
-              // Single selection - extract the first key
-              onChange(Array.from(key)[0]);
-            }
+            onChange(key.size === 0 ? null : Array.from(key)[0]);
           } else {
             onChange(key);
           }
-        },
+        }
       };
+
+      return fieldProps;
     },
   });
 
@@ -259,6 +272,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     validationState,
     isDisabled,
     isLoading,
+    isSearchLoading = false,
     isSearchable = false,
     searchPlaceholder = 'Search...',
     filter,
@@ -292,69 +306,61 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
 
     const filterFn = filter || contains;
 
-    // Filter React children elements
+    // Returns `true` if the given element's text value matches the search.
     const filterChild = (child: any): boolean => {
-      if (!child || typeof child !== 'object') return false;
+      if (!isValidElement(child)) return false;
 
-      // Handle regular items
-      const textValue =
-        child.props?.children?.toString() || child.key?.toString() || '';
-      return filterFn(textValue, searchValue);
-    };
+      const { textValue, children } = child.props as any;
 
-    const filterSection = (section: any): any => {
-      if (!section || typeof section !== 'object') return null;
+      // Prefer an explicit textValue prop (React Aria's Item), then children, then key.
+      let candidate: string = '';
 
-      const sectionChildren = section.props?.children;
-      if (!sectionChildren) return null;
-
-      let filteredSectionChildren;
-      if (Array.isArray(sectionChildren)) {
-        filteredSectionChildren = sectionChildren.filter(filterChild);
-      } else {
-        filteredSectionChildren = filterChild(sectionChildren)
-          ? [sectionChildren]
-          : [];
+      if (typeof textValue === 'string') {
+        candidate = textValue;
+      } else if (typeof children === 'string') {
+        candidate = children;
+      } else if (Array.isArray(children)) {
+        candidate = children.join(' ');
+      } else if (child.key != null) {
+        candidate = String(child.key);
       }
 
-      // Only return the section if it has matching children
-      if (filteredSectionChildren.length === 0) return null;
-
-      // Clone the section with filtered children
-      return {
-        ...section,
-        props: {
-          ...section.props,
-          children: filteredSectionChildren,
-        },
-      };
+      return filterFn(candidate, searchValue);
     };
 
-    if (Array.isArray(props.children)) {
-      return props.children
-        .map((child) => {
-          // Handle sections
-          if (
-            isValidElement(child) &&
-            (child.type === BaseSection || child.props?.title)
-          ) {
-            return filterSection(child);
-          }
-          // Handle regular items
-          return filterChild(child) ? child : null;
-        })
-        .filter(Boolean);
-    }
+    // Filters a Section element and returns a cloned element with only the matching children.
+    const filterSection = (section: any) => {
+      if (!isValidElement(section)) return null;
 
-    // Single child case
-    if (
-      isValidElement(props.children) &&
-      (props.children.type === BaseSection || props.children.props?.title)
-    ) {
-      return filterSection(props.children);
-    }
+      const childrenArray = Children.toArray(
+        (section as any).props.children as any,
+      );
+      const filteredSectionChildren = childrenArray.filter(filterChild);
 
-    return filterChild(props.children) ? props.children : null;
+      if (filteredSectionChildren.length === 0) return null;
+
+      return cloneElement(
+        section as any,
+        { children: filteredSectionChildren } as any,
+      );
+    };
+
+    const childrenArray = Children.toArray(props.children as any);
+
+    const result = childrenArray
+      .map((child) => {
+        if (
+          isValidElement(child) &&
+          (child.type === BaseSection || (child.props as any)?.title)
+        ) {
+          return filterSection(child);
+        }
+
+        return filterChild(child) ? child : null;
+      })
+      .filter(Boolean);
+
+    return result.length === 0 ? null : result;
   }, [isSearchable, searchValue, props.children, filter, contains]);
 
   // Create filtered items based on search
@@ -394,11 +400,12 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       // For single selection mode, we extract the first (and only) key
       if (keys instanceof Set) {
         if (keys.size === 0) {
-          externalSelectionHandler(null);
+          externalSelectionHandler(
+            props.selectionMode === 'multiple' ? [] : null,
+          );
         } else if (props.selectionMode === 'multiple') {
-          externalSelectionHandler(keys); // Return the Set for multiple selection
+          externalSelectionHandler(Array.from(keys));
         } else {
-          // Single selection - extract the first key
           externalSelectionHandler(Array.from(keys)[0]);
         }
       } else {
@@ -420,10 +427,14 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // Set selection props based on mode
   if (listStateProps.selectionMode === 'multiple') {
     if (selectedKeys !== undefined) {
-      listStateProps.selectedKeys = selectedKeys;
+      listStateProps.selectedKeys =
+        selectedKeys === 'all' ? 'all' : new Set(selectedKeys as Key[]);
     }
     if (defaultSelectedKeys !== undefined) {
-      listStateProps.defaultSelectedKeys = defaultSelectedKeys;
+      listStateProps.defaultSelectedKeys =
+        defaultSelectedKeys === 'all'
+          ? 'all'
+          : new Set(defaultSelectedKeys as Key[]);
     }
     // Remove single-selection props if any
     delete listStateProps.selectedKey;
@@ -433,11 +444,14 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       listStateProps.selectedKey = selectedKey;
     }
     if (defaultSelectedKey !== undefined) {
-      listStateProps.defaultSelectedKey = defaultSelectedKey;
+      // useListState expects a Set for uncontrolled selections, even in single-selection mode
+      // so convert the provided key into a Set. Passing an empty Set means no default selection.
+      listStateProps.defaultSelectedKeys =
+        defaultSelectedKey == null ? new Set() : new Set([defaultSelectedKey]);
     }
     // Remove set-based props if any
     delete listStateProps.selectedKeys;
-    delete listStateProps.defaultSelectedKeys;
+    delete listStateProps.defaultSelectedKey;
   }
 
   const listState = useListState(listStateProps);
@@ -492,7 +506,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       valid: validationState === 'valid',
       disabled: isDisabled,
       focused: isFocused,
-      loading: isLoading,
+      loading: isSearchLoading,
       searchable: isSearchable,
     }),
     [
@@ -500,7 +514,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       validationState,
       isDisabled,
       isFocused,
-      isLoading,
+      isSearchLoading,
       isSearchable,
     ],
   );
@@ -521,7 +535,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       />
       <div data-element="Prefix">
         <div data-element="InputIcon">
-          <SearchIcon />
+          {isSearchLoading ? <LoadingIcon /> : <SearchIcon />}
         </div>
       </div>
     </SearchWrapperElement>
@@ -589,15 +603,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
           return renderedItems;
         })()}
       </ListElement>
-      {(validationState && !isLoading) || isLoading ? (
-        <div
-          data-element="ValidationState"
-          style={{ position: 'absolute', top: '1x', right: '1x' }}
-        >
-          {validationState && !isLoading ? validation : null}
-          {isLoading && <div>Loading...</div>}
-        </div>
-      ) : null}
     </ListBoxWrapperElement>
   );
 
