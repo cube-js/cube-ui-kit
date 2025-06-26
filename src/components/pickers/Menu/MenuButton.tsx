@@ -15,10 +15,7 @@ const StyledButton = tasty(Block, {
     ...DEFAULT_BUTTON_STYLES,
     ...DEFAULT_NEUTRAL_STYLES,
     height: 'min 4x',
-    border: {
-      '': '#clear',
-      pressed: '#clear',
-    },
+    border: '#clear',
     fill: {
       '': '#clear',
       focused: '#dark.03',
@@ -29,7 +26,7 @@ const StyledButton = tasty(Block, {
     },
     color: {
       '': '#dark-02',
-      pressed: '#dark',
+      'selected | pressed': '#dark',
       disabled: '#dark-04',
     },
     cursor: {

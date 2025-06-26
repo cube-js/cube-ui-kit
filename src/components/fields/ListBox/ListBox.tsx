@@ -115,7 +115,7 @@ const OptionElement = tasty({
     userSelect: 'none',
     color: {
       '': '#dark-02',
-      selected: '#dark',
+      'selected | pressed': '#dark',
       disabled: '#dark-04',
       valid: '#success-text',
       invalid: '#danger-text',
@@ -124,6 +124,8 @@ const OptionElement = tasty({
       '': '#clear',
       focused: '#dark.03',
       selected: '#dark.06',
+      'selected & focused': '#dark.09',
+      pressed: '#dark.06',
       valid: '#success-bg',
       invalid: '#danger-bg',
       disabled: '#clear',
