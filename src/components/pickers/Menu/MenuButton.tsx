@@ -21,14 +21,14 @@ const StyledButton = tasty(Block, {
     },
     fill: {
       '': '#clear',
-      'hovered | focused': '#dark.03',
-      'pressed | selected': '#dark.06',
-      '(pressed | selected) & focused': '#dark.09',
+      focused: '#dark.03',
+      selected: '#dark.06',
+      'selected & focused': '#dark.09',
+      pressed: '#dark.06',
       disabled: '#clear',
     },
     color: {
       '': '#dark-02',
-      hovered: '#dark-02',
       pressed: '#dark',
       disabled: '#dark-04',
     },
@@ -41,7 +41,7 @@ const StyledButton = tasty(Block, {
       '': '0 (1.5x - 1px)',
       'selectable & !selected': '0 (1.5x - 1px) 0 (1.5x - 1px)',
       'selectionIcon & selectable & !selected':
-        '0 (1.5x - 1px) 0 (1.5x - 1px + 22px)',
+        '0 (1.5x - 1px) 0 (1.5x - 1px + 3x)',
     },
     display: 'flex',
     flow: 'row',
