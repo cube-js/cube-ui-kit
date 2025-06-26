@@ -18,12 +18,12 @@ const StyledButton = tasty(Block, {
     border: {
       '': '#clear',
       pressed: '#clear',
-      focused: '#purple-text',
     },
     fill: {
       '': '#clear',
-      hovered: '#dark.03',
+      'hovered | focused': '#dark.03',
       'pressed | selected': '#dark.06',
+      '(pressed | selected) & focused': '#dark.09',
       disabled: '#clear',
     },
     color: {
@@ -47,10 +47,7 @@ const StyledButton = tasty(Block, {
     flow: 'row',
     justifyContent: 'start',
     gap: '.75x',
-    outline: {
-      '': '#purple-03.0',
-      'focused & focus-visible': '#purple-03',
-    },
+    outline: false,
 
     ButtonIcon: {
       display: 'grid',

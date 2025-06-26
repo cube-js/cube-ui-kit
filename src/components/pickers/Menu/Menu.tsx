@@ -10,7 +10,6 @@ import {
 } from 'react-stately';
 
 import {
-  BaseProps,
   BasePropsWithoutChildren,
   CONTAINER_STYLES,
   ContainerStyleProps,
