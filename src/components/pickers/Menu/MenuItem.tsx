@@ -80,7 +80,9 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
   return (
     <FocusRing>
       <StyledItem
-        {...menuItemProps}
+        {...mergeProps(menuItemProps, {
+          'aria-disabled': isDisabled || undefined,
+        })}
         ref={ref}
         data-qa={itemProps.qa ? `MenuItem-${itemProps.qa}` : `MenuItem-${key}`}
         mods={{

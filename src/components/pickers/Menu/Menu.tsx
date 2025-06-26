@@ -1,7 +1,7 @@
 import { useSyncRef } from '@react-aria/utils';
 import { useDOMRef } from '@react-spectrum/utils';
 import { DOMRef, ItemProps, Key } from '@react-types/shared';
-import React, { cloneElement, ReactElement, ReactNode } from 'react';
+import React, { ReactElement, ReactNode, useMemo } from 'react';
 import { AriaMenuProps, useMenu } from 'react-aria';
 import {
   Item as BaseItem,
@@ -69,7 +69,10 @@ function Menu<T extends object>(
   const hasSections = collectionItems.some((item) => item.type === 'section');
 
   const { menuProps } = useMenu(treeProps, state, domRef);
-  const styles = extractStyles(completeProps, CONTAINER_STYLES);
+  const styles = useMemo(
+    () => extractStyles(completeProps, CONTAINER_STYLES),
+    [completeProps],
+  );
 
   const defaultProps = {
     qa,
@@ -81,6 +84,9 @@ function Menu<T extends object>(
     },
   };
 
+  // Sync the ref stored in the context object with the DOM ref returned by useDOMRef.
+  // The helper from @react-aria/utils expects the context object as the first argument
+  // to keep it up-to-date, and a ref object as the second.
   useSyncRef(contextProps, domRef);
 
   return (
@@ -88,63 +94,70 @@ function Menu<T extends object>(
       {...mergeProps(defaultProps, menuProps, filterBaseProps(completeProps))}
       ref={domRef}
     >
-      {header && <StyledHeader>{header}</StyledHeader>}
+      {header && <StyledHeader role="presentation">{header}</StyledHeader>}
       {(() => {
         // Build the list of menu elements, automatically inserting dividers between sections.
-        const renderedItems: React.ReactNode[] = [];
-        let isFirstSection = true;
+        const renderedItems: React.ReactNode[] = useMemo(() => {
+          const items: React.ReactNode[] = [];
+          let isFirstSection = true;
 
-        collectionItems.forEach((item) => {
-          if (item.type === 'section') {
-            // Insert a visual separator before every section except the first one.
-            if (!isFirstSection) {
-              renderedItems.push(
-                <StyledDivider
-                  key={`divider-${String(item.key)}`}
-                  as="li"
-                  role="separator"
-                  aria-orientation="horizontal"
+          collectionItems.forEach((item) => {
+            if (item.type === 'section') {
+              if (!isFirstSection) {
+                items.push(
+                  <StyledDivider
+                    key={`divider-${String(item.key)}`}
+                    as="li"
+                    role="separator"
+                    aria-orientation="horizontal"
+                  />,
+                );
+              }
+
+              items.push(
+                <MenuSection
+                  key={item.key}
+                  item={item}
+                  state={state}
+                  styles={sectionStyles}
+                  itemStyles={itemStyles}
+                  headingStyles={sectionHeadingStyles}
+                  selectionIcon={selectionIcon}
                 />,
               );
+
+              isFirstSection = false;
+              return;
             }
 
-            renderedItems.push(
-              <MenuSection
+            let menuItem = (
+              <MenuItem
                 key={item.key}
                 item={item}
                 state={state}
-                styles={sectionStyles}
-                itemStyles={itemStyles}
-                headingStyles={sectionHeadingStyles}
+                styles={itemStyles}
                 selectionIcon={selectionIcon}
-              />,
+                onAction={item.onAction}
+              />
             );
 
-            isFirstSection = false;
-            return;
-          }
+            if (item.props.wrapper) {
+              menuItem = item.props.wrapper(menuItem);
+            }
 
-          let menuItem = (
-            <MenuItem
-              key={item.key}
-              item={item}
-              state={state}
-              styles={itemStyles}
-              selectionIcon={selectionIcon}
-              onAction={item.onAction}
-            />
-          );
+            // Ensure every child has a stable key, even if the wrapper component didn't set one.
+            items.push(React.cloneElement(menuItem, { key: item.key }));
+          });
 
-          if (item.props.wrapper) {
-            menuItem = item.props.wrapper(menuItem);
-          }
-
-          renderedItems.push(
-            cloneElement(menuItem, {
-              key: item.key,
-            }),
-          );
-        });
+          return items;
+        }, [
+          collectionItems,
+          state,
+          sectionStyles,
+          itemStyles,
+          selectionIcon,
+          sectionHeadingStyles,
+        ]);
 
         return renderedItems;
       })()}

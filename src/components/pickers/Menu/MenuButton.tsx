@@ -1,3 +1,4 @@
+import { IconPointFilled } from '@tabler/icons-react';
 import { ReactElement, ReactNode } from 'react';
 
 import { CheckIcon } from '../../../icons';
@@ -70,23 +71,6 @@ const StyledButton = tasty(Block, {
   },
 });
 
-const RadioIcon = tasty({
-  styles: {
-    display: 'flex',
-    width: '1.875x',
-    placeContent: 'center',
-
-    '&::before': {
-      display: 'block',
-      content: '""',
-      width: '1x',
-      height: '1x',
-      radius: 'round',
-      fill: '#current',
-    },
-  },
-});
-
 const getPostfix = (postfix) =>
   typeof postfix === 'string' ? (
     <Text nowrap color="inherit" data-element="Postfix">
@@ -114,7 +98,7 @@ const getSelectionTypeIcon = (selectionIcon?: MenuSelectionType) => {
     case 'checkbox':
       return <CheckIcon />;
     case 'radio':
-      return <RadioIcon />;
+      return <IconPointFilled />;
     default:
       return undefined;
   }

@@ -360,7 +360,7 @@ export const ItemCustomIcons = (props) => {
   };
 
   return (
-    <div style={{ padding: '20px', width: '340px' }}>
+    <div style={{ padding: '20px', width: '380px' }}>
       <Menu
         id="menu"
         {...props}
