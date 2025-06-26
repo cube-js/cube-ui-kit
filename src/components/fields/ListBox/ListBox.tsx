@@ -190,6 +190,8 @@ export interface CubeListBoxProps<T>
   isSearchable?: boolean;
   /** Placeholder text for the search input */
   searchPlaceholder?: string;
+  /** Whether the search input should have autofocus */
+  autoFocus?: boolean;
   /** The filter function used to determine if an option should be included in the filtered list */
   filter?: FilterFn;
   /** Custom styles for the search input */
@@ -276,6 +278,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     isLoading,
     isSearchable = false,
     searchPlaceholder = 'Search...',
+    autoFocus,
     filter,
     searchInputStyles,
     listStyles,
@@ -528,6 +531,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         placeholder={searchPlaceholder}
         value={searchValue}
         disabled={isDisabled}
+        autoFocus={autoFocus && isSearchable}
+        data-autofocus={autoFocus && isSearchable ? '' : undefined}
         styles={searchInputStyles}
         data-size="small"
         aria-controls={listBoxProps.id}

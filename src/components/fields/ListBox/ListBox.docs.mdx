@@ -354,6 +354,90 @@ This component supports all [Field properties](/docs/forms-field--docs) when use
 </Form>
 ```
 
+## Integration with Popover Dialog
+
+<Story of={ListBoxStories.InPopover} />
+
+ListBox can be effectively used inside a popover Dialog controlled by DialogTrigger to create dropdown-style selection interfaces that provide more space and functionality than traditional Select components. By removing the Dialog's default padding and border, the ListBox appears directly as the popover content.
+
+```jsx
+import { useState } from 'react';
+import { Button } from '../../actions/Button/Button';
+import { Dialog } from '../../overlays/Dialog/Dialog';
+import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
+
+const [selectedKey, setSelectedKey] = useState(null);
+
+<DialogTrigger type="popover" placement="bottom start">
+  <Button>Choose Technology</Button>
+  <Dialog
+    styles={{
+      padding: 0,
+      border: false,
+      shadow: '0px .5x 2x #shadow',
+      radius: '1r',
+    }}
+  >
+          <ListBox
+        isSearchable
+        autoFocus
+        label="Available Technologies"
+        selectedKey={selectedKey}
+        selectionMode="single"
+        searchPlaceholder="Search technologies..."
+        onSelectionChange={setSelectedKey}
+        styles={{
+          width: '400px',
+          height: '300px',
+          border: true,
+          radius: '1r',
+        }}
+      >
+      <ListBox.Section title="Frontend">
+        <ListBox.Item key="react" description="JavaScript library for building UIs">
+          React
+        </ListBox.Item>
+        <ListBox.Item key="vue" description="Progressive JavaScript framework">
+          Vue.js
+        </ListBox.Item>
+        <ListBox.Item key="angular" description="Platform for web applications">
+          Angular
+        </ListBox.Item>
+      </ListBox.Section>
+      <ListBox.Section title="Backend">
+        <ListBox.Item key="nodejs" description="JavaScript runtime environment">
+          Node.js
+        </ListBox.Item>
+        <ListBox.Item key="python" description="High-level programming language">
+          Python
+        </ListBox.Item>
+        <ListBox.Item key="java" description="Object-oriented programming language">
+          Java
+        </ListBox.Item>
+      </ListBox.Section>
+    </ListBox>
+  </Dialog>
+</DialogTrigger>
+```
+
+### Benefits of ListBox in Popover
+
+- **More Space**: Unlike traditional Select dropdowns, popovers can accommodate larger lists with descriptions and sections
+- **Rich Content**: Support for descriptions, icons, and complex layouts within options
+- **Search Functionality**: Built-in search makes it easy to find options in large lists
+- **Better Accessibility**: Full keyboard navigation and screen reader support
+- **Custom Positioning**: Flexible placement options relative to the trigger button
+
+### Best Practices for Popover Integration
+
+1. **Clean Appearance**: Remove Dialog's default padding and border (`padding: 0, border: false`) and apply border/radius directly to ListBox for a seamless popover appearance
+2. **Auto Focus**: Use `autoFocus` to automatically focus the search input when the popover opens, improving keyboard navigation
+3. **Size Management**: Set appropriate width and height constraints to prevent the popover from becoming too large
+4. **Placement**: Use `placement="bottom start"` or similar to ensure good positioning relative to the trigger
+5. **Search**: Enable search for lists with many options to improve user experience
+6. **Selection Feedback**: Display the current selection outside the popover so users know what's selected
+7. **Mobile Considerations**: The popover will automatically convert to a modal on mobile devices
+
 ## Suggested Improvements
 
 - Add support for custom option rendering with more complex layouts

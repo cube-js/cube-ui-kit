@@ -2,7 +2,13 @@ import { StoryFn } from '@storybook/react';
 import { useState } from 'react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Button } from '../../actions/Button/Button';
+import { Content } from '../../content/Content';
+import { Header } from '../../content/Header';
+import { Title } from '../../content/Title';
 import { Form } from '../../form';
+import { Dialog } from '../../overlays/Dialog/Dialog';
+import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
 import { CubeListBoxProps, ListBox } from './ListBox';
 
@@ -46,6 +52,13 @@ export default {
       description: 'Placeholder text for the search input',
       table: {
         defaultValue: { summary: 'Search...' },
+      },
+    },
+    autoFocus: {
+      control: { type: 'boolean' },
+      description: 'Whether the search input should have autofocus',
+      table: {
+        defaultValue: { summary: false },
       },
     },
 
@@ -397,4 +410,143 @@ export const InForm: StoryFn<CubeListBoxProps<any>> = () => {
       <Form.Submit>Submit</Form.Submit>
     </Form>
   );
+};
+
+export const InPopover: StoryFn<CubeListBoxProps<any>> = () => {
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+
+  return (
+    <div
+      style={{
+        padding: '2rem',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1rem',
+      }}
+    >
+      <p>
+        Selected technology: <strong>{selectedKey || 'None'}</strong>
+      </p>
+
+      <DialogTrigger type="popover" placement="bottom start">
+        <Button>Choose Technology</Button>
+        <Dialog>
+          <ListBox
+            isSearchable
+            autoFocus
+            selectedKey={selectedKey}
+            selectionMode="single"
+            searchPlaceholder="Search technologies..."
+            styles={{
+              width: '400px',
+              height: '300px',
+              border: true,
+            }}
+            onSelectionChange={(key) => setSelectedKey(key as string | null)}
+          >
+            <ListBox.Section title="Frontend">
+              <ListBox.Item
+                key="react"
+                description="JavaScript library for building UIs"
+              >
+                React
+              </ListBox.Item>
+              <ListBox.Item
+                key="vue"
+                description="Progressive JavaScript framework"
+              >
+                Vue.js
+              </ListBox.Item>
+              <ListBox.Item
+                key="angular"
+                description="Platform for web applications"
+              >
+                Angular
+              </ListBox.Item>
+              <ListBox.Item
+                key="svelte"
+                description="Cybernetically enhanced web apps"
+              >
+                Svelte
+              </ListBox.Item>
+            </ListBox.Section>
+            <ListBox.Section title="Backend">
+              <ListBox.Item
+                key="nodejs"
+                description="JavaScript runtime environment"
+              >
+                Node.js
+              </ListBox.Item>
+              <ListBox.Item
+                key="python"
+                description="High-level programming language"
+              >
+                Python
+              </ListBox.Item>
+              <ListBox.Item
+                key="java"
+                description="Object-oriented programming language"
+              >
+                Java
+              </ListBox.Item>
+              <ListBox.Item
+                key="csharp"
+                description="Modern object-oriented language"
+              >
+                C#
+              </ListBox.Item>
+            </ListBox.Section>
+            <ListBox.Section title="Database">
+              <ListBox.Item
+                key="postgresql"
+                description="Advanced open source database"
+              >
+                PostgreSQL
+              </ListBox.Item>
+              <ListBox.Item
+                key="mongodb"
+                description="Document-oriented database"
+              >
+                MongoDB
+              </ListBox.Item>
+              <ListBox.Item
+                key="redis"
+                description="In-memory data structure store"
+              >
+                Redis
+              </ListBox.Item>
+              <ListBox.Item
+                key="mysql"
+                description="Popular relational database"
+              >
+                MySQL
+              </ListBox.Item>
+            </ListBox.Section>
+          </ListBox>
+        </Dialog>
+      </DialogTrigger>
+    </div>
+  );
+};
+
+InPopover.parameters = {
+  docs: {
+    description: {
+      story:
+        'ListBox can be used inside a Dialog controlled by DialogTrigger to create popover-style selection interfaces.',
+    },
+  },
+};
+
+InPopover.play = async ({ canvasElement }) => {
+  const canvas = canvasElement;
+  const button = canvas.querySelector('button');
+
+  if (button) {
+    // Simulate clicking the button to open the popover
+    button.click();
+
+    // Wait a moment for the popover to open and autoFocus to take effect
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
 };
