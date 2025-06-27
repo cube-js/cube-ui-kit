@@ -112,7 +112,7 @@ export function useFieldProps<
   }
 
   // Handle errorMessage compilation if it's a function
-  let compiledErrorMessage = field.errorMessage;
+  let compiledErrorMessage;
   if (typeof props.errorMessage === 'function') {
     // Create ValidationResult object from current field state
     const validationResult: ValidationResult = {
@@ -130,6 +130,12 @@ export function useFieldProps<
     compiledErrorMessage = props.errorMessage(validationResult);
   } else if (props.errorMessage !== undefined) {
     compiledErrorMessage = props.errorMessage;
+  } else {
+    // Use the default errorMessage from useField (validation errors or undefined)
+    compiledErrorMessage =
+      field?.field?.status === 'invalid' && field?.field?.errors?.length
+        ? field.field.errors[0]
+        : undefined;
   }
 
   const result: Props = isOutsideOfForm
