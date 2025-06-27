@@ -546,22 +546,57 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
           if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
             e.preventDefault();
 
-            const keyGetter =
-              e.key === 'ArrowDown'
-                ? listState.collection.getKeyAfter.bind(listState.collection)
-                : listState.collection.getKeyBefore.bind(listState.collection);
+            const isArrowDown = e.key === 'ArrowDown';
+            const keyGetter = isArrowDown
+              ? listState.collection.getKeyAfter.bind(listState.collection)
+              : listState.collection.getKeyBefore.bind(listState.collection);
 
-            const firstKey =
-              e.key === 'ArrowDown'
-                ? listState.collection.getFirstKey()
-                : listState.collection.getLastKey();
+            // Helper function to find next selectable item (skip section headers)
+            const findNextSelectableKey = (startKey: any) => {
+              let nextKey = startKey;
+
+              // Keep looking for a selectable item (not a section header)
+              while (nextKey != null) {
+                const item = listState.collection.getItem(nextKey);
+                if (item && item.type !== 'section') {
+                  return nextKey;
+                }
+                nextKey = keyGetter(nextKey);
+              }
+
+              return null;
+            };
+
+            // Helper function to find first/last selectable item
+            const findFirstLastSelectableKey = () => {
+              const allKeys = Array.from(listState.collection.getKeys());
+              const keysToCheck = isArrowDown ? allKeys : allKeys.reverse();
+
+              for (const key of keysToCheck) {
+                const item = listState.collection.getItem(key);
+                if (item && item.type !== 'section') {
+                  return key;
+                }
+              }
+
+              return null;
+            };
 
             let nextKey;
             const currentKey = listState.selectionManager.focusedKey;
+
             if (currentKey == null) {
-              nextKey = firstKey;
+              // No current focus, find first/last selectable item
+              nextKey = findFirstLastSelectableKey();
             } else {
-              nextKey = keyGetter(currentKey) ?? firstKey;
+              // Find next selectable item from current position
+              const candidateKey = keyGetter(currentKey);
+              nextKey = findNextSelectableKey(candidateKey);
+
+              // If no next key found, wrap to first/last selectable item
+              if (nextKey == null) {
+                nextKey = findFirstLastSelectableKey();
+              }
             }
 
             if (nextKey != null) {

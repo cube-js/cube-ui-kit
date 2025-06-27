@@ -438,9 +438,9 @@ export const InPopover: StoryFn<CubeListBoxProps<any>> = () => {
             selectionMode="single"
             searchPlaceholder="Search technologies..."
             styles={{
-              width: '400px',
               height: '300px',
-              border: true,
+              border: false,
+              fill: '#clear',
             }}
             onSelectionChange={(key) => setSelectedKey(key as string | null)}
           >

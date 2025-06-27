@@ -370,15 +370,8 @@ const [selectedKey, setSelectedKey] = useState(null);
 
 <DialogTrigger type="popover" placement="bottom start">
   <Button>Choose Technology</Button>
-  <Dialog
-    styles={{
-      padding: 0,
-      border: false,
-      shadow: '0px .5x 2x #shadow',
-      radius: '1r',
-    }}
-  >
-          <ListBox
+    <Dialog>
+      <ListBox
         isSearchable
         autoFocus
         label="Available Technologies"
@@ -387,10 +380,9 @@ const [selectedKey, setSelectedKey] = useState(null);
         searchPlaceholder="Search technologies..."
         onSelectionChange={setSelectedKey}
         styles={{
-          width: '400px',
           height: '300px',
-          border: true,
-          radius: '1r',
+          border: false,
+          fill: '#clear',
         }}
       >
       <ListBox.Section title="Frontend">
