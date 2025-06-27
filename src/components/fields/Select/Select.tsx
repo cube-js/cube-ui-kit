@@ -218,17 +218,16 @@ const OptionElement = tasty({
     padding: '(1x - 1px) (1.5x - 1px)',
     cursor: 'pointer',
     radius: true,
-    fill: {
-      '': '#dark.0',
-      'pressed | selected': '#purple.10',
-      'hovered | focused': '#dark.04',
-      disabled: '#dark.0',
-    },
     color: {
       '': '#dark-02',
-      'hovered | focused': '#dark-02',
-      'pressed | selected': '#purple',
-      disabled: '#dark.3',
+      selected: '#dark',
+      disabled: '#dark-04',
+    },
+    fill: {
+      '': '#clear',
+      focused: '#dark.03',
+      selected: '#dark.06',
+      disabled: '#clear',
     },
     preset: 't3',
     transition: 'theme',
@@ -272,7 +271,7 @@ export interface CubeSelectBaseProps<T>
     ColorStyleProps,
     FieldBaseProps,
     CollectionBase<T>,
-    AriaSelectProps<T> {
+    Omit<AriaSelectProps<T>, 'errorMessage'> {
   icon?: ReactElement;
   prefix?: ReactNode;
   suffix?: ReactNode;

@@ -28,7 +28,7 @@ import { DEFAULT_DATE_PROPS } from './props';
 import { formatSegments, useFocusManagerRef } from './utils';
 
 export interface CubeDateInputProps<T extends DateValue = DateValue>
-  extends AriaDateFieldProps<T>,
+  extends Omit<AriaDateFieldProps<T>, 'errorMessage'>,
     BaseProps,
     ContainerStyleProps,
     FieldBaseProps {

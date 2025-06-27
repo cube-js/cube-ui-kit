@@ -108,11 +108,20 @@ export function useFieldProps<
     }
   }
 
+  // Use errorMessage directly or fall back to validation errors
+  const compiledErrorMessage =
+    props.errorMessage !== undefined
+      ? props.errorMessage
+      : field?.field?.status === 'invalid' && field?.field?.errors?.length
+        ? field.field.errors[0]
+        : undefined;
+
   const result: Props = isOutsideOfForm
     ? props
     : mergeProps(props, field, valueProps, {
         validateTrigger: field.validateTrigger ?? defaultValidationTrigger,
         onBlur: onBlurChained,
+        errorMessage: compiledErrorMessage,
       });
 
   if (result.id) {

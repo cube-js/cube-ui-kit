@@ -2,6 +2,16 @@ import { ReactNode } from 'react';
 
 import { Props, Styles } from '../tasty';
 
+/** ValidationResult type for error message functions */
+export interface ValidationResult {
+  /** Whether the value is invalid */
+  isInvalid: boolean;
+  /** List of validation error messages */
+  validationErrors: string[];
+  /** Native browser validation details */
+  validationDetails: ValidityState;
+}
+
 /** Where to place label relative to input */
 export type LabelPosition = 'side' | 'top';
 /** The type of necessity indicator */

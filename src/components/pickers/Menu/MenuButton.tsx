@@ -1,3 +1,4 @@
+import { IconPointFilled } from '@tabler/icons-react';
 import { ReactElement, ReactNode } from 'react';
 
 import { CheckIcon } from '../../../icons';
@@ -15,21 +16,18 @@ const StyledButton = tasty(Block, {
     ...DEFAULT_BUTTON_STYLES,
     ...DEFAULT_NEUTRAL_STYLES,
     height: 'min 4x',
-    border: {
-      '': '#clear',
-      pressed: '#clear',
-      focused: '#purple-text',
-    },
+    border: '#clear',
     fill: {
       '': '#clear',
-      hovered: '#dark.03',
-      'pressed | selected': '#dark.06',
-      disabled: '#dark.04',
+      focused: '#dark.03',
+      selected: '#dark.06',
+      'selected & focused': '#dark.09',
+      pressed: '#dark.06',
+      disabled: '#clear',
     },
     color: {
       '': '#dark-02',
-      hovered: '#dark-02',
-      pressed: '#dark',
+      'selected | pressed': '#dark',
       disabled: '#dark-04',
     },
     cursor: {
@@ -41,16 +39,13 @@ const StyledButton = tasty(Block, {
       '': '0 (1.5x - 1px)',
       'selectable & !selected': '0 (1.5x - 1px) 0 (1.5x - 1px)',
       'selectionIcon & selectable & !selected':
-        '0 (1.5x - 1px) 0 (1.5x - 1px + 22px)',
+        '0 (1.5x - 1px) 0 (1.5x - 1px + 3x)',
     },
     display: 'flex',
     flow: 'row',
     justifyContent: 'start',
     gap: '.75x',
-    outline: {
-      '': '#purple-03.0',
-      'focused & focus-visible': '#purple-03',
-    },
+    outline: false,
 
     ButtonIcon: {
       display: 'grid',
@@ -72,23 +67,6 @@ const StyledButton = tasty(Block, {
     Description: {
       preset: 't4',
       color: '#dark-03',
-    },
-  },
-});
-
-const RadioIcon = tasty({
-  styles: {
-    display: 'flex',
-    width: '1.875x',
-    placeContent: 'center',
-
-    '&::before': {
-      display: 'block',
-      content: '""',
-      width: '1x',
-      height: '1x',
-      radius: 'round',
-      fill: '#current',
     },
   },
 });
@@ -120,7 +98,7 @@ const getSelectionTypeIcon = (selectionIcon?: MenuSelectionType) => {
     case 'checkbox':
       return <CheckIcon />;
     case 'radio':
-      return <RadioIcon />;
+      return <IconPointFilled />;
     default:
       return undefined;
   }

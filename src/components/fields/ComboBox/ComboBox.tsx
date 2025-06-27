@@ -22,6 +22,7 @@ import { Section as BaseSection, Item, useComboBoxState } from 'react-stately';
 import { useEvent } from '../../../_internal/index';
 import { DownIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
+import { FieldBaseProps } from '../../../shared';
 import {
   BASE_STYLES,
   COLOR_STYLES,
@@ -96,8 +97,9 @@ export interface CubeComboBoxProps<T>
       CubeSelectBaseProps<T>,
       'onOpenChange' | 'onBlur' | 'onFocus' | 'validate' | 'onSelectionChange'
     >,
-    AriaComboBoxProps<T>,
-    AriaTextFieldProps {
+    Omit<AriaComboBoxProps<T>, 'errorMessage'>,
+    Omit<AriaTextFieldProps, 'errorMessage'>,
+    FieldBaseProps {
   defaultSelectedKey?: string | null;
   selectedKey?: string | null;
   onSelectionChange?: (selectedKey: string | null) => void;

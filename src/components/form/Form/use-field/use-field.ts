@@ -199,7 +199,12 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
           ? message
           : field?.status === 'invalid' && field?.errors?.[0],
       description,
-      errorMessage,
+      errorMessage:
+        errorMessage !== undefined
+          ? errorMessage
+          : field?.status === 'invalid' && field?.errors?.length
+            ? field.errors[0]
+            : undefined,
       onBlur: onBlurHandler,
       onChange: onChangeHandler,
     }),

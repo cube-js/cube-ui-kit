@@ -71,6 +71,8 @@ export type { CubeBadgeProps } from './components/content/Badge/Badge';
 export { Tag } from './components/content/Tag/Tag';
 export type { CubeTagProps } from './components/content/Tag/Tag';
 export type { CubeSearchInputProps } from './components/fields/SearchInput/SearchInput';
+export type { CubeListBoxProps } from './components/fields/ListBox';
+export { ListBox } from './components/fields/ListBox';
 export { Menu } from './components/pickers/Menu/Menu';
 export type { CubeMenuProps } from './components/pickers/Menu/Menu';
 export { MenuTrigger } from './components/pickers/Menu/MenuTrigger';

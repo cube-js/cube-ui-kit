@@ -2,7 +2,6 @@ import { Meta, StoryFn } from '@storybook/react';
 import { userEvent, within } from '@storybook/test';
 import { IconCoin } from '@tabler/icons-react';
 
-import { SELECTED_KEY_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { wait } from '../../../test/utils/wait';
 import { Button } from '../../actions/index';
@@ -12,7 +11,7 @@ import { Flow } from '../../layout/Flow';
 import { ComboBox, CubeComboBoxProps } from './ComboBox';
 
 export default {
-  title: 'Pickers/ComboBox',
+  title: 'Forms/ComboBox',
   component: ComboBox,
   subcomponents: { Item: ComboBox.Item, Section: ComboBox.Section },
   args: { id: 'name', width: '200px', label: 'Choose your favourite color' },
