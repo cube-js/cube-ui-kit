@@ -271,7 +271,7 @@ export interface CubeSelectBaseProps<T>
     ColorStyleProps,
     FieldBaseProps,
     CollectionBase<T>,
-    AriaSelectProps<T> {
+    Omit<AriaSelectProps<T>, 'errorMessage'> {
   icon?: ReactElement;
   prefix?: ReactNode;
   suffix?: ReactNode;

@@ -26,7 +26,7 @@ import { Granularity } from './types';
 import { useFocusManagerRef } from './utils';
 
 export interface CubeTimeInputProps<T extends TimeValue = TimeValue>
-  extends AriaTimeFieldProps<T>,
+  extends Omit<AriaTimeFieldProps<T>, 'errorMessage'>,
     BaseProps,
     ContainerStyleProps,
     FieldBaseProps {

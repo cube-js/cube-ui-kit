@@ -388,14 +388,12 @@ describe('Legacy <Field />', () => {
     expect(getByText('Must be at least 5 characters')).toBeInTheDocument();
   });
 
-  it('should handle errorMessage as function with ValidationResult', async () => {
-    const errorMessageFunction = jest.fn((validationResult) => {
-      const { isInvalid, validationErrors } = validationResult;
-
-      if (!isInvalid) return null;
+  it('should handle errorMessage as function with errors array', async () => {
+    const errorMessageFunction = jest.fn((errors) => {
+      if (!errors || errors.length === 0) return null;
 
       // Combine all validation errors
-      return `Combined errors: ${validationErrors.join(', ')}`;
+      return `Combined errors: ${errors.join(', ')}`;
     });
 
     const { getByRole, getByText, formInstance } = renderWithForm(
@@ -418,14 +416,10 @@ describe('Legacy <Field />', () => {
       await userEvent.tab(); // Trigger onBlur validation
     });
 
-    // Check that function was called with proper ValidationResult
-    expect(errorMessageFunction).toHaveBeenCalledWith({
-      isInvalid: true,
-      validationErrors: expect.arrayContaining([
-        'Must be at least 5 characters',
-      ]),
-      validationDetails: expect.any(Object),
-    });
+    // Check that function was called with proper errors array
+    expect(errorMessageFunction).toHaveBeenCalledWith([
+      'Must be at least 5 characters',
+    ]);
 
     // Should display the combined error message
     expect(

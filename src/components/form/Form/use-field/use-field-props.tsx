@@ -7,10 +7,7 @@ import { useInsideLegacyField } from '../Field';
 
 import { useField } from './use-field';
 
-import type {
-  ValidateTrigger,
-  ValidationResult,
-} from '../../../../shared/index';
+import type { ValidateTrigger } from '../../../../shared/index';
 import type { FieldTypes } from '../types';
 import type { CubeFieldProps } from './types';
 
@@ -114,20 +111,15 @@ export function useFieldProps<
   // Handle errorMessage compilation if it's a function
   let compiledErrorMessage;
   if (typeof props.errorMessage === 'function') {
-    // Create ValidationResult object from current field state
-    const validationResult: ValidationResult = {
-      isInvalid: field?.field?.status === 'invalid' || false,
-      validationErrors:
-        field?.field?.errors
-          ?.map((error) =>
-            typeof error === 'string' ? error : error?.toString() || '',
-          )
-          .filter(Boolean) || [],
-      validationDetails:
-        field?.field?.validationDetails || ({} as ValidityState),
-    };
+    // Create errors array from current field state
+    const errors =
+      field?.field?.errors
+        ?.map((error) =>
+          typeof error === 'string' ? error : error?.toString() || '',
+        )
+        .filter(Boolean) || [];
 
-    compiledErrorMessage = props.errorMessage(validationResult);
+    compiledErrorMessage = props.errorMessage(errors);
   } else if (props.errorMessage !== undefined) {
     compiledErrorMessage = props.errorMessage;
   } else {

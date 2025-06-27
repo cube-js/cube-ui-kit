@@ -2,7 +2,6 @@ import { ReactNode } from 'react';
 
 import {
   ValidateTrigger,
-  ValidationResult,
   ValidationRule,
   ValidationState,
 } from '../../../../shared/index';
@@ -41,7 +40,7 @@ export interface CubeFieldProps<T extends FieldTypes> {
   /** Description for the field. Will be placed below the label */
   description?: ReactNode;
   /** Error message for the field. Always displayed in danger state regardless of validation state */
-  errorMessage?: ReactNode | ((v: ValidationResult) => ReactNode);
+  errorMessage?: ReactNode | ((errors: any[]) => ReactNode);
   labelProps?: Props;
 }
 
