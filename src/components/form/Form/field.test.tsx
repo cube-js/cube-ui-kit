@@ -289,7 +289,7 @@ describe('Legacy <Field />', () => {
     expect(input).toHaveValue('Hello, world!');
   });
 
-  it('should set to new default value after its change and form reset', () => {
+  it('should set to new default value after its change and form reset', async () => {
     const TestForm = ({ defaultValues, forceReset = false }) => {
       const [form] = Form.useForm();
 
@@ -297,7 +297,7 @@ describe('Legacy <Field />', () => {
         if (forceReset) {
           form.resetFields();
         }
-      }, []);
+      }, [form, forceReset]);
 
       return (
         <Root>
@@ -327,11 +327,12 @@ describe('Legacy <Field />', () => {
     // Re-render with two inputs and updated default values
     rerender(
       <TestForm
-        defaultValues={{ test: 'Goodbye, world!', forceReset: true }}
+        defaultValues={{ test: 'Goodbye, world!' }}
+        forceReset={true}
       />,
     );
 
-    waitFor(() => {
+    await waitFor(() => {
       // Check that default value is reset
       expect(input).toHaveValue('Goodbye, world!');
     });
@@ -361,7 +362,9 @@ describe('Legacy <Field />', () => {
     });
 
     // Should display the custom error message instead of validation errors
-    expect(getByText(customErrorMessage)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(getByText(customErrorMessage)).toBeInTheDocument();
+    });
   });
 
   it('should display first validation error when errorMessage is not provided', async () => {
@@ -385,6 +388,8 @@ describe('Legacy <Field />', () => {
     });
 
     // Should display the first validation error
-    expect(getByText('Must be at least 5 characters')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(getByText('Must be at least 5 characters')).toBeInTheDocument();
+    });
   });
 });
