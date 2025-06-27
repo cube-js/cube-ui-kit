@@ -7,9 +7,12 @@ import { useInsideLegacyField } from '../Field';
 
 import { useField } from './use-field';
 
-import type { ValidateTrigger } from '../../../../shared/index';
+import type {
+  ValidateTrigger,
+  ValidationResult,
+} from '../../../../shared/index';
 import type { FieldTypes } from '../types';
-import type { CubeFieldProps, ValidationResult } from './types';
+import type { CubeFieldProps } from './types';
 
 export type UseFieldPropsParams = {
   valuePropsMapper?: ({ value, onChange }) => any;

@@ -1,8 +1,8 @@
 import { ReactNode } from 'react';
 
-import { ValidationResult } from '../../../../shared/form';
 import {
   ValidateTrigger,
+  ValidationResult,
   ValidationRule,
   ValidationState,
 } from '../../../../shared/index';

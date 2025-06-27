@@ -1,5 +1,5 @@
 import { FocusableRef } from '@react-types/shared';
-import { ReactElement, RefObject } from 'react';
+import { ReactElement, ReactNode, RefObject } from 'react';
 
 import { FieldBaseProps, FormBaseProps } from '../../shared/index';
 import { BaseProps, Styles } from '../../tasty/index';
@@ -53,7 +53,9 @@ export function wrapWithField<T extends WrapWithFieldProps>(
         message,
         messageStyles,
         description,
-        errorMessage,
+        // Only pass errorMessage if it's not a function (should be compiled by useFieldProps)
+        errorMessage:
+          typeof errorMessage === 'function' ? undefined : errorMessage,
         validationState,
         requiredMark,
         tooltip,
