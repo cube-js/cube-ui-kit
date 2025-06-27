@@ -9,7 +9,7 @@ import { useField } from './use-field';
 
 import type { ValidateTrigger } from '../../../../shared/index';
 import type { FieldTypes } from '../types';
-import type { CubeFieldProps } from './types';
+import type { CubeFieldProps, ValidationResult } from './types';
 
 export type UseFieldPropsParams = {
   valuePropsMapper?: ({ value, onChange }) => any;
@@ -108,11 +108,33 @@ export function useFieldProps<
     }
   }
 
+  // Handle errorMessage compilation if it's a function
+  let compiledErrorMessage = field.errorMessage;
+  if (typeof props.errorMessage === 'function') {
+    // Create ValidationResult object from current field state
+    const validationResult: ValidationResult = {
+      isInvalid: field?.field?.status === 'invalid' || false,
+      validationErrors:
+        field?.field?.errors
+          ?.map((error) =>
+            typeof error === 'string' ? error : error?.toString() || '',
+          )
+          .filter(Boolean) || [],
+      validationDetails:
+        field?.field?.validationDetails || ({} as ValidityState),
+    };
+
+    compiledErrorMessage = props.errorMessage(validationResult);
+  } else if (props.errorMessage !== undefined) {
+    compiledErrorMessage = props.errorMessage;
+  }
+
   const result: Props = isOutsideOfForm
     ? props
     : mergeProps(props, field, valueProps, {
         validateTrigger: field.validateTrigger ?? defaultValidationTrigger,
         onBlur: onBlurChained,
+        errorMessage: compiledErrorMessage,
       });
 
   if (result.id) {

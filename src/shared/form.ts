@@ -2,6 +2,16 @@ import { ReactNode } from 'react';
 
 import { Props, Styles } from '../tasty';
 
+/** ValidationResult type for error message functions */
+export interface ValidationResult {
+  /** Whether the value is invalid */
+  isInvalid: boolean;
+  /** List of validation error messages */
+  validationErrors: string[];
+  /** Native browser validation details */
+  validationDetails: ValidityState;
+}
+
 /** Where to place label relative to input */
 export type LabelPosition = 'side' | 'top';
 /** The type of necessity indicator */
@@ -41,7 +51,7 @@ export interface FieldBaseProps extends FormBaseProps {
   /** Description for the field. Will be placed below the label */
   description?: ReactNode;
   /** Error message for the field. Always displayed in danger state regardless of validation state */
-  errorMessage?: ReactNode;
+  errorMessage?: ReactNode | ((v: ValidationResult) => ReactNode);
   /** A tooltip that is shown inside the label */
   tooltip?: ReactNode;
   /** Whether the element should receive focus on render */
