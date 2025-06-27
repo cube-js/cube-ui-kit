@@ -40,7 +40,7 @@ export interface CubeFieldProps<T extends FieldTypes> {
   /** Description for the field. Will be placed below the label */
   description?: ReactNode;
   /** Error message for the field. Always displayed in danger state regardless of validation state */
-  errorMessage?: ReactNode | ((errors: any[]) => ReactNode);
+  errorMessage?: ReactNode;
   labelProps?: Props;
 }
 

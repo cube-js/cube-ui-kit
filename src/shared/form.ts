@@ -51,7 +51,7 @@ export interface FieldBaseProps extends FormBaseProps {
   /** Description for the field. Will be placed below the label */
   description?: ReactNode;
   /** Error message for the field. Always displayed in danger state regardless of validation state */
-  errorMessage?: ReactNode | ((errors: any[]) => ReactNode);
+  errorMessage?: ReactNode;
   /** A tooltip that is shown inside the label */
   tooltip?: ReactNode;
   /** Whether the element should receive focus on render */

@@ -53,9 +53,7 @@ export function wrapWithField<T extends WrapWithFieldProps>(
         message,
         messageStyles,
         description,
-        // Only pass errorMessage if it's not a function (should be compiled by useFieldProps)
-        errorMessage:
-          typeof errorMessage === 'function' ? undefined : errorMessage,
+        errorMessage,
         validationState,
         requiredMark,
         tooltip,

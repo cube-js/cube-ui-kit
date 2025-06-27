@@ -108,27 +108,13 @@ export function useFieldProps<
     }
   }
 
-  // Handle errorMessage compilation if it's a function
-  let compiledErrorMessage;
-  if (typeof props.errorMessage === 'function') {
-    // Create errors array from current field state
-    const errors =
-      field?.field?.errors
-        ?.map((error) =>
-          typeof error === 'string' ? error : error?.toString() || '',
-        )
-        .filter(Boolean) || [];
-
-    compiledErrorMessage = props.errorMessage(errors);
-  } else if (props.errorMessage !== undefined) {
-    compiledErrorMessage = props.errorMessage;
-  } else {
-    // Use the default errorMessage from useField (validation errors or undefined)
-    compiledErrorMessage =
-      field?.field?.status === 'invalid' && field?.field?.errors?.length
+  // Use errorMessage directly or fall back to validation errors
+  const compiledErrorMessage =
+    props.errorMessage !== undefined
+      ? props.errorMessage
+      : field?.field?.status === 'invalid' && field?.field?.errors?.length
         ? field.field.errors[0]
         : undefined;
-  }
 
   const result: Props = isOutsideOfForm
     ? props

@@ -200,15 +200,11 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
           : field?.status === 'invalid' && field?.errors?.[0],
       description,
       errorMessage:
-        // Note: if errorMessage is a function, it will be compiled by useFieldProps
-        // useField should only return compiled ReactNode values, not functions
-        typeof errorMessage === 'function'
-          ? undefined
-          : errorMessage !== undefined
-            ? errorMessage
-            : field?.status === 'invalid' && field?.errors?.length
-              ? field.errors[0]
-              : undefined,
+        errorMessage !== undefined
+          ? errorMessage
+          : field?.status === 'invalid' && field?.errors?.length
+            ? field.errors[0]
+            : undefined,
       onBlur: onBlurHandler,
       onChange: onChangeHandler,
     }),
