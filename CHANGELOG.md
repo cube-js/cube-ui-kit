@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.64.0
+
+### Minor Changes
+
+- [#711](https://github.com/cube-js/cube-ui-kit/pull/711) [`ad733be`](https://github.com/cube-js/cube-ui-kit/commit/ad733be793cbadd7de6d21488d127676cd8ef766) Thanks [@tenphi](https://github.com/tenphi)! - The `message` field prop is now deprecated. Use `errorMessage` or `description` instead.
+
+### Patch Changes
+
+- [#713](https://github.com/cube-js/cube-ui-kit/pull/713) [`77275fb`](https://github.com/cube-js/cube-ui-kit/commit/77275fb656b6db7e94cda2e8f6598a149687f6a2) Thanks [@tenphi](https://github.com/tenphi)! - Add new horizontal chart icons.
+
 ## 0.63.3
 
 ### Patch Changes
