@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.64.1
+
+### Patch Changes
+
+- [#712](https://github.com/cube-js/cube-ui-kit/pull/712) [`6612034`](https://github.com/cube-js/cube-ui-kit/commit/66120342e3c495e10227d3f77c6f43204034256c) Thanks [@tenphi](https://github.com/tenphi)! - Unify the focused state in Menu component.
+
+- [#712](https://github.com/cube-js/cube-ui-kit/pull/712) [`6612034`](https://github.com/cube-js/cube-ui-kit/commit/66120342e3c495e10227d3f77c6f43204034256c) Thanks [@tenphi](https://github.com/tenphi)! - Fix errorMessage type.
+
 ## 0.64.0
 
 ### Minor Changes
