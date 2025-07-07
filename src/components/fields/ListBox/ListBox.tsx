@@ -21,7 +21,6 @@ import {
   useOption,
 } from 'react-aria';
 import { Section as BaseSection, Item, useListState } from 'react-stately';
-import { Block } from 'src/components/Block';
 
 import { LoadingIcon, SearchIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
@@ -35,6 +34,7 @@ import {
 } from '../../../tasty';
 import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
+import { Block } from '../../Block';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import {
   DEFAULT_INPUT_STYLES,
