@@ -1,12 +1,5 @@
 const DOMPropNames = new Set(['id']);
 
-const labelablePropNames = new Set([
-  'aria-label',
-  'aria-labelledby',
-  'aria-describedby',
-  'aria-details',
-]);
-
 const BasePropNames = new Set([
   'role',
   'as',
@@ -39,6 +32,7 @@ const propRe = /^((data-).*)$/;
 const eventRe = /^on[A-Z].+$/;
 
 interface PropsFilterOptions {
+  // @deprecated
   labelable?: boolean;
   propNames?: Set<string>;
   eventProps?: boolean;
@@ -53,7 +47,7 @@ export function filterBaseProps(
   props,
   opts: PropsFilterOptions = {},
 ): Record<string, any> {
-  let { labelable, propNames, eventProps } = opts;
+  let { propNames, eventProps } = opts;
   let filteredProps = {};
 
   for (const prop in props) {
@@ -61,7 +55,8 @@ export function filterBaseProps(
       Object.prototype.hasOwnProperty.call(props, prop) &&
       (DOMPropNames.has(prop) ||
         BasePropNames.has(prop) ||
-        (labelable && labelablePropNames.has(prop)) ||
+        // Always preserve any ARIA attributes to maintain accessibility support.
+        prop.startsWith('aria-') ||
         (eventProps &&
           eventRe.test(prop) &&
           !ignoreEventPropsNames.has(prop)) ||

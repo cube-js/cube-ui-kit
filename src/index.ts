@@ -70,6 +70,7 @@ export { Badge } from './components/content/Badge/Badge';
 export type { CubeBadgeProps } from './components/content/Badge/Badge';
 export { Tag } from './components/content/Tag/Tag';
 export type { CubeTagProps } from './components/content/Tag/Tag';
+export * from './components/content/HotKeys';
 export type { CubeSearchInputProps } from './components/fields/SearchInput/SearchInput';
 export type { CubeListBoxProps } from './components/fields/ListBox';
 export { ListBox } from './components/fields/ListBox';
