@@ -42,6 +42,8 @@ Brief description of what the component is and its primary purpose.
 
 <Story of={ComponentStories.Default} />
 
+---
+
 ### Properties
 
 <Controls of={componentStories.Default} />
