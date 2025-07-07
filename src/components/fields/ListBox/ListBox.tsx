@@ -1,13 +1,10 @@
 import {
-  Children,
-  cloneElement,
   ForwardedRef,
   forwardRef,
-  isValidElement,
   ReactElement,
   ReactNode,
   RefObject,
-  useEffect,
+  useCallback,
   useMemo,
   useRef,
   useState,
@@ -305,91 +302,61 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   const [searchValue, setSearchValue] = useState('');
   const { contains } = useFilter({ sensitivity: 'base' });
 
-  // Create filtered children based on search
-  const filteredChildren = useMemo(() => {
-    if (!isSearchable || !searchValue.trim() || !props.children) {
-      return props.children;
-    }
+  // Choose the text filter function: user-provided `filter` prop (if any)
+  // or the default `contains` helper from `useFilter`.
+  const textFilterFn = useMemo<FilterFn>(
+    () => filter || contains,
+    [filter, contains],
+  );
 
-    const filterFn = filter || contains;
+  // Collection-level filter function expected by `useListState`.
+  // It converts the text filter (textValue, searchValue) ⟶ boolean
+  // into the shape `(nodes) => Iterable<Node<T>>`.
+  // The current `searchValue` is captured in the closure – every re-render
+  // produces a new function so React Stately updates the collection when the
+  // search term changes.
+  const collectionFilter = useCallback(
+    (nodes: Iterable<any>): Iterable<any> => {
+      const term = searchValue.trim();
 
-    // Returns `true` if the given element's text value matches the search.
-    const filterChild = (child: any): boolean => {
-      if (!isValidElement(child)) return false;
-
-      const { textValue, children } = child.props as any;
-
-      // Prefer an explicit textValue prop (React Aria's Item), then children, then key.
-      let candidate: string = '';
-
-      if (typeof textValue === 'string') {
-        candidate = textValue;
-      } else if (typeof children === 'string') {
-        candidate = children;
-      } else if (Array.isArray(children)) {
-        candidate = children.join(' ');
-      } else if (child.key != null) {
-        candidate = String(child.key);
+      // If there is no search term, return nodes untouched to avoid
+      // unnecessary object allocations.
+      if (!term) {
+        return nodes;
       }
 
-      return filterFn(candidate, searchValue);
-    };
+      // Recursive helper to filter sections and items.
+      const filterNodes = (iter: Iterable<any>): any[] => {
+        const result: any[] = [];
 
-    // Filters a Section element and returns a cloned element with only the matching children.
-    const filterSection = (section: any) => {
-      if (!isValidElement(section)) return null;
+        for (const node of iter) {
+          if (node.type === 'section') {
+            const filteredChildren = filterNodes(node.childNodes);
 
-      const childrenArray = Children.toArray(
-        (section as any).props.children as any,
-      );
-      const filteredSectionChildren = childrenArray.filter(filterChild);
+            if (filteredChildren.length) {
+              // Preserve the original node but replace `childNodes` with the
+              // filtered iterable so that React-Stately can still traverse it.
+              result.push({
+                ...node,
+                childNodes: filteredChildren,
+              });
+            }
+          } else {
+            const text = node.textValue ?? String(node.rendered ?? '');
 
-      if (filteredSectionChildren.length === 0) return null;
-
-      return cloneElement(
-        section as any,
-        { children: filteredSectionChildren } as any,
-      );
-    };
-
-    const childrenArray = Children.toArray(props.children as any);
-
-    const result = childrenArray
-      .map((child) => {
-        if (
-          isValidElement(child) &&
-          (child.type === BaseSection || (child.props as any)?.title)
-        ) {
-          return filterSection(child);
+            if (textFilterFn(text, term)) {
+              result.push(node);
+            }
+          }
         }
 
-        return filterChild(child) ? child : null;
-      })
-      .filter(Boolean);
+        return result;
+      };
 
-    return result.length === 0 ? null : result;
-  }, [isSearchable, searchValue, props.children, filter, contains]);
-
-  // Create filtered items based on search
-  const filteredItems = useMemo(() => {
-    if (!isSearchable || !searchValue.trim()) {
-      return props.items;
-    }
-
-    const filterFn = filter || contains;
-
-    if (props.items) {
-      return Array.from(props.items).filter((item: any) => {
-        const textValue =
-          typeof item === 'string'
-            ? item
-            : item?.textValue || item?.name || String(item);
-        return filterFn(textValue, searchValue);
-      });
-    }
-
-    return undefined;
-  }, [isSearchable, searchValue, props.items, filter, contains]);
+      return filterNodes(nodes);
+    },
+    [searchValue, textFilterFn],
+  );
 
   // Wrap onSelectionChange to prevent selection when disabled and handle React Aria's Set format
   const externalSelectionHandler = onSelectionChange || (props as any).onChange;
@@ -424,8 +391,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // Prepare props for useListState with correct selection props
   const listStateProps: any = {
     ...props,
-    items: filteredItems,
-    children: filteredChildren,
+    filter: collectionFilter,
     onSelectionChange: wrappedOnSelectionChange,
     isDisabled,
     selectionMode: props.selectionMode || 'single',
@@ -621,7 +587,10 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
             ? `${listBoxProps.id}-option-${listState.selectionManager.focusedKey}`
             : undefined
         }
-        onChange={(e) => setSearchValue(e.target.value)}
+        onChange={(e) => {
+          const value = e.target.value;
+          setSearchValue(value);
+        }}
         {...keyboardProps}
         {...modAttrs(mods)}
       />
