@@ -36,10 +36,10 @@ const StyledButton = tasty(Block, {
     },
     shadow: '#clear',
     padding: {
-      '': '0 (1.5x - 1px)',
-      'selectable & !selected': '0 (1.5x - 1px) 0 (1.5x - 1px)',
+      '': '0 (1x - 1bw)',
+      'selectable & !selected': '0 (1.5x - 1bw) 0 (1.5x - 1bw)',
       'selectionIcon & selectable & !selected':
-        '0 (1.5x - 1px) 0 (1.5x - 1px + 3x)',
+        '0 (1.5x - 1bw) 0 (1.5x - 1bw + 3x)',
     },
     display: 'flex',
     flow: 'row',
