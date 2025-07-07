@@ -13,7 +13,8 @@ export function paddingInlineStyle({
 
   if (padding === true) padding = '1x';
 
-  let { values } = parseStyle(padding);
+  const processed = parseStyle(padding);
+  let { values } = processed.groups[0] ?? ({ values: [] } as any);
 
   if (!values.length) {
     values = ['var(--gap)'];

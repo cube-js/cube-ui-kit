@@ -10,7 +10,9 @@ export function groupRadiusAttr({ groupRadius, flow }) {
 
   if (groupRadius === true) groupRadius = '1r';
 
-  const { values, mods } = parseStyle(groupRadius);
+  const processed = parseStyle(groupRadius);
+  const { values, mods } =
+    processed.groups[0] ?? ({ values: [], mods: [] } as any);
 
   flow = flow || 'row';
 
