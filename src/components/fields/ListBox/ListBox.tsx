@@ -447,43 +447,24 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     delete listStateProps.selectedKey;
     delete listStateProps.defaultSelectedKey;
   } else {
+    // For single-selection we convert the scalar key props that our public
+    // API exposes into the Set-based props that React Stately expects.
     if (selectedKey !== undefined) {
-      listStateProps.selectedKey = selectedKey;
+      listStateProps.selectedKeys =
+        selectedKey == null ? new Set() : new Set([selectedKey]);
     }
+
     if (defaultSelectedKey !== undefined) {
-      // useListState expects a Set for uncontrolled selections, even in single-selection mode
-      // so convert the provided key into a Set. Passing an empty Set means no default selection.
       listStateProps.defaultSelectedKeys =
         defaultSelectedKey == null ? new Set() : new Set([defaultSelectedKey]);
     }
-    // Remove set-based props if any
-    delete listStateProps.selectedKeys;
+
+    // Remove the single-value props so we don't pass unsupported keys through.
+    delete listStateProps.selectedKey;
     delete listStateProps.defaultSelectedKey;
   }
 
   const listState = useListState(listStateProps);
-
-  // Manually sync controlled selection if needed
-  useEffect(() => {
-    if (selectedKey !== undefined) {
-      const currentSelection = listState.selectionManager.selectedKeys;
-      const expectedSelection =
-        selectedKey !== null ? new Set([selectedKey]) : new Set();
-
-      // Check if the current selection matches the expected selection
-      const currentKeys = Array.from(currentSelection);
-      const expectedKeys = Array.from(expectedSelection);
-
-      const selectionChanged =
-        currentKeys.length !== expectedKeys.length ||
-        currentKeys.some((key) => !expectedSelection.has(key)) ||
-        expectedKeys.some((key) => !currentSelection.has(key));
-
-      if (selectionChanged) {
-        listState.selectionManager.setSelectedKeys(expectedSelection);
-      }
-    }
-  }, [selectedKey, listState.selectionManager]);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
@@ -589,7 +570,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         if (nextKey != null) {
           selectionManager.setFocusedKey(nextKey);
         }
-      } else if (e.key === 'Enter') {
+      } else if (e.key === 'Enter' || (e.key === ' ' && !searchValue.trim())) {
         const focusedKey = listState.selectionManager.focusedKey;
         if (focusedKey != null) {
           e.preventDefault();
