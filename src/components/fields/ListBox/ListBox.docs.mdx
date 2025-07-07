@@ -16,6 +16,7 @@ A list box component that allows users to select one or more items from a list o
 - Display structured data with sections and descriptions
 - Create custom selection interfaces that need to remain visible
 - Build form controls that require persistent option visibility
+- Customize empty state messages when no results are found
 
 ## Component
 
@@ -63,6 +64,10 @@ Customizes section wrapper elements.
 #### headingStyles
 
 Customizes section heading elements.
+
+#### emptyLabel
+
+Custom label to display when no results are found after filtering. Accepts any ReactNode including text, JSX elements, or components. Defaults to "No results found".
 
 ### Style Properties
 
@@ -118,6 +123,22 @@ The `mods` property accepts the following modifiers you can override:
   <ListBox.Item key="banana">Banana</ListBox.Item>
   <ListBox.Item key="cherry">Cherry</ListBox.Item>
   {/* More items... */}
+</ListBox>
+```
+
+### Custom Empty Label
+
+<Story of={ListBoxStories.CustomEmptyLabel} />
+
+```jsx
+<ListBox
+  label="Search with custom empty message"
+  isSearchable={true}
+  emptyLabel="🔍 Nothing matches your search criteria"
+  selectionMode="single"
+>
+  <ListBox.Item key="apple">Apple</ListBox.Item>
+  <ListBox.Item key="banana">Banana</ListBox.Item>
 </ListBox>
 ```
 

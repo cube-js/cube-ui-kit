@@ -15,11 +15,13 @@ import {
 import {
   AriaListBoxProps,
   useFilter,
+  useKeyboard,
   useListBox,
   useListBoxSection,
   useOption,
 } from 'react-aria';
 import { Section as BaseSection, Item, useListState } from 'react-stately';
+import { Block } from 'src/components/Block';
 
 import { LoadingIcon, SearchIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
@@ -34,8 +36,6 @@ import {
 import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
-import { InvalidIcon } from '../../shared/InvalidIcon';
-import { ValidIcon } from '../../shared/ValidIcon';
 import {
   DEFAULT_INPUT_STYLES,
   INPUT_WRAPPER_STYLES,
@@ -194,6 +194,8 @@ export interface CubeListBoxProps<T>
   autoFocus?: boolean;
   /** The filter function used to determine if an option should be included in the filtered list */
   filter?: FilterFn;
+  /** Custom label to display when no results are found after filtering */
+  emptyLabel?: ReactNode;
   /** Custom styles for the search input */
   searchInputStyles?: Styles;
   /** Custom styles for the list container */
@@ -280,6 +282,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     searchPlaceholder = 'Search...',
     autoFocus,
     filter,
+    emptyLabel,
     searchInputStyles,
     listStyles,
     optionStyles,
@@ -503,6 +506,85 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   const { isFocused, focusProps } = useFocus({ isDisabled });
   const isInvalid = validationState === 'invalid';
 
+  // Keyboard navigation handler for search input
+  const { keyboardProps } = useKeyboard({
+    onKeyDown: (e) => {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+
+        const isArrowDown = e.key === 'ArrowDown';
+        const keyGetter = isArrowDown
+          ? listState.collection.getKeyAfter.bind(listState.collection)
+          : listState.collection.getKeyBefore.bind(listState.collection);
+
+        // Helper function to find next selectable item (skip section headers)
+        const findNextSelectableKey = (startKey: any) => {
+          let nextKey = startKey;
+
+          // Keep looking for a selectable item (not a section header)
+          while (nextKey != null) {
+            const item = listState.collection.getItem(nextKey);
+            if (item && item.type !== 'section') {
+              return nextKey;
+            }
+            nextKey = keyGetter(nextKey);
+          }
+
+          return null;
+        };
+
+        // Helper function to find first/last selectable item
+        const findFirstLastSelectableKey = () => {
+          const allKeys = Array.from(listState.collection.getKeys());
+          const keysToCheck = isArrowDown ? allKeys : allKeys.reverse();
+
+          for (const key of keysToCheck) {
+            const item = listState.collection.getItem(key);
+            if (item && item.type !== 'section') {
+              return key;
+            }
+          }
+
+          return null;
+        };
+
+        let nextKey;
+        const currentKey = listState.selectionManager.focusedKey;
+
+        if (currentKey == null) {
+          // No current focus, find first/last selectable item
+          nextKey = findFirstLastSelectableKey();
+        } else {
+          // Find next selectable item from current position
+          const candidateKey = keyGetter(currentKey);
+          nextKey = findNextSelectableKey(candidateKey);
+
+          // If no next key found, wrap to first/last selectable item
+          if (nextKey == null) {
+            nextKey = findFirstLastSelectableKey();
+          }
+        }
+
+        if (nextKey != null) {
+          listState.selectionManager.setFocusedKey(nextKey);
+        }
+      } else if (
+        e.key === 'Enter' ||
+        (e.key === ' ' && props.selectionMode === 'multiple')
+      ) {
+        const focusedKey = listState.selectionManager.focusedKey;
+        if (focusedKey != null) {
+          e.preventDefault();
+          if (props.selectionMode === 'multiple') {
+            (listState.selectionManager as any).toggleSelection(focusedKey);
+          } else {
+            (listState.selectionManager as any).select(focusedKey);
+          }
+        }
+      }
+    },
+  });
+
   const mods = useMemo(
     () => ({
       invalid: isInvalid,
@@ -532,7 +614,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         value={searchValue}
         disabled={isDisabled}
         autoFocus={autoFocus && isSearchable}
-        data-autofocus={autoFocus && isSearchable ? '' : undefined}
+        data-autofocus={autoFocus ? '' : undefined}
         styles={searchInputStyles}
         data-size="small"
         aria-controls={listBoxProps.id}
@@ -542,81 +624,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
             : undefined
         }
         onChange={(e) => setSearchValue(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-            e.preventDefault();
-
-            const isArrowDown = e.key === 'ArrowDown';
-            const keyGetter = isArrowDown
-              ? listState.collection.getKeyAfter.bind(listState.collection)
-              : listState.collection.getKeyBefore.bind(listState.collection);
-
-            // Helper function to find next selectable item (skip section headers)
-            const findNextSelectableKey = (startKey: any) => {
-              let nextKey = startKey;
-
-              // Keep looking for a selectable item (not a section header)
-              while (nextKey != null) {
-                const item = listState.collection.getItem(nextKey);
-                if (item && item.type !== 'section') {
-                  return nextKey;
-                }
-                nextKey = keyGetter(nextKey);
-              }
-
-              return null;
-            };
-
-            // Helper function to find first/last selectable item
-            const findFirstLastSelectableKey = () => {
-              const allKeys = Array.from(listState.collection.getKeys());
-              const keysToCheck = isArrowDown ? allKeys : allKeys.reverse();
-
-              for (const key of keysToCheck) {
-                const item = listState.collection.getItem(key);
-                if (item && item.type !== 'section') {
-                  return key;
-                }
-              }
-
-              return null;
-            };
-
-            let nextKey;
-            const currentKey = listState.selectionManager.focusedKey;
-
-            if (currentKey == null) {
-              // No current focus, find first/last selectable item
-              nextKey = findFirstLastSelectableKey();
-            } else {
-              // Find next selectable item from current position
-              const candidateKey = keyGetter(currentKey);
-              nextKey = findNextSelectableKey(candidateKey);
-
-              // If no next key found, wrap to first/last selectable item
-              if (nextKey == null) {
-                nextKey = findFirstLastSelectableKey();
-              }
-            }
-
-            if (nextKey != null) {
-              listState.selectionManager.setFocusedKey(nextKey);
-            }
-          } else if (
-            e.key === 'Enter' ||
-            (e.key === ' ' && props.selectionMode === 'multiple')
-          ) {
-            const focusedKey = listState.selectionManager.focusedKey;
-            if (focusedKey != null) {
-              e.preventDefault();
-              if (props.selectionMode === 'multiple') {
-                (listState.selectionManager as any).toggleSelection(focusedKey);
-              } else {
-                (listState.selectionManager as any).select(focusedKey);
-              }
-            }
-          }
-        }}
+        {...keyboardProps}
         {...modAttrs(mods)}
       />
       <div data-element="Prefix">
@@ -641,6 +649,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         ref={listRef}
         styles={listStyles}
         aria-disabled={isDisabled || undefined}
+        {...(!isSearchable ? keyboardProps : {})}
       >
         {(() => {
           const renderedItems: ReactNode[] = [];
@@ -686,6 +695,21 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
             }
           }
 
+          // Show "No results found" message when there are no items after filtration
+          if (
+            renderedItems.length === 0 &&
+            isSearchable &&
+            searchValue.trim()
+          ) {
+            return (
+              <li>
+                <Block preset="t4" color="#dark-03">
+                  {emptyLabel !== undefined ? emptyLabel : 'No results found'}
+                </Block>
+              </li>
+            );
+          }
+
           return renderedItems;
         })()}
       </ListElement>
@@ -705,12 +729,9 @@ function Option({ item, state, styles, isParentDisabled, validationState }) {
   const ref = useRef<HTMLLIElement>(null);
   const isDisabled = isParentDisabled || state.disabledKeys.has(item.key);
   const isSelected = state.selectionManager.isSelected(item.key);
+  const isFocused = state.selectionManager.focusedKey === item.key;
 
-  const {
-    optionProps,
-    isPressed,
-    isFocused: optionFocused,
-  } = useOption(
+  const { optionProps, isPressed } = useOption(
     {
       key: item.key,
       isDisabled,
@@ -730,7 +751,7 @@ function Option({ item, state, styles, isParentDisabled, validationState }) {
       ref={ref}
       mods={{
         selected: isSelected,
-        focused: optionFocused,
+        focused: isFocused,
         disabled: isDisabled,
         pressed: isPressed,
         valid: isSelected && validationState === 'valid',

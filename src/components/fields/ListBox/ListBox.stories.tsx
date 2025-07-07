@@ -3,9 +3,6 @@ import { useState } from 'react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
-import { Content } from '../../content/Content';
-import { Header } from '../../content/Header';
-import { Title } from '../../content/Title';
 import { Form } from '../../form';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
@@ -59,6 +56,14 @@ export default {
       description: 'Whether the search input should have autofocus',
       table: {
         defaultValue: { summary: false },
+      },
+    },
+    emptyLabel: {
+      control: { type: 'text' },
+      description:
+        'Custom label to display when no results are found after filtering',
+      table: {
+        defaultValue: { summary: 'No results found' },
       },
     },
 
@@ -549,4 +554,41 @@ InPopover.play = async ({ canvasElement }) => {
     // Wait a moment for the popover to open and autoFocus to take effect
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
+};
+
+export const WithAutoFocus: StoryFn<CubeListBoxProps<any>> = (args) => (
+  <ListBox {...args}>
+    <ListBox.Item key="apple">Apple</ListBox.Item>
+    <ListBox.Item key="banana">Banana</ListBox.Item>
+    <ListBox.Item key="cherry">Cherry</ListBox.Item>
+    <ListBox.Item key="date">Date</ListBox.Item>
+    <ListBox.Item key="elderberry">Elderberry</ListBox.Item>
+    <ListBox.Item key="fig">Fig</ListBox.Item>
+    <ListBox.Item key="grape">Grape</ListBox.Item>
+    <ListBox.Item key="honeydew">Honeydew</ListBox.Item>
+    <ListBox.Item key="kiwi">Kiwi</ListBox.Item>
+    <ListBox.Item key="lemon">Lemon</ListBox.Item>
+  </ListBox>
+);
+WithAutoFocus.args = {
+  label: 'Search fruits (auto-focused)',
+  isSearchable: true,
+  autoFocus: true,
+  searchPlaceholder: 'Search input is auto-focused...',
+  selectionMode: 'single',
+};
+
+export const CustomEmptyLabel: StoryFn<CubeListBoxProps<any>> = (args) => (
+  <ListBox {...args}>
+    <ListBox.Item key="apple">Apple</ListBox.Item>
+    <ListBox.Item key="banana">Banana</ListBox.Item>
+    <ListBox.Item key="cherry">Cherry</ListBox.Item>
+  </ListBox>
+);
+CustomEmptyLabel.args = {
+  label: 'Search with custom empty message',
+  isSearchable: true,
+  searchPlaceholder: 'Try searching for "orange"...',
+  emptyLabel: '🔍 Nothing matches your search criteria',
+  selectionMode: 'single',
 };
