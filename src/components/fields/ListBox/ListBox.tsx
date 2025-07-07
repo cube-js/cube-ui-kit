@@ -513,18 +513,28 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         e.preventDefault();
 
         const isArrowDown = e.key === 'ArrowDown';
-        const keyGetter = isArrowDown
-          ? listState.collection.getKeyAfter.bind(listState.collection)
-          : listState.collection.getKeyBefore.bind(listState.collection);
+        const { selectionManager, collection } = listState;
+        const currentKey = selectionManager.focusedKey;
 
-        // Helper function to find next selectable item (skip section headers)
-        const findNextSelectableKey = (startKey: any) => {
+        // Helper function to find next selectable item (skip section headers and disabled items)
+        const findNextSelectableKey = (
+          startKey: any,
+          direction: 'forward' | 'backward',
+        ) => {
           let nextKey = startKey;
+          const keyGetter =
+            direction === 'forward'
+              ? collection.getKeyAfter.bind(collection)
+              : collection.getKeyBefore.bind(collection);
 
-          // Keep looking for a selectable item (not a section header)
           while (nextKey != null) {
-            const item = listState.collection.getItem(nextKey);
-            if (item && item.type !== 'section') {
+            const item = collection.getItem(nextKey);
+            // Use SelectionManager's canSelectItem method for proper validation
+            if (
+              item &&
+              item.type !== 'section' &&
+              selectionManager.canSelectItem(nextKey)
+            ) {
               return nextKey;
             }
             nextKey = keyGetter(nextKey);
@@ -534,13 +544,20 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         };
 
         // Helper function to find first/last selectable item
-        const findFirstLastSelectableKey = () => {
-          const allKeys = Array.from(listState.collection.getKeys());
-          const keysToCheck = isArrowDown ? allKeys : allKeys.reverse();
+        const findFirstLastSelectableKey = (
+          direction: 'forward' | 'backward',
+        ) => {
+          const allKeys = Array.from(collection.getKeys());
+          const keysToCheck =
+            direction === 'forward' ? allKeys : allKeys.reverse();
 
           for (const key of keysToCheck) {
-            const item = listState.collection.getItem(key);
-            if (item && item.type !== 'section') {
+            const item = collection.getItem(key);
+            if (
+              item &&
+              item.type !== 'section' &&
+              selectionManager.canSelectItem(key)
+            ) {
               return key;
             }
           }
@@ -548,38 +565,38 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
           return null;
         };
 
-        let nextKey;
-        const currentKey = listState.selectionManager.focusedKey;
+        let nextKey: any = null;
+        const direction = isArrowDown ? 'forward' : 'backward';
 
         if (currentKey == null) {
           // No current focus, find first/last selectable item
-          nextKey = findFirstLastSelectableKey();
+          nextKey = findFirstLastSelectableKey(direction);
         } else {
           // Find next selectable item from current position
-          const candidateKey = keyGetter(currentKey);
-          nextKey = findNextSelectableKey(candidateKey);
+          const candidateKey =
+            direction === 'forward'
+              ? collection.getKeyAfter(currentKey)
+              : collection.getKeyBefore(currentKey);
 
-          // If no next key found, wrap to first/last selectable item
+          nextKey = findNextSelectableKey(candidateKey, direction);
+
+          // If no next key found and focus wrapping is enabled, wrap to first/last selectable item
           if (nextKey == null) {
-            nextKey = findFirstLastSelectableKey();
+            nextKey = findFirstLastSelectableKey(direction);
           }
         }
 
         if (nextKey != null) {
-          listState.selectionManager.setFocusedKey(nextKey);
+          selectionManager.setFocusedKey(nextKey);
         }
-      } else if (
-        e.key === 'Enter' ||
-        (e.key === ' ' && props.selectionMode === 'multiple')
-      ) {
+      } else if (e.key === 'Enter') {
         const focusedKey = listState.selectionManager.focusedKey;
         if (focusedKey != null) {
           e.preventDefault();
-          if (props.selectionMode === 'multiple') {
-            (listState.selectionManager as any).toggleSelection(focusedKey);
-          } else {
-            (listState.selectionManager as any).select(focusedKey);
-          }
+
+          // Use the SelectionManager's select method which handles all selection logic
+          // including single vs multiple selection modes and modifier keys
+          listState.selectionManager.select(focusedKey, e);
         }
       }
     },
