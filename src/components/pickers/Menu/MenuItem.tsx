@@ -29,9 +29,9 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
   const { rendered, key, props: itemProps } = item;
 
   // Extract optional keyboard shortcut from item props so it is not passed down to DOM elements.
-  // `hotkeys` is our custom prop for specifying keyboard shortcuts, similar to `postfix` or `icon`.
-
-  const { hotkeys: shortcutKeys, ...cleanItemProps } = (itemProps || {}) as any;
+  // `keys` is our custom prop for specifying keyboard shortcuts, similar to `postfix` or `icon`.
+   
+  const { keys: shortcutKeys, ...cleanItemProps } = (itemProps || {}) as any;
 
   const isSelectable = state.selectionManager.selectionMode !== 'none';
   const isDisabledKey = state.disabledKeys.has(key);
