@@ -3,10 +3,7 @@ import { ReactElement, ReactNode } from 'react';
 
 import { CheckIcon } from '../../../icons';
 import { tasty } from '../../../tasty';
-import {
-  DEFAULT_BUTTON_STYLES,
-  DEFAULT_NEUTRAL_STYLES,
-} from '../../actions/index';
+import { DEFAULT_BUTTON_STYLES, DEFAULT_NEUTRAL_STYLES } from '../../actions';
 import { Block, CubeBlockProps } from '../../Block';
 import { Text } from '../../content/Text';
 import { Space } from '../../layout/Space';
@@ -37,9 +34,8 @@ const StyledButton = tasty(Block, {
     shadow: '#clear',
     padding: {
       '': '0 (1x - 1bw)',
-      'selectable & !selected': '0 (1.5x - 1bw) 0 (1.5x - 1bw)',
       'selectionIcon & selectable & !selected':
-        '0 (1.5x - 1bw) 0 (1.5x - 1bw + 3x)',
+        '0 (1x - 1bw) 0 (1x - 1bw + 3x)',
     },
     display: 'flex',
     flow: 'row',

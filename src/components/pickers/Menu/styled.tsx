@@ -54,7 +54,7 @@ export const StyledHeader = tasty(Space, {
   styles: {
     color: '#dark-02',
     preset: 't2m',
-    padding: '0.75x 2x',
+    padding: '0.75x 1.5x',
     margin: '-0.5x -0.5x (0.5x - 1bw) -0.5x',
     border: '#dark-05 bottom',
     placeContent: 'space-between',
