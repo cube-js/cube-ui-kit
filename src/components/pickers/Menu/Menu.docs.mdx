@@ -1,0 +1,346 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
+import { Menu } from './Menu';
+import * as MenuStories from './Menu.stories';
+
+<Meta of={MenuStories} />
+
+# Menu
+
+A versatile dropdown menu component that displays a list of actions or options. Built with React Aria for accessibility and supports single/multiple selection, sections, keyboard navigation, and custom styling.
+
+## When to Use
+
+- Display a list of actions that can be performed (like Cut, Copy, Paste)
+- Create context menus for right-click interactions
+- Build dropdown menus for navigation or settings
+- Implement selection lists with single or multiple selection modes
+- Group related options using sections with dividers
+
+## Component
+
+<Story of={MenuStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={MenuStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/BaseProperties)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root menu container element.
+
+**Sub-elements:**
+- `Header` - Optional header element at the top of the menu
+- `Divider` - Separator elements between sections
+
+#### itemStyles
+
+Customizes individual menu items.
+
+**Sub-elements:**
+- `Icon` - Icon element within menu items
+- `Text` - Main text content of menu items
+- `Description` - Secondary text content for items with descriptions
+- `Postfix` - Right-aligned content (shortcuts, badges, etc.)
+
+#### sectionStyles
+
+Customizes section container elements.
+
+**Sub-elements:**
+- `SectionHeading` - Section title/heading element
+
+#### sectionHeadingStyles
+
+Customizes section heading text styling.
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop: `width`, `height`, `padding`, `margin`.
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| sections | `boolean` | Applied when menu contains sections |
+| footer | `boolean` | Applied when footer prop is provided |
+| header | `boolean` | Applied when header prop is provided |
+| popover | `boolean` | Applied when menu is displayed as popover |
+
+## Menu Properties
+
+### Collection Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| items | `Iterable<T>` | - | Item objects for dynamic collections |
+| children | `ReactNode` | - | Static menu items and sections |
+
+### Selection Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| selectionMode | `'single' \| 'multiple'` | `'none'` | Type of selection allowed |
+| selectedKeys | `Iterable<Key>` | - | Currently selected keys (controlled) |
+| defaultSelectedKeys | `Iterable<Key>` | - | Initially selected keys (uncontrolled) |
+| onSelectionChange | `(keys: Selection) => void` | - | Handler for selection changes |
+| selectionIcon | `'checkbox' \| 'radio'` | - | Type of selection indicator |
+
+### State Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| disabledKeys | `Iterable<Key>` | - | Keys of disabled items |
+| autoFocus | `boolean \| FocusStrategy` | - | Focus behavior when menu opens |
+| shouldFocusWrap | `boolean` | - | Whether keyboard navigation wraps |
+
+### Event Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| onAction | `(key: Key) => void` | - | Handler for item activation |
+| onClose | `() => void` | - | Handler for menu close requests |
+
+### Content Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| header | `ReactNode` | - | Optional header content (deprecated) |
+| footer | `ReactNode` | - | Optional footer content |
+
+## Menu.Item Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| key | `Key` | - | Unique identifier for the item |
+| children | `ReactNode` | - | Item content/label |
+| description | `ReactNode` | - | Secondary text shown below label |
+| icon | `ReactElement` | - | Icon displayed before the label |
+| hotkeys | `string` | - | Keyboard shortcut (e.g., "Ctrl+C") |
+| wrapper | `(item: ReactElement) => ReactElement` | - | Function to wrap the item |
+
+### Menu.Item State Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| isDisabled | `boolean` | `false` | Whether the item is disabled |
+| textValue | `string` | - | Text for typeahead search |
+
+### Menu.Item Button Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| postfix | `ReactNode` | - | Content displayed on the right side |
+| prefix | `ReactNode` | - | Content displayed on the left side |
+
+## Menu.Section Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| key | `Key` | - | Unique identifier for the section |
+| title | `ReactNode` | - | Section heading text |
+| children | `ReactNode` | - | Menu items within the section |
+| items | `Iterable<T>` | - | Dynamic items for the section |
+
+### Menu.Section Styling Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| aria-label | `string` | - | Accessibility label for sections without titles |
+
+## Selection Modes
+
+### None (Default)
+Items are not selectable and only trigger `onAction` when activated.
+
+```jsx
+<Menu onAction={(key) => console.log('Action:', key)}>
+  <Menu.Item key="copy">Copy</Menu.Item>
+  <Menu.Item key="paste">Paste</Menu.Item>
+</Menu>
+```
+
+### Single Selection
+Only one item can be selected at a time.
+
+```jsx
+<Menu selectionMode="single" selectedKeys={['option1']}>
+  <Menu.Item key="option1">Option 1</Menu.Item>
+  <Menu.Item key="option2">Option 2</Menu.Item>
+</Menu>
+```
+
+### Multiple Selection
+Multiple items can be selected simultaneously.
+
+```jsx
+<Menu selectionMode="multiple" selectedKeys={['option1', 'option3']}>
+  <Menu.Item key="option1">Option 1</Menu.Item>
+  <Menu.Item key="option2">Option 2</Menu.Item>
+  <Menu.Item key="option3">Option 3</Menu.Item>
+</Menu>
+```
+
+## Examples
+
+### Basic Menu
+
+```jsx
+<Menu onAction={(key) => console.log(key)}>
+  <Menu.Item key="new">New File</Menu.Item>
+  <Menu.Item key="open">Open File</Menu.Item>
+  <Menu.Item key="save">Save</Menu.Item>
+</Menu>
+```
+
+### Menu with Sections
+
+```jsx
+<Menu>
+  <Menu.Section title="File Operations">
+    <Menu.Item key="new">New</Menu.Item>
+    <Menu.Item key="open">Open</Menu.Item>
+  </Menu.Section>
+  <Menu.Section title="Edit Operations">
+    <Menu.Item key="copy">Copy</Menu.Item>
+    <Menu.Item key="paste">Paste</Menu.Item>
+  </Menu.Section>
+</Menu>
+```
+
+### Menu with Icons and Shortcuts
+
+```jsx
+<Menu>
+  <Menu.Item key="copy" icon={<CopyIcon />} hotkeys="Ctrl+C">
+    Copy
+  </Menu.Item>
+  <Menu.Item key="paste" icon={<PasteIcon />} hotkeys="Ctrl+V">
+    Paste
+  </Menu.Item>
+</Menu>
+```
+
+### Dynamic Menu
+
+```jsx
+const items = [
+  { id: 'copy', label: 'Copy', shortcut: 'Ctrl+C' },
+  { id: 'paste', label: 'Paste', shortcut: 'Ctrl+V' }
+];
+
+<Menu items={items}>
+  {(item) => (
+    <Menu.Item key={item.id} hotkeys={item.shortcut}>
+      {item.label}
+    </Menu.Item>
+  )}
+</Menu>
+```
+
+### Selection with Custom Icons
+
+```jsx
+<Menu selectionMode="multiple" selectionIcon="checkbox">
+  <Menu.Item key="bold">Bold</Menu.Item>
+  <Menu.Item key="italic">Italic</Menu.Item>
+  <Menu.Item key="underline">Underline</Menu.Item>
+</Menu>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the menu
+- `Arrow Keys` - Navigate between items
+- `Home/End` - Move to first/last item
+- `Enter/Space` - Activate the focused item
+- `Escape` - Close the menu
+- `A-Z` - Typeahead search for items
+
+### Screen Reader Support
+
+- Menu announces as "menu" with proper role
+- Items announce as "menuitem", "menuitemcheckbox", or "menuitemradio"
+- Selection state is announced for selectable items
+- Keyboard shortcuts are announced when present
+- Section headings provide context for grouped items
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label for the menu
+- `aria-labelledby` - References element that labels the menu
+- `aria-activedescendant` - Indicates the currently focused item
+- `aria-orientation` - Indicates menu orientation (vertical by default)
+
+## Best Practices
+
+1. **Clear Labels**: Use descriptive, action-oriented labels
+   ```jsx
+   <Menu.Item key="save">Save Document</Menu.Item> // Good
+   <Menu.Item key="save">Save</Menu.Item> // Less clear
+   ```
+
+2. **Logical Grouping**: Group related actions using sections
+   ```jsx
+   <Menu.Section title="File Operations">
+     <Menu.Item key="new">New</Menu.Item>
+     <Menu.Item key="open">Open</Menu.Item>
+   </Menu.Section>
+   ```
+
+3. **Keyboard Shortcuts**: Include shortcuts for common actions
+   ```jsx
+   <Menu.Item key="copy" hotkeys="Ctrl+C">Copy</Menu.Item>
+   ```
+
+4. **Appropriate Selection**: Choose the right selection mode
+   - Use `selectionMode="none"` for action menus
+   - Use `selectionMode="single"` for mutually exclusive options
+   - Use `selectionMode="multiple"` for independent toggles
+
+5. **Disabled States**: Clearly indicate unavailable actions
+   ```jsx
+   <Menu disabledKeys={['paste']}>
+     <Menu.Item key="paste">Paste</Menu.Item>
+   </Menu>
+   ```
+
+## Integration with MenuTrigger
+
+The Menu component is typically used with MenuTrigger for dropdown functionality:
+
+```jsx
+<MenuTrigger>
+  <Button>Actions</Button>
+  <Menu>
+    <Menu.Item key="edit">Edit</Menu.Item>
+    <Menu.Item key="delete">Delete</Menu.Item>
+  </Menu>
+</MenuTrigger>
+```
+
+## Suggested Improvements
+
+- Enhancement 1: Add support for nested submenus
+- Enhancement 2: Implement virtual scrolling for large item lists
+- Enhancement 3: Add animation presets for menu transitions
+- Enhancement 4: Support for item templates and custom renderers
+- Enhancement 5: Built-in search/filter functionality
+
+## Related Components
+
+- [MenuTrigger](/components/MenuTrigger) - Handles menu positioning and trigger interaction
+- [Button](/components/Button) - Common trigger element for menus
+- [ListBox](/components/ListBox) - Alternative for selection-focused interfaces
+- [ComboBox](/components/ComboBox) - Combines input with menu selection 

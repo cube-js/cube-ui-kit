@@ -15,3 +15,5 @@ stats.html
 yarn-error.log
 coverage
 size-limit-report/stats.json
+docs-static
+

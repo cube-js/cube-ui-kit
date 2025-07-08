@@ -1,34 +1,13 @@
 import { Meta, Canvas, ArgTypes, Source } from '@storybook/blocks';
-import { Badge } from '@storybook/components';
 import * as TextInputMapperStories from './TextInputMapper.stories';
 
 <Meta of={TextInputMapperStories} />
 
 # TextInputMapper
 
-<Badge variant="neutral">Form component</Badge>
-
 The TextInputMapper component allows users to create and manage key-value pairs dynamically. It provides an interface for adding, editing, and removing mappings with customizable input components for both keys and values.
 
 <Canvas of={TextInputMapperStories.Default} />
-
-## Examples
-
-### With Label
-
-<Canvas of={TextInputMapperStories.WithLabel} />
-
-### With Default Value
-
-<Canvas of={TextInputMapperStories.WithDefaultValue} />
-
-### Disabled State
-
-<Canvas of={TextInputMapperStories.Disabled} />
-
-### Custom Components
-
-<Canvas of={TextInputMapperStories.CustomComponents} />
 
 ## Properties
 

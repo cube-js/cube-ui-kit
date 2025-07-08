@@ -1,0 +1,318 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
+import { HotKeys } from './HotKeys';
+import * as HotKeysStories from './HotKeys.stories';
+
+<Meta of={HotKeysStories} />
+
+# HotKeys
+
+A component that displays keyboard shortcuts in a visually appealing and accessible format using Tag components. It automatically formats key combinations, separates alternative shortcuts with "or" text, and provides comprehensive accessibility support for screen readers and other assistive technologies.
+
+## When to Use
+
+- Display keyboard shortcuts in tooltips or help documentation
+- Show available hotkeys in command palettes or menus
+- Provide visual feedback for keyboard navigation instructions
+- Document keyboard shortcuts in user interfaces
+- Create accessible keyboard shortcut references
+
+## Component
+
+<Story of={HotKeysStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={HotKeysStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/docs/tasty-base-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root element of the component (Space component).
+
+**Sub-elements:**
+- None - The component uses Tag components for individual keys
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop: `width`, `height`, `padding`, `margin`, `gap`, `flow`, `placeContent`, `placeItems`.
+
+### Accessibility Properties
+
+#### label
+
+Provides an accessible label for the keyboard shortcuts. If not provided, defaults to "Keyboard shortcuts".
+
+#### description
+
+Provides additional context about what the keyboard shortcuts do. This is announced by screen readers along with the shortcuts.
+
+### Modifiers
+
+The `mods` property accepts standard Space component modifiers.
+
+## Examples
+
+### Basic Usage
+
+<Story of={HotKeysStories.Default} />
+
+```jsx
+<HotKeys keys="mod+k" />
+```
+
+### With Accessibility Labels
+
+<Story of={HotKeysStories.SingleKey} />
+
+```jsx
+<HotKeys 
+  keys="enter" 
+  label="Submit action"
+/>
+```
+
+### With Description
+
+<Story of={HotKeysStories.MultipleKeys} />
+
+```jsx
+<HotKeys 
+  keys="mod+shift+p" 
+  label="Command palette"
+  description="Opens the command palette for quick actions"
+/>
+```
+
+### Alternative Shortcuts
+
+<Story of={HotKeysStories.Alternatives} />
+
+```jsx
+<HotKeys 
+  keys="mod+k, ctrl+k" 
+  label="Search"
+  description="Opens the search dialog"
+/>
+```
+
+### Complex Alternatives
+
+<Story of={HotKeysStories.ComplexAlternatives} />
+
+```jsx
+<HotKeys 
+  keys="mod+shift+p, ctrl+shift+p, alt+space" 
+  label="Quick actions"
+  description="Multiple ways to access quick actions menu"
+/>
+```
+
+### Function Keys
+
+<Story of={HotKeysStories.FunctionKeys} />
+
+```jsx
+<HotKeys 
+  keys="f1, f2, f3" 
+  label="Help functions"
+  description="Function keys for help, rename, and search"
+/>
+```
+
+### Arrow Keys
+
+<Story of={HotKeysStories.ArrowKeys} />
+
+```jsx
+<HotKeys 
+  keys="up, down, left, right" 
+  label="Navigation"
+  description="Arrow keys for directional navigation"
+/>
+```
+
+### Special Keys
+
+<Story of={HotKeysStories.SpecialKeys} />
+
+```jsx
+<HotKeys 
+  keys="esc, enter, space, backspace, delete" 
+  label="Common actions"
+  description="Frequently used special keys"
+/>
+```
+
+### Platform-Specific Keys
+
+<Story of={HotKeysStories.Mixed} />
+
+```jsx
+<HotKeys 
+  keys="mod+c, ctrl+c, cmd+c" 
+  label="Copy"
+  description="Copy selected content to clipboard"
+/>
+```
+
+### With Custom Styles
+
+<Story of={HotKeysStories.WithCustomStyles} />
+
+```jsx
+<HotKeys 
+  keys="mod+k, ctrl+k"
+  label="Styled shortcuts"
+  description="Custom styled keyboard shortcuts"
+  styles={{
+    padding: '2x',
+    fill: '#purple.10',
+    radius: '1r',
+  }}
+/>
+```
+
+## Key Format
+
+The `keys` prop accepts a string with the following format:
+
+- **Single key**: `"enter"`, `"space"`, `"a"`
+- **Key combinations**: `"mod+k"`, `"ctrl+shift+p"`
+- **Multiple alternatives**: `"mod+k, ctrl+k"` (separated by commas)
+
+### Supported Modifiers
+
+- `mod` - Command (⌘) on macOS, Ctrl on Windows/Linux
+- `ctrl`, `control` - Control key (⌃ on macOS, Ctrl on Windows/Linux)
+- `alt`, `option` - Alt/Option key (⌥ on macOS, ⎇ on Windows/Linux)
+- `shift` - Shift key (⇧)
+- `meta`, `cmd`, `command` - Command key (⌘ on macOS, ⊞ on Windows/Linux)
+
+### Special Keys
+
+- `esc`, `escape` - Escape key (⎋)
+- `enter`, `return` - Enter key (⏎)
+- `space` - Space key (␣)
+- `backspace` - Backspace key (⌫)
+- `delete` - Delete key (⌦)
+
+## Accessibility
+
+The HotKeys component is designed with comprehensive accessibility support:
+
+### Screen Reader Support
+
+- **Semantic Structure**: Uses proper ARIA roles and grouping for logical organization
+- **Descriptive Labels**: Each key combination is properly labeled for screen readers
+- **Contextual Information**: Provides meaningful descriptions of what shortcuts do
+- **Keyboard Shortcuts**: Individual keys are announced clearly with their symbolic representations
+- **Alternative Separators**: The "or" text between alternatives is marked as decorative to avoid confusion
+
+### ARIA Attributes
+
+- `role="group"` - Identifies the component as a group of related keyboard shortcuts
+- `aria-label` - Provides an accessible name for the shortcuts group (defaults to "Keyboard shortcuts")
+- `aria-description` - Provides additional context about what the shortcuts do
+- `role="text"` - Ensures individual keys are read as text content
+- `aria-label` on individual keys - Provides clear pronunciation for each key
+- `role="separator"` - Marks the "or" text as a separator between alternatives
+- `aria-hidden="true"` - Hides decorative "or" text from screen readers to avoid redundancy
+
+### Keyboard Navigation
+
+- The component itself is not focusable as it's for display purposes only
+- Individual keys are presented as non-interactive elements using semantic `<kbd>` tags
+- Screen readers can navigate through the shortcuts using standard reading commands
+
+### Semantic HTML
+
+- Uses `<kbd>` elements for individual keys, which is the semantic HTML element for keyboard input
+- Proper grouping structure with ARIA roles for logical organization
+- Clear separation between different shortcut alternatives
+
+## Best Practices
+
+1. **Provide meaningful labels**: Always use the `label` prop to describe what the shortcuts do
+   ```jsx
+   <HotKeys 
+     keys="mod+k" 
+     label="Search" 
+     description="Opens the search dialog"
+   />
+   ```
+
+2. **Use platform-appropriate modifiers**: Use `mod` instead of `ctrl` for cross-platform shortcuts
+   ```jsx
+   <HotKeys keys="mod+k" label="Search" /> // Good: Works on both Mac and PC
+   <HotKeys keys="ctrl+k" label="Search" /> // Limited: PC-specific
+   ```
+
+3. **Group related alternatives**: Separate alternative shortcuts with commas
+   ```jsx
+   <HotKeys 
+     keys="mod+k, ctrl+k" 
+     label="Search"
+     description="Opens search dialog"
+   /> // Good: Shows alternatives with context
+   ```
+
+4. **Provide descriptions for complex shortcuts**: Use the `description` prop for clarity
+   ```jsx
+   <HotKeys 
+     keys="mod+shift+p" 
+     label="Command palette"
+     description="Opens the command palette for quick actions"
+   />
+   ```
+
+5. **Use clear, recognizable keys**: Stick to standard key names
+   ```jsx
+   <HotKeys keys="enter, space" label="Confirm" /> // Good: Clear key names
+   <HotKeys keys="ret, spc" label="Confirm" /> // Avoid: Unclear abbreviations
+   ```
+
+6. **Keep combinations reasonable**: Avoid overly complex key combinations
+   ```jsx
+   <HotKeys keys="mod+shift+p" label="Command palette" /> // Good: Reasonable complexity
+   <HotKeys keys="mod+ctrl+shift+alt+p" label="Command palette" /> // Avoid: Too complex
+   ```
+
+7. **Consider context**: Provide context about when and where shortcuts are available
+   ```jsx
+   <HotKeys 
+     keys="esc" 
+     label="Cancel"
+     description="Cancel current action and close dialog"
+   />
+   ```
+
+## Platform Behavior
+
+The component automatically adapts key symbols based on the user's platform:
+
+- **macOS**: Shows ⌘ for `mod`, ⌃ for `ctrl`, ⌥ for `alt`
+- **Windows/Linux**: Shows Ctrl for `mod`, Ctrl for `ctrl`, ⎇ for `alt`
+
+This ensures users see familiar symbols regardless of their operating system.
+
+## Related Components
+
+- [Tag](/docs/content-tag--docs) - Individual key display component
+- [Space](/docs/layout-space--docs) - Layout container used internally
+- [Text](/docs/content-text--docs) - Used for separator text
+- [Tooltip](/docs/overlays-tooltip--docs) - Often used together to show shortcuts
+
+## Suggested Improvements
+
+- Add support for mouse button indicators (e.g., "Click + Drag")
+- Consider adding animation for key press feedback
+- Support for custom key symbol mappings
+- Integration with system accessibility preferences
+- Support for voice command alternatives 

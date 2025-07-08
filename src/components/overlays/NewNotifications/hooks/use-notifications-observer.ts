@@ -1,7 +1,7 @@
 import { useContext, useEffect } from 'react';
 
 import { useEvent } from '../../../../_internal';
-import { NotificationsContext } from '../NotificationsContext/NotificationsProvider';
+import { NotificationsContext } from '../NotificationsContext';
 import { CubeNotifyApiPropsWithID } from '../types';
 
 export function useNotificationsObserver(

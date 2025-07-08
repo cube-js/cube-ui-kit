@@ -178,6 +178,8 @@ type ItemComponent = <T>(
     PartialMenuButton & {
       description?: ReactNode;
       wrapper?: (item: ReactElement) => ReactElement;
+      /** Keyboard shortcut string, e.g. "Ctrl+C" */
+      hotkeys?: string;
     },
 ) => ReactElement;
 
