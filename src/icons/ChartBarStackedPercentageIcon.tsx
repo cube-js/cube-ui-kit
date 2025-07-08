@@ -14,7 +14,7 @@ export const ChartBarStackedPercentageIcon = wrapIcon(
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth="1.5"
-      d="M3 15h6m-6 0v4a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1m-6-4V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1m0 10v4m0-4V5m0 14v-7m0 7a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1M9 5v7m0-7a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1m-6 7h6m0 0v7m0-7V5m0 14v-9m0 9a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-9m-6 0h6m-6 0V5m6 5V5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1M5 20h14M5 4h14"
+      d="M3 15h6m-6 0v5a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1m-6-5V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1m0 11v5m0-5V4m0 16v-8m0 8a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1M9 4v8m0-8a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1m-6 8h6m0 0v8m0-8V4m0 16V10m0 10a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1V10m-6 0h6m-6 0V4m6 6V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1M5 21h14M5 3h14"
     />
   </svg>,
 );
