@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.65.0
+
+### Minor Changes
+
+- [#716](https://github.com/cube-js/cube-ui-kit/pull/716) [`a42a468`](https://github.com/cube-js/cube-ui-kit/commit/a42a4686c4b9ad731dabe0bc513a335d5975a31c) Thanks [@tenphi](https://github.com/tenphi)! - Add HotKeys component to visualize hot keys combinations.
+
+- [#716](https://github.com/cube-js/cube-ui-kit/pull/716) [`a42a468`](https://github.com/cube-js/cube-ui-kit/commit/a42a4686c4b9ad731dabe0bc513a335d5975a31c) Thanks [@tenphi](https://github.com/tenphi)! - Add `hotkeys` property for menu items to specify hot keys to trigger the action.
+
+### Patch Changes
+
+- [#716](https://github.com/cube-js/cube-ui-kit/pull/716) [`a42a468`](https://github.com/cube-js/cube-ui-kit/commit/a42a4686c4b9ad731dabe0bc513a335d5975a31c) Thanks [@tenphi](https://github.com/tenphi)! - Improve ListBox implementation and add support for the empty state with customization via `emptyLabel` property.
+
+- [#716](https://github.com/cube-js/cube-ui-kit/pull/716) [`a42a468`](https://github.com/cube-js/cube-ui-kit/commit/a42a4686c4b9ad731dabe0bc513a335d5975a31c) Thanks [@tenphi](https://github.com/tenphi)! - Add new chart icons and update the old ones.
+
 ## 0.64.1
 
 ### Patch Changes
