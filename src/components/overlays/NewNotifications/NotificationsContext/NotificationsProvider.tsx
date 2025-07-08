@@ -1,17 +1,10 @@
-import { createContext, PropsWithChildren, RefObject, useMemo } from 'react';
+import { PropsWithChildren, RefObject, useMemo } from 'react';
 
 import { Portal } from '../../../portal';
 import { NotificationsBar } from '../Bar';
-import { CubeNotificationsApi, CubeNotifyApiPropsWithID } from '../types';
 
+import { NotificationsContext } from './NotificationsContext';
 import { useNotifications } from './use-notifications';
-
-export const NotificationsContext = createContext<{
-  api: CubeNotificationsApi;
-  addOnDismissListener: (
-    listener: (notification: CubeNotifyApiPropsWithID) => void,
-  ) => () => void;
-} | null>(null);
 
 export function NotificationsProvider(
   props: PropsWithChildren<{ rootRef: RefObject<HTMLElement | null> | null }>,
