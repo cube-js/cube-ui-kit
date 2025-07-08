@@ -125,7 +125,7 @@ The `mods` property accepts the following modifiers you can override:
 | children | `ReactNode` | - | Item content/label |
 | description | `ReactNode` | - | Secondary text shown below label |
 | icon | `ReactElement` | - | Icon displayed before the label |
-| keys | `string` | - | Keyboard shortcut (e.g., "Ctrl+C") |
+| hotkeys | `string` | - | Keyboard shortcut (e.g., "Ctrl+C") |
 | wrapper | `(item: ReactElement) => ReactElement` | - | Function to wrap the item |
 
 ### Menu.Item State Properties
@@ -221,10 +221,10 @@ Multiple items can be selected simultaneously.
 
 ```jsx
 <Menu>
-  <Menu.Item key="copy" icon={<CopyIcon />} keys="Ctrl+C">
+  <Menu.Item key="copy" icon={<CopyIcon />} hotkeys="Ctrl+C">
     Copy
   </Menu.Item>
-  <Menu.Item key="paste" icon={<PasteIcon />} keys="Ctrl+V">
+  <Menu.Item key="paste" icon={<PasteIcon />} hotkeys="Ctrl+V">
     Paste
   </Menu.Item>
 </Menu>
@@ -240,7 +240,7 @@ const items = [
 
 <Menu items={items}>
   {(item) => (
-    <Menu.Item key={item.id} keys={item.shortcut}>
+    <Menu.Item key={item.id} hotkeys={item.shortcut}>
       {item.label}
     </Menu.Item>
   )}
@@ -301,7 +301,7 @@ const items = [
 
 3. **Keyboard Shortcuts**: Include shortcuts for common actions
    ```jsx
-   <Menu.Item key="copy" keys="Ctrl+C">Copy</Menu.Item>
+   <Menu.Item key="copy" hotkeys="Ctrl+C">Copy</Menu.Item>
    ```
 
 4. **Appropriate Selection**: Choose the right selection mode

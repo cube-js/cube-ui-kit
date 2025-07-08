@@ -240,13 +240,13 @@ const MenuTemplate = (props) => {
 export const Default = ({ ...props }) => {
   const menu = (
     <Menu id="menu" {...props} width="220px">
-      <Menu.Item key="copy" keys="Ctrl+C">
+      <Menu.Item key="copy" hotkeys="Ctrl+C">
         Copy
       </Menu.Item>
-      <Menu.Item key="paste" keys="Ctrl+V">
+      <Menu.Item key="paste" hotkeys="Ctrl+V">
         Paste
       </Menu.Item>
-      <Menu.Item key="cut" keys="Ctrl+X">
+      <Menu.Item key="cut" hotkeys="Ctrl+X">
         Cut
       </Menu.Item>
     </Menu>
@@ -276,13 +276,13 @@ export const Default = ({ ...props }) => {
 export const DisabledKeys = ({ ...props }) => {
   const menu = (
     <Menu id="menu" disabledKeys={['copy', 'cut']} {...props} width="220px">
-      <Menu.Item key="copy" keys="Ctrl+C">
+      <Menu.Item key="copy" hotkeys="Ctrl+C">
         Copy
       </Menu.Item>
-      <Menu.Item key="paste" keys="Ctrl+V">
+      <Menu.Item key="paste" hotkeys="Ctrl+V">
         Paste
       </Menu.Item>
-      <Menu.Item key="cut" keys="Ctrl+X">
+      <Menu.Item key="cut" hotkeys="Ctrl+X">
         Cut
       </Menu.Item>
     </Menu>
@@ -709,7 +709,7 @@ export const DynamicCollection = (props) => {
           <Menu.Item
             key={item.id}
             icon={<span style={{ fontSize: '16px' }}>{item.icon}</span>}
-            keys={item.shortcut}
+            hotkeys={item.shortcut}
           >
             {item.label}
           </Menu.Item>
@@ -720,39 +720,41 @@ export const DynamicCollection = (props) => {
 };
 
 export const DynamicCollectionWithSections = (props) => {
-  const items = [
+  const sections = [
     {
-      name: 'File Operations',
-      children: [
-        { id: 'new', label: 'New File', icon: '📄', shortcut: 'Ctrl+N' },
-        { id: 'open', label: 'Open', icon: '📂', shortcut: 'Ctrl+O' },
-        { id: 'save', label: 'Save', icon: '💾', shortcut: 'Ctrl+S' },
+      name: 'File',
+      id: 'file',
+      items: [
+        { id: 'new', label: 'New', icon: '📝', shortcut: 'Mod+N' },
+        { id: 'open', label: 'Open…', icon: '📁', shortcut: 'Mod+O' },
+        { id: 'save', label: 'Save', icon: '💾', shortcut: 'Mod+S' },
       ],
     },
     {
-      name: 'Edit Operations',
-      children: [
-        { id: 'undo', label: 'Undo', icon: '↩️', shortcut: 'Ctrl+Z' },
-        { id: 'redo', label: 'Redo', icon: '↪️', shortcut: 'Ctrl+Y' },
-        { id: 'find', label: 'Find', icon: '🔍', shortcut: 'Ctrl+F' },
+      name: 'Edit',
+      id: 'edit',
+      items: [
+        { id: 'copy', label: 'Copy', icon: '📋', shortcut: 'Mod+C' },
+        { id: 'paste', label: 'Paste', icon: '📄', shortcut: 'Mod+V' },
+        { id: 'cut', label: 'Cut', icon: '✂️', shortcut: 'Mod+X' },
       ],
     },
   ];
 
   return (
     <div style={{ padding: '20px', width: '340px' }}>
-      <Menu id="menu" {...props} items={items} header="Dynamic Sections">
+      <Menu id="menu" {...props} items={sections} header="Dynamic Collection">
         {(section) => (
           <Menu.Section
-            key={section.name}
-            items={section.children}
+            key={section.id}
+            items={section.items}
             title={section.name}
           >
             {(item) => (
               <Menu.Item
                 key={item.id}
                 icon={<span style={{ fontSize: '16px' }}>{item.icon}</span>}
-                keys={item.shortcut}
+                hotkeys={item.shortcut}
               >
                 {item.label}
               </Menu.Item>

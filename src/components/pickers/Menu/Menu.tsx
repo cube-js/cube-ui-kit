@@ -179,7 +179,7 @@ type ItemComponent = <T>(
       description?: ReactNode;
       wrapper?: (item: ReactElement) => ReactElement;
       /** Keyboard shortcut string, e.g. "Ctrl+C" */
-      keys?: string;
+      hotkeys?: string;
     },
 ) => ReactElement;
 

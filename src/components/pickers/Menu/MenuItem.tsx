@@ -29,9 +29,9 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
   const { rendered, key, props: itemProps } = item;
 
   // Extract optional keyboard shortcut from item props so it is not passed down to DOM elements.
-  // `keys` is our custom prop for specifying keyboard shortcuts, similar to `postfix` or `icon`.
-   
-  const { keys: shortcutKeys, ...cleanItemProps } = (itemProps || {}) as any;
+  // `hotkeys` is our custom prop for specifying keyboard shortcuts, similar to `postfix` or `icon`.
+
+  const { hotkeys, ...cleanItemProps } = (itemProps || {}) as any;
 
   const isSelectable = state.selectionManager.selectionMode !== 'none';
   const isDisabledKey = state.disabledKeys.has(key);
@@ -75,8 +75,8 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
 
   // Build extra props for MenuButton: automatically add postfix HotKeys component when shortcut provided
   const extraButtonProps: any = {};
-  if (shortcutKeys && !(cleanItemProps as any).postfix) {
-    extraButtonProps.postfix = <HotKeys keys={shortcutKeys} />;
+  if (hotkeys && !(cleanItemProps as any).postfix) {
+    extraButtonProps.postfix = <HotKeys keys={hotkeys} />;
   }
 
   const contents = (
@@ -94,9 +94,9 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
 
   // Register global hotkey if provided
   useHotkeys(
-    typeof shortcutKeys === 'string' ? shortcutKeys.toLowerCase() : '',
+    typeof hotkeys === 'string' ? hotkeys.toLowerCase() : '',
     () => {
-      if (!shortcutKeys) return;
+      if (!hotkeys) return;
 
       if (isDisabledKey || isDisabled) {
         return;
@@ -110,10 +110,10 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
     {
       // Ensure the hotkey is active even when the element is not focused
       enableOnContentEditable: true,
-      enabled: !!shortcutKeys,
+      enabled: !!hotkeys,
       preventDefault: true,
     },
-    [shortcutKeys, isDisabledKey, isDisabled],
+    [hotkeys, isDisabledKey, isDisabled],
   );
 
   return (
