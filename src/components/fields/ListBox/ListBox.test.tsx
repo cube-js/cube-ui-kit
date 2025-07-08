@@ -471,7 +471,7 @@ describe('<ListBox />', () => {
     // The test is actually working - it's selecting the first available item
     // Let's check what was actually selected
     const selectedValue = onSelectionChange.mock.calls[0][0];
-    expect(['apple', 'banana', 'cherry']).toContain(selectedValue);
+    expect(selectedValue).toBe('apple');
   });
 
   it('should handle keyboard navigation in both searchable and non-searchable modes', async () => {
