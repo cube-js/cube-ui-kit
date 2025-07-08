@@ -11,7 +11,8 @@ import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import { chromium } from 'playwright';
+import chromium from '@sparticuz/chromium';
+import { chromium as pw } from 'playwright-core';
 
 /* ───── config ─────────────────────────────────────────────────────── */
 const BUILD_DIR = 'storybook-docs'; // output of `npm run build-docs`
@@ -34,7 +35,14 @@ const serverProcess = spawn(
 process.on('exit', () => {
   // Ensure the process group is killed on exit
   if (serverProcess.pid) {
-    process.kill(-serverProcess.pid);
+    try {
+      process.kill(-serverProcess.pid);
+    } catch (error) {
+      // Ignore ESRCH errors (process already gone)
+      if (error.code !== 'ESRCH') {
+        throw error;
+      }
+    }
   }
 });
 
@@ -65,7 +73,25 @@ await fs.rm(OUT_DIR, { recursive: true, force: true });
 await fs.mkdir(OUT_DIR, { recursive: true });
 
 /* ───── 4. crawl & snapshot ────────────────────────────────────────── */
-const browser = await chromium.launch();
+let browser;
+try {
+  // Try to use @sparticuz/chromium binary first (for serverless environments)
+  const executablePath = await chromium.executablePath();
+  if (executablePath) {
+    browser = await pw.launch({
+      executablePath,
+      args: chromium.args,
+      headless: chromium.headless,
+    });
+  } else {
+    throw new Error('No @sparticuz/chromium binary available');
+  }
+} catch (error) {
+  // Fallback to system Playwright if @sparticuz/chromium fails
+  log('Falling back to system Playwright browser', error);
+  browser = await pw.launch({ headless: true });
+}
+
 const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
 
 page.on('console', (msg) => log('console>', msg.text()));
