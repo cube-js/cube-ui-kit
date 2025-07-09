@@ -588,7 +588,7 @@ export function ListBoxPopup({
                   item={item}
                   state={state}
                   optionStyles={optionStyles}
-                  headingStyles={undefined}
+                  headingStyles={{ padding: '.5x 1.5x' }}
                   sectionStyles={undefined}
                   shouldUseVirtualFocus={shouldUseVirtualFocus}
                 />,
