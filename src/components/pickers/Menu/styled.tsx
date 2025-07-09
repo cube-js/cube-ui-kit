@@ -1,4 +1,5 @@
 import { tasty } from '../../../tasty';
+import { DEFAULT_BUTTON_STYLES, DEFAULT_NEUTRAL_STYLES } from '../../actions';
 import { Space } from '../../layout/Space';
 
 export const StyledMenu = tasty({
@@ -81,19 +82,65 @@ export const StyledItem = tasty({
   qa: 'Item',
   as: 'li',
   styles: {
+    // Base button-like styles merged from Action/Button defaults
+    ...DEFAULT_BUTTON_STYLES,
+    ...DEFAULT_NEUTRAL_STYLES,
+
+    // Override specifics for menu context
     display: 'flex',
-    flow: 'column',
-    gap: '1bw',
-    margin: '0',
-    padding: '0',
+    flow: 'row',
+    justifyContent: 'start',
     listStyle: 'none',
-    fill: '#white',
-    preset: 't3m',
+    height: 'min 4x',
+    border: '#clear',
+    fill: {
+      '': '#clear',
+      focused: '#dark.03',
+      selected: '#dark.06',
+      'selected & focused': '#dark.09',
+      pressed: '#dark.06',
+      disabled: '#clear',
+    },
     color: {
-      '': 'inherit',
+      '': '#dark-02',
+      'selected | pressed': '#dark',
       disabled: '#dark-04',
     },
-    whiteSpace: 'nowrap',
+    cursor: {
+      '': 'pointer',
+      disabled: 'default',
+    },
+    shadow: '#clear',
+    padding: {
+      '': '0 (1x - 1bw)',
+      'selectionIcon & selectable & !selected':
+        '0 (1x - 1bw) 0 (1x - 1bw + 3x)',
+    },
+    gap: '.75x',
+    outline: false,
+
+    // Sub-elements reused from MenuButton styles
+    ButtonIcon: {
+      display: 'grid',
+      fontSize: '@icon-size',
+      width: '@icon-size',
+      height: '@icon-size',
+      placeSelf: 'center',
+      placeItems: 'center',
+    },
+
+    Postfix: {
+      color: {
+        '': '#dark-03',
+        pressed: '#dark-02',
+        disabled: '#dark-04',
+      },
+    },
+
+    Description: {
+      preset: 't4',
+      color: '#dark-03',
+    },
   },
 });
 
@@ -102,7 +149,7 @@ export const StyledSectionHeading = tasty(Space, {
   styles: {
     color: '#dark-04',
     preset: 'c2',
-    padding: '.5x 1.5x',
+    padding: '.5x 1x',
     height: '3x',
     placeContent: 'center space-between',
     align: 'start',
