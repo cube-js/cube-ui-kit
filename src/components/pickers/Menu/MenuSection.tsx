@@ -1,6 +1,7 @@
 import { useMenuSection } from 'react-aria';
 
 import { Styles } from '../../../tasty';
+import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 
 import { MenuItem, MenuItemProps } from './MenuItem';
 import { StyledMenu, StyledSection, StyledSectionHeading } from './styled';
@@ -29,7 +30,7 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
         )}
         <StyledMenu {...groupProps} mods={{ section: true }}>
           {[...item.childNodes].map((node) => {
-            let item = (
+            let menuItem = (
               <MenuItem
                 key={node.key}
                 item={node}
@@ -39,11 +40,30 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
               />
             );
 
-            if (node.props.wrapper) {
-              item = node.props.wrapper(item);
+            // Apply tooltip wrapper if tooltip property is provided
+            if (node.props.tooltip) {
+              const tooltipProps =
+                typeof node.props.tooltip === 'string'
+                  ? { title: node.props.tooltip }
+                  : node.props.tooltip;
+
+              menuItem = (
+                <TooltipProvider
+                  key={node.key}
+                  activeWrap
+                  placement="right"
+                  {...tooltipProps}
+                >
+                  {menuItem}
+                </TooltipProvider>
+              );
             }
 
-            return item;
+            if (node.props.wrapper) {
+              menuItem = node.props.wrapper(menuItem);
+            }
+
+            return menuItem;
           })}
         </StyledMenu>
       </StyledSection>
