@@ -591,30 +591,32 @@ export const ItemWithTooltip = (props) => {
         selectionIcon="checkbox"
         selectionMode="single"
         selectedKeys={selectedKeys}
-        header="Custom Icons"
+        header="Items with Tooltips"
         onSelectionChange={onSelectionChange}
       >
         <Menu.Item
           key="red"
-          wrapper={(item) => (
-            <TooltipProvider title="Color description" placement="right">
-              {item}
-            </TooltipProvider>
-          )}
+          tooltip="This is a simple tooltip for the red item"
           icon={<IconReload />}
         >
           #16C7B3AE-000113-000113
         </Menu.Item>
         <Menu.Item
           key="orange"
-          wrapper={(item) => (
-            <TooltipProvider title="Color description" placement="right">
-              {item}
-            </TooltipProvider>
-          )}
+          tooltip={{
+            title: 'Advanced tooltip with custom placement',
+            placement: 'left',
+          }}
           icon={<IconBook />}
         >
           #16C7B3AE
+        </Menu.Item>
+        <Menu.Item
+          key="blue"
+          tooltip={{ title: 'Tooltip with delay', delay: 1000 }}
+          icon={<IconPlus />}
+        >
+          #2563EB
         </Menu.Item>
       </Menu>
     </div>

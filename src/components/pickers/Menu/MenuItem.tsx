@@ -1,6 +1,6 @@
 import { Key, Node } from '@react-types/shared';
 import { IconPointFilled } from '@tabler/icons-react';
-import { ReactElement, ReactNode, useRef } from 'react';
+import { ReactNode, useRef } from 'react';
 import { FocusRing, useMenuItem } from 'react-aria';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { TreeState } from 'react-stately';
@@ -13,8 +13,9 @@ import { Text } from '../../content/Text';
 import { Space } from '../../layout/Space';
 
 import { useMenuContext } from './context';
-import { MenuSelectionType } from './MenuButton';
 import { StyledItem } from './styled';
+
+export type MenuSelectionType = 'checkbox' | 'radio';
 
 export interface MenuItemProps<T> {
   item: Node<T>;

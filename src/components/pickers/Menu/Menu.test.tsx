@@ -3,7 +3,7 @@
 // noisy errors from complex generic typings that do not affect runtime behaviour.
 import { createRef } from 'react';
 
-import { act, render, userEvent, waitFor } from '../../../test';
+import { act, render, renderWithRoot, userEvent, waitFor } from '../../../test';
 
 import { Menu } from './Menu';
 
@@ -972,5 +972,25 @@ describe('<Menu />', () => {
       '[data-testid="complex-heading"]',
     );
     expect(complexHeading).toBeInTheDocument();
+  });
+
+  it('should support items with tooltip property', () => {
+    const { getByRole, getByText } = renderWithRoot(
+      <Menu aria-label="Test menu">
+        <Menu.Item key="copy" tooltip="Copy selected text">
+          Copy
+        </Menu.Item>
+        <Menu.Item
+          key="paste"
+          tooltip={{ title: 'Paste from clipboard', placement: 'left' }}
+        >
+          Paste
+        </Menu.Item>
+      </Menu>,
+    );
+
+    expect(getByRole('menu')).toBeInTheDocument();
+    expect(getByText('Copy')).toBeInTheDocument();
+    expect(getByText('Paste')).toBeInTheDocument();
   });
 });
