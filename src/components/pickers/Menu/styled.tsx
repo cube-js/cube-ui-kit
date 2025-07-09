@@ -145,7 +145,8 @@ export const StyledItem = tasty({
 });
 
 export const StyledSectionHeading = tasty(Space, {
-  as: 'SectionHeading',
+  qa: 'SectionHeading',
+  as: 'div',
   styles: {
     color: '#dark-04',
     preset: 'c2',

@@ -55,7 +55,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
   const { rendered, key, props: itemProps } = item;
 
   // Extract optional keyboard shortcut from item props so it is not passed down to DOM elements.
-  const { hotkeys, ...cleanItemProps } = (itemProps || {}) as any;
+  const { hotkeys, wrapper, ...cleanItemProps } = (itemProps || {}) as any;
 
   const isSelectable = state.selectionManager.selectionMode !== 'none';
   const isDisabledKey = state.disabledKeys.has(key);
@@ -93,6 +93,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
     icon,
     mods: itemMods,
     qa: itemQa,
+    textValue,
     ...restCleanProps
   } = cleanItemProps as any;
 
