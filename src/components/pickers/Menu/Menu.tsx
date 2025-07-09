@@ -168,7 +168,7 @@ function Menu<T extends object>(
       }
 
       // Ensure every child has a stable key, even if the wrapper component didn't set one.
-      items.push(React.cloneElement(menuItem));
+      items.push(React.cloneElement(menuItem, { key: item.key }));
     });
 
     return items;
