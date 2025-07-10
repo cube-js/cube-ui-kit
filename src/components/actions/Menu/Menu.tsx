@@ -52,6 +52,7 @@ export interface CubeMenuProps<T>
    * This directly maps to the `autoFocus` option supported by React-Aria’s `useMenu` hook.
    */
   autoFocus?: boolean | FocusStrategy;
+  shouldUseVirtualFocus?: boolean;
 }
 
 function Menu<T extends object>(

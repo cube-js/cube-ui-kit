@@ -59,13 +59,13 @@ import {
   SPECIAL_PRIMARY_STYLES,
   SPECIAL_SECONDARY_STYLES,
 } from '../../actions/index';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
-import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import {
   StyledDivider as ListDivider,
   StyledSectionHeading as ListSectionHeading,
   StyledSection as ListSectionWrapper,
-} from '../../pickers/Menu/styled';
+} from '../../actions/Menu/styled';
+import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
 import { DEFAULT_INPUT_STYLES, INPUT_WRAPPER_STYLES } from '../index';

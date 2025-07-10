@@ -1,5 +1,5 @@
+import { DEFAULT_BUTTON_STYLES, DEFAULT_NEUTRAL_STYLES } from '..';
 import { tasty } from '../../../tasty';
-import { DEFAULT_BUTTON_STYLES, DEFAULT_NEUTRAL_STYLES } from '../../actions';
 import { Space } from '../../layout/Space';
 
 export const StyledMenu = tasty({

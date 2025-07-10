@@ -55,8 +55,9 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
   const { onClose, closeOnSelect } = useMenuContext();
   const { rendered, key, props: itemProps } = item;
 
-  // Extract optional keyboard shortcut from item props so it is not passed down to DOM elements.
-  const { hotkeys, wrapper, ...cleanItemProps } = (itemProps || {}) as any;
+  // Extract optional keyboard shortcut and CommandPalette-specific props from item props so they are not passed down to DOM elements.
+  const { hotkeys, wrapper, keywords, forceMount, ...cleanItemProps } =
+    (itemProps || {}) as any;
 
   const isSelectable = state.selectionManager.selectionMode !== 'none';
   const isDisabledKey = state.disabledKeys.has(key);
@@ -107,9 +108,11 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
       ? getSelectionTypeIcon(selectionIcon)
       : undefined;
 
+  const isVirtualFocused = state.selectionManager.focusedKey === key;
+
   const mods = {
     ...itemMods,
-    focused: isFocused,
+    focused: isFocused || isVirtualFocused,
     pressed: isPressed,
     selectionIcon: !!selectionIcon,
     selectable: isSelectable,
@@ -132,6 +135,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
       enableOnContentEditable: true,
       enabled: !!hotkeys,
       preventDefault: true,
+      enableOnFormTags: true,
     },
     [hotkeys, isDisabledKey, isDisabled],
   );
