@@ -127,6 +127,7 @@ The `mods` property accepts the following modifiers you can override:
 | icon | `ReactElement` | - | Icon displayed before the label |
 | hotkeys | `string` | - | Keyboard shortcut (e.g., "Ctrl+C") |
 | wrapper | `(item: ReactElement) => ReactElement` | - | Function to wrap the item |
+| tooltip | `string \| TooltipProviderProps` | - | Tooltip configuration - string for simple tooltip or object for advanced options |
 
 ### Menu.Item State Properties
 
@@ -254,6 +255,22 @@ const items = [
   <Menu.Item key="bold">Bold</Menu.Item>
   <Menu.Item key="italic">Italic</Menu.Item>
   <Menu.Item key="underline">Underline</Menu.Item>
+</Menu>
+```
+
+### Menu Items with Tooltips
+
+```jsx
+<Menu>
+  <Menu.Item key="copy" tooltip="Copy selected text">
+    Copy
+  </Menu.Item>
+  <Menu.Item 
+    key="paste" 
+    tooltip={{ title: "Paste from clipboard", placement: "left" }}
+  >
+    Paste
+  </Menu.Item>
 </Menu>
 ```
 

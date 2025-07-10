@@ -591,31 +591,118 @@ export const ItemWithTooltip = (props) => {
         selectionIcon="checkbox"
         selectionMode="single"
         selectedKeys={selectedKeys}
-        header="Custom Icons"
+        disabledKeys={['blue']}
+        header="Items with Tooltips"
         onSelectionChange={onSelectionChange}
       >
         <Menu.Item
           key="red"
-          wrapper={(item) => (
-            <TooltipProvider title="Color description" placement="right">
-              {item}
-            </TooltipProvider>
-          )}
+          tooltip="This is a simple tooltip for the red item"
           icon={<IconReload />}
         >
           #16C7B3AE-000113-000113
         </Menu.Item>
         <Menu.Item
           key="orange"
-          wrapper={(item) => (
-            <TooltipProvider title="Color description" placement="right">
-              {item}
-            </TooltipProvider>
-          )}
+          tooltip={{
+            title: 'Advanced tooltip with custom placement',
+            placement: 'left',
+          }}
           icon={<IconBook />}
         >
           #16C7B3AE
         </Menu.Item>
+        <Menu.Item
+          key="blue"
+          tooltip={{ title: 'Tooltip with delay', delay: 1000 }}
+          icon={<IconPlus />}
+        >
+          #2563EB
+        </Menu.Item>
+      </Menu>
+    </div>
+  );
+};
+
+export const SectionsWithTooltips = (props) => {
+  const [selectedKeys, setSelectedKeys] = useState(['copy']);
+  const onSelectionChange = (key) => {
+    setSelectedKeys(key);
+  };
+
+  return (
+    <div style={{ padding: '20px', width: '380px' }}>
+      <Menu
+        id="menu"
+        {...props}
+        selectionMode="single"
+        selectedKeys={selectedKeys}
+        header="Sections with Tooltips"
+        onSelectionChange={onSelectionChange}
+      >
+        <Menu.Section key="file-operations" title="File Operations">
+          <Menu.Item
+            key="new"
+            tooltip="Create a new file"
+            icon={<IconPlus />}
+            hotkeys="Ctrl+N"
+          >
+            New File
+          </Menu.Item>
+          <Menu.Item
+            key="open"
+            tooltip={{
+              title: 'Open an existing file from your computer',
+              placement: 'left',
+            }}
+            icon={<IconBook />}
+            hotkeys="Ctrl+O"
+          >
+            Open File
+          </Menu.Item>
+        </Menu.Section>
+        <Menu.Section key="edit-operations" title="Edit Operations">
+          <Menu.Item
+            key="copy"
+            tooltip="Copy the selected content to clipboard"
+            icon={<IconReload />}
+            hotkeys="Ctrl+C"
+          >
+            Copy
+          </Menu.Item>
+          <Menu.Item
+            key="paste"
+            tooltip={{
+              title: 'Paste content from clipboard',
+              delay: 500,
+            }}
+            icon={<IconBulb />}
+            hotkeys="Ctrl+V"
+          >
+            Paste
+          </Menu.Item>
+          <Menu.Item
+            key="cut"
+            tooltip="Cut the selected content"
+            icon={<MoreIcon />}
+            hotkeys="Ctrl+X"
+          >
+            Cut
+          </Menu.Item>
+        </Menu.Section>
+        <Menu.Section key="advanced" title="Advanced">
+          <Menu.Item
+            key="reload"
+            tooltip={{
+              title: 'Reload the current document and lose unsaved changes',
+              placement: 'top',
+            }}
+            icon={<IconReload />}
+            hotkeys="F5"
+          >
+            Reload
+          </Menu.Item>
+        </Menu.Section>
       </Menu>
     </div>
   );

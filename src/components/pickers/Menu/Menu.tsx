@@ -1,6 +1,6 @@
 import { useSyncRef } from '@react-aria/utils';
 import { useDOMRef } from '@react-spectrum/utils';
-import { DOMRef, ItemProps, Key } from '@react-types/shared';
+import { DOMRef, FocusStrategy, ItemProps, Key } from '@react-types/shared';
 import React, { ReactElement, ReactNode, useMemo } from 'react';
 import { AriaMenuProps, useMenu } from 'react-aria';
 import {
@@ -18,10 +18,14 @@ import {
   Styles,
 } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
+import { CubeBlockProps } from '../../Block';
+import {
+  CubeTooltipProviderProps,
+  TooltipProvider,
+} from '../../overlays/Tooltip/TooltipProvider';
 
 import { useMenuContext } from './context';
-import { MenuButtonProps, MenuSelectionType } from './MenuButton';
-import { MenuItem } from './MenuItem';
+import { MenuItem, MenuSelectionType } from './MenuItem';
 import { MenuSection } from './MenuSection';
 import { StyledDivider, StyledHeader, StyledMenu } from './styled';
 
@@ -37,10 +41,17 @@ export interface CubeMenuProps<T>
   itemStyles?: Styles;
   sectionStyles?: Styles;
   sectionHeadingStyles?: Styles;
-  /** Keys that should appear disabled */
-  disabledKeys?: Iterable<Key>;
-  /** Selection mode for the menu: 'single' | 'multiple' */
-  selectionMode?: 'single' | 'multiple';
+  /**
+   * Whether keyboard navigation should wrap around when reaching the start/end of the collection.
+   * This directly maps to the `shouldFocusWrap` option supported by React-Aria’s `useMenu` hook.
+   */
+  shouldFocusWrap?: boolean;
+
+  /**
+   * Whether the menu should automatically receive focus when it mounts.
+   * This directly maps to the `autoFocus` option supported by React-Aria’s `useMenu` hook.
+   */
+  autoFocus?: boolean | FocusStrategy;
 }
 
 function Menu<T extends object>(
@@ -89,78 +100,95 @@ function Menu<T extends object>(
   // to keep it up-to-date, and a ref object as the second.
   useSyncRef(contextProps, domRef);
 
+  const renderedItems = useMemo(() => {
+    const items: React.ReactNode[] = [];
+    let isFirstSection = true;
+
+    collectionItems.forEach((item) => {
+      if (item.type === 'section') {
+        if (!isFirstSection) {
+          items.push(
+            <StyledDivider
+              key={`divider-${String(item.key)}`}
+              role="separator"
+              aria-orientation="horizontal"
+            />,
+          );
+        }
+
+        items.push(
+          <MenuSection
+            key={item.key}
+            item={item}
+            state={state}
+            styles={sectionStyles}
+            itemStyles={itemStyles}
+            headingStyles={sectionHeadingStyles}
+            selectionIcon={selectionIcon}
+          />,
+        );
+
+        isFirstSection = false;
+        return;
+      }
+
+      let menuItem = (
+        <MenuItem
+          key={item.key}
+          item={item}
+          state={state}
+          styles={itemStyles}
+          selectionIcon={selectionIcon}
+          onAction={item.onAction}
+        />
+      );
+
+      // Apply tooltip wrapper if tooltip property is provided
+      if (item.props.tooltip) {
+        const tooltipProps =
+          typeof item.props.tooltip === 'string'
+            ? { title: item.props.tooltip }
+            : item.props.tooltip;
+
+        menuItem = (
+          <TooltipProvider
+            key={item.key}
+            activeWrap
+            placement="right"
+            {...tooltipProps}
+          >
+            {menuItem}
+          </TooltipProvider>
+        );
+      }
+
+      // Apply custom wrapper if provided
+      if (item.props.wrapper) {
+        menuItem = item.props.wrapper(menuItem);
+      }
+
+      // Ensure every child has a stable key, even if the wrapper component didn't set one.
+      items.push(React.cloneElement(menuItem, { key: item.key }));
+    });
+
+    return items;
+  }, [
+    collectionItems,
+    state,
+    sectionStyles,
+    itemStyles,
+    selectionIcon,
+    sectionHeadingStyles,
+  ]);
+
   return (
     <StyledMenu
       {...mergeProps(defaultProps, menuProps, filterBaseProps(completeProps))}
       ref={domRef}
+      role={menuProps.role ?? 'menu'}
     >
       {header && <StyledHeader role="presentation">{header}</StyledHeader>}
-      {(() => {
-        // Build the list of menu elements, automatically inserting dividers between sections.
-        const renderedItems: React.ReactNode[] = useMemo(() => {
-          const items: React.ReactNode[] = [];
-          let isFirstSection = true;
-
-          collectionItems.forEach((item) => {
-            if (item.type === 'section') {
-              if (!isFirstSection) {
-                items.push(
-                  <StyledDivider
-                    key={`divider-${String(item.key)}`}
-                    as="li"
-                    role="separator"
-                    aria-orientation="horizontal"
-                  />,
-                );
-              }
-
-              items.push(
-                <MenuSection
-                  key={item.key}
-                  item={item}
-                  state={state}
-                  styles={sectionStyles}
-                  itemStyles={itemStyles}
-                  headingStyles={sectionHeadingStyles}
-                  selectionIcon={selectionIcon}
-                />,
-              );
-
-              isFirstSection = false;
-              return;
-            }
-
-            let menuItem = (
-              <MenuItem
-                key={item.key}
-                item={item}
-                state={state}
-                styles={itemStyles}
-                selectionIcon={selectionIcon}
-                onAction={item.onAction}
-              />
-            );
-
-            if (item.props.wrapper) {
-              menuItem = item.props.wrapper(menuItem);
-            }
-
-            // Ensure every child has a stable key, even if the wrapper component didn't set one.
-            items.push(React.cloneElement(menuItem, { key: item.key }));
-          });
-
-          return items;
-        }, [
-          collectionItems,
-          state,
-          sectionStyles,
-          itemStyles,
-          selectionIcon,
-          sectionHeadingStyles,
-        ]);
-
-        return renderedItems;
-      })()}
+      {renderedItems}
     </StyledMenu>
   );
 }
@@ -168,18 +196,24 @@ function Menu<T extends object>(
 // forwardRef doesn't support generic parameters, so cast the result to the correct type
 // https://stackoverflow.com/questions/58469229/react-with-typescript-generics-while-using-react-forwardref
 const _Menu = React.forwardRef(Menu) as <T>(
-  props: CubeMenuProps<T> & { ref?: DOMRef<HTMLUListElement> },
+  props: CubeMenuProps<T> & React.RefAttributes<HTMLUListElement>,
 ) => ReactElement;
-
-type PartialMenuButton = Partial<MenuButtonProps>;
 
 type ItemComponent = <T>(
   props: ItemProps<T> &
-    PartialMenuButton & {
-      description?: ReactNode;
-      wrapper?: (item: ReactElement) => ReactElement;
+    CubeBlockProps & {
       /** Keyboard shortcut string, e.g. "Ctrl+C" */
       hotkeys?: string;
+      description?: ReactNode;
+      postfix?: ReactNode;
+      selectionIcon?: MenuSelectionType;
+      isSelectable?: boolean;
+      isSelected?: boolean;
+      icon?: ReactElement;
+      onAction?: () => void;
+      wrapper?: (item: ReactElement) => ReactElement;
+      /** Tooltip configuration - can be a string for simple tooltip or object for advanced options */
+      tooltip?: string | Omit<CubeTooltipProviderProps, 'children'>;
     },
 ) => ReactElement;
 

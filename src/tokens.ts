@@ -34,7 +34,8 @@ const colors = {
   'note-bg': '253 245 233',
   'note-icon': '181 140 44',
   border: '227 227 233',
-  'light-border': '237 237 240',
+  // 'light-border': '237 237 240',
+  'light-border': '227 227 233', // deprecated
 };
 
 function color(name, opacity = 1) {

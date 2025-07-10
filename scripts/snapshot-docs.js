@@ -5,6 +5,7 @@
  * • Serves them from an in-process HTTP server
  * • Snapshots each MDX page to ./docs-static/<id>.html
  * • Logs pages that fail (error, no preview, or render timeout)
+ * • Fixes internal links to point to the generated HTML files
  */
 
 import { spawn } from 'node:child_process';
@@ -20,6 +21,58 @@ const OUT_DIR = 'docs-static';
 const TIMEOUT = process.env.CI ? 30_000 : 15_000; // 30 s on CI, 15 s locally
 
 const log = (...a) => console.log('[docs-snapshot]', ...a);
+
+/* ───── helper functions ─────────────────────────────────────────────── */
+
+/**
+ * Fixes internal links in HTML content to point to the generated HTML files
+ * Transforms links like:
+ * - `/docs/pickers-select--docs` -> `pickers-select--docs.html`
+ * - `?path=/docs/pickers-select--docs` -> `pickers-select--docs.html`
+ * - `/?path=/docs/pickers-select--docs` -> `pickers-select--docs.html`
+ * - `./?path=/docs/pickers-select--docs` -> `pickers-select--docs.html`
+ */
+function fixInternalLinks(html, availableIds) {
+  // Create a set of available IDs for quick lookup
+  const availableIdsSet = new Set(availableIds);
+  const brokenLinks = new Set();
+
+  // Pattern to match various forms of Storybook docs links
+  const linkPatterns = [
+    // Match href="/docs/story-id--docs"
+    /href="\/docs\/([^"]+--docs)"/g,
+    // Match href="?path=/docs/story-id--docs"
+    /href="\?path=\/docs\/([^"]+--docs)"/g,
+    // Match href="/?path=/docs/story-id--docs"
+    /href="\/\?path=\/docs\/([^"]+--docs)"/g,
+    // Match href="./?path=/docs/story-id--docs"
+    /href="\.\/\?path=\/docs\/([^"]+--docs)"/g,
+  ];
+
+  let fixedHtml = html;
+
+  linkPatterns.forEach((pattern) => {
+    fixedHtml = fixedHtml.replace(pattern, (match, storyId) => {
+      // Check if this story ID exists in our generated files
+      if (availableIdsSet.has(storyId)) {
+        return `href="${storyId}.html"`;
+      }
+      // If not found, log it and leave the link as is
+      brokenLinks.add(storyId);
+      return match;
+    });
+  });
+
+  // Log broken links if any were found
+  if (brokenLinks.size > 0) {
+    log(
+      `⚠️  Found ${brokenLinks.size} broken internal links:`,
+      Array.from(brokenLinks).join(', '),
+    );
+  }
+
+  return fixedHtml;
+}
 
 /* ───── 2. start local HTTP server ─────────────────────────────────── */
 log('Starting local http-server...');
@@ -71,6 +124,13 @@ const index = JSON.parse(
 
 await fs.rm(OUT_DIR, { recursive: true, force: true });
 await fs.mkdir(OUT_DIR, { recursive: true });
+
+// Collect all doc story IDs for link fixing
+const docStoryIds = Object.values(index.entries)
+  .filter((entry) => entry.type === 'docs')
+  .map((entry) => entry.id);
+
+log(`Found ${docStoryIds.length} documentation pages to process`);
 
 /* ───── 4. crawl & snapshot ────────────────────────────────────────── */
 let browser;
@@ -131,6 +191,9 @@ for (const { id, type, title } of Object.values(index.entries)) {
       return { styles, docsContent, pageTitle };
     });
 
+    // Fix internal links in the content
+    const fixedDocsContent = fixInternalLinks(docsContent, docStoryIds);
+
     // Wrap the content in a minimal HTML structure with styles included.
     const html = `<!doctype html>
 <html lang="en">
@@ -143,7 +206,7 @@ for (const { id, type, title } of Object.values(index.entries)) {
   </style>
 </head>
 <body>
-  ${docsContent}
+  ${fixedDocsContent}
 </body>
 </html>`;
 
@@ -206,6 +269,10 @@ function generateHtmlToc(nodes) {
 }
 
 const tocHtml = generateHtmlToc(tocTree.children);
+
+// Fix internal links in the table of contents as well
+const fixedTocHtml = fixInternalLinks(tocHtml, docStoryIds);
+
 const indexHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -222,7 +289,7 @@ const indexHtml = `<!DOCTYPE html>
 </head>
 <body>
   <h1>Table of Contents</h1>
-  ${tocHtml}
+  ${fixedTocHtml}
 </body>
 </html>`;
 
@@ -230,6 +297,7 @@ await fs.writeFile(path.join(OUT_DIR, 'index.html'), indexHtml);
 log('✔  Table of contents generated at index.html');
 
 log('Snapshots written to', OUT_DIR);
+log(`✔  Fixed internal links in ${succeeded.length} pages`);
 
 if (failed.length) {
   log('\n⚠️  Some pages were skipped:');
