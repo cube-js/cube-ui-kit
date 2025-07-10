@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.65.1
+
+### Patch Changes
+
+- [#718](https://github.com/cube-js/cube-ui-kit/pull/718) [`eec1cde`](https://github.com/cube-js/cube-ui-kit/commit/eec1cde994d8087362c46c65636abe97030ad98e) Thanks [@tenphi](https://github.com/tenphi)! - Add `tooltip` prop to menu items. You can pass a `string` or a `TooltipProps` object with `title` prop there for advanced customization.
+
 ## 0.65.0
 
 ### Minor Changes
