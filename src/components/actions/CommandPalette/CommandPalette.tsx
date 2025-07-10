@@ -247,6 +247,22 @@ function CommandPaletteBase<T extends object>(
     (item) => item.type === 'section',
   );
 
+  // Helper function to find the first selectable item from filtered results
+  const findFirstSelectableItem = useCallback(() => {
+    // Use the filtered collection items instead of the full tree state collection
+    for (const item of filteredCollectionItems) {
+      if (
+        item &&
+        item.type === 'item' &&
+        !treeState.selectionManager.isDisabled(item.key)
+      ) {
+        return item.key;
+      }
+    }
+
+    return null;
+  }, [filteredCollectionItems, treeState.selectionManager]);
+
   // Create a ref for the menu container
   const menuRef = useRef<HTMLUListElement>(null);
 
@@ -368,6 +384,29 @@ function CommandPaletteBase<T extends object>(
       return () => clearTimeout(timeoutId);
     }
   }, [autoFocus, contextProps.autoFocus]);
+
+  // Auto-focus first item when search value changes (but not on initial render)
+  React.useEffect(() => {
+    // Only auto-focus when search value changes, not on initial mount
+    if (searchValue.trim() !== '') {
+      const firstSelectableKey = findFirstSelectableItem();
+
+      if (firstSelectableKey && hasFilteredItems) {
+        // Focus the first item in the selection manager
+        treeState.selectionManager.setFocusedKey(firstSelectableKey);
+        setFocusedKey(firstSelectableKey);
+      } else {
+        // Clear focus if no items are available
+        treeState.selectionManager.setFocusedKey(null);
+        setFocusedKey(null);
+      }
+    }
+  }, [
+    searchValue,
+    findFirstSelectableItem,
+    hasFilteredItems,
+    treeState.selectionManager,
+  ]);
 
   // Extract styles
   const extractedStyles = useMemo(

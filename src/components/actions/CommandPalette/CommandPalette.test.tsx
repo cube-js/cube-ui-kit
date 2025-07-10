@@ -336,6 +336,111 @@ describe('CommandPalette', () => {
     });
   });
 
+  it('auto-focuses first item when search input is focused and has content', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <CommandPalette>
+        {items.map((item) => (
+          <CommandPalette.Item key={item.id} id={item.id}>
+            {item.textValue}
+          </CommandPalette.Item>
+        ))}
+      </CommandPalette>,
+    );
+
+    const searchInput = screen.getByPlaceholderText('Search commands...');
+
+    // Initially no item should be focused when just clicking
+    await user.click(searchInput);
+    expect(searchInput.getAttribute('aria-activedescendant')).toBeFalsy();
+
+    // Type something to trigger auto-focus
+    await user.type(searchInput, 'C');
+
+    // Check that the first matching item is virtually focused
+    await waitFor(() => {
+      const activeDescendant = searchInput.getAttribute(
+        'aria-activedescendant',
+      );
+      expect(activeDescendant).toMatch(/CommandPalette-menu-option-1/);
+    });
+  });
+
+  it('focuses first item in filtered results when search changes', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <CommandPalette>
+        {items.map((item) => (
+          <CommandPalette.Item key={item.id} id={item.id}>
+            {item.textValue}
+          </CommandPalette.Item>
+        ))}
+      </CommandPalette>,
+    );
+
+    const searchInput = screen.getByPlaceholderText('Search commands...');
+
+    // Focus and type to filter items - "folder" should match "Open folder" (id: '2')
+    await user.click(searchInput);
+    await user.type(searchInput, 'folder');
+
+    // First verify that the item is actually filtered and visible
+    expect(screen.getByText('Open folder')).toBeInTheDocument();
+    expect(screen.queryByText('Create file')).not.toBeInTheDocument();
+
+    // Check that the correct item is virtually focused
+    await waitFor(() => {
+      const activeDescendant = searchInput.getAttribute(
+        'aria-activedescendant',
+      );
+      expect(activeDescendant).toBeTruthy();
+      // Since "Open folder" has id="2", it should be focused when filtered
+      expect(activeDescendant).toContain('menu-option-2');
+    });
+  });
+
+  it('clears focus when no items match search', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <CommandPalette>
+        {items.map((item) => (
+          <CommandPalette.Item key={item.id} id={item.id}>
+            {item.textValue}
+          </CommandPalette.Item>
+        ))}
+      </CommandPalette>,
+    );
+
+    const searchInput = screen.getByPlaceholderText('Search commands...');
+
+    // First type something that matches to establish focus
+    await user.click(searchInput);
+    await user.type(searchInput, 'C');
+
+    // Verify an item is focused first
+    await waitFor(() => {
+      const activeDescendant = searchInput.getAttribute(
+        'aria-activedescendant',
+      );
+      expect(activeDescendant).toMatch(/CommandPalette-menu-option-1/);
+    });
+
+    // Clear and type something that won't match
+    await user.clear(searchInput);
+    await user.type(searchInput, 'nonexistent');
+
+    // Check that no item is focused
+    await waitFor(() => {
+      const activeDescendant = searchInput.getAttribute(
+        'aria-activedescendant',
+      );
+      expect(activeDescendant).toBeFalsy();
+    });
+  });
+
   it('supports custom empty label', async () => {
     const user = userEvent.setup();
 
