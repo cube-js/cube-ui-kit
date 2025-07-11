@@ -1,7 +1,7 @@
 import { tasty } from '../../../tasty';
 
-export const StyledCommandPalette = tasty({
-  qa: 'CommandPalette',
+export const StyledCommandMenu = tasty({
+  qa: 'CommandMenu',
   styles: {
     display: 'grid',
     flow: 'row',
@@ -18,31 +18,38 @@ export const StyledCommandPalette = tasty({
   },
 });
 
-export const StyledSearchWrapper = tasty({
-  qa: 'SearchWrapper',
-  styles: {
-    display: 'flex',
-    flow: 'row',
-    align: 'center',
-    padding: '1x',
-    border: '#border bottom',
-    fill: '#white',
-    gap: '.75x',
-  },
-});
-
 export const StyledSearchInput = tasty({
   qa: 'SearchInput',
   as: 'input',
   styles: {
     display: 'flex',
-    flex: 1,
-    border: 'none',
-    outline: 'none',
-    fill: 'transparent',
+    width: '100%',
     color: '#dark',
+    fill: '#white',
+    border: '#border bottom',
+    outline: 'none',
+    transition: 'theme',
+    radius: 0,
+    padding: '@vertical-padding @right-padding @vertical-padding @left-padding',
+    textAlign: 'left',
+    reset: 'input',
     preset: 't3',
-    padding: '0',
+    margin: 0,
+    boxSizing: 'border-box',
+    userSelect: 'auto',
+
+    '@vertical-padding': {
+      '': '(.75x - 1bw)',
+      '[data-size="medium"]': '(1.25x - 1bw)',
+    },
+    '@left-padding': {
+      '': '1.5x',
+      '[data-size="medium"]': '1.5x',
+    },
+    '@right-padding': {
+      '': '1.5x',
+      '[data-size="medium"]': '1.5x',
+    },
 
     '&::placeholder': {
       color: '#dark-03',

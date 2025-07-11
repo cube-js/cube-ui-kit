@@ -53,6 +53,9 @@ export interface CubeMenuProps<T>
    */
   autoFocus?: boolean | FocusStrategy;
   shouldUseVirtualFocus?: boolean;
+
+  /** Size of the menu items */
+  size?: 'small' | 'medium' | (string & {});
 }
 
 function Menu<T extends object>(
@@ -66,6 +69,7 @@ function Menu<T extends object>(
     sectionStyles,
     sectionHeadingStyles,
     selectionIcon,
+    size = 'small',
     qa,
     ...rest
   } = props;
@@ -89,6 +93,7 @@ function Menu<T extends object>(
   const defaultProps = {
     qa,
     styles,
+    'data-size': size,
     mods: {
       sections: hasSections,
       footer: !!footer,
@@ -126,6 +131,7 @@ function Menu<T extends object>(
             itemStyles={itemStyles}
             headingStyles={sectionHeadingStyles}
             selectionIcon={selectionIcon}
+            size={size}
           />,
         );
 
@@ -140,6 +146,7 @@ function Menu<T extends object>(
           state={state}
           styles={itemStyles}
           selectionIcon={selectionIcon}
+          size={size}
           onAction={item.onAction}
         />
       );

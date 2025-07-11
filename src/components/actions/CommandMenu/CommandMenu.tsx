@@ -10,7 +10,7 @@ import React, {
   useState,
 } from 'react';
 import { useFilter, useMenu } from 'react-aria';
-// Import Item and Section from Menu for CommandPalette compound component
+// Import Item and Section from Menu for CommandMenu compound component
 import { Item, Section, useTreeState } from 'react-stately';
 
 import { LoadingIcon } from '../../../icons';
@@ -32,15 +32,14 @@ import { MenuTrigger } from '../Menu/MenuTrigger';
 import { StyledDivider, StyledMenu } from '../Menu/styled';
 
 import {
-  StyledCommandPalette,
+  StyledCommandMenu,
   StyledEmptyState,
   StyledLoadingWrapper,
   StyledMenuWrapper,
   StyledSearchInput,
-  StyledSearchWrapper,
 } from './styled';
 
-export interface CommandPaletteItem {
+export interface CommandMenuItem {
   // Standard item props
   id: string;
   textValue: string;
@@ -54,7 +53,7 @@ export interface CommandPaletteItem {
   [key: string]: any;
 }
 
-export interface CubeCommandPaletteProps<T>
+export interface CubeCommandMenuProps<T>
   extends BaseProps,
     ContainerStyleProps,
     CubeMenuProps<T> {
@@ -72,10 +71,13 @@ export interface CubeCommandPaletteProps<T>
 
   // Focus management - override the autoFocus from CubeMenuProps to allow boolean | FocusStrategy
   autoFocus?: boolean | FocusStrategy;
+
+  // Size prop
+  size?: 'small' | 'medium' | (string & {});
 }
 
-function CommandPaletteBase<T extends object>(
-  props: CubeCommandPaletteProps<T>,
+function CommandMenuBase<T extends object>(
+  props: CubeCommandMenuProps<T>,
   ref: DOMRef<HTMLDivElement>,
 ) {
   const {
@@ -88,6 +90,7 @@ function CommandPaletteBase<T extends object>(
     isLoading = false,
     shouldFilter = true,
     autoFocus = true,
+    size = 'small',
     qa,
     styles,
     ...restMenuProps
@@ -199,7 +202,7 @@ function CommandPaletteBase<T extends object>(
   const treeStateProps = {
     ...completeProps,
     filter: collectionFilter,
-    shouldUseVirtualFocus: true, // Always use virtual focus for CommandPalette
+    shouldUseVirtualFocus: true, // Always use virtual focus for CommandMenu
   };
 
   const treeState = useTreeState(treeStateProps);
@@ -299,6 +302,7 @@ function CommandPaletteBase<T extends object>(
             itemStyles={completeProps.itemStyles}
             headingStyles={completeProps.sectionHeadingStyles}
             selectionIcon={completeProps.selectionIcon}
+            size={size}
           />,
         );
 
@@ -313,6 +317,7 @@ function CommandPaletteBase<T extends object>(
           state={treeState}
           styles={completeProps.itemStyles}
           selectionIcon={completeProps.selectionIcon}
+          size={size}
           onAction={item.onAction}
         />
       );
@@ -359,7 +364,7 @@ function CommandPaletteBase<T extends object>(
   React.useEffect(() => {
     if (autoFocus && searchInputRef.current) {
       // Use a small timeout to ensure the element is visible and focusable
-      // This is especially important when the CommandPalette is opened in a popover
+      // This is especially important when the CommandMenu is opened in a popover
       const timeoutId = setTimeout(() => {
         if (searchInputRef.current) {
           searchInputRef.current.focus();
@@ -422,178 +427,178 @@ function CommandPaletteBase<T extends object>(
   useSyncRef(contextProps, menuRef);
 
   return (
-    <StyledCommandPalette
+    <StyledCommandMenu
       {...filterBaseProps(props)}
       ref={domRef}
-      qa={qa || 'CommandPalette'}
+      qa={qa || 'CommandMenu'}
+      data-size={size}
       styles={mergeProps(extractedStyles, styles)}
     >
       {/* Search Input */}
-      <StyledSearchWrapper>
-        <StyledSearchInput
-          ref={searchInputRef}
-          type="search"
-          placeholder={searchPlaceholder}
-          value={searchValue}
-          styles={searchInputStyles}
-          aria-controls={`${qa || 'CommandPalette'}-menu`}
-          role="combobox"
-          aria-expanded="true"
-          aria-haspopup="listbox"
-          aria-activedescendant={
-            focusedKey != null
-              ? `${qa || 'CommandPalette'}-menu-option-${focusedKey}`
-              : undefined
-          }
-          onChange={(e) => handleSearchChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-              e.preventDefault();
+      <StyledSearchInput
+        ref={searchInputRef}
+        type="search"
+        placeholder={searchPlaceholder}
+        value={searchValue}
+        styles={searchInputStyles}
+        data-size={size}
+        aria-controls={`${qa || 'CommandMenu'}-menu`}
+        role="combobox"
+        aria-expanded="true"
+        aria-haspopup="listbox"
+        aria-activedescendant={
+          focusedKey != null
+            ? `${qa || 'CommandMenu'}-menu-option-${focusedKey}`
+            : undefined
+        }
+        onChange={(e) => handleSearchChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
 
-              const isArrowDown = e.key === 'ArrowDown';
-              const { selectionManager, collection } = treeState;
-              const currentKey = selectionManager.focusedKey;
+            const isArrowDown = e.key === 'ArrowDown';
+            const { selectionManager, collection } = treeState;
+            const currentKey = selectionManager.focusedKey;
 
-              // Helper function to find next selectable key in a direction
-              const findNextSelectableKey = (
-                startKey: any,
-                direction: 'forward' | 'backward',
-              ) => {
-                if (startKey == null) {
-                  return null;
-                }
+            // Helper function to find next selectable key in a direction
+            const findNextSelectableKey = (
+              startKey: any,
+              direction: 'forward' | 'backward',
+            ) => {
+              if (startKey == null) {
+                return null;
+              }
 
-                // First check if the startKey itself is selectable
-                const startNode = collection.getItem(startKey);
+              // First check if the startKey itself is selectable
+              const startNode = collection.getItem(startKey);
+              if (
+                startNode &&
+                startNode.type === 'item' &&
+                !selectionManager.isDisabled(startKey)
+              ) {
+                return startKey;
+              }
+
+              // If startKey is not selectable, find the next selectable key
+              let keys = [...collection.getKeys()];
+
+              if (direction === 'backward') {
+                keys = keys.reverse();
+              }
+
+              let startIndex = keys.indexOf(startKey);
+
+              if (startIndex === -1) {
+                return null;
+              }
+
+              for (let i = startIndex + 1; i < keys.length; i++) {
+                const key = keys[i];
+                const node = collection.getItem(key);
+
                 if (
-                  startNode &&
-                  startNode.type === 'item' &&
-                  !selectionManager.isDisabled(startKey)
+                  node &&
+                  node.type === 'item' &&
+                  !selectionManager.isDisabled(key)
                 ) {
-                  return startKey;
+                  return key;
                 }
+              }
 
-                // If startKey is not selectable, find the next selectable key
-                let keys = [...collection.getKeys()];
+              return null;
+            };
 
-                if (direction === 'backward') {
-                  keys = keys.reverse();
+            // Helper function to find first or last selectable key
+            const findFirstLastSelectableKey = (
+              direction: 'forward' | 'backward',
+            ) => {
+              const keys = [...collection.getKeys()];
+              const keysToCheck =
+                direction === 'forward' ? keys : keys.reverse();
+
+              for (const key of keysToCheck) {
+                const node = collection.getItem(key);
+
+                if (
+                  node &&
+                  node.type === 'item' &&
+                  !selectionManager.isDisabled(key)
+                ) {
+                  return key;
                 }
+              }
 
-                let startIndex = keys.indexOf(startKey);
+              return null;
+            };
 
-                if (startIndex === -1) {
-                  return null;
-                }
+            let nextKey;
+            const direction = isArrowDown ? 'forward' : 'backward';
 
-                for (let i = startIndex + 1; i < keys.length; i++) {
-                  const key = keys[i];
-                  const node = collection.getItem(key);
+            if (currentKey == null) {
+              // No current focus, start from the first/last item
+              nextKey = findFirstLastSelectableKey(direction);
+            } else {
+              // Find next selectable item from current position
+              const candidateKey =
+                direction === 'forward'
+                  ? collection.getKeyAfter(currentKey)
+                  : collection.getKeyBefore(currentKey);
 
-                  if (
-                    node &&
-                    node.type === 'item' &&
-                    !selectionManager.isDisabled(key)
-                  ) {
-                    return key;
-                  }
-                }
+              nextKey = findNextSelectableKey(candidateKey, direction);
 
-                return null;
-              };
-
-              // Helper function to find first or last selectable key
-              const findFirstLastSelectableKey = (
-                direction: 'forward' | 'backward',
-              ) => {
-                const keys = [...collection.getKeys()];
-                const keysToCheck =
-                  direction === 'forward' ? keys : keys.reverse();
-
-                for (const key of keysToCheck) {
-                  const node = collection.getItem(key);
-
-                  if (
-                    node &&
-                    node.type === 'item' &&
-                    !selectionManager.isDisabled(key)
-                  ) {
-                    return key;
-                  }
-                }
-
-                return null;
-              };
-
-              let nextKey;
-              const direction = isArrowDown ? 'forward' : 'backward';
-
-              if (currentKey == null) {
-                // No current focus, start from the first/last item
+              // If no next key found and focus wrapping is enabled, wrap to first/last selectable item
+              if (nextKey == null) {
                 nextKey = findFirstLastSelectableKey(direction);
-              } else {
-                // Find next selectable item from current position
-                const candidateKey =
-                  direction === 'forward'
-                    ? collection.getKeyAfter(currentKey)
-                    : collection.getKeyBefore(currentKey);
-
-                nextKey = findNextSelectableKey(candidateKey, direction);
-
-                // If no next key found and focus wrapping is enabled, wrap to first/last selectable item
-                if (nextKey == null) {
-                  nextKey = findFirstLastSelectableKey(direction);
-                }
-              }
-
-              if (nextKey != null) {
-                selectionManager.setFocusedKey(nextKey);
-                setFocusedKey(nextKey);
-              }
-            } else if (
-              e.key === 'Enter' ||
-              (e.key === ' ' && !searchValue.trim())
-            ) {
-              const currentFocusedKey =
-                focusedKey || treeState.selectionManager.focusedKey;
-              if (currentFocusedKey != null) {
-                e.preventDefault();
-
-                // Trigger action for the focused item (like Menu does)
-                // First check if there's a selection mode, if so, handle selection
-                if (treeState.selectionManager.selectionMode !== 'none') {
-                  treeState.selectionManager.select(currentFocusedKey, e);
-                } else {
-                  // Default behavior: trigger action
-                  const node = treeState.collection.getItem(currentFocusedKey);
-                  if (node) {
-                    // Call the tree state's action handler
-                    const onAction = (completeProps as any).onAction;
-                    if (onAction) {
-                      onAction(currentFocusedKey);
-                    }
-                    // Also call the item's individual onAction if it exists
-                    if (node.props?.onAction) {
-                      node.props.onAction(currentFocusedKey);
-                    }
-                  }
-                }
-
-                // Close the menu if we're in a trigger context and closeOnSelect is enabled (default behavior)
-                const { onClose, closeOnSelect } = contextProps;
-                if (onClose && closeOnSelect !== false) {
-                  onClose();
-                }
-              }
-            } else if (e.key === 'Escape') {
-              if (searchValue) {
-                e.preventDefault();
-                handleSearchChange('');
               }
             }
-          }}
-        />
-      </StyledSearchWrapper>
+
+            if (nextKey != null) {
+              selectionManager.setFocusedKey(nextKey);
+              setFocusedKey(nextKey);
+            }
+          } else if (
+            e.key === 'Enter' ||
+            (e.key === ' ' && !searchValue.trim())
+          ) {
+            const currentFocusedKey =
+              focusedKey || treeState.selectionManager.focusedKey;
+            if (currentFocusedKey != null) {
+              e.preventDefault();
+
+              // Trigger action for the focused item (like Menu does)
+              // First check if there's a selection mode, if so, handle selection
+              if (treeState.selectionManager.selectionMode !== 'none') {
+                treeState.selectionManager.select(currentFocusedKey, e);
+              } else {
+                // Default behavior: trigger action
+                const node = treeState.collection.getItem(currentFocusedKey);
+                if (node) {
+                  // Call the tree state's action handler
+                  const onAction = (completeProps as any).onAction;
+                  if (onAction) {
+                    onAction(currentFocusedKey);
+                  }
+                  // Also call the item's individual onAction if it exists
+                  if (node.props?.onAction) {
+                    node.props.onAction(currentFocusedKey);
+                  }
+                }
+              }
+
+              // Close the menu if we're in a trigger context and closeOnSelect is enabled (default behavior)
+              const { onClose, closeOnSelect } = contextProps;
+              if (onClose && closeOnSelect !== false) {
+                onClose();
+              }
+            }
+          } else if (e.key === 'Escape') {
+            if (searchValue) {
+              e.preventDefault();
+              handleSearchChange('');
+            }
+          }
+        }}
+      />
 
       {/* Loading State */}
       {isLoading && (
@@ -612,9 +617,10 @@ function CommandPaletteBase<T extends object>(
           <StyledMenu
             {...menuProps}
             ref={menuRef}
-            id={`${qa || 'CommandPalette'}-menu`}
-            aria-label="Command palette menu"
+            id={`${qa || 'CommandMenu'}-menu`}
+            aria-label="Command menu"
             qa="Menu"
+            data-size={size}
             mods={{
               sections: viewHasSections,
               footer: false,
@@ -636,22 +642,22 @@ function CommandPaletteBase<T extends object>(
       {!isLoading && showEmptyState && (
         <StyledEmptyState>{emptyLabel}</StyledEmptyState>
       )}
-    </StyledCommandPalette>
+    </StyledCommandMenu>
   );
 }
 
 // forwardRef doesn't support generic parameters, so cast the result to the correct type
-const _CommandPalette = React.forwardRef(CommandPaletteBase) as <T>(
-  props: CubeCommandPaletteProps<T> & React.RefAttributes<HTMLDivElement>,
+const _CommandMenu = React.forwardRef(CommandMenuBase) as <T>(
+  props: CubeCommandMenuProps<T> & React.RefAttributes<HTMLDivElement>,
 ) => ReactElement;
 
 // Attach Trigger alias from MenuTrigger for consistent API
 // Also attach Item and Section for compound component pattern
-const __CommandPalette = Object.assign(_CommandPalette, {
+const __CommandMenu = Object.assign(_CommandMenu, {
   Trigger: MenuTrigger,
   Item,
   Section,
-  displayName: 'CommandPalette',
+  displayName: 'CommandMenu',
 });
 
-export { __CommandPalette as CommandPalette };
+export { __CommandMenu as CommandMenu };

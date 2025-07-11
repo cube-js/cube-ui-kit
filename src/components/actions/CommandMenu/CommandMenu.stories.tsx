@@ -1,16 +1,17 @@
 import { expect, userEvent, waitFor, within } from '@storybook/test';
 import React, { useState } from 'react';
 
+import { Dialog, DialogTrigger } from '../../overlays/Dialog';
 import { Button } from '../Button';
 import { Menu } from '../Menu/Menu';
 
-import { CommandPalette, CubeCommandPaletteProps } from './CommandPalette';
+import { CommandMenu, CubeCommandMenuProps } from './CommandMenu';
 
 import type { StoryFn } from '@storybook/react';
 
 export default {
-  title: 'Actions/CommandPalette',
-  component: CommandPalette,
+  title: 'Actions/CommandMenu',
+  component: CommandMenu,
   parameters: {
     docs: {
       description: {
@@ -96,6 +97,15 @@ export default {
     },
 
     /* Styling */
+    size: {
+      options: ['small', 'medium'],
+      control: { type: 'radio' },
+      description: 'Size of the select component',
+      table: {
+        type: { summary: 'string' },
+        defaultValue: { summary: 'small' },
+      },
+    },
     styles: {
       description: 'Custom styles for the command palette container',
     },
@@ -257,18 +267,18 @@ const extendedCommands = [
   },
 ];
 
-export const Default: StoryFn<CubeCommandPaletteProps<any>> = (args) => (
-  <CommandPalette {...args}>
+export const Default: StoryFn<CubeCommandMenuProps<any>> = (args) => (
+  <CommandMenu {...args}>
     {basicCommands.map((command) => (
-      <CommandPalette.Item
+      <CommandMenu.Item
         key={command.key}
         description={command.description}
         hotkeys={command.hotkeys}
       >
         {command.label}
-      </CommandPalette.Item>
+      </CommandMenu.Item>
     ))}
-  </CommandPalette>
+  </CommandMenu>
 );
 
 Default.args = {
@@ -276,7 +286,7 @@ Default.args = {
   autoFocus: true,
 };
 
-export const WithSections: StoryFn<CubeCommandPaletteProps<any>> = (args) => {
+export const WithSections: StoryFn<CubeCommandMenuProps<any>> = (args) => {
   const commandsBySection = extendedCommands.reduce(
     (acc, command) => {
       const section = command.section || 'Other';
@@ -288,11 +298,11 @@ export const WithSections: StoryFn<CubeCommandPaletteProps<any>> = (args) => {
   );
 
   return (
-    <CommandPalette {...args}>
+    <CommandMenu {...args}>
       {Object.entries(commandsBySection).map(([sectionName, commands]) => (
         <Menu.Section key={sectionName} title={sectionName}>
           {commands.map((command) => (
-            <CommandPalette.Item
+            <CommandMenu.Item
               key={command.key}
               description={command.description}
               hotkeys={command.hotkeys}
@@ -300,11 +310,11 @@ export const WithSections: StoryFn<CubeCommandPaletteProps<any>> = (args) => {
               forceMount={command.forceMount}
             >
               {command.label}
-            </CommandPalette.Item>
+            </CommandMenu.Item>
           ))}
         </Menu.Section>
       ))}
-    </CommandPalette>
+    </CommandMenu>
   );
 };
 
@@ -313,23 +323,21 @@ WithSections.args = {
   autoFocus: true,
 };
 
-export const WithMenuTrigger: StoryFn<CubeCommandPaletteProps<any>> = (
-  args,
-) => (
-  <CommandPalette.Trigger>
+export const WithMenuTrigger: StoryFn<CubeCommandMenuProps<any>> = (args) => (
+  <CommandMenu.Trigger>
     <Button>Open Command Palette</Button>
-    <CommandPalette {...args}>
+    <CommandMenu {...args}>
       {basicCommands.map((command) => (
-        <CommandPalette.Item
+        <CommandMenu.Item
           key={command.key}
           description={command.description}
           hotkeys={command.hotkeys}
         >
           {command.label}
-        </CommandPalette.Item>
+        </CommandMenu.Item>
       ))}
-    </CommandPalette>
-  </CommandPalette.Trigger>
+    </CommandMenu>
+  </CommandMenu.Trigger>
 );
 
 WithMenuTrigger.args = {
@@ -368,9 +376,7 @@ WithMenuTrigger.play = async ({ canvasElement, viewMode }) => {
   // });
 };
 
-export const ControlledSearch: StoryFn<CubeCommandPaletteProps<any>> = (
-  args,
-) => {
+export const ControlledSearch: StoryFn<CubeCommandMenuProps<any>> = (args) => {
   const [searchValue, setSearchValue] = useState('');
 
   return (
@@ -378,21 +384,21 @@ export const ControlledSearch: StoryFn<CubeCommandPaletteProps<any>> = (
       <div>
         <strong>Current search:</strong> "{searchValue}"
       </div>
-      <CommandPalette
+      <CommandMenu
         {...args}
         searchValue={searchValue}
         onSearchChange={setSearchValue}
       >
         {basicCommands.map((command) => (
-          <CommandPalette.Item
+          <CommandMenu.Item
             key={command.key}
             description={command.description}
             hotkeys={command.hotkeys}
           >
             {command.label}
-          </CommandPalette.Item>
+          </CommandMenu.Item>
         ))}
-      </CommandPalette>
+      </CommandMenu>
     </div>
   );
 };
@@ -402,18 +408,18 @@ ControlledSearch.args = {
   autoFocus: true,
 };
 
-export const LoadingState: StoryFn<CubeCommandPaletteProps<any>> = (args) => (
-  <CommandPalette {...args}>
+export const LoadingState: StoryFn<CubeCommandMenuProps<any>> = (args) => (
+  <CommandMenu {...args}>
     {basicCommands.map((command) => (
-      <CommandPalette.Item
+      <CommandMenu.Item
         key={command.key}
         description={command.description}
         hotkeys={command.hotkeys}
       >
         {command.label}
-      </CommandPalette.Item>
+      </CommandMenu.Item>
     ))}
-  </CommandPalette>
+  </CommandMenu>
 );
 
 LoadingState.args = {
@@ -422,8 +428,8 @@ LoadingState.args = {
   autoFocus: true,
 };
 
-export const CustomFilter: StoryFn<CubeCommandPaletteProps<any>> = (args) => (
-  <CommandPalette
+export const CustomFilter: StoryFn<CubeCommandMenuProps<any>> = (args) => (
+  <CommandMenu
     {...args}
     filter={(textValue, inputValue) => {
       // Custom fuzzy search - matches if all characters of input appear in order
@@ -442,15 +448,15 @@ export const CustomFilter: StoryFn<CubeCommandPaletteProps<any>> = (args) => (
     }}
   >
     {basicCommands.map((command) => (
-      <CommandPalette.Item
+      <CommandMenu.Item
         key={command.key}
         description={command.description}
         hotkeys={command.hotkeys}
       >
         {command.label}
-      </CommandPalette.Item>
+      </CommandMenu.Item>
     ))}
-  </CommandPalette>
+  </CommandMenu>
 );
 
 CustomFilter.args = {
@@ -458,24 +464,21 @@ CustomFilter.args = {
   autoFocus: true,
 };
 
-export const WithKeywords: StoryFn<CubeCommandPaletteProps<any>> = (args) => (
-  <CommandPalette {...args}>
-    <CommandPalette.Item
-      key="copy"
-      keywords={['duplicate', 'clone', 'replicate']}
-    >
+export const WithKeywords: StoryFn<CubeCommandMenuProps<any>> = (args) => (
+  <CommandMenu {...args}>
+    <CommandMenu.Item key="copy" keywords={['duplicate', 'clone', 'replicate']}>
       Copy
-    </CommandPalette.Item>
-    <CommandPalette.Item key="paste" keywords={['insert', 'place', 'put']}>
+    </CommandMenu.Item>
+    <CommandMenu.Item key="paste" keywords={['insert', 'place', 'put']}>
       Paste
-    </CommandPalette.Item>
-    <CommandPalette.Item key="save" keywords={['store', 'persist', 'write']}>
+    </CommandMenu.Item>
+    <CommandMenu.Item key="save" keywords={['store', 'persist', 'write']}>
       Save File
-    </CommandPalette.Item>
-    <CommandPalette.Item key="open" keywords={['load', 'read', 'import']}>
+    </CommandMenu.Item>
+    <CommandMenu.Item key="open" keywords={['load', 'read', 'import']}>
       Open File
-    </CommandPalette.Item>
-  </CommandPalette>
+    </CommandMenu.Item>
+  </CommandMenu>
 );
 
 WithKeywords.args = {
@@ -483,26 +486,24 @@ WithKeywords.args = {
   autoFocus: true,
 };
 
-export const ForceMountItems: StoryFn<CubeCommandPaletteProps<any>> = (
-  args,
-) => (
-  <CommandPalette {...args}>
-    <CommandPalette.Item key="help" forceMount>
+export const ForceMountItems: StoryFn<CubeCommandMenuProps<any>> = (args) => (
+  <CommandMenu {...args}>
+    <CommandMenu.Item key="help" forceMount>
       Help (always visible)
-    </CommandPalette.Item>
-    <CommandPalette.Item key="settings" forceMount>
+    </CommandMenu.Item>
+    <CommandMenu.Item key="settings" forceMount>
       Settings (always visible)
-    </CommandPalette.Item>
+    </CommandMenu.Item>
     {basicCommands.map((command) => (
-      <CommandPalette.Item
+      <CommandMenu.Item
         key={command.key}
         description={command.description}
         hotkeys={command.hotkeys}
       >
         {command.label}
-      </CommandPalette.Item>
+      </CommandMenu.Item>
     ))}
-  </CommandPalette>
+  </CommandMenu>
 );
 
 ForceMountItems.args = {
@@ -510,11 +511,11 @@ ForceMountItems.args = {
   autoFocus: true,
 };
 
-export const EmptyState: StoryFn<CubeCommandPaletteProps<any>> = (args) => (
-  <CommandPalette {...args}>
-    <CommandPalette.Item key="copy">Copy</CommandPalette.Item>
-    <CommandPalette.Item key="paste">Paste</CommandPalette.Item>
-  </CommandPalette>
+export const EmptyState: StoryFn<CubeCommandMenuProps<any>> = (args) => (
+  <CommandMenu {...args}>
+    <CommandMenu.Item key="copy">Copy</CommandMenu.Item>
+    <CommandMenu.Item key="paste">Paste</CommandMenu.Item>
+  </CommandMenu>
 );
 
 EmptyState.args = {
@@ -523,9 +524,7 @@ EmptyState.args = {
   autoFocus: true,
 };
 
-export const MultipleSelection: StoryFn<CubeCommandPaletteProps<any>> = (
-  args,
-) => {
+export const MultipleSelection: StoryFn<CubeCommandMenuProps<any>> = (args) => {
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
   return (
@@ -533,22 +532,22 @@ export const MultipleSelection: StoryFn<CubeCommandPaletteProps<any>> = (
       <div>
         <strong>Selected:</strong> {selectedKeys.join(', ') || 'None'}
       </div>
-      <CommandPalette
+      <CommandMenu
         {...args}
         selectionMode="multiple"
         selectedKeys={selectedKeys}
         onSelectionChange={setSelectedKeys}
       >
         {basicCommands.map((command) => (
-          <CommandPalette.Item
+          <CommandMenu.Item
             key={command.key}
             description={command.description}
             hotkeys={command.hotkeys}
           >
             {command.label}
-          </CommandPalette.Item>
+          </CommandMenu.Item>
         ))}
-      </CommandPalette>
+      </CommandMenu>
     </div>
   );
 };
@@ -558,8 +557,8 @@ MultipleSelection.args = {
   autoFocus: true,
 };
 
-export const CustomStyling: StoryFn<CubeCommandPaletteProps<any>> = (args) => (
-  <CommandPalette
+export const CustomStyling: StoryFn<CubeCommandMenuProps<any>> = (args) => (
+  <CommandMenu
     {...args}
     styles={{
       border: '#purple',
@@ -572,15 +571,15 @@ export const CustomStyling: StoryFn<CubeCommandPaletteProps<any>> = (args) => (
     }}
   >
     {basicCommands.map((command) => (
-      <CommandPalette.Item
+      <CommandMenu.Item
         key={command.key}
         description={command.description}
         hotkeys={command.hotkeys}
       >
         {command.label}
-      </CommandPalette.Item>
+      </CommandMenu.Item>
     ))}
-  </CommandPalette>
+  </CommandMenu>
 );
 
 CustomStyling.args = {
@@ -588,7 +587,7 @@ CustomStyling.args = {
   autoFocus: true,
 };
 
-export const HotkeyTesting: StoryFn<CubeCommandPaletteProps<any>> = (args) => {
+export const HotkeyTesting: StoryFn<CubeCommandMenuProps<any>> = (args) => {
   const [lastAction, setLastAction] = useState<string | null>(null);
 
   const handleAction = (key: string) => {
@@ -631,22 +630,65 @@ export const HotkeyTesting: StoryFn<CubeCommandPaletteProps<any>> = (args) => {
         )}
       </div>
 
-      <CommandPalette {...args} onAction={handleAction}>
+      <CommandMenu {...args} onAction={handleAction}>
         {basicCommands.map((command) => (
-          <CommandPalette.Item
+          <CommandMenu.Item
             key={command.key}
             description={command.description}
             hotkeys={command.hotkeys}
           >
             {command.label}
-          </CommandPalette.Item>
+          </CommandMenu.Item>
         ))}
-      </CommandPalette>
+      </CommandMenu>
     </div>
   );
 };
 
 HotkeyTesting.args = {
   searchPlaceholder: 'Test hotkeys while focused here...',
+  autoFocus: true,
+};
+
+export const MediumSize: StoryFn<CubeCommandMenuProps<any>> = (args) => (
+  <CommandMenu {...args} size="medium">
+    {basicCommands.map((command) => (
+      <CommandMenu.Item
+        key={command.key}
+        description={command.description}
+        hotkeys={command.hotkeys}
+      >
+        {command.label}
+      </CommandMenu.Item>
+    ))}
+  </CommandMenu>
+);
+
+MediumSize.args = {
+  searchPlaceholder: 'Medium size command palette...',
+  autoFocus: true,
+};
+
+export const WithDialog: StoryFn<CubeCommandMenuProps<any>> = (args) => (
+  <DialogTrigger>
+    <Button>Open Command Menu</Button>
+    <Dialog size="medium" isDismissable={false}>
+      <CommandMenu width="100%" height="20x" {...args} size="medium">
+        {basicCommands.map((command) => (
+          <CommandMenu.Item
+            key={command.key}
+            description={command.description}
+            hotkeys={command.hotkeys}
+          >
+            {command.label}
+          </CommandMenu.Item>
+        ))}
+      </CommandMenu>
+    </Dialog>
+  </DialogTrigger>
+);
+
+WithDialog.args = {
+  searchPlaceholder: 'Search commands...',
   autoFocus: true,
 };

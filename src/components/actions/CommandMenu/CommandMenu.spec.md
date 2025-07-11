@@ -1,8 +1,8 @@
-# CommandPalette Component Specification
+# CommandMenu Component Specification
 
 ## Overview
 
-The CommandPalette component is a searchable menu interface that combines the functionality of Menu and ListBox components. It provides a command-line-like experience for users to quickly find and execute actions through a searchable interface.
+The CommandMenu component is a searchable menu interface that combines the functionality of Menu and ListBox components. It provides a command-line-like experience for users to quickly find and execute actions through a searchable interface.
 
 ## Component Features
 
@@ -18,7 +18,7 @@ The CommandPalette component is a searchable menu interface that combines the fu
 - **Enhanced search**: Keywords-based matching and custom value support
 
 ### Key Behaviors
-- When CommandPalette gains focus, the search input is automatically focused
+- When CommandMenu gains focus, the search input is automatically focused
 - Arrow keys navigate through filtered options while search input retains focus
 - Enter key selects the currently highlighted option
 - Escape key clears search or closes the palette
@@ -32,14 +32,14 @@ The CommandPalette component is a searchable menu interface that combines the fu
 ## Required Files
 
 ### Core Component Files
-1. **CommandPalette.tsx** - Main component implementation
+1. **CommandMenu.tsx** - Main component implementation
 2. **styled.tsx** - Styled components using tasty
-3. **index.ts** - Export barrel (includes CommandPalette.Trigger alias)
+3. **index.ts** - Export barrel (includes CommandMenu.Trigger alias)
 
 ### Documentation & Testing
-4. **CommandPalette.docs.mdx** - Component documentation
-5. **CommandPalette.stories.tsx** - Storybook stories
-6. **CommandPalette.test.tsx** - Unit tests (10-15 comprehensive tests)
+4. **CommandMenu.docs.mdx** - Component documentation
+5. **CommandMenu.stories.tsx** - Storybook stories
+6. **CommandMenu.test.tsx** - Unit tests (10-15 comprehensive tests)
 
 ### Integration Files
 7. **Update src/components/actions/index.ts** - Export new components
@@ -47,18 +47,18 @@ The CommandPalette component is a searchable menu interface that combines the fu
 
 ## Implementation Approach
 
-The CommandPalette will **reuse the existing Menu component** and add search functionality on top. This approach ensures we inherit all Menu features (sections, descriptions, tooltips, hotkeys) while adding search-specific capabilities. The implementation will follow the React Aria command palette example pattern, wrapping Menu with search input and filtering logic.
+The CommandMenu will **reuse the existing Menu component** and add search functionality on top. This approach ensures we inherit all Menu features (sections, descriptions, tooltips, hotkeys) while adding search-specific capabilities. The implementation will follow the React Aria command palette example pattern, wrapping Menu with search input and filtering logic.
 
 ### Key Technical Insights
 
-1. **Reuse Menu component**: CommandPalette will wrap the existing Menu component to inherit all features (sections, descriptions, tooltips, hotkeys)
+1. **Reuse Menu component**: CommandMenu will wrap the existing Menu component to inherit all features (sections, descriptions, tooltips, hotkeys)
 2. **Filter-based search**: Use React Stately's `filter` prop (like ListBox) to implement search functionality
 3. **Virtual focus pattern**: Follow ListBox's search pattern - search input stays focused while arrow keys navigate menu items
-4. **Reuse existing patterns**: Use `useDialogContainer(CommandPalette)` for programmatic usage - no need for a separate hook
+4. **Reuse existing patterns**: Use `useDialogContainer(CommandMenu)` for programmatic usage - no need for a separate hook
 
 ## Implementation Plan
 
-### Phase 1: Core Component Structure (CommandPalette.tsx)
+### Phase 1: Core Component Structure (CommandMenu.tsx)
 1. **Setup component interface**
    - Extend Menu props with search-specific additions
    - Add `searchPlaceholder`, `emptyLabel`, `filter` props
@@ -92,9 +92,9 @@ The CommandPalette will **reuse the existing Menu component** and add search fun
    - Empty state when no results
 
 ### Phase 2: MenuTrigger Integration and Alias
-1. **Create CommandPalette.Trigger alias**
-   - Export MenuTrigger as CommandPalette.Trigger in index.ts
-   - Ensure CommandPalette works seamlessly with MenuTrigger
+1. **Create CommandMenu.Trigger alias**
+   - Export MenuTrigger as CommandMenu.Trigger in index.ts
+   - Ensure CommandMenu works seamlessly with MenuTrigger
    - Test compatibility with existing MenuTrigger features
 
 2. **Update documentation**
@@ -104,7 +104,7 @@ The CommandPalette will **reuse the existing Menu component** and add search fun
 
 ### Phase 3: Styling (styled.tsx)
 1. **Create styled components using tasty**
-   - CommandPaletteWrapper: Main container
+   - CommandMenuWrapper: Main container
    - SearchSection: Search input area
    - LoadingSection: Loading indicator area
    - ContentSection: Options list area
@@ -117,7 +117,7 @@ The CommandPalette will **reuse the existing Menu component** and add search fun
    - Proper spacing and typography
    - Theme integration
 
-### Phase 4: Documentation (CommandPalette.docs.mdx)
+### Phase 4: Documentation (CommandMenu.docs.mdx)
 1. **Follow documentation guidelines**
    - Component overview and when to use
    - Complete props documentation
@@ -128,19 +128,19 @@ The CommandPalette will **reuse the existing Menu component** and add search fun
 2. **Include comprehensive examples**
    - Basic usage
    - With header/footer
-   - Programmatic usage with `useDialogContainer(CommandPalette)`
-   - With MenuTrigger (using CommandPalette.Trigger alias)
+   - Programmatic usage with `useDialogContainer(CommandMenu)`
+   - With MenuTrigger (using CommandMenu.Trigger alias)
    - Custom filtering and keywords
    - Multiple selection
    - Loading states
    - Force mount items
 
-### Phase 5: Stories (CommandPalette.stories.tsx)
+### Phase 5: Stories (CommandMenu.stories.tsx)
 1. **Create comprehensive stories**
    - Default usage
    - With header and footer
-   - Programmatic usage with `useDialogContainer(CommandPalette)`
-   - With MenuTrigger (CommandPalette.Trigger)
+   - Programmatic usage with `useDialogContainer(CommandMenu)`
+   - With MenuTrigger (CommandMenu.Trigger)
    - Custom filtering and keywords
    - Loading states
    - Empty states
@@ -152,7 +152,7 @@ The CommandPalette will **reuse the existing Menu component** and add search fun
    - Demonstrate keyboard navigation
    - Show filtering behavior
 
-### Phase 6: Testing (CommandPalette.test.tsx)
+### Phase 6: Testing (CommandMenu.test.tsx)
 1. **Functional tests (10-15 tests)**
    - Basic rendering and props
    - Search functionality and filtering
@@ -181,7 +181,7 @@ The CommandPalette will **reuse the existing Menu component** and add search fun
 
 ### Props Interface
 ```typescript
-interface CommandPaletteProps<T> extends CubeMenuProps<T> {
+interface CommandMenuProps<T> extends CubeMenuProps<T> {
   // Search-specific props
   searchPlaceholder?: string;
   searchValue?: string;
@@ -202,7 +202,7 @@ interface CommandPaletteProps<T> extends CubeMenuProps<T> {
   // - All React Aria menu props (isDisabled, disabledKeys, etc.)
 }
 
-interface CommandPaletteItem {
+interface CommandMenuItem {
   // Standard item props
   id: string;
   textValue: string;
@@ -241,7 +241,7 @@ interface CommandPaletteItem {
 ## Integration Points
 
 ### With Menu Component
-- **Direct reuse**: CommandPalette wraps Menu component completely
+- **Direct reuse**: CommandMenu wraps Menu component completely
 - **Inherit all features**: Sections, descriptions, tooltips, hotkeys, selection icons
 - **Consistent API**: All Menu props work the same way
 - **Styling compatibility**: All Menu styling props are supported

@@ -25,6 +25,7 @@ export interface MenuItemProps<T> {
   isVirtualized?: boolean;
   isDisabled?: boolean;
   onAction?: (key: Key) => void;
+  size?: 'small' | 'medium' | (string & {});
 }
 
 // Returns icon corresponding to selection type
@@ -51,11 +52,12 @@ const getPostfix = (postfix?: ReactNode) =>
 
 /** @private */
 export function MenuItem<T>(props: MenuItemProps<T>) {
-  const { item, state, styles, selectionIcon, isVirtualized, onAction } = props;
+  const { item, state, styles, selectionIcon, isVirtualized, onAction, size } =
+    props;
   const { onClose, closeOnSelect } = useMenuContext();
   const { rendered, key, props: itemProps } = item;
 
-  // Extract optional keyboard shortcut and CommandPalette-specific props from item props so they are not passed down to DOM elements.
+  // Extract optional keyboard shortcut and CommandMenu-specific props from item props so they are not passed down to DOM elements.
   const { hotkeys, wrapper, keywords, forceMount, ...cleanItemProps } =
     (itemProps || {}) as any;
 
@@ -148,6 +150,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
           mods,
           styles,
           'aria-disabled': isDisabled || undefined,
+          'data-size': size,
         })}
         ref={ref}
       >

@@ -9,11 +9,12 @@ import { StyledMenu, StyledSection, StyledSectionHeading } from './styled';
 export interface CubeMenuSectionProps<T> extends MenuItemProps<T> {
   itemStyles?: Styles;
   headingStyles?: Styles;
+  size?: 'small' | 'medium' | (string & {});
 }
 
 /** @private */
 export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
-  const { item, state, styles, itemStyles, headingStyles } = props;
+  const { item, state, styles, itemStyles, headingStyles, size } = props;
   const heading = item.rendered;
   const { itemProps, headingProps, groupProps } = useMenuSection({
     heading,
@@ -36,6 +37,7 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
                 item={node}
                 styles={itemStyles}
                 state={state}
+                size={size}
                 onAction={(node as unknown as MenuItemProps<T>).onAction}
               />
             );

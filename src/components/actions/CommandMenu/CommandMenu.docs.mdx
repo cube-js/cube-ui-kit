@@ -1,10 +1,10 @@
 import { Meta, Story, Controls } from '@storybook/blocks';
-import { CommandPalette } from './CommandPalette';
-import * as CommandPaletteStories from './CommandPalette.stories.tsx';
+import { CommandMenu } from './CommandMenu';
+import * as CommandMenuStories from './CommandMenu.stories';
 
-<Meta of={CommandPaletteStories} />
+<Meta of={CommandMenuStories} />
 
-# CommandPalette
+# CommandMenu
 
 A searchable menu interface that combines the functionality of Menu and ListBox components. It provides a command-line-like experience for users to quickly find and execute actions through a searchable interface.
 
@@ -20,17 +20,17 @@ A searchable menu interface that combines the functionality of Menu and ListBox 
 
 ### Default Usage
 
-<Story of={CommandPaletteStories.Default} />
+<Story of={CommandMenuStories.Default} />
 
 ## Props
 
-<Controls of={CommandPaletteStories.Default} />
+<Controls of={CommandMenuStories.Default} />
 
 ## Styling
 
 ### Style Props
 
-The CommandPalette component supports all standard style properties:
+The CommandMenu component supports all standard style properties:
 
 - **Layout**: `width`, `height`, `padding`, `margin`
 - **Positioning**: `position`, `top`, `left`, `right`, `bottom`
@@ -41,7 +41,7 @@ The CommandPalette component supports all standard style properties:
 
 ### Sub-elements
 
-The CommandPalette component has several sub-elements that can be styled:
+The CommandMenu component has several sub-elements that can be styled:
 
 - `SearchWrapper` - Container for the search input area
 - `SearchInput` - The search input field specifically
@@ -56,7 +56,7 @@ Customizes the search input field specifically.
 
 ### Modifiers
 
-The CommandPalette component supports the following modifiers:
+The CommandMenu component supports the following modifiers:
 
 | Modifier | Type | Description |
 |----------|------|-------------|
@@ -66,7 +66,7 @@ The CommandPalette component supports the following modifiers:
 
 ### Keyboard Navigation
 
-The CommandPalette component provides comprehensive keyboard support:
+The CommandMenu component provides comprehensive keyboard support:
 
 - **Search Input Focus**: The search input is automatically focused when the palette opens
 - **Arrow Keys**: Navigate through filtered options while keeping search input focused
@@ -92,29 +92,29 @@ The CommandPalette component provides comprehensive keyboard support:
 ### Basic Usage
 
 ```jsx
-<CommandPalette searchPlaceholder="Search commands...">
+<CommandMenu searchPlaceholder="Search commands...">
   <Menu.Item key="copy">Copy</Menu.Item>
   <Menu.Item key="paste">Paste</Menu.Item>
   <Menu.Item key="cut">Cut</Menu.Item>
-</CommandPalette>
+</CommandMenu>
 ```
 
 ### With MenuTrigger
 
 ```jsx
-<CommandPalette.Trigger>
+<CommandMenu.Trigger>
   <Button>Open Commands</Button>
-  <CommandPalette searchPlaceholder="Search commands...">
+  <CommandMenu searchPlaceholder="Search commands...">
     <Menu.Item key="copy">Copy</Menu.Item>
     <Menu.Item key="paste">Paste</Menu.Item>
-  </CommandPalette>
-</CommandPalette.Trigger>
+  </CommandMenu>
+</CommandMenu.Trigger>
 ```
 
 ### With Sections and Keywords
 
 ```jsx
-<CommandPalette searchPlaceholder="Search commands...">
+<CommandMenu searchPlaceholder="Search commands...">
   <Menu.Section title="Edit">
     <Menu.Item key="copy" keywords={["duplicate", "clone"]}>
       Copy
@@ -128,7 +128,7 @@ The CommandPalette component provides comprehensive keyboard support:
       Zoom In
     </Menu.Item>
   </Menu.Section>
-</CommandPalette>
+</CommandMenu>
 ```
 
 ### Controlled Search
@@ -136,20 +136,20 @@ The CommandPalette component provides comprehensive keyboard support:
 ```jsx
 const [searchValue, setSearchValue] = useState('');
 
-<CommandPalette
+<CommandMenu
   searchValue={searchValue}
   onSearchChange={setSearchValue}
   searchPlaceholder="Type to search..."
 >
   <Menu.Item key="action1">Action 1</Menu.Item>
   <Menu.Item key="action2">Action 2</Menu.Item>
-</CommandPalette>
+</CommandMenu>
 ```
 
 ### With Loading State
 
 ```jsx
-<CommandPalette
+<CommandMenu
   isLoading={isLoading}
   searchPlaceholder="Search commands..."
 >
@@ -158,13 +158,13 @@ const [searchValue, setSearchValue] = useState('');
       {command.name}
     </Menu.Item>
   ))}
-</CommandPalette>
+</CommandMenu>
 ```
 
 ### Custom Filtering
 
 ```jsx
-<CommandPalette
+<CommandMenu
   filter={(textValue, inputValue) => {
     // Custom fuzzy search logic
     return textValue.toLowerCase().includes(inputValue.toLowerCase());
@@ -173,26 +173,26 @@ const [searchValue, setSearchValue] = useState('');
 >
   <Menu.Item key="action1">Action 1</Menu.Item>
   <Menu.Item key="action2">Action 2</Menu.Item>
-</CommandPalette>
+</CommandMenu>
 ```
 
 ### Force Mount Items
 
 ```jsx
-<CommandPalette searchPlaceholder="Search commands...">
+<CommandMenu searchPlaceholder="Search commands...">
   <Menu.Item key="help" forceMount>
     Help (always visible)
   </Menu.Item>
   <Menu.Item key="copy">Copy</Menu.Item>
   <Menu.Item key="paste">Paste</Menu.Item>
-</CommandPalette>
+</CommandMenu>
 ```
 
 ## Advanced Features
 
 ### Enhanced Search
 
-The CommandPalette supports enhanced search capabilities:
+The CommandMenu supports enhanced search capabilities:
 
 - **Keywords**: Items can include additional keywords for better discoverability
 - **Custom values**: Items can have custom search values separate from display text
@@ -204,16 +204,16 @@ The CommandPalette supports enhanced search capabilities:
 ```jsx
 import { useDialogContainer } from '../../../hooks';
 
-const CommandPaletteDialog = useDialogContainer(CommandPalette);
+const CommandMenuDialog = useDialogContainer(CommandMenu);
 
 // Usage
-<CommandPaletteDialog
+<CommandMenuDialog
   isOpen={isOpen}
   onClose={() => setIsOpen(false)}
   searchPlaceholder="Search commands..."
 >
   <Menu.Item key="action1">Action 1</Menu.Item>
-</CommandPaletteDialog>
+</CommandMenuDialog>
 ```
 
 ## Best Practices

@@ -110,6 +110,7 @@ const SelectWrapperElement = tasty({
       width: {
         '': '4x',
         '[data-size="small"]': '3x',
+        '[data-size="medium"]': '4x',
       },
       cursor: 'pointer',
       fontSize: 'inherit',
@@ -215,7 +216,10 @@ const OptionElement = tasty({
     display: 'flex',
     flow: 'column',
     gap: '0',
-    padding: '(1x - 1px) (1.5x - 1px)',
+    padding: {
+      '': '(1x - 1px) (1.5x - 1px)',
+      '[data-size="medium"]': '(1.25x - 1px) (1.5x - 1px)',
+    },
     cursor: 'pointer',
     radius: true,
     color: {
@@ -298,7 +302,7 @@ export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
   popoverRef?: RefObject<HTMLInputElement>;
   /** The ref for the list box. */
   listBoxRef?: RefObject<HTMLElement>;
-  size?: 'small' | 'default' | 'large' | string;
+  size?: 'small' | 'medium' | 'default' | 'large' | string;
   placeholder?: string;
 }
 
@@ -349,7 +353,7 @@ function Select<T extends object>(
     shouldFlip = true,
     placeholder,
     tooltip,
-    size,
+    size = 'small',
     styles,
     type = 'outline',
     theme = 'default',
@@ -489,6 +493,7 @@ function Select<T extends object>(
           overlayStyles={overlayStyles}
           optionStyles={optionStyles}
           minWidth={triggerWidth}
+          size={size}
         />
       </OverlayWrapper>
     </SelectWrapperElement>
@@ -518,6 +523,7 @@ export function ListBoxPopup({
   shouldUseVirtualFocus = false,
   placement,
   minWidth,
+  size,
   ...otherProps
 }) {
   // Get props for the listbox
@@ -591,6 +597,7 @@ export function ListBoxPopup({
                   headingStyles={{ padding: '.5x 1.5x' }}
                   sectionStyles={undefined}
                   shouldUseVirtualFocus={shouldUseVirtualFocus}
+                  size={size}
                 />,
               );
 
@@ -603,6 +610,7 @@ export function ListBoxPopup({
                   state={state}
                   styles={optionStyles}
                   shouldUseVirtualFocus={shouldUseVirtualFocus}
+                  size={size}
                 />,
               );
             }
@@ -625,7 +633,7 @@ export function ListBoxPopup({
   );
 }
 
-function Option({ item, state, styles, shouldUseVirtualFocus }) {
+function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
   let ref = useRef<HTMLDivElement>(null);
   let isDisabled = state.disabledKeys.has(item.key);
   let isSelected = state.selectionManager.isSelected(item.key);
@@ -660,6 +668,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
         disabled: isDisabled,
       }}
       data-theme={isSelected ? 'special' : undefined}
+      data-size={size}
       styles={styles}
     >
       <div data-element="Label">{item.rendered}</div>
@@ -675,6 +684,7 @@ interface SelectSectionProps<T> {
   headingStyles?: Styles;
   sectionStyles?: Styles;
   shouldUseVirtualFocus?: boolean;
+  size?: string;
 }
 
 function SelectSection<T>(props: SelectSectionProps<T>) {
@@ -685,6 +695,7 @@ function SelectSection<T>(props: SelectSectionProps<T>) {
     headingStyles,
     sectionStyles,
     shouldUseVirtualFocus,
+    size,
   } = props;
 
   const heading = item.rendered;
@@ -711,6 +722,7 @@ function SelectSection<T>(props: SelectSectionProps<T>) {
               state={state}
               styles={optionStyles}
               shouldUseVirtualFocus={shouldUseVirtualFocus}
+              size={size}
             />
           ))}
       </ListBoxElement>

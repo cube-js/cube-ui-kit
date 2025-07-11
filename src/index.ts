@@ -78,8 +78,11 @@ export { Menu } from './components/actions/Menu/Menu';
 export type { CubeMenuProps } from './components/actions/Menu/Menu';
 export { MenuTrigger } from './components/actions/Menu/MenuTrigger';
 export type { CubeMenuTriggerProps } from './components/actions/Menu/MenuTrigger';
-export { CommandPalette } from './components/actions/CommandPalette/CommandPalette';
-export type { CubeCommandPaletteProps } from './components/actions/CommandPalette/CommandPalette';
+export { CommandMenu } from './components/actions/CommandMenu';
+export type {
+  CubeCommandMenuProps,
+  CommandMenuItem,
+} from './components/actions/CommandMenu';
 export { Select, ListBoxPopup } from './components/fields/Select/Select';
 export type {
   CubeSelectProps,

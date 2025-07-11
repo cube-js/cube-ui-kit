@@ -87,12 +87,16 @@ export const StyledItem = tasty({
     ...DEFAULT_NEUTRAL_STYLES,
 
     // Override specifics for menu context
-    display: 'flex',
-    flow: 'row',
-    justifyContent: 'start',
+    display: 'grid',
+    flow: 'column',
+    justifyContent: 'stretch',
     listStyle: 'none',
-    height: 'min 4x',
-    border: '#clear',
+    height: {
+      '': 'min 4x',
+      '[data-size="medium"]': 'min 5x',
+    },
+    border: false,
+    boxSizing: 'content-box',
     fill: {
       '': '#clear',
       focused: '#dark.03',
@@ -112,9 +116,11 @@ export const StyledItem = tasty({
     },
     shadow: '#clear',
     padding: {
-      '': '0 (1x - 1bw)',
-      'selectionIcon & selectable & !selected':
-        '0 (1x - 1bw) 0 (1x - 1bw + 3x)',
+      '': '.5x 1x',
+      '[data-size="medium"]': '1x 1x',
+      'selectionIcon & selectable & !selected': '.5x 1x .5x (1x + 3x)',
+      '[data-size="medium"] & selectionIcon & selectable & !selected':
+        '1x 1x 1x (1x + 3x)',
     },
     gap: '.75x',
     outline: false,

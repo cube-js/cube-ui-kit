@@ -73,11 +73,11 @@ export default {
 
     /* Presentation */
     size: {
-      options: ['small', 'default', 'large'],
+      options: ['small', 'medium', 'large'],
       control: { type: 'radio' },
       description: 'ComboBox size',
       table: {
-        defaultValue: { summary: 'default' },
+        defaultValue: { summary: 'small' },
       },
     },
 
@@ -325,6 +325,9 @@ Default.args = {};
 
 export const Small = Template.bind({});
 Small.args = { size: 'small' };
+
+export const Medium = Template.bind({});
+Medium.args = { size: 'medium' };
 
 export const WithPlaceholder = Template.bind({});
 WithPlaceholder.args = { placeholder: 'Enter a value' };

@@ -72,6 +72,7 @@ const TriggerElement = tasty({
     width: {
       '': '4x',
       '[data-size="small"]': '3x',
+      '[data-size="medium"]': '4x',
     },
     color: {
       '': '#dark-02',
@@ -123,7 +124,7 @@ export interface CubeComboBoxProps<T>
    * Has no effect when `items` is provided.
    */
   filter?: FilterFn;
-  size?: 'small' | 'default' | 'large' | string;
+  size?: 'small' | 'medium' | 'default' | 'large' | string;
   suffixPosition?: 'before' | 'after';
   menuTrigger?: MenuTriggerAction;
   allowsCustomValue?: boolean;
@@ -191,7 +192,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     hideTrigger,
     message,
     description,
-    size,
+    size = 'small',
     autoComplete = 'off',
     direction = 'bottom',
     shouldFlip = true,
@@ -463,6 +464,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
           overlayStyles={overlayStyles}
           optionStyles={optionStyles}
           minWidth={comboBoxWidth}
+          size={size}
         />
       </OverlayWrapper>
     </ComboBoxWrapperElement>

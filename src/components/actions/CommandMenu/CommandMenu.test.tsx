@@ -2,9 +2,9 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 
-import { CommandPalette } from './CommandPalette';
+import { CommandMenu } from './CommandMenu';
 
-describe('CommandPalette', () => {
+describe('CommandMenu', () => {
   const items = [
     { id: '1', textValue: 'Create file' },
     { id: '2', textValue: 'Open folder' },
@@ -13,13 +13,13 @@ describe('CommandPalette', () => {
 
   it('renders with search input and menu items', () => {
     render(
-      <CommandPalette>
+      <CommandMenu>
         {items.map((item) => (
-          <CommandPalette.Item key={item.id} id={item.id}>
+          <CommandMenu.Item key={item.id} id={item.id}>
             {item.textValue}
-          </CommandPalette.Item>
+          </CommandMenu.Item>
         ))}
-      </CommandPalette>,
+      </CommandMenu>,
     );
 
     expect(
@@ -34,13 +34,13 @@ describe('CommandPalette', () => {
     const user = userEvent.setup();
 
     render(
-      <CommandPalette>
+      <CommandMenu>
         {items.map((item) => (
-          <CommandPalette.Item key={item.id} id={item.id}>
+          <CommandMenu.Item key={item.id} id={item.id}>
             {item.textValue}
-          </CommandPalette.Item>
+          </CommandMenu.Item>
         ))}
-      </CommandPalette>,
+      </CommandMenu>,
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
@@ -55,13 +55,13 @@ describe('CommandPalette', () => {
     const user = userEvent.setup();
 
     render(
-      <CommandPalette qa="test-palette">
+      <CommandMenu qa="test-menu">
         {items.map((item) => (
-          <CommandPalette.Item key={item.id} id={item.id}>
+          <CommandMenu.Item key={item.id} id={item.id}>
             {item.textValue}
-          </CommandPalette.Item>
+          </CommandMenu.Item>
         ))}
-      </CommandPalette>,
+      </CommandMenu>,
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
@@ -79,7 +79,7 @@ describe('CommandPalette', () => {
     // First item should be virtually focused (aria-activedescendant)
     expect(searchInput).toHaveAttribute(
       'aria-activedescendant',
-      'test-palette-menu-option-1',
+      'test-menu-menu-option-1',
     );
 
     // Press arrow down again - should move to second item
@@ -91,7 +91,7 @@ describe('CommandPalette', () => {
     // Second item should be virtually focused
     expect(searchInput).toHaveAttribute(
       'aria-activedescendant',
-      'test-palette-menu-option-2',
+      'test-menu-menu-option-2',
     );
 
     // Press arrow up - should move back to first item
@@ -103,7 +103,7 @@ describe('CommandPalette', () => {
     // First item should be virtually focused again
     expect(searchInput).toHaveAttribute(
       'aria-activedescendant',
-      'test-palette-menu-option-1',
+      'test-menu-menu-option-1',
     );
   });
 
@@ -112,13 +112,13 @@ describe('CommandPalette', () => {
     const onAction = jest.fn();
 
     render(
-      <CommandPalette onAction={onAction as any} {...({} as any)}>
+      <CommandMenu onAction={onAction as any} {...({} as any)}>
         {items.map((item) => (
-          <CommandPalette.Item key={item.id} id={item.id}>
+          <CommandMenu.Item key={item.id} id={item.id}>
             {item.textValue}
-          </CommandPalette.Item>
+          </CommandMenu.Item>
         ))}
-      </CommandPalette>,
+      </CommandMenu>,
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
@@ -136,17 +136,17 @@ describe('CommandPalette', () => {
     const onSelectionChange = jest.fn();
 
     render(
-      <CommandPalette
+      <CommandMenu
         selectionMode="single"
         onSelectionChange={onSelectionChange as any}
         {...({} as any)}
       >
         {items.map((item) => (
-          <CommandPalette.Item key={item.id} id={item.id}>
+          <CommandMenu.Item key={item.id} id={item.id}>
             {item.textValue}
-          </CommandPalette.Item>
+          </CommandMenu.Item>
         ))}
-      </CommandPalette>,
+      </CommandMenu>,
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
@@ -166,13 +166,13 @@ describe('CommandPalette', () => {
     const user = userEvent.setup();
 
     render(
-      <CommandPalette>
+      <CommandMenu>
         {items.map((item) => (
-          <CommandPalette.Item key={item.id} id={item.id}>
+          <CommandMenu.Item key={item.id} id={item.id}>
             {item.textValue}
-          </CommandPalette.Item>
+          </CommandMenu.Item>
         ))}
-      </CommandPalette>,
+      </CommandMenu>,
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
@@ -187,13 +187,13 @@ describe('CommandPalette', () => {
     const user = userEvent.setup();
 
     render(
-      <CommandPalette>
+      <CommandMenu>
         {items.map((item) => (
-          <CommandPalette.Item key={item.id} id={item.id}>
+          <CommandMenu.Item key={item.id} id={item.id}>
             {item.textValue}
-          </CommandPalette.Item>
+          </CommandMenu.Item>
         ))}
-      </CommandPalette>,
+      </CommandMenu>,
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
@@ -204,13 +204,13 @@ describe('CommandPalette', () => {
 
   it('shows loading state', () => {
     render(
-      <CommandPalette isLoading>
+      <CommandMenu isLoading>
         {items.map((item) => (
-          <CommandPalette.Item key={item.id} id={item.id}>
+          <CommandMenu.Item key={item.id} id={item.id}>
             {item.textValue}
-          </CommandPalette.Item>
+          </CommandMenu.Item>
         ))}
-      </CommandPalette>,
+      </CommandMenu>,
     );
 
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
@@ -223,13 +223,13 @@ describe('CommandPalette', () => {
     };
 
     render(
-      <CommandPalette filter={customFilter}>
+      <CommandMenu filter={customFilter}>
         {items.map((item) => (
-          <CommandPalette.Item key={item.id} id={item.id}>
+          <CommandMenu.Item key={item.id} id={item.id}>
             {item.textValue}
-          </CommandPalette.Item>
+          </CommandMenu.Item>
         ))}
-      </CommandPalette>,
+      </CommandMenu>,
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
@@ -243,12 +243,12 @@ describe('CommandPalette', () => {
     const user = userEvent.setup();
 
     render(
-      <CommandPalette>
-        <CommandPalette.Item id="1" keywords={['new', 'add']}>
+      <CommandMenu>
+        <CommandMenu.Item id="1" keywords={['new', 'add']}>
           Create file
-        </CommandPalette.Item>
-        <CommandPalette.Item id="2">Open folder</CommandPalette.Item>
-      </CommandPalette>,
+        </CommandMenu.Item>
+        <CommandMenu.Item id="2">Open folder</CommandMenu.Item>
+      </CommandMenu>,
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
@@ -262,12 +262,12 @@ describe('CommandPalette', () => {
     const user = userEvent.setup();
 
     render(
-      <CommandPalette>
-        <CommandPalette.Item forceMount id="1">
+      <CommandMenu>
+        <CommandMenu.Item forceMount id="1">
           Always visible
-        </CommandPalette.Item>
-        <CommandPalette.Item id="2">Sometimes visible</CommandPalette.Item>
-      </CommandPalette>,
+        </CommandMenu.Item>
+        <CommandMenu.Item id="2">Sometimes visible</CommandMenu.Item>
+      </CommandMenu>,
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
@@ -279,15 +279,15 @@ describe('CommandPalette', () => {
 
   it('supports sections', () => {
     render(
-      <CommandPalette>
-        <CommandPalette.Section title="File Operations">
-          <CommandPalette.Item id="1">Create file</CommandPalette.Item>
-          <CommandPalette.Item id="2">Open folder</CommandPalette.Item>
-        </CommandPalette.Section>
-        <CommandPalette.Section title="Document Operations">
-          <CommandPalette.Item id="3">Save document</CommandPalette.Item>
-        </CommandPalette.Section>
-      </CommandPalette>,
+      <CommandMenu>
+        <CommandMenu.Section title="File Operations">
+          <CommandMenu.Item id="1">Create file</CommandMenu.Item>
+          <CommandMenu.Item id="2">Open folder</CommandMenu.Item>
+        </CommandMenu.Section>
+        <CommandMenu.Section title="Document Operations">
+          <CommandMenu.Item id="3">Save document</CommandMenu.Item>
+        </CommandMenu.Section>
+      </CommandMenu>,
     );
 
     expect(screen.getByText('File Operations')).toBeInTheDocument();
@@ -301,13 +301,13 @@ describe('CommandPalette', () => {
     const onSearchChange = jest.fn();
 
     render(
-      <CommandPalette searchValue="test" onSearchChange={onSearchChange}>
+      <CommandMenu searchValue="test" onSearchChange={onSearchChange}>
         {items.map((item) => (
-          <CommandPalette.Item key={item.id} id={item.id}>
+          <CommandMenu.Item key={item.id} id={item.id}>
             {item.textValue}
-          </CommandPalette.Item>
+          </CommandMenu.Item>
         ))}
-      </CommandPalette>,
+      </CommandMenu>,
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
@@ -321,13 +321,13 @@ describe('CommandPalette', () => {
 
   it('auto-focuses search input when autoFocus is true', async () => {
     render(
-      <CommandPalette autoFocus>
+      <CommandMenu autoFocus>
         {items.map((item) => (
-          <CommandPalette.Item key={item.id} id={item.id}>
+          <CommandMenu.Item key={item.id} id={item.id}>
             {item.textValue}
-          </CommandPalette.Item>
+          </CommandMenu.Item>
         ))}
-      </CommandPalette>,
+      </CommandMenu>,
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
@@ -340,13 +340,13 @@ describe('CommandPalette', () => {
     const user = userEvent.setup();
 
     render(
-      <CommandPalette>
+      <CommandMenu>
         {items.map((item) => (
-          <CommandPalette.Item key={item.id} id={item.id}>
+          <CommandMenu.Item key={item.id} id={item.id}>
             {item.textValue}
-          </CommandPalette.Item>
+          </CommandMenu.Item>
         ))}
-      </CommandPalette>,
+      </CommandMenu>,
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
@@ -363,7 +363,7 @@ describe('CommandPalette', () => {
       const activeDescendant = searchInput.getAttribute(
         'aria-activedescendant',
       );
-      expect(activeDescendant).toMatch(/CommandPalette-menu-option-1/);
+      expect(activeDescendant).toMatch(/CommandMenu-menu-option-1/);
     });
   });
 
@@ -371,13 +371,13 @@ describe('CommandPalette', () => {
     const user = userEvent.setup();
 
     render(
-      <CommandPalette>
+      <CommandMenu>
         {items.map((item) => (
-          <CommandPalette.Item key={item.id} id={item.id}>
+          <CommandMenu.Item key={item.id} id={item.id}>
             {item.textValue}
-          </CommandPalette.Item>
+          </CommandMenu.Item>
         ))}
-      </CommandPalette>,
+      </CommandMenu>,
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
@@ -405,13 +405,13 @@ describe('CommandPalette', () => {
     const user = userEvent.setup();
 
     render(
-      <CommandPalette>
+      <CommandMenu>
         {items.map((item) => (
-          <CommandPalette.Item key={item.id} id={item.id}>
+          <CommandMenu.Item key={item.id} id={item.id}>
             {item.textValue}
-          </CommandPalette.Item>
+          </CommandMenu.Item>
         ))}
-      </CommandPalette>,
+      </CommandMenu>,
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
@@ -425,7 +425,7 @@ describe('CommandPalette', () => {
       const activeDescendant = searchInput.getAttribute(
         'aria-activedescendant',
       );
-      expect(activeDescendant).toMatch(/CommandPalette-menu-option-1/);
+      expect(activeDescendant).toMatch(/CommandMenu-menu-option-1/);
     });
 
     // Clear and type something that won't match
@@ -445,13 +445,13 @@ describe('CommandPalette', () => {
     const user = userEvent.setup();
 
     render(
-      <CommandPalette emptyLabel="Custom empty message">
+      <CommandMenu emptyLabel="Custom empty message">
         {items.map((item) => (
-          <CommandPalette.Item key={item.id} id={item.id}>
+          <CommandMenu.Item key={item.id} id={item.id}>
             {item.textValue}
-          </CommandPalette.Item>
+          </CommandMenu.Item>
         ))}
-      </CommandPalette>,
+      </CommandMenu>,
     );
 
     const searchInput = screen.getByPlaceholderText('Search commands...');
@@ -462,13 +462,13 @@ describe('CommandPalette', () => {
 
   it('supports custom search placeholder', () => {
     render(
-      <CommandPalette searchPlaceholder="Type to search...">
+      <CommandMenu searchPlaceholder="Type to search...">
         {items.map((item) => (
-          <CommandPalette.Item key={item.id} id={item.id}>
+          <CommandMenu.Item key={item.id} id={item.id}>
             {item.textValue}
-          </CommandPalette.Item>
+          </CommandMenu.Item>
         ))}
-      </CommandPalette>,
+      </CommandMenu>,
     );
 
     expect(
@@ -480,14 +480,14 @@ describe('CommandPalette', () => {
     const onAction = jest.fn();
 
     const { container } = render(
-      <CommandPalette onAction={onAction as any} {...({} as any)}>
-        <CommandPalette.Item key="copy" hotkeys="Ctrl+C">
+      <CommandMenu onAction={onAction as any} {...({} as any)}>
+        <CommandMenu.Item key="copy" hotkeys="Ctrl+C">
           Copy
-        </CommandPalette.Item>
-        <CommandPalette.Item key="paste" hotkeys="Ctrl+V">
+        </CommandMenu.Item>
+        <CommandMenu.Item key="paste" hotkeys="Ctrl+V">
           Paste
-        </CommandPalette.Item>
-      </CommandPalette>,
+        </CommandMenu.Item>
+      </CommandMenu>,
     );
 
     // Verify that hotkey elements are rendered
@@ -509,11 +509,11 @@ describe('CommandPalette', () => {
     const onAction = jest.fn();
 
     render(
-      <CommandPalette onAction={onAction as any} {...({} as any)}>
-        <CommandPalette.Item key="copy" hotkeys="Ctrl+C">
+      <CommandMenu onAction={onAction as any} {...({} as any)}>
+        <CommandMenu.Item key="copy" hotkeys="Ctrl+C">
           Copy
-        </CommandPalette.Item>
-      </CommandPalette>,
+        </CommandMenu.Item>
+      </CommandMenu>,
     );
 
     // Click the menu item directly to verify action works
@@ -531,14 +531,14 @@ describe('CommandPalette', () => {
     const onAction = jest.fn();
 
     render(
-      <CommandPalette onAction={onAction as any} {...({} as any)}>
-        <CommandPalette.Item key="copy" hotkeys="Ctrl+C">
+      <CommandMenu onAction={onAction as any} {...({} as any)}>
+        <CommandMenu.Item key="copy" hotkeys="Ctrl+C">
           Copy
-        </CommandPalette.Item>
-        <CommandPalette.Item key="paste" hotkeys="Ctrl+V">
+        </CommandMenu.Item>
+        <CommandMenu.Item key="paste" hotkeys="Ctrl+V">
           Paste
-        </CommandPalette.Item>
-      </CommandPalette>,
+        </CommandMenu.Item>
+      </CommandMenu>,
     );
 
     // Focus the search input to simulate real usage

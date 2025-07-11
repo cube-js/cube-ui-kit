@@ -124,6 +124,15 @@ export default {
     },
 
     /* Styling */
+    size: {
+      options: ['small', 'medium'],
+      control: { type: 'radio' },
+      description: 'Size of the menu items',
+      table: {
+        type: { summary: "'small' | 'medium'" },
+        defaultValue: { summary: 'small' },
+      },
+    },
     styles: {
       control: { type: null },
       description: 'Custom styles for the menu container',
@@ -264,6 +273,42 @@ export const Default = ({ ...props }) => {
       <MenuTrigger>
         <Button
           size="small"
+          icon={<MoreIcon />}
+          aria-label="Open Context Menu"
+        />
+        {menu}
+      </MenuTrigger>
+    </Space>
+  );
+};
+
+export const MediumSize = ({ ...props }) => {
+  const menu = (
+    <Menu id="menu" {...props} size="medium" width="220px">
+      <Menu.Item key="copy" hotkeys="Ctrl+C">
+        Copy
+      </Menu.Item>
+      <Menu.Item key="paste" hotkeys="Ctrl+V">
+        Paste
+      </Menu.Item>
+      <Menu.Item key="cut" hotkeys="Ctrl+X">
+        Cut
+      </Menu.Item>
+    </Menu>
+  );
+
+  return (
+    <Space
+      gap="10x"
+      placeContent="start start"
+      placeItems="start"
+      height="400px"
+    >
+      {menu}
+
+      <MenuTrigger>
+        <Button
+          size="medium"
           icon={<MoreIcon />}
           aria-label="Open Context Menu"
         />
