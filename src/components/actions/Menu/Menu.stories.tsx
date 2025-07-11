@@ -504,8 +504,8 @@ export const GitActions = (props) => {
 
 export const MenuSelectableSingle = (props) => {
   const [selectedKeys, setSelectedKeys] = useState(['1']);
-  const onSelectionChange = (key) => {
-    setSelectedKeys(key);
+  const onSelectionChange = (keys) => {
+    setSelectedKeys(keys);
   };
 
   return MenuTemplate({
@@ -518,8 +518,8 @@ export const MenuSelectableSingle = (props) => {
 
 export const MenuSelectableMultiple = (props) => {
   const [selectedKeys, setSelectedKeys] = useState(['1', '2']);
-  const onSelectionChange = (key) => {
-    setSelectedKeys(key);
+  const onSelectionChange = (keys) => {
+    setSelectedKeys(keys);
   };
 
   return MenuTemplate({
@@ -539,8 +539,8 @@ MenuSelectableMultiple.play = async ({ canvasElement }) => {
 
 export const MenuSelectableCheckboxes = (props) => {
   const [selectedKeys, setSelectedKeys] = useState(['1', '2']);
-  const onSelectionChange = (key) => {
-    setSelectedKeys(key);
+  const onSelectionChange = (keys) => {
+    setSelectedKeys(keys);
   };
 
   return MenuTemplate({
@@ -554,8 +554,8 @@ export const MenuSelectableCheckboxes = (props) => {
 
 export const MenuSelectableRadio = (props) => {
   const [selectedKeys, setSelectedKeys] = useState(['1']);
-  const onSelectionChange = (key) => {
-    setSelectedKeys(key);
+  const onSelectionChange = (keys) => {
+    setSelectedKeys(keys);
   };
 
   return MenuTemplate({
@@ -590,8 +590,8 @@ export const PaymentDetails = (props) => {
 
 export const ItemCustomIcons = (props) => {
   const [selectedKeys, setSelectedKeys] = useState(['1']);
-  const onSelectionChange = (key) => {
-    setSelectedKeys(key);
+  const onSelectionChange = (keys) => {
+    setSelectedKeys(keys);
   };
 
   return (
@@ -624,8 +624,8 @@ export const ItemCustomIcons = (props) => {
 
 export const ItemWithTooltip = (props) => {
   const [selectedKeys, setSelectedKeys] = useState(['1']);
-  const onSelectionChange = (key) => {
-    setSelectedKeys(key);
+  const onSelectionChange = (keys) => {
+    setSelectedKeys(keys);
   };
 
   return (
@@ -671,8 +671,8 @@ export const ItemWithTooltip = (props) => {
 
 export const SectionsWithTooltips = (props) => {
   const [selectedKeys, setSelectedKeys] = useState(['copy']);
-  const onSelectionChange = (key) => {
-    setSelectedKeys(key);
+  const onSelectionChange = (keys) => {
+    setSelectedKeys(keys);
   };
 
   return (

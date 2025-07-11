@@ -90,9 +90,9 @@ The `mods` property accepts the following modifiers you can override:
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | selectionMode | `'single' \| 'multiple'` | `'none'` | Type of selection allowed |
-| selectedKeys | `Iterable<Key>` | - | Currently selected keys (controlled) |
-| defaultSelectedKeys | `Iterable<Key>` | - | Initially selected keys (uncontrolled) |
-| onSelectionChange | `(keys: Selection) => void` | - | Handler for selection changes |
+| selectedKeys | `string[]` | - | Currently selected keys (controlled) |
+| defaultSelectedKeys | `string[]` | - | Initially selected keys (uncontrolled) |
+| onSelectionChange | `(keys: string[]) => void` | - | Handler for selection changes |
 | selectionIcon | `'checkbox' \| 'radio'` | - | Type of selection indicator |
 
 ### State Properties

@@ -32,7 +32,10 @@ import { StyledDivider, StyledHeader, StyledMenu } from './styled';
 export interface CubeMenuProps<T>
   extends BasePropsWithoutChildren,
     ContainerStyleProps,
-    AriaMenuProps<T> {
+    Omit<
+      AriaMenuProps<T>,
+      'selectedKeys' | 'defaultSelectedKeys' | 'onSelectionChange'
+    > {
   selectionIcon?: MenuSelectionType;
   // @deprecated
   header?: ReactNode;
@@ -43,19 +46,26 @@ export interface CubeMenuProps<T>
   sectionHeadingStyles?: Styles;
   /**
    * Whether keyboard navigation should wrap around when reaching the start/end of the collection.
-   * This directly maps to the `shouldFocusWrap` option supported by React-Aria’s `useMenu` hook.
+   * This directly maps to the `shouldFocusWrap` option supported by React-Aria's `useMenu` hook.
    */
   shouldFocusWrap?: boolean;
 
   /**
    * Whether the menu should automatically receive focus when it mounts.
-   * This directly maps to the `autoFocus` option supported by React-Aria’s `useMenu` hook.
+   * This directly maps to the `autoFocus` option supported by React-Aria's `useMenu` hook.
    */
   autoFocus?: boolean | FocusStrategy;
   shouldUseVirtualFocus?: boolean;
 
   /** Size of the menu items */
   size?: 'small' | 'medium' | (string & {});
+
+  /** Currently selected keys (controlled) */
+  selectedKeys?: string[];
+  /** Initially selected keys (uncontrolled) */
+  defaultSelectedKeys?: string[];
+  /** Handler for selection changes */
+  onSelectionChange?: (keys: string[]) => void;
 }
 
 function Menu<T extends object>(
@@ -71,11 +81,40 @@ function Menu<T extends object>(
     selectionIcon,
     size = 'small',
     qa,
+    selectedKeys,
+    defaultSelectedKeys,
+    onSelectionChange,
     ...rest
   } = props;
   const domRef = useDOMRef(ref);
   const contextProps = useMenuContext();
-  const completeProps = mergeProps(contextProps, rest);
+
+  // Convert string[] to Set<Key> for React Aria compatibility
+  const ariaSelectedKeys = selectedKeys ? new Set(selectedKeys) : undefined;
+  const ariaDefaultSelectedKeys = defaultSelectedKeys
+    ? new Set(defaultSelectedKeys)
+    : undefined;
+
+  // Convert Set<Key> to string[] for the callback
+  const handleSelectionChange = onSelectionChange
+    ? (keys: any) => {
+        if (keys === 'all') {
+          // Handle 'all' selection case - for now, we'll pass an empty array
+          // This is a rare edge case that might need special handling
+          onSelectionChange([]);
+        } else if (keys instanceof Set) {
+          onSelectionChange(Array.from(keys).map((key) => String(key)));
+        } else {
+          onSelectionChange([]);
+        }
+      }
+    : undefined;
+
+  const completeProps = mergeProps(contextProps, rest, {
+    selectedKeys: ariaSelectedKeys,
+    defaultSelectedKeys: ariaDefaultSelectedKeys,
+    onSelectionChange: handleSelectionChange,
+  });
 
   // Props used for collection building.
   const treeProps = completeProps as typeof completeProps;

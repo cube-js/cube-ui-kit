@@ -56,7 +56,10 @@ export interface CommandMenuItem {
 export interface CubeCommandMenuProps<T>
   extends BaseProps,
     ContainerStyleProps,
-    CubeMenuProps<T> {
+    Omit<
+      CubeMenuProps<T>,
+      'selectedKeys' | 'defaultSelectedKeys' | 'onSelectionChange'
+    > {
   // Search-specific props
   searchPlaceholder?: string;
   searchValue?: string;
@@ -74,6 +77,13 @@ export interface CubeCommandMenuProps<T>
 
   // Size prop
   size?: 'small' | 'medium' | (string & {});
+
+  /** Currently selected keys (controlled) */
+  selectedKeys?: string[];
+  /** Initially selected keys (uncontrolled) */
+  defaultSelectedKeys?: string[];
+  /** Handler for selection changes */
+  onSelectionChange?: (keys: string[]) => void;
 }
 
 function CommandMenuBase<T extends object>(
@@ -93,13 +103,42 @@ function CommandMenuBase<T extends object>(
     size = 'small',
     qa,
     styles,
+    selectedKeys,
+    defaultSelectedKeys,
+    onSelectionChange,
     ...restMenuProps
   } = props;
 
   const domRef = useDOMRef(ref);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const contextProps = useMenuContext();
-  const completeProps = mergeProps(contextProps, restMenuProps);
+
+  // Convert string[] to Set<Key> for React Aria compatibility
+  const ariaSelectedKeys = selectedKeys ? new Set(selectedKeys) : undefined;
+  const ariaDefaultSelectedKeys = defaultSelectedKeys
+    ? new Set(defaultSelectedKeys)
+    : undefined;
+
+  // Convert Set<Key> to string[] for the callback
+  const handleSelectionChange = onSelectionChange
+    ? (keys: any) => {
+        if (keys === 'all') {
+          // Handle 'all' selection case - for now, we'll pass an empty array
+          // This is a rare edge case that might need special handling
+          onSelectionChange([]);
+        } else if (keys instanceof Set) {
+          onSelectionChange(Array.from(keys).map((key) => String(key)));
+        } else {
+          onSelectionChange([]);
+        }
+      }
+    : undefined;
+
+  const completeProps = mergeProps(contextProps, restMenuProps, {
+    selectedKeys: ariaSelectedKeys,
+    defaultSelectedKeys: ariaDefaultSelectedKeys,
+    onSelectionChange: handleSelectionChange,
+  });
 
   // Search state management
   const [internalSearchValue, setInternalSearchValue] = useState('');
@@ -222,7 +261,7 @@ function CommandMenuBase<T extends object>(
     const filterNodes = (items: any[]): any[] => {
       const result: any[] = [];
 
-      items.forEach((item) => {
+      [...items].forEach((item) => {
         if (item.type === 'section') {
           const filteredChildren = filterNodes(item.childNodes);
           if (filteredChildren.length) {

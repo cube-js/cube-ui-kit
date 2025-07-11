@@ -1,7 +1,24 @@
 import { expect, userEvent, waitFor, within } from '@storybook/test';
+import {
+  IconArrowBack,
+  IconArrowForward,
+  IconClipboard,
+  IconCopy,
+  IconCut,
+  IconDeviceFloppy,
+  IconFile,
+  IconFileText,
+  IconFolder,
+  IconSearch,
+  IconSettings,
+} from '@tabler/icons-react';
 import React, { useState } from 'react';
 
-import { Dialog, DialogTrigger } from '../../overlays/Dialog';
+import {
+  Dialog,
+  DialogTrigger,
+  useDialogContainer,
+} from '../../overlays/Dialog';
 import { Button } from '../Button';
 import { Menu } from '../Menu/Menu';
 
@@ -557,6 +574,41 @@ MultipleSelection.args = {
   autoFocus: true,
 };
 
+export const SingleSelection: StoryFn<CubeCommandMenuProps<any>> = (args) => {
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div>
+        <strong>Selected:</strong> {selectedKey || 'None'}
+      </div>
+      <CommandMenu
+        {...args}
+        selectionMode="single"
+        selectedKeys={selectedKey ? [selectedKey] : []}
+        onSelectionChange={(keys) => {
+          setSelectedKey(keys[0] || null);
+        }}
+      >
+        {basicCommands.map((command) => (
+          <CommandMenu.Item
+            key={command.key}
+            description={command.description}
+            hotkeys={command.hotkeys}
+          >
+            {command.label}
+          </CommandMenu.Item>
+        ))}
+      </CommandMenu>
+    </div>
+  );
+};
+
+SingleSelection.args = {
+  searchPlaceholder: 'Select a single command...',
+  autoFocus: true,
+};
+
 export const CustomStyling: StoryFn<CubeCommandMenuProps<any>> = (args) => (
   <CommandMenu
     {...args}
@@ -673,7 +725,7 @@ export const WithDialog: StoryFn<CubeCommandMenuProps<any>> = (args) => (
   <DialogTrigger>
     <Button>Open Command Menu</Button>
     <Dialog size="medium" isDismissable={false}>
-      <CommandMenu width="100%" height="20x" {...args} size="medium">
+      <CommandMenu width="100%" height="min(40x, 90vh)" {...args} size="medium">
         {basicCommands.map((command) => (
           <CommandMenu.Item
             key={command.key}
@@ -690,5 +742,189 @@ export const WithDialog: StoryFn<CubeCommandMenuProps<any>> = (args) => (
 
 WithDialog.args = {
   searchPlaceholder: 'Search commands...',
+  autoFocus: true,
+};
+
+WithDialog.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const button = canvas.getByText('Open Command Menu');
+  await userEvent.click(button);
+
+  // Wait for dialog to open
+  await waitFor(() => {
+    canvas.getByPlaceholderText('Search commands...');
+  });
+};
+
+function CommandMenuDialogContent({
+  onClose,
+  ...args
+}: CubeCommandMenuProps<any> & { onClose: () => void }) {
+  const commandMenuProps = {
+    ...args,
+    onAction: (key: React.Key) => {
+      console.log('Action selected:', key);
+      onClose();
+    },
+  };
+
+  return (
+    <Dialog size="medium" isDismissable={false}>
+      <CommandMenu
+        width="100%"
+        height="min(40x, 90vh)"
+        {...commandMenuProps}
+        size="medium"
+      >
+        {basicCommands.map((command) => (
+          <CommandMenu.Item
+            key={command.key}
+            description={command.description}
+            hotkeys={command.hotkeys}
+          >
+            {command.label}
+          </CommandMenu.Item>
+        ))}
+      </CommandMenu>
+    </Dialog>
+  );
+}
+
+export const WithDialogContainer: StoryFn<CubeCommandMenuProps<any>> = (
+  args,
+) => {
+  const dialog = useDialogContainer(CommandMenuDialogContent);
+
+  const handleOpenDialog = () => {
+    dialog.open({
+      ...args,
+      onClose: dialog.close,
+    });
+  };
+
+  return (
+    <div>
+      <Button onPress={handleOpenDialog}>Open Command Menu (Hook)</Button>
+      {dialog.rendered}
+    </div>
+  );
+};
+
+WithDialogContainer.args = {
+  searchPlaceholder: 'Search commands...',
+  autoFocus: true,
+};
+
+WithDialogContainer.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const button = canvas.getByText('Open Command Menu (Hook)');
+  await userEvent.click(button);
+
+  // Wait for dialog to open
+  await waitFor(() => {
+    canvas.getByPlaceholderText('Search commands...');
+  });
+};
+
+export const WithIcons: StoryFn<CubeCommandMenuProps<any>> = (args) => (
+  <CommandMenu {...args}>
+    <Menu.Section title="File Operations">
+      <CommandMenu.Item
+        key="new-file"
+        icon={<IconFile />}
+        description="Create a new file"
+        hotkeys="Ctrl+N"
+      >
+        New File
+      </CommandMenu.Item>
+      <CommandMenu.Item
+        key="open-file"
+        icon={<IconFolder />}
+        description="Open an existing file"
+        hotkeys="Ctrl+O"
+      >
+        Open File
+      </CommandMenu.Item>
+      <CommandMenu.Item
+        key="save-file"
+        icon={<IconDeviceFloppy />}
+        description="Save current file"
+        hotkeys="Ctrl+S"
+      >
+        Save File
+      </CommandMenu.Item>
+    </Menu.Section>
+
+    <Menu.Section title="Edit Operations">
+      <CommandMenu.Item
+        key="copy"
+        icon={<IconCopy />}
+        description="Copy selected text"
+        hotkeys="Ctrl+C"
+        keywords={['duplicate', 'clone']}
+      >
+        Copy
+      </CommandMenu.Item>
+      <CommandMenu.Item
+        key="paste"
+        icon={<IconClipboard />}
+        description="Paste from clipboard"
+        hotkeys="Ctrl+V"
+        keywords={['insert']}
+      >
+        Paste
+      </CommandMenu.Item>
+      <CommandMenu.Item
+        key="cut"
+        icon={<IconCut />}
+        description="Cut selected text"
+        hotkeys="Ctrl+X"
+      >
+        Cut
+      </CommandMenu.Item>
+      <CommandMenu.Item
+        key="undo"
+        icon={<IconArrowBack />}
+        description="Undo last action"
+        hotkeys="Ctrl+Z"
+      >
+        Undo
+      </CommandMenu.Item>
+      <CommandMenu.Item
+        key="redo"
+        icon={<IconArrowForward />}
+        description="Redo last action"
+        hotkeys="Ctrl+Y"
+      >
+        Redo
+      </CommandMenu.Item>
+    </Menu.Section>
+
+    <Menu.Section title="Tools">
+      <CommandMenu.Item
+        key="search"
+        icon={<IconSearch />}
+        description="Search in files"
+        hotkeys="Ctrl+F"
+      >
+        Search
+      </CommandMenu.Item>
+      <CommandMenu.Item
+        key="settings"
+        icon={<IconSettings />}
+        description="Open settings"
+        hotkeys="Ctrl+."
+      >
+        Settings
+      </CommandMenu.Item>
+      <CommandMenu.Item key="documents" description="View all documents">
+        Documents
+      </CommandMenu.Item>
+    </Menu.Section>
+  </CommandMenu>
+);
+
+WithIcons.args = {
+  searchPlaceholder: 'Search commands with icons...',
   autoFocus: true,
 };

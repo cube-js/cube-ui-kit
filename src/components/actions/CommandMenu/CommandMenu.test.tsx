@@ -158,8 +158,7 @@ describe('CommandMenu', () => {
 
     expect(onSelectionChange).toHaveBeenCalledTimes(1);
     const selectionArg = onSelectionChange.mock.calls[0][0];
-    expect(selectionArg).toBeInstanceOf(Set);
-    expect(selectionArg.has('1')).toBe(true);
+    expect(selectionArg).toEqual(['1']);
   });
 
   it('clears search with Escape key', async () => {
@@ -560,5 +559,70 @@ describe('CommandMenu', () => {
     const copyItem = screen.getByText('Copy').closest('li');
     expect(copyItem).toHaveTextContent('Ctrl');
     expect(copyItem).toHaveTextContent('C');
+  });
+
+  it('handles multiple selection with string[] selectedKeys', async () => {
+    const user = userEvent.setup();
+    const onSelectionChange = jest.fn();
+
+    // Create a component that properly handles string[] selectedKeys
+    const TestComponent = () => {
+      const [selectedKeys, setSelectedKeys] = React.useState<string[]>([]);
+
+      const handleSelectionChange = (keys: string[]) => {
+        setSelectedKeys(keys);
+        onSelectionChange(keys);
+      };
+
+      return (
+        <div>
+          <div data-testid="selected-display">
+            Selected: {selectedKeys.join(', ') || 'None'}
+          </div>
+          <CommandMenu
+            selectionMode="multiple"
+            selectedKeys={selectedKeys}
+            onSelectionChange={handleSelectionChange}
+          >
+            {items.map((item) => (
+              <CommandMenu.Item key={item.id} id={item.id}>
+                {item.textValue}
+              </CommandMenu.Item>
+            ))}
+          </CommandMenu>
+        </div>
+      );
+    };
+
+    render(<TestComponent />);
+
+    const searchInput = screen.getByPlaceholderText('Search commands...');
+    await user.click(searchInput);
+
+    // Navigate to first item and select it
+    await user.keyboard('{ArrowDown}');
+    await user.keyboard('{Enter}');
+
+    // Check that onSelectionChange was called with a string[]
+    expect(onSelectionChange).toHaveBeenCalledTimes(1);
+    const selectionArg = onSelectionChange.mock.calls[0][0];
+    expect(selectionArg).toEqual(['1']);
+
+    // Verify the display shows the selected item
+    let selectedDisplay = screen.getByText(/Selected:/);
+    expect(selectedDisplay).toHaveTextContent(/Selected:.*1/);
+
+    // Select another item
+    await user.keyboard('{ArrowDown}');
+    await user.keyboard('{Enter}');
+
+    // Check that both items are selected
+    expect(onSelectionChange).toHaveBeenCalledTimes(2);
+    const secondSelectionArg = onSelectionChange.mock.calls[1][0];
+    expect(secondSelectionArg).toEqual(expect.arrayContaining(['1', '2']));
+
+    // Verify the display shows both selected items
+    selectedDisplay = screen.getByText(/Selected:/);
+    expect(selectedDisplay).toHaveTextContent(/Selected:.*1.*2/);
   });
 });

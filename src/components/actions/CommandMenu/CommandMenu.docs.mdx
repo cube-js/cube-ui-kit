@@ -188,6 +188,119 @@ const [searchValue, setSearchValue] = useState('');
 </CommandMenu>
 ```
 
+### With Selection
+
+```jsx
+const [selectedKeys, setSelectedKeys] = useState(['copy']);
+
+<CommandMenu
+  selectionMode="single"
+  selectedKeys={selectedKeys}
+  onSelectionChange={setSelectedKeys}
+  searchPlaceholder="Select commands..."
+>
+  <Menu.Item key="copy">Copy</Menu.Item>
+  <Menu.Item key="paste">Paste</Menu.Item>
+  <Menu.Item key="cut">Cut</Menu.Item>
+</CommandMenu>
+```
+
+### Multiple Selection
+
+```jsx
+const [selectedKeys, setSelectedKeys] = useState(['copy', 'paste']);
+
+<CommandMenu
+  selectionMode="multiple"
+  selectedKeys={selectedKeys}
+  onSelectionChange={setSelectedKeys}
+  searchPlaceholder="Select multiple commands..."
+>
+  <Menu.Item key="copy">Copy</Menu.Item>
+  <Menu.Item key="paste">Paste</Menu.Item>
+  <Menu.Item key="cut">Cut</Menu.Item>
+</CommandMenu>
+```
+
+### With DialogTrigger
+
+Use CommandMenu inside a Dialog with DialogTrigger for modal command palette functionality:
+
+```jsx
+<DialogTrigger>
+  <Button>Open Command Menu</Button>
+  <Dialog size="medium" isDismissable={false}>
+    <CommandMenu width="100%" height="max(40x, 90vh)" size="medium" searchPlaceholder="Search commands...">
+      <Menu.Item key="copy" description="Copy selected text" hotkeys="Ctrl+C">
+        Copy
+      </Menu.Item>
+      <Menu.Item key="paste" description="Paste from clipboard" hotkeys="Ctrl+V">
+        Paste
+      </Menu.Item>
+      <Menu.Item key="cut" description="Cut selected text" hotkeys="Ctrl+X">
+        Cut
+      </Menu.Item>
+    </CommandMenu>
+  </Dialog>
+</DialogTrigger>
+```
+
+### With useDialogContainer Hook
+
+For programmatic control over the command menu dialog:
+
+```jsx
+import { useDialogContainer } from '@cube-dev/ui-kit';
+
+function CommandMenuDialogContent({ onClose, ...args }) {
+  const handleAction = (key) => {
+    console.log('Action selected:', key);
+    onClose();
+  };
+
+  return (
+    <Dialog size="medium" isDismissable={false}>
+      <CommandMenu 
+        width="100%" 
+        height="max(40x, 90vh)" 
+        size="medium" 
+        onAction={handleAction}
+        {...args}
+      >
+        <Menu.Item key="copy" description="Copy selected text" hotkeys="Ctrl+C">
+          Copy
+        </Menu.Item>
+        <Menu.Item key="paste" description="Paste from clipboard" hotkeys="Ctrl+V">
+          Paste
+        </Menu.Item>
+        <Menu.Item key="cut" description="Cut selected text" hotkeys="Ctrl+X">
+          Cut
+        </Menu.Item>
+      </CommandMenu>
+    </Dialog>
+  );
+}
+
+function App() {
+  const dialog = useDialogContainer(CommandMenuDialogContent);
+
+  const handleOpenDialog = () => {
+    dialog.open({
+      searchPlaceholder: 'Search commands...',
+      autoFocus: true,
+      onClose: dialog.close,
+    });
+  };
+
+  return (
+    <div>
+      <Button onPress={handleOpenDialog}>Open Command Menu</Button>
+      {dialog.rendered}
+    </div>
+  );
+}
+```
+
 ## Advanced Features
 
 ### Enhanced Search

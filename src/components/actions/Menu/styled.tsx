@@ -87,8 +87,8 @@ export const StyledItem = tasty({
     ...DEFAULT_NEUTRAL_STYLES,
 
     // Override specifics for menu context
-    display: 'grid',
-    flow: 'column',
+    display: 'flex',
+    flow: 'row',
     justifyContent: 'stretch',
     listStyle: 'none',
     height: {
