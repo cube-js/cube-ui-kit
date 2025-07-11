@@ -1,6 +1,6 @@
 import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
 import { ComboBox } from './ComboBox';
-import * as ComboBoxStories from './ComboBox.stories.tsx';
+import * as ComboBoxStories from './ComboBox.stories';
 
 <Meta of={ComboBoxStories} />
 
@@ -76,7 +76,8 @@ The `mods` property accepts the following modifiers you can override:
 
 ### Sizes
 
-- `small` - Compact size for dense interfaces
+- `small` - Compact size for dense interfaces (32px height, default)
+- `medium` - Medium size for standard interfaces (40px height)
 - `default` - Standard size
 - `large` - Emphasized size for important selections
 
@@ -154,6 +155,20 @@ The `mods` property accepts the following modifiers you can override:
   placeholder="Cannot be edited"
 >
   <ComboBox.Item key="option1">Option 1</ComboBox.Item>
+</ComboBox>
+```
+
+### Small Size
+
+```jsx
+<ComboBox
+  label="Priority"
+  size="small"
+  placeholder="Select priority..."
+>
+  <ComboBox.Item key="low">Low</ComboBox.Item>
+  <ComboBox.Item key="medium">Medium</ComboBox.Item>
+  <ComboBox.Item key="high">High</ComboBox.Item>
 </ComboBox>
 ```
 

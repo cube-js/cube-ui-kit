@@ -25,6 +25,7 @@ export interface MenuItemProps<T> {
   isVirtualized?: boolean;
   isDisabled?: boolean;
   onAction?: (key: Key) => void;
+  size?: 'small' | 'medium' | (string & {});
 }
 
 // Returns icon corresponding to selection type
@@ -51,12 +52,14 @@ const getPostfix = (postfix?: ReactNode) =>
 
 /** @private */
 export function MenuItem<T>(props: MenuItemProps<T>) {
-  const { item, state, styles, selectionIcon, isVirtualized, onAction } = props;
+  const { item, state, styles, selectionIcon, isVirtualized, onAction, size } =
+    props;
   const { onClose, closeOnSelect } = useMenuContext();
   const { rendered, key, props: itemProps } = item;
 
-  // Extract optional keyboard shortcut from item props so it is not passed down to DOM elements.
-  const { hotkeys, wrapper, ...cleanItemProps } = (itemProps || {}) as any;
+  // Extract optional keyboard shortcut and CommandMenu-specific props from item props so they are not passed down to DOM elements.
+  const { hotkeys, wrapper, keywords, forceMount, ...cleanItemProps } =
+    (itemProps || {}) as any;
 
   const isSelectable = state.selectionManager.selectionMode !== 'none';
   const isDisabledKey = state.disabledKeys.has(key);
@@ -107,9 +110,11 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
       ? getSelectionTypeIcon(selectionIcon)
       : undefined;
 
+  const isVirtualFocused = state.selectionManager.focusedKey === key;
+
   const mods = {
     ...itemMods,
-    focused: isFocused,
+    focused: isFocused || isVirtualFocused,
     pressed: isPressed,
     selectionIcon: !!selectionIcon,
     selectable: isSelectable,
@@ -132,6 +137,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
       enableOnContentEditable: true,
       enabled: !!hotkeys,
       preventDefault: true,
+      enableOnFormTags: true,
     },
     [hotkeys, isDisabledKey, isDisabled],
   );
@@ -144,6 +150,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
           mods,
           styles,
           'aria-disabled': isDisabled || undefined,
+          'data-size': size,
         })}
         ref={ref}
       >

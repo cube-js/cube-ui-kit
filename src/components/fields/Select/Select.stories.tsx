@@ -86,12 +86,12 @@ export default {
       },
     },
     size: {
-      options: ['small', 'default', 'large'],
+      options: ['small', 'medium', 'large'],
       control: { type: 'radio' },
       description: 'Size of the select component',
       table: {
         type: { summary: 'string' },
-        defaultValue: { summary: 'default' },
+        defaultValue: { summary: 'small' },
       },
     },
     direction: {
@@ -386,6 +386,9 @@ Default.args = {};
 
 export const Small = Template.bind({});
 Small.args = { placeholder: 'small', size: 'small' };
+
+export const Medium = Template.bind({});
+Medium.args = { placeholder: 'medium', size: 'medium' };
 
 export const Primary = Template.bind({});
 Primary.args = { type: 'primary', placeholder: 'primary' };

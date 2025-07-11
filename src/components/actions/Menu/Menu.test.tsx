@@ -70,8 +70,7 @@ describe('<Menu />', () => {
 
     expect(onSelectionChange).toHaveBeenCalledTimes(1);
     const selectionArg = onSelectionChange.mock.calls[0][0];
-    expect(selectionArg).toBeInstanceOf(Set);
-    expect(selectionArg.has('copy')).toBe(true);
+    expect(selectionArg).toEqual(['copy']);
   });
 
   it('should work with multiple selection mode', async () => {
@@ -97,8 +96,7 @@ describe('<Menu />', () => {
 
     expect(onSelectionChange).toHaveBeenCalledTimes(1);
     const firstCall = onSelectionChange.mock.calls[0][0];
-    expect(firstCall).toBeInstanceOf(Set);
-    expect(firstCall.has('copy')).toBe(true);
+    expect(firstCall).toEqual(['copy']);
 
     await act(async () => {
       await userEvent.click(pasteItem);
@@ -106,9 +104,7 @@ describe('<Menu />', () => {
 
     expect(onSelectionChange).toHaveBeenCalledTimes(2);
     const secondCall = onSelectionChange.mock.calls[1][0];
-    expect(secondCall).toBeInstanceOf(Set);
-    expect(secondCall.has('copy')).toBe(true);
-    expect(secondCall.has('paste')).toBe(true);
+    expect(secondCall).toEqual(expect.arrayContaining(['copy', 'paste']));
   });
 
   // Controlled and uncontrolled state tests
@@ -648,8 +644,7 @@ describe('<Menu />', () => {
 
     expect(onSelectionChange).toHaveBeenCalledTimes(1);
     const selectionArg = onSelectionChange.mock.calls[0][0];
-    expect(selectionArg).toBeInstanceOf(Set);
-    expect(selectionArg.has('copy')).toBe(true);
+    expect(selectionArg).toEqual(['copy']);
     expect(onAction).toHaveBeenCalledWith('copy');
   });
 
@@ -712,8 +707,7 @@ describe('<Menu />', () => {
 
     expect(onSelectionChange).toHaveBeenCalledTimes(1);
     const selectionArg = onSelectionChange.mock.calls[0][0];
-    expect(selectionArg).toBeInstanceOf(Set);
-    expect(selectionArg.has('paste')).toBe(true);
+    expect(selectionArg).toEqual(['paste']);
 
     // Simulate controlled state update
     rerender(
@@ -754,9 +748,7 @@ describe('<Menu />', () => {
 
     expect(onSelectionChange).toHaveBeenCalledTimes(1);
     const selectionArg = onSelectionChange.mock.calls[0][0];
-    expect(selectionArg).toBeInstanceOf(Set);
-    expect(selectionArg.has('copy')).toBe(true);
-    expect(selectionArg.has('paste')).toBe(true);
+    expect(selectionArg).toEqual(expect.arrayContaining(['copy', 'paste']));
 
     // Simulate controlled state update
     rerender(
@@ -912,9 +904,7 @@ describe('<Menu />', () => {
 
     expect(onSelectionChange).toHaveBeenCalledTimes(1);
     const selectionArg = onSelectionChange.mock.calls[0][0];
-    expect(selectionArg).toBeInstanceOf(Set);
-    expect(selectionArg.has('copy')).toBe(false);
-    expect(selectionArg.has('paste')).toBe(true);
+    expect(selectionArg).toEqual(['paste']); // 'copy' was deselected
   });
 
   // Test with width and height props
