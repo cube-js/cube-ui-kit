@@ -555,7 +555,7 @@ EmptyState.args = {
 };
 
 export const MultipleSelection: StoryFn<CubeCommandMenuProps<any>> = (args) => {
-  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+  const [selectedKeys, setSelectedKeys] = useState<string[]>(['copy', 'cut']);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -565,6 +565,7 @@ export const MultipleSelection: StoryFn<CubeCommandMenuProps<any>> = (args) => {
       <CommandMenu
         {...args}
         selectionMode="multiple"
+        selectionIcon="checkbox"
         selectedKeys={selectedKeys}
         onSelectionChange={setSelectedKeys}
       >
