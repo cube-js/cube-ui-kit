@@ -312,23 +312,6 @@ The CommandMenu supports enhanced search capabilities:
 - **Force mount**: Certain items can always be visible regardless of search filter
 - **Custom filtering**: Override the default search algorithm with custom logic
 
-### Integration with Dialog System
-
-```jsx
-import { useDialogContainer } from '../../../hooks';
-
-const CommandMenuDialog = useDialogContainer(CommandMenu);
-
-// Usage
-<CommandMenuDialog
-  isOpen={isOpen}
-  onClose={() => setIsOpen(false)}
-  searchPlaceholder="Search commands..."
->
-  <Menu.Item key="action1">Action 1</Menu.Item>
-</CommandMenuDialog>
-```
-
 ## Best Practices
 
 ### Do's

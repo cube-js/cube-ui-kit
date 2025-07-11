@@ -46,7 +46,6 @@ export interface CommandMenuItem {
 
   // Enhanced search features
   keywords?: string[];
-  value?: string;
   forceMount?: boolean;
 
   // Standard Menu item props inherited
@@ -184,11 +183,6 @@ function CommandMenuBase<T extends object>(
         return item.keywords.some((keyword: string) =>
           textFilterFn(keyword, inputValue),
         );
-      }
-
-      // Check custom value if available
-      if (item?.value && typeof item.value === 'string') {
-        return textFilterFn(item.value, inputValue);
       }
 
       return false;

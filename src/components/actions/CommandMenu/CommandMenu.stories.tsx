@@ -10,6 +10,7 @@ import {
   IconFileText,
   IconFolder,
   IconSearch,
+  IconSelect,
   IconSettings,
 } from '@tabler/icons-react';
 import React, { useState } from 'react';
@@ -135,36 +136,42 @@ const basicCommands = [
     label: 'Copy',
     description: 'Copy selected text',
     hotkeys: 'Ctrl+C',
+    icon: <IconCopy />,
   },
   {
     key: 'paste',
     label: 'Paste',
     description: 'Paste from clipboard',
     hotkeys: 'Ctrl+V',
+    icon: <IconClipboard />,
   },
   {
     key: 'cut',
     label: 'Cut',
     description: 'Cut selected text',
     hotkeys: 'Ctrl+X',
+    icon: <IconCut />,
   },
   {
     key: 'undo',
     label: 'Undo',
     description: 'Undo last action',
     hotkeys: 'Ctrl+Z',
+    icon: <IconArrowBack />,
   },
   {
     key: 'redo',
     label: 'Redo',
     description: 'Redo last action',
     hotkeys: 'Ctrl+Y',
+    icon: <IconArrowForward />,
   },
   {
     key: 'select-all',
     label: 'Select All',
     description: 'Select all text',
     hotkeys: 'Ctrl+A',
+    icon: <IconSelect />,
   },
 ];
 
@@ -291,6 +298,7 @@ export const Default: StoryFn<CubeCommandMenuProps<any>> = (args) => (
         key={command.key}
         description={command.description}
         hotkeys={command.hotkeys}
+        icon={command.icon}
       >
         {command.label}
       </CommandMenu.Item>
@@ -349,6 +357,7 @@ export const WithMenuTrigger: StoryFn<CubeCommandMenuProps<any>> = (args) => (
           key={command.key}
           description={command.description}
           hotkeys={command.hotkeys}
+          icon={command.icon}
         >
           {command.label}
         </CommandMenu.Item>
@@ -411,6 +420,7 @@ export const ControlledSearch: StoryFn<CubeCommandMenuProps<any>> = (args) => {
             key={command.key}
             description={command.description}
             hotkeys={command.hotkeys}
+            icon={command.icon}
           >
             {command.label}
           </CommandMenu.Item>
@@ -432,6 +442,7 @@ export const LoadingState: StoryFn<CubeCommandMenuProps<any>> = (args) => (
         key={command.key}
         description={command.description}
         hotkeys={command.hotkeys}
+        icon={command.icon}
       >
         {command.label}
       </CommandMenu.Item>
@@ -469,6 +480,7 @@ export const CustomFilter: StoryFn<CubeCommandMenuProps<any>> = (args) => (
         key={command.key}
         description={command.description}
         hotkeys={command.hotkeys}
+        icon={command.icon}
       >
         {command.label}
       </CommandMenu.Item>
@@ -516,6 +528,7 @@ export const ForceMountItems: StoryFn<CubeCommandMenuProps<any>> = (args) => (
         key={command.key}
         description={command.description}
         hotkeys={command.hotkeys}
+        icon={command.icon}
       >
         {command.label}
       </CommandMenu.Item>
@@ -560,6 +573,7 @@ export const MultipleSelection: StoryFn<CubeCommandMenuProps<any>> = (args) => {
             key={command.key}
             description={command.description}
             hotkeys={command.hotkeys}
+            icon={command.icon}
           >
             {command.label}
           </CommandMenu.Item>
@@ -595,6 +609,7 @@ export const SingleSelection: StoryFn<CubeCommandMenuProps<any>> = (args) => {
             key={command.key}
             description={command.description}
             hotkeys={command.hotkeys}
+            icon={command.icon}
           >
             {command.label}
           </CommandMenu.Item>
@@ -627,6 +642,7 @@ export const CustomStyling: StoryFn<CubeCommandMenuProps<any>> = (args) => (
         key={command.key}
         description={command.description}
         hotkeys={command.hotkeys}
+        icon={command.icon}
       >
         {command.label}
       </CommandMenu.Item>
@@ -688,6 +704,7 @@ export const HotkeyTesting: StoryFn<CubeCommandMenuProps<any>> = (args) => {
             key={command.key}
             description={command.description}
             hotkeys={command.hotkeys}
+            icon={command.icon}
           >
             {command.label}
           </CommandMenu.Item>
@@ -709,6 +726,7 @@ export const MediumSize: StoryFn<CubeCommandMenuProps<any>> = (args) => (
         key={command.key}
         description={command.description}
         hotkeys={command.hotkeys}
+        icon={command.icon}
       >
         {command.label}
       </CommandMenu.Item>
@@ -731,6 +749,7 @@ export const WithDialog: StoryFn<CubeCommandMenuProps<any>> = (args) => (
             key={command.key}
             description={command.description}
             hotkeys={command.hotkeys}
+            icon={command.icon}
           >
             {command.label}
           </CommandMenu.Item>
@@ -781,6 +800,7 @@ function CommandMenuDialogContent({
             key={command.key}
             description={command.description}
             hotkeys={command.hotkeys}
+            icon={command.icon}
           >
             {command.label}
           </CommandMenu.Item>
@@ -824,107 +844,4 @@ WithDialogContainer.play = async ({ canvasElement }) => {
   await waitFor(() => {
     canvas.getByPlaceholderText('Search commands...');
   });
-};
-
-export const WithIcons: StoryFn<CubeCommandMenuProps<any>> = (args) => (
-  <CommandMenu {...args}>
-    <Menu.Section title="File Operations">
-      <CommandMenu.Item
-        key="new-file"
-        icon={<IconFile />}
-        description="Create a new file"
-        hotkeys="Ctrl+N"
-      >
-        New File
-      </CommandMenu.Item>
-      <CommandMenu.Item
-        key="open-file"
-        icon={<IconFolder />}
-        description="Open an existing file"
-        hotkeys="Ctrl+O"
-      >
-        Open File
-      </CommandMenu.Item>
-      <CommandMenu.Item
-        key="save-file"
-        icon={<IconDeviceFloppy />}
-        description="Save current file"
-        hotkeys="Ctrl+S"
-      >
-        Save File
-      </CommandMenu.Item>
-    </Menu.Section>
-
-    <Menu.Section title="Edit Operations">
-      <CommandMenu.Item
-        key="copy"
-        icon={<IconCopy />}
-        description="Copy selected text"
-        hotkeys="Ctrl+C"
-        keywords={['duplicate', 'clone']}
-      >
-        Copy
-      </CommandMenu.Item>
-      <CommandMenu.Item
-        key="paste"
-        icon={<IconClipboard />}
-        description="Paste from clipboard"
-        hotkeys="Ctrl+V"
-        keywords={['insert']}
-      >
-        Paste
-      </CommandMenu.Item>
-      <CommandMenu.Item
-        key="cut"
-        icon={<IconCut />}
-        description="Cut selected text"
-        hotkeys="Ctrl+X"
-      >
-        Cut
-      </CommandMenu.Item>
-      <CommandMenu.Item
-        key="undo"
-        icon={<IconArrowBack />}
-        description="Undo last action"
-        hotkeys="Ctrl+Z"
-      >
-        Undo
-      </CommandMenu.Item>
-      <CommandMenu.Item
-        key="redo"
-        icon={<IconArrowForward />}
-        description="Redo last action"
-        hotkeys="Ctrl+Y"
-      >
-        Redo
-      </CommandMenu.Item>
-    </Menu.Section>
-
-    <Menu.Section title="Tools">
-      <CommandMenu.Item
-        key="search"
-        icon={<IconSearch />}
-        description="Search in files"
-        hotkeys="Ctrl+F"
-      >
-        Search
-      </CommandMenu.Item>
-      <CommandMenu.Item
-        key="settings"
-        icon={<IconSettings />}
-        description="Open settings"
-        hotkeys="Ctrl+."
-      >
-        Settings
-      </CommandMenu.Item>
-      <CommandMenu.Item key="documents" description="View all documents">
-        Documents
-      </CommandMenu.Item>
-    </Menu.Section>
-  </CommandMenu>
-);
-
-WithIcons.args = {
-  searchPlaceholder: 'Search commands with icons...',
-  autoFocus: true,
 };
