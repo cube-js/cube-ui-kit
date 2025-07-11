@@ -1,7 +1,7 @@
 import { useSyncRef } from '@react-aria/utils';
 import { useDOMRef } from '@react-spectrum/utils';
 import { DOMRef, FocusStrategy, ItemProps, Key } from '@react-types/shared';
-import React, { ReactElement, ReactNode, useMemo } from 'react';
+import React, { ReactElement, ReactNode, useMemo, useRef } from 'react';
 import { AriaMenuProps, useMenu } from 'react-aria';
 import {
   Item as BaseItem,
@@ -95,13 +95,14 @@ function Menu<T extends object>(
     ? new Set(defaultSelectedKeys)
     : undefined;
 
-  // Convert Set<Key> to string[] for the callback
   const handleSelectionChange = onSelectionChange
     ? (keys: any) => {
         if (keys === 'all') {
-          // Handle 'all' selection case - for now, we'll pass an empty array
-          // This is a rare edge case that might need special handling
-          onSelectionChange([]);
+          // Handle 'all' selection case - collect all available keys
+          const allKeys = Array.from(state.collection.getKeys()).map(
+            (key: any) => String(key),
+          );
+          onSelectionChange(allKeys);
         } else if (keys instanceof Set) {
           onSelectionChange(Array.from(keys).map((key) => String(key)));
         } else {
@@ -123,7 +124,7 @@ function Menu<T extends object>(
   const collectionItems = [...state.collection];
   const hasSections = collectionItems.some((item) => item.type === 'section');
 
-  const { menuProps } = useMenu(treeProps, state, domRef);
+  const { menuProps } = useMenu(completeProps, state, domRef);
   const styles = useMemo(
     () => extractStyles(completeProps, CONTAINER_STYLES),
     [completeProps],

@@ -118,13 +118,14 @@ function CommandMenuBase<T extends object>(
     ? new Set(defaultSelectedKeys)
     : undefined;
 
-  // Convert Set<Key> to string[] for the callback
   const handleSelectionChange = onSelectionChange
     ? (keys: any) => {
         if (keys === 'all') {
-          // Handle 'all' selection case - for now, we'll pass an empty array
-          // This is a rare edge case that might need special handling
-          onSelectionChange([]);
+          // Handle 'all' selection case - collect all available keys
+          const allKeys = Array.from(treeState.collection.getKeys()).map(
+            (key: any) => String(key),
+          );
+          onSelectionChange(allKeys);
         } else if (keys instanceof Set) {
           onSelectionChange(Array.from(keys).map((key) => String(key)));
         } else {
@@ -239,6 +240,7 @@ function CommandMenuBase<T extends object>(
   };
 
   const treeState = useTreeState(treeStateProps);
+
   const collectionItems = [...treeState.collection];
   const hasSections = collectionItems.some((item) => item.type === 'section');
 
@@ -304,7 +306,12 @@ function CommandMenuBase<T extends object>(
 
   // Use menu hook for accessibility
   const { menuProps } = useMenu(
-    { ...treeStateProps, 'aria-label': 'Command palette menu' },
+    {
+      ...completeProps,
+      'aria-label': 'Command palette menu',
+      filter: collectionFilter,
+      shouldUseVirtualFocus: true,
+    },
     treeState,
     menuRef,
   );
