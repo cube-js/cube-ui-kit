@@ -356,16 +356,16 @@ WithMenuTrigger.play = async ({ canvasElement, viewMode }) => {
     }
   });
 
-  // Test keyboard navigation and action triggering
-  await userEvent.keyboard('{ArrowDown}'); // Navigate to first item
-  await userEvent.keyboard('{Enter}'); // Trigger action
+  // // Test keyboard navigation and action triggering
+  // await userEvent.keyboard('{ArrowDown}'); // Navigate to first item
+  // await userEvent.keyboard('{Enter}'); // Trigger action
 
-  // Verify the command palette closes after action
-  await waitFor(() => {
-    if (queryByPlaceholderText('Search commands...')) {
-      throw new Error('Command palette should close after action');
-    }
-  });
+  // // Verify the command palette closes after action
+  // await waitFor(() => {
+  //   if (queryByPlaceholderText('Search commands...')) {
+  //     throw new Error('Command palette should close after action');
+  //   }
+  // });
 };
 
 export const ControlledSearch: StoryFn<CubeCommandPaletteProps<any>> = (

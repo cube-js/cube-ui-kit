@@ -13,7 +13,7 @@ import { useFilter, useMenu } from 'react-aria';
 // Import Item and Section from Menu for CommandPalette compound component
 import { Item, Section, useTreeState } from 'react-stately';
 
-import { LoadingIcon, SearchIcon } from '../../../icons';
+import { LoadingIcon } from '../../../icons';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -430,7 +430,6 @@ function CommandPaletteBase<T extends object>(
     >
       {/* Search Input */}
       <StyledSearchWrapper>
-        <SearchIcon />
         <StyledSearchInput
           ref={searchInputRef}
           type="search"
