@@ -192,7 +192,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     hideTrigger,
     message,
     description,
-    size = 'small',
+    size = 'medium',
     autoComplete = 'off',
     direction = 'bottom',
     shouldFlip = true,
