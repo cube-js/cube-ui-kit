@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.66.0
+
+### Minor Changes
+
+- [#720](https://github.com/cube-js/cube-ui-kit/pull/720) [`2275c30`](https://github.com/cube-js/cube-ui-kit/commit/2275c30a9e918c06d861a4c348057fb191566229) Thanks [@tenphi](https://github.com/tenphi)! - Add CommandMenu component.
+
+- [#720](https://github.com/cube-js/cube-ui-kit/pull/720) [`2275c30`](https://github.com/cube-js/cube-ui-kit/commit/2275c30a9e918c06d861a4c348057fb191566229) Thanks [@tenphi](https://github.com/tenphi)! - Changed HotKeys API. Use `children` to pass hotkeys instead of `keys` prop.
+
 ## 0.65.1
 
 ### Patch Changes
