@@ -9,6 +9,15 @@ import {
   useTreeState,
 } from 'react-stately';
 
+import {
+  BasePropsWithoutChildren,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  Styles,
+} from '../../../tasty';
+import { mergeProps } from '../../../utils/react';
 import { CubeBlockProps } from '../../Block';
 import {
   CubeTooltipProviderProps,
@@ -24,16 +33,6 @@ import {
   StyledHeader,
   StyledMenu,
 } from './styled';
-
-import { mergeProps } from '@/utils/react';
-import {
-  BasePropsWithoutChildren,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  extractStyles,
-  filterBaseProps,
-  Styles,
-} from '@/tasty';
 
 export interface CubeMenuProps<T>
   extends BasePropsWithoutChildren,
