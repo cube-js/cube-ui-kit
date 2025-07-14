@@ -159,7 +159,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
             slots={{
               text: { className: 'itemLabel', ...labelProps },
               end: { className: 'end', ...descriptionProps },
-              icon: { className: 'icon', size: 'S' },
+              icon: { className: 'icon' },
               description: { className: 'description', ...descriptionProps },
               keyboard: { className: 'keyboard', ...keyboardShortcutProps },
             }}

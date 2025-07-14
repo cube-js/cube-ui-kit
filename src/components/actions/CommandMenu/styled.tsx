@@ -24,7 +24,11 @@ export const StyledCommandMenu = tasty({
     },
     overflow: 'hidden',
     width: '20x 50x',
-    height: 'initial max-content (50vh - 4x)',
+    height: {
+      '': 'initial',
+      popover: 'initial max-content (50vh - 4x)',
+      tray: 'initial max-content (100vh - 4x)',
+    },
   },
 });
 
