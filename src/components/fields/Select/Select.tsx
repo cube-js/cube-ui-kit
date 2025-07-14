@@ -59,13 +59,13 @@ import {
   SPECIAL_PRIMARY_STYLES,
   SPECIAL_SECONDARY_STYLES,
 } from '../../actions/index';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
-import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import {
   StyledDivider as ListDivider,
   StyledSectionHeading as ListSectionHeading,
   StyledSection as ListSectionWrapper,
-} from '../../pickers/Menu/styled';
+} from '../../actions/Menu/styled';
+import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
 import { DEFAULT_INPUT_STYLES, INPUT_WRAPPER_STYLES } from '../index';
@@ -110,6 +110,7 @@ const SelectWrapperElement = tasty({
       width: {
         '': '4x',
         '[data-size="small"]': '3x',
+        '[data-size="medium"]': '4x',
       },
       cursor: 'pointer',
       fontSize: 'inherit',
@@ -213,11 +214,14 @@ const OptionElement = tasty({
   as: 'li',
   styles: {
     display: 'flex',
+    placeContent: 'start center',
+    placeItems: 'start center',
     flow: 'column',
     gap: '0',
-    padding: '(1x - 1px) (1.5x - 1px)',
+    padding: '.5x 1x',
     cursor: 'pointer',
     radius: true,
+    boxSizing: 'border-box',
     color: {
       '': '#dark-02',
       selected: '#dark',
@@ -232,6 +236,10 @@ const OptionElement = tasty({
     preset: 't3',
     transition: 'theme',
     width: 'max 100%',
+    height: {
+      '': 'min 4x',
+      '[data-size="medium"]': 'min 5x',
+    },
 
     Label: {
       preset: 't3',
@@ -298,7 +306,7 @@ export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
   popoverRef?: RefObject<HTMLInputElement>;
   /** The ref for the list box. */
   listBoxRef?: RefObject<HTMLElement>;
-  size?: 'small' | 'default' | 'large' | string;
+  size?: 'small' | 'medium' | 'default' | 'large' | string;
   placeholder?: string;
 }
 
@@ -349,7 +357,7 @@ function Select<T extends object>(
     shouldFlip = true,
     placeholder,
     tooltip,
-    size,
+    size = 'medium',
     styles,
     type = 'outline',
     theme = 'default',
@@ -518,6 +526,7 @@ export function ListBoxPopup({
   shouldUseVirtualFocus = false,
   placement,
   minWidth,
+  size = 'small',
   ...otherProps
 }) {
   // Get props for the listbox
@@ -591,6 +600,7 @@ export function ListBoxPopup({
                   headingStyles={{ padding: '.5x 1.5x' }}
                   sectionStyles={undefined}
                   shouldUseVirtualFocus={shouldUseVirtualFocus}
+                  size={size}
                 />,
               );
 
@@ -603,6 +613,7 @@ export function ListBoxPopup({
                   state={state}
                   styles={optionStyles}
                   shouldUseVirtualFocus={shouldUseVirtualFocus}
+                  size={size}
                 />,
               );
             }
@@ -625,7 +636,7 @@ export function ListBoxPopup({
   );
 }
 
-function Option({ item, state, styles, shouldUseVirtualFocus }) {
+function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
   let ref = useRef<HTMLDivElement>(null);
   let isDisabled = state.disabledKeys.has(item.key);
   let isSelected = state.selectionManager.isSelected(item.key);
@@ -660,6 +671,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
         disabled: isDisabled,
       }}
       data-theme={isSelected ? 'special' : undefined}
+      data-size={size}
       styles={styles}
     >
       <div data-element="Label">{item.rendered}</div>
@@ -675,6 +687,7 @@ interface SelectSectionProps<T> {
   headingStyles?: Styles;
   sectionStyles?: Styles;
   shouldUseVirtualFocus?: boolean;
+  size?: string;
 }
 
 function SelectSection<T>(props: SelectSectionProps<T>) {
@@ -685,6 +698,7 @@ function SelectSection<T>(props: SelectSectionProps<T>) {
     headingStyles,
     sectionStyles,
     shouldUseVirtualFocus,
+    size,
   } = props;
 
   const heading = item.rendered;
@@ -711,6 +725,7 @@ function SelectSection<T>(props: SelectSectionProps<T>) {
               state={state}
               styles={optionStyles}
               shouldUseVirtualFocus={shouldUseVirtualFocus}
+              size={size}
             />
           ))}
       </ListBoxElement>

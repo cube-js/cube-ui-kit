@@ -8,6 +8,10 @@ export interface MenuContextValue
   shouldFocusWrap?: boolean;
   autoFocus?: boolean | FocusStrategy;
   ref?: MutableRefObject<HTMLUListElement>;
+  mods?: {
+    popover?: boolean;
+    tray?: boolean;
+  };
 }
 
 export const MenuContext = React.createContext<MenuContextValue>({});

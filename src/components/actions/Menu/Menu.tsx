@@ -1,6 +1,6 @@
 import { useSyncRef } from '@react-aria/utils';
 import { useDOMRef } from '@react-spectrum/utils';
-import { DOMRef, FocusStrategy, ItemProps, Key } from '@react-types/shared';
+import { DOMRef, FocusStrategy, ItemProps } from '@react-types/shared';
 import React, { ReactElement, ReactNode, useMemo } from 'react';
 import { AriaMenuProps, useMenu } from 'react-aria';
 import {
@@ -27,12 +27,20 @@ import {
 import { useMenuContext } from './context';
 import { MenuItem, MenuSelectionType } from './MenuItem';
 import { MenuSection } from './MenuSection';
-import { StyledDivider, StyledHeader, StyledMenu } from './styled';
+import {
+  StyledDivider,
+  StyledFooter,
+  StyledHeader,
+  StyledMenu,
+} from './styled';
 
 export interface CubeMenuProps<T>
   extends BasePropsWithoutChildren,
     ContainerStyleProps,
-    AriaMenuProps<T> {
+    Omit<
+      AriaMenuProps<T>,
+      'selectedKeys' | 'defaultSelectedKeys' | 'onSelectionChange'
+    > {
   selectionIcon?: MenuSelectionType;
   // @deprecated
   header?: ReactNode;
@@ -43,15 +51,26 @@ export interface CubeMenuProps<T>
   sectionHeadingStyles?: Styles;
   /**
    * Whether keyboard navigation should wrap around when reaching the start/end of the collection.
-   * This directly maps to the `shouldFocusWrap` option supported by React-Aria’s `useMenu` hook.
+   * This directly maps to the `shouldFocusWrap` option supported by React-Aria's `useMenu` hook.
    */
   shouldFocusWrap?: boolean;
 
   /**
    * Whether the menu should automatically receive focus when it mounts.
-   * This directly maps to the `autoFocus` option supported by React-Aria’s `useMenu` hook.
+   * This directly maps to the `autoFocus` option supported by React-Aria's `useMenu` hook.
    */
   autoFocus?: boolean | FocusStrategy;
+  shouldUseVirtualFocus?: boolean;
+
+  /** Size of the menu items */
+  size?: 'small' | 'medium' | (string & {});
+
+  /** Currently selected keys (controlled) */
+  selectedKeys?: string[];
+  /** Initially selected keys (uncontrolled) */
+  defaultSelectedKeys?: string[];
+  /** Handler for selection changes */
+  onSelectionChange?: (keys: string[]) => void;
 }
 
 function Menu<T extends object>(
@@ -65,12 +84,43 @@ function Menu<T extends object>(
     sectionStyles,
     sectionHeadingStyles,
     selectionIcon,
+    size = 'small',
     qa,
+    selectedKeys,
+    defaultSelectedKeys,
+    onSelectionChange,
     ...rest
   } = props;
   const domRef = useDOMRef(ref);
   const contextProps = useMenuContext();
-  const completeProps = mergeProps(contextProps, rest);
+
+  // Convert string[] to Set<Key> for React Aria compatibility
+  const ariaSelectedKeys = selectedKeys ? new Set(selectedKeys) : undefined;
+  const ariaDefaultSelectedKeys = defaultSelectedKeys
+    ? new Set(defaultSelectedKeys)
+    : undefined;
+
+  const handleSelectionChange = onSelectionChange
+    ? (keys: any) => {
+        if (keys === 'all') {
+          // Handle 'all' selection case - collect all available keys
+          const allKeys = Array.from(state.collection.getKeys()).map(
+            (key: any) => String(key),
+          );
+          onSelectionChange(allKeys);
+        } else if (keys instanceof Set) {
+          onSelectionChange(Array.from(keys).map((key) => String(key)));
+        } else {
+          onSelectionChange([]);
+        }
+      }
+    : undefined;
+
+  const completeProps = mergeProps(contextProps, rest, {
+    selectedKeys: ariaSelectedKeys,
+    defaultSelectedKeys: ariaDefaultSelectedKeys,
+    onSelectionChange: handleSelectionChange,
+  });
 
   // Props used for collection building.
   const treeProps = completeProps as typeof completeProps;
@@ -79,7 +129,7 @@ function Menu<T extends object>(
   const collectionItems = [...state.collection];
   const hasSections = collectionItems.some((item) => item.type === 'section');
 
-  const { menuProps } = useMenu(treeProps, state, domRef);
+  const { menuProps } = useMenu(completeProps, state, domRef);
   const styles = useMemo(
     () => extractStyles(completeProps, CONTAINER_STYLES),
     [completeProps],
@@ -88,10 +138,12 @@ function Menu<T extends object>(
   const defaultProps = {
     qa,
     styles,
+    'data-size': size,
     mods: {
       sections: hasSections,
       footer: !!footer,
       header: !!header,
+      popover: completeProps.mods?.popover,
     },
   };
 
@@ -125,6 +177,7 @@ function Menu<T extends object>(
             itemStyles={itemStyles}
             headingStyles={sectionHeadingStyles}
             selectionIcon={selectionIcon}
+            size={size}
           />,
         );
 
@@ -139,6 +192,7 @@ function Menu<T extends object>(
           state={state}
           styles={itemStyles}
           selectionIcon={selectionIcon}
+          size={size}
           onAction={item.onAction}
         />
       );
@@ -189,6 +243,7 @@ function Menu<T extends object>(
     >
       {header && <StyledHeader role="presentation">{header}</StyledHeader>}
       {renderedItems}
+      {footer && <StyledFooter role="presentation">{footer}</StyledFooter>}
     </StyledMenu>
   );
 }

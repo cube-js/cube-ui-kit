@@ -109,6 +109,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
       : undefined,
     mods: {
       popover: !isMobile,
+      tray: isMobile,
     },
   } as MenuContextValue;
 

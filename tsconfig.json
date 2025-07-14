@@ -23,6 +23,9 @@
     "target": "es2022",
     "noEmit": true,
     "types": ["jest", "react", "react-dom"],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src/**/*"]
 }

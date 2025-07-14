@@ -1,6 +1,6 @@
 import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
 import { Select } from './Select';
-import * as SelectStories from './Select.stories.tsx';
+import * as SelectStories from './Select.stories';
 
 <Meta of={SelectStories} />
 
@@ -110,7 +110,8 @@ Groups related options together with an optional heading.
 
 ### Sizes
 
-- `small` - Compact size for dense interfaces
+- `small` - Compact size for dense interfaces (32px height, default)
+- `medium` - Medium size for standard interfaces (40px height)
 - `default` - Standard size
 - `large` - Emphasized size for important selections
 

@@ -1,0 +1,789 @@
+import { useSyncRef } from '@react-aria/utils';
+import { useDOMRef } from '@react-spectrum/utils';
+import { DOMRef, FocusStrategy } from '@react-types/shared';
+import React, {
+  ReactElement,
+  ReactNode,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { useFilter, useMenu } from 'react-aria';
+// Import Item and Section from Menu for CommandMenu compound component
+import { Item, Section, useTreeState } from 'react-stately';
+
+import { LoadingIcon } from '../../../icons';
+import {
+  BaseProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  Styles,
+} from '../../../tasty';
+import { mergeProps } from '../../../utils/react';
+import { useDialogContext } from '../../overlays/Dialog/context';
+import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
+import { useMenuContext } from '../Menu';
+import { CubeMenuProps } from '../Menu/Menu';
+import { MenuItem } from '../Menu/MenuItem';
+import { MenuSection } from '../Menu/MenuSection';
+import { MenuTrigger } from '../Menu/MenuTrigger';
+import {
+  StyledDivider,
+  StyledFooter,
+  StyledHeader,
+  StyledMenu,
+} from '../Menu/styled';
+
+import {
+  StyledCommandMenu,
+  StyledEmptyState,
+  StyledLoadingWrapper,
+  StyledMenuWrapper,
+  StyledSearchInput,
+} from './styled';
+
+export interface CommandMenuItem {
+  // Standard item props
+  id: string;
+  textValue: string;
+
+  // Enhanced search features
+  keywords?: string[];
+  forceMount?: boolean;
+
+  // Standard Menu item props inherited
+  [key: string]: any;
+}
+
+export interface CubeCommandMenuProps<T>
+  extends BaseProps,
+    ContainerStyleProps,
+    Omit<
+      CubeMenuProps<T>,
+      'selectedKeys' | 'defaultSelectedKeys' | 'onSelectionChange'
+    > {
+  // Search-specific props
+  searchPlaceholder?: string;
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
+  filter?: (textValue: string, inputValue: string) => boolean;
+  emptyLabel?: ReactNode;
+  searchInputStyles?: Styles;
+  headerStyles?: Styles;
+  footerStyles?: Styles;
+
+  // Advanced search features
+  isLoading?: boolean;
+  shouldFilter?: boolean;
+
+  // Focus management - override the autoFocus from CubeMenuProps to allow boolean | FocusStrategy
+  autoFocus?: boolean | FocusStrategy;
+
+  // Size prop
+  size?: 'small' | 'medium' | (string & {});
+
+  /** Currently selected keys (controlled) */
+  selectedKeys?: string[];
+  /** Initially selected keys (uncontrolled) */
+  defaultSelectedKeys?: string[];
+  /** Handler for selection changes */
+  onSelectionChange?: (keys: string[]) => void;
+}
+
+function CommandMenuBase<T extends object>(
+  props: CubeCommandMenuProps<T>,
+  ref: DOMRef<HTMLDivElement>,
+) {
+  const {
+    searchPlaceholder = 'Search commands...',
+    searchValue: controlledSearchValue,
+    onSearchChange,
+    filter: customFilter,
+    emptyLabel = 'No commands found',
+    searchInputStyles,
+    headerStyles,
+    footerStyles,
+    isLoading = false,
+    shouldFilter = true,
+    autoFocus = true,
+    size = 'small',
+    qa,
+    styles,
+    selectedKeys,
+    defaultSelectedKeys,
+    onSelectionChange,
+    header,
+    footer,
+    ...restMenuProps
+  } = props;
+
+  const domRef = useDOMRef(ref);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const contextProps = useMenuContext();
+
+  const dialogContext = useDialogContext();
+
+  // Convert string[] to Set<Key> for React Aria compatibility
+  const ariaSelectedKeys = selectedKeys ? new Set(selectedKeys) : undefined;
+  const ariaDefaultSelectedKeys = defaultSelectedKeys
+    ? new Set(defaultSelectedKeys)
+    : undefined;
+
+  const handleSelectionChange = onSelectionChange
+    ? (keys: any) => {
+        if (keys === 'all') {
+          // Handle 'all' selection case - collect all available keys
+          const allKeys = Array.from(treeState.collection.getKeys()).map(
+            (key: any) => String(key),
+          );
+          onSelectionChange(allKeys);
+        } else if (keys instanceof Set) {
+          onSelectionChange(Array.from(keys).map((key) => String(key)));
+        } else {
+          onSelectionChange([]);
+        }
+      }
+    : undefined;
+
+  const completeProps = mergeProps(contextProps, restMenuProps, {
+    selectedKeys: ariaSelectedKeys,
+    defaultSelectedKeys: ariaDefaultSelectedKeys,
+    onSelectionChange: handleSelectionChange,
+  });
+
+  // Search state management
+  const [internalSearchValue, setInternalSearchValue] = useState('');
+  const searchValue = controlledSearchValue ?? internalSearchValue;
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      if (controlledSearchValue === undefined) {
+        setInternalSearchValue(value);
+      }
+      onSearchChange?.(value);
+    },
+    [controlledSearchValue, onSearchChange],
+  );
+
+  // Filter setup
+  const { contains } = useFilter({ sensitivity: 'base' });
+  const textFilterFn = useMemo(
+    () => customFilter || contains,
+    [customFilter, contains],
+  );
+
+  // Enhanced filter function that supports keywords and forceMount
+  const enhancedFilter = useCallback(
+    (textValue: string, inputValue: string, item?: any) => {
+      // Always show force-mounted items
+      if (item?.forceMount) {
+        return true;
+      }
+
+      // If shouldFilter is false, show all items
+      if (!shouldFilter) {
+        return true;
+      }
+
+      // Split input value into individual words and filter out empty strings
+      const searchWords = inputValue
+        .trim()
+        .toLowerCase()
+        .split(/\s+/)
+        .filter((word) => word.length > 0);
+
+      // If no search words, show all items
+      if (searchWords.length === 0) {
+        return true;
+      }
+
+      // Collect all searchable text for this item
+      const searchableTexts: string[] = [];
+
+      // Add main text value
+      searchableTexts.push(textValue.toLowerCase());
+
+      // Add keywords if available
+      if (item?.keywords && Array.isArray(item.keywords)) {
+        searchableTexts.push(
+          ...item.keywords.map((keyword: string) => keyword.toLowerCase()),
+        );
+      }
+
+      // Check if ALL search words match at least one of the searchable texts
+      return searchWords.every((searchWord) =>
+        searchableTexts.some((text) => text.includes(searchWord)),
+      );
+    },
+    [shouldFilter],
+  );
+
+  // Collection filter for React Stately
+  const collectionFilter = useCallback(
+    (nodes: Iterable<any>): Iterable<any> => {
+      const term = searchValue.trim();
+
+      // If no search term, return all nodes
+      if (!term) {
+        return nodes;
+      }
+
+      // Split search term into words for multi-word filtering
+      const searchWords = term
+        .toLowerCase()
+        .split(/\s+/)
+        .filter((word) => word.length > 0);
+
+      // If no valid search words, return all nodes
+      if (searchWords.length === 0) {
+        return nodes;
+      }
+
+      // Recursive helper to filter sections and items
+      const filterNodes = (iter: Iterable<any>): any[] => {
+        const result: any[] = [];
+
+        for (const node of iter) {
+          if (node.type === 'section') {
+            const filteredChildren = filterNodes(node.childNodes);
+
+            if (filteredChildren.length) {
+              result.push({
+                ...node,
+                childNodes: filteredChildren,
+              });
+            }
+          } else {
+            const text = node.textValue ?? String(node.rendered ?? '');
+
+            if (enhancedFilter(text, term, node.props)) {
+              result.push(node);
+            }
+          }
+        }
+
+        return result;
+      };
+
+      return filterNodes(nodes);
+    },
+    [searchValue, enhancedFilter],
+  );
+
+  // Create tree state with filter for both keyboard navigation and rendering
+  const treeStateProps = {
+    ...completeProps,
+    filter: collectionFilter,
+    shouldUseVirtualFocus: true, // Always use virtual focus for CommandMenu
+  };
+
+  const treeState = useTreeState(treeStateProps);
+
+  const collectionItems = [...treeState.collection];
+  const hasSections = collectionItems.some((item) => item.type === 'section');
+
+  // Track focused key for aria-activedescendant
+  const [focusedKey, setFocusedKey] = React.useState<React.Key | null>(null);
+
+  // Apply filtering to collection items for rendering and empty state checks
+  const filteredCollectionItems = useMemo(() => {
+    const term = searchValue.trim();
+    if (!term) {
+      return collectionItems;
+    }
+
+    // Split search term into words for multi-word filtering
+    const searchWords = term
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((word) => word.length > 0);
+
+    // If no valid search words, return all items
+    if (searchWords.length === 0) {
+      return collectionItems;
+    }
+
+    const filterNodes = (items: any[]): any[] => {
+      const result: any[] = [];
+
+      [...items].forEach((item) => {
+        if (item.type === 'section') {
+          const filteredChildren = filterNodes(item.childNodes);
+          if (filteredChildren.length) {
+            result.push({
+              ...item,
+              childNodes: filteredChildren,
+            });
+          }
+        } else {
+          const text = item.textValue ?? String(item.rendered ?? '');
+          if (enhancedFilter(text, term, item.props)) {
+            result.push(item);
+          }
+        }
+      });
+
+      return result;
+    };
+
+    return filterNodes(collectionItems);
+  }, [collectionItems, searchValue, enhancedFilter]);
+
+  const hasFilteredItems = filteredCollectionItems.length > 0;
+  const viewHasSections = filteredCollectionItems.some(
+    (item) => item.type === 'section',
+  );
+
+  // Helper function to find the first selectable item from filtered results
+  const findFirstSelectableItem = useCallback(() => {
+    // Use the filtered collection items instead of the full tree state collection
+    for (const item of filteredCollectionItems) {
+      if (
+        item &&
+        item.type === 'item' &&
+        !treeState.selectionManager.isDisabled(item.key)
+      ) {
+        return item.key;
+      }
+    }
+
+    return null;
+  }, [filteredCollectionItems, treeState.selectionManager]);
+
+  // Create a ref for the menu container
+  const menuRef = useRef<HTMLUListElement>(null);
+
+  // Use menu hook for accessibility
+  const { menuProps } = useMenu(
+    {
+      ...completeProps,
+      'aria-label': 'Command palette menu',
+      filter: collectionFilter,
+      shouldUseVirtualFocus: true,
+    },
+    treeState,
+    menuRef,
+  );
+
+  // Manual rendering of menu items (similar to Menu component)
+  const renderedItems = useMemo(() => {
+    const items: React.ReactNode[] = [];
+    let isFirstSection = true;
+
+    filteredCollectionItems.forEach((item) => {
+      if (item.type === 'section') {
+        if (!isFirstSection) {
+          items.push(
+            <StyledDivider
+              key={`divider-${String(item.key)}`}
+              role="separator"
+              aria-orientation="horizontal"
+            />,
+          );
+        }
+
+        items.push(
+          <MenuSection
+            key={item.key}
+            item={item}
+            state={treeState}
+            styles={completeProps.sectionStyles}
+            itemStyles={completeProps.itemStyles}
+            headingStyles={completeProps.sectionHeadingStyles}
+            selectionIcon={completeProps.selectionIcon}
+            size={size}
+          />,
+        );
+
+        isFirstSection = false;
+        return;
+      }
+
+      let menuItem = (
+        <MenuItem
+          key={item.key}
+          item={item}
+          state={treeState}
+          styles={completeProps.itemStyles}
+          selectionIcon={completeProps.selectionIcon}
+          size={size}
+          onAction={item.onAction}
+        />
+      );
+
+      // Apply tooltip wrapper if tooltip property is provided
+      if (item.props.tooltip) {
+        const tooltipProps =
+          typeof item.props.tooltip === 'string'
+            ? { title: item.props.tooltip }
+            : item.props.tooltip;
+
+        menuItem = (
+          <TooltipProvider
+            key={item.key}
+            activeWrap
+            placement="right"
+            {...tooltipProps}
+          >
+            {menuItem}
+          </TooltipProvider>
+        );
+      }
+
+      // Apply custom wrapper if provided
+      if (item.props.wrapper) {
+        menuItem = item.props.wrapper(menuItem);
+      }
+
+      // Ensure every child has a stable key, even if the wrapper component didn't set one.
+      items.push(React.cloneElement(menuItem, { key: item.key }));
+    });
+
+    return items;
+  }, [
+    filteredCollectionItems,
+    treeState,
+    completeProps.sectionStyles,
+    completeProps.itemStyles,
+    completeProps.selectionIcon,
+    completeProps.sectionHeadingStyles,
+  ]);
+
+  // Auto-focus search input
+  React.useEffect(() => {
+    if (autoFocus && searchInputRef.current) {
+      // Use a small timeout to ensure the element is visible and focusable
+      // This is especially important when the CommandMenu is opened in a popover
+      const timeoutId = setTimeout(() => {
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
+      }, 0);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [autoFocus]);
+
+  // Also focus when the component becomes visible (for trigger/popover usage)
+  React.useEffect(() => {
+    // Check if autoFocus is enabled and we're in a trigger context
+    if (autoFocus && contextProps.autoFocus && searchInputRef.current) {
+      // Use a small timeout to ensure the popover is fully rendered
+      const timeoutId = setTimeout(() => {
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
+      }, 50); // Slightly longer timeout for popover context
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [autoFocus, contextProps.autoFocus]);
+
+  // Auto-focus first item when search value changes (but not on initial render)
+  React.useEffect(() => {
+    // Only auto-focus when search value changes, not on initial mount
+    if (searchValue.trim() !== '') {
+      const firstSelectableKey = findFirstSelectableItem();
+
+      if (firstSelectableKey && hasFilteredItems) {
+        // Focus the first item in the selection manager
+        treeState.selectionManager.setFocusedKey(firstSelectableKey);
+        setFocusedKey(firstSelectableKey);
+      } else {
+        // Clear focus if no items are available
+        treeState.selectionManager.setFocusedKey(null);
+        setFocusedKey(null);
+      }
+    }
+  }, [
+    searchValue,
+    findFirstSelectableItem,
+    hasFilteredItems,
+    treeState.selectionManager,
+  ]);
+
+  // Extract styles
+  const extractedStyles = useMemo(
+    () => extractStyles(props, CONTAINER_STYLES),
+    [props],
+  );
+
+  // Determine if we should show empty state based on actual filtered collection
+  const hasSearchTerm = searchValue.trim().length > 0;
+  const showEmptyState = hasSearchTerm && !hasFilteredItems && !isLoading;
+
+  // Sync refs
+  useSyncRef(contextProps, menuRef);
+
+  const mods = useMemo(() => {
+    // Determine mods based on dialog context and menu context
+    let popoverMod =
+      completeProps.mods?.popover || dialogContext?.type === 'popover';
+    let trayMod = completeProps.mods?.tray || dialogContext?.type === 'tray';
+    let modalMod = dialogContext?.type === 'modal';
+
+    return {
+      sections: viewHasSections,
+      footer: !!footer,
+      header: !!header,
+      popover: popoverMod,
+      tray: trayMod,
+      modal: modalMod,
+    };
+  }, [
+    viewHasSections,
+    footer,
+    header,
+    completeProps.mods,
+    dialogContext?.type,
+  ]);
+
+  return (
+    <StyledCommandMenu
+      {...filterBaseProps(props)}
+      ref={domRef}
+      qa={qa || 'CommandMenu'}
+      data-size={size}
+      mods={mods}
+      styles={mergeProps(extractedStyles, styles)}
+    >
+      {/* Header */}
+      {header && (
+        <StyledHeader role="presentation" styles={headerStyles}>
+          {header}
+        </StyledHeader>
+      )}
+
+      {/* Search Input */}
+      <StyledSearchInput
+        ref={searchInputRef}
+        type="search"
+        placeholder={searchPlaceholder}
+        value={searchValue}
+        styles={searchInputStyles}
+        data-size={size}
+        aria-controls={`${qa || 'CommandMenu'}-menu`}
+        role="combobox"
+        aria-expanded="true"
+        aria-haspopup="listbox"
+        aria-activedescendant={
+          focusedKey != null
+            ? `${qa || 'CommandMenu'}-menu-option-${focusedKey}`
+            : undefined
+        }
+        onChange={(e) => handleSearchChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+
+            const isArrowDown = e.key === 'ArrowDown';
+            const { selectionManager, collection } = treeState;
+            const currentKey = selectionManager.focusedKey;
+
+            // Helper function to find next selectable key in a direction
+            const findNextSelectableKey = (
+              startKey: any,
+              direction: 'forward' | 'backward',
+            ) => {
+              if (startKey == null) {
+                return null;
+              }
+
+              // First check if the startKey itself is selectable
+              const startNode = collection.getItem(startKey);
+              if (
+                startNode &&
+                startNode.type === 'item' &&
+                !selectionManager.isDisabled(startKey)
+              ) {
+                return startKey;
+              }
+
+              // If startKey is not selectable, find the next selectable key
+              let keys = [...collection.getKeys()];
+
+              if (direction === 'backward') {
+                keys = keys.reverse();
+              }
+
+              let startIndex = keys.indexOf(startKey);
+
+              if (startIndex === -1) {
+                return null;
+              }
+
+              for (let i = startIndex + 1; i < keys.length; i++) {
+                const key = keys[i];
+                const node = collection.getItem(key);
+
+                if (
+                  node &&
+                  node.type === 'item' &&
+                  !selectionManager.isDisabled(key)
+                ) {
+                  return key;
+                }
+              }
+
+              return null;
+            };
+
+            // Helper function to find first or last selectable key
+            const findFirstLastSelectableKey = (
+              direction: 'forward' | 'backward',
+            ) => {
+              const keys = [...collection.getKeys()];
+              const keysToCheck =
+                direction === 'forward' ? keys : keys.reverse();
+
+              for (const key of keysToCheck) {
+                const node = collection.getItem(key);
+
+                if (
+                  node &&
+                  node.type === 'item' &&
+                  !selectionManager.isDisabled(key)
+                ) {
+                  return key;
+                }
+              }
+
+              return null;
+            };
+
+            let nextKey;
+            const direction = isArrowDown ? 'forward' : 'backward';
+
+            if (currentKey == null) {
+              // No current focus, start from the first/last item
+              nextKey = findFirstLastSelectableKey(direction);
+            } else {
+              // Find next selectable item from current position
+              const candidateKey =
+                direction === 'forward'
+                  ? collection.getKeyAfter(currentKey)
+                  : collection.getKeyBefore(currentKey);
+
+              nextKey = findNextSelectableKey(candidateKey, direction);
+
+              // If no next key found and focus wrapping is enabled, wrap to first/last selectable item
+              if (nextKey == null) {
+                nextKey = findFirstLastSelectableKey(direction);
+              }
+            }
+
+            if (nextKey != null) {
+              selectionManager.setFocusedKey(nextKey);
+              setFocusedKey(nextKey);
+            }
+          } else if (
+            e.key === 'Enter' ||
+            (e.key === ' ' && !searchValue.trim())
+          ) {
+            const currentFocusedKey =
+              focusedKey || treeState.selectionManager.focusedKey;
+            if (currentFocusedKey != null) {
+              e.preventDefault();
+
+              // Trigger action for the focused item (like Menu does)
+              // First check if there's a selection mode, if so, handle selection
+              if (treeState.selectionManager.selectionMode !== 'none') {
+                treeState.selectionManager.select(currentFocusedKey, e);
+              } else {
+                // Default behavior: trigger action
+                const node = treeState.collection.getItem(currentFocusedKey);
+                if (node) {
+                  // Call the tree state's action handler
+                  const onAction = (completeProps as any).onAction;
+                  if (onAction) {
+                    onAction(currentFocusedKey);
+                  }
+                  // Also call the item's individual onAction if it exists
+                  if (node.props?.onAction) {
+                    node.props.onAction(currentFocusedKey);
+                  }
+                }
+              }
+
+              // Close the menu if we're in a trigger context and closeOnSelect is enabled (default behavior)
+              const { onClose, closeOnSelect } = contextProps;
+              if (onClose && closeOnSelect !== false) {
+                onClose();
+              }
+            }
+          } else if (e.key === 'Escape') {
+            if (searchValue) {
+              e.preventDefault();
+              handleSearchChange('');
+            }
+          }
+        }}
+      />
+
+      {/* Loading State */}
+      {isLoading && (
+        <StyledLoadingWrapper>
+          <LoadingIcon
+            role="progressbar"
+            aria-label="Loading commands"
+            aria-hidden={false}
+          />
+        </StyledLoadingWrapper>
+      )}
+
+      {/* Menu Content - always render unless loading */}
+      {!isLoading && !showEmptyState && (
+        <StyledMenuWrapper>
+          <StyledMenu
+            {...menuProps}
+            ref={menuRef}
+            id={`${qa || 'CommandMenu'}-menu`}
+            aria-label="Command menu"
+            qa="Menu"
+            data-size={size}
+            mods={mods}
+            styles={{
+              border: 'none',
+              boxShadow: 'none',
+              radius: 0,
+              padding: '0.5x',
+            }}
+          >
+            {renderedItems}
+          </StyledMenu>
+        </StyledMenuWrapper>
+      )}
+
+      {/* Empty State - show when search term exists but no results */}
+      {!isLoading && showEmptyState && (
+        <StyledEmptyState>{emptyLabel}</StyledEmptyState>
+      )}
+
+      {/* Footer */}
+      {footer && (
+        <StyledFooter role="presentation" styles={footerStyles}>
+          {footer}
+        </StyledFooter>
+      )}
+    </StyledCommandMenu>
+  );
+}
+
+// forwardRef doesn't support generic parameters, so cast the result to the correct type
+const _CommandMenu = React.forwardRef(CommandMenuBase) as <T>(
+  props: CubeCommandMenuProps<T> & React.RefAttributes<HTMLDivElement>,
+) => ReactElement;
+
+// Attach Trigger alias from MenuTrigger for consistent API
+// Also attach Item and Section for compound component pattern
+const __CommandMenu = Object.assign(_CommandMenu, {
+  Trigger: MenuTrigger,
+  Item,
+  Section,
+  displayName: 'CommandMenu',
+});
+
+export { __CommandMenu as CommandMenu };
