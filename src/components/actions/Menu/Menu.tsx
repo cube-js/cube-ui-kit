@@ -1,7 +1,7 @@
 import { useSyncRef } from '@react-aria/utils';
 import { useDOMRef } from '@react-spectrum/utils';
-import { DOMRef, FocusStrategy, ItemProps, Key } from '@react-types/shared';
-import React, { ReactElement, ReactNode, useMemo, useRef } from 'react';
+import { DOMRef, FocusStrategy, ItemProps } from '@react-types/shared';
+import React, { ReactElement, ReactNode, useMemo } from 'react';
 import { AriaMenuProps, useMenu } from 'react-aria';
 import {
   Item as BaseItem,
@@ -9,15 +9,6 @@ import {
   useTreeState,
 } from 'react-stately';
 
-import {
-  BasePropsWithoutChildren,
-  CONTAINER_STYLES,
-  ContainerStyleProps,
-  extractStyles,
-  filterBaseProps,
-  Styles,
-} from '../../../tasty';
-import { mergeProps } from '../../../utils/react';
 import { CubeBlockProps } from '../../Block';
 import {
   CubeTooltipProviderProps,
@@ -33,6 +24,16 @@ import {
   StyledHeader,
   StyledMenu,
 } from './styled';
+
+import { mergeProps } from '@/utils/react';
+import {
+  BasePropsWithoutChildren,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  extractStyles,
+  filterBaseProps,
+  Styles,
+} from '@/tasty';
 
 export interface CubeMenuProps<T>
   extends BasePropsWithoutChildren,

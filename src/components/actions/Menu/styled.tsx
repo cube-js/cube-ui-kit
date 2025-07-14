@@ -109,7 +109,7 @@ export const StyledItem = tasty({
       '': 'min 4x',
       '[data-size="medium"]': 'min 5x',
     },
-    border: '#clear',
+    border: false,
     boxSizing: 'border-box',
     fill: {
       '': '#clear',
