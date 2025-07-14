@@ -353,7 +353,7 @@ function Select<T extends object>(
     shouldFlip = true,
     placeholder,
     tooltip,
-    size = 'small',
+    size = 'medium',
     styles,
     type = 'outline',
     theme = 'default',
