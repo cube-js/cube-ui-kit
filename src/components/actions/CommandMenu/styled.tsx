@@ -5,16 +5,26 @@ export const StyledCommandMenu = tasty({
   styles: {
     display: 'grid',
     flow: 'row',
-    gridColumns: '1fr',
-    gridRows: 'auto minmax(0, 1fr)',
+    gridColumns: 'minmax(0, 1fr)',
+    gridRows: {
+      '': 'max-content minmax(0, 1fr)',
+      header: 'max-content max-content minmax(0, 1fr)',
+      footer: 'max-content minmax(0, 1fr) max-content max-content',
+      'header & footer':
+        'max-content max-content minmax(0, 1fr) max-content max-content',
+    },
+    placeContent: 'stretch',
+    placeItems: 'stretch',
     fill: '#white',
     border: '#border',
     radius: '(1cr + 1bw)',
-    boxShadow: '0px 5px 15px #dark.05',
+    shadow: {
+      '': false,
+      'popover | tray': '0px 5px 15px #dark.05',
+    },
     overflow: 'hidden',
-    minWidth: '20x',
-    maxWidth: '50x',
-    maxHeight: '40x',
+    width: '20x 50x',
+    height: 'initial max-content (50vh - 4x)',
   },
 });
 
@@ -43,12 +53,12 @@ export const StyledSearchInput = tasty({
       '[data-size="medium"]': '(1.25x - 1bw)',
     },
     '@left-padding': {
-      '': '1.5x',
-      '[data-size="medium"]': '1.5x',
+      '': '1x',
+      '[data-size="medium"]': '1x',
     },
     '@right-padding': {
-      '': '1.5x',
-      '[data-size="medium"]': '1.5x',
+      '': '1x',
+      '[data-size="medium"]': '1x',
     },
 
     '&::placeholder': {

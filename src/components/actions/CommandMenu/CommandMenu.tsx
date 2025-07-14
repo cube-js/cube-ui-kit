@@ -23,13 +23,19 @@ import {
   Styles,
 } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
+import { useDialogContext } from '../../overlays/Dialog/context';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 import { useMenuContext } from '../Menu';
 import { CubeMenuProps } from '../Menu/Menu';
 import { MenuItem } from '../Menu/MenuItem';
 import { MenuSection } from '../Menu/MenuSection';
 import { MenuTrigger } from '../Menu/MenuTrigger';
-import { StyledDivider, StyledMenu } from '../Menu/styled';
+import {
+  StyledDivider,
+  StyledFooter,
+  StyledHeader,
+  StyledMenu,
+} from '../Menu/styled';
 
 import {
   StyledCommandMenu,
@@ -66,6 +72,8 @@ export interface CubeCommandMenuProps<T>
   filter?: (textValue: string, inputValue: string) => boolean;
   emptyLabel?: ReactNode;
   searchInputStyles?: Styles;
+  headerStyles?: Styles;
+  footerStyles?: Styles;
 
   // Advanced search features
   isLoading?: boolean;
@@ -96,6 +104,8 @@ function CommandMenuBase<T extends object>(
     filter: customFilter,
     emptyLabel = 'No commands found',
     searchInputStyles,
+    headerStyles,
+    footerStyles,
     isLoading = false,
     shouldFilter = true,
     autoFocus = true,
@@ -105,12 +115,16 @@ function CommandMenuBase<T extends object>(
     selectedKeys,
     defaultSelectedKeys,
     onSelectionChange,
+    header,
+    footer,
     ...restMenuProps
   } = props;
 
   const domRef = useDOMRef(ref);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const contextProps = useMenuContext();
+
+  const dialogContext = useDialogContext();
 
   // Convert string[] to Set<Key> for React Aria compatibility
   const ariaSelectedKeys = selectedKeys ? new Set(selectedKeys) : undefined;
@@ -466,14 +480,45 @@ function CommandMenuBase<T extends object>(
   // Sync refs
   useSyncRef(contextProps, menuRef);
 
+  const mods = useMemo(() => {
+    // Determine mods based on dialog context and menu context
+    let popoverMod =
+      completeProps.mods?.popover || dialogContext?.type === 'popover';
+    let trayMod = completeProps.mods?.tray || dialogContext?.type === 'tray';
+    let modalMod = dialogContext?.type === 'modal';
+
+    return {
+      sections: viewHasSections,
+      footer: !!footer,
+      header: !!header,
+      popover: popoverMod,
+      tray: trayMod,
+      modal: modalMod,
+    };
+  }, [
+    viewHasSections,
+    footer,
+    header,
+    completeProps.mods,
+    dialogContext?.type,
+  ]);
+
   return (
     <StyledCommandMenu
       {...filterBaseProps(props)}
       ref={domRef}
       qa={qa || 'CommandMenu'}
       data-size={size}
+      mods={mods}
       styles={mergeProps(extractedStyles, styles)}
     >
+      {/* Header */}
+      {header && (
+        <StyledHeader role="presentation" styles={headerStyles}>
+          {header}
+        </StyledHeader>
+      )}
+
       {/* Search Input */}
       <StyledSearchInput
         ref={searchInputRef}
@@ -661,11 +706,7 @@ function CommandMenuBase<T extends object>(
             aria-label="Command menu"
             qa="Menu"
             data-size={size}
-            mods={{
-              sections: viewHasSections,
-              footer: false,
-              header: false,
-            }}
+            mods={mods}
             styles={{
               border: 'none',
               boxShadow: 'none',
@@ -681,6 +722,13 @@ function CommandMenuBase<T extends object>(
       {/* Empty State - show when search term exists but no results */}
       {!isLoading && showEmptyState && (
         <StyledEmptyState>{emptyLabel}</StyledEmptyState>
+      )}
+
+      {/* Footer */}
+      {footer && (
+        <StyledFooter role="presentation" styles={footerStyles}>
+          {footer}
+        </StyledFooter>
       )}
     </StyledCommandMenu>
   );

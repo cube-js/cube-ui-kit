@@ -1,20 +1,17 @@
-import { expect, userEvent, waitFor, within } from '@storybook/test';
+import { userEvent, waitFor, within } from '@storybook/test';
 import {
   IconArrowBack,
   IconArrowForward,
   IconClipboard,
   IconCopy,
   IconCut,
-  IconDeviceFloppy,
-  IconFile,
-  IconFileText,
-  IconFolder,
-  IconSearch,
   IconSelect,
-  IconSettings,
 } from '@tabler/icons-react';
 import React, { useState } from 'react';
 
+import { tasty } from '../../../tasty';
+import { HotKeys } from '../../content/HotKeys';
+import { Text } from '../../content/Text';
 import {
   Dialog,
   DialogTrigger,
@@ -26,6 +23,28 @@ import { Menu } from '../Menu/Menu';
 import { CommandMenu, CubeCommandMenuProps } from './CommandMenu';
 
 import type { StoryFn } from '@storybook/react';
+
+// Styled components for header and footer
+const HeaderTitle = tasty(Text, {
+  styles: {
+    preset: 't2m',
+    color: '#dark',
+  },
+});
+
+const HeaderSubtitle = tasty(Text, {
+  styles: {
+    preset: 't4',
+    color: '#dark-03',
+  },
+});
+
+const FooterText = tasty(Text, {
+  styles: {
+    preset: 't4',
+    color: '#dark-03',
+  },
+});
 
 export default {
   title: 'Actions/CommandMenu',
@@ -776,6 +795,46 @@ WithDialog.play = async ({ canvasElement }) => {
   });
 };
 
+export const WithHeaderAndFooter: StoryFn<CubeCommandMenuProps<any>> = (
+  args,
+) => (
+  <CommandMenu
+    {...args}
+    header={
+      <>
+        <HeaderTitle>Available Commands</HeaderTitle>
+        <HeaderSubtitle>6 items</HeaderSubtitle>
+      </>
+    }
+    footer={
+      <>
+        <FooterText>
+          Press <HotKeys>Enter</HotKeys> to select
+        </FooterText>
+        <FooterText>
+          <HotKeys>Esc</HotKeys> to clear
+        </FooterText>
+      </>
+    }
+  >
+    {basicCommands.map((command) => (
+      <CommandMenu.Item
+        key={command.key}
+        description={command.description}
+        hotkeys={command.hotkeys}
+        icon={command.icon}
+      >
+        {command.label}
+      </CommandMenu.Item>
+    ))}
+  </CommandMenu>
+);
+
+WithHeaderAndFooter.args = {
+  searchPlaceholder: 'Search commands...',
+  autoFocus: true,
+};
+
 function CommandMenuDialogContent({
   onClose,
   ...args
@@ -786,6 +845,22 @@ function CommandMenuDialogContent({
       console.log('Action selected:', key);
       onClose();
     },
+    header: (
+      <>
+        <HeaderTitle>Command Palette</HeaderTitle>
+        <HeaderSubtitle>Quick Actions</HeaderSubtitle>
+      </>
+    ),
+    footer: (
+      <>
+        <FooterText>
+          <HotKeys>↑,↓</HotKeys> to navigate
+        </FooterText>
+        <FooterText>
+          <HotKeys>Enter</HotKeys> to select • <HotKeys>Esc</HotKeys> to close
+        </FooterText>
+      </>
+    ),
   };
 
   return (
@@ -814,7 +889,9 @@ function CommandMenuDialogContent({
 export const WithDialogContainer: StoryFn<CubeCommandMenuProps<any>> = (
   args,
 ) => {
-  const dialog = useDialogContainer(CommandMenuDialogContent);
+  const dialog = useDialogContainer(CommandMenuDialogContent, {
+    isDismissable: true,
+  });
 
   const handleOpenDialog = () => {
     dialog.open({

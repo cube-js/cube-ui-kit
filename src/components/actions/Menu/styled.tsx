@@ -51,17 +51,30 @@ export const StyledDivider = tasty({
 
 export const StyledHeader = tasty(Space, {
   qa: 'Header',
-  as: 'li',
+  as: 'div',
   styles: {
     color: '#dark-02',
-    preset: 't2m',
-    padding: '0.75x 1.5x',
-    margin: '-0.5x -0.5x (0.5x - 1bw) -0.5x',
-    border: '#dark-05 bottom',
+    preset: 't3',
     placeContent: 'space-between',
-    align: 'start',
-    radius: '1r 1r 0 0',
+    placeItems: 'center',
     whiteSpace: 'nowrap',
+    padding: '.5x 1x',
+    height: 'min 4x',
+  },
+});
+
+export const StyledFooter = tasty(Space, {
+  qa: 'Footer',
+  as: 'div',
+  styles: {
+    color: '#dark-02',
+    preset: 't3',
+    border: '#border top',
+    placeContent: 'space-between',
+    placeItems: 'center',
+    whiteSpace: 'nowrap',
+    padding: '.5x 1x',
+    height: 'min 4x',
   },
 });
 

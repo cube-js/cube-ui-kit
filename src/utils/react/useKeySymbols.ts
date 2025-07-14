@@ -4,8 +4,8 @@ import { useIsDarwin } from './useIsDarwin';
 
 /* symbols that are identical on every OS */
 const COMMON: Record<string, string> = {
-  esc: '⎋',
-  escape: '⎋',
+  esc: 'Esc',
+  escape: 'Esc',
   enter: '⏎',
   return: '⏎',
   space: '␣',
@@ -39,11 +39,11 @@ const PC: Record<string, string> = {
   mod: 'Ctrl',
   ctrl: 'Ctrl',
   control: 'Ctrl',
-  meta: '⊞',
-  win: '⊞',
-  windows: '⊞',
-  cmd: '⊞',
-  command: '⊞',
+  meta: 'Win',
+  win: 'Win',
+  windows: 'Win',
+  cmd: 'Win',
+  command: 'Win',
   alt: '⎇',
   option: '⎇',
   shift: '⇧',

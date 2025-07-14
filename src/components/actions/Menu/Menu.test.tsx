@@ -3,9 +3,18 @@
 // noisy errors from complex generic typings that do not affect runtime behaviour.
 import { createRef } from 'react';
 
-import { act, render, renderWithRoot, userEvent, waitFor } from '../../../test';
+import {
+  act,
+  fireEvent,
+  render,
+  renderWithRoot,
+  userEvent,
+  waitFor,
+} from '../../../test';
+import { Button } from '../Button';
 
 import { Menu } from './Menu';
+import { MenuTrigger } from './MenuTrigger';
 
 jest.mock('../../../_internal/hooks/use-warn');
 
@@ -982,5 +991,51 @@ describe('<Menu />', () => {
     expect(getByRole('menu')).toBeInTheDocument();
     expect(getByText('Copy')).toBeInTheDocument();
     expect(getByText('Paste')).toBeInTheDocument();
+  });
+});
+
+describe('Menu popover mod', () => {
+  it('should apply popover mod when context provides it', () => {
+    const { MenuContext } = require('./context');
+
+    const { getByRole } = render(
+      <MenuContext.Provider value={{ mods: { popover: true } }}>
+        <Menu aria-label="Test menu">
+          <Menu.Item key="item1">Item 1</Menu.Item>
+          <Menu.Item key="item2">Item 2</Menu.Item>
+        </Menu>
+      </MenuContext.Provider>,
+    );
+
+    const menu = getByRole('menu');
+    expect(menu).toHaveAttribute('data-is-popover');
+  });
+
+  it('should not apply popover mod when used standalone', () => {
+    const { getByRole } = render(
+      <Menu aria-label="Test menu">
+        <Menu.Item key="item1">Item 1</Menu.Item>
+        <Menu.Item key="item2">Item 2</Menu.Item>
+      </Menu>,
+    );
+
+    const menu = getByRole('menu');
+    expect(menu).not.toHaveAttribute('data-is-popover');
+  });
+
+  it('should not apply popover mod when context provides false', () => {
+    const { MenuContext } = require('./context');
+
+    const { getByRole } = render(
+      <MenuContext.Provider value={{ mods: { popover: false } }}>
+        <Menu aria-label="Test menu">
+          <Menu.Item key="item1">Item 1</Menu.Item>
+          <Menu.Item key="item2">Item 2</Menu.Item>
+        </Menu>
+      </MenuContext.Provider>,
+    );
+
+    const menu = getByRole('menu');
+    expect(menu).not.toHaveAttribute('data-is-popover');
   });
 });

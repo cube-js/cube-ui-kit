@@ -1,36 +1,46 @@
 import { forwardRef, Fragment } from 'react';
 
 import {
-  AllBaseProps,
+  BasePropsWithoutChildren,
   CONTAINER_STYLES,
   ContainerStyleProps,
   extractStyles,
   filterBaseProps,
+  tasty,
 } from '../../../tasty';
 import { useKeySymbols } from '../../../utils/react/useKeySymbols';
 import { Space } from '../../layout/Space';
 import { Tag } from '../Tag/Tag';
 import { Text } from '../Text';
 
-export interface CubeHotKeysProps extends AllBaseProps, ContainerStyleProps {
-  keys: string;
+const StyledHotKeys = tasty(Space, {
+  qa: 'HotKeys',
+  role: 'group',
+  'aria-label': 'Keyboard shortcuts',
+  styles: {
+    display: 'inline-flex',
+    flow: 'row',
+    gap: '1x',
+  },
+});
+
+export interface CubeHotKeysProps
+  extends BasePropsWithoutChildren,
+    ContainerStyleProps {
+  children: string;
 }
 
 function HotKeys(props: CubeHotKeysProps, ref) {
-  const { keys, ...otherProps } = props;
+  const { children: keys, ...otherProps } = props;
   const parsedKeys = useKeySymbols(keys);
   const styles = extractStyles(otherProps, CONTAINER_STYLES);
 
   return (
-    <Space
+    <StyledHotKeys
       qa="HotKeys"
-      aria-label="Keyboard shortcuts"
       {...filterBaseProps(otherProps, { eventProps: true, labelable: true })}
       ref={ref}
       styles={styles}
-      flow="row"
-      gap="1x"
-      role="group"
     >
       {parsedKeys.map((keyGroup, groupIndex) => (
         <Fragment key={groupIndex}>
@@ -58,7 +68,7 @@ function HotKeys(props: CubeHotKeysProps, ref) {
           </Space>
         </Fragment>
       ))}
-    </Space>
+    </StyledHotKeys>
   );
 }
 

@@ -27,7 +27,12 @@ import {
 import { useMenuContext } from './context';
 import { MenuItem, MenuSelectionType } from './MenuItem';
 import { MenuSection } from './MenuSection';
-import { StyledDivider, StyledHeader, StyledMenu } from './styled';
+import {
+  StyledDivider,
+  StyledFooter,
+  StyledHeader,
+  StyledMenu,
+} from './styled';
 
 export interface CubeMenuProps<T>
   extends BasePropsWithoutChildren,
@@ -138,6 +143,7 @@ function Menu<T extends object>(
       sections: hasSections,
       footer: !!footer,
       header: !!header,
+      popover: completeProps.mods?.popover,
     },
   };
 
@@ -237,6 +243,7 @@ function Menu<T extends object>(
     >
       {header && <StyledHeader role="presentation">{header}</StyledHeader>}
       {renderedItems}
+      {footer && <StyledFooter role="presentation">{footer}</StyledFooter>}
     </StyledMenu>
   );
 }

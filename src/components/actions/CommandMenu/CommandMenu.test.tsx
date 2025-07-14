@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 
@@ -624,5 +624,69 @@ describe('CommandMenu', () => {
     // Verify the display shows both selected items
     selectedDisplay = screen.getByText(/Selected:/);
     expect(selectedDisplay).toHaveTextContent(/Selected:.*1.*2/);
+  });
+
+  describe('CommandMenu mods', () => {
+    it('should apply popover mod when used with MenuTrigger', () => {
+      const { MenuContext } = require('../Menu/context');
+
+      render(
+        <MenuContext.Provider value={{ mods: { popover: true } }}>
+          <CommandMenu qa="test-command-menu">
+            <CommandMenu.Item key="item1">Item 1</CommandMenu.Item>
+            <CommandMenu.Item key="item2">Item 2</CommandMenu.Item>
+          </CommandMenu>
+        </MenuContext.Provider>,
+      );
+
+      const commandMenu = screen.getByTestId('test-command-menu');
+      expect(commandMenu).toHaveAttribute('data-is-popover');
+    });
+
+    it('should apply tray mod when used with MenuTrigger', () => {
+      const { MenuContext } = require('../Menu/context');
+
+      render(
+        <MenuContext.Provider value={{ mods: { tray: true } }}>
+          <CommandMenu qa="test-command-menu">
+            <CommandMenu.Item key="item1">Item 1</CommandMenu.Item>
+            <CommandMenu.Item key="item2">Item 2</CommandMenu.Item>
+          </CommandMenu>
+        </MenuContext.Provider>,
+      );
+
+      const commandMenu = screen.getByTestId('test-command-menu');
+      expect(commandMenu).toHaveAttribute('data-is-tray');
+    });
+
+    it('should apply modal mod when used inside a modal dialog', () => {
+      const { DialogContext } = require('../../overlays/Dialog/context');
+
+      render(
+        <DialogContext.Provider value={{ type: 'modal' }}>
+          <CommandMenu qa="test-command-menu">
+            <CommandMenu.Item key="item1">Item 1</CommandMenu.Item>
+            <CommandMenu.Item key="item2">Item 2</CommandMenu.Item>
+          </CommandMenu>
+        </DialogContext.Provider>,
+      );
+
+      const commandMenu = screen.getByTestId('test-command-menu');
+      expect(commandMenu).toHaveAttribute('data-is-modal');
+    });
+
+    it('should not apply any special mods when used standalone', () => {
+      render(
+        <CommandMenu qa="test-command-menu">
+          <CommandMenu.Item key="item1">Item 1</CommandMenu.Item>
+          <CommandMenu.Item key="item2">Item 2</CommandMenu.Item>
+        </CommandMenu>,
+      );
+
+      const commandMenu = screen.getByTestId('test-command-menu');
+      expect(commandMenu).not.toHaveAttribute('data-is-popover');
+      expect(commandMenu).not.toHaveAttribute('data-is-tray');
+      expect(commandMenu).not.toHaveAttribute('data-is-modal');
+    });
   });
 });

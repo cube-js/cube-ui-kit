@@ -103,7 +103,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
 
   // Build final postfix: custom postfix or HotKeys hint if provided and no explicit postfix
   const finalPostfix =
-    postfix ?? (hotkeys ? <HotKeys keys={hotkeys} /> : undefined);
+    postfix ?? (hotkeys ? <HotKeys>{hotkeys}</HotKeys> : undefined);
 
   const checkIcon =
     isSelectable && isSelected
