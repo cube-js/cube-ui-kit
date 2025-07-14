@@ -257,6 +257,130 @@ describe('CommandMenu', () => {
     expect(screen.queryByText('Open folder')).not.toBeInTheDocument();
   });
 
+  it('supports multi-word search where all words must match', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <CommandMenu>
+        <CommandMenu.Item id="1" keywords={['new', 'document', 'text']}>
+          Create new file
+        </CommandMenu.Item>
+        <CommandMenu.Item id="2" keywords={['open', 'existing']}>
+          Open folder
+        </CommandMenu.Item>
+        <CommandMenu.Item id="3" keywords={['save', 'document']}>
+          Save document
+        </CommandMenu.Item>
+        <CommandMenu.Item id="4">New project setup</CommandMenu.Item>
+      </CommandMenu>,
+    );
+
+    const searchInput = screen.getByPlaceholderText('Search commands...');
+
+    // Test 1: Single word should match multiple items
+    await user.type(searchInput, 'new');
+    expect(screen.getByText('Create new file')).toBeInTheDocument();
+    expect(screen.getByText('New project setup')).toBeInTheDocument();
+    expect(screen.queryByText('Open folder')).not.toBeInTheDocument();
+    expect(screen.queryByText('Save document')).not.toBeInTheDocument();
+
+    // Clear search
+    await user.clear(searchInput);
+
+    // Test 2: Two words - both must match
+    await user.type(searchInput, 'new document');
+    expect(screen.getByText('Create new file')).toBeInTheDocument(); // has both "new" and "document" (in keywords)
+    expect(screen.queryByText('New project setup')).not.toBeInTheDocument(); // has "new" but not "document"
+    expect(screen.queryByText('Open folder')).not.toBeInTheDocument();
+    expect(screen.queryByText('Save document')).not.toBeInTheDocument(); // has "document" but not "new"
+
+    // Clear search
+    await user.clear(searchInput);
+
+    // Test 3: Multiple spaces should be handled correctly
+    await user.type(searchInput, 'create   file');
+    expect(screen.getByText('Create new file')).toBeInTheDocument(); // textValue contains both "create" and "file"
+    expect(screen.queryByText('New project setup')).not.toBeInTheDocument();
+    expect(screen.queryByText('Open folder')).not.toBeInTheDocument();
+    expect(screen.queryByText('Save document')).not.toBeInTheDocument();
+
+    // Clear search
+    await user.clear(searchInput);
+
+    // Test 4: Mixed textValue and keywords matching
+    await user.type(searchInput, 'save document');
+    expect(screen.getByText('Save document')).toBeInTheDocument(); // textValue has "save" and keywords have "document"
+    expect(screen.queryByText('Create new file')).not.toBeInTheDocument();
+    expect(screen.queryByText('New project setup')).not.toBeInTheDocument();
+    expect(screen.queryByText('Open folder')).not.toBeInTheDocument();
+
+    // Clear search
+    await user.clear(searchInput);
+
+    // Test 5: No match when not all words are present
+    await user.type(searchInput, 'create missing');
+    expect(screen.queryByText('Create new file')).not.toBeInTheDocument(); // has "create" but not "missing"
+    expect(screen.queryByText('New project setup')).not.toBeInTheDocument();
+    expect(screen.queryByText('Open folder')).not.toBeInTheDocument();
+    expect(screen.queryByText('Save document')).not.toBeInTheDocument();
+    expect(screen.getByText('No commands found')).toBeInTheDocument();
+
+    // Clear search
+    await user.clear(searchInput);
+
+    // Test 6: Case insensitive matching
+    await user.type(searchInput, 'NEW FILE');
+    expect(screen.getByText('Create new file')).toBeInTheDocument();
+    expect(screen.queryByText('New project setup')).not.toBeInTheDocument(); // has "new" but not "file"
+  });
+
+  it('supports multi-word search with sections', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <CommandMenu>
+        <CommandMenu.Section title="File Operations">
+          <CommandMenu.Item id="1" keywords={['new', 'document']}>
+            Create new file
+          </CommandMenu.Item>
+          <CommandMenu.Item id="2">Open existing file</CommandMenu.Item>
+        </CommandMenu.Section>
+        <CommandMenu.Section title="Project Operations">
+          <CommandMenu.Item id="3">New project setup</CommandMenu.Item>
+          <CommandMenu.Item id="4" keywords={['existing', 'project']}>
+            Open project
+          </CommandMenu.Item>
+        </CommandMenu.Section>
+      </CommandMenu>,
+    );
+
+    const searchInput = screen.getByPlaceholderText('Search commands...');
+
+    // Search for items that should match across sections
+    await user.type(searchInput, 'new file');
+
+    // Should show the section with matching items
+    expect(screen.getByText('File Operations')).toBeInTheDocument();
+    expect(screen.getByText('Create new file')).toBeInTheDocument();
+
+    // Should hide sections with no matching items
+    expect(screen.queryByText('Project Operations')).not.toBeInTheDocument();
+    expect(screen.queryByText('New project setup')).not.toBeInTheDocument(); // has "new" but not "file"
+    expect(screen.queryByText('Open existing file')).not.toBeInTheDocument(); // has "file" but not "new"
+    expect(screen.queryByText('Open project')).not.toBeInTheDocument();
+
+    // Clear search
+    await user.clear(searchInput);
+
+    // Search for something that matches in the second section
+    await user.type(searchInput, 'existing project');
+
+    expect(screen.getByText('Project Operations')).toBeInTheDocument();
+    expect(screen.getByText('Open project')).toBeInTheDocument();
+    expect(screen.queryByText('File Operations')).not.toBeInTheDocument();
+    expect(screen.queryByText('Open existing file')).not.toBeInTheDocument(); // has "existing" but not "project"
+  });
+
   it('supports force mount items', async () => {
     const user = userEvent.setup();
 

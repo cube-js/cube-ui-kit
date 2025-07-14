@@ -188,21 +188,37 @@ function CommandMenuBase<T extends object>(
         return true;
       }
 
-      // Check main text value
-      if (textFilterFn(textValue, inputValue)) {
+      // Split input value into individual words and filter out empty strings
+      const searchWords = inputValue
+        .trim()
+        .toLowerCase()
+        .split(/\s+/)
+        .filter((word) => word.length > 0);
+
+      // If no search words, show all items
+      if (searchWords.length === 0) {
         return true;
       }
 
-      // Check keywords if available
+      // Collect all searchable text for this item
+      const searchableTexts: string[] = [];
+
+      // Add main text value
+      searchableTexts.push(textValue.toLowerCase());
+
+      // Add keywords if available
       if (item?.keywords && Array.isArray(item.keywords)) {
-        return item.keywords.some((keyword: string) =>
-          textFilterFn(keyword, inputValue),
+        searchableTexts.push(
+          ...item.keywords.map((keyword: string) => keyword.toLowerCase()),
         );
       }
 
-      return false;
+      // Check if ALL search words match at least one of the searchable texts
+      return searchWords.every((searchWord) =>
+        searchableTexts.some((text) => text.includes(searchWord)),
+      );
     },
-    [textFilterFn, shouldFilter],
+    [shouldFilter],
   );
 
   // Collection filter for React Stately
@@ -212,6 +228,17 @@ function CommandMenuBase<T extends object>(
 
       // If no search term, return all nodes
       if (!term) {
+        return nodes;
+      }
+
+      // Split search term into words for multi-word filtering
+      const searchWords = term
+        .toLowerCase()
+        .split(/\s+/)
+        .filter((word) => word.length > 0);
+
+      // If no valid search words, return all nodes
+      if (searchWords.length === 0) {
         return nodes;
       }
 
@@ -265,6 +292,17 @@ function CommandMenuBase<T extends object>(
   const filteredCollectionItems = useMemo(() => {
     const term = searchValue.trim();
     if (!term) {
+      return collectionItems;
+    }
+
+    // Split search term into words for multi-word filtering
+    const searchWords = term
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((word) => word.length > 0);
+
+    // If no valid search words, return all items
+    if (searchWords.length === 0) {
       return collectionItems;
     }
 
