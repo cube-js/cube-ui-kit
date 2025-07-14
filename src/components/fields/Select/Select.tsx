@@ -214,14 +214,14 @@ const OptionElement = tasty({
   as: 'li',
   styles: {
     display: 'flex',
+    placeContent: 'start center',
+    placeItems: 'start center',
     flow: 'column',
     gap: '0',
-    padding: {
-      '': '(1x - 1px) (1.5x - 1px)',
-      '[data-size="medium"]': '(1.25x - 1px) (1.5x - 1px)',
-    },
+    padding: '.5x 1x',
     cursor: 'pointer',
     radius: true,
+    boxSizing: 'border-box',
     color: {
       '': '#dark-02',
       selected: '#dark',
@@ -236,6 +236,10 @@ const OptionElement = tasty({
     preset: 't3',
     transition: 'theme',
     width: 'max 100%',
+    height: {
+      '': 'min 4x',
+      '[data-size="medium"]': 'min 5x',
+    },
 
     Label: {
       preset: 't3',
@@ -493,7 +497,6 @@ function Select<T extends object>(
           overlayStyles={overlayStyles}
           optionStyles={optionStyles}
           minWidth={triggerWidth}
-          size={size}
         />
       </OverlayWrapper>
     </SelectWrapperElement>
@@ -523,7 +526,7 @@ export function ListBoxPopup({
   shouldUseVirtualFocus = false,
   placement,
   minWidth,
-  size,
+  size = 'small',
   ...otherProps
 }) {
   // Get props for the listbox
