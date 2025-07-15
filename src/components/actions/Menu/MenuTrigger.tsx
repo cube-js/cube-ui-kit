@@ -28,6 +28,7 @@ export type CubeMenuTriggerProps = AriaMenuTriggerProps &
     ];
 
     closeOnSelect?: boolean;
+    isDummy?: boolean;
   };
 
 function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
@@ -42,6 +43,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     closeOnSelect,
     trigger = 'press',
     isDisabled,
+    isDummy,
   } = props;
 
   if (!Array.isArray(children) || children.length > 2) {
@@ -132,13 +134,15 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
       <SlotProvider
         slots={{ actionButton: { holdAffordance: trigger === 'longPress' } }}
       >
-        <PressResponder
-          {...menuTriggerProps}
-          ref={menuTriggerRef}
-          isPressed={state.isOpen}
-        >
-          {menuTrigger}
-        </PressResponder>
+        {!isDummy ? (
+          <PressResponder
+            {...menuTriggerProps}
+            ref={menuTriggerRef}
+            isPressed={state.isOpen}
+          >
+            {menuTrigger}
+          </PressResponder>
+        ) : null}
       </SlotProvider>
       <MenuContext.Provider value={menuContext}>{overlay}</MenuContext.Provider>
     </Fragment>

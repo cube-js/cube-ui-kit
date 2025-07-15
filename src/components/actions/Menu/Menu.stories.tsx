@@ -1115,11 +1115,11 @@ export const WithContextMenuPlacements = () => {
     'bottom start',
     'bottom end',
     'left',
-    'left start',
-    'left end',
+    'left top',
+    'left bottom',
     'right',
-    'right start',
-    'right end',
+    'right top',
+    'right bottom',
   ];
 
   const ContextContainer = ({ placement, title }) => {

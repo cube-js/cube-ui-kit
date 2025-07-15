@@ -1,3 +1,4 @@
+import { Pressable } from '@react-aria/interactions';
 import {
   ComponentProps,
   ComponentType,
@@ -66,6 +67,7 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
 
     return (
       <MenuTrigger
+        isDummy
         isOpen={isOpen}
         targetRef={anchorRef}
         placement="bottom start"
@@ -73,7 +75,9 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
         {...mergeProps(defaultTriggerProps, triggerProps || undefined)}
       >
         <VisuallyHidden>
-          <button aria-label="context-menu" />
+          <Pressable>
+            <button aria-label="context-menu" />
+          </Pressable>
         </VisuallyHidden>
         <Component {...componentProps} />
       </MenuTrigger>

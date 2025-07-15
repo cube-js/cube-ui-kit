@@ -163,6 +163,7 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
           }}
         />
         <MenuTrigger
+          isDummy
           isOpen={isOpen}
           targetRef={invisibleAnchorRef}
           offset={0}
@@ -174,11 +175,11 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
           onOpenChange={setIsOpen}
           {...mergeProps(defaultTriggerProps, triggerProps || undefined)}
         >
-          <Pressable>
-            <VisuallyHidden>
+          <VisuallyHidden>
+            <Pressable>
               <button aria-label="context-menu" />
-            </VisuallyHidden>
-          </Pressable>
+            </Pressable>
+          </VisuallyHidden>
           <Component {...componentProps} />
         </MenuTrigger>
       </>
