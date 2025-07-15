@@ -367,27 +367,37 @@ WithSections.args = {
   autoFocus: true,
 };
 
-export const WithMenuTrigger: StoryFn<CubeCommandMenuProps<any>> = (args) => (
-  <CommandMenu.Trigger>
-    <Button>Open Command Palette</Button>
-    <CommandMenu {...args}>
-      {basicCommands.map((command) => (
-        <CommandMenu.Item
-          key={command.key}
-          description={command.description}
-          hotkeys={command.hotkeys}
-          icon={command.icon}
-        >
-          {command.label}
-        </CommandMenu.Item>
-      ))}
-    </CommandMenu>
-  </CommandMenu.Trigger>
-);
+export const WithMenuTrigger: StoryFn<CubeCommandMenuProps<any>> = (args) => {
+  const [selectedKeys, setSelectedKeys] = useState<string[]>(['undo']);
+
+  return (
+    <CommandMenu.Trigger>
+      <Button>Open Command Palette</Button>
+      <CommandMenu
+        {...args}
+        selectedKeys={selectedKeys}
+        onSelectionChange={setSelectedKeys}
+      >
+        {basicCommands.map((command) => (
+          <CommandMenu.Item
+            key={command.key}
+            description={command.description}
+            hotkeys={command.hotkeys}
+            icon={command.icon}
+          >
+            {command.label}
+          </CommandMenu.Item>
+        ))}
+      </CommandMenu>
+    </CommandMenu.Trigger>
+  );
+};
 
 WithMenuTrigger.args = {
   searchPlaceholder: 'Search commands...',
   autoFocus: true,
+  selectionMode: 'multiple',
+  selectionIcon: 'checkbox',
 };
 
 WithMenuTrigger.play = async ({ canvasElement, viewMode }) => {

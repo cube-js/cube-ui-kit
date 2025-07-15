@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import React from 'react';
+import React, { useState } from 'react';
 
 import { CommandMenu } from './CommandMenu';
 
@@ -843,6 +843,246 @@ describe('CommandMenu', () => {
     // Verify the display shows both selected items
     selectedDisplay = screen.getByText(/Selected:/);
     expect(selectedDisplay).toHaveTextContent(/Selected:.*1.*2/);
+  });
+
+  it('sorts selected items to the top in multiple selection mode', async () => {
+    const user = userEvent.setup();
+    const items = [
+      { id: '1', textValue: 'First Item' },
+      { id: '2', textValue: 'Second Item' },
+      { id: '3', textValue: 'Third Item' },
+      { id: '4', textValue: 'Fourth Item' },
+    ];
+
+    const TestComponent = () => {
+      const [selectedKeys, setSelectedKeys] = useState<string[]>(['2', '4']);
+
+      const handleSelectionChange = (keys: string[]) => {
+        setSelectedKeys(keys);
+      };
+
+      return (
+        <CommandMenu
+          selectionMode="multiple"
+          selectedKeys={selectedKeys}
+          onSelectionChange={handleSelectionChange}
+        >
+          {items.map((item) => (
+            <CommandMenu.Item key={item.id} id={item.id}>
+              {item.textValue}
+            </CommandMenu.Item>
+          ))}
+        </CommandMenu>
+      );
+    };
+
+    render(<TestComponent />);
+
+    // Get all menu items (in multiple selection mode, they have role "menuitemcheckbox")
+    const menuItems = screen.getAllByRole('menuitemcheckbox');
+
+    // The selected items (2 and 4) should appear first
+    // So the order should be: Second Item, Fourth Item, First Item, Third Item
+    expect(menuItems[0]).toHaveTextContent('Second Item');
+    expect(menuItems[1]).toHaveTextContent('Fourth Item');
+    expect(menuItems[2]).toHaveTextContent('First Item');
+    expect(menuItems[3]).toHaveTextContent('Third Item');
+  });
+
+  it('sorts selected items to the top in multiple selection mode even with search filtering', async () => {
+    const user = userEvent.setup();
+    const items = [
+      { id: '1', textValue: 'Apple' },
+      { id: '2', textValue: 'Banana' },
+      { id: '3', textValue: 'Apricot' },
+      { id: '4', textValue: 'Berry' },
+    ];
+
+    const TestComponent = () => {
+      const [selectedKeys, setSelectedKeys] = useState<string[]>(['3', '4']); // Apricot and Berry are selected
+
+      const handleSelectionChange = (keys: string[]) => {
+        setSelectedKeys(keys);
+      };
+
+      return (
+        <CommandMenu
+          selectionMode="multiple"
+          selectedKeys={selectedKeys}
+          onSelectionChange={handleSelectionChange}
+        >
+          {items.map((item) => (
+            <CommandMenu.Item key={item.id} id={item.id}>
+              {item.textValue}
+            </CommandMenu.Item>
+          ))}
+        </CommandMenu>
+      );
+    };
+
+    render(<TestComponent />);
+
+    // Search for "Ap" - should match "Apple" and "Apricot"
+    const searchInput = screen.getByPlaceholderText('Search commands...');
+    await user.type(searchInput, 'Ap');
+
+    // Get all filtered menu items
+    const menuItems = screen.getAllByRole('menuitemcheckbox');
+
+    // Only "Apple" and "Apricot" should be visible
+    // "Apricot" should appear first because it's selected
+    expect(menuItems).toHaveLength(2);
+    expect(menuItems[0]).toHaveTextContent('Apricot'); // Selected item first
+    expect(menuItems[1]).toHaveTextContent('Apple'); // Unselected item second
+  });
+
+  it('sorts selected items to the top in multiple selection mode with sections', async () => {
+    const TestComponent = () => {
+      const [selectedKeys, setSelectedKeys] = useState<string[]>([
+        'item2',
+        'item4',
+      ]);
+
+      const handleSelectionChange = (keys: string[]) => {
+        setSelectedKeys(keys);
+      };
+
+      return (
+        <CommandMenu
+          selectionMode="multiple"
+          selectedKeys={selectedKeys}
+          onSelectionChange={handleSelectionChange}
+        >
+          <CommandMenu.Section key="section1" aria-label="Files">
+            <CommandMenu.Item key="item1" id="item1">
+              Create File
+            </CommandMenu.Item>
+            <CommandMenu.Item key="item2" id="item2">
+              Open File
+            </CommandMenu.Item>
+          </CommandMenu.Section>
+          <CommandMenu.Section key="section2" aria-label="Edit">
+            <CommandMenu.Item key="item3" id="item3">
+              Cut
+            </CommandMenu.Item>
+            <CommandMenu.Item key="item4" id="item4">
+              Copy
+            </CommandMenu.Item>
+          </CommandMenu.Section>
+        </CommandMenu>
+      );
+    };
+
+    render(<TestComponent />);
+
+    // Get all menu items
+    const menuItems = screen.getAllByRole('menuitemcheckbox');
+
+    // Within each section, selected items should appear first
+    // Section 1: "Open File" (selected) should come before "Create File" (unselected)
+    // Section 2: "Copy" (selected) should come before "Cut" (unselected)
+    expect(menuItems[0]).toHaveTextContent('Open File'); // Selected item in section 1
+    expect(menuItems[1]).toHaveTextContent('Create File'); // Unselected item in section 1
+    expect(menuItems[2]).toHaveTextContent('Copy'); // Selected item in section 2
+    expect(menuItems[3]).toHaveTextContent('Cut'); // Unselected item in section 2
+  });
+
+  it('does not re-sort items during user interaction to prevent content shifting', async () => {
+    const user = userEvent.setup();
+    const items = [
+      { id: '1', textValue: 'First Item' },
+      { id: '2', textValue: 'Second Item' },
+      { id: '3', textValue: 'Third Item' },
+      { id: '4', textValue: 'Fourth Item' },
+    ];
+
+    const TestComponent = () => {
+      const [selectedKeys, setSelectedKeys] = useState<string[]>(['2', '4']); // Initially select items 2 and 4
+
+      const handleSelectionChange = (keys: string[]) => {
+        setSelectedKeys(keys);
+      };
+
+      return (
+        <CommandMenu
+          selectionMode="multiple"
+          selectedKeys={selectedKeys}
+          onSelectionChange={handleSelectionChange}
+        >
+          {items.map((item) => (
+            <CommandMenu.Item key={item.id} id={item.id}>
+              {item.textValue}
+            </CommandMenu.Item>
+          ))}
+        </CommandMenu>
+      );
+    };
+
+    render(<TestComponent />);
+
+    // Initially, items 2 and 4 should be sorted to the top
+    let menuItems = screen.getAllByRole('menuitemcheckbox');
+    expect(menuItems[0]).toHaveTextContent('Second Item'); // Selected
+    expect(menuItems[1]).toHaveTextContent('Fourth Item'); // Selected
+    expect(menuItems[2]).toHaveTextContent('First Item'); // Unselected
+    expect(menuItems[3]).toHaveTextContent('Third Item'); // Unselected
+
+    // Click on "First Item" to select it - the order should NOT change (no content shifting)
+    await user.click(menuItems[2]); // Click "First Item"
+
+    // Get menu items again after the selection change
+    menuItems = screen.getAllByRole('menuitemcheckbox');
+
+    // The order should remain the same - no content shifting
+    expect(menuItems[0]).toHaveTextContent('Second Item'); // Still first
+    expect(menuItems[1]).toHaveTextContent('Fourth Item'); // Still second
+    expect(menuItems[2]).toHaveTextContent('First Item'); // Still third (now selected)
+    expect(menuItems[3]).toHaveTextContent('Third Item'); // Still fourth
+
+    // Verify that "First Item" is now selected but didn't move
+    expect(menuItems[2]).toHaveAttribute('aria-checked', 'true');
+  });
+
+  it('sorts selected items to the top with defaultSelectedKeys', async () => {
+    const items = [
+      { id: '1', textValue: 'First Item' },
+      { id: '2', textValue: 'Second Item' },
+      { id: '3', textValue: 'Third Item' },
+      { id: '4', textValue: 'Fourth Item' },
+    ];
+
+    const TestComponent = () => {
+      return (
+        <CommandMenu
+          selectionMode="multiple"
+          defaultSelectedKeys={['3', '1']} // Default select Third and First items
+        >
+          {items.map((item) => (
+            <CommandMenu.Item key={item.id} id={item.id}>
+              {item.textValue}
+            </CommandMenu.Item>
+          ))}
+        </CommandMenu>
+      );
+    };
+
+    render(<TestComponent />);
+
+    // Get all menu items
+    const menuItems = screen.getAllByRole('menuitemcheckbox');
+
+    // The default selected items (3 and 1) should appear first
+    // The order follows the original array order for selected items: First Item (1), Third Item (3)
+    expect(menuItems[0]).toHaveTextContent('First Item'); // Selected (appears first in original array)
+    expect(menuItems[1]).toHaveTextContent('Third Item'); // Selected (appears third in original array)
+    expect(menuItems[2]).toHaveTextContent('Second Item'); // Unselected
+    expect(menuItems[3]).toHaveTextContent('Fourth Item'); // Unselected
+
+    // Verify the selected items are indeed selected
+    expect(menuItems[0]).toHaveAttribute('aria-checked', 'true');
+    expect(menuItems[1]).toHaveAttribute('aria-checked', 'true');
+    expect(menuItems[2]).toHaveAttribute('aria-checked', 'false');
+    expect(menuItems[3]).toHaveAttribute('aria-checked', 'false');
   });
 
   describe('CommandMenu mods', () => {
