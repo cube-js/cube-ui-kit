@@ -1,3 +1,4 @@
+import { Pressable } from '@react-aria/interactions';
 import {
   ComponentProps,
   ComponentType,
@@ -173,9 +174,11 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
           onOpenChange={setIsOpen}
           {...mergeProps(defaultTriggerProps, triggerProps || undefined)}
         >
-          <VisuallyHidden>
-            <button aria-label="context-menu" />
-          </VisuallyHidden>
+          <Pressable>
+            <VisuallyHidden>
+              <button aria-label="context-menu" />
+            </VisuallyHidden>
+          </Pressable>
           <Component {...componentProps} />
         </MenuTrigger>
       </>
