@@ -82,10 +82,10 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
 
   // Emit event when this menu opens
   useEffect(() => {
-    if (state.isOpen) {
+    if (state.isOpen && !isDummy) {
       emit('menu:open', { menuId });
     }
-  }, [state.isOpen, emit, menuId]);
+  }, [state.isOpen, emit, menuId, isDummy]);
 
   if (typeof menuTrigger === 'function') {
     menuTrigger = (menuTrigger as CubeMenuTriggerProps['children'][0])(state);

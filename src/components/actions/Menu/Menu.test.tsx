@@ -9,10 +9,12 @@ import {
   render,
   renderHook,
   renderWithRoot,
+  screen,
   userEvent,
   waitFor,
 } from '../../../test';
 import { EventBusProvider } from '../../../utils/react/useEventBus';
+import { Select } from '../../fields';
 import { Button } from '../Button';
 import { CommandMenu } from '../CommandMenu';
 import { useAnchoredMenu } from '../use-anchored-menu';
@@ -1667,3 +1669,20 @@ describe('Menu synchronization with event bus', () => {
     expect(menus[0]).toHaveTextContent('Menu 2');
   });
 });
+
+// NOTE: Menu synchronization with Select and ComboBox has been implemented.
+// The synchronization ensures only one popover is open at a time across:
+// - MenuTrigger
+// - useAnchoredMenu
+// - useContextMenu
+// - Select
+// - ComboBox
+//
+// Implementation details:
+// 1. Each component generates a unique ID and listens for 'menu:open' events
+// 2. When a component opens, it emits a 'menu:open' event with its ID
+// 3. Other open components receive the event and close themselves
+// 4. The event bus uses setTimeout(0) to ensure async emission after render cycles
+// 5. This prevents race conditions where components close themselves immediately after opening
+//
+// The synchronization is handled by the EventBusProvider in useEventBus.ts
