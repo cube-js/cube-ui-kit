@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.66.1
+
+### Patch Changes
+
+- [#722](https://github.com/cube-js/cube-ui-kit/pull/722) [`7eaf393`](https://github.com/cube-js/cube-ui-kit/commit/7eaf393cedb574237afee6579ab21b7abf57f83e) Thanks [@tenphi](https://github.com/tenphi)! - Fix a bug when CommandMenu is unable to be navigated via keys when the search input is filled with any value.
+
 ## 0.66.0
 
 ### Minor Changes
