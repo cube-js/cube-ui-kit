@@ -26,8 +26,6 @@ export type CubeMenuTriggerProps = AriaMenuTriggerProps &
       ReactElement | ((state: MenuTriggerState) => ReactElement),
       ReactElement,
     ];
-    direction?: Placement;
-    align?: 'start' | 'end';
 
     closeOnSelect?: boolean;
   };
@@ -36,13 +34,11 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
   const menuPopoverRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLElement>();
   const domRef = useDOMRef(ref);
-  const menuTriggerRef = domRef || triggerRef;
+  const menuTriggerRef = props.targetRef || domRef || triggerRef;
   const menuRef = useRef<HTMLUListElement>(null);
   const {
     children,
-    align = 'start',
     shouldFlip = true,
-    direction = 'bottom',
     closeOnSelect,
     trigger = 'press',
     isDisabled,
@@ -65,21 +61,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     menuTriggerRef,
   );
 
-  let initialPlacement: Placement;
-  switch (direction) {
-    case 'left':
-    case 'right':
-    case 'start':
-    case 'end':
-      initialPlacement = `${direction} ${
-        align === 'end' ? 'bottom' : 'top'
-      }` as Placement;
-      break;
-    case 'bottom':
-    case 'top':
-    default:
-      initialPlacement = `${direction} ${align}` as Placement;
-  }
+  let initialPlacement: Placement = props.placement;
 
   const isMobile = useIsMobileDevice();
   const { overlayProps: positionProps, placement } = useOverlayPosition({
@@ -91,7 +73,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     isOpen: state.isOpen && !isMobile,
     onClose: state.close,
     containerPadding: props.containerPadding,
-    offset: props.offset || 8,
+    offset: props.offset ?? 8,
     crossOffset: props.crossOffset,
   });
 

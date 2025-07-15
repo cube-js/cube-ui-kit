@@ -1,7 +1,13 @@
 // @ts-nocheck
 // NOTE: Type checking is disabled in this Storybook file to prevent
 // noisy errors from complex generic typings that do not affect runtime behaviour.
-import { expect, userEvent, waitFor, within } from '@storybook/test';
+import {
+  expect,
+  findByRole,
+  userEvent,
+  waitFor,
+  within,
+} from '@storybook/test';
 import {
   IconBook,
   IconBulb,
@@ -15,14 +21,20 @@ import { Icon, MoreIcon } from '../../../icons';
 import {
   AlertDialog,
   Button,
+  Card,
   DialogContainer,
   DirectionIcon,
   Flex,
+  Flow,
   Menu,
   MenuTrigger,
+  Paragraph,
   Space,
   Text,
+  Title,
   TooltipProvider,
+  useAnchoredMenu,
+  useContextMenu,
 } from '../../../index';
 import { baseProps } from '../../../stories/lists/baseProps';
 
@@ -896,4 +908,308 @@ export const DynamicCollectionWithSections = (props) => {
       </Menu>
     </div>
   );
+};
+
+export const WithAnchoredMenu = () => {
+  const MyMenuComponent = ({ onAction }) => (
+    <Menu width="220px" onAction={onAction}>
+      <Menu.Item key="edit" hotkeys="Ctrl+E">
+        Edit
+      </Menu.Item>
+      <Menu.Item key="duplicate" hotkeys="Ctrl+D">
+        Duplicate
+      </Menu.Item>
+      <Menu.Item key="delete" hotkeys="Del">
+        Delete
+      </Menu.Item>
+    </Menu>
+  );
+
+  const { anchorRef, open, isOpen, rendered } = useAnchoredMenu(
+    MyMenuComponent,
+    { placement: 'right top' },
+  );
+
+  const handleAction = (key) => {
+    console.log('Action selected:', key);
+  };
+
+  return (
+    <Flow
+      gap="4x"
+      placeContent="start start"
+      placeItems="start"
+      height="400px"
+      padding="3x"
+    >
+      <Title level={3} margin="0 0 2x 0">
+        useAnchoredMenu Hook Example
+      </Title>
+      <Paragraph preset="t4" color="#dark-03" margin="0 0 4x 0">
+        Click the button to open a menu anchored to the container
+      </Paragraph>
+
+      <Card
+        ref={anchorRef}
+        border="dashed #purple"
+        position="relative"
+        onContextMenu={(e) => {
+          open({ onAction: handleAction });
+          e.preventDefault();
+        }}
+      >
+        <Button
+          size="small"
+          icon={<MoreIcon />}
+          aria-label="Open Context Menu"
+          onPress={() => open({ onAction: handleAction })}
+        >
+          {isOpen ? 'Menu is opened' : 'Open Menu'}
+        </Button>
+        <Paragraph preset="t4" color="#dark-03" margin="2x 0 0 0">
+          Menu will be anchored to this container
+        </Paragraph>
+        <Paragraph preset="t4" color="#dark-03" margin="2x 0 0 0">
+          Right click on the container to open the menu
+        </Paragraph>
+      </Card>
+
+      {rendered}
+    </Flow>
+  );
+};
+
+WithAnchoredMenu.play = async ({ canvasElement, viewMode }) => {
+  if (viewMode === 'docs') return;
+
+  const { findByRole, findByText } = within(canvasElement);
+
+  // Click the button to open the anchored menu
+  await userEvent.click(await findByRole('button'));
+
+  // Wait for the menu to appear
+  await waitFor(() => expect(findByRole('menu')).resolves.toBeInTheDocument());
+
+  // Verify menu items are present
+  await expect(findByText('Edit')).resolves.toBeInTheDocument();
+  await expect(findByText('Duplicate')).resolves.toBeInTheDocument();
+  await expect(findByText('Delete')).resolves.toBeInTheDocument();
+};
+
+export const WithContextMenu = () => {
+  const MyMenuComponent = ({ onAction }) => (
+    <Menu width="220px" onAction={onAction}>
+      <Menu.Item key="edit" hotkeys="Ctrl+E">
+        Edit
+      </Menu.Item>
+      <Menu.Item key="duplicate" hotkeys="Ctrl+D">
+        Duplicate
+      </Menu.Item>
+      <Menu.Item key="delete" hotkeys="Del">
+        Delete
+      </Menu.Item>
+    </Menu>
+  );
+
+  const { anchorRef, open, isOpen, rendered } = useContextMenu(
+    MyMenuComponent,
+    {
+      placement: 'right top',
+    },
+  );
+
+  const handleAction = (key) => {
+    console.log('Context menu action selected:', key);
+  };
+
+  const handleContextMenu = (e) => {
+    e.preventDefault();
+    open(e, { onAction: handleAction });
+  };
+
+  return (
+    <Flow
+      gap="4x"
+      placeContent="start start"
+      placeItems="start"
+      height="400px"
+      padding="3x"
+    >
+      <Title level={3} margin="0 0 2x 0">
+        useContextMenu Hook Example
+      </Title>
+      <Paragraph preset="t4" color="#dark-03" margin="0 0 4x 0">
+        Right-click anywhere in the container below to open a context menu at
+        the exact cursor position
+      </Paragraph>
+
+      <Card
+        ref={anchorRef}
+        position="relative"
+        border="dashed #purple"
+        padding="4x"
+        onContextMenu={handleContextMenu}
+      >
+        {rendered}
+        <Title level={4} margin="0 0 2x 0">
+          Context Menu Area
+        </Title>
+        <Paragraph preset="t4" color="#dark-03" margin="0 0 2x 0">
+          Right-click anywhere in this area to open a context menu.
+        </Paragraph>
+        <Paragraph preset="t4" color="#dark-03" margin="0 0 2x 0">
+          The menu will appear exactly where you clicked.
+        </Paragraph>
+        <Paragraph preset="t4" color="#dark-03" margin="0">
+          Status:{' '}
+          {isOpen ? 'Context menu is open' : 'Right-click to open context menu'}
+        </Paragraph>
+      </Card>
+    </Flow>
+  );
+};
+
+WithContextMenu.play = async ({ canvasElement, viewMode }) => {
+  if (viewMode === 'docs') return;
+
+  const { findByText } = within(canvasElement);
+
+  const contextArea = await findByText('Context Menu Area');
+  const container = contextArea.closest('[role="region"]');
+
+  // Right-click to open the context menu
+  await userEvent.pointer([
+    { target: container, coords: { clientX: 200, clientY: 150 } },
+    { keys: '[MouseRight]', target: container },
+  ]);
+
+  // Wait for the menu to appear
+  await waitFor(() => expect(findByRole('menu')).resolves.toBeInTheDocument());
+
+  // Verify menu items are present
+  await expect(findByText('Edit')).resolves.toBeInTheDocument();
+  await expect(findByText('Duplicate')).resolves.toBeInTheDocument();
+  await expect(findByText('Delete')).resolves.toBeInTheDocument();
+};
+
+export const WithContextMenuPlacements = () => {
+  const MyMenuComponent = ({ onAction }) => (
+    <Menu width="220px" onAction={onAction}>
+      <Menu.Item key="edit" hotkeys="Ctrl+E">
+        Edit
+      </Menu.Item>
+      <Menu.Item key="duplicate" hotkeys="Ctrl+D">
+        Duplicate
+      </Menu.Item>
+      <Menu.Item key="delete" hotkeys="Del">
+        Delete
+      </Menu.Item>
+    </Menu>
+  );
+
+  const placements = [
+    'top',
+    'top start',
+    'top end',
+    'bottom',
+    'bottom start',
+    'bottom end',
+    'left',
+    'left start',
+    'left end',
+    'right',
+    'right start',
+    'right end',
+  ];
+
+  const ContextContainer = ({ placement, title }) => {
+    const { anchorRef, open, rendered } = useContextMenu(MyMenuComponent, {
+      placement,
+    });
+
+    const handleAction = (key) => {
+      console.log(`Action selected from ${placement}:`, key);
+    };
+
+    const handleContextMenu = (e) => {
+      e.preventDefault();
+      open(e, { onAction: handleAction });
+    };
+
+    return (
+      <Card
+        ref={anchorRef}
+        position="relative"
+        border="dashed #purple"
+        padding="3x"
+        gap="1x"
+        onContextMenu={handleContextMenu}
+      >
+        {rendered}
+        <Paragraph preset="t3m" color="#dark">
+          {title}
+        </Paragraph>
+        <Paragraph color="#dark-03">Right-click to test</Paragraph>
+      </Card>
+    );
+  };
+
+  return (
+    <Flow
+      gap="3x"
+      placeContent="start start"
+      placeItems="start"
+      height="600px"
+      padding="3x"
+    >
+      <Title level={3} margin="0 0 2x 0">
+        useContextMenu - Different Placements
+      </Title>
+      <Paragraph preset="t4" color="#dark-03" margin="0 0 4x 0">
+        Right-click on each container to test different placement positions.
+        Notice how the menu appears relative to your click position.
+      </Paragraph>
+
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: '16px',
+          width: '100%',
+        }}
+      >
+        {placements.map((placement) => (
+          <ContextContainer
+            key={placement}
+            placement={placement}
+            title={placement}
+          />
+        ))}
+      </div>
+    </Flow>
+  );
+};
+
+WithContextMenuPlacements.play = async ({ canvasElement, viewMode }) => {
+  if (viewMode === 'docs') return;
+
+  const { findByText } = within(canvasElement);
+
+  // Find the first placement container
+  const topContainer = await findByText('top');
+  const container = topContainer.closest('[role="region"]');
+
+  // Right-click to open the context menu
+  await userEvent.pointer([
+    { target: container, coords: { clientX: 50, clientY: 50 } },
+    { keys: '[MouseRight]', target: container },
+  ]);
+
+  // Wait for the menu to appear
+  await waitFor(() => expect(findByRole('menu')).resolves.toBeInTheDocument());
+
+  // Verify menu items are present
+  await expect(findByText('Edit')).resolves.toBeInTheDocument();
+  await expect(findByText('Duplicate')).resolves.toBeInTheDocument();
+  await expect(findByText('Delete')).resolves.toBeInTheDocument();
 };

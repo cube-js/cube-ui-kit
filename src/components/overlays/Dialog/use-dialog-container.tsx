@@ -6,8 +6,8 @@ import {
   useState,
 } from 'react';
 
-import { useEvent } from '../../../_internal/index';
-import { mergeProps } from '../../../utils/react/index';
+import { useEvent } from '../../../_internal';
+import { mergeProps } from '../../../utils/react';
 
 import { DialogContainer } from './DialogContainer';
 
