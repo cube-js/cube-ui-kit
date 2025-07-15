@@ -2,6 +2,7 @@ import { Pressable } from '@react-aria/interactions';
 import {
   ComponentProps,
   ComponentType,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -9,7 +10,9 @@ import {
 import { VisuallyHidden } from 'react-aria';
 
 import { useEvent } from '../../_internal';
+import { generateRandomId } from '../../utils/random';
 import { mergeProps } from '../../utils/react';
+import { useEventBus } from '../../utils/react/useEventBus';
 
 import { MenuTrigger } from './Menu';
 
@@ -32,6 +35,31 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   const [triggerProps, setTriggerProps] = useState<T | null>(null);
   const anchorRef = useRef<HTMLDivElement>(null);
   const setupRef = useRef(false);
+
+  // Generate a unique ID for this menu instance
+  const menuId = useMemo(() => generateRandomId(), []);
+
+  // Get event bus for menu synchronization
+  const { emit, on } = useEventBus();
+
+  // Listen for other menus opening and close this one if needed
+  useEffect(() => {
+    const unsubscribe = on('menu:open', (data: { menuId: string }) => {
+      // If another menu is opening and this menu is open, close this one
+      if (data.menuId !== menuId && isOpen) {
+        setIsOpen(false);
+      }
+    });
+
+    return unsubscribe;
+  }, [on, menuId, isOpen]);
+
+  // Emit event when this menu opens
+  useEffect(() => {
+    if (isOpen) {
+      emit('menu:open', { menuId });
+    }
+  }, [isOpen, emit, menuId]);
 
   function setupCheck() {
     if (!setupRef.current) {

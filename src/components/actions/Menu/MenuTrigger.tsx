@@ -1,7 +1,14 @@
 import { PressResponder } from '@react-aria/interactions';
 import { useDOMRef, useIsMobileDevice } from '@react-spectrum/utils';
 import { DOMRef } from '@react-types/shared';
-import { forwardRef, Fragment, ReactElement, useRef } from 'react';
+import {
+  forwardRef,
+  Fragment,
+  ReactElement,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react';
 import {
   AriaMenuTriggerProps,
   DismissButton,
@@ -12,7 +19,9 @@ import {
 } from 'react-aria';
 import { MenuTriggerState, useMenuTriggerState } from 'react-stately';
 
+import { generateRandomId } from '../../../utils/random';
 import { SlotProvider } from '../../../utils/react';
+import { useEventBus } from '../../../utils/react/useEventBus';
 import { Popover, Tray } from '../../overlays/Modal';
 
 import { MenuContext, MenuContextValue } from './context';
@@ -46,12 +55,37 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     isDummy,
   } = props;
 
+  // Generate a unique ID for this menu instance
+  const menuId = useMemo(() => generateRandomId(), []);
+
+  // Get event bus for menu synchronization
+  const { emit, on } = useEventBus();
+
   if (!Array.isArray(children) || children.length > 2) {
     throw new Error('MenuTrigger must have exactly 2 children');
   }
 
   let [menuTrigger, menu] = children;
   const state: MenuTriggerState = useMenuTriggerState(props);
+
+  // Listen for other menus opening and close this one if needed
+  useEffect(() => {
+    const unsubscribe = on('menu:open', (data: { menuId: string }) => {
+      // If another menu is opening and this menu is open, close this one
+      if (data.menuId !== menuId && state.isOpen && !isDummy) {
+        state.close();
+      }
+    });
+
+    return unsubscribe;
+  }, [on, menuId, state]);
+
+  // Emit event when this menu opens
+  useEffect(() => {
+    if (state.isOpen) {
+      emit('menu:open', { menuId });
+    }
+  }, [state.isOpen, emit, menuId]);
 
   if (typeof menuTrigger === 'function') {
     menuTrigger = (menuTrigger as CubeMenuTriggerProps['children'][0])(state);
@@ -122,6 +156,9 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
         isOpen={state.isOpen}
         style={positionProps.style}
         placement={placement}
+        shouldCloseOnInteractOutside={(el) =>
+          !el.closest('[data-menu-trigger]')
+        }
         onClose={state.close}
       >
         {contents}
@@ -138,6 +175,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
           <PressResponder
             {...menuTriggerProps}
             ref={menuTriggerRef}
+            data-menu-trigger
             isPressed={state.isOpen}
           >
             {menuTrigger}

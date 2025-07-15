@@ -1470,3 +1470,188 @@ describe('useAnchoredMenu', () => {
     expect(getByRole('menu')).toBeInTheDocument();
   });
 });
+
+describe('Menu synchronization with event bus', () => {
+  it('should close other menus when a new menu opens', async () => {
+    const TestMenuSynchronization = () => {
+      const {
+        anchorRef: anchorRef1,
+        open: open1,
+        rendered: rendered1,
+      } = useAnchoredMenu(({ onAction }) => (
+        <Menu onAction={onAction}>
+          <Menu.Item key="item1">Menu 1 Item</Menu.Item>
+        </Menu>
+      ));
+
+      const {
+        anchorRef: anchorRef2,
+        open: open2,
+        rendered: rendered2,
+      } = useAnchoredMenu(({ onAction }) => (
+        <Menu onAction={onAction}>
+          <Menu.Item key="item2">Menu 2 Item</Menu.Item>
+        </Menu>
+      ));
+
+      const {
+        anchorRef: anchorRef3,
+        open: open3,
+        rendered: rendered3,
+      } = useContextMenu(({ onAction }) => (
+        <Menu onAction={onAction}>
+          <Menu.Item key="item3">Menu 3 Item</Menu.Item>
+        </Menu>
+      ));
+
+      return (
+        <div data-qa="container">
+          <div ref={anchorRef1}>
+            <button
+              data-qa="trigger1"
+              onClick={() => open1({ onAction: () => {} })}
+            >
+              Open Menu 1
+            </button>
+          </div>
+          <div ref={anchorRef2}>
+            <button
+              data-qa="trigger2"
+              onClick={() => open2({ onAction: () => {} })}
+            >
+              Open Menu 2
+            </button>
+          </div>
+          <div ref={anchorRef3}>
+            <button
+              data-qa="trigger3"
+              onClick={(e) => open3(e, { onAction: () => {} })}
+            >
+              Open Menu 3
+            </button>
+          </div>
+          {rendered1}
+          {rendered2}
+          {rendered3}
+        </div>
+      );
+    };
+
+    const { getByTestId, getAllByRole, queryAllByRole } = renderWithRoot(
+      <TestMenuSynchronization />,
+    );
+
+    const trigger1 = getByTestId('trigger1');
+    const trigger2 = getByTestId('trigger2');
+    const trigger3 = getByTestId('trigger3');
+
+    // Initially, no menus should be visible
+    expect(queryAllByRole('menu')).toHaveLength(0);
+
+    // Open first menu
+    await act(async () => {
+      await userEvent.click(trigger1);
+    });
+
+    await waitFor(() => {
+      expect(getAllByRole('menu')).toHaveLength(1);
+    });
+
+    // Open second menu - should close the first one
+    await act(async () => {
+      await userEvent.click(trigger2);
+    });
+
+    await waitFor(() => {
+      expect(getAllByRole('menu')).toHaveLength(1);
+    });
+
+    // Open third menu (context menu) - should close the second one
+    await act(async () => {
+      await userEvent.click(trigger3);
+    });
+
+    await waitFor(() => {
+      expect(getAllByRole('menu')).toHaveLength(1);
+    });
+
+    // Verify only the third menu is open by checking content
+    const menus = getAllByRole('menu');
+    expect(menus).toHaveLength(1);
+
+    // The third menu should contain "Menu 3 Item"
+    const menuContent = menus[0];
+    expect(menuContent).toHaveTextContent('Menu 3 Item');
+  });
+
+  it('should handle rapid menu opening without conflicts', async () => {
+    const TestRapidMenuOpening = () => {
+      const {
+        anchorRef: anchorRef1,
+        open: open1,
+        rendered: rendered1,
+      } = useAnchoredMenu(({ onAction }) => (
+        <Menu onAction={onAction}>
+          <Menu.Item key="item1">Menu 1</Menu.Item>
+        </Menu>
+      ));
+
+      const {
+        anchorRef: anchorRef2,
+        open: open2,
+        rendered: rendered2,
+      } = useAnchoredMenu(({ onAction }) => (
+        <Menu onAction={onAction}>
+          <Menu.Item key="item2">Menu 2</Menu.Item>
+        </Menu>
+      ));
+
+      return (
+        <div>
+          <div ref={anchorRef1}>
+            <button
+              data-qa="rapid-trigger1"
+              onClick={() => open1({ onAction: () => {} })}
+            >
+              Rapid 1
+            </button>
+          </div>
+          <div ref={anchorRef2}>
+            <button
+              data-qa="rapid-trigger2"
+              onClick={() => open2({ onAction: () => {} })}
+            >
+              Rapid 2
+            </button>
+          </div>
+          {rendered1}
+          {rendered2}
+        </div>
+      );
+    };
+
+    const { getByTestId, getAllByRole, queryAllByRole } = renderWithRoot(
+      <TestRapidMenuOpening />,
+    );
+
+    const trigger1 = getByTestId('rapid-trigger1');
+    const trigger2 = getByTestId('rapid-trigger2');
+
+    // Rapidly click between menus
+    await act(async () => {
+      await userEvent.click(trigger1);
+      await userEvent.click(trigger2);
+      await userEvent.click(trigger1);
+      await userEvent.click(trigger2);
+    });
+
+    // Should still have only one menu open
+    await waitFor(() => {
+      expect(getAllByRole('menu')).toHaveLength(1);
+    });
+
+    // Verify it's the second menu (last opened)
+    const menus = getAllByRole('menu');
+    expect(menus[0]).toHaveTextContent('Menu 2');
+  });
+});

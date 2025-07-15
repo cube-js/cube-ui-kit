@@ -17,8 +17,19 @@ import {
 } from '@tabler/icons-react';
 import { useState } from 'react';
 
-import { Icon, MoreIcon } from '../../../icons';
 import {
+  CheckIcon,
+  CloseCircleIcon,
+  CloseIcon,
+  CopyIcon,
+  EditIcon,
+  FolderIcon,
+  Icon,
+  MoreIcon,
+  PlusIcon,
+} from '../../../icons';
+import {
+  Alert,
   AlertDialog,
   Button,
   Card,
@@ -1212,4 +1223,137 @@ WithContextMenuPlacements.play = async ({ canvasElement, viewMode }) => {
   await expect(findByText('Edit')).resolves.toBeInTheDocument();
   await expect(findByText('Duplicate')).resolves.toBeInTheDocument();
   await expect(findByText('Delete')).resolves.toBeInTheDocument();
+};
+
+export const MenuSynchronization = () => {
+  const MyMenuComponent1 = ({ onAction }) => (
+    <Menu width="200px" onAction={onAction}>
+      <Menu.Item key="option1" icon={<EditIcon />}>
+        Edit Item
+      </Menu.Item>
+      <Menu.Item key="option2" icon={<CopyIcon />}>
+        Copy Item
+      </Menu.Item>
+      <Menu.Item key="option3" icon={<CloseIcon />}>
+        Delete Item
+      </Menu.Item>
+    </Menu>
+  );
+
+  const MyContextMenuComponent = ({ onAction }) => (
+    <Menu width="180px" onAction={onAction}>
+      <Menu.Item key="cut" icon={<CloseCircleIcon />} hotkeys="Ctrl+X">
+        Cut
+      </Menu.Item>
+      <Menu.Item key="copy" icon={<CopyIcon />} hotkeys="Ctrl+C">
+        Copy
+      </Menu.Item>
+      <Menu.Item key="paste" icon={<CheckIcon />} hotkeys="Ctrl+V">
+        Paste
+      </Menu.Item>
+    </Menu>
+  );
+
+  const {
+    anchorRef: anchorRef1,
+    open: open1,
+    isOpen: isOpen1,
+    rendered: rendered1,
+  } = useAnchoredMenu(MyMenuComponent1, { placement: 'bottom start' });
+
+  const {
+    anchorRef: anchorRef3,
+    open: open3,
+    isOpen: isOpen3,
+    rendered: rendered3,
+  } = useContextMenu(MyContextMenuComponent, { placement: 'bottom start' });
+
+  const handleAction = (key) => {
+    console.log('Action selected:', key);
+  };
+
+  return (
+    <Flow gap="4x" placeContent="start" padding="4x">
+      <Title level={3} margin="0 0 2x 0">
+        Menu Synchronization Demo
+      </Title>
+      <Paragraph preset="t4" color="#dark-03" margin="0 0 4x 0">
+        Only one menu can be open at a time. Opening a new menu automatically
+        closes any other open menu.
+      </Paragraph>
+
+      <Flow gap="3x" flexDirection="row">
+        <Card border padding="3x" margin="0 0 3x 0">
+          <Paragraph preset="t3m" color="#dark" margin="0 0 2x 0">
+            Regular MenuTrigger
+          </Paragraph>
+          <MenuTrigger>
+            <Button size="small" icon={<MoreIcon />} aria-label="Open Menu">
+              Click to test menu synchronization
+            </Button>
+            <Menu width="220px">
+              <Menu.Item key="sync-edit" hotkeys="Ctrl+E">
+                Edit (Sync Test)
+              </Menu.Item>
+              <Menu.Item key="sync-duplicate" hotkeys="Ctrl+D">
+                Duplicate (Sync Test)
+              </Menu.Item>
+              <Menu.Item key="sync-delete" hotkeys="Del">
+                Delete (Sync Test)
+              </Menu.Item>
+            </Menu>
+          </MenuTrigger>
+          <Paragraph preset="t5" color="#dark-03" margin="2x 0 0 0">
+            Click this button, then try right-clicking on any placement
+            container below to test menu synchronization.
+          </Paragraph>
+        </Card>
+
+        <Card ref={anchorRef1} border padding="3x">
+          {rendered1}
+          <Button
+            data-menu-trigger
+            size="small"
+            theme={isOpen1 ? 'accent' : 'secondary'}
+            onPress={() => open1({ onAction: handleAction })}
+          >
+            Edit Menu {isOpen1 ? '(Open)' : ''}
+          </Button>
+          <Paragraph preset="t5" color="#dark-03" margin="1x 0 0 0">
+            Anchored menu with editing actions
+          </Paragraph>
+        </Card>
+
+        <Card
+          ref={anchorRef3}
+          border
+          data-menu-trigger
+          padding="3x"
+          background={isOpen3 ? '#purple-10' : undefined}
+          onContextMenu={(e) => {
+            open3(e, { onAction: handleAction });
+            e.preventDefault();
+          }}
+        >
+          {rendered3}
+          <Paragraph preset="t5" color="#dark-03" margin="1x 0 0 0">
+            Right-click or click to open context menu
+          </Paragraph>
+        </Card>
+      </Flow>
+
+      <Alert type="info" title="Try it out">
+        <Flow gap="1x">
+          <Text>1. Open any menu by clicking a button</Text>
+          <Text>
+            2. Try opening another menu - the first one will automatically close
+          </Text>
+          <Text>
+            3. Right-click on the context menu card for a context menu
+          </Text>
+          <Text>4. Notice how only one menu can be open at any time</Text>
+        </Flow>
+      </Alert>
+    </Flow>
+  );
 };
