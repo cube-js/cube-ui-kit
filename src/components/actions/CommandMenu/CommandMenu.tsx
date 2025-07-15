@@ -287,6 +287,7 @@ function CommandMenuBase<T extends object>(
 
   // Track focused key for aria-activedescendant
   const [focusedKey, setFocusedKey] = React.useState<React.Key | null>(null);
+  const focusedKeyRef = useRef<React.Key | null>(null);
 
   // Apply filtering to collection items for rendering and empty state checks
   const filteredCollectionItems = useMemo(() => {
@@ -482,28 +483,34 @@ function CommandMenuBase<T extends object>(
     }
   }, [autoFocus, contextProps.autoFocus]);
 
+  // Track the previous search value to only run auto-focus when search actually changes
+  const prevSearchValueRef = useRef<string>('');
+
   // Auto-focus first item when search value changes (but not on initial render)
   React.useEffect(() => {
-    // Only auto-focus when search value changes, not on initial mount
-    if (searchValue.trim() !== '') {
+    const currentSearchValue = searchValue.trim();
+    const prevSearchValue = prevSearchValueRef.current;
+
+    // Only auto-focus when search value actually changes
+    if (currentSearchValue !== prevSearchValue && currentSearchValue !== '') {
       const firstSelectableKey = findFirstSelectableItem();
 
       if (firstSelectableKey && hasFilteredItems) {
         // Focus the first item in the selection manager
         treeState.selectionManager.setFocusedKey(firstSelectableKey);
         setFocusedKey(firstSelectableKey);
+        focusedKeyRef.current = firstSelectableKey;
       } else {
         // Clear focus if no items are available
         treeState.selectionManager.setFocusedKey(null);
         setFocusedKey(null);
+        focusedKeyRef.current = null;
       }
     }
-  }, [
-    searchValue,
-    findFirstSelectableItem,
-    hasFilteredItems,
-    treeState.selectionManager,
-  ]);
+
+    // Update the previous search value
+    prevSearchValueRef.current = currentSearchValue;
+  }, [searchValue, findFirstSelectableItem, hasFilteredItems]);
 
   // Extract styles
   const extractedStyles = useMemo(
@@ -580,50 +587,44 @@ function CommandMenuBase<T extends object>(
             e.preventDefault();
 
             const isArrowDown = e.key === 'ArrowDown';
-            const { selectionManager, collection } = treeState;
-            const currentKey = selectionManager.focusedKey;
+            const { selectionManager } = treeState;
+            // Use the ref to get the current focused key synchronously
+            const currentKey =
+              focusedKeyRef.current || selectionManager.focusedKey;
+
+            // Helper function to get all visible item keys by applying filter to tree state collection
+            const getVisibleItemKeys = (): any[] => {
+              const keys: any[] = [];
+              const term = searchValue.trim();
+
+              // Use the tree state's collection and apply filter manually
+              for (const item of treeState.collection) {
+                if (item.type === 'item') {
+                  const text = item.textValue ?? String(item.rendered ?? '');
+                  if (enhancedFilter(text, term, item.props)) {
+                    keys.push(item.key);
+                  }
+                }
+              }
+
+              return keys;
+            };
 
             // Helper function to find next selectable key in a direction
             const findNextSelectableKey = (
-              startKey: any,
+              currentIndex: number,
               direction: 'forward' | 'backward',
+              visibleKeys: any[],
             ) => {
-              if (startKey == null) {
-                return null;
-              }
+              const increment = direction === 'forward' ? 1 : -1;
 
-              // First check if the startKey itself is selectable
-              const startNode = collection.getItem(startKey);
-              if (
-                startNode &&
-                startNode.type === 'item' &&
-                !selectionManager.isDisabled(startKey)
+              for (
+                let i = currentIndex + increment;
+                i >= 0 && i < visibleKeys.length;
+                i += increment
               ) {
-                return startKey;
-              }
-
-              // If startKey is not selectable, find the next selectable key
-              let keys = [...collection.getKeys()];
-
-              if (direction === 'backward') {
-                keys = keys.reverse();
-              }
-
-              let startIndex = keys.indexOf(startKey);
-
-              if (startIndex === -1) {
-                return null;
-              }
-
-              for (let i = startIndex + 1; i < keys.length; i++) {
-                const key = keys[i];
-                const node = collection.getItem(key);
-
-                if (
-                  node &&
-                  node.type === 'item' &&
-                  !selectionManager.isDisabled(key)
-                ) {
+                const key = visibleKeys[i];
+                if (!selectionManager.isDisabled(key)) {
                   return key;
                 }
               }
@@ -634,19 +635,15 @@ function CommandMenuBase<T extends object>(
             // Helper function to find first or last selectable key
             const findFirstLastSelectableKey = (
               direction: 'forward' | 'backward',
+              visibleKeys: any[],
             ) => {
-              const keys = [...collection.getKeys()];
               const keysToCheck =
-                direction === 'forward' ? keys : keys.reverse();
+                direction === 'forward'
+                  ? visibleKeys
+                  : [...visibleKeys].reverse();
 
               for (const key of keysToCheck) {
-                const node = collection.getItem(key);
-
-                if (
-                  node &&
-                  node.type === 'item' &&
-                  !selectionManager.isDisabled(key)
-                ) {
+                if (!selectionManager.isDisabled(key)) {
                   return key;
                 }
               }
@@ -654,30 +651,44 @@ function CommandMenuBase<T extends object>(
               return null;
             };
 
+            const visibleKeys = getVisibleItemKeys();
+
+            if (visibleKeys.length === 0) {
+              return; // No visible items to navigate
+            }
+
             let nextKey;
             const direction = isArrowDown ? 'forward' : 'backward';
 
             if (currentKey == null) {
               // No current focus, start from the first/last item
-              nextKey = findFirstLastSelectableKey(direction);
+              nextKey = findFirstLastSelectableKey(direction, visibleKeys);
             } else {
-              // Find next selectable item from current position
-              const candidateKey =
-                direction === 'forward'
-                  ? collection.getKeyAfter(currentKey)
-                  : collection.getKeyBefore(currentKey);
+              // Find current position in visible keys
+              const currentIndex = visibleKeys.indexOf(currentKey);
 
-              nextKey = findNextSelectableKey(candidateKey, direction);
+              if (currentIndex === -1) {
+                // Current key not in visible items, start from beginning/end
+                nextKey = findFirstLastSelectableKey(direction, visibleKeys);
+              } else {
+                // Find next selectable item from current position
+                nextKey = findNextSelectableKey(
+                  currentIndex,
+                  direction,
+                  visibleKeys,
+                );
 
-              // If no next key found and focus wrapping is enabled, wrap to first/last selectable item
-              if (nextKey == null) {
-                nextKey = findFirstLastSelectableKey(direction);
+                // If no next key found, wrap to first/last selectable item
+                if (nextKey == null) {
+                  nextKey = findFirstLastSelectableKey(direction, visibleKeys);
+                }
               }
             }
 
             if (nextKey != null) {
               selectionManager.setFocusedKey(nextKey);
               setFocusedKey(nextKey);
+              focusedKeyRef.current = nextKey; // Update ref immediately
             }
           } else if (
             e.key === 'Enter' ||

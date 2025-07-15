@@ -107,6 +107,101 @@ describe('CommandMenu', () => {
     );
   });
 
+  it('navigates through filtered items with arrow keys when search input has value', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <CommandMenu qa="test-menu">
+        {items.map((item) => (
+          <CommandMenu.Item key={item.id} id={item.id}>
+            {item.textValue}
+          </CommandMenu.Item>
+        ))}
+      </CommandMenu>,
+    );
+
+    const searchInput = screen.getByPlaceholderText('Search commands...');
+
+    // Focus and type to filter items - "Create" should only match "Create file" (id: '1')
+    await user.click(searchInput);
+    await user.type(searchInput, 'Create');
+
+    // Verify filtered items are visible
+    expect(screen.getByText('Create file')).toBeInTheDocument();
+    expect(screen.queryByText('Open folder')).not.toBeInTheDocument();
+    expect(screen.queryByText('Save document')).not.toBeInTheDocument();
+
+    // Press arrow down - should move virtual focus to the only filtered item ('Create file')
+    await user.keyboard('{ArrowDown}');
+
+    // Search input should still have focus
+    expect(searchInput).toHaveFocus();
+
+    // The filtered item should be virtually focused
+    expect(searchInput).toHaveAttribute(
+      'aria-activedescendant',
+      'test-menu-menu-option-1',
+    );
+
+    // Clear and type "Save" to test navigation with different filter
+    await user.clear(searchInput);
+    await user.type(searchInput, 'Save');
+
+    // Verify filtered items are visible
+    expect(screen.getByText('Save document')).toBeInTheDocument();
+    expect(screen.queryByText('Create file')).not.toBeInTheDocument();
+    expect(screen.queryByText('Open folder')).not.toBeInTheDocument();
+
+    // Press arrow down - should move virtual focus to the only filtered item ('Save document')
+    await user.keyboard('{ArrowDown}');
+
+    // Search input should still have focus
+    expect(searchInput).toHaveFocus();
+
+    // The filtered item should be virtually focused
+    expect(searchInput).toHaveAttribute(
+      'aria-activedescendant',
+      'test-menu-menu-option-3',
+    );
+
+    // Clear and type "a" to match multiple items ("Create file" and "Save document")
+    await user.clear(searchInput);
+    await user.type(searchInput, 'a');
+
+    // Verify filtered items are visible
+    expect(screen.getByText('Create file')).toBeInTheDocument();
+    expect(screen.getByText('Save document')).toBeInTheDocument();
+    expect(screen.queryByText('Open folder')).not.toBeInTheDocument();
+
+    // Press arrow down - should move to second filtered item ('Save document')
+    // since auto-focus already focused the first item when typing
+    await user.keyboard('{ArrowDown}');
+
+    // Second filtered item should be virtually focused
+    expect(searchInput).toHaveAttribute(
+      'aria-activedescendant',
+      'test-menu-menu-option-3',
+    );
+
+    // Press arrow down again - should wrap to first filtered item ('Create file')
+    await user.keyboard('{ArrowDown}');
+
+    // First filtered item should be virtually focused
+    expect(searchInput).toHaveAttribute(
+      'aria-activedescendant',
+      'test-menu-menu-option-1',
+    );
+
+    // Press arrow up - should move to last filtered item ('Save document')
+    await user.keyboard('{ArrowUp}');
+
+    // Last filtered item should be virtually focused
+    expect(searchInput).toHaveAttribute(
+      'aria-activedescendant',
+      'test-menu-menu-option-3',
+    );
+  });
+
   it('triggers action with Enter key', async () => {
     const user = userEvent.setup();
     const onAction = jest.fn();
