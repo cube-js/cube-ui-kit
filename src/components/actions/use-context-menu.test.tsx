@@ -12,12 +12,18 @@ import {
   userEvent,
   waitFor,
 } from '../../test';
+import { EventBusProvider } from '../../utils/react/useEventBus';
 
 import { CommandMenu } from './CommandMenu';
 import { Menu } from './Menu';
 import { useContextMenu } from './use-context-menu';
 
 jest.mock('../../_internal/hooks/use-warn');
+
+// Wrapper for hooks that need EventBusProvider
+const HookWrapper = ({ children }: { children: React.ReactNode }) => (
+  <EventBusProvider>{children}</EventBusProvider>
+);
 
 describe('useContextMenu', () => {
   // Test component that uses the hook with Menu
@@ -105,7 +111,9 @@ describe('useContextMenu', () => {
 
   // Basic functionality tests
   it('should provide anchorRef, open, close, and rendered properties', () => {
-    const { result } = renderHook(() => useContextMenu(TestMenuComponent));
+    const { result } = renderHook(() => useContextMenu(TestMenuComponent), {
+      wrapper: HookWrapper,
+    });
 
     expect(result.current.anchorRef).toBeDefined();
     expect(result.current.anchorRef.current).toBeNull(); // Initially null
@@ -115,7 +123,9 @@ describe('useContextMenu', () => {
   });
 
   it('should provide setup check functionality', () => {
-    const { result } = renderHook(() => useContextMenu(TestMenuComponent));
+    const { result } = renderHook(() => useContextMenu(TestMenuComponent), {
+      wrapper: HookWrapper,
+    });
 
     // The hook should provide all expected functions
     expect(typeof result.current.open).toBe('function');
@@ -543,7 +553,9 @@ describe('useContextMenu', () => {
   });
 
   it('should handle edge case when component props are null', () => {
-    const { result } = renderHook(() => useContextMenu(TestMenuComponent));
+    const { result } = renderHook(() => useContextMenu(TestMenuComponent), {
+      wrapper: HookWrapper,
+    });
 
     // When no props are set, rendered should be null
     expect(result.current.rendered).toBeNull();
@@ -576,7 +588,9 @@ describe('useContextMenu', () => {
   });
 
   it('should throw error when trying to open without rendered being accessed', () => {
-    const { result } = renderHook(() => useContextMenu(TestMenuComponent));
+    const { result } = renderHook(() => useContextMenu(TestMenuComponent), {
+      wrapper: HookWrapper,
+    });
 
     const mockEvent = {
       clientX: 100,

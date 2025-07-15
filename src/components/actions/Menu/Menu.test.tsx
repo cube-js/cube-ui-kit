@@ -12,6 +12,7 @@ import {
   userEvent,
   waitFor,
 } from '../../../test';
+import { EventBusProvider } from '../../../utils/react/useEventBus';
 import { Button } from '../Button';
 import { CommandMenu } from '../CommandMenu';
 import { useAnchoredMenu } from '../use-anchored-menu';
@@ -21,6 +22,11 @@ import { Menu } from './Menu';
 import { MenuTrigger } from './MenuTrigger';
 
 jest.mock('../../../_internal/hooks/use-warn');
+
+// Wrapper for hooks that need EventBusProvider
+const HookWrapper = ({ children }: { children: React.ReactNode }) => (
+  <EventBusProvider>{children}</EventBusProvider>
+);
 
 describe('<Menu />', () => {
   const basicItems = [
@@ -1117,7 +1123,9 @@ describe('useAnchoredMenu', () => {
 
   // Basic functionality tests
   it('should provide anchorRef, open, close, and rendered properties', () => {
-    const { result } = renderHook(() => useAnchoredMenu(TestMenuComponent));
+    const { result } = renderHook(() => useAnchoredMenu(TestMenuComponent), {
+      wrapper: HookWrapper,
+    });
 
     expect(result.current.anchorRef).toBeDefined();
     expect(result.current.anchorRef.current).toBeNull(); // Initially null
@@ -1130,7 +1138,9 @@ describe('useAnchoredMenu', () => {
     // Test that the hook provides the setup check mechanism
     // This is tested indirectly through the integration tests
     // where the rendered property must be accessed for the hook to work
-    const { result } = renderHook(() => useAnchoredMenu(TestMenuComponent));
+    const { result } = renderHook(() => useAnchoredMenu(TestMenuComponent), {
+      wrapper: HookWrapper,
+    });
 
     // The hook should provide all expected functions
     expect(typeof result.current.open).toBe('function');
@@ -1438,7 +1448,9 @@ describe('useAnchoredMenu', () => {
   });
 
   it('should handle edge case when component props are null', () => {
-    const { result } = renderHook(() => useAnchoredMenu(TestMenuComponent));
+    const { result } = renderHook(() => useAnchoredMenu(TestMenuComponent), {
+      wrapper: HookWrapper,
+    });
 
     // When no props are set, rendered should be null
     expect(result.current.rendered).toBeNull();
