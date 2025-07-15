@@ -8,3 +8,5 @@ export { useCombinedRefs } from './useCombinedRefs';
 export { wrapNodeIfPlain } from './wrapNodeIfPlain';
 export { useViewportSize } from './useViewportSize';
 export { useQaProps } from './useQaProps';
+export { useEventBus, useEventListener, EventBusProvider } from './useEventBus';
+export type { EventBusListener, EventBusContextValue } from './useEventBus';

@@ -36,7 +36,6 @@ export function createSharedStore<S>(
     existing &&
     existing.state !== initialState
   ) {
-     
     console.warn(
       `[createSharedStore] Store "${name}" already exists – ` +
         'the new initialState is ignored to preserve hot-reload state.',
