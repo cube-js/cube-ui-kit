@@ -2,6 +2,7 @@ import { useSyncRef } from '@react-aria/utils';
 import { useDOMRef } from '@react-spectrum/utils';
 import { DOMRef, FocusStrategy } from '@react-types/shared';
 import React, {
+  Key,
   ReactElement,
   ReactNode,
   useCallback,
@@ -133,7 +134,7 @@ function CommandMenuBase<T extends object>(
     : undefined;
 
   const handleSelectionChange = onSelectionChange
-    ? (keys: any) => {
+    ? (keys: 'all' | Set<Key>) => {
         if (keys === 'all') {
           // Handle 'all' selection case - collect all available keys
           const allKeys = Array.from(treeState.collection.getKeys()).map(
@@ -593,8 +594,8 @@ function CommandMenuBase<T extends object>(
               focusedKeyRef.current || selectionManager.focusedKey;
 
             // Helper function to get all visible item keys by applying filter to tree state collection
-            const getVisibleItemKeys = (): any[] => {
-              const keys: any[] = [];
+            const getVisibleItemKeys = (): Key[] => {
+              const keys: Key[] = [];
               const term = searchValue.trim();
 
               // Use the tree state's collection and apply filter manually
@@ -614,7 +615,7 @@ function CommandMenuBase<T extends object>(
             const findNextSelectableKey = (
               currentIndex: number,
               direction: 'forward' | 'backward',
-              visibleKeys: any[],
+              visibleKeys: Key[],
             ) => {
               const increment = direction === 'forward' ? 1 : -1;
 
@@ -635,7 +636,7 @@ function CommandMenuBase<T extends object>(
             // Helper function to find first or last selectable key
             const findFirstLastSelectableKey = (
               direction: 'forward' | 'backward',
-              visibleKeys: any[],
+              visibleKeys: Key[],
             ) => {
               const keysToCheck =
                 direction === 'forward'
