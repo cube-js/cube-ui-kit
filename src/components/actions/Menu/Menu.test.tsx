@@ -1654,9 +1654,38 @@ describe('Menu synchronization with event bus', () => {
     // Rapidly click between menus
     await act(async () => {
       await userEvent.click(trigger1);
+    });
+
+    // Wait for the first menu to be open
+    await waitFor(() => {
+      expect(getAllByRole('menu')).toHaveLength(1);
+    });
+
+    await act(async () => {
       await userEvent.click(trigger2);
+    });
+
+    // Wait for stabilization - allow time for the async setTimeout(0) to process
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+
+    await act(async () => {
       await userEvent.click(trigger1);
+    });
+
+    // Wait for stabilization again
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+
+    await act(async () => {
       await userEvent.click(trigger2);
+    });
+
+    // Final wait for stabilization
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
     });
 
     // Should still have only one menu open
