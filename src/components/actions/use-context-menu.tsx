@@ -24,11 +24,12 @@ type NativeMouseEvent = globalThis.MouseEvent;
 type NativePointerEvent = globalThis.PointerEvent;
 
 export interface UseContextMenuReturn<
-  P,
+  E extends HTMLElement = HTMLElement,
+  P extends object = {},
   T = ComponentProps<typeof MenuTrigger>,
 > {
   /** Container element that receives context menu events. Attach this ref to your target element. */
-  targetRef: RefObject<HTMLElement>;
+  targetRef: RefObject<E>;
 
   /**
    * Programmatically opens the menu at the specified event coordinates.
@@ -72,14 +73,18 @@ export interface UseContextMenuReturn<
  * @param defaultMenuProps - Default props to pass to the Menu component.
  * @returns An object with `targetRef` to attach to the container element, `open` function to open the menu at event coordinates, `close` function to close the menu, and `rendered` JSX element to include in your component tree.
  */
-export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
+export function useContextMenu<
+  E extends HTMLElement = HTMLElement,
+  P extends object = {},
+  T = ComponentProps<typeof MenuTrigger>,
+>(
   Component: ComponentType<P>,
   defaultTriggerProps?: Omit<
     ComponentProps<typeof MenuTrigger>,
     'children' | 'isOpen' | 'onOpenChange' | 'targetRef'
   >,
   defaultMenuProps?: P,
-): UseContextMenuReturn<P, T> {
+): UseContextMenuReturn<E, P, T> {
   const [isOpen, setIsOpen] = useState(false);
   const [componentProps, setComponentProps] = useState<P | null>(null);
   const [triggerProps, setTriggerProps] = useState<T | null>(null);
@@ -87,7 +92,7 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
     x: number;
     y: number;
   } | null>(null);
-  const targetRef = useRef<HTMLElement>(null);
+  const targetRef = useRef<E>(null);
   const invisibleAnchorRef = useRef<HTMLSpanElement>(null);
   const setupRef = useRef(false);
 

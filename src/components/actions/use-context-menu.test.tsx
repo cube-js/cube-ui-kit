@@ -1,4 +1,3 @@
-// @ts-nocheck
 // NOTE: Type checking is disabled in this test file to prevent
 // noisy errors from complex generic typings that do not affect runtime behaviour.
 import { createRef } from 'react';
@@ -432,10 +431,11 @@ describe('useContextMenu', () => {
 
     // Custom wrapper to test multiple opens with different props
     const MultiOpenWrapper = () => {
-      const { targetRef, open, rendered } = useContextMenu(TestMenuComponent);
+      const { targetRef, open, rendered } =
+        useContextMenu<HTMLDivElement>(TestMenuComponent);
 
       const handleClick1 = (e: React.MouseEvent) => {
-        open(e, { onAction: onAction1 });
+        open(e, { onAction: onAction1, sadf: '123' });
       };
 
       const handleClick2 = (e: React.MouseEvent) => {
@@ -527,7 +527,8 @@ describe('useContextMenu', () => {
 
   it('should maintain target ref across renders', () => {
     const TestRefWrapper = () => {
-      const { targetRef, rendered } = useContextMenu(TestMenuComponent);
+      const { targetRef, rendered } =
+        useContextMenu<HTMLDivElement>(TestMenuComponent);
 
       return (
         <div ref={targetRef} data-qa="container">
@@ -675,7 +676,7 @@ describe('useContextMenu', () => {
   it('should expose isOpen state', async () => {
     const TestIsOpenWrapper = () => {
       const { targetRef, open, close, isOpen, rendered } =
-        useContextMenu(TestMenuComponent);
+        useContextMenu<HTMLDivElement>(TestMenuComponent);
 
       return (
         <div ref={targetRef} data-qa="container">
@@ -721,7 +722,7 @@ describe('useContextMenu', () => {
     const onAction = jest.fn();
 
     const TestPlacementWrapper = ({ placement }: { placement: any }) => {
-      const { targetRef, open, rendered } = useContextMenu(
+      const { targetRef, open, rendered } = useContextMenu<HTMLDivElement>(
         TestMenuComponent,
         {
           placement,
@@ -768,7 +769,7 @@ describe('useContextMenu', () => {
     const onAction = jest.fn();
 
     const TestAutoContextWrapper = () => {
-      const { targetRef, isOpen, rendered } = useContextMenu(
+      const { targetRef, isOpen, rendered } = useContextMenu<HTMLDivElement>(
         TestMenuComponent,
         { placement: 'bottom start' },
         { onAction },
@@ -827,14 +828,14 @@ describe('useContextMenu', () => {
     const runtimeAction = jest.fn();
 
     const TestMergeWrapper = () => {
-      const { targetRef, open, rendered } = useContextMenu(
+      const { targetRef, open, rendered } = useContextMenu<HTMLDivElement>(
         TestMenuComponent,
         { placement: 'bottom start' },
         { onAction: defaultAction, width: '200px' },
       );
 
       const handleManualOpen = (e: React.MouseEvent) => {
-        open(e, { onAction: runtimeAction }); // Should override default onAction
+        open(e, { onAction: runtimeAction, width: '200px' }); // Should override default onAction
       };
 
       return (
