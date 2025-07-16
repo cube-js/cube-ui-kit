@@ -9,5 +9,5 @@ export function random(min: number, max: number) {
  * Generates a unique random ID using current timestamp and random number
  */
 export function generateRandomId(): string {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 }
