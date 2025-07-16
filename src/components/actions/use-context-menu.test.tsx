@@ -63,35 +63,32 @@ describe('useContextMenu', () => {
     componentProps = {},
     triggerProps = {},
     defaultTriggerProps = {},
+    defaultMenuProps = {},
     onTriggerClick,
   }: {
     Component: any;
     componentProps?: any;
     triggerProps?: any;
     defaultTriggerProps?: any;
+    defaultMenuProps?: any;
     onTriggerClick?: () => void;
   }) => {
     const { targetRef, open, close, rendered } = useContextMenu(
       Component,
       defaultTriggerProps,
+      defaultMenuProps,
     );
 
-    const handleContextMenu = (e: React.MouseEvent) => {
-      if (onTriggerClick) {
-        onTriggerClick();
-      }
-      open(e, componentProps, triggerProps);
-    };
-
     return (
-      <div
-        ref={targetRef}
-        data-qa="container"
-        onContextMenu={handleContextMenu}
-      >
+      <div ref={targetRef} data-qa="container">
         <button
           data-qa="trigger"
-          onClick={(e) => open(e, componentProps, triggerProps)}
+          onClick={(e) => {
+            if (onTriggerClick) {
+              onTriggerClick();
+            }
+            open(e, componentProps, triggerProps);
+          }}
         >
           Open Menu
         </button>
@@ -143,7 +140,7 @@ describe('useContextMenu', () => {
     const { getByTestId, getByRole, getByText } = renderWithRoot(
       <TestWrapper
         Component={TestMenuComponent}
-        componentProps={{ onAction }}
+        defaultMenuProps={{ onAction }}
       />,
     );
 
@@ -174,7 +171,7 @@ describe('useContextMenu', () => {
       renderWithRoot(
         <TestWrapper
           Component={TestCommandMenuComponent}
-          componentProps={{
+          defaultMenuProps={{
             onAction,
             searchPlaceholder: 'Search test commands...',
           }}
@@ -205,7 +202,7 @@ describe('useContextMenu', () => {
     const { getByTestId, getByRole, queryByRole } = renderWithRoot(
       <TestWrapper
         Component={TestMenuComponent}
-        componentProps={{ onAction }}
+        defaultMenuProps={{ onAction }}
       />,
     );
 
@@ -237,7 +234,7 @@ describe('useContextMenu', () => {
     const { getByTestId, getByText } = renderWithRoot(
       <TestWrapper
         Component={TestMenuComponent}
-        componentProps={{ onAction }}
+        defaultMenuProps={{ onAction }}
       />,
     );
 
@@ -263,7 +260,7 @@ describe('useContextMenu', () => {
     const { getByTestId, getByRole, getByText } = renderWithRoot(
       <TestWrapper
         Component={TestMenuComponent}
-        componentProps={{ onAction }}
+        defaultMenuProps={{ onAction }}
       />,
     );
 
@@ -296,7 +293,7 @@ describe('useContextMenu', () => {
     const { getByTestId } = renderWithRoot(
       <TestWrapper
         Component={TestMenuComponent}
-        componentProps={{ onAction }}
+        defaultMenuProps={{ onAction }}
       />,
     );
 
@@ -339,7 +336,7 @@ describe('useContextMenu', () => {
     const { getByTestId } = renderWithRoot(
       <TestWrapper
         Component={TestMenuComponent}
-        componentProps={{ onAction }}
+        defaultMenuProps={{ onAction }}
       />,
     );
 
@@ -382,7 +379,7 @@ describe('useContextMenu', () => {
     const { getByTestId, getByRole } = renderWithRoot(
       <TestWrapper
         Component={TestMenuComponent}
-        componentProps={{ onAction }}
+        defaultMenuProps={{ onAction }}
         triggerProps={{ placement: 'top start' }}
       />,
     );
@@ -408,7 +405,7 @@ describe('useContextMenu', () => {
     const { getByTestId, getByRole } = renderWithRoot(
       <TestWrapper
         Component={TestMenuComponent}
-        componentProps={{ onAction }}
+        defaultMenuProps={{ onAction }}
         defaultTriggerProps={{ placement: 'bottom start' }}
         triggerProps={{ offset: 16 }}
       />,
@@ -497,7 +494,7 @@ describe('useContextMenu', () => {
       renderWithRoot(
         <TestWrapper
           Component={TestCommandMenuComponent}
-          componentProps={{ onAction }}
+          defaultMenuProps={{ onAction }}
         />,
       );
 
@@ -567,7 +564,7 @@ describe('useContextMenu', () => {
     const { getByTestId, getByRole } = renderWithRoot(
       <TestWrapper
         Component={TestMenuComponent}
-        componentProps={{ onAction }}
+        defaultMenuProps={{ onAction }}
         defaultTriggerProps={{ placement: 'top end' }}
       />,
     );
@@ -611,7 +608,7 @@ describe('useContextMenu', () => {
     const { getByTestId } = renderWithRoot(
       <TestWrapper
         Component={TestMenuComponent}
-        componentProps={{ onAction }}
+        defaultMenuProps={{ onAction }}
       />,
     );
 
@@ -644,7 +641,7 @@ describe('useContextMenu', () => {
     const { getByTestId, getByRole } = renderWithRoot(
       <TestWrapper
         Component={TestMenuComponent}
-        componentProps={{ onAction }}
+        defaultMenuProps={{ onAction }}
       />,
     );
 
@@ -724,12 +721,16 @@ describe('useContextMenu', () => {
     const onAction = jest.fn();
 
     const TestPlacementWrapper = ({ placement }: { placement: any }) => {
-      const { targetRef, open, rendered } = useContextMenu(TestMenuComponent, {
-        placement,
-      });
+      const { targetRef, open, rendered } = useContextMenu(
+        TestMenuComponent,
+        {
+          placement,
+        },
+        { onAction },
+      );
 
       const handleClick = (e: React.MouseEvent) => {
-        open(e, { onAction });
+        open(e);
       };
 
       return (
@@ -761,5 +762,124 @@ describe('useContextMenu', () => {
     // Verify the menu trigger received the placement prop
     const menu = getByRole('menu');
     expect(menu).toBeInTheDocument();
+  });
+
+  it('should automatically bind context menu events with defaultMenuProps', async () => {
+    const onAction = jest.fn();
+
+    const TestAutoContextWrapper = () => {
+      const { targetRef, isOpen, rendered } = useContextMenu(
+        TestMenuComponent,
+        { placement: 'bottom start' },
+        { onAction },
+      );
+
+      return (
+        <div ref={targetRef} data-qa="container" style={{ padding: '50px' }}>
+          <div data-qa="content">
+            Right-click anywhere here for automatic context menu
+          </div>
+          <div data-qa="status">Status: {isOpen ? 'Open' : 'Closed'}</div>
+          {rendered}
+        </div>
+      );
+    };
+
+    const { getByTestId, getByText, getByRole } = renderWithRoot(
+      <TestAutoContextWrapper />,
+    );
+
+    const container = getByTestId('container');
+
+    // Initially, menu should not be visible
+    expect(() => getByRole('menu')).toThrow();
+    expect(getByText('Status: Closed')).toBeInTheDocument();
+
+    // Right-click should automatically open the context menu
+    await act(async () => {
+      fireEvent.contextMenu(container, {
+        clientX: 100,
+        clientY: 50,
+      });
+    });
+
+    // Menu should now be visible
+    await waitFor(() => {
+      expect(getByRole('menu')).toBeInTheDocument();
+    });
+
+    expect(getByText('Status: Open')).toBeInTheDocument();
+    expect(getByText('Edit')).toBeInTheDocument();
+    expect(getByText('Delete')).toBeInTheDocument();
+    expect(getByText('Copy')).toBeInTheDocument();
+
+    // Click on an item to test action
+    const editItem = getByText('Edit');
+    await act(async () => {
+      await userEvent.click(editItem);
+    });
+
+    expect(onAction).toHaveBeenCalledWith('edit');
+  });
+
+  it('should merge defaultMenuProps with runtime props when using open function', async () => {
+    const defaultAction = jest.fn();
+    const runtimeAction = jest.fn();
+
+    const TestMergeWrapper = () => {
+      const { targetRef, open, rendered } = useContextMenu(
+        TestMenuComponent,
+        { placement: 'bottom start' },
+        { onAction: defaultAction, width: '200px' },
+      );
+
+      const handleManualOpen = (e: React.MouseEvent) => {
+        open(e, { onAction: runtimeAction }); // Should override default onAction
+      };
+
+      return (
+        <div ref={targetRef} data-qa="container">
+          <button data-qa="manual-trigger" onClick={handleManualOpen}>
+            Manual Open
+          </button>
+          {rendered}
+        </div>
+      );
+    };
+
+    const { getByTestId, getByText } = renderWithRoot(<TestMergeWrapper />);
+
+    const manualTrigger = getByTestId('manual-trigger');
+
+    // Open with manual trigger (should use runtime props)
+    await act(async () => {
+      await userEvent.click(manualTrigger);
+    });
+
+    const editItem = getByText('Edit');
+    await act(async () => {
+      await userEvent.click(editItem);
+    });
+
+    // Should use runtime action, not default action
+    expect(runtimeAction).toHaveBeenCalledWith('edit');
+    expect(defaultAction).not.toHaveBeenCalled();
+
+    // Right-click should use default props
+    const container = getByTestId('container');
+    await act(async () => {
+      fireEvent.contextMenu(container, {
+        clientX: 100,
+        clientY: 50,
+      });
+    });
+
+    const editItem2 = getByText('Edit');
+    await act(async () => {
+      await userEvent.click(editItem2);
+    });
+
+    // Should use default action
+    expect(defaultAction).toHaveBeenCalledWith('edit');
   });
 });

@@ -23,6 +23,7 @@ import { MenuTrigger } from './Menu';
  *
  * @param Component - A React component that represents the menu content (Menu or CommandMenu).
  * @param defaultTriggerProps - Default props to pass to the MenuTrigger.
+ * @param defaultMenuProps - Default props to pass to the Menu component.
  * @returns An object with `targetRef` to attach to the container element, `open` function to open the menu at event coordinates, `close` function to close the menu, and `rendered` JSX element to include in your component tree.
  */
 export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
@@ -31,6 +32,7 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
     ComponentProps<typeof MenuTrigger>,
     'children' | 'isOpen' | 'onOpenChange' | 'targetRef'
   >,
+  defaultMenuProps?: P,
 ) {
   const [isOpen, setIsOpen] = useState(false);
   const [componentProps, setComponentProps] = useState<P | null>(null);
@@ -125,7 +127,7 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   const open = useEvent(
     (
       event: MouseEvent | PointerEvent | MouseEvent | PointerEvent,
-      props: P,
+      props?: P,
       triggerProps?: T,
     ) => {
       setupCheck();
@@ -153,7 +155,12 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
       const { x, y } = calculatePosition(event);
       setAnchorPosition({ x, y });
 
-      setComponentProps(props);
+      // Merge defaultMenuProps with provided props
+      const finalProps = defaultMenuProps
+        ? { ...defaultMenuProps, ...props }
+        : props;
+
+      setComponentProps(finalProps as P);
       setTriggerProps(triggerProps ?? null);
       setIsOpen(true);
     },
@@ -162,7 +169,12 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   const update = useEvent((props: P, triggerProps?: T) => {
     setupCheck();
 
-    setComponentProps(props);
+    // Merge defaultMenuProps with provided props
+    const finalProps = defaultMenuProps
+      ? { ...defaultMenuProps, ...props }
+      : props;
+
+    setComponentProps(finalProps as P);
     setTriggerProps(triggerProps ?? null);
   });
 
@@ -170,6 +182,26 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
     setIsOpen(false);
     setAnchorPosition(null);
   });
+
+  // Context menu event handler
+  const onContextMenu = useEvent(
+    (event: MouseEvent | PointerEvent | MouseEvent | PointerEvent) => {
+      event.preventDefault();
+      open(event, defaultMenuProps);
+    },
+  );
+
+  // Bind the onContextMenu event to targetRef
+  useEffect(() => {
+    const element = targetRef.current;
+    if (!element) return;
+
+    element.addEventListener('contextmenu', onContextMenu as any);
+
+    return () => {
+      element.removeEventListener('contextmenu', onContextMenu as any);
+    };
+  }, [onContextMenu]);
 
   // Render the menu only when componentProps is set
   const renderedMenu = useMemo(() => {

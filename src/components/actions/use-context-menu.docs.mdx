@@ -1,0 +1,178 @@
+# `useContextMenu` Hook
+
+## Purpose
+
+`useContextMenu` is a React hook that enables components to display context menus (like `Menu` or `CommandMenu`) at the exact cursor position where the user right-clicked or triggered a context action. Unlike [`useAnchoredMenu`](./use-anchored-menu.docs.mdx) which anchors menus to specific elements, `useContextMenu` positions menus at cursor coordinates, making it perfect for traditional right-click context menus.
+
+The hook automatically handles `onContextMenu` event binding and provides a clean API for both automatic (right-click) and programmatic menu opening.
+
+## Related Components
+
+- [`useAnchoredMenu`](./use-anchored-menu.docs.mdx) - For menus anchored to specific elements
+- [`MenuTrigger`](./Menu/MenuTrigger.docs.mdx) - The underlying trigger component used for positioning
+- [`Menu`](./Menu/Menu.docs.mdx) - The menu component typically used with this hook
+- [`CommandMenu`](./CommandMenu/CommandMenu.docs.mdx) - Command palette component that can be used with this hook
+
+## API
+
+```ts
+function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
+  Component: ComponentType<P>,
+  defaultTriggerProps?: Omit<
+    ComponentProps<typeof MenuTrigger>,
+    'children' | 'isOpen' | 'onOpenChange' | 'targetRef'
+  >,
+  defaultMenuProps?: P,
+): {
+  /** Container element that receives context menu events. Attach this ref to your target element. */
+  targetRef: RefObject<HTMLElement>;
+
+  /**
+   * Programmatically opens the menu at the specified event coordinates.
+   * Runtime props are merged with defaultMenuProps (runtime props take precedence).
+   *
+   * @param event - The pointer/mouse event containing coordinates for positioning
+   * @param props - Props to pass to the menu component (optional, defaults to defaultMenuProps)
+   * @param triggerProps - Additional props for MenuTrigger (merged with defaultTriggerProps)
+   */
+  open(
+    event: MouseEvent | PointerEvent | React.MouseEvent | React.PointerEvent,
+    props?: P,
+    triggerProps?: T,
+  ): void;
+
+  /**
+   * Updates the props of the currently open menu without repositioning.
+   * Props are merged with defaultMenuProps.
+   */
+  update(props: P, triggerProps?: T): void;
+
+  /** Closes the menu programmatically. */
+  close(): void;
+
+  /** Current open/closed state of the menu. */
+  isOpen: boolean;
+
+  /**
+   * JSX element that must be rendered in your component tree.
+   * Contains the MenuTrigger and positioning logic.
+   */
+  get rendered(): ReactElement | null;
+};
+```
+
+### Parameters
+
+- **`Component`** - The menu component to render (`Menu`, `CommandMenu`, etc.)
+- **`defaultTriggerProps`** - Default props passed to `MenuTrigger` for positioning and behavior
+- **`defaultMenuProps`** - Default props passed to the menu component (used for automatic right-click opening)
+
+## Key Features
+
+### Automatic Context Menu Binding
+
+The hook automatically binds `onContextMenu` events to the `targetRef` element:
+
+- **Right-click** automatically opens the menu using `defaultMenuProps`
+- **`event.preventDefault()`** is called automatically to suppress the browser's native context menu
+- **No manual event binding required** in most cases
+
+### Coordinate-Based Positioning
+
+Unlike element-anchored menus, `useContextMenu` positions menus at exact cursor coordinates:
+
+- Creates an **invisible anchor element** at click coordinates
+- Supports **collision detection** and automatic repositioning
+- **Clamps coordinates** to stay within the container bounds
+- Works with **scrollable containers** by accounting for scroll offset
+
+### Props Merging Strategy
+
+The hook provides flexible prop management:
+
+- **`defaultMenuProps`** - Used for automatic right-click opening
+- **Runtime props** (via `open()`) - Merged with defaults, taking precedence
+- **Trigger props** - Merged with `defaultTriggerProps` for positioning control
+
+### Menu Synchronization
+
+Integrates with the global menu synchronization system:
+
+- **Only one menu open** at a time across the entire application
+- **Automatic closing** when other menus open
+- **Works with** `MenuTrigger`, `useAnchoredMenu`, `Select`, `ComboBox`, etc.
+
+## Basic Usage
+
+```tsx
+import { useContextMenu, Menu } from '@cube-dev/ui-kit';
+
+function FileItem({ file }) {
+  const handleAction = (key) => {
+    console.log(`Action ${key} on ${file.name}`);
+  };
+
+  const { targetRef, rendered } = useContextMenu(
+    Menu,
+    { placement: 'bottom start' },     // trigger props
+    { 
+      onAction: handleAction,
+      children: (
+        <>
+          <Menu.Item key="open">Open</Menu.Item>
+          <Menu.Item key="rename">Rename</Menu.Item>
+          <Menu.Item key="delete">Delete</Menu.Item>
+        </>
+      )
+    }
+  );
+
+  return (
+    <div ref={targetRef} className="file-item">
+      {rendered}
+      <span>{file.name}</span>
+    </div>
+  );
+}
+```
+
+## Comparison with Related Hooks
+
+| Feature | `useContextMenu` | `useAnchoredMenu` |
+|---------|------------------|-------------------|
+| **Positioning** | Cursor coordinates | Element-anchored |
+| **Trigger** | Right-click (automatic) | Manual (button click) |
+| **Event Binding** | Automatic `onContextMenu` | Manual event handling |
+| **Use Cases** | Context menus, right-click actions | Dropdown menus, action buttons |
+| **Default Placement** | `"bottom start"` | `"bottom start"` |
+| **Setup Complexity** | Minimal (auto-binding) | Manual event handling |
+
+## Implementation Notes
+
+### Coordinate Calculation
+
+The hook calculates menu position by:
+
+1. **Getting viewport coordinates** from the pointer event
+2. **Converting to container-relative coordinates** accounting for borders and scroll
+3. **Clamping to container bounds** to ensure the menu stays visible
+4. **Creating an invisible anchor** at the calculated position
+5. **Delegating to MenuTrigger** for collision detection and final positioning
+
+### Event Handling
+
+- **Automatic binding** occurs via `useEffect` on the `targetRef`
+- **Event listeners** are properly cleaned up on unmount
+- **`preventDefault()`** is called automatically for context menu events
+- **Manual `open()` calls** can still prevent default if needed
+
+### Memory Management
+
+- **Event listeners** are bound/unbound automatically
+- **Menu content** is only rendered when needed
+- **Position calculations** are performed only when opening
+- **No memory leaks** from uncleaned event handlers
+
+---
+
+*Last updated: 2025-01-16* 

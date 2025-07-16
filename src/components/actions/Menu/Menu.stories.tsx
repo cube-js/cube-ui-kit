@@ -1025,21 +1025,17 @@ export const WithContextMenu = () => {
     </Menu>
   );
 
-  const { targetRef, open, isOpen, rendered } = useContextMenu(
-    MyMenuComponent,
-    {
-      placement: 'right top',
-    },
-  );
-
   const handleAction = (key) => {
     console.log('Context menu action selected:', key);
   };
 
-  const handleContextMenu = (e) => {
-    e.preventDefault();
-    open(e, { onAction: handleAction });
-  };
+  const { targetRef, isOpen, rendered } = useContextMenu(
+    MyMenuComponent,
+    {
+      placement: 'right top',
+    },
+    { onAction: handleAction },
+  );
 
   return (
     <Flow
@@ -1062,7 +1058,6 @@ export const WithContextMenu = () => {
         position="relative"
         border="dashed #purple"
         padding="4x"
-        onContextMenu={handleContextMenu}
       >
         {rendered}
         <Title level={4} margin="0 0 2x 0">
@@ -1137,18 +1132,17 @@ export const WithContextMenuPlacements = () => {
   ];
 
   const ContextContainer = ({ placement, title }) => {
-    const { targetRef, open, rendered } = useContextMenu(MyMenuComponent, {
-      placement,
-    });
-
     const handleAction = (key) => {
       console.log(`Action selected from ${placement}:`, key);
     };
 
-    const handleContextMenu = (e) => {
-      e.preventDefault();
-      open(e, { onAction: handleAction });
-    };
+    const { targetRef, rendered } = useContextMenu(
+      MyMenuComponent,
+      {
+        placement,
+      },
+      { onAction: handleAction },
+    );
 
     return (
       <Card
@@ -1157,7 +1151,6 @@ export const WithContextMenuPlacements = () => {
         border="dashed #purple"
         padding="3x"
         gap="1x"
-        onContextMenu={handleContextMenu}
       >
         {rendered}
         <Paragraph preset="t3m" color="#dark">
@@ -1360,16 +1353,20 @@ export const MenuSynchronization = () => {
     rendered: rendered1,
   } = useAnchoredMenu(MyMenuComponent1, { placement: 'bottom start' });
 
+  const handleAction = (key) => {
+    console.log('Action selected:', key);
+  };
+
   const {
     targetRef: targetRef3,
     open: open3,
     isOpen: isOpen3,
     rendered: rendered3,
-  } = useContextMenu(MyContextMenuComponent, { placement: 'bottom start' });
-
-  const handleAction = (key) => {
-    console.log('Action selected:', key);
-  };
+  } = useContextMenu(
+    MyContextMenuComponent,
+    { placement: 'bottom start' },
+    { onAction: handleAction },
+  );
 
   return (
     <Flow gap="4x" placeContent="start" padding="4x">
@@ -1429,14 +1426,10 @@ export const MenuSynchronization = () => {
           data-menu-trigger
           padding="3x"
           background={isOpen3 ? '#purple-10' : undefined}
-          onContextMenu={(e) => {
-            open3(e, { onAction: handleAction });
-            e.preventDefault();
-          }}
         >
           {rendered3}
           <Paragraph preset="t5" color="#dark-03" margin="1x 0 0 0">
-            Right-click or click to open context menu
+            Right-click to open context menu
           </Paragraph>
         </Card>
       </Flow>
@@ -1479,16 +1472,20 @@ export const ComprehensivePopoverSynchronization = () => {
     rendered: rendered1,
   } = useAnchoredMenu(MyMenuComponent, { placement: 'bottom start' });
 
+  const handleAction = (key) => {
+    console.log('Action selected:', key);
+  };
+
   const {
     targetRef: targetRef2,
     open: open2,
     isOpen: isOpen2,
     rendered: rendered2,
-  } = useContextMenu(MyMenuComponent, { placement: 'bottom start' });
-
-  const handleAction = (key) => {
-    console.log('Action selected:', key);
-  };
+  } = useContextMenu(
+    MyMenuComponent,
+    { placement: 'bottom start' },
+    { onAction: handleAction },
+  );
 
   const selectOptions = [
     { value: 'option1', label: 'Option 1' },
@@ -1568,10 +1565,6 @@ export const ComprehensivePopoverSynchronization = () => {
           padding="3x"
           minWidth="200px"
           background={isOpen2 ? '#purple-10' : undefined}
-          onContextMenu={(e) => {
-            open2(e, { onAction: handleAction });
-            e.preventDefault();
-          }}
         >
           {rendered2}
           <Paragraph preset="t3m" color="#dark" margin="0 0 2x 0">
