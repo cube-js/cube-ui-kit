@@ -56,6 +56,7 @@ function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   /**
    * JSX element that must be rendered in your component tree.
    * Contains the MenuTrigger and positioning logic.
+   * IMPORTANT: Must be placed directly inside the target container (the element with targetRef).
    */
   get rendered(): ReactElement | null;
 };
@@ -129,12 +130,15 @@ function FileItem({ file }) {
 
   return (
     <div ref={targetRef} className="file-item">
+      {/* IMPORTANT: rendered must be placed directly inside the target container */}
       {rendered}
       <span>{file.name}</span>
     </div>
   );
 }
 ```
+
+> **Important:** The `{rendered}` element must be placed **directly inside** the element that has the `targetRef` attached. This ensures proper coordinate calculation and positioning for the context menu.
 
 ## Comparison with Related Hooks
 
@@ -172,6 +176,31 @@ The hook calculates menu position by:
 - **Menu content** is only rendered when needed
 - **Position calculations** are performed only when opening
 - **No memory leaks** from uncleaned event handlers
+
+### Rendered Element Placement
+
+The `{rendered}` element contains the invisible anchor and MenuTrigger components needed for positioning. It **must** be placed directly inside the element with `targetRef` because:
+
+- **Coordinate calculations** are relative to the target container
+- **Scroll offset handling** requires the rendered element to be within the scrollable area
+- **CSS positioning context** needs to be established correctly
+- **Event coordinate mapping** depends on the proper parent-child relationship
+
+```tsx
+// ✅ Correct placement
+<div ref={targetRef}>
+  {rendered}
+  <content />
+</div>
+
+// ❌ Incorrect placement
+<div>
+  <div ref={targetRef}>
+    <content />
+  </div>
+  {rendered}
+</div>
+```
 
 ---
 

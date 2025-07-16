@@ -4,6 +4,8 @@ import {
   ComponentType,
   MouseEvent,
   PointerEvent,
+  ReactElement,
+  RefObject,
   useEffect,
   useMemo,
   useRef,
@@ -17,6 +19,50 @@ import { mergeProps } from '../../utils/react';
 import { useEventBus } from '../../utils/react/useEventBus';
 
 import { MenuTrigger } from './Menu';
+
+type NativeMouseEvent = globalThis.MouseEvent;
+type NativePointerEvent = globalThis.PointerEvent;
+
+export interface UseContextMenuReturn<
+  P,
+  T = ComponentProps<typeof MenuTrigger>,
+> {
+  /** Container element that receives context menu events. Attach this ref to your target element. */
+  targetRef: RefObject<HTMLElement>;
+
+  /**
+   * Programmatically opens the menu at the specified event coordinates.
+   * Runtime props are merged with defaultMenuProps (runtime props take precedence).
+   *
+   * @param event - The pointer/mouse event containing coordinates for positioning
+   * @param props - Props to pass to the menu component (optional, defaults to defaultMenuProps)
+   * @param triggerProps - Additional props for MenuTrigger (merged with defaultTriggerProps)
+   */
+  open(
+    event: NativeMouseEvent | NativePointerEvent | MouseEvent | PointerEvent,
+    props?: P,
+    triggerProps?: T,
+  ): void;
+
+  /**
+   * Updates the props of the currently open menu without repositioning.
+   * Props are merged with defaultMenuProps.
+   */
+  update(props: P, triggerProps?: T): void;
+
+  /** Closes the menu programmatically. */
+  close(): void;
+
+  /** Current open/closed state of the menu. */
+  isOpen: boolean;
+
+  /**
+   * JSX element that must be rendered in your component tree.
+   * Contains the MenuTrigger and positioning logic.
+   * IMPORTANT: Must be placed directly inside the target container (the element with targetRef).
+   */
+  get rendered(): ReactElement | null;
+}
 
 /**
  * Generic hook to manage a context menu component that opens at pointer coordinates.
@@ -33,7 +79,7 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
     'children' | 'isOpen' | 'onOpenChange' | 'targetRef'
   >,
   defaultMenuProps?: P,
-) {
+): UseContextMenuReturn<P, T> {
   const [isOpen, setIsOpen] = useState(false);
   const [componentProps, setComponentProps] = useState<P | null>(null);
   const [triggerProps, setTriggerProps] = useState<T | null>(null);
@@ -41,7 +87,7 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
     x: number;
     y: number;
   } | null>(null);
-  const targetRef = useRef<HTMLDivElement>(null);
+  const targetRef = useRef<HTMLElement>(null);
   const invisibleAnchorRef = useRef<HTMLSpanElement>(null);
   const setupRef = useRef(false);
 
@@ -83,13 +129,13 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   // element's scroll offset into account. Without the scroll offset the menu
   // would be rendered at the wrong place inside scrollable containers.
   const calculatePosition = (
-    event: MouseEvent | PointerEvent | MouseEvent | PointerEvent,
+    event: NativeMouseEvent | NativePointerEvent | MouseEvent | PointerEvent,
   ) => {
     const container = targetRef.current;
 
     // If the target reference is missing, fall back to viewport coordinates.
     if (!container) {
-      const { clientX = 0, clientY = 0 } = event as any;
+      const { clientX = 0, clientY = 0 } = event;
 
       return { x: clientX, y: clientY };
     }
@@ -97,10 +143,7 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
     const containerRect = container.getBoundingClientRect();
 
     // Get coordinates from the event (viewport-relative)
-    const { clientX, clientY } =
-      'clientX' in event && 'clientY' in event
-        ? (event as MouseEvent | PointerEvent)
-        : { clientX: containerRect.left, clientY: containerRect.top };
+    const { clientX, clientY } = event;
 
     // Take the element's scroll offset into account so that the coordinates are
     // relative to the **content** box, not the visible viewport of the
@@ -126,7 +169,7 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   // 'open' accepts an event for positioning, props required by the Component and opens the menu
   const open = useEvent(
     (
-      event: MouseEvent | PointerEvent | MouseEvent | PointerEvent,
+      event: NativeMouseEvent | NativePointerEvent | MouseEvent | PointerEvent,
       props?: P,
       triggerProps?: T,
     ) => {
