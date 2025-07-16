@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.67.0
+
+### Minor Changes
+
+- [#725](https://github.com/cube-js/cube-ui-kit/pull/725) [`4b789d2b`](https://github.com/cube-js/cube-ui-kit/commit/4b789d2bddc3bee1c91194c2d76b1c5946cc9cbc) Thanks [@tenphi](https://github.com/tenphi)! - Add useEventBus hook to emit global events and subscribe to them.
+
+- [#725](https://github.com/cube-js/cube-ui-kit/pull/725) [`4b789d2b`](https://github.com/cube-js/cube-ui-kit/commit/4b789d2bddc3bee1c91194c2d76b1c5946cc9cbc) Thanks [@tenphi](https://github.com/tenphi)! - Add useContextMenu hook to invoke a context menu in the exact place of the click.
+
+- [#725](https://github.com/cube-js/cube-ui-kit/pull/725) [`4b789d2b`](https://github.com/cube-js/cube-ui-kit/commit/4b789d2bddc3bee1c91194c2d76b1c5946cc9cbc) Thanks [@tenphi](https://github.com/tenphi)! - Add useAnchoredMenu hook to programmatically invoke a menu anchored to the specific element.
+
 ## 0.66.1
 
 ### Patch Changes
