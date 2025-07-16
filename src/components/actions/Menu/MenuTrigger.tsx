@@ -97,7 +97,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     menuTriggerRef,
   );
 
-  let initialPlacement: Placement = props.placement;
+  let initialPlacement: Placement = props.placement ?? 'bottom start';
 
   const isMobile = useIsMobileDevice();
   const { overlayProps: positionProps, placement } = useOverlayPosition({

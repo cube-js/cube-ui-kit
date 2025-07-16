@@ -816,6 +816,7 @@ export const WithHeaderAndFooter: StoryFn<CubeCommandMenuProps<any>> = (
   args,
 ) => (
   <CommandMenu
+    width="20x 50x"
     {...args}
     header={
       <>
