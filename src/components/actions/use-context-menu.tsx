@@ -289,7 +289,7 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
         >
           <VisuallyHidden>
             <Pressable>
-              <button aria-label="context-menu" />
+              <button aria-label="Open context menu" />
             </Pressable>
           </VisuallyHidden>
           <Component {...componentProps} />
