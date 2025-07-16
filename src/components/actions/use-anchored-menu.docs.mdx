@@ -95,43 +95,76 @@ Integrates with the global menu synchronization system:
 - **Automatic closing** when other menus open
 - **Works with** `MenuTrigger`, `useContextMenu`, `Select`, `ComboBox`, etc.
 
-## Basic Usage
+## Usage
 
 ```tsx
-import { useAnchoredMenu, Menu } from '@cube-dev/ui-kit';
+import { useAnchoredMenu, Menu, Button, Flex } from '@cube-dev/ui-kit';
+import { IconDotsVertical } from '@tabler/icons-react';
 
-function DropdownButton() {
-  const handleAction = (key) => {
-    console.log(`Selected: ${key}`);
+function TabWithMultipleTriggers() {
+  const menu = useAnchoredMenu(Menu, {
+    placement: 'top end',
+  });
+
+  const openTab = () => {
+    console.log('Opening tab...');
   };
 
-  const { anchorRef, open, rendered } = useAnchoredMenu(
-    Menu,
-    { placement: 'bottom start' },  // default trigger props
-  );
+  const openActionsMenu = () => {
+    menu.open({
+      onAction: (key) => {
+        console.log('Tab action:', key);
+      },
+      children: (
+        <>
+          <Menu.Item key="rename">Rename Tab</Menu.Item>
+          <Menu.Item key="duplicate">Duplicate Tab</Menu.Item>
+          <Menu.Item key="close">Close Tab</Menu.Item>
+          <Menu.Item key="close-others">Close Other Tabs</Menu.Item>
+        </>
+      ),
+    });
+  };
+
+  const handleRightClick = (event) => {
+    event.preventDefault();
+    openActionsMenu(event);
+  };
 
   return (
     <>
-      <button
-        ref={anchorRef}
-        onClick={() => open({
-          onAction: handleAction,
-          children: (
-            <>
-              <Menu.Item key="option1">Option 1</Menu.Item>
-              <Menu.Item key="option2">Option 2</Menu.Item>
-              <Menu.Item key="option3">Option 3</Menu.Item>
-            </>
-          )
-        })}
+      <Flex
+        ref={menu.anchorRef}
+        display="inline-flex"
+        onContextMenu={handleRightClick}
       >
-        Open Menu
-      </button>
-      {rendered}
+        <Button size="small" radius="left" onPress={openTab}>
+          Open file
+        </Button>
+
+        <Button
+          size="small"
+          icon={<IconDotsVertical />}
+          aria-label="Tab actions"
+          padding="1x"
+          radius="right"
+          margin="-1bw left"
+          onPress={openActionsMenu}
+        />
+      </Flex>
+
+      {menu.rendered}
     </>
   );
 }
 ```
+
+This example demonstrates a more realistic use case where a single menu can be triggered in multiple ways:
+
+1. **Click the dots button** to open the actions menu
+2. **Right-click anywhere on the tab** to also open the same actions menu
+
+Both triggers share the same anchor point (`menu.anchorRef`) and open the same menu with identical content, showcasing the flexibility of `useAnchoredMenu` for creating sophisticated UI interactions.
 
 > **Important:** The `{rendered}` element must be placed in the component tree such that the MenuTrigger can properly position relative to the anchorRef. Typically, place it adjacent to the anchor element.
 
