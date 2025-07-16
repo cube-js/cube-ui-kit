@@ -492,6 +492,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
           overlayStyles={overlayStyles}
           optionStyles={optionStyles}
           minWidth={comboBoxWidth}
+          triggerRef={triggerRef}
         />
       </OverlayWrapper>
     </ComboBoxWrapperElement>

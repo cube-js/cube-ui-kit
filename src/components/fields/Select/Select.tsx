@@ -526,6 +526,7 @@ function Select<T extends object>(
           overlayStyles={overlayStyles}
           optionStyles={optionStyles}
           minWidth={triggerWidth}
+          triggerRef={triggerRef}
         />
       </OverlayWrapper>
     </SelectWrapperElement>
@@ -556,6 +557,7 @@ export function ListBoxPopup({
   placement,
   minWidth,
   size = 'small',
+  triggerRef,
   ...otherProps
 }) {
   // Get props for the listbox
@@ -577,7 +579,15 @@ export function ListBoxPopup({
       shouldCloseOnBlur: true,
       isOpen: state.isOpen,
       isDismissable: true,
-      shouldCloseOnInteractOutside: (el) => !el.closest('[data-menu-trigger]'),
+      shouldCloseOnInteractOutside: (el) => {
+        const menuTriggerEl = el.closest('[data-menu-trigger]');
+        // If no menu trigger was clicked, allow closing
+        if (!menuTriggerEl) return true;
+        // If the same trigger that opened this select was clicked, allow closing
+        if (menuTriggerEl === triggerRef?.current) return true;
+        // Otherwise, don't close (let event mechanism handle it)
+        return false;
+      },
     },
     popoverRef,
   );

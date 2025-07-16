@@ -156,9 +156,24 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
         isOpen={state.isOpen}
         style={positionProps.style}
         placement={placement}
-        shouldCloseOnInteractOutside={(el) =>
-          !el.closest('[data-menu-trigger]')
-        }
+        shouldCloseOnInteractOutside={(el) => {
+          const menuTriggerEl = el.closest('[data-menu-trigger]');
+          // If no menu trigger was clicked, allow closing
+          if (!menuTriggerEl) return true;
+          // For dummy triggers (like useAnchoredMenu), check if the clicked element
+          // is the target element or its descendant
+          if (
+            isDummy &&
+            (menuTriggerEl === menuTriggerRef.current ||
+              menuTriggerRef.current?.contains(el))
+          ) {
+            return true;
+          }
+          // If the same trigger that opened this menu was clicked, allow closing
+          if (menuTriggerEl === menuTriggerRef.current) return true;
+          // Otherwise, don't close (let event mechanism handle it)
+          return false;
+        }}
         onClose={state.close}
       >
         {contents}
