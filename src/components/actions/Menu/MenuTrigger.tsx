@@ -1,7 +1,14 @@
 import { PressResponder } from '@react-aria/interactions';
 import { useDOMRef, useIsMobileDevice } from '@react-spectrum/utils';
 import { DOMRef } from '@react-types/shared';
-import { forwardRef, Fragment, ReactElement, useRef } from 'react';
+import {
+  forwardRef,
+  Fragment,
+  ReactElement,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react';
 import {
   AriaMenuTriggerProps,
   DismissButton,
@@ -12,7 +19,9 @@ import {
 } from 'react-aria';
 import { MenuTriggerState, useMenuTriggerState } from 'react-stately';
 
+import { generateRandomId } from '../../../utils/random';
 import { SlotProvider } from '../../../utils/react';
+import { useEventBus } from '../../../utils/react/useEventBus';
 import { Popover, Tray } from '../../overlays/Modal';
 
 import { MenuContext, MenuContextValue } from './context';
@@ -26,27 +35,31 @@ export type CubeMenuTriggerProps = AriaMenuTriggerProps &
       ReactElement | ((state: MenuTriggerState) => ReactElement),
       ReactElement,
     ];
-    direction?: Placement;
-    align?: 'start' | 'end';
 
     closeOnSelect?: boolean;
+    isDummy?: boolean;
   };
 
 function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
   const menuPopoverRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLElement>();
   const domRef = useDOMRef(ref);
-  const menuTriggerRef = domRef || triggerRef;
+  const menuTriggerRef = props.targetRef || domRef || triggerRef;
   const menuRef = useRef<HTMLUListElement>(null);
   const {
     children,
-    align = 'start',
     shouldFlip = true,
-    direction = 'bottom',
     closeOnSelect,
     trigger = 'press',
     isDisabled,
+    isDummy,
   } = props;
+
+  // Generate a unique ID for this menu instance
+  const menuId = useMemo(() => generateRandomId(), []);
+
+  // Get event bus for menu synchronization
+  const { emit, on } = useEventBus();
 
   if (!Array.isArray(children) || children.length > 2) {
     throw new Error('MenuTrigger must have exactly 2 children');
@@ -54,6 +67,25 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
 
   let [menuTrigger, menu] = children;
   const state: MenuTriggerState = useMenuTriggerState(props);
+
+  // Listen for other menus opening and close this one if needed
+  useEffect(() => {
+    const unsubscribe = on('menu:open', (data: { menuId: string }) => {
+      // If another menu is opening and this menu is open, close this one
+      if (data.menuId !== menuId && state.isOpen && !isDummy) {
+        state.close();
+      }
+    });
+
+    return unsubscribe;
+  }, [on, menuId, state]);
+
+  // Emit event when this menu opens
+  useEffect(() => {
+    if (state.isOpen && !isDummy) {
+      emit('menu:open', { menuId });
+    }
+  }, [state.isOpen, emit, menuId, isDummy]);
 
   if (typeof menuTrigger === 'function') {
     menuTrigger = (menuTrigger as CubeMenuTriggerProps['children'][0])(state);
@@ -65,21 +97,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     menuTriggerRef,
   );
 
-  let initialPlacement: Placement;
-  switch (direction) {
-    case 'left':
-    case 'right':
-    case 'start':
-    case 'end':
-      initialPlacement = `${direction} ${
-        align === 'end' ? 'bottom' : 'top'
-      }` as Placement;
-      break;
-    case 'bottom':
-    case 'top':
-    default:
-      initialPlacement = `${direction} ${align}` as Placement;
-  }
+  let initialPlacement: Placement = props.placement ?? 'bottom start';
 
   const isMobile = useIsMobileDevice();
   const { overlayProps: positionProps, placement } = useOverlayPosition({
@@ -91,8 +109,8 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     isOpen: state.isOpen && !isMobile,
     onClose: state.close,
     containerPadding: props.containerPadding,
-    offset: props.offset || 8,
-    crossOffset: props.crossOffset,
+    offset: props.offset ?? 8,
+    crossOffset: props.crossOffset ?? 0,
   });
 
   const menuContext = {
@@ -138,6 +156,24 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
         isOpen={state.isOpen}
         style={positionProps.style}
         placement={placement}
+        shouldCloseOnInteractOutside={(el) => {
+          const menuTriggerEl = el.closest('[data-menu-trigger]');
+          // If no menu trigger was clicked, allow closing
+          if (!menuTriggerEl) return true;
+          // For dummy triggers (like useAnchoredMenu), check if the clicked element
+          // is the target element or its descendant
+          if (
+            isDummy &&
+            (menuTriggerEl === menuTriggerRef.current ||
+              menuTriggerRef.current?.contains(el))
+          ) {
+            return true;
+          }
+          // If the same trigger that opened this menu was clicked, allow closing
+          if (menuTriggerEl === menuTriggerRef.current) return true;
+          // Otherwise, don't close (let event mechanism handle it)
+          return false;
+        }}
         onClose={state.close}
       >
         {contents}
@@ -150,13 +186,16 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
       <SlotProvider
         slots={{ actionButton: { holdAffordance: trigger === 'longPress' } }}
       >
-        <PressResponder
-          {...menuTriggerProps}
-          ref={menuTriggerRef}
-          isPressed={state.isOpen}
-        >
-          {menuTrigger}
-        </PressResponder>
+        {!isDummy ? (
+          <PressResponder
+            {...menuTriggerProps}
+            ref={menuTriggerRef}
+            data-menu-trigger
+            isPressed={state.isOpen}
+          >
+            {menuTrigger}
+          </PressResponder>
+        ) : null}
       </SlotProvider>
       <MenuContext.Provider value={menuContext}>{overlay}</MenuContext.Provider>
     </Fragment>

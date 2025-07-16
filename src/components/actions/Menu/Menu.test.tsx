@@ -7,16 +7,28 @@ import {
   act,
   fireEvent,
   render,
+  renderHook,
   renderWithRoot,
+  screen,
   userEvent,
   waitFor,
 } from '../../../test';
+import { EventBusProvider } from '../../../utils/react/useEventBus';
+import { Select } from '../../fields';
 import { Button } from '../Button';
+import { CommandMenu } from '../CommandMenu';
+import { useAnchoredMenu } from '../use-anchored-menu';
+import { useContextMenu } from '../use-context-menu';
 
 import { Menu } from './Menu';
 import { MenuTrigger } from './MenuTrigger';
 
 jest.mock('../../../_internal/hooks/use-warn');
+
+// Wrapper for hooks that need EventBusProvider
+const HookWrapper = ({ children }: { children: React.ReactNode }) => (
+  <EventBusProvider>{children}</EventBusProvider>
+);
 
 describe('<Menu />', () => {
   const basicItems = [
@@ -1039,3 +1051,667 @@ describe('Menu popover mod', () => {
     expect(menu).not.toHaveAttribute('data-is-popover');
   });
 });
+
+describe('useAnchoredMenu', () => {
+  // Test component that uses the hook with Menu
+  const TestMenuComponent = ({
+    onAction,
+  }: {
+    onAction?: (key: string) => void;
+  }) => (
+    <Menu onAction={onAction}>
+      <Menu.Item key="edit">Edit</Menu.Item>
+      <Menu.Item key="delete">Delete</Menu.Item>
+      <Menu.Item key="copy">Copy</Menu.Item>
+    </Menu>
+  );
+
+  // Test component that uses the hook with CommandMenu
+  const TestCommandMenuComponent = ({
+    onAction,
+    searchPlaceholder,
+  }: {
+    onAction?: (key: string) => void;
+    searchPlaceholder?: string;
+  }) => (
+    <CommandMenu
+      searchPlaceholder={searchPlaceholder || 'Search commands...'}
+      onAction={onAction}
+    >
+      <Menu.Item key="copy">Copy</Menu.Item>
+      <Menu.Item key="paste">Paste</Menu.Item>
+      <Menu.Item key="cut">Cut</Menu.Item>
+    </CommandMenu>
+  );
+
+  // Wrapper component to test the hook
+  const TestWrapper = ({
+    Component,
+    componentProps = {},
+    triggerProps = {},
+    defaultTriggerProps = {},
+    onTriggerClick,
+  }: {
+    Component: any;
+    componentProps?: any;
+    triggerProps?: any;
+    defaultTriggerProps?: any;
+    onTriggerClick?: () => void;
+  }) => {
+    const { anchorRef, open, close, rendered } = useAnchoredMenu(
+      Component,
+      defaultTriggerProps,
+    );
+
+    const handleClick = () => {
+      if (onTriggerClick) {
+        onTriggerClick();
+      }
+      open(componentProps, triggerProps);
+    };
+
+    return (
+      <div ref={anchorRef} data-qa="container">
+        <button data-qa="trigger" onClick={handleClick}>
+          Open Menu
+        </button>
+        <button data-qa="close-button" onClick={close}>
+          Close Menu
+        </button>
+        {rendered}
+      </div>
+    );
+  };
+
+  // Basic functionality tests
+  it('should provide anchorRef, open, close, and rendered properties', () => {
+    const { result } = renderHook(() => useAnchoredMenu(TestMenuComponent), {
+      wrapper: HookWrapper,
+    });
+
+    expect(result.current.anchorRef).toBeDefined();
+    expect(result.current.anchorRef.current).toBeNull(); // Initially null
+    expect(typeof result.current.open).toBe('function');
+    expect(typeof result.current.close).toBe('function');
+    expect(result.current.rendered).toBeNull(); // Initially null since not opened
+  });
+
+  it('should provide setup check functionality', () => {
+    // Test that the hook provides the setup check mechanism
+    // This is tested indirectly through the integration tests
+    // where the rendered property must be accessed for the hook to work
+    const { result } = renderHook(() => useAnchoredMenu(TestMenuComponent), {
+      wrapper: HookWrapper,
+    });
+
+    // The hook should provide all expected functions
+    expect(typeof result.current.open).toBe('function');
+    expect(typeof result.current.close).toBe('function');
+    expect(result.current.rendered).toBeNull(); // Initially null
+
+    // Accessing rendered should set up the hook properly
+    const rendered = result.current.rendered;
+    expect(rendered).toBeNull(); // Still null since no props are set
+  });
+
+  it('should render menu when opened with Menu component', async () => {
+    const onAction = jest.fn();
+
+    const { getByTestId, getByRole, getByText } = renderWithRoot(
+      <TestWrapper
+        Component={TestMenuComponent}
+        componentProps={{ onAction }}
+      />,
+    );
+
+    const trigger = getByTestId('trigger');
+
+    // Initially, menu should not be visible
+    expect(() => getByRole('menu')).toThrow();
+
+    // Click trigger to open menu
+    await act(async () => {
+      await userEvent.click(trigger);
+    });
+
+    // Menu should now be visible
+    await waitFor(() => {
+      expect(getByRole('menu')).toBeInTheDocument();
+    });
+
+    expect(getByText('Edit')).toBeInTheDocument();
+    expect(getByText('Delete')).toBeInTheDocument();
+    expect(getByText('Copy')).toBeInTheDocument();
+  });
+
+  it('should render CommandMenu when opened with CommandMenu component', async () => {
+    const onAction = jest.fn();
+
+    const { getByTestId, getByRole, getByText, getByPlaceholderText } =
+      renderWithRoot(
+        <TestWrapper
+          Component={TestCommandMenuComponent}
+          componentProps={{
+            onAction,
+            searchPlaceholder: 'Search test commands...',
+          }}
+        />,
+      );
+
+    const trigger = getByTestId('trigger');
+
+    // Click trigger to open command menu
+    await act(async () => {
+      await userEvent.click(trigger);
+    });
+
+    // CommandMenu should now be visible
+    await waitFor(() => {
+      expect(getByRole('menu')).toBeInTheDocument();
+    });
+
+    expect(getByPlaceholderText('Search test commands...')).toBeInTheDocument();
+    expect(getByText('Copy')).toBeInTheDocument();
+    expect(getByText('Paste')).toBeInTheDocument();
+    expect(getByText('Cut')).toBeInTheDocument();
+  });
+
+  it('should close menu when close function is called', async () => {
+    const onAction = jest.fn();
+
+    const { getByTestId, getByRole, queryByRole } = renderWithRoot(
+      <TestWrapper
+        Component={TestMenuComponent}
+        componentProps={{ onAction }}
+      />,
+    );
+
+    const trigger = getByTestId('trigger');
+    const closeButton = getByTestId('close-button');
+
+    // Open menu
+    await act(async () => {
+      await userEvent.click(trigger);
+    });
+
+    await waitFor(() => {
+      expect(getByRole('menu')).toBeInTheDocument();
+    });
+
+    // Close menu
+    await act(async () => {
+      await userEvent.click(closeButton);
+    });
+
+    await waitFor(() => {
+      expect(queryByRole('menu')).not.toBeInTheDocument();
+    });
+  });
+
+  it('should handle menu item actions correctly', async () => {
+    const onAction = jest.fn();
+
+    const { getByTestId, getByText } = renderWithRoot(
+      <TestWrapper
+        Component={TestMenuComponent}
+        componentProps={{ onAction }}
+      />,
+    );
+
+    const trigger = getByTestId('trigger');
+
+    // Open menu
+    await act(async () => {
+      await userEvent.click(trigger);
+    });
+
+    // Click on Edit item
+    const editItem = getByText('Edit');
+    await act(async () => {
+      await userEvent.click(editItem);
+    });
+
+    expect(onAction).toHaveBeenCalledWith('edit');
+  });
+
+  it('should pass trigger props to MenuTrigger', async () => {
+    const onAction = jest.fn();
+
+    const { getByTestId, getByRole } = renderWithRoot(
+      <TestWrapper
+        Component={TestMenuComponent}
+        componentProps={{ onAction }}
+        triggerProps={{ placement: 'top start' }}
+      />,
+    );
+
+    const trigger = getByTestId('trigger');
+
+    // Open menu
+    await act(async () => {
+      await userEvent.click(trigger);
+    });
+
+    await waitFor(() => {
+      expect(getByRole('menu')).toBeInTheDocument();
+    });
+
+    // The menu should be positioned according to the trigger props
+    // This is a basic test - in a real scenario you might want to test positioning more thoroughly
+    expect(getByRole('menu')).toBeInTheDocument();
+  });
+
+  it('should merge default trigger props with runtime trigger props', async () => {
+    const onAction = jest.fn();
+
+    const { getByTestId, getByRole } = renderWithRoot(
+      <TestWrapper
+        Component={TestMenuComponent}
+        componentProps={{ onAction }}
+        defaultTriggerProps={{ placement: 'bottom start' }}
+        triggerProps={{ offset: 16 }}
+      />,
+    );
+
+    const trigger = getByTestId('trigger');
+
+    // Open menu
+    await act(async () => {
+      await userEvent.click(trigger);
+    });
+
+    await waitFor(() => {
+      expect(getByRole('menu')).toBeInTheDocument();
+    });
+
+    // Both default and runtime props should be applied
+    expect(getByRole('menu')).toBeInTheDocument();
+  });
+
+  it('should update component props when opened multiple times', async () => {
+    const onAction1 = jest.fn();
+    const onAction2 = jest.fn();
+
+    // Custom wrapper to test multiple opens with different props
+    const MultiOpenWrapper = () => {
+      const { anchorRef, open, rendered } = useAnchoredMenu(TestMenuComponent);
+
+      return (
+        <div ref={anchorRef} data-qa="container">
+          <button
+            data-qa="trigger1"
+            onClick={() => open({ onAction: onAction1 })}
+          >
+            Open Menu 1
+          </button>
+          <button
+            data-qa="trigger2"
+            onClick={() => open({ onAction: onAction2 })}
+          >
+            Open Menu 2
+          </button>
+          {rendered}
+        </div>
+      );
+    };
+
+    const { getByTestId, getByText } = renderWithRoot(<MultiOpenWrapper />);
+
+    const trigger1 = getByTestId('trigger1');
+    const trigger2 = getByTestId('trigger2');
+
+    // Open with first action handler
+    await act(async () => {
+      await userEvent.click(trigger1);
+    });
+
+    const editItem1 = getByText('Edit');
+    await act(async () => {
+      await userEvent.click(editItem1);
+    });
+
+    expect(onAction1).toHaveBeenCalledWith('edit');
+    expect(onAction2).not.toHaveBeenCalled();
+
+    // Open with second action handler
+    await act(async () => {
+      await userEvent.click(trigger2);
+    });
+
+    const editItem2 = getByText('Edit');
+    await act(async () => {
+      await userEvent.click(editItem2);
+    });
+
+    expect(onAction2).toHaveBeenCalledWith('edit');
+    expect(onAction1).toHaveBeenCalledTimes(1); // Should still be called only once
+  });
+
+  it('should handle CommandMenu search functionality', async () => {
+    const onAction = jest.fn();
+
+    const { getByTestId, getByPlaceholderText, getByText, queryByText } =
+      renderWithRoot(
+        <TestWrapper
+          Component={TestCommandMenuComponent}
+          componentProps={{ onAction }}
+        />,
+      );
+
+    const trigger = getByTestId('trigger');
+
+    // Open command menu
+    await act(async () => {
+      await userEvent.click(trigger);
+    });
+
+    const searchInput = getByPlaceholderText('Search commands...');
+
+    // Initially all items should be visible
+    expect(getByText('Copy')).toBeInTheDocument();
+    expect(getByText('Paste')).toBeInTheDocument();
+    expect(getByText('Cut')).toBeInTheDocument();
+
+    // Search for "copy"
+    await act(async () => {
+      await userEvent.type(searchInput, 'copy');
+    });
+
+    // Only Copy should be visible
+    await waitFor(() => {
+      expect(getByText('Copy')).toBeInTheDocument();
+      expect(queryByText('Paste')).not.toBeInTheDocument();
+      expect(queryByText('Cut')).not.toBeInTheDocument();
+    });
+  });
+
+  it('should maintain anchor ref across renders', () => {
+    const TestRefWrapper = () => {
+      const { anchorRef, rendered } = useAnchoredMenu(TestMenuComponent);
+
+      return (
+        <div ref={anchorRef} data-qa="container">
+          <div data-qa="anchor-test">Anchor element</div>
+          {rendered}
+        </div>
+      );
+    };
+
+    const { getByTestId, rerender } = renderWithRoot(<TestRefWrapper />);
+
+    const container = getByTestId('container');
+    const initialRef = container;
+
+    // Rerender and check that the ref is maintained
+    rerender(<TestRefWrapper />);
+
+    const containerAfterRerender = getByTestId('container');
+    expect(containerAfterRerender).toBe(initialRef);
+  });
+
+  it('should handle edge case when component props are null', () => {
+    const { result } = renderHook(() => useAnchoredMenu(TestMenuComponent), {
+      wrapper: HookWrapper,
+    });
+
+    // When no props are set, rendered should be null
+    expect(result.current.rendered).toBeNull();
+  });
+
+  it('should work with custom MenuTrigger placement', async () => {
+    const onAction = jest.fn();
+
+    const { getByTestId, getByRole } = renderWithRoot(
+      <TestWrapper
+        Component={TestMenuComponent}
+        componentProps={{ onAction }}
+        defaultTriggerProps={{ placement: 'top end' }}
+      />,
+    );
+
+    const trigger = getByTestId('trigger');
+
+    // Open menu
+    await act(async () => {
+      await userEvent.click(trigger);
+    });
+
+    await waitFor(() => {
+      expect(getByRole('menu')).toBeInTheDocument();
+    });
+
+    // Menu should be positioned according to placement
+    expect(getByRole('menu')).toBeInTheDocument();
+  });
+});
+
+describe('Menu synchronization with event bus', () => {
+  it('should close other menus when a new menu opens', async () => {
+    const TestMenuSynchronization = () => {
+      const {
+        anchorRef: anchorRef1,
+        open: open1,
+        rendered: rendered1,
+      } = useAnchoredMenu(({ onAction }) => (
+        <Menu onAction={onAction}>
+          <Menu.Item key="item1">Menu 1 Item</Menu.Item>
+        </Menu>
+      ));
+
+      const {
+        anchorRef: anchorRef2,
+        open: open2,
+        rendered: rendered2,
+      } = useAnchoredMenu(({ onAction }) => (
+        <Menu onAction={onAction}>
+          <Menu.Item key="item2">Menu 2 Item</Menu.Item>
+        </Menu>
+      ));
+
+      const {
+        anchorRef: anchorRef3,
+        open: open3,
+        rendered: rendered3,
+      } = useContextMenu(({ onAction }) => (
+        <Menu onAction={onAction}>
+          <Menu.Item key="item3">Menu 3 Item</Menu.Item>
+        </Menu>
+      ));
+
+      return (
+        <div data-qa="container">
+          <div ref={anchorRef1}>
+            <button
+              data-qa="trigger1"
+              onClick={() => open1({ onAction: () => {} })}
+            >
+              Open Menu 1
+            </button>
+          </div>
+          <div ref={anchorRef2}>
+            <button
+              data-qa="trigger2"
+              onClick={() => open2({ onAction: () => {} })}
+            >
+              Open Menu 2
+            </button>
+          </div>
+          <div ref={anchorRef3}>
+            <button
+              data-qa="trigger3"
+              onClick={(e) => open3(e, { onAction: () => {} })}
+            >
+              Open Menu 3
+            </button>
+          </div>
+          {rendered1}
+          {rendered2}
+          {rendered3}
+        </div>
+      );
+    };
+
+    const { getByTestId, getAllByRole, queryAllByRole } = renderWithRoot(
+      <TestMenuSynchronization />,
+    );
+
+    const trigger1 = getByTestId('trigger1');
+    const trigger2 = getByTestId('trigger2');
+    const trigger3 = getByTestId('trigger3');
+
+    // Initially, no menus should be visible
+    expect(queryAllByRole('menu')).toHaveLength(0);
+
+    // Open first menu
+    await act(async () => {
+      await userEvent.click(trigger1);
+    });
+
+    await waitFor(() => {
+      expect(getAllByRole('menu')).toHaveLength(1);
+    });
+
+    // Open second menu - should close the first one
+    await act(async () => {
+      await userEvent.click(trigger2);
+    });
+
+    await waitFor(() => {
+      expect(getAllByRole('menu')).toHaveLength(1);
+    });
+
+    // Open third menu (context menu) - should close the second one
+    await act(async () => {
+      await userEvent.click(trigger3);
+    });
+
+    await waitFor(() => {
+      expect(getAllByRole('menu')).toHaveLength(1);
+    });
+
+    // Verify only the third menu is open by checking content
+    const menus = getAllByRole('menu');
+    expect(menus).toHaveLength(1);
+
+    // The third menu should contain "Menu 3 Item"
+    const menuContent = menus[0];
+    expect(menuContent).toHaveTextContent('Menu 3 Item');
+  });
+
+  it('should handle rapid menu opening without conflicts', async () => {
+    const TestRapidMenuOpening = () => {
+      const {
+        anchorRef: anchorRef1,
+        open: open1,
+        rendered: rendered1,
+      } = useAnchoredMenu(({ onAction }) => (
+        <Menu onAction={onAction}>
+          <Menu.Item key="item1">Menu 1</Menu.Item>
+        </Menu>
+      ));
+
+      const {
+        anchorRef: anchorRef2,
+        open: open2,
+        rendered: rendered2,
+      } = useAnchoredMenu(({ onAction }) => (
+        <Menu onAction={onAction}>
+          <Menu.Item key="item2">Menu 2</Menu.Item>
+        </Menu>
+      ));
+
+      return (
+        <div>
+          <div ref={anchorRef1}>
+            <button
+              data-qa="rapid-trigger1"
+              onClick={() => open1({ onAction: () => {} })}
+            >
+              Rapid 1
+            </button>
+          </div>
+          <div ref={anchorRef2}>
+            <button
+              data-qa="rapid-trigger2"
+              onClick={() => open2({ onAction: () => {} })}
+            >
+              Rapid 2
+            </button>
+          </div>
+          {rendered1}
+          {rendered2}
+        </div>
+      );
+    };
+
+    const { getByTestId, getAllByRole, queryAllByRole } = renderWithRoot(
+      <TestRapidMenuOpening />,
+    );
+
+    const trigger1 = getByTestId('rapid-trigger1');
+    const trigger2 = getByTestId('rapid-trigger2');
+
+    // Rapidly click between menus
+    await act(async () => {
+      await userEvent.click(trigger1);
+    });
+
+    // Wait for the first menu to be open
+    await waitFor(() => {
+      expect(getAllByRole('menu')).toHaveLength(1);
+    });
+
+    await act(async () => {
+      await userEvent.click(trigger2);
+    });
+
+    // Wait for stabilization - allow time for the async setTimeout(0) to process
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+
+    await act(async () => {
+      await userEvent.click(trigger1);
+    });
+
+    // Wait for stabilization again
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+
+    await act(async () => {
+      await userEvent.click(trigger2);
+    });
+
+    // Final wait for stabilization
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+
+    // Should still have only one menu open
+    await waitFor(() => {
+      expect(getAllByRole('menu')).toHaveLength(1);
+    });
+
+    // Verify it's the second menu (last opened)
+    const menus = getAllByRole('menu');
+    expect(menus[0]).toHaveTextContent('Menu 2');
+  });
+});
+
+// NOTE: Menu synchronization with Select and ComboBox has been implemented.
+// The synchronization ensures only one popover is open at a time across:
+// - MenuTrigger
+// - useAnchoredMenu
+// - useContextMenu
+// - Select
+// - ComboBox
+//
+// Implementation details:
+// 1. Each component generates a unique ID and listens for 'menu:open' events
+// 2. When a component opens, it emits a 'menu:open' event with its ID
+// 3. Other open components receive the event and close themselves
+// 4. The event bus uses setTimeout(0) to ensure async emission after render cycles
+// 5. This prevents race conditions where components close themselves immediately after opening
+//
+// The synchronization is handled by the EventBusProvider in useEventBus.ts

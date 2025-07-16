@@ -8,6 +8,7 @@ import {
 } from 'react';
 
 import { BreakpointsProvider, Props } from './tasty';
+import { EventBusProvider } from './utils/react/useEventBus';
 
 export interface ProviderProps extends Props {
   breakpoints?: number[];
@@ -46,6 +47,9 @@ export function Provider(allProps: PropsWithChildren<ProviderProps>) {
       <BreakpointsProvider value={breakpoints}>{children}</BreakpointsProvider>
     );
   }
+
+  // Wrap with EventBusProvider for menu synchronization
+  children = <EventBusProvider>{children}</EventBusProvider>;
 
   const props = useMemo(
     () => ({

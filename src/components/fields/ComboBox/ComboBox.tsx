@@ -30,6 +30,7 @@ import {
   OUTER_STYLES,
   tasty,
 } from '../../../tasty';
+import { generateRandomId } from '../../../utils/random';
 import {
   mergeProps,
   modAttrs,
@@ -37,6 +38,7 @@ import {
   useLayoutEffect,
 } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
+import { useEventBus } from '../../../utils/react/useEventBus';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import { InvalidIcon } from '../../shared/InvalidIcon';
@@ -219,6 +221,31 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   };
 
   let state = useComboBoxState(comboBoxStateProps);
+
+  // Generate a unique ID for this combobox instance
+  const comboBoxId = useMemo(() => generateRandomId(), []);
+
+  // Get event bus for menu synchronization
+  const { emit, on } = useEventBus();
+
+  // Listen for other menus opening and close this one if needed
+  useEffect(() => {
+    const unsubscribe = on('menu:open', (data: { menuId: string }) => {
+      // If another menu is opening and this combobox is open, close this one
+      if (data.menuId !== comboBoxId && state.isOpen) {
+        state.close();
+      }
+    });
+
+    return unsubscribe;
+  }, [on, comboBoxId, state]);
+
+  // Emit event when this combobox opens
+  useEffect(() => {
+    if (state.isOpen) {
+      emit('menu:open', { menuId: comboBoxId });
+    }
+  }, [state.isOpen, emit, comboBoxId]);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
@@ -433,6 +460,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         {suffixPosition === 'after' ? suffix : null}
         {!hideTrigger ? (
           <TriggerElement
+            data-menu-trigger
             qa="ComboBoxTrigger"
             {...mergeProps(buttonProps, triggerFocusProps, triggerHoverProps)}
             {...modAttrs({
@@ -464,6 +492,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
           overlayStyles={overlayStyles}
           optionStyles={optionStyles}
           minWidth={comboBoxWidth}
+          triggerRef={triggerRef}
         />
       </OverlayWrapper>
     </ComboBoxWrapperElement>

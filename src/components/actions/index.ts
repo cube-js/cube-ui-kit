@@ -13,4 +13,6 @@ export * from './Action/Action';
 export * from './Menu';
 export * from './CommandMenu';
 export * from './use-action';
+export * from './use-anchored-menu';
+export * from './use-context-menu';
 export { Button, ButtonGroup };

@@ -112,7 +112,7 @@ const CopyButton = tasty(Button, {
 });
 
 export interface CubeCopyPasteBlockProps
-  extends CubeCardProps,
+  extends Omit<CubeCardProps, 'onPaste' | 'onCopy'>,
     PositionStyleProps {
   padding?: Styles['padding'];
   /** The code snippet */

@@ -5,6 +5,7 @@ import React, {
   ReactElement,
   ReactNode,
   RefObject,
+  useEffect,
   useMemo,
   useRef,
 } from 'react';
@@ -41,8 +42,10 @@ import {
   Styles,
   tasty,
 } from '../../../tasty/index';
+import { generateRandomId } from '../../../utils/random';
 import { mergeProps, useCombinedRefs } from '../../../utils/react/index';
 import { useFocus } from '../../../utils/react/interactions';
+import { useEventBus } from '../../../utils/react/useEventBus';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
 import {
   DEFAULT_BUTTON_STYLES,
@@ -367,6 +370,31 @@ function Select<T extends object>(
   } = props;
   let state = useSelectState(props);
 
+  // Generate a unique ID for this select instance
+  const selectId = useMemo(() => generateRandomId(), []);
+
+  // Get event bus for menu synchronization
+  const { emit, on } = useEventBus();
+
+  // Listen for other menus opening and close this one if needed
+  useEffect(() => {
+    const unsubscribe = on('menu:open', (data: { menuId: string }) => {
+      // If another menu is opening and this select is open, close this one
+      if (data.menuId !== selectId && state.isOpen) {
+        state.close();
+      }
+    });
+
+    return unsubscribe;
+  }, [on, selectId, state]);
+
+  // Emit event when this select opens
+  useEffect(() => {
+    if (state.isOpen) {
+      emit('menu:open', { menuId: selectId });
+    }
+  }, [state.isOpen, emit, selectId]);
+
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
   ref = useCombinedRefs(ref);
@@ -462,6 +490,7 @@ function Select<T extends object>(
       <SelectElement
         {...mergeProps(buttonProps, hoverProps, focusProps)}
         ref={triggerRef}
+        data-menu-trigger
         styles={inputStyles}
         variant={`${theme}.${type}` as VariantType}
         data-theme={theme}
@@ -497,6 +526,7 @@ function Select<T extends object>(
           overlayStyles={overlayStyles}
           optionStyles={optionStyles}
           minWidth={triggerWidth}
+          triggerRef={triggerRef}
         />
       </OverlayWrapper>
     </SelectWrapperElement>
@@ -527,6 +557,7 @@ export function ListBoxPopup({
   placement,
   minWidth,
   size = 'small',
+  triggerRef,
   ...otherProps
 }) {
   // Get props for the listbox
@@ -548,6 +579,15 @@ export function ListBoxPopup({
       shouldCloseOnBlur: true,
       isOpen: state.isOpen,
       isDismissable: true,
+      shouldCloseOnInteractOutside: (el) => {
+        const menuTriggerEl = el.closest('[data-menu-trigger]');
+        // If no menu trigger was clicked, allow closing
+        if (!menuTriggerEl) return true;
+        // If the same trigger that opened this select was clicked, allow closing
+        if (menuTriggerEl === triggerRef?.current) return true;
+        // Otherwise, don't close (let event mechanism handle it)
+        return false;
+      },
     },
     popoverRef,
   );

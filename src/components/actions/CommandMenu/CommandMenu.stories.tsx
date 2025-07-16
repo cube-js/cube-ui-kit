@@ -1,4 +1,10 @@
-import { userEvent, waitFor, within } from '@storybook/test';
+import {
+  expect,
+  findByRole,
+  userEvent,
+  waitFor,
+  within,
+} from '@storybook/test';
 import {
   IconArrowBack,
   IconArrowForward,
@@ -10,8 +16,12 @@ import {
 import React, { useState } from 'react';
 
 import { tasty } from '../../../tasty';
+import { Card } from '../../content/Card/Card';
 import { HotKeys } from '../../content/HotKeys';
+import { Paragraph } from '../../content/Paragraph';
 import { Text } from '../../content/Text';
+import { Title } from '../../content/Title';
+import { Flow } from '../../layout/Flow';
 import {
   Dialog,
   DialogTrigger,
@@ -19,6 +29,8 @@ import {
 } from '../../overlays/Dialog';
 import { Button } from '../Button';
 import { Menu } from '../Menu/Menu';
+import { useAnchoredMenu } from '../use-anchored-menu';
+import { useContextMenu } from '../use-context-menu';
 
 import { CommandMenu, CubeCommandMenuProps } from './CommandMenu';
 
@@ -311,7 +323,7 @@ const extendedCommands = [
 ];
 
 export const Default: StoryFn<CubeCommandMenuProps<any>> = (args) => (
-  <CommandMenu {...args}>
+  <CommandMenu width="20x 50x" {...args}>
     {basicCommands.map((command) => (
       <CommandMenu.Item
         key={command.key}
@@ -342,7 +354,7 @@ export const WithSections: StoryFn<CubeCommandMenuProps<any>> = (args) => {
   );
 
   return (
-    <CommandMenu {...args}>
+    <CommandMenu width="20x 50x" {...args}>
       {Object.entries(commandsBySection).map(([sectionName, commands]) => (
         <Menu.Section key={sectionName} title={sectionName}>
           {commands.map((command) => (
@@ -430,6 +442,7 @@ export const ControlledSearch: StoryFn<CubeCommandMenuProps<any>> = (args) => {
         <strong>Current search:</strong> "{searchValue}"
       </div>
       <CommandMenu
+        width="20x 50x"
         {...args}
         searchValue={searchValue}
         onSearchChange={setSearchValue}
@@ -455,7 +468,7 @@ ControlledSearch.args = {
 };
 
 export const LoadingState: StoryFn<CubeCommandMenuProps<any>> = (args) => (
-  <CommandMenu {...args}>
+  <CommandMenu width="20x 50x" {...args}>
     {basicCommands.map((command) => (
       <CommandMenu.Item
         key={command.key}
@@ -477,6 +490,7 @@ LoadingState.args = {
 
 export const CustomFilter: StoryFn<CubeCommandMenuProps<any>> = (args) => (
   <CommandMenu
+    width="20x 50x"
     {...args}
     filter={(textValue, inputValue) => {
       // Custom fuzzy search - matches if all characters of input appear in order
@@ -513,7 +527,7 @@ CustomFilter.args = {
 };
 
 export const WithKeywords: StoryFn<CubeCommandMenuProps<any>> = (args) => (
-  <CommandMenu {...args}>
+  <CommandMenu width="20x 50x" {...args}>
     <CommandMenu.Item key="copy" keywords={['duplicate', 'clone', 'replicate']}>
       Copy
     </CommandMenu.Item>
@@ -535,7 +549,7 @@ WithKeywords.args = {
 };
 
 export const ForceMountItems: StoryFn<CubeCommandMenuProps<any>> = (args) => (
-  <CommandMenu {...args}>
+  <CommandMenu width="20x 50x" {...args}>
     <CommandMenu.Item key="help" forceMount>
       Help (always visible)
     </CommandMenu.Item>
@@ -561,7 +575,7 @@ ForceMountItems.args = {
 };
 
 export const EmptyState: StoryFn<CubeCommandMenuProps<any>> = (args) => (
-  <CommandMenu {...args}>
+  <CommandMenu width="20x 50x" {...args}>
     <CommandMenu.Item key="copy">Copy</CommandMenu.Item>
     <CommandMenu.Item key="paste">Paste</CommandMenu.Item>
   </CommandMenu>
@@ -582,6 +596,7 @@ export const MultipleSelection: StoryFn<CubeCommandMenuProps<any>> = (args) => {
         <strong>Selected:</strong> {selectedKeys.join(', ') || 'None'}
       </div>
       <CommandMenu
+        width="20x 50x"
         {...args}
         selectionMode="multiple"
         selectionIcon="checkbox"
@@ -617,6 +632,7 @@ export const SingleSelection: StoryFn<CubeCommandMenuProps<any>> = (args) => {
         <strong>Selected:</strong> {selectedKey || 'None'}
       </div>
       <CommandMenu
+        width="20x 50x"
         {...args}
         selectionMode="single"
         selectedKeys={selectedKey ? [selectedKey] : []}
@@ -646,6 +662,7 @@ SingleSelection.args = {
 
 export const CustomStyling: StoryFn<CubeCommandMenuProps<any>> = (args) => (
   <CommandMenu
+    width="20x 50x"
     {...args}
     styles={{
       border: '#purple',
@@ -740,7 +757,7 @@ HotkeyTesting.args = {
 };
 
 export const MediumSize: StoryFn<CubeCommandMenuProps<any>> = (args) => (
-  <CommandMenu {...args} size="medium">
+  <CommandMenu width="20x 50x" {...args} size="medium">
     {basicCommands.map((command) => (
       <CommandMenu.Item
         key={command.key}
@@ -763,7 +780,7 @@ export const WithDialog: StoryFn<CubeCommandMenuProps<any>> = (args) => (
   <DialogTrigger>
     <Button>Open Command Menu</Button>
     <Dialog size="medium" isDismissable={false}>
-      <CommandMenu width="100%" height="min(40x, 90vh)" {...args} size="medium">
+      <CommandMenu height="min(40x, 90vh)" {...args} size="medium">
         {basicCommands.map((command) => (
           <CommandMenu.Item
             key={command.key}
@@ -799,6 +816,7 @@ export const WithHeaderAndFooter: StoryFn<CubeCommandMenuProps<any>> = (
   args,
 ) => (
   <CommandMenu
+    width="20x 50x"
     {...args}
     header={
       <>
@@ -922,4 +940,222 @@ WithDialogContainer.play = async ({ canvasElement }) => {
   await waitFor(() => {
     canvas.getByPlaceholderText('Search commands...');
   });
+};
+
+export const WithAnchoredMenu: StoryFn<CubeCommandMenuProps<any>> = (args) => {
+  const MyCommandMenuComponent = ({ onAction, ...props }) => (
+    <CommandMenu
+      width="320px"
+      searchPlaceholder="Search commands..."
+      onAction={onAction}
+      {...props}
+    >
+      {basicCommands.map((command) => (
+        <CommandMenu.Item
+          key={command.key}
+          description={command.description}
+          hotkeys={command.hotkeys}
+          icon={command.icon}
+        >
+          {command.label}
+        </CommandMenu.Item>
+      ))}
+    </CommandMenu>
+  );
+
+  const { anchorRef, open, close, rendered } = useAnchoredMenu(
+    MyCommandMenuComponent,
+    { placement: 'right top' },
+  );
+
+  const handleAction = (key) => {
+    console.log('Command selected:', key);
+    close();
+  };
+
+  return (
+    <Flow
+      gap="4x"
+      placeContent="start start"
+      placeItems="start"
+      height="400px"
+      padding="3x"
+    >
+      <Title level={3} margin="0 0 2x 0">
+        useAnchoredMenu Hook Example
+      </Title>
+      <Paragraph preset="t4" color="#dark-03" margin="0 0 4x 0">
+        Click the button to open a menu anchored to the container
+      </Paragraph>
+
+      <Card
+        ref={anchorRef}
+        border="dashed #purple"
+        position="relative"
+        onContextMenu={(e) => {
+          open({ onAction: handleAction });
+          e.preventDefault();
+        }}
+      >
+        <Button
+          size="small"
+          aria-label="Open Command Menu"
+          onPress={() => open({ onAction: handleAction, ...args })}
+        >
+          Open Command Menu
+        </Button>
+
+        <Paragraph preset="t4" color="#dark-03" margin="2x 0 0 0">
+          Menu will be anchored to this container
+        </Paragraph>
+        <Paragraph preset="t4" color="#dark-03" margin="2x 0 0 0">
+          Right click on the container to open the menu
+        </Paragraph>
+      </Card>
+
+      {rendered}
+    </Flow>
+  );
+};
+
+WithAnchoredMenu.args = {
+  searchPlaceholder: 'Search commands...',
+  autoFocus: true,
+};
+
+WithAnchoredMenu.play = async ({ canvasElement, viewMode }) => {
+  if (viewMode === 'docs') return;
+
+  const { findByRole, findByPlaceholderText, findByText } =
+    within(canvasElement);
+
+  // Click the button to open the anchored command menu
+  await userEvent.click(await findByRole('button'));
+
+  // Wait for the command menu to appear and verify the search input is present
+  const searchInput = await findByPlaceholderText('Search commands...');
+
+  // Verify the search input is focused
+  await waitFor(() => {
+    if (document.activeElement !== searchInput) {
+      throw new Error('Search input should be focused');
+    }
+  });
+
+  // Verify command menu items are present
+  await expect(findByText('Copy')).resolves.toBeInTheDocument();
+  await expect(findByText('Paste')).resolves.toBeInTheDocument();
+  await expect(findByText('Cut')).resolves.toBeInTheDocument();
+
+  // Test search functionality
+  await userEvent.type(searchInput, 'copy');
+
+  // Verify filtering works
+  await waitFor(() => expect(findByText('Copy')).resolves.toBeInTheDocument());
+};
+
+export const WithContextMenu = () => {
+  const MyCommandMenuComponent = ({
+    onAction,
+    searchPlaceholder,
+  }: CubeCommandMenuProps<any>) => (
+    <CommandMenu
+      width="320px"
+      searchPlaceholder={searchPlaceholder}
+      onAction={onAction}
+    >
+      <Menu.Item key="copy" icon="📋">
+        Copy
+      </Menu.Item>
+      <Menu.Item key="paste" icon="📄">
+        Paste
+      </Menu.Item>
+      <Menu.Item key="cut" icon="✂️">
+        Cut
+      </Menu.Item>
+      <Menu.Item key="delete" icon="🗑️">
+        Delete
+      </Menu.Item>
+      <Menu.Item key="rename" icon="✏️">
+        Rename
+      </Menu.Item>
+    </CommandMenu>
+  );
+
+  const { targetRef, rendered } = useContextMenu(
+    MyCommandMenuComponent,
+    {},
+    { searchPlaceholder: 'commands' },
+  );
+
+  return (
+    <Flow
+      gap="4x"
+      placeContent="start start"
+      placeItems="start"
+      height="400px"
+      padding="3x"
+    >
+      <Title level={3} margin="0 0 2x 0">
+        useContextMenu with CommandMenu
+      </Title>
+      <Paragraph preset="t4" color="#dark-03" margin="0 0 4x 0">
+        Right-click to open a searchable command menu at cursor position
+      </Paragraph>
+
+      <Card
+        ref={targetRef}
+        border="dashed #green"
+        position="relative"
+        padding="4x"
+      >
+        {rendered}
+        <Title level={4} margin="0 0 2x 0">
+          Command Palette Context Menu
+        </Title>
+        <Paragraph preset="t4" color="#dark-03" margin="0 0 2x 0">
+          Right-click anywhere to open a searchable command menu.
+        </Paragraph>
+        <Paragraph preset="t4" color="#dark-03" margin="0">
+          Try typing to filter the available commands.
+        </Paragraph>
+      </Card>
+    </Flow>
+  );
+};
+
+WithContextMenu.play = async ({ canvasElement, viewMode }) => {
+  if (viewMode === 'docs') return;
+
+  const { findByText, findByRole } = within(canvasElement);
+
+  // Wait for the content to be fully rendered
+  await waitFor(() =>
+    expect(
+      findByText('useContextMenu with CommandMenu'),
+    ).resolves.toBeInTheDocument(),
+  );
+  await waitFor(() =>
+    expect(
+      findByText('Command Palette Context Menu'),
+    ).resolves.toBeInTheDocument(),
+  );
+
+  const contextArea = await findByText('Command Palette Context Menu');
+  const container =
+    contextArea.closest('[role="region"]') || contextArea.parentElement;
+
+  // Right-click to open the context menu
+  await userEvent.pointer([
+    { target: container, coords: { clientX: 150, clientY: 150 } },
+    { keys: '[MouseRight]', target: container },
+  ]);
+
+  // Wait for the menu to appear
+  await waitFor(() => expect(findByRole('menu')).resolves.toBeInTheDocument());
+
+  // Verify menu items are present
+  await expect(findByText('Copy')).resolves.toBeInTheDocument();
+  await expect(findByText('Paste')).resolves.toBeInTheDocument();
+  await expect(findByText('Cut')).resolves.toBeInTheDocument();
 };

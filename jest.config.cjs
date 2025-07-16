@@ -20,9 +20,6 @@ const config = {
     'node_modules/(?!(.pnpm/)?react-hotkeys-hook)',
   ],
   setupFilesAfterEnv: ['./src/test/setup.ts'],
-  moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
-  },
 };
 
 module.exports = config;
