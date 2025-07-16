@@ -1,0 +1,172 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Actions/useAnchoredMenu" />
+
+# `useAnchoredMenu` Hook
+
+## Purpose
+
+`useAnchoredMenu` is a React hook that enables components to display anchored menus (like `Menu` or `CommandMenu`) positioned relative to a specific anchor element. Unlike [`useContextMenu`](./use-context-menu.docs.mdx) which positions at cursor coordinates, `useAnchoredMenu` anchors to an element, making it ideal for dropdown menus, popovers, or programmatically triggered menus attached to specific UI elements.
+
+The hook provides a clean API for programmatic menu opening and automatic integration with the global menu synchronization system.
+
+## Related Components
+
+- [`useContextMenu`](./use-context-menu.docs.mdx) - For cursor-positioned context menus
+- [`MenuTrigger`](./Menu/MenuTrigger.docs.mdx) - The underlying trigger component used for positioning
+- [`Menu`](./Menu/Menu.docs.mdx) - The menu component typically used with this hook
+- [`CommandMenu`](./CommandMenu/CommandMenu.docs.mdx) - Command palette component that can be used with this hook
+
+## API
+
+```ts
+function useAnchoredMenu&lt;P, T = ComponentProps&lt;typeof MenuTrigger&gt;&gt;(
+  Component: ComponentType&lt;P&gt;,
+  defaultTriggerProps?: Omit&lt;
+    ComponentProps&lt;typeof MenuTrigger&gt;,
+    'children' | 'isOpen' | 'onOpenChange' | 'targetRef'
+  &gt;,
+): {
+  /** Ref to attach to the anchor element for positioning the menu. */
+  anchorRef: RefObject&lt;HTMLElement&gt;;
+
+  /**
+   * Programmatically opens the menu with the provided props.
+   * @param props - Props to pass to the menu component
+   * @param triggerProps - Additional props for MenuTrigger (merged with defaultTriggerProps)
+   */
+  open(props: P, triggerProps?: T): void;
+
+  /**
+   * Updates the props of the currently open menu.
+   * Props are merged if defaults are provided.
+   */
+  update(props: P, triggerProps?: T): void;
+
+  /** Closes the menu programmatically. */
+  close(): void;
+
+  /** Current open/closed state of the menu. */
+  isOpen: boolean;
+
+  /**
+   * JSX element that must be rendered in your component tree.
+   * Contains the MenuTrigger and positioning logic.
+   */
+  get rendered(): ReactElement | null;
+};
+```
+
+### Parameters
+
+- **`Component`** - The menu component to render (`Menu`, `CommandMenu`, etc.)
+- **`defaultTriggerProps`** - Default props passed to `MenuTrigger` for positioning and behavior
+
+## Key Features
+
+### Programmatic Control
+
+The hook provides full programmatic control over the menu:
+
+- **`open()`** opens the menu with provided props
+- **`update()`** updates menu props without closing/reopening
+- **`close()`** closes the menu
+- **No automatic triggering** - designed for manual control via events or state
+
+### Element-Based Positioning
+
+Positions menus relative to the anchor element:
+
+- Uses **`anchorRef`** for positioning context
+- Supports **collision detection** and automatic repositioning via MenuTrigger
+- **Default placement:** `"bottom start"`
+- Customizable via `defaultTriggerProps` or runtime `triggerProps`
+
+### Props Merging Strategy
+
+- **Runtime props** (via `open()`/`update()`) for menu component
+- **Trigger props** merged with `defaultTriggerProps` for positioning control
+
+### Menu Synchronization
+
+Integrates with the global menu synchronization system:
+
+- **Only one menu open** at a time across the entire application
+- **Automatic closing** when other menus open
+- **Works with** `MenuTrigger`, `useContextMenu`, `Select`, `ComboBox`, etc.
+
+## Basic Usage
+
+```tsx
+import { useAnchoredMenu, Menu } from '@cube-dev/ui-kit';
+
+function DropdownButton() {
+  const handleAction = (key) => {
+    console.log(`Selected: ${key}`);
+  };
+
+  const { anchorRef, open, rendered } = useAnchoredMenu(
+    Menu,
+    { placement: 'bottom start' },  // default trigger props
+  );
+
+  return (
+    <>
+      <button
+        ref={anchorRef}
+        onClick={() => open({
+          onAction: handleAction,
+          children: (
+            <>
+              <Menu.Item key="option1">Option 1</Menu.Item>
+              <Menu.Item key="option2">Option 2</Menu.Item>
+              <Menu.Item key="option3">Option 3</Menu.Item>
+            </>
+          )
+        })}
+      >
+        Open Menu
+      </button>
+      {rendered}
+    </>
+  );
+}
+```
+
+> **Important:** The `{rendered}` element must be placed in the component tree such that the MenuTrigger can properly position relative to the anchorRef. Typically, place it adjacent to the anchor element.
+
+## Comparison with Related Hooks
+
+| Feature | `useAnchoredMenu` | `useContextMenu` |
+|---------|-------------------|------------------|
+| **Positioning** | Element-anchored | Cursor coordinates |
+| **Trigger** | Manual (programmatic) | Right-click (automatic) |
+| **Event Binding** | Manual event handling | Automatic `onContextMenu` |
+| **Use Cases** | Dropdown menus, action buttons | Context menus, right-click actions |
+| **Default Placement** | `"bottom start"` | `"bottom start"` |
+| **Setup Complexity** | Manual open calls | Minimal (auto-binding) |
+
+## Implementation Notes
+
+### Positioning
+
+The hook positions the menu by:
+
+1. Using the **`anchorRef`** as the positioning target
+2. Creating a visually hidden trigger for accessibility
+3. Delegating to **`MenuTrigger`** for collision detection and final positioning
+
+### Event Handling
+
+- **No automatic events** - consumer must call `open()` in response to events
+- **State management** handled internally with synchronization
+
+### Memory Management
+
+- **Event listeners** for global synchronization cleaned up automatically
+- **Menu content** only rendered when open
+- **No memory leaks** from uncleaned handlers
+
+---
+
+*Last updated: 2025-01-16* 

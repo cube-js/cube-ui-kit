@@ -2,6 +2,8 @@ import { Pressable } from '@react-aria/interactions';
 import {
   ComponentProps,
   ComponentType,
+  ReactElement,
+  RefObject,
   useEffect,
   useMemo,
   useRef,
@@ -16,6 +18,36 @@ import { useEventBus } from '../../utils/react/useEventBus';
 
 import { MenuTrigger } from './Menu';
 
+export interface UseAnchoredMenuReturn<P, T> {
+  /** Ref to attach to the anchor element for positioning the menu. */
+  anchorRef: RefObject<HTMLElement>;
+
+  /**
+   * Programmatically opens the menu with the provided props.
+   * @param props - Props to pass to the menu component
+   * @param triggerProps - Additional props for MenuTrigger (merged with defaultTriggerProps)
+   */
+  open(props: P, triggerProps?: T): void;
+
+  /**
+   * Updates the props of the currently open menu.
+   * Props are merged if defaults are provided.
+   */
+  update(props: P, triggerProps?: T): void;
+
+  /** Closes the menu programmatically. */
+  close(): void;
+
+  /** Current open/closed state of the menu. */
+  isOpen: boolean;
+
+  /**
+   * JSX element that must be rendered in your component tree.
+   * Contains the MenuTrigger and positioning logic.
+   */
+  get rendered(): ReactElement | null;
+}
+
 /**
  * Generic hook to manage an anchored menu component.
  *
@@ -29,11 +61,11 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
     ComponentProps<typeof MenuTrigger>,
     'children' | 'isOpen' | 'onOpenChange' | 'targetRef'
   >,
-) {
+): UseAnchoredMenuReturn<P, T> {
   const [isOpen, setIsOpen] = useState(false);
   const [componentProps, setComponentProps] = useState<P | null>(null);
   const [triggerProps, setTriggerProps] = useState<T | null>(null);
-  const anchorRef = useRef<HTMLDivElement>(null);
+  const anchorRef = useRef<HTMLElement>(null);
   const setupRef = useRef(false);
 
   // Generate a unique ID for this menu instance
