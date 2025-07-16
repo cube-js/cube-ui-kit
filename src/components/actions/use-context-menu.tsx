@@ -23,7 +23,7 @@ import { MenuTrigger } from './Menu';
  *
  * @param Component - A React component that represents the menu content (Menu or CommandMenu).
  * @param defaultTriggerProps - Default props to pass to the MenuTrigger.
- * @returns An object with `anchorRef` to position the menu container, `open` function to open the menu at event coordinates, `close` function to close the menu, and `rendered` JSX element to include in your component tree.
+ * @returns An object with `targetRef` to attach to the container element, `open` function to open the menu at event coordinates, `close` function to close the menu, and `rendered` JSX element to include in your component tree.
  */
 export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   Component: ComponentType<P>,
@@ -39,7 +39,7 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
     x: number;
     y: number;
   } | null>(null);
-  const anchorRef = useRef<HTMLDivElement>(null);
+  const targetRef = useRef<HTMLDivElement>(null);
   const invisibleAnchorRef = useRef<HTMLSpanElement>(null);
   const setupRef = useRef(false);
 
@@ -77,15 +77,15 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
     }
   }
 
-  // Helper function to calculate position relative to anchorRef, taking the
+  // Helper function to calculate position relative to targetRef, taking the
   // element's scroll offset into account. Without the scroll offset the menu
   // would be rendered at the wrong place inside scrollable containers.
   const calculatePosition = (
     event: MouseEvent | PointerEvent | MouseEvent | PointerEvent,
   ) => {
-    const container = anchorRef.current;
+    const container = targetRef.current;
 
-    // If the anchor reference is missing, fall back to viewport coordinates.
+    // If the target reference is missing, fall back to viewport coordinates.
     if (!container) {
       const { clientX = 0, clientY = 0 } = event as any;
 
@@ -130,15 +130,15 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
     ) => {
       setupCheck();
 
-      // Ensure the anchor element can serve as a positioning context for the
+      // Ensure the target element can serve as a positioning context for the
       // invisible target element. If the consumer hasn't explicitly set
       // `position: relative | absolute | fixed | sticky` we switch it to
       // `relative` so that absolutely-positioned children are laid out correctly.
-      if (anchorRef.current) {
-        const computedStyle = window.getComputedStyle(anchorRef.current);
+      if (targetRef.current) {
+        const computedStyle = window.getComputedStyle(targetRef.current);
 
         if (computedStyle.position === 'static') {
-          anchorRef.current.style.position = 'relative';
+          targetRef.current.style.position = 'relative';
         }
       }
 
@@ -196,6 +196,7 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
           isOpen={isOpen}
           targetRef={invisibleAnchorRef}
           offset={0}
+          crossOffset={0}
           placement={
             (triggerProps as ComponentProps<typeof MenuTrigger>)?.placement ||
             defaultTriggerProps?.placement ||
@@ -222,7 +223,7 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   ]);
 
   return {
-    anchorRef,
+    targetRef,
     open,
     update,
     close,

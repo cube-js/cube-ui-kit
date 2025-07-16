@@ -23,7 +23,6 @@ export const StyledCommandMenu = tasty({
       'popover | tray': '0px 5px 15px #dark.05',
     },
     overflow: 'hidden',
-    width: '20x 50x',
     height: {
       '': 'initial',
       popover: 'initial max-content (50vh - 4x)',

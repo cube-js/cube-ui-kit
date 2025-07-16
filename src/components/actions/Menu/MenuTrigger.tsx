@@ -110,7 +110,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     onClose: state.close,
     containerPadding: props.containerPadding,
     offset: props.offset ?? 8,
-    crossOffset: props.crossOffset,
+    crossOffset: props.crossOffset ?? 0,
   });
 
   const menuContext = {

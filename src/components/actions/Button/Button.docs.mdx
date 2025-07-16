@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
+import { Meta, Story, Controls } from '@storybook/blocks';
 import { Button } from './Button';
 import * as ButtonStories from './Button.stories';
 
@@ -17,9 +17,9 @@ A versatile action component that triggers commands and navigates users.
 
 ## Component
 
-<Canvas>
-    <Story of={ButtonStories.Default} />
-</Canvas>
+<Story of={ButtonStories.Default} />
+
+---
 
 ## Properties
 
@@ -59,7 +59,7 @@ The `mods` prop accepts the following modifiers you can override:
 
 ## Variants
 
-### Types
+### Types. `type` prop
 
 - `primary` – Emphasised call-to-action.
 - `secondary` – Less emphasised, alternative action.
@@ -68,14 +68,14 @@ The `mods` prop accepts the following modifiers you can override:
 - `clear` – Text-only variant without background and border.
 - `link` – Styled as a textual link.
 
-### Themes
+### Themes. `theme` prop
 
 - `default` – Brand purple colours.
 - `danger` – Red palette for destructive actions.
 - `success` – Green palette for positive actions.
 - `special` – White palette for dark backgrounds.
 
-### Sizes
+### Sizes. `size` prop
 
 - `small` – Compact height (4×).
 - `medium` – Default height (5×).
@@ -100,9 +100,14 @@ import { IconPlus } from '@tabler/icons-react';
 ### Link Button
 
 ```jsx
+<!-- Navigate to a new page using the router -->
 <Button to="/pricing">Pricing</Button>
 <!-- Use `!` prefix to open in a new tab -->
 <Button to="!/pricing">Pricing</Button>
+<!-- Use `@` prefix to navigate to a new page without using the router -->
+<Button to="@/pricing">Pricing</Button>
+<!-- Use `@` to reload the page -->
+<Button to="@/pricing">Pricing</Button>
 ```
 
 ### Loading State

@@ -323,7 +323,7 @@ const extendedCommands = [
 ];
 
 export const Default: StoryFn<CubeCommandMenuProps<any>> = (args) => (
-  <CommandMenu {...args}>
+  <CommandMenu width="20x 50x" {...args}>
     {basicCommands.map((command) => (
       <CommandMenu.Item
         key={command.key}

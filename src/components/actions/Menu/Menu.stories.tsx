@@ -12,6 +12,7 @@ import {
   IconBook,
   IconBulb,
   IconCircleCheckFilled,
+  IconDotsVertical,
   IconPlus,
   IconReload,
 } from '@tabler/icons-react';
@@ -1024,7 +1025,7 @@ export const WithContextMenu = () => {
     </Menu>
   );
 
-  const { anchorRef, open, isOpen, rendered } = useContextMenu(
+  const { targetRef, open, isOpen, rendered } = useContextMenu(
     MyMenuComponent,
     {
       placement: 'right top',
@@ -1057,7 +1058,7 @@ export const WithContextMenu = () => {
       </Paragraph>
 
       <Card
-        ref={anchorRef}
+        ref={targetRef}
         position="relative"
         border="dashed #purple"
         padding="4x"
@@ -1136,7 +1137,7 @@ export const WithContextMenuPlacements = () => {
   ];
 
   const ContextContainer = ({ placement, title }) => {
-    const { anchorRef, open, rendered } = useContextMenu(MyMenuComponent, {
+    const { targetRef, open, rendered } = useContextMenu(MyMenuComponent, {
       placement,
     });
 
@@ -1151,7 +1152,7 @@ export const WithContextMenuPlacements = () => {
 
     return (
       <Card
-        ref={anchorRef}
+        ref={targetRef}
         position="relative"
         border="dashed #purple"
         padding="3x"
@@ -1227,6 +1228,102 @@ WithContextMenuPlacements.play = async ({ canvasElement, viewMode }) => {
   await expect(findByText('Delete')).resolves.toBeInTheDocument();
 };
 
+export const TabWithMultipleTriggers = () => {
+  const menu = useAnchoredMenu(Menu, {
+    placement: 'top end',
+  });
+
+  const openTab = () => {
+    console.log('Opening tab...');
+  };
+
+  const openActionsMenu = () => {
+    menu.open({
+      onAction: (key) => {
+        console.log('Tab action:', key);
+      },
+      children: (
+        <>
+          <Menu.Item key="rename">Rename Tab</Menu.Item>
+          <Menu.Item key="duplicate">Duplicate Tab</Menu.Item>
+          <Menu.Item key="close">Close Tab</Menu.Item>
+          <Menu.Item key="close-others">Close Other Tabs</Menu.Item>
+        </>
+      ),
+    });
+  };
+
+  const handleRightClick = (event) => {
+    event.preventDefault();
+    openActionsMenu(event);
+  };
+
+  return (
+    <Flow
+      gap="4x"
+      placeContent="start start"
+      placeItems="start"
+      height="400px"
+      padding="3x"
+    >
+      <Title level={3} margin="0 0 2x 0">
+        Tab with Multiple Triggers
+      </Title>
+      <Paragraph preset="t4" color="#dark-03" margin="0 0 4x 0">
+        This demonstrates multiple ways to trigger the same menu positioned
+        relative to a tab button:
+      </Paragraph>
+
+      <ul>
+        <li>Click "Open file" to open the tab (do nothing in our example)</li>
+        <li>Click the dots button to open the actions menu</li>
+        <li>Right-click the tab to also open the actions menu</li>
+      </ul>
+
+      <Flex
+        ref={menu.anchorRef}
+        display="inline-flex"
+        onContextMenu={handleRightClick}
+      >
+        <Button size="small" radius="left" onPress={openTab}>
+          Open file
+        </Button>
+
+        <Button
+          size="small"
+          icon={<IconDotsVertical />}
+          aria-label="Tab actions"
+          padding="1x"
+          radius="right"
+          margin="-1bw left"
+          onPress={openActionsMenu}
+        />
+      </Flex>
+
+      {menu.rendered}
+    </Flow>
+  );
+};
+
+TabWithMultipleTriggers.play = async ({ canvasElement, viewMode }) => {
+  if (viewMode === 'docs') return;
+
+  const { findByText, findByRole } = within(canvasElement);
+
+  // Find the dots button and click it
+  const dotsButton = await findByRole('button', { name: 'Tab actions' });
+  await userEvent.click(dotsButton);
+
+  // Wait for the menu to appear
+  await waitFor(() => expect(findByRole('menu')).resolves.toBeInTheDocument());
+
+  // Verify menu items are present
+  await expect(findByText('Rename Tab')).resolves.toBeInTheDocument();
+  await expect(findByText('Duplicate Tab')).resolves.toBeInTheDocument();
+  await expect(findByText('Close Tab')).resolves.toBeInTheDocument();
+  await expect(findByText('Close Other Tabs')).resolves.toBeInTheDocument();
+};
+
 export const MenuSynchronization = () => {
   const MyMenuComponent1 = ({ onAction }) => (
     <Menu width="200px" onAction={onAction}>
@@ -1264,7 +1361,7 @@ export const MenuSynchronization = () => {
   } = useAnchoredMenu(MyMenuComponent1, { placement: 'bottom start' });
 
   const {
-    anchorRef: anchorRef3,
+    targetRef: targetRef3,
     open: open3,
     isOpen: isOpen3,
     rendered: rendered3,
@@ -1327,7 +1424,7 @@ export const MenuSynchronization = () => {
         </Card>
 
         <Card
-          ref={anchorRef3}
+          ref={targetRef3}
           border
           data-menu-trigger
           padding="3x"
@@ -1383,7 +1480,7 @@ export const ComprehensivePopoverSynchronization = () => {
   } = useAnchoredMenu(MyMenuComponent, { placement: 'bottom start' });
 
   const {
-    anchorRef: anchorRef2,
+    targetRef: targetRef2,
     open: open2,
     isOpen: isOpen2,
     rendered: rendered2,
@@ -1465,7 +1562,7 @@ export const ComprehensivePopoverSynchronization = () => {
 
         {/* Context Menu */}
         <Card
-          ref={anchorRef2}
+          ref={targetRef2}
           border
           data-menu-trigger
           padding="3x"

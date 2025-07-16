@@ -71,7 +71,7 @@ describe('useContextMenu', () => {
     defaultTriggerProps?: any;
     onTriggerClick?: () => void;
   }) => {
-    const { anchorRef, open, close, rendered } = useContextMenu(
+    const { targetRef, open, close, rendered } = useContextMenu(
       Component,
       defaultTriggerProps,
     );
@@ -85,7 +85,7 @@ describe('useContextMenu', () => {
 
     return (
       <div
-        ref={anchorRef}
+        ref={targetRef}
         data-qa="container"
         onContextMenu={handleContextMenu}
       >
@@ -110,13 +110,13 @@ describe('useContextMenu', () => {
   };
 
   // Basic functionality tests
-  it('should provide anchorRef, open, close, and rendered properties', () => {
+  it('should provide targetRef, open, close, and rendered properties', () => {
     const { result } = renderHook(() => useContextMenu(TestMenuComponent), {
       wrapper: HookWrapper,
     });
 
-    expect(result.current.anchorRef).toBeDefined();
-    expect(result.current.anchorRef.current).toBeNull(); // Initially null
+    expect(result.current.targetRef).toBeDefined();
+    expect(result.current.targetRef.current).toBeNull(); // Initially null
     expect(typeof result.current.open).toBe('function');
     expect(typeof result.current.close).toBe('function');
     expect(result.current.rendered).toBeNull(); // Initially null since not opened
@@ -435,7 +435,7 @@ describe('useContextMenu', () => {
 
     // Custom wrapper to test multiple opens with different props
     const MultiOpenWrapper = () => {
-      const { anchorRef, open, rendered } = useContextMenu(TestMenuComponent);
+      const { targetRef, open, rendered } = useContextMenu(TestMenuComponent);
 
       const handleClick1 = (e: React.MouseEvent) => {
         open(e, { onAction: onAction1 });
@@ -446,7 +446,7 @@ describe('useContextMenu', () => {
       };
 
       return (
-        <div ref={anchorRef} data-qa="container">
+        <div ref={targetRef} data-qa="container">
           <button data-qa="trigger1" onClick={handleClick1}>
             Open Menu 1
           </button>
@@ -528,12 +528,12 @@ describe('useContextMenu', () => {
     });
   });
 
-  it('should maintain anchor ref across renders', () => {
+  it('should maintain target ref across renders', () => {
     const TestRefWrapper = () => {
-      const { anchorRef, rendered } = useContextMenu(TestMenuComponent);
+      const { targetRef, rendered } = useContextMenu(TestMenuComponent);
 
       return (
-        <div ref={anchorRef} data-qa="container">
+        <div ref={targetRef} data-qa="container">
           <div data-qa="anchor-test">Anchor element</div>
           {rendered}
         </div>
@@ -677,11 +677,11 @@ describe('useContextMenu', () => {
 
   it('should expose isOpen state', async () => {
     const TestIsOpenWrapper = () => {
-      const { anchorRef, open, close, isOpen, rendered } =
+      const { targetRef, open, close, isOpen, rendered } =
         useContextMenu(TestMenuComponent);
 
       return (
-        <div ref={anchorRef} data-qa="container">
+        <div ref={targetRef} data-qa="container">
           <button data-qa="trigger" onClick={(e) => open(e, {})}>
             {isOpen ? 'Close Menu' : 'Open Menu'}
           </button>
@@ -724,7 +724,7 @@ describe('useContextMenu', () => {
     const onAction = jest.fn();
 
     const TestPlacementWrapper = ({ placement }: { placement: any }) => {
-      const { anchorRef, open, rendered } = useContextMenu(TestMenuComponent, {
+      const { targetRef, open, rendered } = useContextMenu(TestMenuComponent, {
         placement,
       });
 
@@ -733,7 +733,7 @@ describe('useContextMenu', () => {
       };
 
       return (
-        <div ref={anchorRef} data-qa="container" style={{ padding: '100px' }}>
+        <div ref={targetRef} data-qa="container" style={{ padding: '100px' }}>
           <button data-qa="trigger" onClick={handleClick}>
             Open
           </button>
