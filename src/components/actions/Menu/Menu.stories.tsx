@@ -1423,7 +1423,6 @@ export const MenuSynchronization = () => {
         <Card
           ref={targetRef3}
           border
-          data-menu-trigger
           padding="3x"
           background={isOpen3 ? '#purple-10' : undefined}
         >
@@ -1545,7 +1544,6 @@ export const ComprehensivePopoverSynchronization = () => {
             Anchored Menu
           </Paragraph>
           <Button
-            data-menu-trigger
             size="small"
             theme={isOpen1 ? 'accent' : 'secondary'}
             onPress={() => open1({ onAction: handleAction })}
@@ -1561,7 +1559,6 @@ export const ComprehensivePopoverSynchronization = () => {
         <Card
           ref={targetRef2}
           border
-          data-menu-trigger
           padding="3x"
           minWidth="200px"
           background={isOpen2 ? '#purple-10' : undefined}

@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 
 import {
-  BaseProps,
+  AllBaseProps,
   CONTAINER_STYLES,
   ContainerStyleProps,
   extractStyles,
@@ -23,7 +23,7 @@ const CardElement = tasty({
   styleProps: CONTAINER_STYLES,
 });
 
-export interface CubeCardProps extends BaseProps, ContainerStyleProps {}
+export interface CubeCardProps extends AllBaseProps, ContainerStyleProps {}
 
 export const Card = forwardRef(function Card(props: CubeCardProps, ref) {
   const styles = extractStyles(props, CONTAINER_STYLES);

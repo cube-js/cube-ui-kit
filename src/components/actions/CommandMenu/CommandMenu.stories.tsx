@@ -1054,7 +1054,10 @@ WithAnchoredMenu.play = async ({ canvasElement, viewMode }) => {
 };
 
 export const WithContextMenu = () => {
-  const MyCommandMenuComponent = ({ onAction, searchPlaceholder }) => (
+  const MyCommandMenuComponent = ({
+    onAction,
+    searchPlaceholder,
+  }: CubeCommandMenuProps<any>) => (
     <CommandMenu
       width="320px"
       searchPlaceholder={searchPlaceholder}
@@ -1078,19 +1081,11 @@ export const WithContextMenu = () => {
     </CommandMenu>
   );
 
-  const { anchorRef, open, rendered } = useContextMenu(MyCommandMenuComponent);
-
-  const handleAction = (key) => {
-    console.log('Command selected:', key);
-  };
-
-  const handleContextMenu = (e) => {
-    e.preventDefault();
-    open(e, {
-      onAction: handleAction,
-      searchPlaceholder: 'Search actions...',
-    });
-  };
+  const { targetRef, rendered } = useContextMenu(
+    MyCommandMenuComponent,
+    {},
+    { searchPlaceholder: 'commands' },
+  );
 
   return (
     <Flow
@@ -1108,12 +1103,12 @@ export const WithContextMenu = () => {
       </Paragraph>
 
       <Card
-        ref={anchorRef}
+        ref={targetRef}
         border="dashed #green"
         position="relative"
         padding="4x"
-        onContextMenu={handleContextMenu}
       >
+        {rendered}
         <Title level={4} margin="0 0 2x 0">
           Command Palette Context Menu
         </Title>
@@ -1124,8 +1119,6 @@ export const WithContextMenu = () => {
           Try typing to filter the available commands.
         </Paragraph>
       </Card>
-
-      {rendered}
     </Flow>
   );
 };
@@ -1135,12 +1128,12 @@ WithContextMenu.play = async ({ canvasElement, viewMode }) => {
 
   const { findByText } = within(canvasElement);
 
-  const contextArea = await findByText('Context Menu Area');
-  const container = contextArea.closest('[style*="cursor: context-menu"]');
+  const contextArea = await findByText('Command Palette Context Menu');
+  const container = contextArea.closest('[data-menu-trigger]');
 
   // Right-click to open the context menu
   await userEvent.pointer([
-    { target: container, coords: { clientX: 150, clientY: 100 } },
+    { target: container, coords: { clientX: 150, clientY: 150 } },
     { keys: '[MouseRight]', target: container },
   ]);
 

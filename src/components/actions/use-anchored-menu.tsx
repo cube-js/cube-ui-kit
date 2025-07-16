@@ -68,6 +68,16 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   const anchorRef = useRef<HTMLElement>(null);
   const setupRef = useRef(false);
 
+  useEffect(() => {
+    const el = anchorRef.current;
+    if (el) {
+      el.dataset.menuTrigger = '';
+      return () => {
+        delete el.dataset.menuTrigger;
+      };
+    }
+  }, []);
+
   // Generate a unique ID for this menu instance
   const menuId = useMemo(() => generateRandomId(), []);
 

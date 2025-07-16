@@ -230,7 +230,12 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   const onContextMenu = useEvent(
     (event: MouseEvent | PointerEvent | MouseEvent | PointerEvent) => {
       event.preventDefault();
-      open(event, defaultMenuProps);
+      if (isOpen) {
+        const pos = calculatePosition(event);
+        setAnchorPosition(pos);
+      } else {
+        open(event, defaultMenuProps);
+      }
     },
   );
 
@@ -240,9 +245,11 @@ export function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
     if (!element) return;
 
     element.addEventListener('contextmenu', onContextMenu as any);
+    element.dataset.menuTrigger = '';
 
     return () => {
       element.removeEventListener('contextmenu', onContextMenu as any);
+      delete element.dataset.menuTrigger;
     };
   }, [onContextMenu]);
 
