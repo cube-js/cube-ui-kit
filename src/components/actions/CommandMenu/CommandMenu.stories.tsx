@@ -354,7 +354,7 @@ export const WithSections: StoryFn<CubeCommandMenuProps<any>> = (args) => {
   );
 
   return (
-    <CommandMenu {...args}>
+    <CommandMenu width="20x 50x" {...args}>
       {Object.entries(commandsBySection).map(([sectionName, commands]) => (
         <Menu.Section key={sectionName} title={sectionName}>
           {commands.map((command) => (
@@ -442,6 +442,7 @@ export const ControlledSearch: StoryFn<CubeCommandMenuProps<any>> = (args) => {
         <strong>Current search:</strong> "{searchValue}"
       </div>
       <CommandMenu
+        width="20x 50x"
         {...args}
         searchValue={searchValue}
         onSearchChange={setSearchValue}
@@ -467,7 +468,7 @@ ControlledSearch.args = {
 };
 
 export const LoadingState: StoryFn<CubeCommandMenuProps<any>> = (args) => (
-  <CommandMenu {...args}>
+  <CommandMenu width="20x 50x" {...args}>
     {basicCommands.map((command) => (
       <CommandMenu.Item
         key={command.key}
@@ -489,6 +490,7 @@ LoadingState.args = {
 
 export const CustomFilter: StoryFn<CubeCommandMenuProps<any>> = (args) => (
   <CommandMenu
+    width="20x 50x"
     {...args}
     filter={(textValue, inputValue) => {
       // Custom fuzzy search - matches if all characters of input appear in order
@@ -525,7 +527,7 @@ CustomFilter.args = {
 };
 
 export const WithKeywords: StoryFn<CubeCommandMenuProps<any>> = (args) => (
-  <CommandMenu {...args}>
+  <CommandMenu width="20x 50x" {...args}>
     <CommandMenu.Item key="copy" keywords={['duplicate', 'clone', 'replicate']}>
       Copy
     </CommandMenu.Item>
@@ -547,7 +549,7 @@ WithKeywords.args = {
 };
 
 export const ForceMountItems: StoryFn<CubeCommandMenuProps<any>> = (args) => (
-  <CommandMenu {...args}>
+  <CommandMenu width="20x 50x" {...args}>
     <CommandMenu.Item key="help" forceMount>
       Help (always visible)
     </CommandMenu.Item>
@@ -573,7 +575,7 @@ ForceMountItems.args = {
 };
 
 export const EmptyState: StoryFn<CubeCommandMenuProps<any>> = (args) => (
-  <CommandMenu {...args}>
+  <CommandMenu width="20x 50x" {...args}>
     <CommandMenu.Item key="copy">Copy</CommandMenu.Item>
     <CommandMenu.Item key="paste">Paste</CommandMenu.Item>
   </CommandMenu>
@@ -594,6 +596,7 @@ export const MultipleSelection: StoryFn<CubeCommandMenuProps<any>> = (args) => {
         <strong>Selected:</strong> {selectedKeys.join(', ') || 'None'}
       </div>
       <CommandMenu
+        width="20x 50x"
         {...args}
         selectionMode="multiple"
         selectionIcon="checkbox"
@@ -629,6 +632,7 @@ export const SingleSelection: StoryFn<CubeCommandMenuProps<any>> = (args) => {
         <strong>Selected:</strong> {selectedKey || 'None'}
       </div>
       <CommandMenu
+        width="20x 50x"
         {...args}
         selectionMode="single"
         selectedKeys={selectedKey ? [selectedKey] : []}
@@ -658,6 +662,7 @@ SingleSelection.args = {
 
 export const CustomStyling: StoryFn<CubeCommandMenuProps<any>> = (args) => (
   <CommandMenu
+    width="20x 50x"
     {...args}
     styles={{
       border: '#purple',
@@ -752,7 +757,7 @@ HotkeyTesting.args = {
 };
 
 export const MediumSize: StoryFn<CubeCommandMenuProps<any>> = (args) => (
-  <CommandMenu {...args} size="medium">
+  <CommandMenu width="20x 50x" {...args} size="medium">
     {basicCommands.map((command) => (
       <CommandMenu.Item
         key={command.key}
@@ -775,7 +780,7 @@ export const WithDialog: StoryFn<CubeCommandMenuProps<any>> = (args) => (
   <DialogTrigger>
     <Button>Open Command Menu</Button>
     <Dialog size="medium" isDismissable={false}>
-      <CommandMenu width="100%" height="min(40x, 90vh)" {...args} size="medium">
+      <CommandMenu height="min(40x, 90vh)" {...args} size="medium">
         {basicCommands.map((command) => (
           <CommandMenu.Item
             key={command.key}
