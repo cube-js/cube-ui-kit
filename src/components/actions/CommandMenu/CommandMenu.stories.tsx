@@ -1127,10 +1127,23 @@ export const WithContextMenu = () => {
 WithContextMenu.play = async ({ canvasElement, viewMode }) => {
   if (viewMode === 'docs') return;
 
-  const { findByText } = within(canvasElement);
+  const { findByText, findByRole } = within(canvasElement);
+
+  // Wait for the content to be fully rendered
+  await waitFor(() =>
+    expect(
+      findByText('useContextMenu with CommandMenu'),
+    ).resolves.toBeInTheDocument(),
+  );
+  await waitFor(() =>
+    expect(
+      findByText('Command Palette Context Menu'),
+    ).resolves.toBeInTheDocument(),
+  );
 
   const contextArea = await findByText('Command Palette Context Menu');
-  const container = contextArea.closest('[data-menu-trigger]');
+  const container =
+    contextArea.closest('[role="region"]') || contextArea.parentElement;
 
   // Right-click to open the context menu
   await userEvent.pointer([
@@ -1142,7 +1155,7 @@ WithContextMenu.play = async ({ canvasElement, viewMode }) => {
   await waitFor(() => expect(findByRole('menu')).resolves.toBeInTheDocument());
 
   // Verify menu items are present
-  await expect(findByText('Edit')).resolves.toBeInTheDocument();
-  await expect(findByText('Duplicate')).resolves.toBeInTheDocument();
-  await expect(findByText('Delete')).resolves.toBeInTheDocument();
+  await expect(findByText('Copy')).resolves.toBeInTheDocument();
+  await expect(findByText('Paste')).resolves.toBeInTheDocument();
+  await expect(findByText('Cut')).resolves.toBeInTheDocument();
 };

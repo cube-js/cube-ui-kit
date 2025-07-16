@@ -250,11 +250,9 @@ export function useContextMenu<
     if (!element) return;
 
     element.addEventListener('contextmenu', onContextMenu as any);
-    element.dataset.menuTrigger = '';
 
     return () => {
       element.removeEventListener('contextmenu', onContextMenu as any);
-      delete element.dataset.menuTrigger;
     };
   }, [onContextMenu]);
 

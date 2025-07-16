@@ -1081,7 +1081,12 @@ export const WithContextMenu = () => {
 WithContextMenu.play = async ({ canvasElement, viewMode }) => {
   if (viewMode === 'docs') return;
 
-  const { findByText } = within(canvasElement);
+  const { findByText, findByRole } = within(canvasElement);
+
+  // Wait for the content to be fully rendered
+  await waitFor(() =>
+    expect(findByText('Context Menu Area')).resolves.toBeInTheDocument(),
+  );
 
   const contextArea = await findByText('Context Menu Area');
   const container = contextArea.closest('[role="region"]');
@@ -1200,7 +1205,15 @@ export const WithContextMenuPlacements = () => {
 WithContextMenuPlacements.play = async ({ canvasElement, viewMode }) => {
   if (viewMode === 'docs') return;
 
-  const { findByText } = within(canvasElement);
+  const { findByText, findByRole } = within(canvasElement);
+
+  // Wait for the content to be fully rendered
+  await waitFor(() =>
+    expect(
+      findByText('useContextMenu - Different Placements'),
+    ).resolves.toBeInTheDocument(),
+  );
+  await waitFor(() => expect(findByText('top')).resolves.toBeInTheDocument());
 
   // Find the first placement container
   const topContainer = await findByText('top');
