@@ -6,7 +6,7 @@ import { Meta } from '@storybook/blocks';
 
 ## Purpose
 
-`useContextMenu` is a React hook that enables components to display context menus (like `Menu` or `CommandMenu`) at the exact cursor position where the user right-clicked or triggered a context action. Unlike [`useAnchoredMenu`](./use-anchored-menu.docs.mdx) which anchors menus to specific elements, `useContextMenu` positions menus at cursor coordinates, making it perfect for traditional right-click context menus.
+`useContextMenu` is a React hook that enables components to display context menus (like `Menu` or `CommandMenu`) at the exact cursor position where the user right-clicked or triggered a context action. Unlike [`useAnchoredMenu`](./use-anchored-menu.docs.mdx) which anchors menus to specific elements, `useContextMenu` positions menus at cursor coordinates or centers them on the target element, making it perfect for traditional right-click context menus and programmatic menu opening.
 
 The hook automatically handles `onContextMenu` event binding and provides a clean API for both automatic (right-click) and programmatic menu opening.
 
@@ -32,17 +32,17 @@ function useContextMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   targetRef: RefObject<HTMLElement>;
 
   /**
-   * Programmatically opens the menu at the specified event coordinates.
+   * Programmatically opens the menu at the specified coordinates or element center.
    * Runtime props are merged with defaultMenuProps (runtime props take precedence).
    *
-   * @param event - The pointer/mouse event containing coordinates for positioning
    * @param props - Props to pass to the menu component (optional, defaults to defaultMenuProps)
    * @param triggerProps - Additional props for MenuTrigger (merged with defaultTriggerProps)
+   * @param event - The pointer/mouse event containing coordinates for positioning (optional, centers on element if not provided)
    */
   open(
-    event: MouseEvent | PointerEvent | React.MouseEvent | React.PointerEvent,
     props?: P,
     triggerProps?: T,
+    event?: MouseEvent | PointerEvent,
   ): void;
 
   /**
@@ -82,14 +82,20 @@ The hook automatically binds `onContextMenu` events to the `targetRef` element:
 - **`event.preventDefault()`** is called automatically to suppress the browser's native context menu
 - **No manual event binding required** in most cases
 
-### Coordinate-Based Positioning
+### Flexible Positioning
 
-Unlike element-anchored menus, `useContextMenu` positions menus at exact cursor coordinates:
+`useContextMenu` supports two positioning modes:
 
-- Creates an **invisible anchor element** at click coordinates
-- Supports **collision detection** and automatic repositioning
-- **Clamps coordinates** to stay within the container bounds
-- Works with **scrollable containers** by accounting for scroll offset
+1. **Coordinate-Based Positioning** (when event is provided):
+   - Creates an **invisible anchor element** at click coordinates
+   - Supports **collision detection** and automatic repositioning
+   - **Clamps coordinates** to stay within the container bounds
+   - Works with **scrollable containers** by accounting for scroll offset
+
+2. **Center Positioning** (when no event is provided):
+   - Positions the menu at the **center of the target element**
+   - Useful for **programmatic menu opening** from buttons or keyboard shortcuts
+   - Respects **element padding and borders** for accurate centering
 
 ### Props Merging Strategy
 
@@ -148,10 +154,10 @@ function FileItem({ file }) {
 
 | Feature | `useContextMenu` | `useAnchoredMenu` |
 |---------|------------------|-------------------|
-| **Positioning** | Cursor coordinates | Element-anchored |
-| **Trigger** | Right-click (automatic) | Manual (button click) |
+| **Positioning** | Cursor coordinates or element center | Element-anchored |
+| **Trigger** | Right-click (automatic) + programmatic | Manual (button click) |
 | **Event Binding** | Automatic `onContextMenu` | Manual event handling |
-| **Use Cases** | Context menus, right-click actions | Dropdown menus, action buttons |
+| **Use Cases** | Context menus, right-click actions, toolbar dropdowns | Dropdown menus, action buttons |
 | **Default Placement** | `"bottom start"` | `"bottom start"` |
 | **Setup Complexity** | Minimal (auto-binding) | Manual event handling |
 
@@ -159,20 +165,27 @@ function FileItem({ file }) {
 
 ### Coordinate Calculation
 
-The hook calculates menu position by:
+The hook calculates menu position differently based on whether an event is provided:
 
+**With Event (Coordinate-Based):**
 1. **Getting viewport coordinates** from the pointer event
 2. **Converting to container-relative coordinates** accounting for borders and scroll
 3. **Clamping to container bounds** to ensure the menu stays visible
 4. **Creating an invisible anchor** at the calculated position
 5. **Delegating to MenuTrigger** for collision detection and final positioning
 
+**Without Event (Center-Based):**
+1. **Calculating element center** using `clientWidth/2` and `clientHeight/2`
+2. **Accounting for scroll offset** to position relative to content area
+3. **Clamping to container bounds** to ensure proper positioning
+4. **Creating an invisible anchor** at the center position
+
 ### Event Handling
 
 - **Automatic binding** occurs via `useEffect` on the `targetRef`
 - **Event listeners** are properly cleaned up on unmount
 - **`preventDefault()`** is called automatically for context menu events
-- **Manual `open()` calls** can still prevent default if needed
+- **Manual `open()` calls** can still prevent default if an event is provided
 
 ### Memory Management
 

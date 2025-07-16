@@ -79,14 +79,17 @@ describe('useContextMenu', () => {
     );
 
     return (
-      <div ref={targetRef} data-qa="container">
+      <div
+        ref={targetRef as React.RefObject<HTMLDivElement>}
+        data-qa="container"
+      >
         <button
           data-qa="trigger"
           onClick={(e) => {
             if (onTriggerClick) {
               onTriggerClick();
             }
-            open(e, componentProps, triggerProps);
+            open(componentProps, triggerProps, e);
           }}
         >
           Open Menu
@@ -435,11 +438,11 @@ describe('useContextMenu', () => {
         useContextMenu<HTMLDivElement>(TestMenuComponent);
 
       const handleClick1 = (e: React.MouseEvent) => {
-        open(e, { onAction: onAction1, sadf: '123' });
+        open({ onAction: onAction1, sadf: '123' }, undefined, e);
       };
 
       const handleClick2 = (e: React.MouseEvent) => {
-        open(e, { onAction: onAction2 });
+        open({ onAction: onAction2 }, undefined, e);
       };
 
       return (
@@ -597,7 +600,7 @@ describe('useContextMenu', () => {
     } as any;
 
     expect(() => {
-      result.current.open(mockEvent, {});
+      result.current.open({}, undefined, mockEvent);
     }).toThrow(
       'useContextMenu: MenuTrigger must be rendered. Use `rendered` property to include it in your component tree.',
     );
@@ -680,7 +683,7 @@ describe('useContextMenu', () => {
 
       return (
         <div ref={targetRef} data-qa="container">
-          <button data-qa="trigger" onClick={(e) => open(e, {})}>
+          <button data-qa="trigger" onClick={(e) => open({}, undefined, e)}>
             {isOpen ? 'Close Menu' : 'Open Menu'}
           </button>
           <button data-qa="close-button" onClick={close}>
@@ -835,7 +838,7 @@ describe('useContextMenu', () => {
       );
 
       const handleManualOpen = (e: React.MouseEvent) => {
-        open(e, { onAction: runtimeAction, width: '200px' }); // Should override default onAction
+        open({ onAction: runtimeAction, width: '200px' }, undefined, e); // Should override default onAction
       };
 
       return (
@@ -882,5 +885,67 @@ describe('useContextMenu', () => {
 
     // Should use default action
     expect(defaultAction).toHaveBeenCalledWith('edit');
+  });
+
+  it('should position menu at element center when no event is provided', async () => {
+    const onAction = jest.fn();
+
+    const TestCenterWrapper = () => {
+      const { targetRef, open, rendered } = useContextMenu<HTMLDivElement>(
+        TestMenuComponent,
+        { placement: 'bottom start' },
+        { onAction },
+      );
+
+      const handleCenterOpen = () => {
+        open(); // No event provided - should center on element
+      };
+
+      return (
+        <div
+          ref={targetRef}
+          data-qa="container"
+          style={{ width: 200, height: 100, padding: '20px' }}
+        >
+          <button data-qa="center-trigger" onClick={handleCenterOpen}>
+            Open Centered
+          </button>
+          {rendered}
+        </div>
+      );
+    };
+
+    const { getByTestId, getByRole, getByText } = renderWithRoot(
+      <TestCenterWrapper />,
+    );
+
+    const centerTrigger = getByTestId('center-trigger');
+
+    // Open without event (should center on element)
+    await act(async () => {
+      await userEvent.click(centerTrigger);
+    });
+
+    // Menu should be visible
+    await waitFor(() => {
+      expect(getByRole('menu')).toBeInTheDocument();
+    });
+
+    expect(getByText('Edit')).toBeInTheDocument();
+
+    // Verify that invisible anchor is positioned (we can't easily verify exact center coordinates in tests)
+    const container = getByTestId('container');
+    const invisibleAnchor = container.querySelector(
+      'span[style*="position: absolute"]',
+    );
+    expect(invisibleAnchor).toBeInTheDocument();
+
+    // Click on an item to test action
+    const editItem = getByText('Edit');
+    await act(async () => {
+      await userEvent.click(editItem);
+    });
+
+    expect(onAction).toHaveBeenCalledWith('edit');
   });
 });

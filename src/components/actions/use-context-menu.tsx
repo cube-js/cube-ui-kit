@@ -32,17 +32,17 @@ export interface UseContextMenuReturn<
   targetRef: RefObject<E>;
 
   /**
-   * Programmatically opens the menu at the specified event coordinates.
+   * Programmatically opens the menu at the specified coordinates or element center.
    * Runtime props are merged with defaultMenuProps (runtime props take precedence).
    *
-   * @param event - The pointer/mouse event containing coordinates for positioning
    * @param props - Props to pass to the menu component (optional, defaults to defaultMenuProps)
    * @param triggerProps - Additional props for MenuTrigger (merged with defaultTriggerProps)
+   * @param event - The pointer/mouse event containing coordinates for positioning (optional, centers on element if not provided)
    */
   open(
-    event: NativeMouseEvent | NativePointerEvent | MouseEvent | PointerEvent,
     props?: P,
     triggerProps?: T,
+    event?: NativeMouseEvent | NativePointerEvent | MouseEvent | PointerEvent,
   ): void;
 
   /**
@@ -134,9 +134,34 @@ export function useContextMenu<
   // element's scroll offset into account. Without the scroll offset the menu
   // would be rendered at the wrong place inside scrollable containers.
   const calculatePosition = (
-    event: NativeMouseEvent | NativePointerEvent | MouseEvent | PointerEvent,
+    event?: NativeMouseEvent | NativePointerEvent | MouseEvent | PointerEvent,
   ) => {
     const container = targetRef.current;
+
+    // If no event is provided, position at the center of the element
+    if (!event) {
+      if (!container) {
+        return { x: 0, y: 0 };
+      }
+
+      const containerRect = container.getBoundingClientRect();
+      const scrollLeft = container.scrollLeft;
+      const scrollTop = container.scrollTop;
+
+      const computed = window.getComputedStyle(container);
+      const borderLeft = parseFloat(computed.borderLeftWidth) || 0;
+      const borderTop = parseFloat(computed.borderTopWidth) || 0;
+
+      // Position at the center of the element's content area
+      const x = container.clientWidth / 2 + scrollLeft;
+      const y = container.clientHeight / 2 + scrollTop;
+
+      // Clamp to the full scroll size
+      const clampedX = Math.max(0, Math.min(x, container.scrollWidth));
+      const clampedY = Math.max(0, Math.min(y, container.scrollHeight));
+
+      return { x: clampedX, y: clampedY };
+    }
 
     // If the target reference is missing, fall back to viewport coordinates.
     if (!container) {
@@ -171,12 +196,12 @@ export function useContextMenu<
     return { x: clampedX, y: clampedY };
   };
 
-  // 'open' accepts an event for positioning, props required by the Component and opens the menu
+  // 'open' accepts props, trigger props, and optional event for positioning, then opens the menu
   const open = useEvent(
     (
-      event: NativeMouseEvent | NativePointerEvent | MouseEvent | PointerEvent,
       props?: P,
       triggerProps?: T,
+      event?: NativeMouseEvent | NativePointerEvent | MouseEvent | PointerEvent,
     ) => {
       setupCheck();
 
@@ -194,6 +219,7 @@ export function useContextMenu<
 
       // Prevent default context menu if it's a context menu event
       if (
+        event &&
         'preventDefault' in event &&
         typeof event.preventDefault === 'function'
       ) {
@@ -239,7 +265,7 @@ export function useContextMenu<
         const pos = calculatePosition(event);
         setAnchorPosition(pos);
       } else {
-        open(event, defaultMenuProps);
+        open(defaultMenuProps, undefined, event);
       }
     },
   );
