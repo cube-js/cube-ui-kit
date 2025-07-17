@@ -184,6 +184,12 @@ export interface CubeListBoxProps<T>
    * management while keeping DOM focus elsewhere.
    */
   stateRef?: MutableRefObject<any | null>;
+
+  /**
+   * When true (default) moving the pointer over an option will move DOM focus to that option.
+   * Set to false for components that keep DOM focus outside (e.g. searchable FilterListBox).
+   */
+  focusOnHover?: boolean;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -240,6 +246,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     defaultSelectedKeys,
     onSelectionChange,
     stateRef,
+    focusOnHover,
     ...otherProps
   } = props;
 
@@ -389,6 +396,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                   sectionStyles={sectionStyles}
                   isParentDisabled={isDisabled}
                   validationState={validationState}
+                  focusOnHover={focusOnHover}
                 />,
               );
 
@@ -402,6 +410,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                   styles={optionStyles}
                   isParentDisabled={isDisabled}
                   validationState={validationState}
+                  focusOnHover={focusOnHover}
                 />,
               );
             }
@@ -422,7 +431,14 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   props: CubeListBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },
 ) => ReactElement) & { Item: typeof Item; Section: typeof BaseSection };
 
-function Option({ item, state, styles, isParentDisabled, validationState }) {
+function Option({
+  item,
+  state,
+  styles,
+  isParentDisabled,
+  validationState,
+  focusOnHover = true,
+}) {
   const ref = useRef<HTMLLIElement>(null);
   const isDisabled = isParentDisabled || state.disabledKeys.has(item.key);
   const isSelected = state.selectionManager.isSelected(item.key);
@@ -434,7 +450,7 @@ function Option({ item, state, styles, isParentDisabled, validationState }) {
       isDisabled,
       isSelected,
       shouldSelectOnPressUp: true,
-      shouldFocusOnHover: true,
+      shouldFocusOnHover: focusOnHover,
     },
     state,
     ref,
@@ -471,6 +487,7 @@ interface ListBoxSectionProps<T> {
   sectionStyles?: Styles;
   isParentDisabled?: boolean;
   validationState?: any;
+  focusOnHover?: boolean;
 }
 
 function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
@@ -482,6 +499,7 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
     sectionStyles,
     isParentDisabled,
     validationState,
+    focusOnHover,
   } = props;
   const heading = item.rendered;
 
@@ -508,6 +526,7 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
               styles={optionStyles}
               isParentDisabled={isParentDisabled}
               validationState={validationState}
+              focusOnHover={focusOnHover}
             />
           ))}
       </SectionListElement>

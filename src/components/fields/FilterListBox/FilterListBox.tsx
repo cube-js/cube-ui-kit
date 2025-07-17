@@ -173,6 +173,11 @@ export const FilterListBox = forwardRef(function FilterListBox<
     ...otherProps
   } = props;
 
+  // Determine an aria-label for the internal ListBox to avoid React Aria warnings.
+  const innerAriaLabel =
+    (props as any)['aria-label'] ||
+    (typeof label === 'string' ? label : undefined);
+
   const [searchValue, setSearchValue] = useState('');
   const { contains } = useFilter({ sensitivity: 'base' });
 
@@ -442,8 +447,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
       ) : (
         <ListBox
           ref={listBoxRef}
-          label={label}
-          aria-label={props['aria-label']}
+          aria-label={innerAriaLabel}
           selectedKey={selectedKey}
           defaultSelectedKey={defaultSelectedKey}
           selectedKeys={selectedKeys}
