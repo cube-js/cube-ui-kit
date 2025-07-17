@@ -135,10 +135,17 @@ color: '#purple.05',   // 5% opacity
 |------|-------------|---------|------------|
 | `x` | Gap multiplier | `2x` | `calc(var(--gap) * 2)` |
 | `r` | Border radius | `1r` | `var(--radius)` |
+| `cr` | Card border radius | `1cr` | `var(--card-radius)` |
 | `bw` | Border width | `2bw` | `calc(var(--border-width) * 2)` |
 | `ow` | Outline width | `1ow` | `var(--outline-width)` |
 | `fs` | Font size | `1fs` | `var(--font-size)` |
 | `lh` | Line height | `1lh` | `var(--line-height)` |
+| `sf` | Stable fraction | `1sf` | `minmax(0, 1fr)` |
+
+> **💡 Grid Tip:** Use `sf` units in `gridColumns` for stable grid fractions that prevent layout collapse:
+> ```jsx
+> gridColumns="1sf 2sf 1sf"  // equivalent to "minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr)"
+> ```
 
 ### Responsive Styling
 
@@ -173,31 +180,47 @@ hide: true,          // Shortcut for display: none
 #### `flow` - Layout Direction
 Unified control for flex and grid direction:
 ```jsx
-// Flex containers
-flow: 'row',         // flex-direction: row
+// Flex containers (display: flex)
+flow: 'row',         // flex-flow: row
 flow: 'column wrap', // flex-flow: column wrap
+flow: 'row nowrap',  // flex-flow: row nowrap
 
-// Grid containers  
+// Grid containers (display: grid)
 flow: 'column',      // grid-auto-flow: column
 flow: 'row dense',   // grid-auto-flow: row dense
+
+// Block layout: affects gap direction
+// Default: 'row' for flex, 'column' for block
+// Requires display prop for proper detection
 ```
 
 #### `gap` - Element Spacing
 Works across all layout types:
 ```jsx
 gap: '2x',           // Standard gap
-gap: '1x 2x',        // Row gap, column gap
-gap: true,           // Default gap (1x)
+gap: '1x 2x',        // Row gap, column gap  
+gap: true,           // Default: '1x'
+
+// Flex/Grid: Uses native CSS gap
+// Block: Emulates with margin on children
+// Wrap mode: Uses negative margins on container
+// Default value (true): '1x' → 'var(--gap)'
+// Direction depends on flow prop
 ```
 
 #### `padding` & `margin` - Spacing
 Enhanced syntax with directional modifiers:
 ```jsx
 padding: '2x',                    // All sides
-padding: '2x 1x',                 // Vertical, horizontal
+padding: '2x 1x',                 // Vertical, horizontal  
 padding: '2x top',                // Top only
 padding: '1x left right',         // Left and right
-padding: true,                    // Default spacing
+padding: true,                    // Default: '1x'
+padding: ['2x', '1x', '0.5x'],    // Responsive array (padding only)
+
+// Available modifiers: top, right, bottom, left
+// Default value (true): '1x' → 'var(--gap)'
+// Also supports: paddingBlock, paddingInline for logical properties
 ```
 
 #### `width` & `height` - Dimensions
@@ -205,8 +228,16 @@ padding: true,                    // Default spacing
 width: '10x',                     // Fixed width
 width: '1x 10x',                  // min-width, max-width
 width: '1x 5x 10x',               // min, value, max
-width: 'min 2x',                  // min-width only
-width: 'stretch',                 // Fill available space
+width: 'min 2x',                  // min-width only ('var(--gap)' default)
+width: 'max 100%',                // max-width only ('100%' default)
+width: 'stretch',                 // Fill available space (browser-specific)
+
+// Default values:
+// - Default: 'auto'
+// - Min default: 'var(--gap)'
+// - Max default: '100%'
+// Intrinsic sizing: max-content, min-content, fit-content, stretch
+// Modifiers: min, max
 ```
 
 ### Visual Properties
@@ -214,31 +245,52 @@ width: 'stretch',                 // Fill available space
 #### `color` & `fill` - Colors
 ```jsx
 color: '#text',                   // Text color token
+color: true,                      // Default: 'currentColor'
 fill: '#purple.10',               // Background with opacity
+fill: '#surface',                 // Background color token
 color: {
   '': '#dark',
   hovered: '#purple',
   '[disabled]': '#gray',
 },
+
+// color default (true): 'currentColor'
+// Provides context variables: --current-color, --current-color-rgb
+// fill provides: --context-fill-color, --context-fill-color-rgb
 ```
 
 #### `border` - Borders
 Enhanced border syntax with directional support:
 ```jsx
-border: true,                     // Default border
-border: '2bw solid #purple',      // Custom border
+border: true,                     // Default: '1bw solid var(--border-color)'
+border: '2bw solid #purple',      // Custom width, style, color
 border: '1bw top',                // Top border only
 border: 'dashed #danger left right', // Left/right borders
+border: '#purple',                // Color only (uses defaults for width/style)
+
+// Default values:
+// - Width: '1bw' → 'var(--border-width)'  
+// - Style: 'solid'
+// - Color: 'var(--border-color)'
+// Available styles: none, hidden, dotted, dashed, solid, double, groove, ridge, inset, outset
+// Available modifiers: top, right, bottom, left
 ```
 
 #### `radius` - Border Radius
 Advanced radius with shapes and directions:
 ```jsx
 radius: '2r',                     // Custom radius
-radius: true,                     // Default radius
-radius: 'round',                  // Fully rounded
-radius: 'leaf',                   // Asymmetric shape
-radius: '1r top',                 // Top corners only
+radius: true,                     // Default: '1r' → 'var(--radius)'
+radius: 'round',                  // Fully rounded (9999rem)
+radius: 'ellipse',                // Elliptical (50%)
+radius: 'leaf',                   // Asymmetric leaf shape
+radius: 'backleaf',               // Reverse leaf shape
+radius: '1r top',                 // Top corners only (top-left, top-right)
+
+// Default value (true): '1r' → 'var(--radius)'
+// Shape modifiers: round, ellipse, leaf, backleaf
+// Directional modifiers: top, right, bottom, left
+// Provides --context-radius CSS variable for child elements
 ```
 
 ### Typography Properties
@@ -259,31 +311,81 @@ preset: 'h2 strong',              // Bold heading 2
 // Captions: c1, c2, tag
 ```
 
+#### `align`, `justify`, & `place` - Alignment
+Unified alignment control for flex and grid:
+```jsx
+align: 'center',                  // align-items & align-content: center
+justify: 'space-between',         // justify-items & justify-content: space-between  
+place: 'center',                  // place-items & place-content: center
+
+// Sets both *-items and *-content properties
+// Works with flex and grid layouts
+// Standard CSS alignment values supported
+```
+
+#### `inset` - Positioning Offset
+Shorthand for positioning offsets:
+```jsx
+inset: '0',                       // All sides: 0
+inset: '2x top',                  // Top only: 2x
+inset: '1x left right',           // Left and right: 1x
+inset: true,                      // Default: 0
+
+// Available modifiers: top, right, bottom, left
+// Default value (true): 0
+```
+
 ### Advanced Properties
 
 #### `transition` - Animations
 Semantic transition names:
 ```jsx
 transition: 'fill 0.2s',          // Background transitions
-transition: 'fade 0.15s ease-in', // Opacity transitions  
+transition: 'fade 0.15s ease-in', // Mask transitions  
 transition: 'theme 0.3s',         // All theme properties
 transition: 'border 0.2s, radius 0.3s', // Multiple properties
+
+// Available semantic names:
+// - fade: mask
+// - fill: background-color  
+// - border: border, box-shadow
+// - radius: border-radius
+// - theme: color, background-color, box-shadow, border, border-radius, outline
+// - preset: font-size, line-height, letter-spacing, font-weight, font-style
+// - gap: gap, margin
+// - width/height: dimensions and constraints
+// Default timing: 'var(--transition)'
 ```
 
 #### `scrollbar` - Scrollbar Styling
 ```jsx
-scrollbar: true,                  // Thin, default color
-scrollbar: 'thin 10px #purple.40 #dark.04', // Custom
-scrollbar: 'none',                // Hidden
-scrollbar: 'styled 12px #purple.40 #dark.04', // Modern style
+scrollbar: true,                  // Default: 'thin' with system colors
+scrollbar: 'thin 10px #purple.40 #dark.04', // Size and colors
+scrollbar: 'none',                // Hidden scrollbar
+scrollbar: 'auto',                // Browser default width
+scrollbar: 'styled 12px #primary #surface', // Enhanced appearance
+
+// Available modifiers:
+// - thin, auto, none: scrollbar-width values
+// - stable, both-edges: scrollbar-gutter behavior
+// - always: force scrollbars to show (sets overflow: scroll)
+// - styled: enhanced appearance with transitions
+// Color order: thumb, track, corner (optional)
+// Default colors: var(--scrollbar-thumb-color), transparent
 ```
 
 #### `fade` - Edge Fading
 Gradient masks for edge fading:
 ```jsx
-fade: true,                       // All edges
+fade: true,                       // All edges, default width
 fade: '2x left right',            // Left/right edges, 2x width
 fade: '1x top',                   // Top edge only
+fade: '3x 1x top bottom',         // Different widths per edge
+
+// Default width: 'var(--fade-width)'
+// Default edges: top, right, bottom, left (all)
+// Available modifiers: top, right, bottom, left
+// Uses CSS mask with linear gradients and mask-composite: intersect
 ```
 
 ---
