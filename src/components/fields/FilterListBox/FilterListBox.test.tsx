@@ -1,7 +1,7 @@
 import { createRef } from 'react';
 
-import { Field, FilterListBox } from '../../../index';
-import { act, render, userEvent, waitFor } from '../../../test';
+import { FilterListBox } from '../../../index';
+import { act, render, userEvent } from '../../../test';
 
 jest.mock('../../../_internal/hooks/use-warn');
 

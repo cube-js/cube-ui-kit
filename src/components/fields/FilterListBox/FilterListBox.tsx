@@ -321,7 +321,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
                 : '') ||
               String(child.props.children ?? '');
 
-            if (childText === term) {
+            if (term === String(child.key)) {
               exists = true;
             }
           }
