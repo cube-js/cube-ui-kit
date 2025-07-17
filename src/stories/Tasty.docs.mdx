@@ -238,6 +238,7 @@ width: 'stretch',                 // Fill available space (browser-specific)
 // - Max default: '100%'
 // Intrinsic sizing: max-content, min-content, fit-content, stretch
 // Modifiers: min, max
+// ✅ Prefer unified syntax over separate maxWidth/minWidth properties
 ```
 
 ### Visual Properties
@@ -580,6 +581,7 @@ styles: {
 
 // ✅ Use responsive arrays for breakpoints
 padding: ['4x', '2x', '1x']
+width: ['max 1200px', 'max 800px', 'max 100%']
 
 // ✅ Use modifiers for state-based styling
 styles: {
@@ -600,14 +602,20 @@ styles: {
 styles: {
   color: '#333333',        // Use '#text' instead
   padding: '16px',         // Use '2x' instead
-  border: '6px',     // Use '1r' instead
+  radius: '6px',     // Use 'radius: "1r"' instead
 }
 
 // ❌ Don't use CSS property names when Tasty alternatives exist
 styles: {
-  backgroundColor: '#blue', // Use 'fill' instead
-  alignItems: 'center',     // Use 'align' instead
-  justifyContent: 'center', // Use 'justify' instead
+  backgroundColor: '#blue',   // Use 'fill' instead
+  borderColor: '#purple',     // Use 'border' instead
+  borderWidth: '2px',         // Use 'border' instead
+  borderStyle: 'dashed',      // Use 'border' instead
+  borderRadius: '8px',        // Use 'radius' instead
+  maxWidth: '100%',           // Use 'width: "max 100%"' instead
+  minWidth: '200px',          // Use 'width: "min 200px"' instead
+  maxHeight: '500px',         // Use 'height: "max 500px"' instead
+  minHeight: '100px',         // Use 'height: "min 100px"' instead
 }
 
 // ❌ Don't use custom selectors unnecessarily
@@ -626,6 +634,29 @@ styles: {
     disabled: '#gray',     // Use '[disabled]' instead
     checked: '#blue',      // Use '[checked]' instead
   },
+}
+```
+
+#### Tasty vs Native CSS Properties
+
+| ❌ Native CSS | ✅ Tasty Alternative | Benefits |
+|---------------|---------------------|----------|
+| `backgroundColor` | `fill` | Color tokens, context variables |
+| `borderColor`, `borderWidth`, `borderStyle` | `border` | Unified syntax, directional modifiers |
+| `borderRadius` | `radius` | Custom units, shape modifiers |
+| `maxWidth` | `width: "max 100%"` | Unified dimension control |
+| `minWidth` | `width: "min 200px"` | Consistent syntax |
+| `maxHeight` | `height: "max 500px"` | Dimension constraints |
+| `minHeight` | `height: "min 100px"` | Design system integration |
+
+```jsx
+// ✅ Recommended Tasty approach
+styles: {
+  fill: '#surface',
+  border: '1bw solid #border',
+  radius: '1r',
+  width: 'min 200px max 800px',
+  height: 'min 100px',
 }
 ```
 
@@ -670,7 +701,7 @@ const InteractiveCard = tasty({
 const Container = tasty({
   styles: {
     padding: ['6x', '4x', '2x'],
-    maxWidth: ['1200px', '800px', '100%'],
+    width: ['max 1200px', 'max 800px', 'max 100%'],
     margin: '0 auto',
   },
 });
