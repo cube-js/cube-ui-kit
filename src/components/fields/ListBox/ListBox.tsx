@@ -4,22 +4,17 @@ import {
   ReactElement,
   ReactNode,
   RefObject,
-  useCallback,
   useMemo,
   useRef,
-  useState,
 } from 'react';
 import {
   AriaListBoxProps,
-  useFilter,
-  useKeyboard,
   useListBox,
   useListBoxSection,
   useOption,
 } from 'react-aria';
 import { Section as BaseSection, Item, useListState } from 'react-stately';
 
-import { LoadingIcon, SearchIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import {
   BASE_STYLES,
@@ -31,17 +26,10 @@ import {
 } from '../../../tasty';
 import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
-import { Block } from '../../Block';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
-import {
-  DEFAULT_INPUT_STYLES,
-  INPUT_WRAPPER_STYLES,
-} from '../TextInput/TextInputBase';
 
 import type { CollectionBase, Key } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
-
-type FilterFn = (textValue: string, inputValue: string) => boolean;
 
 const ListBoxWrapperElement = tasty({
   styles: {
@@ -66,20 +54,6 @@ const ListBoxWrapperElement = tasty({
       disabled: true,
     },
   },
-});
-
-const SearchWrapperElement = tasty({
-  styles: {
-    ...INPUT_WRAPPER_STYLES,
-    border: '#clear',
-    radius: '1r top',
-    borderBottom: '1bw solid #border',
-  },
-});
-
-const SearchInputElement = tasty({
-  as: 'input',
-  styles: DEFAULT_INPUT_STYLES,
 });
 
 const ListElement = tasty({
@@ -183,18 +157,6 @@ export interface CubeListBoxProps<T>
   extends Omit<AriaListBoxProps<T>, 'onSelectionChange'>,
     CollectionBase<T>,
     FieldBaseProps {
-  /** Whether the ListBox is searchable */
-  isSearchable?: boolean;
-  /** Placeholder text for the search input */
-  searchPlaceholder?: string;
-  /** Whether the search input should have autofocus */
-  autoFocus?: boolean;
-  /** The filter function used to determine if an option should be included in the filtered list */
-  filter?: FilterFn;
-  /** Custom label to display when no results are found after filtering */
-  emptyLabel?: ReactNode;
-  /** Custom styles for the search input */
-  searchInputStyles?: Styles;
   /** Custom styles for the list container */
   listStyles?: Styles;
   /** Custom styles for options */
@@ -205,18 +167,14 @@ export interface CubeListBoxProps<T>
   headingStyles?: Styles;
   /** Whether the ListBox is disabled */
   isDisabled?: boolean;
-  /** Whether the ListBox as a whole is loading (generic loading indicator) */
-  isLoading?: boolean;
   /** The selected key(s) */
   selectedKey?: Key | null;
-  selectedKeys?: Key[] | 'all';
+  selectedKeys?: Key[];
   /** Default selected key(s) */
   defaultSelectedKey?: Key | null;
-  defaultSelectedKeys?: Key[] | 'all';
+  defaultSelectedKeys?: Key[];
   /** Selection change handler */
   onSelectionChange?: (key: Key | null | Key[]) => void;
-  /** Ref for the search input */
-  searchInputRef?: RefObject<HTMLInputElement>;
   /** Ref for the list */
   listRef?: RefObject<HTMLElement>;
 }
@@ -234,30 +192,16 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       const fieldProps: any = {};
 
       if (props.selectionMode === 'multiple') {
-        fieldProps.selectedKeys = Array.isArray(value)
-          ? value
-          : value
-            ? [value]
-            : [];
+        fieldProps.selectedKeys = value || [];
       } else {
         fieldProps.selectedKey = value ?? null;
       }
 
       fieldProps.onSelectionChange = (key: any) => {
         if (props.selectionMode === 'multiple') {
-          if (Array.isArray(key)) {
-            onChange(key);
-          } else if (key instanceof Set) {
-            onChange(Array.from(key));
-          } else {
-            onChange(key ? [key] : []);
-          }
+          onChange(key ? (Array.isArray(key) ? key : [key]) : []);
         } else {
-          if (key instanceof Set) {
-            onChange(key.size === 0 ? null : Array.from(key)[0]);
-          } else {
-            onChange(key);
-          }
+          onChange(Array.isArray(key) ? key[0] : key);
         }
       };
 
@@ -274,18 +218,10 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     necessityIndicator,
     validationState,
     isDisabled,
-    isLoading,
-    isSearchable = false,
-    searchPlaceholder = 'Search...',
-    autoFocus,
-    filter,
-    emptyLabel,
-    searchInputStyles,
     listStyles,
     optionStyles,
     sectionStyles,
     headingStyles,
-    searchInputRef,
     listRef,
     message,
     description,
@@ -298,65 +234,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     onSelectionChange,
     ...otherProps
   } = props;
-
-  const [searchValue, setSearchValue] = useState('');
-  const { contains } = useFilter({ sensitivity: 'base' });
-
-  // Choose the text filter function: user-provided `filter` prop (if any)
-  // or the default `contains` helper from `useFilter`.
-  const textFilterFn = useMemo<FilterFn>(
-    () => filter || contains,
-    [filter, contains],
-  );
-
-  // Collection-level filter function expected by `useListState`.
-  // It converts the text filter (textValue, searchValue) ⟶ boolean
-  // into the shape `(nodes) => Iterable<Node<T>>`.
-  // The current `searchValue` is captured in the closure – every re-render
-  // produces a new function so React Stately updates the collection when the
-  // search term changes.
-  const collectionFilter = useCallback(
-    (nodes: Iterable<any>): Iterable<any> => {
-      const term = searchValue.trim();
-
-      // If there is no search term, return nodes untouched to avoid
-      // unnecessary object allocations.
-      if (!term) {
-        return nodes;
-      }
-
-      // Recursive helper to filter sections and items.
-      const filterNodes = (iter: Iterable<any>): any[] => {
-        const result: any[] = [];
-
-        for (const node of iter) {
-          if (node.type === 'section') {
-            const filteredChildren = filterNodes(node.childNodes);
-
-            if (filteredChildren.length) {
-              // Preserve the original node but replace `childNodes` with the
-              // filtered iterable so that React-Stately can still traverse it.
-              result.push({
-                ...node,
-                childNodes: filteredChildren,
-              });
-            }
-          } else {
-            const text = node.textValue ?? String(node.rendered ?? '');
-
-            if (textFilterFn(text, term)) {
-              result.push(node);
-            }
-          }
-        }
-
-        return result;
-      };
-
-      return filterNodes(nodes);
-    },
-    [searchValue, textFilterFn],
-  );
 
   // Wrap onSelectionChange to prevent selection when disabled and handle React Aria's Set format
   const externalSelectionHandler = onSelectionChange || (props as any).onChange;
@@ -391,7 +268,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // Prepare props for useListState with correct selection props
   const listStateProps: any = {
     ...props,
-    filter: collectionFilter,
     onSelectionChange: wrappedOnSelectionChange,
     isDisabled,
     selectionMode: props.selectionMode || 'single',
@@ -400,14 +276,12 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // Set selection props based on mode
   if (listStateProps.selectionMode === 'multiple') {
     if (selectedKeys !== undefined) {
-      listStateProps.selectedKeys =
-        selectedKeys === 'all' ? 'all' : new Set(selectedKeys as Key[]);
+      listStateProps.selectedKeys = new Set(selectedKeys as Key[]);
     }
     if (defaultSelectedKeys !== undefined) {
-      listStateProps.defaultSelectedKeys =
-        defaultSelectedKeys === 'all'
-          ? 'all'
-          : new Set(defaultSelectedKeys as Key[]);
+      listStateProps.defaultSelectedKeys = new Set(
+        defaultSelectedKeys as Key[],
+      );
     }
     // Remove single-selection props if any
     delete listStateProps.selectedKey;
@@ -435,7 +309,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
   ref = useCombinedRefs(ref);
-  searchInputRef = useCombinedRefs(searchInputRef);
   listRef = useCombinedRefs(listRef);
 
   const { listBoxProps } = useListBox(
@@ -443,7 +316,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       ...props,
       'aria-label': props['aria-label'] || label?.toString(),
       isDisabled,
-      shouldUseVirtualFocus: isSearchable,
+      shouldUseVirtualFocus: false,
       shouldFocusWrap: true,
     },
     listState,
@@ -453,154 +326,15 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   const { isFocused, focusProps } = useFocus({ isDisabled });
   const isInvalid = validationState === 'invalid';
 
-  // Keyboard navigation handler for search input
-  const { keyboardProps } = useKeyboard({
-    onKeyDown: (e) => {
-      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        e.preventDefault();
-
-        const isArrowDown = e.key === 'ArrowDown';
-        const { selectionManager, collection } = listState;
-        const currentKey = selectionManager.focusedKey;
-
-        // Helper function to find next selectable item (skip section headers and disabled items)
-        const findNextSelectableKey = (
-          startKey: any,
-          direction: 'forward' | 'backward',
-        ) => {
-          let nextKey = startKey;
-          const keyGetter =
-            direction === 'forward'
-              ? collection.getKeyAfter.bind(collection)
-              : collection.getKeyBefore.bind(collection);
-
-          while (nextKey != null) {
-            const item = collection.getItem(nextKey);
-            // Use SelectionManager's canSelectItem method for proper validation
-            if (
-              item &&
-              item.type !== 'section' &&
-              selectionManager.canSelectItem(nextKey)
-            ) {
-              return nextKey;
-            }
-            nextKey = keyGetter(nextKey);
-          }
-
-          return null;
-        };
-
-        // Helper function to find first/last selectable item
-        const findFirstLastSelectableKey = (
-          direction: 'forward' | 'backward',
-        ) => {
-          const allKeys = Array.from(collection.getKeys());
-          const keysToCheck =
-            direction === 'forward' ? allKeys : allKeys.reverse();
-
-          for (const key of keysToCheck) {
-            const item = collection.getItem(key);
-            if (
-              item &&
-              item.type !== 'section' &&
-              selectionManager.canSelectItem(key)
-            ) {
-              return key;
-            }
-          }
-
-          return null;
-        };
-
-        let nextKey: any = null;
-        const direction = isArrowDown ? 'forward' : 'backward';
-
-        if (currentKey == null) {
-          // No current focus, find first/last selectable item
-          nextKey = findFirstLastSelectableKey(direction);
-        } else {
-          // Find next selectable item from current position
-          const candidateKey =
-            direction === 'forward'
-              ? collection.getKeyAfter(currentKey)
-              : collection.getKeyBefore(currentKey);
-
-          nextKey = findNextSelectableKey(candidateKey, direction);
-
-          // If no next key found and focus wrapping is enabled, wrap to first/last selectable item
-          if (nextKey == null) {
-            nextKey = findFirstLastSelectableKey(direction);
-          }
-        }
-
-        if (nextKey != null) {
-          selectionManager.setFocusedKey(nextKey);
-        }
-      } else if (e.key === 'Enter' || (e.key === ' ' && !searchValue.trim())) {
-        const focusedKey = listState.selectionManager.focusedKey;
-        if (focusedKey != null) {
-          e.preventDefault();
-
-          // Use the SelectionManager's select method which handles all selection logic
-          // including single vs multiple selection modes and modifier keys
-          listState.selectionManager.select(focusedKey, e);
-        }
-      }
-    },
-  });
-
   const mods = useMemo(
     () => ({
       invalid: isInvalid,
       valid: validationState === 'valid',
       disabled: isDisabled,
       focused: isFocused,
-      loading: isLoading,
-      searchable: isSearchable,
     }),
-    [
-      isInvalid,
-      validationState,
-      isDisabled,
-      isFocused,
-      isLoading,
-      isSearchable,
-    ],
+    [isInvalid, validationState, isDisabled, isFocused],
   );
-
-  const searchInput = isSearchable ? (
-    <SearchWrapperElement mods={mods} data-size="small">
-      <SearchInputElement
-        ref={searchInputRef}
-        data-is-prefix
-        type="search"
-        placeholder={searchPlaceholder}
-        value={searchValue}
-        disabled={isDisabled}
-        autoFocus={autoFocus && isSearchable}
-        data-autofocus={autoFocus ? '' : undefined}
-        styles={searchInputStyles}
-        data-size="small"
-        aria-controls={listBoxProps.id}
-        aria-activedescendant={
-          listState.selectionManager.focusedKey != null
-            ? `${listBoxProps.id}-option-${listState.selectionManager.focusedKey}`
-            : undefined
-        }
-        onChange={(e) => {
-          const value = e.target.value;
-          setSearchValue(value);
-        }}
-        {...keyboardProps}
-        {...modAttrs(mods)}
-      />
-      <div data-element="Prefix">
-        <div data-element="InputIcon">
-          {isLoading ? <LoadingIcon /> : <SearchIcon />}
-        </div>
-      </div>
-    </SearchWrapperElement>
-  ) : null;
 
   const listBoxField = (
     <ListBoxWrapperElement
@@ -610,13 +344,11 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       styles={styles}
       {...focusProps}
     >
-      {searchInput}
       <ListElement
         {...listBoxProps}
         ref={listRef}
         styles={listStyles}
         aria-disabled={isDisabled || undefined}
-        {...(!isSearchable ? keyboardProps : {})}
       >
         {(() => {
           const renderedItems: ReactNode[] = [];
@@ -660,21 +392,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                 />,
               );
             }
-          }
-
-          // Show "No results found" message when there are no items after filtration
-          if (
-            renderedItems.length === 0 &&
-            isSearchable &&
-            searchValue.trim()
-          ) {
-            return (
-              <li>
-                <Block preset="t4" color="#dark-03">
-                  {emptyLabel !== undefined ? emptyLabel : 'No results found'}
-                </Block>
-              </li>
-            );
           }
 
           return renderedItems;

@@ -1,0 +1,247 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
+import { FilterListBox } from './FilterListBox';
+import * as FilterListBoxStories from './FilterListBox.stories';
+
+<Meta of={FilterListBoxStories} />
+
+# FilterListBox
+
+A searchable list box component that allows users to filter and select from a list of options with an integrated search input. It combines the capabilities of a regular ListBox with real-time search functionality, supporting sections, descriptions, and full keyboard navigation. Built with React Aria's accessibility features and the Cube `tasty` style system for theming.
+
+## When to Use
+
+- Present a searchable list of selectable options for large datasets
+- Enable filtering through options in real-time as users type
+- Create searchable selection interfaces for data with many entries
+- Build filterable form controls that need to remain visible
+- Provide quick option discovery in lengthy lists
+- Display structured data with searchable sections and descriptions
+- Customize empty state messages when search yields no results
+
+## Component
+
+<Story of={FilterListBoxStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={FilterListBoxStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/docs/tasty-base-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root wrapper element of the component.
+
+**Sub-elements:**
+- `ValidationState` - Container for validation and loading indicators
+
+#### searchInputStyles
+
+Customizes the search input field appearance.
+
+**Sub-elements:**
+- `Prefix` - Container for search icon
+- `InputIcon` - The search or loading icon
+
+#### listStyles
+
+Customizes the list container element that holds the filtered options.
+
+#### optionStyles
+
+Customizes individual option elements.
+
+**Sub-elements:**
+- `Label` - The main text of each option
+- `Description` - Secondary descriptive text for options
+
+#### sectionStyles
+
+Customizes section wrapper elements.
+
+#### headingStyles
+
+Customizes section heading elements.
+
+### Component-Specific Properties
+
+#### searchPlaceholder
+
+Custom placeholder text for the search input field. Defaults to "Search...".
+
+```jsx
+<FilterListBox searchPlaceholder="Filter items...">
+  <FilterListBox.Item key="1">Option 1</FilterListBox.Item>
+  <FilterListBox.Item key="2">Option 2</FilterListBox.Item>
+</FilterListBox>
+```
+
+#### autoFocus
+
+Whether the search input should automatically receive focus when the component mounts.
+
+```jsx
+<FilterListBox autoFocus>
+  <FilterListBox.Item key="1">Option 1</FilterListBox.Item>
+</FilterListBox>
+```
+
+#### filter
+
+Custom filter function to determine if an option should be included in search results. Receives the option's text value and the current search input value.
+
+```jsx
+const customFilter = (optionText, searchTerm) => {
+  // Custom filtering logic - e.g., exact match only
+  return optionText.toLowerCase() === searchTerm.toLowerCase();
+};
+
+<FilterListBox filter={customFilter}>
+  <FilterListBox.Item key="1">Option 1</FilterListBox.Item>
+</FilterListBox>
+```
+
+#### emptyLabel
+
+Custom content to display when search yields no results. Accepts any ReactNode including text, JSX elements, or components. Defaults to "No results found".
+
+```jsx
+<FilterListBox emptyLabel="No matching items found. Try a different search term.">
+  <FilterListBox.Item key="1">Option 1</FilterListBox.Item>
+</FilterListBox>
+```
+
+#### isLoading
+
+Shows a loading indicator in the search input when data is being fetched or processed.
+
+```jsx
+<FilterListBox isLoading>
+  <FilterListBox.Item key="1">Option 1</FilterListBox.Item>
+</FilterListBox>
+```
+
+### Selection Properties
+
+Inherits all selection properties from the base ListBox component:
+
+- `selectedKey` / `selectedKeys` - Controlled selection
+- `defaultSelectedKey` / `defaultSelectedKeys` - Uncontrolled selection
+- `selectionMode` - 'single', 'multiple', or 'none'
+- `onSelectionChange` - Selection change handler
+- `disallowEmptySelection` - Prevent deselecting all items
+- `disabledKeys` - Keys of disabled options
+
+### Accessibility
+
+- **Keyboard Navigation**: Arrow keys navigate through filtered options
+- **Search Shortcuts**: Escape key clears the search input
+- **Screen Reader Support**: Proper announcements for search results
+- **Focus Management**: Seamless focus transition between search and options
+- **ARIA Labels**: Automatic labeling for search input and filtered content
+
+### Examples
+
+#### Basic Searchable List
+
+<Story of={FilterListBoxStories.Default} />
+
+#### With Sections
+
+<Story of={FilterListBoxStories.WithSections} />
+
+#### Multiple Selection
+
+<Story of={FilterListBoxStories.MultipleSelection} />
+
+#### Custom Filter Function
+
+<Story of={FilterListBoxStories.CustomFilter} />
+
+#### With Descriptions
+
+<Story of={FilterListBoxStories.WithDescriptions} />
+
+#### Loading State
+
+<Story of={FilterListBoxStories.Loading} />
+
+#### Custom Empty State
+
+<Story of={FilterListBoxStories.CustomEmptyState} />
+
+---
+
+## Usage Guidelines
+
+### Do's ✅
+
+- Use for lists with more than 10-15 options
+- Provide clear, searchable text content for each option
+- Use `textValue` prop when option content is complex (JSX)
+- Implement custom filter functions for specialized search needs
+- Show loading states during async data fetching
+- Provide meaningful empty state messages
+
+```jsx
+// ✅ Good - Clear searchable content
+<FilterListBox>
+  <FilterListBox.Item key="user1" textValue="John Doe">
+    <div>
+      <strong>John Doe</strong>
+      <div>john.doe@company.com</div>
+    </div>
+  </FilterListBox.Item>
+</FilterListBox>
+```
+
+### Don'ts ❌
+
+- Don't use for very small lists (under 5-7 options)
+- Don't forget to provide `textValue` for complex option content
+- Don't implement search that's too strict or too loose
+- Don't hide important options that users expect to always see
+
+```jsx
+// ❌ Avoid - No textValue for complex content
+<FilterListBox>
+  <FilterListBox.Item key="user1">
+    <div>
+      <strong>John Doe</strong>
+      <div>john.doe@company.com</div>
+    </div>
+  </FilterListBox.Item>
+</FilterListBox>
+```
+
+### Performance Tips
+
+- Use `textValue` prop to avoid searching through JSX content
+- Implement debounced search for large datasets
+- Consider virtualization for very large lists (500+ items)
+- Memoize custom filter functions to prevent unnecessary re-renders
+
+```jsx
+const memoizedFilter = useCallback((text, search) => {
+  return text.toLowerCase().includes(search.toLowerCase());
+}, []);
+
+<FilterListBox filter={memoizedFilter}>
+  {/* options */}
+</FilterListBox>
+```
+
+---
+
+## Related Components
+
+- **[ListBox](/docs/forms-listbox--docs)** - Simple list selection without search
+- **[ComboBox](/docs/forms-combobox--docs)** - Dropdown with search and text input
+- **[Select](/docs/forms-select--docs)** - Dropdown selection without search
+- **[SearchInput](/docs/forms-searchinput--docs)** - Standalone search input component 

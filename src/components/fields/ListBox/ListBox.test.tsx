@@ -159,27 +159,6 @@ describe('<ListBox />', () => {
     expect(secondCall.sort()).toEqual(['apple', 'banana']);
   });
 
-  it('should support search functionality', async () => {
-    const { getByRole, getByText, queryByText } = render(
-      <ListBox isSearchable label="Select a fruit">
-        {basicItems}
-      </ListBox>,
-    );
-
-    const searchInput = getByRole('searchbox');
-    expect(searchInput).toBeInTheDocument();
-
-    // Type in search input
-    await act(async () => {
-      await userEvent.type(searchInput, 'app');
-    });
-
-    // Only Apple should be visible
-    expect(getByText('Apple')).toBeInTheDocument();
-    expect(queryByText('Banana')).not.toBeInTheDocument();
-    expect(queryByText('Cherry')).not.toBeInTheDocument();
-  });
-
   it('should handle disabled state', () => {
     const { getByRole } = render(
       <ListBox isDisabled label="Select a fruit">
@@ -232,24 +211,16 @@ describe('<ListBox />', () => {
 
   it('should correctly assign refs', () => {
     const listRef = createRef<HTMLElement>();
-    const searchInputRef = createRef<HTMLInputElement>();
 
     const { getByRole } = render(
-      <ListBox
-        isSearchable
-        label="Select a fruit"
-        listRef={listRef}
-        searchInputRef={searchInputRef}
-      >
+      <ListBox label="Select a fruit" listRef={listRef}>
         {basicItems}
       </ListBox>,
     );
 
     const listbox = getByRole('listbox');
-    const searchInput = getByRole('searchbox');
 
     expect(listRef.current).toBe(listbox);
-    expect(searchInputRef.current).toBe(searchInput);
   });
 
   it('should handle keyboard navigation', async () => {
@@ -294,48 +265,6 @@ describe('<ListBox />', () => {
     expect(listbox.closest('[data-is-valid]')).toBeInTheDocument();
   });
 
-  it('should handle search loading state', () => {
-    const { container } = render(
-      <ListBox isSearchable isSearchLoading label="Select a fruit">
-        {basicItems}
-      </ListBox>,
-    );
-
-    // Check that LoadingIcon is rendered instead of SearchIcon
-    const loadingIcon = container.querySelector(
-      '[data-element="InputIcon"] svg',
-    );
-    expect(loadingIcon).toBeInTheDocument();
-  });
-
-  it('should filter sections when searching', async () => {
-    const { getByRole, getByText, queryByText } = render(
-      <ListBox isSearchable label="Select an item">
-        <ListBox.Section title="Fruits">
-          <ListBox.Item key="apple">Apple</ListBox.Item>
-          <ListBox.Item key="banana">Banana</ListBox.Item>
-        </ListBox.Section>
-        <ListBox.Section title="Vegetables">
-          <ListBox.Item key="carrot">Carrot</ListBox.Item>
-          <ListBox.Item key="broccoli">Broccoli</ListBox.Item>
-        </ListBox.Section>
-      </ListBox>,
-    );
-
-    const searchInput = getByRole('searchbox');
-
-    // Search for "app" - should only show Apple and Fruits section
-    await act(async () => {
-      await userEvent.type(searchInput, 'app');
-    });
-
-    expect(getByText('Fruits')).toBeInTheDocument();
-    expect(getByText('Apple')).toBeInTheDocument();
-    expect(queryByText('Banana')).not.toBeInTheDocument();
-    expect(queryByText('Vegetables')).not.toBeInTheDocument();
-    expect(queryByText('Carrot')).not.toBeInTheDocument();
-  });
-
   it('should clear selection when null is passed', async () => {
     const onSelectionChange = jest.fn();
 
@@ -365,26 +294,6 @@ describe('<ListBox />', () => {
     );
 
     expect(appleOption.closest('li')).toHaveAttribute('aria-selected', 'false');
-  });
-
-  it('should handle empty search results', async () => {
-    const { getByRole, queryByText } = render(
-      <ListBox isSearchable label="Select a fruit">
-        {basicItems}
-      </ListBox>,
-    );
-
-    const searchInput = getByRole('searchbox');
-
-    // Search for something that doesn't exist
-    await act(async () => {
-      await userEvent.type(searchInput, 'xyz');
-    });
-
-    // No items should be visible
-    expect(queryByText('Apple')).not.toBeInTheDocument();
-    expect(queryByText('Banana')).not.toBeInTheDocument();
-    expect(queryByText('Cherry')).not.toBeInTheDocument();
   });
 
   it('should work with form integration and onSelectionChange handler together', async () => {
@@ -474,52 +383,24 @@ describe('<ListBox />', () => {
     expect(['apple', 'banana', 'cherry']).toContain(selectedValue);
   });
 
-  it('should handle keyboard navigation in both searchable and non-searchable modes', async () => {
-    // Test non-searchable ListBox
-    const onSelectionChangeNonSearchable = jest.fn();
-    const { getByRole: getByRoleNonSearchable, unmount } = render(
-      <ListBox
-        label="Select a fruit"
-        onSelectionChange={onSelectionChangeNonSearchable}
-      >
+  it('should handle keyboard navigation', async () => {
+    const onSelectionChange = jest.fn();
+    const { getByRole } = render(
+      <ListBox label="Select a fruit" onSelectionChange={onSelectionChange}>
         {basicItems}
       </ListBox>,
     );
 
-    const listboxNonSearchable = getByRoleNonSearchable('listbox');
+    const listbox = getByRole('listbox');
 
     // Focus and navigate
     await act(async () => {
-      listboxNonSearchable.focus();
+      listbox.focus();
       await userEvent.keyboard('{ArrowDown}');
       await userEvent.keyboard('{Enter}');
     });
 
-    expect(onSelectionChangeNonSearchable).toHaveBeenCalledTimes(1);
-    unmount();
-
-    // Test searchable ListBox
-    const onSelectionChangeSearchable = jest.fn();
-    const { getByRole: getByRoleSearchable } = render(
-      <ListBox
-        isSearchable
-        label="Select a fruit"
-        onSelectionChange={onSelectionChangeSearchable}
-      >
-        {basicItems}
-      </ListBox>,
-    );
-
-    const searchInput = getByRoleSearchable('searchbox');
-
-    // Focus search input and navigate
-    await act(async () => {
-      searchInput.focus();
-      await userEvent.keyboard('{ArrowDown}');
-      await userEvent.keyboard('{Enter}');
-    });
-
-    expect(onSelectionChangeSearchable).toHaveBeenCalledTimes(1);
+    expect(onSelectionChange).toHaveBeenCalledTimes(1);
   });
 
   it('should apply focused mod to the focused item during keyboard navigation', async () => {
