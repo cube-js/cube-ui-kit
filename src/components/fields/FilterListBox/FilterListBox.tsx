@@ -5,6 +5,7 @@ import React, {
   ReactElement,
   ReactNode,
   RefObject,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -374,6 +375,51 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
   // Track focused key for virtual focus management
   const [focusedKey, setFocusedKey] = useState<Key | null>(null);
+
+  // When the search value changes, the visible collection of items may change as well.
+  // If the currently focused item is no longer visible, move virtual focus to the first
+  // available item so that arrow navigation and Enter behaviour continue to work.
+  useLayoutEffect(() => {
+    const listState = listStateRef.current;
+
+    if (!listState) return;
+
+    const { selectionManager, collection } = listState;
+
+    // Early exit if the current focused key is still present in the collection.
+    const currentFocused = selectionManager.focusedKey;
+    if (
+      currentFocused != null &&
+      collection.getItem &&
+      collection.getItem(currentFocused)
+    ) {
+      return;
+    }
+
+    // Find the first item key in the (possibly sectioned) collection.
+    let firstKey: Key | null = null;
+
+    for (const node of collection) {
+      if (node.type === 'item') {
+        firstKey = node.key;
+        break;
+      }
+
+      if (node.childNodes) {
+        for (const child of node.childNodes) {
+          if (child.type === 'item') {
+            firstKey = child.key;
+            break;
+          }
+        }
+      }
+
+      if (firstKey != null) break;
+    }
+
+    selectionManager.setFocusedKey(firstKey);
+    setFocusedKey(firstKey);
+  }, [searchValue, enhancedChildren]);
 
   // Keyboard navigation handler for search input
   const { keyboardProps } = useKeyboard({
