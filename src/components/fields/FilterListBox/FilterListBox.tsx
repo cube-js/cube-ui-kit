@@ -1,3 +1,4 @@
+import { Key } from '@react-types/shared';
 import {
   ForwardedRef,
   forwardRef,
@@ -273,24 +274,98 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
   const listBoxRef = useRef<HTMLDivElement>(null);
 
+  // Ref to access internal ListBox state (selection manager, etc.)
+  const listStateRef = useRef<any>(null);
+
+  // Track focused key for virtual focus management
+  const [focusedKey, setFocusedKey] = useState<Key | null>(null);
+
   // Keyboard navigation handler for search input
   const { keyboardProps } = useKeyboard({
     onKeyDown: (e) => {
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         e.preventDefault();
 
-        // Focus the list box to enable keyboard navigation
-        if (listBoxRef.current) {
-          const firstFocusableElement = listBoxRef.current.querySelector(
-            '[role="option"]:not([aria-disabled="true"])',
-          ) as HTMLElement;
-          if (firstFocusableElement) {
-            firstFocusableElement.focus();
+        const listState = listStateRef.current;
+        if (!listState) return;
+
+        const { selectionManager, collection } = listState;
+
+        // Helper to collect visible item keys (supports sections)
+        const collectVisibleKeys = (nodes: Iterable<any>, out: Key[]) => {
+          const term = searchValue.trim();
+          for (const node of nodes) {
+            if (node.type === 'item') {
+              const text = node.textValue ?? String(node.rendered ?? '');
+              if (!term || textFilterFn(text, term)) {
+                out.push(node.key);
+              }
+            } else if (node.childNodes) {
+              collectVisibleKeys(node.childNodes, out);
+            }
+          }
+        };
+
+        const visibleKeys: Key[] = [];
+        collectVisibleKeys(collection, visibleKeys);
+
+        if (visibleKeys.length === 0) return;
+
+        const isArrowDown = e.key === 'ArrowDown';
+        const direction = isArrowDown ? 1 : -1;
+
+        const currentKey =
+          focusedKey != null ? focusedKey : selectionManager.focusedKey;
+
+        let nextKey: Key | null = null;
+
+        if (currentKey == null) {
+          // If nothing focused yet, pick first/last depending on direction
+          nextKey = isArrowDown
+            ? visibleKeys[0]
+            : visibleKeys[visibleKeys.length - 1];
+        } else {
+          const currentIndex = visibleKeys.indexOf(currentKey);
+          if (currentIndex !== -1) {
+            const newIndex = currentIndex + direction;
+            if (newIndex >= 0 && newIndex < visibleKeys.length) {
+              nextKey = visibleKeys[newIndex];
+            } else {
+              // Wrap around
+              nextKey = isArrowDown
+                ? visibleKeys[0]
+                : visibleKeys[visibleKeys.length - 1];
+            }
+          } else {
+            // Fallback
+            nextKey = isArrowDown
+              ? visibleKeys[0]
+              : visibleKeys[visibleKeys.length - 1];
           }
         }
+
+        if (nextKey != null) {
+          selectionManager.setFocusedKey(nextKey);
+          setFocusedKey(nextKey);
+        }
+      } else if (e.key === 'Enter') {
+        const listState = listStateRef.current;
+        if (!listState) return;
+
+        const keyToSelect =
+          focusedKey != null
+            ? focusedKey
+            : listState.selectionManager.focusedKey;
+
+        if (keyToSelect != null) {
+          e.preventDefault();
+          listState.selectionManager.select(keyToSelect, e);
+        }
       } else if (e.key === 'Escape') {
-        // Clear search on escape
-        setSearchValue('');
+        if (searchValue) {
+          e.preventDefault();
+          setSearchValue('');
+        }
       }
     },
   });
@@ -328,6 +403,12 @@ export const FilterListBox = forwardRef(function FilterListBox<
         data-autofocus={autoFocus ? '' : undefined}
         styles={searchInputStyles}
         data-size="small"
+        role="combobox"
+        aria-expanded="true"
+        aria-haspopup="listbox"
+        aria-activedescendant={
+          focusedKey != null ? `ListBox-option-${focusedKey}` : undefined
+        }
         onChange={(e) => {
           const value = e.target.value;
           setSearchValue(value);
@@ -368,6 +449,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
           selectionMode={props.selectionMode}
           isDisabled={isDisabled}
           listRef={listRef}
+          stateRef={listStateRef}
           listStyles={listStyles}
           optionStyles={optionStyles}
           sectionStyles={sectionStyles}

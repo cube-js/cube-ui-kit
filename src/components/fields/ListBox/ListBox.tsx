@@ -1,6 +1,7 @@
 import {
   ForwardedRef,
   forwardRef,
+  MutableRefObject,
   ReactElement,
   ReactNode,
   RefObject,
@@ -177,6 +178,12 @@ export interface CubeListBoxProps<T>
   onSelectionChange?: (key: Key | null | Key[]) => void;
   /** Ref for the list */
   listRef?: RefObject<HTMLElement>;
+  /**
+   * Optional ref that will receive the internal React Stately list state instance.
+   * This can be used by parent components (e.g., FilterListBox) for virtual focus
+   * management while keeping DOM focus elsewhere.
+   */
+  stateRef?: MutableRefObject<any | null>;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -232,6 +239,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     selectedKeys,
     defaultSelectedKeys,
     onSelectionChange,
+    stateRef,
     ...otherProps
   } = props;
 
@@ -305,6 +313,11 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   }
 
   const listState = useListState(listStateProps);
+
+  // Expose the list state instance via the provided ref (if any)
+  if (stateRef) {
+    stateRef.current = listState;
+  }
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
@@ -431,6 +444,7 @@ function Option({ item, state, styles, isParentDisabled, validationState }) {
 
   return (
     <OptionElement
+      id={`ListBox-option-${String(item.key)}`}
       {...optionProps}
       ref={ref}
       mods={{
