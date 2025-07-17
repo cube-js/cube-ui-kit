@@ -516,4 +516,358 @@ describe('<FilterListBox />', () => {
       expect(options.length).toBeGreaterThan(0);
     });
   });
+
+  describe('Custom values (allowsCustomValue)', () => {
+    it('should not show custom option when allowsCustomValue is false', async () => {
+      const { getByPlaceholderText, queryByText } = render(
+        <FilterListBox
+          label="Select a fruit"
+          searchPlaceholder="Search..."
+          allowsCustomValue={false}
+        >
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      const searchInput = getByPlaceholderText('Search...');
+
+      // Search for a value that doesn't exist
+      await act(async () => {
+        await userEvent.type(searchInput, 'mango');
+      });
+
+      // Should not show the custom option
+      expect(queryByText('mango')).not.toBeInTheDocument();
+    });
+
+    it('should show custom option when allowsCustomValue is true and search term is unique', async () => {
+      const { getByPlaceholderText, getByText } = render(
+        <FilterListBox
+          label="Select a fruit"
+          searchPlaceholder="Search..."
+          allowsCustomValue={true}
+        >
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      const searchInput = getByPlaceholderText('Search...');
+
+      // Search for a value that doesn't exist
+      await act(async () => {
+        await userEvent.type(searchInput, 'mango');
+      });
+
+      // Should show the custom option
+      expect(getByText('mango')).toBeInTheDocument();
+    });
+
+    it('should not show custom option when search term matches existing option key', async () => {
+      const { getByPlaceholderText, getAllByText } = render(
+        <FilterListBox
+          label="Select a fruit"
+          searchPlaceholder="Search..."
+          allowsCustomValue={true}
+        >
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      const searchInput = getByPlaceholderText('Search...');
+
+      // Search for an existing key
+      await act(async () => {
+        await userEvent.type(searchInput, 'apple');
+      });
+
+      // Should only show the original Apple option, not a duplicate custom one
+      const appleOptions = getAllByText('Apple');
+      expect(appleOptions).toHaveLength(1);
+    });
+
+    it('should allow selecting custom value in single selection mode', async () => {
+      const onSelectionChange = jest.fn();
+
+      const { getByPlaceholderText, getByText } = render(
+        <FilterListBox
+          label="Select a fruit"
+          searchPlaceholder="Search..."
+          allowsCustomValue={true}
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      const searchInput = getByPlaceholderText('Search...');
+
+      // Search for a custom value
+      await act(async () => {
+        await userEvent.type(searchInput, 'mango');
+      });
+
+      // Click on the custom option
+      const customOption = getByText('mango');
+      await act(async () => {
+        await userEvent.click(customOption);
+      });
+
+      expect(onSelectionChange).toHaveBeenCalledWith('mango');
+    });
+
+    it('should allow selecting custom values in multiple selection mode', async () => {
+      const onSelectionChange = jest.fn();
+
+      const { getByPlaceholderText, getByText } = render(
+        <FilterListBox
+          label="Select fruits"
+          searchPlaceholder="Search..."
+          allowsCustomValue={true}
+          selectionMode="multiple"
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      const searchInput = getByPlaceholderText('Search...');
+
+      // First select an existing option
+      const appleOption = getByText('Apple');
+      await act(async () => {
+        await userEvent.click(appleOption);
+      });
+
+      expect(onSelectionChange).toHaveBeenCalledWith(['apple']);
+
+      // Now search for and select a custom value
+      await act(async () => {
+        await userEvent.clear(searchInput);
+        await userEvent.type(searchInput, 'mango');
+      });
+
+      const customOption = getByText('mango');
+      await act(async () => {
+        await userEvent.click(customOption);
+      });
+
+      expect(onSelectionChange).toHaveBeenLastCalledWith(['apple', 'mango']);
+    });
+
+    it('should persist custom values after they are selected', async () => {
+      const onSelectionChange = jest.fn();
+
+      const { getByPlaceholderText, getByText } = render(
+        <FilterListBox
+          label="Select a fruit"
+          searchPlaceholder="Search..."
+          allowsCustomValue={true}
+          selectionMode="multiple"
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      const searchInput = getByPlaceholderText('Search...');
+
+      // Search for and select a custom value
+      await act(async () => {
+        await userEvent.type(searchInput, 'mango');
+      });
+
+      const customOption = getByText('mango');
+      await act(async () => {
+        await userEvent.click(customOption);
+      });
+
+      // Clear search
+      await act(async () => {
+        await userEvent.clear(searchInput);
+      });
+
+      // The custom value should still be visible and selectable
+      expect(getByText('mango')).toBeInTheDocument();
+    });
+
+    it('should remove custom values when they are deselected', async () => {
+      const onSelectionChange = jest.fn();
+
+      const { getByPlaceholderText, getByText, queryByText } = render(
+        <FilterListBox
+          label="Select fruits"
+          searchPlaceholder="Search..."
+          allowsCustomValue={true}
+          selectionMode="multiple"
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      const searchInput = getByPlaceholderText('Search...');
+
+      // Search for and select a custom value
+      await act(async () => {
+        await userEvent.type(searchInput, 'mango');
+      });
+
+      const customOption = getByText('mango');
+      await act(async () => {
+        await userEvent.click(customOption);
+      });
+
+      expect(onSelectionChange).toHaveBeenCalledWith(['mango']);
+
+      // Deselect the custom value by clicking it again
+      await act(async () => {
+        await userEvent.click(customOption);
+      });
+
+      expect(onSelectionChange).toHaveBeenLastCalledWith([]);
+
+      // Clear search to check if custom value is removed
+      await act(async () => {
+        await userEvent.clear(searchInput);
+      });
+
+      // The custom value should no longer be visible
+      expect(queryByText('mango')).not.toBeInTheDocument();
+    });
+
+    it('should handle multiple custom values correctly', async () => {
+      const onSelectionChange = jest.fn();
+
+      const { getByPlaceholderText, getByText } = render(
+        <FilterListBox
+          label="Select fruits"
+          searchPlaceholder="Search..."
+          allowsCustomValue={true}
+          selectionMode="multiple"
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      const searchInput = getByPlaceholderText('Search...');
+
+      // Add first custom value
+      await act(async () => {
+        await userEvent.type(searchInput, 'mango');
+      });
+
+      const mangoOption = getByText('mango');
+      await act(async () => {
+        await userEvent.click(mangoOption);
+      });
+
+      // Add second custom value
+      await act(async () => {
+        await userEvent.clear(searchInput);
+        await userEvent.type(searchInput, 'kiwi');
+      });
+
+      const kiwiOption = getByText('kiwi');
+      await act(async () => {
+        await userEvent.click(kiwiOption);
+      });
+
+      expect(onSelectionChange).toHaveBeenLastCalledWith(['mango', 'kiwi']);
+
+      // Clear search and verify both custom values are visible
+      await act(async () => {
+        await userEvent.clear(searchInput);
+      });
+
+      expect(getByText('mango')).toBeInTheDocument();
+      expect(getByText('kiwi')).toBeInTheDocument();
+    });
+
+    it('should not show custom option when search is empty', async () => {
+      const { getByPlaceholderText, queryByText } = render(
+        <FilterListBox
+          label="Select a fruit"
+          searchPlaceholder="Search..."
+          allowsCustomValue={true}
+        >
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      const searchInput = getByPlaceholderText('Search...');
+
+      // Initially no custom option should be shown
+      expect(queryByText('custom')).not.toBeInTheDocument();
+
+      // Type something then clear it
+      await act(async () => {
+        await userEvent.type(searchInput, 'custom');
+      });
+
+      expect(queryByText('custom')).toBeInTheDocument();
+
+      await act(async () => {
+        await userEvent.clear(searchInput);
+      });
+
+      // Custom option should disappear when search is cleared
+      expect(queryByText('custom')).not.toBeInTheDocument();
+    });
+
+    it('should show custom option at the end of filtered results', async () => {
+      const { getByPlaceholderText, getAllByRole } = render(
+        <FilterListBox
+          label="Select a fruit"
+          searchPlaceholder="Search..."
+          allowsCustomValue={true}
+        >
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      const searchInput = getByPlaceholderText('Search...');
+
+      // Search for 'xyz' which should not match any existing options but show custom option
+      await act(async () => {
+        await userEvent.type(searchInput, 'xyz');
+      });
+
+      const options = getAllByRole('option');
+
+      // Should only have the custom 'xyz' option
+      expect(options).toHaveLength(1);
+      expect(options[0]).toHaveTextContent('xyz');
+    });
+
+    it('should work with keyboard navigation to select custom values', async () => {
+      const onSelectionChange = jest.fn();
+
+      const { getByPlaceholderText } = render(
+        <FilterListBox
+          label="Select a fruit"
+          searchPlaceholder="Search..."
+          allowsCustomValue={true}
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      const searchInput = getByPlaceholderText('Search...');
+
+      // Search for a custom value
+      await act(async () => {
+        await userEvent.type(searchInput, 'mango');
+      });
+
+      // Use arrow key to navigate to the custom option and select with Enter
+      await act(async () => {
+        await userEvent.keyboard('{ArrowDown}');
+        await userEvent.keyboard('{Enter}');
+      });
+
+      expect(onSelectionChange).toHaveBeenCalledWith('mango');
+    });
+  });
 });
