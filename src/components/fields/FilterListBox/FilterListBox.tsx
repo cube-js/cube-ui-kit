@@ -1,5 +1,5 @@
 import { Key } from '@react-types/shared';
-import {
+import React, {
   ForwardedRef,
   forwardRef,
   ReactElement,
@@ -94,6 +94,8 @@ export interface CubeFilterListBoxProps<T>
   searchInputRef?: RefObject<HTMLInputElement>;
   /** Children (ListBox.Item and ListBox.Section elements) */
   children?: ReactNode;
+  /** Allow entering a custom value that is not present in the options */
+  allowsCustomValue?: boolean;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -154,10 +156,49 @@ export const FilterListBox = forwardRef(function FilterListBox<
     defaultSelectedKey,
     selectedKeys,
     defaultSelectedKeys,
-    onSelectionChange,
+    onSelectionChange: externalOnSelectionChange,
+    allowsCustomValue = false,
     children,
     ...otherProps
   } = props;
+
+  // Collect original option keys to avoid duplicating them as custom values.
+  const originalKeys = useMemo(() => {
+    const keys = new Set<string>();
+
+    const collectKeys = (nodes: ReactNode): void => {
+      React.Children.forEach(nodes, (child: any) => {
+        if (!child || typeof child !== 'object') return;
+
+        if (child.type === Item) {
+          if (child.key != null) keys.add(String(child.key));
+        }
+
+        if (child.props?.children) {
+          collectKeys(child.props.children);
+        }
+      });
+    };
+
+    if (children) collectKeys(children);
+    return keys;
+  }, [children]);
+
+  // State to keep track of custom (user-entered) items that were selected.
+  const [customItems, setCustomItems] = useState<Record<string, ReactElement>>(
+    {},
+  );
+
+  // Merge original children with any previously created custom items so they are always displayed afterwards.
+  const mergedChildren: ReactNode = useMemo(() => {
+    if (!children && !Object.keys(customItems).length) return children;
+
+    const customArray = Object.values(customItems);
+    if (!children) return customArray;
+
+    const originalArray = Array.isArray(children) ? children : [children];
+    return [...originalArray, ...customArray];
+  }, [children, customItems]);
 
   // Determine an aria-label for the internal ListBox to avoid React Aria warnings.
   const innerAriaLabel =
@@ -178,8 +219,8 @@ export const FilterListBox = forwardRef(function FilterListBox<
   const filteredChildren = useMemo(() => {
     const term = searchValue.trim();
 
-    if (!term || !children) {
-      return children;
+    if (!term || !mergedChildren) {
+      return mergedChildren;
     }
 
     // Helper to check if a node matches the search term
@@ -251,8 +292,71 @@ export const FilterListBox = forwardRef(function FilterListBox<
       return filteredNodes;
     };
 
-    return filterChildren(children);
-  }, [children, searchValue, textFilterFn]);
+    return filterChildren(mergedChildren);
+  }, [mergedChildren, searchValue, textFilterFn]);
+
+  // If custom values are allowed and there is a search term that doesn't
+  // exactly match any option, append a temporary option so the user can pick it.
+  const enhancedChildren = useMemo(() => {
+    if (!allowsCustomValue) return filteredChildren;
+
+    const term = searchValue.trim();
+    if (!term) return filteredChildren;
+
+    // Helper to determine if the term is already present (exact match on rendered textValue).
+    const doesTermExist = (nodes: ReactNode): boolean => {
+      let exists = false;
+
+      const checkNodes = (childNodes: ReactNode): void => {
+        React.Children.forEach(childNodes, (child: any) => {
+          if (!child || typeof child !== 'object') return;
+
+          // Check items directly
+          if (child.type === Item) {
+            const childText =
+              child.props.textValue ||
+              (typeof child.props.children === 'string'
+                ? child.props.children
+                : '') ||
+              String(child.props.children ?? '');
+
+            if (childText === term) {
+              exists = true;
+            }
+          }
+
+          // Recurse into sections or other wrappers
+          if (child.props?.children) {
+            checkNodes(child.props.children);
+          }
+        });
+      };
+
+      checkNodes(nodes);
+      return exists;
+    };
+
+    if (doesTermExist(mergedChildren)) {
+      return filteredChildren;
+    }
+
+    // Append the custom option at the end.
+    const customOption = (
+      <Item key={term} textValue={term}>
+        {term}
+      </Item>
+    );
+
+    if (Array.isArray(filteredChildren)) {
+      return [...filteredChildren, customOption];
+    }
+
+    if (filteredChildren) {
+      return [filteredChildren, customOption];
+    }
+
+    return customOption;
+  }, [allowsCustomValue, filteredChildren, mergedChildren, searchValue]);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
@@ -374,12 +478,50 @@ export const FilterListBox = forwardRef(function FilterListBox<
   );
 
   const hasResults =
-    filteredChildren &&
-    (Array.isArray(filteredChildren)
-      ? filteredChildren.length > 0
-      : filteredChildren !== null);
+    enhancedChildren &&
+    (Array.isArray(enhancedChildren)
+      ? enhancedChildren.length > 0
+      : enhancedChildren !== null);
 
   const showEmptyMessage = !hasResults && searchValue.trim();
+
+  // Handler must be defined before we render ListBox so we can pass it.
+  const handleSelectionChange = (selection: any) => {
+    if (allowsCustomValue) {
+      // Normalize current selection into an array of string keys
+      let selectedValues: string[] = [];
+
+      if (selection != null) {
+        if (Array.isArray(selection)) {
+          selectedValues = selection.map(String);
+        } else {
+          selectedValues = [String(selection)];
+        }
+      }
+
+      // Keep only those custom items that remain selected and add any new ones
+      setCustomItems((prev) => {
+        const next: Record<string, ReactElement> = {};
+
+        selectedValues.forEach((val) => {
+          // Ignore original (non-custom) options
+          if (originalKeys.has(val)) return;
+
+          next[val] = prev[val] ?? (
+            <Item key={val} textValue={val}>
+              {val}
+            </Item>
+          );
+        });
+
+        return next;
+      });
+    }
+
+    if (externalOnSelectionChange) {
+      (externalOnSelectionChange as any)(selection);
+    }
+  };
 
   const searchInput = (
     <SearchWrapperElement mods={mods} data-size="small">
@@ -449,11 +591,12 @@ export const FilterListBox = forwardRef(function FilterListBox<
           validationState={validationState}
           disallowEmptySelection={props.disallowEmptySelection}
           disabledKeys={props.disabledKeys}
-          onSelectionChange={onSelectionChange}
+          focusOnHover={false}
+          onSelectionChange={handleSelectionChange}
           {...modAttrs({ ...mods, focused: false })}
           styles={{ border: '#clear', radius: '1r bottom' }}
         >
-          {filteredChildren as any}
+          {enhancedChildren as any}
         </ListBox>
       )}
     </FilterListBoxWrapperElement>
