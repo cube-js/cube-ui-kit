@@ -119,6 +119,9 @@ export const CUSTOM_UNITS = {
   lh: 'var(--line-height)',
   rp: 'var(--rem-pixel)',
   gp: 'var(--column-gap)',
+  sf: function sf(num) {
+    return `minmax(0, ${num}fr)`;
+  },
   // global setting
   dvh: function dvh(num) {
     return IS_DVH_SUPPORTED
