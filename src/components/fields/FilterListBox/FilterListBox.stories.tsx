@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
-import { Form } from '../../form';
+import { Form, SubmitButton } from '../../form';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
@@ -348,11 +348,7 @@ export const InForm: StoryFn = () => {
         </FilterListBox.Section>
       </FilterListBox>
 
-      <div style={{ marginTop: '1rem' }}>
-        <Button type="submit" variant="primary">
-          Submit
-        </Button>
-      </div>
+      <SubmitButton>Submit</SubmitButton>
     </Form>
   );
 };

@@ -108,30 +108,16 @@ export const FilterListBox = forwardRef(function FilterListBox<
       const fieldProps: any = {};
 
       if (props.selectionMode === 'multiple') {
-        fieldProps.selectedKeys = Array.isArray(value)
-          ? value
-          : value
-            ? [value]
-            : [];
+        fieldProps.selectedKeys = value || [];
       } else {
         fieldProps.selectedKey = value ?? null;
       }
 
       fieldProps.onSelectionChange = (key: any) => {
         if (props.selectionMode === 'multiple') {
-          if (Array.isArray(key)) {
-            onChange(key);
-          } else if (key instanceof Set) {
-            onChange(Array.from(key));
-          } else {
-            onChange(key ? [key] : []);
-          }
+          onChange(key ? (Array.isArray(key) ? key : [key]) : []);
         } else {
-          if (key instanceof Set) {
-            onChange(key.size === 0 ? null : Array.from(key)[0]);
-          } else {
-            onChange(key);
-          }
+          onChange(Array.isArray(key) ? key[0] : key);
         }
       };
 
