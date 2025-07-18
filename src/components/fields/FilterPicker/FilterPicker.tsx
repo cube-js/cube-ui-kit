@@ -1,5 +1,11 @@
 import { DOMRef } from '@react-types/shared';
-import React, { forwardRef, ReactElement, ReactNode, useState } from 'react';
+import React, {
+  forwardRef,
+  ReactElement,
+  ReactNode,
+  useRef,
+  useState,
+} from 'react';
 import { Section as BaseSection, Item } from 'react-stately';
 
 import { DirectionIcon } from '../../../icons';
@@ -164,6 +170,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     defaultSelectedKeys ?? [],
   );
 
+  // Track popover open/close and capture children order for session
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const cachedChildrenOrder = useRef<ReactNode[] | null>(null);
+  const selectionsWhenClosed = useRef<{
+    single: string | null;
+    multiple: string[];
+  }>({ single: null, multiple: [] });
+
   const isControlledSingle = selectedKey !== undefined;
   const isControlledMultiple = selectedKeys !== undefined;
 
@@ -217,6 +231,122 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const selectedLabels = getSelectedLabels();
   const hasSelection = selectedLabels.length > 0;
 
+  // Function to sort children with selected items on top
+  const getSortedChildren = React.useCallback(() => {
+    if (!children) return children;
+
+    // If we have cached order, use it
+    if (cachedChildrenOrder.current) {
+      return cachedChildrenOrder.current;
+    }
+
+    // Only sort when the popover opens with existing selections from previous session
+    const hadSelectionsWhenClosed =
+      selectionMode === 'multiple'
+        ? selectionsWhenClosed.current.multiple.length > 0
+        : selectionsWhenClosed.current.single !== null;
+
+    if (!isPopoverOpen || !hadSelectionsWhenClosed) {
+      return children;
+    }
+
+    // Create selected keys set for fast lookup
+    const selectedSet = new Set<string>();
+    if (selectionMode === 'multiple' && effectiveSelectedKeys) {
+      effectiveSelectedKeys.forEach((key) => selectedSet.add(String(key)));
+    } else if (selectionMode === 'single' && effectiveSelectedKey != null) {
+      selectedSet.add(String(effectiveSelectedKey));
+    }
+
+    // Helper function to check if an item is selected
+    const isItemSelected = (child: any): boolean => {
+      return child?.key != null && selectedSet.has(String(child.key));
+    };
+
+    // Helper function to sort children array
+    const sortChildrenArray = (childrenArray: ReactNode[]): ReactNode[] => {
+      const selected: ReactNode[] = [];
+      const unselected: ReactNode[] = [];
+
+      childrenArray.forEach((child: any) => {
+        if (!child || typeof child !== 'object') {
+          unselected.push(child);
+          return;
+        }
+
+        // Handle sections - sort items within each section
+        if (
+          child.type === BaseSection ||
+          child.type?.displayName === 'Section'
+        ) {
+          const sectionChildren = Array.isArray(child.props.children)
+            ? child.props.children
+            : [child.props.children];
+
+          const selectedItems: ReactNode[] = [];
+          const unselectedItems: ReactNode[] = [];
+
+          sectionChildren.forEach((sectionChild: any) => {
+            if (
+              sectionChild &&
+              typeof sectionChild === 'object' &&
+              (sectionChild.type === Item ||
+                sectionChild.type?.displayName === 'Item')
+            ) {
+              if (isItemSelected(sectionChild)) {
+                selectedItems.push(sectionChild);
+              } else {
+                unselectedItems.push(sectionChild);
+              }
+            } else {
+              unselectedItems.push(sectionChild);
+            }
+          });
+
+          // Create new section with sorted children, preserving React element properly
+          unselected.push(
+            React.cloneElement(child, {
+              ...child.props,
+              children: [...selectedItems, ...unselectedItems],
+            }),
+          );
+        }
+        // Handle regular items
+        else if (child.type === Item || child.type?.displayName === 'Item') {
+          if (isItemSelected(child)) {
+            selected.push(child);
+          } else {
+            unselected.push(child);
+          }
+        } else {
+          unselected.push(child);
+        }
+      });
+
+      return [...selected, ...unselected];
+    };
+
+    // Sort the children
+    const childrenArray = React.Children.toArray(children);
+    const sortedChildren = sortChildrenArray(childrenArray);
+
+    // Cache the sorted order when popover opens
+    if (isPopoverOpen) {
+      cachedChildrenOrder.current = sortedChildren;
+    }
+
+    return sortedChildren;
+  }, [
+    children,
+    effectiveSelectedKeys,
+    effectiveSelectedKey,
+    selectionMode,
+    isPopoverOpen,
+    hasSelection,
+  ]);
+
+  const sortedChildren = getSortedChildren();
+
   const renderTriggerContent = () => {
     // When there is a selection and a custom summary renderer is provided – use it.
     if (hasSelection && typeof renderSummary === 'function') {
@@ -262,26 +392,43 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   };
 
   // The trigger is rendered as a function so we can access the dialog state
-  const renderTrigger = (state) => (
-    <Button
-      type={type}
-      theme={validationState === 'invalid' ? 'danger' : theme}
-      size={size}
-      isDisabled={isDisabled}
-      isLoading={isLoading}
-      mods={{
-        placeholder: !hasSelection,
-        selected: hasSelection,
-        ...externalMods,
-      }}
-      icon={icon}
-      rightIcon={<DirectionIcon to={state.isOpen ? 'top' : 'bottom'} />}
-      styles={styles}
-      {...otherProps}
-    >
-      {renderTriggerContent()}
-    </Button>
-  );
+  const renderTrigger = (state) => {
+    // Track popover open/close state to control sorting
+    React.useEffect(() => {
+      if (state.isOpen !== isPopoverOpen) {
+        setIsPopoverOpen(state.isOpen);
+        if (!state.isOpen) {
+          // Popover closed - clear cached order and save current selections for next session
+          cachedChildrenOrder.current = null;
+          selectionsWhenClosed.current = {
+            single: effectiveSelectedKey,
+            multiple: effectiveSelectedKeys || [],
+          };
+        }
+      }
+    }, [state.isOpen, isPopoverOpen]);
+
+    return (
+      <Button
+        type={type}
+        theme={validationState === 'invalid' ? 'danger' : theme}
+        size={size}
+        isDisabled={isDisabled}
+        isLoading={isLoading}
+        mods={{
+          placeholder: !hasSelection,
+          selected: hasSelection,
+          ...externalMods,
+        }}
+        icon={icon}
+        rightIcon={<DirectionIcon to={state.isOpen ? 'top' : 'bottom'} />}
+        styles={styles}
+        {...otherProps}
+      >
+        {renderTriggerContent()}
+      </Button>
+    );
+  };
 
   const filterPickerField = (
     <DialogTrigger
@@ -295,16 +442,19 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         <Dialog display="grid" styles={{ gridRows: '1sf', ...popoverStyles }}>
           <FilterListBox
             autoFocus
-            selectedKey={effectiveSelectedKey ?? undefined}
+            selectedKey={
+              selectionMode === 'single'
+                ? effectiveSelectedKey ?? undefined
+                : undefined
+            }
             selectedKeys={
               selectionMode === 'multiple' ? effectiveSelectedKeys : undefined
             }
-            defaultSelectedKey={defaultSelectedKey}
-            defaultSelectedKeys={defaultSelectedKeys}
             selectionMode={selectionMode}
             validationState={validationState}
             isDisabled={isDisabled}
             stateRef={listStateRef}
+            sortSelectedToTop={false}
             mods={{
               popover: true,
             }}
@@ -313,6 +463,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             headerStyles={headerStyles}
             footerStyles={footerStyles}
             onSelectionChange={(selection) => {
+              // No need to change any flags - children order is cached
+
               // Update internal state if uncontrolled
               if (selectionMode === 'single') {
                 if (!isControlledSingle) {
@@ -332,7 +484,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             }}
             onEscape={close}
           >
-            {children}
+            {sortedChildren}
           </FilterListBox>
         </Dialog>
       )}

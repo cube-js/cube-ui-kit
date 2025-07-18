@@ -10,6 +10,7 @@ import {
 } from 'react';
 import {
   AriaListBoxProps,
+  useKeyboard,
   useListBox,
   useListBoxSection,
   useOption,
@@ -170,11 +171,10 @@ export interface CubeListBoxProps<T>
   /** Selection change handler */
   onSelectionChange?: (key: Key | null | Key[]) => void;
   /** Ref for the list */
-  listRef?: RefObject<HTMLElement>;
+  listRef?: RefObject<HTMLDivElement>;
   /**
-   * Optional ref that will receive the internal React Stately list state instance.
-   * This can be used by parent components (e.g., FilterListBox) for virtual focus
-   * management while keeping DOM focus elsewhere.
+   * Ref to access the internal ListState instance.
+   * This allows parent components to access selection state and other list functionality.
    */
   stateRef?: MutableRefObject<any | null>;
 
@@ -193,6 +193,12 @@ export interface CubeListBoxProps<T>
   footerStyles?: Styles;
   /** Mods for the ListBox */
   mods?: Record<string, boolean>;
+
+  /**
+   * Optional callback fired when the user presses Escape key.
+   * When provided, this prevents React Aria's default Escape behavior (selection reset).
+   */
+  onEscape?: () => void;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -255,6 +261,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     footer,
     headerStyles,
     footerStyles,
+    escapeKeyBehavior,
+    onEscape,
     ...otherProps
   } = props;
 
@@ -334,6 +342,17 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     stateRef.current = listState;
   }
 
+  // Custom keyboard handling to prevent selection clearing on Escape while allowing overlay dismiss
+  const { keyboardProps } = useKeyboard({
+    onKeyDown: (e) => {
+      if (e.key === 'Escape' && onEscape) {
+        // Don't prevent default - let the overlay system handle closing
+        // But we'll call onEscape to potentially override the default selection clearing
+        onEscape();
+      }
+    },
+  });
+
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
   ref = useCombinedRefs(ref);
@@ -346,6 +365,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       isDisabled,
       shouldUseVirtualFocus: false,
       shouldFocusWrap: true,
+      escapeKeyBehavior: onEscape ? 'none' : 'clearSelection',
     },
     listState,
     listRef,
@@ -390,6 +410,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       )}
       <ListElement
         {...listBoxProps}
+        {...keyboardProps}
         ref={listRef}
         styles={listStyles}
         aria-disabled={isDisabled || undefined}

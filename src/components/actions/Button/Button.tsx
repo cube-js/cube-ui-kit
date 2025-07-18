@@ -27,7 +27,7 @@ export interface CubeButtonProps extends CubeActionProps {
     | 'outline'
     | 'neutral'
     | (string & {});
-  size?: 'small' | 'medium' | 'large' | (string & {});
+  size?: 'tiny' | 'small' | 'medium' | 'large' | (string & {});
 }
 
 export type ButtonVariant =
@@ -83,20 +83,23 @@ export const DEFAULT_BUTTON_STYLES = {
   reset: 'button',
   outlineOffset: 1,
   padding: {
-    '': '0 (2x - 1bw)',
-    '[data-size="small"]': '0 (1x - 1bw)',
-    '[data-size="medium"]': '0 (1.5x - 1bw)',
-    '[data-size="large"]': '0 (2.25x - 1bw)',
+    '': '.5x (2x - 1bw)',
+    '[data-size="tiny"]': '.5x (1x - 1bw)',
+    '[data-size="small"]': '.5x (1x - 1bw)',
+    '[data-size="medium"]': '.5x (1.5x - 1bw)',
+    '[data-size="large"]': '.5x (2.25x - 1bw)',
     'single-icon-only | [data-type="link"]': 0,
   },
   width: {
     '': 'initial',
+    '[data-size="tiny"] & single-icon-only': '3.5x 3.5x',
     '[data-size="small"] & single-icon-only': '4x 4x',
     '[data-size="medium"] & single-icon-only': '5x 5x',
     '[data-size="large"] & single-icon-only': '6x 6x',
   },
   height: {
     '': 'initial',
+    '[data-size="tiny"]': '3.5x 3.5x',
     '[data-size="small"]': '4x 4x',
     '[data-size="medium"]': '5x 5x',
     '[data-size="large"]': '6x 6x',

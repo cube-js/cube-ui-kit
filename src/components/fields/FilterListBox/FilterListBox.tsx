@@ -107,6 +107,8 @@ export interface CubeFilterListBoxProps<T>
   children?: ReactNode;
   /** Allow entering a custom value that is not present in the options */
   allowsCustomValue?: boolean;
+  /** Whether to sort selected items to the top. Defaults to true. */
+  sortSelectedToTop?: boolean;
   /** Mods for the FilterListBox */
   mods?: Record<string, boolean>;
 
@@ -178,6 +180,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     defaultSelectedKeys,
     onSelectionChange: externalOnSelectionChange,
     allowsCustomValue = false,
+    sortSelectedToTop = true,
     header,
     footer,
     headerStyles,
@@ -321,13 +324,113 @@ export const FilterListBox = forwardRef(function FilterListBox<
     return filterChildren(mergedChildren);
   }, [mergedChildren, searchValue, textFilterFn]);
 
-  // If custom values are allowed and there is a search term that doesn't
-  // exactly match any option, append a temporary option so the user can pick it.
+  // Sort children to put selected items on top, then handle custom values
   const enhancedChildren = useMemo(() => {
-    if (!allowsCustomValue) return filteredChildren;
+    let childrenToProcess = filteredChildren;
+
+    // First, sort the children to put selected items on top
+    if (childrenToProcess && sortSelectedToTop) {
+      // Get current selection as a Set for fast lookup
+      const selectedSet = new Set<string>();
+
+      if (props.selectionMode === 'multiple' && selectedKeys) {
+        selectedKeys.forEach((key) => selectedSet.add(String(key)));
+      } else if (props.selectionMode === 'single' && selectedKey != null) {
+        selectedSet.add(String(selectedKey));
+      }
+
+      // Helper function to check if an item is selected
+      const isItemSelected = (child: any): boolean => {
+        return child?.key != null && selectedSet.has(String(child.key));
+      };
+
+      // Helper function to sort children - selected items first
+      const sortChildren = (nodes: ReactNode): ReactNode => {
+        if (!nodes) return nodes;
+
+        const childArray = Array.isArray(nodes) ? nodes : [nodes];
+        const sortedNodes: ReactNode[] = [];
+
+        childArray.forEach((child: any) => {
+          if (!child || typeof child !== 'object') {
+            sortedNodes.push(child);
+            return;
+          }
+
+          // Handle sections - sort items within each section
+          if (
+            child.type === BaseSection ||
+            child.type?.displayName === 'Section'
+          ) {
+            const sectionChildren = Array.isArray(child.props.children)
+              ? child.props.children
+              : [child.props.children];
+
+            // Separate selected and unselected items within the section
+            const selectedItems: ReactNode[] = [];
+            const unselectedItems: ReactNode[] = [];
+
+            sectionChildren.forEach((sectionChild: any) => {
+              if (
+                sectionChild &&
+                typeof sectionChild === 'object' &&
+                sectionChild.type === Item
+              ) {
+                if (isItemSelected(sectionChild)) {
+                  selectedItems.push(sectionChild);
+                } else {
+                  unselectedItems.push(sectionChild);
+                }
+              } else {
+                unselectedItems.push(sectionChild);
+              }
+            });
+
+            // Create new section with sorted children
+            sortedNodes.push({
+              ...child,
+              props: {
+                ...child.props,
+                children: [...selectedItems, ...unselectedItems],
+              },
+            });
+          }
+          // Handle regular items
+          else {
+            sortedNodes.push(child);
+          }
+        });
+
+        // For non-sectioned items, sort them at the top level
+        const topLevelItems = sortedNodes.filter(
+          (child: any) =>
+            child && typeof child === 'object' && child.type === Item,
+        );
+        const nonItems = sortedNodes.filter(
+          (child: any) =>
+            !child || typeof child !== 'object' || child.type !== Item,
+        );
+
+        if (topLevelItems.length > 0) {
+          const selectedTopLevel = topLevelItems.filter(isItemSelected);
+          const unselectedTopLevel = topLevelItems.filter(
+            (child: any) => !isItemSelected(child),
+          );
+
+          return [...selectedTopLevel, ...unselectedTopLevel, ...nonItems];
+        }
+
+        return sortedNodes;
+      };
+
+      childrenToProcess = sortChildren(childrenToProcess);
+    }
+
+    // Then handle custom values if allowed
+    if (!allowsCustomValue) return childrenToProcess;
 
     const term = searchValue.trim();
-    if (!term) return filteredChildren;
+    if (!term) return childrenToProcess;
 
     // Helper to determine if the term is already present (exact match on rendered textValue).
     const doesTermExist = (nodes: ReactNode): boolean => {
@@ -363,7 +466,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     };
 
     if (doesTermExist(mergedChildren)) {
-      return filteredChildren;
+      return childrenToProcess;
     }
 
     // Append the custom option at the end.
@@ -373,16 +476,25 @@ export const FilterListBox = forwardRef(function FilterListBox<
       </Item>
     );
 
-    if (Array.isArray(filteredChildren)) {
-      return [...filteredChildren, customOption];
+    if (Array.isArray(childrenToProcess)) {
+      return [...childrenToProcess, customOption];
     }
 
-    if (filteredChildren) {
-      return [filteredChildren, customOption];
+    if (childrenToProcess) {
+      return [childrenToProcess, customOption];
     }
 
     return customOption;
-  }, [allowsCustomValue, filteredChildren, mergedChildren, searchValue]);
+  }, [
+    allowsCustomValue,
+    filteredChildren,
+    mergedChildren,
+    searchValue,
+    selectedKey,
+    selectedKeys,
+    props.selectionMode,
+    sortSelectedToTop,
+  ]);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
@@ -547,9 +659,9 @@ export const FilterListBox = forwardRef(function FilterListBox<
     () => ({
       invalid: isInvalid,
       valid: validationState === 'valid',
-      disabled: isDisabled,
+      disabled: !!isDisabled,
       focused: isFocused,
-      loading: isLoading,
+      loading: !!isLoading,
       searchable: true,
       ...externalMods,
     }),
@@ -690,9 +802,11 @@ export const FilterListBox = forwardRef(function FilterListBox<
           focusOnHover={false}
           footer={footer}
           footerStyles={footerStyles}
+          header={header}
+          headerStyles={headerStyles}
+          mods={mods}
           onSelectionChange={handleSelectionChange}
-          {...modAttrs({ ...mods, focused: false })}
-          styles={{ border: false, ...listBoxStyles }}
+          onEscape={onEscape}
         >
           {enhancedChildren as any}
         </ListBox>
