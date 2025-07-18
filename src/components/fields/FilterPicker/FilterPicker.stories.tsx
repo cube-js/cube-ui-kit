@@ -1,4 +1,9 @@
-import { EditIcon } from '../../../icons';
+import { EditIcon, FilterIcon, RightIcon } from '../../../icons';
+import { Button } from '../../actions/Button/Button';
+import { Badge } from '../../content/Badge/Badge';
+import { Text } from '../../content/Text';
+import { Title } from '../../content/Title';
+import { Space } from '../../layout/Space';
 
 import { FilterPicker } from './FilterPicker';
 
@@ -151,6 +156,93 @@ export const CustomLabel: Story = {
         </FilterPicker.Item>
         <FilterPicker.Item key="oats" textValue="Oats">
           Oats
+        </FilterPicker.Item>
+      </FilterPicker.Section>
+    </FilterPicker>
+  ),
+};
+
+export const WithHeaderAndFooter: Story = {
+  args: {
+    label: 'Choose your preferred programming language',
+    placeholder: 'Select languages...',
+    selectionMode: 'multiple',
+    searchPlaceholder: 'Search languages...',
+    width: 'max 30x',
+  },
+  render: (args) => (
+    <FilterPicker
+      {...args}
+      header={
+        <Space gap="1x" placeContent="space-between" flow="row">
+          <Space gap="1x" flow="row" placeItems="center">
+            <Title level={6}>Programming Languages</Title>
+            <Badge type="purple">12</Badge>
+          </Space>
+          <Button
+            type="clear"
+            size="small"
+            icon={<FilterIcon />}
+            aria-label="Filter languages"
+          />
+        </Space>
+      }
+      footer={
+        <Space
+          gap="1x"
+          placeContent="space-between"
+          flow="row"
+          placeItems="center"
+        >
+          <Text color="#dark.50" preset="t4">
+            Popular languages shown
+          </Text>
+          <Button type="link" size="small" rightIcon={<RightIcon />}>
+            View all
+          </Button>
+        </Space>
+      }
+    >
+      <FilterPicker.Section title="Frontend">
+        <FilterPicker.Item key="javascript" textValue="JavaScript">
+          JavaScript
+        </FilterPicker.Item>
+        <FilterPicker.Item key="typescript" textValue="TypeScript">
+          TypeScript
+        </FilterPicker.Item>
+        <FilterPicker.Item key="react" textValue="React">
+          React
+        </FilterPicker.Item>
+        <FilterPicker.Item key="vue" textValue="Vue.js">
+          Vue.js
+        </FilterPicker.Item>
+      </FilterPicker.Section>
+      <FilterPicker.Section title="Backend">
+        <FilterPicker.Item key="python" textValue="Python">
+          Python
+        </FilterPicker.Item>
+        <FilterPicker.Item key="nodejs" textValue="Node.js">
+          Node.js
+        </FilterPicker.Item>
+        <FilterPicker.Item key="rust" textValue="Rust">
+          Rust
+        </FilterPicker.Item>
+        <FilterPicker.Item key="go" textValue="Go">
+          Go
+        </FilterPicker.Item>
+      </FilterPicker.Section>
+      <FilterPicker.Section title="Database">
+        <FilterPicker.Item key="sql" textValue="SQL">
+          SQL
+        </FilterPicker.Item>
+        <FilterPicker.Item key="mongodb" textValue="MongoDB">
+          MongoDB
+        </FilterPicker.Item>
+        <FilterPicker.Item key="redis" textValue="Redis">
+          Redis
+        </FilterPicker.Item>
+        <FilterPicker.Item key="postgres" textValue="PostgreSQL">
+          PostgreSQL
         </FilterPicker.Item>
       </FilterPicker.Section>
     </FilterPicker>

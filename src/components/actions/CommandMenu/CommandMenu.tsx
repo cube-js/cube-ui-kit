@@ -41,7 +41,6 @@ import {
   StyledCommandMenu,
   StyledEmptyState,
   StyledLoadingWrapper,
-  StyledMenuWrapper,
   StyledSearchInput,
 } from './styled';
 
@@ -548,7 +547,10 @@ function CommandMenuBase<T extends object>(
     >
       {/* Header */}
       {header && (
-        <StyledHeader role="presentation" styles={headerStyles}>
+        <StyledHeader
+          role="presentation"
+          styles={{ border: 'none', ...headerStyles }}
+        >
           {header}
         </StyledHeader>
       )}
@@ -736,25 +738,23 @@ function CommandMenuBase<T extends object>(
 
       {/* Menu Content - always render unless loading */}
       {!isLoading && !showEmptyState && (
-        <StyledMenuWrapper>
-          <StyledMenu
-            {...menuProps}
-            ref={menuRef}
-            id={`${qa || 'CommandMenu'}-menu`}
-            aria-label="Command menu"
-            qa="Menu"
-            data-size={size}
-            mods={mods}
-            styles={{
-              border: 'none',
-              boxShadow: 'none',
-              radius: 0,
-              padding: '0.5x',
-            }}
-          >
-            {renderedItems}
-          </StyledMenu>
-        </StyledMenuWrapper>
+        <StyledMenu
+          {...menuProps}
+          ref={menuRef}
+          id={`${qa || 'CommandMenu'}-menu`}
+          aria-label="Command menu"
+          qa="Menu"
+          data-size={size}
+          mods={mods}
+          styles={{
+            border: 'none',
+            boxShadow: 'none',
+            radius: 0,
+            padding: '0.5x',
+          }}
+        >
+          {renderedItems}
+        </StyledMenu>
       )}
 
       {/* Empty State - show when search term exists but no results */}

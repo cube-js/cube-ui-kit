@@ -1,9 +1,15 @@
 import { StoryFn } from '@storybook/react';
 import { useState } from 'react';
 
+import { FilterIcon, RightIcon } from '../../../icons';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
+import { Badge } from '../../content/Badge/Badge';
+import { Text } from '../../content/Text';
+import { Title } from '../../content/Title';
 import { Form, SubmitButton } from '../../form';
+import { Space } from '../../layout/Space';
+import { Link } from '../../navigation/Link/Link';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
@@ -148,6 +154,78 @@ export const WithSections: StoryFn<CubeFilterListBoxProps<any>> = (args) => (
 WithSections.args = {
   label: 'Choose an ingredient',
   searchPlaceholder: 'Search ingredients...',
+};
+
+export const WithHeaderAndFooter: StoryFn<CubeFilterListBoxProps<any>> = (
+  args,
+) => (
+  <FilterListBox
+    {...args}
+    header={
+      <Space gap="1x" placeContent="space-between" flow="row">
+        <Space gap="1x" flow="row" placeItems="center">
+          <Title level={6}>Programming Languages</Title>
+          <Badge type="purple">12</Badge>
+        </Space>
+        <Button
+          type="clear"
+          size="small"
+          icon={<FilterIcon />}
+          aria-label="Filter languages"
+        />
+      </Space>
+    }
+    footer={
+      <Space
+        gap="1x"
+        placeContent="space-between"
+        flow="row"
+        placeItems="center"
+      >
+        <Text color="#dark.50" preset="t4">
+          Popular languages shown
+        </Text>
+        <Button type="link" size="small" rightIcon={<RightIcon />}>
+          View all
+        </Button>
+      </Space>
+    }
+  >
+    <FilterListBox.Item
+      key="javascript"
+      textValue="JavaScript - Dynamic, interpreted programming language"
+    >
+      JavaScript
+    </FilterListBox.Item>
+    <FilterListBox.Item
+      key="python"
+      textValue="Python - High-level, general-purpose programming language"
+    >
+      Python
+    </FilterListBox.Item>
+    <FilterListBox.Item
+      key="typescript"
+      textValue="TypeScript - Strongly typed programming language based on JavaScript"
+    >
+      TypeScript
+    </FilterListBox.Item>
+    <FilterListBox.Item
+      key="rust"
+      textValue="Rust - Systems programming language focused on safety and performance"
+    >
+      Rust
+    </FilterListBox.Item>
+    <FilterListBox.Item
+      key="go"
+      textValue="Go - Open source programming language supported by Google"
+    >
+      Go
+    </FilterListBox.Item>
+  </FilterListBox>
+);
+WithHeaderAndFooter.args = {
+  label: 'Choose your preferred programming language',
+  searchPlaceholder: 'Search languages...',
 };
 
 export const MultipleSelection: StoryFn<CubeFilterListBoxProps<any>> = (

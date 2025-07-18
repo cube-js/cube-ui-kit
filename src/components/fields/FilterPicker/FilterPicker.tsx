@@ -146,6 +146,10 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     onSelectionChange,
     selectionMode = 'multiple',
     listStateRef,
+    header,
+    footer,
+    headerStyles,
+    footerStyles,
     renderSummary,
     ...otherProps
   } = props;
@@ -304,6 +308,10 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             mods={{
               popover: true,
             }}
+            header={header}
+            footer={footer}
+            headerStyles={headerStyles}
+            footerStyles={footerStyles}
             onSelectionChange={(selection) => {
               // Update internal state if uncontrolled
               if (selectionMode === 'single') {

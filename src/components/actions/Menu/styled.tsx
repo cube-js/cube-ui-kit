@@ -60,6 +60,8 @@ export const StyledHeader = tasty(Space, {
     whiteSpace: 'nowrap',
     padding: '.5x 1x',
     height: 'min 4x',
+    boxSizing: 'border-box',
+    border: 'bottom',
   },
 });
 
@@ -69,12 +71,13 @@ export const StyledFooter = tasty(Space, {
   styles: {
     color: '#dark-02',
     preset: 't3',
-    border: '#border top',
     placeContent: 'space-between',
     placeItems: 'center',
     whiteSpace: 'nowrap',
     padding: '.5x 1x',
     height: 'min 4x',
+    boxSizing: 'border-box',
+    border: 'top',
   },
 });
 

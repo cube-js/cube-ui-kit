@@ -25,6 +25,7 @@ import {
 } from '../../../tasty';
 import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
+import { StyledHeader } from '../../actions/Menu/styled';
 import { Block } from '../../Block';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
@@ -42,7 +43,7 @@ const FilterListBoxWrapperElement = tasty({
     display: 'grid',
     flow: 'column',
     gridColumns: '1sf',
-    gridRows: 'max-content 1sf',
+    gridRows: 'max-content max-content 1sf',
     gap: 0,
     position: 'relative',
     radius: true,
@@ -177,6 +178,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
     defaultSelectedKeys,
     onSelectionChange: externalOnSelectionChange,
     allowsCustomValue = false,
+    header,
+    footer,
+    headerStyles,
+    footerStyles,
     children,
     onEscape,
     ...otherProps
@@ -645,6 +650,13 @@ export const FilterListBox = forwardRef(function FilterListBox<
       styles={styles}
       {...focusProps}
     >
+      {header ? (
+        <StyledHeader role="presentation" styles={headerStyles}>
+          {header}
+        </StyledHeader>
+      ) : (
+        <div role="presentation" />
+      )}
       {searchInput}
       {showEmptyMessage ? (
         <div style={{ padding: '0.75rem 1rem' }}>
@@ -672,6 +684,8 @@ export const FilterListBox = forwardRef(function FilterListBox<
           disallowEmptySelection={props.disallowEmptySelection}
           disabledKeys={props.disabledKeys}
           focusOnHover={false}
+          footer={footer}
+          footerStyles={footerStyles}
           onSelectionChange={handleSelectionChange}
           {...modAttrs({ ...mods, focused: false })}
           styles={{ border: '#clear', radius: '1r bottom' }}

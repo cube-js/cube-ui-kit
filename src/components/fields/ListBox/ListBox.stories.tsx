@@ -1,9 +1,15 @@
 import { StoryFn } from '@storybook/react';
 import { useState } from 'react';
 
+import { FilterIcon, RightIcon } from '../../../icons';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
+import { Badge } from '../../content/Badge/Badge';
+import { Text } from '../../content/Text';
+import { Title } from '../../content/Title';
 import { Form } from '../../form';
+import { Space } from '../../layout/Space';
+import { Link } from '../../navigation/Link/Link';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
@@ -139,6 +145,71 @@ export const WithSections: StoryFn<CubeListBoxProps<any>> = (args) => (
 );
 WithSections.args = {
   label: 'Select food items',
+  selectionMode: 'single',
+};
+
+export const WithHeaderAndFooter: StoryFn<CubeListBoxProps<any>> = (args) => (
+  <ListBox
+    {...args}
+    header={
+      <>
+        <Space gap="1x" flow="row" placeItems="center">
+          <Title level={6}>Programming Languages</Title>
+          <Badge type="purple">12</Badge>
+        </Space>
+        <Button
+          type="clear"
+          size="small"
+          icon={<FilterIcon />}
+          aria-label="Filter languages"
+        />
+      </>
+    }
+    footer={
+      <>
+        <Text color="#dark.50" preset="t4">
+          Popular languages shown
+        </Text>
+        <Button type="link" size="small" rightIcon={<RightIcon />}>
+          View all
+        </Button>
+      </>
+    }
+  >
+    <ListBox.Item
+      key="javascript"
+      description="Dynamic, interpreted programming language"
+    >
+      JavaScript
+    </ListBox.Item>
+    <ListBox.Item
+      key="python"
+      description="High-level, general-purpose programming language"
+    >
+      Python
+    </ListBox.Item>
+    <ListBox.Item
+      key="typescript"
+      description="Strongly typed programming language based on JavaScript"
+    >
+      TypeScript
+    </ListBox.Item>
+    <ListBox.Item
+      key="rust"
+      description="Systems programming language focused on safety and performance"
+    >
+      Rust
+    </ListBox.Item>
+    <ListBox.Item
+      key="go"
+      description="Open source programming language supported by Google"
+    >
+      Go
+    </ListBox.Item>
+  </ListBox>
+);
+WithHeaderAndFooter.args = {
+  label: 'Choose your preferred programming language',
   selectionMode: 'single',
 };
 
