@@ -24,10 +24,12 @@ const Card = tasty({
     border: true,
     radius: true,
   },
+  styleProps: ['padding', 'fill'], // Expose styles as props
 });
 
 // Usage
 <Card>Hello World</Card>
+<Card padding="6x" fill="#gray.05">Custom Card</Card>
 ```
 
 ### Extending Existing Components
@@ -106,6 +108,64 @@ const GlobalHeading = tasty('.heading', {
   preset: 'h2',
   color: '#primary',
 });
+```
+
+### Style Props - Direct Style Access
+
+Use `styleProps` to expose style properties as direct component props:
+
+```jsx
+const FlexibleBox = tasty({
+  as: 'div',
+  styles: {
+    display: 'flex',
+    padding: '2x',
+  },
+  styleProps: ['gap', 'align', 'placeContent', 'fill'],
+});
+
+// Usage - style properties become direct props
+<FlexibleBox 
+  gap="2x" 
+  align="center" 
+  placeContent="space-between"
+  fill="#surface"
+>
+  Content
+</FlexibleBox>
+
+// Equivalent to using styles prop:
+<FlexibleBox styles={{ 
+  gap: '2x', 
+  align: 'center', 
+  placeContent: 'space-between',
+  fill: '#surface' 
+}}>
+  Content
+</FlexibleBox>
+```
+
+**Benefits of `styleProps`:**
+- **Cleaner API** - No need for `styles` prop wrapper
+- **Better TypeScript support** - Props are properly typed
+- **Component-specific styling** - Expose only relevant properties
+- **Responsive support** - Works with arrays: `gap={['2x', '1x']}`
+- **State-based styling** - Works with objects: `fill={{ '': '#white', hovered: '#gray' }}`
+
+**Style Prop Priority:**
+```jsx
+// Direct props override styles prop
+<FlexibleBox 
+  styles={{ gap: '1x' }} 
+  gap="3x"  // This takes priority
+/>
+
+// Both direct props and styles can be used together
+<FlexibleBox 
+  styles={{ padding: '2x', border: true }} 
+  gap="2x" 
+  align="center"
+/>
 ```
 
 ### Style System Overview
@@ -560,7 +620,8 @@ const Component = tasty({
 ```jsx
 // ✅ Use styled wrappers instead of styles prop
 const StyledButton = tasty(Button, {
-  styles: { fill: '#purple' }
+  styles: { fill: '#purple' },
+  styleProps: ['fill', 'color'], // Expose common styles as props
 });
 
 // ✅ Use design tokens and custom units
@@ -590,6 +651,13 @@ styles: {
     hovered: '#gray.05',
   },
 }
+
+// ✅ Use styleProps for component APIs
+const Container = tasty({
+  styles: { display: 'flex' },
+  styleProps: ['gap', 'padding', 'align', 'justify'],
+});
+// Enables: <Container gap="2x" align="center" />
 ```
 
 ### Don'ts ❌
