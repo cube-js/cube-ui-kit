@@ -27,19 +27,28 @@ import {
 } from '../../../tasty';
 import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
+// Import Menu styled components for header and footer
+import {
+  StyledDivider,
+  StyledFooter,
+  StyledHeader,
+  StyledSectionHeading,
+} from '../../actions/Menu/styled';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 
 import type { CollectionBase, Key } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
 
 const ListBoxWrapperElement = tasty({
+  qa: 'ListBox',
   styles: {
-    display: 'flex',
+    display: 'grid',
+    gridColumns: '1sf',
+    gridRows: 'max-content 1sf max-content',
     flow: 'column',
     gap: 0,
     position: 'relative',
     radius: true,
-    fill: '#white',
     color: '#dark-02',
     transition: 'theme',
     outline: {
@@ -53,6 +62,7 @@ const ListBoxWrapperElement = tasty({
       valid: '#success-text.50',
       invalid: '#danger-text.50',
       disabled: true,
+      popover: false,
     },
   },
 });
@@ -124,16 +134,8 @@ const SectionWrapperElement = tasty({
   },
 });
 
-const SectionHeadingElement = tasty({
-  styles: {
-    preset: 't4 strong',
-    color: '#dark-03',
-    padding: '.5x 1x .25x',
-    userSelect: 'none',
-  },
-});
-
 const SectionListElement = tasty({
+  qa: 'ListBoxSectionList',
   as: 'ul',
   styles: {
     display: 'flex',
@@ -142,15 +144,6 @@ const SectionListElement = tasty({
     margin: '0',
     padding: '0',
     listStyle: 'none',
-  },
-});
-
-const DividerElement = tasty({
-  as: 'li',
-  styles: {
-    height: '1bw',
-    fill: '#border',
-    margin: '.5x 0',
   },
 });
 
@@ -190,6 +183,16 @@ export interface CubeListBoxProps<T>
    * Set to false for components that keep DOM focus outside (e.g. searchable FilterListBox).
    */
   focusOnHover?: boolean;
+  /** Custom header content */
+  header?: ReactNode;
+  /** Custom footer content */
+  footer?: ReactNode;
+  /** Custom styles for the header */
+  headerStyles?: Styles;
+  /** Custom styles for the footer */
+  footerStyles?: Styles;
+  /** Mods for the ListBox */
+  mods?: Record<string, boolean>;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -239,6 +242,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     message,
     description,
     styles,
+    mods: externalMods,
     labelSuffix,
     selectedKey,
     defaultSelectedKey,
@@ -247,6 +251,10 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     onSelectionChange,
     stateRef,
     focusOnHover,
+    header,
+    footer,
+    headerStyles,
+    footerStyles,
     ...otherProps
   } = props;
 
@@ -352,8 +360,19 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       valid: validationState === 'valid',
       disabled: isDisabled,
       focused: isFocused,
+      header: !!header,
+      footer: !!footer,
+      ...externalMods,
     }),
-    [isInvalid, validationState, isDisabled, isFocused],
+    [
+      isInvalid,
+      validationState,
+      isDisabled,
+      isFocused,
+      header,
+      footer,
+      externalMods,
+    ],
   );
 
   const listBoxField = (
@@ -364,6 +383,11 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       styles={styles}
       {...focusProps}
     >
+      {header ? (
+        <StyledHeader styles={headerStyles}>{header}</StyledHeader>
+      ) : (
+        <div role="presentation" />
+      )}
       <ListElement
         {...listBoxProps}
         ref={listRef}
@@ -378,7 +402,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
             if (item.type === 'section') {
               if (!isFirstSection) {
                 renderedItems.push(
-                  <DividerElement
+                  <StyledDivider
                     key={`divider-${String(item.key)}`}
                     role="separator"
                     aria-orientation="horizontal"
@@ -419,6 +443,11 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
           return renderedItems;
         })()}
       </ListElement>
+      {footer ? (
+        <StyledFooter styles={footerStyles}>{footer}</StyledFooter>
+      ) : (
+        <div role="presentation" />
+      )}
     </ListBoxWrapperElement>
   );
 
@@ -460,7 +489,7 @@ function Option({
 
   return (
     <OptionElement
-      id={`ListBox-option-${String(item.key)}`}
+      id={`ListBoxItem-${String(item.key)}`}
       {...optionProps}
       ref={ref}
       mods={{
@@ -511,9 +540,9 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
   return (
     <SectionWrapperElement {...itemProps} styles={sectionStyles}>
       {heading && (
-        <SectionHeadingElement {...headingProps} styles={headingStyles}>
+        <StyledSectionHeading {...headingProps} styles={headingStyles}>
           {heading}
-        </SectionHeadingElement>
+        </StyledSectionHeading>
       )}
       <SectionListElement {...groupProps}>
         {[...item.childNodes]

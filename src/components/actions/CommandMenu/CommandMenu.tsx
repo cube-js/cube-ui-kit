@@ -24,7 +24,6 @@ import {
   Styles,
 } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
-import { useDialogContext } from '../../overlays/Dialog/context';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 import { useMenuContext } from '../Menu';
 import { CubeMenuProps } from '../Menu/Menu';
@@ -124,8 +123,6 @@ function CommandMenuBase<T extends object>(
   const domRef = useDOMRef(ref);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const contextProps = useMenuContext();
-
-  const dialogContext = useDialogContext();
 
   // Convert string[] to Set<Key> for React Aria compatibility
   const ariaSelectedKeys = selectedKeys ? new Set(selectedKeys) : undefined;
@@ -527,11 +524,9 @@ function CommandMenuBase<T extends object>(
   useSyncRef(contextProps, menuRef);
 
   const mods = useMemo(() => {
-    // Determine mods based on dialog context and menu context
-    let popoverMod =
-      completeProps.mods?.popover || dialogContext?.type === 'popover';
-    let trayMod = completeProps.mods?.tray || dialogContext?.type === 'tray';
-    let modalMod = dialogContext?.type === 'modal';
+    // Determine mods based on menu context
+    let popoverMod = completeProps.mods?.popover;
+    let trayMod = completeProps.mods?.tray;
 
     return {
       sections: viewHasSections,
@@ -539,15 +534,8 @@ function CommandMenuBase<T extends object>(
       header: !!header,
       popover: popoverMod,
       tray: trayMod,
-      modal: modalMod,
     };
-  }, [
-    viewHasSections,
-    footer,
-    header,
-    completeProps.mods,
-    dialogContext?.type,
-  ]);
+  }, [viewHasSections, footer, header, completeProps.mods]);
 
   return (
     <StyledCommandMenu

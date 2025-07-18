@@ -14,4 +14,5 @@ export * from './Select';
 export * from './ComboBox';
 export * from './ListBox';
 export * from './FilterListBox';
+export * from './FilterPicker';
 export * from './TextInputMapper';

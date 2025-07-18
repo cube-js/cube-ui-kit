@@ -39,12 +39,13 @@ type FilterFn = (textValue: string, inputValue: string) => boolean;
 
 const FilterListBoxWrapperElement = tasty({
   styles: {
-    display: 'flex',
+    display: 'grid',
     flow: 'column',
+    gridColumns: '1sf',
+    gridRows: 'max-content 1sf',
     gap: 0,
     position: 'relative',
     radius: true,
-    fill: '#white',
     color: '#dark-02',
     transition: 'theme',
     outline: {
@@ -52,12 +53,17 @@ const FilterListBoxWrapperElement = tasty({
       'invalid & focused': '#danger.50',
       focused: '#purple-03',
     },
+    height: {
+      '': false,
+      popover: 'initial max-content (50vh - 4x)',
+    },
     border: {
       '': true,
       focused: '#purple-text',
       valid: '#success-text.50',
       invalid: '#danger-text.50',
       disabled: true,
+      popover: false,
     },
   },
 });
@@ -65,15 +71,18 @@ const FilterListBoxWrapperElement = tasty({
 const SearchWrapperElement = tasty({
   styles: {
     ...INPUT_WRAPPER_STYLES,
-    border: '#clear',
+    border: 'bottom',
     radius: '1r top',
-    borderBottom: '1bw solid #border',
+    fill: '#clear',
   },
 });
 
 const SearchInputElement = tasty({
   as: 'input',
-  styles: DEFAULT_INPUT_STYLES,
+  styles: {
+    ...DEFAULT_INPUT_STYLES,
+    fill: '#clear',
+  },
 });
 
 export interface CubeFilterListBoxProps<T>
@@ -97,6 +106,8 @@ export interface CubeFilterListBoxProps<T>
   children?: ReactNode;
   /** Allow entering a custom value that is not present in the options */
   allowsCustomValue?: boolean;
+  /** Mods for the FilterListBox */
+  mods?: Record<string, boolean>;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -141,6 +152,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     searchPlaceholder = 'Search...',
     autoFocus,
     filter,
+    mods: externalMods,
     emptyLabel,
     searchInputStyles,
     listStyles,
@@ -519,8 +531,16 @@ export const FilterListBox = forwardRef(function FilterListBox<
       focused: isFocused,
       loading: isLoading,
       searchable: true,
+      ...externalMods,
     }),
-    [isInvalid, validationState, isDisabled, isFocused, isLoading],
+    [
+      isInvalid,
+      validationState,
+      isDisabled,
+      isFocused,
+      isLoading,
+      externalMods,
+    ],
   );
 
   const hasResults =
@@ -586,7 +606,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         aria-expanded="true"
         aria-haspopup="listbox"
         aria-activedescendant={
-          focusedKey != null ? `ListBox-option-${focusedKey}` : undefined
+          focusedKey != null ? `ListBoxItem-${focusedKey}` : undefined
         }
         onChange={(e) => {
           const value = e.target.value;
