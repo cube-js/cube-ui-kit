@@ -6,17 +6,16 @@ import * as ListBoxStories from './ListBox.stories';
 
 # ListBox
 
-A list box component that allows users to select one or more items from a list of options. It supports sections, descriptions, optional search functionality, and full keyboard navigation with virtual focus. Built with React Aria's `useListBox` for accessibility and the Cube `tasty` style system for theming.
+A simple list box component that allows users to select one or more items from a list of options. It supports sections, descriptions, and full keyboard navigation. Built with React Aria's `useListBox` for accessibility and the Cube `tasty` style system for theming.
 
 ## When to Use
 
-- Present a list of selectable options in a contained area
+- Present a simple list of selectable options in a contained area
 - Enable single or multiple selection from a set of choices
-- Provide searchable selection for large lists of options
 - Display structured data with sections and descriptions
 - Create custom selection interfaces that need to remain visible
 - Build form controls that require persistent option visibility
-- Customize empty state messages when no results are found
+- Use when you have a small to medium number of options (for larger lists with search, consider FilterListBox)
 
 ## Component
 
@@ -41,10 +40,6 @@ Customizes the root wrapper element of the component.
 **Sub-elements:**
 - `ValidationState` - Container for validation and loading indicators
 
-#### searchInputStyles
-
-Customizes the search input when `isSearchable` is true.
-
 #### listStyles
 
 Customizes the list container element.
@@ -65,9 +60,7 @@ Customizes section wrapper elements.
 
 Customizes section heading elements.
 
-#### emptyLabel
 
-Custom label to display when no results are found after filtering. Accepts any ReactNode including text, JSX elements, or components. Defaults to "No results found".
 
 ### Style Properties
 
@@ -108,39 +101,7 @@ The `mods` property accepts the following modifiers you can override:
 </ListBox>
 ```
 
-### With Search
 
-<Story of={ListBoxStories.WithSearch} />
-
-```jsx
-<ListBox
-  label="Search fruits"
-  isSearchable={true}
-  searchPlaceholder="Type to search fruits..."
-  selectionMode="single"
->
-  <ListBox.Item key="apple">Apple</ListBox.Item>
-  <ListBox.Item key="banana">Banana</ListBox.Item>
-  <ListBox.Item key="cherry">Cherry</ListBox.Item>
-  {/* More items... */}
-</ListBox>
-```
-
-### Custom Empty Label
-
-<Story of={ListBoxStories.CustomEmptyLabel} />
-
-```jsx
-<ListBox
-  label="Search with custom empty message"
-  isSearchable={true}
-  emptyLabel="🔍 Nothing matches your search criteria"
-  selectionMode="single"
->
-  <ListBox.Item key="apple">Apple</ListBox.Item>
-  <ListBox.Item key="banana">Banana</ListBox.Item>
-</ListBox>
-```
 
 ### With Descriptions
 
@@ -264,38 +225,14 @@ const [selectedKey, setSelectedKey] = useState('apple');
 </ListBox>
 ```
 
-### Search with Loading State
-
-<Story of={ListBoxStories.SearchLoadingState} />
-
-```jsx
-<ListBox
-  label="Searching ListBox"
-  isSearchable={true}
-  isLoading={true}
-  selectionMode="single"
->
-  <ListBox.Item key="option1">Option 1</ListBox.Item>
-</ListBox>
-```
-
 ## Accessibility
 
 ### Keyboard Navigation
 
-#### Search Field Navigation (when `isSearchable` is true)
-
-- `Tab` - Moves focus to the search input
-- `Arrow Down/Up` - Moves virtual focus through options while keeping input focused
-- `Enter` - Selects the currently highlighted option
-- `Space` - In multiple selection mode, toggles selection of the highlighted option
-- `Left/Right Arrow` - Moves text cursor within the search input (normal text editing)
-- `Escape` - Clears the search input
-
-#### Direct ListBox Navigation (when search is not used)
-
 - `Tab` - Moves focus to the ListBox
 - `Arrow Down/Up` - Moves focus to the next/previous option
+- `Enter` - Selects the currently focused option
+- `Space` - In multiple selection mode, toggles selection of the focused option
 
 ### Screen Reader Support
 

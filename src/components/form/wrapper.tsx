@@ -38,6 +38,10 @@ export function wrapWithField<T extends WrapWithFieldProps>(
     children,
   } = props;
 
+  if (!label) {
+    return component;
+  }
+
   return (
     <FieldWrapper
       {...{

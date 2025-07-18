@@ -161,13 +161,13 @@ export const DEFAULT_OUTLINE_STYLES: Styles = {
   fill: {
     '': '#dark.0',
     hovered: '#dark.03',
-    'pressed | selected': '#dark.06',
+    'pressed | (selected & !hovered)': '#dark.06',
     '[disabled] | disabled': '#dark.04',
   },
   color: {
     '': '#dark-02',
     hovered: '#dark-02',
-    'pressed | selected': '#dark',
+    'pressed | (selected & !hovered)': '#dark',
     '[disabled] | disabled': '#dark-04',
   },
 } as const;
@@ -180,7 +180,7 @@ export const DEFAULT_NEUTRAL_STYLES: Styles = {
   fill: {
     '': '#dark.0',
     hovered: '#dark.03',
-    'pressed | selected': '#dark.06',
+    'pressed | (selected & !hovered)': '#dark.06',
   },
   color: {
     '': '#dark-02',
@@ -199,7 +199,7 @@ export const DEFAULT_CLEAR_STYLES: Styles = {
   fill: {
     '': '#purple.0',
     hovered: '#purple.16',
-    'pressed | selected': '#purple.10',
+    'pressed | (selected & !hovered)': '#purple.10',
   },
   color: {
     '': '#purple-text',
@@ -273,7 +273,7 @@ export const DANGER_OUTLINE_STYLES: Styles = {
   fill: {
     '': '#danger.0',
     hovered: '#danger.1',
-    'pressed | selected': '#danger.05',
+    'pressed | (selected & !hovered)': '#danger.05',
     '[disabled] | disabled': '#dark.04',
   },
   color: {
@@ -290,11 +290,11 @@ export const DANGER_NEUTRAL_STYLES: Styles = {
   fill: {
     '': '#dark.0',
     hovered: '#dark.04',
-    'pressed | selected': '#dark.05',
+    'pressed | (selected & !hovered)': '#dark.05',
   },
   color: {
     '': '#dark-02',
-    'pressed | selected': '#danger-text',
+    'pressed | (selected & !hovered)': '#danger-text',
     '[disabled] | disabled': '#dark-04',
   },
 } as const;
@@ -308,7 +308,7 @@ export const DANGER_CLEAR_STYLES: Styles = {
   fill: {
     '': '#danger.0',
     hovered: '#danger.1',
-    'pressed | selected': '#danger.05',
+    'pressed | (selected & !hovered)': '#danger.05',
   },
   color: {
     '': '#danger-text',
@@ -382,7 +382,7 @@ export const SUCCESS_OUTLINE_STYLES: Styles = {
   fill: {
     '': '#success.0',
     hovered: '#success.1',
-    'pressed | selected': '#success.05',
+    'pressed | (selected & !hovered)': '#success.05',
     '[disabled] | disabled': '#dark.04',
   },
   color: {
@@ -399,11 +399,11 @@ export const SUCCESS_NEUTRAL_STYLES: Styles = {
   fill: {
     '': '#dark.0',
     hovered: '#dark.04',
-    'pressed | selected': '#dark.05',
+    'pressed | (selected & !hovered)': '#dark.05',
   },
   color: {
     '': '#dark-02',
-    'pressed | selected': '#success-text',
+    'pressed | (selected & !hovered)': '#success-text',
     '[disabled] | disabled': '#dark-04',
   },
 } as const;
@@ -417,7 +417,7 @@ export const SUCCESS_CLEAR_STYLES: Styles = {
   fill: {
     '': '#success.0',
     hovered: '#success.1',
-    'pressed | selected': '#success.05',
+    'pressed | (selected & !hovered)': '#success.05',
   },
   color: {
     '': '#success-text',
@@ -489,7 +489,7 @@ export const SPECIAL_OUTLINE_STYLES: Styles = {
   fill: {
     '': '#white.0',
     hovered: '#white.18',
-    'pressed | selected': '#white.12',
+    'pressed | (selected & !hovered)': '#white.12',
     '[disabled] | disabled': '#white.12',
   },
   color: {
@@ -506,7 +506,7 @@ export const SPECIAL_NEUTRAL_STYLES: Styles = {
   fill: {
     '': '#white.0',
     hovered: '#white.12',
-    'pressed | selected': '#white.18',
+    'pressed | (selected & !hovered)': '#white.18',
   },
   color: {
     '': '#white',

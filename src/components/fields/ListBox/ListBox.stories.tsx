@@ -1,9 +1,15 @@
 import { StoryFn } from '@storybook/react';
 import { useState } from 'react';
 
+import { FilterIcon, RightIcon } from '../../../icons';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
+import { Badge } from '../../content/Badge/Badge';
+import { Text } from '../../content/Text';
+import { Title } from '../../content/Title';
 import { Form } from '../../form';
+import { Space } from '../../layout/Space';
+import { Link } from '../../navigation/Link/Link';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
@@ -36,37 +42,6 @@ export default {
       },
     },
 
-    /* Search */
-    isSearchable: {
-      control: { type: 'boolean' },
-      description: 'Whether the ListBox includes a search input',
-      table: {
-        defaultValue: { summary: false },
-      },
-    },
-    searchPlaceholder: {
-      control: { type: 'text' },
-      description: 'Placeholder text for the search input',
-      table: {
-        defaultValue: { summary: 'Search...' },
-      },
-    },
-    autoFocus: {
-      control: { type: 'boolean' },
-      description: 'Whether the search input should have autofocus',
-      table: {
-        defaultValue: { summary: false },
-      },
-    },
-    emptyLabel: {
-      control: { type: 'text' },
-      description:
-        'Custom label to display when no results are found after filtering',
-      table: {
-        defaultValue: { summary: 'No results found' },
-      },
-    },
-
     /* Presentation */
     size: {
       options: ['small', 'default', 'large'],
@@ -81,13 +56,6 @@ export default {
     isDisabled: {
       control: { type: 'boolean' },
       description: 'Whether the ListBox is disabled',
-      table: {
-        defaultValue: { summary: false },
-      },
-    },
-    SearchLoadingState: {
-      control: { type: 'boolean' },
-      description: 'Whether the listbox is loading. Works only with search.',
       table: {
         defaultValue: { summary: false },
       },
@@ -126,27 +94,6 @@ const Template: StoryFn<CubeListBoxProps<any>> = (args) => (
 export const Default = Template.bind({});
 Default.args = {
   label: 'Select a fruit',
-  selectionMode: 'single',
-};
-
-export const WithSearch: StoryFn<CubeListBoxProps<any>> = (args) => (
-  <ListBox {...args}>
-    <ListBox.Item key="apple">Apple</ListBox.Item>
-    <ListBox.Item key="banana">Banana</ListBox.Item>
-    <ListBox.Item key="cherry">Cherry</ListBox.Item>
-    <ListBox.Item key="date">Date</ListBox.Item>
-    <ListBox.Item key="elderberry">Elderberry</ListBox.Item>
-    <ListBox.Item key="fig">Fig</ListBox.Item>
-    <ListBox.Item key="grape">Grape</ListBox.Item>
-    <ListBox.Item key="honeydew">Honeydew</ListBox.Item>
-    <ListBox.Item key="kiwi">Kiwi</ListBox.Item>
-    <ListBox.Item key="lemon">Lemon</ListBox.Item>
-  </ListBox>
-);
-WithSearch.args = {
-  label: 'Search fruits',
-  isSearchable: true,
-  searchPlaceholder: 'Type to search fruits...',
   selectionMode: 'single',
 };
 
@@ -201,56 +148,68 @@ WithSections.args = {
   selectionMode: 'single',
 };
 
-export const WithSearchAndSections: StoryFn<CubeListBoxProps<any>> = (args) => (
-  <ListBox {...args}>
-    <ListBox.Section title="Frontend">
-      <ListBox.Item
-        key="react"
-        description="JavaScript library for building UIs"
-      >
-        React
-      </ListBox.Item>
-      <ListBox.Item key="vue" description="Progressive JavaScript framework">
-        Vue.js
-      </ListBox.Item>
-      <ListBox.Item key="angular" description="Platform for web applications">
-        Angular
-      </ListBox.Item>
-    </ListBox.Section>
-    <ListBox.Section title="Backend">
-      <ListBox.Item key="nodejs" description="JavaScript runtime environment">
-        Node.js
-      </ListBox.Item>
-      <ListBox.Item key="python" description="High-level programming language">
-        Python
-      </ListBox.Item>
-      <ListBox.Item
-        key="java"
-        description="Object-oriented programming language"
-      >
-        Java
-      </ListBox.Item>
-    </ListBox.Section>
-    <ListBox.Section title="Database">
-      <ListBox.Item
-        key="postgresql"
-        description="Advanced open source database"
-      >
-        PostgreSQL
-      </ListBox.Item>
-      <ListBox.Item key="mongodb" description="Document-oriented database">
-        MongoDB
-      </ListBox.Item>
-      <ListBox.Item key="redis" description="In-memory data structure store">
-        Redis
-      </ListBox.Item>
-    </ListBox.Section>
+export const WithHeaderAndFooter: StoryFn<CubeListBoxProps<any>> = (args) => (
+  <ListBox
+    {...args}
+    header={
+      <>
+        <Space gap="1x" flow="row" placeItems="center">
+          <Title level={6}>Programming Languages</Title>
+          <Badge type="purple">12</Badge>
+        </Space>
+        <Button
+          type="clear"
+          size="small"
+          icon={<FilterIcon />}
+          aria-label="Filter languages"
+        />
+      </>
+    }
+    footer={
+      <>
+        <Text color="#dark.50" preset="t4">
+          Popular languages shown
+        </Text>
+        <Button type="link" size="small" rightIcon={<RightIcon />}>
+          View all
+        </Button>
+      </>
+    }
+  >
+    <ListBox.Item
+      key="javascript"
+      description="Dynamic, interpreted programming language"
+    >
+      JavaScript
+    </ListBox.Item>
+    <ListBox.Item
+      key="python"
+      description="High-level, general-purpose programming language"
+    >
+      Python
+    </ListBox.Item>
+    <ListBox.Item
+      key="typescript"
+      description="Strongly typed programming language based on JavaScript"
+    >
+      TypeScript
+    </ListBox.Item>
+    <ListBox.Item
+      key="rust"
+      description="Systems programming language focused on safety and performance"
+    >
+      Rust
+    </ListBox.Item>
+    <ListBox.Item
+      key="go"
+      description="Open source programming language supported by Google"
+    >
+      Go
+    </ListBox.Item>
   </ListBox>
 );
-WithSearchAndSections.args = {
-  label: 'Choose technologies',
-  isSearchable: true,
-  searchPlaceholder: 'Search technologies...',
+WithHeaderAndFooter.args = {
+  label: 'Choose your preferred programming language',
   selectionMode: 'single',
 };
 
@@ -268,8 +227,6 @@ export const MultipleSelection: StoryFn<CubeListBoxProps<any>> = (args) => (
 MultipleSelection.args = {
   label: 'Select skills (multiple)',
   selectionMode: 'multiple',
-  isSearchable: true,
-  searchPlaceholder: 'Search skills...',
 };
 
 export const DisabledState: StoryFn<CubeListBoxProps<any>> = (args) => (
@@ -282,21 +239,6 @@ export const DisabledState: StoryFn<CubeListBoxProps<any>> = (args) => (
 DisabledState.args = {
   label: 'Disabled ListBox',
   isDisabled: true,
-  selectionMode: 'single',
-};
-
-export const SearchLoadingState: StoryFn<CubeListBoxProps<any>> = (args) => (
-  <ListBox {...args}>
-    <ListBox.Item key="option1">Option 1</ListBox.Item>
-    <ListBox.Item key="option2">Option 2</ListBox.Item>
-    <ListBox.Item key="option3">Option 3</ListBox.Item>
-  </ListBox>
-);
-SearchLoadingState.args = {
-  label: 'Loading ListBox',
-  isSearchable: true,
-  searchPlaceholder: 'Search...',
-  isLoading: true,
   selectionMode: 'single',
 };
 
@@ -331,7 +273,6 @@ export const ControlledExample: StoryFn<CubeListBoxProps<any>> = () => {
   return (
     <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>
       <ListBox
-        isSearchable
         label="Controlled ListBox"
         selectedKey={selectedKey}
         selectionMode="single"
@@ -363,12 +304,10 @@ export const InForm: StoryFn<CubeListBoxProps<any>> = () => {
     <Form style={{ maxWidth: '400px' }} onSubmit={handleSubmit}>
       <ListBox
         isRequired
-        isSearchable
         name="technology"
         label="Preferred Technology"
         description="Select your preferred technology stack"
         selectionMode="single"
-        searchPlaceholder="Search technologies..."
       >
         <ListBox.Section title="Frontend">
           <ListBox.Item
@@ -437,11 +376,8 @@ export const InPopover: StoryFn<CubeListBoxProps<any>> = () => {
         <Button>Choose Technology</Button>
         <Dialog>
           <ListBox
-            isSearchable
-            autoFocus
             selectedKey={selectedKey}
             selectionMode="single"
-            searchPlaceholder="Search technologies..."
             styles={{
               height: '300px',
               border: false,
@@ -554,41 +490,4 @@ InPopover.play = async ({ canvasElement }) => {
     // Wait a moment for the popover to open and autoFocus to take effect
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
-};
-
-export const WithAutoFocus: StoryFn<CubeListBoxProps<any>> = (args) => (
-  <ListBox {...args}>
-    <ListBox.Item key="apple">Apple</ListBox.Item>
-    <ListBox.Item key="banana">Banana</ListBox.Item>
-    <ListBox.Item key="cherry">Cherry</ListBox.Item>
-    <ListBox.Item key="date">Date</ListBox.Item>
-    <ListBox.Item key="elderberry">Elderberry</ListBox.Item>
-    <ListBox.Item key="fig">Fig</ListBox.Item>
-    <ListBox.Item key="grape">Grape</ListBox.Item>
-    <ListBox.Item key="honeydew">Honeydew</ListBox.Item>
-    <ListBox.Item key="kiwi">Kiwi</ListBox.Item>
-    <ListBox.Item key="lemon">Lemon</ListBox.Item>
-  </ListBox>
-);
-WithAutoFocus.args = {
-  label: 'Search fruits (auto-focused)',
-  isSearchable: true,
-  autoFocus: true,
-  searchPlaceholder: 'Search input is auto-focused...',
-  selectionMode: 'single',
-};
-
-export const CustomEmptyLabel: StoryFn<CubeListBoxProps<any>> = (args) => (
-  <ListBox {...args}>
-    <ListBox.Item key="apple">Apple</ListBox.Item>
-    <ListBox.Item key="banana">Banana</ListBox.Item>
-    <ListBox.Item key="cherry">Cherry</ListBox.Item>
-  </ListBox>
-);
-CustomEmptyLabel.args = {
-  label: 'Search with custom empty message',
-  isSearchable: true,
-  searchPlaceholder: 'Try searching for "orange"...',
-  emptyLabel: '🔍 Nothing matches your search criteria',
-  selectionMode: 'single',
 };
