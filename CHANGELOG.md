@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.67.1
+
+### Patch Changes
+
+- [#727](https://github.com/cube-js/cube-ui-kit/pull/727) [`fa1397f2`](https://github.com/cube-js/cube-ui-kit/commit/fa1397f26e2f6ece95aec915f43e0815355d74f6) Thanks [@tenphi](https://github.com/tenphi)! - Add `fs` custom unit for stable fractions in grid layouts. `1sf` -> `minmax(0, 1fr)`.
+
+- [#727](https://github.com/cube-js/cube-ui-kit/pull/727) [`fa1397f2`](https://github.com/cube-js/cube-ui-kit/commit/fa1397f26e2f6ece95aec915f43e0815355d74f6) Thanks [@tenphi](https://github.com/tenphi)! - Improved tasty documentation.
+
 ## 0.67.0
 
 ### Minor Changes
