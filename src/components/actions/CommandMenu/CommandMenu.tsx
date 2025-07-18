@@ -290,49 +290,145 @@ function CommandMenuBase<T extends object>(
   const [focusedKey, setFocusedKey] = React.useState<React.Key | null>(null);
   const focusedKeyRef = useRef<React.Key | null>(null);
 
+  // Store the initial selected keys to avoid content shifting during interaction
+  const initialSelectedKeysRef = useRef<Set<Key> | undefined>(undefined);
+  const hasInitializedRef = useRef(false);
+
+  // Initialize initial selected keys only once on mount
+  // This captures the initial state and prevents sorting changes during user interaction
+  React.useMemo(() => {
+    // Only set initial keys once, on the first render
+    if (!hasInitializedRef.current) {
+      hasInitializedRef.current = true;
+      // Use selectedKeys if provided, otherwise fall back to defaultSelectedKeys
+      const initialKeys = ariaSelectedKeys || ariaDefaultSelectedKeys;
+      if (initialKeys !== undefined) {
+        initialSelectedKeysRef.current = new Set(initialKeys);
+      } else {
+        initialSelectedKeysRef.current = undefined;
+      }
+    }
+  }, [selectedKeys, defaultSelectedKeys]); // Depend on both props for initial setup
+
   // Apply filtering to collection items for rendering and empty state checks
   const filteredCollectionItems = useMemo(() => {
-    const term = searchValue.trim();
-    if (!term) {
-      return collectionItems;
-    }
+    // Helper to sort items with selected ones first (for multiple selection mode)
+    // Uses initial selected keys to prevent content shifting during interaction
+    const sortWithSelectedFirst = (items: any[]): any[] => {
+      if (
+        treeState?.selectionManager?.selectionMode !== 'multiple' ||
+        !initialSelectedKeysRef.current ||
+        initialSelectedKeysRef.current.size === 0
+      ) {
+        return items;
+      }
 
-    // Split search term into words for multi-word filtering
-    const searchWords = term
-      .toLowerCase()
-      .split(/\s+/)
-      .filter((word) => word.length > 0);
+      const selectedItems: any[] = [];
+      const unselectedItems: any[] = [];
 
-    // If no valid search words, return all items
-    if (searchWords.length === 0) {
-      return collectionItems;
-    }
-
-    const filterNodes = (items: any[]): any[] => {
-      const result: any[] = [];
-
-      [...items].forEach((item) => {
-        if (item.type === 'section') {
-          const filteredChildren = filterNodes(item.childNodes);
-          if (filteredChildren.length) {
-            result.push({
-              ...item,
-              childNodes: filteredChildren,
-            });
-          }
+      items.forEach((item) => {
+        if (initialSelectedKeysRef.current!.has(item.key)) {
+          selectedItems.push(item);
         } else {
-          const text = item.textValue ?? String(item.rendered ?? '');
-          if (enhancedFilter(text, term, item.props)) {
-            result.push(item);
-          }
+          unselectedItems.push(item);
         }
       });
 
-      return result;
+      return [...selectedItems, ...unselectedItems];
     };
 
-    return filterNodes(collectionItems);
-  }, [collectionItems, searchValue, enhancedFilter]);
+    const term = searchValue.trim();
+
+    let resultItems = collectionItems;
+
+    // Apply filtering if there's a search term
+    if (term) {
+      // Split search term into words for multi-word filtering
+      const searchWords = term
+        .toLowerCase()
+        .split(/\s+/)
+        .filter((word) => word.length > 0);
+
+      // If no valid search words, use all items
+      if (searchWords.length > 0) {
+        const filterNodes = (items: any[]): any[] => {
+          const result: any[] = [];
+
+          [...items].forEach((item) => {
+            if (item.type === 'section') {
+              const filteredChildren = filterNodes(item.childNodes);
+              if (filteredChildren.length) {
+                // Sort section children with selected items first
+                const sortedChildren = sortWithSelectedFirst(filteredChildren);
+                result.push({
+                  ...item,
+                  childNodes: sortedChildren,
+                });
+              }
+            } else {
+              const text = item.textValue ?? String(item.rendered ?? '');
+              if (enhancedFilter(text, term, item.props)) {
+                result.push(item);
+              }
+            }
+          });
+
+          return result;
+        };
+
+        resultItems = filterNodes(collectionItems);
+      }
+    } else {
+      // No search term - apply sorting by sections and items separately
+      const processNodes = (nodeList: any[]): any[] => {
+        const sections: any[] = [];
+        const items: any[] = [];
+
+        nodeList.forEach((node) => {
+          if (node.type === 'section') {
+            // Process section children recursively
+            const sortedChildren = sortWithSelectedFirst(
+              Array.from(node.childNodes),
+            );
+            sections.push({
+              ...node,
+              childNodes: sortedChildren,
+            });
+          } else {
+            items.push(node);
+          }
+        });
+
+        // Sort items and combine with sections
+        const sortedItems = sortWithSelectedFirst(items);
+        return [...sections, ...sortedItems];
+      };
+
+      resultItems = processNodes(collectionItems);
+    }
+
+    // Sort items at the root level with selected ones first (for items not in sections)
+    const sections: any[] = [];
+    const items: any[] = [];
+
+    resultItems.forEach((item) => {
+      if (item.type === 'section') {
+        sections.push(item);
+      } else {
+        items.push(item);
+      }
+    });
+
+    const sortedItems = sortWithSelectedFirst(items);
+    return [...sections, ...sortedItems];
+  }, [
+    collectionItems,
+    searchValue,
+    enhancedFilter,
+    treeState?.selectionManager?.selectionMode,
+    selectedKeys,
+    defaultSelectedKeys,
+  ]);
 
   const hasFilteredItems = filteredCollectionItems.length > 0;
   const viewHasSections = filteredCollectionItems.some(
