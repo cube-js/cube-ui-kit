@@ -2,7 +2,7 @@ import { DOMRef } from '@react-types/shared';
 import React, { forwardRef, ReactElement, ReactNode, useState } from 'react';
 import { Section as BaseSection, Item } from 'react-stately';
 
-import { DownIcon } from '../../../icons';
+import { DirectionIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import {
   BASE_STYLES,
@@ -212,7 +212,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     );
   };
 
-  const trigger = (
+  // The trigger is rendered as a function so we can access the dialog state
+  const renderTrigger = (state) => (
     <Button
       type={type}
       theme={theme}
@@ -224,7 +225,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         ...externalMods,
       }}
       icon={icon}
-      rightIcon={<DownIcon />}
+      rightIcon={<DirectionIcon to={state.isOpen ? 'top' : 'bottom'} />}
       validationState={validationState}
       styles={styles}
     >
@@ -239,7 +240,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       shouldFlip={true}
       isDismissable={true}
     >
-      {trigger}
+      {renderTrigger}
       {(close) => (
         <Dialog display="grid" styles={{ gridRows: '1sf', ...popoverStyles }}>
           <FilterListBox
@@ -275,6 +276,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 close();
               }
             }}
+            onEscape={close}
           >
             {children}
           </FilterListBox>

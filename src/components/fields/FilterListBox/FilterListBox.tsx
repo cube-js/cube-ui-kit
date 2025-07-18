@@ -108,6 +108,12 @@ export interface CubeFilterListBoxProps<T>
   allowsCustomValue?: boolean;
   /** Mods for the FilterListBox */
   mods?: Record<string, boolean>;
+
+  /**
+   * Optional callback fired when the user presses `Escape` while the search input is empty.
+   * Can be used by parent components (e.g. FilterPicker) to close an enclosing Dialog.
+   */
+  onEscape?: () => void;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -172,6 +178,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     onSelectionChange: externalOnSelectionChange,
     allowsCustomValue = false,
     children,
+    onEscape,
     ...otherProps
   } = props;
 
@@ -516,8 +523,15 @@ export const FilterListBox = forwardRef(function FilterListBox<
         }
       } else if (e.key === 'Escape') {
         if (searchValue) {
+          // Clear the current search if any text is present.
           e.preventDefault();
           setSearchValue('');
+        } else {
+          // Notify parent that Escape was pressed on an empty input.
+          if (onEscape) {
+            e.preventDefault();
+            onEscape();
+          }
         }
       }
     },
