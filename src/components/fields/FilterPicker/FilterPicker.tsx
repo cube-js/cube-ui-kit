@@ -130,7 +130,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     message,
     mods: externalMods,
     description,
-    placeholder = 'Select options...',
+    placeholder,
     size = 'medium',
     styles,
     listBoxStyles,
@@ -233,7 +233,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       });
     }
 
-    let content = '';
+    let content: string | null | undefined = '';
 
     if (!hasSelection) {
       content = placeholder;
@@ -241,6 +241,10 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       content = selectedLabels[0];
     } else {
       content = selectedLabels.join(', ');
+    }
+
+    if (!content) {
+      return null;
     }
 
     return (
@@ -257,18 +261,19 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const renderTrigger = (state) => (
     <Button
       type={type}
-      theme={theme}
+      theme={validationState === 'invalid' ? 'danger' : theme}
       size={size}
       isDisabled={isDisabled}
       isLoading={isLoading}
       mods={{
         placeholder: !hasSelection,
+        selected: hasSelection,
         ...externalMods,
       }}
       icon={icon}
       rightIcon={<DirectionIcon to={state.isOpen ? 'top' : 'bottom'} />}
-      validationState={validationState}
       styles={styles}
+      {...otherProps}
     >
       {renderTriggerContent()}
     </Button>

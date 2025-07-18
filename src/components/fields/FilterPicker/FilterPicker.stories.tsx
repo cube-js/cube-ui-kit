@@ -1,3 +1,5 @@
+import { EditIcon } from '../../../icons';
+
 import { FilterPicker } from './FilterPicker';
 
 import type { Meta, StoryObj } from '@storybook/react';
@@ -106,6 +108,63 @@ export const CustomLabel: Story = {
       }
       return `${selectedKeys.length} of 12 selected`;
     },
+  },
+  render: (args) => (
+    <FilterPicker {...args}>
+      <FilterPicker.Section title="Fruits">
+        <FilterPicker.Item key="apple" textValue="Apple">
+          Apple
+        </FilterPicker.Item>
+        <FilterPicker.Item key="banana" textValue="Banana">
+          Banana
+        </FilterPicker.Item>
+        <FilterPicker.Item key="cherry" textValue="Cherry">
+          Cherry
+        </FilterPicker.Item>
+        <FilterPicker.Item key="date" textValue="Date">
+          Date
+        </FilterPicker.Item>
+        <FilterPicker.Item key="elderberry" textValue="Elderberry">
+          Elderberry
+        </FilterPicker.Item>
+      </FilterPicker.Section>
+      <FilterPicker.Section title="Vegetables">
+        <FilterPicker.Item key="carrot" textValue="Carrot">
+          Carrot
+        </FilterPicker.Item>
+        <FilterPicker.Item key="broccoli" textValue="Broccoli">
+          Broccoli
+        </FilterPicker.Item>
+        <FilterPicker.Item key="spinach" textValue="Spinach">
+          Spinach
+        </FilterPicker.Item>
+        <FilterPicker.Item key="pepper" textValue="Bell Pepper">
+          Bell Pepper
+        </FilterPicker.Item>
+      </FilterPicker.Section>
+      <FilterPicker.Section title="Grains">
+        <FilterPicker.Item key="rice" textValue="Rice">
+          Rice
+        </FilterPicker.Item>
+        <FilterPicker.Item key="quinoa" textValue="Quinoa">
+          Quinoa
+        </FilterPicker.Item>
+        <FilterPicker.Item key="oats" textValue="Oats">
+          Oats
+        </FilterPicker.Item>
+      </FilterPicker.Section>
+    </FilterPicker>
+  ),
+};
+
+export const SingleIcon: Story = {
+  args: {
+    label: 'Single Icon',
+    selectionMode: 'multiple',
+    searchPlaceholder: 'Search options...',
+    renderSummary: () => null,
+    icon: <EditIcon />,
+    rightIcon: null,
   },
   render: (args) => (
     <FilterPicker {...args}>
