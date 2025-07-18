@@ -1,3 +1,5 @@
+import { userEvent, within } from '@storybook/test';
+
 import { EditIcon, FilterIcon, RightIcon } from '../../../icons';
 import { Button } from '../../actions/Button/Button';
 import { Badge } from '../../content/Badge/Badge';
@@ -51,6 +53,11 @@ export const Default: Story = {
     selectionMode: 'multiple',
     searchPlaceholder: 'Search options...',
     width: 'max 30x',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
   },
   render: (args) => (
     <FilterPicker {...args}>
@@ -114,6 +121,11 @@ export const CustomLabel: Story = {
       return `${selectedKeys.length} of 12 selected`;
     },
   },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
+  },
   render: (args) => (
     <FilterPicker {...args}>
       <FilterPicker.Section title="Fruits">
@@ -170,11 +182,16 @@ export const WithHeaderAndFooter: Story = {
     searchPlaceholder: 'Search languages...',
     width: 'max 30x',
   },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
+  },
   render: (args) => (
     <FilterPicker
       {...args}
       header={
-        <Space gap="1x" placeContent="space-between" flow="row">
+        <>
           <Space gap="1x" flow="row" placeItems="center">
             <Title level={6}>Programming Languages</Title>
             <Badge type="purple">12</Badge>
@@ -185,22 +202,17 @@ export const WithHeaderAndFooter: Story = {
             icon={<FilterIcon />}
             aria-label="Filter languages"
           />
-        </Space>
+        </>
       }
       footer={
-        <Space
-          gap="1x"
-          placeContent="space-between"
-          flow="row"
-          placeItems="center"
-        >
+        <>
           <Text color="#dark.50" preset="t4">
             Popular languages shown
           </Text>
           <Button type="link" size="small" rightIcon={<RightIcon />}>
             View all
           </Button>
-        </Space>
+        </>
       }
     >
       <FilterPicker.Section title="Frontend">
@@ -257,6 +269,11 @@ export const SingleIcon: Story = {
     renderSummary: () => null,
     icon: <EditIcon />,
     rightIcon: null,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
   },
   render: (args) => (
     <FilterPicker {...args}>

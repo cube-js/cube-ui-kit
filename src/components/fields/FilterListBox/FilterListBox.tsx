@@ -182,6 +182,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     footer,
     headerStyles,
     footerStyles,
+    listBoxStyles,
     children,
     onEscape,
     ...otherProps
@@ -651,7 +652,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
       {...focusProps}
     >
       {header ? (
-        <StyledHeader role="presentation" styles={headerStyles}>
+        <StyledHeader
+          role="presentation"
+          styles={{ border: false, ...headerStyles }}
+        >
           {header}
         </StyledHeader>
       ) : (
@@ -688,7 +692,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
           footerStyles={footerStyles}
           onSelectionChange={handleSelectionChange}
           {...modAttrs({ ...mods, focused: false })}
-          styles={{ border: '#clear', radius: '1r bottom' }}
+          styles={{ border: false, ...listBoxStyles }}
         >
           {enhancedChildren as any}
         </ListBox>
