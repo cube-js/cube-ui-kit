@@ -59,6 +59,27 @@ export interface CubeFilterPickerProps<T>
   /** Custom styles for the popover */
   popoverStyles?: Styles;
 
+  /**
+   * Custom renderer for the summary shown inside the trigger **when there is a selection**.
+   *
+   * For `selectionMode="multiple"` the function receives:
+   *  - `selectedLabels`: array of labels of the selected items.
+   *  - `selectedKeys`: array of keys of the selected items.
+   *
+   * For `selectionMode="single"` the function receives:
+   *  - `selectedLabel`: label of the selected item.
+   *  - `selectedKey`: key of the selected item.
+   *
+   * The function should return a `ReactNode` that will be rendered inside the trigger.
+   */
+  renderSummary?: (args: {
+    selectedLabels: string[];
+    selectedKeys: (string | number)[];
+    selectedLabel?: string;
+    selectedKey?: string | number | null;
+    selectionMode: 'single' | 'multiple';
+  }) => ReactNode;
+
   /** Optional ref to access internal ListBox state (from FilterListBox) */
   listStateRef?: React.MutableRefObject<any | null>;
   /** Mods for the FilterPicker */
@@ -125,6 +146,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     onSelectionChange,
     selectionMode = 'multiple',
     listStateRef,
+    renderSummary,
     ...otherProps
   } = props;
 
@@ -192,6 +214,25 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const hasSelection = selectedLabels.length > 0;
 
   const renderTriggerContent = () => {
+    // When there is a selection and a custom summary renderer is provided – use it.
+    if (hasSelection && typeof renderSummary === 'function') {
+      if (selectionMode === 'single') {
+        return renderSummary({
+          selectedLabel: selectedLabels[0],
+          selectedKey: effectiveSelectedKey ?? null,
+          selectedLabels,
+          selectedKeys: effectiveSelectedKeys as any,
+          selectionMode: 'single',
+        });
+      }
+
+      return renderSummary({
+        selectedLabels,
+        selectedKeys: effectiveSelectedKeys as any,
+        selectionMode: 'multiple',
+      });
+    }
+
     let content = '';
 
     if (!hasSelection) {
