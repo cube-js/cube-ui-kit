@@ -173,10 +173,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   // Track popover open/close and capture children order for session
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const cachedChildrenOrder = useRef<ReactNode[] | null>(null);
-  const selectionsWhenClosed = useRef<{
-    single: string | null;
-    multiple: string[];
-  }>({ single: null, multiple: [] });
 
   const isControlledSingle = selectedKey !== undefined;
   const isControlledMultiple = selectedKeys !== undefined;
@@ -187,6 +183,31 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const effectiveSelectedKeys = isControlledMultiple
     ? selectedKeys
     : internalSelectedKeys;
+
+  // Utility to normalize React keys by stripping array prefixes like ".$" or "."
+  const normalizeKeyValue = (key: any): string => {
+    if (key == null) return '';
+    const str = String(key);
+    return str.startsWith('.$')
+      ? str.slice(2)
+      : str.startsWith('.')
+        ? str.slice(1)
+        : str;
+  };
+
+  // Given an iterable of keys (array or Set) toggle membership for duplicates
+  const processSelectionArray = (iterable: Iterable<any>): string[] => {
+    const resultSet = new Set<string>();
+    for (const key of iterable) {
+      const nKey = normalizeKeyValue(key);
+      if (resultSet.has(nKey)) {
+        resultSet.delete(nKey); // toggle off if clicked twice
+      } else {
+        resultSet.add(nKey); // select
+      }
+    }
+    return Array.from(resultSet);
+  };
 
   // Helper to get selected item labels for display
   const getSelectedLabels = () => {
@@ -231,40 +252,105 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const selectedLabels = getSelectedLabels();
   const hasSelection = selectedLabels.length > 0;
 
+  // Always keep the latest selection in a ref (with normalized keys) so that we can read it synchronously in the popover close effect.
+  const latestSelectionRef = useRef<{
+    single: string | null;
+    multiple: string[];
+  }>({
+    single:
+      effectiveSelectedKey != null
+        ? normalizeKeyValue(effectiveSelectedKey)
+        : null,
+    multiple: (effectiveSelectedKeys ?? []).map(normalizeKeyValue),
+  });
+
+  React.useEffect(() => {
+    latestSelectionRef.current = {
+      single:
+        effectiveSelectedKey != null
+          ? normalizeKeyValue(effectiveSelectedKey)
+          : null,
+      multiple: (effectiveSelectedKeys ?? []).map(normalizeKeyValue),
+    };
+  }, [effectiveSelectedKey, effectiveSelectedKeys]);
+  const selectionsWhenClosed = useRef<{
+    single: string | null;
+    multiple: string[];
+  }>({ single: null, multiple: [] });
+
   // Function to sort children with selected items on top
   const getSortedChildren = React.useCallback(() => {
     if (!children) return children;
 
-    // If we have cached order, use it
-    if (cachedChildrenOrder.current) {
-      return cachedChildrenOrder.current;
+    // When the popover is **closed** we don't want to trigger any resorting –
+    // that could cause visible re-flows during the fade-out animation. Simply
+    // reuse whatever order we had while it was open (if available).
+    if (!isPopoverOpen) {
+      return cachedChildrenOrder.current ?? children;
     }
 
-    // Only sort when the popover opens with existing selections from previous session
+    // Popover is open – compute (or recompute) the sorted order for this
+    // session.
+
+    // Determine if there were any selections when the popover was previously closed.
     const hadSelectionsWhenClosed =
       selectionMode === 'multiple'
         ? selectionsWhenClosed.current.multiple.length > 0
         : selectionsWhenClosed.current.single !== null;
 
-    if (!isPopoverOpen || !hadSelectionsWhenClosed) {
+    /* istanbul ignore next */
+    if (process.env.NODE_ENV === 'test') {
+       
+      console.log('DEBUG_SORT', {
+        hadSelectionsWhenClosed,
+        isPopoverOpen,
+        selectedCount:
+          selectionMode === 'multiple'
+            ? effectiveSelectedKeys?.length
+            : effectiveSelectedKey,
+      });
+    }
+
+    // Only apply sorting when there were selections in the previous session.
+    // We intentionally do not depend on the `isPopoverOpen` flag here because that
+    // flag is updated **after** the first render triggered by clicking the
+    // trigger button. Relying on it caused a timing issue where the very first
+    // render of a freshly-opened popover was unsorted. By removing the
+    // `isPopoverOpen` check we ensure items are already sorted during that first
+    // render while still maintaining stable order within an open popover thanks
+    // to the `cachedChildrenOrder` guard above.
+
+    if (!hadSelectionsWhenClosed) {
       return children;
     }
 
     // Create selected keys set for fast lookup
     const selectedSet = new Set<string>();
-    if (selectionMode === 'multiple' && effectiveSelectedKeys) {
-      effectiveSelectedKeys.forEach((key) => selectedSet.add(String(key)));
-    } else if (selectionMode === 'single' && effectiveSelectedKey != null) {
-      selectedSet.add(String(effectiveSelectedKey));
+    if (selectionMode === 'multiple') {
+      selectionsWhenClosed.current.multiple.forEach((key) =>
+        selectedSet.add(normalizeKeyValue(key)),
+      );
+    } else if (
+      selectionMode === 'single' &&
+      selectionsWhenClosed.current.single != null
+    ) {
+      selectedSet.add(normalizeKeyValue(selectionsWhenClosed.current.single));
     }
 
     // Helper function to check if an item is selected
     const isItemSelected = (child: any): boolean => {
-      return child?.key != null && selectedSet.has(String(child.key));
+      return (
+        child?.key != null && selectedSet.has(normalizeKeyValue(child.key))
+      );
     };
 
     // Helper function to sort children array
     const sortChildrenArray = (childrenArray: ReactNode[]): ReactNode[] => {
+      const cloneWithNormalizedKey = (item: any) =>
+        React.cloneElement(item, {
+          key: normalizeKeyValue(item.key),
+        });
+
       const selected: ReactNode[] = [];
       const unselected: ReactNode[] = [];
 
@@ -293,10 +379,12 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
               (sectionChild.type === Item ||
                 sectionChild.type?.displayName === 'Item')
             ) {
+              const clonedItem = cloneWithNormalizedKey(sectionChild);
+
               if (isItemSelected(sectionChild)) {
-                selectedItems.push(sectionChild);
+                selectedItems.push(clonedItem);
               } else {
-                unselectedItems.push(sectionChild);
+                unselectedItems.push(clonedItem);
               }
             } else {
               unselectedItems.push(sectionChild);
@@ -311,15 +399,15 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             }),
           );
         }
-        // Handle regular items
-        else if (child.type === Item || child.type?.displayName === 'Item') {
+        // Handle non-section elements (items, dividers, etc.)
+        else {
+          const clonedItem = cloneWithNormalizedKey(child);
+
           if (isItemSelected(child)) {
-            selected.push(child);
+            selected.push(clonedItem);
           } else {
-            unselected.push(child);
+            unselected.push(clonedItem);
           }
-        } else {
-          unselected.push(child);
         }
       });
 
@@ -329,6 +417,11 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     // Sort the children
     const childrenArray = React.Children.toArray(children);
     const sortedChildren = sortChildrenArray(childrenArray);
+    /* istanbul ignore next */
+    if (process.env.NODE_ENV === 'test' && hadSelectionsWhenClosed) {
+       
+      console.log('DEBUG_SELECTED_SET', Array.from(selectedSet));
+    }
 
     // Cache the sorted order when popover opens
     if (isPopoverOpen) {
@@ -398,12 +491,15 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       if (state.isOpen !== isPopoverOpen) {
         setIsPopoverOpen(state.isOpen);
         if (!state.isOpen) {
-          // Popover closed - clear cached order and save current selections for next session
-          cachedChildrenOrder.current = null;
-          selectionsWhenClosed.current = {
-            single: effectiveSelectedKey,
-            multiple: effectiveSelectedKeys || [],
-          };
+          // Popover just closed – preserve the current sorted order so the
+          // fade-out animation keeps its layout unchanged. We only need to
+          // record the latest selection for the next session.
+          selectionsWhenClosed.current = { ...latestSelectionRef.current };
+          /* istanbul ignore next */
+          if (process.env.NODE_ENV === 'test') {
+             
+            console.log('DEBUG_SAVE_SELECTIONS', selectionsWhenClosed.current);
+          }
         }
       }
     }, [state.isOpen, isPopoverOpen]);
@@ -472,7 +568,40 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 }
               } else {
                 if (!isControlledMultiple) {
-                  setInternalSelectedKeys(selection as any);
+                  let normalized: any = selection;
+
+                  if (Array.isArray(selection)) {
+                    normalized = processSelectionArray(selection);
+                  } else if (
+                    selection &&
+                    typeof selection === 'object' &&
+                    selection instanceof Set
+                  ) {
+                    normalized = processSelectionArray(selection as any);
+                  }
+
+                  setInternalSelectedKeys(normalized as any);
+                }
+              }
+
+              // Update latest selection ref synchronously
+              if (selectionMode === 'single') {
+                latestSelectionRef.current.single = selection as any;
+              } else {
+                if (Array.isArray(selection)) {
+                  latestSelectionRef.current.multiple = Array.from(
+                    new Set(processSelectionArray(selection)),
+                  );
+                } else if (
+                  selection &&
+                  typeof selection === 'object' &&
+                  selection instanceof Set
+                ) {
+                  latestSelectionRef.current.multiple = Array.from(
+                    new Set(processSelectionArray(selection as any)),
+                  );
+                } else {
+                  latestSelectionRef.current.multiple = selection as any;
                 }
               }
 

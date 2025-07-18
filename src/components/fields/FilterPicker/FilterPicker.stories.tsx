@@ -61,6 +61,49 @@ export const Default: Story = {
   },
   render: (args) => (
     <FilterPicker {...args}>
+      <FilterPicker.Item key="apple" textValue="Apple">
+        Apple
+      </FilterPicker.Item>
+      <FilterPicker.Item key="banana" textValue="Banana">
+        Banana
+      </FilterPicker.Item>
+      <FilterPicker.Item key="cherry" textValue="Cherry">
+        Cherry
+      </FilterPicker.Item>
+      <FilterPicker.Item key="carrot" textValue="Carrot">
+        Carrot
+      </FilterPicker.Item>
+      <FilterPicker.Item key="broccoli" textValue="Broccoli">
+        Broccoli
+      </FilterPicker.Item>
+      <FilterPicker.Item key="spinach" textValue="Spinach">
+        Spinach
+      </FilterPicker.Item>
+      <FilterPicker.Item key="rice" textValue="Rice">
+        Rice
+      </FilterPicker.Item>
+      <FilterPicker.Item key="quinoa" textValue="Quinoa">
+        Quinoa
+      </FilterPicker.Item>
+    </FilterPicker>
+  ),
+};
+
+export const WithSections: Story = {
+  args: {
+    label: 'Select Options',
+    placeholder: 'Choose items...',
+    selectionMode: 'multiple',
+    searchPlaceholder: 'Search options...',
+    width: 'max 30x',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
+  },
+  render: (args) => (
+    <FilterPicker {...args}>
       <FilterPicker.Section title="Fruits">
         <FilterPicker.Item key="apple" textValue="Apple">
           Apple

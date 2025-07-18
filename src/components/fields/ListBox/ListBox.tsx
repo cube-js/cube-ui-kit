@@ -63,7 +63,7 @@ const ListBoxWrapperElement = tasty({
       valid: '#success-text.50',
       invalid: '#danger-text.50',
       disabled: true,
-      popover: false,
+      'popover | searchable': false,
     },
   },
 });
@@ -195,6 +195,14 @@ export interface CubeListBoxProps<T>
   mods?: Record<string, boolean>;
 
   /**
+   * When true, ListBox will use virtual focus. This keeps actual DOM focus
+   * outside of the individual option elements (e.g. for searchable lists
+   * where focus stays within an external input).
+   * Defaults to false for backward compatibility.
+   */
+  shouldUseVirtualFocus?: boolean;
+
+  /**
    * Optional callback fired when the user presses Escape key.
    * When provided, this prevents React Aria's default Escape behavior (selection reset).
    */
@@ -254,6 +262,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     defaultSelectedKey,
     selectedKeys,
     defaultSelectedKeys,
+    shouldUseVirtualFocus,
     onSelectionChange,
     stateRef,
     focusOnHover,
@@ -363,7 +372,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       ...props,
       'aria-label': props['aria-label'] || label?.toString(),
       isDisabled,
-      shouldUseVirtualFocus: false,
+      shouldUseVirtualFocus: shouldUseVirtualFocus ?? false,
       shouldFocusWrap: true,
       escapeKeyBehavior: onEscape ? 'none' : 'clearSelection',
     },
@@ -373,6 +382,11 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
 
   const { isFocused, focusProps } = useFocus({ isDisabled });
   const isInvalid = validationState === 'invalid';
+
+  // Merge React Aria listbox props with custom keyboard props so both sets of
+  // event handlers (e.g. Arrow navigation *and* our Escape handler) are
+  // preserved.
+  const mergedListBoxProps = mergeProps(listBoxProps, keyboardProps);
 
   const mods = useMemo(
     () => ({
@@ -409,8 +423,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         <div role="presentation" />
       )}
       <ListElement
-        {...listBoxProps}
-        {...keyboardProps}
+        {...mergedListBoxProps}
         ref={listRef}
         styles={listStyles}
         aria-disabled={isDisabled || undefined}

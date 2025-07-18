@@ -510,8 +510,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
   // Ref to access internal ListBox state (selection manager, etc.)
   const listStateRef = useRef<any>(null);
 
-  // Track focused key for virtual focus management
-  const [focusedKey, setFocusedKey] = useState<Key | null>(null);
+  // No separate focusedKey state needed; rely directly on selectionManager.focusedKey.
 
   // When the search value changes, the visible collection of items may change as well.
   // If the currently focused item is no longer visible, move virtual focus to the first
@@ -555,7 +554,6 @@ export const FilterListBox = forwardRef(function FilterListBox<
     }
 
     selectionManager.setFocusedKey(firstKey);
-    setFocusedKey(firstKey);
   }, [searchValue, enhancedChildren]);
 
   // Keyboard navigation handler for search input
@@ -592,8 +590,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         const isArrowDown = e.key === 'ArrowDown';
         const direction = isArrowDown ? 1 : -1;
 
-        const currentKey =
-          focusedKey != null ? focusedKey : selectionManager.focusedKey;
+        const currentKey = selectionManager.focusedKey;
 
         let nextKey: Key | null = null;
 
@@ -624,16 +621,12 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
         if (nextKey != null) {
           selectionManager.setFocusedKey(nextKey);
-          setFocusedKey(nextKey);
         }
       } else if (e.key === 'Enter') {
         const listState = listStateRef.current;
         if (!listState) return;
 
-        const keyToSelect =
-          focusedKey != null
-            ? focusedKey
-            : listState.selectionManager.focusedKey;
+        const keyToSelect = listState.selectionManager.focusedKey;
 
         if (keyToSelect != null) {
           e.preventDefault();
@@ -738,7 +731,9 @@ export const FilterListBox = forwardRef(function FilterListBox<
         aria-expanded="true"
         aria-haspopup="listbox"
         aria-activedescendant={
-          focusedKey != null ? `ListBoxItem-${focusedKey}` : undefined
+          listStateRef.current?.selectionManager.focusedKey != null
+            ? `ListBoxItem-${listStateRef.current?.selectionManager.focusedKey}`
+            : undefined
         }
         onChange={(e) => {
           const value = e.target.value;
@@ -799,7 +794,8 @@ export const FilterListBox = forwardRef(function FilterListBox<
           validationState={validationState}
           disallowEmptySelection={props.disallowEmptySelection}
           disabledKeys={props.disabledKeys}
-          focusOnHover={false}
+          focusOnHover={true}
+          shouldUseVirtualFocus={true}
           footer={footer}
           footerStyles={footerStyles}
           header={header}
