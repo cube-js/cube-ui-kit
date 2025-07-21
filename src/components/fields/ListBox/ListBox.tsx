@@ -92,7 +92,12 @@ const OptionElement = tasty({
     flow: 'row',
     placeItems: 'center start',
     gap: '.75x',
-    padding: '.75x 1x',
+    padding: '.5x 1x',
+    height: {
+      '[data-size="small"]': 'min 4x',
+      '[data-size="medium"]': 'min 5x',
+    },
+    boxSizing: 'border-box',
     radius: '1r',
     cursor: {
       '': 'default',
@@ -242,6 +247,8 @@ export interface CubeListBoxProps<T>
   footerStyles?: Styles;
   /** Mods for the ListBox */
   mods?: Record<string, boolean>;
+  /** Size of the ListBox */
+  size?: 'small' | 'medium';
 
   /**
    * When true, ListBox will use virtual focus. This keeps actual DOM focus
@@ -318,6 +325,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     description,
     styles,
     mods: externalMods,
+    size,
     labelSuffix,
     selectedKey,
     defaultSelectedKey,
@@ -536,6 +544,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
               renderedItems.push(
                 <Option
                   key={item.key}
+                  size={size}
                   item={item}
                   state={listState}
                   styles={optionStyles}
@@ -570,6 +579,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
 ) => ReactElement) & { Item: typeof Item; Section: typeof BaseSection };
 
 function Option({
+  size,
   item,
   state,
   styles,
@@ -641,6 +651,7 @@ function Option({
       id={`ListBoxItem-${String(item.key)}`}
       {...optionProps}
       ref={ref}
+      data-size={size}
       mods={{
         selected: isSelected,
         focused: isFocused,

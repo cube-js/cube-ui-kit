@@ -9,7 +9,6 @@ import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
 import { Form } from '../../form';
 import { Space } from '../../layout/Space';
-import { Link } from '../../navigation/Link/Link';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
@@ -44,11 +43,11 @@ export default {
 
     /* Presentation */
     size: {
-      options: ['small', 'default', 'large'],
+      options: ['small', 'medium', 'large'],
       control: { type: 'radio' },
       description: 'ListBox size',
       table: {
-        defaultValue: { summary: 'default' },
+        defaultValue: { summary: 'small' },
       },
     },
 
@@ -490,4 +489,111 @@ InPopover.play = async ({ canvasElement }) => {
     // Wait a moment for the popover to open and autoFocus to take effect
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
+};
+
+export const VirtualizedList: StoryFn<CubeListBoxProps<any>> = (args) => {
+  const [selected, setSelected] = useState<string | null>(null);
+
+  // Generate a large list of items to trigger virtualization (> 30 items)
+  const items = Array.from({ length: 100 }, (_, i) => ({
+    id: `item-${i}`,
+    name: `Item ${i + 1}`,
+    description: `This is the description for item ${i + 1}`,
+  }));
+
+  return (
+    <div style={{ height: '400px', width: '300px' }}>
+      <Text>
+        Large list with {items.length} items (virtualization automatically
+        enabled for {'>'}30 items)
+      </Text>
+      <Space height="1x" />
+      <ListBox
+        {...args}
+        label="Virtualized List"
+        selectedKey={selected}
+        height="300px"
+        overflow="auto"
+        onSelectionChange={setSelected}
+      >
+        {items.map((item) => (
+          <ListBox.Item key={item.id} description={item.description}>
+            {item.name}
+          </ListBox.Item>
+        ))}
+      </ListBox>
+      <Space height="1x" />
+      <Text>Selected: {selected || 'None'}</Text>
+    </div>
+  );
+};
+
+VirtualizedList.parameters = {
+  docs: {
+    description: {
+      story:
+        'When a ListBox contains more than 30 items, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets.',
+    },
+  },
+};
+
+export const VirtualizedWithSections: StoryFn<CubeListBoxProps<any>> = (
+  args,
+) => {
+  const [selected, setSelected] = useState<string | null>(null);
+
+  // Generate sections with multiple items each to exceed the 30-item threshold
+  const sections = Array.from({ length: 5 }, (_, sectionIndex) => ({
+    id: `section-${sectionIndex}`,
+    name: `Section ${sectionIndex + 1}`,
+    items: Array.from({ length: 10 }, (_, itemIndex) => ({
+      id: `section-${sectionIndex}-item-${itemIndex}`,
+      name: `Item ${itemIndex + 1}`,
+      description: `Description for item ${itemIndex + 1} in section ${sectionIndex + 1}`,
+    })),
+  }));
+
+  const totalItems = sections.reduce(
+    (acc, section) => acc + section.items.length,
+    0,
+  );
+
+  return (
+    <div style={{ height: '400px', width: '350px' }}>
+      <Text>
+        Large sectioned list with {totalItems} items across {sections.length}{' '}
+        sections (virtualized)
+      </Text>
+      <Space height="1x" />
+      <ListBox
+        {...args}
+        label="Virtualized Sectioned List"
+        selectedKey={selected}
+        height="300px"
+        overflow="auto"
+        onSelectionChange={setSelected}
+      >
+        {sections.map((section) => (
+          <ListBox.Section key={section.id} title={section.name}>
+            {section.items.map((item) => (
+              <ListBox.Item key={item.id} description={item.description}>
+                {item.name}
+              </ListBox.Item>
+            ))}
+          </ListBox.Section>
+        ))}
+      </ListBox>
+      <Space height="1x" />
+      <Text>Selected: {selected || 'None'}</Text>
+    </div>
+  );
+};
+
+VirtualizedWithSections.parameters = {
+  docs: {
+    description: {
+      story:
+        'Virtualization also works with sectioned lists. Both sections and items are virtualized, maintaining performance even with complex nested structures.',
+    },
+  },
 };
