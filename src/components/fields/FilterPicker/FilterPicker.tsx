@@ -78,13 +78,15 @@ export interface CubeFilterPickerProps<T>
    *
    * The function should return a `ReactNode` that will be rendered inside the trigger.
    */
-  renderSummary?: (args: {
-    selectedLabels: string[];
-    selectedKeys: (string | number)[];
-    selectedLabel?: string;
-    selectedKey?: string | number | null;
-    selectionMode: 'single' | 'multiple';
-  }) => ReactNode;
+  renderSummary?:
+    | ((args: {
+        selectedLabels: string[];
+        selectedKeys: (string | number)[];
+        selectedLabel?: string;
+        selectedKey?: string | number | null;
+        selectionMode: 'single' | 'multiple';
+      }) => ReactNode)
+    | null;
 
   /** Optional ref to access internal ListBox state (from FilterListBox) */
   listStateRef?: React.MutableRefObject<any | null>;
@@ -150,7 +152,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     selectedKeys,
     defaultSelectedKeys,
     onSelectionChange,
-    selectionMode = 'multiple',
+    selectionMode = 'single',
     listStateRef,
     header,
     footer,
@@ -456,6 +458,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         selectedKeys: effectiveSelectedKeys as any,
         selectionMode: 'multiple',
       });
+    } else if (renderSummary === null) {
+      return null;
     }
 
     let content: string | null | undefined = '';

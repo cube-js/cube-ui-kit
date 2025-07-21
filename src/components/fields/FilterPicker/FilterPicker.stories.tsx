@@ -50,7 +50,6 @@ export const Default: Story = {
   args: {
     label: 'Select Options',
     placeholder: 'Choose items...',
-    selectionMode: 'multiple',
     searchPlaceholder: 'Search options...',
     width: 'max 30x',
   },
@@ -309,7 +308,7 @@ export const SingleIcon: Story = {
     label: 'Single Icon',
     selectionMode: 'multiple',
     searchPlaceholder: 'Search options...',
-    renderSummary: () => null,
+    renderSummary: null,
     icon: <EditIcon />,
     rightIcon: null,
   },
