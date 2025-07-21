@@ -308,7 +308,7 @@ export const SingleIcon: Story = {
     label: 'Single Icon',
     selectionMode: 'multiple',
     searchPlaceholder: 'Search options...',
-    renderSummary: null,
+    renderSummary: false,
     icon: <EditIcon />,
     rightIcon: null,
   },

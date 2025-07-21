@@ -86,7 +86,7 @@ export interface CubeFilterPickerProps<T>
         selectedKey?: string | number | null;
         selectionMode: 'single' | 'multiple';
       }) => ReactNode)
-    | null;
+    | false;
 
   /** Optional ref to access internal ListBox state (from FilterListBox) */
   listStateRef?: React.MutableRefObject<any | null>;
@@ -458,7 +458,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         selectedKeys: effectiveSelectedKeys as any,
         selectionMode: 'multiple',
       });
-    } else if (renderSummary === null) {
+    } else if (renderSummary === false) {
       return null;
     }
 
