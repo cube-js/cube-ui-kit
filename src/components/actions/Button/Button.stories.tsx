@@ -29,7 +29,7 @@ export default {
       },
     },
     size: {
-      options: ['small', 'medium', 'large'],
+      options: ['tiny', 'small', 'medium', 'large'],
       control: { type: 'radio' },
       description: 'Button size',
       table: {

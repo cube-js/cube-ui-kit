@@ -59,8 +59,6 @@ export interface CubeFilterPickerProps<T>
   size?: 'small' | 'medium' | 'large';
   /** Children (FilterListBox.Item and FilterListBox.Section elements) */
   children?: ReactNode;
-  /** Maximum number of tags to show before showing count */
-  maxTags?: number;
   /** Custom styles for the list box */
   listBoxStyles?: Styles;
   /** Custom styles for the popover */

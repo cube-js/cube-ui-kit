@@ -96,11 +96,6 @@ const meta: Meta<typeof FilterPicker> = {
         defaultValue: { summary: 'medium' },
       },
     },
-    maxTags: {
-      control: 'number',
-      description:
-        'Maximum number of tags to show before showing count (multiple mode only)',
-    },
   },
 };
 

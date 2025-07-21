@@ -1,0 +1,303 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
+import { FilterPicker } from './FilterPicker';
+import * as FilterPickerStories from './FilterPicker.stories';
+
+<Meta of={FilterPickerStories} />
+
+# FilterPicker
+
+FilterPicker is a versatile selection component that combines a trigger button with a filterable dropdown. It provides a searchable interface for selecting one or multiple items from a list, with support for sections, custom summaries, and various UI states.
+
+## When to Use
+
+- Creating filter interfaces where users need to select from predefined options
+- Building advanced search and filtering systems with multiple criteria
+- Implementing tag-based selection systems where users can choose multiple categories
+- Designing compact selection interfaces where space is limited and search functionality is important
+- Building user preference panels where options need to be organized into logical groups
+
+## Component
+
+<Story of={FilterPickerStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={FilterPickerStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/BaseProperties)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root element of the component.
+
+**Sub-elements:**
+- None - styles apply directly to the trigger button wrapper
+
+#### listBoxStyles
+
+Customizes the dropdown list container within the popover.
+
+#### popoverStyles
+
+Customizes the popover dialog that contains the list.
+
+#### headerStyles
+
+Customizes the header area when header prop is provided.
+
+#### footerStyles
+
+Customizes the footer area when footer prop is provided.
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop: `width`, `height`, `margin`, `padding`, `position`, `inset`, `zIndex`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `opacity`, `color`, `fill`, `fade`.
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| placeholder | `boolean` | Applied when no selection is made |
+| selected | `boolean` | Applied when items are selected |
+| disabled | `boolean` | Applied when the component is disabled |
+| loading | `boolean` | Applied when the component is in loading state |
+| invalid | `boolean` | Applied when validation state is invalid |
+| valid | `boolean` | Applied when validation state is valid |
+| focused | `boolean` | Applied when the component has focus |
+
+## Variants
+
+### Types
+
+- `outline` - Default outlined button appearance
+- `clear` - Transparent background with minimal styling
+- `primary` - Primary brand color styling
+- `secondary` - Secondary color styling
+- `neutral` - Neutral gray styling
+
+### Themes
+
+- `default` - Standard appearance
+- `danger` - Used when validationState is invalid
+
+### Sizes
+
+- `small` - Compact size for dense interfaces
+- `medium` - Default size
+- `large` - Emphasized size for prominent selections
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<FilterPicker label="Select Fruits" placeholder="Choose fruits...">
+  <FilterPicker.Item key="apple">Apple</FilterPicker.Item>
+  <FilterPicker.Item key="banana">Banana</FilterPicker.Item>
+  <FilterPicker.Item key="cherry">Cherry</FilterPicker.Item>
+</FilterPicker>
+```
+
+### Multiple Selection
+
+```jsx
+<FilterPicker 
+  label="Select Multiple Options" 
+  selectionMode="multiple"
+  placeholder="Choose items..."
+>
+  <FilterPicker.Item key="option1">Option 1</FilterPicker.Item>
+  <FilterPicker.Item key="option2">Option 2</FilterPicker.Item>
+  <FilterPicker.Item key="option3">Option 3</FilterPicker.Item>
+</FilterPicker>
+```
+
+### With Sections
+
+```jsx
+<FilterPicker 
+  label="Categorized Options" 
+  selectionMode="multiple"
+  placeholder="Select from categories..."
+>
+  <FilterPicker.Section title="Fruits">
+    <FilterPicker.Item key="apple">Apple</FilterPicker.Item>
+    <FilterPicker.Item key="banana">Banana</FilterPicker.Item>
+  </FilterPicker.Section>
+  <FilterPicker.Section title="Vegetables">
+    <FilterPicker.Item key="carrot">Carrot</FilterPicker.Item>
+    <FilterPicker.Item key="broccoli">Broccoli</FilterPicker.Item>
+  </FilterPicker.Section>
+</FilterPicker>
+```
+
+### With Checkboxes
+
+```jsx
+<FilterPicker 
+  label="Multi-select with Checkboxes" 
+  selectionMode="multiple"
+  isCheckable={true}
+  placeholder="Select options..."
+>
+  <FilterPicker.Item key="option1">Option 1</FilterPicker.Item>
+  <FilterPicker.Item key="option2">Option 2</FilterPicker.Item>
+  <FilterPicker.Item key="option3">Option 3</FilterPicker.Item>
+</FilterPicker>
+```
+
+### Custom Summary Display
+
+```jsx
+<FilterPicker
+  label="Custom Summary"
+  selectionMode="multiple"
+  placeholder="Choose items..."
+  renderSummary={({ selectedKeys, selectedLabels }) => {
+    if (selectedKeys.length === 0) return null;
+    if (selectedKeys.length === 1) return selectedLabels[0];
+    return `${selectedKeys.length} items selected`;
+  }}
+>
+  <FilterPicker.Item key="item1">Item 1</FilterPicker.Item>
+  <FilterPicker.Item key="item2">Item 2</FilterPicker.Item>
+  <FilterPicker.Item key="item3">Item 3</FilterPicker.Item>
+</FilterPicker>
+```
+
+### With Header and Footer
+
+```jsx
+<FilterPicker
+  label="Advanced Options"
+  placeholder="Filter options..."
+  header={
+    <div>
+      <h4>Filter Options</h4>
+      <Badge>12 available</Badge>
+    </div>
+  }
+  footer={
+    <div>
+      <Text>Select multiple to combine filters</Text>
+      <Button type="link" size="small">Reset all</Button>
+    </div>
+  }
+>
+  <FilterPicker.Item key="filter1">Active Items</FilterPicker.Item>
+  <FilterPicker.Item key="filter2">Recent Items</FilterPicker.Item>
+  <FilterPicker.Item key="filter3">Archived Items</FilterPicker.Item>
+</FilterPicker>
+```
+
+### Icon-Only Filter Button
+
+```jsx
+<FilterPicker
+  selectionMode="multiple"
+  renderSummary={false}
+  icon={<FilterIcon />}
+  aria-label="Apply filters"
+>
+  <FilterPicker.Item key="filter1">Recent</FilterPicker.Item>
+  <FilterPicker.Item key="filter2">Popular</FilterPicker.Item>
+  <FilterPicker.Item key="filter3">Favorites</FilterPicker.Item>
+</FilterPicker>
+```
+
+### Controlled Component
+
+```jsx
+function ControlledFilterPicker() {
+  const [selectedKeys, setSelectedKeys] = useState(['apple', 'banana']);
+
+  return (
+    <FilterPicker
+      label="Controlled Selection"
+      selectionMode="multiple"
+      selectedKeys={selectedKeys}
+      onSelectionChange={setSelectedKeys}
+    >
+      <FilterPicker.Item key="apple">Apple</FilterPicker.Item>
+      <FilterPicker.Item key="banana">Banana</FilterPicker.Item>
+      <FilterPicker.Item key="cherry">Cherry</FilterPicker.Item>
+    </FilterPicker>
+  );
+}
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the FilterPicker trigger
+- `Space/Enter` - Opens the dropdown when trigger is focused
+- `Arrow Up/Down` - Navigates between options in the search input
+- `Enter` - Selects the focused option
+- `Space` - Toggles selection (when search input is empty)
+- `Escape` - Closes the dropdown or clears search text
+
+### Screen Reader Support
+
+- Component announces as "button" with appropriate expanded state
+- Search input is properly labeled as "combobox" with aria-activedescendant
+- Selection changes are announced with current selection count
+- Options announce their selected state and text content
+- Sections are properly grouped and announced
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label for the trigger button when no visible label exists
+- `aria-expanded` - Indicates whether the dropdown is open
+- `aria-haspopup` - Indicates the trigger opens a listbox
+- `aria-activedescendant` - Points to the currently focused option in search mode
+
+## Best Practices
+
+1. **Do**: Provide clear, descriptive labels for options
+   ```jsx
+   <FilterPicker label="Filter by Category">
+     <FilterPicker.Item key="electronics">Electronics & Gadgets</FilterPicker.Item>
+     <FilterPicker.Item key="clothing">Clothing & Accessories</FilterPicker.Item>
+   </FilterPicker>
+   ```
+
+2. **Don't**: Use overly long option texts that will be truncated
+   ```jsx
+   // Avoid this
+   <FilterPicker.Item key="long">
+     This is an extremely long option text that will be truncated and hard to read
+   </FilterPicker.Item>
+   ```
+
+3. **Accessibility**: Always provide meaningful labels and use sections for logical grouping
+4. **Performance**: Use `textValue` prop for options with complex content to ensure proper searching
+5. **UX**: Consider using `isCheckable` for multiple selection to make selection state more obvious
+
+## Integration with Forms
+
+This component supports all [Field properties](/field-properties.md) when used within a Form. The component automatically handles form validation, field states, and integrates with form submission.
+
+## Suggested Improvements
+
+- Enhanced keyboard shortcuts: Add support for typing to jump to options
+- Async data loading: Built-in support for loading options dynamically
+- Virtualization: Support for rendering large lists efficiently
+- Custom filter functions: More sophisticated filtering options beyond text matching
+- Batch operations: Support for "select all" and "clear all" actions in multiple selection mode
+
+## Related Components
+
+- [FilterListBox](/docs/forms-filterlistbox--docs) - The underlying searchable list component
+- [Select](/docs/forms-select--docs) - Use for simple selection without search functionality
+- [ComboBox](/docs/forms-combobox--docs) - Use when users need to enter custom values
+- [ListBox](/docs/forms-listbox--docs) - Use for basic list selection without search
+- [Button](/docs/actions-button--docs) - The underlying trigger component
