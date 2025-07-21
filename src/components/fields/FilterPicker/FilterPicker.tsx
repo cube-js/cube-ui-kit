@@ -470,7 +470,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         selectedKeys: effectiveSelectedKeys as any,
         selectionMode: 'multiple',
       });
-    } else if (renderSummary === false) {
+    } else if (hasSelection && renderSummary === false) {
       return null;
     }
 
@@ -519,6 +519,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
     return (
       <Button
+        qa={`${props.qa || 'FilterPicker'}Trigger`}
         type={type}
         theme={validationState === 'invalid' ? 'danger' : theme}
         size={size}
@@ -551,8 +552,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       {(close) => (
         <Dialog display="grid" styles={{ gridRows: '1sf', ...popoverStyles }}>
           <FilterListBox
-            // Pass an aria-label so the internal ListBox is properly labeled and React Aria doesn't warn.
             autoFocus
+            // Pass an aria-label so the internal ListBox is properly labeled and React Aria doesn't warn.
             aria-label={`${props['aria-label'] ?? props.label ?? ''} Picker`}
             selectedKey={
               selectionMode === 'single'
@@ -575,6 +576,15 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             footer={footer}
             headerStyles={headerStyles}
             footerStyles={footerStyles}
+            qa={`${props.qa || 'FilterPicker'}ListBox`}
+            onEscape={close}
+            onOptionClick={(key) => {
+              // For FilterPicker, clicking the content area should close the popover
+              // in multiple selection mode (single mode already closes via onSelectionChange)
+              if (selectionMode === 'multiple' && isCheckable) {
+                close();
+              }
+            }}
             onSelectionChange={(selection) => {
               // No need to change any flags - children order is cached
 
@@ -628,14 +638,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 close();
               }
             }}
-            onOptionClick={(key) => {
-              // For FilterPicker, clicking the content area should close the popover
-              // in multiple selection mode (single mode already closes via onSelectionChange)
-              if (selectionMode === 'multiple' && isCheckable) {
-                close();
-              }
-            }}
-            onEscape={close}
           >
             {sortedChildren}
           </FilterListBox>

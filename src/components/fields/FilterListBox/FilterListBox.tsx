@@ -86,6 +86,12 @@ const SearchInputElement = tasty({
   },
 });
 
+const StyledHeaderWithoutBorder = tasty(StyledHeader, {
+  styles: {
+    border: false,
+  },
+});
+
 export interface CubeFilterListBoxProps<T>
   extends Omit<CubeListBoxProps<T>, 'children'>,
     FieldBaseProps {
@@ -783,12 +789,9 @@ export const FilterListBox = forwardRef(function FilterListBox<
       {...focusProps}
     >
       {header ? (
-        <StyledHeader
-          role="presentation"
-          styles={{ border: false, ...headerStyles }}
-        >
+        <StyledHeaderWithoutBorder role="presentation" styles={headerStyles}>
           {header}
-        </StyledHeader>
+        </StyledHeaderWithoutBorder>
       ) : (
         <div role="presentation" />
       )}
@@ -822,8 +825,6 @@ export const FilterListBox = forwardRef(function FilterListBox<
           shouldUseVirtualFocus={true}
           footer={footer}
           footerStyles={footerStyles}
-          header={header}
-          headerStyles={headerStyles}
           mods={mods}
           isCheckable={isCheckable}
           onSelectionChange={handleSelectionChange}

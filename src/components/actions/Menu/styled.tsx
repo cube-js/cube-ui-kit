@@ -52,6 +52,8 @@ export const StyledDivider = tasty({
 export const StyledHeader = tasty(Space, {
   qa: 'Header',
   as: 'div',
+  role: 'heading',
+  'aria-level': 3,
   styles: {
     color: '#dark-02',
     preset: 't3',
@@ -68,6 +70,7 @@ export const StyledHeader = tasty(Space, {
 export const StyledFooter = tasty(Space, {
   qa: 'Footer',
   as: 'div',
+  role: 'footer',
   styles: {
     color: '#dark-02',
     preset: 't3',
