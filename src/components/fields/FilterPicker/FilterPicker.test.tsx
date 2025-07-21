@@ -574,4 +574,157 @@ describe('<FilterPicker />', () => {
       expect(container.firstChild).toBeInTheDocument();
     });
   });
+
+  describe('isCheckable prop functionality', () => {
+    it('should show checkboxes when isCheckable is true in multiple selection mode', async () => {
+      const { getByRole } = renderWithRoot(
+        <FilterPicker
+          label="Select fruits"
+          placeholder="Choose fruits..."
+          selectionMode="multiple"
+          isCheckable={true}
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      const trigger = getByRole('button');
+
+      // Open the popover
+      await act(async () => {
+        await userEvent.click(trigger);
+      });
+
+      // Check that checkboxes are present (they should be within the options)
+      const listbox = getByRole('listbox');
+      const options = within(listbox).getAllByRole('option');
+
+      // Check that the first option contains a checkbox element
+      const firstOption = options[0];
+      const checkbox = firstOption.querySelector('[data-element="Checkbox"]');
+      expect(checkbox).toBeInTheDocument();
+    });
+
+    it('should not show checkboxes when isCheckable is false', async () => {
+      const { getByRole } = renderWithRoot(
+        <FilterPicker
+          label="Select fruits"
+          placeholder="Choose fruits..."
+          selectionMode="multiple"
+          isCheckable={false}
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      const trigger = getByRole('button');
+
+      // Open the popover
+      await act(async () => {
+        await userEvent.click(trigger);
+      });
+
+      // Check that checkboxes are not present
+      const listbox = getByRole('listbox');
+      const options = within(listbox).getAllByRole('option');
+
+      // Check that the first option does not contain a checkbox element
+      const firstOption = options[0];
+      const checkbox = firstOption.querySelector('[data-element="Checkbox"]');
+      expect(checkbox).not.toBeInTheDocument();
+    });
+
+    it('should not show checkboxes in single selection mode even when isCheckable is true', async () => {
+      const { getByRole } = renderWithRoot(
+        <FilterPicker
+          label="Select fruit"
+          placeholder="Choose a fruit..."
+          selectionMode="single"
+          isCheckable={true}
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      const trigger = getByRole('button');
+
+      // Open the popover
+      await act(async () => {
+        await userEvent.click(trigger);
+      });
+
+      // Check that checkboxes are not present in single mode
+      const listbox = getByRole('listbox');
+      const options = within(listbox).getAllByRole('option');
+
+      // Check that the first option does not contain a checkbox element
+      const firstOption = options[0];
+      const checkbox = firstOption.querySelector('[data-element="Checkbox"]');
+      expect(checkbox).not.toBeInTheDocument();
+    });
+
+    it('should handle different click behaviors: checkbox click keeps popover open, content click closes popover', async () => {
+      const onSelectionChange = jest.fn();
+
+      const { getByRole, getByText, queryByText } = renderWithRoot(
+        <FilterPicker
+          label="Select fruits"
+          placeholder="Choose fruits..."
+          selectionMode="multiple"
+          isCheckable={true}
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      const trigger = getByRole('button');
+
+      // Open the popover
+      await act(async () => {
+        await userEvent.click(trigger);
+      });
+
+      // TEST 1: Checkbox click - should toggle selection but KEEP popover open
+      const firstOption = getByRole('listbox').querySelector('[role="option"]');
+      const checkbox = firstOption?.querySelector('[data-element="Checkbox"]');
+
+      expect(checkbox).toBeInTheDocument();
+
+      // Click on the checkbox - should select but keep popover open
+      await act(async () => {
+        await userEvent.click(checkbox!);
+      });
+
+      // Check that selection changed
+      expect(onSelectionChange).toHaveBeenCalledWith(['apple']);
+
+      // Check that popover is still open (other options should still be visible)
+      expect(getByText('Banana')).toBeInTheDocument();
+      expect(getByText('Cherry')).toBeInTheDocument();
+
+      // Reset the mock
+      onSelectionChange.mockClear();
+
+      // TEST 2: Content area click - should toggle selection AND close popover
+      const bananaOption = getByText('Banana');
+      const bananaContentArea = bananaOption
+        .closest('[role="option"]')
+        ?.querySelector('[data-element="Content"]');
+
+      expect(bananaContentArea).toBeInTheDocument();
+
+      // Click on the content area - should select and close popover
+      await act(async () => {
+        await userEvent.click(bananaContentArea!);
+      });
+
+      // Check that selection changed (should now have both apple and banana)
+      expect(onSelectionChange).toHaveBeenCalledWith(['apple', 'banana']);
+
+      // Check that popover closed (options should not be visible anymore)
+      expect(queryByText('Cherry')).not.toBeInTheDocument();
+      expect(queryByText('Date')).not.toBeInTheDocument();
+    });
+  });
 });

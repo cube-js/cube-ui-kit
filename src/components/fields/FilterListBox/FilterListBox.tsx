@@ -117,6 +117,18 @@ export interface CubeFilterListBoxProps<T>
    * Can be used by parent components (e.g. FilterPicker) to close an enclosing Dialog.
    */
   onEscape?: () => void;
+
+  /**
+   * Whether the options in the FilterListBox are checkable.
+   * This adds a checkbox icon to the left of the option.
+   */
+  isCheckable?: boolean;
+
+  /**
+   * Callback fired when an option is clicked but not on the checkbox area.
+   * Used by FilterPicker to close the popover on non-checkbox clicks.
+   */
+  onOptionClick?: (key: Key) => void;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -188,6 +200,8 @@ export const FilterListBox = forwardRef(function FilterListBox<
     listBoxStyles,
     children,
     onEscape,
+    isCheckable,
+    onOptionClick,
     ...otherProps
   } = props;
 
@@ -622,8 +636,9 @@ export const FilterListBox = forwardRef(function FilterListBox<
         if (nextKey != null) {
           selectionManager.setFocusedKey(nextKey);
         }
-      } else if (e.key === 'Enter') {
+      } else if (e.key === 'Enter' || (e.key === ' ' && !searchValue)) {
         const listState = listStateRef.current;
+
         if (!listState) return;
 
         const keyToSelect = listState.selectionManager.focusedKey;
@@ -631,6 +646,15 @@ export const FilterListBox = forwardRef(function FilterListBox<
         if (keyToSelect != null) {
           e.preventDefault();
           listState.selectionManager.select(keyToSelect, e);
+
+          if (
+            e.key === 'Enter' &&
+            isCheckable &&
+            onEscape &&
+            props.selectionMode === 'multiple'
+          ) {
+            onEscape();
+          }
         }
       } else if (e.key === 'Escape') {
         if (searchValue) {
@@ -801,8 +825,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
           header={header}
           headerStyles={headerStyles}
           mods={mods}
+          isCheckable={isCheckable}
           onSelectionChange={handleSelectionChange}
           onEscape={onEscape}
+          onOptionClick={onOptionClick}
         >
           {enhancedChildren as any}
         </ListBox>

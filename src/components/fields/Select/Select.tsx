@@ -222,7 +222,10 @@ const OptionElement = tasty({
     flow: 'column',
     gap: '0',
     padding: '.5x 1x',
-    cursor: 'pointer',
+    cursor: {
+      '': 'default',
+      disabled: 'not-allowed',
+    },
     radius: true,
     boxSizing: 'border-box',
     color: {

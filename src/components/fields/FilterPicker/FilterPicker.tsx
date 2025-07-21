@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import { Section as BaseSection, Item } from 'react-stately';
 
+import { useWarn } from '../../../_internal/hooks/use-warn';
 import { DirectionIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import {
@@ -64,6 +65,8 @@ export interface CubeFilterPickerProps<T>
   listBoxStyles?: Styles;
   /** Custom styles for the popover */
   popoverStyles?: Styles;
+  /** Whether the filter picker is checkable */
+  isCheckable?: boolean;
 
   /**
    * Custom renderer for the summary shown inside the trigger **when there is a selection**.
@@ -159,10 +162,19 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     headerStyles,
     footerStyles,
     renderSummary,
+    isCheckable,
     ...otherProps
   } = props;
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
+
+  // Warn if isCheckable is false in single selection mode
+  useWarn(isCheckable === false && selectionMode === 'single', {
+    key: ['filterpicker-checkable-single-mode'],
+    args: [
+      'CubeUIKit: isCheckable=false is not recommended in single selection mode as it may confuse users about selection behavior.',
+    ],
+  });
 
   // Internal selection state (uncontrolled scenario)
   const [internalSelectedKey, setInternalSelectedKey] = useState<string | null>(
@@ -555,6 +567,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             isDisabled={isDisabled}
             stateRef={listStateRef}
             sortSelectedToTop={false}
+            isCheckable={isCheckable}
             mods={{
               popover: true,
             }}
@@ -612,6 +625,13 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
               onSelectionChange?.(selection as any);
 
               if (selectionMode === 'single') {
+                close();
+              }
+            }}
+            onOptionClick={(key) => {
+              // For FilterPicker, clicking the content area should close the popover
+              // in multiple selection mode (single mode already closes via onSelectionChange)
+              if (selectionMode === 'multiple' && isCheckable) {
                 close();
               }
             }}

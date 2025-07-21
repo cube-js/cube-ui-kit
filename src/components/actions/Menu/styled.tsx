@@ -128,8 +128,8 @@ export const StyledItem = tasty({
       disabled: '#dark-04',
     },
     cursor: {
-      '': 'pointer',
-      disabled: 'default',
+      '': 'default',
+      disabled: 'not-allowed',
     },
     shadow: '#clear',
     padding: {

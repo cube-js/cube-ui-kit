@@ -17,6 +17,8 @@ import {
 } from 'react-aria';
 import { Section as BaseSection, Item, useListState } from 'react-stately';
 
+import { useWarn } from '../../../_internal/hooks/use-warn';
+import { CheckIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import {
   BASE_STYLES,
@@ -87,11 +89,15 @@ const OptionElement = tasty({
   as: 'li',
   styles: {
     display: 'flex',
-    flow: 'column',
-    gap: '.25x',
+    flow: 'row',
+    placeItems: 'center start',
+    gap: '.75x',
     padding: '.75x 1x',
     radius: '1r',
-    cursor: 'pointer',
+    cursor: {
+      '': 'default',
+      disabled: 'not-allowed',
+    },
     transition: 'theme',
     outline: 0,
     border: 0,
@@ -112,6 +118,49 @@ const OptionElement = tasty({
       valid: '#success-bg',
       invalid: '#danger-bg',
       disabled: '#clear',
+    },
+
+    CheckboxWrapper: {
+      cursor: 'pointer',
+      padding: '.75x',
+      margin: '-.75x',
+    },
+
+    Checkbox: {
+      display: 'grid',
+      placeItems: 'center',
+      radius: '.5r',
+      width: '(2x - 2bw)',
+      height: '(2x - 2bw)',
+      flexShrink: 0,
+      transition: 'theme',
+      opacity: {
+        '': 0,
+        'selected | :hover': 1,
+      },
+      fill: {
+        '': '#white',
+        selected: '#purple-text',
+        'invalid & !selected': '#white',
+        'invalid & selected': '#danger',
+        disabled: '#dark.12',
+      },
+      color: {
+        '': '#white',
+        'disabled & !selected': '#clear',
+      },
+      border: {
+        '': '#dark.30',
+        invalid: '#danger',
+        'disabled | (selected & !invalid)': '#clear',
+      },
+    },
+
+    Content: {
+      display: 'flex',
+      flow: 'column',
+      gap: '.25x',
+      flex: 1,
     },
 
     Label: {
@@ -207,6 +256,18 @@ export interface CubeListBoxProps<T>
    * When provided, this prevents React Aria's default Escape behavior (selection reset).
    */
   onEscape?: () => void;
+
+  /**
+   * Whether the options in the ListBox are checkable.
+   * This adds a checkbox icon to the left of the option.
+   */
+  isCheckable?: boolean;
+
+  /**
+   * Callback fired when an option is clicked but not on the checkbox area.
+   * Used by FilterPicker to close the popover on non-checkbox clicks.
+   */
+  onOptionClick?: (key: Key) => void;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -272,6 +333,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     footerStyles,
     escapeKeyBehavior,
     onEscape,
+    isCheckable,
+    onOptionClick,
     ...otherProps
   } = props;
 
@@ -350,6 +413,14 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   if (stateRef) {
     stateRef.current = listState;
   }
+
+  // Warn if isCheckable is false in single selection mode
+  useWarn(isCheckable === false && props.selectionMode === 'single', {
+    key: ['listbox-checkable-single-mode'],
+    args: [
+      'CubeUIKit: isCheckable=false is not recommended in single selection mode as it may confuse users about selection behavior.',
+    ],
+  });
 
   // Custom keyboard handling to prevent selection clearing on Escape while allowing overlay dismiss
   const { keyboardProps } = useKeyboard({
@@ -455,6 +526,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                   isParentDisabled={isDisabled}
                   validationState={validationState}
                   focusOnHover={focusOnHover}
+                  isCheckable={isCheckable}
+                  onOptionClick={onOptionClick}
                 />,
               );
 
@@ -469,6 +542,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                   isParentDisabled={isDisabled}
                   validationState={validationState}
                   focusOnHover={focusOnHover}
+                  isCheckable={isCheckable}
+                  onOptionClick={onOptionClick}
                 />,
               );
             }
@@ -501,6 +576,8 @@ function Option({
   isParentDisabled,
   validationState,
   focusOnHover = true,
+  isCheckable,
+  onOptionClick,
 }) {
   const ref = useRef<HTMLLIElement>(null);
   const isDisabled = isParentDisabled || state.disabledKeys.has(item.key);
@@ -521,6 +598,44 @@ function Option({
 
   const description = (item as any)?.props?.description;
 
+  // Custom click handler for the entire option
+  const handleOptionClick = (e) => {
+    // If there's an onOptionClick callback and this is checkable in multiple mode,
+    // we need to distinguish between checkbox and content clicks
+    if (
+      onOptionClick &&
+      isCheckable &&
+      state.selectionManager.selectionMode === 'multiple'
+    ) {
+      // Check if the click target is within the checkbox area
+      const clickTarget = e.target as HTMLElement;
+      const checkboxElement = ref.current?.querySelector(
+        '[data-element="CheckboxWrapper"]',
+      );
+
+      if (
+        checkboxElement &&
+        (checkboxElement === clickTarget ||
+          checkboxElement.contains(clickTarget))
+      ) {
+        // Checkbox area clicked - only toggle, don't call onOptionClick
+        // Let React Aria handle the selection
+        optionProps.onClick?.(e);
+      } else {
+        // Content area clicked - toggle and trigger callback
+        // Let React Aria handle the selection first
+        optionProps.onClick?.(e);
+        // Then call the callback (which will close the popover in FilterPicker)
+        if (onOptionClick) {
+          onOptionClick(item.key);
+        }
+      }
+    } else {
+      // Normal behavior - let React Aria handle it
+      optionProps.onClick?.(e);
+    }
+  };
+
   return (
     <OptionElement
       id={`ListBoxItem-${String(item.key)}`}
@@ -533,11 +648,25 @@ function Option({
         pressed: isPressed,
         valid: isSelected && validationState === 'valid',
         invalid: isSelected && validationState === 'invalid',
+        checkable: isCheckable,
+        hovered: isFocused, // We'll treat focus as hover for the checkbox visibility
       }}
       styles={styles}
+      onClick={handleOptionClick}
     >
-      <div data-element="Label">{item.rendered}</div>
-      {description ? <div data-element="Description">{description}</div> : null}
+      {isCheckable && state.selectionManager.selectionMode === 'multiple' && (
+        <div data-element="CheckboxWrapper">
+          <div data-element="Checkbox">
+            <CheckIcon size={12} stroke={3} />
+          </div>
+        </div>
+      )}
+      <div data-element="Content">
+        <div data-element="Label">{item.rendered}</div>
+        {description ? (
+          <div data-element="Description">{description}</div>
+        ) : null}
+      </div>
     </OptionElement>
   );
 }
@@ -551,6 +680,8 @@ interface ListBoxSectionProps<T> {
   isParentDisabled?: boolean;
   validationState?: any;
   focusOnHover?: boolean;
+  isCheckable?: boolean;
+  onOptionClick?: (key: Key) => void;
 }
 
 function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
@@ -563,6 +694,8 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
     isParentDisabled,
     validationState,
     focusOnHover,
+    isCheckable,
+    onOptionClick,
   } = props;
   const heading = item.rendered;
 
@@ -590,6 +723,8 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
               isParentDisabled={isParentDisabled}
               validationState={validationState}
               focusOnHover={focusOnHover}
+              isCheckable={isCheckable}
+              onOptionClick={onOptionClick}
             />
           ))}
       </SectionListElement>

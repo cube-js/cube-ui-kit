@@ -364,3 +364,32 @@ export const SingleIcon: Story = {
     </FilterPicker>
   ),
 };
+
+export const WithCheckboxes: Story = {
+  name: 'With Checkboxes',
+  render: (props) => (
+    <FilterPicker
+      {...props}
+      label="Select Fruits"
+      placeholder="Choose fruits..."
+      selectionMode="multiple"
+      isCheckable={true}
+    >
+      <FilterPicker.Item key="apple">Apple</FilterPicker.Item>
+      <FilterPicker.Item key="banana">Banana</FilterPicker.Item>
+      <FilterPicker.Item key="cherry">Cherry</FilterPicker.Item>
+      <FilterPicker.Item key="date">Date</FilterPicker.Item>
+      <FilterPicker.Item key="elderberry">Elderberry</FilterPicker.Item>
+      <FilterPicker.Item key="fig">Fig</FilterPicker.Item>
+      <FilterPicker.Item key="grape">Grape</FilterPicker.Item>
+    </FilterPicker>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `isCheckable={true}` and `selectionMode="multiple"`, checkboxes appear on the left of each option. The checkbox is only visible when the item is hovered or selected. Clicking the checkbox toggles the item, while clicking elsewhere on the item toggles it and closes the popover.',
+      },
+    },
+  },
+};
