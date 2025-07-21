@@ -746,7 +746,7 @@ export const CustomInputComponent: Story = {
   args: {},
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const trigger = canvas.getByTestId('AddTrigger');
+    const trigger = canvas.getByTestId('Picker');
     await userEvent.click(trigger);
   },
   render: (args) => {
@@ -805,7 +805,7 @@ export const CustomInputComponent: Story = {
             {/* FilterPicker trigger */}
             <FilterPicker
               isCheckable
-              qa="Add"
+              qa="Picker"
               {...args}
               size="small"
               selectedKeys={selectedKeys}
