@@ -97,6 +97,41 @@ describe('<FilterPicker />', () => {
       expect(queryByText('Banana')).not.toBeInTheDocument();
       expect(trigger).toHaveTextContent('Apple');
     });
+
+    it('should open and close popover when trigger is clicked', async () => {
+      const { getByRole, getByText, queryByText } = renderWithRoot(
+        <FilterPicker
+          label="Select fruits"
+          placeholder="Choose fruits..."
+          selectionMode="multiple"
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      const trigger = getByRole('button');
+
+      // Initially popover should be closed
+      expect(queryByText('Apple')).not.toBeInTheDocument();
+
+      // Click to open popover
+      await act(async () => {
+        await userEvent.click(trigger);
+      });
+
+      // Check that popover is open
+      expect(getByText('Apple')).toBeInTheDocument();
+      expect(getByText('Banana')).toBeInTheDocument();
+
+      // Click trigger again to close popover
+      await act(async () => {
+        await userEvent.click(trigger);
+      });
+
+      // Check that popover is closed
+      expect(queryByText('Apple')).not.toBeInTheDocument();
+      expect(queryByText('Banana')).not.toBeInTheDocument();
+    });
   });
 
   describe('Selection sorting functionality', () => {

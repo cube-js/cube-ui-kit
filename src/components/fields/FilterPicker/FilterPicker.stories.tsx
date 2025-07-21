@@ -54,11 +54,11 @@ export const Default: Story = {
     searchPlaceholder: 'Search options...',
     width: 'max 30x',
   },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const trigger = canvas.getByRole('button');
-    await userEvent.click(trigger);
-  },
+  // play: async ({ canvasElement }) => {
+  //   const canvas = within(canvasElement);
+  //   const trigger = canvas.getByRole('button');
+  //   await userEvent.click(trigger);
+  // },
   render: (args) => (
     <FilterPicker {...args}>
       <FilterPicker.Item key="apple" textValue="Apple">

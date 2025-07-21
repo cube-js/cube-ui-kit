@@ -622,14 +622,14 @@ export const Button = forwardRef(function Button(
     if (icon) {
       if (!specifiedLabel) {
         accessibilityWarning(
-          'If you provide `icon` property for a Button and do not provide any children then you should specify the `label` property to make sure the Button element stays accessible.',
+          'If you provide `icon` property for a Button and do not provide any children then you should specify the `aria-label` property to make sure the Button element stays accessible.',
         );
         label = 'Unnamed'; // fix to avoid warning in production
       }
     } else {
       if (!specifiedLabel) {
         accessibilityWarning(
-          'If you provide no children for a Button then you should specify the `label` property to make sure the Button element stays accessible.',
+          'If you provide no children for a Button then you should specify the `aria-label` property to make sure the Button element stays accessible.',
         );
         label = 'Unnamed'; // fix to avoid warning in production
       }

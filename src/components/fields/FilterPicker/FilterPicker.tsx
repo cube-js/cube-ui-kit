@@ -300,7 +300,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
     /* istanbul ignore next */
     if (process.env.NODE_ENV === 'test') {
-       
       console.log('DEBUG_SORT', {
         hadSelectionsWhenClosed,
         isPopoverOpen,
@@ -419,7 +418,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     const sortedChildren = sortChildrenArray(childrenArray);
     /* istanbul ignore next */
     if (process.env.NODE_ENV === 'test' && hadSelectionsWhenClosed) {
-       
       console.log('DEBUG_SELECTED_SET', Array.from(selectedSet));
     }
 
@@ -497,7 +495,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
           selectionsWhenClosed.current = { ...latestSelectionRef.current };
           /* istanbul ignore next */
           if (process.env.NODE_ENV === 'test') {
-             
             console.log('DEBUG_SAVE_SELECTIONS', selectionsWhenClosed.current);
           }
         }
@@ -520,6 +517,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         rightIcon={<DirectionIcon to={state.isOpen ? 'top' : 'bottom'} />}
         styles={styles}
         {...otherProps}
+        aria-label={`${props['aria-label'] ?? props.label ?? ''}`}
       >
         {renderTriggerContent()}
       </Button>
@@ -537,7 +535,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       {(close) => (
         <Dialog display="grid" styles={{ gridRows: '1sf', ...popoverStyles }}>
           <FilterListBox
+            // Pass an aria-label so the internal ListBox is properly labeled and React Aria doesn't warn.
             autoFocus
+            aria-label={`${props['aria-label'] ?? props.label ?? ''} Picker`}
             selectedKey={
               selectionMode === 'single'
                 ? effectiveSelectedKey ?? undefined
