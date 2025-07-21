@@ -198,7 +198,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     defaultSelectedKeys,
     onSelectionChange: externalOnSelectionChange,
     allowsCustomValue = false,
-    sortSelectedToTop = true,
+    sortSelectedToTop = false,
     header,
     footer,
     headerStyles,

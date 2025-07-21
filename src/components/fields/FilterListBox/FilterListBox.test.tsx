@@ -870,4 +870,214 @@ describe('<FilterListBox />', () => {
       expect(onSelectionChange).toHaveBeenCalledWith('mango');
     });
   });
+
+  describe('Virtualization', () => {
+    beforeEach(() => {
+      // Mock scroll container dimensions for React Virtual to work
+      Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
+        get() {
+          return this.tagName === 'UL' ? 300 : 50; // Listbox container: 300px, items: 50px
+        },
+        configurable: true,
+      });
+
+      Object.defineProperty(HTMLElement.prototype, 'clientHeight', {
+        get() {
+          return this.tagName === 'UL' ? 300 : 50;
+        },
+        configurable: true,
+      });
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    // Create 60 items to trigger virtualization (threshold is 30)
+    const createManyItems = () => {
+      const items: JSX.Element[] = [];
+
+      // First 10 items without description
+      for (let i = 1; i <= 10; i++) {
+        items.push(
+          <FilterListBox.Item key={`item-${i}`}>Item {i}</FilterListBox.Item>,
+        );
+      }
+
+      // Next 50 items with descriptions for some of them
+      for (let i = 11; i <= 60; i++) {
+        const hasDescription = i % 5 === 0; // Every 5th item has description
+        items.push(
+          <FilterListBox.Item
+            key={`item-${i}`}
+            textValue={`Item ${i}${hasDescription ? ` Description for item ${i}` : ''}`}
+            description={
+              hasDescription ? `Description for item ${i}` : undefined
+            }
+          >
+            Item {i}
+          </FilterListBox.Item>,
+        );
+      }
+
+      return items;
+    };
+
+    it('should activate virtualization with 60 items and handle filtering correctly', async () => {
+      const items = createManyItems();
+
+      const { getByRole, getByPlaceholderText, container } = render(
+        <FilterListBox
+          label="Select an item"
+          searchPlaceholder="Search items..."
+          size="small"
+        >
+          {items}
+        </FilterListBox>,
+      );
+
+      const searchInput = getByPlaceholderText('Search items...');
+
+      // Check that virtualization is active by looking for a virtual container with height
+      const virtualContainer = container.querySelector(
+        '[style*="height:"][style*="px"]',
+      );
+      expect(virtualContainer).toBeInTheDocument();
+
+      // Initially, only visible items are rendered (due to virtualization)
+      expect(getByRole('option', { name: 'Item 1' })).toBeInTheDocument();
+      expect(getByRole('option', { name: 'Item 10' })).toBeInTheDocument();
+
+      // Filter to show only items containing "1"
+      await act(async () => {
+        await userEvent.type(searchInput, '1');
+      });
+
+      // Should have items 1, 10, 11-19, 21, 31, 41, 51 (items containing "1")
+      expect(getByRole('option', { name: 'Item 1' })).toBeInTheDocument();
+      expect(getByRole('option', { name: 'Item 10' })).toBeInTheDocument();
+
+      // Item 15 has a description, so find it by textValue
+      expect(
+        getByRole('option', { name: /Item 15.*Description/ }),
+      ).toBeInTheDocument();
+
+      // Items not containing "1" should not be visible
+      expect(() => getByRole('option', { name: 'Item 2' })).toThrow();
+
+      // Clear search to show all items again
+      await act(async () => {
+        await userEvent.clear(searchInput);
+      });
+
+      // Visible items should be back
+      expect(getByRole('option', { name: 'Item 1' })).toBeInTheDocument();
+      expect(getByRole('option', { name: 'Item 10' })).toBeInTheDocument();
+    }, 10000); // Increase timeout
+
+    it('should handle item sizing correctly for items with different content', async () => {
+      const items = createManyItems();
+
+      const { getByRole, container } = render(
+        <FilterListBox label="Select an item" size="small">
+          {items}
+        </FilterListBox>,
+      );
+
+      // Find an item without description (first 10 items)
+      const itemWithoutDescription = getByRole('option', { name: 'Item 1' });
+
+      // Check that virtualization is active
+      const virtualContainer = container.querySelector(
+        '[style*="height:"][style*="px"]',
+      ) as HTMLElement;
+      expect(virtualContainer).toBeInTheDocument();
+
+      // Verify that the virtual container has some reasonable height (should be substantial for 60 items)
+      const totalHeight = parseInt(virtualContainer?.style.height || '0');
+      expect(totalHeight).toBeGreaterThan(1000); // Should be much taller than viewport
+
+      // Verify item without description has correct structure
+      expect(
+        itemWithoutDescription.querySelector('[data-element="Description"]'),
+      ).toBeNull();
+
+      // Check that items are properly positioned in virtual containers
+      const item1Container = itemWithoutDescription.closest('[data-index="0"]');
+      expect(item1Container).toBeInTheDocument();
+      expect(item1Container).toHaveStyle('position: absolute');
+    });
+
+    it('should maintain correct content structure after filtering', async () => {
+      const items = createManyItems();
+
+      const { getByRole, getByPlaceholderText } = render(
+        <FilterListBox
+          label="Select an item"
+          searchPlaceholder="Search items..."
+          size="small"
+        >
+          {items}
+        </FilterListBox>,
+      );
+
+      const searchInput = getByPlaceholderText('Search items...');
+
+      // Filter to show items with "15" (which has a description)
+      await act(async () => {
+        await userEvent.type(searchInput, '15');
+      });
+
+      // Item 15 should be visible with description
+      const filteredItem = getByRole('option', {
+        name: /Item 15.*Description/,
+      });
+      expect(
+        filteredItem.querySelector('[data-element="Description"]'),
+      ).toBeInTheDocument();
+
+      // Filter to show items with "1" (includes items 1, 10, 11-19, etc.)
+      await act(async () => {
+        await userEvent.clear(searchInput);
+        await userEvent.type(searchInput, '1');
+      });
+
+      // Item 1 (without description) should be visible
+      const itemWithoutDesc = getByRole('option', { name: 'Item 1' });
+      expect(
+        itemWithoutDesc.querySelector('[data-element="Description"]'),
+      ).toBeNull();
+
+      // Item 15 (with description) should also be visible
+      const itemWithDesc = getByRole('option', {
+        name: /Item 15.*Description/,
+      });
+      expect(
+        itemWithDesc.querySelector('[data-element="Description"]'),
+      ).toBeInTheDocument();
+    });
+
+    it('should handle selection in virtualized list', async () => {
+      const items = createManyItems();
+      const onSelectionChange = jest.fn();
+
+      const { getByRole } = render(
+        <FilterListBox
+          label="Select an item"
+          onSelectionChange={onSelectionChange}
+        >
+          {items}
+        </FilterListBox>,
+      );
+
+      // Select an item in the virtualized list
+      const item = getByRole('option', { name: 'Item 1' });
+
+      await act(async () => {
+        await userEvent.click(item);
+      });
+
+      expect(onSelectionChange).toHaveBeenCalledWith('item-1');
+    });
+  });
 });

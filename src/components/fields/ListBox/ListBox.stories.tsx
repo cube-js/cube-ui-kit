@@ -494,23 +494,28 @@ InPopover.play = async ({ canvasElement }) => {
 export const VirtualizedList: StoryFn<CubeListBoxProps<any>> = (args) => {
   const [selected, setSelected] = useState<string | null>(null);
 
-  // Generate a large list of items to trigger virtualization (> 30 items)
+  // Generate a large list of items with varying content to trigger virtualization (> 30 items)
+  // Mix items with and without descriptions to test dynamic sizing
   const items = Array.from({ length: 100 }, (_, i) => ({
     id: `item-${i}`,
-    name: `Item ${i + 1}`,
-    description: `This is the description for item ${i + 1}`,
+    name: `Item ${i + 1}${i % 7 === 0 ? ' - This is a longer item name to test dynamic sizing' : ''}`,
+    description:
+      i % 3 === 0
+        ? `This is a description for item ${i + 1}. It varies in length to test virtualization with dynamic item heights.`
+        : undefined,
   }));
 
   return (
-    <div style={{ height: '400px', width: '300px' }}>
+    <div style={{ height: '400px', width: '350px' }}>
       <Text>
-        Large list with {items.length} items (virtualization automatically
-        enabled for {'>'}30 items)
+        Large list with {items.length} items with varying heights
+        (virtualization automatically enabled for {'>'}30 items). Scroll down
+        and back up to test smooth virtualization.
       </Text>
       <Space height="1x" />
       <ListBox
         {...args}
-        label="Virtualized List"
+        label="Virtualized List with Mixed Content"
         selectedKey={selected}
         height="300px"
         overflow="auto"
@@ -532,68 +537,7 @@ VirtualizedList.parameters = {
   docs: {
     description: {
       story:
-        'When a ListBox contains more than 30 items, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets.',
-    },
-  },
-};
-
-export const VirtualizedWithSections: StoryFn<CubeListBoxProps<any>> = (
-  args,
-) => {
-  const [selected, setSelected] = useState<string | null>(null);
-
-  // Generate sections with multiple items each to exceed the 30-item threshold
-  const sections = Array.from({ length: 5 }, (_, sectionIndex) => ({
-    id: `section-${sectionIndex}`,
-    name: `Section ${sectionIndex + 1}`,
-    items: Array.from({ length: 10 }, (_, itemIndex) => ({
-      id: `section-${sectionIndex}-item-${itemIndex}`,
-      name: `Item ${itemIndex + 1}`,
-      description: `Description for item ${itemIndex + 1} in section ${sectionIndex + 1}`,
-    })),
-  }));
-
-  const totalItems = sections.reduce(
-    (acc, section) => acc + section.items.length,
-    0,
-  );
-
-  return (
-    <div style={{ height: '400px', width: '350px' }}>
-      <Text>
-        Large sectioned list with {totalItems} items across {sections.length}{' '}
-        sections (virtualized)
-      </Text>
-      <Space height="1x" />
-      <ListBox
-        {...args}
-        label="Virtualized Sectioned List"
-        selectedKey={selected}
-        height="300px"
-        overflow="auto"
-        onSelectionChange={setSelected}
-      >
-        {sections.map((section) => (
-          <ListBox.Section key={section.id} title={section.name}>
-            {section.items.map((item) => (
-              <ListBox.Item key={item.id} description={item.description}>
-                {item.name}
-              </ListBox.Item>
-            ))}
-          </ListBox.Section>
-        ))}
-      </ListBox>
-      <Space height="1x" />
-      <Text>Selected: {selected || 'None'}</Text>
-    </div>
-  );
-};
-
-VirtualizedWithSections.parameters = {
-  docs: {
-    description: {
-      story:
-        'Virtualization also works with sectioned lists. Both sections and items are virtualized, maintaining performance even with complex nested structures.',
+        'When a ListBox contains more than 30 items, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets. This story includes items with varying heights to demonstrate stable virtualization without scroll jumping.',
     },
   },
 };

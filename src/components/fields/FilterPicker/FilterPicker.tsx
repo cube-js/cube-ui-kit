@@ -517,7 +517,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
     return (
       <Button
-        qa={`${props.qa || 'FilterPicker'}Trigger`}
+        qa={props.qa || 'FilterPicker'}
         type={type}
         theme={validationState === 'invalid' ? 'danger' : theme}
         size={size}
@@ -565,7 +565,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             validationState={validationState}
             isDisabled={isDisabled}
             stateRef={listStateRef}
-            sortSelectedToTop={false}
             isCheckable={isCheckable}
             mods={{
               popover: true,

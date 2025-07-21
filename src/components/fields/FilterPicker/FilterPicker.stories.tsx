@@ -844,3 +844,72 @@ export const CustomInputComponent: Story = {
     },
   },
 };
+
+export const VirtualizedList: Story = {
+  args: {
+    label: 'Virtualized Large Dataset',
+    placeholder: 'Select from large list...',
+    selectionMode: 'multiple',
+    searchPlaceholder: 'Search through 100+ items...',
+    width: 'max 35x',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
+  },
+  render: (args) => {
+    const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+
+    // Generate a large list of items with varying content to trigger virtualization (> 30 items)
+    // Mix items with and without descriptions to test dynamic sizing
+    const items = Array.from({ length: 100 }, (_, i) => ({
+      id: `item-${i}`,
+      name: `Item ${i + 1}${i % 7 === 0 ? ' - This is a longer item name to test dynamic sizing' : ''}`,
+      description:
+        i % 3 === 0
+          ? `This is a description for item ${i + 1}. It varies in length to test virtualization with dynamic item heights.`
+          : undefined,
+    }));
+
+    return (
+      <Flow gap="2x" width="40x">
+        <Paragraph preset="t3">
+          Large list with {items.length} items with varying heights
+          (virtualization automatically enabled for {'>'}30 items). Scroll down
+          and back up to test smooth virtualization.
+        </Paragraph>
+
+        <FilterPicker
+          {...args}
+          selectedKeys={selectedKeys}
+          onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
+        >
+          {items.map((item) => (
+            <FilterPicker.Item
+              key={item.id}
+              textValue={item.name}
+              description={item.description}
+            >
+              {item.name}
+            </FilterPicker.Item>
+          ))}
+        </FilterPicker>
+
+        <Paragraph preset="p4" color="#dark-03">
+          Selected: {selectedKeys.length} / {items.length} items
+          {selectedKeys.length > 0 &&
+            ` (${selectedKeys.slice(0, 3).join(', ')}${selectedKeys.length > 3 ? '...' : ''})`}
+        </Paragraph>
+      </Flow>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When a FilterPicker contains more than 30 items, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets. This story includes items with varying heights to demonstrate stable virtualization without scroll jumping.',
+      },
+    },
+  },
+};
