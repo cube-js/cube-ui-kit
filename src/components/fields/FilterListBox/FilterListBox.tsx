@@ -317,13 +317,12 @@ export const FilterListBox = forwardRef(function FilterListBox<
           );
 
           if (filteredSectionChildren.length > 0) {
-            filteredNodes.push({
+            // Store filtered children in a way that doesn't require cloning the section
+            const filteredSection = {
               ...child,
-              props: {
-                ...child.props,
-                children: filteredSectionChildren,
-              },
-            });
+              filteredChildren: filteredSectionChildren,
+            };
+            filteredNodes.push(filteredSection);
           }
         }
         // Handle ListBox.Item
@@ -380,11 +379,14 @@ export const FilterListBox = forwardRef(function FilterListBox<
           // Handle sections - sort items within each section
           if (
             child.type === BaseSection ||
-            child.type?.displayName === 'Section'
+            child.type?.displayName === 'Section' ||
+            child.filteredChildren // This is our custom filtered section marker
           ) {
-            const sectionChildren = Array.isArray(child.props.children)
-              ? child.props.children
-              : [child.props.children];
+            const sectionChildren =
+              child.filteredChildren ||
+              (Array.isArray(child.props.children)
+                ? child.props.children
+                : [child.props.children]);
 
             // Separate selected and unselected items within the section
             const selectedItems: ReactNode[] = [];
@@ -406,14 +408,12 @@ export const FilterListBox = forwardRef(function FilterListBox<
               }
             });
 
-            // Create new section with sorted children
-            sortedNodes.push({
+            // Create sorted section without cloning
+            const sortedSection = {
               ...child,
-              props: {
-                ...child.props,
-                children: [...selectedItems, ...unselectedItems],
-              },
-            });
+              sortedChildren: [...selectedItems, ...unselectedItems],
+            };
+            sortedNodes.push(sortedSection);
           }
           // Handle regular items
           else {
@@ -515,6 +515,38 @@ export const FilterListBox = forwardRef(function FilterListBox<
     props.selectionMode,
     sortSelectedToTop,
   ]);
+
+  // Convert custom objects back to React elements for rendering
+  const finalChildren = useMemo(() => {
+    if (!enhancedChildren) return enhancedChildren;
+
+    const convertToReactElements = (nodes: ReactNode): ReactNode => {
+      if (!nodes) return nodes;
+
+      const nodeArray = Array.isArray(nodes) ? nodes : [nodes];
+
+      return nodeArray.map((node: any, index) => {
+        if (!node || typeof node !== 'object') {
+          return node;
+        }
+
+        // Handle our custom filtered/sorted section objects
+        if (node.filteredChildren || node.sortedChildren) {
+          const childrenToUse = node.sortedChildren || node.filteredChildren;
+          // Return the original section but with the processed children
+          return React.cloneElement(node, {
+            key: node.key || index,
+            children: childrenToUse,
+          });
+        }
+
+        // Handle regular React elements
+        return node;
+      });
+    };
+
+    return convertToReactElements(enhancedChildren);
+  }, [enhancedChildren]);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
@@ -831,7 +863,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
           onEscape={onEscape}
           onOptionClick={onOptionClick}
         >
-          {enhancedChildren as any}
+          {finalChildren as any}
         </ListBox>
       )}
     </FilterListBoxWrapperElement>
