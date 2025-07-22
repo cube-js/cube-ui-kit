@@ -274,13 +274,22 @@ const [selectedKey, setSelectedKey] = useState('apple');
    </ListBox>
    ```
 
-3. **Performance**: Enable search for lists with more than 10-15 options
+3. **Complex Children**: Use `textValue` prop when item children contain complex elements
+   ```jsx
+   <ListBox label="Select user">
+     <ListBox.Item key="john" textValue="John Doe">
+       <Avatar src="/john.jpg" />
+       <div>
+         <div>John Doe</div>
+         <div>Senior Developer</div>
+       </div>
+     </ListBox.Item>
+   </ListBox>
+   ```
+
 4. **Organization**: Use sections to group related options logically
 5. **Descriptions**: Provide helpful descriptions for complex or technical options
-6. **Validation**: Provide clear error messages for validation failures
-7. **Selection**: Consider multiple selection for scenarios where users might need several options
-8. **Search Experience**: When using search, ensure the virtual focus behavior feels natural to users
-9. **Keyboard Users**: Test that arrow key navigation works smoothly with the search input
+6. **Selection**: Consider multiple selection for scenarios where users might need several options
 
 ## Integration with Forms
 
