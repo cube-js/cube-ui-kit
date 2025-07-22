@@ -21,6 +21,7 @@ export const StyledMenuWrapper = tasty({
       popover: 'initial max-content (50vh - 4x)',
       tray: 'initial max-content (100vh - 4x)',
     },
+    boxSizing: 'border-box',
   },
 });
 
@@ -34,6 +35,7 @@ export const StyledMenu = tasty({
       '': '1bw',
       sections: false,
     },
+    boxSizing: 'border-box',
     margin: 0,
     padding: {
       '': '0.5x',
