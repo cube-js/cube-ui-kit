@@ -585,6 +585,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
               height: `${rowVirtualizer.getTotalSize()}px`,
               width: '100%',
               position: 'relative',
+              marginBottom: -1,
             }}
           >
             {rowVirtualizer.getVirtualItems().map((virtualItem) => {
