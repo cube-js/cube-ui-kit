@@ -294,11 +294,17 @@ export interface CubeSelectBaseProps<T>
   loadingIndicator?: ReactNode;
   overlayOffset?: number;
   hideTrigger?: boolean;
+  /**
+   *  @deprecated Use `triggerStyles` instead
+   */
   inputStyles?: Styles;
   optionStyles?: Styles;
   triggerStyles?: Styles;
   listBoxStyles?: Styles;
   overlayStyles?: Styles;
+  /**
+   *  @deprecated Use `styles` instead
+   */
   wrapperStyles?: Styles;
   direction?: 'top' | 'bottom';
   shouldFlip?: boolean;
@@ -352,6 +358,7 @@ function Select<T extends object>(
     loadingIndicator,
     overlayOffset = 8,
     inputStyles,
+    triggerStyles,
     optionStyles,
     wrapperStyles,
     listBoxStyles,
@@ -479,7 +486,7 @@ function Select<T extends object>(
     <SelectWrapperElement
       qa={qa || 'Select'}
       mods={modifiers}
-      styles={wrapperStyles}
+      styles={{ ...wrapperStyles, ...styles }}
       data-size={size}
       data-type={type}
       data-theme={theme}
@@ -494,7 +501,7 @@ function Select<T extends object>(
         {...mergeProps(buttonProps, hoverProps, focusProps)}
         ref={triggerRef}
         data-menu-trigger
-        styles={inputStyles}
+        styles={{ ...inputStyles, ...triggerStyles }}
         variant={`${theme}.${type}` as VariantType}
         data-theme={theme}
         data-size={size}

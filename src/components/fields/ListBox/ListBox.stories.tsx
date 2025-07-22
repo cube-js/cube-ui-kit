@@ -494,7 +494,7 @@ InPopover.play = async ({ canvasElement }) => {
 export const VirtualizedList: StoryFn<CubeListBoxProps<any>> = (args) => {
   const [selected, setSelected] = useState<string | null>(null);
 
-  // Generate a large list of items with varying content to trigger virtualization (> 30 items)
+  // Generate a large list of items with varying content to test virtualization
   // Mix items with and without descriptions to test dynamic sizing
   const items = Array.from({ length: 100 }, (_, i) => ({
     id: `item-${i}`,
@@ -509,8 +509,8 @@ export const VirtualizedList: StoryFn<CubeListBoxProps<any>> = (args) => {
     <div style={{ height: '400px', width: '350px' }}>
       <Text>
         Large list with {items.length} items with varying heights
-        (virtualization automatically enabled for {'>'}30 items). Scroll down
-        and back up to test smooth virtualization.
+        (virtualization automatically enabled if there is no sections. Scroll
+        down and back up to test smooth virtualization.
       </Text>
       <Space height="1x" />
       <ListBox
