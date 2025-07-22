@@ -31,6 +31,7 @@ import {
   CubeFilterListBoxProps,
   FilterListBox,
 } from '../FilterListBox/FilterListBox';
+import { ListBox } from '../ListBox';
 
 import type { FieldBaseProps } from '../../../shared';
 
@@ -658,11 +659,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   props: CubeFilterPickerProps<T> & { ref?: DOMRef<HTMLDivElement> },
 ) => ReactElement) & { Item: typeof Item; Section: typeof BaseSection };
 
-FilterPicker.Item = Item as unknown as (props: {
-  description?: ReactNode;
-  textValue?: string;
-  [key: string]: any;
-}) => ReactElement;
+FilterPicker.Item = ListBox.Item;
 
 FilterPicker.Section = BaseSection;
 

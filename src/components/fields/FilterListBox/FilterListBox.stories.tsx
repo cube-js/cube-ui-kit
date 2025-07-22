@@ -254,44 +254,106 @@ export const WithDescriptions: StoryFn<CubeFilterListBoxProps<any>> = (
   args,
 ) => (
   <FilterListBox {...args}>
-    <FilterListBox.Item
-      key="basic"
-      textValue="Basic Plan - Free tier with limited features"
-    >
-      <div>
-        <strong>Basic Plan</strong>
-        <div style={{ color: 'var(--neutral-600)', fontSize: '0.875rem' }}>
-          Free tier with limited features
-        </div>
-      </div>
+    <FilterListBox.Item key="apple" description="Crisp and sweet red fruit">
+      Apple
     </FilterListBox.Item>
     <FilterListBox.Item
-      key="pro"
-      textValue="Pro Plan - Advanced features for professionals"
+      key="banana"
+      description="Yellow tropical fruit rich in potassium"
     >
-      <div>
-        <strong>Pro Plan</strong>
-        <div style={{ color: 'var(--neutral-600)', fontSize: '0.875rem' }}>
-          Advanced features for professionals
-        </div>
-      </div>
+      Banana
     </FilterListBox.Item>
     <FilterListBox.Item
-      key="enterprise"
-      textValue="Enterprise Plan - Full-featured solution for teams"
+      key="cherry"
+      description="Small red stone fruit with sweet flavor"
     >
-      <div>
-        <strong>Enterprise Plan</strong>
-        <div style={{ color: 'var(--neutral-600)', fontSize: '0.875rem' }}>
-          Full-featured solution for teams
-        </div>
-      </div>
+      Cherry
+    </FilterListBox.Item>
+    <FilterListBox.Item
+      key="date"
+      description="Sweet dried fruit from date palm"
+    >
+      Date
+    </FilterListBox.Item>
+    <FilterListBox.Item
+      key="elderberry"
+      description="Dark purple berry with tart flavor"
+    >
+      Elderberry
     </FilterListBox.Item>
   </FilterListBox>
 );
 WithDescriptions.args = {
-  label: 'Choose a plan',
-  searchPlaceholder: 'Search plans...',
+  label: 'Choose a fruit',
+  searchPlaceholder: 'Search fruits...',
+};
+
+export const WithSectionsAndDescriptions: StoryFn<
+  CubeFilterListBoxProps<any>
+> = (args) => (
+  <FilterListBox {...args}>
+    <FilterListBox.Section key="fruits" title="Fruits">
+      <FilterListBox.Item key="apple" description="Crisp and sweet red fruit">
+        Apple
+      </FilterListBox.Item>
+      <FilterListBox.Item
+        key="banana"
+        description="Yellow tropical fruit rich in potassium"
+      >
+        Banana
+      </FilterListBox.Item>
+      <FilterListBox.Item
+        key="cherry"
+        description="Small red stone fruit with sweet flavor"
+      >
+        Cherry
+      </FilterListBox.Item>
+    </FilterListBox.Section>
+    <FilterListBox.Section key="vegetables" title="Vegetables">
+      <FilterListBox.Item
+        key="carrot"
+        description="Orange root vegetable high in beta-carotene"
+      >
+        Carrot
+      </FilterListBox.Item>
+      <FilterListBox.Item
+        key="broccoli"
+        description="Green cruciferous vegetable packed with nutrients"
+      >
+        Broccoli
+      </FilterListBox.Item>
+      <FilterListBox.Item
+        key="spinach"
+        description="Leafy green vegetable rich in iron"
+      >
+        Spinach
+      </FilterListBox.Item>
+    </FilterListBox.Section>
+    <FilterListBox.Section key="herbs" title="Herbs">
+      <FilterListBox.Item
+        key="basil"
+        description="Aromatic herb used in Mediterranean cooking"
+      >
+        Basil
+      </FilterListBox.Item>
+      <FilterListBox.Item
+        key="oregano"
+        description="Pungent herb popular in Italian cuisine"
+      >
+        Oregano
+      </FilterListBox.Item>
+      <FilterListBox.Item
+        key="thyme"
+        description="Fragrant herb with earthy flavor"
+      >
+        Thyme
+      </FilterListBox.Item>
+    </FilterListBox.Section>
+  </FilterListBox>
+);
+WithSectionsAndDescriptions.args = {
+  label: 'Choose an ingredient',
+  searchPlaceholder: 'Search ingredients...',
 };
 
 export const CustomFilter: StoryFn<CubeFilterListBoxProps<any>> = (args) => (
@@ -577,11 +639,7 @@ export const VirtualizedList: StoryFn<CubeFilterListBoxProps<any>> = (args) => {
           onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
         >
           {items.map((item) => (
-            <FilterListBox.Item
-              key={item.id}
-              textValue={item.name}
-              description={item.description}
-            >
+            <FilterListBox.Item key={item.id} description={item.description}>
               {item.name}
             </FilterListBox.Item>
           ))}

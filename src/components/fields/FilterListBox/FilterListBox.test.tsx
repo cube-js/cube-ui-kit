@@ -900,7 +900,9 @@ describe('<FilterListBox />', () => {
       // First 10 items without description
       for (let i = 1; i <= 10; i++) {
         items.push(
-          <FilterListBox.Item key={`item-${i}`}>Item {i}</FilterListBox.Item>,
+          <FilterListBox.Item
+            key={`item-${i}`}
+          >{`Item ${i}`}</FilterListBox.Item>,
         );
       }
 
@@ -910,13 +912,10 @@ describe('<FilterListBox />', () => {
         items.push(
           <FilterListBox.Item
             key={`item-${i}`}
-            textValue={`Item ${i}${hasDescription ? ` Description for item ${i}` : ''}`}
             description={
               hasDescription ? `Description for item ${i}` : undefined
             }
-          >
-            Item {i}
-          </FilterListBox.Item>,
+          >{`Item ${i}`}</FilterListBox.Item>,
         );
       }
 
