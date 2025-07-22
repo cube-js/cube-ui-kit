@@ -2,9 +2,31 @@ import { DEFAULT_BUTTON_STYLES, DEFAULT_NEUTRAL_STYLES } from '..';
 import { tasty } from '../../../tasty';
 import { Space } from '../../layout/Space';
 
+export const StyledMenuWrapper = tasty({
+  qa: 'Menu',
+  styles: {
+    display: 'grid',
+    gridRows: 'max-content 1sf max-content',
+    fill: '#white',
+    margin: 0,
+    padding: 0,
+    border: true,
+    radius: '(1cr + 1bw)',
+    shadow: {
+      '': '',
+      'popover | tray': '0px 5px 15px #dark.05',
+    },
+    height: {
+      '': 'initial',
+      popover: 'initial max-content (50vh - 4x)',
+      tray: 'initial max-content (100vh - 4x)',
+    },
+  },
+});
+
 export const StyledMenu = tasty({
   as: 'ul',
-  qa: 'Menu',
+  qa: 'MenuList',
   styles: {
     display: 'flex',
     flow: 'column',
@@ -12,7 +34,6 @@ export const StyledMenu = tasty({
       '': '1bw',
       sections: false,
     },
-    fill: '#white',
     margin: 0,
     padding: {
       '': '0.5x',
@@ -21,15 +42,6 @@ export const StyledMenu = tasty({
     overflow: {
       '': 'auto',
       section: '',
-    },
-    border: {
-      '': '#border',
-      section: false,
-    },
-    radius: '(1cr + 1bw)',
-    boxShadow: {
-      '': '',
-      popover: '0px 5px 15px #dark.05',
     },
     scrollbar: 'styled',
   },

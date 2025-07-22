@@ -32,6 +32,7 @@ import {
   StyledFooter,
   StyledHeader,
   StyledMenu,
+  StyledMenuWrapper,
 } from './styled';
 
 export interface CubeMenuProps<T>
@@ -45,6 +46,7 @@ export interface CubeMenuProps<T>
   // @deprecated
   header?: ReactNode;
   footer?: ReactNode;
+  menuStyles?: Styles;
   headerStyles?: Styles;
   footerStyles?: Styles;
   styles?: Styles;
@@ -82,6 +84,7 @@ function Menu<T extends object>(
   const {
     header,
     footer,
+    menuStyles,
     headerStyles,
     footerStyles,
     itemStyles,
@@ -139,17 +142,19 @@ function Menu<T extends object>(
     [completeProps],
   );
 
-  const defaultProps = {
-    qa,
-    styles,
-    'data-size': size,
-    mods: {
-      sections: hasSections,
+  const wrapperMods = useMemo(() => {
+    return {
+      popover: completeProps.mods?.popover,
       footer: !!footer,
       header: !!header,
-      popover: completeProps.mods?.popover,
-    },
-  };
+    };
+  }, [completeProps.mods?.popover, footer, header]);
+
+  const menuMods = useMemo(() => {
+    return {
+      sections: hasSections,
+    };
+  }, [hasSections]);
 
   // Sync the ref stored in the context object with the DOM ref returned by useDOMRef.
   // The helper from @react-aria/utils expects the context object as the first argument
@@ -240,23 +245,37 @@ function Menu<T extends object>(
   ]);
 
   return (
-    <StyledMenu
-      {...mergeProps(defaultProps, menuProps, filterBaseProps(completeProps))}
-      ref={domRef}
-      role={menuProps.role ?? 'menu'}
-    >
-      {header && (
+    <StyledMenuWrapper qa={qa} styles={styles} mods={wrapperMods}>
+      {header ? (
         <StyledHeader data-size={size} styles={headerStyles}>
           {header}
         </StyledHeader>
+      ) : (
+        <div role="presentation" />
       )}
-      {renderedItems}
-      {footer && (
+      <StyledMenu
+        {...mergeProps(
+          {
+            styles: menuStyles,
+            'data-size': size,
+            mods: menuMods,
+          },
+          menuProps,
+          filterBaseProps(completeProps),
+        )}
+        ref={domRef}
+        role={menuProps.role ?? 'menu'}
+      >
+        {renderedItems}
+      </StyledMenu>
+      {footer ? (
         <StyledFooter data-size={size} styles={footerStyles}>
           {footer}
         </StyledFooter>
+      ) : (
+        <div role="presentation" />
       )}
-    </StyledMenu>
+    </StyledMenuWrapper>
   );
 }
 
