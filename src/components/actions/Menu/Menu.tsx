@@ -245,7 +245,12 @@ function Menu<T extends object>(
   ]);
 
   return (
-    <StyledMenuWrapper qa={qa} styles={styles} mods={wrapperMods}>
+    <StyledMenuWrapper
+      qa={qa}
+      styles={styles}
+      mods={wrapperMods}
+      {...filterBaseProps(completeProps)}
+    >
       {header ? (
         <StyledHeader data-size={size} styles={headerStyles}>
           {header}
@@ -261,7 +266,6 @@ function Menu<T extends object>(
             mods: menuMods,
           },
           menuProps,
-          filterBaseProps(completeProps),
         )}
         ref={domRef}
         role={menuProps.role ?? 'menu'}
