@@ -113,8 +113,6 @@ export interface CubeFilterListBoxProps<T>
   children?: ReactNode;
   /** Allow entering a custom value that is not present in the options */
   allowsCustomValue?: boolean;
-  /** Whether to sort selected items to the top. Defaults to true. */
-  sortSelectedToTop?: boolean;
   /** Mods for the FilterListBox */
   mods?: Record<string, boolean>;
 
@@ -148,14 +146,14 @@ export const FilterListBox = forwardRef(function FilterListBox<
     valuePropsMapper: ({ value, onChange }) => {
       const fieldProps: any = {};
 
-      if (props.selectionMode === 'multiple') {
+      if (selectionMode === 'multiple') {
         fieldProps.selectedKeys = value || [];
       } else {
         fieldProps.selectedKey = value ?? null;
       }
 
       fieldProps.onSelectionChange = (key: any) => {
-        if (props.selectionMode === 'multiple') {
+        if (selectionMode === 'multiple') {
           onChange(key ? (Array.isArray(key) ? key : [key]) : []);
         } else {
           onChange(Array.isArray(key) ? key[0] : key);
@@ -198,7 +196,6 @@ export const FilterListBox = forwardRef(function FilterListBox<
     defaultSelectedKeys,
     onSelectionChange: externalOnSelectionChange,
     allowsCustomValue = false,
-    sortSelectedToTop = false,
     header,
     footer,
     size = 'small',
@@ -209,6 +206,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     onEscape,
     isCheckable,
     onOptionClick,
+    selectionMode = 'single',
     ...otherProps
   } = props;
 
@@ -344,116 +342,17 @@ export const FilterListBox = forwardRef(function FilterListBox<
     return filterChildren(mergedChildren);
   }, [mergedChildren, searchValue, textFilterFn]);
 
-  // Sort children to put selected items on top, then handle custom values
+  // Handle custom values if allowed
   const enhancedChildren = useMemo(() => {
     let childrenToProcess = filteredChildren;
 
-    // First, sort the children to put selected items on top
-    if (childrenToProcess && sortSelectedToTop) {
-      // Get current selection as a Set for fast lookup
-      const selectedSet = new Set<string>();
-
-      if (props.selectionMode === 'multiple' && selectedKeys) {
-        selectedKeys.forEach((key) => selectedSet.add(String(key)));
-      } else if (props.selectionMode === 'single' && selectedKey != null) {
-        selectedSet.add(String(selectedKey));
-      }
-
-      // Helper function to check if an item is selected
-      const isItemSelected = (child: any): boolean => {
-        return child?.key != null && selectedSet.has(String(child.key));
-      };
-
-      // Helper function to sort children - selected items first
-      const sortChildren = (nodes: ReactNode): ReactNode => {
-        if (!nodes) return nodes;
-
-        const childArray = Array.isArray(nodes) ? nodes : [nodes];
-        const sortedNodes: ReactNode[] = [];
-
-        childArray.forEach((child: any) => {
-          if (!child || typeof child !== 'object') {
-            sortedNodes.push(child);
-            return;
-          }
-
-          // Handle sections - sort items within each section
-          if (
-            child.type === BaseSection ||
-            child.type?.displayName === 'Section' ||
-            child.filteredChildren // This is our custom filtered section marker
-          ) {
-            const sectionChildren =
-              child.filteredChildren ||
-              (Array.isArray(child.props.children)
-                ? child.props.children
-                : [child.props.children]);
-
-            // Separate selected and unselected items within the section
-            const selectedItems: ReactNode[] = [];
-            const unselectedItems: ReactNode[] = [];
-
-            sectionChildren.forEach((sectionChild: any) => {
-              if (
-                sectionChild &&
-                typeof sectionChild === 'object' &&
-                sectionChild.type === Item
-              ) {
-                if (isItemSelected(sectionChild)) {
-                  selectedItems.push(sectionChild);
-                } else {
-                  unselectedItems.push(sectionChild);
-                }
-              } else {
-                unselectedItems.push(sectionChild);
-              }
-            });
-
-            // Create sorted section without cloning
-            const sortedSection = {
-              ...child,
-              sortedChildren: [...selectedItems, ...unselectedItems],
-            };
-            sortedNodes.push(sortedSection);
-          }
-          // Handle regular items
-          else {
-            sortedNodes.push(child);
-          }
-        });
-
-        // For non-sectioned items, sort them at the top level
-        const topLevelItems = sortedNodes.filter(
-          (child: any) =>
-            child && typeof child === 'object' && child.type === Item,
-        );
-        const nonItems = sortedNodes.filter(
-          (child: any) =>
-            !child || typeof child !== 'object' || child.type !== Item,
-        );
-
-        if (topLevelItems.length > 0) {
-          const selectedTopLevel = topLevelItems.filter(isItemSelected);
-          const unselectedTopLevel = topLevelItems.filter(
-            (child: any) => !isItemSelected(child),
-          );
-
-          return [...selectedTopLevel, ...unselectedTopLevel, ...nonItems];
-        }
-
-        return sortedNodes;
-      };
-
-      childrenToProcess = sortChildren(childrenToProcess);
-    }
-
-    // Then handle custom values if allowed
+    // Handle custom values if allowed
     if (!allowsCustomValue) return childrenToProcess;
 
     const term = searchValue.trim();
     if (!term) return childrenToProcess;
 
-    // Helper to determine if the term is already present (exact match on rendered textValue).
+    // Helper to determine if the term is already present (exact match on rendered textValue or the key).
     const doesTermExist = (nodes: ReactNode): boolean => {
       let exists = false;
 
@@ -470,7 +369,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
                 : '') ||
               String(child.props.children ?? '');
 
-            if (term === String(child.key)) {
+            if (term === childText || String(child.key) === term) {
               exists = true;
             }
           }
@@ -506,16 +405,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     }
 
     return customOption;
-  }, [
-    allowsCustomValue,
-    filteredChildren,
-    mergedChildren,
-    searchValue,
-    selectedKey,
-    selectedKeys,
-    props.selectionMode,
-    sortSelectedToTop,
-  ]);
+  }, [allowsCustomValue, filteredChildren, mergedChildren, searchValue]);
 
   // Convert custom objects back to React elements for rendering
   const finalChildren = useMemo(() => {
@@ -531,9 +421,9 @@ export const FilterListBox = forwardRef(function FilterListBox<
           return node;
         }
 
-        // Handle our custom filtered/sorted section objects
-        if (node.filteredChildren || node.sortedChildren) {
-          const childrenToUse = node.sortedChildren || node.filteredChildren;
+        // Handle our custom filtered section objects
+        if (node.filteredChildren) {
+          const childrenToUse = node.filteredChildren;
           // Return the original section but with the processed children
           return React.cloneElement(node, {
             key: node.key || index,
@@ -690,7 +580,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
             e.key === 'Enter' &&
             isCheckable &&
             onEscape &&
-            props.selectionMode === 'multiple'
+            selectionMode === 'multiple'
           ) {
             onEscape();
           }
@@ -843,7 +733,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
           defaultSelectedKey={defaultSelectedKey}
           selectedKeys={selectedKeys}
           defaultSelectedKeys={defaultSelectedKeys}
-          selectionMode={props.selectionMode}
+          selectionMode={selectionMode}
           isDisabled={isDisabled}
           listRef={listRef}
           stateRef={listStateRef}
