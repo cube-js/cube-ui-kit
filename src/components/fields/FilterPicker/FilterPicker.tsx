@@ -141,7 +141,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     mods: externalMods,
     description,
     placeholder,
-    size = 'medium',
+    size = 'small',
     styles,
     listBoxStyles,
     popoverStyles,

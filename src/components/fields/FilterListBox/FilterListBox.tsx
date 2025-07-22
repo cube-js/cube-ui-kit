@@ -201,6 +201,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     sortSelectedToTop = false,
     header,
     footer,
+    size = 'small',
     headerStyles,
     footerStyles,
     listBoxStyles,
@@ -821,7 +822,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
       {...focusProps}
     >
       {header ? (
-        <StyledHeaderWithoutBorder role="presentation" styles={headerStyles}>
+        <StyledHeaderWithoutBorder data-size={size} styles={headerStyles}>
           {header}
         </StyledHeaderWithoutBorder>
       ) : (
@@ -858,6 +859,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
           footer={footer}
           footerStyles={footerStyles}
           mods={mods}
+          size={size}
           isCheckable={isCheckable}
           onSelectionChange={handleSelectionChange}
           onEscape={onEscape}

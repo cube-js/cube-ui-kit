@@ -567,7 +567,9 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       {...focusProps}
     >
       {header ? (
-        <StyledHeader styles={headerStyles}>{header}</StyledHeader>
+        <StyledHeader styles={headerStyles} data-size={size}>
+          {header}
+        </StyledHeader>
       ) : (
         <div role="presentation" />
       )}
@@ -674,7 +676,9 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         )}
       </ListElement>
       {footer ? (
-        <StyledFooter styles={footerStyles}>{footer}</StyledFooter>
+        <StyledFooter styles={footerStyles} data-size={size}>
+          {footer}
+        </StyledFooter>
       ) : (
         <div role="presentation" />
       )}

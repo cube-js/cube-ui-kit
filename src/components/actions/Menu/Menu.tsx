@@ -45,6 +45,8 @@ export interface CubeMenuProps<T>
   // @deprecated
   header?: ReactNode;
   footer?: ReactNode;
+  headerStyles?: Styles;
+  footerStyles?: Styles;
   styles?: Styles;
   itemStyles?: Styles;
   sectionStyles?: Styles;
@@ -80,6 +82,8 @@ function Menu<T extends object>(
   const {
     header,
     footer,
+    headerStyles,
+    footerStyles,
     itemStyles,
     sectionStyles,
     sectionHeadingStyles,
@@ -241,9 +245,17 @@ function Menu<T extends object>(
       ref={domRef}
       role={menuProps.role ?? 'menu'}
     >
-      {header && <StyledHeader role="presentation">{header}</StyledHeader>}
+      {header && (
+        <StyledHeader data-size={size} styles={headerStyles}>
+          {header}
+        </StyledHeader>
+      )}
       {renderedItems}
-      {footer && <StyledFooter role="presentation">{footer}</StyledFooter>}
+      {footer && (
+        <StyledFooter data-size={size} styles={footerStyles}>
+          {footer}
+        </StyledFooter>
+      )}
     </StyledMenu>
   );
 }

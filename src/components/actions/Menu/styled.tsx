@@ -61,7 +61,10 @@ export const StyledHeader = tasty(Space, {
     placeItems: 'center',
     whiteSpace: 'nowrap',
     padding: '.5x 1x',
-    height: 'min 4x',
+    height: {
+      '': 'min 4x',
+      '[data-size="medium"]': 'min 5x',
+    },
     boxSizing: 'border-box',
     border: 'bottom',
   },
@@ -78,7 +81,10 @@ export const StyledFooter = tasty(Space, {
     placeItems: 'center',
     whiteSpace: 'nowrap',
     padding: '.5x 1x',
-    height: 'min 4x',
+    height: {
+      '': 'min 4x',
+      '[data-size="medium"]': 'min 5x',
+    },
     boxSizing: 'border-box',
     border: 'top',
   },

@@ -549,6 +549,7 @@ function CommandMenuBase<T extends object>(
       {header && (
         <StyledHeader
           role="presentation"
+          data-size={size}
           styles={{ border: 'none', ...headerStyles }}
         >
           {header}
@@ -764,7 +765,11 @@ function CommandMenuBase<T extends object>(
 
       {/* Footer */}
       {footer && (
-        <StyledFooter role="presentation" styles={footerStyles}>
+        <StyledFooter
+          role="presentation"
+          data-size={size}
+          styles={footerStyles}
+        >
           {footer}
         </StyledFooter>
       )}
