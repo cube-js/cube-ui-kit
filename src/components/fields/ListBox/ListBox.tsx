@@ -109,7 +109,7 @@ const OptionElement = tasty({
     gap: '.75x',
     padding: '.5x 1x',
     margin: {
-      '': '1bw bottom',
+      '': '0 0 1bw 0',
       ':last-of-type': '0',
     },
     height: {
@@ -124,7 +124,7 @@ const OptionElement = tasty({
     },
     transition: 'theme',
     outline: 0,
-    border: false,
+    border: 0,
     userSelect: 'none',
     color: {
       '': '#dark-02',
@@ -528,9 +528,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       }
       return size === 'small' ? 33 : 41;
     },
-    measureElement: (el) => {
-      return el.offsetHeight;
-    },
     overscan: 10,
   });
 
@@ -628,7 +625,9 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                     validationState={validationState}
                     focusOnHover={focusOnHover}
                     isCheckable={isCheckable}
-                    virtualRef={rowVirtualizer.measureElement as any}
+                    // We don't need to measure the element here, because the height is already set by the virtualizer
+                    // This is a workaround to avoid glitches when selecting/deselecting items
+                    // virtualRef={rowVirtualizer.measureElement as any}
                     virtualStyle={{
                       position: 'absolute',
                       top: 0,
