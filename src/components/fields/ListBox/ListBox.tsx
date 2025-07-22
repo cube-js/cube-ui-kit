@@ -1,5 +1,6 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import {
+  CSSProperties,
   ForwardedRef,
   forwardRef,
   MutableRefObject,
@@ -53,7 +54,7 @@ const ListBoxWrapperElement = tasty({
     flow: 'column',
     gap: 0,
     position: 'relative',
-    radius: true,
+    radius: '1cr',
     color: '#dark-02',
     transition: 'theme',
     outline: {
@@ -76,10 +77,24 @@ const ListElement = tasty({
   as: 'ul',
   styles: {
     display: 'block',
-    margin: '0',
-    padding: '.5x',
+    padding: 0,
     listStyle: 'none',
-    height: 'auto',
+    boxSizing: 'border-box',
+    margin: {
+      '': '.5x .5x 0 .5x',
+      sections: '0 .5x',
+    },
+    height: 'max-content',
+  },
+});
+
+// NEW: dedicated scroll container for ListBox
+const ListBoxScrollElement = tasty({
+  as: 'div',
+  styles: {
+    display: 'grid',
+    gridColumns: '1sf',
+    gridRows: '1sf',
     overflow: 'auto',
     scrollbar: 'styled',
   },
@@ -93,6 +108,10 @@ const OptionElement = tasty({
     placeItems: 'center start',
     gap: '.75x',
     padding: '.5x 1x',
+    margin: {
+      '': '1bw bottom',
+      ':last-of-type': '0',
+    },
     height: {
       '[data-size="small"]': 'min 4x',
       '[data-size="medium"]': 'min 5x',
@@ -105,10 +124,7 @@ const OptionElement = tasty({
     },
     transition: 'theme',
     outline: 0,
-    border: {
-      '': '1bw bottom #clear',
-      ':last-of-type': '0 #clear',
-    },
+    border: false,
     userSelect: 'none',
     color: {
       '': '#dark-02',
@@ -199,6 +215,10 @@ const SectionWrapperElement = tasty({
   as: 'li',
   styles: {
     display: 'block',
+    padding: {
+      '': 0,
+      ':last-of-type': '0 0 .5x 0',
+    },
   },
 });
 
@@ -494,9 +514,12 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   const itemsArrayRef = useRef(itemsArray);
   itemsArrayRef.current = itemsArray;
 
+  // Scroll container ref for virtualization
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   const rowVirtualizer = useVirtualizer({
     count: shouldVirtualize ? itemsArray.length : 0,
-    getScrollElement: () => listRef.current,
+    getScrollElement: () => scrollRef.current,
     estimateSize: (index: number) => {
       const currentItem: any = itemsArrayRef.current[index];
 
@@ -506,7 +529,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       return size === 'small' ? 33 : 41;
     },
     measureElement: (el) => {
-      return el.offsetHeight + 1;
+      return el.offsetHeight;
     },
     overscan: 10,
   });
@@ -573,38 +596,30 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       ) : (
         <div role="presentation" />
       )}
-      <ListElement
-        {...mergedListBoxProps}
-        ref={listRef}
-        styles={listStyles}
-        aria-disabled={isDisabled || undefined}
-      >
-        {shouldVirtualize ? (
-          <div
-            style={{
-              height: `${rowVirtualizer.getTotalSize()}px`,
-              width: '100%',
-              position: 'relative',
-              marginBottom: -1,
-            }}
-          >
-            {rowVirtualizer.getVirtualItems().map((virtualItem) => {
-              const item = itemsArray[virtualItem.index];
+      {/* Scroll container wrapper */}
+      <ListBoxScrollElement ref={scrollRef}>
+        <ListElement
+          {...mergedListBoxProps}
+          ref={listRef}
+          styles={listStyles}
+          aria-disabled={isDisabled || undefined}
+          mods={{ sections: hasSections }}
+          style={
+            shouldVirtualize
+              ? {
+                  position: 'relative',
+                  height: `${rowVirtualizer.getTotalSize() + 3}px`,
+                }
+              : undefined
+          }
+        >
+          {shouldVirtualize
+            ? rowVirtualizer.getVirtualItems().map((virtualItem) => {
+                const item = itemsArray[virtualItem.index];
 
-              return (
-                <div
-                  key={virtualItem.key}
-                  ref={rowVirtualizer.measureElement}
-                  data-index={virtualItem.index}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    transform: `translateY(${virtualItem.start}px)`,
-                  }}
-                >
+                return (
                   <Option
+                    key={virtualItem.key}
                     size={size}
                     item={item}
                     state={listState}
@@ -613,69 +628,74 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                     validationState={validationState}
                     focusOnHover={focusOnHover}
                     isCheckable={isCheckable}
+                    virtualRef={rowVirtualizer.measureElement as any}
+                    virtualStyle={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      transform: `translateY(${virtualItem.start}px)`,
+                    }}
                     onOptionClick={onOptionClick}
                   />
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          (() => {
-            const renderedItems: ReactNode[] = [];
-            let isFirstSection = true;
+                );
+              })
+            : (() => {
+                const renderedItems: ReactNode[] = [];
+                let isFirstSection = true;
 
-            for (const item of listState.collection) {
-              if (item.type === 'section') {
-                if (!isFirstSection) {
-                  renderedItems.push(
-                    <StyledDivider
-                      key={`divider-${String(item.key)}`}
-                      role="separator"
-                      aria-orientation="horizontal"
-                    />,
-                  );
+                for (const item of listState.collection) {
+                  if (item.type === 'section') {
+                    if (!isFirstSection) {
+                      renderedItems.push(
+                        <StyledDivider
+                          key={`divider-${String(item.key)}`}
+                          role="separator"
+                          aria-orientation="horizontal"
+                        />,
+                      );
+                    }
+
+                    renderedItems.push(
+                      <ListBoxSection
+                        key={item.key}
+                        item={item}
+                        state={listState}
+                        optionStyles={optionStyles}
+                        headingStyles={headingStyles}
+                        sectionStyles={sectionStyles}
+                        isParentDisabled={isDisabled}
+                        validationState={validationState}
+                        focusOnHover={focusOnHover}
+                        isCheckable={isCheckable}
+                        size={size}
+                        onOptionClick={onOptionClick}
+                      />,
+                    );
+
+                    isFirstSection = false;
+                  } else {
+                    renderedItems.push(
+                      <Option
+                        key={item.key}
+                        size={size}
+                        item={item}
+                        state={listState}
+                        styles={optionStyles}
+                        isParentDisabled={isDisabled}
+                        validationState={validationState}
+                        focusOnHover={focusOnHover}
+                        isCheckable={isCheckable}
+                        onOptionClick={onOptionClick}
+                      />,
+                    );
+                  }
                 }
 
-                renderedItems.push(
-                  <ListBoxSection
-                    key={item.key}
-                    item={item}
-                    state={listState}
-                    optionStyles={optionStyles}
-                    headingStyles={headingStyles}
-                    sectionStyles={sectionStyles}
-                    isParentDisabled={isDisabled}
-                    validationState={validationState}
-                    focusOnHover={focusOnHover}
-                    isCheckable={isCheckable}
-                    size={size}
-                    onOptionClick={onOptionClick}
-                  />,
-                );
-
-                isFirstSection = false;
-              } else {
-                renderedItems.push(
-                  <Option
-                    key={item.key}
-                    size={size}
-                    item={item}
-                    state={listState}
-                    styles={optionStyles}
-                    isParentDisabled={isDisabled}
-                    validationState={validationState}
-                    focusOnHover={focusOnHover}
-                    isCheckable={isCheckable}
-                    onOptionClick={onOptionClick}
-                  />,
-                );
-              }
-            }
-
-            return renderedItems;
-          })()
-        )}
-      </ListElement>
+                return renderedItems;
+              })()}
+        </ListElement>
+      </ListBoxScrollElement>
       {footer ? (
         <StyledFooter styles={footerStyles} data-size={size}>
           {footer}
@@ -705,6 +725,8 @@ function Option({
   focusOnHover = true,
   isCheckable,
   onOptionClick,
+  virtualStyle,
+  virtualRef,
 }: {
   size?: 'small' | 'medium';
   item: any;
@@ -715,8 +737,15 @@ function Option({
   focusOnHover?: boolean;
   isCheckable?: boolean;
   onOptionClick?: (key: Key) => void;
+  /** Inline style applied when virtualized (absolute positioning etc.) */
+  virtualStyle?: CSSProperties;
+  /** Ref callback from react-virtual to measure row height */
+  virtualRef?: (element: HTMLElement | null) => void;
 }) {
   const localRef = useRef<HTMLLIElement>(null);
+  // Merge local ref with react-virtual measure ref when provided
+  const combinedRef = useCombinedRefs(localRef, virtualRef);
+
   const isDisabled = isParentDisabled || state.disabledKeys.has(item.key);
   const isSelected = state.selectionManager.isSelected(item.key);
   const isFocused = state.selectionManager.focusedKey === item.key;
@@ -730,7 +759,7 @@ function Option({
       shouldFocusOnHover: focusOnHover,
     },
     state,
-    localRef,
+    combinedRef,
   );
 
   const description = (item as any)?.props?.description;
@@ -777,7 +806,8 @@ function Option({
     <OptionElement
       id={`ListBoxItem-${String(item.key)}`}
       {...optionProps}
-      ref={localRef}
+      ref={combinedRef}
+      style={virtualStyle}
       data-size={size}
       mods={{
         selected: isSelected,
