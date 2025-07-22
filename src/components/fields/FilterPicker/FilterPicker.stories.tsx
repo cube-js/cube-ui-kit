@@ -54,6 +54,13 @@ const meta: Meta<typeof FilterPicker> = {
       control: 'text',
       description: 'Placeholder text in the search input',
     },
+    allowsCustomValue: {
+      control: { type: 'boolean' },
+      description: 'Whether the FilterListBox allows custom values',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
     isDisabled: {
       control: 'boolean',
       description: 'Whether the picker is disabled',

@@ -11,7 +11,6 @@ import { Title } from '../../content/Title';
 import { Form, SubmitButton } from '../../form';
 import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
-import { Link } from '../../navigation/Link/Link';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
@@ -41,6 +40,13 @@ export default {
       description: 'Selection mode',
       table: {
         defaultValue: { summary: 'single' },
+      },
+    },
+    allowsCustomValue: {
+      control: { type: 'boolean' },
+      description: 'Whether the FilterListBox allows custom values',
+      table: {
+        defaultValue: { summary: false },
       },
     },
 

@@ -160,6 +160,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     footer,
     headerStyles,
     footerStyles,
+    allowsCustomValue,
     renderSummary,
     isCheckable,
     ...otherProps
@@ -562,6 +563,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             selectedKeys={
               selectionMode === 'multiple' ? effectiveSelectedKeys : undefined
             }
+            allowsCustomValue={allowsCustomValue}
             selectionMode={selectionMode}
             validationState={validationState}
             isDisabled={isDisabled}
