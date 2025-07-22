@@ -636,6 +636,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                       right: 0,
                       transform: `translateY(${virtualItem.start}px)`,
                     }}
+                    virtualIndex={virtualItem.index}
                     onOptionClick={onOptionClick}
                   />
                 );
@@ -727,6 +728,7 @@ function Option({
   onOptionClick,
   virtualStyle,
   virtualRef,
+  virtualIndex,
 }: {
   size?: 'small' | 'medium';
   item: any;
@@ -741,6 +743,8 @@ function Option({
   virtualStyle?: CSSProperties;
   /** Ref callback from react-virtual to measure row height */
   virtualRef?: (element: HTMLElement | null) => void;
+  /** Virtual index from react-virtual for data-index attribute */
+  virtualIndex?: number;
 }) {
   const localRef = useRef<HTMLLIElement>(null);
   // Merge local ref with react-virtual measure ref when provided
@@ -809,6 +813,7 @@ function Option({
       ref={combinedRef}
       style={virtualStyle}
       data-size={size}
+      data-index={virtualIndex}
       mods={{
         selected: isSelected,
         focused: isFocused,
