@@ -26,6 +26,7 @@ export { ChartBoxPlotIcon } from './ChartBoxPlotIcon';
 export { ChartBubbleIcon } from './ChartBubbleIcon';
 export { ChartDonut2Icon } from './ChartDonut2Icon';
 export { ChartFunnelIcon } from './ChartFunnelIcon';
+export { ChartKPIIcon } from './ChartKPIIcon';
 export { ChartPie2Icon } from './ChartPie2Icon';
 export { ChartScatterIcon } from './ChartScatterIcon';
 export { CheckCircleFilledIcon } from './CheckCircleFilledIcon';

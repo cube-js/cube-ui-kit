@@ -74,6 +74,8 @@ export interface FieldBaseProps extends FormBaseProps {
   insideForm?: boolean;
   fieldProps?: Props;
   messageStyles?: Styles;
+  /** If true, the input component will be wrapped in a field wrapper even if it doesn't have a label. */
+  forceField?: boolean;
 }
 
 export interface FormBaseProps {
