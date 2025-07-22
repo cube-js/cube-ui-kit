@@ -863,7 +863,7 @@ export const VirtualizedList: Story = {
 
     // Generate a large list of items with varying content to trigger virtualization (> 30 items)
     // Mix items with and without descriptions to test dynamic sizing
-    const items = Array.from({ length: 100 }, (_, i) => ({
+    const items = Array.from({ length: 10000 }, (_, i) => ({
       id: `item-${i}`,
       name: `Item ${i + 1}${i % 7 === 0 ? ' - This is a longer item name to test dynamic sizing' : ''}`,
       description:
@@ -876,8 +876,8 @@ export const VirtualizedList: Story = {
       <Flow gap="2x" width="40x">
         <Paragraph preset="t3">
           Large list with {items.length} items with varying heights
-          (virtualization automatically enabled for {'>'}30 items). Scroll down
-          and back up to test smooth virtualization.
+          (virtualization automatically enabled if there is no sections). Scroll
+          down and back up to test smooth virtualization.
         </Paragraph>
 
         <FilterPicker
@@ -908,7 +908,7 @@ export const VirtualizedList: Story = {
     docs: {
       description: {
         story:
-          'When a FilterPicker contains more than 30 items, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets. This story includes items with varying heights to demonstrate stable virtualization without scroll jumping.',
+          'Virtualization is automatically enabled if there is no sections. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets. This story includes items with varying heights to demonstrate stable virtualization without scroll jumping.',
       },
     },
   },

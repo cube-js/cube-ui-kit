@@ -270,12 +270,6 @@ export interface CubeListBoxProps<T>
    * Defaults to false for backward compatibility.
    */
   shouldUseVirtualFocus?: boolean;
-  /**
-   * When true, ListBox will use virtualization. This is useful for large lists
-   * to improve performance.
-   * Defaults to false for backward compatibility.
-   */
-  shouldVirtualize?: boolean;
 
   /**
    * Optional callback fired when the user presses Escape key.
@@ -492,8 +486,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     [itemsArray],
   );
 
-  const shouldVirtualize =
-    props.shouldVirtualize ?? (!hasSections && itemsArray.length >= 50);
+  const shouldVirtualize = !hasSections;
 
   // Use ref to ensure estimateSize always accesses current itemsArray
   const itemsArrayRef = useRef(itemsArray);
