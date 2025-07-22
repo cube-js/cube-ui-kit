@@ -75,9 +75,7 @@ const ListBoxWrapperElement = tasty({
 const ListElement = tasty({
   as: 'ul',
   styles: {
-    display: 'flex',
-    gap: '1bw',
-    flow: 'column',
+    display: 'block',
     margin: '0',
     padding: '.5x',
     listStyle: 'none',
