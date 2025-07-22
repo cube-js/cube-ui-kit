@@ -846,11 +846,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
   props: CubeFilterListBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },
 ) => ReactElement) & { Item: typeof Item; Section: typeof BaseSection };
 
-FilterListBox.Item = Item as unknown as (props: {
-  description?: ReactNode;
-  textValue?: string;
-  [key: string]: any;
-}) => ReactElement;
+FilterListBox.Item = ListBox.Item;
 
 FilterListBox.Section = BaseSection;
 

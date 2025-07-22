@@ -428,7 +428,9 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     delete listStateProps.defaultSelectedKey;
   }
 
-  const listState = useListState(listStateProps);
+  const listState = useListState({
+    ...listStateProps,
+  });
 
   // Expose the list state instance via the provided ref (if any)
   if (stateRef) {
@@ -873,6 +875,7 @@ const ListBoxSectionComponent = Object.assign(BaseSection, {
 
 ListBox.Item = Item as unknown as (props: {
   description?: ReactNode;
+  textValue?: string;
   [key: string]: any;
 }) => ReactElement;
 

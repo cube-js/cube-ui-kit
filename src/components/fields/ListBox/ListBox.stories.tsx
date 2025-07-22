@@ -1,4 +1,4 @@
-import { StoryFn } from '@storybook/react';
+import { StoryFn, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 
 import { FilterIcon, RightIcon } from '../../../icons';

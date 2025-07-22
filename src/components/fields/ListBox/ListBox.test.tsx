@@ -1,7 +1,14 @@
 import { createRef } from 'react';
 
 import { Field, ListBox } from '../../../index';
-import { act, render, renderWithForm, userEvent, waitFor } from '../../../test';
+import {
+  act,
+  render,
+  renderWithForm,
+  screen,
+  userEvent,
+  waitFor,
+} from '../../../test';
 
 jest.mock('../../../_internal/hooks/use-warn');
 
@@ -194,10 +201,18 @@ describe('<ListBox />', () => {
   it('should support items with descriptions', () => {
     const { getByText } = render(
       <ListBox label="Select a fruit">
-        <ListBox.Item key="apple" description="Red and sweet">
+        <ListBox.Item
+          key="apple"
+          textValue="Apple Red and sweet"
+          description="Red and sweet"
+        >
           Apple
         </ListBox.Item>
-        <ListBox.Item key="banana" description="Yellow and curved">
+        <ListBox.Item
+          key="banana"
+          textValue="Banana Yellow and curved"
+          description="Yellow and curved"
+        >
           Banana
         </ListBox.Item>
       </ListBox>,
