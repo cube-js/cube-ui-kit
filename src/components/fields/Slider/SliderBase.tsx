@@ -193,8 +193,10 @@ function SliderBase(
     [labelPosition, orientation],
   );
 
+  styles = extractStyles(otherProps, OUTER_STYLES, styles);
+
   const sliderField = (
-    <SliderElement ref={domRef} {...groupProps} mods={mods}>
+    <SliderElement ref={domRef} {...groupProps} mods={mods} styles={styles}>
       <SliderControlsElement {...trackProps} ref={trackRef} mods={mods}>
         {children({
           trackRef,
@@ -205,12 +207,10 @@ function SliderBase(
     </SliderElement>
   );
 
-  styles = extractStyles(otherProps, OUTER_STYLES, styles);
-
   return wrapWithField(sliderField, ref, {
     ...props,
     children: undefined,
-    styles,
+    // styles,
     extra,
     labelProps,
   });
