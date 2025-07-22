@@ -146,14 +146,14 @@ export const FilterListBox = forwardRef(function FilterListBox<
     valuePropsMapper: ({ value, onChange }) => {
       const fieldProps: any = {};
 
-      if (selectionMode === 'multiple') {
+      if (props.selectionMode === 'multiple') {
         fieldProps.selectedKeys = value || [];
       } else {
         fieldProps.selectedKey = value ?? null;
       }
 
       fieldProps.onSelectionChange = (key: any) => {
-        if (selectionMode === 'multiple') {
+        if (props.selectionMode === 'multiple') {
           onChange(key ? (Array.isArray(key) ? key : [key]) : []);
         } else {
           onChange(Array.isArray(key) ? key[0] : key);
