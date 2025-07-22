@@ -620,6 +620,39 @@ export const WithIcons: Story = {
   ),
 };
 
+export const WithCustomValues: Story = {
+  args: {
+    label: 'Custom Values Allowed',
+    placeholder: 'Type or select...',
+    selectionMode: 'multiple',
+    allowsCustomValue: true,
+    searchPlaceholder: 'Search or add custom value...',
+    width: 'max 30x',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
+  },
+  render: (args) => (
+    <FilterPicker {...args}>
+      {fruits.slice(0, 4).map((fruit) => (
+        <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+          {fruit.label}
+        </FilterPicker.Item>
+      ))}
+    </FilterPicker>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `allowsCustomValue={true}`, users can enter and select values that are not in the predefined list. Custom values are automatically added to the list when selected and persist across popover sessions.',
+      },
+    },
+  },
+};
+
 export const ComplexExample: Story = {
   args: {
     label: 'Advanced Filter System',

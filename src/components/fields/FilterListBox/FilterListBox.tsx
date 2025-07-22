@@ -237,6 +237,37 @@ export const FilterListBox = forwardRef(function FilterListBox<
     {},
   );
 
+  // Initialize custom items from selectedKeys that don't exist in original children
+  // This handles cases where FilterListBox is mounted with selected custom values
+  React.useEffect(() => {
+    if (!allowsCustomValue) return;
+
+    const currentSelectedKeys = selectedKeys
+      ? Array.from(selectedKeys).map(String)
+      : selectedKey != null
+        ? [String(selectedKey)]
+        : [];
+
+    if (currentSelectedKeys.length === 0) return;
+
+    // Find custom values that are selected but don't exist in original children
+    const customValuesToAdd: Record<string, ReactElement> = {};
+    currentSelectedKeys.forEach((key) => {
+      if (!originalKeys.has(key)) {
+        // This is a custom value that was selected (from previous session)
+        customValuesToAdd[key] = (
+          <Item key={key} textValue={key}>
+            {key}
+          </Item>
+        );
+      }
+    });
+
+    if (Object.keys(customValuesToAdd).length > 0) {
+      setCustomItems((prev) => ({ ...prev, ...customValuesToAdd }));
+    }
+  }, [allowsCustomValue, selectedKeys, selectedKey, originalKeys]);
+
   // Merge original children with any previously created custom items so they are always displayed afterwards.
   const mergedChildren: ReactNode = useMemo(() => {
     if (!children && !Object.keys(customItems).length) return children;

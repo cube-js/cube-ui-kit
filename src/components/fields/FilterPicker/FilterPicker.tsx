@@ -259,7 +259,51 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       });
     };
 
-    extractLabels(children);
+    const processedKeys = new Set<string>();
+
+    // Modified extractLabels to track which keys we've processed
+    const extractLabelsWithTracking = (nodes: ReactNode): void => {
+      React.Children.forEach(nodes, (child: any) => {
+        if (!child || typeof child !== 'object') return;
+
+        if (child.type === Item) {
+          const childKey = String(child.key);
+          if (selectedSet.has(childKey)) {
+            const label =
+              child.props.textValue ||
+              (typeof child.props.children === 'string'
+                ? child.props.children
+                : '') ||
+              String(child.props.children || '');
+            labels.push(label);
+            processedKeys.add(childKey);
+          }
+        }
+
+        if (child.props?.children) {
+          extractLabelsWithTracking(child.props.children);
+        }
+      });
+    };
+
+    extractLabelsWithTracking(children);
+
+    // Handle custom values that don't have corresponding children
+    const selectedKeys =
+      selectionMode === 'multiple'
+        ? (effectiveSelectedKeys || []).map(String)
+        : effectiveSelectedKey != null
+          ? [String(effectiveSelectedKey)]
+          : [];
+
+    // Add labels for any selected keys that weren't processed (custom values)
+    selectedKeys.forEach((key) => {
+      if (!processedKeys.has(key)) {
+        // This is a custom value, use the key as the label
+        labels.push(key);
+      }
+    });
+
     return labels;
   };
 
@@ -311,18 +355,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       selectionMode === 'multiple'
         ? selectionsWhenClosed.current.multiple.length > 0
         : selectionsWhenClosed.current.single !== null;
-
-    /* istanbul ignore next */
-    if (process.env.NODE_ENV === 'test') {
-      console.log('DEBUG_SORT', {
-        hadSelectionsWhenClosed,
-        isPopoverOpen,
-        selectedCount:
-          selectionMode === 'multiple'
-            ? effectiveSelectedKeys?.length
-            : effectiveSelectedKey,
-      });
-    }
 
     // Only apply sorting when there were selections in the previous session.
     // We intentionally do not depend on the `isPopoverOpen` flag here because that
@@ -430,10 +462,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     // Sort the children
     const childrenArray = React.Children.toArray(children);
     const sortedChildren = sortChildrenArray(childrenArray);
-    /* istanbul ignore next */
-    if (process.env.NODE_ENV === 'test' && hadSelectionsWhenClosed) {
-      console.log('DEBUG_SELECTED_SET', Array.from(selectedSet));
-    }
 
     // Cache the sorted order when popover opens
     if (isPopoverOpen) {
@@ -450,7 +478,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     hasSelection,
   ]);
 
-  const sortedChildren = getSortedChildren();
+  // FilterListBox handles custom values internally when allowsCustomValue={true}
+  // We only provide the sorted original children
+  const finalChildren = getSortedChildren();
 
   const renderTriggerContent = () => {
     // When there is a selection and a custom summary renderer is provided – use it.
@@ -509,10 +539,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
           // fade-out animation keeps its layout unchanged. We only need to
           // record the latest selection for the next session.
           selectionsWhenClosed.current = { ...latestSelectionRef.current };
-          /* istanbul ignore next */
-          if (process.env.NODE_ENV === 'test') {
-            console.log('DEBUG_SAVE_SELECTIONS', selectionsWhenClosed.current);
-          }
         }
       }
     }, [state.isOpen, isPopoverOpen]);
@@ -639,7 +665,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
               }
             }}
           >
-            {sortedChildren}
+            {finalChildren}
           </FilterListBox>
         </Dialog>
       )}

@@ -727,4 +727,213 @@ describe('<FilterPicker />', () => {
       expect(queryByText('Date')).not.toBeInTheDocument();
     });
   });
+
+  describe('allowsCustomValue functionality', () => {
+    it('should support custom values and display them in trigger', async () => {
+      const onSelectionChange = jest.fn();
+
+      const { getByRole, getByPlaceholderText, getByText } = renderWithRoot(
+        <FilterPicker
+          label="Select fruits"
+          placeholder="Choose fruits..."
+          selectionMode="single"
+          allowsCustomValue={true}
+          searchPlaceholder="Search..."
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      const trigger = getByRole('button');
+
+      // Initially trigger should show placeholder
+      expect(trigger).toHaveTextContent('Choose fruits...');
+
+      // Open the popover
+      await act(async () => {
+        await userEvent.click(trigger);
+      });
+
+      // Type a custom value that doesn't exist in the options
+      const searchInput = getByPlaceholderText('Search...');
+      await act(async () => {
+        await userEvent.type(searchInput, 'mango');
+      });
+
+      // Should see the custom option
+      expect(getByText('mango')).toBeInTheDocument();
+
+      // Select the custom option
+      await act(async () => {
+        await userEvent.click(getByText('mango'));
+      });
+
+      // Check that selection changed with the custom value
+      expect(onSelectionChange).toHaveBeenCalledWith('mango');
+
+      // Popover should close (single mode)
+      expect(searchInput).not.toBeInTheDocument();
+
+      // Trigger should now display the custom value
+      expect(trigger).toHaveTextContent('mango');
+      expect(trigger).not.toHaveTextContent('Choose fruits...');
+    });
+
+    it('should support custom values in multiple selection mode', async () => {
+      const onSelectionChange = jest.fn();
+
+      const { getByRole, getByPlaceholderText, getByText } = renderWithRoot(
+        <FilterPicker
+          label="Select fruits"
+          placeholder="Choose fruits..."
+          selectionMode="multiple"
+          allowsCustomValue={true}
+          searchPlaceholder="Search..."
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      const trigger = getByRole('button');
+
+      // Open the popover
+      await act(async () => {
+        await userEvent.click(trigger);
+      });
+
+      // First select a regular option
+      await act(async () => {
+        await userEvent.click(getByText('Apple'));
+      });
+
+      expect(onSelectionChange).toHaveBeenCalledWith(['apple']);
+
+      // Type and select a custom value
+      const searchInput = getByPlaceholderText('Search...');
+      await act(async () => {
+        await userEvent.type(searchInput, 'mango');
+      });
+
+      await act(async () => {
+        await userEvent.click(getByText('mango'));
+      });
+
+      expect(onSelectionChange).toHaveBeenLastCalledWith(['apple', 'mango']);
+
+      // Close popover by pressing Escape
+      await act(async () => {
+        await userEvent.keyboard('{Escape}');
+      });
+
+      // Trigger should display both the regular and custom values
+      expect(trigger).toHaveTextContent('Apple, mango');
+    });
+
+    it('should persist custom values across popover sessions', async () => {
+      const onSelectionChange = jest.fn();
+
+      const { getByRole, getByPlaceholderText, getByText } = renderWithRoot(
+        <FilterPicker
+          label="Select fruits"
+          placeholder="Choose fruits..."
+          selectionMode="multiple"
+          allowsCustomValue={true}
+          searchPlaceholder="Search..."
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      const trigger = getByRole('button');
+
+      // Open popover and add custom value
+      await act(async () => {
+        await userEvent.click(trigger);
+      });
+
+      const searchInput = getByPlaceholderText('Search...');
+      await act(async () => {
+        await userEvent.type(searchInput, 'mango');
+      });
+
+      await act(async () => {
+        await userEvent.click(getByText('mango'));
+      });
+
+      // Close popover
+      await act(async () => {
+        await userEvent.keyboard('{Escape}');
+      });
+
+      // Reopen popover
+      await act(async () => {
+        await userEvent.click(trigger);
+      });
+
+      // Custom value should still be visible in the list
+      expect(getByText('mango')).toBeInTheDocument();
+    });
+
+    it('should show selected custom values in the list when popover reopens', async () => {
+      const onSelectionChange = jest.fn();
+
+      const { getByRole, getByPlaceholderText, getByText } = renderWithRoot(
+        <FilterPicker
+          label="Select fruits"
+          placeholder="Choose fruits..."
+          selectionMode="multiple"
+          allowsCustomValue={true}
+          searchPlaceholder="Search..."
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </FilterPicker>,
+      );
+
+      const trigger = getByRole('button');
+
+      // Session 1: Add a custom value and select Apple
+      await act(async () => {
+        await userEvent.click(trigger);
+      });
+
+      // Select Apple first
+      await act(async () => {
+        await userEvent.click(getByText('Apple'));
+      });
+
+      let searchInput = getByPlaceholderText('Search...');
+      await act(async () => {
+        await userEvent.type(searchInput, 'mango');
+      });
+
+      await act(async () => {
+        await userEvent.click(getByText('mango'));
+      });
+
+      // Close popover by clicking on the trigger again (toggle behavior)
+      await act(async () => {
+        await userEvent.click(trigger);
+      });
+
+      // Verify popover is closed and trigger shows both selections
+      expect(trigger.getAttribute('aria-expanded')).toBe('false');
+      expect(trigger).toHaveTextContent('Apple, mango');
+
+      // Session 2: Reopen popover - custom value should be visible in the list
+      await act(async () => {
+        await userEvent.click(trigger);
+      });
+
+      // Verify popover opened and search input is available
+      expect(getByPlaceholderText('Search...')).toBeInTheDocument();
+
+      // Both Apple and mango should be visible in the list without searching
+      expect(getByText('Apple')).toBeInTheDocument();
+      expect(getByText('mango')).toBeInTheDocument();
+    });
+  });
 });
