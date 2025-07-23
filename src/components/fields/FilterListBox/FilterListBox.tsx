@@ -512,6 +512,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
   // When the search value changes, the visible collection of items may change as well.
   // If the currently focused item is no longer visible, move virtual focus to the first
   // available item so that arrow navigation and Enter behaviour continue to work.
+  // If there are no available items, reset the selection so Enter won't select anything.
   useLayoutEffect(() => {
     const listState = listStateRef.current;
 
@@ -519,39 +520,39 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
     const { selectionManager, collection } = listState;
 
-    // Early exit if the current focused key is still present in the collection.
-    const currentFocused = selectionManager.focusedKey;
-    if (
-      currentFocused != null &&
-      collection.getItem &&
-      collection.getItem(currentFocused)
-    ) {
+    // Helper to collect visible item keys (supports sections)
+    const collectVisibleKeys = (nodes: Iterable<any>, out: Key[]) => {
+      const term = searchValue.trim();
+      for (const node of nodes) {
+        if (node.type === 'item') {
+          const text = node.textValue ?? String(node.rendered ?? '');
+          if (!term || textFilterFn(text, term)) {
+            out.push(node.key);
+          }
+        } else if (node.childNodes) {
+          collectVisibleKeys(node.childNodes, out);
+        }
+      }
+    };
+
+    const visibleKeys: Key[] = [];
+    collectVisibleKeys(collection, visibleKeys);
+
+    // If there are no visible items, reset the focused key so Enter won't select anything
+    if (visibleKeys.length === 0) {
+      selectionManager.setFocusedKey(null);
       return;
     }
 
-    // Find the first item key in the (possibly sectioned) collection.
-    let firstKey: Key | null = null;
-
-    for (const node of collection) {
-      if (node.type === 'item') {
-        firstKey = node.key;
-        break;
-      }
-
-      if (node.childNodes) {
-        for (const child of node.childNodes) {
-          if (child.type === 'item') {
-            firstKey = child.key;
-            break;
-          }
-        }
-      }
-
-      if (firstKey != null) break;
+    // Early exit if the current focused key is still present in the visible items.
+    const currentFocused = selectionManager.focusedKey;
+    if (currentFocused != null && visibleKeys.includes(currentFocused)) {
+      return;
     }
 
-    selectionManager.setFocusedKey(firstKey);
-  }, [searchValue, enhancedChildren]);
+    // Set focus to the first visible item
+    selectionManager.setFocusedKey(visibleKeys[0]);
+  }, [searchValue, enhancedChildren, textFilterFn]);
 
   // Keyboard navigation handler for search input
   const { keyboardProps } = useKeyboard({

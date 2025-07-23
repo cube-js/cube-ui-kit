@@ -223,6 +223,60 @@ describe('<FilterListBox />', () => {
       expect(getByText('No fruits match your search')).toBeInTheDocument();
     });
 
+    it('should reset selection when no search results are found', async () => {
+      const onSelectionChange = jest.fn();
+
+      const { getByPlaceholderText, getByText } = render(
+        <FilterListBox
+          label="Select a fruit"
+          searchPlaceholder="Search..."
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      const searchInput = getByPlaceholderText('Search...');
+
+      // First, select an item by typing a search term that matches
+      await act(async () => {
+        await userEvent.type(searchInput, 'app');
+      });
+
+      // Navigate to the first item and select it
+      await act(async () => {
+        await userEvent.keyboard('{ArrowDown}');
+      });
+
+      await act(async () => {
+        await userEvent.keyboard('{Enter}');
+      });
+
+      expect(onSelectionChange).toHaveBeenCalledWith('apple');
+
+      // Clear the search input and type something that doesn't match
+      await act(async () => {
+        await userEvent.clear(searchInput);
+      });
+
+      await act(async () => {
+        await userEvent.type(searchInput, 'xyz');
+      });
+
+      // Verify empty state is shown
+      expect(getByText('No results found')).toBeInTheDocument();
+
+      // Try to press Enter - should not trigger selection change since no items are focused
+      const selectionChangeCallCount = onSelectionChange.mock.calls.length;
+
+      await act(async () => {
+        await userEvent.keyboard('{Enter}');
+      });
+
+      // Selection should not have changed
+      expect(onSelectionChange).toHaveBeenCalledTimes(selectionChangeCallCount);
+    });
+
     it('should support custom filter function', async () => {
       const customFilter = jest.fn((text, search) =>
         text.toLowerCase().startsWith(search.toLowerCase()),
