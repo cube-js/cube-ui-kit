@@ -289,7 +289,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     extractLabelsWithTracking(children);
 
     // Handle custom values that don't have corresponding children
-    const selectedKeys =
+    const selectedKeysArr =
       selectionMode === 'multiple'
         ? (effectiveSelectedKeys || []).map(String)
         : effectiveSelectedKey != null
@@ -297,7 +297,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
           : [];
 
     // Add labels for any selected keys that weren't processed (custom values)
-    selectedKeys.forEach((key) => {
+    selectedKeysArr.forEach((key) => {
       if (!processedKeys.has(key)) {
         // This is a custom value, use the key as the label
         labels.push(key);
@@ -475,7 +475,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     effectiveSelectedKey,
     selectionMode,
     isPopoverOpen,
-    hasSelection,
   ]);
 
   // FilterListBox handles custom values internally when allowsCustomValue={true}

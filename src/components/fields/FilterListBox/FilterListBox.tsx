@@ -235,8 +235,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
   // State to keep track of custom (user-entered) items that were selected.
   const [customKeys, setCustomKeys] = useState<Set<string>>(new Set());
 
-  // Initialize custom items from selectedKeys that don't exist in original children
-  // This handles cases where FilterListBox is mounted with selected custom values
+  // Initialize custom keys from current selection
   React.useEffect(() => {
     if (!allowsCustomValue) return;
 
@@ -248,34 +247,59 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
     if (currentSelectedKeys.length === 0) return;
 
-    // Find custom values that are selected but don't exist in original children
-    const customValuesToAdd = new Set<string>();
-    currentSelectedKeys.forEach((key) => {
-      if (!originalKeys.has(key)) {
-        // This is a custom value that was selected (from previous session)
-        customValuesToAdd.add(key);
-      }
-    });
+    const keysToAdd = currentSelectedKeys.filter((k) => !originalKeys.has(k));
 
-    if (customValuesToAdd.size > 0) {
-      setCustomKeys((prev) => new Set([...prev, ...customValuesToAdd]));
+    if (keysToAdd.length) {
+      setCustomKeys((prev) => new Set([...Array.from(prev), ...keysToAdd]));
     }
   }, [allowsCustomValue, selectedKeys, selectedKey, originalKeys]);
 
-  // Merge original children with any previously created custom items so they are always displayed afterwards.
+  // Merge original children with any custom items so they persist in the list.
+  // If there are selected custom values, they should appear on top with other
+  // selected items (which are already sorted by the parent component, e.g. FilterPicker).
   const mergedChildren: ReactNode = useMemo(() => {
     if (!children && customKeys.size === 0) return children;
 
+    // Build React elements for custom values (kept stable via their key).
     const customArray = Array.from(customKeys).map((key) => (
       <Item key={key} textValue={key}>
         {key}
       </Item>
     ));
-    if (!children) return customArray;
+
+    // Identify which custom keys are currently selected so we can promote them.
+    const selectedKeysSet = new Set<string>();
+
+    if (selectionMode === 'multiple') {
+      Array.from(selectedKeys ?? []).forEach((k) =>
+        selectedKeysSet.add(String(k)),
+      );
+    } else {
+      if (selectedKey != null) selectedKeysSet.add(String(selectedKey));
+    }
+
+    const selectedCustom: ReactNode[] = [];
+    const unselectedCustom: ReactNode[] = [];
+
+    customArray.forEach((item: any) => {
+      if (selectedKeysSet.has(String(item.key))) {
+        selectedCustom.push(item);
+      } else {
+        unselectedCustom.push(item);
+      }
+    });
+
+    if (!children) {
+      // No original items – just return selected custom followed by the rest.
+      return [...selectedCustom, ...unselectedCustom];
+    }
 
     const originalArray = Array.isArray(children) ? children : [children];
-    return [...originalArray, ...customArray];
-  }, [children, customKeys]);
+
+    // Final order: selected custom items -> original array (already possibly
+    // sorted by parent) -> unselected custom items.
+    return [...selectedCustom, ...originalArray, ...unselectedCustom];
+  }, [children, customKeys, selectionMode, selectedKey, selectedKeys]);
 
   // Determine an aria-label for the internal ListBox to avoid React Aria warnings.
   const innerAriaLabel =
@@ -672,19 +696,17 @@ export const FilterListBox = forwardRef(function FilterListBox<
         }
       }
 
-      // Keep only those custom items that remain selected and add any new ones
-      setCustomKeys((prev) => {
-        const next = new Set<string>();
+      // Build next custom keys set based on selected values
+      const nextSet = new Set<string>();
 
-        selectedValues.forEach((val) => {
-          // Ignore original (non-custom) options
-          if (originalKeys.has(val)) return;
-
-          next.add(val);
-        });
-
-        return next;
+      selectedValues.forEach((val) => {
+        if (!originalKeys.has(val)) {
+          nextSet.add(val);
+        }
       });
+
+      // Update internal custom keys state
+      setCustomKeys(nextSet);
     }
 
     if (externalOnSelectionChange) {
