@@ -597,9 +597,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             // Pass an aria-label so the internal ListBox is properly labeled and React Aria doesn't warn.
             aria-label={`${props['aria-label'] ?? props.label ?? ''} Picker`}
             selectedKey={
-              selectionMode === 'single'
-                ? effectiveSelectedKey ?? undefined
-                : undefined
+              selectionMode === 'single' ? effectiveSelectedKey : undefined
             }
             selectedKeys={
               selectionMode === 'multiple' ? effectiveSelectedKeys : undefined
