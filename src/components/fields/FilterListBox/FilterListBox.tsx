@@ -233,9 +233,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
   }, [children]);
 
   // State to keep track of custom (user-entered) items that were selected.
-  const [customItems, setCustomItems] = useState<Record<string, ReactElement>>(
-    {},
-  );
+  const [customKeys, setCustomKeys] = useState<Set<string>>(new Set());
 
   // Initialize custom items from selectedKeys that don't exist in original children
   // This handles cases where FilterListBox is mounted with selected custom values
@@ -251,33 +249,33 @@ export const FilterListBox = forwardRef(function FilterListBox<
     if (currentSelectedKeys.length === 0) return;
 
     // Find custom values that are selected but don't exist in original children
-    const customValuesToAdd: Record<string, ReactElement> = {};
+    const customValuesToAdd = new Set<string>();
     currentSelectedKeys.forEach((key) => {
       if (!originalKeys.has(key)) {
         // This is a custom value that was selected (from previous session)
-        customValuesToAdd[key] = (
-          <Item key={key} textValue={key}>
-            {key}
-          </Item>
-        );
+        customValuesToAdd.add(key);
       }
     });
 
-    if (Object.keys(customValuesToAdd).length > 0) {
-      setCustomItems((prev) => ({ ...prev, ...customValuesToAdd }));
+    if (customValuesToAdd.size > 0) {
+      setCustomKeys((prev) => new Set([...prev, ...customValuesToAdd]));
     }
   }, [allowsCustomValue, selectedKeys, selectedKey, originalKeys]);
 
   // Merge original children with any previously created custom items so they are always displayed afterwards.
   const mergedChildren: ReactNode = useMemo(() => {
-    if (!children && !Object.keys(customItems).length) return children;
+    if (!children && customKeys.size === 0) return children;
 
-    const customArray = Object.values(customItems);
+    const customArray = Array.from(customKeys).map((key) => (
+      <Item key={key} textValue={key}>
+        {key}
+      </Item>
+    ));
     if (!children) return customArray;
 
     const originalArray = Array.isArray(children) ? children : [children];
     return [...originalArray, ...customArray];
-  }, [children, customItems]);
+  }, [children, customKeys]);
 
   // Determine an aria-label for the internal ListBox to avoid React Aria warnings.
   const innerAriaLabel =
@@ -675,18 +673,14 @@ export const FilterListBox = forwardRef(function FilterListBox<
       }
 
       // Keep only those custom items that remain selected and add any new ones
-      setCustomItems((prev) => {
-        const next: Record<string, ReactElement> = {};
+      setCustomKeys((prev) => {
+        const next = new Set<string>();
 
         selectedValues.forEach((val) => {
           // Ignore original (non-custom) options
           if (originalKeys.has(val)) return;
 
-          next[val] = prev[val] ?? (
-            <Item key={val} textValue={val}>
-              {val}
-            </Item>
-          );
+          next.add(val);
         });
 
         return next;
