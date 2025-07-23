@@ -236,7 +236,9 @@ const OptionElement = tasty({
     fill: {
       '': '#clear',
       focused: '#dark.03',
-      selected: '#dark.06',
+      selected: '#dark.09',
+      'selected & focused': '#dark.12',
+      pressed: '#dark.09',
       disabled: '#clear',
     },
     preset: 't3',
@@ -692,7 +694,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
   let isSelected = state.selectionManager.isSelected(item.key);
   let isVirtualFocused = state.selectionManager.focusedKey === item.key;
 
-  let { optionProps } = useOption(
+  let { optionProps, isPressed } = useOption(
     {
       key: item.key,
       isDisabled,
@@ -719,6 +721,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
         selected: isSelected,
         focused: shouldUseVirtualFocus ? isVirtualFocused : isFocused,
         disabled: isDisabled,
+        pressed: isPressed,
       }}
       data-theme={isSelected ? 'special' : undefined}
       data-size={size}

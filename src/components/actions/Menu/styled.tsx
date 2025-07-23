@@ -140,9 +140,9 @@ export const StyledItem = tasty({
     fill: {
       '': '#clear',
       focused: '#dark.03',
-      selected: '#dark.06',
-      'selected & focused': '#dark.09',
-      pressed: '#dark.06',
+      selected: '#dark.09',
+      'selected & focused': '#dark.12',
+      pressed: '#dark.09',
       disabled: '#clear',
     },
     color: {

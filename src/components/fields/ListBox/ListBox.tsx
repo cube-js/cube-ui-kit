@@ -139,6 +139,7 @@ const OptionElement = tasty({
       'hovered | focused': '#dark.03',
       selected: '#dark.09',
       'selected & (hovered | focused)': '#dark.12',
+      'selected & hovered & focused': '#dark.15',
       pressed: '#dark.09',
       valid: '#success-bg',
       invalid: '#danger-bg',
