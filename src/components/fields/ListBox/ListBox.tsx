@@ -553,7 +553,16 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         (it) => it.key === focusedKey,
       );
       if (idx !== -1) {
-        rowVirtualizer.scrollToIndex(idx, { align: 'auto' });
+        // Check if the focused item is already visible in the current viewport
+        const virtualItems = rowVirtualizer.getVirtualItems();
+        const isAlreadyVisible = virtualItems.some(
+          (virtualItem) => virtualItem.index === idx,
+        );
+
+        // Only scroll if the item is not already visible
+        if (!isAlreadyVisible) {
+          rowVirtualizer.scrollToIndex(idx, { align: 'auto' });
+        }
       }
     }
   }, [shouldVirtualize, listState.selectionManager.focusedKey, itemsArray]);
@@ -798,10 +807,14 @@ function Option({
         // Checkbox area clicked - only toggle, don't call onOptionClick
         // Let React Aria handle the selection
         optionProps.onClick?.(e);
+        // Set focus to the clicked item
+        state.selectionManager.setFocusedKey(item.key);
       } else {
         // Content area clicked - toggle and trigger callback
         // Let React Aria handle the selection first
         optionProps.onClick?.(e);
+        // Set focus to the clicked item
+        state.selectionManager.setFocusedKey(item.key);
         // Then call the callback (which will close the popover in FilterPicker)
         if (onOptionClick) {
           onOptionClick(item.key);
@@ -810,6 +823,8 @@ function Option({
     } else {
       // Normal behavior - let React Aria handle it
       optionProps.onClick?.(e);
+      // Set focus to the clicked item
+      state.selectionManager.setFocusedKey(item.key);
     }
   };
 
