@@ -599,7 +599,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       qa={qa || 'ListBox'}
       mods={mods}
       styles={styles}
-      {...focusProps}
     >
       {header ? (
         <StyledHeader styles={headerStyles} data-size={size}>
@@ -609,7 +608,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         <div role="presentation" />
       )}
       {/* Scroll container wrapper */}
-      <ListBoxScrollElement ref={scrollRef}>
+      <ListBoxScrollElement ref={scrollRef} mods={mods} {...focusProps}>
         <ListElement
           {...mergedListBoxProps}
           ref={listRef}
@@ -825,6 +824,10 @@ function Option({
       optionProps.onClick?.(e);
       // Set focus to the clicked item
       state.selectionManager.setFocusedKey(item.key);
+      // Call onOptionClick if provided
+      if (onOptionClick) {
+        onOptionClick(item.key);
+      }
     }
   };
 

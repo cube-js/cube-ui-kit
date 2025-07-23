@@ -755,6 +755,22 @@ export const FilterListBox = forwardRef(function FilterListBox<
     }
   };
 
+  // Custom option click handler that ensures search input receives focus
+  const handleOptionClick = (key: Key) => {
+    // Focus the search input to enable keyboard navigation
+    // Use setTimeout to ensure this happens after React state updates
+    setTimeout(() => {
+      if (searchInputRef.current) {
+        searchInputRef.current.focus();
+      }
+    }, 0);
+
+    // Call the original onOptionClick if provided
+    if (onOptionClick) {
+      onOptionClick(key);
+    }
+  };
+
   const searchInput = (
     <SearchWrapperElement mods={mods} data-size="small">
       <SearchInputElement
@@ -841,7 +857,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
           isCheckable={isCheckable}
           onSelectionChange={handleSelectionChange}
           onEscape={onEscape}
-          onOptionClick={onOptionClick}
+          onOptionClick={handleOptionClick}
         >
           {finalChildren as any}
         </ListBox>

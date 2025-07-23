@@ -153,6 +153,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     defaultSelectedKey,
     selectedKeys,
     defaultSelectedKeys,
+    disabledKeys,
     onSelectionChange,
     selectionMode = 'single',
     listStateRef,
@@ -589,6 +590,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             selectedKeys={
               selectionMode === 'multiple' ? effectiveSelectedKeys : undefined
             }
+            disabledKeys={disabledKeys}
             focusOnHover={focusOnHover}
             allowsCustomValue={allowsCustomValue}
             selectionMode={selectionMode}
