@@ -1,5 +1,6 @@
-import { DOMRef } from '@react-types/shared';
+import { FocusableRef } from '@react-types/shared';
 import React, {
+  ForwardedRef,
   forwardRef,
   ReactElement,
   ReactNode,
@@ -22,7 +23,7 @@ import {
   OuterStyleProps,
   Styles,
 } from '../../../tasty';
-import { mergeProps, useCombinedRefs } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react';
 import { Button } from '../../actions';
 import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
@@ -100,7 +101,7 @@ const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
 
 export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   props: CubeFilterPickerProps<T>,
-  ref: DOMRef<HTMLDivElement>,
+  ref: ForwardedRef<HTMLElement>,
 ) {
   props = useProviderProps(props);
   props = useFormProps(props);
@@ -189,6 +190,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   // Track popover open/close and capture children order for session
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const cachedChildrenOrder = useRef<ReactNode[] | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const isControlledSingle = selectedKey !== undefined;
   const isControlledMultiple = selectedKeys !== undefined;
@@ -483,6 +485,17 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   // We only provide the sorted original children
   const finalChildren = getSortedChildren();
 
+  // Function to close popover and focus trigger button
+  const closeAndFocus = React.useCallback((close: () => void) => {
+    close();
+    // Use setTimeout to ensure the popover closes first, then focus the trigger
+    setTimeout(() => {
+      if (triggerRef.current) {
+        triggerRef.current.focus();
+      }
+    }, 0);
+  }, []);
+
   const renderTriggerContent = () => {
     // When there is a selection and a custom summary renderer is provided – use it.
     if (hasSelection && typeof renderSummary === 'function') {
@@ -546,6 +559,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
     return (
       <Button
+        ref={triggerRef as any}
         qa={props.qa || 'FilterPicker'}
         type={type}
         theme={validationState === 'invalid' ? 'danger' : theme}
@@ -606,12 +620,12 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             headerStyles={headerStyles}
             footerStyles={footerStyles}
             qa={`${props.qa || 'FilterPicker'}ListBox`}
-            onEscape={close}
+            onEscape={() => closeAndFocus(close)}
             onOptionClick={(key) => {
               // For FilterPicker, clicking the content area should close the popover
               // in multiple selection mode (single mode already closes via onSelectionChange)
               if (selectionMode === 'multiple' && isCheckable) {
-                close();
+                closeAndFocus(close);
               }
             }}
             onSelectionChange={(selection) => {
@@ -664,7 +678,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
               onSelectionChange?.(selection as any);
 
               if (selectionMode === 'single') {
-                close();
+                closeAndFocus(close);
               }
             }}
           >
@@ -677,7 +691,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   return wrapWithField<Omit<CubeFilterPickerProps<T>, 'children'>>(
     filterPickerField,
-    useCombinedRefs(ref),
+    ref as any,
     mergeProps(
       {
         ...props,
@@ -687,7 +701,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     ),
   );
 }) as unknown as (<T>(
-  props: CubeFilterPickerProps<T> & { ref?: DOMRef<HTMLDivElement> },
+  props: CubeFilterPickerProps<T> & { ref?: ForwardedRef<HTMLElement> },
 ) => ReactElement) & { Item: typeof Item; Section: typeof BaseSection };
 
 FilterPicker.Item = ListBox.Item;

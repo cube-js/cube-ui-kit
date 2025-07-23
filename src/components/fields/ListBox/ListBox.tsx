@@ -14,7 +14,6 @@ import {
 } from 'react';
 import {
   AriaListBoxProps,
-  useFocusVisible,
   useKeyboard,
   useListBox,
   useListBoxSection,
