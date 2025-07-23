@@ -553,15 +553,33 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         (it) => it.key === focusedKey,
       );
       if (idx !== -1) {
-        // Check if the focused item is already visible in the current viewport
-        const virtualItems = rowVirtualizer.getVirtualItems();
-        const isAlreadyVisible = virtualItems.some(
-          (virtualItem) => virtualItem.index === idx,
-        );
+        // Check if the focused item is actually visible in the current viewport
+        // (not just rendered due to overscan)
+        const scrollElement = scrollRef.current;
+        if (scrollElement) {
+          const scrollTop = scrollElement.scrollTop;
+          const viewportHeight = scrollElement.clientHeight;
+          const viewportBottom = scrollTop + viewportHeight;
 
-        // Only scroll if the item is not already visible
-        if (!isAlreadyVisible) {
-          rowVirtualizer.scrollToIndex(idx, { align: 'auto' });
+          // Find the virtual item for this index
+          const virtualItems = rowVirtualizer.getVirtualItems();
+          const virtualItem = virtualItems.find((item) => item.index === idx);
+
+          let isAlreadyVisible = false;
+          if (virtualItem) {
+            const itemTop = virtualItem.start;
+            const itemBottom = virtualItem.start + virtualItem.size;
+
+            // Check if the item is fully visible in the viewport
+            // We should scroll if the item is partially hidden
+            isAlreadyVisible =
+              itemTop >= scrollTop && itemBottom <= viewportBottom;
+          }
+
+          // Only scroll if the item is not already visible
+          if (!isAlreadyVisible) {
+            rowVirtualizer.scrollToIndex(idx, { align: 'auto' });
+          }
         }
       }
     }

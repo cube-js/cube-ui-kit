@@ -1,4 +1,5 @@
 import { StoryFn, StoryObj } from '@storybook/react';
+import { userEvent, within } from '@storybook/test';
 import { useState } from 'react';
 
 import {
@@ -1065,8 +1066,10 @@ export const WithIcons: Story = {
 
 export const WithCustomStyles: StoryFn = () => (
   <FilterListBox
+    allowsCustomValue
     label="Custom Styled FilterListBox"
     searchPlaceholder="Search with custom styles..."
+    selectionMode="multiple"
     styles={{
       fill: '#gradient(to right, #purple.20, #blue.20)',
       border: '2bw solid #purple',
@@ -1094,6 +1097,24 @@ export const WithCustomStyles: StoryFn = () => (
     <FilterListBox.Item key="red">Red Theme</FilterListBox.Item>
   </FilterListBox>
 );
+
+WithCustomStyles.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+
+  // Find the search input
+  const searchInput = canvas.getByPlaceholderText(
+    'Search with custom styles...',
+  );
+
+  // Type a custom value
+  await userEvent.type(searchInput, 'Orange Theme');
+
+  // Wait a moment for the input to register
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  // Press Enter to add the custom value
+  await userEvent.keyboard('{Enter}');
+};
 
 export const EscapeKeyHandling: StoryFn<CubeFilterListBoxProps<any>> = () => {
   const [selectedKey, setSelectedKey] = useState<string | null>('apple');
