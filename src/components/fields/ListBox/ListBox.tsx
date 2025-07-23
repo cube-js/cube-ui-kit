@@ -454,9 +454,15 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     ...listStateProps,
   });
 
+  // Track whether the last focus change was due to keyboard navigation
+  const lastFocusSourceRef = useRef<'keyboard' | 'mouse' | 'other'>('other');
+
   // Expose the list state instance via the provided ref (if any)
   if (stateRef) {
-    stateRef.current = listState;
+    stateRef.current = {
+      ...listState,
+      lastFocusSourceRef,
+    };
   }
 
   // Warn if isCheckable is false in single selection mode
@@ -470,6 +476,18 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // Custom keyboard handling to prevent selection clearing on Escape while allowing overlay dismiss
   const { keyboardProps } = useKeyboard({
     onKeyDown: (e) => {
+      // Mark focus changes from keyboard navigation
+      if (
+        e.key === 'ArrowDown' ||
+        e.key === 'ArrowUp' ||
+        e.key === 'Home' ||
+        e.key === 'End' ||
+        e.key === 'PageUp' ||
+        e.key === 'PageDown'
+      ) {
+        lastFocusSourceRef.current = 'keyboard';
+      }
+
       if (e.key === 'Escape' && onEscape) {
         // Don't prevent default - let the overlay system handle closing
         // But we'll call onEscape to potentially override the default selection clearing
@@ -543,7 +561,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     }
   }, [shouldVirtualize, itemsArray, rowVirtualizer]);
 
-  // Keep focused item visible when virtualizing
+  // Keep focused item visible when virtualizing, but only for keyboard navigation
   useEffect(() => {
     if (!shouldVirtualize) return;
     const focusedKey = listState.selectionManager.focusedKey;
@@ -575,8 +593,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
               itemTop >= scrollTop && itemBottom <= viewportBottom;
           }
 
-          // Only scroll if the item is not already visible
-          if (!isAlreadyVisible) {
+          // Only scroll if the item is not already visible AND the focus change was due to keyboard navigation
+          if (!isAlreadyVisible && lastFocusSourceRef.current === 'keyboard') {
             rowVirtualizer.scrollToIndex(idx, { align: 'auto' });
           }
         }
@@ -667,6 +685,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                       transform: `translateY(${virtualItem.start}px)`,
                     }}
                     virtualIndex={virtualItem.index}
+                    lastFocusSourceRef={lastFocusSourceRef}
                     onOptionClick={onOptionClick}
                   />
                 );
@@ -700,6 +719,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                         focusOnHover={focusOnHover}
                         isCheckable={isCheckable}
                         size={size}
+                        lastFocusSourceRef={lastFocusSourceRef}
                         onOptionClick={onOptionClick}
                       />,
                     );
@@ -717,6 +737,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                         validationState={validationState}
                         focusOnHover={focusOnHover}
                         isCheckable={isCheckable}
+                        lastFocusSourceRef={lastFocusSourceRef}
                         onOptionClick={onOptionClick}
                       />,
                     );
@@ -759,6 +780,7 @@ function Option({
   virtualStyle,
   virtualRef,
   virtualIndex,
+  lastFocusSourceRef,
 }: {
   size?: 'small' | 'medium';
   item: any;
@@ -775,6 +797,8 @@ function Option({
   virtualRef?: (element: HTMLElement | null) => void;
   /** Virtual index from react-virtual for data-index attribute */
   virtualIndex?: number;
+  /** Ref to track the source of focus changes */
+  lastFocusSourceRef?: MutableRefObject<'keyboard' | 'mouse' | 'other'>;
 }) {
   const localRef = useRef<HTMLLIElement>(null);
   // Merge local ref with react-virtual measure ref when provided
@@ -802,6 +826,11 @@ function Option({
 
   // Custom click handler for the entire option
   const handleOptionClick = (e) => {
+    // Mark focus changes from mouse clicks
+    if (lastFocusSourceRef) {
+      lastFocusSourceRef.current = 'mouse';
+    }
+
     // If there's an onOptionClick callback and this is checkable in multiple mode,
     // we need to distinguish between checkbox and content clicks
     if (
@@ -898,6 +927,7 @@ interface ListBoxSectionProps<T> {
   isCheckable?: boolean;
   onOptionClick?: (key: Key) => void;
   size?: 'small' | 'medium';
+  lastFocusSourceRef?: MutableRefObject<'keyboard' | 'mouse' | 'other'>;
 }
 
 function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
@@ -912,6 +942,7 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
     focusOnHover,
     isCheckable,
     onOptionClick,
+    lastFocusSourceRef,
   } = props;
   const heading = item.rendered;
 
@@ -941,6 +972,7 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
               validationState={validationState}
               focusOnHover={focusOnHover}
               isCheckable={isCheckable}
+              lastFocusSourceRef={lastFocusSourceRef}
               onOptionClick={onOptionClick}
             />
           ))}

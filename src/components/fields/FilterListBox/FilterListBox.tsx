@@ -618,6 +618,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
         }
 
         if (nextKey != null) {
+          // Mark this focus change as keyboard navigation
+          if (listState.lastFocusSourceRef) {
+            listState.lastFocusSourceRef.current = 'keyboard';
+          }
           selectionManager.setFocusedKey(nextKey);
         }
       } else if (
@@ -658,6 +662,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
             ? visibleKeys[0]
             : visibleKeys[visibleKeys.length - 1];
 
+        // Mark this focus change as keyboard navigation
+        if (listState.lastFocusSourceRef) {
+          listState.lastFocusSourceRef.current = 'keyboard';
+        }
         selectionManager.setFocusedKey(targetKey);
       } else if (e.key === 'Enter' || (e.key === ' ' && !searchValue)) {
         const listState = listStateRef.current;
