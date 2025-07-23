@@ -189,6 +189,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     message,
     description,
     styles,
+    focusOnHover,
     labelSuffix,
     selectedKey,
     defaultSelectedKey,
@@ -830,7 +831,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
           validationState={validationState}
           disallowEmptySelection={props.disallowEmptySelection}
           disabledKeys={props.disabledKeys}
-          focusOnHover={true}
+          focusOnHover={focusOnHover}
           shouldUseVirtualFocus={true}
           footer={footer}
           footerStyles={footerStyles}

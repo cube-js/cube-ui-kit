@@ -1,3 +1,4 @@
+import { useHover } from '@react-aria/interactions';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import {
   CSSProperties,
@@ -13,6 +14,7 @@ import {
 } from 'react';
 import {
   AriaListBoxProps,
+  useFocusVisible,
   useKeyboard,
   useListBox,
   useListBoxSection,
@@ -31,7 +33,7 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
+import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 // Import Menu styled components for header and footer
 import {
@@ -123,7 +125,6 @@ const OptionElement = tasty({
       disabled: 'not-allowed',
     },
     transition: 'theme',
-    outline: 0,
     border: 0,
     userSelect: 'none',
     color: {
@@ -135,14 +136,15 @@ const OptionElement = tasty({
     },
     fill: {
       '': '#clear',
-      focused: '#dark.03',
-      selected: '#dark.06',
-      'selected & focused': '#dark.09',
-      pressed: '#dark.06',
+      'hovered | focused': '#dark.03',
+      selected: '#dark.09',
+      'selected & (hovered | focused)': '#dark.12',
+      pressed: '#dark.09',
       valid: '#success-bg',
       invalid: '#danger-bg',
       disabled: '#clear',
     },
+    outline: 0,
     backgroundClip: 'padding-box',
 
     CheckboxWrapper: {
@@ -585,7 +587,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     <ListBoxWrapperElement
       ref={ref}
       qa={qa || 'ListBox'}
-      {...modAttrs(mods)}
+      mods={mods}
       styles={styles}
       {...focusProps}
     >
@@ -725,7 +727,7 @@ function Option({
   styles,
   isParentDisabled,
   validationState,
-  focusOnHover = true,
+  focusOnHover = false,
   isCheckable,
   onOptionClick,
   virtualStyle,
@@ -755,6 +757,8 @@ function Option({
   const isDisabled = isParentDisabled || state.disabledKeys.has(item.key);
   const isSelected = state.selectionManager.isSelected(item.key);
   const isFocused = state.selectionManager.focusedKey === item.key;
+
+  const { hoverProps, isHovered } = useHover({ isDisabled });
 
   const { optionProps, isPressed } = useOption(
     {
@@ -811,7 +815,7 @@ function Option({
   return (
     <OptionElement
       id={`ListBoxItem-${String(item.key)}`}
-      {...optionProps}
+      {...mergeProps(optionProps, hoverProps)}
       ref={combinedRef}
       style={virtualStyle}
       data-size={size}
@@ -824,7 +828,7 @@ function Option({
         valid: isSelected && validationState === 'valid',
         invalid: isSelected && validationState === 'invalid',
         checkable: isCheckable,
-        hovered: isFocused, // We'll treat focus as hover for the checkbox visibility
+        hovered: isHovered, // We'll treat focus as hover for the checkbox visibility
       }}
       styles={styles}
       onClick={handleOptionClick}
