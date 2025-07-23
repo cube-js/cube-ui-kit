@@ -1,7 +1,16 @@
-import { StoryFn } from '@storybook/react';
+import { StoryFn, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 
-import { FilterIcon, RightIcon } from '../../../icons';
+import {
+  CheckIcon,
+  DatabaseIcon,
+  FilterIcon,
+  PlusIcon,
+  RightIcon,
+  SearchIcon,
+  SettingsIcon,
+  UserIcon,
+} from '../../../icons';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { Badge } from '../../content/Badge/Badge';
@@ -16,7 +25,9 @@ import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
 import { CubeFilterListBoxProps, FilterListBox } from './FilterListBox';
 
-export default {
+import type { Meta } from '@storybook/react';
+
+const meta: Meta<typeof FilterListBox> = {
   title: 'Forms/FilterListBox',
   component: FilterListBox,
   parameters: {
@@ -43,7 +54,7 @@ export default {
       description: 'The default selected keys in uncontrolled multiple mode',
     },
     selectionMode: {
-      options: ['single', 'multiple', 'none'],
+      options: ['single', 'multiple'],
       control: { type: 'radio' },
       description: 'Selection mode',
       table: {
@@ -185,21 +196,215 @@ export default {
   },
 };
 
+export default meta;
+type Story = StoryObj<typeof FilterListBox>;
+
+// Sample data for stories
+const fruits = [
+  { key: 'apple', label: 'Apple', description: 'Crisp and sweet red fruit' },
+  {
+    key: 'banana',
+    label: 'Banana',
+    description: 'Yellow tropical fruit rich in potassium',
+  },
+  {
+    key: 'cherry',
+    label: 'Cherry',
+    description: 'Small red stone fruit with sweet flavor',
+  },
+  {
+    key: 'date',
+    label: 'Date',
+    description: 'Sweet dried fruit from date palm',
+  },
+  {
+    key: 'elderberry',
+    label: 'Elderberry',
+    description: 'Dark purple berry with tart flavor',
+  },
+  { key: 'fig', label: 'Fig', description: 'Sweet fruit with soft flesh' },
+  {
+    key: 'grape',
+    label: 'Grape',
+    description: 'Small sweet fruit that grows in clusters',
+  },
+  {
+    key: 'honeydew',
+    label: 'Honeydew',
+    description: 'Sweet green melon with pale flesh',
+  },
+];
+
+const vegetables = [
+  {
+    key: 'carrot',
+    label: 'Carrot',
+    description: 'Orange root vegetable high in beta-carotene',
+  },
+  {
+    key: 'broccoli',
+    label: 'Broccoli',
+    description: 'Green cruciferous vegetable packed with nutrients',
+  },
+  {
+    key: 'spinach',
+    label: 'Spinach',
+    description: 'Leafy green vegetable rich in iron',
+  },
+  { key: 'pepper', label: 'Bell Pepper', description: 'Colorful sweet pepper' },
+  {
+    key: 'tomato',
+    label: 'Tomato',
+    description: 'Red fruit commonly used as vegetable',
+  },
+];
+
+const herbs = [
+  {
+    key: 'basil',
+    label: 'Basil',
+    description: 'Aromatic herb used in Mediterranean cooking',
+  },
+  {
+    key: 'oregano',
+    label: 'Oregano',
+    description: 'Pungent herb popular in Italian cuisine',
+  },
+  {
+    key: 'thyme',
+    label: 'Thyme',
+    description: 'Fragrant herb with earthy flavor',
+  },
+  {
+    key: 'parsley',
+    label: 'Parsley',
+    description: 'Fresh herb used for garnish and flavor',
+  },
+  {
+    key: 'cilantro',
+    label: 'Cilantro',
+    description: 'Bright herb with citrusy flavor',
+  },
+];
+
+const permissions = [
+  { key: 'read', label: 'Read', description: 'View content and data' },
+  { key: 'write', label: 'Write', description: 'Create and edit content' },
+  { key: 'delete', label: 'Delete', description: 'Remove content permanently' },
+  { key: 'admin', label: 'Admin', description: 'Full administrative access' },
+  {
+    key: 'moderate',
+    label: 'Moderate',
+    description: 'Review and approve content',
+  },
+  { key: 'share', label: 'Share', description: 'Share content with others' },
+];
+
+const languages = [
+  {
+    key: 'javascript',
+    label: 'JavaScript',
+    description: 'Dynamic, interpreted programming language',
+  },
+  {
+    key: 'python',
+    label: 'Python',
+    description: 'High-level, general-purpose programming language',
+  },
+  {
+    key: 'typescript',
+    label: 'TypeScript',
+    description: 'Strongly typed programming language based on JavaScript',
+  },
+  {
+    key: 'rust',
+    label: 'Rust',
+    description:
+      'Systems programming language focused on safety and performance',
+  },
+  {
+    key: 'go',
+    label: 'Go',
+    description: 'Open source programming language supported by Google',
+  },
+  {
+    key: 'java',
+    label: 'Java',
+    description: 'Object-oriented programming language',
+  },
+  {
+    key: 'csharp',
+    label: 'C#',
+    description: 'Modern object-oriented language',
+  },
+  { key: 'php', label: 'PHP', description: 'Server-side scripting language' },
+];
+
 const Template: StoryFn<CubeFilterListBoxProps<any>> = (args) => (
   <FilterListBox {...args}>
-    <FilterListBox.Item key="apple">Apple</FilterListBox.Item>
-    <FilterListBox.Item key="banana">Banana</FilterListBox.Item>
-    <FilterListBox.Item key="cherry">Cherry</FilterListBox.Item>
-    <FilterListBox.Item key="date">Date</FilterListBox.Item>
-    <FilterListBox.Item key="elderberry">Elderberry</FilterListBox.Item>
-    <FilterListBox.Item key="fig">Fig</FilterListBox.Item>
-    <FilterListBox.Item key="grape">Grape</FilterListBox.Item>
-    <FilterListBox.Item key="honeydew">Honeydew</FilterListBox.Item>
+    {fruits.slice(0, 6).map((fruit) => (
+      <FilterListBox.Item key={fruit.key}>{fruit.label}</FilterListBox.Item>
+    ))}
   </FilterListBox>
 );
 
-export const Default = Template.bind({});
-Default.args = {
+export const Default: Story = {
+  render: Template,
+  args: {
+    label: 'Choose a fruit',
+    searchPlaceholder: 'Search fruits...',
+  },
+};
+
+export const SingleSelection: Story = {
+  render: (args) => (
+    <FilterListBox {...args}>
+      {fruits.map((fruit) => (
+        <FilterListBox.Item key={fruit.key}>{fruit.label}</FilterListBox.Item>
+      ))}
+    </FilterListBox>
+  ),
+  args: {
+    label: 'Choose your favorite fruit',
+    selectionMode: 'single',
+    defaultSelectedKey: 'apple',
+    searchPlaceholder: 'Search fruits...',
+  },
+};
+
+export const MultipleSelection: Story = {
+  render: (args) => (
+    <FilterListBox {...args}>
+      {permissions.map((permission) => (
+        <FilterListBox.Item
+          key={permission.key}
+          description={permission.description}
+        >
+          {permission.label}
+        </FilterListBox.Item>
+      ))}
+    </FilterListBox>
+  ),
+  args: {
+    label: 'Select permissions',
+    selectionMode: 'multiple',
+    defaultSelectedKeys: ['read', 'write'],
+    searchPlaceholder: 'Filter permissions...',
+  },
+};
+
+export const WithDescriptions: StoryFn<CubeFilterListBoxProps<any>> = (
+  args,
+) => (
+  <FilterListBox {...args}>
+    {fruits.slice(0, 5).map((fruit) => (
+      <FilterListBox.Item key={fruit.key} description={fruit.description}>
+        {fruit.label}
+      </FilterListBox.Item>
+    ))}
+  </FilterListBox>
+);
+WithDescriptions.args = {
   label: 'Choose a fruit',
   searchPlaceholder: 'Search fruits...',
 };
@@ -207,23 +412,60 @@ Default.args = {
 export const WithSections: StoryFn<CubeFilterListBoxProps<any>> = (args) => (
   <FilterListBox {...args}>
     <FilterListBox.Section key="fruits" title="Fruits">
-      <FilterListBox.Item key="apple">Apple</FilterListBox.Item>
-      <FilterListBox.Item key="banana">Banana</FilterListBox.Item>
-      <FilterListBox.Item key="cherry">Cherry</FilterListBox.Item>
+      {fruits.slice(0, 3).map((fruit) => (
+        <FilterListBox.Item key={fruit.key}>{fruit.label}</FilterListBox.Item>
+      ))}
     </FilterListBox.Section>
     <FilterListBox.Section key="vegetables" title="Vegetables">
-      <FilterListBox.Item key="carrot">Carrot</FilterListBox.Item>
-      <FilterListBox.Item key="broccoli">Broccoli</FilterListBox.Item>
-      <FilterListBox.Item key="spinach">Spinach</FilterListBox.Item>
+      {vegetables.slice(0, 3).map((vegetable) => (
+        <FilterListBox.Item key={vegetable.key}>
+          {vegetable.label}
+        </FilterListBox.Item>
+      ))}
     </FilterListBox.Section>
     <FilterListBox.Section key="herbs" title="Herbs">
-      <FilterListBox.Item key="basil">Basil</FilterListBox.Item>
-      <FilterListBox.Item key="oregano">Oregano</FilterListBox.Item>
-      <FilterListBox.Item key="thyme">Thyme</FilterListBox.Item>
+      {herbs.slice(0, 3).map((herb) => (
+        <FilterListBox.Item key={herb.key}>{herb.label}</FilterListBox.Item>
+      ))}
     </FilterListBox.Section>
   </FilterListBox>
 );
 WithSections.args = {
+  label: 'Choose an ingredient',
+  searchPlaceholder: 'Search ingredients...',
+};
+
+export const WithSectionsAndDescriptions: StoryFn<
+  CubeFilterListBoxProps<any>
+> = (args) => (
+  <FilterListBox {...args}>
+    <FilterListBox.Section key="fruits" title="Fruits">
+      {fruits.slice(0, 3).map((fruit) => (
+        <FilterListBox.Item key={fruit.key} description={fruit.description}>
+          {fruit.label}
+        </FilterListBox.Item>
+      ))}
+    </FilterListBox.Section>
+    <FilterListBox.Section key="vegetables" title="Vegetables">
+      {vegetables.slice(0, 3).map((vegetable) => (
+        <FilterListBox.Item
+          key={vegetable.key}
+          description={vegetable.description}
+        >
+          {vegetable.label}
+        </FilterListBox.Item>
+      ))}
+    </FilterListBox.Section>
+    <FilterListBox.Section key="herbs" title="Herbs">
+      {herbs.slice(0, 3).map((herb) => (
+        <FilterListBox.Item key={herb.key} description={herb.description}>
+          {herb.label}
+        </FilterListBox.Item>
+      ))}
+    </FilterListBox.Section>
+  </FilterListBox>
+);
+WithSectionsAndDescriptions.args = {
   label: 'Choose an ingredient',
   searchPlaceholder: 'Search ingredients...',
 };
@@ -234,7 +476,7 @@ export const WithHeaderAndFooter: StoryFn<CubeFilterListBoxProps<any>> = (
   <FilterListBox
     {...args}
     header={
-      <Space gap="1x" placeContent="space-between" flow="row">
+      <>
         <Space gap="1x" flow="row" placeItems="center">
           <Title level={6}>Programming Languages</Title>
           <Badge type="purple">12</Badge>
@@ -245,54 +487,27 @@ export const WithHeaderAndFooter: StoryFn<CubeFilterListBoxProps<any>> = (
           icon={<FilterIcon />}
           aria-label="Filter languages"
         />
-      </Space>
+      </>
     }
     footer={
-      <Space
-        gap="1x"
-        placeContent="space-between"
-        flow="row"
-        placeItems="center"
-      >
+      <>
         <Text color="#dark.50" preset="t4">
           Popular languages shown
         </Text>
         <Button type="link" size="small" rightIcon={<RightIcon />}>
           View all
         </Button>
-      </Space>
+      </>
     }
   >
-    <FilterListBox.Item
-      key="javascript"
-      textValue="JavaScript - Dynamic, interpreted programming language"
-    >
-      JavaScript
-    </FilterListBox.Item>
-    <FilterListBox.Item
-      key="python"
-      textValue="Python - High-level, general-purpose programming language"
-    >
-      Python
-    </FilterListBox.Item>
-    <FilterListBox.Item
-      key="typescript"
-      textValue="TypeScript - Strongly typed programming language based on JavaScript"
-    >
-      TypeScript
-    </FilterListBox.Item>
-    <FilterListBox.Item
-      key="rust"
-      textValue="Rust - Systems programming language focused on safety and performance"
-    >
-      Rust
-    </FilterListBox.Item>
-    <FilterListBox.Item
-      key="go"
-      textValue="Go - Open source programming language supported by Google"
-    >
-      Go
-    </FilterListBox.Item>
+    {languages.slice(0, 5).map((language) => (
+      <FilterListBox.Item
+        key={language.key}
+        textValue={`${language.label} - ${language.description}`}
+      >
+        {language.label}
+      </FilterListBox.Item>
+    ))}
   </FilterListBox>
 );
 WithHeaderAndFooter.args = {
@@ -300,130 +515,162 @@ WithHeaderAndFooter.args = {
   searchPlaceholder: 'Search languages...',
 };
 
-export const MultipleSelection: StoryFn<CubeFilterListBoxProps<any>> = (
-  args,
-) => (
-  <FilterListBox {...args}>
-    <FilterListBox.Item key="read">Read</FilterListBox.Item>
-    <FilterListBox.Item key="write">Write</FilterListBox.Item>
-    <FilterListBox.Item key="execute">Execute</FilterListBox.Item>
-    <FilterListBox.Item key="delete">Delete</FilterListBox.Item>
-    <FilterListBox.Item key="admin">Admin</FilterListBox.Item>
-    <FilterListBox.Item key="moderator">Moderator</FilterListBox.Item>
-    <FilterListBox.Item key="viewer">Viewer</FilterListBox.Item>
-  </FilterListBox>
-);
-MultipleSelection.args = {
-  label: 'Select permissions',
-  selectionMode: 'multiple',
-  defaultSelectedKeys: ['read', 'write'],
-  searchPlaceholder: 'Filter permissions...',
+export const CheckableMultipleSelection: Story = {
+  render: (args) => (
+    <FilterListBox {...args}>
+      {permissions.map((permission) => (
+        <FilterListBox.Item
+          key={permission.key}
+          description={permission.description}
+        >
+          {permission.label}
+        </FilterListBox.Item>
+      ))}
+    </FilterListBox>
+  ),
+  args: {
+    label: 'Select user permissions',
+    selectionMode: 'multiple',
+    isCheckable: true,
+    defaultSelectedKeys: ['read', 'write'],
+    searchPlaceholder: 'Filter permissions...',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `isCheckable={true}` and `selectionMode="multiple"`, checkboxes appear on the left of each option. The checkbox is only visible when the item is hovered or selected.',
+      },
+    },
+  },
 };
 
-export const WithDescriptions: StoryFn<CubeFilterListBoxProps<any>> = (
-  args,
-) => (
-  <FilterListBox {...args}>
-    <FilterListBox.Item key="apple" description="Crisp and sweet red fruit">
-      Apple
-    </FilterListBox.Item>
-    <FilterListBox.Item
-      key="banana"
-      description="Yellow tropical fruit rich in potassium"
-    >
-      Banana
-    </FilterListBox.Item>
-    <FilterListBox.Item
-      key="cherry"
-      description="Small red stone fruit with sweet flavor"
-    >
-      Cherry
-    </FilterListBox.Item>
-    <FilterListBox.Item
-      key="date"
-      description="Sweet dried fruit from date palm"
-    >
-      Date
-    </FilterListBox.Item>
-    <FilterListBox.Item
-      key="elderberry"
-      description="Dark purple berry with tart flavor"
-    >
-      Elderberry
-    </FilterListBox.Item>
-  </FilterListBox>
-);
-WithDescriptions.args = {
-  label: 'Choose a fruit',
-  searchPlaceholder: 'Search fruits...',
+export const AllowsCustomValue: Story = {
+  render: (args) => (
+    <FilterListBox {...args}>
+      {fruits.slice(0, 5).map((fruit) => (
+        <FilterListBox.Item key={fruit.key}>{fruit.label}</FilterListBox.Item>
+      ))}
+    </FilterListBox>
+  ),
+  args: {
+    label: 'Select or add fruits',
+    allowsCustomValue: true,
+    selectionMode: 'multiple',
+    searchPlaceholder: 'Search or type new fruit...',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "When `allowsCustomValue={true}`, users can type custom values that aren't in the predefined list. Custom values appear at the bottom of search results.",
+      },
+    },
+  },
 };
 
-export const WithSectionsAndDescriptions: StoryFn<
-  CubeFilterListBoxProps<any>
-> = (args) => (
-  <FilterListBox {...args}>
-    <FilterListBox.Section key="fruits" title="Fruits">
-      <FilterListBox.Item key="apple" description="Crisp and sweet red fruit">
-        Apple
+export const DisabledItems: Story = {
+  render: (args) => (
+    <FilterListBox {...args}>
+      <FilterListBox.Item key="available1">
+        Available Option 1
+      </FilterListBox.Item>
+      <FilterListBox.Item key="disabled1">Disabled Option 1</FilterListBox.Item>
+      <FilterListBox.Item key="available2">
+        Available Option 2
+      </FilterListBox.Item>
+      <FilterListBox.Item key="disabled2">Disabled Option 2</FilterListBox.Item>
+      <FilterListBox.Item key="available3">
+        Available Option 3
+      </FilterListBox.Item>
+    </FilterListBox>
+  ),
+  args: {
+    label: 'Select an option',
+    selectionMode: 'single',
+    disabledKeys: ['disabled1', 'disabled2'],
+    searchPlaceholder: 'Search options...',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Individual items can be disabled using the `disabledKeys` prop. Disabled items cannot be selected and are visually distinguished.',
+      },
+    },
+  },
+};
+
+export const DisallowEmptySelection: Story = {
+  render: (args) => (
+    <FilterListBox {...args}>
+      {fruits.slice(0, 4).map((fruit) => (
+        <FilterListBox.Item key={fruit.key}>{fruit.label}</FilterListBox.Item>
+      ))}
+    </FilterListBox>
+  ),
+  args: {
+    label: 'Must select one option',
+    selectionMode: 'single',
+    disallowEmptySelection: true,
+    defaultSelectedKey: 'apple',
+    searchPlaceholder: 'Search fruits...',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `disallowEmptySelection={true}`, the user cannot deselect the last selected item, ensuring at least one item is always selected.',
+      },
+    },
+  },
+};
+
+export const WithTextValue: Story = {
+  render: (args) => (
+    <FilterListBox {...args}>
+      <FilterListBox.Item
+        key="basic"
+        textValue="Basic Plan - Free with limited features"
+      >
+        <Space gap="1x" flow="column">
+          <Text weight="600">Basic Plan</Text>
+          <Badge type="neutral">Free</Badge>
+        </Space>
       </FilterListBox.Item>
       <FilterListBox.Item
-        key="banana"
-        description="Yellow tropical fruit rich in potassium"
+        key="pro"
+        textValue="Pro Plan - Monthly subscription with all features"
       >
-        Banana
+        <Space gap="1x" flow="column">
+          <Text weight="600">Pro Plan</Text>
+          <Badge type="purple">$19/month</Badge>
+        </Space>
       </FilterListBox.Item>
       <FilterListBox.Item
-        key="cherry"
-        description="Small red stone fruit with sweet flavor"
+        key="enterprise"
+        textValue="Enterprise Plan - Custom pricing for large teams"
       >
-        Cherry
+        <Space gap="1x" flow="column">
+          <Text weight="600">Enterprise Plan</Text>
+          <Badge type="note">Custom</Badge>
+        </Space>
       </FilterListBox.Item>
-    </FilterListBox.Section>
-    <FilterListBox.Section key="vegetables" title="Vegetables">
-      <FilterListBox.Item
-        key="carrot"
-        description="Orange root vegetable high in beta-carotene"
-      >
-        Carrot
-      </FilterListBox.Item>
-      <FilterListBox.Item
-        key="broccoli"
-        description="Green cruciferous vegetable packed with nutrients"
-      >
-        Broccoli
-      </FilterListBox.Item>
-      <FilterListBox.Item
-        key="spinach"
-        description="Leafy green vegetable rich in iron"
-      >
-        Spinach
-      </FilterListBox.Item>
-    </FilterListBox.Section>
-    <FilterListBox.Section key="herbs" title="Herbs">
-      <FilterListBox.Item
-        key="basil"
-        description="Aromatic herb used in Mediterranean cooking"
-      >
-        Basil
-      </FilterListBox.Item>
-      <FilterListBox.Item
-        key="oregano"
-        description="Pungent herb popular in Italian cuisine"
-      >
-        Oregano
-      </FilterListBox.Item>
-      <FilterListBox.Item
-        key="thyme"
-        description="Fragrant herb with earthy flavor"
-      >
-        Thyme
-      </FilterListBox.Item>
-    </FilterListBox.Section>
-  </FilterListBox>
-);
-WithSectionsAndDescriptions.args = {
-  label: 'Choose an ingredient',
-  searchPlaceholder: 'Search ingredients...',
+    </FilterListBox>
+  ),
+  args: {
+    label: 'Choose your plan',
+    selectionMode: 'single',
+    searchPlaceholder: 'Search plans...',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use the `textValue` prop when option content is complex (JSX) to provide searchable text that includes more context than just the visible label.',
+      },
+    },
+  },
 };
 
 export const CustomFilter: StoryFn<CubeFilterListBoxProps<any>> = (args) => (
@@ -434,14 +681,11 @@ export const CustomFilter: StoryFn<CubeFilterListBoxProps<any>> = (args) => (
       return text.toLowerCase().startsWith(search.toLowerCase());
     }}
   >
-    <FilterListBox.Item key="javascript">JavaScript</FilterListBox.Item>
-    <FilterListBox.Item key="typescript">TypeScript</FilterListBox.Item>
-    <FilterListBox.Item key="python">Python</FilterListBox.Item>
-    <FilterListBox.Item key="java">Java</FilterListBox.Item>
-    <FilterListBox.Item key="csharp">C#</FilterListBox.Item>
-    <FilterListBox.Item key="php">PHP</FilterListBox.Item>
-    <FilterListBox.Item key="ruby">Ruby</FilterListBox.Item>
-    <FilterListBox.Item key="go">Go</FilterListBox.Item>
+    {languages.slice(0, 6).map((language) => (
+      <FilterListBox.Item key={language.key}>
+        {language.label}
+      </FilterListBox.Item>
+    ))}
   </FilterListBox>
 );
 CustomFilter.args = {
@@ -450,68 +694,110 @@ CustomFilter.args = {
   description: 'Custom filter that matches items starting with your input',
 };
 
-export const Loading: StoryFn<CubeFilterListBoxProps<any>> = (args) => (
-  <FilterListBox {...args}>
-    <FilterListBox.Item key="item1">Loading Item 1</FilterListBox.Item>
-    <FilterListBox.Item key="item2">Loading Item 2</FilterListBox.Item>
-    <FilterListBox.Item key="item3">Loading Item 3</FilterListBox.Item>
-  </FilterListBox>
-);
-Loading.args = {
-  label: 'Choose an item',
-  isLoading: true,
-  searchPlaceholder: 'Loading data...',
+export const LoadingState: Story = {
+  render: (args) => (
+    <FilterListBox {...args}>
+      <FilterListBox.Item key="item1">Loading Item 1</FilterListBox.Item>
+      <FilterListBox.Item key="item2">Loading Item 2</FilterListBox.Item>
+      <FilterListBox.Item key="item3">Loading Item 3</FilterListBox.Item>
+    </FilterListBox>
+  ),
+  args: {
+    label: 'Choose an item',
+    isLoading: true,
+    searchPlaceholder: 'Loading data...',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `isLoading={true}`, a loading icon appears in the search input and the placeholder can indicate loading state.',
+      },
+    },
+  },
 };
 
-export const CustomEmptyState: StoryFn<CubeFilterListBoxProps<any>> = (
-  args,
-) => (
-  <FilterListBox
-    {...args}
-    emptyLabel={
-      <div style={{ textAlign: 'center', padding: '1rem' }}>
-        <div style={{ marginBottom: '0.5rem' }}>🔍</div>
-        <div>No matching countries found.</div>
-        <div style={{ fontSize: '0.875rem', color: 'var(--neutral-600)' }}>
-          Try searching for a different country name.
-        </div>
-      </div>
-    }
-  >
-    <FilterListBox.Item key="us">United States</FilterListBox.Item>
-    <FilterListBox.Item key="ca">Canada</FilterListBox.Item>
-    <FilterListBox.Item key="uk">United Kingdom</FilterListBox.Item>
-    <FilterListBox.Item key="de">Germany</FilterListBox.Item>
-    <FilterListBox.Item key="fr">France</FilterListBox.Item>
-  </FilterListBox>
-);
-CustomEmptyState.args = {
-  label: 'Select country',
-  searchPlaceholder: 'Search countries...',
-  description:
-    "Try searching for something that doesn't exist to see the custom empty state",
+export const CustomEmptyState: Story = {
+  render: (args) => (
+    <FilterListBox
+      {...args}
+      emptyLabel={
+        <Space gap="1x" flow="column" placeItems="center" padding="2x">
+          <Text preset="t1">🔍</Text>
+          <Text weight="600">No matching countries found</Text>
+          <Text preset="t4" color="#dark.60">
+            Try searching for a different country name
+          </Text>
+        </Space>
+      }
+    >
+      <FilterListBox.Item key="us">United States</FilterListBox.Item>
+      <FilterListBox.Item key="ca">Canada</FilterListBox.Item>
+      <FilterListBox.Item key="uk">United Kingdom</FilterListBox.Item>
+      <FilterListBox.Item key="de">Germany</FilterListBox.Item>
+      <FilterListBox.Item key="fr">France</FilterListBox.Item>
+    </FilterListBox>
+  ),
+  args: {
+    label: 'Select country',
+    searchPlaceholder: 'Search countries...',
+    description:
+      "Try searching for something that doesn't exist to see the custom empty state",
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Customize the empty state message shown when search results are empty using the `emptyLabel` prop. Can be a string or custom JSX.',
+      },
+    },
+  },
 };
 
-export const Disabled: StoryFn<CubeFilterListBoxProps<any>> = (args) => (
+export const AutoFocus: Story = {
+  render: (args) => (
+    <FilterListBox {...args}>
+      {fruits.slice(0, 5).map((fruit) => (
+        <FilterListBox.Item key={fruit.key}>{fruit.label}</FilterListBox.Item>
+      ))}
+    </FilterListBox>
+  ),
+  args: {
+    label: 'Auto-focused search',
+    autoFocus: true,
+    searchPlaceholder: 'Start typing immediately...',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use `autoFocus={true}` to automatically focus the search input when the component mounts. Useful in dialogs and other focused contexts.',
+      },
+    },
+  },
+};
+
+export const DisabledState: StoryFn<CubeFilterListBoxProps<any>> = (args) => (
   <FilterListBox {...args}>
     <FilterListBox.Item key="option1">Option 1</FilterListBox.Item>
     <FilterListBox.Item key="option2">Option 2</FilterListBox.Item>
     <FilterListBox.Item key="option3">Option 3</FilterListBox.Item>
   </FilterListBox>
 );
-Disabled.args = {
+DisabledState.args = {
   label: 'Disabled FilterListBox',
   isDisabled: true,
   searchPlaceholder: 'Cannot search...',
 };
 
 export const ValidationStates: StoryFn<CubeFilterListBoxProps<any>> = () => (
-  <div style={{ display: 'flex', gap: '2rem', flexDirection: 'column' }}>
+  <Space gap="3x" flow="column">
     <FilterListBox
       label="Valid state"
       validationState="valid"
       message="Good choice!"
       defaultSelectedKey="option1"
+      searchPlaceholder="Search options..."
     >
       <FilterListBox.Item key="option1">Valid Option 1</FilterListBox.Item>
       <FilterListBox.Item key="option2">Valid Option 2</FilterListBox.Item>
@@ -522,14 +808,103 @@ export const ValidationStates: StoryFn<CubeFilterListBoxProps<any>> = () => (
       validationState="invalid"
       message="Please select a different option"
       defaultSelectedKey="option1"
+      searchPlaceholder="Search options..."
     >
       <FilterListBox.Item key="option1">Invalid Option 1</FilterListBox.Item>
       <FilterListBox.Item key="option2">Invalid Option 2</FilterListBox.Item>
     </FilterListBox>
-  </div>
+  </Space>
 );
 
-// Form integration examples
+export const ControlledExample: StoryFn<CubeFilterListBoxProps<any>> = () => {
+  const [selectedKey, setSelectedKey] = useState<string | null>('apple');
+
+  return (
+    <Space gap="2x" flow="column">
+      <FilterListBox
+        label="Controlled FilterListBox"
+        selectedKey={selectedKey}
+        selectionMode="single"
+        searchPlaceholder="Search fruits..."
+        onSelectionChange={(key) => setSelectedKey(key as string | null)}
+      >
+        {fruits.slice(0, 6).map((fruit) => (
+          <FilterListBox.Item key={fruit.key}>{fruit.label}</FilterListBox.Item>
+        ))}
+      </FilterListBox>
+
+      <Text>
+        Selected: <strong>{selectedKey || 'None'}</strong>
+      </Text>
+
+      <Space gap="1x" flow="row">
+        <Button
+          size="small"
+          type="outline"
+          onClick={() => setSelectedKey('banana')}
+        >
+          Select Banana
+        </Button>
+        <Button
+          size="small"
+          type="outline"
+          onClick={() => setSelectedKey(null)}
+        >
+          Clear Selection
+        </Button>
+      </Space>
+    </Space>
+  );
+};
+
+export const MultipleControlledExample: StoryFn<
+  CubeFilterListBoxProps<any>
+> = () => {
+  const [selectedKeys, setSelectedKeys] = useState<string[]>(['read', 'write']);
+
+  return (
+    <Space gap="2x" flow="column">
+      <FilterListBox
+        label="Controlled Multiple Selection"
+        selectedKeys={selectedKeys}
+        selectionMode="multiple"
+        isCheckable={true}
+        searchPlaceholder="Filter permissions..."
+        onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
+      >
+        {permissions.map((permission) => (
+          <FilterListBox.Item
+            key={permission.key}
+            description={permission.description}
+          >
+            {permission.label}
+          </FilterListBox.Item>
+        ))}
+      </FilterListBox>
+
+      <Text>
+        Selected:{' '}
+        <strong>
+          {selectedKeys.length ? selectedKeys.join(', ') : 'None'}
+        </strong>
+      </Text>
+
+      <Space gap="1x" flow="row">
+        <Button
+          size="small"
+          type="outline"
+          onClick={() => setSelectedKeys(['read', 'write', 'admin'])}
+        >
+          Select Admin Set
+        </Button>
+        <Button size="small" type="outline" onClick={() => setSelectedKeys([])}>
+          Clear All
+        </Button>
+      </Space>
+    </Space>
+  );
+};
+
 export const InForm: StoryFn = () => {
   const [value, setValue] = useState<string | null>(null);
 
@@ -589,7 +964,6 @@ export const InDialog: StoryFn = () => {
   );
 };
 
-// Advanced examples
 export const AsyncLoading: StoryFn = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [items, setItems] = useState([
@@ -621,12 +995,10 @@ export const AsyncLoading: StoryFn = () => {
   };
 
   return (
-    <div>
-      <div style={{ marginBottom: '1rem' }}>
-        <Button isDisabled={isLoading} onPress={refreshData}>
-          {isLoading ? 'Loading...' : 'Refresh Data'}
-        </Button>
-      </div>
+    <Space gap="2x" flow="column">
+      <Button isDisabled={isLoading} onPress={refreshData}>
+        {isLoading ? 'Loading...' : 'Refresh Data'}
+      </Button>
 
       <FilterListBox
         label="Fruits"
@@ -639,8 +1011,56 @@ export const AsyncLoading: StoryFn = () => {
           </FilterListBox.Item>
         ))}
       </FilterListBox>
-    </div>
+    </Space>
   );
+};
+
+export const WithIcons: Story = {
+  render: (args) => (
+    <FilterListBox {...args}>
+      <FilterListBox.Section title="User Management">
+        <FilterListBox.Item key="users">
+          <Space gap="1x" flow="row" placeItems="center">
+            <UserIcon />
+            Users
+          </Space>
+        </FilterListBox.Item>
+        <FilterListBox.Item key="permissions">
+          <Space gap="1x" flow="row" placeItems="center">
+            <CheckIcon />
+            Permissions
+          </Space>
+        </FilterListBox.Item>
+      </FilterListBox.Section>
+      <FilterListBox.Section title="System">
+        <FilterListBox.Item key="database">
+          <Space gap="1x" flow="row" placeItems="center">
+            <DatabaseIcon />
+            Database
+          </Space>
+        </FilterListBox.Item>
+        <FilterListBox.Item key="settings">
+          <Space gap="1x" flow="row" placeItems="center">
+            <SettingsIcon />
+            Settings
+          </Space>
+        </FilterListBox.Item>
+      </FilterListBox.Section>
+    </FilterListBox>
+  ),
+  args: {
+    label: 'System Administration',
+    selectionMode: 'single',
+    searchPlaceholder: 'Search admin options...',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'FilterListBox options can include icons to improve visual clarity and help users quickly identify options during search.',
+      },
+    },
+  },
 };
 
 export const WithCustomStyles: StoryFn = () => (
@@ -675,10 +1095,54 @@ export const WithCustomStyles: StoryFn = () => (
   </FilterListBox>
 );
 
+export const EscapeKeyHandling: StoryFn<CubeFilterListBoxProps<any>> = () => {
+  const [selectedKey, setSelectedKey] = useState<string | null>('apple');
+  const [escapeCount, setEscapeCount] = useState(0);
+
+  return (
+    <Space gap="2x" flow="column">
+      <FilterListBox
+        label="Custom Escape Handling"
+        selectedKey={selectedKey}
+        selectionMode="single"
+        searchPlaceholder="Search fruits..."
+        onSelectionChange={(key) => setSelectedKey(key as string | null)}
+        onEscape={() => {
+          setEscapeCount((prev) => prev + 1);
+          // Custom escape behavior - could close a parent modal, etc.
+        }}
+      >
+        {fruits.slice(0, 4).map((fruit) => (
+          <FilterListBox.Item key={fruit.key}>{fruit.label}</FilterListBox.Item>
+        ))}
+      </FilterListBox>
+
+      <Text>
+        Selected: <strong>{selectedKey || 'None'}</strong>
+      </Text>
+      <Text>
+        Escape key pressed: <strong>{escapeCount} times</strong>
+      </Text>
+      <Text preset="t4" color="#dark.60">
+        Focus the search input and press Escape to trigger custom handling
+      </Text>
+    </Space>
+  );
+};
+
+EscapeKeyHandling.parameters = {
+  docs: {
+    description: {
+      story:
+        'Use the `onEscape` prop to provide custom behavior when the Escape key is pressed with empty search input, such as closing a parent modal.',
+    },
+  },
+};
+
 export const VirtualizedList: StoryFn<CubeFilterListBoxProps<any>> = (args) => {
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
-  // Generate a large list of items with varying content to trigger virtualization (> 30 items)
+  // Generate a large list of items with varying content to test virtualization
   // Mix items with and without descriptions to test dynamic sizing
   const items = Array.from({ length: 100 }, (_, i) => ({
     id: `item-${i}`,
@@ -690,38 +1154,39 @@ export const VirtualizedList: StoryFn<CubeFilterListBoxProps<any>> = (args) => {
   }));
 
   return (
-    <div style={{ height: '400px', width: '350px' }}>
-      <Flow gap="2x">
-        <Paragraph preset="t3">
-          Large list with {items.length} items with varying heights
-          (virtualization automatically enabled for {'>'}30 items). Scroll down
-          and back up to test smooth virtualization.
-        </Paragraph>
+    <Space gap="2x" flow="column" style={{ height: '450px', width: '400px' }}>
+      <Text>
+        Large list with {items.length} items with varying heights.
+        Virtualization is automatically enabled when there are no sections.
+        Scroll down and back up to test smooth virtualization.
+      </Text>
 
-        <FilterListBox
-          {...args}
-          label="Virtualized Large Dataset"
-          searchPlaceholder="Search through 100+ items..."
-          selectionMode="multiple"
-          selectedKeys={selectedKeys}
-          height="300px"
-          overflow="auto"
-          onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
-        >
-          {items.map((item) => (
-            <FilterListBox.Item key={item.id} description={item.description}>
-              {item.name}
-            </FilterListBox.Item>
-          ))}
-        </FilterListBox>
+      <FilterListBox
+        {...args}
+        label="Virtualized Large Dataset"
+        searchPlaceholder="Search through 100+ items..."
+        selectionMode="multiple"
+        selectedKeys={selectedKeys}
+        height="300px"
+        overflow="auto"
+        onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
+      >
+        {items.map((item) => (
+          <FilterListBox.Item key={item.id} description={item.description}>
+            {item.name}
+          </FilterListBox.Item>
+        ))}
+      </FilterListBox>
 
-        <Paragraph preset="p4" color="#dark-03">
-          Selected: {selectedKeys.length} / {items.length} items
-          {selectedKeys.length > 0 &&
-            ` (${selectedKeys.slice(0, 3).join(', ')}${selectedKeys.length > 3 ? '...' : ''})`}
-        </Paragraph>
-      </Flow>
-    </div>
+      <Text>
+        Selected:{' '}
+        <strong>
+          {selectedKeys.length} / {items.length} items
+        </strong>
+        {selectedKeys.length > 0 &&
+          ` (${selectedKeys.slice(0, 3).join(', ')}${selectedKeys.length > 3 ? '...' : ''})`}
+      </Text>
+    </Space>
   );
 };
 
@@ -729,7 +1194,7 @@ VirtualizedList.parameters = {
   docs: {
     description: {
       story:
-        'When a FilterListBox contains more than 30 items, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets. This story includes items with varying heights to demonstrate stable virtualization without scroll jumping.',
+        'When a FilterListBox contains many items and has no sections, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets. This story includes items with varying heights to demonstrate stable virtualization without scroll jumping.',
     },
   },
 };

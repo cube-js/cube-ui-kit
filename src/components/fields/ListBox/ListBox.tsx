@@ -528,6 +528,9 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       }
       return size === 'small' ? 33 : 41;
     },
+    measureElement: (el) => {
+      return el.offsetHeight + 1;
+    },
     overscan: 10,
   });
 
@@ -627,7 +630,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                     isCheckable={isCheckable}
                     // We don't need to measure the element here, because the height is already set by the virtualizer
                     // This is a workaround to avoid glitches when selecting/deselecting items
-                    // virtualRef={rowVirtualizer.measureElement as any}
+                    virtualRef={rowVirtualizer.measureElement as any}
                     virtualStyle={{
                       position: 'absolute',
                       top: 0,

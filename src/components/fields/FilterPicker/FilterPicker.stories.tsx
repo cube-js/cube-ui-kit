@@ -18,6 +18,7 @@ import { Paragraph } from '../../content/Paragraph';
 import { Tag } from '../../content/Tag/Tag';
 import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
+import { Form } from '../../form';
 import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
 
@@ -224,28 +225,96 @@ type Story = StoryObj<typeof FilterPicker>;
 
 // Sample data for stories
 const fruits = [
-  { key: 'apple', label: 'Apple' },
-  { key: 'banana', label: 'Banana' },
-  { key: 'cherry', label: 'Cherry' },
-  { key: 'date', label: 'Date' },
-  { key: 'elderberry', label: 'Elderberry' },
-  { key: 'fig', label: 'Fig' },
-  { key: 'grape', label: 'Grape' },
+  { key: 'apple', label: 'Apple', description: 'Crisp and sweet red fruit' },
+  {
+    key: 'banana',
+    label: 'Banana',
+    description: 'Yellow tropical fruit rich in potassium',
+  },
+  {
+    key: 'cherry',
+    label: 'Cherry',
+    description: 'Small red stone fruit with sweet flavor',
+  },
+  {
+    key: 'date',
+    label: 'Date',
+    description: 'Sweet dried fruit from date palm',
+  },
+  {
+    key: 'elderberry',
+    label: 'Elderberry',
+    description: 'Dark purple berry with tart flavor',
+  },
+  { key: 'fig', label: 'Fig', description: 'Sweet fruit with soft flesh' },
+  {
+    key: 'grape',
+    label: 'Grape',
+    description: 'Small sweet fruit that grows in clusters',
+  },
 ];
 
 const vegetables = [
-  { key: 'carrot', label: 'Carrot' },
-  { key: 'broccoli', label: 'Broccoli' },
-  { key: 'spinach', label: 'Spinach' },
-  { key: 'pepper', label: 'Bell Pepper' },
-  { key: 'tomato', label: 'Tomato' },
+  {
+    key: 'carrot',
+    label: 'Carrot',
+    description: 'Orange root vegetable high in beta-carotene',
+  },
+  {
+    key: 'broccoli',
+    label: 'Broccoli',
+    description: 'Green cruciferous vegetable packed with nutrients',
+  },
+  {
+    key: 'spinach',
+    label: 'Spinach',
+    description: 'Leafy green vegetable rich in iron',
+  },
+  { key: 'pepper', label: 'Bell Pepper', description: 'Colorful sweet pepper' },
+  {
+    key: 'tomato',
+    label: 'Tomato',
+    description: 'Red fruit commonly used as vegetable',
+  },
 ];
 
 const grains = [
-  { key: 'rice', label: 'Rice' },
-  { key: 'quinoa', label: 'Quinoa' },
-  { key: 'oats', label: 'Oats' },
-  { key: 'barley', label: 'Barley' },
+  { key: 'rice', label: 'Rice', description: 'Staple grain eaten worldwide' },
+  {
+    key: 'quinoa',
+    label: 'Quinoa',
+    description: 'Protein-rich seed often used as grain',
+  },
+  { key: 'oats', label: 'Oats', description: 'Nutritious cereal grain' },
+  { key: 'barley', label: 'Barley', description: 'Versatile cereal grain' },
+];
+
+const permissions = [
+  { key: 'read', label: 'Read', description: 'View content and data' },
+  { key: 'write', label: 'Write', description: 'Create and edit content' },
+  { key: 'delete', label: 'Delete', description: 'Remove content permanently' },
+  { key: 'admin', label: 'Admin', description: 'Full administrative access' },
+  {
+    key: 'moderate',
+    label: 'Moderate',
+    description: 'Review and approve content',
+  },
+  { key: 'share', label: 'Share', description: 'Share content with others' },
+];
+
+const languages = [
+  { key: 'javascript', label: 'JavaScript', category: 'Frontend' },
+  { key: 'typescript', label: 'TypeScript', category: 'Frontend' },
+  { key: 'react', label: 'React', category: 'Frontend' },
+  { key: 'vue', label: 'Vue.js', category: 'Frontend' },
+  { key: 'python', label: 'Python', category: 'Backend' },
+  { key: 'nodejs', label: 'Node.js', category: 'Backend' },
+  { key: 'rust', label: 'Rust', category: 'Backend' },
+  { key: 'go', label: 'Go', category: 'Backend' },
+  { key: 'sql', label: 'SQL', category: 'Database' },
+  { key: 'mongodb', label: 'MongoDB', category: 'Database' },
+  { key: 'redis', label: 'Redis', category: 'Database' },
+  { key: 'postgres', label: 'PostgreSQL', category: 'Database' },
 ];
 
 export const Default: Story = {
@@ -339,9 +408,13 @@ export const WithCheckboxes: Story = {
   },
   render: (args) => (
     <FilterPicker {...args}>
-      {fruits.map((fruit) => (
-        <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
-          {fruit.label}
+      {permissions.map((permission) => (
+        <FilterPicker.Item
+          key={permission.key}
+          textValue={permission.label}
+          description={permission.description}
+        >
+          {permission.label}
         </FilterPicker.Item>
       ))}
     </FilterPicker>
@@ -351,6 +424,90 @@ export const WithCheckboxes: Story = {
       description: {
         story:
           'When `isCheckable={true}` and `selectionMode="multiple"`, checkboxes appear on the left of each option. The checkbox is only visible when the item is hovered or selected.',
+      },
+    },
+  },
+};
+
+export const WithDescriptions: Story = {
+  args: {
+    label: 'Options with Descriptions',
+    placeholder: 'Choose items...',
+    selectionMode: 'single',
+    searchPlaceholder: 'Search options...',
+    width: 'max 35x',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
+  },
+  render: (args) => (
+    <FilterPicker {...args}>
+      {fruits.slice(0, 5).map((fruit) => (
+        <FilterPicker.Item
+          key={fruit.key}
+          textValue={fruit.label}
+          description={fruit.description}
+        >
+          {fruit.label}
+        </FilterPicker.Item>
+      ))}
+    </FilterPicker>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Options can include descriptions to provide additional context for each choice.',
+      },
+    },
+  },
+};
+
+export const WithSections: Story = {
+  args: {
+    label: 'Organized by Sections',
+    placeholder: 'Choose items...',
+    selectionMode: 'multiple',
+    searchPlaceholder: 'Search ingredients...',
+    width: 'max 30x',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
+  },
+  render: (args) => (
+    <FilterPicker {...args}>
+      <FilterPicker.Section title="Fruits">
+        {fruits.slice(0, 3).map((fruit) => (
+          <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+            {fruit.label}
+          </FilterPicker.Item>
+        ))}
+      </FilterPicker.Section>
+      <FilterPicker.Section title="Vegetables">
+        {vegetables.slice(0, 3).map((vegetable) => (
+          <FilterPicker.Item key={vegetable.key} textValue={vegetable.label}>
+            {vegetable.label}
+          </FilterPicker.Item>
+        ))}
+      </FilterPicker.Section>
+      <FilterPicker.Section title="Grains">
+        {grains.slice(0, 3).map((grain) => (
+          <FilterPicker.Item key={grain.key} textValue={grain.label}>
+            {grain.label}
+          </FilterPicker.Item>
+        ))}
+      </FilterPicker.Section>
+    </FilterPicker>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use sections to organize related options into logical groups for better usability.',
       },
     },
   },
@@ -395,6 +552,14 @@ export const CustomSummary: Story = {
       </FilterPicker.Section>
     </FilterPicker>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use the `renderSummary` prop to customize how the selection is displayed in the trigger button.',
+      },
+    },
+  },
 };
 
 export const NoSummary: Story = {
@@ -404,7 +569,6 @@ export const NoSummary: Story = {
     searchPlaceholder: 'Search options...',
     renderSummary: false,
     icon: <FilterIcon />,
-    rightIcon: null,
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -471,50 +635,27 @@ export const WithHeaderAndFooter: Story = {
         </>
       }
     >
-      <FilterPicker.Section title="Frontend">
-        <FilterPicker.Item key="javascript" textValue="JavaScript">
-          JavaScript
-        </FilterPicker.Item>
-        <FilterPicker.Item key="typescript" textValue="TypeScript">
-          TypeScript
-        </FilterPicker.Item>
-        <FilterPicker.Item key="react" textValue="React">
-          React
-        </FilterPicker.Item>
-        <FilterPicker.Item key="vue" textValue="Vue.js">
-          Vue.js
-        </FilterPicker.Item>
-      </FilterPicker.Section>
-      <FilterPicker.Section title="Backend">
-        <FilterPicker.Item key="python" textValue="Python">
-          Python
-        </FilterPicker.Item>
-        <FilterPicker.Item key="nodejs" textValue="Node.js">
-          Node.js
-        </FilterPicker.Item>
-        <FilterPicker.Item key="rust" textValue="Rust">
-          Rust
-        </FilterPicker.Item>
-        <FilterPicker.Item key="go" textValue="Go">
-          Go
-        </FilterPicker.Item>
-      </FilterPicker.Section>
-      <FilterPicker.Section title="Database">
-        <FilterPicker.Item key="sql" textValue="SQL">
-          SQL
-        </FilterPicker.Item>
-        <FilterPicker.Item key="mongodb" textValue="MongoDB">
-          MongoDB
-        </FilterPicker.Item>
-        <FilterPicker.Item key="redis" textValue="Redis">
-          Redis
-        </FilterPicker.Item>
-        <FilterPicker.Item key="postgres" textValue="PostgreSQL">
-          PostgreSQL
-        </FilterPicker.Item>
-      </FilterPicker.Section>
+      {['Frontend', 'Backend', 'Database'].map((category) => (
+        <FilterPicker.Section key={category} title={category}>
+          {languages
+            .filter((lang) => lang.category === category)
+            .map((lang) => (
+              <FilterPicker.Item key={lang.key} textValue={lang.label}>
+                {lang.label}
+              </FilterPicker.Item>
+            ))}
+        </FilterPicker.Section>
+      ))}
     </FilterPicker>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Add custom header and footer content to provide additional context or actions for the picker.',
+      },
+    },
+  },
 };
 
 export const LoadingState: Story = {
@@ -535,6 +676,14 @@ export const LoadingState: Story = {
       ))}
     </FilterPicker>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Show a loading spinner in the trigger button while data is being fetched.',
+      },
+    },
+  },
 };
 
 export const DisabledState: Story = {
@@ -555,6 +704,81 @@ export const DisabledState: Story = {
       ))}
     </FilterPicker>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Disable the entire picker when selection should not be allowed.',
+      },
+    },
+  },
+};
+
+export const DisabledItems: Story = {
+  args: {
+    label: 'With Disabled Items',
+    placeholder: 'Choose items...',
+    selectionMode: 'single',
+    disabledKeys: ['banana', 'cherry'],
+    searchPlaceholder: 'Search options...',
+    width: 'max 25x',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
+  },
+  render: (args) => (
+    <FilterPicker {...args}>
+      {fruits.slice(0, 5).map((fruit) => (
+        <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+          {fruit.label}
+        </FilterPicker.Item>
+      ))}
+    </FilterPicker>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Individual items can be disabled using the `disabledKeys` prop. Disabled items cannot be selected and are visually distinguished.',
+      },
+    },
+  },
+};
+
+export const DisallowEmptySelection: Story = {
+  args: {
+    label: 'Must Select One',
+    placeholder: 'Choose one...',
+    selectionMode: 'single',
+    disallowEmptySelection: true,
+    defaultSelectedKey: 'apple',
+    searchPlaceholder: 'Search options...',
+    width: 'max 25x',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
+  },
+  render: (args) => (
+    <FilterPicker {...args}>
+      {fruits.slice(0, 4).map((fruit) => (
+        <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+          {fruit.label}
+        </FilterPicker.Item>
+      ))}
+    </FilterPicker>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `disallowEmptySelection={true}`, the user cannot deselect the last selected item, ensuring at least one item is always selected.',
+      },
+    },
+  },
 };
 
 export const ValidationStates: Story = {
@@ -601,6 +825,14 @@ export const ValidationStates: Story = {
       </FilterPicker>
     </Space>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Show validation states with appropriate styling and colors to indicate valid or invalid selections.',
+      },
+    },
+  },
 };
 
 export const DifferentSizes: Story = {
@@ -644,6 +876,14 @@ export const DifferentSizes: Story = {
       </FilterPicker>
     </Space>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'FilterPicker supports three sizes: `small`, `medium`, and `large` to fit different interface requirements.',
+      },
+    },
+  },
 };
 
 export const DifferentTypes: Story = {
@@ -695,6 +935,14 @@ export const DifferentTypes: Story = {
       </FilterPicker>
     </Space>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use different button types to match your interface design: `outline`, `primary`, `secondary`, `clear`, and `neutral`.',
+      },
+    },
+  },
 };
 
 export const WithIcons: Story = {
@@ -715,22 +963,42 @@ export const WithIcons: Story = {
     <FilterPicker {...args}>
       <FilterPicker.Section title="User Management">
         <FilterPicker.Item key="users" textValue="Users">
-          <UserIcon /> Users
+          <Space gap="1x" flow="row" placeItems="center">
+            <UserIcon />
+            Users
+          </Space>
         </FilterPicker.Item>
         <FilterPicker.Item key="permissions" textValue="Permissions">
-          <CheckIcon /> Permissions
+          <Space gap="1x" flow="row" placeItems="center">
+            <CheckIcon />
+            Permissions
+          </Space>
         </FilterPicker.Item>
       </FilterPicker.Section>
       <FilterPicker.Section title="System">
         <FilterPicker.Item key="database" textValue="Database">
-          <DatabaseIcon /> Database
+          <Space gap="1x" flow="row" placeItems="center">
+            <DatabaseIcon />
+            Database
+          </Space>
         </FilterPicker.Item>
         <FilterPicker.Item key="settings" textValue="Settings">
-          <SettingsIcon /> Settings
+          <Space gap="1x" flow="row" placeItems="center">
+            <SettingsIcon />
+            Settings
+          </Space>
         </FilterPicker.Item>
       </FilterPicker.Section>
     </FilterPicker>
   ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Include icons in both the trigger button and the options to improve visual clarity and user experience.',
+      },
+    },
+  },
 };
 
 export const WithCustomValues: Story = {
@@ -764,6 +1032,199 @@ export const WithCustomValues: Story = {
       },
     },
   },
+};
+
+export const WithTextValue: Story = {
+  args: {
+    label: 'Complex Content',
+    placeholder: 'Choose plan...',
+    selectionMode: 'single',
+    searchPlaceholder: 'Search plans...',
+    width: 'max 30x',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
+  },
+  render: (args) => (
+    <FilterPicker {...args}>
+      <FilterPicker.Item
+        key="basic"
+        textValue="Basic Plan - Free with limited features"
+      >
+        <Space gap="1x" flow="row" placeItems="center">
+          <Text weight="600">Basic Plan</Text>
+          <Badge type="neutral">Free</Badge>
+        </Space>
+      </FilterPicker.Item>
+      <FilterPicker.Item
+        key="pro"
+        textValue="Pro Plan - Monthly subscription with all features"
+      >
+        <Space gap="1x" flow="row" placeItems="center">
+          <Text weight="600">Pro Plan</Text>
+          <Badge type="purple">$19/month</Badge>
+        </Space>
+      </FilterPicker.Item>
+      <FilterPicker.Item
+        key="enterprise"
+        textValue="Enterprise Plan - Custom pricing for large teams"
+      >
+        <Space gap="1x" flow="row" placeItems="center">
+          <Text weight="600">Enterprise Plan</Text>
+          <Badge type="note">Custom</Badge>
+        </Space>
+      </FilterPicker.Item>
+    </FilterPicker>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use the `textValue` prop when option content is complex (JSX) to provide searchable text that includes more context than just the visible label.',
+      },
+    },
+  },
+};
+
+export const ControlledExample = () => {
+  const [selectedKey, setSelectedKey] = useState<string | null>('apple');
+
+  return (
+    <Space gap="2x" flow="column" placeItems="start">
+      <FilterPicker
+        label="Controlled Single Selection"
+        selectedKey={selectedKey}
+        selectionMode="single"
+        searchPlaceholder="Search fruits..."
+        width="max 30x"
+        onSelectionChange={(key) => setSelectedKey(key as string | null)}
+      >
+        {fruits.slice(0, 5).map((fruit) => (
+          <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+            {fruit.label}
+          </FilterPicker.Item>
+        ))}
+      </FilterPicker>
+
+      <Text>
+        Selected: <strong>{selectedKey || 'None'}</strong>
+      </Text>
+
+      <Space gap="1x" flow="row">
+        <Button
+          size="small"
+          type="outline"
+          onClick={() => setSelectedKey('banana')}
+        >
+          Select Banana
+        </Button>
+        <Button
+          size="small"
+          type="outline"
+          onClick={() => setSelectedKey(null)}
+        >
+          Clear Selection
+        </Button>
+      </Space>
+    </Space>
+  );
+};
+
+export const MultipleControlledExample = () => {
+  const [selectedKeys, setSelectedKeys] = useState<string[]>(['read', 'write']);
+
+  return (
+    <Space gap="2x" flow="column" placeItems="start">
+      <FilterPicker
+        label="Controlled Multiple Selection"
+        selectedKeys={selectedKeys}
+        selectionMode="multiple"
+        isCheckable={true}
+        searchPlaceholder="Filter permissions..."
+        width="max 30x"
+        onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
+      >
+        {permissions.map((permission) => (
+          <FilterPicker.Item
+            key={permission.key}
+            textValue={permission.label}
+            description={permission.description}
+          >
+            {permission.label}
+          </FilterPicker.Item>
+        ))}
+      </FilterPicker>
+
+      <Text>
+        Selected:{' '}
+        <strong>
+          {selectedKeys.length ? selectedKeys.join(', ') : 'None'}
+        </strong>
+      </Text>
+
+      <Space gap="1x" flow="row">
+        <Button
+          size="small"
+          type="outline"
+          onClick={() => setSelectedKeys(['read', 'write', 'admin'])}
+        >
+          Select Admin Set
+        </Button>
+        <Button size="small" type="outline" onClick={() => setSelectedKeys([])}>
+          Clear All
+        </Button>
+      </Space>
+    </Space>
+  );
+};
+
+export const InForm = () => {
+  const [selectedTechnology, setSelectedTechnology] = useState<string | null>(
+    null,
+  );
+
+  const handleSubmit = (data: any) => {
+    alert(`Form submitted with technology: ${data.technology || 'None'}`);
+  };
+
+  return (
+    <Form style={{ width: '400px' }} onSubmit={handleSubmit}>
+      <FilterPicker
+        isRequired
+        name="technology"
+        label="Preferred Technology"
+        description="Select your preferred technology stack"
+        placeholder="Choose technology..."
+        selectionMode="single"
+        searchPlaceholder="Search technologies..."
+        value={selectedTechnology}
+        onSelectionChange={(key) => setSelectedTechnology(key as string | null)}
+      >
+        <FilterPicker.Section title="Frontend">
+          {languages
+            .filter((lang) => lang.category === 'Frontend')
+            .map((lang) => (
+              <FilterPicker.Item key={lang.key} textValue={lang.label}>
+                {lang.label}
+              </FilterPicker.Item>
+            ))}
+        </FilterPicker.Section>
+        <FilterPicker.Section title="Backend">
+          {languages
+            .filter((lang) => lang.category === 'Backend')
+            .map((lang) => (
+              <FilterPicker.Item key={lang.key} textValue={lang.label}>
+                {lang.label}
+              </FilterPicker.Item>
+            ))}
+        </FilterPicker.Section>
+      </FilterPicker>
+
+      <Form.Submit>Submit</Form.Submit>
+    </Form>
+  );
 };
 
 export const ComplexExample: Story = {
@@ -934,9 +1395,9 @@ export const CustomInputComponent: Story = {
 
       return (
         <Flow gap="2x" width="40x">
-          <Paragraph preset="t3m" color="#dark">
+          <Text preset="t3" weight="600" color="#dark">
             Custom Tag Input Component
-          </Paragraph>
+          </Text>
 
           <Flow gap="1x">
             {selectedOptions.length > 0 && (
@@ -965,7 +1426,6 @@ export const CustomInputComponent: Story = {
               selectionMode="multiple"
               renderSummary={false}
               icon={<PlusIcon />}
-              rightIcon={null}
               aria-label="Add technology"
               searchPlaceholder="Search technologies..."
               onSelectionChange={handleSelectionChange}
@@ -978,10 +1438,10 @@ export const CustomInputComponent: Story = {
             </FilterPicker>
           </Flow>
 
-          <Paragraph preset="p4" color="#dark-03" height="10x">
+          <Text preset="t4" color="#dark.60">
             Selected: {selectedKeys.length} / {availableOptions.length}{' '}
             technologies
-          </Paragraph>
+          </Text>
         </Flow>
       );
     };
@@ -1014,9 +1474,9 @@ export const VirtualizedList: Story = {
   render: (args) => {
     const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
-    // Generate a large list of items with varying content to trigger virtualization (> 30 items)
+    // Generate a large list of items with varying content to trigger virtualization
     // Mix items with and without descriptions to test dynamic sizing
-    const items = Array.from({ length: 10000 }, (_, i) => ({
+    const items = Array.from({ length: 100 }, (_, i) => ({
       id: `item-${i}`,
       name: `Item ${i + 1}${i % 7 === 0 ? ' - This is a longer item name to test dynamic sizing' : ''}`,
       description:
@@ -1026,12 +1486,12 @@ export const VirtualizedList: Story = {
     }));
 
     return (
-      <Flow gap="2x" width="40x">
-        <Paragraph preset="t3">
-          Large list with {items.length} items with varying heights
-          (virtualization automatically enabled if there is no sections). Scroll
-          down and back up to test smooth virtualization.
-        </Paragraph>
+      <Space gap="2x" flow="column" width="40x">
+        <Text>
+          Large list with {items.length} items with varying heights.
+          Virtualization is automatically enabled when there are no sections.
+          Scroll down and back up to test smooth virtualization.
+        </Text>
 
         <FilterPicker
           {...args}
@@ -1049,19 +1509,19 @@ export const VirtualizedList: Story = {
           ))}
         </FilterPicker>
 
-        <Paragraph preset="p4" color="#dark-03">
+        <Text preset="t4" color="#dark.60">
           Selected: {selectedKeys.length} / {items.length} items
           {selectedKeys.length > 0 &&
             ` (${selectedKeys.slice(0, 3).join(', ')}${selectedKeys.length > 3 ? '...' : ''})`}
-        </Paragraph>
-      </Flow>
+        </Text>
+      </Space>
     );
   },
   parameters: {
     docs: {
       description: {
         story:
-          'Virtualization is automatically enabled if there is no sections. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets. This story includes items with varying heights to demonstrate stable virtualization without scroll jumping.',
+          'When a FilterPicker contains many items and has no sections, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets.',
       },
     },
   },

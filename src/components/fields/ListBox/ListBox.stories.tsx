@@ -1,7 +1,16 @@
 import { StoryFn, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 
-import { FilterIcon, RightIcon } from '../../../icons';
+import {
+  CheckIcon,
+  DatabaseIcon,
+  EditIcon,
+  FilterIcon,
+  PlusIcon,
+  RightIcon,
+  SettingsIcon,
+  UserIcon,
+} from '../../../icons';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { Badge } from '../../content/Badge/Badge';
@@ -14,7 +23,9 @@ import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
 import { CubeListBoxProps, ListBox } from './ListBox';
 
-export default {
+import type { Meta } from '@storybook/react';
+
+const meta: Meta<typeof ListBox> = {
   title: 'Forms/ListBox',
   component: ListBox,
   parameters: {
@@ -41,7 +52,7 @@ export default {
       description: 'The default selected keys in uncontrolled multiple mode',
     },
     selectionMode: {
-      options: ['single', 'multiple', 'none'],
+      options: ['single', 'multiple'],
       control: { type: 'radio' },
       description: 'Selection mode',
       table: {
@@ -153,6 +164,49 @@ export default {
   },
 };
 
+export default meta;
+type Story = StoryObj<typeof ListBox>;
+
+// Sample data for stories
+const fruits = [
+  { key: 'apple', label: 'Apple' },
+  { key: 'banana', label: 'Banana' },
+  { key: 'cherry', label: 'Cherry' },
+  { key: 'date', label: 'Date' },
+  { key: 'elderberry', label: 'Elderberry' },
+  { key: 'fig', label: 'Fig' },
+  { key: 'grape', label: 'Grape' },
+  { key: 'honeydew', label: 'Honeydew' },
+];
+
+const vegetables = [
+  { key: 'carrot', label: 'Carrot' },
+  { key: 'broccoli', label: 'Broccoli' },
+  { key: 'spinach', label: 'Spinach' },
+  { key: 'pepper', label: 'Bell Pepper' },
+  { key: 'tomato', label: 'Tomato' },
+];
+
+const grains = [
+  { key: 'rice', label: 'Rice' },
+  { key: 'quinoa', label: 'Quinoa' },
+  { key: 'oats', label: 'Oats' },
+  { key: 'barley', label: 'Barley' },
+];
+
+const permissions = [
+  { key: 'read', label: 'Read', description: 'View content and data' },
+  { key: 'write', label: 'Write', description: 'Create and edit content' },
+  { key: 'delete', label: 'Delete', description: 'Remove content permanently' },
+  { key: 'admin', label: 'Admin', description: 'Full administrative access' },
+  {
+    key: 'moderate',
+    label: 'Moderate',
+    description: 'Review and approve content',
+  },
+  { key: 'share', label: 'Share', description: 'Share content with others' },
+];
+
 const Template: StoryFn<CubeListBoxProps<any>> = (args) => (
   <ListBox {...args}>
     <ListBox.Item key="apple">Apple</ListBox.Item>
@@ -163,10 +217,44 @@ const Template: StoryFn<CubeListBoxProps<any>> = (args) => (
   </ListBox>
 );
 
-export const Default = Template.bind({});
-Default.args = {
-  label: 'Select a fruit',
-  selectionMode: 'single',
+export const Default: Story = {
+  render: Template,
+  args: {
+    label: 'Select a fruit',
+    selectionMode: 'single',
+  },
+};
+
+export const SingleSelection: Story = {
+  render: (args) => (
+    <ListBox {...args}>
+      {fruits.map((fruit) => (
+        <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
+      ))}
+    </ListBox>
+  ),
+  args: {
+    label: 'Choose your favorite fruit',
+    selectionMode: 'single',
+    defaultSelectedKey: 'apple',
+  },
+};
+
+export const MultipleSelection: Story = {
+  render: (args) => (
+    <ListBox {...args}>
+      {permissions.map((permission) => (
+        <ListBox.Item key={permission.key} description={permission.description}>
+          {permission.label}
+        </ListBox.Item>
+      ))}
+    </ListBox>
+  ),
+  args: {
+    label: 'Select permissions',
+    selectionMode: 'multiple',
+    defaultSelectedKeys: ['read', 'write'],
+  },
 };
 
 export const WithDescriptions: StoryFn<CubeListBoxProps<any>> = (args) => (
@@ -285,20 +373,166 @@ WithHeaderAndFooter.args = {
   selectionMode: 'single',
 };
 
-export const MultipleSelection: StoryFn<CubeListBoxProps<any>> = (args) => (
-  <ListBox {...args}>
-    <ListBox.Item key="html">HTML</ListBox.Item>
-    <ListBox.Item key="css">CSS</ListBox.Item>
-    <ListBox.Item key="javascript">JavaScript</ListBox.Item>
-    <ListBox.Item key="typescript">TypeScript</ListBox.Item>
-    <ListBox.Item key="react">React</ListBox.Item>
-    <ListBox.Item key="vue">Vue.js</ListBox.Item>
-    <ListBox.Item key="angular">Angular</ListBox.Item>
-  </ListBox>
-);
-MultipleSelection.args = {
-  label: 'Select skills (multiple)',
-  selectionMode: 'multiple',
+export const CheckableMultipleSelection: Story = {
+  render: (args) => (
+    <ListBox {...args}>
+      {permissions.map((permission) => (
+        <ListBox.Item key={permission.key} description={permission.description}>
+          {permission.label}
+        </ListBox.Item>
+      ))}
+    </ListBox>
+  ),
+  args: {
+    label: 'Select user permissions',
+    selectionMode: 'multiple',
+    isCheckable: true,
+    defaultSelectedKeys: ['read', 'write'],
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `isCheckable={true}` and `selectionMode="multiple"`, checkboxes appear on the left of each option. The checkbox is only visible when the item is hovered or selected.',
+      },
+    },
+  },
+};
+
+export const DifferentSizes: Story = {
+  render: (args) => (
+    <Space gap="3x" flow="column" placeItems="start">
+      <div>
+        <Text preset="t3" weight="600">
+          Small Size
+        </Text>
+        <Space height="1x" />
+        <ListBox {...args} size="small" label="Small ListBox">
+          {fruits.slice(0, 4).map((fruit) => (
+            <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
+          ))}
+        </ListBox>
+      </div>
+
+      <div>
+        <Text preset="t3" weight="600">
+          Medium Size
+        </Text>
+        <Space height="1x" />
+        <ListBox {...args} size="medium" label="Medium ListBox">
+          {fruits.slice(0, 4).map((fruit) => (
+            <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
+          ))}
+        </ListBox>
+      </div>
+    </Space>
+  ),
+  args: {
+    selectionMode: 'single',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'ListBox supports two sizes: `small` (32px item height) for dense interfaces and `medium` (40px item height) for standard use.',
+      },
+    },
+  },
+};
+
+export const DisabledItems: Story = {
+  render: (args) => (
+    <ListBox {...args}>
+      <ListBox.Item key="available1">Available Option 1</ListBox.Item>
+      <ListBox.Item key="disabled1">Disabled Option 1</ListBox.Item>
+      <ListBox.Item key="available2">Available Option 2</ListBox.Item>
+      <ListBox.Item key="disabled2">Disabled Option 2</ListBox.Item>
+      <ListBox.Item key="available3">Available Option 3</ListBox.Item>
+    </ListBox>
+  ),
+  args: {
+    label: 'Select an option',
+    selectionMode: 'single',
+    disabledKeys: ['disabled1', 'disabled2'],
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Individual items can be disabled using the `disabledKeys` prop. Disabled items cannot be selected and are visually distinguished.',
+      },
+    },
+  },
+};
+
+export const DisallowEmptySelection: Story = {
+  render: (args) => (
+    <ListBox {...args}>
+      {fruits.slice(0, 4).map((fruit) => (
+        <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
+      ))}
+    </ListBox>
+  ),
+  args: {
+    label: 'Must select one option',
+    selectionMode: 'single',
+    disallowEmptySelection: true,
+    defaultSelectedKey: 'apple',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `disallowEmptySelection={true}`, the user cannot deselect the last selected item, ensuring at least one item is always selected.',
+      },
+    },
+  },
+};
+
+export const WithTextValue: Story = {
+  render: (args) => (
+    <ListBox {...args}>
+      <ListBox.Item
+        key="basic"
+        textValue="Basic Plan - Free with limited features"
+      >
+        <Space gap="1x" flow="column">
+          <Text weight="600">Basic Plan</Text>
+          <Badge type="neutral">Free</Badge>
+        </Space>
+      </ListBox.Item>
+      <ListBox.Item
+        key="pro"
+        textValue="Pro Plan - Monthly subscription with all features"
+      >
+        <Space gap="1x" flow="column">
+          <Text weight="600">Pro Plan</Text>
+          <Badge type="purple">$19/month</Badge>
+        </Space>
+      </ListBox.Item>
+      <ListBox.Item
+        key="enterprise"
+        textValue="Enterprise Plan - Custom pricing for large teams"
+      >
+        <Space gap="1x" flow="column">
+          <Text weight="600">Enterprise Plan</Text>
+          <Badge type="note">Custom</Badge>
+        </Space>
+      </ListBox.Item>
+    </ListBox>
+  ),
+  args: {
+    label: 'Choose your plan',
+    selectionMode: 'single',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use the `textValue` prop when option content is complex (JSX) to provide accessible text for screen readers and keyboard navigation.',
+      },
+    },
+  },
 };
 
 export const DisabledState: StoryFn<CubeListBoxProps<any>> = (args) => (
@@ -315,12 +549,13 @@ DisabledState.args = {
 };
 
 export const ValidationStates: StoryFn<CubeListBoxProps<any>> = () => (
-  <div style={{ display: 'flex', gap: '2rem', flexDirection: 'column' }}>
+  <Space gap="3x" flow="column">
     <ListBox
       label="Valid Selection"
       validationState="valid"
       selectionMode="single"
       defaultSelectedKey="option1"
+      message="Great choice!"
     >
       <ListBox.Item key="option1">Valid Option</ListBox.Item>
       <ListBox.Item key="option2">Another Option</ListBox.Item>
@@ -331,19 +566,19 @@ export const ValidationStates: StoryFn<CubeListBoxProps<any>> = () => (
       validationState="invalid"
       selectionMode="single"
       defaultSelectedKey="option1"
-      errorMessage="Please select a valid option"
+      message="Please select a different option"
     >
       <ListBox.Item key="option1">Option 1</ListBox.Item>
       <ListBox.Item key="option2">Option 2</ListBox.Item>
     </ListBox>
-  </div>
+  </Space>
 );
 
 export const ControlledExample: StoryFn<CubeListBoxProps<any>> = () => {
   const [selectedKey, setSelectedKey] = useState<string | null>('apple');
 
   return (
-    <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>
+    <Space gap="2x" flow="column">
       <ListBox
         label="Controlled ListBox"
         selectedKey={selectedKey}
@@ -356,13 +591,72 @@ export const ControlledExample: StoryFn<CubeListBoxProps<any>> = () => {
         <ListBox.Item key="date">Date</ListBox.Item>
       </ListBox>
 
-      <p>Selected: {selectedKey || 'None'}</p>
+      <Text>
+        Selected: <strong>{selectedKey || 'None'}</strong>
+      </Text>
 
-      <div style={{ display: 'flex', gap: '0.5rem' }}>
-        <button onClick={() => setSelectedKey('banana')}>Select Banana</button>
-        <button onClick={() => setSelectedKey(null)}>Clear Selection</button>
-      </div>
-    </div>
+      <Space gap="1x" flow="row">
+        <Button
+          size="small"
+          type="outline"
+          onClick={() => setSelectedKey('banana')}
+        >
+          Select Banana
+        </Button>
+        <Button
+          size="small"
+          type="outline"
+          onClick={() => setSelectedKey(null)}
+        >
+          Clear Selection
+        </Button>
+      </Space>
+    </Space>
+  );
+};
+
+export const MultipleControlledExample: StoryFn<CubeListBoxProps<any>> = () => {
+  const [selectedKeys, setSelectedKeys] = useState<string[]>(['read', 'write']);
+
+  return (
+    <Space gap="2x" flow="column">
+      <ListBox
+        label="Controlled Multiple Selection"
+        selectedKeys={selectedKeys}
+        selectionMode="multiple"
+        isCheckable={true}
+        onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
+      >
+        {permissions.map((permission) => (
+          <ListBox.Item
+            key={permission.key}
+            description={permission.description}
+          >
+            {permission.label}
+          </ListBox.Item>
+        ))}
+      </ListBox>
+
+      <Text>
+        Selected:{' '}
+        <strong>
+          {selectedKeys.length ? selectedKeys.join(', ') : 'None'}
+        </strong>
+      </Text>
+
+      <Space gap="1x" flow="row">
+        <Button
+          size="small"
+          type="outline"
+          onClick={() => setSelectedKeys(['read', 'write', 'admin'])}
+        >
+          Select Admin Set
+        </Button>
+        <Button size="small" type="outline" onClick={() => setSelectedKeys([])}>
+          Clear All
+        </Button>
+      </Space>
+    </Space>
   );
 };
 
@@ -432,17 +726,10 @@ export const InPopover: StoryFn<CubeListBoxProps<any>> = () => {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
   return (
-    <div
-      style={{
-        padding: '2rem',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1rem',
-      }}
-    >
-      <p>
+    <Space gap="2x" flow="column" placeItems="start">
+      <Text>
         Selected technology: <strong>{selectedKey || 'None'}</strong>
-      </p>
+      </Text>
 
       <DialogTrigger type="popover" placement="bottom start">
         <Button>Choose Technology</Button>
@@ -538,7 +825,7 @@ export const InPopover: StoryFn<CubeListBoxProps<any>> = () => {
           </ListBox>
         </Dialog>
       </DialogTrigger>
-    </div>
+    </Space>
   );
 };
 
@@ -549,19 +836,6 @@ InPopover.parameters = {
         'ListBox can be used inside a Dialog controlled by DialogTrigger to create popover-style selection interfaces.',
     },
   },
-};
-
-InPopover.play = async ({ canvasElement }) => {
-  const canvas = canvasElement;
-  const button = canvas.querySelector('button');
-
-  if (button) {
-    // Simulate clicking the button to open the popover
-    button.click();
-
-    // Wait a moment for the popover to open and autoFocus to take effect
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
 };
 
 export const VirtualizedList: StoryFn<CubeListBoxProps<any>> = (args) => {
@@ -579,13 +853,13 @@ export const VirtualizedList: StoryFn<CubeListBoxProps<any>> = (args) => {
   }));
 
   return (
-    <div style={{ height: '400px', width: '350px' }}>
+    <Space gap="2x" flow="column" style={{ height: '450px', width: '400px' }}>
       <Text>
-        Large list with {items.length} items with varying heights
-        (virtualization automatically enabled if there is no sections. Scroll
-        down and back up to test smooth virtualization.
+        Large list with {items.length} items with varying heights.
+        Virtualization is automatically enabled when there are no sections.
+        Scroll down and back up to test smooth virtualization.
       </Text>
-      <Space height="1x" />
+
       <ListBox
         {...args}
         label="Virtualized List with Mixed Content"
@@ -600,9 +874,11 @@ export const VirtualizedList: StoryFn<CubeListBoxProps<any>> = (args) => {
           </ListBox.Item>
         ))}
       </ListBox>
-      <Space height="1x" />
-      <Text>Selected: {selected || 'None'}</Text>
-    </div>
+
+      <Text>
+        Selected: <strong>{selected || 'None'}</strong>
+      </Text>
+    </Space>
   );
 };
 
@@ -610,7 +886,144 @@ VirtualizedList.parameters = {
   docs: {
     description: {
       story:
-        'When a ListBox contains more than 30 items, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets. This story includes items with varying heights to demonstrate stable virtualization without scroll jumping.',
+        'When a ListBox contains many items and has no sections, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets. This story includes items with varying heights to demonstrate stable virtualization without scroll jumping.',
+    },
+  },
+};
+
+export const WithIcons: Story = {
+  render: (args) => (
+    <ListBox {...args}>
+      <ListBox.Section title="User Management">
+        <ListBox.Item key="users">
+          <Space gap="1x" flow="row" placeItems="center">
+            <UserIcon />
+            Users
+          </Space>
+        </ListBox.Item>
+        <ListBox.Item key="permissions">
+          <Space gap="1x" flow="row" placeItems="center">
+            <CheckIcon />
+            Permissions
+          </Space>
+        </ListBox.Item>
+      </ListBox.Section>
+      <ListBox.Section title="System">
+        <ListBox.Item key="database">
+          <Space gap="1x" flow="row" placeItems="center">
+            <DatabaseIcon />
+            Database
+          </Space>
+        </ListBox.Item>
+        <ListBox.Item key="settings">
+          <Space gap="1x" flow="row" placeItems="center">
+            <SettingsIcon />
+            Settings
+          </Space>
+        </ListBox.Item>
+      </ListBox.Section>
+    </ListBox>
+  ),
+  args: {
+    label: 'System Administration',
+    selectionMode: 'single',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'ListBox options can include icons to improve visual clarity and help users quickly identify options.',
+      },
+    },
+  },
+};
+
+export const FocusBehavior: Story = {
+  render: (args) => (
+    <Space gap="3x" flow="column">
+      <div>
+        <Text preset="t3" weight="600">
+          Standard Focus (focusOnHover=true)
+        </Text>
+        <Text preset="t4" color="#dark.60">
+          Moving pointer over options will focus them
+        </Text>
+        <Space height="1x" />
+        <ListBox {...args} focusOnHover={true} label="Standard Focus Behavior">
+          {fruits.slice(0, 4).map((fruit) => (
+            <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
+          ))}
+        </ListBox>
+      </div>
+
+      <div>
+        <Text preset="t3" weight="600">
+          No Focus on Hover (focusOnHover=false)
+        </Text>
+        <Text preset="t4" color="#dark.60">
+          Use keyboard or click to focus options
+        </Text>
+        <Space height="1x" />
+        <ListBox {...args} focusOnHover={false} label="No Focus on Hover">
+          {fruits.slice(0, 4).map((fruit) => (
+            <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
+          ))}
+        </ListBox>
+      </div>
+    </Space>
+  ),
+  args: {
+    selectionMode: 'single',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `focusOnHover` prop controls whether moving the pointer over an option automatically focuses it. Set to `false` for components where focus should remain elsewhere (like searchable lists).',
+      },
+    },
+  },
+};
+
+export const EscapeKeyHandling: StoryFn<CubeListBoxProps<any>> = () => {
+  const [selectedKey, setSelectedKey] = useState<string | null>('apple');
+  const [escapeCount, setEscapeCount] = useState(0);
+
+  return (
+    <Space gap="2x" flow="column">
+      <ListBox
+        label="Custom Escape Handling"
+        selectedKey={selectedKey}
+        selectionMode="single"
+        onSelectionChange={(key) => setSelectedKey(key as string | null)}
+        onEscape={() => {
+          setEscapeCount((prev) => prev + 1);
+          // Custom escape behavior - could close a parent modal, etc.
+        }}
+      >
+        <ListBox.Item key="apple">Apple</ListBox.Item>
+        <ListBox.Item key="banana">Banana</ListBox.Item>
+        <ListBox.Item key="cherry">Cherry</ListBox.Item>
+      </ListBox>
+
+      <Text>
+        Selected: <strong>{selectedKey || 'None'}</strong>
+      </Text>
+      <Text>
+        Escape key pressed: <strong>{escapeCount} times</strong>
+      </Text>
+      <Text preset="t4" color="#dark.60">
+        Focus the ListBox and press Escape to trigger custom handling
+      </Text>
+    </Space>
+  );
+};
+
+EscapeKeyHandling.parameters = {
+  docs: {
+    description: {
+      story:
+        'Use the `onEscape` prop to provide custom behavior when the Escape key is pressed, such as closing a parent modal. When provided, this prevents the default selection clearing behavior.',
     },
   },
 };
