@@ -6,11 +6,11 @@ import * as ListBoxStories from './ListBox.stories';
 
 # ListBox
 
-A simple list box component that allows users to select one or more items from a list of options. It supports sections, descriptions, and full keyboard navigation. Built with React Aria's `useListBox` for accessibility and the Cube `tasty` style system for theming.
+A versatile list selection component that allows users to select one or more items from a list of options. Built with React Aria's accessibility features and the Cube `tasty` style system, it supports sections, descriptions, keyboard navigation, and virtualization for large datasets.
 
 ## When to Use
 
-- Present a simple list of selectable options in a contained area
+- Present a list of selectable options in a contained area
 - Enable single or multiple selection from a set of choices
 - Display structured data with sections and descriptions
 - Create custom selection interfaces that need to remain visible
@@ -51,6 +51,9 @@ Customizes individual option elements.
 **Sub-elements:**
 - `Label` - The main text of each option
 - `Description` - Secondary descriptive text for options
+- `Content` - Container for label and description
+- `Checkbox` - Checkbox element when `isCheckable={true}`
+- `CheckboxWrapper` - Wrapper around the checkbox
 
 #### sectionStyles
 
@@ -60,13 +63,17 @@ Customizes section wrapper elements.
 
 Customizes section heading elements.
 
+#### headerStyles
 
+Customizes the header area when header prop is provided.
+
+#### footerStyles
+
+Customizes the footer area when footer prop is provided.
 
 ### Style Properties
 
-The ListBox component supports all standard style properties:
-
-`display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `reset`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`, `textAlign`, `color`, `fill`, `fade`, `textTransform`, `fontWeight`, `fontStyle`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+These properties allow direct style application without using the `styles` prop: `display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `color`, `fill`, `fade`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `reset`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`, `textAlign`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`.
 
 ### Modifiers
 
@@ -74,24 +81,31 @@ The `mods` property accepts the following modifiers you can override:
 
 | Modifier | Type | Description |
 |----------|------|-------------|
-| invalid | `boolean` | Whether the ListBox has validation errors |
-| valid | `boolean` | Whether the ListBox is valid |
-| disabled | `boolean` | Whether the ListBox is disabled |
-| focused | `boolean` | Whether the ListBox has focus |
-| loading | `boolean` | Whether the ListBox is in loading state |
-| searchable | `boolean` | Whether the ListBox includes search functionality |
+| `invalid` | `boolean` | Applied when `validationState="invalid"` |
+| `valid` | `boolean` | Applied when `validationState="valid"` |
+| `disabled` | `boolean` | Applied when `isDisabled={true}` |
+| `focused` | `boolean` | Applied when the ListBox has focus |
+| `header` | `boolean` | Applied when header prop is provided |
+| `footer` | `boolean` | Applied when footer prop is provided |
 
 ## Variants
 
+### Selection Modes
+
+- `single` - Allows selecting only one item at a time
+- `multiple` - Allows selecting multiple items
+- `none` - No selection allowed (display only)
+
 ### Sizes
 
-- `small` - Compact size for dense interfaces
-- `default` - Standard size
-- `large` - Emphasized size for important selections
+- `small` - Compact size for dense interfaces (32px item height)
+- `medium` - Standard size for general use (40px item height)
 
 ## Examples
 
 ### Basic Usage
+
+<Story of={ListBoxStories.Default} />
 
 ```jsx
 <ListBox label="Select a fruit" selectionMode="single">
@@ -101,22 +115,23 @@ The `mods` property accepts the following modifiers you can override:
 </ListBox>
 ```
 
-
-
 ### With Descriptions
 
 <Story of={ListBoxStories.WithDescriptions} />
 
 ```jsx
 <ListBox label="Choose a framework" selectionMode="single">
-  <ListBox.Item key="react" description="A JavaScript library for building user interfaces">
+  <ListBox.Item 
+    key="react" 
+    description="A JavaScript library for building user interfaces"
+  >
     React
   </ListBox.Item>
-  <ListBox.Item key="vue" description="The Progressive JavaScript Framework">
+  <ListBox.Item 
+    key="vue" 
+    description="The Progressive JavaScript Framework"
+  >
     Vue.js
-  </ListBox.Item>
-  <ListBox.Item key="angular" description="Platform for building mobile and desktop web applications">
-    Angular
   </ListBox.Item>
 </ListBox>
 ```
@@ -146,12 +161,34 @@ The `mods` property accepts the following modifiers you can override:
 <ListBox
   label="Select skills (multiple)"
   selectionMode="multiple"
-  isSearchable={true}
 >
   <ListBox.Item key="html">HTML</ListBox.Item>
   <ListBox.Item key="css">CSS</ListBox.Item>
   <ListBox.Item key="javascript">JavaScript</ListBox.Item>
-  <ListBox.Item key="react">React</ListBox.Item>
+</ListBox>
+```
+
+### With Header and Footer
+
+<Story of={ListBoxStories.WithHeaderAndFooter} />
+
+```jsx
+<ListBox
+  label="Programming Languages"
+  header={
+    <Space gap="1x" flow="row" placeItems="center">
+      <Title level={6}>Languages</Title>
+      <Badge type="note">12</Badge>
+    </Space>
+  }
+  footer={
+    <Text color="#dark.50" preset="t4">
+      Popular languages shown
+    </Text>
+  }
+>
+  <ListBox.Item key="javascript">JavaScript</ListBox.Item>
+  <ListBox.Item key="python">Python</ListBox.Item>
 </ListBox>
 ```
 
@@ -170,251 +207,137 @@ const [selectedKey, setSelectedKey] = useState('apple');
 >
   <ListBox.Item key="apple">Apple</ListBox.Item>
   <ListBox.Item key="banana">Banana</ListBox.Item>
-  <ListBox.Item key="cherry">Cherry</ListBox.Item>
 </ListBox>
 ```
 
-### Different Sizes
+### Virtualized Large Lists
+
+<Story of={ListBoxStories.VirtualizedList} />
 
 ```jsx
-<ListBox size="small" label="Small ListBox" selectionMode="single">
-  <ListBox.Item key="option1">Option 1</ListBox.Item>
-</ListBox>
-
-<ListBox size="large" label="Large ListBox" selectionMode="single">
-  <ListBox.Item key="option1">Option 1</ListBox.Item>
+<ListBox height="300px" overflow="auto">
+  {Array.from({ length: 1000 }, (_, i) => (
+    <ListBox.Item key={`item-${i}`}>Item {i + 1}</ListBox.Item>
+  ))}
 </ListBox>
 ```
 
-### Validation States
-
-<Story of={ListBoxStories.ValidationStates} />
-
-```jsx
-<ListBox
-  label="Valid Selection"
-  validationState="valid"
-  selectionMode="single"
-  defaultSelectedKey="option1"
->
-  <ListBox.Item key="option1">Valid Option</ListBox.Item>
-</ListBox>
-
-<ListBox
-  label="Invalid Selection"
-  validationState="invalid"
-  selectionMode="single"
-  message="Please select a valid option"
->
-  <ListBox.Item key="option1">Option 1</ListBox.Item>
-</ListBox>
-```
-
-### Disabled State
-
-<Story of={ListBoxStories.DisabledState} />
-
-```jsx
-<ListBox
-  label="Disabled ListBox"
-  isDisabled={true}
-  selectionMode="single"
->
-  <ListBox.Item key="option1">Option 1</ListBox.Item>
-  <ListBox.Item key="option2">Option 2</ListBox.Item>
-</ListBox>
-```
-
-## Accessibility
-
-### Keyboard Navigation
-
-- `Tab` - Moves focus to the ListBox
-- `Arrow Down/Up` - Moves focus to the next/previous option
-- `Enter` - Selects the currently focused option
-- `Space` - In multiple selection mode, toggles selection of the focused option
-
-### Screen Reader Support
-
-- Component announces as "listbox" to screen readers
-- Current selection and total options are announced
-- Section headings are properly associated with their options
-- Option descriptions are read along with option labels
-- When using search, the currently highlighted option is announced via `aria-activedescendant`
-- Virtual focus ensures smooth navigation without focus jumps
-- Loading and validation states are communicated
-
-### ARIA Properties
-
-- `aria-label` - Provides accessible label when no visible label exists
-- `aria-labelledby` - References external label elements
-- `aria-describedby` - References additional descriptive text
-- `aria-multiselectable` - Indicates if multiple selection is allowed
-- `aria-activedescendant` - References the currently highlighted option (especially with search)
-- `aria-controls` - Links the search input to the listbox it controls
-- `aria-required` - Indicates if selection is required
-- `aria-invalid` - Indicates validation state
-
-## Best Practices
-
-1. **Do**: Provide clear, descriptive labels and option text
-   ```jsx
-   <ListBox label="Select your preferred programming language">
-     <ListBox.Item key="js" description="Dynamic, interpreted language">
-       JavaScript
-     </ListBox.Item>
-   </ListBox>
-   ```
-
-2. **Don't**: Use ListBox for navigation or actions
-   ```jsx
-   <ListBox> {/* Use Menu or navigation components instead */}
-     <ListBox.Item key="home">Go Home</ListBox.Item>
-     <ListBox.Item key="logout">Logout</ListBox.Item>
-   </ListBox>
-   ```
-
-3. **Complex Children**: Use `textValue` prop when item children contain complex elements
-   ```jsx
-   <ListBox label="Select user">
-     <ListBox.Item key="john" textValue="John Doe">
-       <Avatar src="/john.jpg" />
-       <div>
-         <div>John Doe</div>
-         <div>Senior Developer</div>
-       </div>
-     </ListBox.Item>
-   </ListBox>
-   ```
-
-4. **Organization**: Use sections to group related options logically
-5. **Descriptions**: Provide helpful descriptions for complex or technical options
-6. **Selection**: Consider multiple selection for scenarios where users might need several options
-
-## Integration with Forms
+### In Forms
 
 <Story of={ListBoxStories.InForm} />
-
-This component supports all [Field properties](/docs/forms-field--docs) when used within a Form.
 
 ```jsx
 <Form onSubmit={handleSubmit}>
   <ListBox
     name="technology"
     label="Preferred Technology"
-    description="Select your preferred technology stack"
     isRequired
     selectionMode="single"
-    isSearchable
   >
     <ListBox.Section title="Frontend">
       <ListBox.Item key="react">React</ListBox.Item>
       <ListBox.Item key="vue">Vue.js</ListBox.Item>
     </ListBox.Section>
-    <ListBox.Section title="Backend">
-      <ListBox.Item key="nodejs">Node.js</ListBox.Item>
-      <ListBox.Item key="python">Python</ListBox.Item>
-    </ListBox.Section>
   </ListBox>
-  
   <Form.Submit>Submit</Form.Submit>
 </Form>
 ```
 
-## Integration with Popover Dialog
+## Accessibility
 
-<Story of={ListBoxStories.InPopover} />
+### Keyboard Navigation
 
-ListBox can be effectively used inside a popover Dialog controlled by DialogTrigger to create dropdown-style selection interfaces that provide more space and functionality than traditional Select components. By removing the Dialog's default padding and border, the ListBox appears directly as the popover content.
+- `Tab` - Moves focus to/from the ListBox
+- `Arrow Keys` - Navigate between options
+- `Space/Enter` - Select/deselect the focused option
+- `Home/End` - Move to first/last option
+- `Page Up/Page Down` - Move up/down by multiple items
+- `Escape` - Deselect all items (if onEscape not provided)
+
+### Screen Reader Support
+
+- ListBox announces as "listbox" with proper role
+- Selected items are announced as "selected"
+- Section headings are properly associated with their items
+- Selection changes are announced immediately
+- Item descriptions are read along with labels
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label when no visible label exists
+- `aria-labelledby` - Associates with external label element
+- `aria-describedby` - Associates with description text
+- `aria-multiselectable` - Indicates multiple selection capability
+- `aria-activedescendant` - Tracks focused item for screen readers
+
+## Best Practices
+
+1. **Do**: Provide clear, descriptive labels for options
+   ```jsx
+   <ListBox.Item key="react" description="JavaScript library for UIs">
+     React
+   </ListBox.Item>
+   ```
+
+2. **Don't**: Use ListBox for very large datasets without virtualization
+   ```jsx
+   // ❌ Avoid for 1000+ items without virtualization
+   <ListBox>
+     {hugeArray.map(item => <ListBox.Item key={item.id}>{item.name}</ListBox.Item>)}
+   </ListBox>
+   ```
+
+3. **Do**: Use sections to organize related options
+   ```jsx
+   <ListBox.Section title="Frontend Frameworks">
+     <ListBox.Item key="react">React</ListBox.Item>
+   </ListBox.Section>
+   ```
+
+4. **Accessibility**: Always provide meaningful labels and descriptions
+5. **Performance**: Use virtualization for lists with 50+ items
+6. **UX**: Consider FilterListBox for searchable lists with many options
+
+## Integration with Forms
+
+This component supports all [Field properties](/docs/forms-field--docs) when used within a Form. The component automatically handles form validation, field states, and integrates with form submission.
 
 ```jsx
-import { useState } from 'react';
-import { Button } from '../../actions/Button/Button';
-import { Dialog } from '../../overlays/Dialog/Dialog';
-import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
-
-const [selectedKey, setSelectedKey] = useState(null);
-
-<DialogTrigger type="popover" placement="bottom start">
-  <Button>Choose Technology</Button>
-    <Dialog>
-      <ListBox
-        isSearchable
-        autoFocus
-        label="Available Technologies"
-        selectedKey={selectedKey}
-        selectionMode="single"
-        searchPlaceholder="Search technologies..."
-        onSelectionChange={setSelectedKey}
-        styles={{
-          height: '300px',
-          border: false,
-          fill: '#clear',
-        }}
-      >
-      <ListBox.Section title="Frontend">
-        <ListBox.Item key="react" description="JavaScript library for building UIs">
-          React
-        </ListBox.Item>
-        <ListBox.Item key="vue" description="Progressive JavaScript framework">
-          Vue.js
-        </ListBox.Item>
-        <ListBox.Item key="angular" description="Platform for web applications">
-          Angular
-        </ListBox.Item>
-      </ListBox.Section>
-      <ListBox.Section title="Backend">
-        <ListBox.Item key="nodejs" description="JavaScript runtime environment">
-          Node.js
-        </ListBox.Item>
-        <ListBox.Item key="python" description="High-level programming language">
-          Python
-        </ListBox.Item>
-        <ListBox.Item key="java" description="Object-oriented programming language">
-          Java
-        </ListBox.Item>
-      </ListBox.Section>
-    </ListBox>
-  </Dialog>
-</DialogTrigger>
+<Form onSubmit={handleSubmit}>
+  <ListBox
+    name="preferences"
+    label="User Preferences"
+    isRequired
+    rules={[{ required: true }]}
+    selectionMode="multiple"
+  >
+    <ListBox.Item key="notifications">Email Notifications</ListBox.Item>
+    <ListBox.Item key="newsletter">Newsletter</ListBox.Item>
+  </ListBox>
+</Form>
 ```
 
-### Benefits of ListBox in Popover
+## Performance
 
-- **More Space**: Unlike traditional Select dropdowns, popovers can accommodate larger lists with descriptions and sections
-- **Rich Content**: Support for descriptions, icons, and complex layouts within options
-- **Search Functionality**: Built-in search makes it easy to find options in large lists
-- **Better Accessibility**: Full keyboard navigation and screen reader support
-- **Custom Positioning**: Flexible placement options relative to the trigger button
+### Virtualization
 
-### Best Practices for Popover Integration
+ListBox automatically enables virtualization when:
+- The list contains more than 30 items
+- No sections are present (sections disable virtualization)
+- Improves performance with large datasets
 
-1. **Clean Appearance**: Remove Dialog's default padding and border (`padding: 0, border: false`) and apply border/radius directly to ListBox for a seamless popover appearance
-2. **Auto Focus**: Use `autoFocus` to automatically focus the search input when the popover opens, improving keyboard navigation
-3. **Size Management**: Set appropriate width and height constraints to prevent the popover from becoming too large
-4. **Placement**: Use `placement="bottom start"` or similar to ensure good positioning relative to the trigger
-5. **Search**: Enable search for lists with many options to improve user experience
-6. **Selection Feedback**: Display the current selection outside the popover so users know what's selected
-7. **Mobile Considerations**: The popover will automatically convert to a modal on mobile devices
+### Optimization Tips
 
-## Suggested Improvements
-
-- Add support for custom option rendering with more complex layouts
-- Implement virtual scrolling for very large lists (1000+ items)
-- Add support for option groups with different selection behaviors
-- Consider adding drag-and-drop reordering functionality
-- Implement async loading with pagination for dynamic data
-- Add support for option icons and avatars
-- Consider adding keyboard shortcuts for common actions (select all, clear all)
-- Enhance search with fuzzy matching and highlighting of matched text
-- Add support for custom filtering functions beyond simple text matching
+- Use `textValue` prop for complex option content
+- Avoid changing selection state too frequently
+- Use sections sparingly for very large lists
+- Consider FilterListBox for searchable large lists
 
 ## Related Components
 
-- [FilterPicker](/docs/forms-filterpicker--docs) - Simple list selection without search
-- [FilterListBox](/docs/forms-filterlistbox--docs) - Simple list selection without search
-- [Select](/docs/forms-select--docs) - For dropdown selection that saves space
-- [ComboBox](/docs/forms-combobox--docs) - For searchable selection with text input
-- [RadioGroup](/docs/forms-radiogroup--docs) - For single selection with radio buttons
-- [Checkbox](/docs/forms-checkbox--docs) - For multiple selection with checkboxes
-- [Menu](/docs/actions-menu--docs) - For action-oriented lists and navigation 
+- [FilterListBox](/docs/forms-filterlistbox--docs) - ListBox with integrated search functionality
+- [FilterPicker](/docs/forms-filterpicker--docs) - ListBox in a trigger-based popover
+- [Select](/docs/forms-select--docs) - Dropdown selection without persistent visibility
+- [ComboBox](/docs/forms-combobox--docs) - Dropdown with text input and search
+- [RadioGroup](/docs/forms-radiogroup--docs) - Single selection with radio buttons
+- [CheckboxGroup](/docs/forms-checkbox--docs) - Multiple selection with checkboxes 

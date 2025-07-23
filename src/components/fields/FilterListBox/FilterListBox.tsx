@@ -618,6 +618,45 @@ export const FilterListBox = forwardRef(function FilterListBox<
         if (nextKey != null) {
           selectionManager.setFocusedKey(nextKey);
         }
+      } else if (
+        e.key === 'Home' ||
+        e.key === 'End' ||
+        e.key === 'PageUp' ||
+        e.key === 'PageDown'
+      ) {
+        e.preventDefault();
+
+        const listState = listStateRef.current;
+        if (!listState) return;
+
+        const { selectionManager, collection } = listState;
+
+        // Helper to collect visible item keys (supports sections)
+        const collectVisibleKeys = (nodes: Iterable<any>, out: Key[]) => {
+          const term = searchValue.trim();
+          for (const node of nodes) {
+            if (node.type === 'item') {
+              const text = node.textValue ?? String(node.rendered ?? '');
+              if (!term || textFilterFn(text, term)) {
+                out.push(node.key);
+              }
+            } else if (node.childNodes) {
+              collectVisibleKeys(node.childNodes, out);
+            }
+          }
+        };
+
+        const visibleKeys: Key[] = [];
+        collectVisibleKeys(collection, visibleKeys);
+
+        if (visibleKeys.length === 0) return;
+
+        const targetKey =
+          e.key === 'Home' || e.key === 'PageUp'
+            ? visibleKeys[0]
+            : visibleKeys[visibleKeys.length - 1];
+
+        selectionManager.setFocusedKey(targetKey);
       } else if (e.key === 'Enter' || (e.key === ' ' && !searchValue)) {
         const listState = listStateRef.current;
 

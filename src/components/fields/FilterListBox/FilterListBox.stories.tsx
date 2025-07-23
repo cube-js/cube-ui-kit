@@ -34,6 +34,14 @@ export default {
       control: { type: 'text' },
       description: 'The default selected key in uncontrolled mode',
     },
+    selectedKeys: {
+      control: { type: 'object' },
+      description: 'The selected keys in controlled multiple mode',
+    },
+    defaultSelectedKeys: {
+      control: { type: 'object' },
+      description: 'The default selected keys in uncontrolled multiple mode',
+    },
     selectionMode: {
       options: ['single', 'multiple', 'none'],
       control: { type: 'radio' },
@@ -48,6 +56,17 @@ export default {
       table: {
         defaultValue: { summary: false },
       },
+    },
+    disallowEmptySelection: {
+      control: { type: 'boolean' },
+      description: 'Whether to disallow empty selection',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    disabledKeys: {
+      control: { type: 'object' },
+      description: 'Array of keys for disabled items',
     },
 
     /* Search */
@@ -73,6 +92,39 @@ export default {
         defaultValue: { summary: 'No results found' },
       },
     },
+    filter: {
+      control: false,
+      description: 'Custom filter function for search',
+    },
+
+    /* Presentation */
+    size: {
+      options: ['small', 'medium'],
+      control: { type: 'radio' },
+      description: 'FilterListBox size',
+      table: {
+        defaultValue: { summary: 'small' },
+      },
+    },
+    header: {
+      control: { type: 'text' },
+      description: 'Custom header content',
+    },
+    footer: {
+      control: { type: 'text' },
+      description: 'Custom footer content',
+    },
+
+    /* Behavior */
+    isCheckable: {
+      control: { type: 'boolean' },
+      description: 'Whether to show checkboxes for multiple selection',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+
+    /* State */
     isLoading: {
       control: { type: 'boolean' },
       description: 'Whether the FilterListBox is loading',
@@ -80,11 +132,16 @@ export default {
         defaultValue: { summary: false },
       },
     },
-
-    /* Visual */
     isDisabled: {
       control: { type: 'boolean' },
       description: 'Whether the FilterListBox is disabled',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isRequired: {
+      control: { type: 'boolean' },
+      description: 'Whether the field is required',
       table: {
         defaultValue: { summary: false },
       },
@@ -103,20 +160,27 @@ export default {
       control: { type: 'text' },
       description: 'Label text',
     },
-    isRequired: {
-      control: { type: 'boolean' },
-      description: 'Whether the field is required',
-      table: {
-        defaultValue: { summary: false },
-      },
+    description: {
+      control: { type: 'text' },
+      description: 'Field description',
     },
     message: {
       control: { type: 'text' },
       description: 'Help or error message',
     },
-    description: {
-      control: { type: 'text' },
-      description: 'Field description',
+
+    /* Events */
+    onSelectionChange: {
+      action: 'selection changed',
+      description: 'Callback when selection changes',
+    },
+    onEscape: {
+      action: 'escape pressed',
+      description: 'Callback when Escape key is pressed',
+    },
+    onOptionClick: {
+      action: 'option clicked',
+      description: 'Callback when an option is clicked (non-checkbox area)',
     },
   },
 };

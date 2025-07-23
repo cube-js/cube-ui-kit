@@ -38,6 +38,23 @@ const meta: Meta<typeof FilterPicker> = {
     },
   },
   argTypes: {
+    /* Content */
+    selectedKey: {
+      control: { type: 'text' },
+      description: 'The selected key in controlled mode',
+    },
+    defaultSelectedKey: {
+      control: { type: 'text' },
+      description: 'The default selected key in uncontrolled mode',
+    },
+    selectedKeys: {
+      control: { type: 'object' },
+      description: 'The selected keys in controlled multiple mode',
+    },
+    defaultSelectedKeys: {
+      control: { type: 'object' },
+      description: 'The default selected keys in uncontrolled multiple mode',
+    },
     selectionMode: {
       control: 'radio',
       options: ['single', 'multiple'],
@@ -46,14 +63,6 @@ const meta: Meta<typeof FilterPicker> = {
         defaultValue: { summary: 'single' },
       },
     },
-    placeholder: {
-      control: 'text',
-      description: 'Placeholder text when no selection is made',
-    },
-    searchPlaceholder: {
-      control: 'text',
-      description: 'Placeholder text in the search input',
-    },
     allowsCustomValue: {
       control: { type: 'boolean' },
       description: 'Whether the FilterListBox allows custom values',
@@ -61,31 +70,26 @@ const meta: Meta<typeof FilterPicker> = {
         defaultValue: { summary: false },
       },
     },
-    isDisabled: {
-      control: 'boolean',
-      description: 'Whether the picker is disabled',
+    disallowEmptySelection: {
+      control: { type: 'boolean' },
+      description: 'Whether to disallow empty selection',
       table: {
-        defaultValue: { summary: 'false' },
+        defaultValue: { summary: false },
       },
     },
-    isLoading: {
-      control: 'boolean',
-      description: 'Whether the picker is in loading state',
-      table: {
-        defaultValue: { summary: 'false' },
-      },
+    disabledKeys: {
+      control: { type: 'object' },
+      description: 'Array of keys for disabled items',
     },
-    validationState: {
-      control: 'radio',
-      options: [undefined, 'valid', 'invalid'],
-      description: 'Validation state of the picker',
+
+    /* Trigger */
+    placeholder: {
+      control: 'text',
+      description: 'Placeholder text when no selection is made',
     },
-    isCheckable: {
-      control: 'boolean',
-      description: 'Whether to show checkboxes in multiple selection mode',
-      table: {
-        defaultValue: { summary: 'false' },
-      },
+    icon: {
+      control: false,
+      description: 'Icon to show in the trigger',
     },
     type: {
       control: 'radio',
@@ -95,13 +99,122 @@ const meta: Meta<typeof FilterPicker> = {
         defaultValue: { summary: 'outline' },
       },
     },
+    theme: {
+      control: 'radio',
+      options: ['default', 'special'],
+      description: 'Button theme',
+      table: {
+        defaultValue: { summary: 'default' },
+      },
+    },
     size: {
       control: 'radio',
       options: ['small', 'medium', 'large'],
       description: 'Size of the picker',
       table: {
-        defaultValue: { summary: 'medium' },
+        defaultValue: { summary: 'small' },
       },
+    },
+
+    /* Search */
+    searchPlaceholder: {
+      control: 'text',
+      description: 'Placeholder text in the search input',
+    },
+    autoFocus: {
+      control: { type: 'boolean' },
+      description: 'Whether the search input should have autofocus',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    emptyLabel: {
+      control: { type: 'text' },
+      description:
+        'Custom label to display when no results are found after filtering',
+    },
+    filter: {
+      control: false,
+      description: 'Custom filter function for search',
+    },
+
+    /* Presentation */
+    header: {
+      control: { type: 'text' },
+      description: 'Custom header content',
+    },
+    footer: {
+      control: { type: 'text' },
+      description: 'Custom footer content',
+    },
+    renderSummary: {
+      control: false,
+      description: 'Custom renderer for the summary shown inside the trigger',
+    },
+
+    /* Behavior */
+    isCheckable: {
+      control: 'boolean',
+      description: 'Whether to show checkboxes in multiple selection mode',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+
+    /* State */
+    isDisabled: {
+      control: 'boolean',
+      description: 'Whether the picker is disabled',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isLoading: {
+      control: 'boolean',
+      description: 'Whether the picker is in loading state',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isRequired: {
+      control: { type: 'boolean' },
+      description: 'Whether the field is required',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    validationState: {
+      control: 'radio',
+      options: [undefined, 'valid', 'invalid'],
+      description: 'Validation state of the picker',
+    },
+
+    /* Field */
+    label: {
+      control: { type: 'text' },
+      description: 'Label text',
+    },
+    description: {
+      control: { type: 'text' },
+      description: 'Field description',
+    },
+    message: {
+      control: { type: 'text' },
+      description: 'Help or error message',
+    },
+
+    /* Events */
+    onSelectionChange: {
+      action: 'selection changed',
+      description: 'Callback when selection changes',
+    },
+    onEscape: {
+      action: 'escape pressed',
+      description: 'Callback when Escape key is pressed',
+    },
+    onOptionClick: {
+      action: 'option clicked',
+      description: 'Callback when an option is clicked (non-checkbox area)',
     },
   },
 };

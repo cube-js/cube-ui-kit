@@ -32,6 +32,14 @@ export default {
       control: { type: 'text' },
       description: 'The default selected key in uncontrolled mode',
     },
+    selectedKeys: {
+      control: { type: 'object' },
+      description: 'The selected keys in controlled multiple mode',
+    },
+    defaultSelectedKeys: {
+      control: { type: 'object' },
+      description: 'The default selected keys in uncontrolled multiple mode',
+    },
     selectionMode: {
       options: ['single', 'multiple', 'none'],
       control: { type: 'radio' },
@@ -40,14 +48,57 @@ export default {
         defaultValue: { summary: 'single' },
       },
     },
+    disallowEmptySelection: {
+      control: { type: 'boolean' },
+      description: 'Whether to disallow empty selection',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    disabledKeys: {
+      control: { type: 'object' },
+      description: 'Array of keys for disabled items',
+    },
 
     /* Presentation */
     size: {
-      options: ['small', 'medium', 'large'],
+      options: ['small', 'medium'],
       control: { type: 'radio' },
       description: 'ListBox size',
       table: {
         defaultValue: { summary: 'small' },
+      },
+    },
+    header: {
+      control: { type: 'text' },
+      description: 'Custom header content',
+    },
+    footer: {
+      control: { type: 'text' },
+      description: 'Custom footer content',
+    },
+
+    /* Behavior */
+    focusOnHover: {
+      control: { type: 'boolean' },
+      description:
+        'Whether moving pointer over an option moves DOM focus to it',
+      table: {
+        defaultValue: { summary: true },
+      },
+    },
+    shouldUseVirtualFocus: {
+      control: { type: 'boolean' },
+      description: 'Whether to use virtual focus instead of DOM focus',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isCheckable: {
+      control: { type: 'boolean' },
+      description: 'Whether to show checkboxes for multiple selection',
+      table: {
+        defaultValue: { summary: false },
       },
     },
 
@@ -67,15 +118,37 @@ export default {
       },
     },
     validationState: {
-      options: ['valid', 'invalid'],
+      options: [undefined, 'valid', 'invalid'],
       control: { type: 'radio' },
       description: 'Validation state',
+    },
+
+    /* Field */
+    label: {
+      control: { type: 'text' },
+      description: 'Label text',
+    },
+    description: {
+      control: { type: 'text' },
+      description: 'Field description',
+    },
+    message: {
+      control: { type: 'text' },
+      description: 'Help or error message',
     },
 
     /* Events */
     onSelectionChange: {
       action: 'selection changed',
       description: 'Callback when selection changes',
+    },
+    onEscape: {
+      action: 'escape pressed',
+      description: 'Callback when Escape key is pressed',
+    },
+    onOptionClick: {
+      action: 'option clicked',
+      description: 'Callback when an option is clicked (non-checkbox area)',
     },
   },
 };

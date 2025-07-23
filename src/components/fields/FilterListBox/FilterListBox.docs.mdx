@@ -6,12 +6,12 @@ import * as FilterListBoxStories from './FilterListBox.stories';
 
 # FilterListBox
 
-A searchable list box component that allows users to filter and select from a list of options with an integrated search input. It combines the capabilities of a regular ListBox with real-time search functionality, supporting sections, descriptions, and full keyboard navigation. Built with React Aria's accessibility features and the Cube `tasty` style system for theming.
+A searchable list selection component that combines a ListBox with an integrated search input. Users can filter through options in real-time while maintaining full keyboard navigation and accessibility. Built with React Aria's accessibility features and the Cube `tasty` style system for theming.
 
 ## When to Use
 
 - Present a searchable list of selectable options for large datasets
-- Enable filtering through options in real-time as users type
+- Enable real-time filtering through options as users type
 - Create searchable selection interfaces for data with many entries
 - Build filterable form controls that need to remain visible
 - Provide quick option discovery in lengthy lists
@@ -60,6 +60,9 @@ Customizes individual option elements.
 **Sub-elements:**
 - `Label` - The main text of each option
 - `Description` - Secondary descriptive text for options
+- `Content` - Container for label and description
+- `Checkbox` - Checkbox element when `isCheckable={true}`
+- `CheckboxWrapper` - Wrapper around the checkbox
 
 #### sectionStyles
 
@@ -69,180 +72,359 @@ Customizes section wrapper elements.
 
 Customizes section heading elements.
 
-### Component-Specific Properties
+#### headerStyles
 
-#### searchPlaceholder
+Customizes the header area when header prop is provided.
 
-Custom placeholder text for the search input field. Defaults to "Search...".
+#### footerStyles
 
-```jsx
-<FilterListBox searchPlaceholder="Filter items...">
-  <FilterListBox.Item key="1">Option 1</FilterListBox.Item>
-  <FilterListBox.Item key="2">Option 2</FilterListBox.Item>
-</FilterListBox>
-```
+Customizes the footer area when footer prop is provided.
 
-#### autoFocus
+### Style Properties
 
-Whether the search input should automatically receive focus when the component mounts.
+These properties allow direct style application without using the `styles` prop: `display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `color`, `fill`, `fade`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `reset`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`, `textAlign`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`.
 
-```jsx
-<FilterListBox autoFocus>
-  <FilterListBox.Item key="1">Option 1</FilterListBox.Item>
-</FilterListBox>
-```
+### Modifiers
 
-#### filter
+The `mods` property accepts the following modifiers you can override:
 
-Custom filter function to determine if an option should be included in search results. Receives the option's text value and the current search input value.
+| Modifier | Type | Description |
+|----------|------|-------------|
+| `invalid` | `boolean` | Applied when `validationState="invalid"` |
+| `valid` | `boolean` | Applied when `validationState="valid"` |
+| `disabled` | `boolean` | Applied when `isDisabled={true}` |
+| `focused` | `boolean` | Applied when the FilterListBox has focus |
+| `loading` | `boolean` | Applied when `isLoading={true}` |
+| `searchable` | `boolean` | Always true for FilterListBox |
 
-```jsx
-const customFilter = (optionText, searchTerm) => {
-  // Custom filtering logic - e.g., exact match only
-  return optionText.toLowerCase() === searchTerm.toLowerCase();
-};
+## Variants
 
-<FilterListBox filter={customFilter}>
-  <FilterListBox.Item key="1">Option 1</FilterListBox.Item>
-</FilterListBox>
-```
+### Selection Modes
 
-#### emptyLabel
+- `single` - Allows selecting only one item at a time
+- `multiple` - Allows selecting multiple items
 
-Custom content to display when search yields no results. Accepts any ReactNode including text, JSX elements, or components. Defaults to "No results found".
+### Sizes
 
-```jsx
-<FilterListBox emptyLabel="No matching items found. Try a different search term.">
-  <FilterListBox.Item key="1">Option 1</FilterListBox.Item>
-</FilterListBox>
-```
+- `small` - Compact size for dense interfaces
 
-#### isLoading
+## Examples
 
-Shows a loading indicator in the search input when data is being fetched or processed.
-
-```jsx
-<FilterListBox isLoading>
-  <FilterListBox.Item key="1">Option 1</FilterListBox.Item>
-</FilterListBox>
-```
-
-### Selection Properties
-
-Inherits all selection properties from the base ListBox component:
-
-- `selectedKey` / `selectedKeys` - Controlled selection
-- `defaultSelectedKey` / `defaultSelectedKeys` - Uncontrolled selection
-- `selectionMode` - 'single', 'multiple', or 'none'
-- `onSelectionChange` - Selection change handler
-- `disallowEmptySelection` - Prevent deselecting all items
-- `disabledKeys` - Keys of disabled options
-
-### Accessibility
-
-- **Keyboard Navigation**: Arrow keys navigate through filtered options
-- **Search Shortcuts**: Escape key clears the search input
-- **Screen Reader Support**: Proper announcements for search results
-- **Focus Management**: Seamless focus transition between search and options
-- **ARIA Labels**: Automatic labeling for search input and filtered content
-
-### Examples
-
-#### Basic Searchable List
+### Basic Usage
 
 <Story of={FilterListBoxStories.Default} />
 
-#### With Sections
+```jsx
+<FilterListBox label="Choose a fruit" searchPlaceholder="Search fruits...">
+  <FilterListBox.Item key="apple">Apple</FilterListBox.Item>
+  <FilterListBox.Item key="banana">Banana</FilterListBox.Item>
+  <FilterListBox.Item key="cherry">Cherry</FilterListBox.Item>
+</FilterListBox>
+```
+
+### With Sections
 
 <Story of={FilterListBoxStories.WithSections} />
 
-#### Multiple Selection
+```jsx
+<FilterListBox label="Choose an ingredient" searchPlaceholder="Search ingredients...">
+  <FilterListBox.Section title="Fruits">
+    <FilterListBox.Item key="apple">Apple</FilterListBox.Item>
+    <FilterListBox.Item key="banana">Banana</FilterListBox.Item>
+  </FilterListBox.Section>
+  <FilterListBox.Section title="Vegetables">
+    <FilterListBox.Item key="carrot">Carrot</FilterListBox.Item>
+    <FilterListBox.Item key="broccoli">Broccoli</FilterListBox.Item>
+  </FilterListBox.Section>
+</FilterListBox>
+```
+
+### Multiple Selection
 
 <Story of={FilterListBoxStories.MultipleSelection} />
 
-#### Custom Filter Function
+```jsx
+<FilterListBox
+  label="Select permissions"
+  selectionMode="multiple"
+  defaultSelectedKeys={['read', 'write']}
+  searchPlaceholder="Filter permissions..."
+>
+  <FilterListBox.Item key="read">Read</FilterListBox.Item>
+  <FilterListBox.Item key="write">Write</FilterListBox.Item>
+  <FilterListBox.Item key="execute">Execute</FilterListBox.Item>
+</FilterListBox>
+```
 
-<Story of={FilterListBoxStories.CustomFilter} />
-
-#### With Descriptions
+### With Descriptions
 
 <Story of={FilterListBoxStories.WithDescriptions} />
 
-#### Loading State
+```jsx
+<FilterListBox label="Choose a fruit" searchPlaceholder="Search fruits...">
+  <FilterListBox.Item 
+    key="apple" 
+    description="Crisp and sweet red fruit"
+  >
+    Apple
+  </FilterListBox.Item>
+  <FilterListBox.Item 
+    key="banana" 
+    description="Yellow tropical fruit rich in potassium"
+  >
+    Banana
+  </FilterListBox.Item>
+</FilterListBox>
+```
+
+### With Custom Filter
+
+<Story of={FilterListBoxStories.CustomFilter} />
+
+```jsx
+<FilterListBox
+  label="Programming Language"
+  searchPlaceholder="Type first letters..."
+  filter={(text, search) => 
+    text.toLowerCase().startsWith(search.toLowerCase())
+  }
+>
+  <FilterListBox.Item key="javascript">JavaScript</FilterListBox.Item>
+  <FilterListBox.Item key="typescript">TypeScript</FilterListBox.Item>
+  <FilterListBox.Item key="python">Python</FilterListBox.Item>
+</FilterListBox>
+```
+
+### Loading State
 
 <Story of={FilterListBoxStories.Loading} />
 
-#### Custom Empty State
+```jsx
+<FilterListBox
+  label="Loading Data"
+  isLoading={true}
+  searchPlaceholder="Search options..."
+>
+  <FilterListBox.Item key="item1">Loading Item 1</FilterListBox.Item>
+  <FilterListBox.Item key="item2">Loading Item 2</FilterListBox.Item>
+</FilterListBox>
+```
+
+### Custom Empty State
 
 <Story of={FilterListBoxStories.CustomEmptyState} />
 
----
-
-## Usage Guidelines
-
-### Do's ✅
-
-- Use for lists with more than 10-15 options
-- Provide clear, searchable text content for each option
-- Use `textValue` prop when option content is complex (JSX)
-- Implement custom filter functions for specialized search needs
-- Show loading states during async data fetching
-- Provide meaningful empty state messages
-
 ```jsx
-// ✅ Good - Clear searchable content
-<FilterListBox>
-  <FilterListBox.Item key="user1" textValue="John Doe">
-    <div>
-      <strong>John Doe</strong>
-      <div>john.doe@company.com</div>
-    </div>
-  </FilterListBox.Item>
+<FilterListBox
+  label="Search Results"
+  emptyLabel="No matching results found. Try a different search term."
+  searchPlaceholder="Search..."
+>
+  <FilterListBox.Item key="item1">Searchable Item</FilterListBox.Item>
 </FilterListBox>
 ```
 
-### Don'ts ❌
+### With Header and Footer
 
-- Don't use for very small lists (under 5-7 options)
-- Don't forget to provide `textValue` for complex option content
-- Don't implement search that's too strict or too loose
-- Don't hide important options that users expect to always see
+<Story of={FilterListBoxStories.WithHeaderAndFooter} />
 
 ```jsx
-// ❌ Avoid - No textValue for complex content
-<FilterListBox>
-  <FilterListBox.Item key="user1">
-    <div>
-      <strong>John Doe</strong>
-      <div>john.doe@company.com</div>
-    </div>
-  </FilterListBox.Item>
+<FilterListBox
+  label="Programming Languages"
+  searchPlaceholder="Search languages..."
+  header={
+    <Space gap="1x" flow="row" placeItems="center">
+      <Title level={6}>Languages</Title>
+      <Badge type="purple">12</Badge>
+    </Space>
+  }
+  footer={
+    <Text color="#dark.50" preset="t4">
+      Popular languages shown
+    </Text>
+  }
+>
+  <FilterListBox.Item key="javascript">JavaScript</FilterListBox.Item>
+  <FilterListBox.Item key="python">Python</FilterListBox.Item>
 </FilterListBox>
 ```
 
-### Performance Tips
-
-- Use `textValue` prop to avoid searching through JSX content
-- Implement debounced search for large datasets
-- Consider virtualization for very large lists (500+ items)
-- Memoize custom filter functions to prevent unnecessary re-renders
+### Custom Values
 
 ```jsx
-const memoizedFilter = useCallback((text, search) => {
-  return text.toLowerCase().includes(search.toLowerCase());
-}, []);
-
-<FilterListBox filter={memoizedFilter}>
-  {/* options */}
+<FilterListBox
+  label="Add Tags"
+  allowsCustomValue={true}
+  selectionMode="multiple"
+  searchPlaceholder="Search or add custom tag..."
+>
+  <FilterListBox.Item key="react">React</FilterListBox.Item>
+  <FilterListBox.Item key="vue">Vue.js</FilterListBox.Item>
 </FilterListBox>
 ```
 
----
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the search input
+- `Arrow Down/Up` - Navigate through filtered options
+- `Enter` - Select the focused option
+- `Space` - In multiple selection mode, toggle selection
+- `Escape` - Clear search input or close (if empty)
+- `Home/End` - Move to first/last option
+
+### Screen Reader Support
+
+- Search input announces as "combobox" with proper state
+- Filtered results are announced when search changes
+- Selected items are announced immediately
+- Loading states are communicated to screen readers
+- Empty search results are properly announced
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label for the FilterListBox
+- `aria-expanded` - Indicates the expanded state of the listbox
+- `aria-haspopup` - Indicates the search input controls a listbox
+- `aria-activedescendant` - Tracks the focused option
+- `aria-describedby` - Associates help text and descriptions
+
+## Best Practices
+
+1. **Do**: Use for lists with more than 10-15 options
+   ```jsx
+   <FilterListBox label="Choose Country" searchPlaceholder="Search countries...">
+     {countries.map(country => (
+       <FilterListBox.Item key={country.code}>{country.name}</FilterListBox.Item>
+     ))}
+   </FilterListBox>
+   ```
+
+2. **Don't**: Use for very small lists (under 5-7 options)
+   ```jsx
+   // ❌ Avoid for small lists - use ListBox instead
+   <FilterListBox>
+     <FilterListBox.Item key="yes">Yes</FilterListBox.Item>
+     <FilterListBox.Item key="no">No</FilterListBox.Item>
+   </FilterListBox>
+   ```
+
+3. **Do**: Provide `textValue` for complex option content
+   ```jsx
+   <FilterListBox.Item key="user1" textValue="John Doe">
+     <Avatar src="/john.jpg" />
+     <div>
+       <strong>John Doe</strong>
+       <div>john.doe@company.com</div>
+     </div>
+   </FilterListBox.Item>
+   ```
+
+4. **Performance**: Use custom filter functions for specialized search needs
+5. **UX**: Provide meaningful empty state messages
+6. **Accessibility**: Always provide clear search placeholders
+
+## Integration with Forms
+
+This component supports all [Field properties](/docs/forms-field--docs) when used within a Form. The component automatically handles form validation, field states, and integrates with form submission.
+
+```jsx
+<Form onSubmit={handleSubmit}>
+  <FilterListBox
+    name="skills"
+    label="Technical Skills"
+    isRequired
+    selectionMode="multiple"
+    searchPlaceholder="Search skills..."
+    rules={[{ required: true, min: 2 }]}
+  >
+    <FilterListBox.Section title="Frontend">
+      <FilterListBox.Item key="react">React</FilterListBox.Item>
+      <FilterListBox.Item key="vue">Vue.js</FilterListBox.Item>
+    </FilterListBox.Section>
+    <FilterListBox.Section title="Backend">
+      <FilterListBox.Item key="nodejs">Node.js</FilterListBox.Item>
+      <FilterListBox.Item key="python">Python</FilterListBox.Item>
+    </FilterListBox.Section>
+  </FilterListBox>
+</Form>
+```
+
+## Advanced Features
+
+### Custom Filter Functions
+
+FilterListBox supports custom filter functions for specialized search behavior:
+
+```jsx
+// Starts-with filter
+const startsWithFilter = (text, search) => 
+  text.toLowerCase().startsWith(search.toLowerCase());
+
+// Fuzzy search filter
+const fuzzyFilter = (text, search) => {
+  const searchChars = search.toLowerCase().split('');
+  const textLower = text.toLowerCase();
+  let searchIndex = 0;
+  
+  for (const char of textLower) {
+    if (char === searchChars[searchIndex]) {
+      searchIndex++;
+      if (searchIndex === searchChars.length) return true;
+    }
+  }
+  return false;
+};
+
+<FilterListBox filter={startsWithFilter}>
+  {/* items */}
+</FilterListBox>
+```
+
+### Custom Values
+
+When `allowsCustomValue={true}`, users can add new options by typing:
+
+```jsx
+<FilterListBox
+  allowsCustomValue={true}
+  selectionMode="multiple"
+  searchPlaceholder="Search or add new..."
+>
+  <FilterListBox.Item key="existing">Existing Option</FilterListBox.Item>
+</FilterListBox>
+```
+
+Custom values:
+- Are automatically added when selected
+- Persist across popover sessions
+- Appear in the list with selected items
+- Can be removed like any other selection
+
+## Performance
+
+### Optimization Tips
+
+- Use `textValue` prop for complex option content to improve search performance
+- Implement debounced search for very large datasets
+- Consider FilterPicker for trigger-based interfaces
+- Use sections sparingly for very large lists
+
+```jsx
+// Optimized for performance
+<FilterListBox.Item 
+  key="complex" 
+  textValue="John Doe - Senior Developer"
+>
+  <ComplexUserCard user={user} />
+</FilterListBox.Item>
+```
 
 ## Related Components
 
 - [ListBox](/docs/forms-listbox--docs) - Simple list selection without search
-- [FilterPicker](/docs/forms-filterpicker--docs) - Simple list selection without search
+- [FilterPicker](/docs/forms-filterpicker--docs) - FilterListBox in a trigger-based popover
 - [ComboBox](/docs/forms-combobox--docs) - Dropdown with search and text input
 - [Select](/docs/forms-select--docs) - Dropdown selection without search
 - [SearchInput](/docs/forms-searchinput--docs) - Standalone search input component
