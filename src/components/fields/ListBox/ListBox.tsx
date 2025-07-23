@@ -164,7 +164,7 @@ const OptionElement = tasty({
       transition: 'theme',
       opacity: {
         '': 0,
-        'selected | :hover': 1,
+        'selected | :hover | focused': 1,
       },
       fill: {
         '': '#white',
