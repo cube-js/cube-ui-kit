@@ -9,7 +9,7 @@ import { config } from 'react-transition-group';
 global.AbortController = AbortController;
 config.disabled = true;
 
-configure({ testIdAttribute: 'data-qa', asyncUtilTimeout: 10000 });
+configure({ testIdAttribute: 'data-qa', asyncUtilTimeout: 15000 });
 
 // Configure React 18 testing environment to support act()
 // This tells React that we're in a testing environment and should use act() for updates

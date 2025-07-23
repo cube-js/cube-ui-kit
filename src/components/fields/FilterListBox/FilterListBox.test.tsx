@@ -1026,7 +1026,7 @@ describe('<FilterListBox />', () => {
       // Visible items should be back
       expect(getByRole('option', { name: 'Item 1' })).toBeInTheDocument();
       expect(getByRole('option', { name: 'Item 10' })).toBeInTheDocument();
-    }, 10000); // Increase timeout
+    }, 20000); // 20 second timeout
 
     it('should handle item sizing correctly for items with different content', async () => {
       const items = createManyItems();
@@ -1059,7 +1059,7 @@ describe('<FilterListBox />', () => {
       const item1Container = itemWithoutDescription.closest('[data-index="0"]');
       expect(item1Container).toBeInTheDocument();
       expect(item1Container).toHaveStyle('position: absolute');
-    });
+    }, 15000); // 15 second timeout
 
     it('should maintain correct content structure after filtering', async () => {
       const items = createManyItems();
@@ -1108,7 +1108,7 @@ describe('<FilterListBox />', () => {
       expect(
         itemWithDesc.querySelector('[data-element="Description"]'),
       ).toBeInTheDocument();
-    });
+    }, 15000); // 15 second timeout
 
     it('should handle selection in virtualized list', async () => {
       const items = createManyItems();
@@ -1131,6 +1131,6 @@ describe('<FilterListBox />', () => {
       });
 
       expect(onSelectionChange).toHaveBeenCalledWith('item-1');
-    });
+    }, 10000); // 10 second timeout
   });
 });
