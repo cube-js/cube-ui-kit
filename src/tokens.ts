@@ -39,11 +39,11 @@ const colors = {
 };
 
 export const SIZES = {
-  XS: '24px',
-  SM: '28px',
-  MD: '32px',
-  LG: '40px',
-  XL: '48px',
+  XS: 24,
+  SM: 28,
+  MD: 32,
+  LG: 40,
+  XL: 48,
 };
 
 function color(name, opacity = 1) {
@@ -103,11 +103,11 @@ const TOKENS = {
   'border-radius-base': '4px',
 
   // button/input sizes
-  'size-xs': `${SIZES.XS}`,
-  'size-sm': `${SIZES.SM}`,
-  'size-md': `${SIZES.MD}`,
-  'size-lg': `${SIZES.LG}`,
-  'size-xl': `${SIZES.XL}`,
+  'size-xs': `${SIZES.XS}px`,
+  'size-sm': `${SIZES.SM}px`,
+  'size-md': `${SIZES.MD}px`,
+  'size-lg': `${SIZES.LG}px`,
+  'size-xl': `${SIZES.XL}px`,
 
   // space sizes
   'space-xs': '.5x',
