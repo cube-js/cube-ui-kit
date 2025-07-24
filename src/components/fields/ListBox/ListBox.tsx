@@ -285,7 +285,7 @@ export interface CubeListBoxProps<T>
   /** Mods for the ListBox */
   mods?: Record<string, boolean>;
   /** Size of the ListBox */
-  size?: 'small' | 'medium';
+  size?: 'small' | 'medium' | 'large';
 
   /**
    * When true, ListBox will use virtual focus. This keeps actual DOM focus
@@ -548,7 +548,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       if (currentItem?.props?.description) {
         return 49;
       }
-      return size === 'small' ? 33 : 41;
+      return size === 'small' ? 29 : size === 'large' ? 41 : 33;
     },
     measureElement: (el) => {
       return el.offsetHeight + 1;
@@ -784,7 +784,7 @@ function Option({
   virtualIndex,
   lastFocusSourceRef,
 }: {
-  size?: 'small' | 'medium';
+  size?: 'small' | 'medium' | 'large';
   item: any;
   state: any;
   styles?: Styles;
@@ -928,7 +928,7 @@ interface ListBoxSectionProps<T> {
   focusOnHover?: boolean;
   isCheckable?: boolean;
   onOptionClick?: (key: Key) => void;
-  size?: 'small' | 'medium';
+  size?: 'small' | 'medium' | 'large';
   lastFocusSourceRef?: MutableRefObject<'keyboard' | 'mouse' | 'other'>;
 }
 

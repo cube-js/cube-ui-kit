@@ -199,7 +199,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     allowsCustomValue = false,
     header,
     footer,
-    size = 'small',
+    size = 'medium',
     headerStyles,
     footerStyles,
     listBoxStyles,
