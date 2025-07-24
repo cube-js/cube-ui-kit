@@ -111,11 +111,11 @@ const meta: Meta<typeof FilterListBox> = {
 
     /* Presentation */
     size: {
-      options: ['small', 'medium'],
+      options: ['small', 'medium', 'large'],
       control: { type: 'radio' },
       description: 'FilterListBox size',
       table: {
-        defaultValue: { summary: 'small' },
+        defaultValue: { summary: 'medium' },
       },
     },
     header: {

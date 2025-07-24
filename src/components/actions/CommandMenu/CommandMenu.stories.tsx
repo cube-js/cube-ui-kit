@@ -22,6 +22,7 @@ import { Paragraph } from '../../content/Paragraph';
 import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
 import { Flow } from '../../layout/Flow';
+import { Space } from '../../layout/Space';
 import {
   Dialog,
   DialogTrigger,
@@ -147,12 +148,12 @@ export default {
 
     /* Styling */
     size: {
-      options: ['small', 'medium'],
+      options: ['small', 'medium', 'large'],
       control: { type: 'radio' },
-      description: 'Size of the select component',
+      description: 'Size of the command menu component',
       table: {
         type: { summary: 'string' },
-        defaultValue: { summary: 'small' },
+        defaultValue: { summary: 'medium' },
       },
     },
     styles: {
@@ -756,25 +757,61 @@ HotkeyTesting.args = {
   autoFocus: true,
 };
 
-export const MediumSize: StoryFn<CubeCommandMenuProps<any>> = (args) => (
-  <CommandMenu width="20x 50x" {...args}>
-    {basicCommands.map((command) => (
-      <CommandMenu.Item
-        key={command.key}
-        description={command.description}
-        hotkeys={command.hotkeys}
-        icon={command.icon}
-      >
-        {command.label}
-      </CommandMenu.Item>
-    ))}
-  </CommandMenu>
+export const DifferentSizes: StoryFn<CubeCommandMenuProps<any>> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>Small Menu</Title>
+    <CommandMenu width="20x 50x" {...args} size="small">
+      {basicCommands.slice(0, 3).map((command) => (
+        <CommandMenu.Item
+          key={command.key}
+          hotkeys={command.hotkeys}
+          icon={command.icon}
+        >
+          {command.label}
+        </CommandMenu.Item>
+      ))}
+    </CommandMenu>
+
+    <Title level={5}>Medium Menu</Title>
+    <CommandMenu width="20x 50x" {...args} size="medium">
+      {basicCommands.slice(0, 3).map((command) => (
+        <CommandMenu.Item
+          key={command.key}
+          hotkeys={command.hotkeys}
+          icon={command.icon}
+        >
+          {command.label}
+        </CommandMenu.Item>
+      ))}
+    </CommandMenu>
+
+    <Title level={5}>Large Menu</Title>
+    <CommandMenu width="20x 50x" {...args} size="large">
+      {basicCommands.slice(0, 3).map((command) => (
+        <CommandMenu.Item
+          key={command.key}
+          hotkeys={command.hotkeys}
+          icon={command.icon}
+        >
+          {command.label}
+        </CommandMenu.Item>
+      ))}
+    </CommandMenu>
+  </Space>
 );
 
-MediumSize.args = {
-  searchPlaceholder: 'Medium size command palette...',
-  autoFocus: true,
-  size: 'medium',
+DifferentSizes.args = {
+  searchPlaceholder: 'Search commands...',
+  autoFocus: false,
+};
+
+DifferentSizes.parameters = {
+  docs: {
+    description: {
+      story:
+        'CommandMenu supports three sizes: `small`, `medium` (default), and `large` to accommodate different interface requirements.',
+    },
+  },
 };
 
 export const WithDialog: StoryFn<CubeCommandMenuProps<any>> = (args) => (
