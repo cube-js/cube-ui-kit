@@ -73,7 +73,7 @@ const meta: Meta<typeof ListBox> = {
 
     /* Presentation */
     size: {
-      options: ['small', 'medium', 'large'],
+      options: ['medium', 'large'],
       control: { type: 'radio' },
       description: 'ListBox size',
       table: {
