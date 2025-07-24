@@ -91,7 +91,7 @@ function Menu<T extends object>(
     sectionStyles,
     sectionHeadingStyles,
     selectionIcon,
-    size = 'small',
+    size = 'medium',
     qa,
     selectedKeys,
     defaultSelectedKeys,

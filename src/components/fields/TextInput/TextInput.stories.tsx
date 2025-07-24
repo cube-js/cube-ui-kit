@@ -57,11 +57,11 @@ export default {
       },
     },
     size: {
-      options: ['small', 'default', 'large'],
+      options: ['small', 'medium', 'large'],
       control: { type: 'radio' },
       description: 'Input size',
       table: {
-        defaultValue: { summary: 'default' },
+        defaultValue: { summary: 'medium' },
       },
     },
 

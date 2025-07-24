@@ -27,7 +27,7 @@ export interface CubeButtonProps extends CubeActionProps {
     | 'outline'
     | 'neutral'
     | (string & {});
-  size?: 'xsmall' | 'small' | 'medium' | 'large' | (string & {});
+  size?: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | (string & {});
 }
 
 export type ButtonVariant =
@@ -76,7 +76,8 @@ export const DEFAULT_BUTTON_STYLES = {
   flow: 'column',
   preset: {
     '': 't3m',
-    '[data-size="large"]': 't2m',
+    '[data-size="xsmall"]': 't4',
+    '[data-size="xlarge"]': 't2m',
   },
   textDecoration: 'none',
   transition: 'theme',
@@ -87,6 +88,7 @@ export const DEFAULT_BUTTON_STYLES = {
     '[data-size="small"] | [data-size="xsmall"]': '.5x (1x - 1bw)',
     '[data-size="medium"]': '.5x (1.5x - 1bw)',
     '[data-size="large"]': '.5x (2x - 1bw)',
+    '[data-size="xlarge"]': '.5x (2.25x - 1bw)',
     'single-icon-only | [data-type="link"]': 0,
   },
   width: {
@@ -95,6 +97,7 @@ export const DEFAULT_BUTTON_STYLES = {
     '[data-size="small"] & single-icon-only': '@size-sm @size-sm',
     '[data-size="medium"] & single-icon-only': '@size-md @size-md',
     '[data-size="large"] & single-icon-only': '@size-lg @size-lg',
+    '[data-size="xlarge"] & single-icon-only': '@size-xl @size-xl',
     '[data-type="link"]': 'initial',
   },
   height: {
@@ -103,6 +106,7 @@ export const DEFAULT_BUTTON_STYLES = {
     '[data-size="small"]': '@size-sm @size-sm',
     '[data-size="medium"]': '@size-md @size-md',
     '[data-size="large"]': '@size-lg @size-lg',
+    '[data-size="xlarge"]': '@size-xl @size-xl',
     '[data-type="link"]': 'initial',
   },
   whiteSpace: 'nowrap',

@@ -35,7 +35,7 @@ export const StyledSearchInput = tasty({
   qa: 'SearchInput',
   as: 'input',
   styles: {
-    display: 'flex',
+    display: 'grid',
     width: '100%',
     color: '#dark',
     fill: '#white',
@@ -43,25 +43,17 @@ export const StyledSearchInput = tasty({
     outline: 'none',
     transition: 'theme',
     radius: 0,
-    padding: '@vertical-padding @right-padding @vertical-padding @left-padding',
+    padding: '.5x 1.5x',
     textAlign: 'left',
     reset: 'input',
     preset: 't3',
     margin: 0,
     boxSizing: 'border-box',
     userSelect: 'auto',
-
-    '@vertical-padding': {
-      '': '(.75x - 1bw)',
-      '[data-size="medium"]': '(1.25x - 1bw)',
-    },
-    '@left-padding': {
-      '': '1x',
-      '[data-size="medium"]': '1x',
-    },
-    '@right-padding': {
-      '': '1x',
-      '[data-size="medium"]': '1x',
+    height: {
+      '': '@size-md @size-md',
+      '[data-size="small"]': '@size-sm @size-sm',
+      '[data-size="large"]': '@size-lg @size-lg',
     },
 
     '&::placeholder': {
