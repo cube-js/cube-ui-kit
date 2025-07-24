@@ -77,7 +77,6 @@ export const StyledHeader = tasty(Space, {
     padding: '.5x 1.5x',
     height: {
       '': 'min @size-md',
-      '[data-size="small"]': 'min @size-sm',
       '[data-size="large"]': 'min @size-lg',
     },
     boxSizing: 'border-box',
@@ -98,7 +97,6 @@ export const StyledFooter = tasty(Space, {
     padding: '.5x 1.5x',
     height: {
       '': 'min @size-md',
-      '[data-size="small"]': 'min @size-sm',
       '[data-size="large"]': 'min @size-lg',
     },
     boxSizing: 'border-box',
@@ -135,7 +133,6 @@ export const StyledItem = tasty({
     flexShrink: 0,
     height: {
       '': 'min @size-md',
-      '[data-size="small"]': 'min @size-sm',
       '[data-size="large"]': 'min @size-lg',
     },
     border: false,

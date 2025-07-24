@@ -245,8 +245,8 @@ const OptionElement = tasty({
     transition: 'theme',
     width: 'max 100%',
     height: {
-      '': 'min @size-sm',
-      '[data-size="medium"]': 'min @size-md',
+      '': 'min @size-md',
+      '[data-size="large"]': 'min @size-lg',
     },
 
     Label: {
@@ -572,6 +572,9 @@ export function ListBoxPopup({
   triggerRef,
   ...otherProps
 }) {
+  // For trigger+popover components, map 'small' size to 'medium' for list items
+  // while preserving 'medium' and 'large' sizes
+  const listItemSize = size === 'small' ? 'medium' : size;
   // Get props for the listbox
   let { listBoxProps } = useListBox(
     {
@@ -652,7 +655,7 @@ export function ListBoxPopup({
                   headingStyles={{ padding: '.5x 1.5x' }}
                   sectionStyles={undefined}
                   shouldUseVirtualFocus={shouldUseVirtualFocus}
-                  size={size}
+                  size={listItemSize}
                 />,
               );
 
@@ -665,7 +668,7 @@ export function ListBoxPopup({
                   state={state}
                   styles={optionStyles}
                   shouldUseVirtualFocus={shouldUseVirtualFocus}
-                  size={size}
+                  size={listItemSize}
                 />,
               );
             }

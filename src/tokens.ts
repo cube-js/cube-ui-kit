@@ -38,6 +38,14 @@ const colors = {
   'light-border': '227 227 233', // deprecated
 };
 
+export const SIZES = {
+  XS: '24px',
+  SM: '28px',
+  MD: '32px',
+  LG: '40px',
+  XL: '48px',
+};
+
 function color(name, opacity = 1) {
   return `rgb(${colors[name]} / ${opacity})`;
 }
@@ -95,11 +103,11 @@ const TOKENS = {
   'border-radius-base': '4px',
 
   // button/input sizes
-  'size-xs': '24px',
-  'size-sm': '28px',
-  'size-md': '32px',
-  'size-lg': '40px',
-  'size-xl': '48px',
+  'size-xs': `${SIZES.XS}`,
+  'size-sm': `${SIZES.SM}`,
+  'size-md': `${SIZES.MD}`,
+  'size-lg': `${SIZES.LG}`,
+  'size-xl': `${SIZES.XL}`,
 
   // space sizes
   'space-xs': '.5x',

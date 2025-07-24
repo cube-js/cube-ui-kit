@@ -82,7 +82,7 @@ export interface CubeCommandMenuProps<T>
   autoFocus?: boolean | FocusStrategy;
 
   // Size prop
-  size?: 'small' | 'medium' | 'large' | (string & {});
+  size?: 'medium' | 'large' | (string & {});
 
   /** Currently selected keys (controlled) */
   selectedKeys?: string[];

@@ -111,7 +111,7 @@ const meta: Meta<typeof FilterListBox> = {
 
     /* Presentation */
     size: {
-      options: ['small', 'medium', 'large'],
+      options: ['medium', 'large'],
       control: { type: 'radio' },
       description: 'FilterListBox size',
       table: {

@@ -52,7 +52,6 @@ export const StyledSearchInput = tasty({
     userSelect: 'auto',
     height: {
       '': '@size-md @size-md',
-      '[data-size="small"]': '@size-sm @size-sm',
       '[data-size="large"]': '@size-lg @size-lg',
     },
 

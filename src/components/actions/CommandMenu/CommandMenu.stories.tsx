@@ -148,7 +148,7 @@ export default {
 
     /* Styling */
     size: {
-      options: ['small', 'medium', 'large'],
+      options: ['medium', 'large'],
       control: { type: 'radio' },
       description: 'Size of the command menu component',
       table: {
@@ -759,19 +759,6 @@ HotkeyTesting.args = {
 
 export const DifferentSizes: StoryFn<CubeCommandMenuProps<any>> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
-    <Title level={5}>Small Menu</Title>
-    <CommandMenu width="20x 50x" {...args} size="small">
-      {basicCommands.slice(0, 3).map((command) => (
-        <CommandMenu.Item
-          key={command.key}
-          hotkeys={command.hotkeys}
-          icon={command.icon}
-        >
-          {command.label}
-        </CommandMenu.Item>
-      ))}
-    </CommandMenu>
-
     <Title level={5}>Medium Menu</Title>
     <CommandMenu width="20x 50x" {...args} size="medium">
       {basicCommands.slice(0, 3).map((command) => (
@@ -809,7 +796,7 @@ DifferentSizes.parameters = {
   docs: {
     description: {
       story:
-        'CommandMenu supports three sizes: `small`, `medium` (default), and `large` to accommodate different interface requirements.',
+        'CommandMenu supports two sizes: `medium` (default) and `large` to accommodate different interface requirements.',
     },
   },
 };

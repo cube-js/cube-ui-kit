@@ -151,11 +151,11 @@ export default {
 
     /* Styling */
     size: {
-      options: ['small', 'medium', 'large'],
+      options: ['medium', 'large'],
       control: { type: 'radio' },
       description: 'Size of the menu items',
       table: {
-        type: { summary: "'small' | 'medium' | 'large'" },
+        type: { summary: "'medium' | 'large'" },
         defaultValue: { summary: 'medium' },
       },
     },
@@ -310,19 +310,6 @@ export const Default = ({ ...props }) => {
 
 export const DifferentSizes = ({ ...props }) => (
   <Space gap="2x" flow="column" placeItems="start">
-    <Title level={5}>Small Menu</Title>
-    <Menu id="small-menu" {...props} size="small" width="200px">
-      <Menu.Item key="copy" hotkeys="Ctrl+C">
-        Copy
-      </Menu.Item>
-      <Menu.Item key="paste" hotkeys="Ctrl+V">
-        Paste
-      </Menu.Item>
-      <Menu.Item key="cut" hotkeys="Ctrl+X">
-        Cut
-      </Menu.Item>
-    </Menu>
-
     <Title level={5}>Medium Menu</Title>
     <Menu id="medium-menu" {...props} size="medium" width="200px">
       <Menu.Item key="copy" hotkeys="Ctrl+C">
@@ -355,7 +342,7 @@ DifferentSizes.parameters = {
   docs: {
     description: {
       story:
-        'Menu supports three sizes: `small`, `medium` (default), and `large` to accommodate different interface requirements.',
+        'Menu supports two sizes: `medium` (default) and `large` to accommodate different interface requirements.',
     },
   },
 };

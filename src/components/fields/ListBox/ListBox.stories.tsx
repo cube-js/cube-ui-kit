@@ -402,12 +402,6 @@ export const CheckableMultipleSelection: Story = {
 export const DifferentSizes: Story = {
   render: (args) => (
     <Space gap="2x" flow="column" placeItems="start">
-      <ListBox width="150px" {...args} size="small" label="Small ListBox">
-        {fruits.slice(0, 4).map((fruit) => (
-          <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
-        ))}
-      </ListBox>
-
       <ListBox width="150px" {...args} size="medium" label="Medium ListBox">
         {fruits.slice(0, 4).map((fruit) => (
           <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
@@ -428,7 +422,7 @@ export const DifferentSizes: Story = {
     docs: {
       description: {
         story:
-          'ListBox supports three sizes: `small` (28px item height) for dense interfaces, `medium` (32px item height, default) for standard use, and `large` (40px item height) for emphasized sections.',
+          'ListBox supports two sizes: `medium` (32px item height, default) for standard use and `large` (40px item height) for emphasized sections.',
       },
     },
   },

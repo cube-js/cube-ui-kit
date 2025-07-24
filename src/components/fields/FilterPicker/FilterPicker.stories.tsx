@@ -113,7 +113,7 @@ const meta: Meta<typeof FilterPicker> = {
       options: ['small', 'medium', 'large'],
       description: 'Size of the picker',
       table: {
-        defaultValue: { summary: 'small' },
+        defaultValue: { summary: 'medium' },
       },
     },
 
@@ -841,13 +841,6 @@ export const DifferentSizes: Story = {
     placeholder: 'Choose size...',
     selectionMode: 'single',
     searchPlaceholder: 'Search...',
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const triggers = canvas.getAllByRole('button');
-
-    // Click the medium size button
-    await userEvent.click(triggers[1]);
   },
   render: (args) => (
     <Space gap="3x" flow="column" placeItems="start">
