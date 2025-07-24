@@ -15,7 +15,7 @@ import { Space } from '../../layout/Space';
 import { useMenuContext } from './context';
 import { StyledItem } from './styled';
 
-export type MenuSelectionType = 'checkbox' | 'radio';
+export type MenuSelectionType = 'checkbox' | 'radio' | 'checkmark';
 
 export interface MenuItemProps<T> {
   item: Node<T>;
@@ -31,6 +31,7 @@ export interface MenuItemProps<T> {
 // Returns icon corresponding to selection type
 const getSelectionTypeIcon = (selectionIcon?: MenuSelectionType) => {
   switch (selectionIcon) {
+    case 'checkmark':
     case 'checkbox':
       return <CheckIcon />;
     case 'radio':

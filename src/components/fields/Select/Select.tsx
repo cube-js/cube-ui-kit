@@ -222,7 +222,10 @@ const OptionElement = tasty({
     flow: 'column',
     gap: '0',
     padding: '.5x 1x',
-    cursor: 'pointer',
+    cursor: {
+      '': 'default',
+      disabled: 'not-allowed',
+    },
     radius: true,
     boxSizing: 'border-box',
     color: {
@@ -233,7 +236,9 @@ const OptionElement = tasty({
     fill: {
       '': '#clear',
       focused: '#dark.03',
-      selected: '#dark.06',
+      selected: '#dark.09',
+      'selected & focused': '#dark.12',
+      pressed: '#dark.09',
       disabled: '#clear',
     },
     preset: 't3',
@@ -291,11 +296,17 @@ export interface CubeSelectBaseProps<T>
   loadingIndicator?: ReactNode;
   overlayOffset?: number;
   hideTrigger?: boolean;
+  /**
+   *  @deprecated Use `triggerStyles` instead
+   */
   inputStyles?: Styles;
   optionStyles?: Styles;
   triggerStyles?: Styles;
   listBoxStyles?: Styles;
   overlayStyles?: Styles;
+  /**
+   *  @deprecated Use `styles` instead
+   */
   wrapperStyles?: Styles;
   direction?: 'top' | 'bottom';
   shouldFlip?: boolean;
@@ -349,6 +360,7 @@ function Select<T extends object>(
     loadingIndicator,
     overlayOffset = 8,
     inputStyles,
+    triggerStyles,
     optionStyles,
     wrapperStyles,
     listBoxStyles,
@@ -476,7 +488,7 @@ function Select<T extends object>(
     <SelectWrapperElement
       qa={qa || 'Select'}
       mods={modifiers}
-      styles={wrapperStyles}
+      styles={{ ...wrapperStyles, ...styles }}
       data-size={size}
       data-type={type}
       data-theme={theme}
@@ -491,7 +503,7 @@ function Select<T extends object>(
         {...mergeProps(buttonProps, hoverProps, focusProps)}
         ref={triggerRef}
         data-menu-trigger
-        styles={inputStyles}
+        styles={{ ...inputStyles, ...triggerStyles }}
         variant={`${theme}.${type}` as VariantType}
         data-theme={theme}
         data-size={size}
@@ -682,7 +694,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
   let isSelected = state.selectionManager.isSelected(item.key);
   let isVirtualFocused = state.selectionManager.focusedKey === item.key;
 
-  let { optionProps } = useOption(
+  let { optionProps, isPressed } = useOption(
     {
       key: item.key,
       isDisabled,
@@ -709,6 +721,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
         selected: isSelected,
         focused: shouldUseVirtualFocus ? isVirtualFocused : isFocused,
         disabled: isDisabled,
+        pressed: isPressed,
       }}
       data-theme={isSelected ? 'special' : undefined}
       data-size={size}

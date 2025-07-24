@@ -878,22 +878,6 @@ describe('CommandMenu', () => {
       expect(commandMenu).toHaveAttribute('data-is-tray');
     });
 
-    it('should apply modal mod when used inside a modal dialog', () => {
-      const { DialogContext } = require('../../overlays/Dialog/context');
-
-      render(
-        <DialogContext.Provider value={{ type: 'modal' }}>
-          <CommandMenu qa="test-command-menu">
-            <CommandMenu.Item key="item1">Item 1</CommandMenu.Item>
-            <CommandMenu.Item key="item2">Item 2</CommandMenu.Item>
-          </CommandMenu>
-        </DialogContext.Provider>,
-      );
-
-      const commandMenu = screen.getByTestId('test-command-menu');
-      expect(commandMenu).toHaveAttribute('data-is-modal');
-    });
-
     it('should not apply any special mods when used standalone', () => {
       render(
         <CommandMenu qa="test-command-menu">
@@ -905,7 +889,6 @@ describe('CommandMenu', () => {
       const commandMenu = screen.getByTestId('test-command-menu');
       expect(commandMenu).not.toHaveAttribute('data-is-popover');
       expect(commandMenu).not.toHaveAttribute('data-is-tray');
-      expect(commandMenu).not.toHaveAttribute('data-is-modal');
     });
   });
 });

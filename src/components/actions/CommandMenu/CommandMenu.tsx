@@ -24,7 +24,6 @@ import {
   Styles,
 } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
-import { useDialogContext } from '../../overlays/Dialog/context';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
 import { useMenuContext } from '../Menu';
 import { CubeMenuProps } from '../Menu/Menu';
@@ -42,7 +41,6 @@ import {
   StyledCommandMenu,
   StyledEmptyState,
   StyledLoadingWrapper,
-  StyledMenuWrapper,
   StyledSearchInput,
 } from './styled';
 
@@ -124,8 +122,6 @@ function CommandMenuBase<T extends object>(
   const domRef = useDOMRef(ref);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const contextProps = useMenuContext();
-
-  const dialogContext = useDialogContext();
 
   // Convert string[] to Set<Key> for React Aria compatibility
   const ariaSelectedKeys = selectedKeys ? new Set(selectedKeys) : undefined;
@@ -527,11 +523,9 @@ function CommandMenuBase<T extends object>(
   useSyncRef(contextProps, menuRef);
 
   const mods = useMemo(() => {
-    // Determine mods based on dialog context and menu context
-    let popoverMod =
-      completeProps.mods?.popover || dialogContext?.type === 'popover';
-    let trayMod = completeProps.mods?.tray || dialogContext?.type === 'tray';
-    let modalMod = dialogContext?.type === 'modal';
+    // Determine mods based on menu context
+    let popoverMod = completeProps.mods?.popover;
+    let trayMod = completeProps.mods?.tray;
 
     return {
       sections: viewHasSections,
@@ -539,15 +533,8 @@ function CommandMenuBase<T extends object>(
       header: !!header,
       popover: popoverMod,
       tray: trayMod,
-      modal: modalMod,
     };
-  }, [
-    viewHasSections,
-    footer,
-    header,
-    completeProps.mods,
-    dialogContext?.type,
-  ]);
+  }, [viewHasSections, footer, header, completeProps.mods]);
 
   return (
     <StyledCommandMenu
@@ -560,7 +547,11 @@ function CommandMenuBase<T extends object>(
     >
       {/* Header */}
       {header && (
-        <StyledHeader role="presentation" styles={headerStyles}>
+        <StyledHeader
+          role="presentation"
+          data-size={size}
+          styles={{ border: 'none', ...headerStyles }}
+        >
           {header}
         </StyledHeader>
       )}
@@ -748,25 +739,23 @@ function CommandMenuBase<T extends object>(
 
       {/* Menu Content - always render unless loading */}
       {!isLoading && !showEmptyState && (
-        <StyledMenuWrapper>
-          <StyledMenu
-            {...menuProps}
-            ref={menuRef}
-            id={`${qa || 'CommandMenu'}-menu`}
-            aria-label="Command menu"
-            qa="Menu"
-            data-size={size}
-            mods={mods}
-            styles={{
-              border: 'none',
-              boxShadow: 'none',
-              radius: 0,
-              padding: '0.5x',
-            }}
-          >
-            {renderedItems}
-          </StyledMenu>
-        </StyledMenuWrapper>
+        <StyledMenu
+          {...menuProps}
+          ref={menuRef}
+          id={`${qa || 'CommandMenu'}-menu`}
+          aria-label="Command menu"
+          qa="Menu"
+          data-size={size}
+          mods={mods}
+          styles={{
+            border: 'none',
+            boxShadow: 'none',
+            radius: 0,
+            padding: '0.5x',
+          }}
+        >
+          {renderedItems}
+        </StyledMenu>
       )}
 
       {/* Empty State - show when search term exists but no results */}
@@ -776,7 +765,11 @@ function CommandMenuBase<T extends object>(
 
       {/* Footer */}
       {footer && (
-        <StyledFooter role="presentation" styles={footerStyles}>
+        <StyledFooter
+          role="presentation"
+          data-size={size}
+          styles={footerStyles}
+        >
           {footer}
         </StyledFooter>
       )}

@@ -27,7 +27,7 @@ export interface CubeButtonProps extends CubeActionProps {
     | 'outline'
     | 'neutral'
     | (string & {});
-  size?: 'small' | 'medium' | 'large' | (string & {});
+  size?: 'tiny' | 'small' | 'medium' | 'large' | (string & {});
 }
 
 export type ButtonVariant =
@@ -83,20 +83,23 @@ export const DEFAULT_BUTTON_STYLES = {
   reset: 'button',
   outlineOffset: 1,
   padding: {
-    '': '0 (2x - 1bw)',
-    '[data-size="small"]': '0 (1x - 1bw)',
-    '[data-size="medium"]': '0 (1.5x - 1bw)',
-    '[data-size="large"]': '0 (2.25x - 1bw)',
+    '': '.5x (2x - 1bw)',
+    '[data-size="tiny"]': '.5x (1x - 1bw)',
+    '[data-size="small"]': '.5x (1x - 1bw)',
+    '[data-size="medium"]': '.5x (1.5x - 1bw)',
+    '[data-size="large"]': '.5x (2.25x - 1bw)',
     'single-icon-only | [data-type="link"]': 0,
   },
   width: {
     '': 'initial',
+    '[data-size="tiny"] & single-icon-only': '3.5x 3.5x',
     '[data-size="small"] & single-icon-only': '4x 4x',
     '[data-size="medium"] & single-icon-only': '5x 5x',
     '[data-size="large"] & single-icon-only': '6x 6x',
   },
   height: {
     '': 'initial',
+    '[data-size="tiny"]': '3.5x 3.5x',
     '[data-size="small"]': '4x 4x',
     '[data-size="medium"]': '5x 5x',
     '[data-size="large"]': '6x 6x',
@@ -161,13 +164,13 @@ export const DEFAULT_OUTLINE_STYLES: Styles = {
   fill: {
     '': '#dark.0',
     hovered: '#dark.03',
-    'pressed | selected': '#dark.06',
+    'pressed | (selected & !hovered)': '#dark.06',
     '[disabled] | disabled': '#dark.04',
   },
   color: {
     '': '#dark-02',
     hovered: '#dark-02',
-    'pressed | selected': '#dark',
+    'pressed | (selected & !hovered)': '#dark',
     '[disabled] | disabled': '#dark-04',
   },
 } as const;
@@ -180,7 +183,7 @@ export const DEFAULT_NEUTRAL_STYLES: Styles = {
   fill: {
     '': '#dark.0',
     hovered: '#dark.03',
-    'pressed | selected': '#dark.06',
+    'pressed | (selected & !hovered)': '#dark.06',
   },
   color: {
     '': '#dark-02',
@@ -199,7 +202,7 @@ export const DEFAULT_CLEAR_STYLES: Styles = {
   fill: {
     '': '#purple.0',
     hovered: '#purple.16',
-    'pressed | selected': '#purple.10',
+    'pressed | (selected & !hovered)': '#purple.10',
   },
   color: {
     '': '#purple-text',
@@ -273,7 +276,7 @@ export const DANGER_OUTLINE_STYLES: Styles = {
   fill: {
     '': '#danger.0',
     hovered: '#danger.1',
-    'pressed | selected': '#danger.05',
+    'pressed | (selected & !hovered)': '#danger.05',
     '[disabled] | disabled': '#dark.04',
   },
   color: {
@@ -290,11 +293,11 @@ export const DANGER_NEUTRAL_STYLES: Styles = {
   fill: {
     '': '#dark.0',
     hovered: '#dark.04',
-    'pressed | selected': '#dark.05',
+    'pressed | (selected & !hovered)': '#dark.05',
   },
   color: {
     '': '#dark-02',
-    'pressed | selected': '#danger-text',
+    'pressed | (selected & !hovered)': '#danger-text',
     '[disabled] | disabled': '#dark-04',
   },
 } as const;
@@ -308,7 +311,7 @@ export const DANGER_CLEAR_STYLES: Styles = {
   fill: {
     '': '#danger.0',
     hovered: '#danger.1',
-    'pressed | selected': '#danger.05',
+    'pressed | (selected & !hovered)': '#danger.05',
   },
   color: {
     '': '#danger-text',
@@ -382,7 +385,7 @@ export const SUCCESS_OUTLINE_STYLES: Styles = {
   fill: {
     '': '#success.0',
     hovered: '#success.1',
-    'pressed | selected': '#success.05',
+    'pressed | (selected & !hovered)': '#success.05',
     '[disabled] | disabled': '#dark.04',
   },
   color: {
@@ -399,11 +402,11 @@ export const SUCCESS_NEUTRAL_STYLES: Styles = {
   fill: {
     '': '#dark.0',
     hovered: '#dark.04',
-    'pressed | selected': '#dark.05',
+    'pressed | (selected & !hovered)': '#dark.05',
   },
   color: {
     '': '#dark-02',
-    'pressed | selected': '#success-text',
+    'pressed | (selected & !hovered)': '#success-text',
     '[disabled] | disabled': '#dark-04',
   },
 } as const;
@@ -417,7 +420,7 @@ export const SUCCESS_CLEAR_STYLES: Styles = {
   fill: {
     '': '#success.0',
     hovered: '#success.1',
-    'pressed | selected': '#success.05',
+    'pressed | (selected & !hovered)': '#success.05',
   },
   color: {
     '': '#success-text',
@@ -489,7 +492,7 @@ export const SPECIAL_OUTLINE_STYLES: Styles = {
   fill: {
     '': '#white.0',
     hovered: '#white.18',
-    'pressed | selected': '#white.12',
+    'pressed | (selected & !hovered)': '#white.12',
     '[disabled] | disabled': '#white.12',
   },
   color: {
@@ -506,7 +509,7 @@ export const SPECIAL_NEUTRAL_STYLES: Styles = {
   fill: {
     '': '#white.0',
     hovered: '#white.12',
-    'pressed | selected': '#white.18',
+    'pressed | (selected & !hovered)': '#white.18',
   },
   color: {
     '': '#white',
@@ -619,14 +622,14 @@ export const Button = forwardRef(function Button(
     if (icon) {
       if (!specifiedLabel) {
         accessibilityWarning(
-          'If you provide `icon` property for a Button and do not provide any children then you should specify the `label` property to make sure the Button element stays accessible.',
+          'If you provide `icon` property for a Button and do not provide any children then you should specify the `aria-label` property to make sure the Button element stays accessible.',
         );
         label = 'Unnamed'; // fix to avoid warning in production
       }
     } else {
       if (!specifiedLabel) {
         accessibilityWarning(
-          'If you provide no children for a Button then you should specify the `label` property to make sure the Button element stays accessible.',
+          'If you provide no children for a Button then you should specify the `aria-label` property to make sure the Button element stays accessible.',
         );
         label = 'Unnamed'; // fix to avoid warning in production
       }

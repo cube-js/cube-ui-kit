@@ -16,6 +16,7 @@ export function wrapWithField<T extends WrapWithFieldProps>(
   props: T,
 ) {
   let {
+    forceField,
     label,
     extra,
     labelPosition = 'top',
@@ -37,6 +38,10 @@ export function wrapWithField<T extends WrapWithFieldProps>(
     styles,
     children,
   } = props;
+
+  if (!label && !forceField) {
+    return component;
+  }
 
   return (
     <FieldWrapper

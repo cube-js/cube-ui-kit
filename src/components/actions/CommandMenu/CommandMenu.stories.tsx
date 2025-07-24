@@ -757,7 +757,7 @@ HotkeyTesting.args = {
 };
 
 export const MediumSize: StoryFn<CubeCommandMenuProps<any>> = (args) => (
-  <CommandMenu width="20x 50x" {...args} size="medium">
+  <CommandMenu width="20x 50x" {...args}>
     {basicCommands.map((command) => (
       <CommandMenu.Item
         key={command.key}
@@ -774,6 +774,7 @@ export const MediumSize: StoryFn<CubeCommandMenuProps<any>> = (args) => (
 MediumSize.args = {
   searchPlaceholder: 'Medium size command palette...',
   autoFocus: true,
+  size: 'medium',
 };
 
 export const WithDialog: StoryFn<CubeCommandMenuProps<any>> = (args) => (
@@ -834,6 +835,7 @@ export const WithHeaderAndFooter: StoryFn<CubeCommandMenuProps<any>> = (
         </FooterText>
       </>
     }
+    size="medium"
   >
     {basicCommands.map((command) => (
       <CommandMenu.Item
@@ -929,6 +931,7 @@ export const WithDialogContainer: StoryFn<CubeCommandMenuProps<any>> = (
 WithDialogContainer.args = {
   searchPlaceholder: 'Search commands...',
   autoFocus: true,
+  size: 'medium',
 };
 
 WithDialogContainer.play = async ({ canvasElement }) => {

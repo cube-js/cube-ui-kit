@@ -2,9 +2,32 @@ import { DEFAULT_BUTTON_STYLES, DEFAULT_NEUTRAL_STYLES } from '..';
 import { tasty } from '../../../tasty';
 import { Space } from '../../layout/Space';
 
+export const StyledMenuWrapper = tasty({
+  qa: 'Menu',
+  styles: {
+    display: 'grid',
+    gridRows: 'max-content 1sf max-content',
+    fill: '#white',
+    margin: 0,
+    padding: 0,
+    border: true,
+    radius: '(1cr + 1bw)',
+    shadow: {
+      '': '',
+      'popover | tray': '0px 5px 15px #dark.05',
+    },
+    height: {
+      '': 'initial',
+      popover: 'initial max-content (50vh - 4x)',
+      tray: 'initial max-content (100vh - 4x)',
+    },
+    boxSizing: 'border-box',
+  },
+});
+
 export const StyledMenu = tasty({
   as: 'ul',
-  qa: 'Menu',
+  qa: 'MenuList',
   styles: {
     display: 'flex',
     flow: 'column',
@@ -12,7 +35,7 @@ export const StyledMenu = tasty({
       '': '1bw',
       sections: false,
     },
-    fill: '#white',
+    boxSizing: 'border-box',
     margin: 0,
     padding: {
       '': '0.5x',
@@ -21,15 +44,6 @@ export const StyledMenu = tasty({
     overflow: {
       '': 'auto',
       section: '',
-    },
-    border: {
-      '': '#border',
-      section: false,
-    },
-    radius: '(1cr + 1bw)',
-    boxShadow: {
-      '': '',
-      popover: '0px 5px 15px #dark.05',
     },
     scrollbar: 'styled',
   },
@@ -52,29 +66,41 @@ export const StyledDivider = tasty({
 export const StyledHeader = tasty(Space, {
   qa: 'Header',
   as: 'div',
+  role: 'heading',
+  'aria-level': 3,
   styles: {
     color: '#dark-02',
     preset: 't3',
     placeContent: 'space-between',
     placeItems: 'center',
     whiteSpace: 'nowrap',
-    padding: '.5x 1x',
-    height: 'min 4x',
+    padding: '.5x 1.5x',
+    height: {
+      '': 'min 4x',
+      '[data-size="medium"]': 'min 5x',
+    },
+    boxSizing: 'border-box',
+    border: 'bottom',
   },
 });
 
 export const StyledFooter = tasty(Space, {
   qa: 'Footer',
   as: 'div',
+  role: 'footer',
   styles: {
     color: '#dark-02',
     preset: 't3',
-    border: '#border top',
     placeContent: 'space-between',
     placeItems: 'center',
     whiteSpace: 'nowrap',
-    padding: '.5x 1x',
-    height: 'min 4x',
+    padding: '.5x 1.5x',
+    height: {
+      '': 'min 4x',
+      '[data-size="medium"]': 'min 5x',
+    },
+    boxSizing: 'border-box',
+    border: 'top',
   },
 });
 
@@ -114,9 +140,9 @@ export const StyledItem = tasty({
     fill: {
       '': '#clear',
       focused: '#dark.03',
-      selected: '#dark.06',
-      'selected & focused': '#dark.09',
-      pressed: '#dark.06',
+      selected: '#dark.09',
+      'selected & focused': '#dark.12',
+      pressed: '#dark.09',
       disabled: '#clear',
     },
     color: {
@@ -125,8 +151,8 @@ export const StyledItem = tasty({
       disabled: '#dark-04',
     },
     cursor: {
-      '': 'pointer',
-      disabled: 'default',
+      '': 'default',
+      disabled: 'not-allowed',
     },
     shadow: '#clear',
     padding: {

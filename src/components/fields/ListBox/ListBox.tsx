@@ -1,17 +1,19 @@
+import { useHover } from '@react-aria/interactions';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import {
+  CSSProperties,
   ForwardedRef,
   forwardRef,
+  MutableRefObject,
   ReactElement,
   ReactNode,
   RefObject,
-  useCallback,
+  useEffect,
   useMemo,
   useRef,
-  useState,
 } from 'react';
 import {
   AriaListBoxProps,
-  useFilter,
   useKeyboard,
   useListBox,
   useListBoxSection,
@@ -19,7 +21,8 @@ import {
 } from 'react-aria';
 import { Section as BaseSection, Item, useListState } from 'react-stately';
 
-import { LoadingIcon, SearchIcon } from '../../../icons';
+import { useWarn } from '../../../_internal/hooks/use-warn';
+import { CheckIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import {
   BASE_STYLES,
@@ -29,28 +32,30 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
+import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
-import { Block } from '../../Block';
-import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+// Import Menu styled components for header and footer
 import {
-  DEFAULT_INPUT_STYLES,
-  INPUT_WRAPPER_STYLES,
-} from '../TextInput/TextInputBase';
+  StyledDivider,
+  StyledFooter,
+  StyledHeader,
+  StyledSectionHeading,
+} from '../../actions/Menu/styled';
+import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 
 import type { CollectionBase, Key } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
 
-type FilterFn = (textValue: string, inputValue: string) => boolean;
-
 const ListBoxWrapperElement = tasty({
+  qa: 'ListBox',
   styles: {
-    display: 'flex',
+    display: 'grid',
+    gridColumns: '1sf',
+    gridRows: 'max-content 1sf max-content',
     flow: 'column',
     gap: 0,
     position: 'relative',
-    radius: true,
-    fill: '#white',
+    radius: '1cr',
     color: '#dark-02',
     transition: 'theme',
     outline: {
@@ -64,34 +69,33 @@ const ListBoxWrapperElement = tasty({
       valid: '#success-text.50',
       invalid: '#danger-text.50',
       disabled: true,
+      'popover | searchable': false,
     },
   },
-});
-
-const SearchWrapperElement = tasty({
-  styles: {
-    ...INPUT_WRAPPER_STYLES,
-    border: '#clear',
-    radius: '1r top',
-    borderBottom: '1bw solid #border',
-  },
-});
-
-const SearchInputElement = tasty({
-  as: 'input',
-  styles: DEFAULT_INPUT_STYLES,
 });
 
 const ListElement = tasty({
   as: 'ul',
   styles: {
-    display: 'flex',
-    gap: '1bw',
-    flow: 'column',
-    margin: '0',
-    padding: '.5x',
+    display: 'block',
+    padding: 0,
     listStyle: 'none',
-    height: 'auto',
+    boxSizing: 'border-box',
+    margin: {
+      '': '.5x .5x 0 .5x',
+      sections: '0 .5x',
+    },
+    height: 'max-content',
+  },
+});
+
+// NEW: dedicated scroll container for ListBox
+const ListBoxScrollElement = tasty({
+  as: 'div',
+  styles: {
+    display: 'grid',
+    gridColumns: '1sf',
+    gridRows: '1sf',
     overflow: 'auto',
     scrollbar: 'styled',
   },
@@ -101,13 +105,25 @@ const OptionElement = tasty({
   as: 'li',
   styles: {
     display: 'flex',
-    flow: 'column',
-    gap: '.25x',
-    padding: '.75x 1x',
+    flow: 'row',
+    placeItems: 'center start',
+    gap: '.75x',
+    padding: '.5x 1x',
+    margin: {
+      '': '0 0 1bw 0',
+      ':last-of-type': '0',
+    },
+    height: {
+      '[data-size="small"]': 'min 4x',
+      '[data-size="medium"]': 'min 5x',
+    },
+    boxSizing: 'border-box',
     radius: '1r',
-    cursor: 'pointer',
+    cursor: {
+      '': 'default',
+      disabled: 'not-allowed',
+    },
     transition: 'theme',
-    outline: 0,
     border: 0,
     userSelect: 'none',
     color: {
@@ -119,18 +135,69 @@ const OptionElement = tasty({
     },
     fill: {
       '': '#clear',
-      focused: '#dark.03',
-      selected: '#dark.06',
-      'selected & focused': '#dark.09',
-      pressed: '#dark.06',
+      'hovered | focused': '#dark.03',
+      selected: '#dark.09',
+      'selected & (hovered | focused)': '#dark.12',
+      'selected & hovered & focused': '#dark.15',
+      pressed: '#dark.09',
       valid: '#success-bg',
       invalid: '#danger-bg',
       disabled: '#clear',
+    },
+    outline: 0,
+    backgroundClip: 'padding-box',
+
+    CheckboxWrapper: {
+      cursor: 'pointer',
+      padding: '.75x',
+      margin: '-.75x',
+    },
+
+    Checkbox: {
+      display: 'grid',
+      placeItems: 'center',
+      radius: '.5r',
+      width: '(2x - 2bw)',
+      height: '(2x - 2bw)',
+      flexShrink: 0,
+      transition: 'theme',
+      opacity: {
+        '': 0,
+        'selected | :hover | focused': 1,
+      },
+      fill: {
+        '': '#white',
+        selected: '#purple-text',
+        'invalid & !selected': '#white',
+        'invalid & selected': '#danger',
+        disabled: '#dark.12',
+      },
+      color: {
+        '': '#white',
+        'disabled & !selected': '#clear',
+      },
+      border: {
+        '': '#dark.30',
+        invalid: '#danger',
+        'disabled | (selected & !invalid)': '#clear',
+      },
+    },
+
+    Content: {
+      display: 'flex',
+      flow: 'column',
+      gap: '.25x',
+      flex: 1,
+      width: 'max 100%',
     },
 
     Label: {
       preset: 't3',
       color: 'inherit',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+      width: 'max 100%',
     },
 
     Description: {
@@ -138,6 +205,10 @@ const OptionElement = tasty({
       color: {
         '': '#dark-03',
       },
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+      width: 'max 100%',
     },
   },
 });
@@ -146,23 +217,19 @@ const SectionWrapperElement = tasty({
   as: 'li',
   styles: {
     display: 'block',
-  },
-});
-
-const SectionHeadingElement = tasty({
-  styles: {
-    preset: 't4 strong',
-    color: '#dark-03',
-    padding: '.5x 1x .25x',
-    userSelect: 'none',
+    padding: {
+      '': 0,
+      ':last-of-type': '0 0 .5x 0',
+    },
   },
 });
 
 const SectionListElement = tasty({
+  qa: 'ListBoxSectionList',
   as: 'ul',
   styles: {
     display: 'flex',
-    gap: '1bw',
+    gap: '0',
     flow: 'column',
     margin: '0',
     padding: '0',
@@ -170,31 +237,10 @@ const SectionListElement = tasty({
   },
 });
 
-const DividerElement = tasty({
-  as: 'li',
-  styles: {
-    height: '1bw',
-    fill: '#border',
-    margin: '.5x 0',
-  },
-});
-
 export interface CubeListBoxProps<T>
   extends Omit<AriaListBoxProps<T>, 'onSelectionChange'>,
     CollectionBase<T>,
     FieldBaseProps {
-  /** Whether the ListBox is searchable */
-  isSearchable?: boolean;
-  /** Placeholder text for the search input */
-  searchPlaceholder?: string;
-  /** Whether the search input should have autofocus */
-  autoFocus?: boolean;
-  /** The filter function used to determine if an option should be included in the filtered list */
-  filter?: FilterFn;
-  /** Custom label to display when no results are found after filtering */
-  emptyLabel?: ReactNode;
-  /** Custom styles for the search input */
-  searchInputStyles?: Styles;
   /** Custom styles for the list container */
   listStyles?: Styles;
   /** Custom styles for options */
@@ -205,20 +251,65 @@ export interface CubeListBoxProps<T>
   headingStyles?: Styles;
   /** Whether the ListBox is disabled */
   isDisabled?: boolean;
-  /** Whether the ListBox as a whole is loading (generic loading indicator) */
-  isLoading?: boolean;
   /** The selected key(s) */
   selectedKey?: Key | null;
-  selectedKeys?: Key[] | 'all';
+  selectedKeys?: Key[];
   /** Default selected key(s) */
   defaultSelectedKey?: Key | null;
-  defaultSelectedKeys?: Key[] | 'all';
+  defaultSelectedKeys?: Key[];
   /** Selection change handler */
   onSelectionChange?: (key: Key | null | Key[]) => void;
-  /** Ref for the search input */
-  searchInputRef?: RefObject<HTMLInputElement>;
   /** Ref for the list */
-  listRef?: RefObject<HTMLElement>;
+  listRef?: RefObject<HTMLDivElement>;
+  /**
+   * Ref to access the internal ListState instance.
+   * This allows parent components to access selection state and other list functionality.
+   */
+  stateRef?: MutableRefObject<any | null>;
+
+  /**
+   * When true (default) moving the pointer over an option will move DOM focus to that option.
+   * Set to false for components that keep DOM focus outside (e.g. searchable FilterListBox).
+   */
+  focusOnHover?: boolean;
+  /** Custom header content */
+  header?: ReactNode;
+  /** Custom footer content */
+  footer?: ReactNode;
+  /** Custom styles for the header */
+  headerStyles?: Styles;
+  /** Custom styles for the footer */
+  footerStyles?: Styles;
+  /** Mods for the ListBox */
+  mods?: Record<string, boolean>;
+  /** Size of the ListBox */
+  size?: 'small' | 'medium';
+
+  /**
+   * When true, ListBox will use virtual focus. This keeps actual DOM focus
+   * outside of the individual option elements (e.g. for searchable lists
+   * where focus stays within an external input).
+   * Defaults to false for backward compatibility.
+   */
+  shouldUseVirtualFocus?: boolean;
+
+  /**
+   * Optional callback fired when the user presses Escape key.
+   * When provided, this prevents React Aria's default Escape behavior (selection reset).
+   */
+  onEscape?: () => void;
+
+  /**
+   * Whether the options in the ListBox are checkable.
+   * This adds a checkbox icon to the left of the option.
+   */
+  isCheckable?: boolean;
+
+  /**
+   * Callback fired when an option is clicked but not on the checkbox area.
+   * Used by FilterPicker to close the popover on non-checkbox clicks.
+   */
+  onOptionClick?: (key: Key) => void;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -234,30 +325,16 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       const fieldProps: any = {};
 
       if (props.selectionMode === 'multiple') {
-        fieldProps.selectedKeys = Array.isArray(value)
-          ? value
-          : value
-            ? [value]
-            : [];
+        fieldProps.selectedKeys = value || [];
       } else {
         fieldProps.selectedKey = value ?? null;
       }
 
       fieldProps.onSelectionChange = (key: any) => {
         if (props.selectionMode === 'multiple') {
-          if (Array.isArray(key)) {
-            onChange(key);
-          } else if (key instanceof Set) {
-            onChange(Array.from(key));
-          } else {
-            onChange(key ? [key] : []);
-          }
+          onChange(key ? (Array.isArray(key) ? key : [key]) : []);
         } else {
-          if (key instanceof Set) {
-            onChange(key.size === 0 ? null : Array.from(key)[0]);
-          } else {
-            onChange(key);
-          }
+          onChange(Array.isArray(key) ? key[0] : key);
         }
       };
 
@@ -274,89 +351,35 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     necessityIndicator,
     validationState,
     isDisabled,
-    isLoading,
-    isSearchable = false,
-    searchPlaceholder = 'Search...',
-    autoFocus,
-    filter,
-    emptyLabel,
-    searchInputStyles,
     listStyles,
     optionStyles,
     sectionStyles,
     headingStyles,
-    searchInputRef,
     listRef,
     message,
     description,
     styles,
+    mods: externalMods,
+    size = 'small',
     labelSuffix,
     selectedKey,
     defaultSelectedKey,
     selectedKeys,
     defaultSelectedKeys,
+    shouldUseVirtualFocus,
     onSelectionChange,
+    stateRef,
+    focusOnHover,
+    header,
+    footer,
+    headerStyles,
+    footerStyles,
+    escapeKeyBehavior,
+    onEscape,
+    isCheckable,
+    onOptionClick,
     ...otherProps
   } = props;
-
-  const [searchValue, setSearchValue] = useState('');
-  const { contains } = useFilter({ sensitivity: 'base' });
-
-  // Choose the text filter function: user-provided `filter` prop (if any)
-  // or the default `contains` helper from `useFilter`.
-  const textFilterFn = useMemo<FilterFn>(
-    () => filter || contains,
-    [filter, contains],
-  );
-
-  // Collection-level filter function expected by `useListState`.
-  // It converts the text filter (textValue, searchValue) ⟶ boolean
-  // into the shape `(nodes) => Iterable<Node<T>>`.
-  // The current `searchValue` is captured in the closure – every re-render
-  // produces a new function so React Stately updates the collection when the
-  // search term changes.
-  const collectionFilter = useCallback(
-    (nodes: Iterable<any>): Iterable<any> => {
-      const term = searchValue.trim();
-
-      // If there is no search term, return nodes untouched to avoid
-      // unnecessary object allocations.
-      if (!term) {
-        return nodes;
-      }
-
-      // Recursive helper to filter sections and items.
-      const filterNodes = (iter: Iterable<any>): any[] => {
-        const result: any[] = [];
-
-        for (const node of iter) {
-          if (node.type === 'section') {
-            const filteredChildren = filterNodes(node.childNodes);
-
-            if (filteredChildren.length) {
-              // Preserve the original node but replace `childNodes` with the
-              // filtered iterable so that React-Stately can still traverse it.
-              result.push({
-                ...node,
-                childNodes: filteredChildren,
-              });
-            }
-          } else {
-            const text = node.textValue ?? String(node.rendered ?? '');
-
-            if (textFilterFn(text, term)) {
-              result.push(node);
-            }
-          }
-        }
-
-        return result;
-      };
-
-      return filterNodes(nodes);
-    },
-    [searchValue, textFilterFn],
-  );
 
   // Wrap onSelectionChange to prevent selection when disabled and handle React Aria's Set format
   const externalSelectionHandler = onSelectionChange || (props as any).onChange;
@@ -391,7 +414,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // Prepare props for useListState with correct selection props
   const listStateProps: any = {
     ...props,
-    filter: collectionFilter,
     onSelectionChange: wrappedOnSelectionChange,
     isDisabled,
     selectionMode: props.selectionMode || 'single',
@@ -400,14 +422,12 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // Set selection props based on mode
   if (listStateProps.selectionMode === 'multiple') {
     if (selectedKeys !== undefined) {
-      listStateProps.selectedKeys =
-        selectedKeys === 'all' ? 'all' : new Set(selectedKeys as Key[]);
+      listStateProps.selectedKeys = new Set(selectedKeys as Key[]);
     }
     if (defaultSelectedKeys !== undefined) {
-      listStateProps.defaultSelectedKeys =
-        defaultSelectedKeys === 'all'
-          ? 'all'
-          : new Set(defaultSelectedKeys as Key[]);
+      listStateProps.defaultSelectedKeys = new Set(
+        defaultSelectedKeys as Key[],
+      );
     }
     // Remove single-selection props if any
     delete listStateProps.selectedKey;
@@ -430,12 +450,55 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     delete listStateProps.defaultSelectedKey;
   }
 
-  const listState = useListState(listStateProps);
+  const listState = useListState({
+    ...listStateProps,
+  });
+
+  // Track whether the last focus change was due to keyboard navigation
+  const lastFocusSourceRef = useRef<'keyboard' | 'mouse' | 'other'>('other');
+
+  // Expose the list state instance via the provided ref (if any)
+  if (stateRef) {
+    stateRef.current = {
+      ...listState,
+      lastFocusSourceRef,
+    };
+  }
+
+  // Warn if isCheckable is false in single selection mode
+  useWarn(isCheckable === false && props.selectionMode === 'single', {
+    key: ['listbox-checkable-single-mode'],
+    args: [
+      'CubeUIKit: isCheckable=false is not recommended in single selection mode as it may confuse users about selection behavior.',
+    ],
+  });
+
+  // Custom keyboard handling to prevent selection clearing on Escape while allowing overlay dismiss
+  const { keyboardProps } = useKeyboard({
+    onKeyDown: (e) => {
+      // Mark focus changes from keyboard navigation
+      if (
+        e.key === 'ArrowDown' ||
+        e.key === 'ArrowUp' ||
+        e.key === 'Home' ||
+        e.key === 'End' ||
+        e.key === 'PageUp' ||
+        e.key === 'PageDown'
+      ) {
+        lastFocusSourceRef.current = 'keyboard';
+      }
+
+      if (e.key === 'Escape' && onEscape) {
+        // Don't prevent default - let the overlay system handle closing
+        // But we'll call onEscape to potentially override the default selection clearing
+        onEscape();
+      }
+    },
+  });
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
   ref = useCombinedRefs(ref);
-  searchInputRef = useCombinedRefs(searchInputRef);
   listRef = useCombinedRefs(listRef);
 
   const { listBoxProps } = useListBox(
@@ -443,8 +506,9 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       ...props,
       'aria-label': props['aria-label'] || label?.toString(),
       isDisabled,
-      shouldUseVirtualFocus: isSearchable,
+      shouldUseVirtualFocus: shouldUseVirtualFocus ?? false,
       shouldFocusWrap: true,
+      escapeKeyBehavior: onEscape ? 'none' : 'clearSelection',
     },
     listState,
     listRef,
@@ -453,101 +517,95 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   const { isFocused, focusProps } = useFocus({ isDisabled });
   const isInvalid = validationState === 'invalid';
 
-  // Keyboard navigation handler for search input
-  const { keyboardProps } = useKeyboard({
-    onKeyDown: (e) => {
-      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        e.preventDefault();
+  // ----- Virtualization logic -----
+  const itemsArray = useMemo(
+    () => [...listState.collection],
+    [listState.collection],
+  );
 
-        const isArrowDown = e.key === 'ArrowDown';
-        const { selectionManager, collection } = listState;
-        const currentKey = selectionManager.focusedKey;
+  const hasSections = useMemo(
+    () => itemsArray.some((i) => i.type === 'section'),
+    [itemsArray],
+  );
 
-        // Helper function to find next selectable item (skip section headers and disabled items)
-        const findNextSelectableKey = (
-          startKey: any,
-          direction: 'forward' | 'backward',
-        ) => {
-          let nextKey = startKey;
-          const keyGetter =
-            direction === 'forward'
-              ? collection.getKeyAfter.bind(collection)
-              : collection.getKeyBefore.bind(collection);
+  const shouldVirtualize = !hasSections;
 
-          while (nextKey != null) {
-            const item = collection.getItem(nextKey);
-            // Use SelectionManager's canSelectItem method for proper validation
-            if (
-              item &&
-              item.type !== 'section' &&
-              selectionManager.canSelectItem(nextKey)
-            ) {
-              return nextKey;
-            }
-            nextKey = keyGetter(nextKey);
+  // Use ref to ensure estimateSize always accesses current itemsArray
+  const itemsArrayRef = useRef(itemsArray);
+  itemsArrayRef.current = itemsArray;
+
+  // Scroll container ref for virtualization
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const rowVirtualizer = useVirtualizer({
+    count: shouldVirtualize ? itemsArray.length : 0,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: (index: number) => {
+      const currentItem: any = itemsArrayRef.current[index];
+
+      if (currentItem?.props?.description) {
+        return 49;
+      }
+      return size === 'small' ? 33 : 41;
+    },
+    measureElement: (el) => {
+      return el.offsetHeight + 1;
+    },
+    overscan: 10,
+  });
+
+  // Trigger remeasurement when items change (for filtering scenarios)
+  useEffect(() => {
+    if (shouldVirtualize) {
+      rowVirtualizer.measure();
+    }
+  }, [shouldVirtualize, itemsArray, rowVirtualizer]);
+
+  // Keep focused item visible when virtualizing, but only for keyboard navigation
+  useEffect(() => {
+    if (!shouldVirtualize) return;
+    const focusedKey = listState.selectionManager.focusedKey;
+    if (focusedKey != null) {
+      const idx = itemsArrayRef.current.findIndex(
+        (it) => it.key === focusedKey,
+      );
+      if (idx !== -1) {
+        // Check if the focused item is actually visible in the current viewport
+        // (not just rendered due to overscan)
+        const scrollElement = scrollRef.current;
+        if (scrollElement) {
+          const scrollTop = scrollElement.scrollTop;
+          const viewportHeight = scrollElement.clientHeight;
+          const viewportBottom = scrollTop + viewportHeight;
+
+          // Find the virtual item for this index
+          const virtualItems = rowVirtualizer.getVirtualItems();
+          const virtualItem = virtualItems.find((item) => item.index === idx);
+
+          let isAlreadyVisible = false;
+          if (virtualItem) {
+            const itemTop = virtualItem.start;
+            const itemBottom = virtualItem.start + virtualItem.size;
+
+            // Check if the item is fully visible in the viewport
+            // We should scroll if the item is partially hidden
+            isAlreadyVisible =
+              itemTop >= scrollTop && itemBottom <= viewportBottom;
           }
 
-          return null;
-        };
-
-        // Helper function to find first/last selectable item
-        const findFirstLastSelectableKey = (
-          direction: 'forward' | 'backward',
-        ) => {
-          const allKeys = Array.from(collection.getKeys());
-          const keysToCheck =
-            direction === 'forward' ? allKeys : allKeys.reverse();
-
-          for (const key of keysToCheck) {
-            const item = collection.getItem(key);
-            if (
-              item &&
-              item.type !== 'section' &&
-              selectionManager.canSelectItem(key)
-            ) {
-              return key;
-            }
+          // Only scroll if the item is not already visible AND the focus change was due to keyboard navigation
+          if (!isAlreadyVisible && lastFocusSourceRef.current === 'keyboard') {
+            rowVirtualizer.scrollToIndex(idx, { align: 'auto' });
           }
-
-          return null;
-        };
-
-        let nextKey: any = null;
-        const direction = isArrowDown ? 'forward' : 'backward';
-
-        if (currentKey == null) {
-          // No current focus, find first/last selectable item
-          nextKey = findFirstLastSelectableKey(direction);
-        } else {
-          // Find next selectable item from current position
-          const candidateKey =
-            direction === 'forward'
-              ? collection.getKeyAfter(currentKey)
-              : collection.getKeyBefore(currentKey);
-
-          nextKey = findNextSelectableKey(candidateKey, direction);
-
-          // If no next key found and focus wrapping is enabled, wrap to first/last selectable item
-          if (nextKey == null) {
-            nextKey = findFirstLastSelectableKey(direction);
-          }
-        }
-
-        if (nextKey != null) {
-          selectionManager.setFocusedKey(nextKey);
-        }
-      } else if (e.key === 'Enter' || (e.key === ' ' && !searchValue.trim())) {
-        const focusedKey = listState.selectionManager.focusedKey;
-        if (focusedKey != null) {
-          e.preventDefault();
-
-          // Use the SelectionManager's select method which handles all selection logic
-          // including single vs multiple selection modes and modifier keys
-          listState.selectionManager.select(focusedKey, e);
         }
       }
-    },
-  });
+    }
+  }, [shouldVirtualize, listState.selectionManager.focusedKey, itemsArray]);
+
+  // Merge React Aria listbox props with custom keyboard props so both sets of
+  // event handlers (e.g. Arrow navigation *and* our Escape handler) are
+  // preserved.
+  const mergedListBoxProps = mergeProps(listBoxProps, keyboardProps);
 
   const mods = useMemo(
     () => ({
@@ -555,131 +613,148 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       valid: validationState === 'valid',
       disabled: isDisabled,
       focused: isFocused,
-      loading: isLoading,
-      searchable: isSearchable,
+      header: !!header,
+      footer: !!footer,
+      ...externalMods,
     }),
     [
       isInvalid,
       validationState,
       isDisabled,
       isFocused,
-      isLoading,
-      isSearchable,
+      header,
+      footer,
+      externalMods,
     ],
   );
-
-  const searchInput = isSearchable ? (
-    <SearchWrapperElement mods={mods} data-size="small">
-      <SearchInputElement
-        ref={searchInputRef}
-        data-is-prefix
-        type="search"
-        placeholder={searchPlaceholder}
-        value={searchValue}
-        disabled={isDisabled}
-        autoFocus={autoFocus && isSearchable}
-        data-autofocus={autoFocus ? '' : undefined}
-        styles={searchInputStyles}
-        data-size="small"
-        aria-controls={listBoxProps.id}
-        aria-activedescendant={
-          listState.selectionManager.focusedKey != null
-            ? `${listBoxProps.id}-option-${listState.selectionManager.focusedKey}`
-            : undefined
-        }
-        onChange={(e) => {
-          const value = e.target.value;
-          setSearchValue(value);
-        }}
-        {...keyboardProps}
-        {...modAttrs(mods)}
-      />
-      <div data-element="Prefix">
-        <div data-element="InputIcon">
-          {isLoading ? <LoadingIcon /> : <SearchIcon />}
-        </div>
-      </div>
-    </SearchWrapperElement>
-  ) : null;
 
   const listBoxField = (
     <ListBoxWrapperElement
       ref={ref}
       qa={qa || 'ListBox'}
-      {...modAttrs(mods)}
+      mods={mods}
       styles={styles}
-      {...focusProps}
     >
-      {searchInput}
-      <ListElement
-        {...listBoxProps}
-        ref={listRef}
-        styles={listStyles}
-        aria-disabled={isDisabled || undefined}
-        {...(!isSearchable ? keyboardProps : {})}
-      >
-        {(() => {
-          const renderedItems: ReactNode[] = [];
-          let isFirstSection = true;
+      {header ? (
+        <StyledHeader styles={headerStyles} data-size={size}>
+          {header}
+        </StyledHeader>
+      ) : (
+        <div role="presentation" />
+      )}
+      {/* Scroll container wrapper */}
+      <ListBoxScrollElement ref={scrollRef} mods={mods} {...focusProps}>
+        <ListElement
+          {...mergedListBoxProps}
+          ref={listRef}
+          styles={listStyles}
+          aria-disabled={isDisabled || undefined}
+          mods={{ sections: hasSections }}
+          style={
+            shouldVirtualize
+              ? {
+                  position: 'relative',
+                  height: `${rowVirtualizer.getTotalSize() + 3}px`,
+                }
+              : undefined
+          }
+        >
+          {shouldVirtualize
+            ? rowVirtualizer.getVirtualItems().map((virtualItem) => {
+                const item = itemsArray[virtualItem.index];
 
-          for (const item of listState.collection) {
-            if (item.type === 'section') {
-              if (!isFirstSection) {
-                renderedItems.push(
-                  <DividerElement
-                    key={`divider-${String(item.key)}`}
-                    role="separator"
-                    aria-orientation="horizontal"
-                  />,
+                return (
+                  <Option
+                    key={virtualItem.key}
+                    size={size}
+                    item={item}
+                    state={listState}
+                    styles={optionStyles}
+                    isParentDisabled={isDisabled}
+                    validationState={validationState}
+                    focusOnHover={focusOnHover}
+                    isCheckable={isCheckable}
+                    // We don't need to measure the element here, because the height is already set by the virtualizer
+                    // This is a workaround to avoid glitches when selecting/deselecting items
+                    virtualRef={rowVirtualizer.measureElement as any}
+                    virtualStyle={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      transform: `translateY(${virtualItem.start}px)`,
+                    }}
+                    virtualIndex={virtualItem.index}
+                    lastFocusSourceRef={lastFocusSourceRef}
+                    onOptionClick={onOptionClick}
+                  />
                 );
-              }
+              })
+            : (() => {
+                const renderedItems: ReactNode[] = [];
+                let isFirstSection = true;
 
-              renderedItems.push(
-                <ListBoxSection
-                  key={item.key}
-                  item={item}
-                  state={listState}
-                  optionStyles={optionStyles}
-                  headingStyles={headingStyles}
-                  sectionStyles={sectionStyles}
-                  isParentDisabled={isDisabled}
-                  validationState={validationState}
-                />,
-              );
+                for (const item of listState.collection) {
+                  if (item.type === 'section') {
+                    if (!isFirstSection) {
+                      renderedItems.push(
+                        <StyledDivider
+                          key={`divider-${String(item.key)}`}
+                          role="separator"
+                          aria-orientation="horizontal"
+                        />,
+                      );
+                    }
 
-              isFirstSection = false;
-            } else {
-              renderedItems.push(
-                <Option
-                  key={item.key}
-                  item={item}
-                  state={listState}
-                  styles={optionStyles}
-                  isParentDisabled={isDisabled}
-                  validationState={validationState}
-                />,
-              );
-            }
-          }
+                    renderedItems.push(
+                      <ListBoxSection
+                        key={item.key}
+                        item={item}
+                        state={listState}
+                        optionStyles={optionStyles}
+                        headingStyles={headingStyles}
+                        sectionStyles={sectionStyles}
+                        isParentDisabled={isDisabled}
+                        validationState={validationState}
+                        focusOnHover={focusOnHover}
+                        isCheckable={isCheckable}
+                        size={size}
+                        lastFocusSourceRef={lastFocusSourceRef}
+                        onOptionClick={onOptionClick}
+                      />,
+                    );
 
-          // Show "No results found" message when there are no items after filtration
-          if (
-            renderedItems.length === 0 &&
-            isSearchable &&
-            searchValue.trim()
-          ) {
-            return (
-              <li>
-                <Block preset="t4" color="#dark-03">
-                  {emptyLabel !== undefined ? emptyLabel : 'No results found'}
-                </Block>
-              </li>
-            );
-          }
+                    isFirstSection = false;
+                  } else {
+                    renderedItems.push(
+                      <Option
+                        key={item.key}
+                        size={size}
+                        item={item}
+                        state={listState}
+                        styles={optionStyles}
+                        isParentDisabled={isDisabled}
+                        validationState={validationState}
+                        focusOnHover={focusOnHover}
+                        isCheckable={isCheckable}
+                        lastFocusSourceRef={lastFocusSourceRef}
+                        onOptionClick={onOptionClick}
+                      />,
+                    );
+                  }
+                }
 
-          return renderedItems;
-        })()}
-      </ListElement>
+                return renderedItems;
+              })()}
+        </ListElement>
+      </ListBoxScrollElement>
+      {footer ? (
+        <StyledFooter styles={footerStyles} data-size={size}>
+          {footer}
+        </StyledFooter>
+      ) : (
+        <div role="presentation" />
+      )}
     </ListBoxWrapperElement>
   );
 
@@ -692,11 +767,48 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   props: CubeListBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },
 ) => ReactElement) & { Item: typeof Item; Section: typeof BaseSection };
 
-function Option({ item, state, styles, isParentDisabled, validationState }) {
-  const ref = useRef<HTMLLIElement>(null);
+function Option({
+  size = 'medium',
+  item,
+  state,
+  styles,
+  isParentDisabled,
+  validationState,
+  focusOnHover = false,
+  isCheckable,
+  onOptionClick,
+  virtualStyle,
+  virtualRef,
+  virtualIndex,
+  lastFocusSourceRef,
+}: {
+  size?: 'small' | 'medium';
+  item: any;
+  state: any;
+  styles?: Styles;
+  isParentDisabled?: boolean;
+  validationState?: any;
+  focusOnHover?: boolean;
+  isCheckable?: boolean;
+  onOptionClick?: (key: Key) => void;
+  /** Inline style applied when virtualized (absolute positioning etc.) */
+  virtualStyle?: CSSProperties;
+  /** Ref callback from react-virtual to measure row height */
+  virtualRef?: (element: HTMLElement | null) => void;
+  /** Virtual index from react-virtual for data-index attribute */
+  virtualIndex?: number;
+  /** Ref to track the source of focus changes */
+  lastFocusSourceRef?: MutableRefObject<'keyboard' | 'mouse' | 'other'>;
+}) {
+  const localRef = useRef<HTMLLIElement>(null);
+  // Merge local ref with react-virtual measure ref when provided
+  const combinedRef = useCombinedRefs(localRef, virtualRef);
+
   const isDisabled = isParentDisabled || state.disabledKeys.has(item.key);
   const isSelected = state.selectionManager.isSelected(item.key);
   const isFocused = state.selectionManager.focusedKey === item.key;
+
+  const { hoverProps, isHovered } = useHover({ isDisabled });
 
   const { optionProps, isPressed } = useOption(
     {
@@ -704,18 +816,75 @@ function Option({ item, state, styles, isParentDisabled, validationState }) {
       isDisabled,
       isSelected,
       shouldSelectOnPressUp: true,
-      shouldFocusOnHover: true,
+      shouldFocusOnHover: focusOnHover,
     },
     state,
-    ref,
+    combinedRef,
   );
 
   const description = (item as any)?.props?.description;
 
+  // Custom click handler for the entire option
+  const handleOptionClick = (e) => {
+    // Mark focus changes from mouse clicks
+    if (lastFocusSourceRef) {
+      lastFocusSourceRef.current = 'mouse';
+    }
+
+    // If there's an onOptionClick callback and this is checkable in multiple mode,
+    // we need to distinguish between checkbox and content clicks
+    if (
+      onOptionClick &&
+      isCheckable &&
+      state.selectionManager.selectionMode === 'multiple'
+    ) {
+      // Check if the click target is within the checkbox area
+      const clickTarget = e.target as HTMLElement;
+      const checkboxElement = localRef.current?.querySelector(
+        '[data-element="CheckboxWrapper"]',
+      );
+
+      if (
+        checkboxElement &&
+        (checkboxElement === clickTarget ||
+          checkboxElement.contains(clickTarget))
+      ) {
+        // Checkbox area clicked - only toggle, don't call onOptionClick
+        // Let React Aria handle the selection
+        optionProps.onClick?.(e);
+        // Set focus to the clicked item
+        state.selectionManager.setFocusedKey(item.key);
+      } else {
+        // Content area clicked - toggle and trigger callback
+        // Let React Aria handle the selection first
+        optionProps.onClick?.(e);
+        // Set focus to the clicked item
+        state.selectionManager.setFocusedKey(item.key);
+        // Then call the callback (which will close the popover in FilterPicker)
+        if (onOptionClick) {
+          onOptionClick(item.key);
+        }
+      }
+    } else {
+      // Normal behavior - let React Aria handle it
+      optionProps.onClick?.(e);
+      // Set focus to the clicked item
+      state.selectionManager.setFocusedKey(item.key);
+      // Call onOptionClick if provided
+      if (onOptionClick) {
+        onOptionClick(item.key);
+      }
+    }
+  };
+
   return (
     <OptionElement
-      {...optionProps}
-      ref={ref}
+      id={`ListBoxItem-${String(item.key)}`}
+      {...mergeProps(optionProps, hoverProps)}
+      ref={combinedRef}
+      style={virtualStyle}
+      data-size={size}
+      data-index={virtualIndex}
       mods={{
         selected: isSelected,
         focused: isFocused,
@@ -723,11 +892,25 @@ function Option({ item, state, styles, isParentDisabled, validationState }) {
         pressed: isPressed,
         valid: isSelected && validationState === 'valid',
         invalid: isSelected && validationState === 'invalid',
+        checkable: isCheckable,
+        hovered: isHovered, // We'll treat focus as hover for the checkbox visibility
       }}
       styles={styles}
+      onClick={handleOptionClick}
     >
-      <div data-element="Label">{item.rendered}</div>
-      {description ? <div data-element="Description">{description}</div> : null}
+      {isCheckable && state.selectionManager.selectionMode === 'multiple' && (
+        <div data-element="CheckboxWrapper">
+          <div data-element="Checkbox">
+            <CheckIcon size={12} stroke={3} />
+          </div>
+        </div>
+      )}
+      <div data-element="Content">
+        <div data-element="Label">{item.rendered}</div>
+        {description ? (
+          <div data-element="Description">{description}</div>
+        ) : null}
+      </div>
     </OptionElement>
   );
 }
@@ -740,6 +923,11 @@ interface ListBoxSectionProps<T> {
   sectionStyles?: Styles;
   isParentDisabled?: boolean;
   validationState?: any;
+  focusOnHover?: boolean;
+  isCheckable?: boolean;
+  onOptionClick?: (key: Key) => void;
+  size?: 'small' | 'medium';
+  lastFocusSourceRef?: MutableRefObject<'keyboard' | 'mouse' | 'other'>;
 }
 
 function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
@@ -751,6 +939,10 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
     sectionStyles,
     isParentDisabled,
     validationState,
+    focusOnHover,
+    isCheckable,
+    onOptionClick,
+    lastFocusSourceRef,
   } = props;
   const heading = item.rendered;
 
@@ -762,9 +954,9 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
   return (
     <SectionWrapperElement {...itemProps} styles={sectionStyles}>
       {heading && (
-        <SectionHeadingElement {...headingProps} styles={headingStyles}>
+        <StyledSectionHeading {...headingProps} styles={headingStyles}>
           {heading}
-        </SectionHeadingElement>
+        </StyledSectionHeading>
       )}
       <SectionListElement {...groupProps}>
         {[...item.childNodes]
@@ -772,11 +964,16 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
           .map((node: any) => (
             <Option
               key={node.key}
+              size={props.size}
               item={node}
               state={state}
               styles={optionStyles}
               isParentDisabled={isParentDisabled}
               validationState={validationState}
+              focusOnHover={focusOnHover}
+              isCheckable={isCheckable}
+              lastFocusSourceRef={lastFocusSourceRef}
+              onOptionClick={onOptionClick}
             />
           ))}
       </SectionListElement>
@@ -792,6 +989,7 @@ const ListBoxSectionComponent = Object.assign(BaseSection, {
 
 ListBox.Item = Item as unknown as (props: {
   description?: ReactNode;
+  textValue?: string;
   [key: string]: any;
 }) => ReactElement;
 

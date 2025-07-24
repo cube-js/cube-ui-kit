@@ -560,25 +560,35 @@ describe('<Menu />', () => {
 
   // Header and footer tests
   it('should render header when provided', () => {
-    const { getByText } = render(
+    const { getByText, getByRole } = render(
       <Menu id="test-menu" aria-label="Test menu" header="Menu Header">
         {basicItems}
       </Menu>,
     );
 
+    // Header content should be visible
     expect(getByText('Menu Header')).toBeInTheDocument();
+
+    // Header element should have the correct role and qa attribute
+    const header = getByRole('heading', { level: 3 });
+    expect(header).toBeInTheDocument();
+    expect(header).toHaveAttribute('data-qa', 'Header');
   });
 
   it('should render footer when provided', () => {
-    const { container } = render(
+    const { getByText, getByRole } = render(
       <Menu id="test-menu" aria-label="Test menu" footer="Menu Footer">
         {basicItems}
       </Menu>,
     );
 
-    // Footer sets the footer modifier
-    const menu = container.querySelector('[role="menu"]');
-    expect(menu).toHaveAttribute('data-is-footer', '');
+    // Footer content should be visible
+    expect(getByText('Menu Footer')).toBeInTheDocument();
+
+    // Footer element should have the correct role and qa attribute
+    const footer = getByRole('footer');
+    expect(footer).toBeInTheDocument();
+    expect(footer).toHaveAttribute('data-qa', 'Footer');
   });
 
   it('should handle onClose callback', () => {
@@ -602,12 +612,12 @@ describe('<Menu />', () => {
       </Menu>,
     );
 
-    const menu = container.querySelector('[data-qa="custom-menu"]');
-    expect(menu).toBeInTheDocument();
+    const menuWrapper = container.querySelector('[data-qa="custom-menu"]');
+    expect(menuWrapper).toBeInTheDocument();
   });
 
   it('should apply mods based on content', () => {
-    const { container } = render(
+    const { container, getByRole } = render(
       <Menu
         id="test-menu"
         aria-label="Test menu"
@@ -620,10 +630,14 @@ describe('<Menu />', () => {
       </Menu>,
     );
 
-    const menu = container.querySelector('[role="menu"]');
+    // Check wrapper mods (header, footer are on wrapper)
+    const menuWrapper = container.querySelector('[data-qa="Menu"]');
+    expect(menuWrapper).toHaveAttribute('data-is-header', '');
+    expect(menuWrapper).toHaveAttribute('data-is-footer', '');
+
+    // Check menu list mods (sections mod is on the menu list)
+    const menu = getByRole('menu');
     expect(menu).toHaveAttribute('data-is-sections', '');
-    expect(menu).toHaveAttribute('data-is-header', '');
-    expect(menu).toHaveAttribute('data-is-footer', '');
   });
 
   // Ref tests
@@ -1010,7 +1024,7 @@ describe('Menu popover mod', () => {
   it('should apply popover mod when context provides it', () => {
     const { MenuContext } = require('./context');
 
-    const { getByRole } = render(
+    const { container } = render(
       <MenuContext.Provider value={{ mods: { popover: true } }}>
         <Menu aria-label="Test menu">
           <Menu.Item key="item1">Item 1</Menu.Item>
@@ -1019,26 +1033,26 @@ describe('Menu popover mod', () => {
       </MenuContext.Provider>,
     );
 
-    const menu = getByRole('menu');
-    expect(menu).toHaveAttribute('data-is-popover');
+    const menuWrapper = container.querySelector('[data-qa="Menu"]');
+    expect(menuWrapper).toHaveAttribute('data-is-popover');
   });
 
   it('should not apply popover mod when used standalone', () => {
-    const { getByRole } = render(
+    const { container } = render(
       <Menu aria-label="Test menu">
         <Menu.Item key="item1">Item 1</Menu.Item>
         <Menu.Item key="item2">Item 2</Menu.Item>
       </Menu>,
     );
 
-    const menu = getByRole('menu');
-    expect(menu).not.toHaveAttribute('data-is-popover');
+    const menuWrapper = container.querySelector('[data-qa="Menu"]');
+    expect(menuWrapper).not.toHaveAttribute('data-is-popover');
   });
 
   it('should not apply popover mod when context provides false', () => {
     const { MenuContext } = require('./context');
 
-    const { getByRole } = render(
+    const { container } = render(
       <MenuContext.Provider value={{ mods: { popover: false } }}>
         <Menu aria-label="Test menu">
           <Menu.Item key="item1">Item 1</Menu.Item>
@@ -1047,8 +1061,8 @@ describe('Menu popover mod', () => {
       </MenuContext.Provider>,
     );
 
-    const menu = getByRole('menu');
-    expect(menu).not.toHaveAttribute('data-is-popover');
+    const menuWrapper = container.querySelector('[data-qa="Menu"]');
+    expect(menuWrapper).not.toHaveAttribute('data-is-popover');
   });
 });
 
