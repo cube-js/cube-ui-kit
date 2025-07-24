@@ -94,6 +94,18 @@ const TOKENS = {
   'sidebar-width': '200px',
   'border-radius-base': '4px',
 
+  // sizes
+  'size-xs': '24px',
+  'size-sm': '28px',
+  'size-md': '36px',
+  'size-lg': '44px',
+
+  // space sizes
+  'space-xs': '.5x',
+  'space-sm': '.75x',
+  'space-md': '1x',
+  'space-lg': '1.5x',
+
   // font sizes
   'text-font-size': '14px',
   'text-line-height': '20px',

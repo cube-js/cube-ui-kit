@@ -100,7 +100,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   InputIcon: {
     display: 'grid',
     placeItems: 'center',
-    width: 'min 4x',
+    width: 'min @size-sm',
     color: 'inherit',
     fontSize: '@icon-size',
   },
@@ -109,8 +109,8 @@ export const INPUT_WRAPPER_STYLES: Styles = {
     display: 'grid',
     placeItems: 'center',
     width: {
-      '': 'min 4x',
-      suffix: 'min 3x',
+      '': 'min @size-sm',
+      suffix: 'min @size-xs',
     },
     fontSize: '@icon-size',
   },

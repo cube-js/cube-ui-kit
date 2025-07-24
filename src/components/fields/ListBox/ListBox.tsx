@@ -114,8 +114,8 @@ const OptionElement = tasty({
       ':last-of-type': '0',
     },
     height: {
-      '[data-size="small"]': 'min 4x',
-      '[data-size="medium"]': 'min 5x',
+      '[data-size="small"]': 'min @size-sm',
+      '[data-size="medium"]': 'min @size-md',
     },
     boxSizing: 'border-box',
     radius: '1r',

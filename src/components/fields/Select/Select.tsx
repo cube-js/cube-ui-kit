@@ -112,8 +112,8 @@ const SelectWrapperElement = tasty({
       placeItems: 'center',
       width: {
         '': '4x',
-        '[data-size="small"]': '3x',
-        '[data-size="medium"]': '4x',
+        '[data-size="small"]': '@size-xs',
+        '[data-size="medium"]': '@size-sm',
       },
       cursor: 'pointer',
       fontSize: 'inherit',
@@ -122,7 +122,7 @@ const SelectWrapperElement = tasty({
     ButtonIcon: {
       display: 'grid',
       placeItems: 'center',
-      width: 'min 4x',
+      width: 'min @size-sm',
       color: 'inherit',
       fontSize: '@icon-size',
     },
@@ -207,7 +207,7 @@ export const ListBoxElement = tasty({
       '': '0px 4px 16px #shadow',
       section: false,
     },
-    height: 'initial max-content (50vh - 4x)',
+    height: 'initial max-content (50vh - @size-md)',
     overflow: 'clip auto',
     scrollbar: 'styled',
   },
@@ -245,8 +245,8 @@ const OptionElement = tasty({
     transition: 'theme',
     width: 'max 100%',
     height: {
-      '': 'min 4x',
-      '[data-size="medium"]': 'min 5x',
+      '': 'min @size-sm',
+      '[data-size="medium"]': 'min @size-md',
     },
 
     Label: {
