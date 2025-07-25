@@ -142,7 +142,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     mods: externalMods,
     description,
     placeholder,
-    size = 'small',
+    size = 'medium',
     styles,
     listBoxStyles,
     popoverStyles,
@@ -613,6 +613,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             mods={{
               popover: true,
             }}
+            size={size === 'small' ? 'medium' : size}
             header={header}
             footer={footer}
             headerStyles={headerStyles}

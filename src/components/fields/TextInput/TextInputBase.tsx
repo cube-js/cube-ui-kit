@@ -50,7 +50,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   display: 'grid',
   position: 'relative',
   gridAreas: '"prefix input suffix"',
-  gridColumns: 'auto 1fr auto',
+  gridColumns: 'auto 1sf auto',
   placeItems: 'stretch',
   fill: {
     '': '#white',
@@ -100,7 +100,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   InputIcon: {
     display: 'grid',
     placeItems: 'center',
-    width: 'min 4x',
+    width: 'min @size-sm',
     color: 'inherit',
     fontSize: '@icon-size',
   },
@@ -109,8 +109,8 @@ export const INPUT_WRAPPER_STYLES: Styles = {
     display: 'grid',
     placeItems: 'center',
     width: {
-      '': 'min 4x',
-      suffix: 'min 3x',
+      '': 'min @size-sm',
+      suffix: 'min @size-xs',
     },
     fontSize: '@icon-size',
   },
@@ -123,6 +123,10 @@ const STYLE_LIST = [...POSITION_STYLES, ...DIMENSION_STYLES];
 const INPUT_STYLE_PROPS_LIST = [...BLOCK_STYLES, 'resize'];
 
 export const DEFAULT_INPUT_STYLES: Styles = {
+  display: 'grid',
+  placeItems: 'center stretch',
+  placeContent: 'center stretch',
+  gridRows: 'min(1lh)',
   gridArea: 'input',
   width: 'initial 100% 100%',
   color: 'inherit',
@@ -139,19 +143,30 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   resize: 'none',
   boxSizing: 'border-box',
   userSelect: 'auto',
-
-  '@vertical-padding': {
-    '': '(1.25x - 1bw)',
-    '[data-size="small"]': '(.75x - 1bw)',
+  height: {
+    '': '(@size-md - 2bw) (@size-md - 2bw)',
+    '[data-size="small"]': '(@size-sm - 2bw) (@size-sm - 2bw)',
+    '[data-size="medium"]': '(@size-md - 2bw) (@size-md - 2bw)',
+    '[data-size="large"]': '(@size-lg - 2bw) (@size-lg - 2bw)',
+    multiline: 'min (@size-md - 2bw)',
+    '[data-size="small"] & multiline': 'min (@size-sm - 2bw)',
+    '[data-size="medium"] & multiline': 'min (@size-md - 2bw)',
+    '[data-size="large"] & multiline': 'min (@size-lg - 2bw)',
   },
+
+  '@vertical-padding': '(.5x - 1bw)',
   '@left-padding': {
-    '': '(1.25x - 1bw)',
+    '': '(1x - 1bw)',
     '[data-size="small"]': '(1x - 1bw)',
+    '[data-size="large"]': '(1.25x - 1bw)',
+    '[data-size="xlarge"]': '(1.5x - 1bw)',
     prefix: '0',
   },
   '@right-padding': {
-    '': '(1.25x - 1bw)',
+    '': '(1x - 1bw)',
     '[data-size="small"]': '(1x - 1bw)',
+    '[data-size="large"]': '(1.25x - 1bw)',
+    '[data-size="xlarge"]': '(1.5x - 1bw)',
     suffix: '0',
   },
 };
@@ -199,7 +214,7 @@ export interface CubeTextInputBaseProps
   /** The resize CSS property sets whether an element is resizable, and if so, in which directions. */
   resize?: Styles['resize'];
   /** The size of the input */
-  size?: 'small' | 'default' | 'large' | (string & {});
+  size?: 'small' | 'medium' | 'large' | (string & {});
   autocomplete?: string;
 }
 
@@ -238,7 +253,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     wrapperRef,
     tooltip,
     rows = 1,
-    size,
+    size = 'medium',
     autocomplete,
     icon,
     maxLength,

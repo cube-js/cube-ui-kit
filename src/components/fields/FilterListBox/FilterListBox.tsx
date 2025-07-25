@@ -13,7 +13,7 @@ import React, {
 import { useFilter, useKeyboard } from 'react-aria';
 import { Section as BaseSection, Item } from 'react-stately';
 
-import { LoadingIcon, SearchIcon } from '../../../icons';
+import { LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import {
   BASE_STYLES,
@@ -83,6 +83,10 @@ const SearchInputElement = tasty({
   styles: {
     ...DEFAULT_INPUT_STYLES,
     fill: '#clear',
+    padding: {
+      '': '.5x 1.5x',
+      prefix: '.5x 1.5x .5x .5x',
+    },
   },
 });
 
@@ -199,7 +203,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     allowsCustomValue = false,
     header,
     footer,
-    size = 'small',
+    size = 'medium',
     headerStyles,
     footerStyles,
     listBoxStyles,
@@ -783,7 +787,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     <SearchWrapperElement mods={mods} data-size="small">
       <SearchInputElement
         ref={searchInputRef}
-        data-is-prefix
+        data-is-prefix={isLoading ? '' : undefined}
         type="search"
         placeholder={searchPlaceholder}
         value={searchValue}
@@ -807,11 +811,13 @@ export const FilterListBox = forwardRef(function FilterListBox<
         {...keyboardProps}
         {...modAttrs(mods)}
       />
-      <div data-element="Prefix">
-        <div data-element="InputIcon">
-          {isLoading ? <LoadingIcon /> : <SearchIcon />}
+      {isLoading && (
+        <div data-element="Prefix">
+          <div data-element="InputIcon">
+            {isLoading ? <LoadingIcon /> : null}
+          </div>
         </div>
-      </div>
+      )}
     </SearchWrapperElement>
   );
 

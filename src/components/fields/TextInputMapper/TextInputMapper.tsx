@@ -40,6 +40,7 @@ export interface CubeTextInputMapperProps extends FieldBaseProps {
   keyProps?: Partial<CubeTextInputMapperInputProps>;
   valueProps?: Partial<CubeTextInputMapperInputProps>;
   allowsCustomValue?: boolean;
+  size?: 'small' | 'medium' | 'large' | (string & {});
 }
 
 // Rewrites upper level field component styles
@@ -96,6 +97,7 @@ function TextInputMapper(
     valueProps,
     KeyComponent,
     ValueComponent,
+    size = 'medium',
   } = props;
 
   function extractLocalValues(
@@ -232,6 +234,7 @@ function TextInputMapper(
             fieldType="key"
             value={key}
             placeholder="Key"
+            size={size}
             onChange={onKeyChange}
             onSubmit={onSubmit}
             {...keyProps}
@@ -242,6 +245,7 @@ function TextInputMapper(
             isDisabled={!key || isDisabled}
             value={value}
             placeholder="Value"
+            size={size}
             onChange={onValueChange}
             onSubmit={onSubmit}
             {...valueProps}
@@ -250,6 +254,7 @@ function TextInputMapper(
             aria-label="Remove mapping"
             theme="danger"
             type="clear"
+            size={size}
             icon={<CloseIcon />}
             onPress={() => {
               setMappings(mappings.filter((m) => m.id !== id));
@@ -270,6 +275,7 @@ function TextInputMapper(
           <Block styles={{ overflow: 'clip', width: 'max 0px' }}>&nbsp;</Block>
           <Button
             isDisabled={isDisabled}
+            size={size}
             icon={<PlusIcon />}
             onPress={addNewMapping}
           >
@@ -287,6 +293,7 @@ export interface CubeTextInputMapperInputProps {
   id: number;
   fieldType: 'key' | 'value';
   inputType?: 'input' | 'combobox' | 'password' | 'textarea';
+  size?: 'small' | 'medium' | 'large' | (string & {});
   value?: string;
   options?: string[];
   placeholder?: string;
@@ -304,6 +311,7 @@ function TextInputMapperInput(props: CubeTextInputMapperInputProps) {
     inputType = 'input',
     options,
     value,
+    size = 'medium',
     placeholder,
     allowsCustomValue,
     ...rest
@@ -339,6 +347,7 @@ function TextInputMapperInput(props: CubeTextInputMapperInputProps) {
         qa="AddMapping"
         data-type={fieldType}
         width="auto"
+        size={size}
         {...mergeProps(rest, PROPS_GRID_HACK)}
         id={undefined}
         inputValue={value}
@@ -362,6 +371,7 @@ function TextInputMapperInput(props: CubeTextInputMapperInputProps) {
       data-type={fieldType}
       width="auto"
       rows={1}
+      size={size}
       {...mergeProps(rest, PROPS_GRID_HACK)}
       id={undefined}
       value={value}

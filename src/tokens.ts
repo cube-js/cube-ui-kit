@@ -38,6 +38,14 @@ const colors = {
   'light-border': '227 227 233', // deprecated
 };
 
+export const SIZES = {
+  XS: 24,
+  SM: 28,
+  MD: 32,
+  LG: 40,
+  XL: 48,
+};
+
 function color(name, opacity = 1) {
   return `rgb(${colors[name]} / ${opacity})`;
 }
@@ -93,6 +101,20 @@ const TOKENS = {
   'devmodebar-height': '54px',
   'sidebar-width': '200px',
   'border-radius-base': '4px',
+
+  // button/input sizes
+  'size-xs': `${SIZES.XS}px`,
+  'size-sm': `${SIZES.SM}px`,
+  'size-md': `${SIZES.MD}px`,
+  'size-lg': `${SIZES.LG}px`,
+  'size-xl': `${SIZES.XL}px`,
+
+  // space sizes
+  'space-xs': '.5x',
+  'space-sm': '.75x',
+  'space-md': '1x',
+  'space-lg': '1.5x',
+  'space-xl': '2x',
 
   // font sizes
   'text-font-size': '14px',

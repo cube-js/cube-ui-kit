@@ -77,7 +77,7 @@ export default {
       control: { type: 'radio' },
       description: 'ComboBox size',
       table: {
-        defaultValue: { summary: 'small' },
+        defaultValue: { summary: 'medium' },
       },
     },
 
@@ -326,8 +326,8 @@ Default.args = {};
 export const Small = Template.bind({});
 Small.args = { size: 'small' };
 
-export const Medium = Template.bind({});
-Medium.args = { size: 'medium' };
+export const Large = Template.bind({});
+Large.args = { size: 'large' };
 
 export const WithPlaceholder = Template.bind({});
 WithPlaceholder.args = { placeholder: 'Enter a value' };

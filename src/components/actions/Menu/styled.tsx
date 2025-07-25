@@ -76,8 +76,8 @@ export const StyledHeader = tasty(Space, {
     whiteSpace: 'nowrap',
     padding: '.5x 1.5x',
     height: {
-      '': 'min 4x',
-      '[data-size="medium"]': 'min 5x',
+      '': 'min @size-md',
+      '[data-size="large"]': 'min @size-lg',
     },
     boxSizing: 'border-box',
     border: 'bottom',
@@ -96,8 +96,8 @@ export const StyledFooter = tasty(Space, {
     whiteSpace: 'nowrap',
     padding: '.5x 1.5x',
     height: {
-      '': 'min 4x',
-      '[data-size="medium"]': 'min 5x',
+      '': 'min @size-md',
+      '[data-size="large"]': 'min @size-lg',
     },
     boxSizing: 'border-box',
     border: 'top',
@@ -132,8 +132,8 @@ export const StyledItem = tasty({
     listStyle: 'none',
     flexShrink: 0,
     height: {
-      '': 'min 4x',
-      '[data-size="medium"]': 'min 5x',
+      '': 'min @size-md',
+      '[data-size="large"]': 'min @size-lg',
     },
     border: false,
     boxSizing: 'border-box',

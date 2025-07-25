@@ -32,6 +32,7 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
+import { SIZES } from '../../../tokens';
 import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 // Import Menu styled components for header and footer
@@ -114,8 +115,8 @@ const OptionElement = tasty({
       ':last-of-type': '0',
     },
     height: {
-      '[data-size="small"]': 'min 4x',
-      '[data-size="medium"]': 'min 5x',
+      '': 'min @size-md',
+      '[data-size="large"]': 'min @size-lg',
     },
     boxSizing: 'border-box',
     radius: '1r',
@@ -283,7 +284,7 @@ export interface CubeListBoxProps<T>
   /** Mods for the ListBox */
   mods?: Record<string, boolean>;
   /** Size of the ListBox */
-  size?: 'small' | 'medium';
+  size?: 'medium' | 'large';
 
   /**
    * When true, ListBox will use virtual focus. This keeps actual DOM focus
@@ -360,7 +361,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     description,
     styles,
     mods: externalMods,
-    size = 'small',
+    size = 'medium',
     labelSuffix,
     selectedKey,
     defaultSelectedKey,
@@ -544,9 +545,9 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       const currentItem: any = itemsArrayRef.current[index];
 
       if (currentItem?.props?.description) {
-        return 49;
+        return SIZES.XL + 1;
       }
-      return size === 'small' ? 33 : 41;
+      return size === 'large' ? SIZES.XL + 1 : SIZES.MD + 1;
     },
     measureElement: (el) => {
       return el.offsetHeight + 1;
@@ -782,7 +783,7 @@ function Option({
   virtualIndex,
   lastFocusSourceRef,
 }: {
-  size?: 'small' | 'medium';
+  size?: 'medium' | 'large';
   item: any;
   state: any;
   styles?: Styles;
@@ -926,7 +927,7 @@ interface ListBoxSectionProps<T> {
   focusOnHover?: boolean;
   isCheckable?: boolean;
   onOptionClick?: (key: Key) => void;
-  size?: 'small' | 'medium';
+  size?: 'medium' | 'large';
   lastFocusSourceRef?: MutableRefObject<'keyboard' | 'mouse' | 'other'>;
 }
 

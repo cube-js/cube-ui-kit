@@ -73,11 +73,11 @@ const meta: Meta<typeof ListBox> = {
 
     /* Presentation */
     size: {
-      options: ['small', 'medium'],
+      options: ['medium', 'large'],
       control: { type: 'radio' },
       description: 'ListBox size',
       table: {
-        defaultValue: { summary: 'small' },
+        defaultValue: { summary: 'medium' },
       },
     },
     header: {
@@ -371,6 +371,7 @@ export const WithHeaderAndFooter: StoryFn<CubeListBoxProps<any>> = (args) => (
 WithHeaderAndFooter.args = {
   label: 'Choose your preferred programming language',
   selectionMode: 'single',
+  size: 'large',
 };
 
 export const CheckableMultipleSelection: Story = {
@@ -401,30 +402,18 @@ export const CheckableMultipleSelection: Story = {
 
 export const DifferentSizes: Story = {
   render: (args) => (
-    <Space gap="3x" flow="column" placeItems="start">
-      <div>
-        <Text preset="t3" weight="600">
-          Small Size
-        </Text>
-        <Space height="1x" />
-        <ListBox {...args} size="small" label="Small ListBox">
-          {fruits.slice(0, 4).map((fruit) => (
-            <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
-          ))}
-        </ListBox>
-      </div>
+    <Space gap="2x" flow="column" placeItems="start">
+      <ListBox width="150px" {...args} size="medium" label="Medium ListBox">
+        {fruits.slice(0, 4).map((fruit) => (
+          <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
+        ))}
+      </ListBox>
 
-      <div>
-        <Text preset="t3" weight="600">
-          Medium Size
-        </Text>
-        <Space height="1x" />
-        <ListBox {...args} size="medium" label="Medium ListBox">
-          {fruits.slice(0, 4).map((fruit) => (
-            <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
-          ))}
-        </ListBox>
-      </div>
+      <ListBox width="150px" {...args} size="large" label="Large ListBox">
+        {fruits.slice(0, 4).map((fruit) => (
+          <ListBox.Item key={fruit.key}>{fruit.label}</ListBox.Item>
+        ))}
+      </ListBox>
     </Space>
   ),
   args: {
@@ -434,7 +423,7 @@ export const DifferentSizes: Story = {
     docs: {
       description: {
         story:
-          'ListBox supports two sizes: `small` (32px item height) for dense interfaces and `medium` (40px item height) for standard use.',
+          'ListBox supports two sizes: `medium` (32px item height, default) for standard use and `large` (40px item height) for emphasized sections.',
       },
     },
   },

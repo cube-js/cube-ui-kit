@@ -111,11 +111,11 @@ const meta: Meta<typeof FilterListBox> = {
 
     /* Presentation */
     size: {
-      options: ['small', 'medium'],
+      options: ['medium', 'large'],
       control: { type: 'radio' },
       description: 'FilterListBox size',
       table: {
-        defaultValue: { summary: 'small' },
+        defaultValue: { summary: 'medium' },
       },
     },
     header: {
@@ -948,7 +948,11 @@ export const InDialog: StoryFn = () => {
     <DialogTrigger isOpen={isOpen} onOpenChange={setIsOpen}>
       <Button>Open Dialog with FilterListBox</Button>
       <Dialog>
-        <FilterListBox autoFocus searchPlaceholder="Search frameworks...">
+        <FilterListBox
+          autoFocus
+          size="large"
+          searchPlaceholder="Search frameworks..."
+        >
           <FilterListBox.Section title="Frontend">
             <FilterListBox.Item key="react">React</FilterListBox.Item>
             <FilterListBox.Item key="vue">Vue.js</FilterListBox.Item>

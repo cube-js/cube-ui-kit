@@ -3,6 +3,7 @@ import { userEvent, within } from '@storybook/test';
 import { IconCoin } from '@tabler/icons-react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Text } from '../../content/Text';
 import { Space } from '../../layout/Space';
 
 import { CubeSelectProps, Select } from './Select';
@@ -91,7 +92,7 @@ export default {
       description: 'Size of the select component',
       table: {
         type: { summary: 'string' },
-        defaultValue: { summary: 'small' },
+        defaultValue: { summary: 'medium' },
       },
     },
     direction: {
@@ -384,12 +385,6 @@ const Template: StoryFn<CubeSelectProps<any>> = (args) => (
 export const Default = Template.bind({});
 Default.args = {};
 
-export const Small = Template.bind({});
-Small.args = { placeholder: 'small', size: 'small' };
-
-export const Medium = Template.bind({});
-Medium.args = { placeholder: 'medium', size: 'medium' };
-
 export const Primary = Template.bind({});
 Primary.args = { type: 'primary', placeholder: 'primary' };
 
@@ -529,3 +524,38 @@ export const SectionsDynamic: StoryFn<CubeSelectProps<any>> = (args) => {
 
 SectionsDynamic.storyName = 'Sections – dynamic collection';
 SectionsDynamic.play = WithDisabledOption.play;
+
+export const DifferentSizes: StoryFn<CubeSelectProps<any>> = (args) => (
+  <Space gap="3x" flow="column" placeItems="start">
+    <Select {...args} size="small" label="Small Select">
+      {options.map((option) => (
+        <Select.Item key={option}>{option}</Select.Item>
+      ))}
+    </Select>
+
+    <Select {...args} size="medium" label="Medium Select">
+      {options.map((option) => (
+        <Select.Item key={option}>{option}</Select.Item>
+      ))}
+    </Select>
+    <Select {...args} size="large" label="Large Select">
+      {options.map((option) => (
+        <Select.Item key={option}>{option}</Select.Item>
+      ))}
+    </Select>
+  </Space>
+);
+
+DifferentSizes.args = {
+  width: '200px',
+  defaultSelectedKey: 'red',
+};
+
+DifferentSizes.parameters = {
+  docs: {
+    description: {
+      story:
+        'Select supports three sizes: `small`, `medium` (default), and `large` to fit different interface requirements.',
+    },
+  },
+};

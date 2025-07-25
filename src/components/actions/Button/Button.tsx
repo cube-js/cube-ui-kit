@@ -27,7 +27,7 @@ export interface CubeButtonProps extends CubeActionProps {
     | 'outline'
     | 'neutral'
     | (string & {});
-  size?: 'tiny' | 'small' | 'medium' | 'large' | (string & {});
+  size?: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | (string & {});
 }
 
 export type ButtonVariant =
@@ -76,34 +76,38 @@ export const DEFAULT_BUTTON_STYLES = {
   flow: 'column',
   preset: {
     '': 't3m',
-    '[data-size="large"]': 't2m',
+    '[data-size="xsmall"]': 't4',
+    '[data-size="xlarge"]': 't2m',
   },
   textDecoration: 'none',
   transition: 'theme',
   reset: 'button',
   outlineOffset: 1,
   padding: {
-    '': '.5x (2x - 1bw)',
-    '[data-size="tiny"]': '.5x (1x - 1bw)',
-    '[data-size="small"]': '.5x (1x - 1bw)',
+    '': '.5x (1.5x - 1bw)',
+    '[data-size="small"] | [data-size="xsmall"]': '.5x (1x - 1bw)',
     '[data-size="medium"]': '.5x (1.5x - 1bw)',
-    '[data-size="large"]': '.5x (2.25x - 1bw)',
+    '[data-size="large"]': '.5x (2x - 1bw)',
+    '[data-size="xlarge"]': '.5x (2.25x - 1bw)',
     'single-icon-only | [data-type="link"]': 0,
   },
   width: {
     '': 'initial',
-    '[data-size="tiny"] & single-icon-only': '3.5x 3.5x',
-    '[data-size="small"] & single-icon-only': '4x 4x',
-    '[data-size="medium"] & single-icon-only': '5x 5x',
-    '[data-size="large"] & single-icon-only': '6x 6x',
+    '[data-size="xsmall"] & single-icon-only': '@size-xs @size-xs',
+    '[data-size="small"] & single-icon-only': '@size-sm @size-sm',
+    '[data-size="medium"] & single-icon-only': '@size-md @size-md',
+    '[data-size="large"] & single-icon-only': '@size-lg @size-lg',
+    '[data-size="xlarge"] & single-icon-only': '@size-xl @size-xl',
+    '[data-type="link"]': 'initial',
   },
   height: {
     '': 'initial',
-    '[data-size="tiny"]': '3.5x 3.5x',
-    '[data-size="small"]': '4x 4x',
-    '[data-size="medium"]': '5x 5x',
-    '[data-size="large"]': '6x 6x',
-    '[data-type="link"]': 'auto',
+    '[data-size="xsmall"]': '@size-xs @size-xs',
+    '[data-size="small"]': '@size-sm @size-sm',
+    '[data-size="medium"]': '@size-md @size-md',
+    '[data-size="large"]': '@size-lg @size-lg',
+    '[data-size="xlarge"]': '@size-xl @size-xl',
+    '[data-type="link"]': 'initial',
   },
   whiteSpace: 'nowrap',
   radius: {

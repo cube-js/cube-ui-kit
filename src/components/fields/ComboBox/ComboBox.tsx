@@ -126,7 +126,7 @@ export interface CubeComboBoxProps<T>
    * Has no effect when `items` is provided.
    */
   filter?: FilterFn;
-  size?: 'small' | 'medium' | 'default' | 'large' | string;
+  size?: 'small' | 'medium' | 'large' | (string & {});
   suffixPosition?: 'before' | 'after';
   menuTrigger?: MenuTriggerAction;
   allowsCustomValue?: boolean;

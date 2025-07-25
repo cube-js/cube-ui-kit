@@ -366,16 +366,6 @@ describe('<FilterListBox />', () => {
         container.querySelector('[data-element="InputIcon"]'),
       ).toBeInTheDocument();
     });
-
-    it('should show search icon when not loading', () => {
-      const { container } = render(
-        <FilterListBox label="Select a fruit">{basicItems}</FilterListBox>,
-      );
-
-      expect(
-        container.querySelector('[data-element="InputIcon"]'),
-      ).toBeInTheDocument();
-    });
   });
 
   describe('Disabled state', () => {

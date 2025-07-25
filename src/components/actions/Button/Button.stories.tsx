@@ -29,7 +29,7 @@ export default {
       },
     },
     size: {
-      options: ['tiny', 'small', 'medium', 'large'],
+      options: ['xsmall', 'small', 'medium', 'large', 'xlarge'],
       control: { type: 'radio' },
       description: 'Button size',
       table: {
@@ -115,15 +115,36 @@ const TemplateSizes: StoryFn<CubeButtonProps> = ({
   ...props
 }) => (
   <Space>
+    <Button icon={icon} rightIcon={rightIcon} {...props} size="xsmall">
+      XSmall
+    </Button>
     <Button icon={icon} rightIcon={rightIcon} {...props} size="small">
-      {children}
+      Small
     </Button>
     <Button icon={icon} rightIcon={rightIcon} {...props} size="medium">
-      {children}
+      Medium
     </Button>
     <Button icon={icon} rightIcon={rightIcon} {...props} size="large">
-      {children}
+      Large
     </Button>
+    <Button icon={icon} rightIcon={rightIcon} {...props} size="xlarge">
+      XLarge
+    </Button>
+  </Space>
+);
+
+const TemplateSizesOnlyIcon: StoryFn<CubeButtonProps> = ({
+  children,
+  icon,
+  rightIcon,
+  ...props
+}) => (
+  <Space>
+    <Button icon={icon} rightIcon={rightIcon} {...props} size="xsmall" />
+    <Button icon={icon} rightIcon={rightIcon} {...props} size="small" />
+    <Button icon={icon} rightIcon={rightIcon} {...props} size="medium" />
+    <Button icon={icon} rightIcon={rightIcon} {...props} size="large" />
+    <Button icon={icon} rightIcon={rightIcon} {...props} size="xlarge" />
   </Space>
 );
 
@@ -477,7 +498,7 @@ TwoIconsAndText.args = {
   rightIcon: <IconCaretDown />,
 };
 
-export const OnlyIcon = TemplateSizes.bind({});
+export const OnlyIcon = TemplateSizesOnlyIcon.bind({});
 OnlyIcon.args = {
   icon: <IconCoin />,
 };

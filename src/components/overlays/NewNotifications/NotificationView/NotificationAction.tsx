@@ -55,7 +55,6 @@ export function NotificationAction(props: NotificationActionProps) {
     <Action
       {...buttonProps}
       type="link"
-      size="small"
       mods={{ primary: type === 'primary', secondary: type === 'secondary' }}
       onPress={onPressEvent}
     >

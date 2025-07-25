@@ -67,7 +67,7 @@ export interface CubeMenuProps<T>
   shouldUseVirtualFocus?: boolean;
 
   /** Size of the menu items */
-  size?: 'small' | 'medium' | (string & {});
+  size?: 'medium' | 'large' | (string & {});
 
   /** Currently selected keys (controlled) */
   selectedKeys?: string[];
@@ -91,7 +91,7 @@ function Menu<T extends object>(
     sectionStyles,
     sectionHeadingStyles,
     selectionIcon,
-    size = 'small',
+    size = 'medium',
     qa,
     selectedKeys,
     defaultSelectedKeys,

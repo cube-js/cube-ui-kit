@@ -112,8 +112,8 @@ const SelectWrapperElement = tasty({
       placeItems: 'center',
       width: {
         '': '4x',
-        '[data-size="small"]': '3x',
-        '[data-size="medium"]': '4x',
+        '[data-size="small"]': '@size-xs',
+        '[data-size="medium"]': '@size-sm',
       },
       cursor: 'pointer',
       fontSize: 'inherit',
@@ -122,7 +122,7 @@ const SelectWrapperElement = tasty({
     ButtonIcon: {
       display: 'grid',
       placeItems: 'center',
-      width: 'min 4x',
+      width: 'min @size-sm',
       color: 'inherit',
       fontSize: '@icon-size',
     },
@@ -207,7 +207,7 @@ export const ListBoxElement = tasty({
       '': '0px 4px 16px #shadow',
       section: false,
     },
-    height: 'initial max-content (50vh - 4x)',
+    height: 'initial max-content (50vh - @size-md)',
     overflow: 'clip auto',
     scrollbar: 'styled',
   },
@@ -245,8 +245,8 @@ const OptionElement = tasty({
     transition: 'theme',
     width: 'max 100%',
     height: {
-      '': 'min 4x',
-      '[data-size="medium"]': 'min 5x',
+      '': 'min @size-md',
+      '[data-size="large"]': 'min @size-lg',
     },
 
     Label: {
@@ -320,7 +320,7 @@ export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
   popoverRef?: RefObject<HTMLInputElement>;
   /** The ref for the list box. */
   listBoxRef?: RefObject<HTMLElement>;
-  size?: 'small' | 'medium' | 'default' | 'large' | string;
+  size?: 'small' | 'medium' | 'large' | (string & {});
   placeholder?: string;
 }
 
@@ -572,6 +572,9 @@ export function ListBoxPopup({
   triggerRef,
   ...otherProps
 }) {
+  // For trigger+popover components, map 'small' size to 'medium' for list items
+  // while preserving 'medium' and 'large' sizes
+  const listItemSize = size === 'small' ? 'medium' : size;
   // Get props for the listbox
   let { listBoxProps } = useListBox(
     {
@@ -652,7 +655,7 @@ export function ListBoxPopup({
                   headingStyles={{ padding: '.5x 1.5x' }}
                   sectionStyles={undefined}
                   shouldUseVirtualFocus={shouldUseVirtualFocus}
-                  size={size}
+                  size={listItemSize}
                 />,
               );
 
@@ -665,7 +668,7 @@ export function ListBoxPopup({
                   state={state}
                   styles={optionStyles}
                   shouldUseVirtualFocus={shouldUseVirtualFocus}
-                  size={size}
+                  size={listItemSize}
                 />,
               );
             }

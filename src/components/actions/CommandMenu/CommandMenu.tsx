@@ -82,7 +82,7 @@ export interface CubeCommandMenuProps<T>
   autoFocus?: boolean | FocusStrategy;
 
   // Size prop
-  size?: 'small' | 'medium' | (string & {});
+  size?: 'medium' | 'large' | (string & {});
 
   /** Currently selected keys (controlled) */
   selectedKeys?: string[];
@@ -92,7 +92,7 @@ export interface CubeCommandMenuProps<T>
   onSelectionChange?: (keys: string[]) => void;
 }
 
-function CommandMenuBase<T extends object>(
+function CommandMenu<T extends object>(
   props: CubeCommandMenuProps<T>,
   ref: DOMRef<HTMLDivElement>,
 ) {
@@ -108,7 +108,7 @@ function CommandMenuBase<T extends object>(
     isLoading = false,
     shouldFilter = true,
     autoFocus = true,
-    size = 'small',
+    size = 'medium',
     qa,
     styles,
     selectedKeys,
@@ -778,7 +778,7 @@ function CommandMenuBase<T extends object>(
 }
 
 // forwardRef doesn't support generic parameters, so cast the result to the correct type
-const _CommandMenu = React.forwardRef(CommandMenuBase) as <T>(
+const _CommandMenu = React.forwardRef(CommandMenu) as <T>(
   props: CubeCommandMenuProps<T> & React.RefAttributes<HTMLDivElement>,
 ) => ReactElement;
 
