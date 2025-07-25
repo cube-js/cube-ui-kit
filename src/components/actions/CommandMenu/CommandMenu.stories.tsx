@@ -324,7 +324,7 @@ const extendedCommands = [
 ];
 
 export const Default: StoryFn<CubeCommandMenuProps<any>> = (args) => (
-  <CommandMenu width="20x 50x" {...args}>
+  <CommandMenu {...args}>
     {basicCommands.map((command) => (
       <CommandMenu.Item
         key={command.key}
@@ -341,6 +341,7 @@ export const Default: StoryFn<CubeCommandMenuProps<any>> = (args) => (
 Default.args = {
   searchPlaceholder: 'Search commands...',
   autoFocus: true,
+  width: '20x 50x',
 };
 
 export const WithSections: StoryFn<CubeCommandMenuProps<any>> = (args) => {
@@ -355,7 +356,7 @@ export const WithSections: StoryFn<CubeCommandMenuProps<any>> = (args) => {
   );
 
   return (
-    <CommandMenu width="20x 50x" {...args}>
+    <CommandMenu {...args}>
       {Object.entries(commandsBySection).map(([sectionName, commands]) => (
         <Menu.Section key={sectionName} title={sectionName}>
           {commands.map((command) => (
@@ -378,6 +379,7 @@ export const WithSections: StoryFn<CubeCommandMenuProps<any>> = (args) => {
 WithSections.args = {
   searchPlaceholder: 'Search all commands...',
   autoFocus: true,
+  width: '20x 50x',
 };
 
 export const WithMenuTrigger: StoryFn<CubeCommandMenuProps<any>> = (args) => (
@@ -469,7 +471,7 @@ ControlledSearch.args = {
 };
 
 export const LoadingState: StoryFn<CubeCommandMenuProps<any>> = (args) => (
-  <CommandMenu width="20x 50x" {...args}>
+  <CommandMenu {...args}>
     {basicCommands.map((command) => (
       <CommandMenu.Item
         key={command.key}
@@ -487,11 +489,11 @@ LoadingState.args = {
   searchPlaceholder: 'Loading commands...',
   isLoading: true,
   autoFocus: true,
+  width: '20x 50x',
 };
 
 export const CustomFilter: StoryFn<CubeCommandMenuProps<any>> = (args) => (
   <CommandMenu
-    width="20x 50x"
     {...args}
     filter={(textValue, inputValue) => {
       // Custom fuzzy search - matches if all characters of input appear in order
@@ -525,10 +527,11 @@ export const CustomFilter: StoryFn<CubeCommandMenuProps<any>> = (args) => (
 CustomFilter.args = {
   searchPlaceholder: 'Try fuzzy search (e.g., "cp" for Copy)...',
   autoFocus: true,
+  width: '20x 50x',
 };
 
 export const WithKeywords: StoryFn<CubeCommandMenuProps<any>> = (args) => (
-  <CommandMenu width="20x 50x" {...args}>
+  <CommandMenu {...args}>
     <CommandMenu.Item key="copy" keywords={['duplicate', 'clone', 'replicate']}>
       Copy
     </CommandMenu.Item>
@@ -547,10 +550,11 @@ export const WithKeywords: StoryFn<CubeCommandMenuProps<any>> = (args) => (
 WithKeywords.args = {
   searchPlaceholder: 'Try searching "duplicate" or "insert"...',
   autoFocus: true,
+  width: '20x 50x',
 };
 
 export const ForceMountItems: StoryFn<CubeCommandMenuProps<any>> = (args) => (
-  <CommandMenu width="20x 50x" {...args}>
+  <CommandMenu {...args}>
     <CommandMenu.Item key="help" forceMount>
       Help (always visible)
     </CommandMenu.Item>
@@ -573,10 +577,11 @@ export const ForceMountItems: StoryFn<CubeCommandMenuProps<any>> = (args) => (
 ForceMountItems.args = {
   searchPlaceholder: 'Help and Settings always visible...',
   autoFocus: true,
+  width: '20x 50x',
 };
 
 export const EmptyState: StoryFn<CubeCommandMenuProps<any>> = (args) => (
-  <CommandMenu width="20x 50x" {...args}>
+  <CommandMenu {...args}>
     <CommandMenu.Item key="copy">Copy</CommandMenu.Item>
     <CommandMenu.Item key="paste">Paste</CommandMenu.Item>
   </CommandMenu>
@@ -586,6 +591,7 @@ EmptyState.args = {
   searchPlaceholder: 'Try searching for "xyz" to see empty state...',
   emptyLabel: 'No matching commands found. Try a different search term.',
   autoFocus: true,
+  width: '20x 50x',
 };
 
 export const MultipleSelection: StoryFn<CubeCommandMenuProps<any>> = (args) => {
@@ -760,7 +766,7 @@ HotkeyTesting.args = {
 export const DifferentSizes: StoryFn<CubeCommandMenuProps<any>> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Medium Menu</Title>
-    <CommandMenu width="20x 50x" {...args} size="medium">
+    <CommandMenu {...args} size="medium">
       {basicCommands.slice(0, 3).map((command) => (
         <CommandMenu.Item
           key={command.key}
@@ -773,7 +779,7 @@ export const DifferentSizes: StoryFn<CubeCommandMenuProps<any>> = (args) => (
     </CommandMenu>
 
     <Title level={5}>Large Menu</Title>
-    <CommandMenu width="20x 50x" {...args} size="large">
+    <CommandMenu {...args} size="large">
       {basicCommands.slice(0, 3).map((command) => (
         <CommandMenu.Item
           key={command.key}
@@ -790,6 +796,7 @@ export const DifferentSizes: StoryFn<CubeCommandMenuProps<any>> = (args) => (
 DifferentSizes.args = {
   searchPlaceholder: 'Search commands...',
   autoFocus: false,
+  width: '20x 50x',
 };
 
 DifferentSizes.parameters = {
@@ -805,7 +812,7 @@ export const WithDialog: StoryFn<CubeCommandMenuProps<any>> = (args) => (
   <DialogTrigger>
     <Button>Open Command Menu</Button>
     <Dialog size="medium" isDismissable={false}>
-      <CommandMenu height="min(40x, 90vh)" {...args} size="medium">
+      <CommandMenu {...args}>
         {basicCommands.map((command) => (
           <CommandMenu.Item
             key={command.key}
@@ -824,6 +831,8 @@ export const WithDialog: StoryFn<CubeCommandMenuProps<any>> = (args) => (
 WithDialog.args = {
   searchPlaceholder: 'Search commands...',
   autoFocus: true,
+  height: 'min(40x, 90vh)',
+  size: 'medium',
 };
 
 WithDialog.play = async ({ canvasElement }) => {
@@ -841,7 +850,6 @@ export const WithHeaderAndFooter: StoryFn<CubeCommandMenuProps<any>> = (
   args,
 ) => (
   <CommandMenu
-    width="20x 50x"
     {...args}
     header={
       <>
@@ -859,7 +867,6 @@ export const WithHeaderAndFooter: StoryFn<CubeCommandMenuProps<any>> = (
         </FooterText>
       </>
     }
-    size="medium"
   >
     {basicCommands.map((command) => (
       <CommandMenu.Item
@@ -877,6 +884,8 @@ export const WithHeaderAndFooter: StoryFn<CubeCommandMenuProps<any>> = (
 WithHeaderAndFooter.args = {
   searchPlaceholder: 'Search commands...',
   autoFocus: true,
+  size: 'large',
+  width: '20x 50x',
 };
 
 function CommandMenuDialogContent({
@@ -884,6 +893,9 @@ function CommandMenuDialogContent({
   ...args
 }: CubeCommandMenuProps<any> & { onClose: () => void }) {
   const commandMenuProps = {
+    width: '100%',
+    height: 'min(40x, 90vh)',
+    size: 'medium',
     ...args,
     onAction: (key: React.Key) => {
       console.log('Action selected:', key);
@@ -909,12 +921,7 @@ function CommandMenuDialogContent({
 
   return (
     <Dialog size="medium" isDismissable={false}>
-      <CommandMenu
-        width="100%"
-        height="min(40x, 90vh)"
-        {...commandMenuProps}
-        size="medium"
-      >
+      <CommandMenu {...commandMenuProps}>
         {basicCommands.map((command) => (
           <CommandMenu.Item
             key={command.key}
@@ -955,7 +962,7 @@ export const WithDialogContainer: StoryFn<CubeCommandMenuProps<any>> = (
 WithDialogContainer.args = {
   searchPlaceholder: 'Search commands...',
   autoFocus: true,
-  size: 'medium',
+  size: 'large',
 };
 
 WithDialogContainer.play = async ({ canvasElement }) => {
@@ -971,12 +978,7 @@ WithDialogContainer.play = async ({ canvasElement }) => {
 
 export const WithAnchoredMenu: StoryFn<CubeCommandMenuProps<any>> = (args) => {
   const MyCommandMenuComponent = ({ onAction, ...props }) => (
-    <CommandMenu
-      width="320px"
-      searchPlaceholder="Search commands..."
-      onAction={onAction}
-      {...props}
-    >
+    <CommandMenu onAction={onAction} {...props}>
       {basicCommands.map((command) => (
         <CommandMenu.Item
           key={command.key}
@@ -1048,6 +1050,7 @@ export const WithAnchoredMenu: StoryFn<CubeCommandMenuProps<any>> = (args) => {
 WithAnchoredMenu.args = {
   searchPlaceholder: 'Search commands...',
   autoFocus: true,
+  width: '320px',
 };
 
 WithAnchoredMenu.play = async ({ canvasElement, viewMode }) => {
@@ -1085,11 +1088,12 @@ export const WithContextMenu = () => {
   const MyCommandMenuComponent = ({
     onAction,
     searchPlaceholder,
+    ...props
   }: CubeCommandMenuProps<any>) => (
     <CommandMenu
-      width="320px"
       searchPlaceholder={searchPlaceholder}
       onAction={onAction}
+      {...props}
     >
       <Menu.Item key="copy" icon="📋">
         Copy
@@ -1112,7 +1116,7 @@ export const WithContextMenu = () => {
   const { targetRef, rendered } = useContextMenu(
     MyCommandMenuComponent,
     {},
-    { searchPlaceholder: 'commands' },
+    { searchPlaceholder: 'commands', width: '320px' },
   );
 
   return (
