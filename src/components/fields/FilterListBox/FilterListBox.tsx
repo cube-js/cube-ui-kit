@@ -83,6 +83,7 @@ const SearchInputElement = tasty({
   styles: {
     ...DEFAULT_INPUT_STYLES,
     fill: '#clear',
+    padding: '.5x 1.5x',
   },
 });
 
@@ -783,7 +784,6 @@ export const FilterListBox = forwardRef(function FilterListBox<
     <SearchWrapperElement mods={mods} data-size="small">
       <SearchInputElement
         ref={searchInputRef}
-        data-is-prefix
         type="search"
         placeholder={searchPlaceholder}
         value={searchValue}
