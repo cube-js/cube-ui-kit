@@ -1,5 +1,25 @@
 # @cube-dev/ui-kit
 
+## 0.68.0
+
+### Minor Changes
+
+- [#730](https://github.com/cube-js/cube-ui-kit/pull/730) [`5d627efa`](https://github.com/cube-js/cube-ui-kit/commit/5d627efafb1793f45ff8b8ba496b07e17227ac67) Thanks [@tenphi](https://github.com/tenphi)! - Add FilterPicker component for single and multiple picker experience with a filter.
+
+- [#730](https://github.com/cube-js/cube-ui-kit/pull/730) [`5d627efa`](https://github.com/cube-js/cube-ui-kit/commit/5d627efafb1793f45ff8b8ba496b07e17227ac67) Thanks [@tenphi](https://github.com/tenphi)! - Split ListBox into two components: simple ListBox and FilterListBox with search input.
+
+### Patch Changes
+
+- [#730](https://github.com/cube-js/cube-ui-kit/pull/730) [`5d627efa`](https://github.com/cube-js/cube-ui-kit/commit/5d627efafb1793f45ff8b8ba496b07e17227ac67) Thanks [@tenphi](https://github.com/tenphi)! - Improve the layout of Menu component.
+
+- [#727](https://github.com/cube-js/cube-ui-kit/pull/727) [`fa1397f2`](https://github.com/cube-js/cube-ui-kit/commit/fa1397f26e2f6ece95aec915f43e0815355d74f6) Thanks [@tenphi](https://github.com/tenphi)! - Add `fs` custom unit for stable fractions in grid layouts. `1sf` -> `minmax(0, 1fr)`.
+
+- [#730](https://github.com/cube-js/cube-ui-kit/pull/730) [`5d627efa`](https://github.com/cube-js/cube-ui-kit/commit/5d627efafb1793f45ff8b8ba496b07e17227ac67) Thanks [@tenphi](https://github.com/tenphi)! - `wrapWithField` no longer wrap the input component with a field if no label is provided and `forceField` prop is not set.
+
+- [#730](https://github.com/cube-js/cube-ui-kit/pull/730) [`5d627efa`](https://github.com/cube-js/cube-ui-kit/commit/5d627efafb1793f45ff8b8ba496b07e17227ac67) Thanks [@tenphi](https://github.com/tenphi)! - Add a new icon ChartKPI.
+
+- [#727](https://github.com/cube-js/cube-ui-kit/pull/727) [`fa1397f2`](https://github.com/cube-js/cube-ui-kit/commit/fa1397f26e2f6ece95aec915f43e0815355d74f6) Thanks [@tenphi](https://github.com/tenphi)! - Improved tasty documentation.
+
 ## 0.67.0
 
 ### Minor Changes
