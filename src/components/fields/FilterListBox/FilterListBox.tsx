@@ -810,7 +810,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
       {isLoading && (
         <div data-element="Prefix">
           <div data-element="InputIcon">
-            isLoading ? <LoadingIcon />
+            {isLoading ? <LoadingIcon /> : null}
           </div>
         </div>
       )}
