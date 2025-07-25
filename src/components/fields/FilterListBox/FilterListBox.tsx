@@ -83,7 +83,10 @@ const SearchInputElement = tasty({
   styles: {
     ...DEFAULT_INPUT_STYLES,
     fill: '#clear',
-    padding: '.5x 1.5x',
+    padding: {
+      '': '.5x 1.5x',
+      prefix: '.5x 1.5x .5x .5x',
+    },
   },
 });
 
