@@ -28,8 +28,8 @@ const ClearButton = tasty(Button, {
   styles: {
     radius: 'right (1r - 1bw)',
     width: {
-      '': '4x',
-      '[data-size="small"]': '3x',
+      '': '3x',
+      '[data-size="large"]': '4x',
     },
     height: 'auto',
     placeSelf: 'stretch',

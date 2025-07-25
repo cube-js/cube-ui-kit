@@ -807,11 +807,13 @@ export const FilterListBox = forwardRef(function FilterListBox<
         {...keyboardProps}
         {...modAttrs(mods)}
       />
-      <div data-element="Prefix">
-        <div data-element="InputIcon">
-          {isLoading ? <LoadingIcon /> : <SearchIcon />}
+      {isLoading && (
+        <div data-element="Prefix">
+          <div data-element="InputIcon">
+            isLoading ? <LoadingIcon />
+          </div>
         </div>
-      </div>
+      )}
     </SearchWrapperElement>
   );
 

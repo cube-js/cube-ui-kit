@@ -95,6 +95,7 @@ const DialogElement = tasty({
 const CloseButton = tasty(Button, {
   qa: 'ModalCloseButton',
   type: 'neutral',
+  size: 'large',
   styles: {
     display: 'flex',
     position: 'absolute',
