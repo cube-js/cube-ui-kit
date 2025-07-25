@@ -13,7 +13,7 @@ import React, {
 import { useFilter, useKeyboard } from 'react-aria';
 import { Section as BaseSection, Item } from 'react-stately';
 
-import { LoadingIcon, SearchIcon } from '../../../icons';
+import { LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import {
   BASE_STYLES,
