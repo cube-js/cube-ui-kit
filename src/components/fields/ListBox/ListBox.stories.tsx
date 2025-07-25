@@ -371,6 +371,7 @@ export const WithHeaderAndFooter: StoryFn<CubeListBoxProps<any>> = (args) => (
 WithHeaderAndFooter.args = {
   label: 'Choose your preferred programming language',
   selectionMode: 'single',
+  size: 'large',
 };
 
 export const CheckableMultipleSelection: Story = {
