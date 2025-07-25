@@ -784,6 +784,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     <SearchWrapperElement mods={mods} data-size="small">
       <SearchInputElement
         ref={searchInputRef}
+        data-is-prefix={isLoading ? '' : undefined}
         type="search"
         placeholder={searchPlaceholder}
         value={searchValue}
