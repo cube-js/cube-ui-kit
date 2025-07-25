@@ -124,8 +124,9 @@ const INPUT_STYLE_PROPS_LIST = [...BLOCK_STYLES, 'resize'];
 
 export const DEFAULT_INPUT_STYLES: Styles = {
   display: 'grid',
-  placeItems: 'stretch',
-  placeContent: 'stretch',
+  placeItems: 'center stretch',
+  placeContent: 'center stretch',
+  gridRows: 'min(1lh)',
   gridArea: 'input',
   width: 'initial 100% 100%',
   color: 'inherit',
