@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.69.0
+
+### Minor Changes
+
+- [#731](https://github.com/cube-js/cube-ui-kit/pull/731) [`1b57ef6c`](https://github.com/cube-js/cube-ui-kit/commit/1b57ef6c00e8e0fc8437aa92f02c57418cf7b048) Thanks [@tenphi](https://github.com/tenphi)! - More condensed UI. New sizes: medium (40) -> large (40), small (32) -> medium (32), large (48) -> xlarge (48), small (28), xsmall (24).
+
+- [#731](https://github.com/cube-js/cube-ui-kit/pull/731) [`1b57ef6c`](https://github.com/cube-js/cube-ui-kit/commit/1b57ef6c00e8e0fc8437aa92f02c57418cf7b048) Thanks [@tenphi](https://github.com/tenphi)! - Add size prop for TextInputMapper.
+
 ## 0.68.0
 
 ### Minor Changes
