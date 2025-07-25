@@ -2,6 +2,8 @@ import { StoryFn } from '@storybook/react';
 import { IconCoin } from '@tabler/icons-react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Title } from '../../content/Title';
+import { Space } from '../../layout/Space';
 
 import { CubeTextInputProps, TextInput } from './TextInput';
 
@@ -148,3 +150,29 @@ Invalid.args = { validationState: 'invalid' };
 
 export const Disabled = Template.bind({});
 Disabled.args = { isDisabled: true };
+
+export const DifferentSizes: StoryFn<CubeTextInputProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>Small Input</Title>
+    <TextInput {...args} size="small" placeholder="Small size" />
+
+    <Title level={5}>Medium Input</Title>
+    <TextInput {...args} size="medium" placeholder="Medium size" />
+
+    <Title level={5}>Large Input</Title>
+    <TextInput {...args} size="large" placeholder="Large size" />
+  </Space>
+);
+
+DifferentSizes.args = {
+  width: '300px',
+};
+
+DifferentSizes.parameters = {
+  docs: {
+    description: {
+      story:
+        'TextInput supports three sizes: `small`, `medium` (default), and `large` to accommodate different interface requirements.',
+    },
+  },
+};

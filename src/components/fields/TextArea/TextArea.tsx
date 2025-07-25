@@ -49,6 +49,7 @@ function TextArea(
     onChange,
     maxRows = 10,
     rows = 3,
+    mods,
     ...otherProps
   } = props;
 
