@@ -10,7 +10,7 @@ import { useTextField } from 'react-aria';
 
 import { useEvent } from '../../../_internal/index';
 import { useProviderProps } from '../../../provider';
-import { chain, mergeProps } from '../../../utils/react';
+import { chain } from '../../../utils/react';
 import {
   castNullableStringValue,
   WithNullableValue,
