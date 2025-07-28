@@ -56,11 +56,11 @@ export default {
       description: 'Amount to increment or decrement the value',
     },
     size: {
-      options: ['small', 'default', 'large'],
+      options: ['small', 'medium', 'large'],
       control: { type: 'radio' },
       description: 'Input size',
       table: {
-        defaultValue: { summary: 'default' },
+        defaultValue: { summary: 'medium' },
       },
     },
     /* State */

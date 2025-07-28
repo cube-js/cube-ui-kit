@@ -66,11 +66,11 @@ export default {
 
     /* Presentation */
     size: {
-      options: ['small', 'default', 'large'],
+      options: ['small', 'medium', 'large'],
       control: { type: 'radio' },
       description: 'Textarea size',
       table: {
-        defaultValue: { summary: 'default' },
+        defaultValue: { summary: 'medium' },
       },
     },
 

@@ -82,11 +82,11 @@ export default {
 
     /* Presentation */
     size: {
-      options: ['small', 'default'],
+      options: ['small', 'large'],
       control: { type: 'radio' },
       description: 'Switch size',
       table: {
-        defaultValue: { summary: 'default' },
+        defaultValue: { summary: 'large' },
       },
     },
 

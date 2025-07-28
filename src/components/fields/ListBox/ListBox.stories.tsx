@@ -833,7 +833,7 @@ export const VirtualizedList: StoryFn<CubeListBoxProps<any>> = (args) => {
   // Generate a large list of items with varying content to test virtualization
   // Mix items with and without descriptions to test dynamic sizing
   const items = Array.from({ length: 100 }, (_, i) => ({
-    id: `item-${i}`,
+    key: `item-${i}`,
     name: `Item ${i + 1}${i % 7 === 0 ? ' - This is a longer item name to test dynamic sizing' : ''}`,
     description:
       i % 3 === 0
@@ -851,17 +851,18 @@ export const VirtualizedList: StoryFn<CubeListBoxProps<any>> = (args) => {
 
       <ListBox
         {...args}
+        items={items}
         label="Virtualized List with Mixed Content"
         selectedKey={selected}
         height="300px"
         overflow="auto"
         onSelectionChange={setSelected}
       >
-        {items.map((item) => (
-          <ListBox.Item key={item.id} description={item.description}>
+        {(item) => (
+          <ListBox.Item key={item.key} description={item.description}>
             {item.name}
           </ListBox.Item>
-        ))}
+        )}
       </ListBox>
 
       <Text>
@@ -1013,6 +1014,27 @@ EscapeKeyHandling.parameters = {
     description: {
       story:
         'Use the `onEscape` prop to provide custom behavior when the Escape key is pressed, such as closing a parent modal. When provided, this prevents the default selection clearing behavior.',
+    },
+  },
+};
+
+export const WithItemsProp: Story = {
+  render: (args) => (
+    <ListBox {...args} items={fruits}>
+      {(item) => <ListBox.Item key={item.key}>{item.label}</ListBox.Item>}
+    </ListBox>
+  ),
+  args: {
+    label: 'Select a fruit using items prop',
+    selectionMode: 'single',
+    defaultSelectedKey: 'apple',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'ListBox supports the `items` prop pattern where you provide an array of data objects and use a render function to create the items. This is useful when working with dynamic data or when you want to separate data from presentation.',
+      },
     },
   },
 };
