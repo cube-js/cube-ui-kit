@@ -84,8 +84,8 @@ const SearchInputElement = tasty({
     ...DEFAULT_INPUT_STYLES,
     fill: '#clear',
     padding: {
-      '': '.5x 1.5x',
-      prefix: '.5x 1.5x .5x .5x',
+      '': '0 1.5x',
+      prefix: '0 1.5x 0 .5x',
     },
   },
 });
@@ -785,7 +785,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
   };
 
   const searchInput = (
-    <SearchWrapperElement mods={mods} data-size="small">
+    <SearchWrapperElement mods={mods} data-size={size}>
       {isLoading && (
         <div data-element="Prefix">
           <div data-element="InputIcon">
