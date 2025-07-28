@@ -324,7 +324,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
       disabled: isDisabled,
       multiline: multiLine,
       prefix: !!prefix,
-      suffix: !!suffix,
+      suffix: (validationState && !isLoading) || isLoading || !!suffix,
       ...mods,
     }),
     [
