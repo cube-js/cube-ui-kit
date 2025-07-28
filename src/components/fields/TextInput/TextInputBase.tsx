@@ -87,6 +87,16 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   boxSizing: 'border-box',
   transition: 'theme',
   backgroundClip: 'content-box',
+  height: {
+    '': '@size-md @size-md',
+    '[data-size="small"]': '@size-sm @size-sm',
+    '[data-size="medium"]': '@size-md @size-md',
+    '[data-size="large"]': '@size-lg @size-lg',
+    multiline: 'min @size-md',
+    '[data-size="small"] & multiline': 'min @size-sm',
+    '[data-size="medium"] & multiline': 'min @size-md',
+    '[data-size="large"] & multiline': 'min @size-lg',
+  },
 
   Prefix: ADD_STYLES,
 
@@ -122,6 +132,7 @@ const STYLE_LIST = [...POSITION_STYLES, ...DIMENSION_STYLES];
 const INPUT_STYLE_PROPS_LIST = [...BLOCK_STYLES, 'resize'];
 
 export const DEFAULT_INPUT_STYLES: Styles = {
+  placeSelf: 'stretch',
   width: 'initial 100% 100%',
   color: 'inherit',
   fill: '#clear',
@@ -142,16 +153,6 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   resize: 'none',
   boxSizing: 'border-box',
   userSelect: 'auto',
-  height: {
-    '': '(@size-md - 2bw) (@size-md - 2bw)',
-    '[data-size="small"]': '(@size-sm - 2bw) (@size-sm - 2bw)',
-    '[data-size="medium"]': '(@size-md - 2bw) (@size-md - 2bw)',
-    '[data-size="large"]': '(@size-lg - 2bw) (@size-lg - 2bw)',
-    multiline: 'min (@size-md - 2bw)',
-    '[data-size="small"] & multiline': 'min (@size-sm - 2bw)',
-    '[data-size="medium"] & multiline': 'min (@size-md - 2bw)',
-    '[data-size="large"] & multiline': 'min (@size-lg - 2bw)',
-  },
 
   '@vertical-padding': 0,
   '@left-padding': {
