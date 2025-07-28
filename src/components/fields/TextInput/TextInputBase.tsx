@@ -37,6 +37,7 @@ const ADD_STYLES = {
   display: 'grid',
   placeContent: 'stretch',
   placeItems: 'center',
+  gridRows: '1sf',
   flow: 'column',
   gap: 0,
   cursor: 'inherit',
@@ -56,6 +57,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
     suffix: '1sf max-content',
     'prefix & suffix': 'max-content 1sf max-content',
   },
+  gridRows: '1sf',
   placeItems: 'stretch',
   fill: {
     '': '#white',
