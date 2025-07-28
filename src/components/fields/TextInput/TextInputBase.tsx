@@ -48,9 +48,14 @@ const ADD_STYLES = {
 
 export const INPUT_WRAPPER_STYLES: Styles = {
   display: 'grid',
+  flow: 'row',
   position: 'relative',
-  gridAreas: '"prefix input suffix"',
-  gridColumns: 'auto 1sf auto',
+  gridColumns: {
+    '': '1sf',
+    prefix: 'max-content 1sf',
+    suffix: '1sf max-content',
+    'prefix & suffix': 'max-content 1sf max-content',
+  },
   placeItems: 'stretch',
   fill: {
     '': '#white',
@@ -83,15 +88,9 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   transition: 'theme',
   backgroundClip: 'content-box',
 
-  Prefix: {
-    ...ADD_STYLES,
-    gridArea: 'prefix',
-  },
+  Prefix: ADD_STYLES,
 
-  Suffix: {
-    ...ADD_STYLES,
-    gridArea: 'suffix',
-  },
+  Suffix: ADD_STYLES,
 
   State: {
     display: 'flex',
@@ -123,11 +122,6 @@ const STYLE_LIST = [...POSITION_STYLES, ...DIMENSION_STYLES];
 const INPUT_STYLE_PROPS_LIST = [...BLOCK_STYLES, 'resize'];
 
 export const DEFAULT_INPUT_STYLES: Styles = {
-  display: 'grid',
-  placeItems: 'center stretch',
-  placeContent: 'center stretch',
-  gridRows: 'min(1lh)',
-  gridArea: 'input',
   width: 'initial 100% 100%',
   color: 'inherit',
   fill: '#clear',
@@ -139,7 +133,12 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   reset: 'input',
   preset: 't3',
   flexGrow: 1,
-  margin: 0,
+  margin: {
+    '': 0,
+    multiline: '(((@size-md - 1lh) / 2) - 1bw) 0',
+    'multiline & [data-size="small"]': '(((@size-sm - 1lh) / 2) - 1bw) 0',
+    'multiline & [data-size="large"]': '(((@size-lg - 1lh) / 2) - 1bw) 0',
+  },
   resize: 'none',
   boxSizing: 'border-box',
   userSelect: 'auto',
@@ -154,7 +153,7 @@ export const DEFAULT_INPUT_STYLES: Styles = {
     '[data-size="large"] & multiline': 'min (@size-lg - 2bw)',
   },
 
-  '@vertical-padding': '(.5x - 1bw)',
+  '@vertical-padding': 0,
   '@left-padding': {
     '': '(1x - 1bw)',
     '[data-size="small"]': '(1x - 1bw)',
