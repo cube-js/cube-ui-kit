@@ -859,7 +859,6 @@ export const FilterListBox = forwardRef(function FilterListBox<
           stateRef={listStateRef}
           listStyles={listStyles}
           shouldFocusWrap={shouldFocusWrap}
-          hoverOnFocus={focusOnHover}
           optionStyles={optionStyles}
           sectionStyles={sectionStyles}
           headingStyles={headingStyles}
