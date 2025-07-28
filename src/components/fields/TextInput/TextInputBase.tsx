@@ -358,6 +358,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
       styles={wrapperStyles}
       {...wrapperProps}
     >
+      {prefix ? <div data-element="Prefix">{prefix}</div> : null}
       <InputElement
         as={ElementType}
         {...mergeProps(inputProps, focusProps, hoverProps)}
@@ -374,7 +375,6 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
         maxLength={maxLength}
         minLength={minLength}
       />
-      {prefix ? <div data-element="Prefix">{prefix}</div> : null}
       {(validationState && !isLoading) || isLoading || suffix ? (
         <div data-element="Suffix">
           {suffixPosition === 'before' ? suffix : null}

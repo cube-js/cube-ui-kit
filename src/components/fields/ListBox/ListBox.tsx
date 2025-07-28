@@ -26,6 +26,7 @@ import { CheckIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import {
   BASE_STYLES,
+  BasePropsWithoutChildren,
   COLOR_STYLES,
   extractStyles,
   OUTER_STYLES,
@@ -241,7 +242,8 @@ const SectionListElement = tasty({
 export interface CubeListBoxProps<T>
   extends Omit<AriaListBoxProps<T>, 'onSelectionChange'>,
     CollectionBase<T>,
-    FieldBaseProps {
+    FieldBaseProps,
+    BasePropsWithoutChildren {
   /** Custom styles for the list container */
   listStyles?: Styles;
   /** Custom styles for options */
@@ -508,7 +510,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       'aria-label': props['aria-label'] || label?.toString(),
       isDisabled,
       shouldUseVirtualFocus: shouldUseVirtualFocus ?? false,
-      shouldFocusWrap: true,
+      // shouldVirtualize: true,
       escapeKeyBehavior: onEscape ? 'none' : 'clearSelection',
     },
     listState,

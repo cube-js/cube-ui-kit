@@ -437,6 +437,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       }}
       data-size={size}
     >
+      {prefix ? <div data-element="Prefix">{prefix}</div> : null}
       <InputElement
         ref={inputRef}
         qa="Input"
@@ -448,7 +449,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         {...modAttrs(mods)}
         data-size={size}
       />
-      {prefix ? <div data-element="Prefix">{prefix}</div> : null}
       <div data-element="Suffix">
         {suffixPosition === 'before' ? suffix : null}
         {validationState || isLoading ? (
