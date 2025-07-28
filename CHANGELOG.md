@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.69.1
+
+### Patch Changes
+
+- [#733](https://github.com/cube-js/cube-ui-kit/pull/733) [`65849abc`](https://github.com/cube-js/cube-ui-kit/commit/65849abc4ef917437cccc1c796cf75680f0a0a7c) Thanks [@tenphi](https://github.com/tenphi)! - Fix minor issues with input styling.
+
+- [#733](https://github.com/cube-js/cube-ui-kit/pull/733) [`65849abc`](https://github.com/cube-js/cube-ui-kit/commit/65849abc4ef917437cccc1c796cf75680f0a0a7c) Thanks [@tenphi](https://github.com/tenphi)! - Expose shouldFocusWrap for ListBox, FilterListBox, and FilterPicker to control whether keyboard navigation should wrap around.
+
 ## 0.69.0
 
 ### Minor Changes
