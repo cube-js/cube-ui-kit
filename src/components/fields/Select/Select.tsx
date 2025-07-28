@@ -92,6 +92,8 @@ const SelectWrapperElement = tasty({
 
     Value: {
       ...DEFAULT_INPUT_STYLES,
+      display: 'grid',
+      placeItems: 'center stretch',
       preset: {
         '': 't3',
         '[data-type="primary"]': 't3m',
