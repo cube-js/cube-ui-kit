@@ -125,9 +125,9 @@ const FlexibleBox = tasty({
 });
 
 // Usage - style properties become direct props
-<FlexibleBox 
-  gap="2x" 
-  align="center" 
+<FlexibleBox
+  gap="2x"
+  align="center"
   placeContent="space-between"
   fill="#surface"
 >
@@ -135,11 +135,11 @@ const FlexibleBox = tasty({
 </FlexibleBox>
 
 // Equivalent to using styles prop:
-<FlexibleBox styles={{ 
-  gap: '2x', 
-  align: 'center', 
+<FlexibleBox styles={{
+  gap: '2x',
+  align: 'center',
   placeContent: 'space-between',
-  fill: '#surface' 
+  fill: '#surface'
 }}>
   Content
 </FlexibleBox>
@@ -155,15 +155,15 @@ const FlexibleBox = tasty({
 **Style Prop Priority:**
 ```jsx
 // Direct props override styles prop
-<FlexibleBox 
-  styles={{ gap: '1x' }} 
+<FlexibleBox
+  styles={{ gap: '1x' }}
   gap="3x"  // This takes priority
 />
 
 // Both direct props and styles can be used together
-<FlexibleBox 
-  styles={{ padding: '2x', border: true }} 
-  gap="2x" 
+<FlexibleBox
+  styles={{ padding: '2x', border: true }}
+  gap="2x"
   align="center"
 />
 ```
@@ -220,7 +220,7 @@ Configure breakpoints and use responsive arrays:
 // Use responsive arrays
 <Block padding={["4x", "2x", "1x"]} />
 // Large screens (≥1200px): 4x
-// Medium screens (640px-1199px): 2x  
+// Medium screens (640px-1199px): 2x
 // Small screens (<640px): 1x
 ```
 
@@ -258,7 +258,7 @@ flow: 'row dense',   // grid-auto-flow: row dense
 Works across all layout types:
 ```jsx
 gap: '2x',           // Standard gap
-gap: '1x 2x',        // Row gap, column gap  
+gap: '1x 2x',        // Row gap, column gap
 gap: true,           // Default: '1x'
 
 // Flex/Grid: Uses native CSS gap
@@ -272,7 +272,7 @@ gap: true,           // Default: '1x'
 Enhanced syntax with directional modifiers:
 ```jsx
 padding: '2x',                    // All sides
-padding: '2x 1x',                 // Vertical, horizontal  
+padding: '2x 1x',                 // Vertical, horizontal
 padding: '2x top',                // Top only
 padding: '1x left right',         // Left and right
 padding: true,                    // Default: '1x'
@@ -330,7 +330,7 @@ border: 'dashed #danger left right', // Left/right borders
 border: '#purple',                // Color only (uses defaults for width/style)
 
 // Default values:
-// - Width: '1bw' → 'var(--border-width)'  
+// - Width: '1bw' → 'var(--border-width)'
 // - Style: 'solid'
 // - Color: 'var(--border-color)'
 // Available styles: none, hidden, dotted, dashed, solid, double, groove, ridge, inset, outset
@@ -366,7 +366,7 @@ preset: 'h2 strong',              // Bold heading 2
 
 // Available presets:
 // Headings: h1, h2, h3, h4, h5, h6
-// Text: t1, t2, t2m, t3, t3m, t4, t4m  
+// Text: t1, t2, t2m, t3, t3m, t4, t4m
 // Paragraphs: p1, p2, p3, p4
 // Main text: m1, m2, m3
 // Captions: c1, c2, tag
@@ -376,7 +376,7 @@ preset: 'h2 strong',              // Bold heading 2
 Unified alignment control for flex and grid:
 ```jsx
 align: 'center',                  // align-items & align-content: center
-justify: 'space-between',         // justify-items & justify-content: space-between  
+justify: 'space-between',         // justify-items & justify-content: space-between
 place: 'center',                  // place-items & place-content: center
 
 // Sets both *-items and *-content properties
@@ -402,13 +402,13 @@ inset: true,                      // Default: 0
 Semantic transition names:
 ```jsx
 transition: 'fill 0.2s',          // Background transitions
-transition: 'fade 0.15s ease-in', // Mask transitions  
+transition: 'fade 0.15s ease-in', // Mask transitions
 transition: 'theme 0.3s',         // All theme properties
 transition: 'border 0.2s, radius 0.3s', // Multiple properties
 
 // Available semantic names:
 // - fade: mask
-// - fill: background-color  
+// - fill: background-color
 // - border: border, box-shadow
 // - radius: border-radius
 // - theme: color, background-color, box-shadow, border, border-radius, outline
@@ -538,7 +538,7 @@ Style inner elements using `data-element` attributes:
 const Card = tasty({
   styles: {
     padding: '4x',
-    
+
     // Sub-element styles
     Title: {                      // Styles data-element="Title"
       preset: 'h3',
@@ -602,7 +602,7 @@ const Component = tasty({
     // Define custom properties
     '@local-spacing': '2x',
     '@theme-color': 'rgb(255 128 0)',
-    
+
     // Use custom properties
     padding: '@local-spacing',
     color: '@theme-color',
@@ -732,7 +732,7 @@ styles: {
 
 ```jsx
 // ✅ Use native style prop for dynamic values
-<Component 
+<Component
   style={{ '--custom-color': dynamicColor }}
   styles={{ color: '@custom-color' }}
 />
@@ -802,8 +802,8 @@ const Button = tasty({
 - **Interactivity**: See [Modifiers & State Binding](#modifiers--state-binding) for hover, focus, and custom states
 - **Theming**: See [Variants & Theming](#variants--theming) for component variations
 - **Performance**: See [Performance Tips](#performance-tips-) for optimization techniques
-- **Create Component Guide**: See [CreateComponent.docs.mdx](/docs/tasty-createcomponent--docs) for component creation patterns
+- **Create Component Guide**: See [CreateComponent.docs.mdx](/docs/tasty-create-component--docs) for component creation patterns
 
 ---
 
-> **Need Help?** This documentation covers the most important `tasty` features. For additional examples and component creation patterns, see the [Component Creation Guide](/docs/tasty-createcomponent--docs).
+> **Need Help?** This documentation covers the most important `tasty` features. For additional examples and component creation patterns, see the [Component Creation Guide](/docs/tasty-create-component--docs).
