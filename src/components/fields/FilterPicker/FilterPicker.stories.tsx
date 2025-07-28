@@ -161,6 +161,13 @@ const meta: Meta<typeof FilterPicker> = {
         defaultValue: { summary: false },
       },
     },
+    shouldFocusWrap: {
+      control: { type: 'boolean' },
+      description: 'Whether keyboard navigation should wrap around',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
 
     /* State */
     isDisabled: {

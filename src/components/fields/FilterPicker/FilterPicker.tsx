@@ -149,6 +149,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     type = 'outline',
     theme = 'default',
     labelSuffix,
+    shouldFocusWrap,
     children,
     selectedKey,
     defaultSelectedKey,
@@ -604,6 +605,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             }
             disabledKeys={disabledKeys}
             focusOnHover={focusOnHover}
+            shouldFocusWrap={shouldFocusWrap}
             allowsCustomValue={allowsCustomValue}
             selectionMode={selectionMode}
             validationState={validationState}

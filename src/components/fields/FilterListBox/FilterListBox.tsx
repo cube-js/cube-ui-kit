@@ -194,6 +194,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     description,
     styles,
     focusOnHover,
+    shouldFocusWrap,
     labelSuffix,
     selectedKey,
     defaultSelectedKey,
@@ -607,13 +608,13 @@ export const FilterListBox = forwardRef(function FilterListBox<
             const newIndex = currentIndex + direction;
             if (newIndex >= 0 && newIndex < visibleKeys.length) {
               nextKey = visibleKeys[newIndex];
-            } else {
+            } else if (shouldFocusWrap) {
               // Wrap around
               nextKey = isArrowDown
                 ? visibleKeys[0]
                 : visibleKeys[visibleKeys.length - 1];
             }
-          } else {
+          } else if (shouldFocusWrap) {
             // Fallback
             nextKey = isArrowDown
               ? visibleKeys[0]
@@ -857,6 +858,8 @@ export const FilterListBox = forwardRef(function FilterListBox<
           listRef={listRef}
           stateRef={listStateRef}
           listStyles={listStyles}
+          shouldFocusWrap={shouldFocusWrap}
+          hoverOnFocus={focusOnHover}
           optionStyles={optionStyles}
           sectionStyles={sectionStyles}
           headingStyles={headingStyles}
