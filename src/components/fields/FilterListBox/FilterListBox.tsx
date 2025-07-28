@@ -715,6 +715,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
       focused: isFocused,
       loading: !!isLoading,
       searchable: true,
+      prefix: isLoading,
       ...externalMods,
     }),
     [
