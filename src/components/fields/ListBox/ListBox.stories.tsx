@@ -45,11 +45,13 @@ const meta: Meta<typeof ListBox> = {
     },
     selectedKeys: {
       control: { type: 'object' },
-      description: 'The selected keys in controlled multiple mode',
+      description:
+        'The selected keys in controlled multiple mode. Use "all" to select all items or an array of keys.',
     },
     defaultSelectedKeys: {
       control: { type: 'object' },
-      description: 'The default selected keys in uncontrolled multiple mode',
+      description:
+        'The default selected keys in uncontrolled multiple mode. Use "all" to select all items or an array of keys.',
     },
     selectionMode: {
       options: ['single', 'multiple'],
@@ -93,7 +95,7 @@ const meta: Meta<typeof ListBox> = {
     focusOnHover: {
       control: { type: 'boolean' },
       description:
-        'Whether moving pointer over an option moves DOM focus to it',
+        'Whether moving the pointer over an option will move DOM focus to that option',
       table: {
         defaultValue: { summary: true },
       },
@@ -107,7 +109,7 @@ const meta: Meta<typeof ListBox> = {
     },
     isCheckable: {
       control: { type: 'boolean' },
-      description: 'Whether to show checkboxes for multiple selection',
+      description: 'Whether to show checkboxes for multiple selection mode',
       table: {
         defaultValue: { summary: false },
       },
@@ -865,7 +867,7 @@ export const VirtualizedList: StoryFn<CubeListBoxProps<any>> = (args) => {
         overflow="auto"
         onSelectionChange={setSelected}
       >
-        {(item) => (
+        {(item: any) => (
           <ListBox.Item key={item.key} description={item.description}>
             {item.name}
           </ListBox.Item>
@@ -1028,7 +1030,7 @@ EscapeKeyHandling.parameters = {
 export const WithItemsProp: Story = {
   render: (args) => (
     <ListBox {...args} items={fruits}>
-      {(item) => <ListBox.Item key={item.key}>{item.label}</ListBox.Item>}
+      {(item: any) => <ListBox.Item key={item.key}>{item.label}</ListBox.Item>}
     </ListBox>
   ),
   args: {

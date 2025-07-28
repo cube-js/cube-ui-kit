@@ -50,11 +50,13 @@ const meta: Meta<typeof FilterPicker> = {
     },
     selectedKeys: {
       control: { type: 'object' },
-      description: 'The selected keys in controlled multiple mode',
+      description:
+        'The selected keys in controlled multiple mode. Use "all" to select all items or an array of keys.',
     },
     defaultSelectedKeys: {
       control: { type: 'object' },
-      description: 'The default selected keys in uncontrolled multiple mode',
+      description:
+        'The default selected keys in uncontrolled multiple mode. Use "all" to select all items or an array of keys.',
     },
     selectionMode: {
       control: 'radio',
@@ -66,7 +68,8 @@ const meta: Meta<typeof FilterPicker> = {
     },
     allowsCustomValue: {
       control: { type: 'boolean' },
-      description: 'Whether the FilterListBox allows custom values',
+      description:
+        'Whether to allow entering custom values that are not present in the predefined options',
       table: {
         defaultValue: { summary: false },
       },
@@ -90,7 +93,7 @@ const meta: Meta<typeof FilterPicker> = {
     },
     icon: {
       control: false,
-      description: 'Icon to show in the trigger',
+      description: 'Icon to show in the trigger button',
     },
     type: {
       control: 'radio',
@@ -111,7 +114,7 @@ const meta: Meta<typeof FilterPicker> = {
     size: {
       control: 'radio',
       options: ['small', 'medium', 'large'],
-      description: 'Size of the picker',
+      description: 'Size of the picker component',
       table: {
         defaultValue: { summary: 'medium' },
       },
@@ -136,7 +139,8 @@ const meta: Meta<typeof FilterPicker> = {
     },
     filter: {
       control: false,
-      description: 'Custom filter function for search',
+      description:
+        'Custom filter function for determining if an option should be included in search results',
     },
 
     /* Presentation */
@@ -150,13 +154,14 @@ const meta: Meta<typeof FilterPicker> = {
     },
     renderSummary: {
       control: false,
-      description: 'Custom renderer for the summary shown inside the trigger',
+      description:
+        'Custom renderer for the summary shown inside the trigger when there is a selection',
     },
 
     /* Behavior */
     isCheckable: {
       control: 'boolean',
-      description: 'Whether to show checkboxes in multiple selection mode',
+      description: 'Whether to show checkboxes for multiple selection mode',
       table: {
         defaultValue: { summary: false },
       },

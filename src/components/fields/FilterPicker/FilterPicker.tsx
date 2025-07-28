@@ -50,9 +50,9 @@ export interface CubeFilterPickerProps<T>
     FieldBaseProps {
   /** Placeholder text when no selection is made */
   placeholder?: string;
-  /** Icon to show in the trigger */
+  /** Icon to show in the trigger button */
   icon?: ReactElement;
-  /** Type of button styling */
+  /** Button styling type */
   type?:
     | 'outline'
     | 'clear'
@@ -62,43 +62,44 @@ export interface CubeFilterPickerProps<T>
     | (string & {});
   /** Button theme */
   theme?: 'default' | 'special';
-  /** Size of the component */
+  /** Size of the picker component */
   size?: 'small' | 'medium' | 'large';
-  /** Children (FilterListBox.Item and FilterListBox.Section elements) */
+  /** Children (FilterPicker.Item and FilterPicker.Section elements) */
   children?: ReactNode;
-  /** Custom styles for the list box */
+  /** Custom styles for the list box popover */
   listBoxStyles?: Styles;
-  /** Custom styles for the popover */
+  /** Custom styles for the popover container */
   popoverStyles?: Styles;
-  /** Whether the filter picker is checkable */
+  /** Whether to show checkboxes for multiple selection mode */
   isCheckable?: boolean;
 
   /**
-   * Custom renderer for the summary shown inside the trigger **when there is a selection**.
+   * Custom renderer for the summary shown inside the trigger when there is a selection.
    *
    * For `selectionMode="multiple"` the function receives:
    *  - `selectedLabels`: array of labels of the selected items.
-   *  - `selectedKeys`: array of keys of the selected items.
+   *  - `selectedKeys`: array of keys of the selected items or "all".
    *
    * For `selectionMode="single"` the function receives:
    *  - `selectedLabel`: label of the selected item.
    *  - `selectedKey`: key of the selected item.
    *
    * The function should return a `ReactNode` that will be rendered inside the trigger.
+   * Set to `false` to hide the summary text completely.
    */
   renderSummary?:
     | ((args: {
         selectedLabels: string[];
-        selectedKeys: (string | number)[];
+        selectedKeys: 'all' | (string | number)[];
         selectedLabel?: string;
         selectedKey?: string | number | null;
         selectionMode: 'single' | 'multiple';
       }) => ReactNode)
     | false;
 
-  /** Optional ref to access internal ListBox state (from FilterListBox) */
+  /** Ref to access internal ListBox state (from FilterListBox) */
   listStateRef?: MutableRefObject<any | null>;
-  /** Mods for the FilterPicker */
+  /** Additional modifiers for styling the FilterPicker */
   mods?: Record<string, boolean>;
 }
 
@@ -122,7 +123,12 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
       fieldProps.onSelectionChange = (key: any) => {
         if (props.selectionMode === 'multiple') {
-          onChange(key ? (Array.isArray(key) ? key : [key]) : []);
+          // Handle "all" selection and array selections
+          if (key === 'all') {
+            onChange('all');
+          } else {
+            onChange(key ? (Array.isArray(key) ? key : [key]) : []);
+          }
         } else {
           onChange(Array.isArray(key) ? key[0] : key);
         }
@@ -189,9 +195,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const [internalSelectedKey, setInternalSelectedKey] = useState<string | null>(
     defaultSelectedKey ?? null,
   );
-  const [internalSelectedKeys, setInternalSelectedKeys] = useState<string[]>(
-    defaultSelectedKeys ?? [],
-  );
+  const [internalSelectedKeys, setInternalSelectedKeys] = useState<
+    'all' | string[]
+  >(defaultSelectedKeys ?? []);
 
   // Track popover open/close and capture children order for session
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -237,8 +243,36 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const getSelectedLabels = () => {
     if (!children) return [];
 
+    // Handle "all" selection - return all available labels
+    if (selectionMode === 'multiple' && effectiveSelectedKeys === 'all') {
+      const allLabels: string[] = [];
+
+      const extractAllLabels = (nodes: ReactNode): void => {
+        Children.forEach(nodes, (child: any) => {
+          if (!child || typeof child !== 'object') return;
+
+          if (child.type === Item) {
+            const label =
+              child.props.textValue ||
+              (typeof child.props.children === 'string'
+                ? child.props.children
+                : '') ||
+              String(child.props.children || '');
+            allLabels.push(label);
+          }
+
+          if (child.props?.children) {
+            extractAllLabels(child.props.children);
+          }
+        });
+      };
+
+      extractAllLabels(children);
+      return allLabels;
+    }
+
     const selectedSet = new Set(
-      selectionMode === 'multiple'
+      selectionMode === 'multiple' && effectiveSelectedKeys !== 'all'
         ? (effectiveSelectedKeys || []).map(String)
         : effectiveSelectedKey != null
           ? [String(effectiveSelectedKey)]
@@ -300,7 +334,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
     // Handle custom values that don't have corresponding children
     const selectedKeysArr =
-      selectionMode === 'multiple'
+      selectionMode === 'multiple' && effectiveSelectedKeys !== 'all'
         ? (effectiveSelectedKeys || []).map(String)
         : effectiveSelectedKey != null
           ? [String(effectiveSelectedKey)]
@@ -323,13 +357,16 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   // Always keep the latest selection in a ref (with normalized keys) so that we can read it synchronously in the popover close effect.
   const latestSelectionRef = useRef<{
     single: string | null;
-    multiple: string[];
+    multiple: 'all' | string[];
   }>({
     single:
       effectiveSelectedKey != null
         ? normalizeKeyValue(effectiveSelectedKey)
         : null,
-    multiple: (effectiveSelectedKeys ?? []).map(normalizeKeyValue),
+    multiple:
+      effectiveSelectedKeys === 'all'
+        ? 'all'
+        : (effectiveSelectedKeys ?? []).map(normalizeKeyValue),
   });
 
   useEffect(() => {
@@ -338,12 +375,15 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         effectiveSelectedKey != null
           ? normalizeKeyValue(effectiveSelectedKey)
           : null,
-      multiple: (effectiveSelectedKeys ?? []).map(normalizeKeyValue),
+      multiple:
+        effectiveSelectedKeys === 'all'
+          ? 'all'
+          : (effectiveSelectedKeys ?? []).map(normalizeKeyValue),
     };
   }, [effectiveSelectedKey, effectiveSelectedKeys]);
   const selectionsWhenClosed = useRef<{
     single: string | null;
-    multiple: string[];
+    multiple: 'all' | string[];
   }>({ single: null, multiple: [] });
 
   // Function to sort children with selected items on top
@@ -382,9 +422,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     // Create selected keys set for fast lookup
     const selectedSet = new Set<string>();
     if (selectionMode === 'multiple') {
-      selectionsWhenClosed.current.multiple.forEach((key) =>
-        selectedSet.add(normalizeKeyValue(key)),
-      );
+      if (selectionsWhenClosed.current.multiple === 'all') {
+        // Don't sort when "all" is selected, just return original children
+        return children;
+      } else {
+        (selectionsWhenClosed.current.multiple as string[]).forEach((key) =>
+          selectedSet.add(normalizeKeyValue(key)),
+        );
+      }
     } else if (
       selectionMode === 'single' &&
       selectionsWhenClosed.current.single != null
@@ -647,7 +692,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                   if (!isControlledMultiple) {
                     let normalized: any = selection;
 
-                    if (Array.isArray(selection)) {
+                    if (selection === 'all') {
+                      normalized = 'all';
+                    } else if (Array.isArray(selection)) {
                       normalized = processSelectionArray(selection);
                     } else if (
                       selection &&
@@ -665,7 +712,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 if (selectionMode === 'single') {
                   latestSelectionRef.current.single = selection as any;
                 } else {
-                  if (Array.isArray(selection)) {
+                  if (selection === 'all') {
+                    latestSelectionRef.current.multiple = 'all';
+                  } else if (Array.isArray(selection)) {
                     latestSelectionRef.current.multiple = Array.from(
                       new Set(processSelectionArray(selection)),
                     );

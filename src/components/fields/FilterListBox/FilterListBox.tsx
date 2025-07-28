@@ -103,32 +103,32 @@ export interface CubeFilterListBoxProps<T>
   searchPlaceholder?: string;
   /** Whether the search input should have autofocus */
   autoFocus?: boolean;
-  /** The filter function used to determine if an option should be included in the filtered list */
+  /** Custom filter function for determining if an option should be included in search results */
   filter?: FilterFn;
   /** Custom label to display when no results are found after filtering */
   emptyLabel?: ReactNode;
   /** Custom styles for the search input */
   searchInputStyles?: Styles;
-  /** Whether the FilterListBox as a whole is loading (generic loading indicator) */
+  /** Whether the FilterListBox is in loading state (shows loading icon in search input) */
   isLoading?: boolean;
-  /** Ref for the search input */
+  /** Ref for accessing the search input element */
   searchInputRef?: RefObject<HTMLInputElement>;
-  /** Children (ListBox.Item and ListBox.Section elements) */
+  /** Children (FilterListBox.Item and FilterListBox.Section elements) */
   children?: ReactNode;
-  /** Allow entering a custom value that is not present in the options */
+  /** Whether to allow entering custom values that are not present in the predefined options */
   allowsCustomValue?: boolean;
-  /** Mods for the FilterListBox */
+  /** Additional modifiers for styling the FilterListBox */
   mods?: Record<string, boolean>;
 
   /**
-   * Optional callback fired when the user presses `Escape` while the search input is empty.
+   * Callback fired when the user presses Escape key while the search input is empty.
    * Can be used by parent components (e.g. FilterPicker) to close an enclosing Dialog.
    */
   onEscape?: () => void;
 
   /**
-   * Whether the options in the FilterListBox are checkable.
-   * This adds a checkbox icon to the left of the option.
+   * Whether to show checkboxes for multiple selection mode.
+   * This adds a checkbox icon to the left of each option.
    */
   isCheckable?: boolean;
 
@@ -158,7 +158,12 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
       fieldProps.onSelectionChange = (key: any) => {
         if (props.selectionMode === 'multiple') {
-          onChange(key ? (Array.isArray(key) ? key : [key]) : []);
+          // Handle "all" selection and array selections
+          if (key === 'all') {
+            onChange('all');
+          } else {
+            onChange(key ? (Array.isArray(key) ? key : [key]) : []);
+          }
         } else {
           onChange(Array.isArray(key) ? key[0] : key);
         }

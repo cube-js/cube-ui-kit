@@ -48,11 +48,13 @@ const meta: Meta<typeof FilterListBox> = {
     },
     selectedKeys: {
       control: { type: 'object' },
-      description: 'The selected keys in controlled multiple mode',
+      description:
+        'The selected keys in controlled multiple mode. Use "all" to select all items or an array of keys.',
     },
     defaultSelectedKeys: {
       control: { type: 'object' },
-      description: 'The default selected keys in uncontrolled multiple mode',
+      description:
+        'The default selected keys in uncontrolled multiple mode. Use "all" to select all items or an array of keys.',
     },
     selectionMode: {
       options: ['single', 'multiple'],
@@ -64,7 +66,8 @@ const meta: Meta<typeof FilterListBox> = {
     },
     allowsCustomValue: {
       control: { type: 'boolean' },
-      description: 'Whether the FilterListBox allows custom values',
+      description:
+        'Whether to allow entering custom values that are not present in the predefined options',
       table: {
         defaultValue: { summary: false },
       },
@@ -106,7 +109,8 @@ const meta: Meta<typeof FilterListBox> = {
     },
     filter: {
       control: false,
-      description: 'Custom filter function for search',
+      description:
+        'Custom filter function for determining if an option should be included in search results',
     },
 
     /* Presentation */
@@ -130,7 +134,7 @@ const meta: Meta<typeof FilterListBox> = {
     /* Behavior */
     isCheckable: {
       control: { type: 'boolean' },
-      description: 'Whether to show checkboxes for multiple selection',
+      description: 'Whether to show checkboxes for multiple selection mode',
       table: {
         defaultValue: { summary: false },
       },

@@ -246,23 +246,25 @@ export interface CubeListBoxProps<T>
     BasePropsWithoutChildren {
   /** Custom styles for the list container */
   listStyles?: Styles;
-  /** Custom styles for options */
+  /** Custom styles for individual options */
   optionStyles?: Styles;
-  /** Custom styles for sections */
+  /** Custom styles for section containers */
   sectionStyles?: Styles;
   /** Custom styles for section headings */
   headingStyles?: Styles;
   /** Whether the ListBox is disabled */
   isDisabled?: boolean;
-  /** The selected key(s) */
+  /** The selected key in controlled single selection mode */
   selectedKey?: Key | null;
-  selectedKeys?: Key[];
-  /** Default selected key(s) */
+  /** The selected keys in controlled multiple selection mode. Use "all" to select all items or an array of keys */
+  selectedKeys?: 'all' | Key[];
+  /** The default selected key in uncontrolled single selection mode */
   defaultSelectedKey?: Key | null;
-  defaultSelectedKeys?: Key[];
-  /** Selection change handler */
-  onSelectionChange?: (key: Key | null | Key[]) => void;
-  /** Ref for the list */
+  /** The default selected keys in uncontrolled multiple selection mode. Use "all" to select all items or an array of keys */
+  defaultSelectedKeys?: 'all' | Key[];
+  /** Callback fired when selection changes */
+  onSelectionChange?: (key: Key | null | 'all' | Key[]) => void;
+  /** Ref for accessing the list DOM element */
   listRef?: RefObject<HTMLDivElement>;
   /**
    * Ref to access the internal ListState instance.
@@ -271,40 +273,40 @@ export interface CubeListBoxProps<T>
   stateRef?: MutableRefObject<any | null>;
 
   /**
-   * When true (default) moving the pointer over an option will move DOM focus to that option.
+   * Whether moving the pointer over an option will move DOM focus to that option.
    * Set to false for components that keep DOM focus outside (e.g. searchable FilterListBox).
+   * Defaults to true.
    */
   focusOnHover?: boolean;
-  /** Custom header content */
+  /** Custom header content displayed above the list */
   header?: ReactNode;
-  /** Custom footer content */
+  /** Custom footer content displayed below the list */
   footer?: ReactNode;
   /** Custom styles for the header */
   headerStyles?: Styles;
   /** Custom styles for the footer */
   footerStyles?: Styles;
-  /** Mods for the ListBox */
+  /** Additional modifiers for styling the ListBox */
   mods?: Record<string, boolean>;
-  /** Size of the ListBox */
+  /** Size variant of the ListBox */
   size?: 'medium' | 'large';
 
   /**
-   * When true, ListBox will use virtual focus. This keeps actual DOM focus
-   * outside of the individual option elements (e.g. for searchable lists
-   * where focus stays within an external input).
+   * Whether to use virtual focus for keyboard navigation.
+   * When true, DOM focus stays outside individual option elements (useful for searchable lists).
    * Defaults to false for backward compatibility.
    */
   shouldUseVirtualFocus?: boolean;
 
   /**
-   * Optional callback fired when the user presses Escape key.
+   * Callback fired when the user presses Escape key.
    * When provided, this prevents React Aria's default Escape behavior (selection reset).
    */
   onEscape?: () => void;
 
   /**
-   * Whether the options in the ListBox are checkable.
-   * This adds a checkbox icon to the left of the option.
+   * Whether to show checkboxes for multiple selection mode.
+   * This adds a checkbox icon to the left of each option.
    */
   isCheckable?: boolean;
 
@@ -397,8 +399,10 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       }
 
       // React Aria always passes a Set for selection changes
-      // For single selection mode, we extract the first (and only) key
-      if (keys instanceof Set) {
+      // Handle the special "all" case and convert to our public API format
+      if (keys === 'all') {
+        externalSelectionHandler('all');
+      } else if (keys instanceof Set) {
         if (keys.size === 0) {
           externalSelectionHandler(
             props.selectionMode === 'multiple' ? [] : null,
@@ -425,12 +429,16 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // Set selection props based on mode
   if (listStateProps.selectionMode === 'multiple') {
     if (selectedKeys !== undefined) {
-      listStateProps.selectedKeys = new Set(selectedKeys as Key[]);
+      // Handle "all" selection by passing it directly to React Aria
+      listStateProps.selectedKeys =
+        selectedKeys === 'all' ? 'all' : new Set(selectedKeys as Key[]);
     }
     if (defaultSelectedKeys !== undefined) {
-      listStateProps.defaultSelectedKeys = new Set(
-        defaultSelectedKeys as Key[],
-      );
+      // Handle "all" default selection
+      listStateProps.defaultSelectedKeys =
+        defaultSelectedKeys === 'all'
+          ? 'all'
+          : new Set(defaultSelectedKeys as Key[]);
     }
     // Remove single-selection props if any
     delete listStateProps.selectedKey;
