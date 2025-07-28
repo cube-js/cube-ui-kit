@@ -785,6 +785,13 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
   const searchInput = (
     <SearchWrapperElement mods={mods} data-size="small">
+      {isLoading && (
+        <div data-element="Prefix">
+          <div data-element="InputIcon">
+            {isLoading ? <LoadingIcon /> : null}
+          </div>
+        </div>
+      )}
       <SearchInputElement
         ref={searchInputRef}
         data-is-prefix={isLoading ? '' : undefined}
@@ -811,13 +818,6 @@ export const FilterListBox = forwardRef(function FilterListBox<
         {...keyboardProps}
         {...modAttrs(mods)}
       />
-      {isLoading && (
-        <div data-element="Prefix">
-          <div data-element="InputIcon">
-            {isLoading ? <LoadingIcon /> : null}
-          </div>
-        </div>
-      )}
     </SearchWrapperElement>
   );
 
