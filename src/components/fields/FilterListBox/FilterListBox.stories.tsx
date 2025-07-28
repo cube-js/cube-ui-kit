@@ -135,6 +135,13 @@ const meta: Meta<typeof FilterListBox> = {
         defaultValue: { summary: false },
       },
     },
+    shouldFocusWrap: {
+      control: { type: 'boolean' },
+      description: 'Whether keyboard navigation should wrap around',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
 
     /* State */
     isLoading: {

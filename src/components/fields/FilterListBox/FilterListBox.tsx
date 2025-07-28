@@ -84,8 +84,8 @@ const SearchInputElement = tasty({
     ...DEFAULT_INPUT_STYLES,
     fill: '#clear',
     padding: {
-      '': '.5x 1.5x',
-      prefix: '.5x 1.5x .5x .5x',
+      '': '0 1.5x',
+      prefix: '0 1.5x 0 .5x',
     },
   },
 });
@@ -194,6 +194,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     description,
     styles,
     focusOnHover,
+    shouldFocusWrap,
     labelSuffix,
     selectedKey,
     defaultSelectedKey,
@@ -607,7 +608,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
             const newIndex = currentIndex + direction;
             if (newIndex >= 0 && newIndex < visibleKeys.length) {
               nextKey = visibleKeys[newIndex];
-            } else {
+            } else if (shouldFocusWrap) {
               // Wrap around
               nextKey = isArrowDown
                 ? visibleKeys[0]
@@ -715,6 +716,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
       focused: isFocused,
       loading: !!isLoading,
       searchable: true,
+      prefix: !!isLoading,
       ...externalMods,
     }),
     [
@@ -784,7 +786,14 @@ export const FilterListBox = forwardRef(function FilterListBox<
   };
 
   const searchInput = (
-    <SearchWrapperElement mods={mods} data-size="small">
+    <SearchWrapperElement mods={mods} data-size={size}>
+      {isLoading && (
+        <div data-element="Prefix">
+          <div data-element="InputIcon">
+            {isLoading ? <LoadingIcon /> : null}
+          </div>
+        </div>
+      )}
       <SearchInputElement
         ref={searchInputRef}
         data-is-prefix={isLoading ? '' : undefined}
@@ -811,13 +820,6 @@ export const FilterListBox = forwardRef(function FilterListBox<
         {...keyboardProps}
         {...modAttrs(mods)}
       />
-      {isLoading && (
-        <div data-element="Prefix">
-          <div data-element="InputIcon">
-            {isLoading ? <LoadingIcon /> : null}
-          </div>
-        </div>
-      )}
     </SearchWrapperElement>
   );
 
@@ -856,6 +858,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
           listRef={listRef}
           stateRef={listStateRef}
           listStyles={listStyles}
+          shouldFocusWrap={shouldFocusWrap}
           optionStyles={optionStyles}
           sectionStyles={sectionStyles}
           headingStyles={headingStyles}
