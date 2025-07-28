@@ -11,7 +11,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { FocusScope } from 'react-aria';
+import { FocusScope, useKeyboard } from 'react-aria';
 import { Section as BaseSection, Item } from 'react-stately';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
@@ -552,6 +552,16 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       }
     }, [state.isOpen, isPopoverOpen]);
 
+    // Add keyboard support for arrow keys to open the popover
+    const { keyboardProps } = useKeyboard({
+      onKeyDown: (e) => {
+        if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !state.isOpen) {
+          e.preventDefault();
+          state.open();
+        }
+      },
+    });
+
     return (
       <Button
         ref={triggerRef as any}
@@ -570,6 +580,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         rightIcon={<DirectionIcon to={state.isOpen ? 'top' : 'bottom'} />}
         styles={styles}
         {...otherProps}
+        {...keyboardProps}
         aria-label={`${props['aria-label'] ?? props.label ?? ''}`}
       >
         {renderTriggerContent()}

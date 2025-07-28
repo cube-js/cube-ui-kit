@@ -614,7 +614,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
                 ? visibleKeys[0]
                 : visibleKeys[visibleKeys.length - 1];
             }
-          } else if (shouldFocusWrap) {
+          } else {
             // Fallback
             nextKey = isArrowDown
               ? visibleKeys[0]
