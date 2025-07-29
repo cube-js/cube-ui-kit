@@ -196,6 +196,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     focusOnHover,
     showSelectAll,
     selectAllLabel,
+    items,
     header,
     footer,
     headerStyles,
@@ -742,6 +743,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             <FocusScope restoreFocus>
               <FilterListBox
                 autoFocus
+                items={items}
                 // Pass an aria-label so the internal ListBox is properly labeled and React Aria doesn't warn.
                 aria-label={`${props['aria-label'] ?? props.label ?? ''} Picker`}
                 selectedKey={

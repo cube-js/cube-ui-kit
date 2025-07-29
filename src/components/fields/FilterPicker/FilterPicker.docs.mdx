@@ -165,6 +165,24 @@ The `mods` property accepts the following modifiers you can override:
 </FilterPicker>
 ```
 
+### Multiple Selection with Select All
+
+<Story of={FilterPickerStories.WithSelectAll} />
+
+```jsx
+<FilterPicker
+  label="Select permissions"
+  placeholder="Choose permissions"
+  selectionMode="multiple"
+  showSelectAll={true}
+  selectAllLabel="All Permissions"
+>
+  <FilterPicker.Item key="read">Read</FilterPicker.Item>
+  <FilterPicker.Item key="write">Write</FilterPicker.Item>
+  <FilterPicker.Item key="execute">Execute</FilterPicker.Item>
+</FilterPicker>
+```
+
 ### Custom Summary
 
 <Story of={FilterPickerStories.CustomSummary} />
@@ -365,9 +383,21 @@ The `mods` property accepts the following modifiers you can override:
    </FilterPicker.Section>
    ```
 
-4. **Accessibility**: Always provide meaningful labels and placeholders
-5. **Performance**: Use `textValue` prop for complex option content
-6. **UX**: Consider using `isCheckable` for multiple selection clarity
+4. **Do**: Use `showSelectAll` for efficient multiple selection in compact interfaces
+   ```jsx
+   <FilterPicker 
+     selectionMode="multiple" 
+     showSelectAll 
+     selectAllLabel="Select All Options"
+     placeholder="Choose items..."
+   >
+     {/* many items */}
+   </FilterPicker>
+   ```
+
+5. **Accessibility**: Always provide meaningful labels and placeholders
+6. **Performance**: Use `textValue` prop for complex option content
+7. **UX**: Consider using `isCheckable` for multiple selection clarity
 
 ## Integration with Forms
 

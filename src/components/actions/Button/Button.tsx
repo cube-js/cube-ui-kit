@@ -117,18 +117,16 @@ export const DEFAULT_BUTTON_STYLES = {
 
   ButtonIcon: {
     width: 'max-content',
-    margin: {
-      '': 0,
-      ':first-child': '-.5x left',
-      ':last-child': '-.5x right',
-      '(:first-child & :last-child) | [data-size="xsmall"]': 0,
-    },
-    placeSelf: {
-      '': 'center',
-      ':first-child': 'center start',
-      ':last-child': 'center end',
-      ':first-child & :last-child': 'center',
-    },
+  },
+
+  '& [data-element="ButtonIcon"]:first-child:not(:last-child)': {
+    marginLeft: '-.5x',
+    placeSelf: 'center start',
+  },
+
+  '& [data-element="ButtonIcon"]:last-child:not(:first-child)': {
+    marginRight: '-.5x',
+    placeSelf: 'center end',
   },
 } as const;
 

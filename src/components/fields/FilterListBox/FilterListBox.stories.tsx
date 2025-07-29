@@ -1220,13 +1220,14 @@ export const VirtualizedList: StoryFn<CubeFilterListBoxProps<any>> = (args) => {
         selectedKeys={selectedKeys}
         height="300px"
         overflow="auto"
+        items={items}
         onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
       >
-        {items.map((item) => (
+        {(item) => (
           <FilterListBox.Item key={item.id} description={item.description}>
             {item.name}
           </FilterListBox.Item>
-        ))}
+        )}
       </FilterListBox>
 
       <Text>

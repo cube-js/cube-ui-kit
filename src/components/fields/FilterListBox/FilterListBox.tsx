@@ -215,13 +215,47 @@ export const FilterListBox = forwardRef(function FilterListBox<
     headerStyles,
     footerStyles,
     listBoxStyles,
-    children,
+    items,
+    children: renderChildren,
     onEscape,
     isCheckable,
     onOptionClick,
     selectionMode = 'single',
     ...otherProps
   } = props;
+
+  // Preserve the original `children` (may be a render function) before we
+  // potentially overwrite it.
+  let children: ReactNode = renderChildren as ReactNode;
+
+  const renderFn = renderChildren as unknown;
+
+  if (items && typeof renderFn === 'function') {
+    try {
+      const itemsArray = Array.from(items as Iterable<any>);
+      // Execute the render function for each item to obtain <Item/> / <Section/> nodes.
+      children = itemsArray.map((item, idx) => {
+        const rendered = (renderFn as (it: any) => ReactNode)(item);
+        // Ensure every element has a stable key: rely on the user-provided key
+        // inside the render function, otherwise fall back to the item itself or
+        // the index. This mirrors React Aria examples where the render function
+        // is expected to set keys, but we add a fallback for robustness.
+        if (
+          React.isValidElement(rendered) &&
+          (rendered as ReactElement).key == null
+        ) {
+          return React.cloneElement(rendered as ReactElement, {
+            key: (rendered as any)?.key ?? item?.key ?? idx,
+          });
+        }
+
+        return rendered as ReactNode;
+      });
+    } catch {
+      // If conversion fails for some reason, we silently ignore and proceed
+      // with the original children value so we don't break runtime.
+    }
+  }
 
   // Collect original option keys to avoid duplicating them as custom values.
   const originalKeys = useMemo(() => {
@@ -881,6 +915,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
           mods={mods}
           size={size}
           isCheckable={isCheckable}
+          items={items as any}
           onSelectionChange={handleSelectionChange}
           onEscape={onEscape}
           onOptionClick={handleOptionClick}

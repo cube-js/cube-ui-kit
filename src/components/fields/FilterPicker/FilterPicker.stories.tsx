@@ -1518,9 +1518,10 @@ export const VirtualizedList: Story = {
         <FilterPicker
           {...args}
           selectedKeys={selectedKeys}
+          items={items}
           onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
         >
-          {items.map((item) => (
+          {(item) => (
             <FilterPicker.Item
               key={item.id}
               textValue={item.name}
@@ -1528,7 +1529,7 @@ export const VirtualizedList: Story = {
             >
               {item.name}
             </FilterPicker.Item>
-          ))}
+          )}
         </FilterPicker>
 
         <Text preset="t4" color="#dark.60">

@@ -157,6 +157,24 @@ The `mods` property accepts the following modifiers you can override:
 </FilterListBox>
 ```
 
+### Multiple Selection with Select All
+
+<Story of={FilterListBoxStories.WithSelectAll} />
+
+```jsx
+<FilterListBox
+  label="Select permissions"
+  selectionMode="multiple"
+  showSelectAll={true}
+  selectAllLabel="All Permissions"
+  searchPlaceholder="Search permissions..."
+>
+  <FilterListBox.Item key="read">Read</FilterListBox.Item>
+  <FilterListBox.Item key="write">Write</FilterListBox.Item>
+  <FilterListBox.Item key="execute">Execute</FilterListBox.Item>
+</FilterListBox>
+```
+
 ### With Descriptions
 
 <Story of={FilterListBoxStories.WithDescriptions} />
@@ -322,9 +340,21 @@ The `mods` property accepts the following modifiers you can override:
    </FilterListBox.Item>
    ```
 
-4. **Performance**: Use custom filter functions for specialized search needs
-5. **UX**: Provide meaningful empty state messages
-6. **Accessibility**: Always provide clear search placeholders
+4. **Do**: Use `showSelectAll` for efficient multiple selection from filtered lists
+   ```jsx
+   <FilterListBox 
+     selectionMode="multiple" 
+     showSelectAll 
+     selectAllLabel="Select All Visible"
+     searchPlaceholder="Filter items..."
+   >
+     {/* many items */}
+   </FilterListBox>
+   ```
+
+5. **Performance**: Use custom filter functions for specialized search needs
+6. **UX**: Provide meaningful empty state messages
+7. **Accessibility**: Always provide clear search placeholders
 
 ## Integration with Forms
 
