@@ -229,6 +229,21 @@ const meta: Meta<typeof FilterPicker> = {
       action: 'option clicked',
       description: 'Callback when an option is clicked (non-checkbox area)',
     },
+    showSelectAll: {
+      control: { type: 'boolean' },
+      description:
+        'Whether to show the "Select All" option in multiple selection mode',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    selectAllLabel: {
+      control: { type: 'text' },
+      description: 'Label for the "Select All" option',
+      table: {
+        defaultValue: { summary: 'Select All' },
+      },
+    },
   },
 };
 
@@ -354,6 +369,7 @@ export const SingleSelection: Story = {
     selectionMode: 'single',
     searchPlaceholder: 'Search fruits...',
     width: 'max 30x',
+    selectedKey: ['banana'],
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -378,6 +394,7 @@ export const MultipleSelection: Story = {
     selectionMode: 'multiple',
     searchPlaceholder: 'Search options...',
     width: 'max 30x',
+    selectedKeys: ['banana', 'cherry'],
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -1527,6 +1544,40 @@ export const VirtualizedList: Story = {
       description: {
         story:
           'When a FilterPicker contains many items and has no sections, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets.',
+      },
+    },
+  },
+};
+
+export const WithSelectAll: Story = {
+  render: (args) => (
+    <FilterPicker {...args}>
+      {permissions.map((permission) => (
+        <FilterPicker.Item
+          key={permission.key}
+          description={permission.description}
+        >
+          {permission.label}
+        </FilterPicker.Item>
+      ))}
+    </FilterPicker>
+  ),
+  args: {
+    label: 'Select permissions with Select All',
+    placeholder: 'Choose permissions',
+    selectionMode: 'multiple',
+    isCheckable: true,
+    showSelectAll: true,
+    selectAllLabel: 'Select All Permissions',
+    defaultSelectedKeys: ['read'],
+    type: 'outline',
+    size: 'medium',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `showSelectAll={true}` is used with multiple selection mode in FilterPicker, a "Select All" option appears in the dropdown above the search input. The checkbox shows indeterminate state when some items are selected, checked when all are selected, and unchecked when none are selected. The select all functionality works seamlessly with filtering and the trigger button shows the combined selection summary.',
       },
     },
   },

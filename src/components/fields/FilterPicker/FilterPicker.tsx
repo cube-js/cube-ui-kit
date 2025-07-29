@@ -162,6 +162,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     labelSuffix,
     shouldFocusWrap,
     children,
+    shouldFlip = true,
     selectedKey,
     defaultSelectedKey,
     selectedKeys,
@@ -171,6 +172,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     selectionMode = 'single',
     listStateRef,
     focusOnHover,
+    showSelectAll,
+    selectAllLabel,
     header,
     footer,
     headerStyles,
@@ -582,6 +585,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     );
   };
 
+  const [shouldUpdatePosition, setShouldUpdatePosition] = useState(false);
+
   // The trigger is rendered as a function so we can access the dialog state
   const renderTrigger = (state) => {
     // Track popover open/close state to control sorting
@@ -606,6 +611,11 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         }
       },
     });
+
+    setTimeout(() => {
+      // Disable the update of the position while the popover is open (with a delay) to avoid jumping
+      setShouldUpdatePosition(!state.isOpen);
+    }, 100);
 
     return (
       <Button
@@ -637,7 +647,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     <DialogTrigger
       type="popover"
       placement="bottom start"
-      shouldFlip={true}
+      shouldUpdatePosition={shouldUpdatePosition}
+      shouldFlip={shouldFlip}
       isDismissable={true}
     >
       {renderTrigger}
@@ -667,6 +678,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 popover: true,
               }}
               size={size === 'small' ? 'medium' : size}
+              showSelectAll={showSelectAll}
+              selectAllLabel={selectAllLabel}
               header={header}
               footer={footer}
               headerStyles={headerStyles}
@@ -676,7 +689,10 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
               onOptionClick={(key) => {
                 // For FilterPicker, clicking the content area should close the popover
                 // in multiple selection mode (single mode already closes via onSelectionChange)
-                if (selectionMode === 'multiple' && isCheckable) {
+                if (
+                  (selectionMode === 'multiple' && isCheckable) ||
+                  key === '__ALL__'
+                ) {
                   close();
                 }
               }}

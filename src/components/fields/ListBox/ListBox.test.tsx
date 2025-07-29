@@ -488,4 +488,115 @@ describe('<ListBox />', () => {
     focusedItem = listbox.querySelector('[data-is-focused]');
     expect(focusedItem).toBeInTheDocument();
   });
+
+  describe('Select All functionality', () => {
+    const selectAllItems = [
+      <ListBox.Item key="apple">Apple</ListBox.Item>,
+      <ListBox.Item key="banana">Banana</ListBox.Item>,
+      <ListBox.Item key="cherry">Cherry</ListBox.Item>,
+    ];
+
+    it('should show select all option when showSelectAll is true', () => {
+      render(
+        <ListBox
+          label="Select fruits"
+          selectionMode="multiple"
+          showSelectAll={true}
+          selectAllLabel="Select All Fruits"
+        >
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      expect(screen.getByText('Select All Fruits')).toBeInTheDocument();
+    });
+
+    it('should not show select all option in single selection mode', () => {
+      render(
+        <ListBox
+          label="Select fruits"
+          selectionMode="single"
+          showSelectAll={true}
+          selectAllLabel="Select All Fruits"
+        >
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      expect(screen.queryByText('Select All Fruits')).not.toBeInTheDocument();
+    });
+
+    it('should handle select all click to select all items', async () => {
+      const onSelectionChange = jest.fn();
+
+      render(
+        <ListBox
+          label="Select fruits"
+          selectionMode="multiple"
+          showSelectAll={true}
+          onSelectionChange={onSelectionChange}
+        >
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      const selectAllOption = screen.getByText('Select All');
+      await act(async () => {
+        await userEvent.click(selectAllOption);
+      });
+
+      expect(onSelectionChange).toHaveBeenCalledWith('all');
+    });
+
+    it('should handle select all click to deselect all when all are selected', async () => {
+      const onSelectionChange = jest.fn();
+
+      render(
+        <ListBox
+          label="Select fruits"
+          selectionMode="multiple"
+          showSelectAll={true}
+          selectedKeys="all"
+          onSelectionChange={onSelectionChange}
+        >
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      const selectAllOption = screen.getByText('Select All');
+      await act(async () => {
+        await userEvent.click(selectAllOption);
+      });
+
+      expect(onSelectionChange).toHaveBeenCalledWith([]);
+    });
+
+    it('should show indeterminate state when some items are selected', () => {
+      render(
+        <ListBox
+          label="Select fruits"
+          selectionMode="multiple"
+          showSelectAll={true}
+          isCheckable={true}
+          selectedKeys={['apple', 'banana']}
+        >
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      // The select all option should exist and have indeterminate styling
+      const selectAllOption = screen.getByText('Select All');
+      expect(selectAllOption).toBeInTheDocument();
+
+      // Check for indeterminate state in the checkbox (should have specific styles)
+      const selectAllElement = selectAllOption.closest('[role="option"]');
+      expect(selectAllElement).toBeInTheDocument();
+
+      // Check if the element has indeterminate styling
+      const checkboxElement = selectAllElement?.querySelector(
+        '[data-element="Checkbox"]',
+      );
+      expect(checkboxElement).toBeInTheDocument();
+    });
+  });
 });

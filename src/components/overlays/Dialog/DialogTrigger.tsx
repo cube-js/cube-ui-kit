@@ -10,7 +10,6 @@ import {
 } from 'react-aria';
 import { OverlayTriggerState, useOverlayTriggerState } from 'react-stately';
 
-import { useIsFirstRender } from '../../../_internal/index';
 import { Styles } from '../../../tasty';
 import { useCombinedRefs } from '../../../utils/react/index';
 import { Modal, Popover, Tray, WithCloseBehavior } from '../Modal';
@@ -68,6 +67,7 @@ export interface CubeDialogTriggerProps
   onOpenChange?: (isOpen: boolean) => void;
   defaultOpen?: boolean;
   shouldFlip?: boolean;
+  shouldUpdatePosition?: boolean;
 }
 
 /**
@@ -243,6 +243,7 @@ function PopoverTrigger(allProps) {
     offset: props.offset || 8,
     crossOffset: props.crossOffset,
     shouldFlip: props.shouldFlip,
+    shouldUpdatePosition: props.shouldUpdatePosition,
     isOpen: state.isOpen,
   });
 

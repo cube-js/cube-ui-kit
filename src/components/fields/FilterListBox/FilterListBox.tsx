@@ -207,6 +207,8 @@ export const FilterListBox = forwardRef(function FilterListBox<
     defaultSelectedKeys,
     onSelectionChange: externalOnSelectionChange,
     allowsCustomValue = false,
+    showSelectAll,
+    selectAllLabel,
     header,
     footer,
     size = 'medium',
@@ -872,6 +874,8 @@ export const FilterListBox = forwardRef(function FilterListBox<
           disabledKeys={props.disabledKeys}
           focusOnHover={focusOnHover}
           shouldUseVirtualFocus={true}
+          showSelectAll={showSelectAll}
+          selectAllLabel={selectAllLabel}
           footer={footer}
           footerStyles={footerStyles}
           mods={mods}

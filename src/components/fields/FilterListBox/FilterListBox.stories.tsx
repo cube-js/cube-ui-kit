@@ -205,6 +205,21 @@ const meta: Meta<typeof FilterListBox> = {
       action: 'option clicked',
       description: 'Callback when an option is clicked (non-checkbox area)',
     },
+    showSelectAll: {
+      control: { type: 'boolean' },
+      description:
+        'Whether to show the "Select All" option in multiple selection mode',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    selectAllLabel: {
+      control: { type: 'text' },
+      description: 'Label for the "Select All" option',
+      table: {
+        defaultValue: { summary: 'Select All' },
+      },
+    },
   },
 };
 
@@ -1231,6 +1246,38 @@ VirtualizedList.parameters = {
     description: {
       story:
         'When a FilterListBox contains many items and has no sections, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets. This story includes items with varying heights to demonstrate stable virtualization without scroll jumping.',
+    },
+  },
+};
+
+export const WithSelectAll: Story = {
+  render: (args) => (
+    <FilterListBox {...args}>
+      {permissions.map((permission) => (
+        <FilterListBox.Item
+          key={permission.key}
+          description={permission.description}
+        >
+          {permission.label}
+        </FilterListBox.Item>
+      ))}
+    </FilterListBox>
+  ),
+  args: {
+    label: 'Select permissions with Select All',
+    selectionMode: 'multiple',
+    isCheckable: true,
+    showSelectAll: true,
+    selectAllLabel: 'Select All Permissions',
+    defaultSelectedKeys: ['read'],
+    searchPlaceholder: 'Search permissions...',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `showSelectAll={true}` is used with multiple selection mode in FilterListBox, a "Select All" option appears in the header above the search input. The checkbox shows indeterminate state when some items are selected, checked when all are selected, and unchecked when none are selected. The select all functionality works seamlessly with filtering - it only affects the currently visible (filtered) items.',
+      },
     },
   },
 };

@@ -170,6 +170,21 @@ const meta: Meta<typeof ListBox> = {
       action: 'option clicked',
       description: 'Callback when an option is clicked (non-checkbox area)',
     },
+    showSelectAll: {
+      control: { type: 'boolean' },
+      description:
+        'Whether to show the "Select All" option in multiple selection mode',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    selectAllLabel: {
+      control: { type: 'text' },
+      description: 'Label for the "Select All" option',
+      table: {
+        defaultValue: { summary: 'Select All' },
+      },
+    },
   },
 };
 
@@ -1043,6 +1058,34 @@ export const WithItemsProp: Story = {
       description: {
         story:
           'ListBox supports the `items` prop pattern where you provide an array of data objects and use a render function to create the items. This is useful when working with dynamic data or when you want to separate data from presentation.',
+      },
+    },
+  },
+};
+
+export const WithSelectAll: Story = {
+  render: (args) => (
+    <ListBox {...args}>
+      {permissions.map((permission) => (
+        <ListBox.Item key={permission.key} description={permission.description}>
+          {permission.label}
+        </ListBox.Item>
+      ))}
+    </ListBox>
+  ),
+  args: {
+    label: 'Select permissions with Select All',
+    selectionMode: 'multiple',
+    isCheckable: true,
+    showSelectAll: true,
+    selectAllLabel: 'Select All Permissions',
+    defaultSelectedKeys: ['read'],
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `showSelectAll={true}` is used with multiple selection mode, a "Select All" option appears in the header. The checkbox shows indeterminate state when some items are selected, checked when all are selected, and unchecked when none are selected.',
       },
     },
   },
