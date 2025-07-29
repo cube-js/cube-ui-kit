@@ -85,6 +85,11 @@ const meta: Meta<typeof FilterPicker> = {
       control: { type: 'object' },
       description: 'Array of keys for disabled items',
     },
+    items: {
+      control: false,
+      description:
+        'Array of items to render when using the render function pattern for large datasets with dynamic content',
+    },
 
     /* Trigger */
     placeholder: {
@@ -173,6 +178,21 @@ const meta: Meta<typeof FilterPicker> = {
         defaultValue: { summary: false },
       },
     },
+    showSelectAll: {
+      control: { type: 'boolean' },
+      description:
+        'Whether to show the "Select All" option in multiple selection mode',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    selectAllLabel: {
+      control: { type: 'text' },
+      description: 'Label for the "Select All" option',
+      table: {
+        defaultValue: { summary: 'Select All' },
+      },
+    },
 
     /* State */
     isDisabled: {
@@ -216,6 +236,32 @@ const meta: Meta<typeof FilterPicker> = {
       description: 'Help or error message',
     },
 
+    /* Styling */
+    listBoxStyles: {
+      control: false,
+      description:
+        'Custom styles for the dropdown list container within the popover',
+    },
+    popoverStyles: {
+      control: false,
+      description:
+        'Custom styles for the popover dialog that contains the FilterListBox',
+    },
+    triggerStyles: {
+      control: false,
+      description: 'Custom styles for the trigger button element',
+    },
+    headerStyles: {
+      control: false,
+      description:
+        'Custom styles for the header area when header prop is provided',
+    },
+    footerStyles: {
+      control: false,
+      description:
+        'Custom styles for the footer area when footer prop is provided',
+    },
+
     /* Events */
     onSelectionChange: {
       action: 'selection changed',
@@ -228,21 +274,6 @@ const meta: Meta<typeof FilterPicker> = {
     onOptionClick: {
       action: 'option clicked',
       description: 'Callback when an option is clicked (non-checkbox area)',
-    },
-    showSelectAll: {
-      control: { type: 'boolean' },
-      description:
-        'Whether to show the "Select All" option in multiple selection mode',
-      table: {
-        defaultValue: { summary: false },
-      },
-    },
-    selectAllLabel: {
-      control: { type: 'text' },
-      description: 'Label for the "Select All" option',
-      table: {
-        defaultValue: { summary: 'Select All' },
-      },
     },
   },
 };
@@ -1579,6 +1610,86 @@ export const WithSelectAll: Story = {
       description: {
         story:
           'When `showSelectAll={true}` is used with multiple selection mode in FilterPicker, a "Select All" option appears in the dropdown above the search input. The checkbox shows indeterminate state when some items are selected, checked when all are selected, and unchecked when none are selected. The select all functionality works seamlessly with filtering and the trigger button shows the combined selection summary.',
+      },
+    },
+  },
+};
+
+export const CustomTriggerStyling: Story = {
+  args: {
+    label: 'Custom Trigger Styling',
+    placeholder: 'Styled trigger...',
+    selectionMode: 'multiple',
+    searchPlaceholder: 'Search options...',
+    width: 'max 30x',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
+  },
+  render: (args) => (
+    <Space gap="3x" flow="column" placeItems="start">
+      <FilterPicker
+        {...args}
+        placeholder="Dashed Border Style"
+        triggerStyles={{
+          border: '2px dashed @color.purple.text',
+          radius: '@radius.xl',
+          background: {
+            '': '@color.purple.05',
+            hovered: '@color.purple.10',
+          },
+        }}
+      >
+        {fruits.slice(0, 4).map((fruit) => (
+          <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+            {fruit.label}
+          </FilterPicker.Item>
+        ))}
+      </FilterPicker>
+
+      <FilterPicker
+        {...args}
+        placeholder="Rounded Accent Style"
+        triggerStyles={{
+          border: '2px solid @color.accent',
+          radius: '@radius.round',
+          fontSize: '@text.t3.fontSize',
+          padding: '1.5x 2x',
+          shadow: '@shadow.small',
+        }}
+      >
+        {fruits.slice(0, 4).map((fruit) => (
+          <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+            {fruit.label}
+          </FilterPicker.Item>
+        ))}
+      </FilterPicker>
+
+      <FilterPicker
+        {...args}
+        placeholder="Minimal Border Style"
+        type="clear"
+        triggerStyles={{
+          border: 'bottom 2px solid @color.dark.30',
+          radius: '0',
+          background: 'transparent',
+        }}
+      >
+        {fruits.slice(0, 4).map((fruit) => (
+          <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+            {fruit.label}
+          </FilterPicker.Item>
+        ))}
+      </FilterPicker>
+    </Space>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use the `triggerStyles` prop to apply custom styling to the trigger button beyond standard types and themes. This allows for complete visual customization while maintaining all functionality.',
       },
     },
   },

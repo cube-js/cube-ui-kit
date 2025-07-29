@@ -35,6 +35,13 @@ Supports [Base properties](/docs/tasty-base-properties--docs)
 
 #### styles
 
+Customizes the main wrapper element of the FilterPicker component.
+
+**Sub-elements:**
+- None - styles apply directly to the wrapper
+
+#### triggerStyles
+
 Customizes the trigger button element.
 
 **Sub-elements:**
@@ -51,13 +58,22 @@ Customizes the dropdown list container within the popover.
 
 Customizes the popover dialog that contains the FilterListBox.
 
+**Sub-elements:**
+- Same as Dialog component sub-elements
+
 #### headerStyles
 
 Customizes the header area when header prop is provided.
 
+**Sub-elements:**
+- None - styles apply directly to the header container
+
 #### footerStyles
 
 Customizes the footer area when footer prop is provided.
+
+**Sub-elements:**
+- None - styles apply directly to the footer container
 
 ### Style Properties
 
@@ -71,6 +87,51 @@ The `mods` property accepts the following modifiers you can override:
 |----------|------|-------------|
 | `placeholder` | `boolean` | Applied when no selection is made |
 | `selected` | `boolean` | Applied when items are selected |
+
+## Content Patterns
+
+### Static Children Pattern
+
+The most common pattern for FilterPicker is to provide static children using `FilterPicker.Item` and `FilterPicker.Section` components:
+
+```jsx
+<FilterPicker label="Select Options">
+  <FilterPicker.Item key="apple">Apple</FilterPicker.Item>
+  <FilterPicker.Item key="banana">Banana</FilterPicker.Item>
+  <FilterPicker.Section title="Vegetables">
+    <FilterPicker.Item key="carrot">Carrot</FilterPicker.Item>
+  </FilterPicker.Section>
+</FilterPicker>
+```
+
+### Dynamic Content Pattern
+
+For large datasets or dynamic content, use the `items` prop with a render function. This pattern enables automatic virtualization for performance:
+
+```jsx
+<FilterPicker
+  label="Large Dataset"
+  items={largeDataArray}
+>
+  {(item) => (
+    <FilterPicker.Item key={item.id} textValue={item.name}>
+      {item.name}
+    </FilterPicker.Item>
+  )}
+</FilterPicker>
+```
+
+**Key Benefits:**
+- **Virtualization**: Automatically enabled for large lists without sections
+- **Performance**: Only renders visible items in the DOM
+- **Dynamic Content**: Perfect for data fetched from APIs or changing datasets
+- **Memory Efficient**: Handles thousands of items smoothly
+
+**When to Use:**
+- Lists with 50+ items
+- Dynamic data from APIs
+- Content that changes frequently
+- When virtualization performance is needed
 
 ## Variants
 
@@ -108,6 +169,35 @@ The `mods` property accepts the following modifiers you can override:
   <FilterPicker.Item key="apple">Apple</FilterPicker.Item>
   <FilterPicker.Item key="banana">Banana</FilterPicker.Item>
   <FilterPicker.Item key="cherry">Cherry</FilterPicker.Item>
+</FilterPicker>
+```
+
+### Dynamic Content Pattern
+
+<Story of={FilterPickerStories.VirtualizedList} />
+
+```jsx
+const items = Array.from({ length: 100 }, (_, i) => ({
+  id: `item-${i}`,
+  name: `Item ${i + 1}`,
+  description: `Description for item ${i + 1}`
+}));
+
+<FilterPicker
+  label="Large Dataset"
+  placeholder="Select from large list..."
+  selectionMode="multiple"
+  items={items}
+>
+  {(item) => (
+    <FilterPicker.Item 
+      key={item.id} 
+      textValue={item.name}
+      description={item.description}
+    >
+      {item.name}
+    </FilterPicker.Item>
+  )}
 </FilterPicker>
 ```
 
@@ -376,14 +466,22 @@ The `mods` property accepts the following modifiers you can override:
    </FilterPicker.Item>
    ```
 
-3. **Do**: Use sections for logical grouping of many options
+3. **Do**: Use sections for logical grouping of small to medium lists
    ```jsx
    <FilterPicker.Section title="Categories">
      <FilterPicker.Item key="tech">Technology</FilterPicker.Item>
    </FilterPicker.Section>
    ```
 
-4. **Do**: Use `showSelectAll` for efficient multiple selection in compact interfaces
+4. **Do**: Use dynamic content pattern for large datasets
+   ```jsx
+   // ✅ For large lists (50+ items)
+   <FilterPicker items={largeDataset}>
+     {(item) => <FilterPicker.Item key={item.id}>{item.name}</FilterPicker.Item>}
+   </FilterPicker>
+   ```
+
+5. **Do**: Use `showSelectAll` for efficient multiple selection in compact interfaces
    ```jsx
    <FilterPicker 
      selectionMode="multiple" 
@@ -395,9 +493,10 @@ The `mods` property accepts the following modifiers you can override:
    </FilterPicker>
    ```
 
-5. **Accessibility**: Always provide meaningful labels and placeholders
-6. **Performance**: Use `textValue` prop for complex option content
-7. **UX**: Consider using `isCheckable` for multiple selection clarity
+6. **Do**: Use `triggerStyles` for custom styling needs beyond standard types
+7. **Accessibility**: Always provide meaningful labels and placeholders
+8. **Performance**: Use `textValue` prop for complex option content
+9. **UX**: Consider using `isCheckable` for multiple selection clarity
 
 ## Integration with Forms
 
@@ -487,10 +586,31 @@ For space-constrained interfaces:
 
 ### Optimization Tips
 
-- Use `textValue` prop for complex option content
-- Implement custom filter functions for specific search needs
-- Use sections sparingly for very large lists
-- Consider debounced selection changes for real-time updates
+- **Use Dynamic Content Pattern**: For large datasets (50+ items), use the `items` prop with render function to enable automatic virtualization
+- **Avoid Sections for Large Lists**: Virtualization is disabled when sections are present, so avoid sections for very large datasets
+- **Use `textValue` prop**: For complex option content, provide searchable text that includes more context than just the visible label
+- **Implement custom filter functions**: For specific search needs or performance-critical filtering
+- **Consider debounced selection changes**: For real-time updates that trigger expensive operations
+
+### Virtualization
+
+When using the dynamic content pattern (`items` prop) without sections, FilterPicker automatically enables virtualization:
+
+```jsx
+// ✅ Virtualization enabled - excellent performance with large datasets
+<FilterPicker items={largeArray}>
+  {(item) => <FilterPicker.Item key={item.id}>{item.name}</FilterPicker.Item>}
+</FilterPicker>
+
+// ❌ Virtualization disabled - sections prevent virtualization
+<FilterPicker items={largeArray}>
+  <FilterPicker.Section title="All Items">
+    {(item) => <FilterPicker.Item key={item.id}>{item.name}</FilterPicker.Item>}
+  </FilterPicker.Section>
+</FilterPicker>
+```
+
+### Content Optimization
 
 ```jsx
 // Optimized for performance
