@@ -121,13 +121,13 @@ export const DEFAULT_BUTTON_STYLES = {
       '': 0,
       ':first-child': '-.5x left',
       ':last-child': '-.5x right',
-      ':first-child:last-child': 0,
+      '(:first-child & :last-child) | [data-size="xsmall"]': 0,
     },
     placeSelf: {
       '': 'center',
       ':first-child': 'center start',
       ':last-child': 'center end',
-      ':first-child:last-child': 'center',
+      ':first-child & :last-child': 'center',
     },
   },
 } as const;
