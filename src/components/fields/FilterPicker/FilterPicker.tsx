@@ -27,6 +27,7 @@ import {
   OUTER_STYLES,
   OuterStyleProps,
   Styles,
+  tasty,
 } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import { Button } from '../../actions';
@@ -70,6 +71,8 @@ export interface CubeFilterPickerProps<T>
   listBoxStyles?: Styles;
   /** Custom styles for the popover container */
   popoverStyles?: Styles;
+  /** Custom styles for the trigger button */
+  triggerStyles?: Styles;
   /** Whether to show checkboxes for multiple selection mode */
   isCheckable?: boolean;
 
@@ -104,6 +107,24 @@ export interface CubeFilterPickerProps<T>
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
+
+const FilterPickerWrapper = tasty({
+  qa: 'FilterPicker',
+  styles: {
+    display: 'grid',
+    flow: 'column',
+    gridRows: '1sf',
+    placeContent: 'stretch',
+    placeItems: 'stretch',
+  },
+});
+
+const TriggerButton = tasty(Button, {
+  qa: 'FilterPickerTrigger',
+  styles: {
+    placeContent: 'stretch',
+  },
+});
 
 export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   props: CubeFilterPickerProps<T>,
@@ -178,6 +199,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     footer,
     headerStyles,
     footerStyles,
+    triggerStyles,
     allowsCustomValue,
     renderSummary,
     isCheckable,
@@ -567,6 +589,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       content = placeholder;
     } else if (selectionMode === 'single') {
       content = selectedLabels[0];
+    } else if (effectiveSelectedKeys === 'all') {
+      content = selectAllLabel;
     } else {
       content = selectedLabels.join(', ');
     }
@@ -618,9 +642,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     }, 100);
 
     return (
-      <Button
+      <TriggerButton
         ref={triggerRef as any}
-        qa={props.qa || 'FilterPicker'}
         type={type}
         theme={validationState === 'invalid' ? 'danger' : theme}
         size={size}
@@ -639,127 +662,132 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         aria-label={`${props['aria-label'] ?? props.label ?? ''}`}
       >
         {renderTriggerContent()}
-      </Button>
+      </TriggerButton>
     );
   };
 
   const filterPickerField = (
-    <DialogTrigger
-      type="popover"
-      placement="bottom start"
-      shouldUpdatePosition={shouldUpdatePosition}
-      shouldFlip={shouldFlip}
-      isDismissable={true}
-    >
-      {renderTrigger}
-      {(close) => (
-        <Dialog display="grid" styles={{ gridRows: '1sf', ...popoverStyles }}>
-          <FocusScope restoreFocus>
-            <FilterListBox
-              autoFocus
-              // Pass an aria-label so the internal ListBox is properly labeled and React Aria doesn't warn.
-              aria-label={`${props['aria-label'] ?? props.label ?? ''} Picker`}
-              selectedKey={
-                selectionMode === 'single' ? effectiveSelectedKey : undefined
-              }
-              selectedKeys={
-                selectionMode === 'multiple' ? effectiveSelectedKeys : undefined
-              }
-              disabledKeys={disabledKeys}
-              focusOnHover={focusOnHover}
-              shouldFocusWrap={shouldFocusWrap}
-              allowsCustomValue={allowsCustomValue}
-              selectionMode={selectionMode}
-              validationState={validationState}
-              isDisabled={isDisabled}
-              stateRef={listStateRef}
-              isCheckable={isCheckable}
-              mods={{
-                popover: true,
-              }}
-              size={size === 'small' ? 'medium' : size}
-              showSelectAll={showSelectAll}
-              selectAllLabel={selectAllLabel}
-              header={header}
-              footer={footer}
-              headerStyles={headerStyles}
-              footerStyles={footerStyles}
-              qa={`${props.qa || 'FilterPicker'}ListBox`}
-              onEscape={() => close()}
-              onOptionClick={(key) => {
-                // For FilterPicker, clicking the content area should close the popover
-                // in multiple selection mode (single mode already closes via onSelectionChange)
-                if (
-                  (selectionMode === 'multiple' && isCheckable) ||
-                  key === '__ALL__'
-                ) {
-                  close();
+    <FilterPickerWrapper qa={props.qa || 'FilterPicker'} styles={styles}>
+      <DialogTrigger
+        type="popover"
+        placement="bottom start"
+        styles={triggerStyles}
+        shouldUpdatePosition={shouldUpdatePosition}
+        shouldFlip={shouldFlip}
+        isDismissable={true}
+      >
+        {renderTrigger}
+        {(close) => (
+          <Dialog display="grid" styles={{ gridRows: '1sf', ...popoverStyles }}>
+            <FocusScope restoreFocus>
+              <FilterListBox
+                autoFocus
+                // Pass an aria-label so the internal ListBox is properly labeled and React Aria doesn't warn.
+                aria-label={`${props['aria-label'] ?? props.label ?? ''} Picker`}
+                selectedKey={
+                  selectionMode === 'single' ? effectiveSelectedKey : undefined
                 }
-              }}
-              onSelectionChange={(selection) => {
-                // No need to change any flags - children order is cached
-
-                // Update internal state if uncontrolled
-                if (selectionMode === 'single') {
-                  if (!isControlledSingle) {
-                    setInternalSelectedKey(selection as any);
+                selectedKeys={
+                  selectionMode === 'multiple'
+                    ? effectiveSelectedKeys
+                    : undefined
+                }
+                disabledKeys={disabledKeys}
+                focusOnHover={focusOnHover}
+                shouldFocusWrap={shouldFocusWrap}
+                allowsCustomValue={allowsCustomValue}
+                selectionMode={selectionMode}
+                validationState={validationState}
+                isDisabled={isDisabled}
+                stateRef={listStateRef}
+                isCheckable={isCheckable}
+                mods={{
+                  popover: true,
+                }}
+                size={size === 'small' ? 'medium' : size}
+                showSelectAll={showSelectAll}
+                selectAllLabel={selectAllLabel}
+                header={header}
+                footer={footer}
+                headerStyles={headerStyles}
+                footerStyles={footerStyles}
+                qa={`${props.qa || 'FilterPicker'}ListBox`}
+                onEscape={() => close()}
+                onOptionClick={(key) => {
+                  // For FilterPicker, clicking the content area should close the popover
+                  // in multiple selection mode (single mode already closes via onSelectionChange)
+                  if (
+                    (selectionMode === 'multiple' && isCheckable) ||
+                    key === '__ALL__'
+                  ) {
+                    close();
                   }
-                } else {
-                  if (!isControlledMultiple) {
-                    let normalized: any = selection;
+                }}
+                onSelectionChange={(selection) => {
+                  // No need to change any flags - children order is cached
 
+                  // Update internal state if uncontrolled
+                  if (selectionMode === 'single') {
+                    if (!isControlledSingle) {
+                      setInternalSelectedKey(selection as any);
+                    }
+                  } else {
+                    if (!isControlledMultiple) {
+                      let normalized: any = selection;
+
+                      if (selection === 'all') {
+                        normalized = 'all';
+                      } else if (Array.isArray(selection)) {
+                        normalized = processSelectionArray(selection);
+                      } else if (
+                        selection &&
+                        typeof selection === 'object' &&
+                        selection instanceof Set
+                      ) {
+                        normalized = processSelectionArray(selection as any);
+                      }
+
+                      setInternalSelectedKeys(normalized as any);
+                    }
+                  }
+
+                  // Update latest selection ref synchronously
+                  if (selectionMode === 'single') {
+                    latestSelectionRef.current.single = selection as any;
+                  } else {
                     if (selection === 'all') {
-                      normalized = 'all';
+                      latestSelectionRef.current.multiple = 'all';
                     } else if (Array.isArray(selection)) {
-                      normalized = processSelectionArray(selection);
+                      latestSelectionRef.current.multiple = Array.from(
+                        new Set(processSelectionArray(selection)),
+                      );
                     } else if (
                       selection &&
                       typeof selection === 'object' &&
                       selection instanceof Set
                     ) {
-                      normalized = processSelectionArray(selection as any);
+                      latestSelectionRef.current.multiple = Array.from(
+                        new Set(processSelectionArray(selection as any)),
+                      );
+                    } else {
+                      latestSelectionRef.current.multiple = selection as any;
                     }
-
-                    setInternalSelectedKeys(normalized as any);
                   }
-                }
 
-                // Update latest selection ref synchronously
-                if (selectionMode === 'single') {
-                  latestSelectionRef.current.single = selection as any;
-                } else {
-                  if (selection === 'all') {
-                    latestSelectionRef.current.multiple = 'all';
-                  } else if (Array.isArray(selection)) {
-                    latestSelectionRef.current.multiple = Array.from(
-                      new Set(processSelectionArray(selection)),
-                    );
-                  } else if (
-                    selection &&
-                    typeof selection === 'object' &&
-                    selection instanceof Set
-                  ) {
-                    latestSelectionRef.current.multiple = Array.from(
-                      new Set(processSelectionArray(selection as any)),
-                    );
-                  } else {
-                    latestSelectionRef.current.multiple = selection as any;
+                  onSelectionChange?.(selection as any);
+
+                  if (selectionMode === 'single') {
+                    close();
                   }
-                }
-
-                onSelectionChange?.(selection as any);
-
-                if (selectionMode === 'single') {
-                  close();
-                }
-              }}
-            >
-              {finalChildren}
-            </FilterListBox>
-          </FocusScope>
-        </Dialog>
-      )}
-    </DialogTrigger>
+                }}
+              >
+                {finalChildren}
+              </FilterListBox>
+            </FocusScope>
+          </Dialog>
+        )}
+      </DialogTrigger>
+    </FilterPickerWrapper>
   );
 
   return wrapWithField<Omit<CubeFilterPickerProps<T>, 'children'>>(

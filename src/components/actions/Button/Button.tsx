@@ -60,7 +60,7 @@ const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
 export const DEFAULT_BUTTON_STYLES = {
   display: 'inline-grid',
-  placeItems: 'center stretch',
+  placeItems: 'center start',
   placeContent: 'center',
   position: 'relative',
   margin: 0,
@@ -113,6 +113,20 @@ export const DEFAULT_BUTTON_STYLES = {
   radius: {
     '': true,
     '[data-type="link"] & !focused': 0,
+  },
+
+  ButtonIcon: {
+    width: 'max-content',
+    margin: {
+      '': '0',
+      ':first-child': '-.5x left',
+      ':last-child': '-.5x right',
+    },
+    placeSelf: {
+      '': 'center',
+      ':first-child': 'center start',
+      ':last-child': 'center end',
+    },
   },
 } as const;
 
@@ -662,6 +676,8 @@ export const Button = forwardRef(function Button(
       loading: isLoading,
       selected: isSelected,
       'with-icons': !!icon || !!rightIcon,
+      'left-icon': !!icon,
+      'right-icon': !!rightIcon,
       'single-icon-only': singleIcon,
       ...mods,
     }),
