@@ -629,6 +629,7 @@ export const NoSummary: Story = {
     searchPlaceholder: 'Search options...',
     renderSummary: false,
     icon: <FilterIcon />,
+    rightIcon: null,
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);

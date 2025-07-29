@@ -123,7 +123,10 @@ const FilterPickerWrapper = tasty({
 const TriggerButton = tasty(Button, {
   qa: 'FilterPickerTrigger',
   styles: {
-    placeContent: 'stretch',
+    placeContent: {
+      '': 'stretch',
+      'single-icon': 'center',
+    },
   },
 });
 
