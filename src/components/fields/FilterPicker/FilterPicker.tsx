@@ -467,7 +467,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   // the very first popover open can already use it for sorting.
   useEffect(() => {
     selectionsWhenClosed.current = { ...latestSelectionRef.current };
-     
   }, []); // run only once on mount
 
   // Function to sort children with selected items on top
