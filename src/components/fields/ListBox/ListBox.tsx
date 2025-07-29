@@ -375,7 +375,7 @@ const SelectAllOption = ({
 
     // If there's an onOptionClick callback and this is checkable in multiple mode,
     // we need to distinguish between checkbox and content clicks
-    if (isCheckable && state.selectionManager.selectionMode === 'multiple') {
+    if (state.selectionManager.selectionMode === 'multiple') {
       // Check if the click target is within the checkbox area
       const clickTarget = e.target as HTMLElement;
       const checkboxElement = localRef.current?.querySelector(
@@ -590,30 +590,42 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
 
   // Calculate select all state for multiple selection mode
   const selectAllState = useMemo(() => {
+    // Select-all only makes sense for multiple selection mode *and* when the UI is enabled
     if (props.selectionMode !== 'multiple' || !showSelectAll) {
       return { isSelected: false, isIndeterminate: false };
     }
 
-    // React Stately exposes the raw selection value, which is either
-    // the string "all" (when selectAll was used) or a Set of keys.
+    // React Stately exposes the raw selection value which is either the string "all"
+    // (when `selectAll(true)` was used) **or** a Set of item keys.
     const rawSelection: any = (listState.selectionManager as any).rawSelection;
 
+    // Fast path – user pressed our "Select All" control previously.
     if (rawSelection === 'all') {
       return { isSelected: true, isIndeterminate: false };
     }
 
-    // Nothing selected
-    const selectedKeys = listState.selectionManager.selectedKeys as any;
+    const selectedKeys = listState.selectionManager.selectedKeys as Set<Key>;
 
-    if (selectedKeys instanceof Set && selectedKeys.size === 0) {
+    // When there is nothing selected, we are in a clear state
+    if (selectedKeys.size === 0) {
       return { isSelected: false, isIndeterminate: false };
     }
 
-    // Any other case (partial selection or even full manual selection)
+    // Determine how many *selectable* items there are, excluding section headers and disabled keys.
+    const totalSelectableItems = [...listState.collection].filter(
+      (item: any) => {
+        return item.type !== 'section' && !listState.disabledKeys.has(item.key);
+      },
+    ).length;
+
+    // Otherwise it must be a partial (indeterminate) selection.
     return { isSelected: false, isIndeterminate: true };
   }, [
     props.selectionMode,
     showSelectAll,
+    listState.collection,
+    listState.disabledKeys,
+    listState.selectionManager.selectedKeys,
     listState.selectionManager.rawSelection,
   ]);
 
@@ -621,7 +633,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   const handleSelectAllClick = (propagate?: boolean) => {
     if (isDisabled || props.selectionMode !== 'multiple') return;
 
-    if (selectAllState.isSelected || selectAllState.isIndeterminate) {
+    if (selectAllState.isSelected) {
       // All selected, deselect all
       listState.selectionManager.clearSelection();
       // Manually call the wrapped handler since React Aria might not trigger it
@@ -634,7 +646,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       forceUpdate({});
     }
 
-    if (propagate) {
+    if (propagate && !selectAllState.isSelected) {
       onOptionClick?.('__ALL__');
     }
   };
