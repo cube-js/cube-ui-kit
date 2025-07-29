@@ -86,10 +86,10 @@ export const DEFAULT_BUTTON_STYLES = {
   outlineOffset: 1,
   padding: {
     '': '.5x (1.5x - 1bw)',
-    '[data-size="small"] | [data-size="xsmall"]': '.5x (1x - 1bw)',
+    '[data-size="small"] | [data-size="xsmall"]': '.5x (1.25x - 1bw)',
     '[data-size="medium"]': '.5x (1.5x - 1bw)',
-    '[data-size="large"]': '.5x (2x - 1bw)',
-    '[data-size="xlarge"]': '.5x (2.25x - 1bw)',
+    '[data-size="large"]': '.5x (1.75x - 1bw)',
+    '[data-size="xlarge"]': '.5x (2x - 1bw)',
     'single-icon | [data-type="link"]': 0,
   },
   width: {

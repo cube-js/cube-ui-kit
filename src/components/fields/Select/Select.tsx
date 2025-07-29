@@ -26,7 +26,7 @@ import {
 import { Section as BaseSection, Item, useSelectState } from 'react-stately';
 import styled from 'styled-components';
 
-import { DownIcon, LoadingIcon } from '../../../icons/index';
+import { DirectionIcon, DownIcon, LoadingIcon } from '../../../icons/index';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared/index';
 import {
@@ -89,45 +89,6 @@ const SelectWrapperElement = tasty({
       invalid: '#danger-text',
       disabled: '#dark.30',
     },
-
-    Value: {
-      ...DEFAULT_INPUT_STYLES,
-      display: 'grid',
-      placeItems: 'center stretch',
-      preset: {
-        '': 't3',
-        '[data-type="primary"]': 't3m',
-      },
-      color: 'inherit',
-      opacity: {
-        '': 1,
-        placeholder: '.6',
-      },
-      textAlign: 'left',
-      fill: '#clear',
-      textOverflow: 'ellipsis',
-      overflow: 'hidden',
-    },
-
-    CaretIcon: {
-      display: 'grid',
-      placeItems: 'center',
-      width: {
-        '': '4x',
-        '[data-size="small"]': '@size-xs',
-        '[data-size="medium"]': '@size-sm',
-      },
-      cursor: 'pointer',
-      fontSize: 'inherit',
-    },
-
-    ButtonIcon: {
-      display: 'grid',
-      placeItems: 'center',
-      width: 'min @size-sm',
-      color: 'inherit',
-      fontSize: '@icon-size',
-    },
   },
 });
 
@@ -162,8 +123,64 @@ const SelectElement = tasty({
   styles: {
     ...INPUT_WRAPPER_STYLES,
     ...DEFAULT_BUTTON_STYLES,
-    padding: 0,
+    backgroundClip: 'initial',
     gap: 0,
+
+    Prefix: {
+      display: 'flex',
+      placeContent: 'center start',
+      placeItems: 'center',
+      placeSelf: 'center start',
+    },
+
+    Suffix: {
+      display: 'flex',
+      placeContent: 'center start',
+      placeItems: 'center',
+      placeSelf: 'center end',
+    },
+
+    ButtonIcon: {
+      display: 'grid',
+      placeItems: 'center',
+      color: 'inherit',
+      fontSize: '@icon-size',
+    },
+
+    Value: {
+      display: 'block',
+      width: 'max 100%',
+      placeItems: 'center stretch',
+      preset: {
+        '': 't3',
+        '[data-type="primary"]': 't3m',
+      },
+      padding: {
+        '': 0,
+        prefix: '.5x left',
+        suffix: '.5x right',
+        'prefix & suffix': '.5x left right',
+      },
+      color: 'inherit',
+      opacity: {
+        '': 1,
+        placeholder: '.6',
+      },
+      textAlign: 'left',
+      fill: '#clear',
+      textOverflow: 'ellipsis',
+      overflow: 'hidden',
+    },
+
+    '& [data-element="Prefix"] [data-element="ButtonIcon"]': {
+      marginLeft: -4,
+      placeSelf: 'center start',
+    },
+
+    '& [data-element="Suffix"] [data-element="ButtonIcon"]': {
+      marginRight: -4,
+      placeSelf: 'center end',
+    },
   },
   variants: {
     // Default theme
@@ -523,8 +540,8 @@ function Select<T extends object>(
           {validationState && !isLoading ? validation : null}
           {isLoading && <LoadingIcon />}
           {suffixPosition === 'after' ? suffix : null}
-          <div data-element="CaretIcon">
-            <DownIcon />
+          <div data-element="ButtonIcon">
+            <DirectionIcon to={state.isOpen ? 'up' : 'down'} />
           </div>
         </div>
       </SelectElement>

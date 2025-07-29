@@ -708,6 +708,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     return (
       <TriggerButton
         ref={triggerRef as any}
+        data-menu-trigger
         type={type}
         theme={validationState === 'invalid' ? 'danger' : theme}
         size={size}
@@ -721,7 +722,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         icon={icon}
         rightIcon={<DirectionIcon to={state.isOpen ? 'top' : 'bottom'} />}
         styles={styles}
-        {...otherProps}
         {...keyboardProps}
         aria-label={`${props['aria-label'] ?? props.label ?? ''}`}
       >
@@ -731,7 +731,11 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   };
 
   const filterPickerField = (
-    <FilterPickerWrapper qa={props.qa || 'FilterPicker'} styles={styles}>
+    <FilterPickerWrapper
+      qa={props.qa || 'FilterPicker'}
+      styles={styles}
+      {...otherProps}
+    >
       <DialogTrigger
         type="popover"
         placement="bottom start"
