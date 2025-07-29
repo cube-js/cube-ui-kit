@@ -696,10 +696,10 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       },
     });
 
-    setTimeout(() => {
+    useEffect(() => {
       // Disable the update of the position while the popover is open (with a delay) to avoid jumping
       setShouldUpdatePosition(!state.isOpen);
-    }, 100);
+    }, [state.isOpen]);
 
     return (
       <TriggerButton

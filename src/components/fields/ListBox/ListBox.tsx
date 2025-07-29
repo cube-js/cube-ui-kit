@@ -611,13 +611,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       return { isSelected: false, isIndeterminate: false };
     }
 
-    // Determine how many *selectable* items there are, excluding section headers and disabled keys.
-    const totalSelectableItems = [...listState.collection].filter(
-      (item: any) => {
-        return item.type !== 'section' && !listState.disabledKeys.has(item.key);
-      },
-    ).length;
-
     // Otherwise it must be a partial (indeterminate) selection.
     return { isSelected: false, isIndeterminate: true };
   }, [
