@@ -172,6 +172,14 @@ export const StyledItem = tasty({
       placeItems: 'center',
     },
 
+    '& [data-element="ButtonIcon"]:first-child:not(:last-child)': {
+      marginLeft: 0,
+    },
+
+    '& [data-element="ButtonIcon"]:last-child:not(:first-child)': {
+      marginRight: 0,
+    },
+
     Postfix: {
       color: {
         '': '#dark-03',
