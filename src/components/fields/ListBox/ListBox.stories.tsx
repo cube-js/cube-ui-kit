@@ -1078,7 +1078,7 @@ export const WithSelectAll: Story = {
     selectionMode: 'multiple',
     isCheckable: true,
     showSelectAll: true,
-    selectAllLabel: 'Select All Permissions',
+    selectAllLabel: 'All Permissions',
     defaultSelectedKeys: ['read'],
   },
   parameters: {

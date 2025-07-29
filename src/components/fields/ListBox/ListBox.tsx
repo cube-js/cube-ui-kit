@@ -12,6 +12,7 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from 'react';
 import {
   AriaListBoxProps,
@@ -501,6 +502,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     ...otherProps
   } = props;
 
+  const [, forceUpdate] = useState({});
+
   // Wrap onSelectionChange to prevent selection when disabled and handle React Aria's Set format
   const externalSelectionHandler = onSelectionChange || (props as any).onChange;
 
@@ -591,45 +594,44 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       return { isSelected: false, isIndeterminate: false };
     }
 
-    const totalItems = [...listState.collection].filter(
-      (item) => item.type === 'item',
-    ).length;
-    const selectedCount =
-      listState.selectionManager.selectedKeys === 'all'
-        ? totalItems
-        : listState.selectionManager.selectedKeys.size;
+    // React Stately exposes the raw selection value, which is either
+    // the string "all" (when selectAll was used) or a Set of keys.
+    const rawSelection: any = (listState.selectionManager as any).rawSelection;
 
-    if (selectedCount === 0) {
-      return { isSelected: false, isIndeterminate: false };
-    } else if (
-      selectedCount === totalItems ||
-      listState.selectionManager.selectedKeys === 'all'
-    ) {
+    if (rawSelection === 'all') {
       return { isSelected: true, isIndeterminate: false };
-    } else {
-      return { isSelected: false, isIndeterminate: true };
     }
+
+    // Nothing selected
+    const selectedKeys = listState.selectionManager.selectedKeys as any;
+
+    if (selectedKeys instanceof Set && selectedKeys.size === 0) {
+      return { isSelected: false, isIndeterminate: false };
+    }
+
+    // Any other case (partial selection or even full manual selection)
+    return { isSelected: false, isIndeterminate: true };
   }, [
     props.selectionMode,
     showSelectAll,
-    listState.collection,
-    listState.selectionManager.selectedKeys,
+    listState.selectionManager.rawSelection,
   ]);
 
   // Handle select all click
   const handleSelectAllClick = (propagate?: boolean) => {
     if (isDisabled || props.selectionMode !== 'multiple') return;
 
-    if (selectAllState.isSelected) {
+    if (selectAllState.isSelected || selectAllState.isIndeterminate) {
       // All selected, deselect all
       listState.selectionManager.clearSelection();
       // Manually call the wrapped handler since React Aria might not trigger it
       wrappedOnSelectionChange?.(new Set());
     } else {
       // Some or none selected, select all
-      listState.selectionManager.selectAll();
+      listState.selectionManager.selectAll(true);
       // Manually call the wrapped handler since React Aria might not trigger it
       wrappedOnSelectionChange?.('all');
+      forceUpdate({});
     }
 
     if (propagate) {
