@@ -10,6 +10,7 @@ import {
   TEXT_STYLES,
 } from '../../../tasty';
 import { accessibilityWarning } from '../../../utils/warnings';
+import { Text } from '../../content/Text';
 import { CubeActionProps } from '../Action/Action';
 import { useAction } from '../use-action';
 
@@ -671,11 +672,13 @@ export const Button = forwardRef(function Button(
     !children
   );
 
+  const hasIcons = !!icon || !!rightIcon;
+
   const modifiers = useMemo(
     () => ({
       loading: isLoading,
       selected: isSelected,
-      'with-icons': !!icon || !!rightIcon,
+      'with-icons': hasIcons,
       'left-icon': !!icon,
       'right-icon': !!rightIcon,
       'single-icon': singleIcon,
@@ -712,7 +715,7 @@ export const Button = forwardRef(function Button(
           <LoadingIcon data-element="ButtonIcon" />
         )
       ) : null}
-      {children}
+      {hasIcons ? <Text ellipsis>{children}</Text> : children}
       {rightIcon}
     </ButtonElement>
   );

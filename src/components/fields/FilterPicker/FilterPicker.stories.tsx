@@ -1244,7 +1244,7 @@ export const InForm = () => {
   };
 
   return (
-    <Form style={{ width: '400px' }} onSubmit={handleSubmit}>
+    <Form style={{ width: '30x' }} onSubmit={handleSubmit}>
       <FilterPicker
         isRequired
         name="technology"
@@ -1288,7 +1288,7 @@ export const ComplexExample: Story = {
     selectionMode: 'multiple',
     isCheckable: true,
     searchPlaceholder: 'Search all filters...',
-    width: '40x',
+    width: '30x',
     renderSummary: ({ selectedKeys, selectedLabels }) => {
       if (selectedKeys.length === 0) return null;
       if (selectedKeys.length === 1) return `1 filter: ${selectedLabels[0]}`;
