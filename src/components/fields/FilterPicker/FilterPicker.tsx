@@ -8,6 +8,7 @@ import {
   ReactNode,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -239,7 +240,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     ? selectedKeys
     : internalSelectedKeys;
 
-  // Utility to normalize React keys by stripping array prefixes like ".$" or "."
+  // Utility: remove React's ".$" / "." prefixes from element keys so that we
+  // can compare them with user-provided keys.
   const normalizeKeyValue = (key: any): string => {
     if (key == null) return '';
     const str = String(key);
@@ -250,11 +252,66 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         : str;
   };
 
+  // ---------------------------------------------------------------------------
+  // Map public-facing keys (without React's "." prefix) to the actual React
+  // element keys that appear in the collection (which usually have the `.$`
+  // or `.` prefix added by React when children are in an array). This ensures
+  // that the key we pass to ListBox exactly matches the keys it receives from
+  // React Aria, so the initial selection is highlighted correctly.
+  // ---------------------------------------------------------------------------
+
+  const findReactKey = useCallback(
+    (lookup: any): any => {
+      if (lookup == null) return lookup;
+
+      const normalizedLookup = normalizeKeyValue(lookup);
+      let foundKey: any = lookup;
+
+      const traverse = (nodes: ReactNode): void => {
+        Children.forEach(nodes, (child: any) => {
+          if (!child || typeof child !== 'object') return;
+
+          if (child.key != null) {
+            if (normalizeKeyValue(child.key) === normalizedLookup) {
+              foundKey = child.key;
+            }
+          }
+
+          if (child.props?.children) {
+            traverse(child.props.children);
+          }
+        });
+      };
+
+      if (children) traverse(children);
+
+      return foundKey;
+    },
+    [children],
+  );
+
+  const mappedSelectedKey = useMemo(() => {
+    if (selectionMode !== 'single') return null;
+    return findReactKey(effectiveSelectedKey);
+  }, [selectionMode, effectiveSelectedKey, findReactKey]);
+
+  const mappedSelectedKeys = useMemo(() => {
+    if (selectionMode !== 'multiple') return undefined as any;
+
+    if (effectiveSelectedKeys === 'all') return 'all' as const;
+
+    if (Array.isArray(effectiveSelectedKeys)) {
+      return (effectiveSelectedKeys as any[]).map((k) => findReactKey(k));
+    }
+
+    return effectiveSelectedKeys as any;
+  }, [selectionMode, effectiveSelectedKeys, findReactKey]);
+
   // Given an iterable of keys (array or Set) toggle membership for duplicates
   const processSelectionArray = (iterable: Iterable<any>): string[] => {
     const resultSet = new Set<string>();
     for (const key of iterable) {
-      const nKey = normalizeKeyValue(key);
+      const nKey = String(key);
       if (resultSet.has(nKey)) {
         resultSet.delete(nKey); // toggle off if clicked twice
       } else {
@@ -298,9 +355,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
     const selectedSet = new Set(
       selectionMode === 'multiple' && effectiveSelectedKeys !== 'all'
-        ? (effectiveSelectedKeys || []).map(String)
+        ? (effectiveSelectedKeys || []).map((k) => normalizeKeyValue(k))
         : effectiveSelectedKey != null
-          ? [String(effectiveSelectedKey)]
+          ? [normalizeKeyValue(effectiveSelectedKey)]
           : [],
     );
 
@@ -311,7 +368,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         if (!child || typeof child !== 'object') return;
 
         if (child.type === Item) {
-          if (selectedSet.has(String(child.key))) {
+          if (selectedSet.has(normalizeKeyValue(child.key))) {
             const label =
               child.props.textValue ||
               (typeof child.props.children === 'string'
@@ -367,7 +424,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
     // Add labels for any selected keys that weren't processed (custom values)
     selectedKeysArr.forEach((key) => {
-      if (!processedKeys.has(key)) {
+      if (!processedKeys.has(normalizeKeyValue(key))) {
         // This is a custom value, use the key as the label
         labels.push(key);
       }
@@ -384,26 +441,21 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     single: string | null;
     multiple: 'all' | string[];
   }>({
-    single:
-      effectiveSelectedKey != null
-        ? normalizeKeyValue(effectiveSelectedKey)
-        : null,
+    single: effectiveSelectedKey != null ? String(effectiveSelectedKey) : null,
     multiple:
       effectiveSelectedKeys === 'all'
         ? 'all'
-        : (effectiveSelectedKeys ?? []).map(normalizeKeyValue),
+        : (effectiveSelectedKeys ?? []).map(String),
   });
 
   useEffect(() => {
     latestSelectionRef.current = {
       single:
-        effectiveSelectedKey != null
-          ? normalizeKeyValue(effectiveSelectedKey)
-          : null,
+        effectiveSelectedKey != null ? String(effectiveSelectedKey) : null,
       multiple:
         effectiveSelectedKeys === 'all'
           ? 'all'
-          : (effectiveSelectedKeys ?? []).map(normalizeKeyValue),
+          : (effectiveSelectedKeys ?? []).map(String),
     };
   }, [effectiveSelectedKey, effectiveSelectedKeys]);
   const selectionsWhenClosed = useRef<{
@@ -411,15 +463,23 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     multiple: 'all' | string[];
   }>({ single: null, multiple: [] });
 
+  // Capture the initial selection (from defaultSelectedKey(s)) so that
+  // the very first popover open can already use it for sorting.
+  useEffect(() => {
+    selectionsWhenClosed.current = { ...latestSelectionRef.current };
+     
+  }, []); // run only once on mount
+
   // Function to sort children with selected items on top
   const getSortedChildren = useCallback(() => {
     if (!children) return children;
 
-    // When the popover is **closed** we don't want to trigger any resorting –
-    // that could cause visible re-flows during the fade-out animation. Simply
-    // reuse whatever order we had while it was open (if available).
-    if (!isPopoverOpen) {
-      return cachedChildrenOrder.current ?? children;
+    // When the popover is **closed**, reuse the cached order if we have it to
+    // avoid unnecessary reflows. If we don't have a cache yet (first open),
+    // fall through to compute the sorted order so the very first render is
+    // already correct.
+    if (!isPopoverOpen && cachedChildrenOrder.current) {
+      return cachedChildrenOrder.current;
     }
 
     // Popover is open – compute (or recompute) the sorted order for this
@@ -452,14 +512,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         return children;
       } else {
         (selectionsWhenClosed.current.multiple as string[]).forEach((key) =>
-          selectedSet.add(normalizeKeyValue(key)),
+          selectedSet.add(String(key)),
         );
       }
     } else if (
       selectionMode === 'single' &&
       selectionsWhenClosed.current.single != null
     ) {
-      selectedSet.add(normalizeKeyValue(selectionsWhenClosed.current.single));
+      selectedSet.add(String(selectionsWhenClosed.current.single));
     }
 
     // Helper function to check if an item is selected
@@ -543,8 +603,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     const childrenArray = Children.toArray(children);
     const sortedChildren = sortChildrenArray(childrenArray);
 
-    // Cache the sorted order when popover opens
-    if (isPopoverOpen) {
+    // Cache the sorted order when popover opens or when we compute it for the
+    // first time before opening.
+    if (isPopoverOpen || !cachedChildrenOrder.current) {
       cachedChildrenOrder.current = sortedChildren;
     }
 
@@ -685,12 +746,10 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 // Pass an aria-label so the internal ListBox is properly labeled and React Aria doesn't warn.
                 aria-label={`${props['aria-label'] ?? props.label ?? ''} Picker`}
                 selectedKey={
-                  selectionMode === 'single' ? effectiveSelectedKey : undefined
+                  selectionMode === 'single' ? mappedSelectedKey : undefined
                 }
                 selectedKeys={
-                  selectionMode === 'multiple'
-                    ? effectiveSelectedKeys
-                    : undefined
+                  selectionMode === 'multiple' ? mappedSelectedKeys : undefined
                 }
                 disabledKeys={disabledKeys}
                 focusOnHover={focusOnHover}

@@ -394,7 +394,7 @@ export const MultipleSelection: Story = {
     selectionMode: 'multiple',
     searchPlaceholder: 'Search options...',
     width: 'max 30x',
-    selectedKeys: ['banana', 'cherry'],
+    defaultSelectedKeys: ['banana', 'cherry'],
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);

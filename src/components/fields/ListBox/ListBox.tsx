@@ -87,7 +87,7 @@ const ListElement = tasty({
     boxSizing: 'border-box',
     margin: {
       '': '.5x .5x 0 .5x',
-      sections: '0 .5x',
+      sections: '.5x .5x 0 .5x',
     },
     height: 'max-content',
   },
