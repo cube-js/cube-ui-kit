@@ -391,6 +391,8 @@ const SelectAllOption = ({
         // Then call the callback (which will close the popover in FilterPicker)
         onClick?.(true);
       }
+    } else {
+      onClick?.(true);
     }
   };
 
@@ -621,9 +623,13 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     if (selectAllState.isSelected) {
       // All selected, deselect all
       listState.selectionManager.clearSelection();
+      // Manually call the wrapped handler since React Aria might not trigger it
+      wrappedOnSelectionChange?.(new Set());
     } else {
       // Some or none selected, select all
       listState.selectionManager.selectAll();
+      // Manually call the wrapped handler since React Aria might not trigger it
+      wrappedOnSelectionChange?.('all');
     }
 
     if (propagate) {
