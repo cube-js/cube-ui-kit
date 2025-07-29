@@ -364,6 +364,129 @@ describe('<ListBox />', () => {
     expect(appleOption.closest('li')).toHaveAttribute('aria-selected', 'false');
   });
 
+  it('should pre-select multiple options based on defaultSelectedKeys', () => {
+    const { getByText } = render(
+      <ListBox
+        label="Select fruits"
+        selectionMode="multiple"
+        defaultSelectedKeys={['apple', 'cherry']}
+      >
+        {basicItems}
+      </ListBox>,
+    );
+
+    const appleOption = getByText('Apple');
+    const bananaOption = getByText('Banana');
+    const cherryOption = getByText('Cherry');
+
+    // Apple and Cherry should be selected, Banana should not
+    expect(appleOption.closest('li')).toHaveAttribute('aria-selected', 'true');
+    expect(bananaOption.closest('li')).toHaveAttribute(
+      'aria-selected',
+      'false',
+    );
+    expect(cherryOption.closest('li')).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('should pre-select all options when defaultSelectedKeys is "all"', () => {
+    const { getByText } = render(
+      <ListBox
+        label="Select fruits"
+        selectionMode="multiple"
+        defaultSelectedKeys="all"
+      >
+        {basicItems}
+      </ListBox>,
+    );
+
+    const appleOption = getByText('Apple');
+    const bananaOption = getByText('Banana');
+    const cherryOption = getByText('Cherry');
+
+    // All options should be selected
+    expect(appleOption.closest('li')).toHaveAttribute('aria-selected', 'true');
+    expect(bananaOption.closest('li')).toHaveAttribute('aria-selected', 'true');
+    expect(cherryOption.closest('li')).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('should work in uncontrolled mode with defaultSelectedKeys', async () => {
+    const onSelectionChange = jest.fn();
+
+    const { getByText } = render(
+      <ListBox
+        label="Select fruits"
+        selectionMode="multiple"
+        defaultSelectedKeys={['apple']}
+        onSelectionChange={onSelectionChange}
+      >
+        {basicItems}
+      </ListBox>,
+    );
+
+    // Apple should be initially selected
+    const appleOption = getByText('Apple');
+    expect(appleOption.closest('li')).toHaveAttribute('aria-selected', 'true');
+
+    // Click on Banana to add it to selection
+    const bananaOption = getByText('Banana');
+    await act(async () => {
+      await userEvent.click(bananaOption);
+    });
+
+    // Should call onSelectionChange with both apple and banana
+    expect(onSelectionChange).toHaveBeenCalledWith(['apple', 'banana']);
+  });
+
+  it('should handle empty defaultSelectedKeys array', () => {
+    const { getByText } = render(
+      <ListBox
+        label="Select fruits"
+        selectionMode="multiple"
+        defaultSelectedKeys={[]}
+      >
+        {basicItems}
+      </ListBox>,
+    );
+
+    const appleOption = getByText('Apple');
+    const bananaOption = getByText('Banana');
+    const cherryOption = getByText('Cherry');
+
+    // No options should be selected
+    expect(appleOption.closest('li')).toHaveAttribute('aria-selected', 'false');
+    expect(bananaOption.closest('li')).toHaveAttribute(
+      'aria-selected',
+      'false',
+    );
+    expect(cherryOption.closest('li')).toHaveAttribute(
+      'aria-selected',
+      'false',
+    );
+  });
+
+  it('should handle defaultSelectedKey with null value', () => {
+    const { getByText } = render(
+      <ListBox label="Select a fruit" defaultSelectedKey={null}>
+        {basicItems}
+      </ListBox>,
+    );
+
+    const appleOption = getByText('Apple');
+    const bananaOption = getByText('Banana');
+    const cherryOption = getByText('Cherry');
+
+    // No options should be selected
+    expect(appleOption.closest('li')).toHaveAttribute('aria-selected', 'false');
+    expect(bananaOption.closest('li')).toHaveAttribute(
+      'aria-selected',
+      'false',
+    );
+    expect(cherryOption.closest('li')).toHaveAttribute(
+      'aria-selected',
+      'false',
+    );
+  });
+
   it('should handle keyboard navigation when no item is initially focused', async () => {
     const onSelectionChange = jest.fn();
 

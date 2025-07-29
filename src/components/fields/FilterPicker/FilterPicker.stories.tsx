@@ -369,7 +369,7 @@ export const SingleSelection: Story = {
     selectionMode: 'single',
     searchPlaceholder: 'Search fruits...',
     width: 'max 30x',
-    selectedKey: ['banana'],
+    defaultSelectedKey: ['banana'],
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
