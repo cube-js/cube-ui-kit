@@ -44,6 +44,14 @@ import { ListBox } from '../ListBox';
 
 import type { FieldBaseProps } from '../../../shared';
 
+// Define interface for items that can have keys
+interface ItemWithKey {
+  key?: string | number;
+  id?: string | number;
+  children?: ItemWithKey[];
+  [key: string]: unknown;
+}
+
 export interface CubeFilterPickerProps<T>
   extends Omit<CubeFilterListBoxProps<T>, 'size'>,
     BasePropsWithoutChildren,
@@ -104,7 +112,7 @@ export interface CubeFilterPickerProps<T>
     | false;
 
   /** Ref to access internal ListBox state (from FilterListBox) */
-  listStateRef?: MutableRefObject<any | null>;
+  listStateRef?: MutableRefObject<unknown>;
   /** Additional modifiers for styling the FilterPicker */
   mods?: Record<string, boolean>;
 }
@@ -130,7 +138,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   props = useFormProps(props);
   props = useFieldProps(props, {
     valuePropsMapper: ({ value, onChange }) => {
-      const fieldProps: any = {};
+      const fieldProps: Record<string, unknown> = {};
 
       if (props.selectionMode === 'multiple') {
         fieldProps.selectedKeys = value || [];
@@ -138,7 +146,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         fieldProps.selectedKey = value ?? null;
       }
 
-      fieldProps.onSelectionChange = (key: any) => {
+      fieldProps.onSelectionChange = (key: Key | null | 'all' | Key[]) => {
         if (props.selectionMode === 'multiple') {
           // Handle "all" selection and array selections
           if (key === 'all') {
@@ -226,7 +234,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const cachedChildrenOrder = useRef<ReactNode[] | null>(null);
   // Cache for sorted items array when using `items` prop
-  const cachedItemsOrder = useRef<any[] | null>(null);
+  const cachedItemsOrder = useRef<unknown[] | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   const isControlledSingle = selectedKey !== undefined;
@@ -241,7 +249,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   // Utility: remove React's ".$" / "." prefixes from element keys so that we
   // can compare them with user-provided keys.
-  const normalizeKeyValue = (key: any): string => {
+  const normalizeKeyValue = (key: Key): string => {
     if (key == null) return '';
     const str = String(key);
     return str.startsWith('.$')
@@ -260,24 +268,25 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   // ---------------------------------------------------------------------------
 
   const findReactKey = useCallback(
-    (lookup: any): any => {
+    (lookup: Key): Key => {
       if (lookup == null) return lookup;
 
       const normalizedLookup = normalizeKeyValue(lookup);
-      let foundKey: any = lookup;
+      let foundKey: Key = lookup;
 
       const traverse = (nodes: ReactNode): void => {
-        Children.forEach(nodes, (child: any) => {
+        Children.forEach(nodes, (child: ReactNode) => {
           if (!child || typeof child !== 'object') return;
+          const element = child as ReactElement;
 
-          if (child.key != null) {
-            if (normalizeKeyValue(child.key) === normalizedLookup) {
-              foundKey = child.key;
+          if (element.key != null) {
+            if (normalizeKeyValue(element.key) === normalizedLookup) {
+              foundKey = element.key;
             }
           }
 
-          if (child.props?.children) {
-            traverse(child.props.children);
+          if (element.props?.children) {
+            traverse(element.props.children);
           }
         });
       };
@@ -291,23 +300,23 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   const mappedSelectedKey = useMemo(() => {
     if (selectionMode !== 'single') return null;
-    return findReactKey(effectiveSelectedKey);
+    return effectiveSelectedKey ? findReactKey(effectiveSelectedKey) : null;
   }, [selectionMode, effectiveSelectedKey, findReactKey]);
 
   const mappedSelectedKeys = useMemo(() => {
-    if (selectionMode !== 'multiple') return undefined as any;
+    if (selectionMode !== 'multiple') return undefined;
 
     if (effectiveSelectedKeys === 'all') return 'all' as const;
 
     if (Array.isArray(effectiveSelectedKeys)) {
-      return (effectiveSelectedKeys as any[]).map((k) => findReactKey(k));
+      return (effectiveSelectedKeys as Key[]).map((k) => findReactKey(k));
     }
 
-    return effectiveSelectedKeys as any;
+    return effectiveSelectedKeys;
   }, [selectionMode, effectiveSelectedKeys, findReactKey]);
 
   // Given an iterable of keys (array or Set) toggle membership for duplicates
-  const processSelectionArray = (iterable: Iterable<any>): string[] => {
+  const processSelectionArray = (iterable: Iterable<Key>): string[] => {
     const resultSet = new Set<string>();
     for (const key of iterable) {
       const nKey = String(key);
@@ -328,19 +337,24 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
       // Extract from items prop if available
       if (items) {
-        const extractFromItems = (itemsArray: any[]): void => {
+        const extractFromItems = (itemsArray: unknown[]): void => {
           itemsArray.forEach((item) => {
             if (item && typeof item === 'object') {
-              if (Array.isArray(item.children)) {
+              const itemObj = item as ItemWithKey & {
+                textValue?: string;
+                label?: string;
+                name?: string;
+              };
+              if (Array.isArray(itemObj.children)) {
                 // Section-like object
-                extractFromItems(item.children);
+                extractFromItems(itemObj.children);
               } else {
                 // Regular item - extract label
                 const label =
-                  item.textValue ||
-                  item.label ||
-                  item.name ||
-                  String(item.key || item.id || item);
+                  itemObj.textValue ||
+                  itemObj.label ||
+                  itemObj.name ||
+                  String(itemObj.key || itemObj.id || item);
                 allLabels.push(label);
               }
             }
@@ -349,7 +363,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
         const itemsArray = Array.isArray(items)
           ? items
-          : Array.from(items as any);
+          : Array.from(items as Iterable<unknown>);
         extractFromItems(itemsArray);
         return allLabels;
       }
@@ -357,21 +371,23 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       // Extract from children if available
       if (children) {
         const extractAllLabels = (nodes: ReactNode): void => {
-          Children.forEach(nodes, (child: any) => {
+          if (!nodes) return;
+          Children.forEach(nodes, (child: ReactNode) => {
             if (!child || typeof child !== 'object') return;
+            const element = child as ReactElement;
 
-            if (child.type === Item) {
+            if (element.type === Item) {
               const label =
-                child.props.textValue ||
-                (typeof child.props.children === 'string'
-                  ? child.props.children
+                element.props.textValue ||
+                (typeof element.props.children === 'string'
+                  ? element.props.children
                   : '') ||
-                String(child.props.children || '');
+                String(element.props.children || '');
               allLabels.push(label);
             }
 
-            if (child.props?.children) {
-              extractAllLabels(child.props.children);
+            if (element.props?.children) {
+              extractAllLabels(element.props.children);
             }
           });
         };
@@ -396,21 +412,29 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
     // Extract from items prop if available
     if (items) {
-      const extractFromItems = (itemsArray: any[]): void => {
+      const extractFromItems = (itemsArray: unknown[]): void => {
         itemsArray.forEach((item) => {
           if (item && typeof item === 'object') {
-            if (Array.isArray(item.children)) {
+            const itemObj = item as ItemWithKey & {
+              textValue?: string;
+              label?: string;
+              name?: string;
+            };
+            if (Array.isArray(itemObj.children)) {
               // Section-like object
-              extractFromItems(item.children);
+              extractFromItems(itemObj.children);
             } else {
               // Regular item - check if selected
-              const itemKey = item.key || item.id;
+              const itemKey = itemObj.key || itemObj.id;
               if (
                 itemKey != null &&
                 selectedSet.has(normalizeKeyValue(itemKey))
               ) {
                 const label =
-                  item.textValue || item.label || item.name || String(itemKey);
+                  itemObj.textValue ||
+                  itemObj.label ||
+                  itemObj.name ||
+                  String(itemKey);
                 labels.push(label);
                 processedKeys.add(normalizeKeyValue(itemKey));
               }
@@ -421,32 +445,34 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
       const itemsArray = Array.isArray(items)
         ? items
-        : Array.from(items as any);
+        : Array.from(items as Iterable<unknown>);
       extractFromItems(itemsArray);
     }
 
     // Extract from children if available (for mixed mode or fallback)
     if (children) {
       const extractLabelsWithTracking = (nodes: ReactNode): void => {
-        Children.forEach(nodes, (child: any) => {
+        if (!nodes) return;
+        Children.forEach(nodes, (child: ReactNode) => {
           if (!child || typeof child !== 'object') return;
+          const element = child as ReactElement;
 
-          if (child.type === Item) {
-            const childKey = String(child.key);
+          if (element.type === Item) {
+            const childKey = String(element.key);
             if (selectedSet.has(normalizeKeyValue(childKey))) {
               const label =
-                child.props.textValue ||
-                (typeof child.props.children === 'string'
-                  ? child.props.children
+                element.props.textValue ||
+                (typeof element.props.children === 'string'
+                  ? element.props.children
                   : '') ||
-                String(child.props.children || '');
+                String(element.props.children || '');
               labels.push(label);
               processedKeys.add(normalizeKeyValue(childKey));
             }
           }
 
-          if (child.props?.children) {
-            extractLabelsWithTracking(child.props.children);
+          if (element.props?.children) {
+            extractLabelsWithTracking(element.props.children);
           }
         });
       };
@@ -563,7 +589,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     }
 
     // Helper function to check if an item is selected
-    const isItemSelected = (child: any): boolean => {
+    const isItemSelected = (child: ReactElement): boolean => {
       return (
         child?.key != null && selectedSet.has(normalizeKeyValue(child.key))
       );
@@ -571,45 +597,50 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
     // Helper function to sort children array
     const sortChildrenArray = (childrenArray: ReactNode[]): ReactNode[] => {
-      const cloneWithNormalizedKey = (item: any) =>
+      const cloneWithNormalizedKey = (item: ReactElement) =>
         cloneElement(item, {
-          key: normalizeKeyValue(item.key),
+          key: item.key ? normalizeKeyValue(item.key) : undefined,
         });
 
       const selected: ReactNode[] = [];
       const unselected: ReactNode[] = [];
 
-      childrenArray.forEach((child: any) => {
+      childrenArray.forEach((child: ReactNode) => {
         if (!child || typeof child !== 'object') {
           unselected.push(child);
           return;
         }
 
+        const element = child as ReactElement;
+
         // Handle sections - sort items within each section
         if (
-          child.type === BaseSection ||
-          child.type?.displayName === 'Section'
+          element.type === BaseSection ||
+          (element.type as any)?.displayName === 'Section'
         ) {
-          const sectionChildren = Array.isArray(child.props.children)
-            ? child.props.children
-            : [child.props.children];
+          const sectionChildren = Array.isArray(element.props.children)
+            ? element.props.children
+            : [element.props.children];
 
           const selectedItems: ReactNode[] = [];
           const unselectedItems: ReactNode[] = [];
 
-          sectionChildren.forEach((sectionChild: any) => {
-            if (
-              sectionChild &&
-              typeof sectionChild === 'object' &&
-              (sectionChild.type === Item ||
-                sectionChild.type?.displayName === 'Item')
-            ) {
-              const clonedItem = cloneWithNormalizedKey(sectionChild);
+          sectionChildren.forEach((sectionChild: ReactNode) => {
+            if (sectionChild && typeof sectionChild === 'object') {
+              const sectionElement = sectionChild as ReactElement;
+              if (
+                sectionElement.type === Item ||
+                (sectionElement.type as any)?.displayName === 'Item'
+              ) {
+                const clonedItem = cloneWithNormalizedKey(sectionElement);
 
-              if (isItemSelected(sectionChild)) {
-                selectedItems.push(clonedItem);
+                if (isItemSelected(sectionElement)) {
+                  selectedItems.push(clonedItem);
+                } else {
+                  unselectedItems.push(clonedItem);
+                }
               } else {
-                unselectedItems.push(clonedItem);
+                unselectedItems.push(sectionChild);
               }
             } else {
               unselectedItems.push(sectionChild);
@@ -618,17 +649,17 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
           // Create new section with sorted children, preserving React element properly
           unselected.push(
-            cloneElement(child, {
-              ...child.props,
+            cloneElement(element, {
+              ...element.props,
               children: [...selectedItems, ...unselectedItems],
             }),
           );
         }
         // Handle non-section elements (items, dividers, etc.)
         else {
-          const clonedItem = cloneWithNormalizedKey(child);
+          const clonedItem = cloneWithNormalizedKey(element);
 
-          if (isItemSelected(child)) {
+          if (isItemSelected(element)) {
             selected.push(clonedItem);
           } else {
             unselected.push(clonedItem);
@@ -669,7 +700,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
     const selectedSet = new Set<string>();
 
-    const addSelected = (key: any) => {
+    const addSelected = (key: Key) => {
       if (key != null) selectedSet.add(String(key));
     };
 
@@ -680,7 +711,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       }
       (selectionsWhenClosed.current.multiple as string[]).forEach(addSelected);
     } else {
-      addSelected(selectionsWhenClosed.current.single);
+      if (selectionsWhenClosed.current.single != null) {
+        addSelected(selectionsWhenClosed.current.single);
+      }
     }
 
     if (selectedSet.size === 0) {
@@ -688,22 +721,25 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     }
 
     // Helpers to extract key from item object
-    const getItemKey = (obj: any): string | undefined => {
+    const getItemKey = (obj: unknown): string | undefined => {
       if (obj == null || typeof obj !== 'object') return undefined;
-      if (obj.key != null) return String(obj.key);
-      if (obj.id != null) return String(obj.id);
+
+      const item = obj as ItemWithKey;
+      if (item.key != null) return String(item.key);
+      if (item.id != null) return String(item.id);
       return undefined;
     };
 
-    const sortArray = (arr: any[]): any[] => {
-      const selectedArr: any[] = [];
-      const unselectedArr: any[] = [];
+    const sortArray = (arr: unknown[]): unknown[] => {
+      const selectedArr: unknown[] = [];
+      const unselectedArr: unknown[] = [];
 
       arr.forEach((obj) => {
-        if (obj && Array.isArray(obj.children)) {
+        const item = obj as ItemWithKey;
+        if (obj && Array.isArray(item.children)) {
           // Section-like object – keep order, but sort its children
-          const sortedChildren = sortArray(obj.children);
-          unselectedArr.push({ ...obj, children: sortedChildren });
+          const sortedChildren = sortArray(item.children);
+          unselectedArr.push({ ...item, children: sortedChildren });
         } else {
           const key = getItemKey(obj);
           if (key && selectedSet.has(key)) {
@@ -717,7 +753,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       return [...selectedArr, ...unselectedArr];
     };
 
-    const itemsArray = Array.isArray(items) ? items : Array.from(items as any);
+    const itemsArray = Array.isArray(items)
+      ? items
+      : Array.from(items as Iterable<unknown>);
     const sorted = sortArray(itemsArray);
 
     if (isPopoverOpen || !cachedItemsOrder.current) {
@@ -741,14 +779,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
           selectedLabel: selectedLabels[0],
           selectedKey: effectiveSelectedKey ?? null,
           selectedLabels,
-          selectedKeys: effectiveSelectedKeys as any,
+          selectedKeys: effectiveSelectedKeys,
           selectionMode: 'single',
         });
       }
 
       return renderSummary({
         selectedLabels,
-        selectedKeys: effectiveSelectedKeys as any,
+        selectedKeys: effectiveSelectedKeys,
         selectionMode: 'multiple',
       });
     } else if (hasSelection && renderSummary === false) {
@@ -910,11 +948,13 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                   // Update internal state if uncontrolled
                   if (selectionMode === 'single') {
                     if (!isControlledSingle) {
-                      setInternalSelectedKey(selection as any);
+                      setInternalSelectedKey(selection as Key | null);
                     }
                   } else {
                     if (!isControlledMultiple) {
-                      let normalized: any = selection;
+                      let normalized: 'all' | Key[] = selection as
+                        | 'all'
+                        | Key[];
 
                       if (selection === 'all') {
                         normalized = 'all';
@@ -925,16 +965,19 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                         typeof selection === 'object' &&
                         (selection as any) instanceof Set
                       ) {
-                        normalized = processSelectionArray(selection as any);
+                        normalized = processSelectionArray(
+                          selection as Set<Key>,
+                        );
                       }
 
-                      setInternalSelectedKeys(normalized as any);
+                      setInternalSelectedKeys(normalized);
                     }
                   }
 
                   // Update latest selection ref synchronously
                   if (selectionMode === 'single') {
-                    latestSelectionRef.current.single = selection as any;
+                    latestSelectionRef.current.single =
+                      selection != null ? String(selection) : null;
                   } else {
                     if (selection === 'all') {
                       latestSelectionRef.current.multiple = 'all';
@@ -948,14 +991,19 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                       (selection as any) instanceof Set
                     ) {
                       latestSelectionRef.current.multiple = Array.from(
-                        new Set(processSelectionArray(selection as any)),
+                        new Set(processSelectionArray(selection as Set<Key>)),
                       );
                     } else {
-                      latestSelectionRef.current.multiple = selection as any;
+                      latestSelectionRef.current.multiple =
+                        selection === 'all'
+                          ? 'all'
+                          : Array.isArray(selection)
+                            ? selection.map(String)
+                            : [];
                     }
                   }
 
-                  onSelectionChange?.(selection as any);
+                  onSelectionChange?.(selection);
 
                   if (selectionMode === 'single') {
                     close();
