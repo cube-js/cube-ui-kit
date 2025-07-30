@@ -97,7 +97,7 @@ const StyledHeaderWithoutBorder = tasty(StyledHeader, {
 });
 
 export interface CubeFilterListBoxProps<T>
-  extends Omit<CubeListBoxProps<T>, 'children'>,
+  extends CubeListBoxProps<T>,
     FieldBaseProps {
   /** Placeholder text for the search input */
   searchPlaceholder?: string;
@@ -113,8 +113,6 @@ export interface CubeFilterListBoxProps<T>
   isLoading?: boolean;
   /** Ref for accessing the search input element */
   searchInputRef?: RefObject<HTMLInputElement>;
-  /** Children (FilterListBox.Item and FilterListBox.Section elements) */
-  children?: ReactNode;
   /** Whether to allow entering custom values that are not present in the predefined options */
   allowsCustomValue?: boolean;
   /** Additional modifiers for styling the FilterListBox */

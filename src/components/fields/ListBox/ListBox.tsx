@@ -244,7 +244,7 @@ const SectionListElement = tasty({
 });
 
 export interface CubeListBoxProps<T>
-  extends Omit<AriaListBoxProps<T>, 'onSelectionChange'>,
+  extends AriaListBoxProps<T>,
     CollectionBase<T>,
     FieldBaseProps,
     BasePropsWithoutChildren {
@@ -268,6 +268,8 @@ export interface CubeListBoxProps<T>
   defaultSelectedKeys?: 'all' | Key[];
   /** Callback fired when selection changes */
   onSelectionChange?: (key: Key | null | 'all' | Key[]) => void;
+  /** The selection mode of the ListBox */
+  selectionMode?: 'single' | 'multiple';
   /** Ref for accessing the list DOM element */
   listRef?: RefObject<HTMLDivElement>;
   /**
@@ -493,7 +495,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     footer,
     headerStyles,
     footerStyles,
-    escapeKeyBehavior,
     onEscape,
     isCheckable,
     onOptionClick,
