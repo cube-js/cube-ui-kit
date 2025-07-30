@@ -124,7 +124,7 @@ export const DEFAULT_BUTTON_STYLES = {
   },
 
   ButtonIcon: {
-    width: 'max-content',
+    width: 'min 1fs',
   },
 
   '& [data-element="ButtonIcon"]:first-child:not(:last-child)': {
