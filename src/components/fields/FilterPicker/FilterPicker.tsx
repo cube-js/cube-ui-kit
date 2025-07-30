@@ -44,7 +44,7 @@ import { ListBox } from '../ListBox';
 import type { FieldBaseProps } from '../../../shared';
 
 export interface CubeFilterPickerProps<T>
-  extends Omit<CubeFilterListBoxProps<T>, 'children'>,
+  extends CubeFilterListBoxProps<T>,
     BasePropsWithoutChildren,
     BaseStyleProps,
     OuterStyleProps,
