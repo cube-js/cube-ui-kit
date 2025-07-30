@@ -6,20 +6,16 @@ import {
   CheckIcon,
   DatabaseIcon,
   FilterIcon,
-  PlusIcon,
   RightIcon,
-  SearchIcon,
   SettingsIcon,
   UserIcon,
 } from '../../../icons';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions/Button/Button';
 import { Badge } from '../../content/Badge/Badge';
-import { Paragraph } from '../../content/Paragraph';
 import { Text } from '../../content/Text';
 import { Title } from '../../content/Title';
 import { Form, SubmitButton } from '../../form';
-import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
 import { Dialog } from '../../overlays/Dialog/Dialog';
 import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
@@ -48,11 +44,13 @@ const meta: Meta<typeof FilterListBox> = {
     },
     selectedKeys: {
       control: { type: 'object' },
-      description: 'The selected keys in controlled multiple mode',
+      description:
+        'The selected keys in controlled multiple mode. Use "all" to select all items or an array of keys.',
     },
     defaultSelectedKeys: {
       control: { type: 'object' },
-      description: 'The default selected keys in uncontrolled multiple mode',
+      description:
+        'The default selected keys in uncontrolled multiple mode. Use "all" to select all items or an array of keys.',
     },
     selectionMode: {
       options: ['single', 'multiple'],
@@ -64,7 +62,8 @@ const meta: Meta<typeof FilterListBox> = {
     },
     allowsCustomValue: {
       control: { type: 'boolean' },
-      description: 'Whether the FilterListBox allows custom values',
+      description:
+        'Whether to allow entering custom values that are not present in the predefined options',
       table: {
         defaultValue: { summary: false },
       },
@@ -106,7 +105,8 @@ const meta: Meta<typeof FilterListBox> = {
     },
     filter: {
       control: false,
-      description: 'Custom filter function for search',
+      description:
+        'Custom filter function for determining if an option should be included in search results',
     },
 
     /* Presentation */
@@ -130,7 +130,7 @@ const meta: Meta<typeof FilterListBox> = {
     /* Behavior */
     isCheckable: {
       control: { type: 'boolean' },
-      description: 'Whether to show checkboxes for multiple selection',
+      description: 'Whether to show checkboxes for multiple selection mode',
       table: {
         defaultValue: { summary: false },
       },
@@ -200,6 +200,21 @@ const meta: Meta<typeof FilterListBox> = {
     onOptionClick: {
       action: 'option clicked',
       description: 'Callback when an option is clicked (non-checkbox area)',
+    },
+    showSelectAll: {
+      control: { type: 'boolean' },
+      description:
+        'Whether to show the "Select All" option in multiple selection mode',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    selectAllLabel: {
+      control: { type: 'text' },
+      description: 'Label for the "Select All" option',
+      table: {
+        defaultValue: { summary: 'Select All' },
+      },
     },
   },
 };
@@ -1201,13 +1216,14 @@ export const VirtualizedList: StoryFn<CubeFilterListBoxProps<any>> = (args) => {
         selectedKeys={selectedKeys}
         height="300px"
         overflow="auto"
+        items={items}
         onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
       >
-        {items.map((item) => (
+        {(item) => (
           <FilterListBox.Item key={item.id} description={item.description}>
             {item.name}
           </FilterListBox.Item>
-        ))}
+        )}
       </FilterListBox>
 
       <Text>
@@ -1227,6 +1243,38 @@ VirtualizedList.parameters = {
     description: {
       story:
         'When a FilterListBox contains many items and has no sections, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets. This story includes items with varying heights to demonstrate stable virtualization without scroll jumping.',
+    },
+  },
+};
+
+export const WithSelectAll: Story = {
+  render: (args) => (
+    <FilterListBox {...args}>
+      {permissions.map((permission) => (
+        <FilterListBox.Item
+          key={permission.key}
+          description={permission.description}
+        >
+          {permission.label}
+        </FilterListBox.Item>
+      ))}
+    </FilterListBox>
+  ),
+  args: {
+    label: 'Select permissions with Select All',
+    selectionMode: 'multiple',
+    isCheckable: true,
+    showSelectAll: true,
+    selectAllLabel: 'All Permissions',
+    defaultSelectedKeys: ['read'],
+    searchPlaceholder: 'Search permissions...',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `showSelectAll={true}` is used with multiple selection mode in FilterListBox, a "Select All" option appears in the header above the search input. The checkbox shows indeterminate state when some items are selected, checked when all are selected, and unchecked when none are selected. The select all functionality works seamlessly with filtering - it only affects the currently visible (filtered) items.',
+      },
     },
   },
 };

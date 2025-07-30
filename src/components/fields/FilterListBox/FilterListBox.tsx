@@ -97,38 +97,38 @@ const StyledHeaderWithoutBorder = tasty(StyledHeader, {
 });
 
 export interface CubeFilterListBoxProps<T>
-  extends Omit<CubeListBoxProps<T>, 'children'>,
+  extends CubeListBoxProps<T>,
     FieldBaseProps {
   /** Placeholder text for the search input */
   searchPlaceholder?: string;
   /** Whether the search input should have autofocus */
   autoFocus?: boolean;
-  /** The filter function used to determine if an option should be included in the filtered list */
+  /** Custom filter function for determining if an option should be included in search results */
   filter?: FilterFn;
   /** Custom label to display when no results are found after filtering */
   emptyLabel?: ReactNode;
   /** Custom styles for the search input */
   searchInputStyles?: Styles;
-  /** Whether the FilterListBox as a whole is loading (generic loading indicator) */
+  /** Whether the FilterListBox is in loading state (shows loading icon in search input) */
   isLoading?: boolean;
-  /** Ref for the search input */
+  /** Ref for accessing the search input element */
   searchInputRef?: RefObject<HTMLInputElement>;
-  /** Children (ListBox.Item and ListBox.Section elements) */
-  children?: ReactNode;
-  /** Allow entering a custom value that is not present in the options */
+  /** Whether to allow entering custom values that are not present in the predefined options */
   allowsCustomValue?: boolean;
-  /** Mods for the FilterListBox */
+  /** Additional modifiers for styling the FilterListBox */
   mods?: Record<string, boolean>;
+  /** Custom styles for the list box */
+  listBoxStyles?: Styles;
 
   /**
-   * Optional callback fired when the user presses `Escape` while the search input is empty.
+   * Callback fired when the user presses Escape key while the search input is empty.
    * Can be used by parent components (e.g. FilterPicker) to close an enclosing Dialog.
    */
   onEscape?: () => void;
 
   /**
-   * Whether the options in the FilterListBox are checkable.
-   * This adds a checkbox icon to the left of the option.
+   * Whether to show checkboxes for multiple selection mode.
+   * This adds a checkbox icon to the left of each option.
    */
   isCheckable?: boolean;
 
@@ -158,7 +158,12 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
       fieldProps.onSelectionChange = (key: any) => {
         if (props.selectionMode === 'multiple') {
-          onChange(key ? (Array.isArray(key) ? key : [key]) : []);
+          // Handle "all" selection and array selections
+          if (key === 'all') {
+            onChange('all');
+          } else {
+            onChange(key ? (Array.isArray(key) ? key : [key]) : []);
+          }
         } else {
           onChange(Array.isArray(key) ? key[0] : key);
         }
@@ -202,19 +207,55 @@ export const FilterListBox = forwardRef(function FilterListBox<
     defaultSelectedKeys,
     onSelectionChange: externalOnSelectionChange,
     allowsCustomValue = false,
+    showSelectAll,
+    selectAllLabel,
     header,
     footer,
     size = 'medium',
     headerStyles,
     footerStyles,
     listBoxStyles,
-    children,
+    items,
+    children: renderChildren,
     onEscape,
     isCheckable,
     onOptionClick,
     selectionMode = 'single',
     ...otherProps
   } = props;
+
+  // Preserve the original `children` (may be a render function) before we
+  // potentially overwrite it.
+  let children: ReactNode = renderChildren as ReactNode;
+
+  const renderFn = renderChildren as unknown;
+
+  if (items && typeof renderFn === 'function') {
+    try {
+      const itemsArray = Array.from(items as Iterable<any>);
+      // Execute the render function for each item to obtain <Item/> / <Section/> nodes.
+      children = itemsArray.map((item, idx) => {
+        const rendered = (renderFn as (it: any) => ReactNode)(item);
+        // Ensure every element has a stable key: rely on the user-provided key
+        // inside the render function, otherwise fall back to the item itself or
+        // the index. This mirrors React Aria examples where the render function
+        // is expected to set keys, but we add a fallback for robustness.
+        if (
+          React.isValidElement(rendered) &&
+          (rendered as ReactElement).key == null
+        ) {
+          return React.cloneElement(rendered as ReactElement, {
+            key: (rendered as any)?.key ?? item?.key ?? idx,
+          });
+        }
+
+        return rendered as ReactNode;
+      });
+    } catch {
+      // If conversion fails for some reason, we silently ignore and proceed
+      // with the original children value so we don't break runtime.
+    }
+  }
 
   // Collect original option keys to avoid duplicating them as custom values.
   const originalKeys = useMemo(() => {
@@ -246,7 +287,9 @@ export const FilterListBox = forwardRef(function FilterListBox<
     if (!allowsCustomValue) return;
 
     const currentSelectedKeys = selectedKeys
-      ? Array.from(selectedKeys).map(String)
+      ? selectedKeys === 'all'
+        ? [] // Skip custom key detection when 'all' is selected
+        : Array.from(selectedKeys).map(String)
       : selectedKey != null
         ? [String(selectedKey)]
         : [];
@@ -277,9 +320,14 @@ export const FilterListBox = forwardRef(function FilterListBox<
     const selectedKeysSet = new Set<string>();
 
     if (selectionMode === 'multiple') {
-      Array.from(selectedKeys ?? []).forEach((k) =>
-        selectedKeysSet.add(String(k)),
-      );
+      if (selectedKeys === 'all') {
+        // When 'all' is selected, no custom items should be treated as selected
+        // since 'all' means all available items, not custom ones
+      } else {
+        Array.from(selectedKeys ?? []).forEach((k) =>
+          selectedKeysSet.add(String(k)),
+        );
+      }
     } else {
       if (selectedKey != null) selectedKeysSet.add(String(selectedKey));
     }
@@ -867,11 +915,15 @@ export const FilterListBox = forwardRef(function FilterListBox<
           disabledKeys={props.disabledKeys}
           focusOnHover={focusOnHover}
           shouldUseVirtualFocus={true}
+          showSelectAll={showSelectAll}
+          selectAllLabel={selectAllLabel}
           footer={footer}
           footerStyles={footerStyles}
           mods={mods}
           size={size}
+          styles={listBoxStyles}
           isCheckable={isCheckable}
+          items={items as any}
           onSelectionChange={handleSelectionChange}
           onEscape={onEscape}
           onOptionClick={handleOptionClick}

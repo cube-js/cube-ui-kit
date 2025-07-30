@@ -168,6 +168,23 @@ The `mods` property accepts the following modifiers you can override:
 </ListBox>
 ```
 
+### Multiple Selection with Select All
+
+<Story of={ListBoxStories.WithSelectAll} />
+
+```jsx
+<ListBox
+  label="Select permissions"
+  selectionMode="multiple"
+  showSelectAll={true}
+  selectAllLabel="All Permissions"
+>
+  <ListBox.Item key="read">Read</ListBox.Item>
+  <ListBox.Item key="write">Write</ListBox.Item>
+  <ListBox.Item key="execute">Execute</ListBox.Item>
+</ListBox>
+```
+
 ### With Header and Footer
 
 <Story of={ListBoxStories.WithHeaderAndFooter} />
@@ -294,9 +311,16 @@ const [selectedKey, setSelectedKey] = useState('apple');
    </ListBox.Section>
    ```
 
-4. **Accessibility**: Always provide meaningful labels and descriptions
-5. **Performance**: Use virtualization for lists with 50+ items
-6. **UX**: Consider FilterListBox for searchable lists with many options
+4. **Do**: Use `showSelectAll` for efficient multiple selection from large lists
+   ```jsx
+   <ListBox selectionMode="multiple" showSelectAll selectAllLabel="Select All Items">
+     {/* many items */}
+   </ListBox>
+   ```
+
+5. **Accessibility**: Always provide meaningful labels and descriptions
+6. **Performance**: Use virtualization for lists with 50+ items
+7. **UX**: Consider FilterListBox for searchable lists with many options
 
 ## Integration with Forms
 

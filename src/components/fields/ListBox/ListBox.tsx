@@ -1,4 +1,5 @@
 import { useHover } from '@react-aria/interactions';
+import { IconMinus } from '@tabler/icons-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import {
   CSSProperties,
@@ -11,6 +12,7 @@ import {
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from 'react';
 import {
   AriaListBoxProps,
@@ -23,6 +25,7 @@ import { Section as BaseSection, Item, useListState } from 'react-stately';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import { CheckIcon } from '../../../icons';
+import { Icon } from '../../../icons/index';
 import { useProviderProps } from '../../../provider';
 import {
   BASE_STYLES,
@@ -53,7 +56,7 @@ const ListBoxWrapperElement = tasty({
   styles: {
     display: 'grid',
     gridColumns: '1sf',
-    gridRows: 'max-content 1sf max-content',
+    gridRows: 'max-content max-content max-content 1sf max-content',
     flow: 'column',
     gap: 0,
     position: 'relative',
@@ -85,7 +88,7 @@ const ListElement = tasty({
     boxSizing: 'border-box',
     margin: {
       '': '.5x .5x 0 .5x',
-      sections: '0 .5x',
+      sections: '.5x .5x 0 .5x',
     },
     height: 'max-content',
   },
@@ -114,6 +117,7 @@ const OptionElement = tasty({
     margin: {
       '': '0 0 1bw 0',
       ':last-of-type': '0',
+      all: '.5x',
     },
     height: {
       '': 'min @size-md',
@@ -165,13 +169,13 @@ const OptionElement = tasty({
       transition: 'theme',
       opacity: {
         '': 0,
-        'selected | :hover | focused': 1,
+        'selected | indeterminate | :hover | focused': 1,
       },
       fill: {
         '': '#white',
-        selected: '#purple-text',
-        'invalid & !selected': '#white',
-        'invalid & selected': '#danger',
+        'selected | indeterminate': '#purple-text',
+        'invalid & !(selected | indeterminate)': '#white',
+        'invalid & (selected | indeterminate)': '#danger',
         disabled: '#dark.12',
       },
       color: {
@@ -181,7 +185,7 @@ const OptionElement = tasty({
       border: {
         '': '#dark.30',
         invalid: '#danger',
-        'disabled | (selected & !invalid)': '#clear',
+        'disabled | ((selected | indeterminate) & !invalid)': '#clear',
       },
     },
 
@@ -240,30 +244,38 @@ const SectionListElement = tasty({
 });
 
 export interface CubeListBoxProps<T>
-  extends Omit<AriaListBoxProps<T>, 'onSelectionChange'>,
+  extends AriaListBoxProps<T>,
     CollectionBase<T>,
     FieldBaseProps,
     BasePropsWithoutChildren {
   /** Custom styles for the list container */
   listStyles?: Styles;
-  /** Custom styles for options */
+  /** Custom styles for individual options */
   optionStyles?: Styles;
-  /** Custom styles for sections */
+  /** Custom styles for section containers */
   sectionStyles?: Styles;
   /** Custom styles for section headings */
   headingStyles?: Styles;
   /** Whether the ListBox is disabled */
   isDisabled?: boolean;
-  /** The selected key(s) */
+  /** The selected key in controlled single selection mode */
   selectedKey?: Key | null;
-  selectedKeys?: Key[];
-  /** Default selected key(s) */
+  /** The selected keys in controlled multiple selection mode. Use "all" to select all items or an array of keys */
+  selectedKeys?: 'all' | Key[];
+  /** The default selected key in uncontrolled single selection mode */
   defaultSelectedKey?: Key | null;
-  defaultSelectedKeys?: Key[];
-  /** Selection change handler */
-  onSelectionChange?: (key: Key | null | Key[]) => void;
-  /** Ref for the list */
+  /** The default selected keys in uncontrolled multiple selection mode. Use "all" to select all items or an array of keys */
+  defaultSelectedKeys?: 'all' | Key[];
+  /** Callback fired when selection changes */
+  onSelectionChange?: (key: Key | null | 'all' | Key[]) => void;
+  /** The selection mode of the ListBox */
+  selectionMode?: 'single' | 'multiple';
+  /** Ref for accessing the list DOM element */
   listRef?: RefObject<HTMLDivElement>;
+  /** Whether to disallow empty selection */
+  disallowEmptySelection?: boolean;
+  /** Whether to wrap focus when reaching the end of the list */
+  shouldFocusWrap?: boolean;
   /**
    * Ref to access the internal ListState instance.
    * This allows parent components to access selection state and other list functionality.
@@ -271,40 +283,40 @@ export interface CubeListBoxProps<T>
   stateRef?: MutableRefObject<any | null>;
 
   /**
-   * When true (default) moving the pointer over an option will move DOM focus to that option.
+   * Whether moving the pointer over an option will move DOM focus to that option.
    * Set to false for components that keep DOM focus outside (e.g. searchable FilterListBox).
+   * Defaults to true.
    */
   focusOnHover?: boolean;
-  /** Custom header content */
+  /** Custom header content displayed above the list */
   header?: ReactNode;
-  /** Custom footer content */
+  /** Custom footer content displayed below the list */
   footer?: ReactNode;
   /** Custom styles for the header */
   headerStyles?: Styles;
   /** Custom styles for the footer */
   footerStyles?: Styles;
-  /** Mods for the ListBox */
+  /** Additional modifiers for styling the ListBox */
   mods?: Record<string, boolean>;
-  /** Size of the ListBox */
+  /** Size variant of the ListBox */
   size?: 'medium' | 'large';
 
   /**
-   * When true, ListBox will use virtual focus. This keeps actual DOM focus
-   * outside of the individual option elements (e.g. for searchable lists
-   * where focus stays within an external input).
+   * Whether to use virtual focus for keyboard navigation.
+   * When true, DOM focus stays outside individual option elements (useful for searchable lists).
    * Defaults to false for backward compatibility.
    */
   shouldUseVirtualFocus?: boolean;
 
   /**
-   * Optional callback fired when the user presses Escape key.
+   * Callback fired when the user presses Escape key.
    * When provided, this prevents React Aria's default Escape behavior (selection reset).
    */
   onEscape?: () => void;
 
   /**
-   * Whether the options in the ListBox are checkable.
-   * This adds a checkbox icon to the left of the option.
+   * Whether to show checkboxes for multiple selection mode.
+   * This adds a checkbox icon to the left of each option.
    */
   isCheckable?: boolean;
 
@@ -313,9 +325,119 @@ export interface CubeListBoxProps<T>
    * Used by FilterPicker to close the popover on non-checkbox clicks.
    */
   onOptionClick?: (key: Key) => void;
+
+  /**
+   * Whether to show the "Select All" option in multiple selection mode.
+   * This adds a select all option to the header that allows selecting/deselecting all items.
+   */
+  showSelectAll?: boolean;
+
+  /**
+   * Label for the "Select All" option. Defaults to "Select All".
+   */
+  selectAllLabel?: ReactNode;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
+
+const SelectAllOption = ({
+  label = 'Select All',
+  isSelected,
+  isIndeterminate,
+  isDisabled,
+  isCheckable,
+  size = 'medium',
+  state,
+  lastFocusSourceRef,
+  onClick,
+}: {
+  label?: ReactNode;
+  isSelected: boolean;
+  isIndeterminate: boolean;
+  isDisabled?: boolean;
+  isCheckable?: boolean;
+  size?: 'medium' | 'large';
+  state: any;
+  lastFocusSourceRef: MutableRefObject<'keyboard' | 'mouse' | 'other'>;
+  onClick: (propagate?: boolean) => void;
+}) => {
+  const { hoverProps, isHovered } = useHover({ isDisabled });
+
+  const markIcon = isIndeterminate ? (
+    <Icon size={12} stroke={3}>
+      <IconMinus />
+    </Icon>
+  ) : (
+    <CheckIcon size={12} stroke={3} />
+  );
+
+  const localRef = useRef<HTMLLIElement>(null);
+
+  const handleOptionClick = (e) => {
+    // Mark focus changes from mouse clicks
+    if (lastFocusSourceRef) {
+      lastFocusSourceRef.current = 'mouse';
+    }
+
+    // If there's an onOptionClick callback and this is checkable in multiple mode,
+    // we need to distinguish between checkbox and content clicks
+    if (state.selectionManager.selectionMode === 'multiple') {
+      // Check if the click target is within the checkbox area
+      const clickTarget = e.target as HTMLElement;
+      const checkboxElement = localRef.current?.querySelector(
+        '[data-element="CheckboxWrapper"]',
+      );
+
+      if (
+        checkboxElement &&
+        (checkboxElement === clickTarget ||
+          checkboxElement.contains(clickTarget))
+      ) {
+        onClick?.(false);
+      } else {
+        // Then call the callback (which will close the popover in FilterPicker)
+        onClick?.(true);
+      }
+    } else {
+      onClick?.(true);
+    }
+  };
+
+  return (
+    <>
+      <OptionElement
+        ref={localRef}
+        as="div"
+        {...hoverProps}
+        data-size={size}
+        role="option"
+        aria-selected={isSelected}
+        mods={{
+          selected: isSelected,
+          disabled: isDisabled,
+          checkable: isCheckable,
+          hovered: isHovered,
+          indeterminate: isIndeterminate,
+          all: true,
+        }}
+        style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
+        onClick={handleOptionClick}
+      >
+        {isCheckable && (
+          <div data-element="CheckboxWrapper">
+            <div data-element="Checkbox">
+              {(isIndeterminate || isSelected) && markIcon}
+            </div>
+          </div>
+        )}
+        <div data-element="Content">
+          <div data-element="Label">{label}</div>
+        </div>
+      </OptionElement>
+      <StyledDivider />
+    </>
+  );
+};
 
 export const ListBox = forwardRef(function ListBox<T extends object>(
   props: CubeListBoxProps<T>,
@@ -377,12 +499,15 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     footer,
     headerStyles,
     footerStyles,
-    escapeKeyBehavior,
     onEscape,
     isCheckable,
     onOptionClick,
+    showSelectAll,
+    selectAllLabel,
     ...otherProps
   } = props;
+
+  const [, forceUpdate] = useState({});
 
   // Wrap onSelectionChange to prevent selection when disabled and handle React Aria's Set format
   const externalSelectionHandler = onSelectionChange || (props as any).onChange;
@@ -397,8 +522,10 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       }
 
       // React Aria always passes a Set for selection changes
-      // For single selection mode, we extract the first (and only) key
-      if (keys instanceof Set) {
+      // Handle the special "all" case and convert to our public API format
+      if (keys === 'all') {
+        externalSelectionHandler('all');
+      } else if (keys instanceof Set) {
         if (keys.size === 0) {
           externalSelectionHandler(
             props.selectionMode === 'multiple' ? [] : null,
@@ -412,7 +539,12 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         externalSelectionHandler(keys);
       }
     };
-  }, [externalSelectionHandler, isDisabled, props.selectionMode]);
+  }, [
+    externalSelectionHandler,
+    isDisabled,
+    props.selectionMode,
+    showSelectAll,
+  ]);
 
   // Prepare props for useListState with correct selection props
   const listStateProps: any = {
@@ -425,12 +557,16 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   // Set selection props based on mode
   if (listStateProps.selectionMode === 'multiple') {
     if (selectedKeys !== undefined) {
-      listStateProps.selectedKeys = new Set(selectedKeys as Key[]);
+      // Handle "all" selection by passing it directly to React Aria
+      listStateProps.selectedKeys =
+        selectedKeys === 'all' ? 'all' : new Set(selectedKeys as Key[]);
     }
     if (defaultSelectedKeys !== undefined) {
-      listStateProps.defaultSelectedKeys = new Set(
-        defaultSelectedKeys as Key[],
-      );
+      // Handle "all" default selection
+      listStateProps.defaultSelectedKeys =
+        defaultSelectedKeys === 'all'
+          ? 'all'
+          : new Set(defaultSelectedKeys as Key[]);
     }
     // Remove single-selection props if any
     delete listStateProps.selectedKey;
@@ -456,6 +592,62 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   const listState = useListState({
     ...listStateProps,
   });
+
+  // Calculate select all state for multiple selection mode
+  const selectAllState = useMemo(() => {
+    // Select-all only makes sense for multiple selection mode *and* when the UI is enabled
+    if (props.selectionMode !== 'multiple' || !showSelectAll) {
+      return { isSelected: false, isIndeterminate: false };
+    }
+
+    // React Stately exposes the raw selection value which is either the string "all"
+    // (when `selectAll(true)` was used) **or** a Set of item keys.
+    const rawSelection: any = (listState.selectionManager as any).rawSelection;
+
+    // Fast path – user pressed our "Select All" control previously.
+    if (rawSelection === 'all') {
+      return { isSelected: true, isIndeterminate: false };
+    }
+
+    const selectedKeys = listState.selectionManager.selectedKeys as Set<Key>;
+
+    // When there is nothing selected, we are in a clear state
+    if (selectedKeys.size === 0) {
+      return { isSelected: false, isIndeterminate: false };
+    }
+
+    // Otherwise it must be a partial (indeterminate) selection.
+    return { isSelected: false, isIndeterminate: true };
+  }, [
+    props.selectionMode,
+    showSelectAll,
+    listState.collection,
+    listState.disabledKeys,
+    listState.selectionManager.selectedKeys,
+    listState.selectionManager.rawSelection,
+  ]);
+
+  // Handle select all click
+  const handleSelectAllClick = (propagate?: boolean) => {
+    if (isDisabled || props.selectionMode !== 'multiple') return;
+
+    if (selectAllState.isSelected) {
+      // All selected, deselect all
+      listState.selectionManager.clearSelection();
+      // Manually call the wrapped handler since React Aria might not trigger it
+      wrappedOnSelectionChange?.(new Set());
+    } else {
+      // Some or none selected, select all
+      listState.selectionManager.selectAll(true);
+      // Manually call the wrapped handler since React Aria might not trigger it
+      wrappedOnSelectionChange?.('all');
+      forceUpdate({});
+    }
+
+    if (propagate && !selectAllState.isSelected) {
+      onOptionClick?.('__ALL__');
+    }
+  };
 
   // Track whether the last focus change was due to keyboard navigation
   const lastFocusSourceRef = useRef<'keyboard' | 'mouse' | 'other'>('other');
@@ -615,8 +807,9 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       valid: validationState === 'valid',
       disabled: isDisabled,
       focused: isFocused,
-      header: !!header,
+      header: !!header || (showSelectAll && props.selectionMode === 'multiple'),
       footer: !!footer,
+      selectAll: showSelectAll && props.selectionMode === 'multiple',
       ...externalMods,
     }),
     [
@@ -626,6 +819,8 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       isFocused,
       header,
       footer,
+      showSelectAll,
+      props.selectionMode,
       externalMods,
     ],
   );
@@ -643,6 +838,24 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         </StyledHeader>
       ) : (
         <div role="presentation" />
+      )}
+      {showSelectAll && props.selectionMode === 'multiple' ? (
+        <SelectAllOption
+          label={selectAllLabel || 'Select All'}
+          state={listState}
+          lastFocusSourceRef={lastFocusSourceRef}
+          isSelected={selectAllState.isSelected}
+          isIndeterminate={selectAllState.isIndeterminate}
+          isDisabled={isDisabled}
+          isCheckable={isCheckable}
+          size={size}
+          onClick={handleSelectAllClick}
+        />
+      ) : (
+        <>
+          <div role="presentation" />
+          <div role="presentation" />
+        </>
       )}
       {/* Scroll container wrapper */}
       <ListBoxScrollElement ref={scrollRef} mods={mods} {...focusProps}>
@@ -688,7 +901,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                     }}
                     virtualIndex={virtualItem.index}
                     lastFocusSourceRef={lastFocusSourceRef}
-                    onOptionClick={onOptionClick}
+                    onClick={onOptionClick}
                   />
                 );
               })
@@ -722,7 +935,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                         isCheckable={isCheckable}
                         size={size}
                         lastFocusSourceRef={lastFocusSourceRef}
-                        onOptionClick={onOptionClick}
+                        onClick={onOptionClick}
                       />,
                     );
 
@@ -740,7 +953,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
                         focusOnHover={focusOnHover}
                         isCheckable={isCheckable}
                         lastFocusSourceRef={lastFocusSourceRef}
-                        onOptionClick={onOptionClick}
+                        onClick={onOptionClick}
                       />,
                     );
                   }
@@ -778,7 +991,7 @@ function Option({
   validationState,
   focusOnHover = false,
   isCheckable,
-  onOptionClick,
+  onClick: onOptionClick,
   virtualStyle,
   virtualRef,
   virtualIndex,
@@ -792,7 +1005,7 @@ function Option({
   validationState?: any;
   focusOnHover?: boolean;
   isCheckable?: boolean;
-  onOptionClick?: (key: Key) => void;
+  onClick?: (key: Key) => void;
   /** Inline style applied when virtualized (absolute positioning etc.) */
   virtualStyle?: CSSProperties;
   /** Ref callback from react-virtual to measure row height */
@@ -927,7 +1140,7 @@ interface ListBoxSectionProps<T> {
   validationState?: any;
   focusOnHover?: boolean;
   isCheckable?: boolean;
-  onOptionClick?: (key: Key) => void;
+  onClick?: (key: Key) => void;
   size?: 'medium' | 'large';
   lastFocusSourceRef?: MutableRefObject<'keyboard' | 'mouse' | 'other'>;
 }
@@ -943,7 +1156,7 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
     validationState,
     focusOnHover,
     isCheckable,
-    onOptionClick,
+    onClick: onOptionClick,
     lastFocusSourceRef,
   } = props;
   const heading = item.rendered;
@@ -975,7 +1188,7 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
               focusOnHover={focusOnHover}
               isCheckable={isCheckable}
               lastFocusSourceRef={lastFocusSourceRef}
-              onOptionClick={onOptionClick}
+              onClick={onOptionClick}
             />
           ))}
       </SectionListElement>

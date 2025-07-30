@@ -10,6 +10,7 @@ import {
   TEXT_STYLES,
 } from '../../../tasty';
 import { accessibilityWarning } from '../../../utils/warnings';
+import { Text } from '../../content/Text';
 import { CubeActionProps } from '../Action/Action';
 import { useAction } from '../use-action';
 
@@ -60,8 +61,16 @@ const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
 export const DEFAULT_BUTTON_STYLES = {
   display: 'inline-grid',
-  placeItems: 'center stretch',
-  placeContent: 'center',
+  flow: 'column',
+  placeItems: 'center start',
+  placeContent: {
+    '': 'center',
+    'right-icon | suffix': 'center stretch',
+  },
+  gridColumns: {
+    '': 'initial',
+    'left-icon | loading | prefix': 'max-content',
+  },
   position: 'relative',
   margin: 0,
   boxSizing: 'border-box',
@@ -73,7 +82,6 @@ export const DEFAULT_BUTTON_STYLES = {
     '': '.75x',
     '[data-size="small"]': '.5x',
   },
-  flow: 'column',
   preset: {
     '': 't3m',
     '[data-size="xsmall"]': 't4',
@@ -85,19 +93,19 @@ export const DEFAULT_BUTTON_STYLES = {
   outlineOffset: 1,
   padding: {
     '': '.5x (1.5x - 1bw)',
-    '[data-size="small"] | [data-size="xsmall"]': '.5x (1x - 1bw)',
+    '[data-size="small"] | [data-size="xsmall"]': '.5x (1.25x - 1bw)',
     '[data-size="medium"]': '.5x (1.5x - 1bw)',
-    '[data-size="large"]': '.5x (2x - 1bw)',
-    '[data-size="xlarge"]': '.5x (2.25x - 1bw)',
-    'single-icon-only | [data-type="link"]': 0,
+    '[data-size="large"]': '.5x (1.75x - 1bw)',
+    '[data-size="xlarge"]': '.5x (2x - 1bw)',
+    'single-icon | [data-type="link"]': 0,
   },
   width: {
     '': 'initial',
-    '[data-size="xsmall"] & single-icon-only': '@size-xs @size-xs',
-    '[data-size="small"] & single-icon-only': '@size-sm @size-sm',
-    '[data-size="medium"] & single-icon-only': '@size-md @size-md',
-    '[data-size="large"] & single-icon-only': '@size-lg @size-lg',
-    '[data-size="xlarge"] & single-icon-only': '@size-xl @size-xl',
+    '[data-size="xsmall"] & single-icon': '@size-xs @size-xs',
+    '[data-size="small"] & single-icon': '@size-sm @size-sm',
+    '[data-size="medium"] & single-icon': '@size-md @size-md',
+    '[data-size="large"] & single-icon': '@size-lg @size-lg',
+    '[data-size="xlarge"] & single-icon': '@size-xl @size-xl',
     '[data-type="link"]': 'initial',
   },
   height: {
@@ -113,6 +121,20 @@ export const DEFAULT_BUTTON_STYLES = {
   radius: {
     '': true,
     '[data-type="link"] & !focused': 0,
+  },
+
+  ButtonIcon: {
+    width: 'max-content',
+  },
+
+  '& [data-element="ButtonIcon"]:first-child:not(:last-child)': {
+    marginLeft: '-.5x',
+    placeSelf: 'center start',
+  },
+
+  '& [data-element="ButtonIcon"]:last-child:not(:first-child)': {
+    marginRight: '-.5x',
+    placeSelf: 'center end',
   },
 } as const;
 
@@ -657,12 +679,16 @@ export const Button = forwardRef(function Button(
     !children
   );
 
+  const hasIcons = !!icon || !!rightIcon;
+
   const modifiers = useMemo(
     () => ({
       loading: isLoading,
       selected: isSelected,
-      'with-icons': !!icon || !!rightIcon,
-      'single-icon-only': singleIcon,
+      'with-icons': hasIcons,
+      'left-icon': !!icon,
+      'right-icon': !!rightIcon,
+      'single-icon': singleIcon,
       ...mods,
     }),
     [mods, isDisabled, isLoading, isSelected, singleIcon],
@@ -696,7 +722,12 @@ export const Button = forwardRef(function Button(
           <LoadingIcon data-element="ButtonIcon" />
         )
       ) : null}
-      {children}
+      {((hasIcons && children) || (!!icon && !!rightIcon)) &&
+      typeof children === 'string' ? (
+        <Text ellipsis>{children}</Text>
+      ) : (
+        children
+      )}
       {rightIcon}
     </ButtonElement>
   );

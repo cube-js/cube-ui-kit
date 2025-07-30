@@ -364,6 +364,129 @@ describe('<ListBox />', () => {
     expect(appleOption.closest('li')).toHaveAttribute('aria-selected', 'false');
   });
 
+  it('should pre-select multiple options based on defaultSelectedKeys', () => {
+    const { getByText } = render(
+      <ListBox
+        label="Select fruits"
+        selectionMode="multiple"
+        defaultSelectedKeys={['apple', 'cherry']}
+      >
+        {basicItems}
+      </ListBox>,
+    );
+
+    const appleOption = getByText('Apple');
+    const bananaOption = getByText('Banana');
+    const cherryOption = getByText('Cherry');
+
+    // Apple and Cherry should be selected, Banana should not
+    expect(appleOption.closest('li')).toHaveAttribute('aria-selected', 'true');
+    expect(bananaOption.closest('li')).toHaveAttribute(
+      'aria-selected',
+      'false',
+    );
+    expect(cherryOption.closest('li')).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('should pre-select all options when defaultSelectedKeys is "all"', () => {
+    const { getByText } = render(
+      <ListBox
+        label="Select fruits"
+        selectionMode="multiple"
+        defaultSelectedKeys="all"
+      >
+        {basicItems}
+      </ListBox>,
+    );
+
+    const appleOption = getByText('Apple');
+    const bananaOption = getByText('Banana');
+    const cherryOption = getByText('Cherry');
+
+    // All options should be selected
+    expect(appleOption.closest('li')).toHaveAttribute('aria-selected', 'true');
+    expect(bananaOption.closest('li')).toHaveAttribute('aria-selected', 'true');
+    expect(cherryOption.closest('li')).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('should work in uncontrolled mode with defaultSelectedKeys', async () => {
+    const onSelectionChange = jest.fn();
+
+    const { getByText } = render(
+      <ListBox
+        label="Select fruits"
+        selectionMode="multiple"
+        defaultSelectedKeys={['apple']}
+        onSelectionChange={onSelectionChange}
+      >
+        {basicItems}
+      </ListBox>,
+    );
+
+    // Apple should be initially selected
+    const appleOption = getByText('Apple');
+    expect(appleOption.closest('li')).toHaveAttribute('aria-selected', 'true');
+
+    // Click on Banana to add it to selection
+    const bananaOption = getByText('Banana');
+    await act(async () => {
+      await userEvent.click(bananaOption);
+    });
+
+    // Should call onSelectionChange with both apple and banana
+    expect(onSelectionChange).toHaveBeenCalledWith(['apple', 'banana']);
+  });
+
+  it('should handle empty defaultSelectedKeys array', () => {
+    const { getByText } = render(
+      <ListBox
+        label="Select fruits"
+        selectionMode="multiple"
+        defaultSelectedKeys={[]}
+      >
+        {basicItems}
+      </ListBox>,
+    );
+
+    const appleOption = getByText('Apple');
+    const bananaOption = getByText('Banana');
+    const cherryOption = getByText('Cherry');
+
+    // No options should be selected
+    expect(appleOption.closest('li')).toHaveAttribute('aria-selected', 'false');
+    expect(bananaOption.closest('li')).toHaveAttribute(
+      'aria-selected',
+      'false',
+    );
+    expect(cherryOption.closest('li')).toHaveAttribute(
+      'aria-selected',
+      'false',
+    );
+  });
+
+  it('should handle defaultSelectedKey with null value', () => {
+    const { getByText } = render(
+      <ListBox label="Select a fruit" defaultSelectedKey={null}>
+        {basicItems}
+      </ListBox>,
+    );
+
+    const appleOption = getByText('Apple');
+    const bananaOption = getByText('Banana');
+    const cherryOption = getByText('Cherry');
+
+    // No options should be selected
+    expect(appleOption.closest('li')).toHaveAttribute('aria-selected', 'false');
+    expect(bananaOption.closest('li')).toHaveAttribute(
+      'aria-selected',
+      'false',
+    );
+    expect(cherryOption.closest('li')).toHaveAttribute(
+      'aria-selected',
+      'false',
+    );
+  });
+
   it('should handle keyboard navigation when no item is initially focused', async () => {
     const onSelectionChange = jest.fn();
 
@@ -487,5 +610,116 @@ describe('<ListBox />', () => {
     // Should still have a focused item (after navigating through sections)
     focusedItem = listbox.querySelector('[data-is-focused]');
     expect(focusedItem).toBeInTheDocument();
+  });
+
+  describe('Select All functionality', () => {
+    const selectAllItems = [
+      <ListBox.Item key="apple">Apple</ListBox.Item>,
+      <ListBox.Item key="banana">Banana</ListBox.Item>,
+      <ListBox.Item key="cherry">Cherry</ListBox.Item>,
+    ];
+
+    it('should show select all option when showSelectAll is true', () => {
+      render(
+        <ListBox
+          label="Select fruits"
+          selectionMode="multiple"
+          showSelectAll={true}
+          selectAllLabel="Select All Fruits"
+        >
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      expect(screen.getByText('Select All Fruits')).toBeInTheDocument();
+    });
+
+    it('should not show select all option in single selection mode', () => {
+      render(
+        <ListBox
+          label="Select fruits"
+          selectionMode="single"
+          showSelectAll={true}
+          selectAllLabel="Select All Fruits"
+        >
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      expect(screen.queryByText('Select All Fruits')).not.toBeInTheDocument();
+    });
+
+    it('should handle select all click to select all items', async () => {
+      const onSelectionChange = jest.fn();
+
+      render(
+        <ListBox
+          label="Select fruits"
+          selectionMode="multiple"
+          showSelectAll={true}
+          onSelectionChange={onSelectionChange}
+        >
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      const selectAllOption = screen.getByText('Select All');
+      await act(async () => {
+        await userEvent.click(selectAllOption);
+      });
+
+      expect(onSelectionChange).toHaveBeenCalledWith('all');
+    });
+
+    it('should handle select all click to deselect all when all are selected', async () => {
+      const onSelectionChange = jest.fn();
+
+      render(
+        <ListBox
+          label="Select fruits"
+          selectionMode="multiple"
+          showSelectAll={true}
+          selectedKeys="all"
+          onSelectionChange={onSelectionChange}
+        >
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      const selectAllOption = screen.getByText('Select All');
+      await act(async () => {
+        await userEvent.click(selectAllOption);
+      });
+
+      expect(onSelectionChange).toHaveBeenCalledWith([]);
+    });
+
+    it('should show indeterminate state when some items are selected', () => {
+      render(
+        <ListBox
+          label="Select fruits"
+          selectionMode="multiple"
+          showSelectAll={true}
+          isCheckable={true}
+          selectedKeys={['apple', 'banana']}
+        >
+          {selectAllItems}
+        </ListBox>,
+      );
+
+      // The select all option should exist and have indeterminate styling
+      const selectAllOption = screen.getByText('Select All');
+      expect(selectAllOption).toBeInTheDocument();
+
+      // Check for indeterminate state in the checkbox (should have specific styles)
+      const selectAllElement = selectAllOption.closest('[role="option"]');
+      expect(selectAllElement).toBeInTheDocument();
+
+      // Check if the element has indeterminate styling
+      const checkboxElement = selectAllElement?.querySelector(
+        '[data-element="Checkbox"]',
+      );
+      expect(checkboxElement).toBeInTheDocument();
+    });
   });
 });

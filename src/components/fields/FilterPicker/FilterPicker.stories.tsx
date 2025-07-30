@@ -50,11 +50,13 @@ const meta: Meta<typeof FilterPicker> = {
     },
     selectedKeys: {
       control: { type: 'object' },
-      description: 'The selected keys in controlled multiple mode',
+      description:
+        'The selected keys in controlled multiple mode. Use "all" to select all items or an array of keys.',
     },
     defaultSelectedKeys: {
       control: { type: 'object' },
-      description: 'The default selected keys in uncontrolled multiple mode',
+      description:
+        'The default selected keys in uncontrolled multiple mode. Use "all" to select all items or an array of keys.',
     },
     selectionMode: {
       control: 'radio',
@@ -66,7 +68,8 @@ const meta: Meta<typeof FilterPicker> = {
     },
     allowsCustomValue: {
       control: { type: 'boolean' },
-      description: 'Whether the FilterListBox allows custom values',
+      description:
+        'Whether to allow entering custom values that are not present in the predefined options',
       table: {
         defaultValue: { summary: false },
       },
@@ -82,6 +85,11 @@ const meta: Meta<typeof FilterPicker> = {
       control: { type: 'object' },
       description: 'Array of keys for disabled items',
     },
+    items: {
+      control: false,
+      description:
+        'Array of items to render when using the render function pattern for large datasets with dynamic content',
+    },
 
     /* Trigger */
     placeholder: {
@@ -90,7 +98,7 @@ const meta: Meta<typeof FilterPicker> = {
     },
     icon: {
       control: false,
-      description: 'Icon to show in the trigger',
+      description: 'Icon to show in the trigger button',
     },
     type: {
       control: 'radio',
@@ -111,7 +119,7 @@ const meta: Meta<typeof FilterPicker> = {
     size: {
       control: 'radio',
       options: ['small', 'medium', 'large'],
-      description: 'Size of the picker',
+      description: 'Size of the picker component',
       table: {
         defaultValue: { summary: 'medium' },
       },
@@ -136,7 +144,8 @@ const meta: Meta<typeof FilterPicker> = {
     },
     filter: {
       control: false,
-      description: 'Custom filter function for search',
+      description:
+        'Custom filter function for determining if an option should be included in search results',
     },
 
     /* Presentation */
@@ -150,13 +159,14 @@ const meta: Meta<typeof FilterPicker> = {
     },
     renderSummary: {
       control: false,
-      description: 'Custom renderer for the summary shown inside the trigger',
+      description:
+        'Custom renderer for the summary shown inside the trigger when there is a selection',
     },
 
     /* Behavior */
     isCheckable: {
       control: 'boolean',
-      description: 'Whether to show checkboxes in multiple selection mode',
+      description: 'Whether to show checkboxes for multiple selection mode',
       table: {
         defaultValue: { summary: false },
       },
@@ -166,6 +176,21 @@ const meta: Meta<typeof FilterPicker> = {
       description: 'Whether keyboard navigation should wrap around',
       table: {
         defaultValue: { summary: false },
+      },
+    },
+    showSelectAll: {
+      control: { type: 'boolean' },
+      description:
+        'Whether to show the "Select All" option in multiple selection mode',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    selectAllLabel: {
+      control: { type: 'text' },
+      description: 'Label for the "Select All" option',
+      table: {
+        defaultValue: { summary: 'Select All' },
       },
     },
 
@@ -209,6 +234,32 @@ const meta: Meta<typeof FilterPicker> = {
     message: {
       control: { type: 'text' },
       description: 'Help or error message',
+    },
+
+    /* Styling */
+    listBoxStyles: {
+      control: false,
+      description:
+        'Custom styles for the dropdown list container within the popover',
+    },
+    popoverStyles: {
+      control: false,
+      description:
+        'Custom styles for the popover dialog that contains the FilterListBox',
+    },
+    triggerStyles: {
+      control: false,
+      description: 'Custom styles for the trigger button element',
+    },
+    headerStyles: {
+      control: false,
+      description:
+        'Custom styles for the header area when header prop is provided',
+    },
+    footerStyles: {
+      control: false,
+      description:
+        'Custom styles for the footer area when footer prop is provided',
     },
 
     /* Events */
@@ -349,6 +400,7 @@ export const SingleSelection: Story = {
     selectionMode: 'single',
     searchPlaceholder: 'Search fruits...',
     width: 'max 30x',
+    defaultSelectedKey: 'banana',
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -373,6 +425,7 @@ export const MultipleSelection: Story = {
     selectionMode: 'multiple',
     searchPlaceholder: 'Search options...',
     width: 'max 30x',
+    defaultSelectedKeys: ['banana', 'cherry'],
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -576,6 +629,7 @@ export const NoSummary: Story = {
     searchPlaceholder: 'Search options...',
     renderSummary: false,
     icon: <FilterIcon />,
+    rightIcon: null,
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -672,7 +726,7 @@ export const LoadingState: Story = {
     isLoading: true,
     selectionMode: 'multiple',
     searchPlaceholder: 'Search options...',
-    width: 'max 25x',
+    width: '30x',
   },
   render: (args) => (
     <FilterPicker {...args}>
@@ -1190,7 +1244,7 @@ export const InForm = () => {
   };
 
   return (
-    <Form style={{ width: '400px' }} onSubmit={handleSubmit}>
+    <Form style={{ width: '30x' }} onSubmit={handleSubmit}>
       <FilterPicker
         isRequired
         name="technology"
@@ -1199,7 +1253,7 @@ export const InForm = () => {
         placeholder="Choose technology..."
         selectionMode="single"
         searchPlaceholder="Search technologies..."
-        value={selectedTechnology}
+        selectedKey={selectedTechnology}
         onSelectionChange={(key) => setSelectedTechnology(key as string | null)}
       >
         <FilterPicker.Section title="Frontend">
@@ -1234,7 +1288,7 @@ export const ComplexExample: Story = {
     selectionMode: 'multiple',
     isCheckable: true,
     searchPlaceholder: 'Search all filters...',
-    width: '40x',
+    width: '30x',
     renderSummary: ({ selectedKeys, selectedLabels }) => {
       if (selectedKeys.length === 0) return null;
       if (selectedKeys.length === 1) return `1 filter: ${selectedLabels[0]}`;
@@ -1496,9 +1550,10 @@ export const VirtualizedList: Story = {
         <FilterPicker
           {...args}
           selectedKeys={selectedKeys}
+          items={items}
           onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
         >
-          {items.map((item) => (
+          {(item: (typeof items)[number]) => (
             <FilterPicker.Item
               key={item.id}
               textValue={item.name}
@@ -1506,7 +1561,7 @@ export const VirtualizedList: Story = {
             >
               {item.name}
             </FilterPicker.Item>
-          ))}
+          )}
         </FilterPicker>
 
         <Text preset="t4" color="#dark.60">
@@ -1522,6 +1577,40 @@ export const VirtualizedList: Story = {
       description: {
         story:
           'When a FilterPicker contains many items and has no sections, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets.',
+      },
+    },
+  },
+};
+
+export const WithSelectAll: Story = {
+  render: (args) => (
+    <FilterPicker {...args}>
+      {permissions.map((permission) => (
+        <FilterPicker.Item
+          key={permission.key}
+          description={permission.description}
+        >
+          {permission.label}
+        </FilterPicker.Item>
+      ))}
+    </FilterPicker>
+  ),
+  args: {
+    label: 'Select permissions with Select All',
+    placeholder: 'Choose permissions',
+    selectionMode: 'multiple',
+    isCheckable: true,
+    showSelectAll: true,
+    selectAllLabel: 'All Permissions',
+    defaultSelectedKeys: ['read'],
+    type: 'outline',
+    size: 'medium',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `showSelectAll={true}` is used with multiple selection mode in FilterPicker, a "Select All" option appears in the dropdown above the search input. The checkbox shows indeterminate state when some items are selected, checked when all are selected, and unchecked when none are selected. The select all functionality works seamlessly with filtering and the trigger button shows the combined selection summary.',
       },
     },
   },

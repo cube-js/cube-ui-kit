@@ -104,6 +104,225 @@ describe('<FilterListBox />', () => {
       expect(onSelectionChange).toHaveBeenCalledWith('banana');
     });
 
+    it('should pre-select option based on defaultSelectedKey', () => {
+      const { getByText } = render(
+        <FilterListBox label="Select a fruit" defaultSelectedKey="banana">
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      const bananaOption = getByText('Banana');
+      const appleOption = getByText('Apple');
+
+      // Banana should be aria-selected=true, others false
+      expect(bananaOption.closest('li')).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+      expect(appleOption.closest('li')).toHaveAttribute(
+        'aria-selected',
+        'false',
+      );
+    });
+
+    it('should pre-select multiple options based on defaultSelectedKeys', () => {
+      const { getByText } = render(
+        <FilterListBox
+          label="Select fruits"
+          selectionMode="multiple"
+          defaultSelectedKeys={['apple', 'cherry']}
+        >
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      const appleOption = getByText('Apple');
+      const bananaOption = getByText('Banana');
+      const cherryOption = getByText('Cherry');
+
+      // Apple and Cherry should be selected, Banana should not
+      expect(appleOption.closest('li')).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+      expect(bananaOption.closest('li')).toHaveAttribute(
+        'aria-selected',
+        'false',
+      );
+      expect(cherryOption.closest('li')).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+    });
+
+    it('should pre-select all options when defaultSelectedKeys is "all"', () => {
+      const { getByText } = render(
+        <FilterListBox
+          label="Select fruits"
+          selectionMode="multiple"
+          defaultSelectedKeys="all"
+        >
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      const appleOption = getByText('Apple');
+      const bananaOption = getByText('Banana');
+      const cherryOption = getByText('Cherry');
+      const dateOption = getByText('Date');
+      const elderberryOption = getByText('Elderberry');
+
+      // All options should be selected
+      expect(appleOption.closest('li')).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+      expect(bananaOption.closest('li')).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+      expect(cherryOption.closest('li')).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+      expect(dateOption.closest('li')).toHaveAttribute('aria-selected', 'true');
+      expect(elderberryOption.closest('li')).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+    });
+
+    it('should work in uncontrolled mode with defaultSelectedKeys', async () => {
+      const onSelectionChange = jest.fn();
+
+      const { getByText } = render(
+        <FilterListBox
+          label="Select fruits"
+          selectionMode="multiple"
+          defaultSelectedKeys={['apple']}
+          onSelectionChange={onSelectionChange}
+        >
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      // Apple should be initially selected
+      const appleOption = getByText('Apple');
+      expect(appleOption.closest('li')).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+
+      // Click on Banana to add it to selection
+      const bananaOption = getByText('Banana');
+      await act(async () => {
+        await userEvent.click(bananaOption);
+      });
+
+      // Should call onSelectionChange with both apple and banana
+      expect(onSelectionChange).toHaveBeenCalledWith(['apple', 'banana']);
+    });
+
+    it('should handle empty defaultSelectedKeys array', () => {
+      const { getByText } = render(
+        <FilterListBox
+          label="Select fruits"
+          selectionMode="multiple"
+          defaultSelectedKeys={[]}
+        >
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      const appleOption = getByText('Apple');
+      const bananaOption = getByText('Banana');
+      const cherryOption = getByText('Cherry');
+
+      // No options should be selected
+      expect(appleOption.closest('li')).toHaveAttribute(
+        'aria-selected',
+        'false',
+      );
+      expect(bananaOption.closest('li')).toHaveAttribute(
+        'aria-selected',
+        'false',
+      );
+      expect(cherryOption.closest('li')).toHaveAttribute(
+        'aria-selected',
+        'false',
+      );
+    });
+
+    it('should handle defaultSelectedKey with null value', () => {
+      const { getByText } = render(
+        <FilterListBox label="Select a fruit" defaultSelectedKey={null}>
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      const appleOption = getByText('Apple');
+      const bananaOption = getByText('Banana');
+      const cherryOption = getByText('Cherry');
+
+      // No options should be selected
+      expect(appleOption.closest('li')).toHaveAttribute(
+        'aria-selected',
+        'false',
+      );
+      expect(bananaOption.closest('li')).toHaveAttribute(
+        'aria-selected',
+        'false',
+      );
+      expect(cherryOption.closest('li')).toHaveAttribute(
+        'aria-selected',
+        'false',
+      );
+    });
+
+    it('should preserve default selection after filtering', async () => {
+      const { getByText, getByPlaceholderText } = render(
+        <FilterListBox
+          label="Select a fruit"
+          defaultSelectedKey="apple"
+          searchPlaceholder="Search..."
+        >
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      // Apple should be initially selected
+      const appleOption = getByText('Apple');
+      expect(appleOption.closest('li')).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+
+      // Filter to show only items containing 'a'
+      const searchInput = getByPlaceholderText('Search...');
+      await act(async () => {
+        await userEvent.type(searchInput, 'a');
+      });
+
+      // Apple should still be selected after filtering
+      const filteredAppleOption = getByText('Apple');
+      expect(filteredAppleOption.closest('li')).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+
+      // Clear the search
+      await act(async () => {
+        await userEvent.clear(searchInput);
+      });
+
+      // Apple should still be selected after clearing the search
+      const unfilteredAppleOption = getByText('Apple');
+      expect(unfilteredAppleOption.closest('li')).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+    });
+
     it('should support multiple selection', async () => {
       const onSelectionChange = jest.fn();
 

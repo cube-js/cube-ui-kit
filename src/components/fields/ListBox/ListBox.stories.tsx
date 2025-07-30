@@ -45,11 +45,13 @@ const meta: Meta<typeof ListBox> = {
     },
     selectedKeys: {
       control: { type: 'object' },
-      description: 'The selected keys in controlled multiple mode',
+      description:
+        'The selected keys in controlled multiple mode. Use "all" to select all items or an array of keys.',
     },
     defaultSelectedKeys: {
       control: { type: 'object' },
-      description: 'The default selected keys in uncontrolled multiple mode',
+      description:
+        'The default selected keys in uncontrolled multiple mode. Use "all" to select all items or an array of keys.',
     },
     selectionMode: {
       options: ['single', 'multiple'],
@@ -93,7 +95,7 @@ const meta: Meta<typeof ListBox> = {
     focusOnHover: {
       control: { type: 'boolean' },
       description:
-        'Whether moving pointer over an option moves DOM focus to it',
+        'Whether moving the pointer over an option will move DOM focus to that option',
       table: {
         defaultValue: { summary: true },
       },
@@ -107,7 +109,7 @@ const meta: Meta<typeof ListBox> = {
     },
     isCheckable: {
       control: { type: 'boolean' },
-      description: 'Whether to show checkboxes for multiple selection',
+      description: 'Whether to show checkboxes for multiple selection mode',
       table: {
         defaultValue: { summary: false },
       },
@@ -167,6 +169,21 @@ const meta: Meta<typeof ListBox> = {
     onOptionClick: {
       action: 'option clicked',
       description: 'Callback when an option is clicked (non-checkbox area)',
+    },
+    showSelectAll: {
+      control: { type: 'boolean' },
+      description:
+        'Whether to show the "Select All" option in multiple selection mode',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    selectAllLabel: {
+      control: { type: 'text' },
+      description: 'Label for the "Select All" option',
+      table: {
+        defaultValue: { summary: 'Select All' },
+      },
     },
   },
 };
@@ -865,7 +882,7 @@ export const VirtualizedList: StoryFn<CubeListBoxProps<any>> = (args) => {
         overflow="auto"
         onSelectionChange={setSelected}
       >
-        {(item) => (
+        {(item: any) => (
           <ListBox.Item key={item.key} description={item.description}>
             {item.name}
           </ListBox.Item>
@@ -1028,7 +1045,7 @@ EscapeKeyHandling.parameters = {
 export const WithItemsProp: Story = {
   render: (args) => (
     <ListBox {...args} items={fruits}>
-      {(item) => <ListBox.Item key={item.key}>{item.label}</ListBox.Item>}
+      {(item: any) => <ListBox.Item key={item.key}>{item.label}</ListBox.Item>}
     </ListBox>
   ),
   args: {
@@ -1041,6 +1058,34 @@ export const WithItemsProp: Story = {
       description: {
         story:
           'ListBox supports the `items` prop pattern where you provide an array of data objects and use a render function to create the items. This is useful when working with dynamic data or when you want to separate data from presentation.',
+      },
+    },
+  },
+};
+
+export const WithSelectAll: Story = {
+  render: (args) => (
+    <ListBox {...args}>
+      {permissions.map((permission) => (
+        <ListBox.Item key={permission.key} description={permission.description}>
+          {permission.label}
+        </ListBox.Item>
+      ))}
+    </ListBox>
+  ),
+  args: {
+    label: 'Select permissions with Select All',
+    selectionMode: 'multiple',
+    isCheckable: true,
+    showSelectAll: true,
+    selectAllLabel: 'All Permissions',
+    defaultSelectedKeys: ['read'],
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'When `showSelectAll={true}` is used with multiple selection mode, a "Select All" option appears in the header. The checkbox shows indeterminate state when some items are selected, checked when all are selected, and unchecked when none are selected.',
       },
     },
   },
