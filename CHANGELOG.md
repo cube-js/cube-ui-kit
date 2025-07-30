@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.69.3
+
+### Patch Changes
+
+- [#737](https://github.com/cube-js/cube-ui-kit/pull/737) [`45daa5de`](https://github.com/cube-js/cube-ui-kit/commit/45daa5de8c9fbaaa4eac86ef006862e71b2b53a6) Thanks [@tenphi](https://github.com/tenphi)! - Full items prop support in FilterPicker.
+
 ## 0.69.2
 
 ### Patch Changes
