@@ -1,5 +1,21 @@
 # @cube-dev/ui-kit
 
+## 0.69.2
+
+### Patch Changes
+
+- [#735](https://github.com/cube-js/cube-ui-kit/pull/735) [`7fdc44b0`](https://github.com/cube-js/cube-ui-kit/commit/7fdc44b09e843b5400e86ed0c512616910ee05f5) Thanks [@tenphi](https://github.com/tenphi)! - Fix flipping of popover in FilterPicker if it's already open.
+
+- [#735](https://github.com/cube-js/cube-ui-kit/pull/735) [`7fdc44b0`](https://github.com/cube-js/cube-ui-kit/commit/7fdc44b09e843b5400e86ed0c512616910ee05f5) Thanks [@tenphi](https://github.com/tenphi)! - Improved Button layout.
+
+- [#735](https://github.com/cube-js/cube-ui-kit/pull/735) [`7fdc44b0`](https://github.com/cube-js/cube-ui-kit/commit/7fdc44b09e843b5400e86ed0c512616910ee05f5) Thanks [@tenphi](https://github.com/tenphi)! - Improved FilterPicker layout with additional wrapper for consistency.
+
+- [#735](https://github.com/cube-js/cube-ui-kit/pull/735) [`7fdc44b0`](https://github.com/cube-js/cube-ui-kit/commit/7fdc44b09e843b5400e86ed0c512616910ee05f5) Thanks [@tenphi](https://github.com/tenphi)! - Fix initial state inconsistency in FilterPicker.
+
+- [#735](https://github.com/cube-js/cube-ui-kit/pull/735) [`7fdc44b0`](https://github.com/cube-js/cube-ui-kit/commit/7fdc44b09e843b5400e86ed0c512616910ee05f5) Thanks [@tenphi](https://github.com/tenphi)! - Overflow text ellipsis in Buttons with icons by default.
+
+- [#735](https://github.com/cube-js/cube-ui-kit/pull/735) [`7fdc44b0`](https://github.com/cube-js/cube-ui-kit/commit/7fdc44b09e843b5400e86ed0c512616910ee05f5) Thanks [@tenphi](https://github.com/tenphi)! - Add `showSelectAll` and `selectAllLabel` options for ListBox, FilterListBox, and FilterPicker to add "Select All" option. The label can be customized.
+
 ## 0.69.1
 
 ### Patch Changes
