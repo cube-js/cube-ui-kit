@@ -1253,7 +1253,7 @@ export const InForm = () => {
         placeholder="Choose technology..."
         selectionMode="single"
         searchPlaceholder="Search technologies..."
-        value={selectedTechnology}
+        selectedKey={selectedTechnology}
         onSelectionChange={(key) => setSelectedTechnology(key as string | null)}
       >
         <FilterPicker.Section title="Frontend">
@@ -1553,7 +1553,7 @@ export const VirtualizedList: Story = {
           items={items}
           onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
         >
-          {(item) => (
+          {(item: (typeof items)[number]) => (
             <FilterPicker.Item
               key={item.id}
               textValue={item.name}

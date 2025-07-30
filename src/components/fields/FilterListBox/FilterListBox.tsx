@@ -287,7 +287,9 @@ export const FilterListBox = forwardRef(function FilterListBox<
     if (!allowsCustomValue) return;
 
     const currentSelectedKeys = selectedKeys
-      ? Array.from(selectedKeys).map(String)
+      ? selectedKeys === 'all'
+        ? [] // Skip custom key detection when 'all' is selected
+        : Array.from(selectedKeys).map(String)
       : selectedKey != null
         ? [String(selectedKey)]
         : [];
@@ -318,9 +320,14 @@ export const FilterListBox = forwardRef(function FilterListBox<
     const selectedKeysSet = new Set<string>();
 
     if (selectionMode === 'multiple') {
-      Array.from(selectedKeys ?? []).forEach((k) =>
-        selectedKeysSet.add(String(k)),
-      );
+      if (selectedKeys === 'all') {
+        // When 'all' is selected, no custom items should be treated as selected
+        // since 'all' means all available items, not custom ones
+      } else {
+        Array.from(selectedKeys ?? []).forEach((k) =>
+          selectedKeysSet.add(String(k)),
+        );
+      }
     } else {
       if (selectedKey != null) selectedKeysSet.add(String(selectedKey));
     }
