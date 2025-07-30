@@ -272,6 +272,10 @@ export interface CubeListBoxProps<T>
   selectionMode?: 'single' | 'multiple';
   /** Ref for accessing the list DOM element */
   listRef?: RefObject<HTMLDivElement>;
+  /** Whether to disallow empty selection */
+  disallowEmptySelection?: boolean;
+  /** Whether to wrap focus when reaching the end of the list */
+  shouldFocusWrap?: boolean;
   /**
    * Ref to access the internal ListState instance.
    * This allows parent components to access selection state and other list functionality.

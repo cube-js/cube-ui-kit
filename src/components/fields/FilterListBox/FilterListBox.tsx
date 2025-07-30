@@ -117,6 +117,8 @@ export interface CubeFilterListBoxProps<T>
   allowsCustomValue?: boolean;
   /** Additional modifiers for styling the FilterListBox */
   mods?: Record<string, boolean>;
+  /** Custom styles for the list box */
+  listBoxStyles?: Styles;
 
   /**
    * Callback fired when the user presses Escape key while the search input is empty.
@@ -912,6 +914,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
           footerStyles={footerStyles}
           mods={mods}
           size={size}
+          styles={listBoxStyles}
           isCheckable={isCheckable}
           items={items as any}
           onSelectionChange={handleSelectionChange}

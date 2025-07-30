@@ -1,3 +1,4 @@
+import { CollectionChildren } from '@react-types/shared';
 import {
   Children,
   cloneElement,
@@ -12,7 +13,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { FocusScope, useKeyboard } from 'react-aria';
+import { FocusScope, Key, useKeyboard } from 'react-aria';
 import { Section as BaseSection, Item } from 'react-stately';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
@@ -31,7 +32,7 @@ import {
   tasty,
 } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
-import { Button } from '../../actions';
+import { Button, CubeButtonProps } from '../../actions';
 import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
@@ -44,12 +45,13 @@ import { ListBox } from '../ListBox';
 import type { FieldBaseProps } from '../../../shared';
 
 export interface CubeFilterPickerProps<T>
-  extends CubeFilterListBoxProps<T>,
+  extends Omit<CubeFilterListBoxProps<T>, 'size'>,
     BasePropsWithoutChildren,
     BaseStyleProps,
     OuterStyleProps,
     ColorStyleProps,
-    FieldBaseProps {
+    FieldBaseProps,
+    Pick<CubeButtonProps, 'type' | 'theme' | 'icon' | 'rightIcon'> {
   /** Placeholder text when no selection is made */
   placeholder?: string;
   /** Icon to show in the trigger button */
@@ -66,8 +68,6 @@ export interface CubeFilterPickerProps<T>
   theme?: 'default' | 'special';
   /** Size of the picker component */
   size?: 'small' | 'medium' | 'large';
-  /** Children (FilterPicker.Item and FilterPicker.Section elements) */
-  children?: ReactNode;
   /** Custom styles for the list box popover */
   listBoxStyles?: Styles;
   /** Custom styles for the popover container */
@@ -76,6 +76,8 @@ export interface CubeFilterPickerProps<T>
   triggerStyles?: Styles;
   /** Whether to show checkboxes for multiple selection mode */
   isCheckable?: boolean;
+  /** Whether to flip the popover placement */
+  shouldFlip?: boolean;
 
   /**
    * Custom renderer for the summary shown inside the trigger when there is a selection.
@@ -199,7 +201,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     listStateRef,
     focusOnHover,
     showSelectAll,
-    selectAllLabel,
+    selectAllLabel = 'All',
     items,
     header,
     footer,
@@ -223,11 +225,11 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   });
 
   // Internal selection state (uncontrolled scenario)
-  const [internalSelectedKey, setInternalSelectedKey] = useState<string | null>(
+  const [internalSelectedKey, setInternalSelectedKey] = useState<Key | null>(
     defaultSelectedKey ?? null,
   );
   const [internalSelectedKeys, setInternalSelectedKeys] = useState<
-    'all' | string[]
+    'all' | Key[]
   >(defaultSelectedKeys ?? []);
 
   // Track popover open/close and capture children order for session
@@ -288,7 +290,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         });
       };
 
-      if (children) traverse(children);
+      if (children) traverse(children as ReactNode);
 
       return foundKey;
     },
@@ -354,7 +356,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         });
       };
 
-      extractAllLabels(children);
+      extractAllLabels(children as ReactNode);
       return allLabels;
     }
 
@@ -417,7 +419,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       });
     };
 
-    extractLabelsWithTracking(children);
+    extractLabelsWithTracking(children as ReactNode);
 
     // Handle custom values that don't have corresponding children
     const selectedKeysArr =
@@ -604,7 +606,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     };
 
     // Sort the children
-    const childrenArray = Children.toArray(children);
+    const childrenArray = Children.toArray(children as ReactNode);
     const sortedChildren = sortChildrenArray(childrenArray);
 
     // Cache the sorted order when popover opens or when we compute it for the
@@ -648,7 +650,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       return null;
     }
 
-    let content: string | null | undefined = '';
+    let content: ReactNode = '';
 
     if (!hasSelection) {
       content = placeholder;
@@ -816,7 +818,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                       } else if (
                         selection &&
                         typeof selection === 'object' &&
-                        selection instanceof Set
+                        (selection as any) instanceof Set
                       ) {
                         normalized = processSelectionArray(selection as any);
                       }
@@ -838,7 +840,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                     } else if (
                       selection &&
                       typeof selection === 'object' &&
-                      selection instanceof Set
+                      (selection as any) instanceof Set
                     ) {
                       latestSelectionRef.current.multiple = Array.from(
                         new Set(processSelectionArray(selection as any)),
@@ -855,7 +857,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                   }
                 }}
               >
-                {finalChildren}
+                {finalChildren as CollectionChildren<T>}
               </FilterListBox>
             </FocusScope>
           </Dialog>
