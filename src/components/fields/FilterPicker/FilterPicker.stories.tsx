@@ -1526,12 +1526,12 @@ export const VirtualizedList: Story = {
     await userEvent.click(trigger);
   },
   render: (args) => {
-    const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+    const [selectedKeys, setSelectedKeys] = useState<string[]>(['item-2']);
 
     // Generate a large list of items with varying content to trigger virtualization
     // Mix items with and without descriptions to test dynamic sizing
     const items = Array.from({ length: 100 }, (_, i) => ({
-      id: `item-${i}`,
+      id: `item-${i + 1}`,
       name: `Item ${i + 1}${i % 7 === 0 ? ' - This is a longer item name to test dynamic sizing' : ''}`,
       description:
         i % 3 === 0
@@ -1584,15 +1584,15 @@ export const VirtualizedList: Story = {
 
 export const WithSelectAll: Story = {
   render: (args) => (
-    <FilterPicker {...args}>
-      {permissions.map((permission) => (
+    <FilterPicker items={permissions} {...args}>
+      {(permission: any) => (
         <FilterPicker.Item
           key={permission.key}
           description={permission.description}
         >
           {permission.label}
         </FilterPicker.Item>
-      ))}
+      )}
     </FilterPicker>
   ),
   args: {
@@ -1603,8 +1603,7 @@ export const WithSelectAll: Story = {
     showSelectAll: true,
     selectAllLabel: 'All Permissions',
     defaultSelectedKeys: ['read'],
-    type: 'outline',
-    size: 'medium',
+    width: '30x',
   },
   parameters: {
     docs: {

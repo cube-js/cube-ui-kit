@@ -843,4 +843,75 @@ describe('<FilterPicker />', () => {
       expect(options[1]).toHaveTextContent('Apple');
     });
   });
+
+  describe('Items prop functionality', () => {
+    const itemsWithLabels = [
+      { key: 'apple', label: 'Red Apple' },
+      { key: 'banana', label: 'Yellow Banana' },
+      { key: 'cherry', label: 'Sweet Cherry' },
+    ];
+
+    it('should display labels correctly when using items prop with label property', async () => {
+      const { getByRole } = renderWithRoot(
+        <FilterPicker
+          label="Select fruits"
+          placeholder="Choose fruits..."
+          selectionMode="single"
+          items={itemsWithLabels}
+          selectedKey="apple"
+        >
+          {(item) => (
+            <FilterPicker.Item key={item.key}>{item.label}</FilterPicker.Item>
+          )}
+        </FilterPicker>,
+      );
+
+      // Wait for component to render
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      });
+
+      const trigger = getByRole('button');
+
+      // Should display the label, not the key
+      expect(trigger).toHaveTextContent('Red Apple');
+      expect(trigger).not.toHaveTextContent('apple');
+    });
+
+    it('should display correct labels in multiple selection mode with items prop', async () => {
+      const renderSummary = jest.fn(
+        ({ selectedLabels }) => `Selected: ${selectedLabels.join(', ')}`,
+      );
+
+      const { getByRole } = renderWithRoot(
+        <FilterPicker
+          label="Select fruits"
+          placeholder="Choose fruits..."
+          selectionMode="multiple"
+          items={itemsWithLabels}
+          selectedKeys={['apple', 'cherry']}
+          renderSummary={renderSummary}
+        >
+          {(item) => (
+            <FilterPicker.Item key={item.key}>{item.label}</FilterPicker.Item>
+          )}
+        </FilterPicker>,
+      );
+
+      // Wait for component to render
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      });
+
+      // Check that renderSummary was called with correct labels
+      expect(renderSummary).toHaveBeenCalledWith({
+        selectedLabels: ['Red Apple', 'Sweet Cherry'],
+        selectedKeys: ['apple', 'cherry'],
+        selectionMode: 'multiple',
+      });
+
+      const trigger = getByRole('button');
+      expect(trigger).toHaveTextContent('Selected: Red Apple, Sweet Cherry');
+    });
+  });
 });

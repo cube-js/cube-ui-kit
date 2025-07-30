@@ -14,7 +14,7 @@ import {
   useState,
 } from 'react';
 import { FocusScope, Key, useKeyboard } from 'react-aria';
-import { Section as BaseSection, Item } from 'react-stately';
+import { Section as BaseSection, Item, ListState } from 'react-stately';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import { DirectionIcon } from '../../../icons';
@@ -43,6 +43,15 @@ import {
 import { ListBox } from '../ListBox';
 
 import type { FieldBaseProps } from '../../../shared';
+
+// Define interface for items that can have keys
+interface ItemWithKey {
+  key?: string | number;
+  id?: string | number;
+  textValue?: string;
+  children?: ItemWithKey[];
+  [key: string]: unknown;
+}
 
 export interface CubeFilterPickerProps<T>
   extends Omit<CubeFilterListBoxProps<T>, 'size'>,
@@ -95,16 +104,16 @@ export interface CubeFilterPickerProps<T>
    */
   renderSummary?:
     | ((args: {
-        selectedLabels: string[];
-        selectedKeys: 'all' | (string | number)[];
+        selectedLabels?: string[];
+        selectedKeys?: 'all' | (string | number)[];
         selectedLabel?: string;
         selectedKey?: string | number | null;
-        selectionMode: 'single' | 'multiple';
+        selectionMode?: 'single' | 'multiple';
       }) => ReactNode)
     | false;
 
   /** Ref to access internal ListBox state (from FilterListBox) */
-  listStateRef?: MutableRefObject<any | null>;
+  listStateRef?: MutableRefObject<ListState<T>>;
   /** Additional modifiers for styling the FilterPicker */
   mods?: Record<string, boolean>;
 }
@@ -130,7 +139,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   props = useFormProps(props);
   props = useFieldProps(props, {
     valuePropsMapper: ({ value, onChange }) => {
-      const fieldProps: any = {};
+      const fieldProps: Record<string, unknown> = {};
 
       if (props.selectionMode === 'multiple') {
         fieldProps.selectedKeys = value || [];
@@ -138,7 +147,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         fieldProps.selectedKey = value ?? null;
       }
 
-      fieldProps.onSelectionChange = (key: any) => {
+      fieldProps.onSelectionChange = (key: Key | null | 'all' | Key[]) => {
         if (props.selectionMode === 'multiple') {
           // Handle "all" selection and array selections
           if (key === 'all') {
@@ -225,6 +234,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   // Track popover open/close and capture children order for session
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const cachedChildrenOrder = useRef<ReactNode[] | null>(null);
+  // Cache for sorted items array when using `items` prop
+  const cachedItemsOrder = useRef<T[] | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   const isControlledSingle = selectedKey !== undefined;
@@ -239,7 +250,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   // Utility: remove React's ".$" / "." prefixes from element keys so that we
   // can compare them with user-provided keys.
-  const normalizeKeyValue = (key: any): string => {
+  const normalizeKeyValue = (key: Key): string => {
     if (key == null) return '';
     const str = String(key);
     return str.startsWith('.$')
@@ -258,24 +269,25 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   // ---------------------------------------------------------------------------
 
   const findReactKey = useCallback(
-    (lookup: any): any => {
+    (lookup: Key): Key => {
       if (lookup == null) return lookup;
 
       const normalizedLookup = normalizeKeyValue(lookup);
-      let foundKey: any = lookup;
+      let foundKey: Key = lookup;
 
       const traverse = (nodes: ReactNode): void => {
-        Children.forEach(nodes, (child: any) => {
+        Children.forEach(nodes, (child: ReactNode) => {
           if (!child || typeof child !== 'object') return;
+          const element = child as ReactElement;
 
-          if (child.key != null) {
-            if (normalizeKeyValue(child.key) === normalizedLookup) {
-              foundKey = child.key;
+          if (element.key != null) {
+            if (normalizeKeyValue(element.key) === normalizedLookup) {
+              foundKey = element.key;
             }
           }
 
-          if (child.props?.children) {
-            traverse(child.props.children);
+          if (element.props?.children) {
+            traverse(element.props.children);
           }
         });
       };
@@ -289,23 +301,23 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   const mappedSelectedKey = useMemo(() => {
     if (selectionMode !== 'single') return null;
-    return findReactKey(effectiveSelectedKey);
+    return effectiveSelectedKey ? findReactKey(effectiveSelectedKey) : null;
   }, [selectionMode, effectiveSelectedKey, findReactKey]);
 
   const mappedSelectedKeys = useMemo(() => {
-    if (selectionMode !== 'multiple') return undefined as any;
+    if (selectionMode !== 'multiple') return undefined;
 
     if (effectiveSelectedKeys === 'all') return 'all' as const;
 
     if (Array.isArray(effectiveSelectedKeys)) {
-      return (effectiveSelectedKeys as any[]).map((k) => findReactKey(k));
+      return (effectiveSelectedKeys as Key[]).map((k) => findReactKey(k));
     }
 
-    return effectiveSelectedKeys as any;
+    return effectiveSelectedKeys;
   }, [selectionMode, effectiveSelectedKeys, findReactKey]);
 
   // Given an iterable of keys (array or Set) toggle membership for duplicates
-  const processSelectionArray = (iterable: Iterable<any>): string[] => {
+  const processSelectionArray = (iterable: Iterable<Key>): string[] => {
     const resultSet = new Set<string>();
     for (const key of iterable) {
       const nKey = String(key);
@@ -320,33 +332,74 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   // Helper to get selected item labels for display
   const getSelectedLabels = () => {
-    if (!children) return [];
-
     // Handle "all" selection - return all available labels
     if (selectionMode === 'multiple' && effectiveSelectedKeys === 'all') {
       const allLabels: string[] = [];
 
-      const extractAllLabels = (nodes: ReactNode): void => {
-        Children.forEach(nodes, (child: any) => {
-          if (!child || typeof child !== 'object') return;
+      // Extract from items prop if available
+      if (items) {
+        const extractFromItems = (itemsArray: unknown[]): void => {
+          itemsArray.forEach((item) => {
+            if (item && typeof item === 'object') {
+              const itemObj = item as ItemWithKey;
+              if (Array.isArray(itemObj.children)) {
+                // Section-like object
+                extractFromItems(itemObj.children);
+              } else {
+                // Regular item - extract label
+                const label =
+                  itemObj.textValue ||
+                  (itemObj as any).label ||
+                  (typeof (itemObj as any).children === 'string'
+                    ? (itemObj as any).children
+                    : '') ||
+                  String(
+                    (itemObj as any).children ||
+                      itemObj.key ||
+                      itemObj.id ||
+                      item,
+                  );
+                allLabels.push(label);
+              }
+            }
+          });
+        };
 
-          if (child.type === Item) {
-            const label =
-              child.props.textValue ||
-              (typeof child.props.children === 'string'
-                ? child.props.children
-                : '') ||
-              String(child.props.children || '');
-            allLabels.push(label);
-          }
+        const itemsArray = Array.isArray(items)
+          ? items
+          : Array.from(items as Iterable<unknown>);
+        extractFromItems(itemsArray);
+        return allLabels;
+      }
 
-          if (child.props?.children) {
-            extractAllLabels(child.props.children);
-          }
-        });
-      };
+      // Extract from children if available
+      if (children) {
+        const extractAllLabels = (nodes: ReactNode): void => {
+          if (!nodes) return;
+          Children.forEach(nodes, (child: ReactNode) => {
+            if (!child || typeof child !== 'object') return;
+            const element = child as ReactElement;
 
-      extractAllLabels(children as ReactNode);
+            if (element.type === Item) {
+              const label =
+                element.props.textValue ||
+                (typeof element.props.children === 'string'
+                  ? element.props.children
+                  : '') ||
+                String(element.props.children || '');
+              allLabels.push(label);
+            }
+
+            if (element.props?.children) {
+              extractAllLabels(element.props.children);
+            }
+          });
+        };
+
+        extractAllLabels(children as ReactNode);
+        return allLabels;
+      }
+
       return allLabels;
     }
 
@@ -359,59 +412,77 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     );
 
     const labels: string[] = [];
-
-    const extractLabels = (nodes: ReactNode): void => {
-      Children.forEach(nodes, (child: any) => {
-        if (!child || typeof child !== 'object') return;
-
-        if (child.type === Item) {
-          if (selectedSet.has(normalizeKeyValue(child.key))) {
-            const label =
-              child.props.textValue ||
-              (typeof child.props.children === 'string'
-                ? child.props.children
-                : '') ||
-              String(child.props.children || '');
-            labels.push(label);
-          }
-        }
-
-        if (child.props?.children) {
-          extractLabels(child.props.children);
-        }
-      });
-    };
-
     const processedKeys = new Set<string>();
 
-    // Modified extractLabels to track which keys we've processed
-    const extractLabelsWithTracking = (nodes: ReactNode): void => {
-      Children.forEach(nodes, (child: any) => {
-        if (!child || typeof child !== 'object') return;
-
-        if (child.type === Item) {
-          const childKey = String(child.key);
-          if (selectedSet.has(childKey)) {
-            const label =
-              child.props.textValue ||
-              (typeof child.props.children === 'string'
-                ? child.props.children
-                : '') ||
-              String(child.props.children || '');
-            labels.push(label);
-            processedKeys.add(childKey);
+    // Extract from items prop if available
+    if (items) {
+      const extractFromItems = (itemsArray: unknown[]): void => {
+        itemsArray.forEach((item) => {
+          if (item && typeof item === 'object') {
+            const itemObj = item as ItemWithKey;
+            if (Array.isArray(itemObj.children)) {
+              // Section-like object
+              extractFromItems(itemObj.children);
+            } else {
+              // Regular item - check if selected
+              const itemKey = itemObj.key || itemObj.id;
+              if (
+                itemKey != null &&
+                selectedSet.has(normalizeKeyValue(itemKey))
+              ) {
+                const label =
+                  itemObj.textValue ||
+                  (itemObj as any).label ||
+                  (typeof (itemObj as any).children === 'string'
+                    ? (itemObj as any).children
+                    : '') ||
+                  String((itemObj as any).children || itemKey);
+                labels.push(label);
+                processedKeys.add(normalizeKeyValue(itemKey));
+              }
+            }
           }
-        }
+        });
+      };
 
-        if (child.props?.children) {
-          extractLabelsWithTracking(child.props.children);
-        }
-      });
-    };
+      const itemsArray = Array.isArray(items)
+        ? items
+        : Array.from(items as Iterable<unknown>);
+      extractFromItems(itemsArray);
+    }
 
-    extractLabelsWithTracking(children as ReactNode);
+    // Extract from children if available (for mixed mode or fallback)
+    if (children) {
+      const extractLabelsWithTracking = (nodes: ReactNode): void => {
+        if (!nodes) return;
+        Children.forEach(nodes, (child: ReactNode) => {
+          if (!child || typeof child !== 'object') return;
+          const element = child as ReactElement;
 
-    // Handle custom values that don't have corresponding children
+          if (element.type === Item) {
+            const childKey = String(element.key);
+            if (selectedSet.has(normalizeKeyValue(childKey))) {
+              const label =
+                element.props.textValue ||
+                (typeof element.props.children === 'string'
+                  ? element.props.children
+                  : '') ||
+                String(element.props.children || '');
+              labels.push(label);
+              processedKeys.add(normalizeKeyValue(childKey));
+            }
+          }
+
+          if (element.props?.children) {
+            extractLabelsWithTracking(element.props.children);
+          }
+        });
+      };
+
+      extractLabelsWithTracking(children as ReactNode);
+    }
+
+    // Handle custom values that don't have corresponding items/children
     const selectedKeysArr =
       selectionMode === 'multiple' && effectiveSelectedKeys !== 'all'
         ? (effectiveSelectedKeys || []).map(String)
@@ -468,7 +539,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   // Function to sort children with selected items on top
   const getSortedChildren = useCallback(() => {
-    if (!children) return children;
+    // If children is not provided or is a render function, return it as-is
+    if (!children || typeof children === 'function') return children;
 
     // When the popover is **closed**, reuse the cached order if we have it to
     // avoid unnecessary reflows. If we don't have a cache yet (first open),
@@ -519,7 +591,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     }
 
     // Helper function to check if an item is selected
-    const isItemSelected = (child: any): boolean => {
+    const isItemSelected = (child: ReactElement): boolean => {
       return (
         child?.key != null && selectedSet.has(normalizeKeyValue(child.key))
       );
@@ -527,45 +599,50 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
     // Helper function to sort children array
     const sortChildrenArray = (childrenArray: ReactNode[]): ReactNode[] => {
-      const cloneWithNormalizedKey = (item: any) =>
+      const cloneWithNormalizedKey = (item: ReactElement) =>
         cloneElement(item, {
-          key: normalizeKeyValue(item.key),
+          key: item.key ? normalizeKeyValue(item.key) : undefined,
         });
 
       const selected: ReactNode[] = [];
       const unselected: ReactNode[] = [];
 
-      childrenArray.forEach((child: any) => {
+      childrenArray.forEach((child: ReactNode) => {
         if (!child || typeof child !== 'object') {
           unselected.push(child);
           return;
         }
 
+        const element = child as ReactElement;
+
         // Handle sections - sort items within each section
         if (
-          child.type === BaseSection ||
-          child.type?.displayName === 'Section'
+          element.type === BaseSection ||
+          (element.type as any)?.displayName === 'Section'
         ) {
-          const sectionChildren = Array.isArray(child.props.children)
-            ? child.props.children
-            : [child.props.children];
+          const sectionChildren = Array.isArray(element.props.children)
+            ? element.props.children
+            : [element.props.children];
 
           const selectedItems: ReactNode[] = [];
           const unselectedItems: ReactNode[] = [];
 
-          sectionChildren.forEach((sectionChild: any) => {
-            if (
-              sectionChild &&
-              typeof sectionChild === 'object' &&
-              (sectionChild.type === Item ||
-                sectionChild.type?.displayName === 'Item')
-            ) {
-              const clonedItem = cloneWithNormalizedKey(sectionChild);
+          sectionChildren.forEach((sectionChild: ReactNode) => {
+            if (sectionChild && typeof sectionChild === 'object') {
+              const sectionElement = sectionChild as ReactElement;
+              if (
+                sectionElement.type === Item ||
+                (sectionElement.type as any)?.displayName === 'Item'
+              ) {
+                const clonedItem = cloneWithNormalizedKey(sectionElement);
 
-              if (isItemSelected(sectionChild)) {
-                selectedItems.push(clonedItem);
+                if (isItemSelected(sectionElement)) {
+                  selectedItems.push(clonedItem);
+                } else {
+                  unselectedItems.push(clonedItem);
+                }
               } else {
-                unselectedItems.push(clonedItem);
+                unselectedItems.push(sectionChild);
               }
             } else {
               unselectedItems.push(sectionChild);
@@ -574,17 +651,17 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
           // Create new section with sorted children, preserving React element properly
           unselected.push(
-            cloneElement(child, {
-              ...child.props,
+            cloneElement(element, {
+              ...element.props,
               children: [...selectedItems, ...unselectedItems],
             }),
           );
         }
         // Handle non-section elements (items, dividers, etc.)
         else {
-          const clonedItem = cloneWithNormalizedKey(child);
+          const clonedItem = cloneWithNormalizedKey(element);
 
-          if (isItemSelected(child)) {
+          if (isItemSelected(element)) {
             selected.push(clonedItem);
           } else {
             unselected.push(clonedItem);
@@ -614,8 +691,92 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     isPopoverOpen,
   ]);
 
+  // Compute sorted items array when using `items` prop
+  const getSortedItems = useCallback(() => {
+    if (!items) return items;
+
+    // Reuse cached order when popover is closed to avoid needless re-renders
+    if (!isPopoverOpen && cachedItemsOrder.current) {
+      return cachedItemsOrder.current;
+    }
+
+    const selectedSet = new Set<string>();
+
+    const addSelected = (key: Key) => {
+      if (key != null) selectedSet.add(String(key));
+    };
+
+    if (selectionMode === 'multiple') {
+      if (selectionsWhenClosed.current.multiple === 'all') {
+        // Do not sort when all selected – keep original order
+        return items;
+      }
+      (selectionsWhenClosed.current.multiple as string[]).forEach(addSelected);
+    } else {
+      if (selectionsWhenClosed.current.single != null) {
+        addSelected(selectionsWhenClosed.current.single);
+      }
+    }
+
+    if (selectedSet.size === 0) {
+      return items;
+    }
+
+    // Helpers to extract key from item object
+    const getItemKey = (obj: unknown): string | undefined => {
+      if (obj == null || typeof obj !== 'object') return undefined;
+
+      const item = obj as ItemWithKey;
+      if (item.key != null) return String(item.key);
+      if (item.id != null) return String(item.id);
+      return undefined;
+    };
+
+    const sortArray = (arr: unknown[]): unknown[] => {
+      const selectedArr: unknown[] = [];
+      const unselectedArr: unknown[] = [];
+
+      arr.forEach((obj) => {
+        const item = obj as ItemWithKey;
+        if (obj && Array.isArray(item.children)) {
+          // Section-like object – keep order, but sort its children
+          const sortedChildren = sortArray(item.children);
+          unselectedArr.push({ ...item, children: sortedChildren });
+        } else {
+          const key = getItemKey(obj);
+          if (key && selectedSet.has(key)) {
+            selectedArr.push(obj);
+          } else {
+            unselectedArr.push(obj);
+          }
+        }
+      });
+
+      return [...selectedArr, ...unselectedArr];
+    };
+
+    const itemsArray = Array.isArray(items)
+      ? items
+      : Array.from(items as Iterable<unknown>);
+    const sorted = sortArray(itemsArray) as T[];
+
+    if (isPopoverOpen || !cachedItemsOrder.current) {
+      cachedItemsOrder.current = sorted;
+    }
+
+    return sorted;
+  }, [
+    items,
+    selectionMode,
+    isPopoverOpen,
+    selectionsWhenClosed.current.multiple,
+    selectionsWhenClosed.current.single,
+  ]);
+
+  const finalItems = getSortedItems();
+
   // FilterListBox handles custom values internally when allowsCustomValue={true}
-  // We only provide the sorted original children
+  // We provide sorted children (if any) and sorted items
   const finalChildren = getSortedChildren();
 
   const renderTriggerContent = () => {
@@ -626,14 +787,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
           selectedLabel: selectedLabels[0],
           selectedKey: effectiveSelectedKey ?? null,
           selectedLabels,
-          selectedKeys: effectiveSelectedKeys as any,
+          selectedKeys: effectiveSelectedKeys,
           selectionMode: 'single',
         });
       }
 
       return renderSummary({
         selectedLabels,
-        selectedKeys: effectiveSelectedKeys as any,
+        selectedKeys: effectiveSelectedKeys,
         selectionMode: 'multiple',
       });
     } else if (hasSelection && renderSummary === false) {
@@ -749,7 +910,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             <FocusScope restoreFocus>
               <FilterListBox
                 autoFocus
-                items={items}
+                items={items ? (finalItems as typeof props.items) : undefined}
                 // Pass an aria-label so the internal ListBox is properly labeled and React Aria doesn't warn.
                 aria-label={`${props['aria-label'] ?? props.label ?? ''} Picker`}
                 selectedKey={
@@ -795,11 +956,13 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                   // Update internal state if uncontrolled
                   if (selectionMode === 'single') {
                     if (!isControlledSingle) {
-                      setInternalSelectedKey(selection as any);
+                      setInternalSelectedKey(selection as Key | null);
                     }
                   } else {
                     if (!isControlledMultiple) {
-                      let normalized: any = selection;
+                      let normalized: 'all' | Key[] = selection as
+                        | 'all'
+                        | Key[];
 
                       if (selection === 'all') {
                         normalized = 'all';
@@ -810,16 +973,19 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                         typeof selection === 'object' &&
                         (selection as any) instanceof Set
                       ) {
-                        normalized = processSelectionArray(selection as any);
+                        normalized = processSelectionArray(
+                          selection as Set<Key>,
+                        );
                       }
 
-                      setInternalSelectedKeys(normalized as any);
+                      setInternalSelectedKeys(normalized);
                     }
                   }
 
                   // Update latest selection ref synchronously
                   if (selectionMode === 'single') {
-                    latestSelectionRef.current.single = selection as any;
+                    latestSelectionRef.current.single =
+                      selection != null ? String(selection) : null;
                   } else {
                     if (selection === 'all') {
                       latestSelectionRef.current.multiple = 'all';
@@ -833,21 +999,30 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                       (selection as any) instanceof Set
                     ) {
                       latestSelectionRef.current.multiple = Array.from(
-                        new Set(processSelectionArray(selection as any)),
+                        new Set(processSelectionArray(selection as Set<Key>)),
                       );
                     } else {
-                      latestSelectionRef.current.multiple = selection as any;
+                      latestSelectionRef.current.multiple =
+                        selection === 'all'
+                          ? 'all'
+                          : Array.isArray(selection)
+                            ? selection.map(String)
+                            : [];
                     }
                   }
 
-                  onSelectionChange?.(selection as any);
+                  onSelectionChange?.(selection);
 
                   if (selectionMode === 'single') {
                     close();
                   }
                 }}
               >
-                {finalChildren as CollectionChildren<T>}
+                {
+                  (children
+                    ? (finalChildren as CollectionChildren<T>)
+                    : undefined) as CollectionChildren<T>
+                }
               </FilterListBox>
             </FocusScope>
           </Dialog>

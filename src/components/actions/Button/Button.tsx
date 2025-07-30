@@ -124,7 +124,7 @@ export const DEFAULT_BUTTON_STYLES = {
   },
 
   ButtonIcon: {
-    width: 'max-content',
+    width: 'min 1fs',
   },
 
   '& [data-element="ButtonIcon"]:first-child:not(:last-child)': {
@@ -722,8 +722,7 @@ export const Button = forwardRef(function Button(
           <LoadingIcon data-element="ButtonIcon" />
         )
       ) : null}
-      {((hasIcons && children) || (!!icon && !!rightIcon)) &&
-      typeof children === 'string' ? (
+      {hasIcons && typeof children === 'string' ? (
         <Text ellipsis>{children}</Text>
       ) : (
         children
