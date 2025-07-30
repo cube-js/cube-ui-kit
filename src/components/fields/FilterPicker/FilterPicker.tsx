@@ -405,11 +405,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             } else {
               // Regular item - check if selected
               const itemKey = item.key || item.id;
-              if (itemKey != null && selectedSet.has(String(itemKey))) {
+              if (
+                itemKey != null &&
+                selectedSet.has(normalizeKeyValue(itemKey))
+              ) {
                 const label =
                   item.textValue || item.label || item.name || String(itemKey);
                 labels.push(label);
-                processedKeys.add(String(itemKey));
+                processedKeys.add(normalizeKeyValue(itemKey));
               }
             }
           }
@@ -861,7 +864,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             <FocusScope restoreFocus>
               <FilterListBox
                 autoFocus
-                items={items ? (finalItems as any) : undefined}
+                items={items ? (finalItems as typeof props.items) : undefined}
                 // Pass an aria-label so the internal ListBox is properly labeled and React Aria doesn't warn.
                 aria-label={`${props['aria-label'] ?? props.label ?? ''} Picker`}
                 selectedKey={
