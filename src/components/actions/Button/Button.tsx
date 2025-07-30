@@ -722,8 +722,8 @@ export const Button = forwardRef(function Button(
           <LoadingIcon data-element="ButtonIcon" />
         )
       ) : null}
-      {(hasIcons && typeof children === 'string' && children) ||
-      (!!icon && !!rightIcon) ? (
+      {((hasIcons && children) || (!!icon && !!rightIcon)) &&
+      typeof children === 'string' ? (
         <Text ellipsis>{children}</Text>
       ) : (
         children
