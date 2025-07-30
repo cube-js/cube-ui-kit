@@ -48,6 +48,9 @@ import type { FieldBaseProps } from '../../../shared';
 interface ItemWithKey {
   key?: string | number;
   id?: string | number;
+  textValue?: string;
+  label?: string;
+  name?: string;
   children?: ItemWithKey[];
   [key: string]: unknown;
 }
@@ -234,7 +237,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const cachedChildrenOrder = useRef<ReactNode[] | null>(null);
   // Cache for sorted items array when using `items` prop
-  const cachedItemsOrder = useRef<unknown[] | null>(null);
+  const cachedItemsOrder = useRef<T[] | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   const isControlledSingle = selectedKey !== undefined;
@@ -340,11 +343,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         const extractFromItems = (itemsArray: unknown[]): void => {
           itemsArray.forEach((item) => {
             if (item && typeof item === 'object') {
-              const itemObj = item as ItemWithKey & {
-                textValue?: string;
-                label?: string;
-                name?: string;
-              };
+              const itemObj = item as ItemWithKey;
               if (Array.isArray(itemObj.children)) {
                 // Section-like object
                 extractFromItems(itemObj.children);
@@ -756,14 +755,20 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     const itemsArray = Array.isArray(items)
       ? items
       : Array.from(items as Iterable<unknown>);
-    const sorted = sortArray(itemsArray);
+    const sorted = sortArray(itemsArray) as T[];
 
     if (isPopoverOpen || !cachedItemsOrder.current) {
       cachedItemsOrder.current = sorted;
     }
 
     return sorted;
-  }, [items, selectionMode, isPopoverOpen, selectionsWhenClosed.current]);
+  }, [
+    items,
+    selectionMode,
+    isPopoverOpen,
+    selectionsWhenClosed.current.multiple,
+    selectionsWhenClosed.current.single,
+  ]);
 
   const finalItems = getSortedItems();
 
