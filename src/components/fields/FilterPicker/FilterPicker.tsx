@@ -112,7 +112,7 @@ const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
 const FilterPickerWrapper = tasty({
   qa: 'FilterPicker',
   styles: {
-    display: 'grid',
+    display: 'inline-grid',
     flow: 'column',
     gridRows: '1sf',
     placeContent: 'stretch',
@@ -168,6 +168,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     label,
     extra,
     icon,
+    rightIcon,
     labelStyles,
     isRequired,
     necessityIndicator,
@@ -720,7 +721,13 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
           ...externalMods,
         }}
         icon={icon}
-        rightIcon={<DirectionIcon to={state.isOpen ? 'top' : 'bottom'} />}
+        rightIcon={
+          rightIcon !== undefined ? (
+            rightIcon
+          ) : (
+            <DirectionIcon to={state.isOpen ? 'top' : 'bottom'} />
+          )
+        }
         styles={styles}
         {...keyboardProps}
         aria-label={`${props['aria-label'] ?? props.label ?? ''}`}
