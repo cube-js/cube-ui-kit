@@ -104,11 +104,11 @@ export interface CubeFilterPickerProps<T>
    */
   renderSummary?:
     | ((args: {
-        selectedLabels: string[];
-        selectedKeys: 'all' | (string | number)[];
+        selectedLabels?: string[];
+        selectedKeys?: 'all' | (string | number)[];
         selectedLabel?: string;
         selectedKey?: string | number | null;
-        selectionMode: 'single' | 'multiple';
+        selectionMode?: 'single' | 'multiple';
       }) => ReactNode)
     | false;
 
@@ -349,7 +349,16 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 // Regular item - extract label
                 const label =
                   itemObj.textValue ||
-                  String(itemObj.key || itemObj.id || item);
+                  (itemObj as any).label ||
+                  (typeof (itemObj as any).children === 'string'
+                    ? (itemObj as any).children
+                    : '') ||
+                  String(
+                    (itemObj as any).children ||
+                      itemObj.key ||
+                      itemObj.id ||
+                      item,
+                  );
                 allLabels.push(label);
               }
             }
@@ -421,7 +430,13 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 itemKey != null &&
                 selectedSet.has(normalizeKeyValue(itemKey))
               ) {
-                const label = itemObj.textValue || String(itemKey);
+                const label =
+                  itemObj.textValue ||
+                  (itemObj as any).label ||
+                  (typeof (itemObj as any).children === 'string'
+                    ? (itemObj as any).children
+                    : '') ||
+                  String((itemObj as any).children || itemKey);
                 labels.push(label);
                 processedKeys.add(normalizeKeyValue(itemKey));
               }
