@@ -49,8 +49,6 @@ interface ItemWithKey {
   key?: string | number;
   id?: string | number;
   textValue?: string;
-  label?: string;
-  name?: string;
   children?: ItemWithKey[];
   [key: string]: unknown;
 }
@@ -351,8 +349,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 // Regular item - extract label
                 const label =
                   itemObj.textValue ||
-                  itemObj.label ||
-                  itemObj.name ||
                   String(itemObj.key || itemObj.id || item);
                 allLabels.push(label);
               }
@@ -414,11 +410,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       const extractFromItems = (itemsArray: unknown[]): void => {
         itemsArray.forEach((item) => {
           if (item && typeof item === 'object') {
-            const itemObj = item as ItemWithKey & {
-              textValue?: string;
-              label?: string;
-              name?: string;
-            };
+            const itemObj = item as ItemWithKey;
             if (Array.isArray(itemObj.children)) {
               // Section-like object
               extractFromItems(itemObj.children);
@@ -429,11 +421,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 itemKey != null &&
                 selectedSet.has(normalizeKeyValue(itemKey))
               ) {
-                const label =
-                  itemObj.textValue ||
-                  itemObj.label ||
-                  itemObj.name ||
-                  String(itemKey);
+                const label = itemObj.textValue || String(itemKey);
                 labels.push(label);
                 processedKeys.add(normalizeKeyValue(itemKey));
               }
