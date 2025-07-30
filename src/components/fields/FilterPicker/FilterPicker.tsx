@@ -14,7 +14,7 @@ import {
   useState,
 } from 'react';
 import { FocusScope, Key, useKeyboard } from 'react-aria';
-import { Section as BaseSection, Item } from 'react-stately';
+import { Section as BaseSection, Item, ListState } from 'react-stately';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import { DirectionIcon } from '../../../icons';
@@ -113,7 +113,7 @@ export interface CubeFilterPickerProps<T>
     | false;
 
   /** Ref to access internal ListBox state (from FilterListBox) */
-  listStateRef?: MutableRefObject<unknown>;
+  listStateRef?: MutableRefObject<ListState<T>>;
   /** Additional modifiers for styling the FilterPicker */
   mods?: Record<string, boolean>;
 }
