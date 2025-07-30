@@ -71,7 +71,7 @@ import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
-import { DEFAULT_INPUT_STYLES, INPUT_WRAPPER_STYLES } from '../index';
+import { INPUT_WRAPPER_STYLES } from '../index';
 
 const SelectWrapperElement = tasty({
   styles: {
@@ -131,6 +131,7 @@ const SelectElement = tasty({
       placeContent: 'center start',
       placeItems: 'center',
       placeSelf: 'center start',
+      flexShrink: 0,
     },
 
     Suffix: {
@@ -138,6 +139,7 @@ const SelectElement = tasty({
       placeContent: 'center start',
       placeItems: 'center',
       placeSelf: 'center end',
+      flexShrink: 0,
     },
 
     ButtonIcon: {
@@ -170,6 +172,7 @@ const SelectElement = tasty({
       fill: '#clear',
       textOverflow: 'ellipsis',
       overflow: 'hidden',
+      flexGrow: 1,
     },
 
     '& [data-element="Prefix"] [data-element="ButtonIcon"]': {

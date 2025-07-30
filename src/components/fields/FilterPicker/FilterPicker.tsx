@@ -122,16 +122,6 @@ const FilterPickerWrapper = tasty({
   },
 });
 
-const TriggerButton = tasty(Button, {
-  qa: 'FilterPickerTrigger',
-  styles: {
-    placeContent: {
-      '': 'stretch',
-      'single-icon': 'center',
-    },
-  },
-});
-
 export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   props: CubeFilterPickerProps<T>,
   ref: ForwardedRef<HTMLElement>,
@@ -709,7 +699,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     }, [state.isOpen]);
 
     return (
-      <TriggerButton
+      <Button
         ref={triggerRef as any}
         data-menu-trigger
         type={type}
@@ -735,7 +725,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         aria-label={`${props['aria-label'] ?? props.label ?? ''}`}
       >
         {renderTriggerContent()}
-      </TriggerButton>
+      </Button>
     );
   };
 

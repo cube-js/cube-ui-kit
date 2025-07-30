@@ -726,7 +726,7 @@ export const LoadingState: Story = {
     isLoading: true,
     selectionMode: 'multiple',
     searchPlaceholder: 'Search options...',
-    width: 'max 25x',
+    width: '30x',
   },
   render: (args) => (
     <FilterPicker {...args}>

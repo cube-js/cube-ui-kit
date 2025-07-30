@@ -61,8 +61,16 @@ const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
 export const DEFAULT_BUTTON_STYLES = {
   display: 'inline-grid',
+  flow: 'column',
   placeItems: 'center start',
-  placeContent: 'center',
+  placeContent: {
+    '': 'center',
+    'right-icon | suffix': 'center stretch',
+  },
+  gridColumns: {
+    '': 'initial',
+    'left-icon | loading | prefix': 'max-content',
+  },
   position: 'relative',
   margin: 0,
   boxSizing: 'border-box',
@@ -74,7 +82,6 @@ export const DEFAULT_BUTTON_STYLES = {
     '': '.75x',
     '[data-size="small"]': '.5x',
   },
-  flow: 'column',
   preset: {
     '': 't3m',
     '[data-size="xsmall"]': 't4',
@@ -715,7 +722,8 @@ export const Button = forwardRef(function Button(
           <LoadingIcon data-element="ButtonIcon" />
         )
       ) : null}
-      {hasIcons && typeof children === 'string' && children ? (
+      {(hasIcons && typeof children === 'string' && children) ||
+      (!!icon && !!rightIcon) ? (
         <Text ellipsis>{children}</Text>
       ) : (
         children
