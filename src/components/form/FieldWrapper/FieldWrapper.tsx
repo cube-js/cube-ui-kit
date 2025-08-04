@@ -19,17 +19,17 @@ const FieldElement = tasty({
     width: 'auto',
     gridColumns: {
       '': 'minmax(0, 1fr)',
-      'has-sider': '@(full-label-width, auto) minmax(0, 1fr)',
+      'has-sider': '$(full-label-width, auto) minmax(0, 1fr)',
     },
     gap: 0,
     placeItems: 'baseline stretch',
-    '@full-label-width': '(@label-width + 1x)',
+    '$full-label-width': '($label-width + 1x)',
 
     LabelArea: {
       display: 'block',
       width: {
         '': 'initial',
-        'has-sider': '@label-width',
+        'has-sider': '$label-width',
       },
       margin: {
         '': '1x bottom',

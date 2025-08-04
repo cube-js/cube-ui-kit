@@ -34,13 +34,13 @@ const IconElement = tasty({
     '& svg.tabler-icon': {
       width: 'min 1em',
       height: '1em 1em',
-      strokeWidth: '@stroke-width',
+      strokeWidth: '$stroke-width',
     },
 
     '& svg:not(.tabler-icon)': {
       width: 'min (1em - 2px)',
       height: '(1em - 2px) (1em - 2px)',
-      strokeWidth: '@stroke-width',
+      strokeWidth: '$stroke-width',
     },
   },
   styleProps: [...OUTER_STYLES, ...BASE_STYLES, ...COLOR_STYLES],

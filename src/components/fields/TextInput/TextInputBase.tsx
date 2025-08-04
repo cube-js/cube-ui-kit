@@ -113,7 +113,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
     placeItems: 'center',
     width: 'min $size-sm',
     color: 'inherit',
-    fontSize: '@icon-size',
+    fontSize: '$icon-size',
   },
 
   ValidationIcon: {
@@ -123,7 +123,7 @@ export const INPUT_WRAPPER_STYLES: Styles = {
       '': 'min $size-sm',
       suffix: 'min $size-xs',
     },
-    fontSize: '@icon-size',
+    fontSize: '$icon-size',
   },
 };
 

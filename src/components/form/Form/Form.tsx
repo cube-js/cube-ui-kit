@@ -45,7 +45,7 @@ const FormElement = tasty({
       horizontal: 'center',
     },
     gap: '2x',
-    '@label-width': '25x',
+    '$label-width': '25x',
   },
 });
 
@@ -198,7 +198,7 @@ function Form<T extends FieldTypes>(
   let styles = extractStyles(otherProps, CONTAINER_STYLES);
 
   if (labelWidth) {
-    styles['@label-width'] = labelWidth;
+    styles['$label-width'] = labelWidth;
   }
 
   let domRef = useDOMRef(ref);
