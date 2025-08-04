@@ -4,7 +4,7 @@
 
 ### Minor Changes
 
-- [#739](https://github.com/cube-js/cube-ui-kit/pull/739) [`796e9bee`](https://github.com/cube-js/cube-ui-kit/commit/796e9bee035ad7246aa018868f0abae930309493) Thanks [@tenphi](https://github.com/tenphi)! - New syntax for custom properties: `# @cube-dev/ui-kit instead of `@`. The old syntax is now deprecated.
+- [#739](https://github.com/cube-js/cube-ui-kit/pull/739) [`796e9bee`](https://github.com/cube-js/cube-ui-kit/commit/796e9bee035ad7246aa018868f0abae930309493) Thanks [@tenphi](https://github.com/tenphi)! - New syntax for custom properties: `$` instead of `@`. The old syntax is now deprecated.
 
 ### Patch Changes
 
