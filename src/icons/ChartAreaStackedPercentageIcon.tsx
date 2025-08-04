@@ -10,7 +10,7 @@ export const ChartAreaStackedPercentageIcon = wrapIcon(
     fill="none"
   >
     <path
-      stroke="#000"
+      stroke="currentColor"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth="1.5"
