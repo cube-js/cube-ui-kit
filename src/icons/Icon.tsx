@@ -20,7 +20,7 @@ const IconElement = tasty({
     verticalAlign: 'sub',
     width: '1em 1em',
     height: 'min 1em',
-    fontSize: '@icon-size',
+    fontSize: '$icon-size',
     transition: 'theme, width, height',
     textAlign: 'center',
     textTransform: 'none',
@@ -73,7 +73,7 @@ export const Icon = memo(
     if (stroke) {
       styles = {
         ...styles,
-        '@stroke-width': stroke,
+        '$stroke-width': stroke,
       };
     }
 

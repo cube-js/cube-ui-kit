@@ -10,7 +10,7 @@ const GridElement = tasty({
 });
 
 const COLUMN_WIDTH =
-  '((@grid-width - (@column-gap * (@columns-amount - 1))) / @columns-amount)';
+  '(($grid-width - ($column-gap * ($columns-amount - 1))) / $columns-amount)';
 
 export interface CubeGridProviderProps {
   children: ReactNode;

@@ -21,7 +21,7 @@ const StepButtonElement = tasty(Button, {
       '[disabled]': '#dark.0',
     },
 
-    '@icon-size': '1fs',
+    '$icon-size': '1fs',
   },
 });
 

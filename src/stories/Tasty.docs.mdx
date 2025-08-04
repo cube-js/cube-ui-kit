@@ -186,7 +186,7 @@ color: '#purple.5',    // 50% opacity
 color: '#purple.05',   // 5% opacity
 
 // RGB values (no commas!)
-'@custom-color': 'rgb(255 128 0)',
+'$custom-color': 'rgb(255 128 0)',
 ```
 
 ### Custom Units Reference
@@ -600,13 +600,13 @@ Define and use custom CSS properties:
 const Component = tasty({
   styles: {
     // Define custom properties
-    '@local-spacing': '2x',
-    '@theme-color': 'rgb(255 128 0)',
+    '$local-spacing': '2x',
+    '$theme-color': 'rgb(255 128 0)',
 
     // Use custom properties
-    padding: '@local-spacing',
-    color: '@theme-color',
-    margin: '@(custom-margin, 1x)', // With fallback
+    padding: '$local-spacing',
+    color: '$theme-color',
+    margin: '$(custom-margin, 1x)', // With fallback
   },
 });
 ```
@@ -733,8 +733,8 @@ styles: {
 ```jsx
 // ✅ Use native style prop for dynamic values
 <Component
-  style={{ '--custom-color': dynamicColor }}
-  styles={{ color: '@custom-color' }}
+  style={{ '--side-padding': dyamnicPadding }}
+  styles={{ padding: '1x $side-padding' }}
 />
 
 // ✅ Avoid changing styles prop at runtime

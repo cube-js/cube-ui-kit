@@ -120,8 +120,8 @@ const OptionElement = tasty({
       all: '.5x',
     },
     height: {
-      '': 'min @size-md',
-      '[data-size="large"]': 'min @size-lg',
+      '': 'min $size-md',
+      '[data-size="large"]': 'min $size-lg',
     },
     boxSizing: 'border-box',
     radius: '1r',

@@ -76,8 +76,8 @@ export const StyledHeader = tasty(Space, {
     whiteSpace: 'nowrap',
     padding: '.5x 1.5x',
     height: {
-      '': 'min @size-md',
-      '[data-size="large"]': 'min @size-lg',
+      '': 'min $size-md',
+      '[data-size="large"]': 'min $size-lg',
     },
     boxSizing: 'border-box',
     border: 'bottom',
@@ -96,8 +96,8 @@ export const StyledFooter = tasty(Space, {
     whiteSpace: 'nowrap',
     padding: '.5x 1.5x',
     height: {
-      '': 'min @size-md',
-      '[data-size="large"]': 'min @size-lg',
+      '': 'min $size-md',
+      '[data-size="large"]': 'min $size-lg',
     },
     boxSizing: 'border-box',
     border: 'top',
@@ -132,8 +132,8 @@ export const StyledItem = tasty({
     listStyle: 'none',
     flexShrink: 0,
     height: {
-      '': 'min @size-md',
-      '[data-size="large"]': 'min @size-lg',
+      '': 'min $size-md',
+      '[data-size="large"]': 'min $size-lg',
     },
     border: false,
     boxSizing: 'border-box',
@@ -165,9 +165,9 @@ export const StyledItem = tasty({
     // Sub-elements reused from MenuButton styles
     ButtonIcon: {
       display: 'grid',
-      fontSize: '@icon-size',
-      width: '@icon-size',
-      height: '@icon-size',
+      fontSize: '$icon-size',
+      width: '$icon-size',
+      height: '$icon-size',
       placeSelf: 'center',
       placeItems: 'center',
     },

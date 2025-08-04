@@ -149,7 +149,7 @@ const IGNORE_MODS = [
 ];
 
 const ATTR_REGEXP =
-  /("[^"]*")|('[^']*')|([a-z-]+\()|(#[a-z0-9.-]{2,}(?![a-f0-9[-]))|(--[a-z0-9-]+|@[a-z0-9-]+)|([a-z][a-z0-9-]*)|(([0-9]+(?![0-9.])|[0-9-.]{2,}|[0-9-]{2,}|[0-9.-]{3,})([a-z%]{0,3}))|([*/+-])|([()])|(,)/gi;
+  /("[^"]*")|('[^']*')|([a-z-]+\()|(#[a-z0-9.-]{2,}(?![a-f0-9[-]))|(--[a-z0-9-]+|[@$][a-z0-9-]+)|([a-z][a-z0-9-]*)|(([0-9]+(?![0-9.])|[0-9-.]{2,}|[0-9-]{2,}|[0-9.-]{3,})([a-z%]{0,3}))|([*/+-])|([()])|(,)/gi;
 const ATTR_CACHE = new Map();
 const ATTR_CACHE_AUTOCALC = new Map();
 const ATTR_CACHE_IGNORE_COLOR = new Map();
@@ -233,7 +233,7 @@ export function parseStyle(value: StyleValue, mode = 0): ParsedStyle {
 
     ATTR_REGEXP.lastIndex = 0;
 
-    value = value.replace(/@\(/g, 'var(--');
+    value = value.replace(/[@$]\(/g, 'var(--');
 
     while ((token = ATTR_REGEXP.exec(value))) {
       let [
@@ -354,7 +354,7 @@ export function parseStyle(value: StyleValue, mode = 0): ParsedStyle {
           currentValue += `${unit} `;
         }
       } else if (prop) {
-        prop = prop.replace('@', '--');
+        prop = prop.replace(/^[@$]/, '--');
         if (currentFunc !== 'var') {
           currentValue += `var(${prop}) `;
         } else {

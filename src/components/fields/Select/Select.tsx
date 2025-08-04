@@ -146,7 +146,7 @@ const SelectElement = tasty({
       display: 'grid',
       placeItems: 'center',
       color: 'inherit',
-      fontSize: '@icon-size',
+      fontSize: '$icon-size',
     },
 
     Value: {
@@ -229,7 +229,7 @@ export const ListBoxElement = tasty({
       '': '0px 4px 16px #shadow',
       section: false,
     },
-    height: 'initial max-content (50vh - @size-md)',
+    height: 'initial max-content (50vh - $size-md)',
     overflow: 'clip auto',
     scrollbar: 'styled',
   },
@@ -267,8 +267,8 @@ const OptionElement = tasty({
     transition: 'theme',
     width: 'max 100%',
     height: {
-      '': 'min @size-md',
-      '[data-size="large"]': 'min @size-lg',
+      '': 'min $size-md',
+      '[data-size="large"]': 'min $size-lg',
     },
 
     Label: {
@@ -292,7 +292,7 @@ const OptionElement = tasty({
 const OverlayElement = tasty({
   styles: {
     position: 'absolute',
-    width: 'min @overlay-min-width',
+    width: 'min $overlay-min-width',
   },
 });
 const StyledOverlayElement = styled(OverlayElement)`
