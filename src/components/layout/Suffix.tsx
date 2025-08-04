@@ -20,11 +20,11 @@ const SuffixElement = tasty({
     placeItems: 'center',
     flow: 'column',
     gap: 0,
-    right: '@suffix-gap',
-    top: '@suffix-gap',
-    bottom: '@suffix-gap',
+    right: '$suffix-gap',
+    top: '$suffix-gap',
+    bottom: '$suffix-gap',
     color: '#dark-02',
-    height: '(100% - (2 * @suffix-gap))',
+    height: '(100% - (2 * $suffix-gap))',
   },
 });
 

@@ -2,8 +2,8 @@ import { tasty } from '../../../tasty';
 
 export const SliderThumbElement = tasty({
   styles: {
-    top: '@slider-thumb-offset-top',
-    left: '@slider-thumb-offset-left',
+    top: '$slider-thumb-offset-top',
+    left: '$slider-thumb-offset-left',
     width: '2x',
     height: '2x',
     fill: {
@@ -59,8 +59,8 @@ export const SliderTrackContainerElement = tasty({
       top: 0,
       bottom: 0,
       fill: '#purple',
-      left: '@slider-range-start',
-      width: '(@slider-range-end - @slider-range-start)',
+      left: '$slider-range-start',
+      width: '($slider-range-end - $slider-range-start)',
     },
   },
 });
@@ -99,11 +99,11 @@ export const SliderControlsElement = tasty({
       horizontal: '100% - 2x',
     },
 
-    '@slider-thumb-offset-top': {
+    '$slider-thumb-offset-top': {
       '': '0',
       horizontal: '1x',
     },
-    '@slider-thumb-offset-left': {
+    '$slider-thumb-offset-left': {
       '': '1x',
       horizontal: '0',
     },

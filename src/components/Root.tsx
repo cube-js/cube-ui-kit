@@ -30,7 +30,7 @@ const DEFAULT_STYLES = {
   display: 'block',
   preset: 't3',
   ...Object.keys(TOKENS).reduce((map, key) => {
-    map[`@${key}`] = TOKENS[key];
+    map[`$${key}`] = TOKENS[key];
 
     return map;
   }, {}),

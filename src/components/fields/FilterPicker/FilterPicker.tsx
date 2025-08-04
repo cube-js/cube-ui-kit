@@ -1037,6 +1037,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     mergeProps(
       {
         ...props,
+        children: undefined,
         styles: undefined,
       },
       {},

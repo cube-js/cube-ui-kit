@@ -60,13 +60,13 @@ const HandlerElement = tasty({
     // Transform requires a separate visual size property to respect size boundaries
     transform: {
       '[data-direction="top"]':
-        'translate(0, (@size-compensation - @visual-size))',
+        'translate(0, ($size-compensation - $visual-size))',
       '[data-direction="right"]':
-        'translate((@visual-size - @size-compensation), 0)',
+        'translate(($visual-size - $size-compensation), 0)',
       '[data-direction="bottom"]':
-        'translate(0, (@visual-size - @size-compensation))',
+        'translate(0, ($visual-size - $size-compensation))',
       '[data-direction="left"]':
-        'translate((@size-compensation - @visual-size), 0)',
+        'translate(($size-compensation - $visual-size), 0)',
     },
     position: 'absolute',
     zIndex: 1,
@@ -201,17 +201,17 @@ const StyledPanel = tasty(Panel, {
   styles: {
     flexGrow: 0,
     width: {
-      '': '@min-size @size @max-size',
+      '': '$min-size $size $max-size',
       '[data-direction="top"] | [data-direction="bottom"]': 'initial',
     },
     height: {
-      '': '@min-size @size @max-size',
+      '': '$min-size $size $max-size',
       '[data-direction="left"] | [data-direction="right"]': 'initial',
     },
     placeSelf: 'stretch',
     touchAction: 'none',
 
-    '--indent-compensation': {
+    '$indent-compensation': {
       '': '3px',
       disabled: '1bw',
     },

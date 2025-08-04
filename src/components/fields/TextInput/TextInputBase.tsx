@@ -43,7 +43,7 @@ const ADD_STYLES = {
   cursor: 'inherit',
   opacity: {
     '': 1,
-    disabled: '@disabled-opacity',
+    disabled: '$disabled-opacity',
   },
 };
 
@@ -90,14 +90,14 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   transition: 'theme',
   backgroundClip: 'content-box',
   height: {
-    '': '@size-md @size-md',
-    '[data-size="small"]': '@size-sm @size-sm',
-    '[data-size="medium"]': '@size-md @size-md',
-    '[data-size="large"]': '@size-lg @size-lg',
-    multiline: 'min @size-md',
-    '[data-size="small"] & multiline': 'min @size-sm',
-    '[data-size="medium"] & multiline': 'min @size-md',
-    '[data-size="large"] & multiline': 'min @size-lg',
+    '': '$size-md $size-md',
+    '[data-size="small"]': '$size-sm $size-sm',
+    '[data-size="medium"]': '$size-md $size-md',
+    '[data-size="large"]': '$size-lg $size-lg',
+    multiline: 'min $size-md',
+    '[data-size="small"] & multiline': 'min $size-sm',
+    '[data-size="medium"] & multiline': 'min $size-md',
+    '[data-size="large"] & multiline': 'min $size-lg',
   },
 
   Prefix: ADD_STYLES,
@@ -111,19 +111,19 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   InputIcon: {
     display: 'grid',
     placeItems: 'center',
-    width: 'min @size-sm',
+    width: 'min $size-sm',
     color: 'inherit',
-    fontSize: '@icon-size',
+    fontSize: '$icon-size',
   },
 
   ValidationIcon: {
     display: 'grid',
     placeItems: 'center',
     width: {
-      '': 'min @size-sm',
-      suffix: 'min @size-xs',
+      '': 'min $size-sm',
+      suffix: 'min $size-xs',
     },
-    fontSize: '@icon-size',
+    fontSize: '$icon-size',
   },
 };
 
@@ -141,30 +141,30 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   border: 0,
   transition: 'theme',
   radius: true,
-  padding: '@vertical-padding @right-padding @vertical-padding @left-padding',
+  padding: '$vertical-padding $right-padding $vertical-padding $left-padding',
   textAlign: 'left',
   reset: 'input',
   preset: 't3',
   flexGrow: 1,
   margin: {
     '': 0,
-    multiline: '(((@size-md - 1lh) / 2) - 1bw) 0',
-    'multiline & [data-size="small"]': '(((@size-sm - 1lh) / 2) - 1bw) 0',
-    'multiline & [data-size="large"]': '(((@size-lg - 1lh) / 2) - 1bw) 0',
+    multiline: '((($size-md - 1lh) / 2) - 1bw) 0',
+    'multiline & [data-size="small"]': '((($size-sm - 1lh) / 2) - 1bw) 0',
+    'multiline & [data-size="large"]': '((($size-lg - 1lh) / 2) - 1bw) 0',
   },
   resize: 'none',
   boxSizing: 'border-box',
   userSelect: 'auto',
 
-  '@vertical-padding': 0,
-  '@left-padding': {
+  '$vertical-padding': 0,
+  '$left-padding': {
     '': '(1x - 1bw)',
     '[data-size="small"]': '(1x - 1bw)',
     '[data-size="large"]': '(1.25x - 1bw)',
     '[data-size="xlarge"]': '(1.5x - 1bw)',
     prefix: '0',
   },
-  '@right-padding': {
+  '$right-padding': {
     '': '(1x - 1bw)',
     '[data-size="small"]': '(1x - 1bw)',
     '[data-size="large"]': '(1.25x - 1bw)',

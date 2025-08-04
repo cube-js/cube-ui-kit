@@ -25,8 +25,8 @@ export const StyledCommandMenu = tasty({
     overflow: 'hidden',
     height: {
       '': 'initial',
-      popover: 'initial max-content (50vh - @size-md)',
-      tray: 'initial max-content (100vh - @size-md)',
+      popover: 'initial max-content (50vh - $size-md)',
+      tray: 'initial max-content (100vh - $size-md)',
     },
   },
 });
@@ -51,8 +51,8 @@ export const StyledSearchInput = tasty({
     boxSizing: 'border-box',
     userSelect: 'auto',
     height: {
-      '': '@size-md @size-md',
-      '[data-size="large"]': '@size-lg @size-lg',
+      '': '$size-md $size-md',
+      '[data-size="large"]': '$size-lg $size-lg',
     },
 
     '&::placeholder': {

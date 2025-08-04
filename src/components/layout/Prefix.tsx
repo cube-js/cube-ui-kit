@@ -20,11 +20,11 @@ const PrefixElement = tasty({
     placeItems: 'center',
     flow: 'column',
     gap: 0,
-    left: '@prefix-gap',
-    top: '@prefix-gap',
-    bottom: '@prefix-gap',
+    left: '$prefix-gap',
+    top: '$prefix-gap',
+    bottom: '$prefix-gap',
     color: '#dark-02',
-    height: '(100% - (2 * @prefix-gap))',
+    height: '(100% - (2 * $prefix-gap))',
   },
 });
 

@@ -42,7 +42,7 @@ const DialogElement = tasty({
       '[data-type="panel"]': 'absolute',
     },
     width: {
-      '': '@min-dialog-size @dialog-size 90vw',
+      '': '$min-dialog-size $dialog-size 90vw',
       '[data-type="fullscreen"]': '90vw 90vw',
       '[data-type="fullscreenTakeover"]': '100vw 100vw',
       '[data-type="panel"]': 'auto',
@@ -72,23 +72,23 @@ const DialogElement = tasty({
       '[data-type="modal"]': '((50vh - 50%) / -3)',
       '[data-type="panel"]': 'auto',
     },
-    '@dialog-title-padding-v': {
+    '$dialog-title-padding-v': {
       '': '2x',
       '[data-type="popover"]': '1x',
     },
-    '@dialog-content-padding-v': {
+    '$dialog-content-padding-v': {
       '': '2x',
       '[data-type="popover"]': '2x',
     },
-    '@dialog-padding-h': {
+    '$dialog-padding-h': {
       '': '2x',
       '[data-type="popover"]': '2x',
     },
-    '@dialog-footer-v': {
+    '$dialog-footer-v': {
       '': '2x',
       '[data-type="popover"]': '1x',
     },
-    '@dialog-content-gap': '2x',
+    '$dialog-content-gap': '2x',
   },
 });
 
@@ -247,11 +247,11 @@ const DialogContent = forwardRef(function DialogContent(
     content: {
       styles: {
         flexGrow: 1,
-        padding: '@dialog-content-padding-v @dialog-padding-h',
-        gap: '@dialog-content-gap',
+        padding: '$dialog-content-padding-v $dialog-padding-h',
+        gap: '$dialog-content-gap',
         height: {
-          '': 'max (100% - (2 * @dialog-content-padding-v))',
-          ':last-child': 'max (100% - @dialog-content-padding-v)',
+          '': 'max (100% - (2 * $dialog-content-padding-v))',
+          ':last-child': 'max (100% - $dialog-content-padding-v)',
         },
       },
     },
@@ -263,9 +263,9 @@ const DialogContent = forwardRef(function DialogContent(
         gap: '1x',
         placeItems: 'baseline stretch',
         placeContent: 'space-between',
-        padding: `@dialog-title-padding-v ${
-          isDismissable ? '(@dialog-padding-h + 4x)' : '@dialog-padding-h'
-        } @dialog-title-padding-v @dialog-padding-h`,
+        padding: `$dialog-title-padding-v ${
+          isDismissable ? '($dialog-padding-h + 4x)' : '$dialog-padding-h'
+        } $dialog-title-padding-v $dialog-padding-h`,
         border: 'bottom',
       },
     },
@@ -276,7 +276,7 @@ const DialogContent = forwardRef(function DialogContent(
         flow: 'row',
         placeItems: 'baseline stretch',
         placeContent: 'space-between',
-        padding: '@dialog-footer-v @dialog-padding-h',
+        padding: '$dialog-footer-v $dialog-padding-h',
       },
     },
   };
