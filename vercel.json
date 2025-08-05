@@ -1,5 +1,4 @@
 {
-  "buildCommand": "corepack enable && pnpm build-docs",
-  "installCommand": "corepack enable && pnpm install",
+  "buildCommand": "./scripts/vercel-build.sh",
   "outputDirectory": "storybook-docs"
 }
