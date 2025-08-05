@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.71.0
+
+### Minor Changes
+
+- [#681](https://github.com/cube-js/cube-ui-kit/pull/681) [`c5f04fec`](https://github.com/cube-js/cube-ui-kit/commit/c5f04fec2c13cf511b6c45059884af94480a17ce) Thanks [@tenphi](https://github.com/tenphi)! - A brand new style parser that supports all kinds of css syntax and nested custom tasty syntax.
+
 ## 0.70.0
 
 ### Minor Changes
