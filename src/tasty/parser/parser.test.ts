@@ -46,7 +46,7 @@ describe('StyleProcessor', () => {
   });
 
   test('parses custom properties', () => {
-    const result = parser.process('@my-gap @(my-gap, 2x)');
+    const result = parser.process('$my-gap $(my-gap, 2x)');
     expect(result.groups[0].values).toEqual([
       'var(--my-gap)',
       'var(--my-gap, calc(2 * var(--gap)))',
@@ -162,8 +162,8 @@ describe('StyleProcessor', () => {
     ]);
   });
 
-  test('treats custom var/@ colors as colors', () => {
-    const res = parser.process('@clear-color var(--clear-color)');
+  test('treats custom var/$ colors as colors', () => {
+    const res = parser.process('$clear-color var(--clear-color)');
     expect(res.groups[0].colors).toEqual([
       'var(--clear-color)',
       'var(--clear-color)',
@@ -187,7 +187,7 @@ describe('StyleProcessor', () => {
   });
 
   test('parses calc with custom props inside parentheses', () => {
-    const expr = '(@slider-range-end - @slider-range-start)';
+    const expr = '($slider-range-end - $slider-range-start)';
     const res = parser.process(expr);
     expect(res.groups[0].values).toEqual([
       'calc(var(--slider-range-end) - var(--slider-range-start))',

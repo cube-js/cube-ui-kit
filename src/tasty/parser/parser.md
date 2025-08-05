@@ -32,7 +32,7 @@ The Style Parser converts an arbitrary CSS-like value string into:
 - Color tokens and all CSS Color 5 functions.
 - Custom units and auto-calc syntax (`2x`, `-.5r`, `(100% - 2r)` …).
 - User-defined functions supplied via `funcs`.
-- Custom properties with `@` syntax.
+- Custom properties with `$` syntax.
 - Classification into values, colors, and modifiers.
 - Whitespace compression.
 - Bounded, configurable LRU cache.
@@ -133,7 +133,7 @@ Each `StyleParser` instance maintains its own LRU cache.
 | Order | Rule                                                                                       | Bucket   |
 |-------|--------------------------------------------------------------------------------------------|----------|
 | 1     | URL – `url(` opens `inUrl`; everything to its `)` is a single token.                       | value    |
-| 2     | Custom property – `@ident` → `var(--ident)`; `@(ident,fallback)` → `var(--ident, <processed fallback>)`. Only first `@` per token counts. | value    |
+| 2     | Custom property – `$ident` → `var(--ident)`; `$(ident,fallback)` → `var(--ident, <processed fallback>)`. Only first `$` per token counts. | value    |
 | 3     | Hash token – `#xxxxxx` if valid hex → `var(--xxxxxx-color, #xxxxxx)`; otherwise `var(--name-color)`. | color    |
 | 4     | Color function – name in list §12.2 followed by `(` (balanced).                            | color    |
 | 5     | User / other function – `ident(` not in color list; parse args recursively, hand off to `funcs[name]` if provided; else rebuild with processed args. | value    |
@@ -180,7 +180,7 @@ Each processed string is inserted into its bucket and into `all` in source order
 - Parser never throws.
 - On unmatched `)` / premature EOF → treat remainder as raw modifier token.
 - Invalid unit number → leave token untouched, classify as modifier.
-- Multiple `@` in one token → first valid custom-property processed, rest ignored.
+- Multiple `$` in one token → first valid custom-property processed, rest ignored.
 
 ---
 
