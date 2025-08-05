@@ -10,7 +10,7 @@
   "module": "dist/es/index.js",
   "types": "dist/types/index.d.ts",
   "sideEffects": false,
-  "packageManager": "pnpm@9.12.2",
+  "packageManager": "pnpm@10.14.0",
   "exports": {
     ".": {
       "import": "./dist/es/index.js",
@@ -182,7 +182,7 @@
   ],
   "license": "MIT",
   "engines": {
-    "node": ">=18.19.1",
-    "pnpm": "^9.0.0"
+    "node": ">=20.19.2",
+    "pnpm": "^10.0.0"
   }
 }
