@@ -21,15 +21,15 @@ jobs:
     outputs:
       published: ${{ steps.changesets.outputs.published }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9.12.2
+          version: 10.14.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
@@ -59,16 +59,16 @@ jobs:
       NODE_OPTIONS: --max-old-space-size=4096
       CHROMATIC_RETRIES: 5
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9.12.2
+          version: 10.14.0
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         name: Download storybook cache
         with:
           path: |
@@ -77,7 +77,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-storybook
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'

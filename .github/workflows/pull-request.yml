@@ -25,14 +25,14 @@ jobs:
       name: Canary package in NPM
       url: https://www.npmjs.com/package/@cube-dev/ui-kit/v/${{ steps.publish.outputs.version }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9.12.2
+          version: 10.14.0
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
@@ -79,21 +79,21 @@ jobs:
     name: 'Tests & lint'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9.12.2
+          version: 10.14.0
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         name: Download eslint cache
         with:
           path: |
             **/.eslintcache
           key: ${{ runner.os }}-eslint
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
@@ -117,16 +117,16 @@ jobs:
       CHROMATIC_RETRIES: 5
       LOG_LEVEL: 'error'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9.12.2
+          version: 10.14.0
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         name: Download storybook cache
         with:
           path: |
@@ -135,7 +135,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-storybook
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
