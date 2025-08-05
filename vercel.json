@@ -1,0 +1,5 @@
+{
+  "buildCommand": "corepack enable && pnpm build-docs",
+  "installCommand": "corepack enable && pnpm install",
+  "outputDirectory": "storybook-docs"
+}
