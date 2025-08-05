@@ -28,6 +28,7 @@
     "build:esm": "tsc -p tsconfig.es.json",
     "watch": "pnpm build:esm --watch",
     "test": "jest",
+    "test:no-cache": "jest --no-cache",
     "test-cover": "jest --coverage",
     "test-watch": "jest --watch",
     "prettier": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\"",
