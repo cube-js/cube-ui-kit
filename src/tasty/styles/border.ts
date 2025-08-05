@@ -1,4 +1,4 @@
-import { StyleDetails } from '../../parser/types';
+import { StyleDetails } from '../parser/types';
 import { DIRECTIONS, filterMods, parseStyle } from '../utils/styles';
 
 const BORDER_STYLES = [

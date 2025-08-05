@@ -32,6 +32,11 @@ const DateInputElement = tasty({
   role: 'presentation',
   styles: {
     ...DEFAULT_INPUT_STYLES,
+    height: {
+      '': '($size-md - 2bw)',
+      '[data-size="small"]': '($size-sm - 2bw)',
+      '[data-size="large"]': '($size-lg - 2bw)',
+    },
     display: 'flex',
     flow: 'row',
     placeItems: 'center start',

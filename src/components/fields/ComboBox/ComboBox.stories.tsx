@@ -2,7 +2,6 @@ import { Meta, StoryFn } from '@storybook/react';
 import { userEvent, within } from '@storybook/test';
 import { IconCoin } from '@tabler/icons-react';
 
-import { SELECTED_KEY_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { wait } from '../../../test/utils/wait';
 import { Button } from '../../actions/index';
@@ -12,12 +11,139 @@ import { Flow } from '../../layout/Flow';
 import { ComboBox, CubeComboBoxProps } from './ComboBox';
 
 export default {
-  title: 'Pickers/ComboBox',
+  title: 'Forms/ComboBox',
   component: ComboBox,
-  subcomponents: { Item: ComboBox.Item },
+  subcomponents: { Item: ComboBox.Item, Section: ComboBox.Section },
   args: { id: 'name', width: '200px', label: 'Choose your favourite color' },
   parameters: { controls: { exclude: baseProps } },
-  argTypes: { ...SELECTED_KEY_ARG },
+  argTypes: {
+    /* Content */
+    children: {
+      control: { type: null },
+      description: 'ComboBox.Item elements that define the available options',
+    },
+    placeholder: {
+      control: { type: 'text' },
+      description: 'Placeholder text when input is empty',
+    },
+    icon: {
+      control: { type: null },
+      description: 'Icon element rendered before the input',
+    },
+    inputValue: {
+      control: { type: 'text' },
+      description: 'The current text value in controlled mode',
+    },
+    defaultInputValue: {
+      control: { type: 'text' },
+      description: 'The default text value in uncontrolled mode',
+    },
+
+    /* Selection */
+    selectedKey: {
+      control: { type: 'text' },
+      description: 'The currently selected key (controlled)',
+    },
+    defaultSelectedKey: {
+      control: { type: 'text' },
+      description: 'The key of the initially selected item (uncontrolled)',
+    },
+    allowsCustomValue: {
+      control: { type: 'boolean' },
+      description: 'Whether the combo box allows custom values to be entered',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+
+    /* Behavior */
+    menuTrigger: {
+      options: ['focus', 'input', 'manual'],
+      control: { type: 'radio' },
+      description: 'How the menu is triggered',
+      table: {
+        defaultValue: { summary: 'input' },
+      },
+    },
+    loadingState: {
+      options: [undefined, 'loading', 'filtering', 'loadingMore'],
+      control: { type: 'radio' },
+      description: 'The current loading state of the ComboBox',
+    },
+
+    /* Presentation */
+    size: {
+      options: ['small', 'medium', 'large'],
+      control: { type: 'radio' },
+      description: 'ComboBox size',
+      table: {
+        defaultValue: { summary: 'medium' },
+      },
+    },
+
+    /* State */
+    isDisabled: {
+      control: { type: 'boolean' },
+      description: 'Whether the input is disabled',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isReadOnly: {
+      control: { type: 'boolean' },
+      description: 'Whether the input can be selected but not changed',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isRequired: {
+      control: { type: 'boolean' },
+      description: 'Whether user input is required before form submission',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    validationState: {
+      options: [undefined, 'valid', 'invalid'],
+      control: { type: 'radio' },
+      description:
+        'Whether the input should display valid or invalid visual styling',
+    },
+    autoFocus: {
+      control: { type: 'boolean' },
+      description: 'Whether the element should receive focus on render',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+
+    /* Events */
+    onSelectionChange: {
+      action: 'selection-change',
+      description: 'Callback fired when the selected option changes',
+      control: { type: null },
+    },
+    onInputChange: {
+      action: 'input-change',
+      description: 'Callback fired when the input text changes',
+      control: { type: null },
+    },
+    onOpenChange: {
+      action: 'open-change',
+      description: 'Callback fired when the dropdown opens or closes',
+      control: { type: null },
+    },
+    onBlur: {
+      action: (e) => ({ type: 'blur', target: e?.target?.tagName }),
+      description: 'Callback fired when the input loses focus',
+      control: { type: null },
+    },
+    onFocus: {
+      action: (e) => ({ type: 'focus', target: e?.target?.tagName }),
+      description: 'Callback fired when the input receives focus',
+      control: { type: null },
+    },
+  },
 } as Meta<CubeComboBoxProps<any>>;
 
 const Template: StoryFn<CubeComboBoxProps<any>> = (
@@ -200,6 +326,9 @@ Default.args = {};
 export const Small = Template.bind({});
 Small.args = { size: 'small' };
 
+export const Large = Template.bind({});
+Large.args = { size: 'large' };
+
 export const WithPlaceholder = Template.bind({});
 WithPlaceholder.args = { placeholder: 'Enter a value' };
 
@@ -343,3 +472,97 @@ WithinFormStopBlurPropagation.play = async ({ canvasElement }) => {
   const button = getByTestId('Button');
   await userEvent.click(button);
 };
+
+export const ItemsWithDescriptions: StoryFn<CubeComboBoxProps<any>> = (
+  args,
+) => (
+  <ComboBox {...args} width="300px" label="Choose an item">
+    <ComboBox.Item key="red" description="Strawberries, tomatoes">
+      Red
+    </ComboBox.Item>
+    <ComboBox.Item key="orange" description="Oranges, carrots">
+      Orange
+    </ComboBox.Item>
+    <ComboBox.Item key="yellow" description="Bananas, lemons">
+      Yellow
+    </ComboBox.Item>
+  </ComboBox>
+);
+ItemsWithDescriptions.args = {};
+ItemsWithDescriptions.play = async ({ canvasElement }) => {
+  const { getByTestId } = within(canvasElement);
+
+  const trigger = getByTestId('ComboBoxTrigger');
+
+  await userEvent.click(trigger);
+};
+
+// ---------------------------------
+// Section stories for ComboBox
+// ---------------------------------
+
+export const SectionsStatic: StoryFn<CubeComboBoxProps<any>> = (args) => (
+  <ComboBox {...args} width="280px" placeholder="Select a color">
+    <ComboBox.Section title="Warm colors">
+      <ComboBox.Item key="red">Red</ComboBox.Item>
+      <ComboBox.Item key="orange">Orange</ComboBox.Item>
+      <ComboBox.Item key="yellow">Yellow</ComboBox.Item>
+    </ComboBox.Section>
+    <ComboBox.Section>
+      <ComboBox.Item key="teal">Teal</ComboBox.Item>
+      <ComboBox.Item key="cyan">Cyan</ComboBox.Item>
+    </ComboBox.Section>
+    <ComboBox.Section title="Cool colors">
+      <ComboBox.Item key="blue">Blue</ComboBox.Item>
+      <ComboBox.Item key="purple">Purple</ComboBox.Item>
+    </ComboBox.Section>
+  </ComboBox>
+);
+
+SectionsStatic.storyName = 'Sections – static items';
+SectionsStatic.play = ItemsWithDescriptions.play;
+
+export const SectionsDynamic: StoryFn<CubeComboBoxProps<any>> = (args) => {
+  const groups = [
+    {
+      name: 'Fruits',
+      children: [
+        { id: 'apple', label: 'Apple' },
+        { id: 'orange', label: 'Orange' },
+        { id: 'banana', label: 'Banana' },
+      ],
+    },
+    {
+      name: 'Vegetables',
+      children: [
+        { id: 'carrot', label: 'Carrot' },
+        { id: 'peas', label: 'Peas' },
+        { id: 'broccoli', label: 'Broccoli' },
+      ],
+    },
+  ];
+
+  return (
+    <ComboBox
+      {...args}
+      defaultItems={groups}
+      width="280px"
+      placeholder="Select an item"
+    >
+      {(group: any) => (
+        <ComboBox.Section
+          key={group.name}
+          title={group.name}
+          items={group.children}
+        >
+          {(item: any) => (
+            <ComboBox.Item key={item.id}>{item.label}</ComboBox.Item>
+          )}
+        </ComboBox.Section>
+      )}
+    </ComboBox>
+  );
+};
+
+SectionsDynamic.storyName = 'Sections – dynamic collection';
+SectionsDynamic.play = ItemsWithDescriptions.play;

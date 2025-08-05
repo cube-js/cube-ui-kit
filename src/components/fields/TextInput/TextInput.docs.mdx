@@ -1,0 +1,197 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
+import { TextInput } from './TextInput';
+import * as TextInputStories from './TextInput.stories';
+
+<Meta of={TextInputStories} />
+
+# TextInput
+
+A text input component that allows users to input custom text entries with a keyboard. Built with React Aria's `useTextField` hook for full accessibility and the Cube `tasty` style system for theming.
+
+## When to Use
+
+- Collect single-line text input from users (names, emails, URLs)
+- Create multiline text areas for longer content
+- Build forms with validation and field decoration
+- Implement search inputs with icons and prefixes
+- Handle password inputs with proper masking
+
+## Component
+
+<Canvas>
+    <Story of={TextInputStories.Default} />
+</Canvas>
+
+---
+
+### Properties
+
+<Controls />
+
+### Base Properties
+
+Supports [Base properties](/docs/tasty-base-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root element of the component.
+
+**Sub-elements:**
+- `InputWrapper` – container around the input field
+- `Prefix` – wrapper around prefix content
+- `Suffix` – wrapper around suffix content
+- `State` – container for validation and loading icons
+- `InputIcon` – wrapper around the main icon
+- `ValidationIcon` – wrapper around validation state icons
+
+#### inputStyles
+
+Customizes the input element itself.
+
+#### wrapperStyles
+
+Customizes the input wrapper container.
+
+### Style Properties
+
+The TextInput component supports all standard style properties:
+
+`display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `reset`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`, `textAlign`, `color`, `fill`, `fade`, `textTransform`, `fontWeight`, `fontStyle`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+
+### Modifiers
+
+The `mods` prop accepts the following modifiers you can override:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| focused | `boolean` | Forces focus ring appearance. |
+| disabled | `boolean` | Forces disabled appearance. |
+| invalid | `boolean` | Forces invalid state styling. |
+| valid | `boolean` | Forces valid state styling. |
+| loading | `boolean` | Displays loading spinner. |
+| prefix | `boolean` | Indicates presence of prefix content. |
+| suffix | `boolean` | Indicates presence of suffix content. |
+
+## Variants
+
+### Types
+
+- `text` – Standard text input (default)
+- `password` – Masked password input
+- `email` – Email input with validation
+- `url` – URL input with validation
+- `tel` – Telephone number input
+- `search` – Search input styling
+
+### Sizes
+
+- `small` – Compact height for dense interfaces
+- `medium` – Standard height for most use cases
+- `large` – Emphasized height for important inputs
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<TextInput
+  label="Name"
+  placeholder="Enter your name"
+  onChange={(value) => console.log(value)}
+/>
+```
+
+### With Icon
+
+```jsx
+import { IconMail } from '@tabler/icons-react';
+
+<TextInput
+  label="Email"
+  type="email"
+  icon={<IconMail />}
+  placeholder="Enter your email"
+/>
+```
+
+### Multiline Text Area
+
+```jsx
+<TextInput
+  label="Description"
+  multiLine
+  rows={4}
+  placeholder="Enter description..."
+/>
+```
+
+### With Validation
+
+```jsx
+<TextInput
+  label="Username"
+  isRequired
+  validationState="invalid"
+  message="Username must be at least 3 characters"
+/>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` – Moves focus to the input field
+- `Shift + Tab` – Moves focus away from the input
+- Standard text editing shortcuts (Ctrl+A, Ctrl+C, etc.)
+
+### Screen Reader Support
+
+- Announces role "textbox" or "searchbox" for search inputs
+- Announces label, description, and validation messages
+- State changes like "invalid" or "required" are announced
+- Loading state is announced to screen readers
+
+### ARIA Properties
+
+- `aria-label`, `aria-labelledby` – Accessible name for the input
+- `aria-describedby` – Links to description and error messages
+- `aria-invalid` – Managed automatically based on `validationState`
+- `aria-required` – Set when `isRequired` is true
+- Additional ARIA attributes supported by React Aria's `useTextField`
+
+## Best Practices
+
+1. **Do**: Provide clear labels and helpful placeholder text
+   ```jsx
+   <TextInput label="Email Address" placeholder="you@example.com" />
+   ```
+
+2. **Don't**: Use placeholder text as the only label
+   ```jsx
+   {/* Avoid this */}
+   <TextInput placeholder="Enter your email" />
+   ```
+
+3. **Accessibility**: Always provide proper labels for screen readers
+4. **Validation**: Use `validationState` and `message` for user feedback
+5. **Performance**: Use `defaultValue` for uncontrolled inputs when possible
+
+## Integration with Forms
+
+This component supports all [Field properties](/docs/forms-field--docs) when used within a Form.
+
+## Suggested Improvements
+
+- Add `autoComplete` prop mapping for better browser integration
+- Provide `maxLength` indicator with character count
+- Support for input masks and formatting
+- Built-in debouncing for onChange events
+
+## Related Components
+
+- [TextArea](/docs/forms-textarea--docs) – Dedicated multiline text input
+- [SearchInput](/docs/forms-searchinput--docs) – Specialized search input with clear button
+- [PasswordInput](/docs/forms-passwordinput--docs) – Enhanced password input with show/hide toggle
+- [NumberInput](/docs/forms-numberinput--docs) – Numeric input with increment/decrement controls

@@ -1,0 +1,79 @@
+import { Meta, Canvas, ArgTypes, Source } from '@storybook/blocks';
+import { Badge } from '@storybook/components';
+import * as TextAreaStories from './TextArea.stories';
+
+<Meta of={TextAreaStories} />
+
+# TextArea
+
+<Badge variant="neutral">Form component</Badge>
+
+The TextArea component is a multi-line text input that allows users to enter and edit longer text content. It supports auto-sizing functionality and various text input features like validation and formatting.
+
+<Canvas of={TextAreaStories.Default} />
+
+## Examples
+
+### With Default Value
+
+<Canvas of={TextAreaStories.WithDefaultValue} />
+
+### With Icon
+
+<Canvas of={TextAreaStories.WithIcon} />
+
+### Auto Size
+
+<Canvas of={TextAreaStories.AutoSize} />
+
+### Auto Size with Max Rows
+
+<Canvas of={TextAreaStories.AutoSizeMaxRows} />
+
+## Variants
+
+### Sizes
+
+- `small` - Compact size for dense interfaces
+- `medium` - Standard size for most use cases
+- `large` - Emphasized size for important text areas
+
+## Properties
+
+<ArgTypes of={TextAreaStories} />
+
+## Sub-elements
+
+The TextArea component renders the following sub-elements that can be customized via the `styles` prop:
+
+- **Prefix**: Content displayed before the input area
+- **Suffix**: Content displayed after the input area
+- **State**: Container for validation and loading indicators
+- **InputIcon**: Icon displayed within the input
+
+## Style Properties
+
+The TextArea component supports all standard style properties:
+
+`display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `reset`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`, `textAlign`, `color`, `fill`, `fade`, `textTransform`, `fontWeight`, `fontStyle`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+
+## Accessibility
+
+The TextArea component follows WAI-ARIA guidelines:
+
+- Uses semantic `textarea` HTML element
+- Supports proper keyboard navigation and text selection
+- Associates labels with the input element using `aria-labelledby`
+- Provides clear focus indicators
+- Announces validation states and error messages to screen readers
+- Supports auto-completion and spell-checking
+
+## Best Practices
+
+- Use descriptive labels that clearly indicate the expected content
+- Provide placeholder text for additional context when appropriate
+- Set appropriate `rows` to indicate expected content length
+- Use `autoSize` for dynamic content that may vary in length
+- Consider `maxRows` to prevent excessive vertical growth
+- Provide clear validation messages when input is invalid
+- Use read-only state for displaying non-editable content

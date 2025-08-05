@@ -1,0 +1,160 @@
+import { Meta, Story, Controls } from '@storybook/blocks';
+import { Button } from './Button';
+import * as ButtonStories from './Button.stories';
+
+<Meta of={ButtonStories} />
+
+# Button
+
+A versatile action component that triggers commands and navigates users.
+
+## When to Use
+
+- Trigger an immediate in-page action (e.g., open a dialog)
+- Navigate to another route or URL using the `to` prop while keeping button styling
+- Toggle a boolean state with `isSelected`
+- Display progress feedback with `isLoading`
+
+## Component
+
+<Story of={ButtonStories.Default} />
+
+---
+
+## Properties
+
+<Controls />
+
+### Base Properties
+
+Supports [Base properties](/docs/tasty-base-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customises the root element of the component.
+
+Sub-elements:
+- `ButtonIcon` – wrapper around `icon` and `rightIcon`.
+
+### Style Properties
+
+These properties allow direct styling without using the `styles` prop: `width`, `height`.
+
+### Modifiers
+
+The `mods` prop accepts the following modifiers you can override:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| hovered | `boolean` | Forces hover state. |
+| pressed | `boolean` | Forces pressed state. |
+| focused | `boolean` | Forces focus ring. |
+| disabled | `boolean` | Forces disabled appearance. |
+| loading | `boolean` | Displays loading spinner. |
+| selected | `boolean` | Displays selected state. |
+| with-icons | `boolean` | Indicates that the button contains at least one icon. |
+| single-icon | `boolean` | Icon-only button without text. |
+
+## Variants
+
+### Types. `type` prop
+
+- `primary` – Emphasised call-to-action.
+- `secondary` – Less emphasised, alternative action.
+- `outline` – Transparent background with border.
+- `neutral` – Minimal style that blends with surroundings.
+- `clear` – Text-only variant without background and border.
+- `link` – Styled as a textual link.
+
+### Themes. `theme` prop
+
+- `default` – Brand purple colours.
+- `danger` – Red palette for destructive actions.
+- `success` – Green palette for positive actions.
+- `special` – White palette for dark backgrounds.
+
+### Sizes. `size` prop
+
+- `xsmall` – Extra compact height (24px).
+- `small` – Compact height (28px).
+- `medium` – Default height (32px).
+- `large` – Spacious height (40px).
+- `xlarge` – Extra spacious height (48px).
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<Button onPress={() => console.log('Pressed')}>Save</Button>
+```
+
+### Icon Button
+
+```jsx
+import { IconPlus } from '@tabler/icons-react';
+
+<Button icon={<IconPlus />} aria-label="Add item" />
+```
+
+### Link Button
+
+```jsx
+<!-- Navigate to a new page using the router -->
+<Button to="/pricing">Pricing</Button>
+<!-- Use `!` prefix to open in a new tab -->
+<Button to="!/pricing">Pricing</Button>
+<!-- Use `@` prefix to navigate to a new page without using the router -->
+<Button to="@/pricing">Pricing</Button>
+<!-- Use `@` to reload the page -->
+<Button to="@/pricing">Pricing</Button>
+```
+
+### Loading State
+
+```jsx
+<Button isLoading>Processing…</Button>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` – Moves focus to the button.
+- `Space` / `Enter` – Activates the button.
+
+### Screen Reader Support
+
+- Announces role "button".
+- Announces state changes such as "pressed", "disabled", or "selected".
+- Provide `label`/`aria-label` when the button has no visible text.
+
+### ARIA Properties
+
+- `aria-label`, `aria-labelledby` – Accessible name.
+- `aria-pressed` – Managed automatically when `isSelected` is used.
+- Additional ARIA attributes supported by React Aria's `useButton`.
+
+## Best Practices
+
+1. **Do**: Provide a label for icon-only buttons
+   ```jsx
+   <Button icon={<IconPlus />} aria-label="Add" />
+   ```
+2. **Don't**: Use the `link` type for destructive actions – prefer `danger.primary` instead.
+3. **Callbacks**: Always use `onPress` for actions that don't navigate. Use `onClick` only if you need to access the event object.
+4. **Accessibility**: Use `isLoading` rather than disabling a button without feedback.
+5. **Performance**: Reuse icon components to avoid unnecessary re-renders.
+
+## Suggested Improvements
+
+- Add `autoFocus` support.
+- Provide `block` modifier to stretch the button 100% width.
+- Expose a `tooltip` helper for icon-only buttons.
+
+## Related Components
+
+- [Link](/components/Link) – Semantic navigation styled like a button.
+- [IconButton](/components/IconButton) – Dedicated icon-only button with simplified API.

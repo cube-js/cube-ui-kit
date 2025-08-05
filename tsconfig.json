@@ -22,7 +22,7 @@
     "noImplicitAny": false,
     "target": "es2022",
     "noEmit": true,
-    "types": ["jest", "react", "react-dom"],
+    "types": ["jest", "react", "react-dom"]
   },
   "include": ["src/**/*"]
 }

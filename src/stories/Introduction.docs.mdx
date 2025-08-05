@@ -10,28 +10,125 @@ import StackAlt from './assets/stackalt.svg';
 
 <Meta title="Introduction" />
 
-# Welcome to Storybook of Cube Cloud UI Kit
+# Welcome to Cube Cloud UI Kit
 
-Storybook helps you build UI components in isolation from your app's business logic, data, and context.
-That makes it easy to develop hard-to-reach states. Save these UI states as **stories** to revisit during development, testing, or QA.
+A comprehensive React component library built for modern web applications with accessibility, theming, and developer experience at its core.
 
-Browse example stories now by navigating to them in the sidebar.
-View their code in the `src/stories` directory to learn how they work.
+## What is Cube UI Kit?
+
+Cube UI Kit is a complete design system that provides:
+- **Accessible Components** - Built with React Aria hooks for WCAG compliance
+- **Powerful Styling System** - The `tasty` style system for maintainable, theme-able components
+- **Form Management** - Integrated form handling with validation and state management
+- **Consistent Design** - Unified visual language across all components
+
+Browse example stories by navigating to them in the sidebar to see components in action.
+
+## Key Features
+
+### 🎨 Tasty Style System
+A declarative styling approach that makes it easy to create consistent, maintainable styles:
+- **State-based styling** - Bind styles to hover, focus, and custom modifiers
+- **Responsive design** - Use arrays for breakpoint-specific styles
+- **Token-based theming** - Built-in color tokens and semantic units
+- **Component variants** - Pre-defined style variations for different use cases
+
+### ♿ Accessibility First
+Every component is built with accessibility as a priority:
+- React Aria hooks provide keyboard navigation and screen reader support
+- ARIA attributes are automatically managed
+- Focus management follows best practices
+- High contrast and reduced motion support
+
+### 📝 Modern Form Handling
+Streamlined form development with built-in field support:
+- All input components have integrated field properties
+- Automatic validation and error handling
+- Form-level configuration inheritance
+- No wrapper components needed for most use cases
+
+## Getting Started
+
+### Basic Usage
+
+```jsx
+import { Button, TextInput, Form } from '@cube-dev/ui-kit';
+
+function MyApp() {
+  return (
+    <Form onSubmit={handleSubmit}>
+      <TextInput
+        name="email"
+        label="Email"
+        type="email"
+        isRequired
+      />
+      <Button type="primary">Submit</Button>
+    </Form>
+  );
+}
+```
+
+### Styling Components
+
+Use the `tasty` system for consistent styling:
+
+```jsx
+import { tasty, Button } from '@cube-dev/ui-kit';
+
+const CustomButton = tasty(Button, {
+  styles: {
+    padding: '2x 4x',
+    fill: {
+      '': '#purple',
+      hovered: '#purple.8',
+    },
+    color: '#white',
+  },
+});
+```
 
 ## Core Concepts
 
-UI Kit is designed using atomic approach similar to [Numl.Design](https://numl.design). Molecule-components are designed based on [AntD](https://ant.design/) API.
+### Styling with Tasty
 
-### Styling
+The `tasty` style system provides a powerful, declarative way to style components:
 
-Each atom component and most of the rich components have generic style attributes. Each style attribute is an abstraction over CSS properties. You can use syntax-sugar, bind styles to states and even to screen widths.
+- **Custom Units** - Use semantic units like `2x` (gap), `1r` (radius), `#purple` (color tokens)
+- **State Bindings** - Style different states using modifiers like `hovered`, `focused`, `disabled`
+- **Responsive Arrays** - Define breakpoint-specific styles with arrays: `padding: ['4x', '2x', '1x']`
+- **Sub-element Styling** - Style internal component parts using element names
 
-To learn more about styling, please, visit [Styles](/?path=/docs/uikit-styles--page) section.
+### Form Integration
 
-### Layout
+All input components work seamlessly with the Form component:
 
-You can create any layout possible using generic components like Space, Flow, Flex, Grid and Block.
+- **Built-in Field Support** - No wrapper components needed
+- **Automatic Validation** - Validation rules and error display
+- **Form-level Configuration** - Inherit settings like `labelPosition` and `validationState`
+- **Programmatic Control** - Use `Form.useForm()` for advanced form management
 
-Each component is an abstraction over specific layout type and their properties are very similar to CSS styles.
+### Component Architecture
 
-To learn more about styling, please, visit [Layout](/?path=/docs/uikit-layout--page) section.
+Components are designed with composition and reusability in mind:
+
+- **Base Properties** - Common props like `qa`, styling, and accessibility
+- **Style Properties** - Direct style application without the `styles` prop
+- **Modifiers** - Control component states through the `mods` prop
+- **Variants** - Pre-defined style themes and sizes
+
+## Documentation Structure
+
+Each component includes comprehensive documentation:
+
+- **Usage Examples** - Real-world implementation patterns
+- **Accessibility Guidelines** - Keyboard navigation and screen reader support
+- **Styling Reference** - Available sub-elements and modifiers
+- **Best Practices** - Recommended usage patterns and common pitfalls
+
+## Next Steps
+
+1. **Explore Components** - Browse the sidebar to see all available components
+2. **Learn Tasty** - Visit the [Tasty documentation](/docs/tasty-documentation--docs) to master the styling system
+3. **Build Forms** - Check out [Form documentation](/docs/forms-form--docs) for form development patterns
+4. **Accessibility** - Review accessibility guidelines for inclusive design

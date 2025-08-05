@@ -2,6 +2,16 @@ import { ReactNode } from 'react';
 
 import { Props, Styles } from '../tasty';
 
+/** ValidationResult type for error message functions */
+export interface ValidationResult {
+  /** Whether the value is invalid */
+  isInvalid: boolean;
+  /** List of validation error messages */
+  validationErrors: string[];
+  /** Native browser validation details */
+  validationDetails: ValidityState;
+}
+
 /** Where to place label relative to input */
 export type LabelPosition = 'side' | 'top';
 /** The type of necessity indicator */
@@ -33,10 +43,15 @@ export interface FieldBaseProps extends FormBaseProps {
   labelSuffix?: ReactNode;
   /** Custom label props */
   labelProps?: Props;
-  /** Message for the field. Some additional information or error notice */
+  /**
+   * @deprecated Use `errorMessage` for error messages and `description` for field descriptions instead.
+   * Message for the field. Some additional information or error notice
+   */
   message?: ReactNode;
   /** Description for the field. Will be placed below the label */
   description?: ReactNode;
+  /** Error message for the field. Always displayed in danger state regardless of validation state */
+  errorMessage?: ReactNode;
   /** A tooltip that is shown inside the label */
   tooltip?: ReactNode;
   /** Whether the element should receive focus on render */
@@ -59,6 +74,8 @@ export interface FieldBaseProps extends FormBaseProps {
   insideForm?: boolean;
   fieldProps?: Props;
   messageStyles?: Styles;
+  /** If true, the input component will be wrapped in a field wrapper even if it doesn't have a label. */
+  forceField?: boolean;
 }
 
 export interface FormBaseProps {

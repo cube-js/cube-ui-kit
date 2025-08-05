@@ -1,0 +1,470 @@
+import { Meta, Canvas, ArgTypes } from '@storybook/blocks';
+import { Badge } from '@storybook/components';
+import * as FormStories from './Form.stories';
+
+<Meta of={FormStories} />
+
+# Form
+
+<Badge variant="accent">Form component</Badge>
+
+Forms allow users to enter data that can be submitted while providing alignment and styling for form fields. The Form component provides structure, validation, and state management for user input through a collection of input components with built-in field support.
+
+## When to Use
+
+- When collecting user information or input data
+- When you need structured validation and error handling
+- When building login forms, registration forms, or data entry interfaces
+- When you need programmatic control over form state and submission
+
+## Component
+
+<Canvas of={FormStories.Default} />
+
+## Properties
+
+<ArgTypes of={FormStories} />
+
+### Base Properties
+
+Supports [Base properties](/docs/tasty-base-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root form element.
+
+The Form component does not expose styled sub-elements via the `styles` prop. It uses a simple container layout that can be customized through the main styles property.
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop: `display`, `flow`, `gap`, `placeItems`, `width`, `height`, `padding`, `margin`.
+
+### Form-specific Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `name` | `string` | Form name attribute |
+| `defaultValues` | `Partial<T>` | Default field values |
+| `onValuesChange` | `(data: T) => void` | Triggered when any field value changes |
+| `onSubmit` | `(data: T) => void \| Promise<void>` | Triggered on successful form submission |
+| `onSubmitFailed` | `(error: any) => void` | Triggered when form submission fails |
+| `form` | `CubeFormInstance<T>` | Form instance created by `useForm` |
+| `labelWidth` | `Styles['width']` | Width of label area for side-positioned labels |
+| `orientation` | `'vertical' \| 'horizontal'` | Form layout orientation |
+
+### Inherited Form Properties
+
+These properties are inherited by all input components within the form:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `labelPosition` | `'top' \| 'side'` | Where to place labels relative to inputs |
+| `requiredMark` | `boolean` | Whether to show required field indicators |
+| `isRequired` | `boolean` | Whether fields are required by default |
+| `necessityIndicator` | `'icon' \| 'label'` | Type of necessity indicator |
+| `isReadOnly` | `boolean` | Whether fields are read-only by default |
+| `validationState` | `'valid' \| 'invalid'` | Validation state for all fields |
+| `validateTrigger` | `'onBlur' \| 'onChange' \| 'onSubmit'` | When to trigger validation |
+| `showValid` | `boolean` | Whether to show valid state indicators |
+
+### HTML Form Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `action` | `string` | Form action URL (for server submission) |
+| `autoComplete` | `string` | Browser autocomplete behavior |
+| `encType` | `string` | Form encoding type |
+| `method` | `'get' \| 'post'` | HTTP method for form submission |
+| `target` | `string` | Target for form submission |
+
+### Modifiers
+
+The `mods` property accepts the following modifiers:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| `has-sider` | `boolean` | Applied when `labelPosition="side"` |
+| `horizontal` | `boolean` | Applied when `orientation="horizontal"` |
+
+## Variants
+
+The Form component does not have built-in variants. Styling is controlled through the `styles` prop and layout properties.
+
+## Static Methods
+
+The Form component provides several static methods for form functionality:
+
+### Form.useForm
+
+```jsx
+const [form] = Form.useForm();
+```
+
+Creates a form instance for programmatic control. See [FormInstance documentation](/docs/forms-forminstance--docs) for detailed API.
+
+### Form.Submit (SubmitButton)
+
+```jsx
+<Form.Submit>Submit</Form.Submit>
+```
+
+Specialized button that automatically handles form submission and loading states.
+
+### Form.Reset (ResetButton)
+
+```jsx
+<Form.Reset>Reset</Form.Reset>
+```
+
+Button that resets all form fields to their initial values.
+
+### Form.SubmitError
+
+```jsx
+<Form.SubmitError />
+```
+
+Component that displays submission errors returned from the `onSubmit` handler.
+
+### Form.Item (Field) - Deprecated
+
+```jsx
+<Form.Item name="email" label="Email">
+  <Input.Text />
+</Form.Item>
+```
+
+**⚠️ Deprecated**: The Field wrapper is deprecated and not recommended for regular use. Input components now have built-in field support, so you can pass field properties directly to them.
+
+The Field component should only be used when wrapping read-only content to make it appear as a form field.
+
+## Built-in Field Support
+
+**All input components have built-in field support**, meaning you can pass field properties directly to them without needing a wrapper:
+
+```jsx
+// ✅ Recommended - Direct field properties
+<Input.Text
+  name="email"
+  label="Email"
+  rules={[{ required: true, type: 'email' }]}
+  placeholder="Enter your email"
+/>
+
+// ❌ Deprecated - Field wrapper (still works but not recommended)
+<Field name="email" label="Email" rules={[{ required: true, type: 'email' }]}>
+  <Input.Text placeholder="Enter your email" />
+</Field>
+```
+
+### Field Properties for Input Components
+
+All input components within a Form accept these field-related properties:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `name` | `string` | Field name for form data |
+| `label` | `ReactNode` | Field label text |
+| `rules` | `ValidationRule[]` | Validation rules array |
+| `required` | `boolean` | Whether the field is required |
+| `help` | `ReactNode` | Help text displayed below the field |
+| `extra` | `ReactNode` | Additional information displayed below help text |
+| `tooltip` | `ReactNode` | Tooltip content for the field label |
+| `dependencies` | `string[]` | Other field names this field depends on |
+| `shouldUpdate` | `boolean \| (prevValues, curValues) => boolean` | When to re-render this field |
+
+## Examples
+
+### Basic Form
+
+```jsx
+import { Form, Input, SubmitButton } from '@cube-dev/ui-kit';
+
+function BasicForm() {
+  function handleSubmit(data) {
+    console.log('Submitted:', data);
+  }
+
+  return (
+    <Form onSubmit={handleSubmit}>
+      <Input.Text
+        name="email"
+        label="Email"
+        type="email"
+        rules={[
+          { required: true, message: 'Email is required' },
+          { type: 'email', message: 'Please enter a valid email' }
+        ]}
+        placeholder="Enter your email"
+      />
+
+      <Input.Password
+        name="password"
+        label="Password"
+        rules={[
+          { required: true, message: 'Password is required' },
+          { min: 6, message: 'Password must be at least 6 characters' }
+        ]}
+        placeholder="Enter your password"
+      />
+
+      <SubmitButton>Submit</SubmitButton>
+    </Form>
+  );
+}
+```
+
+### Horizontal Layout
+
+<Canvas of={FormStories.Horizontal} />
+
+```jsx
+<Form orientation="horizontal" labelPosition="side">
+  <Input.Text
+    name="email"
+    label="Email"
+    type="email"
+    size="small"
+    rules={[{ required: true, type: 'email' }]}
+    placeholder="Enter your email"
+  />
+  <Input.Password
+    name="password"
+    label="Password"
+    size="small"
+    rules={[{ required: true }]}
+    placeholder="Enter your password"
+  />
+  <SubmitButton size="small">Submit</SubmitButton>
+</Form>
+```
+
+### With Default Values
+
+<Canvas of={FormStories.WithDefaultValues} />
+
+```jsx
+<Form
+  defaultValues={{
+    email: 'user@example.com',
+    name: 'John Doe'
+  }}
+  onSubmit={handleSubmit}
+>
+  <Input.Text name="email" label="Email" type="email" />
+  <Input.Text name="name" label="Name" />
+  <SubmitButton>Submit</SubmitButton>
+</Form>
+```
+
+### Form with Validation
+
+<Canvas of={FormStories.WithValidationError} />
+
+### Complex Form with Different Input Types
+
+```jsx
+<Form onSubmit={handleSubmit}>
+  <Input.Text
+    name="username"
+    label="Username"
+    rules={[{ required: true, min: 3 }]}
+    placeholder="Enter username"
+  />
+
+  <Input.Password
+    name="password"
+    label="Password"
+    rules={[{ required: true, min: 8 }]}
+  />
+
+  <Select
+    name="country"
+    label="Country"
+    rules={[{ required: true }]}
+    options={[
+      { value: 'us', label: 'United States' },
+      { value: 'uk', label: 'United Kingdom' },
+      { value: 'ca', label: 'Canada' }
+    ]}
+  />
+
+  <Checkbox
+    name="agree"
+    label="I agree to the terms and conditions"
+    rules={[{ required: true, message: 'You must agree to continue' }]}
+  />
+
+  <SubmitButton>Register</SubmitButton>
+</Form>
+```
+
+### When to Use Field Component
+
+The Field component should **only** be used when wrapping read-only content or custom components that don't have built-in field support:
+
+```jsx
+<Form onSubmit={handleSubmit}>
+  {/* Regular inputs - use built-in field support */}
+  <Input.Text name="name" label="Name" rules={[{ required: true }]} />
+
+  {/* Read-only content - use Field wrapper */}
+  <Field name="readonly" label="Read-only Information">
+    <div>This is some read-only content that should look like a field</div>
+  </Field>
+
+  {/* Custom component without field support - use Field wrapper */}
+  <Field name="custom" label="Custom Component" rules={[{ required: true }]}>
+    <CustomComponent />
+  </Field>
+</Form>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus through form fields in sequence
+- `Shift + Tab` - Moves focus backwards through form fields
+- `Enter` - Submits the form when focus is on a submit button
+- Form fields inherit their specific keyboard navigation patterns
+
+### Screen Reader Support
+
+- Form is announced as "form" to screen readers
+- Field labels are properly associated with their inputs
+- Validation errors are announced when they appear
+- Required fields are indicated to screen readers
+- Form submission status is communicated
+
+### ARIA Properties
+
+- Form uses proper semantic HTML (`<form>` element)
+- Fields are associated with labels via `htmlFor` and `id` attributes
+- Validation errors use `aria-describedby` to associate with fields
+- Required fields use `aria-required` attribute
+- Form submission state is indicated via loading states
+
+## Best Practices
+
+1. **Use direct field properties**: Pass field properties directly to input components instead of using Field wrapper
+   ```jsx
+   // ✅ Recommended
+   <Input.Text name="email" label="Email" type="email" rules={[{ required: true }]} />
+
+   // ❌ Deprecated
+   <Field name="email" label="Email" rules={[{ required: true }]}>
+     <Input.Text type="email" />
+   </Field>
+   ```
+
+2. **Provide clear labels**: Always include descriptive labels for form fields
+   ```jsx
+   <Input.Text name="email" label="Email Address" type="email" />
+   ```
+
+3. **Use appropriate validation**: Implement both client-side and server-side validation
+   ```jsx
+   <Input.Text
+     name="email"
+     label="Email"
+     type="email"
+     rules={[
+       { required: true, message: 'Email is required' },
+       { type: 'email', message: 'Please enter a valid email' }
+     ]}
+   />
+   ```
+
+4. **Handle errors gracefully**: Always provide feedback for validation and submission errors
+   ```jsx
+   <Form onSubmit={handleSubmit} onSubmitFailed={handleError}>
+     {/* fields */}
+     <Form.SubmitError />
+   </Form>
+   ```
+
+5. **Use proper field types**: Choose appropriate input types for better UX and validation
+   ```jsx
+   <Input.Text type="email" />     {/* for email addresses */}
+   <Input.Password />              {/* for passwords */}
+   <Input.Number />                {/* for numeric input */}
+   ```
+
+6. **Group related fields**: Use logical grouping and layout for complex forms
+   ```jsx
+   <Form orientation="horizontal"> {/* for compact forms */}
+   <Form labelPosition="side">     {/* for wide layouts */}
+   ```
+
+## Form Management
+
+Forms can be controlled programmatically using the form instance:
+
+```jsx
+function ControlledForm() {
+  const [form] = Form.useForm();
+
+  const handleReset = () => {
+    form.resetFields();
+  };
+
+  const handleFillDemo = () => {
+    form.setFieldsValue({
+      email: 'demo@example.com',
+      name: 'Demo User'
+    });
+  };
+
+  return (
+    <Form form={form} onSubmit={handleSubmit}>
+      <Input.Text name="email" label="Email" type="email" />
+      <Input.Text name="name" label="Name" />
+
+      <Space>
+        <SubmitButton>Submit</SubmitButton>
+        <Button onPress={handleReset}>Reset</Button>
+        <Button onPress={handleFillDemo}>Fill Demo Data</Button>
+      </Space>
+    </Form>
+  );
+}
+```
+
+## Integration with Input Components
+
+All input components automatically register with the parent Form and inherit form-level properties:
+
+- Validation triggers (`validateTrigger`)
+- Label positioning (`labelPosition`)
+- Required indicators (`requiredMark`)
+- Read-only state (`isReadOnly`)
+- Disabled state (`isDisabled`)
+
+Field properties can be passed directly to any input component:
+
+```jsx
+<Form>
+  <Input.Text name="text" label="Text Input" />
+  <Input.Password name="password" label="Password" />
+  <Select name="select" label="Select" options={[]} />
+  <Checkbox name="checkbox" label="Checkbox" />
+  <RadioGroup name="radio" label="Radio Group" options={[]} />
+  <TextArea name="textarea" label="Text Area" />
+  <DatePicker name="date" label="Date Picker" />
+  <Slider name="slider" label="Slider" />
+  <Switch name="switch" label="Switch" />
+</Form>
+```
+
+## Related Components
+
+- [FormInstance](/docs/forms-forminstance--docs) - Programmatic form control API
+- [Input.Text](/docs/forms-textinput--docs) - Text input field
+- [Input.Password](/docs/forms-passwordinput--docs) - Password input field
+- [Select](/docs/forms-select--docs) - Dropdown selection field
+- [Checkbox](/docs/forms-checkbox--docs) - Checkbox input field
+- [Field](/docs/forms-field--docs) - Field wrapper (deprecated for regular use)
+- [DialogForm](/docs/overlays-dialogform--docs) - Form within a dialog

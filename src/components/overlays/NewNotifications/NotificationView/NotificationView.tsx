@@ -31,6 +31,7 @@ const NotificationContainer = tasty({
     gridColumns: 'min-content 1x minmax(0, auto) 1x minmax(0, min-content)',
     gridRows: '1x minmax(0, auto) minmax(0, auto) minmax(0, auto)',
     fill: '#white',
+    radius: '1cr',
     boxShadow: {
       '': '0 0 0 4bw #purple-04.0 inset',
       focused: '0 0 0 4bw #purple-04 inset',

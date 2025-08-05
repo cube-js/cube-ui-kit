@@ -112,6 +112,7 @@ export default [
   // TypeScript files
   {
     files: ['**/*.{ts,tsx}'],
+    ignores: ['vite.config.ts'],
     languageOptions: {
       parser,
       parserOptions: {

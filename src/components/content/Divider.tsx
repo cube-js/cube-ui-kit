@@ -1,4 +1,5 @@
-import { forwardRef } from 'react';
+import { forwardRef, useRef } from 'react';
+import { useSeparator } from 'react-aria';
 
 import {
   BASE_STYLES,
@@ -9,7 +10,7 @@ import {
   OuterStyleProps,
   tasty,
 } from '../../tasty';
-import { useSlotProps } from '../../utils/react';
+import { useCombinedRefs, useSlotProps } from '../../utils/react';
 
 const DividerElement = tasty({
   styles: {
@@ -52,16 +53,24 @@ export const Divider = forwardRef(function Divider(
     'divider',
   );
 
+  // Determine element type based on whether divider has content.
+  const elementType = children ? 'div' : 'hr';
+
+  const internalRef = useRef(null);
+  const combinedRef = useCombinedRefs(ref, internalRef);
+
+  const { separatorProps } = useSeparator({ elementType });
+
   return (
     <DividerElement
-      as={children ? 'div' : 'hr'}
-      role={children ? 'separator' : undefined}
+      {...separatorProps}
+      as={elementType as any}
       mods={{
         text: !!children,
         ...mods,
       }}
       {...filterBaseProps(otherProps, { eventProps: true })}
-      ref={ref}
+      ref={combinedRef}
       styles={styles}
     >
       {children && (

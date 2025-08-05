@@ -16,6 +16,9 @@ const config = {
       },
     ],
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(.pnpm/)?react-hotkeys-hook)',
+  ],
   setupFilesAfterEnv: ['./src/test/setup.ts'],
 };
 

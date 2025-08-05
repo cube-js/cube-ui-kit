@@ -37,20 +37,27 @@ const ADD_STYLES = {
   display: 'grid',
   placeContent: 'stretch',
   placeItems: 'center',
+  gridRows: '1sf',
   flow: 'column',
   gap: 0,
   cursor: 'inherit',
   opacity: {
     '': 1,
-    disabled: '@disabled-opacity',
+    disabled: '$disabled-opacity',
   },
 };
 
 export const INPUT_WRAPPER_STYLES: Styles = {
   display: 'grid',
+  flow: 'row',
   position: 'relative',
-  gridAreas: '"prefix input suffix"',
-  gridColumns: 'auto 1fr auto',
+  gridColumns: {
+    '': '1sf',
+    prefix: 'max-content 1sf',
+    suffix: '1sf max-content',
+    'prefix & suffix': 'max-content 1sf max-content',
+  },
+  gridRows: '1sf',
   placeItems: 'stretch',
   fill: {
     '': '#white',
@@ -82,16 +89,20 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   boxSizing: 'border-box',
   transition: 'theme',
   backgroundClip: 'content-box',
-
-  Prefix: {
-    ...ADD_STYLES,
-    gridArea: 'prefix',
+  height: {
+    '': '$size-md $size-md',
+    '[data-size="small"]': '$size-sm $size-sm',
+    '[data-size="medium"]': '$size-md $size-md',
+    '[data-size="large"]': '$size-lg $size-lg',
+    multiline: 'min $size-md',
+    '[data-size="small"] & multiline': 'min $size-sm',
+    '[data-size="medium"] & multiline': 'min $size-md',
+    '[data-size="large"] & multiline': 'min $size-lg',
   },
 
-  Suffix: {
-    ...ADD_STYLES,
-    gridArea: 'suffix',
-  },
+  Prefix: ADD_STYLES,
+
+  Suffix: ADD_STYLES,
 
   State: {
     display: 'flex',
@@ -100,19 +111,19 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   InputIcon: {
     display: 'grid',
     placeItems: 'center',
-    width: 'min 4x',
+    width: 'min $size-sm',
     color: 'inherit',
-    fontSize: '@icon-size',
+    fontSize: '$icon-size',
   },
 
   ValidationIcon: {
     display: 'grid',
     placeItems: 'center',
     width: {
-      '': 'min 4x',
-      suffix: 'min 3x',
+      '': 'min $size-sm',
+      suffix: 'min $size-xs',
     },
-    fontSize: '@icon-size',
+    fontSize: '$icon-size',
   },
 };
 
@@ -123,35 +134,41 @@ const STYLE_LIST = [...POSITION_STYLES, ...DIMENSION_STYLES];
 const INPUT_STYLE_PROPS_LIST = [...BLOCK_STYLES, 'resize'];
 
 export const DEFAULT_INPUT_STYLES: Styles = {
-  gridArea: 'input',
+  placeSelf: 'stretch',
   width: 'initial 100% 100%',
   color: 'inherit',
   fill: '#clear',
   border: 0,
   transition: 'theme',
   radius: true,
-  padding: '@vertical-padding @right-padding @vertical-padding @left-padding',
+  padding: '$vertical-padding $right-padding $vertical-padding $left-padding',
   textAlign: 'left',
   reset: 'input',
   preset: 't3',
   flexGrow: 1,
-  margin: 0,
+  margin: {
+    '': 0,
+    multiline: '((($size-md - 1lh) / 2) - 1bw) 0',
+    'multiline & [data-size="small"]': '((($size-sm - 1lh) / 2) - 1bw) 0',
+    'multiline & [data-size="large"]': '((($size-lg - 1lh) / 2) - 1bw) 0',
+  },
   resize: 'none',
   boxSizing: 'border-box',
   userSelect: 'auto',
 
-  '@vertical-padding': {
-    '': '(1.25x - 1bw)',
-    '[data-size="small"]': '(.75x - 1bw)',
-  },
-  '@left-padding': {
-    '': '(1.25x - 1bw)',
+  '$vertical-padding': 0,
+  '$left-padding': {
+    '': '(1x - 1bw)',
     '[data-size="small"]': '(1x - 1bw)',
+    '[data-size="large"]': '(1.25x - 1bw)',
+    '[data-size="xlarge"]': '(1.5x - 1bw)',
     prefix: '0',
   },
-  '@right-padding': {
-    '': '(1.25x - 1bw)',
+  '$right-padding': {
+    '': '(1x - 1bw)',
     '[data-size="small"]': '(1x - 1bw)',
+    '[data-size="large"]': '(1.25x - 1bw)',
+    '[data-size="xlarge"]': '(1.5x - 1bw)',
     suffix: '0',
   },
 };
@@ -199,7 +216,7 @@ export interface CubeTextInputBaseProps
   /** The resize CSS property sets whether an element is resizable, and if so, in which directions. */
   resize?: Styles['resize'];
   /** The size of the input */
-  size?: 'small' | 'default' | 'large' | (string & {});
+  size?: 'small' | 'medium' | 'large' | (string & {});
   autocomplete?: string;
 }
 
@@ -238,7 +255,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     wrapperRef,
     tooltip,
     rows = 1,
-    size,
+    size = 'medium',
     autocomplete,
     icon,
     maxLength,
@@ -310,7 +327,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
       disabled: isDisabled,
       multiline: multiLine,
       prefix: !!prefix,
-      suffix: !!suffix,
+      suffix: (validationState && !isLoading) || isLoading || !!suffix,
       ...mods,
     }),
     [
@@ -344,6 +361,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
       styles={wrapperStyles}
       {...wrapperProps}
     >
+      {prefix ? <div data-element="Prefix">{prefix}</div> : null}
       <InputElement
         as={ElementType}
         {...mergeProps(inputProps, focusProps, hoverProps)}
@@ -360,7 +378,6 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
         maxLength={maxLength}
         minLength={minLength}
       />
-      {prefix ? <div data-element="Prefix">{prefix}</div> : null}
       {(validationState && !isLoading) || isLoading || suffix ? (
         <div data-element="Suffix">
           {suffixPosition === 'before' ? suffix : null}

@@ -54,6 +54,8 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
     form,
     rules,
     message,
+    description,
+    errorMessage,
     validateTrigger = params.defaultValidationTrigger,
     validationState,
     validationDelay,
@@ -196,6 +198,13 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
         message !== undefined
           ? message
           : field?.status === 'invalid' && field?.errors?.[0],
+      description,
+      errorMessage:
+        errorMessage !== undefined
+          ? errorMessage
+          : field?.status === 'invalid' && field?.errors?.length
+            ? field.errors[0]
+            : undefined,
       onBlur: onBlurHandler,
       onChange: onChangeHandler,
     }),
@@ -208,6 +217,9 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
       fieldId,
       fieldName,
       isRequired,
+      message,
+      description,
+      errorMessage,
       onBlurHandler,
       onChangeHandler,
       validateTrigger,

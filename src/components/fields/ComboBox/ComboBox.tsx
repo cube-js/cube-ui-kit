@@ -3,6 +3,7 @@ import {
   ForwardedRef,
   forwardRef,
   ReactElement,
+  ReactNode,
   RefObject,
   useEffect,
   useMemo,
@@ -16,11 +17,12 @@ import {
   useHover,
   useOverlayPosition,
 } from 'react-aria';
-import { Item, useComboBoxState } from 'react-stately';
+import { Section as BaseSection, Item, useComboBoxState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/index';
 import { DownIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
+import { FieldBaseProps } from '../../../shared';
 import {
   BASE_STYLES,
   COLOR_STYLES,
@@ -28,6 +30,7 @@ import {
   OUTER_STYLES,
   tasty,
 } from '../../../tasty';
+import { generateRandomId } from '../../../utils/random';
 import {
   mergeProps,
   modAttrs,
@@ -35,6 +38,7 @@ import {
   useLayoutEffect,
 } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
+import { useEventBus } from '../../../utils/react/useEventBus';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import { InvalidIcon } from '../../shared/InvalidIcon';
@@ -70,6 +74,7 @@ const TriggerElement = tasty({
     width: {
       '': '4x',
       '[data-size="small"]': '3x',
+      '[data-size="medium"]': '4x',
     },
     color: {
       '': '#dark-02',
@@ -95,8 +100,9 @@ export interface CubeComboBoxProps<T>
       CubeSelectBaseProps<T>,
       'onOpenChange' | 'onBlur' | 'onFocus' | 'validate' | 'onSelectionChange'
     >,
-    AriaComboBoxProps<T>,
-    AriaTextFieldProps {
+    Omit<AriaComboBoxProps<T>, 'errorMessage'>,
+    Omit<AriaTextFieldProps, 'errorMessage'>,
+    FieldBaseProps {
   defaultSelectedKey?: string | null;
   selectedKey?: string | null;
   onSelectionChange?: (selectedKey: string | null) => void;
@@ -120,7 +126,7 @@ export interface CubeComboBoxProps<T>
    * Has no effect when `items` is provided.
    */
   filter?: FilterFn;
-  size?: 'small' | 'default' | 'large' | string;
+  size?: 'small' | 'medium' | 'large' | (string & {});
   suffixPosition?: 'before' | 'after';
   menuTrigger?: MenuTriggerAction;
   allowsCustomValue?: boolean;
@@ -188,7 +194,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     hideTrigger,
     message,
     description,
-    size,
+    size = 'medium',
     autoComplete = 'off',
     direction = 'bottom',
     shouldFlip = true,
@@ -206,13 +212,40 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   let isAsync = loadingState != null;
   let { contains } = useFilter({ sensitivity: 'base' });
 
-  let state = useComboBoxState({
+  let comboBoxStateProps: any = {
     ...props,
     defaultFilter: filter || contains,
     filter: undefined,
     allowsEmptyCollection: isAsync,
     menuTrigger,
-  });
+  };
+
+  let state = useComboBoxState(comboBoxStateProps);
+
+  // Generate a unique ID for this combobox instance
+  const comboBoxId = useMemo(() => generateRandomId(), []);
+
+  // Get event bus for menu synchronization
+  const { emit, on } = useEventBus();
+
+  // Listen for other menus opening and close this one if needed
+  useEffect(() => {
+    const unsubscribe = on('menu:open', (data: { menuId: string }) => {
+      // If another menu is opening and this combobox is open, close this one
+      if (data.menuId !== comboBoxId && state.isOpen) {
+        state.close();
+      }
+    });
+
+    return unsubscribe;
+  }, [on, comboBoxId, state]);
+
+  // Emit event when this combobox opens
+  useEffect(() => {
+    if (state.isOpen) {
+      emit('menu:open', { menuId: comboBoxId });
+    }
+  }, [state.isOpen, emit, comboBoxId]);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
@@ -241,7 +274,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     buttonProps: triggerProps,
   } = useComboBox(
     {
-      ...props,
+      ...comboBoxStateProps,
       inputRef,
       buttonRef: triggerRef,
       listBoxRef,
@@ -404,6 +437,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       }}
       data-size={size}
     >
+      {prefix ? <div data-element="Prefix">{prefix}</div> : null}
       <InputElement
         ref={inputRef}
         qa="Input"
@@ -415,7 +449,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         {...modAttrs(mods)}
         data-size={size}
       />
-      {prefix ? <div data-element="Prefix">{prefix}</div> : null}
       <div data-element="Suffix">
         {suffixPosition === 'before' ? suffix : null}
         {validationState || isLoading ? (
@@ -427,6 +460,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         {suffixPosition === 'after' ? suffix : null}
         {!hideTrigger ? (
           <TriggerElement
+            data-menu-trigger
             qa="ComboBoxTrigger"
             {...mergeProps(buttonProps, triggerFocusProps, triggerHoverProps)}
             {...modAttrs({
@@ -458,6 +492,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
           overlayStyles={overlayStyles}
           optionStyles={optionStyles}
           minWidth={comboBoxWidth}
+          triggerRef={triggerRef}
         />
       </OverlayWrapper>
     </ComboBoxWrapperElement>
@@ -470,9 +505,21 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   );
 }) as unknown as (<T>(
   props: CubeComboBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },
-) => ReactElement) & { Item: typeof Item };
+) => ReactElement) & { Item: typeof Item; Section: typeof BaseSection };
 
-ComboBox.Item = Item;
+type SectionComponentCB = typeof BaseSection;
+
+const ComboBoxSectionComponent = Object.assign(BaseSection, {
+  displayName: 'Section',
+}) as SectionComponentCB;
+
+ComboBox.Item = Item as unknown as (props: {
+  description?: ReactNode;
+  [key: string]: any;
+}) => ReactElement;
+
+ComboBox.Section = ComboBoxSectionComponent;
+
 Object.defineProperty(ComboBox, 'cubeInputType', {
   value: 'ComboBox',
   enumerable: false,

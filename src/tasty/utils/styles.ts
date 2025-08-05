@@ -1,11 +1,11 @@
-import { StyleParser } from '../../parser/parser';
+import { StyleParser } from '../parser/parser';
 import { Styles } from '../styles/types';
 
 import { cacheWrapper } from './cache-wrapper';
 import { camelToKebab } from './case-converter';
 import { getModCombinations } from './getModCombinations';
 
-import type { ProcessedStyle, StyleDetails } from '../../parser/types';
+import type { ProcessedStyle, StyleDetails } from '../parser/types';
 
 export type StyleValue<T = string> = T | boolean | number | null | undefined;
 
@@ -122,6 +122,9 @@ export const CUSTOM_UNITS = {
   lh: 'var(--line-height)',
   rp: 'var(--rem-pixel)',
   gp: 'var(--column-gap)',
+  sf: function sf(num) {
+    return `minmax(0, ${num}fr)`;
+  },
   // global setting
   dvh: function dvh(num) {
     return IS_DVH_SUPPORTED

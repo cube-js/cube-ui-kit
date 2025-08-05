@@ -1,5 +1,5 @@
 import { FocusableRef } from '@react-types/shared';
-import { ReactElement, RefObject } from 'react';
+import { ReactElement, ReactNode, RefObject } from 'react';
 
 import { FieldBaseProps, FormBaseProps } from '../../shared/index';
 import { BaseProps, Styles } from '../../tasty/index';
@@ -16,6 +16,7 @@ export function wrapWithField<T extends WrapWithFieldProps>(
   props: T,
 ) {
   let {
+    forceField,
     label,
     extra,
     labelPosition = 'top',
@@ -26,6 +27,7 @@ export function wrapWithField<T extends WrapWithFieldProps>(
     message,
     messageStyles,
     description,
+    errorMessage,
     validationState,
     labelProps,
     fieldProps,
@@ -36,6 +38,10 @@ export function wrapWithField<T extends WrapWithFieldProps>(
     styles,
     children,
   } = props;
+
+  if (!label && !forceField) {
+    return component;
+  }
 
   return (
     <FieldWrapper
@@ -52,6 +58,7 @@ export function wrapWithField<T extends WrapWithFieldProps>(
         message,
         messageStyles,
         description,
+        errorMessage,
         validationState,
         requiredMark,
         tooltip,

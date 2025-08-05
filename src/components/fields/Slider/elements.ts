@@ -3,8 +3,8 @@ import { tasty } from '../../../tasty';
 export const SliderThumbElement = tasty({
   qa: 'SliderThumb',
   styles: {
-    top: '@slider-thumb-offset-top',
-    left: '@slider-thumb-offset-left',
+    top: '$slider-thumb-offset-top',
+    left: '$slider-thumb-offset-left',
     width: '2x',
     height: '2x',
     fill: {
@@ -58,20 +58,20 @@ export const SliderTrackContainerElement = tasty({
       inset: {
         '': 'auto 0 0 0',
         horizontal: '0 auto 0 0',
-        range: 'auto 0 @slider-range-start 0',
-        'range & horizontal': '0 auto 0 @slider-range-start',
+        range: 'auto 0 $slider-range-start 0',
+        'range & horizontal': '0 auto 0 $slider-range-start',
       },
       fill: '#purple',
       width: {
         '': 'auto',
-        horizontal: '@slider-value',
+        horizontal: '$slider-value',
         range: 'auto',
-        'range & horizontal': '(@slider-range-end - @slider-range-start)',
+        'range & horizontal': '($slider-range-end - $slider-range-start)',
       },
       height: {
-        '': '@slider-value',
+        '': '$slider-value',
         horizontal: 'auto',
-        range: '(@slider-range-end - @slider-range-start)',
+        range: '($slider-range-end - $slider-range-start)',
         'range & horizontal': 'auto',
       },
     },
@@ -115,11 +115,11 @@ export const SliderControlsElement = tasty({
       horizontal: '(100% - 2x)',
     },
 
-    '@slider-thumb-offset-top': {
+    '$slider-thumb-offset-top': {
       '': '0',
       horizontal: '1x',
     },
-    '@slider-thumb-offset-left': {
+    '$slider-thumb-offset-left': {
       '': '1x',
       horizontal: '0',
     },

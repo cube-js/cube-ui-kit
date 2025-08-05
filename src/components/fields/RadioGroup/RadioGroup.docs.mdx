@@ -1,0 +1,214 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
+import { RadioGroup } from './RadioGroup';
+import * as RadioGroupStories from './RadioGroup.stories.tsx';
+
+<Meta of={RadioGroupStories} />
+
+# RadioGroup
+
+A radio group allows users to select exactly one option from a set of mutually exclusive choices. It provides clear visual indication of selection state and ensures only one option can be selected at a time.
+
+## When to Use
+
+- Allow users to select exactly one option from 2-7 choices
+- Present mutually exclusive options in forms
+- Create settings panels with single-choice preferences
+- Display filter options where only one can be active
+- Provide clear selection options in surveys or questionnaires
+
+## Component
+
+<Story of={RadioGroupStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={RadioGroupStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/docs/tasty-base-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root wrapper element of the component.
+
+#### groupStyles
+
+Customizes the radio group container specifically.
+
+### Style Properties
+
+The RadioGroup component supports all standard style properties:
+
+`display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `reset`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`, `textAlign`, `color`, `fill`, `fade`, `textTransform`, `fontWeight`, `fontStyle`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| horizontal | `boolean` | Whether the radio group is oriented horizontally |
+| solid | `boolean` | Whether the radio group uses solid styling |
+| disabled | `boolean` | Whether the radio group is disabled |
+| invalid | `boolean` | Whether the radio group has validation errors |
+| valid | `boolean` | Whether the radio group is valid |
+| focused | `boolean` | Whether any radio in the group has focus |
+| inside-form | `boolean` | Whether the radio group is inside a form field |
+
+## Variants
+
+### Orientation
+
+- `vertical` - Stack radio options vertically (default)
+- `horizontal` - Arrange radio options horizontally
+
+### Style
+
+- `solid` - Uses solid background styling with connected buttons
+- `default` - Standard radio buttons with spacing
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<RadioGroup label="Select an option">
+  <Radio value="option1">Option 1</Radio>
+  <Radio value="option2">Option 2</Radio>
+  <Radio value="option3">Option 3</Radio>
+</RadioGroup>
+```
+
+### Horizontal Layout
+
+```jsx
+<RadioGroup label="Size" orientation="horizontal">
+  <Radio value="small">Small</Radio>
+  <Radio value="medium">Medium</Radio>
+  <Radio value="large">Large</Radio>
+</RadioGroup>
+```
+
+### Solid Style
+
+```jsx
+<RadioGroup label="Priority" isSolid>
+  <Radio value="low">Low</Radio>
+  <Radio value="medium">Medium</Radio>
+  <Radio value="high">High</Radio>
+</RadioGroup>
+```
+
+### With Default Value
+
+```jsx
+<RadioGroup label="Theme" defaultValue="light">
+  <Radio value="light">Light</Radio>
+  <Radio value="dark">Dark</Radio>
+  <Radio value="auto">Auto</Radio>
+</RadioGroup>
+```
+
+### With Validation
+
+```jsx
+<RadioGroup
+  label="Required selection"
+  isRequired
+  validationState="invalid"
+  errorMessage="Please select an option"
+>
+  <Radio value="yes">Yes</Radio>
+  <Radio value="no">No</Radio>
+</RadioGroup>
+```
+
+### Disabled State
+
+```jsx
+<RadioGroup label="Disabled options" isDisabled>
+  <Radio value="option1">Cannot select</Radio>
+  <Radio value="option2">Cannot select</Radio>
+</RadioGroup>
+```
+
+### Individual Disabled Options
+
+```jsx
+<RadioGroup label="Mixed state">
+  <Radio value="available">Available</Radio>
+  <Radio value="limited">Limited</Radio>
+  <Radio value="unavailable" isDisabled>Unavailable</Radio>
+</RadioGroup>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the radio group (or first radio if none selected)
+- `Arrow Keys` - Navigate between radio options within the group
+- `Space` - Selects the focused radio option
+- `Shift + Tab` - Moves focus away from the radio group
+
+### Screen Reader Support
+
+- Component announces as "radio group" to screen readers
+- Current selection is announced when navigating
+- Required state and validation errors are communicated
+- Group label and individual radio labels are properly associated
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label when no visible label exists
+- `aria-labelledby` - References external label elements
+- `aria-describedby` - References additional descriptive text
+- `aria-required` - Indicates if selection is required
+- `aria-invalid` - Indicates validation state for the group
+- `role="radiogroup"` - Identifies the container as a radio group
+
+## Best Practices
+
+1. **Do**: Provide clear, descriptive labels for both group and options
+   ```jsx
+   <RadioGroup label="Preferred contact method">
+     <Radio value="email">Email</Radio>
+     <Radio value="phone">Phone</Radio>
+   </RadioGroup>
+   ```
+
+2. **Don't**: Use radio groups for more than 7 options
+   ```jsx
+   <RadioGroup label="Country"> {/* Use Select instead */}
+     {/* Too many options... */}
+   </RadioGroup>
+   ```
+
+3. **Selection**: Always provide a default selection for required fields
+4. **Grouping**: Use meaningful group labels that describe the choice
+5. **Options**: Keep option labels concise and mutually exclusive
+6. **Layout**: Use horizontal layout only when space permits and options are short
+
+## Integration with Forms
+
+This component supports all [Field properties](/docs/forms-field--docs) when used within a Form.
+
+## Suggested Improvements
+
+- Add support for rich content in radio options (icons, descriptions)
+- Implement card-style radio buttons for complex options
+- Add support for custom radio button indicators
+- Consider adding image-based radio options
+- Implement grouped radio sections for complex forms
+
+## Related Components
+
+- [Checkbox](/docs/forms-checkbox--docs) - For multiple selection scenarios
+- [CheckboxGroup](/docs/forms-checkboxgroup--docs) - For selecting multiple related options
+- [Select](/docs/forms-select--docs) - For single selection from many options
+- [Switch](/docs/forms-switch--docs) - For binary on/off choices

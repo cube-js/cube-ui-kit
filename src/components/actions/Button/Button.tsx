@@ -10,6 +10,7 @@ import {
   TEXT_STYLES,
 } from '../../../tasty';
 import { accessibilityWarning } from '../../../utils/warnings';
+import { Text } from '../../content/Text';
 import { CubeActionProps } from '../Action/Action';
 import { useAction } from '../use-action';
 
@@ -27,7 +28,7 @@ export interface CubeButtonProps extends CubeActionProps {
     | 'outline'
     | 'neutral'
     | (string & {});
-  size?: 'small' | 'medium' | 'large' | (string & {});
+  size?: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | (string & {});
 }
 
 export type ButtonVariant =
@@ -60,49 +61,80 @@ const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
 
 export const DEFAULT_BUTTON_STYLES = {
   display: 'inline-grid',
-  placeItems: 'center stretch',
-  placeContent: 'center',
+  flow: 'column',
+  placeItems: 'center start',
+  placeContent: {
+    '': 'center',
+    'right-icon | suffix': 'center stretch',
+  },
+  gridColumns: {
+    '': 'initial',
+    'left-icon | loading | prefix': 'max-content',
+  },
   position: 'relative',
   margin: 0,
   boxSizing: 'border-box',
-  cursor: 'pointer',
+  cursor: {
+    '': 'pointer',
+    '[disabled] | disabled': 'default',
+  },
   gap: {
     '': '.75x',
     '[data-size="small"]': '.5x',
   },
-  flow: 'column',
   preset: {
     '': 't3m',
-    '[data-size="large"]': 't2m',
+    '[data-size="xsmall"]': 't4',
+    '[data-size="xlarge"]': 't2m',
   },
   textDecoration: 'none',
   transition: 'theme',
   reset: 'button',
   outlineOffset: 1,
   padding: {
-    '': '0 (2x - 1bw)',
-    '[data-size="small"]': '0 (1x - 1bw)',
-    '[data-size="medium"]': '0 (1.5x - 1bw)',
-    '[data-size="large"]': '0 (2.25x - 1bw)',
-    'single-icon-only | [data-type="link"]': 0,
+    '': '.5x (1.5x - 1bw)',
+    '[data-size="small"] | [data-size="xsmall"]': '.5x (1.25x - 1bw)',
+    '[data-size="medium"]': '.5x (1.5x - 1bw)',
+    '[data-size="large"]': '.5x (1.75x - 1bw)',
+    '[data-size="xlarge"]': '.5x (2x - 1bw)',
+    'single-icon | [data-type="link"]': 0,
   },
   width: {
     '': 'initial',
-    '[data-size="small"] & single-icon-only': '4x 4x',
-    '[data-size="medium"] & single-icon-only': '5x 5x',
-    '[data-size="large"] & single-icon-only': '6x 6x',
+    '[data-size="xsmall"] & single-icon': '$size-xs $size-xs',
+    '[data-size="small"] & single-icon': '$size-sm $size-sm',
+    '[data-size="medium"] & single-icon': '$size-md $size-md',
+    '[data-size="large"] & single-icon': '$size-lg $size-lg',
+    '[data-size="xlarge"] & single-icon': '$size-xl $size-xl',
+    '[data-type="link"]': 'initial',
   },
   height: {
     '': 'initial',
-    '[data-size="small"]': '4x 4x',
-    '[data-size="medium"]': '5x 5x',
-    '[data-size="large"]': '6x 6x',
-    '[data-type="link"]': 'auto',
+    '[data-size="xsmall"]': '$size-xs $size-xs',
+    '[data-size="small"]': '$size-sm $size-sm',
+    '[data-size="medium"]': '$size-md $size-md',
+    '[data-size="large"]': '$size-lg $size-lg',
+    '[data-size="xlarge"]': '$size-xl $size-xl',
+    '[data-type="link"]': 'initial',
   },
   whiteSpace: 'nowrap',
   radius: {
     '': true,
     '[data-type="link"] & !focused': 0,
+  },
+
+  ButtonIcon: {
+    width: 'min 1fs',
+  },
+
+  '& [data-element="ButtonIcon"]:first-child:not(:last-child)': {
+    marginLeft: '-.5x',
+    placeSelf: 'center start',
+  },
+
+  '& [data-element="ButtonIcon"]:last-child:not(:first-child)': {
+    marginRight: '-.5x',
+    placeSelf: 'center end',
   },
 } as const;
 
@@ -126,7 +158,7 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
   },
   color: {
     '': '#white',
-    '[disabled] | disabled': '#dark.30',
+    '[disabled] | disabled': '#dark-04',
   },
 } as const;
 
@@ -145,7 +177,7 @@ export const DEFAULT_SECONDARY_STYLES: Styles = {
   },
   color: {
     '': '#purple',
-    '[disabled] | disabled': '#dark.30',
+    '[disabled] | disabled': '#dark-04',
   },
 } as const;
 
@@ -158,14 +190,14 @@ export const DEFAULT_OUTLINE_STYLES: Styles = {
   fill: {
     '': '#dark.0',
     hovered: '#dark.03',
-    'pressed | selected': '#dark.06',
+    'pressed | (selected & !hovered)': '#dark.06',
     '[disabled] | disabled': '#dark.04',
   },
   color: {
     '': '#dark-02',
     hovered: '#dark-02',
-    'pressed | selected': '#dark',
-    '[disabled] | disabled': '#dark.30',
+    'pressed | (selected & !hovered)': '#dark',
+    '[disabled] | disabled': '#dark-04',
   },
 } as const;
 
@@ -173,19 +205,17 @@ export const DEFAULT_NEUTRAL_STYLES: Styles = {
   border: {
     '': '#clear',
     focused: '#purple-text',
-    '[disabled] | disabled': '#border',
   },
   fill: {
     '': '#dark.0',
     hovered: '#dark.03',
-    'pressed | selected': '#dark.06',
-    '[disabled] | disabled': '#dark.04',
+    'pressed | (selected & !hovered)': '#dark.06',
   },
   color: {
     '': '#dark-02',
     hovered: '#dark-02',
     pressed: '#dark',
-    '[disabled] | disabled': '#dark.30',
+    '[disabled] | disabled': '#dark-04',
   },
 } as const;
 
@@ -194,17 +224,15 @@ export const DEFAULT_CLEAR_STYLES: Styles = {
     '': '#clear',
     pressed: '#purple-text.10',
     focused: '#purple-text',
-    '[disabled] | disabled': '#border',
   },
   fill: {
     '': '#purple.0',
     hovered: '#purple.16',
-    'pressed | selected': '#purple.10',
-    '[disabled] | disabled': '#dark.04',
+    'pressed | (selected & !hovered)': '#purple.10',
   },
   color: {
     '': '#purple-text',
-    '[disabled] | disabled': '#dark.30',
+    '[disabled] | disabled': '#dark-04',
   },
 } as const;
 
@@ -220,7 +248,7 @@ export const DEFAULT_LINK_STYLES: Styles = {
   color: {
     '': '#purple-text',
     'hovered & !pressed': '#purple',
-    '[disabled] | disabled': '#dark.30',
+    '[disabled] | disabled': '#dark-04',
   },
 } as const;
 
@@ -242,7 +270,7 @@ export const DANGER_PRIMARY_STYLES: Styles = {
   },
   color: {
     '': '#white',
-    '[disabled] | disabled': '#dark.30',
+    '[disabled] | disabled': '#dark-04',
   },
 } as const;
 
@@ -260,7 +288,7 @@ export const DANGER_SECONDARY_STYLES: Styles = {
   },
   color: {
     '': '#danger',
-    '[disabled] | disabled': '#dark.30',
+    '[disabled] | disabled': '#dark-04',
   },
 } as const;
 
@@ -274,12 +302,12 @@ export const DANGER_OUTLINE_STYLES: Styles = {
   fill: {
     '': '#danger.0',
     hovered: '#danger.1',
-    'pressed | selected': '#danger.05',
+    'pressed | (selected & !hovered)': '#danger.05',
     '[disabled] | disabled': '#dark.04',
   },
   color: {
     '': '#danger-text',
-    '[disabled] | disabled': '#dark.30',
+    '[disabled] | disabled': '#dark-04',
   },
 } as const;
 
@@ -287,18 +315,16 @@ export const DANGER_NEUTRAL_STYLES: Styles = {
   border: {
     '': '#clear',
     focused: '#danger-text',
-    '[disabled] | disabled': '#border',
   },
   fill: {
     '': '#dark.0',
     hovered: '#dark.04',
-    'pressed | selected': '#dark.05',
-    '[disabled] | disabled': '#dark.04',
+    'pressed | (selected & !hovered)': '#dark.05',
   },
   color: {
     '': '#dark-02',
-    'pressed | selected': '#danger-text',
-    '[disabled] | disabled': '#dark.30',
+    'pressed | (selected & !hovered)': '#danger-text',
+    '[disabled] | disabled': '#dark-04',
   },
 } as const;
 
@@ -307,17 +333,15 @@ export const DANGER_CLEAR_STYLES: Styles = {
     '': '#clear',
     pressed: '#danger.05',
     focused: '#danger-text',
-    '[disabled] | disabled': '#border',
   },
   fill: {
     '': '#danger.0',
     hovered: '#danger.1',
-    'pressed | selected': '#danger.05',
-    '[disabled] | disabled': '#dark.04',
+    'pressed | (selected & !hovered)': '#danger.05',
   },
   color: {
     '': '#danger-text',
-    '[disabled] | disabled': '#dark.30',
+    '[disabled] | disabled': '#dark-04',
   },
 } as const;
 
@@ -333,7 +357,7 @@ export const DANGER_LINK_STYLES: Styles = {
   color: {
     '': '#danger-text',
     'hovered & !pressed': '#danger',
-    '[disabled] | disabled': '#dark.30',
+    '[disabled] | disabled': '#dark-04',
   },
 } as const;
 
@@ -355,7 +379,7 @@ export const SUCCESS_PRIMARY_STYLES: Styles = {
   },
   color: {
     '': '#white',
-    '[disabled] | disabled': '#dark.30',
+    '[disabled] | disabled': '#dark-04',
   },
 } as const;
 
@@ -373,7 +397,7 @@ export const SUCCESS_SECONDARY_STYLES: Styles = {
   },
   color: {
     '': '#success',
-    '[disabled] | disabled': '#dark.30',
+    '[disabled] | disabled': '#dark-04',
   },
 } as const;
 
@@ -387,12 +411,12 @@ export const SUCCESS_OUTLINE_STYLES: Styles = {
   fill: {
     '': '#success.0',
     hovered: '#success.1',
-    'pressed | selected': '#success.05',
+    'pressed | (selected & !hovered)': '#success.05',
     '[disabled] | disabled': '#dark.04',
   },
   color: {
     '': '#success-text',
-    '[disabled] | disabled': '#dark.30',
+    '[disabled] | disabled': '#dark-04',
   },
 } as const;
 
@@ -400,18 +424,16 @@ export const SUCCESS_NEUTRAL_STYLES: Styles = {
   border: {
     '': '#clear',
     focused: '#success-text',
-    '[disabled] | disabled': '#border',
   },
   fill: {
     '': '#dark.0',
     hovered: '#dark.04',
-    'pressed | selected': '#dark.05',
-    '[disabled] | disabled': '#dark.04',
+    'pressed | (selected & !hovered)': '#dark.05',
   },
   color: {
     '': '#dark-02',
-    'pressed | selected': '#success-text',
-    '[disabled] | disabled': '#dark.30',
+    'pressed | (selected & !hovered)': '#success-text',
+    '[disabled] | disabled': '#dark-04',
   },
 } as const;
 
@@ -420,17 +442,15 @@ export const SUCCESS_CLEAR_STYLES: Styles = {
     '': '#clear',
     pressed: '#success.05',
     focused: '#success-text',
-    '[disabled] | disabled': '#border',
   },
   fill: {
     '': '#success.0',
     hovered: '#success.1',
-    'pressed | selected': '#success.05',
-    '[disabled] | disabled': '#dark.04',
+    'pressed | (selected & !hovered)': '#success.05',
   },
   color: {
     '': '#success-text',
-    '[disabled] | disabled': '#dark.30',
+    '[disabled] | disabled': '#dark-04',
   },
 } as const;
 
@@ -446,7 +466,7 @@ export const SUCCESS_LINK_STYLES: Styles = {
   color: {
     '': '#success-text',
     'hovered & !pressed': '#success',
-    '[disabled] | disabled': '#dark.30',
+    '[disabled] | disabled': '#dark-04',
   },
 } as const;
 
@@ -468,7 +488,7 @@ export const SPECIAL_PRIMARY_STYLES: Styles = {
   },
   color: {
     '': '#white',
-    '[disabled] | disabled': '#white.30',
+    '[disabled] | disabled': '#white.4',
   },
 } as const;
 
@@ -485,7 +505,7 @@ export const SPECIAL_SECONDARY_STYLES: Styles = {
   },
   color: {
     '': '#white',
-    '[disabled] | disabled': '#white.30',
+    '[disabled] | disabled': '#white.4',
   },
 } as const;
 
@@ -498,12 +518,12 @@ export const SPECIAL_OUTLINE_STYLES: Styles = {
   fill: {
     '': '#white.0',
     hovered: '#white.18',
-    'pressed | selected': '#white.12',
+    'pressed | (selected & !hovered)': '#white.12',
     '[disabled] | disabled': '#white.12',
   },
   color: {
     '': '#white',
-    '[disabled] | disabled': '#white.30',
+    '[disabled] | disabled': '#white.4',
   },
 } as const;
 
@@ -511,17 +531,15 @@ export const SPECIAL_NEUTRAL_STYLES: Styles = {
   border: {
     '': 0,
     focused: '#white',
-    '[disabled] | disabled': '#white.3',
   },
   fill: {
     '': '#white.0',
     hovered: '#white.12',
-    'pressed | selected': '#white.18',
-    '[disabled] | disabled': 'white.12',
+    'pressed | (selected & !hovered)': '#white.18',
   },
   color: {
     '': '#white',
-    '[disabled] | disabled': '#white.30',
+    '[disabled] | disabled': '#white.4',
   },
 } as const;
 
@@ -543,7 +561,7 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
     '': '#purple-text',
     hovered: '#purple',
     'pressed & hovered': '#purple-text',
-    '[disabled] | disabled': '#white.30',
+    '[disabled] | disabled': '#white.4',
   },
 } as const;
 
@@ -559,7 +577,7 @@ export const SPECIAL_LINK_STYLES: Styles = {
   color: {
     '': '#white',
     'hovered & !pressed': '#white.9',
-    '[disabled] | disabled': '#white.30',
+    '[disabled] | disabled': '#white.4',
   },
 } as const;
 
@@ -630,14 +648,14 @@ export const Button = forwardRef(function Button(
     if (icon) {
       if (!specifiedLabel) {
         accessibilityWarning(
-          'If you provide `icon` property for a Button and do not provide any children then you should specify the `label` property to make sure the Button element stays accessible.',
+          'If you provide `icon` property for a Button and do not provide any children then you should specify the `aria-label` property to make sure the Button element stays accessible.',
         );
         label = 'Unnamed'; // fix to avoid warning in production
       }
     } else {
       if (!specifiedLabel) {
         accessibilityWarning(
-          'If you provide no children for a Button then you should specify the `label` property to make sure the Button element stays accessible.',
+          'If you provide no children for a Button then you should specify the `aria-label` property to make sure the Button element stays accessible.',
         );
         label = 'Unnamed'; // fix to avoid warning in production
       }
@@ -661,12 +679,16 @@ export const Button = forwardRef(function Button(
     !children
   );
 
+  const hasIcons = !!icon || !!rightIcon;
+
   const modifiers = useMemo(
     () => ({
       loading: isLoading,
       selected: isSelected,
-      'with-icons': !!icon || !!rightIcon,
-      'single-icon-only': singleIcon,
+      'with-icons': hasIcons,
+      'left-icon': !!icon,
+      'right-icon': !!rightIcon,
+      'single-icon': singleIcon,
       ...mods,
     }),
     [mods, isDisabled, isLoading, isSelected, singleIcon],
@@ -700,7 +722,11 @@ export const Button = forwardRef(function Button(
           <LoadingIcon data-element="ButtonIcon" />
         )
       ) : null}
-      {children}
+      {hasIcons && typeof children === 'string' ? (
+        <Text ellipsis>{children}</Text>
+      ) : (
+        children
+      )}
       {rightIcon}
     </ButtonElement>
   );

@@ -20,7 +20,7 @@ const IconElement = tasty({
     verticalAlign: 'sub',
     width: '1em 1em',
     height: 'min 1em',
-    fontSize: '@icon-size',
+    fontSize: '$icon-size',
     transition: 'theme, width, height',
     textAlign: 'center',
     textTransform: 'none',
@@ -34,13 +34,13 @@ const IconElement = tasty({
     '& svg.tabler-icon': {
       width: 'min 1em',
       height: '1em 1em',
-      strokeWidth: '@stroke-width',
+      strokeWidth: '$stroke-width',
     },
 
     '& svg:not(.tabler-icon)': {
       width: 'min (1em - 2px)',
       height: '(1em - 2px) (1em - 2px)',
-      strokeWidth: '@stroke-width',
+      strokeWidth: '$stroke-width',
     },
   },
   styleProps: [...OUTER_STYLES, ...BASE_STYLES, ...COLOR_STYLES],
@@ -73,7 +73,7 @@ export const Icon = memo(
     if (stroke) {
       styles = {
         ...styles,
-        '@stroke-width': stroke,
+        '$stroke-width': stroke,
       };
     }
 

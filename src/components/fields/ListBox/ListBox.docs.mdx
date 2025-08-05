@@ -1,0 +1,367 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
+import { ListBox } from './ListBox';
+import * as ListBoxStories from './ListBox.stories';
+
+<Meta of={ListBoxStories} />
+
+# ListBox
+
+A versatile list selection component that allows users to select one or more items from a list of options. Built with React Aria's accessibility features and the Cube `tasty` style system, it supports sections, descriptions, keyboard navigation, and virtualization for large datasets.
+
+## When to Use
+
+- Present a list of selectable options in a contained area
+- Enable single or multiple selection from a set of choices
+- Display structured data with sections and descriptions
+- Create custom selection interfaces that need to remain visible
+- Build form controls that require persistent option visibility
+- Use when you have a small to medium number of options (for larger lists with search, consider FilterListBox)
+
+## Component
+
+<Story of={ListBoxStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={ListBoxStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/docs/tasty-base-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root wrapper element of the component.
+
+**Sub-elements:**
+- `ValidationState` - Container for validation and loading indicators
+
+#### listStyles
+
+Customizes the list container element.
+
+#### optionStyles
+
+Customizes individual option elements.
+
+**Sub-elements:**
+- `Label` - The main text of each option
+- `Description` - Secondary descriptive text for options
+- `Content` - Container for label and description
+- `Checkbox` - Checkbox element when `isCheckable={true}`
+- `CheckboxWrapper` - Wrapper around the checkbox
+
+#### sectionStyles
+
+Customizes section wrapper elements.
+
+#### headingStyles
+
+Customizes section heading elements.
+
+#### headerStyles
+
+Customizes the header area when header prop is provided.
+
+#### footerStyles
+
+Customizes the footer area when footer prop is provided.
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop: `display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `color`, `fill`, `fade`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `reset`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`, `textAlign`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`.
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| `invalid` | `boolean` | Applied when `validationState="invalid"` |
+| `valid` | `boolean` | Applied when `validationState="valid"` |
+| `disabled` | `boolean` | Applied when `isDisabled={true}` |
+| `focused` | `boolean` | Applied when the ListBox has focus |
+| `header` | `boolean` | Applied when header prop is provided |
+| `footer` | `boolean` | Applied when footer prop is provided |
+
+## Variants
+
+### Selection Modes
+
+- `single` - Allows selecting only one item at a time
+- `multiple` - Allows selecting multiple items
+- `none` - No selection allowed (display only)
+
+### Sizes
+
+- `medium` - Standard size for general use (32px item height, default)
+- `large` - Emphasized size for important sections (40px item height)
+
+## Examples
+
+### Basic Usage
+
+<Story of={ListBoxStories.Default} />
+
+```jsx
+<ListBox label="Select a fruit" selectionMode="single">
+  <ListBox.Item key="apple">Apple</ListBox.Item>
+  <ListBox.Item key="banana">Banana</ListBox.Item>
+  <ListBox.Item key="cherry">Cherry</ListBox.Item>
+</ListBox>
+```
+
+### With Descriptions
+
+<Story of={ListBoxStories.WithDescriptions} />
+
+```jsx
+<ListBox label="Choose a framework" selectionMode="single">
+  <ListBox.Item 
+    key="react" 
+    description="A JavaScript library for building user interfaces"
+  >
+    React
+  </ListBox.Item>
+  <ListBox.Item 
+    key="vue" 
+    description="The Progressive JavaScript Framework"
+  >
+    Vue.js
+  </ListBox.Item>
+</ListBox>
+```
+
+### With Sections
+
+<Story of={ListBoxStories.WithSections} />
+
+```jsx
+<ListBox label="Select food items" selectionMode="single">
+  <ListBox.Section title="Fruits">
+    <ListBox.Item key="apple">Apple</ListBox.Item>
+    <ListBox.Item key="banana">Banana</ListBox.Item>
+  </ListBox.Section>
+  <ListBox.Section title="Vegetables">
+    <ListBox.Item key="carrot">Carrot</ListBox.Item>
+    <ListBox.Item key="broccoli">Broccoli</ListBox.Item>
+  </ListBox.Section>
+</ListBox>
+```
+
+### Multiple Selection
+
+<Story of={ListBoxStories.MultipleSelection} />
+
+```jsx
+<ListBox
+  label="Select skills (multiple)"
+  selectionMode="multiple"
+>
+  <ListBox.Item key="html">HTML</ListBox.Item>
+  <ListBox.Item key="css">CSS</ListBox.Item>
+  <ListBox.Item key="javascript">JavaScript</ListBox.Item>
+</ListBox>
+```
+
+### Multiple Selection with Select All
+
+<Story of={ListBoxStories.WithSelectAll} />
+
+```jsx
+<ListBox
+  label="Select permissions"
+  selectionMode="multiple"
+  showSelectAll={true}
+  selectAllLabel="All Permissions"
+>
+  <ListBox.Item key="read">Read</ListBox.Item>
+  <ListBox.Item key="write">Write</ListBox.Item>
+  <ListBox.Item key="execute">Execute</ListBox.Item>
+</ListBox>
+```
+
+### With Header and Footer
+
+<Story of={ListBoxStories.WithHeaderAndFooter} />
+
+```jsx
+<ListBox
+  label="Programming Languages"
+  header={
+    <Space gap="1x" flow="row" placeItems="center">
+      <Title level={6}>Languages</Title>
+      <Badge type="note">12</Badge>
+    </Space>
+  }
+  footer={
+    <Text color="#dark.50" preset="t4">
+      Popular languages shown
+    </Text>
+  }
+>
+  <ListBox.Item key="javascript">JavaScript</ListBox.Item>
+  <ListBox.Item key="python">Python</ListBox.Item>
+</ListBox>
+```
+
+### Controlled Selection
+
+<Story of={ListBoxStories.ControlledExample} />
+
+```jsx
+const [selectedKey, setSelectedKey] = useState('apple');
+
+<ListBox
+  label="Controlled ListBox"
+  selectedKey={selectedKey}
+  onSelectionChange={setSelectedKey}
+  selectionMode="single"
+>
+  <ListBox.Item key="apple">Apple</ListBox.Item>
+  <ListBox.Item key="banana">Banana</ListBox.Item>
+</ListBox>
+```
+
+### Virtualized Large Lists
+
+<Story of={ListBoxStories.VirtualizedList} />
+
+```jsx
+<ListBox height="300px" overflow="auto">
+  {Array.from({ length: 1000 }, (_, i) => (
+    <ListBox.Item key={`item-${i}`}>Item {i + 1}</ListBox.Item>
+  ))}
+</ListBox>
+```
+
+### In Forms
+
+<Story of={ListBoxStories.InForm} />
+
+```jsx
+<Form onSubmit={handleSubmit}>
+  <ListBox
+    name="technology"
+    label="Preferred Technology"
+    isRequired
+    selectionMode="single"
+  >
+    <ListBox.Section title="Frontend">
+      <ListBox.Item key="react">React</ListBox.Item>
+      <ListBox.Item key="vue">Vue.js</ListBox.Item>
+    </ListBox.Section>
+  </ListBox>
+  <Form.Submit>Submit</Form.Submit>
+</Form>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to/from the ListBox
+- `Arrow Keys` - Navigate between options
+- `Space/Enter` - Select/deselect the focused option
+- `Home/End` - Move to first/last option
+- `Page Up/Page Down` - Move up/down by multiple items
+- `Escape` - Deselect all items (if onEscape not provided)
+
+### Screen Reader Support
+
+- ListBox announces as "listbox" with proper role
+- Selected items are announced as "selected"
+- Section headings are properly associated with their items
+- Selection changes are announced immediately
+- Item descriptions are read along with labels
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label when no visible label exists
+- `aria-labelledby` - Associates with external label element
+- `aria-describedby` - Associates with description text
+- `aria-multiselectable` - Indicates multiple selection capability
+- `aria-activedescendant` - Tracks focused item for screen readers
+
+## Best Practices
+
+1. **Do**: Provide clear, descriptive labels for options
+   ```jsx
+   <ListBox.Item key="react" description="JavaScript library for UIs">
+     React
+   </ListBox.Item>
+   ```
+
+2. **Don't**: Use ListBox for very large datasets without virtualization
+   ```jsx
+   // ❌ Avoid for 1000+ items without virtualization
+   <ListBox>
+     {hugeArray.map(item => <ListBox.Item key={item.id}>{item.name}</ListBox.Item>)}
+   </ListBox>
+   ```
+
+3. **Do**: Use sections to organize related options
+   ```jsx
+   <ListBox.Section title="Frontend Frameworks">
+     <ListBox.Item key="react">React</ListBox.Item>
+   </ListBox.Section>
+   ```
+
+4. **Do**: Use `showSelectAll` for efficient multiple selection from large lists
+   ```jsx
+   <ListBox selectionMode="multiple" showSelectAll selectAllLabel="Select All Items">
+     {/* many items */}
+   </ListBox>
+   ```
+
+5. **Accessibility**: Always provide meaningful labels and descriptions
+6. **Performance**: Use virtualization for lists with 50+ items
+7. **UX**: Consider FilterListBox for searchable lists with many options
+
+## Integration with Forms
+
+This component supports all [Field properties](/docs/forms-field--docs) when used within a Form. The component automatically handles form validation, field states, and integrates with form submission.
+
+```jsx
+<Form onSubmit={handleSubmit}>
+  <ListBox
+    name="preferences"
+    label="User Preferences"
+    isRequired
+    rules={[{ required: true }]}
+    selectionMode="multiple"
+  >
+    <ListBox.Item key="notifications">Email Notifications</ListBox.Item>
+    <ListBox.Item key="newsletter">Newsletter</ListBox.Item>
+  </ListBox>
+</Form>
+```
+
+## Performance
+
+### Virtualization
+
+ListBox automatically enables virtualization when:
+- The list contains more than 30 items
+- No sections are present (sections disable virtualization)
+- Improves performance with large datasets
+
+### Optimization Tips
+
+- Use `textValue` prop for complex option content
+- Avoid changing selection state too frequently
+- Use sections sparingly for very large lists
+- Consider FilterListBox for searchable large lists
+
+## Related Components
+
+- [FilterListBox](/docs/forms-filterlistbox--docs) - ListBox with integrated search functionality
+- [FilterPicker](/docs/forms-filterpicker--docs) - ListBox in a trigger-based popover
+- [Select](/docs/forms-select--docs) - Dropdown selection without persistent visibility
+- [ComboBox](/docs/forms-combobox--docs) - Dropdown with text input and search
+- [RadioGroup](/docs/forms-radiogroup--docs) - Single selection with radio buttons
+- [CheckboxGroup](/docs/forms-checkbox--docs) - Multiple selection with checkboxes 

@@ -1,8 +1,8 @@
-import { IS_SELECTED_ARG } from '../../../stories/FormFieldArgs';
-import { baseProps } from '../../../stories/lists/baseProps';
-import { Flow } from '../../layout/Flow';
+import { StoryFn } from '@storybook/react';
 
-import { Switch } from './Switch';
+import { baseProps } from '../../../stories/lists/baseProps';
+
+import { CubeSwitchProps, Switch } from './Switch';
 
 export default {
   title: 'Forms/Switch',
@@ -13,64 +13,191 @@ export default {
     },
   },
   argTypes: {
-    ...IS_SELECTED_ARG,
+    /* Content */
+    children: {
+      control: { type: 'text' },
+      description: 'The content to display as the switch label',
+    },
+    label: {
+      control: { type: 'text' },
+      description: 'External label for the switch',
+    },
+
+    /* State */
+    isSelected: {
+      control: { type: 'boolean' },
+      description: 'Whether the switch is selected (controlled)',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    defaultSelected: {
+      control: { type: 'boolean' },
+      description: 'Whether the switch is selected by default (uncontrolled)',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isDisabled: {
+      control: { type: 'boolean' },
+      description: 'Whether the switch is disabled',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isReadOnly: {
+      control: { type: 'boolean' },
+      description: 'Whether the switch can be focused but not changed',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isRequired: {
+      control: { type: 'boolean' },
+      description: 'Whether the switch must be toggled before form submission',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isLoading: {
+      control: { type: 'boolean' },
+      description: 'Show loading spinner and disable interactions',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    validationState: {
+      options: [undefined, 'valid', 'invalid'],
+      control: { type: 'radio' },
+      description:
+        'Whether the switch should display valid or invalid visual styling',
+    },
+    autoFocus: {
+      control: { type: 'boolean' },
+      description: 'Whether the element should receive focus on render',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+
+    /* Presentation */
+    size: {
+      options: ['small', 'large'],
+      control: { type: 'radio' },
+      description: 'Switch size',
+      table: {
+        defaultValue: { summary: 'large' },
+      },
+    },
+
+    /* Events */
+    onChange: {
+      action: 'change',
+      description: 'Callback fired when the switch value changes',
+      control: { type: null },
+    },
+    onFocus: {
+      action: 'focus',
+      description: 'Callback fired when the switch receives focus',
+      control: { type: null },
+    },
+    onBlur: {
+      action: 'blur',
+      description: 'Callback fired when the switch loses focus',
+      control: { type: null },
+    },
   },
 };
 
-const Template = (args) => (
-  <Flow gap="2x">
-    <Switch
-      {...args}
-      defaultSelected={false}
-      onChange={(query) => console.log('onChange event', query)}
-    />
-    <Switch
-      {...args}
-      defaultSelected={true}
-      onChange={(query) => console.log('onChange event', query)}
-    />
-  </Flow>
+const Template: StoryFn<CubeSwitchProps> = (props) => (
+  <Switch
+    {...props}
+    onChange={(isSelected) => console.log('change', isSelected)}
+  />
 );
 
 export const Default = Template.bind({});
 Default.args = {
-  children: 'Switch',
+  children: 'Switch label',
 };
 
-export const WithLabel = Template.bind({});
-WithLabel.args = {
-  label: 'Switch',
-};
-
-export const WithLabelAndTitle = Template.bind({});
-WithLabelAndTitle.args = {
-  label: 'Label',
-  children: 'Title',
+export const WithDefaultSelected = Template.bind({});
+WithDefaultSelected.args = {
+  children: 'Pre-selected switch',
+  defaultSelected: true,
 };
 
 export const Small = Template.bind({});
 Small.args = {
-  children: 'Switch',
+  children: 'Small switch',
   size: 'small',
-};
-
-export const WithoutLabel = Template.bind({});
-WithoutLabel.args = {};
-
-export const Disabled = Template.bind({});
-Disabled.args = {
-  children: 'Switch',
-  isDisabled: true,
 };
 
 export const Invalid = Template.bind({});
 Invalid.args = {
-  children: 'Switch',
+  children: 'Required switch',
   validationState: 'invalid',
+  isRequired: true,
+};
+
+export const Disabled = Template.bind({});
+Disabled.args = {
+  children: 'Disabled switch',
+  isDisabled: true,
 };
 
 export const Loading = Template.bind({});
 Loading.args = {
+  children: 'Loading switch',
+  isLoading: true,
+};
+
+// Stories showing both selected and unselected states for visual testing
+const MultiStateTemplate: StoryFn<CubeSwitchProps> = (props) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Switch
+      {...props}
+      isSelected={false}
+      onChange={(isSelected) => console.log('unselected change', isSelected)}
+    >
+      {props.children} (unselected)
+    </Switch>
+    <Switch
+      {...props}
+      isSelected={true}
+      onChange={(isSelected) => console.log('selected change', isSelected)}
+    >
+      {props.children} (selected)
+    </Switch>
+  </div>
+);
+
+export const AllStates = MultiStateTemplate.bind({});
+AllStates.args = {
   children: 'Switch',
+};
+
+export const AllStatesSmall = MultiStateTemplate.bind({});
+AllStatesSmall.args = {
+  children: 'Small switch',
+  size: 'small',
+};
+
+export const AllStatesDisabled = MultiStateTemplate.bind({});
+AllStatesDisabled.args = {
+  children: 'Disabled switch',
+  isDisabled: true,
+};
+
+export const AllStatesInvalid = MultiStateTemplate.bind({});
+AllStatesInvalid.args = {
+  children: 'Invalid switch',
+  validationState: 'invalid',
+  isRequired: true,
+};
+
+export const AllStatesLoading = MultiStateTemplate.bind({});
+AllStatesLoading.args = {
+  children: 'Loading switch',
   isLoading: true,
 };

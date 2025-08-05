@@ -29,8 +29,8 @@ const StyledTextInputBase = tasty(TextInputBase, {
 const StepperContainer = tasty({
   styles: {
     display: 'grid',
-    gridColumns: '1fr',
-    gridRows: 'minmax(1px, 1fr) minmax(1px, 1fr)',
+    gridColumns: '1sf',
+    gridRows: '1sf 1sf',
     flow: 'column',
     placeSelf: 'stretch',
   },

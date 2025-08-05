@@ -1,0 +1,242 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
+import { ComboBox } from './ComboBox';
+import * as ComboBoxStories from './ComboBox.stories';
+
+<Meta of={ComboBoxStories} />
+
+# ComboBox
+
+A combo box combines a text input with a listbox, allowing users to filter a list of options to items matching a query. It supports both selecting from predefined options and entering custom values, making it versatile for various data entry scenarios.
+
+## When to Use
+
+- Allow users to select from a large list of options with filtering capability
+- Enable custom value entry when predefined options aren't sufficient
+- Provide autocomplete functionality for form inputs
+- Offer a searchable dropdown for better user experience with extensive lists
+- Support both structured selection and free-text input in one component
+
+## Component
+
+<Story of={ComboBoxStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={ComboBoxStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/docs/tasty-base-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root wrapper element of the component.
+
+**Sub-elements:**
+- `Prefix` - Element displayed before the input (icon area)
+- `Suffix` - Element displayed after the input (trigger area)
+- `State` - Container for validation state indicators
+- `InputIcon` - Icon displayed within the input area
+- `ValidationIcon` - Icon displayed for validation state
+
+#### inputStyles
+
+Customizes the text input element specifically.
+
+#### popoverStyles
+
+Customizes the dropdown popover container.
+
+### Style Properties
+
+The ComboBox component supports all standard style properties:
+
+`display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `reset`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`, `textAlign`, `color`, `fill`, `fade`, `textTransform`, `fontWeight`, `fontStyle`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| opened | `boolean` | Whether the dropdown is open |
+| focused | `boolean` | Whether the input has focus |
+| disabled | `boolean` | Whether the combo box is disabled |
+| invalid | `boolean` | Whether the combo box has validation errors |
+| valid | `boolean` | Whether the combo box is valid |
+| loading | `boolean` | Whether the combo box is in loading state |
+| hovered | `boolean` | Whether the combo box is being hovered |
+| inside-form | `boolean` | Whether the combo box is inside a form field |
+
+## Variants
+
+### Sizes
+
+- `small` - Compact size for dense interfaces (28px height)
+- `medium` - Standard size for general interfaces (32px height, default)
+- `large` - Emphasized size for important selections (40px height)
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<ComboBox label="Select a color">
+  <ComboBox.Item key="red">Red</ComboBox.Item>
+  <ComboBox.Item key="blue">Blue</ComboBox.Item>
+  <ComboBox.Item key="green">Green</ComboBox.Item>
+</ComboBox>
+```
+
+### With Custom Values
+
+```jsx
+<ComboBox
+  label="Enter or select a technology"
+  allowsCustomValue={true}
+>
+  <ComboBox.Item key="react">React</ComboBox.Item>
+  <ComboBox.Item key="vue">Vue</ComboBox.Item>
+  <ComboBox.Item key="angular">Angular</ComboBox.Item>
+</ComboBox>
+```
+
+### With Icon
+
+```jsx
+<ComboBox
+  label="Currency"
+  icon={<IconCoin />}
+  placeholder="Search currencies..."
+>
+  <ComboBox.Item key="usd">US Dollar</ComboBox.Item>
+  <ComboBox.Item key="eur">Euro</ComboBox.Item>
+  <ComboBox.Item key="gbp">British Pound</ComboBox.Item>
+</ComboBox>
+```
+
+### Loading State
+
+```jsx
+<ComboBox
+  label="Countries"
+  loadingState="loading"
+  placeholder="Loading countries..."
+>
+  {/* Items will be populated when loading completes */}
+</ComboBox>
+```
+
+### With Validation
+
+```jsx
+<ComboBox
+  label="Required selection"
+  isRequired
+  validationState="invalid"
+  placeholder="Please select an option"
+>
+  <ComboBox.Item key="option1">Option 1</ComboBox.Item>
+  <ComboBox.Item key="option2">Option 2</ComboBox.Item>
+</ComboBox>
+```
+
+### Disabled State
+
+```jsx
+<ComboBox
+  label="Disabled combo box"
+  isDisabled
+  placeholder="Cannot be edited"
+>
+  <ComboBox.Item key="option1">Option 1</ComboBox.Item>
+</ComboBox>
+```
+
+### Small Size
+
+```jsx
+<ComboBox
+  label="Priority"
+  size="small"
+  placeholder="Select priority..."
+>
+  <ComboBox.Item key="low">Low</ComboBox.Item>
+  <ComboBox.Item key="medium">Medium</ComboBox.Item>
+  <ComboBox.Item key="high">High</ComboBox.Item>
+</ComboBox>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the combo box
+- `Arrow Down` - Opens the dropdown and moves to the first/next option
+- `Arrow Up` - Moves to the previous option
+- `Enter` - Selects the focused option and closes dropdown
+- `Escape` - Closes the dropdown without selecting
+- `Home` - Moves to the first option
+- `End` - Moves to the last option
+- `Page Up/Down` - Moves by page in long lists
+- Typing - Filters options based on input text
+
+### Screen Reader Support
+
+- Component announces as "combobox" to screen readers
+- Current selection and filtered results are announced
+- Loading and validation states are communicated
+- Option count and position are announced during navigation
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label when no visible label exists
+- `aria-labelledby` - References external label elements
+- `aria-describedby` - References additional descriptive text
+- `aria-expanded` - Indicates if dropdown is open
+- `aria-activedescendant` - References the currently focused option
+- `aria-autocomplete` - Indicates autocomplete behavior (list/both)
+- `aria-required` - Indicates if selection is required
+- `aria-invalid` - Indicates validation state
+
+## Best Practices
+
+1. **Do**: Provide clear, descriptive labels and placeholders
+   ```jsx
+   <ComboBox
+     label="Select your country"
+     placeholder="Type to search countries..."
+   >
+   ```
+
+2. **Don't**: Use combo box for small lists where Select would be simpler
+   ```jsx
+   <ComboBox label="Yes or No"> {/* Use Switch or RadioGroup instead */}
+   ```
+
+3. **Performance**: Use dynamic loading for large datasets
+4. **Filtering**: Provide meaningful filter results and handle empty states
+5. **Custom Values**: Clearly indicate when custom values are allowed
+6. **Validation**: Provide helpful error messages for validation failures
+
+## Integration with Forms
+
+This component supports all [Field properties](/docs/forms-field--docs) when used within a Form.
+
+## Suggested Improvements
+
+- Add support for multi-selection with chips/tags display
+- Implement grouping for categorized options
+- Add support for option descriptions or secondary text
+- Consider adding async loading with debounced search
+- Implement keyboard shortcuts for common actions
+
+## Related Components
+
+- [Select](/docs/forms-select--docs) - For simple selection without filtering
+- [TextInput](/docs/forms-textinput--docs) - For free-text input without options
+- [SearchInput](/docs/forms-searchinput--docs) - For search-only functionality without selection

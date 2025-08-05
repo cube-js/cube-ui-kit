@@ -31,7 +31,7 @@ import { RadioContext } from './context';
 
 export interface CubeRadioGroupProps
   extends BaseProps,
-    AriaRadioGroupProps,
+    Omit<AriaRadioGroupProps, 'errorMessage'>,
     BlockStyleProps,
     OuterStyleProps,
     FieldBaseProps {

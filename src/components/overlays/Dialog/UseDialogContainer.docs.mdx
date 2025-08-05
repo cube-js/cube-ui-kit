@@ -1,0 +1,655 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Overlays/useDialogContainer" />
+
+# useDialogContainer
+
+A generic React hook for managing dialog components programmatically. This hook provides a declarative way to control dialog state, including opening, updating, and closing dialogs, while handling all the necessary state management internally.
+
+## When to Use
+
+- When you need programmatic control over dialog display without trigger elements
+- For complex dialog flows that require external state management
+- When you want to create reusable dialog patterns across your application
+- For displaying dynamic dialogs based on application state or user actions
+- When you need to update dialog content while it's open
+- For dialogs that need to persist across component re-renders or navigation
+
+## Hook Signature
+
+```tsx
+function useDialogContainer<P, E = ComponentProps<typeof DialogContainer>>(
+  Component: ComponentType<P>,
+  defaultContainerProps?: ComponentProps<typeof DialogContainer>
+): {
+  open: (props: P, containerProps?: E) => void;
+  update: (props: P, containerProps?: E) => void;
+  close: () => void;
+  rendered: ReactElement | null;
+}
+```
+
+## Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `Component` | `ComponentType<P>` | **Required.** A React component that represents the dialog content. Must accept props of type P. |
+| `defaultContainerProps` | `ComponentProps<typeof DialogContainer>` | **Optional.** Default props to pass to the DialogContainer wrapper. |
+
+## Return Value
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `open` | `(props: P, containerProps?: E) => void` | Function to open the dialog with provided component props and optional container props. |
+| `update` | `(props: P, containerProps?: E) => void` | Function to update dialog content while it's open. |
+| `close` | `() => void` | Function to close the dialog. |
+| `rendered` | `ReactElement \| null` | **Required.** JSX element that must be included in your component tree for the dialog to work. |
+
+## Generic Type Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `P` | The props type for your dialog component |
+| `E` | The container props type (defaults to `ComponentProps<typeof DialogContainer>`) |
+
+## Examples
+
+### Basic Usage
+
+```tsx
+import { useDialogContainer, Dialog, Header, Title, Content, Paragraph, Button } from '@cube-dev/ui-kit';
+
+function MyDialog({ message, onConfirm }) {
+  return (
+    <Dialog>
+      <Header>
+        <Title>Confirmation</Title>
+      </Header>
+      <Content>
+        <Paragraph>{message}</Paragraph>
+        <Button onPress={onConfirm}>Confirm</Button>
+      </Content>
+    </Dialog>
+  );
+}
+
+function App() {
+  const dialog = useDialogContainer(MyDialog);
+
+  const handleClick = () => {
+    dialog.open({
+      message: 'Are you sure you want to continue?',
+      onConfirm: () => {
+        console.log('Confirmed!');
+        dialog.close();
+      }
+    });
+  };
+
+  return (
+    <div>
+      <Button onPress={handleClick}>Open Dialog</Button>
+      {dialog.rendered}
+    </div>
+  );
+}
+```
+
+### With Default Container Props
+
+```tsx
+import { useDialogContainer, Dialog } from '@cube-dev/ui-kit';
+
+function CustomDialog({ title, children }) {
+  return (
+    <Dialog>
+      <Header>
+        <Title>{title}</Title>
+      </Header>
+      <Content>
+        {children}
+      </Content>
+    </Dialog>
+  );
+}
+
+function App() {
+  const dialog = useDialogContainer(CustomDialog, {
+    type: 'fullscreen',
+    isDismissable: true
+  });
+
+  const openDialog = () => {
+    dialog.open({
+      title: 'Settings',
+      children: <Paragraph>Configure your preferences here.</Paragraph>
+    });
+  };
+
+  return (
+    <div>
+      <Button onPress={openDialog}>Open Settings</Button>
+      {dialog.rendered}
+    </div>
+  );
+}
+```
+
+### Dynamic Container Props
+
+```tsx
+import { useDialogContainer, Dialog } from '@cube-dev/ui-kit';
+
+function InfoDialog({ content, isUrgent }) {
+  return (
+    <Dialog>
+      <Header>
+        <Title>{isUrgent ? 'Urgent Notice' : 'Information'}</Title>
+      </Header>
+      <Content>
+        <Paragraph>{content}</Paragraph>
+      </Content>
+    </Dialog>
+  );
+}
+
+function App() {
+  const dialog = useDialogContainer(InfoDialog);
+
+  const showInfo = (content, isUrgent = false) => {
+    dialog.open(
+      { content, isUrgent },
+      {
+        type: isUrgent ? 'modal' : 'popover',
+        isDismissable: !isUrgent
+      }
+    );
+  };
+
+  return (
+    <div>
+      <Button onPress={() => showInfo('This is normal info')}>
+        Show Info
+      </Button>
+      <Button onPress={() => showInfo('This is urgent!', true)}>
+        Show Urgent
+      </Button>
+      {dialog.rendered}
+    </div>
+  );
+}
+```
+
+### Updating Dialog Content
+
+```tsx
+import { useDialogContainer, Dialog, ProgressBar } from '@cube-dev/ui-kit';
+
+function ProgressDialog({ progress, status }) {
+  return (
+    <Dialog>
+      <Header>
+        <Title>Upload Progress</Title>
+      </Header>
+      <Content>
+        <Paragraph>{status}</Paragraph>
+        <ProgressBar value={progress} />
+      </Content>
+    </Dialog>
+  );
+}
+
+function App() {
+  const dialog = useDialogContainer(ProgressDialog, {
+    isDismissable: false
+  });
+
+  const startUpload = async () => {
+    dialog.open({ progress: 0, status: 'Starting upload...' });
+
+    for (let i = 0; i <= 100; i += 10) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      dialog.update({
+        progress: i,
+        status: i === 100 ? 'Upload complete!' : `Uploading... ${i}%`
+      });
+    }
+
+    setTimeout(() => dialog.close(), 1000);
+  };
+
+  return (
+    <div>
+      <Button onPress={startUpload}>Start Upload</Button>
+      {dialog.rendered}
+    </div>
+  );
+}
+```
+
+### Form Dialog with Validation
+
+```tsx
+import { useDialogContainer, DialogForm } from '@cube-dev/ui-kit';
+
+function UserFormDialog({ onSubmit, initialData, onCancel }) {
+  return (
+    <DialogForm
+      title="User Information"
+      defaultValues={initialData}
+      onSubmit={onSubmit}
+      onDismiss={onCancel}
+      submitProps={{
+        label: 'Save User'
+      }}
+      cancelProps={{
+        label: 'Cancel'
+      }}
+    >
+      <Form.Item 
+        name="name" 
+        rules={[{ required: true, message: 'Name is required' }]}
+      >
+        <TextInput label="Name" />
+      </Form.Item>
+      <Form.Item 
+        name="email" 
+        rules={[
+          { required: true, message: 'Email is required' },
+          { type: 'email', message: 'Please enter a valid email' }
+        ]}
+      >
+        <TextInput label="Email" />
+      </Form.Item>
+    </DialogForm>
+  );
+}
+
+function App() {
+  const userDialog = useDialogContainer(UserFormDialog, {
+    isDismissable: true
+  });
+
+  const editUser = (userData) => {
+    userDialog.open({
+      initialData: userData,
+      onSubmit: async (values) => {
+        try {
+          await saveUser(values);
+          userDialog.close();
+          // Show success message
+        } catch (error) {
+          console.error('Failed to save user:', error);
+          // Handle error - form will stay open
+        }
+      },
+      onCancel: () => userDialog.close()
+    });
+  };
+
+  const addUser = () => {
+    userDialog.open({
+      initialData: {},
+      onSubmit: async (values) => {
+        try {
+          await createUser(values);
+          userDialog.close();
+        } catch (error) {
+          console.error('Failed to create user:', error);
+        }
+      },
+      onCancel: () => userDialog.close()
+    });
+  };
+
+  return (
+    <div>
+      <Button onPress={() => editUser({ name: 'John', email: 'john@example.com' })}>
+        Edit User
+      </Button>
+      <Button onPress={addUser}>
+        Add User
+      </Button>
+      {userDialog.rendered}
+    </div>
+  );
+}
+```
+
+### Multiple Dialog Types
+
+```tsx
+import { useDialogContainer, Dialog, AlertDialog } from '@cube-dev/ui-kit';
+
+function ConfirmDialog({ message, onConfirm, onCancel, danger }) {
+  return (
+    <AlertDialog
+      title="Confirm Action"
+      content={message}
+      danger={danger}
+      actions={{
+        confirm: {
+          label: 'Confirm',
+          onPress: onConfirm
+        },
+        cancel: {
+          label: 'Cancel',
+          onPress: onCancel
+        }
+      }}
+    />
+  );
+}
+
+function InfoDialog({ title, content }) {
+  return (
+    <AlertDialog
+      title={title}
+      content={content}
+      actions={{
+        confirm: {
+          label: 'OK'
+        },
+        cancel: false
+      }}
+    />
+  );
+}
+
+function App() {
+  const confirmDialog = useDialogContainer(ConfirmDialog);
+  const infoDialog = useDialogContainer(InfoDialog, { isDismissable: true });
+
+  const deleteItem = () => {
+    confirmDialog.open({
+      message: 'This action cannot be undone. Continue?',
+      danger: true,
+      onConfirm: () => {
+        // Perform deletion
+        confirmDialog.close();
+        infoDialog.open({
+          title: 'Success',
+          content: 'Item has been deleted successfully.'
+        });
+      },
+      onCancel: () => confirmDialog.close()
+    });
+  };
+
+  return (
+    <div>
+      <Button onPress={deleteItem}>Delete Item</Button>
+      {confirmDialog.rendered}
+      {infoDialog.rendered}
+    </div>
+  );
+}
+```
+
+### Error Boundary Integration
+
+```tsx
+import { useDialogContainer, Dialog } from '@cube-dev/ui-kit';
+
+function ErrorDialog({ error, onRetry, onDismiss }) {
+  return (
+    <Dialog>
+      <Header>
+        <Title>Error Occurred</Title>
+      </Header>
+      <Content>
+        <Paragraph>An error occurred: {error.message}</Paragraph>
+      </Content>
+      <Footer>
+        <Button type="primary" onPress={onRetry}>Retry</Button>
+        <Button onPress={onDismiss}>Dismiss</Button>
+      </Footer>
+    </Dialog>
+  );
+}
+
+function App() {
+  const errorDialog = useDialogContainer(ErrorDialog);
+
+  const handleError = (error, retryAction) => {
+    errorDialog.open({
+      error,
+      onRetry: () => {
+        errorDialog.close();
+        retryAction();
+      },
+      onDismiss: () => errorDialog.close()
+    });
+  };
+
+  const riskyOperation = async () => {
+    try {
+      await someApiCall();
+    } catch (error) {
+      handleError(error, riskyOperation);
+    }
+  };
+
+  return (
+    <div>
+      <Button onPress={riskyOperation}>Perform Operation</Button>
+      {errorDialog.rendered}
+    </div>
+  );
+}
+```
+
+## Important Notes
+
+### Setup Requirement
+
+The `rendered` property **must** be included in your component tree, or the hook will throw an error when `open`, `update`, or `close` functions are called.
+
+```tsx
+// ✅ Correct usage
+function App() {
+  const dialog = useDialogContainer(MyDialog);
+  
+  return (
+    <div>
+      <Button onPress={() => dialog.open({ message: 'Hello' })}>Open</Button>
+      {dialog.rendered} {/* Required! */}
+    </div>
+  );
+}
+
+// ❌ Incorrect usage - will throw error
+function App() {
+  const dialog = useDialogContainer(MyDialog);
+  
+  return (
+    <div>
+      <Button onPress={() => dialog.open({ message: 'Hello' })}>Open</Button>
+      {/* Missing dialog.rendered - will cause error */}
+    </div>
+  );
+}
+```
+
+### State Management
+
+- The hook manages all dialog state internally
+- Dialog state persists until the component using the hook unmounts
+- Multiple calls to `open` will replace the current dialog content
+- Calling `update` while dialog is closed has no effect but won't cause errors
+
+### Container Props Priority
+
+When both `defaultContainerProps` and runtime `containerProps` are provided:
+- Runtime `containerProps` override `defaultContainerProps`
+- Deep merging is performed for nested objects
+- Arrays are replaced entirely (no merging)
+
+## Best Practices
+
+1. **Always include `rendered`**: Place `{dialog.rendered}` in your component tree
+   ```tsx
+   return (
+     <div>
+       {/* Your UI */}
+       {dialog.rendered}
+     </div>
+   );
+   ```
+
+2. **Use TypeScript for type safety**: The hook automatically infers prop types from your dialog component
+   ```tsx
+   interface MyDialogProps {
+     title: string;
+     onConfirm: () => void;
+   }
+   
+   function MyDialog(props: MyDialogProps) {
+     return <Dialog>{/* ... */}</Dialog>;
+   }
+   
+   const dialog = useDialogContainer(MyDialog); // Props type is automatically inferred
+   ```
+
+3. **Handle cleanup in dialog components**: Ensure your dialog components handle their own cleanup
+   ```tsx
+   function MyDialog({ onClose, onSubmit }) {
+     const handleSubmit = async (data) => {
+       await onSubmit(data);
+       onClose(); // Close dialog after successful submission
+     };
+     
+     return <Dialog>{/* ... */}</Dialog>;
+   }
+   ```
+
+4. **Use default container props for common patterns**: Set common dialog behaviors once
+   ```tsx
+   const dialog = useDialogContainer(MyDialog, {
+     isDismissable: true,
+     type: 'modal'
+   });
+   ```
+
+5. **Separate concerns**: Keep dialog content components focused and reusable
+   ```tsx
+   // Good: Focused dialog component
+   function ConfirmDialog({ message, onConfirm }) {
+     return <Dialog>{/* Simple confirmation UI */}</Dialog>;
+   }
+   
+   // Avoid: Dialog component with complex business logic
+   function OverlyComplexDialog({ userId, permissions, settings }) {
+     // Too much business logic here
+   }
+   ```
+
+## Error Handling
+
+The hook will throw an error if you attempt to call `open`, `update`, or `close` before the `rendered` element has been included in the component tree:
+
+```
+Error: useDialogContainer: DialogContainer must be rendered. Use `rendered` property to include it in your component tree.
+```
+
+To avoid this error, always ensure `dialog.rendered` is included in your JSX before calling dialog methods.
+
+## Performance Considerations
+
+- The dialog content is only rendered when props are provided via `open` or `update`
+- Dialog state is preserved during re-renders but reset when the component unmounts
+- Use `React.memo` on dialog components if they receive complex props that change frequently
+- Consider using `useMemo` for expensive dialog prop calculations
+
+## Related Components
+
+- [DialogContainer](/components/DialogContainer) - The underlying container component
+- [Dialog](/components/Dialog) - The dialog content component
+- [DialogTrigger](/components/DialogTrigger) - Alternative for trigger-based dialogs
+- [Modal](/components/Modal) - Lower-level modal overlay component
+
+## Migration from DialogContainer
+
+If you're currently using `DialogContainer` with manual state management:
+
+```tsx
+// Before (manual state management)
+function App() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [dialogProps, setDialogProps] = useState(null);
+
+  const openDialog = (props) => {
+    setDialogProps(props);
+    setIsOpen(true);
+  };
+
+  return (
+    <div>
+      <Button onPress={() => openDialog({ message: 'Hello' })}>Open</Button>
+      <DialogContainer isOpen={isOpen} onDismiss={() => setIsOpen(false)}>
+        {dialogProps && <MyDialog {...dialogProps} />}
+      </DialogContainer>
+    </div>
+  );
+}
+
+// After (using useDialogContainer)
+function App() {
+  const dialog = useDialogContainer(MyDialog);
+
+  return (
+    <div>
+      <Button onPress={() => dialog.open({ message: 'Hello' })}>Open</Button>
+      {dialog.rendered}
+    </div>
+  );
+}
+```
+
+## TypeScript Examples
+
+### Strict Typing
+
+```tsx
+interface UserData {
+  id: string;
+  name: string;
+  email: string;
+}
+
+interface UserDialogProps {
+  user: UserData;
+  onSave: (user: UserData) => Promise<void>;
+  onCancel: () => void;
+}
+
+function UserDialog(props: UserDialogProps) {
+  return <Dialog>{/* ... */}</Dialog>;
+}
+
+const userDialog = useDialogContainer(UserDialog); // Props type automatically inferred
+
+// TypeScript will enforce correct prop types
+userDialog.open({
+  user: { id: '1', name: 'John', email: 'john@example.com' },
+  onSave: async (user) => { /* ... */ },
+  onCancel: () => userDialog.close()
+});
+```
+
+### Custom Container Props Type
+
+```tsx
+interface CustomContainerProps extends ComponentProps<typeof DialogContainer> {
+  customBehavior?: boolean;
+}
+
+function MyDialog(props: MyDialogProps) {
+  return <Dialog>{/* ... */}</Dialog>;
+}
+
+const dialog = useDialogContainer<MyDialogProps, CustomContainerProps>(
+  MyDialog,
+  { customBehavior: true }
+);
+```

@@ -34,7 +34,16 @@ const colors = {
   'note-bg': '253 245 233',
   'note-icon': '181 140 44',
   border: '227 227 233',
-  'light-border': '237 237 240',
+  // 'light-border': '237 237 240',
+  'light-border': '227 227 233', // deprecated
+};
+
+export const SIZES = {
+  XS: 24,
+  SM: 28,
+  MD: 32,
+  LG: 40,
+  XL: 48,
 };
 
 function color(name, opacity = 1) {
@@ -92,6 +101,20 @@ const TOKENS = {
   'devmodebar-height': '54px',
   'sidebar-width': '200px',
   'border-radius-base': '4px',
+
+  // button/input sizes
+  'size-xs': `${SIZES.XS}px`,
+  'size-sm': `${SIZES.SM}px`,
+  'size-md': `${SIZES.MD}px`,
+  'size-lg': `${SIZES.LG}px`,
+  'size-xl': `${SIZES.XL}px`,
+
+  // space sizes
+  'space-xs': '.5x',
+  'space-sm': '.75x',
+  'space-md': '1x',
+  'space-lg': '1.5x',
+  'space-xl': '2x',
 
   // font sizes
   'text-font-size': '14px',
@@ -228,14 +251,16 @@ const TOKENS = {
   'c1-font-size': '14px',
   'c1-line-height': '20px',
   'c1-letter-spacing': '0',
-  'c1-font-weight': '500',
+  'c1-font-weight': '600',
+  'c1-font-bold-weight': '700',
   'c1-text-transform': 'uppercase',
   'c1-icon-size': '18px',
   // c2
   'c2-font-size': '12px',
   'c2-line-height': '18px',
   'c2-letter-spacing': '0.01em',
-  'c2-font-weight': '500',
+  'c2-font-weight': '600',
+  'c2-font-bold-weight': '700',
   'c2-text-transform': 'uppercase',
   'c2-icon-size': '16px',
   // tag

@@ -19,17 +19,17 @@ const FieldElement = tasty({
     width: 'auto',
     gridColumns: {
       '': 'minmax(0, 1fr)',
-      'has-sider': '@(full-label-width, auto) minmax(0, 1fr)',
+      'has-sider': '$(full-label-width, auto) minmax(0, 1fr)',
     },
     gap: 0,
     placeItems: 'baseline stretch',
-    '@full-label-width': '(@label-width + 1x)',
+    '$full-label-width': '($label-width + 1x)',
 
     LabelArea: {
       display: 'block',
       width: {
         '': 'initial',
-        'has-sider': '@label-width',
+        'has-sider': '$label-width',
       },
       margin: {
         '': '1x bottom',
@@ -69,6 +69,16 @@ const MessageElement = tasty({
   },
 });
 
+const DescriptionElement = tasty({
+  qa: 'Field_Description',
+  styles: {
+    preset: 't4',
+    color: '#dark-03',
+    textAlign: 'left',
+    userSelect: 'none',
+  },
+});
+
 /**
  * A wrapper for form fields to provide additional decoration for inputs.
  * @internal Do not use this component directly.
@@ -92,6 +102,7 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     message,
     messageStyles,
     description,
+    errorMessage,
     Component,
     validationState,
     requiredMark = true,
@@ -135,13 +146,24 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     </Label>
   ) : null;
 
-  let descriptionComponent = description ? (
-    <div data-element="Description">
-      {wrapNodeIfPlain(description, () => (
-        <Paragraph>{description}</Paragraph>
-      ))}
-    </div>
-  ) : null;
+  // Create description component with proper styling
+  const createDescriptionComponent = () => {
+    if (!description) return null;
+
+    return (
+      <DescriptionElement data-element="Description">
+        {wrapNodeIfPlain(description, () => (
+          <span>{description}</span>
+        ))}
+      </DescriptionElement>
+    );
+  };
+
+  // Description positioning based on label position
+  const descriptionForLabel =
+    labelPosition === 'side' ? createDescriptionComponent() : null;
+  const descriptionForInput =
+    labelPosition === 'top' ? createDescriptionComponent() : null;
 
   const mods = {
     'has-sider': labelPosition === 'side',
@@ -149,6 +171,10 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
     invalid: validationState === 'invalid',
     valid: validationState === 'valid',
   };
+
+  // Determine which message to display (errorMessage takes precedence, then message for backward compatibility)
+  const displayMessage = errorMessage || message;
+  const isErrorMessage = !!errorMessage;
 
   return (
     <>
@@ -160,21 +186,30 @@ export const FieldWrapper = forwardRef(function FieldWrapper(
         styles={styles}
         {...fieldProps}
       >
-        {labelComponent || descriptionComponent ? (
+        {labelComponent || descriptionForLabel ? (
           <div data-element="LabelArea">
             {labelComponent}
-            {descriptionComponent}
+            {descriptionForLabel}
           </div>
         ) : null}
         <div data-element="InputArea">
           {Component}
-          {message && !isDisabled && (
+          {descriptionForInput}
+          {displayMessage && !isDisabled && (
             <MessageElement
-              mods={mods}
+              mods={{
+                ...mods,
+                // Force invalid state for errorMessage regardless of validationState
+                invalid: isErrorMessage || validationState === 'invalid',
+              }}
               styles={messageStyles}
-              role={validationState === 'invalid' ? 'alert' : undefined}
+              role={
+                isErrorMessage || validationState === 'invalid'
+                  ? 'alert'
+                  : undefined
+              }
             >
-              {message}
+              {displayMessage}
             </MessageElement>
           )}
         </div>

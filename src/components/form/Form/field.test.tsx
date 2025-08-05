@@ -289,7 +289,7 @@ describe('Legacy <Field />', () => {
     expect(input).toHaveValue('Hello, world!');
   });
 
-  it('should set to new default value after its change and form reset', () => {
+  it('should set to new default value after its change and form reset', async () => {
     const TestForm = ({ defaultValues, forceReset = false }) => {
       const [form] = Form.useForm();
 
@@ -297,7 +297,7 @@ describe('Legacy <Field />', () => {
         if (forceReset) {
           form.resetFields();
         }
-      }, []);
+      }, [form, forceReset]);
 
       return (
         <Root>
@@ -327,13 +327,69 @@ describe('Legacy <Field />', () => {
     // Re-render with two inputs and updated default values
     rerender(
       <TestForm
-        defaultValues={{ test: 'Goodbye, world!', forceReset: true }}
+        defaultValues={{ test: 'Goodbye, world!' }}
+        forceReset={true}
       />,
     );
 
-    waitFor(() => {
+    await waitFor(() => {
       // Check that default value is reset
       expect(input).toHaveValue('Goodbye, world!');
+    });
+  });
+
+  it('should display custom errorMessage when provided', async () => {
+    const customErrorMessage = 'Custom error message';
+
+    const { getByRole, getByText, formInstance } = renderWithForm(
+      <TextInput
+        name="test"
+        label="Test Input"
+        errorMessage={customErrorMessage}
+        rules={[
+          { required: true, message: 'Field is required' },
+          { min: 5, message: 'Must be at least 5 characters' },
+        ]}
+      />,
+    );
+
+    const input = getByRole('textbox');
+
+    // Enter a short value to trigger validation errors
+    await act(async () => {
+      await userEvent.type(input, 'ab');
+      await userEvent.tab(); // Trigger onBlur validation
+    });
+
+    // Should display the custom error message instead of validation errors
+    await waitFor(() => {
+      expect(getByText(customErrorMessage)).toBeInTheDocument();
+    });
+  });
+
+  it('should display first validation error when errorMessage is not provided', async () => {
+    const { getByRole, getByText, formInstance } = renderWithForm(
+      <TextInput
+        name="test"
+        label="Test Input"
+        rules={[
+          { required: true, message: 'Field is required' },
+          { min: 5, message: 'Must be at least 5 characters' },
+        ]}
+      />,
+    );
+
+    const input = getByRole('textbox');
+
+    // Enter a short value to trigger validation errors
+    await act(async () => {
+      await userEvent.type(input, 'ab');
+      await userEvent.tab(); // Trigger onBlur validation
+    });
+
+    // Should display the first validation error
+    await waitFor(() => {
+      expect(getByText('Must be at least 5 characters')).toBeInTheDocument();
     });
   });
 });

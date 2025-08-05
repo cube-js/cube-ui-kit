@@ -1,10 +1,11 @@
 import { AriaLabelingProps, CollectionBase, DOMRef } from '@react-types/shared';
-import {
+import React, {
   cloneElement,
   forwardRef,
   ReactElement,
   ReactNode,
   RefObject,
+  useEffect,
   useMemo,
   useRef,
 } from 'react';
@@ -16,15 +17,16 @@ import {
   useButton,
   useHover,
   useListBox,
+  useListBoxSection,
   useOption,
   useOverlay,
   useOverlayPosition,
   useSelect,
 } from 'react-aria';
-import { Item, useSelectState } from 'react-stately';
+import { Section as BaseSection, Item, useSelectState } from 'react-stately';
 import styled from 'styled-components';
 
-import { DownIcon, LoadingIcon } from '../../../icons/index';
+import { DirectionIcon, DownIcon, LoadingIcon } from '../../../icons/index';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared/index';
 import {
@@ -40,8 +42,10 @@ import {
   Styles,
   tasty,
 } from '../../../tasty/index';
+import { generateRandomId } from '../../../utils/random';
 import { mergeProps, useCombinedRefs } from '../../../utils/react/index';
 import { useFocus } from '../../../utils/react/interactions';
+import { useEventBus } from '../../../utils/react/useEventBus';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
 import {
   DEFAULT_BUTTON_STYLES,
@@ -58,11 +62,16 @@ import {
   SPECIAL_PRIMARY_STYLES,
   SPECIAL_SECONDARY_STYLES,
 } from '../../actions/index';
+import {
+  StyledDivider as ListDivider,
+  StyledSectionHeading as ListSectionHeading,
+  StyledSection as ListSectionWrapper,
+} from '../../actions/Menu/styled';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
-import { DEFAULT_INPUT_STYLES, INPUT_WRAPPER_STYLES } from '../index';
+import { INPUT_WRAPPER_STYLES } from '../index';
 
 const SelectWrapperElement = tasty({
   styles: {
@@ -79,45 +88,6 @@ const SelectWrapperElement = tasty({
       focused: '#dark.85',
       invalid: '#danger-text',
       disabled: '#dark.30',
-    },
-
-    Value: {
-      ...DEFAULT_INPUT_STYLES,
-      preset: {
-        '': 't3',
-        '[data-type="primary"]': 't3m',
-      },
-      color: 'inherit',
-      opacity: {
-        '': 1,
-        placeholder: '.6',
-      },
-      textAlign: 'left',
-      fill: '#clear',
-      textOverflow: 'ellipsis',
-      overflow: {
-        '': 'initial',
-        ellipsis: 'hidden',
-      },
-    },
-
-    CaretIcon: {
-      display: 'grid',
-      placeItems: 'center',
-      width: {
-        '': '4x',
-        '[data-size="small"]': '3x',
-      },
-      cursor: 'pointer',
-      fontSize: 'inherit',
-    },
-
-    ButtonIcon: {
-      display: 'grid',
-      placeItems: 'center',
-      width: 'min 4x',
-      color: 'inherit',
-      fontSize: '@icon-size',
     },
   },
 });
@@ -153,8 +123,67 @@ const SelectElement = tasty({
   styles: {
     ...INPUT_WRAPPER_STYLES,
     ...DEFAULT_BUTTON_STYLES,
-    padding: 0,
+    backgroundClip: 'initial',
     gap: 0,
+
+    Prefix: {
+      display: 'flex',
+      placeContent: 'center start',
+      placeItems: 'center',
+      placeSelf: 'center start',
+      flexShrink: 0,
+    },
+
+    Suffix: {
+      display: 'flex',
+      placeContent: 'center start',
+      placeItems: 'center',
+      placeSelf: 'center end',
+      flexShrink: 0,
+    },
+
+    ButtonIcon: {
+      display: 'grid',
+      placeItems: 'center',
+      color: 'inherit',
+      fontSize: '$icon-size',
+    },
+
+    Value: {
+      display: 'block',
+      width: 'max 100%',
+      placeItems: 'center stretch',
+      preset: {
+        '': 't3',
+        '[data-type="primary"]': 't3m',
+      },
+      padding: {
+        '': 0,
+        prefix: '.5x left',
+        suffix: '.5x right',
+        'prefix & suffix': '.5x left right',
+      },
+      color: 'inherit',
+      opacity: {
+        '': 1,
+        placeholder: '.6',
+      },
+      textAlign: 'left',
+      fill: '#clear',
+      textOverflow: 'ellipsis',
+      overflow: 'hidden',
+      flexGrow: 1,
+    },
+
+    '& [data-element="Prefix"] [data-element="ButtonIcon"]': {
+      marginLeft: -4,
+      placeSelf: 'center start',
+    },
+
+    '& [data-element="Suffix"] [data-element="ButtonIcon"]': {
+      marginRight: -4,
+      placeSelf: 'center end',
+    },
   },
   variants: {
     // Default theme
@@ -175,19 +204,32 @@ const SelectElement = tasty({
   },
 });
 
-const ListBoxElement = tasty({
+export const ListBoxElement = tasty({
   as: 'ul',
   styles: {
     display: 'flex',
-    gap: '.5x',
+    gap: '1bw',
     flow: 'column',
     margin: '0',
-    padding: '.5x',
+    padding: {
+      '': '.5x',
+      section: 0,
+    },
     listStyle: 'none',
-    radius: '1cr',
+    radius: {
+      '': '1cr',
+      section: '0',
+    },
+    border: {
+      '': true,
+      section: false,
+    },
     fill: '#white',
-    shadow: '0px 4px 16px #shadow',
-    height: 'initial 30x',
+    shadow: {
+      '': '0px 4px 16px #shadow',
+      section: false,
+    },
+    height: 'initial max-content (50vh - $size-md)',
     overflow: 'clip auto',
     scrollbar: 'styled',
   },
@@ -196,31 +238,61 @@ const ListBoxElement = tasty({
 const OptionElement = tasty({
   as: 'li',
   styles: {
-    display: 'block',
-    padding: '(1x - 1px) (1.5x - 1px)',
-    cursor: 'pointer',
-    radius: true,
-    fill: {
-      '': '#dark.0',
-      'pressed | selected': '#purple.10',
-      'hovered | focused': '#dark.04',
-      disabled: '#dark.0',
+    display: 'flex',
+    placeContent: 'start center',
+    placeItems: 'start center',
+    flow: 'column',
+    gap: '0',
+    padding: '.5x 1x',
+    cursor: {
+      '': 'default',
+      disabled: 'not-allowed',
     },
+    radius: true,
+    boxSizing: 'border-box',
     color: {
       '': '#dark-02',
-      'hovered | focused': '#dark-02',
-      'pressed | selected': '#purple',
-      disabled: '#dark.3',
+      selected: '#dark',
+      disabled: '#dark-04',
+    },
+    fill: {
+      '': '#clear',
+      focused: '#dark.03',
+      selected: '#dark.09',
+      'selected & focused': '#dark.12',
+      pressed: '#dark.09',
+      disabled: '#clear',
     },
     preset: 't3',
     transition: 'theme',
+    width: 'max 100%',
+    height: {
+      '': 'min $size-md',
+      '[data-size="large"]': 'min $size-lg',
+    },
+
+    Label: {
+      preset: 't3',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      width: 'max 100%',
+    },
+
+    Description: {
+      preset: 't4',
+      color: '#dark-03',
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+      textOverflow: 'ellipsis',
+      width: 'max 100%',
+    },
   },
 });
 
 const OverlayElement = tasty({
   styles: {
     position: 'absolute',
-    width: 'min @overlay-min-width',
+    width: 'min $overlay-min-width',
   },
 });
 const StyledOverlayElement = styled(OverlayElement)`
@@ -237,7 +309,7 @@ export interface CubeSelectBaseProps<T>
     ColorStyleProps,
     FieldBaseProps,
     CollectionBase<T>,
-    AriaSelectProps<T> {
+    Omit<AriaSelectProps<T>, 'errorMessage'> {
   icon?: ReactElement;
   prefix?: ReactNode;
   suffix?: ReactNode;
@@ -246,11 +318,17 @@ export interface CubeSelectBaseProps<T>
   loadingIndicator?: ReactNode;
   overlayOffset?: number;
   hideTrigger?: boolean;
+  /**
+   *  @deprecated Use `triggerStyles` instead
+   */
   inputStyles?: Styles;
   optionStyles?: Styles;
   triggerStyles?: Styles;
   listBoxStyles?: Styles;
   overlayStyles?: Styles;
+  /**
+   *  @deprecated Use `styles` instead
+   */
   wrapperStyles?: Styles;
   direction?: 'top' | 'bottom';
   shouldFlip?: boolean;
@@ -264,8 +342,7 @@ export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
   popoverRef?: RefObject<HTMLInputElement>;
   /** The ref for the list box. */
   listBoxRef?: RefObject<HTMLElement>;
-  size?: 'small' | 'default' | 'large' | string;
-  ellipsis?: boolean;
+  size?: 'small' | 'medium' | 'large' | (string & {});
   placeholder?: string;
 }
 
@@ -305,6 +382,7 @@ function Select<T extends object>(
     loadingIndicator,
     overlayOffset = 8,
     inputStyles,
+    triggerStyles,
     optionStyles,
     wrapperStyles,
     listBoxStyles,
@@ -316,16 +394,40 @@ function Select<T extends object>(
     shouldFlip = true,
     placeholder,
     tooltip,
-    size,
+    size = 'medium',
     styles,
     type = 'outline',
     theme = 'default',
     labelSuffix,
-    ellipsis,
     suffixPosition = 'before',
     ...otherProps
   } = props;
   let state = useSelectState(props);
+
+  // Generate a unique ID for this select instance
+  const selectId = useMemo(() => generateRandomId(), []);
+
+  // Get event bus for menu synchronization
+  const { emit, on } = useEventBus();
+
+  // Listen for other menus opening and close this one if needed
+  useEffect(() => {
+    const unsubscribe = on('menu:open', (data: { menuId: string }) => {
+      // If another menu is opening and this select is open, close this one
+      if (data.menuId !== selectId && state.isOpen) {
+        state.close();
+      }
+    });
+
+    return unsubscribe;
+  }, [on, selectId, state]);
+
+  // Emit event when this select opens
+  useEffect(() => {
+    if (state.isOpen) {
+      emit('menu:open', { menuId: selectId });
+    }
+  }, [state.isOpen, emit, selectId]);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
@@ -383,7 +485,6 @@ function Select<T extends object>(
 
   const modifiers = useMemo(
     () => ({
-      ellipsis,
       invalid: isInvalid,
       valid: validationState === 'valid',
       disabled: isDisabled,
@@ -395,7 +496,6 @@ function Select<T extends object>(
       suffix: true,
     }),
     [
-      ellipsis,
       validationState,
       isDisabled,
       isLoading,
@@ -410,7 +510,7 @@ function Select<T extends object>(
     <SelectWrapperElement
       qa={qa || 'Select'}
       mods={modifiers}
-      styles={wrapperStyles}
+      styles={{ ...wrapperStyles, ...styles }}
       data-size={size}
       data-type={type}
       data-theme={theme}
@@ -424,7 +524,8 @@ function Select<T extends object>(
       <SelectElement
         {...mergeProps(buttonProps, hoverProps, focusProps)}
         ref={triggerRef}
-        styles={inputStyles}
+        data-menu-trigger
+        styles={{ ...inputStyles, ...triggerStyles }}
         variant={`${theme}.${type}` as VariantType}
         data-theme={theme}
         data-size={size}
@@ -442,8 +543,8 @@ function Select<T extends object>(
           {validationState && !isLoading ? validation : null}
           {isLoading && <LoadingIcon />}
           {suffixPosition === 'after' ? suffix : null}
-          <div data-element="CaretIcon">
-            <DownIcon />
+          <div data-element="ButtonIcon">
+            <DirectionIcon to={state.isOpen ? 'up' : 'down'} />
           </div>
         </div>
       </SelectElement>
@@ -459,6 +560,7 @@ function Select<T extends object>(
           overlayStyles={overlayStyles}
           optionStyles={optionStyles}
           minWidth={triggerWidth}
+          triggerRef={triggerRef}
         />
       </OverlayWrapper>
     </SelectWrapperElement>
@@ -488,8 +590,13 @@ export function ListBoxPopup({
   shouldUseVirtualFocus = false,
   placement,
   minWidth,
+  size = 'small',
+  triggerRef,
   ...otherProps
 }) {
+  // For trigger+popover components, map 'small' size to 'medium' for list items
+  // while preserving 'medium' and 'large' sizes
+  const listItemSize = size === 'small' ? 'medium' : size;
   // Get props for the listbox
   let { listBoxProps } = useListBox(
     {
@@ -509,6 +616,15 @@ export function ListBoxPopup({
       shouldCloseOnBlur: true,
       isOpen: state.isOpen,
       isDismissable: true,
+      shouldCloseOnInteractOutside: (el) => {
+        const menuTriggerEl = el.closest('[data-menu-trigger]');
+        // If no menu trigger was clicked, allow closing
+        if (!menuTriggerEl) return true;
+        // If the same trigger that opened this select was clicked, allow closing
+        if (menuTriggerEl === triggerRef?.current) return true;
+        // Otherwise, don't close (let event mechanism handle it)
+        return false;
+      },
     },
     popoverRef,
   );
@@ -531,34 +647,79 @@ export function ListBoxPopup({
     >
       <FocusScope restoreFocus>
         <DismissButton onDismiss={() => state.close()} />
-        <ListBoxElement
-          styles={listBoxStyles}
-          {...listBoxProps}
-          ref={listBoxRef}
-        >
-          {Array.from(state.collection).map((item: any) => (
-            <Option
-              key={item.key}
-              item={item}
-              state={state}
-              styles={optionStyles}
-              shouldUseVirtualFocus={shouldUseVirtualFocus}
-            />
-          ))}
-        </ListBoxElement>
+        {(() => {
+          const hasSections = Array.from(state.collection).some(
+            (i: any) => i.type === 'section',
+          );
+
+          const renderedItems: React.ReactNode[] = [];
+          let isFirstSection = true;
+
+          for (const item of state.collection) {
+            if (item.type === 'section') {
+              if (!isFirstSection) {
+                renderedItems.push(
+                  <ListDivider
+                    key={`divider-${String(item.key)}`}
+                    as="li"
+                    role="separator"
+                    aria-orientation="horizontal"
+                  />,
+                );
+              }
+
+              renderedItems.push(
+                <SelectSection
+                  key={item.key}
+                  item={item}
+                  state={state}
+                  optionStyles={optionStyles}
+                  headingStyles={{ padding: '.5x 1.5x' }}
+                  sectionStyles={undefined}
+                  shouldUseVirtualFocus={shouldUseVirtualFocus}
+                  size={listItemSize}
+                />,
+              );
+
+              isFirstSection = false;
+            } else {
+              renderedItems.push(
+                <Option
+                  key={item.key}
+                  item={item}
+                  state={state}
+                  styles={optionStyles}
+                  shouldUseVirtualFocus={shouldUseVirtualFocus}
+                  size={listItemSize}
+                />,
+              );
+            }
+          }
+
+          return (
+            <ListBoxElement
+              styles={listBoxStyles}
+              {...listBoxProps}
+              ref={listBoxRef}
+              mods={{ sections: hasSections }}
+            >
+              {renderedItems}
+            </ListBoxElement>
+          );
+        })()}
         <DismissButton onDismiss={() => state.close()} />
       </FocusScope>
     </StyledOverlayElement>
   );
 }
 
-function Option({ item, state, styles, shouldUseVirtualFocus }) {
+function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
   let ref = useRef<HTMLDivElement>(null);
   let isDisabled = state.disabledKeys.has(item.key);
   let isSelected = state.selectionManager.isSelected(item.key);
   let isVirtualFocused = state.selectionManager.focusedKey === item.key;
 
-  let { optionProps } = useOption(
+  let { optionProps, isPressed } = useOption(
     {
       key: item.key,
       isDisabled,
@@ -575,21 +736,78 @@ function Option({ item, state, styles, shouldUseVirtualFocus }) {
   // style to the focused option
   let { isFocused, focusProps } = useFocus({ isDisabled });
 
+  const description = (item as any)?.props?.description;
+
   return (
     <OptionElement
       {...mergeProps(optionProps, focusProps)}
       ref={ref}
-      key={item.key}
       mods={{
         selected: isSelected,
         focused: shouldUseVirtualFocus ? isVirtualFocused : isFocused,
         disabled: isDisabled,
+        pressed: isPressed,
       }}
       data-theme={isSelected ? 'special' : undefined}
+      data-size={size}
       styles={styles}
     >
-      {item.rendered}
+      <div data-element="Label">{item.rendered}</div>
+      {description ? <div data-element="Description">{description}</div> : null}
     </OptionElement>
+  );
+}
+
+interface SelectSectionProps<T> {
+  item: any; // react-stately Node<T>
+  state: any; // TreeState<T>
+  optionStyles?: Styles;
+  headingStyles?: Styles;
+  sectionStyles?: Styles;
+  shouldUseVirtualFocus?: boolean;
+  size?: string;
+}
+
+function SelectSection<T>(props: SelectSectionProps<T>) {
+  const {
+    item,
+    state,
+    optionStyles,
+    headingStyles,
+    sectionStyles,
+    shouldUseVirtualFocus,
+    size,
+  } = props;
+
+  const heading = item.rendered;
+
+  const { itemProps, headingProps, groupProps } = useListBoxSection({
+    heading,
+    'aria-label': item['aria-label'],
+  });
+
+  return (
+    <ListSectionWrapper {...itemProps} styles={sectionStyles}>
+      {heading && (
+        <ListSectionHeading {...headingProps} styles={headingStyles}>
+          {heading}
+        </ListSectionHeading>
+      )}
+      <ListBoxElement {...groupProps} mods={{ section: true }}>
+        {[...item.childNodes]
+          .filter((node: any) => state.collection.getItem(node.key))
+          .map((node: any) => (
+            <Option
+              key={node.key}
+              item={node}
+              state={state}
+              styles={optionStyles}
+              shouldUseVirtualFocus={shouldUseVirtualFocus}
+              size={size}
+            />
+          ))}
+      </ListBoxElement>
+    </ListSectionWrapper>
   );
 }
 
@@ -597,11 +815,24 @@ const _Select = forwardRef(Select);
 
 (_Select as any).cubeInputType = 'Select';
 
+type SectionComponent = typeof BaseSection;
+
+const SelectSectionComponent = Object.assign(BaseSection, {
+  displayName: 'Section',
+}) as SectionComponent;
+
 const __Select = Object.assign(
   _Select as typeof _Select & {
     Item: typeof Item;
+    Section: typeof SelectSectionComponent;
   },
-  { Item },
+  {
+    Item: Item as unknown as (props: {
+      description?: ReactNode;
+      [key: string]: any;
+    }) => ReactElement,
+    Section: SelectSectionComponent,
+  },
 );
 
 __Select.displayName = 'Select';

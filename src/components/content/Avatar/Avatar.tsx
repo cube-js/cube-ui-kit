@@ -18,10 +18,10 @@ const DEFAULT_STYLES = {
   color: '#white',
   radius: 'round',
   placeContent: 'center',
-  width: '@avatar-size @avatar-size @avatar-size',
-  height: '@avatar-size @avatar-size @avatar-size',
-  fontSize: 'calc(@avatar-size / 2)',
-  lineHeight: 'calc(@avatar-size / 2)',
+  width: '$avatar-size $avatar-size $avatar-size',
+  height: '$avatar-size $avatar-size $avatar-size',
+  fontSize: 'calc($avatar-size / 2)',
+  lineHeight: 'calc($avatar-size / 2)',
   fontWeight: 500,
 };
 

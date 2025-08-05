@@ -1,0 +1,327 @@
+import { Meta, ArgTypes } from '@storybook/blocks';
+
+import { CubeFormInstance } from './use-form';
+
+<Meta title="Forms/FormInstance" />
+
+# FormInstance
+
+The `CubeFormInstance` is the core form management class that provides programmatic control over form state, validation, and data handling. It serves as the central API for interacting with form fields, managing validation states, and handling form submission workflows.
+
+## Creation
+
+Form instances are typically created using the `useForm` hook:
+
+```tsx
+import { Form } from '@cube-dev/ui-kit';
+
+function MyComponent() {
+  const [form] = Form.useForm();
+  
+  return <Form form={form}>{/* form fields */}</Form>;
+}
+```
+
+Alternatively, you can create an instance directly:
+
+```tsx
+import { CubeFormInstance } from '@cube-dev/ui-kit';
+
+const formInstance = new CubeFormInstance();
+```
+
+## Field Management
+
+### Field Values
+
+Access and modify individual field values:
+
+```tsx
+// Get a field value
+const email = form.getFieldValue('email');
+
+// Set a field value
+form.setFieldValue('email', 'user@example.com');
+
+// Get all field values (flat structure)
+const allValues = form.getFieldsValue();
+
+// Get form data (respects dot notation for nested objects)
+const formData = form.getFormData();
+```
+
+### Batch Operations
+
+Update multiple fields at once:
+
+```tsx
+// Set multiple field values
+form.setFieldsValue({
+  email: 'user@example.com',
+  name: 'John Doe',
+  'profile.age': 25
+});
+
+// Reset specific fields to default values
+form.resetFields(['email', 'name']);
+
+// Reset all fields
+form.resetFields();
+```
+
+## Validation
+
+### Individual Field Validation
+
+```tsx
+// Validate a single field
+try {
+  await form.validateField('email');
+  console.log('Field is valid');
+} catch (error) {
+  console.log('Validation failed:', error);
+}
+
+// Check validation state
+const isValid = form.isFieldValid('email');
+const isInvalid = form.isFieldInvalid('email');
+const errors = form.getFieldError('email');
+```
+
+### Form-wide Validation
+
+```tsx
+// Validate all fields
+try {
+  const validData = await form.validateFields();
+  console.log('All fields valid:', validData);
+} catch (errors) {
+  console.log('Validation errors:', errors);
+}
+
+// Check overall form state
+const allValid = form.isValid;
+const hasErrors = form.isInvalid;
+```
+
+### Manual Error Handling
+
+```tsx
+// Set custom error for a field
+form.setFieldError('email', 'This email is already taken');
+
+// Clear validation errors
+form.resetFieldsValidation(['email']);
+```
+
+## Form State
+
+### Touch State
+
+Track user interaction with fields:
+
+```tsx
+// Check if field was touched
+const wasTouched = form.isFieldTouched('email');
+
+// Check if any field was touched
+const formTouched = form.isTouched;
+```
+
+### Dirty State
+
+Detect changes from initial values:
+
+```tsx
+// Check if form has unsaved changes
+const hasChanges = form.isDirty;
+```
+
+### Initial Values
+
+Manage default form state:
+
+```tsx
+// Set initial values during setup
+form.setInitialFieldsValue({
+  email: 'default@example.com',
+  name: 'Default Name'
+});
+
+// Update initial values (useful for edit forms)
+form.updateInitialFieldsValue({
+  'profile.age': 30
+});
+```
+
+## Submission
+
+### Basic Submission
+
+```tsx
+// Submit the form (calls the onSubmit handler)
+await form.submit();
+
+// Check submission state
+const isSubmitting = form.isSubmitting;
+
+// Control submission state manually
+form.setSubmitting(true);
+```
+
+### Submission Errors
+
+```tsx
+// Access submission errors
+const submitError = form.submitError;
+```
+
+## Advanced Usage
+
+### Dot Notation Support
+
+The form instance supports dot notation for nested object structures:
+
+```tsx
+// Set nested value
+form.setFieldValue('user.profile.name', 'John');
+
+// This creates the structure:
+// {
+//   user: {
+//     profile: {
+//       name: 'John'
+//     }
+//   }
+// }
+```
+
+### Field Instance Access
+
+Access the internal field data structure:
+
+```tsx
+const fieldInstance = form.getFieldInstance('email');
+// Returns: {
+//   name: 'email',
+//   value: '...',
+//   errors: [...],
+//   touched: boolean,
+//   validating: boolean,
+//   status: 'valid' | 'invalid' | undefined
+// }
+```
+
+## Event Handlers
+
+Form instances support event callbacks:
+
+```tsx
+const [form] = Form.useForm(undefined, undefined, {
+  onSubmit: async (data) => {
+    // Handle form submission
+    await apiCall(data);
+  },
+  onValuesChange: (data) => {
+    // Handle value changes
+    console.log('Form data changed:', data);
+  }
+});
+```
+
+## API Reference
+
+<ArgTypes of={CubeFormInstance} />
+
+### Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `isSubmitting` | `boolean` | Whether the form is currently being submitted |
+| `submitError` | `unknown` | Error from the last submission attempt |
+| `isTouched` | `boolean` | Whether any field has been interacted with |
+| `isDirty` | `boolean` | Whether any field value differs from initial values |
+| `isValid` | `boolean` | Whether all fields are validated and valid |
+| `isInvalid` | `boolean` | Whether any field is validated and invalid |
+
+### Methods
+
+#### Field Value Management
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `getFieldValue` | `<Name>(name: Name) => T[Name]` | Get the value of a specific field |
+| `setFieldValue` | `<Name>(name: Name, value: T[Name], isTouched?, skipRender?) => void` | Set the value of a specific field |
+| `getFieldsValue` | `() => PartialString<T>` | Get all field values as a flat object |
+| `setFieldsValue` | `(newData: PartialString<T>, touched?, skipRender?) => void` | Set multiple field values |
+| `getFormData` | `() => T` | Get form data with dot notation converted to nested objects |
+
+#### Initial Values
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `setInitialFieldsValue` | `(values: PartialString<T>) => void` | Set initial values for fields |
+| `updateInitialFieldsValue` | `(values: FieldTypes) => void` | Update initial values (merge with existing) |
+| `resetFields` | `(names?: string[], skipRender?) => void` | Reset fields to initial values |
+
+#### Validation
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `validateField` | `<Name>(name: Name) => Promise<any>` | Validate a single field |
+| `validateFields` | `<Names>(names?: Names) => Promise<any>` | Validate multiple or all fields |
+| `isFieldValid` | `<Name>(name: Name) => boolean` | Check if a field is valid |
+| `isFieldInvalid` | `<Name>(name: Name) => boolean` | Check if a field is invalid |
+| `getFieldError` | `<Name>(name: Name) => ReactNode[]` | Get validation errors for a field |
+| `setFieldError` | `(name: string, error: ReactNode, skipRender?) => void` | Set a custom error for a field |
+| `resetFieldsValidation` | `(names?: string[], skipRender?) => void` | Clear validation errors |
+
+#### State Checking
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `isFieldTouched` | `<Name>(name: Name) => boolean` | Check if a field has been interacted with |
+| `getFieldInstance` | `<Name>(name: Name) => TFormData[Name]` | Get the internal field instance |
+
+#### Submission
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `submit` | `() => Promise<void>` | Submit the form |
+| `setSubmitting` | `(isSubmitting: boolean) => void` | Set the submission state |
+
+## Type Definitions
+
+```tsx
+type FieldTypes = {
+  [key: string]: any;
+};
+
+type CubeFormData<T extends FieldTypes> = {
+  [K in keyof T & string]?: CubeFieldData<K, T[K]>;
+};
+
+type CubeFieldData<Name extends string, Value> = {
+  readonly name: Name;
+  errors: ReactNode[];
+  value?: Value;
+  touched?: boolean;
+  rules?: any[];
+  validating?: boolean;
+  validationId?: number;
+  status?: 'valid' | 'invalid';
+};
+```
+
+## Best Practices
+
+1. **Always use the `useForm` hook** in React components rather than creating instances manually
+2. **Handle async validation errors** appropriately using try-catch blocks
+3. **Set initial values early** in the component lifecycle to avoid field state inconsistencies
+4. **Use dot notation** for nested object structures instead of managing complex object hierarchies manually
+5. **Check validation state** before allowing form submission in complex workflows
+6. **Reset fields appropriately** when switching between different data sets (e.g., edit vs. create modes)
+
+## Integration with Forms
+
+Form instances are designed to work seamlessly with the `Form` component and field components. The instance automatically manages field registration, validation triggers, and re-rendering optimization.

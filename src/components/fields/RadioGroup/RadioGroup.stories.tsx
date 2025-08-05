@@ -15,17 +15,91 @@ export default {
     },
   },
   argTypes: {
-    ...TEXT_VALUE_ARG,
+    /* Content */
+    children: {
+      control: { type: null },
+      description: 'Radio elements that define the available options',
+    },
+    label: {
+      control: { type: 'text' },
+      description: 'Label for the radio group',
+    },
+    description: {
+      control: { type: 'text' },
+      description: 'Additional descriptive text for the group',
+    },
+
+    /* Value */
+    value: {
+      control: { type: 'text' },
+      description: 'The currently selected value (controlled)',
+    },
+    defaultValue: {
+      control: { type: 'text' },
+      description: 'The default selected value (uncontrolled)',
+    },
+
+    /* Presentation */
     orientation: {
-      defaultValue: undefined,
-      description: 'Orientation of the group',
-      control: {
-        type: 'radio',
-        options: [undefined, 'vertical', 'horizontal'],
-      },
+      options: [undefined, 'vertical', 'horizontal'],
+      control: { type: 'radio' },
+      description: 'Orientation of the radio group',
       table: {
-        type: { summary: 'boolean' },
+        defaultValue: { summary: 'vertical' },
       },
+    },
+    isSolid: {
+      control: { type: 'boolean' },
+      description: 'Whether to use solid button styling',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+
+    /* State */
+    isDisabled: {
+      control: { type: 'boolean' },
+      description: 'Whether the entire radio group is disabled',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isReadOnly: {
+      control: { type: 'boolean' },
+      description: 'Whether the radio group can be focused but not changed',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isRequired: {
+      control: { type: 'boolean' },
+      description: 'Whether selection is required before form submission',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    validationState: {
+      options: [undefined, 'valid', 'invalid'],
+      control: { type: 'radio' },
+      description:
+        'Whether the radio group should display valid or invalid visual styling',
+    },
+
+    /* Events */
+    onChange: {
+      action: 'change',
+      description: 'Callback fired when the selected value changes',
+      control: { type: null },
+    },
+    onBlur: {
+      action: 'blur',
+      description: 'Callback fired when the radio group loses focus',
+      control: { type: null },
+    },
+    onFocus: {
+      action: 'focus',
+      description: 'Callback fired when the radio group receives focus',
+      control: { type: null },
     },
   },
 };

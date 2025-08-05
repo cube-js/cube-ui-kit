@@ -27,6 +27,7 @@ const fieldWrapperPropsKeys = createFieldWrapperPropsKeys([
   'necessityIndicator',
   'message',
   'messageStyles',
+  'errorMessage',
   'Component',
 ]);
 

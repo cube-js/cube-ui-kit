@@ -23,7 +23,7 @@ export function createStyle(
       if (styleValue == null || styleValue === false) return;
 
       const finalCssStyle =
-        cssStyle || toSnakeCase(styleName).replace(/^@/, '--');
+        cssStyle || toSnakeCase(styleName).replace(/^[@$]/, '--');
 
       // convert non-string values
       if (converter && typeof styleValue !== 'string') {

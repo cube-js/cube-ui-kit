@@ -1,0 +1,220 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
+import { SearchInput } from './SearchInput';
+import * as SearchInputStories from './SearchInput.stories';
+
+<Meta of={SearchInputStories} />
+
+# SearchInput
+
+A search input provides a specialized text field for search functionality, featuring a search icon and optional clear button. It's optimized for search queries and includes built-in state management for search field behavior.
+
+## When to Use
+
+- Enable users to search through large datasets or content
+- Provide filtering capabilities in lists, tables, or catalogs
+- Create search bars for navigation or content discovery
+- Implement autocomplete or suggestion functionality
+- Offer quick search access in headers or sidebars
+
+## Component
+
+<Story of={SearchInputStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={SearchInputStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/docs/tasty-base-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root wrapper element of the component.
+
+**Sub-elements:**
+- `Prefix` - Element displayed before the input (contains search icon)
+- `Suffix` - Element displayed after the input (contains clear button when shown)
+- `State` - Container for validation state indicators
+- `InputIcon` - Icon displayed within the input area
+- `ValidationIcon` - Icon displayed for validation state
+
+#### inputStyles
+
+Customizes the search input field specifically.
+
+### Style Properties
+
+The SearchInput component supports all standard style properties:
+
+`display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `reset`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`, `textAlign`, `color`, `fill`, `fade`, `textTransform`, `fontWeight`, `fontStyle`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| focused | `boolean` | Whether the input has focus |
+| disabled | `boolean` | Whether the search input is disabled |
+| invalid | `boolean` | Whether the search input has validation errors |
+| valid | `boolean` | Whether the search input is valid |
+| hovered | `boolean` | Whether the search input is being hovered |
+| inside-form | `boolean` | Whether the search input is inside a form field |
+
+## Variants
+
+### Sizes
+
+- `small` - Compact size for dense interfaces
+- `medium` - Standard size
+- `large` - Emphasized size for prominent search functionality
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<SearchInput
+  label="Search"
+  placeholder="Search products..."
+/>
+```
+
+### With Clear Button
+
+```jsx
+<SearchInput
+  label="Filter items"
+  placeholder="Type to filter..."
+  isClearable={true}
+/>
+```
+
+### Controlled Search
+
+```jsx
+const [searchValue, setSearchValue] = useState('');
+
+<SearchInput
+  label="Search"
+  value={searchValue}
+  onChange={setSearchValue}
+  placeholder="Search content..."
+/>
+```
+
+### With Description
+
+```jsx
+<SearchInput
+  label="Search Library"
+  description="Search by title, author, or ISBN"
+  placeholder="Enter search terms..."
+/>
+```
+
+### Small Size
+
+```jsx
+<SearchInput
+  size="small"
+  placeholder="Quick search..."
+  aria-label="Quick search"
+/>
+```
+
+### With Validation
+
+```jsx
+<SearchInput
+  label="Search Query"
+  validationState="invalid"
+  errorMessage="Search query too short"
+  placeholder="Enter at least 3 characters"
+/>
+```
+
+### Disabled State
+
+```jsx
+<SearchInput
+  label="Search (Offline)"
+  isDisabled
+  placeholder="Search unavailable"
+/>
+```
+
+### With Custom Suffix
+
+```jsx
+<SearchInput
+  label="Advanced Search"
+  placeholder="Search with filters..."
+  suffix={<FilterButton />}
+/>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the search input
+- `Escape` - Clears the search input (when `isClearable` is true)
+- `Enter` - Submits search or triggers onSubmit callback
+- All standard text input keyboard shortcuts work for text entry
+
+### Screen Reader Support
+
+- Component announces as "search" input type to screen readers
+- Search icon and clear button have appropriate labels
+- Current search value and results count are announced when available
+- Loading states and validation errors are communicated
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label when no visible label exists
+- `aria-labelledby` - References external label elements
+- `aria-describedby` - References additional descriptive text
+- `aria-invalid` - Indicates validation state
+- `role="searchbox"` - Identifies the input as a search field
+- Clear button includes appropriate `aria-label`
+
+## Best Practices
+
+1. **Do**: Provide clear placeholder text indicating what can be searched
+   ```jsx
+   <SearchInput placeholder="Search by name, email, or department..." />
+   ```
+
+2. **Don't**: Use search input for non-search related text entry
+   ```jsx
+   <SearchInput label="Enter your name" /> {/* Use TextInput instead */}
+   ```
+
+3. **Performance**: Debounce search queries to avoid excessive API calls
+4. **UX**: Show search results or feedback immediately when possible
+5. **Accessibility**: Always provide meaningful labels or aria-label
+6. **Clear**: Enable clear functionality for better user experience
+
+## Integration with Forms
+
+This component supports all [Field properties](/docs/forms-field--docs) when used within a Form.
+
+## Suggested Improvements
+
+- Add built-in debouncing for search queries
+- Implement search suggestions or autocomplete dropdown
+- Add search history or recent searches functionality
+- Include advanced search filters integration
+- Add keyboard shortcuts for common search actions
+
+## Related Components
+
+- [TextInput](/docs/forms-textinput--docs) - For general text input
+- [ComboBox](/docs/forms-combobox--docs) - For searchable selection with predefined options
+- [Select](/docs/forms-select--docs) - For selection without search functionality

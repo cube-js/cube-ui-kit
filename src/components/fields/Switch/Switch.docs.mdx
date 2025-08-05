@@ -1,0 +1,196 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
+import { Switch } from './Switch';
+import * as SwitchStories from './Switch.stories.tsx';
+
+<Meta of={SwitchStories} />
+
+# Switch
+
+A switch allows users to toggle between two states: on and off. It provides immediate feedback and is commonly used for enabling/disabling features, settings, or binary choices.
+
+## When to Use
+
+- Enable or disable features, settings, or options
+- Toggle between two mutually exclusive states
+- Control real-time changes that take effect immediately
+- Provide on/off controls in forms and preference panels
+- Create compact binary controls where space is limited
+
+## Component
+
+<Story of={SwitchStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={SwitchStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/docs/tasty-base-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root wrapper element of the component.
+
+**Sub-elements:**
+- `Thumb` - The movable indicator inside the switch
+
+#### inputStyles
+
+Customizes the switch toggle element specifically.
+
+### Style Properties
+
+The Switch component supports all standard style properties:
+
+`display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `reset`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`, `textAlign`, `color`, `fill`, `fade`, `textTransform`, `fontWeight`, `fontStyle`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| checked | `boolean` | Whether the switch is in the "on" state |
+| disabled | `boolean` | Whether the switch is disabled |
+| invalid | `boolean` | Whether the switch has validation errors |
+| valid | `boolean` | Whether the switch is valid |
+| focused | `boolean` | Whether the switch has focus |
+| hovered | `boolean` | Whether the switch is being hovered |
+| side-label | `boolean` | Whether the label is positioned to the side |
+| inside-form | `boolean` | Whether the switch is inside a form field |
+
+## Variants
+
+### Sizes
+
+- `small` - Compact size for dense interfaces
+- `default` - Standard size
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<Switch>Enable notifications</Switch>
+```
+
+### With Default State
+
+```jsx
+<Switch defaultSelected={true}>
+  Auto-save enabled
+</Switch>
+```
+
+### Controlled State
+
+```jsx
+const [isEnabled, setIsEnabled] = useState(false);
+
+<Switch
+  isSelected={isEnabled}
+  onChange={setIsEnabled}
+>
+  Feature enabled: {isEnabled ? 'On' : 'Off'}
+</Switch>
+```
+
+### Small Size
+
+```jsx
+<Switch size="small">
+  Compact toggle
+</Switch>
+```
+
+### With Validation
+
+```jsx
+<Switch
+  isRequired
+  validationState="invalid"
+  errorMessage="You must agree to continue"
+>
+  I agree to the terms
+</Switch>
+```
+
+### Disabled State
+
+```jsx
+<Switch isDisabled>
+  Cannot be changed
+</Switch>
+```
+
+### Loading State
+
+```jsx
+<Switch isLoading>
+  Applying changes...
+</Switch>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the switch
+- `Space` - Toggles the switch state
+- `Enter` - Toggles the switch state
+
+### Screen Reader Support
+
+- Component announces as "switch" to screen readers
+- Current state is announced (e.g., "on", "off")
+- State changes are immediately announced
+- Loading state is communicated when present
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label when no visible label exists
+- `aria-labelledby` - References external label elements
+- `aria-describedby` - References additional descriptive text
+- `aria-checked` - Indicates switch state (true/false)
+- `aria-required` - Indicates if toggling is required
+- `aria-invalid` - Indicates validation state
+
+## Best Practices
+
+1. **Do**: Use clear, descriptive labels that indicate what the switch controls
+   ```jsx
+   <Switch>Enable email notifications</Switch>
+   ```
+
+2. **Don't**: Use switches for actions that require additional steps
+   ```jsx
+   <Switch>Delete account</Switch> {/* Use Button instead */}
+   ```
+
+3. **Immediate Effect**: Use switches for settings that take effect immediately
+4. **State Clarity**: Make it clear what "on" and "off" states mean
+5. **Grouping**: Group related switches together in settings panels
+6. **Labels**: Always provide meaningful labels for screen readers
+
+## Integration with Forms
+
+This component supports all [Field properties](/docs/forms-field--docs) when used within a Form.
+
+## Suggested Improvements
+
+- Add support for custom thumb icons or content
+- Implement animation customization options
+- Add support for intermediate/indeterminate states
+- Consider adding color customization for different switch types
+- Implement grouped switch controls for related settings
+
+## Related Components
+
+- [Checkbox](/components/Checkbox) - For selection that doesn't take immediate effect
+- [RadioGroup](/components/RadioGroup) - For selecting one option from multiple choices
+- [Button](/components/Button) - For actions that require confirmation

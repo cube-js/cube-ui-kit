@@ -19,7 +19,7 @@ export type DirectionIconProps = {
   to?: Direction;
 } & CubeIconProps;
 
-const DIRECTIONS = ['left', 'right', 'top', 'bottom'];
+const DIRECTIONS = ['left', 'right', 'top', 'bottom', 'up', 'down'];
 
 type Direction = (typeof DIRECTIONS)[number];
 
@@ -28,6 +28,8 @@ const rotationByDirection: Record<Direction, number> = {
   right: 90,
   bottom: 180,
   left: 270,
+  up: 0,
+  down: 180,
 };
 
 export const DirectionIcon = memo(function DirectionIcon(

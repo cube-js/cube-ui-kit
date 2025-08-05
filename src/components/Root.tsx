@@ -14,6 +14,7 @@ import {
 } from '../tasty';
 import { TOKENS } from '../tokens';
 import { useViewportSize } from '../utils/react';
+import { EventBusProvider } from '../utils/react/useEventBus';
 
 import { GlobalStyles } from './GlobalStyles';
 import { AlertDialogApiProvider } from './overlays/AlertDialog';
@@ -29,7 +30,7 @@ const DEFAULT_STYLES = {
   display: 'block',
   preset: 't3',
   ...Object.keys(TOKENS).reduce((map, key) => {
-    map[`@${key}`] = TOKENS[key];
+    map[`$${key}`] = TOKENS[key];
 
     return map;
   }, {}),
@@ -150,9 +151,11 @@ export function Root(allProps: CubeRootProps) {
             />
             <ModalProvider>
               <PortalProvider value={ref}>
-                <NotificationsProvider rootRef={ref}>
-                  <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
-                </NotificationsProvider>
+                <EventBusProvider>
+                  <NotificationsProvider rootRef={ref}>
+                    <AlertDialogApiProvider>{children}</AlertDialogApiProvider>
+                  </NotificationsProvider>
+                </EventBusProvider>
               </PortalProvider>
             </ModalProvider>
           </RootElement>

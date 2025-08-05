@@ -13,6 +13,7 @@ export type CubeFieldData<Name extends string, Value> = {
   validating?: boolean;
   validationId?: number;
   status?: 'valid' | 'invalid';
+  validationDetails?: ValidityState;
 };
 
 export type Fields = Record<keyof FieldTypes, CubeFieldData<string, any>>;

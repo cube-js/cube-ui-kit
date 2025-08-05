@@ -1,5 +1,199 @@
 # @cube-dev/ui-kit
 
+## 0.70.0
+
+### Minor Changes
+
+- [#739](https://github.com/cube-js/cube-ui-kit/pull/739) [`796e9bee`](https://github.com/cube-js/cube-ui-kit/commit/796e9bee035ad7246aa018868f0abae930309493) Thanks [@tenphi](https://github.com/tenphi)! - New syntax for custom properties: `$` instead of `@`. The old syntax is now deprecated.
+
+### Patch Changes
+
+- [#739](https://github.com/cube-js/cube-ui-kit/pull/739) [`796e9bee`](https://github.com/cube-js/cube-ui-kit/commit/796e9bee035ad7246aa018868f0abae930309493) Thanks [@tenphi](https://github.com/tenphi)! - Fix color for chart type icons.
+
+## 0.69.3
+
+### Patch Changes
+
+- [#737](https://github.com/cube-js/cube-ui-kit/pull/737) [`45daa5de`](https://github.com/cube-js/cube-ui-kit/commit/45daa5de8c9fbaaa4eac86ef006862e71b2b53a6) Thanks [@tenphi](https://github.com/tenphi)! - Full items prop support in FilterPicker.
+
+## 0.69.2
+
+### Patch Changes
+
+- [#735](https://github.com/cube-js/cube-ui-kit/pull/735) [`7fdc44b0`](https://github.com/cube-js/cube-ui-kit/commit/7fdc44b09e843b5400e86ed0c512616910ee05f5) Thanks [@tenphi](https://github.com/tenphi)! - Fix flipping of popover in FilterPicker if it's already open.
+
+- [#735](https://github.com/cube-js/cube-ui-kit/pull/735) [`7fdc44b0`](https://github.com/cube-js/cube-ui-kit/commit/7fdc44b09e843b5400e86ed0c512616910ee05f5) Thanks [@tenphi](https://github.com/tenphi)! - Improved Button layout.
+
+- [#735](https://github.com/cube-js/cube-ui-kit/pull/735) [`7fdc44b0`](https://github.com/cube-js/cube-ui-kit/commit/7fdc44b09e843b5400e86ed0c512616910ee05f5) Thanks [@tenphi](https://github.com/tenphi)! - Improved FilterPicker layout with additional wrapper for consistency.
+
+- [#735](https://github.com/cube-js/cube-ui-kit/pull/735) [`7fdc44b0`](https://github.com/cube-js/cube-ui-kit/commit/7fdc44b09e843b5400e86ed0c512616910ee05f5) Thanks [@tenphi](https://github.com/tenphi)! - Fix initial state inconsistency in FilterPicker.
+
+- [#735](https://github.com/cube-js/cube-ui-kit/pull/735) [`7fdc44b0`](https://github.com/cube-js/cube-ui-kit/commit/7fdc44b09e843b5400e86ed0c512616910ee05f5) Thanks [@tenphi](https://github.com/tenphi)! - Overflow text ellipsis in Buttons with icons by default.
+
+- [#735](https://github.com/cube-js/cube-ui-kit/pull/735) [`7fdc44b0`](https://github.com/cube-js/cube-ui-kit/commit/7fdc44b09e843b5400e86ed0c512616910ee05f5) Thanks [@tenphi](https://github.com/tenphi)! - Add `showSelectAll` and `selectAllLabel` options for ListBox, FilterListBox, and FilterPicker to add "Select All" option. The label can be customized.
+
+## 0.69.1
+
+### Patch Changes
+
+- [#733](https://github.com/cube-js/cube-ui-kit/pull/733) [`65849abc`](https://github.com/cube-js/cube-ui-kit/commit/65849abc4ef917437cccc1c796cf75680f0a0a7c) Thanks [@tenphi](https://github.com/tenphi)! - Fix minor issues with input styling.
+
+- [#733](https://github.com/cube-js/cube-ui-kit/pull/733) [`65849abc`](https://github.com/cube-js/cube-ui-kit/commit/65849abc4ef917437cccc1c796cf75680f0a0a7c) Thanks [@tenphi](https://github.com/tenphi)! - Expose shouldFocusWrap for ListBox, FilterListBox, and FilterPicker to control whether keyboard navigation should wrap around.
+
+## 0.69.0
+
+### Minor Changes
+
+- [#731](https://github.com/cube-js/cube-ui-kit/pull/731) [`1b57ef6c`](https://github.com/cube-js/cube-ui-kit/commit/1b57ef6c00e8e0fc8437aa92f02c57418cf7b048) Thanks [@tenphi](https://github.com/tenphi)! - More condensed UI. New sizes: medium (40) -> large (40), small (32) -> medium (32), large (48) -> xlarge (48), small (28), xsmall (24).
+
+- [#731](https://github.com/cube-js/cube-ui-kit/pull/731) [`1b57ef6c`](https://github.com/cube-js/cube-ui-kit/commit/1b57ef6c00e8e0fc8437aa92f02c57418cf7b048) Thanks [@tenphi](https://github.com/tenphi)! - Add size prop for TextInputMapper.
+
+## 0.68.0
+
+### Minor Changes
+
+- [#730](https://github.com/cube-js/cube-ui-kit/pull/730) [`5d627efa`](https://github.com/cube-js/cube-ui-kit/commit/5d627efafb1793f45ff8b8ba496b07e17227ac67) Thanks [@tenphi](https://github.com/tenphi)! - Add FilterPicker component for single and multiple picker experience with a filter.
+
+- [#730](https://github.com/cube-js/cube-ui-kit/pull/730) [`5d627efa`](https://github.com/cube-js/cube-ui-kit/commit/5d627efafb1793f45ff8b8ba496b07e17227ac67) Thanks [@tenphi](https://github.com/tenphi)! - Split ListBox into two components: simple ListBox and FilterListBox with search input.
+
+### Patch Changes
+
+- [#730](https://github.com/cube-js/cube-ui-kit/pull/730) [`5d627efa`](https://github.com/cube-js/cube-ui-kit/commit/5d627efafb1793f45ff8b8ba496b07e17227ac67) Thanks [@tenphi](https://github.com/tenphi)! - Improve the layout of Menu component.
+
+- [#727](https://github.com/cube-js/cube-ui-kit/pull/727) [`fa1397f2`](https://github.com/cube-js/cube-ui-kit/commit/fa1397f26e2f6ece95aec915f43e0815355d74f6) Thanks [@tenphi](https://github.com/tenphi)! - Add `fs` custom unit for stable fractions in grid layouts. `1sf` -> `minmax(0, 1fr)`.
+
+- [#730](https://github.com/cube-js/cube-ui-kit/pull/730) [`5d627efa`](https://github.com/cube-js/cube-ui-kit/commit/5d627efafb1793f45ff8b8ba496b07e17227ac67) Thanks [@tenphi](https://github.com/tenphi)! - `wrapWithField` no longer wrap the input component with a field if no label is provided and `forceField` prop is not set.
+
+- [#730](https://github.com/cube-js/cube-ui-kit/pull/730) [`5d627efa`](https://github.com/cube-js/cube-ui-kit/commit/5d627efafb1793f45ff8b8ba496b07e17227ac67) Thanks [@tenphi](https://github.com/tenphi)! - Add a new icon ChartKPI.
+
+- [#727](https://github.com/cube-js/cube-ui-kit/pull/727) [`fa1397f2`](https://github.com/cube-js/cube-ui-kit/commit/fa1397f26e2f6ece95aec915f43e0815355d74f6) Thanks [@tenphi](https://github.com/tenphi)! - Improved tasty documentation.
+
+## 0.67.0
+
+### Minor Changes
+
+- [#725](https://github.com/cube-js/cube-ui-kit/pull/725) [`4b789d2b`](https://github.com/cube-js/cube-ui-kit/commit/4b789d2bddc3bee1c91194c2d76b1c5946cc9cbc) Thanks [@tenphi](https://github.com/tenphi)! - Add useEventBus hook to emit global events and subscribe to them.
+
+- [#725](https://github.com/cube-js/cube-ui-kit/pull/725) [`4b789d2b`](https://github.com/cube-js/cube-ui-kit/commit/4b789d2bddc3bee1c91194c2d76b1c5946cc9cbc) Thanks [@tenphi](https://github.com/tenphi)! - Add useContextMenu hook to invoke a context menu in the exact place of the click.
+
+- [#725](https://github.com/cube-js/cube-ui-kit/pull/725) [`4b789d2b`](https://github.com/cube-js/cube-ui-kit/commit/4b789d2bddc3bee1c91194c2d76b1c5946cc9cbc) Thanks [@tenphi](https://github.com/tenphi)! - Add useAnchoredMenu hook to programmatically invoke a menu anchored to the specific element.
+
+## 0.66.1
+
+### Patch Changes
+
+- [#722](https://github.com/cube-js/cube-ui-kit/pull/722) [`7eaf393`](https://github.com/cube-js/cube-ui-kit/commit/7eaf393cedb574237afee6579ab21b7abf57f83e) Thanks [@tenphi](https://github.com/tenphi)! - Fix a bug when CommandMenu is unable to be navigated via keys when the search input is filled with any value.
+
+## 0.66.0
+
+### Minor Changes
+
+- [#720](https://github.com/cube-js/cube-ui-kit/pull/720) [`2275c30`](https://github.com/cube-js/cube-ui-kit/commit/2275c30a9e918c06d861a4c348057fb191566229) Thanks [@tenphi](https://github.com/tenphi)! - Add CommandMenu component.
+
+- [#720](https://github.com/cube-js/cube-ui-kit/pull/720) [`2275c30`](https://github.com/cube-js/cube-ui-kit/commit/2275c30a9e918c06d861a4c348057fb191566229) Thanks [@tenphi](https://github.com/tenphi)! - Changed HotKeys API. Use `children` to pass hotkeys instead of `keys` prop.
+
+## 0.65.1
+
+### Patch Changes
+
+- [#718](https://github.com/cube-js/cube-ui-kit/pull/718) [`eec1cde`](https://github.com/cube-js/cube-ui-kit/commit/eec1cde994d8087362c46c65636abe97030ad98e) Thanks [@tenphi](https://github.com/tenphi)! - Add `tooltip` prop to menu items. You can pass a `string` or a `TooltipProps` object with `title` prop there for advanced customization.
+
+## 0.65.0
+
+### Minor Changes
+
+- [#716](https://github.com/cube-js/cube-ui-kit/pull/716) [`a42a468`](https://github.com/cube-js/cube-ui-kit/commit/a42a4686c4b9ad731dabe0bc513a335d5975a31c) Thanks [@tenphi](https://github.com/tenphi)! - Add HotKeys component to visualize hot keys combinations.
+
+- [#716](https://github.com/cube-js/cube-ui-kit/pull/716) [`a42a468`](https://github.com/cube-js/cube-ui-kit/commit/a42a4686c4b9ad731dabe0bc513a335d5975a31c) Thanks [@tenphi](https://github.com/tenphi)! - Add `hotkeys` property for menu items to specify hot keys to trigger the action.
+
+### Patch Changes
+
+- [#716](https://github.com/cube-js/cube-ui-kit/pull/716) [`a42a468`](https://github.com/cube-js/cube-ui-kit/commit/a42a4686c4b9ad731dabe0bc513a335d5975a31c) Thanks [@tenphi](https://github.com/tenphi)! - Improve ListBox implementation and add support for the empty state with customization via `emptyLabel` property.
+
+- [#716](https://github.com/cube-js/cube-ui-kit/pull/716) [`a42a468`](https://github.com/cube-js/cube-ui-kit/commit/a42a4686c4b9ad731dabe0bc513a335d5975a31c) Thanks [@tenphi](https://github.com/tenphi)! - Add new chart icons and update the old ones.
+
+## 0.64.1
+
+### Patch Changes
+
+- [#712](https://github.com/cube-js/cube-ui-kit/pull/712) [`6612034`](https://github.com/cube-js/cube-ui-kit/commit/66120342e3c495e10227d3f77c6f43204034256c) Thanks [@tenphi](https://github.com/tenphi)! - Unify the focused state in Menu component.
+
+- [#712](https://github.com/cube-js/cube-ui-kit/pull/712) [`6612034`](https://github.com/cube-js/cube-ui-kit/commit/66120342e3c495e10227d3f77c6f43204034256c) Thanks [@tenphi](https://github.com/tenphi)! - Fix errorMessage type.
+
+## 0.64.0
+
+### Minor Changes
+
+- [#711](https://github.com/cube-js/cube-ui-kit/pull/711) [`ad733be`](https://github.com/cube-js/cube-ui-kit/commit/ad733be793cbadd7de6d21488d127676cd8ef766) Thanks [@tenphi](https://github.com/tenphi)! - The `message` field prop is now deprecated. Use `errorMessage` or `description` instead.
+
+### Patch Changes
+
+- [#713](https://github.com/cube-js/cube-ui-kit/pull/713) [`77275fb`](https://github.com/cube-js/cube-ui-kit/commit/77275fb656b6db7e94cda2e8f6598a149687f6a2) Thanks [@tenphi](https://github.com/tenphi)! - Add new horizontal chart icons.
+
+## 0.63.3
+
+### Patch Changes
+
+- [#706](https://github.com/cube-js/cube-ui-kit/pull/706) [`d440c1e`](https://github.com/cube-js/cube-ui-kit/commit/d440c1e4408cd12ac02291d76d2dcf8c099c550e) Thanks [@tenphi](https://github.com/tenphi)! - Add more documentations for various components and concepts.
+
+## 0.63.2
+
+### Patch Changes
+
+- [#708](https://github.com/cube-js/cube-ui-kit/pull/708) [`e7dad8d`](https://github.com/cube-js/cube-ui-kit/commit/e7dad8d639495934844f5361c715eab694dcd5ba) Thanks [@tenphi](https://github.com/tenphi)! - Update ChartBoxPlot and add Adjustment icons.
+
+## 0.63.1
+
+### Patch Changes
+
+- [#705](https://github.com/cube-js/cube-ui-kit/pull/705) [`0f0b2b3`](https://github.com/cube-js/cube-ui-kit/commit/0f0b2b32badc19947bfed7ce0c69ad4af6cfb6cb) Thanks [@tenphi](https://github.com/tenphi)! - Add new chart icons.
+
+## 0.63.0
+
+### Minor Changes
+
+- [#703](https://github.com/cube-js/cube-ui-kit/pull/703) [`79ab3db`](https://github.com/cube-js/cube-ui-kit/commit/79ab3db8ab185da4615312e3c0daf03cd288a588) Thanks [@tenphi](https://github.com/tenphi)! - Add sections support for Select.
+
+- [#703](https://github.com/cube-js/cube-ui-kit/pull/703) [`79ab3db`](https://github.com/cube-js/cube-ui-kit/commit/79ab3db8ab185da4615312e3c0daf03cd288a588) Thanks [@tenphi](https://github.com/tenphi)! - Remove divider support in Menu but add dividers between sections.
+
+## 0.62.3
+
+### Patch Changes
+
+- [#701](https://github.com/cube-js/cube-ui-kit/pull/701) [`9fc76b5`](https://github.com/cube-js/cube-ui-kit/commit/9fc76b5101bc98c102535a492b59f79334c494f4) Thanks [@tenphi](https://github.com/tenphi)! - Fix Menu type.
+
+## 0.62.2
+
+### Patch Changes
+
+- [#699](https://github.com/cube-js/cube-ui-kit/pull/699) [`71d5328`](https://github.com/cube-js/cube-ui-kit/commit/71d5328bec048c4c6a054bd544d67ffc9b674ebe) Thanks [@tenphi](https://github.com/tenphi)! - Fix Menu with spread function inside.
+
+## 0.62.1
+
+### Patch Changes
+
+- [#697](https://github.com/cube-js/cube-ui-kit/pull/697) [`408ea7b`](https://github.com/cube-js/cube-ui-kit/commit/408ea7bb027c5214d161ec8ef4d5ea72d391d07b) Thanks [@tenphi](https://github.com/tenphi)! - Add support for `description` item prop inside `<Menu/>`.
+
+- [#697](https://github.com/cube-js/cube-ui-kit/pull/697) [`408ea7b`](https://github.com/cube-js/cube-ui-kit/commit/408ea7bb027c5214d161ec8ef4d5ea72d391d07b) Thanks [@tenphi](https://github.com/tenphi)! - Add support for `description` item prop in `<ComboBox/>`.
+
+- [#697](https://github.com/cube-js/cube-ui-kit/pull/697) [`408ea7b`](https://github.com/cube-js/cube-ui-kit/commit/408ea7bb027c5214d161ec8ef4d5ea72d391d07b) Thanks [@tenphi](https://github.com/tenphi)! - Change disabled state of clear and neutral buttons.
+
+- [#697](https://github.com/cube-js/cube-ui-kit/pull/697) [`408ea7b`](https://github.com/cube-js/cube-ui-kit/commit/408ea7bb027c5214d161ec8ef4d5ea72d391d07b) Thanks [@tenphi](https://github.com/tenphi)! - Add border to dialogs with popover type.
+
+- [#697](https://github.com/cube-js/cube-ui-kit/pull/697) [`408ea7b`](https://github.com/cube-js/cube-ui-kit/commit/408ea7bb027c5214d161ec8ef4d5ea72d391d07b) Thanks [@tenphi](https://github.com/tenphi)! - Add border to popover of `<Select/>` and `<Combobox/>`.
+
+- [#697](https://github.com/cube-js/cube-ui-kit/pull/697) [`408ea7b`](https://github.com/cube-js/cube-ui-kit/commit/408ea7bb027c5214d161ec8ef4d5ea72d391d07b) Thanks [@tenphi](https://github.com/tenphi)! - Add support for `<Divider/>` inside `<Menu/>`.
+
+## 0.62.0
+
+### Minor Changes
+
+- [#695](https://github.com/cube-js/cube-ui-kit/pull/695) [`81281f1`](https://github.com/cube-js/cube-ui-kit/commit/81281f1b8f06d34f063f4e9ed899114b6f046078) Thanks [@tenphi](https://github.com/tenphi)! - Remove `ellipsis` flag from `<Select/>`. Text overflow ellipsis is now always used.
+
+### Patch Changes
+
+- [#695](https://github.com/cube-js/cube-ui-kit/pull/695) [`81281f1`](https://github.com/cube-js/cube-ui-kit/commit/81281f1b8f06d34f063f4e9ed899114b6f046078) Thanks [@tenphi](https://github.com/tenphi)! - Add support for description in `Select.Item`.
+
 ## 0.61.10
 
 ### Patch Changes
