@@ -33,7 +33,6 @@ import {
 import { generateRandomId } from '../../../utils/random';
 import {
   mergeProps,
-  modAttrs,
   useCombinedRefs,
   useLayoutEffect,
 } from '../../../utils/react';
@@ -430,7 +429,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     <ComboBoxWrapperElement
       ref={wrapperRef}
       qa={qa || 'ComboBox'}
-      {...modAttrs(mods)}
+      mods={mods}
       styles={wrapperStyles}
       style={{
         zIndex: isFocused ? 1 : 'initial',
@@ -446,7 +445,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         {...allInputProps}
         autoComplete={autoComplete}
         styles={inputStyles}
-        {...modAttrs(mods)}
+        mods={mods}
         data-size={size}
       />
       <div data-element="Suffix">
@@ -463,14 +462,14 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
             data-menu-trigger
             qa="ComboBoxTrigger"
             {...mergeProps(buttonProps, triggerFocusProps, triggerHoverProps)}
-            {...modAttrs({
+            ref={triggerRef}
+            mods={{
               pressed: isTriggerPressed,
               focused: isTriggerFocused,
               hovered: isTriggerHovered,
               disabled: isDisabled,
               loading: isLoading,
-            })}
-            ref={triggerRef}
+            }}
             data-size={size}
             isDisabled={isDisabled}
             styles={triggerStyles}

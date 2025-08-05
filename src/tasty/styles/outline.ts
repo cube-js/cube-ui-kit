@@ -23,7 +23,9 @@ export function outlineStyle({ outline }) {
 
   if (outline === true) outline = '1ow';
 
-  const { values, mods, colors } = parseStyle(String(outline));
+  const processed = parseStyle(String(outline));
+  const { values, mods, colors } =
+    processed.groups[0] ?? ({ values: [], mods: [], colors: [] } as any);
 
   const typeMods = filterMods(mods, BORDER_STYLES);
 

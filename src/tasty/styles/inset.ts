@@ -9,7 +9,9 @@ export function insetStyle({ inset }) {
 
   if (inset === true) inset = '0 0 0 0';
 
-  let { values, mods } = parseStyle(inset);
+  const processed = parseStyle(inset);
+  let { values, mods } =
+    processed.groups[0] ?? ({ values: [], mods: [] } as any);
 
   let directions = filterMods(mods, DIRECTIONS);
 

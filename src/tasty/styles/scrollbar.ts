@@ -17,7 +17,9 @@ export function scrollbarStyle({ scrollbar, overflow }: ScrollbarStyleProps) {
 
   // Support true as alias for thin
   const value = scrollbar === true || scrollbar === '' ? 'thin' : scrollbar;
-  const { mods, colors, values } = parseStyle(String(value));
+  const processed = parseStyle(String(value));
+  const { mods, colors, values } =
+    processed.groups[0] ?? ({ mods: [], colors: [], values: [] } as any);
   const style = {};
 
   // Default colors for scrollbar
@@ -34,7 +36,7 @@ export function scrollbarStyle({ scrollbar, overflow }: ScrollbarStyleProps) {
   // Process modifiers
   if (mods.includes('thin')) {
     style['scrollbar-width'] = 'thin';
-  } else if (values.includes('none')) {
+  } else if (mods.includes('none')) {
     style['scrollbar-width'] = 'none';
     style['scrollbar-color'] = 'transparent transparent';
     // Also hide WebKit scrollbars

@@ -34,7 +34,9 @@ export function paddingStyle({
 
   if (padding === true) padding = '1x';
 
-  let { values, mods } = parseStyle(padding);
+  const processed = parseStyle(padding);
+  let { values, mods } =
+    processed.groups[0] ?? ({ values: [], mods: [] } as any);
 
   let directions = filterMods(mods, DIRECTIONS);
 

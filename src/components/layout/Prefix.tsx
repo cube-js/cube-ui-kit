@@ -55,7 +55,7 @@ export const Prefix = forwardRef(function Prefix(
       styles={styles}
       style={{
         // @ts-ignore
-        '--prefix-gap': parseStyle(outerGap).value,
+        '--prefix-gap': parseStyle(outerGap).output,
       }}
     >
       {children}

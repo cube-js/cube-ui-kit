@@ -1,0 +1,7 @@
+{
+  "buildCommand": "pnpm build-docs",
+  "outputDirectory": "storybook-docs",
+  "env": {
+    "ENABLE_EXPERIMENTAL_COREPACK": "1"
+  }
+}

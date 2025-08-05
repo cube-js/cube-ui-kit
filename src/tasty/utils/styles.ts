@@ -1,8 +1,11 @@
+import { StyleParser } from '../parser/parser';
 import { Styles } from '../styles/types';
 
 import { cacheWrapper } from './cache-wrapper';
 import { camelToKebab } from './case-converter';
 import { getModCombinations } from './getModCombinations';
+
+import type { ProcessedStyle, StyleDetails } from '../parser/types';
 
 export type StyleValue<T = string> = T | boolean | number | null | undefined;
 
@@ -138,29 +141,6 @@ export const CUSTOM_UNITS = {
 
 export const DIRECTIONS = ['top', 'right', 'bottom', 'left'];
 
-const COLOR_FUNCS = ['rgb', 'rgba'];
-const IGNORE_MODS = [
-  'auto',
-  'max-content',
-  'min-content',
-  'none',
-  'subgrid',
-  'initial',
-];
-
-const ATTR_REGEXP =
-  /("[^"]*")|('[^']*')|([a-z-]+\()|(#[a-z0-9.-]{2,}(?![a-f0-9[-]))|(--[a-z0-9-]+|[@$][a-z0-9-]+)|([a-z][a-z0-9-]*)|(([0-9]+(?![0-9.])|[0-9-.]{2,}|[0-9-]{2,}|[0-9.-]{3,})([a-z%]{0,3}))|([*/+-])|([()])|(,)/gi;
-const ATTR_CACHE = new Map();
-const ATTR_CACHE_AUTOCALC = new Map();
-const ATTR_CACHE_IGNORE_COLOR = new Map();
-const MAX_CACHE = 10000;
-const ATTR_CACHE_MODE_MAP = [
-  ATTR_CACHE_AUTOCALC,
-  ATTR_CACHE,
-  ATTR_CACHE_IGNORE_COLOR,
-];
-const PREPARE_REGEXP = /calc\((\d*)\)/gi;
-
 export function createRule(
   prop: string,
   value: StyleValue,
@@ -188,355 +168,105 @@ function getModSelector(modName: string): string {
   return MOD_NAME_CACHE.get(modName);
 }
 
+// Keep a single shared instance across the whole library so that the cache of
+// the new StyleParser keeps working and custom functions/units can be updated
+// at runtime.
+const __tastyParser = new StyleParser({ units: CUSTOM_UNITS });
+
+// Registry for user-provided custom functions that the parser can call.
+// It is updated through the `customFunc` helper exported below.
+const __tastyFuncs: Record<string, (groups: StyleDetails[]) => string> = {};
+
+export function customFunc(
+  name: string,
+  fn: (groups: StyleDetails[]) => string,
+) {
+  __tastyFuncs[name] = fn;
+  __tastyParser.setFuncs(__tastyFuncs);
+}
+
 /**
  *
  * @param {String} value
  * @param {Number} mode
  * @returns {Object<String,String|Array>}
  */
-export function parseStyle(value: StyleValue, mode = 0): ParsedStyle {
-  if (typeof value === 'number') {
-    value = String(value);
+export function parseStyle(value: StyleValue): ProcessedStyle {
+  let str: string;
+
+  if (typeof value === 'string') {
+    str = value;
+  } else if (typeof value === 'number') {
+    str = String(value);
+  } else {
+    // boolean, null, undefined, objects etc. → empty string
+    str = '';
   }
 
-  if (typeof value !== 'string') {
-    return {
-      values: [],
-      mods: [],
-      all: [],
-      value: '',
-      colors: [],
-    };
-  }
+  return __tastyParser.process(str);
+}
 
-  const CACHE = ATTR_CACHE_MODE_MAP[mode];
+// Utility: flatten groups into merged token lists (closest to legacy shape).
+export function flattenStyleDetails(processed: ProcessedStyle) {
+  const merged = {
+    values: [] as string[],
+    mods: [] as string[],
+    colors: [] as string[],
+    all: [] as string[],
+    value: processed.output,
+    color: undefined as string | undefined,
+  };
 
-  if (!CACHE.has(value)) {
-    if (CACHE.size > MAX_CACHE) {
-      CACHE.clear();
+  processed.groups.forEach((g, idx) => {
+    merged.values.push(...g.values);
+    merged.mods.push(...g.mods);
+    merged.colors.push(...g.colors);
+    merged.all.push(...g.all);
+    if (idx < processed.groups.length - 1) {
+      merged.all.push(',');
     }
+  });
 
-    const mods: string[] = [];
-    const all: string[] = [];
-    const values: string[] = [];
-    const colors: string[] = [];
-    const autoCalc = mode !== 1;
-
-    let currentValue = '';
-    let calc = -1;
-    let counter = 0;
-    let parsedValue = '';
-    let color: string | undefined = '';
-    let currentFunc = '';
-    let usedFunc = '';
-    let token;
-
-    ATTR_REGEXP.lastIndex = 0;
-
-    value = value.replace(/[@$]\(/g, 'var(--');
-
-    while ((token = ATTR_REGEXP.exec(value))) {
-      let [
-        ,
-        quotedDouble,
-        quotedSingle,
-        func,
-        hashColor,
-        prop,
-        mod,
-        unit,
-        unitVal,
-        unitMetric,
-        operator,
-        bracket,
-        comma,
-      ] = token;
-
-      if (quotedSingle || quotedDouble) {
-        currentValue += `${quotedSingle || quotedDouble} `;
-      } else if (func) {
-        currentFunc = func.slice(0, -1);
-        currentValue += func;
-        counter++;
-      } else if (hashColor) {
-        if (mode === 2) {
-          color = hashColor;
-        } else {
-          color = parseColor(hashColor, false).color;
-        }
-        if (color) {
-          colors.push(color);
-        }
-      } else if (mod) {
-        // ignore mods inside brackets
-        if (counter || IGNORE_MODS.includes(mod)) {
-          currentValue += `${mod} `;
-        } else {
-          mods.push(mod);
-          all.push(mod);
-          parsedValue += `${mod} `;
-        }
-      } else if (bracket) {
-        if (bracket === '(') {
-          if (!~calc) {
-            calc = counter;
-            currentValue += 'calc';
-          }
-
-          counter++;
-        }
-
-        if (bracket === ')' && counter) {
-          currentValue = currentValue.trim();
-
-          if (counter > 0) {
-            counter--;
-          }
-
-          if (counter === calc) {
-            calc = -1;
-          }
-        }
-
-        if (bracket === ')' && !counter) {
-          usedFunc = currentFunc;
-          currentFunc = '';
-        }
-
-        currentValue += `${bracket}${bracket === ')' ? ' ' : ''}`;
-      } else if (operator) {
-        if (!~calc && autoCalc) {
-          if (currentValue) {
-            if (currentValue.includes('(')) {
-              const index = currentValue.lastIndexOf('(');
-
-              currentValue = `${currentValue.slice(
-                0,
-                index,
-              )}(calc(${currentValue.slice(index + 1)}`;
-
-              calc = counter;
-              counter++;
-            }
-          } else if (values.length) {
-            parsedValue = parsedValue.slice(
-              0,
-              parsedValue.length - values[values.length - 1].length - 1,
-            );
-
-            let tmp = values.splice(values.length - 1, 1)[0];
-
-            all.splice(values.length - 1, 1);
-
-            if (tmp) {
-              if (tmp.startsWith('calc(')) {
-                tmp = tmp.slice(4);
-              }
-
-              calc = counter;
-              counter++;
-              currentValue = `calc((${tmp}) `;
-            }
-          }
-        }
-
-        currentValue += `${operator} `;
-      } else if (unit) {
-        if (unitMetric && CUSTOM_UNITS[unitMetric]) {
-          let add = customUnit(unitVal, unitMetric);
-
-          if (!~calc && add.startsWith('(')) {
-            currentValue += 'calc';
-          }
-
-          currentValue += `${add} `;
-        } else {
-          currentValue += `${unit} `;
-        }
-      } else if (prop) {
-        prop = prop.replace(/^[@$]/, '--');
-        if (currentFunc !== 'var') {
-          currentValue += `var(${prop}) `;
-        } else {
-          currentValue += `${prop} `;
-        }
-      } else if (comma) {
-        if (~calc) {
-          calc = -1;
-          counter--;
-          currentValue = `${currentValue.trim()}), `;
-        } else {
-          currentValue = `${currentValue.trim()}, `;
-        }
-
-        if (!counter) {
-          all.push(',');
-        }
-      }
-
-      if (currentValue && !counter) {
-        let prepared = prepareParsedValue(currentValue);
-
-        if (COLOR_FUNCS.includes(usedFunc)) {
-          color = prepared;
-        } else if (prepared.startsWith('color(')) {
-          prepared = prepared.slice(6, -1);
-
-          color = parseColor(prepared).color;
-        } else {
-          if (prepared !== ',') {
-            values.push(prepared);
-            all.push(prepared);
-          }
-
-          parsedValue += `${prepared} `;
-        }
-
-        currentValue = '';
-      }
-    }
-
-    if (counter) {
-      let prepared = prepareParsedValue(
-        `${currentValue.trim()}${')'.repeat(counter)}`,
-      );
-
-      if (prepared.startsWith('color(')) {
-        prepared = prepared.slice(6, -1);
-
-        color = parseColor(prepared).color;
-      } else {
-        if (prepared !== ',') {
-          values.push(prepared);
-          all.push(prepared);
-        }
-
-        parsedValue += prepared;
-      }
-    }
-
-    CACHE.set(value, {
-      values,
-      mods,
-      all,
-      colors,
-      value: `${parsedValue} ${color}`.trim(),
-      color,
-    });
-  }
-
-  return CACHE.get(value);
+  merged.color = merged.colors[0];
+  return merged;
 }
 
 /**
  * Parse color. Find it value, name and opacity.
  */
 export function parseColor(val: string, ignoreError = false): ParsedColor {
-  val = val.trim();
-
+  val = (val ?? '').trim();
   if (!val) return {};
 
-  if (val.startsWith('#')) {
-    val = val.slice(1);
+  // Utilize the new parser to extract the first color token.
+  const processed = parseStyle(val as any);
+  const firstColor = processed.groups.find((g) => g.colors.length)?.colors[0];
 
-    const tmp = val.split('.');
-
-    let opacity = 100;
-
-    if (tmp.length > 1) {
-      if (tmp[1].length === 1) {
-        opacity = Number(tmp[1]) * 10;
-      } else {
-        opacity = Number(tmp[1]);
-      }
-
-      if (Number.isNaN(opacity)) {
-        opacity = 100;
-      }
-    }
-
-    const name = tmp[0];
-
-    let color;
-
-    if (name === 'current') {
-      color = 'currentColor';
-    } else {
-      if (opacity > 100) {
-        opacity = 100;
-      } else if (opacity < 0) {
-        opacity = 0;
-      }
-    }
-
-    if (!color) {
-      color =
-        opacity !== 100
-          ? rgbColorProp(name, Math.round(opacity) / 100)
-          : colorProp(name, null, strToRgb(`#${name}`));
-    }
-
-    return {
-      color,
-      name,
-      opacity: opacity != null ? opacity : 100,
-    };
-  }
-
-  let { values, mods, color } = parseStyle(val);
-
-  let name, opacity;
-
-  if (color) {
-    return {
-      color: (!color.startsWith('var(') ? strToRgb(color) : color) || color,
-    };
-  }
-
-  values.forEach((token) => {
-    if (token.match(/^((var|rgb|rgba|hsl|hsla)\(|#[0-9a-f]{3,6})/)) {
-      color = !token.startsWith('var') ? strToRgb(token) : token;
-    } else if (token.endsWith('%')) {
-      opacity = parseInt(token);
-    }
-  });
-
-  if (color) {
-    return { color };
-  }
-
-  name = name || mods[0];
-
-  if (!name) {
+  if (!firstColor) {
     if (!ignoreError && devMode) {
-      console.warn('CubeUIKit: incorrect color value:', val);
+      console.warn('CubeUIKit: unable to parse color:', val);
     }
-
     return {};
   }
 
-  if (!opacity) {
-    let color;
+  // Extract color name (if present) from variable pattern.
+  let nameMatch = firstColor.match(/var\(--([a-z0-9-]+)-color/);
+  if (!nameMatch) {
+    nameMatch = firstColor.match(/var\(--([a-z0-9-]+)-color-rgb/);
+  }
 
-    if (name === 'current') {
-      color = 'currentColor';
-    } else if (name === 'inherit') {
-      color = 'inherit';
-    } else if (name !== 'transparent' && name !== 'currentColor') {
-      color = `var(--${name}-color, ${name})`;
-    } else {
-      color = name;
+  let opacity: number | undefined;
+  if (firstColor.startsWith('rgb')) {
+    const alphaMatch = firstColor.match(/\/\s*([0-9.]+)\)/);
+    if (alphaMatch) {
+      const v = parseFloat(alphaMatch[1]);
+      if (!isNaN(v)) opacity = v * 100;
     }
-
-    return {
-      name,
-      color,
-    };
   }
 
   return {
-    color: rgbColorProp(name, Math.round(opacity) / 100),
-    name,
+    color: firstColor,
+    name: nameMatch ? nameMatch[1] : undefined,
     opacity,
   };
 }
@@ -611,10 +341,6 @@ export function transferMods(mods, from, to) {
       from.splice(from.indexOf(mod), 1);
     }
   });
-}
-
-function prepareParsedValue(val) {
-  return val.trim().replace(PREPARE_REGEXP, (s, inner) => inner);
 }
 
 export function filterMods(mods, allowedMods) {

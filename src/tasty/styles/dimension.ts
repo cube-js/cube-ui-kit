@@ -1,34 +1,21 @@
-import { parseStyle, transferMods } from '../utils/styles';
+import { parseStyle } from '../utils/styles';
 
 const DEFAULT_MIN_SIZE = 'var(--gap)';
 const DEFAULT_MAX_SIZE = '100%';
-
-function isSizingSupport(val) {
-  return typeof CSS !== 'undefined' && typeof CSS?.supports === 'function'
-    ? CSS.supports('height', val)
-    : false;
-}
-
-const STRETCH = 'stretch';
-const FILL_AVAILABLE = 'fill-available';
-const WEBKIT_FILL_AVAILABLE = '-webkit-fill-available';
-const MOZ_FILL_AVAILABLE = '-moz-fill-available';
-const STRETCH_SIZE = isSizingSupport(STRETCH)
-  ? STRETCH
-  : isSizingSupport(FILL_AVAILABLE)
-    ? FILL_AVAILABLE
-    : isSizingSupport(WEBKIT_FILL_AVAILABLE)
-      ? WEBKIT_FILL_AVAILABLE
-      : isSizingSupport(MOZ_FILL_AVAILABLE)
-        ? MOZ_FILL_AVAILABLE
-        : null;
-const INTRINSIC_MODS = ['max-content', 'min-content', 'fit-content', 'stretch'];
 
 export function dimensionStyle(name) {
   const minStyle = `min-${name}`;
   const maxStyle = `max-${name}`;
 
   return (val) => {
+    if (val === true) {
+      return {
+        [name]: 'auto',
+        [minStyle]: 'initial',
+        [maxStyle]: 'initial',
+      };
+    }
+
     if (!val) return '';
 
     if (typeof val === 'number') {
@@ -37,21 +24,15 @@ export function dimensionStyle(name) {
 
     val = String(val);
 
-    const styles = {
+    const styles: Record<string, string | string[]> = {
       [name]: 'auto',
       [minStyle]: 'initial',
       [maxStyle]: 'initial',
     };
 
-    const { mods, values } = parseStyle(val);
-
-    transferMods(INTRINSIC_MODS, mods, values);
-
-    values.forEach((v, i) => {
-      if (v === 'stretch') {
-        values[i] = STRETCH_SIZE || (name === 'height' ? '100vh' : '100vw');
-      }
-    });
+    const processed = parseStyle(val);
+    const { mods, values } =
+      processed.groups[0] ?? ({ mods: [], values: [] } as any);
 
     let flag = false;
 
@@ -80,6 +61,14 @@ export function dimensionStyle(name) {
         styles[maxStyle] = values[2];
       } else {
         styles[name] = values[0] || 'auto';
+      }
+    }
+
+    if (styles[name] === 'stretch') {
+      if (name === 'width') {
+        styles[name] = ['stretch', '-webkit-fill-available', '-moz-available'];
+      } else {
+        styles[name] = 'auto';
       }
     }
 

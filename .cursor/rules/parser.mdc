@@ -1,0 +1,8 @@
+---
+description: If the task requires information about how styles are parsed in `tasty`.
+globs: 
+alwaysApply: false
+---
+The specification of the style parser is described in [parser.md](mdc:src/parser/parser.md)
+This part of the styles handling only covers the parsing of string values. Though, boolean and number styles can be converted to string.
+Style-2-state mapping and responsive values are handled separately in [styles.ts](mdc:src/tasty/utils/styles.ts) and [responsive.ts](mdc:src/tasty/utils/responsive.ts)
