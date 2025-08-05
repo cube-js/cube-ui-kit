@@ -12,10 +12,11 @@ const parser = new StyleParser({
   },
   units: {
     x: '8px',
-    r: (v) => `calc(${v} * var(--radius))`,
-    cr: (v) => `calc(${v} * var(--card-radius))`,
-    bw: (v) => `calc(${v} * var(--border-width))`,
-    ow: (v) => `calc(${v} * var(--outline-width))`,
+    r: 'var(--radius)',
+    cr: 'var(--card-radius)',
+    bw: 'var(--border-width)',
+    ow: 'var(--outline-width)',
+    sf: (v) => `minmax(0, ${v}fr)`, // function handler that returns complete CSS value
   },
 });
 
@@ -26,7 +27,7 @@ describe('StyleProcessor', () => {
       'var(--gap)',
       'calc(2 * var(--gap))',
       'calc(3 * var(--card-radius))',
-      'calc(1 * var(--border-width))',
+      'var(--border-width)',
       'calc(4 * var(--outline-width))',
     ]);
   });
@@ -83,12 +84,12 @@ describe('StyleProcessor', () => {
   test('splits by top-level comma', () => {
     const result = parser.process('1bw top #purple, 1ow right #dark-05');
     expect(result.groups.length).toBe(2);
-    expect(result.groups[0].values).toEqual(['calc(1 * var(--border-width))']);
+    expect(result.groups[0].values).toEqual(['var(--border-width)']);
     expect(result.groups[0].colors).toEqual(['var(--purple-color)']);
-    expect(result.groups[1].values).toEqual(['calc(1 * var(--outline-width))']);
+    expect(result.groups[1].values).toEqual(['var(--outline-width)']);
     expect(result.groups[1].colors).toEqual(['var(--dark-05-color)']);
     expect(result.output).toEqual(
-      'calc(1 * var(--border-width)) top var(--purple-color), calc(1 * var(--outline-width)) right var(--dark-05-color)',
+      'var(--border-width) top var(--purple-color), var(--outline-width) right var(--dark-05-color)',
     );
     expect(result.groups[0].mods).toEqual(['top']);
     expect(result.groups[1].mods).toEqual(['right']);
@@ -205,5 +206,35 @@ describe('StyleProcessor', () => {
     expect(warnSpy).toHaveBeenCalled();
 
     warnSpy.mockRestore();
+  });
+
+  test('parses function unit handlers correctly without double wrapping in calc()', () => {
+    const result = parser.process('1sf 2sf');
+    expect(result.groups[0].values).toEqual([
+      'minmax(0, 1fr)', // should NOT be calc(minmax(0, 1fr))
+      'minmax(0, 2fr)', // should NOT be calc(minmax(0, 2fr))
+    ]);
+  });
+
+  test('handles string vs function unit handlers correctly', () => {
+    // Test existing function handlers that return calc() expressions
+    const result1 = parser.process('2r 3cr');
+    expect(result1.groups[0].values).toEqual([
+      'calc(2 * var(--radius))', // function returns complete calc() expression
+      'calc(3 * var(--card-radius))', // function returns complete calc() expression
+    ]);
+
+    // Test parser with string unit (should be wrapped in calc())
+    const customParser = new StyleParser({
+      units: {
+        gap: 'var(--my-gap)', // string unit, should be wrapped for multiplication
+        func: (v) => `${v} * 10px`, // function unit, returns expression as-is
+      },
+    });
+    const result2 = customParser.process('2gap 3func');
+    expect(result2.groups[0].values).toEqual([
+      'calc(2 * var(--my-gap))', // string unit gets calc() wrapping
+      '3 * 10px', // function unit returns expression as-is
+    ]);
   });
 });

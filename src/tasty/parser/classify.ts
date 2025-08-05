@@ -172,11 +172,11 @@ export function classify(
           processed: `calc(${numericPart} * ${base})`,
         };
       } else {
+        // Function units return complete CSS expressions, no wrapping needed
         const inner = handler(numericPart);
-        // Avoid double wrapping if handler already returns a calc(...)
         return {
           bucket: Bucket.Value,
-          processed: inner.startsWith('calc(') ? inner : `calc(${inner})`,
+          processed: inner,
         };
       }
     }
