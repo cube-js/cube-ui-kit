@@ -1614,3 +1614,80 @@ export const WithSelectAll: Story = {
     },
   },
 };
+
+export const MultipleControlled: Story = {
+  args: {
+    label: 'Controlled Multiple Selection',
+    placeholder: 'Choose permissions...',
+    selectionMode: 'multiple',
+    isCheckable: true,
+    searchPlaceholder: 'Filter permissions...',
+    width: 'max 30x',
+  },
+  play: async ({ canvasElement }) => {},
+  render: (args) => {
+    const [selectedKeys, setSelectedKeys] = useState<string[]>([
+      'read',
+      'write',
+    ]);
+
+    return (
+      <Space gap="2x" flow="column" placeItems="start">
+        <FilterPicker
+          {...args}
+          selectedKeys={selectedKeys}
+          onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
+        >
+          {permissions.map((permission) => (
+            <FilterPicker.Item
+              key={permission.key}
+              textValue={permission.label}
+              description={permission.description}
+            >
+              {permission.label}
+            </FilterPicker.Item>
+          ))}
+        </FilterPicker>
+
+        <Text>
+          Selected:{' '}
+          <strong>
+            {selectedKeys.length ? selectedKeys.join(', ') : 'None'}
+          </strong>
+        </Text>
+
+        <Space gap="1x" flow="row">
+          <Button
+            size="small"
+            type="outline"
+            onClick={() => setSelectedKeys(['read', 'write', 'admin'])}
+          >
+            Select Admin Set
+          </Button>
+          <Button
+            size="small"
+            type="outline"
+            onClick={() => setSelectedKeys(['read'])}
+          >
+            Read Only
+          </Button>
+          <Button
+            size="small"
+            type="outline"
+            onClick={() => setSelectedKeys([])}
+          >
+            Clear All
+          </Button>
+        </Space>
+      </Space>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A controlled FilterPicker in multiple selection mode where the selection state is managed externally. The component responds to external state changes and provides selection feedback through the onSelectionChange callback. This pattern is useful when you need to programmatically control the selection or integrate with form libraries.',
+      },
+    },
+  },
+};

@@ -17,7 +17,7 @@ import { FocusScope, Key, useKeyboard } from 'react-aria';
 import { Section as BaseSection, Item, ListState } from 'react-stately';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
-import { DirectionIcon } from '../../../icons';
+import { DirectionIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import {
   BASE_STYLES,
@@ -238,6 +238,21 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const cachedItemsOrder = useRef<T[] | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
+  // ---------------------------------------------------------------------------
+  // Invalidate cached sorting whenever the available options change.
+  // This ensures newly provided options are displayed and properly sorted on
+  // the next popover open instead of re-using a stale order from a previous
+  // session (which caused only the previously selected options to be rendered
+  // or the list to appear unsorted).
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    cachedChildrenOrder.current = null;
+  }, [children]);
+
+  useEffect(() => {
+    cachedItemsOrder.current = null;
+  }, [items]);
+
   const isControlledSingle = selectedKey !== undefined;
   const isControlledMultiple = selectedKeys !== undefined;
 
@@ -252,12 +267,20 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   // can compare them with user-provided keys.
   const normalizeKeyValue = (key: Key): string => {
     if (key == null) return '';
-    const str = String(key);
-    return str.startsWith('.$')
-      ? str.slice(2)
-      : str.startsWith('.')
-        ? str.slice(1)
-        : str;
+    // React escapes "=" as "=0" and ":" as "=2" when it stores keys internally.
+    // We strip the possible React prefixes first and then un-escape those sequences
+    // so that callers work with the original key values supplied by the user.
+    let str = String(key);
+
+    // Remove React array/object key prefixes (".$" or ".") if present.
+    if (str.startsWith('.$')) {
+      str = str.slice(2);
+    } else if (str.startsWith('.')) {
+      str = str.slice(1);
+    }
+
+    // Un-escape React's internal key encodings.
+    return str.replace(/=2/g, ':').replace(/=0/g, '=');
   };
 
   // ---------------------------------------------------------------------------
@@ -867,8 +890,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         type={type}
         theme={validationState === 'invalid' ? 'danger' : theme}
         size={size}
-        isDisabled={isDisabled}
-        isLoading={isLoading}
+        isDisabled={isDisabled || isLoading}
         mods={{
           placeholder: !hasSelection,
           selected: hasSelection,
@@ -876,7 +898,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         }}
         icon={icon}
         rightIcon={
-          rightIcon !== undefined ? (
+          isLoading ? (
+            <LoadingIcon />
+          ) : rightIcon !== undefined ? (
             rightIcon
           ) : (
             <DirectionIcon to={state.isOpen ? 'top' : 'bottom'} />
@@ -927,6 +951,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 selectionMode={selectionMode}
                 validationState={validationState}
                 isDisabled={isDisabled}
+                isLoading={isLoading}
                 stateRef={listStateRef}
                 isCheckable={isCheckable}
                 mods={{
