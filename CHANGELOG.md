@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.71.1
+
+### Patch Changes
+
+- [#742](https://github.com/cube-js/cube-ui-kit/pull/742) [`c383d295`](https://github.com/cube-js/cube-ui-kit/commit/c383d295c9a5d30c2931ccbb628d27d4b22715e3) Thanks [@tenphi](https://github.com/tenphi)! - Fix the FilterPicker sorting behavior in controlled mode.
+
 ## 0.71.0
 
 ### Minor Changes
