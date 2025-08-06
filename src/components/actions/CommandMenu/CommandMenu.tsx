@@ -25,7 +25,7 @@ import {
 } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
-import { MenuContext, MenuContextValue, useMenuContext } from '../Menu';
+import { useMenuContext } from '../Menu';
 import { CubeMenuProps } from '../Menu/Menu';
 import { MenuItem } from '../Menu/MenuItem';
 import { MenuSection } from '../Menu/MenuSection';
@@ -36,7 +36,6 @@ import {
   StyledHeader,
   StyledMenu,
 } from '../Menu/styled';
-import { SubMenuTrigger } from '../Menu/SubMenuTrigger';
 
 import {
   StyledCommandMenu,
@@ -433,11 +432,8 @@ function CommandMenu<T extends object>(
       }
 
       // Apply custom wrapper if provided
-      if (item.props?.wrapper) {
+      if (item.props.wrapper) {
         menuItem = item.props.wrapper(menuItem);
-      } else if ((item as any).wrapper) {
-        // Handle wrapper from collection nodes (e.g., SubMenuTrigger)
-        menuItem = (item as any).wrapper(menuItem);
       }
 
       // Ensure every child has a stable key, even if the wrapper component didn't set one.
@@ -525,22 +521,6 @@ function CommandMenu<T extends object>(
 
   // Sync refs
   useSyncRef(contextProps, menuRef);
-
-  // Create menu context for submenus
-  const commandMenuContext = useMemo(
-    (): MenuContextValue => ({
-      ref: menuRef as React.MutableRefObject<HTMLUListElement>,
-      onClose: contextProps.onClose,
-      closeOnSelect: true,
-      autoFocus: false, // Search input should maintain focus
-      mods: {
-        popover: !!contextProps.mods?.popover,
-        tray: !!contextProps.mods?.tray,
-      },
-      isClosing: false, // CommandMenu doesn't have its own closing state
-    }),
-    [contextProps, menuRef],
-  );
 
   const mods = useMemo(() => {
     // Determine mods based on menu context
@@ -759,25 +739,23 @@ function CommandMenu<T extends object>(
 
       {/* Menu Content - always render unless loading */}
       {!isLoading && !showEmptyState && (
-        <MenuContext.Provider value={commandMenuContext}>
-          <StyledMenu
-            {...menuProps}
-            ref={menuRef}
-            id={`${qa || 'CommandMenu'}-menu`}
-            aria-label="Command menu"
-            qa="Menu"
-            data-size={size}
-            mods={mods}
-            styles={{
-              border: 'none',
-              boxShadow: 'none',
-              radius: 0,
-              padding: '0.5x',
-            }}
-          >
-            {renderedItems}
-          </StyledMenu>
-        </MenuContext.Provider>
+        <StyledMenu
+          {...menuProps}
+          ref={menuRef}
+          id={`${qa || 'CommandMenu'}-menu`}
+          aria-label="Command menu"
+          qa="Menu"
+          data-size={size}
+          mods={mods}
+          styles={{
+            border: 'none',
+            boxShadow: 'none',
+            radius: 0,
+            padding: '0.5x',
+          }}
+        >
+          {renderedItems}
+        </StyledMenu>
       )}
 
       {/* Empty State - show when search term exists but no results */}
@@ -808,7 +786,6 @@ const _CommandMenu = React.forwardRef(CommandMenu) as <T>(
 // Also attach Item and Section for compound component pattern
 const __CommandMenu = Object.assign(_CommandMenu, {
   Trigger: MenuTrigger,
-  SubMenuTrigger,
   Item,
   Section,
   displayName: 'CommandMenu',
