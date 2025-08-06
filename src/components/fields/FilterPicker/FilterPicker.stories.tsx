@@ -1,5 +1,5 @@
 import { userEvent, within } from '@storybook/test';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import {
   CheckIcon,
@@ -1624,33 +1624,25 @@ export const MultipleControlled: Story = {
     searchPlaceholder: 'Filter permissions...',
     width: 'max 30x',
   },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    const trigger = canvas.getByRole('button');
-    await userEvent.click(trigger);
-  },
+  play: async ({ canvasElement }) => {},
   render: (args) => {
-    const [showOptions, setShowOptions] = useState(false);
-    const [selectedKeys, setSelectedKeys] = useState<string[]>(['write']);
-
-    useEffect(() => {
-      setTimeout(() => {
-        setShowOptions(true);
-      }, 1000);
-    }, []);
+    const [selectedKeys, setSelectedKeys] = useState<string[]>([
+      'read',
+      'write',
+    ]);
 
     return (
       <Space gap="2x" flow="column" placeItems="start">
         <FilterPicker
           {...args}
-          isLoading={!showOptions}
           selectedKeys={selectedKeys}
           onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
         >
-          {(showOptions ? permissions : []).map((permission) => (
+          {permissions.map((permission) => (
             <FilterPicker.Item
               key={permission.key}
               textValue={permission.label}
+              description={permission.description}
             >
               {permission.label}
             </FilterPicker.Item>
