@@ -17,7 +17,7 @@ import { FocusScope, Key, useKeyboard } from 'react-aria';
 import { Section as BaseSection, Item, ListState } from 'react-stately';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
-import { DirectionIcon } from '../../../icons';
+import { DirectionIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import {
   BASE_STYLES,
@@ -889,8 +889,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         type={type}
         theme={validationState === 'invalid' ? 'danger' : theme}
         size={size}
-        isDisabled={isDisabled}
-        isLoading={isLoading}
+        isDisabled={isDisabled || isLoading}
         mods={{
           placeholder: !hasSelection,
           selected: hasSelection,
@@ -898,7 +897,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         }}
         icon={icon}
         rightIcon={
-          rightIcon !== undefined ? (
+          isLoading ? (
+            <LoadingIcon />
+          ) : rightIcon !== undefined ? (
             rightIcon
           ) : (
             <DirectionIcon to={state.isOpen ? 'top' : 'bottom'} />
@@ -949,6 +950,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 selectionMode={selectionMode}
                 validationState={validationState}
                 isDisabled={isDisabled}
+                isLoading={isLoading}
                 stateRef={listStateRef}
                 isCheckable={isCheckable}
                 mods={{

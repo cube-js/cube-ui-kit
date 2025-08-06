@@ -1631,16 +1631,19 @@ export const MultipleControlled: Story = {
   },
   render: (args) => {
     const [showOptions, setShowOptions] = useState(false);
-    const [selectedKeys, setSelectedKeys] = useState<string[]>(['read']);
+    const [selectedKeys, setSelectedKeys] = useState<string[]>(['write']);
 
     useEffect(() => {
-      setShowOptions(true);
+      setTimeout(() => {
+        setShowOptions(true);
+      }, 1000);
     }, []);
 
     return (
       <Space gap="2x" flow="column" placeItems="start">
         <FilterPicker
           {...args}
+          isLoading={!showOptions}
           selectedKeys={selectedKeys}
           onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
         >

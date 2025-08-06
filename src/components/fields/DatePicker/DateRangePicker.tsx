@@ -37,7 +37,7 @@ import { useFocusManagerRef } from './utils';
 const DateRangeDash = tasty({
   'aria-hidden': 'true',
   'data-qa': 'DateRangeDash',
-  children: '––',
+  children: '–',
   styles: {
     padding: '0 .5x',
   },
