@@ -118,17 +118,18 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     ref: menuRef,
     onClose: state.close,
     closeOnSelect,
-    autoFocus: state.focusStrategy || true,
+    autoFocus: (state.focusStrategy as any) ?? 'first',
     style: isMobile
       ? {
-          width: '100%',
-          maxHeight: 'inherit',
-        }
+        width: '100%',
+        maxHeight: 'inherit',
+      }
       : undefined,
     mods: {
       popover: !isMobile,
       tray: isMobile,
     },
+    isClosing: !state.isOpen,
   } as MenuContextValue;
 
   const contents = (
