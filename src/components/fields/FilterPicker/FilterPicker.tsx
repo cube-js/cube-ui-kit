@@ -542,11 +542,10 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     // If children is not provided or is a render function, return it as-is
     if (!children || typeof children === 'function') return children;
 
-    // When the popover is **closed**, reuse the cached order if we have it to
-    // avoid unnecessary reflows. If we don't have a cache yet (first open),
-    // fall through to compute the sorted order so the very first render is
-    // already correct.
-    if (!isPopoverOpen && cachedChildrenOrder.current) {
+    // Reuse the cached order if we have it. We only want to compute the sorted
+    // order once per pop-over opening session. The cache is cleared when the
+    // pop-over closes so the next opening can recompute.
+    if (cachedChildrenOrder.current) {
       return cachedChildrenOrder.current;
     }
 
@@ -695,8 +694,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const getSortedItems = useCallback(() => {
     if (!items) return items;
 
-    // Reuse cached order when popover is closed to avoid needless re-renders
-    if (!isPopoverOpen && cachedItemsOrder.current) {
+    // Reuse the cached order if we have it. We only compute the sorted array
+    // once when the pop-over is opened. Cache is cleared on close.
+    if (cachedItemsOrder.current) {
       return cachedItemsOrder.current;
     }
 
@@ -836,10 +836,11 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       if (state.isOpen !== isPopoverOpen) {
         setIsPopoverOpen(state.isOpen);
         if (!state.isOpen) {
-          // Popover just closed – preserve the current sorted order so the
-          // fade-out animation keeps its layout unchanged. We only need to
-          // record the latest selection for the next session.
+          // Popover just closed – record the latest selection for the next opening
+          // and clear the cached order so the next session can compute afresh.
           selectionsWhenClosed.current = { ...latestSelectionRef.current };
+          cachedChildrenOrder.current = null;
+          cachedItemsOrder.current = null;
         }
       }
     }, [state.isOpen, isPopoverOpen]);
