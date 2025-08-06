@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.71.2
+
+### Patch Changes
+
+- [#745](https://github.com/cube-js/cube-ui-kit/pull/745) [`1646e97f`](https://github.com/cube-js/cube-ui-kit/commit/1646e97f25b6fb8a3488460093ecbd75213ba191) Thanks [@tenphi](https://github.com/tenphi)! - Unescape keys in FilterPicker to support `:` and `=` symbols.
+
 ## 0.71.1
 
 ### Patch Changes
