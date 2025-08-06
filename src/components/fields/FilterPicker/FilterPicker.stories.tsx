@@ -1,5 +1,5 @@
 import { userEvent, within } from '@storybook/test';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   CheckIcon,
@@ -1610,6 +1610,88 @@ export const WithSelectAll: Story = {
       description: {
         story:
           'When `showSelectAll={true}` is used with multiple selection mode in FilterPicker, a "Select All" option appears in the dropdown above the search input. The checkbox shows indeterminate state when some items are selected, checked when all are selected, and unchecked when none are selected. The select all functionality works seamlessly with filtering and the trigger button shows the combined selection summary.',
+      },
+    },
+  },
+};
+
+export const MultipleControlled: Story = {
+  args: {
+    label: 'Controlled Multiple Selection',
+    placeholder: 'Choose permissions...',
+    selectionMode: 'multiple',
+    isCheckable: true,
+    searchPlaceholder: 'Filter permissions...',
+    width: 'max 30x',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
+  },
+  render: (args) => {
+    const [showOptions, setShowOptions] = useState(false);
+    const [selectedKeys, setSelectedKeys] = useState<string[]>(['read']);
+
+    useEffect(() => {
+      setShowOptions(true);
+    }, []);
+
+    return (
+      <Space gap="2x" flow="column" placeItems="start">
+        <FilterPicker
+          {...args}
+          selectedKeys={selectedKeys}
+          onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
+        >
+          {(showOptions ? permissions : []).map((permission) => (
+            <FilterPicker.Item
+              key={permission.key}
+              textValue={permission.label}
+            >
+              {permission.label}
+            </FilterPicker.Item>
+          ))}
+        </FilterPicker>
+
+        <Text>
+          Selected:{' '}
+          <strong>
+            {selectedKeys.length ? selectedKeys.join(', ') : 'None'}
+          </strong>
+        </Text>
+
+        <Space gap="1x" flow="row">
+          <Button
+            size="small"
+            type="outline"
+            onClick={() => setSelectedKeys(['read', 'write', 'admin'])}
+          >
+            Select Admin Set
+          </Button>
+          <Button
+            size="small"
+            type="outline"
+            onClick={() => setSelectedKeys(['read'])}
+          >
+            Read Only
+          </Button>
+          <Button
+            size="small"
+            type="outline"
+            onClick={() => setSelectedKeys([])}
+          >
+            Clear All
+          </Button>
+        </Space>
+      </Space>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A controlled FilterPicker in multiple selection mode where the selection state is managed externally. The component responds to external state changes and provides selection feedback through the onSelectionChange callback. This pattern is useful when you need to programmatically control the selection or integrate with form libraries.',
       },
     },
   },
