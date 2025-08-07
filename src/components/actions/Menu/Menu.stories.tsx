@@ -1561,8 +1561,6 @@ export const SubMenus = (props) => {
       placeItems="start"
       height="500px"
     >
-      {menu}
-
       <MenuTrigger>
         <Button
           size="small"
@@ -1585,6 +1583,70 @@ SubMenus.parameters = {
     },
   },
 };
+
+// SubMenus.play = async ({ canvasElement, viewMode }) => {
+//   if (viewMode === 'docs') return;
+
+//   const canvas = within(canvasElement);
+
+//   // Find and click the MenuTrigger button to open the main menu
+//   const triggerButton = await canvas.findByRole('button', {
+//     name: 'Open Context Menu with Submenus'
+//   });
+//   await userEvent.click(triggerButton);
+
+//   // Wait for the main menu to appear and be ready
+//   await waitFor(() => {
+//     const shareItem = canvas.queryByText('Share');
+//     expect(shareItem).toBeInTheDocument();
+//   });
+
+//   // Wait a bit for the menu to be fully ready
+//   await new Promise((resolve) => setTimeout(resolve, 300));
+
+//   // Step 1: Hover over Share to open first submenu
+//   const shareItem = canvas.getByText('Share');
+//   await userEvent.hover(shareItem);
+
+//   // Wait for Share submenu to appear
+//   await waitFor(
+//     () => {
+//       const copyLinkItem = canvas.queryByText('Copy link');
+//       expect(copyLinkItem).toBeInTheDocument();
+//     },
+//     { timeout: 2000 }
+//   );
+
+//   // Step 2: Move to Export submenu (this will close Share submenu)
+//   await new Promise((resolve) => setTimeout(resolve, 300));
+//   const exportItem = canvas.getByText('Export');
+//   await userEvent.hover(exportItem);
+
+//   // Wait for Export submenu to appear
+//   await waitFor(
+//     () => {
+//       const exportPdfItem = canvas.queryByText('Export as PDF');
+//       expect(exportPdfItem).toBeInTheDocument();
+//     },
+//     { timeout: 2000 }
+//   );
+
+//   // Step 3: Hover over "More formats" to show nested submenu
+//   await new Promise((resolve) => setTimeout(resolve, 300));
+//   const moreFormatsItem = canvas.queryByText('More formats');
+//   if (moreFormatsItem) {
+//     await userEvent.hover(moreFormatsItem);
+
+//     // Wait for nested submenu to appear
+//     await waitFor(
+//       () => {
+//         const docxItem = canvas.queryByText('DOCX Document');
+//         expect(docxItem).toBeInTheDocument();
+//       },
+//       { timeout: 2000 }
+//     );
+//   }
+// };
 
 export const SubMenuCustomization = () => {
   const handleAction = (key) => {

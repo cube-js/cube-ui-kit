@@ -8,6 +8,7 @@ import {
   userEvent,
   waitFor,
 } from '../../../test';
+import { EventBusProvider } from '../../../utils/react/useEventBus';
 import { Button } from '../Button/Button';
 
 import { Menu } from './Menu';
@@ -771,6 +772,136 @@ describe('<SubMenuTrigger />', () => {
           expect(menuItem).toHaveAttribute('aria-expanded', 'true');
         },
         { timeout: 2000 },
+      );
+    });
+  });
+
+  describe('Submenu coordination', () => {
+    it('should close one submenu when another opens (keyboard + mouse)', async () => {
+      const multiSubmenuExample = (
+        <EventBusProvider>
+          <MenuTrigger>
+            <Button>Multi Submenu</Button>
+            <Menu width="200px">
+              <Menu.SubMenuTrigger>
+                <Menu.Item key="share">Share</Menu.Item>
+                <Menu onAction={() => {}}>
+                  <Menu.Item key="share-link">Copy link</Menu.Item>
+                </Menu>
+              </Menu.SubMenuTrigger>
+              <Menu.SubMenuTrigger>
+                <Menu.Item key="export">Export</Menu.Item>
+                <Menu onAction={() => {}}>
+                  <Menu.Item key="export-pdf">Export as PDF</Menu.Item>
+                </Menu>
+              </Menu.SubMenuTrigger>
+            </Menu>
+          </MenuTrigger>
+        </EventBusProvider>
+      );
+
+      const { getByText, queryByText } = renderWithRoot(multiSubmenuExample);
+
+      // Open main menu
+      const triggerButton = getByText('Multi Submenu');
+      await userEvent.click(triggerButton);
+
+      // Wait for main menu to appear
+      await waitFor(() => {
+        expect(getByText('Share')).toBeInTheDocument();
+        expect(getByText('Export')).toBeInTheDocument();
+      });
+
+      // Step 1: Open first submenu with keyboard (ArrowRight)
+      const shareItem = getByText('Share');
+      shareItem.focus();
+      await userEvent.keyboard('{ArrowRight}');
+
+      // Wait for first submenu to open
+      await waitFor(
+        () => {
+          expect(queryByText('Copy link')).toBeInTheDocument();
+        },
+        { timeout: 1000 },
+      );
+
+      // Step 2: Open second submenu with mouse hover
+      const exportItem = getByText('Export');
+      await userEvent.hover(exportItem);
+
+      // Wait for second submenu to open and first to close
+      await waitFor(
+        () => {
+          expect(queryByText('Export as PDF')).toBeInTheDocument();
+          // First submenu should be closed
+          expect(queryByText('Copy link')).not.toBeInTheDocument();
+        },
+        { timeout: 1500 },
+      );
+    });
+
+    it('should close one submenu when another opens (mouse + keyboard)', async () => {
+      const multiSubmenuExample = (
+        <EventBusProvider>
+          <MenuTrigger>
+            <Button>Multi Submenu</Button>
+            <Menu width="200px">
+              <Menu.SubMenuTrigger>
+                <Menu.Item key="share">Share</Menu.Item>
+                <Menu onAction={() => {}}>
+                  <Menu.Item key="share-link">Copy link</Menu.Item>
+                </Menu>
+              </Menu.SubMenuTrigger>
+              <Menu.SubMenuTrigger>
+                <Menu.Item key="export">Export</Menu.Item>
+                <Menu onAction={() => {}}>
+                  <Menu.Item key="export-pdf">Export as PDF</Menu.Item>
+                </Menu>
+              </Menu.SubMenuTrigger>
+            </Menu>
+          </MenuTrigger>
+        </EventBusProvider>
+      );
+
+      const { getByText, queryByText } = renderWithRoot(multiSubmenuExample);
+
+      // Open main menu
+      const triggerButton = getByText('Multi Submenu');
+      await userEvent.click(triggerButton);
+
+      // Wait for main menu to appear
+      await waitFor(() => {
+        expect(getByText('Share')).toBeInTheDocument();
+        expect(getByText('Export')).toBeInTheDocument();
+      });
+
+      // Step 1: Open first submenu with mouse hover
+      const shareItem = getByText('Share');
+      await userEvent.hover(shareItem);
+
+      // Wait for first submenu to open
+      await waitFor(
+        () => {
+          expect(queryByText('Copy link')).toBeInTheDocument();
+        },
+        { timeout: 1000 },
+      );
+
+      // Step 2: Open second submenu with keyboard - click on Export then press ArrowRight
+      const exportItem = getByText('Export');
+      await userEvent.click(exportItem);
+      // Short pause to ensure focus
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      await userEvent.keyboard('{ArrowRight}');
+
+      // Wait for second submenu to open and first to close
+      await waitFor(
+        () => {
+          expect(queryByText('Export as PDF')).toBeInTheDocument();
+          // First submenu should be closed
+          expect(queryByText('Copy link')).not.toBeInTheDocument();
+        },
+        { timeout: 1500 },
       );
     });
   });

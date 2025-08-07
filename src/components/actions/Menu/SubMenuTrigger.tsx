@@ -17,6 +17,8 @@ import {
 } from 'react-aria';
 import { useMenuTriggerState } from 'react-stately';
 
+import { generateRandomId } from '../../../utils/random';
+import { useEventBus } from '../../../utils/react/useEventBus';
 import { Popover } from '../../overlays/Modal';
 
 import { MenuContext, MenuContextValue, useMenuContext } from './context';
@@ -100,6 +102,12 @@ function InternalSubMenuTrigger(props: InternalSubMenuTriggerProps) {
 
   const state = useMenuTriggerState(props as AriaMenuTriggerProps);
 
+  // Generate a unique ID for this submenu instance
+  const submenuId = useMemo(() => generateRandomId(), []);
+
+  // Get event bus for submenu synchronization
+  const { emit, on } = useEventBus();
+
   // Refs – trigger (MenuItem <li>) and overlay (<div> from Popover)
   const domTriggerRef = useRef<HTMLElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -174,6 +182,25 @@ function InternalSubMenuTrigger(props: InternalSubMenuTriggerProps) {
 
   // Sync the parent selection manager focus with DOM ref (for virtual focus scenarios)
   useSyncRef(parentContext, domTriggerRef);
+
+  // Listen for other menus opening and close this submenu if needed
+  useEffect(() => {
+    const unsubscribe = on('menu:open', (data: { menuId: string }) => {
+      // If another menu is opening and this submenu is open, close this one
+      if (data.menuId !== submenuId && state.isOpen) {
+        state.close();
+      }
+    });
+
+    return unsubscribe;
+  }, [on, submenuId, state]);
+
+  // Emit event when this submenu opens
+  useEffect(() => {
+    if (state.isOpen) {
+      emit('menu:open', { menuId: submenuId });
+    }
+  }, [state.isOpen, emit, submenuId]);
 
   // Cleanup hover timers and reset refs on unmount
   useEffect(() => {
