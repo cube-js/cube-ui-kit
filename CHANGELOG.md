@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.72.0
+
+### Minor Changes
+
+- [#747](https://github.com/cube-js/cube-ui-kit/pull/747) [`27dc51b2`](https://github.com/cube-js/cube-ui-kit/commit/27dc51b2c3ab08693b02892f38787a3e90e238b9) Thanks [@tenphi](https://github.com/tenphi)! - New syntax for custom properties with fallback: `($prop-name, <fallback_value>)`.
+
+### Patch Changes
+
+- [#749](https://github.com/cube-js/cube-ui-kit/pull/749) [`6f40ed82`](https://github.com/cube-js/cube-ui-kit/commit/6f40ed82775976efecf7b2f99f7356c59b770284) Thanks [@tenphi](https://github.com/tenphi)! - Add SubMenuTrigger component for submenu support in Menu. CommandMenu is not supported.
+
 ## 0.71.2
 
 ### Patch Changes
