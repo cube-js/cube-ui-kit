@@ -47,7 +47,7 @@ describe('StyleProcessor', () => {
   });
 
   test('parses custom properties', () => {
-    const result = parser.process('$my-gap $(my-gap, 2x)');
+    const result = parser.process('$my-gap ($my-gap, 2x)');
     expect(result.groups[0].values).toEqual([
       'var(--my-gap)',
       'var(--my-gap, calc(2 * var(--gap)))',
@@ -192,6 +192,23 @@ describe('StyleProcessor', () => {
     const res = parser.process(expr);
     expect(res.groups[0].values).toEqual([
       'calc(var(--slider-range-end) - var(--slider-range-start))',
+    ]);
+  });
+
+  test('parses new custom property with fallback syntax', () => {
+    const result = parser.process(
+      '($custom-margin, 1x) ($theme-color, #purple)',
+    );
+    expect(result.groups[0].values).toEqual([
+      'var(--custom-margin, var(--gap))',
+      'var(--theme-color, var(--purple-color))',
+    ]);
+  });
+
+  test('parses new custom property syntax in complex expressions', () => {
+    const result = parser.process('(100% - (2 * ($custom-gap, 1x)))');
+    expect(result.groups[0].values).toEqual([
+      'calc(100% - calc(2 * var(--custom-gap, var(--gap))))',
     ]);
   });
 
