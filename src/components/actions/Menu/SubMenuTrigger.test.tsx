@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from 'react';
 
 import {
@@ -494,7 +493,7 @@ describe('<SubMenuTrigger />', () => {
   describe('Disabled state', () => {
     const disabledSubmenu = (
       <Menu id="test-menu" aria-label="Test menu">
-        <Menu.SubMenuTrigger disabled>
+        <Menu.SubMenuTrigger isDisabled>
           <Menu.Item key="share">Share</Menu.Item>
           <Menu>
             <Menu.Item key="link">Copy link</Menu.Item>

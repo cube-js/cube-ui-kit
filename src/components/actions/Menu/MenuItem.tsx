@@ -1,6 +1,6 @@
 import { Key, Node } from '@react-types/shared';
 import { IconPointFilled } from '@tabler/icons-react';
-import React, { ReactNode, useRef } from 'react';
+import { KeyboardEvent, ReactNode, useContext, useRef } from 'react';
 import { FocusRing, useMenuItem } from 'react-aria';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { TreeState } from 'react-stately';
@@ -60,7 +60,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
   const { rendered, key, props: itemProps } = item;
 
   // Check if this item is wrapped in a SubmenuTriggerContext
-  const submenuContext = React.useContext(SubmenuTriggerContext);
+  const submenuContext = useContext(SubmenuTriggerContext);
 
   // Extract optional keyboard shortcut and CommandMenu-specific props from item props so they are not passed down to DOM elements.
   const { hotkeys, wrapper, keywords, forceMount, ...cleanItemProps } =
@@ -167,7 +167,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
           'aria-expanded': submenuContext?.isOpen,
           'data-has-submenu': submenuContext ? true : undefined,
           onKeyDown: submenuContext?.onKeyDown
-            ? (e: React.KeyboardEvent) => {
+            ? (e: KeyboardEvent) => {
                 // Call submenu handler first, if it prevents default, don't call the original
                 submenuContext.onKeyDown?.(e);
                 if (!e.defaultPrevented && menuItemProps.onKeyDown) {
