@@ -1465,6 +1465,336 @@ export const MenuSynchronization = () => {
   );
 };
 
+export const SubMenus = (props) => {
+  const handleAction = (key) => {
+    console.log('Action selected:', key);
+  };
+
+  const menu = (
+    <Menu id="submenu-example" {...props} width="220px" onAction={handleAction}>
+      <Menu.Item key="copy" hotkeys="Ctrl+C" icon={<CopyIcon />}>
+        Copy
+      </Menu.Item>
+      <Menu.Item key="paste" hotkeys="Ctrl+V">
+        Paste
+      </Menu.Item>
+      <Menu.Item key="cut" hotkeys="Ctrl+X">
+        Cut
+      </Menu.Item>
+
+      {/* Basic submenu */}
+      <Menu.SubMenuTrigger>
+        <Menu.Item key="share" icon={<FolderIcon />}>
+          Share
+        </Menu.Item>
+        <Menu onAction={handleAction}>
+          <Menu.Item key="share-link">Copy link</Menu.Item>
+          <Menu.Item key="share-email">Email</Menu.Item>
+          <Menu.Item key="share-sms">SMS</Menu.Item>
+        </Menu>
+      </Menu.SubMenuTrigger>
+
+      {/* Nested submenu with multiple levels */}
+      <Menu.SubMenuTrigger>
+        <Menu.Item key="export" icon={<EditIcon />}>
+          Export
+        </Menu.Item>
+        <Menu onAction={handleAction}>
+          <Menu.Item key="export-pdf">Export as PDF</Menu.Item>
+          <Menu.Item key="export-image">Export as Image</Menu.Item>
+
+          {/* Nested submenu */}
+          <Menu.SubMenuTrigger>
+            <Menu.Item key="export-formats">More formats</Menu.Item>
+            <Menu onAction={handleAction}>
+              <Menu.Item key="export-docx">DOCX Document</Menu.Item>
+              <Menu.Item key="export-xlsx">Excel Spreadsheet</Menu.Item>
+              <Menu.Item key="export-pptx">PowerPoint</Menu.Item>
+
+              {/* Third level nesting */}
+              <Menu.SubMenuTrigger>
+                <Menu.Item key="export-advanced">Advanced</Menu.Item>
+                <Menu onAction={handleAction}>
+                  <Menu.Item key="export-custom">Custom Format</Menu.Item>
+                  <Menu.Item key="export-batch">Batch Export</Menu.Item>
+                  <Menu.Item key="export-cloud">Export to Cloud</Menu.Item>
+                </Menu>
+              </Menu.SubMenuTrigger>
+            </Menu>
+          </Menu.SubMenuTrigger>
+
+          <Menu.Item key="export-raw">Export raw data</Menu.Item>
+        </Menu>
+      </Menu.SubMenuTrigger>
+
+      {/* Submenu with sections */}
+      <Menu.SubMenuTrigger>
+        <Menu.Item key="settings" icon={<EditIcon />}>
+          Settings
+        </Menu.Item>
+        <Menu onAction={handleAction}>
+          <Menu.Section title="General">
+            <Menu.Item key="preferences">Preferences</Menu.Item>
+            <Menu.Item key="account">Account Settings</Menu.Item>
+          </Menu.Section>
+          <Menu.Section title="Display">
+            <Menu.Item key="theme">Theme</Menu.Item>
+            <Menu.Item key="layout">Layout</Menu.Item>
+          </Menu.Section>
+          <Menu.Section title="Advanced">
+            <Menu.Item key="developer">Developer Tools</Menu.Item>
+            <Menu.Item key="reset">Reset Settings</Menu.Item>
+          </Menu.Section>
+        </Menu>
+      </Menu.SubMenuTrigger>
+
+      <Menu.Item key="delete" icon={<CloseIcon />}>
+        Delete
+      </Menu.Item>
+    </Menu>
+  );
+
+  return (
+    <Space
+      gap="10x"
+      placeContent="start start"
+      placeItems="start"
+      height="500px"
+    >
+      <MenuTrigger>
+        <Button
+          size="small"
+          icon={<MoreIcon />}
+          aria-label="Open Context Menu with Submenus"
+        >
+          Menu with Submenus
+        </Button>
+        {menu}
+      </MenuTrigger>
+    </Space>
+  );
+};
+
+SubMenus.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates submenu functionality with Menu.SubMenuTrigger. Supports unlimited nesting levels, keyboard navigation (arrow keys, Enter, Esc), and automatic chevron indicators. Submenus open on hover/arrow keys and close when focus leaves.',
+    },
+  },
+};
+
+SubMenus.play = async ({ canvasElement, viewMode }) => {
+  if (viewMode === 'docs') return;
+
+  const canvas = within(canvasElement);
+
+  // Find and click the MenuTrigger button to open the main menu
+  const triggerButton = await canvas.findByRole('button', {
+    name: 'Open Context Menu with Submenus',
+  });
+  await userEvent.click(triggerButton);
+
+  // Wait for the main menu to appear and be ready
+  await waitFor(() => {
+    const shareItem = canvas.queryByText('Share');
+    expect(shareItem).toBeInTheDocument();
+  });
+
+  // Wait a bit for the menu to be fully ready
+  await new Promise((resolve) => setTimeout(resolve, 300));
+
+  // Step 1: Hover over Share to open first submenu
+  const shareItem = canvas.getByText('Share');
+  await userEvent.hover(shareItem);
+
+  // Wait for Share submenu to appear
+  await waitFor(
+    () => {
+      const copyLinkItem = canvas.queryByText('Copy link');
+      expect(copyLinkItem).toBeInTheDocument();
+    },
+    { timeout: 2000 },
+  );
+
+  // Step 2: Move to Export submenu (this will close Share submenu)
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  const exportItem = canvas.getByText('Export');
+  await userEvent.hover(exportItem);
+
+  // Wait for Export submenu to appear
+  await waitFor(
+    () => {
+      const exportPdfItem = canvas.queryByText('Export as PDF');
+      expect(exportPdfItem).toBeInTheDocument();
+    },
+    { timeout: 2000 },
+  );
+
+  // Step 3: Hover over "More formats" to show nested submenu
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  const moreFormatsItem = canvas.queryByText('More formats');
+  if (moreFormatsItem) {
+    await userEvent.hover(moreFormatsItem);
+
+    // Wait for nested submenu to appear
+    await waitFor(
+      () => {
+        const docxItem = canvas.queryByText('DOCX Document');
+        expect(docxItem).toBeInTheDocument();
+      },
+      { timeout: 2000 },
+    );
+  }
+};
+
+export const SubMenuCustomization = () => {
+  const handleAction = (key) => {
+    console.log('SubMenu action:', key);
+  };
+
+  return (
+    <Flow gap="4x" placeContent="start start" placeItems="start" padding="4x">
+      <Title level={3} margin="0 0 2x 0">
+        SubMenu Customization Options
+      </Title>
+      <Paragraph preset="t4" color="#dark-03" margin="0 0 4x 0">
+        SubMenuTrigger supports various customization options including
+        placement, offset, and autoFocus behavior.
+      </Paragraph>
+
+      <Flow gap="3x" flexDirection="row" flexWrap="wrap">
+        {/* Default placement */}
+        <Card border padding="3x" minWidth="250px">
+          <Paragraph preset="t3m" color="#dark" margin="0 0 2x 0">
+            Default (right top)
+          </Paragraph>
+          <MenuTrigger>
+            <Button size="small" icon={<MoreIcon />}>
+              Default Placement
+            </Button>
+            <Menu width="200px" onAction={handleAction}>
+              <Menu.Item key="action1">Action 1</Menu.Item>
+              <Menu.SubMenuTrigger>
+                <Menu.Item key="submenu1">Submenu Default</Menu.Item>
+                <Menu onAction={handleAction}>
+                  <Menu.Item key="sub1">Submenu Item 1</Menu.Item>
+                  <Menu.Item key="sub2">Submenu Item 2</Menu.Item>
+                  <Menu.Item key="sub3">Submenu Item 3</Menu.Item>
+                </Menu>
+              </Menu.SubMenuTrigger>
+              <Menu.Item key="action2">Action 2</Menu.Item>
+            </Menu>
+          </MenuTrigger>
+        </Card>
+
+        {/* Custom placement */}
+        <Card border padding="3x" minWidth="250px">
+          <Paragraph preset="t3m" color="#dark" margin="0 0 2x 0">
+            Custom Placement
+          </Paragraph>
+          <MenuTrigger>
+            <Button size="small" icon={<MoreIcon />}>
+              Left Placement
+            </Button>
+            <Menu width="200px" onAction={handleAction}>
+              <Menu.Item key="action1">Action 1</Menu.Item>
+              <Menu.SubMenuTrigger placement="left top">
+                <Menu.Item key="submenu1">Submenu Left</Menu.Item>
+                <Menu onAction={handleAction}>
+                  <Menu.Item key="sub1">Submenu Item 1</Menu.Item>
+                  <Menu.Item key="sub2">Submenu Item 2</Menu.Item>
+                  <Menu.Item key="sub3">Submenu Item 3</Menu.Item>
+                </Menu>
+              </Menu.SubMenuTrigger>
+              <Menu.Item key="action2">Action 2</Menu.Item>
+            </Menu>
+          </MenuTrigger>
+        </Card>
+
+        {/* Custom offset */}
+        <Card border padding="3x" minWidth="250px">
+          <Paragraph preset="t3m" color="#dark" margin="0 0 2x 0">
+            Custom Offset
+          </Paragraph>
+          <MenuTrigger>
+            <Button size="small" icon={<MoreIcon />}>
+              Large Offset
+            </Button>
+            <Menu width="200px" onAction={handleAction}>
+              <Menu.Item key="action1">Action 1</Menu.Item>
+              <Menu.SubMenuTrigger offset={20}>
+                <Menu.Item key="submenu1">Submenu +20px</Menu.Item>
+                <Menu onAction={handleAction}>
+                  <Menu.Item key="sub1">Submenu Item 1</Menu.Item>
+                  <Menu.Item key="sub2">Submenu Item 2</Menu.Item>
+                  <Menu.Item key="sub3">Submenu Item 3</Menu.Item>
+                </Menu>
+              </Menu.SubMenuTrigger>
+              <Menu.Item key="action2">Action 2</Menu.Item>
+            </Menu>
+          </MenuTrigger>
+        </Card>
+
+        {/* Disabled submenu */}
+        <Card border padding="3x" minWidth="250px">
+          <Paragraph preset="t3m" color="#dark" margin="0 0 2x 0">
+            Disabled Submenu
+          </Paragraph>
+          <MenuTrigger>
+            <Button size="small" icon={<MoreIcon />}>
+              With Disabled
+            </Button>
+            <Menu
+              width="200px"
+              disabledKeys={['submenu1']}
+              onAction={handleAction}
+            >
+              <Menu.Item key="action1">Action 1</Menu.Item>
+              <Menu.SubMenuTrigger isDisabled>
+                <Menu.Item key="submenu1">Disabled Submenu</Menu.Item>
+                <Menu onAction={handleAction}>
+                  <Menu.Item key="sub1">Won't Open</Menu.Item>
+                  <Menu.Item key="sub2">Disabled State</Menu.Item>
+                </Menu>
+              </Menu.SubMenuTrigger>
+              <Menu.Item key="action2">Action 2</Menu.Item>
+            </Menu>
+          </MenuTrigger>
+        </Card>
+      </Flow>
+
+      <Alert type="info" title="SubMenu Features">
+        <Flow gap="1x">
+          <Text>
+            • <strong>Keyboard Navigation:</strong> Use arrow keys to navigate
+            between menus
+          </Text>
+          <Text>
+            • <strong>Auto-open:</strong> Right arrow or Enter opens submenus
+          </Text>
+          <Text>
+            • <strong>Auto-close:</strong> Left arrow or Esc closes current
+            submenu
+          </Text>
+          <Text>
+            • <strong>Visual Indicator:</strong> Chevron (›) automatically added
+            to submenu triggers
+          </Text>
+          <Text>
+            • <strong>Unlimited Nesting:</strong> Create as many levels as
+            needed
+          </Text>
+          <Text>
+            • <strong>Custom Positioning:</strong> Control placement, offset,
+            and flip behavior
+          </Text>
+        </Flow>
+      </Alert>
+    </Flow>
+  );
+};
+
 export const ComprehensivePopoverSynchronization = () => {
   const MyMenuComponent = ({ onAction }) => (
     <Menu width="200px" onAction={onAction}>

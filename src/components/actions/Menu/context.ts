@@ -12,6 +12,7 @@ export interface MenuContextValue
     popover?: boolean;
     tray?: boolean;
   };
+  isClosing?: boolean;
 }
 
 export const MenuContext = React.createContext<MenuContextValue>({});

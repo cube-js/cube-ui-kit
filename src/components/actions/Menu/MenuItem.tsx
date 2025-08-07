@@ -1,11 +1,11 @@
 import { Key, Node } from '@react-types/shared';
 import { IconPointFilled } from '@tabler/icons-react';
-import { ReactNode, useRef } from 'react';
+import { KeyboardEvent, ReactNode, useContext, useRef } from 'react';
 import { FocusRing, useMenuItem } from 'react-aria';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { TreeState } from 'react-stately';
 
-import { CheckIcon } from '../../../icons';
+import { CheckIcon, RightIcon } from '../../../icons';
 import { Styles } from '../../../tasty';
 import { ClearSlots, mergeProps, SlotProvider } from '../../../utils/react';
 import { HotKeys } from '../../content/HotKeys';
@@ -14,6 +14,7 @@ import { Space } from '../../layout/Space';
 
 import { useMenuContext } from './context';
 import { StyledItem } from './styled';
+import { SubmenuTriggerContext } from './SubmenuTriggerContext';
 
 export type MenuSelectionType = 'checkbox' | 'radio' | 'checkmark';
 
@@ -58,14 +59,21 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
   const { onClose, closeOnSelect } = useMenuContext();
   const { rendered, key, props: itemProps } = item;
 
+  // Check if this item is wrapped in a SubmenuTriggerContext
+  const submenuContext = useContext(SubmenuTriggerContext);
+
   // Extract optional keyboard shortcut and CommandMenu-specific props from item props so they are not passed down to DOM elements.
   const { hotkeys, wrapper, keywords, forceMount, ...cleanItemProps } =
     (itemProps || {}) as any;
 
   const isSelectable = state.selectionManager.selectionMode !== 'none';
-  const isDisabledKey = state.disabledKeys.has(key);
+  const isDisabledKey =
+    state.disabledKeys.has(key) || submenuContext?.isDisabled;
 
   const ref = useRef<HTMLLIElement>(null);
+
+  // Use the triggerRef from submenu context if present
+  const elementRef = (submenuContext?.triggerRef ?? ref) as any;
 
   const {
     menuItemProps,
@@ -82,13 +90,13 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
       isDisabled: isDisabledKey,
       'aria-label': item['aria-label'],
       key,
-      onClose,
-      closeOnSelect,
+      onClose: submenuContext ? undefined : onClose, // Don't close menu for submenu triggers
+      closeOnSelect: submenuContext ? false : closeOnSelect, // Don't close on submenu trigger selection
       isVirtualized,
-      onAction,
+      onAction: submenuContext?.onAction || onAction,
     },
     state,
-    ref,
+    elementRef,
   );
 
   // Destructure presentation-related props from cleanItemProps so they are not spread onto DOM element
@@ -102,9 +110,10 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
     ...restCleanProps
   } = cleanItemProps as any;
 
-  // Build final postfix: custom postfix or HotKeys hint if provided and no explicit postfix
-  const finalPostfix =
-    postfix ?? (hotkeys ? <HotKeys>{hotkeys}</HotKeys> : undefined);
+  // Build final postfix: submenu icon, custom postfix or HotKeys hint
+  const finalPostfix = submenuContext
+    ? postfix ?? <RightIcon />
+    : postfix ?? (hotkeys ? <HotKeys>{hotkeys}</HotKeys> : undefined);
 
   const checkIcon =
     isSelectable && isSelected
@@ -121,6 +130,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
     selectable: isSelectable,
     selected: isSelected,
     disabled: isDisabled,
+    submenu: !!submenuContext,
   };
 
   // Register global hotkey if provided
@@ -130,8 +140,8 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
       if (!hotkeys) return;
       if (isDisabledKey || isDisabled) return;
       // Simulate a click on the menu item so all existing handlers run
-      if (ref.current) {
-        ref.current.click();
+      if (elementRef.current) {
+        (elementRef.current as HTMLElement).click();
       }
     },
     {
@@ -147,13 +157,30 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
     <FocusRing>
       <StyledItem
         {...mergeProps(menuItemProps, restCleanProps, {
+          'data-menu-trigger': true,
           qa: itemQa ? itemQa : `MenuItem-${key}`,
           mods,
           styles,
           'aria-disabled': isDisabled || undefined,
           'data-size': size,
+          'aria-haspopup': submenuContext ? 'menu' : undefined,
+          'aria-expanded': submenuContext?.isOpen,
+          'data-has-submenu': submenuContext ? true : undefined,
+          onKeyDown: submenuContext?.onKeyDown
+            ? (e: KeyboardEvent) => {
+                // Call submenu handler first, if it prevents default, don't call the original
+                submenuContext.onKeyDown?.(e);
+                if (!e.defaultPrevented && menuItemProps.onKeyDown) {
+                  menuItemProps.onKeyDown(e);
+                }
+              }
+            : menuItemProps.onKeyDown,
+          onMouseEnter:
+            submenuContext?.onMouseEnter || menuItemProps.onMouseEnter,
+          onMouseLeave:
+            submenuContext?.onMouseLeave || menuItemProps.onMouseLeave,
         })}
-        ref={ref}
+        ref={elementRef}
       >
         <ClearSlots>
           <SlotProvider
