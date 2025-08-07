@@ -46,6 +46,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
   const domRef = useDOMRef(ref);
   const menuTriggerRef = props.targetRef || domRef || triggerRef;
   const menuRef = useRef<HTMLUListElement>(null);
+  const wasOpenRef = useRef(false);
   const {
     children,
     shouldFlip = true,
@@ -87,6 +88,19 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     }
   }, [state.isOpen, emit, menuId, isDummy]);
 
+  // Restore focus manually when the menu closes
+  useEffect(() => {
+    if (!state.isOpen && wasOpenRef.current && !isDummy) {
+      wasOpenRef.current = false;
+      // Use setTimeout to ensure focus restoration happens after any animations
+      setTimeout(() => {
+        menuTriggerRef.current?.focus();
+      }, 0);
+    } else if (state.isOpen) {
+      wasOpenRef.current = true;
+    }
+  }, [state.isOpen, menuTriggerRef, isDummy]);
+
   if (typeof menuTrigger === 'function') {
     menuTrigger = (menuTrigger as CubeMenuTriggerProps['children'][0])(state);
   }
@@ -121,9 +135,9 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
     autoFocus: (state.focusStrategy as any) ?? 'first',
     style: isMobile
       ? {
-        width: '100%',
-        maxHeight: 'inherit',
-      }
+          width: '100%',
+          maxHeight: 'inherit',
+        }
       : undefined,
     mods: {
       popover: !isMobile,

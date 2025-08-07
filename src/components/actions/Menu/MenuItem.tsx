@@ -67,7 +67,8 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
     (itemProps || {}) as any;
 
   const isSelectable = state.selectionManager.selectionMode !== 'none';
-  const isDisabledKey = state.disabledKeys.has(key);
+  const isDisabledKey =
+    state.disabledKeys.has(key) || submenuContext?.isDisabled;
 
   const ref = useRef<HTMLLIElement>(null);
 
@@ -89,8 +90,8 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
       isDisabled: isDisabledKey,
       'aria-label': item['aria-label'],
       key,
-      onClose,
-      closeOnSelect,
+      onClose: submenuContext ? undefined : onClose, // Don't close menu for submenu triggers
+      closeOnSelect: submenuContext ? false : closeOnSelect, // Don't close on submenu trigger selection
       isVirtualized,
       onAction: submenuContext?.onAction || onAction,
     },
@@ -156,6 +157,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
     <FocusRing>
       <StyledItem
         {...mergeProps(menuItemProps, restCleanProps, {
+          'data-menu-trigger': true,
           qa: itemQa ? itemQa : `MenuItem-${key}`,
           mods,
           styles,
@@ -164,7 +166,15 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
           'aria-haspopup': submenuContext ? 'menu' : undefined,
           'aria-expanded': submenuContext?.isOpen,
           'data-has-submenu': submenuContext ? true : undefined,
-          onKeyDown: submenuContext?.onKeyDown || menuItemProps.onKeyDown,
+          onKeyDown: submenuContext?.onKeyDown
+            ? (e: React.KeyboardEvent) => {
+                // Call submenu handler first, if it prevents default, don't call the original
+                submenuContext.onKeyDown?.(e);
+                if (!e.defaultPrevented && menuItemProps.onKeyDown) {
+                  menuItemProps.onKeyDown(e);
+                }
+              }
+            : menuItemProps.onKeyDown,
           onMouseEnter:
             submenuContext?.onMouseEnter || menuItemProps.onMouseEnter,
           onMouseLeave:

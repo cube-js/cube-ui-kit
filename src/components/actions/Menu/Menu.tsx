@@ -94,6 +94,7 @@ function Menu<T extends object>(
     sectionHeadingStyles,
     selectionIcon,
     size = 'medium',
+    focusOnHover = false,
     qa,
     selectedKeys,
     defaultSelectedKeys,
@@ -126,6 +127,7 @@ function Menu<T extends object>(
     : undefined;
 
   const completeProps = mergeProps(contextProps, rest, {
+    focusOnHover,
     selectedKeys: ariaSelectedKeys,
     defaultSelectedKeys: ariaDefaultSelectedKeys,
     onSelectionChange: handleSelectionChange,

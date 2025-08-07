@@ -3,6 +3,7 @@ import React, { RefObject } from 'react';
 export interface SubmenuTriggerContextValue {
   triggerRef: RefObject<HTMLElement>;
   isOpen?: boolean;
+  isDisabled?: boolean;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
   onKeyDown?: (e: React.KeyboardEvent) => void;

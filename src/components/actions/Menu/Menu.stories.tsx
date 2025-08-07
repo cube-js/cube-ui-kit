@@ -1683,9 +1683,13 @@ export const SubMenuCustomization = () => {
             <Button size="small" icon={<MoreIcon />}>
               With Disabled
             </Button>
-            <Menu width="200px" onAction={handleAction}>
+            <Menu
+              width="200px"
+              disabledKeys={['submenu1']}
+              onAction={handleAction}
+            >
               <Menu.Item key="action1">Action 1</Menu.Item>
-              <Menu.SubMenuTrigger disabled>
+              <Menu.SubMenuTrigger isDisabled>
                 <Menu.Item key="submenu1">Disabled Submenu</Menu.Item>
                 <Menu onAction={handleAction}>
                   <Menu.Item key="sub1">Won't Open</Menu.Item>
