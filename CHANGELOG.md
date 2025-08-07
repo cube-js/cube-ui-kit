@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.72.1
+
+### Patch Changes
+
+- [#750](https://github.com/cube-js/cube-ui-kit/pull/750) [`0ee6ac95`](https://github.com/cube-js/cube-ui-kit/commit/0ee6ac958946c5621a847d7982f16267b4d29526) Thanks [@tenphi](https://github.com/tenphi)! - Fix \$label-width definition in Label component.
+
 ## 0.72.0
 
 ### Minor Changes
