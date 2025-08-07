@@ -39,8 +39,6 @@ The Style Parser converts an arbitrary CSS-like value string into:
 
 The parser operates in a single pass and never throws on malformed input.
 
-**Recent Change**: Custom properties with fallbacks now use the syntax `($prop-name, fallback)` instead of `$(prop-name, fallback)`.
-
 ---
 
 ## 2. Public API
