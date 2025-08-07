@@ -133,7 +133,7 @@ Each `StyleParser` instance maintains its own LRU cache.
 | Order | Rule                                                                                       | Bucket   |
 |-------|--------------------------------------------------------------------------------------------|----------|
 | 1     | URL – `url(` opens `inUrl`; everything to its `)` is a single token.                       | value    |
-| 2     | Custom property – `$ident` → `var(--ident)`; `($ident,fallback)` → `var(--ident, <processed fallback>)`. Only first `$` per token counts. | value    |
+| 2     | Custom property – `$ident` → `var(--ident)`; `($ident,fallback)` → `var(--ident, <processed fallback>)`. Must start with letter or underscore, followed by letters, numbers, hyphens, or underscores. | value    |
 | 3     | Hash token – `#xxxxxx` if valid hex → `var(--xxxxxx-color, #xxxxxx)`; otherwise `var(--name-color)`. | color    |
 | 4     | Color function – name in list §12.2 followed by `(` (balanced).                            | color    |
 | 5     | User / other function – `ident(` not in color list; parse args recursively, hand off to `funcs[name]` if provided; else rebuild with processed args. | value    |
@@ -234,6 +234,7 @@ rgb rgba hsl hsla hwb lab lch oklab oklch color device-cmyk gray color-mix color
 | Comments `/*…*/2x`             | `calc(2 * var(--gap))`.                                                         |
 | `#+not-hash`                   | Modifier (fails hex test).                                                      |
 | `($custom-gap, 1x)`           | `var(--custom-gap, var(--gap))` (new custom property syntax).                  |
+| `($123invalid, fallback)`     | `calc($123invalid, fallback)` (invalid name → auto-calc).                      |
 | Excess spaces/newlines         | Collapsed in output.                                                            |
 | `+2r, 1e3x`                    | Invalid → modifiers.                                                            |
 | Unicode identifiers            | Modifiers (parser supports only kebab-case ASCII idents).                       |

@@ -71,7 +71,7 @@ export function classify(
 
   // 2. Custom property
   if (token[0] === '@' || token[0] === '$') {
-    const identMatch = token.match(/^[$@]([a-z0-9-_]+)$/);
+    const identMatch = token.match(/^[$@]([a-z_][a-z0-9-_]*)$/);
     if (identMatch) {
       const name = identMatch[1];
       const processed = `var(--${name})`;
@@ -141,7 +141,7 @@ export function classify(
   // 6. Custom property with fallback syntax: (${prop}, fallback)
   if (token.startsWith('(') && token.endsWith(')')) {
     const inner = token.slice(1, -1);
-    const match = inner.match(/^[$@]([a-z0-9-_]+)\s*,\s*(.*)$/);
+    const match = inner.match(/^[$@]([a-z_][a-z0-9-_]*)\s*,\s*(.*)$/);
     if (match) {
       const [, name, fallback] = match;
       const processedFallback = recurse(fallback).output;
