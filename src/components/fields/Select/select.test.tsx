@@ -68,4 +68,28 @@ describe('<Select />', () => {
     expect(select).toHaveTextContent('Red');
     expect(formInstance.getFieldValue('test')).toBe('2');
   });
+
+  it('should close popover when clicking trigger the second time', async () => {
+    const { getByRole, queryByRole } = renderWithRoot(
+      <Select label="test" name="test">
+        <Select.Item key="1">Blue</Select.Item>
+        <Select.Item key="2">Red</Select.Item>
+        <Select.Item key="3">Green</Select.Item>
+      </Select>,
+    );
+
+    const select = getByRole('button');
+
+    // First click - open the popover
+    await act(async () => await userEvent.click(select));
+
+    // Check that the listbox is visible
+    expect(queryByRole('listbox')).toBeInTheDocument();
+
+    // Second click - should close the popover
+    await act(async () => await userEvent.click(select));
+
+    // Check that the listbox is no longer visible
+    expect(queryByRole('listbox')).not.toBeInTheDocument();
+  });
 });

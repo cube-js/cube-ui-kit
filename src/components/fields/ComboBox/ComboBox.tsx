@@ -17,7 +17,7 @@ import {
   useHover,
   useOverlayPosition,
 } from 'react-aria';
-import { Section as BaseSection, Item, useComboBoxState } from 'react-stately';
+import { Section as BaseSection, useComboBoxState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/index';
 import { DownIcon, LoadingIcon } from '../../../icons';
@@ -39,6 +39,7 @@ import {
 import { useFocus } from '../../../utils/react/interactions';
 import { useEventBus } from '../../../utils/react/useEventBus';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { Item } from '../../Item';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
@@ -512,10 +513,7 @@ const ComboBoxSectionComponent = Object.assign(BaseSection, {
   displayName: 'Section',
 }) as SectionComponentCB;
 
-ComboBox.Item = Item as unknown as (props: {
-  description?: ReactNode;
-  [key: string]: any;
-}) => ReactElement;
+ComboBox.Item = Item;
 
 ComboBox.Section = ComboBoxSectionComponent;
 

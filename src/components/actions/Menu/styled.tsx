@@ -1,6 +1,7 @@
-import { DEFAULT_BUTTON_STYLES, DEFAULT_NEUTRAL_STYLES } from '..';
+import { DEFAULT_NEUTRAL_STYLES } from '../../../data/item-themes';
 import { tasty } from '../../../tasty';
 import { Space } from '../../layout/Space';
+import { DEFAULT_BUTTON_STYLES } from '../Button/Button';
 
 export const StyledMenuWrapper = tasty({
   qa: 'Menu',

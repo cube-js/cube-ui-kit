@@ -23,10 +23,10 @@ import {
   useOverlayPosition,
   useSelect,
 } from 'react-aria';
-import { Section as BaseSection, Item, useSelectState } from 'react-stately';
+import { Section as BaseSection, useSelectState } from 'react-stately';
 import styled from 'styled-components';
 
-import { DirectionIcon, DownIcon, LoadingIcon } from '../../../icons/index';
+import { DirectionIcon, LoadingIcon } from '../../../icons/index';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared/index';
 import {
@@ -48,30 +48,16 @@ import { useFocus } from '../../../utils/react/interactions';
 import { useEventBus } from '../../../utils/react/useEventBus';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
 import {
-  DEFAULT_BUTTON_STYLES,
-  DEFAULT_CLEAR_STYLES,
-  DEFAULT_LINK_STYLES,
-  DEFAULT_NEUTRAL_STYLES,
-  DEFAULT_OUTLINE_STYLES,
-  DEFAULT_PRIMARY_STYLES,
-  DEFAULT_SECONDARY_STYLES,
-  SPECIAL_CLEAR_STYLES,
-  SPECIAL_LINK_STYLES,
-  SPECIAL_NEUTRAL_STYLES,
-  SPECIAL_OUTLINE_STYLES,
-  SPECIAL_PRIMARY_STYLES,
-  SPECIAL_SECONDARY_STYLES,
-} from '../../actions/index';
-import {
   StyledDivider as ListDivider,
   StyledSectionHeading as ListSectionHeading,
   StyledSection as ListSectionWrapper,
 } from '../../actions/Menu/styled';
+import { ItemBase } from '../../content/ItemBase';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { Item } from '../../Item';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
-import { INPUT_WRAPPER_STYLES } from '../index';
 
 const SelectWrapperElement = tasty({
   styles: {
@@ -92,115 +78,11 @@ const SelectWrapperElement = tasty({
   },
 });
 
-type VariantType =
-  | 'default.primary'
-  | 'default.secondary'
-  | 'default.outline'
-  | 'default.neutral'
-  | 'default.clear'
-  | 'default.link'
-  | 'special.primary'
-  | 'special.secondary'
-  | 'special.outline'
-  | 'special.neutral'
-  | 'special.clear'
-  | 'special.link';
-
-function WithValidationState(styles: Styles) {
-  return {
-    ...styles,
-    border: {
-      ...(typeof styles.border === 'object' ? styles.border : {}),
-      invalid: '#danger-text',
-      valid: '#success-text',
-    },
-  };
-}
-
-const SelectElement = tasty({
+const SelectTrigger = tasty(ItemBase, {
   as: 'button',
-  qa: 'Button',
+  qa: 'Trigger',
   styles: {
-    ...INPUT_WRAPPER_STYLES,
-    ...DEFAULT_BUTTON_STYLES,
-    backgroundClip: 'initial',
-    gap: 0,
-
-    Prefix: {
-      display: 'flex',
-      placeContent: 'center start',
-      placeItems: 'center',
-      placeSelf: 'center start',
-      flexShrink: 0,
-    },
-
-    Suffix: {
-      display: 'flex',
-      placeContent: 'center start',
-      placeItems: 'center',
-      placeSelf: 'center end',
-      flexShrink: 0,
-    },
-
-    ButtonIcon: {
-      display: 'grid',
-      placeItems: 'center',
-      color: 'inherit',
-      fontSize: '$icon-size',
-    },
-
-    Value: {
-      display: 'block',
-      width: 'max 100%',
-      placeItems: 'center stretch',
-      preset: {
-        '': 't3',
-        '[data-type="primary"]': 't3m',
-      },
-      padding: {
-        '': 0,
-        prefix: '.5x left',
-        suffix: '.5x right',
-        'prefix & suffix': '.5x left right',
-      },
-      color: 'inherit',
-      opacity: {
-        '': 1,
-        placeholder: '.6',
-      },
-      textAlign: 'left',
-      fill: '#clear',
-      textOverflow: 'ellipsis',
-      overflow: 'hidden',
-      flexGrow: 1,
-    },
-
-    '& [data-element="Prefix"] [data-element="ButtonIcon"]': {
-      marginLeft: -4,
-      placeSelf: 'center start',
-    },
-
-    '& [data-element="Suffix"] [data-element="ButtonIcon"]': {
-      marginRight: -4,
-      placeSelf: 'center end',
-    },
-  },
-  variants: {
-    // Default theme
-    'default.primary': DEFAULT_PRIMARY_STYLES,
-    'default.secondary': DEFAULT_SECONDARY_STYLES,
-    'default.outline': WithValidationState(DEFAULT_OUTLINE_STYLES),
-    'default.neutral': WithValidationState(DEFAULT_NEUTRAL_STYLES),
-    'default.clear': WithValidationState(DEFAULT_CLEAR_STYLES),
-    'default.link': DEFAULT_LINK_STYLES,
-
-    // Special theme
-    'special.primary': SPECIAL_PRIMARY_STYLES,
-    'special.secondary': SPECIAL_SECONDARY_STYLES,
-    'special.outline': WithValidationState(SPECIAL_OUTLINE_STYLES),
-    'special.neutral': WithValidationState(SPECIAL_NEUTRAL_STYLES),
-    'special.clear': WithValidationState(SPECIAL_CLEAR_STYLES),
-    'special.link': SPECIAL_LINK_STYLES,
+    reset: 'button',
   },
 });
 
@@ -235,26 +117,13 @@ export const ListBoxElement = tasty({
   },
 });
 
-const OptionElement = tasty({
+// Use ItemBase for options to unify item visuals and reduce custom styling
+const OptionItem = tasty(ItemBase, {
   as: 'li',
+  qa: 'Option',
   styles: {
-    display: 'flex',
-    placeContent: 'start center',
-    placeItems: 'start center',
-    flow: 'column',
-    gap: '0',
-    padding: '.5x 1x',
-    cursor: {
-      '': 'default',
-      disabled: 'not-allowed',
-    },
-    radius: true,
-    boxSizing: 'border-box',
-    color: {
-      '': '#dark-02',
-      selected: '#dark',
-      disabled: '#dark-04',
-    },
+    listStyle: 'none',
+    width: 'max 100%',
     fill: {
       '': '#clear',
       focused: '#dark.03',
@@ -263,29 +132,9 @@ const OptionElement = tasty({
       pressed: '#dark.09',
       disabled: '#clear',
     },
-    preset: 't3',
-    transition: 'theme',
-    width: 'max 100%',
-    height: {
-      '': 'min $size-md',
-      '[data-size="large"]': 'min $size-lg',
-    },
+    border: '#clear',
 
-    Label: {
-      preset: 't3',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      width: 'max 100%',
-    },
-
-    Description: {
-      preset: 't4',
-      color: '#dark-03',
-      overflow: 'hidden',
-      whiteSpace: 'nowrap',
-      textOverflow: 'ellipsis',
-      width: 'max 100%',
-    },
+    '$inline-compensation': '0px',
   },
 });
 
@@ -466,21 +315,6 @@ function Select<T extends object>(
 
   let triggerWidth = triggerRef?.current?.offsetWidth;
 
-  if (icon) {
-    icon = <div data-element="ButtonIcon">{icon}</div>;
-
-    if (prefix) {
-      prefix = (
-        <>
-          {icon}
-          {prefix}
-        </>
-      );
-    } else {
-      prefix = icon;
-    }
-  }
-
   const showPlaceholder = !!placeholder?.trim() && !state.selectedItem;
 
   const modifiers = useMemo(
@@ -506,6 +340,19 @@ function Select<T extends object>(
     ],
   );
 
+  suffix = useMemo(() => {
+    if (!suffix && !validationState) {
+      return null;
+    }
+
+    return (
+      <>
+        {suffix}
+        {validationState ? validation : null}
+      </>
+    );
+  }, [suffix, validationState, validation]);
+
   let selectField = (
     <SelectWrapperElement
       qa={qa || 'Select'}
@@ -521,33 +368,34 @@ function Select<T extends object>(
         label={props.label}
         name={props.name}
       />
-      <SelectElement
+      <SelectTrigger
         {...mergeProps(buttonProps, hoverProps, focusProps)}
         ref={triggerRef}
         data-menu-trigger
         styles={{ ...inputStyles, ...triggerStyles }}
-        variant={`${theme}.${type}` as VariantType}
-        data-theme={theme}
-        data-size={size}
-        data-type={type}
+        theme={theme}
+        size={size}
+        // Ensure this button never submits a surrounding form in tests or runtime
+        buttonType="button"
+        // Preserve visual variant via data attribute instead of conflicting with HTML attribute
+        type={type}
         mods={modifiers}
-      >
-        {prefix ? <div data-element="Prefix">{prefix}</div> : null}
-        <span data-element="Value" {...valueProps}>
-          {state.selectedItem
-            ? state.selectedItem.rendered
-            : placeholder || <>&nbsp;</>}
-        </span>
-        <div data-element="Suffix">
-          {suffixPosition === 'before' ? suffix : null}
-          {validationState && !isLoading ? validation : null}
-          {isLoading && <LoadingIcon />}
-          {suffixPosition === 'after' ? suffix : null}
-          <div data-element="ButtonIcon">
+        prefix={prefix}
+        suffix={suffix}
+        icon={icon}
+        rightIcon={
+          isLoading ? (
+            <LoadingIcon />
+          ) : (
             <DirectionIcon to={state.isOpen ? 'up' : 'down'} />
-          </div>
-        </div>
-      </SelectElement>
+          )
+        }
+        contentProps={valueProps}
+      >
+        {state.selectedItem
+          ? state.selectedItem.rendered
+          : placeholder || <>&nbsp;</>}
+      </SelectTrigger>
       <OverlayWrapper isOpen={state.isOpen && !isDisabled}>
         <ListBoxPopup
           {...menuProps}
@@ -714,7 +562,7 @@ export function ListBoxPopup({
 }
 
 function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
-  let ref = useRef<HTMLDivElement>(null);
+  let ref = useRef<HTMLLIElement>(null);
   let isDisabled = state.disabledKeys.has(item.key);
   let isSelected = state.selectionManager.isSelected(item.key);
   let isVirtualFocused = state.selectionManager.focusedKey === item.key;
@@ -736,10 +584,24 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
   // style to the focused option
   let { isFocused, focusProps } = useFocus({ isDisabled });
 
-  const description = (item as any)?.props?.description;
+  const {
+    description,
+    icon,
+    prefix,
+    suffix,
+    rightIcon,
+    styles: itemStyles,
+  } = ((item as any)?.props || {}) as {
+    description?: React.ReactNode;
+    icon?: React.ReactElement;
+    prefix?: React.ReactNode;
+    suffix?: React.ReactNode;
+    rightIcon?: React.ReactElement;
+    styles?: Styles;
+  };
 
   return (
-    <OptionElement
+    <OptionItem
       {...mergeProps(optionProps, focusProps)}
       ref={ref}
       mods={{
@@ -748,13 +610,16 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
         disabled: isDisabled,
         pressed: isPressed,
       }}
-      data-theme={isSelected ? 'special' : undefined}
       data-size={size}
-      styles={styles}
+      styles={{ ...(styles as Styles), ...(itemStyles as Styles) }}
+      icon={icon}
+      prefix={prefix}
+      suffix={suffix}
+      rightIcon={rightIcon}
+      description={description}
     >
-      <div data-element="Label">{item.rendered}</div>
-      {description ? <div data-element="Description">{description}</div> : null}
-    </OptionElement>
+      {item.rendered}
+    </OptionItem>
   );
 }
 
@@ -827,10 +692,7 @@ const __Select = Object.assign(
     Section: typeof SelectSectionComponent;
   },
   {
-    Item: Item as unknown as (props: {
-      description?: ReactNode;
-      [key: string]: any;
-    }) => ReactElement,
+    Item,
     Section: SelectSectionComponent,
   },
 );
