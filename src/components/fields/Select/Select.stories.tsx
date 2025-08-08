@@ -69,7 +69,7 @@ export default {
 
     /* Presentation */
     type: {
-      options: ['outline', 'clear', 'primary', 'secondary', 'neutral', 'link'],
+      options: ['outline', 'clear', 'primary', 'secondary', 'neutral'],
       control: { type: 'radio' },
       description: 'Visual style variant of the select',
       table: {
