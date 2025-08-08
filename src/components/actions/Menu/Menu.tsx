@@ -3,11 +3,7 @@ import { useDOMRef } from '@react-spectrum/utils';
 import { DOMRef, FocusStrategy, ItemProps } from '@react-types/shared';
 import React, { ReactElement, ReactNode, useMemo } from 'react';
 import { AriaMenuProps, useMenu } from 'react-aria';
-import {
-  Item as BaseItem,
-  Section as BaseSection,
-  useTreeState,
-} from 'react-stately';
+import { Section as BaseSection, useTreeState } from 'react-stately';
 
 import {
   BasePropsWithoutChildren,
@@ -19,6 +15,7 @@ import {
 } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import { CubeBlockProps } from '../../Block';
+import { Item } from '../../Item';
 import {
   CubeTooltipProviderProps,
   TooltipProvider,
@@ -309,10 +306,6 @@ type ItemComponent = <T>(
 
 type SectionComponent = typeof BaseSection;
 
-const Item = Object.assign(BaseItem, {
-  displayName: 'Item',
-}) as ItemComponent;
-
 const Section = Object.assign(BaseSection, {
   displayName: 'Section',
 }) as SectionComponent;
@@ -323,10 +316,7 @@ type __MenuComponent = typeof _Menu & {
 };
 
 const __Menu = Object.assign(_Menu as __MenuComponent, {
-  Item: Item as unknown as (props: {
-    description?: ReactNode;
-    [key: string]: any;
-  }) => ReactElement,
+  Item,
   Section,
   displayName: 'Menu',
 });

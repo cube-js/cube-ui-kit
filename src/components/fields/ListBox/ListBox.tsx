@@ -21,7 +21,7 @@ import {
   useListBoxSection,
   useOption,
 } from 'react-aria';
-import { Section as BaseSection, Item, useListState } from 'react-stately';
+import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import { CheckIcon } from '../../../icons';
@@ -47,6 +47,7 @@ import {
   StyledSectionHeading,
 } from '../../actions/Menu/styled';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { Item } from '../../Item';
 
 import type { CollectionBase, Key } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
@@ -1202,11 +1203,7 @@ const ListBoxSectionComponent = Object.assign(BaseSection, {
   displayName: 'Section',
 }) as SectionComponent;
 
-ListBox.Item = Item as unknown as (props: {
-  description?: ReactNode;
-  textValue?: string;
-  [key: string]: any;
-}) => ReactElement;
+ListBox.Item = Item;
 
 ListBox.Section = ListBoxSectionComponent;
 

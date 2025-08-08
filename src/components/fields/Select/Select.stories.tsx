@@ -1,6 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react';
 import { userEvent, within } from '@storybook/test';
-import { IconCoin } from '@tabler/icons-react';
+import { IconCoin, IconUser } from '@tabler/icons-react';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Text } from '../../content/Text';
@@ -461,6 +461,43 @@ export const WithDescription: StoryFn<CubeSelectProps<any>> = (args) => (
 );
 WithDescription.args = {};
 WithDescription.play = WithDisabledOption.play;
+
+export const WithIconsAndDescriptions: StoryFn<CubeSelectProps<any>> = (
+  args,
+) => (
+  <Select
+    {...args}
+    placeholder="Select a color"
+    listBoxStyles={{ width: 'max 36x' }}
+  >
+    <Select.Item key="yellow" description="Child and light" icon={<IconUser />}>
+      Yellow
+    </Select.Item>
+    <Select.Item
+      key="red"
+      description="Hot and strong"
+      prefix={<span>🔥</span>}
+    >
+      Red
+    </Select.Item>
+    <Select.Item
+      key="green"
+      description="Fresh and calm"
+      suffix={<Text color="#dark-03">#00A000</Text>}
+    >
+      Green
+    </Select.Item>
+    <Select.Item
+      key="blue"
+      description="Cold and deep"
+      rightIcon={<span>→</span>}
+    >
+      Blue
+    </Select.Item>
+  </Select>
+);
+WithIconsAndDescriptions.args = {};
+WithIconsAndDescriptions.storyName = 'With icons and descriptions';
 
 // ------------------------------
 // Section stories

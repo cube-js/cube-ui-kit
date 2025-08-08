@@ -23,7 +23,7 @@ import {
   useOverlayPosition,
   useSelect,
 } from 'react-aria';
-import { Section as BaseSection, Item, useSelectState } from 'react-stately';
+import { Section as BaseSection, useSelectState } from 'react-stately';
 import styled from 'styled-components';
 
 import { DirectionIcon, LoadingIcon } from '../../../icons/index';
@@ -54,6 +54,7 @@ import {
 } from '../../actions/Menu/styled';
 import { ItemBase } from '../../content/ItemBase';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { Item } from '../../Item';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
@@ -77,23 +78,9 @@ const SelectWrapperElement = tasty({
   },
 });
 
-type VariantType =
-  | 'default.primary'
-  | 'default.secondary'
-  | 'default.outline'
-  | 'default.neutral'
-  | 'default.clear'
-  | 'default.link'
-  | 'special.primary'
-  | 'special.secondary'
-  | 'special.outline'
-  | 'special.neutral'
-  | 'special.clear'
-  | 'special.link';
-
-const SelectElement = tasty(ItemBase, {
+const SelectTrigger = tasty(ItemBase, {
   as: 'button',
-  qa: 'Button',
+  qa: 'Trigger',
   styles: {
     reset: 'button',
   },
@@ -130,26 +117,13 @@ export const ListBoxElement = tasty({
   },
 });
 
-const OptionElement = tasty({
+// Use ItemBase for options to unify item visuals and reduce custom styling
+const OptionItem = tasty(ItemBase, {
   as: 'li',
+  qa: 'Option',
   styles: {
-    display: 'flex',
-    placeContent: 'start center',
-    placeItems: 'start center',
-    flow: 'column',
-    gap: '0',
-    padding: '.5x 1x',
-    cursor: {
-      '': 'default',
-      disabled: 'not-allowed',
-    },
-    radius: true,
-    boxSizing: 'border-box',
-    color: {
-      '': '#dark-02',
-      selected: '#dark',
-      disabled: '#dark-04',
-    },
+    listStyle: 'none',
+    width: 'max 100%',
     fill: {
       '': '#clear',
       focused: '#dark.03',
@@ -158,29 +132,9 @@ const OptionElement = tasty({
       pressed: '#dark.09',
       disabled: '#clear',
     },
-    preset: 't3',
-    transition: 'theme',
-    width: 'max 100%',
-    height: {
-      '': 'min $size-md',
-      '[data-size="large"]': 'min $size-lg',
-    },
+    border: '#clear',
 
-    Label: {
-      preset: 't3',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      width: 'max 100%',
-    },
-
-    Description: {
-      preset: 't4',
-      color: '#dark-03',
-      overflow: 'hidden',
-      whiteSpace: 'nowrap',
-      textOverflow: 'ellipsis',
-      width: 'max 100%',
-    },
+    '$inline-compensation': '0px',
   },
 });
 
@@ -414,13 +368,16 @@ function Select<T extends object>(
         label={props.label}
         name={props.name}
       />
-      <SelectElement
+      <SelectTrigger
         {...mergeProps(buttonProps, hoverProps, focusProps)}
         ref={triggerRef}
         data-menu-trigger
         styles={{ ...inputStyles, ...triggerStyles }}
         theme={theme}
         size={size}
+        // Ensure this button never submits a surrounding form in tests or runtime
+        buttonType="button"
+        // Preserve visual variant via data attribute instead of conflicting with HTML attribute
         type={type}
         mods={modifiers}
         prefix={prefix}
@@ -438,7 +395,7 @@ function Select<T extends object>(
         {state.selectedItem
           ? state.selectedItem.rendered
           : placeholder || <>&nbsp;</>}
-      </SelectElement>
+      </SelectTrigger>
       <OverlayWrapper isOpen={state.isOpen && !isDisabled}>
         <ListBoxPopup
           {...menuProps}
@@ -605,7 +562,7 @@ export function ListBoxPopup({
 }
 
 function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
-  let ref = useRef<HTMLDivElement>(null);
+  let ref = useRef<HTMLLIElement>(null);
   let isDisabled = state.disabledKeys.has(item.key);
   let isSelected = state.selectionManager.isSelected(item.key);
   let isVirtualFocused = state.selectionManager.focusedKey === item.key;
@@ -627,10 +584,24 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
   // style to the focused option
   let { isFocused, focusProps } = useFocus({ isDisabled });
 
-  const description = (item as any)?.props?.description;
+  const {
+    description,
+    icon,
+    prefix,
+    suffix,
+    rightIcon,
+    styles: itemStyles,
+  } = ((item as any)?.props || {}) as {
+    description?: React.ReactNode;
+    icon?: React.ReactElement;
+    prefix?: React.ReactNode;
+    suffix?: React.ReactNode;
+    rightIcon?: React.ReactElement;
+    styles?: Styles;
+  };
 
   return (
-    <OptionElement
+    <OptionItem
       {...mergeProps(optionProps, focusProps)}
       ref={ref}
       mods={{
@@ -639,13 +610,16 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
         disabled: isDisabled,
         pressed: isPressed,
       }}
-      data-theme={isSelected ? 'special' : undefined}
       data-size={size}
-      styles={styles}
+      styles={{ ...(styles as Styles), ...(itemStyles as Styles) }}
+      icon={icon}
+      prefix={prefix}
+      suffix={suffix}
+      rightIcon={rightIcon}
+      description={description}
     >
-      <div data-element="Label">{item.rendered}</div>
-      {description ? <div data-element="Description">{description}</div> : null}
-    </OptionElement>
+      {item.rendered}
+    </OptionItem>
   );
 }
 
@@ -718,10 +692,7 @@ const __Select = Object.assign(
     Section: typeof SelectSectionComponent;
   },
   {
-    Item: Item as unknown as (props: {
-      description?: ReactNode;
-      [key: string]: any;
-    }) => ReactElement,
+    Item,
     Section: SelectSectionComponent,
   },
 );

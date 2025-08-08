@@ -80,7 +80,10 @@ export const DEFAULT_NEUTRAL_STYLES: Styles = {
   fill: {
     '': '#dark.0',
     hovered: '#dark.03',
-    'pressed | (selected & !hovered)': '#dark.06',
+    selected: '#dark.09',
+    'selected & hovered': '#dark.12',
+    pressed: '#dark.09',
+    '[disabled] | disabled': '#clear',
   },
   color: {
     '': '#dark-02',

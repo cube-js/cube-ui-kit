@@ -34,6 +34,7 @@ export interface CubeItemBaseProps extends BaseProps {
   rightIcon?: ReactNode;
   prefix?: ReactNode;
   suffix?: ReactNode;
+  description?: ReactNode;
   size?:
     | 'xsmall'
     | 'small'
@@ -53,6 +54,11 @@ export interface CubeItemBaseProps extends BaseProps {
     | (string & {});
   theme?: 'default' | 'danger' | 'success' | 'special' | (string & {});
   variant?: ItemVariant;
+  /**
+   * HTML button type to avoid implicit form submission when used as `as="button"`.
+   * Kept separate from visual `type` prop.
+   */
+  buttonType?: 'button' | 'submit' | 'reset';
 }
 
 const DEFAULT_ICON_STYLES: Styles = {
@@ -60,7 +66,7 @@ const DEFAULT_ICON_STYLES: Styles = {
   placeItems: 'center',
   placeContent: 'stretch',
   aspectRatio: '1 / 1',
-  height: 'max $size',
+  width: '($size - 2bw)',
 };
 
 const ADDITION_STYLES: Styles = {
@@ -82,6 +88,7 @@ const ItemBaseElement = tasty({
       'with-icon & with-prefix':
         'max-content max-content 1sf max-content max-content',
     },
+    flexShrink: 0,
     position: 'relative',
     padding: 0,
     margin: 0,
@@ -89,6 +96,7 @@ const ItemBaseElement = tasty({
     height: {
       '': '$size',
       '[data-size="inline"]': 'initial',
+      'with-description': 'max-content',
     },
     preset: {
       '': 't3m',
@@ -99,21 +107,18 @@ const ItemBaseElement = tasty({
     textDecoration: 'none',
     transition: 'theme',
     reset: 'button',
-    border: {
-      '': '#clear',
-      focused: '#purple-text',
-    },
-    fill: {
-      '': '#dark.0',
-      hovered: '#dark.03',
-      'pressed | (selected & !hovered)': '#dark.06',
-    },
-    color: {
-      '': '#dark-02',
-      hovered: '#dark-02',
-      pressed: '#dark',
-      '[disabled] | disabled': '#dark-04',
-    },
+    border: '#clear',
+    // fill: {
+    //   '': '#dark.0',
+    //   hovered: '#dark.03',
+    //   'pressed | (selected & !hovered)': '#dark.06',
+    // },
+    // color: {
+    //   '': '#dark-02',
+    //   hovered: '#dark-02',
+    //   pressed: '#dark',
+    //   '[disabled] | disabled': '#dark-04',
+    // },
     outlineOffset: 1,
     cursor: {
       '': 'default',
@@ -131,7 +136,7 @@ const ItemBaseElement = tasty({
       '[data-size="inline"]': '',
     },
     '$inline-padding': {
-      '': 'max(1x, (($size - 1lh) / 2 + 4px))',
+      '': 'max($min-inline-padding, (($size - 1lh) / 2 + $inline-compensation))',
       '[data-size="inline"]': 0,
     },
     '$block-padding': {
@@ -139,6 +144,8 @@ const ItemBaseElement = tasty({
       '[data-size="xsmall"]': '.25x',
       '[data-size="inline"]': 0,
     },
+    '$inline-compensation': '.5x',
+    '$min-inline-padding': '1x',
 
     Icon: DEFAULT_ICON_STYLES,
 
@@ -146,11 +153,7 @@ const ItemBaseElement = tasty({
 
     Content: {
       display: 'block',
-      placeSelf: {
-        '': 'center',
-        'with-icon | with-right-icon | with-prefix | with-suffix':
-          'center start',
-      },
+      placeSelf: 'center start',
       boxSizing: 'border-box',
       placeContent: 'stretch',
       whiteSpace: 'nowrap',
@@ -170,6 +173,15 @@ const ItemBaseElement = tasty({
         '': 1,
         placeholder: '$disabled-opacity',
       },
+    },
+
+    Description: {
+      preset: 't4',
+      color: '#dark-03',
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+      textOverflow: 'ellipsis',
+      maxWidth: '100%',
     },
 
     Prefix: {
@@ -238,7 +250,9 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     contentProps,
     prefix,
     suffix,
+    description,
     styles,
+    buttonType,
     ...rest
   } = props;
 
@@ -248,9 +262,10 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
       'with-right-icon': !!rightIcon,
       'with-prefix': !!prefix,
       'with-suffix': !!suffix,
+      'with-description': !!description,
       ...mods,
     };
-  }, [icon, rightIcon, prefix, suffix, mods]);
+  }, [icon, rightIcon, prefix, suffix, description, mods]);
 
   return (
     <ItemBaseElement
@@ -261,12 +276,16 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
       data-theme={theme}
       mods={mods}
       styles={styles}
+      type={buttonType as any}
       {...rest}
     >
       {icon && <div data-element="Icon">{icon}</div>}
       {prefix && <div data-element="Prefix">{prefix}</div>}
       <div data-element="Content" {...contentProps}>
         {children}
+        {description ? (
+          <div data-element="Description">{description}</div>
+        ) : null}
       </div>
       {suffix && <div data-element="Suffix">{suffix}</div>}
       {rightIcon && <div data-element="RightIcon">{rightIcon}</div>}
