@@ -41,7 +41,7 @@ export function DialogContainer(props: CubeDialogContainerProps) {
     children,
     type = 'modal',
     onDismiss,
-    isDismissable,
+    isDismissable = true,
     isKeyboardDismissDisabled,
     isOpen,
     hideOnClose,
