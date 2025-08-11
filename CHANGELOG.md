@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.72.2
+
+### Patch Changes
+
+- [#753](https://github.com/cube-js/cube-ui-kit/pull/753) [`2a7a61ea`](https://github.com/cube-js/cube-ui-kit/commit/2a7a61ea86551b83467a678c06bc9c8cd77f9d79) Thanks [@tenphi](https://github.com/tenphi)! - Fix \$label-width definition in Label component.
+
+- [#753](https://github.com/cube-js/cube-ui-kit/pull/753) [`2a7a61ea`](https://github.com/cube-js/cube-ui-kit/commit/2a7a61ea86551b83467a678c06bc9c8cd77f9d79) Thanks [@tenphi](https://github.com/tenphi)! - Set isDismissable for DialogContainer to true by default.
+
+- [#753](https://github.com/cube-js/cube-ui-kit/pull/753) [`2a7a61ea`](https://github.com/cube-js/cube-ui-kit/commit/2a7a61ea86551b83467a678c06bc9c8cd77f9d79) Thanks [@tenphi](https://github.com/tenphi)! - Fix LRU cache error in the style parser.
+
 ## 0.72.1
 
 ### Patch Changes
