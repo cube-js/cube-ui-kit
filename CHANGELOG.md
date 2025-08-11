@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.72.3
+
+### Patch Changes
+
+- [#755](https://github.com/cube-js/cube-ui-kit/pull/755) [`62ff1eed`](https://github.com/cube-js/cube-ui-kit/commit/62ff1eed53448c710348751a0c5716becf8e7c4d) Thanks [@tenphi](https://github.com/tenphi)! - Fix navigation for CommandMenu with sections.
+
 ## 0.72.2
 
 ### Patch Changes
