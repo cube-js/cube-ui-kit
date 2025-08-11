@@ -4,9 +4,12 @@ export class Lru<K, V> {
   private tail: K | null = null;
 
   constructor(private limit = 1000) {
-    // Normalize limit to a non-negative integer to avoid edge cases
-    if (!Number.isFinite(this.limit) || this.limit < 0) this.limit = 0;
-    else this.limit = Math.floor(this.limit);
+    // Normalize limit; fall back to sensible default (1000) to keep caching enabled
+    let normalized = Number.isFinite(this.limit)
+      ? Math.floor(this.limit)
+      : 1000;
+    if (normalized <= 0) normalized = 1000;
+    this.limit = normalized;
   }
 
   get(key: K): V | undefined {
