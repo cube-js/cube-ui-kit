@@ -1,4 +1,5 @@
 import { ForwardedRef, forwardRef, ReactNode, useMemo } from 'react';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 import {
   DANGER_CLEAR_STYLES,
@@ -36,6 +37,11 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
+import {
+  CubeTooltipProviderProps,
+  TooltipProvider,
+} from '../../overlays/Tooltip/TooltipProvider';
+import { HotKeys } from '../HotKeys';
 
 export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
   icon?: ReactNode;
@@ -63,6 +69,10 @@ export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
     | (string & {});
   theme?: 'default' | 'danger' | 'success' | 'special' | (string & {});
   variant?: ItemVariant;
+  /** Keyboard shortcut that triggers the element when pressed */
+  hotkeys?: string;
+  /** Tooltip content - string for simple text or object for advanced configuration */
+  tooltip?: string | Omit<CubeTooltipProviderProps, 'children'>;
   /**
    * HTML button type to avoid implicit form submission when used as `as="button"`.
    * Kept separate from visual `type` prop.
@@ -259,6 +269,8 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     styles,
     buttonType,
     isSelected,
+    hotkeys,
+    tooltip,
     ...rest
   } = props;
 
@@ -266,12 +278,44 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
   const hasCheckbox = isSelected !== undefined;
   const effectiveIcon = hasCheckbox ? undefined : icon;
 
+  // Build final suffix: custom suffix or HotKeys hint if provided and no explicit suffix
+  const finalSuffix =
+    suffix ??
+    (hotkeys ? (
+      <HotKeys
+        type={type === 'primary' ? 'primary' : 'default'}
+        styles={{ padding: '1x left', opacity: rest.isDisabled ? 0.5 : 1 }}
+      >
+        {hotkeys}
+      </HotKeys>
+    ) : undefined);
+
+  // Register global hotkey if provided
+  useHotkeys(
+    typeof hotkeys === 'string' ? hotkeys.toLowerCase() : '',
+    () => {
+      if (!hotkeys) return;
+      if (rest.isDisabled) return;
+      // Simulate a click on the element so all existing handlers run
+      if (ref && typeof ref === 'object' && ref.current) {
+        (ref.current as HTMLElement).click();
+      }
+    },
+    {
+      enableOnContentEditable: true,
+      enabled: !!hotkeys,
+      preventDefault: true,
+      enableOnFormTags: true,
+    },
+    [hotkeys, rest.isDisabled],
+  );
+
   mods = useMemo(() => {
     return {
       'with-icon': !!effectiveIcon || hasCheckbox,
       'with-right-icon': !!rightIcon,
       'with-prefix': !!prefix,
-      'with-suffix': !!suffix,
+      'with-suffix': !!finalSuffix,
       'with-description': !!description,
       'is-checkbox': hasCheckbox,
       'is-selected': isSelected === true,
@@ -282,14 +326,14 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     effectiveIcon,
     rightIcon,
     prefix,
-    suffix,
+    finalSuffix,
     description,
     hasCheckbox,
     isSelected,
     mods,
   ]);
 
-  return (
+  const itemElement = (
     <ItemBaseElement
       ref={ref as any}
       variant={`${theme}.${type}` as ItemVariant}
@@ -313,10 +357,19 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
           <div data-element="Description">{description}</div>
         ) : null}
       </div>
-      {suffix && <div data-element="Suffix">{suffix}</div>}
+      {finalSuffix && <div data-element="Suffix">{finalSuffix}</div>}
       {rightIcon && <div data-element="RightIcon">{rightIcon}</div>}
     </ItemBaseElement>
   );
+
+  if (tooltip) {
+    const tooltipProps =
+      typeof tooltip === 'string' ? { title: tooltip } : tooltip;
+
+    return <TooltipProvider {...tooltipProps}>{itemElement}</TooltipProvider>;
+  }
+
+  return itemElement;
 };
 
 const _ItemBase = forwardRef(ItemBase);

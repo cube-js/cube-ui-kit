@@ -477,3 +477,312 @@ WithCheckbox.parameters = {
     },
   },
 };
+
+export const WithHotkeys: StoryFn<CubeItemBaseProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>ItemBase with Hotkeys</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        hotkeys="cmd+s"
+        as="button"
+        onClick={() => alert('Save action triggered!')}
+      >
+        Save Document
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        hotkeys="cmd+shift+n"
+        type="primary"
+        as="button"
+        icon={<IconUser />}
+        onClick={() => alert('New action triggered!')}
+      >
+        New Item
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        hotkeys="esc"
+        type="outline"
+        as="button"
+        onClick={() => alert('Cancel action triggered!')}
+      >
+        Cancel
+      </ItemBase>
+    </Space>
+
+    <Title level={5}>Different Sizes with Hotkeys</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        size="small"
+        hotkeys="ctrl+1"
+        as="button"
+        onClick={() => alert('Small button clicked!')}
+      >
+        Small with hotkey
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        size="large"
+        hotkeys="ctrl+2"
+        as="button"
+        onClick={() => alert('Large button clicked!')}
+      >
+        Large with hotkey
+      </ItemBase>
+    </Space>
+
+    <Title level={5}>Disabled ItemBase with Hotkeys</Title>
+    <ItemBase
+      {...args}
+      styles={DEFAULT_STYLES}
+      hotkeys="cmd+d"
+      isDisabled={true}
+      as="button"
+      onClick={() => alert('This should not trigger!')}
+    >
+      Disabled (hotkey won't work)
+    </ItemBase>
+  </Space>
+);
+
+WithHotkeys.args = {
+  width: '300px',
+};
+
+WithHotkeys.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates the hotkeys functionality when `hotkeys` prop is provided. The hotkey is displayed as a suffix with the HotKeys component, and pressing the specified key combination triggers the onClick handler. Hotkeys are automatically disabled when the component is disabled.',
+    },
+  },
+};
+
+export const WithTooltip: StoryFn<CubeItemBaseProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>Simple String Tooltips</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        tooltip={{ title: 'Simple tooltip text', activeWrap: true }}
+        as="button"
+        icon={<IconUser />}
+        onClick={() => alert('Button clicked!')}
+      >
+        Hover for tooltip
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        tooltip={{
+          title: 'This is a primary button with a tooltip',
+          activeWrap: true,
+        }}
+        type="primary"
+        as="button"
+        onClick={() => alert('Primary button clicked!')}
+      >
+        Primary with tooltip
+      </ItemBase>
+    </Space>
+
+    <Title level={5}>Advanced Tooltip Configuration</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        tooltip={{
+          title: 'Advanced tooltip with custom placement',
+          placement: 'top',
+          activeWrap: true,
+        }}
+        as="button"
+        icon={<IconSettings />}
+        onClick={() => alert('Top tooltip clicked!')}
+      >
+        Top placement
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        tooltip={{
+          title: 'Right placed tooltip',
+          placement: 'right',
+          activeWrap: true,
+        }}
+        as="button"
+        onClick={() => alert('Right tooltip clicked!')}
+      >
+        Right placement
+      </ItemBase>
+    </Space>
+
+    <Title level={5}>Tooltip with Hotkeys</Title>
+    <ItemBase
+      {...args}
+      styles={DEFAULT_STYLES}
+      tooltip={{
+        title: 'Save your work with Cmd+S',
+        placement: 'top',
+        activeWrap: true,
+      }}
+      hotkeys="cmd+s"
+      as="button"
+      icon={<IconCoin />}
+      onClick={() => alert('Save triggered!')}
+    >
+      Save Document
+    </ItemBase>
+
+    <Title level={5}>Different Sizes with Tooltips</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        size="small"
+        tooltip={{ title: 'Small button tooltip', activeWrap: true }}
+        as="button"
+        onClick={() => alert('Small clicked!')}
+      >
+        Small
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        size="large"
+        tooltip={{ title: 'Large button tooltip', activeWrap: true }}
+        as="button"
+        onClick={() => alert('Large clicked!')}
+      >
+        Large
+      </ItemBase>
+    </Space>
+  </Space>
+);
+
+WithTooltip.args = {
+  width: '250px',
+};
+
+WithTooltip.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates the tooltip functionality when `tooltip` prop is provided. Supports both string tooltips and advanced configuration objects with custom placement. Note: `activeWrap: true` is required in the tooltip object to make the item interactive.',
+    },
+  },
+};
+
+export const CombinedFeatures: StoryFn<CubeItemBaseProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>Hotkeys + Tooltip + Icons</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        hotkeys="cmd+n"
+        tooltip={{
+          title: 'Create a new document (Cmd+N)',
+          placement: 'top',
+          activeWrap: true,
+        }}
+        type="primary"
+        as="button"
+        icon={<IconUser />}
+        onClick={() => alert('New document created!')}
+      >
+        New Document
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        hotkeys="cmd+o"
+        tooltip={{
+          title: 'Open an existing document (Cmd+O)',
+          activeWrap: true,
+        }}
+        as="button"
+        icon={<IconCoin />}
+        rightIcon={<IconSettings />}
+        onClick={() => alert('Open document!')}
+      >
+        Open Document
+      </ItemBase>
+    </Space>
+
+    <Title level={5}>With Checkbox Selection</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        isSelected={true}
+        hotkeys="space"
+        tooltip={{
+          title: 'Toggle selection (Space)',
+          activeWrap: true,
+        }}
+        as="button"
+        onClick={() => alert('Selection toggled!')}
+      >
+        Selected item
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        isSelected={false}
+        hotkeys="enter"
+        tooltip={{
+          title: 'Select this item (Enter)',
+          activeWrap: true,
+        }}
+        as="button"
+        onClick={() => alert('Item selected!')}
+      >
+        Unselected item
+      </ItemBase>
+    </Space>
+
+    <Title level={5}>Complete Configuration</Title>
+    <ItemBase
+      {...args}
+      styles={DEFAULT_STYLES}
+      hotkeys="cmd+shift+s"
+      tooltip={{
+        title: 'Save document with special options (Cmd+Shift+S)',
+        placement: 'bottom',
+        activeWrap: true,
+      }}
+      type="secondary"
+      as="button"
+      icon={<IconCoin />}
+      rightIcon={<IconSettings />}
+      prefix="$"
+      suffix=".doc"
+      description="Advanced save operation"
+      onClick={() => alert('Special save!')}
+    >
+      Save Special
+    </ItemBase>
+  </Space>
+);
+
+CombinedFeatures.args = {
+  width: '350px',
+};
+
+CombinedFeatures.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates the combination of hotkeys, tooltips, icons, checkboxes, and other ItemBase features working together. This shows the full potential of the enhanced ItemBase component.',
+    },
+  },
+};
