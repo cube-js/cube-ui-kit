@@ -606,7 +606,6 @@ export const MultipleSelection: StoryFn<CubeCommandMenuProps<any>> = (args) => {
         width="20x 50x"
         {...args}
         selectionMode="multiple"
-        selectionIcon="checkbox"
         selectedKeys={selectedKeys}
         onSelectionChange={setSelectedKeys}
       >
@@ -1095,19 +1094,28 @@ export const WithContextMenu = () => {
       onAction={onAction}
       {...props}
     >
-      <Menu.Item key="copy" icon="📋">
+      <Menu.Item key="copy" icon={<span style={{ fontSize: '16px' }}>📋</span>}>
         Copy
       </Menu.Item>
-      <Menu.Item key="paste" icon="📄">
+      <Menu.Item
+        key="paste"
+        icon={<span style={{ fontSize: '16px' }}>📄</span>}
+      >
         Paste
       </Menu.Item>
-      <Menu.Item key="cut" icon="✂️">
+      <Menu.Item key="cut" icon={<span style={{ fontSize: '16px' }}>✂️</span>}>
         Cut
       </Menu.Item>
-      <Menu.Item key="delete" icon="🗑️">
+      <Menu.Item
+        key="delete"
+        icon={<span style={{ fontSize: '16px' }}>🗑️</span>}
+      >
         Delete
       </Menu.Item>
-      <Menu.Item key="rename" icon="✏️">
+      <Menu.Item
+        key="rename"
+        icon={<span style={{ fontSize: '16px' }}>✏️</span>}
+      >
         Rename
       </Menu.Item>
     </CommandMenu>

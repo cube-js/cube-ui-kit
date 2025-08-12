@@ -22,7 +22,7 @@ import {
 } from '../../overlays/Tooltip/TooltipProvider';
 
 import { useMenuContext } from './context';
-import { MenuItem, MenuSelectionType } from './MenuItem';
+import { MenuItem } from './MenuItem';
 import { MenuSection } from './MenuSection';
 import {
   StyledDivider,
@@ -39,7 +39,6 @@ export interface CubeMenuProps<T>
       AriaMenuProps<T>,
       'selectedKeys' | 'defaultSelectedKeys' | 'onSelectionChange'
     > {
-  selectionIcon?: MenuSelectionType;
   // @deprecated
   header?: ReactNode;
   footer?: ReactNode;
@@ -87,7 +86,6 @@ function Menu<T extends object>(
     itemStyles,
     sectionStyles,
     sectionHeadingStyles,
-    selectionIcon,
     size = 'medium',
     qa,
     selectedKeys,
@@ -182,7 +180,6 @@ function Menu<T extends object>(
             styles={sectionStyles}
             itemStyles={itemStyles}
             headingStyles={sectionHeadingStyles}
-            selectionIcon={selectionIcon}
             size={size}
           />,
         );
@@ -197,7 +194,6 @@ function Menu<T extends object>(
           item={item}
           state={state}
           styles={itemStyles}
-          selectionIcon={selectionIcon}
           size={size}
           onAction={item.onAction}
         />
@@ -232,14 +228,7 @@ function Menu<T extends object>(
     });
 
     return items;
-  }, [
-    collectionItems,
-    state,
-    sectionStyles,
-    itemStyles,
-    selectionIcon,
-    sectionHeadingStyles,
-  ]);
+  }, [collectionItems, state, sectionStyles, itemStyles, sectionHeadingStyles]);
 
   return (
     <StyledMenuWrapper
@@ -284,24 +273,6 @@ function Menu<T extends object>(
 // https://stackoverflow.com/questions/58469229/react-with-typescript-generics-while-using-react-forwardref
 const _Menu = React.forwardRef(Menu) as <T>(
   props: CubeMenuProps<T> & React.RefAttributes<HTMLUListElement>,
-) => ReactElement;
-
-type ItemComponent = <T>(
-  props: ItemProps<T> &
-    CubeBlockProps & {
-      /** Keyboard shortcut string, e.g. "Ctrl+C" */
-      hotkeys?: string;
-      description?: ReactNode;
-      postfix?: ReactNode;
-      selectionIcon?: MenuSelectionType;
-      isSelectable?: boolean;
-      isSelected?: boolean;
-      icon?: ReactElement;
-      onAction?: () => void;
-      wrapper?: (item: ReactElement) => ReactElement;
-      /** Tooltip configuration - can be a string for simple tooltip or object for advanced options */
-      tooltip?: string | Omit<CubeTooltipProviderProps, 'children'>;
-    },
 ) => ReactElement;
 
 type SectionComponent = typeof BaseSection;

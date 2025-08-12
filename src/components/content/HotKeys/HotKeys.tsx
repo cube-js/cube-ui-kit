@@ -10,7 +10,6 @@ import {
 } from '../../../tasty';
 import { useKeySymbols } from '../../../utils/react/useKeySymbols';
 import { Space } from '../../layout/Space';
-import { Tag } from '../Tag/Tag';
 import { Text } from '../Text';
 
 const StyledHotKeys = tasty(Space, {

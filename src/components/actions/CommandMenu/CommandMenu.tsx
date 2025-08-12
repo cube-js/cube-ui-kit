@@ -391,7 +391,6 @@ function CommandMenu<T extends object>(
             styles={completeProps.sectionStyles}
             itemStyles={completeProps.itemStyles}
             headingStyles={completeProps.sectionHeadingStyles}
-            selectionIcon={completeProps.selectionIcon}
             size={size}
           />,
         );
@@ -406,7 +405,6 @@ function CommandMenu<T extends object>(
           item={item}
           state={treeState}
           styles={completeProps.itemStyles}
-          selectionIcon={completeProps.selectionIcon}
           size={size}
           onAction={item.onAction}
         />
@@ -446,7 +444,7 @@ function CommandMenu<T extends object>(
     treeState,
     completeProps.sectionStyles,
     completeProps.itemStyles,
-    completeProps.selectionIcon,
+
     completeProps.sectionHeadingStyles,
   ]);
 

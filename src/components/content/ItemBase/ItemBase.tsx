@@ -123,6 +123,21 @@ const ItemBaseElement = tasty({
       '[data-size="inline"]': 'initial',
       'with-description': 'max-content',
     },
+    border: '#clear',
+    fill: {
+      '': '#dark.0',
+      'hovered | focused': '#dark.03',
+      selected: '#dark.09',
+      'selected & (hovered | focused)': '#dark.12',
+      pressed: '#dark.09',
+      '[disabled] | disabled': '#clear',
+    },
+    color: {
+      '': '#dark-02',
+      hovered: '#dark-02',
+      pressed: '#dark',
+      '[disabled] | disabled': '#dark-04',
+    },
     preset: {
       '': 't3m',
       '[data-size="xsmall"]': 't4',
@@ -132,7 +147,6 @@ const ItemBaseElement = tasty({
     textDecoration: 'none',
     transition: 'theme',
     reset: 'button',
-    border: '#clear',
     outlineOffset: 1,
     cursor: {
       '': 'default',
@@ -257,7 +271,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
   let {
     children,
     size,
-    type = 'neutral',
+    type,
     theme = 'default',
     mods,
     icon,
@@ -336,10 +350,11 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
   const itemElement = (
     <ItemBaseElement
       ref={ref as any}
-      variant={`${theme}.${type}` as ItemVariant}
+      variant={theme && type ? (`${theme}.${type}` as ItemVariant) : undefined}
       data-size={size}
       data-type={type}
       data-theme={theme}
+      aria-disabled={rest.isDisabled}
       mods={mods}
       styles={styles}
       type={buttonType as any}

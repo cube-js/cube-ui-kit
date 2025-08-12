@@ -10,6 +10,8 @@ const _Item = Item as unknown as (props: {
   suffix?: ReactNode;
   rightIcon?: ReactElement;
   styles?: Styles;
+  onAction?: () => void;
+  wrapper?: (item: ReactElement) => ReactElement;
   [key: string]: any;
 }) => ReactElement;
 
