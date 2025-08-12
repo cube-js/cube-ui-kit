@@ -285,12 +285,12 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     isSelected,
     hotkeys,
     tooltip,
+    isDisabled,
     ...rest
   } = props;
 
   // Determine if we should show checkbox instead of icon
-  const hasCheckbox = isSelected !== undefined;
-  const effectiveIcon = hasCheckbox ? undefined : icon;
+  const hasCheckbox = isSelected !== undefined && icon === undefined;
 
   // Build final suffix: custom suffix or HotKeys hint if provided and no explicit suffix
   const finalSuffix =
@@ -298,7 +298,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     (hotkeys ? (
       <HotKeys
         type={type === 'primary' ? 'primary' : 'default'}
-        styles={{ padding: '1x left', opacity: rest.isDisabled ? 0.5 : 1 }}
+        styles={{ padding: '1x left', opacity: isDisabled ? 0.5 : 1 }}
       >
         {hotkeys}
       </HotKeys>
@@ -309,7 +309,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     typeof hotkeys === 'string' ? hotkeys.toLowerCase() : '',
     () => {
       if (!hotkeys) return;
-      if (rest.isDisabled) return;
+      if (isDisabled) return;
       // Simulate a click on the element so all existing handlers run
       if (ref && typeof ref === 'object' && ref.current) {
         (ref.current as HTMLElement).click();
@@ -321,12 +321,12 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
       preventDefault: true,
       enableOnFormTags: true,
     },
-    [hotkeys, rest.isDisabled],
+    [hotkeys, isDisabled],
   );
 
   mods = useMemo(() => {
     return {
-      'with-icon': !!effectiveIcon || hasCheckbox,
+      'with-icon': !!icon || hasCheckbox,
       'with-right-icon': !!rightIcon,
       'with-prefix': !!prefix,
       'with-suffix': !!finalSuffix,
@@ -337,7 +337,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
       ...mods,
     };
   }, [
-    effectiveIcon,
+    icon,
     rightIcon,
     prefix,
     finalSuffix,
@@ -354,16 +354,15 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
       data-size={size}
       data-type={type}
       data-theme={theme}
-      aria-disabled={rest.isDisabled}
+      aria-disabled={isDisabled}
+      aria-selected={isSelected}
       mods={mods}
       styles={styles}
       type={buttonType as any}
       {...rest}
     >
-      {(effectiveIcon || hasCheckbox) && (
-        <div data-element="Icon">
-          {hasCheckbox ? <CheckIcon /> : effectiveIcon}
-        </div>
+      {(icon || hasCheckbox) && (
+        <div data-element="Icon">{hasCheckbox ? <CheckIcon /> : icon}</div>
       )}
       {prefix && <div data-element="Prefix">{prefix}</div>}
       <div data-element="ItemContent" {...contentProps}>

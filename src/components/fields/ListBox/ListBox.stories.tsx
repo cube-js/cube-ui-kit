@@ -909,31 +909,19 @@ export const WithIcons: Story = {
   render: (args) => (
     <ListBox {...args}>
       <ListBox.Section title="User Management">
-        <ListBox.Item key="users">
-          <Space gap="1x" flow="row" placeItems="center">
-            <UserIcon />
-            Users
-          </Space>
+        <ListBox.Item key="users" icon={<UserIcon />}>
+          Users
         </ListBox.Item>
-        <ListBox.Item key="permissions">
-          <Space gap="1x" flow="row" placeItems="center">
-            <CheckIcon />
-            Permissions
-          </Space>
+        <ListBox.Item key="permissions" icon={<CheckIcon />}>
+          Permissions
         </ListBox.Item>
       </ListBox.Section>
       <ListBox.Section title="System">
-        <ListBox.Item key="database">
-          <Space gap="1x" flow="row" placeItems="center">
-            <DatabaseIcon />
-            Database
-          </Space>
+        <ListBox.Item key="database" icon={<DatabaseIcon />}>
+          Database
         </ListBox.Item>
-        <ListBox.Item key="settings">
-          <Space gap="1x" flow="row" placeItems="center">
-            <SettingsIcon />
-            Settings
-          </Space>
+        <ListBox.Item key="settings" icon={<SettingsIcon />}>
+          Settings
         </ListBox.Item>
       </ListBox.Section>
     </ListBox>
@@ -1086,6 +1074,184 @@ export const WithSelectAll: Story = {
       description: {
         story:
           'When `showSelectAll={true}` is used with multiple selection mode, a "Select All" option appears in the header. The checkbox shows indeterminate state when some items are selected, checked when all are selected, and unchecked when none are selected.',
+      },
+    },
+  },
+};
+
+export const WithHotkeys: Story = {
+  render: (args) => (
+    <Space gap="2x" flow="column">
+      <Text>
+        Try pressing <strong>Ctrl+1</strong>, <strong>Ctrl+2</strong>, or{' '}
+        <strong>Ctrl+3</strong> to select options via hotkeys
+      </Text>
+      <ListBox {...args}>
+        <ListBox.Item key="new" hotkeys="ctrl+1">
+          <Space gap="1x" flow="row" placeItems="center">
+            <PlusIcon />
+            New Project
+          </Space>
+        </ListBox.Item>
+        <ListBox.Item key="edit" hotkeys="ctrl+2">
+          <Space gap="1x" flow="row" placeItems="center">
+            <EditIcon />
+            Edit Project
+          </Space>
+        </ListBox.Item>
+        <ListBox.Item key="settings" hotkeys="ctrl+3">
+          <Space gap="1x" flow="row" placeItems="center">
+            <SettingsIcon />
+            Project Settings
+          </Space>
+        </ListBox.Item>
+      </ListBox>
+    </Space>
+  ),
+  args: {
+    label: 'Project Actions',
+    selectionMode: 'single',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'ListBox options now support hotkeys via the ItemBase integration. Press the specified keyboard shortcuts to select options. The hotkey hint is automatically displayed as a suffix.',
+      },
+    },
+  },
+};
+
+export const WithSuffixAndRightIcon: Story = {
+  render: (args) => (
+    <ListBox {...args}>
+      <ListBox.Item
+        key="users"
+        suffix={<Badge type="note">5</Badge>}
+        rightIcon={<UserIcon />}
+      >
+        User Management
+      </ListBox.Item>
+      <ListBox.Item
+        key="database"
+        suffix={<Badge type="success">Online</Badge>}
+        rightIcon={<DatabaseIcon />}
+      >
+        Database Status
+      </ListBox.Item>
+      <ListBox.Item
+        key="settings"
+        suffix={<Badge type="warning">2</Badge>}
+        rightIcon={<SettingsIcon />}
+      >
+        System Settings
+      </ListBox.Item>
+    </ListBox>
+  ),
+  args: {
+    label: 'System Dashboard',
+    selectionMode: 'single',
+    size: 'large',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'ListBox options now support suffix content and right icons via ItemBase integration. This allows for rich option layouts with status indicators, counts, and action icons.',
+      },
+    },
+  },
+};
+
+export const WithTooltips: Story = {
+  render: (args) => (
+    <ListBox {...args}>
+      <ListBox.Item
+        key="create"
+        tooltip="Create a new project with default settings"
+        icon={<PlusIcon />}
+      >
+        Create Project
+      </ListBox.Item>
+      <ListBox.Item
+        key="import"
+        tooltip={{
+          title: 'Import Project',
+          description: 'Import an existing project from file or URL',
+          placement: 'right',
+        }}
+        icon={<DatabaseIcon />}
+      >
+        Import Project
+      </ListBox.Item>
+      <ListBox.Item
+        key="configure"
+        tooltip="Configure project settings and preferences"
+        icon={<SettingsIcon />}
+      >
+        Configure
+      </ListBox.Item>
+    </ListBox>
+  ),
+  args: {
+    label: 'Project Actions',
+    selectionMode: 'single',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'ListBox options now support tooltips via ItemBase integration. Provide either a simple string or a full tooltip configuration object.',
+      },
+    },
+  },
+};
+
+export const RichContentOptions: Story = {
+  render: (args) => (
+    <ListBox {...args}>
+      <ListBox.Item
+        key="admin"
+        description="Full system administration access"
+        prefix={<Badge type="danger">Admin</Badge>}
+        suffix={<Badge type="note">3</Badge>}
+        rightIcon={<SettingsIcon />}
+        hotkeys="ctrl+a"
+      >
+        System Administrator
+      </ListBox.Item>
+      <ListBox.Item
+        key="editor"
+        description="Content creation and editing permissions"
+        prefix={<Badge type="warning">Editor</Badge>}
+        suffix={<Badge type="note">12</Badge>}
+        rightIcon={<EditIcon />}
+        hotkeys="ctrl+e"
+      >
+        Content Editor
+      </ListBox.Item>
+      <ListBox.Item
+        key="viewer"
+        description="Read-only access to system content"
+        prefix={<Badge type="success">Viewer</Badge>}
+        suffix={<Badge type="note">45</Badge>}
+        rightIcon={<UserIcon />}
+        hotkeys="ctrl+v"
+      >
+        Content Viewer
+      </ListBox.Item>
+    </ListBox>
+  ),
+  args: {
+    label: 'User Roles',
+    selectionMode: 'single',
+    size: 'large',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'This story demonstrates the full capabilities of ListBox options with ItemBase integration: descriptions, prefix/suffix content, right icons, and hotkeys all working together.',
       },
     },
   },

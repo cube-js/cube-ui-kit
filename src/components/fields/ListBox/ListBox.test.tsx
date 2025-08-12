@@ -225,7 +225,7 @@ describe('<ListBox />', () => {
   });
 
   it('should correctly assign refs', () => {
-    const listRef = createRef<HTMLElement>();
+    const listRef = createRef<HTMLUListElement>();
 
     const { getByRole } = render(
       <ListBox label="Select a fruit" listRef={listRef}>
