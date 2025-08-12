@@ -27,14 +27,23 @@ import {
   SUCCESS_PRIMARY_STYLES,
   SUCCESS_SECONDARY_STYLES,
 } from '../../../data/item-themes';
-import { BaseProps, Props, Styles, tasty } from '../../../tasty';
+import { CheckIcon } from '../../../icons/CheckIcon';
+import {
+  BaseProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
+  Props,
+  Styles,
+  tasty,
+} from '../../../tasty';
 
-export interface CubeItemBaseProps extends BaseProps {
+export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
   icon?: ReactNode;
   rightIcon?: ReactNode;
   prefix?: ReactNode;
   suffix?: ReactNode;
   description?: ReactNode;
+  isSelected?: boolean;
   size?:
     | 'xsmall'
     | 'small'
@@ -67,6 +76,12 @@ const DEFAULT_ICON_STYLES: Styles = {
   placeContent: 'stretch',
   aspectRatio: '1 / 1',
   width: '($size - 2bw)',
+  opacity: {
+    '': 1,
+    'is-checkbox & is-selected': 1,
+    'is-checkbox & !is-selected': 0,
+    'is-checkbox & !is-selected & hovered': 0.4,
+  },
 };
 
 const ADDITION_STYLES: Styles = {
@@ -108,17 +123,6 @@ const ItemBaseElement = tasty({
     transition: 'theme',
     reset: 'button',
     border: '#clear',
-    // fill: {
-    //   '': '#dark.0',
-    //   hovered: '#dark.03',
-    //   'pressed | (selected & !hovered)': '#dark.06',
-    // },
-    // color: {
-    //   '': '#dark-02',
-    //   hovered: '#dark-02',
-    //   pressed: '#dark',
-    //   '[disabled] | disabled': '#dark-04',
-    // },
     outlineOffset: 1,
     cursor: {
       '': 'default',
@@ -151,7 +155,7 @@ const ItemBaseElement = tasty({
 
     RightIcon: DEFAULT_ICON_STYLES,
 
-    Content: {
+    ItemContent: {
       display: 'block',
       placeSelf: 'center start',
       boxSizing: 'border-box',
@@ -233,6 +237,7 @@ const ItemBaseElement = tasty({
     'special.clear': SPECIAL_CLEAR_STYLES,
     'special.link': SPECIAL_LINK_STYLES,
   },
+  styleProps: CONTAINER_STYLES,
 });
 
 const ItemBase = <T extends HTMLElement = HTMLDivElement>(
@@ -253,19 +258,36 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     description,
     styles,
     buttonType,
+    isSelected,
     ...rest
   } = props;
 
+  // Determine if we should show checkbox instead of icon
+  const hasCheckbox = isSelected !== undefined;
+  const effectiveIcon = hasCheckbox ? undefined : icon;
+
   mods = useMemo(() => {
     return {
-      'with-icon': !!icon,
+      'with-icon': !!effectiveIcon || hasCheckbox,
       'with-right-icon': !!rightIcon,
       'with-prefix': !!prefix,
       'with-suffix': !!suffix,
       'with-description': !!description,
+      'is-checkbox': hasCheckbox,
+      'is-selected': isSelected === true,
+      selected: isSelected,
       ...mods,
     };
-  }, [icon, rightIcon, prefix, suffix, description, mods]);
+  }, [
+    effectiveIcon,
+    rightIcon,
+    prefix,
+    suffix,
+    description,
+    hasCheckbox,
+    isSelected,
+    mods,
+  ]);
 
   return (
     <ItemBaseElement
@@ -279,9 +301,13 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
       type={buttonType as any}
       {...rest}
     >
-      {icon && <div data-element="Icon">{icon}</div>}
+      {(effectiveIcon || hasCheckbox) && (
+        <div data-element="Icon">
+          {hasCheckbox ? <CheckIcon /> : effectiveIcon}
+        </div>
+      )}
       {prefix && <div data-element="Prefix">{prefix}</div>}
-      <div data-element="Content" {...contentProps}>
+      <div data-element="ItemContent" {...contentProps}>
         {children}
         {description ? (
           <div data-element="Description">{description}</div>

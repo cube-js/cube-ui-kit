@@ -21,6 +21,7 @@ const StyledHotKeys = tasty(Space, {
     display: 'inline-flex',
     flow: 'row',
     gap: '1x',
+    placeSelf: 'center',
   },
 });
 
@@ -28,10 +29,11 @@ export interface CubeHotKeysProps
   extends BasePropsWithoutChildren,
     ContainerStyleProps {
   children: string;
+  theme?: 'default' | 'special';
 }
 
 function HotKeys(props: CubeHotKeysProps, ref) {
-  const { children: keys, ...otherProps } = props;
+  const { children: keys, theme, ...otherProps } = props;
   const parsedKeys = useKeySymbols(keys);
   const styles = extractStyles(otherProps, CONTAINER_STYLES);
 
@@ -58,6 +60,7 @@ function HotKeys(props: CubeHotKeysProps, ref) {
             {keyGroup.map((key, keyIndex) => (
               <Tag
                 key={keyIndex}
+                theme={theme}
                 as="kbd"
                 role="text"
                 aria-label={`Key ${key}`}

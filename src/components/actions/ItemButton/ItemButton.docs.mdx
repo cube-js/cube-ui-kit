@@ -1,0 +1,100 @@
+import { Meta, Story, Controls } from '@storybook/blocks';
+import { ItemButton } from './ItemButton';
+import * as Stories from './ItemButton.stories';
+
+<Meta of={Stories} />
+
+### ItemButton
+
+Combines actionable behavior via the `useAction` hook with the visual layout and theming of `ItemBase`. Use it for list-like buttons with optional icons, prefixes/suffixes, and descriptions.
+
+### Component
+
+<Story of={Stories.Default} />
+
+---
+
+### Properties
+
+<Controls of={Stories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/BaseProperties)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root `ItemBase` appearance.
+
+Sub-elements:
+- `Icon` - left icon wrapper
+- `RightIcon` - right icon wrapper
+- `Content` - main text container
+- `Description` - secondary text line
+- `Prefix` - content before the main text
+- `Suffix` - content after the main text
+
+### Style Properties
+
+Supports container and text style props (e.g., `padding`, `radius`, `fill`, `color`, `width`, `height`, `flow`, `gap`).
+
+### Modifiers
+
+You can override state via `mods`.
+
+- `hovered`/`pressed`/`focused`/`disabled` - interaction states from `useAction`
+- `with-icon`/`with-right-icon`/`with-prefix`/`with-suffix`/`with-description` - layout states from `ItemBase`
+
+### Variants
+
+Types: `primary`, `secondary`, `outline`, `neutral`, `clear`
+
+Themes: `default`, `danger`, `success`, `special`
+
+Sizes: `xsmall`, `small`, `medium`, `large`, `xlarge`, `inline`
+
+### Examples
+
+#### Basic
+
+```jsx
+<ItemButton>Action</ItemButton>
+```
+
+#### With icons and description
+
+```jsx
+<ItemButton icon={<span>🗂️</span>} rightIcon={<span>↗</span>} description="Opens details">
+  Open
+</ItemButton>
+```
+
+#### As link
+
+```jsx
+<ItemButton to="/docs">Docs</ItemButton>
+```
+
+### Accessibility
+
+- Keyboard: Tab to focus, Enter/Space to activate
+- Screen readers: Provide `label` or visible children
+- ARIA: pass `aria-*` props as needed
+
+### Best Practices
+
+1. Prefer visible text or set `label` for icon-only cases
+2. Use `to` for navigation; supports `!` for new tab and `@` for native navigation
+
+### Suggested Improvements
+
+- Loading state support mirroring `Button`
+
+### Related Components
+
+- `Button` - classic button appearance
+- `ItemBase` - underlying layout component
+
+

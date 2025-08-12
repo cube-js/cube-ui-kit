@@ -373,3 +373,107 @@ ExtraWidth.parameters = {
     },
   },
 };
+
+export const WithCheckbox: StoryFn<CubeItemBaseProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>Selected Items (Checkbox Visible)</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <ItemBase {...args} styles={DEFAULT_STYLES} isSelected={true}>
+        Selected item with checkbox
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        isSelected={true}
+        size="small"
+      >
+        Small selected item
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        isSelected={true}
+        size="large"
+      >
+        Large selected item
+      </ItemBase>
+    </Space>
+
+    <Title level={5}>Non-Selected Items (Checkbox Hidden)</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <ItemBase {...args} styles={DEFAULT_STYLES} isSelected={false}>
+        Non-selected item with hidden checkbox
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        isSelected={false}
+        size="small"
+      >
+        Small non-selected item
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        isSelected={false}
+        size="large"
+      >
+        Large non-selected item
+      </ItemBase>
+    </Space>
+
+    <Title level={5}>Mixed Selection States</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        isSelected={true}
+        suffix="Selected"
+      >
+        Item 1
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        isSelected={false}
+        suffix="Not selected"
+      >
+        Item 2
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        isSelected={true}
+        suffix="Selected"
+      >
+        Item 3
+      </ItemBase>
+    </Space>
+
+    <Title level={5}>Comparison: Checkbox vs Regular Icon</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <ItemBase {...args} styles={DEFAULT_STYLES} isSelected={true}>
+        With checkbox (selected)
+      </ItemBase>
+      <ItemBase {...args} styles={DEFAULT_STYLES} isSelected={false}>
+        With checkbox (not selected)
+      </ItemBase>
+      <ItemBase {...args} styles={DEFAULT_STYLES} icon={<IconUser />}>
+        With regular icon
+      </ItemBase>
+    </Space>
+  </Space>
+);
+
+WithCheckbox.args = {
+  width: '300px',
+};
+
+WithCheckbox.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates the checkbox functionality when `isSelected` prop is provided. When `isSelected` is `true`, the checkbox is visible (opacity 1, hover opacity 0.8). When `isSelected` is `false`, the checkbox is invisible (opacity 0, hover opacity 0.4). The checkbox replaces the `icon` prop when `isSelected` is provided.',
+    },
+  },
+};

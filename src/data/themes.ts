@@ -2,7 +2,7 @@ export default {
   special: {
     fill: '#purple',
     color: '#white',
-    border: '#purple',
+    border: '#white',
   },
   success: {
     fill: '#success-bg',
