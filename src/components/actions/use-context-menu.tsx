@@ -199,7 +199,7 @@ export function useContextMenu<
   // 'open' accepts props, trigger props, and optional event for positioning, then opens the menu
   const open = useEvent(
     (
-      props?: P,
+      props: P = {} as P,
       triggerProps?: T,
       event?: NativeMouseEvent | NativePointerEvent | MouseEvent | PointerEvent,
     ) => {
@@ -234,7 +234,7 @@ export function useContextMenu<
         ? { ...defaultMenuProps, ...props }
         : props;
 
-      setComponentProps(finalProps as P);
+      setComponentProps(finalProps);
       setTriggerProps(triggerProps ?? null);
       setIsOpen(true);
     },

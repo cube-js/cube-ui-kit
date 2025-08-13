@@ -26,20 +26,22 @@ function useAnchoredMenu&lt;P, T = ComponentProps&lt;typeof MenuTrigger&gt;&gt;(
     ComponentProps&lt;typeof MenuTrigger&gt;,
     'children' | 'isOpen' | 'onOpenChange' | 'targetRef'
   &gt;,
+  defaultMenuProps?: P,
 ): {
   /** Ref to attach to the anchor element for positioning the menu. */
   anchorRef: RefObject&lt;HTMLElement&gt;;
 
   /**
    * Programmatically opens the menu with the provided props.
-   * @param props - Props to pass to the menu component
+   * Runtime props are merged with defaultMenuProps (runtime props take precedence).
+   * @param props - Props to pass to the menu component (merged with defaultMenuProps)
    * @param triggerProps - Additional props for MenuTrigger (merged with defaultTriggerProps)
    */
   open(props: P, triggerProps?: T): void;
 
   /**
    * Updates the props of the currently open menu.
-   * Props are merged if defaults are provided.
+   * Props are merged with defaultMenuProps.
    */
   update(props: P, triggerProps?: T): void;
 
@@ -61,6 +63,7 @@ function useAnchoredMenu&lt;P, T = ComponentProps&lt;typeof MenuTrigger&gt;&gt;(
 
 - **`Component`** - The menu component to render (`Menu`, `CommandMenu`, etc.)
 - **`defaultTriggerProps`** - Default props passed to `MenuTrigger` for positioning and behavior
+- **`defaultMenuProps`** - Default props passed to the menu component (merged with runtime props)
 
 ## Key Features
 
@@ -84,8 +87,9 @@ Positions menus relative to the anchor element:
 
 ### Props Merging Strategy
 
-- **Runtime props** (via `open()`/`update()`) for menu component
-- **Trigger props** merged with `defaultTriggerProps` for positioning control
+- **`defaultMenuProps`** - Used as base props for the menu component
+- **Runtime props** (via `open()`/`update()`) - Merged with defaults, taking precedence
+- **Trigger props** - Merged with `defaultTriggerProps` for positioning control
 
 ### Menu Synchronization
 
@@ -102,16 +106,13 @@ import { useAnchoredMenu, Menu, Button, Flex } from '@cube-dev/ui-kit';
 import { IconDotsVertical } from '@tabler/icons-react';
 
 function TabWithMultipleTriggers() {
-  const menu = useAnchoredMenu(Menu, {
-    placement: 'top end',
-  });
-
-  const openTab = () => {
-    console.log('Opening tab...');
-  };
-
-  const openActionsMenu = () => {
-    menu.open({
+  const menu = useAnchoredMenu(
+    Menu, 
+    {
+      placement: 'top end',
+    },
+    {
+      // Default menu props applied to all menu opens
       onAction: (key) => {
         console.log('Tab action:', key);
       },
@@ -123,7 +124,16 @@ function TabWithMultipleTriggers() {
           <Menu.Item key="close-others">Close Other Tabs</Menu.Item>
         </>
       ),
-    });
+    }
+  );
+
+  const openTab = () => {
+    console.log('Opening tab...');
+  };
+
+  const openActionsMenu = () => {
+    // Opens with default props - no need to pass them again
+    menu.open();
   };
 
   const handleRightClick = (event) => {
@@ -159,12 +169,12 @@ function TabWithMultipleTriggers() {
 }
 ```
 
-This example demonstrates a more realistic use case where a single menu can be triggered in multiple ways:
+This example demonstrates how `defaultMenuProps` simplifies menu usage by defining common menu content once:
 
 1. **Click the dots button** to open the actions menu
 2. **Right-click anywhere on the tab** to also open the same actions menu
 
-Both triggers share the same anchor point (`menu.anchorRef`) and open the same menu with identical content, showcasing the flexibility of `useAnchoredMenu` for creating sophisticated UI interactions.
+The menu content and behavior are defined in `defaultMenuProps`, eliminating the need to pass the same props repeatedly. Both triggers share the same anchor point (`menu.anchorRef`) and use the predefined menu configuration, showcasing how `defaultMenuProps` reduces code duplication in complex UI interactions.
 
 > **Important:** The `{rendered}` element must be placed in the component tree such that the MenuTrigger can properly position relative to the anchorRef. Typically, place it adjacent to the anchor element.
 
