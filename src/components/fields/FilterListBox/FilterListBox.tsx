@@ -75,6 +75,13 @@ const SearchWrapperElement = tasty({
     border: 'bottom',
     radius: '1r top',
     fill: '#clear',
+    height: '($size + 1x)',
+    $size: {
+      '': '$size-md',
+      '[data-size="small"]': '$size-sm',
+      '[data-size="medium"]': '$size-md',
+      '[data-size="large"]': '$size-lg',
+    },
   },
 });
 
@@ -84,9 +91,13 @@ const SearchInputElement = tasty({
     ...DEFAULT_INPUT_STYLES,
     fill: '#clear',
     padding: {
-      '': '0 1.5x',
-      prefix: '0 1.5x 0 .5x',
+      '': '.5x $inline-padding',
+      prefix: '0 $inline-padding 0 .5x',
     },
+    '$inline-padding':
+      'max($min-inline-padding, (($size - 1lh) / 2 + $inline-compensation))',
+    '$inline-compensation': '1x',
+    '$min-inline-padding': '1x',
   },
 });
 

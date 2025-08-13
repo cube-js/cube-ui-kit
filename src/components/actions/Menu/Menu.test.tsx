@@ -172,7 +172,15 @@ describe('<Menu />', () => {
         selectionMode="multiple"
         selectedKeys={['copy']}
       >
-        {basicItems}
+        <Menu.Item key="copy" icon="checkbox">
+          Copy
+        </Menu.Item>
+        <Menu.Item key="paste" icon="checkbox">
+          Paste
+        </Menu.Item>
+        <Menu.Item key="cut" icon="checkbox">
+          Cut
+        </Menu.Item>
       </Menu>,
     );
 
@@ -189,7 +197,15 @@ describe('<Menu />', () => {
         selectionMode="single"
         selectedKeys={['copy']}
       >
-        {basicItems}
+        <Menu.Item key="copy" icon="checkbox">
+          Copy
+        </Menu.Item>
+        <Menu.Item key="paste" icon="checkbox">
+          Paste
+        </Menu.Item>
+        <Menu.Item key="cut" icon="checkbox">
+          Cut
+        </Menu.Item>
       </Menu>,
     );
 
