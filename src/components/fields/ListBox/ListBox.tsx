@@ -396,7 +396,7 @@ const SelectAllOption = ({
         size={size}
         role="option"
         aria-selected={isSelected}
-        isSelected={isCheckable ? undefined : isSelected} // Don't let ItemBase override our custom checkbox
+        isSelected={isSelected}
         isDisabled={isDisabled}
         icon={checkboxIcon}
         mods={{
@@ -1148,7 +1148,7 @@ function Option({
       data-size={size}
       data-index={virtualIndex}
       size={size}
-      isSelected={isCheckable ? undefined : isSelected} // Don't let ItemBase override our custom checkbox
+      isSelected={isSelected}
       isDisabled={isDisabled}
       icon={effectiveIcon}
       rightIcon={item.props?.rightIcon}

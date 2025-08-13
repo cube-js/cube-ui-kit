@@ -93,9 +93,9 @@ const DEFAULT_ICON_STYLES: Styles = {
   width: '($size - 2bw)',
   opacity: {
     '': 1,
-    'is-checkbox & is-selected': 1,
-    'is-checkbox & !is-selected': 0,
-    'is-checkbox & !is-selected & hovered': 0.4,
+    'checkbox & selected': 1,
+    'checkbox & !selected': 0,
+    'checkbox & !selected & hovered': 0.4,
   },
 };
 
@@ -333,9 +333,8 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
       'with-prefix': !!prefix,
       'with-suffix': !!finalSuffix,
       'with-description': !!description,
-      'is-checkbox': hasCheckbox,
-      'is-selected': isSelected === true,
-      selected: isSelected,
+      checkbox: hasCheckbox,
+      selected: isSelected === true,
       ...mods,
     };
   }, [
