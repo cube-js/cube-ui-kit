@@ -80,6 +80,7 @@ export { ListBox } from './components/fields/ListBox';
 export { Menu } from './components/actions/Menu/Menu';
 export type { CubeMenuProps } from './components/actions/Menu/Menu';
 export { MenuTrigger } from './components/actions/Menu/MenuTrigger';
+export { SubMenuTrigger } from './components/actions/Menu/SubMenuTrigger';
 export type { CubeMenuTriggerProps } from './components/actions/Menu/MenuTrigger';
 export { CommandMenu } from './components/actions/CommandMenu';
 export type {

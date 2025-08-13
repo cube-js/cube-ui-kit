@@ -47,7 +47,7 @@ describe('StyleProcessor', () => {
   });
 
   test('parses custom properties', () => {
-    const result = parser.process('$my-gap $(my-gap, 2x)');
+    const result = parser.process('$my-gap ($my-gap, 2x)');
     expect(result.groups[0].values).toEqual([
       'var(--my-gap)',
       'var(--my-gap, calc(2 * var(--gap)))',
@@ -193,6 +193,174 @@ describe('StyleProcessor', () => {
     expect(res.groups[0].values).toEqual([
       'calc(var(--slider-range-end) - var(--slider-range-start))',
     ]);
+  });
+
+  test('parses new custom property with fallback syntax', () => {
+    const result = parser.process(
+      '($custom-margin, 1x) ($theme-color, #purple)',
+    );
+    expect(result.groups[0].values).toEqual([
+      'var(--custom-margin, var(--gap))',
+      'var(--theme-color, var(--purple-color))',
+    ]);
+  });
+
+  test('parses new custom property syntax in complex expressions', () => {
+    const result = parser.process('(100% - (2 * ($custom-gap, 1x)))');
+    expect(result.groups[0].values).toEqual([
+      'calc(100% - calc(2 * var(--custom-gap, var(--gap))))',
+    ]);
+  });
+
+  test('distinguishes between functions and custom property fallbacks', () => {
+    // Test function with custom property as first argument
+    const result1 = parser.process('sum($my-prop, 2x)');
+    expect(result1.groups[0].values).toEqual([
+      'calc(var(--my-prop) + calc(2 * var(--gap)))',
+    ]);
+
+    // Test custom property with fallback
+    const result2 = parser.process('($my-prop, 2x)');
+    expect(result2.groups[0].values).toEqual([
+      'var(--my-prop, calc(2 * var(--gap)))',
+    ]);
+
+    // Test multiple scenarios in one expression
+    const result3 = parser.process('sum($a, $b) ($fallback-prop, 1x)');
+    expect(result3.groups[0].values).toEqual([
+      'calc(var(--a) + var(--b))',
+      'var(--fallback-prop, var(--gap))',
+    ]);
+
+    // Test edge case: function with custom property fallback as argument
+    const result4 = parser.process('sum(($prop-a, 1x), ($prop-b, 2x))');
+    expect(result4.groups[0].values).toEqual([
+      'calc(var(--prop-a, var(--gap)) + var(--prop-b, calc(2 * var(--gap))))',
+    ]);
+
+    // Test color functions with custom properties
+    const result5 = parser.process('rgb($red, $green, $blue)');
+    expect(result5.groups[0].colors).toEqual([
+      'rgb(var(--red),var(--green),var(--blue))',
+    ]);
+
+    // Test generic function (not user-defined)
+    const result6 = parser.process('min($width, 100%)');
+    expect(result6.groups[0].values).toEqual(['min(var(--width), 100%)']);
+
+    // Test critical edge case: ensure no ambiguity in parsing order
+    // Function name 'sum' vs custom property fallback starting with 'sum'
+    const result7 = parser.process('sum($a, $b) ($sum, fallback)');
+    expect(result7.groups[0].values).toEqual([
+      'calc(var(--a) + var(--b))', // Function call
+      'var(--sum, fallback)', // Custom property fallback (not a function)
+    ]);
+  });
+
+  test('validates CSS custom property names correctly', () => {
+    // Valid names
+    const result1 = parser.process(
+      '$valid-name $_underscore $hyphen-ok $abc123',
+    );
+    expect(result1.groups[0].values).toEqual([
+      'var(--valid-name)',
+      'var(--_underscore)',
+      'var(--hyphen-ok)',
+      'var(--abc123)',
+    ]);
+
+    // Invalid names (should become modifiers)
+    const result2 = parser.process('$123invalid $-123invalid $0test $-');
+    expect(result2.groups[0].mods).toEqual([
+      '$123invalid',
+      '$-123invalid',
+      '$0test',
+      '$-',
+    ]);
+
+    // Edge case: single character names
+    const result3 = parser.process('$a $_ $1');
+    expect(result3.groups[0].values).toEqual(['var(--a)', 'var(--_)']);
+    expect(result3.groups[0].mods).toEqual(['$1']);
+  });
+
+  test('comprehensive collision testing for edge cases', () => {
+    // Test 1: Auto-calc vs custom property fallback - similar patterns
+    const result1 = parser.process('(100% - 2x) ($gap, 1x)');
+    expect(result1.groups[0].values).toEqual([
+      'calc(100% - calc(2 * var(--gap)))', // Auto-calc
+      'var(--gap, var(--gap))', // Custom property fallback
+    ]);
+
+    // Test 2: URL with comma vs custom property fallback
+    // NOTE: URLs merge with following tokens for background layers
+    const result2 = parser.process(
+      'url("img,with,comma.png") ($fallback, auto)',
+    );
+    expect(result2.groups[0].values).toEqual([
+      'url("img,with,comma.png") var(--fallback, auto)', // URL merges with following token
+    ]);
+
+    // Test 3: Quoted strings that look like custom properties
+    const result3 = parser.process(
+      '"($not-a-prop, value)" ($real-prop, fallback)',
+    );
+    expect(result3.groups[0].values).toEqual([
+      '"($not-a-prop, value)"', // Quoted string (not processed)
+      'var(--real-prop, fallback)', // Custom property fallback
+    ]);
+
+    // Test 4: Color function with similar pattern
+    const result4 = parser.process(
+      'rgb($red, $green, $blue) ($color-fallback, #fff)',
+    );
+    expect(result4.groups[0].colors).toEqual([
+      'rgb(var(--red),var(--green),var(--blue))',
+    ]);
+    expect(result4.groups[0].values).toEqual([
+      'var(--color-fallback, var(--fff-color, #fff))',
+    ]);
+
+    // Test 5: Nested parentheses with custom properties
+    const result5 = parser.process('(($outer, 10px) + ($inner, 5px))');
+    expect(result5.groups[0].values).toEqual([
+      'calc(var(--outer, 10px) + var(--inner, 5px))',
+    ]);
+
+    // Test 6: Invalid custom property patterns (should not match)
+    const result6 = parser.process(
+      '(not-a-prop, value) (@invalid-syntax, bad)',
+    );
+    expect(result6.groups[0].values).toEqual([
+      'calc(not-a-prop, value)', // Auto-calc (no $ prefix)
+      'var(--invalid-syntax, bad)', // @ is valid custom property prefix
+    ]);
+
+    // Test 7: Edge case with spaces and special characters
+    // NOTE: Extra spaces cause the pattern to not match, falling back to auto-calc
+    const result7 = parser.process('( $spaced , fallback ) ($compact,nospace)');
+    expect(result7.groups[0].values).toEqual([
+      'calc(var(--spaced), fallback)', // Extra spaces -> auto-calc, not custom property
+      'var(--compact, nospace)', // No spaces are fine
+    ]);
+
+    // Test 8: Edge cases with regex boundaries
+    // Now properly validates CSS custom property names
+    const result8 = parser.process(
+      '($123invalid, fallback) ($valid-name, fallback) ($_underscore, fallback) ($hyphen-ok, fallback)',
+    );
+    expect(result8.groups[0].values).toEqual([
+      'calc($123invalid, fallback)', // Invalid (starts with number) -> auto-calc
+      'var(--valid-name, fallback)', // Valid
+      'var(--_underscore, fallback)', // Valid (underscore allowed)
+      'var(--hyphen-ok, fallback)', // Valid (letter followed by hyphen)
+    ]);
+
+    // Test 9: Comma separation in complex scenarios
+    const result9 = parser.process('($prop1, fallback), ($prop2, fallback)');
+    expect(result9.groups.length).toBe(2); // Should create two groups
+    expect(result9.groups[0].values).toEqual(['var(--prop1, fallback)']);
+    expect(result9.groups[1].values).toEqual(['var(--prop2, fallback)']);
   });
 
   test('skips invalid functions while parsing (for example missing closing parenthesis)', () => {

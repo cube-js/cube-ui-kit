@@ -1,5 +1,37 @@
 # @cube-dev/ui-kit
 
+## 0.72.3
+
+### Patch Changes
+
+- [#755](https://github.com/cube-js/cube-ui-kit/pull/755) [`62ff1eed`](https://github.com/cube-js/cube-ui-kit/commit/62ff1eed53448c710348751a0c5716becf8e7c4d) Thanks [@tenphi](https://github.com/tenphi)! - Fix navigation for CommandMenu with sections.
+
+## 0.72.2
+
+### Patch Changes
+
+- [#753](https://github.com/cube-js/cube-ui-kit/pull/753) [`2a7a61ea`](https://github.com/cube-js/cube-ui-kit/commit/2a7a61ea86551b83467a678c06bc9c8cd77f9d79) Thanks [@tenphi](https://github.com/tenphi)! - Fix \$label-width definition in Label component.
+
+- [#753](https://github.com/cube-js/cube-ui-kit/pull/753) [`2a7a61ea`](https://github.com/cube-js/cube-ui-kit/commit/2a7a61ea86551b83467a678c06bc9c8cd77f9d79) Thanks [@tenphi](https://github.com/tenphi)! - Set isDismissable for DialogContainer to true by default.
+
+- [#753](https://github.com/cube-js/cube-ui-kit/pull/753) [`2a7a61ea`](https://github.com/cube-js/cube-ui-kit/commit/2a7a61ea86551b83467a678c06bc9c8cd77f9d79) Thanks [@tenphi](https://github.com/tenphi)! - Fix LRU cache error in the style parser.
+
+## 0.72.1
+
+### Patch Changes
+
+- [#750](https://github.com/cube-js/cube-ui-kit/pull/750) [`0ee6ac95`](https://github.com/cube-js/cube-ui-kit/commit/0ee6ac958946c5621a847d7982f16267b4d29526) Thanks [@tenphi](https://github.com/tenphi)! - Fix \$label-width definition in Label component.
+
+## 0.72.0
+
+### Minor Changes
+
+- [#747](https://github.com/cube-js/cube-ui-kit/pull/747) [`27dc51b2`](https://github.com/cube-js/cube-ui-kit/commit/27dc51b2c3ab08693b02892f38787a3e90e238b9) Thanks [@tenphi](https://github.com/tenphi)! - New syntax for custom properties with fallback: `($prop-name, <fallback_value>)`.
+
+### Patch Changes
+
+- [#749](https://github.com/cube-js/cube-ui-kit/pull/749) [`6f40ed82`](https://github.com/cube-js/cube-ui-kit/commit/6f40ed82775976efecf7b2f99f7356c59b770284) Thanks [@tenphi](https://github.com/tenphi)! - Add SubMenuTrigger component for submenu support in Menu. CommandMenu is not supported.
+
 ## 0.71.2
 
 ### Patch Changes

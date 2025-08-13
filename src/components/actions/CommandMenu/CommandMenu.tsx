@@ -337,18 +337,24 @@ function CommandMenu<T extends object>(
 
   // Helper function to find the first selectable item from filtered results
   const findFirstSelectableItem = useCallback(() => {
-    // Use the filtered collection items instead of the full tree state collection
-    for (const item of filteredCollectionItems) {
-      if (
-        item &&
-        item.type === 'item' &&
-        !treeState.selectionManager.isDisabled(item.key)
-      ) {
-        return item.key;
-      }
-    }
+    const { selectionManager } = treeState;
 
-    return null;
+    const visit = (items: any[]): Key | null => {
+      for (const node of items) {
+        if (node?.type === 'section') {
+          const childResult = visit(Array.from(node.childNodes ?? []));
+          if (childResult != null) return childResult;
+        } else if (
+          node?.type === 'item' &&
+          !selectionManager.isDisabled(node.key)
+        ) {
+          return node.key;
+        }
+      }
+      return null;
+    };
+
+    return visit(filteredCollectionItems);
   }, [filteredCollectionItems, treeState.selectionManager]);
 
   // Create a ref for the menu container
@@ -582,21 +588,21 @@ function CommandMenu<T extends object>(
             const currentKey =
               focusedKeyRef.current || selectionManager.focusedKey;
 
-            // Helper function to get all visible item keys by applying filter to tree state collection
+            // Helper function to get all visible item keys accounting for sections
             const getVisibleItemKeys = (): Key[] => {
               const keys: Key[] = [];
-              const term = searchValue.trim();
 
-              // Use the tree state's collection and apply filter manually
-              for (const item of treeState.collection) {
-                if (item.type === 'item') {
-                  const text = item.textValue ?? String(item.rendered ?? '');
-                  if (enhancedFilter(text, term, item.props)) {
-                    keys.push(item.key);
+              const visit = (items: any[]) => {
+                for (const node of items) {
+                  if (node?.type === 'section') {
+                    visit(Array.from(node.childNodes ?? []));
+                  } else if (node?.type === 'item') {
+                    keys.push(node.key);
                   }
                 }
-              }
+              };
 
+              visit(filteredCollectionItems);
               return keys;
             };
 

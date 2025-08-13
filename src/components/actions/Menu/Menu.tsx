@@ -24,6 +24,7 @@ import {
 import { useMenuContext } from './context';
 import { MenuItem } from './MenuItem';
 import { MenuSection } from './MenuSection';
+import { MenuTrigger } from './MenuTrigger';
 import {
   StyledDivider,
   StyledFooter,
@@ -31,6 +32,7 @@ import {
   StyledMenu,
   StyledMenuWrapper,
 } from './styled';
+import { SubMenuTrigger } from './SubMenuTrigger';
 
 export interface CubeMenuProps<T>
   extends BasePropsWithoutChildren,
@@ -87,6 +89,7 @@ function Menu<T extends object>(
     sectionStyles,
     sectionHeadingStyles,
     size = 'medium',
+    focusOnHover = false,
     qa,
     selectedKeys,
     defaultSelectedKeys,
@@ -119,6 +122,7 @@ function Menu<T extends object>(
     : undefined;
 
   const completeProps = mergeProps(contextProps, rest, {
+    focusOnHover,
     selectedKeys: ariaSelectedKeys,
     defaultSelectedKeys: ariaDefaultSelectedKeys,
     onSelectionChange: handleSelectionChange,
@@ -219,8 +223,11 @@ function Menu<T extends object>(
       }
 
       // Apply custom wrapper if provided
-      if (item.props.wrapper) {
+      if (item.props?.wrapper) {
         menuItem = item.props.wrapper(menuItem);
+      } else if ((item as any).wrapper) {
+        // Handle wrapper from collection nodes (e.g., SubMenuTrigger)
+        menuItem = (item as any).wrapper(menuItem);
       }
 
       // Ensure every child has a stable key, even if the wrapper component didn't set one.
@@ -284,11 +291,15 @@ const Section = Object.assign(BaseSection, {
 type __MenuComponent = typeof _Menu & {
   Item: typeof Item;
   Section: typeof Section;
+  SubMenuTrigger: typeof SubMenuTrigger;
+  Trigger: typeof MenuTrigger;
 };
 
 const __Menu = Object.assign(_Menu as __MenuComponent, {
   Item,
   Section,
+  SubMenuTrigger,
+  Trigger: MenuTrigger,
   displayName: 'Menu',
 });
 

@@ -158,6 +158,25 @@ The `mods` property accepts the following modifiers you can override:
 |----------|------|---------|-------------|
 | aria-label | `string` | - | Accessibility label for sections without titles |
 
+## Menu.SubMenuTrigger Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| children | `[ReactNode, ReactElement]` | - | Must be exactly two elements: trigger (Menu.Item) and submenu (Menu) |
+| disabled | `boolean` | `false` | Whether the submenu trigger is disabled |
+| onAction | `(key: Key) => void` | - | Callback that bubbles onAction events from the submenu |
+| autoFocus | `boolean \| 'first' \| 'last'` | `'first'` | Whether and how the submenu should receive focus on open |
+
+### Menu.SubMenuTrigger Positioning Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| placement | `Placement` | `'right start'` | Placement of the submenu relative to trigger |
+| offset | `number` | `0` | Distance between trigger and submenu |
+| crossOffset | `number` | `0` | Cross-axis offset for submenu positioning |
+| shouldFlip | `boolean` | `true` | Whether submenu should flip when it doesn't fit |
+| containerPadding | `number` | `8` | Padding from viewport edges |
+
 ## Selection Modes
 
 ### None (Default)
@@ -274,24 +293,95 @@ const items = [
 </Menu>
 ```
 
+### Basic Submenu
+
+```jsx
+<Menu onAction={(key) => console.log(key)}>
+  <Menu.Item key="copy">Copy</Menu.Item>
+  <Menu.Item key="paste">Paste</Menu.Item>
+  
+  <Menu.SubMenuTrigger>
+    <Menu.Item key="share">Share</Menu.Item>
+    <Menu onAction={(key) => console.log(key)}>
+      <Menu.Item key="share-link">Copy link</Menu.Item>
+      <Menu.Item key="share-email">Email</Menu.Item>
+      <Menu.Item key="share-sms">SMS</Menu.Item>
+    </Menu>
+  </Menu.SubMenuTrigger>
+  
+  <Menu.Item key="delete">Delete</Menu.Item>
+</Menu>
+```
+
+### Nested Submenus
+
+```jsx
+<Menu onAction={(key) => console.log(key)}>
+  <Menu.Item key="new">New File</Menu.Item>
+  
+  <Menu.SubMenuTrigger>
+    <Menu.Item key="export">Export</Menu.Item>
+    <Menu onAction={(key) => console.log(key)}>
+      <Menu.Item key="export-pdf">Export as PDF</Menu.Item>
+      <Menu.Item key="export-image">Export as Image</Menu.Item>
+      
+      <Menu.SubMenuTrigger>
+        <Menu.Item key="export-formats">More formats</Menu.Item>
+        <Menu onAction={(key) => console.log(key)}>
+          <Menu.Item key="export-docx">DOCX Document</Menu.Item>
+          <Menu.Item key="export-xlsx">Excel Spreadsheet</Menu.Item>
+          <Menu.Item key="export-pptx">PowerPoint</Menu.Item>
+        </Menu>
+      </Menu.SubMenuTrigger>
+    </Menu>
+  </Menu.SubMenuTrigger>
+</Menu>
+```
+
+### Submenu with Sections
+
+```jsx
+<Menu onAction={(key) => console.log(key)}>
+  <Menu.Item key="copy">Copy</Menu.Item>
+  
+  <Menu.SubMenuTrigger>
+    <Menu.Item key="settings">Settings</Menu.Item>
+    <Menu onAction={(key) => console.log(key)}>
+      <Menu.Section title="General">
+        <Menu.Item key="preferences">Preferences</Menu.Item>
+        <Menu.Item key="account">Account Settings</Menu.Item>
+      </Menu.Section>
+      <Menu.Section title="Display">
+        <Menu.Item key="theme">Theme</Menu.Item>
+        <Menu.Item key="layout">Layout</Menu.Item>
+      </Menu.Section>
+    </Menu>
+  </Menu.SubMenuTrigger>
+</Menu>
+```
+
 ## Accessibility
 
 ### Keyboard Navigation
 
 - `Tab` - Moves focus to the menu
 - `Arrow Keys` - Navigate between items
+- `Right Arrow` - Open submenu when focused on submenu trigger
+- `Left Arrow` - Close submenu and return to parent
 - `Home/End` - Move to first/last item
-- `Enter/Space` - Activate the focused item
-- `Escape` - Close the menu
+- `Enter/Space` - Activate the focused item or open submenu
+- `Escape` - Close the menu or submenu
 - `A-Z` - Typeahead search for items
 
 ### Screen Reader Support
 
 - Menu announces as "menu" with proper role
 - Items announce as "menuitem", "menuitemcheckbox", or "menuitemradio"
+- Submenu triggers announce with "has submenu" indication
 - Selection state is announced for selectable items
 - Keyboard shortcuts are announced when present
 - Section headings provide context for grouped items
+- Submenu opening and closing is announced to screen readers
 
 ### ARIA Properties
 
@@ -333,6 +423,17 @@ const items = [
    </Menu>
    ```
 
+6. **Submenu Structure**: Use clear hierarchy for submenus
+   ```jsx
+   <Menu.SubMenuTrigger>
+     <Menu.Item key="share">Share</Menu.Item>
+     <Menu onAction={handleAction}>
+       <Menu.Item key="link">Copy Link</Menu.Item>
+       <Menu.Item key="email">Email</Menu.Item>
+     </Menu>
+   </Menu.SubMenuTrigger>
+   ```
+
 ## Integration with MenuTrigger
 
 The Menu component is typically used with MenuTrigger for dropdown functionality:
@@ -349,11 +450,11 @@ The Menu component is typically used with MenuTrigger for dropdown functionality
 
 ## Suggested Improvements
 
-- Enhancement 1: Add support for nested submenus
-- Enhancement 2: Implement virtual scrolling for large item lists
-- Enhancement 3: Add animation presets for menu transitions
-- Enhancement 4: Support for item templates and custom renderers
-- Enhancement 5: Built-in search/filter functionality
+- Enhancement 1: Implement virtual scrolling for large item lists
+- Enhancement 2: Add animation presets for menu transitions
+- Enhancement 3: Support for item templates and custom renderers
+- Enhancement 4: Built-in search/filter functionality
+- Enhancement 5: Add support for icons in section headers
 
 ## Related Components
 

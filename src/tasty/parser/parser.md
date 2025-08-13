@@ -133,7 +133,7 @@ Each `StyleParser` instance maintains its own LRU cache.
 | Order | Rule                                                                                       | Bucket   |
 |-------|--------------------------------------------------------------------------------------------|----------|
 | 1     | URL – `url(` opens `inUrl`; everything to its `)` is a single token.                       | value    |
-| 2     | Custom property – `$ident` → `var(--ident)`; `$(ident,fallback)` → `var(--ident, <processed fallback>)`. Only first `$` per token counts. | value    |
+| 2     | Custom property – `$ident` → `var(--ident)`; `($ident,fallback)` → `var(--ident, <processed fallback>)`. Must start with letter or underscore, followed by letters, numbers, hyphens, or underscores. | value    |
 | 3     | Hash token – `#xxxxxx` if valid hex → `var(--xxxxxx-color, #xxxxxx)`; otherwise `var(--name-color)`. | color    |
 | 4     | Color function – name in list §12.2 followed by `(` (balanced).                            | color    |
 | 5     | User / other function – `ident(` not in color list; parse args recursively, hand off to `funcs[name]` if provided; else rebuild with processed args. | value    |
@@ -152,7 +152,7 @@ Each processed string is inserted into its bucket and into `all` in source order
 |--------------------------|---------------------------------------------------------------------------------------------|
 | Custom unit (`2x`, `.75r`, `-3cr`) | `units[unit]`: • string → `calc(n * replacement)` • function → `calc(handler(numeric))`<br> `0u` stays `calc(0 * …)` (unit info preserved). |
 | Auto-calc parentheses    | Applies anywhere, nesting allowed.<br>Trigger = `(` whose previous non-space char is not `[a-z0-9_-]` and not `l` in `url(`.<br>Algorithm:<br>1. Strip outer parens.<br>2. Recursively parse inner text (so `2r`, `#fff`, nested auto-calc, etc., all expand).<br>3. Wrap in `calc( … )`. |
-| Custom property          | As in §5-2.                                                                                 |
+| Custom property          | `$ident` → `var(--ident)` \| `($ident,fallback)` → `var(--ident, <processed fallback>)` |
 | Hash colors              | As in §5-3.                                                                                 |
 | Color functions          | Arguments are parsed, inner colors re-expanded; function name retained.                     |
 | User functions           | If `funcs[name]` exists → call with parsed arg-`StyleDetails[]`, use return string.<br>Else rebuild `ident(<processed args>)`. |
@@ -233,6 +233,8 @@ rgb rgba hsl hsla hwb lab lch oklab oklch color device-cmyk gray color-mix color
 | `1bw top #purple, 1ow right #dark-05` | Two groups; colors processed; positions as modifiers.                  |
 | Comments `/*…*/2x`             | `calc(2 * var(--gap))`.                                                         |
 | `#+not-hash`                   | Modifier (fails hex test).                                                      |
+| `($custom-gap, 1x)`           | `var(--custom-gap, var(--gap))` (new custom property syntax).                  |
+| `($123invalid, fallback)`     | `calc($123invalid, fallback)` (invalid name → auto-calc).                      |
 | Excess spaces/newlines         | Collapsed in output.                                                            |
 | `+2r, 1e3x`                    | Invalid → modifiers.                                                            |
 | Unicode identifiers            | Modifiers (parser supports only kebab-case ASCII idents).                       |
