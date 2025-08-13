@@ -83,6 +83,13 @@ const SelectTrigger = tasty(ItemBase, {
   qa: 'Trigger',
   styles: {
     reset: 'button',
+
+    ItemContent: {
+      opacity: {
+        '': 1,
+        placeholder: '$disabled-opacity',
+      },
+    },
   },
 });
 
