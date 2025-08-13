@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from '@storybook/react';
+import { Meta, StoryObj } from '@storybook/react-vite';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Input } from '../../fields';

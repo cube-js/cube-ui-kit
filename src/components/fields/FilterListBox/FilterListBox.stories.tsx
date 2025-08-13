@@ -1,6 +1,6 @@
-import { StoryFn, StoryObj } from '@storybook/react';
-import { userEvent, within } from '@storybook/test';
+import { StoryFn, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
+import { userEvent, within } from 'storybook/test';
 
 import {
   CheckIcon,
@@ -22,7 +22,7 @@ import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
 import { CubeFilterListBoxProps, FilterListBox } from './FilterListBox';
 
-import type { Meta } from '@storybook/react';
+import type { Meta } from '@storybook/react-vite';
 
 const meta: Meta<typeof FilterListBox> = {
   title: 'Forms/FilterListBox',

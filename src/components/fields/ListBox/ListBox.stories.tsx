@@ -1,4 +1,4 @@
-import { StoryFn, StoryObj } from '@storybook/react';
+import { StoryFn, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 
 import {
@@ -23,7 +23,7 @@ import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
 import { CubeListBoxProps, ListBox } from './ListBox';
 
-import type { Meta } from '@storybook/react';
+import type { Meta } from '@storybook/react-vite';
 
 const meta: Meta<typeof ListBox> = {
   title: 'Forms/ListBox',

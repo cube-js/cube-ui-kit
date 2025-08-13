@@ -1,4 +1,4 @@
-import { StoryFn } from '@storybook/react';
+import { StoryFn } from '@storybook/react-vite';
 import { IconCoin, IconSettings, IconUser } from '@tabler/icons-react';
 
 import { DirectionIcon } from '../../../icons';

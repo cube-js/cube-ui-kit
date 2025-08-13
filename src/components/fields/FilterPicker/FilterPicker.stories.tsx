@@ -1,5 +1,5 @@
-import { userEvent, within } from '@storybook/test';
 import { useState } from 'react';
+import { userEvent, within } from 'storybook/test';
 
 import {
   CheckIcon,
@@ -24,7 +24,7 @@ import { Space } from '../../layout/Space';
 
 import { FilterPicker } from './FilterPicker';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof FilterPicker> = {
   title: 'Forms/FilterPicker',

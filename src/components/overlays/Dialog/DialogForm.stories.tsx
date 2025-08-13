@@ -1,11 +1,11 @@
-import { Meta, StoryFn } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react-vite';
+import { useState } from 'react';
 import {
   expect,
   userEvent,
   waitForElementToBeRemoved,
   within,
-} from '@storybook/test';
-import { useState } from 'react';
+} from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions';

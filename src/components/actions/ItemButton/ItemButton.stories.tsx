@@ -2,7 +2,7 @@ import { IconExternalLink, IconFile } from '@tabler/icons-react';
 
 import { ItemButton } from './ItemButton';
 
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof ItemButton> = {
   title: 'Actions/ItemButton',

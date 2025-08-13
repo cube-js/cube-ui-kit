@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react-vite';
 import { IconSettings } from '@tabler/icons-react';
 
 import { baseProps } from '../../../stories/lists/baseProps';

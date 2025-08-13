@@ -197,10 +197,6 @@ const ItemBaseElement = tasty({
         '(with-icon | with-prefix) & (with-right-icon | with-suffix)':
           '$block-padding 0',
       },
-      opacity: {
-        '': 1,
-        placeholder: '$disabled-opacity',
-      },
     },
 
     Description: {
