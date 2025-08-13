@@ -385,7 +385,7 @@ export const WithCheckbox: StoryFn<CubeItemBaseProps> = (args) => (
         {...args}
         styles={DEFAULT_STYLES}
         isSelected={true}
-        size="small"
+        size="xsmall"
       >
         Small selected item
       </ItemBase>
