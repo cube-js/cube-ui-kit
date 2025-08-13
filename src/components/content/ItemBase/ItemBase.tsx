@@ -3,12 +3,14 @@ import { useHotkeys } from 'react-hotkeys-hook';
 
 import {
   DANGER_CLEAR_STYLES,
+  DANGER_ITEM_STYLES,
   DANGER_LINK_STYLES,
   DANGER_NEUTRAL_STYLES,
   DANGER_OUTLINE_STYLES,
   DANGER_PRIMARY_STYLES,
   DANGER_SECONDARY_STYLES,
   DEFAULT_CLEAR_STYLES,
+  DEFAULT_ITEM_STYLES,
   DEFAULT_LINK_STYLES,
   DEFAULT_NEUTRAL_STYLES,
   DEFAULT_OUTLINE_STYLES,
@@ -16,12 +18,14 @@ import {
   DEFAULT_SECONDARY_STYLES,
   ItemVariant,
   SPECIAL_CLEAR_STYLES,
+  SPECIAL_ITEM_STYLES,
   SPECIAL_LINK_STYLES,
   SPECIAL_NEUTRAL_STYLES,
   SPECIAL_OUTLINE_STYLES,
   SPECIAL_PRIMARY_STYLES,
   SPECIAL_SECONDARY_STYLES,
   SUCCESS_CLEAR_STYLES,
+  SUCCESS_ITEM_STYLES,
   SUCCESS_LINK_STYLES,
   SUCCESS_NEUTRAL_STYLES,
   SUCCESS_OUTLINE_STYLES,
@@ -60,6 +64,7 @@ export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
     | (string & {});
   contentProps?: Props;
   type?:
+    | 'item'
     | 'primary'
     | 'secondary'
     | 'outline'
@@ -232,7 +237,7 @@ const ItemBaseElement = tasty({
     'default.neutral': DEFAULT_NEUTRAL_STYLES,
     'default.clear': DEFAULT_CLEAR_STYLES,
     'default.link': DEFAULT_LINK_STYLES,
-
+    'default.item': DEFAULT_ITEM_STYLES,
     // Danger theme
     'danger.primary': DANGER_PRIMARY_STYLES,
     'danger.secondary': DANGER_SECONDARY_STYLES,
@@ -240,7 +245,7 @@ const ItemBaseElement = tasty({
     'danger.neutral': DANGER_NEUTRAL_STYLES,
     'danger.clear': DANGER_CLEAR_STYLES,
     'danger.link': DANGER_LINK_STYLES,
-
+    'danger.item': DANGER_ITEM_STYLES,
     // Success theme
     'success.primary': SUCCESS_PRIMARY_STYLES,
     'success.secondary': SUCCESS_SECONDARY_STYLES,
@@ -248,7 +253,7 @@ const ItemBaseElement = tasty({
     'success.neutral': SUCCESS_NEUTRAL_STYLES,
     'success.clear': SUCCESS_CLEAR_STYLES,
     'success.link': SUCCESS_LINK_STYLES,
-
+    'success.item': SUCCESS_ITEM_STYLES,
     // Special theme
     'special.primary': SPECIAL_PRIMARY_STYLES,
     'special.secondary': SPECIAL_SECONDARY_STYLES,
@@ -256,6 +261,7 @@ const ItemBaseElement = tasty({
     'special.neutral': SPECIAL_NEUTRAL_STYLES,
     'special.clear': SPECIAL_CLEAR_STYLES,
     'special.link': SPECIAL_LINK_STYLES,
+    'special.item': SPECIAL_ITEM_STYLES,
   },
   styleProps: CONTAINER_STYLES,
 });
@@ -267,7 +273,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
   let {
     children,
     size,
-    type,
+    type = 'item',
     theme = 'default',
     mods,
     icon,

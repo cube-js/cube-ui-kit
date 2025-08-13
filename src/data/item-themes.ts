@@ -127,6 +127,24 @@ export const DEFAULT_LINK_STYLES: Styles = {
   },
 } as const;
 
+export const DEFAULT_ITEM_STYLES: Styles = {
+  border: '#clear',
+  fill: {
+    '': '#dark.0',
+    hovered: '#dark.03',
+    selected: '#dark.09',
+    'selected & hovered': '#dark.12',
+    pressed: '#dark.09',
+    '[disabled] | disabled': '#clear',
+  },
+  color: {
+    '': '#dark-02',
+    hovered: '#dark-02',
+    pressed: '#dark',
+    '[disabled] | disabled': '#dark-04',
+  },
+} as const;
+
 // ---------- DANGER THEME ----------
 export const DANGER_PRIMARY_STYLES: Styles = {
   outline: {
@@ -210,13 +228,18 @@ export const DANGER_CLEAR_STYLES: Styles = {
     focused: '#danger-text',
   },
   fill: {
-    '': '#danger.0',
-    hovered: '#danger.1',
-    'pressed | (selected & !hovered)': '#danger.05',
+    '': '#danger-text.0',
+    hovered: '#danger-text.03',
+    selected: '#danger-text.09',
+    'selected & hovered': '#danger-text.12',
+    pressed: '#danger-text.09',
+    '[disabled] | disabled': '#clear',
   },
   color: {
     '': '#danger-text',
-    '[disabled] | disabled': '#dark-04',
+    hovered: '#danger-text',
+    pressed: '#danger-text',
+    '[disabled] | disabled': '#danger-text.4',
   },
 } as const;
 
@@ -233,6 +256,24 @@ export const DANGER_LINK_STYLES: Styles = {
     '': '#danger-text',
     'hovered & !pressed': '#danger',
     '[disabled] | disabled': '#dark-04',
+  },
+} as const;
+
+export const DANGER_ITEM_STYLES: Styles = {
+  border: '#clear',
+  fill: {
+    '': '#danger-text.0',
+    hovered: '#danger-text.03',
+    selected: '#danger-text.09',
+    'selected & hovered': '#danger-text.12',
+    pressed: '#danger-text.09',
+    '[disabled] | disabled': '#clear',
+  },
+  color: {
+    '': '#danger-text',
+    hovered: '#danger-text',
+    pressed: '#danger-text',
+    '[disabled] | disabled': '#danger-text.4',
   },
 } as const;
 
@@ -319,13 +360,18 @@ export const SUCCESS_CLEAR_STYLES: Styles = {
     focused: '#success-text',
   },
   fill: {
-    '': '#success.0',
-    hovered: '#success.1',
-    'pressed | (selected & !hovered)': '#success.05',
+    '': '#success-text.0',
+    hovered: '#success-text.03',
+    selected: '#success-text.09',
+    'selected & hovered': '#success-text.12',
+    pressed: '#success-text.09',
+    '[disabled] | disabled': '#clear',
   },
   color: {
     '': '#success-text',
-    '[disabled] | disabled': '#dark-04',
+    hovered: '#success-text',
+    pressed: '#success-text',
+    '[disabled] | disabled': '#success-text.4',
   },
 } as const;
 
@@ -342,6 +388,24 @@ export const SUCCESS_LINK_STYLES: Styles = {
     '': '#success-text',
     'hovered & !pressed': '#success',
     '[disabled] | disabled': '#dark-04',
+  },
+} as const;
+
+export const SUCCESS_ITEM_STYLES: Styles = {
+  border: '#clear',
+  fill: {
+    '': '#success-text.0',
+    hovered: '#success-text.03',
+    selected: '#success-text.09',
+    'selected & hovered': '#success-text.12',
+    pressed: '#success-text.09',
+    '[disabled] | disabled': '#clear',
+  },
+  color: {
+    '': '#success-text',
+    hovered: '#success-text',
+    pressed: '#success-text',
+    '[disabled] | disabled': '#success-text.4',
   },
 } as const;
 
@@ -405,7 +469,7 @@ export const SPECIAL_OUTLINE_STYLES: Styles = {
 
 export const SPECIAL_NEUTRAL_STYLES: Styles = {
   border: {
-    '': 0,
+    '': '#clear',
     focused: '#white',
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
@@ -459,6 +523,19 @@ export const SPECIAL_LINK_STYLES: Styles = {
   },
 } as const;
 
+export const SPECIAL_ITEM_STYLES: Styles = {
+  border: '#clear',
+  fill: {
+    '': '#white.0',
+    hovered: '#white.12',
+    'pressed | (selected & !hovered)': '#white.18',
+  },
+  color: {
+    '': '#white',
+    '[disabled] | disabled': '#white.4',
+  },
+} as const;
+
 export type ItemVariant =
   | 'default.primary'
   | 'default.secondary'
@@ -466,21 +543,25 @@ export type ItemVariant =
   | 'default.neutral'
   | 'default.clear'
   | 'default.link'
+  | 'default.item'
   | 'danger.primary'
   | 'danger.secondary'
   | 'danger.outline'
   | 'danger.neutral'
   | 'danger.clear'
   | 'danger.link'
+  | 'danger.item'
   | 'success.primary'
   | 'success.secondary'
   | 'success.outline'
   | 'success.neutral'
   | 'success.clear'
   | 'success.link'
+  | 'success.item'
   | 'special.primary'
   | 'special.secondary'
   | 'special.outline'
   | 'special.neutral'
   | 'special.clear'
-  | 'special.link';
+  | 'special.link'
+  | 'special.item';

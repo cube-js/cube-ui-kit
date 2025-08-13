@@ -1127,6 +1127,9 @@ function Option({
     ...filteredOptionProps
   } = optionProps;
 
+  const theme =
+    { valid: 'success', invalid: 'danger' }[validationState] || 'default';
+
   return (
     <ListBoxItemBase
       ref={combinedRef}
@@ -1140,6 +1143,7 @@ function Option({
         'aria-disabled': ariaDisabled,
         role,
       })}
+      theme={theme}
       style={virtualStyle}
       data-size={size}
       data-index={virtualIndex}
