@@ -5,7 +5,7 @@ import { Styles } from '../tasty';
 
 const _Item = Item as unknown as (props: {
   description?: ReactNode;
-  icon?: ReactElement;
+  icon?: ReactElement | 'checkbox';
   prefix?: ReactNode;
   suffix?: ReactNode;
   rightIcon?: ReactElement;

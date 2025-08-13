@@ -251,6 +251,36 @@ const meta: Meta<typeof FilterPicker> = {
       control: false,
       description: 'Custom styles for the trigger button element',
     },
+    triggerTooltip: {
+      control: { type: 'text' },
+      description:
+        'Tooltip for the trigger button (separate from field tooltip)',
+    },
+    triggerDescription: {
+      control: { type: 'text' },
+      description:
+        'Description for the trigger button (separate from field description)',
+    },
+    prefix: {
+      control: false,
+      description: 'Content to show before the trigger button text',
+    },
+    suffix: {
+      control: false,
+      description: 'Content to show after the trigger button text',
+    },
+    hotkeys: {
+      control: { type: 'text' },
+      description: 'Keyboard shortcut that triggers the picker when pressed',
+    },
+    buttonType: {
+      control: 'radio',
+      options: ['button', 'submit', 'reset'],
+      description: 'HTML button type',
+      table: {
+        defaultValue: { summary: 'button' },
+      },
+    },
     headerStyles: {
       control: false,
       description:
@@ -1610,6 +1640,184 @@ export const WithSelectAll: Story = {
       description: {
         story:
           'When `showSelectAll={true}` is used with multiple selection mode in FilterPicker, a "Select All" option appears in the dropdown above the search input. The checkbox shows indeterminate state when some items are selected, checked when all are selected, and unchecked when none are selected. The select all functionality works seamlessly with filtering and the trigger button shows the combined selection summary.',
+      },
+    },
+  },
+};
+
+export const WithHotkeys: Story = {
+  args: {
+    label: 'Filter with Hotkeys',
+    placeholder: 'Press Ctrl+F to open...',
+    selectionMode: 'multiple',
+    searchPlaceholder: 'Search options...',
+    width: 'max 30x',
+    hotkeys: 'ctrl+f',
+    triggerTooltip: 'Press Ctrl+F to open filter',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
+  },
+  render: (args) => (
+    <FilterPicker {...args}>
+      {fruits.map((fruit) => (
+        <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+          {fruit.label}
+        </FilterPicker.Item>
+      ))}
+    </FilterPicker>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use the `hotkeys` prop to define keyboard shortcuts that will open the FilterPicker. The hotkey is automatically displayed in the trigger button and registered globally.',
+      },
+    },
+  },
+};
+
+export const WithPrefixSuffix: Story = {
+  args: {
+    label: 'With Prefix and Suffix',
+    placeholder: 'Select options...',
+    selectionMode: 'multiple',
+    searchPlaceholder: 'Search options...',
+    width: 'max 35x',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
+  },
+  render: (args) => (
+    <FilterPicker
+      {...args}
+      prefix={<Badge type="note">Filter</Badge>}
+      suffix={
+        <Text preset="t4" color="#dark.50">
+          Active
+        </Text>
+      }
+    >
+      {permissions.map((permission) => (
+        <FilterPicker.Item
+          key={permission.key}
+          textValue={permission.label}
+          description={permission.description}
+        >
+          {permission.label}
+        </FilterPicker.Item>
+      ))}
+    </FilterPicker>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use `prefix` and `suffix` props to add content before and after the main trigger text. This is useful for adding badges, status indicators, or additional context.',
+      },
+    },
+  },
+};
+
+export const WithTooltipAndDescription: Story = {
+  args: {
+    label: 'With Tooltip and Description',
+    placeholder: 'Hover for tooltip...',
+    selectionMode: 'single',
+    searchPlaceholder: 'Search languages...',
+    width: 'max 30x',
+    triggerTooltip:
+      'Select your preferred programming language. You can search and filter the options.',
+    triggerDescription: 'Required for profile',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
+  },
+  render: (args) => (
+    <FilterPicker {...args}>
+      {languages.slice(0, 8).map((lang) => (
+        <FilterPicker.Item key={lang.key} textValue={lang.label}>
+          {lang.label}
+        </FilterPicker.Item>
+      ))}
+    </FilterPicker>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `triggerTooltip` prop adds a helpful tooltip to the trigger button, while `triggerDescription` can show additional context below the main trigger content.',
+      },
+    },
+  },
+};
+
+export const AdvancedTriggerFeatures: Story = {
+  args: {
+    label: 'All ItemButton Features',
+    placeholder: 'Advanced trigger...',
+    selectionMode: 'multiple',
+    searchPlaceholder: 'Search all options...',
+    width: 'max 40x',
+    hotkeys: 'ctrl+shift+f',
+    triggerTooltip: {
+      title: 'Advanced Filter Picker',
+      content:
+        'This picker showcases all the advanced trigger features including hotkeys, prefix/suffix, and descriptions.',
+      placement: 'top',
+    },
+    triggerDescription: 'Premium feature',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const trigger = canvas.getByRole('button');
+    await userEvent.click(trigger);
+  },
+  render: (args) => (
+    <FilterPicker
+      {...args}
+      prefix={
+        <Space gap="0.5x" flow="row" placeItems="center">
+          <FilterIcon />
+          <Badge type="purple">Pro</Badge>
+        </Space>
+      }
+      suffix={
+        <Space gap="0.5x" flow="row" placeItems="center">
+          <Text preset="t4" color="#dark.50">
+            12 active
+          </Text>
+          <Badge type="success">●</Badge>
+        </Space>
+      }
+    >
+      <FilterPicker.Section title="Categories">
+        {fruits.slice(0, 3).map((fruit) => (
+          <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+            {fruit.label}
+          </FilterPicker.Item>
+        ))}
+      </FilterPicker.Section>
+      <FilterPicker.Section title="Permissions">
+        {permissions.slice(0, 3).map((permission) => (
+          <FilterPicker.Item key={permission.key} textValue={permission.label}>
+            {permission.label}
+          </FilterPicker.Item>
+        ))}
+      </FilterPicker.Section>
+    </FilterPicker>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'This example demonstrates all the advanced ItemButton features working together: hotkeys (Ctrl+Shift+F), complex tooltip with custom placement, prefix with icon and badge, suffix with status indicator, and trigger description.',
       },
     },
   },

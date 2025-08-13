@@ -44,7 +44,7 @@ import {
 import { HotKeys } from '../HotKeys';
 
 export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
-  icon?: ReactNode;
+  icon?: ReactNode | 'checkbox';
   rightIcon?: ReactNode;
   prefix?: ReactNode;
   suffix?: ReactNode;
@@ -290,7 +290,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
   } = props;
 
   // Determine if we should show checkbox instead of icon
-  const hasCheckbox = isSelected !== undefined && icon === undefined;
+  const hasCheckbox = icon === 'checkbox';
 
   // Build final suffix: custom suffix or HotKeys hint if provided and no explicit suffix
   const finalSuffix =
@@ -326,7 +326,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
 
   mods = useMemo(() => {
     return {
-      'with-icon': !!icon || hasCheckbox,
+      'with-icon': !!icon,
       'with-right-icon': !!rightIcon,
       'with-prefix': !!prefix,
       'with-suffix': !!finalSuffix,
@@ -361,7 +361,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
       type={buttonType as any}
       {...rest}
     >
-      {(icon || hasCheckbox) && (
+      {icon && (
         <div data-element="Icon">{hasCheckbox ? <CheckIcon /> : icon}</div>
       )}
       {prefix && <div data-element="Prefix">{prefix}</div>}

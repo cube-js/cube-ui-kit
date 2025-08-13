@@ -268,7 +268,11 @@ export const MultipleSelection: Story = {
   render: (args) => (
     <ListBox {...args}>
       {permissions.map((permission) => (
-        <ListBox.Item key={permission.key} description={permission.description}>
+        <ListBox.Item
+          key={permission.key}
+          icon="checkbox"
+          description={permission.description}
+        >
           {permission.label}
         </ListBox.Item>
       ))}

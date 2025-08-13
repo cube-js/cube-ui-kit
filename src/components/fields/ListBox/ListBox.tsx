@@ -181,9 +181,11 @@ const ListBoxCheckbox = tasty({
 const ListBoxCheckboxWrapper = tasty({
   as: 'div',
   styles: {
+    display: 'grid',
+    placeItems: 'center',
+    placeContent: 'center',
     cursor: 'pointer',
-    padding: '.75x',
-    margin: '-.75x',
+    placeSelf: 'stretch',
   },
 });
 

@@ -32,10 +32,11 @@ import {
   tasty,
 } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
-import { Button, CubeButtonProps } from '../../actions';
+import { CubeItemButtonProps, ItemButton } from '../../actions';
 import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
+import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import {
   CubeFilterListBoxProps,
   FilterListBox,
@@ -60,21 +61,12 @@ export interface CubeFilterPickerProps<T>
     OuterStyleProps,
     ColorStyleProps,
     FieldBaseProps,
-    Pick<CubeButtonProps, 'type' | 'theme' | 'icon' | 'rightIcon'> {
+    Pick<
+      CubeItemButtonProps,
+      'type' | 'theme' | 'icon' | 'rightIcon' | 'prefix' | 'suffix' | 'hotkeys'
+    > {
   /** Placeholder text when no selection is made */
   placeholder?: string;
-  /** Icon to show in the trigger button */
-  icon?: ReactElement;
-  /** Button styling type */
-  type?:
-    | 'outline'
-    | 'clear'
-    | 'primary'
-    | 'secondary'
-    | 'neutral'
-    | (string & {});
-  /** Button theme */
-  theme?: 'default' | 'special';
   /** Size of the picker component */
   size?: 'small' | 'medium' | 'large';
   /** Custom styles for the list box popover */
@@ -87,6 +79,10 @@ export interface CubeFilterPickerProps<T>
   isCheckable?: boolean;
   /** Whether to flip the popover placement */
   shouldFlip?: boolean;
+  /** Tooltip for the trigger button (separate from field tooltip) */
+  triggerTooltip?: string | Omit<CubeTooltipProviderProps, 'children'>;
+  /** Description for the trigger button (separate from field description) */
+  triggerDescription?: ReactNode;
 
   /**
    * Custom renderer for the summary shown inside the trigger when there is a selection.
@@ -170,6 +166,11 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     extra,
     icon,
     rightIcon,
+    prefix,
+    suffix,
+    hotkeys,
+    triggerTooltip,
+    triggerDescription,
     labelStyles,
     isRequired,
     necessityIndicator,
@@ -884,7 +885,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     }, [state.isOpen]);
 
     return (
-      <Button
+      <ItemButton
         ref={triggerRef as any}
         data-menu-trigger
         type={type}
@@ -906,12 +907,17 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             <DirectionIcon to={state.isOpen ? 'top' : 'bottom'} />
           )
         }
+        prefix={prefix}
+        suffix={suffix}
+        hotkeys={hotkeys}
+        tooltip={triggerTooltip}
+        description={triggerDescription}
         styles={styles}
         {...keyboardProps}
         aria-label={`${props['aria-label'] ?? props.label ?? ''}`}
       >
         {renderTriggerContent()}
-      </Button>
+      </ItemButton>
     );
   };
 
