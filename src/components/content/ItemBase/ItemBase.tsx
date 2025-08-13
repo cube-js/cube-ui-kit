@@ -119,9 +119,8 @@ const ItemBaseElement = tasty({
     margin: 0,
     radius: true,
     height: {
-      '': '$size',
+      '': 'min $size',
       '[data-size="inline"]': 'initial',
-      'with-description': 'max-content',
     },
     border: '#clear',
     fill: {
