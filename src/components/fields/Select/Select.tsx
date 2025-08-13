@@ -522,7 +522,6 @@ export function ListBoxPopup({
                   item={item}
                   state={state}
                   optionStyles={optionStyles}
-                  headingStyles={{ padding: '.5x 1.5x' }}
                   sectionStyles={undefined}
                   shouldUseVirtualFocus={shouldUseVirtualFocus}
                   size={listItemSize}
@@ -654,7 +653,11 @@ function SelectSection<T>(props: SelectSectionProps<T>) {
   return (
     <ListSectionWrapper {...itemProps} styles={sectionStyles}>
       {heading && (
-        <ListSectionHeading {...headingProps} styles={headingStyles}>
+        <ListSectionHeading
+          {...headingProps}
+          size={size}
+          styles={{ ...headingStyles, '$inline-compensation': '0px' }}
+        >
           {heading}
         </ListSectionHeading>
       )}

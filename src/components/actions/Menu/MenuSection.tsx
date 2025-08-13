@@ -25,7 +25,11 @@ export function MenuSection<T>(props: CubeMenuSectionProps<T>) {
     <>
       <StyledSection {...itemProps} styles={styles}>
         {heading && (
-          <StyledSectionHeading {...headingProps} styles={headingStyles}>
+          <StyledSectionHeading
+            {...headingProps}
+            size={size}
+            styles={headingStyles}
+          >
             {heading}
           </StyledSectionHeading>
         )}

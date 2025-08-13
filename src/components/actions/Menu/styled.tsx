@@ -202,9 +202,23 @@ export const StyledSectionHeading = tasty(Space, {
   styles: {
     color: '#dark-04',
     preset: 'c2',
-    padding: '.5x 1x',
     height: '3x',
     placeContent: 'center space-between',
     align: 'start',
+    padding: {
+      '': '.5x $inline-padding',
+      prefix: '0 $inline-padding 0 .5x',
+    },
+
+    $size: {
+      '': '$size-md',
+      '[data-size="small"]': '$size-sm',
+      '[data-size="medium"]': '$size-md',
+      '[data-size="large"]': '$size-lg',
+    },
+    '$inline-padding':
+      'max($min-inline-padding, (($size - 1lh) / 2 + $inline-compensation))',
+    '$inline-compensation': '.5x',
+    '$min-inline-padding': '1x',
   },
 });

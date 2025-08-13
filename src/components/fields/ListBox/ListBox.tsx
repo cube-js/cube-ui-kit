@@ -1210,7 +1210,11 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
   return (
     <SectionWrapperElement {...itemProps} styles={sectionStyles}>
       {heading && (
-        <StyledSectionHeading {...headingProps} styles={headingStyles}>
+        <StyledSectionHeading
+          {...headingProps}
+          size={props.size}
+          styles={headingStyles}
+        >
           {heading}
         </StyledSectionHeading>
       )}
