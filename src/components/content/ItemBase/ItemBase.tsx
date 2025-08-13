@@ -206,6 +206,7 @@ const ItemBaseElement = tasty({
       whiteSpace: 'nowrap',
       textOverflow: 'ellipsis',
       maxWidth: '100%',
+      textAlign: 'left',
     },
 
     Prefix: {
@@ -361,12 +362,14 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
         <div data-element="Icon">{hasCheckbox ? <CheckIcon /> : icon}</div>
       )}
       {prefix && <div data-element="Prefix">{prefix}</div>}
-      <div data-element="ItemContent" {...contentProps}>
-        {children}
-        {description ? (
-          <div data-element="Description">{description}</div>
-        ) : null}
-      </div>
+      {children || description || contentProps ? (
+        <div data-element="ItemContent" {...contentProps}>
+          {children}
+          {description ? (
+            <div data-element="Description">{description}</div>
+          ) : null}
+        </div>
+      ) : null}
       {finalSuffix && <div data-element="Suffix">{finalSuffix}</div>}
       {rightIcon && <div data-element="RightIcon">{rightIcon}</div>}
     </ItemBaseElement>
