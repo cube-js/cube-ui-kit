@@ -80,6 +80,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
           mods,
           styles,
           'data-size': size,
+          as: 'li',
         })}
         ref={ref}
         icon={icon}
