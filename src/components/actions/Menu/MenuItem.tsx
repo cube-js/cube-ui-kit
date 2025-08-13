@@ -1,18 +1,15 @@
 import { Key, Node } from '@react-types/shared';
-import { IconPointFilled } from '@tabler/icons-react';
-import { KeyboardEvent, ReactNode, useContext, useRef } from 'react';
+import { KeyboardEvent, useContext, useRef } from 'react';
 import { FocusRing, useMenuItem } from 'react-aria';
-import { useHotkeys } from 'react-hotkeys-hook';
 import { TreeState } from 'react-stately';
 
-import { CheckIcon, RightIcon } from '../../../icons';
+import { RightIcon } from '../../../icons';
 import { Styles } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import { HotKeys } from '../../content/HotKeys';
 import { ItemBase } from '../../content/ItemBase/ItemBase';
 
 import { useMenuContext } from './context';
-import { StyledItem } from './styled';
 import { SubmenuTriggerContext } from './SubmenuTriggerContext';
 
 export type MenuSelectionType = 'checkbox' | 'radio' | 'checkmark';
@@ -102,25 +99,6 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
     submenu: !!submenuContext,
   };
 
-  // Register global hotkey if provided
-  useHotkeys(
-    typeof hotkeys === 'string' ? hotkeys.toLowerCase() : '',
-    () => {
-      if (!hotkeys) return;
-      if (isDisabledKey || isDisabled) return;
-      // Simulate a click on the menu item so all existing handlers run
-      if (elementRef.current) {
-        (elementRef.current as HTMLElement).click();
-      }
-    },
-    {
-      enableOnContentEditable: true,
-      enabled: !!hotkeys,
-      preventDefault: true,
-      enableOnFormTags: true,
-    },
-    [hotkeys, isDisabledKey, isDisabled],
-  );
   return (
     <FocusRing>
       <ItemBase
