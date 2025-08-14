@@ -1000,7 +1000,7 @@ function Option({
 
   const { hoverProps, isHovered } = useHover({ isDisabled });
 
-  const { optionProps, isPressed } = useOption(
+  const { optionProps, isPressed, labelProps, descriptionProps } = useOption(
     {
       key: item.key,
       isDisabled,
@@ -1011,8 +1011,6 @@ function Option({
     state,
     combinedRef,
   );
-
-  const description = (item as any)?.props?.description;
 
   // Create checkbox icon for multiple selection mode
   const effectiveIcon = useMemo(() => {
@@ -1133,6 +1131,7 @@ function Option({
   return (
     <ListBoxItemBase
       ref={combinedRef}
+      qa={item.props?.qa}
       id={`ListBoxItem-${String(item.key)}`}
       {...mergeProps(filteredOptionProps, hoverProps, {
         onClick: handleOptionClick,
@@ -1154,7 +1153,10 @@ function Option({
       rightIcon={item.props?.rightIcon}
       hotkeys={item.props?.hotkeys}
       suffix={item.props?.suffix}
-      description={description}
+      description={item.props?.description}
+      descriptionPosition={item.props?.descriptionPosition}
+      labelProps={labelProps}
+      descriptionProps={descriptionProps}
       styles={styles}
       mods={{
         focused: isFocused,

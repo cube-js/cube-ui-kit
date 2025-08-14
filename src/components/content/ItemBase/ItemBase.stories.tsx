@@ -1,4 +1,3 @@
-import { StoryFn } from '@storybook/react-vite';
 import { IconCoin, IconSettings, IconUser } from '@tabler/icons-react';
 
 import { DirectionIcon } from '../../../icons';
@@ -7,6 +6,9 @@ import { Space } from '../../layout/Space';
 import { Title } from '../Title';
 
 import { CubeItemBaseProps, ItemBase } from './ItemBase';
+
+// Using any type due to Storybook type compatibility issues
+type StoryFn<T = {}> = any;
 
 export default {
   title: 'Content/ItemBase',
@@ -783,6 +785,118 @@ CombinedFeatures.parameters = {
     description: {
       story:
         'Demonstrates the combination of hotkeys, tooltips, icons, checkboxes, and other ItemBase features working together. This shows the full potential of the enhanced ItemBase component.',
+    },
+  },
+};
+
+export const WithDescriptionBelow: StoryFn<CubeItemBaseProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>Description Position Comparison</Title>
+    <Space gap="2x" flow="column" placeItems="start">
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        icon={<IconUser />}
+        description="This description appears inside the content area"
+        descriptionPosition="inside"
+      >
+        Item with description inside (default)
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        icon={<IconUser />}
+        description="This description appears below the entire item"
+        descriptionPosition="below"
+      >
+        Item with description below
+      </ItemBase>
+    </Space>
+
+    <Title level={5}>Different Sizes with Description Below</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        size="small"
+        icon={<IconSettings />}
+        description="Small size description below"
+        descriptionPosition="below"
+      >
+        Small item
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        size="medium"
+        icon={<IconSettings />}
+        description="Medium size description below"
+        descriptionPosition="below"
+      >
+        Medium item
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        size="large"
+        icon={<IconSettings />}
+        description="Large size description below"
+        descriptionPosition="below"
+      >
+        Large item
+      </ItemBase>
+    </Space>
+
+    <Title level={5}>With Multiple Elements and Description Below</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        icon={<IconCoin />}
+        rightIcon={<IconSettings />}
+        prefix="$"
+        suffix=".99"
+        description="Complete configuration with description positioned below the item"
+        descriptionPosition="below"
+      >
+        Product Name
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        icon={<IconUser />}
+        hotkeys="cmd+u"
+        description="User management with hotkey and description below"
+        descriptionPosition="below"
+        as="button"
+        onClick={() => alert('User action triggered!')}
+      >
+        Manage Users
+      </ItemBase>
+    </Space>
+
+    <Title level={5}>Long Description Below</Title>
+    <ItemBase
+      {...args}
+      styles={{ ...DEFAULT_STYLES, width: '350px' }}
+      icon={<IconCoin />}
+      description="This is a very long description that demonstrates how the description text flows when positioned below the item. It can contain multiple lines and will wrap naturally."
+      descriptionPosition="below"
+    >
+      Item with long description
+    </ItemBase>
+  </Space>
+);
+
+WithDescriptionBelow.args = {
+  width: '400px',
+};
+
+WithDescriptionBelow.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates the `descriptionPosition="below"` functionality where descriptions are positioned below the entire ItemBase component instead of inside the content area. This is useful for longer descriptions or when you want to maintain a clean main content area.',
     },
   },
 };

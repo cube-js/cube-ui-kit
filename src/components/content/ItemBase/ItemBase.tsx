@@ -53,6 +53,7 @@ export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
   prefix?: ReactNode;
   suffix?: ReactNode;
   description?: ReactNode;
+  descriptionPosition?: 'inside' | 'below';
   isSelected?: boolean;
   size?:
     | 'xsmall'
@@ -62,7 +63,6 @@ export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
     | 'xlarge'
     | 'inline'
     | (string & {});
-  contentProps?: Props;
   type?:
     | 'item'
     | 'primary'
@@ -83,6 +83,9 @@ export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
    * Kept separate from visual `type` prop.
    */
   buttonType?: 'button' | 'submit' | 'reset';
+  labelProps?: Props;
+  descriptionProps?: Props;
+  keyboardShortcutProps?: Props;
 }
 
 const DEFAULT_ICON_STYLES: Styles = {
@@ -97,6 +100,7 @@ const DEFAULT_ICON_STYLES: Styles = {
     'checkbox & !selected': 0,
     'checkbox & !selected & hovered': 0.4,
   },
+  gridRow: 'span 2',
 };
 
 const ADDITION_STYLES: Styles = {
@@ -104,12 +108,14 @@ const ADDITION_STYLES: Styles = {
   flow: 'column',
   placeItems: 'center',
   placeContent: 'stretch',
+  gridRow: 'span 2',
 };
 
 const ItemBaseElement = tasty({
   styles: {
     display: 'inline-grid',
-    flow: 'column',
+    flow: 'column dense',
+    gap: 0,
     placeItems: 'stretch',
     placeContent: 'stretch',
     gridColumns: {
@@ -117,6 +123,10 @@ const ItemBaseElement = tasty({
       'with-icon ^ with-prefix': 'max-content 1sf max-content max-content',
       'with-icon & with-prefix':
         'max-content max-content 1sf max-content max-content',
+    },
+    gridRows: {
+      '': 'auto auto',
+      'with-description-below': 'auto auto auto',
     },
     flexShrink: 0,
     position: 'relative',
@@ -168,7 +178,7 @@ const ItemBaseElement = tasty({
       '[data-size="inline"]': '',
     },
     '$inline-padding': {
-      '': 'max($min-inline-padding, (($size - 1lh) / 2 + $inline-compensation))',
+      '': 'max($min-inline-padding, (($size - 1lh - 2bw) / 2 + $inline-compensation))',
       '[data-size="inline"]': 0,
     },
     '$block-padding': {
@@ -177,13 +187,13 @@ const ItemBaseElement = tasty({
       '[data-size="inline"]': 0,
     },
     '$inline-compensation': '.5x',
-    '$min-inline-padding': '1x',
+    '$min-inline-padding': '(1x - 1bw)',
 
     Icon: DEFAULT_ICON_STYLES,
 
     RightIcon: DEFAULT_ICON_STYLES,
 
-    ItemContent: {
+    Label: {
       display: 'block',
       placeSelf: 'center start',
       boxSizing: 'border-box',
@@ -201,6 +211,11 @@ const ItemBaseElement = tasty({
         '(with-icon | with-prefix) & (with-right-icon | with-suffix)':
           '$block-padding 0',
       },
+      gridRow: {
+        '': 'span 2',
+        'with-description': 'span 1',
+        'with-description-below': 'span 2',
+      },
     },
 
     Description: {
@@ -211,6 +226,22 @@ const ItemBaseElement = tasty({
       textOverflow: 'ellipsis',
       maxWidth: '100%',
       textAlign: 'left',
+      gridRow: {
+        '': 'span 1',
+        'with-description-below': '3 / span 1',
+      },
+      gridColumn: {
+        '': 'span 1',
+        'with-description-below': '1 / -1',
+      },
+      padding: {
+        '': '0 $inline-padding $block-padding $inline-padding',
+        '(with-icon | with-prefix)': '0 $inline-padding $block-padding 0',
+        '(with-right-icon | with-suffix)': '0 0 $block-padding $inline-padding',
+        '(with-icon | with-prefix) & (with-right-icon | with-suffix)': '0 0',
+        'with-description-below':
+          '0 ($inline-padding + $inline-compensation) $block-padding ($inline-padding + $inline-compensation)',
+      },
     },
 
     Prefix: {
@@ -278,10 +309,13 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     mods,
     icon,
     rightIcon,
-    contentProps,
     prefix,
     suffix,
     description,
+    descriptionPosition = 'inside',
+    labelProps,
+    descriptionProps,
+    keyboardShortcutProps,
     styles,
     buttonType,
     isSelected,
@@ -333,6 +367,8 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
       'with-prefix': !!prefix,
       'with-suffix': !!finalSuffix,
       'with-description': !!description,
+      'with-description-below':
+        !!description && descriptionPosition === 'below',
       checkbox: hasCheckbox,
       selected: isSelected === true,
       ...mods,
@@ -366,12 +402,14 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
         <div data-element="Icon">{hasCheckbox ? <CheckIcon /> : icon}</div>
       )}
       {prefix && <div data-element="Prefix">{prefix}</div>}
-      {children || description || contentProps ? (
-        <div data-element="ItemContent" {...contentProps}>
+      {children || labelProps ? (
+        <div data-element="Label" {...labelProps}>
           {children}
-          {description ? (
-            <div data-element="Description">{description}</div>
-          ) : null}
+        </div>
+      ) : null}
+      {description || descriptionProps ? (
+        <div data-element="Description" {...descriptionProps}>
+          {description}
         </div>
       ) : null}
       {finalSuffix && <div data-element="Suffix">{finalSuffix}</div>}

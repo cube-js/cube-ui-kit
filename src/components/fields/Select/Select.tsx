@@ -129,18 +129,6 @@ const OptionItem = tasty(ItemBase, {
   as: 'li',
   qa: 'Option',
   styles: {
-    listStyle: 'none',
-    width: 'max 100%',
-    fill: {
-      '': '#clear',
-      focused: '#dark.03',
-      selected: '#dark.09',
-      'selected & focused': '#dark.12',
-      pressed: '#dark.09',
-      disabled: '#clear',
-    },
-    border: '#clear',
-
     '$inline-compensation': '0px',
   },
 });
@@ -573,7 +561,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
   let isSelected = state.selectionManager.isSelected(item.key);
   let isVirtualFocused = state.selectionManager.focusedKey === item.key;
 
-  let { optionProps, isPressed } = useOption(
+  let { optionProps, isPressed, labelProps, descriptionProps } = useOption(
     {
       key: item.key,
       isDisabled,
@@ -591,11 +579,13 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
   let { isFocused, focusProps } = useFocus({ isDisabled });
 
   const {
+    qa,
     description,
     icon,
     prefix,
     suffix,
     rightIcon,
+    descriptionPosition,
     styles: itemStyles,
   } = ((item as any)?.props || {}) as {
     description?: React.ReactNode;
@@ -604,12 +594,15 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
     suffix?: React.ReactNode;
     rightIcon?: React.ReactElement;
     styles?: Styles;
+    descriptionPosition?: 'inside' | 'below';
+    qa?: string;
   };
 
   return (
     <OptionItem
       {...mergeProps(optionProps, focusProps)}
       ref={ref}
+      qa={qa}
       mods={{
         selected: isSelected,
         focused: shouldUseVirtualFocus ? isVirtualFocused : isFocused,
@@ -623,6 +616,9 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
       suffix={suffix}
       rightIcon={rightIcon}
       description={description}
+      descriptionPosition={descriptionPosition}
+      labelProps={labelProps}
+      descriptionProps={descriptionProps}
     >
       {item.rendered}
     </OptionItem>

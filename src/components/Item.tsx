@@ -4,11 +4,13 @@ import { Item } from 'react-stately';
 import { Styles } from '../tasty';
 
 const _Item = Item as unknown as (props: {
+  qa?: string;
   description?: ReactNode;
-  icon?: ReactElement | 'checkbox';
+  descriptionPosition?: 'inside' | 'below';
+  icon?: ReactNode | 'checkbox';
   prefix?: ReactNode;
   suffix?: ReactNode;
-  rightIcon?: ReactElement;
+  rightIcon?: ReactNode;
   styles?: Styles;
   onAction?: () => void;
   wrapper?: (item: ReactElement) => ReactElement;
