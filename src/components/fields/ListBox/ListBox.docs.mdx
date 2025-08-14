@@ -88,6 +88,62 @@ The `mods` property accepts the following modifiers you can override:
 | `header` | `boolean` | Applied when header prop is provided |
 | `footer` | `boolean` | Applied when footer prop is provided |
 
+## Sub-components
+
+### ListBox.Item
+
+Individual items within the ListBox. Each item is rendered using [ItemBase](/components/ItemBase) and supports all ItemBase properties for layout, icons, descriptions, and interactive features.
+
+#### Item API
+
+For detailed information about all available item properties, see [ItemBase documentation](/components/ItemBase). Key properties include:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| key | `string \| number` | Unique identifier for the item (required) |
+| children | `ReactNode` | The main content/label for the option |
+| icon | `ReactNode` | Icon displayed before the content |
+| rightIcon | `ReactNode` | Icon displayed after the content |
+| description | `ReactNode` | Secondary text below the main content |
+| descriptionPlacement | `'inline' \| 'block'` | How the description is positioned |
+| prefix | `ReactNode` | Content before the main text |
+| suffix | `ReactNode` | Content after the main text |
+| tooltip | `string \| boolean \| object` | Tooltip configuration |
+| styles | `Styles` | Custom styling for the item |
+| qa | `string` | QA identifier for testing |
+
+#### Example with Rich Items
+
+```jsx
+<ListBox label="Team Members" selectionMode="multiple">
+  <ListBox.Item 
+    key="user1" 
+    icon={<IconUser />}
+    description="Product Manager"
+    suffix="Online"
+  >
+    Alice Johnson
+  </ListBox.Item>
+  <ListBox.Item 
+    key="user2" 
+    icon={<IconUser />}
+    description="Senior Developer"
+    rightIcon={<IconBadge />}
+  >
+    Bob Smith
+  </ListBox.Item>
+</ListBox>
+```
+
+### ListBox.Section
+
+Groups related items together with an optional heading.
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| title | `ReactNode` | - | Optional heading text for the section |
+| children | `ListBox.Item[]` | - | Collection of ListBox.Item components |
+
 ## Variants
 
 ### Selection Modes

@@ -1,0 +1,216 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { ItemBase } from './ItemBase';
+import * as ItemBaseStories from './ItemBase.stories';
+
+<Meta of={ItemBaseStories} />
+
+# ItemBase
+
+A foundational component that provides a standardized layout and styling for item-like elements across the design system. ItemBase offers a flexible grid-based structure with support for icons, labels, descriptions, prefixes, suffixes, and interactive features like hotkeys and tooltips.
+
+## When to Use
+
+- As a building block for other components that need item-like styling (Select options, Menu items, List items, etc.)
+- When creating custom interactive elements that need consistent spacing and alignment
+- For buttons or clickable elements that need to display structured content with icons and descriptions
+- When building components that need to support features like selection states, hotkeys, or overflow tooltips
+
+## Component
+
+<Story of={ItemBaseStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={ItemBaseStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/BaseProperties)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root element of the component.
+
+**Sub-elements:**
+- `Icon` - The main icon displayed before the content
+- `RightIcon` - The icon displayed after the content
+- `Label` - The main text content area
+- `Description` - The secondary text below or inline with the main content
+- `Prefix` - Additional content displayed before the main content
+- `Suffix` - Additional content displayed after the main content
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop: `width`, `height`, `padding`, `margin`, `color`, `fill`, `opacity`, `display`, `position`, `zIndex`, `gap`, `flow`, `placeItems`, `placeContent`, `alignItems`, `justifyContent`, `border`, `radius`, `shadow`, `overflow`.
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| with-icon | `boolean` | Applied when an icon is present |
+| with-right-icon | `boolean` | Applied when a right icon is present |
+| with-prefix | `boolean` | Applied when a prefix is present |
+| with-suffix | `boolean` | Applied when a suffix is present |
+| with-description | `boolean` | Applied when a description is present |
+| with-description-block | `boolean` | Applied when description placement is "block" |
+| checkbox | `boolean` | Applied when using checkbox icon (icon="checkbox") |
+| selected | `boolean` | Applied when isSelected is true |
+
+## Variants
+
+### Types
+
+- `item` - Default item appearance (no specific styling)
+- `primary` - Primary styled item with prominent appearance
+- `secondary` - Secondary styled item with moderate emphasis
+- `outline` - Item with border outline styling
+- `neutral` - Neutral colored item styling
+- `clear` - Transparent item with minimal styling
+- `link` - Link-styled item appearance
+
+### Themes
+
+- `default` - Standard appearance with default colors
+- `danger` - Red theme for destructive or warning actions
+- `success` - Green theme for positive actions
+- `special` - Special theme with unique styling
+
+### Sizes
+
+- `xsmall` - Extra small size for compact interfaces
+- `small` - Small size for dense layouts
+- `medium` - Default size for most use cases
+- `large` - Large size for prominent items
+- `xlarge` - Extra large size for emphasized items
+- `inline` - Inline size that adapts to content
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<ItemBase>Simple item content</ItemBase>
+```
+
+### With Icons
+
+```jsx
+<ItemBase icon={<IconUser />} rightIcon={<IconSettings />}>
+  Item with icons
+</ItemBase>
+```
+
+### With Description
+
+```jsx
+<ItemBase 
+  icon={<IconFile />}
+  description="Secondary description text"
+  descriptionPlacement="inline"
+>
+  Main item content
+</ItemBase>
+```
+
+### With Hotkeys
+
+```jsx
+<ItemBase 
+  as="button"
+  hotkeys="cmd+s"
+  onClick={() => console.log('Save triggered')}
+>
+  Save Document
+</ItemBase>
+```
+
+### With Selection State
+
+```jsx
+<ItemBase icon="checkbox" isSelected={true}>
+  Selected item with checkbox
+</ItemBase>
+```
+
+### With Auto Tooltip
+
+```jsx
+<ItemBase 
+  tooltip={true}
+  style={{ width: '200px' }}
+>
+  This is a very long text that will show a tooltip when overflowed
+</ItemBase>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the component when it's focusable
+- `Space/Enter` - Activates the component when used as a button
+- Custom hotkeys - Trigger component actions when hotkeys are specified
+
+### Screen Reader Support
+
+- Component announces its role based on the `as` prop (button, link, etc.)
+- Selection state is announced when `isSelected` is used
+- Disabled state is properly communicated
+- Tooltip content is accessible to screen readers
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label when no visible label exists
+- `aria-disabled` - Indicates disabled state
+- `aria-selected` - Indicates selection state when applicable
+- `tabIndex` - Controls focus behavior
+
+## Best Practices
+
+1. **Do**: Use clear, descriptive text for the main content
+   ```jsx
+   <ItemBase icon={<IconUser />}>User Profile</ItemBase>
+   ```
+
+2. **Do**: Provide tooltips for items that might overflow
+   ```jsx
+   <ItemBase tooltip={true} style={{ width: '200px' }}>
+     Long item name that might be truncated
+   </ItemBase>
+   ```
+
+3. **Do**: Use hotkeys for frequently accessed actions
+   ```jsx
+   <ItemBase as="button" hotkeys="cmd+s" onPress={handleSave}>
+     Save Document
+   </ItemBase>
+   ```
+
+4. **Don't**: Overcrowd the component with too many elements
+   ```jsx
+   {/* Avoid this - too many elements competing for attention */}
+   <ItemBase 
+     icon={<IconA />} 
+     rightIcon={<IconB />} 
+     prefix="Pre" 
+     suffix="Suf"
+     description="Very long description with lots of details"
+   >
+     Complex item with everything
+   </ItemBase>
+   ```
+
+5. **Accessibility**: Always ensure interactive items are focusable and have proper ARIA attributes
+
+## Related Components
+
+- [ItemButton](/components/ItemButton) - Interactive button built on ItemBase
+- [Button](/components/Button) - Traditional button component
+- [Link](/components/Link) - Text link component
+- [Text](/components/Text) - Typography component for simple text

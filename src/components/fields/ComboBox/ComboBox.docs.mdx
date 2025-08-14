@@ -72,6 +72,61 @@ The `mods` property accepts the following modifiers you can override:
 | hovered | `boolean` | Whether the combo box is being hovered |
 | inside-form | `boolean` | Whether the combo box is inside a form field |
 
+## Sub-components
+
+### ComboBox.Item
+
+Individual option items within the combo box dropdown. Each item is rendered using [ItemBase](/components/ItemBase) and supports all ItemBase properties for layout, icons, descriptions, and interactive features.
+
+#### Item API
+
+For detailed information about all available item properties, see [ItemBase documentation](/components/ItemBase). Key properties include:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| key | `string \| number` | Unique identifier for the item (required) |
+| children | `ReactNode` | The main content/label for the option |
+| icon | `ReactNode` | Icon displayed before the content |
+| rightIcon | `ReactNode` | Icon displayed after the content |
+| description | `ReactNode` | Secondary text below the main content |
+| descriptionPlacement | `'inline' \| 'block'` | How the description is positioned |
+| prefix | `ReactNode` | Content before the main text |
+| suffix | `ReactNode` | Content after the main text |
+| tooltip | `string \| boolean \| object` | Tooltip configuration |
+| styles | `Styles` | Custom styling for the item |
+| qa | `string` | QA identifier for testing |
+
+#### Example with Rich Items
+
+```jsx
+<ComboBox label="Technologies" allowsCustomValue>
+  <ComboBox.Item 
+    key="react" 
+    icon={<IconCode />}
+    description="JavaScript library"
+  >
+    React
+  </ComboBox.Item>
+  <ComboBox.Item 
+    key="vue" 
+    icon={<IconCode />}
+    description="Progressive framework"
+    suffix="Popular"
+  >
+    Vue.js
+  </ComboBox.Item>
+</ComboBox>
+```
+
+### ComboBox.Section
+
+Groups related options together with an optional heading.
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| title | `ReactNode` | - | Optional heading text for the section |
+| children | `ComboBox.Item[]` | - | Collection of ComboBox.Item components |
+
 ## Variants
 
 ### Sizes
@@ -96,8 +151,8 @@ The `mods` property accepts the following modifiers you can override:
 
 ```jsx
 <ComboBox
+  allowsCustomValue
   label="Enter or select a technology"
-  allowsCustomValue={true}
 >
   <ComboBox.Item key="react">React</ComboBox.Item>
   <ComboBox.Item key="vue">Vue</ComboBox.Item>

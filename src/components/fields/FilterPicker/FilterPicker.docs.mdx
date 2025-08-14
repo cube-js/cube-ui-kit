@@ -88,6 +88,62 @@ The `mods` property accepts the following modifiers you can override:
 | `placeholder` | `boolean` | Applied when no selection is made |
 | `selected` | `boolean` | Applied when items are selected |
 
+## Sub-components
+
+### FilterPicker.Item
+
+Individual items within the FilterPicker dropdown. Each item is rendered using [ItemBase](/components/ItemBase) and supports all ItemBase properties for layout, icons, descriptions, and interactive features.
+
+#### Item API
+
+For detailed information about all available item properties, see [ItemBase documentation](/components/ItemBase). Key properties include:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| key | `string \| number` | Unique identifier for the item (required) |
+| children | `ReactNode` | The main content/label for the option |
+| icon | `ReactNode` | Icon displayed before the content |
+| rightIcon | `ReactNode` | Icon displayed after the content |
+| description | `ReactNode` | Secondary text below the main content |
+| descriptionPlacement | `'inline' \| 'block'` | How the description is positioned |
+| prefix | `ReactNode` | Content before the main text |
+| suffix | `ReactNode` | Content after the main text |
+| tooltip | `string \| boolean \| object` | Tooltip configuration |
+| styles | `Styles` | Custom styling for the item |
+| qa | `string` | QA identifier for testing |
+
+#### Example with Rich Items
+
+```jsx
+<FilterPicker label="Team Filters" selectionMode="multiple">
+  <FilterPicker.Item 
+    key="active-users" 
+    icon={<IconUsers />}
+    description="Filter by active users"
+    suffix="12 users"
+  >
+    Active Users
+  </FilterPicker.Item>
+  <FilterPicker.Item 
+    key="recent-activity" 
+    icon={<IconClock />}
+    description="Recent activity in the last week"
+    rightIcon={<IconBadge />}
+  >
+    Recent Activity
+  </FilterPicker.Item>
+</FilterPicker>
+```
+
+### FilterPicker.Section
+
+Groups related items together with an optional heading.
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| title | `ReactNode` | - | Optional heading text for the section |
+| children | `FilterPicker.Item[]` | - | Collection of FilterPicker.Item components |
+
 ## Content Patterns
 
 ### Static Children Pattern

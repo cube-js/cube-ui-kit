@@ -1,100 +1,253 @@
-import { Meta, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
 import { ItemButton } from './ItemButton';
-import * as Stories from './ItemButton.stories';
+import * as ItemButtonStories from './ItemButton.stories';
 
-<Meta of={Stories} />
+<Meta of={ItemButtonStories} />
 
-### ItemButton
+# ItemButton
 
-Combines actionable behavior via the `useAction` hook with the visual layout and theming of `ItemBase`. Use it for list-like buttons with optional icons, prefixes/suffixes, and descriptions.
+An interactive button component built on top of `ItemBase` that provides all the layout and styling capabilities of ItemBase with full button functionality. ItemButton supports actions, links, form submissions, and all the advanced features like hotkeys, tooltips, and selection states.
 
-### Component
+## When to Use
 
-<Story of={Stories.Default} />
+- For buttons that need structured content with icons, descriptions, or prefixes/suffixes
+- When you need button functionality with the flexible layout capabilities of ItemBase
+- For interactive items in lists, menus, or toolbars that need consistent styling
+- When building buttons that support features like keyboard shortcuts or overflow tooltips
+- As an alternative to traditional buttons when you need more layout control
+
+## Component
+
+<Story of={ItemButtonStories.Default} />
 
 ---
 
 ### Properties
 
-<Controls of={Stories.Default} />
+<Controls of={ItemButtonStories.Default} />
 
 ### Base Properties
 
 Supports [Base properties](/BaseProperties)
 
-### Styling Properties
+### ItemBase Properties
 
-#### styles
+ItemButton inherits all properties from [ItemBase](/components/ItemBase), including:
+- Layout properties: `icon`, `rightIcon`, `prefix`, `suffix`, `description`, `descriptionPlacement`
+- Interactive properties: `hotkeys`, `tooltip`, `isSelected`
+- Styling properties: `size`, `type`, `theme`, `styles`
 
-Customizes the root `ItemBase` appearance.
+### Action Properties
 
-Sub-elements:
-- `Icon` - left icon wrapper
-- `RightIcon` - right icon wrapper
-- `Content` - main text container
-- `Description` - secondary text line
-- `Prefix` - content before the main text
-- `Suffix` - content after the main text
+#### onPress
+- **Type**: `(e: PressEvent) => void`
+- **Description**: Callback fired when the button is pressed via mouse, keyboard, or touch
+
+#### to
+- **Type**: `string`
+- **Description**: URL for link behavior - when provided, the button acts as a link
+
+#### buttonType
+- **Type**: `'button' | 'submit' | 'reset'`
+- **Description**: HTML button type attribute for form integration
+- **Default**: `'button'`
+
+#### isDisabled
+- **Type**: `boolean`
+- **Description**: Whether the button is disabled and non-interactive
 
 ### Style Properties
 
-Supports container and text style props (e.g., `padding`, `radius`, `fill`, `color`, `width`, `height`, `flow`, `gap`).
+These properties allow direct style application without using the `styles` prop: `width`, `height`, `padding`, `margin`, `color`, `fill`, `opacity`, `display`, `position`, `zIndex`, `gap`, `flow`, `placeItems`, `placeContent`, `alignItems`, `justifyContent`, `border`, `radius`, `shadow`, `overflow`.
 
 ### Modifiers
 
-You can override state via `mods`.
+Inherits all modifiers from [ItemBase](/components/ItemBase) plus:
 
-- `hovered`/`pressed`/`focused`/`disabled` - interaction states from `useAction`
-- `with-icon`/`with-right-icon`/`with-prefix`/`with-suffix`/`with-description` - layout states from `ItemBase`
+| Modifier | Type | Description |
+|----------|------|-------------|
+| disabled | `boolean` | Applied when the button is disabled |
+| pressed | `boolean` | Applied during button press interaction |
 
-### Variants
+## Variants
 
-Types: `primary`, `secondary`, `outline`, `neutral`, `clear`
+### Types
 
-Themes: `default`, `danger`, `success`, `special`
+- `primary` - Primary button with prominent styling for main actions
+- `secondary` - Secondary button with moderate emphasis
+- `outline` - Button with border outline and transparent background
+- `neutral` - Neutral styled button for subtle actions
+- `clear` - Transparent button with minimal visual weight
+- `link` - Link-styled button that looks like a text link
 
-Sizes: `xsmall`, `small`, `medium`, `large`, `xlarge`, `inline`
+### Themes
 
-### Examples
+- `default` - Standard appearance with default colors
+- `danger` - Red theme for destructive actions (delete, remove, etc.)
+- `success` - Green theme for positive actions (save, confirm, etc.)
+- `special` - Special theme with unique styling for standout actions
 
-#### Basic
+### Sizes
+
+- `xsmall` - Extra small size for compact interfaces
+- `small` - Small size for dense layouts  
+- `medium` - Default size for most use cases
+- `large` - Large size for prominent actions
+- `xlarge` - Extra large size for hero actions
+- `inline` - Inline size that adapts to content
+
+## Examples
+
+### Basic Button
 
 ```jsx
-<ItemButton>Action</ItemButton>
-```
-
-#### With icons and description
-
-```jsx
-<ItemButton icon={<span>🗂️</span>} rightIcon={<span>↗</span>} description="Opens details">
-  Open
+<ItemButton onPress={() => console.log('Clicked')}>
+  Click me
 </ItemButton>
 ```
 
-#### As link
+### Button with Icons
 
 ```jsx
-<ItemButton to="/docs">Docs</ItemButton>
+<ItemButton 
+  icon={<IconFile />}
+  rightIcon={<IconExternalLink />}
+  onPress={handleOpen}
+>
+  Open File
+</ItemButton>
 ```
 
-### Accessibility
+### Link Button
 
-- Keyboard: Tab to focus, Enter/Space to activate
-- Screen readers: Provide `label` or visible children
-- ARIA: pass `aria-*` props as needed
+```jsx
+<ItemButton to="/docs">
+  Go to Documentation
+</ItemButton>
+```
 
-### Best Practices
+### Button with Hotkey
 
-1. Prefer visible text or set `label` for icon-only cases
-2. Use `to` for navigation; supports `!` for new tab and `@` for native navigation
+```jsx
+<ItemButton 
+  hotkeys="cmd+s"
+  onPress={handleSave}
+  type="primary"
+>
+  Save Document
+</ItemButton>
+```
 
-### Suggested Improvements
+### Form Submit Button
 
-- Loading state support mirroring `Button`
+```jsx
+<ItemButton 
+  buttonType="submit"
+  type="primary"
+  icon={<IconCheck />}
+>
+  Submit Form
+</ItemButton>
+```
 
-### Related Components
+### Button with Selection State
 
-- `Button` - classic button appearance
-- `ItemBase` - underlying layout component
+```jsx
+<ItemButton 
+  isSelected={isSelected}
+  onPress={() => setIsSelected(!isSelected)}
+>
+  Toggle Selection
+</ItemButton>
+```
 
+## Accessibility
 
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the button
+- `Space/Enter` - Activates the button
+- Custom hotkeys - Trigger button action when hotkeys are specified
+- `Escape` - Removes focus when pressed (standard browser behavior)
+
+### Screen Reader Support
+
+- Button announces as "button" to screen readers
+- Link buttons announce as "link" when `to` prop is provided
+- Button state is announced (pressed, disabled, selected)
+- Hotkey information is included in accessible description
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label when text content isn't descriptive enough
+- `aria-disabled` - Indicates disabled state
+- `aria-pressed` - Indicates toggle state for toggle buttons
+- `role` - Automatically set to "button" or "link" based on props
+
+## Best Practices
+
+1. **Do**: Use clear, action-oriented text
+   ```jsx
+   <ItemButton onPress={handleSave} type="primary">
+     Save Changes
+   </ItemButton>
+   ```
+
+2. **Do**: Add hotkeys for frequently used actions
+   ```jsx
+   <ItemButton hotkeys="cmd+s" onPress={handleSave}>
+     Save Document
+   </ItemButton>
+   ```
+
+3. **Do**: Use appropriate button types for forms
+   ```jsx
+   <ItemButton buttonType="submit" type="primary">
+     Submit Form
+   </ItemButton>
+   ```
+
+4. **Don't**: Use vague or unclear button text
+   ```jsx
+   {/* Avoid this - unclear what "OK" does */}
+   <ItemButton onPress={handleAction}>OK</ItemButton>
+   ```
+
+5. **Don't**: Overcrowd buttons with too many visual elements
+   ```jsx
+   {/* Avoid this - too many competing elements */}
+   <ItemButton 
+     icon={<IconA />}
+     rightIcon={<IconB />}
+     prefix="Pre"
+     suffix="Suf"
+     description="Long description"
+   >
+     Overcrowded Button
+   </ItemButton>
+   ```
+
+6. **Accessibility**: Always ensure buttons have clear, descriptive labels and proper keyboard support
+
+## Integration with Forms
+
+ItemButton integrates seamlessly with forms when using the `buttonType` prop:
+
+```jsx
+<form onSubmit={handleSubmit}>
+  <TextInput name="email" label="Email" />
+  <ItemButton buttonType="submit" type="primary">
+    Sign In
+  </ItemButton>
+  <ItemButton buttonType="reset" type="outline">
+    Clear Form
+  </ItemButton>
+</form>
+```
+
+## Related Components
+
+- [ItemBase](/components/ItemBase) - The foundational component that ItemButton extends
+- [Button](/components/Button) - Traditional button component for simpler use cases
+- [Link](/components/Link) - Text link component for navigation
+- [Menu.Item](/components/Menu) - Menu item component that also uses ItemBase
