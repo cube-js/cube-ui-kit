@@ -33,6 +33,7 @@ import {
 } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import { CubeItemButtonProps, ItemButton } from '../../actions';
+import { CubeItemBaseProps } from '../../content/ItemBase';
 import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
@@ -55,12 +56,13 @@ interface ItemWithKey {
 }
 
 export interface CubeFilterPickerProps<T>
-  extends Omit<CubeFilterListBoxProps<T>, 'size'>,
+  extends Omit<CubeFilterListBoxProps<T>, 'size' | 'tooltip'>,
+    Omit<CubeItemBaseProps, 'children' | 'size'>,
     BasePropsWithoutChildren,
     BaseStyleProps,
     OuterStyleProps,
     ColorStyleProps,
-    FieldBaseProps,
+    Omit<FieldBaseProps, 'tooltip'>,
     Pick<
       CubeItemButtonProps,
       'type' | 'theme' | 'icon' | 'rightIcon' | 'prefix' | 'suffix' | 'hotkeys'
@@ -180,6 +182,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     message,
     mods: externalMods,
     description,
+    descriptionPlacement,
     placeholder,
     size = 'medium',
     styles,
@@ -912,6 +915,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         hotkeys={hotkeys}
         tooltip={triggerTooltip}
         description={triggerDescription}
+        descriptionPlacement={descriptionPlacement}
         styles={styles}
         {...keyboardProps}
         aria-label={`${props['aria-label'] ?? props.label ?? ''}`}

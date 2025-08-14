@@ -152,12 +152,28 @@ export interface CubeSelectBaseProps<T>
     BaseStyleProps,
     OuterStyleProps,
     ColorStyleProps,
-    FieldBaseProps,
+    Omit<FieldBaseProps, 'tooltip'>,
     CollectionBase<T>,
     Omit<AriaSelectProps<T>, 'errorMessage'> {
   icon?: ReactElement;
+  rightIcon?: ReactNode;
   prefix?: ReactNode;
   suffix?: ReactNode;
+  /** Description text for the trigger. Note: Different from field-level description. */
+  description?: ReactNode;
+  descriptionPlacement?: 'inline' | 'block' | 'auto';
+  /** Keyboard shortcut that triggers the select when pressed */
+  hotkeys?: string;
+  /**
+   * Tooltip content and configuration for the trigger:
+   * - string: simple tooltip text
+   * - true: auto tooltip on overflow (shows selected value as tooltip when truncated)
+   * - object: advanced configuration with optional auto property
+   */
+  tooltip?:
+    | string
+    | boolean
+    | (Omit<CubeTooltipProviderProps, 'children'> & { auto?: boolean });
   triggerRef?: RefObject<HTMLButtonElement>;
   isLoading?: boolean;
   loadingIndicator?: ReactNode;
@@ -212,6 +228,7 @@ function Select<T extends object>(
     label,
     extra,
     icon,
+    rightIcon,
     labelStyles,
     isRequired,
     necessityIndicator,
@@ -235,6 +252,8 @@ function Select<T extends object>(
     suffix,
     message,
     description,
+    descriptionPlacement,
+    hotkeys,
     direction = 'bottom',
     shouldFlip = true,
     placeholder,
@@ -380,12 +399,18 @@ function Select<T extends object>(
         suffix={suffix}
         icon={icon}
         rightIcon={
-          isLoading ? (
+          rightIcon !== undefined ? (
+            rightIcon
+          ) : isLoading ? (
             <LoadingIcon />
           ) : (
             <DirectionIcon to={state.isOpen ? 'up' : 'down'} />
           )
         }
+        description={description}
+        descriptionPlacement={descriptionPlacement}
+        hotkeys={hotkeys}
+        tooltip={tooltip}
         labelProps={valueProps}
       >
         {state.selectedItem
