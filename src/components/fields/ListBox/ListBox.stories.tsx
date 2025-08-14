@@ -1,4 +1,3 @@
-import { StoryFn, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 
 import {
@@ -23,7 +22,7 @@ import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
 import { CubeListBoxProps, ListBox } from './ListBox';
 
-import type { Meta } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof ListBox> = {
   title: 'Forms/ListBox',
@@ -231,7 +230,7 @@ const permissions = [
   { key: 'share', label: 'Share', description: 'Share content with others' },
 ];
 
-const Template: StoryFn<CubeListBoxProps<any>> = (args) => (
+const Template: StoryObj<CubeListBoxProps<any>>['render'] = (args) => (
   <ListBox {...args}>
     <ListBox.Item key="apple">Apple</ListBox.Item>
     <ListBox.Item key="banana">Banana</ListBox.Item>
@@ -285,7 +284,9 @@ export const MultipleSelection: Story = {
   },
 };
 
-export const WithDescriptions: StoryFn<CubeListBoxProps<any>> = (args) => (
+export const WithDescriptions: StoryObj<CubeListBoxProps<any>>['render'] = (
+  args,
+) => (
   <ListBox {...args}>
     <ListBox.Item
       key="react"
@@ -312,7 +313,9 @@ WithDescriptions.args = {
   selectionMode: 'single',
 };
 
-export const WithSections: StoryFn<CubeListBoxProps<any>> = (args) => (
+export const WithSections: StoryObj<CubeListBoxProps<any>>['render'] = (
+  args,
+) => (
   <ListBox {...args}>
     <ListBox.Section title="Fruits">
       <ListBox.Item key="apple">Apple</ListBox.Item>
@@ -336,7 +339,9 @@ WithSections.args = {
   selectionMode: 'single',
 };
 
-export const WithHeaderAndFooter: StoryFn<CubeListBoxProps<any>> = (args) => (
+export const WithHeaderAndFooter: StoryObj<CubeListBoxProps<any>>['render'] = (
+  args,
+) => (
   <ListBox
     {...args}
     header={
@@ -552,7 +557,9 @@ export const WithTextValue: Story = {
   },
 };
 
-export const DisabledState: StoryFn<CubeListBoxProps<any>> = (args) => (
+export const DisabledState: StoryObj<CubeListBoxProps<any>>['render'] = (
+  args,
+) => (
   <ListBox {...args}>
     <ListBox.Item key="option1">Option 1</ListBox.Item>
     <ListBox.Item key="option2">Option 2</ListBox.Item>
@@ -565,7 +572,9 @@ DisabledState.args = {
   selectionMode: 'single',
 };
 
-export const ValidationStates: StoryFn<CubeListBoxProps<any>> = () => (
+export const ValidationStates: StoryObj<
+  CubeListBoxProps<any>
+>['render'] = () => (
   <Space gap="3x" flow="column">
     <ListBox
       label="Valid Selection"
@@ -591,7 +600,9 @@ export const ValidationStates: StoryFn<CubeListBoxProps<any>> = () => (
   </Space>
 );
 
-export const ControlledExample: StoryFn<CubeListBoxProps<any>> = () => {
+export const ControlledExample: StoryObj<
+  CubeListBoxProps<any>
+>['render'] = () => {
   const [selectedKey, setSelectedKey] = useState<string | null>('apple');
 
   return (
@@ -632,7 +643,9 @@ export const ControlledExample: StoryFn<CubeListBoxProps<any>> = () => {
   );
 };
 
-export const MultipleControlledExample: StoryFn<CubeListBoxProps<any>> = () => {
+export const MultipleControlledExample: StoryObj<
+  CubeListBoxProps<any>
+>['render'] = () => {
   const [selectedKeys, setSelectedKeys] = useState<string[]>(['read', 'write']);
 
   return (
@@ -677,7 +690,7 @@ export const MultipleControlledExample: StoryFn<CubeListBoxProps<any>> = () => {
   );
 };
 
-export const InForm: StoryFn<CubeListBoxProps<any>> = () => {
+export const InForm: StoryObj<CubeListBoxProps<any>>['render'] = () => {
   const handleSubmit = (data: any) => {
     console.log('Form submitted:', data);
     alert(`Selected: ${data.technology || 'None'}`);
@@ -739,7 +752,7 @@ export const InForm: StoryFn<CubeListBoxProps<any>> = () => {
   );
 };
 
-export const InPopover: StoryFn<CubeListBoxProps<any>> = () => {
+export const InPopover: StoryObj<CubeListBoxProps<any>>['render'] = () => {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
   return (
@@ -855,7 +868,9 @@ InPopover.parameters = {
   },
 };
 
-export const VirtualizedList: StoryFn<CubeListBoxProps<any>> = (args) => {
+export const VirtualizedList: StoryObj<CubeListBoxProps<any>>['render'] = (
+  args,
+) => {
   const [selected, setSelected] = useState<string | null>(null);
 
   // Generate a large list of items with varying content to test virtualization
@@ -991,7 +1006,9 @@ export const FocusBehavior: Story = {
   },
 };
 
-export const EscapeKeyHandling: StoryFn<CubeListBoxProps<any>> = () => {
+export const EscapeKeyHandling: StoryObj<
+  CubeListBoxProps<any>
+>['render'] = () => {
   const [selectedKey, setSelectedKey] = useState<string | null>('apple');
   const [escapeCount, setEscapeCount] = useState(0);
 
@@ -1256,6 +1273,80 @@ export const RichContentOptions: Story = {
       description: {
         story:
           'This story demonstrates the full capabilities of ListBox options with ItemBase integration: descriptions, prefix/suffix content, right icons, and hotkeys all working together.',
+      },
+    },
+  },
+};
+
+export const TooltipsWithActions: Story = {
+  render: (args) => (
+    <ListBox width="300px" {...args}>
+      <ListBox.Section title="Database Operations">
+        <ListBox.Item
+          key="backup"
+          tooltip="Create a backup of the current database state"
+          icon={<DatabaseIcon />}
+          suffix={<Badge type="note">Daily</Badge>}
+        >
+          Backup Database
+        </ListBox.Item>
+        <ListBox.Item
+          key="restore"
+          tooltip={{
+            title: 'Restore Database',
+            description:
+              'Restore database from a previous backup. This action cannot be undone.',
+            placement: 'right',
+          }}
+          icon={<DatabaseIcon />}
+          suffix={<Badge type="warning">Destructive</Badge>}
+        >
+          Restore Database
+        </ListBox.Item>
+        <ListBox.Item
+          key="optimize"
+          tooltip="Optimize database performance by rebuilding indexes and cleaning up unused data"
+          icon={<SettingsIcon />}
+          suffix={<Badge type="success">Safe</Badge>}
+        >
+          Optimize Database
+        </ListBox.Item>
+      </ListBox.Section>
+      <ListBox.Section title="User Management">
+        <ListBox.Item
+          key="invite"
+          tooltip="Send invitation to new team members"
+          icon={<UserIcon />}
+          suffix={<Badge type="note">+</Badge>}
+        >
+          Invite User
+        </ListBox.Item>
+        <ListBox.Item
+          key="permissions"
+          tooltip={{
+            title: 'Manage Permissions',
+            description:
+              'Configure user roles and access permissions for different system areas',
+            placement: 'right',
+          }}
+          icon={<CheckIcon />}
+          suffix={<Badge type="purple">5 users</Badge>}
+        >
+          Manage Permissions
+        </ListBox.Item>
+      </ListBox.Section>
+    </ListBox>
+  ),
+  args: {
+    label: 'System Actions',
+    selectionMode: 'single',
+    size: 'large',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'This story demonstrates tooltips in a practical context with action items. Tooltips provide additional context about what each action does, including warnings for destructive operations.',
       },
     },
   },

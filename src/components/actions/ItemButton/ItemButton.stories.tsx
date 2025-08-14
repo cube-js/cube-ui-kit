@@ -309,20 +309,18 @@ export const AutoTooltipOnOverflow: Story = {
           >
             This text is long enough to overflow and trigger auto tooltip
           </ItemButton>
-          <TooltipProvider title="Custom tooltip text">
-            <ItemButton
-              {...args}
-              // tooltip="Custom tooltip text"
-              icon={<IconExternalLink />}
-              style={{ width: '200px' }}
-            >
-              Short text
-            </ItemButton>
-          </TooltipProvider>
+          <ItemButton
+            {...args}
+            tooltip={true}
+            icon={<IconExternalLink />}
+            style={{ width: '200px' }}
+          >
+            Short text
+          </ItemButton>
         </div>
       </div>
 
-      {/* <div>
+      <div>
         <h4>Auto Tooltip with Configuration Object</h4>
         <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
           <ItemButton
@@ -446,7 +444,7 @@ export const AutoTooltipOnOverflow: Story = {
             Open document with long name
           </ItemButton>
         </div>
-      </div> */}
+      </div>
     </div>
   ),
   parameters: {

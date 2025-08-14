@@ -626,6 +626,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
       labelProps={labelProps}
       descriptionProps={descriptionProps}
       tooltip={tooltip}
+      defaultTooltipPlacement="right"
     >
       {item.rendered}
     </OptionItem>

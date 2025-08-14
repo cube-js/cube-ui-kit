@@ -1,4 +1,3 @@
-import { Meta, StoryFn } from '@storybook/react-vite';
 import { IconCoin, IconUser } from '@tabler/icons-react';
 import { userEvent, within } from 'storybook/test';
 
@@ -7,6 +6,8 @@ import { Text } from '../../content/Text';
 import { Space } from '../../layout/Space';
 
 import { CubeSelectProps, Select } from './Select';
+
+import type { Meta, StoryObj } from '@storybook/react';
 
 export default {
   title: 'Forms/Select',
@@ -368,7 +369,7 @@ const options = [
   'very-long-option-value-with-suffix',
 ];
 
-const Template: StoryFn<CubeSelectProps<any>> = (args) => (
+const Template: StoryObj<CubeSelectProps<any>>['render'] = (args) => (
   <Space
     radius="1x"
     padding={args.theme === 'special' ? '2x' : undefined}
@@ -422,7 +423,7 @@ WithDisabledOption.play = async ({ canvasElement }) => {
   await userEvent.click(button);
 };
 
-export const Wide: StoryFn<CubeSelectProps<any>> = (args) => (
+export const Wide: StoryObj<CubeSelectProps<any>>['render'] = (args) => (
   <Select {...args}>
     {options.map((option) => (
       <Select.Item key={option}>
@@ -439,7 +440,9 @@ WithEllipsis.args = {
   defaultSelectedKey: 'very-long-option-value-with-suffix',
 };
 
-export const WithDescription: StoryFn<CubeSelectProps<any>> = (args) => (
+export const WithDescription: StoryObj<CubeSelectProps<any>>['render'] = (
+  args,
+) => (
   <Select
     {...args}
     placeholder="Select a color"
@@ -462,9 +465,9 @@ export const WithDescription: StoryFn<CubeSelectProps<any>> = (args) => (
 WithDescription.args = {};
 WithDescription.play = WithDisabledOption.play;
 
-export const WithIconsAndDescriptions: StoryFn<CubeSelectProps<any>> = (
-  args,
-) => (
+export const WithIconsAndDescriptions: StoryObj<
+  CubeSelectProps<any>
+>['render'] = (args) => (
   <Select
     {...args}
     placeholder="Select a color"
@@ -503,7 +506,9 @@ WithIconsAndDescriptions.storyName = 'With icons and descriptions';
 // Section stories
 // ------------------------------
 
-export const SectionsStatic: StoryFn<CubeSelectProps<any>> = (args) => (
+export const SectionsStatic: StoryObj<CubeSelectProps<any>>['render'] = (
+  args,
+) => (
   <Select {...args} placeholder="Pick something" width="260px">
     <Select.Section title="Warm colors">
       <Select.Item key="red">Red</Select.Item>
@@ -524,7 +529,9 @@ export const SectionsStatic: StoryFn<CubeSelectProps<any>> = (args) => (
 SectionsStatic.storyName = 'Sections – static items';
 SectionsStatic.play = WithDisabledOption.play;
 
-export const SectionsDynamic: StoryFn<CubeSelectProps<any>> = (args) => {
+export const SectionsDynamic: StoryObj<CubeSelectProps<any>>['render'] = (
+  args,
+) => {
   const groups = [
     {
       name: 'Fruits',
@@ -562,7 +569,9 @@ export const SectionsDynamic: StoryFn<CubeSelectProps<any>> = (args) => {
 SectionsDynamic.storyName = 'Sections – dynamic collection';
 SectionsDynamic.play = WithDisabledOption.play;
 
-export const DifferentSizes: StoryFn<CubeSelectProps<any>> = (args) => (
+export const DifferentSizes: StoryObj<CubeSelectProps<any>>['render'] = (
+  args,
+) => (
   <Space gap="3x" flow="column" placeItems="start">
     <Select {...args} size="small" label="Small Select">
       {options.map((option) => (
@@ -593,6 +602,60 @@ DifferentSizes.parameters = {
     description: {
       story:
         'Select supports three sizes: `small`, `medium` (default), and `large` to fit different interface requirements.',
+    },
+  },
+};
+
+export const WithTooltips: StoryObj<CubeSelectProps<any>>['render'] = (
+  args,
+) => (
+  <Select {...args} placeholder="Choose a framework" width="260px">
+    <Select.Item
+      key="react"
+      tooltip="React - A JavaScript library for building user interfaces"
+    >
+      React
+    </Select.Item>
+    <Select.Item
+      key="vue"
+      tooltip={{
+        title: 'Vue.js Framework',
+      }}
+    >
+      Vue.js
+    </Select.Item>
+    <Select.Item
+      key="angular"
+      tooltip="Angular - Platform for building mobile and desktop web applications"
+    >
+      Angular
+    </Select.Item>
+    <Select.Item
+      key="svelte"
+      tooltip={{
+        title: 'Svelte',
+      }}
+    >
+      Svelte
+    </Select.Item>
+    <Select.Item
+      key="solid"
+      tooltip="SolidJS - Simple and performant reactivity for building user interfaces"
+    >
+      SolidJS
+    </Select.Item>
+  </Select>
+);
+
+WithTooltips.args = {};
+WithTooltips.storyName = 'With tooltips';
+WithTooltips.play = WithDisabledOption.play;
+
+WithTooltips.parameters = {
+  docs: {
+    description: {
+      story:
+        'Select options support tooltips to provide additional context. Use either a simple string or a full tooltip configuration object with title, description, and placement options.',
     },
   },
 };

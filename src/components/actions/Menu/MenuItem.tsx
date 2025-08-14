@@ -75,6 +75,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
     suffix,
     description,
     icon,
+    tooltip,
     mods: itemMods,
     qa: itemQa,
     textValue,
@@ -133,6 +134,8 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
         suffix={finalSuffix}
         description={description}
         hotkeys={hotkeys}
+        tooltip={tooltip}
+        defaultTooltipPlacement="right"
         isSelected={isSelectable ? isSelected : undefined}
         isDisabled={isDisabled}
         size={size === 'small' ? 'small' : 'medium'}

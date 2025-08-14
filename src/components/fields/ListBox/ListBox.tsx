@@ -1158,6 +1158,8 @@ function Option({
       labelProps={labelProps}
       descriptionProps={descriptionProps}
       styles={styles}
+      tooltip={item.props?.tooltip}
+      defaultTooltipPlacement="right"
       mods={{
         focused: isFocused,
         pressed: isPressed,
