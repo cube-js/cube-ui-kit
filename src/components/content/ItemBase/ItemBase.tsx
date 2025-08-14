@@ -53,7 +53,7 @@ export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
   prefix?: ReactNode;
   suffix?: ReactNode;
   description?: ReactNode;
-  descriptionPosition?: 'inside' | 'below';
+  descriptionPlacement?: 'inline' | 'block' | 'auto';
   isSelected?: boolean;
   size?:
     | 'xsmall'
@@ -126,7 +126,7 @@ const ItemBaseElement = tasty({
     },
     gridRows: {
       '': 'auto auto',
-      'with-description-below': 'auto auto auto',
+      'with-description-block': 'auto auto auto',
     },
     flexShrink: 0,
     position: 'relative',
@@ -214,13 +214,14 @@ const ItemBaseElement = tasty({
       gridRow: {
         '': 'span 2',
         'with-description': 'span 1',
-        'with-description-below': 'span 2',
+        'with-description-block': 'span 2',
       },
     },
 
     Description: {
       preset: 't4',
-      color: '#dark-03',
+      color: 'inherit',
+      opacity: 0.75,
       overflow: 'hidden',
       whiteSpace: 'nowrap',
       textOverflow: 'ellipsis',
@@ -228,19 +229,19 @@ const ItemBaseElement = tasty({
       textAlign: 'left',
       gridRow: {
         '': 'span 1',
-        'with-description-below': '3 / span 1',
+        'with-description-block': '3 / span 1',
       },
       gridColumn: {
         '': 'span 1',
-        'with-description-below': '1 / -1',
+        'with-description-block': '1 / -1',
       },
       padding: {
         '': '0 $inline-padding $block-padding $inline-padding',
         '(with-icon | with-prefix)': '0 $inline-padding $block-padding 0',
         '(with-right-icon | with-suffix)': '0 0 $block-padding $inline-padding',
         '(with-icon | with-prefix) & (with-right-icon | with-suffix)': '0 0',
-        'with-description-below':
-          '0 ($inline-padding + $inline-compensation) $block-padding ($inline-padding + $inline-compensation)',
+        'with-description-block':
+          '0 ($inline-padding - $inline-compensation + 1bw) $block-padding ($inline-padding - $inline-compensation + 1bw)',
       },
     },
 
@@ -312,7 +313,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     prefix,
     suffix,
     description,
-    descriptionPosition = 'inside',
+    descriptionPlacement = 'inline',
     labelProps,
     descriptionProps,
     keyboardShortcutProps,
@@ -367,8 +368,8 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
       'with-prefix': !!prefix,
       'with-suffix': !!finalSuffix,
       'with-description': !!description,
-      'with-description-below':
-        !!description && descriptionPosition === 'below',
+      'with-description-block':
+        !!description && descriptionPlacement === 'block',
       checkbox: hasCheckbox,
       selected: isSelected === true,
       ...mods,
@@ -379,6 +380,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     prefix,
     finalSuffix,
     description,
+    descriptionPlacement,
     hasCheckbox,
     isSelected,
     mods,

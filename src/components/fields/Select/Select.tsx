@@ -385,7 +385,7 @@ function Select<T extends object>(
             <DirectionIcon to={state.isOpen ? 'up' : 'down'} />
           )
         }
-        contentProps={valueProps}
+        labelProps={valueProps}
       >
         {state.selectedItem
           ? state.selectedItem.rendered
@@ -585,7 +585,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
     prefix,
     suffix,
     rightIcon,
-    descriptionPosition,
+    descriptionPlacement,
     styles: itemStyles,
   } = ((item as any)?.props || {}) as {
     description?: React.ReactNode;
@@ -594,7 +594,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
     suffix?: React.ReactNode;
     rightIcon?: React.ReactElement;
     styles?: Styles;
-    descriptionPosition?: 'inside' | 'below';
+    descriptionPlacement?: 'inline' | 'block' | 'auto';
     qa?: string;
   };
 
@@ -616,7 +616,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
       suffix={suffix}
       rightIcon={rightIcon}
       description={description}
-      descriptionPosition={descriptionPosition}
+      descriptionPlacement={descriptionPlacement}
       labelProps={labelProps}
       descriptionProps={descriptionProps}
     >

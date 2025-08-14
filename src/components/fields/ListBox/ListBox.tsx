@@ -1154,7 +1154,7 @@ function Option({
       hotkeys={item.props?.hotkeys}
       suffix={item.props?.suffix}
       description={item.props?.description}
-      descriptionPosition={item.props?.descriptionPosition}
+      descriptionPlacement={item.props?.descriptionPlacement}
       labelProps={labelProps}
       descriptionProps={descriptionProps}
       styles={styles}

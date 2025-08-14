@@ -40,6 +40,19 @@ export default {
       control: { type: null },
       description: 'Element rendered after the content (before rightIcon)',
     },
+    description: {
+      control: { type: 'text' },
+      description: 'Description text displayed with the item',
+    },
+    descriptionPlacement: {
+      options: ['inline', 'block', 'auto'],
+      control: { type: 'radio' },
+      description:
+        'How the description is positioned relative to the main content',
+      table: {
+        defaultValue: { summary: 'inline' },
+      },
+    },
 
     /* Presentation */
     size: {
@@ -789,7 +802,7 @@ CombinedFeatures.parameters = {
   },
 };
 
-export const WithDescriptionBelow: StoryFn<CubeItemBaseProps> = (args) => (
+export const WithDescriptionBlock: StoryFn<CubeItemBaseProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Description Position Comparison</Title>
     <Space gap="2x" flow="column" placeItems="start">
@@ -798,30 +811,30 @@ export const WithDescriptionBelow: StoryFn<CubeItemBaseProps> = (args) => (
         styles={DEFAULT_STYLES}
         icon={<IconUser />}
         description="This description appears inside the content area"
-        descriptionPosition="inside"
+        descriptionPlacement="inline"
       >
-        Item with description inside (default)
+        Item with description inline (default)
       </ItemBase>
       <ItemBase
         {...args}
         styles={DEFAULT_STYLES}
         icon={<IconUser />}
         description="This description appears below the entire item"
-        descriptionPosition="below"
+        descriptionPlacement="block"
       >
-        Item with description below
+        Item with description block
       </ItemBase>
     </Space>
 
-    <Title level={5}>Different Sizes with Description Below</Title>
+    <Title level={5}>Different Sizes with Description Block</Title>
     <Space gap="1x" flow="column" placeItems="start">
       <ItemBase
         {...args}
         styles={DEFAULT_STYLES}
         size="small"
         icon={<IconSettings />}
-        description="Small size description below"
-        descriptionPosition="below"
+        description="Small size description block"
+        descriptionPlacement="block"
       >
         Small item
       </ItemBase>
@@ -830,8 +843,8 @@ export const WithDescriptionBelow: StoryFn<CubeItemBaseProps> = (args) => (
         styles={DEFAULT_STYLES}
         size="medium"
         icon={<IconSettings />}
-        description="Medium size description below"
-        descriptionPosition="below"
+        description="Medium size description block"
+        descriptionPlacement="block"
       >
         Medium item
       </ItemBase>
@@ -840,14 +853,14 @@ export const WithDescriptionBelow: StoryFn<CubeItemBaseProps> = (args) => (
         styles={DEFAULT_STYLES}
         size="large"
         icon={<IconSettings />}
-        description="Large size description below"
-        descriptionPosition="below"
+        description="Large size description block"
+        descriptionPlacement="block"
       >
         Large item
       </ItemBase>
     </Space>
 
-    <Title level={5}>With Multiple Elements and Description Below</Title>
+    <Title level={5}>With Multiple Elements and Description Block</Title>
     <Space gap="1x" flow="column" placeItems="start">
       <ItemBase
         {...args}
@@ -857,7 +870,7 @@ export const WithDescriptionBelow: StoryFn<CubeItemBaseProps> = (args) => (
         prefix="$"
         suffix=".99"
         description="Complete configuration with description positioned below the item"
-        descriptionPosition="below"
+        descriptionPlacement="block"
       >
         Product Name
       </ItemBase>
@@ -866,8 +879,8 @@ export const WithDescriptionBelow: StoryFn<CubeItemBaseProps> = (args) => (
         styles={DEFAULT_STYLES}
         icon={<IconUser />}
         hotkeys="cmd+u"
-        description="User management with hotkey and description below"
-        descriptionPosition="below"
+        description="User management with hotkey and description block"
+        descriptionPlacement="block"
         as="button"
         onClick={() => alert('User action triggered!')}
       >
@@ -875,28 +888,28 @@ export const WithDescriptionBelow: StoryFn<CubeItemBaseProps> = (args) => (
       </ItemBase>
     </Space>
 
-    <Title level={5}>Long Description Below</Title>
+    <Title level={5}>Long Description Block</Title>
     <ItemBase
       {...args}
       styles={{ ...DEFAULT_STYLES, width: '350px' }}
       icon={<IconCoin />}
       description="This is a very long description that demonstrates how the description text flows when positioned below the item. It can contain multiple lines and will wrap naturally."
-      descriptionPosition="below"
+      descriptionPlacement="block"
     >
       Item with long description
     </ItemBase>
   </Space>
 );
 
-WithDescriptionBelow.args = {
+WithDescriptionBlock.args = {
   width: '400px',
 };
 
-WithDescriptionBelow.parameters = {
+WithDescriptionBlock.parameters = {
   docs: {
     description: {
       story:
-        'Demonstrates the `descriptionPosition="below"` functionality where descriptions are positioned below the entire ItemBase component instead of inside the content area. This is useful for longer descriptions or when you want to maintain a clean main content area.',
+        'Demonstrates the `descriptionPlacement="block"` functionality where descriptions are positioned below the entire ItemBase component instead of inside the content area. This is useful for longer descriptions or when you want to maintain a clean main content area.',
     },
   },
 };

@@ -6,7 +6,7 @@ import { Styles } from '../tasty';
 const _Item = Item as unknown as (props: {
   qa?: string;
   description?: ReactNode;
-  descriptionPosition?: 'inside' | 'below';
+  descriptionPlacement?: 'inline' | 'block' | 'auto';
   icon?: ReactNode | 'checkbox';
   prefix?: ReactNode;
   suffix?: ReactNode;
