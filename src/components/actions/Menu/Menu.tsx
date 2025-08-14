@@ -211,12 +211,7 @@ function Menu<T extends object>(
             : item.props.tooltip;
 
         menuItem = (
-          <TooltipProvider
-            key={item.key}
-            activeWrap
-            placement="right"
-            {...tooltipProps}
-          >
+          <TooltipProvider key={item.key} placement="right" {...tooltipProps}>
             {menuItem}
           </TooltipProvider>
         );

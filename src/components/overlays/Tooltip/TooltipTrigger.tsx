@@ -91,6 +91,8 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
     tooltipTriggerRef,
   );
 
+  console.log('! triggerProps', triggerProps);
+
   let { overlayProps, arrowProps, placement } = useOverlayPosition({
     placement: props.placement || 'top',
     targetRef: tooltipTriggerRef,

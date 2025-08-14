@@ -1,5 +1,7 @@
 import { IconExternalLink, IconFile } from '@tabler/icons-react';
 
+import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
+
 import { ItemButton } from './ItemButton';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -32,8 +34,9 @@ const meta: Meta<typeof ItemButton> = {
         'Keyboard shortcut that triggers the button (e.g., "cmd+s", "ctrl+alt+d")',
     },
     tooltip: {
-      control: 'text',
-      description: 'Tooltip text to show on hover',
+      control: 'object',
+      description:
+        'Tooltip configuration: string for simple text, true for auto overflow tooltips, or object for advanced config with optional auto property',
     },
     isDisabled: {
       control: 'boolean',
@@ -287,6 +290,170 @@ export const WithCheckbox: Story = {
       description: {
         story:
           'Demonstrates the checkbox functionality in ItemButton when `isSelected` prop is provided. When `isSelected` is `true`, the checkbox is visible (opacity 1, hover opacity 0.8). When `isSelected` is `false`, the checkbox is invisible (opacity 0, hover opacity 0.4). The checkbox replaces the `icon` prop when `isSelected` is provided, inherited from the ItemBase component.',
+      },
+    },
+  },
+};
+
+export const AutoTooltipOnOverflow: Story = {
+  render: (args) => (
+    <div style={{ display: 'grid', gap: 16 }}>
+      <div>
+        <h4>Auto Tooltip with tooltip=true</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            tooltip={true}
+            icon={<IconFile />}
+            style={{ width: '200px' }}
+          >
+            This text is long enough to overflow and trigger auto tooltip
+          </ItemButton>
+          <TooltipProvider title="Custom tooltip text">
+            <ItemButton
+              {...args}
+              // tooltip="Custom tooltip text"
+              icon={<IconExternalLink />}
+              style={{ width: '200px' }}
+            >
+              Short text
+            </ItemButton>
+          </TooltipProvider>
+        </div>
+      </div>
+
+      {/* <div>
+        <h4>Auto Tooltip with Configuration Object</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            tooltip={{ auto: true, placement: 'top' }}
+            icon={<IconFile />}
+            style={{ width: '180px' }}
+          >
+            Long text with custom placement that will show tooltip on top
+          </ItemButton>
+          <ItemButton
+            {...args}
+            tooltip={{ auto: true, placement: 'bottom', delay: 500 }}
+            icon={<IconExternalLink />}
+            style={{ width: '180px' }}
+          >
+            Text with custom delay and bottom placement
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>Auto vs Explicit Tooltip</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            tooltip={{ title: 'Custom tooltip text', auto: true }}
+            icon={<IconFile />}
+            style={{ width: '150px' }}
+          >
+            Explicit title takes priority over auto
+          </ItemButton>
+          <ItemButton
+            {...args}
+            tooltip={{ auto: true }}
+            icon={<IconExternalLink />}
+            style={{ width: '150px' }}
+          >
+            Auto tooltip shows this text when overflowed
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>No Tooltip When Not Overflowed</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            tooltip={true}
+            icon={<IconFile />}
+            style={{ width: '300px' }}
+          >
+            Short text (no tooltip)
+          </ItemButton>
+          <ItemButton
+            {...args}
+            tooltip={{ auto: true, placement: 'top' }}
+            icon={<IconExternalLink />}
+            style={{ width: '400px' }}
+          >
+            Normal length text (no tooltip)
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>Auto Tooltip with Different Button Types</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            tooltip={true}
+            type="primary"
+            icon={<IconFile />}
+            style={{ width: '140px' }}
+          >
+            Primary button with overflow
+          </ItemButton>
+          <ItemButton
+            {...args}
+            tooltip={true}
+            type="outline"
+            icon={<IconExternalLink />}
+            style={{ width: '140px' }}
+          >
+            Outline button with overflow
+          </ItemButton>
+          <ItemButton
+            {...args}
+            tooltip={true}
+            type="clear"
+            icon={<IconFile />}
+            style={{ width: '140px' }}
+          >
+            Clear button with overflow
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>Auto Tooltip with Hotkeys</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            tooltip={{ auto: true, placement: 'top' }}
+            hotkeys="cmd+s"
+            icon={<IconFile />}
+            style={{ width: '160px' }}
+            onPress={() => alert('Save action triggered!')}
+          >
+            Save with very long descriptive name
+          </ItemButton>
+          <ItemButton
+            {...args}
+            tooltip={true}
+            hotkeys="cmd+o"
+            type="primary"
+            icon={<IconExternalLink />}
+            style={{ width: '160px' }}
+            onPress={() => alert('Open action triggered!')}
+          >
+            Open document with long name
+          </ItemButton>
+        </div>
+      </div> */}
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the auto tooltip functionality that shows tooltips only when button text overflows. Use `tooltip={true}` for simple auto tooltips or `tooltip={{ auto: true, ...config }}` for advanced configuration. When text is not overflowed, no tooltip is shown. Explicit `title` in tooltip config takes priority over auto behavior. Auto tooltips work with all button types, hotkeys, and other features.',
       },
     },
   },

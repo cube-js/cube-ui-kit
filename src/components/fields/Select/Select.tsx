@@ -24,6 +24,7 @@ import {
   useSelect,
 } from 'react-aria';
 import { Section as BaseSection, useSelectState } from 'react-stately';
+import { CubeTooltipProviderProps } from 'src/components/overlays/Tooltip/TooltipProvider';
 import styled from 'styled-components';
 
 import { DirectionIcon, LoadingIcon } from '../../../icons/index';
@@ -84,7 +85,7 @@ const SelectTrigger = tasty(ItemBase, {
   styles: {
     reset: 'button',
 
-    ItemContent: {
+    Label: {
       opacity: {
         '': 1,
         placeholder: '$disabled-opacity',
@@ -586,6 +587,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
     suffix,
     rightIcon,
     descriptionPlacement,
+    tooltip,
     styles: itemStyles,
   } = ((item as any)?.props || {}) as {
     description?: React.ReactNode;
@@ -595,6 +597,10 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
     rightIcon?: React.ReactElement;
     styles?: Styles;
     descriptionPlacement?: 'inline' | 'block' | 'auto';
+    tooltip?:
+      | string
+      | boolean
+      | (Omit<CubeTooltipProviderProps, 'children'> & { auto?: boolean });
     qa?: string;
   };
 
@@ -619,6 +625,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
       descriptionPlacement={descriptionPlacement}
       labelProps={labelProps}
       descriptionProps={descriptionProps}
+      tooltip={tooltip}
     >
       {item.rendered}
     </OptionItem>

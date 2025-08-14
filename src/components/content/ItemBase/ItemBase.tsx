@@ -1,4 +1,5 @@
-import { ForwardedRef, forwardRef, ReactNode, useMemo } from 'react';
+import { FocusableRef } from '@react-types/shared';
+import { ForwardedRef, forwardRef, ReactNode, useMemo, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 import {
@@ -41,6 +42,7 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
+import { useCombinedRefs, useLayoutEffect } from '../../../utils/react';
 import {
   CubeTooltipProviderProps,
   TooltipProvider,
@@ -76,8 +78,16 @@ export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
   variant?: ItemVariant;
   /** Keyboard shortcut that triggers the element when pressed */
   hotkeys?: string;
-  /** Tooltip content - string for simple text or object for advanced configuration */
-  tooltip?: string | Omit<CubeTooltipProviderProps, 'children'>;
+  /**
+   * Tooltip content and configuration:
+   * - string: simple tooltip text
+   * - true: auto tooltip on overflow (shows children as tooltip when truncated)
+   * - object: advanced configuration with optional auto property
+   */
+  tooltip?:
+    | string
+    | boolean
+    | (Omit<CubeTooltipProviderProps, 'children'> & { auto?: boolean });
   /**
    * HTML button type to avoid implicit form submission when used as `as="button"`.
    * Kept separate from visual `type` prop.
@@ -242,6 +252,12 @@ const ItemBaseElement = tasty({
         '(with-icon | with-prefix) & (with-right-icon | with-suffix)': '0 0',
         'with-description-block':
           '0 ($inline-padding - $inline-compensation + 1bw) $block-padding ($inline-padding - $inline-compensation + 1bw)',
+        'with-description-block & !with-icon':
+          '0 ($inline-padding - $inline-compensation + 1bw) $block-padding $inline-padding',
+        'with-description-block & !with-right-icon':
+          '0 $inline-padding $block-padding ($inline-padding - $inline-compensation + 1bw)',
+        'with-description-block & !with-right-icon & !with-icon':
+          '0 $inline-padding $block-padding $inline-padding',
       },
     },
 
@@ -386,9 +402,61 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     mods,
   ]);
 
+  // Determine if auto tooltip is enabled
+  const isAutoTooltipEnabled = useMemo(() => {
+    if (tooltip === true) return true;
+    if (typeof tooltip === 'object' && tooltip?.auto) return true;
+    return false;
+  }, [tooltip]);
+
+  // Track label overflow for auto tooltip (only when enabled)
+  const mergedLabelRef = useCombinedRefs((labelProps as any)?.ref);
+  const [isLabelOverflowed, setIsLabelOverflowed] = useState(false);
+
+  const checkLabelOverflow = () => {
+    const label = mergedLabelRef.current;
+    if (!label) {
+      setIsLabelOverflowed(false);
+      return;
+    }
+
+    const hasOverflow = label.scrollWidth > label.clientWidth;
+
+    setIsLabelOverflowed(hasOverflow);
+  };
+
+  useLayoutEffect(() => {
+    if (isAutoTooltipEnabled) {
+      checkLabelOverflow();
+    }
+  }, [children, isAutoTooltipEnabled]);
+
+  useLayoutEffect(() => {
+    if (!isAutoTooltipEnabled) return;
+
+    const label = mergedLabelRef.current;
+    if (!label) return;
+
+    // Initial check
+    checkLabelOverflow();
+
+    const resizeObserver = new ResizeObserver(checkLabelOverflow);
+    resizeObserver.observe(label);
+
+    return () => resizeObserver.disconnect();
+  }, [mergedLabelRef.current, isAutoTooltipEnabled]);
+
+  const finalLabelProps = useMemo(() => {
+    return {
+      ...(labelProps || {}),
+      ref: mergedLabelRef,
+    } as Props & { ref?: any };
+  }, [labelProps, mergedLabelRef]);
+
   const itemElement = (
     <ItemBaseElement
       ref={ref as any}
+      tabIndex={0}
       variant={theme && type ? (`${theme}.${type}` as ItemVariant) : undefined}
       data-size={size}
       data-type={type}
@@ -405,7 +473,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
       )}
       {prefix && <div data-element="Prefix">{prefix}</div>}
       {children || labelProps ? (
-        <div data-element="Label" {...labelProps}>
+        <div data-element="Label" {...finalLabelProps}>
           {children}
         </div>
       ) : null}
@@ -419,11 +487,35 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     </ItemBaseElement>
   );
 
+  // Handle tooltip rendering based on tooltip prop type
   if (tooltip) {
-    const tooltipProps =
-      typeof tooltip === 'string' ? { title: tooltip } : tooltip;
+    // String tooltip - simple case
+    if (typeof tooltip === 'string') {
+      return <TooltipProvider title={tooltip}>{itemElement}</TooltipProvider>;
+    }
 
-    return <TooltipProvider {...tooltipProps}>{itemElement}</TooltipProvider>;
+    // Boolean tooltip - auto tooltip on overflow
+    if (tooltip === true) {
+      if ((children || labelProps) && isLabelOverflowed) {
+        return (
+          <TooltipProvider title={children}>{itemElement}</TooltipProvider>
+        );
+      }
+    }
+
+    // Object tooltip - advanced configuration
+    if (typeof tooltip === 'object') {
+      const { auto, ...tooltipProps } = tooltip;
+
+      // If auto is enabled and label is overflowed, show auto tooltip
+      if (auto && (children || labelProps) && isLabelOverflowed) {
+        return (
+          <TooltipProvider title={children} {...tooltipProps}>
+            {itemElement}
+          </TooltipProvider>
+        );
+      }
+    }
   }
 
   return itemElement;
