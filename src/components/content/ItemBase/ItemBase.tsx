@@ -247,6 +247,14 @@ const ItemBaseElement = tasty({
           '$block-padding 0 $block-padding $inline-padding',
         '(with-icon | with-prefix) & (with-right-icon | with-suffix)':
           '$block-padding 0',
+        'with-description & !with-description-block':
+          '$block-padding $inline-padding 0 $inline-padding',
+        'with-description & !with-description-block & (with-icon | with-prefix)':
+          '$block-padding $inline-padding 0 0',
+        'with-description & !with-description-block & (with-right-icon | with-suffix)':
+          '$block-padding 0 0 $inline-padding',
+        'with-description & !with-description-block & (with-icon | with-prefix) & (with-right-icon | with-suffix)':
+          '$block-padding 0 0 0',
       },
       gridRow: {
         '': 'span 2',
