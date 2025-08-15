@@ -62,7 +62,7 @@ export const StyledSearchInput = tasty({
       '[data-size="large"]': '$size-lg',
     },
     '$inline-padding':
-      'max($min-inline-padding, (($size - 1lh) / 2 + $inline-compensation))',
+      'max($min-inline-padding, (($size - 1lh) / 2 + $inline-compensation - 1bw))',
     '$inline-compensation': '1x',
     '$min-inline-padding': '1x',
   },
