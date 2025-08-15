@@ -276,7 +276,8 @@ const ItemBaseElement = tasty({
         '': '0 $inline-padding $block-padding $inline-padding',
         '(with-icon | with-prefix)': '0 $inline-padding $block-padding 0',
         '(with-right-icon | with-suffix)': '0 0 $block-padding $inline-padding',
-        '(with-icon | with-prefix) & (with-right-icon | with-suffix)': '0 0',
+        '(with-icon | with-prefix) & (with-right-icon | with-suffix)':
+          '0 0 $block-padding 0',
         'with-description-block':
           '0 ($inline-padding - $inline-compensation + 1bw) $block-padding ($inline-padding - $inline-compensation + 1bw)',
         'with-description-block & !with-icon':
