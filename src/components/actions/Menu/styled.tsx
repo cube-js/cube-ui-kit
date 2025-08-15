@@ -87,7 +87,7 @@ export const StyledHeader = tasty(Space, {
       '[data-size="large"]': '$size-lg',
     },
     '$inline-padding':
-      'max($min-inline-padding, (($size - 1lh) / 2 + $inline-compensation - 1bw))',
+      'max($min-inline-padding, (($size - 1lh) / 2 + $inline-compensation))',
     '$inline-compensation': '1x',
     '$min-inline-padding': '1x',
   },

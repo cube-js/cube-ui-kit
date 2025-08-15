@@ -26,7 +26,7 @@ import {
 import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { StyledHeader } from '../../actions/Menu/styled';
-import { Block } from '../../Block';
+import { ItemBase } from '../../content/ItemBase';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { CubeItemProps } from '../../Item';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
@@ -96,7 +96,7 @@ const SearchInputElement = tasty({
       prefix: '0 $inline-padding 0 .5x',
     },
     '$inline-padding':
-      'max($min-inline-padding, (($size - 1lh) / 2 + $inline-compensation - 1bw))',
+      'max($min-inline-padding, (($size - 1lh) / 2 + $inline-compensation))',
     '$inline-compensation': '1x',
     '$min-inline-padding': '1x',
   },
@@ -918,11 +918,14 @@ export const FilterListBox = forwardRef(function FilterListBox<
       )}
       {searchInput}
       {showEmptyMessage ? (
-        <div style={{ padding: '0.75rem 1rem' }}>
-          <Block preset="t4" color="#dark-03">
-            {emptyLabel !== undefined ? emptyLabel : 'No results found'}
-          </Block>
-        </div>
+        <ItemBase
+          preset="t4"
+          color="#dark-03"
+          size={size}
+          padding="(.5x - 1bw)"
+        >
+          {emptyLabel !== undefined ? emptyLabel : 'No results found'}
+        </ItemBase>
       ) : (
         <ListBox
           ref={listBoxRef}
