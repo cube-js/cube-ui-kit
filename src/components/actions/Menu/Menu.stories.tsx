@@ -1427,7 +1427,7 @@ export const MenuSynchronization = () => {
         <Card ref={anchorRef1} border padding="3x">
           {rendered1}
           <Button
-            data-menu-trigger
+            data-popover-trigger
             size="small"
             theme={isOpen1 ? 'accent' : 'secondary'}
             onPress={() => open1({ onAction: handleAction })}

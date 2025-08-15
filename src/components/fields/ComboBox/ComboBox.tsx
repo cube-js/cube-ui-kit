@@ -460,7 +460,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         {suffixPosition === 'after' ? suffix : null}
         {!hideTrigger ? (
           <TriggerElement
-            data-menu-trigger
+            data-popover-trigger
             qa="ComboBoxTrigger"
             {...mergeProps(buttonProps, triggerFocusProps, triggerHoverProps)}
             ref={triggerRef}

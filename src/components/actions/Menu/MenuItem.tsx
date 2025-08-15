@@ -103,7 +103,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
     <FocusRing>
       <ItemBase
         {...mergeProps(menuItemProps, restCleanProps, {
-          'data-menu-trigger': true,
+          'data-popover-trigger': true,
           qa: itemQa ? itemQa : `MenuItem-${key}`,
           mods,
           styles,

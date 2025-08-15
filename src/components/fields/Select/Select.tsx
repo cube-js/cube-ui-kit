@@ -386,7 +386,7 @@ function Select<T extends object>(
       <SelectTrigger
         {...mergeProps(buttonProps, hoverProps, focusProps)}
         ref={triggerRef}
-        data-menu-trigger
+        data-popover-trigger
         styles={{ ...inputStyles, ...triggerStyles }}
         theme={theme}
         size={size}
@@ -486,7 +486,7 @@ export function ListBoxPopup({
       isOpen: state.isOpen,
       isDismissable: true,
       shouldCloseOnInteractOutside: (el) => {
-        const menuTriggerEl = el.closest('[data-menu-trigger]');
+        const menuTriggerEl = el.closest('[data-popover-trigger]');
         // If no menu trigger was clicked, allow closing
         if (!menuTriggerEl) return true;
         // If the same trigger that opened this select was clicked, allow closing

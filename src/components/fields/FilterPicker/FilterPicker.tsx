@@ -920,7 +920,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     return (
       <ItemButton
         ref={triggerRef as any}
-        data-menu-trigger
+        data-popover-trigger
         type={type}
         theme={validationState === 'invalid' ? 'danger' : theme}
         size={size}
@@ -969,7 +969,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         shouldFlip={shouldFlip}
         isDismissable={true}
         shouldCloseOnInteractOutside={(el) => {
-          const menuTriggerEl = el.closest('[data-menu-trigger]');
+          const menuTriggerEl = el.closest('[data-popover-trigger]');
           // If no menu trigger was clicked, allow closing
           if (!menuTriggerEl) return true;
           // If the same trigger that opened this popover was clicked, allow closing (toggle)

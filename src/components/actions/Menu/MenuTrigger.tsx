@@ -172,7 +172,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
         style={positionProps.style}
         placement={placement}
         shouldCloseOnInteractOutside={(el) => {
-          const menuTriggerEl = el.closest('[data-menu-trigger]');
+          const menuTriggerEl = el.closest('[data-popover-trigger]');
           // If no menu trigger was clicked, allow closing
           if (!menuTriggerEl) return true;
           // For dummy triggers (like useAnchoredMenu), check if the clicked element
@@ -205,7 +205,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
           <PressResponder
             {...menuTriggerProps}
             ref={menuTriggerRef}
-            data-menu-trigger
+            data-popover-trigger
             isPressed={state.isOpen}
           >
             {menuTrigger}

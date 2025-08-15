@@ -334,7 +334,6 @@ function DialogTriggerBase(props) {
       <PressResponder
         ref={ref}
         {...triggerProps}
-        data-menu-trigger
         isPressed={
           state.isOpen &&
           type !== 'modal' &&
