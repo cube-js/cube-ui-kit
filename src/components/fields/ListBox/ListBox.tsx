@@ -48,7 +48,7 @@ import {
 } from '../../actions/Menu/styled';
 import { ItemBase } from '../../content/ItemBase/ItemBase';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
-import { Item } from '../../Item';
+import { CubeItemProps, Item } from '../../Item';
 
 import type { CollectionBase, Key } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
@@ -282,6 +282,11 @@ export interface CubeListBoxProps<T>
    * Label for the "Select All" option. Defaults to "Select All".
    */
   selectAllLabel?: ReactNode;
+
+  /**
+   * Props to apply to the "Select All" option.
+   */
+  allValueProps?: Partial<CubeItemProps<T>>;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -296,6 +301,7 @@ const SelectAllOption = ({
   state,
   lastFocusSourceRef,
   onClick,
+  allValueProps = {},
 }: {
   label?: ReactNode;
   isSelected: boolean;
@@ -306,6 +312,7 @@ const SelectAllOption = ({
   state: any;
   lastFocusSourceRef: MutableRefObject<'keyboard' | 'mouse' | 'other'>;
   onClick: (propagate?: boolean) => void;
+  allValueProps?: Partial<CubeItemProps<any>>;
 }) => {
   const { hoverProps, isHovered } = useHover({ isDisabled });
 
@@ -391,7 +398,6 @@ const SelectAllOption = ({
     <>
       <ListBoxItemBase
         ref={localRef}
-        {...mergeProps(hoverProps, { onClick: handleOptionClick })}
         data-size={size}
         size={size}
         role="option"
@@ -406,6 +412,9 @@ const SelectAllOption = ({
           indeterminate: isIndeterminate,
           all: true, // Important: this preserves the 'all' modifier
         }}
+        {...mergeProps(hoverProps, allValueProps, {
+          onClick: handleOptionClick,
+        })}
       >
         {label}
       </ListBoxItemBase>
@@ -479,6 +488,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     onOptionClick,
     showSelectAll,
     selectAllLabel,
+    allValueProps,
     ...otherProps
   } = props;
 
@@ -824,6 +834,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
           isDisabled={isDisabled}
           isCheckable={isCheckable}
           size={size}
+          allValueProps={allValueProps}
           onClick={handleSelectAllClick}
         />
       ) : (

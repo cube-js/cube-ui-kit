@@ -1,11 +1,14 @@
-import { StoryFn, StoryObj } from '@storybook/react-vite';
+import { StoryFn } from '@storybook/react-vite';
+import { IconFile, IconFileDiff } from '@tabler/icons-react';
 import { useState } from 'react';
 import { userEvent, within } from 'storybook/test';
 
 import {
+  BellFilledIcon,
   CheckIcon,
   DatabaseIcon,
   FilterIcon,
+  PlusIcon,
   RightIcon,
   SettingsIcon,
   UserIcon,
@@ -22,9 +25,9 @@ import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
 import { CubeFilterListBoxProps, FilterListBox } from './FilterListBox';
 
-import type { Meta } from '@storybook/react-vite';
+// import type { Meta, StoryObj } from '@storybook/react-vite';
 
-const meta: Meta<typeof FilterListBox> = {
+const meta: any = {
   title: 'Forms/FilterListBox',
   component: FilterListBox,
   parameters: {
@@ -220,7 +223,7 @@ const meta: Meta<typeof FilterListBox> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof FilterListBox>;
+type Story = any;
 
 // Sample data for stories
 const fruits = [
@@ -1277,4 +1280,139 @@ export const WithSelectAll: Story = {
       },
     },
   },
+};
+
+export const CustomValueProps: Story = {
+  render: (args) => {
+    const [selectedKeys, setSelectedKeys] = useState<string[]>([
+      'react',
+      'customtag1',
+      'customtag2',
+    ]);
+
+    return (
+      <Space gap="2x" flow="column">
+        <FilterListBox
+          {...args}
+          selectedKeys={selectedKeys}
+          onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
+        >
+          <FilterListBox.Item key="react" icon={<IconFile />}>
+            React
+          </FilterListBox.Item>
+          <FilterListBox.Item key="vue" icon={<IconFile />}>
+            Vue.js
+          </FilterListBox.Item>
+          <FilterListBox.Item key="angular" icon={<IconFile />}>
+            Angular
+          </FilterListBox.Item>
+          <FilterListBox.Item key="svelte" icon={<IconFile />}>
+            Svelte
+          </FilterListBox.Item>
+        </FilterListBox>
+
+        <Text>
+          Selected: <strong>{selectedKeys.join(', ')}</strong>
+        </Text>
+      </Space>
+    );
+  },
+  args: {
+    label: 'Tags with Custom Values',
+    selectionMode: 'multiple',
+    // isCheckable: true,
+    allowsCustomValue: true,
+    searchPlaceholder: 'Search or add tags...',
+    customValueProps: {
+      icon: <IconFileDiff />,
+      styles: {
+        color: '#orange-text',
+      },
+    },
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `customValueProps` prop allows you to customize existing custom values (values that are already selected but not in the predefined options). In this example, custom values are displayed with a tag icon and orange text color. Try typing and selecting new values to see how they are styled.',
+      },
+    },
+  },
+};
+
+export const NewCustomValueProps: Story = {
+  render: (args) => {
+    const [selectedKeys, setSelectedKeys] = useState<string[]>(['react']);
+
+    return (
+      <Space gap="2x" flow="column">
+        <FilterListBox
+          {...args}
+          selectedKeys={selectedKeys}
+          onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
+        >
+          <FilterListBox.Item key="react" icon={<IconFile />}>
+            React
+          </FilterListBox.Item>
+          <FilterListBox.Item key="vue" icon={<IconFile />}>
+            Vue.js
+          </FilterListBox.Item>
+          <FilterListBox.Item key="angular" icon={<IconFile />}>
+            Angular
+          </FilterListBox.Item>
+          <FilterListBox.Item key="svelte" icon={<IconFile />}>
+            Svelte
+          </FilterListBox.Item>
+        </FilterListBox>
+
+        <Text>
+          Selected: <strong>{selectedKeys.join(', ')}</strong>
+        </Text>
+
+        <Text preset="t4" color="#dark.60">
+          Type a new framework name in the search box to see the "plus" icon for
+          new values
+        </Text>
+      </Space>
+    );
+  },
+  args: {
+    label: 'Add New Framework',
+    selectionMode: 'multiple',
+    // isCheckable: true,
+    allowsCustomValue: true,
+    searchPlaceholder: 'Search or add frameworks...',
+    customValueProps: {
+      icon: <IconFileDiff />,
+      styles: {
+        color: '#orange-text',
+      },
+    },
+    newCustomValueProps: {
+      icon: <PlusIcon />,
+      styles: {
+        color: '#success-text',
+      },
+    },
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `newCustomValueProps` prop allows you to customize new custom values that appear when typing in the search input. These props are merged with `customValueProps` for new values. In this example, new values show with a plus icon and green text color to indicate they can be added. Try typing "Next.js" to see the styling.',
+      },
+    },
+  },
+};
+
+NewCustomValueProps.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+
+  // Find the search input
+  const searchInput = canvas.getByPlaceholderText(
+    'Search or add frameworks...',
+  );
+
+  // Type "SolidJS" in the search input
+  await userEvent.type(searchInput, 'SolidJS');
 };

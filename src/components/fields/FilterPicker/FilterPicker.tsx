@@ -214,6 +214,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     allowsCustomValue,
     renderSummary,
     isCheckable,
+    allValueProps,
+    customValueProps,
+    newCustomValueProps,
     ...otherProps
   } = props;
 
@@ -975,6 +978,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 headerStyles={headerStyles}
                 footerStyles={footerStyles}
                 qa={`${props.qa || 'FilterPicker'}ListBox`}
+                allValueProps={allValueProps}
+                customValueProps={customValueProps}
+                newCustomValueProps={newCustomValueProps}
                 onEscape={() => close()}
                 onOptionClick={(key) => {
                   // For FilterPicker, clicking the content area should close the popover
@@ -1067,7 +1073,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     </FilterPickerWrapper>
   );
 
-  return wrapWithField<Omit<CubeFilterPickerProps<T>, 'children'>>(
+  return wrapWithField<Omit<CubeFilterPickerProps<T>, 'children' | 'tooltip'>>(
     filterPickerField,
     ref as any,
     mergeProps(

@@ -1,3 +1,4 @@
+import { StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 
 import {
@@ -22,9 +23,9 @@ import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
 import { CubeListBoxProps, ListBox } from './ListBox';
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+// import type { Meta, StoryObj } from '@storybook/react-vite';
 
-const meta: Meta<typeof ListBox> = {
+const meta: any = {
   title: 'Forms/ListBox',
   component: ListBox,
   parameters: {
@@ -188,7 +189,7 @@ const meta: Meta<typeof ListBox> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof ListBox>;
+type Story = any;
 
 // Sample data for stories
 const fruits = [
@@ -1347,6 +1348,40 @@ export const TooltipsWithActions: Story = {
       description: {
         story:
           'This story demonstrates tooltips in a practical context with action items. Tooltips provide additional context about what each action does, including warnings for destructive operations.',
+      },
+    },
+  },
+};
+
+export const AllValuePropsExample: Story = {
+  render: (args) => (
+    <ListBox {...args}>
+      {permissions.map((permission) => (
+        <ListBox.Item key={permission.key} description={permission.description}>
+          {permission.label}
+        </ListBox.Item>
+      ))}
+    </ListBox>
+  ),
+  args: {
+    label: 'Select permissions with styled "Select All"',
+    selectionMode: 'multiple',
+    isCheckable: true,
+    showSelectAll: true,
+    selectAllLabel: 'All Permissions',
+    allValueProps: {
+      styles: {
+        preset: 't3m',
+        color: '#purple-text',
+      },
+    },
+    defaultSelectedKeys: ['read'],
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `allValueProps` prop allows you to customize the styling and behavior of the "Select All" option. In this example, the "Select All" option uses the `t3m` preset and purple text color.',
       },
     },
   },

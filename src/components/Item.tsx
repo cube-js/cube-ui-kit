@@ -1,9 +1,9 @@
 import { ReactElement, ReactNode } from 'react';
-import { Item } from 'react-stately';
+import { Item, ItemProps } from 'react-stately';
 
 import { Styles } from '../tasty';
 
-const _Item = Item as unknown as (props: {
+export interface CubeItemProps<T> extends ItemProps<T> {
   qa?: string;
   description?: ReactNode;
   descriptionPlacement?: 'inline' | 'block' | 'auto';
@@ -15,6 +15,8 @@ const _Item = Item as unknown as (props: {
   onAction?: () => void;
   wrapper?: (item: ReactElement) => ReactElement;
   [key: string]: any;
-}) => ReactElement;
+}
+
+const _Item = Item as unknown as <T>(props: CubeItemProps<T>) => ReactElement;
 
 export { _Item as Item };
