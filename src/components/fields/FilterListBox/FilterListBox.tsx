@@ -96,7 +96,7 @@ const SearchInputElement = tasty({
       prefix: '0 $inline-padding 0 .5x',
     },
     '$inline-padding':
-      'max($min-inline-padding, (($size - 1lh) / 2 + $inline-compensation))',
+      'max($min-inline-padding, (($size - 1lh) / 2 + $inline-compensation - 1bw))',
     '$inline-compensation': '1x',
     '$min-inline-padding': '1x',
   },
