@@ -634,6 +634,74 @@ describe('<FilterPicker />', () => {
     });
   });
 
+  describe('Menu synchronization (event bus)', () => {
+    it('should close one FilterPicker when another FilterPicker opens', async () => {
+      const { getByRole, getAllByRole, getByText, queryByText } =
+        renderWithRoot(
+          <div>
+            <FilterPicker
+              label="First FilterPicker"
+              placeholder="Select fruit 1"
+              selectionMode="single"
+              data-testid="filter-picker-1"
+            >
+              {basicItems}
+            </FilterPicker>
+            <FilterPicker
+              label="Second FilterPicker"
+              placeholder="Select fruit 2"
+              selectionMode="single"
+              data-testid="filter-picker-2"
+            >
+              {basicItems}
+            </FilterPicker>
+          </div>,
+        );
+
+      // Wait for components to render
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      });
+
+      const triggers = getAllByRole('button');
+      const firstTrigger = triggers[0];
+      const secondTrigger = triggers[1];
+
+      // Step 1: Open first FilterPicker
+      await act(async () => {
+        await userEvent.click(firstTrigger);
+      });
+
+      // Verify first FilterPicker is open
+      expect(getByText('Apple')).toBeInTheDocument();
+      expect(getByText('Banana')).toBeInTheDocument();
+
+      // Step 2: Open second FilterPicker - this should close the first one
+      await act(async () => {
+        await userEvent.click(secondTrigger);
+      });
+
+      // Wait for the events to propagate and animations to complete
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      });
+
+      // Step 3: Verify only one popover is open
+      // There should still be Apple and Banana visible (from second picker)
+      // but there should be only one set of them, not two
+      const appleElements = queryByText('Apple');
+      const bananaElements = queryByText('Banana');
+
+      // Both should still be visible (from the second popover)
+      expect(appleElements).toBeInTheDocument();
+      expect(bananaElements).toBeInTheDocument();
+
+      // More importantly, there should be only one listbox visible
+      const listboxes = getAllByRole('listbox');
+      expect(listboxes).toHaveLength(1);
+    });
+  });
+
   describe('allowsCustomValue functionality', () => {
     it('should support custom values and display them in trigger', async () => {
       const onSelectionChange = jest.fn();

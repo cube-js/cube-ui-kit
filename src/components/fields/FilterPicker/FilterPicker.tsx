@@ -31,7 +31,9 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
+import { generateRandomId } from '../../../utils/random';
 import { mergeProps } from '../../../utils/react';
+import { useEventBus } from '../../../utils/react/useEventBus';
 import { CubeItemButtonProps, ItemButton } from '../../actions';
 import { CubeItemBaseProps } from '../../content/ItemBase';
 import { Text } from '../../content/Text';
@@ -221,6 +223,12 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   } = props;
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
+
+  // Generate a unique ID for this FilterPicker instance
+  const filterPickerId = useMemo(() => generateRandomId(), []);
+
+  // Get event bus for menu synchronization
+  const { emit, on } = useEventBus();
 
   // Warn if isCheckable is false in single selection mode
   useWarn(isCheckable === false && selectionMode === 'single', {
@@ -861,6 +869,25 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   // The trigger is rendered as a function so we can access the dialog state
   const renderTrigger = (state) => {
+    // Listen for other menus opening and close this one if needed
+    useEffect(() => {
+      const unsubscribe = on('menu:open', (data: { menuId: string }) => {
+        // If another menu is opening and this FilterPicker is open, close this one
+        if (data.menuId !== filterPickerId && state.isOpen) {
+          state.close();
+        }
+      });
+
+      return unsubscribe;
+    }, [on, filterPickerId, state]);
+
+    // Emit event when this FilterPicker opens
+    useEffect(() => {
+      if (state.isOpen) {
+        emit('menu:open', { menuId: filterPickerId });
+      }
+    }, [state.isOpen, emit, filterPickerId]);
+
     // Track popover open/close state to control sorting
     useEffect(() => {
       if (state.isOpen !== isPopoverOpen) {
@@ -941,6 +968,15 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         shouldUpdatePosition={shouldUpdatePosition}
         shouldFlip={shouldFlip}
         isDismissable={true}
+        shouldCloseOnInteractOutside={(el) => {
+          const menuTriggerEl = el.closest('[data-menu-trigger]');
+          // If no menu trigger was clicked, allow closing
+          if (!menuTriggerEl) return true;
+          // If the same trigger that opened this popover was clicked, allow closing (toggle)
+          if (menuTriggerEl === (triggerRef as any)?.current) return true;
+          // Otherwise, don't close here. Let the event bus handle closing when the other opens.
+          return false;
+        }}
       >
         {renderTrigger}
         {(close) => (
