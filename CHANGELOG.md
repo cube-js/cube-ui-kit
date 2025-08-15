@@ -1,5 +1,23 @@
 # @cube-dev/ui-kit
 
+## 0.73.0
+
+### Minor Changes
+
+- [#752](https://github.com/cube-js/cube-ui-kit/pull/752) [`6f3b2616`](https://github.com/cube-js/cube-ui-kit/commit/6f3b2616a50bc1188e7166982e8e4bbff245f663) Thanks [@tenphi](https://github.com/tenphi)! - Add itemBase and ItemButton components packed with lots of features. ItemBase is now used as a base for all Item components in Menu, CommandMenu, ListBox, FilterListBox, FilterPicker, Select, ComboBox.
+
+### Patch Changes
+
+- [#752](https://github.com/cube-js/cube-ui-kit/pull/752) [`6f3b2616`](https://github.com/cube-js/cube-ui-kit/commit/6f3b2616a50bc1188e7166982e8e4bbff245f663) Thanks [@tenphi](https://github.com/tenphi)! - Make menu props optional for open method in `useAnchoredMenu`.
+
+- [#752](https://github.com/cube-js/cube-ui-kit/pull/752) [`6f3b2616`](https://github.com/cube-js/cube-ui-kit/commit/6f3b2616a50bc1188e7166982e8e4bbff245f663) Thanks [@tenphi](https://github.com/tenphi)! - Increase search input size for FilterListBox and CommandMenu.
+
+- [#752](https://github.com/cube-js/cube-ui-kit/pull/752) [`6f3b2616`](https://github.com/cube-js/cube-ui-kit/commit/6f3b2616a50bc1188e7166982e8e4bbff245f663) Thanks [@tenphi](https://github.com/tenphi)! - Add default menu props to `useAnchoredMenu`.
+
+- [#752](https://github.com/cube-js/cube-ui-kit/pull/752) [`6f3b2616`](https://github.com/cube-js/cube-ui-kit/commit/6f3b2616a50bc1188e7166982e8e4bbff245f663) Thanks [@tenphi](https://github.com/tenphi)! - Add `allValueProps`, `customValueProps` and `newCustomValueProps` to customize the additional options in ListBox, FilterListBox and FilterPicker.
+
+- [#752](https://github.com/cube-js/cube-ui-kit/pull/752) [`6f3b2616`](https://github.com/cube-js/cube-ui-kit/commit/6f3b2616a50bc1188e7166982e8e4bbff245f663) Thanks [@tenphi](https://github.com/tenphi)! - Sync opening state between FilterPicker instances and other triggers.
+
 ## 0.72.3
 
 ### Patch Changes
