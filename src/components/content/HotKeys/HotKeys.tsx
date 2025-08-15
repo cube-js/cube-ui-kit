@@ -10,7 +10,6 @@ import {
 } from '../../../tasty';
 import { useKeySymbols } from '../../../utils/react/useKeySymbols';
 import { Space } from '../../layout/Space';
-import { Tag } from '../Tag/Tag';
 import { Text } from '../Text';
 
 const StyledHotKeys = tasty(Space, {
@@ -21,6 +20,37 @@ const StyledHotKeys = tasty(Space, {
     display: 'inline-flex',
     flow: 'row',
     gap: '1x',
+    placeSelf: 'center',
+  },
+});
+
+const KeyElement = tasty({
+  as: 'kbd',
+  role: 'text',
+  styles: {
+    display: 'inline-flex',
+    placeContent: 'center',
+    placeItems: 'center start',
+    radius: '1r',
+    preset: 'tag',
+    boxSizing: 'border-box',
+    width: '2.5x max-content max-content',
+    height: 'min-content',
+    textAlign: 'left',
+    whiteSpace: 'nowrap',
+    padding: '0 (.5x - 1bw)',
+    color: {
+      '': '#dark.65',
+      '[data-type="primary"]': '#white',
+    },
+    fill: {
+      '': '#dark.04',
+      '[data-type="primary"]': '#clear',
+    },
+    border: {
+      '': true,
+      '[data-type="primary"]': '#white',
+    },
   },
 });
 
@@ -28,10 +58,11 @@ export interface CubeHotKeysProps
   extends BasePropsWithoutChildren,
     ContainerStyleProps {
   children: string;
+  type?: 'default' | 'primary';
 }
 
 function HotKeys(props: CubeHotKeysProps, ref) {
-  const { children: keys, ...otherProps } = props;
+  const { children: keys, type, ...otherProps } = props;
   const parsedKeys = useKeySymbols(keys);
   const styles = extractStyles(otherProps, CONTAINER_STYLES);
 
@@ -56,14 +87,15 @@ function HotKeys(props: CubeHotKeysProps, ref) {
             aria-label={`Key combination ${groupIndex + 1}`}
           >
             {keyGroup.map((key, keyIndex) => (
-              <Tag
+              <KeyElement
                 key={keyIndex}
+                data-type={type}
                 as="kbd"
                 role="text"
                 aria-label={`Key ${key}`}
               >
                 {key}
-              </Tag>
+              </KeyElement>
             ))}
           </Space>
         </Fragment>

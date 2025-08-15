@@ -27,7 +27,7 @@ export interface UseAnchoredMenuReturn<P, T> {
    * @param props - Props to pass to the menu component
    * @param triggerProps - Additional props for MenuTrigger (merged with defaultTriggerProps)
    */
-  open(props: P, triggerProps?: T): void;
+  open(props?: P, triggerProps?: T): void;
 
   /**
    * Updates the props of the currently open menu.
@@ -53,6 +53,7 @@ export interface UseAnchoredMenuReturn<P, T> {
  *
  * @param Component - A React component that represents the menu content (Menu or CommandMenu).
  * @param defaultTriggerProps - Default props to pass to the MenuTrigger.
+ * @param defaultMenuProps - Default props to pass to the Menu component.
  * @returns An object with `anchorRef` to position the menu, `open` function to open the menu with provided props, `close` function to close the menu, and `rendered` JSX element to include in your component tree.
  */
 export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
@@ -61,6 +62,7 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
     ComponentProps<typeof MenuTrigger>,
     'children' | 'isOpen' | 'onOpenChange' | 'targetRef'
   >,
+  defaultMenuProps?: P,
 ): UseAnchoredMenuReturn<P, T> {
   const [isOpen, setIsOpen] = useState(false);
   const [componentProps, setComponentProps] = useState<P | null>(null);
@@ -112,10 +114,15 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   }
 
   // 'open' accepts props required by the Component and opens the menu
-  const open = useEvent((props: P, triggerProps?: T) => {
+  const open = useEvent((props: P = {} as P, triggerProps?: T) => {
     setupCheck();
 
-    setComponentProps(props);
+    // Merge defaultMenuProps with provided props
+    const finalProps = defaultMenuProps
+      ? { ...defaultMenuProps, ...props }
+      : props;
+
+    setComponentProps(finalProps);
     setTriggerProps(triggerProps ?? null);
     setIsOpen(true);
   });
@@ -123,7 +130,12 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   const update = useEvent((props: P, triggerProps?: T) => {
     setupCheck();
 
-    setComponentProps(props);
+    // Merge defaultMenuProps with provided props
+    const finalProps = defaultMenuProps
+      ? { ...defaultMenuProps, ...props }
+      : props;
+
+    setComponentProps(finalProps);
     setTriggerProps(triggerProps ?? null);
   });
 

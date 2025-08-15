@@ -1,7 +1,6 @@
-import { DocsContainer } from '@storybook/addon-docs';
-import { configure } from '@storybook/test';
 import isChromatic from 'chromatic/isChromatic';
 import { config } from 'react-transition-group';
+import { configure } from 'storybook/test';
 
 import { Root } from '../src';
 
@@ -37,13 +36,7 @@ export const parameters = {
       return aTitle.localeCompare(bTitle, undefined, { numeric: true });
     },
   },
-  docs: {
-    container: ({ children, context }) => (
-      <DocsContainer context={context}>
-        <Root fontDisplay="auto">{children}</Root>
-      </DocsContainer>
-    ),
-  },
+  docs: {},
   backgrounds: {
     default: 'transparent',
     values: [
@@ -64,3 +57,4 @@ export const decorators = [
     </Root>
   ),
 ];
+export const tags = ['autodocs'];

@@ -4,13 +4,16 @@ import { CubeTitleProps, Title } from './components/content/Title';
 
 import './version';
 
-export { Item, Section } from 'react-stately';
+export { Section } from 'react-stately';
 
 export * from '@internationalized/date';
 
 // generic components
+export { Item } from './components/Item';
 export { Block } from './components/Block';
 export type { CubeBlockProps } from './components/Block';
+export { ItemBase } from './components/content/ItemBase/ItemBase';
+export type { CubeItemBaseProps } from './components/content/ItemBase/ItemBase';
 export { ActiveZone } from './components/content/ActiveZone/ActiveZone';
 export type { CubeActiveZoneProps } from './components/content/ActiveZone/ActiveZone';
 export * from './components/content/CopySnippet';

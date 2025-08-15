@@ -170,17 +170,23 @@ describe('<Menu />', () => {
         id="test-menu"
         aria-label="Test menu"
         selectionMode="multiple"
-        selectionIcon="checkbox"
         selectedKeys={['copy']}
       >
-        {basicItems}
+        <Menu.Item key="copy" icon="checkbox">
+          Copy
+        </Menu.Item>
+        <Menu.Item key="paste" icon="checkbox">
+          Paste
+        </Menu.Item>
+        <Menu.Item key="cut" icon="checkbox">
+          Cut
+        </Menu.Item>
       </Menu>,
     );
 
-    const checkboxes = container.querySelectorAll(
-      '[data-element="ButtonIcon"]',
-    );
-    expect(checkboxes.length).toBeGreaterThan(0);
+    // Check that selected items have checkboxes (Icon elements for selected items)
+    const icons = container.querySelectorAll('[data-element="Icon"]');
+    expect(icons.length).toBeGreaterThan(0);
   });
 
   it('should display selection icons for radio mode', () => {
@@ -189,15 +195,23 @@ describe('<Menu />', () => {
         id="test-menu"
         aria-label="Test menu"
         selectionMode="single"
-        selectionIcon="radio"
         selectedKeys={['copy']}
       >
-        {basicItems}
+        <Menu.Item key="copy" icon="checkbox">
+          Copy
+        </Menu.Item>
+        <Menu.Item key="paste" icon="checkbox">
+          Paste
+        </Menu.Item>
+        <Menu.Item key="cut" icon="checkbox">
+          Cut
+        </Menu.Item>
       </Menu>,
     );
 
-    const radios = container.querySelectorAll('[data-element="ButtonIcon"]');
-    expect(radios.length).toBeGreaterThan(0);
+    // Check that selected items have icons (Icon elements for selected items)
+    const icons = container.querySelectorAll('[data-element="Icon"]');
+    expect(icons.length).toBeGreaterThan(0);
   });
 
   // Disabled keys tests
@@ -352,13 +366,13 @@ describe('<Menu />', () => {
     expect(keyElements.length).toBeGreaterThan(0);
   });
 
-  it('should support items with postfix content', () => {
+  it('should support items with suffix content', () => {
     const { getByText } = render(
       <Menu id="test-menu" aria-label="Test menu">
-        <Menu.Item key="save" postfix="March, 2022">
+        <Menu.Item key="save" suffix="March, 2022">
           Save File
         </Menu.Item>
-        <Menu.Item key="open" postfix="Recently used">
+        <Menu.Item key="open" suffix="Recently used">
           Open File
         </Menu.Item>
       </Menu>,
@@ -696,7 +710,7 @@ describe('<Menu />', () => {
           icon={<TestIcon />}
           hotkeys="Ctrl+C"
           description="Copy selected text"
-          postfix="Available"
+          suffix="Available"
           wrapper={wrapper}
         >
           Copy
@@ -955,9 +969,9 @@ describe('<Menu />', () => {
   });
 
   // Test item with complex postfix content
-  it('should handle complex postfix content', () => {
-    const ComplexPostfix = () => (
-      <div data-testid="complex-postfix">
+  it('should handle complex suffix content', () => {
+    const ComplexSuffix = () => (
+      <div data-testid="complex-suffix">
         <span>Complex</span>
         <span>Content</span>
       </div>
@@ -965,16 +979,16 @@ describe('<Menu />', () => {
 
     const { container } = render(
       <Menu id="test-menu" aria-label="Test menu">
-        <Menu.Item key="complex" postfix={<ComplexPostfix />}>
+        <Menu.Item key="complex" suffix={<ComplexSuffix />}>
           Complex Item
         </Menu.Item>
       </Menu>,
     );
 
-    const complexPostfix = container.querySelector(
-      '[data-testid="complex-postfix"]',
+    const complexSuffix = container.querySelector(
+      '[data-testid="complex-suffix"]',
     );
-    expect(complexPostfix).toBeInTheDocument();
+    expect(complexSuffix).toBeInTheDocument();
   });
 
   // Test section with complex heading

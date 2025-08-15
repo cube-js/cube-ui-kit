@@ -2,13 +2,6 @@
 // NOTE: Type checking is disabled in this Storybook file to prevent
 // noisy errors from complex generic typings that do not affect runtime behaviour.
 import {
-  expect,
-  findByRole,
-  userEvent,
-  waitFor,
-  within,
-} from '@storybook/test';
-import {
   IconBook,
   IconBulb,
   IconCircleCheckFilled,
@@ -17,6 +10,7 @@ import {
   IconReload,
 } from '@tabler/icons-react';
 import { useState } from 'react';
+import { expect, findByRole, userEvent, waitFor, within } from 'storybook/test';
 
 import {
   CheckIcon,
@@ -115,14 +109,7 @@ export default {
         type: { summary: 'Iterable<Key>' },
       },
     },
-    selectionIcon: {
-      options: [undefined, 'checkbox', 'radio'],
-      control: { type: 'radio' },
-      description: 'Type of selection indicator to display',
-      table: {
-        type: { summary: "'checkbox' | 'radio'" },
-      },
-    },
+
     disabledKeys: {
       control: { type: null },
       description: 'Keys of items that should appear disabled',
@@ -401,13 +388,13 @@ export const InsideModal = () => {
               width="220px"
               selectionMode="multiple"
             >
-              <Menu.Item key="red" postfix="Ctr+C">
+              <Menu.Item key="red" suffix="Ctr+C">
                 Copy
               </Menu.Item>
-              <Menu.Item key="orange" postfix="Ctr+V">
+              <Menu.Item key="orange" suffix="Ctr+V">
                 Paste
               </Menu.Item>
-              <Menu.Item key="yellow" postfix="Ctr+X">
+              <Menu.Item key="yellow" suffix="Ctr+X">
                 Cut
               </Menu.Item>
             </Menu>
@@ -494,12 +481,12 @@ export const GitActions = (props) => {
         <Menu.Item key="orange" mods={{ hovered: true }}>
           Merge to master (hovered)
         </Menu.Item>
-        <Menu.Item key="yellow" postfix="Suff" mods={{ disabled: true }}>
+        <Menu.Item key="yellow" suffix="Suff" mods={{ disabled: true }}>
           Merge to master (disabled)
         </Menu.Item>
         <Menu.Item
           key="green"
-          postfix={
+          suffix={
             <Flex gap="0.5x">
               {bulbIcon}
               {stuffText}
@@ -511,7 +498,7 @@ export const GitActions = (props) => {
         <Menu.Item
           key="blue"
           mods={{ pressed: true }}
-          postfix={
+          suffix={
             <Space gap="0.5x">
               {successIcon}
               {stuffText}
@@ -520,10 +507,10 @@ export const GitActions = (props) => {
         >
           Merge to master (pressed)
         </Menu.Item>
-        <Menu.Item key="purple" postfix={successIcon}>
+        <Menu.Item key="purple" suffix={successIcon}>
           Merge to master
         </Menu.Item>
-        <Menu.Item key="asdasd" postfix={<Flex gap="0.5x">{bulbIcon}</Flex>}>
+        <Menu.Item key="asdasd" suffix={<Flex gap="0.5x">{bulbIcon}</Flex>}>
           Merge to master
         </Menu.Item>
       </Menu>
@@ -574,7 +561,6 @@ export const MenuSelectableCheckboxes = (props) => {
 
   return MenuTemplate({
     ...props,
-    selectionIcon: 'checkbox',
     selectionMode: 'multiple',
     selectedKeys,
     onSelectionChange,
@@ -589,7 +575,6 @@ export const MenuSelectableRadio = (props) => {
 
   return MenuTemplate({
     ...props,
-    selectionIcon: 'radio',
     selectionMode: 'single',
     selectedKeys,
     onSelectionChange,
@@ -600,16 +585,16 @@ export const PaymentDetails = (props) => {
   return (
     <div style={{ padding: '20px', width: '340px' }}>
       <Menu id="menu" {...props} header="Payment Details">
-        <Menu.Item key="red" postfix="March, 2022">
+        <Menu.Item key="red" suffix="March, 2022">
           Invoice #16C7B3AE-000113-000113
         </Menu.Item>
-        <Menu.Item key="orange" postfix="Jan, 2022">
+        <Menu.Item key="orange" suffix="Jan, 2022">
           Invoice #16C7B3AE
         </Menu.Item>
-        <Menu.Item key="purple" postfix="Feb, 2022">
+        <Menu.Item key="purple" suffix="Feb, 2022">
           Invoice #16C7B3AE manual
         </Menu.Item>
-        <Menu.Item key="yellow" postfix="July, 2022">
+        <Menu.Item key="yellow" suffix="July, 2022">
           #16C7B3AE
         </Menu.Item>
       </Menu>
@@ -618,32 +603,51 @@ export const PaymentDetails = (props) => {
 };
 
 export const ItemCustomIcons = (props) => {
-  const [selectedKeys, setSelectedKeys] = useState(['1']);
-  const onSelectionChange = (keys) => {
-    setSelectedKeys(keys);
-  };
-
   return (
     <div style={{ padding: '20px', width: '380px' }}>
-      <Menu
-        id="menu"
-        {...props}
-        selectionIcon="checkbox"
-        selectionMode="single"
-        selectedKeys={selectedKeys}
-        header="Custom Icons"
-        onSelectionChange={onSelectionChange}
-      >
-        <Menu.Item key="red" icon={<IconReload />} postfix="March, 2022">
+      <Menu id="menu" {...props} header="Custom Icons">
+        <Menu.Item
+          key="red"
+          icon={<IconReload />}
+          suffix={
+            <Text preset="t4" color="#dark-03">
+              March, 2022
+            </Text>
+          }
+        >
           #16C7B3AE-000113-000113
         </Menu.Item>
-        <Menu.Item key="orange" icon={<IconBook />} postfix="Jan, 2022">
+        <Menu.Item
+          key="orange"
+          icon={<IconBook />}
+          suffix={
+            <Text preset="t4" color="#dark-03">
+              Jan, 2022
+            </Text>
+          }
+        >
           #16C7B3AE
         </Menu.Item>
-        <Menu.Item key="purple" icon={<IconPlus />} postfix="Feb, 2022">
+        <Menu.Item
+          key="purple"
+          icon={<IconPlus />}
+          suffix={
+            <Text preset="t4" color="#dark-03">
+              Feb, 2022
+            </Text>
+          }
+        >
           #16C7B3AE
         </Menu.Item>
-        <Menu.Item key="yellow" icon={<IconReload />} postfix="July, 2022">
+        <Menu.Item
+          key="yellow"
+          icon={<IconReload />}
+          suffix={
+            <Text preset="t4" color="#dark-03">
+              July, 2022
+            </Text>
+          }
+        >
           #16C7B3AE
         </Menu.Item>
       </Menu>
@@ -662,7 +666,6 @@ export const ItemWithTooltip = (props) => {
       <Menu
         id="menu"
         {...props}
-        selectionIcon="checkbox"
         selectionMode="single"
         selectedKeys={selectedKeys}
         disabledKeys={['blue']}
@@ -795,13 +798,13 @@ export const SectionsWithTooltips = (props) => {
 export const WithTriggerState = ({ ...props }) => {
   const menu = (
     <Menu id="menu" {...props} width="220px">
-      <Menu.Item key="red" postfix="Ctr+C">
+      <Menu.Item key="red" suffix="Ctr+C">
         Copy
       </Menu.Item>
-      <Menu.Item key="orange" postfix="Ctr+V">
+      <Menu.Item key="orange" suffix="Ctr+V">
         Paste
       </Menu.Item>
-      <Menu.Item key="yellow" postfix="Ctr+X">
+      <Menu.Item key="yellow" suffix="Ctr+X">
         Cut
       </Menu.Item>
     </Menu>
@@ -1424,7 +1427,7 @@ export const MenuSynchronization = () => {
         <Card ref={anchorRef1} border padding="3x">
           {rendered1}
           <Button
-            data-menu-trigger
+            data-popover-trigger
             size="small"
             theme={isOpen1 ? 'accent' : 'secondary'}
             onPress={() => open1({ onAction: handleAction })}

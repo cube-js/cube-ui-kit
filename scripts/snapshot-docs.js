@@ -25,14 +25,121 @@ const log = (...a) => console.log('[docs-snapshot]', ...a);
 /* ───── helper functions ─────────────────────────────────────────────── */
 
 /**
+ * Creates a mapping from component names to their story IDs
+ * e.g., "ItemButton" -> "actions-itembutton--docs"
+ */
+function createComponentMapping(availableIds) {
+  const mapping = new Map();
+
+  // Common component word patterns for splitting compound words
+  const patterns = [
+    { suffix: 'button', replacement: 'Button' },
+    { suffix: 'input', replacement: 'Input' },
+    { suffix: 'box', replacement: 'Box' },
+    { suffix: 'base', replacement: 'Base' },
+    { suffix: 'menu', replacement: 'Menu' },
+    { suffix: 'picker', replacement: 'Picker' },
+    { suffix: 'group', replacement: 'Group' },
+    { suffix: 'dialog', replacement: 'Dialog' },
+    { suffix: 'trigger', replacement: 'Trigger' },
+    { suffix: 'container', replacement: 'Container' },
+    { suffix: 'wrapper', replacement: 'Wrapper' },
+  ];
+
+  availableIds.forEach((storyId) => {
+    // Extract component name from story ID
+    // e.g., "actions-itembutton--docs" -> "itembutton"
+    const match = storyId.match(/^[^-]+-(.+)--docs$/);
+    if (match) {
+      const componentPart = match[1];
+
+      // First, handle kebab-case (has dashes)
+      if (componentPart.includes('-')) {
+        const pascalCase = componentPart
+          .split('-')
+          .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+          .join('');
+        mapping.set(pascalCase, storyId);
+      } else {
+        // Handle compound words without dashes
+        let bestMatch = null;
+        // let componentName = componentPart;
+
+        // Try to split compound words using common patterns
+        for (const pattern of patterns) {
+          if (componentPart.endsWith(pattern.suffix)) {
+            const prefix = componentPart.slice(0, -pattern.suffix.length);
+            if (prefix.length > 0) {
+              const prefixCapitalized =
+                prefix.charAt(0).toUpperCase() + prefix.slice(1);
+              bestMatch = prefixCapitalized + pattern.replacement;
+              break;
+            }
+          }
+        }
+
+        if (bestMatch) {
+          mapping.set(bestMatch, storyId);
+          // componentName = bestMatch;
+        }
+
+        // Also add the simple capitalized version
+        const simpleCapital =
+          componentPart.charAt(0).toUpperCase() + componentPart.slice(1);
+        mapping.set(simpleCapital, storyId);
+      }
+
+      // Always add the exact lowercase version
+      mapping.set(componentPart, storyId);
+    }
+  });
+
+  return mapping;
+}
+
+/**
+ * Fixes /components/ComponentName links in source files to proper /docs/ format
+ * e.g., "/components/ItemButton" -> "/docs/actions-itembutton--docs"
+ */
+function fixComponentLinks(content, componentMapping) {
+  const brokenLinks = new Set();
+
+  // Pattern to match [text](/components/ComponentName)
+  const componentLinkPattern = /\[([^\]]*)\]\(\/components\/([^)]+)\)/g;
+
+  const fixedContent = content.replace(
+    componentLinkPattern,
+    (match, linkText, componentName) => {
+      const storyId = componentMapping.get(componentName);
+      if (storyId) {
+        return `[${linkText}](/docs/${storyId})`;
+      }
+      // If not found, log it and leave the link as is
+      brokenLinks.add(componentName);
+      return match;
+    },
+  );
+
+  // Log broken component links if any were found
+  if (brokenLinks.size > 0) {
+    log(
+      `⚠️  Found ${brokenLinks.size} unresolved component links:`,
+      Array.from(brokenLinks).join(', '),
+    );
+  }
+
+  return fixedContent;
+}
+
+/**
  * Fixes internal links in HTML content to point to the generated HTML files
  * Transforms links like:
- * - `/docs/pickers-select--docs` -> `pickers-select--docs.html`
- * - `?path=/docs/pickers-select--docs` -> `pickers-select--docs.html`
- * - `/?path=/docs/pickers-select--docs` -> `pickers-select--docs.html`
- * - `./?path=/docs/pickers-select--docs` -> `pickers-select--docs.html`
+ * - `href="/docs/pickers-select--docs"` -> `href="pickers-select--docs.html"`
+ * - `href="?path=/docs/pickers-select--docs"` -> `href="pickers-select--docs.html"`
+ * - `href="/?path=/docs/pickers-select--docs"` -> `href="pickers-select--docs.html"`
+ * - `href="./?path=/docs/pickers-select--docs"` -> `href="pickers-select--docs.html"`
  */
-function fixInternalLinks(html, availableIds) {
+function fixInternalLinks(content, availableIds) {
   // Create a set of available IDs for quick lookup
   const availableIdsSet = new Set(availableIds);
   const brokenLinks = new Set();
@@ -49,10 +156,10 @@ function fixInternalLinks(html, availableIds) {
     /href="\.\/\?path=\/docs\/([^"]+--docs)"/g,
   ];
 
-  let fixedHtml = html;
+  let fixedContent = content;
 
   linkPatterns.forEach((pattern) => {
-    fixedHtml = fixedHtml.replace(pattern, (match, storyId) => {
+    fixedContent = fixedContent.replace(pattern, (match, storyId) => {
       // Check if this story ID exists in our generated files
       if (availableIdsSet.has(storyId)) {
         return `href="${storyId}.html"`;
@@ -71,7 +178,7 @@ function fixInternalLinks(html, availableIds) {
     );
   }
 
-  return fixedHtml;
+  return fixedContent;
 }
 
 /* ───── 2. start local HTTP server ─────────────────────────────────── */
@@ -296,8 +403,91 @@ const indexHtml = `<!DOCTYPE html>
 await fs.writeFile(path.join(OUT_DIR, 'index.html'), indexHtml);
 log('✔  Table of contents generated at index.html');
 
+/* ───── 6. fix component links in source files ─────────────────────── */
+log('Fixing component links in source files...');
+const componentMapping = createComponentMapping(docStoryIds);
+let sourceFilesFixed = 0;
+
+// Find all MDX files in the source directory
+const findMdxFiles = async (dir) => {
+  const files = [];
+  const items = await fs.readdir(dir, { withFileTypes: true });
+
+  for (const item of items) {
+    const fullPath = path.join(dir, item.name);
+    if (item.isDirectory()) {
+      files.push(...(await findMdxFiles(fullPath)));
+    } else if (item.isFile() && item.name.endsWith('.mdx')) {
+      files.push(fullPath);
+    }
+  }
+
+  return files;
+};
+
+// Fix component links in MDX source files
+const mdxFiles = await findMdxFiles('src');
+
+for (const filePath of mdxFiles) {
+  try {
+    const content = await fs.readFile(filePath, 'utf8');
+    const fixedContent = fixComponentLinks(content, componentMapping);
+
+    // Only write back if the content actually changed
+    if (fixedContent !== content) {
+      await fs.writeFile(filePath, fixedContent);
+      sourceFilesFixed++;
+    }
+  } catch (error) {
+    log(`⚠️  Failed to fix component links in ${filePath}: ${error.message}`);
+  }
+}
+
+log(`✔  Fixed component links in ${sourceFilesFixed} source files`);
+
+/* ───── 7. apply fixed links to original build files ──────────────── */
+log('Applying fixed links to original build files...');
+let originalFilesFixed = 0;
+
+// Find all HTML files in the build directory
+const findHtmlFiles = async (dir) => {
+  const files = [];
+  const items = await fs.readdir(dir, { withFileTypes: true });
+
+  for (const item of items) {
+    const fullPath = path.join(dir, item.name);
+    if (item.isDirectory()) {
+      files.push(...(await findHtmlFiles(fullPath)));
+    } else if (item.isFile() && item.name.endsWith('.html')) {
+      files.push(fullPath);
+    }
+  }
+
+  return files;
+};
+
+// Fix links in HTML files from build directory only
+const htmlFiles = await findHtmlFiles(BUILD_DIR);
+
+for (const filePath of htmlFiles) {
+  try {
+    const content = await fs.readFile(filePath, 'utf8');
+    const fixedContent = fixInternalLinks(content, docStoryIds);
+
+    // Only write back if the content actually changed
+    if (fixedContent !== content) {
+      await fs.writeFile(filePath, fixedContent);
+      originalFilesFixed++;
+    }
+  } catch (error) {
+    log(`⚠️  Failed to fix links in ${filePath}: ${error.message}`);
+  }
+}
+
+log(`✔  Fixed internal links in ${originalFilesFixed} original build files`);
+
 log('Snapshots written to', OUT_DIR);
-log(`✔  Fixed internal links in ${succeeded.length} pages`);
+log(`✔  Fixed internal links in ${succeeded.length} snapshot pages`);
 
 if (failed.length) {
   log('\n⚠️  Some pages were skipped:');

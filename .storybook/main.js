@@ -1,7 +1,6 @@
 // @ts-check
 import remarkGfm from 'remark-gfm';
 
-/** @type {import('@storybook/core-common').StorybookConfig} */
 const config = {
   staticDirs: ['../public'],
 
@@ -23,8 +22,6 @@ const config = {
 
   addons: [
     '@storybook/addon-links',
-    '@storybook/addon-essentials',
-    '@storybook/addon-interactions',
     {
       name: 'storybook-addon-turbo-build',
       options: {
@@ -44,9 +41,5 @@ const config = {
       },
     },
   ],
-
-  docs: {
-    autodocs: true,
-  },
 };
 export default config;

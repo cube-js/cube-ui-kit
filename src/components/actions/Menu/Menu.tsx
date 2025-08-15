@@ -3,11 +3,7 @@ import { useDOMRef } from '@react-spectrum/utils';
 import { DOMRef, FocusStrategy, ItemProps } from '@react-types/shared';
 import React, { ReactElement, ReactNode, useMemo } from 'react';
 import { AriaMenuProps, useMenu } from 'react-aria';
-import {
-  Item as BaseItem,
-  Section as BaseSection,
-  useTreeState,
-} from 'react-stately';
+import { Section as BaseSection, useTreeState } from 'react-stately';
 
 import {
   BasePropsWithoutChildren,
@@ -19,13 +15,14 @@ import {
 } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import { CubeBlockProps } from '../../Block';
+import { Item } from '../../Item';
 import {
   CubeTooltipProviderProps,
   TooltipProvider,
 } from '../../overlays/Tooltip/TooltipProvider';
 
 import { useMenuContext } from './context';
-import { MenuItem, MenuSelectionType } from './MenuItem';
+import { MenuItem } from './MenuItem';
 import { MenuSection } from './MenuSection';
 import { MenuTrigger } from './MenuTrigger';
 import {
@@ -44,7 +41,6 @@ export interface CubeMenuProps<T>
       AriaMenuProps<T>,
       'selectedKeys' | 'defaultSelectedKeys' | 'onSelectionChange'
     > {
-  selectionIcon?: MenuSelectionType;
   // @deprecated
   header?: ReactNode;
   footer?: ReactNode;
@@ -92,7 +88,6 @@ function Menu<T extends object>(
     itemStyles,
     sectionStyles,
     sectionHeadingStyles,
-    selectionIcon,
     size = 'medium',
     focusOnHover = false,
     qa,
@@ -189,7 +184,6 @@ function Menu<T extends object>(
             styles={sectionStyles}
             itemStyles={itemStyles}
             headingStyles={sectionHeadingStyles}
-            selectionIcon={selectionIcon}
             size={size}
           />,
         );
@@ -204,30 +198,24 @@ function Menu<T extends object>(
           item={item}
           state={state}
           styles={itemStyles}
-          selectionIcon={selectionIcon}
           size={size}
           onAction={item.onAction}
         />
       );
 
       // Apply tooltip wrapper if tooltip property is provided
-      if (item.props.tooltip) {
-        const tooltipProps =
-          typeof item.props.tooltip === 'string'
-            ? { title: item.props.tooltip }
-            : item.props.tooltip;
+      // if (item.props.tooltip) {
+      //   const tooltipProps =
+      //     typeof item.props.tooltip === 'string'
+      //       ? { title: item.props.tooltip }
+      //       : item.props.tooltip;
 
-        menuItem = (
-          <TooltipProvider
-            key={item.key}
-            activeWrap
-            placement="right"
-            {...tooltipProps}
-          >
-            {menuItem}
-          </TooltipProvider>
-        );
-      }
+      //   menuItem = (
+      //     <TooltipProvider key={item.key} placement="right" {...tooltipProps}>
+      //       {menuItem}
+      //     </TooltipProvider>
+      //   );
+      // }
 
       // Apply custom wrapper if provided
       if (item.props?.wrapper) {
@@ -242,14 +230,7 @@ function Menu<T extends object>(
     });
 
     return items;
-  }, [
-    collectionItems,
-    state,
-    sectionStyles,
-    itemStyles,
-    selectionIcon,
-    sectionHeadingStyles,
-  ]);
+  }, [collectionItems, state, sectionStyles, itemStyles, sectionHeadingStyles]);
 
   return (
     <StyledMenuWrapper
@@ -296,29 +277,7 @@ const _Menu = React.forwardRef(Menu) as <T>(
   props: CubeMenuProps<T> & React.RefAttributes<HTMLUListElement>,
 ) => ReactElement;
 
-type ItemComponent = <T>(
-  props: ItemProps<T> &
-    CubeBlockProps & {
-      /** Keyboard shortcut string, e.g. "Ctrl+C" */
-      hotkeys?: string;
-      description?: ReactNode;
-      postfix?: ReactNode;
-      selectionIcon?: MenuSelectionType;
-      isSelectable?: boolean;
-      isSelected?: boolean;
-      icon?: ReactElement;
-      onAction?: () => void;
-      wrapper?: (item: ReactElement) => ReactElement;
-      /** Tooltip configuration - can be a string for simple tooltip or object for advanced options */
-      tooltip?: string | Omit<CubeTooltipProviderProps, 'children'>;
-    },
-) => ReactElement;
-
 type SectionComponent = typeof BaseSection;
-
-const Item = Object.assign(BaseItem, {
-  displayName: 'Item',
-}) as ItemComponent;
 
 const Section = Object.assign(BaseSection, {
   displayName: 'Section',
@@ -332,10 +291,7 @@ type __MenuComponent = typeof _Menu & {
 };
 
 const __Menu = Object.assign(_Menu as __MenuComponent, {
-  Item: Item as unknown as (props: {
-    description?: ReactNode;
-    [key: string]: any;
-  }) => ReactElement,
+  Item,
   Section,
   SubMenuTrigger,
   Trigger: MenuTrigger,

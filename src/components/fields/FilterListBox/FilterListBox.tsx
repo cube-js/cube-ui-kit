@@ -26,8 +26,9 @@ import {
 import { mergeProps, modAttrs, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { StyledHeader } from '../../actions/Menu/styled';
-import { Block } from '../../Block';
+import { ItemBase } from '../../content/ItemBase';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { CubeItemProps } from '../../Item';
 import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 import {
   DEFAULT_INPUT_STYLES,
@@ -75,6 +76,13 @@ const SearchWrapperElement = tasty({
     border: 'bottom',
     radius: '1r top',
     fill: '#clear',
+    height: '($size + 1x)',
+    $size: {
+      '': '$size-md',
+      '[data-size="small"]': '$size-sm',
+      '[data-size="medium"]': '$size-md',
+      '[data-size="large"]': '$size-lg',
+    },
   },
 });
 
@@ -84,9 +92,13 @@ const SearchInputElement = tasty({
     ...DEFAULT_INPUT_STYLES,
     fill: '#clear',
     padding: {
-      '': '0 1.5x',
-      prefix: '0 1.5x 0 .5x',
+      '': '.5x $inline-padding',
+      prefix: '0 $inline-padding 0 .5x',
     },
+    '$inline-padding':
+      'max($min-inline-padding, (($size - 1lh) / 2 + $inline-compensation))',
+    '$inline-compensation': '1x',
+    '$min-inline-padding': '1x',
   },
 });
 
@@ -137,6 +149,17 @@ export interface CubeFilterListBoxProps<T>
    * Used by FilterPicker to close the popover on non-checkbox clicks.
    */
   onOptionClick?: (key: Key) => void;
+
+  /**
+   * Props to apply to existing custom values (values that are already selected but not in the predefined options).
+   */
+  customValueProps?: Partial<CubeItemProps<T>>;
+
+  /**
+   * Props to apply to new custom values (values typed in the search input that are about to be added).
+   * These are merged with customValueProps for new custom values.
+   */
+  newCustomValueProps?: Partial<CubeItemProps<T>>;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -221,6 +244,9 @@ export const FilterListBox = forwardRef(function FilterListBox<
     isCheckable,
     onOptionClick,
     selectionMode = 'single',
+    allValueProps,
+    customValueProps,
+    newCustomValueProps,
     ...otherProps
   } = props;
 
@@ -311,7 +337,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
     // Build React elements for custom values (kept stable via their key).
     const customArray = Array.from(customKeys).map((key) => (
-      <Item key={key} textValue={key}>
+      <Item key={key} textValue={key} {...customValueProps}>
         {key}
       </Item>
     ));
@@ -498,7 +524,11 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
     // Append the custom option at the end.
     const customOption = (
-      <Item key={term} textValue={term}>
+      <Item
+        key={term}
+        textValue={term}
+        {...mergeProps(customValueProps, newCustomValueProps)}
+      >
         {term}
       </Item>
     );
@@ -888,11 +918,14 @@ export const FilterListBox = forwardRef(function FilterListBox<
       )}
       {searchInput}
       {showEmptyMessage ? (
-        <div style={{ padding: '0.75rem 1rem' }}>
-          <Block preset="t4" color="#dark-03">
-            {emptyLabel !== undefined ? emptyLabel : 'No results found'}
-          </Block>
-        </div>
+        <ItemBase
+          preset="t4"
+          color="#dark-03"
+          size={size}
+          padding="(.5x - 1bw)"
+        >
+          {emptyLabel !== undefined ? emptyLabel : 'No results found'}
+        </ItemBase>
       ) : (
         <ListBox
           ref={listBoxRef}
@@ -924,6 +957,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
           styles={listBoxStyles}
           isCheckable={isCheckable}
           items={items as any}
+          allValueProps={allValueProps}
           onSelectionChange={handleSelectionChange}
           onEscape={onEscape}
           onOptionClick={handleOptionClick}

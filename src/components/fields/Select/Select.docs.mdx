@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
+import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
 import { Select } from './Select';
 import * as SelectStories from './Select.stories';
 
@@ -74,14 +74,47 @@ The `mods` property accepts the following modifiers you can override:
 
 ### Select.Item
 
-Individual option items within the select dropdown.
+Individual option items within the select dropdown. Each item is rendered using [ItemBase](/docs/content-itembase--docs) and supports all ItemBase properties for layout, icons, descriptions, and interactive features.
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| key | `string \| number` | - | Unique identifier for the item (required) |
-| textValue | `string` | - | Text representation for accessibility and filtering |
-| description | `ReactNode` | - | Secondary text displayed below the main label |
-| children | `ReactNode` | - | The content to display as the option label |
+#### Item API
+
+For detailed information about all available item properties, see [ItemBase documentation](/docs/content-itembase--docs). Key properties include:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| key | `string \| number` | Unique identifier for the item (required) |
+| children | `ReactNode` | The main content/label for the option |
+| icon | `ReactNode` | Icon displayed before the content |
+| rightIcon | `ReactNode` | Icon displayed after the content |
+| description | `ReactNode` | Secondary text below the main content |
+| descriptionPlacement | `'inline' \| 'block'` | How the description is positioned |
+| prefix | `ReactNode` | Content before the main text |
+| suffix | `ReactNode` | Content after the main text |
+| tooltip | `string \| boolean \| object` | Tooltip configuration |
+| styles | `Styles` | Custom styling for the item |
+| qa | `string` | QA identifier for testing |
+
+#### Example with Rich Items
+
+```jsx
+<Select label="Users">
+  <Select.Item 
+    key="user1" 
+    icon={<IconUser />}
+    description="Administrator"
+  >
+    John Doe
+  </Select.Item>
+  <Select.Item 
+    key="user2" 
+    icon={<IconUser />}
+    description="Editor"
+    suffix="Online"
+  >
+    Jane Smith
+  </Select.Item>
+</Select>
+```
 
 ### Select.Section
 
@@ -283,6 +316,6 @@ This component supports all [Field properties](/docs/forms-field--docs) when use
 
 ## Related Components
 
-- [ComboBox](/components/ComboBox) - For searchable selection with large option lists
-- [RadioGroup](/components/RadioGroup) - For visible selection options
-- [Checkbox](/components/Checkbox) - For multiple selection scenarios
+- [ComboBox](/docs/forms-combobox--docs) - For searchable selection with large option lists
+- [RadioGroup](/docs/forms-radiogroup--docs) - For visible selection options
+- [Checkbox](/docs/forms-checkbox--docs) - For multiple selection scenarios

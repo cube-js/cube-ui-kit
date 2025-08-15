@@ -1,6 +1,7 @@
-import { DEFAULT_BUTTON_STYLES, DEFAULT_NEUTRAL_STYLES } from '..';
+import { DEFAULT_NEUTRAL_STYLES } from '../../../data/item-themes';
 import { tasty } from '../../../tasty';
 import { Space } from '../../layout/Space';
+import { DEFAULT_BUTTON_STYLES } from '../Button/Button';
 
 export const StyledMenuWrapper = tasty({
   qa: 'Menu',
@@ -74,13 +75,21 @@ export const StyledHeader = tasty(Space, {
     placeContent: 'space-between',
     placeItems: 'center',
     whiteSpace: 'nowrap',
-    padding: '.5x 1.5x',
-    height: {
-      '': 'min $size-md',
-      '[data-size="large"]': 'min $size-lg',
-    },
+    padding: '.5x $inline-padding',
+    height: 'min $size',
     boxSizing: 'border-box',
     border: 'bottom',
+
+    $size: {
+      '': '$size-md',
+      '[data-size="small"]': '$size-sm',
+      '[data-size="medium"]': '$size-md',
+      '[data-size="large"]': '$size-lg',
+    },
+    '$inline-padding':
+      'max($min-inline-padding, (($size - 1lh) / 2 + $inline-compensation))',
+    '$inline-compensation': '1x',
+    '$min-inline-padding': '1x',
   },
 });
 
@@ -201,9 +210,23 @@ export const StyledSectionHeading = tasty(Space, {
   styles: {
     color: '#dark-04',
     preset: 'c2',
-    padding: '.5x 1x',
     height: '3x',
     placeContent: 'center space-between',
     align: 'start',
+    padding: {
+      '': '.5x $inline-padding',
+      prefix: '0 $inline-padding 0 .5x',
+    },
+
+    $size: {
+      '': '$size-md',
+      '[data-size="small"]': '$size-sm',
+      '[data-size="medium"]': '$size-md',
+      '[data-size="large"]': '$size-lg',
+    },
+    '$inline-padding':
+      'max($min-inline-padding, (($size - 1lh) / 2 + $inline-compensation - 1bw))',
+    '$inline-compensation': '.5x',
+    '$min-inline-padding': '1x',
   },
 });

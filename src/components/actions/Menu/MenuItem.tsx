@@ -1,19 +1,15 @@
 import { Key, Node } from '@react-types/shared';
-import { IconPointFilled } from '@tabler/icons-react';
-import { KeyboardEvent, ReactNode, useContext, useRef } from 'react';
+import { KeyboardEvent, useContext, useRef } from 'react';
 import { FocusRing, useMenuItem } from 'react-aria';
-import { useHotkeys } from 'react-hotkeys-hook';
 import { TreeState } from 'react-stately';
 
-import { CheckIcon, RightIcon } from '../../../icons';
+import { RightIcon } from '../../../icons';
 import { Styles } from '../../../tasty';
-import { ClearSlots, mergeProps, SlotProvider } from '../../../utils/react';
+import { mergeProps } from '../../../utils/react';
 import { HotKeys } from '../../content/HotKeys';
-import { Text } from '../../content/Text';
-import { Space } from '../../layout/Space';
+import { ItemBase } from '../../content/ItemBase/ItemBase';
 
 import { useMenuContext } from './context';
-import { StyledItem } from './styled';
 import { SubmenuTriggerContext } from './SubmenuTriggerContext';
 
 export type MenuSelectionType = 'checkbox' | 'radio' | 'checkmark';
@@ -22,40 +18,15 @@ export interface MenuItemProps<T> {
   item: Node<T>;
   state: TreeState<T>;
   styles?: Styles;
-  selectionIcon?: MenuSelectionType;
   isVirtualized?: boolean;
   isDisabled?: boolean;
   onAction?: (key: Key) => void;
   size?: 'small' | 'medium' | (string & {});
 }
 
-// Returns icon corresponding to selection type
-const getSelectionTypeIcon = (selectionIcon?: MenuSelectionType) => {
-  switch (selectionIcon) {
-    case 'checkmark':
-    case 'checkbox':
-      return <CheckIcon />;
-    case 'radio':
-      return <IconPointFilled />;
-    default:
-      return undefined;
-  }
-};
-
-// Normalise postfix rendering (string -> Text component)
-const getPostfix = (postfix?: ReactNode) =>
-  typeof postfix === 'string' ? (
-    <Text nowrap color="inherit" data-element="Postfix">
-      {postfix}
-    </Text>
-  ) : (
-    postfix
-  );
-
 /** @private */
 export function MenuItem<T>(props: MenuItemProps<T>) {
-  const { item, state, styles, selectionIcon, isVirtualized, onAction, size } =
-    props;
+  const { item, state, styles, isVirtualized, onAction, size } = props;
   const { onClose, closeOnSelect } = useMenuContext();
   const { rendered, key, props: itemProps } = item;
 
@@ -101,68 +72,46 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
 
   // Destructure presentation-related props from cleanItemProps so they are not spread onto DOM element
   const {
-    postfix,
+    suffix,
     description,
     icon,
+    tooltip,
     mods: itemMods,
     qa: itemQa,
     textValue,
     ...restCleanProps
   } = cleanItemProps as any;
 
-  // Build final postfix: submenu icon, custom postfix or HotKeys hint
-  const finalPostfix = submenuContext
-    ? postfix ?? <RightIcon />
-    : postfix ?? (hotkeys ? <HotKeys>{hotkeys}</HotKeys> : undefined);
+  // Build final suffix: submenu icon, custom suffix or HotKeys hint
+  const finalSuffix = submenuContext
+    ? suffix ?? <RightIcon />
+    : suffix ?? (hotkeys ? <HotKeys>{hotkeys}</HotKeys> : undefined);
 
-  const checkIcon =
-    isSelectable && isSelected
-      ? getSelectionTypeIcon(selectionIcon)
-      : undefined;
-
+  // Selection indicator will be handled by ItemBase component
   const isVirtualFocused = state.selectionManager.focusedKey === key;
 
   const mods = {
     ...itemMods,
     focused: isFocused || isVirtualFocused,
     pressed: isPressed,
-    selectionIcon: !!selectionIcon,
-    selectable: isSelectable,
     selected: isSelected,
     disabled: isDisabled,
     submenu: !!submenuContext,
   };
 
-  // Register global hotkey if provided
-  useHotkeys(
-    typeof hotkeys === 'string' ? hotkeys.toLowerCase() : '',
-    () => {
-      if (!hotkeys) return;
-      if (isDisabledKey || isDisabled) return;
-      // Simulate a click on the menu item so all existing handlers run
-      if (elementRef.current) {
-        (elementRef.current as HTMLElement).click();
-      }
-    },
-    {
-      enableOnContentEditable: true,
-      enabled: !!hotkeys,
-      preventDefault: true,
-      enableOnFormTags: true,
-    },
-    [hotkeys, isDisabledKey, isDisabled],
-  );
-
   return (
     <FocusRing>
-      <StyledItem
+      <ItemBase
         {...mergeProps(menuItemProps, restCleanProps, {
-          'data-menu-trigger': true,
+          'data-popover-trigger': true,
           qa: itemQa ? itemQa : `MenuItem-${key}`,
           mods,
           styles,
-          'aria-disabled': isDisabled || undefined,
           'data-size': size,
+          as: 'li',
+          labelProps,
+          descriptionProps,
+          keyboardShortcutProps,
           'aria-haspopup': submenuContext ? 'menu' : undefined,
           'aria-expanded': submenuContext?.isOpen,
           'data-has-submenu': submenuContext ? true : undefined,
@@ -181,49 +130,18 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
             submenuContext?.onMouseLeave || menuItemProps.onMouseLeave,
         })}
         ref={elementRef}
+        icon={icon}
+        suffix={finalSuffix}
+        description={description}
+        hotkeys={hotkeys}
+        tooltip={tooltip}
+        defaultTooltipPlacement="right"
+        isSelected={isSelectable ? isSelected : undefined}
+        isDisabled={isDisabled}
+        size={size === 'small' ? 'small' : 'medium'}
       >
-        <ClearSlots>
-          <SlotProvider
-            slots={{
-              text: { className: 'itemLabel', ...labelProps },
-              end: { className: 'end', ...descriptionProps },
-              icon: { className: 'icon' },
-              description: { className: 'description', ...descriptionProps },
-              keyboard: { className: 'keyboard', ...keyboardShortcutProps },
-            }}
-          >
-            {/* Content structure replicating previous MenuButton */}
-            {checkIcon ? (
-              <div data-element="ButtonIcon">{checkIcon}</div>
-            ) : null}
-            {icon ? <div data-element="ButtonIcon">{icon}</div> : null}
-            <Space
-              gap="1x"
-              placeContent="space-between"
-              overflow="clip"
-              width="100%"
-            >
-              <Space flow="column" gap="0" width="100%">
-                <Text ellipsis color="inherit">
-                  {rendered}
-                </Text>
-                {description ? (
-                  <Text
-                    nowrap
-                    ellipsis
-                    data-element="Description"
-                    preset="t4"
-                    color="#dark-03"
-                  >
-                    {description}
-                  </Text>
-                ) : null}
-              </Space>
-              {finalPostfix && getPostfix(finalPostfix)}
-            </Space>
-          </SlotProvider>
-        </ClearSlots>
-      </StyledItem>
+        {rendered}
+      </ItemBase>
     </FocusRing>
   );
 }

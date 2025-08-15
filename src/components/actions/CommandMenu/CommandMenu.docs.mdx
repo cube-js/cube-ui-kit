@@ -1,4 +1,4 @@
-import { Meta, Story, Controls } from '@storybook/blocks';
+import { Meta, Story, Controls } from '@storybook/addon-docs/blocks';
 import { CommandMenu } from './CommandMenu';
 import * as CommandMenuStories from './CommandMenu.stories';
 
@@ -61,6 +61,73 @@ The CommandMenu component supports the following modifiers:
 | Modifier | Type | Description |
 |----------|------|-------------|
 | loading | `boolean` | Whether the command palette is in loading state |
+
+## Sub-components
+
+### CommandMenu.Item
+
+Individual menu items within the CommandMenu. Each item is rendered using [ItemBase](/docs/content-itembase--docs) and supports all ItemBase properties for layout, icons, descriptions, and interactive features.
+
+For detailed information about all available item properties, see the [Menu.Item documentation](/components/Menu#sub-components) which provides the complete API reference. Key properties include:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| key | `Key` | Unique identifier for the item (required) |
+| children | `ReactNode` | The main content/label for the menu item |
+| icon | `ReactNode` | Icon displayed before the content |
+| rightIcon | `ReactNode` | Icon displayed after the content |
+| description | `ReactNode` | Secondary text below the main content |
+| prefix | `ReactNode` | Content before the main text |
+| suffix | `ReactNode` | Content after the main text |
+| hotkeys | `string` | Keyboard shortcut that triggers this item |
+| tooltip | `string \| boolean \| object` | Tooltip configuration |
+| isDisabled | `boolean` | Whether the item is disabled |
+| onAction | `() => void` | Callback fired when item is activated |
+
+#### CommandMenu-specific Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| keywords | `string[]` | - | Additional search terms for better discoverability |
+| forceMount | `boolean` | - | Whether to always show this item regardless of search filter |
+| textValue | `string` | - | Text value for search filtering (if different from children) |
+
+#### Example with Enhanced Search
+
+```jsx
+<CommandMenu searchPlaceholder="Search commands...">
+  <CommandMenu.Item 
+    key="save" 
+    icon={<IconSave />}
+    hotkeys="cmd+s"
+    keywords={["write", "disk", "persist"]}
+    description="Save the current document"
+  >
+    Save Document
+  </CommandMenu.Item>
+  <CommandMenu.Item 
+    key="help" 
+    icon={<IconHelp />}
+    forceMount={true}
+    description="Always visible help option"
+  >
+    Help & Support
+  </CommandMenu.Item>
+</CommandMenu>
+```
+
+### CommandMenu.Section
+
+Groups related items together with an optional heading. Same as Menu.Section - see [Menu documentation](/components/Menu#sub-components) for full details.
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| title | `ReactNode` | - | Optional heading text for the section |
+| children | `CommandMenu.Item[]` | - | Collection of CommandMenu.Item components |
+
+### CommandMenu.Trigger
+
+Alias for MenuTrigger component. See [Menu.Trigger documentation](/components/Menu#menu-trigger) for full API reference.
 
 ## Accessibility
 

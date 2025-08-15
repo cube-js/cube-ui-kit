@@ -1,5 +1,4 @@
-import { waitFor } from '@storybook/test';
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { useEffect, useState } from 'react';
 
 import { act, renderWithForm, userEvent } from '../../../test/index';

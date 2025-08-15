@@ -31,11 +31,15 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
+import { generateRandomId } from '../../../utils/random';
 import { mergeProps } from '../../../utils/react';
-import { Button, CubeButtonProps } from '../../actions';
+import { useEventBus } from '../../../utils/react/useEventBus';
+import { CubeItemButtonProps, ItemButton } from '../../actions';
+import { CubeItemBaseProps } from '../../content/ItemBase';
 import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
+import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import {
   CubeFilterListBoxProps,
   FilterListBox,
@@ -54,27 +58,19 @@ interface ItemWithKey {
 }
 
 export interface CubeFilterPickerProps<T>
-  extends Omit<CubeFilterListBoxProps<T>, 'size'>,
+  extends Omit<CubeFilterListBoxProps<T>, 'size' | 'tooltip'>,
+    Omit<CubeItemBaseProps, 'children' | 'size'>,
     BasePropsWithoutChildren,
     BaseStyleProps,
     OuterStyleProps,
     ColorStyleProps,
-    FieldBaseProps,
-    Pick<CubeButtonProps, 'type' | 'theme' | 'icon' | 'rightIcon'> {
+    Omit<FieldBaseProps, 'tooltip'>,
+    Pick<
+      CubeItemButtonProps,
+      'type' | 'theme' | 'icon' | 'rightIcon' | 'prefix' | 'suffix' | 'hotkeys'
+    > {
   /** Placeholder text when no selection is made */
   placeholder?: string;
-  /** Icon to show in the trigger button */
-  icon?: ReactElement;
-  /** Button styling type */
-  type?:
-    | 'outline'
-    | 'clear'
-    | 'primary'
-    | 'secondary'
-    | 'neutral'
-    | (string & {});
-  /** Button theme */
-  theme?: 'default' | 'special';
   /** Size of the picker component */
   size?: 'small' | 'medium' | 'large';
   /** Custom styles for the list box popover */
@@ -87,6 +83,10 @@ export interface CubeFilterPickerProps<T>
   isCheckable?: boolean;
   /** Whether to flip the popover placement */
   shouldFlip?: boolean;
+  /** Tooltip for the trigger button (separate from field tooltip) */
+  triggerTooltip?: string | Omit<CubeTooltipProviderProps, 'children'>;
+  /** Description for the trigger button (separate from field description) */
+  triggerDescription?: ReactNode;
 
   /**
    * Custom renderer for the summary shown inside the trigger when there is a selection.
@@ -170,6 +170,11 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     extra,
     icon,
     rightIcon,
+    prefix,
+    suffix,
+    hotkeys,
+    triggerTooltip,
+    triggerDescription,
     labelStyles,
     isRequired,
     necessityIndicator,
@@ -179,6 +184,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     message,
     mods: externalMods,
     description,
+    descriptionPlacement,
     placeholder,
     size = 'medium',
     styles,
@@ -210,10 +216,19 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     allowsCustomValue,
     renderSummary,
     isCheckable,
+    allValueProps,
+    customValueProps,
+    newCustomValueProps,
     ...otherProps
   } = props;
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
+
+  // Generate a unique ID for this FilterPicker instance
+  const filterPickerId = useMemo(() => generateRandomId(), []);
+
+  // Get event bus for menu synchronization
+  const { emit, on } = useEventBus();
 
   // Warn if isCheckable is false in single selection mode
   useWarn(isCheckable === false && selectionMode === 'single', {
@@ -854,6 +869,25 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   // The trigger is rendered as a function so we can access the dialog state
   const renderTrigger = (state) => {
+    // Listen for other menus opening and close this one if needed
+    useEffect(() => {
+      const unsubscribe = on('menu:open', (data: { menuId: string }) => {
+        // If another menu is opening and this FilterPicker is open, close this one
+        if (data.menuId !== filterPickerId && state.isOpen) {
+          state.close();
+        }
+      });
+
+      return unsubscribe;
+    }, [on, filterPickerId, state]);
+
+    // Emit event when this FilterPicker opens
+    useEffect(() => {
+      if (state.isOpen) {
+        emit('menu:open', { menuId: filterPickerId });
+      }
+    }, [state.isOpen, emit, filterPickerId]);
+
     // Track popover open/close state to control sorting
     useEffect(() => {
       if (state.isOpen !== isPopoverOpen) {
@@ -884,9 +918,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     }, [state.isOpen]);
 
     return (
-      <Button
+      <ItemButton
         ref={triggerRef as any}
-        data-menu-trigger
+        data-popover-trigger
         type={type}
         theme={validationState === 'invalid' ? 'danger' : theme}
         size={size}
@@ -906,12 +940,18 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             <DirectionIcon to={state.isOpen ? 'top' : 'bottom'} />
           )
         }
+        prefix={prefix}
+        suffix={suffix}
+        hotkeys={hotkeys}
+        tooltip={triggerTooltip}
+        description={triggerDescription}
+        descriptionPlacement={descriptionPlacement}
         styles={styles}
         {...keyboardProps}
         aria-label={`${props['aria-label'] ?? props.label ?? ''}`}
       >
         {renderTriggerContent()}
-      </Button>
+      </ItemButton>
     );
   };
 
@@ -928,6 +968,15 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         shouldUpdatePosition={shouldUpdatePosition}
         shouldFlip={shouldFlip}
         isDismissable={true}
+        shouldCloseOnInteractOutside={(el) => {
+          const menuTriggerEl = el.closest('[data-popover-trigger]');
+          // If no menu trigger was clicked, allow closing
+          if (!menuTriggerEl) return true;
+          // If the same trigger that opened this popover was clicked, allow closing (toggle)
+          if (menuTriggerEl === (triggerRef as any)?.current) return true;
+          // Otherwise, don't close here. Let the event bus handle closing when the other opens.
+          return false;
+        }}
       >
         {renderTrigger}
         {(close) => (
@@ -965,6 +1014,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 headerStyles={headerStyles}
                 footerStyles={footerStyles}
                 qa={`${props.qa || 'FilterPicker'}ListBox`}
+                allValueProps={allValueProps}
+                customValueProps={customValueProps}
+                newCustomValueProps={newCustomValueProps}
                 onEscape={() => close()}
                 onOptionClick={(key) => {
                   // For FilterPicker, clicking the content area should close the popover
@@ -1057,7 +1109,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     </FilterPickerWrapper>
   );
 
-  return wrapWithField<Omit<CubeFilterPickerProps<T>, 'children'>>(
+  return wrapWithField<Omit<CubeFilterPickerProps<T>, 'children' | 'tooltip'>>(
     filterPickerField,
     ref as any,
     mergeProps(

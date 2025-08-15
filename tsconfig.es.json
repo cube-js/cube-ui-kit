@@ -9,6 +9,7 @@
     "src/**/__mocks__/**/*",
     "src/**/*.stories.tsx",
     "src/**/*.stories.ts",
+    "src/**/storybook/**/*",
     "src/test/**/*",
     "src/**/*.test.tsx",
     "src/**/*.test.ts",

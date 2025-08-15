@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
+import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
 import { Menu } from './Menu';
 import * as MenuStories from './Menu.stories';
 
@@ -117,31 +117,62 @@ The `mods` property accepts the following modifiers you can override:
 | header | `ReactNode` | - | Optional header content (deprecated) |
 | footer | `ReactNode` | - | Optional footer content |
 
-## Menu.Item Properties
+## Sub-components
+
+### Menu.Item
+
+Individual menu items. Each item is rendered using [ItemBase](/docs/content-itembase--docs) and supports all ItemBase properties for layout, icons, descriptions, and interactive features.
+
+#### Item API
+
+For detailed information about all available item properties, see [ItemBase documentation](/docs/content-itembase--docs). Key properties include:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| key | `Key` | Unique identifier for the item (required) |
+| children | `ReactNode` | The main content/label for the menu item |
+| icon | `ReactNode` | Icon displayed before the content |
+| rightIcon | `ReactNode` | Icon displayed after the content |
+| description | `ReactNode` | Secondary text below the main content |
+| descriptionPlacement | `'inline' \| 'block'` | How the description is positioned |
+| prefix | `ReactNode` | Content before the main text |
+| suffix | `ReactNode` | Content after the main text |
+| hotkeys | `string` | Keyboard shortcut that triggers this item |
+| tooltip | `string \| boolean \| object` | Tooltip configuration |
+| isDisabled | `boolean` | Whether the item is disabled |
+| styles | `Styles` | Custom styling for the item |
+| qa | `string` | QA identifier for testing |
+
+#### Menu-specific Properties
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| key | `Key` | - | Unique identifier for the item |
-| children | `ReactNode` | - | Item content/label |
-| description | `ReactNode` | - | Secondary text shown below label |
-| icon | `ReactElement` | - | Icon displayed before the label |
-| hotkeys | `string` | - | Keyboard shortcut (e.g., "Ctrl+C") |
-| wrapper | `(item: ReactElement) => ReactElement` | - | Function to wrap the item |
-| tooltip | `string \| TooltipProviderProps` | - | Tooltip configuration - string for simple tooltip or object for advanced options |
-
-### Menu.Item State Properties
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| isDisabled | `boolean` | `false` | Whether the item is disabled |
 | textValue | `string` | - | Text for typeahead search |
+| wrapper | `(item: ReactElement) => ReactElement` | - | Function to wrap the item |
+| onAction | `() => void` | - | Callback fired when item is activated |
 
-### Menu.Item Button Properties
+#### Example with Rich Items
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| postfix | `ReactNode` | - | Content displayed on the right side |
-| prefix | `ReactNode` | - | Content displayed on the left side |
+```jsx
+<Menu>
+  <Menu.Item 
+    key="save" 
+    icon={<IconSave />}
+    hotkeys="cmd+s"
+    description="Save the current document"
+  >
+    Save
+  </Menu.Item>
+  <Menu.Item 
+    key="export" 
+    icon={<IconExport />}
+    suffix="PDF"
+    tooltip="Export as PDF file"
+  >
+    Export
+  </Menu.Item>
+</Menu>
+```
 
 ## Menu.Section Properties
 
@@ -459,6 +490,6 @@ The Menu component is typically used with MenuTrigger for dropdown functionality
 ## Related Components
 
 - [MenuTrigger](/components/MenuTrigger) - Handles menu positioning and trigger interaction
-- [Button](/components/Button) - Common trigger element for menus
-- [ListBox](/components/ListBox) - Alternative for selection-focused interfaces
-- [ComboBox](/components/ComboBox) - Combines input with menu selection 
+- [Button](/docs/actions-button--docs) - Common trigger element for menus
+- [ListBox](/docs/forms-listbox--docs) - Alternative for selection-focused interfaces
+- [ComboBox](/docs/forms-combobox--docs) - Combines input with menu selection 

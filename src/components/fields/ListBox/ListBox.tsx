@@ -21,7 +21,7 @@ import {
   useListBoxSection,
   useOption,
 } from 'react-aria';
-import { Section as BaseSection, Item, useListState } from 'react-stately';
+import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useWarn } from '../../../_internal/hooks/use-warn';
 import { CheckIcon } from '../../../icons';
@@ -46,7 +46,9 @@ import {
   StyledHeader,
   StyledSectionHeading,
 } from '../../actions/Menu/styled';
+import { ItemBase } from '../../content/ItemBase/ItemBase';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { CubeItemProps, Item } from '../../Item';
 
 import type { CollectionBase, Key } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
@@ -106,115 +108,14 @@ const ListBoxScrollElement = tasty({
   },
 });
 
-const OptionElement = tasty({
+// Create an extended ItemBase for ListBox options with 'all' modifier support
+const ListBoxItemBase = tasty(ItemBase, {
   as: 'li',
   styles: {
-    display: 'flex',
-    flow: 'row',
-    placeItems: 'center start',
-    gap: '.75x',
-    padding: '.5x 1x',
     margin: {
       '': '0 0 1bw 0',
       ':last-of-type': '0',
       all: '.5x',
-    },
-    height: {
-      '': 'min $size-md',
-      '[data-size="large"]': 'min $size-lg',
-    },
-    boxSizing: 'border-box',
-    radius: '1r',
-    cursor: {
-      '': 'default',
-      disabled: 'not-allowed',
-    },
-    transition: 'theme',
-    border: 0,
-    userSelect: 'none',
-    color: {
-      '': '#dark-02',
-      'selected | pressed': '#dark',
-      disabled: '#dark-04',
-      valid: '#success-text',
-      invalid: '#danger-text',
-    },
-    fill: {
-      '': '#clear',
-      'hovered | focused': '#dark.03',
-      selected: '#dark.09',
-      'selected & (hovered | focused)': '#dark.12',
-      'selected & hovered & focused': '#dark.15',
-      pressed: '#dark.09',
-      valid: '#success-bg',
-      invalid: '#danger-bg',
-      disabled: '#clear',
-    },
-    outline: 0,
-    backgroundClip: 'padding-box',
-
-    CheckboxWrapper: {
-      cursor: 'pointer',
-      padding: '.75x',
-      margin: '-.75x',
-    },
-
-    Checkbox: {
-      display: 'grid',
-      placeItems: 'center',
-      radius: '.5r',
-      width: '(2x - 2bw)',
-      height: '(2x - 2bw)',
-      flexShrink: 0,
-      transition: 'theme',
-      opacity: {
-        '': 0,
-        'selected | indeterminate | :hover | focused': 1,
-      },
-      fill: {
-        '': '#white',
-        'selected | indeterminate': '#purple-text',
-        'invalid & !(selected | indeterminate)': '#white',
-        'invalid & (selected | indeterminate)': '#danger',
-        disabled: '#dark.12',
-      },
-      color: {
-        '': '#white',
-        'disabled & !selected': '#clear',
-      },
-      border: {
-        '': '#dark.30',
-        invalid: '#danger',
-        'disabled | ((selected | indeterminate) & !invalid)': '#clear',
-      },
-    },
-
-    Content: {
-      display: 'flex',
-      flow: 'column',
-      gap: '.25x',
-      flex: 1,
-      width: 'max 100%',
-    },
-
-    Label: {
-      preset: 't3',
-      color: 'inherit',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-      width: 'max 100%',
-    },
-
-    Description: {
-      preset: 't4',
-      color: {
-        '': '#dark-03',
-      },
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-      width: 'max 100%',
     },
   },
 });
@@ -240,6 +141,51 @@ const SectionListElement = tasty({
     margin: '0',
     padding: '0',
     listStyle: 'none',
+  },
+});
+
+// Checkbox component for multiple selection options
+const ListBoxCheckbox = tasty({
+  as: 'div',
+  styles: {
+    display: 'grid',
+    placeItems: 'center',
+    radius: '.5r',
+    width: '(2x - 2bw)',
+    height: '(2x - 2bw)',
+    flexShrink: 0,
+    transition: 'theme',
+    opacity: {
+      '': 0,
+      'selected | indeterminate | :hover | focused': 1,
+    },
+    fill: {
+      '': '#white',
+      'selected | indeterminate': '#purple-text',
+      'invalid & !(selected | indeterminate)': '#white',
+      'invalid & (selected | indeterminate)': '#danger',
+      disabled: '#dark.12',
+    },
+    color: {
+      '': '#white',
+      'disabled & !selected': '#clear',
+    },
+    border: {
+      '': '#dark.30',
+      invalid: '#danger',
+      'disabled | ((selected | indeterminate) & !invalid)': '#clear',
+    },
+  },
+});
+
+const ListBoxCheckboxWrapper = tasty({
+  as: 'div',
+  styles: {
+    display: 'grid',
+    placeItems: 'center',
+    placeContent: 'center',
+    cursor: 'pointer',
+    placeSelf: 'stretch',
   },
 });
 
@@ -271,7 +217,7 @@ export interface CubeListBoxProps<T>
   /** The selection mode of the ListBox */
   selectionMode?: 'single' | 'multiple';
   /** Ref for accessing the list DOM element */
-  listRef?: RefObject<HTMLDivElement>;
+  listRef?: RefObject<HTMLUListElement>;
   /** Whether to disallow empty selection */
   disallowEmptySelection?: boolean;
   /** Whether to wrap focus when reaching the end of the list */
@@ -336,6 +282,11 @@ export interface CubeListBoxProps<T>
    * Label for the "Select All" option. Defaults to "Select All".
    */
   selectAllLabel?: ReactNode;
+
+  /**
+   * Props to apply to the "Select All" option.
+   */
+  allValueProps?: Partial<CubeItemProps<T>>;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -350,6 +301,7 @@ const SelectAllOption = ({
   state,
   lastFocusSourceRef,
   onClick,
+  allValueProps = {},
 }: {
   label?: ReactNode;
   isSelected: boolean;
@@ -360,6 +312,7 @@ const SelectAllOption = ({
   state: any;
   lastFocusSourceRef: MutableRefObject<'keyboard' | 'mouse' | 'other'>;
   onClick: (propagate?: boolean) => void;
+  allValueProps?: Partial<CubeItemProps<any>>;
 }) => {
   const { hoverProps, isHovered } = useHover({ isDisabled });
 
@@ -372,6 +325,44 @@ const SelectAllOption = ({
   );
 
   const localRef = useRef<HTMLLIElement>(null);
+
+  // Create checkbox icon for select all option
+  const checkboxIcon = useMemo(() => {
+    if (!isCheckable) {
+      return null;
+    }
+
+    return (
+      <ListBoxCheckboxWrapper
+        data-element="CheckboxWrapper"
+        mods={{
+          selected: isSelected,
+          disabled: isDisabled,
+          hovered: isHovered,
+          indeterminate: isIndeterminate,
+        }}
+      >
+        <ListBoxCheckbox
+          data-element="Checkbox"
+          mods={{
+            selected: isSelected,
+            disabled: isDisabled,
+            hovered: isHovered,
+            indeterminate: isIndeterminate,
+          }}
+        >
+          {(isIndeterminate || isSelected) && markIcon}
+        </ListBoxCheckbox>
+      </ListBoxCheckboxWrapper>
+    );
+  }, [
+    isCheckable,
+    isSelected,
+    isDisabled,
+    isHovered,
+    isIndeterminate,
+    markIcon,
+  ]);
 
   const handleOptionClick = (e) => {
     // Mark focus changes from mouse clicks
@@ -405,35 +396,28 @@ const SelectAllOption = ({
 
   return (
     <>
-      <OptionElement
+      <ListBoxItemBase
         ref={localRef}
-        as="div"
-        {...hoverProps}
         data-size={size}
+        size={size}
         role="option"
         aria-selected={isSelected}
+        isSelected={isSelected}
+        isDisabled={isDisabled}
+        icon={checkboxIcon}
         mods={{
-          selected: isSelected,
           disabled: isDisabled,
           checkable: isCheckable,
           hovered: isHovered,
           indeterminate: isIndeterminate,
-          all: true,
+          all: true, // Important: this preserves the 'all' modifier
         }}
-        style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
-        onClick={handleOptionClick}
+        {...mergeProps(hoverProps, allValueProps, {
+          onClick: handleOptionClick,
+        })}
       >
-        {isCheckable && (
-          <div data-element="CheckboxWrapper">
-            <div data-element="Checkbox">
-              {(isIndeterminate || isSelected) && markIcon}
-            </div>
-          </div>
-        )}
-        <div data-element="Content">
-          <div data-element="Label">{label}</div>
-        </div>
-      </OptionElement>
+        {label}
+      </ListBoxItemBase>
       <StyledDivider />
     </>
   );
@@ -504,6 +488,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     onOptionClick,
     showSelectAll,
     selectAllLabel,
+    allValueProps,
     ...otherProps
   } = props;
 
@@ -849,6 +834,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
           isDisabled={isDisabled}
           isCheckable={isCheckable}
           size={size}
+          allValueProps={allValueProps}
           onClick={handleSelectAllClick}
         />
       ) : (
@@ -1025,7 +1011,7 @@ function Option({
 
   const { hoverProps, isHovered } = useHover({ isDisabled });
 
-  const { optionProps, isPressed } = useOption(
+  const { optionProps, isPressed, labelProps, descriptionProps } = useOption(
     {
       key: item.key,
       isDisabled,
@@ -1037,7 +1023,54 @@ function Option({
     combinedRef,
   );
 
-  const description = (item as any)?.props?.description;
+  // Create checkbox icon for multiple selection mode
+  const effectiveIcon = useMemo(() => {
+    if (
+      !isCheckable ||
+      state.selectionManager.selectionMode !== 'multiple' ||
+      item.icon
+    ) {
+      return (
+        (item as any)?.props?.icon ??
+        (state.selectionManager.selectionMode !== 'multiple' ? null : undefined)
+      );
+    }
+
+    return (
+      <ListBoxCheckboxWrapper
+        data-element="CheckboxWrapper"
+        mods={{
+          selected: isSelected,
+          disabled: isDisabled,
+          focused: isFocused,
+          hovered: isHovered,
+          invalid: validationState === 'invalid',
+        }}
+      >
+        <ListBoxCheckbox
+          data-element="Checkbox"
+          mods={{
+            selected: isSelected,
+            disabled: isDisabled,
+            focused: isFocused,
+            hovered: isHovered,
+            invalid: validationState === 'invalid',
+          }}
+        >
+          <CheckIcon size={12} stroke={3} />
+        </ListBoxCheckbox>
+      </ListBoxCheckboxWrapper>
+    );
+  }, [
+    isCheckable,
+    state.selectionManager.selectionMode,
+    isSelected,
+    isDisabled,
+    isFocused,
+    isHovered,
+    validationState,
+    item.icon,
+  ]);
 
   // Custom click handler for the entire option
   const handleOptionClick = (e) => {
@@ -1092,41 +1125,64 @@ function Option({
     }
   };
 
+  // Filter out React Aria props that shouldn't reach the DOM
+  const {
+    onKeyDown,
+    onKeyUp,
+    tabIndex,
+    'aria-selected': ariaSelected,
+    'aria-disabled': ariaDisabled,
+    role,
+    ...filteredOptionProps
+  } = optionProps;
+
+  const theme =
+    { valid: 'success', invalid: 'danger' }[validationState] || 'default';
+
   return (
-    <OptionElement
-      id={`ListBoxItem-${String(item.key)}`}
-      {...mergeProps(optionProps, hoverProps)}
+    <ListBoxItemBase
       ref={combinedRef}
+      qa={item.props?.qa}
+      id={`ListBoxItem-${String(item.key)}`}
+      {...mergeProps(filteredOptionProps, hoverProps, {
+        onClick: handleOptionClick,
+        onKeyDown,
+        onKeyUp,
+        tabIndex,
+        'aria-selected': ariaSelected,
+        'aria-disabled': ariaDisabled,
+        role,
+      })}
+      theme={theme}
       style={virtualStyle}
       data-size={size}
       data-index={virtualIndex}
+      size={size}
+      isSelected={isSelected}
+      isDisabled={isDisabled}
+      icon={effectiveIcon}
+      rightIcon={item.props?.rightIcon}
+      hotkeys={item.props?.hotkeys}
+      suffix={item.props?.suffix}
+      description={item.props?.description}
+      descriptionPlacement={item.props?.descriptionPlacement}
+      labelProps={labelProps}
+      descriptionProps={descriptionProps}
+      styles={styles}
+      tooltip={item.props?.tooltip}
+      defaultTooltipPlacement="right"
       mods={{
-        selected: isSelected,
         focused: isFocused,
-        disabled: isDisabled,
         pressed: isPressed,
         valid: isSelected && validationState === 'valid',
         invalid: isSelected && validationState === 'invalid',
         checkable: isCheckable,
-        hovered: isHovered, // We'll treat focus as hover for the checkbox visibility
+        hovered: isHovered,
+        all: false, // This will be set to true for SelectAllOption
       }}
-      styles={styles}
-      onClick={handleOptionClick}
     >
-      {isCheckable && state.selectionManager.selectionMode === 'multiple' && (
-        <div data-element="CheckboxWrapper">
-          <div data-element="Checkbox">
-            <CheckIcon size={12} stroke={3} />
-          </div>
-        </div>
-      )}
-      <div data-element="Content">
-        <div data-element="Label">{item.rendered}</div>
-        {description ? (
-          <div data-element="Description">{description}</div>
-        ) : null}
-      </div>
-    </OptionElement>
+      {item.rendered}
+    </ListBoxItemBase>
   );
 }
 
@@ -1169,7 +1225,11 @@ function ListBoxSection<T>(props: ListBoxSectionProps<T>) {
   return (
     <SectionWrapperElement {...itemProps} styles={sectionStyles}>
       {heading && (
-        <StyledSectionHeading {...headingProps} styles={headingStyles}>
+        <StyledSectionHeading
+          {...headingProps}
+          size={props.size}
+          styles={headingStyles}
+        >
           {heading}
         </StyledSectionHeading>
       )}
@@ -1202,11 +1262,7 @@ const ListBoxSectionComponent = Object.assign(BaseSection, {
   displayName: 'Section',
 }) as SectionComponent;
 
-ListBox.Item = Item as unknown as (props: {
-  description?: ReactNode;
-  textValue?: string;
-  [key: string]: any;
-}) => ReactElement;
+ListBox.Item = Item;
 
 ListBox.Section = ListBoxSectionComponent;
 

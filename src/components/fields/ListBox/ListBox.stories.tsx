@@ -1,4 +1,4 @@
-import { StoryFn, StoryObj } from '@storybook/react';
+import { StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 
 import {
@@ -23,9 +23,9 @@ import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
 import { CubeListBoxProps, ListBox } from './ListBox';
 
-import type { Meta } from '@storybook/react';
+// import type { Meta, StoryObj } from '@storybook/react-vite';
 
-const meta: Meta<typeof ListBox> = {
+const meta: any = {
   title: 'Forms/ListBox',
   component: ListBox,
   parameters: {
@@ -189,7 +189,7 @@ const meta: Meta<typeof ListBox> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof ListBox>;
+type Story = any;
 
 // Sample data for stories
 const fruits = [
@@ -231,7 +231,7 @@ const permissions = [
   { key: 'share', label: 'Share', description: 'Share content with others' },
 ];
 
-const Template: StoryFn<CubeListBoxProps<any>> = (args) => (
+const Template: StoryObj<CubeListBoxProps<any>>['render'] = (args) => (
   <ListBox {...args}>
     <ListBox.Item key="apple">Apple</ListBox.Item>
     <ListBox.Item key="banana">Banana</ListBox.Item>
@@ -268,7 +268,11 @@ export const MultipleSelection: Story = {
   render: (args) => (
     <ListBox {...args}>
       {permissions.map((permission) => (
-        <ListBox.Item key={permission.key} description={permission.description}>
+        <ListBox.Item
+          key={permission.key}
+          icon="checkbox"
+          description={permission.description}
+        >
           {permission.label}
         </ListBox.Item>
       ))}
@@ -281,7 +285,9 @@ export const MultipleSelection: Story = {
   },
 };
 
-export const WithDescriptions: StoryFn<CubeListBoxProps<any>> = (args) => (
+export const WithDescriptions: StoryObj<CubeListBoxProps<any>>['render'] = (
+  args,
+) => (
   <ListBox {...args}>
     <ListBox.Item
       key="react"
@@ -308,7 +314,9 @@ WithDescriptions.args = {
   selectionMode: 'single',
 };
 
-export const WithSections: StoryFn<CubeListBoxProps<any>> = (args) => (
+export const WithSections: StoryObj<CubeListBoxProps<any>>['render'] = (
+  args,
+) => (
   <ListBox {...args}>
     <ListBox.Section title="Fruits">
       <ListBox.Item key="apple">Apple</ListBox.Item>
@@ -332,7 +340,9 @@ WithSections.args = {
   selectionMode: 'single',
 };
 
-export const WithHeaderAndFooter: StoryFn<CubeListBoxProps<any>> = (args) => (
+export const WithHeaderAndFooter: StoryObj<CubeListBoxProps<any>>['render'] = (
+  args,
+) => (
   <ListBox
     {...args}
     header={
@@ -548,7 +558,9 @@ export const WithTextValue: Story = {
   },
 };
 
-export const DisabledState: StoryFn<CubeListBoxProps<any>> = (args) => (
+export const DisabledState: StoryObj<CubeListBoxProps<any>>['render'] = (
+  args,
+) => (
   <ListBox {...args}>
     <ListBox.Item key="option1">Option 1</ListBox.Item>
     <ListBox.Item key="option2">Option 2</ListBox.Item>
@@ -561,7 +573,9 @@ DisabledState.args = {
   selectionMode: 'single',
 };
 
-export const ValidationStates: StoryFn<CubeListBoxProps<any>> = () => (
+export const ValidationStates: StoryObj<
+  CubeListBoxProps<any>
+>['render'] = () => (
   <Space gap="3x" flow="column">
     <ListBox
       label="Valid Selection"
@@ -587,7 +601,9 @@ export const ValidationStates: StoryFn<CubeListBoxProps<any>> = () => (
   </Space>
 );
 
-export const ControlledExample: StoryFn<CubeListBoxProps<any>> = () => {
+export const ControlledExample: StoryObj<
+  CubeListBoxProps<any>
+>['render'] = () => {
   const [selectedKey, setSelectedKey] = useState<string | null>('apple');
 
   return (
@@ -628,7 +644,9 @@ export const ControlledExample: StoryFn<CubeListBoxProps<any>> = () => {
   );
 };
 
-export const MultipleControlledExample: StoryFn<CubeListBoxProps<any>> = () => {
+export const MultipleControlledExample: StoryObj<
+  CubeListBoxProps<any>
+>['render'] = () => {
   const [selectedKeys, setSelectedKeys] = useState<string[]>(['read', 'write']);
 
   return (
@@ -673,7 +691,7 @@ export const MultipleControlledExample: StoryFn<CubeListBoxProps<any>> = () => {
   );
 };
 
-export const InForm: StoryFn<CubeListBoxProps<any>> = () => {
+export const InForm: StoryObj<CubeListBoxProps<any>>['render'] = () => {
   const handleSubmit = (data: any) => {
     console.log('Form submitted:', data);
     alert(`Selected: ${data.technology || 'None'}`);
@@ -735,7 +753,7 @@ export const InForm: StoryFn<CubeListBoxProps<any>> = () => {
   );
 };
 
-export const InPopover: StoryFn<CubeListBoxProps<any>> = () => {
+export const InPopover: StoryObj<CubeListBoxProps<any>>['render'] = () => {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
   return (
@@ -851,7 +869,9 @@ InPopover.parameters = {
   },
 };
 
-export const VirtualizedList: StoryFn<CubeListBoxProps<any>> = (args) => {
+export const VirtualizedList: StoryObj<CubeListBoxProps<any>>['render'] = (
+  args,
+) => {
   const [selected, setSelected] = useState<string | null>(null);
 
   // Generate a large list of items with varying content to test virtualization
@@ -909,31 +929,19 @@ export const WithIcons: Story = {
   render: (args) => (
     <ListBox {...args}>
       <ListBox.Section title="User Management">
-        <ListBox.Item key="users">
-          <Space gap="1x" flow="row" placeItems="center">
-            <UserIcon />
-            Users
-          </Space>
+        <ListBox.Item key="users" icon={<UserIcon />}>
+          Users
         </ListBox.Item>
-        <ListBox.Item key="permissions">
-          <Space gap="1x" flow="row" placeItems="center">
-            <CheckIcon />
-            Permissions
-          </Space>
+        <ListBox.Item key="permissions" icon={<CheckIcon />}>
+          Permissions
         </ListBox.Item>
       </ListBox.Section>
       <ListBox.Section title="System">
-        <ListBox.Item key="database">
-          <Space gap="1x" flow="row" placeItems="center">
-            <DatabaseIcon />
-            Database
-          </Space>
+        <ListBox.Item key="database" icon={<DatabaseIcon />}>
+          Database
         </ListBox.Item>
-        <ListBox.Item key="settings">
-          <Space gap="1x" flow="row" placeItems="center">
-            <SettingsIcon />
-            Settings
-          </Space>
+        <ListBox.Item key="settings" icon={<SettingsIcon />}>
+          Settings
         </ListBox.Item>
       </ListBox.Section>
     </ListBox>
@@ -999,7 +1007,9 @@ export const FocusBehavior: Story = {
   },
 };
 
-export const EscapeKeyHandling: StoryFn<CubeListBoxProps<any>> = () => {
+export const EscapeKeyHandling: StoryObj<
+  CubeListBoxProps<any>
+>['render'] = () => {
   const [selectedKey, setSelectedKey] = useState<string | null>('apple');
   const [escapeCount, setEscapeCount] = useState(0);
 
@@ -1086,6 +1096,292 @@ export const WithSelectAll: Story = {
       description: {
         story:
           'When `showSelectAll={true}` is used with multiple selection mode, a "Select All" option appears in the header. The checkbox shows indeterminate state when some items are selected, checked when all are selected, and unchecked when none are selected.',
+      },
+    },
+  },
+};
+
+export const WithHotkeys: Story = {
+  render: (args) => (
+    <Space gap="2x" flow="column">
+      <Text>
+        Try pressing <strong>Ctrl+1</strong>, <strong>Ctrl+2</strong>, or{' '}
+        <strong>Ctrl+3</strong> to select options via hotkeys
+      </Text>
+      <ListBox {...args}>
+        <ListBox.Item key="new" hotkeys="ctrl+1">
+          <Space gap="1x" flow="row" placeItems="center">
+            <PlusIcon />
+            New Project
+          </Space>
+        </ListBox.Item>
+        <ListBox.Item key="edit" hotkeys="ctrl+2">
+          <Space gap="1x" flow="row" placeItems="center">
+            <EditIcon />
+            Edit Project
+          </Space>
+        </ListBox.Item>
+        <ListBox.Item key="settings" hotkeys="ctrl+3">
+          <Space gap="1x" flow="row" placeItems="center">
+            <SettingsIcon />
+            Project Settings
+          </Space>
+        </ListBox.Item>
+      </ListBox>
+    </Space>
+  ),
+  args: {
+    label: 'Project Actions',
+    selectionMode: 'single',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'ListBox options now support hotkeys via the ItemBase integration. Press the specified keyboard shortcuts to select options. The hotkey hint is automatically displayed as a suffix.',
+      },
+    },
+  },
+};
+
+export const WithSuffixAndRightIcon: Story = {
+  render: (args) => (
+    <ListBox {...args}>
+      <ListBox.Item
+        key="users"
+        suffix={<Badge type="note">5</Badge>}
+        rightIcon={<UserIcon />}
+      >
+        User Management
+      </ListBox.Item>
+      <ListBox.Item
+        key="database"
+        suffix={<Badge type="success">Online</Badge>}
+        rightIcon={<DatabaseIcon />}
+      >
+        Database Status
+      </ListBox.Item>
+      <ListBox.Item
+        key="settings"
+        suffix={<Badge type="warning">2</Badge>}
+        rightIcon={<SettingsIcon />}
+      >
+        System Settings
+      </ListBox.Item>
+    </ListBox>
+  ),
+  args: {
+    label: 'System Dashboard',
+    selectionMode: 'single',
+    size: 'large',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'ListBox options now support suffix content and right icons via ItemBase integration. This allows for rich option layouts with status indicators, counts, and action icons.',
+      },
+    },
+  },
+};
+
+export const WithTooltips: Story = {
+  render: (args) => (
+    <ListBox {...args}>
+      <ListBox.Item
+        key="create"
+        tooltip="Create a new project with default settings"
+        icon={<PlusIcon />}
+      >
+        Create Project
+      </ListBox.Item>
+      <ListBox.Item
+        key="import"
+        tooltip={{
+          title: 'Import Project',
+          description: 'Import an existing project from file or URL',
+          placement: 'right',
+        }}
+        icon={<DatabaseIcon />}
+      >
+        Import Project
+      </ListBox.Item>
+      <ListBox.Item
+        key="configure"
+        tooltip="Configure project settings and preferences"
+        icon={<SettingsIcon />}
+      >
+        Configure
+      </ListBox.Item>
+    </ListBox>
+  ),
+  args: {
+    label: 'Project Actions',
+    selectionMode: 'single',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'ListBox options now support tooltips via ItemBase integration. Provide either a simple string or a full tooltip configuration object.',
+      },
+    },
+  },
+};
+
+export const RichContentOptions: Story = {
+  render: (args) => (
+    <ListBox {...args}>
+      <ListBox.Item
+        key="admin"
+        description="Full system administration access"
+        prefix={<Badge type="danger">Admin</Badge>}
+        suffix={<Badge type="note">3</Badge>}
+        rightIcon={<SettingsIcon />}
+        hotkeys="ctrl+a"
+      >
+        System Administrator
+      </ListBox.Item>
+      <ListBox.Item
+        key="editor"
+        description="Content creation and editing permissions"
+        prefix={<Badge type="warning">Editor</Badge>}
+        suffix={<Badge type="note">12</Badge>}
+        rightIcon={<EditIcon />}
+        hotkeys="ctrl+e"
+      >
+        Content Editor
+      </ListBox.Item>
+      <ListBox.Item
+        key="viewer"
+        description="Read-only access to system content"
+        prefix={<Badge type="success">Viewer</Badge>}
+        suffix={<Badge type="note">45</Badge>}
+        rightIcon={<UserIcon />}
+        hotkeys="ctrl+v"
+      >
+        Content Viewer
+      </ListBox.Item>
+    </ListBox>
+  ),
+  args: {
+    label: 'User Roles',
+    selectionMode: 'single',
+    size: 'large',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'This story demonstrates the full capabilities of ListBox options with ItemBase integration: descriptions, prefix/suffix content, right icons, and hotkeys all working together.',
+      },
+    },
+  },
+};
+
+export const TooltipsWithActions: Story = {
+  render: (args) => (
+    <ListBox width="300px" {...args}>
+      <ListBox.Section title="Database Operations">
+        <ListBox.Item
+          key="backup"
+          tooltip="Create a backup of the current database state"
+          icon={<DatabaseIcon />}
+          suffix={<Badge type="note">Daily</Badge>}
+        >
+          Backup Database
+        </ListBox.Item>
+        <ListBox.Item
+          key="restore"
+          tooltip={{
+            title: 'Restore Database',
+            description:
+              'Restore database from a previous backup. This action cannot be undone.',
+            placement: 'right',
+          }}
+          icon={<DatabaseIcon />}
+          suffix={<Badge type="warning">Destructive</Badge>}
+        >
+          Restore Database
+        </ListBox.Item>
+        <ListBox.Item
+          key="optimize"
+          tooltip="Optimize database performance by rebuilding indexes and cleaning up unused data"
+          icon={<SettingsIcon />}
+          suffix={<Badge type="success">Safe</Badge>}
+        >
+          Optimize Database
+        </ListBox.Item>
+      </ListBox.Section>
+      <ListBox.Section title="User Management">
+        <ListBox.Item
+          key="invite"
+          tooltip="Send invitation to new team members"
+          icon={<UserIcon />}
+          suffix={<Badge type="note">+</Badge>}
+        >
+          Invite User
+        </ListBox.Item>
+        <ListBox.Item
+          key="permissions"
+          tooltip={{
+            title: 'Manage Permissions',
+            description:
+              'Configure user roles and access permissions for different system areas',
+            placement: 'right',
+          }}
+          icon={<CheckIcon />}
+          suffix={<Badge type="purple">5 users</Badge>}
+        >
+          Manage Permissions
+        </ListBox.Item>
+      </ListBox.Section>
+    </ListBox>
+  ),
+  args: {
+    label: 'System Actions',
+    selectionMode: 'single',
+    size: 'large',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'This story demonstrates tooltips in a practical context with action items. Tooltips provide additional context about what each action does, including warnings for destructive operations.',
+      },
+    },
+  },
+};
+
+export const AllValuePropsExample: Story = {
+  render: (args) => (
+    <ListBox {...args}>
+      {permissions.map((permission) => (
+        <ListBox.Item key={permission.key} description={permission.description}>
+          {permission.label}
+        </ListBox.Item>
+      ))}
+    </ListBox>
+  ),
+  args: {
+    label: 'Select permissions with styled "Select All"',
+    selectionMode: 'multiple',
+    isCheckable: true,
+    showSelectAll: true,
+    selectAllLabel: 'All Permissions',
+    allValueProps: {
+      styles: {
+        preset: 't3m',
+        color: '#purple-text',
+      },
+    },
+    defaultSelectedKeys: ['read'],
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The `allValueProps` prop allows you to customize the styling and behavior of the "Select All" option. In this example, the "Select All" option uses the `t3m` preset and purple text color.',
       },
     },
   },

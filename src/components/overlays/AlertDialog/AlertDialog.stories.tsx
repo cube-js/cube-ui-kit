@@ -1,6 +1,6 @@
-import { action } from '@storybook/addon-actions';
-import { Meta, StoryFn } from '@storybook/react';
-import { expect, userEvent, within } from '@storybook/test';
+import { Meta, StoryFn } from '@storybook/react-vite';
+import { action } from 'storybook/actions';
+import { expect, userEvent, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions';
