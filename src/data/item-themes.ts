@@ -52,9 +52,9 @@ export const DEFAULT_SECONDARY_STYLES: Styles = {
 
 export const DEFAULT_OUTLINE_STYLES: Styles = {
   border: {
-    '': '#dark.12',
+    '': true,
     focused: '#purple-text',
-    '[disabled] | disabled': '#border',
+    '[disabled] | disabled': true,
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {

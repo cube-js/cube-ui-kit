@@ -21,12 +21,6 @@ export function propDeprecationWarning(name, props, propList) {
   });
 }
 
-export function accessibilityWarning(...args) {
-  if (devMode) {
-    console.warn(`${PREFIX} accessibility issue:`, ...args);
-  }
-}
-
 export function warn(...args) {
   if (devMode) {
     console.warn(`${PREFIX}:`, ...args);

@@ -1,6 +1,7 @@
 import { FocusableRef } from '@react-types/shared';
 import { cloneElement, forwardRef, ReactElement, useMemo } from 'react';
 
+import { useWarn } from '../../../_internal/hooks/use-warn';
 import {
   DANGER_CLEAR_STYLES,
   DANGER_LINK_STYLES,
@@ -31,11 +32,9 @@ import { LoadingIcon } from '../../../icons';
 import {
   CONTAINER_STYLES,
   extractStyles,
-  Styles,
   tasty,
   TEXT_STYLES,
 } from '../../../tasty';
-import { accessibilityWarning } from '../../../utils/warnings';
 import { Text } from '../../content/Text';
 import { CubeActionProps } from '../Action/Action';
 import { useAction } from '../use-action';
@@ -225,24 +224,28 @@ export const Button = forwardRef(function Button(
 
   children = children || icon || rightIcon ? children : label;
 
-  if (!children) {
-    const specifiedLabel =
-      label ?? props['aria-label'] ?? props['aria-labelledby'];
-    if (icon) {
-      if (!specifiedLabel) {
-        accessibilityWarning(
-          'If you provide `icon` property for a Button and do not provide any children then you should specify the `aria-label` property to make sure the Button element stays accessible.',
-        );
-        label = 'Unnamed'; // fix to avoid warning in production
-      }
-    } else {
-      if (!specifiedLabel) {
-        accessibilityWarning(
-          'If you provide no children for a Button then you should specify the `aria-label` property to make sure the Button element stays accessible.',
-        );
-        label = 'Unnamed'; // fix to avoid warning in production
-      }
-    }
+  const specifiedLabel =
+    label ?? props['aria-label'] ?? props['aria-labelledby'];
+
+  // Warn about accessibility issues when button has no accessible label
+  useWarn(!children && icon && !specifiedLabel, {
+    key: ['button-icon-no-label', !!icon],
+    args: [
+      'accessibility issue:',
+      'If you provide `icon` property for a Button and do not provide any children then you should specify the `aria-label` property to make sure the Button element stays accessible.',
+    ],
+  });
+
+  useWarn(!children && !icon && !specifiedLabel, {
+    key: ['button-no-content-no-label', !!icon],
+    args: [
+      'accessibility issue:',
+      'If you provide no children for a Button then you should specify the `aria-label` property to make sure the Button element stays accessible.',
+    ],
+  });
+
+  if (!children && !specifiedLabel) {
+    label = 'Unnamed'; // fix to avoid warning in production
   }
 
   if (icon) {
