@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.73.1
+
+### Patch Changes
+
+- [#758](https://github.com/cube-js/cube-ui-kit/pull/758) [`b88c07a5`](https://github.com/cube-js/cube-ui-kit/commit/b88c07a500bc9984ce8b66c55b14166b28b86811) Thanks [@tenphi](https://github.com/tenphi)! - Avoid repetitive warnings in Buttons.
+
 ## 0.73.0
 
 ### Minor Changes
