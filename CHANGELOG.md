@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.73.2
+
+### Patch Changes
+
+- [#760](https://github.com/cube-js/cube-ui-kit/pull/760) [`2400dd2f`](https://github.com/cube-js/cube-ui-kit/commit/2400dd2f5a625f58da26e964c3833a684b953c61) Thanks [@tenphi](https://github.com/tenphi)! - Add support for loading state in ItemBase via `isLoading` and `loadingSlot` props.
+
+- [#760](https://github.com/cube-js/cube-ui-kit/pull/760) [`2400dd2f`](https://github.com/cube-js/cube-ui-kit/commit/2400dd2f5a625f58da26e964c3833a684b953c61) Thanks [@tenphi](https://github.com/tenphi)! - Add loading state support to ItemButton.
+
 ## 0.73.1
 
 ### Patch Changes
