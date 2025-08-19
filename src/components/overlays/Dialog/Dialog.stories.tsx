@@ -1,5 +1,5 @@
 import { FocusableRefValue } from '@react-types/shared';
-import { StoryFn } from '@storybook/react-vite';
+import { StoryFn } from '@storybook/react';
 import { expect, userEvent, waitFor, within } from '@storybook/test';
 import { useRef, useState } from 'react';
 

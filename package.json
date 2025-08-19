@@ -74,6 +74,7 @@
     "@react-stately/utils": "^3.10.5",
     "@react-types/shared": "^3.27.0",
     "@sparticuz/chromium": "^137.0.1",
+    "@storybook/react": "^9.1.2",
     "@storybook/test": "^8.6.14",
     "@tabler/icons-react": "^3.31.0",
     "@tanstack/react-virtual": "^3.13.12",

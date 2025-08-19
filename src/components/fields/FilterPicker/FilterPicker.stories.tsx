@@ -24,7 +24,7 @@ import { Space } from '../../layout/Space';
 
 import { FilterPicker } from './FilterPicker';
 
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta<typeof FilterPicker> = {
   title: 'Forms/FilterPicker',

@@ -1,4 +1,4 @@
-import { StoryFn } from '@storybook/react-vite';
+import { StoryFn } from '@storybook/react';
 import { IconBulb, IconLock } from '@tabler/icons-react';
 
 import {

@@ -1,4 +1,4 @@
-import { StoryFn } from '@storybook/react-vite';
+import { StoryFn } from '@storybook/react';
 import { IconCoin } from '@tabler/icons-react';
 
 import { CubeTagProps, Tag } from './Tag';

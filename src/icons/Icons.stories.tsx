@@ -1,4 +1,4 @@
-import { StoryFn } from '@storybook/react-vite';
+import { StoryFn } from '@storybook/react';
 
 import { Text } from '../components/content/Text';
 import { Title } from '../components/content/Title';

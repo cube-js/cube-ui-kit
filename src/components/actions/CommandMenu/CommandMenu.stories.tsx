@@ -35,7 +35,7 @@ import { useContextMenu } from '../use-context-menu';
 
 import { CommandMenu, CubeCommandMenuProps } from './CommandMenu';
 
-import type { StoryFn } from '@storybook/react-vite';
+import type { StoryFn } from '@storybook/react';
 
 // Styled components for header and footer
 const HeaderTitle = tasty(Text, {

@@ -1,4 +1,4 @@
-import { StoryFn } from '@storybook/react-vite';
+import { StoryFn } from '@storybook/react';
 
 import { CubeHotKeysProps, HotKeys } from './HotKeys';
 

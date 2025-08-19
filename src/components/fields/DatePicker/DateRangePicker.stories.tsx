@@ -1,4 +1,4 @@
-import { StoryFn } from '@storybook/react-vite';
+import { StoryFn } from '@storybook/react';
 import { userEvent, within } from '@storybook/test';
 
 import { ICON_ARG, VALIDATION_STATE_ARG } from '../../../stories/FormFieldArgs';

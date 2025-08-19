@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react-vite';
+import { Meta, StoryFn } from '@storybook/react';
 import { expect, userEvent, within } from '@storybook/test';
 import { IconBell, IconBellFilled, IconBrandWechat } from '@tabler/icons-react';
 import { Key, useRef, useState } from 'react';
