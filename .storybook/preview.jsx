@@ -1,6 +1,6 @@
+import { configure } from '@storybook/test';
 import isChromatic from 'chromatic/isChromatic';
 import { config } from 'react-transition-group';
-import { configure } from 'storybook/test';
 
 import { Root } from '../src';
 

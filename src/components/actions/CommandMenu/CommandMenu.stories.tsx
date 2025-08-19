@@ -1,4 +1,11 @@
 import {
+  expect,
+  findByRole,
+  userEvent,
+  waitFor,
+  within,
+} from '@storybook/test';
+import {
   IconArrowBack,
   IconArrowForward,
   IconClipboard,
@@ -7,7 +14,6 @@ import {
   IconSelect,
 } from '@tabler/icons-react';
 import React, { useState } from 'react';
-import { expect, findByRole, userEvent, waitFor, within } from 'storybook/test';
 
 import { tasty } from '../../../tasty';
 import { Card } from '../../content/Card/Card';

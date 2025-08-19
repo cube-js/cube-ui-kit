@@ -42,6 +42,7 @@ import {
   SUCCESS_SECONDARY_STYLES,
 } from '../../../data/item-themes';
 import { CheckIcon } from '../../../icons/CheckIcon';
+import { LoadingIcon } from '../../../icons/LoadingIcon';
 import {
   BaseProps,
   CONTAINER_STYLES,
@@ -108,6 +109,18 @@ export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
   labelProps?: Props;
   descriptionProps?: Props;
   keyboardShortcutProps?: Props;
+  /**
+   * The slot which the loading icon should replace in loading state.
+   * - "auto": Smart selection - prefers icon if present, then rightIcon, fallback to icon
+   * - Specific slot names: Always use that slot
+   * @default "auto"
+   */
+  loadingSlot?: 'auto' | 'icon' | 'rightIcon' | 'prefix' | 'suffix';
+  /**
+   * When true, shows loading state by replacing the specified slot with LoadingIcon
+   * and makes the component disabled.
+   */
+  isLoading?: boolean;
   /**
    * @private
    * Default tooltip placement for the item.
@@ -375,31 +388,61 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     hotkeys,
     tooltip,
     isDisabled,
+    loadingSlot = 'auto',
+    isLoading = false,
     defaultTooltipPlacement = 'top',
     ...rest
   } = props;
 
+  // Loading state makes the component disabled
+  const finalIsDisabled = (isDisabled || isLoading) && isDisabled !== false;
+
   // Determine if we should show checkbox instead of icon
   const hasCheckbox = icon === 'checkbox';
 
-  // Build final suffix: custom suffix or HotKeys hint if provided and no explicit suffix
+  // Determine which slot to use for loading when "auto" is selected
+  const resolvedLoadingSlot = useMemo(() => {
+    if (loadingSlot !== 'auto') return loadingSlot;
+
+    // Auto logic: prefer icon if present, then rightIcon, fallback to icon
+    if (rightIcon && !icon) return 'rightIcon';
+    return 'icon'; // fallback
+  }, [loadingSlot, icon, rightIcon]);
+
+  // Apply loading state to appropriate slots
+  const finalIcon =
+    isLoading && resolvedLoadingSlot === 'icon' ? <LoadingIcon /> : icon;
+  const finalRightIcon =
+    isLoading && resolvedLoadingSlot === 'rightIcon' ? (
+      <LoadingIcon />
+    ) : (
+      rightIcon
+    );
+  const finalPrefix =
+    isLoading && resolvedLoadingSlot === 'prefix' ? <LoadingIcon /> : prefix;
+
+  // Build final suffix: loading icon, custom suffix, or HotKeys hint
   const finalSuffix =
-    suffix ??
-    (hotkeys ? (
-      <HotKeys
-        type={type === 'primary' ? 'primary' : 'default'}
-        styles={{ padding: '1x left', opacity: isDisabled ? 0.5 : 1 }}
-      >
-        {hotkeys}
-      </HotKeys>
-    ) : undefined);
+    isLoading && resolvedLoadingSlot === 'suffix' ? (
+      <LoadingIcon />
+    ) : (
+      suffix ??
+      (hotkeys ? (
+        <HotKeys
+          type={type === 'primary' ? 'primary' : 'default'}
+          styles={{ padding: '1x left', opacity: finalIsDisabled ? 0.5 : 1 }}
+        >
+          {hotkeys}
+        </HotKeys>
+      ) : undefined)
+    );
 
   // Register global hotkey if provided
   useHotkeys(
     typeof hotkeys === 'string' ? hotkeys.toLowerCase() : '',
     () => {
       if (!hotkeys) return;
-      if (isDisabled) return;
+      if (finalIsDisabled) return;
       // Simulate a click on the element so all existing handlers run
       if (ref && typeof ref === 'object' && ref.current) {
         (ref.current as HTMLElement).click();
@@ -411,31 +454,34 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
       preventDefault: true,
       enableOnFormTags: true,
     },
-    [hotkeys, isDisabled],
+    [hotkeys, finalIsDisabled],
   );
 
   mods = useMemo(() => {
     return {
-      'with-icon': !!icon,
-      'with-right-icon': !!rightIcon,
-      'with-prefix': !!prefix,
+      'with-icon': !!finalIcon,
+      'with-right-icon': !!finalRightIcon,
+      'with-prefix': !!finalPrefix,
       'with-suffix': !!finalSuffix,
       'with-description': !!description,
       'with-description-block':
         !!description && descriptionPlacement === 'block',
       checkbox: hasCheckbox,
+      disabled: finalIsDisabled,
       selected: isSelected === true,
+      loading: isLoading,
       ...mods,
     };
   }, [
-    icon,
-    rightIcon,
-    prefix,
+    finalIcon,
+    finalRightIcon,
+    finalPrefix,
     finalSuffix,
     description,
     descriptionPlacement,
     hasCheckbox,
     isSelected,
+    isLoading,
     mods,
   ]);
 
@@ -490,27 +536,29 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     } as Props & { ref?: any };
   }, [labelProps, mergedLabelRef]);
 
-  const Component = tooltip || isDisabled ? FocusableItemBase : ItemBaseElement;
+  const Component =
+    tooltip || finalIsDisabled ? FocusableItemBase : ItemBaseElement;
 
   const itemElement = (
     <Component
       ref={ref as any}
       tabIndex={0}
       variant={theme && type ? (`${theme}.${type}` as ItemVariant) : undefined}
+      disabled={finalIsDisabled}
       data-size={size}
       data-type={type}
       data-theme={theme}
-      aria-disabled={isDisabled}
+      aria-disabled={finalIsDisabled}
       aria-selected={isSelected}
       mods={mods}
       styles={styles}
       type={buttonType as any}
       {...rest}
     >
-      {icon && (
-        <div data-element="Icon">{hasCheckbox ? <CheckIcon /> : icon}</div>
+      {finalIcon && (
+        <div data-element="Icon">{hasCheckbox ? <CheckIcon /> : finalIcon}</div>
       )}
-      {prefix && <div data-element="Prefix">{prefix}</div>}
+      {finalPrefix && <div data-element="Prefix">{finalPrefix}</div>}
       {children || labelProps ? (
         <div data-element="Label" {...finalLabelProps}>
           {children}
@@ -522,7 +570,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
         </div>
       ) : null}
       {finalSuffix && <div data-element="Suffix">{finalSuffix}</div>}
-      {rightIcon && <div data-element="RightIcon">{rightIcon}</div>}
+      {finalRightIcon && <div data-element="RightIcon">{finalRightIcon}</div>}
     </Component>
   );
 

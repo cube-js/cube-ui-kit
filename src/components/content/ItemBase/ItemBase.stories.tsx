@@ -802,6 +802,162 @@ CombinedFeatures.parameters = {
   },
 };
 
+export const WithLoading: StoryFn<CubeItemBaseProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>Auto Loading Slot Selection</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        isLoading={true}
+        // loadingSlot="auto" is default - will use icon slot since icon is present
+        icon={<IconUser />}
+        rightIcon={<IconSettings />}
+      >
+        Auto: icon present (loads in icon)
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        isLoading={true}
+        // loadingSlot="auto" is default - will use rightIcon slot since no icon
+        rightIcon={<IconSettings />}
+      >
+        Auto: no icon, rightIcon present (loads in rightIcon)
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        isLoading={true}
+        // loadingSlot="auto" is default - will fallback to icon slot
+        prefix="$"
+        suffix=".00"
+      >
+        Auto: no icons present (fallback to icon)
+      </ItemBase>
+    </Space>
+
+    <Title level={5}>Specific Loading Slots</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        isLoading={true}
+        loadingSlot="icon"
+        icon={<IconUser />}
+        rightIcon={<IconSettings />}
+      >
+        Explicit icon slot
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        isLoading={true}
+        loadingSlot="rightIcon"
+        icon={<IconUser />}
+        rightIcon={<IconSettings />}
+      >
+        Explicit rightIcon slot
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        isLoading={true}
+        loadingSlot="prefix"
+        icon={<IconUser />}
+        prefix="$"
+      >
+        Explicit prefix slot
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        isLoading={true}
+        loadingSlot="suffix"
+        icon={<IconUser />}
+        suffix=".00"
+      >
+        Explicit suffix slot
+      </ItemBase>
+    </Space>
+
+    <Title level={5}>Different Sizes with Auto Loading</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        size="small"
+        isLoading={true}
+        icon={<IconUser />}
+      >
+        Small size
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        size="medium"
+        isLoading={true}
+        icon={<IconUser />}
+      >
+        Medium size
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        size="large"
+        isLoading={true}
+        icon={<IconUser />}
+      >
+        Large size
+      </ItemBase>
+    </Space>
+
+    <Title level={5}>Loading with Different Visual Types</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="item"
+        isLoading={true}
+        icon={<IconUser />}
+      >
+        Item type
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="primary"
+        isLoading={true}
+        icon={<IconUser />}
+      >
+        Primary type
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="secondary"
+        isLoading={true}
+        icon={<IconUser />}
+      >
+        Secondary type
+      </ItemBase>
+    </Space>
+  </Space>
+);
+
+WithLoading.args = {
+  width: '300px',
+};
+
+WithLoading.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates the loading functionality with `isLoading` and `loadingSlot` props. The default "auto" mode intelligently selects the best slot: prefers icon if present, then rightIcon, otherwise falls back to icon. Specific slots can be explicitly set. When loading, the component becomes disabled automatically.',
+    },
+  },
+};
+
 export const WithDescriptionBlock: StoryFn<CubeItemBaseProps> = (args) => (
   <Space gap="2x" flow="column" placeItems="start">
     <Title level={5}>Description Position Comparison</Title>
@@ -881,8 +1037,6 @@ export const WithDescriptionBlock: StoryFn<CubeItemBaseProps> = (args) => (
         hotkeys="cmd+u"
         description="User management with hotkey and description block"
         descriptionPlacement="block"
-        as="button"
-        onClick={() => alert('User action triggered!')}
       >
         Manage Users
       </ItemBase>
