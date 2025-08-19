@@ -71,22 +71,22 @@ export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
   descriptionPlacement?: 'inline' | 'block' | 'auto';
   isSelected?: boolean;
   size?:
-  | 'xsmall'
-  | 'small'
-  | 'medium'
-  | 'large'
-  | 'xlarge'
-  | 'inline'
-  | (string & {});
+    | 'xsmall'
+    | 'small'
+    | 'medium'
+    | 'large'
+    | 'xlarge'
+    | 'inline'
+    | (string & {});
   type?:
-  | 'item'
-  | 'primary'
-  | 'secondary'
-  | 'outline'
-  | 'neutral'
-  | 'clear'
-  | 'link'
-  | (string & {});
+    | 'item'
+    | 'primary'
+    | 'secondary'
+    | 'outline'
+    | 'neutral'
+    | 'clear'
+    | 'link'
+    | (string & {});
   theme?: 'default' | 'danger' | 'success' | 'special' | (string & {});
   variant?: ItemVariant;
   /** Keyboard shortcut that triggers the element when pressed */
@@ -98,9 +98,9 @@ export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
    * - object: advanced configuration with optional auto property
    */
   tooltip?:
-  | string
-  | boolean
-  | (Omit<CubeTooltipProviderProps, 'children'> & { auto?: boolean });
+    | string
+    | boolean
+    | (Omit<CubeTooltipProviderProps, 'children'> & { auto?: boolean });
   /**
    * HTML button type to avoid implicit form submission when used as `as="button"`.
    * Kept separate from visual `type` prop.
@@ -395,7 +395,8 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
   } = props;
 
   // Loading state makes the component disabled
-  const finalIsDisabled = isDisabled === true || (isLoading && isDisabled !== false);
+  const finalIsDisabled =
+    isDisabled === true || (isLoading && isDisabled !== false);
 
   // Determine if we should show checkbox instead of icon
   const hasCheckbox = icon === 'checkbox';
