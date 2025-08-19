@@ -1,7 +1,5 @@
 import { IconExternalLink, IconFile } from '@tabler/icons-react';
 
-import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider';
-
 import { ItemButton } from './ItemButton';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -50,7 +48,7 @@ const meta: Meta<typeof ItemButton> = {
       control: 'text',
       description: 'URL for link behavior (makes button act as link)',
     },
-    buttonType: {
+    htmlType: {
       control: 'select',
       options: ['button', 'submit', 'reset'],
       description: 'HTML button type attribute',
@@ -58,6 +56,17 @@ const meta: Meta<typeof ItemButton> = {
     description: {
       control: 'text',
       description: 'Secondary text shown below the main content',
+    },
+    isLoading: {
+      control: 'boolean',
+      description:
+        'Whether the button shows loading state with disabled interaction',
+    },
+    loadingSlot: {
+      control: 'select',
+      options: ['auto', 'icon', 'rightIcon', 'prefix', 'suffix'],
+      description:
+        'Which slot to replace with loading icon (auto intelligently selects)',
     },
     // Icon controls are typically not included in argTypes since they're complex ReactNode objects
     // prefix and suffix are also ReactNode, so omitted from controls
@@ -290,6 +299,136 @@ export const WithCheckbox: Story = {
       description: {
         story:
           'Demonstrates the checkbox functionality in ItemButton when `isSelected` prop is provided. When `isSelected` is `true`, the checkbox is visible (opacity 1, hover opacity 0.8). When `isSelected` is `false`, the checkbox is invisible (opacity 0, hover opacity 0.4). The checkbox replaces the `icon` prop when `isSelected` is provided, inherited from the ItemBase component.',
+      },
+    },
+  },
+};
+
+export const WithLoading: Story = {
+  render: (args) => {
+    // Extract isDisabled from args to prevent it from interfering with loading state
+    const { isDisabled: _, ...cleanArgs } = args;
+
+    return (
+      <div style={{ display: 'grid', gap: 16 }}>
+        <div>
+          <h4>Loading States with Auto Slot Selection</h4>
+          <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+            <ItemButton {...cleanArgs} isLoading={false} icon={<IconFile />}>
+              Normal state
+            </ItemButton>
+            <ItemButton {...cleanArgs} isLoading={true} icon={<IconFile />}>
+              Loading (auto - replaces icon)
+            </ItemButton>
+            <ItemButton
+              {...cleanArgs}
+              isLoading={true}
+              rightIcon={<IconExternalLink />}
+            >
+              Loading (auto - replaces rightIcon)
+            </ItemButton>
+            <ItemButton {...cleanArgs} isLoading={true} prefix="$" suffix=".00">
+              Loading (auto - no icons, fallback to icon)
+            </ItemButton>
+          </div>
+        </div>
+
+        <div>
+          <h4>Loading with Different Types</h4>
+          <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+            <ItemButton
+              {...cleanArgs}
+              type="primary"
+              isLoading={true}
+              icon={<IconFile />}
+            >
+              Primary Loading
+            </ItemButton>
+            <ItemButton
+              {...cleanArgs}
+              type="secondary"
+              isLoading={true}
+              icon={<IconFile />}
+            >
+              Secondary Loading
+            </ItemButton>
+            <ItemButton
+              {...cleanArgs}
+              type="outline"
+              isLoading={true}
+              icon={<IconFile />}
+            >
+              Outline Loading
+            </ItemButton>
+          </div>
+        </div>
+
+        <div>
+          <h4>Explicit Loading Slots</h4>
+          <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+            <ItemButton
+              {...cleanArgs}
+              isLoading={true}
+              loadingSlot="rightIcon"
+              icon={<IconFile />}
+              rightIcon={<IconExternalLink />}
+            >
+              Loading in rightIcon slot
+            </ItemButton>
+            <ItemButton
+              {...cleanArgs}
+              isLoading={true}
+              loadingSlot="prefix"
+              icon={<IconFile />}
+              prefix="$"
+            >
+              Loading in prefix slot
+            </ItemButton>
+            <ItemButton
+              {...cleanArgs}
+              isLoading={true}
+              loadingSlot="suffix"
+              icon={<IconFile />}
+              suffix=".00"
+            >
+              Loading in suffix slot
+            </ItemButton>
+          </div>
+        </div>
+
+        <div>
+          <h4>Loading Behavior</h4>
+          <p style={{ fontSize: 14, color: '#666', marginBottom: 16 }}>
+            Loading buttons are automatically disabled and cannot be interacted
+            with:
+          </p>
+          <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+            <ItemButton
+              {...cleanArgs}
+              isLoading={true}
+              icon={<IconFile />}
+              onPress={() => alert('This should not trigger!')}
+            >
+              Loading button (disabled)
+            </ItemButton>
+            <ItemButton
+              {...cleanArgs}
+              isLoading={false}
+              icon={<IconFile />}
+              onPress={() => alert('Normal button clicked!')}
+            >
+              Normal button (clickable)
+            </ItemButton>
+          </div>
+        </div>
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates the loading functionality in ItemButton. When `isLoading` is true, the button shows a loading icon in the appropriate slot (auto-selected or explicitly specified) and becomes disabled. The auto mode intelligently selects: icon → rightIcon → fallback to icon slot.',
       },
     },
   },

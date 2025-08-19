@@ -391,7 +391,7 @@ function Select<T extends object>(
         theme={theme}
         size={size}
         // Ensure this button never submits a surrounding form in tests or runtime
-        buttonType="button"
+        htmlType="button"
         // Preserve visual variant via data attribute instead of conflicting with HTML attribute
         type={type}
         mods={modifiers}

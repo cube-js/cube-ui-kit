@@ -105,7 +105,7 @@ export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
    * HTML button type to avoid implicit form submission when used as `as="button"`.
    * Kept separate from visual `type` prop.
    */
-  buttonType?: 'button' | 'submit' | 'reset';
+  htmlType?: 'button' | 'submit' | 'reset';
   labelProps?: Props;
   descriptionProps?: Props;
   keyboardShortcutProps?: Props;
@@ -383,7 +383,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     descriptionProps,
     keyboardShortcutProps,
     styles,
-    buttonType,
+    htmlType,
     isSelected,
     hotkeys,
     tooltip,
@@ -552,7 +552,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
       aria-selected={isSelected}
       mods={mods}
       styles={styles}
-      type={buttonType as any}
+      type={htmlType as any}
       {...rest}
     >
       {finalIcon && (
