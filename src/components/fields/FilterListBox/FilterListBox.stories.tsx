@@ -1,7 +1,7 @@
-import { StoryFn } from '@storybook/react-vite';
+import { StoryFn } from '@storybook/react';
+import { userEvent, within } from '@storybook/test';
 import { IconFile, IconFileDiff } from '@tabler/icons-react';
 import { useState } from 'react';
-import { userEvent, within } from 'storybook/test';
 
 import {
   BellFilledIcon,
@@ -25,7 +25,7 @@ import { DialogTrigger } from '../../overlays/Dialog/DialogTrigger';
 
 import { CubeFilterListBoxProps, FilterListBox } from './FilterListBox';
 
-// import type { Meta, StoryObj } from '@storybook/react-vite';
+// import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: any = {
   title: 'Forms/FilterListBox',

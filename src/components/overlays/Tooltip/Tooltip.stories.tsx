@@ -1,5 +1,5 @@
-import { ComponentMeta, Story } from '@storybook/react-vite';
-import { expect, userEvent, waitFor, within } from 'storybook/test';
+import { ComponentMeta, Story } from '@storybook/react';
+import { expect, userEvent, waitFor, within } from '@storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Button } from '../../actions';

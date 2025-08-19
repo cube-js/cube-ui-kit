@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react-vite';
+import { Meta, StoryFn } from '@storybook/react';
 import { useState } from 'react';
 
 import { baseProps } from '../../../stories/lists/baseProps';

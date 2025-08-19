@@ -1,6 +1,6 @@
-import { Meta, StoryFn } from '@storybook/react-vite';
+import { Meta, StoryFn } from '@storybook/react';
+import { userEvent, within } from '@storybook/test';
 import { IconCoin } from '@tabler/icons-react';
-import { userEvent, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { wait } from '../../../test/utils/wait';

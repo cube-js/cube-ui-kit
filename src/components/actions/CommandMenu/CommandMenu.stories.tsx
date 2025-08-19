@@ -1,4 +1,11 @@
 import {
+  expect,
+  findByRole,
+  userEvent,
+  waitFor,
+  within,
+} from '@storybook/test';
+import {
   IconArrowBack,
   IconArrowForward,
   IconClipboard,
@@ -7,7 +14,6 @@ import {
   IconSelect,
 } from '@tabler/icons-react';
 import React, { useState } from 'react';
-import { expect, findByRole, userEvent, waitFor, within } from 'storybook/test';
 
 import { tasty } from '../../../tasty';
 import { Card } from '../../content/Card/Card';
@@ -29,7 +35,7 @@ import { useContextMenu } from '../use-context-menu';
 
 import { CommandMenu, CubeCommandMenuProps } from './CommandMenu';
 
-import type { StoryFn } from '@storybook/react-vite';
+import type { StoryFn } from '@storybook/react';
 
 // Styled components for header and footer
 const HeaderTitle = tasty(Text, {

@@ -367,11 +367,7 @@ export function FileTabs({
             );
           })}
         </TabsPanelElement>
-        <Flex
-          flexGrow={1}
-          border="top rgb(227, 227, 233)"
-          {...(paneStyles || {})}
-        >
+        <Flex flexGrow={1} border="top" {...(paneStyles || {})}>
           {children}
         </Flex>
       </FileTabsContext.Provider>

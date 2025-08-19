@@ -1,4 +1,4 @@
-import { StoryFn } from '@storybook/react-vite';
+import { StoryFn } from '@storybook/react';
 import { IconCaretDown, IconCoin } from '@tabler/icons-react';
 
 import { baseProps } from '../../../stories/lists/baseProps';

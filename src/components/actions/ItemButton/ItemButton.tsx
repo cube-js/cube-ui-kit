@@ -7,8 +7,8 @@ import { CubeItemBaseProps, ItemBase } from '../../content/ItemBase';
 import { CubeUseActionProps, useAction } from '../use-action';
 
 export interface CubeItemButtonProps
-  extends Omit<CubeItemBaseProps, 'buttonType' | 'as'>,
-    Omit<CubeUseActionProps, 'type' | 'as'> {}
+  extends CubeItemBaseProps,
+    Omit<CubeUseActionProps, 'as'> {}
 
 const StyledItemBase = tasty(ItemBase, {
   as: 'button',
@@ -24,13 +24,13 @@ export const ItemButton = forwardRef(function ItemButton(
   allProps: CubeItemButtonProps,
   ref: FocusableRef<HTMLElement>,
 ) {
-  const { mods, to, htmlType, buttonType, as, type, ...rest } =
+  const { mods, to, htmlType, as, type, theme, ...rest } =
     allProps as CubeItemButtonProps & {
       as?: 'a' | 'button' | 'div' | 'span';
     };
 
   const { actionProps } = useAction(
-    { ...(allProps as any), type: buttonType, to, htmlType, as, mods },
+    { ...(allProps as any), htmlType, to, as, mods },
     ref,
   );
 
@@ -38,7 +38,7 @@ export const ItemButton = forwardRef(function ItemButton(
     <StyledItemBase
       {...(mergeProps(rest, actionProps) as any)}
       type={type}
-      buttonType={actionProps.type}
+      theme={theme}
     />
   );
 });
