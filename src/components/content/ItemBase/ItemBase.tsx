@@ -395,7 +395,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
   } = props;
 
   // Loading state makes the component disabled
-  const finalIsDisabled = (isDisabled || isLoading) && isDisabled !== false;
+  const finalIsDisabled = isDisabled === true || (isLoading && isDisabled !== false);
 
   // Determine if we should show checkbox instead of icon
   const hasCheckbox = icon === 'checkbox';
