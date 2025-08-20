@@ -8,7 +8,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useCombinedRefs } from 'src/utils/react';
 
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
@@ -23,6 +22,7 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
+import { useCombinedRefs } from '../../../utils/react';
 import { Action } from '../../actions';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 
