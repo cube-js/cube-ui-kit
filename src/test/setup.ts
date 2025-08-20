@@ -49,12 +49,14 @@ const suppressedConsoleError = (...args: any[]) => {
   const firstArg = args[0];
   if (typeof firstArg === 'string') {
     const msg = firstArg.toLowerCase();
-    // React 18/19 act() environment warning variants
+    // React 18/19 act() environment/config warnings
     if (
       msg.includes(
         'the current testing environment is not configured to support act',
       ) ||
-      msg.includes('not configured to support act(')
+      msg.includes('not configured to support act(') ||
+      msg.includes('inside a test was not wrapped in act(') ||
+      msg.includes('was not wrapped in act(')
     ) {
       return;
     }
