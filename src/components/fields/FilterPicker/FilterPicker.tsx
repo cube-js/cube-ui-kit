@@ -324,8 +324,12 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             }
           }
 
-          if (element.props?.children) {
-            traverse(element.props.children);
+          if (
+            element.props &&
+            typeof element.props === 'object' &&
+            'children' in element.props
+          ) {
+            traverse((element.props as any).children);
           }
         });
       };
@@ -419,17 +423,20 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             const element = child as ReactElement;
 
             if (element.type === Item) {
+              const props = element.props as any;
               const label =
-                element.props.textValue ||
-                (typeof element.props.children === 'string'
-                  ? element.props.children
-                  : '') ||
-                String(element.props.children || '');
+                props.textValue ||
+                (typeof props.children === 'string' ? props.children : '') ||
+                String(props.children || '');
               allLabels.push(label);
             }
 
-            if (element.props?.children) {
-              extractAllLabels(element.props.children);
+            if (
+              element.props &&
+              typeof element.props === 'object' &&
+              'children' in element.props
+            ) {
+              extractAllLabels((element.props as any).children);
             }
           });
         };
@@ -500,19 +507,22 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
           if (element.type === Item) {
             const childKey = String(element.key);
             if (selectedSet.has(normalizeKeyValue(childKey))) {
+              const props = element.props as any;
               const label =
-                element.props.textValue ||
-                (typeof element.props.children === 'string'
-                  ? element.props.children
-                  : '') ||
-                String(element.props.children || '');
+                props.textValue ||
+                (typeof props.children === 'string' ? props.children : '') ||
+                String(props.children || '');
               labels.push(label);
               processedKeys.add(normalizeKeyValue(childKey));
             }
           }
 
-          if (element.props?.children) {
-            extractLabelsWithTracking(element.props.children);
+          if (
+            element.props &&
+            typeof element.props === 'object' &&
+            'children' in element.props
+          ) {
+            extractLabelsWithTracking((element.props as any).children);
           }
         });
       };
@@ -657,9 +667,10 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
           element.type === BaseSection ||
           (element.type as any)?.displayName === 'Section'
         ) {
-          const sectionChildren = Array.isArray(element.props.children)
-            ? element.props.children
-            : [element.props.children];
+          const props = element.props as any;
+          const sectionChildren = Array.isArray(props.children)
+            ? props.children
+            : [props.children];
 
           const selectedItems: ReactNode[] = [];
           const unselectedItems: ReactNode[] = [];
@@ -689,7 +700,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
           // Create new section with sorted children, preserving React element properly
           unselected.push(
             cloneElement(element, {
-              ...element.props,
+              ...(element.props as any),
               children: [...selectedItems, ...unselectedItems],
             }),
           );
