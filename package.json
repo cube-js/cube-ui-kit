@@ -40,7 +40,7 @@
     "fix": "npm-run-all -p eslint:fix prettier:fix",
     "storybook": "STORYBOOK_MODE=stories storybook dev -p 6060",
     "build-storybook": "STORYBOOK_MODE=stories storybook build",
-    "build-docs": "storybook build -o storybook-docs",
+    "build-docs": "STORYBOOK_MODE=docs storybook build --docs -o storybook-docs",
     "build-static-docs": "npm run build-docs && node scripts/snapshot-docs.js",
     "size": "size-limit",
     "prepare": "husky install",
