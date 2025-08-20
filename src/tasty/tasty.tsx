@@ -12,8 +12,6 @@ import {
 import { isValidElementType } from 'react-is';
 import styledComponents, { createGlobalStyle } from 'styled-components';
 
-import { forwardRefWithGenerics } from '../utils/react/forwardRefWithGenerics';
-
 import { BreakpointsContext } from './providers/BreakpointsProvider';
 import { BASE_STYLES } from './styles/list';
 import { Styles, StylesInterface } from './styles/types';
@@ -29,6 +27,12 @@ import { ResponsiveStyleValue } from './utils/styles';
 type StyledElementProps = {
   $css: string;
 };
+
+// Basic props accepted by our styled base element
+type BaseElementProps = StyledElementProps & { as?: string } & Record<
+    string,
+    unknown
+  >;
 
 type StyleList = readonly (keyof {
   [key in keyof StylesInterface]: StylesInterface[key];
@@ -80,12 +84,12 @@ type TastyComponentPropsWithDefaults<
       [key in keyof Omit<Props, keyof DefaultProps>]: Props[key];
     };
 
-function tasty<K extends StyleList, V extends VariantMap>(
+export function tasty<K extends StyleList, V extends VariantMap>(
   options: TastyProps<K, V>,
   secondArg?: never,
 ): ComponentType<Omit<Props, 'variant'> & WithVariant<V>>;
-function tasty(selector: string, styles?: Styles);
-function tasty<
+export function tasty(selector: string, styles?: Styles);
+export function tasty<
   Props extends PropsWithStyles,
   DefaultProps extends Partial<Props> = Partial<Props>,
 >(
@@ -94,94 +98,113 @@ function tasty<
 ): ComponentType<TastyComponentPropsWithDefaults<Props, DefaultProps>>;
 
 // Implementation
-function tasty<
+export function tasty<
   K extends StyleList,
   V extends VariantMap,
   C = Record<string, unknown>,
->(Component, options) {
+>(Component: any, options?: any) {
   if (typeof Component === 'string') {
-    let selector = Component;
-    let styles = options;
-    let Element = createGlobalStyle<StyledElementProps>`${({ $css }) => $css}`;
-
-    const _StyleDeclarationComponent: FC<GlobalTastyProps> = ({
-      breakpoints,
-    }) => {
-      let contextBreakpoints = useContext(BreakpointsContext);
-
-      breakpoints = breakpoints ?? contextBreakpoints;
-
-      const breakpointsHash = breakpoints.join(',');
-
-      let css = useMemo(
-        () =>
-          styles
-            ? `\n{}${selector}{${renderStyles(
-                styles,
-                pointsToZones(breakpoints || [980]),
-              )}}`
-            : '',
-        [breakpointsHash],
-      );
-
-      return <Element $css={css} />;
-    };
-
-    _StyleDeclarationComponent.displayName = `TastyStyleDeclaration(${Component})`;
-
-    return _StyleDeclarationComponent;
+    return tastyGlobal(Component as string, options as Styles);
   }
 
   if (isValidElementType(Component)) {
-    let {
-      as: extendTag,
-      element: extendElement,
-      ...defaultProps
-    } = options ?? {};
-
-    let propsWithStyles = ['styles'].concat(
-      Object.keys(defaultProps).filter((prop) => prop.endsWith('Styles')),
-    );
-
-    let _WrappedComponent = forwardRef((props: PropsWithoutRef<C>, ref) => {
-      const { as, element, ...restProps } =
-        props as unknown as AllBasePropsWithMods<K>;
-      const propsWithStylesValues = propsWithStyles.map((prop) => props[prop]);
-
-      const mergedStylesMap: Styles | undefined = useMemo(() => {
-        return propsWithStyles.reduce((map, prop) => {
-          if (restProps[prop] != null && defaultProps[prop] != null) {
-            map[prop] = mergeStyles(defaultProps[prop], restProps[prop]);
-          } else {
-            map[prop] = restProps[prop] || defaultProps[prop];
-          }
-
-          return map;
-        }, {});
-      }, [propsWithStylesValues]);
-
-      return (
-        <Component
-          ref={ref}
-          {...defaultProps}
-          {...restProps}
-          {...mergedStylesMap}
-          as={as ?? extendTag}
-          element={element || extendElement}
-        />
-      );
-    });
-
-    _WrappedComponent.displayName = `TastyWrappedComponent(${getDisplayName(
-      Component,
-      defaultProps.qa ?? extendTag ?? 'Anonymous',
-    )})`;
-
-    return _WrappedComponent;
+    return tastyWrap(Component as ComponentType<any>, options);
   }
 
-  const tastyOptions = Component as TastyProps<K, never, V>;
+  return tastyElement(Component as TastyProps<K, V>);
+}
 
+// Internal specialized implementations
+function tastyGlobal(selector: string, styles?: Styles) {
+  let Element = createGlobalStyle<StyledElementProps>`$(({ $css }) => $css)`;
+
+  const _StyleDeclarationComponent: FC<GlobalTastyProps> = ({
+    breakpoints,
+  }) => {
+    let contextBreakpoints = useContext(BreakpointsContext);
+
+    const breakpointsList = (breakpoints ?? contextBreakpoints) || [980];
+    const breakpointsHash = breakpointsList.join(',');
+
+    let css = useMemo(() => {
+      if (!styles) return '';
+      return `\n{}${selector}{${renderStyles(
+        styles,
+        pointsToZones(breakpointsList),
+      )}}`;
+    }, [breakpointsHash]);
+
+    return <Element $css={css} />;
+  };
+
+  _StyleDeclarationComponent.displayName = `TastyStyleDeclaration(${selector})`;
+
+  return _StyleDeclarationComponent;
+}
+
+function tastyWrap<
+  P extends PropsWithStyles,
+  DefaultProps extends Partial<P> = Partial<P>,
+>(
+  Component: ComponentType<P>,
+  options?: TastyProps<never, never, P>,
+): ComponentType<TastyComponentPropsWithDefaults<P, DefaultProps>> {
+  let {
+    as: extendTag,
+    element: extendElement,
+    ...defaultProps
+  } = (options ?? {}) as TastyProps<never, never, P>;
+
+  let propsWithStyles = ['styles'].concat(
+    Object.keys(defaultProps).filter((prop) => prop.endsWith('Styles')),
+  );
+
+  const _WrappedComponent = forwardRef<any, any>((props, ref) => {
+    const { as, element, ...restProps } = props as Record<string, unknown>;
+    const propsWithStylesValues = propsWithStyles.map(
+      (prop) => (props as any)[prop],
+    );
+
+    const mergedStylesMap: Styles | undefined = useMemo(() => {
+      return propsWithStyles.reduce((map, prop) => {
+        const restValue = (restProps as any)[prop];
+        const defaultValue = (defaultProps as any)[prop];
+
+        if (restValue != null && defaultValue != null) {
+          (map as any)[prop] = mergeStyles(defaultValue, restValue);
+        } else {
+          (map as any)[prop] = restValue ?? defaultValue;
+        }
+
+        return map;
+      }, {} as Styles);
+    }, [propsWithStylesValues]);
+
+    const elementProps = {
+      ...(defaultProps as unknown as Record<string, unknown>),
+      ...(restProps as unknown as Record<string, unknown>),
+      ...(mergedStylesMap as unknown as Record<string, unknown>),
+      as: (as as string | undefined) ?? extendTag,
+      element: (element as string | undefined) || extendElement,
+      ref,
+    } as unknown as P;
+
+    return createElement(Component as ComponentType<P>, elementProps);
+  });
+
+  _WrappedComponent.displayName = `TastyWrappedComponent(${getDisplayName(
+    Component,
+    (defaultProps as any).qa ?? (extendTag as any) ?? 'Anonymous',
+  )})`;
+
+  return _WrappedComponent as unknown as ComponentType<
+    TastyComponentPropsWithDefaults<P, DefaultProps>
+  >;
+}
+
+function tastyElement<K extends StyleList, V extends VariantMap>(
+  tastyOptions: TastyProps<K, V>,
+) {
   let {
     as: originalAs = 'div',
     element: defaultElement,
@@ -194,37 +217,31 @@ function tasty<
   let _TastyComponent;
 
   if (variants) {
-    /**
-     * Create a tasty component for each variant.
-     * Then return a component that receives a `variant` and chooses the right component.
-     */
     type VariantFC<K extends StyleList> = ForwardRefExoticComponent<
       PropsWithoutRef<AllBasePropsWithMods<K>> & RefAttributes<unknown>
     >;
 
-    const variantComponents = Object.keys(variants).reduce(
-      (map, variant) => {
-        const variantStyles = variants?.[variant];
-
-        map[variant] = tasty({
+    const variantEntries = Object.entries(variants) as [string, Styles][];
+    const variantComponents = variantEntries.reduce(
+      (map, [variant, variantStyles]) => {
+        map[variant] = tastyElement({
           as: originalAs,
           styles: mergeStyles(defaultStyles, variantStyles),
           styleProps,
           ...(defaultProps as Props),
-        }) as unknown as VariantFC<K>;
-
+        } as TastyProps<K, never>) as unknown as VariantFC<K>;
         return map;
       },
       {} as Record<string, VariantFC<K>>,
     );
 
     if (!variantComponents['default']) {
-      variantComponents['default'] = tasty({
+      variantComponents['default'] = tastyElement({
         as: originalAs,
         styles: defaultStyles,
         styleProps,
         ...(defaultProps as Props),
-      }) as unknown as VariantFC<K>;
+      } as TastyProps<K, never>) as unknown as VariantFC<K>;
     }
 
     // eslint-disable-next-line react/display-name
@@ -232,10 +249,12 @@ function tasty<
       unknown,
       AllBasePropsWithMods<K> & WithVariant<V>
     >((allProps, ref) => {
-      const { variant, ...restProps } = allProps;
+      const { variant, ...restProps } = allProps as WithVariant<V> &
+        Record<string, unknown>;
 
       const Component =
-        variantComponents[variant as string] || variantComponents['default'];
+        variantComponents[(variant as unknown as string) || 'default'] ??
+        variantComponents['default'];
 
       const componentProps = restProps as unknown as PropsWithoutRef<
         AllBasePropsWithMods<K>
@@ -249,15 +268,17 @@ function tasty<
       return createElement(Component, elementProps);
     });
   } else {
-    let Element = styledComponents[originalAs](({ $css }) => $css);
+    let Element = styledComponents[originalAs](
+      ({ $css }) => $css,
+    ) as ComponentType<BaseElementProps>;
 
     /**
      * An additional optimization that allows to avoid rendering styles across various instances
      * of the same element if no custom styles are provided via `styles` prop or direct style props.
      */
-    const renderDefaultStyles = cacheWrapper((breakpoints) => {
-      return renderStyles(defaultStyles || {}, pointsToZones(breakpoints));
-    });
+    const renderDefaultStyles = cacheWrapper((breakpoints: number[]) =>
+      renderStyles(defaultStyles || {}, pointsToZones(breakpoints)),
+    );
 
     let {
       qa: defaultQa,
@@ -273,73 +294,74 @@ function tasty<
       let {
         as,
         styles,
-        variant,
+        variant: _omitVariant,
         breakpoints,
         mods,
         element,
         qa,
         qaVal,
         ...otherProps
-      } = allProps;
+      } = allProps as Record<string, unknown> as AllBasePropsWithMods<K> &
+        WithVariant<V>;
 
       let propStyles: Styles | null = (
         (styleProps
           ? (styleProps as StyleList).concat(BASE_STYLES)
           : BASE_STYLES) as StyleList
-      ).reduce(
-        (map, prop) => {
-          const key = prop as unknown as string;
-          const otherRecord = otherProps as unknown as Record<string, unknown>;
-          const mapRecord = map as unknown as Record<string, unknown>;
-
-          if (Object.prototype.hasOwnProperty.call(otherRecord, key)) {
-            mapRecord[key] = otherRecord[key];
-            delete otherRecord[key];
-          }
-
-          return mapRecord as unknown as Styles;
-        },
-        {} as unknown as Styles,
-      );
+      ).reduce((map, prop) => {
+        const key = prop as unknown as string;
+        if (Object.prototype.hasOwnProperty.call(otherProps as object, key)) {
+          (map as any)[key] = (otherProps as any)[key];
+          delete (otherProps as any)[key];
+        }
+        return map;
+      }, {} as Styles);
 
       if (Object.keys(propStyles).length === 0) {
         propStyles = null;
       }
 
-      if (!styles || (styles && Object.keys(styles).length === 0)) {
-        styles = undefined;
+      if (
+        !styles ||
+        (styles && Object.keys(styles as Record<string, unknown>).length === 0)
+      ) {
+        styles = undefined as unknown as Styles;
       }
 
       const propStylesCacheKey = JSON.stringify(propStyles);
-      const stylesCacheKey = useMemo(() => {
-        return JSON.stringify(styles);
-      }, [styles]);
+      const stylesCacheKey = useMemo(() => JSON.stringify(styles), [styles]);
 
       const useDefaultStyles = !propStyles && !styles;
 
-      const styleCacheKey = useMemo(() => {
-        return `${styles ? JSON.stringify(styles) : ''}.${
-          propStyles ? JSON.stringify(propStyles) : ''
-        }`;
-      }, [propStylesCacheKey, stylesCacheKey]);
+      const styleCacheKey = useMemo(
+        () =>
+          `${styles ? JSON.stringify(styles) : ''}.${propStyles ? JSON.stringify(propStyles) : ''}`,
+        [propStylesCacheKey, stylesCacheKey],
+      );
 
       let allStyles: Styles | undefined = useMemo(
         () =>
           useDefaultStyles
             ? defaultStyles
-            : mergeStyles(defaultStyles, styles, propStyles),
+            : mergeStyles(
+                defaultStyles,
+                styles as Styles,
+                propStyles as Styles,
+              ),
         [styleCacheKey],
       );
 
       let contextBreakpoints = useContext(BreakpointsContext);
 
-      breakpoints = breakpoints ?? contextBreakpoints;
+      breakpoints = (breakpoints as number[] | undefined) ?? contextBreakpoints;
 
-      let renderedStyles = useMemo(() => {
-        return useDefaultStyles
-          ? renderDefaultStyles(breakpoints as number[])
-          : renderStyles(allStyles, pointsToZones(breakpoints as number[]));
-      }, [allStyles, breakpoints]);
+      let renderedStyles = useMemo(
+        () =>
+          useDefaultStyles
+            ? renderDefaultStyles(breakpoints as number[])
+            : renderStyles(allStyles, pointsToZones(breakpoints as number[])),
+        [allStyles, breakpoints.join(',')],
+      );
 
       let modProps: Record<string, unknown> | undefined;
       if (mods) {
@@ -348,31 +370,26 @@ function tasty<
       }
 
       const elementProps = {
-        as: as ?? originalAs,
-        'data-element': element || defaultElement,
-        'data-qa': qa || defaultQa,
-        'data-qaval': qaVal || defaultQaVal,
+        as: (as as string | undefined) ?? originalAs,
+        'data-element': (element as string | undefined) || defaultElement,
+        'data-qa': (qa as string | undefined) || defaultQa,
+        'data-qaval': (qaVal as string | undefined) || defaultQaVal,
         ...(otherDefaultProps as unknown as Record<string, unknown>),
         ...(otherProps as unknown as Record<string, unknown>),
         ...(modProps || {}),
         ref,
         $css: renderedStyles,
-      } as unknown;
+      } as BaseElementProps;
 
-      return createElement(
-        Element as unknown as ComponentType<any>,
-        elementProps as any,
-      );
+      return createElement(Element, elementProps);
     });
   }
 
   _TastyComponent.displayName = `TastyComponent(${
-    defaultProps.qa || originalAs
+    (defaultProps as any).qa || originalAs
   })`;
 
   return _TastyComponent;
 }
 
-const Element = tasty({});
-
-export { tasty, Element };
+export const Element = tasty({});
