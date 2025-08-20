@@ -1,5 +1,5 @@
-import { ReactNode, useMemo } from 'react';
-import { isElement, isFragment } from 'react-is';
+import { isValidElement, ReactNode, useMemo } from 'react';
+import { isFragment } from 'react-is';
 
 import { useNotificationsApi } from '../NewNotifications';
 
@@ -47,7 +47,7 @@ function propsIsToastProps(
   props: CubeToastsApiProps | ReactNode,
 ): props is CubeToastsApiProps {
   const isReactNode =
-    isElement(props) ||
+    isValidElement(props) ||
     isFragment(props) ||
     typeof props === 'string' ||
     typeof props === 'number';
