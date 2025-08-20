@@ -251,13 +251,13 @@ export const Button = forwardRef(function Button(
   if (icon) {
     icon = cloneElement(icon, {
       'data-element': 'ButtonIcon',
-    });
+    } as any);
   }
 
   if (rightIcon) {
     rightIcon = cloneElement(rightIcon, {
       'data-element': 'ButtonIcon',
-    });
+    } as any);
   }
 
   const singleIcon = !!(

@@ -209,7 +209,7 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
       <LegacyFieldProvider>
         {cloneElement(
           child,
-          mergeProps(child.props, {
+          mergeProps(child.props as any, {
             ...getValueProps(inputType),
             label: name,
             name,

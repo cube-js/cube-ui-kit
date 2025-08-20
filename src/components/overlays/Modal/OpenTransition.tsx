@@ -39,10 +39,13 @@ export function OpenTransition(props: OpenTransitionProps) {
               props.children,
               (child) =>
                 child &&
-                cloneElement(child as ReactElement, {
-                  isOpen: !!OPEN_STATES[state],
-                  transitionState: state,
-                }),
+                cloneElement(
+                  child as ReactElement,
+                  {
+                    isOpen: !!OPEN_STATES[state],
+                    transitionState: state,
+                  } as any,
+                ),
             )}
           </OpenTransitionContext.Provider>
         </div>
