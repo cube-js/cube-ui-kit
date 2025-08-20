@@ -180,53 +180,6 @@ function App() {
 }
 ```
 
-### Updating Dialog Content
-
-```tsx
-import { useDialogContainer, Dialog, ProgressBar } from '@cube-dev/ui-kit';
-
-function ProgressDialog({ progress, status }) {
-  return (
-    <Dialog>
-      <Header>
-        <Title>Upload Progress</Title>
-      </Header>
-      <Content>
-        <Paragraph>{status}</Paragraph>
-        <ProgressBar value={progress} />
-      </Content>
-    </Dialog>
-  );
-}
-
-function App() {
-  const dialog = useDialogContainer(ProgressDialog, {
-    isDismissable: false
-  });
-
-  const startUpload = async () => {
-    dialog.open({ progress: 0, status: 'Starting upload...' });
-
-    for (let i = 0; i <= 100; i += 10) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      dialog.update({
-        progress: i,
-        status: i === 100 ? 'Upload complete!' : `Uploading... ${i}%`
-      });
-    }
-
-    setTimeout(() => dialog.close(), 1000);
-  };
-
-  return (
-    <div>
-      <Button onPress={startUpload}>Start Upload</Button>
-      {dialog.rendered}
-    </div>
-  );
-}
-```
-
 ### Form Dialog with Validation
 
 ```tsx
@@ -566,7 +519,6 @@ To avoid this error, always ensure `dialog.rendered` is included in your JSX bef
 - [DialogContainer](/docs/overlays-dialogcontainer--docs) - The underlying container component
 - [Dialog](/docs/overlays-dialog--docs) - The dialog content component
 - [DialogTrigger](/docs/overlays-dialogtrigger--docs) - Alternative for trigger-based dialogs
-- [Modal](/components/Modal) - Lower-level modal overlay component
 
 ## Migration from DialogContainer
 
