@@ -284,11 +284,11 @@ export function Field<T extends FieldTypes>(props: CubeFieldProps<T>) {
       inputType,
       __props.field?.value,
       __props.onChange,
-      child.props.allowsCustomValue,
+      (child.props as any).allowsCustomValue,
     ),
   );
 
-  const { onChange, onSelectionChange, ...childProps } = child.props;
+  const { onChange, onSelectionChange, ...childProps } = child.props as any;
 
   // onChange event passed to the child should be executed after Form onChange logic
   return (

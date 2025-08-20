@@ -27,7 +27,7 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { mergeProps } from '../../../utils/react';
+import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { InvalidIcon } from '../../shared/InvalidIcon';
@@ -272,9 +272,8 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
   let { isFocused, focusProps } = useFocus({ isDisabled });
   let { hoverProps, isHovered } = useHover({ isDisabled });
   let domRef = useRef(null);
-  let defaultInputRef = useRef(null);
 
-  inputRef = inputRef || defaultInputRef;
+  inputRef = useCombinedRefs(inputRef);
 
   // Expose imperative interface for ref
   useImperativeHandle(ref, () => ({

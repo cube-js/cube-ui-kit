@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { useCombinedRefs } from 'src/utils/react';
 
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
@@ -188,9 +189,8 @@ function FileInput(props: CubeFileInputProps, ref) {
   const [fileName, setFileName] = useState<string | undefined>(defaultFileName);
 
   let domRef = useRef(null);
-  let defaultInputRef = useRef(null);
 
-  inputRef = inputRef || defaultInputRef;
+  inputRef = useCombinedRefs(inputRef);
 
   const onLocalChange = useCallback(
     (event: any) => {

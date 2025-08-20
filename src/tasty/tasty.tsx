@@ -1,8 +1,11 @@
 import {
   ComponentType,
+  createElement,
   FC,
   forwardRef,
+  ForwardRefExoticComponent,
   PropsWithoutRef,
+  RefAttributes,
   useContext,
   useMemo,
 } from 'react';
@@ -195,18 +198,25 @@ function tasty<
      * Create a tasty component for each variant.
      * Then return a component that receives a `variant` and chooses the right component.
      */
-    const variantComponents = Object.keys(variants).reduce((map, variant) => {
-      const variantStyles = variants?.[variant];
+    type VariantFC<K extends StyleList> = ForwardRefExoticComponent<
+      PropsWithoutRef<AllBasePropsWithMods<K>> & RefAttributes<unknown>
+    >;
 
-      map[variant] = tasty({
-        as: originalAs,
-        styles: mergeStyles(defaultStyles, variantStyles),
-        styleProps,
-        ...(defaultProps as Props),
-      });
+    const variantComponents = Object.keys(variants).reduce(
+      (map, variant) => {
+        const variantStyles = variants?.[variant];
 
-      return map;
-    }, {});
+        map[variant] = tasty({
+          as: originalAs,
+          styles: mergeStyles(defaultStyles, variantStyles),
+          styleProps,
+          ...(defaultProps as Props),
+        }) as unknown as VariantFC<K>;
+
+        return map;
+      },
+      {} as Record<string, VariantFC<K>>,
+    );
 
     if (!variantComponents['default']) {
       variantComponents['default'] = tasty({
@@ -214,18 +224,30 @@ function tasty<
         styles: defaultStyles,
         styleProps,
         ...(defaultProps as Props),
-      });
+      }) as unknown as VariantFC<K>;
     }
 
     // eslint-disable-next-line react/display-name
-    _TastyComponent = forwardRef((allProps: any, ref: any) => {
+    _TastyComponent = forwardRef<
+      unknown,
+      AllBasePropsWithMods<K> & WithVariant<V>
+    >((allProps, ref) => {
       const { variant, ...restProps } = allProps;
 
-      const Component = (variantComponents[variant as string] ||
-        variantComponents['default']) as ComponentType<any>;
+      const Component =
+        variantComponents[variant as string] || variantComponents['default'];
 
-      return <Component ref={ref} {...restProps} />;
-    }) as any;
+      const componentProps = restProps as unknown as PropsWithoutRef<
+        AllBasePropsWithMods<K>
+      >;
+
+      const elementProps = {
+        ...componentProps,
+        ref,
+      } as PropsWithoutRef<AllBasePropsWithMods<K>> & RefAttributes<unknown>;
+
+      return createElement(Component, elementProps);
+    });
   } else {
     let Element = styledComponents[originalAs](({ $css }) => $css);
 
@@ -244,91 +266,104 @@ function tasty<
     } = defaultProps ?? {};
 
     // eslint-disable-next-line react/display-name
-    _TastyComponent = forwardRef(
-      (allProps: AllBasePropsWithMods<K> & WithVariant<V>, ref) => {
-        let {
-          as,
-          styles,
-          variant,
-          breakpoints,
-          mods,
-          element,
-          qa,
-          qaVal,
-          ...otherProps
-        } = allProps;
+    _TastyComponent = forwardRef<
+      unknown,
+      AllBasePropsWithMods<K> & WithVariant<V>
+    >((allProps, ref) => {
+      let {
+        as,
+        styles,
+        variant,
+        breakpoints,
+        mods,
+        element,
+        qa,
+        qaVal,
+        ...otherProps
+      } = allProps;
 
-        let propStyles: Styles | null = (
-          (styleProps
-            ? (styleProps as StyleList).concat(BASE_STYLES)
-            : BASE_STYLES) as StyleList
-        ).reduce((map, prop) => {
-          if (prop in otherProps) {
-            map[prop] = otherProps[prop];
+      let propStyles: Styles | null = (
+        (styleProps
+          ? (styleProps as StyleList).concat(BASE_STYLES)
+          : BASE_STYLES) as StyleList
+      ).reduce(
+        (map, prop) => {
+          const key = prop as unknown as string;
+          const otherRecord = otherProps as unknown as Record<string, unknown>;
+          const mapRecord = map as unknown as Record<string, unknown>;
 
-            delete otherProps[prop];
+          if (Object.prototype.hasOwnProperty.call(otherRecord, key)) {
+            mapRecord[key] = otherRecord[key];
+            delete otherRecord[key];
           }
 
-          return map;
-        }, {});
+          return mapRecord as unknown as Styles;
+        },
+        {} as unknown as Styles,
+      );
 
-        if (Object.keys(propStyles).length === 0) {
-          propStyles = null;
-        }
+      if (Object.keys(propStyles).length === 0) {
+        propStyles = null;
+      }
 
-        if (!styles || (styles && Object.keys(styles).length === 0)) {
-          styles = undefined;
-        }
+      if (!styles || (styles && Object.keys(styles).length === 0)) {
+        styles = undefined;
+      }
 
-        const propStylesCacheKey = JSON.stringify(propStyles);
-        const stylesCacheKey = useMemo(() => {
-          return JSON.stringify(styles);
-        }, [styles]);
+      const propStylesCacheKey = JSON.stringify(propStyles);
+      const stylesCacheKey = useMemo(() => {
+        return JSON.stringify(styles);
+      }, [styles]);
 
-        const useDefaultStyles = !propStyles && !styles;
+      const useDefaultStyles = !propStyles && !styles;
 
-        const styleCacheKey = useMemo(() => {
-          return `${styles ? JSON.stringify(styles) : ''}.${
-            propStyles ? JSON.stringify(propStyles) : ''
-          }`;
-        }, [propStylesCacheKey, stylesCacheKey]);
+      const styleCacheKey = useMemo(() => {
+        return `${styles ? JSON.stringify(styles) : ''}.${
+          propStyles ? JSON.stringify(propStyles) : ''
+        }`;
+      }, [propStylesCacheKey, stylesCacheKey]);
 
-        let allStyles: Styles | undefined = useMemo(
-          () =>
-            useDefaultStyles
-              ? defaultStyles
-              : mergeStyles(defaultStyles, styles, propStyles),
-          [styleCacheKey],
-        );
+      let allStyles: Styles | undefined = useMemo(
+        () =>
+          useDefaultStyles
+            ? defaultStyles
+            : mergeStyles(defaultStyles, styles, propStyles),
+        [styleCacheKey],
+      );
 
-        let contextBreakpoints = useContext(BreakpointsContext);
+      let contextBreakpoints = useContext(BreakpointsContext);
 
-        breakpoints = breakpoints ?? contextBreakpoints;
+      breakpoints = breakpoints ?? contextBreakpoints;
 
-        let renderedStyles = useMemo(() => {
-          return useDefaultStyles
-            ? renderDefaultStyles(breakpoints as number[])
-            : renderStyles(allStyles, pointsToZones(breakpoints as number[]));
-        }, [allStyles, breakpoints]);
+      let renderedStyles = useMemo(() => {
+        return useDefaultStyles
+          ? renderDefaultStyles(breakpoints as number[])
+          : renderStyles(allStyles, pointsToZones(breakpoints as number[]));
+      }, [allStyles, breakpoints]);
 
-        if (mods) {
-          Object.assign(otherProps, modAttrs(mods));
-        }
+      let modProps: Record<string, unknown> | undefined;
+      if (mods) {
+        const modsObject = mods as unknown as Record<string, unknown>;
+        modProps = modAttrs(modsObject as any) as Record<string, unknown>;
+      }
 
-        return (
-          <Element
-            as={as ?? originalAs}
-            data-element={element || defaultElement}
-            data-qa={qa || defaultQa}
-            data-qaval={qaVal || defaultQaVal}
-            {...otherDefaultProps}
-            {...otherProps}
-            ref={ref}
-            $css={renderedStyles}
-          />
-        );
-      },
-    );
+      const elementProps = {
+        as: as ?? originalAs,
+        'data-element': element || defaultElement,
+        'data-qa': qa || defaultQa,
+        'data-qaval': qaVal || defaultQaVal,
+        ...(otherDefaultProps as unknown as Record<string, unknown>),
+        ...(otherProps as unknown as Record<string, unknown>),
+        ...(modProps || {}),
+        ref,
+        $css: renderedStyles,
+      } as unknown;
+
+      return createElement(
+        Element as unknown as ComponentType<any>,
+        elementProps as any,
+      );
+    });
   }
 
   _TastyComponent.displayName = `TastyComponent(${
