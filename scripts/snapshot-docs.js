@@ -100,19 +100,21 @@ function createComponentMapping(availableIds) {
 /**
  * Fixes /components/ComponentName links in source files to proper /docs/ format
  * e.g., "/components/ItemButton" -> "/docs/actions-itembutton--docs"
+ * e.g., "/components/ItemButton#sub-components" -> "/docs/actions-itembutton--docs#sub-components"
  */
 function fixComponentLinks(content, componentMapping) {
   const brokenLinks = new Set();
 
-  // Pattern to match [text](/components/ComponentName)
-  const componentLinkPattern = /\[([^\]]*)\]\(\/components\/([^)]+)\)/g;
+  // Pattern to match [text](/components/ComponentName) or [text](/components/ComponentName#hash)
+  const componentLinkPattern =
+    /\[([^\]]*)\]\(\/components\/([^)#]+)(#[^)]+)?\)/g;
 
   const fixedContent = content.replace(
     componentLinkPattern,
-    (match, linkText, componentName) => {
+    (match, linkText, componentName, hashFragment = '') => {
       const storyId = componentMapping.get(componentName);
       if (storyId) {
-        return `[${linkText}](/docs/${storyId})`;
+        return `[${linkText}](/docs/${storyId}${hashFragment})`;
       }
       // If not found, log it and leave the link as is
       brokenLinks.add(componentName);
@@ -135,7 +137,9 @@ function fixComponentLinks(content, componentMapping) {
  * Fixes internal links in HTML content to point to the generated HTML files
  * Transforms links like:
  * - `href="/docs/pickers-select--docs"` -> `href="pickers-select--docs.html"`
+ * - `href="/docs/pickers-select--docs#hash"` -> `href="pickers-select--docs.html#hash"`
  * - `href="?path=/docs/pickers-select--docs"` -> `href="pickers-select--docs.html"`
+ * - `href="?path=/docs/pickers-select--docs#hash"` -> `href="pickers-select--docs.html#hash"`
  * - `href="/?path=/docs/pickers-select--docs"` -> `href="pickers-select--docs.html"`
  * - `href="./?path=/docs/pickers-select--docs"` -> `href="pickers-select--docs.html"`
  */
@@ -144,30 +148,33 @@ function fixInternalLinks(content, availableIds) {
   const availableIdsSet = new Set(availableIds);
   const brokenLinks = new Set();
 
-  // Pattern to match various forms of Storybook docs links
+  // Pattern to match various forms of Storybook docs links with optional hash fragments
   const linkPatterns = [
-    // Match href="/docs/story-id--docs"
-    /href="\/docs\/([^"]+--docs)"/g,
-    // Match href="?path=/docs/story-id--docs"
-    /href="\?path=\/docs\/([^"]+--docs)"/g,
-    // Match href="/?path=/docs/story-id--docs"
-    /href="\/\?path=\/docs\/([^"]+--docs)"/g,
-    // Match href="./?path=/docs/story-id--docs"
-    /href="\.\/\?path=\/docs\/([^"]+--docs)"/g,
+    // Match href="/docs/story-id--docs" or href="/docs/story-id--docs#hash"
+    /href="\/docs\/([^"#]+--docs)(#[^"]+)?"/g,
+    // Match href="?path=/docs/story-id--docs" or href="?path=/docs/story-id--docs#hash"
+    /href="\?path=\/docs\/([^"#]+--docs)(#[^"]+)?"/g,
+    // Match href="/?path=/docs/story-id--docs" or href="/?path=/docs/story-id--docs#hash"
+    /href="\/\?path=\/docs\/([^"#]+--docs)(#[^"]+)?"/g,
+    // Match href="./?path=/docs/story-id--docs" or href="./?path=/docs/story-id--docs#hash"
+    /href="\.\/\?path=\/docs\/([^"#]+--docs)(#[^"]+)?"/g,
   ];
 
   let fixedContent = content;
 
   linkPatterns.forEach((pattern) => {
-    fixedContent = fixedContent.replace(pattern, (match, storyId) => {
-      // Check if this story ID exists in our generated files
-      if (availableIdsSet.has(storyId)) {
-        return `href="${storyId}.html"`;
-      }
-      // If not found, log it and leave the link as is
-      brokenLinks.add(storyId);
-      return match;
-    });
+    fixedContent = fixedContent.replace(
+      pattern,
+      (match, storyId, hashFragment = '') => {
+        // Check if this story ID exists in our generated files
+        if (availableIdsSet.has(storyId)) {
+          return `href="${storyId}.html${hashFragment}"`;
+        }
+        // If not found, log it and leave the link as is
+        brokenLinks.add(storyId);
+        return match;
+      },
+    );
   });
 
   // Log broken links if any were found
