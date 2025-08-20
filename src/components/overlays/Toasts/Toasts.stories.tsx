@@ -1,6 +1,6 @@
-import { Meta, StoryFn } from '@storybook/react';
-import { expect, userEvent, within } from '@storybook/test';
+import { Meta, StoryFn } from '@storybook/react-vite';
 import { IconBell } from '@tabler/icons-react';
+import { expect, userEvent, within } from 'storybook/test';
 
 import { Button } from '../../actions';
 

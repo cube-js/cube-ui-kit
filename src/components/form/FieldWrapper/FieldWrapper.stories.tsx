@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react-vite';
 import { IconCoin } from '@tabler/icons-react';
 
 import { Button } from '../../actions/index';
