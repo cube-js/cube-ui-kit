@@ -116,7 +116,7 @@ export function tasty<
 
 // Internal specialized implementations
 function tastyGlobal(selector: string, styles?: Styles) {
-  let Element = createGlobalStyle<StyledElementProps>`$(({ $css }) => $css)`;
+  let Element = createGlobalStyle<StyledElementProps>`${({ $css }) => $css}`;
 
   const _StyleDeclarationComponent: FC<GlobalTastyProps> = ({
     breakpoints,
