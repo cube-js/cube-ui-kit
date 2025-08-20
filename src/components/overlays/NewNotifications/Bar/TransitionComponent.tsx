@@ -28,6 +28,7 @@ export function TransitionComponent(props: TransitionComponentProps) {
     <CSSTransition
       unmountOnExit
       mountOnEnter
+      nodeRef={notificationRef}
       timeout={TRANSITION_TIMEOUT}
       classNames={CSS_TRANSITION_CLASS_NAME}
       onEnter={calculateNotificationSize}

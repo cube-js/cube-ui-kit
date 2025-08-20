@@ -1,4 +1,5 @@
 export { chain } from './chain';
+export { forwardRefWithGenerics } from './forwardRefWithGenerics';
 export { isTextOnly } from './isTextOnly';
 export { mergeProps } from './mergeProps';
 export { modAttrs } from '../../tasty';

@@ -23,6 +23,7 @@ export function OverlayWrapper({
   container = null,
 }: CubeOverlayWrapperProps) {
   const containerRef = useRef(container);
+  const nodeRef = useRef<HTMLDivElement>(null);
   const options: OverlayTransitionCSSProps = {};
 
   if (typeof minOffset === 'number') {
@@ -44,11 +45,12 @@ export function OverlayWrapper({
   const contents = (
     <CSSTransition
       unmountOnExit
+      nodeRef={nodeRef}
       in={isOpen}
       timeout={120}
       classNames="cube-overlay-transition"
     >
-      <>{children}</>
+      <div ref={nodeRef}>{children}</div>
     </CSSTransition>
   );
 

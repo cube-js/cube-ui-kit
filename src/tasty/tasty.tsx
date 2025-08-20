@@ -1,6 +1,15 @@
-import { ComponentType, FC, forwardRef, useContext, useMemo } from 'react';
+import {
+  ComponentType,
+  FC,
+  forwardRef,
+  PropsWithoutRef,
+  useContext,
+  useMemo,
+} from 'react';
 import { isValidElementType } from 'react-is';
 import styledComponents, { createGlobalStyle } from 'styled-components';
+
+import { forwardRefWithGenerics } from '../utils/react/forwardRefWithGenerics';
 
 import { BreakpointsContext } from './providers/BreakpointsProvider';
 import { BASE_STYLES } from './styles/list';
@@ -131,7 +140,7 @@ function tasty<
       Object.keys(defaultProps).filter((prop) => prop.endsWith('Styles')),
     );
 
-    let _WrappedComponent = forwardRef((props: C, ref) => {
+    let _WrappedComponent = forwardRef((props: PropsWithoutRef<C>, ref) => {
       const { as, element, ...restProps } =
         props as unknown as AllBasePropsWithMods<K>;
       const propsWithStylesValues = propsWithStyles.map((prop) => props[prop]);
@@ -209,24 +218,14 @@ function tasty<
     }
 
     // eslint-disable-next-line react/display-name
-    _TastyComponent = forwardRef(
-      (allProps: AllBasePropsWithMods<K> & WithVariant<V>, ref) => {
-        const { variant, ...restProps } = allProps;
+    _TastyComponent = forwardRef((allProps: any, ref: any) => {
+      const { variant, ...restProps } = allProps;
 
-        const Component = (variantComponents[variant as string] ||
-          variantComponents['default']) as ComponentType<
-          AllBasePropsWithMods<K>
-        >;
+      const Component = (variantComponents[variant as string] ||
+        variantComponents['default']) as ComponentType<any>;
 
-        return (
-          <Component
-            // @ts-ignore
-            ref={ref}
-            {...(restProps as Props)}
-          />
-        );
-      },
-    );
+      return <Component ref={ref} {...restProps} />;
+    }) as any;
   } else {
     let Element = styledComponents[originalAs](({ $css }) => $css);
 

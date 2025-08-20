@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useEffect, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { CSSTransition } from 'react-transition-group';
 import styled from 'styled-components';
@@ -124,6 +124,7 @@ export function Modal(allProps: CubeModalProps) {
 
   isClosable = !!isClosable;
 
+  const nodeRef = useRef<HTMLDivElement>(null);
   const [inProp, setInProp] = useState<boolean>(false);
   const [localLoading, setLocalLoading] = useState(false);
 
@@ -197,8 +198,17 @@ export function Modal(allProps: CubeModalProps) {
   );
 
   return (
-    <CSSTransition in={inProp} timeout={250} classNames="cube-modal-transition">
-      <Overlay className="cube-modal-overlay" onClick={onOverlayClick}>
+    <CSSTransition
+      nodeRef={nodeRef}
+      in={inProp}
+      timeout={250}
+      classNames="cube-modal-transition"
+    >
+      <Overlay
+        ref={nodeRef}
+        className="cube-modal-overlay"
+        onClick={onOverlayClick}
+      >
         <Card
           data-qa={qa || 'Modal'}
           className="cube-modal"

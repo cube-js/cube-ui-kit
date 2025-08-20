@@ -5,6 +5,7 @@ import { useNumberFormatter, useSlider } from 'react-aria';
 import { useSliderState } from 'react-stately';
 
 import { extractStyles, OUTER_STYLES, tasty } from '../../../tasty';
+import { forwardRefWithGenerics } from '../../../utils/react/forwardRefWithGenerics';
 import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 
@@ -216,7 +217,7 @@ function SliderBase(
   });
 }
 
-const _SliderBase = forwardRef(SliderBase);
+const _SliderBase = forwardRefWithGenerics(SliderBase);
 
 _SliderBase.displayName = 'SliderBase';
 

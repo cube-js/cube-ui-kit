@@ -1,4 +1,4 @@
-import { forwardRef, HTMLAttributes } from 'react';
+import { forwardRef, HTMLAttributes, Ref } from 'react';
 
 import { tasty } from '../../../tasty';
 
@@ -35,7 +35,10 @@ export interface CubeUnderlayProps extends HTMLAttributes<HTMLElement> {
   transitionState?: TransitionState;
 }
 
-function Underlay({ isOpen, transitionState, ...otherProps }, ref) {
+function Underlay(
+  { isOpen, transitionState, ...otherProps }: CubeUnderlayProps,
+  ref: Ref<HTMLElement>,
+) {
   return (
     <UnderlayElement
       ref={ref}

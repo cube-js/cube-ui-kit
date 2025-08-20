@@ -1,4 +1,4 @@
-import { Key, ReactChild, ReactElement, ReactFragment, ReactNode } from 'react';
+import { Key, ReactElement, ReactNode } from 'react';
 
 import {
   NotificationAction,
@@ -57,8 +57,8 @@ export type BaseNotificationProps = {
   /**
    * Title of the notification
    */
-  header?: ReactChild | ReactFragment;
-  description: ReactChild | ReactFragment;
+  header?: ReactNode;
+  description: ReactNode;
   /**
    * Custom Icon for the notification
    */

@@ -1,4 +1,4 @@
-import ReactDOM from 'react-dom';
+import { createPortal } from 'react-dom';
 
 import { PortalProps } from './types';
 import { usePortal } from './usePortal';
@@ -30,5 +30,5 @@ export function Portal(props: PortalProps) {
   const { children, mountRoot, isDisabled } = usePortal(props);
 
   if (isDisabled) return <>{children}</>;
-  return mountRoot ? ReactDOM.createPortal(children, mountRoot) : null;
+  return mountRoot ? createPortal(children, mountRoot) : null;
 }

@@ -1,7 +1,6 @@
 import { AriaLabelingProps, CollectionBase, DOMRef } from '@react-types/shared';
 import React, {
   cloneElement,
-  forwardRef,
   ReactElement,
   ReactNode,
   RefObject,
@@ -44,7 +43,11 @@ import {
   tasty,
 } from '../../../tasty/index';
 import { generateRandomId } from '../../../utils/random';
-import { mergeProps, useCombinedRefs } from '../../../utils/react/index';
+import {
+  forwardRefWithGenerics,
+  mergeProps,
+  useCombinedRefs,
+} from '../../../utils/react/index';
 import { useFocus } from '../../../utils/react/interactions';
 import { useEventBus } from '../../../utils/react/useEventBus';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
@@ -715,7 +718,7 @@ function SelectSection<T>(props: SelectSectionProps<T>) {
   );
 }
 
-const _Select = forwardRef(Select);
+const _Select = forwardRefWithGenerics(Select);
 
 (_Select as any).cubeInputType = 'Select';
 
@@ -736,7 +739,7 @@ const __Select = Object.assign(
   },
 );
 
-__Select.displayName = 'Select';
+(__Select as any).displayName = 'Select';
 
 export { __Select as Select };
 
