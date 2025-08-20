@@ -1,7 +1,7 @@
 import { RefObject, useEffect, useRef } from 'react';
 
 export function useCombinedRefs(...refs: any[]): RefObject<any> {
-  const targetRef = useRef();
+  const targetRef = useRef(null);
 
   useEffect(() => {
     refs.forEach((ref) => {

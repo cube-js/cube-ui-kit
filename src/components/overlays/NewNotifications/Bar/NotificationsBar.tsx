@@ -59,7 +59,7 @@ export function NotificationsBar(props: NotificationsBarProps) {
 
   const ref = useRef<HTMLElement | null>(null);
   const [realLimit, setRealLimit] = useState(limit + 1);
-  const lastShownIdRef = useRef<Key>();
+  const lastShownIdRef = useRef<Key>(null);
 
   const { listProps, state } = useNotificationsList({ items, children, ref });
   const { hoverProps, isHovered } = useHover({});

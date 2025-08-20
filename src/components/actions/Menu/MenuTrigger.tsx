@@ -42,7 +42,7 @@ export type CubeMenuTriggerProps = AriaMenuTriggerProps &
 
 function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
   const menuPopoverRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLElement>();
+  const triggerRef = useRef<HTMLElement>(null);
   const domRef = useDOMRef(ref);
   const menuTriggerRef = props.targetRef || domRef || triggerRef;
   const menuRef = useRef<HTMLUListElement>(null);

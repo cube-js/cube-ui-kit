@@ -492,7 +492,7 @@ export function useForm<TSourceType extends FieldTypes>(
   } = {},
 ): [CubeFormInstance<TSourceType>] {
   const { onSubmit, onValuesChange } = options;
-  const formRef = useRef<CubeFormInstance<TSourceType>>();
+  const formRef = useRef<CubeFormInstance<TSourceType>>(null);
   const [, forceUpdate] = useState({});
 
   if (!formRef.current) {
