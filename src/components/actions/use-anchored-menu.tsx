@@ -20,7 +20,7 @@ import { MenuTrigger } from './Menu';
 
 export interface UseAnchoredMenuReturn<P, T> {
   /** Ref to attach to the anchor element for positioning the menu. */
-  anchorRef: RefObject<HTMLElement>;
+  anchorRef: RefObject<HTMLElement | null>;
 
   /**
    * Programmatically opens the menu with the provided props.

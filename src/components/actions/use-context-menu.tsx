@@ -29,7 +29,7 @@ export interface UseContextMenuReturn<
   T = ComponentProps<typeof MenuTrigger>,
 > {
   /** Container element that receives context menu events. Attach this ref to your target element. */
-  targetRef: RefObject<E>;
+  targetRef: RefObject<E | null>;
 
   /**
    * Programmatically opens the menu at the specified coordinates or element center.
