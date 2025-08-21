@@ -4,6 +4,7 @@ import {
   createContext,
   FormHTMLAttributes,
   forwardRef,
+  ReactElement,
   ReactNode,
   useContext,
   useRef,
@@ -201,7 +202,7 @@ function Form<T extends FieldTypes>(
     styles['$label-width'] = labelWidth;
   }
 
-  let domRef = useDOMRef(ref);
+  let domRef = useDOMRef(ref as any);
 
   let ctx = {
     labelPosition,
@@ -256,7 +257,9 @@ function Form<T extends FieldTypes>(
 /**
  * Forms allow users to enter data that can be submitted while providing alignment and styling for form fields.
  */
-const _Form = forwardRef(Form) as typeof Form;
+const _Form = forwardRef(Form) as unknown as <T extends FieldTypes>(
+  props: CubeFormProps<T> & { ref?: DOMRef<HTMLFormElement> },
+) => ReactElement;
 
 (_Form as any).displayName = 'Form';
 

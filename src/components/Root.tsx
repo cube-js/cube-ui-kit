@@ -88,7 +88,7 @@ export function Root(allProps: CubeRootProps) {
   let [height, setHeight] = useState(
     IS_DVH_SUPPORTED ? undefined : viewport.height,
   );
-  let timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  let timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   useEffect(() => {
     if (IS_DVH_SUPPORTED && typeof window !== 'undefined') {

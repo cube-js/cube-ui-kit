@@ -222,7 +222,7 @@ function ResizablePanel(
   props: CubeResizablePanelProps,
   ref: ForwardedRef<HTMLDivElement>,
 ) {
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(null);
   const isControllable = typeof props.size === 'number';
   const {
     isDisabled,

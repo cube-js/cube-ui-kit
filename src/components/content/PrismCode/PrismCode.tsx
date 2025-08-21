@@ -121,26 +121,32 @@ function PrismCode(props: CubePrismCodeProps, ref) {
               }}
             >
               {tokens.map((line, i) => {
-                const props = getLineProps({ line, key: i });
+                const { key: _lineKey, ...lineProps } = getLineProps({
+                  line,
+                  key: i,
+                });
 
                 return (
                   <span
                     key={i}
-                    {...props}
+                    {...lineProps}
                     style={{
-                      ...props.style,
+                      ...lineProps.style,
                       color: undefined,
                     }}
                   >
                     {line.map((token, key) => {
-                      const props = getTokenProps({ token, key });
+                      const { key: _tokenKey, ...tokenProps } = getTokenProps({
+                        token,
+                        key,
+                      });
 
                       return (
                         <span
                           key={key}
-                          {...props}
+                          {...tokenProps}
                           style={{
-                            ...props.style,
+                            ...tokenProps.style,
                             color: undefined,
                             backgroundColor: undefined,
                           }}

@@ -1,6 +1,5 @@
 import { render } from '@testing-library/react';
-import React from 'react';
-import { act } from 'react-dom/test-utils';
+import React, { act } from 'react';
 
 import { PrismDiffCode } from '../../PrismDiffCode/PrismDiffCode';
 import { PrismCode } from '../PrismCode';

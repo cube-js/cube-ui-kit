@@ -15,8 +15,8 @@ import type { SliderState } from 'react-stately';
 export interface SliderThumbProps extends AriaSliderThumbOptions {
   state: SliderState;
   isDisabled?: boolean;
-  trackRef: RefObject<HTMLElement>;
-  inputRef: RefObject<HTMLInputElement>;
+  trackRef: RefObject<HTMLElement | null>;
+  inputRef: RefObject<HTMLInputElement | null>;
   index: number;
 }
 

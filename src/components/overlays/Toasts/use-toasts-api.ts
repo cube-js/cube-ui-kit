@@ -1,5 +1,5 @@
-import { ReactChild, ReactFragment, useMemo } from 'react';
-import { isElement, isFragment } from 'react-is';
+import { isValidElement, ReactNode, useMemo } from 'react';
+import { isFragment } from 'react-is';
 
 import { useNotificationsApi } from '../NewNotifications';
 
@@ -31,7 +31,7 @@ export function useToastsApi() {
   return { toast, update, remove } as const;
 }
 
-function unwrapProps(props: CubeToastsApiProps | ReactChild | ReactFragment) {
+function unwrapProps(props: CubeToastsApiProps | ReactNode) {
   return {
     ...(propsIsToastProps(props)
       ? {
@@ -44,10 +44,10 @@ function unwrapProps(props: CubeToastsApiProps | ReactChild | ReactFragment) {
 }
 
 function propsIsToastProps(
-  props: CubeToastsApiProps | ReactChild | ReactFragment,
+  props: CubeToastsApiProps | ReactNode,
 ): props is CubeToastsApiProps {
   const isReactNode =
-    isElement(props) ||
+    isValidElement(props) ||
     isFragment(props) ||
     typeof props === 'string' ||
     typeof props === 'number';

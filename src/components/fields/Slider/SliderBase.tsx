@@ -1,10 +1,18 @@
 import { useFocusableRef } from '@react-spectrum/utils';
-import { FocusableRef } from '@react-types/shared';
-import { forwardRef, ReactNode, RefObject, useMemo, useRef } from 'react';
+import { DOMRef, FocusableRef } from '@react-types/shared';
+import {
+  ForwardedRef,
+  forwardRef,
+  ReactNode,
+  RefObject,
+  useMemo,
+  useRef,
+} from 'react';
 import { useNumberFormatter, useSlider } from 'react-aria';
 import { useSliderState } from 'react-stately';
 
 import { extractStyles, OUTER_STYLES, tasty } from '../../../tasty';
+import { forwardRefWithGenerics } from '../../../utils/react/forwardRefWithGenerics';
 import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 
@@ -30,10 +38,7 @@ const LabelValueElement = tasty(Text, {
   },
 });
 
-function SliderBase(
-  allProps: SliderBaseProps,
-  ref: FocusableRef<HTMLDivElement>,
-) {
+function SliderBase(allProps: SliderBaseProps, ref: DOMRef<HTMLDivElement>) {
   let props = useFormProps(allProps);
   props = useFieldProps(props, {
     defaultValidationTrigger: 'onChange',
@@ -110,7 +115,7 @@ function SliderBase(
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  let domRef = useFocusableRef(ref, inputRef);
+  let domRef = useFocusableRef(ref as any, inputRef);
 
   let displayValue = '';
   let maxLabelLength = 0;
@@ -216,9 +221,9 @@ function SliderBase(
   });
 }
 
-const _SliderBase = forwardRef(SliderBase);
+const _SliderBase = forwardRefWithGenerics(SliderBase);
 
-_SliderBase.displayName = 'SliderBase';
+(_SliderBase as any).displayName = 'SliderBase';
 
 export { _SliderBase as SliderBase };
 export { useSlider };

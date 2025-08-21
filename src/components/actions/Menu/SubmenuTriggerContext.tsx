@@ -1,7 +1,7 @@
 import React, { RefObject } from 'react';
 
 export interface SubmenuTriggerContextValue {
-  triggerRef: RefObject<HTMLElement>;
+  triggerRef: RefObject<HTMLElement | null>;
   isOpen?: boolean;
   isDisabled?: boolean;
   onMouseEnter?: () => void;

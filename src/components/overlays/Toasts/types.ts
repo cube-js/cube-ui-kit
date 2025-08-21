@@ -1,12 +1,12 @@
-import type { Key, ReactChild, ReactFragment, ReactNode } from 'react';
+import type { Key, ReactNode } from 'react';
 import type {
   CubeNotificationType,
   CubeNotifyApiProps,
 } from '../NewNotifications';
 
 export type CubeToastsApiProps = {
-  description: ReactChild | ReactFragment;
-  header?: ReactChild | ReactFragment;
+  description: ReactNode;
+  header?: ReactNode;
   id?: Key;
   onDismiss?: () => void;
   duration?: number | null;
@@ -21,7 +21,7 @@ export type CubeToastsApi = {
 };
 
 export type CubeToastsApiToastCallback = (
-  props: CubeToastsApiProps | ReactChild | ReactFragment,
+  props: CubeToastsApiProps | ReactNode,
 ) => {
   id: Key;
   update: (props: Partial<CubeNotifyApiProps>) => void;

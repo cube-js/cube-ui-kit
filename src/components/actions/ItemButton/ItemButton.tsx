@@ -37,6 +37,7 @@ export const ItemButton = forwardRef(function ItemButton(
   return (
     <StyledItemBase
       {...(mergeProps(rest, actionProps) as any)}
+      htmlType={actionProps.type}
       type={type}
       theme={theme}
     />

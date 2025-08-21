@@ -52,7 +52,7 @@ export function DialogContainer(props: CubeDialogContainerProps) {
     throw new Error('Only a single child can be passed to DialogContainer.');
   }
 
-  const lastChild = useRef<ReactElement>();
+  const lastChild = useRef<ReactElement>(null);
   const child = isValidElement(childArray[0]) ? childArray[0] : null;
 
   if (child) {

@@ -1,3 +1,4 @@
+import { createRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 
@@ -74,17 +75,26 @@ export const notification: NotificationService = {
 
     root.render(
       <TransitionGroup className="cube-notifications">
-        {items.map((item) => (
-          <CSSTransition
-            key={item.id}
-            timeout={400}
-            classNames="cube-notification"
-          >
-            <Notification type={item.type} onClose={() => this.close(item.id)}>
-              {item.message}
-            </Notification>
-          </CSSTransition>
-        ))}
+        {items.map((item) => {
+          const nodeRef = createRef<HTMLDivElement>();
+          return (
+            <CSSTransition
+              key={item.id}
+              nodeRef={nodeRef}
+              timeout={400}
+              classNames="cube-notification"
+            >
+              <div ref={nodeRef}>
+                <Notification
+                  type={item.type}
+                  onClose={() => this.close(item.id)}
+                >
+                  {item.message}
+                </Notification>
+              </div>
+            </CSSTransition>
+          );
+        })}
       </TransitionGroup>,
     );
   },

@@ -22,6 +22,7 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
+import { useCombinedRefs } from '../../../utils/react';
 import { Action } from '../../actions';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 
@@ -188,9 +189,8 @@ function FileInput(props: CubeFileInputProps, ref) {
   const [fileName, setFileName] = useState<string | undefined>(defaultFileName);
 
   let domRef = useRef(null);
-  let defaultInputRef = useRef(null);
 
-  inputRef = inputRef || defaultInputRef;
+  inputRef = useCombinedRefs(inputRef);
 
   const onLocalChange = useCallback(
     (event: any) => {

@@ -390,11 +390,11 @@ function InternalSubMenuTrigger(props: InternalSubMenuTriggerProps) {
             <MenuContext.Provider value={nestedMenuContext}>
               {/* Clone nested menu to inject required props */}
               {React.cloneElement(menu, {
-                ...menu.props,
+                ...(menu.props as any),
                 autoFocus,
                 onAction: (key: Key) => {
                   // Call original menu onAction first
-                  menu.props.onAction?.(key);
+                  (menu.props as any).onAction?.(key);
                   onAction?.(key);
                   // Don't close here - MenuItem will handle it via context.onClose
                 },
@@ -408,7 +408,7 @@ function InternalSubMenuTrigger(props: InternalSubMenuTriggerProps) {
                     domTriggerRef.current?.focus();
                   }
                   // Call original handler if exists
-                  menu.props.onKeyDown?.(e);
+                  (menu.props as any).onKeyDown?.(e);
                 },
                 ref: menuRef,
               })}

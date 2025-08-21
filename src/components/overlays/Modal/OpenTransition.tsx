@@ -4,6 +4,7 @@ import {
   createContext,
   ReactElement,
   useContext,
+  useRef,
 } from 'react';
 import { Transition } from 'react-transition-group';
 
@@ -27,20 +28,27 @@ export function useOpenTransitionContext() {
 }
 
 export function OpenTransition(props: OpenTransitionProps) {
+  const nodeRef = useRef<HTMLDivElement>(null);
+
   return (
-    <Transition timeout={{ enter: 0, exit: 350 }} {...props}>
+    <Transition nodeRef={nodeRef} timeout={{ enter: 0, exit: 350 }} {...props}>
       {(state) => (
-        <OpenTransitionContext.Provider value={{ transitionState: state }}>
-          {Children.map(
-            props.children,
-            (child) =>
-              child &&
-              cloneElement(child as ReactElement, {
-                isOpen: !!OPEN_STATES[state],
-                transitionState: state,
-              }),
-          )}
-        </OpenTransitionContext.Provider>
+        <div ref={nodeRef}>
+          <OpenTransitionContext.Provider value={{ transitionState: state }}>
+            {Children.map(
+              props.children,
+              (child) =>
+                child &&
+                cloneElement(
+                  child as ReactElement,
+                  {
+                    isOpen: !!OPEN_STATES[state],
+                    transitionState: state,
+                  } as any,
+                ),
+            )}
+          </OpenTransitionContext.Provider>
+        </div>
       )}
     </Transition>
   );

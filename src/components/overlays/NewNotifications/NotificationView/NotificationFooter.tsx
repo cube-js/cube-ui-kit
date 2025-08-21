@@ -1,5 +1,4 @@
-import React, { memo } from 'react';
-import { isElement } from 'react-is';
+import React, { isValidElement, memo } from 'react';
 import flatten from 'react-keyed-flatten-children';
 
 import { tasty } from '../../../../tasty';
@@ -39,7 +38,7 @@ export const NotificationFooter = memo(function NotificationFooter(
           ? actions({ onClose, onDismiss })
           : actions,
       )
-        .filter((action) => isElement(action))
+        .filter((action) => isValidElement(action))
         .map((action, index) => {
           const { props } = action as NotificationActionComponent;
           const defaultType = index === 0 ? 'primary' : 'secondary';

@@ -19,6 +19,8 @@ const config = {
   transformIgnorePatterns: [
     'node_modules/(?!(.pnpm/)?react-hotkeys-hook)',
   ],
+  // Enable React act environment as early as possible
+  setupFiles: ['./src/test/setup-act-env.ts'],
   setupFilesAfterEnv: ['./src/test/setup.ts'],
 };
 

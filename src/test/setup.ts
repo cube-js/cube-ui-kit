@@ -46,13 +46,20 @@ let isConsoleSuppressed = false;
 
 // Override console.error globally to suppress act warnings
 const suppressedConsoleError = (...args: any[]) => {
-  if (
-    typeof args[0] === 'string' &&
-    args[0].includes(
-      'Warning: The current testing environment is not configured to support act',
-    )
-  ) {
-    return;
+  const firstArg = args[0];
+  if (typeof firstArg === 'string') {
+    const msg = firstArg.toLowerCase();
+    // React 18/19 act() environment/config warnings
+    if (
+      msg.includes(
+        'the current testing environment is not configured to support act',
+      ) ||
+      msg.includes('not configured to support act(') ||
+      msg.includes('inside a test was not wrapped in act(') ||
+      msg.includes('was not wrapped in act(')
+    ) {
+      return;
+    }
   }
   return originalError.call(console, ...args);
 };

@@ -1,4 +1,4 @@
-import { FocusableRef } from '@react-types/shared';
+import { DOMRef, FocusableRef } from '@react-types/shared';
 import { ReactElement, ReactNode, RefObject } from 'react';
 
 import { FieldBaseProps, FormBaseProps } from '../../shared/index';
@@ -12,7 +12,7 @@ interface WrapWithFieldProps extends FieldBaseProps, BaseProps, FormBaseProps {
 
 export function wrapWithField<T extends WrapWithFieldProps>(
   component: ReactElement,
-  ref: RefObject<unknown> | FocusableRef<HTMLElement>,
+  ref: RefObject<unknown> | FocusableRef<HTMLElement> | DOMRef<HTMLElement>,
   props: T,
 ) {
   let {

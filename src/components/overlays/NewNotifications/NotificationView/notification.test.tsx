@@ -10,6 +10,7 @@ import userEvent from '@testing-library/user-event';
 import { Timer } from '../../../../_internal';
 import { act } from '../../../../test';
 
+import { NotificationAction } from './NotificationAction';
 import { NotificationView } from './NotificationView';
 
 describe('<Notification />', () => {
@@ -96,5 +97,75 @@ describe('<Notification />', () => {
 
     expect(timerCallback).toBeCalledTimes(1);
     expect(onClose).toBeCalledTimes(0);
+  });
+
+  it('should render actions correctly', async () => {
+    const onActionPress = jest.fn();
+
+    render(
+      <NotificationView
+        description="test"
+        actions={
+          <>
+            <NotificationAction onPress={onActionPress}>
+              Test Action
+            </NotificationAction>
+            <NotificationAction type="secondary">
+              Secondary Action
+            </NotificationAction>
+          </>
+        }
+      />,
+    );
+
+    const actionButton = screen.getByText('Test Action');
+    expect(actionButton).toBeInTheDocument();
+
+    const secondaryButton = screen.getByText('Secondary Action');
+    expect(secondaryButton).toBeInTheDocument();
+
+    await act(() => userEvent.click(actionButton));
+    expect(onActionPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('should render actions as array', async () => {
+    render(
+      <NotificationView
+        description="test"
+        actions={[
+          <NotificationAction key="first">First Action</NotificationAction>,
+          <NotificationAction key="second" type="secondary">
+            Second Action
+          </NotificationAction>,
+        ]}
+      />,
+    );
+
+    expect(screen.getByText('First Action')).toBeInTheDocument();
+    expect(screen.getByText('Second Action')).toBeInTheDocument();
+  });
+
+  it('should render actions as function', async () => {
+    const onClose = jest.fn();
+    const onDismiss = jest.fn();
+
+    render(
+      <NotificationView
+        description="test"
+        actions={({ onClose, onDismiss }) => (
+          <>
+            <NotificationAction onPress={onClose}>Close</NotificationAction>
+            <NotificationAction type="secondary" onPress={onDismiss}>
+              Dismiss
+            </NotificationAction>
+          </>
+        )}
+        onClose={onClose}
+        onDismiss={onDismiss}
+      />,
+    );
+
+    expect(screen.getByText('Close')).toBeInTheDocument();
+    expect(screen.getByText('Dismiss')).toBeInTheDocument();
   });
 });
