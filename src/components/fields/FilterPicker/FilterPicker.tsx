@@ -26,6 +26,7 @@ import {
   COLOR_STYLES,
   ColorStyleProps,
   extractStyles,
+  filterBaseProps,
   OUTER_STYLES,
   OuterStyleProps,
   Styles,
@@ -970,7 +971,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     <FilterPickerWrapper
       qa={props.qa || 'FilterPicker'}
       styles={styles}
-      {...otherProps}
+      {...filterBaseProps(otherProps, { eventProps: true })}
     >
       <DialogTrigger
         type="popover"
