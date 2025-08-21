@@ -360,7 +360,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
           useDefaultStyles
             ? renderDefaultStyles(breakpoints as number[])
             : renderStyles(allStyles, pointsToZones(breakpoints as number[])),
-        [allStyles, breakpoints.join(',')],
+        [allStyles, breakpoints?.join(',')],
       );
 
       let modProps: Record<string, unknown> | undefined;
