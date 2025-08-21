@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.74.0
+
+### Minor Changes
+
+- [#764](https://github.com/cube-js/cube-ui-kit/pull/764) [`5e1b4ecb`](https://github.com/cube-js/cube-ui-kit/commit/5e1b4ecb55537f41f9217ca3b20c7bfe81d03dcb) Thanks [@tenphi](https://github.com/tenphi)! - Add support for React 19.
+
+### Patch Changes
+
+- [#762](https://github.com/cube-js/cube-ui-kit/pull/762) [`ecfa2d3b`](https://github.com/cube-js/cube-ui-kit/commit/ecfa2d3b0c56880547093d4acb262adf050dabdc) Thanks [@tenphi](https://github.com/tenphi)! - Update React Aria deps.
+
+- [#764](https://github.com/cube-js/cube-ui-kit/pull/764) [`5e1b4ecb`](https://github.com/cube-js/cube-ui-kit/commit/5e1b4ecb55537f41f9217ca3b20c7bfe81d03dcb) Thanks [@tenphi](https://github.com/tenphi)! - Fix ItemButton default type attribute (button).
+
 ## 0.73.2
 
 ### Patch Changes
