@@ -11,6 +11,7 @@ export type EventBusListener<T = any> = (data: T) => void;
 
 export interface EventBusContextValue {
   emit: <T = any>(event: string, data?: T) => void;
+  emitSync: <T = any>(event: string, data?: T) => void;
   on: <T = any>(event: string, listener: EventBusListener<T>) => () => void;
   off: <T = any>(event: string, listener: EventBusListener<T>) => void;
 }
@@ -56,11 +57,15 @@ export function EventBusProvider({ children }: EventBusProviderProps) {
   const emit = useCallback(<T = any>(event: string, data?: T) => {
     // Use setTimeout to ensure async emission after current render cycle
     setTimeout(() => {
-      const eventListeners = listeners.current[event];
-      if (eventListeners) {
-        eventListeners.forEach((listener) => listener(data));
-      }
+      emitSync(event, data);
     }, 0);
+  }, []);
+
+  const emitSync = useCallback(<T = any>(event: string, data?: T) => {
+    const eventListeners = listeners.current[event];
+    if (eventListeners) {
+      eventListeners.forEach((listener) => listener(data));
+    }
   }, []);
 
   const on = useCallback(
@@ -80,6 +85,7 @@ export function EventBusProvider({ children }: EventBusProviderProps) {
 
   const contextValue: EventBusContextValue = {
     emit,
+    emitSync,
     on,
     off,
   };
@@ -98,10 +104,14 @@ export function EventBusProvider({ children }: EventBusProviderProps) {
  * @example
  * ```tsx
  * function Component() {
- *   const { emit, on } = useEventBus();
+ *   const { emit, emitSync, on } = useEventBus();
  *
  *   const handleClick = () => {
  *     emit('user-action', { type: 'click', target: 'button' });
+ *   };
+ *
+ *   const handleSyncAction = () => {
+ *     emitSync('sync-action', { immediate: true });
  *   };
  *
  *   useEffect(() => {
@@ -112,7 +122,12 @@ export function EventBusProvider({ children }: EventBusProviderProps) {
  *     return unsubscribe;
  *   }, [on]);
  *
- *   return <button onClick={handleClick}>Click me</button>;
+ *   return (
+ *     <div>
+ *       <button onClick={handleClick}>Async Event</button>
+ *       <button onClick={handleSyncAction}>Sync Event</button>
+ *     </div>
+ *   );
  * }
  * ```
  */
