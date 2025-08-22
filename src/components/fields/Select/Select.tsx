@@ -279,7 +279,7 @@ function Select<T extends object>(
 
   // Listen for other menus opening and close this one if needed
   useEffect(() => {
-    const unsubscribe = on('menu:open', (data: { menuId: string }) => {
+    const unsubscribe = on('popover:open', (data: { menuId: string }) => {
       // If another menu is opening and this select is open, close this one
       if (data.menuId !== selectId && state.isOpen) {
         state.close();
@@ -292,7 +292,7 @@ function Select<T extends object>(
   // Emit event when this select opens
   useEffect(() => {
     if (state.isOpen) {
-      emit('menu:open', { menuId: selectId });
+      emit('popover:open', { menuId: selectId });
     }
   }, [state.isOpen, emit, selectId]);
 

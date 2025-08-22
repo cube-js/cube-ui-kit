@@ -1736,8 +1736,8 @@ describe('Menu synchronization with event bus', () => {
 // - ComboBox
 //
 // Implementation details:
-// 1. Each component generates a unique ID and listens for 'menu:open' events
-// 2. When a component opens, it emits a 'menu:open' event with its ID
+// 1. Each component generates a unique ID and listens for 'popover:open' events
+// 2. When a component opens, it emits a 'popover:open' event with its ID
 // 3. Other open components receive the event and close themselves
 // 4. The event bus uses setTimeout(0) to ensure async emission after render cycles
 // 5. This prevents race conditions where components close themselves immediately after opening
