@@ -7,7 +7,13 @@ import { createStyle, STYLE_HANDLER_MAP } from '../styles';
 import { Styles } from '../styles/types';
 
 import { mediaWrapper, normalizeStyleZones, pointsToZones } from './responsive';
-import { StyleHandler, StyleMap } from './styles';
+import {
+  computeState,
+  getModSelector,
+  StyleHandler,
+  StyleMap,
+  styleStateMapToStyleStateDataList,
+} from './styles';
 
 export interface StyleResult {
   selector: string;
@@ -159,44 +165,63 @@ function explodeHandlerResult(
 }
 
 /**
- * Parse CSS string back to logical rules (temporary solution for state bindings)
+ * Convert handler result (CSSMap) to CSS string for global injection
  */
-function parseCssStringToLogicalRules(
-  cssString: string,
-  className: string,
-): LogicalRule[] {
-  const logicalRules: LogicalRule[] = [];
+function convertHandlerResultToCSS(result: any, selectorSuffix = ''): string {
+  if (!result) return '';
 
-  // Simple regex to match CSS rules like "&:hover { color: red; }"
-  const ruleRegex = /([^{]+)\s*\{\s*([^}]+)\s*\}/g;
-  let match;
-
-  while ((match = ruleRegex.exec(cssString)) !== null) {
-    const [, selectorPart, declarationsPart] = match;
-
-    // Extract selector suffix (remove & and trim)
-    let selectorSuffix = selectorPart.replace(/^&/, '').trim();
-
-    // Parse declarations
-    const declarations: Record<string, string> = {};
-    const declRegex = /([^:]+):\s*([^;]+);?/g;
-    let declMatch;
-
-    while ((declMatch = declRegex.exec(declarationsPart)) !== null) {
-      const [, prop, value] = declMatch;
-      declarations[prop.trim()] = value.trim();
-    }
-
-    if (Object.keys(declarations).length > 0) {
-      logicalRules.push({
-        selectorSuffix,
-        breakpointIdx: 0, // CSS from wrapped handlers is typically base-level
-        declarations,
-      });
-    }
+  if (Array.isArray(result)) {
+    return result.reduce((css, item) => {
+      return css + convertHandlerResultToCSS(item, selectorSuffix);
+    }, '');
   }
 
-  return logicalRules;
+  const { $, css, ...styleProps } = result;
+  let renderedStyles = Object.keys(styleProps).reduce(
+    (styleList, styleName) => {
+      const value = styleProps[styleName];
+
+      if (Array.isArray(value)) {
+        return (
+          styleList +
+          value.reduce((css, val) => {
+            if (val) {
+              return css + `${styleName}: ${val};\n`;
+            }
+            return css;
+          }, '')
+        );
+      }
+
+      if (value) {
+        return `${styleList}${styleName}: ${value};\n`;
+      }
+
+      return styleList;
+    },
+    '',
+  );
+
+  if (css) {
+    renderedStyles = css + '\n' + renderedStyles;
+  }
+
+  if (!renderedStyles) {
+    return '';
+  }
+
+  const finalSelectorSuffix = selectorSuffix || '';
+
+  if (Array.isArray($)) {
+    return $.reduce((rend, suffix) => {
+      return (
+        rend +
+        `&${finalSelectorSuffix}${suffix ? suffix : ''}{\n${renderedStyles}}\n`
+      );
+    }, '');
+  }
+
+  return `&${finalSelectorSuffix}${$ ? $ : ''}{\n${renderedStyles}}\n`;
 }
 
 /**
@@ -347,10 +372,9 @@ export function renderStylesDirect(
         return pointProps;
       });
 
-      // Call original handler for each breakpoint (bypassing state resolution for simple values)
+      // Call handler for each breakpoint
       propsByPoint.forEach((props, breakpointIdx) => {
-        const originalHandler = (handler as any).__originalHandler || handler;
-        const result = originalHandler(props);
+        const result = handler(props);
         if (result) {
           const logicalRules = explodeHandlerResult(
             result,
@@ -362,17 +386,88 @@ export function renderStylesDirect(
         }
       });
     } else {
-      // For non-responsive styles, use wrapped handler (handles state bindings)
-      // The wrapped handler returns CSS string, so we need to parse it
-      const cssResult = handler(styleMap as any);
-      if (cssResult && typeof cssResult === 'string') {
-        // Parse the CSS string back to rules - this is a temporary solution
-        // TODO: We should modify handlers to return structured data instead of CSS strings
-        const tempLogicalRules = parseCssStringToLogicalRules(
-          cssResult,
-          className,
-        );
-        allLogicalRules.push(...tempLogicalRules);
+      // For non-responsive styles, check if any values have state maps
+      const hasStateMaps = lookupStyles.some((style) => {
+        const value = styleMap[style];
+        return value && typeof value === 'object' && !Array.isArray(value);
+      });
+
+      if (hasStateMaps) {
+        // Process each style property individually for state resolution
+        const allMods = new Set<string>();
+        const styleStates: Record<string, any> = {};
+
+        lookupStyles.forEach((style) => {
+          const value = styleMap[style];
+          if (value && typeof value === 'object' && !Array.isArray(value)) {
+            const { states, mods } = styleStateMapToStyleStateDataList(value);
+            styleStates[style] = states;
+            mods.forEach((mod) => allMods.add(mod));
+          } else {
+            // Simple value, create a single state
+            styleStates[style] = [{ mods: [], notMods: [], value }];
+          }
+        });
+
+        // Generate all possible mod combinations
+        const allModsArray = Array.from(allMods);
+        const combinations: string[][] = [[]]; // Start with empty combination
+
+        // Generate all combinations (including empty)
+        for (let i = 0; i < allModsArray.length; i++) {
+          const currentLength = combinations.length;
+          for (let j = 0; j < currentLength; j++) {
+            combinations.push([...combinations[j], allModsArray[i]]);
+          }
+        }
+
+        combinations.forEach((modCombination) => {
+          const stateProps: Record<string, any> = {};
+
+          lookupStyles.forEach((style) => {
+            const states = styleStates[style];
+            // Find the matching state for this mod combination
+            const matchingState = states.find((state) => {
+              return computeState(state.model, (mod) =>
+                modCombination.includes(mod),
+              );
+            });
+            if (matchingState) {
+              stateProps[style] = matchingState.value;
+            }
+          });
+
+          const result = handler(stateProps as any);
+          if (!result) return;
+
+          const notMods = allModsArray.filter(
+            (mod) => !modCombination.includes(mod),
+          );
+          const modsSelectors = `${modCombination
+            .map(getModSelector)
+            .join('')}${notMods
+            .map((mod) => {
+              const sel = getModSelector(mod);
+              return sel.startsWith(':not(')
+                ? sel.slice(5, -1)
+                : `:not(${sel})`;
+            })
+            .join('')}`;
+
+          const logical = explodeHandlerResult(
+            result,
+            zones || [],
+            modsSelectors,
+          );
+          allLogicalRules.push(...logical);
+        });
+      } else {
+        // Simple case: no state maps, call handler directly
+        const result = handler(styleMap as any);
+        if (result) {
+          const logical = explodeHandlerResult(result, zones || [], '');
+          allLogicalRules.push(...logical);
+        }
       }
     }
   });
@@ -476,7 +571,7 @@ export function renderStylesDirectForGlobal(
     });
   });
 
-  // Process handlers - similar to original renderStyles approach
+  // Process handlers using direct approach
   handlerQueue.forEach(({ handler, styleMap, isResponsive }) => {
     const lookupStyles = handler.__lookupStyles;
 
@@ -498,31 +593,121 @@ export function renderStylesDirectForGlobal(
         return pointProps;
       });
 
-      // Call handler for each breakpoint
+      // Call handler for each breakpoint and convert to CSS
       const rulesByPoint = propsByPoint.map((props) => {
-        // Use wrapped handler to get CSS string with & selectors
-        return handler(props) || '';
+        const result = handler(props);
+        if (!result) return '';
+
+        // Convert handler result to CSS string for global injection
+        return convertHandlerResultToCSS(result);
       });
 
       rulesByPoint.forEach((rules, i) => {
         responsiveStyles[i] += rules || '';
       });
     } else {
-      // For non-responsive styles, use wrapped handler
-      const cssResult =
-        (handler(styleMap as any, '') as unknown as string) || '';
+      // For non-responsive styles, check if any values have state maps
+      const hasStateMaps = lookupStyles.some((style) => {
+        const value = styleMap[style];
+        return value && typeof value === 'object' && !Array.isArray(value);
+      });
 
-      // Handle different CSS rule formats
-      if (cssResult) {
-        if (cssResult.startsWith('& {') && !cssResult.includes('&', 2)) {
-          // Simple rule: "& { declarations }"
-          const declarationBlock = cssResult.slice(3, -1).trim(); // Remove "& {" and "}"
-          if (declarationBlock) {
-            declarations.push(declarationBlock);
+      if (hasStateMaps) {
+        // Process each style property individually for state resolution
+        const allMods = new Set<string>();
+        const styleStates: Record<string, any> = {};
+
+        lookupStyles.forEach((style) => {
+          const value = styleMap[style];
+          if (value && typeof value === 'object' && !Array.isArray(value)) {
+            const { states, mods } = styleStateMapToStyleStateDataList(value);
+            styleStates[style] = states;
+            mods.forEach((mod) => allMods.add(mod));
+          } else {
+            // Simple value, create a single state
+            styleStates[style] = [{ mods: [], notMods: [], value }];
           }
-        } else {
-          // Complex rule with nested selectors or state modifiers - keep as-is
-          innerStyles += cssResult;
+        });
+
+        // Generate all possible mod combinations
+        const allModsArray = Array.from(allMods);
+        const combinations: string[][] = [[]]; // Start with empty combination
+
+        // Generate all combinations (including empty)
+        for (let i = 0; i < allModsArray.length; i++) {
+          const currentLength = combinations.length;
+          for (let j = 0; j < currentLength; j++) {
+            combinations.push([...combinations[j], allModsArray[i]]);
+          }
+        }
+
+        combinations.forEach((modCombination) => {
+          const stateProps: Record<string, any> = {};
+
+          lookupStyles.forEach((style) => {
+            const states = styleStates[style];
+            // Find the matching state for this mod combination
+            const matchingState = states.find((state) => {
+              return computeState(state.model, (mod) =>
+                modCombination.includes(mod),
+              );
+            });
+            if (matchingState) {
+              stateProps[style] = matchingState.value;
+            }
+          });
+
+          const result = handler(stateProps as any);
+          if (!result) return;
+
+          const notMods = allModsArray.filter(
+            (mod) => !modCombination.includes(mod),
+          );
+          const modsSelectors = `${modCombination
+            .map(getModSelector)
+            .join('')}${notMods
+            .map((mod) => {
+              const sel = getModSelector(mod);
+              return sel.startsWith(':not(')
+                ? sel.slice(5, -1)
+                : `:not(${sel})`;
+            })
+            .join('')}`;
+
+          // Convert to CSS with proper selectors
+          const cssResult = convertHandlerResultToCSS(result, modsSelectors);
+
+          if (cssResult) {
+            if (cssResult.startsWith('& {') && !cssResult.includes('&', 2)) {
+              // Simple rule: "& { declarations }"
+              const declarationBlock = cssResult.slice(3, -1).trim();
+              if (declarationBlock) {
+                declarations.push(declarationBlock);
+              }
+            } else {
+              // Complex rule with nested selectors or state modifiers
+              innerStyles += cssResult;
+            }
+          }
+        });
+      } else {
+        // Simple case: no state maps, call handler directly
+        const result = handler(styleMap as any);
+        if (result) {
+          const cssResult = convertHandlerResultToCSS(result);
+
+          if (cssResult) {
+            if (cssResult.startsWith('& {') && !cssResult.includes('&', 2)) {
+              // Simple rule: "& { declarations }"
+              const declarationBlock = cssResult.slice(3, -1).trim();
+              if (declarationBlock) {
+                declarations.push(declarationBlock);
+              }
+            } else {
+              // Complex rule with nested selectors or state modifiers
+              innerStyles += cssResult;
+            }
+          }
         }
       }
     }

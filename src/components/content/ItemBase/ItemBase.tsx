@@ -524,10 +524,10 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     // Initial check
     checkLabelOverflow();
 
-    // const resizeObserver = new ResizeObserver(checkLabelOverflow);
-    // resizeObserver.observe(label);
+    const resizeObserver = new ResizeObserver(checkLabelOverflow);
+    resizeObserver.observe(label);
 
-    // return () => resizeObserver.disconnect();
+    return () => resizeObserver.disconnect();
   }, [mergedLabelRef.current, isAutoTooltipEnabled]);
 
   const finalLabelProps = useMemo(() => {

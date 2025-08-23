@@ -157,7 +157,7 @@ export function createRule(
 
 const MOD_NAME_CACHE = new Map();
 
-function getModSelector(modName: string): string {
+export function getModSelector(modName: string): string {
   if (!MOD_NAME_CACHE.has(modName)) {
     MOD_NAME_CACHE.set(
       modName,
@@ -418,71 +418,6 @@ export function extractStyles(
 }
 
 /**
- * Render CSSMap to Styled Components CSS
- * @param styles
- * @param [selector]
- */
-export function renderStylesToSC(styles: StyleHandlerResult, selector = '') {
-  if (!styles) return '';
-
-  if (Array.isArray(styles)) {
-    return styles.reduce((css, stls) => {
-      return css + renderStylesToSC(stls, selector);
-    }, '');
-  }
-
-  const { $, css, ...styleProps } = styles;
-  let renderedStyles = Object.keys(styleProps).reduce(
-    (styleList, styleName) => {
-      const value = styleProps[styleName];
-
-      if (Array.isArray(value)) {
-        return (
-          styleList +
-          value.reduce((css, val) => {
-            if (val) {
-              return css + `${styleName}: ${val};\n`;
-            }
-
-            return css;
-          }, '')
-        );
-      }
-
-      if (value) {
-        return `${styleList}${styleName}: ${value};\n`;
-      }
-
-      return styleList;
-    },
-    '',
-  );
-
-  if (css) {
-    renderedStyles = css + '\n' + renderedStyles;
-  }
-
-  if (!renderedStyles) {
-    return '';
-  }
-
-  if (Array.isArray($)) {
-    return `${selector ? `${selector}{\n` : ''}${$.reduce((rend, suffix) => {
-      return (
-        rend +
-        `${suffix ? `&${suffix}{\n` : ''}${renderedStyles}${
-          suffix ? '}\n' : ''
-        }`
-      );
-    }, '')}${selector ? '}\n' : ''}`;
-  }
-
-  return `${selector ? `${selector}{\n` : ''}${
-    $ ? `&${$}{\n` : ''
-  }${renderedStyles}${$ ? '}\n' : ''}${selector ? '}\n' : ''}`;
-}
-
-/**
  * Compile states to finite CSS with selectors.
  * State values should contain a string value with CSS style list.
  * @param {string} selector
@@ -513,30 +448,6 @@ export function applyStates(selector: string, states, suffix = '') {
       '&',
     )}\n}`;
   }, '');
-}
-
-export function styleHandlerCacheWrapper(
-  styleHandler: StyleHandler,
-  limit = 1000,
-) {
-  const wrappedStyleHandler = cacheWrapper((styleMap) => {
-    return renderStylesToSC(styleHandler(styleMap));
-  }, limit);
-
-  const wrappedMapHandler = cacheWrapper((styleMap, suffix = '') => {
-    if (styleMap == null || styleMap === false) return null;
-
-    const stateMapList = styleMapToStyleMapStateList(styleMap);
-
-    replaceStateValues(stateMapList, wrappedStyleHandler);
-
-    return applyStates('&', stateMapList, suffix);
-  }, limit);
-
-  return Object.assign(wrappedMapHandler, {
-    __lookupStyles: styleHandler.__lookupStyles,
-    __originalHandler: styleHandler, // Store reference to original handler for direct access
-  });
 }
 
 /**
