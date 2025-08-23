@@ -441,7 +441,7 @@ export function renderStylesToSC(styles: StyleHandlerResult, selector = '') {
           styleList +
           value.reduce((css, val) => {
             if (val) {
-              return css + `${styleName}:${val};\n`;
+              return css + `${styleName}: ${val};\n`;
             }
 
             return css;
@@ -450,7 +450,7 @@ export function renderStylesToSC(styles: StyleHandlerResult, selector = '') {
       }
 
       if (value) {
-        return `${styleList}${styleName}:${value};\n`;
+        return `${styleList}${styleName}: ${value};\n`;
       }
 
       return styleList;
@@ -508,10 +508,10 @@ export function applyStates(selector: string, states, suffix = '') {
       .join('')}`;
 
     // TODO: replace `replace()` a REAL hotfix
-    return `${css}${selector}${modifiers}${suffix}{\n${state.value.replace(
+    return `${css}${selector}${modifiers}${suffix} {\n${state.value.replace(
       /^&&/,
       '&',
-    )}}\n`;
+    )}\n}`;
   }, '');
 }
 
@@ -530,11 +530,12 @@ export function styleHandlerCacheWrapper(
 
     replaceStateValues(stateMapList, wrappedStyleHandler);
 
-    return applyStates('&&', stateMapList, suffix);
+    return applyStates('&', stateMapList, suffix);
   }, limit);
 
   return Object.assign(wrappedMapHandler, {
     __lookupStyles: styleHandler.__lookupStyles,
+    __originalHandler: styleHandler, // Store reference to original handler for direct access
   });
 }
 

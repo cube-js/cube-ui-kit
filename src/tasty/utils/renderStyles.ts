@@ -161,9 +161,15 @@ export function renderStyles(
       }
     });
 
-    STYLE_CACHE[cacheKey] = `&${
-      suffix || ''
-    }{outline: none;\n&[hidden]{display: none !important;}}${rawStyles}${
+    // REMOVED: predefined outline/hidden styles as per spec
+    // OLD: {outline: none;\n&[hidden]{display: none !important;}}
+
+    // Only include base rule if there are base styles
+    const baseRule = rawStyles.trim()
+      ? `&${suffix || ''} { ${rawStyles} }`
+      : '';
+
+    STYLE_CACHE[cacheKey] = `${baseRule}${
       responsive &&
       responsive.length &&
       responsiveStyles.filter((s) => s).length

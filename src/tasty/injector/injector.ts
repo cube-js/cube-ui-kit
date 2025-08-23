@@ -1,12 +1,7 @@
-import { flattenNestedCss, wrapWithAtRules } from './flatten';
+import { flattenNestedCss, flattenNestedCssForSelector } from './flatten';
 import { hashCssText } from './hash';
 import { SheetManager } from './sheet-manager';
-import {
-  DisposeFunction,
-  InjectResult,
-  RuleInfo,
-  StyleInjectorConfig,
-} from './types';
+import { DisposeFunction, InjectResult, StyleInjectorConfig } from './types';
 
 export class StyleInjector {
   private sheetManager: SheetManager;
@@ -18,6 +13,7 @@ export class StyleInjector {
 
   /**
    * Inject CSS and return className with dispose function
+   * Simple approach: one CSS block -> one class name
    */
   inject(
     cssText: string,
@@ -33,58 +29,131 @@ export class StyleInjector {
       };
     }
 
-    // Generate hash for deduplication
-    const hash = hashCssText(cssText);
-    const className = hash.slice(2); // Remove 't-' prefix for internal use
+    // Generate stable hash for class name
+    const className = hashCssText(cssText);
 
-    // Check if already injected
-    let ruleInfos = registry.cache.get(hash);
-
-    if (ruleInfos) {
-      // Increment reference count
-      const currentCount = registry.refCounts.get(hash) || 0;
-      registry.refCounts.set(hash, currentCount + 1);
-
-      return {
-        className: hash, // Return full class name with prefix
-        dispose: () => this.dispose(hash, registry, false),
-      };
+    // Only log for debugging specific issues
+    if (process.env.NODE_ENV === 'development' && cssText.length < 100) {
+      console.log('StyleInjector.inject (short CSS):', {
+        cssText: cssText.substring(0, 100),
+        className,
+      });
     }
 
-    // Flatten nested CSS
-    const flattenedRules = flattenNestedCss(cssText, className);
-
-    if (flattenedRules.length === 0) {
+    // CRITICAL DEBUG: Let's also check if we're getting called at all
+    if (!cssText || !cssText.trim()) {
+      console.error('StyleInjector: Empty or null CSS text received!');
       return {
         className: '',
         dispose: () => {},
       };
     }
 
-    try {
-      // Inject flattened rules
-      const allRuleInfos: RuleInfo[] = [];
+    // Check cache first
+    const cachedClassName = registry.cache.get(cssText);
+    if (cachedClassName) {
+      // Increment reference count
+      const currentCount = registry.refCounts.get(cachedClassName) || 0;
+      registry.refCounts.set(cachedClassName, currentCount + 1);
 
-      for (const rule of flattenedRules) {
-        const baseRule = `${rule.selector} { ${rule.declarations} }`;
-        const fullRule = wrapWithAtRules(baseRule, rule.atRules);
-        const ruleInfo = this.sheetManager.insertRule(registry, fullRule, root);
-        ruleInfo.className = hash;
-        allRuleInfos.push(ruleInfo);
-      }
-
-      // Store all rule infos
-      if (allRuleInfos.length > 0) {
-        registry.cache.set(hash, allRuleInfos);
-        registry.refCounts.set(hash, 1);
-      }
+      console.log(
+        'StyleInjector: Cache hit, returning cached class:',
+        cachedClassName,
+      );
 
       return {
-        className: hash,
-        dispose: () => this.dispose(hash, registry, false),
+        className: cachedClassName,
+        dispose: () => this.dispose(cachedClassName, registry),
       };
-    } catch (error) {
-      console.error('Failed to inject CSS:', error);
+    }
+
+    // Flatten nested CSS rules
+    const flattenedRules = flattenNestedCss(cssText, className);
+
+    // Only log if there are no rules (potential issue)
+    if (flattenedRules.length === 0) {
+      console.warn('StyleInjector: No rules flattened from CSS:', {
+        cssText: cssText.substring(0, 100),
+        className,
+      });
+    }
+
+    if (flattenedRules.length === 0) {
+      // Fallback: handle simple CSS that might not have been parsed correctly
+      // Try to create a simple rule by wrapping with the base class
+      const fallbackRule = {
+        selector: `.${className}`,
+        declarations: cssText.replace(/[{}]/g, '').replace(/&/g, '').trim(),
+        atRules: undefined,
+      };
+
+      if (fallbackRule.declarations) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('StyleInjector: Using fallback parsing for CSS:', {
+            cssText:
+              cssText.substring(0, 100) + (cssText.length > 100 ? '...' : ''),
+            className,
+          });
+        }
+
+        const ruleInfo = this.sheetManager.insertRule(
+          registry,
+          [fallbackRule],
+          className,
+          root,
+        );
+
+        if (ruleInfo) {
+          registry.cache.set(cssText, className);
+          registry.refCounts.set(className, 1);
+          registry.rules.set(className, ruleInfo);
+
+          return {
+            className,
+            dispose: () => this.dispose(className, registry),
+          };
+        }
+      }
+
+      console.warn('StyleInjector: No valid CSS could be parsed:', {
+        cssText: cssText.substring(0, 200),
+        className,
+      });
+      return {
+        className: '',
+        dispose: () => {},
+      };
+    }
+
+    // Rules were successfully generated - proceed with insertion
+
+    // Insert all flattened rules as a single block
+    const ruleInfo = this.sheetManager.insertRule(
+      registry,
+      flattenedRules,
+      className,
+      root,
+    );
+
+    if (ruleInfo) {
+      // Store in cache and set reference count
+      registry.cache.set(cssText, className);
+      registry.refCounts.set(className, 1);
+      registry.rules.set(className, ruleInfo);
+
+      console.log('StyleInjector: SUCCESS! Returning className:', {
+        className,
+        cssLength: cssText.length,
+      });
+
+      return {
+        className,
+        dispose: () => this.dispose(className, registry),
+      };
+    } else {
+      console.warn(
+        'StyleInjector: FAILED! No ruleInfo returned from SheetManager',
+      );
       return {
         className: '',
         dispose: () => {},
@@ -107,65 +176,45 @@ export class StyleInjector {
       return () => {};
     }
 
-    // Create hash for global rule
+    // Create unique key for global rule
     const globalKey = `${selector}:${cssText}`;
-    const hash = hashCssText(globalKey);
+    const className = hashCssText(globalKey);
 
-    // Check if already injected
-    let ruleInfos = registry.globalCache.get(hash);
-
-    if (ruleInfos) {
+    // Check cache first
+    const cachedClassName = registry.cache.get(globalKey);
+    if (cachedClassName) {
       // Increment reference count
-      const currentCount = registry.globalRefCounts.get(hash) || 0;
-      registry.globalRefCounts.set(hash, currentCount + 1);
+      const currentCount = registry.refCounts.get(cachedClassName) || 0;
+      registry.refCounts.set(cachedClassName, currentCount + 1);
 
-      return () => this.dispose(hash, registry, true);
+      return () => this.dispose(cachedClassName, registry);
     }
 
-    try {
-      // Handle nested CSS in global rules
-      const allRuleInfos: RuleInfo[] = [];
+    // Flatten CSS relative to the provided selector, preserving it as-is
+    const flattenedRules = flattenNestedCssForSelector(cssText, selector);
 
-      // Use a special marker for global selector flattening
-      const globalMarker = `__GLOBAL_${Date.now()}__`;
-      const flattenedRules = flattenNestedCss(cssText, globalMarker);
-
-      if (flattenedRules.length === 0) {
-        // Simple case: no nested rules
-        const fullRule = `${selector} { ${cssText} }`;
-        const ruleInfo = this.sheetManager.insertRule(registry, fullRule, root);
-        ruleInfo.className = hash;
-        allRuleInfos.push(ruleInfo);
-      } else {
-        // Process flattened rules
-        for (const rule of flattenedRules) {
-          // Replace all global marker occurrences with the actual selector
-          const finalSelector = rule.selector
-            .split(`.${globalMarker}`)
-            .join(selector);
-          const baseRule = `${finalSelector} { ${rule.declarations} }`;
-          const fullRule = wrapWithAtRules(baseRule, rule.atRules);
-          const ruleInfo = this.sheetManager.insertRule(
-            registry,
-            fullRule,
-            root,
-          );
-          ruleInfo.className = hash;
-          allRuleInfos.push(ruleInfo);
-        }
-      }
-
-      // Store all rule infos
-      if (allRuleInfos.length > 0) {
-        registry.globalCache.set(hash, allRuleInfos);
-        registry.globalRefCounts.set(hash, 1);
-      }
-
-      return () => this.dispose(hash, registry, true);
-    } catch (error) {
-      console.error('Failed to inject global CSS:', error);
+    if (flattenedRules.length === 0) {
       return () => {};
     }
+
+    // Insert global rule
+    const ruleInfo = this.sheetManager.insertGlobalRule(
+      registry,
+      flattenedRules,
+      className,
+      root,
+    );
+
+    if (ruleInfo) {
+      // Store in cache
+      registry.cache.set(globalKey, className);
+      registry.refCounts.set(className, 1);
+      registry.rules.set(className, ruleInfo);
+
+      return () => this.dispose(className, registry);
+    }
+
+    return () => {};
   }
 
   /**
@@ -181,20 +230,17 @@ export class StyleInjector {
   /**
    * Dispose a CSS rule (decrement reference count and cleanup if needed)
    */
-  private dispose(hash: string, registry: any, isGlobal: boolean): void {
-    const refCountsMap = isGlobal
-      ? registry.globalRefCounts
-      : registry.refCounts;
-    const currentCount = refCountsMap.get(hash) || 0;
+  private dispose(className: string, registry: any): void {
+    const currentCount = registry.refCounts.get(className) || 0;
 
     if (currentCount <= 1) {
       // Schedule for deletion
-      refCountsMap.set(hash, 0);
-      registry.deletionQueue.push(hash);
+      registry.refCounts.set(className, 0);
+      registry.deletionQueue.push(className);
       this.scheduleCleanup(registry);
     } else {
       // Just decrement
-      refCountsMap.set(hash, currentCount - 1);
+      registry.refCounts.set(className, currentCount - 1);
     }
   }
 
@@ -219,8 +265,6 @@ export class StyleInjector {
    * Perform cleanup of unused rules
    */
   private performCleanup(registry: any): void {
-    // Always process the queue when scheduled
-    // gcThreshold is used only for batching scheduling, not blocking cleanup
     this.sheetManager.processCleanupQueue(registry);
   }
 

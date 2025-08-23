@@ -1,4 +1,7 @@
+import { Lru } from '../parser/lru';
+
 import {
+  FlattenedRule,
   RootRegistry,
   RuleInfo,
   SheetInfo,
@@ -22,11 +25,11 @@ export class SheetManager {
     if (!registry) {
       registry = {
         sheets: [],
-        cache: new Map(),
+        cache: new Lru<string, string>(this.config.cacheSize || 1000),
         refCounts: new Map(),
-        globalCache: new Map(),
-        globalRefCounts: new Map(),
+        rules: new Map(),
         deletionQueue: [],
+        ruleTextSet: new Set<string>(),
       };
       this.rootRegistries.set(root, registry);
     }
@@ -41,7 +44,7 @@ export class SheetManager {
     let sheet: CSSStyleSheet | HTMLStyleElement;
     let isAdopted = false;
 
-    // Try to use adoptedStyleSheets if available and enabled
+    // Use style elements by default, adoptedStyleSheets only if explicitly enabled
     if (this.config.useAdoptedStyleSheets && 'adoptedStyleSheets' in root) {
       try {
         sheet = new CSSStyleSheet();
@@ -90,17 +93,26 @@ export class SheetManager {
       document.head.appendChild(style);
     }
 
+    // Verify it was actually added - log only if there's a problem
+    if (!style.isConnected) {
+      console.error('SheetManager: Style element failed to connect to DOM!', {
+        parentNode: style.parentNode?.nodeName,
+        isConnected: style.isConnected,
+      });
+    }
+
     return style;
   }
 
   /**
-   * Insert a CSS rule into the appropriate sheet
+   * Insert CSS rules as a single block
    */
   insertRule(
     registry: RootRegistry,
-    cssText: string,
+    flattenedRules: FlattenedRule[],
+    className: string,
     root: Document | ShadowRoot,
-  ): RuleInfo {
+  ): RuleInfo | null {
     // Find or create a sheet with available space
     let targetSheet = this.findAvailableSheet(registry, root);
 
@@ -112,45 +124,110 @@ export class SheetManager {
     const sheetIndex = registry.sheets.indexOf(targetSheet);
 
     try {
-      if (targetSheet.isAdopted) {
-        // Use CSSStyleSheet.insertRule
-        const sheet = targetSheet.sheet as CSSStyleSheet;
-        sheet.insertRule(cssText, ruleIndex);
-      } else {
-        // Use HTMLStyleElement
-        const styleElement = targetSheet.sheet as HTMLStyleElement;
-        const styleSheet = styleElement.sheet;
+      // Insert each flattened rule individually
+      const insertedRules: string[] = [];
+      let currentRuleIndex = ruleIndex;
 
-        if (styleSheet) {
-          styleSheet.insertRule(cssText, ruleIndex);
-        } else {
-          // Fallback: append to textContent
-          styleElement.textContent =
-            (styleElement.textContent || '') + '\n' + cssText;
+      // Only log for potential debugging
+      if (flattenedRules.length > 10) {
+        console.log('SheetManager: Inserting many rules:', {
+          className,
+          rulesCount: flattenedRules.length,
+        });
+      }
+
+      for (const rule of flattenedRules) {
+        const declarations = rule.declarations;
+        const baseRule = `${rule.selector} { ${declarations} }`;
+
+        // Wrap with at-rules if present
+        let fullRule = baseRule;
+        if (rule.atRules && rule.atRules.length > 0) {
+          fullRule = rule.atRules.reduce(
+            (css, atRule) => `${atRule} { ${css} }`,
+            baseRule,
+          );
         }
+
+        // Skip if we've already inserted an identical rule text in this root
+        if (registry.ruleTextSet.has(fullRule)) {
+          insertedRules.push(fullRule);
+          continue;
+        }
+
+        // Insert individual rule
+        if (targetSheet.isAdopted) {
+          const sheet = targetSheet.sheet as CSSStyleSheet;
+          sheet.insertRule(fullRule, currentRuleIndex);
+        } else {
+          // Use HTMLStyleElement
+          const styleElement = targetSheet.sheet as HTMLStyleElement;
+          const styleSheet = styleElement.sheet;
+
+          if (styleSheet) {
+            styleSheet.insertRule(fullRule, currentRuleIndex);
+          } else {
+            // Fallback: append to textContent
+            styleElement.textContent =
+              (styleElement.textContent || '') + '\n' + fullRule;
+          }
+
+          // CRITICAL DEBUG: Verify the style element is in DOM only if there are issues
+          if (!styleElement.parentNode) {
+            console.error(
+              'SheetManager: Style element is NOT in DOM! This is the problem!',
+              {
+                className,
+                ruleIndex: currentRuleIndex,
+              },
+            );
+          }
+        }
+
+        insertedRules.push(fullRule);
+        registry.ruleTextSet.add(fullRule);
+        currentRuleIndex++;
       }
 
-      // Update sheet info
-      if (ruleIndex >= targetSheet.ruleCount) {
-        targetSheet.ruleCount = ruleIndex + 1;
+      // Update sheet info based on the number of rules inserted
+      const finalRuleIndex = currentRuleIndex - 1;
+      if (finalRuleIndex >= targetSheet.ruleCount) {
+        targetSheet.ruleCount = finalRuleIndex + 1;
       }
 
-      // Remove from holes if it was a reused index
+      // Remove from holes if original index was reused
       const holeIndex = targetSheet.holes.indexOf(ruleIndex);
       if (holeIndex !== -1) {
         targetSheet.holes.splice(holeIndex, 1);
       }
 
       return {
-        className: '', // Will be set by caller
+        className,
         ruleIndex,
         sheetIndex,
-        cssText,
+        cssText: insertedRules.join('\n'), // Store combined CSS for reference
+        endRuleIndex: finalRuleIndex,
       };
     } catch (error) {
-      console.warn('Failed to insert CSS rule:', error);
-      throw error;
+      console.warn('Failed to insert CSS rules:', error, {
+        flattenedRules,
+        className,
+      });
+      return null;
     }
+  }
+
+  /**
+   * Insert global CSS rules
+   */
+  insertGlobalRule(
+    registry: RootRegistry,
+    flattenedRules: FlattenedRule[],
+    className: string,
+    root: Document | ShadowRoot,
+  ): RuleInfo | null {
+    // For now, global rules are handled the same way as regular rules
+    return this.insertRule(registry, flattenedRules, className, root);
   }
 
   /**
@@ -164,32 +241,35 @@ export class SheetManager {
     }
 
     try {
-      if (sheet.isAdopted) {
-        const cssStyleSheet = sheet.sheet as CSSStyleSheet;
-        cssStyleSheet.deleteRule(ruleInfo.ruleIndex);
-      } else {
-        const styleElement = sheet.sheet as HTMLStyleElement;
-        const styleSheet = styleElement.sheet;
+      const start = ruleInfo.ruleIndex;
+      const end = ruleInfo.endRuleIndex ?? ruleInfo.ruleIndex;
 
-        if (styleSheet) {
-          styleSheet.deleteRule(ruleInfo.ruleIndex);
+      // Delete from end to start to keep indices valid
+      for (let idx = end; idx >= start; idx--) {
+        if (sheet.isAdopted) {
+          const cssStyleSheet = sheet.sheet as CSSStyleSheet;
+          const cssText = cssStyleSheet.cssRules[idx]?.cssText;
+          cssStyleSheet.deleteRule(idx);
+          if (cssText) {
+            registry.ruleTextSet.delete(cssText);
+          }
+        } else {
+          const styleElement = sheet.sheet as HTMLStyleElement;
+          const styleSheet = styleElement.sheet;
+          if (styleSheet) {
+            const cssText = styleSheet.cssRules[idx]?.cssText;
+            styleSheet.deleteRule(idx);
+            if (cssText) {
+              registry.ruleTextSet.delete(cssText);
+            }
+          }
         }
+        // Mark this index as available for reuse
+        sheet.holes.push(idx);
       }
-
-      // Mark this index as available for reuse
-      sheet.holes.push(ruleInfo.ruleIndex);
       sheet.holes.sort((a, b) => a - b); // Keep holes sorted
     } catch (error) {
       console.warn('Failed to delete CSS rule:', error);
-    }
-  }
-
-  /**
-   * Delete multiple CSS rules
-   */
-  deleteRules(registry: RootRegistry, ruleInfos: RuleInfo[]): void {
-    for (const ruleInfo of ruleInfos) {
-      this.deleteRule(registry, ruleInfo);
     }
   }
 
@@ -203,8 +283,9 @@ export class SheetManager {
     const maxRules = this.config.maxRulesPerSheet;
 
     if (!maxRules) {
-      // No limit, use the last sheet or create new one
-      return registry.sheets[registry.sheets.length - 1] || null;
+      // No limit, use the last sheet if it exists
+      const lastSheet = registry.sheets[registry.sheets.length - 1];
+      return lastSheet || null;
     }
 
     // Find sheet with space
@@ -244,23 +325,18 @@ export class SheetManager {
     const toDelete = [...deletionQueue];
     deletionQueue.length = 0; // Clear queue
 
-    for (const cssTextHash of toDelete) {
+    for (const className of toDelete) {
       // Check if still referenced
-      const refCount = registry.refCounts.get(cssTextHash) || 0;
-      const globalRefCount = registry.globalRefCounts.get(cssTextHash) || 0;
+      const refCount = registry.refCounts.get(className) || 0;
 
-      if (refCount <= 0 && globalRefCount <= 0) {
+      if (refCount <= 0) {
         // Safe to delete
-        const ruleInfos =
-          registry.cache.get(cssTextHash) ||
-          registry.globalCache.get(cssTextHash);
+        const ruleInfo = registry.rules.get(className);
 
-        if (ruleInfos) {
-          this.deleteRules(registry, ruleInfos);
-          registry.cache.delete(cssTextHash);
-          registry.globalCache.delete(cssTextHash);
-          registry.refCounts.delete(cssTextHash);
-          registry.globalRefCounts.delete(cssTextHash);
+        if (ruleInfo) {
+          this.deleteRule(registry, ruleInfo);
+          registry.rules.delete(className);
+          registry.refCounts.delete(className);
         }
       }
     }

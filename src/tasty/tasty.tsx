@@ -7,11 +7,15 @@ import {
   PropsWithoutRef,
   RefAttributes,
   useContext,
+  useEffect,
+  useInsertionEffect,
   useMemo,
+  useRef,
 } from 'react';
 import { isValidElementType } from 'react-is';
-import styledComponents, { createGlobalStyle } from 'styled-components';
 
+import { inject, injectDirect, injectGlobal } from './injector';
+import { hashCssText } from './injector/hash';
 import { BreakpointsContext } from './providers/BreakpointsProvider';
 import { BASE_STYLES } from './styles/list';
 import { Styles, StylesInterface } from './styles/types';
@@ -20,19 +24,15 @@ import { cacheWrapper } from './utils/cache-wrapper';
 import { getDisplayName } from './utils/getDisplayName';
 import { mergeStyles } from './utils/mergeStyles';
 import { modAttrs } from './utils/modAttrs';
-import { renderStyles } from './utils/renderStyles';
+import {
+  renderStylesDirect,
+  renderStylesDirectForGlobal,
+} from './utils/renderStylesDirect';
 import { pointsToZones } from './utils/responsive';
 import { ResponsiveStyleValue } from './utils/styles';
 
-type StyledElementProps = {
-  $css: string;
-};
-
-// Basic props accepted by our styled base element
-type BaseElementProps = StyledElementProps & { as?: string } & Record<
-    string,
-    unknown
-  >;
+// Basic props accepted by our base element (no longer styled-components specific)
+type BaseElementProps = { as?: string } & Record<string, unknown>;
 
 type StyleList = readonly (keyof {
   [key in keyof StylesInterface]: StylesInterface[key];
@@ -116,8 +116,6 @@ export function tasty<
 
 // Internal specialized implementations
 function tastyGlobal(selector: string, styles?: Styles) {
-  let Element = createGlobalStyle<StyledElementProps>`${({ $css }) => $css}`;
-
   const _StyleDeclarationComponent: FC<GlobalTastyProps> = ({
     breakpoints,
   }) => {
@@ -125,16 +123,25 @@ function tastyGlobal(selector: string, styles?: Styles) {
 
     const breakpointsList = (breakpoints ?? contextBreakpoints) || [980];
     const breakpointsHash = breakpointsList.join(',');
+    const disposeRef = useRef<(() => void) | null>(null);
 
-    let css = useMemo(() => {
+    const cssText = useMemo(() => {
       if (!styles) return '';
-      return `\n{}${selector}{${renderStyles(
-        styles,
-        pointsToZones(breakpointsList),
-      )}}`;
+      return renderStylesDirectForGlobal(styles, breakpointsList);
     }, [breakpointsHash]);
 
-    return <Element $css={css} />;
+    // Inject styles at insertion phase; cleanup on change/unmount
+    useInsertionEffect(() => {
+      disposeRef.current?.();
+      if (!cssText) return;
+      disposeRef.current = injectGlobal(selector, cssText);
+      return () => {
+        disposeRef.current?.();
+        disposeRef.current = null;
+      };
+    }, [cssText, selector]);
+
+    return null;
   };
 
   _StyleDeclarationComponent.displayName = `TastyStyleDeclaration(${selector})`;
@@ -268,17 +275,19 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
       return createElement(Component, elementProps);
     });
   } else {
-    let Element = styledComponents[originalAs](
-      ({ $css }) => $css,
-    ) as ComponentType<BaseElementProps>;
-
     /**
      * An additional optimization that allows to avoid rendering styles across various instances
      * of the same element if no custom styles are provided via `styles` prop or direct style props.
      */
-    const renderDefaultStyles = cacheWrapper((breakpoints: number[]) =>
-      renderStyles(defaultStyles || {}, pointsToZones(breakpoints)),
-    );
+    const renderDefaultStylesDirect = cacheWrapper((breakpoints: number[]) => {
+      // Generate a stable className for default styles
+      const defaultClassName = hashCssText(JSON.stringify(defaultStyles || {}));
+      return renderStylesDirect(
+        defaultStyles || {},
+        pointsToZones(breakpoints),
+        defaultClassName,
+      );
+    });
 
     let {
       qa: defaultQa,
@@ -300,9 +309,10 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         element,
         qa,
         qaVal,
+        className: userClassName,
         ...otherProps
       } = allProps as Record<string, unknown> as AllBasePropsWithMods<K> &
-        WithVariant<V>;
+        WithVariant<V> & { className?: string };
 
       let propStyles: Styles | null = (
         (styleProps
@@ -355,13 +365,43 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
 
       breakpoints = (breakpoints as number[] | undefined) ?? contextBreakpoints;
 
-      let renderedStyles = useMemo(
-        () =>
-          useDefaultStyles
-            ? renderDefaultStyles(breakpoints as number[])
-            : renderStyles(allStyles, pointsToZones(breakpoints as number[])),
-        [allStyles, breakpoints?.join(',')],
-      );
+      // Generate consistent className for caching
+      const className = useMemo(() => {
+        const stylesKey = JSON.stringify(allStyles || {});
+        return hashCssText(stylesKey);
+      }, [allStyles]);
+
+      // Compute rules synchronously; inject via insertion effect
+      const directResult = useMemo(() => {
+        if (useDefaultStyles) {
+          return renderDefaultStylesDirect(breakpoints as number[]);
+        } else if (allStyles && Object.keys(allStyles).length > 0) {
+          return renderStylesDirect(
+            allStyles,
+            pointsToZones(breakpoints as number[]),
+            className,
+          );
+        } else {
+          return { rules: [], className: '' } as ReturnType<
+            typeof renderStylesDirect
+          >;
+        }
+      }, [useDefaultStyles, allStyles, breakpoints?.join(','), className]);
+
+      const disposeRef = useRef<(() => void) | null>(null);
+      useInsertionEffect(() => {
+        disposeRef.current?.();
+        if (!directResult.rules.length) {
+          disposeRef.current = null;
+          return;
+        }
+        const { dispose } = injectDirect(directResult.rules);
+        disposeRef.current = dispose;
+        return () => {
+          disposeRef.current?.();
+          disposeRef.current = null;
+        };
+      }, [directResult.rules]);
 
       let modProps: Record<string, unknown> | undefined;
       if (mods) {
@@ -369,19 +409,40 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         modProps = modAttrs(modsObject as any) as Record<string, unknown>;
       }
 
+      // Merge user className with injected className
+      const finalClassName = [
+        (userClassName as string) || '',
+        directResult.className || className,
+      ]
+        .filter(Boolean)
+        .join(' ');
+
+      // Remove possible className from otherProps to avoid overwriting
+      delete (otherProps as any).className;
+
+      // Note: Empty className is expected when no styles are provided
+
       const elementProps = {
-        as: (as as string | undefined) ?? originalAs,
         'data-element': (element as string | undefined) || defaultElement,
         'data-qa': (qa as string | undefined) || defaultQa,
         'data-qaval': (qaVal as string | undefined) || defaultQaVal,
         ...(otherDefaultProps as unknown as Record<string, unknown>),
         ...(otherProps as unknown as Record<string, unknown>),
         ...(modProps || {}),
+        className: finalClassName, // <- place last so it wins
         ref,
-        $css: renderedStyles,
-      } as BaseElementProps;
+        // REMOVED: $css prop and as prop (handled by createElement)
+      } as Record<string, unknown>;
 
-      return createElement(Element, elementProps);
+      // NEW: Use plain createElement instead of styled Element
+      const renderedElement = createElement(
+        (as as string | 'div') ?? originalAs,
+        elementProps,
+      );
+
+      // Note: Empty className is normal for elements with no styles
+
+      return renderedElement;
     });
   }
 

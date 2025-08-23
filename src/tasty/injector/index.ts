@@ -1,7 +1,20 @@
+import { DirectStyleResult } from '../utils/renderStylesDirect';
+
+import { DirectStyleInjector } from './direct-injector';
 import { StyleInjector } from './injector';
 import { DisposeFunction, InjectResult, StyleInjectorConfig } from './types';
 
-let globalInjector: StyleInjector | null = null;
+// Use a more robust global singleton that survives React Strict Mode
+const GLOBAL_INJECTOR_KEY = '__TASTY_GLOBAL_INJECTOR__';
+
+const GLOBAL_DIRECT_INJECTOR_KEY = '__TASTY_GLOBAL_DIRECT_INJECTOR__';
+
+declare global {
+  interface Window {
+    [GLOBAL_INJECTOR_KEY]?: StyleInjector;
+    [GLOBAL_DIRECT_INJECTOR_KEY]?: DirectStyleInjector;
+  }
+}
 
 /**
  * Configure the global style injector
@@ -10,21 +23,42 @@ export function configure(config: Partial<StyleInjectorConfig> = {}): void {
   const fullConfig: StyleInjectorConfig = {
     maxRulesPerSheet: undefined, // infinite by default
     gcThreshold: 100,
-    useAdoptedStyleSheets: true,
+    useAdoptedStyleSheets: false, // default to style tags
+    cacheSize: 1000, // LRU cache size
     ...config,
   };
 
-  globalInjector = new StyleInjector(fullConfig);
+  // Store on window to survive React Strict Mode resets
+  if (typeof window !== 'undefined') {
+    window[GLOBAL_INJECTOR_KEY] = new StyleInjector(fullConfig);
+  } else {
+    // Fallback for SSR
+    (globalThis as any)[GLOBAL_INJECTOR_KEY] = new StyleInjector(fullConfig);
+  }
 }
 
 /**
  * Get or create the global injector instance
  */
 function getGlobalInjector(): StyleInjector {
-  if (!globalInjector) {
+  const storage = typeof window !== 'undefined' ? window : (globalThis as any);
+
+  if (!storage[GLOBAL_INJECTOR_KEY]) {
     configure();
   }
-  return globalInjector!;
+  return storage[GLOBAL_INJECTOR_KEY]!;
+}
+
+/**
+ * Get or create the global direct injector instance
+ */
+function getGlobalDirectInjector(): DirectStyleInjector {
+  const storage = typeof window !== 'undefined' ? window : (globalThis as any);
+
+  if (!storage[GLOBAL_DIRECT_INJECTOR_KEY]) {
+    storage[GLOBAL_DIRECT_INJECTOR_KEY] = new DirectStyleInjector();
+  }
+  return storage[GLOBAL_DIRECT_INJECTOR_KEY]!;
 }
 
 /**
@@ -35,6 +69,17 @@ export function inject(
   options?: { root?: Document | ShadowRoot },
 ): InjectResult {
   return getGlobalInjector().inject(cssText, options);
+}
+
+/**
+ * Optimized inject function that works directly with style objects
+ * Eliminates CSS string parsing for better performance
+ */
+export function injectDirect(
+  rules: DirectStyleResult[],
+  options?: { root?: Document | ShadowRoot },
+): InjectResult {
+  return getGlobalDirectInjector().injectDirect(rules, options);
 }
 
 /**
@@ -63,6 +108,15 @@ export function cleanup(root?: Document | ShadowRoot): void {
 }
 
 /**
+ * Get the global injector instance for debugging
+ */
+export const injector = {
+  get instance() {
+    return getGlobalInjector();
+  },
+};
+
+/**
  * Destroy all resources and clean up
  */
 export function destroy(root?: Document | ShadowRoot): void {
@@ -78,7 +132,8 @@ export function createInjector(
   const fullConfig: StyleInjectorConfig = {
     maxRulesPerSheet: undefined,
     gcThreshold: 100,
-    useAdoptedStyleSheets: true,
+    useAdoptedStyleSheets: false, // default to style tags
+    cacheSize: 1000, // LRU cache size
     ...config,
   };
 
@@ -95,10 +150,9 @@ export type {
   RootRegistry,
   FlattenedRule,
   KeyframesInfo,
-  AtomicRule,
 } from './types';
 
 export { StyleInjector } from './injector';
 export { SheetManager } from './sheet-manager';
 export { flattenNestedCss } from './flatten';
-export { hashCssText, hashAtomicValue, hashSelector } from './hash';
+export { hashCssText } from './hash';

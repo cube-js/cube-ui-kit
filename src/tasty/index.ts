@@ -4,7 +4,7 @@ export * from './utils/colors';
 export * from './utils/styles';
 export * from './utils/modAttrs';
 export * from './utils/responsive';
-export * from './utils/renderStyles';
+export * from './utils/renderStylesDirect';
 export * from './utils/dotize';
 export * from './styles/list';
 export * from './providers/BreakpointsProvider';

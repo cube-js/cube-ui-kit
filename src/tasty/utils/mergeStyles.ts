@@ -1,6 +1,6 @@
 import { Styles, StylesWithoutSelectors } from '../styles/types';
 
-import { isSelector } from './renderStyles';
+import { isSelector } from './renderStylesDirect';
 
 export function mergeStyles(...objects: (Styles | undefined | null)[]): Styles {
   let styles: Styles = objects[0] ? { ...objects[0] } : {};

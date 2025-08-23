@@ -7,9 +7,9 @@ export type DisposeFunction = () => void;
 
 export interface StyleInjectorConfig {
   nonce?: string;
-  useAdoptedStyleSheets?: boolean;
+  useAdoptedStyleSheets?: boolean; // default: false (use style tags)
   maxRulesPerSheet?: number; // default: infinite (no cap)
-  // mode?: 'nested' | 'atomic'; // TODO: Implement atomic mode
+  cacheSize?: number; // default: 1000 (LRU cache size)
   gcThreshold?: number; // default: 100
 }
 
@@ -18,6 +18,8 @@ export interface RuleInfo {
   ruleIndex: number;
   sheetIndex: number;
   cssText: string;
+  /** Inclusive end index of the contiguous block of inserted rules for this className */
+  endRuleIndex?: number;
 }
 
 export interface SheetInfo {
@@ -29,11 +31,12 @@ export interface SheetInfo {
 
 export interface RootRegistry {
   sheets: SheetInfo[];
-  cache: Map<string, RuleInfo[]>; // Multiple rules per injection
-  refCounts: Map<string, number>;
-  globalCache: Map<string, RuleInfo[]>; // Multiple rules per global injection
-  globalRefCounts: Map<string, number>;
-  deletionQueue: string[];
+  cache: import('../parser/lru').Lru<string, string>; // cssText -> className
+  refCounts: Map<string, number>; // className -> refCount
+  rules: Map<string, RuleInfo>; // className -> rule info
+  deletionQueue: string[]; // className queue for cleanup
+  /** Deduplication set of fully materialized CSS rules inserted into sheets */
+  ruleTextSet: Set<string>;
 }
 
 export interface FlattenedRule {
@@ -47,15 +50,4 @@ export interface KeyframesInfo {
   sheetIndex: number;
   ruleIndex: number;
   cssText: string;
-}
-
-// Atomic mode types (future)
-export interface AtomicRule {
-  property: string;
-  value: string;
-  selector?: string;
-  mediaQuery?: string;
-  origin: 'default' | 'variant' | 'props';
-  subElement?: string; // For Title: { color: 'blue' }
-  zone?: number; // For responsive breakpoints
 }
