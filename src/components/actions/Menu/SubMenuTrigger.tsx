@@ -185,7 +185,7 @@ function InternalSubMenuTrigger(props: InternalSubMenuTriggerProps) {
 
   // Listen for other menus opening and close this submenu if needed
   useEffect(() => {
-    const unsubscribe = on('menu:open', (data: { menuId: string }) => {
+    const unsubscribe = on('popover:open', (data: { menuId: string }) => {
       // If another menu is opening and this submenu is open, close this one
       if (data.menuId !== submenuId && state.isOpen) {
         state.close();
@@ -198,7 +198,7 @@ function InternalSubMenuTrigger(props: InternalSubMenuTriggerProps) {
   // Emit event when this submenu opens
   useEffect(() => {
     if (state.isOpen) {
-      emit('menu:open', { menuId: submenuId });
+      emit('popover:open', { menuId: submenuId });
     }
   }, [state.isOpen, emit, submenuId]);
 

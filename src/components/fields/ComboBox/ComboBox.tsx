@@ -230,7 +230,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
   // Listen for other menus opening and close this one if needed
   useEffect(() => {
-    const unsubscribe = on('menu:open', (data: { menuId: string }) => {
+    const unsubscribe = on('popover:open', (data: { menuId: string }) => {
       // If another menu is opening and this combobox is open, close this one
       if (data.menuId !== comboBoxId && state.isOpen) {
         state.close();
@@ -243,7 +243,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   // Emit event when this combobox opens
   useEffect(() => {
     if (state.isOpen) {
-      emit('menu:open', { menuId: comboBoxId });
+      emit('popover:open', { menuId: comboBoxId });
     }
   }, [state.isOpen, emit, comboBoxId]);
 

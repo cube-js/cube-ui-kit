@@ -71,7 +71,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
 
   // Listen for other menus opening and close this one if needed
   useEffect(() => {
-    const unsubscribe = on('menu:open', (data: { menuId: string }) => {
+    const unsubscribe = on('popover:open', (data: { menuId: string }) => {
       // If another menu is opening and this menu is open, close this one
       if (data.menuId !== menuId && state.isOpen && !isDummy) {
         state.close();
@@ -84,7 +84,7 @@ function MenuTrigger(props: CubeMenuTriggerProps, ref: DOMRef<HTMLElement>) {
   // Emit event when this menu opens
   useEffect(() => {
     if (state.isOpen && !isDummy) {
-      emit('menu:open', { menuId });
+      emit('popover:open', { menuId });
     }
   }, [state.isOpen, emit, menuId, isDummy]);
 

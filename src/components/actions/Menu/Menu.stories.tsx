@@ -44,6 +44,7 @@ import {
 } from '../../../index';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { ComboBox } from '../../fields/ComboBox';
+import { FilterPicker } from '../../fields/FilterPicker';
 import { Select } from '../../fields/Select';
 
 export default {
@@ -1849,140 +1850,85 @@ export const ComprehensivePopoverSynchronization = () => {
     { id: 'item4', name: 'Item 4' },
   ];
 
+  const filterPickerOptions = [
+    { id: 'filter1', name: 'Filter 1' },
+    { id: 'filter2', name: 'Filter 2' },
+    { id: 'filter3', name: 'Filter 3' },
+    { id: 'filter4', name: 'Filter 4' },
+  ];
+
   return (
     <Flow gap="4x" placeContent="start" padding="4x">
       <Title level={3} margin="0 0 2x 0">
-        Complete Popover Synchronization Demo
+        Popover Synchronization
       </Title>
       <Paragraph preset="t4" color="#dark-03" margin="0 0 4x 0">
-        Only one popover can be open at a time across all components: Menu,
-        Select, and ComboBox. Opening any popover automatically closes others.
+        Only one popover can be open at a time. Opening any trigger
+        automatically closes others.
       </Paragraph>
 
-      <Flow gap="3x" flexDirection="row" flexWrap="wrap">
-        {/* Regular MenuTrigger */}
-        <Card border padding="3x" margin="0 0 3x 0" minWidth="200px">
-          <Paragraph preset="t3m" color="#dark" margin="0 0 2x 0">
+      <Flex gap="2x" placeItems="start">
+        {/* MenuTrigger */}
+        <MenuTrigger>
+          <Button size="small" icon={<MoreIcon />}>
             MenuTrigger
-          </Paragraph>
-          <MenuTrigger>
-            <Button size="small" icon={<MoreIcon />} aria-label="Open Menu">
-              Click me
-            </Button>
-            <Menu width="220px">
-              <Menu.Item key="sync-edit" hotkeys="Ctrl+E">
-                Edit (Menu)
-              </Menu.Item>
-              <Menu.Item key="sync-duplicate" hotkeys="Ctrl+D">
-                Duplicate (Menu)
-              </Menu.Item>
-              <Menu.Item key="sync-delete" hotkeys="Del">
-                Delete (Menu)
-              </Menu.Item>
-            </Menu>
-          </MenuTrigger>
-          <Paragraph preset="t5" color="#dark-03" margin="2x 0 0 0">
-            Standard menu trigger
-          </Paragraph>
-        </Card>
+          </Button>
+          <Menu width="220px">
+            <Menu.Item key="sync-edit" hotkeys="Ctrl+E">
+              Edit (Menu)
+            </Menu.Item>
+            <Menu.Item key="sync-duplicate" hotkeys="Ctrl+D">
+              Duplicate (Menu)
+            </Menu.Item>
+            <Menu.Item key="sync-delete" hotkeys="Del">
+              Delete (Menu)
+            </Menu.Item>
+          </Menu>
+        </MenuTrigger>
 
         {/* Anchored Menu */}
-        <Card ref={anchorRef1} border padding="3x" minWidth="200px">
+        <div ref={anchorRef1}>
           {rendered1}
-          <Paragraph preset="t3m" color="#dark" margin="0 0 2x 0">
-            Anchored Menu
-          </Paragraph>
           <Button
             size="small"
-            theme={isOpen1 ? 'accent' : 'secondary'}
             onPress={() => open1({ onAction: handleAction })}
           >
-            Edit Menu {isOpen1 ? '(Open)' : ''}
+            Anchored Menu
           </Button>
-          <Paragraph preset="t5" color="#dark-03" margin="2x 0 0 0">
-            useAnchoredMenu hook
-          </Paragraph>
-        </Card>
+        </div>
 
         {/* Context Menu */}
-        <Card
-          ref={targetRef2}
-          border
-          padding="3x"
-          minWidth="200px"
-          background={isOpen2 ? '#purple-10' : undefined}
-        >
+        <div ref={targetRef2}>
           {rendered2}
-          <Paragraph preset="t3m" color="#dark" margin="0 0 2x 0">
-            Context Menu
-          </Paragraph>
-          <Paragraph preset="t5" color="#dark-03" margin="0 0 2x 0">
-            Right-click here
-          </Paragraph>
-          <Paragraph preset="t5" color="#dark-03" margin="2x 0 0 0">
-            useContextMenu hook
-          </Paragraph>
-        </Card>
+          <Button size="small">Context Menu (Right-click)</Button>
+        </div>
 
         {/* Select */}
-        <Card border padding="3x" minWidth="200px">
-          <Paragraph preset="t3m" color="#dark" margin="0 0 2x 0">
-            Select
-          </Paragraph>
-          <Select
-            label="Choose option"
-            placeholder="Select an option"
-            defaultSelectedKey="option1"
-          >
-            {selectOptions.map((option) => (
-              <Select.Item key={option.value}>{option.label}</Select.Item>
-            ))}
-          </Select>
-          <Paragraph preset="t5" color="#dark-03" margin="2x 0 0 0">
-            Select component
-          </Paragraph>
-        </Card>
+        <Select placeholder="Select" defaultSelectedKey="option1" size="small">
+          {selectOptions.map((option) => (
+            <Select.Item key={option.value}>{option.label}</Select.Item>
+          ))}
+        </Select>
+
+        {/* Simple Button */}
+        <Button size="small">Simple Button</Button>
 
         {/* ComboBox */}
-        <Card border padding="3x" minWidth="200px">
-          <Paragraph preset="t3m" color="#dark" margin="0 0 2x 0">
-            ComboBox
-          </Paragraph>
-          <ComboBox
-            label="Search items"
-            placeholder="Type to search..."
-            items={comboBoxItems}
-          >
-            {(item) => <ComboBox.Item key={item.id}>{item.name}</ComboBox.Item>}
-          </ComboBox>
-          <Paragraph preset="t5" color="#dark-03" margin="2x 0 0 0">
-            ComboBox component
-          </Paragraph>
-        </Card>
-      </Flow>
+        <ComboBox placeholder="ComboBox" items={comboBoxItems} size="small">
+          {(item) => <ComboBox.Item key={item.id}>{item.name}</ComboBox.Item>}
+        </ComboBox>
 
-      <Alert type="info" title="Test the synchronization">
-        <Flow gap="1x">
-          <Text>
-            1. Click on any menu trigger, select dropdown, or combobox
-          </Text>
-          <Text>
-            2. Then click on another component - the first popover will
-            automatically close
-          </Text>
-          <Text>
-            3. Right-click on the context menu card for a context menu
-          </Text>
-          <Text>
-            4. Notice how only one popover can be open at any time across all
-            components
-          </Text>
-          <Text>
-            5. This ensures a clean UI where multiple overlays don't compete for
-            attention
-          </Text>
-        </Flow>
-      </Alert>
+        {/* FilterPicker */}
+        <FilterPicker
+          placeholder="FilterPicker"
+          items={filterPickerOptions}
+          size="small"
+        >
+          {(item) => (
+            <FilterPicker.Item key={item.id}>{item.name}</FilterPicker.Item>
+          )}
+        </FilterPicker>
+      </Flex>
     </Flow>
   );
 };
