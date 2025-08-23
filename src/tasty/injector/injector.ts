@@ -63,10 +63,9 @@ export class StyleInjector {
       this.extractClassName(rules) ||
       hashCssText(cacheKey);
 
-    // Check cache
+    // Check cache; ensure cached class still has rules
     const existingClassName = registry.cache.get(cacheKey);
-    if (existingClassName) {
-      // Increment reference count
+    if (existingClassName && registry.rules.has(existingClassName)) {
       const currentRefCount = registry.refCounts.get(existingClassName) || 0;
       registry.refCounts.set(existingClassName, currentRefCount + 1);
 
@@ -74,6 +73,11 @@ export class StyleInjector {
         className: existingClassName,
         dispose: () => this.dispose(existingClassName, registry),
       };
+    }
+
+    // If cache is stale (className missing rules), remove mapping
+    if (existingClassName && !registry.rules.has(existingClassName)) {
+      registry.cache.set(cacheKey, undefined as unknown as string);
     }
 
     // Insert rules using existing sheet manager
@@ -93,6 +97,7 @@ export class StyleInjector {
 
     // Store in cache and registry
     registry.cache.set(cacheKey, className);
+    registry.cacheKeysByClassName.set(className, cacheKey);
     registry.refCounts.set(className, 1);
     registry.rules.set(className, ruleInfo);
 
@@ -153,9 +158,14 @@ export class StyleInjector {
   private dispose(className: string, registry: any): void {
     const currentRefCount = registry.refCounts.get(className) || 0;
     if (currentRefCount <= 1) {
-      // Mark for deletion and schedule cleanup
+      // Mark for deletion and schedule cleanup; also remove cache binding
       registry.refCounts.set(className, 0);
       registry.deletionQueue.push(className);
+      const cacheKey = registry.cacheKeysByClassName.get(className);
+      if (cacheKey) {
+        registry.cache.set(cacheKey, undefined as unknown as string);
+        registry.cacheKeysByClassName.delete(className);
+      }
       this.scheduleCleanup(registry);
     } else {
       registry.refCounts.set(className, currentRefCount - 1);

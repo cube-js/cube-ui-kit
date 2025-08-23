@@ -37,6 +37,8 @@ export interface RootRegistry {
   deletionQueue: string[]; // className queue for cleanup
   /** Deduplication set of fully materialized CSS rules inserted into sheets */
   ruleTextSet: Set<string>;
+  /** Reverse mapping to remove cache entries on cleanup */
+  cacheKeysByClassName: Map<string, string>;
 }
 
 export interface FlattenedRule {

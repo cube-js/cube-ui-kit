@@ -30,6 +30,7 @@ export class SheetManager {
         rules: new Map(),
         deletionQueue: [],
         ruleTextSet: new Set<string>(),
+        cacheKeysByClassName: new Map(),
       };
       this.rootRegistries.set(root, registry);
     }
@@ -149,27 +150,28 @@ export class SheetManager {
           );
         }
 
-        // Skip if we've already inserted an identical rule text in this root
-        if (registry.ruleTextSet.has(fullRule)) {
-          insertedRuleTexts.push(fullRule);
-          continue;
-        }
-
-        // Insert individual rule
+        // Insert individual rule (no global dedupe to avoid interfering with lifecycle)
         if (targetSheet.isAdopted) {
           const sheet = targetSheet.sheet as CSSStyleSheet;
-          sheet.insertRule(fullRule, currentRuleIndex);
+          const maxIndex = sheet.cssRules.length;
+          const safeIndex = Math.min(Math.max(0, currentRuleIndex), maxIndex);
+          sheet.insertRule(fullRule, safeIndex);
+          currentRuleIndex = safeIndex + 1;
         } else {
           // Use HTMLStyleElement
           const styleElement = targetSheet.sheet as HTMLStyleElement;
           const styleSheet = styleElement.sheet;
 
           if (styleSheet) {
-            styleSheet.insertRule(fullRule, currentRuleIndex);
+            const maxIndex = styleSheet.cssRules.length;
+            const safeIndex = Math.min(Math.max(0, currentRuleIndex), maxIndex);
+            styleSheet.insertRule(fullRule, safeIndex);
+            currentRuleIndex = safeIndex + 1;
           } else {
             // Fallback: append to textContent
             styleElement.textContent =
               (styleElement.textContent || '') + '\n' + fullRule;
+            currentRuleIndex++;
           }
 
           // CRITICAL DEBUG: Verify the style element is in DOM only if there are issues
@@ -185,8 +187,7 @@ export class SheetManager {
         }
 
         insertedRuleTexts.push(fullRule);
-        registry.ruleTextSet.add(fullRule);
-        currentRuleIndex++;
+        // currentRuleIndex already adjusted above
       }
 
       // Update sheet info based on the number of rules inserted
@@ -241,40 +242,51 @@ export class SheetManager {
     }
 
     try {
-      const start = ruleInfo.ruleIndex;
-      const end = ruleInfo.endRuleIndex ?? ruleInfo.ruleIndex;
+      // Remove from dedupe set using stored css texts
+      // (no-op since we no longer dedupe globally)
 
-      // Delete from end to start to keep indices valid
-      for (let idx = end; idx >= start; idx--) {
-        if (sheet.isAdopted) {
-          const cssStyleSheet = sheet.sheet as CSSStyleSheet;
+      // Delete rules by matching cssText to avoid stale indices
+      const texts = Array.isArray(ruleInfo.cssText)
+        ? ruleInfo.cssText.slice()
+        : [];
+
+      if (sheet.isAdopted) {
+        const cssStyleSheet = sheet.sheet as CSSStyleSheet;
+        texts.forEach((text) => {
           const rules = cssStyleSheet.cssRules;
-          if (idx >= rules.length) {
-            continue; // index out of range; skip
+          let idx = -1;
+          for (let i = rules.length - 1; i >= 0; i--) {
+            if (rules[i].cssText === text) {
+              idx = i;
+              break;
+            }
           }
-          const cssText = rules[idx]?.cssText;
-          cssStyleSheet.deleteRule(idx);
-          if (cssText) {
-            registry.ruleTextSet.delete(cssText);
+          if (idx >= 0) {
+            cssStyleSheet.deleteRule(idx);
+            sheet.holes.push(idx);
           }
-        } else {
-          const styleElement = sheet.sheet as HTMLStyleElement;
-          const styleSheet = styleElement.sheet;
-          if (styleSheet) {
+        });
+      } else {
+        const styleElement = sheet.sheet as HTMLStyleElement;
+        const styleSheet = styleElement.sheet;
+        if (styleSheet) {
+          texts.forEach((text) => {
             const rules = styleSheet.cssRules;
-            if (idx >= rules.length) {
-              continue; // index out of range; skip
+            let idx = -1;
+            for (let i = rules.length - 1; i >= 0; i--) {
+              if ((rules[i] as CSSRule).cssText === text) {
+                idx = i;
+                break;
+              }
             }
-            const cssText = rules[idx]?.cssText;
-            styleSheet.deleteRule(idx);
-            if (cssText) {
-              registry.ruleTextSet.delete(cssText);
+            if (idx >= 0) {
+              styleSheet.deleteRule(idx);
+              sheet.holes.push(idx);
             }
-          }
+          });
         }
-        // Mark this index as available for reuse
-        sheet.holes.push(idx);
       }
+
       sheet.holes.sort((a, b) => a - b); // Keep holes sorted
     } catch (error) {
       console.warn('Failed to delete CSS rule:', error);
