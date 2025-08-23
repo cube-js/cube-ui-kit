@@ -125,19 +125,61 @@ export class SheetManager {
     const sheetIndex = registry.sheets.indexOf(targetSheet);
 
     try {
-      // Insert each flattened rule individually
+      // Group rules by selector and at-rules to combine declarations
+      const groupedRules: FlattenedRule[] = [];
+      const groupMap = new Map<
+        string,
+        {
+          idx: number;
+          selector: string;
+          atRules?: string[];
+          declarations: string;
+        }
+      >();
+
+      const atKey = (at?: string[]) => (at && at.length ? at.join('|') : '');
+
+      flattenedRules.forEach((r) => {
+        const key = `${atKey(r.atRules)}||${r.selector}`;
+        const existing = groupMap.get(key);
+        if (existing) {
+          // Append declarations, preserving order
+          existing.declarations = existing.declarations
+            ? `${existing.declarations} ${r.declarations}`
+            : r.declarations;
+        } else {
+          groupMap.set(key, {
+            idx: groupedRules.length,
+            selector: r.selector,
+            atRules: r.atRules,
+            declarations: r.declarations,
+          });
+          groupedRules.push({ ...r });
+        }
+      });
+
+      // Normalize groupedRules from map (with merged declarations)
+      groupMap.forEach((val) => {
+        groupedRules[val.idx] = {
+          selector: val.selector,
+          atRules: val.atRules,
+          declarations: val.declarations,
+        } as FlattenedRule;
+      });
+
+      // Insert grouped rules
       const insertedRuleTexts: string[] = [];
       let currentRuleIndex = ruleIndex;
 
       // Only log for potential debugging
-      if (flattenedRules.length > 10) {
+      if (groupedRules.length > 10) {
         console.log('SheetManager: Inserting many rules:', {
           className,
-          rulesCount: flattenedRules.length,
+          rulesCount: groupedRules.length,
         });
       }
 
-      for (const rule of flattenedRules) {
+      for (const rule of groupedRules) {
         const declarations = rule.declarations;
         const baseRule = `${rule.selector} { ${declarations} }`;
 
