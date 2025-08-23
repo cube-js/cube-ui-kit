@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.74.1
+
+### Patch Changes
+
+- [#765](https://github.com/cube-js/cube-ui-kit/pull/765) [`8310dc90`](https://github.com/cube-js/cube-ui-kit/commit/8310dc90209f14f301a8e60b71f5c2f9bfa27c73) Thanks [@tenphi](https://github.com/tenphi)! - Improve popover state sync.
+
 ## 0.74.0
 
 ### Minor Changes
