@@ -17,7 +17,7 @@ export interface RuleInfo {
   className: string;
   ruleIndex: number;
   sheetIndex: number;
-  cssText: string;
+  cssText: string[];
   /** Inclusive end index of the contiguous block of inserted rules for this className */
   endRuleIndex?: number;
 }

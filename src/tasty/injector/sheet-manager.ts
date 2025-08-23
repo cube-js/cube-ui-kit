@@ -125,7 +125,7 @@ export class SheetManager {
 
     try {
       // Insert each flattened rule individually
-      const insertedRules: string[] = [];
+      const insertedRuleTexts: string[] = [];
       let currentRuleIndex = ruleIndex;
 
       // Only log for potential debugging
@@ -151,7 +151,7 @@ export class SheetManager {
 
         // Skip if we've already inserted an identical rule text in this root
         if (registry.ruleTextSet.has(fullRule)) {
-          insertedRules.push(fullRule);
+          insertedRuleTexts.push(fullRule);
           continue;
         }
 
@@ -184,7 +184,7 @@ export class SheetManager {
           }
         }
 
-        insertedRules.push(fullRule);
+        insertedRuleTexts.push(fullRule);
         registry.ruleTextSet.add(fullRule);
         currentRuleIndex++;
       }
@@ -205,7 +205,7 @@ export class SheetManager {
         className,
         ruleIndex,
         sheetIndex,
-        cssText: insertedRules.join('\n'), // Store combined CSS for reference
+        cssText: insertedRuleTexts, // store each inserted rule text
         endRuleIndex: finalRuleIndex,
       };
     } catch (error) {
@@ -248,7 +248,11 @@ export class SheetManager {
       for (let idx = end; idx >= start; idx--) {
         if (sheet.isAdopted) {
           const cssStyleSheet = sheet.sheet as CSSStyleSheet;
-          const cssText = cssStyleSheet.cssRules[idx]?.cssText;
+          const rules = cssStyleSheet.cssRules;
+          if (idx >= rules.length) {
+            continue; // index out of range; skip
+          }
+          const cssText = rules[idx]?.cssText;
           cssStyleSheet.deleteRule(idx);
           if (cssText) {
             registry.ruleTextSet.delete(cssText);
@@ -257,7 +261,11 @@ export class SheetManager {
           const styleElement = sheet.sheet as HTMLStyleElement;
           const styleSheet = styleElement.sheet;
           if (styleSheet) {
-            const cssText = styleSheet.cssRules[idx]?.cssText;
+            const rules = styleSheet.cssRules;
+            if (idx >= rules.length) {
+              continue; // index out of range; skip
+            }
+            const cssText = rules[idx]?.cssText;
             styleSheet.deleteRule(idx);
             if (cssText) {
               registry.ruleTextSet.delete(cssText);
