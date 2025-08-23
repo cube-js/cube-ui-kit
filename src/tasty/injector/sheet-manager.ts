@@ -170,6 +170,8 @@ export class SheetManager {
       // Insert grouped rules
       const insertedRuleTexts: string[] = [];
       let currentRuleIndex = ruleIndex;
+      let firstInsertedIndex: number | null = null;
+      let lastInsertedIndex: number | null = null;
 
       // Only log for potential debugging
       if (groupedRules.length > 10) {
@@ -198,6 +200,8 @@ export class SheetManager {
           const maxIndex = sheet.cssRules.length;
           const safeIndex = Math.min(Math.max(0, currentRuleIndex), maxIndex);
           sheet.insertRule(fullRule, safeIndex);
+          if (firstInsertedIndex == null) firstInsertedIndex = safeIndex;
+          lastInsertedIndex = safeIndex;
           currentRuleIndex = safeIndex + 1;
         } else {
           // Use HTMLStyleElement
@@ -208,11 +212,16 @@ export class SheetManager {
             const maxIndex = styleSheet.cssRules.length;
             const safeIndex = Math.min(Math.max(0, currentRuleIndex), maxIndex);
             styleSheet.insertRule(fullRule, safeIndex);
+            if (firstInsertedIndex == null) firstInsertedIndex = safeIndex;
+            lastInsertedIndex = safeIndex;
             currentRuleIndex = safeIndex + 1;
           } else {
             // Fallback: append to textContent
             styleElement.textContent =
               (styleElement.textContent || '') + '\n' + fullRule;
+            if (firstInsertedIndex == null)
+              firstInsertedIndex = currentRuleIndex;
+            lastInsertedIndex = currentRuleIndex;
             currentRuleIndex++;
           }
 
@@ -246,10 +255,10 @@ export class SheetManager {
 
       return {
         className,
-        ruleIndex,
+        ruleIndex: firstInsertedIndex ?? ruleIndex,
         sheetIndex,
         cssText: insertedRuleTexts, // store each inserted rule text
-        endRuleIndex: finalRuleIndex,
+        endRuleIndex: lastInsertedIndex ?? finalRuleIndex,
       };
     } catch (error) {
       console.warn('Failed to insert CSS rules:', error, {
@@ -284,10 +293,44 @@ export class SheetManager {
     }
 
     try {
-      // Remove from dedupe set using stored css texts
-      // (no-op since we no longer dedupe globally)
+      // First try deleting by stored index range with clamping
+      if (
+        typeof ruleInfo.ruleIndex === 'number' &&
+        typeof ruleInfo.endRuleIndex === 'number'
+      ) {
+        const start = Math.max(0, ruleInfo.ruleIndex);
+        const end = Math.max(start, ruleInfo.endRuleIndex);
+        if (sheet.isAdopted) {
+          const cssStyleSheet = sheet.sheet as CSSStyleSheet;
+          for (
+            let idx = Math.min(end, cssStyleSheet.cssRules.length - 1);
+            idx >= start;
+            idx--
+          ) {
+            if (idx < 0 || idx >= cssStyleSheet.cssRules.length) continue;
+            cssStyleSheet.deleteRule(idx);
+            sheet.holes.push(idx);
+          }
+        } else {
+          const styleElement = sheet.sheet as HTMLStyleElement;
+          const styleSheet = styleElement.sheet;
+          if (styleSheet) {
+            for (
+              let idx = Math.min(end, styleSheet.cssRules.length - 1);
+              idx >= start;
+              idx--
+            ) {
+              if (idx < 0 || idx >= styleSheet.cssRules.length) continue;
+              styleSheet.deleteRule(idx);
+              sheet.holes.push(idx);
+            }
+          }
+        }
+        sheet.holes.sort((a, b) => a - b);
+        return;
+      }
 
-      // Delete rules by matching cssText to avoid stale indices
+      // Fallback: Delete rules by matching cssText to avoid stale indices
       const texts = Array.isArray(ruleInfo.cssText)
         ? ruleInfo.cssText.slice()
         : [];

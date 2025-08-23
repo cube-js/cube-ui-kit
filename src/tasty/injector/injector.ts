@@ -34,6 +34,9 @@ export class StyleInjector {
     const root = options?.root || document;
     const registry = this.sheetManager.getRegistry(root);
 
+    // Flush pending deletions first to avoid transient duplicates on rapid remounts
+    this.sheetManager.processCleanupQueue(registry);
+
     if (rules.length === 0) {
       return {
         className: '',
@@ -163,7 +166,8 @@ export class StyleInjector {
       registry.deletionQueue.push(className);
       const cacheKey = registry.cacheKeysByClassName.get(className);
       if (cacheKey) {
-        registry.cache.set(cacheKey, undefined as unknown as string);
+        // Delete cache entry to force fresh insert next time with same key
+        registry.cache.delete(cacheKey);
         registry.cacheKeysByClassName.delete(className);
       }
       this.scheduleCleanup(registry);

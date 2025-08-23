@@ -37,6 +37,22 @@ export class Lru<K, V> {
     if (this.map.size > this.limit) this.evict();
   }
 
+  delete(key: K) {
+    const node = this.map.get(key);
+    if (!node) return;
+    if (node.prev) {
+      const prevNode = this.map.get(node.prev);
+      if (prevNode) prevNode.next = node.next;
+    }
+    if (node.next) {
+      const nextNode = this.map.get(node.next);
+      if (nextNode) nextNode.prev = node.prev;
+    }
+    if (this.head === key) this.head = node.next;
+    if (this.tail === key) this.tail = node.prev;
+    this.map.delete(key);
+  }
+
   private touch(key: K, node: { prev: K | null; next: K | null; value: V }) {
     if (this.head === key) return; // already MRU
 
