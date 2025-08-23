@@ -9,14 +9,14 @@ import { Styles } from '../styles/types';
 import { mediaWrapper, normalizeStyleZones, pointsToZones } from './responsive';
 import { StyleHandler, StyleMap } from './styles';
 
-export interface DirectStyleResult {
+export interface StyleResult {
   selector: string;
   declarations: string;
   atRules?: string[];
 }
 
 export interface DirectRenderResult {
-  rules: DirectStyleResult[];
+  rules: StyleResult[];
   className?: string;
 }
 
@@ -200,13 +200,13 @@ function parseCssStringToLogicalRules(
 }
 
 /**
- * Convert logical rules to final DirectStyleResult format
+ * Convert logical rules to final StyleResult format
  */
 function materializeRules(
   logicalRules: LogicalRule[],
   className: string,
   zones: string[],
-): DirectStyleResult[] {
+): StyleResult[] {
   return logicalRules.map((rule) => {
     const selector = `.${className}${rule.selectorSuffix}`;
 

@@ -1,18 +1,14 @@
-import { DirectStyleResult } from '../utils/renderStylesDirect';
+import { StyleResult } from '../utils/renderStylesDirect';
 
-import { DirectStyleInjector } from './direct-injector';
 import { StyleInjector } from './injector';
 import { DisposeFunction, InjectResult, StyleInjectorConfig } from './types';
 
 // Use a more robust global singleton that survives React Strict Mode
 const GLOBAL_INJECTOR_KEY = '__TASTY_GLOBAL_INJECTOR__';
 
-const GLOBAL_DIRECT_INJECTOR_KEY = '__TASTY_GLOBAL_DIRECT_INJECTOR__';
-
 declare global {
   interface Window {
     [GLOBAL_INJECTOR_KEY]?: StyleInjector;
-    [GLOBAL_DIRECT_INJECTOR_KEY]?: DirectStyleInjector;
   }
 }
 
@@ -50,47 +46,27 @@ function getGlobalInjector(): StyleInjector {
 }
 
 /**
- * Get or create the global direct injector instance
- */
-function getGlobalDirectInjector(): DirectStyleInjector {
-  const storage = typeof window !== 'undefined' ? window : (globalThis as any);
-
-  if (!storage[GLOBAL_DIRECT_INJECTOR_KEY]) {
-    storage[GLOBAL_DIRECT_INJECTOR_KEY] = new DirectStyleInjector();
-  }
-  return storage[GLOBAL_DIRECT_INJECTOR_KEY]!;
-}
-
-/**
- * Inject CSS and return className with dispose function
+ * Inject styles and return className with dispose function
  */
 export function inject(
-  cssText: string,
+  rules: StyleResult[],
   options?: { root?: Document | ShadowRoot },
 ): InjectResult {
-  return getGlobalInjector().inject(cssText, options);
+  return getGlobalInjector().inject(rules, options);
 }
 
 /**
- * Optimized inject function that works directly with style objects
- * Eliminates CSS string parsing for better performance
- */
-export function injectDirect(
-  rules: DirectStyleResult[],
-  options?: { root?: Document | ShadowRoot },
-): InjectResult {
-  return getGlobalDirectInjector().injectDirect(rules, options);
-}
-
-/**
- * Inject global CSS rule
+ * Inject global CSS rule (legacy method - not supported in direct injector)
  */
 export function injectGlobal(
   selector: string,
   cssText: string,
   options?: { root?: Document | ShadowRoot },
 ): DisposeFunction {
-  return getGlobalInjector().injectGlobal(selector, cssText, options);
+  console.warn(
+    'injectGlobal is not supported in the direct style injector. Use inject() with pre-processed rules instead.',
+  );
+  return () => {};
 }
 
 /**

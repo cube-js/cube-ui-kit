@@ -14,7 +14,7 @@ import {
 } from 'react';
 import { isValidElementType } from 'react-is';
 
-import { inject, injectDirect, injectGlobal } from './injector';
+import { inject, injectGlobal } from './injector';
 import { hashCssText } from './injector/hash';
 import { BreakpointsContext } from './providers/BreakpointsProvider';
 import { BASE_STYLES } from './styles/list';
@@ -395,7 +395,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
           disposeRef.current = null;
           return;
         }
-        const { dispose } = injectDirect(directResult.rules);
+        const { dispose } = inject(directResult.rules);
         disposeRef.current = dispose;
         return () => {
           disposeRef.current?.();
