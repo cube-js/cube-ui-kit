@@ -54,18 +54,18 @@ export function EventBusProvider({ children }: EventBusProviderProps) {
     [],
   );
 
-  const emit = useCallback(<T = any>(event: string, data?: T) => {
-    // Use setTimeout to ensure async emission after current render cycle
-    setTimeout(() => {
-      emitSync(event, data);
-    }, 0);
-  }, []);
-
   const emitSync = useCallback(<T = any>(event: string, data?: T) => {
     const eventListeners = listeners.current[event];
     if (eventListeners) {
       eventListeners.forEach((listener) => listener(data));
     }
+  }, []);
+
+  const emit = useCallback(<T = any>(event: string, data?: T) => {
+    // Use setTimeout to ensure async emission after current render cycle
+    setTimeout(() => {
+      emitSync(event, data);
+    }, 0);
   }, []);
 
   const on = useCallback(
