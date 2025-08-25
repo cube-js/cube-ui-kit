@@ -53,12 +53,13 @@ function isTestEnvironment(): boolean {
  */
 export function configure(config: Partial<StyleInjectorConfig> = {}): void {
   const fullConfig: StyleInjectorConfig = {
-    maxRulesPerSheet: undefined, // infinite by default
+    maxRulesPerSheet: 8192, // safer default cap per sheet
     cacheSize: 500, // default LRU cache size for disposed rulesets
     cleanupDelay: 5000, // default delay before actual DOM cleanup (ignored if idleCleanup is true)
     idleCleanup: true, // default to using requestIdleCallback instead of setTimeout
     collectMetrics: false, // default to no performance tracking
     forceTextInjection: false, // auto-enable for test environments
+    debugMode: false, // reduce memory usage by avoiding full cssText storage
     ...config,
   };
 
@@ -182,12 +183,13 @@ export function createInjector(
   const isTest = isTestEnvironment();
 
   const fullConfig: StyleInjectorConfig = {
-    maxRulesPerSheet: undefined, // infinite by default
+    maxRulesPerSheet: 8192, // safer default cap per sheet
     cacheSize: 500, // default LRU cache size for disposed rulesets
     cleanupDelay: 5000, // default delay before actual DOM cleanup (ignored if idleCleanup is true)
     idleCleanup: true, // default to using requestIdleCallback instead of setTimeout
     collectMetrics: false, // default to no performance tracking
     forceTextInjection: isTest, // auto-enable for test environments
+    debugMode: false, // reduce memory usage by avoiding full cssText storage
     ...config,
   };
 

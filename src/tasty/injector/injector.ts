@@ -74,6 +74,22 @@ export class StyleInjector {
       };
     }
 
+    // Try to restore from disposed cache if className exists but is not active
+    if (generatedClass && !registry.rules.has(generatedClass)) {
+      const restored = this.sheetManager.restoreFromDisposedCache(
+        registry,
+        generatedClass,
+      );
+      if (restored) {
+        const currentRefCount = registry.refCounts.get(generatedClass) || 0;
+        registry.refCounts.set(generatedClass, currentRefCount + 1);
+        return {
+          className: generatedClass,
+          dispose: () => this.dispose(generatedClass, registry),
+        };
+      }
+    }
+
     // No active cache dedupe — rely on provided className or disposed cache only
 
     // Generate final className - only use extracted className if it's a generated tasty className
@@ -297,10 +313,24 @@ export class StyleInjector {
       const info =
         registry.rules.get(cls) || registry.disposedCache.get(cls)?.ruleInfo;
       if (info) {
-        const texts = Array.isArray(info.cssText)
-          ? info.cssText
-          : [info.cssText];
-        cssChunks.push(...texts);
+        if (info.cssText && info.cssText.length) {
+          cssChunks.push(...info.cssText);
+        } else {
+          // Fallback: try to read from live sheet by index range
+          const sheet = registry.sheets[info.sheetIndex];
+          const styleSheet = sheet?.sheet?.sheet;
+          if (styleSheet) {
+            const start = Math.max(0, info.ruleIndex);
+            const end = Math.min(
+              styleSheet.cssRules.length - 1,
+              (info.endRuleIndex as number) ?? info.ruleIndex,
+            );
+            for (let i = start; i <= end; i++) {
+              const rule = styleSheet.cssRules[i] as CSSRule | undefined;
+              if (rule) cssChunks.push(rule.cssText);
+            }
+          }
+        }
       }
     }
     return cssChunks.join('\n');

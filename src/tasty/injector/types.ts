@@ -13,6 +13,8 @@ export interface StyleInjectorConfig {
   idleCleanup?: boolean; // default: true (use requestIdleCallback for cleanup when available)
   collectMetrics?: boolean; // default: false (performance tracking)
   forceTextInjection?: boolean; // default: auto-detected (true in test environments, false otherwise)
+  /** When false, avoid storing full cssText for each rule block to reduce memory. */
+  debugMode?: boolean; // default: false (store less data)
 }
 
 export interface RuleInfo {

@@ -230,12 +230,14 @@ export class SheetManager {
           );
         }
 
-        insertedRuleTexts.push(fullRule);
-        // Track inserted rule texts for validation/debugging
-        try {
-          registry.ruleTextSet.add(fullRule);
-        } catch (_) {
-          // noop: defensive in case ruleTextSet is unavailable
+        // Conditionally store cssText and track for debug
+        if (this.config.debugMode) {
+          insertedRuleTexts.push(fullRule);
+          try {
+            registry.ruleTextSet.add(fullRule);
+          } catch (_) {
+            // noop: defensive in case ruleTextSet is unavailable
+          }
         }
         // currentRuleIndex already adjusted above
       }
@@ -250,7 +252,7 @@ export class SheetManager {
         className,
         ruleIndex: firstInsertedIndex ?? ruleIndex,
         sheetIndex,
-        cssText: insertedRuleTexts, // store each inserted rule text
+        cssText: this.config.debugMode ? insertedRuleTexts : [],
         endRuleIndex: lastInsertedIndex ?? finalRuleIndex,
       };
     } catch (error) {
@@ -296,33 +298,26 @@ export class SheetManager {
       if (styleSheet) {
         const rules = styleSheet.cssRules;
 
-        // Try safe contiguous deletion only if the expected block matches exactly
-        const expectedCount = texts.length;
+        // Prefer index-based deletion when possible
         const startIdx = Math.max(0, ruleInfo.ruleIndex);
-        const endIdxFromTexts = startIdx + Math.max(0, expectedCount - 1);
-        const canAttemptContiguous =
-          Number.isFinite(startIdx) &&
-          expectedCount > 0 &&
-          endIdxFromTexts < rules.length;
+        const endIdx = Math.min(
+          rules.length - 1,
+          Number.isFinite(ruleInfo.endRuleIndex as number)
+            ? (ruleInfo.endRuleIndex as number)
+            : startIdx - 1,
+        );
 
-        let contiguousMatches = false;
-        if (canAttemptContiguous) {
-          contiguousMatches = true;
-          for (let j = 0; j < expectedCount; j++) {
-            if ((rules[startIdx + j] as CSSRule).cssText !== texts[j]) {
-              contiguousMatches = false;
-              break;
-            }
-          }
-        }
-
-        if (contiguousMatches) {
-          for (let idx = startIdx + expectedCount - 1; idx >= startIdx; idx--) {
+        if (Number.isFinite(startIdx) && endIdx >= startIdx) {
+          for (let idx = endIdx; idx >= startIdx; idx--) {
             if (idx < 0 || idx >= styleSheet.cssRules.length) continue;
             styleSheet.deleteRule(idx);
           }
-        } else {
-          // Fallback: locate each rule by exact cssText and delete
+          sheet.ruleCount = Math.max(
+            0,
+            sheet.ruleCount - (endIdx - startIdx + 1),
+          );
+        } else if (this.config.debugMode && texts.length) {
+          // Fallback: locate each rule by exact cssText and delete (debug mode only)
           for (const text of texts) {
             let idx = -1;
             for (let i = styleSheet.cssRules.length - 1; i >= 0; i--) {
@@ -335,19 +330,19 @@ export class SheetManager {
               styleSheet.deleteRule(idx);
             }
           }
+          sheet.ruleCount = Math.max(0, sheet.ruleCount - texts.length);
         }
-
-        // Update rule count to reflect deleted rules
-        sheet.ruleCount = Math.max(0, sheet.ruleCount - texts.length);
       }
 
       // Remove texts from validation set
-      try {
-        for (const text of texts) {
-          registry.ruleTextSet.delete(text);
+      if (this.config.debugMode) {
+        try {
+          for (const text of texts) {
+            registry.ruleTextSet.delete(text);
+          }
+        } catch (_) {
+          // noop
         }
-      } catch (_) {
-        // noop
       }
     } catch (error) {
       console.warn('Failed to delete CSS rule:', error);
