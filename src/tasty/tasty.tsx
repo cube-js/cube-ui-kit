@@ -413,25 +413,16 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         .filter(Boolean)
         .join(' ');
 
-      // Remove possible className from otherProps to avoid overwriting
-      delete (otherProps as any).className;
-
-      // Note: Empty className is expected when no styles are provided
-
-      const baseElementProps = {
+      const elementProps = {
         'data-element': (element as string | undefined) || defaultElement,
         'data-qa': (qa as string | undefined) || defaultQa,
         'data-qaval': (qaVal as string | undefined) || defaultQaVal,
         ...(otherDefaultProps as unknown as Record<string, unknown>),
         ...(otherProps as unknown as Record<string, unknown>),
         ...(modProps || {}),
-        className: finalClassName, // <- place last so it wins
+        className: finalClassName,
         ref,
-        // REMOVED: $css prop and as prop (handled by createElement)
       } as Record<string, unknown>;
-
-      // Map React-specific props to HTML attributes
-      const elementProps = { ...baseElementProps };
 
       if ('isDisabled' in elementProps) {
         elementProps.disabled = elementProps.isDisabled;
