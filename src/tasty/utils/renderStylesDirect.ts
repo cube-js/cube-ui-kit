@@ -38,6 +38,15 @@ type HandlerQueueItem = {
   isResponsive: boolean;
 };
 
+// Normalize selector suffixes coming from `$` in style handler results.
+// Some legacy handlers return suffixes starting with `&` (e.g. '& > *').
+// The direct renderer expects suffixes without the ampersand because it adds
+// the parent selector during materialization.
+function normalizeDollarSelectorSuffix(suffix: string): string {
+  if (!suffix) return '';
+  return suffix.startsWith('&') ? suffix.slice(1) : suffix;
+}
+
 /**
  * Check if a key represents a CSS selector
  */
@@ -144,7 +153,9 @@ function explodeHandlerResult(
 
     // Phase 3: Selector fan-out - handle $ suffixes
     const suffixes = $
-      ? (Array.isArray($) ? $ : [$]).map((s) => selectorSuffix + s)
+      ? (Array.isArray($) ? $ : [$]).map(
+          (s) => selectorSuffix + normalizeDollarSelectorSuffix(String(s)),
+        )
       : [selectorSuffix];
 
     // Create logical rules for each breakpoint × selector combination
@@ -214,14 +225,17 @@ function convertHandlerResultToCSS(result: any, selectorSuffix = ''): string {
 
   if (Array.isArray($)) {
     return $.reduce((rend, suffix) => {
+      const normalized = suffix
+        ? normalizeDollarSelectorSuffix(String(suffix))
+        : '';
       return (
-        rend +
-        `&${finalSelectorSuffix}${suffix ? suffix : ''}{\n${renderedStyles}}\n`
+        rend + `&${finalSelectorSuffix}${normalized}{\n${renderedStyles}}\n`
       );
     }, '');
   }
 
-  return `&${finalSelectorSuffix}${$ ? $ : ''}{\n${renderedStyles}}\n`;
+  const normalizedSingle = $ ? normalizeDollarSelectorSuffix(String($)) : '';
+  return `&${finalSelectorSuffix}${normalizedSingle}{\n${renderedStyles}}\n`;
 }
 
 /**
