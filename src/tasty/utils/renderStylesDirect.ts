@@ -267,210 +267,196 @@ export function renderStylesDirect(
   }
 
   const zones = pointsToZones(responsive || []);
-  const handlerQueue: HandlerQueueItem[] = [];
-  const keys = Object.keys(styles);
-  const selectorKeys = keys.filter((key) => isSelector(key));
-  const baseSelector = `.${className}`;
-
   // Collect all logical rules
   const allLogicalRules: LogicalRule[] = [];
 
-  // Handle nested selectors (like &:hover, .SubElement)
-  for (const key of selectorKeys) {
-    const selectorSuffix = getSelector(key);
-    if (selectorSuffix && styles[key]) {
-      const nestedStyles = styles[key] as Styles;
-      const nestedResult = renderStylesDirect(
-        nestedStyles,
-        responsive,
-        className,
-      );
+  // Process styles recursively, preserving mod selectors and combining with nested selector suffixes
+  function processStyles(currentStyles: Styles, parentSuffix: string = '') {
+    const keys = Object.keys(currentStyles || {});
+    const selectorKeys = keys.filter((key) => isSelector(key));
 
-      // Convert nested rules to logical rules with adjusted selectors
-      for (const rule of nestedResult.rules) {
-        allLogicalRules.push({
-          selectorSuffix: selectorSuffix,
-          breakpointIdx: 0, // Nested selectors are typically base-level
-          declarations: rule.declarations
-            .split(';')
-            .filter((decl) => decl.trim())
-            .reduce(
-              (acc, decl) => {
-                const [prop, value] = decl.split(':').map((s) => s.trim());
-                if (prop && value) acc[prop] = value;
-                return acc;
-              },
-              {} as Record<string, string>,
-            ),
-        });
+    // Recurse into nested selectors first to compute proper suffix chaining
+    for (const key of selectorKeys) {
+      const suffix = getSelector(key);
+      if (suffix && currentStyles[key]) {
+        processStyles(currentStyles[key] as Styles, `${parentSuffix}${suffix}`);
       }
     }
-  }
 
-  // Build handler queue for base styles
-  keys.forEach((styleName) => {
-    if (isSelector(styleName)) return;
+    // Build handler queue for style properties at this level
+    const handlerQueue: HandlerQueueItem[] = [];
 
-    let handlers: StyleHandler[] = STYLE_HANDLER_MAP[styleName];
+    keys.forEach((styleName) => {
+      if (isSelector(styleName)) return;
 
-    if (!handlers) {
-      handlers = STYLE_HANDLER_MAP[styleName] = [createStyle(styleName)];
-    }
+      let handlers: StyleHandler[] = STYLE_HANDLER_MAP[styleName];
 
-    handlers.forEach((handler) => {
-      if (handlerQueue.find((queueItem) => queueItem.handler === handler)) {
-        return;
+      if (!handlers) {
+        handlers = STYLE_HANDLER_MAP[styleName] = [createStyle(styleName)];
       }
 
-      let isResponsive = false;
-      const lookupStyles = handler.__lookupStyles;
-      const filteredStyleMap = lookupStyles.reduce((map, name) => {
-        const value = styles?.[name];
-        if (value !== undefined) {
-          (map as any)[name] = value;
+      handlers.forEach((handler) => {
+        if (handlerQueue.find((queueItem) => queueItem.handler === handler)) {
+          return;
+        }
 
-          if (Array.isArray(value)) {
-            if (value.length === 0) {
-              delete (map as any)[name];
-            } else {
-              // Keep arrays for responsive processing - don't flatten to single value
-              isResponsive = true;
+        let isResponsive = false;
+        const lookupStyles = handler.__lookupStyles;
+        const filteredStyleMap = lookupStyles.reduce((map, name) => {
+          const value = currentStyles?.[name];
+          if (value !== undefined) {
+            (map as any)[name] = value;
+
+            if (Array.isArray(value)) {
+              if (value.length === 0) {
+                delete (map as any)[name];
+              } else {
+                // Keep arrays for responsive processing - don't flatten to single value
+                isResponsive = true;
+              }
             }
           }
-        }
 
-        return map;
-      }, {} as StyleMap);
+          return map;
+        }, {} as StyleMap);
 
-      handlerQueue.push({
-        handler,
-        styleMap: filteredStyleMap,
-        isResponsive,
+        handlerQueue.push({
+          handler,
+          styleMap: filteredStyleMap,
+          isResponsive,
+        });
       });
     });
-  });
 
-  // Process handlers using the three-phase approach
-  handlerQueue.forEach(({ handler, styleMap, isResponsive }) => {
-    const lookupStyles = handler.__lookupStyles;
+    // Process handlers using the three-phase approach
+    handlerQueue.forEach(({ handler, styleMap, isResponsive }) => {
+      const lookupStyles = handler.__lookupStyles;
 
-    if (isResponsive) {
-      // For responsive styles, resolve arrays using normalizeStyleZones
-      const valueMap = lookupStyles.reduce((map, style) => {
-        map[style] = normalizeStyleZones(styleMap[style], zones.length);
-        return map;
-      }, {} as any);
+      if (isResponsive) {
+        // For responsive styles, resolve arrays using normalizeStyleZones
+        const valueMap = lookupStyles.reduce((map, style) => {
+          map[style] = normalizeStyleZones(styleMap[style], zones.length);
+          return map;
+        }, {} as any);
 
-      // Create props for each breakpoint
-      const propsByPoint = zones.map((zone, i) => {
-        const pointProps = {} as any;
-        lookupStyles.forEach((style) => {
-          if (valueMap != null && valueMap[style] != null) {
-            pointProps[style] = valueMap[style][i];
+        // Create props for each breakpoint
+        const propsByPoint = zones.map((zone, i) => {
+          const pointProps = {} as any;
+          lookupStyles.forEach((style) => {
+            if (valueMap != null && valueMap[style] != null) {
+              pointProps[style] = valueMap[style][i];
+            }
+          });
+          return pointProps;
+        });
+
+        // Call handler for each breakpoint
+        propsByPoint.forEach((props, breakpointIdx) => {
+          const result = handler(props);
+          if (result) {
+            const logicalRules = explodeHandlerResult(
+              result,
+              zones || [],
+              parentSuffix,
+              breakpointIdx,
+            );
+            allLogicalRules.push(...logicalRules);
           }
         });
-        return pointProps;
-      });
-
-      // Call handler for each breakpoint
-      propsByPoint.forEach((props, breakpointIdx) => {
-        const result = handler(props);
-        if (result) {
-          const logicalRules = explodeHandlerResult(
-            result,
-            zones || [],
-            '',
-            breakpointIdx,
-          );
-          allLogicalRules.push(...logicalRules);
-        }
-      });
-    } else {
-      // For non-responsive styles, check if any values have state maps
-      const hasStateMaps = lookupStyles.some((style) => {
-        const value = styleMap[style];
-        return value && typeof value === 'object' && !Array.isArray(value);
-      });
-
-      if (hasStateMaps) {
-        // Process each style property individually for state resolution
-        const allMods = new Set<string>();
-        const styleStates: Record<string, any> = {};
-
-        lookupStyles.forEach((style) => {
+      } else {
+        // For non-responsive styles, check if any values have state maps
+        const hasStateMaps = lookupStyles.some((style) => {
           const value = styleMap[style];
-          if (value && typeof value === 'object' && !Array.isArray(value)) {
-            const { states, mods } = styleStateMapToStyleStateDataList(value);
-            styleStates[style] = states;
-            mods.forEach((mod) => allMods.add(mod));
-          } else {
-            // Simple value, create a single state
-            styleStates[style] = [{ mods: [], notMods: [], value }];
-          }
+          return value && typeof value === 'object' && !Array.isArray(value);
         });
 
-        // Generate all possible mod combinations
-        const allModsArray = Array.from(allMods);
-        const combinations: string[][] = [[]]; // Start with empty combination
-
-        // Generate all combinations (including empty)
-        for (let i = 0; i < allModsArray.length; i++) {
-          const currentLength = combinations.length;
-          for (let j = 0; j < currentLength; j++) {
-            combinations.push([...combinations[j], allModsArray[i]]);
-          }
-        }
-
-        combinations.forEach((modCombination) => {
-          const stateProps: Record<string, any> = {};
+        if (hasStateMaps) {
+          // Process each style property individually for state resolution
+          const allMods = new Set<string>();
+          const styleStates: Record<string, any> = {};
 
           lookupStyles.forEach((style) => {
-            const states = styleStates[style];
-            // Find the matching state for this mod combination
-            const matchingState = states.find((state) => {
-              return computeState(state.model, (mod) =>
-                modCombination.includes(mod),
-              );
-            });
-            if (matchingState) {
-              stateProps[style] = matchingState.value;
+            const value = styleMap[style];
+            if (value && typeof value === 'object' && !Array.isArray(value)) {
+              const { states, mods } = styleStateMapToStyleStateDataList(value);
+              styleStates[style] = states;
+              mods.forEach((mod) => allMods.add(mod));
+            } else {
+              // Simple value, create a single state
+              styleStates[style] = [{ mods: [], notMods: [], value }];
             }
           });
 
-          const result = handler(stateProps as any);
-          if (!result) return;
+          // Generate all possible mod combinations
+          const allModsArray = Array.from(allMods);
+          const combinations: string[][] = [[]]; // Start with empty combination
 
-          const notMods = allModsArray.filter(
-            (mod) => !modCombination.includes(mod),
-          );
-          const modsSelectors = `${modCombination
-            .map(getModSelector)
-            .join('')}${notMods
-            .map((mod) => {
-              const sel = getModSelector(mod);
-              return sel.startsWith(':not(')
-                ? sel.slice(5, -1)
-                : `:not(${sel})`;
-            })
-            .join('')}`;
+          // Generate all combinations (including empty)
+          for (let i = 0; i < allModsArray.length; i++) {
+            const currentLength = combinations.length;
+            for (let j = 0; j < currentLength; j++) {
+              combinations.push([...combinations[j], allModsArray[i]]);
+            }
+          }
 
-          const logical = explodeHandlerResult(
-            result,
-            zones || [],
-            modsSelectors,
-          );
-          allLogicalRules.push(...logical);
-        });
-      } else {
-        // Simple case: no state maps, call handler directly
-        const result = handler(styleMap as any);
-        if (result) {
-          const logical = explodeHandlerResult(result, zones || [], '');
-          allLogicalRules.push(...logical);
+          combinations.forEach((modCombination) => {
+            const stateProps: Record<string, any> = {};
+
+            lookupStyles.forEach((style) => {
+              const states = styleStates[style];
+              // Find the matching state for this mod combination
+              const matchingState = states.find((state) => {
+                return computeState(state.model, (mod) =>
+                  modCombination.includes(mod),
+                );
+              });
+              if (matchingState) {
+                stateProps[style] = matchingState.value;
+              }
+            });
+
+            const result = handler(stateProps as any);
+            if (!result) return;
+
+            const notMods = allModsArray.filter(
+              (mod) => !modCombination.includes(mod),
+            );
+            const modsSelectors = `${modCombination
+              .map(getModSelector)
+              .join('')}${notMods
+              .map((mod) => {
+                const sel = getModSelector(mod);
+                return sel.startsWith(':not(')
+                  ? sel.slice(5, -1)
+                  : `:not(${sel})`;
+              })
+              .join('')}`;
+
+            const logical = explodeHandlerResult(
+              result,
+              zones || [],
+              `${modsSelectors}${parentSuffix}`,
+            );
+            allLogicalRules.push(...logical);
+          });
+        } else {
+          // Simple case: no state maps, call handler directly
+          const result = handler(styleMap as any);
+          if (result) {
+            const logical = explodeHandlerResult(
+              result,
+              zones || [],
+              parentSuffix,
+            );
+            allLogicalRules.push(...logical);
+          }
         }
       }
-    }
-  });
+    });
+  }
+
+  // Kick off processing from the root styles with empty suffix
+  processStyles(styles, '');
 
   // Materialize all logical rules into final format
   const finalRulesRaw = materializeRules(

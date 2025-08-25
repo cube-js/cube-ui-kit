@@ -34,9 +34,6 @@ export class StyleInjector {
     const root = options?.root || document;
     const registry = this.sheetManager.getRegistry(root);
 
-    // Flush pending deletions first to avoid transient duplicates on rapid remounts
-    this.sheetManager.processCleanupQueue(registry);
-
     if (rules.length === 0) {
       return {
         className: '',
