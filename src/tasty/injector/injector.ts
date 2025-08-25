@@ -331,7 +331,7 @@ export class StyleInjector {
     const root = options?.root || document;
     const registry = this.sheetManager.getRegistry(root);
 
-    // Clear all cleanup timeouts and perform immediate cleanup
+    // Clear any scheduled cleanups and immediately clean those
     for (const [className, timeoutId] of registry.cleanupTimeouts) {
       if (
         this.config.idleCleanup &&
@@ -347,6 +347,12 @@ export class StyleInjector {
       }
     }
     registry.cleanupTimeouts.clear();
+
+    // Also cleanup any remaining disposed entries that were not scheduled
+    const keys = Array.from(registry.disposedCache.keys());
+    for (const cls of keys) {
+      this.sheetManager['performActualCleanup'](registry, cls);
+    }
   }
 
   /**

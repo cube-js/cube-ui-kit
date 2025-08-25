@@ -152,6 +152,18 @@ function explodeHandlerResult(
     }
 
     // Phase 3: Selector fan-out - handle $ suffixes
+    // IMPORTANT: If we are already in a pseudo-element context (contains '::'),
+    // CSS does not allow further descendant/child selectors (e.g., '>*') after
+    // a pseudo-element. In such cases we must ignore the entire style handler
+    // result since the styles become unapplicable and would produce invalid
+    // selectors like `.t0::before>*`.
+    const inPseudoElementContext = selectorSuffix.includes('::');
+
+    if (inPseudoElementContext && $) {
+      // Skip this entire handler result - styles with $ selectors are not applicable in pseudo-element context
+      return [];
+    }
+
     const suffixes = $
       ? (Array.isArray($) ? $ : [$]).map(
           (s) => selectorSuffix + normalizeDollarSelectorSuffix(String(s)),

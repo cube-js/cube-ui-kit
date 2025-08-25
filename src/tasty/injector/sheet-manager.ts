@@ -38,19 +38,30 @@ export class SheetManager {
           }
         : undefined;
 
+      const disposedCache = new Lru<string, DisposedRuleInfo>(
+        this.config.cacheSize || 500,
+      );
+
       registry = {
         sheets: [],
         refCounts: new Map(),
         rules: new Map(),
         deletionQueue: [],
         ruleTextSet: new Set<string>(),
-        disposedCache: new Lru<string, DisposedRuleInfo>(
-          this.config.cacheSize || 500,
-        ),
+        disposedCache,
         cleanupTimeouts: new Map(),
         metrics,
         classCounter: 0,
       } as unknown as RootRegistry;
+
+      // Perform DOM cleanup only when an item is evicted from the LRU
+      disposedCache.setOnEvict((key) => {
+        this.performActualCleanup(registry as RootRegistry, key);
+        if ((registry as RootRegistry).metrics) {
+          (registry as RootRegistry).metrics!.evictions++;
+        }
+      });
+
       this.rootRegistries.set(root, registry);
     }
 
@@ -401,7 +412,13 @@ export class SheetManager {
       registry.metrics.totalDisposals++;
     }
 
-    // Schedule lazy cleanup if configured
+    // If we have a disposed LRU cache, don't schedule DOM cleanup.
+    // Cleanup will occur on LRU eviction or via manual forceCleanup.
+    if ((this.config.cacheSize || 0) > 0) {
+      return;
+    }
+
+    // Schedule lazy cleanup if configured (legacy behavior when no cache)
     if (this.config.idleCleanup && typeof requestIdleCallback !== 'undefined') {
       // Use requestIdleCallback for cleanup when available and enabled
       const timeoutId = requestIdleCallback(() => {
