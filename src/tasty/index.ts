@@ -11,6 +11,7 @@ export * from './providers/BreakpointsProvider';
 export * from './utils/mergeStyles';
 export * from './utils/warnings';
 export * from './utils/getDisplayName';
+export * from './injector';
 export type {
   TastyProps,
   GlobalTastyProps,

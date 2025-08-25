@@ -8,10 +8,10 @@ The Style Injector provides:
 - **Hash-based deduplication** - identical CSS gets the same className
 - **Reference counting** - automatic cleanup when components unmount
 - **CSS nesting flattening** - handles `&`, `.Class`, `SubElement` patterns
-- **Garbage collection** - configurable cleanup thresholds
+- **Lazy cleanup** - configurable delay before DOM cleanup
 - **SSR support** - deterministic class names and CSS extraction
 - **Multiple roots** - works with Document and ShadowRoot
-- **Adopted stylesheets** - uses modern APIs with fallbacks
+- **Style elements** - reliable DOM insertion with fallbacks
 
 ## Quick Start
 
@@ -20,8 +20,8 @@ import { inject, injectGlobal, configure } from './tasty/injector';
 
 // Configure once (optional)
 configure({
-  gcThreshold: 100,
-  useAdoptedStyleSheets: true,
+  cacheSize: 1000,
+  collectMetrics: true,
 });
 
 // Inject component styles
@@ -59,11 +59,13 @@ Configures the global injector instance.
 
 ```typescript
 configure({
-  maxRulesPerSheet: 8000,    // Cap rules per sheet (infinite by default)
-  mode: 'nested',            // 'nested' | 'atomic' 
-  gcThreshold: 100,          // Cleanup trigger threshold
-  useAdoptedStyleSheets: true, // Use modern APIs when available
-  nonce: 'csp-nonce',        // CSP nonce for style elements
+  maxRulesPerSheet: 8000,           // Cap rules per sheet (infinite by default)
+  cacheSize: 500,                   // LRU cache size for disposed rulesets
+  cleanupDelay: 5000,               // Delay before actual DOM cleanup (ms, ignored if idleCleanup is true)
+  idleCleanup: true,                // Use requestIdleCallback for cleanup when available
+  collectMetrics: false,            // Collect performance metrics
+  forceTextInjection: false,        // Force textContent insertion (auto-detected for tests)
+  nonce: 'csp-nonce',               // CSP nonce for style elements
 });
 ```
 
@@ -139,14 +141,14 @@ const cssForSSR = getCssText();
 - **Deduplication** - Identical CSS reuses the same className
 - **Reference counting** - Automatic cleanup prevents memory leaks
 - **Batched operations** - DOM updates are batched for performance
-- **Adopted stylesheets** - Uses modern browser APIs when available
-- **Caching** - Smart caching with configurable limits
-- **Garbage collection** - Configurable cleanup thresholds
+- **Style elements** - Reliable DOM insertion with textContent fallbacks
+- **Caching** - Smart caching with configurable limits including disposed rulesets
+- **Lazy cleanup** - Configurable delay or idle callback for DOM cleanup optimization
 
 ## Browser Support
 
-- **Modern browsers** - Uses adoptedStyleSheets for best performance
-- **Legacy browsers** - Falls back to `<style>` elements
+- **All browsers** - Uses reliable `<style>` element insertion
+- **CSS injection** - Uses CSSStyleSheet.insertRule with textContent fallback
 - **Shadow DOM** - Full support for multiple roots
 - **SSR** - Deterministic class names and CSS extraction
 

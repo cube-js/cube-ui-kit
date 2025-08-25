@@ -155,6 +155,7 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   resize: 'none',
   boxSizing: 'border-box',
   userSelect: 'auto',
+  outline: 0,
 
   '$vertical-padding': 0,
   '$left-padding': {

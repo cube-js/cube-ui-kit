@@ -1,6 +1,8 @@
 import { Lru } from '../parser/lru';
 
 import {
+  CacheMetrics,
+  DisposedRuleInfo,
   FlattenedRule,
   RootRegistry,
   RuleInfo,
@@ -23,15 +25,32 @@ export class SheetManager {
     let registry = this.rootRegistries.get(root);
 
     if (!registry) {
+      const metrics: CacheMetrics | undefined = this.config.collectMetrics
+        ? {
+            hits: 0,
+            misses: 0,
+            disposedHits: 0,
+            evictions: 0,
+            totalInsertions: 0,
+            totalDisposals: 0,
+            domCleanups: 0,
+            startTime: Date.now(),
+          }
+        : undefined;
+
       registry = {
         sheets: [],
-        cache: new Lru<string, string>(this.config.cacheSize || 1000),
         refCounts: new Map(),
         rules: new Map(),
         deletionQueue: [],
         ruleTextSet: new Set<string>(),
-        cacheKeysByClassName: new Map(),
-      };
+        disposedCache: new Lru<string, DisposedRuleInfo>(
+          this.config.cacheSize || 500,
+        ),
+        cleanupTimeouts: new Map(),
+        metrics,
+        classCounter: 0,
+      } as unknown as RootRegistry;
       this.rootRegistries.set(root, registry);
     }
 
@@ -42,29 +61,12 @@ export class SheetManager {
    * Create a new stylesheet for the registry
    */
   createSheet(registry: RootRegistry, root: Document | ShadowRoot): SheetInfo {
-    let sheet: CSSStyleSheet | HTMLStyleElement;
-    let isAdopted = false;
-
-    // Use style elements by default, adoptedStyleSheets only if explicitly enabled
-    if (this.config.useAdoptedStyleSheets && 'adoptedStyleSheets' in root) {
-      try {
-        sheet = new CSSStyleSheet();
-        const adoptedSheets = root.adoptedStyleSheets || [];
-        root.adoptedStyleSheets = [...adoptedSheets, sheet];
-        isAdopted = true;
-      } catch (error) {
-        // Fallback to style element
-        sheet = this.createStyleElement(root);
-      }
-    } else {
-      sheet = this.createStyleElement(root);
-    }
+    const sheet = this.createStyleElement(root);
 
     const sheetInfo: SheetInfo = {
       sheet,
       ruleCount: 0,
       holes: [],
-      isAdopted,
     };
 
     registry.sheets.push(sheetInfo);
@@ -94,8 +96,8 @@ export class SheetManager {
       document.head.appendChild(style);
     }
 
-    // Verify it was actually added - log only if there's a problem
-    if (!style.isConnected) {
+    // Verify it was actually added - log only if there's a problem and we're not using forceTextInjection
+    if (!style.isConnected && !this.config.forceTextInjection) {
       console.error('SheetManager: Style element failed to connect to DOM!', {
         parentNode: style.parentNode?.nodeName,
         isConnected: style.isConnected,
@@ -173,14 +175,6 @@ export class SheetManager {
       let firstInsertedIndex: number | null = null;
       let lastInsertedIndex: number | null = null;
 
-      // Only log for potential debugging
-      if (groupedRules.length > 10) {
-        console.log('SheetManager: Inserting many rules:', {
-          className,
-          rulesCount: groupedRules.length,
-        });
-      }
-
       for (const rule of groupedRules) {
         const declarations = rule.declarations;
         const baseRule = `${rule.selector} { ${declarations} }`;
@@ -194,50 +188,44 @@ export class SheetManager {
           );
         }
 
-        // Insert individual rule (no global dedupe to avoid interfering with lifecycle)
-        if (targetSheet.isAdopted) {
-          const sheet = targetSheet.sheet as CSSStyleSheet;
-          const maxIndex = sheet.cssRules.length;
+        // Insert individual rule into style element
+        const styleElement = targetSheet.sheet;
+        const styleSheet = styleElement.sheet;
+
+        if (styleSheet && !this.config.forceTextInjection) {
+          const maxIndex = styleSheet.cssRules.length;
           const safeIndex = Math.min(Math.max(0, currentRuleIndex), maxIndex);
-          sheet.insertRule(fullRule, safeIndex);
+          styleSheet.insertRule(fullRule, safeIndex);
           if (firstInsertedIndex == null) firstInsertedIndex = safeIndex;
           lastInsertedIndex = safeIndex;
           currentRuleIndex = safeIndex + 1;
         } else {
-          // Use HTMLStyleElement
-          const styleElement = targetSheet.sheet as HTMLStyleElement;
-          const styleSheet = styleElement.sheet;
+          // Use textContent (either as fallback or when forceTextInjection is enabled)
+          styleElement.textContent =
+            (styleElement.textContent || '') + '\n' + fullRule;
+          if (firstInsertedIndex == null) firstInsertedIndex = currentRuleIndex;
+          lastInsertedIndex = currentRuleIndex;
+          currentRuleIndex++;
+        }
 
-          if (styleSheet) {
-            const maxIndex = styleSheet.cssRules.length;
-            const safeIndex = Math.min(Math.max(0, currentRuleIndex), maxIndex);
-            styleSheet.insertRule(fullRule, safeIndex);
-            if (firstInsertedIndex == null) firstInsertedIndex = safeIndex;
-            lastInsertedIndex = safeIndex;
-            currentRuleIndex = safeIndex + 1;
-          } else {
-            // Fallback: append to textContent
-            styleElement.textContent =
-              (styleElement.textContent || '') + '\n' + fullRule;
-            if (firstInsertedIndex == null)
-              firstInsertedIndex = currentRuleIndex;
-            lastInsertedIndex = currentRuleIndex;
-            currentRuleIndex++;
-          }
-
-          // CRITICAL DEBUG: Verify the style element is in DOM only if there are issues
-          if (!styleElement.parentNode) {
-            console.error(
-              'SheetManager: Style element is NOT in DOM! This is the problem!',
-              {
-                className,
-                ruleIndex: currentRuleIndex,
-              },
-            );
-          }
+        // CRITICAL DEBUG: Verify the style element is in DOM only if there are issues and we're not using forceTextInjection
+        if (!styleElement.parentNode && !this.config.forceTextInjection) {
+          console.error(
+            'SheetManager: Style element is NOT in DOM! This is the problem!',
+            {
+              className,
+              ruleIndex: currentRuleIndex,
+            },
+          );
         }
 
         insertedRuleTexts.push(fullRule);
+        // Track inserted rule texts for validation/debugging
+        try {
+          registry.ruleTextSet.add(fullRule);
+        } catch (_) {
+          // noop: defensive in case ruleTextSet is unavailable
+        }
         // currentRuleIndex already adjusted above
       }
 
@@ -245,12 +233,6 @@ export class SheetManager {
       const finalRuleIndex = currentRuleIndex - 1;
       if (finalRuleIndex >= targetSheet.ruleCount) {
         targetSheet.ruleCount = finalRuleIndex + 1;
-      }
-
-      // Remove from holes if original index was reused
-      const holeIndex = targetSheet.holes.indexOf(ruleIndex);
-      if (holeIndex !== -1) {
-        targetSheet.holes.splice(holeIndex, 1);
       }
 
       return {
@@ -293,86 +275,69 @@ export class SheetManager {
     }
 
     try {
-      // First try deleting by stored index range with clamping
-      if (
-        typeof ruleInfo.ruleIndex === 'number' &&
-        typeof ruleInfo.endRuleIndex === 'number'
-      ) {
-        const start = Math.max(0, ruleInfo.ruleIndex);
-        const end = Math.max(start, ruleInfo.endRuleIndex);
-        if (sheet.isAdopted) {
-          const cssStyleSheet = sheet.sheet as CSSStyleSheet;
-          for (
-            let idx = Math.min(end, cssStyleSheet.cssRules.length - 1);
-            idx >= start;
-            idx--
-          ) {
-            if (idx < 0 || idx >= cssStyleSheet.cssRules.length) continue;
-            cssStyleSheet.deleteRule(idx);
-            sheet.holes.push(idx);
-          }
-        } else {
-          const styleElement = sheet.sheet as HTMLStyleElement;
-          const styleSheet = styleElement.sheet;
-          if (styleSheet) {
-            for (
-              let idx = Math.min(end, styleSheet.cssRules.length - 1);
-              idx >= start;
-              idx--
-            ) {
-              if (idx < 0 || idx >= styleSheet.cssRules.length) continue;
-              styleSheet.deleteRule(idx);
-              sheet.holes.push(idx);
-            }
-          }
-        }
-        sheet.holes.sort((a, b) => a - b);
-        return;
-      }
-
-      // Fallback: Delete rules by matching cssText to avoid stale indices
       const texts = Array.isArray(ruleInfo.cssText)
         ? ruleInfo.cssText.slice()
         : [];
 
-      if (sheet.isAdopted) {
-        const cssStyleSheet = sheet.sheet as CSSStyleSheet;
-        texts.forEach((text) => {
-          const rules = cssStyleSheet.cssRules;
-          let idx = -1;
-          for (let i = rules.length - 1; i >= 0; i--) {
-            if (rules[i].cssText === text) {
-              idx = i;
+      const styleElement = sheet.sheet;
+      const styleSheet = styleElement.sheet;
+
+      if (styleSheet) {
+        const rules = styleSheet.cssRules;
+
+        // Try safe contiguous deletion only if the expected block matches exactly
+        const expectedCount = texts.length;
+        const startIdx = Math.max(0, ruleInfo.ruleIndex);
+        const endIdxFromTexts = startIdx + Math.max(0, expectedCount - 1);
+        const canAttemptContiguous =
+          Number.isFinite(startIdx) &&
+          expectedCount > 0 &&
+          endIdxFromTexts < rules.length;
+
+        let contiguousMatches = false;
+        if (canAttemptContiguous) {
+          contiguousMatches = true;
+          for (let j = 0; j < expectedCount; j++) {
+            if ((rules[startIdx + j] as CSSRule).cssText !== texts[j]) {
+              contiguousMatches = false;
               break;
             }
           }
-          if (idx >= 0) {
-            cssStyleSheet.deleteRule(idx);
-            sheet.holes.push(idx);
+        }
+
+        if (contiguousMatches) {
+          for (let idx = startIdx + expectedCount - 1; idx >= startIdx; idx--) {
+            if (idx < 0 || idx >= styleSheet.cssRules.length) continue;
+            styleSheet.deleteRule(idx);
           }
-        });
-      } else {
-        const styleElement = sheet.sheet as HTMLStyleElement;
-        const styleSheet = styleElement.sheet;
-        if (styleSheet) {
-          texts.forEach((text) => {
-            const rules = styleSheet.cssRules;
+        } else {
+          // Fallback: locate each rule by exact cssText and delete
+          for (const text of texts) {
             let idx = -1;
-            for (let i = rules.length - 1; i >= 0; i--) {
-              if ((rules[i] as CSSRule).cssText === text) {
+            for (let i = styleSheet.cssRules.length - 1; i >= 0; i--) {
+              if ((styleSheet.cssRules[i] as CSSRule).cssText === text) {
                 idx = i;
                 break;
               }
             }
             if (idx >= 0) {
               styleSheet.deleteRule(idx);
-              sheet.holes.push(idx);
             }
-          });
+          }
         }
+
+        // Update rule count to reflect deleted rules
+        sheet.ruleCount = Math.max(0, sheet.ruleCount - texts.length);
       }
 
-      sheet.holes.sort((a, b) => a - b); // Keep holes sorted
+      // Remove texts from validation set
+      try {
+        for (const text of texts) {
+          registry.ruleTextSet.delete(text);
+        }
+      } catch (_) {
+        // noop
+      }
     } catch (error) {
       console.warn('Failed to delete CSS rule:', error);
     }
@@ -395,7 +360,7 @@ export class SheetManager {
 
     // Find sheet with space
     for (const sheet of registry.sheets) {
-      if (sheet.ruleCount < maxRules || sheet.holes.length > 0) {
+      if (sheet.ruleCount < maxRules) {
         return sheet;
       }
     }
@@ -404,16 +369,126 @@ export class SheetManager {
   }
 
   /**
-   * Find an available rule index in the sheet (reuse holes first)
+   * Find an available rule index in the sheet
    */
   findAvailableRuleIndex(sheet: SheetInfo): number {
-    // Reuse holes first (lowest index first)
-    if (sheet.holes.length > 0) {
-      return sheet.holes[0];
+    // Always append to the end - CSS doesn't have holes
+    return sheet.ruleCount;
+  }
+
+  /**
+   * Move a ruleset to disposed cache for potential reuse
+   */
+  moveToDisposedCache(registry: RootRegistry, className: string): void {
+    const ruleInfo = registry.rules.get(className);
+    if (!ruleInfo) return;
+
+    // Move to disposed cache
+    const disposedInfo: DisposedRuleInfo = {
+      ruleInfo,
+      disposedAt: Date.now(),
+      recentlyUsed: false,
+    };
+
+    registry.disposedCache.set(className, disposedInfo);
+
+    // Remove from active registry
+    registry.rules.delete(className);
+    registry.refCounts.delete(className);
+
+    // Update metrics
+    if (registry.metrics) {
+      registry.metrics.totalDisposals++;
     }
 
-    // Use next available index
-    return sheet.ruleCount;
+    // Schedule lazy cleanup if configured
+    if (this.config.idleCleanup && typeof requestIdleCallback !== 'undefined') {
+      // Use requestIdleCallback for cleanup when available and enabled
+      const timeoutId = requestIdleCallback(() => {
+        this.performActualCleanup(registry, className);
+      }) as ReturnType<typeof requestIdleCallback>;
+
+      registry.cleanupTimeouts.set(className, timeoutId);
+    } else {
+      const cleanupDelay = this.config.cleanupDelay || 5000;
+      if (cleanupDelay > 0) {
+        const timeoutId = setTimeout(() => {
+          this.performActualCleanup(registry, className);
+        }, cleanupDelay);
+
+        registry.cleanupTimeouts.set(className, timeoutId);
+      } else {
+        // Immediate cleanup
+        this.performActualCleanup(registry, className);
+      }
+    }
+  }
+
+  /**
+   * Restore a ruleset from disposed cache
+   */
+  restoreFromDisposedCache(
+    registry: RootRegistry,
+    className: string,
+  ): RuleInfo | null {
+    const disposedInfo = registry.disposedCache.get(className);
+    if (!disposedInfo) return null;
+
+    // Cancel any scheduled cleanup
+    const timeoutId = registry.cleanupTimeouts.get(className);
+    if (timeoutId) {
+      if (
+        this.config.idleCleanup &&
+        typeof cancelIdleCallback !== 'undefined'
+      ) {
+        cancelIdleCallback(timeoutId as unknown as number);
+      } else {
+        clearTimeout(timeoutId);
+      }
+      registry.cleanupTimeouts.delete(className);
+    }
+
+    // Restore to active registry
+    registry.rules.set(className, disposedInfo.ruleInfo);
+    registry.refCounts.set(className, 1);
+
+    // Remove from disposed cache
+    registry.disposedCache.delete(className);
+
+    // Mark as recently used for optimization
+    disposedInfo.recentlyUsed = true;
+
+    // Update metrics
+    if (registry.metrics) {
+      registry.metrics.disposedHits++;
+    }
+
+    return disposedInfo.ruleInfo;
+  }
+
+  /**
+   * Actually remove CSS rules from DOM (lazy cleanup)
+   */
+  private performActualCleanup(
+    registry: RootRegistry,
+    className: string,
+  ): void {
+    const disposedInfo = registry.disposedCache.get(className);
+    if (!disposedInfo) return;
+
+    // Remove from DOM
+    this.deleteRule(registry, disposedInfo.ruleInfo);
+
+    // Remove from disposed cache
+    registry.disposedCache.delete(className);
+
+    // Clean up timeout tracking
+    registry.cleanupTimeouts.delete(className);
+
+    // Update metrics
+    if (registry.metrics) {
+      registry.metrics.domCleanups++;
+    }
   }
 
   /**
@@ -435,13 +510,10 @@ export class SheetManager {
       const refCount = registry.refCounts.get(className) || 0;
 
       if (refCount <= 0) {
-        // Safe to delete
+        // Move to disposed cache
         const ruleInfo = registry.rules.get(className);
-
         if (ruleInfo) {
-          this.deleteRule(registry, ruleInfo);
-          registry.rules.delete(className);
-          registry.refCounts.delete(className);
+          this.moveToDisposedCache(registry, className);
         }
       }
     }
@@ -465,18 +537,12 @@ export class SheetManager {
 
     for (const sheet of registry.sheets) {
       try {
-        if (sheet.isAdopted) {
-          const cssStyleSheet = sheet.sheet as CSSStyleSheet;
-          const rules = Array.from(cssStyleSheet.cssRules);
+        const styleElement = sheet.sheet;
+        if (styleElement.textContent) {
+          cssChunks.push(styleElement.textContent);
+        } else if (styleElement.sheet) {
+          const rules = Array.from(styleElement.sheet.cssRules);
           cssChunks.push(rules.map((rule) => rule.cssText).join('\n'));
-        } else {
-          const styleElement = sheet.sheet as HTMLStyleElement;
-          if (styleElement.textContent) {
-            cssChunks.push(styleElement.textContent);
-          } else if (styleElement.sheet) {
-            const rules = Array.from(styleElement.sheet.cssRules);
-            cssChunks.push(rules.map((rule) => rule.cssText).join('\n'));
-          }
         }
       } catch (error) {
         console.warn('Failed to read CSS from sheet:', error);
@@ -484,6 +550,31 @@ export class SheetManager {
     }
 
     return cssChunks.join('\n');
+  }
+
+  /**
+   * Get cache performance metrics
+   */
+  getMetrics(registry: RootRegistry): CacheMetrics | null {
+    return registry.metrics || null;
+  }
+
+  /**
+   * Reset cache performance metrics
+   */
+  resetMetrics(registry: RootRegistry): void {
+    if (registry.metrics) {
+      registry.metrics = {
+        hits: 0,
+        misses: 0,
+        disposedHits: 0,
+        evictions: 0,
+        totalInsertions: 0,
+        totalDisposals: 0,
+        domCleanups: 0,
+        startTime: Date.now(),
+      };
+    }
   }
 
   /**
@@ -496,24 +587,26 @@ export class SheetManager {
       return;
     }
 
+    // Clear all cleanup timeouts
+    for (const timeoutId of registry.cleanupTimeouts.values()) {
+      if (
+        this.config.idleCleanup &&
+        typeof cancelIdleCallback !== 'undefined'
+      ) {
+        cancelIdleCallback(timeoutId as unknown as number);
+      } else {
+        clearTimeout(timeoutId);
+      }
+    }
+    registry.cleanupTimeouts.clear();
+
     // Remove all sheets
     for (const sheet of registry.sheets) {
       try {
-        if (sheet.isAdopted) {
-          // Remove from adoptedStyleSheets
-          const adoptedSheets = root.adoptedStyleSheets || [];
-          const index = adoptedSheets.indexOf(sheet.sheet as CSSStyleSheet);
-          if (index !== -1) {
-            const newSheets = [...adoptedSheets];
-            newSheets.splice(index, 1);
-            root.adoptedStyleSheets = newSheets;
-          }
-        } else {
-          // Remove style element
-          const styleElement = sheet.sheet as HTMLStyleElement;
-          if (styleElement.parentNode) {
-            styleElement.parentNode.removeChild(styleElement);
-          }
+        // Remove style element
+        const styleElement = sheet.sheet;
+        if (styleElement.parentNode) {
+          styleElement.parentNode.removeChild(styleElement);
         }
       } catch (error) {
         console.warn('Failed to cleanup sheet:', error);

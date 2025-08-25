@@ -6,7 +6,6 @@
 import { StyleResult } from '../utils/renderStyles';
 
 import { flattenNestedCssForSelector } from './flatten';
-import { hashCssText } from './hash';
 import { SheetManager } from './sheet-manager';
 import {
   DisposeFunction,
@@ -14,6 +13,13 @@ import {
   InjectResult,
   StyleInjectorConfig,
 } from './types';
+
+/**
+ * Generate sequential class name with format t{number}
+ */
+function generateClassName(counter: number): string {
+  return `t${counter}`;
+}
 
 export class StyleInjector {
   private sheetManager: SheetManager;
@@ -42,65 +48,83 @@ export class StyleInjector {
       };
     }
 
-    // Try to dedupe by className first — if the same class was already inserted, reuse it
-    const preExtractedClass = this.extractClassName(rules);
-    if (preExtractedClass && registry.rules.has(preExtractedClass)) {
-      const currentRefCount = registry.refCounts.get(preExtractedClass) || 0;
-      registry.refCounts.set(preExtractedClass, currentRefCount + 1);
-
-      return {
-        className: preExtractedClass,
-        dispose: () => this.dispose(preExtractedClass, registry),
-      };
-    }
-
-    // Convert to flattened rules for the existing sheet manager
+    // Convert to flattened rules
     const flattenedRules = this.convertToFlattenedRules(rules);
 
-    // Generate cache key and className
-    const cacheKey = this.generateCacheKey(flattenedRules);
-    const className =
-      preExtractedClass ||
-      this.extractClassName(rules) ||
-      hashCssText(cacheKey);
+    // Try to dedupe by className first — if the same class was already inserted, reuse it
+    // Only extract className if it looks like a generated tasty className (t + digits)
+    const preExtractedClass = this.extractClassName(rules);
+    const generatedClass =
+      preExtractedClass && /^t\d+$/.test(preExtractedClass)
+        ? preExtractedClass
+        : null;
 
-    // Check cache; ensure cached class still has rules
-    const existingClassName = registry.cache.get(cacheKey);
-    if (existingClassName && registry.rules.has(existingClassName)) {
-      const currentRefCount = registry.refCounts.get(existingClassName) || 0;
-      registry.refCounts.set(existingClassName, currentRefCount + 1);
+    if (generatedClass && registry.rules.has(generatedClass)) {
+      const currentRefCount = registry.refCounts.get(generatedClass) || 0;
+      registry.refCounts.set(generatedClass, currentRefCount + 1);
+
+      // Update metrics
+      if (registry.metrics) {
+        registry.metrics.hits++;
+      }
 
       return {
-        className: existingClassName,
-        dispose: () => this.dispose(existingClassName, registry),
+        className: generatedClass,
+        dispose: () => this.dispose(generatedClass, registry),
       };
     }
 
-    // If cache is stale (className missing rules), remove mapping
-    if (existingClassName && !registry.rules.has(existingClassName)) {
-      registry.cache.set(cacheKey, undefined as unknown as string);
-    }
+    // No active cache dedupe — rely on provided className or disposed cache only
+
+    // Generate final className - only use extracted className if it's a generated tasty className
+    const className = generatedClass
+      ? generatedClass
+      : generateClassName(registry.classCounter++);
+
+    // If a different pre-extracted class was used in rules, rewrite selectors to the final class
+    const rulesToInsert =
+      generatedClass && generatedClass !== className
+        ? flattenedRules.map((r) => {
+            if (r.selector.startsWith('.' + generatedClass)) {
+              return {
+                ...r,
+                selector:
+                  '.' + className + r.selector.slice(generatedClass.length + 1),
+              } as FlattenedRule;
+            }
+            return r;
+          })
+        : flattenedRules;
 
     // Insert rules using existing sheet manager
     const ruleInfo = this.sheetManager.insertRule(
       registry,
-      flattenedRules,
+      rulesToInsert,
       className,
       root,
     );
 
     if (!ruleInfo) {
+      // Update metrics
+      if (registry.metrics) {
+        registry.metrics.misses++;
+      }
+
       return {
         className,
         dispose: () => {},
       };
     }
 
-    // Store in cache and registry
-    registry.cache.set(cacheKey, className);
-    registry.cacheKeysByClassName.set(className, cacheKey);
+    // Store in registry
     registry.refCounts.set(className, 1);
     registry.rules.set(className, ruleInfo);
+
+    // Update metrics
+    if (registry.metrics) {
+      registry.metrics.totalInsertions++;
+      registry.metrics.misses++;
+    }
 
     return {
       className,
@@ -133,7 +157,7 @@ export class StyleInjector {
   }
 
   /**
-   * Generate cache key from flattened rules
+   * Generate cache key from flattened rules with optimized deduplication
    */
   private generateCacheKey(rules: FlattenedRule[]): string {
     const normalizeSelector = (selector: string): string => {
@@ -141,14 +165,32 @@ export class StyleInjector {
       return match ? match[1] : selector;
     };
 
-    return rules
+    // Sort rules to ensure consistent cache keys for equivalent rule sets
+    const sortedRules = [...rules].sort((a, b) => {
+      const aKey = `${normalizeSelector(a.selector)}${
+        a.atRules ? a.atRules.join('|') : ''
+      }`;
+      const bKey = `${normalizeSelector(b.selector)}${
+        b.atRules ? b.atRules.join('|') : ''
+      }`;
+      return aKey.localeCompare(bKey);
+    });
+
+    return sortedRules
       .map((rule) => {
         const at =
           rule.atRules && rule.atRules.length
             ? `@${rule.atRules.join('|')}`
             : '';
         const sel = normalizeSelector(rule.selector);
-        return `${sel}{${rule.declarations}}${at}`;
+        // Normalize declarations by sorting properties for consistent caching
+        const normalizedDeclarations = rule.declarations
+          .split(';')
+          .filter(Boolean)
+          .map((decl) => decl.trim())
+          .sort()
+          .join(';');
+        return `${sel}{${normalizedDeclarations}}${at}`;
       })
       .join('');
   }
@@ -159,15 +201,9 @@ export class StyleInjector {
   private dispose(className: string, registry: any): void {
     const currentRefCount = registry.refCounts.get(className) || 0;
     if (currentRefCount <= 1) {
-      // Mark for deletion and schedule cleanup; also remove cache binding
+      // Mark for deletion and schedule cleanup - but keep cache entries for disposal cache
       registry.refCounts.set(className, 0);
       registry.deletionQueue.push(className);
-      const cacheKey = registry.cacheKeysByClassName.get(className);
-      if (cacheKey) {
-        // Delete cache entry to force fresh insert next time with same key
-        registry.cache.delete(cacheKey);
-        registry.cacheKeysByClassName.delete(className);
-      }
       this.scheduleCleanup(registry);
     } else {
       registry.refCounts.set(className, currentRefCount - 1);
@@ -209,18 +245,8 @@ export class StyleInjector {
       return () => {};
     }
 
-    // Create a deterministic key for caching/deduplication
-    const cacheKey = `G|${selector}|${cssText}`;
-    const existingClassName = registry.cache.get(cacheKey);
-
-    if (existingClassName && registry.rules.has(existingClassName)) {
-      const currentRefCount = registry.refCounts.get(existingClassName) || 0;
-      registry.refCounts.set(existingClassName, currentRefCount + 1);
-      return () => this.dispose(existingClassName, registry);
-    }
-
     // Use a stable pseudo-className to track these global rules in the registry
-    const className = hashCssText(cacheKey);
+    const className = generateClassName(registry.classCounter++);
 
     // Flatten nested CSS against the provided selector (handles &, .Class, SubElement, etc.)
     const flattenedRules: FlattenedRule[] = flattenNestedCssForSelector(
@@ -240,9 +266,7 @@ export class StyleInjector {
       return () => {};
     }
 
-    // Track in caches and registry for ref-counted disposal
-    registry.cache.set(cacheKey, className);
-    registry.cacheKeysByClassName.set(className, cacheKey);
+    // Track in registry for ref-counted disposal
     registry.refCounts.set(className, 1);
     registry.rules.set(className, ruleInfo);
 
@@ -256,6 +280,73 @@ export class StyleInjector {
     const root = options?.root || document;
     const registry = this.sheetManager.getRegistry(root);
     return this.sheetManager.getCssText(registry);
+  }
+
+  /**
+   * Get CSS only for the provided tasty classNames (e.g., ["t0","t3"])
+   */
+  getCssTextForClasses(
+    classNames: Iterable<string>,
+    options?: { root?: Document | ShadowRoot },
+  ): string {
+    const root = options?.root || document;
+    const registry = this.sheetManager.getRegistry(root);
+
+    const cssChunks: string[] = [];
+    for (const cls of classNames) {
+      const info =
+        registry.rules.get(cls) || registry.disposedCache.get(cls)?.ruleInfo;
+      if (info) {
+        const texts = Array.isArray(info.cssText)
+          ? info.cssText
+          : [info.cssText];
+        cssChunks.push(...texts);
+      }
+    }
+    return cssChunks.join('\n');
+  }
+
+  /**
+   * Get cache performance metrics
+   */
+  getMetrics(options?: { root?: Document | ShadowRoot }): any {
+    const root = options?.root || document;
+    const registry = this.sheetManager.getRegistry(root);
+    return this.sheetManager.getMetrics(registry);
+  }
+
+  /**
+   * Reset cache performance metrics
+   */
+  resetMetrics(options?: { root?: Document | ShadowRoot }): void {
+    const root = options?.root || document;
+    const registry = this.sheetManager.getRegistry(root);
+    this.sheetManager.resetMetrics(registry);
+  }
+
+  /**
+   * Force cleanup of disposed rulesets (useful for memory pressure)
+   */
+  forceCleanupDisposed(options?: { root?: Document | ShadowRoot }): void {
+    const root = options?.root || document;
+    const registry = this.sheetManager.getRegistry(root);
+
+    // Clear all cleanup timeouts and perform immediate cleanup
+    for (const [className, timeoutId] of registry.cleanupTimeouts) {
+      if (
+        this.config.idleCleanup &&
+        typeof cancelIdleCallback !== 'undefined'
+      ) {
+        cancelIdleCallback(timeoutId as unknown as number);
+      } else {
+        clearTimeout(timeoutId);
+      }
+      const disposedInfo = registry.disposedCache.get(className);
+      if (disposedInfo) {
+        this.sheetManager['performActualCleanup'](registry, className);
+      }
+    }
+    registry.cleanupTimeouts.clear();
   }
 
   /**

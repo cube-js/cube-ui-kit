@@ -7,10 +7,12 @@ export type DisposeFunction = () => void;
 
 export interface StyleInjectorConfig {
   nonce?: string;
-  useAdoptedStyleSheets?: boolean; // default: false (use style tags)
   maxRulesPerSheet?: number; // default: infinite (no cap)
-  cacheSize?: number; // default: 1000 (LRU cache size)
-  gcThreshold?: number; // default: 100
+  cacheSize?: number; // default: 500 (LRU of disposed rulesets)
+  cleanupDelay?: number; // default: 5000ms (delay before actual DOM cleanup, ignored if idleCleanup is true)
+  idleCleanup?: boolean; // default: true (use requestIdleCallback for cleanup when available)
+  collectMetrics?: boolean; // default: false (performance tracking)
+  forceTextInjection?: boolean; // default: auto-detected (true in test environments, false otherwise)
 }
 
 export interface RuleInfo {
@@ -23,22 +25,46 @@ export interface RuleInfo {
 }
 
 export interface SheetInfo {
-  sheet: CSSStyleSheet | HTMLStyleElement;
+  sheet: HTMLStyleElement;
   ruleCount: number;
   holes: number[]; // Available rule indices from deletions
-  isAdopted: boolean;
+}
+
+export interface DisposedRuleInfo {
+  ruleInfo: RuleInfo;
+  disposedAt: number; // timestamp
+  recentlyUsed: boolean; // optimization flag
+}
+
+export interface CacheMetrics {
+  hits: number;
+  misses: number;
+  disposedHits: number; // hits from disposed cache
+  evictions: number;
+  totalInsertions: number;
+  totalDisposals: number;
+  domCleanups: number; // actual DOM rule removals
+  startTime: number;
 }
 
 export interface RootRegistry {
   sheets: SheetInfo[];
-  cache: import('../parser/lru').Lru<string, string>; // cssText -> className
   refCounts: Map<string, number>; // className -> refCount
   rules: Map<string, RuleInfo>; // className -> rule info
   deletionQueue: string[]; // className queue for cleanup
   /** Deduplication set of fully materialized CSS rules inserted into sheets */
   ruleTextSet: Set<string>;
-  /** Reverse mapping to remove cache entries on cleanup */
-  cacheKeysByClassName: Map<string, string>;
+  /** LRU cache for disposed rulesets that can be quickly reused */
+  disposedCache: import('../parser/lru').Lru<string, DisposedRuleInfo>;
+  /** Cleanup timeouts for lazy disposal */
+  cleanupTimeouts: Map<
+    string,
+    ReturnType<typeof requestIdleCallback> | ReturnType<typeof setTimeout>
+  >;
+  /** Performance metrics (optional) */
+  metrics?: CacheMetrics;
+  /** Counter for generating sequential class names like t0, t1, t2... */
+  classCounter: number;
 }
 
 export interface FlattenedRule {

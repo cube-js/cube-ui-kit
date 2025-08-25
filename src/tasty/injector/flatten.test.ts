@@ -14,8 +14,9 @@ describe('flattenNestedCss', () => {
 
     expect(result).toEqual([
       {
-        selector: `.${baseClassName}`,
+        selector: `.${baseClassName}.${baseClassName}`,
         declarations: 'color: red; padding: 10px;',
+        atRules: undefined,
       },
     ]);
   });
@@ -29,9 +30,21 @@ describe('flattenNestedCss', () => {
     const result = flattenNestedCss(css, baseClassName);
 
     expect(result).toEqual([
-      { selector: `.${baseClassName}`, declarations: 'color: red;' },
-      { selector: `.${baseClassName}:hover`, declarations: 'color: blue;' },
-      { selector: `.${baseClassName}:focus`, declarations: 'color: green;' },
+      {
+        selector: `.${baseClassName}.${baseClassName}`,
+        declarations: 'color: red;',
+        atRules: undefined,
+      },
+      {
+        selector: `.${baseClassName}.${baseClassName}:hover`,
+        declarations: 'color: blue;',
+        atRules: undefined,
+      },
+      {
+        selector: `.${baseClassName}.${baseClassName}:focus`,
+        declarations: 'color: green;',
+        atRules: undefined,
+      },
     ]);
   });
 
@@ -45,13 +58,19 @@ describe('flattenNestedCss', () => {
 
     expect(result).toEqual([
       {
-        selector: `.${baseClassName}.active`,
+        selector: `.${baseClassName}.${baseClassName}.active`,
         declarations: 'background: blue;',
+        atRules: undefined,
       },
-      { selector: `.${baseClassName} > .child`, declarations: 'margin: 10px;' },
       {
-        selector: `.${baseClassName} + .${baseClassName}`,
+        selector: `.${baseClassName}.${baseClassName} > .child`,
+        declarations: 'margin: 10px;',
+        atRules: undefined,
+      },
+      {
+        selector: `.${baseClassName}.${baseClassName} + .${baseClassName}.${baseClassName}`,
         declarations: 'border: 1px solid red;',
+        atRules: undefined,
       },
     ]);
   });
@@ -65,14 +84,20 @@ describe('flattenNestedCss', () => {
     const result = flattenNestedCss(css, baseClassName);
 
     expect(result).toEqual([
-      { selector: `.${baseClassName} .child`, declarations: 'color: blue;' },
       {
-        selector: `.${baseClassName} .header`,
-        declarations: 'font-size: 18px;',
+        selector: `.${baseClassName}.${baseClassName} .child`,
+        declarations: 'color: blue;',
+        atRules: undefined,
       },
       {
-        selector: `.${baseClassName} .footer .text`,
+        selector: `.${baseClassName}.${baseClassName} .header`,
+        declarations: 'font-size: 18px;',
+        atRules: undefined,
+      },
+      {
+        selector: `.${baseClassName}.${baseClassName} .footer .text`,
         declarations: 'color: gray;',
+        atRules: undefined,
       },
     ]);
   });
@@ -87,16 +112,19 @@ describe('flattenNestedCss', () => {
 
     expect(result).toEqual([
       {
-        selector: `.${baseClassName} [data-element="Title"]`,
+        selector: `.${baseClassName}.${baseClassName} [data-element="Title"]`,
         declarations: 'color: blue; font-weight: bold;',
+        atRules: undefined,
       },
       {
-        selector: `.${baseClassName} [data-element="Header"]`,
+        selector: `.${baseClassName}.${baseClassName} [data-element="Header"]`,
         declarations: 'background: gray;',
+        atRules: undefined,
       },
       {
-        selector: `.${baseClassName} [data-element="Content"]`,
+        selector: `.${baseClassName}.${baseClassName} [data-element="Content"]`,
         declarations: 'padding: 20px;',
+        atRules: undefined,
       },
     ]);
   });
@@ -111,18 +139,25 @@ describe('flattenNestedCss', () => {
     const result = flattenNestedCss(css, baseClassName);
 
     expect(result).toEqual([
-      { selector: `.${baseClassName}:hover`, declarations: 'color: red;' },
       {
-        selector: `.${baseClassName}:focus-visible`,
+        selector: `.${baseClassName}.${baseClassName}:hover`,
+        declarations: 'color: red;',
+        atRules: undefined,
+      },
+      {
+        selector: `.${baseClassName}.${baseClassName}:focus-visible`,
         declarations: 'outline: 2px solid blue;',
+        atRules: undefined,
       },
       {
-        selector: `.${baseClassName}[disabled]`,
+        selector: `.${baseClassName}.${baseClassName}[disabled]`,
         declarations: 'opacity: 0.5;',
+        atRules: undefined,
       },
       {
-        selector: `.${baseClassName}[aria-selected="true"]`,
+        selector: `.${baseClassName}.${baseClassName}[aria-selected="true"]`,
         declarations: 'background: highlight;',
+        atRules: undefined,
       },
     ]);
   });
@@ -141,7 +176,7 @@ describe('flattenNestedCss', () => {
     expect(
       result.some(
         (r) =>
-          r.selector === `.${baseClassName}` &&
+          r.selector === `.${baseClassName}.${baseClassName}` &&
           r.declarations.includes('color: red') &&
           !r.atRules,
       ),
@@ -151,7 +186,7 @@ describe('flattenNestedCss', () => {
     expect(
       result.some(
         (r) =>
-          r.selector === `.${baseClassName}` &&
+          r.selector === `.${baseClassName}.${baseClassName}` &&
           r.declarations.includes('color: blue') &&
           r.atRules?.includes('@media (min-width: 768px)'),
       ),
@@ -160,7 +195,7 @@ describe('flattenNestedCss', () => {
     expect(
       result.some(
         (r) =>
-          r.selector === `.${baseClassName}` &&
+          r.selector === `.${baseClassName}.${baseClassName}` &&
           r.declarations.includes('color: green') &&
           r.atRules?.includes('@media (max-width: 480px)'),
       ),
@@ -197,18 +232,26 @@ describe('flattenNestedCss', () => {
     const result = flattenNestedCss(css, baseClassName);
 
     expect(result.length).toBeGreaterThan(0);
-    expect(result.some((r) => r.selector === `.${baseClassName}`)).toBe(true);
-    expect(result.some((r) => r.selector === `.${baseClassName}:hover`)).toBe(
-      true,
-    );
+    expect(
+      result.some((r) => r.selector === `.${baseClassName}.${baseClassName}`),
+    ).toBe(true);
     expect(
       result.some(
-        (r) => r.selector === `.${baseClassName} [data-element="Title"]`,
+        (r) => r.selector === `.${baseClassName}.${baseClassName}:hover`,
       ),
     ).toBe(true);
-    expect(result.some((r) => r.selector === `.${baseClassName} .child`)).toBe(
-      true,
-    );
+    expect(
+      result.some(
+        (r) =>
+          r.selector ===
+          `.${baseClassName}.${baseClassName} [data-element="Title"]`,
+      ),
+    ).toBe(true);
+    expect(
+      result.some(
+        (r) => r.selector === `.${baseClassName}.${baseClassName} .child`,
+      ),
+    ).toBe(true);
   });
 
   it('should preserve declaration formatting', () => {
@@ -264,8 +307,16 @@ describe('flattenNestedCss', () => {
     const result = flattenNestedCss(css, baseClassName);
 
     expect(result).toEqual([
-      { selector: `.${baseClassName}`, declarations: 'color: red;' },
-      { selector: `.${baseClassName}:hover`, declarations: 'color: blue;' },
+      {
+        selector: `.${baseClassName}.${baseClassName}`,
+        declarations: 'color: red;',
+        atRules: undefined,
+      },
+      {
+        selector: `.${baseClassName}.${baseClassName}:hover`,
+        declarations: 'color: blue;',
+        atRules: undefined,
+      },
     ]);
   });
 

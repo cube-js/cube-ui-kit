@@ -281,6 +281,7 @@ function flattenRule(rule: ParsedRule, baseClassName: string): FlattenedRule[] {
 /**
  * Flatten a selector against a base class name
  * Handles &, .Class, SubElement patterns
+ * Uses doubled class name for increased specificity (.t0 -> .t0.t0)
  */
 function flattenSelector(selector: string, baseClassName: string): string {
   // Handle media queries - pass through as-is
@@ -288,28 +289,31 @@ function flattenSelector(selector: string, baseClassName: string): string {
     return selector;
   }
 
+  // Create doubled class selector for increased specificity
+  const doubledClass = `.${baseClassName}.${baseClassName}`;
+
   // Handle & replacement
   if (selector.includes('&')) {
-    return selector.replace(/&/g, `.${baseClassName}`);
+    return selector.replace(/&/g, doubledClass);
   }
 
   // Handle .Class pattern -> descendant selector
   if (selector.startsWith('.')) {
-    return `.${baseClassName} ${selector}`;
+    return `${doubledClass} ${selector}`;
   }
 
   // Handle SubElement pattern (uppercase start) -> data-element selector
   if (/^[A-Z]/.test(selector)) {
-    return `.${baseClassName} [data-element="${selector}"]`;
+    return `${doubledClass} [data-element="${selector}"]`;
   }
 
   // Handle other selectors (pseudo-classes, attributes, etc.)
   if (selector.startsWith(':') || selector.startsWith('[')) {
-    return `.${baseClassName}${selector}`;
+    return `${doubledClass}${selector}`;
   }
 
   // Default: treat as descendant
-  return `.${baseClassName} ${selector}`;
+  return `${doubledClass} ${selector}`;
 }
 
 /**

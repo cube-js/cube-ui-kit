@@ -166,6 +166,7 @@ const ItemBaseElement = tasty({
     display: 'inline-grid',
     flow: 'column dense',
     gap: 0,
+    outline: 0,
     placeItems: 'stretch',
     placeContent: 'stretch',
     gridColumns: {

@@ -14,7 +14,6 @@ import {
 import { isValidElementType } from 'react-is';
 
 import { inject, injectGlobal } from './injector';
-import { hashCssText } from './injector/hash';
 import { BreakpointsContext } from './providers/BreakpointsProvider';
 import { BASE_STYLES } from './styles/list';
 import { Styles, StylesInterface } from './styles/types';
@@ -26,6 +25,20 @@ import { modAttrs } from './utils/modAttrs';
 import { renderStyles, renderStylesForGlobal } from './utils/renderStyles';
 import { pointsToZones } from './utils/responsive';
 import { ResponsiveStyleValue } from './utils/styles';
+
+/**
+ * Simple hash function for internal cache keys
+ */
+// Per-style-key sequential class allocator
+const styleKeyToClass = new Map<string, string>();
+let nextClassId = 0;
+function allocateClassName(styleKey: string): string {
+  const existing = styleKeyToClass.get(styleKey);
+  if (existing) return existing;
+  const cls = `t${nextClassId++}`;
+  styleKeyToClass.set(styleKey, cls);
+  return cls;
+}
 
 // Basic props accepted by our base element (no longer styled-components specific)
 type BaseElementProps = { as?: string } & Record<string, unknown>;
@@ -276,8 +289,10 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
      * of the same element if no custom styles are provided via `styles` prop or direct style props.
      */
     const renderDefaultStyles = cacheWrapper((breakpoints: number[]) => {
-      // Generate a stable className for default styles
-      const defaultClassName = hashCssText(JSON.stringify(defaultStyles || {}));
+      // Allocate a stable class for default styles
+      const defaultClassName = allocateClassName(
+        JSON.stringify(defaultStyles || {}),
+      );
       return renderStyles(
         defaultStyles || {},
         pointsToZones(breakpoints),
@@ -361,10 +376,10 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
 
       breakpoints = (breakpoints as number[] | undefined) ?? contextBreakpoints;
 
-      // Generate consistent className for caching
+      // Allocate a stable sequential class per style-key
       const className = useMemo(() => {
         const stylesKey = JSON.stringify(allStyles || {});
-        return hashCssText(stylesKey);
+        return allocateClassName(stylesKey);
       }, [allStyles]);
 
       // Compute rules synchronously; inject via insertion effect
@@ -384,20 +399,24 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         }
       }, [useDefaultStyles, allStyles, breakpoints?.join(','), className]);
 
+      // Inject styles and get the actual CSS class name
+      const injectedResult = useMemo(() => {
+        if (!directResult.rules.length) {
+          return { className: '', dispose: () => {} };
+        }
+        return inject(directResult.rules);
+      }, [directResult.rules]);
+
       const disposeRef = useRef<(() => void) | null>(null);
+
       useInsertionEffect(() => {
         disposeRef.current?.();
-        if (!directResult.rules.length) {
-          disposeRef.current = null;
-          return;
-        }
-        const { dispose } = inject(directResult.rules);
-        disposeRef.current = dispose;
+        disposeRef.current = injectedResult.dispose;
         return () => {
           disposeRef.current?.();
           disposeRef.current = null;
         };
-      }, [directResult.rules]);
+      }, [injectedResult.dispose]);
 
       let modProps: Record<string, unknown> | undefined;
       if (mods) {
@@ -408,7 +427,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
       // Merge user className with injected className
       const finalClassName = [
         (userClassName as string) || '',
-        directResult.className || className,
+        injectedResult.className || directResult.className || className,
       ]
         .filter(Boolean)
         .join(' ');

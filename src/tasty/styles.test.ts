@@ -8,7 +8,13 @@ import { paddingStyle } from './styles/padding';
 import { presetStyle } from './styles/preset';
 import { radiusStyle } from './styles/radius';
 
+import { configure } from './index';
+
 describe('Tasty style tests', () => {
+  configure({
+    forceTextInjection: true,
+  });
+
   it('should handle border styles', () => {
     expect(borderStyle({ border: '1px solid #000' })).toEqual({
       border: '1px solid var(--000-color, #000)',

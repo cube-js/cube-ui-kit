@@ -151,7 +151,12 @@ export default [
 
   // Test files override
   {
-    files: ['**/*.test.ts', '**/*.test.tsx'],
+    files: ['**/*.test.ts', '**/*.test.tsx', '**/test/**/*.ts'],
+    languageOptions: {
+      globals: {
+        ...globals.jest,
+      },
+    },
     rules: {
       'no-unused-vars': 'off',
       'react/prop-types': 'off',
