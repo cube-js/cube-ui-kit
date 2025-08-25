@@ -23,7 +23,6 @@ import { getDisplayName } from './utils/getDisplayName';
 import { mergeStyles } from './utils/mergeStyles';
 import { modAttrs } from './utils/modAttrs';
 import { renderStyles, renderStylesForGlobal } from './utils/renderStyles';
-import { pointsToZones } from './utils/responsive';
 import { ResponsiveStyleValue } from './utils/styles';
 
 /**
@@ -293,11 +292,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
       const defaultClassName = allocateClassName(
         JSON.stringify(defaultStyles || {}),
       );
-      return renderStyles(
-        defaultStyles || {},
-        pointsToZones(breakpoints),
-        defaultClassName,
-      );
+      return renderStyles(defaultStyles || {}, breakpoints, defaultClassName);
     });
 
     let {
@@ -387,11 +382,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         if (useDefaultStyles) {
           return renderDefaultStyles(breakpoints as number[]);
         } else if (allStyles && Object.keys(allStyles).length > 0) {
-          return renderStyles(
-            allStyles,
-            pointsToZones(breakpoints as number[]),
-            className,
-          );
+          return renderStyles(allStyles, breakpoints as number[], className);
         } else {
           return { rules: [], className: '' } as ReturnType<
             typeof renderStyles

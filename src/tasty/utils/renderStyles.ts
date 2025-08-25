@@ -6,7 +6,12 @@
 import { createStyle, STYLE_HANDLER_MAP } from '../styles';
 import { Styles } from '../styles/types';
 
-import { mediaWrapper, normalizeStyleZones, pointsToZones } from './responsive';
+import {
+  mediaWrapper,
+  normalizeStyleZones,
+  pointsToZones,
+  ResponsiveZone,
+} from './responsive';
 import {
   computeState,
   getModSelector,
@@ -83,7 +88,7 @@ function getSelector(key: string): string | null {
  */
 function explodeHandlerResult(
   result: any,
-  zones: string[],
+  zones: ResponsiveZone[],
   selectorSuffix = '',
   forceBreakpointIdx?: number,
 ): LogicalRule[] {
@@ -256,7 +261,7 @@ function convertHandlerResultToCSS(result: any, selectorSuffix = ''): string {
 function materializeRules(
   logicalRules: LogicalRule[],
   className: string,
-  zones: string[],
+  zones: ResponsiveZone[],
 ): StyleResult[] {
   return logicalRules.map((rule) => {
     const selector = `.${className}${rule.selectorSuffix}`;
@@ -266,10 +271,11 @@ function materializeRules(
       .map(([prop, value]) => `${prop}: ${value};`)
       .join(' ');
 
-    const atRules =
-      rule.breakpointIdx > 0 && zones[rule.breakpointIdx]
-        ? [`@media ${zones[rule.breakpointIdx]}`]
+    const q =
+      rule.breakpointIdx > 0
+        ? zones[rule.breakpointIdx]?.mediaQuery
         : undefined;
+    const atRules = q ? [`@media ${q}`] : undefined;
 
     return {
       selector,
