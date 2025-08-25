@@ -3,7 +3,7 @@
  * Eliminates CSS string parsing for better performance
  */
 
-import { StyleResult } from '../utils/renderStylesDirect';
+import { StyleResult } from '../utils/renderStyles';
 
 import { hashCssText } from './hash';
 import { SheetManager } from './sheet-manager';

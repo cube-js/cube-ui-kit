@@ -7,7 +7,6 @@ import {
   PropsWithoutRef,
   RefAttributes,
   useContext,
-  useEffect,
   useInsertionEffect,
   useMemo,
   useRef,
@@ -24,10 +23,7 @@ import { cacheWrapper } from './utils/cache-wrapper';
 import { getDisplayName } from './utils/getDisplayName';
 import { mergeStyles } from './utils/mergeStyles';
 import { modAttrs } from './utils/modAttrs';
-import {
-  renderStylesDirect,
-  renderStylesDirectForGlobal,
-} from './utils/renderStylesDirect';
+import { renderStyles, renderStylesForGlobal } from './utils/renderStyles';
 import { pointsToZones } from './utils/responsive';
 import { ResponsiveStyleValue } from './utils/styles';
 
@@ -127,7 +123,7 @@ function tastyGlobal(selector: string, styles?: Styles) {
 
     const cssText = useMemo(() => {
       if (!styles) return '';
-      return renderStylesDirectForGlobal(styles, breakpointsList);
+      return renderStylesForGlobal(styles, breakpointsList);
     }, [breakpointsHash]);
 
     // Inject styles at insertion phase; cleanup on change/unmount
@@ -279,10 +275,10 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
      * An additional optimization that allows to avoid rendering styles across various instances
      * of the same element if no custom styles are provided via `styles` prop or direct style props.
      */
-    const renderDefaultStylesDirect = cacheWrapper((breakpoints: number[]) => {
+    const renderDefaultStyles = cacheWrapper((breakpoints: number[]) => {
       // Generate a stable className for default styles
       const defaultClassName = hashCssText(JSON.stringify(defaultStyles || {}));
-      return renderStylesDirect(
+      return renderStyles(
         defaultStyles || {},
         pointsToZones(breakpoints),
         defaultClassName,
@@ -374,16 +370,16 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
       // Compute rules synchronously; inject via insertion effect
       const directResult = useMemo(() => {
         if (useDefaultStyles) {
-          return renderDefaultStylesDirect(breakpoints as number[]);
+          return renderDefaultStyles(breakpoints as number[]);
         } else if (allStyles && Object.keys(allStyles).length > 0) {
-          return renderStylesDirect(
+          return renderStyles(
             allStyles,
             pointsToZones(breakpoints as number[]),
             className,
           );
         } else {
           return { rules: [], className: '' } as ReturnType<
-            typeof renderStylesDirect
+            typeof renderStyles
           >;
         }
       }, [useDefaultStyles, allStyles, breakpoints?.join(','), className]);
@@ -422,7 +418,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
 
       // Note: Empty className is expected when no styles are provided
 
-      const elementProps = {
+      const baseElementProps = {
         'data-element': (element as string | undefined) || defaultElement,
         'data-qa': (qa as string | undefined) || defaultQa,
         'data-qaval': (qaVal as string | undefined) || defaultQaVal,
@@ -433,6 +429,19 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         ref,
         // REMOVED: $css prop and as prop (handled by createElement)
       } as Record<string, unknown>;
+
+      // Map React-specific props to HTML attributes
+      const elementProps = { ...baseElementProps };
+
+      if ('isDisabled' in elementProps) {
+        elementProps.disabled = elementProps.isDisabled;
+        delete elementProps.isDisabled;
+      }
+
+      if ('isHidden' in elementProps) {
+        elementProps.hidden = elementProps.isHidden;
+        delete elementProps.isHidden;
+      }
 
       // NEW: Use plain createElement instead of styled Element
       const renderedElement = createElement(

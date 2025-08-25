@@ -1,4 +1,4 @@
-import { StyleResult } from '../utils/renderStylesDirect';
+import { StyleResult } from '../utils/renderStyles';
 
 import { StyleInjector } from './injector';
 import { DisposeFunction, InjectResult, StyleInjectorConfig } from './types';

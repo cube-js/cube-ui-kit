@@ -371,7 +371,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
         data-autofocus={autoFocus ? '' : undefined}
         autoFocus={autoFocus}
         data-size={size}
-        autocomplete={autocomplete}
+        autoComplete={autocomplete}
         styles={inputStyles}
         disabled={!!isDisabled}
         maxLength={maxLength}

@@ -1,8 +1,36 @@
-import { createStyle, STYLE_HANDLER_MAP } from '../styles';
-import { Selector, Styles } from '../styles/types';
+/**
+ * Style rendering that works with structured style objects
+ * Eliminates CSS string parsing for better performance
+ */
 
-import { mediaWrapper, normalizeStyleZones } from './responsive';
-import { StyleHandler, StyleMap, StyleValueStateMap } from './styles';
+import { createStyle, STYLE_HANDLER_MAP } from '../styles';
+import { Styles } from '../styles/types';
+
+import { mediaWrapper, normalizeStyleZones, pointsToZones } from './responsive';
+import {
+  computeState,
+  getModSelector,
+  StyleHandler,
+  StyleMap,
+  styleStateMapToStyleStateDataList,
+} from './styles';
+
+export interface StyleResult {
+  selector: string;
+  declarations: string;
+  atRules?: string[];
+}
+
+export interface RenderResult {
+  rules: StyleResult[];
+  className?: string;
+}
+
+interface LogicalRule {
+  selectorSuffix: string; // '', ':hover', '>*', …
+  breakpointIdx: number; // 0 = base
+  declarations: Record<string, string>;
+}
 
 type HandlerQueueItem = {
   handler: StyleHandler;
@@ -10,11 +38,28 @@ type HandlerQueueItem = {
   isResponsive: boolean;
 };
 
-export function isSelector(key) {
-  return key.startsWith('&') || key.startsWith('.') || key.match(/^[A-Z]/);
+// Normalize selector suffixes coming from `$` in style handler results.
+// Some legacy handlers return suffixes starting with `&` (e.g. '& > *').
+// The renderer expects suffixes without the ampersand because it adds
+// the parent selector during materialization.
+function normalizeDollarSelectorSuffix(suffix: string): string {
+  if (!suffix) return '';
+  return suffix.startsWith('&') ? suffix.slice(1) : suffix;
 }
 
-function getSelector(key) {
+/**
+ * Check if a key represents a CSS selector
+ */
+export function isSelector(key: string): boolean {
+  return (
+    key.startsWith('&') || key.startsWith('.') || key.match(/^[A-Z]/) !== null
+  );
+}
+
+/**
+ * Get the selector suffix for a key
+ */
+function getSelector(key: string): string | null {
   if (key.startsWith('&')) {
     return key.slice(1);
   }
@@ -30,60 +75,230 @@ function getSelector(key) {
   return null;
 }
 
-/** Props level cache for `renderStyles` function. */
-let STYLE_CACHE = {};
+/**
+ * Explode a style handler result into logical rules with proper mapping
+ * Phase 1: Handler fan-out ($ selectors, arrays)
+ * Phase 2: Responsive fan-out (breakpoint arrays)
+ * Phase 3: Rule materialization
+ */
+function explodeHandlerResult(
+  result: any,
+  zones: string[],
+  selectorSuffix = '',
+  forceBreakpointIdx?: number,
+): LogicalRule[] {
+  if (!result) return [];
 
-/** Current size of the cache. */
-let STYLE_CACHE_COUNT = 0;
+  // Phase 1: Handler fan-out - normalize to array
+  const resultArray = Array.isArray(result) ? result : [result];
+  const logicalRules: LogicalRule[] = [];
 
-/** Cache limit. */
-const CACHE_LIMIT = 1000;
+  for (const item of resultArray) {
+    if (!item || typeof item !== 'object') continue;
+
+    const { $, css, ...styleProps } = item;
+
+    // Phase 2: Responsive fan-out - handle array values
+    const breakpointGroups = new Map<number, Record<string, string>>();
+
+    if (forceBreakpointIdx !== undefined) {
+      // When breakpoint is forced (from responsive processing), use all props for that breakpoint
+      const group: Record<string, string> = {};
+      for (const [prop, value] of Object.entries(styleProps)) {
+        if (value != null && value !== '') {
+          group[prop] = String(value);
+        }
+      }
+      if (Object.keys(group).length > 0) {
+        breakpointGroups.set(forceBreakpointIdx, group);
+      }
+    } else {
+      // Normal processing - handle responsive arrays
+      const responsiveProps: Array<{
+        prop: string;
+        value: any;
+        breakpointIdx: number;
+      }> = [];
+
+      for (const [prop, value] of Object.entries(styleProps)) {
+        if (Array.isArray(value)) {
+          // Responsive array - create entry for each breakpoint
+          value.forEach((val, idx) => {
+            if (val != null && val !== '' && idx < zones.length) {
+              responsiveProps.push({ prop, value: val, breakpointIdx: idx });
+            }
+          });
+        } else if (value != null && value !== '') {
+          // Single value - goes to base breakpoint
+          responsiveProps.push({ prop, value, breakpointIdx: 0 });
+        }
+      }
+
+      // Group by breakpoint index
+      for (const { prop, value, breakpointIdx } of responsiveProps) {
+        const group = breakpointGroups.get(breakpointIdx) || {};
+        group[prop] = String(value);
+        breakpointGroups.set(breakpointIdx, group);
+      }
+    }
+
+    // Handle raw CSS if present (add to base breakpoint)
+    if (css && typeof css === 'string') {
+      const baseGroup = breakpointGroups.get(0) || {};
+      // For now, we'll add raw CSS as a special property
+      // This is a limitation - raw CSS should be parsed properly
+      baseGroup['--raw-css'] = css;
+      breakpointGroups.set(0, baseGroup);
+    }
+
+    // Phase 3: Selector fan-out - handle $ suffixes
+    const suffixes = $
+      ? (Array.isArray($) ? $ : [$]).map(
+          (s) => selectorSuffix + normalizeDollarSelectorSuffix(String(s)),
+        )
+      : [selectorSuffix];
+
+    // Create logical rules for each breakpoint × selector combination
+    for (const [breakpointIdx, declarations] of breakpointGroups) {
+      if (Object.keys(declarations).length === 0) continue;
+
+      for (const suffix of suffixes) {
+        logicalRules.push({
+          selectorSuffix: suffix,
+          breakpointIdx,
+          declarations,
+        });
+      }
+    }
+  }
+
+  return logicalRules;
+}
 
 /**
- * Render style props to complete Styled Components CSS.
- * @param styles - Complete style props.
- * @param responsive - A list of responsive zones
- * @param {string} [suffix]
- * @return {string}
+ * Convert handler result (CSSMap) to CSS string for global injection
+ */
+function convertHandlerResultToCSS(result: any, selectorSuffix = ''): string {
+  if (!result) return '';
+
+  if (Array.isArray(result)) {
+    return result.reduce((css, item) => {
+      return css + convertHandlerResultToCSS(item, selectorSuffix);
+    }, '');
+  }
+
+  const { $, css, ...styleProps } = result;
+  let renderedStyles = Object.keys(styleProps).reduce(
+    (styleList, styleName) => {
+      const value = styleProps[styleName];
+
+      if (Array.isArray(value)) {
+        return (
+          styleList +
+          value.reduce((css, val) => {
+            if (val) {
+              return css + `${styleName}: ${val};\n`;
+            }
+            return css;
+          }, '')
+        );
+      }
+
+      if (value) {
+        return `${styleList}${styleName}: ${value};\n`;
+      }
+
+      return styleList;
+    },
+    '',
+  );
+
+  if (css) {
+    renderedStyles = css + '\n' + renderedStyles;
+  }
+
+  if (!renderedStyles) {
+    return '';
+  }
+
+  const finalSelectorSuffix = selectorSuffix || '';
+
+  if (Array.isArray($)) {
+    return $.reduce((rend, suffix) => {
+      const normalized = suffix
+        ? normalizeDollarSelectorSuffix(String(suffix))
+        : '';
+      return (
+        rend + `&${finalSelectorSuffix}${normalized}{\n${renderedStyles}}\n`
+      );
+    }, '');
+  }
+
+  const normalizedSingle = $ ? normalizeDollarSelectorSuffix(String($)) : '';
+  return `&${finalSelectorSuffix}${normalizedSingle}{\n${renderedStyles}}\n`;
+}
+
+/**
+ * Convert logical rules to final StyleResult format
+ */
+function materializeRules(
+  logicalRules: LogicalRule[],
+  className: string,
+  zones: string[],
+): StyleResult[] {
+  return logicalRules.map((rule) => {
+    const selector = `.${className}${rule.selectorSuffix}`;
+
+    const declarations = Object.entries(rule.declarations)
+      .filter(([key]) => key !== '--raw-css') // Skip raw CSS for now
+      .map(([prop, value]) => `${prop}: ${value};`)
+      .join(' ');
+
+    const atRules =
+      rule.breakpointIdx > 0 && zones[rule.breakpointIdx]
+        ? [`@media ${zones[rule.breakpointIdx]}`]
+        : undefined;
+
+    return {
+      selector,
+      declarations,
+      atRules,
+    };
+  });
+}
+
+/**
+ * Render styles without CSS string conversion
+ * This is a performance-optimized version of renderStyles
  */
 export function renderStyles(
   styles?: Styles,
   responsive: number[] = [],
-  suffix?: string,
-) {
-  const zones = responsive;
-  const responsiveStyles = Array.from(Array(zones.length)).map(() => '');
-  const cacheKey = JSON.stringify({ s: styles, r: responsive, suffix });
+  className: string = 'unknown',
+): RenderResult {
+  if (!styles) {
+    return { rules: [] };
+  }
 
-  let rawStyles = '';
+  const zones = pointsToZones(responsive || []);
+  // Collect all logical rules
+  const allLogicalRules: LogicalRule[] = [];
 
-  const handlerQueue: HandlerQueueItem[] = [];
+  // Process styles recursively, preserving mod selectors and combining with nested selector suffixes
+  function processStyles(currentStyles: Styles, parentSuffix: string = '') {
+    const keys = Object.keys(currentStyles || {});
+    const selectorKeys = keys.filter((key) => isSelector(key));
 
-  if (!STYLE_CACHE[cacheKey]) {
-    STYLE_CACHE_COUNT++;
-
-    // clear cache if size is more that the limit
-    if (STYLE_CACHE_COUNT > CACHE_LIMIT) {
-      STYLE_CACHE_COUNT = 0;
-      STYLE_CACHE = {};
+    // Recurse into nested selectors first to compute proper suffix chaining
+    for (const key of selectorKeys) {
+      const suffix = getSelector(key);
+      if (suffix && currentStyles[key]) {
+        processStyles(currentStyles[key] as Styles, `${parentSuffix}${suffix}`);
+      }
     }
 
-    const keys = styles ? Object.keys(styles) : [];
-    const selectorKeys = keys.filter((key) => isSelector(key)) as Selector[];
-
-    let innerStyles = '';
-
-    if (selectorKeys.length) {
-      selectorKeys.forEach((key) => {
-        const addSuffix = getSelector(key);
-
-        innerStyles += renderStyles(
-          styles?.[key] as Styles,
-          responsive,
-          addSuffix,
-        );
-      });
-    }
+    // Build handler queue for style properties at this level
+    const handlerQueue: HandlerQueueItem[] = [];
 
     keys.forEach((styleName) => {
       if (isSelector(styleName)) return;
@@ -94,89 +309,425 @@ export function renderStyles(
         handlers = STYLE_HANDLER_MAP[styleName] = [createStyle(styleName)];
       }
 
-      handlers.forEach((STYLE) => {
-        if (handlerQueue.find((queueItem) => queueItem.handler === STYLE))
+      handlers.forEach((handler) => {
+        if (handlerQueue.find((queueItem) => queueItem.handler === handler)) {
           return;
+        }
 
         let isResponsive = false;
-        const lookupStyles = STYLE.__lookupStyles;
+        const lookupStyles = handler.__lookupStyles;
         const filteredStyleMap = lookupStyles.reduce((map, name) => {
-          map[name] = styles?.[name];
+          const value = currentStyles?.[name];
+          if (value !== undefined) {
+            (map as any)[name] = value;
 
-          if (Array.isArray(map[name])) {
-            if (map[name].length === 0) {
-              delete map[name];
-            } else {
-              if (map[name].length === 1) {
-                map[name] = map[name][0];
+            if (Array.isArray(value)) {
+              if (value.length === 0) {
+                delete (map as any)[name];
+              } else {
+                // Keep arrays for responsive processing - don't flatten to single value
+                isResponsive = true;
               }
-
-              isResponsive = true;
             }
           }
 
           return map;
-        }, {});
+        }, {} as StyleMap);
 
         handlerQueue.push({
-          handler: STYLE,
+          handler,
           styleMap: filteredStyleMap,
           isResponsive,
         });
       });
     });
 
+    // Process handlers using the three-phase approach
     handlerQueue.forEach(({ handler, styleMap, isResponsive }) => {
       const lookupStyles = handler.__lookupStyles;
 
       if (isResponsive) {
+        // For responsive styles, resolve arrays using normalizeStyleZones
         const valueMap = lookupStyles.reduce((map, style) => {
           map[style] = normalizeStyleZones(styleMap[style], zones.length);
-
           return map;
-        }, {});
+        }, {} as any);
 
+        // Create props for each breakpoint
         const propsByPoint = zones.map((zone, i) => {
-          const pointProps = {};
-
+          const pointProps = {} as any;
           lookupStyles.forEach((style) => {
             if (valueMap != null && valueMap[style] != null) {
               pointProps[style] = valueMap[style][i];
             }
           });
-
           return pointProps;
         });
 
-        const rulesByPoint = propsByPoint.map((props) =>
-          handler(props, suffix),
-        );
-
-        rulesByPoint.forEach((rules, i) => {
-          responsiveStyles[i] += rules || '';
+        // Call handler for each breakpoint
+        propsByPoint.forEach((props, breakpointIdx) => {
+          const result = handler(props);
+          if (result) {
+            const logicalRules = explodeHandlerResult(
+              result,
+              zones || [],
+              parentSuffix,
+              breakpointIdx,
+            );
+            allLogicalRules.push(...logicalRules);
+          }
         });
       } else {
-        rawStyles +=
-          handler(styleMap as StyleValueStateMap<string>, suffix) || '';
+        // For non-responsive styles, check if any values have state maps
+        const hasStateMaps = lookupStyles.some((style) => {
+          const value = styleMap[style];
+          return value && typeof value === 'object' && !Array.isArray(value);
+        });
+
+        if (hasStateMaps) {
+          // Process each style property individually for state resolution
+          const allMods = new Set<string>();
+          const styleStates: Record<string, any> = {};
+
+          lookupStyles.forEach((style) => {
+            const value = styleMap[style];
+            if (value && typeof value === 'object' && !Array.isArray(value)) {
+              const { states, mods } = styleStateMapToStyleStateDataList(value);
+              styleStates[style] = states;
+              mods.forEach((mod) => allMods.add(mod));
+            } else {
+              // Simple value, create a single state
+              styleStates[style] = [{ mods: [], notMods: [], value }];
+            }
+          });
+
+          // Generate all possible mod combinations
+          const allModsArray = Array.from(allMods);
+          const combinations: string[][] = [[]]; // Start with empty combination
+
+          // Generate all combinations (including empty)
+          for (let i = 0; i < allModsArray.length; i++) {
+            const currentLength = combinations.length;
+            for (let j = 0; j < currentLength; j++) {
+              combinations.push([...combinations[j], allModsArray[i]]);
+            }
+          }
+
+          combinations.forEach((modCombination) => {
+            const stateProps: Record<string, any> = {};
+
+            lookupStyles.forEach((style) => {
+              const states = styleStates[style];
+              // Find the matching state for this mod combination
+              const matchingState = states.find((state) => {
+                return computeState(state.model, (mod) =>
+                  modCombination.includes(mod),
+                );
+              });
+              if (matchingState) {
+                stateProps[style] = matchingState.value;
+              }
+            });
+
+            const result = handler(stateProps as any);
+            if (!result) return;
+
+            const notMods = allModsArray.filter(
+              (mod) => !modCombination.includes(mod),
+            );
+            const modsSelectors = `${modCombination
+              .map(getModSelector)
+              .join('')}${notMods
+              .map((mod) => {
+                const sel = getModSelector(mod);
+                return sel.startsWith(':not(')
+                  ? sel.slice(5, -1)
+                  : `:not(${sel})`;
+              })
+              .join('')}`;
+
+            const logical = explodeHandlerResult(
+              result,
+              zones || [],
+              `${modsSelectors}${parentSuffix}`,
+            );
+            allLogicalRules.push(...logical);
+          });
+        } else {
+          // Simple case: no state maps, call handler directly
+          const result = handler(styleMap as any);
+          if (result) {
+            const logical = explodeHandlerResult(
+              result,
+              zones || [],
+              parentSuffix,
+            );
+            allLogicalRules.push(...logical);
+          }
+        }
       }
     });
-
-    // REMOVED: predefined outline/hidden styles as per spec
-    // OLD: {outline: none;\n&[hidden]{display: none !important;}}
-
-    // Only include base rule if there are base styles
-    const baseRule = rawStyles.trim()
-      ? `&${suffix || ''} { ${rawStyles} }`
-      : '';
-
-    STYLE_CACHE[cacheKey] = `${baseRule}${
-      responsive &&
-      responsive.length &&
-      responsiveStyles.filter((s) => s).length
-        ? mediaWrapper(responsiveStyles, zones)
-        : ''
-    }${innerStyles}`;
   }
 
-  return STYLE_CACHE[cacheKey];
+  // Kick off processing from the root styles with empty suffix
+  processStyles(styles, '');
+
+  // Materialize all logical rules into final format
+  const finalRulesRaw = materializeRules(
+    allLogicalRules,
+    className,
+    zones || [],
+  );
+
+  // De-duplicate identical rules (same selector, declarations, and at-rules)
+  const seen = new Set<string>();
+  const finalRules = finalRulesRaw.filter((rule) => {
+    const at =
+      rule.atRules && rule.atRules.length ? `@${rule.atRules.join('|')}` : '';
+    const key = `${rule.selector}|${rule.declarations}|${at}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  return {
+    rules: finalRules,
+    className,
+  };
+}
+
+/**
+ * Render styles for global injection (without class names)
+ * Returns CSS with & selectors that injectGlobal can process
+ */
+export function renderStylesForGlobal(
+  styles?: Styles,
+  responsive: number[] = [],
+): string {
+  if (!styles) {
+    return '';
+  }
+
+  const zones = pointsToZones(responsive || []);
+  const handlerQueue: HandlerQueueItem[] = [];
+  const keys = Object.keys(styles);
+  const selectorKeys = keys.filter((key) => isSelector(key));
+
+  const declarations: string[] = [];
+  const responsiveStyles = Array.from(Array(zones.length)).map(() => '');
+  let innerStyles = '';
+
+  // Handle nested selectors (like &:hover, .SubElement)
+  for (const key of selectorKeys) {
+    const selectorSuffix = getSelector(key);
+    if (selectorSuffix && styles[key]) {
+      const nestedStyles = styles[key] as Styles;
+      innerStyles += renderStylesForGlobal(nestedStyles, responsive).replace(
+        /&/g,
+        `&${selectorSuffix}`,
+      );
+    }
+  }
+
+  // Build handler queue for base styles
+  keys.forEach((styleName) => {
+    if (isSelector(styleName)) return;
+
+    let handlers: StyleHandler[] = STYLE_HANDLER_MAP[styleName];
+
+    if (!handlers) {
+      handlers = STYLE_HANDLER_MAP[styleName] = [createStyle(styleName)];
+    }
+
+    handlers.forEach((handler) => {
+      if (handlerQueue.find((queueItem) => queueItem.handler === handler)) {
+        return;
+      }
+
+      let isResponsive = false;
+      const lookupStyles = handler.__lookupStyles;
+      const filteredStyleMap = lookupStyles.reduce((map, name) => {
+        const value = styles?.[name];
+        if (value !== undefined) {
+          (map as any)[name] = value;
+
+          if (Array.isArray(value)) {
+            if (value.length === 0) {
+              delete (map as any)[name];
+            } else {
+              isResponsive = true;
+            }
+          }
+        }
+
+        return map;
+      }, {} as StyleMap);
+
+      handlerQueue.push({
+        handler,
+        styleMap: filteredStyleMap,
+        isResponsive,
+      });
+    });
+  });
+
+  // Process handlers using approach
+  handlerQueue.forEach(({ handler, styleMap, isResponsive }) => {
+    const lookupStyles = handler.__lookupStyles;
+
+    if (isResponsive) {
+      // For responsive styles, resolve arrays using normalizeStyleZones
+      const valueMap = lookupStyles.reduce((map, style) => {
+        map[style] = normalizeStyleZones(styleMap[style], zones.length);
+        return map;
+      }, {} as any);
+
+      // Create props for each breakpoint
+      const propsByPoint = zones.map((zone, i) => {
+        const pointProps = {} as any;
+        lookupStyles.forEach((style) => {
+          if (valueMap != null && valueMap[style] != null) {
+            pointProps[style] = valueMap[style][i];
+          }
+        });
+        return pointProps;
+      });
+
+      // Call handler for each breakpoint and convert to CSS
+      const rulesByPoint = propsByPoint.map((props) => {
+        const result = handler(props);
+        if (!result) return '';
+
+        // Convert handler result to CSS string for global injection
+        return convertHandlerResultToCSS(result);
+      });
+
+      rulesByPoint.forEach((rules, i) => {
+        responsiveStyles[i] += rules || '';
+      });
+    } else {
+      // For non-responsive styles, check if any values have state maps
+      const hasStateMaps = lookupStyles.some((style) => {
+        const value = styleMap[style];
+        return value && typeof value === 'object' && !Array.isArray(value);
+      });
+
+      if (hasStateMaps) {
+        // Process each style property individually for state resolution
+        const allMods = new Set<string>();
+        const styleStates: Record<string, any> = {};
+
+        lookupStyles.forEach((style) => {
+          const value = styleMap[style];
+          if (value && typeof value === 'object' && !Array.isArray(value)) {
+            const { states, mods } = styleStateMapToStyleStateDataList(value);
+            styleStates[style] = states;
+            mods.forEach((mod) => allMods.add(mod));
+          } else {
+            // Simple value, create a single state
+            styleStates[style] = [{ mods: [], notMods: [], value }];
+          }
+        });
+
+        // Generate all possible mod combinations
+        const allModsArray = Array.from(allMods);
+        const combinations: string[][] = [[]]; // Start with empty combination
+
+        // Generate all combinations (including empty)
+        for (let i = 0; i < allModsArray.length; i++) {
+          const currentLength = combinations.length;
+          for (let j = 0; j < currentLength; j++) {
+            combinations.push([...combinations[j], allModsArray[i]]);
+          }
+        }
+
+        combinations.forEach((modCombination) => {
+          const stateProps: Record<string, any> = {};
+
+          lookupStyles.forEach((style) => {
+            const states = styleStates[style];
+            // Find the matching state for this mod combination
+            const matchingState = states.find((state) => {
+              return computeState(state.model, (mod) =>
+                modCombination.includes(mod),
+              );
+            });
+            if (matchingState) {
+              stateProps[style] = matchingState.value;
+            }
+          });
+
+          const result = handler(stateProps as any);
+          if (!result) return;
+
+          const notMods = allModsArray.filter(
+            (mod) => !modCombination.includes(mod),
+          );
+          const modsSelectors = `${modCombination
+            .map(getModSelector)
+            .join('')}${notMods
+            .map((mod) => {
+              const sel = getModSelector(mod);
+              return sel.startsWith(':not(')
+                ? sel.slice(5, -1)
+                : `:not(${sel})`;
+            })
+            .join('')}`;
+
+          // Convert to CSS with proper selectors
+          const cssResult = convertHandlerResultToCSS(result, modsSelectors);
+
+          if (cssResult) {
+            if (cssResult.startsWith('& {') && !cssResult.includes('&', 2)) {
+              // Simple rule: "& { declarations }"
+              const declarationBlock = cssResult.slice(3, -1).trim();
+              if (declarationBlock) {
+                declarations.push(declarationBlock);
+              }
+            } else {
+              // Complex rule with nested selectors or state modifiers
+              innerStyles += cssResult;
+            }
+          }
+        });
+      } else {
+        // Simple case: no state maps, call handler directly
+        const result = handler(styleMap as any);
+        if (result) {
+          const cssResult = convertHandlerResultToCSS(result);
+
+          if (cssResult) {
+            if (cssResult.startsWith('& {') && !cssResult.includes('&', 2)) {
+              // Simple rule: "& { declarations }"
+              const declarationBlock = cssResult.slice(3, -1).trim();
+              if (declarationBlock) {
+                declarations.push(declarationBlock);
+              }
+            } else {
+              // Complex rule with nested selectors or state modifiers
+              innerStyles += cssResult;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Build final CSS similar to original renderStyles
+  // Merge all declarations into a single rule
+  const baseRule =
+    declarations.length > 0 ? `& { ${declarations.join('\n')} }` : '';
+
+  const mediaRules =
+    responsive && responsive.length && responsiveStyles.some((s) => s)
+      ? mediaWrapper(responsiveStyles, zones)
+      : '';
+
+  // Ensure we always separate the base rule, inner complex selectors and media rules with
+  // a newline so the selector replacement step ( & -> actual selector ) cannot accidentally
+  // concatenate two selectors and create the invalid form "..selector selector".
+  const parts = [baseRule, innerStyles, mediaRules].filter(Boolean);
+  const result = parts.join('\n');
+
+  return result;
 }
