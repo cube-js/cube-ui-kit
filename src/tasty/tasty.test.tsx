@@ -8,10 +8,6 @@ import { tasty } from './tasty';
 
 import { configure } from './index';
 
-configure({
-  forceTextInjection: true,
-});
-
 describe('tasty() API', () => {
   it('should provide defaults and give ability to override', () => {
     const SButton = tasty(Button, { type: 'primary' });
