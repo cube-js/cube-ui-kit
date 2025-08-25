@@ -16,7 +16,7 @@ exports[`tasty() API should create element styles 1`] = `
 `;
 
 exports[`tasty() API should create responsive styles 1`] = `
-".t11 {display: grid;}
+"@media (min-width: 980px) {.t11 {display: grid;}}
 @media (max-width: 979px) {.t11 {display: flex;}}"
 `;
 

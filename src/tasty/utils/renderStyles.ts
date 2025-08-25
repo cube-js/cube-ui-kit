@@ -35,6 +35,9 @@ interface LogicalRule {
   selectorSuffix: string; // '', ':hover', '>*', …
   breakpointIdx: number; // 0 = base
   declarations: Record<string, string>;
+  // Marks that this rule originated from responsive array processing
+  // When true and breakpointIdx === 0, we should wrap the rule in the zone[0] media query
+  responsiveSource?: boolean;
 }
 
 type HandlerQueueItem = {
@@ -91,6 +94,7 @@ function explodeHandlerResult(
   zones: ResponsiveZone[],
   selectorSuffix = '',
   forceBreakpointIdx?: number,
+  responsiveOrigin: boolean = false,
 ): LogicalRule[] {
   if (!result) return [];
 
@@ -184,6 +188,8 @@ function explodeHandlerResult(
           selectorSuffix: suffix,
           breakpointIdx,
           declarations,
+          responsiveSource:
+            responsiveOrigin || forceBreakpointIdx !== undefined,
         });
       }
     }
@@ -274,7 +280,9 @@ function materializeRules(
     const q =
       rule.breakpointIdx > 0
         ? zones[rule.breakpointIdx]?.mediaQuery
-        : undefined;
+        : rule.responsiveSource
+          ? zones[0]?.mediaQuery
+          : undefined;
     const atRules = q ? [`@media ${q}`] : undefined;
 
     return {
@@ -391,6 +399,7 @@ export function renderStyles(
               zones || [],
               parentSuffix,
               breakpointIdx,
+              true,
             );
             allLogicalRules.push(...logicalRules);
           }
