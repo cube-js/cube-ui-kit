@@ -166,6 +166,7 @@ const ItemBaseElement = tasty({
     display: 'inline-grid',
     flow: 'column dense',
     gap: 0,
+    outline: 0,
     placeItems: 'stretch',
     placeContent: 'stretch',
     gridColumns: {
@@ -524,10 +525,10 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     // Initial check
     checkLabelOverflow();
 
-    // const resizeObserver = new ResizeObserver(checkLabelOverflow);
-    // resizeObserver.observe(label);
+    const resizeObserver = new ResizeObserver(checkLabelOverflow);
+    resizeObserver.observe(label);
 
-    // return () => resizeObserver.disconnect();
+    return () => resizeObserver.disconnect();
   }, [mergedLabelRef.current, isAutoTooltipEnabled]);
 
   const finalLabelProps = useMemo(() => {

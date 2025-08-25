@@ -4,7 +4,6 @@ import {
   parseColor,
   parseStyle,
   strToRgb,
-  styleHandlerCacheWrapper,
 } from '../utils/styles';
 
 const CACHE = {};
@@ -81,7 +80,7 @@ export function createStyle(
 
     styleHandler.__lookupStyles = [styleName];
 
-    CACHE[key] = styleHandlerCacheWrapper(styleHandler);
+    CACHE[key] = styleHandler;
   }
 
   return CACHE[key];

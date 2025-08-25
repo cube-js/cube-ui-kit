@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom';
 import 'jest-styled-components';
+import './tasty-jest';
 
 import { configure } from '@testing-library/react';
 import { AbortController } from 'node-abort-controller';
@@ -16,9 +17,8 @@ configure({ testIdAttribute: 'data-qa', asyncUtilTimeout: 15000 });
 global.IS_REACT_ACT_ENVIRONMENT = true;
 
 // Mock @tanstack/react-virtual for test environment
-// eslint-disable-next-line no-undef
+
 jest.mock('@tanstack/react-virtual', () => ({
-  // eslint-disable-next-line no-undef
   useVirtualizer: jest.fn().mockImplementation(({ count = 0 }) => ({
     getVirtualItems: () =>
       Array.from({ length: count }, (_, index) => ({
@@ -28,11 +28,11 @@ jest.mock('@tanstack/react-virtual', () => ({
         size: 40,
       })),
     getTotalSize: () => count * 40,
-    // eslint-disable-next-line no-undef
+
     scrollToIndex: jest.fn(),
-    // eslint-disable-next-line no-undef
+
     measure: jest.fn(),
-    // eslint-disable-next-line no-undef
+
     measureElement: jest.fn(),
   })),
 }));

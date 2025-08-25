@@ -41,15 +41,15 @@ describe('applyStates', () => {
             },
           ],
         ],
-        output: `nu-element{
-value1}
-nu-element[data-is-mod1]{
-value2}
-nu-element:not([data-is-mod2]){
-value2}
-nu-element[data-is-mod1]:not([data-is-mod2]){
-value3}
-`,
+        output: `nu-element {
+value1
+}nu-element[data-is-mod1] {
+value2
+}nu-element:not([data-is-mod2]) {
+value2
+}nu-element[data-is-mod1]:not([data-is-mod2]) {
+value3
+}`,
       },
     ]);
   });
@@ -96,13 +96,13 @@ value3}
             },
           ],
         ],
-        output: `nu-element:not([data-type="link"]):not([data-size="hero"]):not([data-size="large"]){
-value1}
-nu-element[data-size="hero"]:not([data-type="link"]):not([data-size="large"]){
-value2}
-nu-element[data-size="large"]:not([data-type="link"]):not([data-size="hero"]){
-value3}
-`,
+        output: `nu-element:not([data-type="link"]):not([data-size="hero"]):not([data-size="large"]) {
+value1
+}nu-element[data-size="hero"]:not([data-type="link"]):not([data-size="large"]) {
+value2
+}nu-element[data-size="large"]:not([data-type="link"]):not([data-size="hero"]) {
+value3
+}`,
       },
     ]);
   });

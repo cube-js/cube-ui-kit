@@ -6,6 +6,8 @@ import { Block } from '../components/Block';
 import { CONTAINER_STYLES } from './styles/list';
 import { tasty } from './tasty';
 
+import { configure } from './index';
+
 describe('tasty() API', () => {
   it('should provide defaults and give ability to override', () => {
     const SButton = tasty(Button, { type: 'primary' });
@@ -23,7 +25,7 @@ describe('tasty() API', () => {
     const StyledBlock = tasty(Block, { styles: { color: '#clear.1' } });
     const { container } = render(<StyledBlock />);
 
-    expect(container).toMatchSnapshot();
+    expect(container).toMatchTastySnapshot();
   });
 
   it('should support modifiers', () => {
@@ -32,7 +34,7 @@ describe('tasty() API', () => {
     });
     const { container } = render(<StyledBlock mods={{ modified: true }} />);
 
-    expect(container).toMatchSnapshot();
+    expect(container).toMatchTastySnapshot();
   });
 
   it('should support kebab-case modifiers', () => {
@@ -43,7 +45,7 @@ describe('tasty() API', () => {
       <StyledBlock mods={{ 'somehow-modified': true }} />,
     );
 
-    expect(container).toMatchSnapshot();
+    expect(container).toMatchTastySnapshot();
   });
 
   it('should support camelCase modifiers', () => {
@@ -54,7 +56,7 @@ describe('tasty() API', () => {
       <StyledBlock mods={{ somehowModified: true }} />,
     );
 
-    expect(container).toMatchSnapshot();
+    expect(container).toMatchTastySnapshot();
   });
 
   it('should merge styles', () => {
@@ -69,7 +71,7 @@ describe('tasty() API', () => {
     });
     const { container } = render(<StyledBlock />);
 
-    expect(container).toMatchSnapshot();
+    expect(container).toMatchTastySnapshot();
   });
 
   it('should merge styles in custom prop', () => {
@@ -91,7 +93,7 @@ describe('tasty() API', () => {
     });
     const { container } = render(<StyledTwiceBlock />);
 
-    expect(container).toMatchSnapshot();
+    expect(container).toMatchTastySnapshot();
   });
 
   it('should be able to override styles', () => {
@@ -100,7 +102,7 @@ describe('tasty() API', () => {
       <StyledBlock styles={{ color: '#black.1' }} />,
     );
 
-    expect(container).toMatchSnapshot();
+    expect(container).toMatchTastySnapshot();
   });
 
   it('should support variants', () => {
@@ -114,7 +116,7 @@ describe('tasty() API', () => {
     });
     const { container } = render(<StyledBlock variant="custom" />);
 
-    expect(container).toMatchSnapshot();
+    expect(container).toMatchTastySnapshot();
   });
 
   it('should fallback to default variant', () => {
@@ -131,7 +133,7 @@ describe('tasty() API', () => {
     });
     const { container } = render(<StyledBlock />);
 
-    expect(container).toMatchSnapshot();
+    expect(container).toMatchTastySnapshot();
   });
 
   it('should pass qa prop', () => {
@@ -145,7 +147,7 @@ describe('tasty() API', () => {
     const StyledBlock = tasty(Block, { styles: { display: ['grid', 'flex'] } });
     const { container } = render(<StyledBlock />);
 
-    expect(container).toMatchSnapshot();
+    expect(container).toMatchTastySnapshot();
   });
 
   it('should create element styles', () => {
@@ -154,7 +156,7 @@ describe('tasty() API', () => {
     });
     const { container } = render(<Block />);
 
-    expect(container).toMatchSnapshot();
+    expect(container).toMatchTastySnapshot();
   });
 
   it('should merge element styles', () => {
@@ -171,7 +173,7 @@ describe('tasty() API', () => {
     });
     const { container } = render(<StyledBlock />);
 
-    expect(container).toMatchSnapshot();
+    expect(container).toMatchTastySnapshot();
   });
 
   it('should define style props', () => {
@@ -184,7 +186,7 @@ describe('tasty() API', () => {
 
     const { container } = render(<Block border={true} />);
 
-    expect(container).toMatchSnapshot();
+    expect(container).toMatchTastySnapshot();
   });
 
   it('should allow multiple wrapping', () => {
@@ -212,7 +214,7 @@ describe('tasty() API', () => {
 
     const { container } = render(<ThirdBlock display="flex" />);
 
-    expect(container).toMatchSnapshot();
+    expect(container).toMatchTastySnapshot();
   });
 
   it('should allow nested modifiers', () => {
@@ -221,6 +223,6 @@ describe('tasty() API', () => {
     });
     const { container } = render(<StyledBlock />);
 
-    expect(container).toMatchSnapshot();
+    expect(container).toMatchTastySnapshot();
   });
 });

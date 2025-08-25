@@ -1,8 +1,4 @@
-import {
-  RawStyleHandler,
-  StyleHandler,
-  styleHandlerCacheWrapper,
-} from '../utils/styles';
+import { RawStyleHandler, StyleHandler } from '../utils/styles';
 
 import { alignStyle } from './align';
 import { borderStyle } from './border';
@@ -76,8 +72,6 @@ export function defineCustomStyle(
     console.warn('CubeUIKit: incorrect custom style definition: ', names);
     return;
   }
-
-  handlerWithLookup = styleHandlerCacheWrapper(handlerWithLookup);
 
   if (Array.isArray(names)) {
     // just to pass type checking

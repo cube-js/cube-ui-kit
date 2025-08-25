@@ -115,6 +115,7 @@ export const DEFAULT_BUTTON_STYLES = {
   textDecoration: 'none',
   transition: 'theme',
   reset: 'button',
+  outline: 0,
   outlineOffset: 1,
   padding: {
     '': '.5x (1.5x - 1bw)',
