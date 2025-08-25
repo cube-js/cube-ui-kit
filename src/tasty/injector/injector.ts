@@ -5,6 +5,7 @@
 
 import { StyleResult } from '../utils/renderStyles';
 
+import { flattenNestedCssForSelector } from './flatten';
 import { hashCssText } from './hash';
 import { SheetManager } from './sheet-manager';
 import {
@@ -194,17 +195,58 @@ export class StyleInjector {
   }
 
   /**
-   * Inject global CSS rule (legacy method - not supported in direct injector)
+   * Inject global CSS rule
    */
   injectGlobal(
     selector: string,
     cssText: string,
     options?: { root?: Document | ShadowRoot },
   ): DisposeFunction {
-    console.warn(
-      'injectGlobal is not supported in the direct style injector. Use inject() with pre-processed rules instead.',
+    const root = options?.root || document;
+    const registry = this.sheetManager.getRegistry(root);
+
+    if (!cssText || !selector) {
+      return () => {};
+    }
+
+    // Create a deterministic key for caching/deduplication
+    const cacheKey = `G|${selector}|${cssText}`;
+    const existingClassName = registry.cache.get(cacheKey);
+
+    if (existingClassName && registry.rules.has(existingClassName)) {
+      const currentRefCount = registry.refCounts.get(existingClassName) || 0;
+      registry.refCounts.set(existingClassName, currentRefCount + 1);
+      return () => this.dispose(existingClassName, registry);
+    }
+
+    // Use a stable pseudo-className to track these global rules in the registry
+    const className = hashCssText(cacheKey);
+
+    // Flatten nested CSS against the provided selector (handles &, .Class, SubElement, etc.)
+    const flattenedRules: FlattenedRule[] = flattenNestedCssForSelector(
+      cssText,
+      selector,
     );
-    return () => {};
+
+    // Insert the rules as a block using the sheet manager, just like normal rules
+    const ruleInfo = this.sheetManager.insertGlobalRule(
+      registry,
+      flattenedRules,
+      className,
+      root,
+    );
+
+    if (!ruleInfo) {
+      return () => {};
+    }
+
+    // Track in caches and registry for ref-counted disposal
+    registry.cache.set(cacheKey, className);
+    registry.cacheKeysByClassName.set(className, cacheKey);
+    registry.refCounts.set(className, 1);
+    registry.rules.set(className, ruleInfo);
+
+    return () => this.dispose(className, registry);
   }
 
   /**

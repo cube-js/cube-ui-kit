@@ -63,10 +63,7 @@ export function injectGlobal(
   cssText: string,
   options?: { root?: Document | ShadowRoot },
 ): DisposeFunction {
-  console.warn(
-    'injectGlobal is not supported in the direct style injector. Use inject() with pre-processed rules instead.',
-  );
-  return () => {};
+  return getGlobalInjector().injectGlobal(selector, cssText, options);
 }
 
 /**
