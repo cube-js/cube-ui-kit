@@ -29,26 +29,21 @@ export interface CubeActionProps<
   download?: string;
 }
 
-const DEFAULT_ACTION_STYLES: Styles = {
-  reset: 'button',
-  position: 'relative',
-  margin: 0,
-  preset: 'inherit',
-  border: 0,
-  padding: 0,
-  outline: {
-    '': '#purple-03.0',
-    focused: '#purple-03',
-  },
-  transition: 'theme',
-  cursor: 'pointer',
-  textDecoration: 'none',
-  fill: '#clear',
-} as const;
-
 const ActionElement = tasty({
   as: 'button',
-  styles: DEFAULT_ACTION_STYLES,
+  styles: {
+    reset: 'button',
+    position: 'relative',
+    margin: 0,
+    preset: 'inherit',
+    border: 0,
+    padding: 0,
+    outline: 0,
+    transition: 'theme',
+    cursor: 'pointer',
+    textDecoration: 'none',
+    fill: '#clear',
+  },
 });
 
 const STYLE_PROPS = [...CONTAINER_STYLES, ...TEXT_STYLES];
