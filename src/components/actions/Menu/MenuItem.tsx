@@ -128,7 +128,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
         })}
         ref={elementRef}
         icon={icon}
-        rightIcon={rightIcon}
+        rightIcon={submenuContext ? <RightIcon /> : rightIcon}
         prefix={prefix}
         suffix={suffix}
         description={description}
