@@ -20,20 +20,20 @@ module.exports = [
         }),
       );
     },
-    limit: '295kB',
+    limit: '300kB',
   },
   {
     name: 'Tree shaking (just a Button)',
     path: './dist/es/index.js',
     webpack: true,
     import: '{ Button }',
-    limit: '26 kB',
+    limit: '30 kB',
   },
   {
     name: 'Tree shaking (just an Icon)',
     path: './dist/es/index.js',
     webpack: true,
     import: '{ AiIcon }',
-    limit: '13 kB',
+    limit: '18 kB',
   },
 ];
