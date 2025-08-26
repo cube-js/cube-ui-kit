@@ -551,9 +551,6 @@ export function renderStyles(
               }
             });
 
-            const result = handler(stateProps as any);
-            if (!result) return;
-
             const optimizedNotMods = optimizeNotSelectors(
               modCombination,
               allModsArray,
@@ -569,12 +566,49 @@ export function renderStyles(
               })
               .join('')}`;
 
-            const logical = explodeHandlerResult(
-              result,
-              zones || [],
-              `${modsSelectors}${parentSuffix}`,
+            // If any state value is responsive (array), fan-out by breakpoint
+            const hasResponsiveStateValues = lookupStyles.some((style) =>
+              Array.isArray(stateProps[style]),
             );
-            allLogicalRules.push(...logical);
+
+            if (hasResponsiveStateValues) {
+              const propsByPoint = zones.map((_, i) => {
+                const pointProps: Record<string, any> = {};
+                lookupStyles.forEach((style) => {
+                  const v = stateProps[style];
+                  if (Array.isArray(v)) {
+                    const arr = normalizeStyleZones(v, zones.length);
+                    pointProps[style] = arr[i];
+                  } else {
+                    pointProps[style] = v;
+                  }
+                });
+                return pointProps;
+              });
+
+              propsByPoint.forEach((props, breakpointIdx) => {
+                const res = handler(props as any);
+                if (!res) return;
+                const logical = explodeHandlerResult(
+                  res,
+                  zones || [],
+                  `${modsSelectors}${parentSuffix}`,
+                  breakpointIdx,
+                  true,
+                );
+                allLogicalRules.push(...logical);
+              });
+            } else {
+              // Simple non-responsive state values
+              const result = handler(stateProps as any);
+              if (!result) return;
+              const logical = explodeHandlerResult(
+                result,
+                zones || [],
+                `${modsSelectors}${parentSuffix}`,
+              );
+              allLogicalRules.push(...logical);
+            }
           });
         } else {
           // Simple case: no state maps, call handler directly

@@ -3,6 +3,7 @@ import { getByTestId, render } from '@testing-library/react';
 import { Button } from '../components/actions';
 import { Block } from '../components/Block';
 
+import { BreakpointsProvider } from './providers/BreakpointsProvider';
 import { CONTAINER_STYLES } from './styles/list';
 import { tasty } from './tasty';
 
@@ -265,5 +266,126 @@ describe('tasty() API', () => {
     const { container: container3 } = render(<StyledBlock3 />);
 
     expect(container3).toMatchTastySnapshot();
+  });
+
+  it('should handle complex responsive styles with state binding', () => {
+    const ComplexCard = tasty({
+      styles: {
+        // Responsive layout that changes between flex and grid
+        display: ['grid', 'flex', 'block'],
+
+        // Responsive gap with different values per breakpoint
+        gap: ['3x', '2x', '1x'],
+
+        // Complex responsive padding with state modifiers
+        padding: {
+          '': ['4x', '3x', '2x'],
+          hovered: ['5x', '4x', '3x'],
+          'pressed & !disabled': ['3x', '2x', '1x'],
+          '[data-variant="compact"]': ['2x', '1x', '0.5x'],
+        },
+
+        // Responsive width with complex logic
+        width: {
+          '': ['max 1200px', 'max 800px', 'max 100%'],
+          'expanded | [data-size="large"]': [
+            'max 1400px',
+            'max 1000px',
+            'max 100%',
+          ],
+          '(hovered | focused) & !disabled': [
+            'max 1300px',
+            'max 900px',
+            'max 100%',
+          ],
+        },
+
+        // Color changes based on state with fallback
+        fill: {
+          '': '#surface',
+          hovered: '#surface-hover',
+          pressed: '#surface-pressed',
+          '[disabled]': '#surface-disabled',
+          '[data-variant="danger"] & hovered': '#danger-hover',
+          '[data-variant="success"] & !disabled': '#success',
+        },
+
+        // Responsive border with state combinations
+        border: {
+          '': ['2bw solid #border', '1bw solid #border', 'none'],
+          focused: [
+            '3bw solid #primary',
+            '2bw solid #primary',
+            '1bw solid #primary',
+          ],
+          'error & focused': [
+            '3bw solid #danger',
+            '2bw solid #danger',
+            '1bw solid #danger',
+          ],
+          '![data-variant="borderless"] & hovered': [
+            '2bw solid #border-hover',
+            '1bw solid #border-hover',
+            '1bw solid #border-hover',
+          ],
+        },
+
+        // Responsive radius
+        radius: ['2r', '1r', '0.5r'],
+
+        // Sub-element styling with responsive behavior
+        Header: {
+          preset: ['h2', 'h3', 'h4'],
+          color: {
+            '': '#text-primary',
+            '[data-variant="danger"]': '#danger',
+            hovered: '#text-primary-hover',
+          },
+          margin: ['0 0 2x 0', '0 0 1x 0', '0 0 0.5x 0'],
+        },
+
+        Content: {
+          padding: ['2x', '1x', '0.5x'],
+          color: {
+            '': '#text',
+            '[disabled]': '#text-disabled',
+            'highlighted & !disabled': '#text-highlighted',
+          },
+        },
+
+        Footer: {
+          display: {
+            '': ['flex', 'flex', 'none'],
+            expanded: ['flex', 'flex', 'flex'],
+          },
+          gap: ['2x', '1x', '0.5x'],
+          padding: {
+            '': ['2x top', '1x top', '0.5x top'],
+            compact: ['1x top', '0.5x top', '0'],
+          },
+        },
+      },
+    });
+
+    // Test with various state combinations - wrap with custom breakpoints for 3-value arrays
+    const { container } = render(
+      <BreakpointsProvider value={[1200, 768]}>
+        <ComplexCard
+          mods={{
+            hovered: true,
+            expanded: false,
+            highlighted: true,
+          }}
+          data-variant="success"
+          data-size="large"
+        >
+          <div data-element="Header">Complex Header</div>
+          <div data-element="Content">Dynamic content</div>
+          <div data-element="Footer">Footer content</div>
+        </ComplexCard>
+      </BreakpointsProvider>,
+    );
+
+    expect(container).toMatchTastySnapshot();
   });
 });
