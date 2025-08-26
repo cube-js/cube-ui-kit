@@ -25,10 +25,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Update Corepack
+        run: npm i -g corepack@latest
+
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
+
+      - name: Enable Corepack (pre)
+        run: corepack enable
+
+      - name: Prepare pnpm (pre)
+        run: corepack prepare pnpm@10.14.0 --activate
 
       - name: Enable Corepack
         run: corepack enable
