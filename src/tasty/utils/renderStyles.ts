@@ -20,6 +20,62 @@ import {
   styleStateMapToStyleStateDataList,
 } from './styles';
 
+// Detect if a value is a state map whose entries contain responsive arrays
+function stateMapHasResponsiveArrays(value: any): boolean {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  return Object.values(value).some((v) => Array.isArray(v));
+}
+
+// Convert a state-map-of-arrays into an array-of-state-maps of length zoneNumber
+// Example:
+//   { '': ['1x', '2x'], large: [null, '3x'] } →
+//   [ { '': '1x', large: null }, { '': '2x', large: '3x' } ]
+function stateMapToArrayOfStateMaps(
+  value: Record<string, any>,
+  zoneNumber: number,
+): Array<Record<string, any>> {
+  const result: Array<Record<string, any>> = Array.from(
+    { length: zoneNumber },
+    () => ({}),
+  );
+
+  for (const [state, stateValue] of Object.entries(value)) {
+    const perZone = Array.isArray(stateValue)
+      ? (normalizeStyleZones(stateValue, zoneNumber) as any[])
+      : Array(zoneNumber).fill(stateValue);
+
+    for (let i = 0; i < zoneNumber; i++) {
+      const v = perZone[i];
+      // Always include the state in the result, even if null or empty
+      // This preserves the state structure across all breakpoints
+      result[i][state] = v;
+    }
+  }
+
+  return result;
+}
+
+// Normalize an array that may contain plain values and/or state maps into
+// an array-of-state-maps of fixed length zoneNumber with propagation.
+// Example:
+//   ['1x', { '': '1x', large: '2x' }] (zoneNumber=2) →
+//   [ { '': '1x' }, { '': '1x', large: '2x' } ]
+function normalizeArrayWithStateMaps(
+  valueArray: any[],
+  zoneNumber: number,
+): Array<Record<string, any>> {
+  const propagated = normalizeStyleZones(
+    valueArray as any,
+    zoneNumber,
+  ) as any[];
+  return propagated.map((entry) => {
+    if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+      return entry as Record<string, any>;
+    }
+    return { '': entry } as Record<string, any>;
+  });
+}
+
 export interface StyleResult {
   selector: string;
   declarations: string;
@@ -436,15 +492,29 @@ export function renderStyles(
         const filteredStyleMap = lookupStyles.reduce((map, name) => {
           const value = currentStyles?.[name];
           if (value !== undefined) {
-            (map as any)[name] = value;
-
-            if (Array.isArray(value)) {
-              if (value.length === 0) {
-                delete (map as any)[name];
-              } else {
-                // Keep arrays for responsive processing - don't flatten to single value
+            // Case 1: state-map-of-arrays → array-of-state-maps
+            if (
+              value &&
+              typeof value === 'object' &&
+              !Array.isArray(value) &&
+              stateMapHasResponsiveArrays(value)
+            ) {
+              (map as any)[name] = stateMapToArrayOfStateMaps(
+                value as Record<string, any>,
+                zones.length,
+              );
+              isResponsive = true;
+            } else if (Array.isArray(value)) {
+              // Case 2: array that may contain state maps → normalize to array-of-state-maps
+              if (value.length > 0) {
+                (map as any)[name] = normalizeArrayWithStateMaps(
+                  value as any[],
+                  zones.length,
+                );
                 isResponsive = true;
               }
+            } else {
+              (map as any)[name] = value;
             }
           }
 
@@ -481,10 +551,86 @@ export function renderStyles(
           return pointProps;
         });
 
-        // Call handler for each breakpoint
-        propsByPoint.forEach((props, breakpointIdx) => {
-          const result = handler(props);
-          if (result) {
+        // Call handler for each breakpoint, with state map processing if needed
+        propsByPoint.forEach((pointProps, breakpointIdx) => {
+          const hasStateMapsAtPoint = lookupStyles.some((style) => {
+            const v = pointProps[style];
+            return v && typeof v === 'object' && !Array.isArray(v);
+          });
+
+          if (hasStateMapsAtPoint) {
+            const allMods = new Set<string>();
+            const styleStates: Record<string, any> = {};
+
+            lookupStyles.forEach((style) => {
+              const v = pointProps[style];
+              if (v && typeof v === 'object' && !Array.isArray(v)) {
+                const { states, mods } = styleStateMapToStyleStateDataList(v);
+                styleStates[style] = states;
+                mods.forEach((m: string) => allMods.add(m));
+              } else {
+                styleStates[style] = [{ mods: [], notMods: [], value: v }];
+              }
+            });
+
+            const allModsArray = Array.from(allMods);
+            const combinations: string[][] = [[]];
+            for (let i = 0; i < allModsArray.length; i++) {
+              const currentLength = combinations.length;
+              for (let j = 0; j < currentLength; j++) {
+                const newCombination = [...combinations[j], allModsArray[i]];
+                if (!hasConflictingAttributeSelectors(newCombination)) {
+                  combinations.push(newCombination);
+                }
+              }
+            }
+
+            combinations.forEach((modCombination) => {
+              const stateProps: Record<string, any> = {};
+
+              lookupStyles.forEach((style) => {
+                const states = styleStates[style];
+                const matchingState = states.find((state: any) =>
+                  computeState(state.model, (mod) =>
+                    modCombination.includes(mod),
+                  ),
+                );
+                if (matchingState) {
+                  stateProps[style] = matchingState.value;
+                }
+              });
+
+              const optimizedNotMods = optimizeNotSelectors(
+                modCombination,
+                allModsArray,
+              );
+              const modsSelectors = `${modCombination
+                .map(getModSelector)
+                .join('')}${optimizedNotMods
+                .map((mod) => {
+                  const sel = getModSelector(mod);
+                  return sel.startsWith(':not(')
+                    ? sel.slice(5, -1)
+                    : `:not(${sel})`;
+                })
+                .join('')}`;
+
+              const result = handler(stateProps as any);
+              if (!result) return;
+
+              const logicalRules = explodeHandlerResult(
+                result,
+                zones || [],
+                `${modsSelectors}${parentSuffix}`,
+                breakpointIdx,
+                true,
+              );
+              allLogicalRules.push(...logicalRules);
+            });
+          } else {
+            const result = handler(pointProps as any);
+            if (!result) return;
+
             const logicalRules = explodeHandlerResult(
               result,
               zones || [],
@@ -706,14 +852,27 @@ export function renderStylesForGlobal(
       const filteredStyleMap = lookupStyles.reduce((map, name) => {
         const value = styles?.[name];
         if (value !== undefined) {
-          (map as any)[name] = value;
-
-          if (Array.isArray(value)) {
-            if (value.length === 0) {
-              delete (map as any)[name];
-            } else {
+          if (
+            value &&
+            typeof value === 'object' &&
+            !Array.isArray(value) &&
+            stateMapHasResponsiveArrays(value)
+          ) {
+            (map as any)[name] = stateMapToArrayOfStateMaps(
+              value as Record<string, any>,
+              zones.length,
+            );
+            isResponsive = true;
+          } else if (Array.isArray(value)) {
+            if (value.length > 0) {
+              (map as any)[name] = normalizeArrayWithStateMaps(
+                value as any[],
+                zones.length,
+              );
               isResponsive = true;
             }
+          } else {
+            (map as any)[name] = value;
           }
         }
 
@@ -750,17 +909,86 @@ export function renderStylesForGlobal(
         return pointProps;
       });
 
-      // Call handler for each breakpoint and convert to CSS
-      const rulesByPoint = propsByPoint.map((props) => {
-        const result = handler(props);
-        if (!result) return '';
+      // Call handler for each breakpoint and convert to CSS, with state processing
+      propsByPoint.forEach((pointProps, i) => {
+        const hasStateMapsAtPoint = lookupStyles.some((style) => {
+          const v = pointProps[style];
+          return v && typeof v === 'object' && !Array.isArray(v);
+        });
 
-        // Convert handler result to CSS string for global injection
-        return convertHandlerResultToCSS(result);
-      });
+        if (hasStateMapsAtPoint) {
+          const allMods = new Set<string>();
+          const styleStates: Record<string, any> = {};
 
-      rulesByPoint.forEach((rules, i) => {
-        responsiveStyles[i] += rules || '';
+          lookupStyles.forEach((style) => {
+            const v = pointProps[style];
+            if (v && typeof v === 'object' && !Array.isArray(v)) {
+              const { states, mods } = styleStateMapToStyleStateDataList(v);
+              styleStates[style] = states;
+              mods.forEach((m: string) => allMods.add(m));
+            } else {
+              styleStates[style] = [{ mods: [], notMods: [], value: v }];
+            }
+          });
+
+          const allModsArray = Array.from(allMods);
+          const combinations: string[][] = [[]];
+          for (let a = 0; a < allModsArray.length; a++) {
+            const currentLength = combinations.length;
+            for (let b = 0; b < currentLength; b++) {
+              const newCombination = [...combinations[b], allModsArray[a]];
+              if (!hasConflictingAttributeSelectors(newCombination)) {
+                combinations.push(newCombination);
+              }
+            }
+          }
+
+          combinations.forEach((modCombination) => {
+            const stateProps: Record<string, any> = {};
+
+            lookupStyles.forEach((style) => {
+              const states = styleStates[style];
+              const matchingState = states.find((state: any) =>
+                computeState(state.model, (mod) =>
+                  modCombination.includes(mod),
+                ),
+              );
+              if (matchingState) {
+                stateProps[style] = matchingState.value;
+              }
+            });
+
+            const optimizedNotMods = optimizeNotSelectors(
+              modCombination,
+              allModsArray,
+            );
+            const modsSelectors = `${modCombination
+              .map(getModSelector)
+              .join('')}${optimizedNotMods
+              .map((mod) => {
+                const sel = getModSelector(mod);
+                return sel.startsWith(':not(')
+                  ? sel.slice(5, -1)
+                  : `:not(${sel})`;
+              })
+              .join('')}`;
+
+            const result = handler(stateProps as any);
+            if (!result) return;
+
+            const cssResult = convertHandlerResultToCSS(result, modsSelectors);
+            if (cssResult) {
+              responsiveStyles[i] += cssResult;
+            }
+          });
+        } else {
+          const result = handler(pointProps as any);
+          if (!result) return;
+          const cssResult = convertHandlerResultToCSS(result);
+          if (cssResult) {
+            responsiveStyles[i] += cssResult;
+          }
+        }
       });
     } else {
       // For non-responsive styles, check if any values have state maps

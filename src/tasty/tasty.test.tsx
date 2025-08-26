@@ -268,8 +268,120 @@ describe('tasty() API', () => {
     expect(container3).toMatchTastySnapshot();
   });
 
+  it('should handle arrays containing state maps', () => {
+    // Test the new syntax: padding: ['1x', { '': '1x', large: '2x' }]
+    const StyledBlock = tasty(Block, {
+      styles: {
+        // Simple array with state map at specific breakpoint
+        padding: ['2x', { '': '1x', hovered: '3x' }],
+
+        // Array with multiple state maps
+        margin: [
+          '1x',
+          { '': '2x', pressed: '1x', disabled: '0' },
+          { '': '0.5x', focused: '1x' },
+        ],
+
+        // Mixed responsive and state syntax
+        fill: {
+          '': ['#white', '#gray.05'],
+          hovered: ['#blue.05', '#blue.10'],
+        },
+      },
+    });
+
+    const { container } = render(
+      <BreakpointsProvider value={[1200, 768]}>
+        <StyledBlock mods={{ hovered: true, pressed: false }} />
+      </BreakpointsProvider>,
+    );
+
+    expect(container).toMatchTastySnapshot();
+  });
+
+  it('should handle state-map-of-arrays pattern', () => {
+    // Test conversion from state-map-of-arrays to arrays-of-state-maps
+    const StyledBlock = tasty(Block, {
+      styles: {
+        // State map where values are responsive arrays
+        padding: {
+          '': ['4x', '2x', '1x'],
+          hovered: ['6x', '3x', '1.5x'],
+          '[data-variant="compact"]': ['2x', '1x', '0.5x'],
+        },
+
+        // Border with responsive arrays in state map
+        border: {
+          '': ['2bw solid #border', '1bw solid #border', 'none'],
+          focused: [
+            '3bw solid #primary',
+            '2bw solid #primary',
+            '1bw solid #primary',
+          ],
+          'error & focused': [
+            '3bw solid #danger',
+            '2bw solid #danger',
+            '1bw solid #danger',
+          ],
+        },
+      },
+    });
+
+    const { container } = render(
+      <BreakpointsProvider value={[1200, 768]}>
+        <StyledBlock
+          mods={{ hovered: false, focused: true, error: false }}
+          data-variant="normal"
+        />
+      </BreakpointsProvider>,
+    );
+
+    expect(container).toMatchTastySnapshot();
+  });
+
+  it('should preserve null values in state-map-of-arrays conversion', () => {
+    // Test that null values in arrays are preserved across all breakpoints
+    // This is important for state logic - missing state !== falsy state
+    const StyledBlock = tasty(Block, {
+      styles: {
+        // Test case: { '': ['1x', '2x'], large: [null, '3x'] }
+        // Should convert to: [ { '': '1x', large: null }, { '': '2x', large: '3x' } ]
+        padding: {
+          '': ['4x', '2x'], // All breakpoints get values
+          hovered: [null, '3x'], // First breakpoint gets null, second gets '3x'
+          disabled: ['1x', null], // First breakpoint gets '1x', second gets null
+        },
+
+        // Color to visualize the states are working
+        fill: {
+          '': '#white',
+          hovered: '#blue',
+          disabled: '#gray',
+        },
+      },
+    });
+
+    // Test with hovered=true (should use null for first breakpoint, '3x' for second)
+    const { container: hoveredContainer } = render(
+      <BreakpointsProvider value={[768]}>
+        <StyledBlock mods={{ hovered: true, disabled: false }} />
+      </BreakpointsProvider>,
+    );
+
+    expect(hoveredContainer).toMatchTastySnapshot();
+
+    // Test with disabled=true (should use '1x' for first breakpoint, null for second)
+    const { container: disabledContainer } = render(
+      <BreakpointsProvider value={[768]}>
+        <StyledBlock mods={{ hovered: false, disabled: true }} />
+      </BreakpointsProvider>,
+    );
+
+    expect(disabledContainer).toMatchTastySnapshot();
+  });
+
   it('should handle complex responsive styles with state binding', () => {
-    const ComplexCard = tasty({
+    const ComplexCard = tasty(Block, {
       styles: {
         // Responsive layout that changes between flex and grid
         display: ['grid', 'flex', 'block'],
