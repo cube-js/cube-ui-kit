@@ -6,7 +6,6 @@
 import { createStyle, STYLE_HANDLER_MAP } from '../styles';
 import { Styles } from '../styles/types';
 
-import { optimizeModifierSelectors } from './optimizeAttributeSelectors';
 import {
   mediaWrapper,
   normalizeStyleZones,
@@ -82,6 +81,94 @@ function getSelector(key: string): string | null {
   }
 
   return null;
+}
+
+// Helper functions to parse and handle attribute selectors
+interface ParsedAttributeSelector {
+  attribute: string;
+  value: string;
+  fullSelector: string;
+}
+
+function parseAttributeSelector(
+  selector: string,
+): ParsedAttributeSelector | null {
+  // Match patterns like [data-size="medium"] or [data-is-selected]
+  const match = selector.match(/^\[([^=\]]+)(?:="([^"]+)")?\]$/);
+  if (!match) return null;
+
+  return {
+    attribute: match[1],
+    value: match[2] || 'true', // Handle boolean attributes
+    fullSelector: selector,
+  };
+}
+
+function hasConflictingAttributeSelectors(mods: string[]): boolean {
+  const attributeMap = new Map<string, string[]>();
+
+  for (const mod of mods) {
+    const parsed = parseAttributeSelector(mod);
+    if (parsed && parsed.value !== 'true') {
+      if (!attributeMap.has(parsed.attribute)) {
+        attributeMap.set(parsed.attribute, []);
+      }
+      attributeMap.get(parsed.attribute)!.push(parsed.value);
+    }
+  }
+
+  // Check if any attribute has multiple values
+  for (const values of attributeMap.values()) {
+    if (values.length > 1) return true;
+  }
+
+  return false;
+}
+
+function optimizeNotSelectors(
+  currentMods: string[],
+  allMods: string[],
+): string[] {
+  const attributeMap = new Map<string, Set<string>>();
+  const currentAttributeMap = new Map<string, string>();
+
+  // Build map of all possible values for each attribute
+  for (const mod of allMods) {
+    const parsed = parseAttributeSelector(mod);
+    if (parsed && parsed.value !== 'true') {
+      if (!attributeMap.has(parsed.attribute)) {
+        attributeMap.set(parsed.attribute, new Set());
+      }
+      attributeMap.get(parsed.attribute)!.add(parsed.value);
+    }
+  }
+
+  // Build map of current mod attribute values
+  for (const mod of currentMods) {
+    const parsed = parseAttributeSelector(mod);
+    if (parsed && parsed.value !== 'true') {
+      currentAttributeMap.set(parsed.attribute, parsed.value);
+    }
+  }
+
+  const notMods = allMods.filter((mod) => !currentMods.includes(mod));
+  const optimizedNotMods: string[] = [];
+
+  for (const mod of notMods) {
+    const parsed = parseAttributeSelector(mod);
+
+    if (parsed && parsed.value !== 'true') {
+      // If we already have a value for this attribute, skip this not selector
+      // because it's already mutually exclusive
+      if (currentAttributeMap.has(parsed.attribute)) {
+        continue;
+      }
+    }
+
+    optimizedNotMods.push(mod);
+  }
+
+  return optimizedNotMods;
 }
 
 /**
@@ -440,7 +527,11 @@ export function renderStyles(
           for (let i = 0; i < allModsArray.length; i++) {
             const currentLength = combinations.length;
             for (let j = 0; j < currentLength; j++) {
-              combinations.push([...combinations[j], allModsArray[i]]);
+              const newCombination = [...combinations[j], allModsArray[i]];
+              // Skip combinations with conflicting attribute selectors
+              if (!hasConflictingAttributeSelectors(newCombination)) {
+                combinations.push(newCombination);
+              }
             }
           }
 
@@ -463,19 +554,20 @@ export function renderStyles(
             const result = handler(stateProps as any);
             if (!result) return;
 
-            const notMods = allModsArray.filter(
-              (mod) => !modCombination.includes(mod),
-            );
-            const modsSelectors = optimizeModifierSelectors(
+            const optimizedNotMods = optimizeNotSelectors(
               modCombination,
-              notMods,
-              getModSelector,
+              allModsArray,
             );
-
-            // Skip impossible selector combinations
-            if (modsSelectors === 'IMPOSSIBLE_SELECTOR') {
-              return;
-            }
+            const modsSelectors = `${modCombination
+              .map(getModSelector)
+              .join('')}${optimizedNotMods
+              .map((mod) => {
+                const sel = getModSelector(mod);
+                return sel.startsWith(':not(')
+                  ? sel.slice(5, -1)
+                  : `:not(${sel})`;
+              })
+              .join('')}`;
 
             const logical = explodeHandlerResult(
               result,
@@ -668,7 +760,11 @@ export function renderStylesForGlobal(
         for (let i = 0; i < allModsArray.length; i++) {
           const currentLength = combinations.length;
           for (let j = 0; j < currentLength; j++) {
-            combinations.push([...combinations[j], allModsArray[i]]);
+            const newCombination = [...combinations[j], allModsArray[i]];
+            // Skip combinations with conflicting attribute selectors
+            if (!hasConflictingAttributeSelectors(newCombination)) {
+              combinations.push(newCombination);
+            }
           }
         }
 
@@ -691,19 +787,20 @@ export function renderStylesForGlobal(
           const result = handler(stateProps as any);
           if (!result) return;
 
-          const notMods = allModsArray.filter(
-            (mod) => !modCombination.includes(mod),
-          );
-          const modsSelectors = optimizeModifierSelectors(
+          const optimizedNotMods = optimizeNotSelectors(
             modCombination,
-            notMods,
-            getModSelector,
+            allModsArray,
           );
-
-          // Skip impossible selector combinations
-          if (modsSelectors === 'IMPOSSIBLE_SELECTOR') {
-            return;
-          }
+          const modsSelectors = `${modCombination
+            .map(getModSelector)
+            .join('')}${optimizedNotMods
+            .map((mod) => {
+              const sel = getModSelector(mod);
+              return sel.startsWith(':not(')
+                ? sel.slice(5, -1)
+                : `:not(${sel})`;
+            })
+            .join('')}`;
 
           // Convert to CSS with proper selectors
           const cssResult = convertHandlerResultToCSS(result, modsSelectors);
