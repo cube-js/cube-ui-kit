@@ -578,7 +578,7 @@ export function renderStyles(
                   const v = stateProps[style];
                   if (Array.isArray(v)) {
                     const arr = normalizeStyleZones(v, zones.length);
-                    pointProps[style] = arr[i];
+                    pointProps[style] = arr?.[i];
                   } else {
                     pointProps[style] = v;
                   }
