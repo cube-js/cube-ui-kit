@@ -225,4 +225,45 @@ describe('tasty() API', () => {
 
     expect(container).toMatchTastySnapshot();
   });
+
+  it('should optimize attribute selectors', () => {
+    const StyledBlock = tasty(Block, {
+      styles: {
+        padding: {
+          '': '1x top',
+          '[data-size="medium"]': '2x top',
+          '[data-size="large"]': '3x top',
+        },
+      },
+    });
+    const { container } = render(<StyledBlock />);
+
+    expect(container).toMatchTastySnapshot();
+
+    const StyledBlock2 = tasty(Block, {
+      styles: {
+        padding: {
+          '': '1x top',
+          '[data-size="medium"] & selected': '2x top',
+          '[data-size="large"]': '3x top',
+        },
+      },
+    });
+    const { container: container2 } = render(<StyledBlock2 />);
+
+    expect(container2).toMatchTastySnapshot();
+
+    const StyledBlock3 = tasty(Block, {
+      styles: {
+        padding: {
+          '': '1x top',
+          '[data-size="medium"] | selected': '2x top',
+          '[data-size="large"] & selected': '3x top',
+        },
+      },
+    });
+    const { container: container3 } = render(<StyledBlock3 />);
+
+    expect(container3).toMatchTastySnapshot();
+  });
 });

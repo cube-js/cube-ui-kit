@@ -45,6 +45,33 @@ exports[`tasty() API should merge styles in custom prop 1`] = `
 .t6>* {--context-fill-color: var(--black-color); --context-fill-color-rgb: var(--black-color-rgb);}"
 `;
 
+exports[`tasty() API should optimize attribute selectors 1`] = `
+".t17 {display: block;}
+.t17:not([data-size]) {padding-top: var(--gap);}
+.t17[data-size="large"] {padding-top: calc(3 * var(--gap));}
+.t17[data-size="medium"] {padding-top: calc(2 * var(--gap));}"
+`;
+
+exports[`tasty() API should optimize attribute selectors 2`] = `
+".t18 {display: block;}
+.t18:not([data-is-selected]):not([data-size]) {padding-top: var(--gap);}
+.t18[data-size="large"]:not([data-is-selected]) {padding-top: calc(3 * var(--gap));}
+.t18[data-size="medium"]:not([data-is-selected]) {padding-top: var(--gap);}
+.t18[data-is-selected]:not([data-size]) {padding-top: var(--gap);}
+.t18[data-size="large"][data-is-selected] {padding-top: calc(3 * var(--gap));}
+.t18[data-size="medium"][data-is-selected] {padding-top: calc(2 * var(--gap));}"
+`;
+
+exports[`tasty() API should optimize attribute selectors 3`] = `
+".t19 {display: block;}
+.t19:not([data-is-selected]):not([data-size]) {padding-top: var(--gap);}
+.t19[data-size="large"]:not([data-is-selected]) {padding-top: var(--gap);}
+.t19[data-is-selected]:not([data-size]) {padding-top: calc(2 * var(--gap));}
+.t19[data-size="large"][data-is-selected] {padding-top: calc(3 * var(--gap));}
+.t19[data-size="medium"]:not([data-is-selected]) {padding-top: calc(2 * var(--gap));}
+.t19[data-is-selected][data-size="medium"] {padding-top: calc(2 * var(--gap));}"
+`;
+
 exports[`tasty() API should pass styles from tasty 1`] = `".t2 {display: block; color: rgb(var(--clear-color-rgb) / .1); --current-color: var(--clear-color, clear); --current-color-rgb: var(--clear-color-rgb);}"`;
 
 exports[`tasty() API should support camelCase modifiers 1`] = `

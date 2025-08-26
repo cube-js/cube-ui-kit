@@ -6,6 +6,7 @@
 import { createStyle, STYLE_HANDLER_MAP } from '../styles';
 import { Styles } from '../styles/types';
 
+import { optimizeModifierSelectors } from './optimizeAttributeSelectors';
 import {
   mediaWrapper,
   normalizeStyleZones,
@@ -465,16 +466,16 @@ export function renderStyles(
             const notMods = allModsArray.filter(
               (mod) => !modCombination.includes(mod),
             );
-            const modsSelectors = `${modCombination
-              .map(getModSelector)
-              .join('')}${notMods
-              .map((mod) => {
-                const sel = getModSelector(mod);
-                return sel.startsWith(':not(')
-                  ? sel.slice(5, -1)
-                  : `:not(${sel})`;
-              })
-              .join('')}`;
+            const modsSelectors = optimizeModifierSelectors(
+              modCombination,
+              notMods,
+              getModSelector,
+            );
+
+            // Skip impossible selector combinations
+            if (modsSelectors === 'IMPOSSIBLE_SELECTOR') {
+              return;
+            }
 
             const logical = explodeHandlerResult(
               result,
@@ -693,16 +694,16 @@ export function renderStylesForGlobal(
           const notMods = allModsArray.filter(
             (mod) => !modCombination.includes(mod),
           );
-          const modsSelectors = `${modCombination
-            .map(getModSelector)
-            .join('')}${notMods
-            .map((mod) => {
-              const sel = getModSelector(mod);
-              return sel.startsWith(':not(')
-                ? sel.slice(5, -1)
-                : `:not(${sel})`;
-            })
-            .join('')}`;
+          const modsSelectors = optimizeModifierSelectors(
+            modCombination,
+            notMods,
+            getModSelector,
+          );
+
+          // Skip impossible selector combinations
+          if (modsSelectors === 'IMPOSSIBLE_SELECTOR') {
+            return;
+          }
 
           // Convert to CSS with proper selectors
           const cssResult = convertHandlerResultToCSS(result, modsSelectors);
