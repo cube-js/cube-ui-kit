@@ -509,7 +509,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     const hasOverflow = label.scrollWidth > label.clientWidth;
 
     setIsLabelOverflowed(hasOverflow);
-  }, []);
+  }, [mergedLabelRef.current]);
 
   useEffect(() => {
     if (isAutoTooltipEnabled) {
