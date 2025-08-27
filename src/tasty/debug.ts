@@ -178,7 +178,7 @@ export const tastyDebug = {
   },
 
   /**
-   * Find all tasty classes used in the page
+   * Find all tasty classes used in the page (in DOM)
    */
   findAllTastyClasses(): string[] {
     const classes = new Set<string>();
@@ -205,28 +205,149 @@ export const tastyDebug = {
   },
 
   /**
-   * Get a summary of all tasty styles in use
+   * Find all tasty classes that have styles in the stylesheet (used + unused)
+   */
+  findAllStyledClasses(): string[] {
+    const registry = (injector.instance as any)['sheetManager'].getRegistry(
+      document,
+    );
+    const classes = new Set<string>();
+
+    // Add all classes from rules map (active + unused)
+    if (registry?.rules) {
+      for (const className of registry.rules.keys()) {
+        if (/^t\d+$/.test(className)) {
+          classes.add(className);
+        }
+      }
+    }
+
+    return Array.from(classes).sort((a, b) => {
+      // Sort numerically by the number part
+      const aNum = parseInt(a.slice(1));
+      const bNum = parseInt(b.slice(1));
+      return aNum - bNum;
+    });
+  },
+
+  /**
+   * Get active vs cached class breakdown
+   */
+  getClassUsage(): {
+    activeClasses: string[];
+    cachedClasses: string[];
+    totalStyledClasses: string[];
+  } {
+    const domClasses = this.findAllTastyClasses();
+    const styledClasses = this.findAllStyledClasses();
+    const registry = (injector.instance as any)['sheetManager'].getRegistry(
+      document,
+    );
+
+    const activeClasses = domClasses;
+    const cachedClasses = styledClasses.filter(
+      (cls) => !domClasses.includes(cls),
+    );
+
+    // Also check unusedRules registry for classes that are marked as cached (unused but kept for performance)
+    if (registry?.unusedRules) {
+      for (const className of registry.unusedRules.keys()) {
+        if (/^t\d+$/.test(className) && !cachedClasses.includes(className)) {
+          cachedClasses.push(className);
+        }
+      }
+    }
+
+    return {
+      activeClasses: activeClasses.sort((a, b) => {
+        const aNum = parseInt(a.slice(1));
+        const bNum = parseInt(b.slice(1));
+        return aNum - bNum;
+      }),
+      cachedClasses: cachedClasses.sort((a, b) => {
+        const aNum = parseInt(a.slice(1));
+        const bNum = parseInt(b.slice(1));
+        return aNum - bNum;
+      }),
+      totalStyledClasses: styledClasses,
+    };
+  },
+
+  /**
+   * Get a comprehensive summary of all tasty styles
    */
   getSummary(): {
-    totalClasses: number;
-    classes: string[];
+    activeClasses: string[];
+    cachedClasses: string[];
+    totalStyledClasses: string[];
+    activeCSSSize: number;
+    cachedCSSSize: number;
     totalCSSSize: number;
+    activeCSS: string;
+    cachedCSS: string;
     allCSS: string;
+    metrics: any;
   } {
-    const classes = this.findAllTastyClasses();
+    const usage = this.getClassUsage();
     const allCSS = this.getAllCSS();
+    const activeCSS = this.getCSSForClasses(usage.activeClasses);
+    const cachedCSS = this.getCSSForClasses(usage.cachedClasses);
+    const metrics = injector.instance.getMetrics();
 
     const summary = {
-      totalClasses: classes.length,
-      classes,
+      activeClasses: usage.activeClasses,
+      cachedClasses: usage.cachedClasses,
+      totalStyledClasses: usage.totalStyledClasses,
+      activeCSSSize: activeCSS.length,
+      cachedCSSSize: cachedCSS.length,
       totalCSSSize: allCSS.length,
+      activeCSS,
+      cachedCSS,
       allCSS,
+      metrics,
     };
 
-    console.group('🎨 Tasty Debug Summary');
-    console.log(`Total tasty classes found: ${summary.totalClasses}`);
-    console.log(`Total CSS size: ${summary.totalCSSSize} characters`);
-    console.log('Classes in use:', summary.classes);
+    console.group('🎨 Comprehensive Tasty Debug Summary');
+    console.log(`📊 Style Cache Status:`);
+    console.log(`  • Active classes (in DOM): ${summary.activeClasses.length}`);
+    console.log(
+      `  • Cached classes (performance cache): ${summary.cachedClasses.length}`,
+    );
+    console.log(
+      `  • Total styled classes: ${summary.totalStyledClasses.length}`,
+    );
+    console.log(`💾 CSS Size:`);
+    console.log(`  • Active CSS: ${summary.activeCSSSize} characters`);
+    console.log(`  • Cached CSS: ${summary.cachedCSSSize} characters`);
+    console.log(`  • Total CSS: ${summary.totalCSSSize} characters`);
+    console.log(`⚡ Performance Metrics:`);
+    if (metrics) {
+      console.log(`  • Cache hits: ${metrics.hits}`);
+      console.log(`  • Cache misses: ${metrics.misses}`);
+      console.log(`  • Cached style reuses: ${metrics.unusedHits}`);
+      console.log(`  • Total insertions: ${metrics.totalInsertions}`);
+      console.log(`  • Styles cleaned up: ${metrics.stylesCleanedUp}`);
+
+      const hitRate =
+        metrics.hits + metrics.misses > 0
+          ? (
+              ((metrics.hits + metrics.unusedHits) /
+                (metrics.hits + metrics.misses)) *
+              100
+            ).toFixed(1)
+          : 0;
+      console.log(`  • Overall cache hit rate: ${hitRate}%`);
+    } else {
+      console.log(
+        `  • Metrics not available (enable with collectMetrics: true)`,
+      );
+    }
+    console.log('🔍 Details:');
+    console.log('  • Active classes:', summary.activeClasses);
+    console.log('  • Cached classes:', summary.cachedClasses);
+    console.log(
+      'ℹ️  Note: Cached styles are kept for performance - avoiding expensive DOM operations',
+    );
     console.groupEnd();
 
     return summary;
@@ -248,13 +369,28 @@ export const tastyDebug = {
   },
 
   /**
-   * Advanced inspection with detailed breakdown
+   * Advanced inspection with detailed breakdown and statistics
    */
   inspect(target: string | Element): {
     element: Element | null;
     tastyClasses: string[];
     css: string;
-    breakdown: { [className: string]: string };
+    cssSize: number;
+    ruleCount: number;
+    breakdown: {
+      [className: string]: {
+        css: string;
+        cssSize: number;
+        ruleCount: number;
+      };
+    };
+    stats: {
+      totalClasses: number;
+      totalRules: number;
+      totalCSSSize: number;
+      averageRulesPerClass: number;
+      averageCSSPerClass: number;
+    };
   } {
     const element =
       typeof target === 'string' ? document.querySelector(target) : target;
@@ -265,7 +401,16 @@ export const tastyDebug = {
         element: null,
         tastyClasses: [],
         css: '',
+        cssSize: 0,
+        ruleCount: 0,
         breakdown: {},
+        stats: {
+          totalClasses: 0,
+          totalRules: 0,
+          totalCSSSize: 0,
+          averageRulesPerClass: 0,
+          averageCSSPerClass: 0,
+        },
       };
     }
 
@@ -277,28 +422,96 @@ export const tastyDebug = {
 
     // Get CSS for the entire subtree
     const fullCSS = getCssTextForNode(element);
+    const prettifiedCSS = prettifyCSS(fullCSS);
 
-    // Get CSS breakdown per class
-    const breakdown: { [className: string]: string } = {};
+    // Count CSS rules in the full CSS
+    const ruleCount = (fullCSS.match(/\{[^}]*\}/g) || []).length;
+
+    // Get CSS breakdown per class with detailed stats
+    const breakdown: {
+      [className: string]: {
+        css: string;
+        cssSize: number;
+        ruleCount: number;
+      };
+    } = {};
+
+    let totalClassRules = 0;
+    let totalClassCSSSize = 0;
+
     tastyClasses.forEach((className) => {
-      breakdown[className] = this.getCSSForClass(className);
+      const classCSS = this.getCSSForClass(className);
+      const classRuleCount = (classCSS.match(/\{[^}]*\}/g) || []).length;
+      breakdown[className] = {
+        css: classCSS,
+        cssSize: classCSS.length,
+        ruleCount: classRuleCount,
+      };
+      totalClassRules += classRuleCount;
+      totalClassCSSSize += classCSS.length;
     });
+
+    // Calculate statistics
+    const stats = {
+      totalClasses: tastyClasses.length,
+      totalRules: totalClassRules,
+      totalCSSSize: totalClassCSSSize,
+      averageRulesPerClass:
+        tastyClasses.length > 0 ? totalClassRules / tastyClasses.length : 0,
+      averageCSSPerClass:
+        tastyClasses.length > 0 ? totalClassCSSSize / tastyClasses.length : 0,
+    };
 
     const result = {
       element,
       tastyClasses,
-      css: prettifyCSS(fullCSS),
+      css: prettifiedCSS,
+      cssSize: fullCSS.length,
+      ruleCount,
       breakdown,
+      stats,
     };
 
     console.group(`🔍 Detailed Tasty Inspection`);
     console.log('Element:', element);
-    console.log('Tasty classes found:', tastyClasses);
-    console.log('Total CSS for element tree:\n' + prettifyCSS(fullCSS));
-    console.log('CSS breakdown by class:', breakdown);
+    console.log('📊 Overview:');
+    console.log(`  • Tasty classes: ${stats.totalClasses}`);
+    console.log(`  • Total rules applied: ${ruleCount}`);
+    console.log(`  • Total CSS size: ${fullCSS.length} characters`);
+    console.log('🏷️ Classes:', tastyClasses);
+    console.log('📈 Statistics:');
+    console.log(
+      `  • Rules per class (avg): ${stats.averageRulesPerClass.toFixed(1)}`,
+    );
+    console.log(
+      `  • CSS per class (avg): ${stats.averageCSSPerClass.toFixed(0)} chars`,
+    );
+    console.log('🎨 Element CSS:\n' + prettifiedCSS);
+    console.log('🔨 CSS breakdown by class:');
+    Object.entries(breakdown).forEach(([className, data]) => {
+      console.log(
+        `  ${className}: ${data.ruleCount} rules, ${data.cssSize} chars`,
+      );
+    });
     console.groupEnd();
 
     return result;
+  },
+
+  /**
+   * Get CSS for active classes only
+   */
+  getActiveCSS(): string {
+    const usage = this.getClassUsage();
+    return this.getCSSForClasses(usage.activeClasses);
+  },
+
+  /**
+   * Get CSS for cached classes only
+   */
+  getCachedCSS(): string {
+    const usage = this.getClassUsage();
+    return this.getCSSForClasses(usage.cachedClasses);
   },
 };
 
@@ -326,7 +539,12 @@ export function installGlobalDebug(): void {
   ) {
     (window as any).tastyDebug = tastyDebug;
     console.log(
-      '🎨 tastyDebug installed on window. Try: tastyDebug.getSummary()',
+      '🎨 tastyDebug installed on window.\n' +
+        '💡 Quick start:\n' +
+        '  • tastyDebug.getSummary() - comprehensive overview\n' +
+        '  • tastyDebug.inspect(".my-element") - detailed element inspection\n' +
+        '  • tastyDebug.findClassGaps() - find missing class numbers\n' +
+        '  • tastyDebug.getActiveCSS() / getCachedCSS() - get specific CSS',
     );
   }
 }
