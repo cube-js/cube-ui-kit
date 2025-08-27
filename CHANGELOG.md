@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.74.3
+
+### Patch Changes
+
+- [#770](https://github.com/cube-js/cube-ui-kit/pull/770) [`21336718`](https://github.com/cube-js/cube-ui-kit/commit/21336718865a2e2c8e9a3753ae6961c0cfa83ba1) Thanks [@tenphi](https://github.com/tenphi)! - Add size observer for ItemBase.
+
 ## 0.74.2
 
 ### Patch Changes
