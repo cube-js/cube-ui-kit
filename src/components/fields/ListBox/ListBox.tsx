@@ -157,7 +157,7 @@ const ListBoxCheckbox = tasty({
     transition: 'theme',
     opacity: {
       '': 0,
-      'selected | indeterminate | :hover | focused': 1,
+      'selected | indeterminate | hovered | focused': 1,
     },
     fill: {
       '': '#white',
