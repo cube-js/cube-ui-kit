@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.74.2
+
+### Patch Changes
+
+- [#768](https://github.com/cube-js/cube-ui-kit/pull/768) [`fc039f5e`](https://github.com/cube-js/cube-ui-kit/commit/fc039f5e9ae8913908486d7115d86ce4285caa25) Thanks [@tenphi](https://github.com/tenphi)! - Fix checkbox opacity on hover in ListBox.
+
 ## 0.74.1
 
 ### Patch Changes
