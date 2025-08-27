@@ -3,6 +3,7 @@ import { getByTestId, render } from '@testing-library/react';
 import { Button } from '../components/actions';
 import { Block } from '../components/Block';
 
+import { tastyDebug } from './debug';
 import { BreakpointsProvider } from './providers/BreakpointsProvider';
 import { CONTAINER_STYLES } from './styles/list';
 import { tasty } from './tasty';
@@ -499,5 +500,90 @@ describe('tasty() API', () => {
     );
 
     expect(container).toMatchTastySnapshot();
+  });
+
+  it('should handle complex gridAreas with responsive arrays and state modifiers', () => {
+    const Header = tasty({
+      as: 'header',
+      styles: {
+        position: { '': 'static', sticky: 'sticky' },
+        top: { sticky: '0' },
+        fill: { '': 'transparent', sticky: '#white' },
+        zIndex: { '': 'auto', sticky: 10 },
+        shadow: { '': 'none', sticky: '0 0.5x 0.5x #white' },
+        display: 'grid',
+        padding: '1x 2x',
+        height: 'min 6x',
+        gridAreas: [
+          {
+            '': `
+              "breadcrumbs breadcrumbs breadcrumbs breadcrumbs breadcrumbs breadcrumbs"
+              "back        title       .           subtitle    spacer      extra"
+              "back        title       .           subtitle    spacer      extra"
+              "content     content     content     content     content     content"
+              "footer      footer      footer      footer      footer      footer"`,
+
+            'back-button-top': `
+                "back        back        back        back        back        back"
+                "breadcrumbs breadcrumbs breadcrumbs breadcrumbs breadcrumbs breadcrumbs"
+                ".           title       .           subtitle    spacer      extra"
+                ".           title       .           subtitle    spacer      extra"
+                "content     content     content     content     content     content"
+                "footer      footer      footer      footer      footer      footer"`,
+          },
+          {
+            '': `
+                "breadcrumbs breadcrumbs breadcrumbs breadcrumbs"
+                "back        title       spacer      extra"
+                "back        subtitle    subtitle    extra"
+                "back        .           .           extra"
+                "content     content     content     content"
+                "footer      footer      footer      footer"`,
+
+            'back-button-top': `
+                "back        back        back        back"
+                "breadcrumbs breadcrumbs breadcrumbs breadcrumbs"
+                ".           title       spacer      extra"
+                ".           subtitle    subtitle    extra"
+                ".           .           .           extra"
+                "content     content     content     content"
+                "footer      footer      footer      footer"`,
+          },
+        ],
+        gridColumns: [
+          'max-content minmax(2x, auto) 2x minmax(0, auto) minmax(2x, 1fr) minmax(min-content, max-content)',
+          'max-content minmax(2x, auto) minmax(2x, 1fr) minmax(min-content, max-content)',
+        ],
+        placeItems: 'center stretch',
+        placeContent: 'stretch',
+      },
+    });
+
+    // Test with default state
+    const { container: defaultContainer } = render(
+      <BreakpointsProvider value={[1200]}>
+        <Header qa="default-grid" />
+      </BreakpointsProvider>,
+    );
+
+    // Demonstrate debug utilities usage
+    const headerElement = defaultContainer.querySelector(
+      '[data-qa="default-grid"]',
+    ) as Element;
+
+    // Example: Get CSS for specific element
+    const cssForElement = tastyDebug.inspectDOMElement(headerElement);
+    expect(cssForElement).toContain('grid-template-areas');
+
+    // Example: Get CSS for specific class
+    const className = headerElement.className
+      .split(' ')
+      .find((cls) => /^t\d+$/.test(cls));
+    if (className) {
+      const cssForClass = tastyDebug.getCSSForClass(className);
+      expect(cssForClass).toContain('display: grid');
+    }
+
+    expect(defaultContainer).toMatchTastySnapshot();
   });
 });

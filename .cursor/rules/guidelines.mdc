@@ -27,6 +27,7 @@ Package name: `@cube-dev/ui-kit`
 
 All tests: `$ pnpm test`
 Specific test: `$ pnpm test -- {TestFileName}`
+Update snaphosts: `$ pnpm test -u -- {TestFileName}`
 
 ## Build
 
