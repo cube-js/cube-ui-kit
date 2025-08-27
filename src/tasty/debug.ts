@@ -297,7 +297,11 @@ function isDevelopmentEnvironment(): boolean {
  * Only in non-production environments
  */
 export function installGlobalDebug(): void {
-  if (typeof window !== 'undefined' && isDevelopmentEnvironment()) {
+  if (
+    typeof window !== 'undefined' &&
+    isDevelopmentEnvironment() &&
+    (window as any).tastyDebug !== tastyDebug
+  ) {
     (window as any).tastyDebug = tastyDebug;
     console.log(
       '🎨 tastyDebug installed on window. Try: tastyDebug.getSummary()',
