@@ -254,60 +254,62 @@ describe('StyleInjector', () => {
   });
 
   describe('dispose and cleanup', () => {
-    it('should dispose CSS when all references are removed', async () => {
+    it('should mark styles as unused when disposed', () => {
       const css = '&{ color: red; }';
 
-      const result1 = injector.inject(cssToStyleResults(css));
-      const result2 = injector.inject(cssToStyleResults(css));
+      const result = injector.inject(cssToStyleResults(css));
+      expect(result.className).toMatch(/^t\d+$/);
 
-      // Class names may or may not be equal without active dedupe
-      expect(result1.className).toMatch(/^t\d+$/);
-      expect(result2.className).toMatch(/^t\d+$/);
-
-      // Dispose first reference
-      result1.dispose();
-
-      // Wait for cleanup
-      await new Promise((resolve) => setTimeout(resolve, 0));
-
-      // Style should still exist (second reference active)
+      // Style should exist in DOM
       expect(document.head.querySelectorAll('[data-tasty]').length).toBe(1);
 
-      // Dispose second reference
-      result2.dispose();
+      // Dispose the style
+      result.dispose();
 
-      // Wait for cleanup
-      await new Promise((resolve) => setTimeout(resolve, 0));
-
-      // Now style might be cleaned up (depends on gc threshold)
+      // Style should still exist in DOM (just marked as unused)
+      expect(document.head.querySelectorAll('[data-tasty]').length).toBe(1);
     });
 
-    it('should dispose global CSS when all references are removed', async () => {
+    it('should restore unused styles when reused', () => {
+      const css = '&{ color: red; }';
+
+      const result1 = injector.inject(cssToStyleResults(css, 't123'));
+      const className1 = result1.className;
+
+      // Dispose the style
+      result1.dispose();
+
+      // Inject the same style again (should restore from unused)
+      const result2 = injector.inject(cssToStyleResults(css, 't123'));
+
+      // Should get the same className back
+      expect(result2.className).toBe(className1);
+
+      // Style should still exist in DOM (no re-insertion)
+      expect(document.head.querySelectorAll('[data-tasty]').length).toBe(1);
+    });
+
+    it('should handle global CSS disposal', () => {
       const selector = 'body';
       const css = 'background: white;';
 
       const dispose1 = injector.injectGlobal(selector, css);
-      const dispose2 = injector.injectGlobal(selector, css);
 
-      // Dispose first reference
-      dispose1();
-
-      // Wait for cleanup
-      await new Promise((resolve) => setTimeout(resolve, 0));
-
-      // Style should still exist (second reference active)
+      // Style should exist
       expect(
         document.head.querySelectorAll('[data-tasty]').length,
       ).toBeGreaterThan(0);
 
-      // Dispose second reference
-      dispose2();
+      // Dispose
+      dispose1();
 
-      // Wait for cleanup
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      // Style should still exist in DOM (marked as unused)
+      expect(
+        document.head.querySelectorAll('[data-tasty]').length,
+      ).toBeGreaterThan(0);
     });
 
-    it('should handle multiple disposals correctly', async () => {
+    it('should handle multiple disposals correctly', () => {
       // Create and dispose multiple styles
       const results: any[] = [];
       for (let i = 0; i < 10; i++) {
@@ -319,20 +321,18 @@ describe('StyleInjector', () => {
       // Dispose all
       results.forEach((result) => result.dispose());
 
-      // Wait for cleanup
-      await new Promise((resolve) => setTimeout(resolve, 10));
-
-      // All should be disposed successfully
+      // All styles should still exist in DOM (marked as unused)
+      expect(document.head.querySelectorAll('[data-tasty]').length).toBe(1);
       expect(results.length).toBe(10);
     });
 
-    it('should force cleanup when cleanup() is called', () => {
+    it('should force bulk cleanup when forceBulkCleanup() is called', () => {
       const css = '&{ color: red; }';
       const result = injector.inject(cssToStyleResults(css));
       result.dispose();
 
-      // Force cleanup
-      injector.cleanup();
+      // Force bulk cleanup
+      injector.forceBulkCleanup();
 
       // Cleanup should have been processed immediately
     });

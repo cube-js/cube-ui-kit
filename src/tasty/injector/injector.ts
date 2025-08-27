@@ -74,15 +74,22 @@ export class StyleInjector {
       };
     }
 
-    // Try to restore from disposed cache if className exists but is not active
-    if (generatedClass && !registry.rules.has(generatedClass)) {
-      const restored = this.sheetManager.restoreFromDisposedCache(
+    // Try to restore from unused styles if className exists but is not active
+    if (
+      generatedClass &&
+      registry.rules.has(generatedClass) &&
+      !registry.refCounts.has(generatedClass)
+    ) {
+      const restored = this.sheetManager.restoreFromUnused(
         registry,
         generatedClass,
       );
       if (restored) {
-        const currentRefCount = registry.refCounts.get(generatedClass) || 0;
-        registry.refCounts.set(generatedClass, currentRefCount + 1);
+        // Update metrics
+        if (registry.metrics) {
+          registry.metrics.hits++;
+        }
+
         return {
           className: generatedClass,
           dispose: () => this.dispose(generatedClass, registry),
@@ -217,10 +224,8 @@ export class StyleInjector {
   private dispose(className: string, registry: any): void {
     const currentRefCount = registry.refCounts.get(className) || 0;
     if (currentRefCount <= 1) {
-      // Mark for deletion and schedule cleanup - but keep cache entries for disposal cache
-      registry.refCounts.set(className, 0);
-      registry.deletionQueue.push(className);
-      this.scheduleCleanup(registry);
+      // Mark as unused immediately
+      this.sheetManager.markAsUnused(registry, className);
     } else {
       registry.refCounts.set(className, currentRefCount - 1);
     }
@@ -235,15 +240,11 @@ export class StyleInjector {
   }
 
   /**
-   * Schedule cleanup to run in the next microtask
+   * Force bulk cleanup of unused styles
    */
-  private scheduleCleanup(registry: any): void {
-    if (this.cleanupScheduled) return;
-    this.cleanupScheduled = true;
-    Promise.resolve().then(() => {
-      this.sheetManager.processCleanupQueue(registry);
-      this.cleanupScheduled = false;
-    });
+  forceBulkCleanup(root?: Document | ShadowRoot): void {
+    const registry = this.sheetManager.getRegistry(root || document);
+    this.sheetManager['performBulkCleanup'](registry);
   }
 
   /**
@@ -310,8 +311,7 @@ export class StyleInjector {
 
     const cssChunks: string[] = [];
     for (const cls of classNames) {
-      const info =
-        registry.rules.get(cls) || registry.disposedCache.get(cls)?.ruleInfo;
+      const info = registry.rules.get(cls);
       if (info) {
         if (info.cssText && info.cssText.length) {
           cssChunks.push(...info.cssText);
@@ -355,34 +355,12 @@ export class StyleInjector {
   }
 
   /**
-   * Force cleanup of disposed rulesets (useful for memory pressure)
+   * Force cleanup of unused styles (useful for memory pressure)
    */
-  forceCleanupDisposed(options?: { root?: Document | ShadowRoot }): void {
+  forceCleanupUnused(options?: { root?: Document | ShadowRoot }): void {
     const root = options?.root || document;
     const registry = this.sheetManager.getRegistry(root);
-
-    // Clear any scheduled cleanups and immediately clean those
-    for (const [className, timeoutId] of registry.cleanupTimeouts) {
-      if (
-        this.config.idleCleanup &&
-        typeof cancelIdleCallback !== 'undefined'
-      ) {
-        cancelIdleCallback(timeoutId as unknown as number);
-      } else {
-        clearTimeout(timeoutId);
-      }
-      const disposedInfo = registry.disposedCache.get(className);
-      if (disposedInfo) {
-        this.sheetManager['performActualCleanup'](registry, className);
-      }
-    }
-    registry.cleanupTimeouts.clear();
-
-    // Also cleanup any remaining disposed entries that were not scheduled
-    const keys = Array.from(registry.disposedCache.keys());
-    for (const cls of keys) {
-      this.sheetManager['performActualCleanup'](registry, cls);
-    }
+    this.sheetManager['performBulkCleanup'](registry);
   }
 
   /**

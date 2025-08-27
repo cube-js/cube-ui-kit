@@ -8,7 +8,7 @@ The Style Injector provides:
 - **Hash-based deduplication** - identical CSS gets the same className
 - **Reference counting** - automatic cleanup when components unmount
 - **CSS nesting flattening** - handles `&`, `.Class`, `SubElement` patterns
-- **Lazy cleanup** - configurable delay before DOM cleanup
+- **Efficient bulk cleanup** - unused styles are marked and cleaned up in batches
 - **SSR support** - deterministic class names and CSS extraction
 - **Multiple roots** - works with Document and ShadowRoot
 - **Style elements** - reliable DOM insertion with fallbacks
@@ -60,8 +60,8 @@ Configures the global injector instance.
 ```typescript
 configure({
   maxRulesPerSheet: 8000,           // Cap rules per sheet (infinite by default)
-  cacheSize: 500,                   // LRU cache size for disposed rulesets
-  cleanupDelay: 5000,               // Delay before actual DOM cleanup (ms, ignored if idleCleanup is true)
+  unusedStylesThreshold: 500,       // Threshold for bulk cleanup of unused styles
+  bulkCleanupDelay: 5000,           // Delay before bulk cleanup (ms, ignored if idleCleanup is true)
   idleCleanup: true,                // Use requestIdleCallback for cleanup when available
   collectMetrics: false,            // Collect performance metrics
   forceTextInjection: false,        // Force textContent insertion (auto-detected for tests)
@@ -113,7 +113,6 @@ const cssForSSR = getCssText();
 
 ### 🔧 In Progress
 - Integration with tasty components
-- Some test environment DOM issues (not affecting core functionality)
 
 ### 🚀 Ready For
 - Integration with `tastyElement` and `tastyGlobal`
@@ -122,9 +121,8 @@ const cssForSSR = getCssText();
 
 ## Test Coverage
 
-- **89 passing tests** covering all critical functionality
-- **5 skipped tests** due to Jest/JSDOM environment issues (not core functionality problems)
-- All major code paths tested: hashing, flattening, sheet management, reference counting, cleanup
+- **Comprehensive test coverage** covering all critical functionality
+- All major code paths tested: hashing, flattening, sheet management, reference counting, bulk cleanup
 
 ## Files
 
@@ -140,10 +138,10 @@ const cssForSSR = getCssText();
 
 - **Deduplication** - Identical CSS reuses the same className
 - **Reference counting** - Automatic cleanup prevents memory leaks
-- **Batched operations** - DOM updates are batched for performance
+- **Bulk cleanup** - Unused styles are marked and cleaned up efficiently in batches
 - **Style elements** - Reliable DOM insertion with textContent fallbacks
-- **Caching** - Smart caching with configurable limits including disposed rulesets
-- **Lazy cleanup** - Configurable delay or idle callback for DOM cleanup optimization
+- **Unused style reuse** - Previously used styles can be instantly reactivated
+- **Minimal CSSOM manipulation** - Bulk operations reduce DOM write overhead
 
 ## Browser Support
 

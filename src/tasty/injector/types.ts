@@ -8,8 +8,8 @@ export type DisposeFunction = () => void;
 export interface StyleInjectorConfig {
   nonce?: string;
   maxRulesPerSheet?: number; // default: infinite (no cap)
-  cacheSize?: number; // default: 500 (LRU of disposed rulesets)
-  cleanupDelay?: number; // default: 5000ms (delay before actual DOM cleanup, ignored if idleCleanup is true)
+  unusedStylesThreshold?: number; // default: 500 (threshold for bulk cleanup of unused styles)
+  bulkCleanupDelay?: number; // default: 5000ms (delay before bulk cleanup, ignored if idleCleanup is true)
   idleCleanup?: boolean; // default: true (use requestIdleCallback for cleanup when available)
   collectMetrics?: boolean; // default: false (performance tracking)
   forceTextInjection?: boolean; // default: auto-detected (true in test environments, false otherwise)
@@ -32,37 +32,34 @@ export interface SheetInfo {
   holes: number[]; // Available rule indices from deletions
 }
 
-export interface DisposedRuleInfo {
+export interface UnusedRuleInfo {
   ruleInfo: RuleInfo;
-  disposedAt: number; // timestamp
-  recentlyUsed: boolean; // optimization flag
+  markedUnusedAt: number; // timestamp when marked as unused
 }
 
 export interface CacheMetrics {
   hits: number;
   misses: number;
-  disposedHits: number; // hits from disposed cache
-  evictions: number;
+  unusedHits: number; // hits from unused styles
+  bulkCleanups: number; // number of bulk cleanup operations
   totalInsertions: number;
-  totalDisposals: number;
-  domCleanups: number; // actual DOM rule removals
+  totalUnused: number; // total styles marked as unused
+  stylesCleanedUp: number; // total number of styles cleaned up in bulk operations
   startTime: number;
 }
 
 export interface RootRegistry {
   sheets: SheetInfo[];
   refCounts: Map<string, number>; // className -> refCount
-  rules: Map<string, RuleInfo>; // className -> rule info
-  deletionQueue: string[]; // className queue for cleanup
+  rules: Map<string, RuleInfo>; // className -> rule info (includes both active and unused)
+  unusedRules: Map<string, UnusedRuleInfo>; // className -> unused rule info
   /** Deduplication set of fully materialized CSS rules inserted into sheets */
   ruleTextSet: Set<string>;
-  /** LRU cache for disposed rulesets that can be quickly reused */
-  disposedCache: import('../parser/lru').Lru<string, DisposedRuleInfo>;
-  /** Cleanup timeouts for lazy disposal */
-  cleanupTimeouts: Map<
-    string,
-    ReturnType<typeof requestIdleCallback> | ReturnType<typeof setTimeout>
-  >;
+  /** Scheduled bulk cleanup timeout */
+  bulkCleanupTimeout:
+    | ReturnType<typeof requestIdleCallback>
+    | ReturnType<typeof setTimeout>
+    | null;
   /** Performance metrics (optional) */
   metrics?: CacheMetrics;
   /** Counter for generating sequential class names like t0, t1, t2... */

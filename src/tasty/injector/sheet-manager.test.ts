@@ -59,10 +59,9 @@ describe('SheetManager', () => {
 
       expect(registry).toBeDefined();
       expect(registry.sheets).toEqual([]);
-      // active cache removed; we only keep disposedCache
       expect(registry.refCounts).toBeInstanceOf(Map);
       expect(registry.rules).toBeInstanceOf(Map);
-      expect(registry.deletionQueue).toEqual([]);
+      expect(registry.unusedRules).toBeInstanceOf(Map);
     });
 
     it('should return same registry for same root', () => {
@@ -294,11 +293,10 @@ describe('SheetManager', () => {
     });
   });
 
-  describe('processCleanupQueue', () => {
-    it('should delete unreferenced rules from queue', () => {
+  describe('markAsUnused and bulk cleanup', () => {
+    it('should mark rule as unused without immediate DOM cleanup', () => {
       const registry = sheetManager.getRegistry(document);
 
-      // Setup some rules
       const rules = [createFlattenedRule('.test', 'color: red;')];
       const ruleInfo = sheetManager.insertRule(
         registry,
@@ -309,19 +307,17 @@ describe('SheetManager', () => {
       const className = 'test-class';
 
       registry.rules.set(className, ruleInfo!);
-      registry.refCounts.set(className, 0); // No references
-      registry.deletionQueue.push(className);
+      registry.refCounts.set(className, 1);
 
-      const initialRuleCount = registry.sheets[0].ruleCount;
+      sheetManager.markAsUnused(registry, className);
 
-      sheetManager.processCleanupQueue(registry);
-
-      expect(registry.rules.has(className)).toBe(false);
+      // Rule should be marked as unused but still in registry.rules
+      expect(registry.rules.has(className)).toBe(true);
+      expect(registry.unusedRules.has(className)).toBe(true);
       expect(registry.refCounts.has(className)).toBe(false);
-      expect(registry.deletionQueue).toEqual([]);
     });
 
-    it('should not delete referenced rules', () => {
+    it('should restore from unused rules', () => {
       const registry = sheetManager.getRegistry(document);
 
       const rules = [createFlattenedRule('.test', 'color: red;')];
@@ -334,14 +330,42 @@ describe('SheetManager', () => {
       const className = 'test-class';
 
       registry.rules.set(className, ruleInfo!);
-      registry.refCounts.set(className, 1); // Still referenced
-      registry.deletionQueue.push(className);
+      registry.refCounts.set(className, 1);
 
-      sheetManager.processCleanupQueue(registry);
+      // Mark as unused
+      sheetManager.markAsUnused(registry, className);
 
-      expect(registry.rules.has(className)).toBe(true);
+      // Restore from unused
+      const restored = sheetManager.restoreFromUnused(registry, className);
+
+      expect(restored).toBeTruthy();
+      expect(registry.unusedRules.has(className)).toBe(false);
       expect(registry.refCounts.get(className)).toBe(1);
-      expect(registry.deletionQueue).toEqual([]); // Queue cleared but rule kept
+      expect(registry.rules.has(className)).toBe(true);
+    });
+
+    it('should schedule bulk cleanup when threshold is exceeded', () => {
+      const manager = new SheetManager({ unusedStylesThreshold: 2 });
+      const registry = manager.getRegistry(document);
+
+      // Create rules that will trigger bulk cleanup
+      for (let i = 0; i < 3; i++) {
+        const rules = [createFlattenedRule(`.test-${i}`, 'color: red;')];
+        const ruleInfo = manager.insertRule(
+          registry,
+          rules,
+          `test-${i}`,
+          document,
+        );
+        const className = `test-class-${i}`;
+
+        registry.rules.set(className, ruleInfo!);
+        registry.refCounts.set(className, 1);
+        manager.markAsUnused(registry, className);
+      }
+
+      // Should have scheduled bulk cleanup
+      expect(registry.bulkCleanupTimeout).toBeTruthy();
     });
   });
 
@@ -417,7 +441,7 @@ describe('SheetManager', () => {
     });
   });
 
-  describe('idle cleanup', () => {
+  describe('bulk cleanup scheduling', () => {
     it('should use requestIdleCallback when idleCleanup is enabled', () => {
       // Mock requestIdleCallback
       const mockRequestIdleCallback = jest.fn((callback) => {
@@ -428,27 +452,27 @@ describe('SheetManager', () => {
       (global as any).requestIdleCallback = mockRequestIdleCallback;
       (global as any).cancelIdleCallback = mockCancelIdleCallback;
 
-      const manager = new SheetManager({ idleCleanup: true });
+      const manager = new SheetManager({
+        idleCleanup: true,
+        unusedStylesThreshold: 1,
+      });
       const registry = manager.getRegistry(document);
 
-      // Create a rule first
+      // Create a rule and mark as unused to trigger bulk cleanup
       const ruleInfo = manager.insertRule(
         registry,
         [createFlattenedRule('.test-class', 'color: red;')],
         'test-class',
         document,
       );
-
-      // Add to rules map so moveToDisposedCache can find it
       registry.rules.set('test-class', ruleInfo!);
+      registry.refCounts.set('test-class', 1);
 
-      // Trigger cleanup via moveToDisposedCache
-      manager.moveToDisposedCache(registry, 'test-class');
+      // This should trigger bulk cleanup scheduling
+      manager.markAsUnused(registry, 'test-class');
 
       expect(mockRequestIdleCallback).toHaveBeenCalled();
-
-      // Verify that the cleanup timeout was stored
-      expect(registry.cleanupTimeouts.get('test-class')).toBe(123);
+      expect(registry.bulkCleanupTimeout).toBe(123);
 
       // Cleanup mocks
       delete (global as any).requestIdleCallback;
@@ -461,44 +485,15 @@ describe('SheetManager', () => {
 
       const manager = new SheetManager({
         idleCleanup: true,
-        cleanupDelay: 100,
+        bulkCleanupDelay: 100,
+        unusedStylesThreshold: 1,
       });
       const registry = manager.getRegistry(document);
-
-      // Create a rule first
-      const ruleInfo = manager.insertRule(
-        registry,
-        [createFlattenedRule('.test-class', 'color: red;')],
-        'test-class',
-        document,
-      );
-
-      // Add to rules map so moveToDisposedCache can find it
-      registry.rules.set('test-class', ruleInfo!);
 
       // Mock setTimeout
       const mockSetTimeout = jest.spyOn(global, 'setTimeout');
 
-      // Trigger cleanup via moveToDisposedCache
-      manager.moveToDisposedCache(registry, 'test-class');
-
-      expect(mockSetTimeout).toHaveBeenCalledWith(expect.any(Function), 100);
-
-      mockSetTimeout.mockRestore();
-    });
-
-    it('should cancel requestIdleCallback when restoring from disposed cache', () => {
-      // Mock requestIdleCallback and cancelIdleCallback
-      const mockRequestIdleCallback = jest.fn(() => 123);
-      const mockCancelIdleCallback = jest.fn();
-
-      (global as any).requestIdleCallback = mockRequestIdleCallback;
-      (global as any).cancelIdleCallback = mockCancelIdleCallback;
-
-      const manager = new SheetManager({ idleCleanup: true });
-      const registry = manager.getRegistry(document);
-
-      // Create a rule and move to disposed cache
+      // Create a rule and mark as unused to trigger bulk cleanup
       const ruleInfo = manager.insertRule(
         registry,
         [createFlattenedRule('.test-class', 'color: red;')],
@@ -506,21 +501,13 @@ describe('SheetManager', () => {
         document,
       );
       registry.rules.set('test-class', ruleInfo!);
-      manager.moveToDisposedCache(registry, 'test-class');
+      registry.refCounts.set('test-class', 1);
 
-      expect(mockRequestIdleCallback).toHaveBeenCalled();
-      expect(registry.cleanupTimeouts.get('test-class')).toBe(123);
+      manager.markAsUnused(registry, 'test-class');
 
-      // Now restore from cache - should cancel the idle callback
-      const restored = manager.restoreFromDisposedCache(registry, 'test-class');
+      expect(mockSetTimeout).toHaveBeenCalledWith(expect.any(Function), 100);
 
-      expect(restored).toBeTruthy();
-      expect(mockCancelIdleCallback).toHaveBeenCalledWith(123);
-      expect(registry.cleanupTimeouts.has('test-class')).toBeFalsy();
-
-      // Cleanup mocks
-      delete (global as any).requestIdleCallback;
-      delete (global as any).cancelIdleCallback;
+      mockSetTimeout.mockRestore();
     });
   });
 });

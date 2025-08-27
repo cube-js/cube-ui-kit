@@ -2,12 +2,12 @@ import { Lru } from '../parser/lru';
 
 import {
   CacheMetrics,
-  DisposedRuleInfo,
   FlattenedRule,
   RootRegistry,
   RuleInfo,
   SheetInfo,
   StyleInjectorConfig,
+  UnusedRuleInfo,
 } from './types';
 
 export class SheetManager {
@@ -29,38 +29,25 @@ export class SheetManager {
         ? {
             hits: 0,
             misses: 0,
-            disposedHits: 0,
-            evictions: 0,
+            unusedHits: 0,
+            bulkCleanups: 0,
             totalInsertions: 0,
-            totalDisposals: 0,
-            domCleanups: 0,
+            totalUnused: 0,
+            stylesCleanedUp: 0,
             startTime: Date.now(),
           }
         : undefined;
-
-      const disposedCache = new Lru<string, DisposedRuleInfo>(
-        this.config.cacheSize || 500,
-      );
 
       registry = {
         sheets: [],
         refCounts: new Map(),
         rules: new Map(),
-        deletionQueue: [],
+        unusedRules: new Map(),
         ruleTextSet: new Set<string>(),
-        disposedCache,
-        cleanupTimeouts: new Map(),
+        bulkCleanupTimeout: null,
         metrics,
         classCounter: 0,
       } as unknown as RootRegistry;
-
-      // Perform DOM cleanup only when an item is evicted from the LRU
-      disposedCache.setOnEvict((key) => {
-        this.performActualCleanup(registry as RootRegistry, key);
-        if ((registry as RootRegistry).metrics) {
-          (registry as RootRegistry).metrics!.evictions++;
-        }
-      });
 
       this.rootRegistries.set(root, registry);
     }
@@ -383,123 +370,120 @@ export class SheetManager {
   }
 
   /**
-   * Move a ruleset to disposed cache for potential reuse
+   * Mark a ruleset as unused but keep it in the stylesheet
    */
-  moveToDisposedCache(registry: RootRegistry, className: string): void {
+  markAsUnused(registry: RootRegistry, className: string): void {
     const ruleInfo = registry.rules.get(className);
     if (!ruleInfo) return;
 
-    // Move to disposed cache
-    const disposedInfo: DisposedRuleInfo = {
+    // Mark as unused (but keep in registry.rules)
+    const unusedInfo: UnusedRuleInfo = {
       ruleInfo,
-      disposedAt: Date.now(),
-      recentlyUsed: false,
+      markedUnusedAt: Date.now(),
     };
 
-    registry.disposedCache.set(className, disposedInfo);
-
-    // Remove from active registry
-    registry.rules.delete(className);
+    registry.unusedRules.set(className, unusedInfo);
     registry.refCounts.delete(className);
 
     // Update metrics
     if (registry.metrics) {
-      registry.metrics.totalDisposals++;
+      registry.metrics.totalUnused++;
     }
 
-    // If we have a disposed LRU cache, don't schedule DOM cleanup.
-    // Cleanup will occur on LRU eviction or via manual forceCleanup.
-    if ((this.config.cacheSize || 0) > 0) {
-      return;
-    }
-
-    // Schedule lazy cleanup if configured (legacy behavior when no cache)
-    if (this.config.idleCleanup && typeof requestIdleCallback !== 'undefined') {
-      // Use requestIdleCallback for cleanup when available and enabled
-      const timeoutId = requestIdleCallback(() => {
-        this.performActualCleanup(registry, className);
-      }) as ReturnType<typeof requestIdleCallback>;
-
-      registry.cleanupTimeouts.set(className, timeoutId);
-    } else {
-      const cleanupDelay = this.config.cleanupDelay || 5000;
-      if (cleanupDelay > 0) {
-        const timeoutId = setTimeout(() => {
-          this.performActualCleanup(registry, className);
-        }, cleanupDelay);
-
-        registry.cleanupTimeouts.set(className, timeoutId);
-      } else {
-        // Immediate cleanup
-        this.performActualCleanup(registry, className);
-      }
+    // Schedule bulk cleanup if threshold exceeded
+    const threshold = this.config.unusedStylesThreshold || 500;
+    if (registry.unusedRules.size >= threshold) {
+      this.scheduleBulkCleanup(registry);
     }
   }
 
   /**
-   * Restore a ruleset from disposed cache
+   * Restore a ruleset from unused styles
    */
-  restoreFromDisposedCache(
+  restoreFromUnused(
     registry: RootRegistry,
     className: string,
   ): RuleInfo | null {
-    const disposedInfo = registry.disposedCache.get(className);
-    if (!disposedInfo) return null;
+    const unusedInfo = registry.unusedRules.get(className);
+    if (!unusedInfo) return null;
 
-    // Cancel any scheduled cleanup
-    const timeoutId = registry.cleanupTimeouts.get(className);
-    if (timeoutId) {
-      if (
-        this.config.idleCleanup &&
-        typeof cancelIdleCallback !== 'undefined'
-      ) {
-        cancelIdleCallback(timeoutId as unknown as number);
-      } else {
-        clearTimeout(timeoutId);
-      }
-      registry.cleanupTimeouts.delete(className);
-    }
-
-    // Restore to active registry
-    registry.rules.set(className, disposedInfo.ruleInfo);
+    // Remove from unused rules (rules stays in registry.rules)
+    registry.unusedRules.delete(className);
     registry.refCounts.set(className, 1);
-
-    // Remove from disposed cache
-    registry.disposedCache.delete(className);
-
-    // Mark as recently used for optimization
-    disposedInfo.recentlyUsed = true;
 
     // Update metrics
     if (registry.metrics) {
-      registry.metrics.disposedHits++;
+      registry.metrics.unusedHits++;
     }
 
-    return disposedInfo.ruleInfo;
+    return unusedInfo.ruleInfo;
   }
 
   /**
-   * Actually remove CSS rules from DOM (lazy cleanup)
+   * Schedule bulk cleanup of all unused styles
    */
-  private performActualCleanup(
-    registry: RootRegistry,
-    className: string,
-  ): void {
-    const disposedInfo = registry.disposedCache.get(className);
-    if (!disposedInfo) return;
+  private scheduleBulkCleanup(registry: RootRegistry): void {
+    // Don't schedule if already scheduled
+    if (registry.bulkCleanupTimeout) return;
 
-    // Remove from DOM
-    this.deleteRule(registry, disposedInfo.ruleInfo);
+    const performCleanup = () => {
+      this.performBulkCleanup(registry);
+      registry.bulkCleanupTimeout = null;
+    };
 
-    // Remove from disposed cache
-    registry.disposedCache.delete(className);
+    if (this.config.idleCleanup && typeof requestIdleCallback !== 'undefined') {
+      registry.bulkCleanupTimeout = requestIdleCallback(performCleanup);
+    } else {
+      const delay = this.config.bulkCleanupDelay || 5000;
+      registry.bulkCleanupTimeout = setTimeout(performCleanup, delay);
+    }
+  }
 
-    // Clean up timeout tracking
-    registry.cleanupTimeouts.delete(className);
+  /**
+   * Perform bulk cleanup of all unused styles
+   */
+  private performBulkCleanup(registry: RootRegistry): void {
+    if (registry.unusedRules.size === 0) return;
+
+    const classNamesToCleanup = Array.from(registry.unusedRules.keys());
+    let cleanedUpCount = 0;
+
+    // Group by sheet for efficient deletion
+    const rulesBySheet = new Map<
+      number,
+      Array<{ className: string; ruleInfo: RuleInfo }>
+    >();
+
+    for (const className of classNamesToCleanup) {
+      const unusedInfo = registry.unusedRules.get(className);
+      if (!unusedInfo) continue;
+
+      const sheetIndex = unusedInfo.ruleInfo.sheetIndex;
+      if (!rulesBySheet.has(sheetIndex)) {
+        rulesBySheet.set(sheetIndex, []);
+      }
+      rulesBySheet
+        .get(sheetIndex)!
+        .push({ className, ruleInfo: unusedInfo.ruleInfo });
+    }
+
+    // Delete rules from each sheet (in reverse order to preserve indices)
+    for (const [sheetIndex, rulesInSheet] of rulesBySheet) {
+      // Sort by rule index in descending order for safe deletion
+      rulesInSheet.sort((a, b) => b.ruleInfo.ruleIndex - a.ruleInfo.ruleIndex);
+
+      for (const { className, ruleInfo } of rulesInSheet) {
+        this.deleteRule(registry, ruleInfo);
+        registry.rules.delete(className);
+        registry.unusedRules.delete(className);
+        cleanedUpCount++;
+      }
+    }
 
     // Update metrics
     if (registry.metrics) {
-      registry.metrics.domCleanups++;
+      registry.metrics.bulkCleanups++;
+      registry.metrics.stylesCleanedUp += cleanedUpCount;
     }
   }
 
@@ -507,28 +491,8 @@ export class SheetManager {
    * Process the deletion queue for cleanup
    */
   processCleanupQueue(registry: RootRegistry): void {
-    const { deletionQueue } = registry;
-
-    if (deletionQueue.length === 0) {
-      return;
-    }
-
-    // Process deletions
-    const toDelete = [...deletionQueue];
-    deletionQueue.length = 0; // Clear queue
-
-    for (const className of toDelete) {
-      // Check if still referenced
-      const refCount = registry.refCounts.get(className) || 0;
-
-      if (refCount <= 0) {
-        // Move to disposed cache
-        const ruleInfo = registry.rules.get(className);
-        if (ruleInfo) {
-          this.moveToDisposedCache(registry, className);
-        }
-      }
-    }
+    // This method is kept for compatibility but the logic has changed
+    // We no longer use a deletion queue, instead marking styles as unused immediately
   }
 
   /**
@@ -579,11 +543,11 @@ export class SheetManager {
       registry.metrics = {
         hits: 0,
         misses: 0,
-        disposedHits: 0,
-        evictions: 0,
+        unusedHits: 0,
+        bulkCleanups: 0,
         totalInsertions: 0,
-        totalDisposals: 0,
-        domCleanups: 0,
+        totalUnused: 0,
+        stylesCleanedUp: 0,
         startTime: Date.now(),
       };
     }
@@ -599,18 +563,18 @@ export class SheetManager {
       return;
     }
 
-    // Clear all cleanup timeouts
-    for (const timeoutId of registry.cleanupTimeouts.values()) {
+    // Cancel any scheduled bulk cleanup
+    if (registry.bulkCleanupTimeout) {
       if (
         this.config.idleCleanup &&
         typeof cancelIdleCallback !== 'undefined'
       ) {
-        cancelIdleCallback(timeoutId as unknown as number);
+        cancelIdleCallback(registry.bulkCleanupTimeout as unknown as number);
       } else {
-        clearTimeout(timeoutId);
+        clearTimeout(registry.bulkCleanupTimeout);
       }
+      registry.bulkCleanupTimeout = null;
     }
-    registry.cleanupTimeouts.clear();
 
     // Remove all sheets
     for (const sheet of registry.sheets) {
