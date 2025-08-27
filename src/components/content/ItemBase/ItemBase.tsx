@@ -5,6 +5,7 @@ import {
   forwardRef,
   ReactNode,
   useCallback,
+  useEffect,
   useMemo,
   useState,
 } from 'react';
@@ -510,26 +511,23 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     setIsLabelOverflowed(hasOverflow);
   }, []);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (isAutoTooltipEnabled) {
       checkLabelOverflow();
     }
   }, [children, isAutoTooltipEnabled]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!isAutoTooltipEnabled) return;
 
     const label = mergedLabelRef.current;
     if (!label) return;
 
-    // Initial check
-    checkLabelOverflow();
-
     const resizeObserver = new ResizeObserver(checkLabelOverflow);
     resizeObserver.observe(label);
 
     return () => resizeObserver.disconnect();
-  }, [isAutoTooltipEnabled, mergedLabelRef]);
+  }, [mergedLabelRef.current]);
 
   const finalLabelProps = useMemo(() => {
     return {
