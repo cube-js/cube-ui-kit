@@ -527,7 +527,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     resizeObserver.observe(label);
 
     return () => resizeObserver.disconnect();
-  }, [mergedLabelRef.current]);
+  }, [mergedLabelRef.current, isAutoTooltipEnabled]);
 
   const finalLabelProps = useMemo(() => {
     return {
