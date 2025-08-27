@@ -515,7 +515,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     if (isAutoTooltipEnabled) {
       checkLabelOverflow();
     }
-  }, [children, isAutoTooltipEnabled]);
+  }, [children, isAutoTooltipEnabled, checkLabelOverflow]);
 
   useEffect(() => {
     if (!isAutoTooltipEnabled) return;
@@ -527,7 +527,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     resizeObserver.observe(label);
 
     return () => resizeObserver.disconnect();
-  }, [mergedLabelRef.current, isAutoTooltipEnabled]);
+  }, [mergedLabelRef.current, isAutoTooltipEnabled, checkLabelOverflow]);
 
   const finalLabelProps = useMemo(() => {
     return {
