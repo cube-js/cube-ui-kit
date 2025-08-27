@@ -4,6 +4,7 @@ import {
   ForwardedRef,
   forwardRef,
   ReactNode,
+  useCallback,
   useMemo,
   useState,
 } from 'react';
@@ -497,7 +498,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
   const mergedLabelRef = useCombinedRefs((labelProps as any)?.ref);
   const [isLabelOverflowed, setIsLabelOverflowed] = useState(false);
 
-  const checkLabelOverflow = () => {
+  const checkLabelOverflow = useCallback(() => {
     const label = mergedLabelRef.current;
     if (!label) {
       setIsLabelOverflowed(false);
@@ -507,7 +508,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     const hasOverflow = label.scrollWidth > label.clientWidth;
 
     setIsLabelOverflowed(hasOverflow);
-  };
+  }, []);
 
   useLayoutEffect(() => {
     if (isAutoTooltipEnabled) {
@@ -528,7 +529,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     resizeObserver.observe(label);
 
     return () => resizeObserver.disconnect();
-  }, [mergedLabelRef.current, isAutoTooltipEnabled]);
+  }, [isAutoTooltipEnabled, mergedLabelRef]);
 
   const finalLabelProps = useMemo(() => {
     return {
