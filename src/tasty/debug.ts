@@ -100,6 +100,28 @@ export const tastyDebug = {
   },
 
   /**
+   * Log CSS for a specific tasty class (e.g., 't24') to console
+   */
+  logCSSForClass(className: string): void {
+    if (!className.match(/^t\d+$/)) {
+      console.warn(
+        `"${className}" doesn't look like a tasty class. Expected format: t{number}`,
+      );
+    }
+    const css = this.getCSSForClass(className);
+    this.logCSS(css, `CSS for class "${className}"`);
+  },
+
+  /**
+   * Log CSS for multiple tasty classes to console
+   */
+  logCSSForClasses(classNames: string[]): void {
+    const css = this.getCSSForClasses(classNames);
+    const title = `CSS for classes [${classNames.join(', ')}]`;
+    this.logCSS(css, title);
+  },
+
+  /**
    * Inspect an element by CSS selector and get its tasty CSS
    */
   inspectElement(selector: string): string {
