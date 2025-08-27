@@ -12,20 +12,27 @@ function prettifyCSS(css: string): string {
     return '';
   }
 
-  let formatted = css
-    // Normalize whitespace first
-    .replace(/\s+/g, ' ')
-    .trim()
-    // Add newlines after opening braces
-    .replace(/\s*\{\s*/g, ' {\n')
-    // Add newlines after semicolons
-    .replace(/;\s*/g, ';\n')
-    // Add newlines before closing braces
-    .replace(/\s*\}\s*/g, '\n}\n')
-    // Handle comma-separated selectors (but not inside strings)
-    .replace(/,(?![^"]*"[^"]*$)/g, ',\n')
-    // Clean up media queries
-    .replace(/@media\s+([^{]+?)\s*\{/g, '@media $1 {');
+  // First, normalize whitespace but preserve structure
+  let formatted = css.replace(/\s+/g, ' ').trim();
+
+  // Add newlines after opening braces
+  formatted = formatted.replace(/\s*\{\s*/g, ' {\n');
+
+  // Add newlines after semicolons (but not inside strings or functions)
+  formatted = formatted.replace(/;(?![^"']*["'][^"']*$)(?![^()]*\))/g, ';\n');
+
+  // Add newlines before closing braces
+  formatted = formatted.replace(/\s*\}\s*/g, '\n}\n');
+
+  // Handle comma-separated selectors (only outside of property values)
+  // This regex looks for commas that are:
+  // 1. Not inside quotes
+  // 2. Not inside parentheses (CSS functions)
+  // 3. Not followed by a colon (not in a property value)
+  formatted = formatted.replace(
+    /,(?![^"']*["'][^"']*$)(?![^()]*\))(?=.*:.*\{|.*\{)/g,
+    ',\n',
+  );
 
   // Process line by line for proper indentation
   const lines = formatted.split('\n');
@@ -54,12 +61,17 @@ function prettifyCSS(css: string): string {
     return result;
   });
 
-  // Clean up the result
-  return formattedLines
+  // Clean up the result and ensure proper spacing
+  let result = formattedLines
     .filter((line) => line.trim()) // Remove empty lines
     .join('\n')
     .replace(/\n{3,}/g, '\n\n') // Max 2 consecutive newlines
     .trim();
+
+  // Final cleanup: ensure single spaces in function calls
+  result = result.replace(/,\s+/g, ', ');
+
+  return result;
 }
 
 /**
