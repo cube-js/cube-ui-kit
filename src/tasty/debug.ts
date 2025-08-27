@@ -5,6 +5,64 @@
 import { getCssText, getCssTextForNode, injector } from './injector';
 
 /**
+ * Pretty-print CSS with proper indentation and formatting
+ */
+function prettifyCSS(css: string): string {
+  if (!css || css.trim() === '') {
+    return '';
+  }
+
+  let formatted = css
+    // Normalize whitespace first
+    .replace(/\s+/g, ' ')
+    .trim()
+    // Add newlines after opening braces
+    .replace(/\s*\{\s*/g, ' {\n')
+    // Add newlines after semicolons
+    .replace(/;\s*/g, ';\n')
+    // Add newlines before closing braces
+    .replace(/\s*\}\s*/g, '\n}\n')
+    // Handle comma-separated selectors (but not inside strings)
+    .replace(/,(?![^"]*"[^"]*$)/g, ',\n')
+    // Clean up media queries
+    .replace(/@media\s+([^{]+?)\s*\{/g, '@media $1 {');
+
+  // Process line by line for proper indentation
+  const lines = formatted.split('\n');
+  let indentLevel = 0;
+  const indentSize = 2;
+
+  const formattedLines = lines.map((line) => {
+    const trimmed = line.trim();
+    if (!trimmed) return '';
+
+    // Handle closing braces - decrease indent first
+    if (trimmed === '}') {
+      indentLevel = Math.max(0, indentLevel - 1);
+      return ' '.repeat(indentLevel * indentSize) + trimmed;
+    }
+
+    // Current line with proper indentation
+    const indent = ' '.repeat(indentLevel * indentSize);
+    let result = indent + trimmed;
+
+    // Handle opening braces - increase indent for next line
+    if (trimmed.endsWith('{')) {
+      indentLevel++;
+    }
+
+    return result;
+  });
+
+  // Clean up the result
+  return formattedLines
+    .filter((line) => line.trim()) // Remove empty lines
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n') // Max 2 consecutive newlines
+    .trim();
+}
+
+/**
  * Debug utilities for inspecting tasty styles in runtime applications
  */
 export const tastyDebug = {
@@ -17,14 +75,16 @@ export const tastyDebug = {
         `"${className}" doesn't look like a tasty class. Expected format: t{number}`,
       );
     }
-    return injector.instance.getCssTextForClasses([className]);
+    const css = injector.instance.getCssTextForClasses([className]);
+    return prettifyCSS(css);
   },
 
   /**
    * Get CSS for multiple tasty classes
    */
   getCSSForClasses(classNames: string[]): string {
-    return injector.instance.getCssTextForClasses(classNames);
+    const css = injector.instance.getCssTextForClasses(classNames);
+    return prettifyCSS(css);
   },
 
   /**
@@ -41,9 +101,10 @@ export const tastyDebug = {
 
     const css = getCssTextForNode(element);
     if (css) {
-      console.log('Generated CSS:', css);
+      const prettified = prettifyCSS(css);
+      console.log('Generated CSS:\n' + prettified);
       console.groupEnd();
-      return css;
+      return prettified;
     } else {
       console.log('No tasty CSS found for this element');
       console.groupEnd();
@@ -64,9 +125,10 @@ export const tastyDebug = {
 
     const css = getCssTextForNode(element);
     if (css) {
-      console.log('Generated CSS:', css);
+      const prettified = prettifyCSS(css);
+      console.log('Generated CSS:\n' + prettified);
       console.groupEnd();
-      return css;
+      return prettified;
     } else {
       console.log('No tasty CSS found for this element');
       console.groupEnd();
@@ -146,16 +208,8 @@ export const tastyDebug = {
     }
 
     console.group(`🎨 ${title}`);
-
-    // Try to format CSS for better readability
-    const formatted = css
-      .replace(/\{/g, ' {\n  ')
-      .replace(/;/g, ';\n  ')
-      .replace(/\}/g, '\n}\n')
-      .replace(/,/g, ',\n')
-      .replace(/\n\s*\n/g, '\n'); // Remove extra empty lines
-
-    console.log(formatted);
+    const prettified = prettifyCSS(css);
+    console.log(prettified);
     console.groupEnd();
   },
 
@@ -199,14 +253,14 @@ export const tastyDebug = {
     const result = {
       element,
       tastyClasses,
-      css: fullCSS,
+      css: prettifyCSS(fullCSS),
       breakdown,
     };
 
     console.group(`🔍 Detailed Tasty Inspection`);
     console.log('Element:', element);
     console.log('Tasty classes found:', tastyClasses);
-    console.log('Total CSS for element tree:', fullCSS);
+    console.log('Total CSS for element tree:\n' + prettifyCSS(fullCSS));
     console.log('CSS breakdown by class:', breakdown);
     console.groupEnd();
 
