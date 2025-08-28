@@ -519,7 +519,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
   }, [children, isAutoTooltipEnabled, checkLabelOverflow]);
 
   useEffect(() => {
-    if (!isAutoTooltipEnabled) return;
+    if (!isAutoTooltipEnabled || typeof children !== 'string') return;
 
     const label = mergedLabelRef.current;
     if (!label) return;
