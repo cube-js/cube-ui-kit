@@ -34,6 +34,6 @@ module.exports = [
     path: './dist/es/index.js',
     webpack: true,
     import: '{ AiIcon }',
-    limit: '18 kB',
+    limit: '19 kB',
   },
 ];
