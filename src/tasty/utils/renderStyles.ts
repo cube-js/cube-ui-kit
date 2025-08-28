@@ -7,6 +7,7 @@ import { Lru } from '../parser/lru';
 import { createStyle, STYLE_HANDLER_MAP } from '../styles';
 import { Styles } from '../styles/types';
 
+import { getModCombinationsIterative } from './getModCombinations';
 import {
   mediaWrapper,
   normalizeStyleZones,
@@ -200,6 +201,17 @@ function hasConflictingAttributeSelectors(
   return false;
 }
 
+/**
+ * Create a conflict checker function that uses precomputed attribute maps
+ * for efficient conflict detection during combination generation
+ */
+function createAttributeConflictChecker(
+  parsedMods: Map<string, ParsedAttributeSelector | null>,
+): (combination: string[]) => boolean {
+  return (combination: string[]) =>
+    hasConflictingAttributeSelectors(combination, parsedMods);
+}
+
 // Interface for precomputed attribute maps to optimize not selector generation
 interface AttributeMaps {
   allAttributes: Map<string, Set<string>>;
@@ -372,10 +384,34 @@ function explodeHandlerResult(
         )
       : [selectorSuffix];
 
-    // Create logical rules for each breakpoint × selector combination
-    for (const [breakpointIdx, declarations] of breakpointGroups) {
+    // Early identical-breakpoint coalescing: skip duplicate declarations
+    const seenDeclarations = new Map<string, number>();
+
+    // Process breakpoints in order to prefer lower breakpoint indices
+    const sortedBreakpoints = Array.from(breakpointGroups.entries()).sort(
+      ([a], [b]) => a - b,
+    );
+
+    for (const [breakpointIdx, declarations] of sortedBreakpoints) {
       if (Object.keys(declarations).length === 0) continue;
 
+      // Create a stable hash key for identical declarations
+      const declarationKeys = Object.keys(declarations).sort();
+      const declarationHash = declarationKeys
+        .map((key) => `${key}:${declarations[key]}`)
+        .join(';');
+
+      const existingBreakpointIdx = seenDeclarations.get(declarationHash);
+      if (existingBreakpointIdx !== undefined) {
+        // Skip this breakpoint as it has identical declarations to a previous one
+        // The CSS cascade will handle the responsive behavior correctly
+        continue;
+      }
+
+      // Mark this declaration set as seen
+      seenDeclarations.set(declarationHash, breakpointIdx);
+
+      // Create logical rules for this unique declaration set
       for (const suffix of suffixes) {
         logicalRules.push({
           selectorSuffix: suffix,
@@ -626,21 +662,15 @@ export function renderStyles(
             // Precompute attribute maps once for all combinations
             const attributeMaps = buildAttributeMaps([], allModsArray);
 
-            const combinations: string[][] = [[]];
-            for (let i = 0; i < allModsArray.length; i++) {
-              const currentLength = combinations.length;
-              for (let j = 0; j < currentLength; j++) {
-                const newCombination = [...combinations[j], allModsArray[i]];
-                if (
-                  !hasConflictingAttributeSelectors(
-                    newCombination,
-                    attributeMaps.parsedMods,
-                  )
-                ) {
-                  combinations.push(newCombination);
-                }
-              }
-            }
+            // Generate combinations with conflict-aware pruning
+            const conflictChecker = createAttributeConflictChecker(
+              attributeMaps.parsedMods,
+            );
+            const combinations = getModCombinationsIterative(
+              allModsArray,
+              true,
+              conflictChecker,
+            );
 
             combinations.forEach((modCombination) => {
               const stateProps: Record<string, any> = {};
@@ -734,24 +764,15 @@ export function renderStyles(
           // Precompute attribute maps once for all combinations
           const attributeMaps = buildAttributeMaps([], allModsArray);
 
-          const combinations: string[][] = [[]]; // Start with empty combination
-
-          // Generate all combinations (including empty)
-          for (let i = 0; i < allModsArray.length; i++) {
-            const currentLength = combinations.length;
-            for (let j = 0; j < currentLength; j++) {
-              const newCombination = [...combinations[j], allModsArray[i]];
-              // Skip combinations with conflicting attribute selectors
-              if (
-                !hasConflictingAttributeSelectors(
-                  newCombination,
-                  attributeMaps.parsedMods,
-                )
-              ) {
-                combinations.push(newCombination);
-              }
-            }
-          }
+          // Generate combinations with conflict-aware pruning
+          const conflictChecker = createAttributeConflictChecker(
+            attributeMaps.parsedMods,
+          );
+          const combinations = getModCombinationsIterative(
+            allModsArray,
+            true,
+            conflictChecker,
+          );
 
           combinations.forEach((modCombination) => {
             const stateProps: Record<string, any> = {};
@@ -1016,21 +1037,15 @@ export function renderStylesForGlobal(
           // Precompute attribute maps once for all combinations
           const attributeMaps = buildAttributeMaps([], allModsArray);
 
-          const combinations: string[][] = [[]];
-          for (let a = 0; a < allModsArray.length; a++) {
-            const currentLength = combinations.length;
-            for (let b = 0; b < currentLength; b++) {
-              const newCombination = [...combinations[b], allModsArray[a]];
-              if (
-                !hasConflictingAttributeSelectors(
-                  newCombination,
-                  attributeMaps.parsedMods,
-                )
-              ) {
-                combinations.push(newCombination);
-              }
-            }
-          }
+          // Generate combinations with conflict-aware pruning
+          const conflictChecker = createAttributeConflictChecker(
+            attributeMaps.parsedMods,
+          );
+          const combinations = getModCombinationsIterative(
+            allModsArray,
+            true,
+            conflictChecker,
+          );
 
           combinations.forEach((modCombination) => {
             const stateProps: Record<string, any> = {};
@@ -1115,24 +1130,15 @@ export function renderStylesForGlobal(
         // Precompute attribute maps once for all combinations
         const attributeMaps = buildAttributeMaps([], allModsArray);
 
-        const combinations: string[][] = [[]]; // Start with empty combination
-
-        // Generate all combinations (including empty)
-        for (let i = 0; i < allModsArray.length; i++) {
-          const currentLength = combinations.length;
-          for (let j = 0; j < currentLength; j++) {
-            const newCombination = [...combinations[j], allModsArray[i]];
-            // Skip combinations with conflicting attribute selectors
-            if (
-              !hasConflictingAttributeSelectors(
-                newCombination,
-                attributeMaps.parsedMods,
-              )
-            ) {
-              combinations.push(newCombination);
-            }
-          }
-        }
+        // Generate combinations with conflict-aware pruning
+        const conflictChecker = createAttributeConflictChecker(
+          attributeMaps.parsedMods,
+        );
+        const combinations = getModCombinationsIterative(
+          allModsArray,
+          true,
+          conflictChecker,
+        );
 
         combinations.forEach((modCombination) => {
           const stateProps: Record<string, any> = {};

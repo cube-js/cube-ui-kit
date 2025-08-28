@@ -3,7 +3,6 @@ import { Styles } from '../styles/types';
 
 import { cacheWrapper } from './cache-wrapper';
 import { camelToKebab } from './case-converter';
-import { getModCombinations } from './getModCombinations';
 
 import type { ProcessedStyle, StyleDetails } from '../parser/types';
 
@@ -46,16 +45,6 @@ export interface StyleStateData {
   notMods: string[];
 }
 
-export interface ParsedStyle {
-  value: ResponsiveStyleValue;
-  values: string[];
-  all: string[];
-  colors: string[];
-  color?: string;
-  /** The list of mods to apply */
-  mods: string[];
-}
-
 export interface ParsedColor {
   color?: string;
   name?: string;
@@ -66,44 +55,9 @@ export type StyleStateDataList = StyleStateData[];
 
 export type StyleStateDataListMap = { [key: string]: StyleStateDataList };
 
-/** An object that describes a relation between specific modifiers and style value. **/
-export interface StyleState {
-  /** The list of mods to apply */
-  mods: string[];
-  /** The list of **not** mods to apply (e.g. `:not(:hover)`) */
-  notMods: string[];
-  /** The value to apply */
-  value: StyleMap;
-}
-
-export interface RenderedStyleState {
-  /** The list of mods to apply */
-  mods: string[];
-  /** The list of **not** mods to apply (e.g. `:not(:hover)`) */
-  notMods: string[];
-  /** The value to apply */
-  value: string;
-}
-
-export type ComputeUnit = string | (string | string[])[];
-
-export type StyleStateList = StyleState[];
-
-export type RenderedStyleStateList = RenderedStyleState[];
-
 export type StyleMap = { [key: string]: ResponsiveStyleValue };
 
-export type StyleStateMap = { [key: string]: StyleState };
-
-export type RenderedStyleStateMap = { [key: string]: RenderedStyleState };
-
-export type StyleStateMapList = StyleStateMap[];
-
-export type RenderedStyleStateMapList = {
-  [key: string]: RenderedStyleStateMap;
-};
-
-export type StyleStateListMap = { [key: string]: StyleStateList };
+export type StyleStateMap = { [key: string]: StyleStateData };
 
 const devMode = process.env.NODE_ENV !== 'production';
 
@@ -140,20 +94,6 @@ export const CUSTOM_UNITS = {
 };
 
 export const DIRECTIONS = ['top', 'right', 'bottom', 'left'];
-
-export function createRule(
-  prop: string,
-  value: StyleValue,
-  selector?: string,
-): string {
-  if (value == null) return '';
-
-  if (selector) {
-    return `${selector} { ${prop}: ${value}; }\n`;
-  }
-
-  return `${prop}: ${value};\n`;
-}
 
 const MOD_NAME_CACHE = new Map();
 
@@ -206,31 +146,6 @@ export function parseStyle(value: StyleValue): ProcessedStyle {
   return __tastyParser.process(str);
 }
 
-// Utility: flatten groups into merged token lists (closest to legacy shape).
-export function flattenStyleDetails(processed: ProcessedStyle) {
-  const merged = {
-    values: [] as string[],
-    mods: [] as string[],
-    colors: [] as string[],
-    all: [] as string[],
-    value: processed.output,
-    color: undefined as string | undefined,
-  };
-
-  processed.groups.forEach((g, idx) => {
-    merged.values.push(...g.values);
-    merged.mods.push(...g.mods);
-    merged.colors.push(...g.colors);
-    merged.all.push(...g.all);
-    if (idx < processed.groups.length - 1) {
-      merged.all.push(',');
-    }
-  });
-
-  merged.color = merged.colors[0];
-  return merged;
-}
-
 /**
  * Parse color. Find it value, name and opacity.
  */
@@ -271,31 +186,6 @@ export function parseColor(val: string, ignoreError = false): ParsedColor {
   };
 }
 
-export function rgbColorProp(
-  colorName: string,
-  opacity: number,
-  fallbackColorName?: Function,
-  fallbackValue?: Function,
-) {
-  const fallbackValuePart = fallbackValue ? `, ${fallbackValue}` : '';
-
-  return `rgb(var(--${colorName}-color-rgb${
-    fallbackColorName
-      ? `, var(--${fallbackColorName}-color-rgb, ${fallbackValuePart})`
-      : fallbackValuePart
-  }) / ${opacity})`;
-}
-
-export function colorProp(colorName, fallbackColorName, fallbackValue) {
-  const fallbackValuePart = fallbackValue ? `, ${fallbackValue}` : '';
-
-  return `var(--${colorName}-color${
-    fallbackColorName
-      ? `, var(--${fallbackColorName}${fallbackValuePart})`
-      : fallbackValuePart
-  })`;
-}
-
 export function strToRgb(color, ignoreAlpha = false) {
   if (!color) return undefined;
 
@@ -334,31 +224,8 @@ export function hexToRgb(hex) {
   return null;
 }
 
-export function transferMods(mods, from, to) {
-  mods.forEach((mod) => {
-    if (from.includes(mod)) {
-      to.push(mod);
-      from.splice(from.indexOf(mod), 1);
-    }
-  });
-}
-
 export function filterMods(mods, allowedMods) {
   return mods.filter((mod) => allowedMods.includes(mod));
-}
-
-export function customUnit(value, unit) {
-  const converter = CUSTOM_UNITS[unit];
-
-  if (typeof converter === 'function') {
-    return converter(value);
-  }
-
-  if (value === '1' || value === 1) {
-    return converter;
-  }
-
-  return `(${value} * ${converter})`;
 }
 
 export function extendStyles(defaultStyles, newStyles) {
@@ -415,139 +282,6 @@ export function extractStyles(
   }, {});
 
   return styles;
-}
-
-/**
- * Compile states to finite CSS with selectors.
- * State values should contain a string value with CSS style list.
- * @param {string} selector
- * @param {StyleStateList|StyleStateMapList} states
- * @param {string} suffix
- */
-export function applyStates(selector: string, states, suffix = '') {
-  return states.reduce((css, state) => {
-    if (!state.value) return css;
-
-    const modifiers = `${(state.mods || []).map(getModSelector).join('')}${(
-      state.notMods || []
-    )
-      .map((mod) => {
-        let selector = getModSelector(mod);
-
-        if (selector.startsWith(':not(')) {
-          return selector.slice(5, -1);
-        } else {
-          return `:not(${selector})`;
-        }
-      })
-      .join('')}`;
-
-    // TODO: replace `replace()` a REAL hotfix
-    return `${css}${selector}${modifiers}${suffix} {\n${state.value.replace(
-      /^&&/,
-      '&',
-    )}\n}`;
-  }, '');
-}
-
-/**
- * Replace state values with new ones.
- * For example, if you want to replace initial values with finite CSS code.
- */
-export function replaceStateValues(
-  states: StyleStateList | StyleStateMapList,
-  replaceFn: (value: string) => string,
-): RenderedStyleStateList | RenderedStyleStateMapList {
-  const cache = new Map();
-
-  states.forEach((state) => {
-    if (!cache.get(state.value)) {
-      cache.set(state.value, replaceFn(state.value));
-    }
-
-    state.value = cache.get(state.value);
-  });
-
-  return states as unknown as
-    | RenderedStyleStateList
-    | RenderedStyleStateMapList;
-}
-
-/**
- * Get all presented modes from the style state list.
- */
-export function getModesFromStyleStateList(stateList: StyleStateList) {
-  return stateList.reduce((list, state) => {
-    state.mods.forEach((mod) => {
-      if (!list.includes(mod)) {
-        list.push(mod);
-      }
-    });
-
-    return list;
-  }, [] as string[]);
-}
-
-/**
- * Get all presented modes from the style state map list.
- */
-export function getModesFromStyleStateListMap(
-  stateListMap: StyleStateMapList,
-): string[] {
-  return Object.keys(stateListMap).reduce((list: string[], style) => {
-    const stateList = stateListMap[style];
-
-    getModesFromStyleStateList(stateList).forEach((mod) => {
-      if (!list.includes(mod)) {
-        list.push(mod);
-      }
-    });
-
-    return list;
-  }, []);
-}
-
-/**
- * Convert the style map to the normalized style state list.
- */
-export function styleMapToStyleMapStateList(
-  styleMap: StyleMap,
-  filterKeys?: string[],
-): StyleStateList {
-  const keys = filterKeys || Object.keys(styleMap);
-
-  if (!keys.length) return [];
-
-  const stateDataListMap = {};
-
-  let allModsSet: Set<string> = new Set();
-
-  keys.forEach((style) => {
-    stateDataListMap[style] = styleStateMapToStyleStateDataList(
-      styleMap[style],
-    );
-    stateDataListMap[style].mods.forEach(allModsSet.add, allModsSet);
-  });
-
-  const allModsArr: string[] = Array.from(allModsSet);
-
-  const styleStateList: StyleStateList = [];
-
-  getModCombinations(allModsArr, true).forEach((combination) => {
-    styleStateList.push({
-      mods: combination,
-      notMods: allModsArr.filter((mod) => !combination.includes(mod)),
-      value: keys.reduce((map, key) => {
-        map[key] = stateDataListMap[key].states.find((state) => {
-          return computeState(state.model, (mod) => combination.includes(mod));
-        }).value;
-
-        return map;
-      }, {}),
-    });
-  });
-
-  return styleStateList;
 }
 
 const STATES_REGEXP =
