@@ -105,19 +105,40 @@ export class StyleInjector {
       : generateClassName(registry.classCounter++);
 
     // If a different pre-extracted class was used in rules, rewrite selectors to the final class
+    // Also increase specificity for class-based selectors by duplicating the class
     const rulesToInsert =
       generatedClass && generatedClass !== className
         ? rules.map((r) => {
             if (r.selector.startsWith('.' + generatedClass)) {
+              const newSelector =
+                '.' + className + r.selector.slice(generatedClass.length + 1);
+              // Increase specificity by duplicating the class for class-based selectors
+              const specificSelector =
+                newSelector.startsWith('.' + className) &&
+                /^\.t\d+/.test(newSelector)
+                  ? '.' + className + newSelector
+                  : newSelector;
               return {
                 ...r,
-                selector:
-                  '.' + className + r.selector.slice(generatedClass.length + 1),
+                selector: specificSelector,
               } as StyleRule;
             }
             return r;
           })
-        : rules;
+        : rules.map((r) => {
+            // Increase specificity for class-based selectors by duplicating the class
+            if (r.selector.startsWith('.') && /^\.t\d+/.test(r.selector)) {
+              const classMatch = r.selector.match(/^\.t\d+/);
+              if (classMatch) {
+                const baseClass = classMatch[0];
+                return {
+                  ...r,
+                  selector: baseClass + r.selector,
+                } as StyleRule;
+              }
+            }
+            return r;
+          });
 
     // Insert rules using existing sheet manager
     const ruleInfo = this.sheetManager.insertRule(
