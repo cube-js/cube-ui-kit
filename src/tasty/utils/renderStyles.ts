@@ -28,113 +28,6 @@ function stateMapHasResponsiveArrays(value: any): boolean {
   return Object.values(value).some((v) => Array.isArray(v));
 }
 
-// Convert a state-map-of-arrays into an array-of-state-maps of length zoneNumber
-// Example:
-//   { '': ['1x', '2x'], large: [null, '3x'] } →
-//   [ { '': '1x', large: null }, { '': '2x', large: '3x' } ]
-function stateMapToArrayOfStateMaps(
-  value: Record<string, any>,
-  zoneNumber: number,
-): Array<Record<string, any>> {
-  // Short-circuit for single zone - avoid array allocation
-  if (zoneNumber === 1) {
-    const singleMap: Record<string, any> = {};
-    for (const [state, stateValue] of Object.entries(value)) {
-      if (Array.isArray(stateValue)) {
-        // Take the first value from the array or null if empty
-        singleMap[state] = stateValue.length > 0 ? stateValue[0] : null;
-      } else {
-        singleMap[state] = stateValue;
-      }
-    }
-    return [singleMap];
-  }
-
-  const result: Array<Record<string, any>> = Array.from(
-    { length: zoneNumber },
-    () => ({}),
-  );
-
-  for (const [state, stateValue] of Object.entries(value)) {
-    const perZone = Array.isArray(stateValue)
-      ? (normalizeStyleZones(stateValue, zoneNumber) as any[])
-      : Array(zoneNumber).fill(stateValue);
-
-    for (let i = 0; i < zoneNumber; i++) {
-      const v = perZone[i];
-      // Always include the state in the result, even if null or empty
-      // This preserves the state structure across all breakpoints
-      result[i][state] = v;
-    }
-  }
-
-  return result;
-}
-
-// Normalize an array that may contain plain values and/or state maps into
-// an array-of-state-maps of fixed length zoneNumber with propagation.
-// Example:
-//   ['1x', { '': '1x', large: '2x' }] (zoneNumber=2) →
-//   [ { '': '1x' }, { '': '1x', large: '2x' } ]
-function normalizeArrayWithStateMaps(
-  valueArray: any[],
-  zoneNumber: number,
-): Array<Record<string, any>> {
-  // Short-circuit for single zone - avoid array propagation and mapping
-  if (zoneNumber === 1) {
-    const firstEntry = valueArray.length > 0 ? valueArray[0] : null;
-    if (
-      firstEntry &&
-      typeof firstEntry === 'object' &&
-      !Array.isArray(firstEntry)
-    ) {
-      return [firstEntry as Record<string, any>];
-    }
-    return [{ '': firstEntry }];
-  }
-
-  const propagated = normalizeStyleZones(
-    valueArray as any,
-    zoneNumber,
-  ) as any[];
-
-  // Trim trailing null/undefined entries to reduce processing
-  let lastNonNullIndex = propagated.length - 1;
-  while (lastNonNullIndex >= 0 && propagated[lastNonNullIndex] == null) {
-    lastNonNullIndex--;
-  }
-
-  // If all entries are null, return minimal array
-  if (lastNonNullIndex < 0) {
-    return Array.from({ length: zoneNumber }, () => ({ '': null }));
-  }
-
-  // Process only up to the last non-null entry, then fill the rest with the last value
-  const result: Array<Record<string, any>> = [];
-  let lastProcessedEntry: Record<string, any> | null = null;
-
-  for (let i = 0; i <= lastNonNullIndex; i++) {
-    const entry = propagated[i];
-    let processedEntry: Record<string, any>;
-
-    if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
-      processedEntry = entry as Record<string, any>;
-    } else {
-      processedEntry = { '': entry };
-    }
-
-    result.push(processedEntry);
-    lastProcessedEntry = processedEntry;
-  }
-
-  // Fill remaining slots with the last processed entry (CSS cascade behavior)
-  for (let i = lastNonNullIndex + 1; i < zoneNumber; i++) {
-    result.push(lastProcessedEntry || { '': null });
-  }
-
-  return result;
-}
-
 export interface StyleResult {
   selector: string;
   declarations: string;
@@ -592,6 +485,131 @@ function generateLogicalRules(
   const zones = pointsToZones(responsive || []);
   const allLogicalRules: LogicalRule[] = [];
 
+  // Cache for normalizeStyleZones results to avoid repeated computation
+  // WeakMap allows automatic cleanup when arrays are garbage collected
+  const normalizeCache = new WeakMap<any[], Map<number, any>>();
+
+  // Helper function to get cached normalizeStyleZones result
+  function cachedNormalizeStyleZones(value: any, zoneNumber: number): any {
+    // Only cache for arrays - other types are fast to process
+    if (!Array.isArray(value)) {
+      return normalizeStyleZones(value, zoneNumber);
+    }
+
+    // Check if we have a cache for this array reference
+    let zoneCache = normalizeCache.get(value);
+    if (!zoneCache) {
+      zoneCache = new Map<number, any>();
+      normalizeCache.set(value, zoneCache);
+    }
+
+    // Check if we have a cached result for this zone count
+    let result = zoneCache.get(zoneNumber);
+    if (result === undefined) {
+      result = normalizeStyleZones(value, zoneNumber);
+      zoneCache.set(zoneNumber, result);
+    }
+
+    return result;
+  }
+
+  // Local versions of helpers that leverage cachedNormalizeStyleZones
+  function stateMapToArrayOfStateMapsLocal(
+    value: Record<string, any>,
+    zoneNumber: number,
+  ): Array<Record<string, any>> {
+    // Short-circuit for single zone - avoid array allocation
+    if (zoneNumber === 1) {
+      const singleMap: Record<string, any> = {};
+      for (const [state, stateValue] of Object.entries(value)) {
+        if (Array.isArray(stateValue)) {
+          // Take the first value from the array or null if empty
+          singleMap[state] = stateValue.length > 0 ? stateValue[0] : null;
+        } else {
+          singleMap[state] = stateValue;
+        }
+      }
+      return [singleMap];
+    }
+
+    const result: Array<Record<string, any>> = Array.from(
+      { length: zoneNumber },
+      () => ({}),
+    );
+
+    for (const [state, stateValue] of Object.entries(value)) {
+      const perZone = Array.isArray(stateValue)
+        ? (cachedNormalizeStyleZones(stateValue, zoneNumber) as any[])
+        : Array(zoneNumber).fill(stateValue);
+
+      for (let i = 0; i < zoneNumber; i++) {
+        const v = perZone[i];
+        result[i][state] = v;
+      }
+    }
+
+    return result;
+  }
+
+  function normalizeArrayWithStateMapsLocal(
+    valueArray: any[],
+    zoneNumber: number,
+  ): Array<Record<string, any>> {
+    // Short-circuit for single zone - avoid array propagation and mapping
+    if (zoneNumber === 1) {
+      const firstEntry = valueArray.length > 0 ? valueArray[0] : null;
+      if (
+        firstEntry &&
+        typeof firstEntry === 'object' &&
+        !Array.isArray(firstEntry)
+      ) {
+        return [firstEntry as Record<string, any>];
+      }
+      return [{ '': firstEntry }];
+    }
+
+    const propagated = cachedNormalizeStyleZones(
+      valueArray as any,
+      zoneNumber,
+    ) as any[];
+
+    // Trim trailing null/undefined entries to reduce processing
+    let lastNonNullIndex = propagated.length - 1;
+    while (lastNonNullIndex >= 0 && propagated[lastNonNullIndex] == null) {
+      lastNonNullIndex--;
+    }
+
+    // If all entries are null, return minimal array
+    if (lastNonNullIndex < 0) {
+      return Array.from({ length: zoneNumber }, () => ({ '': null }));
+    }
+
+    // Process only up to the last non-null entry, then fill the rest with the last value
+    const result: Array<Record<string, any>> = [];
+    let lastProcessedEntry: Record<string, any> | null = null;
+
+    for (let i = 0; i <= lastNonNullIndex; i++) {
+      const entry = propagated[i];
+      let processedEntry: Record<string, any>;
+
+      if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
+        processedEntry = entry as Record<string, any>;
+      } else {
+        processedEntry = { '': entry };
+      }
+
+      result.push(processedEntry);
+      lastProcessedEntry = processedEntry;
+    }
+
+    // Fill remaining slots with the last processed entry (CSS cascade behavior)
+    for (let i = lastNonNullIndex + 1; i < zoneNumber; i++) {
+      result.push(lastProcessedEntry || { '': null });
+    }
+
+    return result;
+  }
+
   // Process styles recursively, preserving mod selectors and combining with nested selector suffixes
   function processStyles(currentStyles: Styles, parentSuffix: string = '') {
     const keys = Object.keys(currentStyles || {});
@@ -636,7 +654,7 @@ function generateLogicalRules(
               !Array.isArray(value) &&
               stateMapHasResponsiveArrays(value)
             ) {
-              (map as any)[name] = stateMapToArrayOfStateMaps(
+              (map as any)[name] = stateMapToArrayOfStateMapsLocal(
                 value as Record<string, any>,
                 zones.length,
               );
@@ -644,7 +662,7 @@ function generateLogicalRules(
             } else if (Array.isArray(value)) {
               // Case 2: array that may contain state maps → normalize to array-of-state-maps
               if (value.length > 0) {
-                (map as any)[name] = normalizeArrayWithStateMaps(
+                (map as any)[name] = normalizeArrayWithStateMapsLocal(
                   value as any[],
                   zones.length,
                 );
@@ -673,7 +691,7 @@ function generateLogicalRules(
       if (isResponsive) {
         // For responsive styles, resolve arrays using normalizeStyleZones
         const valueMap = lookupStyles.reduce((map, style) => {
-          map[style] = normalizeStyleZones(styleMap[style], zones.length);
+          map[style] = cachedNormalizeStyleZones(styleMap[style], zones.length);
           return map;
         }, {} as any);
 
@@ -875,7 +893,7 @@ function generateLogicalRules(
                 lookupStyles.forEach((style) => {
                   const v = stateProps[style];
                   if (Array.isArray(v)) {
-                    const arr = normalizeStyleZones(v, zones.length);
+                    const arr = cachedNormalizeStyleZones(v, zones.length);
                     pointProps[style] = arr?.[i];
                   } else {
                     pointProps[style] = v;
