@@ -61,6 +61,25 @@ export type StyleStateMap = { [key: string]: StyleStateData };
 
 const devMode = process.env.NODE_ENV !== 'production';
 
+// Precompiled regex patterns for parseColor optimization
+const COLOR_VAR_PATTERN = /var\(--([a-z0-9-]+)-color(?:-rgb)?\)/;
+const COLOR_VAR_RGB_PATTERN = /var\(--([a-z0-9-]+)-color-rgb\)/;
+const RGB_ALPHA_PATTERN = /\/\s*([0-9.]+)\)/;
+const SIMPLE_COLOR_PATTERNS = [
+  /^#[0-9a-fA-F]{3,8}$/, // Hex colors: #fff, #ffffff, #ffff, #ffffffff
+  /^rgb\(/, // RGB/RGBA functions
+  /^hsl\(/, // HSL/HSLA functions
+  /^lch\(/, // LCH color functions
+  /^oklch\(/, // OKLCH color functions
+  /^var\(--[a-z0-9-]+-color/, // CSS custom properties for colors
+  /^currentColor$/, // CSS currentColor keyword
+  /^transparent$/, // CSS transparent keyword
+];
+
+// Rate limiting for dev warnings to avoid spam
+let colorWarningCount = 0;
+const MAX_COLOR_WARNINGS = 10;
+
 const IS_DVH_SUPPORTED =
   typeof CSS !== 'undefined' && typeof CSS?.supports === 'function'
     ? CSS.supports('height: 100dvh')
@@ -148,31 +167,66 @@ export function parseStyle(value: StyleValue): ProcessedStyle {
 
 /**
  * Parse color. Find it value, name and opacity.
+ * Optimized to avoid heavy parseStyle calls for simple color patterns.
  */
 export function parseColor(val: string, ignoreError = false): ParsedColor {
-  val = (val ?? '').trim();
-  if (!val) return {};
-
-  // Utilize the new parser to extract the first color token.
-  const processed = parseStyle(val as any);
-  const firstColor = processed.groups.find((g) => g.colors.length)?.colors[0];
-
-  if (!firstColor) {
-    if (!ignoreError && devMode) {
-      console.warn('CubeUIKit: unable to parse color:', val);
-    }
-    return {};
+  // Early return for non-strings or empty values
+  if (typeof val !== 'string') {
+    val = String(val ?? '');
   }
 
-  // Extract color name (if present) from variable pattern.
-  let nameMatch = firstColor.match(/var\(--([a-z0-9-]+)-color/);
+  val = val.trim();
+  if (!val) return {};
+
+  // Fast path: Check if it's a simple color pattern that doesn't need full parsing
+  const isSimpleColor = SIMPLE_COLOR_PATTERNS.some((pattern) =>
+    pattern.test(val),
+  );
+
+  let firstColor: string;
+  let shouldUseParser = false;
+
+  if (isSimpleColor) {
+    // For simple colors, use the value directly without parsing
+    firstColor = val;
+  } else {
+    // Complex value - might contain multiple tokens, fallback to full parser
+    shouldUseParser = true;
+    const processed = parseStyle(val as any);
+    const extractedColor = processed.groups.find((g) => g.colors.length)
+      ?.colors[0];
+
+    if (!extractedColor) {
+      // Rate-limited warning to avoid spam
+      if (!ignoreError && devMode && colorWarningCount < MAX_COLOR_WARNINGS) {
+        console.warn('CubeUIKit: unable to parse color:', val);
+        colorWarningCount++;
+        if (colorWarningCount === MAX_COLOR_WARNINGS) {
+          console.warn(
+            'CubeUIKit: color parsing warnings will be suppressed from now on',
+          );
+        }
+      }
+      return {};
+    }
+
+    firstColor = extractedColor;
+  }
+
+  // Extract color name (if present) from variable pattern using precompiled regex
+  let nameMatch = firstColor.match(COLOR_VAR_PATTERN);
   if (!nameMatch) {
-    nameMatch = firstColor.match(/var\(--([a-z0-9-]+)-color-rgb/);
+    nameMatch = firstColor.match(COLOR_VAR_RGB_PATTERN);
   }
 
   let opacity: number | undefined;
-  if (firstColor.startsWith('rgb')) {
-    const alphaMatch = firstColor.match(/\/\s*([0-9.]+)\)/);
+  if (
+    firstColor.startsWith('rgb') ||
+    firstColor.startsWith('hsl') ||
+    firstColor.startsWith('lch') ||
+    firstColor.startsWith('oklch')
+  ) {
+    const alphaMatch = firstColor.match(RGB_ALPHA_PATTERN);
     if (alphaMatch) {
       const v = parseFloat(alphaMatch[1]);
       if (!isNaN(v)) opacity = v * 100;
