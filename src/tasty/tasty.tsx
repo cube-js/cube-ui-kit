@@ -39,7 +39,7 @@ function allocateClassName(styleKey: string): string {
   return cls;
 }
 
-// Basic props accepted by our base element (no longer styled-components specific)
+// Basic props accepted by our base element
 type BaseElementProps = { as?: string } & Record<string, unknown>;
 
 type StyleList = readonly (keyof {
