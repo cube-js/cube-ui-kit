@@ -472,6 +472,7 @@ export function renderStyles(
 
     // Build handler queue for style properties at this level
     const handlerQueue: HandlerQueueItem[] = [];
+    const seenHandlers = new Set<StyleHandler>();
 
     keys.forEach((styleName) => {
       if (isSelector(styleName)) return;
@@ -483,9 +484,10 @@ export function renderStyles(
       }
 
       handlers.forEach((handler) => {
-        if (handlerQueue.find((queueItem) => queueItem.handler === handler)) {
+        if (seenHandlers.has(handler)) {
           return;
         }
+        seenHandlers.add(handler);
 
         let isResponsive = false;
         const lookupStyles = handler.__lookupStyles;
@@ -833,6 +835,7 @@ export function renderStylesForGlobal(
   }
 
   // Build handler queue for base styles
+  const seenHandlers = new Set<StyleHandler>();
   keys.forEach((styleName) => {
     if (isSelector(styleName)) return;
 
@@ -843,9 +846,10 @@ export function renderStylesForGlobal(
     }
 
     handlers.forEach((handler) => {
-      if (handlerQueue.find((queueItem) => queueItem.handler === handler)) {
+      if (seenHandlers.has(handler)) {
         return;
       }
+      seenHandlers.add(handler);
 
       let isResponsive = false;
       const lookupStyles = handler.__lookupStyles;
