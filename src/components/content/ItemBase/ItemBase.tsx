@@ -4,6 +4,8 @@ import {
   ForwardedRef,
   forwardRef,
   ReactNode,
+  useCallback,
+  useEffect,
   useMemo,
   useState,
 } from 'react';
@@ -498,7 +500,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
   const mergedLabelRef = useCombinedRefs((labelProps as any)?.ref);
   const [isLabelOverflowed, setIsLabelOverflowed] = useState(false);
 
-  const checkLabelOverflow = () => {
+  const checkLabelOverflow = useCallback(() => {
     const label = mergedLabelRef.current;
     if (!label) {
       setIsLabelOverflowed(false);
@@ -508,28 +510,30 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     const hasOverflow = label.scrollWidth > label.clientWidth;
 
     setIsLabelOverflowed(hasOverflow);
-  };
+  }, [mergedLabelRef]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (isAutoTooltipEnabled) {
       checkLabelOverflow();
     }
-  }, [children, isAutoTooltipEnabled]);
+  }, [children, isAutoTooltipEnabled, checkLabelOverflow]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!isAutoTooltipEnabled) return;
 
     const label = mergedLabelRef.current;
     if (!label) return;
 
-    // Initial check
-    checkLabelOverflow();
-
     const resizeObserver = new ResizeObserver(checkLabelOverflow);
     resizeObserver.observe(label);
 
     return () => resizeObserver.disconnect();
-  }, [mergedLabelRef.current, isAutoTooltipEnabled]);
+  }, [
+    isAutoTooltipEnabled,
+    checkLabelOverflow,
+    typeof children === 'string' ? children : null,
+    mergedLabelRef,
+  ]);
 
   const finalLabelProps = useMemo(() => {
     return {

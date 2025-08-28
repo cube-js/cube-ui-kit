@@ -1,5 +1,23 @@
 # @cube-dev/ui-kit
 
+## 0.74.3
+
+### Patch Changes
+
+- [#770](https://github.com/cube-js/cube-ui-kit/pull/770) [`21336718`](https://github.com/cube-js/cube-ui-kit/commit/21336718865a2e2c8e9a3753ae6961c0cfa83ba1) Thanks [@tenphi](https://github.com/tenphi)! - Add size observer for ItemBase.
+
+## 0.74.2
+
+### Patch Changes
+
+- [#768](https://github.com/cube-js/cube-ui-kit/pull/768) [`fc039f5e`](https://github.com/cube-js/cube-ui-kit/commit/fc039f5e9ae8913908486d7115d86ce4285caa25) Thanks [@tenphi](https://github.com/tenphi)! - Fix checkbox opacity on hover in ListBox.
+
+## 0.74.1
+
+### Patch Changes
+
+- [#765](https://github.com/cube-js/cube-ui-kit/pull/765) [`8310dc90`](https://github.com/cube-js/cube-ui-kit/commit/8310dc90209f14f301a8e60b71f5c2f9bfa27c73) Thanks [@tenphi](https://github.com/tenphi)! - Improve popover state sync.
+
 ## 0.74.0
 
 ### Minor Changes

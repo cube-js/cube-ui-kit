@@ -883,7 +883,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const renderTrigger = (state) => {
     // Listen for other menus opening and close this one if needed
     useEffect(() => {
-      const unsubscribe = on('menu:open', (data: { menuId: string }) => {
+      const unsubscribe = on('popover:open', (data: { menuId: string }) => {
         // If another menu is opening and this FilterPicker is open, close this one
         if (data.menuId !== filterPickerId && state.isOpen) {
           state.close();
@@ -896,7 +896,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     // Emit event when this FilterPicker opens
     useEffect(() => {
       if (state.isOpen) {
-        emit('menu:open', { menuId: filterPickerId });
+        emit('popover:open', { menuId: filterPickerId });
       }
     }, [state.isOpen, emit, filterPickerId]);
 

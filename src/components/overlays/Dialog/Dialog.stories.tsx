@@ -11,7 +11,10 @@ import {
   DirectionIcon,
   Footer,
   Header,
+  Menu,
+  MenuTrigger,
   Paragraph,
+  Select,
   Space,
   Text,
   TextInput,
@@ -432,3 +435,71 @@ DoNotCloseOnClickAtParticularElement.play = async (context) => {
 export const WithTriggerState = WithTriggerStateTemplate.bind({});
 WithTriggerState.args = {};
 WithTriggerState.play = Default.play;
+
+export const PopoverWithMenuAndSelect: StoryFn<
+  CubeDialogTriggerProps & { size: CubeDialogProps['size'] }
+> = ({ size, styles, ...props }) => {
+  return (
+    <DialogTrigger {...props} type="popover">
+      <Button>Open Popover</Button>
+      <Dialog size={size} styles={styles}>
+        <Content>
+          <Space flow="row" gap="2x" placeItems="center">
+            <MenuTrigger>
+              <Button type="outline" size="small">
+                Menu
+              </Button>
+              <Menu>
+                <Menu.Item key="copy">Copy</Menu.Item>
+                <Menu.Item key="cut">Cut</Menu.Item>
+                <Menu.Item key="paste">Paste</Menu.Item>
+              </Menu>
+            </MenuTrigger>
+
+            <Select size="small" placeholder="Choose option" width="150px">
+              <Select.Item key="option1">Option 1</Select.Item>
+              <Select.Item key="option2">Option 2</Select.Item>
+              <Select.Item key="option3">Option 3</Select.Item>
+            </Select>
+
+            <Button type="primary" size="small">
+              Action
+            </Button>
+          </Space>
+        </Content>
+      </Dialog>
+    </DialogTrigger>
+  );
+};
+PopoverWithMenuAndSelect.args = {};
+PopoverWithMenuAndSelect.play = async ({ canvasElement, viewMode }) => {
+  if (viewMode === 'docs') return;
+
+  const { findByRole, getByRole } = within(canvasElement);
+
+  // Open the popover
+  await userEvent.click(await findByRole('button', { name: 'Open Popover' }));
+
+  // Wait for dialog to appear
+  const dialog = await findByRole('dialog');
+  await expect(dialog).toBeInTheDocument();
+
+  // Test Menu trigger
+  const menuButton = getByRole('button', { name: 'Menu' });
+  await userEvent.click(menuButton);
+
+  // Check if menu opens
+  const menu = await findByRole('menu');
+  await expect(menu).toBeInTheDocument();
+
+  // Click somewhere else to close menu, then test Select
+  await userEvent.click(dialog);
+
+  // Test Select trigger
+  const selectButton = getByRole('button', { name: 'Choose option' });
+  await userEvent.click(selectButton);
+
+  // Check if select listbox opens
+  const listbox = await findByRole('listbox');
+  await expect(listbox).toBeInTheDocument();
+};

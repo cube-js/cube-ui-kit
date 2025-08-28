@@ -73,9 +73,9 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   useEffect(() => {
     const el = anchorRef.current;
     if (el) {
-      el.dataset.menuTrigger = '';
+      el.dataset.popoverTrigger = '';
       return () => {
-        delete el.dataset.menuTrigger;
+        delete el.dataset.popoverTrigger;
       };
     }
   }, []);
@@ -88,7 +88,7 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
 
   // Listen for other menus opening and close this one if needed
   useEffect(() => {
-    const unsubscribe = on('menu:open', (data: { menuId: string }) => {
+    const unsubscribe = on('popover:open', (data: { menuId: string }) => {
       // If another menu is opening and this menu is open, close this one
       if (data.menuId !== menuId && isOpen) {
         setIsOpen(false);
@@ -101,7 +101,7 @@ export function useAnchoredMenu<P, T = ComponentProps<typeof MenuTrigger>>(
   // Emit event when this menu opens
   useEffect(() => {
     if (isOpen) {
-      emit('menu:open', { menuId });
+      emit('popover:open', { menuId });
     }
   }, [isOpen, emit, menuId]);
 
