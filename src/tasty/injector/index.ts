@@ -54,7 +54,7 @@ function isTestEnvironment(): boolean {
 export function configure(config: Partial<StyleInjectorConfig> = {}): void {
   const fullConfig: StyleInjectorConfig = {
     maxRulesPerSheet: 8192, // safer default cap per sheet
-    unusedStylesThreshold: 500, // default threshold for bulk cleanup of unused styles
+    unusedStylesThreshold: 200, // default threshold for bulk cleanup of unused styles
     bulkCleanupDelay: 5000, // default delay before bulk cleanup (ignored if idleCleanup is true)
     idleCleanup: true, // default to using requestIdleCallback instead of setTimeout
     collectMetrics: false, // default to no performance tracking

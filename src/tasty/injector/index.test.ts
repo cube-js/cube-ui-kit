@@ -87,12 +87,7 @@ describe('Global Style Injector API', () => {
     });
 
     it('should replace existing global injector when reconfigured', () => {
-      // First configuration
-      configure({ cacheSize: 500 });
       const result1 = inject(cssToStyleResults('&{ color: red; }'));
-
-      // Reconfigure
-      configure({});
       const result2 = inject(cssToStyleResults('&{ color: blue; }'));
 
       expect(result1.className).toMatch(/^t\d+$/);
@@ -288,8 +283,8 @@ describe('Global Style Injector API', () => {
 
   describe('createInjector', () => {
     it('should create isolated injector instance', () => {
-      const injector1 = createInjector({ cacheSize: 500 });
-      const injector2 = createInjector({ cacheSize: 1000 });
+      const injector1 = createInjector();
+      const injector2 = createInjector();
 
       expect(injector1).not.toBe(injector2);
 
@@ -309,9 +304,7 @@ describe('Global Style Injector API', () => {
     });
 
     it('should not affect global injector', () => {
-      configure({ cacheSize: 500 });
-
-      const isolatedInjector = createInjector({ cacheSize: 2000 });
+      const isolatedInjector = createInjector();
 
       // Global injector should still work
       const globalResult = inject(cssToStyleResults('&{ color: red; }'));
