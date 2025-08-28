@@ -434,36 +434,35 @@ function convertHandlerResultToCSS(result: any, selectorSuffix = ''): string {
   if (!result) return '';
 
   if (Array.isArray(result)) {
-    return result.reduce((css, item) => {
-      return css + convertHandlerResultToCSS(item, selectorSuffix);
-    }, '');
+    const fragments: string[] = [];
+    for (const item of result) {
+      const itemCSS = convertHandlerResultToCSS(item, selectorSuffix);
+      if (itemCSS) {
+        fragments.push(itemCSS);
+      }
+    }
+    return fragments.join('');
   }
 
   const { $, css, ...styleProps } = result;
-  let renderedStyles = Object.keys(styleProps).reduce(
-    (styleList, styleName) => {
-      const value = styleProps[styleName];
+  const styleFragments: string[] = [];
 
-      if (Array.isArray(value)) {
-        return (
-          styleList +
-          value.reduce((css, val) => {
-            if (val) {
-              return css + `${styleName}: ${val};\n`;
-            }
-            return css;
-          }, '')
-        );
+  // Process style properties using array accumulation
+  for (const [styleName, value] of Object.entries(styleProps)) {
+    if (Array.isArray(value)) {
+      // Handle array values
+      for (const val of value) {
+        if (val) {
+          styleFragments.push(`${styleName}: ${val};\n`);
+        }
       }
+    } else if (value) {
+      // Handle single values
+      styleFragments.push(`${styleName}: ${value};\n`);
+    }
+  }
 
-      if (value) {
-        return `${styleList}${styleName}: ${value};\n`;
-      }
-
-      return styleList;
-    },
-    '',
-  );
+  let renderedStyles = styleFragments.join('');
 
   if (css) {
     renderedStyles = css + '\n' + renderedStyles;
@@ -476,14 +475,16 @@ function convertHandlerResultToCSS(result: any, selectorSuffix = ''): string {
   const finalSelectorSuffix = selectorSuffix || '';
 
   if (Array.isArray($)) {
-    return $.reduce((rend, suffix) => {
+    const ruleFragments: string[] = [];
+    for (const suffix of $) {
       const normalized = suffix
         ? normalizeDollarSelectorSuffix(String(suffix))
         : '';
-      return (
-        rend + `&${finalSelectorSuffix}${normalized}{\n${renderedStyles}}\n`
+      ruleFragments.push(
+        `&${finalSelectorSuffix}${normalized}{\n${renderedStyles}}\n`,
       );
-    }, '');
+    }
+    return ruleFragments.join('');
   }
 
   const normalizedSingle = $ ? normalizeDollarSelectorSuffix(String($)) : '';
@@ -938,18 +939,23 @@ export function renderStylesForGlobal(
   const selectorKeys = keys.filter((key) => isSelector(key));
 
   const declarations: string[] = [];
-  const responsiveStyles = Array.from(Array(zones.length)).map(() => '');
-  let innerStyles = '';
+  const responsiveStyles = Array.from(Array(zones.length)).map(
+    () => [] as string[],
+  );
+  const innerStylesFragments: string[] = [];
 
   // Handle nested selectors (like &:hover, .SubElement)
   for (const key of selectorKeys) {
     const selectorSuffix = getSelector(key);
     if (selectorSuffix && styles[key]) {
       const nestedStyles = styles[key] as Styles;
-      innerStyles += renderStylesForGlobal(nestedStyles, responsive).replace(
+      const nestedCSS = renderStylesForGlobal(nestedStyles, responsive).replace(
         /&/g,
         `&${selectorSuffix}`,
       );
+      if (nestedCSS) {
+        innerStylesFragments.push(nestedCSS);
+      }
     }
   }
 
@@ -1110,7 +1116,7 @@ export function renderStylesForGlobal(
 
             const cssResult = convertHandlerResultToCSS(result, modsSelectors);
             if (cssResult) {
-              responsiveStyles[i] += cssResult;
+              responsiveStyles[i].push(cssResult);
             }
           });
         } else {
@@ -1118,7 +1124,7 @@ export function renderStylesForGlobal(
           if (!result) return;
           const cssResult = convertHandlerResultToCSS(result);
           if (cssResult) {
-            responsiveStyles[i] += cssResult;
+            responsiveStyles[i].push(cssResult);
           }
         }
       });
@@ -1211,7 +1217,7 @@ export function renderStylesForGlobal(
               }
             } else {
               // Complex rule with nested selectors or state modifiers
-              innerStyles += cssResult;
+              innerStylesFragments.push(cssResult);
             }
           }
         });
@@ -1230,7 +1236,7 @@ export function renderStylesForGlobal(
               }
             } else {
               // Complex rule with nested selectors or state modifiers
-              innerStyles += cssResult;
+              innerStylesFragments.push(cssResult);
             }
           }
         }
@@ -1244,13 +1250,19 @@ export function renderStylesForGlobal(
     declarations.length > 0 ? `& { ${declarations.join('\n')} }` : '';
 
   const mediaRules =
-    responsive && responsive.length && responsiveStyles.some((s) => s)
-      ? mediaWrapper(responsiveStyles, zones)
+    responsive &&
+    responsive.length &&
+    responsiveStyles.some((s) => s.length > 0)
+      ? mediaWrapper(
+          responsiveStyles.map((fragments) => fragments.join('')),
+          zones,
+        )
       : '';
 
   // Ensure we always separate the base rule, inner complex selectors and media rules with
   // a newline so the selector replacement step ( & -> actual selector ) cannot accidentally
   // concatenate two selectors and create the invalid form "..selector selector".
+  const innerStyles = innerStylesFragments.join('');
   const parts = [baseRule, innerStyles, mediaRules].filter(Boolean);
   const result = parts.join('\n');
 
