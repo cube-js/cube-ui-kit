@@ -5,14 +5,9 @@
 
 import { StyleResult } from '../utils/renderStyles';
 
-import { flattenNestedCssForSelector } from './flatten';
+// Simple CSS text to StyleResult converter for injectGlobal backward compatibility
 import { SheetManager } from './sheet-manager';
-import {
-  DisposeFunction,
-  FlattenedRule,
-  InjectResult,
-  StyleInjectorConfig,
-} from './types';
+import { InjectResult, StyleInjectorConfig, StyleRule } from './types';
 
 /**
  * Generate sequential class name with format t{number}
@@ -48,8 +43,7 @@ export class StyleInjector {
       };
     }
 
-    // Convert to flattened rules
-    const flattenedRules = this.convertToFlattenedRules(rules);
+    // Rules are now in StyleRule format directly
 
     // Try to dedupe by className first — if the same class was already inserted, reuse it
     // Only extract className if it looks like a generated tasty className (t + digits)
@@ -107,17 +101,17 @@ export class StyleInjector {
     // If a different pre-extracted class was used in rules, rewrite selectors to the final class
     const rulesToInsert =
       generatedClass && generatedClass !== className
-        ? flattenedRules.map((r) => {
+        ? rules.map((r) => {
             if (r.selector.startsWith('.' + generatedClass)) {
               return {
                 ...r,
                 selector:
                   '.' + className + r.selector.slice(generatedClass.length + 1),
-              } as FlattenedRule;
+              } as StyleRule;
             }
             return r;
           })
-        : flattenedRules;
+        : rules;
 
     // Insert rules using existing sheet manager
     const ruleInfo = this.sheetManager.insertRule(
@@ -156,17 +150,6 @@ export class StyleInjector {
   }
 
   /**
-   * Convert StyleResult to FlattenedRule format
-   */
-  private convertToFlattenedRules(rules: StyleResult[]): FlattenedRule[] {
-    return rules.map((rule) => ({
-      selector: rule.selector,
-      declarations: rule.declarations,
-      atRules: rule.atRules,
-    }));
-  }
-
-  /**
    * Extract className from rules (assumes first rule contains the base className)
    */
   private extractClassName(rules: StyleResult[]): string | null {
@@ -180,9 +163,9 @@ export class StyleInjector {
   }
 
   /**
-   * Generate cache key from flattened rules with optimized deduplication
+   * Generate cache key from style rules with optimized deduplication
    */
-  private generateCacheKey(rules: FlattenedRule[]): string {
+  private generateCacheKey(rules: StyleRule[]): string {
     const normalizeSelector = (selector: string): string => {
       const match = selector.match(/^\.[a-zA-Z0-9_-]+(.*)$/);
       return match ? match[1] : selector;
@@ -245,49 +228,6 @@ export class StyleInjector {
   forceBulkCleanup(root?: Document | ShadowRoot): void {
     const registry = this.sheetManager.getRegistry(root || document);
     this.sheetManager['performBulkCleanup'](registry);
-  }
-
-  /**
-   * Inject global CSS rule
-   */
-  injectGlobal(
-    selector: string,
-    cssText: string,
-    options?: { root?: Document | ShadowRoot },
-  ): DisposeFunction {
-    const root = options?.root || document;
-    const registry = this.sheetManager.getRegistry(root);
-
-    if (!cssText || !selector) {
-      return () => {};
-    }
-
-    // Use a stable pseudo-className to track these global rules in the registry
-    const className = generateClassName(registry.classCounter++);
-
-    // Flatten nested CSS against the provided selector (handles &, .Class, SubElement, etc.)
-    const flattenedRules: FlattenedRule[] = flattenNestedCssForSelector(
-      cssText,
-      selector,
-    );
-
-    // Insert the rules as a block using the sheet manager, just like normal rules
-    const ruleInfo = this.sheetManager.insertGlobalRule(
-      registry,
-      flattenedRules,
-      className,
-      root,
-    );
-
-    if (!ruleInfo) {
-      return () => {};
-    }
-
-    // Track in registry for ref-counted disposal
-    registry.refCounts.set(className, 1);
-    registry.rules.set(className, ruleInfo);
-
-    return () => this.dispose(className, registry);
   }
 
   /**

@@ -66,11 +66,8 @@ export interface RootRegistry {
   classCounter: number;
 }
 
-export interface FlattenedRule {
-  selector: string;
-  declarations: string;
-  atRules?: string[]; // e.g. ['@media (min-width: 768px)', '@supports (display: grid)']
-}
+// StyleRule is now just an alias for StyleResult from renderStyles
+export type StyleRule = import('../utils/renderStyles').StyleResult;
 
 export interface KeyframesInfo {
   name: string;

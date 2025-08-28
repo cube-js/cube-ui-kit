@@ -9,7 +9,6 @@ import { Styles } from '../styles/types';
 
 import { getModCombinationsIterative } from './getModCombinations';
 import {
-  mediaWrapper,
   normalizeStyleZones,
   pointsToZones,
   ResponsiveZone,
@@ -257,7 +256,7 @@ function explodeHandlerResult(
   for (const item of resultArray) {
     if (!item || typeof item !== 'object') continue;
 
-    const { $, css, ...styleProps } = item;
+    const { $, ...styleProps } = item;
 
     // Phase 2: Responsive fan-out - handle array values
     const breakpointGroups = new Map<number, Record<string, string>>();
@@ -301,15 +300,6 @@ function explodeHandlerResult(
         group[prop] = String(value);
         breakpointGroups.set(breakpointIdx, group);
       }
-    }
-
-    // Handle raw CSS if present (add to base breakpoint)
-    if (css && typeof css === 'string') {
-      const baseGroup = breakpointGroups.get(0) || {};
-      // For now, we'll add raw CSS as a special property
-      // This is a limitation - raw CSS should be parsed properly
-      baseGroup['--raw-css'] = css;
-      breakpointGroups.set(0, baseGroup);
     }
 
     // Phase 3: Selector fan-out - handle $ suffixes
@@ -453,7 +443,6 @@ function materializeRules(
     const selector = `.${className}${rule.selectorSuffix}`;
 
     const declarations = Object.entries(rule.declarations)
-      .filter(([key]) => key !== '--raw-css') // Skip raw CSS for now
       .map(([prop, value]) => `${prop}: ${value};`)
       .join(' ');
 
@@ -475,7 +464,7 @@ function materializeRules(
 
 /**
  * Core style processing logic that generates logical rules
- * Shared between renderStyles and renderStylesForGlobal
+ * Used by the unified renderStyles function
  */
 function generateLogicalRules(
   styles: Styles,
@@ -949,23 +938,69 @@ function generateLogicalRules(
 }
 
 /**
- * Render styles without CSS string conversion
- * This is a performance-optimized version of renderStyles
+ * Render styles to StyleResult[] format (recommended)
+ * Supports both component and global styling with advanced optimizations
  */
 export function renderStyles(
   styles?: Styles,
+  responsive?: number[],
+  className?: string,
+): RenderResult;
+
+/**
+ * Render styles for direct injection with a specific selector
+ * Bypasses CSS text generation and flattening by directly creating StyleResult[]
+ */
+export function renderStyles(
+  styles: Styles | undefined,
+  responsive: number[],
+  selector: string,
+  directSelector: true,
+): StyleResult[];
+
+export function renderStyles(
+  styles?: Styles,
   responsive: number[] = [],
-  className: string = 'unknown',
-): RenderResult {
+  classNameOrSelector: string = 'unknown',
+  directSelector: boolean = false,
+): RenderResult | StyleResult[] {
   if (!styles) {
-    return { rules: [] };
+    return directSelector ? [] : { rules: [] };
   }
 
   // Generate logical rules using shared pipeline
   const allLogicalRules = generateLogicalRules(styles, responsive);
   const zones = pointsToZones(responsive || []);
 
-  // Accumulate declarations before materialization to reduce duplication
+  if (directSelector) {
+    // Direct selector mode: convert logical rules directly to StyleResult format
+    return allLogicalRules.map((rule) => {
+      // Replace & with the actual selector or append suffix to selector
+      const finalSelector = rule.selectorSuffix
+        ? `${classNameOrSelector}${rule.selectorSuffix}`
+        : classNameOrSelector;
+
+      const declarations = Object.entries(rule.declarations)
+        .map(([prop, value]) => `${prop}: ${value};`)
+        .join(' ');
+
+      const q =
+        rule.breakpointIdx > 0
+          ? zones[rule.breakpointIdx]?.mediaQuery
+          : rule.responsiveSource
+            ? zones[0]?.mediaQuery
+            : undefined;
+      const atRules = q ? [`@media ${q}`] : undefined;
+
+      return {
+        selector: finalSelector,
+        declarations,
+        atRules,
+      };
+    });
+  }
+
+  // Standard mode: use accumulation and materialization with className
   const accumulatedRules = new Map<string, LogicalRule>();
 
   for (const rule of allLogicalRules) {
@@ -990,7 +1025,7 @@ export function renderStyles(
   // Materialize the accumulated logical rules into final format
   const finalRulesRaw = materializeRules(
     Array.from(accumulatedRules.values()),
-    className,
+    classNameOrSelector,
     zones || [],
   );
 
@@ -1007,93 +1042,6 @@ export function renderStyles(
 
   return {
     rules: finalRules,
-    className,
+    className: classNameOrSelector,
   };
-}
-
-/**
- * Convert logical rules to global CSS strings with & selectors
- */
-function logicalRulesToGlobalCSS(
-  logicalRules: LogicalRule[],
-  zones: ResponsiveZone[],
-): string {
-  const declarations: string[] = [];
-  const responsiveStyles = Array.from(Array(zones.length)).map(
-    () => [] as string[],
-  );
-  const innerStylesFragments: string[] = [];
-
-  // Accumulate rules by type
-  for (const rule of logicalRules) {
-    // Create CSS rule string
-    const declarationList = Object.entries(rule.declarations)
-      .map(([prop, value]) => `${prop}: ${value};`)
-      .join(' ');
-
-    if (!declarationList) continue;
-
-    const cssRule = `&${rule.selectorSuffix} { ${declarationList} }`;
-
-    if (rule.breakpointIdx > 0) {
-      // Responsive rule
-      responsiveStyles[rule.breakpointIdx].push(cssRule);
-    } else if (rule.responsiveSource) {
-      // Base responsive rule
-      responsiveStyles[0].push(cssRule);
-    } else if (rule.selectorSuffix) {
-      // Nested selector rule
-      innerStylesFragments.push(cssRule);
-    } else {
-      // Base rule
-      const declarationBlock = Object.entries(rule.declarations)
-        .map(([prop, value]) => `${prop}: ${value};`)
-        .join('\n');
-      if (declarationBlock) {
-        declarations.push(declarationBlock);
-      }
-    }
-  }
-
-  // Build final CSS similar to original renderStyles
-  // Merge all declarations into a single rule
-  const baseRule =
-    declarations.length > 0 ? `& { ${declarations.join('\n')} }` : '';
-
-  const mediaRules =
-    zones.length > 0 && responsiveStyles.some((s) => s.length > 0)
-      ? mediaWrapper(
-          responsiveStyles.map((fragments) => fragments.join('')),
-          zones,
-        )
-      : '';
-
-  // Ensure we always separate the base rule, inner complex selectors and media rules with
-  // a newline so the selector replacement step ( & -> actual selector ) cannot accidentally
-  // concatenate two selectors and create the invalid form "..selector selector".
-  const innerStyles = innerStylesFragments.join('');
-  const parts = [baseRule, innerStyles, mediaRules].filter(Boolean);
-  const result = parts.join('\n');
-
-  return result;
-}
-
-/**
- * Render styles for global injection (without class names)
- * Returns CSS with & selectors that injectGlobal can process
- */
-export function renderStylesForGlobal(
-  styles?: Styles,
-  responsive: number[] = [],
-): string {
-  if (!styles) {
-    return '';
-  }
-
-  // Generate logical rules using shared pipeline
-  const allLogicalRules = generateLogicalRules(styles, responsive);
-  const zones = pointsToZones(responsive || []);
-
-  // Convert logical rules to global CSS
-  return logicalRulesToGlobalCSS(allLogicalRules, zones);
 }

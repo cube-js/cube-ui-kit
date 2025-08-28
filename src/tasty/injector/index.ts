@@ -95,17 +95,6 @@ export function inject(
 }
 
 /**
- * Inject global CSS rule (legacy method - not supported in direct injector)
- */
-export function injectGlobal(
-  selector: string,
-  cssText: string,
-  options?: { root?: Document | ShadowRoot },
-): DisposeFunction {
-  return getGlobalInjector().injectGlobal(selector, cssText, options);
-}
-
-/**
  * Get CSS text from all sheets (for SSR)
  */
 export function getCssText(options?: { root?: Document | ShadowRoot }): string {
@@ -204,7 +193,7 @@ export type {
   RuleInfo,
   SheetInfo,
   RootRegistry,
-  FlattenedRule,
+  StyleRule,
   KeyframesInfo,
   UnusedRuleInfo,
   CacheMetrics,
@@ -212,4 +201,3 @@ export type {
 
 export { StyleInjector } from './injector';
 export { SheetManager } from './sheet-manager';
-export { flattenNestedCss } from './flatten';

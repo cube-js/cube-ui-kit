@@ -2,13 +2,10 @@
  * @jest-environment jsdom
  */
 import { SheetManager } from './sheet-manager';
-import { FlattenedRule, StyleInjectorConfig } from './types';
+import { StyleInjectorConfig, StyleRule } from './types';
 
-// Helper function to create FlattenedRule from CSS for testing
-function createFlattenedRule(
-  selector: string,
-  declarations: string,
-): FlattenedRule {
+// Helper function to create StyleRule from CSS for testing
+function createStyleRule(selector: string, declarations: string): StyleRule {
   return {
     selector,
     declarations,
@@ -124,7 +121,7 @@ describe('SheetManager', () => {
   describe('insertRule', () => {
     it('should insert rule into style element', () => {
       const registry = sheetManager.getRegistry(document);
-      const rules = [createFlattenedRule('.test', 'color: red;')];
+      const rules = [createStyleRule('.test', 'color: red;')];
 
       const ruleInfo = sheetManager.insertRule(
         registry,
@@ -142,7 +139,7 @@ describe('SheetManager', () => {
 
     it('should insert multiple rules correctly', () => {
       const registry = sheetManager.getRegistry(document);
-      const rules = [createFlattenedRule('.test', 'color: red;')];
+      const rules = [createStyleRule('.test', 'color: red;')];
 
       const ruleInfo = sheetManager.insertRule(
         registry,
@@ -168,13 +165,13 @@ describe('SheetManager', () => {
       // Insert rules up to limit
       manager.insertRule(
         registry,
-        [createFlattenedRule('.rule1', 'color: red;')],
+        [createStyleRule('.rule1', 'color: red;')],
         'rule1',
         document,
       );
       manager.insertRule(
         registry,
-        [createFlattenedRule('.rule2', 'color: blue;')],
+        [createStyleRule('.rule2', 'color: blue;')],
         'rule2',
         document,
       );
@@ -184,7 +181,7 @@ describe('SheetManager', () => {
       // This should create a new sheet
       manager.insertRule(
         registry,
-        [createFlattenedRule('.rule3', 'color: green;')],
+        [createStyleRule('.rule3', 'color: green;')],
         'rule3',
         document,
       );
@@ -198,19 +195,19 @@ describe('SheetManager', () => {
       // Insert some rules
       const rule1 = sheetManager.insertRule(
         registry,
-        [createFlattenedRule('.rule1', 'color: red;')],
+        [createStyleRule('.rule1', 'color: red;')],
         'rule1',
         document,
       );
       const rule2 = sheetManager.insertRule(
         registry,
-        [createFlattenedRule('.rule2', 'color: blue;')],
+        [createStyleRule('.rule2', 'color: blue;')],
         'rule2',
         document,
       );
       const rule3 = sheetManager.insertRule(
         registry,
-        [createFlattenedRule('.rule3', 'color: green;')],
+        [createStyleRule('.rule3', 'color: green;')],
         'rule3',
         document,
       );
@@ -225,7 +222,7 @@ describe('SheetManager', () => {
       // Next insertion should append to the end (no hole reuse in CSS)
       const rule4 = sheetManager.insertRule(
         registry,
-        [createFlattenedRule('.rule4', 'color: yellow;')],
+        [createStyleRule('.rule4', 'color: yellow;')],
         'rule4',
         document,
       );
@@ -239,13 +236,13 @@ describe('SheetManager', () => {
 
       const rule1 = sheetManager.insertRule(
         registry,
-        [createFlattenedRule('.rule1', 'color: red;')],
+        [createStyleRule('.rule1', 'color: red;')],
         'rule1',
         document,
       );
       const rule2 = sheetManager.insertRule(
         registry,
-        [createFlattenedRule('.rule2', 'color: blue;')],
+        [createStyleRule('.rule2', 'color: blue;')],
         'rule2',
         document,
       );
@@ -297,7 +294,7 @@ describe('SheetManager', () => {
     it('should mark rule as unused without immediate DOM cleanup', () => {
       const registry = sheetManager.getRegistry(document);
 
-      const rules = [createFlattenedRule('.test', 'color: red;')];
+      const rules = [createStyleRule('.test', 'color: red;')];
       const ruleInfo = sheetManager.insertRule(
         registry,
         rules,
@@ -320,7 +317,7 @@ describe('SheetManager', () => {
     it('should restore from unused rules', () => {
       const registry = sheetManager.getRegistry(document);
 
-      const rules = [createFlattenedRule('.test', 'color: red;')];
+      const rules = [createStyleRule('.test', 'color: red;')];
       const ruleInfo = sheetManager.insertRule(
         registry,
         rules,
@@ -350,7 +347,7 @@ describe('SheetManager', () => {
 
       // Create rules that will trigger bulk cleanup
       for (let i = 0; i < 3; i++) {
-        const rules = [createFlattenedRule(`.test-${i}`, 'color: red;')];
+        const rules = [createStyleRule(`.test-${i}`, 'color: red;')];
         const ruleInfo = manager.insertRule(
           registry,
           rules,
@@ -395,13 +392,13 @@ describe('SheetManager', () => {
 
       manager.insertRule(
         registry,
-        [createFlattenedRule('.rule1', 'color: red;')],
+        [createStyleRule('.rule1', 'color: red;')],
         'rule1',
         document,
       );
       manager.insertRule(
         registry,
-        [createFlattenedRule('.rule2', 'color: blue;')],
+        [createStyleRule('.rule2', 'color: blue;')],
         'rule2',
         document,
       );
@@ -424,7 +421,7 @@ describe('SheetManager', () => {
       // Create some sheets
       manager.insertRule(
         registry,
-        [createFlattenedRule('.test', 'color: red;')],
+        [createStyleRule('.test', 'color: red;')],
         'test',
         document,
       );
@@ -461,7 +458,7 @@ describe('SheetManager', () => {
       // Create a rule and mark as unused to trigger bulk cleanup
       const ruleInfo = manager.insertRule(
         registry,
-        [createFlattenedRule('.test-class', 'color: red;')],
+        [createStyleRule('.test-class', 'color: red;')],
         'test-class',
         document,
       );
@@ -496,7 +493,7 @@ describe('SheetManager', () => {
       // Create a rule and mark as unused to trigger bulk cleanup
       const ruleInfo = manager.insertRule(
         registry,
-        [createFlattenedRule('.test-class', 'color: red;')],
+        [createStyleRule('.test-class', 'color: red;')],
         'test-class',
         document,
       );

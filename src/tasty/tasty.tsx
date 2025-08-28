@@ -13,7 +13,7 @@ import {
 } from 'react';
 import { isValidElementType } from 'react-is';
 
-import { inject, injectGlobal } from './injector';
+import { inject } from './injector';
 import { BreakpointsContext } from './providers/BreakpointsProvider';
 import { BASE_STYLES } from './styles/list';
 import { Styles, StylesInterface } from './styles/types';
@@ -22,7 +22,7 @@ import { cacheWrapper } from './utils/cache-wrapper';
 import { getDisplayName } from './utils/getDisplayName';
 import { mergeStyles } from './utils/mergeStyles';
 import { modAttrs } from './utils/modAttrs';
-import { renderStyles, renderStylesForGlobal } from './utils/renderStyles';
+import { RenderResult, renderStyles } from './utils/renderStyles';
 import { ResponsiveStyleValue } from './utils/styles';
 
 /**
@@ -133,21 +133,22 @@ function tastyGlobal(selector: string, styles?: Styles) {
     const breakpointsHash = breakpointsList.join(',');
     const disposeRef = useRef<(() => void) | null>(null);
 
-    const cssText = useMemo(() => {
-      if (!styles) return '';
-      return renderStylesForGlobal(styles, breakpointsList);
-    }, [breakpointsHash]);
+    const styleResults = useMemo(() => {
+      if (!styles) return [];
+      return renderStyles(styles, breakpointsList, selector, true);
+    }, [selector, breakpointsHash]);
 
     // Inject styles at insertion phase; cleanup on change/unmount
     useInsertionEffect(() => {
       disposeRef.current?.();
-      if (!cssText) return;
-      disposeRef.current = injectGlobal(selector, cssText);
+      if (styleResults.length === 0) return;
+      const { dispose } = inject(styleResults);
+      disposeRef.current = dispose;
       return () => {
         disposeRef.current?.();
         disposeRef.current = null;
       };
-    }, [cssText, selector]);
+    }, [styleResults]);
 
     return null;
   };
@@ -378,15 +379,13 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
       }, [allStyles]);
 
       // Compute rules synchronously; inject via insertion effect
-      const directResult = useMemo(() => {
+      const directResult: RenderResult = useMemo(() => {
         if (useDefaultStyles) {
           return renderDefaultStyles(breakpoints as number[]);
         } else if (allStyles && Object.keys(allStyles).length > 0) {
           return renderStyles(allStyles, breakpoints as number[], className);
         } else {
-          return { rules: [], className: '' } as ReturnType<
-            typeof renderStyles
-          >;
+          return { rules: [], className: '' };
         }
       }, [useDefaultStyles, allStyles, breakpoints?.join(','), className]);
 

@@ -16,7 +16,7 @@ The Style Injector provides:
 ## Quick Start
 
 ```typescript
-import { inject, injectGlobal, configure } from './tasty/injector';
+import { inject, configure } from './tasty/injector';
 
 // Configure once (optional)
 configure({
@@ -25,10 +25,16 @@ configure({
 });
 
 // Inject component styles
-const { className, dispose } = inject('&{ color: red; padding: 10px; }');
+const { className, dispose } = inject([{
+  selector: '.t-123',
+  declarations: 'color: red; padding: 10px;'
+}]);
 
 // Inject global styles
-const globalDispose = injectGlobal('body', 'margin: 0; font-family: Arial;');
+const globalDispose = inject([
+  { selector: 'body', declarations: 'margin: 0; font-family: Arial;' },
+  { selector: '.header', declarations: 'background: blue; height: 60px;' }
+]);
 
 // Cleanup when component unmounts
 useEffect(() => dispose, [dispose]);
@@ -36,21 +42,31 @@ useEffect(() => dispose, [dispose]);
 
 ## API Reference
 
-### `inject(cssText: string, options?): InjectResult`
+### `inject(rules: StyleResult[], options?): InjectResult`
 
-Injects CSS and returns a className with dispose function.
+Injects CSS rules and returns a className with dispose function. Supports both component injection (with generated class names) and global injection (with custom selectors).
 
 ```typescript
-const result = inject('&{ color: red; &:hover{ color: blue; } }');
+// Component injection - for tasty components
+const componentResult = inject([{
+  selector: '.t-abc123',
+  declarations: 'color: red; padding: 10px;',
+}]);
 // Returns: { className: 't-abc123', dispose: () => void }
-```
 
-### `injectGlobal(selector: string, cssText: string, options?): DisposeFunction`
-
-Injects global CSS rules.
-
-```typescript
-const dispose = injectGlobal('body', 'margin: 0; background: white;');
+// Global injection - for global styles  
+const globalResult = inject([
+  {
+    selector: 'body',
+    declarations: 'margin: 0; font-family: Arial;',
+  },
+  {
+    selector: '.header',
+    declarations: 'background: blue; color: white;',
+    atRules: ['@media (min-width: 768px)'],
+  }
+]);
+// Returns: { className: 't-def456', dispose: () => void }
 ```
 
 ### `configure(config: Partial<StyleInjectorConfig>): void`
@@ -95,8 +111,8 @@ const cssForSSR = getCssText();
          │                                            │
          ▼                                            ▼
 ┌─────────────────┐                             ┌─────────────────┐
-│ flattenNestedCss│                             │ CSSStyleSheet   │
-│                 │                             │ <style> element │
+│   StyleResult   │                             │ CSSStyleSheet   │
+│     Array       │                             │ <style> element │
 └─────────────────┘                             └─────────────────┘
 ```
 
@@ -105,11 +121,11 @@ const cssForSSR = getCssText();
 ### ✅ Complete
 - Core types and interfaces
 - Hash utility (collision-resistant, base52 encoding)
-- CSS nesting flattener (handles all selector patterns)
+- Direct StyleResult injection (bypasses CSS parsing)
 - SheetManager (DOM manipulation, cleanup)
 - StyleInjector core (injection, deduplication, GC)
 - Global configuration API
-- Comprehensive test suite (89 passing tests)
+- Comprehensive test suite
 
 ### 🔧 In Progress
 - Integration with tasty components
@@ -122,13 +138,12 @@ const cssForSSR = getCssText();
 ## Test Coverage
 
 - **Comprehensive test coverage** covering all critical functionality
-- All major code paths tested: hashing, flattening, sheet management, reference counting, bulk cleanup
+- All major code paths tested: hashing, direct injection, sheet management, reference counting, bulk cleanup
 
 ## Files
 
 - `types.ts` - TypeScript interfaces and types
 - `hash.ts` - Hash utility for class name generation
-- `flatten.ts` - CSS nesting flattener
 - `sheet-manager.ts` - DOM stylesheet management
 - `injector.ts` - Core StyleInjector class
 - `index.ts` - Global API and configuration

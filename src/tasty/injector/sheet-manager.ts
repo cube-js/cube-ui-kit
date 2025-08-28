@@ -2,11 +2,11 @@ import { Lru } from '../parser/lru';
 
 import {
   CacheMetrics,
-  FlattenedRule,
   RootRegistry,
   RuleInfo,
   SheetInfo,
   StyleInjectorConfig,
+  StyleRule,
   UnusedRuleInfo,
 } from './types';
 
@@ -110,7 +110,7 @@ export class SheetManager {
    */
   insertRule(
     registry: RootRegistry,
-    flattenedRules: FlattenedRule[],
+    flattenedRules: StyleRule[],
     className: string,
     root: Document | ShadowRoot,
   ): RuleInfo | null {
@@ -126,7 +126,7 @@ export class SheetManager {
 
     try {
       // Group rules by selector and at-rules to combine declarations
-      const groupedRules: FlattenedRule[] = [];
+      const groupedRules: StyleRule[] = [];
       const groupMap = new Map<
         string,
         {
@@ -164,7 +164,7 @@ export class SheetManager {
           selector: val.selector,
           atRules: val.atRules,
           declarations: val.declarations,
-        } as FlattenedRule;
+        } as StyleRule;
       });
 
       // Insert grouped rules
@@ -256,7 +256,7 @@ export class SheetManager {
    */
   insertGlobalRule(
     registry: RootRegistry,
-    flattenedRules: FlattenedRule[],
+    flattenedRules: StyleRule[],
     className: string,
     root: Document | ShadowRoot,
   ): RuleInfo | null {
