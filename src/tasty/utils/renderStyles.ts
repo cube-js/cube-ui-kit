@@ -524,20 +524,15 @@ function materializeRules(
 }
 
 /**
- * Render styles without CSS string conversion
- * This is a performance-optimized version of renderStyles
+ * Core style processing logic that generates logical rules
+ * Shared between renderStyles and renderStylesForGlobal
  */
-export function renderStyles(
-  styles?: Styles,
+function generateLogicalRules(
+  styles: Styles,
   responsive: number[] = [],
-  className: string = 'unknown',
-): RenderResult {
-  if (!styles) {
-    return { rules: [] };
-  }
-
+  parentSuffix: string = '',
+): LogicalRule[] {
   const zones = pointsToZones(responsive || []);
-  // Collect all logical rules
   const allLogicalRules: LogicalRule[] = [];
 
   // Process styles recursively, preserving mod selectors and combining with nested selector suffixes
@@ -873,7 +868,27 @@ export function renderStyles(
   }
 
   // Kick off processing from the root styles with empty suffix
-  processStyles(styles, '');
+  processStyles(styles, parentSuffix);
+
+  return allLogicalRules;
+}
+
+/**
+ * Render styles without CSS string conversion
+ * This is a performance-optimized version of renderStyles
+ */
+export function renderStyles(
+  styles?: Styles,
+  responsive: number[] = [],
+  className: string = 'unknown',
+): RenderResult {
+  if (!styles) {
+    return { rules: [] };
+  }
+
+  // Generate logical rules using shared pipeline
+  const allLogicalRules = generateLogicalRules(styles, responsive);
+  const zones = pointsToZones(responsive || []);
 
   // Accumulate declarations before materialization to reduce duplication
   const accumulatedRules = new Map<string, LogicalRule>();
@@ -922,327 +937,48 @@ export function renderStyles(
 }
 
 /**
- * Render styles for global injection (without class names)
- * Returns CSS with & selectors that injectGlobal can process
+ * Convert logical rules to global CSS strings with & selectors
  */
-export function renderStylesForGlobal(
-  styles?: Styles,
-  responsive: number[] = [],
+function logicalRulesToGlobalCSS(
+  logicalRules: LogicalRule[],
+  zones: ResponsiveZone[],
 ): string {
-  if (!styles) {
-    return '';
-  }
-
-  const zones = pointsToZones(responsive || []);
-  const handlerQueue: HandlerQueueItem[] = [];
-  const keys = Object.keys(styles);
-  const selectorKeys = keys.filter((key) => isSelector(key));
-
   const declarations: string[] = [];
   const responsiveStyles = Array.from(Array(zones.length)).map(
     () => [] as string[],
   );
   const innerStylesFragments: string[] = [];
 
-  // Handle nested selectors (like &:hover, .SubElement)
-  for (const key of selectorKeys) {
-    const selectorSuffix = getSelector(key);
-    if (selectorSuffix && styles[key]) {
-      const nestedStyles = styles[key] as Styles;
-      const nestedCSS = renderStylesForGlobal(nestedStyles, responsive).replace(
-        /&/g,
-        `&${selectorSuffix}`,
-      );
-      if (nestedCSS) {
-        innerStylesFragments.push(nestedCSS);
+  // Accumulate rules by type
+  for (const rule of logicalRules) {
+    // Create CSS rule string
+    const declarationList = Object.entries(rule.declarations)
+      .map(([prop, value]) => `${prop}: ${value};`)
+      .join(' ');
+
+    if (!declarationList) continue;
+
+    const cssRule = `&${rule.selectorSuffix} { ${declarationList} }`;
+
+    if (rule.breakpointIdx > 0) {
+      // Responsive rule
+      responsiveStyles[rule.breakpointIdx].push(cssRule);
+    } else if (rule.responsiveSource) {
+      // Base responsive rule
+      responsiveStyles[0].push(cssRule);
+    } else if (rule.selectorSuffix) {
+      // Nested selector rule
+      innerStylesFragments.push(cssRule);
+    } else {
+      // Base rule
+      const declarationBlock = Object.entries(rule.declarations)
+        .map(([prop, value]) => `${prop}: ${value};`)
+        .join('\n');
+      if (declarationBlock) {
+        declarations.push(declarationBlock);
       }
     }
   }
-
-  // Build handler queue for base styles
-  const seenHandlers = new Set<StyleHandler>();
-  keys.forEach((styleName) => {
-    if (isSelector(styleName)) return;
-
-    let handlers: StyleHandler[] = STYLE_HANDLER_MAP[styleName];
-
-    if (!handlers) {
-      handlers = STYLE_HANDLER_MAP[styleName] = [createStyle(styleName)];
-    }
-
-    handlers.forEach((handler) => {
-      if (seenHandlers.has(handler)) {
-        return;
-      }
-      seenHandlers.add(handler);
-
-      let isResponsive = false;
-      const lookupStyles = handler.__lookupStyles;
-      const filteredStyleMap = lookupStyles.reduce((map, name) => {
-        const value = styles?.[name];
-        if (value !== undefined) {
-          if (
-            value &&
-            typeof value === 'object' &&
-            !Array.isArray(value) &&
-            stateMapHasResponsiveArrays(value)
-          ) {
-            (map as any)[name] = stateMapToArrayOfStateMaps(
-              value as Record<string, any>,
-              zones.length,
-            );
-            isResponsive = true;
-          } else if (Array.isArray(value)) {
-            if (value.length > 0) {
-              (map as any)[name] = normalizeArrayWithStateMaps(
-                value as any[],
-                zones.length,
-              );
-              isResponsive = true;
-            }
-          } else {
-            (map as any)[name] = value;
-          }
-        }
-
-        return map;
-      }, {} as StyleMap);
-
-      handlerQueue.push({
-        handler,
-        styleMap: filteredStyleMap,
-        isResponsive,
-      });
-    });
-  });
-
-  // Process handlers using approach
-  handlerQueue.forEach(({ handler, styleMap, isResponsive }) => {
-    const lookupStyles = handler.__lookupStyles;
-
-    if (isResponsive) {
-      // For responsive styles, resolve arrays using normalizeStyleZones
-      const valueMap = lookupStyles.reduce((map, style) => {
-        map[style] = normalizeStyleZones(styleMap[style], zones.length);
-        return map;
-      }, {} as any);
-
-      // Create props for each breakpoint
-      const propsByPoint = zones.map((zone, i) => {
-        const pointProps = {} as any;
-        lookupStyles.forEach((style) => {
-          if (valueMap != null && valueMap[style] != null) {
-            pointProps[style] = valueMap[style][i];
-          }
-        });
-        return pointProps;
-      });
-
-      // Call handler for each breakpoint and convert to CSS, with state processing
-      propsByPoint.forEach((pointProps, i) => {
-        const hasStateMapsAtPoint = lookupStyles.some((style) => {
-          const v = pointProps[style];
-          return v && typeof v === 'object' && !Array.isArray(v);
-        });
-
-        if (hasStateMapsAtPoint) {
-          const allMods = new Set<string>();
-          const styleStates: Record<string, any> = {};
-
-          lookupStyles.forEach((style) => {
-            const v = pointProps[style];
-            if (v && typeof v === 'object' && !Array.isArray(v)) {
-              const { states, mods } = styleStateMapToStyleStateDataList(v);
-              styleStates[style] = states;
-              mods.forEach((m: string) => allMods.add(m));
-            } else {
-              styleStates[style] = [{ mods: [], notMods: [], value: v }];
-            }
-          });
-
-          const allModsArray = Array.from(allMods);
-
-          // Precompute attribute maps once for all combinations
-          const attributeMaps = buildAttributeMaps([], allModsArray);
-
-          // Generate combinations with conflict-aware pruning
-          const conflictChecker = createAttributeConflictChecker(
-            attributeMaps.parsedMods,
-          );
-          const combinations = getModCombinationsIterative(
-            allModsArray,
-            true,
-            conflictChecker,
-          );
-
-          combinations.forEach((modCombination) => {
-            const stateProps: Record<string, any> = {};
-
-            lookupStyles.forEach((style) => {
-              const states = styleStates[style];
-              const matchingState = states.find((state: any) =>
-                computeState(state.model, (mod) =>
-                  modCombination.includes(mod),
-                ),
-              );
-              if (matchingState) {
-                stateProps[style] = matchingState.value;
-              }
-            });
-
-            // Use precomputed maps for efficient not selector optimization
-            const currentMaps = buildAttributeMaps(
-              modCombination,
-              allModsArray,
-            );
-            const optimizedNotMods = optimizeNotSelectors(
-              modCombination,
-              allModsArray,
-              currentMaps,
-            );
-            const modsSelectors = `${modCombination
-              .map(getModSelector)
-              .join('')}${optimizedNotMods
-              .map((mod) => {
-                const sel = getModSelector(mod);
-                return sel.startsWith(':not(')
-                  ? sel.slice(5, -1)
-                  : `:not(${sel})`;
-              })
-              .join('')}`;
-
-            const result = handler(stateProps as any);
-            if (!result) return;
-
-            const cssResult = convertHandlerResultToCSS(result, modsSelectors);
-            if (cssResult) {
-              responsiveStyles[i].push(cssResult);
-            }
-          });
-        } else {
-          const result = handler(pointProps as any);
-          if (!result) return;
-          const cssResult = convertHandlerResultToCSS(result);
-          if (cssResult) {
-            responsiveStyles[i].push(cssResult);
-          }
-        }
-      });
-    } else {
-      // For non-responsive styles, check if any values have state maps
-      const hasStateMaps = lookupStyles.some((style) => {
-        const value = styleMap[style];
-        return value && typeof value === 'object' && !Array.isArray(value);
-      });
-
-      if (hasStateMaps) {
-        // Process each style property individually for state resolution
-        const allMods = new Set<string>();
-        const styleStates: Record<string, any> = {};
-
-        lookupStyles.forEach((style) => {
-          const value = styleMap[style];
-          if (value && typeof value === 'object' && !Array.isArray(value)) {
-            const { states, mods } = styleStateMapToStyleStateDataList(value);
-            styleStates[style] = states;
-            mods.forEach((mod) => allMods.add(mod));
-          } else {
-            // Simple value, create a single state
-            styleStates[style] = [{ mods: [], notMods: [], value }];
-          }
-        });
-
-        // Generate all possible mod combinations
-        const allModsArray = Array.from(allMods);
-
-        // Precompute attribute maps once for all combinations
-        const attributeMaps = buildAttributeMaps([], allModsArray);
-
-        // Generate combinations with conflict-aware pruning
-        const conflictChecker = createAttributeConflictChecker(
-          attributeMaps.parsedMods,
-        );
-        const combinations = getModCombinationsIterative(
-          allModsArray,
-          true,
-          conflictChecker,
-        );
-
-        combinations.forEach((modCombination) => {
-          const stateProps: Record<string, any> = {};
-
-          lookupStyles.forEach((style) => {
-            const states = styleStates[style];
-            // Find the matching state for this mod combination
-            const matchingState = states.find((state) => {
-              return computeState(state.model, (mod) =>
-                modCombination.includes(mod),
-              );
-            });
-            if (matchingState) {
-              stateProps[style] = matchingState.value;
-            }
-          });
-
-          const result = handler(stateProps as any);
-          if (!result) return;
-
-          // Use precomputed maps for efficient not selector optimization
-          const currentMaps = buildAttributeMaps(modCombination, allModsArray);
-          const optimizedNotMods = optimizeNotSelectors(
-            modCombination,
-            allModsArray,
-            currentMaps,
-          );
-          const modsSelectors = `${modCombination
-            .map(getModSelector)
-            .join('')}${optimizedNotMods
-            .map((mod) => {
-              const sel = getModSelector(mod);
-              return sel.startsWith(':not(')
-                ? sel.slice(5, -1)
-                : `:not(${sel})`;
-            })
-            .join('')}`;
-
-          // Convert to CSS with proper selectors
-          const cssResult = convertHandlerResultToCSS(result, modsSelectors);
-
-          if (cssResult) {
-            if (cssResult.startsWith('& {') && !cssResult.includes('&', 2)) {
-              // Simple rule: "& { declarations }"
-              const declarationBlock = cssResult.slice(3, -1).trim();
-              if (declarationBlock) {
-                declarations.push(declarationBlock);
-              }
-            } else {
-              // Complex rule with nested selectors or state modifiers
-              innerStylesFragments.push(cssResult);
-            }
-          }
-        });
-      } else {
-        // Simple case: no state maps, call handler directly
-        const result = handler(styleMap as any);
-        if (result) {
-          const cssResult = convertHandlerResultToCSS(result);
-
-          if (cssResult) {
-            if (cssResult.startsWith('& {') && !cssResult.includes('&', 2)) {
-              // Simple rule: "& { declarations }"
-              const declarationBlock = cssResult.slice(3, -1).trim();
-              if (declarationBlock) {
-                declarations.push(declarationBlock);
-              }
-            } else {
-              // Complex rule with nested selectors or state modifiers
-              innerStylesFragments.push(cssResult);
-            }
-          }
-        }
-      }
-    }
-  });
 
   // Build final CSS similar to original renderStyles
   // Merge all declarations into a single rule
@@ -1250,9 +986,7 @@ export function renderStylesForGlobal(
     declarations.length > 0 ? `& { ${declarations.join('\n')} }` : '';
 
   const mediaRules =
-    responsive &&
-    responsive.length &&
-    responsiveStyles.some((s) => s.length > 0)
+    zones.length > 0 && responsiveStyles.some((s) => s.length > 0)
       ? mediaWrapper(
           responsiveStyles.map((fragments) => fragments.join('')),
           zones,
@@ -1267,4 +1001,24 @@ export function renderStylesForGlobal(
   const result = parts.join('\n');
 
   return result;
+}
+
+/**
+ * Render styles for global injection (without class names)
+ * Returns CSS with & selectors that injectGlobal can process
+ */
+export function renderStylesForGlobal(
+  styles?: Styles,
+  responsive: number[] = [],
+): string {
+  if (!styles) {
+    return '';
+  }
+
+  // Generate logical rules using shared pipeline
+  const allLogicalRules = generateLogicalRules(styles, responsive);
+  const zones = pointsToZones(responsive || []);
+
+  // Convert logical rules to global CSS
+  return logicalRulesToGlobalCSS(allLogicalRules, zones);
 }
