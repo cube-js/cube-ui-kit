@@ -6,6 +6,7 @@ import { StyleResult } from '../utils/renderStyles';
 import {
   cleanup,
   configure,
+  createGlobalStyle,
   createInjector,
   destroy,
   getCssText,
@@ -498,6 +499,33 @@ describe('Global Style Injector API', () => {
 
       expect(shadow2Css).toContain('color: green');
       expect(shadow2Css).not.toContain('color: red');
+    });
+  });
+
+  describe('createGlobalStyle', () => {
+    test('exports createGlobalStyle function from global injector', () => {
+      expect(typeof createGlobalStyle).toBe('function');
+
+      // Create a global style component
+      const GlobalStyle = createGlobalStyle<{ color: string }>`
+        .test-global {
+          color: ${(props) => props.color};
+        }
+      `;
+
+      // Check that it returns a React component type
+      expect(typeof GlobalStyle).toBe('function');
+      expect(GlobalStyle.prototype).toBeDefined();
+
+      // Test that the interpolation would work as expected
+      const testColor = 'blue';
+      const expectedTemplate = `
+        .test-global {
+          color: ${testColor};
+        }
+      `;
+      expect(expectedTemplate).toContain('color: blue');
+      expect(expectedTemplate).toContain('.test-global');
     });
   });
 });

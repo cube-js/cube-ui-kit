@@ -195,6 +195,19 @@ export function createInjector(
   return new StyleInjector(fullConfig);
 }
 
+/**
+ * Create a global style component like styled-components createGlobalStyle
+ * Returns a React component that injects global styles when mounted and cleans up when unmounted
+ */
+export function createGlobalStyle<Props = {}>(
+  strings: TemplateStringsArray,
+  ...interpolations: Array<
+    string | number | ((props: Props) => string | number)
+  >
+): import('react').ComponentType<Props & { root?: Document | ShadowRoot }> {
+  return getGlobalInjector().createGlobalStyle(strings, ...interpolations);
+}
+
 // Re-export types
 export type {
   StyleInjectorConfig,

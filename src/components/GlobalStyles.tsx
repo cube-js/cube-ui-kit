@@ -1,5 +1,4 @@
-import { createGlobalStyle } from 'styled-components';
-
+import { createGlobalStyle } from '../tasty';
 import { TOKENS } from '../tokens';
 
 interface GlobalStylesProps {
