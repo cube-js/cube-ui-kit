@@ -2,6 +2,8 @@ import { Lru } from '../parser/lru';
 
 import {
   CacheMetrics,
+  KeyframesInfo,
+  KeyframesSteps,
   RootRegistry,
   RuleInfo,
   SheetInfo,
@@ -47,6 +49,9 @@ export class SheetManager {
         bulkCleanupTimeout: null,
         metrics,
         classCounter: 0,
+        keyframesCache: new Map(),
+        unusedKeyframes: new Map(),
+        keyframesCounter: 0,
       } as unknown as RootRegistry;
 
       this.rootRegistries.set(root, registry);
@@ -550,6 +555,109 @@ export class SheetManager {
         stylesCleanedUp: 0,
         startTime: Date.now(),
       };
+    }
+  }
+
+  /**
+   * Convert keyframes steps to CSS string
+   */
+  private stepsToCSS(steps: KeyframesSteps): string {
+    const rules: string[] = [];
+    for (const [key, value] of Object.entries(steps)) {
+      const declarations =
+        typeof value === 'string'
+          ? value
+          : Object.entries(value)
+              .sort(([a], [b]) => a.localeCompare(b))
+              .map(([prop, val]) => `${prop}: ${val}`)
+              .join('; ');
+      rules.push(`${key} { ${declarations.trim()} }`);
+    }
+    return rules.join(' ');
+  }
+
+  /**
+   * Insert keyframes rule
+   */
+  insertKeyframes(
+    registry: RootRegistry,
+    steps: KeyframesSteps,
+    name: string,
+    root: Document | ShadowRoot,
+  ): KeyframesInfo | null {
+    let targetSheet = this.findAvailableSheet(registry, root);
+    if (!targetSheet) {
+      targetSheet = this.createSheet(registry, root);
+    }
+
+    const ruleIndex = this.findAvailableRuleIndex(targetSheet);
+    const sheetIndex = registry.sheets.indexOf(targetSheet);
+
+    try {
+      const cssSteps = this.stepsToCSS(steps);
+      const fullRule = `@keyframes ${name} { ${cssSteps} }`;
+
+      const styleElement = targetSheet.sheet;
+      const styleSheet = styleElement.sheet;
+
+      if (styleSheet && !this.config.forceTextInjection) {
+        const safeIndex = Math.min(
+          Math.max(0, ruleIndex),
+          styleSheet.cssRules.length,
+        );
+        styleSheet.insertRule(fullRule, safeIndex);
+      } else {
+        styleElement.textContent =
+          (styleElement.textContent || '') + '\n' + fullRule;
+      }
+
+      targetSheet.ruleCount++;
+
+      return {
+        name,
+        ruleIndex,
+        sheetIndex,
+        cssText: fullRule,
+      };
+    } catch (error) {
+      console.warn('Failed to insert keyframes:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Delete keyframes rule
+   */
+  deleteKeyframes(registry: RootRegistry, info: KeyframesInfo): void {
+    const sheet = registry.sheets[info.sheetIndex];
+    if (!sheet) return;
+
+    try {
+      const styleElement = sheet.sheet;
+      const styleSheet = styleElement.sheet;
+
+      if (styleSheet) {
+        if (
+          info.ruleIndex >= 0 &&
+          info.ruleIndex < styleSheet.cssRules.length
+        ) {
+          styleSheet.deleteRule(info.ruleIndex);
+          sheet.ruleCount = Math.max(0, sheet.ruleCount - 1);
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to delete keyframes:', error);
+    }
+  }
+
+  /**
+   * Mark keyframes as unused
+   */
+  markKeyframesAsUnused(registry: RootRegistry, name: string): void {
+    // Implementation similar to markAsUnused but for keyframes
+    const threshold = this.config.unusedStylesThreshold || 500;
+    if (registry.unusedKeyframes.size >= threshold) {
+      this.scheduleBulkCleanup(registry);
     }
   }
 

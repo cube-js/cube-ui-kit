@@ -95,6 +95,16 @@ export function inject(
 }
 
 /**
+ * Inject keyframes and return object with toString() and dispose()
+ */
+export function keyframes(
+  steps: import('./types').KeyframesSteps,
+  options?: { root?: Document | ShadowRoot },
+): import('./types').KeyframesResult {
+  return getGlobalInjector().keyframes(steps, options);
+}
+
+/**
  * Get CSS text from all sheets (for SSR)
  */
 export function getCssText(options?: { root?: Document | ShadowRoot }): string {
@@ -195,6 +205,9 @@ export type {
   RootRegistry,
   StyleRule,
   KeyframesInfo,
+  KeyframesResult,
+  KeyframesSteps,
+  KeyframesCacheEntry,
   UnusedRuleInfo,
   CacheMetrics,
 } from './types';

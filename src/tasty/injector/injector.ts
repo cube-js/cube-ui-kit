@@ -7,7 +7,13 @@ import { StyleResult } from '../utils/renderStyles';
 
 // Simple CSS text to StyleResult converter for injectGlobal backward compatibility
 import { SheetManager } from './sheet-manager';
-import { InjectResult, StyleInjectorConfig, StyleRule } from './types';
+import {
+  InjectResult,
+  KeyframesResult,
+  KeyframesSteps,
+  StyleInjectorConfig,
+  StyleRule,
+} from './types';
 
 /**
  * Generate sequential class name with format t{number}
@@ -301,6 +307,82 @@ export class StyleInjector {
     const root = options?.root || document;
     const registry = this.sheetManager.getRegistry(root);
     this.sheetManager['performBulkCleanup'](registry);
+  }
+
+  /**
+   * Inject keyframes and return object with toString() and dispose()
+   */
+  keyframes(
+    steps: KeyframesSteps,
+    options?: { root?: Document | ShadowRoot },
+  ): KeyframesResult {
+    const root = options?.root || document;
+    const registry = this.sheetManager.getRegistry(root);
+
+    if (Object.keys(steps).length === 0) {
+      return {
+        toString: () => '',
+        dispose: () => {},
+      };
+    }
+
+    // Generate cache key from steps
+    const cacheKey = JSON.stringify(steps);
+
+    // Check if already cached
+    const existing = registry.keyframesCache.get(cacheKey);
+    if (existing) {
+      existing.refCount++;
+      return {
+        toString: () => existing.name,
+        dispose: () => this.disposeKeyframes(cacheKey, registry),
+      };
+    }
+
+    // Generate new name
+    const name = `k${registry.keyframesCounter++}`;
+
+    // Insert keyframes
+    const info = this.sheetManager.insertKeyframes(registry, steps, name, root);
+    if (!info) {
+      return {
+        toString: () => '',
+        dispose: () => {},
+      };
+    }
+
+    // Cache the result
+    registry.keyframesCache.set(cacheKey, {
+      name,
+      refCount: 1,
+      info,
+    });
+
+    // Update metrics
+    if (registry.metrics) {
+      registry.metrics.totalInsertions++;
+      registry.metrics.misses++;
+    }
+
+    return {
+      toString: () => name,
+      dispose: () => this.disposeKeyframes(cacheKey, registry),
+    };
+  }
+
+  /**
+   * Dispose keyframes
+   */
+  private disposeKeyframes(cacheKey: string, registry: any): void {
+    const entry = registry.keyframesCache.get(cacheKey);
+    if (!entry) return;
+
+    entry.refCount--;
+    if (entry.refCount <= 0) {
+      // Mark as unused
+      registry.keyframesCache.delete(cacheKey);
+      this.sheetManager.markKeyframesAsUnused(registry, entry.name);
+    }
   }
 
   /**

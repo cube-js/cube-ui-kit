@@ -64,6 +64,12 @@ export interface RootRegistry {
   metrics?: CacheMetrics;
   /** Counter for generating sequential class names like t0, t1, t2... */
   classCounter: number;
+  /** Keyframes cache by JSON.stringify(steps) -> entry */
+  keyframesCache: Map<string, KeyframesCacheEntry>;
+  /** Unused keyframes for cleanup */
+  unusedKeyframes: Map<string, UnusedRuleInfo>;
+  /** Counter for generating keyframes names like k0, k1, k2... */
+  keyframesCounter: number;
 }
 
 // StyleRule is now just an alias for StyleResult from renderStyles
@@ -74,4 +80,18 @@ export interface KeyframesInfo {
   sheetIndex: number;
   ruleIndex: number;
   cssText: string;
+}
+
+export type KeyframeStep = string | Record<string, string | number>;
+export type KeyframesSteps = Record<string, KeyframeStep>;
+
+export interface KeyframesResult {
+  toString(): string;
+  dispose: () => void;
+}
+
+export interface KeyframesCacheEntry {
+  name: string;
+  refCount: number;
+  info: KeyframesInfo;
 }

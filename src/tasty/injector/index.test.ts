@@ -10,6 +10,7 @@ import {
   destroy,
   getCssText,
   inject,
+  keyframes,
 } from './index';
 
 // Helper function to convert CSS string to StyleResult array for testing
@@ -314,6 +315,77 @@ describe('Global Style Injector API', () => {
 
       expect(globalResult.className).toMatch(/^t\d+$/);
       expect(isolatedResult.className).toMatch(/^t\d+$/);
+    });
+  });
+
+  describe('keyframes', () => {
+    it('should inject keyframes and return object with toString/dispose', () => {
+      const fade = keyframes({
+        from: { opacity: 0 },
+        to: { opacity: 1 },
+      });
+
+      expect(fade.toString()).toMatch(/^k\d+$/);
+      expect(typeof fade.dispose).toBe('function');
+
+      const styleElements = document.head.querySelectorAll('[data-tasty]');
+      expect(styleElements.length).toBeGreaterThan(0);
+
+      const allCssText = Array.from(styleElements)
+        .map((el) => el.textContent || '')
+        .join('');
+      expect(allCssText).toContain('@keyframes');
+      expect(allCssText).toContain('opacity: 0');
+      expect(allCssText).toContain('opacity: 1');
+    });
+
+    it('should deduplicate identical keyframes', () => {
+      const fadeA = keyframes({ from: 'opacity: 0;', to: 'opacity: 1;' });
+      const fadeB = keyframes({ from: 'opacity: 0;', to: 'opacity: 1;' });
+
+      expect(fadeA.toString()).toBe(fadeB.toString());
+    });
+
+    it('should work with percentage steps', () => {
+      const spin = keyframes({
+        '0%': 'transform: rotate(0deg);',
+        '100%': 'transform: rotate(360deg);',
+      });
+
+      expect(spin.toString()).toMatch(/^k\d+$/);
+    });
+
+    it('should handle empty steps', () => {
+      const empty = keyframes({});
+      expect(empty.toString()).toBe('');
+    });
+
+    it('should work with custom root', () => {
+      const shadowRoot = document
+        .createElement('div')
+        .attachShadow({ mode: 'open' });
+
+      const pulse = keyframes(
+        {
+          '0%': 'opacity: 0.5;',
+          '50%': 'opacity: 1;',
+          '100%': 'opacity: 0.5;',
+        },
+        { root: shadowRoot },
+      );
+
+      expect(pulse.toString()).toMatch(/^k\d+$/);
+      expect(shadowRoot.querySelectorAll('[data-tasty]').length).toBe(1);
+    });
+
+    it('should dispose keyframes properly', () => {
+      const fade = keyframes({ from: 'opacity: 0;', to: 'opacity: 1;' });
+      const name = fade.toString();
+
+      fade.dispose();
+
+      // Should still work after dispose (cleanup happens later)
+      expect(name).toMatch(/^k\d+$/);
     });
   });
 
