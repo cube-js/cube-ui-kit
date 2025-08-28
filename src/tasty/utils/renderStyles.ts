@@ -3,6 +3,7 @@
  * Eliminates CSS string parsing for better performance
  */
 
+import { Lru } from '../parser/lru';
 import { createStyle, STYLE_HANDLER_MAP } from '../styles';
 import { Styles } from '../styles/types';
 
@@ -146,25 +147,43 @@ interface ParsedAttributeSelector {
   fullSelector: string;
 }
 
+// Cache for parsed attribute selectors with bounded size to prevent memory leaks
+const attributeSelectorCache = new Lru<string, ParsedAttributeSelector | null>(
+  5000,
+);
+
 function parseAttributeSelector(
   selector: string,
 ): ParsedAttributeSelector | null {
+  // Check cache first
+  const cached = attributeSelectorCache.get(selector);
+  if (cached !== undefined) {
+    return cached;
+  }
+
   // Match patterns like [data-size="medium"] or [data-is-selected]
   const match = selector.match(/^\[([^=\]]+)(?:="([^"]+)")?\]$/);
-  if (!match) return null;
+  const result = match
+    ? {
+        attribute: match[1],
+        value: match[2] || 'true', // Handle boolean attributes
+        fullSelector: selector,
+      }
+    : null;
 
-  return {
-    attribute: match[1],
-    value: match[2] || 'true', // Handle boolean attributes
-    fullSelector: selector,
-  };
+  // Cache the result
+  attributeSelectorCache.set(selector, result);
+  return result;
 }
 
-function hasConflictingAttributeSelectors(mods: string[]): boolean {
+function hasConflictingAttributeSelectors(
+  mods: string[],
+  parsedMods?: Map<string, ParsedAttributeSelector | null>,
+): boolean {
   const attributeMap = new Map<string, string[]>();
 
   for (const mod of mods) {
-    const parsed = parseAttributeSelector(mod);
+    const parsed = parsedMods?.get(mod) ?? parseAttributeSelector(mod);
     if (parsed && parsed.value !== 'true') {
       if (!attributeMap.has(parsed.attribute)) {
         attributeMap.set(parsed.attribute, []);
@@ -181,42 +200,69 @@ function hasConflictingAttributeSelectors(mods: string[]): boolean {
   return false;
 }
 
-function optimizeNotSelectors(
+// Interface for precomputed attribute maps to optimize not selector generation
+interface AttributeMaps {
+  allAttributes: Map<string, Set<string>>;
+  currentAttributes: Map<string, string>;
+  parsedMods: Map<string, ParsedAttributeSelector | null>;
+}
+
+// Build precomputed attribute maps for efficient not selector optimization
+function buildAttributeMaps(
   currentMods: string[],
   allMods: string[],
-): string[] {
-  const attributeMap = new Map<string, Set<string>>();
-  const currentAttributeMap = new Map<string, string>();
+): AttributeMaps {
+  const allAttributes = new Map<string, Set<string>>();
+  const currentAttributes = new Map<string, string>();
+  const parsedMods = new Map<string, ParsedAttributeSelector | null>();
+
+  // Parse all mods once and cache results
+  const allModsSet = new Set([...currentMods, ...allMods]);
+  for (const mod of allModsSet) {
+    if (!parsedMods.has(mod)) {
+      parsedMods.set(mod, parseAttributeSelector(mod));
+    }
+  }
 
   // Build map of all possible values for each attribute
   for (const mod of allMods) {
-    const parsed = parseAttributeSelector(mod);
+    const parsed = parsedMods.get(mod);
     if (parsed && parsed.value !== 'true') {
-      if (!attributeMap.has(parsed.attribute)) {
-        attributeMap.set(parsed.attribute, new Set());
+      if (!allAttributes.has(parsed.attribute)) {
+        allAttributes.set(parsed.attribute, new Set());
       }
-      attributeMap.get(parsed.attribute)!.add(parsed.value);
+      allAttributes.get(parsed.attribute)!.add(parsed.value);
     }
   }
 
   // Build map of current mod attribute values
   for (const mod of currentMods) {
-    const parsed = parseAttributeSelector(mod);
+    const parsed = parsedMods.get(mod);
     if (parsed && parsed.value !== 'true') {
-      currentAttributeMap.set(parsed.attribute, parsed.value);
+      currentAttributes.set(parsed.attribute, parsed.value);
     }
   }
+
+  return { allAttributes, currentAttributes, parsedMods };
+}
+
+function optimizeNotSelectors(
+  currentMods: string[],
+  allMods: string[],
+  precomputedMaps?: AttributeMaps,
+): string[] {
+  const maps = precomputedMaps || buildAttributeMaps(currentMods, allMods);
 
   const notMods = allMods.filter((mod) => !currentMods.includes(mod));
   const optimizedNotMods: string[] = [];
 
   for (const mod of notMods) {
-    const parsed = parseAttributeSelector(mod);
+    const parsed = maps.parsedMods.get(mod);
 
     if (parsed && parsed.value !== 'true') {
       // If we already have a value for this attribute, skip this not selector
       // because it's already mutually exclusive
-      if (currentAttributeMap.has(parsed.attribute)) {
+      if (maps.currentAttributes.has(parsed.attribute)) {
         continue;
       }
     }
@@ -576,12 +622,21 @@ export function renderStyles(
             });
 
             const allModsArray = Array.from(allMods);
+
+            // Precompute attribute maps once for all combinations
+            const attributeMaps = buildAttributeMaps([], allModsArray);
+
             const combinations: string[][] = [[]];
             for (let i = 0; i < allModsArray.length; i++) {
               const currentLength = combinations.length;
               for (let j = 0; j < currentLength; j++) {
                 const newCombination = [...combinations[j], allModsArray[i]];
-                if (!hasConflictingAttributeSelectors(newCombination)) {
+                if (
+                  !hasConflictingAttributeSelectors(
+                    newCombination,
+                    attributeMaps.parsedMods,
+                  )
+                ) {
                   combinations.push(newCombination);
                 }
               }
@@ -602,9 +657,15 @@ export function renderStyles(
                 }
               });
 
+              // Use precomputed maps for efficient not selector optimization
+              const currentMaps = buildAttributeMaps(
+                modCombination,
+                allModsArray,
+              );
               const optimizedNotMods = optimizeNotSelectors(
                 modCombination,
                 allModsArray,
+                currentMaps,
               );
               const modsSelectors = `${modCombination
                 .map(getModSelector)
@@ -669,6 +730,10 @@ export function renderStyles(
 
           // Generate all possible mod combinations
           const allModsArray = Array.from(allMods);
+
+          // Precompute attribute maps once for all combinations
+          const attributeMaps = buildAttributeMaps([], allModsArray);
+
           const combinations: string[][] = [[]]; // Start with empty combination
 
           // Generate all combinations (including empty)
@@ -677,7 +742,12 @@ export function renderStyles(
             for (let j = 0; j < currentLength; j++) {
               const newCombination = [...combinations[j], allModsArray[i]];
               // Skip combinations with conflicting attribute selectors
-              if (!hasConflictingAttributeSelectors(newCombination)) {
+              if (
+                !hasConflictingAttributeSelectors(
+                  newCombination,
+                  attributeMaps.parsedMods,
+                )
+              ) {
                 combinations.push(newCombination);
               }
             }
@@ -699,9 +769,15 @@ export function renderStyles(
               }
             });
 
+            // Use precomputed maps for efficient not selector optimization
+            const currentMaps = buildAttributeMaps(
+              modCombination,
+              allModsArray,
+            );
             const optimizedNotMods = optimizeNotSelectors(
               modCombination,
               allModsArray,
+              currentMaps,
             );
             const modsSelectors = `${modCombination
               .map(getModSelector)
@@ -936,12 +1012,21 @@ export function renderStylesForGlobal(
           });
 
           const allModsArray = Array.from(allMods);
+
+          // Precompute attribute maps once for all combinations
+          const attributeMaps = buildAttributeMaps([], allModsArray);
+
           const combinations: string[][] = [[]];
           for (let a = 0; a < allModsArray.length; a++) {
             const currentLength = combinations.length;
             for (let b = 0; b < currentLength; b++) {
               const newCombination = [...combinations[b], allModsArray[a]];
-              if (!hasConflictingAttributeSelectors(newCombination)) {
+              if (
+                !hasConflictingAttributeSelectors(
+                  newCombination,
+                  attributeMaps.parsedMods,
+                )
+              ) {
                 combinations.push(newCombination);
               }
             }
@@ -962,9 +1047,15 @@ export function renderStylesForGlobal(
               }
             });
 
+            // Use precomputed maps for efficient not selector optimization
+            const currentMaps = buildAttributeMaps(
+              modCombination,
+              allModsArray,
+            );
             const optimizedNotMods = optimizeNotSelectors(
               modCombination,
               allModsArray,
+              currentMaps,
             );
             const modsSelectors = `${modCombination
               .map(getModSelector)
@@ -1020,6 +1111,10 @@ export function renderStylesForGlobal(
 
         // Generate all possible mod combinations
         const allModsArray = Array.from(allMods);
+
+        // Precompute attribute maps once for all combinations
+        const attributeMaps = buildAttributeMaps([], allModsArray);
+
         const combinations: string[][] = [[]]; // Start with empty combination
 
         // Generate all combinations (including empty)
@@ -1028,7 +1123,12 @@ export function renderStylesForGlobal(
           for (let j = 0; j < currentLength; j++) {
             const newCombination = [...combinations[j], allModsArray[i]];
             // Skip combinations with conflicting attribute selectors
-            if (!hasConflictingAttributeSelectors(newCombination)) {
+            if (
+              !hasConflictingAttributeSelectors(
+                newCombination,
+                attributeMaps.parsedMods,
+              )
+            ) {
               combinations.push(newCombination);
             }
           }
@@ -1053,9 +1153,12 @@ export function renderStylesForGlobal(
           const result = handler(stateProps as any);
           if (!result) return;
 
+          // Use precomputed maps for efficient not selector optimization
+          const currentMaps = buildAttributeMaps(modCombination, allModsArray);
           const optimizedNotMods = optimizeNotSelectors(
             modCombination,
             allModsArray,
+            currentMaps,
           );
           const modsSelectors = `${modCombination
             .map(getModSelector)
