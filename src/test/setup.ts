@@ -1,5 +1,4 @@
 import '@testing-library/jest-dom';
-import 'jest-styled-components';
 import './tasty-jest';
 
 import { configure } from '@testing-library/react';
