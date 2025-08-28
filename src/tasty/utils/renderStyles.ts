@@ -874,14 +874,36 @@ export function renderStyles(
   // Kick off processing from the root styles with empty suffix
   processStyles(styles, '');
 
-  // Materialize all logical rules into final format
+  // Accumulate declarations before materialization to reduce duplication
+  const accumulatedRules = new Map<string, LogicalRule>();
+
+  for (const rule of allLogicalRules) {
+    // Create a key based on breakpointIdx, selectorSuffix, and responsiveOrigin
+    const ruleKey = `${rule.breakpointIdx}|${rule.selectorSuffix}|${rule.responsiveSource}`;
+
+    const existing = accumulatedRules.get(ruleKey);
+    if (existing) {
+      // Merge declarations from this rule into the existing one
+      Object.assign(existing.declarations, rule.declarations);
+    } else {
+      // Create a new accumulated rule
+      accumulatedRules.set(ruleKey, {
+        selectorSuffix: rule.selectorSuffix,
+        breakpointIdx: rule.breakpointIdx,
+        declarations: { ...rule.declarations },
+        responsiveSource: rule.responsiveSource,
+      });
+    }
+  }
+
+  // Materialize the accumulated logical rules into final format
   const finalRulesRaw = materializeRules(
-    allLogicalRules,
+    Array.from(accumulatedRules.values()),
     className,
     zones || [],
   );
 
-  // De-duplicate identical rules (same selector, declarations, and at-rules)
+  // Simplified deduplication (should be much less work now)
   const seen = new Set<string>();
   const finalRules = finalRulesRaw.filter((rule) => {
     const at =
