@@ -99,9 +99,9 @@ export function inject(
  */
 export function keyframes(
   steps: import('./types').KeyframesSteps,
-  options?: { root?: Document | ShadowRoot },
+  nameOrOptions?: string | { root?: Document | ShadowRoot; name?: string },
 ): import('./types').KeyframesResult {
-  return getGlobalInjector().keyframes(steps, options);
+  return getGlobalInjector().keyframes(steps, nameOrOptions);
 }
 
 /**

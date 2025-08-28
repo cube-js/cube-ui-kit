@@ -387,6 +387,40 @@ describe('Global Style Injector API', () => {
       // Should still work after dispose (cleanup happens later)
       expect(name).toMatch(/^k\d+$/);
     });
+
+    it('should allow custom names via options', () => {
+      const customFade = keyframes(
+        { from: 'opacity: 0;', to: 'opacity: 1;' },
+        { name: 'customFade' },
+      );
+
+      expect(customFade.toString()).toBe('customFade');
+    });
+
+    it('should allow custom names via string parameter', () => {
+      const customFade = keyframes(
+        { from: 'opacity: 0;', to: 'opacity: 1;' },
+        'directName',
+      );
+
+      expect(customFade.toString()).toBe('directName');
+    });
+
+    it('should cache by name and steps separately', () => {
+      const fade1 = keyframes(
+        { from: 'opacity: 0;', to: 'opacity: 1;' },
+        { name: 'fade' },
+      );
+      const fade2 = keyframes(
+        { from: 'opacity: 0;', to: 'opacity: 1;' },
+        'fade',
+      );
+      const fade3 = keyframes({ from: 'opacity: 0;', to: 'opacity: 1;' });
+
+      expect(fade1.toString()).toBe('fade');
+      expect(fade2.toString()).toBe('fade'); // Same name + steps = reused
+      expect(fade3.toString()).toMatch(/^k\d+$/); // Different cache key (no name)
+    });
   });
 
   describe('integration', () => {

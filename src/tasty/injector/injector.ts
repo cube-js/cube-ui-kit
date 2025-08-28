@@ -314,9 +314,12 @@ export class StyleInjector {
    */
   keyframes(
     steps: KeyframesSteps,
-    options?: { root?: Document | ShadowRoot },
+    nameOrOptions?: string | { root?: Document | ShadowRoot; name?: string },
   ): KeyframesResult {
-    const root = options?.root || document;
+    // Parse parameters
+    const isStringName = typeof nameOrOptions === 'string';
+    const providedName = isStringName ? nameOrOptions : nameOrOptions?.name;
+    const root = isStringName ? document : nameOrOptions?.root || document;
     const registry = this.sheetManager.getRegistry(root);
 
     if (Object.keys(steps).length === 0) {
@@ -326,8 +329,10 @@ export class StyleInjector {
       };
     }
 
-    // Generate cache key from steps
-    const cacheKey = JSON.stringify(steps);
+    // Generate cache key from steps and name
+    const cacheKey = providedName
+      ? `${providedName}:${JSON.stringify(steps)}`
+      : JSON.stringify(steps);
 
     // Check if already cached
     const existing = registry.keyframesCache.get(cacheKey);
@@ -339,8 +344,8 @@ export class StyleInjector {
       };
     }
 
-    // Generate new name
-    const name = `k${registry.keyframesCounter++}`;
+    // Use provided name or generate new one
+    const name = providedName || `k${registry.keyframesCounter++}`;
 
     // Insert keyframes
     const info = this.sheetManager.insertKeyframes(registry, steps, name, root);
