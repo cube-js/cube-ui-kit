@@ -464,10 +464,10 @@ export function styleStateMapToStyleStateDataList(
 }
 
 export const COMPUTE_FUNC_MAP = {
-  '!': (a) => !a,
-  '^': (a, b) => a ^ b,
-  '|': (a, b) => a | b,
-  '&': (a, b) => a & b,
+  '!': (a) => !a, // NOT - boolean negation
+  '^': (a, b) => (a && !b) || (!a && b), // XOR - true when exactly one is true
+  '|': (a, b) => a || b, // OR - logical OR
+  '&': (a, b) => a && b, // AND - logical AND
 };
 
 /**

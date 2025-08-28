@@ -36,6 +36,20 @@ function stateMapToArrayOfStateMaps(
   value: Record<string, any>,
   zoneNumber: number,
 ): Array<Record<string, any>> {
+  // Short-circuit for single zone - avoid array allocation
+  if (zoneNumber === 1) {
+    const singleMap: Record<string, any> = {};
+    for (const [state, stateValue] of Object.entries(value)) {
+      if (Array.isArray(stateValue)) {
+        // Take the first value from the array or null if empty
+        singleMap[state] = stateValue.length > 0 ? stateValue[0] : null;
+      } else {
+        singleMap[state] = stateValue;
+      }
+    }
+    return [singleMap];
+  }
+
   const result: Array<Record<string, any>> = Array.from(
     { length: zoneNumber },
     () => ({}),
@@ -66,16 +80,59 @@ function normalizeArrayWithStateMaps(
   valueArray: any[],
   zoneNumber: number,
 ): Array<Record<string, any>> {
+  // Short-circuit for single zone - avoid array propagation and mapping
+  if (zoneNumber === 1) {
+    const firstEntry = valueArray.length > 0 ? valueArray[0] : null;
+    if (
+      firstEntry &&
+      typeof firstEntry === 'object' &&
+      !Array.isArray(firstEntry)
+    ) {
+      return [firstEntry as Record<string, any>];
+    }
+    return [{ '': firstEntry }];
+  }
+
   const propagated = normalizeStyleZones(
     valueArray as any,
     zoneNumber,
   ) as any[];
-  return propagated.map((entry) => {
+
+  // Trim trailing null/undefined entries to reduce processing
+  let lastNonNullIndex = propagated.length - 1;
+  while (lastNonNullIndex >= 0 && propagated[lastNonNullIndex] == null) {
+    lastNonNullIndex--;
+  }
+
+  // If all entries are null, return minimal array
+  if (lastNonNullIndex < 0) {
+    return Array.from({ length: zoneNumber }, () => ({ '': null }));
+  }
+
+  // Process only up to the last non-null entry, then fill the rest with the last value
+  const result: Array<Record<string, any>> = [];
+  let lastProcessedEntry: Record<string, any> | null = null;
+
+  for (let i = 0; i <= lastNonNullIndex; i++) {
+    const entry = propagated[i];
+    let processedEntry: Record<string, any>;
+
     if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
-      return entry as Record<string, any>;
+      processedEntry = entry as Record<string, any>;
+    } else {
+      processedEntry = { '': entry };
     }
-    return { '': entry } as Record<string, any>;
-  });
+
+    result.push(processedEntry);
+    lastProcessedEntry = processedEntry;
+  }
+
+  // Fill remaining slots with the last processed entry (CSS cascade behavior)
+  for (let i = lastNonNullIndex + 1; i < zoneNumber; i++) {
+    result.push(lastProcessedEntry || { '': null });
+  }
+
+  return result;
 }
 
 export interface StyleResult {
