@@ -17,7 +17,7 @@ const placeholderAnimation = keyframes({
     'background-position': '0 0',
   },
   '100%': {
-    'background-position': 'var(--placeholder-animation-size) 0',
+    'background-position': '$placeholder-animation-size 0',
   },
 });
 
@@ -30,6 +30,14 @@ const StyledPlaceholder = tasty({
     fill: '#dark.10',
     height: '2x',
     opacity: '.35',
+    aspectRatio: {
+      '': 'initial',
+      circle: '1 / 1',
+    },
+    radius: {
+      '': '1r',
+      circle: 'round',
+    },
 
     // CSS custom properties for animation
     '$placeholder-animation-time': '1.4s',
@@ -80,11 +88,9 @@ export const Placeholder = forwardRef(function Placeholder(
       role="region"
       {...filterBaseProps(props, { eventProps: true })}
       ref={ref}
-      mods={{ animated: !isStatic }}
+      mods={{ animated: !isStatic, circle }}
       styles={{
         height: size,
-        width: circle ? size : false,
-        radius: circle ? '9999rem' : '1r',
         ...styles,
       }}
     />

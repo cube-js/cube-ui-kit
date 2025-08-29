@@ -1,4 +1,5 @@
 import { Lru } from '../parser/lru';
+import { createStyle, STYLE_HANDLER_MAP } from '../styles';
 import { camelToKebab } from '../utils/case-converter';
 
 import {
@@ -12,6 +13,8 @@ import {
   StyleRule,
   UnusedRuleInfo,
 } from './types';
+
+import type { StyleHandler } from '../utils/styles';
 
 export class SheetManager {
   private rootRegistries = new WeakMap<Document | ShadowRoot, RootRegistry>();
@@ -641,16 +644,85 @@ export class SheetManager {
    */
   private stepsToCSS(steps: KeyframesSteps): string {
     const rules: string[] = [];
+
     for (const [key, value] of Object.entries(steps)) {
-      const declarations =
-        typeof value === 'string'
-          ? value
-          : Object.entries(value)
-              .sort(([a], [b]) => a.localeCompare(b))
-              .map(([prop, val]) => `${camelToKebab(prop)}: ${val}`)
-              .join('; ');
+      // Support raw CSS strings for backwards compatibility
+      if (typeof value === 'string') {
+        rules.push(`${key} { ${value.trim()} }`);
+        continue;
+      }
+
+      // Treat value as a style map and process via tasty style handlers
+      const styleMap = (value || {}) as Record<string, any>;
+
+      // Build a deterministic handler queue based on present style keys
+      const styleNames = Object.keys(styleMap).sort();
+      const handlerQueue: StyleHandler[] = [];
+      const seenHandlers = new Set<StyleHandler>();
+
+      styleNames.forEach((styleName) => {
+        let handlers = STYLE_HANDLER_MAP[styleName];
+        if (!handlers) {
+          // Create a default handler for unknown styles (maps to kebab-case CSS or custom props)
+          handlers = STYLE_HANDLER_MAP[styleName] = [createStyle(styleName)];
+        }
+
+        handlers.forEach((handler) => {
+          if (!seenHandlers.has(handler)) {
+            seenHandlers.add(handler);
+            handlerQueue.push(handler);
+          }
+        });
+      });
+
+      // Accumulate declarations (ordered). We intentionally ignore `$` selector fan-out
+      // and any responsive/state bindings for keyframes.
+      const declarationPairs: Array<{ prop: string; value: string }> = [];
+
+      handlerQueue.forEach((handler) => {
+        const lookup = handler.__lookupStyles;
+        const filteredMap = lookup.reduce(
+          (acc, name) => {
+            const v = styleMap[name];
+            if (v !== undefined) acc[name] = v;
+            return acc;
+          },
+          {} as Record<string, any>,
+        );
+
+        const result = handler(filteredMap as any);
+        if (!result) return;
+
+        const results = Array.isArray(result) ? result : [result];
+        results.forEach((cssMap) => {
+          if (!cssMap || typeof cssMap !== 'object') return;
+          const { $, ...props } = cssMap as Record<string, any>;
+
+          Object.entries(props).forEach(([prop, val]) => {
+            if (val == null || val === '') return;
+
+            if (Array.isArray(val)) {
+              // Multiple values for the same property -> emit in order
+              val.forEach((v) => {
+                if (v != null && v !== '') {
+                  declarationPairs.push({ prop, value: String(v) });
+                }
+              });
+            } else {
+              declarationPairs.push({ prop, value: String(val) });
+            }
+          });
+        });
+      });
+
+      // Fallback: if nothing produced (e.g., empty object), generate empty block
+      const declarations = declarationPairs
+        .map((d) => `${d.prop}: ${d.value}`)
+        .join('; ');
+
       rules.push(`${key} { ${declarations.trim()} }`);
     }
+
     return rules.join(' ');
   }
 
