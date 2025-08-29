@@ -67,6 +67,14 @@ export class StyleInjector {
     if (generatedClass && registry.rules.has(generatedClass)) {
       const currentRefCount = registry.refCounts.get(generatedClass) || 0;
       registry.refCounts.set(generatedClass, currentRefCount + 1);
+      // If this class was previously marked as unused, clear that state now
+      if (registry.unusedRules.has(generatedClass)) {
+        registry.unusedRules.delete(generatedClass);
+        if (registry.metrics) {
+          // Consider this a reuse rather than a cold miss
+          registry.metrics.unusedHits++;
+        }
+      }
 
       // Update metrics
       if (registry.metrics) {

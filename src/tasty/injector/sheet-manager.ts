@@ -575,6 +575,25 @@ export class SheetManager {
       rulesInSheet.sort((a, b) => b.ruleInfo.ruleIndex - a.ruleInfo.ruleIndex);
 
       for (const { className, ruleInfo } of rulesInSheet) {
+        // SAFETY: Re-check that the rule is still unused at deletion time.
+        // Between scheduling and execution a class may have been restored
+        // (refCounts set and removed from unusedRules). Skip such entries.
+        if (!registry.unusedRules.has(className)) {
+          continue;
+        }
+        if (registry.refCounts.has(className)) {
+          // Class became active again; do not delete
+          continue;
+        }
+
+        // Ensure we delete the same RuleInfo we marked earlier to avoid
+        // accidentally deleting updated rules for the same class.
+        const currentInfo = registry.rules.get(className);
+        if (currentInfo && currentInfo !== ruleInfo) {
+          // Rule was replaced; skip deletion of the old reference
+          continue;
+        }
+
         this.deleteRule(registry, ruleInfo);
         registry.rules.delete(className);
         registry.unusedRules.delete(className);
