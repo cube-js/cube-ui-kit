@@ -70,6 +70,8 @@ export interface RootRegistry {
   unusedKeyframes: Map<string, UnusedRuleInfo>;
   /** Counter for generating keyframes names like k0, k1, k2... */
   keyframesCounter: number;
+  /** Set of injected @property names for tracking */
+  injectedProperties: Set<string>;
 }
 
 // StyleRule is now just an alias for StyleResult from renderStyles

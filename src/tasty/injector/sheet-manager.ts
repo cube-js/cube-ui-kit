@@ -56,6 +56,7 @@ export class SheetManager {
         keyframesCache: new Map(),
         unusedKeyframes: new Map(),
         keyframesCounter: 0,
+        injectedProperties: new Set<string>(),
       } as unknown as RootRegistry;
 
       this.rootRegistries.set(root, registry);

@@ -6,6 +6,7 @@
 import { Component, createElement } from 'react';
 
 import { StyleResult } from '../utils/renderStyles';
+import { parseStyle } from '../utils/styles';
 
 // Simple CSS text to StyleResult converter for injectGlobal backward compatibility
 import { SheetManager } from './sheet-manager';
@@ -332,6 +333,83 @@ export class StyleInjector {
     const root = options?.root || document;
     const registry = this.sheetManager.getRegistry(root);
     this.sheetManager['performBulkCleanup'](registry);
+  }
+
+  /**
+   * Define a CSS @property custom property
+   * Example:
+   * @property --rotation { syntax: "<angle>"; inherits: false; initial-value: 45deg; }
+   * Note: No caching or dispose — this defines a global property.
+   */
+  property(
+    name: string,
+    options?: {
+      syntax?: string;
+      inherits?: boolean;
+      initialValue?: string | number;
+      root?: Document | ShadowRoot;
+    },
+  ): void {
+    const root = options?.root || document;
+    const registry = this.sheetManager.getRegistry(root);
+
+    // Check if already defined to avoid duplicates
+    if (registry.injectedProperties.has(name)) {
+      return;
+    }
+
+    const parts: string[] = [];
+
+    if (options?.syntax != null) {
+      let syntax = String(options.syntax).trim();
+      if (!/^['"]/u.test(syntax)) syntax = `"${syntax}"`;
+      parts.push(`syntax: ${syntax};`);
+    }
+
+    if (options?.inherits != null) {
+      parts.push(`inherits: ${options.inherits ? 'true' : 'false'};`);
+    }
+
+    if (options?.initialValue != null) {
+      let initialValueStr: string;
+      if (typeof options.initialValue === 'number') {
+        initialValueStr = String(options.initialValue);
+      } else {
+        // Process via tasty parser to resolve custom units/functions
+        initialValueStr = parseStyle(options.initialValue as any).output;
+      }
+      parts.push(`initial-value: ${initialValueStr};`);
+    }
+
+    const declarations = parts.join(' ').trim();
+
+    const rule: StyleRule = {
+      selector: `@property ${name}`,
+      declarations,
+    } as StyleRule;
+
+    // Insert as a global rule; ignore returned info (no tracking/dispose)
+    this.sheetManager.insertGlobalRule(
+      registry,
+      [rule],
+      `property:${name}`,
+      root,
+    );
+
+    // Track that this property was injected
+    registry.injectedProperties.add(name);
+  }
+
+  /**
+   * Check whether a given @property name was already injected by this injector
+   */
+  isPropertyDefined(
+    name: string,
+    options?: { root?: Document | ShadowRoot },
+  ): boolean {
+    const root = options?.root || document;
+    const registry = this.sheetManager.getRegistry(root);
+    return registry.injectedProperties.has(name);
   }
 
   /**
