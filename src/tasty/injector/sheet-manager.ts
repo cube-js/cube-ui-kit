@@ -40,6 +40,7 @@ export class SheetManager {
             totalInsertions: 0,
             totalUnused: 0,
             stylesCleanedUp: 0,
+            cleanupHistory: [],
             startTime: Date.now(),
           }
         : undefined;
@@ -532,8 +533,11 @@ export class SheetManager {
   private performBulkCleanup(registry: RootRegistry): void {
     if (registry.unusedRules.size === 0) return;
 
+    const cleanupStartTime = Date.now();
     const classNamesToCleanup = Array.from(registry.unusedRules.keys());
     let cleanedUpCount = 0;
+    let totalCssSize = 0;
+    let totalRulesDeleted = 0;
 
     // Group by sheet for efficient deletion
     const rulesBySheet = new Map<
@@ -541,17 +545,28 @@ export class SheetManager {
       Array<{ className: string; ruleInfo: RuleInfo }>
     >();
 
+    // Calculate CSS size before deletion and group rules
     for (const className of classNamesToCleanup) {
       const unusedInfo = registry.unusedRules.get(className);
       if (!unusedInfo) continue;
 
-      const sheetIndex = unusedInfo.ruleInfo.sheetIndex;
+      const ruleInfo = unusedInfo.ruleInfo;
+      const sheetIndex = ruleInfo.sheetIndex;
+
+      // Calculate CSS size for this rule
+      const cssSize = ruleInfo.cssText.reduce(
+        (total, css) => total + css.length,
+        0,
+      );
+      totalCssSize += cssSize;
+
+      // Count number of rules (based on cssText array length)
+      totalRulesDeleted += ruleInfo.cssText.length;
+
       if (!rulesBySheet.has(sheetIndex)) {
         rulesBySheet.set(sheetIndex, []);
       }
-      rulesBySheet
-        .get(sheetIndex)!
-        .push({ className, ruleInfo: unusedInfo.ruleInfo });
+      rulesBySheet.get(sheetIndex)!.push({ className, ruleInfo });
     }
 
     // Delete rules from each sheet (in reverse order to preserve indices)
@@ -571,6 +586,14 @@ export class SheetManager {
     if (registry.metrics) {
       registry.metrics.bulkCleanups++;
       registry.metrics.stylesCleanedUp += cleanedUpCount;
+
+      // Add detailed cleanup stats to history
+      registry.metrics.cleanupHistory.push({
+        timestamp: cleanupStartTime,
+        classesDeleted: cleanedUpCount,
+        cssSize: totalCssSize,
+        rulesDeleted: totalRulesDeleted,
+      });
     }
   }
 
@@ -635,6 +658,7 @@ export class SheetManager {
         totalInsertions: 0,
         totalUnused: 0,
         stylesCleanedUp: 0,
+        cleanupHistory: [],
         startTime: Date.now(),
       };
     }

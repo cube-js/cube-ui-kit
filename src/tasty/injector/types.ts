@@ -37,6 +37,13 @@ export interface UnusedRuleInfo {
   markedUnusedAt: number; // timestamp when marked as unused
 }
 
+export interface CleanupStats {
+  timestamp: number;
+  classesDeleted: number;
+  cssSize: number;
+  rulesDeleted: number;
+}
+
 export interface CacheMetrics {
   hits: number;
   misses: number;
@@ -45,6 +52,7 @@ export interface CacheMetrics {
   totalInsertions: number;
   totalUnused: number; // total styles marked as unused
   stylesCleanedUp: number; // total number of styles cleaned up in bulk operations
+  cleanupHistory: CleanupStats[]; // detailed history of each cleanup operation
   startTime: number;
 }
 

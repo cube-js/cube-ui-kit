@@ -291,6 +291,23 @@ export const tastyDebug = {
     definedKeyframes: { name: string; refCount: number; cssText?: string }[];
     propertyCount: number;
     keyframeCount: number;
+    cleanupSummary: {
+      enabled: boolean;
+      totalCleanups: number;
+      totalClassesDeleted: number;
+      totalCssDeleted: number;
+      totalRulesDeleted: number;
+      averageClassesPerCleanup: number;
+      averageCssPerCleanup: number;
+      averageRulesPerCleanup: number;
+      lastCleanup?: {
+        timestamp: number;
+        date: string;
+        classesDeleted: number;
+        cssSize: number;
+        rulesDeleted: number;
+      };
+    };
   } {
     const usage = this.getClassUsage();
     const allCSS = this.getAllCSS();
@@ -299,6 +316,7 @@ export const tastyDebug = {
     const metrics = injector.instance.getMetrics();
     const definedProperties = this.getDefinedProperties();
     const definedKeyframes = this.getDefinedKeyframes();
+    const cleanupSummary = this.getCleanupSummary();
 
     const summary = {
       activeClasses: usage.activeClasses,
@@ -315,6 +333,7 @@ export const tastyDebug = {
       definedKeyframes,
       propertyCount: definedProperties.length,
       keyframeCount: definedKeyframes.length,
+      cleanupSummary,
     };
 
     console.group('🎨 Comprehensive Tasty Debug Summary');
@@ -340,6 +359,39 @@ export const tastyDebug = {
       console.log(
         '  • Keyframes:',
         definedKeyframes.map((k) => `${k.name} (refs: ${k.refCount})`),
+      );
+    }
+    console.log('🧹 Cleanup Statistics:');
+    if (cleanupSummary.enabled) {
+      console.log(
+        `  • Total cleanups performed: ${cleanupSummary.totalCleanups}`,
+      );
+      console.log(
+        `  • Total classes deleted: ${cleanupSummary.totalClassesDeleted}`,
+      );
+      console.log(
+        `  • Total CSS deleted: ${cleanupSummary.totalCssDeleted} chars`,
+      );
+      console.log(
+        `  • Total rules deleted: ${cleanupSummary.totalRulesDeleted}`,
+      );
+      if (cleanupSummary.totalCleanups > 0) {
+        console.log(
+          `  • Avg classes per cleanup: ${cleanupSummary.averageClassesPerCleanup.toFixed(1)}`,
+        );
+        console.log(
+          `  • Avg CSS per cleanup: ${cleanupSummary.averageCssPerCleanup.toFixed(0)} chars`,
+        );
+        console.log(
+          `  • Avg rules per cleanup: ${cleanupSummary.averageRulesPerCleanup.toFixed(1)}`,
+        );
+      }
+      if (cleanupSummary.lastCleanup) {
+        console.log(`  • Last cleanup: ${cleanupSummary.lastCleanup.date}`);
+      }
+    } else {
+      console.log(
+        '  • Metrics collection disabled (enable with collectMetrics: true)',
       );
     }
     console.log(`⚡ Performance Metrics:`);
@@ -606,6 +658,170 @@ export const tastyDebug = {
     }
     return false;
   },
+
+  /**
+   * Get detailed cleanup statistics history
+   */
+  getCleanupHistory(): {
+    totalCleanups: number;
+    totalClassesDeleted: number;
+    totalCssDeleted: number;
+    totalRulesDeleted: number;
+    cleanupHistory: Array<{
+      timestamp: number;
+      date: string;
+      classesDeleted: number;
+      cssSize: number;
+      rulesDeleted: number;
+    }>;
+  } {
+    const registry = (injector.instance as any)['sheetManager'].getRegistry(
+      document,
+    );
+
+    if (!registry?.metrics?.cleanupHistory) {
+      return {
+        totalCleanups: 0,
+        totalClassesDeleted: 0,
+        totalCssDeleted: 0,
+        totalRulesDeleted: 0,
+        cleanupHistory: [],
+      };
+    }
+
+    const history = registry.metrics.cleanupHistory;
+    const totalClassesDeleted = history.reduce(
+      (sum, cleanup) => sum + cleanup.classesDeleted,
+      0,
+    );
+    const totalCssDeleted = history.reduce(
+      (sum, cleanup) => sum + cleanup.cssSize,
+      0,
+    );
+    const totalRulesDeleted = history.reduce(
+      (sum, cleanup) => sum + cleanup.rulesDeleted,
+      0,
+    );
+
+    return {
+      totalCleanups: history.length,
+      totalClassesDeleted,
+      totalCssDeleted,
+      totalRulesDeleted,
+      cleanupHistory: history.map((cleanup) => ({
+        ...cleanup,
+        date: new Date(cleanup.timestamp).toISOString(),
+      })),
+    };
+  },
+
+  /**
+   * Get cleanup statistics summary
+   */
+  getCleanupSummary(): {
+    enabled: boolean;
+    totalCleanups: number;
+    totalClassesDeleted: number;
+    totalCssDeleted: number;
+    totalRulesDeleted: number;
+    averageClassesPerCleanup: number;
+    averageCssPerCleanup: number;
+    averageRulesPerCleanup: number;
+    lastCleanup?: {
+      timestamp: number;
+      date: string;
+      classesDeleted: number;
+      cssSize: number;
+      rulesDeleted: number;
+    };
+  } {
+    const registry = (injector.instance as any)['sheetManager'].getRegistry(
+      document,
+    );
+
+    if (!registry?.metrics) {
+      return {
+        enabled: false,
+        totalCleanups: 0,
+        totalClassesDeleted: 0,
+        totalCssDeleted: 0,
+        totalRulesDeleted: 0,
+        averageClassesPerCleanup: 0,
+        averageCssPerCleanup: 0,
+        averageRulesPerCleanup: 0,
+      };
+    }
+
+    const history = registry.metrics.cleanupHistory || [];
+    const totalClassesDeleted = history.reduce(
+      (sum, cleanup) => sum + cleanup.classesDeleted,
+      0,
+    );
+    const totalCssDeleted = history.reduce(
+      (sum, cleanup) => sum + cleanup.cssSize,
+      0,
+    );
+    const totalRulesDeleted = history.reduce(
+      (sum, cleanup) => sum + cleanup.rulesDeleted,
+      0,
+    );
+    const totalCleanups = history.length;
+
+    const lastCleanup =
+      history.length > 0 ? history[history.length - 1] : undefined;
+
+    return {
+      enabled: true,
+      totalCleanups,
+      totalClassesDeleted,
+      totalCssDeleted,
+      totalRulesDeleted,
+      averageClassesPerCleanup:
+        totalCleanups > 0 ? totalClassesDeleted / totalCleanups : 0,
+      averageCssPerCleanup:
+        totalCleanups > 0 ? totalCssDeleted / totalCleanups : 0,
+      averageRulesPerCleanup:
+        totalCleanups > 0 ? totalRulesDeleted / totalCleanups : 0,
+      lastCleanup: lastCleanup
+        ? {
+            ...lastCleanup,
+            date: new Date(lastCleanup.timestamp).toISOString(),
+          }
+        : undefined,
+    };
+  },
+
+  /**
+   * Log cleanup history to console in a readable format
+   */
+  logCleanupHistory(): void {
+    const cleanupData = this.getCleanupHistory();
+
+    if (cleanupData.totalCleanups === 0) {
+      console.log('🧹 No cleanup history available');
+      return;
+    }
+
+    console.group(`🧹 Cleanup History (${cleanupData.totalCleanups} cleanups)`);
+    console.log('📊 Total Statistics:');
+    console.log(
+      `  • Total classes deleted: ${cleanupData.totalClassesDeleted}`,
+    );
+    console.log(
+      `  • Total CSS deleted: ${cleanupData.totalCssDeleted} characters`,
+    );
+    console.log(`  • Total rules deleted: ${cleanupData.totalRulesDeleted}`);
+
+    console.log('\n📅 Cleanup Sessions:');
+    cleanupData.cleanupHistory.forEach((cleanup, index) => {
+      console.log(`  ${index + 1}. ${cleanup.date}`);
+      console.log(`     • Classes: ${cleanup.classesDeleted}`);
+      console.log(`     • CSS: ${cleanup.cssSize} chars`);
+      console.log(`     • Rules: ${cleanup.rulesDeleted}`);
+    });
+
+    console.groupEnd();
+  },
 };
 
 /**
@@ -640,7 +856,9 @@ export function installGlobalDebug(options?: { force?: boolean }): void {
         '  • tastyDebug.inspect(".my-element") - detailed element inspection\n' +
         '  • tastyDebug.getDefinedProperties() - list all @property definitions\n' +
         '  • tastyDebug.getDefinedKeyframes() - list all keyframe definitions\n' +
-        '  • tastyDebug.getActiveCSS() / getCachedCSS() - get specific CSS',
+        '  • tastyDebug.getActiveCSS() / getCachedCSS() - get specific CSS\n' +
+        '  • tastyDebug.getCleanupSummary() - cleanup statistics overview\n' +
+        '  • tastyDebug.logCleanupHistory() - detailed cleanup history',
     );
   }
 }
