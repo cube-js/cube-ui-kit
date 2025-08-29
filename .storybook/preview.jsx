@@ -6,6 +6,18 @@ import { Root } from '../src';
 
 configure({ testIdAttribute: 'data-qa', asyncUtilTimeout: 10000 });
 
+// Load tasty debug utilities in local Storybook only (exclude Chromatic)
+if (!isChromatic() && import.meta.env.DEV) {
+  import('../src/tasty/debug').then(({ installGlobalDebug }) => {
+    try {
+      installGlobalDebug({ force: true });
+    } catch (e) {
+       
+      console.warn('tastyDebug installation failed:', e);
+    }
+  });
+}
+
 if (isChromatic()) {
   // disabling transitions
   config.disabled = true;
