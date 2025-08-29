@@ -2,12 +2,9 @@ import isChromatic from 'chromatic/isChromatic';
 import { config } from 'react-transition-group';
 import { configure } from 'storybook/test';
 
-import { Root, configure as tastyConfigure } from '../src';
+import { Root } from '../src';
 
 configure({ testIdAttribute: 'data-qa', asyncUtilTimeout: 10000 });
-tastyConfigure({
-  activeCacheSize: 10,
-});
 
 // Load tasty debug utilities in local Storybook only (exclude Chromatic)
 if (!isChromatic() && import.meta.env.DEV) {
