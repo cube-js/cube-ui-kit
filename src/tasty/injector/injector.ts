@@ -145,6 +145,31 @@ export class StyleInjector {
             return r;
           });
 
+    // Before inserting, auto-register @property for any color custom properties being defined.
+    // Fast parse: split declarations by ';' and match "--*-color:"
+    // Do this only when we actually insert (i.e., no cache hit above)
+    const colorPropRegex = /^\s*(--[a-z0-9-]+-color)\s*:/i;
+    for (const rule of rulesToInsert) {
+      // Skip if no declarations
+      if (!rule.declarations) continue;
+      const parts = rule.declarations.split(/;+\s*/);
+      for (const part of parts) {
+        if (!part) continue;
+        const match = colorPropRegex.exec(part);
+        if (match) {
+          const propName = match[1];
+          // Register @property only if not already defined for this root
+          if (!this.isPropertyDefined(propName, { root })) {
+            this.property(propName, {
+              syntax: '<color>',
+              initialValue: 'transparent',
+              root,
+            });
+          }
+        }
+      }
+    }
+
     // Insert rules using existing sheet manager
     const ruleInfo = this.sheetManager.insertRule(
       registry,
