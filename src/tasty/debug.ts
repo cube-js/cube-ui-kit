@@ -287,12 +287,18 @@ export const tastyDebug = {
     cachedCSS: string;
     allCSS: string;
     metrics: any;
+    definedProperties: string[];
+    definedKeyframes: { name: string; refCount: number; cssText?: string }[];
+    propertyCount: number;
+    keyframeCount: number;
   } {
     const usage = this.getClassUsage();
     const allCSS = this.getAllCSS();
     const activeCSS = this.getCSSForClasses(usage.activeClasses);
     const cachedCSS = this.getCSSForClasses(usage.cachedClasses);
     const metrics = injector.instance.getMetrics();
+    const definedProperties = this.getDefinedProperties();
+    const definedKeyframes = this.getDefinedKeyframes();
 
     const summary = {
       activeClasses: usage.activeClasses,
@@ -305,6 +311,10 @@ export const tastyDebug = {
       cachedCSS,
       allCSS,
       metrics,
+      definedProperties,
+      definedKeyframes,
+      propertyCount: definedProperties.length,
+      keyframeCount: definedKeyframes.length,
     };
 
     console.group('🎨 Comprehensive Tasty Debug Summary');
@@ -320,6 +330,18 @@ export const tastyDebug = {
     console.log(`  • Active CSS: ${summary.activeCSSSize} characters`);
     console.log(`  • Cached CSS: ${summary.cachedCSSSize} characters`);
     console.log(`  • Total CSS: ${summary.totalCSSSize} characters`);
+    console.log('🏷️ Properties & Keyframes:');
+    console.log(`  • Defined @property: ${definedProperties.length}`);
+    console.log(`  • Defined keyframes: ${definedKeyframes.length}`);
+    if (definedProperties.length > 0) {
+      console.log('  • Properties:', definedProperties);
+    }
+    if (definedKeyframes.length > 0) {
+      console.log(
+        '  • Keyframes:',
+        definedKeyframes.map((k) => `${k.name} (refs: ${k.refCount})`),
+      );
+    }
     console.log(`⚡ Performance Metrics:`);
     if (metrics) {
       console.log(`  • Cache hits: ${metrics.hits}`);
@@ -513,6 +535,77 @@ export const tastyDebug = {
     const usage = this.getClassUsage();
     return this.getCSSForClasses(usage.cachedClasses);
   },
+
+  /**
+   * Get all defined @property custom properties
+   */
+  getDefinedProperties(): string[] {
+    const registry = (injector.instance as any)['sheetManager'].getRegistry(
+      document,
+    );
+    if (!registry?.injectedProperties) {
+      return [];
+    }
+    return Array.from(registry.injectedProperties as Set<string>).sort();
+  },
+
+  /**
+   * Get all defined keyframes
+   */
+  getDefinedKeyframes(): {
+    name: string;
+    refCount: number;
+    cssText?: string;
+  }[] {
+    const registry = (injector.instance as any)['sheetManager'].getRegistry(
+      document,
+    );
+    if (!registry?.keyframesCache) {
+      return [];
+    }
+
+    const keyframes: {
+      name: string;
+      refCount: number;
+      cssText?: string;
+    }[] = [];
+
+    for (const [cacheKey, entry] of registry.keyframesCache.entries()) {
+      keyframes.push({
+        name: entry.name,
+        refCount: entry.refCount,
+        cssText: entry.info?.cssText,
+      });
+    }
+
+    return keyframes.sort((a, b) => a.name.localeCompare(b.name));
+  },
+
+  /**
+   * Check if a specific @property is defined
+   */
+  isPropertyDefined(propertyName: string): boolean {
+    return injector.instance.isPropertyDefined(propertyName);
+  },
+
+  /**
+   * Check if a specific keyframe is defined
+   */
+  isKeyframeDefined(keyframeName: string): boolean {
+    const registry = (injector.instance as any)['sheetManager'].getRegistry(
+      document,
+    );
+    if (!registry?.keyframesCache) {
+      return false;
+    }
+
+    for (const entry of registry.keyframesCache.values()) {
+      if (entry.name === keyframeName) {
+        return true;
+      }
+    }
+    return false;
+  },
 };
 
 /**
@@ -531,19 +624,22 @@ function isDevelopmentEnvironment(): boolean {
  * Install tastyDebug on window object for easy access in browser console
  * Only in non-production environments
  */
-export function installGlobalDebug(): void {
+export function installGlobalDebug(options?: { force?: boolean }): void {
+  const shouldInstall = options?.force || isDevelopmentEnvironment();
+
   if (
     typeof window !== 'undefined' &&
-    isDevelopmentEnvironment() &&
+    shouldInstall &&
     (window as any).tastyDebug !== tastyDebug
   ) {
     (window as any).tastyDebug = tastyDebug;
     console.log(
       '🎨 tastyDebug installed on window.\n' +
         '💡 Quick start:\n' +
-        '  • tastyDebug.getSummary() - comprehensive overview\n' +
+        '  • tastyDebug.getSummary() - comprehensive overview with properties & keyframes\n' +
         '  • tastyDebug.inspect(".my-element") - detailed element inspection\n' +
-        '  • tastyDebug.findClassGaps() - find missing class numbers\n' +
+        '  • tastyDebug.getDefinedProperties() - list all @property definitions\n' +
+        '  • tastyDebug.getDefinedKeyframes() - list all keyframe definitions\n' +
         '  • tastyDebug.getActiveCSS() / getCachedCSS() - get specific CSS',
     );
   }
