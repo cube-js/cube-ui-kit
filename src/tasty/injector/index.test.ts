@@ -361,6 +361,68 @@ describe('Global Style Injector API', () => {
       expect(empty.toString()).toBe('');
     });
 
+    it('should convert camelCase properties to kebab-case', () => {
+      const animation = keyframes({
+        from: {
+          backgroundColor: 'red',
+          fontSize: '12px',
+          marginTop: '10px',
+        },
+        to: {
+          backgroundColor: 'blue',
+          fontSize: '16px',
+          marginTop: '20px',
+        },
+      });
+
+      expect(animation.toString()).toMatch(/^k\d+$/);
+
+      const styleElements = document.head.querySelectorAll('[data-tasty]');
+      const allCssText = Array.from(styleElements)
+        .map((el) => el.textContent || '')
+        .join('');
+
+      // Check that kebab-case properties are generated
+      expect(allCssText).toContain('background-color: red');
+      expect(allCssText).toContain('background-color: blue');
+      expect(allCssText).toContain('font-size: 12px');
+      expect(allCssText).toContain('font-size: 16px');
+      expect(allCssText).toContain('margin-top: 10px');
+      expect(allCssText).toContain('margin-top: 20px');
+
+      // Check that camelCase properties are NOT present
+      expect(allCssText).not.toContain('backgroundColor');
+      expect(allCssText).not.toContain('fontSize');
+      expect(allCssText).not.toContain('marginTop');
+    });
+
+    it('should handle mixed string and object values with camelCase', () => {
+      const mixedAnimation = keyframes({
+        '0%': 'opacity: 0; transform: scale(1);', // string value
+        '50%': {
+          opacity: 0.5,
+          transform: 'scale(1.2)',
+          backgroundColor: 'yellow', // camelCase in object
+        },
+        '100%': 'opacity: 1; transform: scale(1);', // string value
+      });
+
+      expect(mixedAnimation.toString()).toMatch(/^k\d+$/);
+
+      const styleElements = document.head.querySelectorAll('[data-tasty]');
+      const allCssText = Array.from(styleElements)
+        .map((el) => el.textContent || '')
+        .join('');
+
+      // Check string values are preserved as-is
+      expect(allCssText).toContain('opacity: 0; transform: scale(1)');
+      expect(allCssText).toContain('opacity: 1; transform: scale(1)');
+
+      // Check object values have camelCase converted
+      expect(allCssText).toContain('background-color: yellow');
+      expect(allCssText).not.toContain('backgroundColor: yellow');
+    });
+
     it('should work with custom root', () => {
       const shadowRoot = document
         .createElement('div')

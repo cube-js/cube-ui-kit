@@ -1,4 +1,5 @@
 import { Lru } from '../parser/lru';
+import { camelToKebab } from '../utils/case-converter';
 
 import {
   CacheMetrics,
@@ -198,10 +199,87 @@ export class SheetManager {
         if (styleSheet && !this.config.forceTextInjection) {
           const maxIndex = styleSheet.cssRules.length;
           const safeIndex = Math.min(Math.max(0, currentRuleIndex), maxIndex);
-          styleSheet.insertRule(fullRule, safeIndex);
-          if (firstInsertedIndex == null) firstInsertedIndex = safeIndex;
-          lastInsertedIndex = safeIndex;
-          currentRuleIndex = safeIndex + 1;
+
+          // Helper: split comma-separated selectors safely (ignores commas inside [] () " ')
+          const splitSelectorsSafely = (selectorList: string): string[] => {
+            const parts: string[] = [];
+            let buf = '';
+            let depthSq = 0; // [] depth
+            let depthPar = 0; // () depth
+            let inStr: '"' | "'" | '' = '';
+            for (let i = 0; i < selectorList.length; i++) {
+              const ch = selectorList[i];
+              if (inStr) {
+                if (ch === inStr && selectorList[i - 1] !== '\\') {
+                  inStr = '';
+                }
+                buf += ch;
+                continue;
+              }
+              if (ch === '"' || ch === "'") {
+                inStr = ch as '"' | "'";
+                buf += ch;
+                continue;
+              }
+              if (ch === '[') depthSq++;
+              else if (ch === ']') depthSq = Math.max(0, depthSq - 1);
+              else if (ch === '(') depthPar++;
+              else if (ch === ')') depthPar = Math.max(0, depthPar - 1);
+
+              if (ch === ',' && depthSq === 0 && depthPar === 0) {
+                const part = buf.trim();
+                if (part) parts.push(part);
+                buf = '';
+              } else {
+                buf += ch;
+              }
+            }
+            const tail = buf.trim();
+            if (tail) parts.push(tail);
+            return parts;
+          };
+
+          try {
+            styleSheet.insertRule(fullRule, safeIndex);
+            if (firstInsertedIndex == null) firstInsertedIndex = safeIndex;
+            lastInsertedIndex = safeIndex;
+            currentRuleIndex = safeIndex + 1;
+          } catch (e) {
+            // If the browser rejects the combined selector (e.g., vendor pseudo-elements),
+            // try to split and insert each selector independently. Skip unsupported ones.
+            const selectors = splitSelectorsSafely(rule.selector);
+            if (selectors.length > 1) {
+              let anyInserted = false;
+              for (const sel of selectors) {
+                const singleBase = `${sel} { ${declarations} }`;
+                let singleRule = singleBase;
+                if (rule.atRules && rule.atRules.length > 0) {
+                  singleRule = rule.atRules.reduce(
+                    (css, atRule) => `${atRule} { ${css} }`,
+                    singleBase,
+                  );
+                }
+
+                try {
+                  const maxIdx = styleSheet.cssRules.length;
+                  const idx = Math.min(Math.max(0, currentRuleIndex), maxIdx);
+                  styleSheet.insertRule(singleRule, idx);
+                  if (firstInsertedIndex == null) firstInsertedIndex = idx;
+                  lastInsertedIndex = idx;
+                  currentRuleIndex = idx + 1;
+                  anyInserted = true;
+                } catch (_) {
+                  // Skip unsupported selector in this engine (e.g., ::-moz-selection in Blink)
+                }
+              }
+              // If none inserted, continue without throwing to avoid aborting the whole batch
+              if (!anyInserted) {
+                // noop: all selectors invalid here; safe to skip
+              }
+            } else {
+              // Single selector failed — skip it silently (likely unsupported in this engine)
+            }
+          }
         } else {
           // Use textContent (either as fallback or when forceTextInjection is enabled)
           styleElement.textContent =
@@ -569,7 +647,7 @@ export class SheetManager {
           ? value
           : Object.entries(value)
               .sort(([a], [b]) => a.localeCompare(b))
-              .map(([prop, val]) => `${prop}: ${val}`)
+              .map(([prop, val]) => `${camelToKebab(prop)}: ${val}`)
               .join('; ');
       rules.push(`${key} { ${declarations.trim()} }`);
     }
