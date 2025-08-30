@@ -74,7 +74,6 @@ export const Action = forwardRef(function Action(
       data-theme={theme}
       download={download}
       {...actionProps}
-      isDisabled={undefined}
       styles={styles}
     />
   );
