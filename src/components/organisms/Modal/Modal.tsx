@@ -1,9 +1,9 @@
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { CSSTransition } from 'react-transition-group';
-import styled from 'styled-components';
 
 import { CloseIcon } from '../../../icons';
+import { tasty } from '../../../tasty';
 import { Button } from '../../actions';
 import { Action } from '../../actions/Action/Action';
 import { Block } from '../../Block';
@@ -13,72 +13,75 @@ import { Flex } from '../../layout/Flex';
 import { Flow } from '../../layout/Flow';
 import { Space } from '../../layout/Space';
 
-const Overlay = styled.div`
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  background: rgb(0 0 0 / 0.4);
-  place-content: center;
-  place-items: center;
-  z-index: 1000;
-  display: none;
-  white-space: normal;
+const Overlay = tasty({
+  as: 'div',
+  styles: {
+    position: 'fixed',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    '$enter-transition-time': '250ms',
+    '$leave-transition-time': '160ms',
+    fill: '#black.40',
+    place: 'center',
+    zIndex: 1000,
+    display: 'none',
+    whiteSpace: 'normal',
 
-  .cube-modal {
-    --enter-transition-time: 250ms;
-    --leave-transition-time: 160ms;
-    --base-translate: calc((50vh - 50%) / -3);
-    transform: translate(0, calc(var(--base-translate)));
-  }
+    '& > .cube-modal': {
+      '$base-translate': 'calc((50vh - 50%) / -3)',
+      transform: 'translate(0, calc(var(--base-translate)))',
+    },
 
-  &.cube-modal-transition-enter {
-    opacity: 0;
-    display: flex;
+    '&.cube-modal-transition-enter': {
+      opacity: 0,
+      display: 'flex',
+    },
 
-    & .cube-modal {
-      transform: translate(0, calc(-32px + var(--base-translate))) scale(0.5);
-    }
-  }
+    '&.cube-modal-transition-enter > .cube-modal': {
+      transform: 'translate(0, calc(-32px + var(--base-translate))) scale(0.5)',
+    },
 
-  &.cube-modal-transition-enter-active {
-    opacity: 1;
-    transition: all var(--enter-transition-time) cubic-bezier(0, 0.5, 0, 1);
+    '&.cube-modal-transition-enter-active': {
+      opacity: 1,
+      transition: 'all var(--enter-transition-time) cubic-bezier(0, 0.5, 0, 1)',
+    },
 
-    & .cube-modal {
-      transform: translate(0, calc(var(--base-translate))) scale(1);
-      transition: all var(--enter-transition-time) cubic-bezier(0.5, 0.5, 0, 1);
-    }
-  }
+    '&.cube-modal-transition-enter-active > .cube-modal': {
+      transform: 'translate(0, calc(var(--base-translate))) scale(1)',
+      transition:
+        'all var(--enter-transition-time) cubic-bezier(0.5, 0.5, 0, 1)',
+    },
 
-  &.cube-modal-transition-enter-done {
-    display: flex;
-  }
+    '&.cube-modal-transition-enter-done': {
+      display: 'flex',
+    },
 
-  &.cube-modal-transition-exit {
-    opacity: 1;
-    display: flex;
+    '&.cube-modal-transition-exit': {
+      opacity: 1,
+      display: 'flex',
+    },
 
-    & .cube-modal {
-      transform: translate(0, calc(var(--base-translate))) scale(1);
-    }
-  }
+    '&.cube-modal-transition-exit > .cube-modal': {
+      transform: 'translate(0, calc(var(--base-translate))) scale(1)',
+    },
 
-  &.cube-modal-transition-exit-active {
-    opacity: 0;
-    transition: all var(--leave-transition-time) ease-in;
+    '&.cube-modal-transition-exit-active': {
+      opacity: 0,
+      transition: 'all var(--leave-transition-time) ease-in',
+    },
 
-    & .cube-modal {
-      transform: translate(0, calc(-32px + var(--base-translate))) scale(0.5);
-      transition: all var(--leave-transition-time) ease-in;
-    }
-  }
+    '&.cube-modal-transition-exit-active > .cube-modal': {
+      transform: 'translate(0, calc(-32px + var(--base-translate))) scale(0.5)',
+      transition: 'all var(--leave-transition-time) ease-in',
+    },
 
-  &.cube-modal-transition-exit-done {
-    display: none;
-  }
-`;
+    '&.cube-modal-transition-exit-done': {
+      display: 'none',
+    },
+  },
+});
 
 export interface CubeModalProps extends CubeCardProps {
   title?: string;

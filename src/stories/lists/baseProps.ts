@@ -33,7 +33,6 @@ export const baseProps = [
   'style',
   'styles',
   'css',
-  'styleName',
   'hidden',
   'disabled',
   'mods',

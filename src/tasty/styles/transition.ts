@@ -27,6 +27,7 @@ const MAP = {
     'border',
     'border-radius',
     'outline',
+    'opacity',
   ],
   inset: ['box-shadow'],
   mark: ['box-shadow'],

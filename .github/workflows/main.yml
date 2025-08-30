@@ -23,16 +23,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.14.0
+      - name: Update Corepack
+        run: npm i -g corepack@latest
+
+      - name: Enable Corepack (pre)
+        run: corepack enable
+
+      - name: Prepare pnpm (pre)
+        run: corepack prepare pnpm@10.14.0 --activate
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
+
+      - name: Enable Corepack
+        run: corepack enable
+      
+      - name: Prepare pnpm
+        run: corepack prepare pnpm@10.14.0 --activate
 
       - name: Install Dependencies
         run: pnpm install
@@ -63,10 +73,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.14.0
+      - name: Update Corepack
+        run: npm i -g corepack@latest
+
+      - name: Enable Corepack (pre)
+        run: corepack enable
+
+      - name: Prepare pnpm (pre)
+        run: corepack prepare pnpm@10.14.0 --activate
 
       - uses: actions/cache@v4
         name: Download storybook cache
@@ -81,6 +95,12 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
+
+      - name: Enable Corepack
+        run: corepack enable
+      
+      - name: Prepare pnpm
+        run: corepack prepare pnpm@10.14.0 --activate
 
       - name: Install dependencies
         run: pnpm install

@@ -16,19 +16,15 @@ export function colorStyle({ color }) {
     name = match[1];
   }
 
-  const styles: any[] = [
-    {
-      color: color,
-    },
-  ];
+  const styles = {
+    color: color,
+  };
 
   if (name) {
-    styles.push([
-      {
-        '--current-color': `var(--${name}-color, ${name})`,
-        '--current-color-rgb': `var(--${name}-color-rgb)`,
-      },
-    ]);
+    Object.assign(styles, {
+      '--current-color': `var(--${name}-color, ${name})`,
+      '--current-color-rgb': `var(--${name}-color-rgb)`,
+    });
   }
 
   return styles;

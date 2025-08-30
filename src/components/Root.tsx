@@ -23,7 +23,7 @@ import { PortalProvider } from './portal';
 
 const RootElement = tasty({
   id: 'cube-ui-kit-root',
-  className: 'root',
+  // className: 'root',
 });
 
 const DEFAULT_STYLES = {

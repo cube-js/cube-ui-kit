@@ -185,7 +185,14 @@ color: '#purple',      // Full opacity
 color: '#purple.5',    // 50% opacity
 color: '#purple.05',   // 5% opacity
 
-// RGB values (no commas!)
+// Color token definition syntax
+'#primary': 'rgb(255 120 45)',       // Define custom color variables
+'#brand': '#purple',                 // Reference existing color tokens
+'#accent': '#purple.5',              // With opacity
+'#custom': '#aaffbb',                // Hex colors
+'#theme': 'var(--purple-color)',     // CSS custom properties
+
+// Via custom property
 '$custom-color': 'rgb(255 128 0)',
 ```
 
@@ -611,7 +618,37 @@ const Component = tasty({
 });
 ```
 
----
+### Custom Color Definitions
+
+Define custom color variables with enhanced syntax:
+
+```jsx
+const ThemedComponent = tasty({
+  styles: {
+    // Define custom color variables (maps to --name-color CSS properties)
+    '#primary': 'rgb(255 120 45)',       // Creates --primary-color
+    '#secondary': '#purple',             // Creates --secondary-color, references purple token
+    '#accent': '#purple.5',              // Creates --accent-color with 50% opacity
+    '#success': '#aaffbb',               // Creates --success-color from hex
+    '#brand': 'var(--purple-color)',     // Creates --brand-color from CSS variable
+    
+    // Use the defined colors
+    fill: '#primary',                    // Uses var(--primary-color)
+    color: '#secondary',                 // Uses var(--secondary-color)  
+    border: '1bw solid #accent',         // Uses var(--accent-color)
+    
+    // Color definitions work with state styling
+    '#interactive': {
+      '': '#primary',
+      'hovered': '#primary.8',
+      'pressed': '#primary.6',
+    },
+  },
+});
+
+// Color variables are automatically scoped and provide RGB variants
+// Generates: --primary-color, --primary-color-rgb, etc.
+```
 
 ## ✅ Best Practices & Anti-patterns
 
@@ -629,6 +666,14 @@ styles: {
   color: '#text',
   padding: '2x',
   radius: '1r',
+}
+
+// ✅ Define custom color tokens with #name syntax
+styles: {
+  '#primary': 'rgb(255 120 45)',
+  '#accent': '#purple.5',
+  fill: '#primary',
+  border: '1bw solid #accent',
 }
 
 // ✅ Use semantic transition names

@@ -155,6 +155,7 @@ export const DEFAULT_INPUT_STYLES: Styles = {
   resize: 'none',
   boxSizing: 'border-box',
   userSelect: 'auto',
+  outline: 0,
 
   '$vertical-padding': 0,
   '$left-padding': {
@@ -371,7 +372,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
         data-autofocus={autoFocus ? '' : undefined}
         autoFocus={autoFocus}
         data-size={size}
-        autocomplete={autocomplete}
+        autoComplete={autocomplete}
         styles={inputStyles}
         disabled={!!isDisabled}
         maxLength={maxLength}
