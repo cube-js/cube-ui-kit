@@ -690,9 +690,37 @@ export class StyleInjector {
 
           // Check if this is an at-rule
           if (selectorPart.startsWith('@')) {
-            // This is an at-rule, recursively parse its content
-            const newAtRuleStack = [...atRuleStack, selectorPart];
-            this.parseCSS(content, rules, newAtRuleStack, parentSelector);
+            const atSelector = selectorPart.trim();
+            // Leaf at-rules that contain declarations directly and should be emitted as-is
+            const leafAtRules = [
+              '@font-face',
+              '@property',
+              '@page',
+              '@counter-style',
+              '@font-feature-values',
+              '@font-palette-values',
+              '@color-profile',
+            ];
+
+            const isLeafAtRule = leafAtRules.some((prefix) =>
+              atSelector.startsWith(prefix),
+            );
+
+            if (isLeafAtRule) {
+              // Emit the at-rule with its declarations directly
+              if (content.trim()) {
+                rules.push({
+                  selector: atSelector,
+                  declarations: content,
+                  atRules:
+                    atRuleStack.length > 0 ? [...atRuleStack] : undefined,
+                });
+              }
+            } else {
+              // Wrapper at-rule (e.g., @media, @supports, @keyframes) — parse its content
+              const newAtRuleStack = [...atRuleStack, atSelector];
+              this.parseCSS(content, rules, newAtRuleStack, parentSelector);
+            }
           } else {
             // Check if content contains nested rules (has { and })
             if (content.includes('{') && content.includes('}')) {
