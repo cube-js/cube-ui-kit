@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.75.0
+
+### Minor Changes
+
+- [#767](https://github.com/cube-js/cube-ui-kit/pull/767) [`a43815d8`](https://github.com/cube-js/cube-ui-kit/commit/a43815d8f2f660fd89b5fa7950574204e77158e4) Thanks [@tenphi](https://github.com/tenphi)! - A brand new style injector. Drop `styled-components` dependency.
+
+### Patch Changes
+
+- [#767](https://github.com/cube-js/cube-ui-kit/pull/767) [`a43815d8`](https://github.com/cube-js/cube-ui-kit/commit/a43815d8f2f660fd89b5fa7950574204e77158e4) Thanks [@tenphi](https://github.com/tenphi)! - Add @property definition support via `property` method.
+
+- [#767](https://github.com/cube-js/cube-ui-kit/pull/767) [`a43815d8`](https://github.com/cube-js/cube-ui-kit/commit/a43815d8f2f660fd89b5fa7950574204e77158e4) Thanks [@tenphi](https://github.com/tenphi)! - Fix MenuItem prop passing.
+
+- [#767](https://github.com/cube-js/cube-ui-kit/pull/767) [`a43815d8`](https://github.com/cube-js/cube-ui-kit/commit/a43815d8f2f660fd89b5fa7950574204e77158e4) Thanks [@tenphi](https://github.com/tenphi)! - Add `tastyDebug` tool for debugging.
+
 ## 0.74.3
 
 ### Patch Changes
