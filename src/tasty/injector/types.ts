@@ -15,6 +15,17 @@ export interface StyleInjectorConfig {
   forceTextInjection?: boolean; // default: auto-detected (true in test environments, false otherwise)
   /** When false, avoid storing full cssText for each rule block to reduce memory. */
   debugMode?: boolean; // default: false (store less data)
+  /**
+   * Ratio of unused styles to delete per bulk cleanup run (0..1).
+   * Defaults to 0.5 (oldest half) to reduce risk of removing styles
+   * that may be restored shortly after being marked unused.
+   */
+  bulkCleanupBatchRatio?: number;
+  /**
+   * Minimum age (in ms) a style must remain unused before eligible for deletion.
+   * Helps avoid races during rapid mount/unmount cycles. Default: 2000ms.
+   */
+  unusedStylesMinAgeMs?: number;
 }
 
 export interface RuleInfo {

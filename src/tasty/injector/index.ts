@@ -60,6 +60,8 @@ export function configure(config: Partial<StyleInjectorConfig> = {}): void {
     collectMetrics: false, // default to no performance tracking
     forceTextInjection: false, // auto-enable for test environments
     debugMode: false, // reduce memory usage by avoiding full cssText storage
+    bulkCleanupBatchRatio: 0.5,
+    unusedStylesMinAgeMs: 10000,
     ...config,
   };
 
@@ -189,6 +191,8 @@ export function createInjector(
     collectMetrics: false, // default to no performance tracking
     forceTextInjection: isTest, // auto-enable for test environments
     debugMode: false, // reduce memory usage by avoiding full cssText storage
+    bulkCleanupBatchRatio: 0.5,
+    unusedStylesMinAgeMs: 2000,
     ...config,
   };
 

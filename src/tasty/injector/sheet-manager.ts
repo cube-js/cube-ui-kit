@@ -534,7 +534,29 @@ export class SheetManager {
     if (registry.unusedRules.size === 0) return;
 
     const cleanupStartTime = Date.now();
-    const classNamesToCleanup = Array.from(registry.unusedRules.keys());
+    // Build candidates list with age and sort by oldest first
+    const now = Date.now();
+    const minAge = Math.max(0, this.config.unusedStylesMinAgeMs || 0);
+    const candidates = Array.from(registry.unusedRules.entries())
+      .map(([className, info]) => ({
+        className,
+        info,
+        age: now - (info.markedUnusedAt || 0),
+      }))
+      // Filter out too-fresh entries to avoid racing unmount/mount cycles
+      .filter((entry) => entry.age >= minAge)
+      // Sort from oldest to newest
+      .sort((a, b) => b.age - a.age);
+
+    if (candidates.length === 0) return;
+
+    // Limit deletion scope per run (batch ratio)
+    const ratio = this.config.bulkCleanupBatchRatio ?? 0.5;
+    const limit = Math.max(
+      1,
+      Math.floor(candidates.length * Math.min(1, Math.max(0, ratio))),
+    );
+    const selected = candidates.slice(0, limit);
     let cleanedUpCount = 0;
     let totalCssSize = 0;
     let totalRulesDeleted = 0;
@@ -546,10 +568,7 @@ export class SheetManager {
     >();
 
     // Calculate CSS size before deletion and group rules
-    for (const className of classNamesToCleanup) {
-      const unusedInfo = registry.unusedRules.get(className);
-      if (!unusedInfo) continue;
-
+    for (const { className, info: unusedInfo } of selected) {
       const ruleInfo = unusedInfo.ruleInfo;
       const sheetIndex = ruleInfo.sheetIndex;
 
@@ -591,6 +610,12 @@ export class SheetManager {
         const currentInfo = registry.rules.get(className);
         if (currentInfo && currentInfo !== ruleInfo) {
           // Rule was replaced; skip deletion of the old reference
+          continue;
+        }
+
+        // Optional last-resort safety: ensure the sheet element still exists
+        const sheetInfo = registry.sheets[ruleInfo.sheetIndex];
+        if (!sheetInfo || !sheetInfo.sheet) {
           continue;
         }
 
