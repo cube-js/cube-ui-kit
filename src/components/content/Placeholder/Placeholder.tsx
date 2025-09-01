@@ -1,5 +1,4 @@
 import { forwardRef } from 'react';
-import styled from 'styled-components';
 
 import {
   BaseProps,
@@ -7,11 +6,22 @@ import {
   ContainerStyleProps,
   extractStyles,
   filterBaseProps,
+  keyframes,
   Styles,
   tasty,
 } from '../../../tasty';
 
-const PlaceholderElement = tasty({
+// Create the placeholder animation using keyframes helper
+const placeholderAnimation = keyframes({
+  '0%': {
+    'background-position': '0 0',
+  },
+  '100%': {
+    'background-position': '$placeholder-animation-size 0',
+  },
+});
+
+const StyledPlaceholder = tasty({
   role: 'alert',
   'aria-live': 'polite',
   'aria-label': 'Content is loading',
@@ -20,43 +30,44 @@ const PlaceholderElement = tasty({
     fill: '#dark.10',
     height: '2x',
     opacity: '.35',
+    aspectRatio: {
+      '': 'initial',
+      circle: '1 / 1',
+    },
+    radius: {
+      '': '1r',
+      circle: 'round',
+    },
+
+    // CSS custom properties for animation
+    '$placeholder-animation-time': '1.4s',
+    '$placeholder-animation-size': 'calc((180rem + 100vw) / 3)',
+
+    // Base background styling
+    backgroundRepeat: 'repeat',
+    backgroundSize: '$placeholder-animation-size',
+    backgroundColor: '#dark.15',
+
+    // Animated state styling
+    animation: {
+      '': 'none',
+      animated: `${placeholderAnimation} $placeholder-animation-time linear infinite`,
+    },
+    backgroundImage: {
+      '': 'none',
+      animated: `linear-gradient(
+        135deg,
+        #dark.15 0%,
+        #dark.15 5%,
+        #dark.0 35%,
+        #dark-03.2 50%,
+        #dark-03.0 65%,
+        #dark.15 95%,
+        #dark.15 100%
+      )`,
+    },
   },
 });
-
-const StyledPlaceholder = styled(PlaceholderElement)`
-  --placeholder-animation-time: 1.4s;
-  --placeholder-animation-size: calc((180rem + 100vw) / 3);
-  background-repeat: repeat;
-  background-size: var(--placeholder-animation-size);
-
-  && {
-    background-color: rgb(var(--dark-color-rgb) / 0.15);
-  }
-
-  &[data-is-animated] {
-    animation: placeholder-animation var(--placeholder-animation-time) linear
-      infinite;
-    background-image: linear-gradient(
-      135deg,
-      rgb(var(--dark-color-rgb) / 0.15) 0%,
-      rgb(var(--dark-color-rgb) / 0.15) 5%,
-      rgb(var(--dark-color-rgb) / 0) 35%,
-      rgb(var(--dark-03-color-rgb) / 0.2) 50%,
-      rgb(var(--dark-03-color-rgb) / 0) 65%,
-      rgb(var(--dark-color-rgb) / 0.15) 95%,
-      rgb(var(--dark-color-rgb) / 0.15) 100%
-    );
-  }
-
-  @keyframes placeholder-animation {
-    0% {
-      background-position: 0 0;
-    }
-    100% {
-      background-position: var(--placeholder-animation-size) 0;
-    }
-  }
-`;
 
 export interface CubePlaceholderProps extends BaseProps, ContainerStyleProps {
   size?: Styles['fontSize'];
@@ -77,11 +88,9 @@ export const Placeholder = forwardRef(function Placeholder(
       role="region"
       {...filterBaseProps(props, { eventProps: true })}
       ref={ref}
-      mods={{ animated: !isStatic }}
+      mods={{ animated: !isStatic, circle }}
       styles={{
         height: size,
-        width: circle ? size : false,
-        radius: circle ? '9999rem' : '1r',
         ...styles,
       }}
     />

@@ -75,17 +75,14 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
     suffix,
     description,
     icon,
+    rightIcon,
+    prefix,
     tooltip,
     mods: itemMods,
     qa: itemQa,
     textValue,
     ...restCleanProps
   } = cleanItemProps as any;
-
-  // Build final suffix: submenu icon, custom suffix or HotKeys hint
-  const finalSuffix = submenuContext
-    ? suffix ?? <RightIcon />
-    : suffix ?? (hotkeys ? <HotKeys>{hotkeys}</HotKeys> : undefined);
 
   // Selection indicator will be handled by ItemBase component
   const isVirtualFocused = state.selectionManager.focusedKey === key;
@@ -131,7 +128,9 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
         })}
         ref={elementRef}
         icon={icon}
-        suffix={finalSuffix}
+        rightIcon={submenuContext ? <RightIcon /> : rightIcon}
+        prefix={prefix}
+        suffix={suffix}
         description={description}
         hotkeys={hotkeys}
         tooltip={tooltip}

@@ -2,14 +2,23 @@ export class Lru<K, V> {
   private map = new Map<K, { prev: K | null; next: K | null; value: V }>();
   private head: K | null = null;
   private tail: K | null = null;
+  private onEvict?: (key: K, value: V) => void;
 
-  constructor(private limit = 1000) {
+  constructor(
+    private limit = 1000,
+    onEvict?: (key: K, value: V) => void,
+  ) {
     // Normalize limit; fall back to sensible default (1000) to keep caching enabled
     let normalized = Number.isFinite(this.limit)
       ? Math.floor(this.limit)
       : 1000;
     if (normalized <= 0) normalized = 1000;
     this.limit = normalized;
+    this.onEvict = onEvict;
+  }
+
+  setOnEvict(fn?: (key: K, value: V) => void) {
+    this.onEvict = fn;
   }
 
   get(key: K): V | undefined {
@@ -35,6 +44,26 @@ export class Lru<K, V> {
     if (!this.tail) this.tail = key;
     this.map.set(key, node);
     if (this.map.size > this.limit) this.evict();
+  }
+
+  delete(key: K) {
+    const node = this.map.get(key);
+    if (!node) return;
+    if (node.prev) {
+      const prevNode = this.map.get(node.prev);
+      if (prevNode) prevNode.next = node.next;
+    }
+    if (node.next) {
+      const nextNode = this.map.get(node.next);
+      if (nextNode) nextNode.prev = node.prev;
+    }
+    if (this.head === key) this.head = node.next;
+    if (this.tail === key) this.tail = node.prev;
+    this.map.delete(key);
+  }
+
+  keys(): IterableIterator<K> {
+    return this.map.keys();
   }
 
   private touch(key: K, node: { prev: K | null; next: K | null; value: V }) {
@@ -78,6 +107,14 @@ export class Lru<K, V> {
     this.tail = node.prev;
     if (this.head === old) this.head = null;
     this.map.delete(old);
+
+    if (this.onEvict) {
+      try {
+        this.onEvict(old, node.value);
+      } catch {
+        // ignore user callback errors
+      }
+    }
   }
 
   clear() {

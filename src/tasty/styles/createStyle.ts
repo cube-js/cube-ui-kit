@@ -4,7 +4,6 @@ import {
   parseColor,
   parseStyle,
   strToRgb,
-  styleHandlerCacheWrapper,
 } from '../utils/styles';
 
 const CACHE = {};
@@ -22,8 +21,23 @@ export function createStyle(
 
       if (styleValue == null || styleValue === false) return;
 
-      const finalCssStyle =
-        cssStyle || toSnakeCase(styleName).replace(/^[@$]/, '--');
+      // Map style name to final CSS property.
+      // - "$foo" → "--foo"
+      // - "#name"        → "--name-color" (alternative color definition syntax)
+      let finalCssStyle: string;
+      if (
+        !cssStyle &&
+        typeof styleName === 'string' &&
+        styleName.startsWith('#')
+      ) {
+        const raw = styleName.slice(1);
+        // Convert camelCase to kebab and remove possible leading dash from uppercase start
+        const name = toSnakeCase(raw).replace(/^-+/, '');
+        finalCssStyle = `--${name}-color`;
+      } else {
+        finalCssStyle =
+          cssStyle || toSnakeCase(styleName).replace(/^[@$]/, '--');
+      }
 
       // convert non-string values
       if (converter && typeof styleValue !== 'string') {
@@ -81,7 +95,7 @@ export function createStyle(
 
     styleHandler.__lookupStyles = [styleName];
 
-    CACHE[key] = styleHandlerCacheWrapper(styleHandler);
+    CACHE[key] = styleHandler;
   }
 
   return CACHE[key];

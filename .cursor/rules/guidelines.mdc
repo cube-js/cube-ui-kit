@@ -27,6 +27,7 @@ Package name: `@cube-dev/ui-kit`
 
 All tests: `$ pnpm test`
 Specific test: `$ pnpm test -- {TestFileName}`
+Update snaphosts: `$ pnpm test -u -- {TestFileName}`
 
 ## Build
 
@@ -45,7 +46,6 @@ Specific test: `$ pnpm test -- {TestFileName}`
   - `src/stories/CreateComponent.docs.mdx` - create components using tasty helper.
 - Storybook v8.6
 - React and React DOM v18
-- `styled-components` v6
 - `react-aria` and `react-stately` with the latest versions.
 - `tabler/icons-react` - icons.
 
@@ -113,7 +113,7 @@ Specific test: `$ pnpm test -- {TestFileName}`
 - Sub-elements: Target inner elements using capitalized keys in styles
 - Style props: Direct style application without `styles` prop
 - CSS custom properties: Use `@token-name` syntax for design tokens
-- To declare a CSS animation use `styled-components` and then pass the animation name to the tasty styles.
+- To declare a CSS animation use `keyframes` method and then pass the animation name to the tasty styles.
 
 ## Export Patterns
 
@@ -187,7 +187,6 @@ Specific test: `$ pnpm test -- {TestFileName}`
   - `src/stories/CreateComponent.docs.mdx` - create components using tasty helper.
 - Storybook v8.6
 - React and React DOM v18
-- `styled-components` v6
 - `react-aria` and `react-stately` with the latest versions.
 - `tabler/icons-react` - icons.
 
@@ -255,7 +254,7 @@ Specific test: `$ pnpm test -- {TestFileName}`
 - Sub-elements: Target inner elements using capitalized keys in styles
 - Style props: Direct style application without `styles` prop
 - CSS custom properties: Use `@token-name` syntax for design tokens
-- To declare a CSS animation use `styled-components` and then pass the animation name to the tasty styles.
+- To declare a CSS animation use `keyframes` method and then pass the animation name to the tasty styles.
 
 ## Export Patterns
 

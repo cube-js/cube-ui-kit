@@ -1,68 +1,65 @@
-import { CSSMap, parseStyle } from '../utils/styles';
+import { parseStyle } from '../utils/styles';
+
+const AUTOFILL_STYLES = {
+  'caret-color': 'var(--purple-color)',
+  '-webkit-text-fill-color': 'var(--purple-color)',
+  '-webkit-box-shadow': '0 0 0px 9999rem var(--white-color) inset',
+  'box-shadow': '0 0 0px 9999rem var(--white-color) inset',
+  'font-family': 'inherit',
+  'font-size': 'inherit',
+  'line-height': 'inherit',
+};
 
 const RESET_MAP = {
   input: [
     {
-      css: `
--webkit-appearance: none;
-word-spacing: initial;
--webkit-text-fill-color: currentColor;
-`,
+      '-webkit-appearance': 'none',
+      'word-spacing': 'initial',
+      '-webkit-text-fill-color': 'currentColor',
     },
     {
       $: '::-webkit-search-cancel-button',
-      css: 'display: none',
+      display: 'none',
     },
     {
-      $: [
-        ':-webkit-autofill',
-        ':-webkit-autofill:hover',
-        ':-webkit-autofill:focus',
-      ],
-      css: `
-caret-color: var(--purple-color);
--webkit-text-fill-color: var(--purple-color);
--webkit-box-shadow: 0 0 0px 9999rem var(--white-color) inset;
-box-shadow: 0 0 0px 9999rem var(--white-color) inset;
-font-family: inherit;
-font-size: inherit;
-line-height: inherit;
-`,
+      $: ':-webkit-autofill',
+      ...AUTOFILL_STYLES,
+    },
+    {
+      $: ':-webkit-autofill:hover',
+      ...AUTOFILL_STYLES,
+    },
+    {
+      $: ':-webkit-autofill:focus',
+      ...AUTOFILL_STYLES,
     },
     {
       $: '[disabled]',
-      css: `
--webkit-opacity: 1;
-`,
+      '-webkit-opacity': '1',
     },
     {
       $: '::placeholder',
-      css: `
--webkit-text-fill-color: var(--local-placeholder-color);
-color: var(--local-placeholder-color);
-filter: saturate(.33);
-`,
+      '-webkit-text-fill-color': 'var(--local-placeholder-color)',
+      color: 'var(--local-placeholder-color)',
+      filter: 'saturate(.33)',
     },
     {
       $: '::-webkit-search-cancel-button',
-      css: `
-display: none;
--webkit-appearance: none;
-`,
+      display: 'none',
+      '-webkit-appearance': 'none',
     },
     {
       $: ':not([disabled])::placeholder',
-      css: '--local-placeholder-color: var(--placeholder-color, rgb(var(--dark-color-rgb) / .3));\n',
+      '--local-placeholder-color':
+        'var(--placeholder-color, rgb(var(--dark-color-rgb) / .3))',
     },
   ],
   button: [
     {
-      css: `
-appearance: none;
-touch-action: manipulation;
--webkit-tap-highlight-color: transparent;
-text-decoration: none;
-`,
+      appearance: 'none',
+      'touch-action': 'manipulation',
+      '-webkit-tap-highlight-color': 'transparent',
+      'text-decoration': 'none',
     },
   ],
 };
@@ -73,13 +70,15 @@ export function resetStyle({ reset }) {
   const processed = parseStyle(reset);
   const { mods } = processed.groups[0] ?? ({ mods: [] } as any);
 
-  return mods.reduce((sum, mod) => {
-    if (RESET_MAP[mod]) {
-      sum.push(...RESET_MAP[mod]);
-    }
+  const result: any[] = [];
 
-    return sum;
-  }, [] as CSSMap[]);
+  for (const mod of mods) {
+    if (RESET_MAP[mod]) {
+      result.push(...RESET_MAP[mod]);
+    }
+  }
+
+  return result.length ? result : undefined;
 }
 
 resetStyle.__lookupStyles = ['reset'];

@@ -7,11 +7,13 @@ import {
   PropsWithoutRef,
   RefAttributes,
   useContext,
+  useInsertionEffect,
   useMemo,
+  useRef,
 } from 'react';
 import { isValidElementType } from 'react-is';
-import styledComponents, { createGlobalStyle } from 'styled-components';
 
+import { inject } from './injector';
 import { BreakpointsContext } from './providers/BreakpointsProvider';
 import { BASE_STYLES } from './styles/list';
 import { Styles, StylesInterface } from './styles/types';
@@ -20,19 +22,25 @@ import { cacheWrapper } from './utils/cache-wrapper';
 import { getDisplayName } from './utils/getDisplayName';
 import { mergeStyles } from './utils/mergeStyles';
 import { modAttrs } from './utils/modAttrs';
-import { renderStyles } from './utils/renderStyles';
-import { pointsToZones } from './utils/responsive';
+import { RenderResult, renderStyles } from './utils/renderStyles';
 import { ResponsiveStyleValue } from './utils/styles';
 
-type StyledElementProps = {
-  $css: string;
-};
+/**
+ * Simple hash function for internal cache keys
+ */
+// Per-style-key sequential class allocator
+const styleKeyToClass = new Map<string, string>();
+let nextClassId = 0;
+function allocateClassName(styleKey: string): string {
+  const existing = styleKeyToClass.get(styleKey);
+  if (existing) return existing;
+  const cls = `t${nextClassId++}`;
+  styleKeyToClass.set(styleKey, cls);
+  return cls;
+}
 
-// Basic props accepted by our styled base element
-type BaseElementProps = StyledElementProps & { as?: string } & Record<
-    string,
-    unknown
-  >;
+// Basic props accepted by our base element
+type BaseElementProps = { as?: string } & Record<string, unknown>;
 
 type StyleList = readonly (keyof {
   [key in keyof StylesInterface]: StylesInterface[key];
@@ -116,8 +124,6 @@ export function tasty<
 
 // Internal specialized implementations
 function tastyGlobal(selector: string, styles?: Styles) {
-  let Element = createGlobalStyle<StyledElementProps>`${({ $css }) => $css}`;
-
   const _StyleDeclarationComponent: FC<GlobalTastyProps> = ({
     breakpoints,
   }) => {
@@ -125,16 +131,26 @@ function tastyGlobal(selector: string, styles?: Styles) {
 
     const breakpointsList = (breakpoints ?? contextBreakpoints) || [980];
     const breakpointsHash = breakpointsList.join(',');
+    const disposeRef = useRef<(() => void) | null>(null);
 
-    let css = useMemo(() => {
-      if (!styles) return '';
-      return `\n{}${selector}{${renderStyles(
-        styles,
-        pointsToZones(breakpointsList),
-      )}}`;
-    }, [breakpointsHash]);
+    const styleResults = useMemo(() => {
+      if (!styles) return [];
+      return renderStyles(styles, breakpointsList, selector, true);
+    }, [selector, breakpointsHash]);
 
-    return <Element $css={css} />;
+    // Inject styles at insertion phase; cleanup on change/unmount
+    useInsertionEffect(() => {
+      disposeRef.current?.();
+      if (styleResults.length === 0) return;
+      const { dispose } = inject(styleResults);
+      disposeRef.current = dispose;
+      return () => {
+        disposeRef.current?.();
+        disposeRef.current = null;
+      };
+    }, [styleResults]);
+
+    return null;
   };
 
   _StyleDeclarationComponent.displayName = `TastyStyleDeclaration(${selector})`;
@@ -268,17 +284,17 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
       return createElement(Component, elementProps);
     });
   } else {
-    let Element = styledComponents[originalAs](
-      ({ $css }) => $css,
-    ) as ComponentType<BaseElementProps>;
-
     /**
      * An additional optimization that allows to avoid rendering styles across various instances
      * of the same element if no custom styles are provided via `styles` prop or direct style props.
      */
-    const renderDefaultStyles = cacheWrapper((breakpoints: number[]) =>
-      renderStyles(defaultStyles || {}, pointsToZones(breakpoints)),
-    );
+    const renderDefaultStyles = cacheWrapper((breakpoints: number[]) => {
+      // Allocate a stable class for default styles
+      const defaultClassName = allocateClassName(
+        JSON.stringify(defaultStyles || {}),
+      );
+      return renderStyles(defaultStyles || {}, breakpoints, defaultClassName);
+    });
 
     let {
       qa: defaultQa,
@@ -300,9 +316,10 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         element,
         qa,
         qaVal,
+        className: userClassName,
         ...otherProps
       } = allProps as Record<string, unknown> as AllBasePropsWithMods<K> &
-        WithVariant<V>;
+        WithVariant<V> & { className?: string };
 
       let propStyles: Styles | null = (
         (styleProps
@@ -355,13 +372,41 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
 
       breakpoints = (breakpoints as number[] | undefined) ?? contextBreakpoints;
 
-      let renderedStyles = useMemo(
-        () =>
-          useDefaultStyles
-            ? renderDefaultStyles(breakpoints as number[])
-            : renderStyles(allStyles, pointsToZones(breakpoints as number[])),
-        [allStyles, breakpoints?.join(',')],
-      );
+      // Allocate a stable sequential class per style-key
+      const className = useMemo(() => {
+        const stylesKey = JSON.stringify(allStyles || {});
+        return allocateClassName(stylesKey);
+      }, [allStyles]);
+
+      // Compute rules synchronously; inject via insertion effect
+      const directResult: RenderResult = useMemo(() => {
+        if (useDefaultStyles) {
+          return renderDefaultStyles(breakpoints as number[]);
+        } else if (allStyles && Object.keys(allStyles).length > 0) {
+          return renderStyles(allStyles, breakpoints as number[], className);
+        } else {
+          return { rules: [], className: '' };
+        }
+      }, [useDefaultStyles, allStyles, breakpoints?.join(','), className]);
+
+      // Inject styles and get the actual CSS class name
+      const injectedResult = useMemo(() => {
+        if (!directResult.rules.length) {
+          return { className: '', dispose: () => {} };
+        }
+        return inject(directResult.rules);
+      }, [directResult.rules]);
+
+      const disposeRef = useRef<(() => void) | null>(null);
+
+      useInsertionEffect(() => {
+        disposeRef.current?.();
+        disposeRef.current = injectedResult.dispose;
+        return () => {
+          disposeRef.current?.();
+          disposeRef.current = null;
+        };
+      }, [injectedResult.dispose]);
 
       let modProps: Record<string, unknown> | undefined;
       if (mods) {
@@ -369,19 +414,44 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         modProps = modAttrs(modsObject as any) as Record<string, unknown>;
       }
 
+      // Merge user className with injected className
+      const finalClassName = [
+        (userClassName as string) || '',
+        injectedResult.className || directResult.className || className,
+      ]
+        .filter(Boolean)
+        .join(' ');
+
       const elementProps = {
-        as: (as as string | undefined) ?? originalAs,
         'data-element': (element as string | undefined) || defaultElement,
         'data-qa': (qa as string | undefined) || defaultQa,
         'data-qaval': (qaVal as string | undefined) || defaultQaVal,
         ...(otherDefaultProps as unknown as Record<string, unknown>),
         ...(otherProps as unknown as Record<string, unknown>),
         ...(modProps || {}),
+        className: finalClassName,
         ref,
-        $css: renderedStyles,
-      } as BaseElementProps;
+      } as Record<string, unknown>;
 
-      return createElement(Element, elementProps);
+      if ('isDisabled' in elementProps) {
+        elementProps.disabled = elementProps.isDisabled;
+        delete elementProps.isDisabled;
+      }
+
+      if ('isHidden' in elementProps) {
+        elementProps.hidden = elementProps.isHidden;
+        delete elementProps.isHidden;
+      }
+
+      // NEW: Use plain createElement instead of styled Element
+      const renderedElement = createElement(
+        (as as string | 'div') ?? originalAs,
+        elementProps,
+      );
+
+      // Note: Empty className is normal for elements with no styles
+
+      return renderedElement;
     });
   }
 

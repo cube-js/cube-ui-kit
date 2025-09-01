@@ -71,8 +71,6 @@ export interface BasePropsWithoutChildren<K extends TagName = TagName>
   isDisabled?: boolean;
   /** Plain css for the element */
   css?: string;
-  /** The element name for using in style overriding */
-  styleName?: string;
   /** The CSS style map */
   style?:
     | CSSProperties

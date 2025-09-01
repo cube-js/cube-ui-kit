@@ -75,16 +75,6 @@ const TOKENS = {
   'draft-color': color('dark', 0.2),
   'minor-color': color('dark', 0.65),
   'danger-bg-hover-color': color('danger', 0.1),
-  'primary-1': color('purple', 0.9),
-  'primary-2': color('purple', 0.8),
-  'primary-3': color('purple', 0.7),
-  'primary-4': color('purple', 0.6),
-  'primary-5': color('purple', 0.5),
-  'primary-6': color('purple', 0.4),
-  'primary-7': color('purple', 0.3),
-  'primary-8': color('purple', 0.2),
-  'primary-9': color('purple', 0.1),
-  'primary-10': color('purple', 0),
   'dark-75-color': color('dark', 0.75),
   'primary-color': color('purple'),
 
@@ -93,7 +83,6 @@ const TOKENS = {
 
   'disabled-color': color('dark-01', 0.25),
   'disabled-text-color': color('dark-01', 0.25),
-  'disabled-bg': color('dark-05', 0.2),
   'disabled-bg-color': color('dark-05', 0.2),
 
   'max-content-width': '1440px',

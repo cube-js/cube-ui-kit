@@ -168,6 +168,7 @@ const ItemBaseElement = tasty({
     display: 'inline-grid',
     flow: 'column dense',
     gap: 0,
+    outline: 0,
     placeItems: 'stretch',
     placeContent: 'stretch',
     gridColumns: {
@@ -518,7 +519,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
   }, [children, isAutoTooltipEnabled, checkLabelOverflow]);
 
   useEffect(() => {
-    if (!isAutoTooltipEnabled) return;
+    if (!isAutoTooltipEnabled || typeof children !== 'string') return;
 
     const label = mergedLabelRef.current;
     if (!label) return;
@@ -527,7 +528,12 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     resizeObserver.observe(label);
 
     return () => resizeObserver.disconnect();
-  }, [isAutoTooltipEnabled, checkLabelOverflow, children, mergedLabelRef]);
+  }, [
+    isAutoTooltipEnabled,
+    checkLabelOverflow,
+    typeof children === 'string' ? children : null,
+    mergedLabelRef,
+  ]);
 
   const finalLabelProps = useMemo(() => {
     return {

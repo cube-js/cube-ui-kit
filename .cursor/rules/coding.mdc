@@ -8,6 +8,7 @@ alwaysApply: true
 - Do not run tests if you only changed stories or documentation since the last test run.
 - If you need to move or rename a file: use command line tools for that.
 - If you need to move a part of code from one file to another: First, write the code at the new place, then delete the code in the original place.
+- Don't implement backward compatibility unless asked.
 
 # Coding rules
 
