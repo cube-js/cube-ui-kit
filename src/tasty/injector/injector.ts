@@ -314,23 +314,22 @@ export class StyleInjector {
     for (const cls of classNames) {
       const info = registry.rules.get(cls);
       if (info) {
-        if (info.cssText && info.cssText.length) {
-          cssChunks.push(...info.cssText);
-        } else {
-          // Fallback: try to read from live sheet by index range
-          const sheet = registry.sheets[info.sheetIndex];
-          const styleSheet = sheet?.sheet?.sheet;
-          if (styleSheet) {
-            const start = Math.max(0, info.ruleIndex);
-            const end = Math.min(
-              styleSheet.cssRules.length - 1,
-              (info.endRuleIndex as number) ?? info.ruleIndex,
-            );
-            for (let i = start; i <= end; i++) {
-              const rule = styleSheet.cssRules[i] as CSSRule | undefined;
-              if (rule) cssChunks.push(rule.cssText);
-            }
+        // Always prefer reading from the live stylesheet, since indices can change
+        const sheet = registry.sheets[info.sheetIndex];
+        const styleSheet = sheet?.sheet?.sheet;
+        if (styleSheet) {
+          const start = Math.max(0, info.ruleIndex);
+          const end = Math.min(
+            styleSheet.cssRules.length - 1,
+            (info.endRuleIndex as number) ?? info.ruleIndex,
+          );
+          for (let i = start; i <= end; i++) {
+            const rule = styleSheet.cssRules[i] as CSSRule | undefined;
+            if (rule) cssChunks.push(rule.cssText);
           }
+        } else if (info.cssText && info.cssText.length) {
+          // Fallback in environments without CSSOM access
+          cssChunks.push(...info.cssText);
         }
       }
     }

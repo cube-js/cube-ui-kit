@@ -574,6 +574,19 @@ export class SheetManager {
       rulesBySheet.get(sheetIndex)!.push({ className, ruleInfo });
     }
 
+    // Resolve root node for DOM checks (Document or ShadowRoot)
+    const resolveRoot = (): Document | ShadowRoot | null => {
+      const firstSheet = registry.sheets[0]?.sheet;
+      if (!firstSheet) return null;
+      const rootNode = (firstSheet as any).getRootNode
+        ? (firstSheet as any).getRootNode()
+        : (firstSheet.ownerDocument as Document | null);
+      // Prefer ShadowRoot if available, else Document
+      return (rootNode as ShadowRoot | Document) || null;
+    };
+
+    const rootNode = resolveRoot();
+
     // Delete rules from each sheet (in reverse order to preserve indices)
     for (const [sheetIndex, rulesInSheet] of rulesBySheet) {
       // Sort by rule index in descending order for safe deletion
@@ -597,6 +610,23 @@ export class SheetManager {
         if (currentInfo && currentInfo !== ruleInfo) {
           // Rule was replaced; skip deletion of the old reference
           continue;
+        }
+
+        // EXTRA SAFETY: If this class is present in the DOM, skip deletion.
+        // This protects against refCount drift or races where the style is actually in use.
+        try {
+          const canQuery = rootNode && (rootNode as any).querySelector;
+          if (canQuery) {
+            const el = (rootNode as any).querySelector?.(`.${className}`);
+            if (el) {
+              // Class is currently used in DOM; do not delete its rules
+              // Also remove it from unused list to avoid repeated checks
+              registry.unusedRules.delete(className);
+              continue;
+            }
+          }
+        } catch (_) {
+          // If querying fails for any reason, proceed with other safeguards only
         }
 
         // Optional last-resort safety: ensure the sheet element still exists
