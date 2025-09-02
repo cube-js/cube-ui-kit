@@ -3,6 +3,7 @@
  */
 
 import { getCssText, getCssTextForNode, injector } from './injector';
+import { isDevEnv } from './utils/isDevEnv';
 
 /**
  * Pretty-print CSS with proper indentation and formatting
@@ -402,7 +403,7 @@ export const tastyDebug = {
       }
     } else {
       console.log(
-        '  • Metrics collection disabled (enable with collectMetrics: true)',
+        '  • Metrics collection disabled (enable with devMode: true)',
       );
     }
     console.log(`⚡ Performance Metrics:`);
@@ -423,9 +424,7 @@ export const tastyDebug = {
           : 0;
       console.log(`  • Overall cache hit rate: ${hitRate}%`);
     } else {
-      console.log(
-        `  • Metrics not available (enable with collectMetrics: true)`,
-      );
+      console.log(`  • Metrics not available (enable with devMode: true)`);
     }
     console.log('🔍 Details:');
     console.log('  • Active classes:', summary.activeClasses);
@@ -1198,23 +1197,11 @@ export const tastyDebug = {
 };
 
 /**
- * Check if we're in a development environment at runtime
- * Uses bracket notation to avoid bundler compilation
- */
-function isDevelopmentEnvironment(): boolean {
-  if (typeof process === 'undefined') return false;
-
-  // Use bracket notation to avoid bundler replacement
-  const nodeEnv = process.env?.['NODE_ENV'];
-  return nodeEnv === 'development' || nodeEnv !== 'production';
-}
-
-/**
  * Install tastyDebug on window object for easy access in browser console
  * Only in non-production environments
  */
 export function installGlobalDebug(options?: { force?: boolean }): void {
-  const shouldInstall = options?.force || isDevelopmentEnvironment();
+  const shouldInstall = options?.force || isDevEnv();
 
   if (
     typeof window !== 'undefined' &&
@@ -1243,6 +1230,6 @@ export function installGlobalDebug(options?: { force?: boolean }): void {
 /**
  * Auto-install in development
  */
-if (typeof window !== 'undefined' && isDevelopmentEnvironment()) {
+if (typeof window !== 'undefined' && isDevEnv()) {
   installGlobalDebug();
 }

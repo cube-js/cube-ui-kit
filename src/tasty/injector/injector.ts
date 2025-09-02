@@ -228,49 +228,14 @@ export class StyleInjector {
   }
 
   /**
-   * Generate cache key from style rules with optimized deduplication
-   */
-  private generateCacheKey(rules: StyleRule[]): string {
-    const normalizeSelector = (selector: string): string => {
-      const match = selector.match(/^\.[a-zA-Z0-9_-]+(.*)$/);
-      return match ? match[1] : selector;
-    };
-
-    // Sort rules to ensure consistent cache keys for equivalent rule sets
-    const sortedRules = [...rules].sort((a, b) => {
-      const aKey = `${normalizeSelector(a.selector)}${
-        a.atRules ? a.atRules.join('|') : ''
-      }`;
-      const bKey = `${normalizeSelector(b.selector)}${
-        b.atRules ? b.atRules.join('|') : ''
-      }`;
-      return aKey.localeCompare(bKey);
-    });
-
-    return sortedRules
-      .map((rule) => {
-        const at =
-          rule.atRules && rule.atRules.length
-            ? `@${rule.atRules.join('|')}`
-            : '';
-        const sel = normalizeSelector(rule.selector);
-        // Normalize declarations by sorting properties for consistent caching
-        const normalizedDeclarations = rule.declarations
-          .split(';')
-          .filter(Boolean)
-          .map((decl) => decl.trim())
-          .sort()
-          .join(';');
-        return `${sel}{${normalizedDeclarations}}${at}`;
-      })
-      .join('');
-  }
-
-  /**
    * Dispose of a className
    */
   private dispose(className: string, registry: any): void {
-    const currentRefCount = registry.refCounts.get(className) || 0;
+    const currentRefCount = registry.refCounts.get(className);
+    // Guard against stale double-dispose or mismatched lifecycle
+    if (currentRefCount == null) {
+      return;
+    }
     if (currentRefCount <= 1) {
       // Mark as unused immediately
       this.sheetManager.markAsUnused(registry, className);
@@ -280,17 +245,9 @@ export class StyleInjector {
   }
 
   /**
-   * Cleanup unused rules
-   */
-  cleanup(root?: Document | ShadowRoot): void {
-    const registry = this.sheetManager.getRegistry(root || document);
-    this.sheetManager.processCleanupQueue(registry);
-  }
-
-  /**
    * Force bulk cleanup of unused styles
    */
-  forceBulkCleanup(root?: Document | ShadowRoot): void {
+  cleanup(root?: Document | ShadowRoot): void {
     const registry = this.sheetManager.getRegistry(root || document);
     this.sheetManager['performBulkCleanup'](registry);
   }
@@ -357,15 +314,6 @@ export class StyleInjector {
     const root = options?.root || document;
     const registry = this.sheetManager.getRegistry(root);
     this.sheetManager.resetMetrics(registry);
-  }
-
-  /**
-   * Force cleanup of unused styles (useful for memory pressure)
-   */
-  forceCleanupUnused(options?: { root?: Document | ShadowRoot }): void {
-    const root = options?.root || document;
-    const registry = this.sheetManager.getRegistry(root);
-    this.sheetManager['performBulkCleanup'](registry);
   }
 
   /**

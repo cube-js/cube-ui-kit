@@ -31,7 +31,7 @@ export class SheetManager {
     let registry = this.rootRegistries.get(root);
 
     if (!registry) {
-      const metrics: CacheMetrics | undefined = this.config.collectMetrics
+      const metrics: CacheMetrics | undefined = this.config.devMode
         ? {
             hits: 0,
             misses: 0,
@@ -305,8 +305,8 @@ export class SheetManager {
           );
         }
 
-        // Conditionally store cssText and track for debug
-        if (this.config.debugMode) {
+        // Dev-only: store cssText for debugging tools
+        if (this.config.devMode) {
           insertedRuleTexts.push(fullRule);
           try {
             registry.ruleTextSet.add(fullRule);
@@ -327,7 +327,7 @@ export class SheetManager {
         className,
         ruleIndex: firstInsertedIndex ?? ruleIndex,
         sheetIndex,
-        cssText: this.config.debugMode ? insertedRuleTexts : [],
+        cssText: this.config.devMode ? insertedRuleTexts : undefined,
         endRuleIndex: lastInsertedIndex ?? finalRuleIndex,
       };
     } catch (error) {
@@ -363,9 +363,10 @@ export class SheetManager {
     }
 
     try {
-      const texts = Array.isArray(ruleInfo.cssText)
-        ? ruleInfo.cssText.slice()
-        : [];
+      const texts: string[] =
+        this.config.devMode && Array.isArray(ruleInfo.cssText)
+          ? ruleInfo.cssText.slice()
+          : [];
 
       const styleElement = sheet.sheet;
       const styleSheet = styleElement.sheet;
@@ -391,26 +392,11 @@ export class SheetManager {
             0,
             sheet.ruleCount - (endIdx - startIdx + 1),
           );
-        } else if (this.config.debugMode && texts.length) {
-          // Fallback: locate each rule by exact cssText and delete (debug mode only)
-          for (const text of texts) {
-            let idx = -1;
-            for (let i = styleSheet.cssRules.length - 1; i >= 0; i--) {
-              if ((styleSheet.cssRules[i] as CSSRule).cssText === text) {
-                idx = i;
-                break;
-              }
-            }
-            if (idx >= 0) {
-              styleSheet.deleteRule(idx);
-            }
-          }
-          sheet.ruleCount = Math.max(0, sheet.ruleCount - texts.length);
         }
       }
 
-      // Remove texts from validation set
-      if (this.config.debugMode) {
+      // Dev-only: remove cssText entries from validation set
+      if (this.config.devMode && texts.length) {
         try {
           for (const text of texts) {
             registry.ruleTextSet.delete(text);
@@ -572,15 +558,15 @@ export class SheetManager {
       const ruleInfo = unusedInfo.ruleInfo;
       const sheetIndex = ruleInfo.sheetIndex;
 
-      // Calculate CSS size for this rule
-      const cssSize = ruleInfo.cssText.reduce(
-        (total, css) => total + css.length,
-        0,
-      );
-      totalCssSize += cssSize;
-
-      // Count number of rules (based on cssText array length)
-      totalRulesDeleted += ruleInfo.cssText.length;
+      // Dev-only metrics: estimate CSS size and rule count if available
+      if (this.config.devMode && Array.isArray(ruleInfo.cssText)) {
+        const cssSize = ruleInfo.cssText.reduce(
+          (total, css) => total + css.length,
+          0,
+        );
+        totalCssSize += cssSize;
+        totalRulesDeleted += ruleInfo.cssText.length;
+      }
 
       if (!rulesBySheet.has(sheetIndex)) {
         rulesBySheet.set(sheetIndex, []);
@@ -639,14 +625,6 @@ export class SheetManager {
         rulesDeleted: totalRulesDeleted,
       });
     }
-  }
-
-  /**
-   * Process the deletion queue for cleanup
-   */
-  processCleanupQueue(registry: RootRegistry): void {
-    // This method is kept for compatibility but the logic has changed
-    // We no longer use a deletion queue, instead marking styles as unused immediately
   }
 
   /**
@@ -836,7 +814,7 @@ export class SheetManager {
         name,
         ruleIndex,
         sheetIndex,
-        cssText: fullRule,
+        cssText: this.config.devMode ? fullRule : undefined,
       };
     } catch (error) {
       console.warn('Failed to insert keyframes:', error);

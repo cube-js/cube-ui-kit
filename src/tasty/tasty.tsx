@@ -23,7 +23,7 @@ import { getDisplayName } from './utils/getDisplayName';
 import { mergeStyles } from './utils/mergeStyles';
 import { modAttrs } from './utils/modAttrs';
 import { RenderResult, renderStyles } from './utils/renderStyles';
-import { ResponsiveStyleValue } from './utils/styles';
+import { ResponsiveStyleValue, stringifyStyles } from './utils/styles';
 
 /**
  * Simple hash function for internal cache keys
@@ -291,7 +291,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
     const renderDefaultStyles = cacheWrapper((breakpoints: number[]) => {
       // Allocate a stable class for default styles
       const defaultClassName = allocateClassName(
-        JSON.stringify(defaultStyles || {}),
+        stringifyStyles(defaultStyles || {}),
       );
       return renderStyles(defaultStyles || {}, breakpoints, defaultClassName);
     });
@@ -345,14 +345,13 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         styles = undefined as unknown as Styles;
       }
 
-      const propStylesCacheKey = JSON.stringify(propStyles);
-      const stylesCacheKey = useMemo(() => JSON.stringify(styles), [styles]);
+      const propStylesCacheKey = stringifyStyles(propStyles);
+      const stylesCacheKey = useMemo(() => stringifyStyles(styles), [styles]);
 
       const useDefaultStyles = !propStyles && !styles;
 
       const styleCacheKey = useMemo(
-        () =>
-          `${styles ? JSON.stringify(styles) : ''}.${propStyles ? JSON.stringify(propStyles) : ''}`,
+        () => `${propStylesCacheKey}.${stylesCacheKey}`,
         [propStylesCacheKey, stylesCacheKey],
       );
 
@@ -374,7 +373,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
 
       // Allocate a stable sequential class per style-key
       const className = useMemo(() => {
-        const stylesKey = JSON.stringify(allStyles || {});
+        const stylesKey = stringifyStyles(allStyles || {});
         return allocateClassName(stylesKey);
       }, [allStyles]);
 
@@ -389,24 +388,22 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         }
       }, [useDefaultStyles, allStyles, breakpoints?.join(','), className]);
 
-      // Inject styles and get the actual CSS class name
-      const injectedResult = useMemo(() => {
-        if (!directResult.rules.length) {
-          return { className: '', dispose: () => {} };
-        }
-        return inject(directResult.rules);
-      }, [directResult.rules]);
-
       const disposeRef = useRef<(() => void) | null>(null);
 
+      // Inject styles only in useInsertionEffect (not in render)
       useInsertionEffect(() => {
         disposeRef.current?.();
-        disposeRef.current = injectedResult.dispose;
+        if (directResult.rules.length) {
+          const { dispose } = inject(directResult.rules);
+          disposeRef.current = dispose;
+        } else {
+          disposeRef.current = null;
+        }
         return () => {
           disposeRef.current?.();
           disposeRef.current = null;
         };
-      }, [injectedResult.dispose]);
+      }, [directResult.rules]);
 
       let modProps: Record<string, unknown> | undefined;
       if (mods) {
@@ -414,10 +411,10 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         modProps = modAttrs(modsObject as any) as Record<string, unknown>;
       }
 
-      // Merge user className with injected className
+      // Merge user className with generated className
       const finalClassName = [
         (userClassName as string) || '',
-        injectedResult.className || directResult.className || className,
+        directResult.className || className,
       ]
         .filter(Boolean)
         .join(' ');

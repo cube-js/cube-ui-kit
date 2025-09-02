@@ -2,6 +2,7 @@ import { getByTestId, render } from '@testing-library/react';
 
 import { Button } from '../components/actions';
 import { Block } from '../components/Block';
+import { Space } from '../components/layout/Space';
 
 import { tastyDebug } from './debug';
 import { BreakpointsProvider } from './providers/BreakpointsProvider';
@@ -585,5 +586,267 @@ describe('tasty() API', () => {
     }
 
     expect(defaultContainer).toMatchTastySnapshot();
+  });
+});
+
+describe('style order consistency', () => {
+  // Helper function to extract class names from rendered components
+  function getClassName(container: HTMLElement): string {
+    const element = container.firstElementChild as HTMLElement;
+    return (
+      element?.className?.split(' ').find((cls) => /^t\d+$/.test(cls)) || ''
+    );
+  }
+
+  it('should generate same class for two components made with tasty having same styles but different order', () => {
+    const Component1 = tasty({
+      styles: {
+        padding: '2x',
+        margin: '1x',
+        fill: '#blue',
+        color: '#white',
+        radius: '1r',
+      },
+    });
+
+    const Component2 = tasty({
+      styles: {
+        color: '#white',
+        radius: '1r',
+        fill: '#blue',
+        margin: '1x',
+        padding: '2x',
+      },
+    });
+
+    const { container: container1 } = render(<Component1 />);
+    const { container: container2 } = render(<Component2 />);
+
+    const className1 = getClassName(container1);
+    const className2 = getClassName(container2);
+
+    expect(className1).toBe(className2);
+    expect(className1).toBeTruthy(); // Ensure we actually got a class name
+  });
+
+  it('should generate same class for two components extending Space with tasty having same styles but different order', () => {
+    const ExtendedSpace1 = tasty(Space, {
+      styles: {
+        padding: '3x',
+        fill: '#purple',
+        border: '1bw solid #dark',
+        gap: '2x',
+        radius: '2r',
+      },
+    });
+
+    const ExtendedSpace2 = tasty(Space, {
+      styles: {
+        border: '1bw solid #dark',
+        radius: '2r',
+        gap: '2x',
+        fill: '#purple',
+        padding: '3x',
+      },
+    });
+
+    const { container: container1 } = render(<ExtendedSpace1 />);
+    const { container: container2 } = render(<ExtendedSpace2 />);
+
+    const className1 = getClassName(container1);
+    const className2 = getClassName(container2);
+
+    expect(className1).toBe(className2);
+    expect(className1).toBeTruthy();
+  });
+
+  it('should generate same class for two Space components with styles prop in different order', () => {
+    const styles1 = {
+      padding: '4x',
+      margin: '2x',
+      fill: '#green',
+      border: '2bw solid #black',
+      width: '200px',
+    };
+
+    const styles2 = {
+      width: '200px',
+      border: '2bw solid #black',
+      fill: '#green',
+      margin: '2x',
+      padding: '4x',
+    };
+
+    const { container: container1 } = render(<Space styles={styles1} />);
+    const { container: container2 } = render(<Space styles={styles2} />);
+
+    const className1 = getClassName(container1);
+    const className2 = getClassName(container2);
+
+    expect(className1).toBe(className2);
+    expect(className1).toBeTruthy();
+  });
+
+  it('should generate same class for two Space components with styles prop for sub-element Test in different order', () => {
+    const styles1 = {
+      display: 'block',
+      Test: {
+        color: '#red',
+        padding: '1x',
+        fill: '#yellow',
+        margin: '0.5x',
+        border: '1bw solid #gray',
+      },
+    };
+
+    const styles2 = {
+      display: 'block',
+      Test: {
+        border: '1bw solid #gray',
+        margin: '0.5x',
+        fill: '#yellow',
+        padding: '1x',
+        color: '#red',
+      },
+    };
+
+    const { container: container1 } = render(<Space styles={styles1} />);
+    const { container: container2 } = render(<Space styles={styles2} />);
+
+    const className1 = getClassName(container1);
+    const className2 = getClassName(container2);
+
+    expect(className1).toBe(className2);
+    expect(className1).toBeTruthy();
+  });
+
+  it('should generate same class for two Space components with different order of style props radius and padding', () => {
+    const StyledSpace1 = tasty({
+      as: 'div',
+      styleProps: ['radius', 'padding', 'fill', 'margin'] as const,
+    });
+
+    const StyledSpace2 = tasty({
+      as: 'div',
+      styleProps: ['margin', 'fill', 'padding', 'radius'] as const,
+    });
+
+    const commonProps = {
+      radius: '2r',
+      padding: '3x',
+      fill: '#orange',
+      margin: '1x',
+    };
+
+    const { container: container1 } = render(<StyledSpace1 {...commonProps} />);
+    const { container: container2 } = render(<StyledSpace2 {...commonProps} />);
+
+    const className1 = getClassName(container1);
+    const className2 = getClassName(container2);
+
+    expect(className1).toBe(className2);
+    expect(className1).toBeTruthy();
+  });
+
+  it('should generate same class for mixed components with same styles but different ordering', () => {
+    const spaceStyles = {
+      display: 'flex',
+      gap: true,
+      flow: {
+        '': 'row',
+        vertical: 'column',
+      },
+      placeItems: {
+        '': 'center stretch',
+        vertical: 'stretch',
+      },
+    };
+
+    // Common styles in different orders
+    const commonStyles1 = {
+      padding: '2x',
+      fill: '#cyan',
+      border: '1bw solid #navy',
+      radius: '1r',
+      margin: '1x',
+      color: '#dark',
+    };
+
+    const commonStyles2 = {
+      color: '#dark',
+      margin: '1x',
+      radius: '1r',
+      border: '1bw solid #navy',
+      fill: '#cyan',
+      padding: '2x',
+    };
+
+    // Sub-element styles in different orders
+    const subElementStyles1 = {
+      Content: {
+        preset: 'h3',
+        color: '#white',
+        padding: '1x',
+        fill: '#black',
+      },
+    };
+
+    const subElementStyles2 = {
+      Content: {
+        fill: '#black',
+        padding: '1x',
+        color: '#white',
+        preset: 'h3',
+      },
+    };
+
+    // Test 1: tasty() with different style order
+    const TastyComponent1 = tasty({
+      styles: { ...spaceStyles, ...commonStyles1, ...subElementStyles1 },
+    });
+
+    const TastyComponent2 = tasty({
+      styles: { ...spaceStyles, ...commonStyles2, ...subElementStyles2 },
+    });
+
+    const { container: tastyContainer1 } = render(<TastyComponent1 />);
+    const { container: tastyContainer2 } = render(<TastyComponent2 />);
+
+    expect(getClassName(tastyContainer1)).toBe(getClassName(tastyContainer2));
+
+    // Test 2: Extended Space with different style order
+    const ExtendedSpace1 = tasty(Space, {
+      styles: { ...commonStyles1, ...subElementStyles1 },
+    });
+
+    const ExtendedSpace2 = tasty(Space, {
+      styles: { ...commonStyles2, ...subElementStyles2 },
+    });
+
+    const { container: extendedContainer1 } = render(<ExtendedSpace1 />);
+    const { container: extendedContainer2 } = render(<ExtendedSpace2 />);
+
+    expect(getClassName(extendedContainer1)).toBe(
+      getClassName(extendedContainer2),
+    );
+
+    // Test 3: Space with styles prop in different order
+    const { container: spaceContainer1 } = render(
+      <Space styles={{ ...commonStyles1, ...subElementStyles1 }} />,
+    );
+    const { container: spaceContainer2 } = render(
+      <Space styles={{ ...commonStyles2, ...subElementStyles2 }} />,
+    );
+
+    expect(getClassName(spaceContainer1)).toBe(getClassName(spaceContainer2));
+
+    // Test 4: All should have the same class (same styles, different ordering methods)
+    const tastyClass = getClassName(tastyContainer1);
+    const extendedClass = getClassName(extendedContainer1);
+    const spaceClass = getClassName(spaceContainer1);
+
+    expect(tastyClass).toBe(extendedClass);
+    expect(extendedClass).toBe(spaceClass);
+    expect(tastyClass).toBeTruthy();
   });
 });

@@ -577,3 +577,45 @@ export function computeState(
 
   return !!func(a, b);
 }
+
+const _innerCache = new WeakMap();
+
+export function stringifyStyles(styles: any): string {
+  if (styles == null || typeof styles !== 'object') return '';
+  const keys = Object.keys(styles).sort();
+  const parts: string[] = [];
+  for (let i = 0; i < keys.length; i++) {
+    const k = keys[i],
+      v = styles[k];
+    if (v === undefined || typeof v === 'function' || typeof v === 'symbol')
+      continue;
+
+    const c0 = k.charCodeAt(0);
+    const needsInnerSort =
+      ((c0 >= 65 && c0 <= 90) || c0 === 38) &&
+      v &&
+      typeof v === 'object' &&
+      !Array.isArray(v);
+
+    let sv: string;
+    if (needsInnerSort) {
+      sv = _innerCache.get(v);
+      if (sv === undefined) {
+        const innerKeys = Object.keys(v).sort();
+        const innerParts: string[] = [];
+        for (let j = 0; j < innerKeys.length; j++) {
+          const ik = innerKeys[j];
+          const ivs = JSON.stringify(v[ik]);
+          if (ivs !== undefined)
+            innerParts.push(JSON.stringify(ik) + ':' + ivs);
+        }
+        sv = '{' + innerParts.join(',') + '}';
+        _innerCache.set(v, sv);
+      }
+    } else {
+      sv = JSON.stringify(v);
+    }
+    parts.push(JSON.stringify(k) + ':' + sv);
+  }
+  return '{' + parts.join(',') + '}';
+}

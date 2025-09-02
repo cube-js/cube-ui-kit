@@ -454,13 +454,13 @@ describe('StyleInjector', () => {
       expect(results.length).toBe(10);
     });
 
-    it('should force bulk cleanup when forceBulkCleanup() is called', () => {
+    it('should force bulk cleanup when cleanup() is called', () => {
       const css = '&{ color: red; }';
       const result = injector.inject(cssToStyleResults(css));
       result.dispose();
 
       // Force bulk cleanup
-      injector.forceBulkCleanup();
+      injector.cleanup();
 
       // Cleanup should have been processed immediately
     });
@@ -777,7 +777,7 @@ describe('StyleInjector', () => {
     });
 
     test('demonstrates limited content-based deduplication behavior', () => {
-      const injector = new StyleInjector({ collectMetrics: true });
+      const injector = new StyleInjector({ devMode: true });
 
       // Create two identical global style components
       const GlobalStyle1 = injector.createGlobalStyle`

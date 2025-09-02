@@ -1,3 +1,4 @@
+import { isDevEnv } from '../utils/isDevEnv';
 import { StyleResult } from '../utils/renderStyles';
 
 import { StyleInjector } from './injector';
@@ -57,9 +58,8 @@ export function configure(config: Partial<StyleInjectorConfig> = {}): void {
     unusedStylesThreshold: 200, // default threshold for bulk cleanup of unused styles
     bulkCleanupDelay: 5000, // default delay before bulk cleanup (ignored if idleCleanup is true)
     idleCleanup: true, // default to using requestIdleCallback instead of setTimeout
-    collectMetrics: false, // default to no performance tracking
     forceTextInjection: false, // auto-enable for test environments
-    debugMode: false, // reduce memory usage by avoiding full cssText storage
+    devMode: isDevEnv(), // enable dev features: performance tracking and debug info
     bulkCleanupBatchRatio: 0.5,
     unusedStylesMinAgeMs: 10000,
     ...config,
@@ -188,9 +188,8 @@ export function createInjector(
     unusedStylesThreshold: 500, // default threshold for bulk cleanup of unused styles
     bulkCleanupDelay: 5000, // default delay before bulk cleanup (ignored if idleCleanup is true)
     idleCleanup: true, // default to using requestIdleCallback instead of setTimeout
-    collectMetrics: false, // default to no performance tracking
     forceTextInjection: isTest, // auto-enable for test environments
-    debugMode: false, // reduce memory usage by avoiding full cssText storage
+    devMode: isDevEnv(), // enable dev features: performance tracking and debug info
     bulkCleanupBatchRatio: 0.5,
     unusedStylesMinAgeMs: 10000,
     ...config,

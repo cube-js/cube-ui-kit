@@ -9,10 +9,11 @@ The Style Injector provides:
 - **Reference counting** - automatic cleanup when components unmount
 - **CSS nesting flattening** - handles `&`, `.Class`, `SubElement` patterns
 - **Keyframes injection** - first-class `@keyframes` support with deduplication
-- **Efficient bulk cleanup** - unused styles are marked and cleaned up in batches
+- **Safe bulk cleanup** - unused styles are aged and cleaned up in partial batches
 - **SSR support** - deterministic class names and CSS extraction
 - **Multiple roots** - works with Document and ShadowRoot
 - **Style elements** - reliable DOM insertion with fallbacks
+- **DOM presence validation** - prevents deletion of styles still active in DOM
 
 ## Quick Start
 
@@ -22,7 +23,7 @@ import { inject, keyframes, configure } from './tasty/injector';
 // Configure once (optional)
 configure({
   cacheSize: 1000,
-  collectMetrics: true,
+  devMode: true,
 });
 
 // Inject component styles
@@ -99,8 +100,10 @@ configure({
   unusedStylesThreshold: 500,       // Threshold for bulk cleanup of unused styles
   bulkCleanupDelay: 5000,           // Delay before bulk cleanup (ms, ignored if idleCleanup is true)
   idleCleanup: true,                // Use requestIdleCallback for cleanup when available
-  collectMetrics: false,            // Collect performance metrics
+  bulkCleanupBatchRatio: 0.5,       // Ratio of unused styles to delete per cleanup (0.5 = oldest half)
+  unusedStylesMinAgeMs: 10000,       // Minimum age before styles are eligible for deletion (ms)
   forceTextInjection: false,        // Force textContent insertion (auto-detected for tests)
+  devMode: false,                   // Enable dev features: metrics and debug info (auto-enabled in development)
   nonce: 'csp-nonce',               // CSP nonce for style elements
 });
 ```
@@ -151,6 +154,18 @@ Extracts CSS text for SSR.
 const cssForSSR = getCssText();
 ```
 
+### `cleanup(root?: Document | ShadowRoot): void`
+
+Forces immediate cleanup of unused styles. Normally cleanup happens automatically when thresholds are reached, but this can be called manually for memory management.
+
+```typescript
+// Force cleanup of unused styles
+cleanup();
+
+// Force cleanup for specific root
+cleanup(shadowRoot);
+```
+
 ## Architecture
 
 ```
@@ -183,16 +198,15 @@ const cssForSSR = getCssText();
 - Keyframes injection with deduplication and reference counting
 - SheetManager (DOM manipulation, cleanup)
 - StyleInjector core (injection, deduplication, GC)
+- Safe cleanup system with age-based filtering and partial cleanup
+- DOM presence validation to prevent active style deletion
 - Global configuration API
 - Comprehensive test suite
-
-### 🔧 In Progress
 - Integration with tasty components
 
 ### 🚀 Ready For
-- Integration with `tastyElement` and `tastyGlobal`
-- Replacement of styled-components
 - Production deployment
+- Full replacement of styled-components
 
 ## Test Coverage
 
@@ -213,10 +227,14 @@ const cssForSSR = getCssText();
 - **Deduplication** - Identical CSS reuses the same className
 - **Keyframes deduplication** - Identical keyframes reuse the same name via JSON.stringify caching
 - **Reference counting** - Automatic cleanup prevents memory leaks
-- **Bulk cleanup** - Unused styles are marked and cleaned up efficiently in batches
+- **Safe partial cleanup** - Only oldest unused styles are cleaned up in configurable batches
+- **Age-based cleanup** - Styles must remain unused for a minimum time before deletion
+- **DOM presence validation** - Prevents deletion of styles still referenced in the DOM
+- **Stale disposal protection** - Guards against double-dispose and lifecycle mismatches
 - **Style elements** - Reliable DOM insertion with textContent fallbacks
 - **Unused style reuse** - Previously used styles can be instantly reactivated
 - **Minimal CSSOM manipulation** - Bulk operations reduce DOM write overhead
+- **Insertion-phase injection** - Styles are injected at optimal React timing to prevent races
 
 ## Browser Support
 

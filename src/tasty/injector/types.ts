@@ -11,10 +11,9 @@ export interface StyleInjectorConfig {
   unusedStylesThreshold?: number; // default: 500 (threshold for bulk cleanup of unused styles)
   bulkCleanupDelay?: number; // default: 5000ms (delay before bulk cleanup, ignored if idleCleanup is true)
   idleCleanup?: boolean; // default: true (use requestIdleCallback for cleanup when available)
-  collectMetrics?: boolean; // default: false (performance tracking)
   forceTextInjection?: boolean; // default: auto-detected (true in test environments, false otherwise)
-  /** When false, avoid storing full cssText for each rule block to reduce memory. */
-  debugMode?: boolean; // default: false (store less data)
+  /** Enable development mode features: performance metrics and debug information storage */
+  devMode?: boolean; // default: auto-detected (true in development, false in production)
   /**
    * Ratio of unused styles to delete per bulk cleanup run (0..1).
    * Defaults to 0.5 (oldest half) to reduce risk of removing styles
@@ -23,7 +22,7 @@ export interface StyleInjectorConfig {
   bulkCleanupBatchRatio?: number;
   /**
    * Minimum age (in ms) a style must remain unused before eligible for deletion.
-   * Helps avoid races during rapid mount/unmount cycles. Default: 2000ms.
+   * Helps avoid races during rapid mount/unmount cycles. Default: 10000ms.
    */
   unusedStylesMinAgeMs?: number;
 }
@@ -32,7 +31,8 @@ export interface RuleInfo {
   className: string;
   ruleIndex: number;
   sheetIndex: number;
-  cssText: string[];
+  /** Dev-only: full CSS texts inserted for this class; omitted in production */
+  cssText?: string[];
   /** Inclusive end index of the contiguous block of inserted rules for this className */
   endRuleIndex?: number;
 }
@@ -100,7 +100,8 @@ export interface KeyframesInfo {
   name: string;
   sheetIndex: number;
   ruleIndex: number;
-  cssText: string;
+  /** Dev-only: full CSS text of the @keyframes rule; omitted in production */
+  cssText?: string;
 }
 
 export type KeyframeStep = string | Record<string, string | number>;
