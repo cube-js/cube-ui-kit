@@ -353,6 +353,64 @@ export class SheetManager {
   }
 
   /**
+   * Adjust rule indices after deletion to account for shifting
+   */
+  private adjustIndicesAfterDeletion(
+    registry: RootRegistry,
+    sheetIndex: number,
+    startIdx: number,
+    endIdx: number,
+    deleteCount: number,
+    deletedRuleInfo: RuleInfo,
+  ): void {
+    try {
+      // Helper function to adjust a single RuleInfo
+      const adjustRuleInfo = (info: RuleInfo): void => {
+        if (info === deletedRuleInfo) return; // Skip the deleted rule
+        if (info.sheetIndex !== sheetIndex) return; // Different sheet
+
+        const infoEnd = (info.endRuleIndex as number) ?? info.ruleIndex;
+
+        if (info.ruleIndex > endIdx) {
+          // Rule is after deleted range - shift left
+          info.ruleIndex = Math.max(0, info.ruleIndex - deleteCount);
+          if (info.endRuleIndex != null) {
+            info.endRuleIndex = Math.max(info.ruleIndex, infoEnd - deleteCount);
+          }
+        } else if (info.ruleIndex <= endIdx && infoEnd >= startIdx) {
+          // Rule overlaps with deleted range (should not normally happen)
+          // Clamp endRuleIndex to avoid pointing into deleted region
+          if (info.endRuleIndex != null) {
+            const newEnd = Math.max(info.ruleIndex, startIdx - 1);
+            info.endRuleIndex = Math.max(info.ruleIndex, newEnd);
+          }
+        }
+      };
+
+      // Adjust active rules
+      for (const info of registry.rules.values()) {
+        adjustRuleInfo(info);
+      }
+
+      // Adjust unused rules (their ruleInfo references the same objects as in rules map)
+      for (const unused of registry.unusedRules.values()) {
+        adjustRuleInfo(unused.ruleInfo);
+      }
+
+      // Adjust keyframes indices stored in cache
+      for (const entry of registry.keyframesCache.values()) {
+        const ki = entry.info as KeyframesInfo;
+        if (ki.sheetIndex !== sheetIndex) continue;
+        if (ki.ruleIndex > endIdx) {
+          ki.ruleIndex = Math.max(0, ki.ruleIndex - deleteCount);
+        }
+      }
+    } catch (_) {
+      // Defensive: do not let index adjustments crash cleanup
+    }
+  }
+
+  /**
    * Delete a CSS rule from the sheet
    */
   deleteRule(registry: RootRegistry, ruleInfo: RuleInfo): void {
@@ -384,13 +442,22 @@ export class SheetManager {
         );
 
         if (Number.isFinite(startIdx) && endIdx >= startIdx) {
+          const deleteCount = endIdx - startIdx + 1;
           for (let idx = endIdx; idx >= startIdx; idx--) {
             if (idx < 0 || idx >= styleSheet.cssRules.length) continue;
             styleSheet.deleteRule(idx);
           }
-          sheet.ruleCount = Math.max(
-            0,
-            sheet.ruleCount - (endIdx - startIdx + 1),
+          sheet.ruleCount = Math.max(0, sheet.ruleCount - deleteCount);
+
+          // After deletion, all subsequent rule indices shift left by deleteCount.
+          // We must adjust stored indices for all other RuleInfo within the same sheet.
+          this.adjustIndicesAfterDeletion(
+            registry,
+            ruleInfo.sheetIndex,
+            startIdx,
+            endIdx,
+            deleteCount,
+            ruleInfo,
           );
         }
       }
@@ -610,23 +677,6 @@ export class SheetManager {
         if (currentInfo && currentInfo !== ruleInfo) {
           // Rule was replaced; skip deletion of the old reference
           continue;
-        }
-
-        // EXTRA SAFETY: If this class is present in the DOM, skip deletion.
-        // This protects against refCount drift or races where the style is actually in use.
-        try {
-          const canQuery = rootNode && (rootNode as any).querySelector;
-          if (canQuery) {
-            const el = (rootNode as any).querySelector?.(`.${className}`);
-            if (el) {
-              // Class is currently used in DOM; do not delete its rules
-              // Also remove it from unused list to avoid repeated checks
-              registry.unusedRules.delete(className);
-              continue;
-            }
-          }
-        } catch (_) {
-          // If querying fails for any reason, proceed with other safeguards only
         }
 
         // Optional last-resort safety: ensure the sheet element still exists

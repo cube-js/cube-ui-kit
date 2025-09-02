@@ -664,7 +664,7 @@ export const tastyDebug = {
       const registry = (injector.instance as any)['sheetManager']?.getRegistry(
         root,
       );
-      if (registry?.keyframesCache) {
+      if (registry) {
         for (const entry of registry.keyframesCache.values()) {
           keyframes.push({
             name: entry.name,
