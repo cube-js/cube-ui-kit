@@ -2,7 +2,12 @@ import { isDevEnv } from '../utils/isDevEnv';
 import { StyleResult } from '../utils/renderStyles';
 
 import { StyleInjector } from './injector';
-import { DisposeFunction, InjectResult, StyleInjectorConfig } from './types';
+import {
+  DisposeFunction,
+  GlobalInjectResult,
+  InjectResult,
+  StyleInjectorConfig,
+} from './types';
 
 // Use a more robust global singleton that survives React Strict Mode
 const GLOBAL_INJECTOR_KEY = '__TASTY_GLOBAL_INJECTOR__';
@@ -102,7 +107,7 @@ export function inject(
 export function injectGlobal(
   rules: StyleResult[],
   options?: { root?: Document | ShadowRoot },
-): InjectResult {
+): GlobalInjectResult {
   return getGlobalInjector().injectGlobal(rules, options);
 }
 
