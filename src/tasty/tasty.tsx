@@ -31,11 +31,12 @@ import { ResponsiveStyleValue, stringifyStyles } from './utils/styles';
 // Per-style-key sequential class allocator
 const styleKeyToClass = new Map<string, string>();
 let nextClassId = 0;
-function allocateClassName(styleKey: string): string {
-  const existing = styleKeyToClass.get(styleKey);
+function allocateClassName(styleKey: string, contextKey?: string): string {
+  const key = contextKey ? `${styleKey}||${contextKey}` : styleKey;
+  const existing = styleKeyToClass.get(key);
   if (existing) return existing;
   const cls = `t${nextClassId++}`;
-  styleKeyToClass.set(styleKey, cls);
+  styleKeyToClass.set(key, cls);
   return cls;
 }
 
@@ -87,10 +88,10 @@ type TastyComponentPropsWithDefaults<
 > = keyof DefaultProps extends never
   ? Props
   : {
-      [key in Extract<keyof Props, keyof DefaultProps>]?: Props[key];
-    } & {
-      [key in keyof Omit<Props, keyof DefaultProps>]: Props[key];
-    };
+    [key in Extract<keyof Props, keyof DefaultProps>]?: Props[key];
+  } & {
+    [key in keyof Omit<Props, keyof DefaultProps>]: Props[key];
+  };
 
 export function tasty<K extends StyleList, V extends VariantMap>(
   options: TastyProps<K, V>,
@@ -290,8 +291,10 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
      */
     const renderDefaultStyles = cacheWrapper((breakpoints: number[]) => {
       // Allocate a stable class for default styles
+      const bpKey = (breakpoints || []).join(',');
       const defaultClassName = allocateClassName(
         stringifyStyles(defaultStyles || {}),
+        `bp:${bpKey}`,
       );
       return renderStyles(defaultStyles || {}, breakpoints, defaultClassName);
     });
@@ -319,7 +322,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         className: userClassName,
         ...otherProps
       } = allProps as Record<string, unknown> as AllBasePropsWithMods<K> &
-        WithVariant<V> & { className?: string };
+      WithVariant<V> & { className?: string };
 
       let propStyles: Styles | null = (
         (styleProps
@@ -360,10 +363,10 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
           useDefaultStyles
             ? defaultStyles
             : mergeStyles(
-                defaultStyles,
-                styles as Styles,
-                propStyles as Styles,
-              ),
+              defaultStyles,
+              styles as Styles,
+              propStyles as Styles,
+            ),
         [styleCacheKey],
       );
 
@@ -374,8 +377,9 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
       // Allocate a stable sequential class per style-key
       const className = useMemo(() => {
         const stylesKey = stringifyStyles(allStyles || {});
-        return allocateClassName(stylesKey);
-      }, [allStyles]);
+        const bpKey = (breakpoints as number[] | undefined)?.join(',') || '';
+        return allocateClassName(stylesKey, `bp:${bpKey}`);
+      }, [allStyles, breakpoints?.join(',')]);
 
       // Compute rules synchronously; inject via insertion effect
       const directResult: RenderResult = useMemo(() => {
@@ -452,9 +456,8 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
     });
   }
 
-  _TastyComponent.displayName = `TastyComponent(${
-    (defaultProps as any).qa || originalAs
-  })`;
+  _TastyComponent.displayName = `TastyComponent(${(defaultProps as any).qa || originalAs
+    })`;
 
   return _TastyComponent;
 }
