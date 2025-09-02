@@ -929,6 +929,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
       ) : (
         <ListBox
           ref={listBoxRef}
+          {...otherProps}
           aria-label={innerAriaLabel}
           selectedKey={selectedKey}
           defaultSelectedKey={defaultSelectedKey}
