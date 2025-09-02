@@ -97,6 +97,16 @@ export function inject(
 }
 
 /**
+ * Inject global rules that should not reserve tasty class names
+ */
+export function injectGlobal(
+  rules: StyleResult[],
+  options?: { root?: Document | ShadowRoot },
+): InjectResult {
+  return getGlobalInjector().injectGlobal(rules, options);
+}
+
+/**
  * Inject keyframes and return object with toString() and dispose()
  */
 export function keyframes(

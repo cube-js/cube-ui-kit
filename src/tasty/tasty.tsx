@@ -13,7 +13,7 @@ import {
 } from 'react';
 import { isValidElementType } from 'react-is';
 
-import { inject } from './injector';
+import { inject, injectGlobal } from './injector';
 import { BreakpointsContext } from './providers/BreakpointsProvider';
 import { BASE_STYLES } from './styles/list';
 import { Styles, StylesInterface } from './styles/types';
@@ -142,7 +142,7 @@ function tastyGlobal(selector: string, styles?: Styles) {
     useInsertionEffect(() => {
       disposeRef.current?.();
       if (styleResults.length === 0) return;
-      const { dispose } = inject(styleResults);
+      const { dispose } = injectGlobal(styleResults as any);
       disposeRef.current = dispose;
       return () => {
         disposeRef.current?.();

@@ -573,7 +573,7 @@ describe('tasty() API', () => {
     ) as Element;
 
     // Example: Get CSS for specific element
-    const cssForElement = tastyDebug.inspectDOMElement(headerElement);
+    const cssForElement = tastyDebug.css(headerElement);
     expect(cssForElement).toContain('grid-template-areas');
 
     // Example: Get CSS for specific class
@@ -581,7 +581,7 @@ describe('tasty() API', () => {
       .split(' ')
       .find((cls) => /^t\d+$/.test(cls));
     if (className) {
-      const cssForClass = tastyDebug.getCSSForClass(className);
+      const cssForClass = tastyDebug.css(className);
       expect(cssForClass).toContain('display: grid');
     }
 

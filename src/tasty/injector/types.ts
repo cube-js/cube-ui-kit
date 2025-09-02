@@ -3,6 +3,10 @@ export interface InjectResult {
   dispose: () => void;
 }
 
+export interface GlobalInjectResult {
+  dispose: () => void;
+}
+
 export type DisposeFunction = () => void;
 
 export interface StyleInjectorConfig {

@@ -11,6 +11,7 @@ import { parseStyle } from '../utils/styles';
 // Simple CSS text to StyleResult converter for injectGlobal backward compatibility
 import { SheetManager } from './sheet-manager';
 import {
+  GlobalInjectResult,
   InjectResult,
   KeyframesResult,
   KeyframesSteps,
@@ -31,6 +32,7 @@ export class StyleInjector {
   private sheetManager: SheetManager;
   private config: StyleInjectorConfig;
   private cleanupScheduled = false;
+  private globalRuleCounter = 0;
 
   constructor(config: StyleInjectorConfig = {}) {
     this.config = config;
@@ -211,6 +213,43 @@ export class StyleInjector {
     return {
       className,
       dispose: () => this.dispose(className, registry),
+    };
+  }
+
+  /**
+   * Inject global styles (rules without a generated tasty class selector)
+   * This ensures we don't reserve a tasty class name (t{number}) for global rules,
+   * which could otherwise collide with element-level styles and break lookups.
+   */
+  injectGlobal(
+    rules: StyleResult[],
+    options?: { root?: Document | ShadowRoot },
+  ): GlobalInjectResult {
+    const root = options?.root || document;
+    const registry = this.sheetManager.getRegistry(root);
+
+    if (!rules || rules.length === 0) {
+      return { dispose: () => {} };
+    }
+
+    // Use a non-tasty identifier to avoid any collisions with .t{number} classes
+    const key = `global:${this.globalRuleCounter++}`;
+
+    const info = this.sheetManager.insertGlobalRule(
+      registry,
+      rules as unknown as StyleRule[],
+      key,
+      root,
+    );
+
+    if (registry.metrics) {
+      registry.metrics.totalInsertions++;
+    }
+
+    return {
+      dispose: () => {
+        if (info) this.sheetManager.deleteRule(registry, info);
+      },
     };
   }
 
@@ -516,8 +555,8 @@ export class StyleInjector {
         const css = this.interpolateTemplate();
         if (css.trim()) {
           const styleResults = this.parseCSSToStyleResults(css);
-          // Bind the inject method to the outer injector instance
-          const result = injector.inject(styleResults, {
+          // Bind the global inject method to the outer injector instance
+          const result = injector.injectGlobal(styleResults as any, {
             root: this.props.root,
           });
           this.disposeFunction = result.dispose;
