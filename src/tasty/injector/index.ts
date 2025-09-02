@@ -192,7 +192,7 @@ export function createInjector(
     forceTextInjection: isTest, // auto-enable for test environments
     debugMode: false, // reduce memory usage by avoiding full cssText storage
     bulkCleanupBatchRatio: 0.5,
-    unusedStylesMinAgeMs: 2000,
+    unusedStylesMinAgeMs: 10000,
     ...config,
   };
 
