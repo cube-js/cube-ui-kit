@@ -28,17 +28,10 @@ import { ResponsiveStyleValue, stringifyStyles } from './utils/styles';
 /**
  * Simple hash function for internal cache keys
  */
-// Per-style-key sequential class allocator
-const styleKeyToClass = new Map<string, string>();
-let nextClassId = 0;
-function allocateClassName(styleKey: string, contextKey?: string): string {
+// Generate unique cache key for style deduplication
+function generateStyleCacheKey(styleKey: string, contextKey?: string): string {
   // Use null character as separator for better performance and no collision risk
-  const key = contextKey ? `${styleKey}\0${contextKey}` : styleKey;
-  const existing = styleKeyToClass.get(key);
-  if (existing) return existing;
-  const cls = `t${nextClassId++}`;
-  styleKeyToClass.set(key, cls);
-  return cls;
+  return contextKey ? `${styleKey}\0${contextKey}` : styleKey;
 }
 
 // Basic props accepted by our base element
@@ -136,13 +129,13 @@ function tastyGlobal(selector: string, styles?: Styles) {
 
     const styleResults = useMemo(() => {
       if (!styles) return [];
-      return renderStyles(styles, breakpointsList, selector, true);
+      return renderStyles(styles, breakpointsList, selector);
     }, [selector, styles, breakpointsList]);
 
     // Inject styles at insertion phase; cleanup on change/unmount
     useInsertionEffect(() => {
       disposeRef.current?.();
-      if (styleResults.length === 0) return;
+      if ((styleResults as any[]).length === 0) return;
       const { dispose } = injectGlobal(styleResults as any);
       disposeRef.current = dispose;
       return () => {
@@ -290,13 +283,8 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
      * of the same element if no custom styles are provided via `styles` prop or direct style props.
      */
     const renderDefaultStyles = cacheWrapper((breakpoints: number[]) => {
-      // Allocate a stable class for default styles
-      const bpKey = (breakpoints || []).join(',');
-      const defaultClassName = allocateClassName(
-        stringifyStyles(defaultStyles || {}),
-        `bp:${bpKey}`,
-      );
-      return renderStyles(defaultStyles || {}, breakpoints, defaultClassName);
+      // Return rules without className - injector will add it
+      return renderStyles(defaultStyles || {}, breakpoints);
     });
 
     let {
@@ -355,8 +343,8 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         [breakpoints?.join(',')],
       );
 
-      // Optimize style computation and className allocation
-      const { allStyles, className, useDefaultStyles } = useMemo(() => {
+      // Optimize style computation and cache key generation
+      const { allStyles, cacheKey, useDefaultStyles } = useMemo(() => {
         const hasStyles =
           styles && Object.keys(styles as Record<string, unknown>).length > 0;
         const hasPropStyles = propStyles && Object.keys(propStyles).length > 0;
@@ -366,16 +354,16 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
           ? defaultStyles
           : mergeStyles(defaultStyles, styles as Styles, propStyles as Styles);
 
-        // Single stringifyStyles call
+        // Generate cache key for style deduplication
         const styleKey = stringifyStyles(merged || {});
-        const cls = allocateClassName(
+        const key = generateStyleCacheKey(
           styleKey,
           breakpointsKey ? `bp:${breakpointsKey}` : undefined,
         );
 
         return {
           allStyles: merged,
-          className: cls,
+          cacheKey: key,
           useDefaultStyles: useDefault,
         };
       }, [styles, propStyles, breakpointsKey]);
@@ -385,19 +373,28 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         if (useDefaultStyles) {
           return renderDefaultStyles(breakpoints as number[]);
         } else if (allStyles && Object.keys(allStyles).length > 0) {
-          return renderStyles(allStyles, breakpoints as number[], className);
+          // Return rules without className - injector will add it
+          return renderStyles(allStyles, breakpoints as number[]);
         } else {
           return { rules: [], className: '' };
         }
-      }, [useDefaultStyles, allStyles, breakpointsKey, className]);
+      }, [useDefaultStyles, allStyles, breakpointsKey, cacheKey]);
 
       const disposeRef = useRef<(() => void) | null>(null);
 
-      // Inject styles only in useInsertionEffect (not in render)
+      // Compute the className synchronously
+      const injectedClassName = useMemo(() => {
+        if (!directResult.rules.length) return '';
+        // This will either reuse existing or allocate new class
+        const { className } = inject(directResult.rules, { cacheKey });
+        return className;
+      }, [directResult.rules, cacheKey]);
+
+      // Handle disposal in useInsertionEffect
       useInsertionEffect(() => {
         disposeRef.current?.();
         if (directResult.rules.length) {
-          const { dispose } = inject(directResult.rules);
+          const { dispose } = inject(directResult.rules, { cacheKey });
           disposeRef.current = dispose;
         } else {
           disposeRef.current = null;
@@ -406,7 +403,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
           disposeRef.current?.();
           disposeRef.current = null;
         };
-      }, [directResult.rules]);
+      }, [directResult.rules, cacheKey]);
 
       let modProps: Record<string, unknown> | undefined;
       if (mods) {
@@ -414,10 +411,10 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         modProps = modAttrs(modsObject as any) as Record<string, unknown>;
       }
 
-      // Merge user className with generated className
+      // Merge user className with injected className
       const finalClassName = [
         (userClassName as string) || '',
-        directResult.className || className,
+        injectedClassName,
       ]
         .filter(Boolean)
         .join(' ');

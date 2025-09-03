@@ -96,7 +96,7 @@ function getGlobalInjector(): StyleInjector {
  */
 export function inject(
   rules: StyleResult[],
-  options?: { root?: Document | ShadowRoot },
+  options?: { root?: Document | ShadowRoot; cacheKey?: string },
 ): InjectResult {
   return getGlobalInjector().inject(rules, options);
 }

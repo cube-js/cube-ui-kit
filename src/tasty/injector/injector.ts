@@ -44,7 +44,7 @@ export class StyleInjector {
    */
   inject(
     rules: StyleResult[],
-    options?: { root?: Document | ShadowRoot },
+    options?: { root?: Document | ShadowRoot; cacheKey?: string },
   ): InjectResult {
     const root = options?.root || document;
     const registry = this.sheetManager.getRegistry(root);
@@ -58,17 +58,16 @@ export class StyleInjector {
 
     // Rules are now in StyleRule format directly
 
-    // Try to dedupe by className first — if the same class was already inserted, reuse it
-    // Only extract className if it looks like a generated tasty className (t + digits)
-    const preExtractedClass = this.extractClassName(rules);
-    const generatedClass =
-      preExtractedClass && /^t\d+$/.test(preExtractedClass)
-        ? preExtractedClass
-        : null;
+    // Check if we can reuse based on cache key
+    const cacheKey = options?.cacheKey;
+    let className: string;
 
-    if (generatedClass && registry.rules.has(generatedClass)) {
-      const currentRefCount = registry.refCounts.get(generatedClass) || 0;
-      registry.refCounts.set(generatedClass, currentRefCount + 1);
+    if (cacheKey && registry.rules.has(cacheKey)) {
+      // Reuse existing class for this cache key
+      const existingRuleInfo = registry.rules.get(cacheKey)!;
+      className = existingRuleInfo.className;
+      const currentRefCount = registry.refCounts.get(className) || 0;
+      registry.refCounts.set(className, currentRefCount + 1);
 
       // Update metrics
       if (registry.metrics) {
@@ -76,19 +75,40 @@ export class StyleInjector {
       }
 
       return {
-        className: generatedClass,
-        dispose: () => this.dispose(generatedClass, registry),
+        className,
+        dispose: () => this.dispose(className, registry),
       };
     }
 
-    // No active cache dedupe — rely on provided className or disposed cache only
+    // Generate new className
+    className = generateClassName(registry.classCounter++);
 
-    // Use extracted className if available, otherwise generate new one
-    const className =
-      generatedClass || generateClassName(registry.classCounter++);
+    // Process rules: handle needsClassName flag and apply specificity
+    const rulesToInsert = rules.map((rule) => {
+      let newSelector = rule.selector;
 
-    // Use rules as-is - specificity is handled during selector generation
-    const rulesToInsert = rules;
+      // If rule needs className prepended
+      if (rule.needsClassName) {
+        // Simple concatenation: .className + selectorSuffix
+        newSelector = `.${className}${newSelector}`;
+      }
+
+      // Apply specificity duplication for tasty class selectors
+      if (/^\.t\d+/.test(newSelector)) {
+        // Extract the base class and duplicate it
+        const match = newSelector.match(/^\.t\d+/);
+        if (match) {
+          const baseClass = match[0];
+          newSelector = baseClass + newSelector;
+        }
+      }
+
+      return {
+        ...rule,
+        selector: newSelector,
+        needsClassName: undefined, // Remove the flag after processing
+      };
+    });
 
     // Before inserting, auto-register @property for any color custom properties being defined.
     // Fast parse: split declarations by ';' and match "--*-color:"
@@ -139,6 +159,11 @@ export class StyleInjector {
     registry.refCounts.set(className, 1);
     registry.rules.set(className, ruleInfo);
 
+    // Also store by cache key if provided
+    if (cacheKey) {
+      registry.rules.set(cacheKey, ruleInfo);
+    }
+
     // Update metrics
     if (registry.metrics) {
       registry.metrics.totalInsertions++;
@@ -186,19 +211,6 @@ export class StyleInjector {
         if (info) this.sheetManager.deleteRule(registry, info);
       },
     };
-  }
-
-  /**
-   * Extract className from rules (assumes first rule contains the base className)
-   */
-  private extractClassName(rules: StyleResult[]): string | null {
-    for (const rule of rules) {
-      const match = rule.selector.match(/^\.([a-zA-Z0-9_-]+)/);
-      if (match) {
-        return match[1];
-      }
-    }
-    return null;
   }
 
   /**

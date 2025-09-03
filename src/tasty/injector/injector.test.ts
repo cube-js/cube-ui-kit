@@ -418,7 +418,7 @@ describe('StyleInjector', () => {
       expect(document.head.querySelectorAll('[data-tasty]').length).toBe(1);
     });
 
-    it('should restore unused styles when reused', () => {
+    it('should generate new class names for the same styles', () => {
       const css = '&{ color: red; }';
 
       const result1 = injector.inject(cssToStyleResults(css, 't123'));
@@ -427,14 +427,16 @@ describe('StyleInjector', () => {
       // Dispose the style
       result1.dispose();
 
-      // Inject the same style again (should restore from unused)
+      // Inject the same style again (should get a new class name)
       const result2 = injector.inject(cssToStyleResults(css, 't123'));
 
-      // Should get the same className back
-      expect(result2.className).toBe(className1);
+      // Should get a different className (no reuse)
+      expect(result2.className).not.toBe(className1);
 
-      // Style should still exist in DOM (no re-insertion)
-      expect(document.head.querySelectorAll('[data-tasty]').length).toBe(1);
+      // Style sheet count depends on cleanup - first style is marked as unused
+      // but not immediately removed from DOM
+      const styleSheets = document.head.querySelectorAll('[data-tasty]').length;
+      expect(styleSheets).toBeGreaterThanOrEqual(1);
     });
 
     it('should handle multiple disposals correctly', () => {
@@ -816,8 +818,8 @@ describe('StyleInjector', () => {
       expect(metrics.misses).toBe(2);
       expect(metrics.hits).toBe(0);
 
-      // However, if we inject the exact same StyleResult objects again
-      // with the same className in the selector, it should deduplicate
+      // Class name reuse is now disabled, so injecting with a specific
+      // className in the selector will still generate a new className
       const result3 = injector.inject([
         {
           selector: `.${result1.className}`,
@@ -825,8 +827,9 @@ describe('StyleInjector', () => {
         },
       ]);
 
-      // This should reuse the existing className (if it has the right format)
-      expect(result3.className).toBe(result1.className);
+      // Should generate a new className (no reuse based on selector)
+      expect(result3.className).not.toBe(result1.className);
+      expect(result3.className).toMatch(/^t\d+$/);
 
       // Cleanup
       result1.dispose();
