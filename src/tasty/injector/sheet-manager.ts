@@ -49,6 +49,7 @@ export class SheetManager {
         rules: new Map(),
         ruleTextSet: new Set<string>(),
         bulkCleanupTimeout: null,
+        cleanupCheckTimeout: null,
         metrics,
         classCounter: 0,
         keyframesCache: new Map(),
@@ -596,48 +597,52 @@ export class SheetManager {
       rulesBySheet.get(sheetIndex)!.push({ className, ruleInfo });
     }
 
-    // Resolve root node for DOM checks (Document or ShadowRoot)
-    const resolveRoot = (): Document | ShadowRoot | null => {
-      const firstSheet = registry.sheets[0]?.sheet;
-      if (!firstSheet) return null;
-      const rootNode = (firstSheet as any).getRootNode
-        ? (firstSheet as any).getRootNode()
-        : (firstSheet.ownerDocument as Document | null);
-      // Prefer ShadowRoot if available, else Document
-      return (rootNode as ShadowRoot | Document) || null;
-    };
-
-    const rootNode = resolveRoot();
-
     // Delete rules from each sheet (in reverse order to preserve indices)
     for (const [sheetIndex, rulesInSheet] of rulesBySheet) {
       // Sort by rule index in descending order for safe deletion
       rulesInSheet.sort((a, b) => b.ruleInfo.ruleIndex - a.ruleInfo.ruleIndex);
 
       for (const { className, ruleInfo } of rulesInSheet) {
-        // SAFETY: Re-check that the rule is still unused at deletion time.
-        // Between scheduling and execution a class may have been restored
-        // (refCount set to > 0). Skip such entries.
+        // SAFETY 1: Double-check refCount is still 0
         const currentRefCount = registry.refCounts.get(className) || 0;
         if (currentRefCount > 0) {
           // Class became active again; do not delete
           continue;
         }
 
-        // Ensure we delete the same RuleInfo we marked earlier to avoid
-        // accidentally deleting updated rules for the same class.
+        // SAFETY 2: Ensure rule wasn't replaced
+        // Between scheduling and execution a class may have been replaced with a new RuleInfo
         const currentInfo = registry.rules.get(className);
-        if (currentInfo && currentInfo !== ruleInfo) {
+        if (currentInfo !== ruleInfo) {
           // Rule was replaced; skip deletion of the old reference
           continue;
         }
 
-        // Optional last-resort safety: ensure the sheet element still exists
+        // SAFETY 3: Verify the sheet element is still valid and accessible
         const sheetInfo = registry.sheets[ruleInfo.sheetIndex];
         if (!sheetInfo || !sheetInfo.sheet) {
+          // Sheet was removed or corrupted; skip this rule
           continue;
         }
 
+        // SAFETY 4: Verify the stylesheet itself is accessible
+        const styleSheet = sheetInfo.sheet.sheet;
+        if (!styleSheet) {
+          // Stylesheet not available; skip this rule
+          continue;
+        }
+
+        // SAFETY 5: Verify rule index is still within valid range
+        const maxRuleIndex = styleSheet.cssRules.length - 1;
+        const startIdx = ruleInfo.ruleIndex;
+        const endIdx = ruleInfo.endRuleIndex ?? ruleInfo.ruleIndex;
+
+        if (startIdx < 0 || endIdx > maxRuleIndex || startIdx > endIdx) {
+          // Rule indices are out of bounds; skip this rule
+          continue;
+        }
+
+        // All safety checks passed - proceed with deletion
         this.deleteRule(registry, ruleInfo);
         registry.rules.delete(className);
         registry.refCounts.delete(className);
@@ -890,9 +895,26 @@ export class SheetManager {
   }
 
   /**
-   * Check if cleanup should be scheduled (async, non-stacking)
+   * Schedule async cleanup check (non-stacking)
    */
   public checkCleanupNeeded(registry: RootRegistry): void {
+    // Clear any existing check timeout to prevent stacking
+    if (registry.cleanupCheckTimeout) {
+      clearTimeout(registry.cleanupCheckTimeout);
+      registry.cleanupCheckTimeout = null;
+    }
+
+    // Schedule the actual check with setTimeout(..., 0)
+    registry.cleanupCheckTimeout = setTimeout(() => {
+      this.performCleanupCheck(registry);
+      registry.cleanupCheckTimeout = null;
+    }, 0);
+  }
+
+  /**
+   * Perform the actual cleanup check (called asynchronously)
+   */
+  private performCleanupCheck(registry: RootRegistry): void {
     // Count unused rules (refCount = 0) - keyframes are disposed immediately
     const unusedRulesCount = Array.from(registry.refCounts.values()).filter(
       (count) => count === 0,
@@ -925,6 +947,12 @@ export class SheetManager {
         clearTimeout(registry.bulkCleanupTimeout);
       }
       registry.bulkCleanupTimeout = null;
+    }
+
+    // Cancel any scheduled cleanup check
+    if (registry.cleanupCheckTimeout) {
+      clearTimeout(registry.cleanupCheckTimeout);
+      registry.cleanupCheckTimeout = null;
     }
 
     // Remove all sheets

@@ -79,6 +79,8 @@ export interface RootRegistry {
     | ReturnType<typeof requestIdleCallback>
     | ReturnType<typeof setTimeout>
     | null;
+  /** Scheduled cleanup check timeout */
+  cleanupCheckTimeout: ReturnType<typeof setTimeout> | null;
   /** Performance metrics (optional) */
   metrics?: CacheMetrics;
   /** Counter for generating sequential class names like t0, t1, t2... */

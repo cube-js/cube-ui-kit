@@ -382,28 +382,30 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
 
       const disposeRef = useRef<(() => void) | null>(null);
 
-      // Compute the className synchronously
-      const injectedClassName = useMemo(() => {
-        if (!directResult.rules.length) return '';
-        // This will either reuse existing or allocate new class
-        const { className } = inject(directResult.rules, { cacheKey });
-        return className;
+      // Single injection pattern - inject once and get both className and dispose
+      const injectionResult = useMemo(() => {
+        if (!directResult.rules.length) return null;
+        return inject(directResult.rules, { cacheKey });
       }, [directResult.rules, cacheKey]);
+
+      const injectedClassName = injectionResult?.className || '';
 
       // Handle disposal in useInsertionEffect
       useInsertionEffect(() => {
+        // Cleanup previous disposal reference
         disposeRef.current?.();
-        if (directResult.rules.length) {
-          const { dispose } = inject(directResult.rules, { cacheKey });
-          disposeRef.current = dispose;
+
+        if (injectionResult) {
+          disposeRef.current = injectionResult.dispose;
         } else {
           disposeRef.current = null;
         }
+
         return () => {
           disposeRef.current?.();
           disposeRef.current = null;
         };
-      }, [directResult.rules, cacheKey]);
+      }, [injectionResult]);
 
       let modProps: Record<string, unknown> | undefined;
       if (mods) {

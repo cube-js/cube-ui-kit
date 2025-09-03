@@ -341,7 +341,7 @@ describe('SheetManager', () => {
       expect(registry.rules.has(className)).toBe(true);
     });
 
-    it('should schedule bulk cleanup when threshold is exceeded', () => {
+    it('should schedule bulk cleanup when threshold is exceeded', (done) => {
       const manager = new SheetManager({ unusedStylesThreshold: 2 });
       const registry = manager.getRegistry(document);
 
@@ -363,8 +363,16 @@ describe('SheetManager', () => {
       // Check if cleanup should be scheduled
       manager.checkCleanupNeeded(registry);
 
-      // Should have scheduled bulk cleanup
-      expect(registry.bulkCleanupTimeout).toBeTruthy();
+      // Should have scheduled cleanup check timeout immediately
+      expect(registry.cleanupCheckTimeout).toBeTruthy();
+
+      // Wait for async cleanup check to complete
+      setTimeout(() => {
+        // Should have scheduled bulk cleanup after the check
+        expect(registry.bulkCleanupTimeout).toBeTruthy();
+        expect(registry.cleanupCheckTimeout).toBe(null);
+        done();
+      }, 10);
     });
   });
 
@@ -441,7 +449,7 @@ describe('SheetManager', () => {
   });
 
   describe('bulk cleanup scheduling', () => {
-    it('should use requestIdleCallback when idleCleanup is enabled', () => {
+    it('should use requestIdleCallback when idleCleanup is enabled', (done) => {
       // Mock requestIdleCallback
       const mockRequestIdleCallback = jest.fn((callback) => {
         return 123; // mock handle - don't execute callback immediately
@@ -471,15 +479,23 @@ describe('SheetManager', () => {
       registry.refCounts.set('test-class', 0);
       manager.checkCleanupNeeded(registry);
 
-      expect(mockRequestIdleCallback).toHaveBeenCalled();
-      expect(registry.bulkCleanupTimeout).toBe(123);
+      // Should have scheduled cleanup check timeout immediately
+      expect(registry.cleanupCheckTimeout).toBeTruthy();
 
-      // Cleanup mocks
-      delete (global as any).requestIdleCallback;
-      delete (global as any).cancelIdleCallback;
+      // Wait for async cleanup check to complete
+      setTimeout(() => {
+        expect(mockRequestIdleCallback).toHaveBeenCalled();
+        expect(registry.bulkCleanupTimeout).toBe(123);
+        expect(registry.cleanupCheckTimeout).toBe(null);
+
+        // Cleanup mocks
+        delete (global as any).requestIdleCallback;
+        delete (global as any).cancelIdleCallback;
+        done();
+      }, 10);
     });
 
-    it('should fallback to setTimeout when requestIdleCallback is not available', () => {
+    it('should fallback to setTimeout when requestIdleCallback is not available', (done) => {
       // Ensure requestIdleCallback is not available
       delete (global as any).requestIdleCallback;
 
@@ -506,9 +522,20 @@ describe('SheetManager', () => {
       registry.refCounts.set('test-class', 0);
       manager.checkCleanupNeeded(registry);
 
-      expect(mockSetTimeout).toHaveBeenCalledWith(expect.any(Function), 100);
+      // Should have called setTimeout for cleanup check (0ms) immediately
+      expect(mockSetTimeout).toHaveBeenCalledWith(expect.any(Function), 0);
+      expect(registry.cleanupCheckTimeout).toBeTruthy();
 
-      mockSetTimeout.mockRestore();
+      // Wait for async cleanup check to complete
+      setTimeout(() => {
+        // Should have called setTimeout again for bulk cleanup (100ms)
+        expect(mockSetTimeout).toHaveBeenCalledWith(expect.any(Function), 100);
+        expect(registry.bulkCleanupTimeout).toBeTruthy();
+        expect(registry.cleanupCheckTimeout).toBe(null);
+
+        mockSetTimeout.mockRestore();
+        done();
+      }, 10);
     });
   });
 });
