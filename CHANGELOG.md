@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.76.0
+
+### Minor Changes
+
+- [#773](https://github.com/cube-js/cube-ui-kit/pull/773) [`d79517e8`](https://github.com/cube-js/cube-ui-kit/commit/d79517e82614fe3fe7c4e0d388ec4ef96ad00c88) Thanks [@tenphi](https://github.com/tenphi)! - Improved debug tools with better DX and simpler API.
+
+### Patch Changes
+
+- [#773](https://github.com/cube-js/cube-ui-kit/pull/773) [`d79517e8`](https://github.com/cube-js/cube-ui-kit/commit/d79517e82614fe3fe7c4e0d388ec4ef96ad00c88) Thanks [@tenphi](https://github.com/tenphi)! - Fix cleanup of style in the new style injector.
+
+- [#773](https://github.com/cube-js/cube-ui-kit/pull/773) [`d79517e8`](https://github.com/cube-js/cube-ui-kit/commit/d79517e82614fe3fe7c4e0d388ec4ef96ad00c88) Thanks [@tenphi](https://github.com/tenphi)! - Optimize rule generation by sorting in cache keys.
+
+- [#773](https://github.com/cube-js/cube-ui-kit/pull/773) [`d79517e8`](https://github.com/cube-js/cube-ui-kit/commit/d79517e82614fe3fe7c4e0d388ec4ef96ad00c88) Thanks [@tenphi](https://github.com/tenphi)! - Improve cache cleanup logic and cache checks.
+
 ## 0.75.0
 
 ### Minor Changes
