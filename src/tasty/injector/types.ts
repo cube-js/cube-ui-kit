@@ -72,6 +72,8 @@ export interface RootRegistry {
   sheets: SheetInfo[];
   refCounts: Map<string, number>; // className -> refCount (0 means unused)
   rules: Map<string, RuleInfo>; // className -> rule info (includes both active and unused)
+  /** Cache key to className mapping to avoid dual storage of RuleInfo objects */
+  cacheKeyToClassName: Map<string, string>; // cacheKey -> className
   /** Deduplication set of fully materialized CSS rules inserted into sheets */
   ruleTextSet: Set<string>;
   /** Scheduled bulk cleanup timeout */

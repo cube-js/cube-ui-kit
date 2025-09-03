@@ -47,6 +47,7 @@ export class SheetManager {
         sheets: [],
         refCounts: new Map(),
         rules: new Map(),
+        cacheKeyToClassName: new Map(),
         ruleTextSet: new Set<string>(),
         bulkCleanupTimeout: null,
         cleanupCheckTimeout: null,
@@ -646,6 +647,20 @@ export class SheetManager {
         this.deleteRule(registry, ruleInfo);
         registry.rules.delete(className);
         registry.refCounts.delete(className);
+
+        // Clean up cache key mappings that point to this className
+        const keysToDelete: string[] = [];
+        for (const [
+          key,
+          mappedClassName,
+        ] of registry.cacheKeyToClassName.entries()) {
+          if (mappedClassName === className) {
+            keysToDelete.push(key);
+          }
+        }
+        for (const key of keysToDelete) {
+          registry.cacheKeyToClassName.delete(key);
+        }
         cleanedUpCount++;
       }
     }

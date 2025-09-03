@@ -51,10 +51,10 @@ export class StyleInjector {
     const registry = this.sheetManager.getRegistry(root);
 
     // Check if we can reuse existing className for this cache key
-    if (registry.rules.has(cacheKey)) {
-      const existingRuleInfo = registry.rules.get(cacheKey)!;
+    if (registry.cacheKeyToClassName.has(cacheKey)) {
+      const className = registry.cacheKeyToClassName.get(cacheKey)!;
       return {
-        className: existingRuleInfo.className,
+        className,
         isNewAllocation: false,
       };
     }
@@ -69,9 +69,9 @@ export class StyleInjector {
       sheetIndex: -1, // Placeholder - will be set during actual injection
     };
 
-    // Reserve both className and cacheKey mappings
+    // Store RuleInfo only once by className, and map cacheKey separately
     registry.rules.set(className, placeholderRuleInfo);
-    registry.rules.set(cacheKey, placeholderRuleInfo);
+    registry.cacheKeyToClassName.set(cacheKey, className);
 
     return {
       className,
@@ -103,10 +103,10 @@ export class StyleInjector {
     let className: string;
     let isPreAllocated = false;
 
-    if (cacheKey && registry.rules.has(cacheKey)) {
+    if (cacheKey && registry.cacheKeyToClassName.has(cacheKey)) {
       // Reuse existing class for this cache key
-      const existingRuleInfo = registry.rules.get(cacheKey)!;
-      className = existingRuleInfo.className;
+      className = registry.cacheKeyToClassName.get(cacheKey)!;
+      const existingRuleInfo = registry.rules.get(className)!;
 
       // Check if this is a placeholder (pre-allocated but not yet injected)
       isPreAllocated =
@@ -198,16 +198,14 @@ export class StyleInjector {
     registry.refCounts.set(className, 1);
 
     if (isPreAllocated) {
-      // Update the existing placeholder entries with real rule info
+      // Update the existing placeholder entry with real rule info
       registry.rules.set(className, ruleInfo);
-      if (cacheKey) {
-        registry.rules.set(cacheKey, ruleInfo);
-      }
+      // cacheKey mapping already exists from allocation
     } else {
       // Store new entries
       registry.rules.set(className, ruleInfo);
       if (cacheKey) {
-        registry.rules.set(cacheKey, ruleInfo);
+        registry.cacheKeyToClassName.set(cacheKey, className);
       }
     }
 
