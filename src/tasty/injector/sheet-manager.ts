@@ -130,7 +130,6 @@ export class SheetManager {
       targetSheet = this.createSheet(registry, root);
     }
 
-    const ruleIndex = this.findAvailableRuleIndex(targetSheet);
     const sheetIndex = registry.sheets.indexOf(targetSheet);
 
     try {
@@ -178,7 +177,8 @@ export class SheetManager {
 
       // Insert grouped rules
       const insertedRuleTexts: string[] = [];
-      let currentRuleIndex = ruleIndex;
+      // Calculate rule index atomically right before insertion to prevent race conditions
+      let currentRuleIndex = this.findAvailableRuleIndex(targetSheet);
       let firstInsertedIndex: number | null = null;
       let lastInsertedIndex: number | null = null;
 
@@ -200,8 +200,10 @@ export class SheetManager {
         const styleSheet = styleElement.sheet;
 
         if (styleSheet && !this.config.forceTextInjection) {
+          // Calculate index atomically for each rule to prevent concurrent insertion races
           const maxIndex = styleSheet.cssRules.length;
-          const safeIndex = Math.min(Math.max(0, currentRuleIndex), maxIndex);
+          const atomicRuleIndex = this.findAvailableRuleIndex(targetSheet);
+          const safeIndex = Math.min(Math.max(0, atomicRuleIndex), maxIndex);
 
           // Helper: split comma-separated selectors safely (ignores commas inside [] () " ')
           const splitSelectorsSafely = (selectorList: string): string[] => {
@@ -244,6 +246,8 @@ export class SheetManager {
 
           try {
             styleSheet.insertRule(fullRule, safeIndex);
+            // Update sheet ruleCount immediately to prevent concurrent race conditions
+            targetSheet.ruleCount++;
             if (firstInsertedIndex == null) firstInsertedIndex = safeIndex;
             lastInsertedIndex = safeIndex;
             currentRuleIndex = safeIndex + 1;
@@ -264,9 +268,13 @@ export class SheetManager {
                 }
 
                 try {
+                  // Calculate index atomically for each individual selector insertion
                   const maxIdx = styleSheet.cssRules.length;
-                  const idx = Math.min(Math.max(0, currentRuleIndex), maxIdx);
+                  const atomicIdx = this.findAvailableRuleIndex(targetSheet);
+                  const idx = Math.min(Math.max(0, atomicIdx), maxIdx);
                   styleSheet.insertRule(singleRule, idx);
+                  // Update sheet ruleCount immediately
+                  targetSheet.ruleCount++;
                   if (firstInsertedIndex == null) firstInsertedIndex = idx;
                   lastInsertedIndex = idx;
                   currentRuleIndex = idx + 1;
@@ -285,11 +293,15 @@ export class SheetManager {
           }
         } else {
           // Use textContent (either as fallback or when forceTextInjection is enabled)
+          // Calculate index atomically for textContent insertion too
+          const atomicRuleIndex = this.findAvailableRuleIndex(targetSheet);
           styleElement.textContent =
             (styleElement.textContent || '') + '\n' + fullRule;
-          if (firstInsertedIndex == null) firstInsertedIndex = currentRuleIndex;
-          lastInsertedIndex = currentRuleIndex;
-          currentRuleIndex++;
+          // Update sheet ruleCount immediately
+          targetSheet.ruleCount++;
+          if (firstInsertedIndex == null) firstInsertedIndex = atomicRuleIndex;
+          lastInsertedIndex = atomicRuleIndex;
+          currentRuleIndex = atomicRuleIndex + 1;
         }
 
         // CRITICAL DEBUG: Verify the style element is in DOM only if there are issues and we're not using forceTextInjection
@@ -315,18 +327,15 @@ export class SheetManager {
         // currentRuleIndex already adjusted above
       }
 
-      // Update sheet info based on the number of rules inserted
-      const finalRuleIndex = currentRuleIndex - 1;
-      if (finalRuleIndex >= targetSheet.ruleCount) {
-        targetSheet.ruleCount = finalRuleIndex + 1;
-      }
+      // Sheet ruleCount is now updated immediately after each insertion
+      // No need for deferred update logic
 
       return {
         className,
-        ruleIndex: firstInsertedIndex ?? ruleIndex,
+        ruleIndex: firstInsertedIndex ?? 0,
         sheetIndex,
         cssText: this.config.devMode ? insertedRuleTexts : undefined,
-        endRuleIndex: lastInsertedIndex ?? finalRuleIndex,
+        endRuleIndex: lastInsertedIndex ?? firstInsertedIndex ?? 0,
       };
     } catch (error) {
       console.warn('Failed to insert CSS rules:', error, {

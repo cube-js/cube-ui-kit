@@ -322,9 +322,16 @@ export class StyleInjector {
             styleSheet.cssRules.length - 1,
             (info.endRuleIndex as number) ?? info.ruleIndex,
           );
-          for (let i = start; i <= end; i++) {
-            const rule = styleSheet.cssRules[i] as CSSRule | undefined;
-            if (rule) cssChunks.push(rule.cssText);
+          // Additional validation: ensure indices are valid and in correct order
+          if (
+            start >= 0 &&
+            end >= start &&
+            start < styleSheet.cssRules.length
+          ) {
+            for (let i = start; i <= end; i++) {
+              const rule = styleSheet.cssRules[i] as CSSRule | undefined;
+              if (rule) cssChunks.push(rule.cssText);
+            }
           }
         } else if (info.cssText && info.cssText.length) {
           // Fallback in environments without CSSOM access
