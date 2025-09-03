@@ -10,7 +10,7 @@ type CSSTarget =
   | 'all' // tasty CSS + tasty global CSS (createGlobalStyle)
   | 'global' // only tasty global CSS
   | 'active' // tasty CSS for classes currently in DOM
-  | 'cached' // tasty CSS present in sheets but not in DOM
+  | 'unused' // tasty CSS with refCount = 0 (still in cache but not actively used)
   | 'page' // ALL CSS on the page across stylesheets (not only tasty)
   | string // 't123' tasty class or a CSS selector
   | string[] // array of tasty classes like ['t1', 't2']
@@ -33,7 +33,6 @@ interface InspectResult {
 interface CacheMetrics {
   hits: number;
   misses: number;
-  unusedHits: number;
   bulkCleanups: number;
   totalInsertions: number;
   totalUnused: number;
@@ -45,12 +44,15 @@ interface CacheMetrics {
     rulesDeleted: number;
   }>;
   startTime: number;
+
+  // Calculated metrics
+  unusedHits?: number; // calculated as current unused count
 }
 
 interface CacheStatus {
   classes: {
-    active: string[]; // from DOM scan
-    cached: string[]; // present in sheets but not currently in DOM
+    active: string[]; // classes with refCount > 0 and present in DOM
+    unused: string[]; // classes with refCount = 0 but still in cache
     all: string[]; // union of both
   };
   metrics: CacheMetrics | null;
@@ -88,18 +90,18 @@ interface SummaryOptions {
 interface Summary {
   // Classes
   activeClasses: string[];
-  cachedClasses: string[];
+  unusedClasses: string[];
   totalStyledClasses: string[];
 
   // Tasty CSS sizes
   activeCSSSize: number;
-  cachedCSSSize: number;
-  totalCSSSize: number; // tasty-only: active + cached + tasty global
+  unusedCSSSize: number;
+  totalCSSSize: number; // tasty-only: active + unused + tasty global
 
   // Tasty CSS payloads
   activeCSS: string;
-  cachedCSS: string;
-  allCSS: string; // tasty-only CSS (active + cached + tasty global)
+  unusedCSS: string;
+  allCSS: string; // tasty-only CSS (active + unused + tasty global)
 
   // Tasty global (createGlobalStyle)
   globalCSS: string;
@@ -449,13 +451,21 @@ export const tastyDebug = {
       } else if (target === 'active') {
         const activeClasses = findAllTastyClasses(root);
         css = injector.instance.getCssTextForClasses(activeClasses, { root });
-      } else if (target === 'cached') {
-        const activeClasses = findAllTastyClasses(root);
-        const allClasses = findAllStyledClasses(root);
-        const cachedClasses = allClasses.filter(
-          (cls) => !activeClasses.includes(cls),
-        );
-        css = injector.instance.getCssTextForClasses(cachedClasses, { root });
+      } else if (target === 'unused') {
+        // Get unused classes (refCount = 0) from the registry
+        const registry = (injector.instance as any)[
+          'sheetManager'
+        ]?.getRegistry(root);
+        const unusedClasses: string[] = registry
+          ? Array.from(
+              registry.refCounts.entries() as IterableIterator<
+                [string, number]
+              >,
+            )
+              .filter(([, refCount]: [string, number]) => refCount === 0)
+              .map(([className]: [string, number]) => className)
+          : [];
+        css = injector.instance.getCssTextForClasses(unusedClasses, { root });
       } else if (target === 'page') {
         css = getPageCSS({ root, includeCrossOrigin: true });
       } else if (/^t\d+$/.test(target)) {
@@ -536,15 +546,23 @@ export const tastyDebug = {
     const { root = document } = opts || {};
     const activeClasses = findAllTastyClasses(root);
     const allClasses = findAllStyledClasses(root);
-    const cachedClasses = allClasses.filter(
-      (cls) => !activeClasses.includes(cls),
+    // Get unused classes (refCount = 0) from the registry
+    const registry = (injector.instance as any)['sheetManager']?.getRegistry(
+      root,
     );
+    const unusedClasses: string[] = registry
+      ? Array.from(
+          registry.refCounts.entries() as IterableIterator<[string, number]>,
+        )
+          .filter(([, refCount]: [string, number]) => refCount === 0)
+          .map(([className]: [string, number]) => className)
+      : [];
 
     return {
       classes: {
         active: activeClasses,
-        cached: cachedClasses,
-        all: allClasses,
+        unused: unusedClasses,
+        all: [...activeClasses, ...unusedClasses],
       },
       metrics: injector.instance.getMetrics({ root }),
     };
@@ -699,7 +717,7 @@ export const tastyDebug = {
     const metrics = this.metrics({ root });
 
     const activeCSS = this.css('active', { root, prettify: false });
-    const cachedCSS = this.css('cached', { root, prettify: false });
+    const unusedCSS = this.css('unused', { root, prettify: false });
     const allCSS = this.css('all', { root, prettify: false });
 
     // Build cleanup summary from metrics
@@ -754,13 +772,13 @@ export const tastyDebug = {
 
     const summary: Summary = {
       activeClasses: cacheStatus.classes.active,
-      cachedClasses: cacheStatus.classes.cached,
+      unusedClasses: cacheStatus.classes.unused,
       totalStyledClasses: cacheStatus.classes.all,
       activeCSSSize: activeCSS.length,
-      cachedCSSSize: cachedCSS.length,
+      unusedCSSSize: unusedCSS.length,
       totalCSSSize: allCSS.length,
       activeCSS: prettifyCSS(activeCSS),
-      cachedCSS: prettifyCSS(cachedCSS),
+      unusedCSS: prettifyCSS(unusedCSS),
       allCSS: prettifyCSS(allCSS),
       globalCSS: globalBreakdown.css,
       globalCSSSize: globalBreakdown.totalCSSSize,
@@ -781,14 +799,14 @@ export const tastyDebug = {
         `  • Active classes (in DOM): ${summary.activeClasses.length}`,
       );
       console.log(
-        `  • Cached classes (performance cache): ${summary.cachedClasses.length}`,
+        `  • Unused classes (refCount = 0): ${summary.unusedClasses.length}`,
       );
       console.log(
         `  • Total styled classes: ${summary.totalStyledClasses.length}`,
       );
       console.log(`💾 CSS Size:`);
       console.log(`  • Active CSS: ${summary.activeCSSSize} characters`);
-      console.log(`  • Cached CSS: ${summary.cachedCSSSize} characters`);
+      console.log(`  • Unused CSS: ${summary.unusedCSSSize} characters`);
       console.log(
         `  • Global CSS: ${summary.globalCSSSize} characters (${summary.globalRuleCount} rules)`,
       );
@@ -815,7 +833,7 @@ export const tastyDebug = {
         const hitRate =
           metrics.hits + metrics.misses > 0
             ? (
-                ((metrics.hits + metrics.unusedHits) /
+                ((metrics.hits + (metrics.unusedHits || 0)) /
                   (metrics.hits + metrics.misses)) *
                 100
               ).toFixed(1)
@@ -825,7 +843,7 @@ export const tastyDebug = {
 
       console.log('🔍 Details:');
       console.log('  • Active classes:', summary.activeClasses);
-      console.log('  • Cached classes:', summary.cachedClasses);
+      console.log('  • Unused classes:', summary.unusedClasses);
       console.groupEnd();
     }
 
@@ -984,7 +1002,7 @@ export const tastyDebug = {
     console.log('📖 Common targets for css()/log():');
     console.log('  • "all" - all tasty CSS + global CSS');
     console.log('  • "active" - CSS for classes in DOM');
-    console.log('  • "cached" - CSS for unused classes');
+    console.log('  • "unused" - CSS for classes with refCount = 0');
     console.log('  • "global" - only global CSS (createGlobalStyle)');
     console.log('  • "page" - ALL page CSS (including non-tasty)');
     console.log('  • "t123" - specific tasty class');

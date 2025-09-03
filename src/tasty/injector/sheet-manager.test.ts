@@ -58,7 +58,7 @@ describe('SheetManager', () => {
       expect(registry.sheets).toEqual([]);
       expect(registry.refCounts).toBeInstanceOf(Map);
       expect(registry.rules).toBeInstanceOf(Map);
-      expect(registry.unusedRules).toBeInstanceOf(Map);
+      expect(registry.refCounts).toBeInstanceOf(Map);
     });
 
     it('should return same registry for same root', () => {
@@ -290,8 +290,8 @@ describe('SheetManager', () => {
     });
   });
 
-  describe('markAsUnused and bulk cleanup', () => {
-    it('should mark rule as unused without immediate DOM cleanup', () => {
+  describe('unused tracking and bulk cleanup', () => {
+    it('should track unused rules via refCount = 0', () => {
       const registry = sheetManager.getRegistry(document);
 
       const rules = [createStyleRule('.test', 'color: red;')];
@@ -306,15 +306,16 @@ describe('SheetManager', () => {
       registry.rules.set(className, ruleInfo!);
       registry.refCounts.set(className, 1);
 
-      sheetManager.markAsUnused(registry, className);
+      // Mark as unused by setting refCount to 0
+      registry.refCounts.set(className, 0);
 
       // Rule should be marked as unused but still in registry.rules
       expect(registry.rules.has(className)).toBe(true);
-      expect(registry.unusedRules.has(className)).toBe(true);
-      expect(registry.refCounts.has(className)).toBe(false);
+      // Rule should be unused (refCount = 0)
+      expect(registry.refCounts.get(className)).toBe(0);
     });
 
-    it('should restore from unused rules', () => {
+    it('should reuse unused rules by setting refCount > 0', () => {
       const registry = sheetManager.getRegistry(document);
 
       const rules = [createStyleRule('.test', 'color: red;')];
@@ -330,13 +331,12 @@ describe('SheetManager', () => {
       registry.refCounts.set(className, 1);
 
       // Mark as unused
-      sheetManager.markAsUnused(registry, className);
+      registry.refCounts.set(className, 0);
 
-      // Restore from unused
-      const restored = sheetManager.restoreFromUnused(registry, className);
+      // Restore by setting refCount to 1
+      registry.refCounts.set(className, 1);
 
-      expect(restored).toBeTruthy();
-      expect(registry.unusedRules.has(className)).toBe(false);
+      // Rule should be active (refCount > 0)
       expect(registry.refCounts.get(className)).toBe(1);
       expect(registry.rules.has(className)).toBe(true);
     });
@@ -357,9 +357,11 @@ describe('SheetManager', () => {
         const className = `test-class-${i}`;
 
         registry.rules.set(className, ruleInfo!);
-        registry.refCounts.set(className, 1);
-        manager.markAsUnused(registry, className);
+        registry.refCounts.set(className, 0); // Mark as unused
       }
+
+      // Check if cleanup should be scheduled
+      manager.checkCleanupNeeded(registry);
 
       // Should have scheduled bulk cleanup
       expect(registry.bulkCleanupTimeout).toBeTruthy();
@@ -465,8 +467,9 @@ describe('SheetManager', () => {
       registry.rules.set('test-class', ruleInfo!);
       registry.refCounts.set('test-class', 1);
 
-      // This should trigger bulk cleanup scheduling
-      manager.markAsUnused(registry, 'test-class');
+      // Mark as unused and trigger bulk cleanup scheduling
+      registry.refCounts.set('test-class', 0);
+      manager.checkCleanupNeeded(registry);
 
       expect(mockRequestIdleCallback).toHaveBeenCalled();
       expect(registry.bulkCleanupTimeout).toBe(123);
@@ -500,7 +503,8 @@ describe('SheetManager', () => {
       registry.rules.set('test-class', ruleInfo!);
       registry.refCounts.set('test-class', 1);
 
-      manager.markAsUnused(registry, 'test-class');
+      registry.refCounts.set('test-class', 0);
+      manager.checkCleanupNeeded(registry);
 
       expect(mockSetTimeout).toHaveBeenCalledWith(expect.any(Function), 100);
 

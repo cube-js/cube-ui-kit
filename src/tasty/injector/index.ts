@@ -239,7 +239,6 @@ export type {
   KeyframesResult,
   KeyframesSteps,
   KeyframesCacheEntry,
-  UnusedRuleInfo,
   CacheMetrics,
 } from './types';
 

@@ -47,11 +47,6 @@ export interface SheetInfo {
   holes: number[]; // Available rule indices from deletions
 }
 
-export interface UnusedRuleInfo {
-  ruleInfo: RuleInfo;
-  markedUnusedAt: number; // timestamp when marked as unused
-}
-
 export interface CleanupStats {
   timestamp: number;
   classesDeleted: number;
@@ -62,20 +57,21 @@ export interface CleanupStats {
 export interface CacheMetrics {
   hits: number;
   misses: number;
-  unusedHits: number; // hits from unused styles
   bulkCleanups: number; // number of bulk cleanup operations
   totalInsertions: number;
   totalUnused: number; // total styles marked as unused
   stylesCleanedUp: number; // total number of styles cleaned up in bulk operations
   cleanupHistory: CleanupStats[]; // detailed history of each cleanup operation
   startTime: number;
+
+  // Calculated getters
+  unusedHits?: number; // calculated as hits from reused unused styles (not tracked)
 }
 
 export interface RootRegistry {
   sheets: SheetInfo[];
-  refCounts: Map<string, number>; // className -> refCount
+  refCounts: Map<string, number>; // className -> refCount (0 means unused)
   rules: Map<string, RuleInfo>; // className -> rule info (includes both active and unused)
-  unusedRules: Map<string, UnusedRuleInfo>; // className -> unused rule info
   /** Deduplication set of fully materialized CSS rules inserted into sheets */
   ruleTextSet: Set<string>;
   /** Scheduled bulk cleanup timeout */
@@ -89,8 +85,6 @@ export interface RootRegistry {
   classCounter: number;
   /** Keyframes cache by JSON.stringify(steps) -> entry */
   keyframesCache: Map<string, KeyframesCacheEntry>;
-  /** Unused keyframes for cleanup */
-  unusedKeyframes: Map<string, UnusedRuleInfo>;
   /** Counter for generating keyframes names like k0, k1, k2... */
   keyframesCounter: number;
   /** Set of injected @property names for tracking */

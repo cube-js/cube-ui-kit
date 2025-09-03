@@ -11,7 +11,6 @@ import {
   SheetInfo,
   StyleInjectorConfig,
   StyleRule,
-  UnusedRuleInfo,
 } from './types';
 
 import type { StyleHandler } from '../utils/styles';
@@ -35,7 +34,6 @@ export class SheetManager {
         ? {
             hits: 0,
             misses: 0,
-            unusedHits: 0,
             bulkCleanups: 0,
             totalInsertions: 0,
             totalUnused: 0,
@@ -49,13 +47,11 @@ export class SheetManager {
         sheets: [],
         refCounts: new Map(),
         rules: new Map(),
-        unusedRules: new Map(),
         ruleTextSet: new Set<string>(),
         bulkCleanupTimeout: null,
         metrics,
         classCounter: 0,
         keyframesCache: new Map(),
-        unusedKeyframes: new Map(),
         keyframesCounter: 0,
         injectedProperties: new Set<string>(),
       } as unknown as RootRegistry;
@@ -392,10 +388,7 @@ export class SheetManager {
         adjustRuleInfo(info);
       }
 
-      // Adjust unused rules (their ruleInfo references the same objects as in rules map)
-      for (const unused of registry.unusedRules.values()) {
-        adjustRuleInfo(unused.ruleInfo);
-      }
+      // No need to separately adjust unused rules since they're part of the rules Map
 
       // Adjust keyframes indices stored in cache
       for (const entry of registry.keyframesCache.values()) {
@@ -511,61 +504,21 @@ export class SheetManager {
   }
 
   /**
-   * Mark a ruleset as unused but keep it in the stylesheet
-   */
-  markAsUnused(registry: RootRegistry, className: string): void {
-    const ruleInfo = registry.rules.get(className);
-    if (!ruleInfo) return;
-
-    // Mark as unused (but keep in registry.rules)
-    const unusedInfo: UnusedRuleInfo = {
-      ruleInfo,
-      markedUnusedAt: Date.now(),
-    };
-
-    registry.unusedRules.set(className, unusedInfo);
-    registry.refCounts.delete(className);
-
-    // Update metrics
-    if (registry.metrics) {
-      registry.metrics.totalUnused++;
-    }
-
-    // Schedule bulk cleanup if threshold exceeded
-    const threshold = this.config.unusedStylesThreshold || 500;
-    if (registry.unusedRules.size >= threshold) {
-      this.scheduleBulkCleanup(registry);
-    }
-  }
-
-  /**
-   * Restore a ruleset from unused styles
-   */
-  restoreFromUnused(
-    registry: RootRegistry,
-    className: string,
-  ): RuleInfo | null {
-    const unusedInfo = registry.unusedRules.get(className);
-    if (!unusedInfo) return null;
-
-    // Remove from unused rules (rules stays in registry.rules)
-    registry.unusedRules.delete(className);
-    registry.refCounts.set(className, 1);
-
-    // Update metrics
-    if (registry.metrics) {
-      registry.metrics.unusedHits++;
-    }
-
-    return unusedInfo.ruleInfo;
-  }
-
-  /**
-   * Schedule bulk cleanup of all unused styles
+   * Schedule bulk cleanup of all unused styles (non-stacking)
    */
   private scheduleBulkCleanup(registry: RootRegistry): void {
-    // Don't schedule if already scheduled
-    if (registry.bulkCleanupTimeout) return;
+    // Clear any existing timeout to prevent stacking
+    if (registry.bulkCleanupTimeout) {
+      if (
+        this.config.idleCleanup &&
+        typeof cancelIdleCallback !== 'undefined'
+      ) {
+        cancelIdleCallback(registry.bulkCleanupTimeout as unknown as number);
+      } else {
+        clearTimeout(registry.bulkCleanupTimeout);
+      }
+      registry.bulkCleanupTimeout = null;
+    }
 
     const performCleanup = () => {
       this.performBulkCleanup(registry);
@@ -584,22 +537,23 @@ export class SheetManager {
    * Perform bulk cleanup of all unused styles
    */
   private performBulkCleanup(registry: RootRegistry): void {
-    if (registry.unusedRules.size === 0) return;
-
     const cleanupStartTime = Date.now();
-    // Build candidates list with age and sort by oldest first
-    const now = Date.now();
-    const minAge = Math.max(0, this.config.unusedStylesMinAgeMs || 0);
-    const candidates = Array.from(registry.unusedRules.entries())
-      .map(([className, info]) => ({
+
+    // Calculate unused rules dynamically: rules that have refCount = 0
+    const unusedClassNames = Array.from(registry.refCounts.entries())
+      .filter(([, refCount]) => refCount === 0)
+      .map(([className]) => className);
+
+    if (unusedClassNames.length === 0) return;
+
+    // Build candidates list - no age filtering needed
+    const candidates = unusedClassNames.map((className) => {
+      const ruleInfo = registry.rules.get(className)!; // We know it exists
+      return {
         className,
-        info,
-        age: now - (info.markedUnusedAt || 0),
-      }))
-      // Filter out too-fresh entries to avoid racing unmount/mount cycles
-      .filter((entry) => entry.age >= minAge)
-      // Sort from oldest to newest
-      .sort((a, b) => b.age - a.age);
+        ruleInfo,
+      };
+    });
 
     if (candidates.length === 0) return;
 
@@ -609,7 +563,9 @@ export class SheetManager {
       1,
       Math.floor(candidates.length * Math.min(1, Math.max(0, ratio))),
     );
+
     const selected = candidates.slice(0, limit);
+
     let cleanedUpCount = 0;
     let totalCssSize = 0;
     let totalRulesDeleted = 0;
@@ -621,8 +577,7 @@ export class SheetManager {
     >();
 
     // Calculate CSS size before deletion and group rules
-    for (const { className, info: unusedInfo } of selected) {
-      const ruleInfo = unusedInfo.ruleInfo;
+    for (const { className, ruleInfo } of selected) {
       const sheetIndex = ruleInfo.sheetIndex;
 
       // Dev-only metrics: estimate CSS size and rule count if available
@@ -662,11 +617,9 @@ export class SheetManager {
       for (const { className, ruleInfo } of rulesInSheet) {
         // SAFETY: Re-check that the rule is still unused at deletion time.
         // Between scheduling and execution a class may have been restored
-        // (refCounts set and removed from unusedRules). Skip such entries.
-        if (!registry.unusedRules.has(className)) {
-          continue;
-        }
-        if (registry.refCounts.has(className)) {
+        // (refCount set to > 0). Skip such entries.
+        const currentRefCount = registry.refCounts.get(className) || 0;
+        if (currentRefCount > 0) {
           // Class became active again; do not delete
           continue;
         }
@@ -687,7 +640,7 @@ export class SheetManager {
 
         this.deleteRule(registry, ruleInfo);
         registry.rules.delete(className);
-        registry.unusedRules.delete(className);
+        registry.refCounts.delete(className);
         cleanedUpCount++;
       }
     }
@@ -744,7 +697,17 @@ export class SheetManager {
    * Get cache performance metrics
    */
   getMetrics(registry: RootRegistry): CacheMetrics | null {
-    return registry.metrics || null;
+    if (!registry.metrics) return null;
+
+    // Calculate unusedHits on demand - only count CSS rules since keyframes are disposed immediately
+    const unusedRulesCount = Array.from(registry.refCounts.values()).filter(
+      (count) => count === 0,
+    ).length;
+
+    return {
+      ...registry.metrics,
+      unusedHits: unusedRulesCount,
+    };
   }
 
   /**
@@ -755,7 +718,6 @@ export class SheetManager {
       registry.metrics = {
         hits: 0,
         misses: 0,
-        unusedHits: 0,
         bulkCleanups: 0,
         totalInsertions: 0,
         totalUnused: 0,
@@ -928,12 +890,16 @@ export class SheetManager {
   }
 
   /**
-   * Mark keyframes as unused
+   * Check if cleanup should be scheduled (async, non-stacking)
    */
-  markKeyframesAsUnused(registry: RootRegistry, name: string): void {
-    // Implementation similar to markAsUnused but for keyframes
+  public checkCleanupNeeded(registry: RootRegistry): void {
+    // Count unused rules (refCount = 0) - keyframes are disposed immediately
+    const unusedRulesCount = Array.from(registry.refCounts.values()).filter(
+      (count) => count === 0,
+    ).length;
     const threshold = this.config.unusedStylesThreshold || 500;
-    if (registry.unusedKeyframes.size >= threshold) {
+
+    if (unusedRulesCount >= threshold) {
       this.scheduleBulkCleanup(registry);
     }
   }

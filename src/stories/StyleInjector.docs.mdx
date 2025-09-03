@@ -13,13 +13,13 @@ A high-performance CSS-in-JS solution that powers the Tasty design system with e
 The Style Injector is the core engine behind Tasty's styling system, providing:
 
 - **🔄 Hash-based deduplication** - Identical CSS gets the same className
-- **📊 Reference counting** - Automatic cleanup when components unmount
+- **📊 Reference counting** - Automatic cleanup when components unmount (refCount = 0)
 - **🎯 CSS nesting flattening** - Handles `&`, `.Class`, `SubElement` patterns
-- **🎬 Keyframes injection** - First-class `@keyframes` support with deduplication
-- **🧹 Safe bulk cleanup** - Unused styles are aged and cleaned up in partial batches
+- **🎬 Keyframes injection** - First-class `@keyframes` support with immediate disposal
+- **🧹 Smart cleanup** - CSS rules batched cleanup, keyframes disposed immediately
 - **🖥️ SSR support** - Deterministic class names and CSS extraction
 - **🌙 Multiple roots** - Works with Document and ShadowRoot
-- **🔒 DOM presence validation** - Prevents deletion of styles still active in DOM
+- **⚡ Non-stacking cleanups** - Prevents timeout accumulation for better performance
 
 > **💡 Note:** This is internal infrastructure that powers Tasty components. Most developers will interact with the higher-level `tasty()` API instead.
 
@@ -67,7 +67,7 @@ const result = inject([{
 
 console.log(result.className); // 't-abc123'
 
-// Cleanup when component unmounts
+// Cleanup when component unmounts (refCount decremented)
 result.dispose();
 ```
 
@@ -116,9 +116,9 @@ const animatedComponent = inject([{
   declarations: `animation: ${fadeIn} 300ms ease-in;`
 }]);
 
-// Cleanup
-fadeIn.dispose();
-animatedComponent.dispose();
+// Cleanup (keyframes disposed immediately, CSS rules marked for batch cleanup)
+fadeIn.dispose();           // Immediate keyframes deletion from DOM
+animatedComponent.dispose(); // CSS rules marked unused (refCount = 0)
 ```
 
 ### `configure(config): void`
@@ -129,11 +129,10 @@ Configures the global injector instance.
 configure({
   devMode: true,                     // Enable development features
   maxRulesPerSheet: 8000,            // Cap rules per stylesheet
-  unusedStylesThreshold: 500,        // Trigger cleanup threshold
+  unusedStylesThreshold: 500,        // Trigger cleanup threshold (CSS rules only)
   bulkCleanupDelay: 5000,            // Cleanup delay (ms)
   idleCleanup: true,                 // Use requestIdleCallback
-  bulkCleanupBatchRatio: 0.5,        // Clean up oldest 50%
-  unusedStylesMinAgeMs: 10000,       // Minimum age before cleanup
+  bulkCleanupBatchRatio: 0.5,        // Clean up oldest 50% per batch
   forceTextInjection: false,         // Force textContent insertion
   nonce: 'csp-nonce',                // CSP nonce for security
 });
@@ -193,23 +192,27 @@ const comp3 = inject([commonStyle]);
 // Style is kept alive while any component uses it
 comp1.dispose(); // refCount: 3 → 2
 comp2.dispose(); // refCount: 2 → 1
-comp3.dispose(); // refCount: 1 → 0, marked for cleanup
+comp3.dispose(); // refCount: 1 → 0, eligible for bulk cleanup
+
+// Rule exists but refCount = 0 means unused
+// Next inject() with same styles will increment refCount and reuse immediately
 ```
 
-### Bulk Cleanup System
+### Smart Cleanup System
 
 ```typescript
-// Styles are not immediately deleted when dispose() is called
-// Instead, they're marked as unused and cleaned up in batches
+// CSS rules: Not immediately deleted, marked for bulk cleanup (refCount = 0)
+// Keyframes: Disposed immediately when refCount = 0 (safer for global scope)
 
 configure({
-  unusedStylesThreshold: 100,    // Cleanup when 100+ unused styles
+  unusedStylesThreshold: 100,    // Cleanup when 100+ unused CSS rules
   bulkCleanupBatchRatio: 0.3,    // Remove oldest 30% each time
-  unusedStylesMinAgeMs: 5000,    // Styles must be unused for 5s
 });
 
-// This prevents performance issues from frequent DOM manipulation
-// and allows "recently used" styles to be quickly reactivated
+// Benefits:
+// - CSS rules: Batch cleanup prevents DOM manipulation overhead  
+// - Keyframes: Immediate cleanup prevents global namespace pollution
+// - Unused styles can be instantly reactivated (just increment refCount)
 ```
 
 ### Shadow DOM Support
@@ -292,10 +295,10 @@ configure({ devMode: true });
 const metrics = injector.instance.getMetrics();
 
 console.log({
-  cacheHits: metrics.hits,           // Successful cache hits
+  cacheHits: metrics.hits,           // Successful cache hits  
   cacheMisses: metrics.misses,       // New styles injected
-  unusedHits: metrics.unusedHits,    // Reactivated unused styles
-  bulkCleanups: metrics.bulkCleanups, // Cleanup operations
+  unusedHits: metrics.unusedHits,    // Current unused styles (calculated)
+  bulkCleanups: metrics.bulkCleanups, // CSS cleanup operations (keyframes disposed immediately)
   stylesCleanedUp: metrics.stylesCleanedUp, // Total styles removed
   totalInsertions: metrics.totalInsertions, // Lifetime insertions
 });
@@ -364,13 +367,13 @@ configure({
 // The injector automatically manages memory through:
 
 // 1. Hash-based deduplication - same CSS = same className
-// 2. Reference counting - styles stay alive while in use
-// 3. Aged cleanup - unused styles must remain unused for minimum time
-// 4. Partial cleanup - only oldest unused styles are removed per batch
-// 5. DOM validation - prevents cleanup of styles still in DOM
+// 2. Reference counting - styles stay alive while in use (refCount > 0)
+// 3. Immediate keyframes cleanup - disposed instantly when refCount = 0
+// 4. Batch CSS cleanup - unused CSS rules (refCount = 0) cleaned in batches
+// 5. Non-stacking cleanups - prevents timeout accumulation
 
 // Manual cleanup is rarely needed but available:
-cleanup(); // Force immediate cleanup of eligible unused styles
+cleanup(); // Force immediate cleanup of all unused CSS rules (refCount = 0)
 destroy(); // Nuclear option: remove all stylesheets and reset
 ```
 

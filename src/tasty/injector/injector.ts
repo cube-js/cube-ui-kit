@@ -69,14 +69,6 @@ export class StyleInjector {
     if (generatedClass && registry.rules.has(generatedClass)) {
       const currentRefCount = registry.refCounts.get(generatedClass) || 0;
       registry.refCounts.set(generatedClass, currentRefCount + 1);
-      // If this class was previously marked as unused, clear that state now
-      if (registry.unusedRules.has(generatedClass)) {
-        registry.unusedRules.delete(generatedClass);
-        if (registry.metrics) {
-          // Consider this a reuse rather than a cold miss
-          registry.metrics.unusedHits++;
-        }
-      }
 
       // Update metrics
       if (registry.metrics) {
@@ -89,71 +81,27 @@ export class StyleInjector {
       };
     }
 
-    // Try to restore from unused styles if className exists but is not active
-    if (
-      generatedClass &&
-      registry.rules.has(generatedClass) &&
-      !registry.refCounts.has(generatedClass)
-    ) {
-      const restored = this.sheetManager.restoreFromUnused(
-        registry,
-        generatedClass,
-      );
-      if (restored) {
-        // Update metrics
-        if (registry.metrics) {
-          registry.metrics.hits++;
-        }
-
-        return {
-          className: generatedClass,
-          dispose: () => this.dispose(generatedClass, registry),
-        };
-      }
-    }
-
     // No active cache dedupe — rely on provided className or disposed cache only
 
-    // Generate final className - only use extracted className if it's a generated tasty className
-    const className = generatedClass
-      ? generatedClass
-      : generateClassName(registry.classCounter++);
+    // Use extracted className if available, otherwise generate new one
+    const className =
+      generatedClass || generateClassName(registry.classCounter++);
 
-    // If a different pre-extracted class was used in rules, rewrite selectors to the final class
-    // Also increase specificity for class-based selectors by duplicating the class
-    const rulesToInsert =
-      generatedClass && generatedClass !== className
-        ? rules.map((r) => {
-            if (r.selector.startsWith('.' + generatedClass)) {
-              const newSelector =
-                '.' + className + r.selector.slice(generatedClass.length + 1);
-              // Increase specificity by duplicating the class for class-based selectors
-              const specificSelector =
-                newSelector.startsWith('.' + className) &&
-                /^\.t\d+/.test(newSelector)
-                  ? '.' + className + newSelector
-                  : newSelector;
-              return {
-                ...r,
-                selector: specificSelector,
-              } as StyleRule;
-            }
-            return r;
-          })
-        : rules.map((r) => {
-            // Increase specificity for class-based selectors by duplicating the class
-            if (r.selector.startsWith('.') && /^\.t\d+/.test(r.selector)) {
-              const classMatch = r.selector.match(/^\.t\d+/);
-              if (classMatch) {
-                const baseClass = classMatch[0];
-                return {
-                  ...r,
-                  selector: baseClass + r.selector,
-                } as StyleRule;
-              }
-            }
-            return r;
-          });
+    // Increase specificity for class-based selectors by duplicating the class
+    const rulesToInsert = rules.map((r) => {
+      // Increase specificity for class-based selectors by duplicating the class
+      if (r.selector.startsWith('.') && /^\.t\d+/.test(r.selector)) {
+        const classMatch = r.selector.match(/^\.t\d+/);
+        if (classMatch) {
+          const baseClass = classMatch[0];
+          return {
+            ...r,
+            selector: baseClass + r.selector,
+          } as StyleRule;
+        }
+      }
+      return r;
+    });
 
     // Before inserting, auto-register @property for any color custom properties being defined.
     // Fast parse: split declarations by ';' and match "--*-color:"
@@ -272,14 +220,21 @@ export class StyleInjector {
   private dispose(className: string, registry: any): void {
     const currentRefCount = registry.refCounts.get(className);
     // Guard against stale double-dispose or mismatched lifecycle
-    if (currentRefCount == null) {
+    if (currentRefCount == null || currentRefCount <= 0) {
       return;
     }
-    if (currentRefCount <= 1) {
-      // Mark as unused immediately
-      this.sheetManager.markAsUnused(registry, className);
-    } else {
-      registry.refCounts.set(className, currentRefCount - 1);
+
+    const newRefCount = currentRefCount - 1;
+    registry.refCounts.set(className, newRefCount);
+
+    if (newRefCount === 0) {
+      // Update metrics
+      if (registry.metrics) {
+        registry.metrics.totalUnused++;
+      }
+
+      // Check if cleanup should be scheduled
+      this.sheetManager.checkCleanupNeeded(registry);
     }
   }
 
@@ -506,9 +461,15 @@ export class StyleInjector {
 
     entry.refCount--;
     if (entry.refCount <= 0) {
-      // Mark as unused
+      // Dispose immediately - keyframes are global and safe to clean up right away
+      this.sheetManager.deleteKeyframes(registry, entry.info);
       registry.keyframesCache.delete(cacheKey);
-      this.sheetManager.markKeyframesAsUnused(registry, entry.name);
+
+      // Update metrics
+      if (registry.metrics) {
+        registry.metrics.totalUnused++;
+        registry.metrics.stylesCleanedUp++;
+      }
     }
   }
 
