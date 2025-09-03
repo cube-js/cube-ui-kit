@@ -524,11 +524,3 @@ exports[`tasty() API should support modifiers 1`] = `
 `;
 
 exports[`tasty() API should support variants 1`] = `".t8.t8 {color: var(--black-color); --current-color: var(--black-color, black); --current-color-rgb: var(--black-color-rgb);}"`;
-
-exports[`tasty() API tastyGlobal functionality should cleanup global styles on unmount 1`] = `""`;
-
-exports[`tasty() API tastyGlobal functionality should handle empty styles gracefully 1`] = `""`;
-
-exports[`tasty() API tastyGlobal functionality should inject global styles for CSS selectors 1`] = `""`;
-
-exports[`tasty() API tastyGlobal functionality should work with breakpoints for global styles 1`] = `""`;

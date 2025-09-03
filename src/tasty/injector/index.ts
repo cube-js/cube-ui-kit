@@ -55,18 +55,27 @@ function isTestEnvironment(): boolean {
 }
 
 /**
+ * Create default configuration with optional test environment detection
+ */
+function createDefaultConfig(isTest?: boolean): StyleInjectorConfig {
+  return {
+    maxRulesPerSheet: 8192, // safer default cap per sheet
+    unusedStylesThreshold: 500, // default threshold for bulk cleanup of unused styles
+    bulkCleanupDelay: 5000, // default delay before bulk cleanup (ignored if idleCleanup is true)
+    idleCleanup: true, // default to using requestIdleCallback instead of setTimeout
+    forceTextInjection: isTest ?? false, // auto-enable for test environments
+    devMode: isDevEnv(), // enable dev features: performance tracking and debug info
+    bulkCleanupBatchRatio: 0.5,
+    unusedStylesMinAgeMs: 10000,
+  };
+}
+
+/**
  * Configure the global style injector
  */
 export function configure(config: Partial<StyleInjectorConfig> = {}): void {
   const fullConfig: StyleInjectorConfig = {
-    maxRulesPerSheet: 8192, // safer default cap per sheet
-    unusedStylesThreshold: 200, // default threshold for bulk cleanup of unused styles
-    bulkCleanupDelay: 5000, // default delay before bulk cleanup (ignored if idleCleanup is true)
-    idleCleanup: true, // default to using requestIdleCallback instead of setTimeout
-    forceTextInjection: false, // auto-enable for test environments
-    devMode: isDevEnv(), // enable dev features: performance tracking and debug info
-    bulkCleanupBatchRatio: 0.5,
-    unusedStylesMinAgeMs: 10000,
+    ...createDefaultConfig(),
     ...config,
   };
 
@@ -209,14 +218,7 @@ export function createInjector(
   const isTest = isTestEnvironment();
 
   const fullConfig: StyleInjectorConfig = {
-    maxRulesPerSheet: 8192, // safer default cap per sheet
-    unusedStylesThreshold: 500, // default threshold for bulk cleanup of unused styles
-    bulkCleanupDelay: 5000, // default delay before bulk cleanup (ignored if idleCleanup is true)
-    idleCleanup: true, // default to using requestIdleCallback instead of setTimeout
-    forceTextInjection: isTest, // auto-enable for test environments
-    devMode: isDevEnv(), // enable dev features: performance tracking and debug info
-    bulkCleanupBatchRatio: 0.5,
-    unusedStylesMinAgeMs: 10000,
+    ...createDefaultConfig(isTest),
     ...config,
   };
 
