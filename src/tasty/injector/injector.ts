@@ -87,21 +87,8 @@ export class StyleInjector {
     const className =
       generatedClass || generateClassName(registry.classCounter++);
 
-    // Increase specificity for class-based selectors by duplicating the class
-    const rulesToInsert = rules.map((r) => {
-      // Increase specificity for class-based selectors by duplicating the class
-      if (r.selector.startsWith('.') && /^\.t\d+/.test(r.selector)) {
-        const classMatch = r.selector.match(/^\.t\d+/);
-        if (classMatch) {
-          const baseClass = classMatch[0];
-          return {
-            ...r,
-            selector: baseClass + r.selector,
-          } as StyleRule;
-        }
-      }
-      return r;
-    });
+    // Use rules as-is - specificity is handled during selector generation
+    const rulesToInsert = rules;
 
     // Before inserting, auto-register @property for any color custom properties being defined.
     // Fast parse: split declarations by ';' and match "--*-color:"

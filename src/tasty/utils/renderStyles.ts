@@ -440,7 +440,13 @@ function materializeRules(
   zones: ResponsiveZone[],
 ): StyleResult[] {
   return logicalRules.map((rule) => {
-    const selector = `.${className}${rule.selectorSuffix}`;
+    // Generate base selector
+    let selector = `.${className}${rule.selectorSuffix}`;
+
+    // Increase specificity for tasty class selectors by duplicating the class
+    if (/^t\d+$/.test(className)) {
+      selector = `.${className}${selector}`;
+    }
 
     const declarations = Object.entries(rule.declarations)
       .map(([prop, value]) => `${prop}: ${value};`)
@@ -976,9 +982,18 @@ export function renderStyles(
     // Direct selector mode: convert logical rules directly to StyleResult format
     return allLogicalRules.map((rule) => {
       // Replace & with the actual selector or append suffix to selector
-      const finalSelector = rule.selectorSuffix
+      let finalSelector = rule.selectorSuffix
         ? `${classNameOrSelector}${rule.selectorSuffix}`
         : classNameOrSelector;
+
+      // Increase specificity for tasty class selectors by duplicating the class
+      if (finalSelector.startsWith('.') && /^\.t\d+/.test(finalSelector)) {
+        const classMatch = finalSelector.match(/^\.t\d+/);
+        if (classMatch) {
+          const baseClass = classMatch[0];
+          finalSelector = baseClass + finalSelector;
+        }
+      }
 
       const declarations = Object.entries(rule.declarations)
         .map(([prop, value]) => `${prop}: ${value};`)
