@@ -431,7 +431,7 @@ export class SheetManager {
           rules.length - 1,
           Number.isFinite(ruleInfo.endRuleIndex as number)
             ? (ruleInfo.endRuleIndex as number)
-            : startIdx - 1,
+            : startIdx,
         );
 
         if (Number.isFinite(startIdx) && endIdx >= startIdx) {
