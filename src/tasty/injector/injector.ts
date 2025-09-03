@@ -89,18 +89,8 @@ export class StyleInjector {
 
       // If rule needs className prepended
       if (rule.needsClassName) {
-        // Simple concatenation: .className + selectorSuffix
-        newSelector = `.${className}${newSelector}`;
-      }
-
-      // Apply specificity duplication for tasty class selectors
-      if (/^\.t\d+/.test(newSelector)) {
-        // Extract the base class and duplicate it
-        const match = newSelector.match(/^\.t\d+/);
-        if (match) {
-          const baseClass = match[0];
-          newSelector = baseClass + newSelector;
-        }
+        // Simple concatenation: .className (double specificity) + selectorSuffix
+        newSelector = `.${className}.${className}${newSelector}`;
       }
 
       return {

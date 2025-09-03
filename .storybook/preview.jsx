@@ -11,6 +11,7 @@ if (!isChromatic() && import.meta.env.DEV) {
   import('../src/tasty/debug').then(({ tastyDebug }) => {
     try {
       tastyDebug.install();
+      tastyDebug.trackInjections(true);
     } catch (e) {
       console.warn('tastyDebug installation failed:', e);
     }
