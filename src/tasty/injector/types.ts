@@ -67,7 +67,7 @@ export interface CacheMetrics {
   startTime: number;
 
   // Calculated getters
-  unusedHits?: number; // calculated as hits from reused unused styles (not tracked)
+  unusedHits?: number; // calculated as current unused styles count (refCount = 0)
 }
 
 export interface RootRegistry {
@@ -95,6 +95,8 @@ export interface RootRegistry {
   keyframesCounter: number;
   /** Set of injected @property names for tracking */
   injectedProperties: Set<string>;
+  /** Global rules tracking for index adjustment */
+  globalRules: Map<string, RuleInfo>; // globalKey -> rule info
 }
 
 // StyleRule is now just an alias for StyleResult from renderStyles

@@ -56,6 +56,7 @@ export class SheetManager {
         keyframesCache: new Map(),
         keyframesCounter: 0,
         injectedProperties: new Set<string>(),
+        globalRules: new Map(),
       } as unknown as RootRegistry;
 
       this.rootRegistries.set(root, registry);
@@ -357,11 +358,34 @@ export class SheetManager {
   insertGlobalRule(
     registry: RootRegistry,
     flattenedRules: StyleRule[],
-    className: string,
+    globalKey: string,
     root: Document | ShadowRoot,
   ): RuleInfo | null {
-    // For now, global rules are handled the same way as regular rules
-    return this.insertRule(registry, flattenedRules, className, root);
+    // Insert the rule using the same mechanism as regular rules
+    const ruleInfo = this.insertRule(registry, flattenedRules, globalKey, root);
+
+    // Track global rules for index adjustment
+    if (ruleInfo) {
+      registry.globalRules.set(globalKey, ruleInfo);
+    }
+
+    return ruleInfo;
+  }
+
+  /**
+   * Delete a global CSS rule by key
+   */
+  public deleteGlobalRule(registry: RootRegistry, globalKey: string): void {
+    const ruleInfo = registry.globalRules.get(globalKey);
+    if (!ruleInfo) {
+      return;
+    }
+
+    // Delete the rule using the standard deletion mechanism
+    this.deleteRule(registry, ruleInfo);
+
+    // Remove from global rules tracking
+    registry.globalRules.delete(globalKey);
   }
 
   /**
@@ -429,6 +453,11 @@ export class SheetManager {
 
       // Adjust active rules
       for (const info of registry.rules.values()) {
+        adjustRuleInfo(info);
+      }
+
+      // Adjust global rules
+      for (const info of registry.globalRules.values()) {
         adjustRuleInfo(info);
       }
 

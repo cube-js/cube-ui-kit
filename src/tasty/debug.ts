@@ -2,7 +2,7 @@
  * Debug utilities for inspecting tasty-generated CSS at runtime
  */
 
-import { getCssText, getCssTextForNode, injector } from './injector';
+import { getCssTextForNode, injector } from './injector';
 import { isDevEnv } from './utils/isDevEnv';
 
 // Type definitions for the new API

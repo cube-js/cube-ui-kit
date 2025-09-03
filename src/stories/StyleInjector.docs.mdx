@@ -93,6 +93,45 @@ const globalResult = injectGlobal([
 globalResult.dispose();
 ```
 
+### `createGlobalStyle<Props>(strings, ...interpolations): ComponentType`
+
+Creates a React component that injects global styles when mounted (similar to styled-components).
+
+```typescript
+import { createGlobalStyle } from '@cube-dev/ui-kit/tasty/injector';
+
+const GlobalReset = createGlobalStyle<{ theme: 'dark' | 'light' }>`
+  body {
+    margin: 0;
+    background: ${props => props.theme === 'dark' ? '#000' : '#fff'};
+    color: ${props => props.theme === 'dark' ? '#fff' : '#000'};
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+`;
+
+// Usage in React
+<GlobalReset theme="dark" />
+```
+
+### `createInjector(config?): StyleInjector`
+
+Creates an isolated injector instance with custom configuration.
+
+```typescript
+import { createInjector } from '@cube-dev/ui-kit/tasty/injector';
+
+// Create isolated instance for testing
+const testInjector = createInjector({
+  devMode: true,
+  forceTextInjection: true,
+});
+
+const result = testInjector.inject(rules);
+```
+
 ### `keyframes(steps, nameOrOptions?): KeyframesResult`
 
 Injects CSS keyframes with automatic deduplication.
@@ -127,16 +166,26 @@ Configures the global injector instance.
 
 ```typescript
 configure({
-  devMode: true,                     // Enable development features
-  maxRulesPerSheet: 8000,            // Cap rules per stylesheet
+  devMode: true,                     // Enable development features (auto-detected)
+  maxRulesPerSheet: 8192,            // Cap rules per stylesheet (default: 8192)
   unusedStylesThreshold: 500,        // Trigger cleanup threshold (CSS rules only)
-  bulkCleanupDelay: 5000,            // Cleanup delay (ms)
-  idleCleanup: true,                 // Use requestIdleCallback
+  bulkCleanupDelay: 5000,            // Cleanup delay (ms) - ignored if idleCleanup is true
+  idleCleanup: true,                 // Use requestIdleCallback for cleanup
   bulkCleanupBatchRatio: 0.5,        // Clean up oldest 50% per batch
-  forceTextInjection: false,         // Force textContent insertion
+  unusedStylesMinAgeMs: 10000,       // Minimum age before cleanup (ms)
+  forceTextInjection: false,         // Force textContent insertion (auto-detected for tests)
   nonce: 'csp-nonce',                // CSP nonce for security
 });
 ```
+
+**Auto-Detection Features:**
+- `devMode`: Automatically enabled in development environments (detected via `isDevEnv()`)
+- `forceTextInjection`: Automatically enabled in test environments (Jest, Vitest, Mocha, jsdom)
+
+**Configuration Notes:**
+- Most options have sensible defaults and auto-detection
+- `configure()` is optional - the injector works with defaults
+- `unusedStylesMinAgeMs`: Minimum time (ms) a style must remain unused before being eligible for cleanup. Helps prevent removal of styles that might be quickly reactivated.
 
 ---
 
@@ -240,7 +289,9 @@ const shadowAnimation = keyframes({
 ### Server-Side Rendering
 
 ```typescript
-// Extract CSS for SSR
+import { getCssText, getCssTextForNode } from '@cube-dev/ui-kit/tasty/injector';
+
+// Extract all CSS for SSR
 const cssText = getCssText();
 
 // Extract CSS for specific DOM subtree (like jest-styled-components)
@@ -253,10 +304,12 @@ const componentCSS = getCssTextForNode(container);
 ```typescript
 // Automatically detected test environments:
 // - NODE_ENV === 'test'
-// - Jest globals (describe, it, expect)
+// - Jest globals (jest, describe, it, expect)
 // - jsdom user agent
-// - Vitest, Mocha globals
+// - Vitest globals (vitest)
+// - Mocha globals (mocha)
 
+import { getIsTestEnvironment } from '@cube-dev/ui-kit/tasty/injector';
 const isTest = getIsTestEnvironment();
 
 // Test-specific optimizations:
@@ -297,10 +350,13 @@ const metrics = injector.instance.getMetrics();
 console.log({
   cacheHits: metrics.hits,           // Successful cache hits  
   cacheMisses: metrics.misses,       // New styles injected
-  unusedHits: metrics.unusedHits,    // Current unused styles (calculated)
-  bulkCleanups: metrics.bulkCleanups, // CSS cleanup operations (keyframes disposed immediately)
-  stylesCleanedUp: metrics.stylesCleanedUp, // Total styles removed
+  unusedHits: metrics.unusedHits,    // Current unused styles (calculated on demand)
+  bulkCleanups: metrics.bulkCleanups, // Number of bulk cleanup operations
+  stylesCleanedUp: metrics.stylesCleanedUp, // Total styles removed in bulk cleanups
   totalInsertions: metrics.totalInsertions, // Lifetime insertions
+  totalUnused: metrics.totalUnused,  // Total styles marked as unused (refCount = 0)
+  startTime: metrics.startTime,      // Metrics collection start timestamp
+  cleanupHistory: metrics.cleanupHistory, // Detailed cleanup operation history
 });
 ```
 
@@ -329,7 +385,7 @@ metrics.cleanupHistory.forEach(cleanup => {
     timestamp: new Date(cleanup.timestamp),
     classesDeleted: cleanup.classesDeleted,
     rulesDeleted: cleanup.rulesDeleted,
-    cssSize: cleanup.cssSize,
+    cssSize: cleanup.cssSize,              // Total CSS size removed (bytes)
   });
 });
 ```
@@ -356,8 +412,9 @@ injectGlobal([
 
 // ✅ Configure appropriate thresholds for your app
 configure({
-  unusedStylesThreshold: 200,      // Adjust based on component count
-  bulkCleanupBatchRatio: 0.4,      // Balance cleanup frequency vs performance
+  unusedStylesThreshold: 500,      // Default threshold (adjust based on app size)
+  bulkCleanupBatchRatio: 0.5,      // Default: clean oldest 50% per batch
+  unusedStylesMinAgeMs: 10000,     // Wait 10s before cleanup eligibility
 });
 ```
 

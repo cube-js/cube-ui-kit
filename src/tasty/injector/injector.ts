@@ -253,7 +253,7 @@ export class StyleInjector {
 
     return {
       dispose: () => {
-        if (info) this.sheetManager.deleteRule(registry, info);
+        if (info) this.sheetManager.deleteGlobalRule(registry, key);
       },
     };
   }
