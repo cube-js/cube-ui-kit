@@ -92,6 +92,16 @@ function getGlobalInjector(): StyleInjector {
 }
 
 /**
+ * Allocate a className for a cacheKey without injecting styles yet
+ */
+export function allocateClassName(
+  cacheKey: string,
+  options?: { root?: Document | ShadowRoot },
+): { className: string; isNewAllocation: boolean } {
+  return getGlobalInjector().allocateClassName(cacheKey, options);
+}
+
+/**
  * Inject styles and return className with dispose function
  */
 export function inject(

@@ -40,6 +40,46 @@ export class StyleInjector {
   }
 
   /**
+   * Allocate a className for a cacheKey without injecting styles yet.
+   * This allows separating className allocation (render phase) from style injection (insertion phase).
+   */
+  allocateClassName(
+    cacheKey: string,
+    options?: { root?: Document | ShadowRoot },
+  ): { className: string; isNewAllocation: boolean } {
+    const root = options?.root || document;
+    const registry = this.sheetManager.getRegistry(root);
+
+    // Check if we can reuse existing className for this cache key
+    if (registry.rules.has(cacheKey)) {
+      const existingRuleInfo = registry.rules.get(cacheKey)!;
+      return {
+        className: existingRuleInfo.className,
+        isNewAllocation: false,
+      };
+    }
+
+    // Generate new className and reserve it
+    const className = generateClassName(registry.classCounter++);
+
+    // Create placeholder RuleInfo to reserve the className
+    const placeholderRuleInfo = {
+      className,
+      ruleIndex: -1, // Placeholder - will be set during actual injection
+      sheetIndex: -1, // Placeholder - will be set during actual injection
+    };
+
+    // Reserve both className and cacheKey mappings
+    registry.rules.set(className, placeholderRuleInfo);
+    registry.rules.set(cacheKey, placeholderRuleInfo);
+
+    return {
+      className,
+      isNewAllocation: true,
+    };
+  }
+
+  /**
    * Inject styles from StyleResult objects
    */
   inject(
@@ -61,27 +101,36 @@ export class StyleInjector {
     // Check if we can reuse based on cache key
     const cacheKey = options?.cacheKey;
     let className: string;
+    let isPreAllocated = false;
 
     if (cacheKey && registry.rules.has(cacheKey)) {
       // Reuse existing class for this cache key
       const existingRuleInfo = registry.rules.get(cacheKey)!;
       className = existingRuleInfo.className;
-      const currentRefCount = registry.refCounts.get(className) || 0;
-      registry.refCounts.set(className, currentRefCount + 1);
 
-      // Update metrics
-      if (registry.metrics) {
-        registry.metrics.hits++;
+      // Check if this is a placeholder (pre-allocated but not yet injected)
+      isPreAllocated =
+        existingRuleInfo.ruleIndex === -1 && existingRuleInfo.sheetIndex === -1;
+
+      if (!isPreAllocated) {
+        // Already injected - just increment refCount
+        const currentRefCount = registry.refCounts.get(className) || 0;
+        registry.refCounts.set(className, currentRefCount + 1);
+
+        // Update metrics
+        if (registry.metrics) {
+          registry.metrics.hits++;
+        }
+
+        return {
+          className,
+          dispose: () => this.dispose(className, registry),
+        };
       }
-
-      return {
-        className,
-        dispose: () => this.dispose(className, registry),
-      };
+    } else {
+      // Generate new className
+      className = generateClassName(registry.classCounter++);
     }
-
-    // Generate new className
-    className = generateClassName(registry.classCounter++);
 
     // Process rules: handle needsClassName flag and apply specificity
     const rulesToInsert = rules.map((rule) => {
@@ -147,11 +196,19 @@ export class StyleInjector {
 
     // Store in registry
     registry.refCounts.set(className, 1);
-    registry.rules.set(className, ruleInfo);
 
-    // Also store by cache key if provided
-    if (cacheKey) {
-      registry.rules.set(cacheKey, ruleInfo);
+    if (isPreAllocated) {
+      // Update the existing placeholder entries with real rule info
+      registry.rules.set(className, ruleInfo);
+      if (cacheKey) {
+        registry.rules.set(cacheKey, ruleInfo);
+      }
+    } else {
+      // Store new entries
+      registry.rules.set(className, ruleInfo);
+      if (cacheKey) {
+        registry.rules.set(cacheKey, ruleInfo);
+      }
     }
 
     // Update metrics

@@ -13,7 +13,7 @@ import {
 } from 'react';
 import { isValidElementType } from 'react-is';
 
-import { inject, injectGlobal } from './injector';
+import { allocateClassName, inject, injectGlobal } from './injector';
 import { BreakpointsContext } from './providers/BreakpointsProvider';
 import { BASE_STYLES } from './styles/list';
 import { Styles, StylesInterface } from './styles/types';
@@ -382,20 +382,20 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
 
       const disposeRef = useRef<(() => void) | null>(null);
 
-      // Single injection pattern - inject once and get both className and dispose
-      const injectionResult = useMemo(() => {
-        if (!directResult.rules.length) return null;
-        return inject(directResult.rules, { cacheKey });
-      }, [directResult.rules, cacheKey]);
+      // Allocate className in render phase (safe for React Strict Mode)
+      const allocatedClassName = useMemo(() => {
+        if (!directResult.rules.length || !cacheKey) return '';
+        const { className } = allocateClassName(cacheKey);
+        return className;
+      }, [directResult.rules.length, cacheKey]);
 
-      const injectedClassName = injectionResult?.className || '';
-
-      // Handle disposal in useInsertionEffect
+      // Inject styles in insertion effect (avoids render phase side effects)
       useInsertionEffect(() => {
         // Cleanup previous disposal reference
         disposeRef.current?.();
 
-        if (injectionResult) {
+        if (directResult.rules.length > 0) {
+          const injectionResult = inject(directResult.rules, { cacheKey });
           disposeRef.current = injectionResult.dispose;
         } else {
           disposeRef.current = null;
@@ -405,7 +405,9 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
           disposeRef.current?.();
           disposeRef.current = null;
         };
-      }, [injectionResult]);
+      }, [directResult.rules, cacheKey]);
+
+      const injectedClassName = allocatedClassName;
 
       let modProps: Record<string, unknown> | undefined;
       if (mods) {
