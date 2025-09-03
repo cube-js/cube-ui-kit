@@ -32,7 +32,8 @@ import { ResponsiveStyleValue, stringifyStyles } from './utils/styles';
 const styleKeyToClass = new Map<string, string>();
 let nextClassId = 0;
 function allocateClassName(styleKey: string, contextKey?: string): string {
-  const key = contextKey ? `${styleKey}||${contextKey}` : styleKey;
+  // Use null character as separator for better performance and no collision risk
+  const key = contextKey ? `${styleKey}\0${contextKey}` : styleKey;
   const existing = styleKeyToClass.get(key);
   if (existing) return existing;
   const cls = `t${nextClassId++}`;
@@ -88,10 +89,10 @@ type TastyComponentPropsWithDefaults<
 > = keyof DefaultProps extends never
   ? Props
   : {
-    [key in Extract<keyof Props, keyof DefaultProps>]?: Props[key];
-  } & {
-    [key in keyof Omit<Props, keyof DefaultProps>]: Props[key];
-  };
+      [key in Extract<keyof Props, keyof DefaultProps>]?: Props[key];
+    } & {
+      [key in keyof Omit<Props, keyof DefaultProps>]: Props[key];
+    };
 
 export function tasty<K extends StyleList, V extends VariantMap>(
   options: TastyProps<K, V>,
@@ -131,13 +132,12 @@ function tastyGlobal(selector: string, styles?: Styles) {
     let contextBreakpoints = useContext(BreakpointsContext);
 
     const breakpointsList = (breakpoints ?? contextBreakpoints) || [980];
-    const breakpointsHash = breakpointsList.join(',');
     const disposeRef = useRef<(() => void) | null>(null);
 
     const styleResults = useMemo(() => {
       if (!styles) return [];
       return renderStyles(styles, breakpointsList, selector, true);
-    }, [selector, breakpointsHash]);
+    }, [selector, styles, breakpointsList]);
 
     // Inject styles at insertion phase; cleanup on change/unmount
     useInsertionEffect(() => {
@@ -322,23 +322,21 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         className: userClassName,
         ...otherProps
       } = allProps as Record<string, unknown> as AllBasePropsWithMods<K> &
-      WithVariant<V> & { className?: string };
+        WithVariant<V> & { className?: string };
 
-      let propStyles: Styles | null = (
-        (styleProps
-          ? (styleProps as StyleList).concat(BASE_STYLES)
-          : BASE_STYLES) as StyleList
-      ).reduce((map, prop) => {
+      // Optimize propStyles extraction - avoid creating empty objects
+      let propStyles: Styles | null = null;
+      const propsToCheck = styleProps
+        ? (styleProps as StyleList).concat(BASE_STYLES)
+        : BASE_STYLES;
+
+      for (const prop of propsToCheck) {
         const key = prop as unknown as string;
         if (Object.prototype.hasOwnProperty.call(otherProps as object, key)) {
-          (map as any)[key] = (otherProps as any)[key];
+          if (!propStyles) propStyles = {};
+          (propStyles as any)[key] = (otherProps as any)[key];
           delete (otherProps as any)[key];
         }
-        return map;
-      }, {} as Styles);
-
-      if (Object.keys(propStyles).length === 0) {
-        propStyles = null;
       }
 
       if (
@@ -348,38 +346,39 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         styles = undefined as unknown as Styles;
       }
 
-      const propStylesCacheKey = stringifyStyles(propStyles);
-      const stylesCacheKey = useMemo(() => stringifyStyles(styles), [styles]);
-
-      const useDefaultStyles = !propStyles && !styles;
-
-      const styleCacheKey = useMemo(
-        () => `${propStylesCacheKey}.${stylesCacheKey}`,
-        [propStylesCacheKey, stylesCacheKey],
-      );
-
-      let allStyles: Styles | undefined = useMemo(
-        () =>
-          useDefaultStyles
-            ? defaultStyles
-            : mergeStyles(
-              defaultStyles,
-              styles as Styles,
-              propStyles as Styles,
-            ),
-        [styleCacheKey],
-      );
-
       let contextBreakpoints = useContext(BreakpointsContext);
-
       breakpoints = (breakpoints as number[] | undefined) ?? contextBreakpoints;
 
-      // Allocate a stable sequential class per style-key
-      const className = useMemo(() => {
-        const stylesKey = stringifyStyles(allStyles || {});
-        const bpKey = (breakpoints as number[] | undefined)?.join(',') || '';
-        return allocateClassName(stylesKey, `bp:${bpKey}`);
-      }, [allStyles, breakpoints?.join(',')]);
+      // Memoize breakpoints key once
+      const breakpointsKey = useMemo(
+        () => (breakpoints as number[] | undefined)?.join(',') || '',
+        [breakpoints?.join(',')],
+      );
+
+      // Optimize style computation and className allocation
+      const { allStyles, className, useDefaultStyles } = useMemo(() => {
+        const hasStyles =
+          styles && Object.keys(styles as Record<string, unknown>).length > 0;
+        const hasPropStyles = propStyles && Object.keys(propStyles).length > 0;
+        const useDefault = !hasStyles && !hasPropStyles;
+
+        const merged = useDefault
+          ? defaultStyles
+          : mergeStyles(defaultStyles, styles as Styles, propStyles as Styles);
+
+        // Single stringifyStyles call
+        const styleKey = stringifyStyles(merged || {});
+        const cls = allocateClassName(
+          styleKey,
+          breakpointsKey ? `bp:${breakpointsKey}` : undefined,
+        );
+
+        return {
+          allStyles: merged,
+          className: cls,
+          useDefaultStyles: useDefault,
+        };
+      }, [styles, propStyles, breakpointsKey]);
 
       // Compute rules synchronously; inject via insertion effect
       const directResult: RenderResult = useMemo(() => {
@@ -390,7 +389,7 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         } else {
           return { rules: [], className: '' };
         }
-      }, [useDefaultStyles, allStyles, breakpoints?.join(','), className]);
+      }, [useDefaultStyles, allStyles, breakpointsKey, className]);
 
       const disposeRef = useRef<(() => void) | null>(null);
 
@@ -456,8 +455,9 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
     });
   }
 
-  _TastyComponent.displayName = `TastyComponent(${(defaultProps as any).qa || originalAs
-    })`;
+  _TastyComponent.displayName = `TastyComponent(${
+    (defaultProps as any).qa || originalAs
+  })`;
 
   return _TastyComponent;
 }

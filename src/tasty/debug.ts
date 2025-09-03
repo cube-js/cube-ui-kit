@@ -823,7 +823,7 @@ export const tastyDebug = {
 
       console.log('🏷️ Properties & Keyframes:');
       console.log(`  • Defined @property: ${summary.propertyCount}`);
-      console.log(`  • Defined keyframes: ${summary.keyframeCount}`);
+      console.log(`  • Defined @keyframes: ${summary.keyframeCount}`);
 
       if (metrics) {
         console.log(`⚡ Performance Metrics:`);
