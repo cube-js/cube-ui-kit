@@ -220,6 +220,21 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     allValueProps,
     customValueProps,
     newCustomValueProps,
+    searchPlaceholder,
+    autoFocus,
+    filter,
+    emptyLabel,
+    searchInputStyles,
+    searchInputRef,
+    listStyles,
+    optionStyles,
+    sectionStyles,
+    headingStyles,
+    listRef,
+    disallowEmptySelection,
+    shouldUseVirtualFocus,
+    onEscape,
+    onOptionClick,
     ...otherProps
   } = props;
 
@@ -1005,6 +1020,17 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 selectedKeys={
                   selectionMode === 'multiple' ? mappedSelectedKeys : undefined
                 }
+                searchPlaceholder={searchPlaceholder}
+                filter={filter}
+                listStyles={listStyles}
+                optionStyles={optionStyles}
+                sectionStyles={sectionStyles}
+                headingStyles={headingStyles}
+                listRef={listRef}
+                disallowEmptySelection={disallowEmptySelection}
+                emptyLabel={emptyLabel}
+                searchInputStyles={searchInputStyles}
+                searchInputRef={searchInputRef}
                 disabledKeys={disabledKeys}
                 focusOnHover={focusOnHover}
                 shouldFocusWrap={shouldFocusWrap}

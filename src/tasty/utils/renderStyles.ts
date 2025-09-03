@@ -31,6 +31,7 @@ export interface StyleResult {
   selector: string;
   declarations: string;
   atRules?: string[];
+  needsClassName?: boolean; // Flag to indicate selector needs className prepended
 }
 
 export interface RenderResult {
@@ -440,7 +441,13 @@ function materializeRules(
   zones: ResponsiveZone[],
 ): StyleResult[] {
   return logicalRules.map((rule) => {
-    const selector = `.${className}${rule.selectorSuffix}`;
+    // Generate base selector
+    let selector = `.${className}${rule.selectorSuffix}`;
+
+    // Increase specificity for tasty class selectors by duplicating the class
+    if (/^t\d+$/.test(className)) {
+      selector = `.${className}${selector}`;
+    }
 
     const declarations = Object.entries(rule.declarations)
       .map(([prop, value]) => `${prop}: ${value};`)
@@ -948,6 +955,14 @@ export function renderStyles(
 ): RenderResult;
 
 /**
+ * Render styles without className for element styles (injector will add it)
+ */
+export function renderStyles(
+  styles: Styles | undefined,
+  responsive?: number[],
+): RenderResult;
+
+/**
  * Render styles for direct injection with a specific selector
  * Bypasses CSS text generation and flattening by directly creating StyleResult[]
  */
@@ -955,15 +970,15 @@ export function renderStyles(
   styles: Styles | undefined,
   responsive: number[],
   selector: string,
-  directSelector: true,
 ): StyleResult[];
 
 export function renderStyles(
   styles?: Styles,
   responsive: number[] = [],
-  classNameOrSelector: string = 'unknown',
-  directSelector: boolean = false,
+  classNameOrSelector?: string,
 ): RenderResult | StyleResult[] {
+  const directSelector = !!classNameOrSelector;
+
   if (!styles) {
     return directSelector ? [] : { rules: [] };
   }
@@ -974,11 +989,24 @@ export function renderStyles(
 
   if (directSelector) {
     // Direct selector mode: convert logical rules directly to StyleResult format
+    if (!classNameOrSelector) {
+      throw new Error('directSelector mode requires classNameOrSelector');
+    }
+
     return allLogicalRules.map((rule) => {
       // Replace & with the actual selector or append suffix to selector
-      const finalSelector = rule.selectorSuffix
+      let finalSelector = rule.selectorSuffix
         ? `${classNameOrSelector}${rule.selectorSuffix}`
         : classNameOrSelector;
+
+      // Increase specificity for tasty class selectors by duplicating the class
+      if (finalSelector.startsWith('.') && /^\.t\d+/.test(finalSelector)) {
+        const classMatch = finalSelector.match(/^\.t\d+/);
+        if (classMatch) {
+          const baseClass = classMatch[0];
+          finalSelector = baseClass + finalSelector;
+        }
+      }
 
       const declarations = Object.entries(rule.declarations)
         .map(([prop, value]) => `${prop}: ${value};`)
@@ -1020,6 +1048,36 @@ export function renderStyles(
         responsiveSource: rule.responsiveSource,
       });
     }
+  }
+
+  // If no className provided, return rules with needsClassName flag
+  if (!classNameOrSelector) {
+    const materializedRules = Array.from(accumulatedRules.values()).map(
+      (rule) => {
+        const declarations = Object.entries(rule.declarations)
+          .map(([prop, value]) => `${prop}: ${value};`)
+          .join(' ');
+
+        const q =
+          rule.breakpointIdx > 0
+            ? zones[rule.breakpointIdx]?.mediaQuery
+            : rule.responsiveSource
+              ? zones[0]?.mediaQuery
+              : undefined;
+        const atRules = q ? [`@media ${q}`] : undefined;
+
+        return {
+          selector: rule.selectorSuffix || '',
+          declarations,
+          atRules,
+          needsClassName: true, // Flag for injector to prepend className
+        };
+      },
+    );
+
+    return {
+      rules: materializedRules,
+    };
   }
 
   // Materialize the accumulated logical rules into final format

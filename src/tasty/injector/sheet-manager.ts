@@ -11,7 +11,6 @@ import {
   SheetInfo,
   StyleInjectorConfig,
   StyleRule,
-  UnusedRuleInfo,
 } from './types';
 
 import type { StyleHandler } from '../utils/styles';
@@ -31,11 +30,10 @@ export class SheetManager {
     let registry = this.rootRegistries.get(root);
 
     if (!registry) {
-      const metrics: CacheMetrics | undefined = this.config.collectMetrics
+      const metrics: CacheMetrics | undefined = this.config.devMode
         ? {
             hits: 0,
             misses: 0,
-            unusedHits: 0,
             bulkCleanups: 0,
             totalInsertions: 0,
             totalUnused: 0,
@@ -49,15 +47,16 @@ export class SheetManager {
         sheets: [],
         refCounts: new Map(),
         rules: new Map(),
-        unusedRules: new Map(),
+        cacheKeyToClassName: new Map(),
         ruleTextSet: new Set<string>(),
         bulkCleanupTimeout: null,
+        cleanupCheckTimeout: null,
         metrics,
         classCounter: 0,
         keyframesCache: new Map(),
-        unusedKeyframes: new Map(),
         keyframesCounter: 0,
         injectedProperties: new Set<string>(),
+        globalRules: new Map(),
       } as unknown as RootRegistry;
 
       this.rootRegistries.set(root, registry);
@@ -132,7 +131,6 @@ export class SheetManager {
       targetSheet = this.createSheet(registry, root);
     }
 
-    const ruleIndex = this.findAvailableRuleIndex(targetSheet);
     const sheetIndex = registry.sheets.indexOf(targetSheet);
 
     try {
@@ -180,7 +178,9 @@ export class SheetManager {
 
       // Insert grouped rules
       const insertedRuleTexts: string[] = [];
-      let currentRuleIndex = ruleIndex;
+      const insertedIndices: number[] = []; // Track exact indices
+      // Calculate rule index atomically right before insertion to prevent race conditions
+      let currentRuleIndex = this.findAvailableRuleIndex(targetSheet);
       let firstInsertedIndex: number | null = null;
       let lastInsertedIndex: number | null = null;
 
@@ -202,8 +202,10 @@ export class SheetManager {
         const styleSheet = styleElement.sheet;
 
         if (styleSheet && !this.config.forceTextInjection) {
+          // Calculate index atomically for each rule to prevent concurrent insertion races
           const maxIndex = styleSheet.cssRules.length;
-          const safeIndex = Math.min(Math.max(0, currentRuleIndex), maxIndex);
+          const atomicRuleIndex = this.findAvailableRuleIndex(targetSheet);
+          const safeIndex = Math.min(Math.max(0, atomicRuleIndex), maxIndex);
 
           // Helper: split comma-separated selectors safely (ignores commas inside [] () " ')
           const splitSelectorsSafely = (selectorList: string): string[] => {
@@ -246,6 +248,9 @@ export class SheetManager {
 
           try {
             styleSheet.insertRule(fullRule, safeIndex);
+            // Update sheet ruleCount immediately to prevent concurrent race conditions
+            targetSheet.ruleCount++;
+            insertedIndices.push(safeIndex); // Track this index
             if (firstInsertedIndex == null) firstInsertedIndex = safeIndex;
             lastInsertedIndex = safeIndex;
             currentRuleIndex = safeIndex + 1;
@@ -266,9 +271,14 @@ export class SheetManager {
                 }
 
                 try {
+                  // Calculate index atomically for each individual selector insertion
                   const maxIdx = styleSheet.cssRules.length;
-                  const idx = Math.min(Math.max(0, currentRuleIndex), maxIdx);
+                  const atomicIdx = this.findAvailableRuleIndex(targetSheet);
+                  const idx = Math.min(Math.max(0, atomicIdx), maxIdx);
                   styleSheet.insertRule(singleRule, idx);
+                  // Update sheet ruleCount immediately
+                  targetSheet.ruleCount++;
+                  insertedIndices.push(idx); // Track this index
                   if (firstInsertedIndex == null) firstInsertedIndex = idx;
                   lastInsertedIndex = idx;
                   currentRuleIndex = idx + 1;
@@ -287,11 +297,16 @@ export class SheetManager {
           }
         } else {
           // Use textContent (either as fallback or when forceTextInjection is enabled)
+          // Calculate index atomically for textContent insertion too
+          const atomicRuleIndex = this.findAvailableRuleIndex(targetSheet);
           styleElement.textContent =
             (styleElement.textContent || '') + '\n' + fullRule;
-          if (firstInsertedIndex == null) firstInsertedIndex = currentRuleIndex;
-          lastInsertedIndex = currentRuleIndex;
-          currentRuleIndex++;
+          // Update sheet ruleCount immediately
+          targetSheet.ruleCount++;
+          insertedIndices.push(atomicRuleIndex); // Track this index
+          if (firstInsertedIndex == null) firstInsertedIndex = atomicRuleIndex;
+          lastInsertedIndex = atomicRuleIndex;
+          currentRuleIndex = atomicRuleIndex + 1;
         }
 
         // CRITICAL DEBUG: Verify the style element is in DOM only if there are issues and we're not using forceTextInjection
@@ -305,8 +320,8 @@ export class SheetManager {
           );
         }
 
-        // Conditionally store cssText and track for debug
-        if (this.config.debugMode) {
+        // Dev-only: store cssText for debugging tools
+        if (this.config.devMode) {
           insertedRuleTexts.push(fullRule);
           try {
             registry.ruleTextSet.add(fullRule);
@@ -317,18 +332,16 @@ export class SheetManager {
         // currentRuleIndex already adjusted above
       }
 
-      // Update sheet info based on the number of rules inserted
-      const finalRuleIndex = currentRuleIndex - 1;
-      if (finalRuleIndex >= targetSheet.ruleCount) {
-        targetSheet.ruleCount = finalRuleIndex + 1;
-      }
+      // Sheet ruleCount is now updated immediately after each insertion
+      // No need for deferred update logic
 
       return {
         className,
-        ruleIndex: firstInsertedIndex ?? ruleIndex,
+        ruleIndex: firstInsertedIndex ?? 0,
         sheetIndex,
-        cssText: this.config.debugMode ? insertedRuleTexts : [],
-        endRuleIndex: lastInsertedIndex ?? finalRuleIndex,
+        cssText: this.config.devMode ? insertedRuleTexts : undefined,
+        endRuleIndex: lastInsertedIndex ?? firstInsertedIndex ?? 0,
+        indices: insertedIndices.length > 0 ? insertedIndices : undefined,
       };
     } catch (error) {
       console.warn('Failed to insert CSS rules:', error, {
@@ -345,11 +358,122 @@ export class SheetManager {
   insertGlobalRule(
     registry: RootRegistry,
     flattenedRules: StyleRule[],
-    className: string,
+    globalKey: string,
     root: Document | ShadowRoot,
   ): RuleInfo | null {
-    // For now, global rules are handled the same way as regular rules
-    return this.insertRule(registry, flattenedRules, className, root);
+    // Insert the rule using the same mechanism as regular rules
+    const ruleInfo = this.insertRule(registry, flattenedRules, globalKey, root);
+
+    // Track global rules for index adjustment
+    if (ruleInfo) {
+      registry.globalRules.set(globalKey, ruleInfo);
+    }
+
+    return ruleInfo;
+  }
+
+  /**
+   * Delete a global CSS rule by key
+   */
+  public deleteGlobalRule(registry: RootRegistry, globalKey: string): void {
+    const ruleInfo = registry.globalRules.get(globalKey);
+    if (!ruleInfo) {
+      return;
+    }
+
+    // Delete the rule using the standard deletion mechanism
+    this.deleteRule(registry, ruleInfo);
+
+    // Remove from global rules tracking
+    registry.globalRules.delete(globalKey);
+  }
+
+  /**
+   * Adjust rule indices after deletion to account for shifting
+   */
+  private adjustIndicesAfterDeletion(
+    registry: RootRegistry,
+    sheetIndex: number,
+    startIdx: number,
+    endIdx: number,
+    deleteCount: number,
+    deletedRuleInfo: RuleInfo,
+    deletedIndices?: number[],
+  ): void {
+    try {
+      // Helper function to adjust a single RuleInfo
+      const adjustRuleInfo = (info: RuleInfo): void => {
+        if (info === deletedRuleInfo) return; // Skip the deleted rule
+        if (info.sheetIndex !== sheetIndex) return; // Different sheet
+
+        // If info has exact indices, adjust them
+        if (info.indices && info.indices.length > 0 && deletedIndices) {
+          // Sort deleted indices for efficient binary search
+          const sortedDeleted = [...deletedIndices].sort((a, b) => a - b);
+
+          // Adjust each index based on how many deleted indices are before it
+          info.indices = info.indices.map((idx) => {
+            // Count how many deleted indices are less than this index
+            let shift = 0;
+            for (const delIdx of sortedDeleted) {
+              if (delIdx < idx) shift++;
+              else break;
+            }
+            return idx - shift;
+          });
+
+          // Update ruleIndex and endRuleIndex to match adjusted indices
+          if (info.indices.length > 0) {
+            info.ruleIndex = Math.min(...info.indices);
+            info.endRuleIndex = Math.max(...info.indices);
+          }
+        } else {
+          // Fallback: adjust using range logic
+          const infoEnd = (info.endRuleIndex as number) ?? info.ruleIndex;
+
+          if (info.ruleIndex > endIdx) {
+            // Rule is after deleted range - shift left
+            info.ruleIndex = Math.max(0, info.ruleIndex - deleteCount);
+            if (info.endRuleIndex != null) {
+              info.endRuleIndex = Math.max(
+                info.ruleIndex,
+                infoEnd - deleteCount,
+              );
+            }
+          } else if (info.ruleIndex <= endIdx && infoEnd >= startIdx) {
+            // Rule overlaps with deleted range (should not normally happen)
+            // Clamp endRuleIndex to avoid pointing into deleted region
+            if (info.endRuleIndex != null) {
+              const newEnd = Math.max(info.ruleIndex, startIdx - 1);
+              info.endRuleIndex = Math.max(info.ruleIndex, newEnd);
+            }
+          }
+        }
+      };
+
+      // Adjust active rules
+      for (const info of registry.rules.values()) {
+        adjustRuleInfo(info);
+      }
+
+      // Adjust global rules
+      for (const info of registry.globalRules.values()) {
+        adjustRuleInfo(info);
+      }
+
+      // No need to separately adjust unused rules since they're part of the rules Map
+
+      // Adjust keyframes indices stored in cache
+      for (const entry of registry.keyframesCache.values()) {
+        const ki = entry.info as KeyframesInfo;
+        if (ki.sheetIndex !== sheetIndex) continue;
+        if (ki.ruleIndex > endIdx) {
+          ki.ruleIndex = Math.max(0, ki.ruleIndex - deleteCount);
+        }
+      }
+    } catch (_) {
+      // Defensive: do not let index adjustments crash cleanup
+    }
   }
 
   /**
@@ -363,9 +487,10 @@ export class SheetManager {
     }
 
     try {
-      const texts = Array.isArray(ruleInfo.cssText)
-        ? ruleInfo.cssText.slice()
-        : [];
+      const texts: string[] =
+        this.config.devMode && Array.isArray(ruleInfo.cssText)
+          ? ruleInfo.cssText.slice()
+          : [];
 
       const styleElement = sheet.sheet;
       const styleSheet = styleElement.sheet;
@@ -373,44 +498,74 @@ export class SheetManager {
       if (styleSheet) {
         const rules = styleSheet.cssRules;
 
-        // Prefer index-based deletion when possible
-        const startIdx = Math.max(0, ruleInfo.ruleIndex);
-        const endIdx = Math.min(
-          rules.length - 1,
-          Number.isFinite(ruleInfo.endRuleIndex as number)
-            ? (ruleInfo.endRuleIndex as number)
-            : startIdx - 1,
-        );
+        // Use exact indices if available, otherwise fall back to range
+        if (ruleInfo.indices && ruleInfo.indices.length > 0) {
+          // NEW: Delete using exact tracked indices
+          const sortedIndices = [...ruleInfo.indices].sort((a, b) => b - a); // Sort descending
+          const deletedIndices: number[] = [];
 
-        if (Number.isFinite(startIdx) && endIdx >= startIdx) {
-          for (let idx = endIdx; idx >= startIdx; idx--) {
-            if (idx < 0 || idx >= styleSheet.cssRules.length) continue;
-            styleSheet.deleteRule(idx);
-          }
-          sheet.ruleCount = Math.max(
-            0,
-            sheet.ruleCount - (endIdx - startIdx + 1),
-          );
-        } else if (this.config.debugMode && texts.length) {
-          // Fallback: locate each rule by exact cssText and delete (debug mode only)
-          for (const text of texts) {
-            let idx = -1;
-            for (let i = styleSheet.cssRules.length - 1; i >= 0; i--) {
-              if ((styleSheet.cssRules[i] as CSSRule).cssText === text) {
-                idx = i;
-                break;
+          for (const idx of sortedIndices) {
+            if (idx >= 0 && idx < styleSheet.cssRules.length) {
+              try {
+                styleSheet.deleteRule(idx);
+                deletedIndices.push(idx);
+              } catch (e) {
+                console.warn(`Failed to delete rule at index ${idx}:`, e);
               }
             }
-            if (idx >= 0) {
+          }
+
+          sheet.ruleCount = Math.max(
+            0,
+            sheet.ruleCount - deletedIndices.length,
+          );
+
+          // Adjust indices for all other rules
+          if (deletedIndices.length > 0) {
+            this.adjustIndicesAfterDeletion(
+              registry,
+              ruleInfo.sheetIndex,
+              Math.min(...deletedIndices),
+              Math.max(...deletedIndices),
+              deletedIndices.length,
+              ruleInfo,
+              deletedIndices,
+            );
+          }
+        } else {
+          // FALLBACK: Use old range-based deletion for backwards compatibility
+          const startIdx = Math.max(0, ruleInfo.ruleIndex);
+          const endIdx = Math.min(
+            rules.length - 1,
+            Number.isFinite(ruleInfo.endRuleIndex as number)
+              ? (ruleInfo.endRuleIndex as number)
+              : startIdx,
+          );
+
+          if (Number.isFinite(startIdx) && endIdx >= startIdx) {
+            const deleteCount = endIdx - startIdx + 1;
+            for (let idx = endIdx; idx >= startIdx; idx--) {
+              if (idx < 0 || idx >= styleSheet.cssRules.length) continue;
               styleSheet.deleteRule(idx);
             }
+            sheet.ruleCount = Math.max(0, sheet.ruleCount - deleteCount);
+
+            // After deletion, all subsequent rule indices shift left by deleteCount.
+            // We must adjust stored indices for all other RuleInfo within the same sheet.
+            this.adjustIndicesAfterDeletion(
+              registry,
+              ruleInfo.sheetIndex,
+              startIdx,
+              endIdx,
+              deleteCount,
+              ruleInfo,
+            );
           }
-          sheet.ruleCount = Math.max(0, sheet.ruleCount - texts.length);
         }
       }
 
-      // Remove texts from validation set
-      if (this.config.debugMode) {
+      // Dev-only: remove cssText entries from validation set
+      if (this.config.devMode && texts.length) {
         try {
           for (const text of texts) {
             registry.ruleTextSet.delete(text);
@@ -458,61 +613,21 @@ export class SheetManager {
   }
 
   /**
-   * Mark a ruleset as unused but keep it in the stylesheet
-   */
-  markAsUnused(registry: RootRegistry, className: string): void {
-    const ruleInfo = registry.rules.get(className);
-    if (!ruleInfo) return;
-
-    // Mark as unused (but keep in registry.rules)
-    const unusedInfo: UnusedRuleInfo = {
-      ruleInfo,
-      markedUnusedAt: Date.now(),
-    };
-
-    registry.unusedRules.set(className, unusedInfo);
-    registry.refCounts.delete(className);
-
-    // Update metrics
-    if (registry.metrics) {
-      registry.metrics.totalUnused++;
-    }
-
-    // Schedule bulk cleanup if threshold exceeded
-    const threshold = this.config.unusedStylesThreshold || 500;
-    if (registry.unusedRules.size >= threshold) {
-      this.scheduleBulkCleanup(registry);
-    }
-  }
-
-  /**
-   * Restore a ruleset from unused styles
-   */
-  restoreFromUnused(
-    registry: RootRegistry,
-    className: string,
-  ): RuleInfo | null {
-    const unusedInfo = registry.unusedRules.get(className);
-    if (!unusedInfo) return null;
-
-    // Remove from unused rules (rules stays in registry.rules)
-    registry.unusedRules.delete(className);
-    registry.refCounts.set(className, 1);
-
-    // Update metrics
-    if (registry.metrics) {
-      registry.metrics.unusedHits++;
-    }
-
-    return unusedInfo.ruleInfo;
-  }
-
-  /**
-   * Schedule bulk cleanup of all unused styles
+   * Schedule bulk cleanup of all unused styles (non-stacking)
    */
   private scheduleBulkCleanup(registry: RootRegistry): void {
-    // Don't schedule if already scheduled
-    if (registry.bulkCleanupTimeout) return;
+    // Clear any existing timeout to prevent stacking
+    if (registry.bulkCleanupTimeout) {
+      if (
+        this.config.idleCleanup &&
+        typeof cancelIdleCallback !== 'undefined'
+      ) {
+        cancelIdleCallback(registry.bulkCleanupTimeout as unknown as number);
+      } else {
+        clearTimeout(registry.bulkCleanupTimeout);
+      }
+      registry.bulkCleanupTimeout = null;
+    }
 
     const performCleanup = () => {
       this.performBulkCleanup(registry);
@@ -528,13 +643,47 @@ export class SheetManager {
   }
 
   /**
+   * Force cleanup of unused styles
+   */
+  public forceCleanup(registry: RootRegistry): void {
+    this.performBulkCleanup(registry, true);
+  }
+
+  /**
    * Perform bulk cleanup of all unused styles
    */
-  private performBulkCleanup(registry: RootRegistry): void {
-    if (registry.unusedRules.size === 0) return;
-
+  private performBulkCleanup(registry: RootRegistry, cleanupAll = false): void {
     const cleanupStartTime = Date.now();
-    const classNamesToCleanup = Array.from(registry.unusedRules.keys());
+
+    // Calculate unused rules dynamically: rules that have refCount = 0
+    const unusedClassNames = Array.from(registry.refCounts.entries())
+      .filter(([, refCount]) => refCount === 0)
+      .map(([className]) => className);
+
+    if (unusedClassNames.length === 0) return;
+
+    // Build candidates list - no age filtering needed
+    const candidates = unusedClassNames.map((className) => {
+      const ruleInfo = registry.rules.get(className)!; // We know it exists
+      return {
+        className,
+        ruleInfo,
+      };
+    });
+
+    if (candidates.length === 0) return;
+
+    // Limit deletion scope per run (batch ratio) unless cleanupAll is true
+    let selected = candidates;
+    if (!cleanupAll) {
+      const ratio = this.config.bulkCleanupBatchRatio ?? 0.5;
+      const limit = Math.max(
+        1,
+        Math.floor(candidates.length * Math.min(1, Math.max(0, ratio))),
+      );
+      selected = candidates.slice(0, limit);
+    }
+
     let cleanedUpCount = 0;
     let totalCssSize = 0;
     let totalRulesDeleted = 0;
@@ -546,22 +695,18 @@ export class SheetManager {
     >();
 
     // Calculate CSS size before deletion and group rules
-    for (const className of classNamesToCleanup) {
-      const unusedInfo = registry.unusedRules.get(className);
-      if (!unusedInfo) continue;
-
-      const ruleInfo = unusedInfo.ruleInfo;
+    for (const { className, ruleInfo } of selected) {
       const sheetIndex = ruleInfo.sheetIndex;
 
-      // Calculate CSS size for this rule
-      const cssSize = ruleInfo.cssText.reduce(
-        (total, css) => total + css.length,
-        0,
-      );
-      totalCssSize += cssSize;
-
-      // Count number of rules (based on cssText array length)
-      totalRulesDeleted += ruleInfo.cssText.length;
+      // Dev-only metrics: estimate CSS size and rule count if available
+      if (this.config.devMode && Array.isArray(ruleInfo.cssText)) {
+        const cssSize = ruleInfo.cssText.reduce(
+          (total, css) => total + css.length,
+          0,
+        );
+        totalCssSize += cssSize;
+        totalRulesDeleted += ruleInfo.cssText.length;
+      }
 
       if (!rulesBySheet.has(sheetIndex)) {
         rulesBySheet.set(sheetIndex, []);
@@ -575,28 +720,63 @@ export class SheetManager {
       rulesInSheet.sort((a, b) => b.ruleInfo.ruleIndex - a.ruleInfo.ruleIndex);
 
       for (const { className, ruleInfo } of rulesInSheet) {
-        // SAFETY: Re-check that the rule is still unused at deletion time.
-        // Between scheduling and execution a class may have been restored
-        // (refCounts set and removed from unusedRules). Skip such entries.
-        if (!registry.unusedRules.has(className)) {
-          continue;
-        }
-        if (registry.refCounts.has(className)) {
+        // SAFETY 1: Double-check refCount is still 0
+        const currentRefCount = registry.refCounts.get(className) || 0;
+        if (currentRefCount > 0) {
           // Class became active again; do not delete
           continue;
         }
 
-        // Ensure we delete the same RuleInfo we marked earlier to avoid
-        // accidentally deleting updated rules for the same class.
+        // SAFETY 2: Ensure rule wasn't replaced
+        // Between scheduling and execution a class may have been replaced with a new RuleInfo
         const currentInfo = registry.rules.get(className);
-        if (currentInfo && currentInfo !== ruleInfo) {
+        if (currentInfo !== ruleInfo) {
           // Rule was replaced; skip deletion of the old reference
           continue;
         }
 
+        // SAFETY 3: Verify the sheet element is still valid and accessible
+        const sheetInfo = registry.sheets[ruleInfo.sheetIndex];
+        if (!sheetInfo || !sheetInfo.sheet) {
+          // Sheet was removed or corrupted; skip this rule
+          continue;
+        }
+
+        // SAFETY 4: Verify the stylesheet itself is accessible
+        const styleSheet = sheetInfo.sheet.sheet;
+        if (!styleSheet) {
+          // Stylesheet not available; skip this rule
+          continue;
+        }
+
+        // SAFETY 5: Verify rule index is still within valid range
+        const maxRuleIndex = styleSheet.cssRules.length - 1;
+        const startIdx = ruleInfo.ruleIndex;
+        const endIdx = ruleInfo.endRuleIndex ?? ruleInfo.ruleIndex;
+
+        if (startIdx < 0 || endIdx > maxRuleIndex || startIdx > endIdx) {
+          // Rule indices are out of bounds; skip this rule
+          continue;
+        }
+
+        // All safety checks passed - proceed with deletion
         this.deleteRule(registry, ruleInfo);
         registry.rules.delete(className);
-        registry.unusedRules.delete(className);
+        registry.refCounts.delete(className);
+
+        // Clean up cache key mappings that point to this className
+        const keysToDelete: string[] = [];
+        for (const [
+          key,
+          mappedClassName,
+        ] of registry.cacheKeyToClassName.entries()) {
+          if (mappedClassName === className) {
+            keysToDelete.push(key);
+          }
+        }
+        for (const key of keysToDelete) {
+          registry.cacheKeyToClassName.delete(key);
+        }
         cleanedUpCount++;
       }
     }
@@ -614,14 +794,6 @@ export class SheetManager {
         rulesDeleted: totalRulesDeleted,
       });
     }
-  }
-
-  /**
-   * Process the deletion queue for cleanup
-   */
-  processCleanupQueue(registry: RootRegistry): void {
-    // This method is kept for compatibility but the logic has changed
-    // We no longer use a deletion queue, instead marking styles as unused immediately
   }
 
   /**
@@ -661,7 +833,17 @@ export class SheetManager {
    * Get cache performance metrics
    */
   getMetrics(registry: RootRegistry): CacheMetrics | null {
-    return registry.metrics || null;
+    if (!registry.metrics) return null;
+
+    // Calculate unusedHits on demand - only count CSS rules since keyframes are disposed immediately
+    const unusedRulesCount = Array.from(registry.refCounts.values()).filter(
+      (count) => count === 0,
+    ).length;
+
+    return {
+      ...registry.metrics,
+      unusedHits: unusedRulesCount,
+    };
   }
 
   /**
@@ -672,7 +854,6 @@ export class SheetManager {
       registry.metrics = {
         hits: 0,
         misses: 0,
-        unusedHits: 0,
         bulkCleanups: 0,
         totalInsertions: 0,
         totalUnused: 0,
@@ -811,7 +992,7 @@ export class SheetManager {
         name,
         ruleIndex,
         sheetIndex,
-        cssText: fullRule,
+        cssText: this.config.devMode ? fullRule : undefined,
       };
     } catch (error) {
       console.warn('Failed to insert keyframes:', error);
@@ -845,12 +1026,33 @@ export class SheetManager {
   }
 
   /**
-   * Mark keyframes as unused
+   * Schedule async cleanup check (non-stacking)
    */
-  markKeyframesAsUnused(registry: RootRegistry, name: string): void {
-    // Implementation similar to markAsUnused but for keyframes
+  public checkCleanupNeeded(registry: RootRegistry): void {
+    // Clear any existing check timeout to prevent stacking
+    if (registry.cleanupCheckTimeout) {
+      clearTimeout(registry.cleanupCheckTimeout);
+      registry.cleanupCheckTimeout = null;
+    }
+
+    // Schedule the actual check with setTimeout(..., 0)
+    registry.cleanupCheckTimeout = setTimeout(() => {
+      this.performCleanupCheck(registry);
+      registry.cleanupCheckTimeout = null;
+    }, 0);
+  }
+
+  /**
+   * Perform the actual cleanup check (called asynchronously)
+   */
+  private performCleanupCheck(registry: RootRegistry): void {
+    // Count unused rules (refCount = 0) - keyframes are disposed immediately
+    const unusedRulesCount = Array.from(registry.refCounts.values()).filter(
+      (count) => count === 0,
+    ).length;
     const threshold = this.config.unusedStylesThreshold || 500;
-    if (registry.unusedKeyframes.size >= threshold) {
+
+    if (unusedRulesCount >= threshold) {
       this.scheduleBulkCleanup(registry);
     }
   }
@@ -876,6 +1078,12 @@ export class SheetManager {
         clearTimeout(registry.bulkCleanupTimeout);
       }
       registry.bulkCleanupTimeout = null;
+    }
+
+    // Cancel any scheduled cleanup check
+    if (registry.cleanupCheckTimeout) {
+      clearTimeout(registry.cleanupCheckTimeout);
+      registry.cleanupCheckTimeout = null;
     }
 
     // Remove all sheets

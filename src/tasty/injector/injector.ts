@@ -11,6 +11,7 @@ import { parseStyle } from '../utils/styles';
 // Simple CSS text to StyleResult converter for injectGlobal backward compatibility
 import { SheetManager } from './sheet-manager';
 import {
+  GlobalInjectResult,
   InjectResult,
   KeyframesResult,
   KeyframesSteps,
@@ -31,6 +32,7 @@ export class StyleInjector {
   private sheetManager: SheetManager;
   private config: StyleInjectorConfig;
   private cleanupScheduled = false;
+  private globalRuleCounter = 0;
 
   constructor(config: StyleInjectorConfig = {}) {
     this.config = config;
@@ -38,11 +40,51 @@ export class StyleInjector {
   }
 
   /**
+   * Allocate a className for a cacheKey without injecting styles yet.
+   * This allows separating className allocation (render phase) from style injection (insertion phase).
+   */
+  allocateClassName(
+    cacheKey: string,
+    options?: { root?: Document | ShadowRoot },
+  ): { className: string; isNewAllocation: boolean } {
+    const root = options?.root || document;
+    const registry = this.sheetManager.getRegistry(root);
+
+    // Check if we can reuse existing className for this cache key
+    if (registry.cacheKeyToClassName.has(cacheKey)) {
+      const className = registry.cacheKeyToClassName.get(cacheKey)!;
+      return {
+        className,
+        isNewAllocation: false,
+      };
+    }
+
+    // Generate new className and reserve it
+    const className = generateClassName(registry.classCounter++);
+
+    // Create placeholder RuleInfo to reserve the className
+    const placeholderRuleInfo = {
+      className,
+      ruleIndex: -1, // Placeholder - will be set during actual injection
+      sheetIndex: -1, // Placeholder - will be set during actual injection
+    };
+
+    // Store RuleInfo only once by className, and map cacheKey separately
+    registry.rules.set(className, placeholderRuleInfo);
+    registry.cacheKeyToClassName.set(cacheKey, className);
+
+    return {
+      className,
+      isNewAllocation: true,
+    };
+  }
+
+  /**
    * Inject styles from StyleResult objects
    */
   inject(
     rules: StyleResult[],
-    options?: { root?: Document | ShadowRoot },
+    options?: { root?: Document | ShadowRoot; cacheKey?: string },
   ): InjectResult {
     const root = options?.root || document;
     const registry = this.sheetManager.getRegistry(root);
@@ -56,102 +98,56 @@ export class StyleInjector {
 
     // Rules are now in StyleRule format directly
 
-    // Try to dedupe by className first — if the same class was already inserted, reuse it
-    // Only extract className if it looks like a generated tasty className (t + digits)
-    const preExtractedClass = this.extractClassName(rules);
-    const generatedClass =
-      preExtractedClass && /^t\d+$/.test(preExtractedClass)
-        ? preExtractedClass
-        : null;
+    // Check if we can reuse based on cache key
+    const cacheKey = options?.cacheKey;
+    let className: string;
+    let isPreAllocated = false;
 
-    if (generatedClass && registry.rules.has(generatedClass)) {
-      const currentRefCount = registry.refCounts.get(generatedClass) || 0;
-      registry.refCounts.set(generatedClass, currentRefCount + 1);
-      // If this class was previously marked as unused, clear that state now
-      if (registry.unusedRules.has(generatedClass)) {
-        registry.unusedRules.delete(generatedClass);
-        if (registry.metrics) {
-          // Consider this a reuse rather than a cold miss
-          registry.metrics.unusedHits++;
-        }
-      }
+    if (cacheKey && registry.cacheKeyToClassName.has(cacheKey)) {
+      // Reuse existing class for this cache key
+      className = registry.cacheKeyToClassName.get(cacheKey)!;
+      const existingRuleInfo = registry.rules.get(className)!;
 
-      // Update metrics
-      if (registry.metrics) {
-        registry.metrics.hits++;
-      }
+      // Check if this is a placeholder (pre-allocated but not yet injected)
+      isPreAllocated =
+        existingRuleInfo.ruleIndex === -1 && existingRuleInfo.sheetIndex === -1;
 
-      return {
-        className: generatedClass,
-        dispose: () => this.dispose(generatedClass, registry),
-      };
-    }
+      if (!isPreAllocated) {
+        // Already injected - just increment refCount
+        const currentRefCount = registry.refCounts.get(className) || 0;
+        registry.refCounts.set(className, currentRefCount + 1);
 
-    // Try to restore from unused styles if className exists but is not active
-    if (
-      generatedClass &&
-      registry.rules.has(generatedClass) &&
-      !registry.refCounts.has(generatedClass)
-    ) {
-      const restored = this.sheetManager.restoreFromUnused(
-        registry,
-        generatedClass,
-      );
-      if (restored) {
         // Update metrics
         if (registry.metrics) {
           registry.metrics.hits++;
         }
 
         return {
-          className: generatedClass,
-          dispose: () => this.dispose(generatedClass, registry),
+          className,
+          dispose: () => this.dispose(className, registry),
         };
       }
+    } else {
+      // Generate new className
+      className = generateClassName(registry.classCounter++);
     }
 
-    // No active cache dedupe — rely on provided className or disposed cache only
+    // Process rules: handle needsClassName flag and apply specificity
+    const rulesToInsert = rules.map((rule) => {
+      let newSelector = rule.selector;
 
-    // Generate final className - only use extracted className if it's a generated tasty className
-    const className = generatedClass
-      ? generatedClass
-      : generateClassName(registry.classCounter++);
+      // If rule needs className prepended
+      if (rule.needsClassName) {
+        // Simple concatenation: .className (double specificity) + selectorSuffix
+        newSelector = `.${className}.${className}${newSelector}`;
+      }
 
-    // If a different pre-extracted class was used in rules, rewrite selectors to the final class
-    // Also increase specificity for class-based selectors by duplicating the class
-    const rulesToInsert =
-      generatedClass && generatedClass !== className
-        ? rules.map((r) => {
-            if (r.selector.startsWith('.' + generatedClass)) {
-              const newSelector =
-                '.' + className + r.selector.slice(generatedClass.length + 1);
-              // Increase specificity by duplicating the class for class-based selectors
-              const specificSelector =
-                newSelector.startsWith('.' + className) &&
-                /^\.t\d+/.test(newSelector)
-                  ? '.' + className + newSelector
-                  : newSelector;
-              return {
-                ...r,
-                selector: specificSelector,
-              } as StyleRule;
-            }
-            return r;
-          })
-        : rules.map((r) => {
-            // Increase specificity for class-based selectors by duplicating the class
-            if (r.selector.startsWith('.') && /^\.t\d+/.test(r.selector)) {
-              const classMatch = r.selector.match(/^\.t\d+/);
-              if (classMatch) {
-                const baseClass = classMatch[0];
-                return {
-                  ...r,
-                  selector: baseClass + r.selector,
-                } as StyleRule;
-              }
-            }
-            return r;
-          });
+      return {
+        ...rule,
+        selector: newSelector,
+        needsClassName: undefined, // Remove the flag after processing
+      };
+    });
 
     // Before inserting, auto-register @property for any color custom properties being defined.
     // Fast parse: split declarations by ';' and match "--*-color:"
@@ -200,7 +196,18 @@ export class StyleInjector {
 
     // Store in registry
     registry.refCounts.set(className, 1);
-    registry.rules.set(className, ruleInfo);
+
+    if (isPreAllocated) {
+      // Update the existing placeholder entry with real rule info
+      registry.rules.set(className, ruleInfo);
+      // cacheKey mapping already exists from allocation
+    } else {
+      // Store new entries
+      registry.rules.set(className, ruleInfo);
+      if (cacheKey) {
+        registry.cacheKeyToClassName.set(cacheKey, className);
+      }
+    }
 
     // Update metrics
     if (registry.metrics) {
@@ -215,84 +222,73 @@ export class StyleInjector {
   }
 
   /**
-   * Extract className from rules (assumes first rule contains the base className)
+   * Inject global styles (rules without a generated tasty class selector)
+   * This ensures we don't reserve a tasty class name (t{number}) for global rules,
+   * which could otherwise collide with element-level styles and break lookups.
    */
-  private extractClassName(rules: StyleResult[]): string | null {
-    for (const rule of rules) {
-      const match = rule.selector.match(/^\.([a-zA-Z0-9_-]+)/);
-      if (match) {
-        return match[1];
-      }
+  injectGlobal(
+    rules: StyleResult[],
+    options?: { root?: Document | ShadowRoot },
+  ): GlobalInjectResult {
+    const root = options?.root || document;
+    const registry = this.sheetManager.getRegistry(root);
+
+    if (!rules || rules.length === 0) {
+      return { dispose: () => {} };
     }
-    return null;
-  }
 
-  /**
-   * Generate cache key from style rules with optimized deduplication
-   */
-  private generateCacheKey(rules: StyleRule[]): string {
-    const normalizeSelector = (selector: string): string => {
-      const match = selector.match(/^\.[a-zA-Z0-9_-]+(.*)$/);
-      return match ? match[1] : selector;
+    // Use a non-tasty identifier to avoid any collisions with .t{number} classes
+    const key = `global:${this.globalRuleCounter++}`;
+
+    const info = this.sheetManager.insertGlobalRule(
+      registry,
+      rules as unknown as StyleRule[],
+      key,
+      root,
+    );
+
+    if (registry.metrics) {
+      registry.metrics.totalInsertions++;
+    }
+
+    return {
+      dispose: () => {
+        if (info) this.sheetManager.deleteGlobalRule(registry, key);
+      },
     };
-
-    // Sort rules to ensure consistent cache keys for equivalent rule sets
-    const sortedRules = [...rules].sort((a, b) => {
-      const aKey = `${normalizeSelector(a.selector)}${
-        a.atRules ? a.atRules.join('|') : ''
-      }`;
-      const bKey = `${normalizeSelector(b.selector)}${
-        b.atRules ? b.atRules.join('|') : ''
-      }`;
-      return aKey.localeCompare(bKey);
-    });
-
-    return sortedRules
-      .map((rule) => {
-        const at =
-          rule.atRules && rule.atRules.length
-            ? `@${rule.atRules.join('|')}`
-            : '';
-        const sel = normalizeSelector(rule.selector);
-        // Normalize declarations by sorting properties for consistent caching
-        const normalizedDeclarations = rule.declarations
-          .split(';')
-          .filter(Boolean)
-          .map((decl) => decl.trim())
-          .sort()
-          .join(';');
-        return `${sel}{${normalizedDeclarations}}${at}`;
-      })
-      .join('');
   }
 
   /**
    * Dispose of a className
    */
   private dispose(className: string, registry: any): void {
-    const currentRefCount = registry.refCounts.get(className) || 0;
-    if (currentRefCount <= 1) {
-      // Mark as unused immediately
-      this.sheetManager.markAsUnused(registry, className);
-    } else {
-      registry.refCounts.set(className, currentRefCount - 1);
+    const currentRefCount = registry.refCounts.get(className);
+    // Guard against stale double-dispose or mismatched lifecycle
+    if (currentRefCount == null || currentRefCount <= 0) {
+      return;
     }
-  }
 
-  /**
-   * Cleanup unused rules
-   */
-  cleanup(root?: Document | ShadowRoot): void {
-    const registry = this.sheetManager.getRegistry(root || document);
-    this.sheetManager.processCleanupQueue(registry);
+    const newRefCount = currentRefCount - 1;
+    registry.refCounts.set(className, newRefCount);
+
+    if (newRefCount === 0) {
+      // Update metrics
+      if (registry.metrics) {
+        registry.metrics.totalUnused++;
+      }
+
+      // Check if cleanup should be scheduled
+      this.sheetManager.checkCleanupNeeded(registry);
+    }
   }
 
   /**
    * Force bulk cleanup of unused styles
    */
-  forceBulkCleanup(root?: Document | ShadowRoot): void {
+  cleanup(root?: Document | ShadowRoot): void {
     const registry = this.sheetManager.getRegistry(root || document);
-    this.sheetManager['performBulkCleanup'](registry);
+    // Clean up ALL unused rules regardless of batch ratio
+    this.sheetManager.forceCleanup(registry);
   }
 
   /**
@@ -318,23 +314,29 @@ export class StyleInjector {
     for (const cls of classNames) {
       const info = registry.rules.get(cls);
       if (info) {
-        if (info.cssText && info.cssText.length) {
-          cssChunks.push(...info.cssText);
-        } else {
-          // Fallback: try to read from live sheet by index range
-          const sheet = registry.sheets[info.sheetIndex];
-          const styleSheet = sheet?.sheet?.sheet;
-          if (styleSheet) {
-            const start = Math.max(0, info.ruleIndex);
-            const end = Math.min(
-              styleSheet.cssRules.length - 1,
-              (info.endRuleIndex as number) ?? info.ruleIndex,
-            );
+        // Always prefer reading from the live stylesheet, since indices can change
+        const sheet = registry.sheets[info.sheetIndex];
+        const styleSheet = sheet?.sheet?.sheet;
+        if (styleSheet) {
+          const start = Math.max(0, info.ruleIndex);
+          const end = Math.min(
+            styleSheet.cssRules.length - 1,
+            (info.endRuleIndex as number) ?? info.ruleIndex,
+          );
+          // Additional validation: ensure indices are valid and in correct order
+          if (
+            start >= 0 &&
+            end >= start &&
+            start < styleSheet.cssRules.length
+          ) {
             for (let i = start; i <= end; i++) {
               const rule = styleSheet.cssRules[i] as CSSRule | undefined;
               if (rule) cssChunks.push(rule.cssText);
             }
           }
+        } else if (info.cssText && info.cssText.length) {
+          // Fallback in environments without CSSOM access
+          cssChunks.push(...info.cssText);
         }
       }
     }
@@ -357,15 +359,6 @@ export class StyleInjector {
     const root = options?.root || document;
     const registry = this.sheetManager.getRegistry(root);
     this.sheetManager.resetMetrics(registry);
-  }
-
-  /**
-   * Force cleanup of unused styles (useful for memory pressure)
-   */
-  forceCleanupUnused(options?: { root?: Document | ShadowRoot }): void {
-    const root = options?.root || document;
-    const registry = this.sheetManager.getRegistry(root);
-    this.sheetManager['performBulkCleanup'](registry);
   }
 
   /**
@@ -520,9 +513,15 @@ export class StyleInjector {
 
     entry.refCount--;
     if (entry.refCount <= 0) {
-      // Mark as unused
+      // Dispose immediately - keyframes are global and safe to clean up right away
+      this.sheetManager.deleteKeyframes(registry, entry.info);
       registry.keyframesCache.delete(cacheKey);
-      this.sheetManager.markKeyframesAsUnused(registry, entry.name);
+
+      // Update metrics
+      if (registry.metrics) {
+        registry.metrics.totalUnused++;
+        registry.metrics.stylesCleanedUp++;
+      }
     }
   }
 
@@ -568,8 +567,8 @@ export class StyleInjector {
         const css = this.interpolateTemplate();
         if (css.trim()) {
           const styleResults = this.parseCSSToStyleResults(css);
-          // Bind the inject method to the outer injector instance
-          const result = injector.inject(styleResults, {
+          // Bind the global inject method to the outer injector instance
+          const result = injector.injectGlobal(styleResults as any, {
             root: this.props.root,
           });
           this.disposeFunction = result.dispose;

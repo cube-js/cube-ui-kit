@@ -2,7 +2,147 @@
  * Debug utilities for inspecting tasty-generated CSS at runtime
  */
 
-import { getCssText, getCssTextForNode, injector } from './injector';
+import { getCssTextForNode, injector } from './injector';
+import { isDevEnv } from './utils/isDevEnv';
+
+// Type definitions for the new API
+type CSSTarget =
+  | 'all' // tasty CSS + tasty global CSS (createGlobalStyle)
+  | 'global' // only tasty global CSS
+  | 'active' // tasty CSS for classes currently in DOM
+  | 'unused' // tasty CSS with refCount = 0 (still in cache but not actively used)
+  | 'page' // ALL CSS on the page across stylesheets (not only tasty)
+  | string // 't123' tasty class or a CSS selector
+  | string[] // array of tasty classes like ['t1', 't2']
+  | Element; // a DOM element
+
+interface CssOptions {
+  root?: Document | ShadowRoot;
+  prettify?: boolean; // default: true
+  log?: boolean; // default: false
+}
+
+interface InspectResult {
+  element?: Element | null;
+  classes: string[]; // tasty classes found on the element
+  css: string; // full, prettified CSS affecting the element
+  size: number; // characters in css
+  rules: number; // number of rule blocks
+}
+
+interface CacheMetrics {
+  hits: number;
+  misses: number;
+  bulkCleanups: number;
+  totalInsertions: number;
+  totalUnused: number;
+  stylesCleanedUp: number;
+  cleanupHistory: Array<{
+    timestamp: number;
+    classesDeleted: number;
+    cssSize: number;
+    rulesDeleted: number;
+  }>;
+  startTime: number;
+
+  // Calculated metrics
+  unusedHits?: number; // calculated as current unused count
+}
+
+interface CacheStatus {
+  classes: {
+    active: string[]; // classes with refCount > 0 and present in DOM
+    unused: string[]; // classes with refCount = 0 but still in cache
+    all: string[]; // union of both
+  };
+  metrics: CacheMetrics | null;
+}
+
+interface GlobalBreakdown {
+  css: string; // prettified tasty global CSS
+  totalRules: number;
+  totalCSSSize: number;
+  selectors: {
+    elements: string[];
+    classes: string[];
+    ids: string[];
+    pseudoClasses: string[];
+    mediaQueries: string[];
+    keyframes: string[];
+    other: string[];
+  };
+}
+
+interface Definitions {
+  properties: string[]; // defined via @property
+  keyframes: Array<{ name: string; refCount: number }>;
+}
+
+interface SummaryOptions {
+  root?: Document | ShadowRoot;
+  log?: boolean;
+  includePageCSS?:
+    | false // do not include page-level CSS stats (default)
+    | true // include sizes/counts only
+    | 'all'; // include stats and return full page CSS string
+}
+
+interface Summary {
+  // Classes
+  activeClasses: string[];
+  unusedClasses: string[];
+  totalStyledClasses: string[];
+
+  // Tasty CSS sizes
+  activeCSSSize: number;
+  unusedCSSSize: number;
+  totalCSSSize: number; // tasty-only: active + unused + tasty global
+
+  // Tasty CSS payloads
+  activeCSS: string;
+  unusedCSS: string;
+  allCSS: string; // tasty-only CSS (active + unused + tasty global)
+
+  // Tasty global (createGlobalStyle)
+  globalCSS: string;
+  globalCSSSize: number;
+  globalRuleCount: number;
+
+  // Page-level CSS (across all stylesheets, not only tasty) — shown when includePageCSS != false
+  page?: {
+    css?: string; // present only when includePageCSS === 'all'
+    cssSize: number; // total characters
+    ruleCount: number; // approximate rule count
+    stylesheetCount: number; // stylesheets scanned (CORS-safe)
+    skippedStylesheets: number; // stylesheets skipped due to cross-origin/CORS
+  };
+
+  // Metrics & definitions
+  metrics: CacheMetrics | null;
+  definedProperties: string[];
+  definedKeyframes: Array<{ name: string; refCount: number }>;
+  propertyCount: number;
+  keyframeCount: number;
+
+  // Cleanup summary
+  cleanupSummary: {
+    enabled: boolean;
+    totalCleanups: number;
+    totalClassesDeleted: number;
+    totalCssDeleted: number;
+    totalRulesDeleted: number;
+    averageClassesPerCleanup: number;
+    averageCssPerCleanup: number;
+    averageRulesPerCleanup: number;
+    lastCleanup?: {
+      timestamp: number;
+      date: string;
+      classesDeleted: number;
+      cssSize: number;
+      rulesDeleted: number;
+    };
+  };
+}
 
 /**
  * Pretty-print CSS with proper indentation and formatting
@@ -74,847 +214,384 @@ function prettifyCSS(css: string): string {
   return result;
 }
 
+// Helper functions
+function findAllTastyClasses(root: Document | ShadowRoot = document): string[] {
+  const classes = new Set<string>();
+  const elements = (root as Document).querySelectorAll?.('[class]') || [];
+
+  elements.forEach((element) => {
+    const classList = element.getAttribute('class');
+    if (classList) {
+      const tastyClasses = classList
+        .split(/\s+/)
+        .filter((cls) => /^t\d+$/.test(cls));
+      tastyClasses.forEach((cls) => classes.add(cls));
+    }
+  });
+
+  return Array.from(classes).sort((a, b) => {
+    const aNum = parseInt(a.slice(1));
+    const bNum = parseInt(b.slice(1));
+    return aNum - bNum;
+  });
+}
+
+function findAllStyledClasses(
+  root: Document | ShadowRoot = document,
+): string[] {
+  // Extract tasty classes from all CSS text by parsing selectors
+  const allCSS = injector.instance.getCssText({ root });
+  const classes = new Set<string>();
+
+  // Simple regex to find .t{number} class selectors
+  const classRegex = /\.t(\d+)/g;
+  let match;
+  while ((match = classRegex.exec(allCSS)) !== null) {
+    classes.add(`t${match[1]}`);
+  }
+
+  return Array.from(classes).sort((a, b) => {
+    const aNum = parseInt(a.slice(1));
+    const bNum = parseInt(b.slice(1));
+    return aNum - bNum;
+  });
+}
+
+function extractCSSRules(
+  css: string,
+): Array<{ selector: string; declarations: string }> {
+  const rules: Array<{ selector: string; declarations: string }> = [];
+
+  // Remove comments
+  let cleanCSS = css.replace(/\/\*[\s\S]*?\*\//g, '');
+
+  let i = 0;
+  while (i < cleanCSS.length) {
+    // Skip whitespace
+    while (i < cleanCSS.length && /\s/.test(cleanCSS[i])) {
+      i++;
+    }
+    if (i >= cleanCSS.length) break;
+
+    // Find selector start
+    const selectorStart = i;
+    let braceDepth = 0;
+    let inString = false;
+    let stringChar = '';
+
+    // Find opening brace
+    while (i < cleanCSS.length) {
+      const char = cleanCSS[i];
+      if (inString) {
+        if (char === stringChar && cleanCSS[i - 1] !== '\\') {
+          inString = false;
+        }
+      } else {
+        if (char === '"' || char === "'") {
+          inString = true;
+          stringChar = char;
+        } else if (char === '{') {
+          braceDepth++;
+          if (braceDepth === 1) break;
+        }
+      }
+      i++;
+    }
+
+    if (i >= cleanCSS.length) break;
+    const selector = cleanCSS.substring(selectorStart, i).trim();
+    i++; // Skip opening brace
+
+    // Find matching closing brace
+    const contentStart = i;
+    braceDepth = 1;
+    inString = false;
+
+    while (i < cleanCSS.length && braceDepth > 0) {
+      const char = cleanCSS[i];
+      if (inString) {
+        if (char === stringChar && cleanCSS[i - 1] !== '\\') {
+          inString = false;
+        }
+      } else {
+        if (char === '"' || char === "'") {
+          inString = true;
+          stringChar = char;
+        } else if (char === '{') {
+          braceDepth++;
+        } else if (char === '}') {
+          braceDepth--;
+        }
+      }
+      i++;
+    }
+
+    const content = cleanCSS.substring(contentStart, i - 1).trim();
+    if (content && selector) {
+      rules.push({ selector, declarations: content });
+    }
+  }
+
+  return rules;
+}
+
+function getGlobalCSS(root: Document | ShadowRoot = document): string {
+  const allCSS = injector.instance.getCssText({ root });
+  const rules = extractCSSRules(allCSS);
+
+  const globalRules = rules.filter((rule) => {
+    const selectors = rule.selector.split(',').map((s) => s.trim());
+    return !selectors.every((selector) => {
+      const cleanSelector = selector.replace(/[.#:\s>+~[\]()]/g, ' ');
+      const parts = cleanSelector.split(/\s+/).filter(Boolean);
+      return parts.length > 0 && parts.every((part) => /^t\d+$/.test(part));
+    });
+  });
+
+  const globalCSS = globalRules
+    .map((rule) => `${rule.selector} { ${rule.declarations} }`)
+    .join('\n');
+  return prettifyCSS(globalCSS);
+}
+
+function getPageCSS(options?: {
+  root?: Document | ShadowRoot;
+  includeCrossOrigin?: boolean;
+}): string {
+  const root = options?.root || document;
+  const includeCrossOrigin = options?.includeCrossOrigin ?? false;
+
+  const cssChunks: string[] = [];
+
+  try {
+    if ('styleSheets' in root) {
+      const styleSheets = Array.from((root as Document).styleSheets);
+
+      for (const sheet of styleSheets) {
+        try {
+          if (sheet.cssRules) {
+            const rules = Array.from(sheet.cssRules);
+            cssChunks.push(rules.map((rule) => rule.cssText).join('\n'));
+          }
+        } catch (e) {
+          // Cross-origin sheet or other access error
+          if (includeCrossOrigin) {
+            cssChunks.push(
+              `/* Cross-origin stylesheet: ${sheet.href || 'inline'} */`,
+            );
+          }
+        }
+      }
+    }
+  } catch (e) {
+    // Fallback error handling
+  }
+
+  return cssChunks.join('\n');
+}
+
+function getPageStats(options?: {
+  root?: Document | ShadowRoot;
+  includeCrossOrigin?: boolean;
+}): {
+  cssSize: number;
+  ruleCount: number;
+  stylesheetCount: number;
+  skippedStylesheets: number;
+} {
+  const root = options?.root || document;
+  const includeCrossOrigin = options?.includeCrossOrigin ?? false;
+
+  let cssSize = 0;
+  let ruleCount = 0;
+  let stylesheetCount = 0;
+  let skippedStylesheets = 0;
+
+  try {
+    if ('styleSheets' in root) {
+      const styleSheets = Array.from((root as Document).styleSheets);
+      stylesheetCount = styleSheets.length;
+
+      for (const sheet of styleSheets) {
+        try {
+          if (sheet.cssRules) {
+            const rules = Array.from(sheet.cssRules);
+            ruleCount += rules.length;
+            cssSize += rules.reduce(
+              (sum, rule) => sum + rule.cssText.length,
+              0,
+            );
+          }
+        } catch (e) {
+          skippedStylesheets++;
+        }
+      }
+    }
+  } catch (e) {
+    // Fallback error handling
+  }
+
+  return { cssSize, ruleCount, stylesheetCount, skippedStylesheets };
+}
+
 /**
- * Debug utilities for inspecting tasty styles in runtime applications
+ * Concise tastyDebug API for inspecting styles at runtime
  */
 export const tastyDebug = {
-  /**
-   * Get CSS for a specific tasty class (e.g., 't24')
-   */
-  getCSSForClass(className: string): string {
-    if (!className.match(/^t\d+$/)) {
-      console.warn(
-        `"${className}" doesn't look like a tasty class. Expected format: t{number}`,
-      );
-    }
-    const css = injector.instance.getCssTextForClasses([className]);
-    return prettifyCSS(css);
-  },
+  // 1) One function to get CSS from anywhere
+  css(target: CSSTarget, opts?: CssOptions): string {
+    const { root = document, prettify = true, log = false } = opts || {};
+    let css = '';
 
-  /**
-   * Get CSS for multiple tasty classes
-   */
-  getCSSForClasses(classNames: string[]): string {
-    const css = injector.instance.getCssTextForClasses(classNames);
-    return prettifyCSS(css);
-  },
-
-  /**
-   * Log CSS for a specific tasty class (e.g., 't24') to console
-   */
-  logCSSForClass(className: string): void {
-    if (!className.match(/^t\d+$/)) {
-      console.warn(
-        `"${className}" doesn't look like a tasty class. Expected format: t{number}`,
-      );
-    }
-    const css = this.getCSSForClass(className);
-    this.logCSS(css, `CSS for class "${className}"`);
-  },
-
-  /**
-   * Log CSS for multiple tasty classes to console
-   */
-  logCSSForClasses(classNames: string[]): void {
-    const css = this.getCSSForClasses(classNames);
-    const title = `CSS for classes [${classNames.join(', ')}]`;
-    this.logCSS(css, title);
-  },
-
-  /**
-   * Inspect an element by CSS selector and get its tasty CSS
-   */
-  inspectElement(selector: string): string {
-    const element = document.querySelector(selector);
-    if (!element) {
-      return `Element not found: ${selector}`;
-    }
-
-    console.group(`🎨 Tasty CSS for "${selector}"`);
-    console.log('Element:', element);
-
-    const css = getCssTextForNode(element);
-    if (css) {
-      const prettified = prettifyCSS(css);
-      console.log('Generated CSS:\n' + prettified);
-      console.groupEnd();
-      return prettified;
-    } else {
-      console.log('No tasty CSS found for this element');
-      console.groupEnd();
-      return 'No tasty CSS found';
-    }
-  },
-
-  /**
-   * Inspect a DOM element directly and get its tasty CSS
-   */
-  inspectDOMElement(element: Element): string {
-    if (!element) {
-      return 'Element is null or undefined';
-    }
-
-    console.group('🎨 Tasty CSS for element');
-    console.log('Element:', element);
-
-    const css = getCssTextForNode(element);
-    if (css) {
-      const prettified = prettifyCSS(css);
-      console.log('Generated CSS:\n' + prettified);
-      console.groupEnd();
-      return prettified;
-    } else {
-      console.log('No tasty CSS found for this element');
-      console.groupEnd();
-      return 'No tasty CSS found';
-    }
-  },
-
-  /**
-   * Get all tasty CSS currently injected into the page
-   */
-  getAllCSS(): string {
-    return getCssText();
-  },
-
-  /**
-   * Find all tasty classes used in the page (in DOM)
-   */
-  findAllTastyClasses(): string[] {
-    const classes = new Set<string>();
-
-    // Find all elements with class attributes
-    const elements = document.querySelectorAll('[class]');
-    elements.forEach((element) => {
-      const classList = element.getAttribute('class');
-      if (classList) {
-        // Extract tasty classes (t + digits)
-        const tastyClasses = classList
-          .split(/\s+/)
-          .filter((cls) => /^t\d+$/.test(cls));
-        tastyClasses.forEach((cls) => classes.add(cls));
-      }
-    });
-
-    return Array.from(classes).sort((a, b) => {
-      // Sort numerically by the number part
-      const aNum = parseInt(a.slice(1));
-      const bNum = parseInt(b.slice(1));
-      return aNum - bNum;
-    });
-  },
-
-  /**
-   * Find all tasty classes that have styles in the stylesheet (used + unused)
-   */
-  findAllStyledClasses(): string[] {
-    const registry = (injector.instance as any)['sheetManager'].getRegistry(
-      document,
-    );
-    const classes = new Set<string>();
-
-    // Add all classes from rules map (active + unused)
-    if (registry?.rules) {
-      for (const className of registry.rules.keys()) {
-        if (/^t\d+$/.test(className)) {
-          classes.add(className);
+    if (typeof target === 'string') {
+      if (target === 'all') {
+        css = injector.instance.getCssText({ root });
+      } else if (target === 'global') {
+        css = getGlobalCSS(root);
+      } else if (target === 'active') {
+        const activeClasses = findAllTastyClasses(root);
+        css = injector.instance.getCssTextForClasses(activeClasses, { root });
+      } else if (target === 'unused') {
+        // Get unused classes (refCount = 0) from the registry
+        const registry = (injector.instance as any)[
+          'sheetManager'
+        ]?.getRegistry(root);
+        const unusedClasses: string[] = registry
+          ? Array.from(
+              registry.refCounts.entries() as IterableIterator<
+                [string, number]
+              >,
+            )
+              .filter(([, refCount]: [string, number]) => refCount === 0)
+              .map(([className]: [string, number]) => className)
+          : [];
+        css = injector.instance.getCssTextForClasses(unusedClasses, { root });
+      } else if (target === 'page') {
+        css = getPageCSS({ root, includeCrossOrigin: true });
+      } else if (/^t\d+$/.test(target)) {
+        // Single tasty class
+        css = injector.instance.getCssTextForClasses([target], { root });
+      } else {
+        // CSS selector - find element and get its CSS
+        const element = (root as Document).querySelector?.(target);
+        if (element) {
+          css = getCssTextForNode(element, { root });
         }
       }
+    } else if (Array.isArray(target)) {
+      // Array of tasty classes
+      css = injector.instance.getCssTextForClasses(target, { root });
+    } else if (target instanceof Element) {
+      // DOM element
+      css = getCssTextForNode(target, { root });
     }
 
-    return Array.from(classes).sort((a, b) => {
-      // Sort numerically by the number part
-      const aNum = parseInt(a.slice(1));
-      const bNum = parseInt(b.slice(1));
-      return aNum - bNum;
-    });
+    const result = prettify ? prettifyCSS(css) : css;
+
+    if (log) {
+      console.group(
+        `🎨 CSS for ${Array.isArray(target) ? `[${target.join(', ')}]` : target}`,
+      );
+      console.log(result || '(empty)');
+      console.groupEnd();
+    }
+
+    return result;
   },
 
-  /**
-   * Get active vs cached class breakdown
-   */
-  getClassUsage(): {
-    activeClasses: string[];
-    cachedClasses: string[];
-    totalStyledClasses: string[];
-  } {
-    const domClasses = this.findAllTastyClasses();
-    const styledClasses = this.findAllStyledClasses();
-    const registry = (injector.instance as any)['sheetManager'].getRegistry(
-      document,
-    );
-
-    const activeClasses = domClasses;
-    const cachedClasses = styledClasses.filter(
-      (cls) => !domClasses.includes(cls),
-    );
-
-    // Also check unusedRules registry for classes that are marked as cached (unused but kept for performance)
-    if (registry?.unusedRules) {
-      for (const className of registry.unusedRules.keys()) {
-        if (/^t\d+$/.test(className) && !cachedClasses.includes(className)) {
-          cachedClasses.push(className);
-        }
-      }
-    }
-
-    return {
-      activeClasses: activeClasses.sort((a, b) => {
-        const aNum = parseInt(a.slice(1));
-        const bNum = parseInt(b.slice(1));
-        return aNum - bNum;
-      }),
-      cachedClasses: cachedClasses.sort((a, b) => {
-        const aNum = parseInt(a.slice(1));
-        const bNum = parseInt(b.slice(1));
-        return aNum - bNum;
-      }),
-      totalStyledClasses: styledClasses,
-    };
-  },
-
-  /**
-   * Get a comprehensive summary of all tasty styles
-   */
-  getSummary(): {
-    activeClasses: string[];
-    cachedClasses: string[];
-    totalStyledClasses: string[];
-    activeCSSSize: number;
-    cachedCSSSize: number;
-    totalCSSSize: number;
-    activeCSS: string;
-    cachedCSS: string;
-    allCSS: string;
-    globalCSS: string;
-    globalCSSSize: number;
-    globalRuleCount: number;
-    metrics: any;
-    definedProperties: string[];
-    definedKeyframes: { name: string; refCount: number; cssText?: string }[];
-    propertyCount: number;
-    keyframeCount: number;
-    cleanupSummary: {
-      enabled: boolean;
-      totalCleanups: number;
-      totalClassesDeleted: number;
-      totalCssDeleted: number;
-      totalRulesDeleted: number;
-      averageClassesPerCleanup: number;
-      averageCssPerCleanup: number;
-      averageRulesPerCleanup: number;
-      lastCleanup?: {
-        timestamp: number;
-        date: string;
-        classesDeleted: number;
-        cssSize: number;
-        rulesDeleted: number;
-      };
-    };
-  } {
-    const usage = this.getClassUsage();
-    const allCSS = this.getAllCSS();
-    const activeCSS = this.getCSSForClasses(usage.activeClasses);
-    const cachedCSS = this.getCSSForClasses(usage.cachedClasses);
-    const globalCSS = this.getGlobalCSS();
-    const globalBreakdown = this.getGlobalCSSBreakdown();
-    const metrics = injector.instance.getMetrics();
-    const definedProperties = this.getDefinedProperties();
-    const definedKeyframes = this.getDefinedKeyframes();
-    const cleanupSummary = this.getCleanupSummary();
-
-    const summary = {
-      activeClasses: usage.activeClasses,
-      cachedClasses: usage.cachedClasses,
-      totalStyledClasses: usage.totalStyledClasses,
-      activeCSSSize: activeCSS.length,
-      cachedCSSSize: cachedCSS.length,
-      totalCSSSize: allCSS.length,
-      activeCSS,
-      cachedCSS,
-      allCSS,
-      globalCSS,
-      globalCSSSize: globalCSS.length,
-      globalRuleCount: globalBreakdown.totalRules,
-      metrics,
-      definedProperties,
-      definedKeyframes,
-      propertyCount: definedProperties.length,
-      keyframeCount: definedKeyframes.length,
-      cleanupSummary,
-    };
-
-    console.group('🎨 Comprehensive Tasty Debug Summary');
-    console.log(`📊 Style Cache Status:`);
-    console.log(`  • Active classes (in DOM): ${summary.activeClasses.length}`);
-    console.log(
-      `  • Cached classes (performance cache): ${summary.cachedClasses.length}`,
-    );
-    console.log(
-      `  • Total styled classes: ${summary.totalStyledClasses.length}`,
-    );
-    console.log(`💾 CSS Size:`);
-    console.log(`  • Active CSS: ${summary.activeCSSSize} characters`);
-    console.log(`  • Cached CSS: ${summary.cachedCSSSize} characters`);
-    console.log(
-      `  • Global CSS: ${summary.globalCSSSize} characters (${summary.globalRuleCount} rules)`,
-    );
-    console.log(`  • Total CSS: ${summary.totalCSSSize} characters`);
-    console.log('🏷️ Properties & Keyframes:');
-    console.log(`  • Defined @property: ${definedProperties.length}`);
-    console.log(`  • Defined keyframes: ${definedKeyframes.length}`);
-    if (definedProperties.length > 0) {
-      console.log('  • Properties:', definedProperties);
-    }
-    if (definedKeyframes.length > 0) {
-      console.log(
-        '  • Keyframes:',
-        definedKeyframes.map((k) => `${k.name} (refs: ${k.refCount})`),
-      );
-    }
-    console.log('🧹 Cleanup Statistics:');
-    if (cleanupSummary.enabled) {
-      console.log(
-        `  • Total cleanups performed: ${cleanupSummary.totalCleanups}`,
-      );
-      console.log(
-        `  • Total classes deleted: ${cleanupSummary.totalClassesDeleted}`,
-      );
-      console.log(
-        `  • Total CSS deleted: ${cleanupSummary.totalCssDeleted} chars`,
-      );
-      console.log(
-        `  • Total rules deleted: ${cleanupSummary.totalRulesDeleted}`,
-      );
-      if (cleanupSummary.totalCleanups > 0) {
-        console.log(
-          `  • Avg classes per cleanup: ${cleanupSummary.averageClassesPerCleanup.toFixed(1)}`,
-        );
-        console.log(
-          `  • Avg CSS per cleanup: ${cleanupSummary.averageCssPerCleanup.toFixed(0)} chars`,
-        );
-        console.log(
-          `  • Avg rules per cleanup: ${cleanupSummary.averageRulesPerCleanup.toFixed(1)}`,
-        );
-      }
-      if (cleanupSummary.lastCleanup) {
-        console.log(`  • Last cleanup: ${cleanupSummary.lastCleanup.date}`);
-      }
-    } else {
-      console.log(
-        '  • Metrics collection disabled (enable with collectMetrics: true)',
-      );
-    }
-    console.log(`⚡ Performance Metrics:`);
-    if (metrics) {
-      console.log(`  • Cache hits: ${metrics.hits}`);
-      console.log(`  • Cache misses: ${metrics.misses}`);
-      console.log(`  • Cached style reuses: ${metrics.unusedHits}`);
-      console.log(`  • Total insertions: ${metrics.totalInsertions}`);
-      console.log(`  • Styles cleaned up: ${metrics.stylesCleanedUp}`);
-
-      const hitRate =
-        metrics.hits + metrics.misses > 0
-          ? (
-              ((metrics.hits + metrics.unusedHits) /
-                (metrics.hits + metrics.misses)) *
-              100
-            ).toFixed(1)
-          : 0;
-      console.log(`  • Overall cache hit rate: ${hitRate}%`);
-    } else {
-      console.log(
-        `  • Metrics not available (enable with collectMetrics: true)`,
-      );
-    }
-    console.log('🔍 Details:');
-    console.log('  • Active classes:', summary.activeClasses);
-    console.log('  • Cached classes:', summary.cachedClasses);
-    console.log(
-      'ℹ️  Note: Cached styles are kept for performance - avoiding expensive DOM operations',
-    );
-    console.groupEnd();
-
-    return summary;
-  },
-
-  /**
-   * Helper to log CSS in a readable format
-   */
-  logCSS(css: string, title = 'CSS'): void {
-    if (!css || css.trim() === '') {
-      console.log(`${title}: (empty)`);
-      return;
-    }
-
-    console.group(`🎨 ${title}`);
-    const prettified = prettifyCSS(css);
-    console.log(prettified);
-    console.groupEnd();
-  },
-
-  /**
-   * Advanced inspection with detailed breakdown and statistics
-   */
-  inspect(target: string | Element): {
-    element: Element | null;
-    tastyClasses: string[];
-    css: string;
-    cssSize: number;
-    ruleCount: number;
-    breakdown: {
-      [className: string]: {
-        css: string;
-        cssSize: number;
-        ruleCount: number;
-      };
-    };
-    stats: {
-      totalClasses: number;
-      totalRules: number;
-      totalCSSSize: number;
-      averageRulesPerClass: number;
-      averageCSSPerClass: number;
-    };
-  } {
+  // 2) Element-level inspection
+  inspect(
+    target: string | Element,
+    opts?: { root?: Document | ShadowRoot },
+  ): InspectResult {
+    const { root = document } = opts || {};
     const element =
-      typeof target === 'string' ? document.querySelector(target) : target;
+      typeof target === 'string'
+        ? (root as Document).querySelector?.(target)
+        : target;
 
     if (!element) {
-      console.error(`Element not found: ${target}`);
       return {
         element: null,
-        tastyClasses: [],
+        classes: [],
         css: '',
-        cssSize: 0,
-        ruleCount: 0,
-        breakdown: {},
-        stats: {
-          totalClasses: 0,
-          totalRules: 0,
-          totalCSSSize: 0,
-          averageRulesPerClass: 0,
-          averageCSSPerClass: 0,
-        },
+        size: 0,
+        rules: 0,
       };
     }
 
-    // Find tasty classes on this element
     const classList = element.getAttribute('class') || '';
     const tastyClasses = classList
       .split(/\s+/)
       .filter((cls) => /^t\d+$/.test(cls));
 
-    // Get CSS for the entire subtree
-    const fullCSS = getCssTextForNode(element);
-    const prettifiedCSS = prettifyCSS(fullCSS);
-
-    // Count CSS rules in the full CSS
-    const ruleCount = (fullCSS.match(/\{[^}]*\}/g) || []).length;
-
-    // Get CSS breakdown per class with detailed stats
-    const breakdown: {
-      [className: string]: {
-        css: string;
-        cssSize: number;
-        ruleCount: number;
-      };
-    } = {};
-
-    let totalClassRules = 0;
-    let totalClassCSSSize = 0;
-
-    tastyClasses.forEach((className) => {
-      const classCSS = this.getCSSForClass(className);
-      const classRuleCount = (classCSS.match(/\{[^}]*\}/g) || []).length;
-      breakdown[className] = {
-        css: classCSS,
-        cssSize: classCSS.length,
-        ruleCount: classRuleCount,
-      };
-      totalClassRules += classRuleCount;
-      totalClassCSSSize += classCSS.length;
-    });
-
-    // Calculate statistics
-    const stats = {
-      totalClasses: tastyClasses.length,
-      totalRules: totalClassRules,
-      totalCSSSize: totalClassCSSSize,
-      averageRulesPerClass:
-        tastyClasses.length > 0 ? totalClassRules / tastyClasses.length : 0,
-      averageCSSPerClass:
-        tastyClasses.length > 0 ? totalClassCSSSize / tastyClasses.length : 0,
-    };
-
-    const result = {
-      element,
-      tastyClasses,
-      css: prettifiedCSS,
-      cssSize: fullCSS.length,
-      ruleCount,
-      breakdown,
-      stats,
-    };
-
-    console.group(`🔍 Detailed Tasty Inspection`);
-    console.log('Element:', element);
-    console.log('📊 Overview:');
-    console.log(`  • Tasty classes: ${stats.totalClasses}`);
-    console.log(`  • Total rules applied: ${ruleCount}`);
-    console.log(`  • Total CSS size: ${fullCSS.length} characters`);
-    console.log('🏷️ Classes:', tastyClasses);
-    console.log('📈 Statistics:');
-    console.log(
-      `  • Rules per class (avg): ${stats.averageRulesPerClass.toFixed(1)}`,
-    );
-    console.log(
-      `  • CSS per class (avg): ${stats.averageCSSPerClass.toFixed(0)} chars`,
-    );
-    console.log('🎨 Element CSS:\n' + prettifiedCSS);
-    console.log('🔨 CSS breakdown by class:');
-    Object.entries(breakdown).forEach(([className, data]) => {
-      console.log(
-        `  ${className}: ${data.ruleCount} rules, ${data.cssSize} chars`,
-      );
-    });
-    console.groupEnd();
-
-    return result;
-  },
-
-  /**
-   * Get CSS for active classes only
-   */
-  getActiveCSS(): string {
-    const usage = this.getClassUsage();
-    return this.getCSSForClasses(usage.activeClasses);
-  },
-
-  /**
-   * Get CSS for cached classes only
-   */
-  getCachedCSS(): string {
-    const usage = this.getClassUsage();
-    return this.getCSSForClasses(usage.cachedClasses);
-  },
-
-  /**
-   * Get all defined @property custom properties
-   */
-  getDefinedProperties(): string[] {
-    const registry = (injector.instance as any)['sheetManager'].getRegistry(
-      document,
-    );
-    if (!registry?.injectedProperties) {
-      return [];
-    }
-    return Array.from(registry.injectedProperties as Set<string>).sort();
-  },
-
-  /**
-   * Get all defined keyframes
-   */
-  getDefinedKeyframes(): {
-    name: string;
-    refCount: number;
-    cssText?: string;
-  }[] {
-    const registry = (injector.instance as any)['sheetManager'].getRegistry(
-      document,
-    );
-    if (!registry?.keyframesCache) {
-      return [];
-    }
-
-    const keyframes: {
-      name: string;
-      refCount: number;
-      cssText?: string;
-    }[] = [];
-
-    for (const [cacheKey, entry] of registry.keyframesCache.entries()) {
-      keyframes.push({
-        name: entry.name,
-        refCount: entry.refCount,
-        cssText: entry.info?.cssText,
-      });
-    }
-
-    return keyframes.sort((a, b) => a.name.localeCompare(b.name));
-  },
-
-  /**
-   * Check if a specific @property is defined
-   */
-  isPropertyDefined(propertyName: string): boolean {
-    return injector.instance.isPropertyDefined(propertyName);
-  },
-
-  /**
-   * Check if a specific keyframe is defined
-   */
-  isKeyframeDefined(keyframeName: string): boolean {
-    const registry = (injector.instance as any)['sheetManager'].getRegistry(
-      document,
-    );
-    if (!registry?.keyframesCache) {
-      return false;
-    }
-
-    for (const entry of registry.keyframesCache.values()) {
-      if (entry.name === keyframeName) {
-        return true;
-      }
-    }
-    return false;
-  },
-
-  /**
-   * Get detailed cleanup statistics history
-   */
-  getCleanupHistory(): {
-    totalCleanups: number;
-    totalClassesDeleted: number;
-    totalCssDeleted: number;
-    totalRulesDeleted: number;
-    cleanupHistory: Array<{
-      timestamp: number;
-      date: string;
-      classesDeleted: number;
-      cssSize: number;
-      rulesDeleted: number;
-    }>;
-  } {
-    const registry = (injector.instance as any)['sheetManager'].getRegistry(
-      document,
-    );
-
-    if (!registry?.metrics?.cleanupHistory) {
-      return {
-        totalCleanups: 0,
-        totalClassesDeleted: 0,
-        totalCssDeleted: 0,
-        totalRulesDeleted: 0,
-        cleanupHistory: [],
-      };
-    }
-
-    const history = registry.metrics.cleanupHistory;
-    const totalClassesDeleted = history.reduce(
-      (sum, cleanup) => sum + cleanup.classesDeleted,
-      0,
-    );
-    const totalCssDeleted = history.reduce(
-      (sum, cleanup) => sum + cleanup.cssSize,
-      0,
-    );
-    const totalRulesDeleted = history.reduce(
-      (sum, cleanup) => sum + cleanup.rulesDeleted,
-      0,
-    );
-
-    return {
-      totalCleanups: history.length,
-      totalClassesDeleted,
-      totalCssDeleted,
-      totalRulesDeleted,
-      cleanupHistory: history.map((cleanup) => ({
-        ...cleanup,
-        date: new Date(cleanup.timestamp).toISOString(),
-      })),
-    };
-  },
-
-  /**
-   * Get cleanup statistics summary
-   */
-  getCleanupSummary(): {
-    enabled: boolean;
-    totalCleanups: number;
-    totalClassesDeleted: number;
-    totalCssDeleted: number;
-    totalRulesDeleted: number;
-    averageClassesPerCleanup: number;
-    averageCssPerCleanup: number;
-    averageRulesPerCleanup: number;
-    lastCleanup?: {
-      timestamp: number;
-      date: string;
-      classesDeleted: number;
-      cssSize: number;
-      rulesDeleted: number;
-    };
-  } {
-    const registry = (injector.instance as any)['sheetManager'].getRegistry(
-      document,
-    );
-
-    if (!registry?.metrics) {
-      return {
-        enabled: false,
-        totalCleanups: 0,
-        totalClassesDeleted: 0,
-        totalCssDeleted: 0,
-        totalRulesDeleted: 0,
-        averageClassesPerCleanup: 0,
-        averageCssPerCleanup: 0,
-        averageRulesPerCleanup: 0,
-      };
-    }
-
-    const history = registry.metrics.cleanupHistory || [];
-    const totalClassesDeleted = history.reduce(
-      (sum, cleanup) => sum + cleanup.classesDeleted,
-      0,
-    );
-    const totalCssDeleted = history.reduce(
-      (sum, cleanup) => sum + cleanup.cssSize,
-      0,
-    );
-    const totalRulesDeleted = history.reduce(
-      (sum, cleanup) => sum + cleanup.rulesDeleted,
-      0,
-    );
-    const totalCleanups = history.length;
-
-    const lastCleanup =
-      history.length > 0 ? history[history.length - 1] : undefined;
-
-    return {
-      enabled: true,
-      totalCleanups,
-      totalClassesDeleted,
-      totalCssDeleted,
-      totalRulesDeleted,
-      averageClassesPerCleanup:
-        totalCleanups > 0 ? totalClassesDeleted / totalCleanups : 0,
-      averageCssPerCleanup:
-        totalCleanups > 0 ? totalCssDeleted / totalCleanups : 0,
-      averageRulesPerCleanup:
-        totalCleanups > 0 ? totalRulesDeleted / totalCleanups : 0,
-      lastCleanup: lastCleanup
-        ? {
-            ...lastCleanup,
-            date: new Date(lastCleanup.timestamp).toISOString(),
-          }
-        : undefined,
-    };
-  },
-
-  /**
-   * Log cleanup history to console in a readable format
-   */
-  logCleanupHistory(): void {
-    const cleanupData = this.getCleanupHistory();
-
-    if (cleanupData.totalCleanups === 0) {
-      console.log('🧹 No cleanup history available');
-      return;
-    }
-
-    console.group(`🧹 Cleanup History (${cleanupData.totalCleanups} cleanups)`);
-    console.log('📊 Total Statistics:');
-    console.log(
-      `  • Total classes deleted: ${cleanupData.totalClassesDeleted}`,
-    );
-    console.log(
-      `  • Total CSS deleted: ${cleanupData.totalCssDeleted} characters`,
-    );
-    console.log(`  • Total rules deleted: ${cleanupData.totalRulesDeleted}`);
-
-    console.log('\n📅 Cleanup Sessions:');
-    cleanupData.cleanupHistory.forEach((cleanup, index) => {
-      console.log(`  ${index + 1}. ${cleanup.date}`);
-      console.log(`     • Classes: ${cleanup.classesDeleted}`);
-      console.log(`     • CSS: ${cleanup.cssSize} chars`);
-      console.log(`     • Rules: ${cleanup.rulesDeleted}`);
-    });
-
-    console.groupEnd();
-  },
-
-  /**
-   * Get all global CSS rules (non-tasty class selectors)
-   */
-  getGlobalCSS(): string {
-    const allCSS = this.getAllCSS();
-
-    // Split CSS into rules and filter out tasty class rules
-    const rules = this.extractCSSRules(allCSS);
-    const globalRules = rules.filter((rule) => {
-      // Filter out rules that only contain tasty classes (t + digits)
-      const selectors = rule.selector.split(',').map((s) => s.trim());
-      return !selectors.every((selector) => {
-        // Check if selector is purely a tasty class or contains only tasty classes
-        const cleanSelector = selector.replace(/[.#:\s>+~[\]()]/g, ' ');
-        const parts = cleanSelector.split(/\s+/).filter(Boolean);
-        return parts.length > 0 && parts.every((part) => /^t\d+$/.test(part));
-      });
-    });
-
-    const globalCSS = globalRules
-      .map((rule) => `${rule.selector} { ${rule.declarations} }`)
-      .join('\n');
-    return prettifyCSS(globalCSS);
-  },
-
-  /**
-   * Log global CSS to console
-   */
-  logGlobalCSS(): void {
-    const globalCSS = this.getGlobalCSS();
-    if (!globalCSS.trim()) {
-      console.log('🌍 No global CSS found');
-      return;
-    }
-    this.logCSS(globalCSS, 'Global CSS (createGlobalStyle)');
-  },
-
-  /**
-   * Get global CSS rules breakdown with detailed analysis
-   */
-  getGlobalCSSBreakdown(): {
-    globalRules: Array<{
-      selector: string;
-      declarations: string;
-      ruleCount: number;
-    }>;
-    totalRules: number;
-    totalCSSSize: number;
-    css: string;
-    selectors: {
-      elements: string[];
-      classes: string[];
-      ids: string[];
-      pseudoClasses: string[];
-      mediaQueries: string[];
-      keyframes: string[];
-      other: string[];
-    };
-  } {
-    const allCSS = this.getAllCSS();
-    const rules = this.extractCSSRules(allCSS);
-
-    const globalRules = rules.filter((rule) => {
-      const selectors = rule.selector.split(',').map((s) => s.trim());
-      return !selectors.every((selector) => {
-        const cleanSelector = selector.replace(/[.#:\s>+~[\]()]/g, ' ');
-        const parts = cleanSelector.split(/\s+/).filter(Boolean);
-        return parts.length > 0 && parts.every((part) => /^t\d+$/.test(part));
-      });
-    });
-
-    const breakdown = globalRules.map((rule) => ({
-      selector: rule.selector,
-      declarations: rule.declarations,
-      ruleCount: 1,
-    }));
-
-    const css = globalRules
-      .map((rule) => `${rule.selector} { ${rule.declarations} }`)
-      .join('\n');
+    const css = getCssTextForNode(element, { root });
     const prettifiedCSS = prettifyCSS(css);
+    const ruleCount = (css.match(/\{[^}]*\}/g) || []).length;
+
+    return {
+      element,
+      classes: tastyClasses,
+      css: prettifiedCSS,
+      size: css.length,
+      rules: ruleCount,
+    };
+  },
+
+  // 3) Cache + metrics at a glance
+  cache(opts?: {
+    root?: Document | ShadowRoot;
+    includeHistory?: boolean;
+  }): CacheStatus {
+    const { root = document } = opts || {};
+    const activeClasses = findAllTastyClasses(root);
+    const allClasses = findAllStyledClasses(root);
+    // Get unused classes (refCount = 0) from the registry
+    const registry = (injector.instance as any)['sheetManager']?.getRegistry(
+      root,
+    );
+    const unusedClasses: string[] = registry
+      ? Array.from(
+          registry.refCounts.entries() as IterableIterator<[string, number]>,
+        )
+          .filter(([, refCount]: [string, number]) => refCount === 0)
+          .map(([className]: [string, number]) => className)
+      : [];
+
+    return {
+      classes: {
+        active: activeClasses,
+        unused: unusedClasses,
+        all: [...activeClasses, ...unusedClasses],
+      },
+      metrics: injector.instance.getMetrics({ root }),
+    };
+  },
+
+  // 4) Cleanup + metrics utilities
+  cleanup(opts?: { root?: Document | ShadowRoot }): void {
+    const { root } = opts || {};
+    injector.instance.cleanup(root);
+  },
+
+  metrics(opts?: { root?: Document | ShadowRoot }): CacheMetrics | null {
+    const { root } = opts || {};
+    return injector.instance.getMetrics({ root });
+  },
+
+  resetMetrics(opts?: { root?: Document | ShadowRoot }): void {
+    const { root } = opts || {};
+    injector.instance.resetMetrics({ root });
+  },
+
+  // 5) Tasty global CSS and selector analysis
+  global(opts?: {
+    root?: Document | ShadowRoot;
+    log?: boolean;
+  }): GlobalBreakdown {
+    const { root = document, log = false } = opts || {};
+    const css = getGlobalCSS(root);
+    const rules = extractCSSRules(css);
 
     // Analyze selectors
     const selectors = {
@@ -927,10 +604,8 @@ export const tastyDebug = {
       other: [] as string[],
     };
 
-    globalRules.forEach((rule) => {
+    rules.forEach((rule) => {
       const selector = rule.selector;
-
-      // Categorize selectors
       if (selector.startsWith('@media')) {
         selectors.mediaQueries.push(selector);
       } else if (selector.startsWith('@keyframes')) {
@@ -956,293 +631,395 @@ export const tastyDebug = {
       }
     });
 
-    return {
-      globalRules: breakdown,
-      totalRules: breakdown.length,
+    const result = {
+      css,
+      totalRules: rules.length,
       totalCSSSize: css.length,
-      css: prettifiedCSS,
       selectors,
     };
+
+    if (log) {
+      console.group(`🌍 Global CSS (${result.totalRules} rules)`);
+      console.log(`📊 Size: ${result.totalCSSSize} characters`);
+      console.log('🎯 Selector breakdown:', result.selectors);
+      console.log('🎨 CSS:\n' + result.css);
+      console.groupEnd();
+    }
+
+    return result;
   },
 
-  /**
-   * Log detailed global CSS breakdown
-   */
-  logGlobalCSSBreakdown(): void {
-    const breakdown = this.getGlobalCSSBreakdown();
+  // 6) Defined @property and keyframes
+  defs(opts?: { root?: Document | ShadowRoot }): Definitions {
+    const { root = document } = opts || {};
 
-    if (breakdown.totalRules === 0) {
-      console.log('🌍 No global CSS rules found');
+    // Get properties from injector if available, otherwise scan CSS
+    let properties: string[] = [];
+    try {
+      const registry = (injector.instance as any)['sheetManager']?.getRegistry(
+        root,
+      );
+      if (registry?.injectedProperties) {
+        properties = Array.from(
+          registry.injectedProperties as Set<string>,
+        ).sort();
+      }
+    } catch {
+      // Fallback: scan CSS for @property rules
+      const allCSS = injector.instance.getCssText({ root });
+      const propRegex = /@property\s+(--[a-z0-9-]+)/gi;
+      const propSet = new Set<string>();
+      let match;
+      while ((match = propRegex.exec(allCSS)) !== null) {
+        propSet.add(match[1]);
+      }
+      properties = Array.from(propSet).sort();
+    }
+
+    // Get keyframes
+    let keyframes: Array<{ name: string; refCount: number }> = [];
+    try {
+      const registry = (injector.instance as any)['sheetManager']?.getRegistry(
+        root,
+      );
+      if (registry) {
+        for (const entry of registry.keyframesCache.values()) {
+          keyframes.push({
+            name: entry.name,
+            refCount: entry.refCount,
+          });
+        }
+        keyframes.sort((a, b) => a.name.localeCompare(b.name));
+      }
+    } catch {
+      // Fallback: scan CSS for @keyframes rules
+      const allCSS = injector.instance.getCssText({ root });
+      const keyframesRegex = /@keyframes\s+([a-zA-Z0-9_-]+)/gi;
+      const keyframesSet = new Set<string>();
+      let match;
+      while ((match = keyframesRegex.exec(allCSS)) !== null) {
+        keyframesSet.add(match[1]);
+      }
+      keyframes = Array.from(keyframesSet)
+        .sort()
+        .map((name) => ({ name, refCount: 1 }));
+    }
+
+    return { properties, keyframes };
+  },
+
+  // 7) One-shot overview
+  summary(opts?: SummaryOptions): Summary {
+    const { root = document, log = false, includePageCSS = false } = opts || {};
+    const cacheStatus = this.cache({ root });
+    const globalBreakdown = this.global({ root });
+    const definitions = this.defs({ root });
+    const metrics = this.metrics({ root });
+
+    const activeCSS = this.css('active', { root, prettify: false });
+    const unusedCSS = this.css('unused', { root, prettify: false });
+    const allCSS = this.css('all', { root, prettify: false });
+
+    // Build cleanup summary from metrics
+    const cleanupSummary = {
+      enabled: !!metrics,
+      totalCleanups: metrics?.cleanupHistory?.length || 0,
+      totalClassesDeleted:
+        metrics?.cleanupHistory?.reduce(
+          (sum, c) => sum + c.classesDeleted,
+          0,
+        ) || 0,
+      totalCssDeleted:
+        metrics?.cleanupHistory?.reduce((sum, c) => sum + c.cssSize, 0) || 0,
+      totalRulesDeleted:
+        metrics?.cleanupHistory?.reduce((sum, c) => sum + c.rulesDeleted, 0) ||
+        0,
+      averageClassesPerCleanup: 0,
+      averageCssPerCleanup: 0,
+      averageRulesPerCleanup: 0,
+      lastCleanup: undefined as any,
+    };
+
+    if (cleanupSummary.totalCleanups > 0) {
+      cleanupSummary.averageClassesPerCleanup =
+        cleanupSummary.totalClassesDeleted / cleanupSummary.totalCleanups;
+      cleanupSummary.averageCssPerCleanup =
+        cleanupSummary.totalCssDeleted / cleanupSummary.totalCleanups;
+      cleanupSummary.averageRulesPerCleanup =
+        cleanupSummary.totalRulesDeleted / cleanupSummary.totalCleanups;
+
+      const lastCleanup =
+        metrics?.cleanupHistory?.[metrics.cleanupHistory.length - 1];
+      if (lastCleanup) {
+        cleanupSummary.lastCleanup = {
+          ...lastCleanup,
+          date: new Date(lastCleanup.timestamp).toISOString(),
+        };
+      }
+    }
+
+    let page: Summary['page'] | undefined;
+    if (includePageCSS) {
+      const pageStats = getPageStats({ root, includeCrossOrigin: true });
+      page = {
+        ...pageStats,
+        css:
+          includePageCSS === 'all'
+            ? getPageCSS({ root, includeCrossOrigin: true })
+            : undefined,
+      };
+    }
+
+    const summary: Summary = {
+      activeClasses: cacheStatus.classes.active,
+      unusedClasses: cacheStatus.classes.unused,
+      totalStyledClasses: cacheStatus.classes.all,
+      activeCSSSize: activeCSS.length,
+      unusedCSSSize: unusedCSS.length,
+      totalCSSSize: allCSS.length,
+      activeCSS: prettifyCSS(activeCSS),
+      unusedCSS: prettifyCSS(unusedCSS),
+      allCSS: prettifyCSS(allCSS),
+      globalCSS: globalBreakdown.css,
+      globalCSSSize: globalBreakdown.totalCSSSize,
+      globalRuleCount: globalBreakdown.totalRules,
+      page,
+      metrics,
+      definedProperties: definitions.properties,
+      definedKeyframes: definitions.keyframes,
+      propertyCount: definitions.properties.length,
+      keyframeCount: definitions.keyframes.length,
+      cleanupSummary,
+    };
+
+    if (log) {
+      console.group('🎨 Comprehensive Tasty Debug Summary');
+      console.log(`📊 Style Cache Status:`);
+      console.log(
+        `  • Active classes (in DOM): ${summary.activeClasses.length}`,
+      );
+      console.log(
+        `  • Unused classes (refCount = 0): ${summary.unusedClasses.length}`,
+      );
+      console.log(
+        `  • Total styled classes: ${summary.totalStyledClasses.length}`,
+      );
+      console.log(`💾 CSS Size:`);
+      console.log(`  • Active CSS: ${summary.activeCSSSize} characters`);
+      console.log(`  • Unused CSS: ${summary.unusedCSSSize} characters`);
+      console.log(
+        `  • Global CSS: ${summary.globalCSSSize} characters (${summary.globalRuleCount} rules)`,
+      );
+      console.log(`  • Total CSS: ${summary.totalCSSSize} characters`);
+
+      if (page) {
+        console.log(`📄 Page CSS:`);
+        console.log(`  • Total page CSS: ${page.cssSize} characters`);
+        console.log(`  • Total page rules: ${page.ruleCount}`);
+        console.log(
+          `  • Stylesheets: ${page.stylesheetCount} (${page.skippedStylesheets} skipped)`,
+        );
+      }
+
+      console.log('🏷️ Properties & Keyframes:');
+      console.log(`  • Defined @property: ${summary.propertyCount}`);
+      console.log(`  • Defined @keyframes: ${summary.keyframeCount}`);
+
+      if (metrics) {
+        console.log(`⚡ Performance Metrics:`);
+        console.log(`  • Cache hits: ${metrics.hits}`);
+        console.log(`  • Cache misses: ${metrics.misses}`);
+        console.log(`  • Cached style reuses: ${metrics.unusedHits}`);
+        const hitRate =
+          metrics.hits + metrics.misses > 0
+            ? (
+                ((metrics.hits + (metrics.unusedHits || 0)) /
+                  (metrics.hits + metrics.misses)) *
+                100
+              ).toFixed(1)
+            : '0';
+        console.log(`  • Overall cache hit rate: ${hitRate}%`);
+      }
+
+      console.log('🔍 Details:');
+      console.log('  • Active classes:', summary.activeClasses);
+      console.log('  • Unused classes:', summary.unusedClasses);
+      console.groupEnd();
+    }
+
+    return summary;
+  },
+
+  // 8) Page-level CSS helpers
+  pageCSS(opts?: {
+    root?: Document | ShadowRoot;
+    prettify?: boolean;
+    log?: boolean;
+    includeCrossOrigin?: boolean;
+  }): string {
+    const {
+      root = document,
+      prettify = true,
+      log = false,
+      includeCrossOrigin = true,
+    } = opts || {};
+    const css = getPageCSS({ root, includeCrossOrigin });
+    const result = prettify ? prettifyCSS(css) : css;
+
+    if (log) {
+      console.group('📄 Page CSS (All Stylesheets)');
+      console.log(result || '(empty)');
+      console.groupEnd();
+    }
+
+    return result;
+  },
+
+  pageStats(opts?: {
+    root?: Document | ShadowRoot;
+    includeCrossOrigin?: boolean;
+  }): {
+    cssSize: number;
+    ruleCount: number;
+    stylesheetCount: number;
+    skippedStylesheets: number;
+  } {
+    const { root = document, includeCrossOrigin = true } = opts || {};
+    return getPageStats({ root, includeCrossOrigin });
+  },
+
+  // 9) Install globally
+  install(): void {
+    if (
+      typeof window !== 'undefined' &&
+      (window as any).tastyDebug !== tastyDebug
+    ) {
+      (window as any).tastyDebug = tastyDebug;
+      console.log(
+        '🎨 tastyDebug installed on window. Run tastyDebug.help() for quick start guide.',
+      );
+    }
+  },
+
+  // 10) Beautiful console logging with collapsible CSS
+  log(target: CSSTarget, opts?: CssOptions & { title?: string }): void {
+    const { title, ...cssOpts } = opts || {};
+    const css = tastyDebug.css(target, cssOpts);
+
+    if (!css.trim()) {
+      console.warn(`🎨 No CSS found for target: ${String(target)}`);
       return;
     }
 
-    console.group(`🌍 Global CSS Breakdown (${breakdown.totalRules} rules)`);
-    console.log(`📊 Statistics:`);
-    console.log(`  • Total global rules: ${breakdown.totalRules}`);
-    console.log(`  • Total CSS size: ${breakdown.totalCSSSize} characters`);
+    const targetStr = Array.isArray(target)
+      ? target.join(', ')
+      : String(target);
+    const displayTitle = title || `CSS for "${targetStr}"`;
 
-    console.log(`🎯 Selector Analysis:`);
-    if (breakdown.selectors.elements.length > 0) {
-      console.log(
-        `  • Element selectors: ${breakdown.selectors.elements.length}`,
-        breakdown.selectors.elements.slice(0, 5),
-      );
-    }
-    if (breakdown.selectors.classes.length > 0) {
-      console.log(
-        `  • Class selectors: ${breakdown.selectors.classes.length}`,
-        breakdown.selectors.classes.slice(0, 5),
-      );
-    }
-    if (breakdown.selectors.ids.length > 0) {
-      console.log(
-        `  • ID selectors: ${breakdown.selectors.ids.length}`,
-        breakdown.selectors.ids.slice(0, 5),
-      );
-    }
-    if (breakdown.selectors.pseudoClasses.length > 0) {
-      console.log(
-        `  • Pseudo-class selectors: ${breakdown.selectors.pseudoClasses.length}`,
-        breakdown.selectors.pseudoClasses.slice(0, 5),
-      );
-    }
-    if (breakdown.selectors.mediaQueries.length > 0) {
-      console.log(
-        `  • Media queries: ${breakdown.selectors.mediaQueries.length}`,
-        breakdown.selectors.mediaQueries.slice(0, 3),
-      );
-    }
-    if (breakdown.selectors.keyframes.length > 0) {
-      console.log(
-        `  • Keyframe rules: ${breakdown.selectors.keyframes.length}`,
-        breakdown.selectors.keyframes.slice(0, 3),
-      );
-    }
-    if (breakdown.selectors.other.length > 0) {
-      console.log(
-        `  • Other selectors: ${breakdown.selectors.other.length}`,
-        breakdown.selectors.other.slice(0, 5),
-      );
+    // Get some stats about the CSS
+    const lines = css.split('\n').length;
+    const size = new Blob([css]).size;
+    const sizeStr = size > 1024 ? `${(size / 1024).toFixed(1)}KB` : `${size}B`;
+
+    // Count CSS rules (blocks with opening braces)
+    const ruleCount = (css.match(/\{/g) || []).length;
+
+    console.group(
+      `🎨 ${displayTitle} (${ruleCount} rules, ${lines} lines, ${sizeStr})`,
+    );
+
+    // Detect sub-elements in CSS
+    const subElementMatches = css.match(/\[data-element="([^"]+)"\]/g) || [];
+    const subElements = [
+      ...new Set(
+        subElementMatches
+          .map((match) => match.match(/\[data-element="([^"]+)"\]/)?.[1])
+          .filter(Boolean),
+      ),
+    ];
+
+    if (subElements.length > 0) {
+      console.log(`🧩 Sub-elements found: ${subElements.join(', ')}`);
+
+      // Show stats and CSS for each sub-element
+      subElements.forEach((element) => {
+        const elementSelector = `[data-element="${element}"]`;
+        const elementRegex = new RegExp(
+          `[^}]*\\[data-element="${element.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"\\][^{]*\\{[^}]*\\}`,
+          'gm',
+        );
+        const elementCSS = (css.match(elementRegex) || []).join('\n');
+
+        if (elementCSS) {
+          const elementRules = (elementCSS.match(/\{/g) || []).length;
+          const elementLines = elementCSS.split('\n').length;
+          const elementSize = new Blob([elementCSS]).size;
+          const elementSizeStr =
+            elementSize > 1024
+              ? `${(elementSize / 1024).toFixed(1)}KB`
+              : `${elementSize}B`;
+
+          console.groupCollapsed(
+            `🧩 ${element} (${elementRules} rules, ${elementLines} lines, ${elementSizeStr})`,
+          );
+          console.log(
+            `%c${elementCSS}`,
+            'color: #666; font-family: monospace; font-size: 12px; white-space: pre;',
+          );
+          console.groupEnd();
+        }
+      });
     }
 
-    console.log(`🎨 CSS Output:`);
-    console.log(breakdown.css);
+    // Full CSS in collapsible group (hidden by default)
+    console.groupCollapsed('📄 Full CSS (click to expand)');
+    console.log(
+      `%c${css}`,
+      'color: #666; font-family: monospace; font-size: 12px; white-space: pre;',
+    );
+    console.groupEnd();
+
     console.groupEnd();
   },
 
-  /**
-   * Helper to extract CSS rules from raw CSS text
-   */
-  extractCSSRules(
-    css: string,
-  ): Array<{ selector: string; declarations: string }> {
-    const rules: Array<{ selector: string; declarations: string }> = [];
-
-    // Remove comments
-    let cleanCSS = css.replace(/\/\*[\s\S]*?\*\//g, '');
-
-    // Enhanced parser that handles nested CSS properly
-    this.parseCSSSafe(cleanCSS, rules);
-
-    return rules;
-  },
-
-  /**
-   * Safe CSS parser that handles nested rules properly
-   */
-  parseCSSSafe(
-    css: string,
-    rules: Array<{ selector: string; declarations: string }>,
-  ): void {
-    let i = 0;
-
-    while (i < css.length) {
-      // Skip whitespace
-      while (i < css.length && /\s/.test(css[i])) {
-        i++;
-      }
-
-      if (i >= css.length) break;
-
-      // Find selector start
-      const selectorStart = i;
-      let braceDepth = 0;
-      let inString = false;
-      let stringChar = '';
-
-      // Find opening brace for this rule
-      while (i < css.length) {
-        const char = css[i];
-
-        if (inString) {
-          if (char === stringChar && css[i - 1] !== '\\') {
-            inString = false;
-          }
-        } else {
-          if (char === '"' || char === "'") {
-            inString = true;
-            stringChar = char;
-          } else if (char === '{') {
-            braceDepth++;
-            if (braceDepth === 1) {
-              break; // Found opening brace
-            }
-          }
-        }
-        i++;
-      }
-
-      if (i >= css.length) break;
-
-      const selector = css.substring(selectorStart, i).trim();
-      i++; // Skip opening brace
-
-      // Find matching closing brace and extract content
-      const contentStart = i;
-      braceDepth = 1;
-      inString = false;
-
-      while (i < css.length && braceDepth > 0) {
-        const char = css[i];
-
-        if (inString) {
-          if (char === stringChar && css[i - 1] !== '\\') {
-            inString = false;
-          }
-        } else {
-          if (char === '"' || char === "'") {
-            inString = true;
-            stringChar = char;
-          } else if (char === '{') {
-            braceDepth++;
-          } else if (char === '}') {
-            braceDepth--;
-          }
-        }
-        i++;
-      }
-
-      const content = css.substring(contentStart, i - 1).trim();
-
-      // Check if content has nested rules
-      if (content.includes('{') && content.includes('}')) {
-        // Extract declarations (before any nested rules)
-        const declarationMatch = content.match(/^([^{]*)/);
-        const declarations = declarationMatch ? declarationMatch[1].trim() : '';
-
-        if (declarations) {
-          rules.push({ selector, declarations });
-        }
-
-        // Extract and parse nested rules recursively
-        const nestedStart = content.indexOf('{');
-        if (nestedStart !== -1) {
-          const nestedCSS = content.substring(nestedStart);
-          this.parseCSSSafe(nestedCSS, rules);
-        }
-      } else if (content.trim()) {
-        // Simple rule with just declarations
-        rules.push({ selector, declarations: content });
-      }
-    }
-  },
-
-  /**
-   * Debug method to see raw CSS content and rule parsing
-   */
-  debugRawCSS(): void {
-    const allCSS = this.getAllCSS();
-    console.group('🔍 Raw CSS Debug');
-    console.log('📝 Raw CSS length:', allCSS.length);
-    console.log('📝 Raw CSS preview (first 2000 chars):');
-    console.log(allCSS.substring(0, 2000));
-
-    const rules = this.extractCSSRules(allCSS);
-    console.log('📊 Total extracted rules:', rules.length);
-    console.log('📋 First 10 rules:');
-    rules.slice(0, 10).forEach((rule, i) => {
-      console.log(`  ${i + 1}. ${rule.selector}`);
-    });
-
-    // Show some examples of what gets filtered as tasty vs global
-    const tastyRules = rules.filter((rule) => {
-      const selectors = rule.selector.split(',').map((s) => s.trim());
-      return selectors.every((selector) => {
-        const cleanSelector = selector.replace(/[.#:\s>+~[\]()]/g, ' ');
-        const parts = cleanSelector.split(/\s+/).filter(Boolean);
-        return parts.length > 0 && parts.every((part) => /^t\d+$/.test(part));
-      });
-    });
-
-    const globalRules = rules.filter((rule) => {
-      const selectors = rule.selector.split(',').map((s) => s.trim());
-      return !selectors.every((selector) => {
-        const cleanSelector = selector.replace(/[.#:\s>+~[\]()]/g, ' ');
-        const parts = cleanSelector.split(/\s+/).filter(Boolean);
-        return parts.length > 0 && parts.every((part) => /^t\d+$/.test(part));
-      });
-    });
-
-    console.log('🏷️ Tasty class rules found:', tastyRules.length);
-    console.log('🌍 Global rules found:', globalRules.length);
-
-    if (globalRules.length > 0) {
-      console.log('📋 First 5 global rules:');
-      globalRules.slice(0, 5).forEach((rule, i) => {
-        console.log(`  ${i + 1}. ${rule.selector}`);
-      });
-    }
-
+  // 11) Show help and usage examples
+  help(): void {
+    console.group('🎨 tastyDebug - Quick Start Guide');
+    console.log('💡 Essential commands:');
+    console.log(
+      '  • tastyDebug.summary({ log: true }) - comprehensive overview',
+    );
+    console.log('  • tastyDebug.log("active") - beautiful CSS display');
+    console.log('  • tastyDebug.css("active") - get active CSS');
+    console.log(
+      '  • tastyDebug.inspect(".my-element") - detailed element inspection',
+    );
+    console.log('  • tastyDebug.global({ log: true }) - global CSS analysis');
+    console.log('  • tastyDebug.cache() - cache status');
+    console.log('  • tastyDebug.defs() - defined properties & keyframes');
+    console.log('  • tastyDebug.pageCSS({ log: true }) - all page CSS');
+    console.log('');
+    console.log('📖 Common targets for css()/log():');
+    console.log('  • "all" - all tasty CSS + global CSS');
+    console.log('  • "active" - CSS for classes in DOM');
+    console.log('  • "unused" - CSS for classes with refCount = 0');
+    console.log('  • "global" - only global CSS (createGlobalStyle)');
+    console.log('  • "page" - ALL page CSS (including non-tasty)');
+    console.log('  • "t123" - specific tasty class');
+    console.log('  • [".my-selector"] - CSS selector');
+    console.log('');
+    console.log('🔧 Available options:');
+    console.log('  • { log: true } - auto-log results to console');
+    console.log('  • { title: "Custom" } - custom title for log()');
+    console.log('  • { root: shadowRoot } - target Shadow DOM');
+    console.log('  • { prettify: false } - skip CSS formatting');
     console.groupEnd();
   },
 };
 
 /**
- * Check if we're in a development environment at runtime
- * Uses bracket notation to avoid bundler compilation
- */
-function isDevelopmentEnvironment(): boolean {
-  if (typeof process === 'undefined') return false;
-
-  // Use bracket notation to avoid bundler replacement
-  const nodeEnv = process.env?.['NODE_ENV'];
-  return nodeEnv === 'development' || nodeEnv !== 'production';
-}
-
-/**
- * Install tastyDebug on window object for easy access in browser console
- * Only in non-production environments
- */
-export function installGlobalDebug(options?: { force?: boolean }): void {
-  const shouldInstall = options?.force || isDevelopmentEnvironment();
-
-  if (
-    typeof window !== 'undefined' &&
-    shouldInstall &&
-    (window as any).tastyDebug !== tastyDebug
-  ) {
-    (window as any).tastyDebug = tastyDebug;
-    console.log(
-      '🎨 tastyDebug installed on window.\n' +
-        '💡 Quick start:\n' +
-        '  • tastyDebug.getSummary() - comprehensive overview with properties, keyframes & global CSS\n' +
-        '  • tastyDebug.inspect(".my-element") - detailed element inspection\n' +
-        '  • tastyDebug.getGlobalCSS() - get all global CSS from createGlobalStyle()\n' +
-        '  • tastyDebug.logGlobalCSS() - log global CSS to console\n' +
-        '  • tastyDebug.logGlobalCSSBreakdown() - detailed global CSS analysis\n' +
-        '  • tastyDebug.debugRawCSS() - debug raw CSS parsing and filtering\n' +
-        '  • tastyDebug.getDefinedProperties() - list all @property definitions\n' +
-        '  • tastyDebug.getDefinedKeyframes() - list all keyframe definitions\n' +
-        '  • tastyDebug.getActiveCSS() / getCachedCSS() - get specific CSS\n' +
-        '  • tastyDebug.getCleanupSummary() - cleanup statistics overview\n' +
-        '  • tastyDebug.logCleanupHistory() - detailed cleanup history',
-    );
-  }
-}
-
-/**
  * Auto-install in development
  */
-if (typeof window !== 'undefined' && isDevelopmentEnvironment()) {
-  installGlobalDebug();
+if (typeof window !== 'undefined' && isDevEnv()) {
+  tastyDebug.install();
 }

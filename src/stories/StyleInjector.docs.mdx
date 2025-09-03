@@ -1,0 +1,474 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="tasty/Style Injector" />
+
+# Tasty Style Injector
+
+A high-performance CSS-in-JS solution that powers the Tasty design system with efficient style injection, automatic cleanup, and first-class SSR support.
+
+---
+
+## 🚀 Overview
+
+The Style Injector is the core engine behind Tasty's styling system, providing:
+
+- **🔄 Hash-based deduplication** - Identical CSS gets the same className
+- **📊 Reference counting** - Automatic cleanup when components unmount (refCount = 0)
+- **🎯 CSS nesting flattening** - Handles `&`, `.Class`, `SubElement` patterns
+- **🎬 Keyframes injection** - First-class `@keyframes` support with immediate disposal
+- **🧹 Smart cleanup** - CSS rules batched cleanup, keyframes disposed immediately
+- **🖥️ SSR support** - Deterministic class names and CSS extraction
+- **🌙 Multiple roots** - Works with Document and ShadowRoot
+- **⚡ Non-stacking cleanups** - Prevents timeout accumulation for better performance
+
+> **💡 Note:** This is internal infrastructure that powers Tasty components. Most developers will interact with the higher-level `tasty()` API instead.
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   tasty()       │────│  Style Injector  │────│  Sheet Manager  │
+│   components    │    │                  │    │                 │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+         │                        │                       │
+         │                        │                       │
+         ▼                        ▼                       ▼
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│  Style Results  │    │ Keyframes Manager│    │  Root Registry  │
+│  (CSS rules)    │    │                  │    │                 │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+         │                                            │
+         │                                            │
+         ▼                                            ▼
+┌─────────────────┐                             ┌─────────────────┐
+│   Hash Cache    │                             │ <style> elements│
+│   Deduplication │                             │ CSSStyleSheet   │
+└─────────────────┘                             └─────────────────┘
+```
+
+---
+
+## 📖 Core API
+
+### `inject(rules, options?): InjectResult`
+
+Injects CSS rules and returns a className with dispose function.
+
+```typescript
+import { inject } from '@cube-dev/ui-kit/tasty/injector';
+
+// Component styling - generates tasty class names
+const result = inject([{
+  selector: '.t-abc123',
+  declarations: 'color: red; padding: 10px;',
+}]);
+
+console.log(result.className); // 't-abc123'
+
+// Cleanup when component unmounts (refCount decremented)
+result.dispose();
+```
+
+### `injectGlobal(rules, options?): { dispose: () => void }`
+
+Injects global styles that don't reserve tasty class names.
+
+```typescript
+// Global styles - for body, resets, etc.
+const globalResult = injectGlobal([
+  {
+    selector: 'body',
+    declarations: 'margin: 0; font-family: Arial;',
+  },
+  {
+    selector: '.header',
+    declarations: 'background: blue; color: white;',
+    atRules: ['@media (min-width: 768px)'],
+  }
+]);
+
+// Only returns dispose function - no className needed for global styles
+globalResult.dispose();
+```
+
+### `createGlobalStyle<Props>(strings, ...interpolations): ComponentType`
+
+Creates a React component that injects global styles when mounted (similar to styled-components).
+
+```typescript
+import { createGlobalStyle } from '@cube-dev/ui-kit/tasty/injector';
+
+const GlobalReset = createGlobalStyle<{ theme: 'dark' | 'light' }>`
+  body {
+    margin: 0;
+    background: ${props => props.theme === 'dark' ? '#000' : '#fff'};
+    color: ${props => props.theme === 'dark' ? '#fff' : '#000'};
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+`;
+
+// Usage in React
+<GlobalReset theme="dark" />
+```
+
+### `createInjector(config?): StyleInjector`
+
+Creates an isolated injector instance with custom configuration.
+
+```typescript
+import { createInjector } from '@cube-dev/ui-kit/tasty/injector';
+
+// Create isolated instance for testing
+const testInjector = createInjector({
+  devMode: true,
+  forceTextInjection: true,
+});
+
+const result = testInjector.inject(rules);
+```
+
+### `keyframes(steps, nameOrOptions?): KeyframesResult`
+
+Injects CSS keyframes with automatic deduplication.
+
+```typescript
+// Generated name (k0, k1, k2...)
+const fadeIn = keyframes({
+  from: { opacity: 0 },
+  to: { opacity: 1 },
+});
+
+// Custom name
+const slideIn = keyframes({
+  '0%': 'transform: translateX(-100%)',
+  '100%': 'transform: translateX(0)',
+}, 'slideInAnimation');
+
+// Use in styles
+const animatedComponent = inject([{
+  selector: '.t-animated',
+  declarations: `animation: ${fadeIn} 300ms ease-in;`
+}]);
+
+// Cleanup (keyframes disposed immediately, CSS rules marked for batch cleanup)
+fadeIn.dispose();           // Immediate keyframes deletion from DOM
+animatedComponent.dispose(); // CSS rules marked unused (refCount = 0)
+```
+
+### `configure(config): void`
+
+Configures the global injector instance.
+
+```typescript
+configure({
+  devMode: true,                     // Enable development features (auto-detected)
+  maxRulesPerSheet: 8192,            // Cap rules per stylesheet (default: 8192)
+  unusedStylesThreshold: 500,        // Trigger cleanup threshold (CSS rules only)
+  bulkCleanupDelay: 5000,            // Cleanup delay (ms) - ignored if idleCleanup is true
+  idleCleanup: true,                 // Use requestIdleCallback for cleanup
+  bulkCleanupBatchRatio: 0.5,        // Clean up oldest 50% per batch
+  unusedStylesMinAgeMs: 10000,       // Minimum age before cleanup (ms)
+  forceTextInjection: false,         // Force textContent insertion (auto-detected for tests)
+  nonce: 'csp-nonce',                // CSP nonce for security
+});
+```
+
+**Auto-Detection Features:**
+- `devMode`: Automatically enabled in development environments (detected via `isDevEnv()`)
+- `forceTextInjection`: Automatically enabled in test environments (Jest, Vitest, Mocha, jsdom)
+
+**Configuration Notes:**
+- Most options have sensible defaults and auto-detection
+- `configure()` is optional - the injector works with defaults
+- `unusedStylesMinAgeMs`: Minimum time (ms) a style must remain unused before being eligible for cleanup. Helps prevent removal of styles that might be quickly reactivated.
+
+---
+
+## 🔧 Advanced Features
+
+### Style Result Format
+
+The injector works with `StyleResult` objects from the tasty parser:
+
+```typescript
+interface StyleResult {
+  selector: string;              // CSS selector
+  declarations: string;          // CSS declarations
+  atRules?: string[];           // @media, @supports, etc.
+  nestingLevel?: number;        // Nesting depth for specificity
+}
+
+// Example StyleResult
+const styleRule: StyleResult = {
+  selector: '.t-button',
+  declarations: 'padding: 8px 16px; background: blue; color: white;',
+  atRules: ['@media (min-width: 768px)'],
+  nestingLevel: 0,
+};
+```
+
+### Deduplication & Performance
+
+```typescript
+// Identical CSS rules get the same className
+const button1 = inject([{
+  selector: '.t-btn1',
+  declarations: 'padding: 8px; color: red;'
+}]);
+
+const button2 = inject([{
+  selector: '.t-btn2', 
+  declarations: 'padding: 8px; color: red;' // Same declarations
+}]);
+
+// Both get the same className due to deduplication
+console.log(button1.className === button2.className); // true
+```
+
+### Reference Counting
+
+```typescript
+// Multiple components using the same styles
+const comp1 = inject([commonStyle]);
+const comp2 = inject([commonStyle]);
+const comp3 = inject([commonStyle]);
+
+// Style is kept alive while any component uses it
+comp1.dispose(); // refCount: 3 → 2
+comp2.dispose(); // refCount: 2 → 1
+comp3.dispose(); // refCount: 1 → 0, eligible for bulk cleanup
+
+// Rule exists but refCount = 0 means unused
+// Next inject() with same styles will increment refCount and reuse immediately
+```
+
+### Smart Cleanup System
+
+```typescript
+// CSS rules: Not immediately deleted, marked for bulk cleanup (refCount = 0)
+// Keyframes: Disposed immediately when refCount = 0 (safer for global scope)
+
+configure({
+  unusedStylesThreshold: 100,    // Cleanup when 100+ unused CSS rules
+  bulkCleanupBatchRatio: 0.3,    // Remove oldest 30% each time
+});
+
+// Benefits:
+// - CSS rules: Batch cleanup prevents DOM manipulation overhead  
+// - Keyframes: Immediate cleanup prevents global namespace pollution
+// - Unused styles can be instantly reactivated (just increment refCount)
+```
+
+### Shadow DOM Support
+
+```typescript
+// Works with Shadow DOM
+const shadowRoot = document.createElement('div').attachShadow({ mode: 'open' });
+
+const shadowStyles = inject([{
+  selector: '.shadow-component',
+  declarations: 'color: purple;'
+}], { root: shadowRoot });
+
+// Keyframes in Shadow DOM
+const shadowAnimation = keyframes({
+  from: { opacity: 0 },
+  to: { opacity: 1 }
+}, { root: shadowRoot, name: 'shadowFade' });
+```
+
+---
+
+## 🎭 SSR & Testing
+
+### Server-Side Rendering
+
+```typescript
+import { getCssText, getCssTextForNode } from '@cube-dev/ui-kit/tasty/injector';
+
+// Extract all CSS for SSR
+const cssText = getCssText();
+
+// Extract CSS for specific DOM subtree (like jest-styled-components)
+const container = render(<MyComponent />);
+const componentCSS = getCssTextForNode(container);
+```
+
+### Test Environment Detection
+
+```typescript
+// Automatically detected test environments:
+// - NODE_ENV === 'test'
+// - Jest globals (jest, describe, it, expect)
+// - jsdom user agent
+// - Vitest globals (vitest)
+// - Mocha globals (mocha)
+
+import { getIsTestEnvironment } from '@cube-dev/ui-kit/tasty/injector';
+const isTest = getIsTestEnvironment();
+
+// Test-specific optimizations:
+configure({
+  forceTextInjection: isTest,  // More reliable in test environments
+  devMode: true,               // Always enable dev features in tests
+});
+```
+
+### Memory Management in Tests
+
+```typescript
+// Clean up between tests
+afterEach(() => {
+  cleanup(); // Force cleanup of unused styles
+});
+
+// Full cleanup after test suite
+afterAll(() => {
+  destroy(); // Destroy all stylesheets and reset state
+});
+```
+
+---
+
+## 📊 Development Features
+
+### Performance Metrics
+
+When `devMode` is enabled, the injector tracks comprehensive metrics:
+
+```typescript
+configure({ devMode: true });
+
+// Access metrics through the global injector
+const metrics = injector.instance.getMetrics();
+
+console.log({
+  cacheHits: metrics.hits,           // Successful cache hits  
+  cacheMisses: metrics.misses,       // New styles injected
+  unusedHits: metrics.unusedHits,    // Current unused styles (calculated on demand)
+  bulkCleanups: metrics.bulkCleanups, // Number of bulk cleanup operations
+  stylesCleanedUp: metrics.stylesCleanedUp, // Total styles removed in bulk cleanups
+  totalInsertions: metrics.totalInsertions, // Lifetime insertions
+  totalUnused: metrics.totalUnused,  // Total styles marked as unused (refCount = 0)
+  startTime: metrics.startTime,      // Metrics collection start timestamp
+  cleanupHistory: metrics.cleanupHistory, // Detailed cleanup operation history
+});
+```
+
+### Debug Information
+
+```typescript
+// Get detailed information about injected styles
+const debugInfo = injector.instance.getDebugInfo();
+
+console.log({
+  activeStyles: debugInfo.activeStyles,     // Currently active styles
+  unusedStyles: debugInfo.unusedStyles,     // Styles marked for cleanup
+  totalSheets: debugInfo.totalSheets,       // Number of stylesheets
+  totalRules: debugInfo.totalRules,         // Total CSS rules
+});
+```
+
+### Cleanup History
+
+```typescript
+// Track cleanup operations over time
+const metrics = injector.instance.getMetrics();
+
+metrics.cleanupHistory.forEach(cleanup => {
+  console.log({
+    timestamp: new Date(cleanup.timestamp),
+    classesDeleted: cleanup.classesDeleted,
+    rulesDeleted: cleanup.rulesDeleted,
+    cssSize: cleanup.cssSize,              // Total CSS size removed (bytes)
+  });
+});
+```
+
+---
+
+## ⚡ Performance Optimizations
+
+### Best Practices
+
+```typescript
+// ✅ Reuse styles - identical CSS gets deduplicated
+const buttonBase = { padding: '8px 16px', borderRadius: '4px' };
+
+// ✅ Avoid frequent disposal and re-injection
+// Let the reference counting system handle cleanup
+
+// ✅ Use bulk operations for global styles
+injectGlobal([
+  { selector: 'body', declarations: 'margin: 0;' },
+  { selector: '*', declarations: 'box-sizing: border-box;' },
+  { selector: '.container', declarations: 'max-width: 1200px;' }
+]);
+
+// ✅ Configure appropriate thresholds for your app
+configure({
+  unusedStylesThreshold: 500,      // Default threshold (adjust based on app size)
+  bulkCleanupBatchRatio: 0.5,      // Default: clean oldest 50% per batch
+  unusedStylesMinAgeMs: 10000,     // Wait 10s before cleanup eligibility
+});
+```
+
+### Memory Management
+
+```typescript
+// The injector automatically manages memory through:
+
+// 1. Hash-based deduplication - same CSS = same className
+// 2. Reference counting - styles stay alive while in use (refCount > 0)
+// 3. Immediate keyframes cleanup - disposed instantly when refCount = 0
+// 4. Batch CSS cleanup - unused CSS rules (refCount = 0) cleaned in batches
+// 5. Non-stacking cleanups - prevents timeout accumulation
+
+// Manual cleanup is rarely needed but available:
+cleanup(); // Force immediate cleanup of all unused CSS rules (refCount = 0)
+destroy(); // Nuclear option: remove all stylesheets and reset
+```
+
+---
+
+## 🔗 Integration with Tasty
+
+The Style Injector is seamlessly integrated with the higher-level Tasty API:
+
+```jsx
+// High-level tasty() API
+const StyledButton = tasty({
+  styles: {
+    padding: '2x 4x',
+    fill: '#purple',
+    color: '#white',
+  }
+});
+
+// Internally uses the injector:
+// 1. Styles are parsed into StyleResult objects
+// 2. inject() is called with the parsed results
+// 3. Component gets the returned className
+// 4. dispose() is called when component unmounts
+```
+
+For most development, you'll use the [Tasty style system](/docs/tasty-documentation--docs) rather than the injector directly. The injector provides the high-performance foundation that makes Tasty's declarative styling possible.
+
+---
+
+## 🎯 When to Use Direct Injection
+
+Direct injector usage is recommended for:
+
+- **Custom CSS-in-JS libraries** built on top of Tasty
+- **Global styles** that don't fit the component model
+- **Third-party integration** where you need low-level CSS control
+- **Performance-critical scenarios** where you need direct control
+- **Testing utilities** that need to inject or extract CSS
+
+For regular component styling, prefer the [`tasty()` API](/docs/tasty-documentation--docs) which provides a more developer-friendly interface.

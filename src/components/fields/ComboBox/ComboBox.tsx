@@ -3,7 +3,6 @@ import {
   ForwardedRef,
   forwardRef,
   ReactElement,
-  ReactNode,
   RefObject,
   useEffect,
   useMemo,
@@ -71,18 +70,14 @@ const TriggerElement = tasty({
     placeContent: 'center',
     placeSelf: 'stretch',
     radius: '(1r - 1bw) right',
-    width: {
-      '': '4x',
-      '[data-size="small"]': '3x',
-      '[data-size="medium"]': '4x',
-    },
+    width: '3x',
     color: {
       '': '#dark-02',
       hovered: '#dark-02',
       pressed: '#purple',
       '[disabled]': '#dark.30',
     },
-    border: 0,
+    border: 'left',
     reset: 'button',
     margin: 0,
     fill: {

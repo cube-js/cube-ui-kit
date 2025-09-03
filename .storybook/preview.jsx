@@ -8,9 +8,9 @@ configure({ testIdAttribute: 'data-qa', asyncUtilTimeout: 10000 });
 
 // Load tasty debug utilities in local Storybook only (exclude Chromatic)
 if (!isChromatic() && import.meta.env.DEV) {
-  import('../src/tasty/debug').then(({ installGlobalDebug }) => {
+  import('../src/tasty/debug').then(({ tastyDebug }) => {
     try {
-      installGlobalDebug({ force: true });
+      tastyDebug.install();
     } catch (e) {
       console.warn('tastyDebug installation failed:', e);
     }
