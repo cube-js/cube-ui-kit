@@ -177,6 +177,7 @@ export class SheetManager {
 
       // Insert grouped rules
       const insertedRuleTexts: string[] = [];
+      const insertedIndices: number[] = []; // Track exact indices
       // Calculate rule index atomically right before insertion to prevent race conditions
       let currentRuleIndex = this.findAvailableRuleIndex(targetSheet);
       let firstInsertedIndex: number | null = null;
@@ -248,6 +249,7 @@ export class SheetManager {
             styleSheet.insertRule(fullRule, safeIndex);
             // Update sheet ruleCount immediately to prevent concurrent race conditions
             targetSheet.ruleCount++;
+            insertedIndices.push(safeIndex); // Track this index
             if (firstInsertedIndex == null) firstInsertedIndex = safeIndex;
             lastInsertedIndex = safeIndex;
             currentRuleIndex = safeIndex + 1;
@@ -275,6 +277,7 @@ export class SheetManager {
                   styleSheet.insertRule(singleRule, idx);
                   // Update sheet ruleCount immediately
                   targetSheet.ruleCount++;
+                  insertedIndices.push(idx); // Track this index
                   if (firstInsertedIndex == null) firstInsertedIndex = idx;
                   lastInsertedIndex = idx;
                   currentRuleIndex = idx + 1;
@@ -299,6 +302,7 @@ export class SheetManager {
             (styleElement.textContent || '') + '\n' + fullRule;
           // Update sheet ruleCount immediately
           targetSheet.ruleCount++;
+          insertedIndices.push(atomicRuleIndex); // Track this index
           if (firstInsertedIndex == null) firstInsertedIndex = atomicRuleIndex;
           lastInsertedIndex = atomicRuleIndex;
           currentRuleIndex = atomicRuleIndex + 1;
@@ -336,6 +340,7 @@ export class SheetManager {
         sheetIndex,
         cssText: this.config.devMode ? insertedRuleTexts : undefined,
         endRuleIndex: lastInsertedIndex ?? firstInsertedIndex ?? 0,
+        indices: insertedIndices.length > 0 ? insertedIndices : undefined,
       };
     } catch (error) {
       console.warn('Failed to insert CSS rules:', error, {
@@ -369,6 +374,7 @@ export class SheetManager {
     endIdx: number,
     deleteCount: number,
     deletedRuleInfo: RuleInfo,
+    deletedIndices?: number[],
   ): void {
     try {
       // Helper function to adjust a single RuleInfo
@@ -376,20 +382,47 @@ export class SheetManager {
         if (info === deletedRuleInfo) return; // Skip the deleted rule
         if (info.sheetIndex !== sheetIndex) return; // Different sheet
 
-        const infoEnd = (info.endRuleIndex as number) ?? info.ruleIndex;
+        // If info has exact indices, adjust them
+        if (info.indices && info.indices.length > 0 && deletedIndices) {
+          // Sort deleted indices for efficient binary search
+          const sortedDeleted = [...deletedIndices].sort((a, b) => a - b);
 
-        if (info.ruleIndex > endIdx) {
-          // Rule is after deleted range - shift left
-          info.ruleIndex = Math.max(0, info.ruleIndex - deleteCount);
-          if (info.endRuleIndex != null) {
-            info.endRuleIndex = Math.max(info.ruleIndex, infoEnd - deleteCount);
+          // Adjust each index based on how many deleted indices are before it
+          info.indices = info.indices.map((idx) => {
+            // Count how many deleted indices are less than this index
+            let shift = 0;
+            for (const delIdx of sortedDeleted) {
+              if (delIdx < idx) shift++;
+              else break;
+            }
+            return idx - shift;
+          });
+
+          // Update ruleIndex and endRuleIndex to match adjusted indices
+          if (info.indices.length > 0) {
+            info.ruleIndex = Math.min(...info.indices);
+            info.endRuleIndex = Math.max(...info.indices);
           }
-        } else if (info.ruleIndex <= endIdx && infoEnd >= startIdx) {
-          // Rule overlaps with deleted range (should not normally happen)
-          // Clamp endRuleIndex to avoid pointing into deleted region
-          if (info.endRuleIndex != null) {
-            const newEnd = Math.max(info.ruleIndex, startIdx - 1);
-            info.endRuleIndex = Math.max(info.ruleIndex, newEnd);
+        } else {
+          // Fallback: adjust using range logic
+          const infoEnd = (info.endRuleIndex as number) ?? info.ruleIndex;
+
+          if (info.ruleIndex > endIdx) {
+            // Rule is after deleted range - shift left
+            info.ruleIndex = Math.max(0, info.ruleIndex - deleteCount);
+            if (info.endRuleIndex != null) {
+              info.endRuleIndex = Math.max(
+                info.ruleIndex,
+                infoEnd - deleteCount,
+              );
+            }
+          } else if (info.ruleIndex <= endIdx && infoEnd >= startIdx) {
+            // Rule overlaps with deleted range (should not normally happen)
+            // Clamp endRuleIndex to avoid pointing into deleted region
+            if (info.endRuleIndex != null) {
+              const newEnd = Math.max(info.ruleIndex, startIdx - 1);
+              info.endRuleIndex = Math.max(info.ruleIndex, newEnd);
+            }
           }
         }
       };
@@ -436,33 +469,69 @@ export class SheetManager {
       if (styleSheet) {
         const rules = styleSheet.cssRules;
 
-        // Prefer index-based deletion when possible
-        const startIdx = Math.max(0, ruleInfo.ruleIndex);
-        const endIdx = Math.min(
-          rules.length - 1,
-          Number.isFinite(ruleInfo.endRuleIndex as number)
-            ? (ruleInfo.endRuleIndex as number)
-            : startIdx,
-        );
+        // Use exact indices if available, otherwise fall back to range
+        if (ruleInfo.indices && ruleInfo.indices.length > 0) {
+          // NEW: Delete using exact tracked indices
+          const sortedIndices = [...ruleInfo.indices].sort((a, b) => b - a); // Sort descending
+          const deletedIndices: number[] = [];
 
-        if (Number.isFinite(startIdx) && endIdx >= startIdx) {
-          const deleteCount = endIdx - startIdx + 1;
-          for (let idx = endIdx; idx >= startIdx; idx--) {
-            if (idx < 0 || idx >= styleSheet.cssRules.length) continue;
-            styleSheet.deleteRule(idx);
+          for (const idx of sortedIndices) {
+            if (idx >= 0 && idx < styleSheet.cssRules.length) {
+              try {
+                styleSheet.deleteRule(idx);
+                deletedIndices.push(idx);
+              } catch (e) {
+                console.warn(`Failed to delete rule at index ${idx}:`, e);
+              }
+            }
           }
-          sheet.ruleCount = Math.max(0, sheet.ruleCount - deleteCount);
 
-          // After deletion, all subsequent rule indices shift left by deleteCount.
-          // We must adjust stored indices for all other RuleInfo within the same sheet.
-          this.adjustIndicesAfterDeletion(
-            registry,
-            ruleInfo.sheetIndex,
-            startIdx,
-            endIdx,
-            deleteCount,
-            ruleInfo,
+          sheet.ruleCount = Math.max(
+            0,
+            sheet.ruleCount - deletedIndices.length,
           );
+
+          // Adjust indices for all other rules
+          if (deletedIndices.length > 0) {
+            this.adjustIndicesAfterDeletion(
+              registry,
+              ruleInfo.sheetIndex,
+              Math.min(...deletedIndices),
+              Math.max(...deletedIndices),
+              deletedIndices.length,
+              ruleInfo,
+              deletedIndices,
+            );
+          }
+        } else {
+          // FALLBACK: Use old range-based deletion for backwards compatibility
+          const startIdx = Math.max(0, ruleInfo.ruleIndex);
+          const endIdx = Math.min(
+            rules.length - 1,
+            Number.isFinite(ruleInfo.endRuleIndex as number)
+              ? (ruleInfo.endRuleIndex as number)
+              : startIdx,
+          );
+
+          if (Number.isFinite(startIdx) && endIdx >= startIdx) {
+            const deleteCount = endIdx - startIdx + 1;
+            for (let idx = endIdx; idx >= startIdx; idx--) {
+              if (idx < 0 || idx >= styleSheet.cssRules.length) continue;
+              styleSheet.deleteRule(idx);
+            }
+            sheet.ruleCount = Math.max(0, sheet.ruleCount - deleteCount);
+
+            // After deletion, all subsequent rule indices shift left by deleteCount.
+            // We must adjust stored indices for all other RuleInfo within the same sheet.
+            this.adjustIndicesAfterDeletion(
+              registry,
+              ruleInfo.sheetIndex,
+              startIdx,
+              endIdx,
+              deleteCount,
+              ruleInfo,
+            );
+          }
         }
       }
 
@@ -545,9 +614,16 @@ export class SheetManager {
   }
 
   /**
+   * Force cleanup of unused styles
+   */
+  public forceCleanup(registry: RootRegistry): void {
+    this.performBulkCleanup(registry, true);
+  }
+
+  /**
    * Perform bulk cleanup of all unused styles
    */
-  private performBulkCleanup(registry: RootRegistry): void {
+  private performBulkCleanup(registry: RootRegistry, cleanupAll = false): void {
     const cleanupStartTime = Date.now();
 
     // Calculate unused rules dynamically: rules that have refCount = 0
@@ -568,14 +644,16 @@ export class SheetManager {
 
     if (candidates.length === 0) return;
 
-    // Limit deletion scope per run (batch ratio)
-    const ratio = this.config.bulkCleanupBatchRatio ?? 0.5;
-    const limit = Math.max(
-      1,
-      Math.floor(candidates.length * Math.min(1, Math.max(0, ratio))),
-    );
-
-    const selected = candidates.slice(0, limit);
+    // Limit deletion scope per run (batch ratio) unless cleanupAll is true
+    let selected = candidates;
+    if (!cleanupAll) {
+      const ratio = this.config.bulkCleanupBatchRatio ?? 0.5;
+      const limit = Math.max(
+        1,
+        Math.floor(candidates.length * Math.min(1, Math.max(0, ratio))),
+      );
+      selected = candidates.slice(0, limit);
+    }
 
     let cleanedUpCount = 0;
     let totalCssSize = 0;

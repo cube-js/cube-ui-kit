@@ -39,6 +39,8 @@ export interface RuleInfo {
   cssText?: string[];
   /** Inclusive end index of the contiguous block of inserted rules for this className */
   endRuleIndex?: number;
+  /** NEW: exact indices of all inserted rules for this className */
+  indices?: number[];
 }
 
 export interface SheetInfo {

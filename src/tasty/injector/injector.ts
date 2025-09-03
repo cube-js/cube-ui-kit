@@ -287,7 +287,8 @@ export class StyleInjector {
    */
   cleanup(root?: Document | ShadowRoot): void {
     const registry = this.sheetManager.getRegistry(root || document);
-    this.sheetManager['performBulkCleanup'](registry);
+    // Clean up ALL unused rules regardless of batch ratio
+    this.sheetManager.forceCleanup(registry);
   }
 
   /**
