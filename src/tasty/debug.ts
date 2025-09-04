@@ -590,8 +590,25 @@ export const tastyDebug = {
     log?: boolean;
   }): GlobalBreakdown {
     const { root = document, log = false } = opts || {};
-    const css = getGlobalCSS(root);
-    const rules = extractCSSRules(css);
+    const allCSS = injector.instance.getCssText({ root });
+    const rules = extractCSSRules(allCSS);
+
+    const globalRules = rules.filter((rule) => {
+      const selectors = rule.selector.split(',').map((s) => s.trim());
+      return !selectors.every((selector) => {
+        const cleanSelector = selector.replace(/[.#:\s>+~[\]()]/g, ' ');
+        const parts = cleanSelector.split(/\s+/).filter(Boolean);
+        return parts.length > 0 && parts.every((part) => /^t\d+$/.test(part));
+      });
+    });
+
+    // Calculate raw CSS size for consistent size calculations
+    const rawGlobalCSS = globalRules
+      .map((rule) => `${rule.selector} { ${rule.declarations} }`)
+      .join('\n');
+
+    // Use prettified CSS for display
+    const css = prettifyCSS(rawGlobalCSS);
 
     // Analyze selectors
     const selectors = {
@@ -604,7 +621,7 @@ export const tastyDebug = {
       other: [] as string[],
     };
 
-    rules.forEach((rule) => {
+    globalRules.forEach((rule) => {
       const selector = rule.selector;
       if (selector.startsWith('@media')) {
         selectors.mediaQueries.push(selector);
@@ -633,8 +650,8 @@ export const tastyDebug = {
 
     const result = {
       css,
-      totalRules: rules.length,
-      totalCSSSize: css.length,
+      totalRules: globalRules.length,
+      totalCSSSize: rawGlobalCSS.length, // Use raw CSS length for consistent size calculations
       selectors,
     };
 
@@ -776,7 +793,7 @@ export const tastyDebug = {
       totalStyledClasses: cacheStatus.classes.all,
       activeCSSSize: activeCSS.length,
       unusedCSSSize: unusedCSS.length,
-      totalCSSSize: allCSS.length,
+      totalCSSSize: allCSS.length, // This includes active + unused + global CSS
       activeCSS: prettifyCSS(activeCSS),
       unusedCSS: prettifyCSS(unusedCSS),
       allCSS: prettifyCSS(allCSS),
