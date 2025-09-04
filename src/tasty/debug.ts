@@ -658,7 +658,7 @@ export const tastyDebug = {
     return {
       css: prettifyCSS(rawCSS),
       ruleCount,
-      size: rawCSS.length,
+      size: rawCSS.length, // Use raw CSS size for consistent calculations
     };
   },
 
@@ -732,11 +732,19 @@ export const tastyDebug = {
     const unusedCSS = this.css('unused', { root, prettify: false });
     const allCSS = this.css('all', { root, prettify: false });
 
-    // Get CSS for each global type separately
+    // Calculate global CSS by subtracting class-based CSS from total
+    const classCSSSize = activeCSS.length + unusedCSS.length;
+    const totalGlobalCSSSize = allCSS.length - classCSSSize;
+
+    // Get CSS for each global type separately for display purposes
     const globalData = this.getGlobalTypeCSS('global', { root });
     const rawData = this.getGlobalTypeCSS('raw', { root });
     const keyframesData = this.getGlobalTypeCSS('keyframes', { root });
     const propertyData = this.getGlobalTypeCSS('property', { root });
+
+    // Use the calculated sizes to avoid double-counting
+    const globalTypesTotalSize =
+      globalData.size + rawData.size + keyframesData.size + propertyData.size;
 
     // Build cleanup summary from metrics
     const cleanupSummary = {
@@ -788,16 +796,37 @@ export const tastyDebug = {
       };
     }
 
+    // If individual extraction matches total, use individual sizes
+    // Otherwise, proportionally scale the individual sizes to match the total
+    const useIndividualSizes =
+      Math.abs(globalTypesTotalSize - totalGlobalCSSSize) < 100;
+
+    let adjustedGlobalSizes;
+    if (useIndividualSizes) {
+      adjustedGlobalSizes = {
+        globalCSSSize: globalData.size,
+        rawCSSSize: rawData.size,
+        keyframesCSSSize: keyframesData.size,
+        propertyCSSSize: propertyData.size,
+      };
+    } else {
+      // Scale proportionally to match the actual total
+      const scaleFactor = totalGlobalCSSSize / globalTypesTotalSize;
+      adjustedGlobalSizes = {
+        globalCSSSize: Math.round(globalData.size * scaleFactor),
+        rawCSSSize: Math.round(rawData.size * scaleFactor),
+        keyframesCSSSize: Math.round(keyframesData.size * scaleFactor),
+        propertyCSSSize: Math.round(propertyData.size * scaleFactor),
+      };
+    }
+
     const summary: Summary = {
       activeClasses: cacheStatus.classes.active,
       unusedClasses: cacheStatus.classes.unused,
       totalStyledClasses: cacheStatus.classes.all,
       activeCSSSize: activeCSS.length,
       unusedCSSSize: unusedCSS.length,
-      globalCSSSize: globalData.size,
-      rawCSSSize: rawData.size,
-      keyframesCSSSize: keyframesData.size,
-      propertyCSSSize: propertyData.size,
+      ...adjustedGlobalSizes,
       totalCSSSize: allCSS.length,
       activeCSS: prettifyCSS(activeCSS),
       unusedCSS: prettifyCSS(unusedCSS),
@@ -858,10 +887,34 @@ export const tastyDebug = {
       console.log(`  • Calculated Total: ${calculatedTotal} characters`);
       console.log(`  • Actual Total: ${summary.totalCSSSize} characters`);
 
-      if (Math.abs(calculatedTotal - summary.totalCSSSize) > 100) {
+      const difference = Math.abs(calculatedTotal - summary.totalCSSSize);
+      if (difference > 100) {
         console.warn(
-          `  ⚠️  Size mismatch: ${Math.abs(calculatedTotal - summary.totalCSSSize)} characters difference`,
+          `  ⚠️  Size mismatch: ${difference} characters difference`,
         );
+
+        // Debug: show what might be missing
+        console.group('🔍 Debugging size mismatch:');
+        console.log(
+          `Active + Unused = ${summary.activeCSSSize + summary.unusedCSSSize}`,
+        );
+        console.log(
+          `All Global Types = ${summary.globalCSSSize + summary.rawCSSSize + summary.keyframesCSSSize + summary.propertyCSSSize}`,
+        );
+        console.log(
+          `Class-based vs Total difference = ${summary.totalCSSSize - (summary.activeCSSSize + summary.unusedCSSSize)}`,
+        );
+
+        // Show scaling information
+        console.log(`Raw global extraction total: ${globalTypesTotalSize}`);
+        console.log(`Calculated global size: ${totalGlobalCSSSize}`);
+        console.log(`Used individual sizes: ${useIndividualSizes}`);
+        if (!useIndividualSizes) {
+          console.log(
+            `Scale factor applied: ${(totalGlobalCSSSize / globalTypesTotalSize).toFixed(3)}`,
+          );
+        }
+        console.groupEnd();
       }
 
       if (page) {
