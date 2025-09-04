@@ -259,6 +259,41 @@ export class StyleInjector {
   }
 
   /**
+   * Inject styles from createGlobalStyle (separate from injectGlobal for tracking)
+   */
+  injectCreateGlobalStyle(
+    rules: StyleResult[],
+    options?: { root?: Document | ShadowRoot },
+  ): GlobalInjectResult {
+    const root = options?.root || document;
+    const registry = this.sheetManager.getRegistry(root);
+
+    if (!rules || rules.length === 0) {
+      return { dispose: () => {} };
+    }
+
+    // Use a different prefix to distinguish from injectGlobal
+    const key = `raw:${this.globalRuleCounter++}`;
+
+    const info = this.sheetManager.insertGlobalRule(
+      registry,
+      rules as unknown as StyleRule[],
+      key,
+      root,
+    );
+
+    if (registry.metrics) {
+      registry.metrics.totalInsertions++;
+    }
+
+    return {
+      dispose: () => {
+        if (info) this.sheetManager.deleteGlobalRule(registry, key);
+      },
+    };
+  }
+
+  /**
    * Dispose of a className
    */
   private dispose(className: string, registry: any): void {
@@ -567,8 +602,8 @@ export class StyleInjector {
         const css = this.interpolateTemplate();
         if (css.trim()) {
           const styleResults = this.parseCSSToStyleResults(css);
-          // Bind the global inject method to the outer injector instance
-          const result = injector.injectGlobal(styleResults as any, {
+          // Use a special method for createGlobalStyle to distinguish from injectGlobal
+          const result = injector.injectCreateGlobalStyle(styleResults as any, {
             root: this.props.root,
           });
           this.disposeFunction = result.dispose;
