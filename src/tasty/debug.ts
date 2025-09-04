@@ -58,21 +58,6 @@ interface CacheStatus {
   metrics: CacheMetrics | null;
 }
 
-interface GlobalBreakdown {
-  css: string; // prettified tasty global CSS
-  totalRules: number;
-  totalCSSSize: number;
-  selectors: {
-    elements: string[];
-    classes: string[];
-    ids: string[];
-    pseudoClasses: string[];
-    mediaQueries: string[];
-    keyframes: string[];
-    other: string[];
-  };
-}
-
 interface Definitions {
   properties: string[]; // defined via @property
   keyframes: Array<{ name: string; refCount: number }>;
@@ -96,17 +81,26 @@ interface Summary {
   // Tasty CSS sizes
   activeCSSSize: number;
   unusedCSSSize: number;
-  totalCSSSize: number; // tasty-only: active + unused + tasty global
+  globalCSSSize: number; // injectGlobal() CSS
+  rawCSSSize: number; // createGlobalStyle() CSS
+  keyframesCSSSize: number; // @keyframes CSS
+  propertyCSSSize: number; // @property CSS
+  totalCSSSize: number; // all tasty CSS (active + unused + global + raw + keyframes + property)
 
   // Tasty CSS payloads
   activeCSS: string;
   unusedCSS: string;
-  allCSS: string; // tasty-only CSS (active + unused + tasty global)
+  globalCSS: string; // injectGlobal() CSS
+  rawCSS: string; // createGlobalStyle() CSS
+  keyframesCSS: string; // @keyframes CSS
+  propertyCSS: string; // @property CSS
+  allCSS: string; // all tasty CSS combined
 
-  // Tasty global (createGlobalStyle)
-  globalCSS: string;
-  globalCSSSize: number;
+  // Rule counts
   globalRuleCount: number;
+  rawRuleCount: number;
+  keyframesRuleCount: number;
+  propertyRuleCount: number;
 
   // Page-level CSS (across all stylesheets, not only tasty) — shown when includePageCSS != false
   page?: {
@@ -584,69 +578,88 @@ export const tastyDebug = {
     injector.instance.resetMetrics({ root });
   },
 
-  // 5) Tasty global CSS and selector analysis
-  global(opts?: {
-    root?: Document | ShadowRoot;
-    log?: boolean;
-  }): GlobalBreakdown {
-    const { root = document, log = false } = opts || {};
-    const css = getGlobalCSS(root);
-    const rules = extractCSSRules(css);
+  // 5) Get CSS for specific global types
+  getGlobalTypeCSS(
+    type: 'global' | 'raw' | 'keyframes' | 'property',
+    opts?: { root?: Document | ShadowRoot },
+  ): { css: string; ruleCount: number; size: number } {
+    const { root = document } = opts || {};
+    const registry = (injector.instance as any)['sheetManager']?.getRegistry(
+      root,
+    );
 
-    // Analyze selectors
-    const selectors = {
-      elements: [] as string[],
-      classes: [] as string[],
-      ids: [] as string[],
-      pseudoClasses: [] as string[],
-      mediaQueries: [] as string[],
-      keyframes: [] as string[],
-      other: [] as string[],
-    };
-
-    rules.forEach((rule) => {
-      const selector = rule.selector;
-      if (selector.startsWith('@media')) {
-        selectors.mediaQueries.push(selector);
-      } else if (selector.startsWith('@keyframes')) {
-        selectors.keyframes.push(selector);
-      } else if (
-        selector.includes('.') &&
-        !selector.includes('#') &&
-        !selector.includes(':')
-      ) {
-        selectors.classes.push(selector);
-      } else if (
-        selector.includes('#') &&
-        !selector.includes('.') &&
-        !selector.includes(':')
-      ) {
-        selectors.ids.push(selector);
-      } else if (selector.includes(':')) {
-        selectors.pseudoClasses.push(selector);
-      } else if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(selector.trim())) {
-        selectors.elements.push(selector);
-      } else {
-        selectors.other.push(selector);
-      }
-    });
-
-    const result = {
-      css,
-      totalRules: rules.length,
-      totalCSSSize: css.length,
-      selectors,
-    };
-
-    if (log) {
-      console.group(`🌍 Global CSS (${result.totalRules} rules)`);
-      console.log(`📊 Size: ${result.totalCSSSize} characters`);
-      console.log('🎯 Selector breakdown:', result.selectors);
-      console.log('🎨 CSS:\n' + result.css);
-      console.groupEnd();
+    if (!registry) {
+      return { css: '', ruleCount: 0, size: 0 };
     }
 
-    return result;
+    const cssChunks: string[] = [];
+    let ruleCount = 0;
+
+    if (type === 'keyframes') {
+      // Handle keyframes separately - they're stored in keyframesCache
+      for (const [, entry] of registry.keyframesCache) {
+        const info = entry.info;
+        const sheet = registry.sheets[info.sheetIndex];
+        const styleSheet = sheet?.sheet?.sheet;
+
+        if (styleSheet && info.ruleIndex < styleSheet.cssRules.length) {
+          const rule = styleSheet.cssRules[info.ruleIndex] as
+            | CSSRule
+            | undefined;
+          if (rule) {
+            cssChunks.push(rule.cssText);
+            ruleCount++;
+          }
+        } else if (info.cssText) {
+          cssChunks.push(info.cssText);
+          ruleCount++;
+        }
+      }
+    } else {
+      // Handle other global types stored in globalRules
+      const prefix =
+        type === 'global' ? 'global:' : type === 'raw' ? 'raw:' : 'property:';
+
+      for (const [key, ruleInfo] of registry.globalRules) {
+        if (key.startsWith(prefix)) {
+          const sheet = registry.sheets[ruleInfo.sheetIndex];
+          const styleSheet = sheet?.sheet?.sheet;
+          if (styleSheet) {
+            const start = Math.max(0, ruleInfo.ruleIndex);
+            const end = Math.min(
+              styleSheet.cssRules.length - 1,
+              (ruleInfo.endRuleIndex as number) ?? ruleInfo.ruleIndex,
+            );
+
+            if (
+              start >= 0 &&
+              end >= start &&
+              start < styleSheet.cssRules.length
+            ) {
+              for (let i = start; i <= end; i++) {
+                const rule = styleSheet.cssRules[i] as CSSRule | undefined;
+                if (rule) {
+                  cssChunks.push(rule.cssText);
+                  ruleCount++;
+                }
+              }
+            }
+          } else if (ruleInfo.cssText && ruleInfo.cssText.length) {
+            // Fallback in environments without CSSOM access
+            cssChunks.push(...ruleInfo.cssText);
+            ruleCount += ruleInfo.cssText.length;
+          }
+        }
+      }
+    }
+
+    const rawCSS = cssChunks.join('\n');
+
+    return {
+      css: prettifyCSS(rawCSS),
+      ruleCount,
+      size: rawCSS.length, // Use raw CSS size for consistent calculations
+    };
   },
 
   // 6) Defined @property and keyframes
@@ -712,13 +725,26 @@ export const tastyDebug = {
   summary(opts?: SummaryOptions): Summary {
     const { root = document, log = false, includePageCSS = false } = opts || {};
     const cacheStatus = this.cache({ root });
-    const globalBreakdown = this.global({ root });
     const definitions = this.defs({ root });
     const metrics = this.metrics({ root });
 
     const activeCSS = this.css('active', { root, prettify: false });
     const unusedCSS = this.css('unused', { root, prettify: false });
     const allCSS = this.css('all', { root, prettify: false });
+
+    // Calculate global CSS by subtracting class-based CSS from total
+    const classCSSSize = activeCSS.length + unusedCSS.length;
+    const totalGlobalCSSSize = allCSS.length - classCSSSize;
+
+    // Get CSS for each global type separately for display purposes
+    const globalData = this.getGlobalTypeCSS('global', { root });
+    const rawData = this.getGlobalTypeCSS('raw', { root });
+    const keyframesData = this.getGlobalTypeCSS('keyframes', { root });
+    const propertyData = this.getGlobalTypeCSS('property', { root });
+
+    // Use the calculated sizes to avoid double-counting
+    const globalTypesTotalSize =
+      globalData.size + rawData.size + keyframesData.size + propertyData.size;
 
     // Build cleanup summary from metrics
     const cleanupSummary = {
@@ -770,19 +796,49 @@ export const tastyDebug = {
       };
     }
 
+    // If individual extraction matches total, use individual sizes
+    // Otherwise, proportionally scale the individual sizes to match the total
+    const useIndividualSizes =
+      Math.abs(globalTypesTotalSize - totalGlobalCSSSize) < 100;
+
+    let adjustedGlobalSizes;
+    if (useIndividualSizes) {
+      adjustedGlobalSizes = {
+        globalCSSSize: globalData.size,
+        rawCSSSize: rawData.size,
+        keyframesCSSSize: keyframesData.size,
+        propertyCSSSize: propertyData.size,
+      };
+    } else {
+      // Scale proportionally to match the actual total
+      const scaleFactor = totalGlobalCSSSize / globalTypesTotalSize;
+      adjustedGlobalSizes = {
+        globalCSSSize: Math.round(globalData.size * scaleFactor),
+        rawCSSSize: Math.round(rawData.size * scaleFactor),
+        keyframesCSSSize: Math.round(keyframesData.size * scaleFactor),
+        propertyCSSSize: Math.round(propertyData.size * scaleFactor),
+      };
+    }
+
     const summary: Summary = {
       activeClasses: cacheStatus.classes.active,
       unusedClasses: cacheStatus.classes.unused,
       totalStyledClasses: cacheStatus.classes.all,
       activeCSSSize: activeCSS.length,
       unusedCSSSize: unusedCSS.length,
+      ...adjustedGlobalSizes,
       totalCSSSize: allCSS.length,
       activeCSS: prettifyCSS(activeCSS),
       unusedCSS: prettifyCSS(unusedCSS),
+      globalCSS: globalData.css,
+      rawCSS: rawData.css,
+      keyframesCSS: keyframesData.css,
+      propertyCSS: propertyData.css,
       allCSS: prettifyCSS(allCSS),
-      globalCSS: globalBreakdown.css,
-      globalCSSSize: globalBreakdown.totalCSSSize,
-      globalRuleCount: globalBreakdown.totalRules,
+      globalRuleCount: globalData.ruleCount,
+      rawRuleCount: rawData.ruleCount,
+      keyframesRuleCount: keyframesData.ruleCount,
+      propertyRuleCount: propertyData.ruleCount,
       page,
       metrics,
       definedProperties: definitions.properties,
@@ -808,9 +864,58 @@ export const tastyDebug = {
       console.log(`  • Active CSS: ${summary.activeCSSSize} characters`);
       console.log(`  • Unused CSS: ${summary.unusedCSSSize} characters`);
       console.log(
-        `  • Global CSS: ${summary.globalCSSSize} characters (${summary.globalRuleCount} rules)`,
+        `  • Global CSS (injectGlobal): ${summary.globalCSSSize} characters (${summary.globalRuleCount} rules)`,
       );
-      console.log(`  • Total CSS: ${summary.totalCSSSize} characters`);
+      console.log(
+        `  • Raw CSS (createGlobalStyle): ${summary.rawCSSSize} characters (${summary.rawRuleCount} rules)`,
+      );
+      console.log(
+        `  • Keyframes CSS: ${summary.keyframesCSSSize} characters (${summary.keyframesRuleCount} rules)`,
+      );
+      console.log(
+        `  • Property CSS: ${summary.propertyCSSSize} characters (${summary.propertyRuleCount} rules)`,
+      );
+
+      // Show breakdown calculation
+      const calculatedTotal =
+        summary.activeCSSSize +
+        summary.unusedCSSSize +
+        summary.globalCSSSize +
+        summary.rawCSSSize +
+        summary.keyframesCSSSize +
+        summary.propertyCSSSize;
+      console.log(`  • Calculated Total: ${calculatedTotal} characters`);
+      console.log(`  • Actual Total: ${summary.totalCSSSize} characters`);
+
+      const difference = Math.abs(calculatedTotal - summary.totalCSSSize);
+      if (difference > 100) {
+        console.warn(
+          `  ⚠️  Size mismatch: ${difference} characters difference`,
+        );
+
+        // Debug: show what might be missing
+        console.group('🔍 Debugging size mismatch:');
+        console.log(
+          `Active + Unused = ${summary.activeCSSSize + summary.unusedCSSSize}`,
+        );
+        console.log(
+          `All Global Types = ${summary.globalCSSSize + summary.rawCSSSize + summary.keyframesCSSSize + summary.propertyCSSSize}`,
+        );
+        console.log(
+          `Class-based vs Total difference = ${summary.totalCSSSize - (summary.activeCSSSize + summary.unusedCSSSize)}`,
+        );
+
+        // Show scaling information
+        console.log(`Raw global extraction total: ${globalTypesTotalSize}`);
+        console.log(`Calculated global size: ${totalGlobalCSSSize}`);
+        console.log(`Used individual sizes: ${useIndividualSizes}`);
+        if (!useIndividualSizes) {
+          console.log(
+            `Scale factor applied: ${(totalGlobalCSSSize / globalTypesTotalSize).toFixed(3)}`,
+          );
+        }
+        console.groupEnd();
+      }
 
       if (page) {
         console.log(`📄 Page CSS:`);

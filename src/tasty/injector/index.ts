@@ -131,6 +131,16 @@ export function injectGlobal(
 }
 
 /**
+ * Internal method for createGlobalStyle - not exported publicly
+ */
+function injectCreateGlobalStyle(
+  rules: StyleResult[],
+  options?: { root?: Document | ShadowRoot },
+): GlobalInjectResult {
+  return getGlobalInjector().injectCreateGlobalStyle(rules, options);
+}
+
+/**
  * Inject keyframes and return object with toString() and dispose()
  */
 export function keyframes(
