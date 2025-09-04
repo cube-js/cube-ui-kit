@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.76.2
+
+### Patch Changes
+
+- [#778](https://github.com/cube-js/cube-ui-kit/pull/778) [`0be20c83`](https://github.com/cube-js/cube-ui-kit/commit/0be20c83f07ff92dd65ba984cb309cdc16166bec) Thanks [@tenphi](https://github.com/tenphi)! - Fix form submission by Enter key.
+
 ## 0.76.1
 
 ### Patch Changes
