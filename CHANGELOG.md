@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.76.1
+
+### Patch Changes
+
+- [#776](https://github.com/cube-js/cube-ui-kit/pull/776) [`3f8be8e5`](https://github.com/cube-js/cube-ui-kit/commit/3f8be8e5435e1f6fdcaf0976e27e8a6a3de4890d) Thanks [@tenphi](https://github.com/tenphi)! - Fix CSS total size calculation in debug tools.
+
 ## 0.76.0
 
 ### Minor Changes
