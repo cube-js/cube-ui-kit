@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.77.0
+
+### Minor Changes
+
+- [#780](https://github.com/cube-js/cube-ui-kit/pull/780) [`88accef2`](https://github.com/cube-js/cube-ui-kit/commit/88accef2beaadbdf2c2758de0c3aa961f619a0ca) Thanks [@tenphi](https://github.com/tenphi)! - Remove legacy Modal component.
+
+### Patch Changes
+
+- [#780](https://github.com/cube-js/cube-ui-kit/pull/780) [`88accef2`](https://github.com/cube-js/cube-ui-kit/commit/88accef2beaadbdf2c2758de0c3aa961f619a0ca) Thanks [@tenphi](https://github.com/tenphi)! - Add side border radius to the header and the footer of the menus.
+
 ## 0.76.2
 
 ### Patch Changes
