@@ -190,7 +190,7 @@ const DialogContent = forwardRef(function DialogContent(
   let {
     qa,
     children,
-    size = 'S',
+    size = 'M',
     isDismissable = contextProps.isDismissable,
     onDismiss = contextProps.onClose,
     closeIcon,

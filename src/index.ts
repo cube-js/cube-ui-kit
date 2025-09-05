@@ -123,8 +123,6 @@ export { LegacyTabs } from './components/navigation/LegacyTabs/LegacyTabs';
 export type { CubeTabsProps } from './components/navigation/LegacyTabs/LegacyTabs';
 export { FileTabs } from './components/organisms/FileTabs/FileTabs';
 export type { CubeFileTabProps } from './components/organisms/FileTabs/FileTabs';
-export { Modal } from './components/organisms/Modal/Modal';
-export type { CubeModalProps } from './components/organisms/Modal/Modal';
 export { StatsCard } from './components/organisms/StatsCard/StatsCard';
 export type { CubeStatsCard } from './components/organisms/StatsCard/StatsCard';
 export {

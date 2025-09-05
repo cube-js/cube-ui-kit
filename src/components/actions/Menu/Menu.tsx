@@ -14,12 +14,7 @@ import {
   Styles,
 } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
-import { CubeBlockProps } from '../../Block';
 import { Item } from '../../Item';
-import {
-  CubeTooltipProviderProps,
-  TooltipProvider,
-} from '../../overlays/Tooltip/TooltipProvider';
 
 import { useMenuContext } from './context';
 import { MenuItem } from './MenuItem';
