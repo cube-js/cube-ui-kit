@@ -1799,6 +1799,43 @@ export const SubMenuCustomization = () => {
   );
 };
 
+export const WithHeaderAndFooter = (props) => {
+  return (
+    <div style={{ padding: '20px', width: '340px' }}>
+      <Menu
+        id="menu-header-footer"
+        {...props}
+        header="Menu Header"
+        footer="Menu Footer"
+        headerStyles={{ fill: '#light' }}
+        footerStyles={{ fill: '#light' }}
+      >
+        <Menu.Item key="item1" icon={<IconReload />}>
+          First Item
+        </Menu.Item>
+        <Menu.Item key="item2" icon={<IconBook />}>
+          Second Item
+        </Menu.Item>
+        <Menu.Item key="item3" icon={<IconPlus />}>
+          Third Item
+        </Menu.Item>
+        <Menu.Item key="item4" icon={<IconBulb />}>
+          Fourth Item
+        </Menu.Item>
+      </Menu>
+    </div>
+  );
+};
+
+WithHeaderAndFooter.parameters = {
+  docs: {
+    description: {
+      story:
+        'Menu with both header and footer sections, both styled with light fill background.',
+    },
+  },
+};
+
 export const ComprehensivePopoverSynchronization = () => {
   const MyMenuComponent = ({ onAction }) => (
     <Menu width="200px" onAction={onAction}>

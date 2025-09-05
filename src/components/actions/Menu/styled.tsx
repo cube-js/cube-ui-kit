@@ -79,6 +79,7 @@ export const StyledHeader = tasty(Space, {
     height: 'min $size',
     boxSizing: 'border-box',
     border: 'bottom',
+    radius: '1cr top',
 
     $size: {
       '': '$size-md',
@@ -110,6 +111,7 @@ export const StyledFooter = tasty(Space, {
     },
     boxSizing: 'border-box',
     border: 'top',
+    radius: '1cr bottom',
   },
 });
 
