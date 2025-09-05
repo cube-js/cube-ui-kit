@@ -1007,7 +1007,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       >
         {renderTrigger}
         {(close) => (
-          <Dialog display="grid" styles={{ gridRows: '1sf', ...popoverStyles }}>
+          <Dialog
+            display="grid"
+            styles={{
+              gridRows: '1sf',
+              width: '30x max-content 50vw',
+              ...popoverStyles,
+            }}
+          >
             <FocusScope restoreFocus>
               <FilterListBox
                 autoFocus
