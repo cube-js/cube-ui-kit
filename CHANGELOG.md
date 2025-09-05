@@ -1,5 +1,9 @@
 # @cube-dev/ui-kit
 
+## v0.76.3
+
+[compare changes](https://github.com/cube-js/cube-ui-kit/compare/v0.76.2...v0.76.3)
+
 ## 0.76.2
 
 ### Patch Changes
