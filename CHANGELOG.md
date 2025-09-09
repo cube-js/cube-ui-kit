@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.77.1
+
+### Patch Changes
+
+- [#782](https://github.com/cube-js/cube-ui-kit/pull/782) [`01192708`](https://github.com/cube-js/cube-ui-kit/commit/01192708383c0e03921020bdeb1d5b5e3f0bc9e7) Thanks [@tenphi](https://github.com/tenphi)! - Fix FilterPicker's tooltip typings.
+
 ## 0.77.0
 
 ### Minor Changes
