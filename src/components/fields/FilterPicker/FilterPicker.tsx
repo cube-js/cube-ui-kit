@@ -85,9 +85,9 @@ export interface CubeFilterPickerProps<T>
   /** Whether to flip the popover placement */
   shouldFlip?: boolean;
   /** Tooltip for the trigger button (separate from field tooltip) */
-  triggerTooltip?: string | Omit<CubeTooltipProviderProps, 'children'>;
+  triggerTooltip?: CubeItemBaseProps['tooltip'];
   /** Description for the trigger button (separate from field description) */
-  triggerDescription?: ReactNode;
+  triggerDescription?: CubeItemBaseProps['description'];
 
   /**
    * Custom renderer for the summary shown inside the trigger when there is a selection.
