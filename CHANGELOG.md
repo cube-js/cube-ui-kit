@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.77.2
+
+### Patch Changes
+
+- [#784](https://github.com/cube-js/cube-ui-kit/pull/784) [`39be6b6b`](https://github.com/cube-js/cube-ui-kit/commit/39be6b6b7053001a36939d047d91dd1ef3d67db5) Thanks [@tenphi](https://github.com/tenphi)! - Fix tooltip condition in ItemBase.
+
+- [#784](https://github.com/cube-js/cube-ui-kit/pull/784) [`39be6b6b`](https://github.com/cube-js/cube-ui-kit/commit/39be6b6b7053001a36939d047d91dd1ef3d67db5) Thanks [@tenphi](https://github.com/tenphi)! - Allow to rewrite the tooltip title in ItemBase.
+
 ## 0.77.1
 
 ### Patch Changes
