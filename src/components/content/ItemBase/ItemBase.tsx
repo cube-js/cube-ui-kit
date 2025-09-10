@@ -53,11 +53,7 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import {
-  mergeProps,
-  useCombinedRefs,
-  useLayoutEffect,
-} from '../../../utils/react';
+import { mergeProps, useCombinedRefs } from '../../../utils/react';
 import {
   CubeTooltipProviderProps,
   TooltipProvider,
@@ -491,10 +487,10 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
 
   // Determine if auto tooltip is enabled
   const isAutoTooltipEnabled = useMemo(() => {
-    if (tooltip === true) return true;
+    if (tooltip === true && typeof children === 'string') return true;
     if (typeof tooltip === 'object' && tooltip?.auto) return true;
     return false;
-  }, [tooltip]);
+  }, [tooltip, typeof children]);
 
   // Track label overflow for auto tooltip (only when enabled)
   const mergedLabelRef = useCombinedRefs((labelProps as any)?.ref);
@@ -519,7 +515,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
   }, [children, isAutoTooltipEnabled, checkLabelOverflow]);
 
   useEffect(() => {
-    if (!isAutoTooltipEnabled || typeof children !== 'string') return;
+    if (!isAutoTooltipEnabled) return;
 
     const label = mergedLabelRef.current;
     if (!label) return;
@@ -614,7 +610,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
         return (
           <TooltipProvider
             placement={defaultTooltipPlacement}
-            title={children}
+            title={tooltipProps.title ?? children}
             {...tooltipProps}
           >
             {itemElement}
