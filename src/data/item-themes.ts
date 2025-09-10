@@ -17,17 +17,17 @@ export const DEFAULT_PRIMARY_STYLES: Styles = {
     '': '#clear',
     pressed: '#purple-text',
     focused: '#purple-text',
-    '[disabled] | disabled': '#border',
+    disabled: '#border',
   },
   fill: {
     '': '#purple',
     hovered: '#purple-text',
     pressed: '#purple',
-    '[disabled] | disabled': '#dark.04',
+    disabled: '#dark.04',
   },
   color: {
     '': '#white',
-    '[disabled] | disabled': '#dark-04',
+    disabled: '#dark-04',
   },
 } as const;
 
@@ -36,17 +36,17 @@ export const DEFAULT_SECONDARY_STYLES: Styles = {
     '': '#purple.15',
     pressed: '#purple.3',
     focused: '#purple-text',
-    '[disabled] | disabled': '#border',
+    disabled: '#border',
   },
   fill: {
     '': '#purple.10',
     hovered: '#purple.16',
     pressed: '#purple-text.10',
-    '[disabled] | disabled': '#dark.04',
+    disabled: '#dark.04',
   },
   color: {
     '': '#purple',
-    '[disabled] | disabled': '#dark-04',
+    disabled: '#dark-04',
   },
 } as const;
 
@@ -54,20 +54,20 @@ export const DEFAULT_OUTLINE_STYLES: Styles = {
   border: {
     '': true,
     focused: '#purple-text',
-    '[disabled] | disabled': true,
+    disabled: true,
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
     '': '#dark.0',
     hovered: '#dark.03',
     'pressed | (selected & !hovered)': '#dark.06',
-    '[disabled] | disabled': '#dark.04',
+    disabled: '#dark.04',
   },
   color: {
     '': '#dark-02',
     hovered: '#dark-02',
     'pressed | (selected & !hovered)': '#dark',
-    '[disabled] | disabled': '#dark-04',
+    disabled: '#dark-04',
   },
 } as const;
 
@@ -83,13 +83,13 @@ export const DEFAULT_NEUTRAL_STYLES: Styles = {
     selected: '#dark.09',
     'selected & hovered': '#dark.12',
     pressed: '#dark.09',
-    '[disabled] | disabled': '#clear',
+    disabled: '#clear',
   },
   color: {
     '': '#dark-02',
     hovered: '#dark-02',
     pressed: '#dark',
-    '[disabled] | disabled': '#dark-04',
+    disabled: '#dark-04',
   },
 } as const;
 
@@ -107,7 +107,7 @@ export const DEFAULT_CLEAR_STYLES: Styles = {
   },
   color: {
     '': '#purple-text',
-    '[disabled] | disabled': '#dark-04',
+    disabled: '#dark-04',
   },
 } as const;
 
@@ -123,7 +123,7 @@ export const DEFAULT_LINK_STYLES: Styles = {
   color: {
     '': '#purple-text',
     'hovered & !pressed': '#purple',
-    '[disabled] | disabled': '#dark-04',
+    disabled: '#dark-04',
   },
 } as const;
 
@@ -135,13 +135,13 @@ export const DEFAULT_ITEM_STYLES: Styles = {
     selected: '#dark.09',
     'selected & (hovered | focused)': '#dark.12',
     pressed: '#dark.09',
-    '[disabled] | disabled': '#clear',
+    disabled: '#clear',
   },
   color: {
     '': '#dark-02',
     hovered: '#dark-02',
     pressed: '#dark',
-    '[disabled] | disabled': '#dark-04',
+    disabled: '#dark-04',
   },
 } as const;
 
@@ -154,16 +154,16 @@ export const DANGER_PRIMARY_STYLES: Styles = {
   border: {
     '': '#clear',
     'pressed | focused': '#danger-text',
-    '[disabled] | disabled': '#border',
+    disabled: '#border',
   },
   fill: {
     '': '#danger',
     'hovered & !pressed': '#danger-text',
-    '[disabled] | disabled': '#dark.04',
+    disabled: '#dark.04',
   },
   color: {
     '': '#white',
-    '[disabled] | disabled': '#dark-04',
+    disabled: '#dark-04',
   },
 } as const;
 
@@ -172,16 +172,16 @@ export const DANGER_SECONDARY_STYLES: Styles = {
     '': '#danger.15',
     pressed: '#danger.3',
     focused: '#danger-text',
-    '[disabled] | disabled': '#border',
+    disabled: '#border',
   },
   fill: {
     '': '#danger.05',
     'hovered & !pressed': '#danger.1',
-    '[disabled] | disabled': '#dark.04',
+    disabled: '#dark.04',
   },
   color: {
     '': '#danger',
-    '[disabled] | disabled': '#dark-04',
+    disabled: '#dark-04',
   },
 } as const;
 
@@ -190,17 +190,17 @@ export const DANGER_OUTLINE_STYLES: Styles = {
     '': '#danger.15',
     pressed: '#danger.3',
     focused: '#danger-text',
-    '[disabled] | disabled': '#border',
+    disabled: '#border',
   },
   fill: {
     '': '#danger.0',
     hovered: '#danger.1',
     'pressed | (selected & !hovered)': '#danger.05',
-    '[disabled] | disabled': '#dark.04',
+    disabled: '#dark.04',
   },
   color: {
     '': '#danger-text',
-    '[disabled] | disabled': '#dark-04',
+    disabled: '#dark-04',
   },
 } as const;
 
@@ -217,7 +217,7 @@ export const DANGER_NEUTRAL_STYLES: Styles = {
   color: {
     '': '#dark-02',
     'pressed | (selected & !hovered)': '#danger-text',
-    '[disabled] | disabled': '#dark-04',
+    disabled: '#dark-04',
   },
 } as const;
 
@@ -233,13 +233,13 @@ export const DANGER_CLEAR_STYLES: Styles = {
     selected: '#danger-text.09',
     'selected & hovered': '#danger-text.12',
     pressed: '#danger-text.09',
-    '[disabled] | disabled': '#clear',
+    disabled: '#clear',
   },
   color: {
     '': '#danger-text',
     hovered: '#danger-text',
     pressed: '#danger-text',
-    '[disabled] | disabled': '#danger-text.4',
+    disabled: '#danger-text.4',
   },
 } as const;
 
@@ -255,7 +255,7 @@ export const DANGER_LINK_STYLES: Styles = {
   color: {
     '': '#danger-text',
     'hovered & !pressed': '#danger',
-    '[disabled] | disabled': '#dark-04',
+    disabled: '#dark-04',
   },
 } as const;
 
@@ -267,13 +267,13 @@ export const DANGER_ITEM_STYLES: Styles = {
     selected: '#danger-text.09',
     'selected & (hovered | focused)': '#danger-text.12',
     pressed: '#danger-text.09',
-    '[disabled] | disabled': '#clear',
+    disabled: '#clear',
   },
   color: {
     '': '#danger-text',
     hovered: '#danger-text',
     pressed: '#danger-text',
-    '[disabled] | disabled': '#danger-text.4',
+    disabled: '#danger-text.4',
   },
 } as const;
 
@@ -286,16 +286,16 @@ export const SUCCESS_PRIMARY_STYLES: Styles = {
   border: {
     '': '#clear',
     'pressed | focused': '#success-text',
-    '[disabled] | disabled': '#border',
+    disabled: '#border',
   },
   fill: {
     '': '#success',
     'hovered & !pressed': '#success-text',
-    '[disabled] | disabled': '#dark.04',
+    disabled: '#dark.04',
   },
   color: {
     '': '#white',
-    '[disabled] | disabled': '#dark-04',
+    disabled: '#dark-04',
   },
 } as const;
 
@@ -304,16 +304,16 @@ export const SUCCESS_SECONDARY_STYLES: Styles = {
     '': '#success.15',
     pressed: '#success.3',
     focused: '#success-text',
-    '[disabled] | disabled': '#border',
+    disabled: '#border',
   },
   fill: {
     '': '#success.05',
     'hovered & !pressed': '#success.1',
-    '[disabled] | disabled': '#dark.04',
+    disabled: '#dark.04',
   },
   color: {
     '': '#success',
-    '[disabled] | disabled': '#dark-04',
+    disabled: '#dark-04',
   },
 } as const;
 
@@ -322,17 +322,17 @@ export const SUCCESS_OUTLINE_STYLES: Styles = {
     '': '#success.15',
     pressed: '#success.3',
     focused: '#success-text',
-    '[disabled] | disabled': '#border',
+    disabled: '#border',
   },
   fill: {
     '': '#success.0',
     hovered: '#success.1',
     'pressed | (selected & !hovered)': '#success.05',
-    '[disabled] | disabled': '#dark.04',
+    disabled: '#dark.04',
   },
   color: {
     '': '#success-text',
-    '[disabled] | disabled': '#dark-04',
+    disabled: '#dark-04',
   },
 } as const;
 
@@ -349,7 +349,7 @@ export const SUCCESS_NEUTRAL_STYLES: Styles = {
   color: {
     '': '#dark-02',
     'pressed | (selected & !hovered)': '#success-text',
-    '[disabled] | disabled': '#dark-04',
+    disabled: '#dark-04',
   },
 } as const;
 
@@ -365,13 +365,13 @@ export const SUCCESS_CLEAR_STYLES: Styles = {
     selected: '#success-text.09',
     'selected & hovered': '#success-text.12',
     pressed: '#success-text.09',
-    '[disabled] | disabled': '#clear',
+    disabled: '#clear',
   },
   color: {
     '': '#success-text',
     hovered: '#success-text',
     pressed: '#success-text',
-    '[disabled] | disabled': '#success-text.4',
+    disabled: '#success-text.4',
   },
 } as const;
 
@@ -387,7 +387,7 @@ export const SUCCESS_LINK_STYLES: Styles = {
   color: {
     '': '#success-text',
     'hovered & !pressed': '#success',
-    '[disabled] | disabled': '#dark-04',
+    disabled: '#dark-04',
   },
 } as const;
 
@@ -399,13 +399,13 @@ export const SUCCESS_ITEM_STYLES: Styles = {
     selected: '#success-text.09',
     'selected & (hovered | focused)': '#success-text.12',
     pressed: '#success-text.09',
-    '[disabled] | disabled': '#clear',
+    disabled: '#clear',
   },
   color: {
     '': '#success-text',
     hovered: '#success-text',
     pressed: '#success-text',
-    '[disabled] | disabled': '#success-text.4',
+    disabled: '#success-text.4',
   },
 } as const;
 
@@ -418,16 +418,16 @@ export const SPECIAL_PRIMARY_STYLES: Styles = {
   border: {
     '': '#clear',
     pressed: '#purple-03',
-    '[disabled] | disabled': '#white.3',
+    disabled: '#white.3',
   },
   fill: {
     '': '#purple',
     'hovered & !pressed': '#purple-text',
-    '[disabled] | disabled': '#white.12',
+    disabled: '#white.12',
   },
   color: {
     '': '#white',
-    '[disabled] | disabled': '#white.4',
+    disabled: '#white.4',
   },
 } as const;
 
@@ -440,11 +440,11 @@ export const SPECIAL_SECONDARY_STYLES: Styles = {
   fill: {
     '': '#white.12',
     'hovered & !pressed': '#white.18',
-    '[disabled] | disabled': '#white.12',
+    disabled: '#white.12',
   },
   color: {
     '': '#white',
-    '[disabled] | disabled': '#white.4',
+    disabled: '#white.4',
   },
 } as const;
 
@@ -459,11 +459,11 @@ export const SPECIAL_OUTLINE_STYLES: Styles = {
     '': '#white.0',
     hovered: '#white.18',
     'pressed | (selected & !hovered)': '#white.12',
-    '[disabled] | disabled': '#white.12',
+    disabled: '#white.12',
   },
   color: {
     '': '#white',
-    '[disabled] | disabled': '#white.4',
+    disabled: '#white.4',
   },
 } as const;
 
@@ -480,7 +480,7 @@ export const SPECIAL_NEUTRAL_STYLES: Styles = {
   },
   color: {
     '': '#white',
-    '[disabled] | disabled': '#white.4',
+    disabled: '#white.4',
   },
 } as const;
 
@@ -491,19 +491,19 @@ export const SPECIAL_CLEAR_STYLES: Styles = {
   border: {
     '': '#clear',
     'pressed | focused': '#white',
-    '[disabled] | disabled': '#white.3',
+    disabled: '#white.3',
     ...(VALIDATION_STYLES.border as Record<string, string>),
   },
   fill: {
     '': '#white',
     'hovered & !pressed': '#white.94',
-    '[disabled] | disabled': '#white.12',
+    disabled: '#white.12',
   },
   color: {
     '': '#purple-text',
     hovered: '#purple',
     'pressed & hovered': '#purple-text',
-    '[disabled] | disabled': '#white.4',
+    disabled: '#white.4',
   },
 } as const;
 
@@ -519,7 +519,7 @@ export const SPECIAL_LINK_STYLES: Styles = {
   color: {
     '': '#white',
     'hovered & !pressed': '#white.9',
-    '[disabled] | disabled': '#white.4',
+    disabled: '#white.4',
   },
 } as const;
 
@@ -532,7 +532,7 @@ export const SPECIAL_ITEM_STYLES: Styles = {
   },
   color: {
     '': '#white',
-    '[disabled] | disabled': '#white.4',
+    disabled: '#white.4',
   },
 } as const;
 

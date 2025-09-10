@@ -319,7 +319,7 @@ fill: '#surface',                 // Background color token
 color: {
   '': '#dark',
   hovered: '#purple',
-  '[disabled]': '#gray',
+  disabled: '#gray',
 },
 
 // color default (true): 'currentColor'
@@ -471,7 +471,7 @@ const Button = tasty({
       '': '#blue',
       hovered: '#blue.8',          // Custom modifier
       pressed: '#blue.6',          // Custom modifier
-      '[disabled]': '#gray',       // Built-in state
+      disabled: '#gray',           // Built-in state
     },
   },
 });
@@ -515,7 +515,7 @@ fill: {
   '.custom-class': '#highlight',           // CSS class selector
   '[data-variant="primary"]': '#primary',  // Data attribute with value
   '[data-loading]': '#gray',               // Data attribute (boolean)
-  '[disabled]': '#disabled',               // Built-in HTML attribute
+  disabled: '#disabled',                   // Built-in state
   '[aria-selected="true"]': '#selected',   // ARIA attribute
   ':focus-visible': '#focus',              // CSS pseudo-class
 }
@@ -741,10 +741,9 @@ styles: {
 const [dynamicStyles, setDynamicStyles] = useState({});
 <Component styles={dynamicStyles} /> // Use style prop for dynamic values
 
-// ❌ Don't use simplified keys for built-in states
+// ❌ Don't use simplified keys for other built-in states that require attributes
 styles: {
   color: {
-    disabled: '#gray',     // Use '[disabled]' instead
     checked: '#blue',      // Use '[checked]' instead
   },
 }
