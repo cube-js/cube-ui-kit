@@ -16,12 +16,8 @@ import { heightStyle } from './height';
 import { insetStyle } from './inset';
 import { justifyStyle } from './justify';
 import { marginStyle } from './margin';
-import { marginBlockStyle } from './marginBlock';
-import { marginInlineStyle } from './marginInline';
 import { outlineStyle } from './outline';
 import { paddingStyle } from './padding';
-import { paddingBlockStyle } from './paddingBlock';
-import { paddingInlineStyle } from './paddingInline';
 import { presetStyle } from './preset';
 import { radiusStyle } from './radius';
 import { resetStyle } from './reset';
@@ -154,8 +150,6 @@ export function predefine() {
     fillStyle,
     widthStyle,
     marginStyle,
-    marginBlockStyle,
-    marginInlineStyle,
     gapStyle,
     flowStyle,
     colorStyle,
@@ -164,8 +158,6 @@ export function predefine() {
     borderStyle,
     shadowStyle,
     paddingStyle,
-    paddingBlockStyle,
-    paddingInlineStyle,
     alignStyle,
     justifyStyle,
     presetStyle,
