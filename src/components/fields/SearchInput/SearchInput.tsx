@@ -26,13 +26,9 @@ export interface CubeSearchInputProps
 const ClearButton = tasty(Button, {
   icon: <CloseIcon />,
   styles: {
-    radius: 'right (1r - 1bw)',
-    width: {
-      '': '3x',
-      '[data-size="large"]': '4x',
-    },
-    height: 'auto',
-    placeSelf: 'stretch',
+    height: '($size - 1x)',
+    width: '($size - 1x)',
+    margin: '0 .5x',
   },
 });
 
