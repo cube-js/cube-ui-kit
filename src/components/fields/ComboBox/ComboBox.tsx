@@ -332,23 +332,11 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   let clearValue = useEvent(() => {
     if (props.allowsCustomValue) {
       props.onInputChange?.('');
-      // If state has a setInputValue method, use it as well
-      if (
-        'setInputValue' in state &&
-        typeof state.setInputValue === 'function'
-      ) {
-        state.setInputValue('');
-      }
-    } else {
-      props.onSelectionChange?.(null);
-      // If state has a setSelectedKey method, use it as well
-      if (
-        'setSelectedKey' in state &&
-        typeof state.setSelectedKey === 'function'
-      ) {
-        state.setSelectedKey(null);
-      }
+      state.setInputValue('');
     }
+    props.onSelectionChange?.(null);
+    state.setSelectedKey(null);
+
     // Close the popup if it's open
     if (state.isOpen) {
       state.close();
