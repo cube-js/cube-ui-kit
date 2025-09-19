@@ -172,6 +172,8 @@ const ItemBaseElement = tasty({
       'with-icon ^ with-prefix': 'max-content 1sf max-content max-content',
       'with-icon & with-prefix':
         'max-content max-content 1sf max-content max-content',
+      '(with-icon ^ with-right-icon) & !with-description & !with-prefix & !with-suffix & !with-label':
+        'max-content',
     },
     gridRows: {
       '': 'auto auto',
@@ -461,6 +463,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     return {
       'with-icon': !!finalIcon,
       'with-right-icon': !!finalRightIcon,
+      'with-label': !!(children || labelProps),
       'with-prefix': !!finalPrefix,
       'with-suffix': !!finalSuffix,
       'with-description': !!description,

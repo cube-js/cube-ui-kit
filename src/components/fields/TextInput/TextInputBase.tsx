@@ -90,14 +90,15 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   transition: 'theme',
   backgroundClip: 'content-box',
   height: {
-    '': '$size-md $size-md',
-    '[data-size="small"]': '$size-sm $size-sm',
-    '[data-size="medium"]': '$size-md $size-md',
-    '[data-size="large"]': '$size-lg $size-lg',
-    multiline: 'min $size-md',
-    '[data-size="small"] & multiline': 'min $size-sm',
-    '[data-size="medium"] & multiline': 'min $size-md',
-    '[data-size="large"] & multiline': 'min $size-lg',
+    '': '$size $size',
+    multiline: 'min $size',
+  },
+
+  $size: {
+    '': '$size-md',
+    '[data-size="small"]': '$size-sm',
+    '[data-size="medium"]': '$size-md',
+    '[data-size="large"]': '$size-lg',
   },
 
   Prefix: ADD_STYLES,

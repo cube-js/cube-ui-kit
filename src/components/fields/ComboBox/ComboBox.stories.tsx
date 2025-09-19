@@ -55,6 +55,14 @@ export default {
         defaultValue: { summary: false },
       },
     },
+    isClearable: {
+      control: { type: 'boolean' },
+      description:
+        'Whether the combo box is clearable using ESC keyboard button or clear button inside the input',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
 
     /* Behavior */
     menuTrigger: {
@@ -346,6 +354,13 @@ Valid.args = { selectedKey: 'yellow', validationState: 'valid' };
 
 export const Disabled = Template.bind({});
 Disabled.args = { selectedKey: 'yellow', isDisabled: true };
+
+export const Clearable = Template.bind({});
+Clearable.args = {
+  defaultSelectedKey: 'purple',
+  isClearable: true,
+  placeholder: 'Choose a color...',
+};
 
 export const Wide: StoryFn<CubeComboBoxProps<any>> = (
   args: CubeComboBoxProps<any>,
