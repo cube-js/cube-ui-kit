@@ -26,7 +26,8 @@ import { Section as BaseSection, useSelectState } from 'react-stately';
 import { CubeTooltipProviderProps } from 'src/components/overlays/Tooltip/TooltipProvider';
 import styled from 'styled-components';
 
-import { DirectionIcon, LoadingIcon } from '../../../icons/index';
+import { useEvent } from '../../../_internal';
+import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons/index';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared/index';
 import {
@@ -51,6 +52,7 @@ import {
 import { useFocus } from '../../../utils/react/interactions';
 import { useEventBus } from '../../../utils/react/useEventBus';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
+import { Button } from '../../actions';
 import {
   StyledDivider as ListDivider,
   StyledSectionHeading as ListSectionHeading,
@@ -149,6 +151,16 @@ const StyledOverlayElement = styled(OverlayElement)`
   }}
 `;
 
+const ClearButton = tasty(Button, {
+  children: <CloseIcon />,
+  type: 'neutral',
+  mods: { pressed: false },
+  styles: {
+    height: '($size - 1x)',
+    width: '($size - 1x)',
+  },
+});
+
 export interface CubeSelectBaseProps<T>
   extends BasePropsWithoutChildren,
     AriaLabelingProps,
@@ -200,6 +212,8 @@ export interface CubeSelectBaseProps<T>
   type?: 'outline' | 'clear' | 'primary' | (string & {});
   suffixPosition?: 'before' | 'after';
   theme?: 'default' | 'special';
+  /** Whether the select is clearable using a clear button in the rightIcon slot */
+  isClearable?: boolean;
 }
 
 export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
@@ -267,6 +281,7 @@ function Select<T extends object>(
     theme = 'default',
     labelSuffix,
     suffixPosition = 'before',
+    isClearable,
     ...otherProps
   } = props;
   let state = useSelectState(props);
@@ -330,6 +345,17 @@ function Select<T extends object>(
 
   let validationIcon = isInvalid ? InvalidIcon : ValidIcon;
   let validation = cloneElement(validationIcon);
+
+  // Clear button logic
+  let hasSelection = state.selectedItem != null;
+  let showClearButton =
+    isClearable && hasSelection && !isDisabled && !props.isReadOnly;
+
+  // Clear function
+  let clearValue = useEvent(() => {
+    props.onSelectionChange?.(null);
+    state.setSelectedKey(null);
+  });
 
   let triggerWidth = triggerRef?.current?.offsetWidth;
 
@@ -404,6 +430,13 @@ function Select<T extends object>(
         rightIcon={
           rightIcon !== undefined ? (
             rightIcon
+          ) : showClearButton ? (
+            <ClearButton
+              size={size}
+              theme={validationState === 'invalid' ? 'danger' : undefined}
+              qa="SelectClearButton"
+              onPress={clearValue}
+            />
           ) : isLoading ? (
             <LoadingIcon />
           ) : (
