@@ -581,25 +581,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const selectedLabels = getSelectedLabels();
   const hasSelection = selectedLabels.length > 0;
 
-  // Clear button logic
-  let showClearButton =
-    isClearable && hasSelection && !isDisabled && !props.isReadOnly;
-
-  // Clear function
-  let clearValue = useEvent(() => {
-    if (selectionMode === 'multiple') {
-      if (!isControlledMultiple) {
-        setInternalSelectedKeys([]);
-      }
-      onSelectionChange?.([]);
-    } else {
-      if (!isControlledSingle) {
-        setInternalSelectedKey(null);
-      }
-      onSelectionChange?.(null);
-    }
-  });
-
   // Always keep the latest selection in a ref (with normalized keys) so that we can read it synchronously in the popover close effect.
   const latestSelectionRef = useRef<{
     single: string | null;
@@ -975,6 +956,33 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       // Disable the update of the position while the popover is open (with a delay) to avoid jumping
       setShouldUpdatePosition(!state.isOpen);
     }, [state.isOpen]);
+
+    // Clear button logic
+    let showClearButton =
+      isClearable && hasSelection && !isDisabled && !props.isReadOnly;
+
+    // Clear function
+    let clearValue = useEvent(() => {
+      if (selectionMode === 'multiple') {
+        if (!isControlledMultiple) {
+          setInternalSelectedKeys([]);
+        }
+        onSelectionChange?.([]);
+      } else {
+        if (!isControlledSingle) {
+          setInternalSelectedKey(null);
+        }
+        onSelectionChange?.(null);
+      }
+
+      if (state.isOpen) {
+        state.close();
+      }
+
+      triggerRef?.current?.focus?.();
+
+      return false;
+    });
 
     return (
       <ItemButton

@@ -355,6 +355,12 @@ function Select<T extends object>(
   let clearValue = useEvent(() => {
     props.onSelectionChange?.(null);
     state.setSelectedKey(null);
+    // Close the popup if it's open
+    if (state.isOpen) {
+      state.close();
+    }
+    // Return focus to the trigger for better UX
+    triggerRef.current?.focus?.();
   });
 
   let triggerWidth = triggerRef?.current?.offsetWidth;

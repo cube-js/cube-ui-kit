@@ -95,6 +95,7 @@ const TriggerElement = tasty({
 
 const ClearButton = tasty(Button, {
   icon: <CloseIcon />,
+  type: 'neutral',
   styles: {
     height: '($size - 1x)',
     width: '($size - 1x)',
@@ -330,9 +331,11 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
   // Clear function
   let clearValue = useEvent(() => {
+    // Always clear input value in state so UI resets to placeholder
+    state.setInputValue('');
+    // Notify external input value only when custom value mode is enabled
     if (props.allowsCustomValue) {
       props.onInputChange?.('');
-      state.setInputValue('');
     }
     props.onSelectionChange?.(null);
     state.setSelectedKey(null);
@@ -497,7 +500,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         {showClearButton && (
           <ClearButton
             size={size}
-            type={validationState === 'invalid' ? 'clear' : 'neutral'}
             theme={validationState === 'invalid' ? 'danger' : undefined}
             qa="ComboBoxClearButton"
             data-no-trigger={hideTrigger ? '' : undefined}
