@@ -943,11 +943,12 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     });
 
     useEffect(() => {
-      // Allow initial positioning & flipping when opening, then lock placement after first frame
+      // Allow initial positioning & flipping when opening, then lock placement after transition
+      // Popover transition is ~120ms, give it a bit more time to finalize placement
       if (state.isOpen) {
         setShouldUpdatePosition(true);
-        const id = requestAnimationFrame(() => setShouldUpdatePosition(false));
-        return () => cancelAnimationFrame(id);
+        const id = window.setTimeout(() => setShouldUpdatePosition(false), 160);
+        return () => window.clearTimeout(id);
       } else {
         setShouldUpdatePosition(true);
       }
@@ -1038,7 +1039,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         placement="bottom start"
         styles={triggerStyles}
         shouldUpdatePosition={shouldUpdatePosition}
-        shouldFlip={shouldFlip && !isPopoverOpen}
+        shouldFlip={shouldFlip && shouldUpdatePosition}
         isDismissable={true}
         shouldCloseOnInteractOutside={(el) => {
           const menuTriggerEl = el.closest('[data-popover-trigger]');
