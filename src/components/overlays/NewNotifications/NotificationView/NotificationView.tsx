@@ -38,10 +38,10 @@ const NotificationContainer = tasty({
     },
     outline: 0,
     border: {
-      '': '#clear',
+      '': '#border',
       '[data-type="success"]': '#success.4',
       '[data-type="danger"]': '#danger.4',
-      '[data-type="attention"]': '#note.4',
+      '[data-type="attention"]': '#border',
     },
   },
 });
