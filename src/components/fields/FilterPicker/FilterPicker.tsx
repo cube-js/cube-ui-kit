@@ -36,7 +36,7 @@ import {
 import { generateRandomId } from '../../../utils/random';
 import { mergeProps } from '../../../utils/react';
 import { useEventBus } from '../../../utils/react/useEventBus';
-import { Button, CubeItemButtonProps, ItemButton } from '../../actions';
+import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
 import { CubeItemBaseProps } from '../../content/ItemBase';
 import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
@@ -131,16 +131,6 @@ const FilterPickerWrapper = tasty({
     gridRows: '1sf',
     placeContent: 'stretch',
     placeItems: 'stretch',
-  },
-});
-
-const ClearButton = tasty(Button, {
-  children: <CloseIcon />,
-  type: 'neutral',
-  mods: { pressed: false },
-  styles: {
-    height: '($size - 1x)',
-    width: '($size - 1x)',
   },
 });
 
@@ -1004,10 +994,12 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
           ) : rightIcon !== undefined ? (
             rightIcon
           ) : showClearButton ? (
-            <ClearButton
+            <ItemAction
+              icon={<CloseIcon />}
               size={size}
               theme={validationState === 'invalid' ? 'danger' : undefined}
               qa="FilterPickerClearButton"
+              mods={{ pressed: false }}
               onPress={clearValue}
             />
           ) : (

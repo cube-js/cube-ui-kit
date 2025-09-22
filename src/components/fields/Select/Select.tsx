@@ -52,7 +52,7 @@ import {
 import { useFocus } from '../../../utils/react/interactions';
 import { useEventBus } from '../../../utils/react/useEventBus';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
-import { Button } from '../../actions';
+import { ItemAction } from '../../actions';
 import {
   StyledDivider as ListDivider,
   StyledSectionHeading as ListSectionHeading,
@@ -150,16 +150,6 @@ const StyledOverlayElement = styled(OverlayElement)`
     return getOverlayTransitionCSS({ placement: props?.['data-position'] });
   }}
 `;
-
-const ClearButton = tasty(Button, {
-  children: <CloseIcon />,
-  type: 'neutral',
-  mods: { pressed: false },
-  styles: {
-    height: '($size - 1x)',
-    width: '($size - 1x)',
-  },
-});
 
 export interface CubeSelectBaseProps<T>
   extends BasePropsWithoutChildren,
@@ -437,10 +427,12 @@ function Select<T extends object>(
           rightIcon !== undefined ? (
             rightIcon
           ) : showClearButton ? (
-            <ClearButton
+            <ItemAction
+              icon={<CloseIcon />}
               size={size}
               theme={validationState === 'invalid' ? 'danger' : undefined}
               qa="SelectClearButton"
+              mods={{ pressed: false }}
               onPress={clearValue}
             />
           ) : isLoading ? (

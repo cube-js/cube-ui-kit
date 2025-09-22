@@ -37,7 +37,7 @@ import {
 } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { useEventBus } from '../../../utils/react/useEventBus';
-import { Button } from '../../actions';
+import { ItemAction } from '../../actions';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { Item } from '../../Item';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
@@ -90,16 +90,6 @@ const TriggerElement = tasty({
       disabled: '#clear',
     },
     cursor: 'pointer',
-  },
-});
-
-const ClearButton = tasty(Button, {
-  icon: <CloseIcon />,
-  type: 'neutral',
-  styles: {
-    height: '($size - 1x)',
-    width: '($size - 1x)',
-    margin: '0 .5x',
   },
 });
 
@@ -498,7 +488,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         ) : null}
         {suffixPosition === 'after' ? suffix : null}
         {showClearButton && (
-          <ClearButton
+          <ItemAction
+            icon={<CloseIcon />}
             size={size}
             theme={validationState === 'invalid' ? 'danger' : undefined}
             qa="ComboBoxClearButton"
