@@ -1,11 +1,11 @@
-import { ForwardedRef, forwardRef, useContext } from 'react';
+import { ForwardedRef, forwardRef } from 'react';
 import { useFocusRing, useHover } from 'react-aria';
 
 import { useEvent, useTimer } from '../../../../_internal';
 import { tasty } from '../../../../tasty';
 import { ClearSlots, mergeProps } from '../../../../utils/react';
 import { useId } from '../../../../utils/react/useId';
-import { DialogContext } from '../../Dialog/context';
+import { useNotificationsDialogContext } from '../Dialog/NotificationsDialogContext';
 
 import { NotificationCloseButton } from './NotificationCloseButton';
 import { NotificationDescription } from './NotificationDescription';
@@ -76,11 +76,8 @@ export const NotificationView = forwardRef(function NotificationView(
   const labelID = useId();
   const descriptionID = useId();
 
-  // Detect if we're inside a dialog
-  const dialogContext = useContext(DialogContext);
-  const insideDialog = dialogContext !== null && dialogContext !== undefined;
-
-  console.log('! insideDialog', insideDialog);
+  // Detect if we're inside a NotificationsDialog specifically
+  const insideNotificationsDialog = useNotificationsDialogContext();
 
   const onCloseEvent = useEvent(() => {
     onClose?.();
@@ -117,7 +114,7 @@ export const NotificationView = forwardRef(function NotificationView(
           mods={{
             focused: isFocusVisible,
             'is-dismissible': isDismissible,
-            'inside-dialog': insideDialog,
+            'inside-dialog': insideNotificationsDialog,
           }}
         >
           <NotificationIcon icon={icon} type={type} />
