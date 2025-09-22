@@ -44,6 +44,8 @@ export { CubeIcon } from './CubeIcon';
 export { DangerIcon } from './DangerIcon';
 export { DashboardIcon } from './DashboardIcon';
 export { DatabaseIcon } from './DatabaseIcon';
+export { DecimalDecreaseIcon } from './DecimalDecreaseIcon';
+export { DecimalIncreaseIcon } from './DecimalIncreaseIcon';
 export { DirectionIcon } from './DirectionIcon';
 export { DonutIcon } from './DonutIcon';
 export { DownIcon } from './DownIcon';
