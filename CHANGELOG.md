@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.77.3
+
+### Patch Changes
+
+- [#787](https://github.com/cube-js/cube-ui-kit/pull/787) [`78dc7da2`](https://github.com/cube-js/cube-ui-kit/commit/78dc7da2983d1acb1ed32ad48e482a62758c093c) Thanks [@tenphi](https://github.com/tenphi)! - Add ItemAction component with a temporary implementation.
+
+- [#787](https://github.com/cube-js/cube-ui-kit/pull/787) [`78dc7da2`](https://github.com/cube-js/cube-ui-kit/commit/78dc7da2983d1acb1ed32ad48e482a62758c093c) Thanks [@tenphi](https://github.com/tenphi)! - Add a clear button to FilterPicker, Select and ComboBox components. Redesign the clear button in SearchInput component.
+
+- [#789](https://github.com/cube-js/cube-ui-kit/pull/789) [`1251a11b`](https://github.com/cube-js/cube-ui-kit/commit/1251a11b7a406cf960ed1a89115c2f9dd4bd3717) Thanks [@tenphi](https://github.com/tenphi)! - Add DecimalDecreaseIcon.tsx and DecimalIncreaseIcon.tsx.
+
+- [#790](https://github.com/cube-js/cube-ui-kit/pull/790) [`f4e502d1`](https://github.com/cube-js/cube-ui-kit/commit/f4e502d19eae89334c8f2487f7c0a4acb9c3fde6) Thanks [@tenphi](https://github.com/tenphi)! - Make toasts and notifications more visible with a colorful border.
+
 ## 0.77.2
 
 ### Patch Changes
