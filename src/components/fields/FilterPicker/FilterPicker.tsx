@@ -895,7 +895,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     );
   };
 
-  const [shouldUpdatePosition, setShouldUpdatePosition] = useState(false);
+  const [shouldUpdatePosition, setShouldUpdatePosition] = useState(true);
 
   // The trigger is rendered as a function so we can access the dialog state
   const renderTrigger = (state) => {
@@ -943,8 +943,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     });
 
     useEffect(() => {
-      // Disable the update of the position while the popover is open (with a delay) to avoid jumping
-      setShouldUpdatePosition(!state.isOpen);
+      // Allow initial positioning & flipping when opening, then lock placement after first frame
+      if (state.isOpen) {
+        setShouldUpdatePosition(true);
+        const id = requestAnimationFrame(() => setShouldUpdatePosition(false));
+        return () => cancelAnimationFrame(id);
+      } else {
+        setShouldUpdatePosition(true);
+      }
     }, [state.isOpen]);
 
     // Clear button logic
@@ -1032,7 +1038,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         placement="bottom start"
         styles={triggerStyles}
         shouldUpdatePosition={shouldUpdatePosition}
-        shouldFlip={shouldFlip}
+        shouldFlip={shouldFlip && !isPopoverOpen}
         isDismissable={true}
         shouldCloseOnInteractOutside={(el) => {
           const menuTriggerEl = el.closest('[data-popover-trigger]');
