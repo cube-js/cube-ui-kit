@@ -14,7 +14,11 @@ import {
   useState,
 } from 'react';
 import { FocusScope, Key, useKeyboard } from 'react-aria';
-import { Section as BaseSection, Item, ListState } from 'react-stately';
+import {
+  Section as BaseSection,
+  ListState,
+  Item as ReactAriaItem,
+} from 'react-stately';
 
 import { useEvent } from '../../../_internal';
 import { useWarn } from '../../../_internal/hooks/use-warn';
@@ -441,7 +445,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             if (!child || typeof child !== 'object') return;
             const element = child as ReactElement;
 
-            if (element.type === Item) {
+            if (element.type === ReactAriaItem) {
               const props = element.props as any;
               const label =
                 props.textValue ||
@@ -523,7 +527,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
           if (!child || typeof child !== 'object') return;
           const element = child as ReactElement;
 
-          if (element.type === Item) {
+          if (element.type === ReactAriaItem) {
             const childKey = String(element.key);
             if (selectedSet.has(normalizeKeyValue(childKey))) {
               const props = element.props as any;
@@ -698,7 +702,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             if (sectionChild && typeof sectionChild === 'object') {
               const sectionElement = sectionChild as ReactElement;
               if (
-                sectionElement.type === Item ||
+                sectionElement.type === ReactAriaItem ||
                 (sectionElement.type as any)?.displayName === 'Item'
               ) {
                 const clonedItem = cloneWithNormalizedKey(sectionElement);
@@ -1214,7 +1218,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   );
 }) as unknown as (<T>(
   props: CubeFilterPickerProps<T> & { ref?: ForwardedRef<HTMLElement> },
-) => ReactElement) & { Item: typeof Item; Section: typeof BaseSection };
+) => ReactElement) & { Item: typeof ListBox.Item; Section: typeof BaseSection };
 
 FilterPicker.Item = ListBox.Item;
 
