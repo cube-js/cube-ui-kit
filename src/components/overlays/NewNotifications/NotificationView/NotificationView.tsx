@@ -44,7 +44,7 @@ const NotificationContainer = tasty({
       '[data-type="danger"]': '#danger.4',
       '[data-type="attention"]': '#border',
       // Clear border when inside dialog
-      'inside-dialog': '#clear',
+      'inside-dialog': false,
     },
   },
 });
