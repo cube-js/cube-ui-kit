@@ -20,6 +20,8 @@ export interface CubeSearchInputProps
     SearchFieldProps {
   /** Whether the search input is clearable using ESC keyboard button or clear button inside the input */
   isClearable?: boolean;
+  /** Callback called when the clear button is pressed */
+  onClear?: () => void;
 }
 
 export const SearchInput = forwardRef(function SearchInput(
@@ -29,7 +31,7 @@ export const SearchInput = forwardRef(function SearchInput(
   props = castNullableStringValue(props);
   props = useProviderProps(props);
 
-  let { isClearable, validationState } = props;
+  let { isClearable, validationState, onClear } = props;
 
   let inputRef = useRef(null);
 
@@ -57,6 +59,12 @@ export const SearchInput = forwardRef(function SearchInput(
                 type={validationState === 'invalid' ? 'clear' : 'neutral'}
                 theme={validationState === 'invalid' ? 'danger' : undefined}
                 {...ariaToCubeButtonProps(clearButtonProps)}
+                onPress={(e) => {
+                  // Call the original clear functionality
+                  clearButtonProps.onPress?.();
+                  // Call the onClear callback
+                  onClear?.();
+                }}
               />
             )}
           </>

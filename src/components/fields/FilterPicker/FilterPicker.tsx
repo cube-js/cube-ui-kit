@@ -123,6 +123,8 @@ export interface CubeFilterPickerProps<T>
   mods?: Record<string, boolean>;
   /** Whether the filter picker is clearable using a clear button in the rightIcon slot */
   isClearable?: boolean;
+  /** Callback called when the clear button is pressed */
+  onClear?: () => void;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -981,6 +983,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       }
 
       triggerRef?.current?.focus?.();
+
+      props.onClear?.();
 
       return false;
     });
