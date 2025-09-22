@@ -36,6 +36,13 @@ const NotificationContainer = tasty({
       '': '0 0 0 4bw #purple-04.0 inset',
       focused: '0 0 0 4bw #purple-04 inset',
     },
+    outline: 0,
+    border: {
+      '': '#clear',
+      '[data-type="success"]': '#success.4',
+      '[data-type="danger"]': '#danger.4',
+      '[data-type="attention"]': '#note.4',
+    },
   },
 });
 
@@ -95,6 +102,7 @@ export const NotificationView = forwardRef(function NotificationView(
           styles={styles}
           data-id={id}
           data-qa={qa}
+          data-type={type}
           aria-labelledby={labelID}
           aria-describedby={descriptionID}
           mods={{ focused: isFocusVisible, 'is-dismissible': isDismissible }}
