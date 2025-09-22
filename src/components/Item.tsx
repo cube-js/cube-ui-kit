@@ -11,6 +11,6 @@ export interface CubeItemProps<T>
   [key: string]: any;
 }
 
-const _Item = Item as unknown as <T>(props: CubeItemProps<T>) => ReactElement;
+const _Item = Item as <T>(props: CubeItemProps<T>) => ReactElement;
 
 export { _Item as Item };
