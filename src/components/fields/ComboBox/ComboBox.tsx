@@ -130,6 +130,8 @@ export interface CubeComboBoxProps<T>
   allowsCustomValue?: boolean;
   /** Whether the combo box is clearable using ESC keyboard button or clear button inside the input */
   isClearable?: boolean;
+  /** Callback called when the clear button is pressed */
+  onClear?: () => void;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -336,6 +338,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     }
     // Focus back to the input
     inputRef.current?.focus();
+
+    props.onClear?.();
   });
 
   let comboBoxWidth = wrapperRef?.current?.offsetWidth;

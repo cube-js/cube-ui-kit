@@ -204,6 +204,8 @@ export interface CubeSelectBaseProps<T>
   theme?: 'default' | 'special';
   /** Whether the select is clearable using a clear button in the rightIcon slot */
   isClearable?: boolean;
+  /** Callback called when the clear button is pressed */
+  onClear?: () => void;
 }
 
 export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
@@ -351,6 +353,8 @@ function Select<T extends object>(
     }
     // Return focus to the trigger for better UX
     triggerRef.current?.focus?.();
+
+    props.onClear?.();
   });
 
   let triggerWidth = triggerRef?.current?.offsetWidth;
