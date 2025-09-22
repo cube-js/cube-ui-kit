@@ -1,5 +1,19 @@
 # @cube-dev/ui-kit
 
+## 0.77.4
+
+### Patch Changes
+
+- [#791](https://github.com/cube-js/cube-ui-kit/pull/791) [`1ca1deb4`](https://github.com/cube-js/cube-ui-kit/commit/1ca1deb4211ec6a67a5d81fbd7606a76c69faa31) Thanks [@tenphi](https://github.com/tenphi)! - Actualize the interface of Item component.
+
+- [#791](https://github.com/cube-js/cube-ui-kit/pull/791) [`1ca1deb4`](https://github.com/cube-js/cube-ui-kit/commit/1ca1deb4211ec6a67a5d81fbd7606a76c69faa31) Thanks [@tenphi](https://github.com/tenphi)! - Make Panel placeSelf stretch by default.
+
+- [#791](https://github.com/cube-js/cube-ui-kit/pull/791) [`1ca1deb4`](https://github.com/cube-js/cube-ui-kit/commit/1ca1deb4211ec6a67a5d81fbd7606a76c69faa31) Thanks [@tenphi](https://github.com/tenphi)! - Fix Item interface for FilterPicker.
+
+- [#791](https://github.com/cube-js/cube-ui-kit/pull/791) [`1ca1deb4`](https://github.com/cube-js/cube-ui-kit/commit/1ca1deb4211ec6a67a5d81fbd7606a76c69faa31) Thanks [@tenphi](https://github.com/tenphi)! - Add onClear callback for FilterPicker, Select, ComboBox and SearchInput.
+
+- [#791](https://github.com/cube-js/cube-ui-kit/pull/791) [`1ca1deb4`](https://github.com/cube-js/cube-ui-kit/commit/1ca1deb4211ec6a67a5d81fbd7606a76c69faa31) Thanks [@tenphi](https://github.com/tenphi)! - Fix popover of FilterPicker to corretly flip on opening.
+
 ## 0.77.3
 
 ### Patch Changes
