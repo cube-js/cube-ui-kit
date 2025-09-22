@@ -19,7 +19,7 @@ import {
 import { Section as BaseSection, useComboBoxState } from 'react-stately';
 
 import { useEvent } from '../../../_internal/index';
-import { DownIcon, LoadingIcon } from '../../../icons';
+import { CloseIcon, DownIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import {
@@ -37,6 +37,7 @@ import {
 } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { useEventBus } from '../../../utils/react/useEventBus';
+import { ItemAction } from '../../actions';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { Item } from '../../Item';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
@@ -70,7 +71,9 @@ const TriggerElement = tasty({
     placeContent: 'center',
     placeSelf: 'stretch',
     radius: '(1r - 1bw) right',
+    padding: '0',
     width: '3x',
+    boxSizing: 'border-box',
     color: {
       '': '#dark-02',
       hovered: '#dark-02',
@@ -125,6 +128,8 @@ export interface CubeComboBoxProps<T>
   suffixPosition?: 'before' | 'after';
   menuTrigger?: MenuTriggerAction;
   allowsCustomValue?: boolean;
+  /** Whether the combo box is clearable using ESC keyboard button or clear button inside the input */
+  isClearable?: boolean;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -201,6 +206,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     labelSuffix,
     selectedKey,
     defaultSelectedKey,
+    isClearable,
     ...otherProps
   } = props;
 
@@ -306,6 +312,32 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   let validationIcon = isInvalid ? InvalidIcon : ValidIcon;
   let validation = cloneElement(validationIcon);
 
+  // Clear button logic
+  let hasValue = props.allowsCustomValue
+    ? state.inputValue !== ''
+    : state.selectedKey != null;
+  let showClearButton =
+    isClearable && hasValue && !isDisabled && !props.isReadOnly;
+
+  // Clear function
+  let clearValue = useEvent(() => {
+    // Always clear input value in state so UI resets to placeholder
+    state.setInputValue('');
+    // Notify external input value only when custom value mode is enabled
+    if (props.allowsCustomValue) {
+      props.onInputChange?.('');
+    }
+    props.onSelectionChange?.(null);
+    state.setSelectedKey(null);
+
+    // Close the popup if it's open
+    if (state.isOpen) {
+      state.close();
+    }
+    // Focus back to the input
+    inputRef.current?.focus();
+  });
+
   let comboBoxWidth = wrapperRef?.current?.offsetWidth;
 
   if (icon) {
@@ -333,6 +365,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       loading: isLoading,
       prefix: !!prefix,
       suffix: true,
+      clearable: showClearButton,
     }),
     [
       isInvalid,
@@ -342,6 +375,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       isFocused,
       isLoading,
       prefix,
+      showClearButton,
     ],
   );
 
@@ -453,6 +487,16 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
           </>
         ) : null}
         {suffixPosition === 'after' ? suffix : null}
+        {showClearButton && (
+          <ItemAction
+            icon={<CloseIcon />}
+            size={size}
+            theme={validationState === 'invalid' ? 'danger' : undefined}
+            qa="ComboBoxClearButton"
+            data-no-trigger={hideTrigger ? '' : undefined}
+            onPress={clearValue}
+          />
+        )}
         {!hideTrigger ? (
           <TriggerElement
             data-popover-trigger

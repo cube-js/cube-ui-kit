@@ -74,6 +74,14 @@ const meta: Meta<typeof FilterPicker> = {
         defaultValue: { summary: false },
       },
     },
+    isClearable: {
+      control: { type: 'boolean' },
+      description:
+        'Whether the filter picker is clearable using a clear button in the rightIcon slot',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
     disallowEmptySelection: {
       control: { type: 'boolean' },
       description: 'Whether to disallow empty selection',
@@ -436,6 +444,27 @@ export const SingleSelection: Story = {
     const canvas = within(canvasElement);
     const trigger = canvas.getByRole('button');
     await userEvent.click(trigger);
+  },
+  render: (args) => (
+    <FilterPicker {...args}>
+      {fruits.map((fruit) => (
+        <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+          {fruit.label}
+        </FilterPicker.Item>
+      ))}
+    </FilterPicker>
+  ),
+};
+
+export const Clearable: Story = {
+  args: {
+    label: 'Clearable Filter Picker',
+    placeholder: 'Choose items...',
+    selectionMode: 'single',
+    searchPlaceholder: 'Search fruits...',
+    width: 'max 30x',
+    defaultSelectedKey: 'apple',
+    isClearable: true,
   },
   render: (args) => (
     <FilterPicker {...args}>

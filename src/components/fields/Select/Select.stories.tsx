@@ -105,6 +105,15 @@ export default {
         defaultValue: { summary: 'bottom' },
       },
     },
+    isClearable: {
+      control: { type: 'boolean' },
+      description:
+        'Whether the select is clearable using a clear button in the rightIcon slot',
+      table: {
+        type: { summary: 'boolean' },
+        defaultValue: { summary: false },
+      },
+    },
     shouldFlip: {
       control: { type: 'boolean' },
       description: 'Whether dropdown should flip to fit in viewport',
@@ -403,6 +412,13 @@ WithPlaceholder.args = { placeholder: 'Enter a value' };
 
 export const WithDefaultValue = Template.bind({});
 WithDefaultValue.args = { defaultSelectedKey: 'purple' };
+
+export const Clearable = Template.bind({});
+Clearable.args = {
+  defaultSelectedKey: 'blue',
+  isClearable: true,
+  placeholder: 'Choose a color...',
+};
 
 export const WithIcon = Template.bind({});
 WithIcon.args = { icon: <IconCoin /> };

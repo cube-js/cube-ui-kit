@@ -4,13 +4,12 @@ import { SearchFieldProps, useSearchFieldState } from 'react-stately';
 
 import { CloseIcon, SearchIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
-import { tasty } from '../../../tasty';
 import { ariaToCubeButtonProps } from '../../../utils/react/mapProps';
 import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
-import { Button } from '../../actions';
+import { ItemAction } from '../../actions';
 import { CubeTextInputBaseProps, TextInputBase } from '../TextInput';
 
 export { useSearchFieldState, useSearchField };
@@ -22,19 +21,6 @@ export interface CubeSearchInputProps
   /** Whether the search input is clearable using ESC keyboard button or clear button inside the input */
   isClearable?: boolean;
 }
-
-const ClearButton = tasty(Button, {
-  icon: <CloseIcon />,
-  styles: {
-    radius: 'right (1r - 1bw)',
-    width: {
-      '': '3x',
-      '[data-size="large"]': '4x',
-    },
-    height: 'auto',
-    placeSelf: 'stretch',
-  },
-});
 
 export const SearchInput = forwardRef(function SearchInput(
   props: WithNullableValue<CubeSearchInputProps>,
@@ -65,7 +51,8 @@ export const SearchInput = forwardRef(function SearchInput(
           <>
             {props.suffix}
             {showClearButton && (
-              <ClearButton
+              <ItemAction
+                icon={<CloseIcon />}
                 size={props.size}
                 type={validationState === 'invalid' ? 'clear' : 'neutral'}
                 theme={validationState === 'invalid' ? 'danger' : undefined}

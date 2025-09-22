@@ -16,8 +16,9 @@ import {
 import { FocusScope, Key, useKeyboard } from 'react-aria';
 import { Section as BaseSection, Item, ListState } from 'react-stately';
 
+import { useEvent } from '../../../_internal';
 import { useWarn } from '../../../_internal/hooks/use-warn';
-import { DirectionIcon, LoadingIcon } from '../../../icons';
+import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import {
   BASE_STYLES,
@@ -35,12 +36,11 @@ import {
 import { generateRandomId } from '../../../utils/random';
 import { mergeProps } from '../../../utils/react';
 import { useEventBus } from '../../../utils/react/useEventBus';
-import { CubeItemButtonProps, ItemButton } from '../../actions';
+import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
 import { CubeItemBaseProps } from '../../content/ItemBase';
 import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
-import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import {
   CubeFilterListBoxProps,
   FilterListBox,
@@ -117,6 +117,8 @@ export interface CubeFilterPickerProps<T>
   listStateRef?: MutableRefObject<ListState<T>>;
   /** Additional modifiers for styling the FilterPicker */
   mods?: Record<string, boolean>;
+  /** Whether the filter picker is clearable using a clear button in the rightIcon slot */
+  isClearable?: boolean;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -235,6 +237,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     shouldUseVirtualFocus,
     onEscape,
     onOptionClick,
+    isClearable,
     ...otherProps
   } = props;
 
@@ -944,6 +947,33 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       setShouldUpdatePosition(!state.isOpen);
     }, [state.isOpen]);
 
+    // Clear button logic
+    let showClearButton =
+      isClearable && hasSelection && !isDisabled && !props.isReadOnly;
+
+    // Clear function
+    let clearValue = useEvent(() => {
+      if (selectionMode === 'multiple') {
+        if (!isControlledMultiple) {
+          setInternalSelectedKeys([]);
+        }
+        onSelectionChange?.([]);
+      } else {
+        if (!isControlledSingle) {
+          setInternalSelectedKey(null);
+        }
+        onSelectionChange?.(null);
+      }
+
+      if (state.isOpen) {
+        state.close();
+      }
+
+      triggerRef?.current?.focus?.();
+
+      return false;
+    });
+
     return (
       <ItemButton
         ref={triggerRef as any}
@@ -963,6 +993,15 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             <LoadingIcon />
           ) : rightIcon !== undefined ? (
             rightIcon
+          ) : showClearButton ? (
+            <ItemAction
+              icon={<CloseIcon />}
+              size={size}
+              theme={validationState === 'invalid' ? 'danger' : undefined}
+              qa="FilterPickerClearButton"
+              mods={{ pressed: false }}
+              onPress={clearValue}
+            />
           ) : (
             <DirectionIcon to={state.isOpen ? 'top' : 'bottom'} />
           )
