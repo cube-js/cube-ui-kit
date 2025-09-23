@@ -158,7 +158,7 @@ export function performClickHandler(
 
   onPress?.(evt);
 
-  if (!to && to !== 0) {
+  if (to == null) {
     // Allow 0 as valid navigation (go to current page)
     tracking.event(BUTTON_PRESS_EVENT, { qa }, element);
     return;
