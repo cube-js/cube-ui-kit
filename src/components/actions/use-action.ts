@@ -10,18 +10,25 @@ import { AllBaseProps, filterBaseProps, TagName } from '../../tasty';
 import { mergeProps } from '../../utils/react';
 import { useFocus } from '../../utils/react/interactions';
 
+// Import specific types for internal usage
+import type {
+  NavigateArg,
+  NavigateOptions,
+  Path,
+  To,
+} from '../../providers/navigation.types';
+
 const LINK_PRESS_EVENT = 'Link Press';
 const BUTTON_PRESS_EVENT = 'Button Press';
 
-// React Router compatible types
-export interface Path {
-  pathname: string; // starts with "/"
-  search: string; // starts with "?"
-  hash: string; // starts with "#"
-}
-
-export type To = string | Partial<Path>;
-export type NavigateArg = To | number;
+// Re-export types for convenience
+export type {
+  Path,
+  To,
+  NavigateArg,
+  NavigateOptions,
+  RelativeRoutingType,
+} from '../../providers/navigation.types';
 
 export interface CubeUseActionProps<
   T extends TagName = 'a' | 'button' | 'span' | 'div',
@@ -30,6 +37,7 @@ export interface CubeUseActionProps<
   to?: NavigateArg;
   label?: string;
   htmlType?: 'button' | 'submit' | 'reset' | undefined;
+  navigationOptions?: NavigateOptions;
 }
 
 const FILTER_OPTIONS = { propNames: new Set(['onMouseEnter', 'onMouseLeave']) };
@@ -58,66 +66,92 @@ export function openLink(href, target?) {
 }
 
 /**
- * Converts a Path object to a string URL
+ * Checks if a URL is external (absolute HTTP(S), protocol-relative, or non-http protocols)
  */
-function pathToString(path: Partial<Path>): string {
-  let { pathname = '', search = '', hash = '' } = path;
-  if (pathname && !pathname.startsWith('/')) pathname = `/${pathname}`;
-  if (search && !search.startsWith('?')) search = `?${search}`;
-  if (hash && !hash.startsWith('#')) hash = `#${hash}`;
-  return `${pathname}${search}${hash}`;
+function isExternalUrl(url: string): boolean {
+  return (
+    url.startsWith('http://') ||
+    url.startsWith('https://') ||
+    url.startsWith('//') ||
+    (url.includes(':') && !url.startsWith('#'))
+  );
 }
 
 export function parseTo(to: NavigateArg | undefined): {
   newTab: boolean;
   nativeRoute: boolean;
-  href: string | undefined;
+  cleanTo: To | undefined;
   isHistoryNavigation: boolean;
   historyDelta?: number;
+  isHashNavigation: boolean;
+  isExternal: boolean;
 } {
   // Handle number (history navigation)
   if (typeof to === 'number') {
     return {
       newTab: false,
       nativeRoute: false,
-      href: undefined,
+      cleanTo: undefined,
       isHistoryNavigation: true,
       historyDelta: to,
+      isHashNavigation: false,
+      isExternal: false,
     };
   }
 
   // Handle object path
   if (to && typeof to === 'object') {
-    const href = pathToString(to);
     return {
       newTab: false,
       nativeRoute: false,
-      href,
+      cleanTo: to,
       isHistoryNavigation: false,
+      isHashNavigation: false,
+      isExternal: false,
     };
   }
 
-  // Handle string (existing logic)
-  const newTab = to && typeof to === 'string' && to.startsWith('!');
-  const nativeRoute = to && typeof to === 'string' && to.startsWith('@');
-  const href: string | undefined =
-    to && typeof to === 'string'
-      ? newTab || nativeRoute
-        ? to.slice(1)
-        : to
-      : undefined;
+  // Handle string
+  if (!to || typeof to !== 'string') {
+    return {
+      newTab: false,
+      nativeRoute: false,
+      cleanTo: undefined,
+      isHistoryNavigation: false,
+      isHashNavigation: false,
+      isExternal: false,
+    };
+  }
+
+  const newTab = to.startsWith('!');
+  const nativeRoute = to.startsWith('@');
+  const isHashNavigation = to.startsWith('#');
+  const cleanTo = newTab || nativeRoute ? to.slice(1) : to;
+  const isExternal = typeof cleanTo === 'string' && isExternalUrl(cleanTo);
 
   return {
-    newTab: !!newTab,
-    nativeRoute: !!nativeRoute,
-    href,
+    newTab,
+    nativeRoute,
+    cleanTo,
     isHistoryNavigation: false,
+    isHashNavigation,
+    isExternal,
   };
 }
 
-export function performClickHandler(evt, { router, to, onPress, tracking }) {
-  const { newTab, nativeRoute, href, isHistoryNavigation, historyDelta } =
-    parseTo(to);
+export function performClickHandler(
+  evt,
+  { navigate, resolvedHref, to, onPress, tracking, navigationOptions },
+) {
+  const {
+    newTab,
+    nativeRoute,
+    cleanTo,
+    isHistoryNavigation,
+    historyDelta,
+    isHashNavigation,
+    isExternal,
+  } = parseTo(to);
   const element = evt.target;
   const qa = element?.getAttribute('data-qa');
 
@@ -126,98 +160,158 @@ export function performClickHandler(evt, { router, to, onPress, tracking }) {
   if (!to && to !== 0) {
     // Allow 0 as valid navigation (go to current page)
     tracking.event(BUTTON_PRESS_EVENT, { qa }, element);
-
     return;
   }
 
   // Handle history navigation (back/forward)
   if (isHistoryNavigation && typeof historyDelta === 'number') {
-    if (router && typeof router.go === 'function') {
-      tracking.event(
-        LINK_PRESS_EVENT,
-        { qa, delta: historyDelta, type: 'router-history' },
-        element,
-      );
-      router.go(historyDelta);
-    } else {
-      tracking.event(
-        LINK_PRESS_EVENT,
-        { qa, delta: historyDelta, type: 'native-history' },
-        element,
-      );
-      window.history.go(historyDelta);
-    }
+    tracking.event(
+      LINK_PRESS_EVENT,
+      { qa, delta: historyDelta, type: 'router-history' },
+      element,
+    );
+    navigate(historyDelta);
     return;
   }
 
-  if (evt.shiftKey || evt.metaKey || newTab) {
-    openLink(href, true);
-
-    tracking.event(LINK_PRESS_EVENT, { qa, href, type: 'tab' }, element);
-
-    return;
-  }
-
-  if (nativeRoute) {
-    openLink(href || window.location.href);
-    tracking.event(LINK_PRESS_EVENT, { qa, href, type: 'native' }, element);
-  } else if (href && href.startsWith('#')) {
-    const id = href.slice(1);
-    const element = document.getElementById(id);
+  // Handle hash navigation (smooth scroll)
+  if (isHashNavigation && typeof to === 'string') {
+    const id = to.slice(1);
+    const targetElement = document.getElementById(id);
 
     tracking.event(
       LINK_PRESS_EVENT,
-      { qa, href, type: 'hash', target: id },
+      { qa, href: to, type: 'hash', target: id },
       element,
     );
 
-    if (element) {
-      element.scrollIntoView({
+    if (targetElement) {
+      targetElement.scrollIntoView({
         behavior: 'smooth',
         block: 'start',
         inline: 'nearest',
       });
-
-      return;
     }
+    return;
   }
 
-  if (router) {
-    tracking.event(LINK_PRESS_EVENT, { qa, href, type: 'router' }, element);
+  // Handle new tab (via ! prefix or user modifiers)
+  if (evt.shiftKey || evt.metaKey || newTab) {
+    openLink(resolvedHref, true);
+    tracking.event(
+      LINK_PRESS_EVENT,
+      { qa, href: resolvedHref, type: 'tab' },
+      element,
+    );
+    return;
+  }
 
-    // For object paths, pass the original to value; for strings, use href
-    if (typeof to === 'object' && to !== null) {
-      // Modern React Router supports object navigation
-      if (typeof router.navigate === 'function') {
-        router.navigate(to);
-      } else {
-        // Fallback to push with string href for older routers
-        router.push(href);
-      }
+  // Handle @ prefix (native navigation)
+  if (nativeRoute) {
+    if (cleanTo === '' || cleanTo === undefined) {
+      // @'' or @ -> reload current page
+      tracking.event(LINK_PRESS_EVENT, { qa, type: 'native' }, element);
+      window.location.reload();
     } else {
-      router.push(href);
+      // @path -> navigate to resolved path natively
+      tracking.event(
+        LINK_PRESS_EVENT,
+        { qa, href: resolvedHref, type: 'native' },
+        element,
+      );
+      window.location.assign(resolvedHref);
     }
-  } else if (href) {
-    tracking.event(LINK_PRESS_EVENT, { qa, href, type: 'native' }, element);
-    window.location.href = href;
+    return;
+  }
+
+  // Handle external URLs (always native)
+  if (isExternal && typeof cleanTo === 'string') {
+    tracking.event(
+      LINK_PRESS_EVENT,
+      { qa, href: cleanTo, type: 'native' },
+      element,
+    );
+    window.location.assign(cleanTo);
+    return;
+  }
+
+  // Handle router navigation
+  if (cleanTo !== undefined) {
+    tracking.event(
+      LINK_PRESS_EVENT,
+      { qa, href: resolvedHref, type: 'router' },
+      element,
+    );
+    navigate(cleanTo, navigationOptions);
   }
 }
 
 export const useAction = function useAction(
-  { to, as, htmlType, label, mods, onPress, ...props }: CubeUseActionProps,
+  {
+    to,
+    as,
+    htmlType,
+    label,
+    mods,
+    onPress,
+    navigationOptions,
+    ...props
+  }: CubeUseActionProps,
   ref: FocusableRef<HTMLElement>,
 ) {
   const tracking = useTracking();
-  const router = useContext(UIKitContext).router;
+  const navigation = useContext(UIKitContext).navigation;
   const isDisabled = props.isDisabled;
-  const { newTab, href, isHistoryNavigation } = parseTo(to);
 
+  // Always call navigation hooks (using fallback when to is not provided)
+  const fallbackTo = to || '.';
+  const navigate = navigation.useNavigate();
+  const resolvedHref = navigation.useHref(fallbackTo);
+
+  const {
+    newTab,
+    nativeRoute,
+    cleanTo,
+    isHistoryNavigation,
+    isHashNavigation,
+    isExternal,
+  } = parseTo(to);
+
+  // Determine element type: 'a' for navigation, 'button' for actions
   as = to && !isHistoryNavigation ? 'a' : as || 'button';
-  const target = newTab ? '_blank' : undefined;
+
+  // Compute target (prefixes override explicit target prop per spec)
+  const target = newTab ? '_blank' : props.target;
+
+  // Compute href for anchor elements
+  let href: string | undefined;
+  if (as === 'a' && cleanTo !== undefined) {
+    if (newTab || nativeRoute) {
+      // For ! and @ prefixes, resolve the clean path
+      href =
+        typeof cleanTo === 'string' && isExternal
+          ? cleanTo // External URLs as-is
+          : navigation.useHref(cleanTo);
+    } else {
+      // Regular navigation
+      href = resolvedHref;
+    }
+  }
+
   const domRef = useFocusableRef(ref);
 
+  // Use navigation options directly
+  const mergedNavigationOptions = navigationOptions;
+
   const customOnPress = useEvent((evt: PressEvent) => {
-    performClickHandler(evt, { router, to, onPress, tracking });
+    performClickHandler(evt, {
+      navigate,
+      resolvedHref: href || resolvedHref,
+      to,
+      onPress,
+      tracking,
+      navigationOptions: mergedNavigationOptions,
+    });
   });
 
   let { buttonProps, isPressed } = useButton(

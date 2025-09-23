@@ -1,0 +1,326 @@
+import { Meta, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Link } from './Link';
+import * as LinkStories from './Link.stories';
+
+<Meta of={LinkStories} />
+
+# Link
+
+Semantic navigation component styled as a textual link. It reuses `Button` under the hood with `type="link"`, but this page focuses on navigation via the `to` prop.
+
+## When to Use
+
+- Navigate inside your SPA using the configured router
+- Open destinations in a new tab
+- Jump to on‑page anchors via `#id`
+- Perform history navigation (back/forward/reload) using numbers
+- Bypass SPA routing and force a full page load
+
+## Component
+
+<Story of={LinkStories.Default} />
+
+---
+
+## Properties
+
+<Controls />
+
+### Base Properties
+
+Supports [Base properties](/docs/tasty-base-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root element of the component.
+
+Sub-elements:
+- `ButtonIcon` – wrapper around `icon` and `rightIcon` when used.
+
+### Style Properties
+
+These properties allow direct styling without using the `styles` prop: `width`, `height`.
+
+---
+
+## Link Syntax (`to` prop)
+
+`to` defines where and how navigation happens. It accepts a string, an object path, or a number for history navigation.
+
+### 1) String URL/Path (SPA push)
+
+```jsx
+// Navigate to internal route via the navigation adapter
+<Link to="/pricing">Pricing</Link>
+
+// External absolute URLs always use native navigation
+<Link to="https://cube.dev">Cube</Link>
+
+// Relative paths work properly with router context
+<Link to="../parent-page">Parent</Link>
+```
+
+### 2) Open in a new tab (`!` prefix)
+
+```jsx
+// Open internal route in a new tab
+<Link to="!/changelog">Changelog</Link>
+
+// Open external URL in a new tab
+<Link to="!https://cube.dev">Docs</Link>
+```
+
+Notes:
+- Adds `target="_blank"` and `rel="noopener noreferrer"` automatically.
+- Cmd/Ctrl/Shift + click also opens in a new tab, like a native link.
+
+### 3) Native navigation / full reload (`@` prefix)
+
+```jsx
+// Bypass SPA router and perform a full page load
+<Link to="@/signin">Sign in</Link>
+
+// External native navigation works as well
+<Link to="@https://cube.dev">Homepage</Link>
+```
+
+### 4) On‑page anchors (hash links)
+
+```jsx
+// Smoothly scrolls to the element with id="features"
+<Link to="#features">Jump to Features</Link>
+```
+
+### 5) Object path (modern routers)
+
+```jsx
+// Uses navigate(to) with object path support
+<Link
+  to={{ pathname: '/search', search: 'q=cube', hash: 'top' }}
+>
+  Advanced search
+</Link>
+```
+
+Accepted object shape:
+```ts
+{ pathname?: string; search?: string; hash?: string }
+```
+
+Notes:
+- `search` and `hash` are auto-prefixed with `?` and `#` if needed
+- `pathname` can be relative (e.g., `../parent`) or absolute (e.g., `/root`)
+- Works with `!` and `@` prefixes when passed as strings
+
+### 6) History navigation (numbers)
+
+```jsx
+// Go back one entry
+<Link to={-1}>Back</Link>
+
+// Go forward one entry
+<Link to={1}>Forward</Link>
+
+// Reload current entry (like location.reload but via history)
+<Link to={0}>Reload</Link>
+```
+
+Behavior:
+- Uses `navigate(delta)` from the navigation adapter
+- The default adapter calls `window.history.go(delta)`
+
+---
+
+## Router Integration
+
+`Link` uses a hook-based navigation adapter that you provide via the `Root` component. The adapter enables proper relative path resolution for new-tab navigation and modern router integration.
+
+### Interface
+
+```ts
+interface NavigationAdapter {
+  useHref: (to: To, opts?: { relative?: 'route' | 'path' }) => string;
+  useNavigate: () => (to: To | number, opts?: NavigateOptions) => void;
+}
+```
+
+### React Router v6+ (Recommended)
+
+React Router hooks are directly compatible with our `NavigationAdapter` interface:
+
+```jsx
+import { Root } from '@cube-dev/ui-kit';
+import { useHref, useNavigate } from 'react-router-dom';
+
+const navigation = { useHref, useNavigate };
+
+export function App() {
+  return (
+    <Root navigation={navigation}>
+      {/* Your app content */}
+    </Root>
+  );
+}
+```
+
+### Custom adapter example
+
+For other routers, create a custom adapter:
+
+```jsx
+import { Root } from '@cube-dev/ui-kit';
+
+function MyRouterAdapter() {
+  return {
+    useHref: (to) => {
+      // Return resolved href for the given route
+      return typeof to === 'string' ? to : `${to.pathname || ''}${to.search || ''}${to.hash || ''}`;
+    },
+    useNavigate: () => {
+      return (to, options) => {
+        if (typeof to === 'number') {
+          window.history.go(to);
+        } else {
+          myRouter.navigate(to, options);
+        }
+      };
+    },
+  };
+}
+
+export function App() {
+  const navigation = MyRouterAdapter();
+  return <Root navigation={navigation}>{/* Your app */}</Root>;
+}
+```
+
+### No router (default behavior)
+
+When no `navigation` prop is provided, `Link` falls back to native browser navigation:
+
+```jsx
+import { Root } from '@cube-dev/ui-kit';
+
+export function App() {
+  return (
+    <Root>
+      {/* Links will use window.location for navigation */}
+    </Root>
+  );
+}
+```
+
+Default adapter behavior:
+- String/object navigation uses `window.location.assign(href)`
+- History navigation uses `window.history.go(delta)`
+- `!` prefix opens resolved URLs in a new tab
+- `@` prefix forces native navigation to resolved URLs
+- Relative paths are resolved against the current page
+
+---
+
+## Navigation Options
+
+Control navigation behavior via the `navigationOptions` prop:
+
+```jsx
+<Link 
+  to="/search"
+  navigationOptions={{ 
+    replace: true, 
+    state: { from: 'homepage' },
+    relative: 'path',
+    preventScrollReset: true
+  }}
+>
+  Search (replace history)
+</Link>
+```
+
+### Available options
+
+- `replace`: Replace current history entry instead of pushing a new one
+- `state`: Navigation state data (router-specific)  
+- `relative`: How relative paths are resolved (`'route'` | `'path'`)
+- `preventScrollReset`: Prevent scroll reset on navigation
+
+These options are passed to the router's `navigate` function and have no effect on native navigation (`@` prefix, external URLs, or when no adapter is provided).
+
+---
+
+## Variants
+
+`Link` inherits `theme` and `size` from `Button`. The visual `type` is fixed to `link`.
+
+### Themes
+
+- `default`, `danger`, `success`, `special`
+
+### Sizes
+
+- `xsmall`, `small`, `medium`, `large`, `xlarge`
+
+---
+
+## Examples
+
+### Basic SPA push
+
+```jsx
+<Link to="/about">About</Link>
+```
+
+### Anchor and new tab
+
+```jsx
+<Link to="#faq">FAQ</Link>
+<Link to="!https://cube.dev">Open Docs in new tab</Link>
+```
+
+### Bypass SPA
+
+```jsx
+<Link to="@/logout">Log out</Link>
+```
+
+### History
+
+```jsx
+<Link to={-1}>Back</Link>
+<Link to={0}>Reload</Link>
+```
+
+---
+
+## Accessibility
+
+- Renders as an `<a>` element when `to` is a string/object; as a `<button>` when `to` is a number or omitted.
+- Keyboard interaction and focus management are handled by React Aria.
+- Provide `label`/`aria-label` when there is no visible text.
+
+### ARIA Properties
+
+- `aria-label`, `aria-labelledby` – Accessible name.
+- Additional ARIA attributes supported by React Aria's `useButton`.
+
+---
+
+## Best Practices
+
+1. Prefer SPA push (`to="/path"`) for in‑app navigation; use `@` only when a full reload is required.
+2. Use `!` for new tabs instead of adding `target` props yourself; security attributes are added automatically.
+3. Use object `to` when your router supports structured navigation.
+4. For back/forward actions in UI, use numeric `to` for predictable history behavior.
+
+## Suggested Improvements
+
+- Add a dedicated `href` prop alias for clarity in link‑only scenarios.
+- Expose a `replace` option for SPA navigation.
+
+## Related Components
+
+- [Button](/docs/actions-button--docs) – Action component with multiple visual styles, including `type="link"`.
+
+

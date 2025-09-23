@@ -124,7 +124,7 @@ export interface CubeFilterListBoxProps<T>
   /** Whether the FilterListBox is in loading state (shows loading icon in search input) */
   isLoading?: boolean;
   /** Ref for accessing the search input element */
-  searchInputRef?: RefObject<HTMLInputElement>;
+  searchInputRef?: RefObject<HTMLInputElement | null>;
   /** Whether to allow entering custom values that are not present in the predefined options */
   allowsCustomValue?: boolean;
   /** Additional modifiers for styling the FilterListBox */
