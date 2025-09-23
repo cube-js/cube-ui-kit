@@ -7,6 +7,8 @@ import {
   useMemo,
 } from 'react';
 
+import { NavigationAdapter } from './providers/navigation.types';
+import { defaultNavigationAdapter } from './providers/navigationAdapter.default';
 import { BreakpointsProvider, Props } from './tasty';
 import { EventBusProvider } from './utils/react/useEventBus';
 
@@ -17,14 +19,16 @@ export interface ProviderProps extends Props {
   isReadOnly?: boolean;
   isRequired?: boolean;
   validationState?: string;
-  router?: any;
+  navigation?: NavigationAdapter;
   ref?: ReactElement;
   root?: ForwardedRef<any>;
 }
 
 export type ProviderInsideProps = Omit<ProviderProps, 'styles' | 'breakpoints'>;
 
-export const UIKitContext = createContext<ProviderInsideProps>({});
+export const UIKitContext = createContext<ProviderInsideProps>({
+  navigation: defaultNavigationAdapter,
+});
 
 export function Provider(allProps: PropsWithChildren<ProviderProps>) {
   let {
@@ -35,7 +39,7 @@ export function Provider(allProps: PropsWithChildren<ProviderProps>) {
     isReadOnly,
     isRequired,
     validationState,
-    router,
+    navigation,
     root,
     ref,
   } = allProps;
@@ -60,7 +64,7 @@ export function Provider(allProps: PropsWithChildren<ProviderProps>) {
       isReadOnly,
       isRequired,
       validationState,
-      router,
+      navigation: navigation || defaultNavigationAdapter,
       root,
     }),
     [
@@ -71,7 +75,7 @@ export function Provider(allProps: PropsWithChildren<ProviderProps>) {
       isReadOnly,
       isRequired,
       validationState,
-      router,
+      navigation,
       root,
     ],
   );

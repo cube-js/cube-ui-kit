@@ -217,7 +217,7 @@ export interface CubeListBoxProps<T>
   /** The selection mode of the ListBox */
   selectionMode?: 'single' | 'multiple';
   /** Ref for accessing the list DOM element */
-  listRef?: RefObject<HTMLUListElement>;
+  listRef?: RefObject<HTMLUListElement | null>;
   /** Whether to disallow empty selection */
   disallowEmptySelection?: boolean;
   /** Whether to wrap focus when reaching the end of the list */
@@ -226,7 +226,7 @@ export interface CubeListBoxProps<T>
    * Ref to access the internal ListState instance.
    * This allows parent components to access selection state and other list functionality.
    */
-  stateRef?: MutableRefObject<any | null>;
+  stateRef?: RefObject<any | null>;
 
   /**
    * Whether moving the pointer over an option will move DOM focus to that option.

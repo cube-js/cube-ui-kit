@@ -1,4 +1,4 @@
-import { createRef } from 'react';
+import { createRef, JSX } from 'react';
 
 import { FilterListBox } from '../../../index';
 import { act, render, renderWithRoot, userEvent } from '../../../test';
@@ -719,7 +719,7 @@ describe('<FilterListBox />', () => {
     });
 
     it('should forward listRef to list element', () => {
-      const listRef = createRef<HTMLElement>();
+      const listRef = createRef<HTMLUListElement | null>();
 
       render(
         <FilterListBox listRef={listRef} label="Select a fruit">
@@ -1192,7 +1192,6 @@ describe('<FilterListBox />', () => {
         <FilterListBox
           label="Select an item"
           searchPlaceholder="Search items..."
-          size="small"
         >
           {items}
         </FilterListBox>,
@@ -1244,9 +1243,7 @@ describe('<FilterListBox />', () => {
       const items = createManyItems();
 
       const { container } = renderWithRoot(
-        <FilterListBox label="Select an item" size="small">
-          {items}
-        </FilterListBox>,
+        <FilterListBox label="Select an item">{items}</FilterListBox>,
       );
 
       // Wait for component to render
@@ -1286,7 +1283,6 @@ describe('<FilterListBox />', () => {
         <FilterListBox
           label="Select an item"
           searchPlaceholder="Search items..."
-          size="small"
         >
           {items}
         </FilterListBox>,
