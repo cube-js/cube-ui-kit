@@ -13,11 +13,21 @@ import { useFocus } from '../../utils/react/interactions';
 const LINK_PRESS_EVENT = 'Link Press';
 const BUTTON_PRESS_EVENT = 'Button Press';
 
+// React Router compatible types
+export interface Path {
+  pathname: string; // starts with "/"
+  search: string; // starts with "?"
+  hash: string; // starts with "#"
+}
+
+export type To = string | Partial<Path>;
+export type NavigateArg = To | number;
+
 export interface CubeUseActionProps<
   T extends TagName = 'a' | 'button' | 'span' | 'div',
 > extends AllBaseProps<T>,
     Omit<AriaButtonProps, 'type'> {
-  to?: string;
+  to?: NavigateArg;
   label?: string;
   htmlType?: 'button' | 'submit' | 'reset' | undefined;
 }
@@ -36,6 +46,8 @@ export function openLink(href, target?) {
 
   if (target) {
     link.target = target === true ? '_blank' : target;
+    // Prevent reverse tabnabbing when opening in a new tab
+    link.rel = 'noopener noreferrer';
   }
 
   document.body.appendChild(link);
@@ -45,11 +57,47 @@ export function openLink(href, target?) {
   document.body.removeChild(link);
 }
 
-export function parseTo(to): {
+/**
+ * Converts a Path object to a string URL
+ */
+function pathToString(path: Partial<Path>): string {
+  let { pathname = '', search = '', hash = '' } = path;
+  if (pathname && !pathname.startsWith('/')) pathname = `/${pathname}`;
+  if (search && !search.startsWith('?')) search = `?${search}`;
+  if (hash && !hash.startsWith('#')) hash = `#${hash}`;
+  return `${pathname}${search}${hash}`;
+}
+
+export function parseTo(to: NavigateArg | undefined): {
   newTab: boolean;
   nativeRoute: boolean;
   href: string | undefined;
+  isHistoryNavigation: boolean;
+  historyDelta?: number;
 } {
+  // Handle number (history navigation)
+  if (typeof to === 'number') {
+    return {
+      newTab: false,
+      nativeRoute: false,
+      href: undefined,
+      isHistoryNavigation: true,
+      historyDelta: to,
+    };
+  }
+
+  // Handle object path
+  if (to && typeof to === 'object') {
+    const href = pathToString(to);
+    return {
+      newTab: false,
+      nativeRoute: false,
+      href,
+      isHistoryNavigation: false,
+    };
+  }
+
+  // Handle string (existing logic)
   const newTab = to && typeof to === 'string' && to.startsWith('!');
   const nativeRoute = to && typeof to === 'string' && to.startsWith('@');
   const href: string | undefined =
@@ -60,22 +108,45 @@ export function parseTo(to): {
       : undefined;
 
   return {
-    newTab,
-    nativeRoute,
+    newTab: !!newTab,
+    nativeRoute: !!nativeRoute,
     href,
+    isHistoryNavigation: false,
   };
 }
 
 export function performClickHandler(evt, { router, to, onPress, tracking }) {
-  const { newTab, nativeRoute, href } = parseTo(to);
+  const { newTab, nativeRoute, href, isHistoryNavigation, historyDelta } =
+    parseTo(to);
   const element = evt.target;
   const qa = element?.getAttribute('data-qa');
 
   onPress?.(evt);
 
-  if (!to) {
+  if (!to && to !== 0) {
+    // Allow 0 as valid navigation (go to current page)
     tracking.event(BUTTON_PRESS_EVENT, { qa }, element);
 
+    return;
+  }
+
+  // Handle history navigation (back/forward)
+  if (isHistoryNavigation && typeof historyDelta === 'number') {
+    if (router && typeof router.go === 'function') {
+      tracking.event(
+        LINK_PRESS_EVENT,
+        { qa, delta: historyDelta, type: 'router-history' },
+        element,
+      );
+      router.go(historyDelta);
+    } else {
+      tracking.event(
+        LINK_PRESS_EVENT,
+        { qa, delta: historyDelta, type: 'native-history' },
+        element,
+      );
+      window.history.go(historyDelta);
+    }
     return;
   }
 
@@ -113,7 +184,19 @@ export function performClickHandler(evt, { router, to, onPress, tracking }) {
 
   if (router) {
     tracking.event(LINK_PRESS_EVENT, { qa, href, type: 'router' }, element);
-    router.push(href);
+
+    // For object paths, pass the original to value; for strings, use href
+    if (typeof to === 'object' && to !== null) {
+      // Modern React Router supports object navigation
+      if (typeof router.navigate === 'function') {
+        router.navigate(to);
+      } else {
+        // Fallback to push with string href for older routers
+        router.push(href);
+      }
+    } else {
+      router.push(href);
+    }
   } else if (href) {
     tracking.event(LINK_PRESS_EVENT, { qa, href, type: 'native' }, element);
     window.location.href = href;
@@ -124,12 +207,12 @@ export const useAction = function useAction(
   { to, as, htmlType, label, mods, onPress, ...props }: CubeUseActionProps,
   ref: FocusableRef<HTMLElement>,
 ) {
-  as = to ? 'a' : as || 'button';
-
   const tracking = useTracking();
   const router = useContext(UIKitContext).router;
   const isDisabled = props.isDisabled;
-  const { newTab, href } = parseTo(to);
+  const { newTab, href, isHistoryNavigation } = parseTo(to);
+
+  as = to && !isHistoryNavigation ? 'a' : as || 'button';
   const target = newTab ? '_blank' : undefined;
   const domRef = useFocusableRef(ref);
 
@@ -148,13 +231,14 @@ export const useAction = function useAction(
   let { hoverProps, isHovered } = useHover({ isDisabled });
   let { focusProps, isFocused } = useFocus({ isDisabled }, true);
 
-  const customProps = to
-    ? {
-        onClick(evt) {
-          evt.preventDefault();
-        },
-      }
-    : {};
+  const customProps =
+    to && !isHistoryNavigation
+      ? {
+          onClick(evt) {
+            evt.preventDefault();
+          },
+        }
+      : {};
 
   return {
     actionProps: {
@@ -174,7 +258,7 @@ export const useAction = function useAction(
       ) as object),
       ref: domRef,
       type: htmlType || 'button',
-      rel: as === 'a' && newTab ? 'rel="noopener noreferrer"' : undefined,
+      rel: as === 'a' && newTab ? 'noopener noreferrer' : undefined,
       as,
       isDisabled,
       target,
