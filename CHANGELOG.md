@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.78.0
+
+### Minor Changes
+
+- [#793](https://github.com/cube-js/cube-ui-kit/pull/793) [`a64ee513`](https://github.com/cube-js/cube-ui-kit/commit/a64ee513381c56b470ebca720a6ad3f21bc5fd3f) Thanks [@tenphi](https://github.com/tenphi)! - The new navigation API that relies on external `useHref` and `useNavigation` hooks.
+
+### Patch Changes
+
+- [#793](https://github.com/cube-js/cube-ui-kit/pull/793) [`a64ee513`](https://github.com/cube-js/cube-ui-kit/commit/a64ee513381c56b470ebca720a6ad3f21bc5fd3f) Thanks [@tenphi](https://github.com/tenphi)! - Add support for full navigation argument type in `to` prop in actions including object `{ pathname, search, hash }` and numbers for history navigation. Use `<Link to={-1}>...` to move back in history.
+
 ## 0.77.4
 
 ### Patch Changes
