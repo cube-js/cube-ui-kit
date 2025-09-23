@@ -128,7 +128,7 @@ Notes:
 ```
 
 Behavior:
-- Uses `navigate(delta)` from the navigation adapter
+- Uses `navigate(delta)` from the navigation adapter with overload signature
 - The default adapter calls `window.history.go(delta)`
 
 ---
@@ -140,21 +140,27 @@ Behavior:
 ### Interface
 
 ```ts
+type NavigateLike = {
+  (to: To, options?: NavigateOptions): void;
+  (delta: number): void;
+};
+
 interface NavigationAdapter {
   useHref: (to: To, opts?: { relative?: 'route' | 'path' }) => string;
-  useNavigate: () => (to: To | number, opts?: NavigateOptions) => void;
+  useNavigate: () => NavigateLike;
 }
 ```
 
 ### React Router v6+ (Recommended)
 
-React Router hooks are directly compatible with our `NavigationAdapter` interface:
+React Router v6+ hooks are directly compatible with our `NavigationAdapter` interface:
 
 ```jsx
 import { Root } from '@cube-dev/ui-kit';
 import { useHref, useNavigate } from 'react-router-dom';
 
 const navigation = { useHref, useNavigate };
+// React Router's useNavigate supports both overloads: navigate(to, options) and navigate(delta)
 
 export function App() {
   return (
@@ -179,13 +185,15 @@ function MyRouterAdapter() {
       return typeof to === 'string' ? to : `${to.pathname || ''}${to.search || ''}${to.hash || ''}`;
     },
     useNavigate: () => {
-      return (to, options) => {
+      // Return function with overload signatures
+      const navigate = (to, options) => {
         if (typeof to === 'number') {
           window.history.go(to);
         } else {
           myRouter.navigate(to, options);
         }
       };
+      return navigate;
     },
   };
 }

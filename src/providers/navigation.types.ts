@@ -16,8 +16,14 @@ export interface NavigateOptions {
   preventScrollReset?: boolean;
 }
 
+// Overload-style type (NOT a union in the first arg)
+export type NavigateLike = {
+  (to: To, options?: NavigateOptions): void;
+  (delta: number): void;
+};
+
 export interface NavigationAdapter {
   // React Router compatible hook signatures
   useHref: (to: To, options?: { relative?: RelativeRoutingType }) => string;
-  useNavigate: () => (to: To | number, options?: NavigateOptions) => void;
+  useNavigate: () => NavigateLike;
 }

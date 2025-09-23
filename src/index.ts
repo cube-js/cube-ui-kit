@@ -37,6 +37,7 @@ export type { CubeRootProps } from './components/Root';
 // Navigation types and helpers
 export type {
   NavigationAdapter,
+  NavigateLike,
   Path,
   To,
   NavigateArg,

@@ -23,6 +23,7 @@ const BUTTON_PRESS_EVENT = 'Button Press';
 
 // Re-export types for convenience
 export type {
+  NavigateLike,
   Path,
   To,
   NavigateArg,
@@ -196,7 +197,7 @@ export function performClickHandler(
   }
 
   // Handle new tab (via ! prefix or user modifiers)
-  if (evt.shiftKey || evt.metaKey || newTab) {
+  if (evt.shiftKey || evt.metaKey || (evt as any).ctrlKey || newTab) {
     openLink(resolvedHref, true);
     tracking.event(
       LINK_PRESS_EVENT,
@@ -263,11 +264,6 @@ export const useAction = function useAction(
   const navigation = useContext(UIKitContext).navigation;
   const isDisabled = props.isDisabled;
 
-  // Always call navigation hooks (using fallback when to is not provided)
-  const fallbackTo = to || '.';
-  const navigate = navigation.useNavigate();
-  const resolvedHref = navigation.useHref(fallbackTo);
-
   const {
     newTab,
     nativeRoute,
@@ -276,6 +272,13 @@ export const useAction = function useAction(
     isHashNavigation,
     isExternal,
   } = parseTo(to);
+
+  // Always call navigation hooks (using fallback when to is not provided)
+  const fallbackTo = to || '.';
+  const navigate = navigation.useNavigate();
+  const resolvedHref = navigation.useHref(fallbackTo);
+  // Always resolve cleanTo href to avoid conditional hook calls
+  const cleanToHref = navigation.useHref(cleanTo || '.');
 
   // Determine element type: 'a' for navigation, 'button' for actions
   as = to && !isHistoryNavigation ? 'a' : as || 'button';
@@ -291,7 +294,7 @@ export const useAction = function useAction(
       href =
         typeof cleanTo === 'string' && isExternal
           ? cleanTo // External URLs as-is
-          : navigation.useHref(cleanTo);
+          : cleanToHref;
     } else {
       // Regular navigation
       href = resolvedHref;

@@ -1,4 +1,5 @@
 import {
+  NavigateLike,
   NavigateOptions,
   NavigationAdapter,
   Path,
@@ -31,7 +32,7 @@ export const defaultNavigationAdapter: NavigationAdapter = {
   },
 
   useNavigate: () => {
-    return (to: To | number, options?: NavigateOptions) => {
+    const navigate: NavigateLike = (to: any, options?: NavigateOptions) => {
       // Handle history navigation (numbers)
       if (typeof to === 'number') {
         if (typeof window !== 'undefined') {
@@ -51,5 +52,6 @@ export const defaultNavigationAdapter: NavigationAdapter = {
         }
       }
     };
+    return navigate;
   },
 };
