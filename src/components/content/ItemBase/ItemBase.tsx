@@ -195,13 +195,13 @@ const ItemBaseElement = tasty({
       selected: '#dark.09',
       'selected & (hovered | focused)': '#dark.12',
       pressed: '#dark.09',
-      '[disabled] | disabled': '#clear',
+      disabled: '#clear',
     },
     color: {
       '': '#dark-02',
       hovered: '#dark-02',
       pressed: '#dark',
-      '[disabled] | disabled': '#dark-04',
+      disabled: '#dark-04',
     },
     preset: {
       '': 't3m',
@@ -216,7 +216,7 @@ const ItemBaseElement = tasty({
     cursor: {
       '': 'default',
       ':is(button) | :is(a)': 'pointer',
-      '[disabled] | disabled': 'not-allowed',
+      disabled: 'not-allowed',
     },
 
     $size: {

@@ -101,7 +101,7 @@ export const DEFAULT_BUTTON_STYLES = {
   boxSizing: 'border-box',
   cursor: {
     '': 'pointer',
-    '[disabled] | disabled': 'default',
+    disabled: 'default',
   },
   gap: {
     '': '.75x',
