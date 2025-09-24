@@ -73,8 +73,8 @@ const DialogElement = tasty({
       '[data-type="panel"]': 'auto',
     },
     '$dialog-title-padding-v': {
-      '': '1x',
-      '[data-type="popover"]': '1x',
+      '': '1.5x',
+      '[data-type="popover"]': '1.5x',
     },
     '$dialog-content-padding-v': {
       '': '1.5x',
@@ -95,7 +95,6 @@ const DialogElement = tasty({
 const CloseButton = tasty(ItemButton, {
   qa: 'ModalCloseButton',
   type: 'neutral',
-  size: 'xsmall',
   styles: {
     position: 'absolute',
     top: '1x',
