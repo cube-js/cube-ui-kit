@@ -37,7 +37,7 @@ import {
 } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
 import { useEventBus } from '../../../utils/react/useEventBus';
-import { Button } from '../../actions';
+import { Button, ItemAction } from '../../actions';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { Item } from '../../Item';
 import { OverlayWrapper } from '../../overlays/OverlayWrapper';
@@ -139,6 +139,8 @@ export interface CubeComboBoxProps<T>
   allowsCustomValue?: boolean;
   /** Whether the combo box is clearable using ESC keyboard button or clear button inside the input */
   isClearable?: boolean;
+  /** Callback called when the clear button is pressed */
+  onClear?: () => void;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -330,31 +332,22 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
   // Clear function
   let clearValue = useEvent(() => {
+    // Always clear input value in state so UI resets to placeholder
+    state.setInputValue('');
+    // Notify external input value only when custom value mode is enabled
     if (props.allowsCustomValue) {
       props.onInputChange?.('');
-      // If state has a setInputValue method, use it as well
-      if (
-        'setInputValue' in state &&
-        typeof state.setInputValue === 'function'
-      ) {
-        state.setInputValue('');
-      }
-    } else {
-      props.onSelectionChange?.(null);
-      // If state has a setSelectedKey method, use it as well
-      if (
-        'setSelectedKey' in state &&
-        typeof state.setSelectedKey === 'function'
-      ) {
-        state.setSelectedKey(null);
-      }
     }
+    props.onSelectionChange?.(null);
+    state.setSelectedKey(null);
     // Close the popup if it's open
     if (state.isOpen) {
       state.close();
     }
     // Focus back to the input
     inputRef.current?.focus();
+
+    props.onClear?.();
   });
 
   let comboBoxWidth = wrapperRef?.current?.offsetWidth;
@@ -507,9 +500,9 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         ) : null}
         {suffixPosition === 'after' ? suffix : null}
         {showClearButton && (
-          <ClearButton
+          <ItemAction
+            icon={<CloseIcon />}
             size={size}
-            type={validationState === 'invalid' ? 'clear' : 'neutral'}
             theme={validationState === 'invalid' ? 'danger' : undefined}
             qa="ComboBoxClearButton"
             data-no-trigger={hideTrigger ? '' : undefined}

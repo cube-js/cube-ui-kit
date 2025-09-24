@@ -5,6 +5,7 @@ import { useEvent, useTimer } from '../../../../_internal';
 import { tasty } from '../../../../tasty';
 import { ClearSlots, mergeProps } from '../../../../utils/react';
 import { useId } from '../../../../utils/react/useId';
+import { useNotificationsDialogContext } from '../Dialog/NotificationsDialogContext';
 
 import { NotificationCloseButton } from './NotificationCloseButton';
 import { NotificationDescription } from './NotificationDescription';
@@ -36,6 +37,15 @@ const NotificationContainer = tasty({
       '': '0 0 0 4bw #purple-04.0 inset',
       focused: '0 0 0 4bw #purple-04 inset',
     },
+    outline: 0,
+    border: {
+      '': '#border',
+      '[data-type="success"]': '#success.4',
+      '[data-type="danger"]': '#danger.4',
+      '[data-type="attention"]': '#border',
+      // Clear border when inside dialog
+      'inside-dialog': false,
+    },
   },
 });
 
@@ -66,6 +76,9 @@ export const NotificationView = forwardRef(function NotificationView(
   const labelID = useId();
   const descriptionID = useId();
 
+  // Detect if we're inside a NotificationsDialog specifically
+  const insideNotificationsDialog = useNotificationsDialogContext();
+
   const onCloseEvent = useEvent(() => {
     onClose?.();
   });
@@ -95,9 +108,14 @@ export const NotificationView = forwardRef(function NotificationView(
           styles={styles}
           data-id={id}
           data-qa={qa}
+          data-type={type}
           aria-labelledby={labelID}
           aria-describedby={descriptionID}
-          mods={{ focused: isFocusVisible, 'is-dismissible': isDismissible }}
+          mods={{
+            focused: isFocusVisible,
+            'is-dismissible': isDismissible,
+            'inside-dialog': insideNotificationsDialog,
+          }}
         >
           <NotificationIcon icon={icon} type={type} />
 

@@ -3,6 +3,7 @@ import { ModalProvider } from 'react-aria';
 import { StyleSheetManager } from 'styled-components';
 
 import { Provider } from '../provider';
+import { NavigationAdapter } from '../providers/navigation.types';
 import { TrackingProps, TrackingProvider } from '../providers/TrackingProvider';
 import {
   BASE_STYLES,
@@ -43,7 +44,7 @@ export interface CubeRootProps extends BaseProps {
   fontDisplay?: 'auto' | 'block' | 'swap' | 'fallback' | 'optional';
   fonts?: boolean;
   publicUrl?: string;
-  router?: any;
+  navigation?: NavigationAdapter;
   font?: string;
   monospaceFont?: string;
   applyLegacyTokens?: boolean;
@@ -64,7 +65,7 @@ export function Root(allProps: CubeRootProps) {
     fontDisplay = 'swap',
     fonts,
     publicUrl,
-    router,
+    navigation,
     font,
     monospaceFont,
     applyLegacyTokens,
@@ -125,7 +126,7 @@ export function Root(allProps: CubeRootProps) {
   const styles = extractStyles(props, STYLES, DEFAULT_STYLES);
 
   return (
-    <Provider router={router} root={rootRef} breakpoints={breakpoints}>
+    <Provider navigation={navigation} root={rootRef} breakpoints={breakpoints}>
       <TrackingProvider event={tracking?.event}>
         <StyleSheetManager>
           <RootElement

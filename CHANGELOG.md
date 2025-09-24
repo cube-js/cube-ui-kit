@@ -1,5 +1,41 @@
 # @cube-dev/ui-kit
 
+## 0.78.0
+
+### Minor Changes
+
+- [#793](https://github.com/cube-js/cube-ui-kit/pull/793) [`a64ee513`](https://github.com/cube-js/cube-ui-kit/commit/a64ee513381c56b470ebca720a6ad3f21bc5fd3f) Thanks [@tenphi](https://github.com/tenphi)! - The new navigation API that relies on external `useHref` and `useNavigation` hooks.
+
+### Patch Changes
+
+- [#793](https://github.com/cube-js/cube-ui-kit/pull/793) [`a64ee513`](https://github.com/cube-js/cube-ui-kit/commit/a64ee513381c56b470ebca720a6ad3f21bc5fd3f) Thanks [@tenphi](https://github.com/tenphi)! - Add support for full navigation argument type in `to` prop in actions including object `{ pathname, search, hash }` and numbers for history navigation. Use `<Link to={-1}>...` to move back in history.
+
+## 0.77.4
+
+### Patch Changes
+
+- [#791](https://github.com/cube-js/cube-ui-kit/pull/791) [`1ca1deb4`](https://github.com/cube-js/cube-ui-kit/commit/1ca1deb4211ec6a67a5d81fbd7606a76c69faa31) Thanks [@tenphi](https://github.com/tenphi)! - Actualize the interface of Item component.
+
+- [#791](https://github.com/cube-js/cube-ui-kit/pull/791) [`1ca1deb4`](https://github.com/cube-js/cube-ui-kit/commit/1ca1deb4211ec6a67a5d81fbd7606a76c69faa31) Thanks [@tenphi](https://github.com/tenphi)! - Make Panel placeSelf stretch by default.
+
+- [#791](https://github.com/cube-js/cube-ui-kit/pull/791) [`1ca1deb4`](https://github.com/cube-js/cube-ui-kit/commit/1ca1deb4211ec6a67a5d81fbd7606a76c69faa31) Thanks [@tenphi](https://github.com/tenphi)! - Fix Item interface for FilterPicker.
+
+- [#791](https://github.com/cube-js/cube-ui-kit/pull/791) [`1ca1deb4`](https://github.com/cube-js/cube-ui-kit/commit/1ca1deb4211ec6a67a5d81fbd7606a76c69faa31) Thanks [@tenphi](https://github.com/tenphi)! - Add onClear callback for FilterPicker, Select, ComboBox and SearchInput.
+
+- [#791](https://github.com/cube-js/cube-ui-kit/pull/791) [`1ca1deb4`](https://github.com/cube-js/cube-ui-kit/commit/1ca1deb4211ec6a67a5d81fbd7606a76c69faa31) Thanks [@tenphi](https://github.com/tenphi)! - Fix popover of FilterPicker to corretly flip on opening.
+
+## 0.77.3
+
+### Patch Changes
+
+- [#787](https://github.com/cube-js/cube-ui-kit/pull/787) [`78dc7da2`](https://github.com/cube-js/cube-ui-kit/commit/78dc7da2983d1acb1ed32ad48e482a62758c093c) Thanks [@tenphi](https://github.com/tenphi)! - Add ItemAction component with a temporary implementation.
+
+- [#787](https://github.com/cube-js/cube-ui-kit/pull/787) [`78dc7da2`](https://github.com/cube-js/cube-ui-kit/commit/78dc7da2983d1acb1ed32ad48e482a62758c093c) Thanks [@tenphi](https://github.com/tenphi)! - Add a clear button to FilterPicker, Select and ComboBox components. Redesign the clear button in SearchInput component.
+
+- [#789](https://github.com/cube-js/cube-ui-kit/pull/789) [`1251a11b`](https://github.com/cube-js/cube-ui-kit/commit/1251a11b7a406cf960ed1a89115c2f9dd4bd3717) Thanks [@tenphi](https://github.com/tenphi)! - Add DecimalDecreaseIcon.tsx and DecimalIncreaseIcon.tsx.
+
+- [#790](https://github.com/cube-js/cube-ui-kit/pull/790) [`f4e502d1`](https://github.com/cube-js/cube-ui-kit/commit/f4e502d19eae89334c8f2487f7c0a4acb9c3fde6) Thanks [@tenphi](https://github.com/tenphi)! - Make toasts and notifications more visible with a colorful border.
+
 ## 0.77.2
 
 ### Patch Changes

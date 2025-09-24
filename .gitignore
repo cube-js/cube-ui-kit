@@ -16,4 +16,4 @@ yarn-error.log
 coverage
 size-limit-report/stats.json
 docs-static
-
+*.spec.md

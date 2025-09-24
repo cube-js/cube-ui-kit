@@ -14,7 +14,11 @@ import {
   useState,
 } from 'react';
 import { FocusScope, Key, useKeyboard } from 'react-aria';
-import { Section as BaseSection, Item, ListState } from 'react-stately';
+import {
+  Section as BaseSection,
+  ListState,
+  Item as ReactAriaItem,
+} from 'react-stately';
 
 import { useEvent } from '../../../_internal';
 import { useWarn } from '../../../_internal/hooks/use-warn';
@@ -36,7 +40,12 @@ import {
 import { generateRandomId } from '../../../utils/random';
 import { mergeProps } from '../../../utils/react';
 import { useEventBus } from '../../../utils/react/useEventBus';
-import { Button, CubeItemButtonProps, ItemButton } from '../../actions';
+import {
+  Button,
+  CubeItemButtonProps,
+  ItemAction,
+  ItemButton,
+} from '../../actions';
 import { CubeItemBaseProps } from '../../content/ItemBase';
 import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
@@ -119,6 +128,8 @@ export interface CubeFilterPickerProps<T>
   mods?: Record<string, boolean>;
   /** Whether the filter picker is clearable using a clear button in the rightIcon slot */
   isClearable?: boolean;
+  /** Callback called when the clear button is pressed */
+  onClear?: () => void;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -451,7 +462,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             if (!child || typeof child !== 'object') return;
             const element = child as ReactElement;
 
-            if (element.type === Item) {
+            if (element.type === ReactAriaItem) {
               const props = element.props as any;
               const label =
                 props.textValue ||
@@ -533,7 +544,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
           if (!child || typeof child !== 'object') return;
           const element = child as ReactElement;
 
-          if (element.type === Item) {
+          if (element.type === ReactAriaItem) {
             const childKey = String(element.key);
             if (selectedSet.has(normalizeKeyValue(childKey))) {
               const props = element.props as any;
@@ -727,7 +738,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             if (sectionChild && typeof sectionChild === 'object') {
               const sectionElement = sectionChild as ReactElement;
               if (
-                sectionElement.type === Item ||
+                sectionElement.type === ReactAriaItem ||
                 (sectionElement.type as any)?.displayName === 'Item'
               ) {
                 const clonedItem = cloneWithNormalizedKey(sectionElement);
@@ -924,7 +935,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     );
   };
 
-  const [shouldUpdatePosition, setShouldUpdatePosition] = useState(false);
+  const [shouldUpdatePosition, setShouldUpdatePosition] = useState(true);
 
   // The trigger is rendered as a function so we can access the dialog state
   const renderTrigger = (state) => {
@@ -972,9 +983,45 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     });
 
     useEffect(() => {
-      // Disable the update of the position while the popover is open (with a delay) to avoid jumping
-      setShouldUpdatePosition(!state.isOpen);
+      // Allow initial positioning & flipping when opening, then lock placement after transition
+      // Popover transition is ~120ms, give it a bit more time to finalize placement
+      if (state.isOpen) {
+        setShouldUpdatePosition(true);
+        const id = window.setTimeout(() => setShouldUpdatePosition(false), 160);
+        return () => window.clearTimeout(id);
+      } else {
+        setShouldUpdatePosition(true);
+      }
     }, [state.isOpen]);
+
+    // Clear button logic
+    let showClearButton =
+      isClearable && hasSelection && !isDisabled && !props.isReadOnly;
+
+    // Clear function
+    let clearValue = useEvent(() => {
+      if (selectionMode === 'multiple') {
+        if (!isControlledMultiple) {
+          setInternalSelectedKeys([]);
+        }
+        onSelectionChange?.([]);
+      } else {
+        if (!isControlledSingle) {
+          setInternalSelectedKey(null);
+        }
+        onSelectionChange?.(null);
+      }
+
+      if (state.isOpen) {
+        state.close();
+      }
+
+      triggerRef?.current?.focus?.();
+
+      props.onClear?.();
+
+      return false;
+    });
 
     return (
       <ItemButton
@@ -996,10 +1043,12 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
           ) : rightIcon !== undefined ? (
             rightIcon
           ) : showClearButton ? (
-            <ClearButton
+            <ItemAction
+              icon={<CloseIcon />}
               size={size}
               theme={validationState === 'invalid' ? 'danger' : undefined}
               qa="FilterPickerClearButton"
+              mods={{ pressed: false }}
               onPress={clearValue}
             />
           ) : (
@@ -1032,7 +1081,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         placement="bottom start"
         styles={triggerStyles}
         shouldUpdatePosition={shouldUpdatePosition}
-        shouldFlip={shouldFlip}
+        shouldFlip={shouldFlip && shouldUpdatePosition}
         isDismissable={true}
         shouldCloseOnInteractOutside={(el) => {
           const menuTriggerEl = el.closest('[data-popover-trigger]');
@@ -1207,7 +1256,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   );
 }) as unknown as (<T>(
   props: CubeFilterPickerProps<T> & { ref?: ForwardedRef<HTMLElement> },
-) => ReactElement) & { Item: typeof Item; Section: typeof BaseSection };
+) => ReactElement) & { Item: typeof ListBox.Item; Section: typeof BaseSection };
 
 FilterPicker.Item = ListBox.Item;
 

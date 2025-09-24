@@ -17,8 +17,10 @@ const FooterArea = tasty(ButtonGroup, {
     gridArea: 'footer',
     gap: '1x 2x',
     flow: 'row wrap',
-    '&:not(:empty)': {
-      margin: { '': '0.5x top', 'has-description': '1x top' },
+    margin: {
+      '': '0.5x top',
+      'has-description': '1x top',
+      ':empty': '0',
     },
   },
 });

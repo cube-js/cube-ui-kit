@@ -52,7 +52,7 @@ import {
 import { useFocus } from '../../../utils/react/interactions';
 import { useEventBus } from '../../../utils/react/useEventBus';
 import { getOverlayTransitionCSS } from '../../../utils/transitions';
-import { Button } from '../../actions';
+import { ItemAction } from '../../actions';
 import {
   StyledDivider as ListDivider,
   StyledSectionHeading as ListSectionHeading,
@@ -151,16 +151,6 @@ const StyledOverlayElement = styled(OverlayElement)`
   }}
 `;
 
-const ClearButton = tasty(Button, {
-  children: <CloseIcon />,
-  type: 'neutral',
-  mods: { pressed: false },
-  styles: {
-    height: '($size - 1x)',
-    width: '($size - 1x)',
-  },
-});
-
 export interface CubeSelectBaseProps<T>
   extends BasePropsWithoutChildren,
     AriaLabelingProps,
@@ -214,6 +204,8 @@ export interface CubeSelectBaseProps<T>
   theme?: 'default' | 'special';
   /** Whether the select is clearable using a clear button in the rightIcon slot */
   isClearable?: boolean;
+  /** Callback called when the clear button is pressed */
+  onClear?: () => void;
 }
 
 export interface CubeSelectProps<T> extends CubeSelectBaseProps<T> {
@@ -355,6 +347,14 @@ function Select<T extends object>(
   let clearValue = useEvent(() => {
     props.onSelectionChange?.(null);
     state.setSelectedKey(null);
+    // Close the popup if it's open
+    if (state.isOpen) {
+      state.close();
+    }
+    // Return focus to the trigger for better UX
+    triggerRef.current?.focus?.();
+
+    props.onClear?.();
   });
 
   let triggerWidth = triggerRef?.current?.offsetWidth;
@@ -431,10 +431,12 @@ function Select<T extends object>(
           rightIcon !== undefined ? (
             rightIcon
           ) : showClearButton ? (
-            <ClearButton
+            <ItemAction
+              icon={<CloseIcon />}
               size={size}
               theme={validationState === 'invalid' ? 'danger' : undefined}
               qa="SelectClearButton"
+              mods={{ pressed: false }}
               onPress={clearValue}
             />
           ) : isLoading ? (
