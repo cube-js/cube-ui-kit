@@ -78,7 +78,7 @@ const TriggerElement = tasty({
       '': '#dark-02',
       hovered: '#dark-02',
       pressed: '#purple',
-      '[disabled]': '#dark.30',
+      disabled: '#dark.30',
     },
     border: 'left',
     reset: 'button',

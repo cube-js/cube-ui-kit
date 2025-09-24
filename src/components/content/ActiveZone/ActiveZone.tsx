@@ -32,7 +32,7 @@ const DEFAULT_STYLES: Styles = {
   position: 'relative',
   opacity: {
     '': 1,
-    '[disabled]': 0.4,
+    disabled: 0.4,
   },
   transition: 'theme',
 } as const;
