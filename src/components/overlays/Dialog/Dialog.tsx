@@ -74,7 +74,7 @@ const DialogElement = tasty({
     },
     '$dialog-title-padding-v': {
       '': '1.5x',
-      '[data-type="popover"]': '1.5x',
+      '[data-type="popover"]': '1x',
     },
     '$dialog-content-padding-v': {
       '': '1.5x',
