@@ -110,7 +110,7 @@ const TabElement = tasty(Action, {
     preset: 'default',
     transform: {
       '': 'translate(0, 0)',
-      '[disabled]': 'translate(0, 1bw)',
+      disabled: 'translate(0, 1bw)',
     },
     transition: 'theme 0.2s',
     margin: '1bw bottom',

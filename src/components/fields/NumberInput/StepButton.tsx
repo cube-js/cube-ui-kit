@@ -18,7 +18,7 @@ const StepButtonElement = tasty(Button, {
       '': '#dark.0',
       hovered: '#dark.04',
       pressed: '#purple.10',
-      '[disabled]': '#dark.0',
+      disabled: '#dark.0',
     },
 
     '$icon-size': '1fs',

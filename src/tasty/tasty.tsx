@@ -26,6 +26,39 @@ import { RenderResult, renderStyles } from './utils/renderStyles';
 import { ResponsiveStyleValue, stringifyStyles } from './utils/styles';
 
 /**
+ * Mapping of is* properties to their corresponding HTML attributes
+ */
+const IS_PROPERTIES_MAP = {
+  isDisabled: 'disabled',
+  isHidden: 'hidden',
+  isChecked: 'checked',
+} as const;
+
+/**
+ * Precalculated entries for performance optimization
+ */
+const IS_PROPERTIES_ENTRIES = Object.entries(IS_PROPERTIES_MAP);
+
+/**
+ * Helper function to handle is* properties consistently
+ * Transforms is* props to HTML attributes and adds corresponding data-is-* attributes
+ */
+function handleIsProperties(props: Record<string, unknown>) {
+  for (const [isProperty, targetAttribute] of IS_PROPERTIES_ENTRIES) {
+    if (isProperty in props) {
+      props[targetAttribute] = props[isProperty];
+      delete props[isProperty];
+    }
+
+    // Add data-is-* attribute if target attribute is truthy and doesn't already exist
+    const dataAttribute = `data-is-${targetAttribute}`;
+    if (!(dataAttribute in props) && props[targetAttribute]) {
+      props[dataAttribute] = '';
+    }
+  }
+}
+
+/**
  * Simple hash function for internal cache keys
  */
 // Generate unique cache key for style deduplication
@@ -434,15 +467,8 @@ function tastyElement<K extends StyleList, V extends VariantMap>(
         ref,
       } as Record<string, unknown>;
 
-      if ('isDisabled' in elementProps) {
-        elementProps.disabled = elementProps.isDisabled;
-        delete elementProps.isDisabled;
-      }
-
-      if ('isHidden' in elementProps) {
-        elementProps.hidden = elementProps.isHidden;
-        delete elementProps.isHidden;
-      }
+      // Apply the helper to handle is* properties
+      handleIsProperties(elementProps);
 
       // NEW: Use plain createElement instead of styled Element
       const renderedElement = createElement(
