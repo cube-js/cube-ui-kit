@@ -78,17 +78,20 @@ const DialogElement = tasty({
     },
     '$dialog-content-padding-v': {
       '': '1.5x',
-      '[data-type="popover"]': '1.5x',
+      '[data-type="popover"]': '1x',
     },
     '$dialog-padding-h': {
       '': '1.5x',
-      '[data-type="popover"]': '1.5x',
+      '[data-type="popover"]': '1x',
     },
     '$dialog-footer-v': {
       '': '1.5x',
       '[data-type="popover"]': '1x',
     },
-    '$dialog-content-gap': '1.5x',
+    '$dialog-content-gap': {
+      '': '1.5x',
+      '[data-type="popover"]': '1x',
+    },
   },
 });
 
