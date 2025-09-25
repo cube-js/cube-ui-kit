@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.78.1
+
+### Patch Changes
+
+- [#795](https://github.com/cube-js/cube-ui-kit/pull/795) [`2e1a331d`](https://github.com/cube-js/cube-ui-kit/commit/2e1a331d6a02c377e8b8017efe3109574bdde03d) Thanks [@tenphi](https://github.com/tenphi)! - Condense the UI of Dialog component.
+
+- [#796](https://github.com/cube-js/cube-ui-kit/pull/796) [`728f983d`](https://github.com/cube-js/cube-ui-kit/commit/728f983d66a68e78c8c17f6edfde5b0e3b0050cb) Thanks [@tenphi](https://github.com/tenphi)! - Set `disabled`, `checked`, `hidden` mods automatically.
+
 ## 0.78.0
 
 ### Minor Changes
