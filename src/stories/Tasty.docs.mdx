@@ -697,6 +697,16 @@ styles: {
   },
 }
 
+// ✅ Use simplified mods for built-in states (disabled, checked, selected)
+styles: {
+  color: {
+    '': '#dark',
+    disabled: '#gray',     // Preferred over '[disabled]'
+    checked: '#blue',      // Preferred over '[checked]'
+    selected: '#purple',   // Preferred over '[selected]'
+  },
+}
+
 // ✅ Use styleProps for component APIs
 const Container = tasty({
   styles: { display: 'flex' },
@@ -740,13 +750,6 @@ styles: {
 // ❌ Don't change styles prop at runtime (performance)
 const [dynamicStyles, setDynamicStyles] = useState({});
 <Component styles={dynamicStyles} /> // Use style prop for dynamic values
-
-// ❌ Don't use simplified keys for other built-in states that require attributes
-styles: {
-  color: {
-    checked: '#blue',      // Use '[checked]' instead
-  },
-}
 ```
 
 #### Tasty vs Native CSS Properties
