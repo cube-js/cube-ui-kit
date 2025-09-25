@@ -319,7 +319,7 @@ fill: '#surface',                 // Background color token
 color: {
   '': '#dark',
   hovered: '#purple',
-  '[disabled]': '#gray',
+  disabled: '#gray',
 },
 
 // color default (true): 'currentColor'
@@ -471,7 +471,7 @@ const Button = tasty({
       '': '#blue',
       hovered: '#blue.8',          // Custom modifier
       pressed: '#blue.6',          // Custom modifier
-      '[disabled]': '#gray',       // Built-in state
+      disabled: '#gray',           // Built-in state
     },
   },
 });
@@ -515,7 +515,7 @@ fill: {
   '.custom-class': '#highlight',           // CSS class selector
   '[data-variant="primary"]': '#primary',  // Data attribute with value
   '[data-loading]': '#gray',               // Data attribute (boolean)
-  '[disabled]': '#disabled',               // Built-in HTML attribute
+  disabled: '#disabled',                   // Built-in state
   '[aria-selected="true"]': '#selected',   // ARIA attribute
   ':focus-visible': '#focus',              // CSS pseudo-class
 }
@@ -697,6 +697,16 @@ styles: {
   },
 }
 
+// ✅ Use simplified mods for built-in states (disabled, checked, selected)
+styles: {
+  color: {
+    '': '#dark',
+    disabled: '#gray',     // Preferred over '[disabled]'
+    checked: '#blue',      // Preferred over '[checked]'
+    selected: '#purple',   // Preferred over '[selected]'
+  },
+}
+
 // ✅ Use styleProps for component APIs
 const Container = tasty({
   styles: { display: 'flex' },
@@ -740,14 +750,6 @@ styles: {
 // ❌ Don't change styles prop at runtime (performance)
 const [dynamicStyles, setDynamicStyles] = useState({});
 <Component styles={dynamicStyles} /> // Use style prop for dynamic values
-
-// ❌ Don't use simplified keys for built-in states
-styles: {
-  color: {
-    disabled: '#gray',     // Use '[disabled]' instead
-    checked: '#blue',      // Use '[checked]' instead
-  },
-}
 ```
 
 #### Tasty vs Native CSS Properties

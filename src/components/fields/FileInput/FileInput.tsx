@@ -57,11 +57,11 @@ const FileInputElement = tasty(Action, {
         '': '#purple.10',
         hovered: '#purple.16',
         pressed: '#purple.10',
-        '[disabled]': '#dark.04',
+        disabled: '#dark.04',
       },
       color: {
         '': '#purple',
-        '[disabled]': '#dark.30',
+        disabled: '#dark.30',
       },
       padding: '.5x (1.5x - 1px)',
       transition: 'theme',
