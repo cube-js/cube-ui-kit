@@ -41,7 +41,7 @@ const TooltipElement = tasty({
     width: 'initial 36x max-content',
     radius: true,
     padding: '.75x 1x',
-    preset: 't3',
+    preset: 't4',
     backdropFilter: 'blur(.5x)',
     whiteSpace: 'pre-line',
     pointerEvents: {

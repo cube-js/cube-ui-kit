@@ -1,15 +1,15 @@
-import { FocusableRef } from '@react-types/shared';
 import {
-  ComponentProps,
   ForwardedRef,
   forwardRef,
+  HTMLAttributes,
   ReactNode,
+  RefObject,
   useCallback,
   useEffect,
   useMemo,
   useState,
 } from 'react';
-import { FocusableOptions, OverlayProps, useFocusable } from 'react-aria';
+import { OverlayProps } from 'react-aria';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 import {
@@ -149,15 +149,6 @@ const ADDITION_STYLES: Styles = {
   placeContent: 'stretch',
   gridRow: 'span 2',
 };
-
-const FocusableItemBase = forwardRef(function FocusableItembase(
-  props: ComponentProps<typeof ItemBaseElement> & FocusableOptions,
-  ref: FocusableRef<HTMLElement>,
-) {
-  let { focusableProps } = useFocusable(props, ref as any);
-
-  return <ItemBaseElement ref={ref} {...mergeProps(props, focusableProps)} />;
-});
 
 const ItemBaseElement = tasty({
   styles: {
@@ -364,6 +355,158 @@ const ItemBaseElement = tasty({
   styleProps: CONTAINER_STYLES,
 });
 
+export function useAutoTooltip({
+  tooltip,
+  children,
+  labelProps,
+}: {
+  tooltip: CubeItemBaseProps['tooltip'];
+  children: ReactNode;
+  labelProps?: Props;
+}) {
+  // Determine if auto tooltip is enabled
+  // Auto tooltip only works when children is a string (overflow detection needs text)
+  const isAutoTooltipEnabled = useMemo(() => {
+    if (typeof children !== 'string') return false;
+
+    // Boolean true enables auto overflow detection
+    if (tooltip === true) return true;
+    if (typeof tooltip === 'object') {
+      // If title is provided and auto is explicitly true, enable auto overflow detection
+      if (tooltip.title) {
+        return tooltip.auto === true;
+      }
+
+      // If no title is provided, default to auto=true unless explicitly disabled
+      const autoValue = tooltip.auto !== undefined ? tooltip.auto : true;
+      return !!autoValue;
+    }
+    return false;
+  }, [tooltip, children]);
+
+  // Track label overflow for auto tooltip (only when enabled)
+  const mergedLabelRef = useCombinedRefs((labelProps as any)?.ref);
+  const [isLabelOverflowed, setIsLabelOverflowed] = useState(false);
+
+  const checkLabelOverflow = useCallback(() => {
+    const label = mergedLabelRef.current;
+    if (!label) {
+      setIsLabelOverflowed(false);
+      return;
+    }
+
+    const hasOverflow = label.scrollWidth > label.clientWidth;
+
+    setIsLabelOverflowed(hasOverflow);
+  }, [mergedLabelRef]);
+
+  useEffect(() => {
+    if (isAutoTooltipEnabled) {
+      checkLabelOverflow();
+    }
+  }, [isAutoTooltipEnabled, checkLabelOverflow]);
+
+  useEffect(() => {
+    if (!isAutoTooltipEnabled) return;
+
+    const label = mergedLabelRef.current;
+    if (!label) return;
+
+    const resizeObserver = new ResizeObserver(checkLabelOverflow);
+    resizeObserver.observe(label);
+
+    return () => resizeObserver.disconnect();
+  }, [isAutoTooltipEnabled, checkLabelOverflow, mergedLabelRef]);
+
+  const finalLabelProps = useMemo(() => {
+    return {
+      ...(labelProps || {}),
+      ref: mergedLabelRef,
+    } as Props & { ref?: any };
+  }, [labelProps, mergedLabelRef]);
+
+  const renderWithTooltip = useCallback(
+    (
+      renderElement: (
+        tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
+        tooltipRef?: RefObject<HTMLElement>,
+      ) => ReactNode,
+      defaultTooltipPlacement: OverlayProps['placement'],
+    ) => {
+      // Handle tooltip rendering based on tooltip prop type
+      if (tooltip) {
+        // String tooltip - simple case
+        if (typeof tooltip === 'string') {
+          return (
+            <TooltipProvider
+              placement={defaultTooltipPlacement}
+              title={tooltip}
+            >
+              {(triggerProps, ref) => renderElement(triggerProps, ref)}
+            </TooltipProvider>
+          );
+        }
+
+        // Boolean tooltip - auto tooltip on overflow
+        if (tooltip === true) {
+          if ((children || labelProps) && isLabelOverflowed) {
+            return (
+              <TooltipProvider
+                placement={defaultTooltipPlacement}
+                title={children}
+              >
+                {(triggerProps, ref) => renderElement(triggerProps, ref)}
+              </TooltipProvider>
+            );
+          }
+        }
+
+        // Object tooltip - advanced configuration
+        if (typeof tooltip === 'object') {
+          const { auto, ...tooltipProps } = tooltip;
+
+          // If title is provided and auto is not explicitly true, always show the tooltip
+          if (tooltipProps.title && auto !== true) {
+            return (
+              <TooltipProvider
+                placement={defaultTooltipPlacement}
+                {...tooltipProps}
+              >
+                {(triggerProps, ref) => renderElement(triggerProps, ref)}
+              </TooltipProvider>
+            );
+          }
+
+          // If title is provided with auto=true, OR no title but auto behavior enabled
+          if ((children || labelProps) && isLabelOverflowed) {
+            return (
+              <TooltipProvider
+                placement={defaultTooltipPlacement}
+                title={tooltipProps.title ?? children}
+                {...tooltipProps}
+              >
+                {(triggerProps, ref) => renderElement(triggerProps, ref)}
+              </TooltipProvider>
+            );
+          }
+        }
+      }
+
+      return renderElement();
+    },
+    [tooltip, children, labelProps, isLabelOverflowed],
+  );
+
+  return {
+    labelRef: mergedLabelRef,
+    labelProps: finalLabelProps,
+    isLabelOverflowed,
+    isAutoTooltipEnabled,
+    hasTooltip: !!tooltip,
+    renderWithTooltip,
+  };
+}
+
 const ItemBase = <T extends HTMLElement = HTMLDivElement>(
   props: CubeItemBaseProps,
   ref: ForwardedRef<T>,
@@ -387,7 +530,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     htmlType,
     isSelected,
     hotkeys,
-    tooltip,
+    tooltip = true,
     isDisabled,
     loadingSlot = 'auto',
     isLoading = false,
@@ -488,142 +631,98 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     mods,
   ]);
 
-  // Determine if auto tooltip is enabled
-  const isAutoTooltipEnabled = useMemo(() => {
-    if (tooltip === true && typeof children === 'string') return true;
-    if (typeof tooltip === 'object' && tooltip?.auto) return true;
-    return false;
-  }, [tooltip, typeof children]);
+  const {
+    labelProps: finalLabelProps,
+    hasTooltip,
+    renderWithTooltip,
+  } = useAutoTooltip({ tooltip, children, labelProps });
 
-  // Track label overflow for auto tooltip (only when enabled)
-  const mergedLabelRef = useCombinedRefs((labelProps as any)?.ref);
-  const [isLabelOverflowed, setIsLabelOverflowed] = useState(false);
+  // Create a stable render function that doesn't call hooks
+  const renderItemElement = useCallback(
+    (
+      tooltipTriggerProps?: HTMLAttributes<HTMLElement>,
+      tooltipRef?: RefObject<HTMLElement>,
+    ) => {
+      // Use callback ref to merge multiple refs without calling hooks
+      const handleRef = (element: HTMLElement | null) => {
+        // Set the component's forwarded ref
+        if (typeof ref === 'function') {
+          ref(element as T | null);
+        } else if (ref) {
+          (ref as any).current = element;
+        }
+        // Set the tooltip ref if provided
+        if (tooltipRef) {
+          (tooltipRef as any).current = element;
+        }
+      };
 
-  const checkLabelOverflow = useCallback(() => {
-    const label = mergedLabelRef.current;
-    if (!label) {
-      setIsLabelOverflowed(false);
-      return;
-    }
-
-    const hasOverflow = label.scrollWidth > label.clientWidth;
-
-    setIsLabelOverflowed(hasOverflow);
-  }, [mergedLabelRef]);
-
-  useEffect(() => {
-    if (isAutoTooltipEnabled) {
-      checkLabelOverflow();
-    }
-  }, [children, isAutoTooltipEnabled, checkLabelOverflow]);
-
-  useEffect(() => {
-    if (!isAutoTooltipEnabled) return;
-
-    const label = mergedLabelRef.current;
-    if (!label) return;
-
-    const resizeObserver = new ResizeObserver(checkLabelOverflow);
-    resizeObserver.observe(label);
-
-    return () => resizeObserver.disconnect();
-  }, [
-    isAutoTooltipEnabled,
-    checkLabelOverflow,
-    typeof children === 'string' ? children : null,
-    mergedLabelRef,
-  ]);
-
-  const finalLabelProps = useMemo(() => {
-    return {
-      ...(labelProps || {}),
-      ref: mergedLabelRef,
-    } as Props & { ref?: any };
-  }, [labelProps, mergedLabelRef]);
-
-  const Component =
-    tooltip || finalIsDisabled ? FocusableItemBase : ItemBaseElement;
-
-  const itemElement = (
-    <Component
-      ref={ref as any}
-      tabIndex={0}
-      variant={theme && type ? (`${theme}.${type}` as ItemVariant) : undefined}
-      disabled={finalIsDisabled}
-      data-size={size}
-      data-type={type}
-      data-theme={theme}
-      aria-disabled={finalIsDisabled}
-      aria-selected={isSelected}
-      mods={mods}
-      styles={styles}
-      type={htmlType as any}
-      {...rest}
-    >
-      {finalIcon && (
-        <div data-element="Icon">{hasCheckbox ? <CheckIcon /> : finalIcon}</div>
-      )}
-      {finalPrefix && <div data-element="Prefix">{finalPrefix}</div>}
-      {children || labelProps ? (
-        <div data-element="Label" {...finalLabelProps}>
-          {children}
-        </div>
-      ) : null}
-      {description || descriptionProps ? (
-        <div data-element="Description" {...descriptionProps}>
-          {description}
-        </div>
-      ) : null}
-      {finalSuffix && <div data-element="Suffix">{finalSuffix}</div>}
-      {finalRightIcon && <div data-element="RightIcon">{finalRightIcon}</div>}
-    </Component>
+      return (
+        <ItemBaseElement
+          ref={handleRef}
+          tabIndex={0}
+          variant={
+            theme && type ? (`${theme}.${type}` as ItemVariant) : undefined
+          }
+          disabled={finalIsDisabled}
+          data-size={size}
+          data-type={type}
+          data-theme={theme}
+          aria-disabled={finalIsDisabled}
+          aria-selected={isSelected}
+          mods={mods}
+          styles={styles}
+          type={htmlType as any}
+          {...mergeProps(rest, tooltipTriggerProps || {})}
+        >
+          {finalIcon && (
+            <div data-element="Icon">
+              {hasCheckbox ? <CheckIcon /> : finalIcon}
+            </div>
+          )}
+          {finalPrefix && <div data-element="Prefix">{finalPrefix}</div>}
+          {children || labelProps ? (
+            <div data-element="Label" {...finalLabelProps}>
+              {children}
+            </div>
+          ) : null}
+          {description || descriptionProps ? (
+            <div data-element="Description" {...descriptionProps}>
+              {description}
+            </div>
+          ) : null}
+          {finalSuffix && <div data-element="Suffix">{finalSuffix}</div>}
+          {finalRightIcon && (
+            <div data-element="RightIcon">{finalRightIcon}</div>
+          )}
+        </ItemBaseElement>
+      );
+    },
+    [
+      ref,
+      theme,
+      type,
+      finalIsDisabled,
+      size,
+      isSelected,
+      mods,
+      styles,
+      htmlType,
+      rest,
+      finalIcon,
+      hasCheckbox,
+      finalPrefix,
+      children,
+      labelProps,
+      finalLabelProps,
+      description,
+      descriptionProps,
+      finalSuffix,
+      finalRightIcon,
+    ],
   );
 
-  // Handle tooltip rendering based on tooltip prop type
-  if (tooltip) {
-    // String tooltip - simple case
-    if (typeof tooltip === 'string') {
-      return (
-        <TooltipProvider placement={defaultTooltipPlacement} title={tooltip}>
-          {itemElement}
-        </TooltipProvider>
-      );
-    }
-
-    // Boolean tooltip - auto tooltip on overflow
-    if (tooltip === true) {
-      if ((children || labelProps) && isLabelOverflowed) {
-        return (
-          <TooltipProvider placement={defaultTooltipPlacement} title={children}>
-            {itemElement}
-          </TooltipProvider>
-        );
-      }
-    }
-
-    // Object tooltip - advanced configuration
-    if (typeof tooltip === 'object') {
-      const { auto, ...tooltipProps } = tooltip;
-
-      // If auto is enabled and label is overflowed, show auto tooltip
-      if (
-        (auto && (children || labelProps) && isLabelOverflowed) ||
-        (tooltipProps.title && !auto)
-      ) {
-        return (
-          <TooltipProvider
-            placement={defaultTooltipPlacement}
-            title={tooltipProps.title ?? children}
-            {...tooltipProps}
-          >
-            {itemElement}
-          </TooltipProvider>
-        );
-      }
-    }
-  }
-
-  return itemElement;
+  return renderWithTooltip(renderItemElement, defaultTooltipPlacement);
 };
 
 const _ItemBase = forwardRef(ItemBase);

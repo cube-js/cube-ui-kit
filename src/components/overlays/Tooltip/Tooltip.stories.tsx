@@ -66,7 +66,7 @@ ViaProvider.args = {
 ViaProvider.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
   // wait for TooltipProvider setRendered to true
-  await timeout(1000);
+  await timeout(250);
 
   const button = await canvas.findByRole('button');
   // this is hack that makes tooltip working properly on page load
@@ -82,7 +82,7 @@ ViaProviderWithActiveWrap.args = { activeWrap: true, delay: 0 };
 ViaProviderWithActiveWrap.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
   // wait for TooltipProvider setRendered to true
-  await timeout(1000);
+  await timeout(250);
 
   const button = await canvas.findByRole('button');
   // this is a weird hack that makes tooltip working properly on page load
@@ -95,3 +95,84 @@ ViaProviderWithActiveWrap.play = async ({ canvasElement }) => {
 export const Light: typeof Template = Template.bind({});
 Light.args = { isLight: true };
 Light.play = Default.play;
+
+const FunctionPatternTemplate: Story<CubeTooltipProviderProps> = (args) => (
+  <div style={{ padding: '20px' }}>
+    <p>This should show a div with tooltip below:</p>
+    <TooltipProvider title="Tooltip with function pattern" {...args}>
+      {(triggerProps, ref) => (
+        <div
+          ref={ref as any}
+          {...triggerProps}
+          style={{
+            padding: '8px 16px',
+            border: '2px solid #007acc',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            display: 'inline-block',
+            backgroundColor: '#f0f8ff',
+            color: '#333',
+            fontWeight: 'bold',
+          }}
+        >
+          Hover over this non-focusable element
+        </div>
+      )}
+    </TooltipProvider>
+    <p>The div should be visible above this text.</p>
+  </div>
+);
+
+export const FunctionPattern: typeof FunctionPatternTemplate =
+  FunctionPatternTemplate.bind({});
+FunctionPattern.args = { delay: 1000 };
+FunctionPattern.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  // wait for TooltipProvider setRendered to true
+  await timeout(250);
+
+  const div = await canvas.findByText('Hover over this non-focusable element');
+  // this is hack that makes tooltip working properly on page load
+  await userEvent.unhover(div);
+  await userEvent.hover(div);
+
+  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeVisible());
+};
+
+const DirectFunctionPatternTemplate: Story<CubeTooltipTriggerProps> = (
+  args,
+) => (
+  <div style={{ padding: '20px' }}>
+    <p>Direct TooltipTrigger with function pattern:</p>
+    <TooltipTrigger {...args}>
+      {(triggerProps, ref) => (
+        <span
+          ref={ref as any}
+          {...triggerProps}
+          style={{
+            padding: '4px 8px',
+            border: '1px solid #ff6b6b',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            display: 'inline-block',
+            backgroundColor: '#ffe0e0',
+          }}
+        >
+          Direct function trigger
+        </span>
+      )}
+      <Tooltip>Direct tooltip content</Tooltip>
+    </TooltipTrigger>
+  </div>
+);
+
+export const DirectFunctionPattern: typeof DirectFunctionPatternTemplate =
+  DirectFunctionPatternTemplate.bind({});
+DirectFunctionPattern.args = { delay: 1000 };
+DirectFunctionPattern.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const span = await canvas.findByText('Direct function trigger');
+  await userEvent.unhover(span);
+  await userEvent.hover(span);
+  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeVisible());
+};
