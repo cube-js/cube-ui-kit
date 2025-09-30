@@ -277,6 +277,26 @@ describe('performClickHandler', () => {
     ...modifiers,
   });
 
+  it('passes a serializable event to onPress (target preserved, non-enumerable)', () => {
+    const evt = createMockEvent();
+
+    performClickHandler(evt, {
+      navigate: mockNavigate,
+      resolvedHref: undefined,
+      to: undefined,
+      onPress: mockOnPress,
+      tracking: mockTracking,
+      navigationOptions: {},
+    });
+
+    expect(mockOnPress).toHaveBeenCalled();
+    const arg = mockOnPress.mock.calls[0][0];
+    expect(() => JSON.stringify(arg)).not.toThrow();
+    expect(arg.target).toBe(evt.target);
+    expect(arg.shiftKey).toBe(false);
+    expect(arg.metaKey).toBe(false);
+  });
+
   it('should handle history navigation', () => {
     const evt = createMockEvent();
 

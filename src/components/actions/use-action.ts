@@ -140,6 +140,44 @@ export function parseTo(to: NavigateArg | undefined): {
   };
 }
 
+interface SanitizedPressEvent {
+  type?: string;
+  pointerType?: string;
+  shiftKey: boolean;
+  metaKey: boolean;
+  ctrlKey: boolean;
+  altKey: boolean;
+  // target is defined as a non-enumerable property below
+  [key: string]: unknown; // allow non-enumerable 'target'
+}
+
+function sanitizePressEvent(evt: PressEvent): SanitizedPressEvent {
+  const safeEvt: SanitizedPressEvent = {
+    type: 'type' in evt ? evt.type : undefined,
+    pointerType:
+      'pointerType' in evt
+        ? (evt as { pointerType?: string }).pointerType
+        : undefined,
+    shiftKey:
+      'shiftKey' in evt ? !!(evt as { shiftKey?: boolean }).shiftKey : false,
+    metaKey:
+      'metaKey' in evt ? !!(evt as { metaKey?: boolean }).metaKey : false,
+    ctrlKey:
+      'ctrlKey' in evt ? !!(evt as { ctrlKey?: boolean }).ctrlKey : false,
+    altKey: 'altKey' in evt ? !!(evt as { altKey?: boolean }).altKey : false,
+  };
+  try {
+    Object.defineProperty(safeEvt, 'target', {
+      value: 'target' in evt ? (evt as { target?: unknown }).target : undefined,
+      enumerable: false,
+      configurable: true,
+    });
+  } catch (e) {
+    // Failed to define target property - continue without it
+  }
+  return safeEvt;
+}
+
 export function performClickHandler(
   evt,
   { navigate, resolvedHref, to, onPress, tracking, navigationOptions },
@@ -156,7 +194,7 @@ export function performClickHandler(
   const element = evt.target;
   const qa = element?.getAttribute('data-qa');
 
-  onPress?.(evt);
+  onPress?.(sanitizePressEvent(evt));
 
   if (to == null) {
     // Allow 0 as valid navigation (go to current page)
