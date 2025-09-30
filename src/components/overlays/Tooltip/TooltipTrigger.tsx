@@ -1,5 +1,11 @@
 import { FocusableProvider } from '@react-aria/focus';
-import { Children, ReactElement, useRef } from 'react';
+import {
+  HTMLAttributes,
+  ReactElement,
+  ReactNode,
+  RefObject,
+  useRef,
+} from 'react';
 import {
   Placement,
   TooltipTriggerProps,
@@ -17,16 +23,28 @@ import { TooltipContext } from './context';
 const DEFAULT_OFFSET = 8; // Offset needed to reach 4px/5px (med/large) distance between tooltip and trigger button
 const DEFAULT_CROSS_OFFSET = 0;
 
+export type TooltipTriggerFunction = (
+  triggerProps: HTMLAttributes<HTMLElement>,
+  ref: RefObject<HTMLElement>,
+) => ReactNode;
+
 export interface CubeTooltipTriggerProps extends TooltipTriggerProps {
-  children: [ReactElement | string, ReactElement];
+  children: [ReactElement | string | TooltipTriggerFunction, ReactElement];
   crossOffset?: number;
   offset?: number;
   placement?: Placement;
   isMaterial?: boolean;
   isLight?: boolean;
-  /** Whether the trigger should have an ActiveZone wrap to make sure it's focusable and hoverable.
-   * Otherwise, tooltip won't work. */
+  /**
+   * @deprecated Use function-as-first-child pattern instead.
+   * Whether the trigger should have an ActiveZone wrap to make sure it's focusable and hoverable.
+   * Otherwise, tooltip won't work.
+   */
   activeWrap?: boolean;
+  /**
+   * External ref to use instead of internal ref (optional).
+   */
+  targetRef?: RefObject<HTMLElement>;
   isOpen?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
   defaultOpen?: boolean;
@@ -59,6 +77,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
   let {
     children,
     activeWrap,
+    targetRef: externalRef,
     crossOffset = DEFAULT_CROSS_OFFSET,
     isDisabled,
     isMaterial,
@@ -71,12 +90,30 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
     defaultOpen,
   } = props;
 
-  let [trigger, tooltip] = Children.toArray(children);
+  // Extract both children without using React.Children.toArray so we don't lose
+  // function-as-child (render-prop) which React.Children filters out.
+  const rawChildrenArray = Array.isArray(children)
+    ? (children as unknown[])
+    : ([children] as unknown[]);
+  const childrenArray = rawChildrenArray as unknown as [
+    ReactElement | string | TooltipTriggerFunction,
+    ReactElement,
+  ];
+  let [trigger, tooltip] = childrenArray;
+  const isTriggerFunction = typeof trigger === 'function';
+
+  // Show deprecation warning for activeWrap
+  if (activeWrap && process.env.NODE_ENV === 'development') {
+    console.warn(
+      'CubeUIKit: The `activeWrap` prop is deprecated. Use function-as-first-child pattern instead.',
+    );
+  }
+
+  let internalRef = useRef<HTMLElement>(null!);
+  let tooltipTriggerRef = externalRef ?? internalRef;
+  let overlayRef = useRef(null);
 
   let state = useTooltipTriggerState({ delay, ...props });
-
-  let tooltipTriggerRef = useRef(null);
-  let overlayRef = useRef(null);
 
   let { triggerProps, tooltipProps } = useTooltipTrigger(
     {
@@ -100,9 +137,42 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
     isOpen: state.isOpen,
   });
 
+  const tooltipContextValue = {
+    state,
+    placement,
+    ref: overlayRef,
+    overlayProps,
+    arrowProps,
+    minOffset: 'var(--gap)',
+    minScale: '1',
+    isMaterial,
+    isLight,
+    ...tooltipProps,
+  };
+
+  // Function trigger pattern (new)
+  if (isTriggerFunction) {
+    const triggerFn = trigger as TooltipTriggerFunction;
+
+    return (
+      <>
+        {triggerFn(triggerProps, tooltipTriggerRef)}
+        <TooltipContext.Provider value={tooltipContextValue}>
+          <OverlayWrapper
+            isOpen={state.isOpen}
+            placement={props.placement || 'top'}
+          >
+            {tooltip}
+          </OverlayWrapper>
+        </TooltipContext.Provider>
+      </>
+    );
+  }
+
+  // Legacy element/string trigger pattern
   if (!activeWrap && typeof trigger === 'string') {
     console.warn(
-      'CubeUIKit: Tooltips are only supported on elements that are both focusable and hoverable. To solve this issue you can: 1) Use active element as a trigger (`Button`, `Link`, etc); 2) Use `activeWrap` attribute to automatically wrap the content; 3) Use `ActiveZone` component to manually wrap the content.',
+      'CubeUIKit: Tooltips are only supported on elements that are both focusable and hoverable. To solve this issue you can: 1) Use active element as a trigger (`Button`, `Link`, etc); 2) Use function-as-first-child pattern to manually apply trigger props; 3) Use `ActiveZone` component to manually wrap the content.',
     );
 
     return <Block>{trigger}</Block>;
@@ -119,20 +189,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
       ) : (
         trigger
       )}
-      <TooltipContext.Provider
-        value={{
-          state,
-          placement,
-          ref: overlayRef,
-          overlayProps,
-          arrowProps,
-          minOffset: 'var(--gap)',
-          minScale: '1',
-          isMaterial,
-          isLight,
-          ...tooltipProps,
-        }}
-      >
+      <TooltipContext.Provider value={tooltipContextValue}>
         <OverlayWrapper
           isOpen={state.isOpen}
           placement={props.placement || 'top'}
