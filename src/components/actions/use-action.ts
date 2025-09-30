@@ -140,6 +140,27 @@ export function parseTo(to: NavigateArg | undefined): {
   };
 }
 
+function sanitizePressEvent(evt: PressEvent): PressEvent {
+  const safeEvt: any = {
+    type: (evt as any)?.type,
+    pointerType: (evt as any)?.pointerType,
+    shiftKey: !!(evt as any)?.shiftKey,
+    metaKey: !!(evt as any)?.metaKey,
+    ctrlKey: !!(evt as any)?.ctrlKey,
+    altKey: !!(evt as any)?.altKey,
+  };
+  try {
+    Object.defineProperty(safeEvt, 'target', {
+      value: (evt as any)?.target,
+      enumerable: false,
+      configurable: true,
+    });
+  } catch (e) {
+    // do nothing
+  }
+  return safeEvt;
+}
+
 export function performClickHandler(
   evt,
   { navigate, resolvedHref, to, onPress, tracking, navigationOptions },
@@ -156,7 +177,7 @@ export function performClickHandler(
   const element = evt.target;
   const qa = element?.getAttribute('data-qa');
 
-  onPress?.(evt);
+  onPress?.(sanitizePressEvent(evt));
 
   if (to == null) {
     // Allow 0 as valid navigation (go to current page)
