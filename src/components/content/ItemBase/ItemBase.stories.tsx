@@ -1086,6 +1086,8 @@ export const WithAutoTooltip: StoryFn<CubeItemBaseProps> = () => (
 WithAutoTooltip.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
 
+  await timeout(250);
+
   const item = await canvas.findByTestId('auto-tooltip-item');
   // this is a weird hack that makes tooltip working properly on page load
   await userEvent.unhover(item);
