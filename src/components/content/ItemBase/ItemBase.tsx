@@ -551,8 +551,12 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     } as Props & { ref?: any };
   }, [labelProps, mergedLabelRef]);
 
+  // Determine if we need FocusableItemBase
+  // Elements like 'li', 'a', 'button' are already focusable, so we don't need the wrapper
+  const tag = rest.as;
+  const isNativelyFocusable = tag === 'li' || tag === 'a' || tag === 'button';
   const Component =
-    tooltip || finalIsDisabled ? FocusableItemBase : ItemBaseElement;
+    tooltip && !isNativelyFocusable ? FocusableItemBase : ItemBaseElement;
 
   const itemElement = (
     <Component
