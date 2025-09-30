@@ -153,16 +153,16 @@ interface SanitizedPressEvent {
 
 function sanitizePressEvent(evt: PressEvent): SanitizedPressEvent {
   const safeEvt: SanitizedPressEvent = {
-    type: (evt as any)?.type,
-    pointerType: (evt as any)?.pointerType,
-    shiftKey: !!(evt as any)?.shiftKey,
-    metaKey: !!(evt as any)?.metaKey,
-    ctrlKey: !!(evt as any)?.ctrlKey,
-    altKey: !!(evt as any)?.altKey,
+    type: 'type' in evt ? evt.type : undefined,
+    pointerType: 'pointerType' in evt ? (evt as { pointerType?: string }).pointerType : undefined,
+    shiftKey: 'shiftKey' in evt ? !!(evt as { shiftKey?: boolean }).shiftKey : false,
+    metaKey: 'metaKey' in evt ? !!(evt as { metaKey?: boolean }).metaKey : false,
+    ctrlKey: 'ctrlKey' in evt ? !!(evt as { ctrlKey?: boolean }).ctrlKey : false,
+    altKey: 'altKey' in evt ? !!(evt as { altKey?: boolean }).altKey : false,
   };
   try {
     Object.defineProperty(safeEvt, 'target', {
-      value: (evt as any)?.target,
+      value: 'target' in evt ? (evt as { target?: unknown }).target : undefined,
       enumerable: false,
       configurable: true,
     });
