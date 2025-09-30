@@ -1,0 +1,394 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
+import * as TooltipStories from './Tooltip.stories';
+
+<Meta of={TooltipStories} />
+
+# Tooltip
+
+Tooltips display informative text when users hover over or focus an element. They provide supplementary information about an element without cluttering the interface.
+
+## When to Use
+
+- Provide brief descriptions of buttons, icons, or other UI elements
+- Show keyboard shortcuts or additional context for actions
+- Display truncated text or labels in full
+- Explain unfamiliar terms or provide helpful hints
+- Add supplementary information without overwhelming the interface
+
+## Components
+
+This module exports three components that work together:
+
+- **`TooltipProvider`** - Convenience wrapper for simple tooltip use cases (recommended)
+- **`TooltipTrigger`** - Lower-level component for advanced tooltip scenarios
+- **`Tooltip`** - The tooltip content container (used with `TooltipTrigger`)
+
+## TooltipProvider (Recommended)
+
+The simplest way to add tooltips to your components. It combines `TooltipTrigger` and `Tooltip` for convenience.
+
+<Story of={TooltipStories.ViaProvider} />
+
+---
+
+### Properties
+
+<Controls of={TooltipStories.ViaProvider} />
+
+### Base Properties
+
+Supports [Base properties](/docs/base-properties)
+
+### Styling Properties
+
+#### tooltipStyles
+
+Customizes the tooltip content container.
+
+**Sub-elements:**
+- None (tooltip tip is styled via `tipStyles` prop on `Tooltip` component)
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop: `width`.
+
+### Modifiers
+
+The `mods` property on the tooltip accepts the following modifiers you can override:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| material | `boolean` | Enables material-style tooltip with pointer events |
+| light | `boolean` | Uses light color scheme instead of dark |
+| open | `boolean` | Indicates whether the tooltip is currently visible |
+
+## TooltipTrigger
+
+Lower-level component that wraps a trigger element and a `Tooltip`. Use this when you need more control over the tooltip content or behavior.
+
+<Story of={TooltipStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={TooltipStories.Default} />
+
+### Base Properties
+
+Supports [Base properties](/docs/base-properties)
+
+## Tooltip
+
+Display container for tooltip content. Has a directional arrow dependent on its placement. This component is typically used as a child of `TooltipTrigger` or automatically rendered by `TooltipProvider`.
+
+### Properties
+
+#### tipStyles
+
+Customizes the tooltip arrow (tip) element.
+
+#### showIcon
+
+`boolean` - Controls whether an icon should be displayed in the tooltip.
+
+#### placement
+
+`PlacementAxis` - Controls the position of the tooltip relative to its trigger. Options: `top`, `bottom`, `left`, `right`.
+
+#### isMaterial
+
+`boolean` - Enables material-style tooltip with auto pointer events.
+
+#### isLight
+
+`boolean` - Uses light color scheme for the tooltip.
+
+#### width
+
+Specifies the width of the tooltip.
+
+### Base Properties
+
+Supports [Base properties](/docs/base-properties)
+
+### Styling Properties
+
+#### styles
+
+Customizes the root element of the tooltip.
+
+**Sub-elements:**
+- None
+
+## Usage Patterns
+
+### Standard Pattern (Active Elements)
+
+For focusable and hoverable elements like `Button`, `Link`, `IconButton`, etc., use the standard pattern with `TooltipProvider`:
+
+```jsx
+<TooltipProvider title="Click to save">
+  <Button>Save</Button>
+</TooltipProvider>
+```
+
+Or with `TooltipTrigger`:
+
+```jsx
+<TooltipTrigger>
+  <Button>Save</Button>
+  <Tooltip>Click to save</Tooltip>
+</TooltipTrigger>
+```
+
+### Function Pattern (Non-Focusable Elements)
+
+For elements that don't have native DOM focus or hover support (like `div`, `span`, or custom components), use the function-as-child pattern:
+
+```jsx
+<TooltipProvider title="Additional information">
+  {(triggerProps, ref) => (
+    <div ref={ref} {...triggerProps}>
+      Hoverable content
+    </div>
+  )}
+</TooltipProvider>
+```
+
+<Story of={TooltipStories.FunctionPattern} />
+
+With `TooltipTrigger`:
+
+```jsx
+<TooltipTrigger>
+  {(triggerProps, ref) => (
+    <span ref={ref} {...triggerProps}>
+      Custom element
+    </span>
+  )}
+  <Tooltip>Tooltip content</Tooltip>
+</TooltipTrigger>
+```
+
+<Story of={TooltipStories.DirectFunctionPattern} />
+
+### Different Placements
+
+Control where the tooltip appears relative to its trigger:
+
+```jsx
+<TooltipProvider title="Tooltip on the right" placement="right">
+  <Button>Hover me</Button>
+</TooltipProvider>
+```
+
+<Story of={TooltipStories.Side} />
+
+### Light Theme
+
+Use the light theme for tooltips on dark backgrounds:
+
+```jsx
+<TooltipProvider title="Light tooltip" isLight>
+  <Button>Hover me</Button>
+</TooltipProvider>
+```
+
+<Story of={TooltipStories.Light} />
+
+### Custom Delay
+
+Adjust how long the user must hover before the tooltip appears:
+
+```jsx
+<TooltipProvider title="Quick tooltip" delay={100}>
+  <Button>Fast tooltip</Button>
+</TooltipProvider>
+
+<TooltipProvider title="Slower tooltip" delay={1000}>
+  <Button>Slow tooltip</Button>
+</TooltipProvider>
+```
+
+### Custom Styling
+
+Customize the appearance of the tooltip:
+
+```jsx
+<TooltipProvider
+  title="Styled tooltip"
+  tooltipStyles={{
+    fill: '#purple',
+    color: '#white',
+    padding: '1.5x 2x',
+  }}
+>
+  <Button>Custom tooltip</Button>
+</TooltipProvider>
+```
+
+### Controlled Tooltip
+
+Programmatically control when the tooltip is shown:
+
+```jsx
+function ControlledExample() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <TooltipProvider
+      title="Controlled tooltip"
+      isOpen={isOpen}
+      onOpenChange={setIsOpen}
+    >
+      <Button onClick={() => setIsOpen(!isOpen)}>
+        Toggle tooltip
+      </Button>
+    </TooltipProvider>
+  );
+}
+```
+
+### Conditional Tooltip
+
+Show a tooltip only when certain conditions are met:
+
+```jsx
+<TooltipProvider title={hasError ? "Fix errors first" : null}>
+  <Button isDisabled={hasError}>Submit</Button>
+</TooltipProvider>
+```
+
+### Focus-Only Trigger
+
+Show tooltip only on focus, not on hover:
+
+```jsx
+<TooltipProvider title="Focus only" trigger="focus">
+  <Button>Focus me</Button>
+</TooltipProvider>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the trigger element, showing the tooltip after the delay
+- `Shift + Tab` - Moves focus away from the trigger, hiding the tooltip
+- Tooltips automatically appear on focus for keyboard users
+
+### Screen Reader Support
+
+- Tooltips use the `tooltip` ARIA role
+- Content is announced to screen readers when the tooltip appears
+- The trigger element maintains proper focus management
+- Tooltips are associated with their triggers via ARIA attributes
+
+### ARIA Properties
+
+- `aria-describedby` - Automatically set on the trigger to reference the tooltip
+- All standard ARIA labeling props are supported
+
+### Best Practices
+
+1. **Keep it brief** - Tooltips should contain concise, supplementary information
+   ```jsx
+   {/* Good */}
+   <TooltipProvider title="Save changes">
+     <Button><IconDeviceFloppy /></Button>
+   </TooltipProvider>
+
+   {/* Avoid */}
+   <TooltipProvider title="This button will save all your changes to the database and close the dialog. Make sure you review your changes before clicking.">
+     <Button>Save</Button>
+   </TooltipProvider>
+   ```
+
+2. **Don't hide critical information** - Never put essential information only in a tooltip
+   ```jsx
+   {/* Good - tooltip adds context */}
+   <TooltipProvider title="Permanently delete this item">
+     <Button theme="danger">Delete</Button>
+   </TooltipProvider>
+
+   {/* Avoid - essential action only in tooltip */}
+   <TooltipProvider title="Delete item">
+     <Button><IconX /></Button>
+   </TooltipProvider>
+   ```
+
+3. **Use appropriate delays** - Default delay (250ms) works for most cases
+   ```jsx
+   {/* Good - default delay */}
+   <TooltipProvider title="Info">
+     <Button>Action</Button>
+   </TooltipProvider>
+
+   {/* Consider longer delay for dense interfaces */}
+   <TooltipProvider title="Info" delay={500}>
+     <IconButton><IconInfo /></IconButton>
+   </TooltipProvider>
+   ```
+
+4. **Choose the right pattern** - Use function pattern only when necessary
+   ```jsx
+   {/* Good - standard pattern for active elements */}
+   <TooltipProvider title="Click me">
+     <Button>Action</Button>
+   </TooltipProvider>
+
+   {/* Good - function pattern for non-focusable elements */}
+   <TooltipProvider title="Info">
+     {(props, ref) => (
+       <div ref={ref} {...props}>Content</div>
+     )}
+   </TooltipProvider>
+
+   {/* Avoid - unnecessary function pattern */}
+   <TooltipProvider title="Click me">
+     {(props, ref) => (
+       <Button ref={ref} {...props}>Action</Button>
+     )}
+   </TooltipProvider>
+   ```
+
+5. **Provide meaningful context** - Ensure tooltip text is descriptive
+   ```jsx
+   {/* Good */}
+   <TooltipProvider title="Export as CSV">
+     <IconButton><IconDownload /></IconButton>
+   </TooltipProvider>
+
+   {/* Avoid */}
+   <TooltipProvider title="Click here">
+     <IconButton><IconDownload /></IconButton>
+   </TooltipProvider>
+   ```
+
+## Migration from activeWrap
+
+The `activeWrap` prop is deprecated. If you're using it, migrate to the function pattern:
+
+```jsx
+{/* Before (deprecated) */}
+<TooltipProvider title="Tooltip" activeWrap>
+  <span>Text</span>
+</TooltipProvider>
+
+{/* After */}
+<TooltipProvider title="Tooltip">
+  {(props, ref) => (
+    <span ref={ref} {...props}>
+      Text
+    </span>
+  )}
+</TooltipProvider>
+```
+
+## Related Components
+
+- [Button](/docs/components-actions-button--docs) - Primary use case for tooltips
+- [IconButton](/docs/components-actions-iconbutton--docs) - Often paired with tooltips for clarity
+- [Link](/docs/components-actions-link--docs) - Can use tooltips for additional context
+- [Popover](/docs/components-overlays-popover--docs) - For more complex interactive content
