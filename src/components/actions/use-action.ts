@@ -140,8 +140,19 @@ export function parseTo(to: NavigateArg | undefined): {
   };
 }
 
-function sanitizePressEvent(evt: PressEvent): PressEvent {
-  const safeEvt: any = {
+interface SanitizedPressEvent {
+  type?: string;
+  pointerType?: string;
+  shiftKey: boolean;
+  metaKey: boolean;
+  ctrlKey: boolean;
+  altKey: boolean;
+  // target is defined as a non-enumerable property below
+  [key: string]: unknown; // allow non-enumerable 'target'
+}
+
+function sanitizePressEvent(evt: PressEvent): SanitizedPressEvent {
+  const safeEvt: SanitizedPressEvent = {
     type: (evt as any)?.type,
     pointerType: (evt as any)?.pointerType,
     shiftKey: !!(evt as any)?.shiftKey,
