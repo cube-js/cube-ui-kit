@@ -387,7 +387,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     htmlType,
     isSelected,
     hotkeys,
-    tooltip,
+    tooltip = true,
     isDisabled,
     loadingSlot = 'auto',
     isLoading = false,
@@ -491,7 +491,17 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
   // Determine if auto tooltip is enabled
   const isAutoTooltipEnabled = useMemo(() => {
     if (tooltip === true && typeof children === 'string') return true;
-    if (typeof tooltip === 'object' && tooltip?.auto) return true;
+    if (typeof tooltip === 'object') {
+      // If title is provided, it's not auto behavior (unless auto is explicitly set)
+      if (tooltip.title) {
+        // Respect explicit auto value even when title is provided
+        return tooltip.auto === true && typeof children === 'string';
+      }
+
+      // If no title, use auto behavior (default to true for cases like { placement: 'right' })
+      const autoValue = tooltip.auto !== undefined ? tooltip.auto : true;
+      return autoValue && typeof children === 'string';
+    }
     return false;
   }, [tooltip, typeof children]);
 
@@ -605,11 +615,20 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     if (typeof tooltip === 'object') {
       const { auto, ...tooltipProps } = tooltip;
 
-      // If auto is enabled and label is overflowed, show auto tooltip
-      if (
-        (auto && (children || labelProps) && isLabelOverflowed) ||
-        (tooltipProps.title && !auto)
-      ) {
+      // If title is provided and auto is not explicitly true, always show the tooltip
+      if (tooltipProps.title && auto !== true) {
+        return (
+          <TooltipProvider
+            placement={defaultTooltipPlacement}
+            {...tooltipProps}
+          >
+            {itemElement}
+          </TooltipProvider>
+        );
+      }
+
+      // If title is provided with auto=true, OR no title but auto behavior enabled
+      if ((children || labelProps) && isLabelOverflowed) {
         return (
           <TooltipProvider
             placement={defaultTooltipPlacement}

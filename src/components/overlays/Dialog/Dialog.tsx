@@ -23,7 +23,7 @@ import {
   tasty,
 } from '../../../tasty';
 import { mergeProps, SlotProvider } from '../../../utils/react';
-import { Button, ItemButton } from '../../actions';
+import { ItemButton } from '../../actions';
 import { useOpenTransitionContext } from '../Modal/OpenTransition';
 
 import { useDialogContext } from './context';
