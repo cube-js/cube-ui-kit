@@ -156,7 +156,7 @@ function sanitizePressEvent(evt: PressEvent): PressEvent {
       configurable: true,
     });
   } catch (e) {
-    // do nothing
+    // Failed to define target property - continue without it
   }
   return safeEvt;
 }
