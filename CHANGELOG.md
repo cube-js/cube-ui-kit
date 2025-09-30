@@ -1,5 +1,15 @@
 # @cube-dev/ui-kit
 
+## 0.78.2
+
+### Patch Changes
+
+- [#799](https://github.com/cube-js/cube-ui-kit/pull/799) [`29163467`](https://github.com/cube-js/cube-ui-kit/commit/29163467292aa161131735448ad5e1b659d55abc) Thanks [@tenphi](https://github.com/tenphi)! - Fix tooltip implementation so it doesn't break item navigation.
+
+- [#799](https://github.com/cube-js/cube-ui-kit/pull/799) [`29163467`](https://github.com/cube-js/cube-ui-kit/commit/29163467292aa161131735448ad5e1b659d55abc) Thanks [@tenphi](https://github.com/tenphi)! - Use auto tooltip in ItemBase component by default. See documentation to learn more.
+
+- [#798](https://github.com/cube-js/cube-ui-kit/pull/798) [`17e4f7f7`](https://github.com/cube-js/cube-ui-kit/commit/17e4f7f77103d9c2678cbe6e7c01ab2ca7aa7aa7) Thanks [@tenphi](https://github.com/tenphi)! - Don't pass onPress prop to the element in ItemButton.
+
 ## 0.78.1
 
 ### Patch Changes
