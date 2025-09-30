@@ -1,4 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
+import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
 import * as TooltipStories from './Tooltip.stories';
 
 <Meta of={TooltipStories} />
@@ -27,13 +27,11 @@ This module exports three components that work together:
 
 The simplest way to add tooltips to your components. It combines `TooltipTrigger` and `Tooltip` for convenience.
 
-<Story of={TooltipStories.ViaProvider} />
-
 ---
 
 ### Properties
 
-<Controls of={TooltipStories.ViaProvider} />
+<Controls of={TooltipStories.Default} />
 
 ### Base Properties
 
@@ -66,13 +64,13 @@ The `mods` property on the tooltip accepts the following modifiers you can overr
 
 Lower-level component that wraps a trigger element and a `Tooltip`. Use this when you need more control over the tooltip content or behavior.
 
-<Story of={TooltipStories.Default} />
+<Story of={TooltipStories.ViaProvider} />
 
 ---
 
 ### Properties
 
-<Controls of={TooltipStories.Default} />
+<Controls of={TooltipStories.ViaProvider} />
 
 ### Base Properties
 
