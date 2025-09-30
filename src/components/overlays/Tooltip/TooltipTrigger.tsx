@@ -1,6 +1,7 @@
 import { FocusableProvider } from '@react-aria/focus';
 import {
   HTMLAttributes,
+  isValidElement,
   ReactElement,
   ReactNode,
   RefObject,
@@ -22,6 +23,15 @@ import { TooltipContext } from './context';
 
 const DEFAULT_OFFSET = 8; // Offset needed to reach 4px/5px (med/large) distance between tooltip and trigger button
 const DEFAULT_CROSS_OFFSET = 0;
+
+// Type guards
+function isTriggerFunction(value: unknown): value is TooltipTriggerFunction {
+  return typeof value === 'function';
+}
+
+function isReactElement(value: unknown): value is ReactElement {
+  return isValidElement(value);
+}
 
 export type TooltipTriggerFunction = (
   triggerProps: HTMLAttributes<HTMLElement>,
@@ -95,12 +105,26 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
   const rawChildrenArray = Array.isArray(children)
     ? (children as unknown[])
     : ([children] as unknown[]);
-  const childrenArray = rawChildrenArray as unknown as [
-    ReactElement | string | TooltipTriggerFunction,
-    ReactElement,
-  ];
-  let [trigger, tooltip] = childrenArray;
-  const isTriggerFunction = typeof trigger === 'function';
+
+  const [trigger, tooltip] = rawChildrenArray;
+
+  // Type guard the tooltip
+  if (!isReactElement(tooltip)) {
+    throw new Error(
+      'CubeUIKit: TooltipTrigger expects the second child to be a valid React element (Tooltip component).',
+    );
+  }
+
+  // Type guard the trigger
+  if (
+    !isTriggerFunction(trigger) &&
+    !isReactElement(trigger) &&
+    typeof trigger !== 'string'
+  ) {
+    throw new Error(
+      'CubeUIKit: TooltipTrigger expects the first child to be a function, React element, or string.',
+    );
+  }
 
   // Show deprecation warning for activeWrap
   if (activeWrap && process.env.NODE_ENV === 'development') {
@@ -151,12 +175,10 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
   };
 
   // Function trigger pattern (new)
-  if (isTriggerFunction) {
-    const triggerFn = trigger as TooltipTriggerFunction;
-
+  if (isTriggerFunction(trigger)) {
     return (
       <>
-        {triggerFn(triggerProps, tooltipTriggerRef)}
+        {trigger(triggerProps, tooltipTriggerRef)}
         <TooltipContext.Provider value={tooltipContextValue}>
           <OverlayWrapper
             isOpen={state.isOpen}
