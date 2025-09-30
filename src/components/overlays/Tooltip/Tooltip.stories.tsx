@@ -66,7 +66,7 @@ ViaProvider.args = {
 ViaProvider.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
   // wait for TooltipProvider setRendered to true
-  await timeout(1000);
+  await timeout(250);
 
   const button = await canvas.findByRole('button');
   // this is hack that makes tooltip working properly on page load
@@ -82,7 +82,7 @@ ViaProviderWithActiveWrap.args = { activeWrap: true, delay: 0 };
 ViaProviderWithActiveWrap.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
   // wait for TooltipProvider setRendered to true
-  await timeout(1000);
+  await timeout(250);
 
   const button = await canvas.findByRole('button');
   // this is a weird hack that makes tooltip working properly on page load

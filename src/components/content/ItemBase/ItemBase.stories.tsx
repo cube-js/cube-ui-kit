@@ -1,4 +1,5 @@
 import { IconCoin, IconSettings, IconUser } from '@tabler/icons-react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { DirectionIcon } from '../../../icons';
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -1064,6 +1065,41 @@ WithDescriptionBlock.parameters = {
     description: {
       story:
         'Demonstrates the `descriptionPlacement="block"` functionality where descriptions are positioned below the entire ItemBase component instead of inside the content area. This is useful for longer descriptions or when you want to maintain a clean main content area.',
+    },
+  },
+};
+
+const timeout = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
+export const WithAutoTooltip: StoryFn<CubeItemBaseProps> = () => (
+  <ItemBase
+    qa="auto-tooltip-item"
+    icon={<IconUser />}
+    style={{ width: '200px' }}
+    tooltip={{ delay: 0 }}
+  >
+    This is a very long label that will overflow and trigger the auto tooltip
+  </ItemBase>
+);
+
+WithAutoTooltip.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+
+  const item = await canvas.findByTestId('auto-tooltip-item');
+  // this is a weird hack that makes tooltip working properly on page load
+  await userEvent.unhover(item);
+  await userEvent.hover(item);
+
+  // Wait for the tooltip to appear - getByRole will throw if not found
+  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeVisible());
+};
+
+WithAutoTooltip.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates the auto tooltip feature that automatically shows a tooltip when the label text overflows. The tooltip is triggered on hover and displays the full text content.',
     },
   },
 };
