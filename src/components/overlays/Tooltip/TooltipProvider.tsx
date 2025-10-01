@@ -1,4 +1,11 @@
-import { ReactElement, ReactNode, RefObject, useEffect, useState } from 'react';
+import {
+  isValidElement,
+  ReactElement,
+  ReactNode,
+  RefObject,
+  useEffect,
+  useState,
+} from 'react';
 
 import { Styles } from '../../../tasty';
 
@@ -11,7 +18,7 @@ import {
 
 export interface CubeTooltipProviderProps
   extends Omit<CubeTooltipTriggerProps, 'children'> {
-  children: ReactElement | TooltipTriggerFunction;
+  children: ReactNode | TooltipTriggerFunction;
   title?: ReactNode;
   tooltipStyles?: Styles;
   width?: CubeTooltipProps['width'];
@@ -29,20 +36,26 @@ export function TooltipProvider(props: CubeTooltipProviderProps): ReactElement {
 
   // SSR: render without tooltip
   if (!rendered) {
-    return isFunction ? (
+    return (
       <>
-        {children({}, { current: null } as unknown as RefObject<HTMLElement>)}
+        {isFunction
+          ? children({}, { current: null } as unknown as RefObject<HTMLElement>)
+          : children}
       </>
-    ) : (
-      <>{children}</>
-    );
+    ) as ReactElement;
   }
 
   // Both patterns pass through to TooltipTrigger
   // The difference is whether we pass function or element as first child
   return (
     <TooltipTrigger {...otherProps}>
-      {children}
+      {isFunction ||
+      isValidElement(children) ||
+      typeof children === 'string' ? (
+        children
+      ) : (
+        <>{children}</>
+      )}
       <Tooltip styles={tooltipStyles} {...(width ? { width } : null)}>
         {title}
       </Tooltip>
