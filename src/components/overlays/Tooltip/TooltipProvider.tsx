@@ -17,7 +17,7 @@ export interface CubeTooltipProviderProps
   width?: CubeTooltipProps['width'];
 }
 
-export function TooltipProvider(props: CubeTooltipProviderProps) {
+export function TooltipProvider(props: CubeTooltipProviderProps): ReactElement {
   const [rendered, setRendered] = useState(false);
   const { title, children, tooltipStyles, width, ...otherProps } = props;
 
