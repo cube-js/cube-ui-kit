@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.78.3
+
+### Patch Changes
+
+- [#801](https://github.com/cube-js/cube-ui-kit/pull/801) [`fae98647`](https://github.com/cube-js/cube-ui-kit/commit/fae98647f070ac69f6fa7abc80b5bb568896c81a) Thanks [@tenphi](https://github.com/tenphi)! - Fix the return type of TooltipProvider.
+
 ## 0.78.2
 
 ### Patch Changes
