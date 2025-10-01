@@ -10,7 +10,7 @@ export const DecimalDecreaseIcon = wrapIcon(
     viewBox="0 0 24 24"
   >
     <path
-      stroke="#000"
+      stroke="currentColor"
       strokeLinecap="round"
       strokeLinejoin="round"
       strokeWidth="1.5"

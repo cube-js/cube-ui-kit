@@ -61,7 +61,7 @@ const Template: StoryFn<CubeIconProps> = (name) => {
 
           return (
             <Space key={iconName} gap="1x">
-              <Icon size={24} />
+              <Icon size={24} color="#purple-text" />
               <Text preset="t4">{iconName}</Text>
             </Space>
           );
