@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.78.5
+
+### Patch Changes
+
+- [#805](https://github.com/cube-js/cube-ui-kit/pull/805) [`5fa85184`](https://github.com/cube-js/cube-ui-kit/commit/5fa851840db023def82f1a3838576ba8fe0d65f8) Thanks [@tenphi](https://github.com/tenphi)! - Fix the return type of the TooltipProvider the second time :)
+
+- [#805](https://github.com/cube-js/cube-ui-kit/pull/805) [`5fa85184`](https://github.com/cube-js/cube-ui-kit/commit/5fa851840db023def82f1a3838576ba8fe0d65f8) Thanks [@tenphi](https://github.com/tenphi)! - Fix DecimalDecreaseIcon and DecimalIncreaseIcon.
+
 ## 0.78.4
 
 ### Patch Changes
