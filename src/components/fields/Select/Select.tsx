@@ -1,4 +1,5 @@
 import { AriaLabelingProps, CollectionBase, DOMRef } from '@react-types/shared';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import React, {
   cloneElement,
   ReactElement,
@@ -43,6 +44,7 @@ import {
   Styles,
   tasty,
 } from '../../../tasty/index';
+import { SIZES } from '../../../tokens';
 import { generateRandomId } from '../../../utils/random';
 import {
   forwardRefWithGenerics,
@@ -99,34 +101,47 @@ const SelectTrigger = tasty(ItemBase, {
   },
 });
 
+// Wrapper for the popover list with visual styles
+const ListBoxContainer = tasty({
+  styles: {
+    display: 'grid',
+    gridColumns: '1sf',
+    gridRows: '1sf',
+    radius: '1cr',
+    border: true,
+    fill: '#white',
+    shadow: '0px 4px 16px #shadow',
+    overflow: 'hidden',
+  },
+});
+
+// Scroll container for virtualized list
+const ListBoxScrollElement = tasty({
+  as: 'div',
+  styles: {
+    display: 'grid',
+    gridColumns: '1sf',
+    gridRows: '1sf',
+    height: 'initial max-content (50vh - $size-md)',
+    overflow: 'auto',
+    scrollbar: 'styled',
+  },
+});
+
 export const ListBoxElement = tasty({
   as: 'ul',
   styles: {
     display: 'flex',
     gap: '1bw',
     flow: 'column',
-    margin: '0',
-    padding: {
-      '': '.5x',
+    margin: {
+      '': '.5x .5x .5x .5x',
       section: 0,
     },
+    padding: 0,
     listStyle: 'none',
-    radius: {
-      '': '1cr',
-      section: '0',
-    },
-    border: {
-      '': true,
-      section: false,
-    },
-    fill: '#white',
-    shadow: {
-      '': '0px 4px 16px #shadow',
-      section: false,
-    },
-    height: 'initial max-content (50vh - $size-md)',
-    overflow: 'clip auto',
-    scrollbar: 'styled',
+    height: 'max-content',
+    overflow: 'visible',
   },
 });
 
@@ -504,6 +519,10 @@ export function ListBoxPopup({
   // For trigger+popover components, map 'small' size to 'medium' for list items
   // while preserving 'medium' and 'large' sizes
   const listItemSize = size === 'small' ? 'medium' : size;
+
+  // Scroll container ref for virtualization
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   // Get props for the listbox
   let { listBoxProps } = useListBox(
     {
@@ -536,6 +555,44 @@ export function ListBoxPopup({
     popoverRef,
   );
 
+  // Compute items array and detect sections
+  const itemsArray = useMemo(() => [...state.collection], [state.collection]);
+
+  const hasSections = useMemo(
+    () => itemsArray.some((i) => i.type === 'section'),
+    [itemsArray],
+  );
+
+  const shouldVirtualize = !hasSections;
+
+  // Use ref to ensure estimateSize always accesses current itemsArray
+  const itemsArrayRef = useRef(itemsArray);
+  itemsArrayRef.current = itemsArray;
+
+  const rowVirtualizer = useVirtualizer({
+    count: shouldVirtualize ? itemsArray.length : 0,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: (index: number) => {
+      const currentItem: any = itemsArrayRef.current[index];
+
+      if (currentItem?.props?.description) {
+        return SIZES.XL + 1;
+      }
+      return listItemSize === 'large' ? SIZES.XL + 1 : SIZES.MD + 1;
+    },
+    measureElement: (el) => {
+      return el.offsetHeight + 1;
+    },
+    overscan: 10,
+  });
+
+  // Trigger remeasurement when items change (for filtering scenarios)
+  useEffect(() => {
+    if (shouldVirtualize) {
+      rowVirtualizer.measure();
+    }
+  }, [shouldVirtualize, itemsArray, rowVirtualizer]);
+
   // Wrap in <FocusScope> so that focus is restored back to the
   // trigger when the popup is closed. In addition, add hidden
   // <DismissButton> components at the start and end of the list
@@ -554,73 +611,123 @@ export function ListBoxPopup({
     >
       <FocusScope restoreFocus>
         <DismissButton onDismiss={() => state.close()} />
-        {(() => {
-          const hasSections = Array.from(state.collection).some(
-            (i: any) => i.type === 'section',
-          );
-
-          const renderedItems: React.ReactNode[] = [];
-          let isFirstSection = true;
-
-          for (const item of state.collection) {
-            if (item.type === 'section') {
-              if (!isFirstSection) {
-                renderedItems.push(
-                  <ListDivider
-                    key={`divider-${String(item.key)}`}
-                    as="li"
-                    role="separator"
-                    aria-orientation="horizontal"
-                  />,
-                );
-              }
-
-              renderedItems.push(
-                <SelectSection
-                  key={item.key}
-                  item={item}
-                  state={state}
-                  optionStyles={optionStyles}
-                  sectionStyles={undefined}
-                  shouldUseVirtualFocus={shouldUseVirtualFocus}
-                  size={listItemSize}
-                />,
-              );
-
-              isFirstSection = false;
-            } else {
-              renderedItems.push(
-                <Option
-                  key={item.key}
-                  item={item}
-                  state={state}
-                  styles={optionStyles}
-                  shouldUseVirtualFocus={shouldUseVirtualFocus}
-                  size={listItemSize}
-                />,
-              );
-            }
-          }
-
-          return (
+        <ListBoxContainer styles={listBoxStyles}>
+          <ListBoxScrollElement ref={scrollRef}>
             <ListBoxElement
-              styles={listBoxStyles}
               {...listBoxProps}
               ref={listBoxRef}
               mods={{ sections: hasSections }}
+              style={
+                shouldVirtualize
+                  ? {
+                      position: 'relative',
+                      height: `${rowVirtualizer.getTotalSize() + 3}px`,
+                    }
+                  : undefined
+              }
             >
-              {renderedItems}
+              {shouldVirtualize
+                ? rowVirtualizer.getVirtualItems().map((virtualItem) => {
+                    const item = itemsArray[virtualItem.index];
+
+                    return (
+                      <Option
+                        key={virtualItem.key}
+                        item={item}
+                        state={state}
+                        styles={optionStyles}
+                        shouldUseVirtualFocus={shouldUseVirtualFocus}
+                        size={listItemSize}
+                        virtualRef={rowVirtualizer.measureElement as any}
+                        virtualStyle={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          transform: `translateY(${virtualItem.start}px)`,
+                        }}
+                        virtualIndex={virtualItem.index}
+                      />
+                    );
+                  })
+                : (() => {
+                    const renderedItems: React.ReactNode[] = [];
+                    let isFirstSection = true;
+
+                    for (const item of state.collection) {
+                      if (item.type === 'section') {
+                        if (!isFirstSection) {
+                          renderedItems.push(
+                            <ListDivider
+                              key={`divider-${String(item.key)}`}
+                              as="li"
+                              role="separator"
+                              aria-orientation="horizontal"
+                            />,
+                          );
+                        }
+
+                        renderedItems.push(
+                          <SelectSection
+                            key={item.key}
+                            item={item}
+                            state={state}
+                            optionStyles={optionStyles}
+                            sectionStyles={undefined}
+                            shouldUseVirtualFocus={shouldUseVirtualFocus}
+                            size={listItemSize}
+                          />,
+                        );
+
+                        isFirstSection = false;
+                      } else {
+                        renderedItems.push(
+                          <Option
+                            key={item.key}
+                            item={item}
+                            state={state}
+                            styles={optionStyles}
+                            shouldUseVirtualFocus={shouldUseVirtualFocus}
+                            size={listItemSize}
+                          />,
+                        );
+                      }
+                    }
+
+                    return renderedItems;
+                  })()}
             </ListBoxElement>
-          );
-        })()}
+          </ListBoxScrollElement>
+        </ListBoxContainer>
         <DismissButton onDismiss={() => state.close()} />
       </FocusScope>
     </StyledOverlayElement>
   );
 }
 
-function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
-  let ref = useRef<HTMLLIElement>(null);
+function Option({
+  item,
+  state,
+  styles,
+  shouldUseVirtualFocus,
+  size,
+  virtualRef,
+  virtualStyle,
+  virtualIndex,
+}: {
+  item: any;
+  state: any;
+  styles?: Styles;
+  shouldUseVirtualFocus?: boolean;
+  size?: string;
+  virtualRef?: (element: HTMLElement | null) => void;
+  virtualStyle?: React.CSSProperties;
+  virtualIndex?: number;
+}) {
+  let localRef = useRef<HTMLLIElement>(null);
+  // Merge local ref with react-virtual measure ref when provided
+  const combinedRef = useCombinedRefs(localRef, virtualRef);
+
   let isDisabled = state.disabledKeys.has(item.key);
   let isSelected = state.selectionManager.isSelected(item.key);
   let isVirtualFocused = state.selectionManager.focusedKey === item.key;
@@ -635,7 +742,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
       shouldUseVirtualFocus,
     },
     state,
-    ref,
+    combinedRef,
   );
 
   // Handle focus events, so we can apply highlighted
@@ -670,7 +777,7 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
   return (
     <OptionItem
       {...mergeProps(optionProps, focusProps)}
-      ref={ref}
+      ref={combinedRef}
       qa={qa}
       mods={{
         selected: isSelected,
@@ -679,6 +786,8 @@ function Option({ item, state, styles, shouldUseVirtualFocus, size }) {
         pressed: isPressed,
       }}
       data-size={size}
+      data-index={virtualIndex}
+      style={virtualStyle}
       styles={{ ...(styles as Styles), ...(itemStyles as Styles) }}
       icon={icon}
       prefix={prefix}
