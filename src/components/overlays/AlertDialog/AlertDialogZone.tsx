@@ -64,7 +64,20 @@ export function AlertDialogZone(props: DialogZoneProps) {
     return {
       confirm: mergeActionProps(actions.confirm, 'confirm'),
       secondary: mergeActionProps(actions.secondary, 'secondary'),
-      cancel: mergeActionProps(actions.cancel, 'cancel'),
+      cancel:
+        typeof actions.cancel === 'undefined'
+          ? undefined
+          : typeof actions.cancel === 'boolean'
+            ? actions.cancel
+              ? { onPress: () => reject(undefined) }
+              : false
+            : {
+                ...(actions.cancel as CubeButtonProps),
+                onPress: (e) => {
+                  (actions.cancel as CubeButtonProps).onPress?.(e);
+                  reject(undefined);
+                },
+              },
     };
   })();
 

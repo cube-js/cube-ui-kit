@@ -89,4 +89,70 @@ describe('useAlertDialogApi()', () => {
     expect(onReject).toHaveBeenCalled();
     await expect(dialogPromise).rejects.toEqual(undefined);
   });
+
+  it('should reject when cancel button (boolean) is clicked', async () => {
+    const { getByRole } = renderWithRoot(
+      <TestComponent actions={{ cancel: true }} />,
+    );
+    const showDialogButton = getByRole('button', { name: 'Open Dialog' });
+
+    await userEvent.click(showDialogButton);
+
+    const cancelButton = getByRole('button', { name: 'Cancel' });
+
+    await userEvent.click(cancelButton);
+
+    expect(onReject).toHaveBeenCalled();
+    await expect(dialogPromise).rejects.toEqual(undefined);
+  });
+
+  it('should reject when cancel button (object) is clicked', async () => {
+    const { getByRole } = renderWithRoot(
+      <TestComponent actions={{ cancel: { label: 'No thanks' } }} />,
+    );
+    const showDialogButton = getByRole('button', { name: 'Open Dialog' });
+
+    await userEvent.click(showDialogButton);
+
+    const cancelButton = getByRole('button', { name: 'No thanks' });
+
+    await userEvent.click(cancelButton);
+
+    expect(onReject).toHaveBeenCalled();
+    await expect(dialogPromise).rejects.toEqual(undefined);
+  });
+
+  it('should resolve when confirm button is clicked', async () => {
+    const { getByRole } = renderWithRoot(
+      <TestComponent actions={{ confirm: true }} />,
+    );
+    const showDialogButton = getByRole('button', { name: 'Open Dialog' });
+
+    await userEvent.click(showDialogButton);
+
+    const confirmButton = getByRole('button', { name: 'Ok' });
+
+    await userEvent.click(confirmButton);
+
+    expect(onResolve).toHaveBeenCalledWith('confirm');
+    await expect(dialogPromise).resolves.toEqual('confirm');
+  });
+
+  it('should resolve when secondary button is clicked', async () => {
+    const { getByRole } = renderWithRoot(
+      <TestComponent
+        actions={{ confirm: true, secondary: { label: 'Later' } }}
+      />,
+    );
+    const showDialogButton = getByRole('button', { name: 'Open Dialog' });
+
+    await userEvent.click(showDialogButton);
+
+    const secondaryButton = getByRole('button', { name: 'Later' });
+
+    await userEvent.click(secondaryButton);
+
+    expect(onResolve).toHaveBeenCalledWith('secondary');
+    await expect(dialogPromise).resolves.toEqual('secondary');
+  });
 });
