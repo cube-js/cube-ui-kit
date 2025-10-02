@@ -22,7 +22,7 @@ export interface DialogProps
   content: ReactNode | (({ resolve, reject }) => ReactNode);
 }
 
-export type AlertDialogResolveStatus = 'confirm' | 'cancel' | 'secondary';
+export type AlertDialogResolveStatus = 'confirm' | 'secondary';
 
 interface AlertDialogMeta {
   id: number;

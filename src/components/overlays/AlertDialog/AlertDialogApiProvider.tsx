@@ -129,7 +129,19 @@ export function AlertDialogApiProvider(props) {
  *      cancelToken: abortDialog.signal
  *   });
  *
- *   openedDialog.then(() => console.log('closed'))
+ *   openedDialog
+ *     .then((status) => {
+ *       // User confirmed or used secondary action
+ *       if (status === 'confirm') {
+ *         // Handle confirm
+ *       } else if (status === 'secondary') {
+ *         // Handle secondary action
+ *       }
+ *     })
+ *     .catch(() => {
+ *       // User cancelled or dismissed the dialog
+ *       // Handle cancel/dismiss
+ *     })
  *
  *   return () => {
  *     abortDialog.abort();
@@ -141,6 +153,14 @@ export function AlertDialogApiProvider(props) {
  *
  * const onPress = useCallback(() => {
  *   alertDialogAPI.open({...})
+ *     .then((status) => {
+ *       if (status === 'confirm') {
+ *         // Handle confirm
+ *       }
+ *     })
+ *     .catch(() => {
+ *       // Handle cancel/dismiss
+ *     })
  * }, [])
  *
  * return <Button onPress={onPress}>New issue</Button>
