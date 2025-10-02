@@ -1,5 +1,46 @@
 # @cube-dev/ui-kit
 
+## 0.79.0
+
+### Minor Changes
+
+- [#807](https://github.com/cube-js/cube-ui-kit/pull/807) [`ce19c264`](https://github.com/cube-js/cube-ui-kit/commit/ce19c26496fbb87799fc7fb055d1647a4f87c392) Thanks [@tenphi](https://github.com/tenphi)! - **Breaking Change:** AlertDialog API cancel button behavior changed
+
+  The `cancel` button in AlertDialog now rejects the promise instead of resolving with `'cancel'` status, aligning it with the dismiss (Escape key) behavior.
+
+  **Migration Guide:**
+
+  **Before:**
+
+  ```typescript
+  alertDialogAPI.open({...})
+    .then((status) => {
+      if (status === 'cancel') {
+        // Handle cancel
+      } else if (status === 'confirm') {
+        // Handle confirm
+      }
+    })
+  ```
+
+  **After:**
+
+  ```typescript
+  alertDialogAPI.open({...})
+    .then((status) => {
+      if (status === 'confirm') {
+        // Handle confirm
+      } else if (status === 'secondary') {
+        // Handle secondary action
+      }
+    })
+    .catch(() => {
+      // Handle cancel or dismiss
+    })
+  ```
+
+  **Note:** `AlertDialogResolveStatus` type no longer includes `'cancel'` - it now only contains `'confirm' | 'secondary'`.
+
 ## 0.78.5
 
 ### Patch Changes
