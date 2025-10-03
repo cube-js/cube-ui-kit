@@ -27,7 +27,10 @@ import prettier from 'prettier';
     let svgContent = fs.readFileSync(svgFile, 'utf8');
 
     // Replace '#43436B' with 'currentColor'
-    svgContent = svgContent.replace(/(#43436B|#000|#000000)/g, 'currentColor');
+    svgContent = svgContent.replace(
+      /("#43436B"|"#000"|"#000000"|"black")/g,
+      '"currentColor"',
+    );
 
     // Ensure the <svg> tag has a viewBox attribute; if not, add one.
     const svgTagMatch = svgContent.match(/<svg\b([^>]*)>/);
