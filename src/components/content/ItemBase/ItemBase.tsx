@@ -469,7 +469,7 @@ export function useAutoTooltip({
     delete props.ref;
 
     return props;
-  }, [labelProps, handleLabelElementRef]);
+  }, [labelProps]);
 
   const renderWithTooltip = useCallback(
     (
