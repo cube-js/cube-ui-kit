@@ -125,6 +125,10 @@ export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
    * @default "top"
    */
   defaultTooltipPlacement?: OverlayProps['placement'];
+  /**
+   * Ref to access the label element directly
+   */
+  labelRef?: RefObject<HTMLElement>;
 }
 
 const DEFAULT_ICON_STYLES: Styles = {
@@ -359,10 +363,12 @@ export function useAutoTooltip({
   tooltip,
   children,
   labelProps,
+  labelRef: externalLabelRef,
 }: {
   tooltip: CubeItemBaseProps['tooltip'];
   children: ReactNode;
   labelProps?: Props;
+  labelRef?: RefObject<HTMLElement>;
 }) {
   // Determine if auto tooltip is enabled
   // Auto tooltip only works when children is a string (overflow detection needs text)
@@ -574,6 +580,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
       suffix ??
       (hotkeys ? (
         <HotKeys
+          {...(keyboardShortcutProps as any)}
           type={type === 'primary' ? 'primary' : 'default'}
           styles={{ padding: '1x left', opacity: finalIsDisabled ? 0.5 : 1 }}
         >
@@ -633,7 +640,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
 
   const {
     labelProps: finalLabelProps,
-    hasTooltip,
+    labelRef,
     renderWithTooltip,
   } = useAutoTooltip({ tooltip, children, labelProps });
 
@@ -660,7 +667,6 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
       return (
         <ItemBaseElement
           ref={handleRef}
-          tabIndex={0}
           variant={
             theme && type ? (`${theme}.${type}` as ItemVariant) : undefined
           }
@@ -682,7 +688,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
           )}
           {finalPrefix && <div data-element="Prefix">{finalPrefix}</div>}
           {children || labelProps ? (
-            <div data-element="Label" {...finalLabelProps}>
+            <div ref={labelRef} data-element="Label" {...finalLabelProps}>
               {children}
             </div>
           ) : null}
