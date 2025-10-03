@@ -7,6 +7,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { OverlayProps } from 'react-aria';
@@ -125,6 +126,10 @@ export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
    * @default "top"
    */
   defaultTooltipPlacement?: OverlayProps['placement'];
+  /**
+   * Ref to access the label element directly
+   */
+  labelRef?: RefObject<HTMLElement>;
 }
 
 const DEFAULT_ICON_STYLES: Styles = {
@@ -387,6 +392,8 @@ export function useAutoTooltip({
   // Track label overflow for auto tooltip (only when enabled)
   const mergedLabelRef = useCombinedRefs((labelProps as any)?.ref);
   const [isLabelOverflowed, setIsLabelOverflowed] = useState(false);
+  const observedElementRef = useRef<HTMLElement | null>(null);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
   const checkLabelOverflow = useCallback(() => {
     const label = mergedLabelRef.current;
@@ -396,7 +403,6 @@ export function useAutoTooltip({
     }
 
     const hasOverflow = label.scrollWidth > label.clientWidth;
-
     setIsLabelOverflowed(hasOverflow);
   }, [mergedLabelRef]);
 
@@ -406,24 +412,64 @@ export function useAutoTooltip({
     }
   }, [isAutoTooltipEnabled, checkLabelOverflow]);
 
+  // Attach ResizeObserver via callback ref to handle DOM node changes
+  const handleLabelElementRef = useCallback(
+    (element: HTMLElement | null) => {
+      // Sync to combined ref so external refs receive the node
+      (mergedLabelRef as any).current = element;
+
+      // Disconnect previous observer
+      if (resizeObserverRef.current) {
+        try {
+          resizeObserverRef.current.disconnect();
+        } catch {
+          // do nothing
+        }
+        resizeObserverRef.current = null;
+      }
+
+      observedElementRef.current = element;
+
+      if (element && isAutoTooltipEnabled) {
+        // Create a fresh observer to capture the latest callback
+        const obs = new ResizeObserver(() => {
+          checkLabelOverflow();
+        });
+        resizeObserverRef.current = obs;
+        obs.observe(element);
+        // Initial check
+        checkLabelOverflow();
+      } else {
+        setIsLabelOverflowed(false);
+      }
+    },
+    [mergedLabelRef, isAutoTooltipEnabled, checkLabelOverflow],
+  );
+
+  // Cleanup on unmount
   useEffect(() => {
-    if (!isAutoTooltipEnabled) return;
-
-    const label = mergedLabelRef.current;
-    if (!label) return;
-
-    const resizeObserver = new ResizeObserver(checkLabelOverflow);
-    resizeObserver.observe(label);
-
-    return () => resizeObserver.disconnect();
-  }, [isAutoTooltipEnabled, checkLabelOverflow, mergedLabelRef]);
+    return () => {
+      if (resizeObserverRef.current) {
+        try {
+          resizeObserverRef.current.disconnect();
+        } catch {
+          // do nothing
+        }
+        resizeObserverRef.current = null;
+      }
+      observedElementRef.current = null;
+    };
+  }, []);
 
   const finalLabelProps = useMemo(() => {
-    return {
+    const props = {
       ...(labelProps || {}),
-      ref: mergedLabelRef,
-    } as Props & { ref?: any };
-  }, [labelProps, mergedLabelRef]);
+    };
+
+    delete props.ref;
+
+    return props;
+  }, [labelProps]);
 
   const renderWithTooltip = useCallback(
     (
@@ -498,7 +544,7 @@ export function useAutoTooltip({
   );
 
   return {
-    labelRef: mergedLabelRef,
+    labelRef: handleLabelElementRef,
     labelProps: finalLabelProps,
     isLabelOverflowed,
     isAutoTooltipEnabled,
@@ -574,6 +620,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
       suffix ??
       (hotkeys ? (
         <HotKeys
+          {...(keyboardShortcutProps as any)}
           type={type === 'primary' ? 'primary' : 'default'}
           styles={{ padding: '1x left', opacity: finalIsDisabled ? 0.5 : 1 }}
         >
@@ -633,7 +680,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
 
   const {
     labelProps: finalLabelProps,
-    hasTooltip,
+    labelRef,
     renderWithTooltip,
   } = useAutoTooltip({ tooltip, children, labelProps });
 
@@ -660,7 +707,6 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
       return (
         <ItemBaseElement
           ref={handleRef}
-          tabIndex={0}
           variant={
             theme && type ? (`${theme}.${type}` as ItemVariant) : undefined
           }
@@ -682,7 +728,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
           )}
           {finalPrefix && <div data-element="Prefix">{finalPrefix}</div>}
           {children || labelProps ? (
-            <div data-element="Label" {...finalLabelProps}>
+            <div data-element="Label" {...finalLabelProps} ref={labelRef}>
               {children}
             </div>
           ) : null}
