@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.80.0
+
+### Minor Changes
+
+- [#810](https://github.com/cube-js/cube-ui-kit/pull/810) [`eb5a2efa`](https://github.com/cube-js/cube-ui-kit/commit/eb5a2efad5681c7f38e5beb6852249e222fd9efa) Thanks [@tenphi](https://github.com/tenphi)! - Add new icons: PercentageIcon, CurrencyDollarIcon, Number123Icon.
+
+### Patch Changes
+
+- [#809](https://github.com/cube-js/cube-ui-kit/pull/809) [`041e7da7`](https://github.com/cube-js/cube-ui-kit/commit/041e7da7be5a293c7919a49f23c758215fe67999) Thanks [@tenphi](https://github.com/tenphi)! - Fix tooltip logic in ItemBase component.
+
+- [#809](https://github.com/cube-js/cube-ui-kit/pull/809) [`041e7da7`](https://github.com/cube-js/cube-ui-kit/commit/041e7da7be5a293c7919a49f23c758215fe67999) Thanks [@tenphi](https://github.com/tenphi)! - Fix accessibility by setting keyboard props to hotkeys in ItemBase component.
+
 ## 0.79.0
 
 ### Minor Changes
