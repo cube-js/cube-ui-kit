@@ -48,7 +48,7 @@
     "clear:dist": "rimraf ./dist",
     "release": "pnpm build && changeset publish",
     "postinstall": "git config blame.ignoreRevsFile .git-blame-ignore-revs",
-    "add-icons": "cd src/icons && node add-new-icon.js"
+    "add-icons": "cd src/icons && node add-new-icon.js && pnpm fix"
   },
   "publishConfig": {
     "directory": "dist"
