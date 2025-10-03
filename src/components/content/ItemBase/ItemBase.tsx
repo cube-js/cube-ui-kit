@@ -543,7 +543,7 @@ export function useAutoTooltip({
   );
 
   return {
-    labelRef: mergedLabelRef,
+    labelRef: handleLabelElementRef,
     labelProps: finalLabelProps,
     isLabelOverflowed,
     isAutoTooltipEnabled,
@@ -727,7 +727,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
           )}
           {finalPrefix && <div data-element="Prefix">{finalPrefix}</div>}
           {children || labelProps ? (
-            <div ref={labelRef} data-element="Label" {...finalLabelProps}>
+            <div data-element="Label" {...finalLabelProps} ref={labelRef}>
               {children}
             </div>
           ) : null}
