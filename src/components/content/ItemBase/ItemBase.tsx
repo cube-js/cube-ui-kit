@@ -390,13 +390,13 @@ export function useAutoTooltip({
   }, [tooltip, children]);
 
   // Track label overflow for auto tooltip (only when enabled)
-  const mergedLabelRef = useCombinedRefs((labelProps as any)?.ref);
+  const externalLabelRef = (labelProps as any)?.ref;
   const [isLabelOverflowed, setIsLabelOverflowed] = useState(false);
-  const observedElementRef = useRef<HTMLElement | null>(null);
+  const elementRef = useRef<HTMLElement | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
   const checkLabelOverflow = useCallback(() => {
-    const label = mergedLabelRef.current;
+    const label = elementRef.current;
     if (!label) {
       setIsLabelOverflowed(false);
       return;
@@ -404,7 +404,7 @@ export function useAutoTooltip({
 
     const hasOverflow = label.scrollWidth > label.clientWidth;
     setIsLabelOverflowed(hasOverflow);
-  }, [mergedLabelRef]);
+  }, []);
 
   useEffect(() => {
     if (isAutoTooltipEnabled) {
@@ -415,8 +415,14 @@ export function useAutoTooltip({
   // Attach ResizeObserver via callback ref to handle DOM node changes
   const handleLabelElementRef = useCallback(
     (element: HTMLElement | null) => {
-      // Sync to combined ref so external refs receive the node
-      (mergedLabelRef as any).current = element;
+      // Call external callback ref to notify external refs
+      if (externalLabelRef) {
+        if (typeof externalLabelRef === 'function') {
+          externalLabelRef(element);
+        } else {
+          (externalLabelRef as any).current = element;
+        }
+      }
 
       // Disconnect previous observer
       if (resizeObserverRef.current) {
@@ -428,7 +434,7 @@ export function useAutoTooltip({
         resizeObserverRef.current = null;
       }
 
-      observedElementRef.current = element;
+      elementRef.current = element;
 
       if (element && isAutoTooltipEnabled) {
         // Create a fresh observer to capture the latest callback
@@ -443,7 +449,7 @@ export function useAutoTooltip({
         setIsLabelOverflowed(false);
       }
     },
-    [mergedLabelRef, isAutoTooltipEnabled, checkLabelOverflow],
+    [externalLabelRef, isAutoTooltipEnabled, checkLabelOverflow],
   );
 
   // Cleanup on unmount
@@ -457,7 +463,7 @@ export function useAutoTooltip({
         }
         resizeObserverRef.current = null;
       }
-      observedElementRef.current = null;
+      elementRef.current = null;
     };
   }, []);
 
