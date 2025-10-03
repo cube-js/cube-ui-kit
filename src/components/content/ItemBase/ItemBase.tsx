@@ -7,6 +7,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import { OverlayProps } from 'react-aria';
@@ -393,6 +394,8 @@ export function useAutoTooltip({
   // Track label overflow for auto tooltip (only when enabled)
   const mergedLabelRef = useCombinedRefs((labelProps as any)?.ref);
   const [isLabelOverflowed, setIsLabelOverflowed] = useState(false);
+  const observedElementRef = useRef<HTMLElement | null>(null);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
   const checkLabelOverflow = useCallback(() => {
     const label = mergedLabelRef.current;
@@ -402,7 +405,6 @@ export function useAutoTooltip({
     }
 
     const hasOverflow = label.scrollWidth > label.clientWidth;
-
     setIsLabelOverflowed(hasOverflow);
   }, [mergedLabelRef]);
 
@@ -412,24 +414,61 @@ export function useAutoTooltip({
     }
   }, [isAutoTooltipEnabled, checkLabelOverflow]);
 
+  // Attach ResizeObserver via callback ref to handle DOM node changes
+  const handleLabelElementRef = useCallback(
+    (element: HTMLElement | null) => {
+      // Sync to combined ref so external refs receive the node
+      (mergedLabelRef as any).current = element;
+
+      // Disconnect previous observer
+      if (resizeObserverRef.current) {
+        try {
+          resizeObserverRef.current.disconnect();
+        } catch {
+          // do nothing
+        }
+        resizeObserverRef.current = null;
+      }
+
+      observedElementRef.current = element;
+
+      if (element && isAutoTooltipEnabled) {
+        // Create a fresh observer to capture the latest callback
+        const obs = new ResizeObserver(() => {
+          checkLabelOverflow();
+        });
+        resizeObserverRef.current = obs;
+        obs.observe(element);
+        // Initial check
+        checkLabelOverflow();
+      } else {
+        setIsLabelOverflowed(false);
+      }
+    },
+    [mergedLabelRef, isAutoTooltipEnabled, checkLabelOverflow],
+  );
+
+  // Cleanup on unmount
   useEffect(() => {
-    if (!isAutoTooltipEnabled) return;
-
-    const label = mergedLabelRef.current;
-    if (!label) return;
-
-    const resizeObserver = new ResizeObserver(checkLabelOverflow);
-    resizeObserver.observe(label);
-
-    return () => resizeObserver.disconnect();
-  }, [isAutoTooltipEnabled, checkLabelOverflow, mergedLabelRef]);
+    return () => {
+      if (resizeObserverRef.current) {
+        try {
+          resizeObserverRef.current.disconnect();
+        } catch {
+          // do nothing
+        }
+        resizeObserverRef.current = null;
+      }
+      observedElementRef.current = null;
+    };
+  }, []);
 
   const finalLabelProps = useMemo(() => {
     return {
       ...(labelProps || {}),
-      ref: mergedLabelRef,
+      ref: handleLabelElementRef,
     } as Props & { ref?: any };
-  }, [labelProps, mergedLabelRef]);
+  }, [labelProps, handleLabelElementRef]);
 
   const renderWithTooltip = useCallback(
     (
