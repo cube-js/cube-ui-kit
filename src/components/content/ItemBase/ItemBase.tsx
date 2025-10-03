@@ -462,10 +462,13 @@ export function useAutoTooltip({
   }, []);
 
   const finalLabelProps = useMemo(() => {
-    return {
+    const props = {
       ...(labelProps || {}),
-      ref: handleLabelElementRef,
-    } as Props & { ref?: any };
+    };
+
+    delete props.ref;
+
+    return props;
   }, [labelProps, handleLabelElementRef]);
 
   const renderWithTooltip = useCallback(
