@@ -364,12 +364,10 @@ export function useAutoTooltip({
   tooltip,
   children,
   labelProps,
-  labelRef: externalLabelRef,
 }: {
   tooltip: CubeItemBaseProps['tooltip'];
   children: ReactNode;
   labelProps?: Props;
-  labelRef?: RefObject<HTMLElement>;
 }) {
   // Determine if auto tooltip is enabled
   // Auto tooltip only works when children is a string (overflow detection needs text)
