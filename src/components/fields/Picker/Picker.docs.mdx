@@ -1,0 +1,664 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import { Picker } from './Picker';
+import * as PickerStories from './Picker.stories';
+
+<Meta of={PickerStories} />
+
+# Picker
+
+A versatile selection component that combines a trigger button with a dropdown list. It provides a space-efficient interface for selecting one or multiple items from a list, with support for sections, custom summaries, and various UI states. Built with React Aria's accessibility features and the Cube `tasty` style system.
+
+## When to Use
+
+- Creating selection interfaces where users need to choose from predefined options
+- Building user preference panels with organized option groups
+- Implementing compact selection interfaces where space is limited
+- Providing selection without taking up permanent screen space
+- When you don't need search/filter functionality (use FilterPicker for searchable lists)
+- Building simple dropdown selections with single or multiple choice
+
+## Component
+
+<Story of={PickerStories.SingleSelection} />
+
+---
+
+### Properties
+
+<Controls of={PickerStories.SingleSelection} />
+
+### Base Properties
+
+Supports [Base properties](/docs/tasty-base-properties--docs)
+
+### Styling Properties
+
+#### styles
+
+Customizes the main wrapper element of the Picker component.
+
+**Sub-elements:**
+- None - styles apply directly to the wrapper
+
+#### triggerStyles
+
+Customizes the trigger button element.
+
+**Sub-elements:**
+- None - styles apply directly to the trigger button
+
+#### listBoxStyles
+
+Customizes the dropdown list container within the popover.
+
+**Sub-elements:**
+- Same as ListBox: `Label`, `Description`, `Content`, `Checkbox`, `CheckboxWrapper`
+
+#### popoverStyles
+
+Customizes the popover dialog that contains the ListBox.
+
+**Sub-elements:**
+- Same as Dialog component sub-elements
+
+#### headerStyles
+
+Customizes the header area when header prop is provided.
+
+**Sub-elements:**
+- None - styles apply directly to the header container
+
+#### footerStyles
+
+Customizes the footer area when footer prop is provided.
+
+**Sub-elements:**
+- None - styles apply directly to the footer container
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop: `width`, `height`, `margin`, `padding`, `position`, `inset`, `zIndex`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `opacity`, `color`, `fill`, `fade`.
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| `placeholder` | `boolean` | Applied when no selection is made |
+| `selected` | `boolean` | Applied when items are selected |
+
+## Sub-components
+
+### Picker.Item
+
+Individual items within the Picker dropdown. Each item is rendered using [ItemBase](/docs/content-itembase--docs) and supports all ItemBase properties for layout, icons, descriptions, and interactive features.
+
+#### Item API
+
+For detailed information about all available item properties, see [ItemBase documentation](/docs/content-itembase--docs). Key properties include:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| key | `string \| number` | Unique identifier for the item (required) |
+| children | `ReactNode` | The main content/label for the option |
+| icon | `ReactNode` | Icon displayed before the content |
+| rightIcon | `ReactNode` | Icon displayed after the content |
+| description | `ReactNode` | Secondary text below the main content |
+| descriptionPlacement | `'inline' \| 'block'` | How the description is positioned |
+| prefix | `ReactNode` | Content before the main text |
+| suffix | `ReactNode` | Content after the main text |
+| tooltip | `string \| boolean \| object` | Tooltip configuration |
+| styles | `Styles` | Custom styling for the item |
+| qa | `string` | QA identifier for testing |
+
+#### Example with Rich Items
+
+```jsx
+<Picker label="Team Selection" selectionMode="multiple">
+  <Picker.Item 
+    key="active-users" 
+    icon={<IconUsers />}
+    description="All active team members"
+    suffix="12 users"
+  >
+    Active Users
+  </Picker.Item>
+  <Picker.Item 
+    key="admins" 
+    icon={<IconShield />}
+    description="Administrators only"
+    rightIcon={<IconBadge />}
+  >
+    Administrators
+  </Picker.Item>
+</Picker>
+```
+
+### Picker.Section
+
+Groups related items together with an optional heading.
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| title | `ReactNode` | - | Optional heading text for the section |
+| children | `Picker.Item[]` | - | Collection of Picker.Item components |
+
+## Content Patterns
+
+### Static Children Pattern
+
+The most common pattern for Picker is to provide static children using `Picker.Item` and `Picker.Section` components:
+
+```jsx
+<Picker label="Select Options">
+  <Picker.Item key="apple">Apple</Picker.Item>
+  <Picker.Item key="banana">Banana</Picker.Item>
+  <Picker.Section title="Vegetables">
+    <Picker.Item key="carrot">Carrot</Picker.Item>
+  </Picker.Section>
+</Picker>
+```
+
+### Dynamic Content Pattern
+
+For large datasets or dynamic content, use the `items` prop with a render function. This pattern enables automatic virtualization for performance:
+
+```jsx
+<Picker
+  label="Large Dataset"
+  items={largeDataArray}
+>
+  {(item) => (
+    <Picker.Item key={item.id} textValue={item.name}>
+      {item.name}
+    </Picker.Item>
+  )}
+</Picker>
+```
+
+**Key Benefits:**
+- **Virtualization**: Automatically enabled for large lists without sections
+- **Performance**: Only renders visible items in the DOM
+- **Dynamic Content**: Perfect for data fetched from APIs or changing datasets
+- **Memory Efficient**: Handles thousands of items smoothly
+
+**When to Use:**
+- Lists with 50+ items
+- Dynamic data from APIs
+- Content that changes frequently
+- When virtualization performance is needed
+
+## Variants
+
+### Selection Modes
+
+- `single` - Allows selecting only one item at a time
+- `multiple` - Allows selecting multiple items
+
+### Button Types
+
+- `outline` - Default outlined button style
+- `clear` - Transparent background button
+- `primary` - Primary brand color button
+- `secondary` - Secondary color button
+- `neutral` - Neutral color button
+
+### Sizes
+
+- `small` - Compact size for dense interfaces (28px height)
+- `medium` - Standard size for general use (32px height, default)
+- `large` - Emphasized size for important actions (40px height)
+
+## Examples
+
+### Basic Single Selection
+
+<Story of={PickerStories.SingleSelection} />
+
+```jsx
+<Picker 
+  label="Select Option" 
+  placeholder="Choose an item..."
+  selectionMode="single"
+>
+  <Picker.Item key="apple">Apple</Picker.Item>
+  <Picker.Item key="banana">Banana</Picker.Item>
+  <Picker.Item key="cherry">Cherry</Picker.Item>
+</Picker>
+```
+
+### Multiple Selection
+
+<Story of={PickerStories.MultipleSelection} />
+
+```jsx
+<Picker
+  label="Select Multiple Options"
+  placeholder="Choose items..."
+  selectionMode="multiple"
+  isCheckable={true}
+>
+  <Picker.Section title="Fruits">
+    <Picker.Item key="apple">Apple</Picker.Item>
+    <Picker.Item key="banana">Banana</Picker.Item>
+  </Picker.Section>
+  <Picker.Section title="Vegetables">
+    <Picker.Item key="carrot">Carrot</Picker.Item>
+    <Picker.Item key="broccoli">Broccoli</Picker.Item>
+  </Picker.Section>
+</Picker>
+```
+
+### With Clear Button
+
+<Story of={PickerStories.WithClearButton} />
+
+```jsx
+<Picker
+  label="Favorite Fruit"
+  placeholder="Select a fruit..."
+  selectionMode="single"
+  isClearable={true}
+  defaultSelectedKey="apple"
+>
+  <Picker.Item key="apple">Apple</Picker.Item>
+  <Picker.Item key="banana">Banana</Picker.Item>
+</Picker>
+```
+
+### Multiple Selection with Select All
+
+<Story of={PickerStories.WithSelectAll} />
+
+```jsx
+<Picker
+  label="Select Permissions"
+  placeholder="Choose permissions"
+  selectionMode="multiple"
+  showSelectAll={true}
+  selectAllLabel="All Permissions"
+  isCheckable={true}
+>
+  <Picker.Item key="read">Read</Picker.Item>
+  <Picker.Item key="write">Write</Picker.Item>
+  <Picker.Item key="execute">Execute</Picker.Item>
+</Picker>
+```
+
+### With Checkboxes
+
+<Story of={PickerStories.MultipleSelection} />
+
+```jsx
+<Picker
+  label="Select with Checkboxes"
+  selectionMode="multiple"
+  isCheckable={true}
+>
+  <Picker.Item key="option1">Option 1</Picker.Item>
+  <Picker.Item key="option2">Option 2</Picker.Item>
+  <Picker.Item key="option3">Option 3</Picker.Item>
+</Picker>
+```
+
+### Custom Summary
+
+<Story of={PickerStories.WithCustomRenderSummary} />
+
+```jsx
+<Picker
+  label="Custom Summary Display"
+  selectionMode="multiple"
+  renderSummary={({ selectedLabels, selectedKeys }) => {
+    if (selectedKeys.length === 0) return null;
+    if (selectedKeys.length === 1) return `${selectedLabels[0]} selected`;
+    return `${selectedKeys.length} items selected`;
+  }}
+>
+  <Picker.Item key="item1">Item 1</Picker.Item>
+  <Picker.Item key="item2">Item 2</Picker.Item>
+</Picker>
+```
+
+### No Summary (Icon Only)
+
+```jsx
+<Picker
+  renderSummary={false}
+  icon={<FilterIcon />}
+  aria-label="Apply filters"
+  type="clear"
+>
+  <Picker.Item key="filter1">Filter 1</Picker.Item>
+  <Picker.Item key="filter2">Filter 2</Picker.Item>
+</Picker>
+```
+
+### With Sections
+
+<Story of={PickerStories.WithSections} />
+
+```jsx
+<Picker
+  label="Select Food"
+  placeholder="Choose a food..."
+  selectionMode="single"
+>
+  <Picker.Section title="Fruits">
+    <Picker.Item key="apple">Apple</Picker.Item>
+    <Picker.Item key="banana">Banana</Picker.Item>
+  </Picker.Section>
+  <Picker.Section title="Vegetables">
+    <Picker.Item key="carrot">Carrot</Picker.Item>
+    <Picker.Item key="broccoli">Broccoli</Picker.Item>
+  </Picker.Section>
+</Picker>
+```
+
+### With Header and Footer
+
+```jsx
+<Picker
+  label="Programming Languages"
+  selectionMode="multiple"
+  header={
+    <Space gap="1x" flow="row" placeItems="center">
+      <Title level={6}>Languages</Title>
+      <Badge type="purple">12</Badge>
+    </Space>
+  }
+  footer={
+    <Text color="#dark.50" preset="t4">
+      Popular languages shown
+    </Text>
+  }
+>
+  <Picker.Section title="Frontend">
+    <Picker.Item key="javascript">JavaScript</Picker.Item>
+    <Picker.Item key="react">React</Picker.Item>
+  </Picker.Section>
+</Picker>
+```
+
+### Different Button Types
+
+<Story of={PickerStories.DifferentSizes} />
+
+```jsx
+<Space gap="2x" flow="row">
+  <Picker type="outline" placeholder="Outline">
+    <Picker.Item key="item1">Item 1</Picker.Item>
+  </Picker>
+  
+  <Picker type="primary" placeholder="Primary">
+    <Picker.Item key="item1">Item 1</Picker.Item>
+  </Picker>
+  
+  <Picker type="clear" placeholder="Clear">
+    <Picker.Item key="item1">Item 1</Picker.Item>
+  </Picker>
+</Space>
+```
+
+### Different Sizes
+
+<Story of={PickerStories.DifferentSizes} />
+
+```jsx
+<Space gap="3x" flow="column" placeItems="start">
+  <Picker size="small" placeholder="Small size">
+    <Picker.Item key="item1">Item 1</Picker.Item>
+  </Picker>
+  
+  <Picker size="medium" placeholder="Medium size">
+    <Picker.Item key="item1">Item 1</Picker.Item>
+  </Picker>
+  
+  <Picker size="large" placeholder="Large size">
+    <Picker.Item key="item1">Item 1</Picker.Item>
+  </Picker>
+</Space>
+```
+
+### Disabled State
+
+<Story of={PickerStories.Disabled} />
+
+```jsx
+<Picker
+  label="Disabled Picker"
+  placeholder="Cannot select"
+  selectionMode="single"
+  isDisabled={true}
+>
+  <Picker.Item key="item1">Item 1</Picker.Item>
+  <Picker.Item key="item2">Item 2</Picker.Item>
+</Picker>
+```
+
+### With Validation
+
+<Story of={PickerStories.WithValidation} />
+
+```jsx
+<Picker
+  label="Favorite Fruit (Required)"
+  placeholder="Select a fruit..."
+  selectionMode="single"
+  isRequired={true}
+  validationState="invalid"
+  message="Please select a fruit"
+>
+  <Picker.Item key="apple">Apple</Picker.Item>
+  <Picker.Item key="banana">Banana</Picker.Item>
+</Picker>
+```
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to the trigger button
+- `Space/Enter` - Opens the dropdown popover
+- `Arrow Keys` - Navigate through options (when popover is open) or open the popover (when closed)
+- `Escape` - Closes the popover
+
+### Screen Reader Support
+
+- Trigger button announces current selection state
+- Popover opening/closing is announced
+- Selection changes are announced immediately
+- Loading and validation states are communicated
+
+### ARIA Properties
+
+- `aria-label` - Provides accessible label for the trigger button
+- `aria-expanded` - Indicates whether the popover is open
+- `aria-haspopup` - Indicates the button controls a listbox
+- `aria-describedby` - Associates help text and descriptions
+
+## Best Practices
+
+1. **Do**: Provide clear, descriptive labels for the trigger
+   ```jsx
+   <Picker label="Filter by Category" placeholder="Choose categories...">
+     <Picker.Item key="electronics">Electronics</Picker.Item>
+   </Picker>
+   ```
+
+2. **Don't**: Use overly long option texts that will be truncated
+   ```jsx
+   // ❌ Avoid very long option text
+   <Picker.Item key="long">
+     This is an extremely long option text that will be truncated
+   </Picker.Item>
+   ```
+
+3. **Do**: Use sections for logical grouping of small to medium lists
+   ```jsx
+   <Picker.Section title="Categories">
+     <Picker.Item key="tech">Technology</Picker.Item>
+   </Picker.Section>
+   ```
+
+4. **Do**: Use dynamic content pattern for large datasets
+   ```jsx
+   // ✅ For large lists (50+ items)
+   <Picker items={largeDataset}>
+     {(item) => <Picker.Item key={item.id}>{item.name}</Picker.Item>}
+   </Picker>
+   ```
+
+5. **Do**: Use `isClearable` for optional selections
+   ```jsx
+   <Picker 
+     selectionMode="single" 
+     isClearable={true}
+     placeholder="Optional selection..."
+   >
+     {/* items */}
+   </Picker>
+   ```
+
+6. **Do**: Use `showSelectAll` for efficient multiple selection
+   ```jsx
+   <Picker 
+     selectionMode="multiple" 
+     showSelectAll 
+     selectAllLabel="Select All Options"
+   >
+     {/* many items */}
+   </Picker>
+   ```
+
+7. **Accessibility**: Always provide meaningful labels and placeholders
+8. **Performance**: Use `textValue` prop for complex option content
+9. **UX**: Consider using `isCheckable` for multiple selection clarity
+
+## Integration with Forms
+
+This component supports all [Field properties](/docs/forms-field--docs) when used within a Form. The component automatically handles form validation, field states, and integrates with form submission.
+
+```jsx
+<Form onSubmit={handleSubmit}>
+  <Picker
+    name="categories"
+    label="Product Categories"
+    isRequired
+    selectionMode="multiple"
+    placeholder="Select categories..."
+    rules={[{ required: true }]}
+  >
+    <Picker.Section title="Electronics">
+      <Picker.Item key="phones">Phones</Picker.Item>
+      <Picker.Item key="laptops">Laptops</Picker.Item>
+    </Picker.Section>
+    <Picker.Section title="Clothing">
+      <Picker.Item key="shirts">Shirts</Picker.Item>
+      <Picker.Item key="pants">Pants</Picker.Item>
+    </Picker.Section>
+  </Picker>
+</Form>
+```
+
+## Advanced Features
+
+### Custom Summary Rendering
+
+Picker supports custom summary functions for the trigger display:
+
+```jsx
+const renderSummary = ({ selectedLabels, selectedKeys, selectionMode }) => {
+  if (selectionMode === 'single') {
+    return selectedLabels[0] ? `Selected: ${selectedLabels[0]}` : null;
+  }
+  
+  if (selectedKeys.length === 0) return null;
+  if (selectedKeys.length === 1) return selectedLabels[0];
+  if (selectedKeys.length <= 3) return selectedLabels.join(', ');
+  return `${selectedKeys.length} items selected`;
+};
+
+<Picker renderSummary={renderSummary}>
+  {/* items */}
+</Picker>
+```
+
+### Icon-Only Mode
+
+For space-constrained interfaces:
+
+```jsx
+<Picker
+  renderSummary={false}
+  icon={<FilterIcon />}
+  aria-label="Select options"
+  type="clear"
+>
+  {/* options */}
+</Picker>
+```
+
+### Controlled Mode
+
+Full control over selection state:
+
+```jsx
+const [selectedKey, setSelectedKey] = useState(null);
+
+<Picker
+  label="Controlled Picker"
+  selectedKey={selectedKey}
+  onSelectionChange={(key) => setSelectedKey(key)}
+>
+  {/* items */}
+</Picker>
+```
+
+## Performance
+
+### Optimization Tips
+
+- **Use Dynamic Content Pattern**: For large datasets (50+ items), use the `items` prop with render function to enable automatic virtualization
+- **Avoid Sections for Large Lists**: Virtualization is disabled when sections are present, so avoid sections for very large datasets
+- **Use `textValue` prop**: For complex option content, provide searchable text
+- **Consider debounced selection changes**: For real-time updates that trigger expensive operations
+
+### Virtualization
+
+When using the dynamic content pattern (`items` prop) without sections, Picker automatically enables virtualization:
+
+```jsx
+// ✅ Virtualization enabled - excellent performance with large datasets
+<Picker items={largeArray}>
+  {(item) => <Picker.Item key={item.id}>{item.name}</Picker.Item>}
+</Picker>
+
+// ❌ Virtualization disabled - sections prevent virtualization
+<Picker items={largeArray}>
+  <Picker.Section title="All Items">
+    {(item) => <Picker.Item key={item.id}>{item.name}</Picker.Item>}
+  </Picker.Section>
+</Picker>
+```
+
+### Content Optimization
+
+```jsx
+// Optimized for performance
+<Picker.Item 
+  key="complex" 
+  textValue="John Doe - Senior Developer"
+>
+  <UserCard user={user} />
+</Picker.Item>
+```
+
+## Related Components
+
+- [FilterPicker](/docs/forms-filterpicker--docs) - Use when you need search/filter functionality
+- [Select](/docs/forms-select--docs) - Use for native select behavior
+- [ComboBox](/docs/forms-combobox--docs) - Use when users need to enter custom values
+- [ListBox](/docs/forms-listbox--docs) - Use for always-visible list selection
+- [Button](/docs/actions-button--docs) - The underlying trigger component
