@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { userEvent, within } from 'storybook/test';
 
 import {
@@ -1924,6 +1924,269 @@ export const MultipleControlled: Story = {
       description: {
         story:
           'A controlled FilterPicker in multiple selection mode where the selection state is managed externally. The component responds to external state changes and provides selection feedback through the onSelectionChange callback. This pattern is useful when you need to programmatically control the selection or integrate with form libraries.',
+      },
+    },
+  },
+};
+
+export const ExternalFiltering: Story = {
+  render: () => {
+    const allFruits = [
+      {
+        key: 'apple',
+        label: 'Apple',
+        description: 'Crisp and sweet red fruit',
+      },
+      {
+        key: 'banana',
+        label: 'Banana',
+        description: 'Yellow tropical fruit rich in potassium',
+      },
+      {
+        key: 'cherry',
+        label: 'Cherry',
+        description: 'Small red stone fruit with sweet flavor',
+      },
+      {
+        key: 'date',
+        label: 'Date',
+        description: 'Sweet dried fruit from date palm',
+      },
+      {
+        key: 'elderberry',
+        label: 'Elderberry',
+        description: 'Dark purple berry with tart flavor',
+      },
+      { key: 'fig', label: 'Fig', description: 'Sweet fruit with soft flesh' },
+      {
+        key: 'grape',
+        label: 'Grape',
+        description: 'Small sweet fruit that grows in clusters',
+      },
+      {
+        key: 'honeydew',
+        label: 'Honeydew',
+        description: 'Sweet melon with pale green flesh',
+      },
+      {
+        key: 'kiwi',
+        label: 'Kiwi',
+        description: 'Small oval fruit with fuzzy brown skin',
+      },
+      {
+        key: 'lemon',
+        label: 'Lemon',
+        description: 'Yellow citrus fruit with sour taste',
+      },
+      {
+        key: 'mango',
+        label: 'Mango',
+        description: 'Tropical stone fruit with sweet orange flesh',
+      },
+      {
+        key: 'orange',
+        label: 'Orange',
+        description: 'Round citrus fruit with orange peel',
+      },
+    ];
+
+    // Example 1: Using filter={false} with externally filtered items
+    const Example1 = () => {
+      const [externalSearch, setExternalSearch] = useState('');
+      const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+
+      const filteredFruits = useMemo(() => {
+        if (!externalSearch.trim()) return allFruits;
+        return allFruits.filter((fruit) =>
+          fruit.label.toLowerCase().includes(externalSearch.toLowerCase()),
+        );
+      }, [externalSearch]);
+
+      return (
+        <Space gap="2x" flow="column" width="100%">
+          <Title preset="h5">
+            Approach 1: Disabled Internal Filtering (filter={'{false}'})
+          </Title>
+          <Paragraph>
+            Use this approach when you want to filter items outside the
+            component (e.g., server-side filtering, custom search logic) while
+            keeping the FilterPicker's search input for visual consistency.
+          </Paragraph>
+
+          <Flow gap="1x">
+            <Text preset="t4" weight="600" color="#dark.80">
+              External Search Input:
+            </Text>
+            <input
+              type="text"
+              value={externalSearch}
+              placeholder="Filter fruits externally..."
+              style={{
+                padding: '8px 12px',
+                border: '1px solid #d0d0d0',
+                borderRadius: '6px',
+                fontSize: '14px',
+                width: '100%',
+              }}
+              onChange={(e) => setExternalSearch(e.target.value)}
+            />
+          </Flow>
+
+          <FilterPicker
+            label="Select Fruits"
+            placeholder="Choose fruits..."
+            selectionMode="multiple"
+            selectedKeys={selectedKeys}
+            filter={false}
+            items={filteredFruits}
+            searchPlaceholder="Type to search (disabled internally)..."
+            width="100%"
+            onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
+          >
+            {(fruit: (typeof filteredFruits)[number]) => (
+              <FilterPicker.Item
+                key={fruit.key}
+                textValue={fruit.label}
+                description={fruit.description}
+              >
+                {fruit.label}
+              </FilterPicker.Item>
+            )}
+          </FilterPicker>
+
+          <Text preset="t4" color="#dark.60">
+            Showing {filteredFruits.length} of {allFruits.length} fruits •
+            Selected: {selectedKeys.length}
+          </Text>
+        </Space>
+      );
+    };
+
+    // Example 2: Using controlled searchValue and onSearchChange
+    const Example2 = () => {
+      const [searchValue, setSearchValue] = useState('');
+      const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+
+      // Simulate external processing (e.g., debouncing, API calls)
+      const [processedSearch, setProcessedSearch] = useState('');
+
+      // Simulate debounced search with a simple effect
+      useEffect(() => {
+        const timer = setTimeout(() => {
+          setProcessedSearch(searchValue);
+        }, 300);
+        return () => clearTimeout(timer);
+      }, [searchValue]);
+
+      const filteredFruits = useMemo(() => {
+        if (!processedSearch.trim()) return allFruits;
+        return allFruits.filter((fruit) =>
+          fruit.label.toLowerCase().includes(processedSearch.toLowerCase()),
+        );
+      }, [processedSearch]);
+
+      return (
+        <Space gap="2x" flow="column" width="100%">
+          <Title preset="h5">
+            Approach 2: Controlled Search Input (searchValue + onSearchChange)
+          </Title>
+          <Paragraph>
+            Use this approach when you need full control over the search input
+            value, such as for debouncing, synchronizing with external state, or
+            implementing server-side search.
+          </Paragraph>
+
+          <Flow gap="1x">
+            <Text preset="t4" weight="600" color="#dark.80">
+              Current search value:{' '}
+              <Badge theme="primary">{searchValue || '(empty)'}</Badge>
+            </Text>
+            {searchValue !== processedSearch && (
+              <Text preset="t4" color="#dark.60">
+                Processing search... (debounced)
+              </Text>
+            )}
+          </Flow>
+
+          <FilterPicker
+            label="Select Fruits (Controlled Search)"
+            placeholder="Choose fruits..."
+            selectionMode="multiple"
+            selectedKeys={selectedKeys}
+            searchValue={searchValue}
+            filter={false}
+            items={filteredFruits}
+            searchPlaceholder="Type to search (controlled)..."
+            width="100%"
+            onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
+            onSearchChange={setSearchValue}
+          >
+            {(fruit: (typeof filteredFruits)[number]) => (
+              <FilterPicker.Item
+                key={fruit.key}
+                textValue={fruit.label}
+                description={fruit.description}
+              >
+                {fruit.label}
+              </FilterPicker.Item>
+            )}
+          </FilterPicker>
+
+          <Text preset="t4" color="#dark.60">
+            Showing {filteredFruits.length} of {allFruits.length} fruits •
+            Selected: {selectedKeys.length}
+          </Text>
+        </Space>
+      );
+    };
+
+    return (
+      <Space gap="4x" flow="column" width="max 80x">
+        <Flow gap="2x">
+          <Title preset="h4">External Filtering Patterns</Title>
+          <Paragraph>
+            FilterPicker provides two approaches for implementing external
+            filtering when you need to control the filtering logic outside the
+            component.
+          </Paragraph>
+        </Flow>
+
+        <Example1 />
+        <Example2 />
+
+        <Space
+          gap="2x"
+          padding="2x"
+          fill="#purple.04"
+          radius="1r"
+          border="#purple.30"
+        >
+          <Title preset="h6">When to Use Each Approach</Title>
+          <Flow as="ul" gap="1x" padding="0 0 0 2x">
+            <Text as="li">
+              <strong>filter={'{false}'}:</strong> Simpler approach when you
+              just need to pre-filter items without controlling the search input
+              itself. Good for server-side filtering or custom filter logic.
+            </Text>
+            <Text as="li">
+              <strong>Controlled Search:</strong> Use when you need full control
+              over the search input (debouncing, external UI sync, clearing from
+              outside, or tracking search analytics).
+            </Text>
+            <Text as="li">
+              <strong>Combine Both:</strong> You can use both together for
+              maximum control - controlled search input with external filtering.
+            </Text>
+          </Flow>
+        </Space>
+      </Space>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates two approaches for external filtering: (1) using `filter={false}` to disable internal filtering while providing pre-filtered items, and (2) using controlled search input with `searchValue` and `onSearchChange` props for complete control over the search behavior.',
       },
     },
   },

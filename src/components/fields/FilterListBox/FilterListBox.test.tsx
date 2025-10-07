@@ -354,6 +354,66 @@ describe('<FilterListBox />', () => {
   });
 
   describe('Search functionality', () => {
+    it('should work with controlled search and filter={false} for external filtering', async () => {
+      const onSearchChange = jest.fn();
+
+      const { getByPlaceholderText, getByText, queryByText, rerender } = render(
+        <FilterListBox
+          label="Select a fruit"
+          searchPlaceholder="Search..."
+          searchValue=""
+          filter={false}
+          onSearchChange={onSearchChange}
+        >
+          {basicItems}
+        </FilterListBox>,
+      );
+
+      const searchInput = getByPlaceholderText('Search...');
+
+      // Initially all options should be visible
+      expect(getByText('Apple')).toBeInTheDocument();
+      expect(getByText('Banana')).toBeInTheDocument();
+      expect(getByText('Cherry')).toBeInTheDocument();
+
+      // Type in search - should call onSearchChange but NOT filter internally
+      await act(async () => {
+        await userEvent.type(searchInput, 'app');
+      });
+
+      // onSearchChange should be called for each character as user types
+      expect(onSearchChange).toHaveBeenCalledTimes(3);
+      expect(onSearchChange).toHaveBeenCalledWith('a');
+      expect(onSearchChange).toHaveBeenCalledWith('p');
+
+      // All items should still be visible because filter={false} disables internal filtering
+      expect(getByText('Apple')).toBeInTheDocument();
+      expect(getByText('Banana')).toBeInTheDocument();
+      expect(getByText('Cherry')).toBeInTheDocument();
+
+      // Simulate external filtering by providing only matching items
+      const filteredItems = [
+        <FilterListBox.Item key="apple">Apple</FilterListBox.Item>,
+      ];
+
+      rerender(
+        <FilterListBox
+          label="Select a fruit"
+          searchPlaceholder="Search..."
+          searchValue="app"
+          filter={false}
+          onSearchChange={onSearchChange}
+        >
+          {filteredItems}
+        </FilterListBox>,
+      );
+
+      // Now only Apple should be visible (externally filtered)
+      expect(getByText('Apple')).toBeInTheDocument();
+      expect(queryByText('Banana')).not.toBeInTheDocument();
+      expect(queryByText('Cherry')).not.toBeInTheDocument();
+    });
+
     it('should filter options based on search input', async () => {
       const { getByPlaceholderText, getByText, queryByText } = render(
         <FilterListBox label="Select a fruit" searchPlaceholder="Search...">
