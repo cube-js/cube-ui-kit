@@ -244,6 +244,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     onEscape,
     onOptionClick,
     isClearable,
+    searchValue,
+    onSearchChange,
     ...otherProps
   } = props;
 
@@ -1083,6 +1085,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 }
                 searchPlaceholder={searchPlaceholder}
                 filter={filter}
+                searchValue={searchValue}
                 listStyles={listStyles}
                 optionStyles={optionStyles}
                 sectionStyles={sectionStyles}
@@ -1116,6 +1119,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 allValueProps={allValueProps}
                 customValueProps={customValueProps}
                 newCustomValueProps={newCustomValueProps}
+                onSearchChange={onSearchChange}
                 onEscape={() => close()}
                 onOptionClick={(key) => {
                   // For FilterPicker, clicking the content area should close the popover

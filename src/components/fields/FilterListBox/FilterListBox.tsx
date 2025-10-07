@@ -5,6 +5,7 @@ import React, {
   ReactElement,
   ReactNode,
   RefObject,
+  useCallback,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -115,8 +116,11 @@ export interface CubeFilterListBoxProps<T>
   searchPlaceholder?: string;
   /** Whether the search input should have autofocus */
   autoFocus?: boolean;
-  /** Custom filter function for determining if an option should be included in search results */
-  filter?: FilterFn;
+  /**
+   * Custom filter function for determining if an option should be included in search results.
+   * Pass `false` to disable internal filtering completely (useful for external filtering).
+   */
+  filter?: FilterFn | false;
   /** Custom label to display when no results are found after filtering */
   emptyLabel?: ReactNode;
   /** Custom styles for the search input */
@@ -160,6 +164,18 @@ export interface CubeFilterListBoxProps<T>
    * These are merged with customValueProps for new custom values.
    */
   newCustomValueProps?: Partial<CubeItemProps<T>>;
+
+  /**
+   * Controlled search value. When provided, the search input becomes controlled.
+   * Use with `onSearchChange` to manage the search state externally.
+   */
+  searchValue?: string;
+
+  /**
+   * Callback fired when the search input value changes.
+   * Use with `searchValue` for controlled search input.
+   */
+  onSearchChange?: (value: string) => void;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -247,6 +263,8 @@ export const FilterListBox = forwardRef(function FilterListBox<
     allValueProps,
     customValueProps,
     newCustomValueProps,
+    searchValue: controlledSearchValue,
+    onSearchChange,
     ...otherProps
   } = props;
 
@@ -386,13 +404,30 @@ export const FilterListBox = forwardRef(function FilterListBox<
     (props as any)['aria-label'] ||
     (typeof label === 'string' ? label : undefined);
 
-  const [searchValue, setSearchValue] = useState('');
+  // Controlled/uncontrolled search value pattern
+  const [internalSearchValue, setInternalSearchValue] = useState('');
+  const isSearchControlled = controlledSearchValue !== undefined;
+  const searchValue = isSearchControlled
+    ? controlledSearchValue
+    : internalSearchValue;
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      if (!isSearchControlled) {
+        setInternalSearchValue(value);
+      }
+      onSearchChange?.(value);
+    },
+    [isSearchControlled, onSearchChange],
+  );
+
   const { contains } = useFilter({ sensitivity: 'base' });
 
-  // Choose the text filter function: user-provided `filter` prop (if any)
+  // Choose the text filter function: user-provided `filter` prop (if any),
   // or the default `contains` helper from `useFilter`.
+  // When filter={false}, disable filtering completely.
   const textFilterFn = useMemo<FilterFn>(
-    () => filter || contains,
+    () => (filter === false ? () => true : filter || contains),
     [filter, contains],
   );
 
@@ -774,7 +809,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         if (searchValue) {
           // Clear the current search if any text is present.
           e.preventDefault();
-          setSearchValue('');
+          handleSearchChange('');
         } else {
           // Notify parent that Escape was pressed on an empty input.
           if (onEscape) {
@@ -893,7 +928,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         }
         onChange={(e) => {
           const value = e.target.value;
-          setSearchValue(value);
+          handleSearchChange(value);
         }}
         {...keyboardProps}
         {...modAttrs(mods)}
