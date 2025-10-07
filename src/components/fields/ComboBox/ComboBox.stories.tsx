@@ -1,12 +1,15 @@
 import { Meta, StoryFn } from '@storybook/react-vite';
 import { IconCoin } from '@tabler/icons-react';
+import { useState } from 'react';
 import { userEvent, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 import { wait } from '../../../test/utils/wait';
 import { Button } from '../../actions/index';
+import { Text } from '../../content/Text';
 import { Field, Form } from '../../form/index';
 import { Flow } from '../../layout/Flow';
+import { Space } from '../../layout/Space';
 
 import { ComboBox, CubeComboBoxProps } from './ComboBox';
 
@@ -581,3 +584,76 @@ export const SectionsDynamic: StoryFn<CubeComboBoxProps<any>> = (args) => {
 
 SectionsDynamic.storyName = 'Sections – dynamic collection';
 SectionsDynamic.play = ItemsWithDescriptions.play;
+
+export const VirtualizedList: StoryFn<CubeComboBoxProps<any>> = (args) => {
+  const [selectedKey, setSelectedKey] = useState<string | null>('item-2');
+  const [inputValue, setInputValue] = useState('');
+
+  // Generate a large list of items with varying content to trigger virtualization
+  // Mix items with and without descriptions to test dynamic sizing
+  const items = Array.from({ length: 100 }, (_, i) => ({
+    id: `item-${i + 1}`,
+    name: `Item ${i + 1}${i % 7 === 0 ? ' - This is a longer item name to test dynamic sizing' : ''}`,
+    description:
+      i % 3 === 0
+        ? `This is a description for item ${i + 1}. It varies in length to test virtualization with dynamic item heights.`
+        : undefined,
+  }));
+
+  return (
+    <Space gap="2x" flow="column" width="40x">
+      <Text>
+        Large list with {items.length} items with varying heights.
+        Virtualization is automatically enabled when there are no sections.
+        Scroll down and back up to test smooth virtualization.
+      </Text>
+
+      <ComboBox
+        {...args}
+        selectedKey={selectedKey}
+        inputValue={inputValue}
+        defaultItems={items}
+        width="max 35x"
+        placeholder="Type or select from large list..."
+        label="Virtualized ComboBox"
+        onSelectionChange={(key) => setSelectedKey(key as string | null)}
+        onInputChange={setInputValue}
+      >
+        {(item: (typeof items)[number]) => (
+          <ComboBox.Item
+            key={item.id}
+            textValue={item.name}
+            description={item.description}
+          >
+            {item.name}
+          </ComboBox.Item>
+        )}
+      </ComboBox>
+
+      <Text preset="t4" color="#dark.60">
+        Selected: {selectedKey || 'None'}
+        {selectedKey &&
+          ` (${items.find((item) => item.id === selectedKey)?.name})`}
+      </Text>
+      <Text preset="t4" color="#dark.60">
+        Input value: "{inputValue}"
+      </Text>
+    </Space>
+  );
+};
+
+VirtualizedList.args = {};
+VirtualizedList.storyName = 'Virtualized Large Dataset';
+VirtualizedList.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const combobox = canvas.getByRole('combobox');
+  await userEvent.click(combobox);
+};
+VirtualizedList.parameters = {
+  docs: {
+    description: {
+      story:
+        'When a ComboBox contains many items and has no sections, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets. You can type to filter the items or scroll through the full list.',
+    },
+  },
+};

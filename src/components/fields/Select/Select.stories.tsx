@@ -1,4 +1,5 @@
 import { IconCoin, IconUser } from '@tabler/icons-react';
+import { useState } from 'react';
 import { userEvent, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -672,6 +673,74 @@ WithTooltips.parameters = {
     description: {
       story:
         'Select options support tooltips to provide additional context. Use either a simple string or a full tooltip configuration object with title, description, and placement options.',
+    },
+  },
+};
+
+export const VirtualizedList: StoryObj<CubeSelectProps<any>>['render'] = (
+  args,
+) => {
+  const [selectedKey, setSelectedKey] = useState<string | null>('item-2');
+
+  // Generate a large list of items with varying content to trigger virtualization
+  // Mix items with and without descriptions to test dynamic sizing
+  const items = Array.from({ length: 100 }, (_, i) => ({
+    id: `item-${i + 1}`,
+    name: `Item ${i + 1}${i % 7 === 0 ? ' - This is a longer item name to test dynamic sizing' : ''}`,
+    description:
+      i % 3 === 0
+        ? `This is a description for item ${i + 1}. It varies in length to test virtualization with dynamic item heights.`
+        : undefined,
+  }));
+
+  return (
+    <Space gap="2x" flow="column" width="40x">
+      <Text>
+        Large list with {items.length} items with varying heights.
+        Virtualization is automatically enabled when there are no sections.
+        Scroll down and back up to test smooth virtualization.
+      </Text>
+
+      <Select
+        {...args}
+        selectedKey={selectedKey}
+        items={items}
+        width="max 35x"
+        placeholder="Select from large list..."
+        onSelectionChange={(key) => setSelectedKey(key as string | null)}
+      >
+        {(item: (typeof items)[number]) => (
+          <Select.Item
+            key={item.id}
+            textValue={item.name}
+            description={item.description}
+          >
+            {item.name}
+          </Select.Item>
+        )}
+      </Select>
+
+      <Text preset="t4" color="#dark.60">
+        Selected: {selectedKey || 'None'}
+        {selectedKey &&
+          ` (${items.find((item) => item.id === selectedKey)?.name})`}
+      </Text>
+    </Space>
+  );
+};
+
+VirtualizedList.args = {};
+VirtualizedList.storyName = 'Virtualized Large Dataset';
+VirtualizedList.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  const trigger = canvas.getByRole('button');
+  await userEvent.click(trigger);
+};
+VirtualizedList.parameters = {
+  docs: {
+    description: {
+      story:
+        'When a Select contains many items and has no sections, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets.',
     },
   },
 };
