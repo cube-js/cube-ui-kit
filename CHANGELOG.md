@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.80.1
+
+### Patch Changes
+
+- [#812](https://github.com/cube-js/cube-ui-kit/pull/812) [`4c673561`](https://github.com/cube-js/cube-ui-kit/commit/4c6735617a7ac754c0b3e4b0c7871c759ceeea48) Thanks [@tenphi](https://github.com/tenphi)! - Fix tooltip dynamic calculation in ItemBase.
+
+- [#813](https://github.com/cube-js/cube-ui-kit/pull/813) [`96218a6e`](https://github.com/cube-js/cube-ui-kit/commit/96218a6ef18ce24307269f36657fc8209aea68cc) Thanks [@tenphi](https://github.com/tenphi)! - Add ChartHeatmapIcon component.
+
 ## 0.80.0
 
 ### Minor Changes
