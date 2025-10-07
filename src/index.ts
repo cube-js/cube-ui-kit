@@ -22,7 +22,7 @@ export { Grid } from './components/layout/Grid';
 export type { CubeGridProps } from './components/layout/Grid';
 export { Flex } from './components/layout/Flex';
 export type { CubeFlexProps } from './components/layout/Flex';
-export { Link } from './components/navigation/Link/Link';
+export { Link } from './components/actions/Link/Link';
 export { Space } from './components/layout/Space';
 export type { CubeSpaceProps } from './components/layout/Space';
 export { Flow } from './components/layout/Flow';
@@ -33,6 +33,18 @@ export { ResizablePanel } from './components/layout/ResizablePanel';
 export type { CubeResizablePanelProps } from './components/layout/ResizablePanel';
 export { Root } from './components/Root';
 export type { CubeRootProps } from './components/Root';
+
+// Navigation types and helpers
+export type {
+  NavigationAdapter,
+  NavigateLike,
+  Path,
+  To,
+  NavigateArg,
+  NavigateOptions,
+  RelativeRoutingType,
+} from './providers/navigation.types';
+export { defaultNavigationAdapter } from './providers/navigationAdapter.default';
 export { PrismCode } from './components/content/PrismCode/PrismCode';
 export type { CubePrismCodeProps } from './components/content/PrismCode/PrismCode';
 export { PrismDiffCode } from './components/content/PrismDiffCode/PrismDiffCode';
@@ -123,8 +135,6 @@ export { LegacyTabs } from './components/navigation/LegacyTabs/LegacyTabs';
 export type { CubeTabsProps } from './components/navigation/LegacyTabs/LegacyTabs';
 export { FileTabs } from './components/organisms/FileTabs/FileTabs';
 export type { CubeFileTabProps } from './components/organisms/FileTabs/FileTabs';
-export { Modal } from './components/organisms/Modal/Modal';
-export type { CubeModalProps } from './components/organisms/Modal/Modal';
 export { StatsCard } from './components/organisms/StatsCard/StatsCard';
 export type { CubeStatsCard } from './components/organisms/StatsCard/StatsCard';
 export {

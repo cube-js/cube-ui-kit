@@ -37,6 +37,7 @@ const PanelElement = tasty({
       card: '1bw',
     },
     flexGrow: 1,
+    placeSelf: 'stretch',
   },
 });
 

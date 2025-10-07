@@ -7,6 +7,14 @@ import { config } from 'react-transition-group';
 
 // @ts-expect-error Setup AbortController for test environment
 global.AbortController = AbortController;
+
+// Mock ResizeObserver for test environment
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
 config.disabled = true;
 
 configure({ testIdAttribute: 'data-qa', asyncUtilTimeout: 15000 });

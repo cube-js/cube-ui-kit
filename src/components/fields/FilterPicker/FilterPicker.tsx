@@ -14,10 +14,15 @@ import {
   useState,
 } from 'react';
 import { FocusScope, Key, useKeyboard } from 'react-aria';
-import { Section as BaseSection, Item, ListState } from 'react-stately';
+import {
+  Section as BaseSection,
+  ListState,
+  Item as ReactAriaItem,
+} from 'react-stately';
 
+import { useEvent } from '../../../_internal';
 import { useWarn } from '../../../_internal/hooks/use-warn';
-import { DirectionIcon, LoadingIcon } from '../../../icons';
+import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import {
   BASE_STYLES,
@@ -35,12 +40,11 @@ import {
 import { generateRandomId } from '../../../utils/random';
 import { mergeProps } from '../../../utils/react';
 import { useEventBus } from '../../../utils/react/useEventBus';
-import { CubeItemButtonProps, ItemButton } from '../../actions';
+import { CubeItemButtonProps, ItemAction, ItemButton } from '../../actions';
 import { CubeItemBaseProps } from '../../content/ItemBase';
 import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
-import { CubeTooltipProviderProps } from '../../overlays/Tooltip/TooltipProvider';
 import {
   CubeFilterListBoxProps,
   FilterListBox,
@@ -85,9 +89,9 @@ export interface CubeFilterPickerProps<T>
   /** Whether to flip the popover placement */
   shouldFlip?: boolean;
   /** Tooltip for the trigger button (separate from field tooltip) */
-  triggerTooltip?: string | Omit<CubeTooltipProviderProps, 'children'>;
+  triggerTooltip?: CubeItemBaseProps['tooltip'];
   /** Description for the trigger button (separate from field description) */
-  triggerDescription?: ReactNode;
+  triggerDescription?: CubeItemBaseProps['description'];
 
   /**
    * Custom renderer for the summary shown inside the trigger when there is a selection.
@@ -117,6 +121,10 @@ export interface CubeFilterPickerProps<T>
   listStateRef?: MutableRefObject<ListState<T>>;
   /** Additional modifiers for styling the FilterPicker */
   mods?: Record<string, boolean>;
+  /** Whether the filter picker is clearable using a clear button in the rightIcon slot */
+  isClearable?: boolean;
+  /** Callback called when the clear button is pressed */
+  onClear?: () => void;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -220,6 +228,22 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     allValueProps,
     customValueProps,
     newCustomValueProps,
+    searchPlaceholder,
+    autoFocus,
+    filter,
+    emptyLabel,
+    searchInputStyles,
+    searchInputRef,
+    listStyles,
+    optionStyles,
+    sectionStyles,
+    headingStyles,
+    listRef,
+    disallowEmptySelection,
+    shouldUseVirtualFocus,
+    onEscape,
+    onOptionClick,
+    isClearable,
     ...otherProps
   } = props;
 
@@ -423,7 +447,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             if (!child || typeof child !== 'object') return;
             const element = child as ReactElement;
 
-            if (element.type === Item) {
+            if (element.type === ReactAriaItem) {
               const props = element.props as any;
               const label =
                 props.textValue ||
@@ -505,7 +529,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
           if (!child || typeof child !== 'object') return;
           const element = child as ReactElement;
 
-          if (element.type === Item) {
+          if (element.type === ReactAriaItem) {
             const childKey = String(element.key);
             if (selectedSet.has(normalizeKeyValue(childKey))) {
               const props = element.props as any;
@@ -680,7 +704,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             if (sectionChild && typeof sectionChild === 'object') {
               const sectionElement = sectionChild as ReactElement;
               if (
-                sectionElement.type === Item ||
+                sectionElement.type === ReactAriaItem ||
                 (sectionElement.type as any)?.displayName === 'Item'
               ) {
                 const clonedItem = cloneWithNormalizedKey(sectionElement);
@@ -877,7 +901,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     );
   };
 
-  const [shouldUpdatePosition, setShouldUpdatePosition] = useState(false);
+  const [shouldUpdatePosition, setShouldUpdatePosition] = useState(true);
 
   // The trigger is rendered as a function so we can access the dialog state
   const renderTrigger = (state) => {
@@ -925,9 +949,45 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     });
 
     useEffect(() => {
-      // Disable the update of the position while the popover is open (with a delay) to avoid jumping
-      setShouldUpdatePosition(!state.isOpen);
+      // Allow initial positioning & flipping when opening, then lock placement after transition
+      // Popover transition is ~120ms, give it a bit more time to finalize placement
+      if (state.isOpen) {
+        setShouldUpdatePosition(true);
+        const id = window.setTimeout(() => setShouldUpdatePosition(false), 160);
+        return () => window.clearTimeout(id);
+      } else {
+        setShouldUpdatePosition(true);
+      }
     }, [state.isOpen]);
+
+    // Clear button logic
+    let showClearButton =
+      isClearable && hasSelection && !isDisabled && !props.isReadOnly;
+
+    // Clear function
+    let clearValue = useEvent(() => {
+      if (selectionMode === 'multiple') {
+        if (!isControlledMultiple) {
+          setInternalSelectedKeys([]);
+        }
+        onSelectionChange?.([]);
+      } else {
+        if (!isControlledSingle) {
+          setInternalSelectedKey(null);
+        }
+        onSelectionChange?.(null);
+      }
+
+      if (state.isOpen) {
+        state.close();
+      }
+
+      triggerRef?.current?.focus?.();
+
+      props.onClear?.();
+
+      return false;
+    });
 
     return (
       <ItemButton
@@ -948,6 +1008,15 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             <LoadingIcon />
           ) : rightIcon !== undefined ? (
             rightIcon
+          ) : showClearButton ? (
+            <ItemAction
+              icon={<CloseIcon />}
+              size={size}
+              theme={validationState === 'invalid' ? 'danger' : undefined}
+              qa="FilterPickerClearButton"
+              mods={{ pressed: false }}
+              onPress={clearValue}
+            />
           ) : (
             <DirectionIcon to={state.isOpen ? 'top' : 'bottom'} />
           )
@@ -978,7 +1047,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
         placement="bottom start"
         styles={triggerStyles}
         shouldUpdatePosition={shouldUpdatePosition}
-        shouldFlip={shouldFlip}
+        shouldFlip={shouldFlip && shouldUpdatePosition}
         isDismissable={true}
         shouldCloseOnInteractOutside={(el) => {
           const menuTriggerEl = el.closest('[data-popover-trigger]');
@@ -992,7 +1061,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       >
         {renderTrigger}
         {(close) => (
-          <Dialog display="grid" styles={{ gridRows: '1sf', ...popoverStyles }}>
+          <Dialog
+            display="grid"
+            styles={{
+              gridRows: '1sf',
+              width: '30x max-content 50vw',
+              ...popoverStyles,
+            }}
+          >
             <FocusScope restoreFocus>
               <FilterListBox
                 autoFocus
@@ -1005,6 +1081,17 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 selectedKeys={
                   selectionMode === 'multiple' ? mappedSelectedKeys : undefined
                 }
+                searchPlaceholder={searchPlaceholder}
+                filter={filter}
+                listStyles={listStyles}
+                optionStyles={optionStyles}
+                sectionStyles={sectionStyles}
+                headingStyles={headingStyles}
+                listRef={listRef}
+                disallowEmptySelection={disallowEmptySelection}
+                emptyLabel={emptyLabel}
+                searchInputStyles={searchInputStyles}
+                searchInputRef={searchInputRef}
                 disabledKeys={disabledKeys}
                 focusOnHover={focusOnHover}
                 shouldFocusWrap={shouldFocusWrap}
@@ -1135,7 +1222,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   );
 }) as unknown as (<T>(
   props: CubeFilterPickerProps<T> & { ref?: ForwardedRef<HTMLElement> },
-) => ReactElement) & { Item: typeof Item; Section: typeof BaseSection };
+) => ReactElement) & { Item: typeof ListBox.Item; Section: typeof BaseSection };
 
 FilterPicker.Item = ListBox.Item;
 

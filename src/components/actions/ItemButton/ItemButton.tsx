@@ -24,7 +24,7 @@ export const ItemButton = forwardRef(function ItemButton(
   allProps: CubeItemButtonProps,
   ref: FocusableRef<HTMLElement>,
 ) {
-  const { mods, to, htmlType, as, type, theme, ...rest } =
+  const { mods, to, htmlType, as, type, theme, onPress, ...rest } =
     allProps as CubeItemButtonProps & {
       as?: 'a' | 'button' | 'div' | 'span';
     };

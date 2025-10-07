@@ -21,7 +21,7 @@ A foundational component that provides a standardized layout and styling for ite
 
 ---
 
-### Properties
+## Properties
 
 <Controls of={ItemBaseStories.Default} />
 
@@ -29,9 +29,9 @@ A foundational component that provides a standardized layout and styling for ite
 
 Supports [Base properties](/BaseProperties)
 
-### Styling Properties
+## Styling
 
-#### styles
+### styles
 
 Customizes the root element of the component.
 
@@ -45,11 +45,11 @@ Customizes the root element of the component.
 
 ### Style Properties
 
-These properties allow direct style application without using the `styles` prop: `width`, `height`, `padding`, `margin`, `color`, `fill`, `opacity`, `display`, `position`, `zIndex`, `gap`, `flow`, `placeItems`, `placeContent`, `alignItems`, `justifyContent`, `border`, `radius`, `shadow`, `overflow`.
+Direct style application without using the `styles` prop: `width`, `height`, `padding`, `margin`, `color`, `fill`, `opacity`, `display`, `position`, `zIndex`, `gap`, `flow`, `placeItems`, `placeContent`, `alignItems`, `justifyContent`, `border`, `radius`, `shadow`, `overflow`.
 
 ### Modifiers
 
-The `mods` property accepts the following modifiers you can override:
+The `mods` property accepts the following modifiers:
 
 | Modifier | Type | Description |
 |----------|------|-------------|
@@ -138,14 +138,49 @@ The `mods` property accepts the following modifiers you can override:
 </ItemBase>
 ```
 
-### With Auto Tooltip
+### With Tooltip
+
+By default, ItemBase shows an auto tooltip when content overflows.
+
+**Type:** `string | boolean | object`
+
+**Values:**
+- `true` (default) - Shows tooltip with item content when text overflows
+- `false` - Disables tooltip entirely
+- `string` - Shows tooltip with the specified text (always visible, not auto)
+- `object` - Advanced configuration:
+  - `title?: string` - Custom tooltip text (when provided, always shows tooltip unless `auto: true`)
+  - `auto?: boolean` - Enable/disable auto overflow behavior (defaults to `true` when no `title` is provided)
+  - `placement?: string` - Tooltip position (top, bottom, left, right, etc.)
+  - Plus other [TooltipProvider props](/docs/overlays-tooltip--docs)
 
 ```jsx
+{/* Auto tooltip on overflow (default) */}
+<ItemBase style={{ width: '200px' }}>
+  This is a very long text that will show a tooltip when overflowed
+</ItemBase>
+
+{/* Disable tooltip */}
+<ItemBase tooltip={false} style={{ width: '200px' }}>
+  This text will be truncated without a tooltip
+</ItemBase>
+
+{/* Always show custom tooltip */}
+<ItemBase tooltip={{ title: 'Custom tooltip text' }}>
+  Hover to see custom tooltip
+</ItemBase>
+
+{/* Auto tooltip with custom placement */}
+<ItemBase tooltip={{ placement: 'right' }} style={{ width: '200px' }}>
+  Long text with tooltip on the right when overflowed
+</ItemBase>
+
+{/* Custom tooltip only on overflow */}
 <ItemBase 
-  tooltip={true}
+  tooltip={{ title: 'Custom overflow tooltip', auto: true }}
   style={{ width: '200px' }}
 >
-  This is a very long text that will show a tooltip when overflowed
+  This shows custom tooltip only when text overflows
 </ItemBase>
 ```
 
@@ -178,10 +213,10 @@ The `mods` property accepts the following modifiers you can override:
    <ItemBase icon={<IconUser />}>User Profile</ItemBase>
    ```
 
-2. **Do**: Provide tooltips for items that might overflow
+2. **Do**: Use descriptions to provide additional context
    ```jsx
-   <ItemBase tooltip={true} style={{ width: '200px' }}>
-     Long item name that might be truncated
+   <ItemBase icon={<IconFile />} description="Last edited 2 hours ago">
+     Document.pdf
    </ItemBase>
    ```
 

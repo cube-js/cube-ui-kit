@@ -14,6 +14,8 @@ import {
 import { useNotificationsObserver } from '../hooks';
 import { CubeNotifyApiPropsWithID } from '../types';
 
+import { NotificationsDialogProvider } from './NotificationsDialogContext';
+
 export type NotificationsDialogTriggerProps = Omit<
   CubeDialogTriggerProps,
   'type'
@@ -56,7 +58,9 @@ export function NotificationsDialog(props: NotificationsDialogProps) {
       </VisuallyHidden>
 
       <StyledDialogContent>
-        <ClearSlots>{children}</ClearSlots>
+        <NotificationsDialogProvider>
+          <ClearSlots>{children}</ClearSlots>
+        </NotificationsDialogProvider>
       </StyledDialogContent>
     </StyledDialog>
   );

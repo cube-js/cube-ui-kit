@@ -22,7 +22,7 @@ Our component documentation serves multiple purposes:
 Every component documentation file should follow this structure:
 
 ```mdx
-import { Meta, Canvas, Story, Controls } from '@storybook/blocks';
+import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
 import { ComponentName } from './ComponentName';
 import * as ComponentStories from './ComponentName.stories';
 

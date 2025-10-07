@@ -23,7 +23,7 @@ import {
   tasty,
 } from '../../../tasty';
 import { mergeProps, SlotProvider } from '../../../utils/react';
-import { Button } from '../../actions';
+import { ItemButton } from '../../actions';
 import { useOpenTransitionContext } from '../Modal/OpenTransition';
 
 import { useDialogContext } from './context';
@@ -73,45 +73,35 @@ const DialogElement = tasty({
       '[data-type="panel"]': 'auto',
     },
     '$dialog-title-padding-v': {
-      '': '2x',
+      '': '1.5x',
       '[data-type="popover"]': '1x',
     },
     '$dialog-content-padding-v': {
-      '': '2x',
-      '[data-type="popover"]': '2x',
-    },
-    '$dialog-padding-h': {
-      '': '2x',
-      '[data-type="popover"]': '2x',
-    },
-    '$dialog-footer-v': {
-      '': '2x',
+      '': '1.5x',
       '[data-type="popover"]': '1x',
     },
-    '$dialog-content-gap': '2x',
+    '$dialog-padding-h': {
+      '': '1.5x',
+      '[data-type="popover"]': '1x',
+    },
+    '$dialog-footer-v': {
+      '': '1.5x',
+      '[data-type="popover"]': '1x',
+    },
+    '$dialog-content-gap': {
+      '': '1.5x',
+      '[data-type="popover"]': '1x',
+    },
   },
 });
 
-const CloseButton = tasty(Button, {
+const CloseButton = tasty(ItemButton, {
   qa: 'ModalCloseButton',
   type: 'neutral',
-  size: 'large',
   styles: {
-    display: 'flex',
     position: 'absolute',
     top: '1x',
     right: '1x',
-    placeContent: 'center',
-    fill: {
-      '': '#dark.0',
-      hovered: '#dark.04',
-      pressed: '#dark.05',
-    },
-    color: {
-      '': '#dark-02',
-      hovered: '#dark-02',
-      pressed: '#purple',
-    },
   },
 });
 
@@ -190,7 +180,7 @@ const DialogContent = forwardRef(function DialogContent(
   let {
     qa,
     children,
-    size = 'S',
+    size = 'M',
     isDismissable = contextProps.isDismissable,
     onDismiss = contextProps.onClose,
     closeIcon,
@@ -261,7 +251,7 @@ const DialogContent = forwardRef(function DialogContent(
         display: 'flex',
         flow: 'row',
         gap: '1x',
-        placeItems: 'baseline stretch',
+        placeItems: 'center stretch',
         placeContent: 'space-between',
         padding: `$dialog-title-padding-v ${
           isDismissable ? '($dialog-padding-h + 4x)' : '$dialog-padding-h'
@@ -300,7 +290,7 @@ const DialogContent = forwardRef(function DialogContent(
       <SlotProvider slots={slots}>
         {isDismissable && (
           <CloseButton
-            icon={closeIcon || <CloseIcon />}
+            icon={closeIcon || <CloseIcon size={20} />}
             label={formatMessage('dismiss')}
             onPress={() => onDismiss && onDismiss()}
           />

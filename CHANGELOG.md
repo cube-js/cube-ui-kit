@@ -1,5 +1,190 @@
 # @cube-dev/ui-kit
 
+## 0.80.1
+
+### Patch Changes
+
+- [#812](https://github.com/cube-js/cube-ui-kit/pull/812) [`4c673561`](https://github.com/cube-js/cube-ui-kit/commit/4c6735617a7ac754c0b3e4b0c7871c759ceeea48) Thanks [@tenphi](https://github.com/tenphi)! - Fix tooltip dynamic calculation in ItemBase.
+
+- [#813](https://github.com/cube-js/cube-ui-kit/pull/813) [`96218a6e`](https://github.com/cube-js/cube-ui-kit/commit/96218a6ef18ce24307269f36657fc8209aea68cc) Thanks [@tenphi](https://github.com/tenphi)! - Add ChartHeatmapIcon component.
+
+## 0.80.0
+
+### Minor Changes
+
+- [#810](https://github.com/cube-js/cube-ui-kit/pull/810) [`eb5a2efa`](https://github.com/cube-js/cube-ui-kit/commit/eb5a2efad5681c7f38e5beb6852249e222fd9efa) Thanks [@tenphi](https://github.com/tenphi)! - Add new icons: PercentageIcon, CurrencyDollarIcon, Number123Icon.
+
+### Patch Changes
+
+- [#809](https://github.com/cube-js/cube-ui-kit/pull/809) [`041e7da7`](https://github.com/cube-js/cube-ui-kit/commit/041e7da7be5a293c7919a49f23c758215fe67999) Thanks [@tenphi](https://github.com/tenphi)! - Fix tooltip logic in ItemBase component.
+
+- [#809](https://github.com/cube-js/cube-ui-kit/pull/809) [`041e7da7`](https://github.com/cube-js/cube-ui-kit/commit/041e7da7be5a293c7919a49f23c758215fe67999) Thanks [@tenphi](https://github.com/tenphi)! - Fix accessibility by setting keyboard props to hotkeys in ItemBase component.
+
+## 0.79.0
+
+### Minor Changes
+
+- [#807](https://github.com/cube-js/cube-ui-kit/pull/807) [`ce19c264`](https://github.com/cube-js/cube-ui-kit/commit/ce19c26496fbb87799fc7fb055d1647a4f87c392) Thanks [@tenphi](https://github.com/tenphi)! - **Breaking Change:** AlertDialog API cancel button behavior changed
+
+  The `cancel` button in AlertDialog now rejects the promise instead of resolving with `'cancel'` status, aligning it with the dismiss (Escape key) behavior.
+
+  **Migration Guide:**
+
+  **Before:**
+
+  ```typescript
+  alertDialogAPI.open({...})
+    .then((status) => {
+      if (status === 'cancel') {
+        // Handle cancel
+      } else if (status === 'confirm') {
+        // Handle confirm
+      }
+    })
+  ```
+
+  **After:**
+
+  ```typescript
+  alertDialogAPI.open({...})
+    .then((status) => {
+      if (status === 'confirm') {
+        // Handle confirm
+      } else if (status === 'secondary') {
+        // Handle secondary action
+      }
+    })
+    .catch(() => {
+      // Handle cancel or dismiss
+    })
+  ```
+
+  **Note:** `AlertDialogResolveStatus` type no longer includes `'cancel'` - it now only contains `'confirm' | 'secondary'`.
+
+## 0.78.5
+
+### Patch Changes
+
+- [#805](https://github.com/cube-js/cube-ui-kit/pull/805) [`5fa85184`](https://github.com/cube-js/cube-ui-kit/commit/5fa851840db023def82f1a3838576ba8fe0d65f8) Thanks [@tenphi](https://github.com/tenphi)! - Fix the return type of the TooltipProvider the second time :)
+
+- [#805](https://github.com/cube-js/cube-ui-kit/pull/805) [`5fa85184`](https://github.com/cube-js/cube-ui-kit/commit/5fa851840db023def82f1a3838576ba8fe0d65f8) Thanks [@tenphi](https://github.com/tenphi)! - Fix DecimalDecreaseIcon and DecimalIncreaseIcon.
+
+## 0.78.4
+
+### Patch Changes
+
+- [#803](https://github.com/cube-js/cube-ui-kit/pull/803) [`a4f59bb7`](https://github.com/cube-js/cube-ui-kit/commit/a4f59bb74066d1e900fb69ab3215584182a38cb1) Thanks [@tenphi](https://github.com/tenphi)! - Fix the return type of the TooltipProvider the second time :)
+
+## 0.78.3
+
+### Patch Changes
+
+- [#801](https://github.com/cube-js/cube-ui-kit/pull/801) [`fae98647`](https://github.com/cube-js/cube-ui-kit/commit/fae98647f070ac69f6fa7abc80b5bb568896c81a) Thanks [@tenphi](https://github.com/tenphi)! - Fix the return type of TooltipProvider.
+
+## 0.78.2
+
+### Patch Changes
+
+- [#799](https://github.com/cube-js/cube-ui-kit/pull/799) [`29163467`](https://github.com/cube-js/cube-ui-kit/commit/29163467292aa161131735448ad5e1b659d55abc) Thanks [@tenphi](https://github.com/tenphi)! - Fix tooltip implementation so it doesn't break item navigation.
+
+- [#799](https://github.com/cube-js/cube-ui-kit/pull/799) [`29163467`](https://github.com/cube-js/cube-ui-kit/commit/29163467292aa161131735448ad5e1b659d55abc) Thanks [@tenphi](https://github.com/tenphi)! - Use auto tooltip in ItemBase component by default. See documentation to learn more.
+
+- [#798](https://github.com/cube-js/cube-ui-kit/pull/798) [`17e4f7f7`](https://github.com/cube-js/cube-ui-kit/commit/17e4f7f77103d9c2678cbe6e7c01ab2ca7aa7aa7) Thanks [@tenphi](https://github.com/tenphi)! - Don't pass onPress prop to the element in ItemButton.
+
+## 0.78.1
+
+### Patch Changes
+
+- [#795](https://github.com/cube-js/cube-ui-kit/pull/795) [`2e1a331d`](https://github.com/cube-js/cube-ui-kit/commit/2e1a331d6a02c377e8b8017efe3109574bdde03d) Thanks [@tenphi](https://github.com/tenphi)! - Condense the UI of Dialog component.
+
+- [#796](https://github.com/cube-js/cube-ui-kit/pull/796) [`728f983d`](https://github.com/cube-js/cube-ui-kit/commit/728f983d66a68e78c8c17f6edfde5b0e3b0050cb) Thanks [@tenphi](https://github.com/tenphi)! - Set `disabled`, `checked`, `hidden` mods automatically.
+
+## 0.78.0
+
+### Minor Changes
+
+- [#793](https://github.com/cube-js/cube-ui-kit/pull/793) [`a64ee513`](https://github.com/cube-js/cube-ui-kit/commit/a64ee513381c56b470ebca720a6ad3f21bc5fd3f) Thanks [@tenphi](https://github.com/tenphi)! - The new navigation API that relies on external `useHref` and `useNavigation` hooks.
+
+### Patch Changes
+
+- [#793](https://github.com/cube-js/cube-ui-kit/pull/793) [`a64ee513`](https://github.com/cube-js/cube-ui-kit/commit/a64ee513381c56b470ebca720a6ad3f21bc5fd3f) Thanks [@tenphi](https://github.com/tenphi)! - Add support for full navigation argument type in `to` prop in actions including object `{ pathname, search, hash }` and numbers for history navigation. Use `<Link to={-1}>...` to move back in history.
+
+## 0.77.4
+
+### Patch Changes
+
+- [#791](https://github.com/cube-js/cube-ui-kit/pull/791) [`1ca1deb4`](https://github.com/cube-js/cube-ui-kit/commit/1ca1deb4211ec6a67a5d81fbd7606a76c69faa31) Thanks [@tenphi](https://github.com/tenphi)! - Actualize the interface of Item component.
+
+- [#791](https://github.com/cube-js/cube-ui-kit/pull/791) [`1ca1deb4`](https://github.com/cube-js/cube-ui-kit/commit/1ca1deb4211ec6a67a5d81fbd7606a76c69faa31) Thanks [@tenphi](https://github.com/tenphi)! - Make Panel placeSelf stretch by default.
+
+- [#791](https://github.com/cube-js/cube-ui-kit/pull/791) [`1ca1deb4`](https://github.com/cube-js/cube-ui-kit/commit/1ca1deb4211ec6a67a5d81fbd7606a76c69faa31) Thanks [@tenphi](https://github.com/tenphi)! - Fix Item interface for FilterPicker.
+
+- [#791](https://github.com/cube-js/cube-ui-kit/pull/791) [`1ca1deb4`](https://github.com/cube-js/cube-ui-kit/commit/1ca1deb4211ec6a67a5d81fbd7606a76c69faa31) Thanks [@tenphi](https://github.com/tenphi)! - Add onClear callback for FilterPicker, Select, ComboBox and SearchInput.
+
+- [#791](https://github.com/cube-js/cube-ui-kit/pull/791) [`1ca1deb4`](https://github.com/cube-js/cube-ui-kit/commit/1ca1deb4211ec6a67a5d81fbd7606a76c69faa31) Thanks [@tenphi](https://github.com/tenphi)! - Fix popover of FilterPicker to corretly flip on opening.
+
+## 0.77.3
+
+### Patch Changes
+
+- [#787](https://github.com/cube-js/cube-ui-kit/pull/787) [`78dc7da2`](https://github.com/cube-js/cube-ui-kit/commit/78dc7da2983d1acb1ed32ad48e482a62758c093c) Thanks [@tenphi](https://github.com/tenphi)! - Add ItemAction component with a temporary implementation.
+
+- [#787](https://github.com/cube-js/cube-ui-kit/pull/787) [`78dc7da2`](https://github.com/cube-js/cube-ui-kit/commit/78dc7da2983d1acb1ed32ad48e482a62758c093c) Thanks [@tenphi](https://github.com/tenphi)! - Add a clear button to FilterPicker, Select and ComboBox components. Redesign the clear button in SearchInput component.
+
+- [#789](https://github.com/cube-js/cube-ui-kit/pull/789) [`1251a11b`](https://github.com/cube-js/cube-ui-kit/commit/1251a11b7a406cf960ed1a89115c2f9dd4bd3717) Thanks [@tenphi](https://github.com/tenphi)! - Add DecimalDecreaseIcon.tsx and DecimalIncreaseIcon.tsx.
+
+- [#790](https://github.com/cube-js/cube-ui-kit/pull/790) [`f4e502d1`](https://github.com/cube-js/cube-ui-kit/commit/f4e502d19eae89334c8f2487f7c0a4acb9c3fde6) Thanks [@tenphi](https://github.com/tenphi)! - Make toasts and notifications more visible with a colorful border.
+
+## 0.77.2
+
+### Patch Changes
+
+- [#784](https://github.com/cube-js/cube-ui-kit/pull/784) [`39be6b6b`](https://github.com/cube-js/cube-ui-kit/commit/39be6b6b7053001a36939d047d91dd1ef3d67db5) Thanks [@tenphi](https://github.com/tenphi)! - Fix tooltip condition in ItemBase.
+
+- [#784](https://github.com/cube-js/cube-ui-kit/pull/784) [`39be6b6b`](https://github.com/cube-js/cube-ui-kit/commit/39be6b6b7053001a36939d047d91dd1ef3d67db5) Thanks [@tenphi](https://github.com/tenphi)! - Allow to rewrite the tooltip title in ItemBase.
+
+## 0.77.1
+
+### Patch Changes
+
+- [#782](https://github.com/cube-js/cube-ui-kit/pull/782) [`01192708`](https://github.com/cube-js/cube-ui-kit/commit/01192708383c0e03921020bdeb1d5b5e3f0bc9e7) Thanks [@tenphi](https://github.com/tenphi)! - Fix FilterPicker's tooltip typings.
+
+## 0.77.0
+
+### Minor Changes
+
+- [#780](https://github.com/cube-js/cube-ui-kit/pull/780) [`88accef2`](https://github.com/cube-js/cube-ui-kit/commit/88accef2beaadbdf2c2758de0c3aa961f619a0ca) Thanks [@tenphi](https://github.com/tenphi)! - Remove legacy Modal component.
+
+### Patch Changes
+
+- [#780](https://github.com/cube-js/cube-ui-kit/pull/780) [`88accef2`](https://github.com/cube-js/cube-ui-kit/commit/88accef2beaadbdf2c2758de0c3aa961f619a0ca) Thanks [@tenphi](https://github.com/tenphi)! - Add side border radius to the header and the footer of the menus.
+
+## 0.76.2
+
+### Patch Changes
+
+- [#778](https://github.com/cube-js/cube-ui-kit/pull/778) [`0be20c83`](https://github.com/cube-js/cube-ui-kit/commit/0be20c83f07ff92dd65ba984cb309cdc16166bec) Thanks [@tenphi](https://github.com/tenphi)! - Fix form submission by Enter key.
+
+## 0.76.1
+
+### Patch Changes
+
+- [#776](https://github.com/cube-js/cube-ui-kit/pull/776) [`3f8be8e5`](https://github.com/cube-js/cube-ui-kit/commit/3f8be8e5435e1f6fdcaf0976e27e8a6a3de4890d) Thanks [@tenphi](https://github.com/tenphi)! - Fix CSS total size calculation in debug tools.
+
+## 0.76.0
+
+### Minor Changes
+
+- [#773](https://github.com/cube-js/cube-ui-kit/pull/773) [`d79517e8`](https://github.com/cube-js/cube-ui-kit/commit/d79517e82614fe3fe7c4e0d388ec4ef96ad00c88) Thanks [@tenphi](https://github.com/tenphi)! - Improved debug tools with better DX and simpler API.
+
+### Patch Changes
+
+- [#773](https://github.com/cube-js/cube-ui-kit/pull/773) [`d79517e8`](https://github.com/cube-js/cube-ui-kit/commit/d79517e82614fe3fe7c4e0d388ec4ef96ad00c88) Thanks [@tenphi](https://github.com/tenphi)! - Fix cleanup of style in the new style injector.
+
+- [#773](https://github.com/cube-js/cube-ui-kit/pull/773) [`d79517e8`](https://github.com/cube-js/cube-ui-kit/commit/d79517e82614fe3fe7c4e0d388ec4ef96ad00c88) Thanks [@tenphi](https://github.com/tenphi)! - Optimize rule generation by sorting in cache keys.
+
+- [#773](https://github.com/cube-js/cube-ui-kit/pull/773) [`d79517e8`](https://github.com/cube-js/cube-ui-kit/commit/d79517e82614fe3fe7c4e0d388ec4ef96ad00c88) Thanks [@tenphi](https://github.com/tenphi)! - Improve cache cleanup logic and cache checks.
+
 ## 0.75.0
 
 ### Minor Changes

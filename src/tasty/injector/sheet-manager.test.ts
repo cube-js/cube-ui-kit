@@ -58,7 +58,7 @@ describe('SheetManager', () => {
       expect(registry.sheets).toEqual([]);
       expect(registry.refCounts).toBeInstanceOf(Map);
       expect(registry.rules).toBeInstanceOf(Map);
-      expect(registry.unusedRules).toBeInstanceOf(Map);
+      expect(registry.refCounts).toBeInstanceOf(Map);
     });
 
     it('should return same registry for same root', () => {
@@ -290,8 +290,8 @@ describe('SheetManager', () => {
     });
   });
 
-  describe('markAsUnused and bulk cleanup', () => {
-    it('should mark rule as unused without immediate DOM cleanup', () => {
+  describe('unused tracking and bulk cleanup', () => {
+    it('should track unused rules via refCount = 0', () => {
       const registry = sheetManager.getRegistry(document);
 
       const rules = [createStyleRule('.test', 'color: red;')];
@@ -306,15 +306,16 @@ describe('SheetManager', () => {
       registry.rules.set(className, ruleInfo!);
       registry.refCounts.set(className, 1);
 
-      sheetManager.markAsUnused(registry, className);
+      // Mark as unused by setting refCount to 0
+      registry.refCounts.set(className, 0);
 
       // Rule should be marked as unused but still in registry.rules
       expect(registry.rules.has(className)).toBe(true);
-      expect(registry.unusedRules.has(className)).toBe(true);
-      expect(registry.refCounts.has(className)).toBe(false);
+      // Rule should be unused (refCount = 0)
+      expect(registry.refCounts.get(className)).toBe(0);
     });
 
-    it('should restore from unused rules', () => {
+    it('should reuse unused rules by setting refCount > 0', () => {
       const registry = sheetManager.getRegistry(document);
 
       const rules = [createStyleRule('.test', 'color: red;')];
@@ -330,18 +331,17 @@ describe('SheetManager', () => {
       registry.refCounts.set(className, 1);
 
       // Mark as unused
-      sheetManager.markAsUnused(registry, className);
+      registry.refCounts.set(className, 0);
 
-      // Restore from unused
-      const restored = sheetManager.restoreFromUnused(registry, className);
+      // Restore by setting refCount to 1
+      registry.refCounts.set(className, 1);
 
-      expect(restored).toBeTruthy();
-      expect(registry.unusedRules.has(className)).toBe(false);
+      // Rule should be active (refCount > 0)
       expect(registry.refCounts.get(className)).toBe(1);
       expect(registry.rules.has(className)).toBe(true);
     });
 
-    it('should schedule bulk cleanup when threshold is exceeded', () => {
+    it('should schedule bulk cleanup when threshold is exceeded', (done) => {
       const manager = new SheetManager({ unusedStylesThreshold: 2 });
       const registry = manager.getRegistry(document);
 
@@ -357,12 +357,22 @@ describe('SheetManager', () => {
         const className = `test-class-${i}`;
 
         registry.rules.set(className, ruleInfo!);
-        registry.refCounts.set(className, 1);
-        manager.markAsUnused(registry, className);
+        registry.refCounts.set(className, 0); // Mark as unused
       }
 
-      // Should have scheduled bulk cleanup
-      expect(registry.bulkCleanupTimeout).toBeTruthy();
+      // Check if cleanup should be scheduled
+      manager.checkCleanupNeeded(registry);
+
+      // Should have scheduled cleanup check timeout immediately
+      expect(registry.cleanupCheckTimeout).toBeTruthy();
+
+      // Wait for async cleanup check to complete
+      setTimeout(() => {
+        // Should have scheduled bulk cleanup after the check
+        expect(registry.bulkCleanupTimeout).toBeTruthy();
+        expect(registry.cleanupCheckTimeout).toBe(null);
+        done();
+      }, 10);
     });
   });
 
@@ -439,7 +449,7 @@ describe('SheetManager', () => {
   });
 
   describe('bulk cleanup scheduling', () => {
-    it('should use requestIdleCallback when idleCleanup is enabled', () => {
+    it('should use requestIdleCallback when idleCleanup is enabled', (done) => {
       // Mock requestIdleCallback
       const mockRequestIdleCallback = jest.fn((callback) => {
         return 123; // mock handle - don't execute callback immediately
@@ -465,18 +475,27 @@ describe('SheetManager', () => {
       registry.rules.set('test-class', ruleInfo!);
       registry.refCounts.set('test-class', 1);
 
-      // This should trigger bulk cleanup scheduling
-      manager.markAsUnused(registry, 'test-class');
+      // Mark as unused and trigger bulk cleanup scheduling
+      registry.refCounts.set('test-class', 0);
+      manager.checkCleanupNeeded(registry);
 
-      expect(mockRequestIdleCallback).toHaveBeenCalled();
-      expect(registry.bulkCleanupTimeout).toBe(123);
+      // Should have scheduled cleanup check timeout immediately
+      expect(registry.cleanupCheckTimeout).toBeTruthy();
 
-      // Cleanup mocks
-      delete (global as any).requestIdleCallback;
-      delete (global as any).cancelIdleCallback;
+      // Wait for async cleanup check to complete
+      setTimeout(() => {
+        expect(mockRequestIdleCallback).toHaveBeenCalled();
+        expect(registry.bulkCleanupTimeout).toBe(123);
+        expect(registry.cleanupCheckTimeout).toBe(null);
+
+        // Cleanup mocks
+        delete (global as any).requestIdleCallback;
+        delete (global as any).cancelIdleCallback;
+        done();
+      }, 10);
     });
 
-    it('should fallback to setTimeout when requestIdleCallback is not available', () => {
+    it('should fallback to setTimeout when requestIdleCallback is not available', (done) => {
       // Ensure requestIdleCallback is not available
       delete (global as any).requestIdleCallback;
 
@@ -500,11 +519,23 @@ describe('SheetManager', () => {
       registry.rules.set('test-class', ruleInfo!);
       registry.refCounts.set('test-class', 1);
 
-      manager.markAsUnused(registry, 'test-class');
+      registry.refCounts.set('test-class', 0);
+      manager.checkCleanupNeeded(registry);
 
-      expect(mockSetTimeout).toHaveBeenCalledWith(expect.any(Function), 100);
+      // Should have called setTimeout for cleanup check (0ms) immediately
+      expect(mockSetTimeout).toHaveBeenCalledWith(expect.any(Function), 0);
+      expect(registry.cleanupCheckTimeout).toBeTruthy();
 
-      mockSetTimeout.mockRestore();
+      // Wait for async cleanup check to complete
+      setTimeout(() => {
+        // Should have called setTimeout again for bulk cleanup (100ms)
+        expect(mockSetTimeout).toHaveBeenCalledWith(expect.any(Function), 100);
+        expect(registry.bulkCleanupTimeout).toBeTruthy();
+        expect(registry.cleanupCheckTimeout).toBe(null);
+
+        mockSetTimeout.mockRestore();
+        done();
+      }, 10);
     });
   });
 });

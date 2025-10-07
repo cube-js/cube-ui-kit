@@ -477,11 +477,6 @@ describe('<FilterPicker />', () => {
         </FilterPicker>,
       );
 
-      // Wait for component to render
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      });
-
       const trigger = getByRole('button');
       expect(trigger).toBeInTheDocument();
     });
@@ -496,11 +491,6 @@ describe('<FilterPicker />', () => {
           {basicItems}
         </FilterPicker>,
       );
-
-      // Wait for component to render
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      });
 
       // Check that the component renders properly
       expect(container.firstChild).toBeInTheDocument();
@@ -518,11 +508,6 @@ describe('<FilterPicker />', () => {
           {basicItems}
         </FilterPicker>,
       );
-
-      // Wait for component to render
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      });
 
       const trigger = getByRole('button');
 
@@ -548,11 +533,6 @@ describe('<FilterPicker />', () => {
         </FilterPicker>,
       );
 
-      // Wait for component to render
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      });
-
       const trigger = getByRole('button');
 
       // Open the popover
@@ -577,11 +557,6 @@ describe('<FilterPicker />', () => {
         </FilterPicker>,
       );
 
-      // Wait for component to render
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      });
-
       const trigger = getByRole('button');
 
       // Open the popover
@@ -605,11 +580,6 @@ describe('<FilterPicker />', () => {
           {basicItems}
         </FilterPicker>,
       );
-
-      // Wait for component to render
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      });
 
       const trigger = getByRole('button');
 
@@ -718,11 +688,6 @@ describe('<FilterPicker />', () => {
         </FilterPicker>,
       );
 
-      // Wait for component to render
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      });
-
       const trigger = getByRole('button');
 
       // Initially trigger should show placeholder
@@ -771,11 +736,6 @@ describe('<FilterPicker />', () => {
         </FilterPicker>,
       );
 
-      // Wait for component to render
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      });
-
       const trigger = getByRole('button');
 
       // Open the popover
@@ -816,11 +776,6 @@ describe('<FilterPicker />', () => {
           {basicItems}
         </FilterPicker>,
       );
-
-      // Wait for component to render
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      });
 
       const trigger = getByRole('button');
 
@@ -863,11 +818,6 @@ describe('<FilterPicker />', () => {
           {basicItems}
         </FilterPicker>,
       );
-
-      // Wait for component to render
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      });
 
       const trigger = getByRole('button');
 
@@ -934,11 +884,6 @@ describe('<FilterPicker />', () => {
         </FilterPicker>,
       );
 
-      // Wait for component to render
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      });
-
       const trigger = getByRole('button');
 
       // Should display the label, not the key
@@ -965,11 +910,6 @@ describe('<FilterPicker />', () => {
           )}
         </FilterPicker>,
       );
-
-      // Wait for component to render
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      });
 
       // Check that renderSummary was called with correct labels
       expect(renderSummary).toHaveBeenCalledWith({

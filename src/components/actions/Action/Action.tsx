@@ -8,13 +8,12 @@ import {
   CONTAINER_STYLES,
   ContainerStyleProps,
   extractStyles,
-  Styles,
   TagName,
   tasty,
   TEXT_STYLES,
   TextStyleProps,
 } from '../../../tasty';
-import { useAction } from '../use-action';
+import { NavigateArg, useAction } from '../use-action';
 
 export interface CubeActionProps<
   T extends TagName = 'a' | 'button' | 'span' | 'div',
@@ -23,7 +22,7 @@ export interface CubeActionProps<
     ContainerStyleProps,
     TextStyleProps,
     Omit<AriaButtonProps, 'type'> {
-  to?: string;
+  to?: NavigateArg;
   label?: string;
   htmlType?: 'button' | 'submit' | 'reset' | undefined;
   download?: string;

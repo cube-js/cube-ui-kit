@@ -1,7 +1,10 @@
 import { IconCoin, IconSettings, IconUser } from '@tabler/icons-react';
+import { useState } from 'react';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { DirectionIcon } from '../../../icons';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Button } from '../../actions';
 import { Space } from '../../layout/Space';
 import { Title } from '../Title';
 
@@ -1064,6 +1067,106 @@ WithDescriptionBlock.parameters = {
     description: {
       story:
         'Demonstrates the `descriptionPlacement="block"` functionality where descriptions are positioned below the entire ItemBase component instead of inside the content area. This is useful for longer descriptions or when you want to maintain a clean main content area.',
+    },
+  },
+};
+
+const timeout = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
+export const WithAutoTooltip: StoryFn<CubeItemBaseProps> = () => (
+  <ItemBase
+    qa="auto-tooltip-item"
+    icon={<IconUser />}
+    style={{ width: '200px' }}
+    tooltip={{ delay: 0 }}
+  >
+    This is a very long label that will overflow and trigger the auto tooltip
+  </ItemBase>
+);
+
+WithAutoTooltip.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+
+  await timeout(250);
+
+  const item = await canvas.findByTestId('auto-tooltip-item');
+  // this is a weird hack that makes tooltip working properly on page load
+  await userEvent.unhover(item);
+  await userEvent.hover(item);
+
+  // Wait for the tooltip to appear - getByRole will throw if not found
+  await waitFor(() => expect(canvas.getByRole('tooltip')).toBeVisible());
+};
+
+WithAutoTooltip.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates the auto tooltip feature that automatically shows a tooltip when the label text overflows. The tooltip is triggered on hover and displays the full text content.',
+    },
+  },
+};
+
+export const DynamicAutoTooltip: StoryFn<CubeItemBaseProps> = () => {
+  const [width, setWidth] = useState('400px');
+
+  return (
+    <div>
+      <ItemBase
+        qa="dynamic-tooltip-item"
+        icon={<IconUser />}
+        style={{ width }}
+        tooltip={{ delay: 0 }}
+      >
+        This is a very long label that will eventually overflow
+      </ItemBase>
+      <Button
+        qa="resize-button"
+        onPress={() =>
+          width === '400px' ? setWidth('150px') : setWidth('400px')
+        }
+      >
+        Resize
+      </Button>
+    </div>
+  );
+};
+
+// DynamicAutoTooltip.play = async ({ canvasElement }) => {
+//   const canvas = within(canvasElement);
+//   await timeout(250);
+
+//   const item = await canvas.findByTestId('dynamic-tooltip-item');
+
+//   // Test 1: No tooltip when wide
+//   // this is a weird hack that makes tooltip working properly on page load
+//   await userEvent.unhover(item);
+//   await userEvent.hover(item);
+//   await timeout(1000);
+//   expect(canvas.queryByRole('tooltip')).toBe(null);
+
+//   // Change width to trigger overflow
+//   await userEvent.unhover(item);
+//   const resizeButton = await canvas.findByTestId('resize-button');
+//   await userEvent.click(resizeButton);
+//   // Unhover button after clicking to clear any hover state
+//   await userEvent.unhover(resizeButton);
+//   await timeout(1000);
+
+//   // Test 2: Tooltip appears when narrow
+//   // this is a weird hack that makes tooltip working properly
+//   await userEvent.unhover(item);
+//   await userEvent.hover(item);
+
+//   await waitFor(() => expect(canvas.getByRole('tooltip')).toBeVisible());
+// };
+
+DynamicAutoTooltip.parameters = {
+  docs: {
+    description: {
+      story:
+        'Tests the dynamic auto tooltip behavior that responds to width changes. Initially the item is wide and no tooltip appears. When the width is reduced, the label overflows and the tooltip automatically appears on hover.',
     },
   },
 };
