@@ -726,7 +726,10 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   );
 
   // Input focus handler
-  const handleInputFocus = useEvent(() => {
+  const handleInputFocus = useEvent((e: React.FocusEvent<HTMLInputElement>) => {
+    // Call focus props handler if it exists
+    focusProps.onFocus?.(e as any);
+
     if (popoverTrigger === 'focus' && !isPopoverOpen) {
       setIsPopoverOpen(true);
     }
@@ -747,14 +750,23 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         const listState = listStateRef.current;
         if (!listState) return;
 
-        const { selectionManager, collection } = listState;
+        const { selectionManager, collection, disabledKeys } = listState;
+
+        // Helper to collect visible item keys (supports sections)
+        const collectVisibleKeys = (nodes: Iterable<any>, out: Key[]) => {
+          for (const node of nodes) {
+            if (node.type === 'item') {
+              if (!disabledKeys?.has(node.key)) {
+                out.push(node.key);
+              }
+            } else if (node.childNodes) {
+              collectVisibleKeys(node.childNodes, out);
+            }
+          }
+        };
 
         const visibleKeys: Key[] = [];
-        for (const node of collection) {
-          if (node.type === 'item') {
-            visibleKeys.push(node.key);
-          }
-        }
+        collectVisibleKeys(collection, visibleKeys);
 
         if (visibleKeys.length === 0) return;
 
@@ -834,14 +846,23 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
           const listState = listStateRef.current;
           if (!listState) return;
 
-          const { selectionManager, collection } = listState;
+          const { selectionManager, collection, disabledKeys } = listState;
+
+          // Helper to collect visible item keys (supports sections)
+          const collectVisibleKeys = (nodes: Iterable<any>, out: Key[]) => {
+            for (const node of nodes) {
+              if (node.type === 'item') {
+                if (!disabledKeys?.has(node.key)) {
+                  out.push(node.key);
+                }
+              } else if (node.childNodes) {
+                collectVisibleKeys(node.childNodes, out);
+              }
+            }
+          };
 
           const visibleKeys: Key[] = [];
-          for (const node of collection) {
-            if (node.type === 'item') {
-              visibleKeys.push(node.key);
-            }
-          }
+          collectVisibleKeys(collection, visibleKeys);
 
           if (visibleKeys.length === 0) return;
 
@@ -1058,7 +1079,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         data-autofocus={autoFocus ? '' : undefined}
         onChange={handleInputChange}
         onFocus={handleInputFocus}
-        {...mergeProps(keyboardProps, focusProps)}
+        onBlur={focusProps.onBlur}
+        {...keyboardProps}
         styles={inputStyles}
         mods={mods}
         data-size={size}
