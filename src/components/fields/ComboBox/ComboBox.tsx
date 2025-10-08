@@ -1091,6 +1091,26 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     },
   );
 
+  // Sync input value with selected key in controlled mode
+  useEffect(() => {
+    // Only sync when input is not controlled to avoid overriding controlled input
+    if (isControlledInput) return;
+
+    if (effectiveSelectedKey != null) {
+      const selectedItem = findItemByKey(effectiveSelectedKey);
+      const label =
+        selectedItem?.props?.textValue ||
+        (typeof selectedItem?.props?.children === 'string'
+          ? selectedItem.props.children
+          : '') ||
+        String(effectiveSelectedKey);
+
+      setInternalInputValue(label);
+    } else {
+      setInternalInputValue('');
+    }
+  }, [effectiveSelectedKey, findItemByKey, isControlledInput, children]);
+
   // Input focus handler
   const handleInputFocus = useEvent((e: React.FocusEvent<HTMLInputElement>) => {
     // Call focus props handler if it exists
