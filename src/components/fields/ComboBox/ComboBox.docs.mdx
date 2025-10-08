@@ -1,0 +1,500 @@
+import { Meta, Story, Controls } from '@storybook/addon-docs/blocks';
+import * as ComboBoxStories from './ComboBox.stories';
+
+<Meta of={ComboBoxStories} />
+
+# ComboBox
+
+A combobox component that combines a text input with a dropdown list, allowing users to either select from predefined options or enter custom values. It features automatic filtering, keyboard navigation, and supports both controlled and uncontrolled modes.
+
+## When to Use
+
+- When users need to select from a large list of options and benefit from filtering by typing
+- When you want to provide suggestions while allowing custom input values
+- When you need a searchable dropdown with keyboard navigation support
+- When the list of options is dynamic and can be filtered based on user input
+- When you need a more flexible alternative to standard Select components
+
+## Component
+
+<Story of={ComboBoxStories.Default} />
+
+---
+
+### Properties
+
+<Controls />
+
+### Base Properties
+
+Supports [Base properties](?path=/docs/foundation-base-properties--docs)
+
+### Styling Properties
+
+#### styles (wrapperStyles)
+
+Customizes the root wrapper element of the ComboBox.
+
+**Sub-elements:**
+- `Prefix` - Container for prefix content and icons
+- `Suffix` - Container for suffix content, validation icons, and action buttons
+- `InputIcon` - Container for the left icon
+- `ValidationIcon` - Container for validation state icons
+- `State` - Container for state indicators
+
+#### inputStyles
+
+Customizes the text input element where users type.
+
+#### triggerStyles
+
+Customizes the dropdown trigger button that opens/closes the popover.
+
+#### listBoxStyles
+
+Customizes the dropdown list container that displays options.
+
+#### overlayStyles
+
+Customizes the popover overlay wrapper that contains the list.
+
+#### optionStyles
+
+Customizes individual option items in the dropdown list.
+
+#### sectionStyles
+
+Customizes section containers when using grouped options.
+
+#### headingStyles
+
+Customizes section heading elements within grouped options.
+
+### Style Properties
+
+These properties allow direct style application without using the `styles` prop: `display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `color`, `fill`, `fade`.
+
+### Modifiers
+
+The `mods` property accepts the following modifiers you can override:
+
+| Modifier | Type | Description |
+|----------|------|-------------|
+| invalid | `boolean` | Applied when validation state is invalid |
+| valid | `boolean` | Applied when validation state is valid |
+| disabled | `boolean` | Applied when the combobox is disabled |
+| focused | `boolean` | Applied when the input has focus |
+| loading | `boolean` | Applied when the combobox is in loading state |
+| prefix | `boolean` | Applied when prefix content is present |
+| suffix | `boolean` | Applied when suffix content is present |
+| clearable | `boolean` | Applied when the clear button is visible |
+
+## Variants
+
+### Sizes
+
+- `small` - Compact size for dense interfaces
+- `medium` - Default size (default)
+- `large` - Emphasized size for important inputs
+
+<Story of={ComboBoxStories.Sizes} />
+
+### Popover Trigger Modes
+
+- `input` - Opens popover when user types (default)
+- `focus` - Opens popover when input receives focus
+- `manual` - Only opens via trigger button click
+
+<Story of={ComboBoxStories.PopoverTriggers} />
+
+### Validation States
+
+- `valid` - Indicates successful validation
+- `invalid` - Indicates validation errors
+
+<Story of={ComboBoxStories.ValidationStates} />
+
+## Examples
+
+### Basic Usage
+
+```jsx
+<ComboBox label="Fruit" placeholder="Select a fruit...">
+  <ComboBox.Item key="apple">Apple</ComboBox.Item>
+  <ComboBox.Item key="banana">Banana</ComboBox.Item>
+  <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
+</ComboBox>
+```
+
+### With Default Value
+
+<Story of={ComboBoxStories.WithDefaultValue} />
+
+```jsx
+<ComboBox
+  label="Fruit"
+  placeholder="Select a fruit..."
+  defaultSelectedKey="banana"
+>
+  <ComboBox.Item key="apple">Apple</ComboBox.Item>
+  <ComboBox.Item key="banana">Banana</ComboBox.Item>
+  <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
+</ComboBox>
+```
+
+### Controlled Mode
+
+<Story of={ComboBoxStories.Controlled} />
+
+```jsx
+const [selectedKey, setSelectedKey] = useState('apple');
+
+<ComboBox
+  label="Fruit"
+  selectedKey={selectedKey}
+  onSelectionChange={setSelectedKey}
+>
+  <ComboBox.Item key="apple">Apple</ComboBox.Item>
+  <ComboBox.Item key="banana">Banana</ComboBox.Item>
+  <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
+</ComboBox>
+```
+
+### With Custom Values
+
+<Story of={ComboBoxStories.AllowsCustomValue} />
+
+```jsx
+const [inputValue, setInputValue] = useState('');
+
+<ComboBox
+  allowsCustomValue
+  label="Tags"
+  placeholder="Type or select..."
+  inputValue={inputValue}
+  onInputChange={setInputValue}
+>
+  <ComboBox.Item key="react">React</ComboBox.Item>
+  <ComboBox.Item key="vue">Vue</ComboBox.Item>
+  <ComboBox.Item key="angular">Angular</ComboBox.Item>
+</ComboBox>
+```
+
+### Clearable
+
+<Story of={ComboBoxStories.Clearable} />
+
+```jsx
+<ComboBox
+  isClearable
+  label="Fruit"
+  placeholder="Select a fruit..."
+  defaultSelectedKey="apple"
+>
+  <ComboBox.Item key="apple">Apple</ComboBox.Item>
+  <ComboBox.Item key="banana">Banana</ComboBox.Item>
+  <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
+</ComboBox>
+```
+
+### With Sections
+
+<Story of={ComboBoxStories.WithSections} />
+
+```jsx
+<ComboBox label="Food" placeholder="Select food...">
+  <ComboBox.Section key="fruits" title="Fruits">
+    <ComboBox.Item key="apple">Apple</ComboBox.Item>
+    <ComboBox.Item key="banana">Banana</ComboBox.Item>
+  </ComboBox.Section>
+  <ComboBox.Section key="vegetables" title="Vegetables">
+    <ComboBox.Item key="carrot">Carrot</ComboBox.Item>
+    <ComboBox.Item key="broccoli">Broccoli</ComboBox.Item>
+  </ComboBox.Section>
+</ComboBox>
+```
+
+### With Disabled Items
+
+<Story of={ComboBoxStories.WithDisabledItems} />
+
+```jsx
+<ComboBox
+  label="Fruit"
+  placeholder="Select a fruit..."
+  disabledKeys={['banana', 'date']}
+>
+  <ComboBox.Item key="apple">Apple</ComboBox.Item>
+  <ComboBox.Item key="banana">Banana</ComboBox.Item>
+  <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
+  <ComboBox.Item key="date">Date</ComboBox.Item>
+</ComboBox>
+```
+
+### Loading State
+
+<Story of={ComboBoxStories.Loading} />
+
+```jsx
+<ComboBox isLoading label="Fruit" placeholder="Select a fruit...">
+  <ComboBox.Item key="apple">Apple</ComboBox.Item>
+  <ComboBox.Item key="banana">Banana</ComboBox.Item>
+</ComboBox>
+```
+
+### Disabled State
+
+<Story of={ComboBoxStories.Disabled} />
+
+```jsx
+<ComboBox
+  isDisabled
+  label="Fruit"
+  defaultSelectedKey="apple"
+>
+  <ComboBox.Item key="apple">Apple</ComboBox.Item>
+  <ComboBox.Item key="banana">Banana</ComboBox.Item>
+</ComboBox>
+```
+
+### With Items Array
+
+<Story of={ComboBoxStories.WithItemsArray} />
+
+```jsx
+const fruits = [
+  { key: 'apple', label: 'Apple' },
+  { key: 'banana', label: 'Banana' },
+  { key: 'cherry', label: 'Cherry' },
+];
+
+<ComboBox label="Fruit" placeholder="Select..." items={fruits}>
+  {(item) => <ComboBox.Item key={item.key}>{item.label}</ComboBox.Item>}
+</ComboBox>
+```
+
+### Custom Filter Function
+
+<Story of={ComboBoxStories.WithCustomFilter} />
+
+```jsx
+<ComboBox
+  label="Fruit"
+  placeholder="Type to filter..."
+  filter={(textValue, inputValue) => {
+    return textValue.toLowerCase().startsWith(inputValue.toLowerCase());
+  }}
+>
+  <ComboBox.Item key="apple">Apple</ComboBox.Item>
+  <ComboBox.Item key="apricot">Apricot</ComboBox.Item>
+  <ComboBox.Item key="banana">Banana</ComboBox.Item>
+</ComboBox>
+```
+
+### Disable Filtering
+
+<Story of={ComboBoxStories.NoFilter} />
+
+```jsx
+<ComboBox
+  label="Fruit"
+  placeholder="Type anything..."
+  filter={false}
+>
+  <ComboBox.Item key="apple">Apple</ComboBox.Item>
+  <ComboBox.Item key="banana">Banana</ComboBox.Item>
+</ComboBox>
+```
+
+### Required Field
+
+<Story of={ComboBoxStories.Required} />
+
+```jsx
+<ComboBox
+  isRequired
+  label="Fruit"
+  placeholder="Select a fruit..."
+  necessityIndicator="label"
+>
+  <ComboBox.Item key="apple">Apple</ComboBox.Item>
+  <ComboBox.Item key="banana">Banana</ComboBox.Item>
+</ComboBox>
+```
+
+### With Description
+
+<Story of={ComboBoxStories.WithDescription} />
+
+```jsx
+<ComboBox
+  label="Fruit"
+  placeholder="Select a fruit..."
+  description="Choose your favorite fruit from the list"
+>
+  <ComboBox.Item key="apple">Apple</ComboBox.Item>
+  <ComboBox.Item key="banana">Banana</ComboBox.Item>
+</ComboBox>
+```
+
+### Hidden Trigger Button
+
+<Story of={ComboBoxStories.HiddenTrigger} />
+
+```jsx
+<ComboBox
+  hideTrigger
+  label="Fruit"
+  placeholder="Type to search..."
+>
+  <ComboBox.Item key="apple">Apple</ComboBox.Item>
+  <ComboBox.Item key="banana">Banana</ComboBox.Item>
+</ComboBox>
+```
+
+### Long List with Filtering
+
+<Story of={ComboBoxStories.LongList} />
+
+## Accessibility
+
+### Keyboard Navigation
+
+- `Tab` - Moves focus to/from the combobox input
+- `ArrowDown` - Opens popover (if closed) or moves focus to next option
+- `ArrowUp` - Opens popover (if closed) or moves focus to previous option
+- `Enter` - Selects the focused option and closes popover
+- `Escape` - Closes popover (if open) or clears input (if clearable and popover closed)
+- `Home` - Moves focus to the first option (when popover is open)
+- `End` - Moves focus to the last option (when popover is open)
+- Typing - Filters options based on input value
+
+### Screen Reader Support
+
+- Input announces as "combobox" with appropriate expanded/collapsed state
+- Selected option is announced when selection changes
+- Focused option is announced as user navigates with arrow keys
+- Loading state is announced via loading indicator
+- Validation states are announced through validation icons
+- Clear button announces as "Clear" action
+
+### ARIA Properties
+
+- `role="combobox"` - Identifies the input as a combobox
+- `aria-expanded` - Indicates whether the popover is open or closed
+- `aria-haspopup="listbox"` - Indicates the combobox has a listbox popup
+- `aria-controls` - References the listbox ID when popover is open
+- `aria-activedescendant` - References the currently focused option
+- `aria-label` - Provides accessible label when no visible label exists
+- `aria-required` - Indicates required fields
+- `aria-invalid` - Indicates validation errors
+- `aria-describedby` - Links to description and error messages
+
+## Best Practices
+
+1. **Do**: Provide clear labels and placeholders
+   ```jsx
+   <ComboBox
+     label="Country"
+     placeholder="Search countries..."
+   >
+     <ComboBox.Item key="us">United States</ComboBox.Item>
+   </ComboBox>
+   ```
+
+2. **Do**: Use sections to group related options
+   ```jsx
+   <ComboBox label="Contact">
+     <ComboBox.Section title="Recent">
+       <ComboBox.Item key="john">John Doe</ComboBox.Item>
+     </ComboBox.Section>
+     <ComboBox.Section title="All Contacts">
+       <ComboBox.Item key="jane">Jane Smith</ComboBox.Item>
+     </ComboBox.Section>
+   </ComboBox>
+   ```
+
+3. **Do**: Enable `allowsCustomValue` when user input flexibility is needed
+   ```jsx
+   <ComboBox
+     allowsCustomValue
+     label="Email"
+     placeholder="Enter or select email..."
+   >
+     <ComboBox.Item key="work">work@example.com</ComboBox.Item>
+   </ComboBox>
+   ```
+
+4. **Don't**: Use ComboBox for a small fixed set of options
+   ```jsx
+   {/* Use Select instead for simple dropdowns */}
+   <ComboBox label="Yes or No">
+     <ComboBox.Item key="yes">Yes</ComboBox.Item>
+     <ComboBox.Item key="no">No</ComboBox.Item>
+   </ComboBox>
+   ```
+
+5. **Don't**: Disable filtering on large lists
+   ```jsx
+   {/* Defeats the purpose of ComboBox's search capability */}
+   <ComboBox filter={false} label="Countries">
+     {/* 200+ countries... */}
+   </ComboBox>
+   ```
+
+6. **Accessibility**: Always provide meaningful labels and descriptions
+   ```jsx
+   <ComboBox
+     label="Product Category"
+     description="Select the primary category for your product"
+     isRequired
+   >
+     <ComboBox.Item key="electronics">Electronics</ComboBox.Item>
+   </ComboBox>
+   ```
+
+7. **Performance**: Use `items` prop with render function for dynamic lists
+   ```jsx
+   <ComboBox items={largeDataset}>
+     {(item) => <ComboBox.Item key={item.id}>{item.name}</ComboBox.Item>}
+   </ComboBox>
+   ```
+
+## Integration with Forms
+
+This component supports all Field properties when used within a Form. It integrates seamlessly with the form validation system and supports both controlled and uncontrolled modes.
+
+### Form Example
+
+```jsx
+<Form>
+  <ComboBox
+    name="country"
+    label="Country"
+    isRequired
+    validationBehavior="native"
+  >
+    <ComboBox.Item key="us">United States</ComboBox.Item>
+    <ComboBox.Item key="uk">United Kingdom</ComboBox.Item>
+    <ComboBox.Item key="ca">Canada</ComboBox.Item>
+  </ComboBox>
+</Form>
+```
+
+## Suggested Improvements
+
+- **Virtual Scrolling**: Add support for virtualizing long lists to improve performance with thousands of items
+- **Multi-Select Mode**: Add ability to select multiple items with tag-based display
+- **Async Loading**: Built-in support for async data loading with loading states per scroll position
+- **Custom Option Rendering**: Allow more flexibility in rendering option content beyond text
+- **Grouped Item Navigation**: Improve keyboard navigation to allow jumping between section groups
+- **Empty State Customization**: Add more control over empty state rendering with custom components
+
+## Related Components
+
+- [Select](?path=/docs/forms-select--docs) - Use when you need a simple dropdown without filtering
+- [Autocomplete](?path=/docs/forms-autocomplete--docs) - Similar but optimized for async search suggestions
+- [TextInput](?path=/docs/forms-textinput--docs) - Use for free-form text input without suggestions
+- [ListBox](?path=/docs/forms-listbox--docs) - The underlying list component used in ComboBox popover
+- [FilterPicker](?path=/docs/forms-filterpicker--docs) - Alternative with different interaction patterns
+
