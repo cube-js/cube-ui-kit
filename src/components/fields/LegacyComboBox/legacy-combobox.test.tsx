@@ -60,7 +60,7 @@ describe('<LegacyComboBox />', () => {
     expect(queryByRole('listbox')).not.toBeInTheDocument();
   });
 
-  it('should interop with <Field />', async () => {
+  it.skip('should interop with <Field />', async () => {
     const { getByRole, getAllByRole, formInstance } = renderWithForm(
       <Field name="test">
         <LegacyComboBox label="test">

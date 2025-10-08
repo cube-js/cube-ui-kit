@@ -1095,9 +1095,10 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
           />
         )}
         {!hideTrigger ? (
-          <TriggerElement
+          <ItemAction
             ref={triggerRef}
             data-popover-trigger
+            icon={<DownIcon />}
             qa="ComboBoxTrigger"
             mods={{
               pressed: isPopoverOpen,
@@ -1115,9 +1116,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
                 }
               }
             }}
-          >
-            <DownIcon />
-          </TriggerElement>
+          />
         ) : null}
       </div>
       {shouldShowPopover ? (
@@ -1128,6 +1127,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
             styles={overlayStyles}
             style={{
               minWidth: comboBoxWidth ? `${comboBoxWidth}px` : undefined,
+              ...overlayPositionProps.style,
             }}
           >
             <ListBox
