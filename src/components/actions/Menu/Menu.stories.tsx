@@ -43,8 +43,8 @@ import {
   useContextMenu,
 } from '../../../index';
 import { baseProps } from '../../../stories/lists/baseProps';
-import { ComboBox } from '../../fields/ComboBox';
 import { FilterPicker } from '../../fields/FilterPicker';
+import { LegacyComboBox } from '../../fields/LegacyComboBox';
 import { Select } from '../../fields/Select';
 
 export default {
@@ -1950,10 +1950,16 @@ export const ComprehensivePopoverSynchronization = () => {
         {/* Simple Button */}
         <Button size="small">Simple Button</Button>
 
-        {/* ComboBox */}
-        <ComboBox placeholder="ComboBox" items={comboBoxItems} size="small">
-          {(item) => <ComboBox.Item key={item.id}>{item.name}</ComboBox.Item>}
-        </ComboBox>
+        {/* LegacyComboBox */}
+        <LegacyComboBox
+          placeholder="LegacyComboBox"
+          items={comboBoxItems}
+          size="small"
+        >
+          {(item) => (
+            <LegacyComboBox.Item key={item.id}>{item.name}</LegacyComboBox.Item>
+          )}
+        </LegacyComboBox>
 
         {/* FilterPicker */}
         <FilterPicker

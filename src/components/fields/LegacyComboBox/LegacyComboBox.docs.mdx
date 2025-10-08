@@ -1,10 +1,10 @@
 import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
-import { ComboBox } from './ComboBox';
-import * as ComboBoxStories from './ComboBox.stories';
+import { LegacyComboBox } from './LegacyComboBox';
+import * as LegacyComboBoxStories from './LegacyComboBox.stories';
 
-<Meta of={ComboBoxStories} />
+<Meta of={LegacyComboBoxStories} />
 
-# ComboBox
+# LegacyComboBox
 
 A combo box combines a text input with a listbox, allowing users to filter a list of options to items matching a query. It supports both selecting from predefined options and entering custom values, making it versatile for various data entry scenarios.
 
@@ -18,13 +18,13 @@ A combo box combines a text input with a listbox, allowing users to filter a lis
 
 ## Component
 
-<Story of={ComboBoxStories.Default} />
+<Story of={LegacyComboBoxStories.Default} />
 
 ---
 
 ### Properties
 
-<Controls of={ComboBoxStories.Default} />
+<Controls of={LegacyComboBoxStories.Default} />
 
 ### Base Properties
 
@@ -53,7 +53,7 @@ Customizes the dropdown popover container.
 
 ### Style Properties
 
-The ComboBox component supports all standard style properties:
+The LegacyComboBox component supports all standard style properties:
 
 `display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `reset`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`, `textAlign`, `color`, `fill`, `fade`, `textTransform`, `fontWeight`, `fontStyle`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
 
@@ -74,7 +74,7 @@ The `mods` property accepts the following modifiers you can override:
 
 ## Sub-components
 
-### ComboBox.Item
+### LegacyComboBox.Item
 
 Individual option items within the combo box dropdown. Each item is rendered using [ItemBase](/docs/content-itembase--docs) and supports all ItemBase properties for layout, icons, descriptions, and interactive features.
 
@@ -99,33 +99,33 @@ For detailed information about all available item properties, see [ItemBase docu
 #### Example with Rich Items
 
 ```jsx
-<ComboBox label="Technologies" allowsCustomValue>
-  <ComboBox.Item 
+<LegacyComboBox label="Technologies" allowsCustomValue>
+  <LegacyComboBox.Item 
     key="react" 
     icon={<IconCode />}
     description="JavaScript library"
   >
     React
-  </ComboBox.Item>
-  <ComboBox.Item 
+  </LegacyComboBox.Item>
+  <LegacyComboBox.Item 
     key="vue" 
     icon={<IconCode />}
     description="Progressive framework"
     suffix="Popular"
   >
     Vue.js
-  </ComboBox.Item>
-</ComboBox>
+  </LegacyComboBox.Item>
+</LegacyComboBox>
 ```
 
-### ComboBox.Section
+### LegacyComboBox.Section
 
 Groups related options together with an optional heading.
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | title | `ReactNode` | - | Optional heading text for the section |
-| children | `ComboBox.Item[]` | - | Collection of ComboBox.Item components |
+| children | `LegacyComboBox.Item[]` | - | Collection of LegacyComboBox.Item components |
 
 ## Variants
 
@@ -140,90 +140,90 @@ Groups related options together with an optional heading.
 ### Basic Usage
 
 ```jsx
-<ComboBox label="Select a color">
-  <ComboBox.Item key="red">Red</ComboBox.Item>
-  <ComboBox.Item key="blue">Blue</ComboBox.Item>
-  <ComboBox.Item key="green">Green</ComboBox.Item>
-</ComboBox>
+<LegacyComboBox label="Select a color">
+  <LegacyComboBox.Item key="red">Red</LegacyComboBox.Item>
+  <LegacyComboBox.Item key="blue">Blue</LegacyComboBox.Item>
+  <LegacyComboBox.Item key="green">Green</LegacyComboBox.Item>
+</LegacyComboBox>
 ```
 
 ### With Custom Values
 
 ```jsx
-<ComboBox
+<LegacyComboBox
   allowsCustomValue
   label="Enter or select a technology"
 >
-  <ComboBox.Item key="react">React</ComboBox.Item>
-  <ComboBox.Item key="vue">Vue</ComboBox.Item>
-  <ComboBox.Item key="angular">Angular</ComboBox.Item>
-</ComboBox>
+  <LegacyComboBox.Item key="react">React</LegacyComboBox.Item>
+  <LegacyComboBox.Item key="vue">Vue</LegacyComboBox.Item>
+  <LegacyComboBox.Item key="angular">Angular</LegacyComboBox.Item>
+</LegacyComboBox>
 ```
 
 ### With Icon
 
 ```jsx
-<ComboBox
+<LegacyComboBox
   label="Currency"
   icon={<IconCoin />}
   placeholder="Search currencies..."
 >
-  <ComboBox.Item key="usd">US Dollar</ComboBox.Item>
-  <ComboBox.Item key="eur">Euro</ComboBox.Item>
-  <ComboBox.Item key="gbp">British Pound</ComboBox.Item>
-</ComboBox>
+  <LegacyComboBox.Item key="usd">US Dollar</LegacyComboBox.Item>
+  <LegacyComboBox.Item key="eur">Euro</LegacyComboBox.Item>
+  <LegacyComboBox.Item key="gbp">British Pound</LegacyComboBox.Item>
+</LegacyComboBox>
 ```
 
 ### Loading State
 
 ```jsx
-<ComboBox
+<LegacyComboBox
   label="Countries"
   loadingState="loading"
   placeholder="Loading countries..."
 >
   {/* Items will be populated when loading completes */}
-</ComboBox>
+</LegacyComboBox>
 ```
 
 ### With Validation
 
 ```jsx
-<ComboBox
+<LegacyComboBox
   label="Required selection"
   isRequired
   validationState="invalid"
   placeholder="Please select an option"
 >
-  <ComboBox.Item key="option1">Option 1</ComboBox.Item>
-  <ComboBox.Item key="option2">Option 2</ComboBox.Item>
-</ComboBox>
+  <LegacyComboBox.Item key="option1">Option 1</LegacyComboBox.Item>
+  <LegacyComboBox.Item key="option2">Option 2</LegacyComboBox.Item>
+</LegacyComboBox>
 ```
 
 ### Disabled State
 
 ```jsx
-<ComboBox
+<LegacyComboBox
   label="Disabled combo box"
   isDisabled
   placeholder="Cannot be edited"
 >
-  <ComboBox.Item key="option1">Option 1</ComboBox.Item>
-</ComboBox>
+  <LegacyComboBox.Item key="option1">Option 1</LegacyComboBox.Item>
+</LegacyComboBox>
 ```
 
 ### Small Size
 
 ```jsx
-<ComboBox
+<LegacyComboBox
   label="Priority"
   size="small"
   placeholder="Select priority..."
 >
-  <ComboBox.Item key="low">Low</ComboBox.Item>
-  <ComboBox.Item key="medium">Medium</ComboBox.Item>
-  <ComboBox.Item key="high">High</ComboBox.Item>
-</ComboBox>
+  <LegacyComboBox.Item key="low">Low</LegacyComboBox.Item>
+  <LegacyComboBox.Item key="medium">Medium</LegacyComboBox.Item>
+  <LegacyComboBox.Item key="high">High</LegacyComboBox.Item>
+</LegacyComboBox>
 ```
 
 ## Accessibility
@@ -262,7 +262,7 @@ Groups related options together with an optional heading.
 
 1. **Do**: Provide clear, descriptive labels and placeholders
    ```jsx
-   <ComboBox
+   <LegacyComboBox
      label="Select your country"
      placeholder="Type to search countries..."
    >
@@ -270,7 +270,7 @@ Groups related options together with an optional heading.
 
 2. **Don't**: Use combo box for small lists where Select would be simpler
    ```jsx
-   <ComboBox label="Yes or No"> {/* Use Switch or RadioGroup instead */}
+   <LegacyComboBox label="Yes or No"> {/* Use Switch or RadioGroup instead */}
    ```
 
 3. **Performance**: Use dynamic loading for large datasets

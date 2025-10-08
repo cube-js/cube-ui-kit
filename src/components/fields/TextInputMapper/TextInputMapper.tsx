@@ -19,7 +19,7 @@ import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { Flow } from '../../layout/Flow';
 import { Grid } from '../../layout/Grid';
 import { Space } from '../../layout/Space';
-import { ComboBox } from '../ComboBox';
+import { LegacyComboBox } from '../LegacyComboBox';
 import { PasswordInput } from '../PasswordInput/PasswordInput';
 import { TextArea } from '../TextArea/index';
 import { TextInput } from '../TextInput';
@@ -343,7 +343,7 @@ function TextInputMapperInput(props: CubeTextInputMapperInputProps) {
 
   if (inputType === 'combobox') {
     return (
-      <ComboBox
+      <LegacyComboBox
         qa="AddMapping"
         data-type={fieldType}
         width="auto"
@@ -359,9 +359,9 @@ function TextInputMapperInput(props: CubeTextInputMapperInputProps) {
         onSelectionChange={(val) => onSelectionChange(val ?? '')}
       >
         {(options ?? []).map((option) => (
-          <ComboBox.Item key={option}>{option}</ComboBox.Item>
+          <LegacyComboBox.Item key={option}>{option}</LegacyComboBox.Item>
         ))}
-      </ComboBox>
+      </LegacyComboBox>
     );
   }
 
