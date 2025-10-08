@@ -70,37 +70,6 @@ const InputElement = tasty({
   styles: DEFAULT_INPUT_STYLES,
 });
 
-const TriggerElement = tasty({
-  as: 'button',
-  type: 'neutral',
-  styles: {
-    display: 'grid',
-    placeItems: 'center',
-    placeContent: 'center',
-    placeSelf: 'stretch',
-    radius: '(1r - 1bw) right',
-    padding: '0',
-    width: '3x',
-    boxSizing: 'border-box',
-    color: {
-      '': '#dark-02',
-      hovered: '#dark-02',
-      pressed: '#purple',
-      disabled: '#dark.30',
-    },
-    border: 'left',
-    reset: 'button',
-    margin: 0,
-    fill: {
-      '': '#dark.0',
-      hovered: '#dark.04',
-      pressed: '#purple.10',
-      disabled: '#clear',
-    },
-    cursor: 'pointer',
-  },
-});
-
 const ComboBoxOverlayElement = tasty({
   qa: 'ComboBoxOverlay',
   styles: {
