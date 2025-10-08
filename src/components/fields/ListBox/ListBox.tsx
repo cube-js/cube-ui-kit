@@ -521,7 +521,11 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       } else if (keys instanceof Set) {
         if (keys.size === 0) {
           if (disableSelectionToggle && props.selectionMode === 'single') {
-            return;
+            const prevKey = lastSelectedKeyRef.current;
+            if (prevKey != null) {
+              externalSelectionHandler(prevKey);
+              return;
+            }
           }
           externalSelectionHandler(
             props.selectionMode === 'multiple' ? [] : null,
