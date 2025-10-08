@@ -617,6 +617,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
   // Ref to access internal ListBox state
   const listStateRef = useRef<any>(null);
+  const focusInitAttemptsRef = useRef(0);
 
   // Find item by key to get its label
   const findItemByKey = useCallback(
@@ -977,34 +978,20 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     }
   }, [isPopoverOpen, hasResults]);
 
-  useLayoutEffect(() => {
-    if (!shouldShowPopover) {
-      return;
-    }
+  const ensureInitialFocus = useCallback(() => {
+    if (!shouldShowPopover) return;
 
     const listState = listStateRef.current;
-
-    if (!listState) {
-      return;
-    }
+    if (!listState) return;
 
     const { selectionManager, collection, disabledKeys, lastFocusSourceRef } =
       listState;
+    if (!selectionManager || !collection) return;
 
-    if (!selectionManager || !collection) {
-      return;
-    }
-
-    if (lastFocusSourceRef) {
-      lastFocusSourceRef.current = 'keyboard';
-    }
-
-    const findFirstFocusableKey = (): Key | null => {
+    const collectFirstKey = (): Key | null => {
       for (const node of collection) {
         if (node.type === 'item') {
-          if (!disabledKeys?.has(node.key)) {
-            return node.key;
-          }
+          if (!disabledKeys?.has(node.key)) return node.key;
         } else if (node.childNodes) {
           for (const child of node.childNodes) {
             if (child.type === 'item' && !disabledKeys?.has(child.key)) {
@@ -1013,26 +1000,39 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
           }
         }
       }
-
       return null;
     };
 
-    if (effectiveSelectedKey != null) {
-      selectionManager.setFocusedKey(effectiveSelectedKey);
-    } else {
-      const firstKey = findFirstFocusableKey();
-      if (firstKey != null) {
-        selectionManager.setFocusedKey(firstKey);
-      }
-    }
+    if (lastFocusSourceRef) lastFocusSourceRef.current = 'keyboard';
 
-    updatePosition?.();
-  }, [
-    shouldShowPopover,
-    effectiveSelectedKey,
-    enhancedChildren,
-    updatePosition,
-  ]);
+    if (selectionManager.focusedKey == null) {
+      const keyToFocus =
+        effectiveSelectedKey != null ? effectiveSelectedKey : collectFirstKey();
+      if (keyToFocus != null) selectionManager.setFocusedKey(keyToFocus);
+    }
+  }, [shouldShowPopover, effectiveSelectedKey]);
+
+  useLayoutEffect(() => {
+    if (!shouldShowPopover) return;
+    focusInitAttemptsRef.current = 0;
+
+    const tick = () => {
+      if (!shouldShowPopover) return;
+      ensureInitialFocus();
+      focusInitAttemptsRef.current += 1;
+      // Try a few frames to wait for collection to mount
+      if (
+        focusInitAttemptsRef.current < 8 &&
+        listStateRef.current?.selectionManager?.focusedKey == null
+      ) {
+        requestAnimationFrame(tick);
+      } else {
+        updatePosition?.();
+      }
+    };
+
+    requestAnimationFrame(() => requestAnimationFrame(tick));
+  }, [shouldShowPopover, ensureInitialFocus, updatePosition]);
 
   const comboBoxField = (
     <ComboBoxWrapperElement

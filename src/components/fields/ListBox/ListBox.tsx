@@ -10,6 +10,7 @@ import {
   ReactNode,
   RefObject,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -596,7 +597,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     ...listStateProps,
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const selected = listState.selectionManager.selectedKeys;
     if (selected && (selected as any).size > 0) {
       const first = Array.from(selected as Set<Key>)[0];
