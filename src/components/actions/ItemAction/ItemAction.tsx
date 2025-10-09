@@ -13,6 +13,11 @@ export const ItemAction = tasty(Button, {
   styles: {
     height: '($size - 1x)',
     width: '($size - 1x)',
-    margin: '0 (.5x - 1bw)',
+    margin: {
+      '': '0 1bw 0 1bw',
+      ':last-child & !:first-child': '0 (.5x - 1bw) 0 0',
+      '!:last-child & :first-child': '0 0 0 (.5x - 1bw)',
+      ':last-child & :first-child': '0 (.5x - 1bw)',
+    },
   },
 });
