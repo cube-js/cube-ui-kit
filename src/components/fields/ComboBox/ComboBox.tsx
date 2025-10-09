@@ -22,7 +22,12 @@ import {
 import { Section as BaseSection, Item } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
-import { CloseIcon, DownIcon, LoadingIcon } from '../../../icons';
+import {
+  CloseIcon,
+  DirectionIcon,
+  DownIcon,
+  LoadingIcon,
+} from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import {
@@ -47,8 +52,8 @@ import { useFocus } from '../../../utils/react/interactions';
 import { useEventBus } from '../../../utils/react/useEventBus';
 import { ItemAction } from '../../actions';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { DisplayTransition } from '../../helpers';
 import { CubeItemProps } from '../../Item';
-import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
 import { ListBox } from '../ListBox/ListBox';
@@ -76,14 +81,31 @@ const ComboBoxOverlayElement = tasty({
     display: 'grid',
     gridRows: '1sf',
     width: '30x max-content 50vw',
-    maxHeight: '50vh',
+    height: 'initial max-content (50vh - $size)',
     overflow: 'auto',
     background: '#white',
     radius: '1cr',
-    shadow: '0px .5x 2x #shadow',
+    shadow: '0 .5x 2x #shadow',
     padding: '0',
-    border: '#dark.08',
-    outline: '#purple-03.0',
+    border: '#border',
+
+    transition:
+      'translate $transition ease-out, scale $transition ease-out, theme $transition ease-out',
+    translate: {
+      '': '0 0',
+      'open & [data-placement="top"]': '0 0',
+      '!open & [data-placement="top"]': '0 (10% + 1x)',
+      'open & [data-placement="bottom"]': '0 0',
+      '!open & [data-placement="bottom"]': '0 (-10% - 1x)',
+    },
+    scale: {
+      '': '1 1',
+      '!open': '1 .9',
+    },
+    opacity: {
+      '': 1,
+      '!open': 0,
+    },
   },
 });
 
@@ -587,6 +609,8 @@ interface ComboBoxInputProps {
   hasResults: boolean;
   comboBoxId: string;
   listStateRef: RefObject<any>;
+  isLoading?: boolean;
+  allowsCustomValue?: boolean;
 }
 
 const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
@@ -609,10 +633,15 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
       hasResults,
       comboBoxId,
       listStateRef,
+      isLoading,
+      allowsCustomValue,
     },
     ref,
   ) {
     const combinedRef = useCombinedRefs(ref, inputRef);
+
+    // Disable input when loading unless custom values are allowed
+    const shouldDisableInput = isDisabled || (isLoading && !allowsCustomValue);
 
     return (
       <InputElement
@@ -621,7 +650,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
         type="text"
         value={value}
         placeholder={placeholder}
-        disabled={isDisabled}
+        isDisabled={shouldDisableInput}
         readOnly={isReadOnly}
         autoFocus={autoFocus}
         data-autofocus={autoFocus ? '' : undefined}
@@ -751,47 +780,52 @@ function ComboBoxOverlay({
     }
   }, [isOpen, updatePosition]);
 
-  if (!isOpen) return null;
-
   return (
-    <OverlayWrapper isOpen placement={placement as any}>
-      <ComboBoxOverlayElement
-        {...mergeProps(overlayPositionProps, overlayBehaviorProps)}
-        ref={popoverRef as any}
-        styles={overlayStyles}
-        style={{
-          minWidth: comboBoxWidth ? `${comboBoxWidth}px` : undefined,
-          ...overlayPositionProps.style,
-        }}
-      >
-        <ListBox
-          ref={listBoxRef}
-          focusOnHover
-          disableSelectionToggle
-          id={`ComboBoxListBox-${comboBoxId}`}
-          aria-label={
-            ariaLabel || (typeof label === 'string' ? label : 'Options')
-          }
-          selectedKey={effectiveSelectedKey}
-          selectionMode="single"
-          isDisabled={isDisabled}
-          disabledKeys={disabledKeys}
-          shouldUseVirtualFocus={true}
-          items={items as any}
-          styles={listBoxStyles}
-          optionStyles={optionStyles}
-          sectionStyles={sectionStyles}
-          headingStyles={headingStyles}
-          stateRef={listStateRef}
+    <DisplayTransition isShown={isOpen}>
+      {(phase, isShown) => (
+        <ComboBoxOverlayElement
+          {...mergeProps(overlayPositionProps, overlayBehaviorProps)}
+          ref={popoverRef as any}
+          data-placement={placement}
+          data-phase={phase}
           mods={{
-            popover: true,
+            open: isShown,
           }}
-          onSelectionChange={onSelectionChange}
+          styles={overlayStyles}
+          style={{
+            minWidth: comboBoxWidth ? `${comboBoxWidth}px` : undefined,
+            ...overlayPositionProps.style,
+          }}
         >
-          {children as any}
-        </ListBox>
-      </ComboBoxOverlayElement>
-    </OverlayWrapper>
+          <ListBox
+            ref={listBoxRef}
+            focusOnHover
+            disableSelectionToggle
+            id={`ComboBoxListBox-${comboBoxId}`}
+            aria-label={
+              ariaLabel || (typeof label === 'string' ? label : 'Options')
+            }
+            selectedKey={effectiveSelectedKey}
+            selectionMode="single"
+            isDisabled={isDisabled}
+            disabledKeys={disabledKeys}
+            shouldUseVirtualFocus={true}
+            items={items as any}
+            styles={listBoxStyles}
+            optionStyles={optionStyles}
+            sectionStyles={sectionStyles}
+            headingStyles={headingStyles}
+            stateRef={listStateRef}
+            mods={{
+              popover: true,
+            }}
+            onSelectionChange={onSelectionChange}
+          >
+            {children as any}
+          </ListBox>
+        </ComboBoxOverlayElement>
+      )}
+    </DisplayTransition>
   );
 }
 
@@ -1162,7 +1196,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     () => ({
       invalid: isInvalid,
       valid: validationState === 'valid',
-      disabled: isDisabled,
+      disabled: isDisabled || (isLoading && !allowsCustomValue),
       hovered: false,
       focused: isFocused,
       loading: isLoading,
@@ -1176,6 +1210,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       isDisabled,
       isFocused,
       isLoading,
+      allowsCustomValue,
       prefix,
       showClearButton,
     ],
@@ -1274,6 +1309,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         hasResults={hasResults}
         comboBoxId={comboBoxId}
         listStateRef={listStateRef}
+        isLoading={isLoading}
+        allowsCustomValue={allowsCustomValue}
         onChange={handleInputChange}
         onFocus={handleInputFocus}
       />
@@ -1300,7 +1337,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
           <ItemAction
             ref={triggerRef}
             data-popover-trigger
-            icon={<DownIcon />}
+            icon={<DirectionIcon to={isPopoverOpen ? 'up' : 'down'} />}
             qa="ComboBoxTrigger"
             mods={{
               pressed: isPopoverOpen,

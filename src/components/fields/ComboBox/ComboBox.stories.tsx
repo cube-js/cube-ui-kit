@@ -1,32 +1,197 @@
+import { within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
+
+import { baseProps } from '../../../stories/lists/baseProps';
 
 import { ComboBox, CubeComboBoxProps } from './ComboBox';
 
-import type { Meta } from '@storybook/react-vite';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
 export default {
   title: 'Forms/ComboBox',
   component: ComboBox,
+  subcomponents: { Item: ComboBox.Item, Section: ComboBox.Section },
+  args: { width: '200px', label: 'Choose an option' },
+  parameters: { controls: { exclude: baseProps } },
   argTypes: {
-    size: {
-      control: 'select',
-      options: ['small', 'medium', 'large'],
+    /* Content */
+    children: {
+      control: { type: null },
+      description: 'ComboBox.Item elements that define the available options',
     },
+    placeholder: {
+      control: { type: 'text' },
+      description: 'Placeholder text when input is empty',
+    },
+    icon: {
+      control: { type: null },
+      description: 'Icon element rendered before the input',
+    },
+    inputValue: {
+      control: { type: 'text' },
+      description: 'The current text value in controlled mode',
+    },
+    defaultInputValue: {
+      control: { type: 'text' },
+      description: 'The default text value in uncontrolled mode',
+    },
+    label: {
+      control: { type: 'text' },
+      description: 'Label text for the combo box',
+    },
+    description: {
+      control: { type: 'text' },
+      description: 'Description text displayed below the input',
+    },
+    message: {
+      control: { type: 'text' },
+      description:
+        'Message text displayed below the input (validation message)',
+    },
+    emptyLabel: {
+      control: { type: 'text' },
+      description: 'Text shown when no items match the filter',
+    },
+
+    /* Selection */
+    selectedKey: {
+      control: { type: 'text' },
+      description: 'The currently selected key (controlled)',
+    },
+    defaultSelectedKey: {
+      control: { type: 'text' },
+      description: 'The key of the initially selected item (uncontrolled)',
+    },
+    allowsCustomValue: {
+      control: { type: 'boolean' },
+      description: 'Whether the combo box allows custom values to be entered',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isClearable: {
+      control: { type: 'boolean' },
+      description:
+        'Whether the combo box is clearable using ESC keyboard button or clear button inside the input',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+
+    /* Behavior */
     popoverTrigger: {
-      control: 'select',
       options: ['focus', 'input', 'manual'],
+      control: { type: 'radio' },
+      description: 'How the popover is triggered',
+      table: {
+        defaultValue: { summary: 'input' },
+      },
+    },
+    isLoading: {
+      control: { type: 'boolean' },
+      description: 'Whether the ComboBox is in a loading state',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    filter: {
+      control: { type: null },
+      description:
+        'Custom filter function or false to disable filtering. If not provided, uses default contains filter',
+    },
+    hideTrigger: {
+      control: { type: 'boolean' },
+      description: 'Whether to hide the trigger button',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+
+    /* Presentation */
+    size: {
+      options: ['small', 'medium', 'large'],
+      control: { type: 'radio' },
+      description: 'ComboBox size',
+      table: {
+        defaultValue: { summary: 'medium' },
+      },
+    },
+
+    /* State */
+    isDisabled: {
+      control: { type: 'boolean' },
+      description: 'Whether the input is disabled',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isReadOnly: {
+      control: { type: 'boolean' },
+      description: 'Whether the input can be selected but not changed',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    isRequired: {
+      control: { type: 'boolean' },
+      description: 'Whether user input is required before form submission',
+      table: {
+        defaultValue: { summary: false },
+      },
     },
     validationState: {
-      control: 'select',
       options: [undefined, 'valid', 'invalid'],
+      control: { type: 'radio' },
+      description:
+        'Whether the input should display valid or invalid visual styling',
+    },
+    autoFocus: {
+      control: { type: 'boolean' },
+      description: 'Whether the element should receive focus on render',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
+    necessityIndicator: {
+      options: [undefined, 'label', 'icon'],
+      control: { type: 'radio' },
+      description: 'How the required state should be indicated',
+    },
+
+    /* Events */
+    onSelectionChange: {
+      action: 'selection-change',
+      description: 'Callback fired when the selected option changes',
+      control: { type: null },
+    },
+    onInputChange: {
+      action: 'input-change',
+      description: 'Callback fired when the input text changes',
+      control: { type: null },
+    },
+    onOpenChange: {
+      action: 'open-change',
+      description: 'Callback fired when the popover opens or closes',
+      control: { type: null },
+    },
+    onBlur: {
+      action: (e) => ({ type: 'blur', target: e?.target?.tagName }),
+      description: 'Callback fired when the input loses focus',
+      control: { type: null },
+    },
+    onFocus: {
+      action: (e) => ({ type: 'focus', target: e?.target?.tagName }),
+      description: 'Callback fired when the input receives focus',
+      control: { type: null },
     },
   },
 } as Meta<typeof ComboBox>;
 
 const Template = (args: CubeComboBoxProps<object>) => <ComboBox {...args} />;
 
-export const Default = () => (
-  <ComboBox label="Fruit" placeholder="Select a fruit...">
+export const Default = (args) => (
+  <ComboBox label="Fruit" placeholder="Select a fruit..." {...args}>
     <ComboBox.Item key="apple">Apple</ComboBox.Item>
     <ComboBox.Item key="banana">Banana</ComboBox.Item>
     <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
@@ -97,6 +262,35 @@ export const AllowsCustomValue = () => {
   );
 };
 
+export const AllowsCustomValueNoItems: StoryObj<typeof ComboBox> = {
+  render: () => {
+    const [inputValue, setInputValue] = useState('');
+
+    return (
+      <div>
+        <ComboBox
+          isLoading
+          allowsCustomValue
+          label="Custom Input"
+          placeholder="Type anything..."
+          inputValue={inputValue}
+          emptyLabel="No predefined options available"
+          onInputChange={setInputValue}
+        />
+        <div style={{ marginTop: '16px' }}>
+          Value: <strong>{inputValue || 'none'}</strong>
+        </div>
+      </div>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByRole('combobox');
+
+    await userEvent.type(input, 'Custom value example', { delay: 100 });
+  },
+};
+
 export const Clearable = () => (
   <ComboBox
     isClearable
@@ -140,9 +334,33 @@ export const WithDisabledItems = () => (
   </ComboBox>
 );
 
-export const Loading = () => (
-  <ComboBox isLoading label="Fruit" placeholder="Select a fruit...">
-    <ComboBox.Item key="apple">Apple</ComboBox.Item>
+export const Loading = (args) => (
+  <ComboBox isLoading label="Fruit" placeholder="Select a fruit..." {...args}>
+    <ComboBox.Item
+      key="ap
+    ple"
+    >
+      Apple
+    </ComboBox.Item>
+    <ComboBox.Item key="banana">Banana</ComboBox.Item>
+    <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
+  </ComboBox>
+);
+
+export const LoadingWithCustomValue = (args) => (
+  <ComboBox
+    isLoading
+    allowsCustomValue
+    label="Fruit"
+    placeholder="Select a fruit..."
+    {...args}
+  >
+    <ComboBox.Item
+      key="ap
+    ple"
+    >
+      Apple
+    </ComboBox.Item>
     <ComboBox.Item key="banana">Banana</ComboBox.Item>
     <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
   </ComboBox>

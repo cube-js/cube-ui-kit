@@ -124,7 +124,7 @@ export const ListBoxElement = tasty({
       '': '0px 4px 16px #shadow',
       section: false,
     },
-    height: 'initial max-content (50vh - $size-md)',
+    height: 'initial max-content (50vh - $size)',
     overflow: 'clip auto',
     scrollbar: 'styled',
   },

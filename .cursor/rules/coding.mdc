@@ -13,3 +13,4 @@ alwaysApply: true
 # Coding rules
 
 - Use named imports from react (like `useCallback`) instead of using the `React` instance. Avoid: `React.useCallback`.
+- Prefer stable `useEvent` callbacks when it's possible.
