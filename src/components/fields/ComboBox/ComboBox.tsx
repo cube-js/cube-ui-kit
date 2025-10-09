@@ -104,7 +104,7 @@ const ComboBoxOverlayElement = tasty({
     },
     opacity: {
       '': 1,
-      '!open': 0,
+      '!open': 0.001,
     },
   },
 });
@@ -780,13 +780,16 @@ function ComboBoxOverlay({
     }
   }, [isOpen, updatePosition]);
 
+  // Extract primary placement direction for consistent styling
+  const placementDirection = placement?.split(' ')[0] || direction;
+
   return (
     <DisplayTransition isShown={isOpen}>
       {(phase, isShown) => (
         <ComboBoxOverlayElement
           {...mergeProps(overlayPositionProps, overlayBehaviorProps)}
           ref={popoverRef as any}
-          data-placement={placement}
+          data-placement={placementDirection}
           data-phase={phase}
           mods={{
             open: isShown,
@@ -982,6 +985,21 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       filter,
     });
 
+  // Freeze filtered children during close animation to prevent visual jumps
+  const frozenFilteredChildrenRef = useRef<ReactNode>(null);
+
+  useEffect(() => {
+    // Update frozen children only when popover is open
+    if (isPopoverOpen) {
+      frozenFilteredChildrenRef.current = filteredChildren;
+    }
+  }, [isPopoverOpen, filteredChildren]);
+
+  // Use frozen children during close animation, fresh children when open
+  const displayedFilteredChildren = isPopoverOpen
+    ? filteredChildren
+    : frozenFilteredChildrenRef.current ?? filteredChildren;
+
   const { isFocused, focusProps } = useFocus({ isDisabled });
 
   let isInvalid = validationState === 'invalid';
@@ -1109,9 +1127,9 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         String(effectiveSelectedKey);
 
       setInternalInputValue(label);
-    } else {
-      setInternalInputValue('');
     }
+    // Note: When selection is cleared (null), we don't clear the input here
+    // because the user might be typing. The input will be managed by handleInputChange.
   }, [effectiveSelectedKey, findItemByKey, isControlledInput, children]);
 
   // Input focus handler
@@ -1131,10 +1149,10 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   let showClearButton = isClearable && hasValue && !isDisabled && !isReadOnly;
 
   const hasResults = Boolean(
-    filteredChildren &&
-      (Array.isArray(filteredChildren)
-        ? filteredChildren.length > 0
-        : filteredChildren !== null),
+    displayedFilteredChildren &&
+      (Array.isArray(displayedFilteredChildren)
+        ? displayedFilteredChildren.length > 0
+        : displayedFilteredChildren !== null),
   );
 
   // Clear function
@@ -1383,7 +1401,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         onSelectionChange={handleSelectionChange}
         onClose={() => setIsPopoverOpen(false)}
       >
-        {filteredChildren}
+        {displayedFilteredChildren}
       </ComboBoxOverlay>
     </ComboBoxWrapperElement>
   );

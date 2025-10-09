@@ -8,7 +8,7 @@ import { ComboBox, CubeComboBoxProps } from './ComboBox';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-export default {
+const meta = {
   title: 'Forms/ComboBox',
   component: ComboBox,
   subcomponents: { Item: ComboBox.Item, Section: ComboBox.Section },
@@ -186,7 +186,9 @@ export default {
       control: { type: null },
     },
   },
-} as Meta<typeof ComboBox>;
+} satisfies Meta<typeof ComboBox>;
+
+export default meta;
 
 const Template = (args: CubeComboBoxProps<object>) => <ComboBox {...args} />;
 
@@ -336,12 +338,7 @@ export const WithDisabledItems = () => (
 
 export const Loading = (args) => (
   <ComboBox isLoading label="Fruit" placeholder="Select a fruit..." {...args}>
-    <ComboBox.Item
-      key="ap
-    ple"
-    >
-      Apple
-    </ComboBox.Item>
+    <ComboBox.Item key="apple">Apple</ComboBox.Item>
     <ComboBox.Item key="banana">Banana</ComboBox.Item>
     <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
   </ComboBox>
@@ -355,12 +352,7 @@ export const LoadingWithCustomValue = (args) => (
     placeholder="Select a fruit..."
     {...args}
   >
-    <ComboBox.Item
-      key="ap
-    ple"
-    >
-      Apple
-    </ComboBox.Item>
+    <ComboBox.Item key="apple">Apple</ComboBox.Item>
     <ComboBox.Item key="banana">Banana</ComboBox.Item>
     <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
   </ComboBox>
