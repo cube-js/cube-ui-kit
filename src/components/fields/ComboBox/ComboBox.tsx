@@ -785,7 +785,7 @@ function ComboBoxOverlay({
 
   return (
     <DisplayTransition isShown={isOpen}>
-      {(phase, isShown) => (
+      {({ phase, isShown }) => (
         <ComboBoxOverlayElement
           {...mergeProps(overlayPositionProps, overlayBehaviorProps)}
           ref={popoverRef as any}

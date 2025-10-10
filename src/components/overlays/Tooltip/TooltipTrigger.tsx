@@ -189,7 +189,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
       <>
         {trigger(triggerProps, tooltipTriggerRef)}
         <DisplayTransition isShown={state.isOpen}>
-          {(phase, isShown) => (
+          {({ phase, isShown }) => (
             <TooltipContext.Provider
               value={{
                 ...tooltipContextValue,
@@ -226,7 +226,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
         trigger
       )}
       <DisplayTransition isShown={state.isOpen}>
-        {(phase, isShown) => (
+        {({ phase, isShown }) => (
           <TooltipContext.Provider
             value={{
               ...tooltipContextValue,

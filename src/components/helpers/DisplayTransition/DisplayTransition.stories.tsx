@@ -72,7 +72,7 @@ export const Default: Story = {
           animateOnMount={args.animateOnMount}
           respectReducedMotion={args.respectReducedMotion}
         >
-          {(phase, isShownNow) => (
+          {({ phase, isShown: isShownNow }) => (
             <AnimatedCard
               mods={{
                 entered: phase === 'entered',
@@ -115,7 +115,7 @@ export const SlowTransition: Story = {
           animateOnMount={args.animateOnMount}
           respectReducedMotion={args.respectReducedMotion}
         >
-          {(phase, isShownNow) => (
+          {({ phase, isShown: isShownNow }) => (
             <AnimatedCard
               mods={{
                 entered: phase === 'entered',
@@ -168,7 +168,7 @@ export const NoMountAnimation: Story = {
           animateOnMount={false}
           respectReducedMotion={args.respectReducedMotion}
         >
-          {(phase, isShownNow) => (
+          {({ phase, isShown: isShownNow }) => (
             <AnimatedCard
               mods={{
                 entered: phase === 'entered',

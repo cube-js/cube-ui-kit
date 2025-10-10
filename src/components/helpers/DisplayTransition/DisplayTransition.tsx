@@ -22,8 +22,8 @@ export type DisplayTransitionProps = {
   animateOnMount?: boolean;
   /** Respect prefers-reduced-motion by collapsing duration to 0. */
   respectReducedMotion?: boolean;
-  /** Render-prop gets (phase, isShownNow). */
-  children: (phase: Phase, isShown: boolean) => ReactNode;
+  /** Render-prop gets { phase, isShown }. */
+  children: (props: { phase: Phase; isShown: boolean }) => ReactNode;
 };
 
 // Stable callback to avoid stale closures
@@ -171,8 +171,8 @@ export function DisplayTransition({
   const isShownNow = phase === 'entered';
 
   if (phase === 'unmounted' && !exposeUnmounted) return null;
-  return children(
-    phase === 'enter' && !duration ? 'entered' : phase,
-    isShownNow,
-  );
+  return children({
+    phase: phase === 'enter' && !duration ? 'entered' : phase,
+    isShown: isShownNow,
+  });
 }

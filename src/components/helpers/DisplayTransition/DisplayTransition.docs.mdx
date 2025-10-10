@@ -39,7 +39,7 @@ The component manages four distinct phases:
 | `entered` | Enter animation complete, content is visible | `true` |
 | `exit` | Content is exiting, exit animation should start | `false` |
 
-The render prop receives `(phase, isShown)` where `isShown` is only `true` during the `entered` phase.
+The render prop receives an object `{ phase, isShown }` where `isShown` is only `true` during the `entered` phase.
 
 ## Examples
 
@@ -49,7 +49,7 @@ The render prop receives `(phase, isShown)` where `isShown` is only `true` durin
 import { Block } from '@cube-dev/ui-kit';
 
 <DisplayTransition isShown={isVisible} duration={150}>
-  {(phase, isShown) => (
+  {({ phase, isShown }) => (
     <Block 
       data-phase={phase}
       mods={{ entered: phase === 'entered' }}
@@ -88,7 +88,7 @@ const AnimatedCard = tasty(Card, {
 });
 
 <DisplayTransition isShown={isVisible}>
-  {(phase) => (
+  {({ phase }) => (
     <AnimatedCard mods={{ entered: phase === 'entered', exit: phase === 'exit' }}>
       Content
     </AnimatedCard>
@@ -123,7 +123,7 @@ Longer durations can be used for more dramatic entrance and exit effects.
     console.log(`${transition} transition completed`);
   }}
 >
-  {(phase, isShown) => (
+  {({ phase, isShown }) => (
     <Block 
       data-phase={phase}
       mods={{ entered: phase === 'entered' }}
@@ -144,7 +144,7 @@ By default, the component returns `null` when in the `unmounted` phase. Set `exp
 
 ```jsx
 <DisplayTransition isShown={isVisible} exposeUnmounted>
-  {(phase, isShown) => {
+  {({ phase, isShown }) => {
     if (phase === 'unmounted') {
       return <Block>Custom unmounted state</Block>;
     }
@@ -176,7 +176,7 @@ The component automatically respects the `prefers-reduced-motion` media query wh
 1. **Match CSS duration with duration prop**: Ensure your CSS transition/animation duration matches the `duration` prop for proper timing
    ```jsx
    <DisplayTransition duration={300}>
-     {(phase) => (
+     {({ phase }) => (
        <Block 
          data-phase={phase}
          mods={{ entered: phase === 'entered' }}
@@ -197,7 +197,7 @@ The component automatically respects the `prefers-reduced-motion` media query wh
 3. **Animate on mount thoughtfully**: Set `animateOnMount={false}` for content that should appear immediately on SSR or first paint
    ```jsx
    <DisplayTransition isShown={true} animateOnMount={false}>
-     {(phase) => (
+     {({ phase }) => (
        <Block 
          data-phase={phase}
          mods={{ entered: phase === 'entered' }}
