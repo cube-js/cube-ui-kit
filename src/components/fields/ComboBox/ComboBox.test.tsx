@@ -87,8 +87,8 @@ describe('<ComboBox />', () => {
     await userEvent.type(combobox, 're');
 
     await waitFor(() => {
-      const listbox = getByRole('listbox');
-      const options = getAllByRole('option', { container: listbox });
+      expect(getByRole('listbox')).toBeInTheDocument();
+      const options = getAllByRole('option');
       // Should match "Red" and "Green" (contains 're')
       expect(options).toHaveLength(2);
       expect(options[0]).toHaveTextContent('Red');
@@ -97,6 +97,12 @@ describe('<ComboBox />', () => {
 
     // Clear and test with custom filter
     await userEvent.clear(combobox);
+
+    // Wait for clear to complete and popover to close
+    await waitFor(() => {
+      expect(combobox).toHaveValue('');
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
+    });
 
     rerender(
       <ComboBox label="test" filter={customFilterFn}>
@@ -109,8 +115,8 @@ describe('<ComboBox />', () => {
     await userEvent.type(combobox, 're');
 
     await waitFor(() => {
-      const listbox = getByRole('listbox');
-      const options = getAllByRole('option', { container: listbox });
+      expect(getByRole('listbox')).toBeInTheDocument();
+      const options = getAllByRole('option');
       // Should only match "Red" (starts with 're')
       expect(options).toHaveLength(1);
       expect(options[0]).toHaveTextContent('Red');
@@ -119,6 +125,12 @@ describe('<ComboBox />', () => {
 
     // Clear and test with filter disabled
     await userEvent.clear(combobox);
+
+    // Wait for clear to complete and popover to close
+    await waitFor(() => {
+      expect(combobox).toHaveValue('');
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
+    });
 
     rerender(
       <ComboBox label="test" filter={false}>
@@ -131,14 +143,20 @@ describe('<ComboBox />', () => {
     await userEvent.type(combobox, 're');
 
     await waitFor(() => {
-      const listbox = getByRole('listbox');
-      const options = getAllByRole('option', { container: listbox });
+      expect(getByRole('listbox')).toBeInTheDocument();
+      const options = getAllByRole('option');
       // Should show all items when filter is disabled
       expect(options).toHaveLength(7);
     });
 
     // Test filtering with sections
     await userEvent.clear(combobox);
+
+    // Wait for clear to complete and popover to close
+    await waitFor(() => {
+      expect(combobox).toHaveValue('');
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
+    });
 
     rerender(
       <ComboBox label="test">
@@ -158,14 +176,20 @@ describe('<ComboBox />', () => {
     await userEvent.type(combobox, 'e');
 
     await waitFor(() => {
-      const listbox = getByRole('listbox');
-      const options = getAllByRole('option', { container: listbox });
+      expect(getByRole('listbox')).toBeInTheDocument();
+      const options = getAllByRole('option');
       // Should match "Red", "Orange", "Yellow", "Green", "Blue", "Purple"
       expect(options.length).toBeGreaterThan(0);
     });
 
     // Test no results
     await userEvent.clear(combobox);
+
+    // Wait for clear to complete
+    await waitFor(() => {
+      expect(combobox).toHaveValue('');
+    });
+
     await userEvent.type(combobox, 'zzz');
 
     await waitFor(() => {
