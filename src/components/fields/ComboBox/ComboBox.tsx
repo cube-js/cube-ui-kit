@@ -1,6 +1,5 @@
 import { Key } from '@react-types/shared';
 import React, {
-  Children,
   cloneElement,
   ForwardedRef,
   forwardRef,
@@ -993,31 +992,11 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   const listStateRef = useRef<any>(null);
   const focusInitAttemptsRef = useRef(0);
 
-  // Find item by key to get its label
-  const findItemByKey = useCallback(
-    (key: Key): any => {
-      let foundItem: any = null;
-
-      const traverse = (nodes: ReactNode): void => {
-        Children.forEach(nodes, (child: any) => {
-          if (!child || typeof child !== 'object') return;
-
-          if (child.type === Item && String(child.key) === String(key)) {
-            foundItem = child;
-          }
-
-          if (child.props?.children) {
-            traverse(child.props.children);
-          }
-        });
-      };
-
-      if (children) traverse(children);
-
-      return foundItem;
-    },
-    [children],
-  );
+  // Helper to get label from collection item
+  const getItemLabel = useCallback((key: Key): string => {
+    const item = listStateRef.current?.collection?.getItem(key);
+    return item?.textValue || String(key);
+  }, []);
 
   // Selection change handler
   const handleSelectionChange = useEvent((selection: Key | Key[] | null) => {
@@ -1033,13 +1012,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     if (key != null) {
       setIsFilterActive(false);
 
-      const selectedItem = findItemByKey(key);
-      const label =
-        selectedItem?.props?.textValue ||
-        (typeof selectedItem?.props?.children === 'string'
-          ? selectedItem.props.children
-          : '') ||
-        String(key);
+      const label = getItemLabel(key);
 
       if (!isControlledInput) {
         setInternalInputValue(label);
@@ -1102,23 +1075,18 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     // Only initialize once, in uncontrolled input mode, when defaultSelectedKey is provided
     if (hasInitialized || isControlledInput || !defaultSelectedKey) return;
 
-    const selectedItem = findItemByKey(defaultSelectedKey);
-    if (selectedItem) {
-      const label =
-        selectedItem?.props?.textValue ||
-        (typeof selectedItem?.props?.children === 'string'
-          ? selectedItem.props.children
-          : '') ||
-        String(defaultSelectedKey);
+    // Wait for collection to be ready
+    if (!listStateRef.current?.collection) return;
 
-      setInternalInputValue(label);
-      setHasInitialized(true);
-    }
+    const label = getItemLabel(defaultSelectedKey);
+
+    setInternalInputValue(label);
+    setHasInitialized(true);
   }, [
     hasInitialized,
     isControlledInput,
     defaultSelectedKey,
-    findItemByKey,
+    getItemLabel,
     children,
   ]);
 
@@ -1165,15 +1133,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     }
 
     // Reset input to show current selection (or empty if none)
-    const selectedItem =
-      effectiveSelectedKey != null ? findItemByKey(effectiveSelectedKey) : null;
-    const nextValue = selectedItem
-      ? selectedItem.props?.textValue ||
-        (typeof selectedItem.props?.children === 'string'
-          ? selectedItem.props.children
-          : '') ||
-        String(effectiveSelectedKey)
-      : '';
+    const nextValue =
+      effectiveSelectedKey != null ? getItemLabel(effectiveSelectedKey) : '';
 
     if (!isControlledInput) {
       setInternalInputValue(nextValue);

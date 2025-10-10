@@ -18,6 +18,7 @@ import {
   Section as BaseSection,
   ListState,
   Item as ReactAriaItem,
+  useListState,
 } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
@@ -325,53 +326,43 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     return str.replace(/=2/g, ':').replace(/=0/g, '=');
   };
 
+  // Create a local collection for label extraction only (not for rendering)
+  // This gives us immediate access to textValue without waiting for FilterListBox
+  const localCollectionState = useListState({
+    children: children as any,
+    items: items as any,
+    selectionMode: 'none' as any, // We don't need selection management
+  });
+
   // ---------------------------------------------------------------------------
-  // Map public-facing keys (without React's "." prefix) to the actual React
-  // element keys that appear in the collection (which usually have the `.$`
-  // or `.` prefix added by React when children are in an array). This ensures
-  // that the key we pass to ListBox exactly matches the keys it receives from
-  // React Aria, so the initial selection is highlighted correctly.
+  // Map user-provided keys to collection keys using the local collection.
+  // The local collection handles key normalization, so we search for matching
+  // items by comparing normalized keys.
   // ---------------------------------------------------------------------------
 
-  const findReactKey = useCallback(
+  const findCollectionKey = useCallback(
     (lookup: Key): Key => {
       if (lookup == null) return lookup;
 
       const normalizedLookup = normalizeKeyValue(lookup);
-      let foundKey: Key = lookup;
+      for (const item of localCollectionState.collection) {
+        if (normalizeKeyValue(item.key) === normalizedLookup) {
+          return item.key;
+        }
+      }
 
-      const traverse = (nodes: ReactNode): void => {
-        Children.forEach(nodes, (child: ReactNode) => {
-          if (!child || typeof child !== 'object') return;
-          const element = child as ReactElement;
-
-          if (element.key != null) {
-            if (normalizeKeyValue(element.key) === normalizedLookup) {
-              foundKey = element.key;
-            }
-          }
-
-          if (
-            element.props &&
-            typeof element.props === 'object' &&
-            'children' in element.props
-          ) {
-            traverse((element.props as any).children);
-          }
-        });
-      };
-
-      if (children) traverse(children as ReactNode);
-
-      return foundKey;
+      // Fallback: return the lookup key as-is
+      return lookup;
     },
-    [children],
+    [localCollectionState.collection],
   );
 
   const mappedSelectedKey = useMemo(() => {
     if (selectionMode !== 'single') return null;
-    return effectiveSelectedKey ? findReactKey(effectiveSelectedKey) : null;
-  }, [selectionMode, effectiveSelectedKey, findReactKey]);
+    return effectiveSelectedKey
+      ? findCollectionKey(effectiveSelectedKey)
+      : null;
+  }, [selectionMode, effectiveSelectedKey, findCollectionKey]);
 
   const mappedSelectedKeys = useMemo(() => {
     if (selectionMode !== 'multiple') return undefined;
@@ -379,11 +370,11 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     if (effectiveSelectedKeys === 'all') return 'all' as const;
 
     if (Array.isArray(effectiveSelectedKeys)) {
-      return (effectiveSelectedKeys as Key[]).map((k) => findReactKey(k));
+      return (effectiveSelectedKeys as Key[]).map((k) => findCollectionKey(k));
     }
 
     return effectiveSelectedKeys;
-  }, [selectionMode, effectiveSelectedKeys, findReactKey]);
+  }, [selectionMode, effectiveSelectedKeys, findCollectionKey]);
 
   // Given an iterable of keys (array or Set) toggle membership for duplicates
   const processSelectionArray = (iterable: Iterable<Key>): string[] => {
@@ -399,79 +390,18 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     return Array.from(resultSet);
   };
 
-  // Helper to get selected item labels for display
+  // Helper to get selected item labels for display using local collection
   const getSelectedLabels = () => {
+    const collection = localCollectionState.collection;
+
     // Handle "all" selection - return all available labels
     if (selectionMode === 'multiple' && effectiveSelectedKeys === 'all') {
       const allLabels: string[] = [];
-
-      // Extract from items prop if available
-      if (items) {
-        const extractFromItems = (itemsArray: unknown[]): void => {
-          itemsArray.forEach((item) => {
-            if (item && typeof item === 'object') {
-              const itemObj = item as ItemWithKey;
-              if (Array.isArray(itemObj.children)) {
-                // Section-like object
-                extractFromItems(itemObj.children);
-              } else {
-                // Regular item - extract label
-                const label =
-                  itemObj.textValue ||
-                  (itemObj as any).label ||
-                  (typeof (itemObj as any).children === 'string'
-                    ? (itemObj as any).children
-                    : '') ||
-                  String(
-                    (itemObj as any).children ||
-                      itemObj.key ||
-                      itemObj.id ||
-                      item,
-                  );
-                allLabels.push(label);
-              }
-            }
-          });
-        };
-
-        const itemsArray = Array.isArray(items)
-          ? items
-          : Array.from(items as Iterable<unknown>);
-        extractFromItems(itemsArray);
-        return allLabels;
+      for (const item of collection) {
+        if (item.type === 'item') {
+          allLabels.push(item.textValue || String(item.key));
+        }
       }
-
-      // Extract from children if available
-      if (children) {
-        const extractAllLabels = (nodes: ReactNode): void => {
-          if (!nodes) return;
-          Children.forEach(nodes, (child: ReactNode) => {
-            if (!child || typeof child !== 'object') return;
-            const element = child as ReactElement;
-
-            if (element.type === ReactAriaItem) {
-              const props = element.props as any;
-              const label =
-                props.textValue ||
-                (typeof props.children === 'string' ? props.children : '') ||
-                String(props.children || '');
-              allLabels.push(label);
-            }
-
-            if (
-              element.props &&
-              typeof element.props === 'object' &&
-              'children' in element.props
-            ) {
-              extractAllLabels((element.props as any).children);
-            }
-          });
-        };
-
-        extractAllLabels(children as ReactNode);
-        return allLabels;
-      }
-
       return allLabels;
     }
 
@@ -486,78 +416,18 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     const labels: string[] = [];
     const processedKeys = new Set<string>();
 
-    // Extract from items prop if available
-    if (items) {
-      const extractFromItems = (itemsArray: unknown[]): void => {
-        itemsArray.forEach((item) => {
-          if (item && typeof item === 'object') {
-            const itemObj = item as ItemWithKey;
-            if (Array.isArray(itemObj.children)) {
-              // Section-like object
-              extractFromItems(itemObj.children);
-            } else {
-              // Regular item - check if selected
-              const itemKey = itemObj.key || itemObj.id;
-              if (
-                itemKey != null &&
-                selectedSet.has(normalizeKeyValue(itemKey))
-              ) {
-                const label =
-                  itemObj.textValue ||
-                  (itemObj as any).label ||
-                  (typeof (itemObj as any).children === 'string'
-                    ? (itemObj as any).children
-                    : '') ||
-                  String((itemObj as any).children || itemKey);
-                labels.push(label);
-                processedKeys.add(normalizeKeyValue(itemKey));
-              }
-            }
-          }
-        });
-      };
-
-      const itemsArray = Array.isArray(items)
-        ? items
-        : Array.from(items as Iterable<unknown>);
-      extractFromItems(itemsArray);
+    // Use collection to get labels for selected items
+    for (const item of collection) {
+      if (
+        item.type === 'item' &&
+        selectedSet.has(normalizeKeyValue(item.key))
+      ) {
+        labels.push(item.textValue || String(item.key));
+        processedKeys.add(normalizeKeyValue(item.key));
+      }
     }
 
-    // Extract from children if available (for mixed mode or fallback)
-    if (children) {
-      const extractLabelsWithTracking = (nodes: ReactNode): void => {
-        if (!nodes) return;
-        Children.forEach(nodes, (child: ReactNode) => {
-          if (!child || typeof child !== 'object') return;
-          const element = child as ReactElement;
-
-          if (element.type === ReactAriaItem) {
-            const childKey = String(element.key);
-            if (selectedSet.has(normalizeKeyValue(childKey))) {
-              const props = element.props as any;
-              const label =
-                props.textValue ||
-                (typeof props.children === 'string' ? props.children : '') ||
-                String(props.children || '');
-              labels.push(label);
-              processedKeys.add(normalizeKeyValue(childKey));
-            }
-          }
-
-          if (
-            element.props &&
-            typeof element.props === 'object' &&
-            'children' in element.props
-          ) {
-            extractLabelsWithTracking((element.props as any).children);
-          }
-        });
-      };
-
-      extractLabelsWithTracking(children as ReactNode);
-    }
-
-    // Handle custom values that don't have corresponding items/children
+    // Handle custom values that aren't in the collection
     const selectedKeysArr =
       selectionMode === 'multiple' && effectiveSelectedKeys !== 'all'
         ? (effectiveSelectedKeys || []).map(String)
@@ -565,7 +435,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
           ? [String(effectiveSelectedKey)]
           : [];
 
-    // Add labels for any selected keys that weren't processed (custom values)
+    // Add labels for any selected keys that weren't found in collection (custom values)
     selectedKeysArr.forEach((key) => {
       if (!processedKeys.has(normalizeKeyValue(key))) {
         // This is a custom value, use the key as the label
