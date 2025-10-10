@@ -12,12 +12,7 @@ import {
   useState,
 } from 'react';
 import { FocusScope, Key, useKeyboard } from 'react-aria';
-import {
-  Section as BaseSection,
-  ListState,
-  Item as ReactAriaItem,
-  useListState,
-} from 'react-stately';
+import { Section as BaseSection, ListState, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
 import { useWarn } from '../../../_internal/hooks/use-warn';
@@ -790,6 +785,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 items={items ? (finalItems as typeof props.items) : undefined}
                 // Pass an aria-label so the internal ListBox is properly labeled and React Aria doesn't warn.
                 aria-label={`${props['aria-label'] ?? props.label ?? ''} Picker`}
+                _internalCollection={localCollectionState.collection}
                 selectedKey={
                   selectionMode === 'single' ? mappedSelectedKey : undefined
                 }

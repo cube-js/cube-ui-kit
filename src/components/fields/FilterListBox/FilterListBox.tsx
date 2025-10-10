@@ -36,6 +36,7 @@ import {
   INPUT_WRAPPER_STYLES,
 } from '../TextInput/TextInputBase';
 
+import type { Collection, Node } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
 
 type FilterFn = (textValue: string, inputValue: string) => boolean;
@@ -176,6 +177,13 @@ export interface CubeFilterListBoxProps<T>
    * Use with `searchValue` for controlled search input.
    */
   onSearchChange?: (value: string) => void;
+
+  /**
+   * Pre-built collection to use instead of creating a new one.
+   * Used internally by FilterPicker to avoid duplicate collection creation.
+   * @internal
+   */
+  _internalCollection?: Collection<Node<any>>;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -265,6 +273,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     newCustomValueProps,
     searchValue: controlledSearchValue,
     onSearchChange,
+    _internalCollection,
     ...otherProps
   } = props;
 
@@ -301,12 +310,15 @@ export const FilterListBox = forwardRef(function FilterListBox<
     }
   }
 
-  // Create a local collection for efficient key lookups and existence checks
-  const localCollectionState = useListState({
-    children: children as any,
-    items: items as any,
-    selectionMode: 'none' as any,
-  });
+  // Use provided collection from FilterPicker or create our own
+  // Hook call order is stable: _internalCollection is consistent per component instance
+  const localCollectionState = _internalCollection
+    ? { collection: _internalCollection }
+    : useListState({
+        children: children as any,
+        items: items as any,
+        selectionMode: 'none' as any,
+      });
 
   // Collect original option keys to avoid duplicating them as custom values.
   const originalKeys = useMemo(() => {
