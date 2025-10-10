@@ -2,9 +2,9 @@ import { CollectionChildren } from '@react-types/shared';
 import {
   ForwardedRef,
   forwardRef,
-  MutableRefObject,
   ReactElement,
   ReactNode,
+  RefObject,
   useCallback,
   useEffect,
   useMemo,
@@ -112,7 +112,7 @@ export interface CubeFilterPickerProps<T>
     | false;
 
   /** Ref to access internal ListBox state (from FilterListBox) */
-  listStateRef?: MutableRefObject<ListState<T>>;
+  listStateRef?: RefObject<ListState<T>>;
   /** Additional modifiers for styling the FilterPicker */
   mods?: Record<string, boolean>;
   /** Whether the filter picker is clearable using a clear button in the rightIcon slot */
