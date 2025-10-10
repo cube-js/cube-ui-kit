@@ -68,12 +68,8 @@ describe('<ComboBox />', () => {
     });
   });
 
-  it('should filter options correctly', async () => {
-    const customFilterFn = jest.fn((textValue, inputValue) =>
-      textValue.toLowerCase().startsWith(inputValue.toLowerCase()),
-    );
-
-    const { getByRole, getAllByRole, queryByRole, rerender } = renderWithRoot(
+  it('should filter options with default contains filter', async () => {
+    const { getByRole, getAllByRole, queryByRole } = renderWithRoot(
       <ComboBox label="test">
         {items.map((item) => (
           <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
@@ -83,7 +79,6 @@ describe('<ComboBox />', () => {
 
     const combobox = getByRole('combobox');
 
-    // Test default contains filter
     await userEvent.type(combobox, 're');
 
     await waitFor(() => {
@@ -95,16 +90,20 @@ describe('<ComboBox />', () => {
       expect(options[1]).toHaveTextContent('Green');
     });
 
-    // Clear and test with custom filter
-    await userEvent.clear(combobox);
+    // Close popover
+    await userEvent.keyboard('{Escape}');
 
-    // Wait for clear to complete and popover to close
     await waitFor(() => {
-      expect(combobox).toHaveValue('');
       expect(queryByRole('listbox')).not.toBeInTheDocument();
     });
+  });
 
-    rerender(
+  it('should support custom filter function', async () => {
+    const customFilterFn = jest.fn((textValue, inputValue) =>
+      textValue.toLowerCase().startsWith(inputValue.toLowerCase()),
+    );
+
+    const { getByRole, getAllByRole } = renderWithRoot(
       <ComboBox label="test" filter={customFilterFn}>
         {items.map((item) => (
           <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
@@ -112,27 +111,21 @@ describe('<ComboBox />', () => {
       </ComboBox>,
     );
 
+    const combobox = getByRole('combobox');
+
     await userEvent.type(combobox, 're');
 
     await waitFor(() => {
-      expect(getByRole('listbox')).toBeInTheDocument();
       const options = getAllByRole('option');
       // Should only match "Red" (starts with 're')
       expect(options).toHaveLength(1);
       expect(options[0]).toHaveTextContent('Red');
       expect(customFilterFn).toHaveBeenCalled();
     });
+  });
 
-    // Clear and test with filter disabled
-    await userEvent.clear(combobox);
-
-    // Wait for clear to complete and popover to close
-    await waitFor(() => {
-      expect(combobox).toHaveValue('');
-      expect(queryByRole('listbox')).not.toBeInTheDocument();
-    });
-
-    rerender(
+  it('should show all items when filter is disabled', async () => {
+    const { getByRole, getAllByRole } = renderWithRoot(
       <ComboBox label="test" filter={false}>
         {items.map((item) => (
           <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
@@ -140,25 +133,19 @@ describe('<ComboBox />', () => {
       </ComboBox>,
     );
 
+    const combobox = getByRole('combobox');
+
     await userEvent.type(combobox, 're');
 
     await waitFor(() => {
-      expect(getByRole('listbox')).toBeInTheDocument();
       const options = getAllByRole('option');
       // Should show all items when filter is disabled
       expect(options).toHaveLength(7);
     });
+  });
 
-    // Test filtering with sections
-    await userEvent.clear(combobox);
-
-    // Wait for clear to complete and popover to close
-    await waitFor(() => {
-      expect(combobox).toHaveValue('');
-      expect(queryByRole('listbox')).not.toBeInTheDocument();
-    });
-
-    rerender(
+  it('should filter options within sections', async () => {
+    const { getByRole, getAllByRole } = renderWithRoot(
       <ComboBox label="test">
         <ComboBox.Section key="warm" title="Warm Colors">
           <ComboBox.Item key="red">Red</ComboBox.Item>
@@ -173,22 +160,27 @@ describe('<ComboBox />', () => {
       </ComboBox>,
     );
 
+    const combobox = getByRole('combobox');
+
     await userEvent.type(combobox, 'e');
 
     await waitFor(() => {
-      expect(getByRole('listbox')).toBeInTheDocument();
       const options = getAllByRole('option');
       // Should match "Red", "Orange", "Yellow", "Green", "Blue", "Purple"
       expect(options.length).toBeGreaterThan(0);
     });
+  });
 
-    // Test no results
-    await userEvent.clear(combobox);
+  it('should close popover when no results match', async () => {
+    const { getByRole, queryByRole } = renderWithRoot(
+      <ComboBox label="test">
+        {items.map((item) => (
+          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+    );
 
-    // Wait for clear to complete
-    await waitFor(() => {
-      expect(combobox).toHaveValue('');
-    });
+    const combobox = getByRole('combobox');
 
     await userEvent.type(combobox, 'zzz');
 
