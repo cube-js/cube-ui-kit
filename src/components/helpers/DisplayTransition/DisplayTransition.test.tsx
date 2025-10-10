@@ -17,8 +17,8 @@ describe('DisplayTransition', () => {
     // Test 1: Initial unmounted with exposeUnmounted=true
     let result = render(
       <DisplayTransition exposeUnmounted isShown={false}>
-        {({ phase, isShown }) => (
-          <div data-phase={phase} data-is-shown={isShown}>
+        {({ phase, isShown, ref }) => (
+          <div ref={ref} data-phase={phase} data-is-shown={isShown}>
             content
           </div>
         )}
@@ -37,8 +37,8 @@ describe('DisplayTransition', () => {
     // Test 2: exposeUnmounted=false returns null
     result = render(
       <DisplayTransition isShown={false}>
-        {({ phase, isShown }) => (
-          <div data-phase={phase} data-is-shown={isShown}>
+        {({ phase, isShown, ref }) => (
+          <div ref={ref} data-phase={phase} data-is-shown={isShown}>
             content
           </div>
         )}
@@ -54,8 +54,8 @@ describe('DisplayTransition', () => {
     // Test 3: Initial entered when animateOnMount=false
     result = render(
       <DisplayTransition isShown={true} animateOnMount={false}>
-        {({ phase, isShown }) => (
-          <div data-phase={phase} data-is-shown={isShown}>
+        {({ phase, isShown, ref }) => (
+          <div ref={ref} data-phase={phase} data-is-shown={isShown}>
             content
           </div>
         )}
@@ -74,8 +74,8 @@ describe('DisplayTransition', () => {
     // Test 4: Initial enter when animateOnMount=true
     result = render(
       <DisplayTransition isShown={true} animateOnMount={true}>
-        {({ phase, isShown }) => (
-          <div data-phase={phase} data-is-shown={isShown}>
+        {({ phase, isShown, ref }) => (
+          <div ref={ref} data-phase={phase} data-is-shown={isShown}>
             content
           </div>
         )}
@@ -96,10 +96,10 @@ describe('DisplayTransition', () => {
 
     const { container } = render(
       <DisplayTransition isShown={true} duration={150} onRest={onRest}>
-        {({ phase, isShown }) => {
+        {({ phase, isShown, ref }) => {
           phases.push(`${phase}:${isShown}`);
           return (
-            <div data-phase={phase} data-is-shown={isShown}>
+            <div ref={ref} data-phase={phase} data-is-shown={isShown}>
               content
             </div>
           );
@@ -146,8 +146,8 @@ describe('DisplayTransition', () => {
         duration={150}
         onRest={onRest}
       >
-        {({ phase, isShown }) => (
-          <div data-phase={phase} data-is-shown={isShown}>
+        {({ phase, isShown, ref }) => (
+          <div ref={ref} data-phase={phase} data-is-shown={isShown}>
             content
           </div>
         )}
@@ -171,8 +171,8 @@ describe('DisplayTransition', () => {
         duration={150}
         onRest={onRest}
       >
-        {({ phase, isShown }) => (
-          <div data-phase={phase} data-is-shown={isShown}>
+        {({ phase, isShown, ref }) => (
+          <div ref={ref} data-phase={phase} data-is-shown={isShown}>
             content
           </div>
         )}
@@ -205,8 +205,8 @@ describe('DisplayTransition', () => {
         duration={150}
         onRest={onRest}
       >
-        {({ phase, isShown }) => (
-          <div data-phase={phase} data-is-shown={isShown}>
+        {({ phase, isShown, ref }) => (
+          <div ref={ref} data-phase={phase} data-is-shown={isShown}>
             content
           </div>
         )}
@@ -222,8 +222,8 @@ describe('DisplayTransition', () => {
     // Test enter flow with duration=0
     const { container, rerender } = render(
       <DisplayTransition isShown={true} duration={0} onRest={onRest}>
-        {({ phase, isShown }) => (
-          <div data-phase={phase} data-is-shown={isShown}>
+        {({ phase, isShown, ref }) => (
+          <div ref={ref} data-phase={phase} data-is-shown={isShown}>
             content
           </div>
         )}
@@ -300,8 +300,8 @@ describe('DisplayTransition', () => {
         respectReducedMotion={true}
         onRest={onRest}
       >
-        {({ phase, isShown }) => (
-          <div data-phase={phase} data-is-shown={isShown}>
+        {({ phase, isShown, ref }) => (
+          <div ref={ref} data-phase={phase} data-is-shown={isShown}>
             content
           </div>
         )}
@@ -344,8 +344,8 @@ describe('DisplayTransition', () => {
         duration={150}
         onRest={onRest}
       >
-        {({ phase, isShown }) => (
-          <div data-phase={phase} data-is-shown={isShown}>
+        {({ phase, isShown, ref }) => (
+          <div ref={ref} data-phase={phase} data-is-shown={isShown}>
             content
           </div>
         )}

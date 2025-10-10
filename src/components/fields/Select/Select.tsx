@@ -24,7 +24,6 @@ import {
 } from 'react-aria';
 import { Section as BaseSection, useSelectState } from 'react-stately';
 import { CubeTooltipProviderProps } from 'src/components/overlays/Tooltip/TooltipProvider';
-import styled from 'styled-components';
 
 import { useEvent } from '../../../_internal';
 import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons/index';
@@ -51,7 +50,6 @@ import {
 } from '../../../utils/react/index';
 import { useFocus } from '../../../utils/react/interactions';
 import { useEventBus } from '../../../utils/react/useEventBus';
-import { getOverlayTransitionCSS } from '../../../utils/transitions';
 import { ItemAction } from '../../actions';
 import {
   StyledDivider as ListDivider,
@@ -60,8 +58,8 @@ import {
 } from '../../actions/Menu/styled';
 import { ItemBase } from '../../content/ItemBase';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { DisplayTransition } from '../../helpers';
 import { Item } from '../../Item';
-import { OverlayWrapper } from '../../overlays/OverlayWrapper';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
 
@@ -106,26 +104,8 @@ export const ListBoxElement = tasty({
     gap: '1bw',
     flow: 'column',
     margin: '0',
-    padding: {
-      '': '.5x',
-      section: 0,
-    },
+    padding: '0',
     listStyle: 'none',
-    radius: {
-      '': '1cr',
-      section: '0',
-    },
-    border: {
-      '': true,
-      section: false,
-    },
-    fill: '#white',
-    shadow: {
-      '': '0px 4px 16px #shadow',
-      section: false,
-    },
-    height: 'initial max-content (50vh - $size)',
-    overflow: 'clip auto',
     scrollbar: 'styled',
   },
 });
@@ -143,13 +123,35 @@ const OverlayElement = tasty({
   styles: {
     position: 'absolute',
     width: 'min $overlay-min-width',
+    display: 'grid',
+    gridRows: '1sf',
+    height: 'initial max-content (50vh - $size)',
+    overflow: 'auto',
+    background: '#white',
+    radius: '1cr',
+    shadow: '0px 4px 16px #shadow',
+    padding: '.5x',
+    border: true,
+
+    transition:
+      'transform $transition ease-out, scale $transition ease-out, theme $transition ease-out',
+    transform: {
+      '': '0 0',
+      'open & [data-placement="top"]': 'translate(0, 0)',
+      '!open & [data-placement="top"]': 'translate(0, 10%)',
+      'open & [data-placement="bottom"]': 'translate(0, 0)',
+      '!open & [data-placement="bottom"]': 'translate(0, -10%)',
+    },
+    scale: {
+      '': '1 1',
+      '!open': '1 .9',
+    },
+    opacity: {
+      '': 1,
+      '!open': 0.001,
+    },
   },
 });
-const StyledOverlayElement = styled(OverlayElement)`
-  ${(props) => {
-    return getOverlayTransitionCSS({ placement: props?.['data-position'] });
-  }}
-`;
 
 export interface CubeSelectBaseProps<T>
   extends BasePropsWithoutChildren,
@@ -455,21 +457,20 @@ function Select<T extends object>(
           ? state.selectedItem.rendered
           : placeholder || <>&nbsp;</>}
       </SelectTrigger>
-      <OverlayWrapper isOpen={state.isOpen && !isDisabled}>
-        <ListBoxPopup
-          {...menuProps}
-          popoverRef={popoverRef}
-          listBoxRef={listBoxRef}
-          overlayProps={overlayProps}
-          placement={placement}
-          state={state}
-          listBoxStyles={listBoxStyles}
-          overlayStyles={overlayStyles}
-          optionStyles={optionStyles}
-          minWidth={triggerWidth}
-          triggerRef={triggerRef}
-        />
-      </OverlayWrapper>
+      <ListBoxPopup
+        {...menuProps}
+        popoverRef={popoverRef}
+        listBoxRef={listBoxRef}
+        overlayProps={overlayProps}
+        placement={placement}
+        state={state}
+        listBoxStyles={listBoxStyles}
+        overlayStyles={overlayStyles}
+        optionStyles={optionStyles}
+        minWidth={triggerWidth}
+        triggerRef={triggerRef}
+        isDisabled={isDisabled}
+      />
     </SelectWrapperElement>
   );
 
@@ -499,6 +500,7 @@ export function ListBoxPopup({
   minWidth,
   size = 'small',
   triggerRef,
+  isDisabled,
   ...otherProps
 }) {
   // For trigger+popover components, map 'small' size to 'medium' for list items
@@ -536,86 +538,95 @@ export function ListBoxPopup({
     popoverRef,
   );
 
+  // Extract primary placement direction for consistent styling
+  const placementDirection = placement?.split(' ')[0] || 'bottom';
+
   // Wrap in <FocusScope> so that focus is restored back to the
   // trigger when the popup is closed. In addition, add hidden
   // <DismissButton> components at the start and end of the list
   // to allow screen reader users to dismiss the popup easily.
   return (
-    <StyledOverlayElement
-      {...overlayProps}
-      {...parentOverlayProps}
-      ref={popoverRef}
-      styles={overlayStyles}
-      style={{
-        '--overlay-min-width': minWidth ? `${minWidth}px` : 'initial',
-        ...parentOverlayProps?.style,
-      }}
-      data-position={placement}
-    >
-      <FocusScope restoreFocus>
-        <DismissButton onDismiss={() => state.close()} />
-        {(() => {
-          const hasSections = Array.from(state.collection).some(
-            (i: any) => i.type === 'section',
-          );
+    <DisplayTransition isShown={state.isOpen && !isDisabled}>
+      {({ phase, isShown, ref: transitionRef }) => (
+        <OverlayElement
+          {...overlayProps}
+          {...parentOverlayProps}
+          ref={(value) => {
+            transitionRef(value as HTMLElement | null);
+            (popoverRef as any).current = value;
+          }}
+          data-placement={placementDirection}
+          data-phase={phase}
+          mods={{
+            open: isShown,
+          }}
+          styles={overlayStyles}
+          style={{
+            '--overlay-min-width': minWidth ? `${minWidth}px` : 'initial',
+            ...parentOverlayProps?.style,
+          }}
+        >
+          <FocusScope restoreFocus>
+            <DismissButton onDismiss={() => state.close()} />
+            {(() => {
+              const renderedItems: React.ReactNode[] = [];
+              let isFirstSection = true;
 
-          const renderedItems: React.ReactNode[] = [];
-          let isFirstSection = true;
+              for (const item of state.collection) {
+                if (item.type === 'section') {
+                  if (!isFirstSection) {
+                    renderedItems.push(
+                      <ListDivider
+                        key={`divider-${String(item.key)}`}
+                        as="li"
+                        role="separator"
+                        aria-orientation="horizontal"
+                      />,
+                    );
+                  }
 
-          for (const item of state.collection) {
-            if (item.type === 'section') {
-              if (!isFirstSection) {
-                renderedItems.push(
-                  <ListDivider
-                    key={`divider-${String(item.key)}`}
-                    as="li"
-                    role="separator"
-                    aria-orientation="horizontal"
-                  />,
-                );
+                  renderedItems.push(
+                    <SelectSection
+                      key={item.key}
+                      item={item}
+                      state={state}
+                      optionStyles={optionStyles}
+                      sectionStyles={undefined}
+                      shouldUseVirtualFocus={shouldUseVirtualFocus}
+                      size={listItemSize}
+                    />,
+                  );
+
+                  isFirstSection = false;
+                } else {
+                  renderedItems.push(
+                    <Option
+                      key={item.key}
+                      item={item}
+                      state={state}
+                      styles={optionStyles}
+                      shouldUseVirtualFocus={shouldUseVirtualFocus}
+                      size={listItemSize}
+                    />,
+                  );
+                }
               }
 
-              renderedItems.push(
-                <SelectSection
-                  key={item.key}
-                  item={item}
-                  state={state}
-                  optionStyles={optionStyles}
-                  sectionStyles={undefined}
-                  shouldUseVirtualFocus={shouldUseVirtualFocus}
-                  size={listItemSize}
-                />,
+              return (
+                <ListBoxElement
+                  styles={listBoxStyles}
+                  {...listBoxProps}
+                  ref={listBoxRef}
+                >
+                  {renderedItems}
+                </ListBoxElement>
               );
-
-              isFirstSection = false;
-            } else {
-              renderedItems.push(
-                <Option
-                  key={item.key}
-                  item={item}
-                  state={state}
-                  styles={optionStyles}
-                  shouldUseVirtualFocus={shouldUseVirtualFocus}
-                  size={listItemSize}
-                />,
-              );
-            }
-          }
-
-          return (
-            <ListBoxElement
-              styles={listBoxStyles}
-              {...listBoxProps}
-              ref={listBoxRef}
-              mods={{ sections: hasSections }}
-            >
-              {renderedItems}
-            </ListBoxElement>
-          );
-        })()}
-        <DismissButton onDismiss={() => state.close()} />
-      </FocusScope>
-    </StyledOverlayElement>
+            })()}
+            <DismissButton onDismiss={() => state.close()} />
+          </FocusScope>
+        </OverlayElement>
+      )}
+    </DisplayTransition>
   );
 }
 

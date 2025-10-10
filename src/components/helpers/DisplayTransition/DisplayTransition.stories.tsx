@@ -72,8 +72,9 @@ export const Default: Story = {
           animateOnMount={args.animateOnMount}
           respectReducedMotion={args.respectReducedMotion}
         >
-          {({ phase, isShown: isShownNow }) => (
+          {({ phase, isShown: isShownNow, ref: transitionRef }) => (
             <AnimatedCard
+              ref={transitionRef}
               mods={{
                 entered: phase === 'entered',
                 enter: phase === 'enter',
@@ -115,8 +116,9 @@ export const SlowTransition: Story = {
           animateOnMount={args.animateOnMount}
           respectReducedMotion={args.respectReducedMotion}
         >
-          {({ phase, isShown: isShownNow }) => (
+          {({ phase, isShown: isShownNow, ref: transitionRef }) => (
             <AnimatedCard
+              ref={transitionRef}
               mods={{
                 entered: phase === 'entered',
                 enter: phase === 'enter',
@@ -168,8 +170,9 @@ export const NoMountAnimation: Story = {
           animateOnMount={false}
           respectReducedMotion={args.respectReducedMotion}
         >
-          {({ phase, isShown: isShownNow }) => (
+          {({ phase, isShown: isShownNow, ref: transitionRef }) => (
             <AnimatedCard
+              ref={transitionRef}
               mods={{
                 entered: phase === 'entered',
                 enter: phase === 'enter',
@@ -191,6 +194,50 @@ export const NoMountAnimation: Story = {
   args: {
     duration: 150,
     animateOnMount: false,
+    respectReducedMotion: true,
+  },
+};
+
+export const NativeEventDetection: Story = {
+  render: (args) => {
+    const [isShown, setIsShown] = useState(false);
+
+    return (
+      <Container>
+        <Button type="primary" onPress={() => setIsShown(!isShown)}>
+          {isShown ? 'Hide Card' : 'Show Card'}
+        </Button>
+
+        <DisplayTransition
+          isShown={isShown}
+          animateOnMount={args.animateOnMount}
+          respectReducedMotion={args.respectReducedMotion}
+        >
+          {({ phase, isShown: isShownNow, ref: transitionRef }) => (
+            <AnimatedCard
+              ref={transitionRef}
+              mods={{
+                entered: phase === 'entered',
+                enter: phase === 'enter',
+                exit: phase === 'exit',
+              }}
+              width="300px"
+            >
+              <strong>Native Event Detection</strong>
+              <br />
+              Phase: {phase}
+              <br />
+              Is Shown: {isShownNow ? 'Yes' : 'No'}
+              <br />
+              <em>Duration auto-detected from CSS</em>
+            </AnimatedCard>
+          )}
+        </DisplayTransition>
+      </Container>
+    );
+  },
+  args: {
+    animateOnMount: true,
     respectReducedMotion: true,
   },
 };

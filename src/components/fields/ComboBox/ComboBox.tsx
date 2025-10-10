@@ -22,12 +22,7 @@ import {
 import { Section as BaseSection, Item } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
-import {
-  CloseIcon,
-  DirectionIcon,
-  DownIcon,
-  LoadingIcon,
-} from '../../../icons';
+import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import {
@@ -785,10 +780,13 @@ function ComboBoxOverlay({
 
   return (
     <DisplayTransition isShown={isOpen}>
-      {({ phase, isShown }) => (
+      {({ phase, isShown, ref: transitionRef }) => (
         <ComboBoxOverlayElement
           {...mergeProps(overlayPositionProps, overlayBehaviorProps)}
-          ref={popoverRef as any}
+          ref={(value) => {
+            transitionRef(value as HTMLElement | null);
+            (popoverRef as any).current = value;
+          }}
           data-placement={placementDirection}
           data-phase={phase}
           mods={{

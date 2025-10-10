@@ -19,7 +19,7 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { mergeProps, useLayoutEffect } from '../../../utils/react';
+import { mergeProps, mergeRefs, useLayoutEffect } from '../../../utils/react';
 
 import { TooltipContext } from './context';
 
@@ -130,6 +130,7 @@ function Tooltip(
 ) {
   let {
     ref: overlayRef,
+    transitionRef,
     arrowProps,
     state,
     overlayProps,
@@ -143,8 +144,8 @@ function Tooltip(
     ...tooltipProviderProps
   } = useContext(TooltipContext);
 
-  let defaultRef = useRef<HTMLDivElement>(null);
-
+  const defaultRef = useRef<HTMLDivElement>(null);
+  const combinedRef = mergeRefs(transitionRef, overlayRef ?? defaultRef);
   const finalOverlayRef = overlayRef ?? defaultRef;
 
   props = mergeProps(props, tooltipProviderProps);
@@ -194,7 +195,7 @@ function Tooltip(
     <TooltipElement
       {...tooltipProps}
       {...overlayProps}
-      ref={overlayRef}
+      ref={combinedRef}
       styles={styles}
       mods={mods}
       data-min-offset={minOffset}

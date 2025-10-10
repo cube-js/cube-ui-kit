@@ -1,4 +1,4 @@
-import React, { HTMLAttributes, RefObject } from 'react';
+import React, { HTMLAttributes, RefCallback, RefObject } from 'react';
 import { TooltipTriggerState } from 'react-stately';
 
 import { PlacementAxis } from '../../../shared';
@@ -9,6 +9,7 @@ type Phase = 'enter' | 'entered' | 'exit' | 'unmounted';
 interface TooltipContextProps {
   state?: TooltipTriggerState;
   ref?: RefObject<HTMLDivElement>;
+  transitionRef?: RefCallback<HTMLDivElement>;
   placement?: PlacementAxis;
   arrowProps?: HTMLAttributes<HTMLElement>;
   overlayProps?: Props;
