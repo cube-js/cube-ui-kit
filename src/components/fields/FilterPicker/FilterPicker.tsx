@@ -1,7 +1,5 @@
 import { CollectionChildren } from '@react-types/shared';
 import {
-  Children,
-  cloneElement,
   ForwardedRef,
   forwardRef,
   MutableRefObject,
@@ -126,6 +124,13 @@ export interface CubeFilterPickerProps<T>
   isClearable?: boolean;
   /** Callback called when the clear button is pressed */
   onClear?: () => void;
+  /**
+   * Sort selected items to the top when the popover opens.
+   * Only works when using the `items` prop (data-driven mode).
+   * Ignored when using JSX children.
+   * @default false
+   */
+  sortSelectedToTop?: boolean;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -247,6 +252,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     isClearable,
     searchValue,
     onSearchChange,
+    sortSelectedToTop = false,
     ...otherProps
   } = props;
 
@@ -276,7 +282,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   // Track popover open/close and capture children order for session
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const cachedChildrenOrder = useRef<ReactNode[] | null>(null);
   // Cache for sorted items array when using `items` prop
   const cachedItemsOrder = useRef<T[] | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -288,10 +293,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   // session (which caused only the previously selected options to be rendered
   // or the list to appear unsorted).
   // ---------------------------------------------------------------------------
-  useEffect(() => {
-    cachedChildrenOrder.current = null;
-  }, [children]);
-
   useEffect(() => {
     cachedItemsOrder.current = null;
   }, [items]);
@@ -306,26 +307,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     ? selectedKeys
     : internalSelectedKeys;
 
-  // Utility: remove React's ".$" / "." prefixes from element keys so that we
-  // can compare them with user-provided keys.
-  const normalizeKeyValue = (key: Key): string => {
-    if (key == null) return '';
-    // React escapes "=" as "=0" and ":" as "=2" when it stores keys internally.
-    // We strip the possible React prefixes first and then un-escape those sequences
-    // so that callers work with the original key values supplied by the user.
-    let str = String(key);
-
-    // Remove React array/object key prefixes (".$" or ".") if present.
-    if (str.startsWith('.$')) {
-      str = str.slice(2);
-    } else if (str.startsWith('.')) {
-      str = str.slice(1);
-    }
-
-    // Un-escape React's internal key encodings.
-    return str.replace(/=2/g, ':').replace(/=0/g, '=');
-  };
-
   // Create a local collection for label extraction only (not for rendering)
   // This gives us immediate access to textValue without waiting for FilterListBox
   const localCollectionState = useListState({
@@ -336,17 +317,17 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   // ---------------------------------------------------------------------------
   // Map user-provided keys to collection keys using the local collection.
-  // The local collection handles key normalization, so we search for matching
-  // items by comparing normalized keys.
+  // The collection handles key normalization internally, so we use direct
+  // string comparison.
   // ---------------------------------------------------------------------------
 
   const findCollectionKey = useCallback(
     (lookup: Key): Key => {
       if (lookup == null) return lookup;
 
-      const normalizedLookup = normalizeKeyValue(lookup);
+      // Direct comparison - collection handles normalization internally
       for (const item of localCollectionState.collection) {
-        if (normalizeKeyValue(item.key) === normalizedLookup) {
+        if (String(item.key) === String(lookup)) {
           return item.key;
         }
       }
@@ -407,9 +388,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
     const selectedSet = new Set(
       selectionMode === 'multiple' && effectiveSelectedKeys !== 'all'
-        ? (effectiveSelectedKeys || []).map((k) => normalizeKeyValue(k))
+        ? (effectiveSelectedKeys || []).map((k) => String(k))
         : effectiveSelectedKey != null
-          ? [normalizeKeyValue(effectiveSelectedKey)]
+          ? [String(effectiveSelectedKey)]
           : [],
     );
 
@@ -418,12 +399,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
     // Use collection to get labels for selected items
     for (const item of collection) {
-      if (
-        item.type === 'item' &&
-        selectedSet.has(normalizeKeyValue(item.key))
-      ) {
+      if (item.type === 'item' && selectedSet.has(String(item.key))) {
         labels.push(item.textValue || String(item.key));
-        processedKeys.add(normalizeKeyValue(item.key));
+        processedKeys.add(String(item.key));
       }
     }
 
@@ -437,7 +415,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
     // Add labels for any selected keys that weren't found in collection (custom values)
     selectedKeysArr.forEach((key) => {
-      if (!processedKeys.has(normalizeKeyValue(key))) {
+      if (!processedKeys.has(String(key))) {
         // This is a custom value, use the key as the label
         labels.push(key);
       }
@@ -484,161 +462,26 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   // Function to sort children with selected items on top
   const getSortedChildren = useCallback(() => {
-    // If children is not provided or is a render function, return it as-is
-    if (!children || typeof children === 'function') return children;
-
-    // Reuse the cached order if we have it. We only want to compute the sorted
-    // order once per pop-over opening session. The cache is cleared when the
-    // pop-over closes so the next opening can recompute.
-    if (cachedChildrenOrder.current) {
-      return cachedChildrenOrder.current;
-    }
-
-    // Popover is open – compute (or recompute) the sorted order for this
-    // session.
-
-    // Determine if there were any selections when the popover was previously closed.
-    const hadSelectionsWhenClosed =
-      selectionMode === 'multiple'
-        ? selectionsWhenClosed.current.multiple.length > 0
-        : selectionsWhenClosed.current.single !== null;
-
-    // Only apply sorting when there were selections in the previous session.
-    // We intentionally do not depend on the `isPopoverOpen` flag here because that
-    // flag is updated **after** the first render triggered by clicking the
-    // trigger button. Relying on it caused a timing issue where the very first
-    // render of a freshly-opened popover was unsorted. By removing the
-    // `isPopoverOpen` check we ensure items are already sorted during that first
-    // render while still maintaining stable order within an open popover thanks
-    // to the `cachedChildrenOrder` guard above.
-
-    if (!hadSelectionsWhenClosed) {
-      return children;
-    }
-
-    // Create selected keys set for fast lookup
-    const selectedSet = new Set<string>();
-    if (selectionMode === 'multiple') {
-      if (selectionsWhenClosed.current.multiple === 'all') {
-        // Don't sort when "all" is selected, just return original children
-        return children;
-      } else {
-        (selectionsWhenClosed.current.multiple as string[]).forEach((key) =>
-          selectedSet.add(String(key)),
-        );
-      }
-    } else if (
-      selectionMode === 'single' &&
-      selectionsWhenClosed.current.single != null
-    ) {
-      selectedSet.add(String(selectionsWhenClosed.current.single));
-    }
-
-    // Helper function to check if an item is selected
-    const isItemSelected = (child: ReactElement): boolean => {
-      return (
-        child?.key != null && selectedSet.has(normalizeKeyValue(child.key))
+    // Warn if sorting is requested but not supported
+    if (sortSelectedToTop && !items) {
+      console.warn(
+        'FilterPicker: sortSelectedToTop only works with the items prop. ' +
+          'Sorting will be skipped when using JSX children.',
       );
-    };
-
-    // Helper function to sort children array
-    const sortChildrenArray = (childrenArray: ReactNode[]): ReactNode[] => {
-      const cloneWithNormalizedKey = (item: ReactElement) =>
-        cloneElement(item, {
-          key: item.key ? normalizeKeyValue(item.key) : undefined,
-        });
-
-      const selected: ReactNode[] = [];
-      const unselected: ReactNode[] = [];
-
-      childrenArray.forEach((child: ReactNode) => {
-        if (!child || typeof child !== 'object') {
-          unselected.push(child);
-          return;
-        }
-
-        const element = child as ReactElement;
-
-        // Handle sections - sort items within each section
-        if (
-          element.type === BaseSection ||
-          (element.type as any)?.displayName === 'Section'
-        ) {
-          const props = element.props as any;
-          const sectionChildren = Array.isArray(props.children)
-            ? props.children
-            : [props.children];
-
-          const selectedItems: ReactNode[] = [];
-          const unselectedItems: ReactNode[] = [];
-
-          sectionChildren.forEach((sectionChild: ReactNode) => {
-            if (sectionChild && typeof sectionChild === 'object') {
-              const sectionElement = sectionChild as ReactElement;
-              if (
-                sectionElement.type === ReactAriaItem ||
-                (sectionElement.type as any)?.displayName === 'Item'
-              ) {
-                const clonedItem = cloneWithNormalizedKey(sectionElement);
-
-                if (isItemSelected(sectionElement)) {
-                  selectedItems.push(clonedItem);
-                } else {
-                  unselectedItems.push(clonedItem);
-                }
-              } else {
-                unselectedItems.push(sectionChild);
-              }
-            } else {
-              unselectedItems.push(sectionChild);
-            }
-          });
-
-          // Create new section with sorted children, preserving React element properly
-          unselected.push(
-            cloneElement(element, {
-              ...(element.props as any),
-              children: [...selectedItems, ...unselectedItems],
-            }),
-          );
-        }
-        // Handle non-section elements (items, dividers, etc.)
-        else {
-          const clonedItem = cloneWithNormalizedKey(element);
-
-          if (isItemSelected(element)) {
-            selected.push(clonedItem);
-          } else {
-            unselected.push(clonedItem);
-          }
-        }
-      });
-
-      return [...selected, ...unselected];
-    };
-
-    // Sort the children
-    const childrenArray = Children.toArray(children as ReactNode);
-    const sortedChildren = sortChildrenArray(childrenArray);
-
-    // Cache the sorted order when popover opens or when we compute it for the
-    // first time before opening.
-    if (isPopoverOpen || !cachedChildrenOrder.current) {
-      cachedChildrenOrder.current = sortedChildren;
     }
 
-    return sortedChildren;
-  }, [
-    children,
-    effectiveSelectedKeys,
-    effectiveSelectedKey,
-    selectionMode,
-    isPopoverOpen,
-  ]);
+    // Return children as-is (no sorting for JSX children)
+    return children;
+  }, [children, sortSelectedToTop, items]);
 
   // Compute sorted items array when using `items` prop
   const getSortedItems = useCallback(() => {
     if (!items) return items;
+
+    // Only sort if explicitly enabled
+    if (!sortSelectedToTop) {
+      return items;
+    }
 
     // Reuse the cached order if we have it. We only compute the sorted array
     // once when the pop-over is opened. Cache is cleared on close.
@@ -713,6 +556,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     return sorted;
   }, [
     items,
+    sortSelectedToTop,
     selectionMode,
     isPopoverOpen,
     selectionsWhenClosed.current.multiple,
@@ -804,7 +648,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
           // Popover just closed – record the latest selection for the next opening
           // and clear the cached order so the next session can compute afresh.
           selectionsWhenClosed.current = { ...latestSelectionRef.current };
-          cachedChildrenOrder.current = null;
           cachedItemsOrder.current = null;
         }
       }

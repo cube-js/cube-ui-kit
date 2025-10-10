@@ -12,7 +12,7 @@ import React, {
   useState,
 } from 'react';
 import { useFilter, useKeyboard } from 'react-aria';
-import { Section as BaseSection, Item } from 'react-stately';
+import { Section as BaseSection, Item, useListState } from 'react-stately';
 
 import { LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
@@ -301,27 +301,23 @@ export const FilterListBox = forwardRef(function FilterListBox<
     }
   }
 
+  // Create a local collection for efficient key lookups and existence checks
+  const localCollectionState = useListState({
+    children: children as any,
+    items: items as any,
+    selectionMode: 'none' as any,
+  });
+
   // Collect original option keys to avoid duplicating them as custom values.
   const originalKeys = useMemo(() => {
     const keys = new Set<string>();
-
-    const collectKeys = (nodes: ReactNode): void => {
-      React.Children.forEach(nodes, (child: any) => {
-        if (!child || typeof child !== 'object') return;
-
-        if (child.type === Item) {
-          if (child.key != null) keys.add(String(child.key));
-        }
-
-        if (child.props?.children) {
-          collectKeys(child.props.children);
-        }
-      });
-    };
-
-    if (children) collectKeys(children);
+    for (const item of localCollectionState.collection) {
+      if (item.type === 'item') {
+        keys.add(String(item.key));
+      }
+    }
     return keys;
-  }, [children]);
+  }, [localCollectionState.collection]);
 
   // State to keep track of custom (user-entered) items that were selected.
   const [customKeys, setCustomKeys] = useState<Set<string>>(new Set());
@@ -521,39 +517,19 @@ export const FilterListBox = forwardRef(function FilterListBox<
     if (!term) return childrenToProcess;
 
     // Helper to determine if the term is already present (exact match on rendered textValue or the key).
-    const doesTermExist = (nodes: ReactNode): boolean => {
-      let exists = false;
-
-      const checkNodes = (childNodes: ReactNode): void => {
-        React.Children.forEach(childNodes, (child: any) => {
-          if (!child || typeof child !== 'object') return;
-
-          // Check items directly
-          if (child.type === Item) {
-            const childText =
-              child.props.textValue ||
-              (typeof child.props.children === 'string'
-                ? child.props.children
-                : '') ||
-              String(child.props.children ?? '');
-
-            if (term === childText || String(child.key) === term) {
-              exists = true;
-            }
+    const doesTermExist = (term: string): boolean => {
+      for (const item of localCollectionState.collection) {
+        if (item.type === 'item') {
+          const textValue = item.textValue || String(item.rendered || '');
+          if (term === textValue || String(item.key) === term) {
+            return true;
           }
-
-          // Recurse into sections or other wrappers
-          if (child.props?.children) {
-            checkNodes(child.props.children);
-          }
-        });
-      };
-
-      checkNodes(nodes);
-      return exists;
+        }
+      }
+      return false;
     };
 
-    if (doesTermExist(mergedChildren)) {
+    if (doesTermExist(term)) {
       return childrenToProcess;
     }
 
