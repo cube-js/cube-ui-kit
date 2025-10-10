@@ -1,6 +1,5 @@
-import { within } from '@testing-library/react';
-import { userEvent } from '@testing-library/user-event';
 import { useState } from 'react';
+import { userEvent, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
 
@@ -68,6 +67,14 @@ const meta = {
       description: 'Whether the combo box allows custom values to be entered',
       table: {
         defaultValue: { summary: false },
+      },
+    },
+    shouldCommitOnBlur: {
+      control: { type: 'boolean' },
+      description:
+        'Whether to commit custom value on blur in allowsCustomValue mode',
+      table: {
+        defaultValue: { summary: true },
       },
     },
     isClearable: {
@@ -242,6 +249,7 @@ export const Controlled = () => {
 
 export const AllowsCustomValue = () => {
   const [inputValue, setInputValue] = useState('');
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
   return (
     <div>
@@ -250,7 +258,12 @@ export const AllowsCustomValue = () => {
         label="Tags"
         placeholder="Type or select..."
         inputValue={inputValue}
+        selectedKey={selectedKey}
         onInputChange={setInputValue}
+        onSelectionChange={(key) => {
+          setSelectedKey(key);
+          console.log('Selection committed:', key);
+        }}
       >
         <ComboBox.Item key="react">React</ComboBox.Item>
         <ComboBox.Item key="vue">Vue</ComboBox.Item>
@@ -258,7 +271,16 @@ export const AllowsCustomValue = () => {
         <ComboBox.Item key="svelte">Svelte</ComboBox.Item>
       </ComboBox>
       <div style={{ marginTop: '16px' }}>
-        Value: <strong>{inputValue || 'none'}</strong>
+        <div>
+          Input value: <strong>{inputValue || 'none'}</strong>
+        </div>
+        <div>
+          Selected (committed): <strong>{selectedKey || 'none'}</strong>
+        </div>
+        <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+          Type text and press Enter or blur to commit. Select from list to
+          commit immediately.
+        </div>
       </div>
     </div>
   );
@@ -338,20 +360,6 @@ export const WithDisabledItems = () => (
 
 export const Loading = (args) => (
   <ComboBox isLoading label="Fruit" placeholder="Select a fruit..." {...args}>
-    <ComboBox.Item key="apple">Apple</ComboBox.Item>
-    <ComboBox.Item key="banana">Banana</ComboBox.Item>
-    <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
-  </ComboBox>
-);
-
-export const LoadingWithCustomValue = (args) => (
-  <ComboBox
-    isLoading
-    allowsCustomValue
-    label="Fruit"
-    placeholder="Select a fruit..."
-    {...args}
-  >
     <ComboBox.Item key="apple">Apple</ComboBox.Item>
     <ComboBox.Item key="banana">Banana</ComboBox.Item>
     <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
@@ -563,3 +571,114 @@ export const HiddenTrigger = () => (
     <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
   </ComboBox>
 );
+
+export const IndependentControls = () => {
+  const [inputValue, setInputValue] = useState('');
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+
+  return (
+    <div>
+      <ComboBox
+        label="Fruit"
+        placeholder="Type to filter..."
+        inputValue={inputValue}
+        selectedKey={selectedKey}
+        onInputChange={setInputValue}
+        onSelectionChange={setSelectedKey}
+      >
+        <ComboBox.Item key="apple">Apple</ComboBox.Item>
+        <ComboBox.Item key="banana">Banana</ComboBox.Item>
+        <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
+        <ComboBox.Item key="date">Date</ComboBox.Item>
+        <ComboBox.Item key="elderberry">Elderberry</ComboBox.Item>
+      </ComboBox>
+      <div style={{ marginTop: '16px' }}>
+        <div>
+          Input value: <strong>{inputValue || 'empty'}</strong>
+        </div>
+        <div>
+          Selected key: <strong>{selectedKey || 'none'}</strong>
+        </div>
+        <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+          inputValue and selectedKey are independent. Typing updates input and
+          clears selection. Selecting from list updates both.
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const AllowsCustomValueNoCommitOnBlur = () => {
+  const [inputValue, setInputValue] = useState('');
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+
+  return (
+    <div>
+      <ComboBox
+        allowsCustomValue
+        shouldCommitOnBlur={false}
+        label="Tags (Enter only)"
+        placeholder="Type or select..."
+        inputValue={inputValue}
+        selectedKey={selectedKey}
+        onInputChange={setInputValue}
+        onSelectionChange={(key) => {
+          setSelectedKey(key);
+          console.log('Selection committed:', key);
+        }}
+      >
+        <ComboBox.Item key="react">React</ComboBox.Item>
+        <ComboBox.Item key="vue">Vue</ComboBox.Item>
+        <ComboBox.Item key="angular">Angular</ComboBox.Item>
+        <ComboBox.Item key="svelte">Svelte</ComboBox.Item>
+      </ComboBox>
+      <div style={{ marginTop: '16px' }}>
+        <div>
+          Input value: <strong>{inputValue || 'none'}</strong>
+        </div>
+        <div>
+          Selected (committed): <strong>{selectedKey || 'none'}</strong>
+        </div>
+        <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+          With shouldCommitOnBlur=false, custom values only commit on Enter key,
+          not on blur.
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const ShowAllOnNoResults: StoryObj<typeof ComboBox> = {
+  render: () => (
+    <div>
+      <ComboBox
+        label="Search Fruits"
+        placeholder="Type 'xyz' to see behavior..."
+      >
+        <ComboBox.Item key="apple">Apple</ComboBox.Item>
+        <ComboBox.Item key="banana">Banana</ComboBox.Item>
+        <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
+        <ComboBox.Item key="date">Date</ComboBox.Item>
+        <ComboBox.Item key="elderberry">Elderberry</ComboBox.Item>
+      </ComboBox>
+      <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+        Type text that matches no items (e.g., "xyz"), then click the dropdown
+        arrow or press Down/Up to see all options.
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByRole('combobox');
+
+    // Type text that yields no results
+    await userEvent.type(input, 'xyz', { delay: 100 });
+
+    // Wait a moment
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // Click the trigger to show all items
+    const trigger = canvas.getByTestId('ComboBoxTrigger');
+    await userEvent.click(trigger);
+  },
+};

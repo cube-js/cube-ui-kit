@@ -7,7 +7,7 @@ alwaysApply: false
 ### Stories Files (.stories.tsx)
 - Import types: `import type { Meta, StoryObj } from '@storybook/react-vite';`
 - Import `StoryFn` for custom template functions
-- For interactive tests: `import { within, userEvent } from '@testing-library/react';` or `import { userEvent, within } from 'storybook/test';`
+- For interactive tests: `import { userEvent, within } from 'storybook/test';` (NOT from `@testing-library/react`)
 
 ### Documentation Files (.docs.mdx)
 - `import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';`
@@ -102,6 +102,8 @@ export const Interactive: StoryObj = {
   }
 };
 ```
+
+**Important:** Always import `userEvent` and `within` from `'storybook/test'` in story files. This ensures they respect Storybook's configuration (e.g., `testIdAttribute: 'data-qa'` set in `.storybook/preview.jsx`). Do NOT use `@testing-library/react` imports in stories.
 
 ## MDX Documentation Structure
 

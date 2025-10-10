@@ -202,12 +202,25 @@ describe('<ComboBox />', () => {
       expect(queryByRole('listbox')).not.toBeInTheDocument();
     });
 
-    // Input change should clear selection
+    // In normal mode, typing should NOT clear selection (only filters)
+    // Selection stays until explicitly changed
     onSelectionChange.mockClear();
+    await userEvent.clear(combobox);
     await userEvent.type(combobox, 'x');
 
+    // Selection should still be 'red' (not cleared by typing)
     await waitFor(() => {
-      expect(onSelectionChange).toHaveBeenCalledWith(null);
+      // onSelectionChange should NOT have been called
+      expect(onSelectionChange).not.toHaveBeenCalled();
+    });
+
+    // But on blur, input should reset to show current selection
+    await act(async () => {
+      combobox.blur();
+    });
+
+    await waitFor(() => {
+      expect(combobox).toHaveValue('Red'); // Reset to selection
     });
   });
 
@@ -321,7 +334,7 @@ describe('<ComboBox />', () => {
     const onInputChange = jest.fn();
     const onSelectionChange = jest.fn();
 
-    const { getByRole, rerender } = renderWithRoot(
+    const { getByRole, rerender, getAllByRole, queryByRole } = renderWithRoot(
       <ComboBox
         allowsCustomValue
         label="test"
@@ -349,6 +362,31 @@ describe('<ComboBox />', () => {
       expect(combobox).toHaveValue('Custom Color');
     });
 
+    // Test that typing DOES clear selection in allowsCustomValue mode
+    onSelectionChange.mockClear();
+    await userEvent.clear(combobox);
+    await userEvent.type(combobox, 'red');
+
+    await waitFor(() => {
+      expect(queryByRole('listbox')).toBeInTheDocument();
+    });
+
+    const options = getAllByRole('option');
+    await userEvent.click(options[0]); // Select Red
+
+    await waitFor(() => {
+      expect(onSelectionChange).toHaveBeenCalledWith('red');
+      expect(combobox).toHaveValue('Red');
+    });
+
+    // Now type to modify - this SHOULD clear selection in allowsCustomValue mode
+    onSelectionChange.mockClear();
+    await userEvent.type(combobox, 'x');
+
+    await waitFor(() => {
+      expect(onSelectionChange).toHaveBeenCalledWith(null);
+    });
+
     // Test controlled mode with inputValue
     rerender(
       <ComboBox
@@ -365,6 +403,92 @@ describe('<ComboBox />', () => {
 
     await waitFor(() => {
       expect(combobox).toHaveValue('My Custom Value');
+    });
+  });
+
+  it('should respect shouldCommitOnBlur={false}', async () => {
+    const onSelectionChange = jest.fn();
+
+    const { getByRole } = renderWithRoot(
+      <ComboBox
+        allowsCustomValue
+        shouldCommitOnBlur={false}
+        label="test"
+        onSelectionChange={onSelectionChange}
+      >
+        {items.map((item) => (
+          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+    );
+
+    const combobox = getByRole('combobox');
+
+    // Type custom value
+    await userEvent.type(combobox, 'Custom Value');
+
+    // Blur without pressing Enter
+    await act(async () => {
+      combobox.blur();
+    });
+
+    // Should NOT commit on blur when shouldCommitOnBlur is false
+    await waitFor(() => {
+      expect(onSelectionChange).not.toHaveBeenCalled();
+    });
+
+    // But should commit on Enter
+    await userEvent.clear(combobox);
+    await userEvent.type(combobox, 'New Value');
+    await userEvent.keyboard('{Enter}');
+
+    await waitFor(() => {
+      expect(onSelectionChange).toHaveBeenCalledWith('New Value');
+    });
+  });
+
+  it('should show all items when opening with no results', async () => {
+    const { getByRole, getAllByRole, queryByRole, getByTestId } =
+      renderWithRoot(
+        <ComboBox label="test">
+          {items.map((item) => (
+            <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+          ))}
+        </ComboBox>,
+      );
+
+    const combobox = getByRole('combobox');
+    const trigger = getByTestId('ComboBoxTrigger');
+
+    // Type something that yields no results
+    await userEvent.type(combobox, 'xyz');
+
+    await waitFor(() => {
+      expect(queryByRole('listbox')).not.toBeInTheDocument();
+    });
+
+    // Click trigger to open - should show all items (filter disabled)
+    await userEvent.click(trigger);
+
+    await waitFor(
+      () => {
+        const listbox = queryByRole('listbox');
+        expect(listbox).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
+
+    // Should show all 7 items (filter was disabled)
+    const options = getAllByRole('option');
+    expect(options.length).toBe(7);
+
+    // Clear and type again - should re-enable filtering
+    await userEvent.clear(combobox);
+    await userEvent.type(combobox, 're');
+
+    await waitFor(() => {
+      const filteredOptions = getAllByRole('option');
+      expect(filteredOptions.length).toBeLessThan(7); // Filtered again
     });
   });
 

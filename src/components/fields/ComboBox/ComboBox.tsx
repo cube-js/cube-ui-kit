@@ -142,6 +142,8 @@ export interface CubeComboBoxProps<T>
 
   /** Whether to allow entering custom values that are not in the predefined options */
   allowsCustomValue?: boolean;
+  /** Whether to commit custom value on blur in allowsCustomValue mode (default: true) */
+  shouldCommitOnBlur?: boolean;
   /** Whether the combobox is clearable using ESC key or clear button */
   isClearable?: boolean;
   /** Callback called when the clear button is pressed */
@@ -206,16 +208,6 @@ export interface CubeComboBoxProps<T>
   isReadOnly?: boolean;
   /** Suffix position goes before or after the validation and loading statuses */
   suffixPosition?: 'before' | 'after';
-
-  /**
-   * Props to apply to existing custom values.
-   */
-  customValueProps?: Partial<CubeItemProps<T>>;
-
-  /**
-   * Props to apply to new custom values.
-   */
-  newCustomValueProps?: Partial<CubeItemProps<T>>;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -421,6 +413,7 @@ interface UseComboBoxKeyboardProps {
   onOpenPopover: () => void;
   onClosePopover: () => void;
   inputRef: RefObject<HTMLInputElement>;
+  setIsFilterActive: (active: boolean) => void;
 }
 
 function useComboBoxKeyboard({
@@ -435,6 +428,7 @@ function useComboBoxKeyboard({
   onOpenPopover,
   onClosePopover,
   inputRef,
+  setIsFilterActive,
 }: UseComboBoxKeyboardProps) {
   const { keyboardProps } = useKeyboard({
     onKeyDown: (e) => {
@@ -443,6 +437,10 @@ function useComboBoxKeyboard({
 
         // Open popover if closed
         if (!isPopoverOpen) {
+          // If opening with no filtered results, disable filter to show all items
+          if (!hasResults) {
+            setIsFilterActive(false);
+          }
           onOpenPopover();
           return;
         }
@@ -635,9 +633,6 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
   ) {
     const combinedRef = useCombinedRefs(ref, inputRef);
 
-    // Disable input when loading unless custom values are allowed
-    const shouldDisableInput = isDisabled || (isLoading && !allowsCustomValue);
-
     return (
       <InputElement
         ref={combinedRef}
@@ -645,7 +640,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
         type="text"
         value={value}
         placeholder={placeholder}
-        isDisabled={shouldDisableInput}
+        isDisabled={isDisabled}
         readOnly={isReadOnly}
         autoFocus={autoFocus}
         data-autofocus={autoFocus ? '' : undefined}
@@ -842,20 +837,10 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   props = useFieldProps(props, {
     valuePropsMapper: ({ value, onChange }) => {
       return {
-        selectedKey: !props.allowsCustomValue ? value ?? null : undefined,
-        inputValue: props.allowsCustomValue ? value ?? '' : undefined,
-        onInputChange(val) {
-          if (!props.allowsCustomValue) {
-            return;
-          }
-
-          onChange(val);
-        },
+        // Form value maps to selectedKey (the committed value) in both modes
+        selectedKey: value ?? null,
         onSelectionChange(val: string | null) {
-          if (val == null && props.allowsCustomValue) {
-            return;
-          }
-
+          // Commit selection changes to the form
           onChange(val);
         },
       };
@@ -906,11 +891,10 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     onClear,
     placeholder,
     allowsCustomValue,
+    shouldCommitOnBlur = true,
     emptyLabel,
     items,
     children: renderChildren,
-    customValueProps,
-    newCustomValueProps,
     sectionStyles,
     headingStyles,
     isReadOnly,
@@ -1095,8 +1079,9 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       const trimmed = value.trim();
       setIsFilterActive(trimmed.length > 0);
 
-      // Clear selection when input changes
-      if (effectiveSelectedKey != null) {
+      // Only clear selection in allowsCustomValue mode
+      // In normal mode, typing just filters - selection stays until explicitly changed
+      if (allowsCustomValue && effectiveSelectedKey != null) {
         if (!isControlledKey) {
           setInternalSelectedKey(null);
         }
@@ -1110,25 +1095,32 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     },
   );
 
-  // Sync input value with selected key in controlled mode
-  useEffect(() => {
-    // Only sync when input is not controlled to avoid overriding controlled input
-    if (isControlledInput) return;
+  // Initialize input value from default selected key (uncontrolled mode only, one-time)
+  const [hasInitialized, setHasInitialized] = useState(false);
 
-    if (effectiveSelectedKey != null) {
-      const selectedItem = findItemByKey(effectiveSelectedKey);
+  useEffect(() => {
+    // Only initialize once, in uncontrolled input mode, when defaultSelectedKey is provided
+    if (hasInitialized || isControlledInput || !defaultSelectedKey) return;
+
+    const selectedItem = findItemByKey(defaultSelectedKey);
+    if (selectedItem) {
       const label =
         selectedItem?.props?.textValue ||
         (typeof selectedItem?.props?.children === 'string'
           ? selectedItem.props.children
           : '') ||
-        String(effectiveSelectedKey);
+        String(defaultSelectedKey);
 
       setInternalInputValue(label);
+      setHasInitialized(true);
     }
-    // Note: When selection is cleared (null), we don't clear the input here
-    // because the user might be typing. The input will be managed by handleInputChange.
-  }, [effectiveSelectedKey, findItemByKey, isControlledInput, children]);
+  }, [
+    hasInitialized,
+    isControlledInput,
+    defaultSelectedKey,
+    findItemByKey,
+    children,
+  ]);
 
   // Input focus handler
   const handleInputFocus = useEvent((e: React.FocusEvent<HTMLInputElement>) => {
@@ -1138,6 +1130,55 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     if (popoverTrigger === 'focus' && !isPopoverOpen) {
       setIsPopoverOpen(true);
     }
+  });
+
+  // Input blur handler
+  const handleInputBlur = useEvent((e: React.FocusEvent<HTMLInputElement>) => {
+    focusProps.onBlur?.(e as any);
+
+    const relatedTarget = e.relatedTarget as Node | null;
+
+    // Don't do anything if focus is moving within the combobox
+    if (
+      relatedTarget &&
+      (wrapperRef.current?.contains(relatedTarget) ||
+        popoverRef.current?.contains(relatedTarget))
+    ) {
+      return;
+    }
+
+    // Always disable filter on blur
+    setIsFilterActive(false);
+
+    // In allowsCustomValue mode with shouldCommitOnBlur, commit the input value
+    if (
+      allowsCustomValue &&
+      shouldCommitOnBlur &&
+      effectiveInputValue &&
+      effectiveSelectedKey == null
+    ) {
+      externalOnSelectionChange?.(effectiveInputValue as string);
+      if (!isControlledKey) {
+        setInternalSelectedKey(effectiveInputValue as Key);
+      }
+      return;
+    }
+
+    // Reset input to show current selection (or empty if none)
+    const selectedItem =
+      effectiveSelectedKey != null ? findItemByKey(effectiveSelectedKey) : null;
+    const nextValue = selectedItem
+      ? selectedItem.props?.textValue ||
+        (typeof selectedItem.props?.children === 'string'
+          ? selectedItem.props.children
+          : '') ||
+        String(effectiveSelectedKey)
+      : '';
+
+    if (!isControlledInput) {
+      setInternalInputValue(nextValue);
+    }
+    onInputChange?.(nextValue);
   });
 
   // Clear button logic
@@ -1191,6 +1232,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     onOpenPopover: () => setIsPopoverOpen(true),
     onClosePopover: () => setIsPopoverOpen(false),
     inputRef,
+    setIsFilterActive,
   });
 
   if (icon) {
@@ -1212,7 +1254,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     () => ({
       invalid: isInvalid,
       valid: validationState === 'valid',
-      disabled: isDisabled || (isLoading && !allowsCustomValue),
+      disabled: isDisabled,
       hovered: false,
       focused: isFocused,
       loading: isLoading,
@@ -1226,7 +1268,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       isDisabled,
       isFocused,
       isLoading,
-      allowsCustomValue,
       prefix,
       showClearButton,
     ],
@@ -1320,7 +1361,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         mods={mods}
         inputStyles={inputStyles}
         keyboardProps={keyboardProps}
-        focusProps={focusProps}
+        focusProps={{ ...focusProps, onBlur: handleInputBlur }}
         isPopoverOpen={isPopoverOpen}
         hasResults={hasResults}
         comboBoxId={comboBoxId}
@@ -1365,9 +1406,14 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
             styles={triggerStyles}
             onClick={() => {
               if (!isDisabled) {
-                setIsPopoverOpen(!isPopoverOpen);
-                if (!isPopoverOpen) {
+                const willOpen = !isPopoverOpen;
+                setIsPopoverOpen(willOpen);
+                if (willOpen) {
                   inputRef.current?.focus();
+                  // If opening with no filtered results, disable filter to show all items
+                  if (!hasResults) {
+                    setIsFilterActive(false);
+                  }
                 }
               }
             }}
