@@ -1,0 +1,246 @@
+import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import * as DisplayTransitionStories from './DisplayTransition.stories';
+
+<Meta of={DisplayTransitionStories} />
+
+# DisplayTransition
+
+A headless helper component that manages enter and exit animation states for showing and hiding content. It provides phase information through a render prop, allowing you to apply appropriate CSS transitions or animations based on the current transition state.
+
+## When to Use
+
+- When you need to animate content appearing and disappearing with full control over timing
+- When you want to coordinate CSS transitions with component mount/unmount
+- When you need to delay unmounting until exit animations complete
+- When building custom animated overlays, modals, or dropdowns
+
+## Component
+
+<Story of={DisplayTransitionStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={DisplayTransitionStories.Default} />
+
+### Base Properties
+
+This is a headless component and does not support base properties.
+
+## Transition Phases
+
+The component manages four distinct phases:
+
+| Phase | Description | isShown value |
+|-------|-------------|---------------|
+| `unmounted` | Content is not mounted | `false` |
+| `enter` | Content is mounting, enter animation should start | `false` |
+| `entered` | Enter animation complete, content is visible | `true` |
+| `exit` | Content is exiting, exit animation should start | `false` |
+
+The render prop receives an object `{ phase, isShown }` where `isShown` is only `true` during the `entered` phase.
+
+## Examples
+
+### Basic Usage
+
+```jsx
+import { Block } from '@cube-dev/ui-kit';
+
+<DisplayTransition isShown={isVisible} duration={150}>
+  {({ phase, isShown }) => (
+    <Block 
+      data-phase={phase}
+      mods={{ entered: phase === 'entered' }}
+      styles={{
+        transition: 'fade',
+        opacity: {
+          '': '0',
+          'entered': '1',
+        },
+        '$transition': '150ms'
+      }}
+    >
+      Content
+    </Block>
+  )}
+</DisplayTransition>
+```
+
+### With Tasty Styles
+
+```jsx
+const AnimatedCard = tasty(Card, {
+  styles: {
+    '$transition': '150ms',
+    transition: 'fade, translate',
+    opacity: {
+      '': '0',
+      'entered': '1',
+    },
+    transform: {
+      '': 'translateY(-8px)',
+      'entered': 'translateY(0)',
+      'exit': 'translateY(8px)',
+    },
+  },
+});
+
+<DisplayTransition isShown={isVisible}>
+  {({ phase }) => (
+    <AnimatedCard mods={{ entered: phase === 'entered', exit: phase === 'exit' }}>
+      Content
+    </AnimatedCard>
+  )}
+</DisplayTransition>
+```
+
+### Instant Transitions
+
+<Story of={DisplayTransitionStories.NoAnimation} />
+
+Set `duration={0}` for instant show/hide without animation.
+
+### Skip Mount Animation
+
+<Story of={DisplayTransitionStories.NoMountAnimation} />
+
+Set `animateOnMount={false}` to skip the initial enter animation when the component mounts with `isShown={true}`. Useful for server-side rendering or preventing layout shift.
+
+### Slow Transition
+
+<Story of={DisplayTransitionStories.SlowTransition} />
+
+Longer durations can be used for more dramatic entrance and exit effects.
+
+### With Callbacks
+
+```jsx
+<DisplayTransition 
+  isShown={isVisible}
+  onRest={(transition) => {
+    console.log(`${transition} transition completed`);
+  }}
+>
+  {({ phase, isShown }) => (
+    <Block 
+      data-phase={phase}
+      mods={{ entered: phase === 'entered' }}
+    >
+      Content
+    </Block>
+  )}
+</DisplayTransition>
+```
+
+The `onRest` callback fires after the enter animation settles (when reaching `entered` phase) or after the exit animation completes (when reaching `unmounted` phase).
+
+## Advanced Features
+
+### Exposing Unmounted Phase
+
+By default, the component returns `null` when in the `unmounted` phase. Set `exposeUnmounted={true}` to continue calling the render prop even when unmounted:
+
+```jsx
+<DisplayTransition isShown={isVisible} exposeUnmounted>
+  {({ phase, isShown }) => {
+    if (phase === 'unmounted') {
+      return <Block>Custom unmounted state</Block>;
+    }
+    return <Block data-phase={phase}>Content</Block>;
+  }}
+</DisplayTransition>
+```
+
+### Reduced Motion Support
+
+The component automatically respects the `prefers-reduced-motion` media query when `respectReducedMotion={true}` (default). When the user has requested reduced motion, the internal duration is collapsed to 0, resulting in instant transitions.
+
+## Animation Flow
+
+### Enter Flow
+1. `isShown` changes from `false` to `true`
+2. Phase changes to `enter` (isShown = false)
+3. After next paint, phase changes to `entered` (isShown = true)
+4. After `duration` milliseconds, `onRest('enter')` fires
+
+### Exit Flow
+1. `isShown` changes from `true` to `false`
+2. Phase changes to `exit` (isShown = false)
+3. After `duration` milliseconds, phase changes to `unmounted` and `onRest('exit')` fires
+4. Component returns `null` (unless `exposeUnmounted={true}`)
+
+## Best Practices
+
+1. **Match CSS duration with duration prop**: Ensure your CSS transition/animation duration matches the `duration` prop for proper timing
+   ```jsx
+   <DisplayTransition duration={300}>
+     {({ phase }) => (
+       <Block 
+         data-phase={phase}
+         mods={{ entered: phase === 'entered' }}
+         styles={{
+           transition: 'fade',
+           opacity: { '': '0', 'entered': '1' },
+           '$transition': '300ms',
+         }}
+       >
+         ...
+       </Block>
+     )}
+   </DisplayTransition>
+   ```
+
+2. **Use stable callbacks**: The component uses `useEvent` internally, but you should still avoid recreating callbacks on every render when possible
+
+3. **Animate on mount thoughtfully**: Set `animateOnMount={false}` for content that should appear immediately on SSR or first paint
+   ```jsx
+   <DisplayTransition isShown={true} animateOnMount={false}>
+     {({ phase }) => (
+       <Block 
+         data-phase={phase}
+         mods={{ entered: phase === 'entered' }}
+       >
+         Initially visible content
+       </Block>
+     )}
+   </DisplayTransition>
+   ```
+
+4. **Respect reduced motion**: Keep the default `respectReducedMotion={true}` to provide a better experience for users with motion sensitivity
+
+5. **Don't use for list items**: This component is designed for single element show/hide. For animating lists, consider using React Aria's built-in list animation features or a dedicated list animation library
+
+## Performance Considerations
+
+- The component uses `requestAnimationFrame` and `setTimeout` for efficient animation scheduling
+- Rapid toggles are handled gracefully with automatic cancellation of pending timers
+- React Strict Mode compatible with versioned flow control
+- Zero additional DOM nodes (headless component)
+
+## Accessibility
+
+### Reduced Motion
+
+The component automatically respects the user's motion preferences when `respectReducedMotion={true}`. Users who have enabled "Reduce motion" in their OS settings will see instant transitions instead of animations.
+
+### Screen Reader Considerations
+
+Since this is a purely visual transition component, ensure that:
+- Content changes are announced appropriately (use `aria-live` if needed)
+- Focus management is handled by parent components
+- Critical state changes aren't communicated only through animations
+
+## Suggested Improvements
+
+- `onPhaseChange` - Callback that fires on every phase change with (newPhase, oldPhase)
+- `onEnter` / `onExit` - Separate callbacks instead of combined `onRest`
+- `skipAnimation` - Runtime prop to skip animations without changing duration
+
+## Related Components
+
+- [Modal](/components/Modal) - Uses DisplayTransition internally for overlay animations
+- [Popover](/components/Popover) - Can use DisplayTransition for custom entrance animations
+- [OverlayWrapper](/components/OverlayWrapper) - Another component that may benefit from transition management
+

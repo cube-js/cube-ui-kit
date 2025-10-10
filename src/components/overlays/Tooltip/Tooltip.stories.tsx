@@ -46,7 +46,8 @@ Default.play = async ({ canvasElement }) => {
   await waitFor(() => expect(canvas.getByRole('tooltip')).toBeInTheDocument());
 };
 
-export const Side: typeof Template = Template.bind({ placement: 'right' });
+export const Side: typeof Template = Template.bind({});
+Side.args = { placement: 'right' };
 Side.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
   const button = await canvas.getByRole('button');

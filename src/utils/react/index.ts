@@ -5,7 +5,7 @@ export { mergeProps } from './mergeProps';
 export { modAttrs } from '../../tasty';
 export { useSlotProps, SlotProvider, ClearSlots } from './Slots';
 export { useLayoutEffect } from './useLayoutEffect';
-export { useCombinedRefs } from './useCombinedRefs';
+export { useCombinedRefs, mergeRefs } from './useCombinedRefs';
 export { wrapNodeIfPlain } from './wrapNodeIfPlain';
 export { useViewportSize } from './useViewportSize';
 export { useQaProps } from './useQaProps';

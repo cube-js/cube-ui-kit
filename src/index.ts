@@ -33,6 +33,8 @@ export { ResizablePanel } from './components/layout/ResizablePanel';
 export type { CubeResizablePanelProps } from './components/layout/ResizablePanel';
 export { Root } from './components/Root';
 export type { CubeRootProps } from './components/Root';
+export { DisplayTransition } from './components/helpers/DisplayTransition/DisplayTransition';
+export type { DisplayTransitionProps } from './components/helpers/DisplayTransition/DisplayTransition';
 
 // Navigation types and helpers
 export type {

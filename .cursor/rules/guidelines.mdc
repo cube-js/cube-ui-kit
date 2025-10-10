@@ -192,7 +192,6 @@ Specific test: `$ pnpm test -- {TestFileName}`
 
 # Recomendations
 
-- Use `DOCUMENTATION_GUIDELINES.md` for writing documentation for components.
 - Use icons from `/src/icons` if they have a required one. If not - use `tabler/icons-react`. If we need to customize the size or color of the icon, then wrap it with `<Icon/>` component and pass all required props there. Do not add any props to the tabler icons directly.
 
 ## Form System

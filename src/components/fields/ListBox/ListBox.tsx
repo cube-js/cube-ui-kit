@@ -10,6 +10,7 @@ import {
   ReactNode,
   RefObject,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -248,6 +249,12 @@ export interface CubeListBoxProps<T>
   size?: 'medium' | 'large';
 
   /**
+   * When `true`, clicking an already-selected item keeps it selected instead of toggling it off.
+   * Useful when embedding ListBox inside components like ComboBox.
+   */
+  disableSelectionToggle?: boolean;
+
+  /**
    * Whether to use virtual focus for keyboard navigation.
    * When true, DOM focus stays outside individual option elements (useful for searchable lists).
    * Defaults to false for backward compatibility.
@@ -477,6 +484,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     defaultSelectedKeys,
     shouldUseVirtualFocus,
     onSelectionChange,
+    disableSelectionToggle = false,
     stateRef,
     focusOnHover,
     header,
@@ -493,6 +501,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   } = props;
 
   const [, forceUpdate] = useState({});
+  const lastSelectedKeyRef = useRef<Key | null>(null);
 
   // Wrap onSelectionChange to prevent selection when disabled and handle React Aria's Set format
   const externalSelectionHandler = onSelectionChange || (props as any).onChange;
@@ -512,15 +521,25 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
         externalSelectionHandler('all');
       } else if (keys instanceof Set) {
         if (keys.size === 0) {
+          if (disableSelectionToggle && props.selectionMode === 'single') {
+            const prevKey = lastSelectedKeyRef.current;
+            if (prevKey != null) {
+              externalSelectionHandler(prevKey);
+              return;
+            }
+          }
           externalSelectionHandler(
             props.selectionMode === 'multiple' ? [] : null,
           );
         } else if (props.selectionMode === 'multiple') {
           externalSelectionHandler(Array.from(keys));
         } else {
-          externalSelectionHandler(Array.from(keys)[0]);
+          const key = Array.from(keys)[0];
+          lastSelectedKeyRef.current = key ?? null;
+          externalSelectionHandler(key);
         }
       } else {
+        lastSelectedKeyRef.current = keys as Key | null;
         externalSelectionHandler(keys);
       }
     };
@@ -577,6 +596,14 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   const listState = useListState({
     ...listStateProps,
   });
+
+  useLayoutEffect(() => {
+    const selected = listState.selectionManager.selectedKeys;
+    if (selected && (selected as any).size > 0) {
+      const first = Array.from(selected as Set<Key>)[0];
+      lastSelectedKeyRef.current = first ?? null;
+    }
+  }, [listState.selectionManager.selectedKeys]);
 
   // Calculate select all state for multiple selection mode
   const selectAllState = useMemo(() => {

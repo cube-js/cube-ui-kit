@@ -27,6 +27,36 @@ describe('<FilterPicker />', () => {
     </FilterPicker.Section>,
   ];
 
+  // Data arrays for testing sorting functionality (which requires items prop)
+  const basicItemsData = [
+    { key: 'apple', label: 'Apple' },
+    { key: 'banana', label: 'Banana' },
+    { key: 'cherry', label: 'Cherry' },
+    { key: 'date', label: 'Date' },
+    { key: 'elderberry', label: 'Elderberry' },
+  ];
+
+  const sectionsItemsData = [
+    {
+      key: 'fruits',
+      label: 'Fruits',
+      children: [
+        { key: 'apple', label: 'Apple' },
+        { key: 'banana', label: 'Banana' },
+        { key: 'cherry', label: 'Cherry' },
+      ],
+    },
+    {
+      key: 'vegetables',
+      label: 'Vegetables',
+      children: [
+        { key: 'carrot', label: 'Carrot' },
+        { key: 'broccoli', label: 'Broccoli' },
+        { key: 'spinach', label: 'Spinach' },
+      ],
+    },
+  ];
+
   describe('Basic functionality', () => {
     it('should render trigger button with placeholder', () => {
       const { getByRole } = renderWithRoot(
@@ -180,11 +210,15 @@ describe('<FilterPicker />', () => {
     it('should sort selected items to top when popover reopens in multiple mode', async () => {
       const { getByRole, getByText } = renderWithRoot(
         <FilterPicker
+          sortSelectedToTop
           label="Select fruits"
           placeholder="Choose fruits..."
           selectionMode="multiple"
+          items={basicItemsData}
         >
-          {basicItems}
+          {(item) => (
+            <FilterPicker.Item key={item.key}>{item.label}</FilterPicker.Item>
+          )}
         </FilterPicker>,
       );
 
@@ -225,11 +259,21 @@ describe('<FilterPicker />', () => {
     it('should sort selected items to top within their sections', async () => {
       const { getByRole, getByText } = renderWithRoot(
         <FilterPicker
+          sortSelectedToTop
           label="Select items"
           placeholder="Choose items..."
           selectionMode="multiple"
+          items={sectionsItemsData}
         >
-          {sectionsItems}
+          {(section) => (
+            <FilterPicker.Section key={section.key} title={section.label}>
+              {section.children.map((item) => (
+                <FilterPicker.Item key={item.key}>
+                  {item.label}
+                </FilterPicker.Item>
+              ))}
+            </FilterPicker.Section>
+          )}
         </FilterPicker>,
       );
 
@@ -297,11 +341,15 @@ describe('<FilterPicker />', () => {
     it('should maintain sorting when items are deselected and popover reopens', async () => {
       const { getByRole, getByText } = renderWithRoot(
         <FilterPicker
+          sortSelectedToTop
           label="Select fruits"
           placeholder="Choose fruits..."
           selectionMode="multiple"
+          items={basicItemsData}
         >
-          {basicItems}
+          {(item) => (
+            <FilterPicker.Item key={item.key}>{item.label}</FilterPicker.Item>
+          )}
         </FilterPicker>,
       );
 
@@ -371,11 +419,15 @@ describe('<FilterPicker />', () => {
     it('should not reorder items when selecting additional items after reopening popover', async () => {
       const { getByRole, getByText } = renderWithRoot(
         <FilterPicker
+          sortSelectedToTop
           label="Select fruits"
           placeholder="Choose fruits..."
           selectionMode="multiple"
+          items={basicItemsData}
         >
-          {basicItems}
+          {(item) => (
+            <FilterPicker.Item key={item.key}>{item.label}</FilterPicker.Item>
+          )}
         </FilterPicker>,
       );
 
@@ -428,11 +480,15 @@ describe('<FilterPicker />', () => {
     it('should work correctly in single selection mode', async () => {
       const { getByRole, getByText } = renderWithRoot(
         <FilterPicker
+          sortSelectedToTop
           label="Select fruit"
           placeholder="Choose a fruit..."
           selectionMode="single"
+          items={basicItemsData}
         >
-          {basicItems}
+          {(item) => (
+            <FilterPicker.Item key={item.key}>{item.label}</FilterPicker.Item>
+          )}
         </FilterPicker>,
       );
 
@@ -848,7 +904,7 @@ describe('<FilterPicker />', () => {
         await userEvent.click(trigger);
       });
 
-      // Session 2: Reopen and verify both are visible and selected items are sorted to top
+      // Session 2: Reopen and verify both custom and regular values are visible
       await act(async () => {
         await userEvent.click(trigger);
       });

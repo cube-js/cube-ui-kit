@@ -355,6 +355,7 @@ function TextInputMapperInput(props: CubeTextInputMapperInputProps) {
         labelPosition="top"
         aria-label={placeholder}
         placeholder={placeholder}
+        allowsCustomValue={allowsCustomValue}
         onInputChange={onChange}
         onSelectionChange={(val) => onSelectionChange(val ?? '')}
       >

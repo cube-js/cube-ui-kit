@@ -3,6 +3,7 @@ import {
   renderWithForm,
   renderWithRoot,
   userEvent,
+  waitForElementToBeRemoved,
 } from '../../../test/index';
 import { Field } from '../../form';
 
@@ -84,12 +85,13 @@ describe('<Select />', () => {
     await act(async () => await userEvent.click(select));
 
     // Check that the listbox is visible
-    expect(queryByRole('listbox')).toBeInTheDocument();
+    const listbox = queryByRole('listbox');
+    expect(listbox).toBeInTheDocument();
 
     // Second click - should close the popover
     await act(async () => await userEvent.click(select));
 
-    // Check that the listbox is no longer visible
-    expect(queryByRole('listbox')).not.toBeInTheDocument();
+    // Wait for the exit transition to complete and element to be removed
+    await waitForElementToBeRemoved(() => queryByRole('listbox'));
   });
 });

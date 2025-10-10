@@ -48,7 +48,7 @@ export function TooltipProvider(props: CubeTooltipProviderProps): ReactElement {
   // Both patterns pass through to TooltipTrigger
   // The difference is whether we pass function or element as first child
   return (
-    <TooltipTrigger {...otherProps}>
+    <TooltipTrigger {...otherProps} disableFocusableProvider={isFunction}>
       {isFunction ||
       isValidElement(children) ||
       typeof children === 'string' ? (

@@ -33,32 +33,31 @@ export interface CubePrefixProps extends BaseProps, ContainerStyleProps {
   outerGap?: CSSProperties['gap'];
 }
 
-export const Prefix = forwardRef(function Prefix(
-  allProps: CubePrefixProps,
-  outerRef,
-) {
-  let { onWidthChange, outerGap = '1bw', children, ...props } = allProps;
+export const Prefix = forwardRef<HTMLDivElement, CubePrefixProps>(
+  function Prefix(allProps, outerRef) {
+    let { onWidthChange, outerGap = '1bw', children, ...props } = allProps;
 
-  const styles = extractStyles(props, CONTAINER_STYLES);
-  const ref = useCombinedRefs(outerRef);
+    const styles = extractStyles(props, CONTAINER_STYLES);
+    const ref = useCombinedRefs(outerRef);
 
-  useLayoutEffect(() => {
-    if (ref?.current && onWidthChange) {
-      onWidthChange(ref.current.offsetWidth);
-    }
-  }, [children, ref, onWidthChange]);
+    useLayoutEffect(() => {
+      if (ref?.current && onWidthChange) {
+        onWidthChange(ref.current.offsetWidth);
+      }
+    }, [children, ref, onWidthChange]);
 
-  return (
-    <PrefixElement
-      {...filterBaseProps(props, { eventProps: true })}
-      ref={ref}
-      styles={styles}
-      style={{
-        // @ts-ignore
-        '--prefix-gap': parseStyle(outerGap).output,
-      }}
-    >
-      {children}
-    </PrefixElement>
-  );
-});
+    return (
+      <PrefixElement
+        {...filterBaseProps(props, { eventProps: true })}
+        ref={ref}
+        styles={styles}
+        style={{
+          // @ts-ignore
+          '--prefix-gap': parseStyle(outerGap).output,
+        }}
+      >
+        {children}
+      </PrefixElement>
+    );
+  },
+);

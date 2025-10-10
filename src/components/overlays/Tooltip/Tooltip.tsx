@@ -9,7 +9,6 @@ import {
   useRef,
 } from 'react';
 import { AriaTooltipProps, useTooltip } from 'react-aria';
-import styled from 'styled-components';
 
 import { PlacementAxis } from '../../../shared';
 import {
@@ -20,8 +19,7 @@ import {
   Styles,
   tasty,
 } from '../../../tasty';
-import { mergeProps } from '../../../utils/react';
-import { getOverlayTransitionCSS } from '../../../utils/transitions';
+import { mergeProps, mergeRefs, useLayoutEffect } from '../../../utils/react';
 
 import { TooltipContext } from './context';
 
@@ -51,6 +49,22 @@ const TooltipElement = tasty({
     filter: {
       '': false,
       light: 'drop-shadow(0 0 1px #dark.2)',
+    },
+    transition: 'translate, opacity, theme',
+    translate: {
+      '': '0 0',
+      'open & [data-placement="top"]': '0 0',
+      '!open & [data-placement="top"]': '0 1x',
+      'open & [data-placement="bottom"]': '0 0',
+      '!open & [data-placement="bottom"]': '0 -1x',
+      'open & [data-placement="left"]': '0 0',
+      '!open & [data-placement="left"]': '1x 0',
+      'open & [data-placement="right"]': '0 0',
+      '!open & [data-placement="right"]': '-1x 0',
+    },
+    opacity: {
+      '': 1,
+      '!open': 0.001,
     },
   },
 });
@@ -95,16 +109,6 @@ const TooltipTipElement = tasty({
   },
 });
 
-const StyledTooltipElement = styled(TooltipElement)`
-  ${(props) => {
-    return getOverlayTransitionCSS({
-      placement: props?.['data-position'],
-      minOffset: '0',
-      minScale: 1,
-    });
-  }}
-`;
-
 export interface CubeTooltipProps
   extends BaseProps,
     ContainerStyleProps,
@@ -126,6 +130,7 @@ function Tooltip(
 ) {
   let {
     ref: overlayRef,
+    transitionRef,
     arrowProps,
     state,
     overlayProps,
@@ -133,11 +138,14 @@ function Tooltip(
     minScale,
     isMaterial: isMaterialContext,
     isLight: isLightContext,
+    phase,
+    isShown,
+    updatePosition,
     ...tooltipProviderProps
   } = useContext(TooltipContext);
 
-  let defaultRef = useRef<HTMLDivElement>(null);
-
+  const defaultRef = useRef<HTMLDivElement>(null);
+  const combinedRef = mergeRefs(transitionRef, overlayRef ?? defaultRef);
   const finalOverlayRef = overlayRef ?? defaultRef;
 
   props = mergeProps(props, tooltipProviderProps);
@@ -167,33 +175,42 @@ function Tooltip(
     minScale = String(minScale);
   }
 
+  // Extract primary placement direction for consistent styling
+  const placementDirection = placement?.split(' ')[0] || placement || 'top';
+
   const mods = useMemo(() => {
     return {
       material: isMaterial,
       light: isLight,
-      open: isOpen,
+      open: isShown ?? isOpen,
     };
-  }, [isMaterial, isOpen, isLight]);
+  }, [isMaterial, isShown, isOpen, isLight]);
+
+  // Update position when tooltip becomes visible
+  useLayoutEffect(() => {
+    updatePosition?.();
+  }, []);
 
   return (
-    <StyledTooltipElement
+    <TooltipElement
       {...tooltipProps}
       {...overlayProps}
-      ref={overlayRef}
+      ref={combinedRef}
       styles={styles}
       mods={mods}
       data-min-offset={minOffset}
       data-min-scale={minScale}
-      data-placement={placement}
+      data-placement={placementDirection}
+      data-phase={phase}
     >
       {props.children}
       <TooltipTipElement
-        data-placement={placement}
+        data-placement={placementDirection}
         styles={tipStyles}
         mods={mods}
         {...arrowProps}
       />
-    </StyledTooltipElement>
+    </TooltipElement>
   );
 }
 
