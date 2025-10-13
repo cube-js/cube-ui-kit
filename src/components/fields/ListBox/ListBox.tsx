@@ -10,6 +10,7 @@ import {
   ReactNode,
   RefObject,
   useEffect,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -462,6 +463,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     qa,
     label,
     extra,
+    id,
     labelStyles,
     isRequired,
     necessityIndicator,
@@ -499,6 +501,10 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     allValueProps,
     ...otherProps
   } = props;
+
+  // Generate ID for label-listbox linking if not provided
+  const generatedId = useId();
+  const listBoxId = id || generatedId;
 
   const [, forceUpdate] = useState({});
   const lastSelectedKeyRef = useRef<Key | null>(null);
@@ -711,6 +717,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   const { listBoxProps } = useListBox(
     {
       ...props,
+      id: listBoxId,
       'aria-label': props['aria-label'] || label?.toString(),
       isDisabled,
       shouldUseVirtualFocus: shouldUseVirtualFocus ?? false,
@@ -986,10 +993,20 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     </ListBoxWrapperElement>
   );
 
+  const finalProps = { ...props, styles: undefined };
+
+  // Ensure labelProps has the for attribute for label-listbox linking
+  if (!finalProps.labelProps) {
+    finalProps.labelProps = {};
+  }
+  if (!finalProps.labelProps.for) {
+    finalProps.labelProps.for = listBoxId;
+  }
+
   return wrapWithField<Omit<CubeListBoxProps<T>, 'children'>>(
     listBoxField,
     ref,
-    mergeProps({ ...props, styles: undefined }, {}),
+    mergeProps(finalProps, {}),
   );
 }) as unknown as (<T>(
   props: CubeListBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },

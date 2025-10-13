@@ -6,6 +6,7 @@ import React, {
   ReactNode,
   RefObject,
   useCallback,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -224,6 +225,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     qa,
     label,
     extra,
+    id,
     labelStyles,
     isRequired,
     necessityIndicator,
@@ -276,6 +278,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
     _internalCollection,
     ...otherProps
   } = props;
+
+  // Generate ID for label-input linking if not provided
+  const generatedId = useId();
+  const inputId = id || generatedId;
 
   // Preserve the original `children` (may be a render function) before we
   // potentially overwrite it.
@@ -897,6 +903,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
       )}
       <SearchInputElement
         ref={searchInputRef}
+        id={inputId}
         data-is-prefix={isLoading ? '' : undefined}
         type="search"
         placeholder={searchPlaceholder}
@@ -991,10 +998,20 @@ export const FilterListBox = forwardRef(function FilterListBox<
     </FilterListBoxWrapperElement>
   );
 
+  const finalProps = { ...props, styles: undefined };
+
+  // Ensure labelProps has the for attribute for label-input linking
+  if (!finalProps.labelProps) {
+    finalProps.labelProps = {};
+  }
+  if (!finalProps.labelProps.for) {
+    finalProps.labelProps.for = inputId;
+  }
+
   return wrapWithField<Omit<CubeFilterListBoxProps<T>, 'children'>>(
     filterListBoxField,
     ref,
-    mergeProps({ ...props, styles: undefined }, {}),
+    mergeProps(finalProps, {}),
   );
 }) as unknown as (<T>(
   props: CubeFilterListBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },

@@ -7,6 +7,7 @@ import {
   RefObject,
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -178,6 +179,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     qa,
     label,
     extra,
+    id,
     icon,
     rightIcon,
     prefix,
@@ -252,6 +254,10 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   } = props;
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
+
+  // Generate ID for label-trigger linking if not provided
+  const generatedId = useId();
+  const triggerId = id || generatedId;
 
   // Generate a unique ID for this FilterPicker instance
   const filterPickerId = useMemo(() => generateRandomId(), []);
@@ -703,6 +709,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       <ItemButton
         ref={triggerRef as any}
         data-popover-trigger
+        id={triggerId}
         type={type}
         theme={validationState === 'invalid' ? 'danger' : theme}
         size={size}
@@ -921,17 +928,24 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     </FilterPickerWrapper>
   );
 
+  const finalProps = {
+    ...props,
+    children: undefined,
+    styles: undefined,
+  };
+
+  // Ensure labelProps has the for attribute for label-trigger linking
+  if (!finalProps.labelProps) {
+    finalProps.labelProps = {};
+  }
+  if (!finalProps.labelProps.for) {
+    finalProps.labelProps.for = triggerId;
+  }
+
   return wrapWithField<Omit<CubeFilterPickerProps<T>, 'children' | 'tooltip'>>(
     filterPickerField,
     ref as any,
-    mergeProps(
-      {
-        ...props,
-        children: undefined,
-        styles: undefined,
-      },
-      {},
-    ),
+    mergeProps(finalProps, {}),
   );
 }) as unknown as (<T>(
   props: CubeFilterPickerProps<T> & { ref?: ForwardedRef<HTMLElement> },
