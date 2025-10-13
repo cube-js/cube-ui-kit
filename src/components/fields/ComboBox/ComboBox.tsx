@@ -82,6 +82,10 @@ const ComboBoxOverlayElement = tasty({
     shadow: '0 .5x 2x #shadow',
     padding: '0',
     border: '#border',
+    hide: {
+      '': false,
+      hidden: true,
+    },
 
     transition:
       'translate $transition ease-out, scale $transition ease-out, theme $transition ease-out',
@@ -781,7 +785,7 @@ function ComboBoxOverlay({
   const placementDirection = placement?.split(' ')[0] || direction;
 
   return (
-    <DisplayTransition isShown={isOpen}>
+    <DisplayTransition exposeUnmounted isShown={isOpen}>
       {({ phase, isShown, ref: transitionRef }) => (
         <ComboBoxOverlayElement
           {...mergeProps(overlayPositionProps, overlayBehaviorProps)}
@@ -793,6 +797,7 @@ function ComboBoxOverlay({
           data-phase={phase}
           mods={{
             open: isShown,
+            hidden: phase === 'unmounted',
           }}
           styles={overlayStyles}
           style={{
@@ -1179,6 +1184,28 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     hasInitialized,
     isControlledInput,
     defaultSelectedKey,
+    getItemLabel,
+    children,
+  ]);
+
+  // Sync input value with controlled selectedKey
+  useEffect(() => {
+    // Only run when selectedKey is controlled but inputValue is uncontrolled
+    if (!isControlledKey || isControlledInput) return;
+
+    // Wait for collection to be ready
+    if (!listStateRef.current?.collection) return;
+
+    // Get the expected label for the current selection
+    const expectedLabel =
+      effectiveSelectedKey != null ? getItemLabel(effectiveSelectedKey) : '';
+
+    // Update the input value to match the selected key's label
+    setInternalInputValue(expectedLabel);
+  }, [
+    isControlledKey,
+    isControlledInput,
+    effectiveSelectedKey,
     getItemLabel,
     children,
   ]);
