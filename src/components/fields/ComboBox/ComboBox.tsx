@@ -8,6 +8,7 @@ import React, {
   RefObject,
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -585,6 +586,7 @@ function useComboBoxKeyboard({
 // ============================================================================
 interface ComboBoxInputProps {
   inputRef: RefObject<HTMLInputElement>;
+  id?: string;
   value: string;
   placeholder?: string;
   isDisabled?: boolean;
@@ -609,6 +611,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
   function ComboBoxInput(
     {
       inputRef,
+      id,
       value,
       placeholder,
       isDisabled,
@@ -636,6 +639,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
       <InputElement
         ref={combinedRef}
         qa="Input"
+        id={id}
         type="text"
         value={value}
         placeholder={placeholder}
@@ -854,6 +858,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     isRequired,
     necessityIndicator,
     validationState,
+    id,
     icon,
     prefix,
     isDisabled,
@@ -901,6 +906,10 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     onSelectionChange: externalOnSelectionChange,
     ...otherProps
   } = props;
+
+  // Generate ID for label-input linking if not provided
+  const generatedId = useId();
+  const inputId = id || generatedId;
 
   // Generate a unique ID for this combobox instance
   const comboBoxId = useMemo(() => generateRandomId(), []);
@@ -1313,6 +1322,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       {prefix ? <div data-element="Prefix">{prefix}</div> : null}
       <ComboBoxInput
         inputRef={inputRef}
+        id={inputId}
         value={effectiveInputValue}
         placeholder={placeholder}
         isDisabled={isDisabled}
@@ -1411,10 +1421,20 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     </ComboBoxWrapperElement>
   );
 
+  const finalProps = { ...props, styles };
+
+  // Ensure labelProps has the for attribute for label-input linking
+  if (!finalProps.labelProps) {
+    finalProps.labelProps = {};
+  }
+  if (!finalProps.labelProps.for) {
+    finalProps.labelProps.for = inputId;
+  }
+
   return wrapWithField<Omit<CubeComboBoxProps<T>, 'children'>>(
     comboBoxField,
     ref,
-    mergeProps({ ...props, styles }, {}),
+    mergeProps(finalProps, {}),
   );
 }) as unknown as (<T>(
   props: CubeComboBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },
