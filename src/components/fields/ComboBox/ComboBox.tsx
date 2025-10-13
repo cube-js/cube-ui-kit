@@ -49,6 +49,7 @@ import { useEventBus } from '../../../utils/react/useEventBus';
 import { ItemAction } from '../../actions';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { DisplayTransition } from '../../helpers';
+import { Portal } from '../../portal';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
 import { ListBox } from '../ListBox/ListBox';
@@ -790,55 +791,57 @@ function ComboBoxOverlay({
   const placementDirection = placement?.split(' ')[0] || direction;
 
   return (
-    <DisplayTransition exposeUnmounted isShown={isOpen}>
-      {({ phase, isShown, ref: transitionRef }) => (
-        <ComboBoxOverlayElement
-          {...mergeProps(overlayPositionProps, overlayBehaviorProps)}
-          ref={(value) => {
-            transitionRef(value as HTMLElement | null);
-            (popoverRef as any).current = value;
-          }}
-          data-placement={placementDirection}
-          data-phase={phase}
-          mods={{
-            open: isShown,
-            hidden: phase === 'unmounted',
-          }}
-          styles={overlayStyles}
-          style={{
-            minWidth: comboBoxWidth ? `${comboBoxWidth}px` : undefined,
-            ...overlayPositionProps.style,
-          }}
-        >
-          <ListBox
-            ref={listBoxRef}
-            focusOnHover
-            disableSelectionToggle
-            id={`ComboBoxListBox-${comboBoxId}`}
-            aria-label={
-              ariaLabel || (typeof label === 'string' ? label : 'Options')
-            }
-            selectedKey={effectiveSelectedKey}
-            selectionMode="single"
-            isDisabled={isDisabled}
-            disabledKeys={disabledKeys}
-            shouldUseVirtualFocus={true}
-            items={items as any}
-            styles={listBoxStyles}
-            optionStyles={optionStyles}
-            sectionStyles={sectionStyles}
-            headingStyles={headingStyles}
-            stateRef={listStateRef}
-            mods={{
-              popover: true,
+    <Portal>
+      <DisplayTransition exposeUnmounted isShown={isOpen}>
+        {({ phase, isShown, ref: transitionRef }) => (
+          <ComboBoxOverlayElement
+            {...mergeProps(overlayPositionProps, overlayBehaviorProps)}
+            ref={(value) => {
+              transitionRef(value as HTMLElement | null);
+              (popoverRef as any).current = value;
             }}
-            onSelectionChange={onSelectionChange}
+            data-placement={placementDirection}
+            data-phase={phase}
+            mods={{
+              open: isShown,
+              hidden: phase === 'unmounted',
+            }}
+            styles={overlayStyles}
+            style={{
+              minWidth: comboBoxWidth ? `${comboBoxWidth}px` : undefined,
+              ...overlayPositionProps.style,
+            }}
           >
-            {children as any}
-          </ListBox>
-        </ComboBoxOverlayElement>
-      )}
-    </DisplayTransition>
+            <ListBox
+              ref={listBoxRef}
+              focusOnHover
+              disableSelectionToggle
+              id={`ComboBoxListBox-${comboBoxId}`}
+              aria-label={
+                ariaLabel || (typeof label === 'string' ? label : 'Options')
+              }
+              selectedKey={effectiveSelectedKey}
+              selectionMode="single"
+              isDisabled={isDisabled}
+              disabledKeys={disabledKeys}
+              shouldUseVirtualFocus={true}
+              items={items as any}
+              styles={listBoxStyles}
+              optionStyles={optionStyles}
+              sectionStyles={sectionStyles}
+              headingStyles={headingStyles}
+              stateRef={listStateRef}
+              mods={{
+                popover: true,
+              }}
+              onSelectionChange={onSelectionChange}
+            >
+              {children as any}
+            </ListBox>
+          </ComboBoxOverlayElement>
+        )}
+      </DisplayTransition>
+    </Portal>
   );
 }
 
