@@ -1,0 +1,11 @@
+---
+description: When updating the component documentation file *.docs.mdx
+alwaysApply: false
+---
+
+While update {ComponentName}.docs.mdx file look for:
+- Implementation - {ComponentName}.tsx
+- Tests - {ComponentName}.test.tsx
+- Storybook - {ComponentName}.stories.tsx
+
+Align the documentation with the current implementation. Looks for use cases in storybook and code examples in tests.
