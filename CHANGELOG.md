@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.81.0
+
+### Minor Changes
+
+- [#820](https://github.com/cube-js/cube-ui-kit/pull/820) [`bcc9783e`](https://github.com/cube-js/cube-ui-kit/commit/bcc9783e284b209c053b15673990ce2c633178ac) Thanks [@tenphi](https://github.com/tenphi)! - New Switch sizes: `small` -> `medium` (and now default). new `small` size.
+
 ## 0.80.2
 
 ### Patch Changes
