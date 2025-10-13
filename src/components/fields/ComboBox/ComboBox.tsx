@@ -1506,15 +1506,11 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   );
 
   const { children: _, ...propsWithoutChildren } = props;
-  const finalProps = { ...propsWithoutChildren, styles: fieldStyles };
-
-  // Ensure labelProps has the for attribute for label-input linking
-  if (!finalProps.labelProps) {
-    finalProps.labelProps = {};
-  }
-  if (!finalProps.labelProps.for) {
-    finalProps.labelProps.for = inputId;
-  }
+  const finalProps = {
+    ...propsWithoutChildren,
+    styles: fieldStyles,
+    labelProps: { ...props.labelProps, for: inputId },
+  };
 
   return wrapWithField<Omit<CubeComboBoxProps<T>, 'children'>>(
     comboBoxField,
