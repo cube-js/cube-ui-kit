@@ -480,7 +480,7 @@ function Select<T extends object>(
     mergeProps(
       {
         ...props,
-        styles,
+        styles: labelStyles,
       },
       { labelProps },
     ),

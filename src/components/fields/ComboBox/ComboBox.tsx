@@ -172,10 +172,10 @@ export interface CubeComboBoxProps<T>
 
   /** Custom styles for the input */
   inputStyles?: Styles;
-  /** Custom styles for the input wrapper */
-  wrapperStyles?: Styles;
   /** Custom styles for the trigger button */
   triggerStyles?: Styles;
+  /** Custom styles for the field wrapper */
+  fieldStyles?: Styles;
   /** Custom styles for the listbox */
   listBoxStyles?: Styles;
   /** Custom styles for the popover overlay */
@@ -878,7 +878,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     triggerStyles,
     listBoxStyles,
     overlayStyles,
-    wrapperStyles,
+    fieldStyles,
     suffix,
     hideTrigger,
     message,
@@ -1397,7 +1397,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       ref={wrapperRef}
       qa={qa || 'ComboBox'}
       mods={mods}
-      styles={wrapperStyles}
+      styles={styles}
       style={{
         zIndex: isFocused ? 1 : 'initial',
       }}
@@ -1505,7 +1505,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     </ComboBoxWrapperElement>
   );
 
-  const finalProps = { ...props, styles };
+  const finalProps = { ...props, styles: fieldStyles };
 
   // Ensure labelProps has the for attribute for label-input linking
   if (!finalProps.labelProps) {

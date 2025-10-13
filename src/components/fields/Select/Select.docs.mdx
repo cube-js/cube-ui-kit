@@ -1,5 +1,4 @@
-import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
-import { Select } from './Select';
+import { Meta, Story, Controls } from '@storybook/addon-docs/blocks';
 import * as SelectStories from './Select.stories';
 
 <Meta of={SelectStories} />
@@ -26,6 +25,29 @@ A select allows users to choose a single option from a list of predefined choice
 
 <Controls of={SelectStories.Default} />
 
+#### Notable Properties
+
+**isClearable** - Adds a clear button in the rightIcon slot that allows users to clear the selected value. The clear button only appears when a value is selected and the select is not disabled or read-only.
+
+**onClear** - Callback fired when the clear button is pressed, allowing you to perform custom actions when the selection is cleared.
+
+**tooltip** - Enables tooltip display on the trigger button. Can be:
+- `string` - Simple tooltip text
+- `true` - Auto tooltip on overflow (shows selected value when truncated)
+- `object` - Advanced configuration with optional `auto` property
+
+**description** - Text description displayed within the trigger button. Different from field-level description provided by FieldWrapper.
+
+**descriptionPlacement** - Controls how description is positioned: `inline`, `block`, or `auto`.
+
+**overlayOffset** - Distance between the select trigger and dropdown in pixels (default: 8).
+
+**direction** - Preferred direction for the dropdown: `top` or `bottom` (default: `bottom`).
+
+**shouldFlip** - Whether the dropdown should flip to fit in viewport (default: `true`).
+
+**suffixPosition** - Position of suffix content relative to validation icons: `before` or `after` (default: `before`).
+
 ### Base Properties
 
 Supports [Base properties](/docs/tasty-base-properties--docs)
@@ -36,24 +58,42 @@ Supports [Base properties](/docs/tasty-base-properties--docs)
 
 Customizes the root wrapper element of the component.
 
+#### triggerStyles
+
+Customizes the trigger button element that opens the dropdown.
+
 **Sub-elements:**
-- `Value` - The displayed selected value text
-- `CaretIcon` - The dropdown indicator icon
-- `ButtonIcon` - Icons displayed within the select button
+- `Label` - The displayed selected value text or placeholder
+- `Prefix` - Container for prefix content
+- `Suffix` - Container for suffix content
+- `Icon` - Container for left icon
+- `RightIcon` - Container for right icon (caret, loading, clear button)
+- `Description` - Description text within the trigger
+- `Hotkeys` - Keyboard shortcut display
 
 #### listBoxStyles
 
-Customizes the dropdown options container.
+Customizes the dropdown list container that displays options.
+
+#### overlayStyles
+
+Customizes the popover overlay wrapper that contains the list.
 
 #### optionStyles
 
 Customizes individual option items in the dropdown.
 
+**Sub-elements:**
+- `Label` - The main content/text of the option
+- `Description` - Secondary description text
+- `Prefix` - Container for prefix content
+- `Suffix` - Container for suffix content
+- `Icon` - Container for left icon
+- `RightIcon` - Container for right icon
+
 ### Style Properties
 
-The Select component supports all standard style properties:
-
-`display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `reset`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`, `textAlign`, `color`, `fill`, `fade`, `textTransform`, `fontWeight`, `fontStyle`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+These properties allow direct style application without using the `styles` prop: `display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `color`, `fill`, `fade`
 
 ### Modifiers
 
@@ -68,7 +108,9 @@ The `mods` property accepts the following modifiers you can override:
 | valid | `boolean` | Whether the select is valid |
 | placeholder | `boolean` | Whether showing placeholder text |
 | hovered | `boolean` | Whether the select is being hovered |
-| inside-form | `boolean` | Whether the select is inside a form field |
+| loading | `boolean` | Whether the select is in loading state |
+| prefix | `boolean` | Whether prefix content is present |
+| suffix | `boolean` | Whether suffix content is present |
 
 ## Sub-components
 
@@ -143,9 +185,11 @@ Groups related options together with an optional heading.
 
 ### Sizes
 
-- `small` - Compact size for dense interfaces (28px height)
-- `medium` - Standard size for general interfaces (32px height, default)
-- `large` - Emphasized size for important selections (40px height)
+- `small` - Compact size for dense interfaces
+- `medium` - Standard size for general interfaces (default)
+- `large` - Emphasized size for important selections
+
+<Story of={SelectStories.DifferentSizes} />
 
 ## Examples
 
@@ -159,49 +203,67 @@ Groups related options together with an optional heading.
 </Select>
 ```
 
-### With Default Selection
+### With Default Value
+
+<Story of={SelectStories.WithDefaultValue} />
 
 ```jsx
-<Select label="Size" defaultSelectedKey="medium">
-  <Select.Item key="small">Small</Select.Item>
-  <Select.Item key="medium">Medium</Select.Item>
-  <Select.Item key="large">Large</Select.Item>
+<Select label="Color" defaultSelectedKey="purple">
+  <Select.Item key="red">Red</Select.Item>
+  <Select.Item key="blue">Blue</Select.Item>
+  <Select.Item key="purple">Purple</Select.Item>
 </Select>
 ```
 
 ### With Placeholder
 
+<Story of={SelectStories.WithPlaceholder} />
+
 ```jsx
-<Select
-  label="Country"
-  placeholder="Select a country"
->
+<Select label="Country" placeholder="Select a country">
   <Select.Item key="us">United States</Select.Item>
   <Select.Item key="ca">Canada</Select.Item>
   <Select.Item key="uk">United Kingdom</Select.Item>
 </Select>
 ```
 
-### Small Size
+### Clearable
+
+<Story of={SelectStories.Clearable} />
 
 ```jsx
 <Select
-  label="Priority"
-  size="small"
-  defaultSelectedKey="medium"
+  isClearable
+  label="Color"
+  defaultSelectedKey="blue"
+  placeholder="Choose a color..."
 >
-  <Select.Item key="low">Low</Select.Item>
-  <Select.Item key="medium">Medium</Select.Item>
-  <Select.Item key="high">High</Select.Item>
+  <Select.Item key="red">Red</Select.Item>
+  <Select.Item key="blue">Blue</Select.Item>
+  <Select.Item key="green">Green</Select.Item>
 </Select>
 ```
 
-### With Validation
+### Validation States
+
+<Story of={SelectStories.Valid} />
+
+<Story of={SelectStories.Invalid} />
 
 ```jsx
+{/* Valid state */}
+<Select
+  label="Validated field"
+  selectedKey="yes"
+  validationState="valid"
+>
+  <Select.Item key="yes">Yes</Select.Item>
+  <Select.Item key="no">No</Select.Item>
+</Select>
+
+{/* Invalid state */}
 <Select
   label="Required field"
-  isRequired
   validationState="invalid"
   errorMessage="Please select an option"
 >
@@ -212,10 +274,12 @@ Groups related options together with an optional heading.
 
 ### Disabled State
 
+<Story of={SelectStories.Disabled} />
+
 ```jsx
 <Select
-  label="Disabled select"
   isDisabled
+  label="Disabled select"
   selectedKey="option1"
 >
   <Select.Item key="option1">Cannot change</Select.Item>
@@ -223,31 +287,151 @@ Groups related options together with an optional heading.
 </Select>
 ```
 
-### Special Theme
+### With Icon
+
+<Story of={SelectStories.WithIcon} />
 
 ```jsx
-<Select
-  label="Special styling"
-  theme="special"
-  type="outline"
->
-  <Select.Item key="value1">Value 1</Select.Item>
-  <Select.Item key="value2">Value 2</Select.Item>
+<Select label="Currency" icon={<IconCoin />}>
+  <Select.Item key="usd">USD</Select.Item>
+  <Select.Item key="eur">EUR</Select.Item>
+  <Select.Item key="gbp">GBP</Select.Item>
 </Select>
 ```
 
-### With Sections
+### With Description
+
+<Story of={SelectStories.WithDescription} />
 
 ```jsx
-<Select label="Category">
-  <Select.Section title="Primary">
-    <Select.Item key="primary1">Primary Option 1</Select.Item>
-    <Select.Item key="primary2">Primary Option 2</Select.Item>
+<Select placeholder="Select a color" listBoxStyles={{ width: 'max 30x' }}>
+  <Select.Item key="red" description="The color of fire">
+    Red
+  </Select.Item>
+  <Select.Item key="green" description="The color of nature">
+    Green
+  </Select.Item>
+  <Select.Item key="blue" description="The color of the sky">
+    Blue
+  </Select.Item>
+</Select>
+```
+
+### With Icons and Descriptions
+
+<Story of={SelectStories.WithIconsAndDescriptions} />
+
+```jsx
+<Select placeholder="Select a color">
+  <Select.Item 
+    key="yellow" 
+    description="Child and light" 
+    icon={<IconUser />}
+  >
+    Yellow
+  </Select.Item>
+  <Select.Item 
+    key="red" 
+    description="Hot and strong" 
+    prefix={<span>🔥</span>}
+  >
+    Red
+  </Select.Item>
+  <Select.Item 
+    key="green" 
+    description="Fresh and calm" 
+    suffix={<Text color="#dark-03">#00A000</Text>}
+  >
+    Green
+  </Select.Item>
+</Select>
+```
+
+### With Sections (Static)
+
+<Story of={SelectStories.SectionsStatic} />
+
+```jsx
+<Select placeholder="Pick something">
+  <Select.Section title="Warm colors">
+    <Select.Item key="red">Red</Select.Item>
+    <Select.Item key="orange">Orange</Select.Item>
+    <Select.Item key="yellow">Yellow</Select.Item>
   </Select.Section>
-  <Select.Section title="Secondary">
-    <Select.Item key="secondary1">Secondary Option 1</Select.Item>
-    <Select.Item key="secondary2">Secondary Option 2</Select.Item>
+  <Select.Section title="Cool colors">
+    <Select.Item key="blue">Blue</Select.Item>
+    <Select.Item key="purple">Purple</Select.Item>
   </Select.Section>
+</Select>
+```
+
+### With Sections (Dynamic)
+
+<Story of={SelectStories.SectionsDynamic} />
+
+```jsx
+const groups = [
+  {
+    name: 'Fruits',
+    children: [
+      { id: 'apple', label: 'Apple' },
+      { id: 'orange', label: 'Orange' },
+    ],
+  },
+  {
+    name: 'Vegetables',
+    children: [
+      { id: 'carrot', label: 'Carrot' },
+      { id: 'peas', label: 'Peas' },
+    ],
+  },
+];
+
+<Select items={groups} placeholder="Choose an item">
+  {(group) => (
+    <Select.Section key={group.name} title={group.name} items={group.children}>
+      {(item) => <Select.Item key={item.id}>{item.label}</Select.Item>}
+    </Select.Section>
+  )}
+</Select>
+```
+
+### With Tooltips
+
+<Story of={SelectStories.WithTooltips} />
+
+```jsx
+<Select placeholder="Choose a framework">
+  <Select.Item
+    key="react"
+    tooltip="React - A JavaScript library for building user interfaces"
+  >
+    React
+  </Select.Item>
+  <Select.Item
+    key="vue"
+    tooltip={{ title: 'Vue.js Framework' }}
+  >
+    Vue.js
+  </Select.Item>
+  <Select.Item
+    key="angular"
+    tooltip="Angular - Platform for building mobile and desktop web applications"
+  >
+    Angular
+  </Select.Item>
+</Select>
+```
+
+### With Disabled Items
+
+<Story of={SelectStories.WithDisabledOption} />
+
+```jsx
+<Select disabledKeys={['red']}>
+  <Select.Item key="red">Red (disabled)</Select.Item>
+  <Select.Item key="blue">Blue</Select.Item>
+  <Select.Item key="green">Green</Select.Item>
 </Select>
 ```
 
@@ -292,30 +476,100 @@ Groups related options together with an optional heading.
    </Select>
    ```
 
-2. **Don't**: Use select for very long lists (use ComboBox with search instead)
+2. **Don't**: Use select for very long lists (use ComboBox or FilterPicker with search instead)
    ```jsx
-   <Select label="Country"> {/* Consider ComboBox for 50+ options */}
+   {/* Consider ComboBox or FilterPicker for 50+ options */}
+   <Select label="Country">
+     {/* 100+ countries... */}
+   </Select>
    ```
 
-3. **Grouping**: Use sections for logically grouped options
-4. **Validation**: Provide clear error messages for validation failures
-5. **Default Selection**: Consider providing sensible defaults when appropriate
-6. **Loading**: Show loading state when options are being fetched
+3. **Do**: Use sections to group related options logically
+   ```jsx
+   <Select label="Category">
+     <Select.Section title="Popular">
+       <Select.Item key="featured1">Featured Option 1</Select.Item>
+     </Select.Section>
+     <Select.Section title="All Options">
+       <Select.Item key="all1">All Option 1</Select.Item>
+     </Select.Section>
+   </Select>
+   ```
+
+4. **Do**: Provide clear error messages for validation failures
+   ```jsx
+   <Select
+     isRequired
+     validationState="invalid"
+     errorMessage="Please select a shipping method"
+     label="Shipping"
+   >
+     <Select.Item key="standard">Standard</Select.Item>
+   </Select>
+   ```
+
+5. **Do**: Consider providing sensible defaults when appropriate
+   ```jsx
+   <Select label="Language" defaultSelectedKey="en">
+     <Select.Item key="en">English</Select.Item>
+     <Select.Item key="es">Spanish</Select.Item>
+   </Select>
+   ```
+
+6. **Do**: Show loading state when options are being fetched
+   ```jsx
+   <Select isLoading label="Categories" placeholder="Loading...">
+     {categories.map(cat => <Select.Item key={cat.id}>{cat.name}</Select.Item>)}
+   </Select>
+   ```
+
+7. **Accessibility**: Always provide meaningful labels
+   ```jsx
+   <Select label="Country" aria-label="Select your country">
+     <Select.Item key="us">United States</Select.Item>
+   </Select>
+   ```
+
+8. **Clearable**: Use `isClearable` for optional selections
+   ```jsx
+   <Select isClearable label="Filter by status" placeholder="All statuses">
+     <Select.Item key="active">Active</Select.Item>
+     <Select.Item key="inactive">Inactive</Select.Item>
+   </Select>
+   ```
 
 ## Integration with Forms
 
-This component supports all [Field properties](/docs/forms-field--docs) when used within a Form.
+This component supports all Field properties when used within a Form. It integrates seamlessly with the form validation system and supports both controlled and uncontrolled modes.
+
+```jsx
+<Form>
+  <Select
+    name="country"
+    label="Country"
+    isRequired
+    validationBehavior="native"
+  >
+    <Select.Item key="us">United States</Select.Item>
+    <Select.Item key="uk">United Kingdom</Select.Item>
+    <Select.Item key="ca">Canada</Select.Item>
+  </Select>
+</Form>
+```
 
 ## Suggested Improvements
 
-- Add support for multi-selection mode
-- Implement virtual scrolling for very large option lists
-- Add option filtering/search capabilities
-- Consider adding option descriptions or secondary text
-- Implement async loading of options
+- Add support for multi-selection mode with visual badges
+- Implement virtual scrolling for very large option lists (1000+ items)
+- Built-in async loading support with loading states per scroll position
+- Enhanced keyboard shortcuts for power users (e.g., type to jump to option)
+- Custom empty state component when no options are available
+- Support for option groups with visual separators beyond sections
 
 ## Related Components
 
-- [ComboBox](/docs/forms-combobox--docs) - For searchable selection with large option lists
-- [RadioGroup](/docs/forms-radiogroup--docs) - For visible selection options
-- [Checkbox](/docs/forms-checkbox--docs) - For multiple selection scenarios
+- [ComboBox](/docs/forms-combobox--docs) - For searchable selection with filtering capabilities
+- [FilterPicker](/docs/forms-filterpicker--docs) - Alternative with different interaction patterns
+- [ListBox](/docs/forms-listbox--docs) - The underlying list component used in Select
+- [RadioGroup](/docs/forms-radiogroup--docs) - For visible selection options with fewer choices
+- [ItemBase](/docs/content-itembase--docs) - The base component used for rendering items
