@@ -186,14 +186,16 @@ const meta = {
       description: 'Callback fired when the popover opens or closes',
       control: { type: null },
     },
-    onBlur: {
-      action: (e) => ({ type: 'blur', target: e?.target?.tagName }),
-      description: 'Callback fired when the input loses focus',
+    onFocus: {
+      action: 'focus',
+      description:
+        'Callback fired when focus enters the ComboBox wrapper element',
       control: { type: null },
     },
-    onFocus: {
-      action: (e) => ({ type: 'focus', target: e?.target?.tagName }),
-      description: 'Callback fired when the input receives focus',
+    onBlur: {
+      action: 'blur',
+      description:
+        'Callback fired when focus leaves the ComboBox wrapper element',
       control: { type: null },
     },
   },

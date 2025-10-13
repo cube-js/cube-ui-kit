@@ -15,6 +15,7 @@ import React, {
 } from 'react';
 import {
   useFilter,
+  useFocusWithin,
   useKeyboard,
   useOverlay,
   useOverlayPosition,
@@ -128,6 +129,10 @@ export interface CubeComboBoxProps<T>
   placeholder?: string;
   /** Whether the input should have autofocus */
   autoFocus?: boolean;
+  /** Callback fired when the wrapper element receives focus */
+  onFocus?: (e: React.FocusEvent) => void;
+  /** Callback fired when the wrapper element loses focus */
+  onBlur?: (e: React.FocusEvent) => void;
 
   /** Popover trigger behavior: 'focus', 'input', or 'manual'. Defaults to 'input' */
   popoverTrigger?: PopoverTriggerAction;
@@ -913,6 +918,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     overlayOffset = 8,
     onSelectionChange: externalOnSelectionChange,
     sortSelectedToTop: sortSelectedToTopProp,
+    onFocus,
+    onBlur,
     ...otherProps
   } = props;
 
@@ -1080,6 +1087,13 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     : frozenFilteredChildrenRef.current ?? filteredChildren;
 
   const { isFocused, focusProps } = useFocus({ isDisabled });
+
+  // Wrapper-level focus/blur handlers
+  const { focusWithinProps } = useFocusWithin({
+    isDisabled,
+    onFocusWithin: onFocus,
+    onBlurWithin: onBlur,
+  });
 
   let isInvalid = validationState === 'invalid';
 
@@ -1429,6 +1443,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         zIndex: isFocused ? 1 : 'initial',
       }}
       data-size={size}
+      {...focusWithinProps}
     >
       {prefix ? <div data-element="Prefix">{prefix}</div> : null}
       <ComboBoxInput

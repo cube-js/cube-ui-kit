@@ -838,4 +838,49 @@ describe('<ComboBox />', () => {
       expect(combobox).toHaveValue('');
     });
   });
+
+  it('should handle wrapper-level focus and blur events', async () => {
+    const onFocus = jest.fn();
+    const onBlur = jest.fn();
+
+    const { getByRole, getByTestId } = renderWithRoot(
+      <ComboBox label="test" onFocus={onFocus} onBlur={onBlur}>
+        {items.map((item) => (
+          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+    );
+
+    const combobox = getByRole('combobox');
+    const trigger = getByTestId('ComboBoxTrigger');
+
+    // Focus on input should trigger onFocus
+    await act(async () => {
+      combobox.focus();
+    });
+
+    await waitFor(() => {
+      expect(onFocus).toHaveBeenCalledTimes(1);
+    });
+
+    // Moving focus to trigger button within wrapper should NOT trigger onBlur/onFocus
+    onFocus.mockClear();
+    onBlur.mockClear();
+
+    await act(async () => {
+      trigger.focus();
+    });
+
+    expect(onBlur).not.toHaveBeenCalled();
+    expect(onFocus).not.toHaveBeenCalled();
+
+    // Blurring from wrapper should trigger onBlur
+    await act(async () => {
+      trigger.blur();
+    });
+
+    await waitFor(() => {
+      expect(onBlur).toHaveBeenCalledTimes(1);
+    });
+  });
 });
