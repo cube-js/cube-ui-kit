@@ -22,6 +22,7 @@ import {
   castNullableIsSelected,
   WithNullableSelected,
 } from '../../../utils/react/nullableValue';
+import { useId } from '../../../utils/react/useId';
 import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { HiddenInput } from '../../HiddenInput';
@@ -82,7 +83,7 @@ const SwitchElement = tasty({
     cursor: 'pointer',
     shadow: {
       '': '0 0 0 0 #clear',
-      invalid: '0 0 0 1bw #white, 0 0 0 1ow #danger',
+      invalid: '0 0 0 1bw #white, 0 0 0 2bw #danger',
     },
 
     Thumb: {
@@ -128,6 +129,7 @@ export interface CubeSwitchProps
     FieldBaseProps,
     AriaSwitchProps {
   inputStyles?: Styles;
+  fieldStyles?: Styles;
   isLoading?: boolean;
   size?: 'large' | 'medium' | 'small';
 }
@@ -155,9 +157,12 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
     isLoading,
     labelPosition,
     inputStyles,
+    fieldStyles,
     validationState,
     size = 'medium',
   } = props;
+
+  const id = useId(props.id);
 
   let styles = extractStyles(props, OUTER_STYLES);
 
@@ -169,16 +174,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
 
-  let { inputProps } = useSwitch(
-    {
-      ...props,
-      ...(typeof label === 'string' && label.trim()
-        ? { 'aria-label': label }
-        : {}),
-    },
-    useToggleState(props),
-    inputRef,
-  );
+  let { inputProps } = useSwitch(props, useToggleState(props), inputRef);
 
   const mods = {
     checked: inputProps.checked,
@@ -196,12 +192,14 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
       qa={qa || 'SwitchWrapper'}
       mods={mods}
       data-size={size}
+      styles={styles}
       {...hoverProps}
     >
       <HiddenInput
         data-qa="HiddenInput"
         {...mergeProps(inputProps, focusProps)}
         ref={inputRef}
+        id={id}
       />
       <SwitchElement
         qa="Switch"
@@ -223,10 +221,15 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
 
   return wrapWithField(switchField, domRef, {
     ...props,
+    id,
+    labelProps: {
+      ...props.labelProps,
+      for: id,
+    },
     children: null,
     labelStyles,
     inputStyles,
-    styles,
+    styles: fieldStyles,
   });
 }
 

@@ -92,29 +92,21 @@ export default {
 
     /* Events */
     onChange: {
-      action: 'change',
       description: 'Callback fired when the switch value changes',
       control: { type: null },
     },
     onFocus: {
-      action: 'focus',
       description: 'Callback fired when the switch receives focus',
       control: { type: null },
     },
     onBlur: {
-      action: 'blur',
       description: 'Callback fired when the switch loses focus',
       control: { type: null },
     },
   },
 };
 
-const Template: StoryFn<CubeSwitchProps> = (props) => (
-  <Switch
-    {...props}
-    onChange={(isSelected) => console.log('change', isSelected)}
-  />
-);
+const Template: StoryFn<CubeSwitchProps> = (props) => <Switch {...props} />;
 
 export const Default = Template.bind({});
 Default.args = {
@@ -146,28 +138,21 @@ Loading.args = {
   isLoading: true,
 };
 
+export const WithLabel = Template.bind({});
+WithLabel.args = {
+  label: 'Toggle feature',
+};
+
 // Stories showing all sizes for visual comparison
 const SizesTemplate: StoryFn<CubeSwitchProps> = (props) => (
   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-    <Switch
-      {...props}
-      size="small"
-      onChange={(isSelected) => console.log('small change', isSelected)}
-    >
+    <Switch {...props} size="small">
       Small switch
     </Switch>
-    <Switch
-      {...props}
-      size="medium"
-      onChange={(isSelected) => console.log('medium change', isSelected)}
-    >
+    <Switch {...props} size="medium">
       Medium switch
     </Switch>
-    <Switch
-      {...props}
-      size="large"
-      onChange={(isSelected) => console.log('large change', isSelected)}
-    >
+    <Switch {...props} size="large">
       Large switch
     </Switch>
   </div>
@@ -179,18 +164,10 @@ Sizes.args = {};
 // Stories showing both selected and unselected states for visual testing
 const MultiStateTemplate: StoryFn<CubeSwitchProps> = (props) => (
   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-    <Switch
-      {...props}
-      isSelected={false}
-      onChange={(isSelected) => console.log('unselected change', isSelected)}
-    >
+    <Switch {...props} isSelected={false}>
       {props.children} (unselected)
     </Switch>
-    <Switch
-      {...props}
-      isSelected={true}
-      onChange={(isSelected) => console.log('selected change', isSelected)}
-    >
+    <Switch {...props} isSelected={true}>
       {props.children} (selected)
     </Switch>
   </div>
