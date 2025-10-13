@@ -1505,7 +1505,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     </ComboBoxWrapperElement>
   );
 
-  const finalProps = { ...props, styles: fieldStyles };
+  const { children: _, ...propsWithoutChildren } = props;
+  const finalProps = { ...propsWithoutChildren, styles: fieldStyles };
 
   // Ensure labelProps has the for attribute for label-input linking
   if (!finalProps.labelProps) {
