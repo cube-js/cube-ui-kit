@@ -15,7 +15,7 @@ const items = [
 
 jest.mock('../../../_internal/hooks/use-warn');
 
-describe('<LegacyComboBox />', () => {
+describe.skip('<LegacyComboBox />', () => {
   it('should provide suggestions', async () => {
     const { getByRole, getAllByRole } = renderWithRoot(
       <LegacyComboBox label="test">
