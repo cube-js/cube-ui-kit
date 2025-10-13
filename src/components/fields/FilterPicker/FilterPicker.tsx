@@ -124,7 +124,7 @@ export interface CubeFilterPickerProps<T>
    * Sort selected items to the top when the popover opens.
    * Only works when using the `items` prop (data-driven mode).
    * Ignored when using JSX children.
-   * @default false
+   * @default true when items are provided, false when using JSX children
    */
   sortSelectedToTop?: boolean;
 }
@@ -249,9 +249,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     isClearable,
     searchValue,
     onSearchChange,
-    sortSelectedToTop = false,
+    sortSelectedToTop: sortSelectedToTopProp,
     ...otherProps
   } = props;
+
+  // Track if sortSelectedToTop was explicitly provided
+  const sortSelectedToTopExplicit = sortSelectedToTopProp !== undefined;
+  // Default to true if items are provided, false otherwise
+  const sortSelectedToTop = sortSelectedToTopProp ?? (items ? true : false);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
@@ -463,8 +468,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   // Function to sort children with selected items on top
   const getSortedChildren = useCallback(() => {
-    // Warn if sorting is requested but not supported
-    if (sortSelectedToTop && !items) {
+    // Warn if sorting is explicitly requested but not supported
+    if (sortSelectedToTopExplicit && sortSelectedToTop && !items) {
       console.warn(
         'FilterPicker: sortSelectedToTop only works with the items prop. ' +
           'Sorting will be skipped when using JSX children.',
@@ -473,7 +478,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
     // Return children as-is (no sorting for JSX children)
     return children;
-  }, [children, sortSelectedToTop, items]);
+  }, [children, sortSelectedToTop, sortSelectedToTopExplicit, items]);
 
   // Compute sorted items array when using `items` prop
   const getSortedItems = useCallback(() => {

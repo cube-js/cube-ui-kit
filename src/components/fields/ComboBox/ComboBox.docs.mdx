@@ -14,6 +14,7 @@ A combobox component that combines a text input with a dropdown list, allowing u
 - When you need a searchable dropdown with keyboard navigation support
 - When the list of options is dynamic and can be filtered based on user input
 - When you need a more flexible alternative to standard Select components
+- When you want the selected item to appear first in the dropdown (using `items` prop with `sortSelectedToTop`)
 
 ## Component
 
@@ -23,7 +24,22 @@ A combobox component that combines a text input with a dropdown list, allowing u
 
 ### Properties
 
-<Controls />
+<Controls of={ComboBoxStories.Default} />
+
+#### Notable Properties
+
+**sortSelectedToTop** - When using the `items` prop (data-driven mode), the selected item will automatically appear at the top of the list when the popover opens. This is enabled by default when using `items`, but disabled when using JSX children. Set to `false` to maintain the original order.
+
+**allowsCustomValue** - Enables users to enter values that aren't in the predefined options list. Custom values can be committed by pressing Enter or on blur (controlled by `shouldCommitOnBlur`). **Important**: When enabled, typing in the input will clear the current selection. When disabled (default), typing only filters the options without clearing the selection.
+
+**shouldCommitOnBlur** - When `true` (default), custom values are committed when the input loses focus. When `false`, custom values only commit when Enter is pressed. Only applies when `allowsCustomValue` is enabled.
+
+**popoverTrigger** - Controls how the popover opens:
+- `input` (default) - Opens when user types
+- `focus` - Opens when input receives focus
+- `manual` - Only opens via trigger button click
+
+**filter** - Custom filter function or `false` to disable filtering. By default, uses a contains-based filter. Provide a custom function `(textValue, inputValue) => boolean` to customize filtering logic.
 
 ### Base Properties
 
@@ -31,7 +47,7 @@ Supports [Base properties](?path=/docs/foundation-base-properties--docs)
 
 ### Styling Properties
 
-#### styles (wrapperStyles)
+#### wrapperStyles
 
 Customizes the root wrapper element of the ComboBox.
 
@@ -356,6 +372,104 @@ const fruits = [
 
 <Story of={ComboBoxStories.LongList} />
 
+### Virtualized List
+
+<Story of={ComboBoxStories.VirtualizedList} />
+
+```jsx
+const items = Array.from({ length: 1000 }, (_, i) => ({
+  key: `item-${i}`,
+  name: `Item ${i + 1}`,
+}));
+
+<ComboBox
+  label="Virtualized List"
+  placeholder="Search from 1000 items..."
+  items={items}
+>
+  {(item) => <ComboBox.Item key={item.key}>{item.name}</ComboBox.Item>}
+</ComboBox>
+```
+
+### Sort Selected Item to Top
+
+<Story of={ComboBoxStories.SortSelectedToTop} />
+
+```jsx
+const fruits = [
+  { key: 'apple', label: 'Apple' },
+  { key: 'banana', label: 'Banana' },
+  { key: 'cherry', label: 'Cherry' },
+];
+
+// Default behavior with items prop - selected item appears first
+<ComboBox
+  label="With sorting (default)"
+  defaultSelectedKey="cherry"
+  items={fruits}
+>
+  {(item) => <ComboBox.Item key={item.key}>{item.label}</ComboBox.Item>}
+</ComboBox>
+
+// Disable sorting to maintain original order
+<ComboBox
+  label="Without sorting"
+  defaultSelectedKey="cherry"
+  sortSelectedToTop={false}
+  items={fruits}
+>
+  {(item) => <ComboBox.Item key={item.key}>{item.label}</ComboBox.Item>}
+</ComboBox>
+```
+
+### Independent Input and Selection Control
+
+<Story of={ComboBoxStories.IndependentControls} />
+
+```jsx
+const [inputValue, setInputValue] = useState('');
+const [selectedKey, setSelectedKey] = useState(null);
+
+<ComboBox
+  label="Fruit"
+  inputValue={inputValue}
+  selectedKey={selectedKey}
+  onInputChange={setInputValue}
+  onSelectionChange={setSelectedKey}
+>
+  <ComboBox.Item key="apple">Apple</ComboBox.Item>
+  <ComboBox.Item key="banana">Banana</ComboBox.Item>
+</ComboBox>
+```
+
+### Custom Value Without Commit on Blur
+
+<Story of={ComboBoxStories.AllowsCustomValueNoCommitOnBlur} />
+
+```jsx
+<ComboBox
+  allowsCustomValue
+  shouldCommitOnBlur={false}
+  label="Tags (Enter only)"
+  placeholder="Type or select..."
+>
+  <ComboBox.Item key="react">React</ComboBox.Item>
+  <ComboBox.Item key="vue">Vue</ComboBox.Item>
+</ComboBox>
+```
+
+### Show All Items When No Results
+
+<Story of={ComboBoxStories.ShowAllOnNoResults} />
+
+```jsx
+{/* Type text that yields no results, then click trigger or press arrow keys */}
+<ComboBox label="Search Fruits" placeholder="Type 'xyz' to see behavior...">
+  <ComboBox.Item key="apple">Apple</ComboBox.Item>
+  <ComboBox.Item key="banana">Banana</ComboBox.Item>
+</ComboBox>
+```
+
 ## Accessibility
 
 ### Keyboard Navigation
@@ -460,6 +574,38 @@ const fruits = [
    </ComboBox>
    ```
 
+8. **Smart Behavior**: The ComboBox automatically shows all items when opening the popover after filtering yields no results
+   ```jsx
+   {/* User types "xyz" (no match), then clicks trigger - shows all items */}
+   <ComboBox label="Search">
+     <ComboBox.Item key="apple">Apple</ComboBox.Item>
+     <ComboBox.Item key="banana">Banana</ComboBox.Item>
+   </ComboBox>
+   ```
+
+9. **Selected Item Sorting**: Use `items` prop for automatic selected-item-first sorting
+   ```jsx
+   {/* With items prop, selected item appears first by default */}
+   <ComboBox items={options} defaultSelectedKey="option5">
+     {(item) => <ComboBox.Item key={item.key}>{item.label}</ComboBox.Item>}
+   </ComboBox>
+   ```
+
+10. **Independent Control**: Control input and selection separately when needed
+    ```jsx
+    const [inputValue, setInputValue] = useState('');
+    const [selectedKey, setSelectedKey] = useState(null);
+    
+    <ComboBox
+      inputValue={inputValue}
+      selectedKey={selectedKey}
+      onInputChange={setInputValue}
+      onSelectionChange={setSelectedKey}
+    >
+      {/* options */}
+    </ComboBox>
+    ```
+
 ## Integration with Forms
 
 This component supports all Field properties when used within a Form. It integrates seamlessly with the form validation system and supports both controlled and uncontrolled modes.
@@ -485,10 +631,12 @@ This component supports all Field properties when used within a Form. It integra
 
 - **Virtual Scrolling**: Add support for virtualizing long lists to improve performance with thousands of items
 - **Multi-Select Mode**: Add ability to select multiple items with tag-based display
-- **Async Loading**: Built-in support for async data loading with loading states per scroll position
+- **Async Loading**: Built-in support for async data loading with loading states per scroll position (partial support via `isLoading` prop)
 - **Custom Option Rendering**: Allow more flexibility in rendering option content beyond text
-- **Grouped Item Navigation**: Improve keyboard navigation to allow jumping between section groups
-- **Empty State Customization**: Add more control over empty state rendering with custom components
+- **Grouped Item Navigation**: Improve keyboard navigation to allow jumping between section groups (e.g., Ctrl+Arrow to skip to next section)
+- **Empty State Component**: Allow passing custom React components for empty state when no results are found
+- **Prefix/Suffix Slots**: Add more flexible slot-based API for prefix and suffix content
+- **Item Descriptions**: Support for showing secondary text/descriptions in list items
 
 ## Related Components
 

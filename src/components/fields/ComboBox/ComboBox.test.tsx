@@ -661,4 +661,102 @@ describe('<ComboBox />', () => {
     const listbox = getByRole('listbox');
     expect(listbox).toHaveAttribute('aria-label');
   });
+
+  it('should sort selected item to top by default with items prop', async () => {
+    interface Item {
+      key: string;
+      label: string;
+    }
+
+    const itemsArray: Item[] = [
+      { key: 'apple', label: 'Apple' },
+      { key: 'banana', label: 'Banana' },
+      { key: 'cherry', label: 'Cherry' },
+      { key: 'date', label: 'Date' },
+    ];
+
+    const { getByRole, getAllByRole, getByTestId } = renderWithRoot(
+      <ComboBox<Item> label="test" defaultSelectedKey="date" items={itemsArray}>
+        {(item) => <ComboBox.Item key={item.key}>{item.label}</ComboBox.Item>}
+      </ComboBox>,
+    );
+
+    const trigger = getByTestId('ComboBoxTrigger');
+
+    // Open popover
+    await userEvent.click(trigger);
+
+    await waitFor(() => {
+      const options = getAllByRole('option');
+      // Date should be first because it's selected
+      expect(options[0]).toHaveTextContent('Date');
+      expect(options[1]).toHaveTextContent('Apple');
+      expect(options[2]).toHaveTextContent('Banana');
+      expect(options[3]).toHaveTextContent('Cherry');
+    });
+  });
+
+  it('should respect sortSelectedToTop={false}', async () => {
+    interface Item {
+      key: string;
+      label: string;
+    }
+
+    const itemsArray: Item[] = [
+      { key: 'apple', label: 'Apple' },
+      { key: 'banana', label: 'Banana' },
+      { key: 'cherry', label: 'Cherry' },
+      { key: 'date', label: 'Date' },
+    ];
+
+    const { getByRole, getAllByRole, getByTestId } = renderWithRoot(
+      <ComboBox<Item>
+        label="test"
+        defaultSelectedKey="date"
+        sortSelectedToTop={false}
+        items={itemsArray}
+      >
+        {(item) => <ComboBox.Item key={item.key}>{item.label}</ComboBox.Item>}
+      </ComboBox>,
+    );
+
+    const trigger = getByTestId('ComboBoxTrigger');
+
+    // Open popover
+    await userEvent.click(trigger);
+
+    await waitFor(() => {
+      const options = getAllByRole('option');
+      // Should maintain original order
+      expect(options[0]).toHaveTextContent('Apple');
+      expect(options[1]).toHaveTextContent('Banana');
+      expect(options[2]).toHaveTextContent('Cherry');
+      expect(options[3]).toHaveTextContent('Date');
+    });
+  });
+
+  it('should not sort when using JSX children', async () => {
+    const { getByRole, getAllByRole, getByTestId } = renderWithRoot(
+      <ComboBox label="test" defaultSelectedKey="date">
+        <ComboBox.Item key="apple">Apple</ComboBox.Item>
+        <ComboBox.Item key="banana">Banana</ComboBox.Item>
+        <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
+        <ComboBox.Item key="date">Date</ComboBox.Item>
+      </ComboBox>,
+    );
+
+    const trigger = getByTestId('ComboBoxTrigger');
+
+    // Open popover
+    await userEvent.click(trigger);
+
+    await waitFor(() => {
+      const options = getAllByRole('option');
+      // Should maintain original JSX order (sorting doesn't work with JSX children)
+      expect(options[0]).toHaveTextContent('Apple');
+      expect(options[1]).toHaveTextContent('Banana');
+      expect(options[2]).toHaveTextContent('Cherry');
+      expect(options[3]).toHaveTextContent('Date');
+    });
+  });
 });

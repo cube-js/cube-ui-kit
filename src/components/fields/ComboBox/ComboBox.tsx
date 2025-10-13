@@ -48,7 +48,6 @@ import { useEventBus } from '../../../utils/react/useEventBus';
 import { ItemAction } from '../../actions';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { DisplayTransition } from '../../helpers';
-import { CubeItemProps } from '../../Item';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
 import { ListBox } from '../ListBox/ListBox';
@@ -194,8 +193,6 @@ export interface CubeComboBoxProps<T>
   isLoading?: boolean;
   /** Validation state of the combobox */
   validationState?: 'valid' | 'invalid';
-  /** Custom label to display when no results are found after filtering */
-  emptyLabel?: ReactNode;
   /** Keys of disabled items */
   disabledKeys?: Iterable<Key>;
   /** Whether to flip the popover placement */
@@ -208,6 +205,13 @@ export interface CubeComboBoxProps<T>
   isReadOnly?: boolean;
   /** Suffix position goes before or after the validation and loading statuses */
   suffixPosition?: 'before' | 'after';
+  /**
+   * Sort selected item to the top when the popover opens.
+   * Only works when using the `items` prop (data-driven mode).
+   * Ignored when using JSX children.
+   * @default true when items are provided, false when using JSX children
+   */
+  sortSelectedToTop?: boolean;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -896,7 +900,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     placeholder,
     allowsCustomValue,
     shouldCommitOnBlur = true,
-    emptyLabel,
     items,
     children: renderChildren,
     sectionStyles,
@@ -904,6 +907,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     isReadOnly,
     overlayOffset = 8,
     onSelectionChange: externalOnSelectionChange,
+    sortSelectedToTop: sortSelectedToTopProp,
     ...otherProps
   } = props;
 
@@ -931,6 +935,15 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     comboBoxId,
   });
 
+  // Track if sortSelectedToTop was explicitly provided
+  const sortSelectedToTopExplicit = sortSelectedToTopProp !== undefined;
+  // Default to true if items are provided, false otherwise
+  const sortSelectedToTop = sortSelectedToTopProp ?? (items ? true : false);
+
+  // Cache for sorted items array when using `items` prop
+  const cachedItemsOrder = useRef<T[] | null>(null);
+  const selectionWhenClosed = useRef<string | null>(null);
+
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
   ref = useCombinedRefs(ref);
@@ -940,15 +953,72 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   popoverRef = useCombinedRefs(popoverRef);
   listBoxRef = useCombinedRefs(listBoxRef);
 
+  // Sort items with selected on top if enabled
+  const getSortedItems = useCallback((): typeof items => {
+    if (!items) return items;
+
+    if (!sortSelectedToTop) return items;
+
+    // Reuse cached order if available
+    if (cachedItemsOrder.current) {
+      return cachedItemsOrder.current;
+    }
+
+    // Warn if explicitly requested but not supported
+    if (sortSelectedToTopExplicit && !items) {
+      console.warn(
+        'ComboBox: sortSelectedToTop only works with the items prop. ' +
+          'Sorting will be skipped when using JSX children.',
+      );
+      return items;
+    }
+
+    const selectedKey = isPopoverOpen
+      ? effectiveSelectedKey
+      : selectionWhenClosed.current;
+
+    if (!selectedKey) return items;
+
+    const itemsArray = Array.isArray(items) ? items : Array.from(items);
+    const selectedItem = itemsArray.find((item) => {
+      const key = (item as any)?.key ?? (item as any)?.id;
+      return key != null && String(key) === String(selectedKey);
+    });
+
+    if (!selectedItem) return items;
+
+    const sorted = [
+      selectedItem,
+      ...itemsArray.filter((item) => {
+        const key = (item as any)?.key ?? (item as any)?.id;
+        return key == null || String(key) !== String(selectedKey);
+      }),
+    ] as T[];
+
+    if (isPopoverOpen) {
+      cachedItemsOrder.current = sorted;
+    }
+
+    return sorted;
+  }, [
+    items,
+    sortSelectedToTop,
+    sortSelectedToTopExplicit,
+    effectiveSelectedKey,
+    isPopoverOpen,
+  ]);
+
+  const sortedItems = getSortedItems();
+
   // Preserve the original `children` (may be a render function) before we
   // potentially overwrite it.
   let children: ReactNode = renderChildren as ReactNode;
 
   const renderFn = renderChildren as unknown;
 
-  if (items && typeof renderFn === 'function') {
+  if (sortedItems && typeof renderFn === 'function') {
     try {
-      const itemsArray = Array.from(items as Iterable<any>);
+      const itemsArray = Array.from(sortedItems as Iterable<any>);
       children = itemsArray.map((item, idx) => {
         const rendered = (renderFn as (it: any) => ReactNode)(item);
         if (
@@ -966,6 +1036,20 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       // If conversion fails, proceed with the original children
     }
   }
+
+  // Invalidate cached sorting whenever items change
+  useEffect(() => {
+    cachedItemsOrder.current = null;
+  }, [items]);
+
+  // Capture selection when popover closes
+  useEffect(() => {
+    if (!isPopoverOpen) {
+      selectionWhenClosed.current =
+        effectiveSelectedKey != null ? String(effectiveSelectedKey) : null;
+      cachedItemsOrder.current = null;
+    }
+  }, [isPopoverOpen, effectiveSelectedKey]);
 
   // Filtering hook
   const { filteredChildren, isFilterActive, setIsFilterActive } =
@@ -1409,7 +1493,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         effectiveSelectedKey={effectiveSelectedKey}
         isDisabled={isDisabled}
         disabledKeys={props.disabledKeys}
-        items={items}
+        items={sortedItems}
         listStateRef={listStateRef}
         label={label}
         ariaLabel={(props as any)['aria-label']}

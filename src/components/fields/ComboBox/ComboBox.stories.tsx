@@ -48,10 +48,6 @@ const meta = {
       description:
         'Message text displayed below the input (validation message)',
     },
-    emptyLabel: {
-      control: { type: 'text' },
-      description: 'Text shown when no items match the filter',
-    },
 
     /* Selection */
     selectedKey: {
@@ -83,6 +79,14 @@ const meta = {
         'Whether the combo box is clearable using ESC keyboard button or clear button inside the input',
       table: {
         defaultValue: { summary: false },
+      },
+    },
+    sortSelectedToTop: {
+      control: { type: 'boolean' },
+      description:
+        'Whether to sort selected item to the top when popover opens (only works with items prop)',
+      table: {
+        defaultValue: { summary: 'true when items provided, false otherwise' },
       },
     },
 
@@ -298,7 +302,6 @@ export const AllowsCustomValueNoItems: StoryObj<typeof ComboBox> = {
           label="Custom Input"
           placeholder="Type anything..."
           inputValue={inputValue}
-          emptyLabel="No predefined options available"
           onInputChange={setInputValue}
         />
         <div style={{ marginTop: '16px' }}>
@@ -469,6 +472,49 @@ export const WithItemsArray = () => {
   );
 };
 
+export const SortSelectedToTop = () => {
+  interface Fruit {
+    key: string;
+    label: string;
+  }
+
+  const fruits: Fruit[] = [
+    { key: 'apple', label: 'Apple' },
+    { key: 'banana', label: 'Banana' },
+    { key: 'cherry', label: 'Cherry' },
+    { key: 'date', label: 'Date' },
+    { key: 'elderberry', label: 'Elderberry' },
+    { key: 'fig', label: 'Fig' },
+    { key: 'grape', label: 'Grape' },
+  ];
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <ComboBox<Fruit>
+        label="With sorting (default)"
+        placeholder="Select a fruit..."
+        defaultSelectedKey="grape"
+        items={fruits}
+      >
+        {(item) => <ComboBox.Item key={item.key}>{item.label}</ComboBox.Item>}
+      </ComboBox>
+      <ComboBox<Fruit>
+        label="Without sorting"
+        placeholder="Select a fruit..."
+        defaultSelectedKey="grape"
+        sortSelectedToTop={false}
+        items={fruits}
+      >
+        {(item) => <ComboBox.Item key={item.key}>{item.label}</ComboBox.Item>}
+      </ComboBox>
+      <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+        Open both dropdowns. The first one shows "Grape" at the top (default
+        behavior with items prop). The second one keeps the original order.
+      </div>
+    </div>
+  );
+};
+
 export const WithCustomFilter = () => (
   <ComboBox
     label="Fruit (starts with filter)"
@@ -495,18 +541,6 @@ export const NoFilter = () => (
     <ComboBox.Item key="banana">Banana</ComboBox.Item>
     <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
     <ComboBox.Item key="date">Date</ComboBox.Item>
-  </ComboBox>
-);
-
-export const EmptyState = () => (
-  <ComboBox
-    label="Search (no results)"
-    placeholder="Type xyz to see empty state..."
-    emptyLabel="No fruits found. Try a different search."
-  >
-    <ComboBox.Item key="apple">Apple</ComboBox.Item>
-    <ComboBox.Item key="banana">Banana</ComboBox.Item>
-    <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
   </ComboBox>
 );
 
@@ -681,4 +715,41 @@ export const ShowAllOnNoResults: StoryObj<typeof ComboBox> = {
     const trigger = canvas.getByTestId('ComboBoxTrigger');
     await userEvent.click(trigger);
   },
+};
+
+export const VirtualizedList = () => {
+  interface Item {
+    key: string;
+    name: string;
+  }
+
+  const [selected, setSelected] = useState<string | null>(null);
+
+  // Generate a large list of items with varying content to test virtualization
+  const items: Item[] = Array.from({ length: 1000 }, (_, i) => ({
+    key: `item-${i}`,
+    name: `Item ${i + 1}${i % 7 === 0 ? ' - This is a longer item name to test dynamic sizing' : ''}`,
+  }));
+
+  return (
+    <div>
+      <div style={{ marginBottom: '16px', fontSize: '14px', color: '#666' }}>
+        Large list with {items.length} items. Virtualization is automatically
+        enabled in the ListBox. Type to filter or scroll through the dropdown to
+        test performance.
+      </div>
+      <ComboBox<Item>
+        label="Virtualized List"
+        placeholder="Search from 1000 items..."
+        items={items}
+        selectedKey={selected}
+        onSelectionChange={setSelected}
+      >
+        {(item) => <ComboBox.Item key={item.key}>{item.name}</ComboBox.Item>}
+      </ComboBox>
+      <div style={{ marginTop: '16px' }}>
+        Selected: <strong>{selected || 'None'}</strong>
+      </div>
+    </div>
+  );
 };
