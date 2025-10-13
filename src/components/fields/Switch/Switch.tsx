@@ -53,7 +53,8 @@ const SwitchElement = tasty({
     fill: {
       '': '#white',
       checked: '#purple',
-      disabled: '#border',
+      disabled: '#border.5',
+      'disabled & checked': '#border',
     },
     color: {
       '': '#dark-03',
@@ -62,7 +63,8 @@ const SwitchElement = tasty({
     border: {
       '': '#dark-05',
       checked: '#purple-text',
-      disabled: '#dark-05',
+      disabled: '#dark-05.5',
+      invalid: '#danger',
     },
     width: {
       '': '5x 5x',
@@ -81,10 +83,6 @@ const SwitchElement = tasty({
     outlineOffset: 1,
     transition: 'theme',
     cursor: 'pointer',
-    shadow: {
-      '': '0 0 0 0 #clear',
-      invalid: '0 0 0 1bw #white, 0 0 0 2bw #danger',
-    },
 
     Thumb: {
       position: 'absolute',
@@ -101,7 +99,8 @@ const SwitchElement = tasty({
       radius: 'round',
       fill: {
         '': 'currentColor',
-        disabled: '#white.7',
+        disabled: '#current.5',
+        'disabled & checked': '#white.8',
       },
       top: {
         '': '.375x',
