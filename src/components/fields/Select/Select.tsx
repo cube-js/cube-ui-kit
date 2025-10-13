@@ -60,6 +60,7 @@ import { ItemBase } from '../../content/ItemBase';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { DisplayTransition } from '../../helpers';
 import { Item } from '../../Item';
+import { Portal } from '../../portal';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
 
@@ -546,87 +547,89 @@ export function ListBoxPopup({
   // <DismissButton> components at the start and end of the list
   // to allow screen reader users to dismiss the popup easily.
   return (
-    <DisplayTransition isShown={state.isOpen && !isDisabled}>
-      {({ phase, isShown, ref: transitionRef }) => (
-        <OverlayElement
-          {...overlayProps}
-          {...parentOverlayProps}
-          ref={(value) => {
-            transitionRef(value as HTMLElement | null);
-            (popoverRef as any).current = value;
-          }}
-          data-placement={placementDirection}
-          data-phase={phase}
-          mods={{
-            open: isShown,
-          }}
-          styles={overlayStyles}
-          style={{
-            '--overlay-min-width': minWidth ? `${minWidth}px` : 'initial',
-            ...parentOverlayProps?.style,
-          }}
-        >
-          <FocusScope restoreFocus>
-            <DismissButton onDismiss={() => state.close()} />
-            {(() => {
-              const renderedItems: React.ReactNode[] = [];
-              let isFirstSection = true;
+    <Portal>
+      <DisplayTransition isShown={state.isOpen && !isDisabled}>
+        {({ phase, isShown, ref: transitionRef }) => (
+          <OverlayElement
+            {...overlayProps}
+            {...parentOverlayProps}
+            ref={(value) => {
+              transitionRef(value as HTMLElement | null);
+              (popoverRef as any).current = value;
+            }}
+            data-placement={placementDirection}
+            data-phase={phase}
+            mods={{
+              open: isShown,
+            }}
+            styles={overlayStyles}
+            style={{
+              '--overlay-min-width': minWidth ? `${minWidth}px` : 'initial',
+              ...parentOverlayProps?.style,
+            }}
+          >
+            <FocusScope restoreFocus>
+              <DismissButton onDismiss={() => state.close()} />
+              {(() => {
+                const renderedItems: React.ReactNode[] = [];
+                let isFirstSection = true;
 
-              for (const item of state.collection) {
-                if (item.type === 'section') {
-                  if (!isFirstSection) {
+                for (const item of state.collection) {
+                  if (item.type === 'section') {
+                    if (!isFirstSection) {
+                      renderedItems.push(
+                        <ListDivider
+                          key={`divider-${String(item.key)}`}
+                          as="li"
+                          role="separator"
+                          aria-orientation="horizontal"
+                        />,
+                      );
+                    }
+
                     renderedItems.push(
-                      <ListDivider
-                        key={`divider-${String(item.key)}`}
-                        as="li"
-                        role="separator"
-                        aria-orientation="horizontal"
+                      <SelectSection
+                        key={item.key}
+                        item={item}
+                        state={state}
+                        optionStyles={optionStyles}
+                        sectionStyles={undefined}
+                        shouldUseVirtualFocus={shouldUseVirtualFocus}
+                        size={listItemSize}
+                      />,
+                    );
+
+                    isFirstSection = false;
+                  } else {
+                    renderedItems.push(
+                      <Option
+                        key={item.key}
+                        item={item}
+                        state={state}
+                        styles={optionStyles}
+                        shouldUseVirtualFocus={shouldUseVirtualFocus}
+                        size={listItemSize}
                       />,
                     );
                   }
-
-                  renderedItems.push(
-                    <SelectSection
-                      key={item.key}
-                      item={item}
-                      state={state}
-                      optionStyles={optionStyles}
-                      sectionStyles={undefined}
-                      shouldUseVirtualFocus={shouldUseVirtualFocus}
-                      size={listItemSize}
-                    />,
-                  );
-
-                  isFirstSection = false;
-                } else {
-                  renderedItems.push(
-                    <Option
-                      key={item.key}
-                      item={item}
-                      state={state}
-                      styles={optionStyles}
-                      shouldUseVirtualFocus={shouldUseVirtualFocus}
-                      size={listItemSize}
-                    />,
-                  );
                 }
-              }
 
-              return (
-                <ListBoxElement
-                  styles={listBoxStyles}
-                  {...listBoxProps}
-                  ref={listBoxRef}
-                >
-                  {renderedItems}
-                </ListBoxElement>
-              );
-            })()}
-            <DismissButton onDismiss={() => state.close()} />
-          </FocusScope>
-        </OverlayElement>
-      )}
-    </DisplayTransition>
+                return (
+                  <ListBoxElement
+                    styles={listBoxStyles}
+                    {...listBoxProps}
+                    ref={listBoxRef}
+                  >
+                    {renderedItems}
+                  </ListBoxElement>
+                );
+              })()}
+              <DismissButton onDismiss={() => state.close()} />
+            </FocusScope>
+          </OverlayElement>
+        )}
+      </DisplayTransition>
+    </Portal>
   );
 }
 
