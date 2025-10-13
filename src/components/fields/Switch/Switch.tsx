@@ -60,16 +60,18 @@ const SwitchElement = tasty({
     },
     border: {
       '': '#dark-05',
-      checked: '#purple',
+      checked: '#purple-text',
       disabled: '#dark-05',
     },
     width: {
-      '': '5.25x 5.25x',
-      '[data-size="small"]': '4x 4x',
+      '': '5x 5x',
+      '[data-size="medium"]': '4x 4x',
+      '[data-size="small"]': '3x 3x',
     },
     height: {
       '': '3x 3x',
-      '[data-size="small"]': '2.5x 2.5x',
+      '[data-size="medium"]': '2.5x 2.5x',
+      '[data-size="small"]': '2x 2x',
     },
     outline: {
       '': '#purple-text.0',
@@ -87,11 +89,13 @@ const SwitchElement = tasty({
       position: 'absolute',
       width: {
         '': '2x 2x',
-        '[data-size="small"]': '1.5x 1.5x',
+        '[data-size="medium"]': '1.5x 1.5x',
+        '[data-size="small"]': '1.25x 1.25x',
       },
       height: {
         '': '2x 2x',
-        '[data-size="small"]': '1.5x 1.5x',
+        '[data-size="medium"]': '1.5x 1.5x',
+        '[data-size="small"]': '1.25x 1.25x',
       },
       radius: 'round',
       fill: {
@@ -100,13 +104,16 @@ const SwitchElement = tasty({
       },
       top: {
         '': '.375x',
-        '[data-size="small"]': '.375x',
+        '[data-size="medium"]': '.375x',
+        '[data-size="small"]': '.25x',
       },
       left: {
         '': '.375x',
-        '[data-size="small"]': '.375x',
-        checked: '2.5x',
-        'checked & [data-size="small"]': '1.75x',
+        '[data-size="medium"]': '.375x',
+        '[data-size="small"]': '.25x',
+        checked: '2.25x',
+        'checked & [data-size="medium"]': '1.75x',
+        'checked & [data-size="small"]': '1.25x',
       },
       transition: 'left, theme',
       cursor: 'pointer',
@@ -122,7 +129,7 @@ export interface CubeSwitchProps
     AriaSwitchProps {
   inputStyles?: Styles;
   isLoading?: boolean;
-  size?: 'large' | 'small';
+  size?: 'large' | 'medium' | 'small';
 }
 
 function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
@@ -149,7 +156,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
     labelPosition,
     inputStyles,
     validationState,
-    size = 'large',
+    size = 'medium',
   } = props;
 
   let styles = extractStyles(props, OUTER_STYLES);

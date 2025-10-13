@@ -82,7 +82,7 @@ export default {
 
     /* Presentation */
     size: {
-      options: ['small', 'large'],
+      options: ['small', 'medium', 'large'],
       control: { type: 'radio' },
       description: 'Switch size',
       table: {
@@ -127,12 +127,6 @@ WithDefaultSelected.args = {
   defaultSelected: true,
 };
 
-export const Small = Template.bind({});
-Small.args = {
-  children: 'Small switch',
-  size: 'small',
-};
-
 export const Invalid = Template.bind({});
 Invalid.args = {
   children: 'Required switch',
@@ -151,6 +145,36 @@ Loading.args = {
   children: 'Loading switch',
   isLoading: true,
 };
+
+// Stories showing all sizes for visual comparison
+const SizesTemplate: StoryFn<CubeSwitchProps> = (props) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Switch
+      {...props}
+      size="small"
+      onChange={(isSelected) => console.log('small change', isSelected)}
+    >
+      Small switch
+    </Switch>
+    <Switch
+      {...props}
+      size="medium"
+      onChange={(isSelected) => console.log('medium change', isSelected)}
+    >
+      Medium switch
+    </Switch>
+    <Switch
+      {...props}
+      size="large"
+      onChange={(isSelected) => console.log('large change', isSelected)}
+    >
+      Large switch
+    </Switch>
+  </div>
+);
+
+export const Sizes = SizesTemplate.bind({});
+Sizes.args = {};
 
 // Stories showing both selected and unselected states for visual testing
 const MultiStateTemplate: StoryFn<CubeSwitchProps> = (props) => (
