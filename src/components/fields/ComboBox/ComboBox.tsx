@@ -538,7 +538,7 @@ function useComboBoxKeyboard({
             listState.selectionManager.select(keyToSelect, e);
             // Ensure the popover closes even if selection stays the same
             onClosePopover();
-            setTimeout(() => inputRef.current?.focus(), 0);
+            inputRef.current?.focus();
           }
         }
       } else if (e.key === 'Escape') {
@@ -1501,7 +1501,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
             data-size={size}
             isDisabled={isDisabled}
             styles={triggerStyles}
-            onClick={() => {
+            onPress={() => {
               if (!isDisabled) {
                 const willOpen = !isPopoverOpen;
                 setIsPopoverOpen(willOpen);
