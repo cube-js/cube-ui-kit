@@ -1,5 +1,21 @@
 # @cube-dev/ui-kit
 
+## 0.81.0
+
+### Minor Changes
+
+- [#820](https://github.com/cube-js/cube-ui-kit/pull/820) [`bcc9783e`](https://github.com/cube-js/cube-ui-kit/commit/bcc9783e284b209c053b15673990ce2c633178ac) Thanks [@tenphi](https://github.com/tenphi)! - New Switch sizes: `small` -> `medium` (and now default). new `small` size.
+
+## 0.80.2
+
+### Patch Changes
+
+- [#774](https://github.com/cube-js/cube-ui-kit/pull/774) [`3f8c4b7f`](https://github.com/cube-js/cube-ui-kit/commit/3f8c4b7f40b1869abe694135803e7b784e1c51c2) Thanks [@tenphi](https://github.com/tenphi)! - Improve style state application for padding and margin styles making it predictable.
+
+- [#819](https://github.com/cube-js/cube-ui-kit/pull/819) [`852e73f0`](https://github.com/cube-js/cube-ui-kit/commit/852e73f006ef57c5d52ddbbc420f35e16989aaa5) Thanks [@tenphi](https://github.com/tenphi)! - Add CubePauseIcon and CubePlayIcon.
+
+- [#816](https://github.com/cube-js/cube-ui-kit/pull/816) [`13fb4505`](https://github.com/cube-js/cube-ui-kit/commit/13fb4505adcae3f905b6b6a1c21de9fd291886fc) Thanks [@tenphi](https://github.com/tenphi)! - Support controllable filtering in FilterListBox and FilterPicker.
+
 ## 0.80.1
 
 ### Patch Changes
