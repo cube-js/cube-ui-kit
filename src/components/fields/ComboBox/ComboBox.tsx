@@ -1360,13 +1360,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
     // Update the input value to match the selected key's label
     setInternalInputValue(expectedLabel);
-  }, [
-    isControlledKey,
-    isControlledInput,
-    effectiveSelectedKey,
-    getItemLabel,
-    children,
-  ]);
+  }, [isControlledKey, isControlledInput, effectiveSelectedKey, getItemLabel]);
 
   // Input focus handler
   const handleInputFocus = useEvent((e: React.FocusEvent<HTMLInputElement>) => {
