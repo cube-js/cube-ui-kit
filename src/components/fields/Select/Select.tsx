@@ -140,8 +140,10 @@ const OverlayElement = tasty({
       '': '0 0',
       'open & [data-placement="top"]': 'translate(0, 0)',
       '!open & [data-placement="top"]': 'translate(0, 10%)',
-      'open & [data-placement="bottom"]': 'translate(0, 0)',
-      '!open & [data-placement="bottom"]': 'translate(0, -10%)',
+      'open & ([data-placement="bottom"] | ![data-placement])':
+        'translate(0, 0)',
+      '!open & ([data-placement="bottom"] | ![data-placement])':
+        'translate(0, -10%)',
     },
     scale: {
       '': '1 1',

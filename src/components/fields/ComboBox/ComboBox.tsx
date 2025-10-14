@@ -95,8 +95,8 @@ const ComboBoxOverlayElement = tasty({
       '': '0 0',
       'open & [data-placement="top"]': '0 0',
       '!open & [data-placement="top"]': '0 10%',
-      'open & [data-placement="bottom"]': '0 0',
-      '!open & [data-placement="bottom"]': '0 -10%',
+      'open & ([data-placement="bottom"] | ![data-placement]': '0 0',
+      '!open & ([data-placement="bottom"] | ![data-placement])': '0 -10%',
     },
     scale: {
       '': '1 1',
