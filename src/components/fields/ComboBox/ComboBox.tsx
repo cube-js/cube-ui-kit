@@ -15,7 +15,6 @@ import React, {
 } from 'react';
 import {
   useFilter,
-  useFocusWithin,
   useKeyboard,
   useOverlay,
   useOverlayPosition,
@@ -130,10 +129,10 @@ export interface CubeComboBoxProps<T>
   placeholder?: string;
   /** Whether the input should have autofocus */
   autoFocus?: boolean;
-  /** Callback fired when the wrapper element receives focus */
-  onFocus?: (e: React.FocusEvent) => void;
-  /** Callback fired when the wrapper element loses focus */
-  onBlur?: (e: React.FocusEvent) => void;
+  /** Callback fired when focus enters the component (input, trigger, or popover). Does not receive event object. */
+  onFocus?: () => void;
+  /** Callback fired when focus leaves the component entirely. Does not receive event object. */
+  onBlur?: () => void;
 
   /** Popover trigger behavior: 'focus', 'input', or 'manual'. Defaults to 'input' */
   popoverTrigger?: PopoverTriggerAction;
@@ -411,6 +410,85 @@ function useComboBoxFiltering({
     filteredChildren,
     isFilterActive,
     setIsFilterActive,
+  };
+}
+
+// ============================================================================
+// Hook: useCompositeFocus
+// ============================================================================
+interface UseCompositeFocusProps {
+  wrapperRef: RefObject<HTMLElement>;
+  popoverRef: RefObject<HTMLElement>;
+  onFocus?: () => void;
+  onBlur?: () => void;
+  isDisabled?: boolean;
+}
+
+interface UseCompositeFocusReturn {
+  compositeFocusProps: {
+    onFocus: (e: React.FocusEvent) => void;
+    onBlur: (e: React.FocusEvent) => void;
+  };
+}
+
+function useCompositeFocus({
+  wrapperRef,
+  popoverRef,
+  onFocus,
+  onBlur,
+  isDisabled,
+}: UseCompositeFocusProps): UseCompositeFocusReturn {
+  const wasInsideRef = useRef(false);
+  const rafRef = useRef<number | null>(null);
+
+  const checkFocus = useCallback(() => {
+    if (isDisabled) return;
+
+    const activeElement = document.activeElement;
+    const isInside =
+      (wrapperRef.current?.contains(activeElement) ?? false) ||
+      (popoverRef.current?.contains(activeElement) ?? false);
+
+    if (isInside !== wasInsideRef.current) {
+      wasInsideRef.current = isInside;
+      if (isInside) {
+        onFocus?.();
+      } else {
+        onBlur?.();
+      }
+    }
+  }, [wrapperRef, popoverRef, onFocus, onBlur, isDisabled]);
+
+  const handleFocusOrBlur = useCallback(
+    (e: React.FocusEvent) => {
+      // Cancel any pending check
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
+
+      // Schedule focus check for next frame
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = null;
+        checkFocus();
+      });
+    },
+    [checkFocus],
+  );
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, []);
+
+  return {
+    compositeFocusProps: {
+      onFocus: handleFocusOrBlur,
+      onBlur: handleFocusOrBlur,
+    },
   };
 }
 
@@ -718,6 +796,10 @@ interface ComboBoxOverlayProps {
   onClose: () => void;
   label?: ReactNode;
   ariaLabel?: string;
+  compositeFocusProps: {
+    onFocus: (e: React.FocusEvent) => void;
+    onBlur: (e: React.FocusEvent) => void;
+  };
 }
 
 function ComboBoxOverlay({
@@ -745,6 +827,7 @@ function ComboBoxOverlay({
   onClose,
   label,
   ariaLabel,
+  compositeFocusProps,
 }: ComboBoxOverlayProps) {
   // Overlay positioning
   const {
@@ -796,7 +879,11 @@ function ComboBoxOverlay({
     <DisplayTransition exposeUnmounted isShown={isOpen}>
       {({ phase, isShown, ref: transitionRef }) => (
         <ComboBoxOverlayElement
-          {...mergeProps(overlayPositionProps, overlayBehaviorProps)}
+          {...mergeProps(
+            overlayPositionProps,
+            overlayBehaviorProps,
+            compositeFocusProps,
+          )}
           ref={(value) => {
             transitionRef(value as HTMLElement | null);
             (popoverRef as any).current = value;
@@ -1094,11 +1181,62 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
   const { isFocused, focusProps } = useFocus({ isDisabled });
 
-  // Wrapper-level focus/blur handlers
-  const { focusWithinProps } = useFocusWithin({
+  // Composite blur handler - fires when focus leaves the entire component
+  const handleCompositeBlur = useEvent(() => {
+    // Always disable filter on blur
+    setIsFilterActive(false);
+
+    // In allowsCustomValue mode with shouldCommitOnBlur, commit the input value
+    if (
+      allowsCustomValue &&
+      shouldCommitOnBlur &&
+      effectiveInputValue &&
+      effectiveSelectedKey == null
+    ) {
+      externalOnSelectionChange?.(effectiveInputValue as string);
+      if (!isControlledKey) {
+        setInternalSelectedKey(effectiveInputValue as Key);
+      }
+      // Call user's onBlur callback
+      onBlur?.();
+      return;
+    }
+
+    // In clearOnBlur mode (only for non-custom-value mode), clear selection and input
+    if (clearOnBlur && !allowsCustomValue) {
+      externalOnSelectionChange?.(null);
+      if (!isControlledKey) {
+        setInternalSelectedKey(null);
+      }
+      if (!isControlledInput) {
+        setInternalInputValue('');
+      }
+      onInputChange?.('');
+      // Call user's onBlur callback
+      onBlur?.();
+      return;
+    }
+
+    // Reset input to show current selection (or empty if none)
+    const nextValue =
+      effectiveSelectedKey != null ? getItemLabel(effectiveSelectedKey) : '';
+
+    if (!isControlledInput) {
+      setInternalInputValue(nextValue);
+    }
+    onInputChange?.(nextValue);
+
+    // Call user's onBlur callback
+    onBlur?.();
+  });
+
+  // Composite focus hook - handles focus tracking across wrapper and portaled popover
+  const { compositeFocusProps } = useCompositeFocus({
+    wrapperRef,
+    popoverRef,
+    onFocus,
+    onBlur: handleCompositeBlur,
     isDisabled,
-    onFocusWithin: onFocus,
-    onBlurWithin: onBlur,
   });
 
   let isInvalid = validationState === 'invalid';
@@ -1240,59 +1378,9 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     }
   });
 
-  // Input blur handler
+  // Input blur handler - just handles internal focus props
   const handleInputBlur = useEvent((e: React.FocusEvent<HTMLInputElement>) => {
     focusProps.onBlur?.(e as any);
-
-    const relatedTarget = e.relatedTarget as Node | null;
-
-    // Don't do anything if focus is moving within the combobox
-    if (
-      relatedTarget &&
-      (wrapperRef.current?.contains(relatedTarget) ||
-        popoverRef.current?.contains(relatedTarget))
-    ) {
-      return;
-    }
-
-    // Always disable filter on blur
-    setIsFilterActive(false);
-
-    // In allowsCustomValue mode with shouldCommitOnBlur, commit the input value
-    if (
-      allowsCustomValue &&
-      shouldCommitOnBlur &&
-      effectiveInputValue &&
-      effectiveSelectedKey == null
-    ) {
-      externalOnSelectionChange?.(effectiveInputValue as string);
-      if (!isControlledKey) {
-        setInternalSelectedKey(effectiveInputValue as Key);
-      }
-      return;
-    }
-
-    // In clearOnBlur mode (only for non-custom-value mode), clear selection and input
-    if (clearOnBlur && !allowsCustomValue) {
-      externalOnSelectionChange?.(null);
-      if (!isControlledKey) {
-        setInternalSelectedKey(null);
-      }
-      if (!isControlledInput) {
-        setInternalInputValue('');
-      }
-      onInputChange?.('');
-      return;
-    }
-
-    // Reset input to show current selection (or empty if none)
-    const nextValue =
-      effectiveSelectedKey != null ? getItemLabel(effectiveSelectedKey) : '';
-
-    if (!isControlledInput) {
-      setInternalInputValue(nextValue);
-    }
-    onInputChange?.(nextValue);
   });
 
   // Clear button logic
@@ -1462,7 +1550,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         zIndex: isFocused ? 1 : 'initial',
       }}
       data-size={size}
-      {...focusWithinProps}
+      {...compositeFocusProps}
     >
       {prefix ? <div data-element="Prefix">{prefix}</div> : null}
       <ComboBoxInput
@@ -1558,6 +1646,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         listStateRef={listStateRef}
         label={label}
         ariaLabel={(props as any)['aria-label']}
+        compositeFocusProps={compositeFocusProps}
         onSelectionChange={handleSelectionChange}
         onClose={() => setIsPopoverOpen(false)}
       >
