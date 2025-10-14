@@ -34,6 +34,8 @@ A combobox component that combines a text input with a dropdown list, allowing u
 
 **shouldCommitOnBlur** - When `true` (default), custom values are committed when the input loses focus. When `false`, custom values only commit when Enter is pressed. Only applies when `allowsCustomValue` is enabled.
 
+**clearOnBlur** - When `true`, clears both the selection and input when the input loses focus. When `false` (default), the input reverts to showing the current selection. Only applies to non-custom-value mode. Useful for search-like scenarios where you want to reset after each interaction.
+
 **popoverTrigger** - Controls how the popover opens:
 - `input` (default) - Opens when user types
 - `focus` - Opens when input receives focus
@@ -210,6 +212,26 @@ const [inputValue, setInputValue] = useState('');
   label="Fruit"
   placeholder="Select a fruit..."
   defaultSelectedKey="apple"
+>
+  <ComboBox.Item key="apple">Apple</ComboBox.Item>
+  <ComboBox.Item key="banana">Banana</ComboBox.Item>
+  <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
+</ComboBox>
+```
+
+### Clear on Blur
+
+<Story of={ComboBoxStories.ClearOnBlur} />
+
+```jsx
+const [selectedKey, setSelectedKey] = useState(null);
+
+<ComboBox
+  clearOnBlur
+  label="Fruit"
+  placeholder="Select a fruit..."
+  selectedKey={selectedKey}
+  onSelectionChange={setSelectedKey}
 >
   <ComboBox.Item key="apple">Apple</ComboBox.Item>
   <ComboBox.Item key="banana">Banana</ComboBox.Item>

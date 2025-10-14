@@ -463,6 +463,128 @@ describe('<ComboBox />', () => {
     });
   });
 
+  it('should clear selection on blur when clearOnBlur is true', async () => {
+    const onSelectionChange = jest.fn();
+
+    const { getByRole, getAllByRole, queryByRole } = renderWithRoot(
+      <ComboBox clearOnBlur label="test" onSelectionChange={onSelectionChange}>
+        {items.map((item) => (
+          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+    );
+
+    const combobox = getByRole('combobox');
+
+    // Type to filter and open popover
+    await userEvent.type(combobox, 're');
+
+    await waitFor(() => {
+      expect(queryByRole('listbox')).toBeInTheDocument();
+    });
+
+    // Click on first option (Red)
+    const options = getAllByRole('option');
+    await userEvent.click(options[0]);
+
+    // Verify selection was made
+    await waitFor(() => {
+      expect(onSelectionChange).toHaveBeenCalledWith('red');
+      expect(combobox).toHaveValue('Red');
+    });
+
+    // Blur the input
+    await act(async () => {
+      combobox.blur();
+    });
+
+    // Should clear selection on blur
+    await waitFor(() => {
+      expect(onSelectionChange).toHaveBeenCalledWith(null);
+      expect(combobox).toHaveValue('');
+    });
+  }, 15000);
+
+  it('should maintain selection on blur without clearOnBlur flag', async () => {
+    const onSelectionChange = jest.fn();
+
+    const { getByRole, getAllByRole, queryByRole } = renderWithRoot(
+      <ComboBox label="test" onSelectionChange={onSelectionChange}>
+        {items.map((item) => (
+          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+    );
+
+    const combobox = getByRole('combobox');
+
+    // Type to filter and open popover
+    await userEvent.type(combobox, 're');
+
+    await waitFor(() => {
+      expect(queryByRole('listbox')).toBeInTheDocument();
+    });
+
+    // Click on first option (Red)
+    const options = getAllByRole('option');
+    await userEvent.click(options[0]);
+
+    // Verify selection was made
+    await waitFor(() => {
+      expect(onSelectionChange).toHaveBeenCalledWith('red');
+      expect(combobox).toHaveValue('Red');
+    });
+
+    // Clear the mock to check no additional calls happen
+    onSelectionChange.mockClear();
+
+    // Blur the input
+    await act(async () => {
+      combobox.blur();
+    });
+
+    // Wait a bit to ensure state has settled
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // Should maintain selection on blur (default behavior)
+    expect(onSelectionChange).not.toHaveBeenCalled();
+    expect(combobox).toHaveValue('Red');
+  }, 15000);
+
+  it('should not apply clearOnBlur in allowsCustomValue mode', async () => {
+    const onSelectionChange = jest.fn();
+
+    const { getByRole } = renderWithRoot(
+      <ComboBox
+        allowsCustomValue
+        clearOnBlur
+        label="test"
+        onSelectionChange={onSelectionChange}
+      >
+        {items.map((item) => (
+          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+    );
+
+    const combobox = getByRole('combobox');
+
+    // Type custom value
+    await userEvent.type(combobox, 'Custom Value');
+
+    // Blur without pressing Enter - should commit the custom value
+    await act(async () => {
+      combobox.blur();
+    });
+
+    // In allowsCustomValue mode, clearOnBlur should not apply
+    // Instead, shouldCommitOnBlur (default: true) behavior should apply
+    await waitFor(() => {
+      expect(onSelectionChange).toHaveBeenCalledWith('Custom Value');
+      expect(combobox).toHaveValue('Custom Value');
+    });
+  });
+
   it('should show all items when opening with no results', async () => {
     const { getByRole, getAllByRole, queryByRole, getByTestId } =
       renderWithRoot(

@@ -73,6 +73,14 @@ const meta = {
         defaultValue: { summary: true },
       },
     },
+    clearOnBlur: {
+      control: { type: 'boolean' },
+      description:
+        'Whether to clear selection and input on blur (only applies to non-custom-value mode)',
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
     isClearable: {
       control: { type: 'boolean' },
       description:
@@ -333,6 +341,37 @@ export const Clearable = () => (
     <ComboBox.Item key="date">Date</ComboBox.Item>
   </ComboBox>
 );
+
+export const ClearOnBlur = () => {
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+
+  return (
+    <div>
+      <ComboBox
+        clearOnBlur
+        label="Fruit"
+        placeholder="Select a fruit..."
+        selectedKey={selectedKey}
+        onSelectionChange={setSelectedKey}
+      >
+        <ComboBox.Item key="apple">Apple</ComboBox.Item>
+        <ComboBox.Item key="banana">Banana</ComboBox.Item>
+        <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
+        <ComboBox.Item key="date">Date</ComboBox.Item>
+      </ComboBox>
+      <div style={{ marginTop: '16px' }}>
+        <div>
+          Selected: <strong>{selectedKey || 'none'}</strong>
+        </div>
+        <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+          With clearOnBlur, selection and input are cleared when the input loses
+          focus. This is useful for search-like scenarios where you want to
+          reset after each interaction.
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const WithSections = () => (
   <ComboBox label="Food" placeholder="Select food...">

@@ -153,6 +153,8 @@ export interface CubeComboBoxProps<T>
   allowsCustomValue?: boolean;
   /** Whether to commit custom value on blur in allowsCustomValue mode (default: true) */
   shouldCommitOnBlur?: boolean;
+  /** Whether to clear selection and input on blur (default: false, only applies to non-custom-value mode) */
+  clearOnBlur?: boolean;
   /** Whether the combobox is clearable using ESC key or clear button */
   isClearable?: boolean;
   /** Callback called when the clear button is pressed */
@@ -913,6 +915,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     placeholder,
     allowsCustomValue,
     shouldCommitOnBlur = true,
+    clearOnBlur,
     items,
     children: renderChildren,
     sectionStyles,
@@ -1266,6 +1269,19 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       if (!isControlledKey) {
         setInternalSelectedKey(effectiveInputValue as Key);
       }
+      return;
+    }
+
+    // In clearOnBlur mode (only for non-custom-value mode), clear selection and input
+    if (clearOnBlur && !allowsCustomValue) {
+      externalOnSelectionChange?.(null);
+      if (!isControlledKey) {
+        setInternalSelectedKey(null);
+      }
+      if (!isControlledInput) {
+        setInternalInputValue('');
+      }
+      onInputChange?.('');
       return;
     }
 
