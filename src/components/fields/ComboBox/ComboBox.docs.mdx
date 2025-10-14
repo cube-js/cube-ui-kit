@@ -28,6 +28,8 @@ A combobox component that combines a text input with a dropdown list, allowing u
 
 #### Notable Properties
 
+**defaultInputValue** - Sets the initial input value in uncontrolled mode. This is useful when you want to display a specific text in the input field on mount without selecting any option. When both `defaultInputValue` and `defaultSelectedKey` are provided, `defaultInputValue` takes priority. The value can be changed by the user and is not enforced after initial render.
+
 **sortSelectedToTop** - When using the `items` prop (data-driven mode), the selected item will automatically appear at the top of the list when the popover opens. This is enabled by default when using `items`, but disabled when using JSX children. Set to `false` to maintain the original order.
 
 **allowsCustomValue** - Enables users to enter values that aren't in the predefined options list. Custom values can be committed by pressing Enter or on blur (controlled by `shouldCommitOnBlur`). **Important**: When enabled, typing in the input will clear the current selection. When disabled (default), typing only filters the options without clearing the selection.
@@ -148,7 +150,7 @@ The `mods` property accepts the following modifiers you can override:
 </ComboBox>
 ```
 
-### With Default Value
+### With Default Selected Value
 
 <Story of={ComboBoxStories.WithDefaultValue} />
 

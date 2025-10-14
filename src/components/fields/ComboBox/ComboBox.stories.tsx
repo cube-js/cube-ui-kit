@@ -238,6 +238,19 @@ export const WithDefaultValue = () => (
   </ComboBox>
 );
 
+export const WithDefaultInputValue = () => (
+  <ComboBox
+    label="Search Query"
+    placeholder="Start typing..."
+    defaultInputValue="Pre-filled search text"
+  >
+    <ComboBox.Item key="apple">Apple</ComboBox.Item>
+    <ComboBox.Item key="banana">Banana</ComboBox.Item>
+    <ComboBox.Item key="cherry">Cherry</ComboBox.Item>
+    <ComboBox.Item key="date">Date</ComboBox.Item>
+  </ComboBox>
+);
+
 export const Controlled = () => {
   const [selectedKey, setSelectedKey] = useState<string | null>('apple');
 

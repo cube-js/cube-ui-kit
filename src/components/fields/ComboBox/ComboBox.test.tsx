@@ -1005,4 +1005,123 @@ describe('<ComboBox />', () => {
       expect(onBlur).toHaveBeenCalledTimes(1);
     });
   });
+
+  it('should initialize input with defaultInputValue', async () => {
+    const { getByRole } = renderWithRoot(
+      <ComboBox label="test" defaultInputValue="Initial text">
+        {items.map((item) => (
+          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+    );
+
+    const combobox = getByRole('combobox');
+
+    // Input should show the defaultInputValue immediately
+    expect(combobox).toHaveValue('Initial text');
+  });
+
+  it('should prioritize defaultInputValue over defaultSelectedKey', async () => {
+    const { getByRole } = renderWithRoot(
+      <ComboBox
+        label="test"
+        defaultInputValue="Custom initial text"
+        defaultSelectedKey="green"
+      >
+        {items.map((item) => (
+          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+    );
+
+    const combobox = getByRole('combobox');
+
+    // Input should show defaultInputValue, not the label from defaultSelectedKey
+    expect(combobox).toHaveValue('Custom initial text');
+  });
+
+  it('should allow typing when defaultInputValue is set', async () => {
+    const onInputChange = jest.fn();
+
+    const { getByRole } = renderWithRoot(
+      <ComboBox
+        label="test"
+        defaultInputValue="Initial"
+        onInputChange={onInputChange}
+      >
+        {items.map((item) => (
+          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+    );
+
+    const combobox = getByRole('combobox');
+
+    // Clear and type new value
+    await userEvent.clear(combobox);
+    await userEvent.type(combobox, 'New text');
+
+    expect(combobox).toHaveValue('New text');
+    expect(onInputChange).toHaveBeenCalled();
+  });
+
+  it('should work with defaultInputValue in allowsCustomValue mode', async () => {
+    const onSelectionChange = jest.fn();
+
+    const { getByRole } = renderWithRoot(
+      <ComboBox
+        allowsCustomValue
+        label="test"
+        defaultInputValue="Custom value"
+        onSelectionChange={onSelectionChange}
+      >
+        {items.map((item) => (
+          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+    );
+
+    const combobox = getByRole('combobox');
+
+    // Input should show defaultInputValue
+    expect(combobox).toHaveValue('Custom value');
+
+    // Focus and modify the input, then blur to commit
+    await act(async () => {
+      combobox.focus();
+    });
+
+    await userEvent.clear(combobox);
+    await userEvent.type(combobox, 'Modified value');
+
+    await act(async () => {
+      combobox.blur();
+    });
+
+    await waitFor(() => {
+      expect(onSelectionChange).toHaveBeenCalledWith('Modified value');
+    });
+  });
+
+  it('should not interfere with controlled inputValue', async () => {
+    const onInputChange = jest.fn();
+
+    const { getByRole } = renderWithRoot(
+      <ComboBox
+        label="test"
+        inputValue="Controlled value"
+        defaultInputValue="Should be ignored"
+        onInputChange={onInputChange}
+      >
+        {items.map((item) => (
+          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+    );
+
+    const combobox = getByRole('combobox');
+
+    // Input should show controlled value, not defaultInputValue
+    expect(combobox).toHaveValue('Controlled value');
+  });
 });

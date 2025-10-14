@@ -126,6 +126,8 @@ export interface CubeComboBoxProps<T>
 
   /** The input value in controlled mode */
   inputValue?: string;
+  /** The default input value in uncontrolled mode */
+  defaultInputValue?: string;
   /** Callback fired when input value changes */
   onInputChange?: (value: string) => void;
   /** Placeholder text for the input */
@@ -239,6 +241,7 @@ interface UseComboBoxStateProps {
   selectedKey?: string | null;
   defaultSelectedKey?: string | null;
   inputValue?: string;
+  defaultInputValue?: string;
   comboBoxId: string;
 }
 
@@ -257,6 +260,7 @@ function useComboBoxState({
   selectedKey,
   defaultSelectedKey,
   inputValue,
+  defaultInputValue,
   comboBoxId,
 }: UseComboBoxStateProps): UseComboBoxStateReturn {
   // Get event bus for menu synchronization
@@ -266,7 +270,9 @@ function useComboBoxState({
   const [internalSelectedKey, setInternalSelectedKey] = useState<Key | null>(
     defaultSelectedKey ?? null,
   );
-  const [internalInputValue, setInternalInputValue] = useState('');
+  const [internalInputValue, setInternalInputValue] = useState(
+    defaultInputValue ?? '',
+  );
 
   const isControlledKey = selectedKey !== undefined;
   const isControlledInput = inputValue !== undefined;
@@ -1006,6 +1012,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     selectedKey,
     defaultSelectedKey,
     inputValue,
+    defaultInputValue,
     onInputChange,
     isClearable,
     onClear,
@@ -1048,6 +1055,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     selectedKey,
     defaultSelectedKey,
     inputValue,
+    defaultInputValue,
     comboBoxId,
   });
 
@@ -1335,23 +1343,34 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     },
   );
 
-  // Initialize input value from default selected key (uncontrolled mode only, one-time)
+  // Initialize input value from defaultInputValue or defaultSelectedKey (uncontrolled mode only, one-time)
   const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
-    // Only initialize once, in uncontrolled input mode, when defaultSelectedKey is provided
-    if (hasInitialized || isControlledInput || !defaultSelectedKey) return;
+    // Only initialize once, in uncontrolled input mode
+    if (hasInitialized || isControlledInput) return;
 
-    // Wait for collection to be ready
-    if (!listStateRef.current?.collection) return;
+    // Priority 1: defaultInputValue takes precedence
+    if (defaultInputValue !== undefined) {
+      setInternalInputValue(defaultInputValue);
+      setHasInitialized(true);
+      return;
+    }
 
-    const label = getItemLabel(defaultSelectedKey);
+    // Priority 2: fall back to defaultSelectedKey's label
+    if (defaultSelectedKey) {
+      // Wait for collection to be ready
+      if (!listStateRef.current?.collection) return;
 
-    setInternalInputValue(label);
-    setHasInitialized(true);
+      const label = getItemLabel(defaultSelectedKey);
+
+      setInternalInputValue(label);
+      setHasInitialized(true);
+    }
   }, [
     hasInitialized,
     isControlledInput,
+    defaultInputValue,
     defaultSelectedKey,
     getItemLabel,
     children,
