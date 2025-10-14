@@ -37,9 +37,9 @@ A combobox component that combines a text input with a dropdown list, allowing u
 **clearOnBlur** - When `true`, clears both the selection and input when the input loses focus. When `false` (default), the input reverts to showing the current selection. Only applies to non-custom-value mode. Useful for search-like scenarios where you want to reset after each interaction.
 
 **popoverTrigger** - Controls how the popover opens:
-- `input` (default) - Opens when user types
-- `focus` - Opens when input receives focus
-- `manual` - Only opens via trigger button click
+- `manual` - Only opens via trigger button or arrow keys
+- `input` (default) - Opens when user types + manual triggers
+- `focus` - Opens on input focus + typing + manual triggers
 
 **filter** - Custom filter function or `false` to disable filtering. By default, uses a contains-based filter. Provide a custom function `(textValue, inputValue) => boolean` to customize filtering logic.
 
@@ -123,9 +123,9 @@ The `mods` property accepts the following modifiers you can override:
 
 ### Popover Trigger Modes
 
-- `input` - Opens popover when user types (default)
-- `focus` - Opens popover when input receives focus
-- `manual` - Only opens via trigger button click
+- `manual` - Only opens via trigger button or arrow keys
+- `input` - Opens when user types + manual triggers (default)
+- `focus` - Opens on input focus + typing + manual triggers
 
 <Story of={ComboBoxStories.PopoverTriggers} />
 

@@ -1329,7 +1329,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       }
 
       // Open popover based on trigger
-      if (popoverTrigger === 'input' && value && !isPopoverOpen) {
+      if (popoverTrigger !== 'manual' && value && !isPopoverOpen) {
         setIsPopoverOpen(true);
       }
     },
