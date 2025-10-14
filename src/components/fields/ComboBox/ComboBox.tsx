@@ -136,6 +136,8 @@ export interface CubeComboBoxProps<T>
   onFocus?: () => void;
   /** Callback fired when focus leaves the component entirely. Does not receive event object. */
   onBlur?: () => void;
+  /** Callback fired when a key is pressed on the input */
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 
   /** Popover trigger behavior: 'focus', 'input', or 'manual'. Defaults to 'input' */
   popoverTrigger?: PopoverTriggerAction;
@@ -511,6 +513,7 @@ interface UseComboBoxKeyboardProps {
   onClosePopover: () => void;
   inputRef: RefObject<HTMLInputElement>;
   setIsFilterActive: (active: boolean) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 function useComboBoxKeyboard({
@@ -526,9 +529,13 @@ function useComboBoxKeyboard({
   onClosePopover,
   inputRef,
   setIsFilterActive,
+  onKeyDown,
 }: UseComboBoxKeyboardProps) {
   const { keyboardProps } = useKeyboard({
     onKeyDown: (e) => {
+      // Call user's handler first
+      onKeyDown?.(e as React.KeyboardEvent<HTMLInputElement>);
+
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         e.preventDefault();
 
@@ -1016,6 +1023,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     sortSelectedToTop: sortSelectedToTopProp,
     onFocus,
     onBlur,
+    onKeyDown,
     ...otherProps
   } = props;
 
@@ -1432,6 +1440,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     onClosePopover: () => setIsPopoverOpen(false),
     inputRef,
     setIsFilterActive,
+    onKeyDown,
   });
 
   if (icon) {
