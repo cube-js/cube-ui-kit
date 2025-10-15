@@ -47,6 +47,7 @@ import {
   forwardRefWithGenerics,
   mergeProps,
   useCombinedRefs,
+  useLayoutEffect,
 } from '../../../utils/react/index';
 import { useFocus } from '../../../utils/react/interactions';
 import { useEventBus } from '../../../utils/react/useEventBus';
@@ -322,7 +323,7 @@ function Select<T extends object>(
     triggerRef,
   );
 
-  let { overlayProps, placement } = useOverlayPosition({
+  let { overlayProps, placement, updatePosition } = useOverlayPosition({
     targetRef: triggerRef,
     overlayRef: popoverRef,
     scrollRef: listBoxRef,
@@ -467,6 +468,7 @@ function Select<T extends object>(
         listBoxRef={listBoxRef}
         overlayProps={overlayProps}
         placement={placement}
+        updatePosition={updatePosition}
         state={state}
         listBoxStyles={listBoxStyles}
         overlayStyles={overlayStyles}
@@ -501,6 +503,7 @@ export function ListBoxPopup({
   overlayProps: parentOverlayProps,
   shouldUseVirtualFocus = false,
   placement,
+  updatePosition,
   minWidth,
   size = 'small',
   triggerRef,
@@ -510,6 +513,19 @@ export function ListBoxPopup({
   // For trigger+popover components, map 'small' size to 'medium' for list items
   // while preserving 'medium' and 'large' sizes
   const listItemSize = size === 'small' ? 'medium' : size;
+
+  // Update position when overlay opens
+  useLayoutEffect(() => {
+    if (state.isOpen) {
+      // Use double RAF to ensure layout is complete before positioning
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          updatePosition?.();
+        });
+      });
+    }
+  }, [state.isOpen, updatePosition]);
+
   // Get props for the listbox
   let { listBoxProps } = useListBox(
     {
