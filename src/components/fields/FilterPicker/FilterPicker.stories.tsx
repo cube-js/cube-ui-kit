@@ -491,19 +491,24 @@ export const MultipleSelection: Story = {
     const trigger = canvas.getByRole('button');
     await userEvent.click(trigger);
   },
-  render: (args) => {
-    const allItems = [...fruits, ...vegetables];
-
-    return (
-      <FilterPicker<(typeof allItems)[number]> {...args} items={allItems}>
-        {(item) => (
-          <FilterPicker.Item key={item.key} textValue={item.label}>
-            {item.label}
+  render: (args) => (
+    <FilterPicker {...args}>
+      <FilterPicker.Section title="Fruits">
+        {fruits.map((fruit) => (
+          <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
+            {fruit.label}
           </FilterPicker.Item>
-        )}
-      </FilterPicker>
-    );
-  },
+        ))}
+      </FilterPicker.Section>
+      <FilterPicker.Section title="Vegetables">
+        {vegetables.map((vegetable) => (
+          <FilterPicker.Item key={vegetable.key} textValue={vegetable.label}>
+            {vegetable.label}
+          </FilterPicker.Item>
+        ))}
+      </FilterPicker.Section>
+    </FilterPicker>
+  ),
 };
 
 export const WithCheckboxes: Story = {
