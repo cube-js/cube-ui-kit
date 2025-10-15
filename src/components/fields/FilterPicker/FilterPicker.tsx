@@ -381,15 +381,27 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const getSelectedLabels = () => {
     const collection = localCollectionState.collection;
 
+    // Helper to recursively collect all item labels from collection (including nested in sections)
+    const collectAllLabels = (): string[] => {
+      const allLabels: string[] = [];
+
+      const traverse = (nodes: Iterable<any>) => {
+        for (const node of nodes) {
+          if (node.type === 'item') {
+            allLabels.push(node.textValue || String(node.key));
+          } else if (node.childNodes) {
+            traverse(node.childNodes);
+          }
+        }
+      };
+
+      traverse(collection);
+      return allLabels;
+    };
+
     // Handle "all" selection - return all available labels
     if (selectionMode === 'multiple' && effectiveSelectedKeys === 'all') {
-      const allLabels: string[] = [];
-      for (const item of collection) {
-        if (item.type === 'item') {
-          allLabels.push(item.textValue || String(item.key));
-        }
-      }
-      return allLabels;
+      return collectAllLabels();
     }
 
     const selectedSet = new Set(
@@ -403,13 +415,14 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     const labels: string[] = [];
     const processedKeys = new Set<string>();
 
-    // Use collection to get labels for selected items
-    for (const item of collection) {
-      if (item.type === 'item' && selectedSet.has(String(item.key))) {
+    // Use collection.getItem() to directly retrieve items by key (works with sections)
+    selectedSet.forEach((key) => {
+      const item = collection.getItem(key);
+      if (item) {
         labels.push(item.textValue || String(item.key));
         processedKeys.add(String(item.key));
       }
-    }
+    });
 
     // Handle custom values that aren't in the collection
     const selectedKeysArr =
