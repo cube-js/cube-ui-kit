@@ -1,5 +1,17 @@
 # @cube-dev/ui-kit
 
+## 0.82.0
+
+### Minor Changes
+
+- [#823](https://github.com/cube-js/cube-ui-kit/pull/823) [`91e81ac3`](https://github.com/cube-js/cube-ui-kit/commit/91e81ac3e78998f458b3bca140bfbd8c28824f97) Thanks [@tenphi](https://github.com/tenphi)! - Add a brand new ComboBox component with virtualization and user/developer-friendly behavior.
+
+### Patch Changes
+
+- [#818](https://github.com/cube-js/cube-ui-kit/pull/818) [`465e4ebc`](https://github.com/cube-js/cube-ui-kit/commit/465e4ebc303c230a9bb31542f77fcf75d1acb6a8) Thanks [@tenphi](https://github.com/tenphi)! - Add DisplayTransition helper component.
+
+- [#818](https://github.com/cube-js/cube-ui-kit/pull/818) [`465e4ebc`](https://github.com/cube-js/cube-ui-kit/commit/465e4ebc303c230a9bb31542f77fcf75d1acb6a8) Thanks [@tenphi](https://github.com/tenphi)! - Fix Tooltip position and transition.
+
 ## 0.81.0
 
 ### Minor Changes
