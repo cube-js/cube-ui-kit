@@ -34,7 +34,6 @@ const meta: any = {
     controls: {
       exclude: baseProps,
     },
-    layout: 'centered',
   },
   argTypes: {
     /* Content */

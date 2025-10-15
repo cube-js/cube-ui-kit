@@ -12,7 +12,7 @@ const meta = {
   component: ComboBox,
   subcomponents: { Item: ComboBox.Item, Section: ComboBox.Section },
   args: { width: '200px', label: 'Choose an option' },
-  parameters: { controls: { exclude: baseProps } },
+  parameters: { controls: { exclude: baseProps }, layout: 'centered' },
   argTypes: {
     /* Content */
     children: {
