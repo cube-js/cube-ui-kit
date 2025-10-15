@@ -36,18 +36,22 @@ Supports [Base properties](/docs/tasty-base-properties--docs)
 
 Customizes the root wrapper element of the component.
 
-**Sub-elements:**
-- `Thumb` - The movable indicator inside the switch
-
 #### inputStyles
 
 Customizes the switch toggle element specifically.
 
+**Sub-elements:**
+- `Thumb` - The movable indicator inside the switch
+
+#### fieldStyles
+
+Customizes the field wrapper element when the switch is used with labels or validation.
+
 ### Style Properties
 
-The Switch component supports all standard style properties:
+These properties allow direct style application without using the `styles` prop:
 
-`display`, `font`, `preset`, `hide`, `opacity`, `whiteSpace`, `gridArea`, `order`, `gridColumn`, `gridRow`, `placeSelf`, `alignSelf`, `justifySelf`, `zIndex`, `margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `reset`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`, `textAlign`, `color`, `fill`, `fade`, `textTransform`, `fontWeight`, `fontStyle`, `flow`, `placeItems`, `placeContent`, `alignItems`, `alignContent`, `justifyItems`, `justifyContent`, `align`, `justify`, `gap`, `columnGap`, `rowGap`, `gridColumns`, `gridRows`, `gridTemplate`, `gridAreas`
+`margin`, `inset`, `position`, `width`, `height`, `flexBasis`, `flexGrow`, `flexShrink`, `flex`, `padding`, `paddingInline`, `paddingBlock`, `shadow`, `border`, `radius`, `overflow`, `scrollbar`, `outline`
 
 ### Modifiers
 
@@ -69,7 +73,8 @@ The `mods` property accepts the following modifiers you can override:
 ### Sizes
 
 - `small` - Compact size for dense interfaces
-- `default` - Standard size
+- `medium` - Standard size (default)
+- `large` - Larger size for emphasis
 
 ## Examples
 
@@ -81,11 +86,7 @@ The `mods` property accepts the following modifiers you can override:
 
 ### With Default State
 
-```jsx
-<Switch defaultSelected={true}>
-  Auto-save enabled
-</Switch>
-```
+<Story of={SwitchStories.WithDefaultSelected} />
 
 ### Controlled State
 
@@ -100,41 +101,25 @@ const [isEnabled, setIsEnabled] = useState(false);
 </Switch>
 ```
 
-### Small Size
+### All Sizes
 
-```jsx
-<Switch size="small">
-  Compact toggle
-</Switch>
-```
+<Story of={SwitchStories.Sizes} />
 
 ### With Validation
 
-```jsx
-<Switch
-  isRequired
-  validationState="invalid"
-  errorMessage="You must agree to continue"
->
-  I agree to the terms
-</Switch>
-```
+<Story of={SwitchStories.Invalid} />
 
 ### Disabled State
 
-```jsx
-<Switch isDisabled>
-  Cannot be changed
-</Switch>
-```
+<Story of={SwitchStories.Disabled} />
 
 ### Loading State
 
-```jsx
-<Switch isLoading>
-  Applying changes...
-</Switch>
-```
+<Story of={SwitchStories.Loading} />
+
+### All States Overview
+
+<Story of={SwitchStories.AllStates} />
 
 ## Accessibility
 

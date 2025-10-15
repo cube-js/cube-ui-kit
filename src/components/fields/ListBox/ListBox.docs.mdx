@@ -15,7 +15,10 @@ A versatile list selection component that allows users to select one or more ite
 - Display structured data with sections and descriptions
 - Create custom selection interfaces that need to remain visible
 - Build form controls that require persistent option visibility
-- Use when you have a small to medium number of options (for larger lists with search, consider FilterListBox)
+- Handle lists of any size (virtualization is automatic for flat lists)
+- When you need rich option content (icons, descriptions, badges, hotkeys)
+- For multiple selection with clear visual feedback (checkboxes)
+- When options should always be visible (for searchable lists, consider FilterListBox)
 
 ## Component
 
@@ -85,8 +88,81 @@ The `mods` property accepts the following modifiers you can override:
 | `valid` | `boolean` | Applied when `validationState="valid"` |
 | `disabled` | `boolean` | Applied when `isDisabled={true}` |
 | `focused` | `boolean` | Applied when the ListBox has focus |
-| `header` | `boolean` | Applied when header prop is provided |
+| `header` | `boolean` | Applied when header prop is provided or `showSelectAll={true}` |
 | `footer` | `boolean` | Applied when footer prop is provided |
+| `selectAll` | `boolean` | Applied when `showSelectAll={true}` in multiple selection mode |
+
+## Key Properties
+
+### Selection Behavior
+
+**isCheckable** (`boolean`, default: `false`)
+- When `true` in multiple selection mode, displays checkboxes on the left of each option
+- Checkboxes are visible when the item is hovered, focused, or selected
+- Improves clarity of multiple selection interactions
+
+**showSelectAll** (`boolean`, default: `false`)
+- When `true` in multiple selection mode, displays a "Select All" option in the header
+- The checkbox shows three states: unchecked (none selected), indeterminate (some selected), checked (all selected)
+- Only works with `selectionMode="multiple"`
+
+**selectAllLabel** (`ReactNode`, default: `'Select All'`)
+- Custom label for the "Select All" option
+- Only used when `showSelectAll={true}`
+
+**allValueProps** (`Partial<CubeItemProps>`)
+- Props to customize the styling and behavior of the "Select All" option
+- Accepts any ItemBase props like `styles`, `icon`, etc.
+
+**disallowEmptySelection** (`boolean`, default: `false`)
+- When `true`, prevents the user from deselecting the last selected item
+- Ensures at least one item is always selected in single selection mode
+
+**disableSelectionToggle** (`boolean`, default: `false`)
+- When `true`, clicking an already-selected item keeps it selected instead of toggling it off
+- Useful when embedding ListBox inside components like ComboBox
+
+**disabledKeys** (`Key[]`)
+- Array of keys for items that should be disabled
+- Disabled items cannot be selected and are visually distinguished
+
+### Focus and Interaction
+
+**focusOnHover** (`boolean`, default: `true`)
+- When `true`, moving the pointer over an option will move DOM focus to that option
+- Set to `false` for components that keep DOM focus outside (e.g., searchable FilterListBox)
+
+**shouldUseVirtualFocus** (`boolean`, default: `false`)
+- When `true`, uses virtual focus for keyboard navigation
+- DOM focus stays outside individual option elements (useful for searchable lists)
+
+**shouldFocusWrap** (`boolean`, default: `false`)
+- When `true`, keyboard navigation wraps around when reaching the end of the list
+
+### Event Handlers
+
+**onSelectionChange** (`(key: Key | null | 'all' | Key[]) => void`)
+- Callback fired when selection changes
+- In single mode: receives a single key or `null`
+- In multiple mode: receives an array of keys or `'all'` for select all
+
+**onEscape** (`() => void`)
+- Callback fired when the user presses Escape key
+- When provided, prevents React Aria's default Escape behavior (selection reset)
+- Useful for closing parent overlays
+
+**onOptionClick** (`(key: Key) => void`)
+- Callback fired when an option is clicked (not on the checkbox area in checkable mode)
+- Used by FilterPicker to close the popover on non-checkbox clicks
+
+### Advanced
+
+**stateRef** (`RefObject<any>`)
+- Ref to access the internal ListState instance
+- Allows parent components to access selection state and other list functionality
+
+**listRef** (`RefObject<HTMLUListElement>`)
+- Ref for accessing the list DOM element
 
 ## Sub-components
 
@@ -96,19 +172,21 @@ Individual items within the ListBox. Each item is rendered using [ItemBase](/doc
 
 #### Item API
 
-For detailed information about all available item properties, see [ItemBase documentation](/docs/content-itembase--docs). Key properties include:
+ListBox.Item is built using [ItemBase](/docs/content-itembase--docs), which provides rich layout and interaction capabilities. All ItemBase properties are supported:
 
 | Property | Type | Description |
 |----------|------|-------------|
 | key | `string \| number` | Unique identifier for the item (required) |
 | children | `ReactNode` | The main content/label for the option |
+| textValue | `string` | Text representation for complex JSX content (for screen readers and search) |
 | icon | `ReactNode` | Icon displayed before the content |
 | rightIcon | `ReactNode` | Icon displayed after the content |
 | description | `ReactNode` | Secondary text below the main content |
-| descriptionPlacement | `'inline' \| 'block'` | How the description is positioned |
-| prefix | `ReactNode` | Content before the main text |
-| suffix | `ReactNode` | Content after the main text |
-| tooltip | `string \| boolean \| object` | Tooltip configuration |
+| descriptionPlacement | `'inline' \| 'block'` | How the description is positioned (default: `'block'`) |
+| prefix | `ReactNode` | Content displayed at the start (before icon) |
+| suffix | `ReactNode` | Content displayed at the end (after content) |
+| hotkeys | `string` | Keyboard shortcut hint (e.g., `'ctrl+a'`) displayed as suffix |
+| tooltip | `string \| object` | Tooltip shown on hover. Object: `{ title, description, placement }` |
 | styles | `Styles` | Custom styling for the item |
 | qa | `string` | QA identifier for testing |
 
@@ -224,6 +302,22 @@ Groups related items together with an optional heading.
 </ListBox>
 ```
 
+### Multiple Selection with Checkboxes
+
+<Story of={ListBoxStories.CheckableMultipleSelection} />
+
+```jsx
+<ListBox
+  label="Select permissions"
+  selectionMode="multiple"
+  isCheckable={true}
+>
+  <ListBox.Item key="read" description="View content and data">Read</ListBox.Item>
+  <ListBox.Item key="write" description="Create and edit content">Write</ListBox.Item>
+  <ListBox.Item key="delete" description="Remove content permanently">Delete</ListBox.Item>
+</ListBox>
+```
+
 ### Multiple Selection with Select All
 
 <Story of={ListBoxStories.WithSelectAll} />
@@ -232,12 +326,13 @@ Groups related items together with an optional heading.
 <ListBox
   label="Select permissions"
   selectionMode="multiple"
+  isCheckable={true}
   showSelectAll={true}
   selectAllLabel="All Permissions"
 >
-  <ListBox.Item key="read">Read</ListBox.Item>
-  <ListBox.Item key="write">Write</ListBox.Item>
-  <ListBox.Item key="execute">Execute</ListBox.Item>
+  <ListBox.Item key="read" description="View content and data">Read</ListBox.Item>
+  <ListBox.Item key="write" description="Create and edit content">Write</ListBox.Item>
+  <ListBox.Item key="execute" description="Execute operations">Execute</ListBox.Item>
 </ListBox>
 ```
 
@@ -283,15 +378,156 @@ const [selectedKey, setSelectedKey] = useState('apple');
 </ListBox>
 ```
 
-### Virtualized Large Lists
+### Disabled Items
 
-<Story of={ListBoxStories.VirtualizedList} />
+<Story of={ListBoxStories.DisabledItems} />
 
 ```jsx
-<ListBox height="300px" overflow="auto">
-  {Array.from({ length: 1000 }, (_, i) => (
-    <ListBox.Item key={`item-${i}`}>Item {i + 1}</ListBox.Item>
-  ))}
+<ListBox
+  label="Select an option"
+  selectionMode="single"
+  disabledKeys={['disabled1', 'disabled2']}
+>
+  <ListBox.Item key="available1">Available Option 1</ListBox.Item>
+  <ListBox.Item key="disabled1">Disabled Option 1</ListBox.Item>
+  <ListBox.Item key="available2">Available Option 2</ListBox.Item>
+</ListBox>
+```
+
+### Disallow Empty Selection
+
+<Story of={ListBoxStories.DisallowEmptySelection} />
+
+```jsx
+<ListBox
+  label="Must select one option"
+  selectionMode="single"
+  disallowEmptySelection={true}
+  defaultSelectedKey="apple"
+>
+  <ListBox.Item key="apple">Apple</ListBox.Item>
+  <ListBox.Item key="banana">Banana</ListBox.Item>
+</ListBox>
+```
+
+### Rich Content Options
+
+<Story of={ListBoxStories.RichContentOptions} />
+
+```jsx
+<ListBox label="User Roles" selectionMode="single" size="large">
+  <ListBox.Item
+    key="admin"
+    description="Full system administration access"
+    prefix={<Badge type="danger">Admin</Badge>}
+    suffix={<Badge type="note">3</Badge>}
+    rightIcon={<SettingsIcon />}
+    hotkeys="ctrl+a"
+  >
+    System Administrator
+  </ListBox.Item>
+  <ListBox.Item
+    key="editor"
+    description="Content creation and editing permissions"
+    prefix={<Badge type="warning">Editor</Badge>}
+    suffix={<Badge type="note">12</Badge>}
+    rightIcon={<EditIcon />}
+    hotkeys="ctrl+e"
+  >
+    Content Editor
+  </ListBox.Item>
+</ListBox>
+```
+
+### With Tooltips
+
+<Story of={ListBoxStories.WithTooltips} />
+
+```jsx
+<ListBox label="Project Actions" selectionMode="single">
+  <ListBox.Item
+    key="create"
+    tooltip="Create a new project with default settings"
+    icon={<PlusIcon />}
+  >
+    Create Project
+  </ListBox.Item>
+  <ListBox.Item
+    key="import"
+    tooltip={{
+      title: 'Import Project',
+      description: 'Import an existing project from file or URL',
+      placement: 'right',
+    }}
+    icon={<DatabaseIcon />}
+  >
+    Import Project
+  </ListBox.Item>
+</ListBox>
+```
+
+### With Complex Content
+
+<Story of={ListBoxStories.WithTextValue} />
+
+```jsx
+<ListBox label="Choose your plan" selectionMode="single">
+  <ListBox.Item
+    key="basic"
+    textValue="Basic Plan - Free with limited features"
+  >
+    <Space gap="1x" flow="column">
+      <Text weight="600">Basic Plan</Text>
+      <Badge type="neutral">Free</Badge>
+    </Space>
+  </ListBox.Item>
+  <ListBox.Item
+    key="pro"
+    textValue="Pro Plan - Monthly subscription with all features"
+  >
+    <Space gap="1x" flow="column">
+      <Text weight="600">Pro Plan</Text>
+      <Badge type="purple">$19/month</Badge>
+    </Space>
+  </ListBox.Item>
+</ListBox>
+```
+
+### Different Sizes
+
+<Story of={ListBoxStories.DifferentSizes} />
+
+```jsx
+<ListBox size="medium" label="Medium Size (Default)">
+  <ListBox.Item key="apple">Apple</ListBox.Item>
+  <ListBox.Item key="banana">Banana</ListBox.Item>
+</ListBox>
+
+<ListBox size="large" label="Large Size">
+  <ListBox.Item key="apple">Apple</ListBox.Item>
+  <ListBox.Item key="banana">Banana</ListBox.Item>
+</ListBox>
+```
+
+### Custom Escape Handling
+
+<Story of={ListBoxStories.EscapeKeyHandling} />
+
+```jsx
+const [selectedKey, setSelectedKey] = useState('apple');
+
+<ListBox
+  label="Custom Escape Handling"
+  selectedKey={selectedKey}
+  selectionMode="single"
+  onSelectionChange={setSelectedKey}
+  onEscape={() => {
+    // Custom escape behavior - could close a parent modal, etc.
+    console.log('Escape pressed');
+  }}
+>
+  <ListBox.Item key="apple">Apple</ListBox.Item>
+  <ListBox.Item key="banana">Banana</ListBox.Item>
 </ListBox>
 ```
 
@@ -352,10 +588,10 @@ const [selectedKey, setSelectedKey] = useState('apple');
    </ListBox.Item>
    ```
 
-2. **Don't**: Use ListBox for very large datasets without virtualization
+2. **Don't**: Use ListBox for very large datasets without considering virtualization
    ```jsx
-   // ❌ Avoid for 1000+ items without virtualization
-   <ListBox>
+   // ✅ Virtualization is automatic for lists without sections
+   <ListBox height="300px">
      {hugeArray.map(item => <ListBox.Item key={item.id}>{item.name}</ListBox.Item>)}
    </ListBox>
    ```
@@ -367,16 +603,46 @@ const [selectedKey, setSelectedKey] = useState('apple');
    </ListBox.Section>
    ```
 
-4. **Do**: Use `showSelectAll` for efficient multiple selection from large lists
+4. **Do**: Use `isCheckable` for clearer multiple selection UI
    ```jsx
-   <ListBox selectionMode="multiple" showSelectAll selectAllLabel="Select All Items">
-     {/* many items */}
+   <ListBox selectionMode="multiple" isCheckable={true}>
+     {/* Checkboxes make the selection state obvious */}
    </ListBox>
    ```
 
-5. **Accessibility**: Always provide meaningful labels and descriptions
-6. **Performance**: Use virtualization for lists with 50+ items
-7. **UX**: Consider FilterListBox for searchable lists with many options
+5. **Do**: Use `showSelectAll` for efficient multiple selection from lists
+   ```jsx
+   <ListBox selectionMode="multiple" isCheckable={true} showSelectAll selectAllLabel="Select All">
+     {/* Easy bulk selection with visual feedback */}
+   </ListBox>
+   ```
+
+6. **Do**: Use `textValue` for complex option content
+   ```jsx
+   <ListBox.Item key="item" textValue="Basic Plan - Free">
+     <Space gap="1x" flow="column">
+       <Text weight="600">Basic Plan</Text>
+       <Badge>Free</Badge>
+     </Space>
+   </ListBox.Item>
+   ```
+
+7. **Do**: Leverage ItemBase features for rich content
+   ```jsx
+   <ListBox.Item
+     key="admin"
+     icon={<UserIcon />}
+     description="Full access"
+     suffix={<Badge>3</Badge>}
+     hotkeys="ctrl+a"
+   >
+     Administrator
+   </ListBox.Item>
+   ```
+
+8. **Accessibility**: Always provide meaningful labels and descriptions
+9. **Performance**: Virtualization is automatic when there are no sections
+10. **UX**: Consider FilterListBox for searchable lists with many options
 
 ## Integration with Forms
 
@@ -402,16 +668,22 @@ This component supports all [Field properties](/docs/forms-field--docs) when use
 ### Virtualization
 
 ListBox automatically enables virtualization when:
-- The list contains more than 30 items
 - No sections are present (sections disable virtualization)
-- Improves performance with large datasets
+- Provides smooth scrolling even with large datasets
+- Only visible items are rendered in the DOM
+- Uses `@tanstack/react-virtual` for efficient rendering
+- Automatically measures item heights for consistent scrolling
+- Supports items with varying heights (descriptions, complex content)
+
+**Note**: Virtualization is transparent to the user - no configuration needed. It works automatically when you have a flat list without sections.
 
 ### Optimization Tips
 
-- Use `textValue` prop for complex option content
-- Avoid changing selection state too frequently
-- Use sections sparingly for very large lists
-- Consider FilterListBox for searchable large lists
+- Use `textValue` prop for complex option content to improve accessibility and search
+- Avoid sections for very large lists to enable virtualization
+- Use `items` prop pattern with dynamic data for better performance
+- Consider FilterListBox for searchable large lists (100+ items)
+- Virtualization handles items with varying heights automatically
 
 ## Related Components
 

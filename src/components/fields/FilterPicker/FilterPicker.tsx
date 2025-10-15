@@ -1,24 +1,19 @@
 import { CollectionChildren } from '@react-types/shared';
 import {
-  Children,
-  cloneElement,
   ForwardedRef,
   forwardRef,
-  MutableRefObject,
   ReactElement,
   ReactNode,
+  RefObject,
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
 } from 'react';
 import { FocusScope, Key, useKeyboard } from 'react-aria';
-import {
-  Section as BaseSection,
-  ListState,
-  Item as ReactAriaItem,
-} from 'react-stately';
+import { Section as BaseSection, ListState, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
 import { useWarn } from '../../../_internal/hooks/use-warn';
@@ -118,13 +113,20 @@ export interface CubeFilterPickerProps<T>
     | false;
 
   /** Ref to access internal ListBox state (from FilterListBox) */
-  listStateRef?: MutableRefObject<ListState<T>>;
+  listStateRef?: RefObject<ListState<T>>;
   /** Additional modifiers for styling the FilterPicker */
   mods?: Record<string, boolean>;
   /** Whether the filter picker is clearable using a clear button in the rightIcon slot */
   isClearable?: boolean;
   /** Callback called when the clear button is pressed */
   onClear?: () => void;
+  /**
+   * Sort selected items to the top when the popover opens.
+   * Only works when using the `items` prop (data-driven mode).
+   * Ignored when using JSX children.
+   * @default true when items are provided, false when using JSX children
+   */
+  sortSelectedToTop?: boolean;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -177,6 +179,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     qa,
     label,
     extra,
+    id,
     icon,
     rightIcon,
     prefix,
@@ -246,10 +249,20 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     isClearable,
     searchValue,
     onSearchChange,
+    sortSelectedToTop: sortSelectedToTopProp,
     ...otherProps
   } = props;
 
+  // Track if sortSelectedToTop was explicitly provided
+  const sortSelectedToTopExplicit = sortSelectedToTopProp !== undefined;
+  // Default to true if items are provided, false otherwise
+  const sortSelectedToTop = sortSelectedToTopProp ?? (items ? true : false);
+
   styles = extractStyles(otherProps, PROP_STYLES, styles);
+
+  // Generate ID for label-trigger linking if not provided
+  const generatedId = useId();
+  const triggerId = id || generatedId;
 
   // Generate a unique ID for this FilterPicker instance
   const filterPickerId = useMemo(() => generateRandomId(), []);
@@ -275,7 +288,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   // Track popover open/close and capture children order for session
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const cachedChildrenOrder = useRef<ReactNode[] | null>(null);
   // Cache for sorted items array when using `items` prop
   const cachedItemsOrder = useRef<T[] | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -287,10 +299,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   // session (which caused only the previously selected options to be rendered
   // or the list to appear unsorted).
   // ---------------------------------------------------------------------------
-  useEffect(() => {
-    cachedChildrenOrder.current = null;
-  }, [children]);
-
   useEffect(() => {
     cachedItemsOrder.current = null;
   }, [items]);
@@ -305,73 +313,43 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     ? selectedKeys
     : internalSelectedKeys;
 
-  // Utility: remove React's ".$" / "." prefixes from element keys so that we
-  // can compare them with user-provided keys.
-  const normalizeKeyValue = (key: Key): string => {
-    if (key == null) return '';
-    // React escapes "=" as "=0" and ":" as "=2" when it stores keys internally.
-    // We strip the possible React prefixes first and then un-escape those sequences
-    // so that callers work with the original key values supplied by the user.
-    let str = String(key);
-
-    // Remove React array/object key prefixes (".$" or ".") if present.
-    if (str.startsWith('.$')) {
-      str = str.slice(2);
-    } else if (str.startsWith('.')) {
-      str = str.slice(1);
-    }
-
-    // Un-escape React's internal key encodings.
-    return str.replace(/=2/g, ':').replace(/=0/g, '=');
-  };
+  // Create a local collection for label extraction only (not for rendering)
+  // This gives us immediate access to textValue without waiting for FilterListBox
+  const localCollectionState = useListState({
+    children: children as any,
+    items: items as any,
+    selectionMode: 'none' as any, // We don't need selection management
+  });
 
   // ---------------------------------------------------------------------------
-  // Map public-facing keys (without React's "." prefix) to the actual React
-  // element keys that appear in the collection (which usually have the `.$`
-  // or `.` prefix added by React when children are in an array). This ensures
-  // that the key we pass to ListBox exactly matches the keys it receives from
-  // React Aria, so the initial selection is highlighted correctly.
+  // Map user-provided keys to collection keys using the local collection.
+  // The collection handles key normalization internally, so we use direct
+  // string comparison.
   // ---------------------------------------------------------------------------
 
-  const findReactKey = useCallback(
+  const findCollectionKey = useCallback(
     (lookup: Key): Key => {
       if (lookup == null) return lookup;
 
-      const normalizedLookup = normalizeKeyValue(lookup);
-      let foundKey: Key = lookup;
+      // Direct comparison - collection handles normalization internally
+      for (const item of localCollectionState.collection) {
+        if (String(item.key) === String(lookup)) {
+          return item.key;
+        }
+      }
 
-      const traverse = (nodes: ReactNode): void => {
-        Children.forEach(nodes, (child: ReactNode) => {
-          if (!child || typeof child !== 'object') return;
-          const element = child as ReactElement;
-
-          if (element.key != null) {
-            if (normalizeKeyValue(element.key) === normalizedLookup) {
-              foundKey = element.key;
-            }
-          }
-
-          if (
-            element.props &&
-            typeof element.props === 'object' &&
-            'children' in element.props
-          ) {
-            traverse((element.props as any).children);
-          }
-        });
-      };
-
-      if (children) traverse(children as ReactNode);
-
-      return foundKey;
+      // Fallback: return the lookup key as-is
+      return lookup;
     },
-    [children],
+    [localCollectionState.collection],
   );
 
   const mappedSelectedKey = useMemo(() => {
     if (selectionMode !== 'single') return null;
-    return effectiveSelectedKey ? findReactKey(effectiveSelectedKey) : null;
-  }, [selectionMode, effectiveSelectedKey, findReactKey]);
+    return effectiveSelectedKey
+      ? findCollectionKey(effectiveSelectedKey)
+      : null;
+  }, [selectionMode, effectiveSelectedKey, findCollectionKey]);
 
   const mappedSelectedKeys = useMemo(() => {
     if (selectionMode !== 'multiple') return undefined;
@@ -379,11 +357,11 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     if (effectiveSelectedKeys === 'all') return 'all' as const;
 
     if (Array.isArray(effectiveSelectedKeys)) {
-      return (effectiveSelectedKeys as Key[]).map((k) => findReactKey(k));
+      return (effectiveSelectedKeys as Key[]).map((k) => findCollectionKey(k));
     }
 
     return effectiveSelectedKeys;
-  }, [selectionMode, effectiveSelectedKeys, findReactKey]);
+  }, [selectionMode, effectiveSelectedKeys, findCollectionKey]);
 
   // Given an iterable of keys (array or Set) toggle membership for duplicates
   const processSelectionArray = (iterable: Iterable<Key>): string[] => {
@@ -399,165 +377,54 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     return Array.from(resultSet);
   };
 
-  // Helper to get selected item labels for display
+  // Helper to get selected item labels for display using local collection
   const getSelectedLabels = () => {
-    // Handle "all" selection - return all available labels
-    if (selectionMode === 'multiple' && effectiveSelectedKeys === 'all') {
+    const collection = localCollectionState.collection;
+
+    // Helper to recursively collect all item labels from collection (including nested in sections)
+    const collectAllLabels = (): string[] => {
       const allLabels: string[] = [];
 
-      // Extract from items prop if available
-      if (items) {
-        const extractFromItems = (itemsArray: unknown[]): void => {
-          itemsArray.forEach((item) => {
-            if (item && typeof item === 'object') {
-              const itemObj = item as ItemWithKey;
-              if (Array.isArray(itemObj.children)) {
-                // Section-like object
-                extractFromItems(itemObj.children);
-              } else {
-                // Regular item - extract label
-                const label =
-                  itemObj.textValue ||
-                  (itemObj as any).label ||
-                  (typeof (itemObj as any).children === 'string'
-                    ? (itemObj as any).children
-                    : '') ||
-                  String(
-                    (itemObj as any).children ||
-                      itemObj.key ||
-                      itemObj.id ||
-                      item,
-                  );
-                allLabels.push(label);
-              }
-            }
-          });
-        };
+      const traverse = (nodes: Iterable<any>) => {
+        for (const node of nodes) {
+          if (node.type === 'item') {
+            allLabels.push(node.textValue || String(node.key));
+          } else if (node.childNodes) {
+            traverse(node.childNodes);
+          }
+        }
+      };
 
-        const itemsArray = Array.isArray(items)
-          ? items
-          : Array.from(items as Iterable<unknown>);
-        extractFromItems(itemsArray);
-        return allLabels;
-      }
-
-      // Extract from children if available
-      if (children) {
-        const extractAllLabels = (nodes: ReactNode): void => {
-          if (!nodes) return;
-          Children.forEach(nodes, (child: ReactNode) => {
-            if (!child || typeof child !== 'object') return;
-            const element = child as ReactElement;
-
-            if (element.type === ReactAriaItem) {
-              const props = element.props as any;
-              const label =
-                props.textValue ||
-                (typeof props.children === 'string' ? props.children : '') ||
-                String(props.children || '');
-              allLabels.push(label);
-            }
-
-            if (
-              element.props &&
-              typeof element.props === 'object' &&
-              'children' in element.props
-            ) {
-              extractAllLabels((element.props as any).children);
-            }
-          });
-        };
-
-        extractAllLabels(children as ReactNode);
-        return allLabels;
-      }
-
+      traverse(collection);
       return allLabels;
+    };
+
+    // Handle "all" selection - return all available labels
+    if (selectionMode === 'multiple' && effectiveSelectedKeys === 'all') {
+      return collectAllLabels();
     }
 
     const selectedSet = new Set(
       selectionMode === 'multiple' && effectiveSelectedKeys !== 'all'
-        ? (effectiveSelectedKeys || []).map((k) => normalizeKeyValue(k))
+        ? (effectiveSelectedKeys || []).map((k) => String(k))
         : effectiveSelectedKey != null
-          ? [normalizeKeyValue(effectiveSelectedKey)]
+          ? [String(effectiveSelectedKey)]
           : [],
     );
 
     const labels: string[] = [];
     const processedKeys = new Set<string>();
 
-    // Extract from items prop if available
-    if (items) {
-      const extractFromItems = (itemsArray: unknown[]): void => {
-        itemsArray.forEach((item) => {
-          if (item && typeof item === 'object') {
-            const itemObj = item as ItemWithKey;
-            if (Array.isArray(itemObj.children)) {
-              // Section-like object
-              extractFromItems(itemObj.children);
-            } else {
-              // Regular item - check if selected
-              const itemKey = itemObj.key || itemObj.id;
-              if (
-                itemKey != null &&
-                selectedSet.has(normalizeKeyValue(itemKey))
-              ) {
-                const label =
-                  itemObj.textValue ||
-                  (itemObj as any).label ||
-                  (typeof (itemObj as any).children === 'string'
-                    ? (itemObj as any).children
-                    : '') ||
-                  String((itemObj as any).children || itemKey);
-                labels.push(label);
-                processedKeys.add(normalizeKeyValue(itemKey));
-              }
-            }
-          }
-        });
-      };
+    // Use collection.getItem() to directly retrieve items by key (works with sections)
+    selectedSet.forEach((key) => {
+      const item = collection.getItem(key);
+      if (item) {
+        labels.push(item.textValue || String(item.key));
+        processedKeys.add(String(item.key));
+      }
+    });
 
-      const itemsArray = Array.isArray(items)
-        ? items
-        : Array.from(items as Iterable<unknown>);
-      extractFromItems(itemsArray);
-    }
-
-    // Extract from children if available (for mixed mode or fallback)
-    if (children) {
-      const extractLabelsWithTracking = (nodes: ReactNode): void => {
-        if (!nodes) return;
-        Children.forEach(nodes, (child: ReactNode) => {
-          if (!child || typeof child !== 'object') return;
-          const element = child as ReactElement;
-
-          if (element.type === ReactAriaItem) {
-            const childKey = String(element.key);
-            if (selectedSet.has(normalizeKeyValue(childKey))) {
-              const props = element.props as any;
-              const label =
-                props.textValue ||
-                (typeof props.children === 'string' ? props.children : '') ||
-                String(props.children || '');
-              labels.push(label);
-              processedKeys.add(normalizeKeyValue(childKey));
-            }
-          }
-
-          if (
-            element.props &&
-            typeof element.props === 'object' &&
-            'children' in element.props
-          ) {
-            extractLabelsWithTracking((element.props as any).children);
-          }
-        });
-      };
-
-      extractLabelsWithTracking(children as ReactNode);
-    }
-
-    // Handle custom values that don't have corresponding items/children
+    // Handle custom values that aren't in the collection
     const selectedKeysArr =
       selectionMode === 'multiple' && effectiveSelectedKeys !== 'all'
         ? (effectiveSelectedKeys || []).map(String)
@@ -565,9 +432,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
           ? [String(effectiveSelectedKey)]
           : [];
 
-    // Add labels for any selected keys that weren't processed (custom values)
+    // Add labels for any selected keys that weren't found in collection (custom values)
     selectedKeysArr.forEach((key) => {
-      if (!processedKeys.has(normalizeKeyValue(key))) {
+      if (!processedKeys.has(String(key))) {
         // This is a custom value, use the key as the label
         labels.push(key);
       }
@@ -614,161 +481,26 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   // Function to sort children with selected items on top
   const getSortedChildren = useCallback(() => {
-    // If children is not provided or is a render function, return it as-is
-    if (!children || typeof children === 'function') return children;
-
-    // Reuse the cached order if we have it. We only want to compute the sorted
-    // order once per pop-over opening session. The cache is cleared when the
-    // pop-over closes so the next opening can recompute.
-    if (cachedChildrenOrder.current) {
-      return cachedChildrenOrder.current;
-    }
-
-    // Popover is open – compute (or recompute) the sorted order for this
-    // session.
-
-    // Determine if there were any selections when the popover was previously closed.
-    const hadSelectionsWhenClosed =
-      selectionMode === 'multiple'
-        ? selectionsWhenClosed.current.multiple.length > 0
-        : selectionsWhenClosed.current.single !== null;
-
-    // Only apply sorting when there were selections in the previous session.
-    // We intentionally do not depend on the `isPopoverOpen` flag here because that
-    // flag is updated **after** the first render triggered by clicking the
-    // trigger button. Relying on it caused a timing issue where the very first
-    // render of a freshly-opened popover was unsorted. By removing the
-    // `isPopoverOpen` check we ensure items are already sorted during that first
-    // render while still maintaining stable order within an open popover thanks
-    // to the `cachedChildrenOrder` guard above.
-
-    if (!hadSelectionsWhenClosed) {
-      return children;
-    }
-
-    // Create selected keys set for fast lookup
-    const selectedSet = new Set<string>();
-    if (selectionMode === 'multiple') {
-      if (selectionsWhenClosed.current.multiple === 'all') {
-        // Don't sort when "all" is selected, just return original children
-        return children;
-      } else {
-        (selectionsWhenClosed.current.multiple as string[]).forEach((key) =>
-          selectedSet.add(String(key)),
-        );
-      }
-    } else if (
-      selectionMode === 'single' &&
-      selectionsWhenClosed.current.single != null
-    ) {
-      selectedSet.add(String(selectionsWhenClosed.current.single));
-    }
-
-    // Helper function to check if an item is selected
-    const isItemSelected = (child: ReactElement): boolean => {
-      return (
-        child?.key != null && selectedSet.has(normalizeKeyValue(child.key))
+    // Warn if sorting is explicitly requested but not supported
+    if (sortSelectedToTopExplicit && sortSelectedToTop && !items) {
+      console.warn(
+        'FilterPicker: sortSelectedToTop only works with the items prop. ' +
+          'Sorting will be skipped when using JSX children.',
       );
-    };
-
-    // Helper function to sort children array
-    const sortChildrenArray = (childrenArray: ReactNode[]): ReactNode[] => {
-      const cloneWithNormalizedKey = (item: ReactElement) =>
-        cloneElement(item, {
-          key: item.key ? normalizeKeyValue(item.key) : undefined,
-        });
-
-      const selected: ReactNode[] = [];
-      const unselected: ReactNode[] = [];
-
-      childrenArray.forEach((child: ReactNode) => {
-        if (!child || typeof child !== 'object') {
-          unselected.push(child);
-          return;
-        }
-
-        const element = child as ReactElement;
-
-        // Handle sections - sort items within each section
-        if (
-          element.type === BaseSection ||
-          (element.type as any)?.displayName === 'Section'
-        ) {
-          const props = element.props as any;
-          const sectionChildren = Array.isArray(props.children)
-            ? props.children
-            : [props.children];
-
-          const selectedItems: ReactNode[] = [];
-          const unselectedItems: ReactNode[] = [];
-
-          sectionChildren.forEach((sectionChild: ReactNode) => {
-            if (sectionChild && typeof sectionChild === 'object') {
-              const sectionElement = sectionChild as ReactElement;
-              if (
-                sectionElement.type === ReactAriaItem ||
-                (sectionElement.type as any)?.displayName === 'Item'
-              ) {
-                const clonedItem = cloneWithNormalizedKey(sectionElement);
-
-                if (isItemSelected(sectionElement)) {
-                  selectedItems.push(clonedItem);
-                } else {
-                  unselectedItems.push(clonedItem);
-                }
-              } else {
-                unselectedItems.push(sectionChild);
-              }
-            } else {
-              unselectedItems.push(sectionChild);
-            }
-          });
-
-          // Create new section with sorted children, preserving React element properly
-          unselected.push(
-            cloneElement(element, {
-              ...(element.props as any),
-              children: [...selectedItems, ...unselectedItems],
-            }),
-          );
-        }
-        // Handle non-section elements (items, dividers, etc.)
-        else {
-          const clonedItem = cloneWithNormalizedKey(element);
-
-          if (isItemSelected(element)) {
-            selected.push(clonedItem);
-          } else {
-            unselected.push(clonedItem);
-          }
-        }
-      });
-
-      return [...selected, ...unselected];
-    };
-
-    // Sort the children
-    const childrenArray = Children.toArray(children as ReactNode);
-    const sortedChildren = sortChildrenArray(childrenArray);
-
-    // Cache the sorted order when popover opens or when we compute it for the
-    // first time before opening.
-    if (isPopoverOpen || !cachedChildrenOrder.current) {
-      cachedChildrenOrder.current = sortedChildren;
     }
 
-    return sortedChildren;
-  }, [
-    children,
-    effectiveSelectedKeys,
-    effectiveSelectedKey,
-    selectionMode,
-    isPopoverOpen,
-  ]);
+    // Return children as-is (no sorting for JSX children)
+    return children;
+  }, [children, sortSelectedToTop, sortSelectedToTopExplicit, items]);
 
   // Compute sorted items array when using `items` prop
   const getSortedItems = useCallback(() => {
     if (!items) return items;
+
+    // Only sort if explicitly enabled
+    if (!sortSelectedToTop) {
+      return items;
+    }
 
     // Reuse the cached order if we have it. We only compute the sorted array
     // once when the pop-over is opened. Cache is cleared on close.
@@ -843,6 +575,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     return sorted;
   }, [
     items,
+    sortSelectedToTop,
     selectionMode,
     isPopoverOpen,
     selectionsWhenClosed.current.multiple,
@@ -934,7 +667,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
           // Popover just closed – record the latest selection for the next opening
           // and clear the cached order so the next session can compute afresh.
           selectionsWhenClosed.current = { ...latestSelectionRef.current };
-          cachedChildrenOrder.current = null;
           cachedItemsOrder.current = null;
         }
       }
@@ -995,6 +727,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       <ItemButton
         ref={triggerRef as any}
         data-popover-trigger
+        id={triggerId}
         type={type}
         theme={validationState === 'invalid' ? 'danger' : theme}
         size={size}
@@ -1077,6 +810,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 items={items ? (finalItems as typeof props.items) : undefined}
                 // Pass an aria-label so the internal ListBox is properly labeled and React Aria doesn't warn.
                 aria-label={`${props['aria-label'] ?? props.label ?? ''} Picker`}
+                _internalCollection={localCollectionState.collection}
                 selectedKey={
                   selectionMode === 'single' ? mappedSelectedKey : undefined
                 }
@@ -1212,17 +946,24 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     </FilterPickerWrapper>
   );
 
+  const finalProps = {
+    ...props,
+    children: undefined,
+    styles: undefined,
+  };
+
+  // Ensure labelProps has the for attribute for label-trigger linking
+  if (!finalProps.labelProps) {
+    finalProps.labelProps = {};
+  }
+  if (!finalProps.labelProps.for) {
+    finalProps.labelProps.for = triggerId;
+  }
+
   return wrapWithField<Omit<CubeFilterPickerProps<T>, 'children' | 'tooltip'>>(
     filterPickerField,
     ref as any,
-    mergeProps(
-      {
-        ...props,
-        children: undefined,
-        styles: undefined,
-      },
-      {},
-    ),
+    mergeProps(finalProps, {}),
   );
 }) as unknown as (<T>(
   props: CubeFilterPickerProps<T> & { ref?: ForwardedRef<HTMLElement> },

@@ -6,13 +6,14 @@ import React, {
   ReactNode,
   RefObject,
   useCallback,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
 import { useFilter, useKeyboard } from 'react-aria';
-import { Section as BaseSection, Item } from 'react-stately';
+import { Section as BaseSection, Item, useListState } from 'react-stately';
 
 import { LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
@@ -36,6 +37,7 @@ import {
   INPUT_WRAPPER_STYLES,
 } from '../TextInput/TextInputBase';
 
+import type { Collection, Node } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
 
 type FilterFn = (textValue: string, inputValue: string) => boolean;
@@ -176,6 +178,13 @@ export interface CubeFilterListBoxProps<T>
    * Use with `searchValue` for controlled search input.
    */
   onSearchChange?: (value: string) => void;
+
+  /**
+   * Pre-built collection to use instead of creating a new one.
+   * Used internally by FilterPicker to avoid duplicate collection creation.
+   * @internal
+   */
+  _internalCollection?: Collection<Node<any>>;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -216,6 +225,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     qa,
     label,
     extra,
+    id,
     labelStyles,
     isRequired,
     necessityIndicator,
@@ -265,8 +275,13 @@ export const FilterListBox = forwardRef(function FilterListBox<
     newCustomValueProps,
     searchValue: controlledSearchValue,
     onSearchChange,
+    _internalCollection,
     ...otherProps
   } = props;
+
+  // Generate ID for label-input linking if not provided
+  const generatedId = useId();
+  const inputId = id || generatedId;
 
   // Preserve the original `children` (may be a render function) before we
   // potentially overwrite it.
@@ -301,27 +316,26 @@ export const FilterListBox = forwardRef(function FilterListBox<
     }
   }
 
+  // Use provided collection from FilterPicker or create our own
+  // Hook call order is stable: _internalCollection is consistent per component instance
+  const localCollectionState = _internalCollection
+    ? { collection: _internalCollection }
+    : useListState({
+        children: children as any,
+        items: items as any,
+        selectionMode: 'none' as any,
+      });
+
   // Collect original option keys to avoid duplicating them as custom values.
   const originalKeys = useMemo(() => {
     const keys = new Set<string>();
-
-    const collectKeys = (nodes: ReactNode): void => {
-      React.Children.forEach(nodes, (child: any) => {
-        if (!child || typeof child !== 'object') return;
-
-        if (child.type === Item) {
-          if (child.key != null) keys.add(String(child.key));
-        }
-
-        if (child.props?.children) {
-          collectKeys(child.props.children);
-        }
-      });
-    };
-
-    if (children) collectKeys(children);
+    for (const item of localCollectionState.collection) {
+      if (item.type === 'item') {
+        keys.add(String(item.key));
+      }
+    }
     return keys;
-  }, [children]);
+  }, [localCollectionState.collection]);
 
   // State to keep track of custom (user-entered) items that were selected.
   const [customKeys, setCustomKeys] = useState<Set<string>>(new Set());
@@ -521,39 +535,25 @@ export const FilterListBox = forwardRef(function FilterListBox<
     if (!term) return childrenToProcess;
 
     // Helper to determine if the term is already present (exact match on rendered textValue or the key).
-    const doesTermExist = (nodes: ReactNode): boolean => {
-      let exists = false;
+    const doesTermExist = (term: string): boolean => {
+      // Check if term exists in custom keys
+      if (customKeys.has(term)) {
+        return true;
+      }
 
-      const checkNodes = (childNodes: ReactNode): void => {
-        React.Children.forEach(childNodes, (child: any) => {
-          if (!child || typeof child !== 'object') return;
-
-          // Check items directly
-          if (child.type === Item) {
-            const childText =
-              child.props.textValue ||
-              (typeof child.props.children === 'string'
-                ? child.props.children
-                : '') ||
-              String(child.props.children ?? '');
-
-            if (term === childText || String(child.key) === term) {
-              exists = true;
-            }
+      // Check if term exists in original collection
+      for (const item of localCollectionState.collection) {
+        if (item.type === 'item') {
+          const textValue = item.textValue || String(item.rendered || '');
+          if (term === textValue || String(item.key) === term) {
+            return true;
           }
-
-          // Recurse into sections or other wrappers
-          if (child.props?.children) {
-            checkNodes(child.props.children);
-          }
-        });
-      };
-
-      checkNodes(nodes);
-      return exists;
+        }
+      }
+      return false;
     };
 
-    if (doesTermExist(mergedChildren)) {
+    if (doesTermExist(term)) {
       return childrenToProcess;
     }
 
@@ -909,6 +909,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
       )}
       <SearchInputElement
         ref={searchInputRef}
+        id={inputId}
         data-is-prefix={isLoading ? '' : undefined}
         type="search"
         placeholder={searchPlaceholder}
@@ -1003,10 +1004,20 @@ export const FilterListBox = forwardRef(function FilterListBox<
     </FilterListBoxWrapperElement>
   );
 
+  const finalProps = { ...props, styles: undefined };
+
+  // Ensure labelProps has the for attribute for label-input linking
+  if (!finalProps.labelProps) {
+    finalProps.labelProps = {};
+  }
+  if (!finalProps.labelProps.for) {
+    finalProps.labelProps.for = inputId;
+  }
+
   return wrapWithField<Omit<CubeFilterListBoxProps<T>, 'children'>>(
     filterListBoxField,
     ref,
-    mergeProps({ ...props, styles: undefined }, {}),
+    mergeProps(finalProps, {}),
   );
 }) as unknown as (<T>(
   props: CubeFilterListBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },

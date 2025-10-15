@@ -182,6 +182,7 @@ For large datasets or dynamic content, use the `items` prop with a render functi
 - **Performance**: Only renders visible items in the DOM
 - **Dynamic Content**: Perfect for data fetched from APIs or changing datasets
 - **Memory Efficient**: Handles thousands of items smoothly
+- **Selected Items Sorting**: When using the `items` prop, selected items are automatically sorted to the top when the popover reopens (can be controlled with `sortSelectedToTop`)
 
 **When to Use:**
 - Lists with 50+ items
@@ -228,48 +229,21 @@ For large datasets or dynamic content, use the `items` prop with a render functi
 </FilterPicker>
 ```
 
-### Dynamic Content Pattern
+### Clearable Selection
 
-<Story of={FilterPickerStories.VirtualizedList} />
-
-```jsx
-const items = Array.from({ length: 100 }, (_, i) => ({
-  id: `item-${i}`,
-  name: `Item ${i + 1}`,
-  description: `Description for item ${i + 1}`
-}));
-
-<FilterPicker
-  label="Large Dataset"
-  placeholder="Select from large list..."
-  selectionMode="multiple"
-  items={items}
->
-  {(item) => (
-    <FilterPicker.Item 
-      key={item.id} 
-      textValue={item.name}
-      description={item.description}
-    >
-      {item.name}
-    </FilterPicker.Item>
-  )}
-</FilterPicker>
-```
-
-### Single Selection
-
-<Story of={FilterPickerStories.SingleSelection} />
+<Story of={FilterPickerStories.Clearable} />
 
 ```jsx
 <FilterPicker
-  label="Choose a Fruit"
-  placeholder="Select one fruit..."
+  label="Clearable Filter Picker"
+  placeholder="Choose items..."
   selectionMode="single"
-  searchPlaceholder="Search fruits..."
+  isClearable={true}
+  defaultSelectedKey="apple"
 >
   <FilterPicker.Item key="apple">Apple</FilterPicker.Item>
   <FilterPicker.Item key="banana">Banana</FilterPicker.Item>
+  <FilterPicker.Item key="cherry">Cherry</FilterPicker.Item>
 </FilterPicker>
 ```
 
@@ -391,46 +365,6 @@ const items = Array.from({ length: 100 }, (_, i) => ({
 </FilterPicker>
 ```
 
-### Different Button Types
-
-<Story of={FilterPickerStories.DifferentTypes} />
-
-```jsx
-<Space gap="2x" flow="row">
-  <FilterPicker type="outline" placeholder="Outline">
-    <FilterPicker.Item key="item1">Item 1</FilterPicker.Item>
-  </FilterPicker>
-  
-  <FilterPicker type="primary" placeholder="Primary">
-    <FilterPicker.Item key="item1">Item 1</FilterPicker.Item>
-  </FilterPicker>
-  
-  <FilterPicker type="clear" placeholder="Clear">
-    <FilterPicker.Item key="item1">Item 1</FilterPicker.Item>
-  </FilterPicker>
-</Space>
-```
-
-### Different Sizes
-
-<Story of={FilterPickerStories.DifferentSizes} />
-
-```jsx
-<Space gap="3x" flow="column" placeItems="start">
-  <FilterPicker size="small" placeholder="Small size">
-    <FilterPicker.Item key="item1">Item 1</FilterPicker.Item>
-  </FilterPicker>
-  
-  <FilterPicker size="medium" placeholder="Medium size">
-    <FilterPicker.Item key="item1">Item 1</FilterPicker.Item>
-  </FilterPicker>
-  
-  <FilterPicker size="large" placeholder="Large size">
-    <FilterPicker.Item key="item1">Item 1</FilterPicker.Item>
-  </FilterPicker>
-</Space>
-```
-
 ### With Custom Values
 
 <Story of={FilterPickerStories.WithCustomValues} />
@@ -487,8 +421,9 @@ const items = Array.from({ length: 100 }, (_, i) => ({
 
 - `Tab` - Moves focus to the trigger button
 - `Space/Enter` - Opens the dropdown popover
-- `Arrow Keys` - Navigate through options (when popover is open)
+- `Arrow Up/Down` - Opens the popover (when closed) or navigates through options (when open)
 - `Escape` - Closes the popover or clears search
+- `Home/End` - Navigate to first/last option
 
 ### Screen Reader Support
 
@@ -549,10 +484,21 @@ const items = Array.from({ length: 100 }, (_, i) => ({
    </FilterPicker>
    ```
 
-6. **Do**: Use `triggerStyles` for custom styling needs beyond standard types
-7. **Accessibility**: Always provide meaningful labels and placeholders
-8. **Performance**: Use `textValue` prop for complex option content
-9. **UX**: Consider using `isCheckable` for multiple selection clarity
+6. **Do**: Use `isClearable` when users need to quickly clear selections
+   ```jsx
+   <FilterPicker 
+     isClearable 
+     selectionMode="single"
+     label="Choose option"
+   >
+     {/* items */}
+   </FilterPicker>
+   ```
+
+7. **Do**: Use `triggerStyles` for custom styling needs beyond standard types
+8. **Accessibility**: Always provide meaningful labels and placeholders
+9. **Performance**: Use `textValue` prop for complex option content
+10. **UX**: Consider using `isCheckable` for multiple selection clarity
 
 ## Integration with Forms
 
@@ -623,6 +569,43 @@ Custom values:
 - Appear in the selection summary
 - Can be removed like any other selection
 
+### Selected Items Sorting
+
+When using the `items` prop, FilterPicker automatically sorts selected items to the top when the popover reopens. This helps users quickly see and manage their selections.
+
+```jsx
+// ✅ Default behavior - sorting enabled with items prop
+<FilterPicker
+  items={fruits}
+  selectionMode="multiple"
+>
+  {(item) => <FilterPicker.Item key={item.key}>{item.label}</FilterPicker.Item>}
+</FilterPicker>
+
+// Explicitly disable sorting
+<FilterPicker
+  items={fruits}
+  sortSelectedToTop={false}
+  selectionMode="multiple"
+>
+  {(item) => <FilterPicker.Item key={item.key}>{item.label}</FilterPicker.Item>}
+</FilterPicker>
+
+// ❌ Sorting not available with JSX children
+<FilterPicker selectionMode="multiple">
+  <FilterPicker.Item key="apple">Apple</FilterPicker.Item>
+  <FilterPicker.Item key="banana">Banana</FilterPicker.Item>
+</FilterPicker>
+```
+
+**Key behaviors:**
+- Sorting only works when using the `items` prop
+- Selected items move to the top when the popover reopens
+- Within sections, selected items sort to the top of their section
+- Sorting is cached during a session to maintain order while the popover is open
+- Defaults to `true` for items prop, `false` for JSX children
+- Can be explicitly controlled with the `sortSelectedToTop` prop
+
 ### Icon-Only Mode
 
 For space-constrained interfaces:
@@ -638,6 +621,103 @@ For space-constrained interfaces:
 </FilterPicker>
 ```
 
+### Clearable Selection
+
+Add a clear button to quickly reset selection:
+
+```jsx
+<FilterPicker
+  isClearable
+  selectionMode="single"
+  label="Choose option"
+  onClear={() => console.log('Selection cleared')}
+>
+  {/* options */}
+</FilterPicker>
+```
+
+The clear button:
+- Appears in the `rightIcon` slot when there's a selection
+- Only shows when `isClearable={true}` and a selection exists
+- Closes the popover when clicked
+- Calls the optional `onClear` callback
+- Is hidden when the picker is disabled or read-only
+
+### External Filtering
+
+<Story of={FilterPickerStories.ExternalFiltering} />
+
+FilterPicker provides two approaches for implementing external filtering when you need to control the filtering logic outside the component:
+
+#### Approach 1: Disabled Internal Filtering
+
+Use `filter={false}` to disable internal filtering while providing pre-filtered items:
+
+```jsx
+const [externalSearch, setExternalSearch] = useState('');
+
+const filteredFruits = useMemo(() => {
+  if (!externalSearch.trim()) return allFruits;
+  return allFruits.filter((fruit) =>
+    fruit.label.toLowerCase().includes(externalSearch.toLowerCase())
+  );
+}, [externalSearch]);
+
+<FilterPicker
+  label="Select Fruits"
+  placeholder="Choose fruits..."
+  selectionMode="multiple"
+  filter={false}
+  items={filteredFruits}
+  searchPlaceholder="Type to search..."
+>
+  {(fruit) => (
+    <FilterPicker.Item key={fruit.key}>{fruit.label}</FilterPicker.Item>
+  )}
+</FilterPicker>
+```
+
+#### Approach 2: Controlled Search Input
+
+Use `searchValue` and `onSearchChange` for complete control over the search behavior:
+
+```jsx
+const [searchValue, setSearchValue] = useState('');
+
+// Simulate debounced search
+const [processedSearch, setProcessedSearch] = useState('');
+useEffect(() => {
+  const timer = setTimeout(() => setProcessedSearch(searchValue), 300);
+  return () => clearTimeout(timer);
+}, [searchValue]);
+
+const filteredFruits = useMemo(() => {
+  if (!processedSearch.trim()) return allFruits;
+  return allFruits.filter((fruit) =>
+    fruit.label.toLowerCase().includes(processedSearch.toLowerCase())
+  );
+}, [processedSearch]);
+
+<FilterPicker
+  label="Select Fruits"
+  placeholder="Choose fruits..."
+  selectionMode="multiple"
+  searchValue={searchValue}
+  filter={false}
+  items={filteredFruits}
+  onSearchChange={setSearchValue}
+>
+  {(fruit) => (
+    <FilterPicker.Item key={fruit.key}>{fruit.label}</FilterPicker.Item>
+  )}
+</FilterPicker>
+```
+
+**When to use each approach:**
+- **`filter={false}`**: Simpler approach when you just need to pre-filter items without controlling the search input itself. Good for server-side filtering or custom filter logic.
+- **Controlled Search**: Use when you need full control over the search input (debouncing, external UI sync, clearing from outside, or tracking search analytics).
+- **Combine Both**: You can use both together for maximum control - controlled search input with external filtering.
+
 ## Performance
 
 ### Optimization Tips
@@ -647,6 +727,7 @@ For space-constrained interfaces:
 - **Use `textValue` prop**: For complex option content, provide searchable text that includes more context than just the visible label
 - **Implement custom filter functions**: For specific search needs or performance-critical filtering
 - **Consider debounced selection changes**: For real-time updates that trigger expensive operations
+- **Use external filtering**: For server-side filtering or complex custom logic
 
 ### Virtualization
 

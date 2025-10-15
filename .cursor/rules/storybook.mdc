@@ -1,0 +1,151 @@
+---
+globs: *.stories.tsx,*.docs.mdx
+alwaysApply: false
+---
+## Imports
+
+### Stories Files (.stories.tsx)
+- Import types: `import type { Meta, StoryObj } from '@storybook/react-vite';`
+- Import `StoryFn` for custom template functions
+- For interactive tests: `import { userEvent, within } from 'storybook/test';` (NOT from `@testing-library/react`)
+
+### Documentation Files (.docs.mdx)
+- `import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';`
+  - `Meta` - Define meta information with `<Meta of={StoriesImport} />`
+  - `Canvas` - Display story with code panel
+  - `Story` - Reference specific story with `<Story of={StoriesImport.StoryName} />`
+  - `Controls` - Display interactive controls table with `<Controls of={StoriesImport.StoryName} />`
+  - `ArgTypes` - Display argument types documentation
+  - `Source` - Show code examples
+- Import stories: `import * as ComponentStories from './Component.stories';`
+
+## Meta Configuration
+
+Use `satisfies Meta<typeof Component>` or `as Meta<typeof Component>`:
+
+```tsx
+const meta = {
+  title: 'Category/ComponentName',
+  component: ComponentName,
+  subcomponents: { Item: Component.Item }, // For compound components
+  args: { /* common default args */ },
+  parameters: { controls: { exclude: baseProps } }, // Exclude base design system props
+  argTypes: { /* ... */ }
+} satisfies Meta<typeof Component>;
+
+export default meta;
+```
+
+## ArgTypes Structure
+
+Group by categories with comments:
+- `/* Content */` - children, labels, placeholders, icons
+- `/* Selection */` - selectedKey, defaultSelectedKey
+- `/* Behavior */` - filter, trigger modes, loading states
+- `/* Presentation */` - type, theme, size, direction
+- `/* State */` - isDisabled, isRequired, isReadOnly, validationState, autoFocus
+- `/* Events */` - onPress, onChange, onSelectionChange, onBlur, onFocus
+
+### ArgType Format
+
+```tsx
+propName: {
+  control: { type: 'radio' | 'boolean' | 'text' | 'number' | null },
+  options: ['option1', 'option2'], // For radio/select
+  description: 'Clear description',
+  table: {
+    defaultValue: { summary: 'value' },
+    type: { summary: 'string' }
+  }
+}
+```
+
+- Use `control: { type: null }` to disable controls (for functions, complex types)
+- Use `action: 'event-name'` for event handlers
+- Use `action: (e) => ({ type: 'event', data })` for custom action logging
+
+## Stories
+
+### Named Exports (Preferred)
+```tsx
+export const StoryName = (args) => <Component {...args} />;
+```
+
+### Story Objects with CSF3
+```tsx
+export const StoryName: StoryObj<typeof Component> = {
+  render: (args) => <Component {...args} />,
+  args: { /* story-specific args */ },
+  play: async ({ canvasElement }) => {
+    // Interactive test
+  }
+};
+```
+
+### Templates (Legacy Pattern)
+```tsx
+const Template: StoryFn<ComponentProps> = (args) => <Component {...args} />;
+
+export const Story = Template.bind({});
+Story.args = { /* ... */ };
+```
+
+## Testing with Play Functions
+
+```tsx
+export const Interactive: StoryObj = {
+  render: () => { /* ... */ },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const element = canvas.getByRole('button');
+    await userEvent.click(element);
+  }
+};
+```
+
+**Important:** Always import `userEvent` and `within` from `'storybook/test'` in story files. This ensures they respect Storybook's configuration (e.g., `testIdAttribute: 'data-qa'` set in `.storybook/preview.jsx`). Do NOT use `@testing-library/react` imports in stories.
+
+## MDX Documentation Structure
+
+```mdx
+import { Meta, Canvas, Story, Controls } from '@storybook/addon-docs/blocks';
+import * as ComponentStories from './Component.stories';
+
+<Meta of={ComponentStories} />
+
+# ComponentName
+
+Component description
+
+## When to Use
+- Use case 1
+- Use case 2
+
+## Component
+
+<Story of={ComponentStories.Default} />
+
+---
+
+### Properties
+
+<Controls of={ComponentStories.Default} />
+
+### Base Properties
+
+Reference base properties support here.
+
+## Examples
+
+### Example Section
+
+<Story of={ComponentStories.ExampleStory} />
+```
+
+## Common Patterns
+
+- Use `baseProps` exclusion for design system props
+- Define default `width` in meta `args` for form components
+- Create size/state matrix stories to show all variants
+- Use `Space` component for layout in template functions
+- Export type: `type Story = StoryObj<typeof meta>;`

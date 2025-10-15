@@ -1,0 +1,21 @@
+---
+description: When updating the component documentation file *.docs.mdx
+alwaysApply: false
+---
+
+While update {ComponentName}.docs.mdx file look for:
+- Implementation - {ComponentName}.tsx
+- Tests - {ComponentName}.test.tsx
+- Storybook - {ComponentName}.stories.tsx
+
+Align the documentation with the current implementation. Looks for use cases in storybook and code examples in tests.
+
+Don't include ALL stories to documentation. Only those that are make sense to document. Because some stories were only made to test visuals, or basic interactions. Virtualization is a key performance feature, but since it's enabled by default it shouldn't be included as a story to the documentation.
+
+Use links in the following format:
+
+```
+- [FilterListBox](/docs/forms-filterlistbox--docs)
+```
+
+Where `/docs/` is the standard prefix, `forms` is the section, `filterlistbox` - the low-cased name of the component, `--docs` the standard suffix.

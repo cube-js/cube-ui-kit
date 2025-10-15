@@ -446,12 +446,12 @@ export const SingleSelection: Story = {
     await userEvent.click(trigger);
   },
   render: (args) => (
-    <FilterPicker {...args}>
-      {fruits.map((fruit) => (
+    <FilterPicker<(typeof fruits)[number]> {...args} items={fruits}>
+      {(fruit) => (
         <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
           {fruit.label}
         </FilterPicker.Item>
-      ))}
+      )}
     </FilterPicker>
   ),
 };
@@ -467,12 +467,12 @@ export const Clearable: Story = {
     isClearable: true,
   },
   render: (args) => (
-    <FilterPicker {...args}>
-      {fruits.map((fruit) => (
+    <FilterPicker<(typeof fruits)[number]> {...args} items={fruits}>
+      {(fruit) => (
         <FilterPicker.Item key={fruit.key} textValue={fruit.label}>
           {fruit.label}
         </FilterPicker.Item>
-      ))}
+      )}
     </FilterPicker>
   ),
 };
