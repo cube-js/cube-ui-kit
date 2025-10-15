@@ -1616,6 +1616,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
             theme={validationState === 'invalid' ? 'danger' : undefined}
             qa="ComboBoxClearButton"
             data-no-trigger={hideTrigger ? '' : undefined}
+            aria-label="Clear value"
             onPress={clearValue}
           />
         )}
@@ -1633,6 +1634,9 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
             data-size={size}
             isDisabled={isDisabled}
             styles={triggerStyles}
+            aria-expanded={isPopoverOpen}
+            aria-haspopup="listbox"
+            aria-label="Show options"
             onPress={() => {
               if (!isDisabled) {
                 const willOpen = !isPopoverOpen;
