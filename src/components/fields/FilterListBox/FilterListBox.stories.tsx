@@ -1100,7 +1100,7 @@ export const WithCustomStyles: StoryFn = () => (
     searchPlaceholder="Search with custom styles..."
     selectionMode="multiple"
     styles={{
-      fill: '#gradient(to right, #purple.20, #blue.20)',
+      backgroundImage: 'linear-gradient(to right, #purple.20, #danger.20)',
       border: '2bw solid #purple',
       radius: '2r',
     }}

@@ -536,6 +536,12 @@ export const FilterListBox = forwardRef(function FilterListBox<
 
     // Helper to determine if the term is already present (exact match on rendered textValue or the key).
     const doesTermExist = (term: string): boolean => {
+      // Check if term exists in custom keys
+      if (customKeys.has(term)) {
+        return true;
+      }
+
+      // Check if term exists in original collection
       for (const item of localCollectionState.collection) {
         if (item.type === 'item') {
           const textValue = item.textValue || String(item.rendered || '');
