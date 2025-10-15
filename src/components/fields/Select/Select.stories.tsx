@@ -13,7 +13,10 @@ export default {
   title: 'Forms/Select',
   component: Select,
   args: { width: '200px' },
-  parameters: { controls: { exclude: baseProps } },
+  parameters: {
+    controls: { exclude: baseProps },
+    layout: 'centered',
+  },
   argTypes: {
     /* Content */
     selectedKey: {

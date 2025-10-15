@@ -34,6 +34,7 @@ const meta: any = {
     controls: {
       exclude: baseProps,
     },
+    layout: 'centered',
   },
   argTypes: {
     /* Content */
@@ -313,7 +314,13 @@ const herbs = [
   },
 ];
 
-const permissions = [
+interface Permission {
+  key: string;
+  label: string;
+  description: string;
+}
+
+const permissions: Permission[] = [
   { key: 'read', label: 'Read', description: 'View content and data' },
   { key: 'write', label: 'Write', description: 'Create and edit content' },
   { key: 'delete', label: 'Delete', description: 'Remove content permanently' },
@@ -324,7 +331,7 @@ const permissions = [
     description: 'Review and approve content',
   },
   { key: 'share', label: 'Share', description: 'Share content with others' },
-];
+] as const;
 
 const languages = [
   {
@@ -400,15 +407,15 @@ export const SingleSelection: Story = {
 
 export const MultipleSelection: Story = {
   render: (args) => (
-    <FilterListBox {...args}>
-      {permissions.map((permission) => (
+    <FilterListBox<Permission> {...args} items={permissions}>
+      {(permission) => (
         <FilterListBox.Item
           key={permission.key}
           description={permission.description}
         >
           {permission.label}
         </FilterListBox.Item>
-      ))}
+      )}
     </FilterListBox>
   ),
   args: {
@@ -543,15 +550,15 @@ WithHeaderAndFooter.args = {
 
 export const CheckableMultipleSelection: Story = {
   render: (args) => (
-    <FilterListBox {...args}>
-      {permissions.map((permission) => (
+    <FilterListBox {...args} items={permissions}>
+      {(permission: (typeof permissions)[number]) => (
         <FilterListBox.Item
           key={permission.key}
           description={permission.description}
         >
           {permission.label}
         </FilterListBox.Item>
-      ))}
+      )}
     </FilterListBox>
   ),
   args: {
@@ -896,16 +903,17 @@ export const MultipleControlledExample: StoryFn<
         selectionMode="multiple"
         isCheckable={true}
         searchPlaceholder="Filter permissions..."
+        items={permissions}
         onSelectionChange={(keys) => setSelectedKeys(keys as string[])}
       >
-        {permissions.map((permission) => (
+        {(permission: (typeof permissions)[number]) => (
           <FilterListBox.Item
             key={permission.key}
             description={permission.description}
           >
             {permission.label}
           </FilterListBox.Item>
-        ))}
+        )}
       </FilterListBox>
 
       <Text>
@@ -932,11 +940,10 @@ export const MultipleControlledExample: StoryFn<
 };
 
 export const InForm: StoryFn = () => {
-  const [value, setValue] = useState<string | null>(null);
-
   return (
     <Form
       style={{ width: '400px' }}
+      defaultValues={{ country: 'ca' }}
       onSubmit={(data) => {
         alert(`Form submitted with: ${JSON.stringify(data, null, 2)}`);
       }}
@@ -945,9 +952,7 @@ export const InForm: StoryFn = () => {
         isRequired
         name="country"
         label="Country"
-        value={value}
         searchPlaceholder="Search countries..."
-        onSelectionChange={(key) => setValue(key as string)}
       >
         <FilterListBox.Section title="North America">
           <FilterListBox.Item key="us">United States</FilterListBox.Item>
