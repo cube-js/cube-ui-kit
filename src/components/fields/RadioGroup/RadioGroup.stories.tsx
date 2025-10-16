@@ -1,5 +1,6 @@
 import { StoryFn } from '@storybook/react-vite';
 
+import { CheckIcon, CloseIcon, ExclamationIcon } from '../../../icons';
 import { baseProps } from '../../../stories/lists/baseProps';
 import { Flow } from '../../layout/Flow';
 
@@ -166,6 +167,27 @@ export const TabsGroup: StoryFn<CubeRadioGroupProps> = (args) => (
     <Radio value="no">No</Radio>
     <Radio value="maybe">Maybe</Radio>
   </Radio.Tabs>
+);
+
+export const Stretched: StoryFn<CubeRadioGroupProps> = (args) => (
+  <Flow gap="2x">
+    <Radio.Tabs stretch defaultValue="yes" width="280px" {...args}>
+      <Radio value="yes">Yes</Radio>
+      <Radio value="no">No</Radio>
+      <Radio value="maybe">Maybe</Radio>
+    </Radio.Tabs>
+    <Radio.Tabs stretch defaultValue="yes" width="280px" {...args}>
+      <Radio value="yes" icon={<CheckIcon />} suffix="!">
+        Yes
+      </Radio>
+      <Radio value="no" icon={<CloseIcon />} suffix="!">
+        No
+      </Radio>
+      <Radio value="maybe" icon={<ExclamationIcon />} suffix="!">
+        Maybe
+      </Radio>
+    </Radio.Tabs>
+  </Flow>
 );
 
 // Size demonstrations

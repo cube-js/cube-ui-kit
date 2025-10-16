@@ -7,11 +7,9 @@ import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import {
   BaseProps,
-  BLOCK_STYLES,
-  BlockStyleProps,
+  CONTAINER_STYLES,
+  ContainerStyleProps,
   extractStyles,
-  OUTER_STYLES,
-  OuterStyleProps,
   Styles,
   tasty,
 } from '../../../tasty';
@@ -33,8 +31,7 @@ import { RadioContext } from './context';
 export interface CubeRadioGroupProps
   extends BaseProps,
     Omit<AriaRadioGroupProps, 'errorMessage'>,
-    BlockStyleProps,
-    OuterStyleProps,
+    ContainerStyleProps,
     FieldBaseProps {
   groupStyles?: Styles;
   orientation?: 'horizontal' | 'vertical';
@@ -55,8 +52,8 @@ const RadioGroupElement = tasty({
   qa: 'RadioGroup',
   styles: {
     display: 'flex',
-    placeItems: 'start',
-    placeContent: 'start',
+    placeItems: 'stretch',
+    placeContent: 'stretch',
     flow: {
       '': 'column',
       horizontal: 'row wrap',
@@ -77,10 +74,6 @@ const RadioGroupElement = tasty({
       tabs: '.5x',
     },
     whiteSpace: 'nowrap',
-    flexGrow: {
-      '': 'initial',
-      tabs: 1,
-    },
   },
 });
 
@@ -109,8 +102,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
   } = props;
   let domRef = useDOMRef(ref);
 
-  styles = extractStyles(otherProps, OUTER_STYLES, styles);
-  groupStyles = extractStyles(otherProps, BLOCK_STYLES, groupStyles);
+  styles = extractStyles(otherProps, CONTAINER_STYLES, styles);
 
   let state = useRadioGroupState(props);
 
@@ -124,7 +116,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
 
   let radioGroup = (
     <RadioGroupElement
-      styles={groupStyles}
+      styles={styles}
       mods={{
         horizontal: orientation === 'horizontal',
         'inside-form': insideForm,
@@ -160,7 +152,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
     children: null,
     fieldProps,
     labelProps: mergeProps(baseLabelProps, labelProps),
-    styles,
+    styles: props.fieldStyles,
   });
 }
 

@@ -32,6 +32,14 @@ const RadioButtonElement = tasty(ItemBase, {
   styles: {
     preset: 't3m',
     lineHeight: '1fs',
+    flexGrow: 1,
+
+    Label: {
+      placeSelf: {
+        '': 'center start',
+        '!with-prefix & !with-suffix & !with-icon & !with-right-icon': 'center',
+      },
+    },
   },
 });
 
@@ -134,6 +142,10 @@ export interface CubeRadioProps
   icon?: CubeItemBaseProps['icon'];
   /* Icon to display on the right (for button type only) */
   rightIcon?: CubeItemBaseProps['rightIcon'];
+  /* Prefix element (for button type only) */
+  prefix?: CubeItemBaseProps['prefix'];
+  /* Suffix element (for button type only) */
+  suffix?: CubeItemBaseProps['suffix'];
   /* Description text (for button type only) */
   description?: CubeItemBaseProps['description'];
   /* Tooltip configuration (for button type only) */
@@ -161,6 +173,8 @@ function Radio(props: CubeRadioProps, ref) {
     size,
     icon,
     rightIcon,
+    prefix,
+    suffix,
     description,
     tooltip,
     hotkeys,
@@ -196,8 +210,11 @@ function Radio(props: CubeRadioProps, ref) {
   let isButton = effectiveType === 'button' || effectiveType === 'tabs';
 
   // Determine effective size with priority: prop > context > default
-  let effectiveSize =
-    size ?? contextSize ?? (effectiveType === 'tabs' ? 'small' : 'medium');
+  let effectiveSize: CubeItemBaseProps['size'] = (size ??
+    contextSize ??
+    (effectiveType === 'tabs'
+      ? 'small'
+      : 'medium')) as CubeItemBaseProps['size'];
 
   // Apply size mapping for tabs mode button radios
   if (effectiveType === 'tabs' && isButton) {
@@ -290,6 +307,8 @@ function Radio(props: CubeRadioProps, ref) {
         size={effectiveSize}
         icon={icon}
         rightIcon={rightIcon}
+        prefix={prefix}
+        suffix={suffix}
         description={description}
         tooltip={tooltip}
         hotkeys={hotkeys}
