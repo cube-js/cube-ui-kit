@@ -10,11 +10,11 @@ import {
   filterBaseProps,
   OUTER_STYLES,
   OuterStyleProps,
-  Styles,
   tasty,
 } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import { useFocus } from '../../../utils/react/interactions';
+import { CubeItemBaseProps, ItemBase } from '../../content/ItemBase/ItemBase';
 import { INLINE_LABEL_STYLES, useFieldProps, useFormProps } from '../../form';
 import { HiddenInput } from '../../HiddenInput';
 
@@ -49,64 +49,6 @@ const RadioWrapperElement = tasty({
       checked: 1,
     },
     flexGrow: 1,
-
-    Input: {
-      radius: {
-        '': 'round',
-        button: true,
-        'button & solid': 0,
-        'button & solid & :first-child': '1r 0 0 1r',
-        'button & solid & :last-child': '0 1r 1r 0',
-      },
-      margin: {
-        '': 'initial',
-        'button & solid': '-1bw right',
-        'button & solid & :last-child': 0,
-      },
-    },
-  },
-});
-
-const RadioButtonElement = tasty({
-  styles: {
-    display: 'grid',
-    flow: 'column',
-    placeItems: 'center',
-    gap: '.75x',
-    fill: {
-      '': '#white',
-      hovered: '#purple-text.04',
-      checked: '#white',
-      disabled: '#light',
-    },
-    color: {
-      '': '#dark.85',
-      invalid: '#danger-text',
-      checked: '#purple-text',
-      disabled: '#dark-04',
-      'disabled & checked': '#dark-02',
-    },
-    preset: 't3m',
-    border: {
-      '': '#dark-05',
-      checked: '#purple',
-      'invalid & checked': '#danger-text',
-      disabled: '#dark-05',
-      'disabled & checked': '#dark-03',
-    },
-    padding: '(.75x - 1bw) (1.25x - 1bw)',
-    cursor: 'pointer',
-    opacity: {
-      '': 1,
-      disabled: 0.5,
-    },
-    outline: {
-      '': '#purple-text.0',
-      focused: '1bw #purple-text',
-    },
-    outlineOffset: 1,
-    transition: 'theme',
-    whiteSpace: 'nowrap',
   },
 });
 
@@ -161,12 +103,26 @@ const RadioLabelElement = tasty({
 export interface CubeRadioProps
   extends BaseProps,
     AriaRadioProps,
-    FieldBaseProps,
+    Omit<FieldBaseProps, 'tooltip'>,
     OuterStyleProps {
-  inputStyles?: Styles;
   /* The visual type of the radio button */
   type?: 'button' | 'radio';
+  buttonType?: Exclude<CubeItemBaseProps['type'], 'secondary'>;
   value?: string;
+  /* Whether the radio is invalid */
+  isInvalid?: boolean;
+  /* Size of the button (for button type only) */
+  size?: CubeItemBaseProps['size'];
+  /* Icon to display (for button type only) */
+  icon?: CubeItemBaseProps['icon'];
+  /* Icon to display on the right (for button type only) */
+  rightIcon?: CubeItemBaseProps['rightIcon'];
+  /* Description text (for button type only) */
+  description?: CubeItemBaseProps['description'];
+  /* Tooltip configuration (for button type only) */
+  tooltip?: CubeItemBaseProps['tooltip'];
+  /* Keyboard shortcut (for button type only) */
+  hotkeys?: CubeItemBaseProps['hotkeys'];
 }
 
 function Radio(props: CubeRadioProps, ref) {
@@ -177,26 +133,28 @@ function Radio(props: CubeRadioProps, ref) {
   let {
     qa,
     isDisabled,
-    validationState,
+    isInvalid,
     children,
     label,
     autoFocus,
     labelStyles,
     labelProps,
-    inputStyles,
-    type = 'radio',
+    type,
+    buttonType,
+    size,
+    icon,
+    rightIcon,
+    description,
+    tooltip,
+    hotkeys,
     'aria-label': ariaLabel,
     form,
     ...otherProps
   } = props;
 
-  let isButton = type === 'button';
-
   label = label || children;
 
   let styles = extractStyles(otherProps, OUTER_STYLES);
-
-  const RadioElement = isButton ? RadioButtonElement : RadioNormalElement;
 
   labelStyles = {
     ...INLINE_LABEL_STYLES,
@@ -207,14 +165,58 @@ function Radio(props: CubeRadioProps, ref) {
 
   let state = radioGroupProps && radioGroupProps.state;
   let name = radioGroupProps && radioGroupProps.name;
-  let isSolid = (radioGroupProps && radioGroupProps.isSolid) || false;
+  let contextSize = radioGroupProps?.size;
+  let contextButtonType = radioGroupProps?.buttonType;
+  let contextType = radioGroupProps?.type;
+  let contextIsDisabled = radioGroupProps?.isDisabled;
 
   if (!state) {
     throw new Error('CubeUI: The Radio button is used outside the RadioGroup.');
   }
 
-  let { isFocused, focusProps } = useFocus({ isDisabled }, true);
-  let { hoverProps, isHovered } = useHover({ isDisabled });
+  // Determine effective type from props or context
+  let effectiveType = type ?? contextType ?? 'radio';
+  let isButton = effectiveType === 'button' || effectiveType === 'tabs';
+
+  // Determine effective size with priority: prop > context > default
+  let effectiveSize = size ?? contextSize ?? 'medium';
+
+  // Apply size mapping for tabs mode button radios
+  if (effectiveType === 'tabs' && isButton) {
+    if (effectiveSize === 'small' || effectiveSize === 'medium') {
+      effectiveSize = 'xsmall';
+    } else if (effectiveSize === 'large') {
+      effectiveSize = 'medium';
+    } else if (effectiveSize === 'xlarge') {
+      effectiveSize = 'large';
+    }
+    // 'xsmall' stays 'xsmall', 'inline' stays 'inline'
+  }
+
+  // Determine effective button type
+  // In tabs mode, always use 'neutral' and ignore buttonType prop
+  let effectiveButtonType;
+  if (effectiveType === 'tabs') {
+    effectiveButtonType = 'neutral'; // Force neutral for tabs, ignore buttonType
+  } else {
+    const baseButtonType = buttonType ?? contextButtonType ?? 'outline';
+    // When buttonType is 'primary', use 'secondary' for non-selected and 'primary' for selected
+    if (baseButtonType === 'primary') {
+      effectiveButtonType =
+        state.selectedValue === props.value ? 'primary' : 'secondary';
+    } else {
+      effectiveButtonType = baseButtonType;
+    }
+  }
+
+  // Use context isDisabled if prop isDisabled is not explicitly set
+  let effectiveIsDisabled = isDisabled ?? contextIsDisabled ?? false;
+
+  let { isFocused, focusProps } = useFocus(
+    { isDisabled: effectiveIsDisabled },
+    true,
+  );
+  let { hoverProps, isHovered } = useHover({ isDisabled: effectiveIsDisabled });
 
   let inputRef = useRef(null);
   let domRef = useFocusableRef(ref, inputRef);
@@ -227,7 +229,7 @@ function Radio(props: CubeRadioProps, ref) {
     {
       name,
       ...props,
-      isDisabled,
+      isDisabled: effectiveIsDisabled,
     },
     state,
     inputRef,
@@ -236,25 +238,66 @@ function Radio(props: CubeRadioProps, ref) {
   const mods = useMemo(
     () => ({
       checked: isRadioSelected,
-      invalid: validationState === 'invalid',
-      valid: validationState === 'valid',
+      invalid: !!isInvalid,
       disabled: isRadioDisabled,
       hovered: isHovered,
       button: isButton,
       focused: isFocused,
-      solid: isSolid,
+      tabs: effectiveType === 'tabs',
     }),
     [
       isRadioSelected,
-      validationState,
+      isInvalid,
       isRadioDisabled,
       isHovered,
       isButton,
       isFocused,
-      isSolid,
+      effectiveType,
     ],
   );
 
+  // Render button type using ItemBase
+  if (isButton) {
+    return (
+      <ItemBase
+        ref={domRef}
+        as="label"
+        qa={qa || 'Radio'}
+        type={effectiveButtonType}
+        theme={isInvalid ? 'danger' : 'default'}
+        size={effectiveSize}
+        icon={icon}
+        rightIcon={rightIcon}
+        description={description}
+        tooltip={tooltip}
+        hotkeys={hotkeys}
+        isSelected={isRadioSelected}
+        isDisabled={isRadioDisabled}
+        mods={mods}
+        preset="t3m"
+        styles={{
+          preset: 't3m',
+          lineHeight: '1fs',
+          ...(isRadioSelected && effectiveType === 'tabs'
+            ? { fill: '#white', shadow: '0 0 .5x #shadow' }
+            : {}),
+          ...styles,
+        }}
+        {...mergeProps(hoverProps, focusProps)}
+      >
+        <HiddenInput
+          data-qa={qa || 'Radio'}
+          aria-label={ariaLabel}
+          {...inputProps}
+          ref={inputRef}
+          mods={{ button: isButton, disabled: isRadioDisabled }}
+        />
+        {label}
+      </ItemBase>
+    );
+  }
+
+  // Render classic radio type
   return (
     <RadioWrapperElement
       styles={styles}
@@ -270,15 +313,10 @@ function Radio(props: CubeRadioProps, ref) {
         ref={inputRef}
         mods={{ button: isButton }}
       />
-      <RadioElement
-        data-element="Input"
-        mods={mods}
-        data-type={type}
-        styles={inputStyles}
-      >
-        {!isButton ? RadioCircleElement : children}
-      </RadioElement>
-      {label && !isButton && (
+      <RadioNormalElement data-element="Input" mods={mods} data-type={type}>
+        {RadioCircleElement}
+      </RadioNormalElement>
+      {label && (
         <RadioLabelElement
           mods={mods}
           styles={labelStyles}
@@ -308,20 +346,20 @@ const _Radio = forwardRef(Radio);
  */
 const _RadioButton = forwardRef(RadioButton);
 
-const ButtonGroup = tasty(RadioGroup, {
-  isSolid: true,
+const Tabs = tasty(RadioGroup, {
+  type: 'tabs',
 });
 
 const __Radio = Object.assign(
   _Radio as typeof _Radio & {
     Group: typeof RadioGroup;
     Button: typeof _RadioButton;
-    ButtonGroup: typeof ButtonGroup;
+    Tabs: typeof Tabs;
   },
   {
     Group: RadioGroup,
     Button: _RadioButton,
-    ButtonGroup,
+    Tabs,
   },
 );
 

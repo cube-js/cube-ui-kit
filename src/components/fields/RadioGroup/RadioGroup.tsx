@@ -20,6 +20,7 @@ import {
   castNullableStringValue,
   WithNullableValue,
 } from '../../../utils/react/nullableValue';
+import { CubeItemBaseProps } from '../../content/ItemBase/ItemBase';
 import {
   FormContext,
   useFieldProps,
@@ -36,11 +37,18 @@ export interface CubeRadioGroupProps
     OuterStyleProps,
     FieldBaseProps {
   groupStyles?: Styles;
-  isSolid?: boolean;
   orientation?: 'horizontal' | 'vertical';
   value?: string;
   defaultValue?: string;
   onChange?: (value: string) => void;
+  /* Whether the radio group is invalid */
+  isInvalid?: boolean;
+  /* Size for all radio buttons in the group */
+  size?: CubeItemBaseProps['size'];
+  /* Button type for all button-style radios (ignored in tabs mode). When set to 'primary', selected buttons use 'primary' and non-selected use 'secondary' */
+  buttonType?: Exclude<CubeItemBaseProps['type'], 'secondary'>;
+  /* Visual type for all radios in the group: radio (default), button, or tabs */
+  type?: 'radio' | 'button' | 'tabs';
 }
 
 const RadioGroupElement = tasty({
@@ -52,16 +60,26 @@ const RadioGroupElement = tasty({
     flow: {
       '': 'column',
       horizontal: 'row wrap',
-      'horizontal & solid': 'row',
+      'horizontal & tabs': 'row',
     },
+    padding: {
+      '': '0',
+      tabs: '.5x',
+    },
+    radius: '1cr',
+    fill: {
+      '': '#clear',
+      'tabs | disabled': '#light',
+    },
+    width: 'max-content',
     gap: {
       '': '1x',
-      solid: 0,
+      tabs: '.5x',
     },
     whiteSpace: 'nowrap',
     flexGrow: {
       '': 'initial',
-      solid: 1,
+      tabs: 1,
     },
   },
 });
@@ -76,14 +94,16 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
     isDisabled,
     isRequired,
     labelPosition = 'top',
-    validationState,
+    isInvalid,
     children,
     orientation,
     styles,
     groupStyles,
     insideForm,
     labelProps: baseLabelProps,
-    isSolid,
+    size,
+    buttonType,
+    type,
     form,
     ...otherProps
   } = props;
@@ -94,8 +114,10 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
 
   let state = useRadioGroupState(props);
 
+  // Set default orientation based on type
   if (orientation == null) {
-    orientation = isSolid ? 'horizontal' : 'vertical';
+    orientation =
+      type === 'button' || type === 'tabs' ? 'horizontal' : 'vertical';
   }
 
   let { radioGroupProps: fieldProps, labelProps } = useRadioGroup(props, state);
@@ -107,17 +129,26 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
         horizontal: orientation === 'horizontal',
         'inside-form': insideForm,
         'side-label': labelPosition === 'side',
-        solid: !!isSolid,
+        tabs: type === 'tabs',
       }}
     >
       <FormContext.Provider
         value={{
           isRequired,
-          validationState,
+          isInvalid,
           isDisabled,
         }}
       >
-        <RadioContext.Provider value={{ state, name: props.name, isSolid }}>
+        <RadioContext.Provider
+          value={{
+            state,
+            name: props.name,
+            size,
+            buttonType,
+            type,
+            isDisabled,
+          }}
+        >
           {children}
         </RadioContext.Provider>
       </FormContext.Provider>
