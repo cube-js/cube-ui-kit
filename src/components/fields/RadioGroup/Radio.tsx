@@ -305,6 +305,7 @@ function Radio(props: CubeRadioProps, ref) {
           aria-label={ariaLabel}
           {...inputProps}
           ref={inputRef}
+          form={null}
           mods={{ button: isButton, disabled: isRadioDisabled }}
         />
         {label}
