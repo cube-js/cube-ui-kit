@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.82.1
+
+### Patch Changes
+
+- [#824](https://github.com/cube-js/cube-ui-kit/pull/824) [`e88acca3`](https://github.com/cube-js/cube-ui-kit/commit/e88acca3b7dc34a2a9f6574429766212c2644147) Thanks [@tenphi](https://github.com/tenphi)! - Generate id even for input components that are not connected to a form.
+
+- [#824](https://github.com/cube-js/cube-ui-kit/pull/824) [`e88acca3`](https://github.com/cube-js/cube-ui-kit/commit/e88acca3b7dc34a2a9f6574429766212c2644147) Thanks [@tenphi](https://github.com/tenphi)! - Prevent form prop from leaking to the DOM.
+
 ## 0.82.0
 
 ### Minor Changes
