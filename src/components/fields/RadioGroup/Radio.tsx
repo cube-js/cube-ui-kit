@@ -26,6 +26,23 @@ import type { AriaRadioProps } from 'react-aria';
 export { AriaRadioProps };
 export { useRadio };
 
+const RadioButtonElement = tasty(ItemBase, {
+  qa: 'Radio',
+  as: 'label',
+  styles: {
+    preset: 't3m',
+    lineHeight: '1fs',
+  },
+});
+
+const RadioButtonSelectedElement = tasty(RadioButtonElement, {
+  qa: 'RadioSelected',
+  styles: {
+    fill: '#white',
+    shadow: '0 0 .5x #shadow',
+  },
+});
+
 const RadioWrapperElement = tasty({
   as: 'label',
   qa: 'RadioWrapper',
@@ -258,10 +275,14 @@ function Radio(props: CubeRadioProps, ref) {
 
   // Render button type using ItemBase
   if (isButton) {
+    const ButtonElement =
+      isRadioSelected && contextType === 'tabs'
+        ? RadioButtonSelectedElement
+        : RadioButtonElement;
+
     return (
-      <ItemBase
+      <ButtonElement
         ref={domRef}
-        as="label"
         qa={qa || 'Radio'}
         type={effectiveButtonType}
         theme={isInvalid ? 'danger' : 'default'}
@@ -274,15 +295,7 @@ function Radio(props: CubeRadioProps, ref) {
         isSelected={isRadioSelected}
         isDisabled={isRadioDisabled}
         mods={mods}
-        preset="t3m"
-        styles={{
-          preset: 't3m',
-          lineHeight: '1fs',
-          ...(isRadioSelected && effectiveType === 'tabs'
-            ? { fill: '#white', shadow: '0 0 .5x #shadow' }
-            : {}),
-          ...styles,
-        }}
+        styles={styles}
         {...mergeProps(hoverProps, focusProps)}
       >
         <HiddenInput
@@ -293,7 +306,7 @@ function Radio(props: CubeRadioProps, ref) {
           mods={{ button: isButton, disabled: isRadioDisabled }}
         />
         {label}
-      </ItemBase>
+      </ButtonElement>
     );
   }
 
