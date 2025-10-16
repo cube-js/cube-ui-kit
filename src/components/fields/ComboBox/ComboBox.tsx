@@ -18,7 +18,7 @@ import {
   useOverlay,
   useOverlayPosition,
 } from 'react-aria';
-import { Section as BaseSection, Item } from 'react-stately';
+import { Section as BaseSection } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
 import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
@@ -47,6 +47,7 @@ import { useEventBus } from '../../../utils/react/useEventBus';
 import { ItemAction } from '../../actions';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { DisplayTransition } from '../../helpers';
+import { Item } from '../../Item';
 import { Portal } from '../../portal';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
