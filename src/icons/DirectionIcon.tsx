@@ -61,7 +61,7 @@ export const DirectionIcon = memo(function DirectionIcon(
         // Wrap around: use the shorter path
         shortestDiff = diffRotate > 0 ? diffRotate - 360 : diffRotate + 360;
       }
-      // When flipped, rotation direction is inverted (scaleY flips the coordinate system)
+      // Apply the shortest rotation path
       setRotate((prev) => prev - shortestDiff);
     }
 
