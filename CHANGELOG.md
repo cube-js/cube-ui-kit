@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.82.2
+
+### Patch Changes
+
+- [#828](https://github.com/cube-js/cube-ui-kit/pull/828) [`f3a39bba`](https://github.com/cube-js/cube-ui-kit/commit/f3a39bba8129b355d149493b927972a12609aa1a) Thanks [@tenphi](https://github.com/tenphi)! - Improve prop handling in ComboBox.Item
+
 ## 0.82.1
 
 ### Patch Changes
