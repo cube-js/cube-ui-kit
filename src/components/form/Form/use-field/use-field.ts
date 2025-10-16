@@ -9,7 +9,6 @@ import { delayValidationRule } from '../validation';
 import { CubeFieldProps, FieldReturnValue } from './types';
 
 const ID_MAP = {};
-let STANDALONE_FIELD_COUNTER = 0;
 
 function createId(name) {
   if (!name) return;
@@ -72,39 +71,29 @@ export function useField<T extends FieldTypes, Props extends CubeFieldProps<T>>(
   const fieldName: string = name != null ? name : '';
 
   const isFirstRender = useIsFirstRender();
-
-  // Generate a base ID for standalone fields (no name)
-  const baseId = useMemo(() => {
-    if (id) return id;
-    if (fieldName) return idPrefix ? `${idPrefix}_${fieldName}` : fieldName;
-    // For standalone fields without a name, use a counter-based ID
-    return `field_${++STANDALONE_FIELD_COUNTER}`;
-  }, [id, fieldName, idPrefix]);
-
-  let [fieldId, setFieldId] = useState(baseId);
+  let [fieldId, setFieldId] = useState(
+    id || (idPrefix ? `${idPrefix}_${fieldName}` : fieldName),
+  );
 
   useEffect(() => {
     let newId;
 
-    if (!id) {
-      // Generate unique ID for both form-connected and standalone fields
-      const idBase = fieldName || baseId;
-      newId = createId(idBase);
+    if (!id && !nonInput) {
+      newId = createId(fieldId);
 
       setFieldId(newId);
     }
 
     return () => {
       if (!id) {
-        const idBase = fieldName || baseId;
-        removeId(idBase, newId);
+        removeId(idPrefix ? `${idPrefix}_${fieldName}` : fieldName, newId);
       }
 
       if (fieldName && form) {
         form.removeField(fieldName);
       }
     };
-  }, [fieldName, baseId]);
+  }, [fieldName]);
 
   let field = form?.getFieldInstance(fieldName);
 
