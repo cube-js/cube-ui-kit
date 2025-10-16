@@ -498,6 +498,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     showSelectAll,
     selectAllLabel,
     allValueProps,
+    form,
     ...otherProps
   } = props;
 

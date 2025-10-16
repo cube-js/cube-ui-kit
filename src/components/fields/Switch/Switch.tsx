@@ -159,6 +159,7 @@ function Switch(props: WithNullableSelected<CubeSwitchProps>, ref) {
     fieldStyles,
     validationState,
     size = 'medium',
+    form,
   } = props;
 
   const id = useId(props.id);

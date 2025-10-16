@@ -275,6 +275,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     searchValue: controlledSearchValue,
     onSearchChange,
     _internalCollection,
+    form,
     ...otherProps
   } = props;
 

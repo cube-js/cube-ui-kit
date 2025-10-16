@@ -98,6 +98,7 @@ function TextInputMapper(
     KeyComponent,
     ValueComponent,
     size = 'medium',
+    form,
   } = props;
 
   function extractLocalValues(

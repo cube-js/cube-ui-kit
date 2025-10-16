@@ -262,6 +262,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     icon,
     maxLength,
     minLength,
+    form,
     ...otherProps
   } = props;
 
@@ -367,7 +368,6 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
         as={ElementType}
         {...mergeProps(inputProps, focusProps, hoverProps)}
         ref={inputRef}
-        form={null}
         rows={multiLine ? rows : undefined}
         mods={modifiers}
         style={textSecurityStyles}

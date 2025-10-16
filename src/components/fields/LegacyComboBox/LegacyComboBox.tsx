@@ -208,6 +208,7 @@ export const LegacyComboBox = forwardRef(function LegacyComboBox<
     selectedKey,
     defaultSelectedKey,
     isClearable,
+    form,
     ...otherProps
   } = props;
 

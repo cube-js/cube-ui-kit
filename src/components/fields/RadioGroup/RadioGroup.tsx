@@ -84,6 +84,7 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
     insideForm,
     labelProps: baseLabelProps,
     isSolid,
+    form,
     ...otherProps
   } = props;
   let domRef = useDOMRef(ref);

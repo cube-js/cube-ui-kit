@@ -249,6 +249,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     searchValue,
     onSearchChange,
     sortSelectedToTop: sortSelectedToTopProp,
+    form,
     ...otherProps
   } = props;
 

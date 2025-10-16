@@ -30,6 +30,8 @@ export interface FieldBaseProps extends FormBaseProps {
   label?: ReactNode;
   /** Validation rules */
   rules?: ValidationRule[];
+  /** The form instance */
+  form?: any;
   /** An additional content next to the label */
   extra?: ReactNode;
   /** The validation state of the field */

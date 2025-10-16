@@ -1030,6 +1030,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     onFocus,
     onBlur,
     onKeyDown,
+    form,
     ...otherProps
   } = props;
 

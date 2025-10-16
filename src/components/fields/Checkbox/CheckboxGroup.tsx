@@ -82,6 +82,7 @@ function CheckboxGroup(props: WithNullableValue<CubeCheckboxGroupProps>, ref) {
     labelProps: baseLabelProps,
     labelSuffix,
     inputStyles,
+    form,
     ...otherProps
   } = props;
   let domRef = useDOMRef(ref);
