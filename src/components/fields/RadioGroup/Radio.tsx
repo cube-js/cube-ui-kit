@@ -47,7 +47,7 @@ const TabRadioButtonSelectedElement = tasty(RadioButtonElement, {
   qa: 'RadioSelected',
   styles: {
     fill: '#white',
-    shadow: '0 0 .5x #shadow',
+    shadow: '0 1bw .375x #dark.15',
   },
 });
 
