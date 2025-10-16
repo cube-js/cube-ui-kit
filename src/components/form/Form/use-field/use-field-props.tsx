@@ -54,14 +54,11 @@ export function useFieldProps<
     );
   }
 
-  if (
-    isInsideLegacyField ||
-    isDisabledRef.current === true ||
-    props.name == null
-  ) {
+  if (isInsideLegacyField || isDisabledRef.current === true) {
     return props;
   }
 
+  // Call useField even for standalone fields (no name) to generate IDs
   const field = useField<T, Props>(props, {
     defaultValidationTrigger: params.defaultValidationTrigger,
   });
@@ -117,7 +114,7 @@ export function useFieldProps<
         : undefined;
 
   const result: Props = isOutsideOfForm
-    ? props
+    ? mergeProps(props, { id: field.id })
     : mergeProps(props, field, valueProps, {
         validateTrigger: field.validateTrigger ?? defaultValidationTrigger,
         onBlur: onBlurChained,

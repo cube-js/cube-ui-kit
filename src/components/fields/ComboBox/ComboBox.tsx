@@ -8,7 +8,6 @@ import React, {
   RefObject,
   useCallback,
   useEffect,
-  useId,
   useMemo,
   useRef,
   useState,
@@ -1034,10 +1033,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     ...otherProps
   } = props;
 
-  // Generate ID for label-input linking if not provided
-  const generatedId = useId();
-  const inputId = id || generatedId;
-
   // Generate a unique ID for this combobox instance
   const comboBoxId = useMemo(() => generateRandomId(), []);
 
@@ -1580,7 +1575,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       {prefix ? <div data-element="Prefix">{prefix}</div> : null}
       <ComboBoxInput
         inputRef={inputRef}
-        id={inputId}
+        id={id}
         value={effectiveInputValue}
         placeholder={placeholder}
         isDisabled={isDisabled}
@@ -1688,7 +1683,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   const finalProps = {
     ...propsWithoutChildren,
     styles: fieldStyles,
-    labelProps: { ...props.labelProps, for: inputId },
   };
 
   return wrapWithField<Omit<CubeComboBoxProps<T>, 'children'>>(
