@@ -206,6 +206,8 @@ function Radio(props: CubeRadioProps, ref) {
       effectiveSize = 'medium';
     } else if (effectiveSize === 'xlarge') {
       effectiveSize = 'large';
+    } else if (!size && !contextSize) {
+      effectiveSize = 'xsmall';
     }
     // 'xsmall' stays 'xsmall', 'inline' stays 'inline'
   }
