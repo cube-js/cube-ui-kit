@@ -35,7 +35,7 @@ const RadioButtonElement = tasty(ItemBase, {
   },
 });
 
-const RadioButtonSelectedElement = tasty(RadioButtonElement, {
+const TabRadioButtonSelectedElement = tasty(RadioButtonElement, {
   qa: 'RadioSelected',
   styles: {
     fill: '#white',
@@ -277,7 +277,7 @@ function Radio(props: CubeRadioProps, ref) {
   if (isButton) {
     const ButtonElement =
       isRadioSelected && contextType === 'tabs'
-        ? RadioButtonSelectedElement
+        ? TabRadioButtonSelectedElement
         : RadioButtonElement;
 
     return (

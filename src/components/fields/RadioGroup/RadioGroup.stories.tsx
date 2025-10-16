@@ -1,7 +1,7 @@
 import { StoryFn } from '@storybook/react-vite';
 
-import { TEXT_VALUE_ARG } from '../../../stories/FormFieldArgs';
 import { baseProps } from '../../../stories/lists/baseProps';
+import { Flow } from '../../layout/Flow';
 
 import { Radio } from './Radio';
 import { CubeRadioGroupProps } from './RadioGroup';
@@ -298,8 +298,37 @@ export const CustomButtonTypes: StoryFn<CubeRadioGroupProps> = () => (
 );
 
 // Disabled state
-export const DisabledState = Template.bind({});
-DisabledState.args = {
-  type: 'tabs',
-  isDisabled: true,
-};
+export const DisabledState: StoryFn<CubeRadioGroupProps> = () => (
+  <Flow gap="2x">
+    <Radio.Group
+      type="radio"
+      isDisabled={true}
+      defaultValue="yes"
+      label="Radio (Disabled)"
+    >
+      <Radio value="yes">Yes</Radio>
+      <Radio value="no">No</Radio>
+      <Radio value="maybe">Maybe</Radio>
+    </Radio.Group>
+    <Radio.Group
+      type="button"
+      isDisabled={true}
+      defaultValue="yes"
+      label="Button (Disabled)"
+    >
+      <Radio value="yes">Yes</Radio>
+      <Radio value="no">No</Radio>
+      <Radio value="maybe">Maybe</Radio>
+    </Radio.Group>
+    <Radio.Group
+      type="tabs"
+      isDisabled={true}
+      defaultValue="yes"
+      label="Tabs (Disabled)"
+    >
+      <Radio value="yes">Yes</Radio>
+      <Radio value="no">No</Radio>
+      <Radio value="maybe">Maybe</Radio>
+    </Radio.Group>
+  </Flow>
+);
