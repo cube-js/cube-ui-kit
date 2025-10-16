@@ -129,7 +129,7 @@ export interface CubeRadioProps
   /* Whether the radio is invalid */
   isInvalid?: boolean;
   /* Size of the button (for button type only) */
-  size?: CubeItemBaseProps['size'];
+  size?: Omit<CubeItemBaseProps['size'], 'inline'>;
   /* Icon to display (for button type only) */
   icon?: CubeItemBaseProps['icon'];
   /* Icon to display on the right (for button type only) */
@@ -196,7 +196,8 @@ function Radio(props: CubeRadioProps, ref) {
   let isButton = effectiveType === 'button' || effectiveType === 'tabs';
 
   // Determine effective size with priority: prop > context > default
-  let effectiveSize = size ?? contextSize ?? 'medium';
+  let effectiveSize =
+    size ?? contextSize ?? (effectiveType === 'tabs' ? 'small' : 'medium');
 
   // Apply size mapping for tabs mode button radios
   if (effectiveType === 'tabs' && isButton) {
@@ -206,10 +207,8 @@ function Radio(props: CubeRadioProps, ref) {
       effectiveSize = 'medium';
     } else if (effectiveSize === 'xlarge') {
       effectiveSize = 'large';
-    } else if (!size && !contextSize) {
-      effectiveSize = 'xsmall';
     }
-    // 'xsmall' stays 'xsmall', 'inline' stays 'inline'
+    // 'xsmall' stays 'xsmall'
   }
 
   // Determine effective button type
