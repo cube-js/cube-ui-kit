@@ -160,10 +160,13 @@ ButtonGroup.args = {
   type: 'button',
 };
 
-export const TabsGroup = Template.bind({});
-TabsGroup.args = {
-  type: 'tabs',
-};
+export const TabsGroup: StoryFn<CubeRadioGroupProps> = (args) => (
+  <Radio.Tabs defaultValue="yes" {...args}>
+    <Radio value="yes">Yes</Radio>
+    <Radio value="no">No</Radio>
+    <Radio value="maybe">Maybe</Radio>
+  </Radio.Tabs>
+);
 
 // Size demonstrations
 export const ButtonGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
@@ -198,8 +201,7 @@ export const ButtonGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
 
 export const TabsGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
   <>
-    <Radio.Group
-      type="tabs"
+    <Radio.Tabs
       size="xsmall"
       defaultValue="yes"
       label="XSmall (stays xsmall in tabs mode)"
@@ -207,9 +209,8 @@ export const TabsGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
       <Radio value="yes">Yes</Radio>
       <Radio value="no">No</Radio>
       <Radio value="maybe">Maybe</Radio>
-    </Radio.Group>
-    <Radio.Group
-      type="tabs"
+    </Radio.Tabs>
+    <Radio.Tabs
       size="small"
       defaultValue="yes"
       label="Small (maps to xsmall in tabs mode)"
@@ -217,9 +218,8 @@ export const TabsGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
       <Radio value="yes">Yes</Radio>
       <Radio value="no">No</Radio>
       <Radio value="maybe">Maybe</Radio>
-    </Radio.Group>
-    <Radio.Group
-      type="tabs"
+    </Radio.Tabs>
+    <Radio.Tabs
       size="medium"
       defaultValue="yes"
       label="Medium (maps to xsmall in tabs mode)"
@@ -227,9 +227,8 @@ export const TabsGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
       <Radio value="yes">Yes</Radio>
       <Radio value="no">No</Radio>
       <Radio value="maybe">Maybe</Radio>
-    </Radio.Group>
-    <Radio.Group
-      type="tabs"
+    </Radio.Tabs>
+    <Radio.Tabs
       size="large"
       defaultValue="yes"
       label="Large (maps to medium in tabs mode)"
@@ -237,9 +236,8 @@ export const TabsGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
       <Radio value="yes">Yes</Radio>
       <Radio value="no">No</Radio>
       <Radio value="maybe">Maybe</Radio>
-    </Radio.Group>
-    <Radio.Group
-      type="tabs"
+    </Radio.Tabs>
+    <Radio.Tabs
       size="xlarge"
       defaultValue="yes"
       label="XLarge (maps to large in tabs mode)"
@@ -247,7 +245,7 @@ export const TabsGroupSizes: StoryFn<CubeRadioGroupProps> = () => (
       <Radio value="yes">Yes</Radio>
       <Radio value="no">No</Radio>
       <Radio value="maybe">Maybe</Radio>
-    </Radio.Group>
+    </Radio.Tabs>
   </>
 );
 
@@ -320,15 +318,10 @@ export const DisabledState: StoryFn<CubeRadioGroupProps> = () => (
       <Radio value="no">No</Radio>
       <Radio value="maybe">Maybe</Radio>
     </Radio.Group>
-    <Radio.Group
-      type="tabs"
-      isDisabled={true}
-      defaultValue="yes"
-      label="Tabs (Disabled)"
-    >
+    <Radio.Tabs isDisabled={true} defaultValue="yes" label="Tabs (Disabled)">
       <Radio value="yes">Yes</Radio>
       <Radio value="no">No</Radio>
       <Radio value="maybe">Maybe</Radio>
-    </Radio.Group>
+    </Radio.Tabs>
   </Flow>
 );

@@ -344,44 +344,33 @@ function Radio(props: CubeRadioProps, ref) {
   );
 }
 
-function RadioButton(props: CubeRadioProps, ref) {
-  const Radio = _Radio;
-
-  return <Radio {...props} ref={ref} type="button" />;
-}
-
 /**
  * Radio buttons allow users to select a single option from a list of mutually exclusive options.
  * All possible options are exposed up front for users to compare.
  */
 const _Radio = forwardRef(Radio);
-/**
- * Radio buttons allow users to select a single option from a list of mutually exclusive options.
- * All possible options are exposed up front for users to compare.
- */
-const _RadioButton = forwardRef(RadioButton);
 
 const Tabs = tasty(RadioGroup, {
   type: 'tabs',
 });
 
+const ButtonGroup = tasty(RadioGroup, {
+  type: 'button',
+});
+
 const __Radio = Object.assign(
   _Radio as typeof _Radio & {
     Group: typeof RadioGroup;
-    Button: typeof _RadioButton;
     Tabs: typeof Tabs;
+    ButtonGroup: typeof ButtonGroup;
   },
   {
     Group: RadioGroup,
-    Button: _RadioButton,
     Tabs,
+    ButtonGroup,
   },
 );
 
 __Radio.displayName = 'Radio';
 
 export { __Radio as Radio };
-
-_RadioButton.displayName = 'RadioButton';
-
-export { _RadioButton as RadioButton };
