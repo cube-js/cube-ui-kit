@@ -74,6 +74,7 @@ function SliderBase(allProps: SliderBaseProps, ref: DOMRef<HTMLDivElement>) {
     children,
     showValueLabel = true,
     orientation: formOrientation,
+    form,
     ...otherProps
   } = props;
 

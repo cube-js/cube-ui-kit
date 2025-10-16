@@ -10,7 +10,6 @@ import {
   ReactNode,
   RefObject,
   useEffect,
-  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -499,12 +498,9 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     showSelectAll,
     selectAllLabel,
     allValueProps,
+    form,
     ...otherProps
   } = props;
-
-  // Generate ID for label-listbox linking if not provided
-  const generatedId = useId();
-  const listBoxId = id || generatedId;
 
   const [, forceUpdate] = useState({});
   const lastSelectedKeyRef = useRef<Key | null>(null);
@@ -717,7 +713,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   const { listBoxProps } = useListBox(
     {
       ...props,
-      id: listBoxId,
+      id: id,
       'aria-label': props['aria-label'] || label?.toString(),
       isDisabled,
       shouldUseVirtualFocus: shouldUseVirtualFocus ?? false,
@@ -994,14 +990,6 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   );
 
   const finalProps = { ...props, styles: undefined };
-
-  // Ensure labelProps has the for attribute for label-listbox linking
-  if (!finalProps.labelProps) {
-    finalProps.labelProps = {};
-  }
-  if (!finalProps.labelProps.for) {
-    finalProps.labelProps.for = listBoxId;
-  }
 
   return wrapWithField<Omit<CubeListBoxProps<T>, 'children'>>(
     listBoxField,

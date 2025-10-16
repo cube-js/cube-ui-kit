@@ -186,6 +186,7 @@ function Radio(props: CubeRadioProps, ref) {
     inputStyles,
     type = 'radio',
     'aria-label': ariaLabel,
+    form,
     ...otherProps
   } = props;
 

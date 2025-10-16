@@ -281,6 +281,7 @@ function Select<T extends object>(
     labelSuffix,
     suffixPosition = 'before',
     isClearable,
+    form,
     ...otherProps
   } = props;
   let state = useSelectState(props);

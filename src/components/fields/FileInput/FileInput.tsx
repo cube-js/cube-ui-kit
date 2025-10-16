@@ -174,6 +174,7 @@ function FileInput(props: CubeFileInputProps, ref) {
     type = 'file',
     inputProps,
     accept,
+    form,
     ...otherProps
   } = props;
 

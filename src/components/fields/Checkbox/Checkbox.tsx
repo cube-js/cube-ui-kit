@@ -142,6 +142,7 @@ function Checkbox(
     labelPosition,
     inputStyles,
     isHidden,
+    form,
     ...otherProps
   } = props;
 
