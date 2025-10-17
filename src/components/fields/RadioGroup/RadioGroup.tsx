@@ -79,6 +79,8 @@ const RadioGroupElement = tasty({
 });
 
 function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
+  let orientation = props.orientation;
+
   props = castNullableStringValue(props);
   props = useProviderProps(props);
   props = useFormProps(props);
@@ -90,10 +92,10 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
     labelPosition = 'top',
     isInvalid,
     children,
-    orientation,
     styles,
     groupStyles,
     insideForm,
+    // orientation, // ignore orientation since it came from the form context
     labelProps: baseLabelProps,
     size,
     buttonType,
