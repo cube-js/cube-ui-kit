@@ -131,7 +131,7 @@ const OverlayElement = tasty({
     overflow: 'auto',
     background: '#white',
     radius: '1cr',
-    shadow: '0px 4px 16px #shadow',
+    shadow: true,
     padding: '.5x',
     border: true,
     boxSizing: 'border-box',

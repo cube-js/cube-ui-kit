@@ -21,7 +21,7 @@ const NotificationElement = tasty(Card, {
     display: 'grid',
     color: '#dark-02',
     padding: '.5x',
-    shadow: '0 5px 15px #dark.10',
+    shadow: true,
     border: false,
     margin: '1x bottom',
     radius: '1x',
