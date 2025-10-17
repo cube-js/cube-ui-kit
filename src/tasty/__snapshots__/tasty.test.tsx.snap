@@ -48,7 +48,7 @@ exports[`tasty() API should handle arrays containing state maps 1`] = `
 `;
 
 exports[`tasty() API should handle complex gridAreas with responsive arrays and state modifiers 1`] = `
-".t23.t23:not([data-is-sticky]) {position: static; background-color: transparent; z-index: auto; box-shadow: none var(--shadow-color);}
+".t23.t23:not([data-is-sticky]) {position: static; background-color: transparent; z-index: auto; box-shadow: none;}
 .t23.t23[data-is-sticky] {position: sticky; top: 0; background-color: var(--white-color); z-index: 10; box-shadow: 0 calc(0.5 * var(--gap)) calc(0.5 * var(--gap)) var(--white-color);}
 .t23.t23[data-is-sticky]>* {--context-fill-color: var(--white-color); --context-fill-color-rgb: var(--white-color-rgb);}
 .t23.t23 {display: grid; padding-top: var(--gap); padding-right: calc(2 * var(--gap)); padding-bottom: var(--gap); padding-left: calc(2 * var(--gap)); height: auto; min-height: calc(6 * var(--gap)); max-height: initial; place-items: center stretch; place-content: stretch;}
