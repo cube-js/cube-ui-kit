@@ -81,7 +81,7 @@ const ComboBoxOverlayElement = tasty({
     overflow: 'auto',
     background: '#white',
     radius: '1cr',
-    shadow: '0 .5x 2x #shadow',
+    shadow: true,
     padding: '0',
     border: '#border',
     hide: {

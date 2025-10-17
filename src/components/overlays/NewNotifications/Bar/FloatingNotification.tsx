@@ -23,7 +23,7 @@ const NotificationContainer = tasty({
   styles: {
     overflow: 'hidden',
     radius: '1cr',
-    boxShadow: '0 0.5x 2x #shadow',
+    shadow: true,
     pointerEvents: 'auto',
   },
 });

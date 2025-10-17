@@ -71,7 +71,7 @@ const TOKENS = {
   'min-dialog-size': 'min(288px, calc(100vw - (2 * var(--gap))))',
   'clear-color': 'transparent',
   'border-opaque-color': 'rgb(227 227 233)',
-  'shadow-color': color('dark-03', 0.1),
+  'shadow-color': color('dark', 0.06),
   'draft-color': color('dark', 0.2),
   'minor-color': color('dark', 0.65),
   'danger-bg-hover-color': color('danger', 0.1),
@@ -90,6 +90,11 @@ const TOKENS = {
   'devmodebar-height': '54px',
   'sidebar-width': '200px',
   'border-radius-base': '4px',
+
+  // shadows
+  'item-shadow': '0 1bw .375x #dark.15',
+  'card-shadow': '0 .5x 2x #shadow',
+  'dialog-shadow': '0 1x 4x #dark.15',
 
   // button/input sizes
   'size-xs': `${SIZES.XS}px`,

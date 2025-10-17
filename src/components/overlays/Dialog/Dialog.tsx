@@ -64,8 +64,8 @@ const DialogElement = tasty({
       '[data-type="fullscreenTakeover"]': '0r',
     },
     shadow: {
-      '': '0 2x 4x #shadow',
-      '[data-type="popover"] | [data-type="panel"]': '0px .5x 2x #shadow',
+      '': '$dialog-shadow',
+      '[data-type="popover"] | [data-type="panel"]': '$card-shadow',
     },
     top: {
       '': false,
