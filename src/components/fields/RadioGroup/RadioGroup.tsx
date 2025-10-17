@@ -69,6 +69,7 @@ const RadioGroupElement = tasty({
       'tabs | disabled': '#dark.06',
     },
     width: 'max-content max-content initial',
+    flexShrink: 0,
     gap: {
       '': '1x',
       tabs: '.5x',
