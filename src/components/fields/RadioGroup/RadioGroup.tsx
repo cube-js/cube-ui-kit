@@ -113,7 +113,10 @@ function RadioGroup(props: WithNullableValue<CubeRadioGroupProps>, ref) {
       type === 'button' || type === 'tabs' ? 'horizontal' : 'vertical';
   }
 
-  let { radioGroupProps: fieldProps, labelProps } = useRadioGroup(props, state);
+  let { radioGroupProps: fieldProps, labelProps } = useRadioGroup(
+    { ...props, orientation },
+    state,
+  );
 
   let radioGroup = (
     <RadioGroupElement
