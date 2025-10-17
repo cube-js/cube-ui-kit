@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.83.0
+
+### Minor Changes
+
+- [#827](https://github.com/cube-js/cube-ui-kit/pull/827) [`7153c8f2`](https://github.com/cube-js/cube-ui-kit/commit/7153c8f26fc955ed7d78dbe6f53b623f45f6c430) Thanks [@tenphi](https://github.com/tenphi)! - Introduces a brand new Radio.Tabs component as a replacement for RadioGroup with isSolid flag.
+
 ## 0.82.2
 
 ### Patch Changes
