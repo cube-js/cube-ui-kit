@@ -91,6 +91,10 @@ const TOKENS = {
   'sidebar-width': '200px',
   'border-radius-base': '4px',
 
+  // shadows
+  'item-shadow': '0 1bw .375x #dark.15',
+  'card-shadow': '0 .75x 2x #shadow',
+
   // button/input sizes
   'size-xs': `${SIZES.XS}px`,
   'size-sm': `${SIZES.SM}px`,

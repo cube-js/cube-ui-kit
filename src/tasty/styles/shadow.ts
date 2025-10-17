@@ -5,7 +5,7 @@ function toBoxShadow(shadow) {
   const { values, mods, colors } =
     processed.groups[0] ?? ({ values: [], mods: [], colors: [] } as any);
   const mod = mods[0] || '';
-  const shadowColor = (colors && colors[0]) || 'var(--shadow-color)';
+  const shadowColor = (colors && colors[0]) ?? '';
 
   return [mod, ...values, shadowColor].join(' ');
 }
@@ -13,7 +13,7 @@ function toBoxShadow(shadow) {
 export function shadowStyle({ shadow }) {
   if (!shadow) return '';
 
-  if (shadow === true) shadow = '0 5px 15px #shadow';
+  if (shadow === true) shadow = 'var(--card-shadow)';
 
   return {
     'box-shadow': shadow.split(',').map(toBoxShadow).join(','),

@@ -66,7 +66,7 @@ const RadioGroupElement = tasty({
     radius: '1cr',
     fill: {
       '': '#clear',
-      'tabs | disabled': '#light',
+      'tabs | disabled': '#dark.06',
     },
     width: 'max-content',
     gap: {

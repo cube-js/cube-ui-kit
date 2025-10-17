@@ -47,7 +47,7 @@ const TabRadioButtonSelectedElement = tasty(RadioButtonElement, {
   qa: 'RadioSelected',
   styles: {
     fill: '#white',
-    shadow: '0 1bw .375x #dark.15',
+    shadow: '$item-shadow',
   },
 });
 
@@ -382,13 +382,11 @@ const __Radio = Object.assign(
     Group: typeof RadioGroup;
     Tabs: typeof Tabs;
     ButtonGroup: typeof ButtonGroup;
-    Button: typeof Radio;
   },
   {
     Group: RadioGroup,
     Tabs,
     ButtonGroup,
-    Button: Radio,
   },
 );
 
