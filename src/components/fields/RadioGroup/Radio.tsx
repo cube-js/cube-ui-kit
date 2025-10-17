@@ -382,11 +382,13 @@ const __Radio = Object.assign(
     Group: typeof RadioGroup;
     Tabs: typeof Tabs;
     ButtonGroup: typeof ButtonGroup;
+    Button: typeof Radio;
   },
   {
     Group: RadioGroup,
     Tabs,
     ButtonGroup,
+    Button: Radio,
   },
 );
 
