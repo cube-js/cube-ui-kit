@@ -528,7 +528,7 @@ WithIconsAndDescriptions.storyName = 'With icons and descriptions';
 export const SectionsStatic: StoryObj<CubeSelectProps<any>>['render'] = (
   args,
 ) => (
-  <Select {...args} placeholder="Pick something" width="260px">
+  <Select {...args} placeholder="Pick something" width="260px" direction="top">
     <Select.Section title="Warm colors">
       <Select.Item key="red">Red</Select.Item>
       <Select.Item key="orange">Orange</Select.Item>

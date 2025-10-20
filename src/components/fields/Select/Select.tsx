@@ -137,15 +137,17 @@ const OverlayElement = tasty({
     boxSizing: 'border-box',
 
     transition:
-      'transform $transition ease-out, scale $transition ease-out, theme $transition ease-out',
-    transform: {
+      'translate $transition ease-out, scale $transition ease-out, theme $transition ease-out',
+    translate: {
       '': '0 0',
-      'open & [data-placement="top"]': 'translate(0, 0)',
-      '!open & [data-placement="top"]': 'translate(0, 10%)',
-      'open & ([data-placement="bottom"] | ![data-placement])':
-        'translate(0, 0)',
-      '!open & ([data-placement="bottom"] | ![data-placement])':
-        'translate(0, -10%)',
+      'open & [data-placement="top"]': '0 0',
+      '!open & [data-placement="top"]': '0 1x',
+      'open & ([data-placement="bottom"] | ![data-placement]': '0 0',
+      '!open & ([data-placement="bottom"] | ![data-placement])': '0 -1x',
+    },
+    transformOrigin: {
+      '': 'top center',
+      '[data-placement="top"]': 'bottom center',
     },
     scale: {
       '': '1 1',
