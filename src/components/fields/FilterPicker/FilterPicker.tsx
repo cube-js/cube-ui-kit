@@ -723,6 +723,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       <ItemButton
         ref={triggerRef as any}
         data-popover-trigger
+        qa={props.qa || 'FilterPicker'}
         id={id}
         type={type}
         theme={validationState === 'invalid' ? 'danger' : theme}
@@ -769,7 +770,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   const filterPickerField = (
     <FilterPickerWrapper
-      qa={props.qa || 'FilterPicker'}
+      qa="FilterPickerWrapper"
       styles={styles}
       {...filterBaseProps(otherProps, { eventProps: true })}
     >
