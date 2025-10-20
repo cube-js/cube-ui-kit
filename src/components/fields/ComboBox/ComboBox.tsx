@@ -18,7 +18,7 @@ import {
   useOverlay,
   useOverlayPosition,
 } from 'react-aria';
-import { Section as BaseSection } from 'react-stately';
+import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
 import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
@@ -896,7 +896,7 @@ function ComboBoxOverlay({
   const placementDirection = placement?.split(' ')[0] || direction;
 
   const overlayContent = (
-    <DisplayTransition exposeUnmounted isShown={isOpen}>
+    <DisplayTransition isShown={isOpen}>
       {({ phase, isShown, ref: transitionRef }) => (
         <ComboBoxOverlayElement
           {...mergeProps(
@@ -1199,6 +1199,14 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     ? filteredChildren
     : frozenFilteredChildrenRef.current ?? filteredChildren;
 
+  // Create local collection state for reading item data (labels, etc.)
+  // This allows us to read item labels even before the popover opens
+  const localCollectionState = useListState({
+    children: displayedFilteredChildren,
+    items: sortedItems,
+    selectionMode: 'none', // Don't manage selection in this state
+  });
+
   const { isFocused, focusProps } = useFocus({ isDisabled });
 
   // Composite blur handler - fires when focus leaves the entire component
@@ -1268,11 +1276,14 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   const listStateRef = useRef<any>(null);
   const focusInitAttemptsRef = useRef(0);
 
-  // Helper to get label from collection item
-  const getItemLabel = useCallback((key: Key): string => {
-    const item = listStateRef.current?.collection?.getItem(key);
-    return item?.textValue || String(key);
-  }, []);
+  // Helper to get label from local collection
+  const getItemLabel = useCallback(
+    (key: Key): string => {
+      const item = localCollectionState?.collection?.getItem(key);
+      return item?.textValue || String(key);
+    },
+    [localCollectionState?.collection],
+  );
 
   // Selection change handler
   const handleSelectionChange = useEvent((selection: Key | Key[] | null) => {
@@ -1360,9 +1371,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
     // Priority 2: fall back to defaultSelectedKey's label
     if (defaultSelectedKey) {
-      // Wait for collection to be ready
-      if (!listStateRef.current?.collection) return;
-
       const label = getItemLabel(defaultSelectedKey);
 
       setInternalInputValue(label);
@@ -1381,9 +1389,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   useEffect(() => {
     // Only run when selectedKey is controlled but inputValue is uncontrolled
     if (!isControlledKey || isControlledInput) return;
-
-    // Wait for collection to be ready
-    if (!listStateRef.current?.collection) return;
 
     // Get the expected label for the current selection
     const expectedLabel =
