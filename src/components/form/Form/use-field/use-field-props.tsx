@@ -1,4 +1,4 @@
-import { useDebugValue, useRef } from 'react';
+import { useDebugValue, useId, useRef } from 'react';
 
 import { useChainedCallback, useEvent } from '../../../../_internal/index';
 import { mergeProps } from '../../../../utils/react/index';
@@ -54,14 +54,31 @@ export function useFieldProps<
     );
   }
 
-  if (
-    isInsideLegacyField ||
-    isDisabledRef.current === true ||
-    props.name == null
-  ) {
+  if (isInsideLegacyField || isDisabledRef.current === true) {
     return props;
   }
 
+  // For standalone fields (no name), just generate an ID without calling useField
+  const hasName = props.name != null;
+  const generatedId = useId();
+
+  if (!hasName) {
+    // Standalone field - just add generated ID if not provided
+    if (!props.id) {
+      const result = { ...props, id: generatedId };
+
+      if (result.id && !result.labelProps) {
+        result.labelProps = { for: result.id };
+      } else if (result.id && result.labelProps && !result.labelProps.for) {
+        result.labelProps = { ...result.labelProps, for: result.id };
+      }
+
+      return result as Props;
+    }
+    return props;
+  }
+
+  // Form-connected field - use full useField logic
   const field = useField<T, Props>(props, {
     defaultValidationTrigger: params.defaultValidationTrigger,
   });

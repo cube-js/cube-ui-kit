@@ -1,5 +1,53 @@
 # @cube-dev/ui-kit
 
+## 0.83.0
+
+### Minor Changes
+
+- [#827](https://github.com/cube-js/cube-ui-kit/pull/827) [`7153c8f2`](https://github.com/cube-js/cube-ui-kit/commit/7153c8f26fc955ed7d78dbe6f53b623f45f6c430) Thanks [@tenphi](https://github.com/tenphi)! - Introduces a brand new Radio.Tabs component as a replacement for RadioGroup with isSolid flag.
+
+## 0.82.2
+
+### Patch Changes
+
+- [#828](https://github.com/cube-js/cube-ui-kit/pull/828) [`f3a39bba`](https://github.com/cube-js/cube-ui-kit/commit/f3a39bba8129b355d149493b927972a12609aa1a) Thanks [@tenphi](https://github.com/tenphi)! - Improve prop handling in ComboBox.Item
+
+## 0.82.1
+
+### Patch Changes
+
+- [#824](https://github.com/cube-js/cube-ui-kit/pull/824) [`e88acca3`](https://github.com/cube-js/cube-ui-kit/commit/e88acca3b7dc34a2a9f6574429766212c2644147) Thanks [@tenphi](https://github.com/tenphi)! - Generate id even for input components that are not connected to a form.
+
+- [#824](https://github.com/cube-js/cube-ui-kit/pull/824) [`e88acca3`](https://github.com/cube-js/cube-ui-kit/commit/e88acca3b7dc34a2a9f6574429766212c2644147) Thanks [@tenphi](https://github.com/tenphi)! - Prevent form prop from leaking to the DOM.
+
+## 0.82.0
+
+### Minor Changes
+
+- [#823](https://github.com/cube-js/cube-ui-kit/pull/823) [`91e81ac3`](https://github.com/cube-js/cube-ui-kit/commit/91e81ac3e78998f458b3bca140bfbd8c28824f97) Thanks [@tenphi](https://github.com/tenphi)! - Add a brand new ComboBox component with virtualization and user/developer-friendly behavior.
+
+### Patch Changes
+
+- [#818](https://github.com/cube-js/cube-ui-kit/pull/818) [`465e4ebc`](https://github.com/cube-js/cube-ui-kit/commit/465e4ebc303c230a9bb31542f77fcf75d1acb6a8) Thanks [@tenphi](https://github.com/tenphi)! - Add DisplayTransition helper component.
+
+- [#818](https://github.com/cube-js/cube-ui-kit/pull/818) [`465e4ebc`](https://github.com/cube-js/cube-ui-kit/commit/465e4ebc303c230a9bb31542f77fcf75d1acb6a8) Thanks [@tenphi](https://github.com/tenphi)! - Fix Tooltip position and transition.
+
+## 0.81.0
+
+### Minor Changes
+
+- [#820](https://github.com/cube-js/cube-ui-kit/pull/820) [`bcc9783e`](https://github.com/cube-js/cube-ui-kit/commit/bcc9783e284b209c053b15673990ce2c633178ac) Thanks [@tenphi](https://github.com/tenphi)! - New Switch sizes: `small` -> `medium` (and now default). new `small` size.
+
+## 0.80.2
+
+### Patch Changes
+
+- [#774](https://github.com/cube-js/cube-ui-kit/pull/774) [`3f8c4b7f`](https://github.com/cube-js/cube-ui-kit/commit/3f8c4b7f40b1869abe694135803e7b784e1c51c2) Thanks [@tenphi](https://github.com/tenphi)! - Improve style state application for padding and margin styles making it predictable.
+
+- [#819](https://github.com/cube-js/cube-ui-kit/pull/819) [`852e73f0`](https://github.com/cube-js/cube-ui-kit/commit/852e73f006ef57c5d52ddbbc420f35e16989aaa5) Thanks [@tenphi](https://github.com/tenphi)! - Add CubePauseIcon and CubePlayIcon.
+
+- [#816](https://github.com/cube-js/cube-ui-kit/pull/816) [`13fb4505`](https://github.com/cube-js/cube-ui-kit/commit/13fb4505adcae3f905b6b6a1c21de9fd291886fc) Thanks [@tenphi](https://github.com/tenphi)! - Support controllable filtering in FilterListBox and FilterPicker.
+
 ## 0.80.1
 
 ### Patch Changes

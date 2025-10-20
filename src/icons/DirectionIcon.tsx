@@ -8,7 +8,7 @@ import { UpIcon } from './UpIcon';
 const StyledUpIcon = tasty(UpIcon, {
   styles: {
     transformOrigin: 'center',
-    transition: 'rotate linear 120ms, scale linear 120ms',
+    transition: 'rotate linear $transition, transform linear $transition',
   },
 });
 
@@ -46,33 +46,24 @@ export const DirectionIcon = memo(function DirectionIcon(
       return;
     }
 
-    let appliedRotate = 0;
-    let nextFlipScale = flipScale;
-
     const lastRotate = rotationByDirection[lastDirection];
     const nextRotate = rotationByDirection[direction];
-    const diffRotate = nextRotate - lastRotate;
+    const diffRotate = lastRotate - nextRotate;
+    const angle = Math.abs(diffRotate) % 360;
 
-    if (Math.abs(diffRotate) % 360 !== 180) {
-      if (nextRotate < lastRotate) {
-        appliedRotate = 90;
-      } else {
-        appliedRotate = -90;
-      }
-
-      if (Math.abs(diffRotate) !== 90) {
-        appliedRotate = -appliedRotate;
-      }
-
-      if (flipScale) {
-        appliedRotate = -appliedRotate;
-      }
+    if (angle === 180) {
+      // For 180° changes, flip instead of rotating
+      setFlipScale((prev) => -prev);
     } else {
-      nextFlipScale = -flipScale;
+      // Find shortest rotation path
+      let shortestDiff = diffRotate;
+      if (angle > 180) {
+        // Wrap around: use the shorter path
+        shortestDiff = diffRotate > 0 ? diffRotate - 360 : diffRotate + 360;
+      }
+      // Apply the shortest rotation path
+      setRotate((prev) => prev - shortestDiff);
     }
-
-    setRotate(rotate + appliedRotate);
-    setFlipScale(nextFlipScale);
 
     lastDirectionRef.current = direction;
   }, [direction]);
@@ -83,7 +74,7 @@ export const DirectionIcon = memo(function DirectionIcon(
       {...iconProps}
       style={{
         rotate: `${rotate}deg`,
-        scale: `1 ${flipScale}`,
+        transform: `scaleY(${flipScale})`,
       }}
     />
   );

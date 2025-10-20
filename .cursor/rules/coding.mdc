@@ -13,3 +13,7 @@ alwaysApply: true
 # Coding rules
 
 - Use named imports from react (like `useCallback`) instead of using the `React` instance. Avoid: `React.useCallback`.
+- Prefer stable `useEvent` callbacks when it's possible.
+
+# Knowledge rules
+- If you find any essential knowledge that is not yet listed anywhere, then add it to Claude.md file in the nearest folder this knowledge applies to. Create file if it's not yet exist. Make sure this essential knowledge is as compact as possible.

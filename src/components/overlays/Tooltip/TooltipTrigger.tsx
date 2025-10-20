@@ -17,7 +17,8 @@ import { useTooltipTriggerState } from 'react-stately';
 
 import { Block } from '../../Block';
 import { ActiveZone } from '../../content/ActiveZone/ActiveZone';
-import { OverlayWrapper } from '../OverlayWrapper';
+import { DisplayTransition } from '../../helpers/DisplayTransition/DisplayTransition';
+import { Portal } from '../../portal';
 
 import { TooltipContext } from './context';
 
@@ -76,6 +77,11 @@ export interface CubeTooltipTriggerProps extends TooltipTriggerProps {
    * By default, opens for both focus and hover. Can be made to open only for focus.
    */
   trigger?: 'focus';
+  /**
+   * When true, FocusableProvider won't be applied to the trigger.
+   * Useful when trigger already handles focus or uses render props pattern.
+   */
+  disableFocusableProvider?: boolean;
 }
 
 /**
@@ -98,6 +104,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
     isOpen,
     onOpenChange,
     defaultOpen,
+    disableFocusableProvider,
   } = props;
 
   // Extract both children without using React.Children.toArray so we don't lose
@@ -135,7 +142,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
 
   let internalRef = useRef<HTMLElement>(null!);
   let tooltipTriggerRef = externalRef ?? internalRef;
-  let overlayRef = useRef(null);
+  let overlayRef = useRef<HTMLElement | null>(null);
 
   let state = useTooltipTriggerState({ delay, ...props });
 
@@ -152,18 +159,19 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
     tooltipTriggerRef,
   );
 
-  let { overlayProps, arrowProps, placement } = useOverlayPosition({
-    placement: props.placement || 'top',
-    targetRef: tooltipTriggerRef,
-    overlayRef,
-    offset,
-    crossOffset,
-    isOpen: state.isOpen,
-  });
+  let { overlayProps, arrowProps, placement, updatePosition } =
+    useOverlayPosition({
+      placement: props.placement || 'top',
+      targetRef: tooltipTriggerRef,
+      overlayRef,
+      offset,
+      crossOffset,
+      isOpen: state.isOpen,
+    });
 
   const tooltipContextValue = {
     state,
-    placement,
+    placement: placement || props.placement || 'top',
     ref: overlayRef,
     overlayProps,
     arrowProps,
@@ -171,6 +179,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
     minScale: '1',
     isMaterial,
     isLight,
+    updatePosition,
     ...tooltipProps,
   };
 
@@ -179,14 +188,21 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
     return (
       <>
         {trigger(triggerProps, tooltipTriggerRef)}
-        <TooltipContext.Provider value={tooltipContextValue}>
-          <OverlayWrapper
-            isOpen={state.isOpen}
-            placement={props.placement || 'top'}
-          >
-            {tooltip}
-          </OverlayWrapper>
-        </TooltipContext.Provider>
+        <DisplayTransition isShown={state.isOpen}>
+          {({ phase, isShown, ref: transitionRef }) => (
+            <TooltipContext.Provider
+              value={{
+                ...tooltipContextValue,
+                phase,
+                isShown,
+                ref: overlayRef,
+                transitionRef,
+              }}
+            >
+              <Portal>{tooltip}</Portal>
+            </TooltipContext.Provider>
+          )}
+        </DisplayTransition>
       </>
     );
   }
@@ -204,21 +220,38 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
     e?.currentTarget?.parentNode.click();
   }
 
-  return (
-    <FocusableProvider {...triggerProps} ref={tooltipTriggerRef}>
+  const triggerContent = (
+    <>
       {activeWrap ? (
         <ActiveZone onClick={onClick}>{trigger}</ActiveZone>
       ) : (
         trigger
       )}
-      <TooltipContext.Provider value={tooltipContextValue}>
-        <OverlayWrapper
-          isOpen={state.isOpen}
-          placement={props.placement || 'top'}
-        >
-          {tooltip}
-        </OverlayWrapper>
-      </TooltipContext.Provider>
+      <DisplayTransition isShown={state.isOpen}>
+        {({ phase, isShown, ref: transitionRef }) => (
+          <TooltipContext.Provider
+            value={{
+              ...tooltipContextValue,
+              phase,
+              isShown,
+              ref: overlayRef,
+              transitionRef,
+            }}
+          >
+            <Portal>{tooltip}</Portal>
+          </TooltipContext.Provider>
+        )}
+      </DisplayTransition>
+    </>
+  );
+
+  if (disableFocusableProvider) {
+    return triggerContent;
+  }
+
+  return (
+    <FocusableProvider {...triggerProps} ref={tooltipTriggerRef}>
+      {triggerContent}
     </FocusableProvider>
   );
 }

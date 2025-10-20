@@ -5,13 +5,14 @@ import React, {
   ReactElement,
   ReactNode,
   RefObject,
+  useCallback,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
 import { useFilter, useKeyboard } from 'react-aria';
-import { Section as BaseSection, Item } from 'react-stately';
+import { Section as BaseSection, Item, useListState } from 'react-stately';
 
 import { LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
@@ -35,6 +36,7 @@ import {
   INPUT_WRAPPER_STYLES,
 } from '../TextInput/TextInputBase';
 
+import type { Collection, Node } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
 
 type FilterFn = (textValue: string, inputValue: string) => boolean;
@@ -115,8 +117,11 @@ export interface CubeFilterListBoxProps<T>
   searchPlaceholder?: string;
   /** Whether the search input should have autofocus */
   autoFocus?: boolean;
-  /** Custom filter function for determining if an option should be included in search results */
-  filter?: FilterFn;
+  /**
+   * Custom filter function for determining if an option should be included in search results.
+   * Pass `false` to disable internal filtering completely (useful for external filtering).
+   */
+  filter?: FilterFn | false;
   /** Custom label to display when no results are found after filtering */
   emptyLabel?: ReactNode;
   /** Custom styles for the search input */
@@ -160,6 +165,25 @@ export interface CubeFilterListBoxProps<T>
    * These are merged with customValueProps for new custom values.
    */
   newCustomValueProps?: Partial<CubeItemProps<T>>;
+
+  /**
+   * Controlled search value. When provided, the search input becomes controlled.
+   * Use with `onSearchChange` to manage the search state externally.
+   */
+  searchValue?: string;
+
+  /**
+   * Callback fired when the search input value changes.
+   * Use with `searchValue` for controlled search input.
+   */
+  onSearchChange?: (value: string) => void;
+
+  /**
+   * Pre-built collection to use instead of creating a new one.
+   * Used internally by FilterPicker to avoid duplicate collection creation.
+   * @internal
+   */
+  _internalCollection?: Collection<Node<any>>;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -200,6 +224,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
     qa,
     label,
     extra,
+    id,
     labelStyles,
     isRequired,
     necessityIndicator,
@@ -247,6 +272,10 @@ export const FilterListBox = forwardRef(function FilterListBox<
     allValueProps,
     customValueProps,
     newCustomValueProps,
+    searchValue: controlledSearchValue,
+    onSearchChange,
+    _internalCollection,
+    form,
     ...otherProps
   } = props;
 
@@ -283,27 +312,26 @@ export const FilterListBox = forwardRef(function FilterListBox<
     }
   }
 
+  // Use provided collection from FilterPicker or create our own
+  // Hook call order is stable: _internalCollection is consistent per component instance
+  const localCollectionState = _internalCollection
+    ? { collection: _internalCollection }
+    : useListState({
+        children: children as any,
+        items: items as any,
+        selectionMode: 'none' as any,
+      });
+
   // Collect original option keys to avoid duplicating them as custom values.
   const originalKeys = useMemo(() => {
     const keys = new Set<string>();
-
-    const collectKeys = (nodes: ReactNode): void => {
-      React.Children.forEach(nodes, (child: any) => {
-        if (!child || typeof child !== 'object') return;
-
-        if (child.type === Item) {
-          if (child.key != null) keys.add(String(child.key));
-        }
-
-        if (child.props?.children) {
-          collectKeys(child.props.children);
-        }
-      });
-    };
-
-    if (children) collectKeys(children);
+    for (const item of localCollectionState.collection) {
+      if (item.type === 'item') {
+        keys.add(String(item.key));
+      }
+    }
     return keys;
-  }, [children]);
+  }, [localCollectionState.collection]);
 
   // State to keep track of custom (user-entered) items that were selected.
   const [customKeys, setCustomKeys] = useState<Set<string>>(new Set());
@@ -386,13 +414,30 @@ export const FilterListBox = forwardRef(function FilterListBox<
     (props as any)['aria-label'] ||
     (typeof label === 'string' ? label : undefined);
 
-  const [searchValue, setSearchValue] = useState('');
+  // Controlled/uncontrolled search value pattern
+  const [internalSearchValue, setInternalSearchValue] = useState('');
+  const isSearchControlled = controlledSearchValue !== undefined;
+  const searchValue = isSearchControlled
+    ? controlledSearchValue
+    : internalSearchValue;
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      if (!isSearchControlled) {
+        setInternalSearchValue(value);
+      }
+      onSearchChange?.(value);
+    },
+    [isSearchControlled, onSearchChange],
+  );
+
   const { contains } = useFilter({ sensitivity: 'base' });
 
-  // Choose the text filter function: user-provided `filter` prop (if any)
+  // Choose the text filter function: user-provided `filter` prop (if any),
   // or the default `contains` helper from `useFilter`.
+  // When filter={false}, disable filtering completely.
   const textFilterFn = useMemo<FilterFn>(
-    () => filter || contains,
+    () => (filter === false ? () => true : filter || contains),
     [filter, contains],
   );
 
@@ -486,39 +531,25 @@ export const FilterListBox = forwardRef(function FilterListBox<
     if (!term) return childrenToProcess;
 
     // Helper to determine if the term is already present (exact match on rendered textValue or the key).
-    const doesTermExist = (nodes: ReactNode): boolean => {
-      let exists = false;
+    const doesTermExist = (term: string): boolean => {
+      // Check if term exists in custom keys
+      if (customKeys.has(term)) {
+        return true;
+      }
 
-      const checkNodes = (childNodes: ReactNode): void => {
-        React.Children.forEach(childNodes, (child: any) => {
-          if (!child || typeof child !== 'object') return;
-
-          // Check items directly
-          if (child.type === Item) {
-            const childText =
-              child.props.textValue ||
-              (typeof child.props.children === 'string'
-                ? child.props.children
-                : '') ||
-              String(child.props.children ?? '');
-
-            if (term === childText || String(child.key) === term) {
-              exists = true;
-            }
+      // Check if term exists in original collection
+      for (const item of localCollectionState.collection) {
+        if (item.type === 'item') {
+          const textValue = item.textValue || String(item.rendered || '');
+          if (term === textValue || String(item.key) === term) {
+            return true;
           }
-
-          // Recurse into sections or other wrappers
-          if (child.props?.children) {
-            checkNodes(child.props.children);
-          }
-        });
-      };
-
-      checkNodes(nodes);
-      return exists;
+        }
+      }
+      return false;
     };
 
-    if (doesTermExist(mergedChildren)) {
+    if (doesTermExist(term)) {
       return childrenToProcess;
     }
 
@@ -774,7 +805,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         if (searchValue) {
           // Clear the current search if any text is present.
           e.preventDefault();
-          setSearchValue('');
+          handleSearchChange('');
         } else {
           // Notify parent that Escape was pressed on an empty input.
           if (onEscape) {
@@ -874,6 +905,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
       )}
       <SearchInputElement
         ref={searchInputRef}
+        id={id}
         data-is-prefix={isLoading ? '' : undefined}
         type="search"
         placeholder={searchPlaceholder}
@@ -893,7 +925,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
         }
         onChange={(e) => {
           const value = e.target.value;
-          setSearchValue(value);
+          handleSearchChange(value);
         }}
         {...keyboardProps}
         {...modAttrs(mods)}
@@ -968,10 +1000,12 @@ export const FilterListBox = forwardRef(function FilterListBox<
     </FilterListBoxWrapperElement>
   );
 
+  const finalProps = { ...props, styles: undefined };
+
   return wrapWithField<Omit<CubeFilterListBoxProps<T>, 'children'>>(
     filterListBoxField,
     ref,
-    mergeProps({ ...props, styles: undefined }, {}),
+    mergeProps(finalProps, {}),
   );
 }) as unknown as (<T>(
   props: CubeFilterListBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },

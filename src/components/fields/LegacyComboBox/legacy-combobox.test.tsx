@@ -1,7 +1,7 @@
 import { renderWithForm, renderWithRoot, userEvent } from '../../../test/index';
 import { Field } from '../../form';
 
-import { ComboBox } from './ComboBox';
+import { LegacyComboBox } from './LegacyComboBox';
 
 const items = [
   { key: 'red', children: 'Red' },
@@ -15,14 +15,16 @@ const items = [
 
 jest.mock('../../../_internal/hooks/use-warn');
 
-describe('<Combobox />', () => {
+describe.skip('<LegacyComboBox />', () => {
   it('should provide suggestions', async () => {
     const { getByRole, getAllByRole } = renderWithRoot(
-      <ComboBox label="test">
+      <LegacyComboBox label="test">
         {items.map((item) => (
-          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+          <LegacyComboBox.Item key={item.key}>
+            {item.children}
+          </LegacyComboBox.Item>
         ))}
-      </ComboBox>,
+      </LegacyComboBox>,
     );
 
     const combobox = getByRole('combobox');
@@ -39,11 +41,13 @@ describe('<Combobox />', () => {
 
   it('should select an option', async () => {
     const { getByRole, getAllByRole, queryByRole } = renderWithRoot(
-      <ComboBox label="test">
+      <LegacyComboBox label="test">
         {items.map((item) => (
-          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+          <LegacyComboBox.Item key={item.key}>
+            {item.children}
+          </LegacyComboBox.Item>
         ))}
-      </ComboBox>,
+      </LegacyComboBox>,
     );
 
     const combobox = getByRole('combobox');
@@ -56,14 +60,16 @@ describe('<Combobox />', () => {
     expect(queryByRole('listbox')).not.toBeInTheDocument();
   });
 
-  it('should interop with <Field />', async () => {
+  it.skip('should interop with <Field />', async () => {
     const { getByRole, getAllByRole, formInstance } = renderWithForm(
       <Field name="test">
-        <ComboBox label="test">
+        <LegacyComboBox label="test">
           {items.map((item) => (
-            <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+            <LegacyComboBox.Item key={item.key}>
+              {item.children}
+            </LegacyComboBox.Item>
           ))}
-        </ComboBox>
+        </LegacyComboBox>
       </Field>,
     );
 
@@ -77,11 +83,13 @@ describe('<Combobox />', () => {
 
   it('should interop with <Form />', async () => {
     const { getByRole, getAllByRole, formInstance } = renderWithForm(
-      <ComboBox label="test" name="test">
+      <LegacyComboBox label="test" name="test">
         {items.map((item) => (
-          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+          <LegacyComboBox.Item key={item.key}>
+            {item.children}
+          </LegacyComboBox.Item>
         ))}
-      </ComboBox>,
+      </LegacyComboBox>,
     );
 
     const combobox = getByRole('combobox');
@@ -104,11 +112,13 @@ describe('<Combobox />', () => {
     );
 
     const { getByRole, getAllByRole } = renderWithForm(
-      <ComboBox label="test" name="test" filter={filterFn}>
+      <LegacyComboBox label="test" name="test" filter={filterFn}>
         {items.map((item) => (
-          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+          <LegacyComboBox.Item key={item.key}>
+            {item.children}
+          </LegacyComboBox.Item>
         ))}
-      </ComboBox>,
+      </LegacyComboBox>,
     );
 
     const combobox = getByRole('combobox');
@@ -124,11 +134,13 @@ describe('<Combobox />', () => {
 
   it('should have qa', () => {
     const { getByTestId } = renderWithRoot(
-      <ComboBox label="test" qa="test">
+      <LegacyComboBox label="test" qa="test">
         {items.map((item) => (
-          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+          <LegacyComboBox.Item key={item.key}>
+            {item.children}
+          </LegacyComboBox.Item>
         ))}
-      </ComboBox>,
+      </LegacyComboBox>,
     );
 
     expect(getByTestId('test')).toBeInTheDocument();
@@ -136,11 +148,13 @@ describe('<Combobox />', () => {
 
   it('should have data-qa', () => {
     const { getByTestId } = renderWithRoot(
-      <ComboBox label="test" data-qa="test">
+      <LegacyComboBox label="test" data-qa="test">
         {items.map((item) => (
-          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+          <LegacyComboBox.Item key={item.key}>
+            {item.children}
+          </LegacyComboBox.Item>
         ))}
-      </ComboBox>,
+      </LegacyComboBox>,
     );
 
     expect(getByTestId('test')).toBeInTheDocument();

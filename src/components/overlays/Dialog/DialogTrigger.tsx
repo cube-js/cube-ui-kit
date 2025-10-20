@@ -296,8 +296,8 @@ function PopoverTrigger(allProps) {
   );
 }
 
-function DialogTriggerBase(props) {
-  const ref = useCombinedRefs(props.ref);
+function DialogTriggerBase(props: any) {
+  const ref = useCombinedRefs<HTMLElement>(props.ref);
   const wasOpenRef = useRef(false);
 
   let {

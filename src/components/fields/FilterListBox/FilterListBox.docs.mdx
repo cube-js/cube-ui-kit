@@ -53,6 +53,9 @@ Customizes the search input field appearance.
 
 Customizes the list container element that holds the filtered options.
 
+**Sub-elements:**
+- Same as ListBox component sub-elements
+
 #### optionStyles
 
 Customizes individual option elements.
@@ -68,17 +71,29 @@ Customizes individual option elements.
 
 Customizes section wrapper elements.
 
+**Sub-elements:**
+- Same as ListBox component sub-elements
+
 #### headingStyles
 
 Customizes section heading elements.
+
+**Sub-elements:**
+- Same as ListBox component sub-elements
 
 #### headerStyles
 
 Customizes the header area when header prop is provided.
 
+**Sub-elements:**
+- None - styles apply directly to the header container
+
 #### footerStyles
 
 Customizes the footer area when footer prop is provided.
+
+**Sub-elements:**
+- None - styles apply directly to the footer container
 
 ### Style Properties
 
@@ -96,12 +111,42 @@ The `mods` property accepts the following modifiers you can override:
 | `focused` | `boolean` | Applied when the FilterListBox has focus |
 | `loading` | `boolean` | Applied when `isLoading={true}` |
 | `searchable` | `boolean` | Always true for FilterListBox |
+| `prefix` | `boolean` | Applied when loading icon is shown |
+
+## Sub-components
+
+### FilterListBox.Item
+
+Individual items within the FilterListBox. Each item is rendered using [ItemBase](/docs/content-itembase--docs) and supports all ItemBase properties.
+
+#### Item API
+
+For detailed information about all available item properties, see [ItemBase documentation](/docs/content-itembase--docs). Key properties include:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| key | `string \| number` | Unique identifier for the item (required) |
+| children | `ReactNode` | The main content/label for the option |
+| textValue | `string` | Searchable text value (use for complex content) |
+| description | `ReactNode` | Secondary text below the main content |
+| icon | `ReactNode` | Icon displayed before the content |
+| styles | `Styles` | Custom styling for the item |
+| qa | `string` | QA identifier for testing |
+
+### FilterListBox.Section
+
+Groups related items together with an optional heading.
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| title | `ReactNode` | - | Optional heading text for the section |
+| children | `FilterListBox.Item[]` | - | Collection of FilterListBox.Item components |
 
 ## Variants
 
 ### Selection Modes
 
-- `single` - Allows selecting only one item at a time
+- `single` - Allows selecting only one item at a time (default)
 - `multiple` - Allows selecting multiple items
 
 ### Sizes
@@ -123,6 +168,29 @@ The `mods` property accepts the following modifiers you can override:
 </FilterListBox>
 ```
 
+### Multiple Selection
+
+<Story of={FilterListBoxStories.MultipleSelection} />
+
+```jsx
+<FilterListBox
+  label="Select permissions"
+  selectionMode="multiple"
+  defaultSelectedKeys={['read', 'write']}
+  searchPlaceholder="Filter permissions..."
+>
+  <FilterListBox.Item key="read" description="View content and data">
+    Read
+  </FilterListBox.Item>
+  <FilterListBox.Item key="write" description="Create and edit content">
+    Write
+  </FilterListBox.Item>
+  <FilterListBox.Item key="execute" description="Run operations">
+    Execute
+  </FilterListBox.Item>
+</FilterListBox>
+```
+
 ### With Sections
 
 <Story of={FilterListBoxStories.WithSections} />
@@ -137,41 +205,6 @@ The `mods` property accepts the following modifiers you can override:
     <FilterListBox.Item key="carrot">Carrot</FilterListBox.Item>
     <FilterListBox.Item key="broccoli">Broccoli</FilterListBox.Item>
   </FilterListBox.Section>
-</FilterListBox>
-```
-
-### Multiple Selection
-
-<Story of={FilterListBoxStories.MultipleSelection} />
-
-```jsx
-<FilterListBox
-  label="Select permissions"
-  selectionMode="multiple"
-  defaultSelectedKeys={['read', 'write']}
-  searchPlaceholder="Filter permissions..."
->
-  <FilterListBox.Item key="read">Read</FilterListBox.Item>
-  <FilterListBox.Item key="write">Write</FilterListBox.Item>
-  <FilterListBox.Item key="execute">Execute</FilterListBox.Item>
-</FilterListBox>
-```
-
-### Multiple Selection with Select All
-
-<Story of={FilterListBoxStories.WithSelectAll} />
-
-```jsx
-<FilterListBox
-  label="Select permissions"
-  selectionMode="multiple"
-  showSelectAll={true}
-  selectAllLabel="All Permissions"
-  searchPlaceholder="Search permissions..."
->
-  <FilterListBox.Item key="read">Read</FilterListBox.Item>
-  <FilterListBox.Item key="write">Write</FilterListBox.Item>
-  <FilterListBox.Item key="execute">Execute</FilterListBox.Item>
 </FilterListBox>
 ```
 
@@ -196,6 +229,71 @@ The `mods` property accepts the following modifiers you can override:
 </FilterListBox>
 ```
 
+### Multiple Selection with Checkboxes
+
+<Story of={FilterListBoxStories.CheckableMultipleSelection} />
+
+```jsx
+<FilterListBox
+  label="Select user permissions"
+  selectionMode="multiple"
+  isCheckable={true}
+  defaultSelectedKeys={['read', 'write']}
+  searchPlaceholder="Filter permissions..."
+>
+  <FilterListBox.Item key="read" description="View content and data">
+    Read
+  </FilterListBox.Item>
+  <FilterListBox.Item key="write" description="Create and edit content">
+    Write
+  </FilterListBox.Item>
+</FilterListBox>
+```
+
+### Multiple Selection with Select All
+
+<Story of={FilterListBoxStories.WithSelectAll} />
+
+```jsx
+<FilterListBox
+  label="Select permissions"
+  selectionMode="multiple"
+  isCheckable={true}
+  showSelectAll={true}
+  selectAllLabel="All Permissions"
+  searchPlaceholder="Search permissions..."
+>
+  <FilterListBox.Item key="read">Read</FilterListBox.Item>
+  <FilterListBox.Item key="write">Write</FilterListBox.Item>
+  <FilterListBox.Item key="execute">Execute</FilterListBox.Item>
+</FilterListBox>
+```
+
+### With Header and Footer
+
+<Story of={FilterListBoxStories.WithHeaderAndFooter} />
+
+```jsx
+<FilterListBox
+  label="Choose your preferred programming language"
+  searchPlaceholder="Search languages..."
+  header={
+    <Space gap="1x" flow="row" placeItems="center">
+      <Title level={6}>Programming Languages</Title>
+      <Badge type="purple">12</Badge>
+    </Space>
+  }
+  footer={
+    <Text color="#dark.50" preset="t4">
+      Popular languages shown
+    </Text>
+  }
+>
+  <FilterListBox.Item key="javascript">JavaScript</FilterListBox.Item>
+  <FilterListBox.Item key="python">Python</FilterListBox.Item>
+</FilterListBox>
+```
+
 ### With Custom Filter
 
 <Story of={FilterListBoxStories.CustomFilter} />
@@ -214,21 +312,6 @@ The `mods` property accepts the following modifiers you can override:
 </FilterListBox>
 ```
 
-### Loading State
-
-<Story of={FilterListBoxStories.LoadingState} />
-
-```jsx
-<FilterListBox
-  label="Loading Data"
-  isLoading={true}
-  searchPlaceholder="Search options..."
->
-  <FilterListBox.Item key="item1">Loading Item 1</FilterListBox.Item>
-  <FilterListBox.Item key="item2">Loading Item 2</FilterListBox.Item>
-</FilterListBox>
-```
-
 ### Custom Empty State
 
 <Story of={FilterListBoxStories.CustomEmptyState} />
@@ -243,42 +326,77 @@ The `mods` property accepts the following modifiers you can override:
 </FilterListBox>
 ```
 
-### With Header and Footer
+### With Custom Values
 
-<Story of={FilterListBoxStories.WithHeaderAndFooter} />
+<Story of={FilterListBoxStories.AllowsCustomValue} />
 
 ```jsx
 <FilterListBox
-  label="Programming Languages"
-  searchPlaceholder="Search languages..."
-  header={
-    <Space gap="1x" flow="row" placeItems="center">
-      <Title level={6}>Languages</Title>
-      <Badge type="purple">12</Badge>
-    </Space>
-  }
-  footer={
-    <Text color="#dark.50" preset="t4">
-      Popular languages shown
-    </Text>
-  }
+  label="Select or add fruits"
+  allowsCustomValue={true}
+  selectionMode="multiple"
+  searchPlaceholder="Search or type new fruit..."
 >
-  <FilterListBox.Item key="javascript">JavaScript</FilterListBox.Item>
-  <FilterListBox.Item key="python">Python</FilterListBox.Item>
+  <FilterListBox.Item key="apple">Apple</FilterListBox.Item>
+  <FilterListBox.Item key="banana">Banana</FilterListBox.Item>
 </FilterListBox>
 ```
 
-### Custom Values
+### With Icons
+
+<Story of={FilterListBoxStories.WithIcons} />
 
 ```jsx
 <FilterListBox
-  label="Add Tags"
-  allowsCustomValue={true}
-  selectionMode="multiple"
-  searchPlaceholder="Search or add custom tag..."
+  label="System Administration"
+  selectionMode="single"
+  searchPlaceholder="Search admin options..."
 >
-  <FilterListBox.Item key="react">React</FilterListBox.Item>
-  <FilterListBox.Item key="vue">Vue.js</FilterListBox.Item>
+  <FilterListBox.Section title="User Management">
+    <FilterListBox.Item key="users">
+      <Space gap="1x" flow="row" placeItems="center">
+        <UserIcon />
+        Users
+      </Space>
+    </FilterListBox.Item>
+    <FilterListBox.Item key="permissions">
+      <Space gap="1x" flow="row" placeItems="center">
+        <CheckIcon />
+        Permissions
+      </Space>
+    </FilterListBox.Item>
+  </FilterListBox.Section>
+</FilterListBox>
+```
+
+### With Complex Content (textValue)
+
+<Story of={FilterListBoxStories.WithTextValue} />
+
+```jsx
+<FilterListBox
+  label="Choose your plan"
+  selectionMode="single"
+  searchPlaceholder="Search plans..."
+>
+  <FilterListBox.Item
+    key="basic"
+    textValue="Basic Plan - Free with limited features"
+  >
+    <Space gap="1x" flow="column">
+      <Text weight="600">Basic Plan</Text>
+      <Badge type="neutral">Free</Badge>
+    </Space>
+  </FilterListBox.Item>
+  <FilterListBox.Item
+    key="pro"
+    textValue="Pro Plan - Monthly subscription with all features"
+  >
+    <Space gap="1x" flow="column">
+      <Text weight="600">Pro Plan</Text>
+      <Badge type="purple">$19/month</Badge>
+    </Space>
+  </FilterListBox.Item>
 </FilterListBox>
 ```
 
@@ -289,9 +407,10 @@ The `mods` property accepts the following modifiers you can override:
 - `Tab` - Moves focus to the search input
 - `Arrow Down/Up` - Navigate through filtered options
 - `Enter` - Select the focused option
-- `Space` - In multiple selection mode, toggle selection
+- `Space` - In multiple selection mode, toggle selection (when search is empty)
 - `Escape` - Clear search input or close (if empty)
 - `Home/End` - Move to first/last option
+- `PageUp/PageDown` - Jump to first/last option
 
 ### Screen Reader Support
 
@@ -331,7 +450,7 @@ The `mods` property accepts the following modifiers you can override:
 
 3. **Do**: Provide `textValue` for complex option content
    ```jsx
-   <FilterListBox.Item key="user1" textValue="John Doe">
+   <FilterListBox.Item key="user1" textValue="John Doe john.doe@company.com">
      <Avatar src="/john.jpg" />
      <div>
        <strong>John Doe</strong>
@@ -352,9 +471,20 @@ The `mods` property accepts the following modifiers you can override:
    </FilterListBox>
    ```
 
-5. **Performance**: Use custom filter functions for specialized search needs
-6. **UX**: Provide meaningful empty state messages
-7. **Accessibility**: Always provide clear search placeholders
+5. **Do**: Use `isCheckable` for visual clarity in multiple selection mode
+   ```jsx
+   <FilterListBox 
+     selectionMode="multiple" 
+     isCheckable={true}
+     searchPlaceholder="Search options..."
+   >
+     {/* items */}
+   </FilterListBox>
+   ```
+
+6. **Performance**: Use custom filter functions for specialized search needs
+7. **UX**: Provide meaningful empty state messages
+8. **Accessibility**: Always provide clear search placeholders
 
 ## Integration with Forms
 
@@ -429,24 +559,172 @@ When `allowsCustomValue={true}`, users can add new options by typing:
 
 Custom values:
 - Are automatically added when selected
-- Persist across popover sessions
+- Persist across searches
 - Appear in the list with selected items
 - Can be removed like any other selection
+
+### Custom Value Styling
+
+Use `customValueProps` to style existing custom values and `newCustomValueProps` to style new custom values appearing in search results:
+
+```jsx
+<FilterListBox
+  allowsCustomValue={true}
+  selectionMode="multiple"
+  customValueProps={{
+    icon: <TagIcon />,
+    styles: {
+      color: '#orange-text',
+    },
+  }}
+  newCustomValueProps={{
+    icon: <PlusIcon />,
+    styles: {
+      color: '#success-text',
+    },
+  }}
+>
+  <FilterListBox.Item key="react">React</FilterListBox.Item>
+  <FilterListBox.Item key="vue">Vue.js</FilterListBox.Item>
+</FilterListBox>
+```
+
+**Key differences:**
+- `customValueProps` - Applied to custom values that are already selected
+- `newCustomValueProps` - Applied to new custom values appearing when typing in search (merged with `customValueProps`)
+
+### External Filtering
+
+For server-side filtering or complex custom logic, use `filter={false}` with controlled search:
+
+```jsx
+const [searchValue, setSearchValue] = useState('');
+const [filteredItems, setFilteredItems] = useState(allItems);
+
+useEffect(() => {
+  // Your custom filtering logic (e.g., API call, complex algorithm)
+  const filtered = customFilterLogic(allItems, searchValue);
+  setFilteredItems(filtered);
+}, [searchValue, allItems]);
+
+<FilterListBox
+  searchValue={searchValue}
+  onSearchChange={setSearchValue}
+  filter={false}
+>
+  {filteredItems.map(item => (
+    <FilterListBox.Item key={item.id}>{item.name}</FilterListBox.Item>
+  ))}
+</FilterListBox>
+```
+
+**When to use:**
+- Server-side filtering for large datasets
+- Complex custom search algorithms
+- Debounced API calls
+- Multi-field search logic
+
+### Escape Key Handling
+
+Use the `onEscape` prop to handle custom behavior when Escape is pressed with empty search input:
+
+```jsx
+<FilterListBox
+  label="Custom Escape Handling"
+  searchPlaceholder="Search fruits..."
+  onEscape={() => {
+    // Custom behavior (e.g., close parent dialog)
+    closeParentDialog();
+  }}
+>
+  <FilterListBox.Item key="apple">Apple</FilterListBox.Item>
+  <FilterListBox.Item key="banana">Banana</FilterListBox.Item>
+</FilterListBox>
+```
+
+**Key behaviors:**
+- If search has text: Escape clears the search
+- If search is empty: Escape calls `onEscape` callback
+- Useful for closing parent modals or dialogs
+
+### Controlled Search
+
+Use `searchValue` and `onSearchChange` for complete control over the search input:
+
+```jsx
+const [searchValue, setSearchValue] = useState('');
+
+// Debounced search example
+const debouncedSearch = useDebounce(searchValue, 300);
+
+useEffect(() => {
+  // Perform search with debounced value
+  performSearch(debouncedSearch);
+}, [debouncedSearch]);
+
+<FilterListBox
+  searchValue={searchValue}
+  onSearchChange={setSearchValue}
+  searchPlaceholder="Search..."
+>
+  {/* items */}
+</FilterListBox>
+```
+
+**Use cases:**
+- Debouncing search input
+- Synchronizing with external UI
+- Tracking search analytics
+- Clearing search from external triggers
+
+### Virtualization
+
+<Story of={FilterListBoxStories.VirtualizedList} />
+
+When FilterListBox contains many items without sections, virtualization is automatically enabled to improve performance. Only visible items are rendered in the DOM, providing smooth scrolling even with large datasets.
+
+```jsx
+const items = Array.from({ length: 1000 }, (_, i) => ({
+  id: `item-${i}`,
+  name: `Item ${i + 1}`,
+}));
+
+<FilterListBox
+  label="Large Dataset"
+  searchPlaceholder="Search through 1000+ items..."
+  items={items}
+>
+  {(item) => (
+    <FilterListBox.Item key={item.id}>{item.name}</FilterListBox.Item>
+  )}
+</FilterListBox>
+```
+
+**Key features:**
+- Automatically enabled for large lists without sections
+- Handles items with varying heights
+- Works seamlessly with filtering
+- Maintains performance with thousands of items
+
+**Limitations:**
+- Virtualization is disabled when sections are present
+- For sectioned large lists, consider flattening or alternative approaches
 
 ## Performance
 
 ### Optimization Tips
 
-- Use `textValue` prop for complex option content to improve search performance
-- Implement debounced search for very large datasets
-- Consider FilterPicker for trigger-based interfaces
-- Use sections sparingly for very large lists
+- **Use `textValue` prop**: For complex option content, provide searchable text that includes more context than just the visible label
+- **Implement debounced search**: For external filtering or expensive operations
+- **Use `filter={false}` with external logic**: For server-side filtering or complex custom logic
+- **Avoid sections for very large lists**: Virtualization is disabled when sections are present
+- **Consider FilterPicker**: For trigger-based interfaces to save screen space
 
 ```jsx
 // Optimized for performance
 <FilterListBox.Item 
   key="complex" 
-  textValue="John Doe - Senior Developer"
+  textValue="John Doe - Senior Developer - Engineering Team"
 >
   <ComplexUserCard user={user} />
 </FilterListBox.Item>

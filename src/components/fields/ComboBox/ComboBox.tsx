@@ -1,32 +1,39 @@
-import {
+import { Key } from '@react-types/shared';
+import React, {
   cloneElement,
   ForwardedRef,
   forwardRef,
   ReactElement,
+  ReactNode,
   RefObject,
+  useCallback,
   useEffect,
   useMemo,
+  useRef,
+  useState,
 } from 'react';
 import {
-  AriaComboBoxProps,
-  AriaTextFieldProps,
-  useButton,
-  useComboBox,
   useFilter,
-  useHover,
+  useKeyboard,
+  useOverlay,
   useOverlayPosition,
 } from 'react-aria';
-import { Section as BaseSection, useComboBoxState } from 'react-stately';
+import { Section as BaseSection } from 'react-stately';
 
-import { useEvent } from '../../../_internal/index';
-import { CloseIcon, DownIcon, LoadingIcon } from '../../../icons';
+import { useEvent } from '../../../_internal';
+import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
 import { useProviderProps } from '../../../provider';
 import { FieldBaseProps } from '../../../shared';
 import {
   BASE_STYLES,
+  BasePropsWithoutChildren,
+  BaseStyleProps,
   COLOR_STYLES,
+  ColorStyleProps,
   extractStyles,
   OUTER_STYLES,
+  OuterStyleProps,
+  Styles,
   tasty,
 } from '../../../tasty';
 import { generateRandomId } from '../../../utils/random';
@@ -39,19 +46,20 @@ import { useFocus } from '../../../utils/react/interactions';
 import { useEventBus } from '../../../utils/react/useEventBus';
 import { ItemAction } from '../../actions';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
+import { DisplayTransition } from '../../helpers';
 import { Item } from '../../Item';
-import { OverlayWrapper } from '../../overlays/OverlayWrapper';
+import { Portal } from '../../portal';
 import { InvalidIcon } from '../../shared/InvalidIcon';
 import { ValidIcon } from '../../shared/ValidIcon';
-import { DEFAULT_INPUT_STYLES, INPUT_WRAPPER_STYLES } from '../index';
-import { ListBoxPopup } from '../Select';
-
-import type { KeyboardDelegate, LoadingState } from '@react-types/shared';
-import type { CubeSelectBaseProps } from '../Select';
+import { ListBox } from '../ListBox/ListBox';
+import {
+  DEFAULT_INPUT_STYLES,
+  INPUT_WRAPPER_STYLES,
+} from '../TextInput/TextInputBase';
 
 type FilterFn = (textValue: string, inputValue: string) => boolean;
 
-export type MenuTriggerAction = 'focus' | 'input' | 'manual';
+export type PopoverTriggerAction = 'focus' | 'input' | 'manual';
 
 const ComboBoxWrapperElement = tasty({
   styles: INPUT_WRAPPER_STYLES,
@@ -62,80 +70,889 @@ const InputElement = tasty({
   styles: DEFAULT_INPUT_STYLES,
 });
 
-const TriggerElement = tasty({
-  as: 'button',
-  type: 'neutral',
+const ComboBoxOverlayElement = tasty({
+  qa: 'ComboBoxOverlay',
   styles: {
     display: 'grid',
-    placeItems: 'center',
-    placeContent: 'center',
-    placeSelf: 'stretch',
-    radius: '(1r - 1bw) right',
+    gridRows: '1sf',
+    gridColumns: '1sf',
+    width: '$min-width max-content 50vw',
+    height: 'initial max-content (50vh - $size)',
+    overflow: 'auto',
+    background: '#white',
+    radius: '1cr',
+    shadow: true,
     padding: '0',
-    width: '3x',
-    boxSizing: 'border-box',
-    color: {
-      '': '#dark-02',
-      hovered: '#dark-02',
-      pressed: '#purple',
-      disabled: '#dark.30',
+    border: '#border',
+    hide: {
+      '': false,
+      hidden: true,
     },
-    border: 'left',
-    reset: 'button',
-    margin: 0,
-    fill: {
-      '': '#dark.0',
-      hovered: '#dark.04',
-      pressed: '#purple.10',
-      disabled: '#clear',
+
+    transition:
+      'translate $transition ease-out, scale $transition ease-out, theme $transition ease-out',
+    translate: {
+      '': '0 0',
+      'open & [data-placement="top"]': '0 0',
+      '!open & [data-placement="top"]': '0 10%',
+      'open & ([data-placement="bottom"] | ![data-placement]': '0 0',
+      '!open & ([data-placement="bottom"] | ![data-placement])': '0 -10%',
     },
-    cursor: 'pointer',
+    scale: {
+      '': '1 1',
+      '!open': '1 .9',
+    },
+    opacity: {
+      '': 1,
+      '!open': 0.001,
+    },
+
+    '$min-width': 'min 30x',
   },
 });
 
 export interface CubeComboBoxProps<T>
-  extends Omit<
-      CubeSelectBaseProps<T>,
-      'onOpenChange' | 'onBlur' | 'onFocus' | 'validate' | 'onSelectionChange'
-    >,
-    Omit<AriaComboBoxProps<T>, 'errorMessage'>,
-    Omit<AriaTextFieldProps, 'errorMessage'>,
+  extends BasePropsWithoutChildren,
+    BaseStyleProps,
+    OuterStyleProps,
+    ColorStyleProps,
     FieldBaseProps {
-  defaultSelectedKey?: string | null;
+  /** The selected key in controlled mode */
   selectedKey?: string | null;
-  onSelectionChange?: (selectedKey: string | null) => void;
-  onInputChange?: (inputValue: string) => void;
+  /** The default selected key in uncontrolled mode */
+  defaultSelectedKey?: string | null;
+  /** Callback fired when selection changes */
+  onSelectionChange?: (key: string | null) => void;
+
+  /** The input value in controlled mode */
   inputValue?: string;
+  /** The default input value in uncontrolled mode */
+  defaultInputValue?: string;
+  /** Callback fired when input value changes */
+  onInputChange?: (value: string) => void;
+  /** Placeholder text for the input */
   placeholder?: string;
-  icon?: ReactElement;
-  multiLine?: boolean;
-  autoComplete?: string;
-  wrapperRef?: RefObject<HTMLDivElement>;
-  inputRef?: RefObject<HTMLInputElement>;
-  /** The ref for the list box popover. */
-  popoverRef?: RefObject<HTMLDivElement>;
-  /** The ref for the list box. */
-  listBoxRef?: RefObject<HTMLElement>;
-  /** An optional keyboard delegate implementation, to override the default. */
-  keyboardDelegate?: KeyboardDelegate;
-  loadingState?: LoadingState;
+  /** Whether the input should have autofocus */
+  autoFocus?: boolean;
+  /** Callback fired when focus enters the component (input, trigger, or popover). Does not receive event object. */
+  onFocus?: () => void;
+  /** Callback fired when focus leaves the component entirely. Does not receive event object. */
+  onBlur?: () => void;
+  /** Callback fired when a key is pressed on the input */
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+
+  /** Popover trigger behavior: 'focus', 'input', or 'manual'. Defaults to 'input' */
+  popoverTrigger?: PopoverTriggerAction;
+
+  /** Items for the listbox (alternative to children) */
+  items?: Iterable<T>;
+  /** Children for the listbox (static items or render function) */
+  children?: ReactNode | ((item: T) => ReactElement);
+
   /**
-   * The filter function used to determine if a option should be included in the combo box list.
-   * Has no effect when `items` is provided.
+   * Custom filter function for determining if an option should be included.
+   * Pass `false` to disable internal filtering completely.
    */
-  filter?: FilterFn;
-  size?: 'small' | 'medium' | 'large' | (string & {});
-  suffixPosition?: 'before' | 'after';
-  menuTrigger?: MenuTriggerAction;
+  filter?: FilterFn | false;
+
+  /** Whether to allow entering custom values that are not in the predefined options */
   allowsCustomValue?: boolean;
-  /** Whether the combo box is clearable using ESC keyboard button or clear button inside the input */
+  /** Whether to commit custom value on blur in allowsCustomValue mode (default: true) */
+  shouldCommitOnBlur?: boolean;
+  /** Whether to clear selection and input on blur (default: false, only applies to non-custom-value mode) */
+  clearOnBlur?: boolean;
+  /** Whether the combobox is clearable using ESC key or clear button */
   isClearable?: boolean;
   /** Callback called when the clear button is pressed */
   onClear?: () => void;
+
+  /** Left input icon */
+  icon?: ReactElement;
+  /** Input decoration before the main input */
+  prefix?: ReactNode;
+  /** Input decoration after the main input */
+  suffix?: ReactNode;
+  /** Whether to hide the trigger button */
+  hideTrigger?: boolean;
+  /** Size of the combobox */
+  size?: 'small' | 'medium' | 'large' | (string & {});
+
+  /** Ref for accessing the input element */
+  inputRef?: RefObject<HTMLInputElement>;
+  /** Ref for accessing the wrapper element */
+  wrapperRef?: RefObject<HTMLDivElement>;
+  /** Ref for accessing the listbox element */
+  listBoxRef?: RefObject<HTMLDivElement>;
+  /** Ref for accessing the popover element */
+  popoverRef?: RefObject<HTMLDivElement>;
+  /** Ref for accessing the trigger button element */
+  triggerRef?: RefObject<HTMLButtonElement>;
+
+  /** Custom styles for the input */
+  inputStyles?: Styles;
+  /** Custom styles for the trigger button */
+  triggerStyles?: Styles;
+  /** Custom styles for the field wrapper */
+  fieldStyles?: Styles;
+  /** Custom styles for the listbox */
+  listBoxStyles?: Styles;
+  /** Custom styles for the popover overlay */
+  overlayStyles?: Styles;
+  /** Custom styles for individual options */
+  optionStyles?: Styles;
+  /** Custom styles for sections */
+  sectionStyles?: Styles;
+  /** Custom styles for section headings */
+  headingStyles?: Styles;
+
+  /** Whether the combobox is disabled */
+  isDisabled?: boolean;
+  /** Whether the combobox is in loading state */
+  isLoading?: boolean;
+  /** Validation state of the combobox */
+  validationState?: 'valid' | 'invalid';
+  /** Keys of disabled items */
+  disabledKeys?: Iterable<Key>;
+  /** Whether to flip the popover placement */
+  shouldFlip?: boolean;
+  /** Placement direction for the popover */
+  direction?: 'bottom' | 'top';
+  /** Offset for the popover */
+  overlayOffset?: number;
+  /** Whether the combobox is read-only */
+  isReadOnly?: boolean;
+  /** Suffix position goes before or after the validation and loading statuses */
+  suffixPosition?: 'before' | 'after';
+  /**
+   * Sort selected item to the top when the popover opens.
+   * Only works when using the `items` prop (data-driven mode).
+   * Ignored when using JSX children.
+   * @default true when items are provided, false when using JSX children
+   */
+  sortSelectedToTop?: boolean;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
 
+// ============================================================================
+// Hook: useComboBoxState
+// ============================================================================
+interface UseComboBoxStateProps {
+  selectedKey?: string | null;
+  defaultSelectedKey?: string | null;
+  inputValue?: string;
+  defaultInputValue?: string;
+  comboBoxId: string;
+}
+
+interface UseComboBoxStateReturn {
+  effectiveSelectedKey: Key | null;
+  effectiveInputValue: string;
+  isPopoverOpen: boolean;
+  setIsPopoverOpen: (open: boolean) => void;
+  setInternalSelectedKey: (key: Key | null) => void;
+  setInternalInputValue: (value: string) => void;
+  isControlledKey: boolean;
+  isControlledInput: boolean;
+}
+
+function useComboBoxState({
+  selectedKey,
+  defaultSelectedKey,
+  inputValue,
+  defaultInputValue,
+  comboBoxId,
+}: UseComboBoxStateProps): UseComboBoxStateReturn {
+  // Get event bus for menu synchronization
+  const { emit, on } = useEventBus();
+
+  // Internal state for uncontrolled mode
+  const [internalSelectedKey, setInternalSelectedKey] = useState<Key | null>(
+    defaultSelectedKey ?? null,
+  );
+  const [internalInputValue, setInternalInputValue] = useState(
+    defaultInputValue ?? '',
+  );
+
+  const isControlledKey = selectedKey !== undefined;
+  const isControlledInput = inputValue !== undefined;
+
+  const effectiveSelectedKey = isControlledKey
+    ? selectedKey
+    : internalSelectedKey;
+  const effectiveInputValue = isControlledInput
+    ? inputValue
+    : internalInputValue;
+
+  // Popover state
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
+  // Listen for other menus opening and close this one if needed
+  useEffect(() => {
+    const unsubscribe = on('popover:open', (data: { menuId: string }) => {
+      if (data.menuId !== comboBoxId && isPopoverOpen) {
+        setIsPopoverOpen(false);
+      }
+    });
+
+    return unsubscribe;
+  }, [on, comboBoxId, isPopoverOpen]);
+
+  // Emit event when this combobox opens
+  useEffect(() => {
+    if (isPopoverOpen) {
+      emit('popover:open', { menuId: comboBoxId });
+    }
+  }, [isPopoverOpen, emit, comboBoxId]);
+
+  return {
+    effectiveSelectedKey,
+    effectiveInputValue,
+    isPopoverOpen,
+    setIsPopoverOpen,
+    setInternalSelectedKey,
+    setInternalInputValue,
+    isControlledKey,
+    isControlledInput,
+  };
+}
+
+// ============================================================================
+// Hook: useComboBoxFiltering
+// ============================================================================
+interface UseComboBoxFilteringProps {
+  children: ReactNode;
+  effectiveInputValue: string;
+  filter: FilterFn | false | undefined;
+}
+
+interface UseComboBoxFilteringReturn {
+  filteredChildren: ReactNode;
+  isFilterActive: boolean;
+  setIsFilterActive: (active: boolean) => void;
+}
+
+function useComboBoxFiltering({
+  children,
+  effectiveInputValue,
+  filter,
+}: UseComboBoxFilteringProps): UseComboBoxFilteringReturn {
+  const [isFilterActive, setIsFilterActive] = useState(false);
+
+  const { contains } = useFilter({ sensitivity: 'base' });
+
+  const textFilterFn = useMemo<FilterFn>(
+    () => (filter === false ? () => true : filter || contains),
+    [filter, contains],
+  );
+
+  // Filter children based on input value
+  const filteredChildren = useMemo(() => {
+    const term = effectiveInputValue.trim();
+
+    if (!isFilterActive || !term || !children) {
+      return children;
+    }
+
+    const nodeMatches = (node: any): boolean => {
+      if (!node?.props) return false;
+
+      const textValue =
+        node.props.textValue ||
+        (typeof node.props.children === 'string' ? node.props.children : '') ||
+        String(node.props.children || '');
+
+      return textFilterFn(textValue, term);
+    };
+
+    const filterChildren = (childNodes: ReactNode): ReactNode => {
+      if (!childNodes) return null;
+
+      const childArray = Array.isArray(childNodes) ? childNodes : [childNodes];
+      const filteredNodes: ReactNode[] = [];
+
+      childArray.forEach((child: any) => {
+        if (!child || typeof child !== 'object') {
+          return;
+        }
+
+        if (
+          child.type === BaseSection ||
+          child.type?.displayName === 'Section'
+        ) {
+          const sectionChildren = Array.isArray(child.props.children)
+            ? child.props.children
+            : [child.props.children];
+
+          const filteredSectionChildren = sectionChildren.filter(
+            (sectionChild: any) => {
+              return (
+                sectionChild &&
+                typeof sectionChild === 'object' &&
+                nodeMatches(sectionChild)
+              );
+            },
+          );
+
+          if (filteredSectionChildren.length > 0) {
+            filteredNodes.push(
+              cloneElement(child, {
+                key: child.key,
+                children: filteredSectionChildren,
+              }),
+            );
+          }
+        } else if (child.type === Item) {
+          if (nodeMatches(child)) {
+            filteredNodes.push(child);
+          }
+        } else if (nodeMatches(child)) {
+          filteredNodes.push(child);
+        }
+      });
+
+      return filteredNodes;
+    };
+
+    return filterChildren(children);
+  }, [isFilterActive, children, effectiveInputValue, textFilterFn]);
+
+  return {
+    filteredChildren,
+    isFilterActive,
+    setIsFilterActive,
+  };
+}
+
+// ============================================================================
+// Hook: useCompositeFocus
+// ============================================================================
+interface UseCompositeFocusProps {
+  wrapperRef: RefObject<HTMLElement>;
+  popoverRef: RefObject<HTMLElement>;
+  onFocus?: () => void;
+  onBlur?: () => void;
+  isDisabled?: boolean;
+}
+
+interface UseCompositeFocusReturn {
+  compositeFocusProps: {
+    onFocus: (e: React.FocusEvent) => void;
+    onBlur: (e: React.FocusEvent) => void;
+  };
+}
+
+function useCompositeFocus({
+  wrapperRef,
+  popoverRef,
+  onFocus,
+  onBlur,
+  isDisabled,
+}: UseCompositeFocusProps): UseCompositeFocusReturn {
+  const wasInsideRef = useRef(false);
+  const rafRef = useRef<number | null>(null);
+
+  const checkFocus = useCallback(() => {
+    if (isDisabled) return;
+
+    const activeElement = document.activeElement;
+    const isInside =
+      (wrapperRef.current?.contains(activeElement) ?? false) ||
+      (popoverRef.current?.contains(activeElement) ?? false);
+
+    if (isInside !== wasInsideRef.current) {
+      wasInsideRef.current = isInside;
+      if (isInside) {
+        onFocus?.();
+      } else {
+        onBlur?.();
+      }
+    }
+  }, [wrapperRef, popoverRef, onFocus, onBlur, isDisabled]);
+
+  const handleFocusOrBlur = useCallback(
+    (e: React.FocusEvent) => {
+      // Cancel any pending check
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
+
+      // Schedule focus check for next frame
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = null;
+        checkFocus();
+      });
+    },
+    [checkFocus],
+  );
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, []);
+
+  return {
+    compositeFocusProps: {
+      onFocus: handleFocusOrBlur,
+      onBlur: handleFocusOrBlur,
+    },
+  };
+}
+
+// ============================================================================
+// Hook: useComboBoxKeyboard
+// ============================================================================
+interface UseComboBoxKeyboardProps {
+  isPopoverOpen: boolean;
+  listStateRef: RefObject<any>;
+  hasResults: boolean;
+  allowsCustomValue?: boolean;
+  effectiveInputValue: string;
+  isClearable?: boolean;
+  onSelectionChange: (selection: Key | Key[] | null) => void;
+  onClearValue: () => void;
+  onOpenPopover: () => void;
+  onClosePopover: () => void;
+  inputRef: RefObject<HTMLInputElement>;
+  setIsFilterActive: (active: boolean) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+}
+
+function useComboBoxKeyboard({
+  isPopoverOpen,
+  listStateRef,
+  hasResults,
+  allowsCustomValue,
+  effectiveInputValue,
+  isClearable,
+  onSelectionChange,
+  onClearValue,
+  onOpenPopover,
+  onClosePopover,
+  inputRef,
+  setIsFilterActive,
+  onKeyDown,
+}: UseComboBoxKeyboardProps) {
+  const { keyboardProps } = useKeyboard({
+    onKeyDown: (e) => {
+      // Call user's handler first
+      onKeyDown?.(e as React.KeyboardEvent<HTMLInputElement>);
+
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+
+        // Open popover if closed
+        if (!isPopoverOpen) {
+          // If opening with no filtered results, disable filter to show all items
+          if (!hasResults) {
+            setIsFilterActive(false);
+          }
+          onOpenPopover();
+          return;
+        }
+
+        const listState = listStateRef.current;
+        if (!listState) return;
+
+        const { selectionManager, collection, disabledKeys } = listState;
+
+        // Helper to collect visible item keys (supports sections)
+        const collectVisibleKeys = (nodes: Iterable<any>, out: Key[]) => {
+          for (const node of nodes) {
+            if (node.type === 'item') {
+              if (!disabledKeys?.has(node.key)) {
+                out.push(node.key);
+              }
+            } else if (node.childNodes) {
+              collectVisibleKeys(node.childNodes, out);
+            }
+          }
+        };
+
+        const visibleKeys: Key[] = [];
+        collectVisibleKeys(collection, visibleKeys);
+
+        if (visibleKeys.length === 0) return;
+
+        const isArrowDown = e.key === 'ArrowDown';
+        const currentKey = selectionManager.focusedKey;
+
+        let nextKey: Key | null = null;
+
+        if (currentKey == null) {
+          nextKey = isArrowDown
+            ? visibleKeys[0]
+            : visibleKeys[visibleKeys.length - 1];
+        } else {
+          const currentIndex = visibleKeys.indexOf(currentKey);
+          if (currentIndex !== -1) {
+            const newIndex = currentIndex + (isArrowDown ? 1 : -1);
+            if (newIndex >= 0 && newIndex < visibleKeys.length) {
+              nextKey = visibleKeys[newIndex];
+            }
+          } else {
+            nextKey = isArrowDown
+              ? visibleKeys[0]
+              : visibleKeys[visibleKeys.length - 1];
+          }
+        }
+
+        if (nextKey != null) {
+          if (listState.lastFocusSourceRef) {
+            listState.lastFocusSourceRef.current = 'keyboard';
+          }
+          selectionManager.setFocusedKey(nextKey);
+        }
+      } else if (e.key === 'Enter') {
+        if (!hasResults) {
+          e.preventDefault();
+
+          if (allowsCustomValue) {
+            const value = effectiveInputValue;
+
+            onSelectionChange(
+              (value as unknown as Key) ?? (null as unknown as Key),
+            );
+          } else {
+            onSelectionChange(null);
+          }
+
+          return;
+        }
+
+        if (isPopoverOpen) {
+          const listState = listStateRef.current;
+          if (!listState) return;
+
+          const keyToSelect = listState.selectionManager.focusedKey;
+
+          if (keyToSelect != null) {
+            e.preventDefault();
+            listState.selectionManager.select(keyToSelect, e);
+            // Ensure the popover closes even if selection stays the same
+            onClosePopover();
+            inputRef.current?.focus();
+          }
+        }
+      } else if (e.key === 'Escape') {
+        if (isPopoverOpen) {
+          e.preventDefault();
+          onClosePopover();
+          inputRef.current?.focus();
+        } else if (effectiveInputValue && isClearable) {
+          e.preventDefault();
+          onClearValue();
+        }
+      } else if (e.key === 'Home' || e.key === 'End') {
+        if (isPopoverOpen) {
+          e.preventDefault();
+
+          const listState = listStateRef.current;
+          if (!listState) return;
+
+          const { selectionManager, collection, disabledKeys } = listState;
+
+          // Helper to collect visible item keys (supports sections)
+          const collectVisibleKeys = (nodes: Iterable<any>, out: Key[]) => {
+            for (const node of nodes) {
+              if (node.type === 'item') {
+                if (!disabledKeys?.has(node.key)) {
+                  out.push(node.key);
+                }
+              } else if (node.childNodes) {
+                collectVisibleKeys(node.childNodes, out);
+              }
+            }
+          };
+
+          const visibleKeys: Key[] = [];
+          collectVisibleKeys(collection, visibleKeys);
+
+          if (visibleKeys.length === 0) return;
+
+          const targetKey =
+            e.key === 'Home'
+              ? visibleKeys[0]
+              : visibleKeys[visibleKeys.length - 1];
+
+          if (listState.lastFocusSourceRef) {
+            listState.lastFocusSourceRef.current = 'keyboard';
+          }
+          selectionManager.setFocusedKey(targetKey);
+        }
+      }
+    },
+  });
+
+  return { keyboardProps };
+}
+
+// ============================================================================
+// Component: ComboBoxInput
+// ============================================================================
+interface ComboBoxInputProps {
+  inputRef: RefObject<HTMLInputElement>;
+  id?: string;
+  value: string;
+  placeholder?: string;
+  isDisabled?: boolean;
+  isReadOnly?: boolean;
+  autoFocus?: boolean;
+  size: string;
+  mods: Record<string, any>;
+  inputStyles?: Styles;
+  keyboardProps: any;
+  focusProps: any;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onFocus: (e: React.FocusEvent<HTMLInputElement>) => void;
+  isPopoverOpen: boolean;
+  hasResults: boolean;
+  comboBoxId: string;
+  listStateRef: RefObject<any>;
+  isLoading?: boolean;
+  allowsCustomValue?: boolean;
+}
+
+const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
+  function ComboBoxInput(
+    {
+      inputRef,
+      id,
+      value,
+      placeholder,
+      isDisabled,
+      isReadOnly,
+      autoFocus,
+      size,
+      mods,
+      inputStyles,
+      keyboardProps,
+      focusProps,
+      onChange,
+      onFocus,
+      isPopoverOpen,
+      hasResults,
+      comboBoxId,
+      listStateRef,
+      isLoading,
+      allowsCustomValue,
+    },
+    ref,
+  ) {
+    const combinedRef = useCombinedRefs(ref, inputRef);
+
+    return (
+      <InputElement
+        ref={combinedRef}
+        qa="Input"
+        id={id}
+        type="text"
+        value={value}
+        placeholder={placeholder}
+        isDisabled={isDisabled}
+        readOnly={isReadOnly}
+        autoFocus={autoFocus}
+        data-autofocus={autoFocus ? '' : undefined}
+        onChange={onChange}
+        onFocus={onFocus}
+        onBlur={focusProps.onBlur}
+        {...keyboardProps}
+        styles={inputStyles}
+        mods={mods}
+        data-size={size}
+        role="combobox"
+        aria-expanded={isPopoverOpen && hasResults}
+        aria-haspopup="listbox"
+        aria-controls={
+          isPopoverOpen && hasResults
+            ? `ComboBoxListBox-${comboBoxId}`
+            : undefined
+        }
+        aria-activedescendant={
+          isPopoverOpen &&
+          hasResults &&
+          listStateRef.current?.selectionManager.focusedKey != null
+            ? `ListBoxItem-${listStateRef.current?.selectionManager.focusedKey}`
+            : undefined
+        }
+      />
+    );
+  },
+);
+
+// ============================================================================
+// Component: ComboBoxOverlay
+// ============================================================================
+interface ComboBoxOverlayProps {
+  isOpen: boolean;
+  triggerRef: RefObject<HTMLElement>;
+  popoverRef: RefObject<HTMLDivElement>;
+  listBoxRef: RefObject<HTMLDivElement>;
+  direction: 'bottom' | 'top';
+  shouldFlip: boolean;
+  overlayOffset: number;
+  comboBoxWidth?: number;
+  comboBoxId: string;
+  overlayStyles?: Styles;
+  listBoxStyles?: Styles;
+  optionStyles?: Styles;
+  sectionStyles?: Styles;
+  headingStyles?: Styles;
+  effectiveSelectedKey: Key | null;
+  isDisabled?: boolean;
+  disabledKeys?: Iterable<Key>;
+  items?: Iterable<any>;
+  children: ReactNode;
+  listStateRef: RefObject<any>;
+  onSelectionChange: (selection: Key | Key[] | null) => void;
+  onClose: () => void;
+  label?: ReactNode;
+  ariaLabel?: string;
+  compositeFocusProps: {
+    onFocus: (e: React.FocusEvent) => void;
+    onBlur: (e: React.FocusEvent) => void;
+  };
+}
+
+function ComboBoxOverlay({
+  isOpen,
+  triggerRef,
+  popoverRef,
+  listBoxRef,
+  direction,
+  shouldFlip,
+  overlayOffset,
+  comboBoxWidth,
+  comboBoxId,
+  overlayStyles,
+  listBoxStyles,
+  optionStyles,
+  sectionStyles,
+  headingStyles,
+  effectiveSelectedKey,
+  isDisabled,
+  disabledKeys,
+  items,
+  children,
+  listStateRef,
+  onSelectionChange,
+  onClose,
+  label,
+  ariaLabel,
+  compositeFocusProps,
+}: ComboBoxOverlayProps) {
+  // Overlay positioning
+  const {
+    overlayProps: overlayPositionProps,
+    placement,
+    updatePosition,
+  } = useOverlayPosition({
+    targetRef: triggerRef as any,
+    overlayRef: popoverRef as any,
+    placement: `${direction} start` as any,
+    shouldFlip,
+    isOpen,
+    offset: overlayOffset,
+  });
+
+  // Overlay behavior (dismiss on outside click, escape)
+  const { overlayProps: overlayBehaviorProps } = useOverlay(
+    {
+      onClose,
+      shouldCloseOnBlur: true,
+      isOpen,
+      isDismissable: true,
+      shouldCloseOnInteractOutside: (el) => {
+        const menuTriggerEl = el.closest('[data-popover-trigger]');
+        if (!menuTriggerEl) return true;
+        if (menuTriggerEl === triggerRef?.current) return true;
+        return false;
+      },
+    },
+    popoverRef as any,
+  );
+
+  // Update position when overlay opens
+  useLayoutEffect(() => {
+    if (isOpen) {
+      // Use double RAF to ensure layout is complete before positioning
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          updatePosition?.();
+        });
+      });
+    }
+  }, [isOpen, updatePosition]);
+
+  // Extract primary placement direction for consistent styling
+  const placementDirection = placement?.split(' ')[0] || direction;
+
+  const overlayContent = (
+    <DisplayTransition exposeUnmounted isShown={isOpen}>
+      {({ phase, isShown, ref: transitionRef }) => (
+        <ComboBoxOverlayElement
+          {...mergeProps(
+            overlayPositionProps,
+            overlayBehaviorProps,
+            compositeFocusProps,
+          )}
+          ref={(value) => {
+            transitionRef(value as HTMLElement | null);
+            (popoverRef as any).current = value;
+          }}
+          data-placement={placementDirection}
+          data-phase={phase}
+          mods={{
+            open: isShown,
+            hidden: phase === 'unmounted',
+          }}
+          styles={overlayStyles}
+          style={{
+            '--min-width': comboBoxWidth ? `${comboBoxWidth}px` : undefined,
+            ...overlayPositionProps.style,
+          }}
+        >
+          <ListBox
+            ref={listBoxRef}
+            focusOnHover
+            disableSelectionToggle
+            id={`ComboBoxListBox-${comboBoxId}`}
+            aria-label={
+              ariaLabel || (typeof label === 'string' ? label : 'Options')
+            }
+            selectedKey={effectiveSelectedKey}
+            selectionMode="single"
+            isDisabled={isDisabled}
+            disabledKeys={disabledKeys}
+            shouldUseVirtualFocus={true}
+            items={items as any}
+            styles={listBoxStyles}
+            optionStyles={optionStyles}
+            sectionStyles={sectionStyles}
+            headingStyles={headingStyles}
+            stateRef={listStateRef}
+            mods={{
+              popover: true,
+            }}
+            onSelectionChange={onSelectionChange}
+          >
+            {children as any}
+          </ListBox>
+        </ComboBoxOverlayElement>
+      )}
+    </DisplayTransition>
+  );
+
+  return <Portal>{overlayContent}</Portal>;
+}
+
+// ============================================================================
+// Main Component: ComboBox
+// ============================================================================
 export const ComboBox = forwardRef(function ComboBox<T extends object>(
   props: CubeComboBoxProps<T>,
   ref: ForwardedRef<HTMLDivElement>,
@@ -145,20 +962,10 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   props = useFieldProps(props, {
     valuePropsMapper: ({ value, onChange }) => {
       return {
-        selectedKey: !props.allowsCustomValue ? value ?? null : undefined,
-        inputValue: props.allowsCustomValue ? value ?? '' : undefined,
-        onInputChange(val) {
-          if (!props.allowsCustomValue) {
-            return;
-          }
-
-          onChange(val);
-        },
-        onSelectionChange(val: string) {
-          if (val == null && props.allowsCustomValue) {
-            return;
-          }
-
+        // Form value maps to selectedKey (the committed value) in both modes
+        selectedKey: value ?? null,
+        onSelectionChange(val: string | null) {
+          // Commit selection changes to the form
           onChange(val);
         },
       };
@@ -173,10 +980,10 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     isRequired,
     necessityIndicator,
     validationState,
+    id,
     icon,
     prefix,
     isDisabled,
-    multiLine,
     autoFocus,
     wrapperRef,
     inputRef,
@@ -184,71 +991,79 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     popoverRef,
     listBoxRef,
     isLoading,
-    loadingIndicator,
-    overlayOffset = 8,
     inputStyles,
     optionStyles,
     triggerStyles,
     listBoxStyles,
     overlayStyles,
-    wrapperStyles,
+    fieldStyles,
     suffix,
     hideTrigger,
     message,
     description,
     size = 'medium',
-    autoComplete = 'off',
     direction = 'bottom',
     shouldFlip = true,
-    menuTrigger = 'input',
+    popoverTrigger = 'input',
     suffixPosition = 'before',
-    loadingState,
     filter,
     styles,
     labelSuffix,
     selectedKey,
     defaultSelectedKey,
+    inputValue,
+    defaultInputValue,
+    onInputChange,
     isClearable,
+    onClear,
+    placeholder,
+    allowsCustomValue,
+    shouldCommitOnBlur = true,
+    clearOnBlur,
+    items,
+    children: renderChildren,
+    sectionStyles,
+    headingStyles,
+    isReadOnly,
+    overlayOffset = 8,
+    onSelectionChange: externalOnSelectionChange,
+    sortSelectedToTop: sortSelectedToTopProp,
+    onFocus,
+    onBlur,
+    onKeyDown,
+    form,
     ...otherProps
   } = props;
-
-  let isAsync = loadingState != null;
-  let { contains } = useFilter({ sensitivity: 'base' });
-
-  let comboBoxStateProps: any = {
-    ...props,
-    defaultFilter: filter || contains,
-    filter: undefined,
-    allowsEmptyCollection: isAsync,
-    menuTrigger,
-  };
-
-  let state = useComboBoxState(comboBoxStateProps);
 
   // Generate a unique ID for this combobox instance
   const comboBoxId = useMemo(() => generateRandomId(), []);
 
-  // Get event bus for menu synchronization
-  const { emit, on } = useEventBus();
+  // State management hook
+  const {
+    effectiveSelectedKey,
+    effectiveInputValue,
+    isPopoverOpen,
+    setIsPopoverOpen,
+    setInternalSelectedKey,
+    setInternalInputValue,
+    isControlledKey,
+    isControlledInput,
+  } = useComboBoxState({
+    selectedKey,
+    defaultSelectedKey,
+    inputValue,
+    defaultInputValue,
+    comboBoxId,
+  });
 
-  // Listen for other menus opening and close this one if needed
-  useEffect(() => {
-    const unsubscribe = on('popover:open', (data: { menuId: string }) => {
-      // If another menu is opening and this combobox is open, close this one
-      if (data.menuId !== comboBoxId && state.isOpen) {
-        state.close();
-      }
-    });
+  // Track if sortSelectedToTop was explicitly provided
+  const sortSelectedToTopExplicit = sortSelectedToTopProp !== undefined;
+  // Default to true if items are provided, false otherwise
+  const sortSelectedToTop = sortSelectedToTopProp ?? (items ? true : false);
 
-    return unsubscribe;
-  }, [on, comboBoxId, state]);
-
-  // Emit event when this combobox opens
-  useEffect(() => {
-    if (state.isOpen) {
-      emit('popover:open', { menuId: comboBoxId });
-    }
-  }, [state.isOpen, emit, comboBoxId]);
+  // Cache for sorted items array when using `items` prop
+  const cachedItemsOrder = useRef<T[] | null>(null);
+  const selectionWhenClosed = useRef<string | null>(null);
 
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
@@ -259,90 +1074,390 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   popoverRef = useCombinedRefs(popoverRef);
   listBoxRef = useCombinedRefs(listBoxRef);
 
-  let { overlayProps, placement, updatePosition } = useOverlayPosition({
-    targetRef: triggerRef,
-    overlayRef: popoverRef,
-    scrollRef: listBoxRef,
-    placement: `${direction} end`,
-    shouldFlip: shouldFlip,
-    isOpen: state.isOpen,
-    onClose: state.close,
-    offset: overlayOffset,
+  // Sort items with selected on top if enabled
+  const getSortedItems = useCallback((): typeof items => {
+    if (!items) return items;
+
+    if (!sortSelectedToTop) return items;
+
+    // Reuse cached order if available
+    if (cachedItemsOrder.current) {
+      return cachedItemsOrder.current;
+    }
+
+    // Warn if explicitly requested but not supported
+    if (sortSelectedToTopExplicit && !items) {
+      console.warn(
+        'ComboBox: sortSelectedToTop only works with the items prop. ' +
+          'Sorting will be skipped when using JSX children.',
+      );
+      return items;
+    }
+
+    const selectedKey = isPopoverOpen
+      ? effectiveSelectedKey
+      : selectionWhenClosed.current;
+
+    if (!selectedKey) return items;
+
+    const itemsArray = Array.isArray(items) ? items : Array.from(items);
+    const selectedItem = itemsArray.find((item) => {
+      const key = (item as any)?.key ?? (item as any)?.id;
+      return key != null && String(key) === String(selectedKey);
+    });
+
+    if (!selectedItem) return items;
+
+    const sorted = [
+      selectedItem,
+      ...itemsArray.filter((item) => {
+        const key = (item as any)?.key ?? (item as any)?.id;
+        return key == null || String(key) !== String(selectedKey);
+      }),
+    ] as T[];
+
+    if (isPopoverOpen) {
+      cachedItemsOrder.current = sorted;
+    }
+
+    return sorted;
+  }, [
+    items,
+    sortSelectedToTop,
+    sortSelectedToTopExplicit,
+    effectiveSelectedKey,
+    isPopoverOpen,
+  ]);
+
+  const sortedItems = getSortedItems();
+
+  // Preserve the original `children` (may be a render function) before we
+  // potentially overwrite it.
+  let children: ReactNode = renderChildren as ReactNode;
+
+  const renderFn = renderChildren as unknown;
+
+  if (sortedItems && typeof renderFn === 'function') {
+    try {
+      const itemsArray = Array.from(sortedItems as Iterable<any>);
+      children = itemsArray.map((item, idx) => {
+        const rendered = (renderFn as (it: any) => ReactNode)(item);
+        if (
+          React.isValidElement(rendered) &&
+          (rendered as ReactElement).key == null
+        ) {
+          return React.cloneElement(rendered as ReactElement, {
+            key: (rendered as any)?.key ?? item?.key ?? idx,
+          });
+        }
+
+        return rendered as ReactNode;
+      });
+    } catch {
+      // If conversion fails, proceed with the original children
+    }
+  }
+
+  // Invalidate cached sorting whenever items change
+  useEffect(() => {
+    cachedItemsOrder.current = null;
+  }, [items]);
+
+  // Capture selection when popover closes
+  useEffect(() => {
+    if (!isPopoverOpen) {
+      selectionWhenClosed.current =
+        effectiveSelectedKey != null ? String(effectiveSelectedKey) : null;
+      cachedItemsOrder.current = null;
+    }
+  }, [isPopoverOpen, effectiveSelectedKey]);
+
+  // Filtering hook
+  const { filteredChildren, isFilterActive, setIsFilterActive } =
+    useComboBoxFiltering({
+      children,
+      effectiveInputValue,
+      filter,
+    });
+
+  // Freeze filtered children during close animation to prevent visual jumps
+  const frozenFilteredChildrenRef = useRef<ReactNode>(null);
+
+  useEffect(() => {
+    // Update frozen children only when popover is open
+    if (isPopoverOpen) {
+      frozenFilteredChildrenRef.current = filteredChildren;
+    }
+  }, [isPopoverOpen, filteredChildren]);
+
+  // Use frozen children during close animation, fresh children when open
+  const displayedFilteredChildren = isPopoverOpen
+    ? filteredChildren
+    : frozenFilteredChildrenRef.current ?? filteredChildren;
+
+  const { isFocused, focusProps } = useFocus({ isDisabled });
+
+  // Composite blur handler - fires when focus leaves the entire component
+  const handleCompositeBlur = useEvent(() => {
+    // Always disable filter on blur
+    setIsFilterActive(false);
+
+    // In allowsCustomValue mode with shouldCommitOnBlur, commit the input value
+    if (
+      allowsCustomValue &&
+      shouldCommitOnBlur &&
+      effectiveInputValue &&
+      effectiveSelectedKey == null
+    ) {
+      externalOnSelectionChange?.(effectiveInputValue as string);
+      if (!isControlledKey) {
+        setInternalSelectedKey(effectiveInputValue as Key);
+      }
+      // Call user's onBlur callback
+      onBlur?.();
+      return;
+    }
+
+    // In clearOnBlur mode (only for non-custom-value mode), clear selection and input
+    if (clearOnBlur && !allowsCustomValue) {
+      externalOnSelectionChange?.(null);
+      if (!isControlledKey) {
+        setInternalSelectedKey(null);
+      }
+      if (!isControlledInput) {
+        setInternalInputValue('');
+      }
+      onInputChange?.('');
+      // Call user's onBlur callback
+      onBlur?.();
+      return;
+    }
+
+    // Reset input to show current selection (or empty if none)
+    const nextValue =
+      effectiveSelectedKey != null ? getItemLabel(effectiveSelectedKey) : '';
+
+    if (!isControlledInput) {
+      setInternalInputValue(nextValue);
+    }
+    onInputChange?.(nextValue);
+
+    // Call user's onBlur callback
+    onBlur?.();
   });
 
-  let {
-    labelProps,
-    inputProps,
-    listBoxProps,
-    buttonProps: triggerProps,
-  } = useComboBox(
-    {
-      ...comboBoxStateProps,
-      inputRef,
-      buttonRef: triggerRef,
-      listBoxRef,
-      popoverRef,
-      menuTrigger,
-    },
-    state,
-  );
-
-  let { isFocused, focusProps } = useFocus({ isDisabled });
-  let { hoverProps, isHovered } = useHover({ isDisabled });
-
-  // Get props for the button based on the trigger props from useComboBox
-  let { buttonProps, isPressed: isTriggerPressed } = useButton(
-    triggerProps,
-    triggerRef,
-  );
-  let { hoverProps: triggerHoverProps, isHovered: isTriggerHovered } = useHover(
-    { isDisabled },
-  );
-  let { focusProps: triggerFocusProps, isFocused: isTriggerFocused } = useFocus(
-    { isDisabled },
-    true,
-  );
-
-  useLayoutEffect(() => {
-    if (state.isOpen) {
-      updatePosition();
-    }
-  }, [state.isOpen, state.collection.size]);
+  // Composite focus hook - handles focus tracking across wrapper and portaled popover
+  const { compositeFocusProps } = useCompositeFocus({
+    wrapperRef,
+    popoverRef,
+    onFocus,
+    onBlur: handleCompositeBlur,
+    isDisabled,
+  });
 
   let isInvalid = validationState === 'invalid';
 
   let validationIcon = isInvalid ? InvalidIcon : ValidIcon;
   let validation = cloneElement(validationIcon);
 
+  // Ref to access internal ListBox state
+  const listStateRef = useRef<any>(null);
+  const focusInitAttemptsRef = useRef(0);
+
+  // Helper to get label from collection item
+  const getItemLabel = useCallback((key: Key): string => {
+    const item = listStateRef.current?.collection?.getItem(key);
+    return item?.textValue || String(key);
+  }, []);
+
+  // Selection change handler
+  const handleSelectionChange = useEvent((selection: Key | Key[] | null) => {
+    // Extract single key from selection (we only support single selection)
+    const key = Array.isArray(selection) ? selection[0] : selection;
+
+    // Update selected key
+    if (!isControlledKey) {
+      setInternalSelectedKey(key ?? null);
+    }
+
+    // Update input value to show selected item label
+    if (key != null) {
+      setIsFilterActive(false);
+
+      const label = getItemLabel(key);
+
+      if (!isControlledInput) {
+        setInternalInputValue(label);
+      }
+      onInputChange?.(label);
+    } else {
+      // Clear input when selection is cleared
+      if (!isControlledInput) {
+        setInternalInputValue('');
+      }
+      onInputChange?.('');
+      setIsFilterActive(false);
+    }
+
+    externalOnSelectionChange?.(key as string | null);
+
+    // Close popover after selection
+    setIsPopoverOpen(false);
+
+    // Focus input
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
+  });
+
+  // Input change handler
+  const handleInputChange = useEvent(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+
+      // Update input value
+      if (!isControlledInput) {
+        setInternalInputValue(value);
+      }
+      onInputChange?.(value);
+
+      const trimmed = value.trim();
+      setIsFilterActive(trimmed.length > 0);
+
+      // Only clear selection in allowsCustomValue mode
+      // In normal mode, typing just filters - selection stays until explicitly changed
+      if (allowsCustomValue && effectiveSelectedKey != null) {
+        if (!isControlledKey) {
+          setInternalSelectedKey(null);
+        }
+        externalOnSelectionChange?.(null);
+      }
+
+      // Open popover based on trigger
+      if (popoverTrigger !== 'manual' && value && !isPopoverOpen) {
+        setIsPopoverOpen(true);
+      }
+    },
+  );
+
+  // Initialize input value from defaultInputValue or defaultSelectedKey (uncontrolled mode only, one-time)
+  const [hasInitialized, setHasInitialized] = useState(false);
+
+  useEffect(() => {
+    // Only initialize once, in uncontrolled input mode
+    if (hasInitialized || isControlledInput) return;
+
+    // Priority 1: defaultInputValue takes precedence
+    if (defaultInputValue !== undefined) {
+      setInternalInputValue(defaultInputValue);
+      setHasInitialized(true);
+      return;
+    }
+
+    // Priority 2: fall back to defaultSelectedKey's label
+    if (defaultSelectedKey) {
+      // Wait for collection to be ready
+      if (!listStateRef.current?.collection) return;
+
+      const label = getItemLabel(defaultSelectedKey);
+
+      setInternalInputValue(label);
+      setHasInitialized(true);
+    }
+  }, [
+    hasInitialized,
+    isControlledInput,
+    defaultInputValue,
+    defaultSelectedKey,
+    getItemLabel,
+    children,
+  ]);
+
+  // Sync input value with controlled selectedKey
+  useEffect(() => {
+    // Only run when selectedKey is controlled but inputValue is uncontrolled
+    if (!isControlledKey || isControlledInput) return;
+
+    // Wait for collection to be ready
+    if (!listStateRef.current?.collection) return;
+
+    // Get the expected label for the current selection
+    const expectedLabel =
+      effectiveSelectedKey != null ? getItemLabel(effectiveSelectedKey) : '';
+
+    // Update the input value to match the selected key's label
+    setInternalInputValue(expectedLabel);
+  }, [isControlledKey, isControlledInput, effectiveSelectedKey, getItemLabel]);
+
+  // Input focus handler
+  const handleInputFocus = useEvent((e: React.FocusEvent<HTMLInputElement>) => {
+    // Call focus props handler if it exists
+    focusProps.onFocus?.(e as any);
+
+    if (popoverTrigger === 'focus' && !isPopoverOpen) {
+      setIsPopoverOpen(true);
+    }
+  });
+
+  // Input blur handler - just handles internal focus props
+  const handleInputBlur = useEvent((e: React.FocusEvent<HTMLInputElement>) => {
+    focusProps.onBlur?.(e as any);
+  });
+
   // Clear button logic
-  let hasValue = props.allowsCustomValue
-    ? state.inputValue !== ''
-    : state.selectedKey != null;
-  let showClearButton =
-    isClearable && hasValue && !isDisabled && !props.isReadOnly;
+  let hasValue = allowsCustomValue
+    ? effectiveInputValue !== ''
+    : effectiveSelectedKey != null;
+  let showClearButton = isClearable && hasValue && !isDisabled && !isReadOnly;
+
+  const hasResults = Boolean(
+    displayedFilteredChildren &&
+      (Array.isArray(displayedFilteredChildren)
+        ? displayedFilteredChildren.length > 0
+        : displayedFilteredChildren !== null),
+  );
 
   // Clear function
   let clearValue = useEvent(() => {
-    // Always clear input value in state so UI resets to placeholder
-    state.setInputValue('');
-    // Notify external input value only when custom value mode is enabled
-    if (props.allowsCustomValue) {
-      props.onInputChange?.('');
+    // Clear input
+    if (!isControlledInput) {
+      setInternalInputValue('');
     }
-    props.onSelectionChange?.(null);
-    state.setSelectedKey(null);
+    onInputChange?.('');
 
-    // Close the popup if it's open
-    if (state.isOpen) {
-      state.close();
+    // Clear selection
+    if (!isControlledKey) {
+      setInternalSelectedKey(null);
     }
-    // Focus back to the input
+    externalOnSelectionChange?.(null);
+
+    // Close popover
+    if (isPopoverOpen) {
+      setIsPopoverOpen(false);
+    }
+
+    // Focus input
     inputRef.current?.focus();
 
-    props.onClear?.();
+    onClear?.();
   });
 
-  let comboBoxWidth = wrapperRef?.current?.offsetWidth;
+  // Keyboard navigation hook
+  const { keyboardProps } = useComboBoxKeyboard({
+    isPopoverOpen,
+    listStateRef,
+    hasResults,
+    allowsCustomValue,
+    effectiveInputValue,
+    isClearable,
+    onSelectionChange: handleSelectionChange,
+    onClearValue: clearValue,
+    onOpenPopover: () => setIsPopoverOpen(true),
+    onClosePopover: () => setIsPopoverOpen(false),
+    inputRef,
+    setIsFilterActive,
+    onKeyDown,
+  });
 
   if (icon) {
     icon = <div data-element="InputIcon">{icon}</div>;
@@ -364,7 +1479,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       invalid: isInvalid,
       valid: validationState === 'valid',
       disabled: isDisabled,
-      hovered: isHovered,
+      hovered: false,
       focused: isFocused,
       loading: isLoading,
       prefix: !!prefix,
@@ -375,7 +1490,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       isInvalid,
       validationState,
       isDisabled,
-      isHovered,
       isFocused,
       isLoading,
       prefix,
@@ -383,104 +1497,105 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     ],
   );
 
-  // If input is not full and the user presses Enter, pick the first option.
-  let onKeyPress = useEvent((e: KeyboardEvent) => {
-    if (!props.onSelectionChange) {
-      return;
-    }
+  const comboBoxWidth = wrapperRef?.current?.offsetWidth;
 
-    if (e.key === 'Enter') {
-      if (!props.allowsCustomValue) {
-        if (state.isOpen) {
-          // If there is a selected option then do nothing. It will be selected on Enter anyway.
-          if (listBoxRef.current?.querySelector('li[aria-selected="true"]')) {
-            return;
-          }
+  const shouldShowPopover = Boolean(isPopoverOpen && hasResults);
 
-          const option = [...state.collection][0]?.key;
-
-          if (option && selectedKey !== option) {
-            props.onSelectionChange?.(option);
-
-            e.stopPropagation();
-            e.preventDefault();
-          }
-        } else if (
-          inputRef.current?.value &&
-          ![...state.collection]
-            .map((i) => i.textValue)
-            .includes(inputRef.current?.value)
-        ) {
-          // If the input value is not in the collection, we need to prevent the submitting of the form.
-          // Also, we reset value manually.
-          e.preventDefault();
-          props.onSelectionChange?.(null);
-        }
-        // If a custom value is allowed, we need to check if the input value is in the collection.
-      } else if (props.allowsCustomValue) {
-        const inputValue = inputRef?.current?.value;
-
-        const item = [...state.collection].find(
-          (item) => item.textValue.toLowerCase() === inputValue?.toLowerCase(),
-        );
-
-        props.onSelectionChange?.(
-          item ? item.key : inputRef?.current?.value ?? '',
-        );
-      }
-    }
-  });
-
-  let onBlur = useEvent((e: FocusEvent) => {
-    // If the input value is not in the collection, we need to reset the value.
-    if (
-      !props.allowsCustomValue &&
-      inputRef.current?.value &&
-      ![...state.collection]
-        .map((i) => i.textValue)
-        .includes(inputRef.current?.value)
-    ) {
-      props.onSelectionChange?.(null);
-    }
-  });
-
+  // Close popover if no results
   useEffect(() => {
-    inputRef.current?.addEventListener('keydown', onKeyPress, true);
-    inputRef.current?.addEventListener('blur', onBlur, true);
+    if (isPopoverOpen && !hasResults) {
+      setIsPopoverOpen(false);
+    }
+  }, [isPopoverOpen, hasResults]);
 
-    return () => {
-      inputRef.current?.removeEventListener('keydown', onKeyPress, true);
-      inputRef.current?.removeEventListener('blur', onBlur, true);
+  const ensureInitialFocus = useCallback(() => {
+    if (!shouldShowPopover) return;
+
+    const listState = listStateRef.current;
+    if (!listState) return;
+
+    const { selectionManager, collection, disabledKeys, lastFocusSourceRef } =
+      listState;
+    if (!selectionManager || !collection) return;
+
+    const collectFirstKey = (): Key | null => {
+      for (const node of collection) {
+        if (node.type === 'item') {
+          if (!disabledKeys?.has(node.key)) return node.key;
+        } else if (node.childNodes) {
+          for (const child of node.childNodes) {
+            if (child.type === 'item' && !disabledKeys?.has(child.key)) {
+              return child.key;
+            }
+          }
+        }
+      }
+      return null;
     };
-  }, []);
 
-  let allInputProps = useMemo(
-    () => mergeProps(inputProps, hoverProps, focusProps),
-    [inputProps, hoverProps, focusProps],
-  );
+    if (lastFocusSourceRef) lastFocusSourceRef.current = 'keyboard';
 
-  let comboBoxField = (
+    if (selectionManager.focusedKey == null) {
+      const keyToFocus =
+        effectiveSelectedKey != null ? effectiveSelectedKey : collectFirstKey();
+      if (keyToFocus != null) selectionManager.setFocusedKey(keyToFocus);
+    }
+  }, [shouldShowPopover, effectiveSelectedKey]);
+
+  useLayoutEffect(() => {
+    if (!shouldShowPopover) return;
+    focusInitAttemptsRef.current = 0;
+
+    const tick = () => {
+      if (!shouldShowPopover) return;
+      ensureInitialFocus();
+      focusInitAttemptsRef.current += 1;
+      // Try a few frames to wait for collection to mount
+      if (
+        focusInitAttemptsRef.current < 8 &&
+        listStateRef.current?.selectionManager?.focusedKey == null
+      ) {
+        requestAnimationFrame(tick);
+      }
+    };
+
+    requestAnimationFrame(() => requestAnimationFrame(tick));
+  }, [shouldShowPopover, ensureInitialFocus]);
+
+  const comboBoxField = (
     <ComboBoxWrapperElement
       ref={wrapperRef}
       qa={qa || 'ComboBox'}
       mods={mods}
-      styles={wrapperStyles}
+      styles={styles}
       style={{
         zIndex: isFocused ? 1 : 'initial',
       }}
       data-size={size}
+      {...compositeFocusProps}
     >
       {prefix ? <div data-element="Prefix">{prefix}</div> : null}
-      <InputElement
-        ref={inputRef}
-        qa="Input"
+      <ComboBoxInput
+        inputRef={inputRef}
+        id={id}
+        value={effectiveInputValue}
+        placeholder={placeholder}
+        isDisabled={isDisabled}
+        isReadOnly={isReadOnly}
         autoFocus={autoFocus}
-        data-autofocus={autoFocus ? '' : undefined}
-        {...allInputProps}
-        autoComplete={autoComplete}
-        styles={inputStyles}
+        size={size}
         mods={mods}
-        data-size={size}
+        inputStyles={inputStyles}
+        keyboardProps={keyboardProps}
+        focusProps={{ ...focusProps, onBlur: handleInputBlur }}
+        isPopoverOpen={isPopoverOpen}
+        hasResults={hasResults}
+        comboBoxId={comboBoxId}
+        listStateRef={listStateRef}
+        isLoading={isLoading}
+        allowsCustomValue={allowsCustomValue}
+        onChange={handleInputChange}
+        onFocus={handleInputFocus}
       />
       <div data-element="Suffix">
         {suffixPosition === 'before' ? suffix : null}
@@ -498,67 +1613,92 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
             theme={validationState === 'invalid' ? 'danger' : undefined}
             qa="ComboBoxClearButton"
             data-no-trigger={hideTrigger ? '' : undefined}
+            aria-label="Clear value"
             onPress={clearValue}
           />
         )}
         {!hideTrigger ? (
-          <TriggerElement
-            data-popover-trigger
-            qa="ComboBoxTrigger"
-            {...mergeProps(buttonProps, triggerFocusProps, triggerHoverProps)}
+          <ItemAction
             ref={triggerRef}
+            data-popover-trigger
+            icon={<DirectionIcon to={isPopoverOpen ? 'up' : 'down'} />}
+            qa="ComboBoxTrigger"
             mods={{
-              pressed: isTriggerPressed,
-              focused: isTriggerFocused,
-              hovered: isTriggerHovered,
+              pressed: isPopoverOpen,
               disabled: isDisabled,
               loading: isLoading,
             }}
             data-size={size}
             isDisabled={isDisabled}
             styles={triggerStyles}
-          >
-            <DownIcon />
-          </TriggerElement>
+            aria-expanded={isPopoverOpen}
+            aria-haspopup="listbox"
+            aria-label="Show options"
+            onPress={() => {
+              if (!isDisabled) {
+                const willOpen = !isPopoverOpen;
+                setIsPopoverOpen(willOpen);
+                if (willOpen) {
+                  inputRef.current?.focus();
+                  // If opening with no filtered results, disable filter to show all items
+                  if (!hasResults) {
+                    setIsFilterActive(false);
+                  }
+                }
+              }
+            }}
+          />
         ) : null}
       </div>
-      <OverlayWrapper isOpen={state.isOpen && !isDisabled}>
-        <ListBoxPopup
-          {...listBoxProps}
-          shouldUseVirtualFocus
-          listBoxRef={listBoxRef}
-          popoverRef={popoverRef}
-          overlayProps={overlayProps}
-          placement={placement}
-          state={state}
-          listBoxStyles={listBoxStyles}
-          overlayStyles={overlayStyles}
-          optionStyles={optionStyles}
-          minWidth={comboBoxWidth}
-          triggerRef={triggerRef}
-        />
-      </OverlayWrapper>
+      <ComboBoxOverlay
+        isOpen={shouldShowPopover}
+        triggerRef={wrapperRef as RefObject<HTMLElement>}
+        popoverRef={popoverRef}
+        listBoxRef={listBoxRef}
+        direction={direction}
+        shouldFlip={shouldFlip}
+        overlayOffset={overlayOffset}
+        comboBoxWidth={comboBoxWidth}
+        comboBoxId={comboBoxId}
+        overlayStyles={overlayStyles}
+        listBoxStyles={listBoxStyles}
+        optionStyles={optionStyles}
+        sectionStyles={sectionStyles}
+        headingStyles={headingStyles}
+        effectiveSelectedKey={effectiveSelectedKey}
+        isDisabled={isDisabled}
+        disabledKeys={props.disabledKeys}
+        items={sortedItems}
+        listStateRef={listStateRef}
+        label={label}
+        ariaLabel={(props as any)['aria-label']}
+        compositeFocusProps={compositeFocusProps}
+        onSelectionChange={handleSelectionChange}
+        onClose={() => setIsPopoverOpen(false)}
+      >
+        {displayedFilteredChildren}
+      </ComboBoxOverlay>
     </ComboBoxWrapperElement>
   );
+
+  const { children: _, ...propsWithoutChildren } = props;
+  const finalProps = {
+    ...propsWithoutChildren,
+    styles: fieldStyles,
+  };
 
   return wrapWithField<Omit<CubeComboBoxProps<T>, 'children'>>(
     comboBoxField,
     ref,
-    mergeProps({ ...props, styles }, { labelProps }),
+    mergeProps(finalProps, {}),
   );
 }) as unknown as (<T>(
   props: CubeComboBoxProps<T> & { ref?: ForwardedRef<HTMLDivElement> },
 ) => ReactElement) & { Item: typeof Item; Section: typeof BaseSection };
 
-type SectionComponentCB = typeof BaseSection;
-
-const ComboBoxSectionComponent = Object.assign(BaseSection, {
-  displayName: 'Section',
-}) as SectionComponentCB;
-
 ComboBox.Item = Item;
 
-ComboBox.Section = ComboBoxSectionComponent;
+ComboBox.Section = BaseSection;
 
 Object.defineProperty(ComboBox, 'cubeInputType', {
   value: 'ComboBox',

@@ -30,5 +30,7 @@ export function Portal(props: PortalProps) {
   const { children, mountRoot, isDisabled } = usePortal(props);
 
   if (isDisabled) return <>{children}</>;
-  return mountRoot ? createPortal(children, mountRoot) : null;
+  // Render inline until mountRoot is available (fixes timing issues in tests and SSR)
+  if (!mountRoot) return <>{children}</>;
+  return createPortal(children, mountRoot);
 }

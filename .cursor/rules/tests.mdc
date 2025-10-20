@@ -1,0 +1,208 @@
+---
+globs: *.test.tsx
+alwaysApply: false
+---
+
+# Testing Rules for UI Kit
+
+## Setup
+
+- Place test files next to components with `.test.tsx` extension
+- Mock internal warnings: `jest.mock('../../../_internal/hooks/use-warn')`
+- Define test data at the top of `describe` blocks
+
+## Render Functions
+
+**Choose based on component requirements:**
+- `render()` - Simple components (Button, Text, standalone UI elements)
+- `renderWithRoot()` - Components using overlays, popovers, portals, modals, or complex interactions (Select, ComboBox, Menu, Dialog, etc.)
+- `renderWithForm()` - Form-integrated components (returns `{ formInstance, ...renderResult }`)
+
+Note: Root provides ModalProvider, PortalProvider, EventBusProvider, NotificationsProvider, and styled-components context. Most interactive components need it, but simple presentational components don't.
+
+## User Interactions
+
+**Always use `userEvent` for interactions:**
+- `await userEvent.click(element)`
+- `await userEvent.type(input, 'text')`
+- `await userEvent.clear(input)`
+- `await userEvent.keyboard('{Enter}')` / `'{Escape}'` / `'{ArrowDown}'` / `'{Home}'` / etc.
+- `await userEvent.tab()`
+
+**Focus management:**
+```tsx
+await act(async () => {
+  element.focus();
+  element.blur();
+});
+```
+
+## Async Testing
+
+Use `waitFor()` for async state changes:
+```tsx
+await userEvent.click(button);
+
+await waitFor(() => {
+  expect(element).toBeInTheDocument();
+});
+```
+
+Wait for removal: `await waitForElementToBeRemoved(() => queryByRole('dialog'))`
+
+## Common Patterns
+
+### Basic Rendering & User Interactions
+```tsx
+it('should handle button press', async () => {
+  const onPress = jest.fn();
+  const { getByRole } = render(<Button onPress={onPress}>Label</Button>);
+  
+  await userEvent.click(getByRole('button'));
+  
+  expect(onPress).toHaveBeenCalled();
+});
+```
+
+### Popover/Overlay State
+```tsx
+it('should open and close popover', async () => {
+  const { getByRole, queryByRole } = renderWithRoot(<Select label="test">...</Select>);
+  
+  expect(queryByRole('listbox')).not.toBeInTheDocument();
+  
+  await userEvent.click(getByRole('button'));
+  await waitFor(() => expect(queryByRole('listbox')).toBeInTheDocument());
+  
+  await userEvent.keyboard('{Escape}');
+  await waitFor(() => expect(queryByRole('listbox')).not.toBeInTheDocument());
+});
+```
+
+### Form Integration
+```tsx
+// Modern Form integration
+it('should integrate with Form', async () => {
+  const { getByRole, formInstance } = renderWithForm(
+    <TextInput name="test" label="test" />
+  );
+  
+  await userEvent.type(getByRole('textbox'), 'Hello');
+  expect(formInstance.getFieldValue('test')).toBe('Hello');
+});
+
+// Legacy Field wrapper
+it('should interop with legacy <Field />', async () => {
+  const { getByRole, formInstance } = renderWithForm(
+    <Field name="test"><Switch aria-label="test" /></Field>
+  );
+  
+  await userEvent.click(getByRole('switch'));
+  expect(formInstance.getFieldValue('test')).toBe(true);
+});
+```
+
+### Props & State Changes (Rerender)
+```tsx
+it('should respect state props', async () => {
+  const { getByRole, rerender } = renderWithRoot(<Component isDisabled />);
+  
+  expect(getByRole('button')).toBeDisabled();
+  
+  rerender(<Component isReadOnly />);
+  expect(getByRole('button')).toHaveAttribute('readonly');
+});
+```
+
+### Keyboard Navigation
+```tsx
+it('should handle keyboard navigation', async () => {
+  const { getByRole } = renderWithRoot(<ComboBox label="test">...</ComboBox>);
+  const input = getByRole('combobox');
+  
+  await act(async () => {
+    input.focus();
+    await userEvent.keyboard('{ArrowDown}');
+  });
+  
+  await waitFor(() => expect(input).toHaveAttribute('aria-expanded', 'true'));
+});
+```
+
+### Filtering/Search
+```tsx
+it('should filter options', async () => {
+  const { getByRole, getAllByRole } = renderWithRoot(<ComboBox label="test">{items}</ComboBox>);
+  
+  await userEvent.type(getByRole('combobox'), 'red');
+  
+  await waitFor(() => {
+    expect(getAllByRole('option')).toHaveLength(2);
+  });
+});
+```
+
+### Validation
+```tsx
+it('should display validation errors', async () => {
+  const { getByRole, getByText } = renderWithForm(
+    <TextInput name="test" label="test" rules={[{ required: true, message: 'Required' }]} />
+  );
+  
+  await userEvent.type(getByRole('textbox'), 'a');
+  await userEvent.clear(getByRole('textbox'));
+  await userEvent.tab();
+  
+  await waitFor(() => expect(getByText('Required')).toBeInTheDocument());
+});
+```
+
+### Parameterized Tests
+```tsx
+it.each([
+  ['aria-label', { 'aria-label': 'test' }],
+  ['label', { label: 'test' }],
+])('should not warn if %s is provided', (_, props) => {
+  const spy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  render(<Button {...props} />);
+  expect(spy).not.toHaveBeenCalled();
+  spy.mockRestore();
+});
+```
+
+## Query Selectors Priority
+
+1. `getByRole()` - most accessible
+2. `getByLabelText()` - form fields
+3. `getByTestId()` - QA attributes (`qa` prop)
+4. `getByText()` - text content
+
+Use `query*` when checking non-existence, `getAll*` for multiple elements.
+
+## Common Matchers
+
+- `toBeInTheDocument()`, `toHaveTextContent()`, `toHaveAttribute()`, `toHaveValue()`
+- `toBeDisabled()`, `toBeChecked()`
+- `toHaveBeenCalled()`, `toHaveBeenCalledWith()`, `toHaveBeenCalledTimes()`
+
+## Best Practices
+
+### Do
+- ✅ Test user-facing behavior, not implementation
+- ✅ Use semantic queries (`getByRole`)
+- ✅ Wait for async changes with `waitFor()`
+- ✅ Test accessibility (ARIA, keyboard navigation)
+- ✅ Test form integration when supported
+- ✅ Use descriptive test names
+
+### Don't
+- ❌ Don't test implementation details
+- ❌ Don't overuse `act()` (userEvent handles it)
+- ❌ Don't query by class names when semantic queries work
+- ❌ Don't test `styles` or simple layout props (e.g., `icon` that just renders to slot)
+- ❌ Don't forget to mock warnings for clean output
+
+## Debugging
+
+- `screen.debug()` - print DOM
+- `waitFor(() => {...}, { timeout: 5000 })` - custom timeout

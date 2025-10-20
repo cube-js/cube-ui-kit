@@ -42,6 +42,8 @@ export { CodeIcon } from './CodeIcon';
 export { CopyIcon } from './CopyIcon';
 export { CountIcon } from './CountIcon';
 export { CubeIcon } from './CubeIcon';
+export { CubePauseIcon } from './CubePauseIcon';
+export { CubePlayIcon } from './CubePlayIcon';
 export { CurrencyDollarIcon } from './CurrencyDollarIcon';
 export { DangerIcon } from './DangerIcon';
 export { DashboardIcon } from './DashboardIcon';

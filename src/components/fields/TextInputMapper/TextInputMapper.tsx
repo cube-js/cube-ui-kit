@@ -98,6 +98,7 @@ function TextInputMapper(
     KeyComponent,
     ValueComponent,
     size = 'medium',
+    form,
   } = props;
 
   function extractLocalValues(
@@ -355,6 +356,7 @@ function TextInputMapperInput(props: CubeTextInputMapperInputProps) {
         labelPosition="top"
         aria-label={placeholder}
         placeholder={placeholder}
+        allowsCustomValue={allowsCustomValue}
         onInputChange={onChange}
         onSelectionChange={(val) => onSelectionChange(val ?? '')}
       >
