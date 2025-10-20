@@ -843,7 +843,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   const listBoxField = (
     <ListBoxWrapperElement
       ref={ref}
-      qa={qa || 'ListBox'}
+      qa="ListBoxWrapper"
       mods={mods}
       styles={styles}
     >
@@ -876,6 +876,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       {/* Scroll container wrapper */}
       <ListBoxScrollElement ref={scrollRef} mods={mods} {...focusProps}>
         <ListElement
+          qa={qa || 'ListBox'}
           {...mergedListBoxProps}
           ref={listRef}
           styles={listStyles}

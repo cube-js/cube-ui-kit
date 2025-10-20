@@ -73,6 +73,7 @@ const FilterListBoxWrapperElement = tasty({
 });
 
 const SearchWrapperElement = tasty({
+  qa: 'FilterListBoxSearchWrapper',
   styles: {
     ...INPUT_WRAPPER_STYLES,
     border: 'bottom',
@@ -905,6 +906,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
       )}
       <SearchInputElement
         ref={searchInputRef}
+        qa={qa || 'FilterListBox'}
         id={id}
         data-is-prefix={isLoading ? '' : undefined}
         type="search"
@@ -936,7 +938,7 @@ export const FilterListBox = forwardRef(function FilterListBox<
   const filterListBoxField = (
     <FilterListBoxWrapperElement
       ref={ref}
-      qa={qa || 'FilterListBox'}
+      qa="FilterListBoxWrapper"
       {...modAttrs(mods)}
       styles={styles}
       {...focusProps}
