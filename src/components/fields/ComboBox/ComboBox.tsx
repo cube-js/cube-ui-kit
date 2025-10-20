@@ -747,6 +747,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
     return (
       <InputElement
         ref={combinedRef}
+        qa={qa}
         id={id}
         type="text"
         value={value}
