@@ -1574,7 +1574,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     >
       {prefix ? <div data-element="Prefix">{prefix}</div> : null}
       <ComboBoxInput
-        qa={qa}
+        qa={qa || 'ComboBox'}
         inputRef={inputRef}
         id={id}
         value={effectiveInputValue}
