@@ -50,7 +50,8 @@ const TooltipElement = tasty({
       '': false,
       light: 'drop-shadow(0 0 1px #dark.2)',
     },
-    transition: 'translate, opacity, theme',
+    transition:
+      'translate $transition ease-out, scale $transition ease-out, theme $transition ease-out',
     translate: {
       '': '0 0',
       'open & [data-placement="top"]': '0 0',
@@ -61,6 +62,17 @@ const TooltipElement = tasty({
       '!open & [data-placement="left"]': '1x 0',
       'open & [data-placement="right"]': '0 0',
       '!open & [data-placement="right"]': '-1x 0',
+    },
+    transformOrigin: {
+      '': 'top center',
+      '[data-placement="top"]': 'bottom center',
+      '[data-placement="left"]': 'right center',
+      '[data-placement="right"]': 'left center',
+    },
+    scale: {
+      '': '1 1',
+      '!open': '1 .8',
+      '!open & ([data-placement="left"] | [data-placement="right"])': '.8 1',
     },
     opacity: {
       '': 1,
