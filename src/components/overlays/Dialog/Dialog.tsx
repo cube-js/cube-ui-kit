@@ -52,6 +52,7 @@ const DialogElement = tasty({
       '[data-type="fullscreen"]': '90vh 90vh',
       '[data-type="fullscreenTakeover"] | [data-type="panel"]': '100vh 100vh',
       '[data-type="panel"]': 'auto',
+      '[data-type="popover"]': 'auto max-content (50vh - 5x)',
     },
     gap: 0,
     border: {

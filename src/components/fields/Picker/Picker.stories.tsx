@@ -161,7 +161,7 @@ export const Controlled = () => {
 };
 
 export const ControlledMultiple = () => {
-  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+  const [selectedKeys, setSelectedKeys] = useState<string[]>(['apple']);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -172,6 +172,7 @@ export const ControlledMultiple = () => {
         isCheckable={true}
         isClearable={true}
         selectedKeys={selectedKeys}
+        items={fruits}
         onSelectionChange={(keys) => {
           if (keys === 'all') {
             setSelectedKeys(fruits.map((f) => f.key));
@@ -180,9 +181,7 @@ export const ControlledMultiple = () => {
           }
         }}
       >
-        {fruits.map((fruit) => (
-          <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>
-        ))}
+        {(fruit) => <Picker.Item key={fruit.key}>{fruit.label}</Picker.Item>}
       </Picker>
       <div>Selected: {selectedKeys.join(', ') || 'None'}</div>
     </div>
