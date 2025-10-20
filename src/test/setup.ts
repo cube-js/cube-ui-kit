@@ -67,6 +67,13 @@ const suppressedConsoleError = (...args: any[]) => {
     ) {
       return;
     }
+    // Nested button warnings
+    if (
+      msg.includes('cannot contain a nested') ||
+      msg.includes('cannot be a descendant')
+    ) {
+      return;
+    }
   }
   return originalError.call(console, ...args);
 };
