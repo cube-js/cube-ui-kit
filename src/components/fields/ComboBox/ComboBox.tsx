@@ -62,6 +62,7 @@ type FilterFn = (textValue: string, inputValue: string) => boolean;
 export type PopoverTriggerAction = 'focus' | 'input' | 'manual';
 
 const ComboBoxWrapperElement = tasty({
+  qa: 'ComboBoxWrapper',
   styles: INPUT_WRAPPER_STYLES,
 });
 
@@ -699,6 +700,7 @@ function useComboBoxKeyboard({
 // Component: ComboBoxInput
 // ============================================================================
 interface ComboBoxInputProps {
+  qa?: string;
   inputRef: RefObject<HTMLInputElement>;
   id?: string;
   value: string;
@@ -717,13 +719,12 @@ interface ComboBoxInputProps {
   hasResults: boolean;
   comboBoxId: string;
   listStateRef: RefObject<any>;
-  isLoading?: boolean;
-  allowsCustomValue?: boolean;
 }
 
 const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
   function ComboBoxInput(
     {
+      qa,
       inputRef,
       id,
       value,
@@ -742,8 +743,6 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
       hasResults,
       comboBoxId,
       listStateRef,
-      isLoading,
-      allowsCustomValue,
     },
     ref,
   ) {
@@ -752,7 +751,7 @@ const ComboBoxInput = forwardRef<HTMLInputElement, ComboBoxInputProps>(
     return (
       <InputElement
         ref={combinedRef}
-        qa="Input"
+        qa={qa}
         id={id}
         type="text"
         value={value}
@@ -1569,7 +1568,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   const comboBoxField = (
     <ComboBoxWrapperElement
       ref={wrapperRef}
-      qa={qa || 'ComboBox'}
       mods={mods}
       styles={styles}
       style={{
@@ -1580,6 +1578,7 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     >
       {prefix ? <div data-element="Prefix">{prefix}</div> : null}
       <ComboBoxInput
+        qa={qa || 'ComboBox'}
         inputRef={inputRef}
         id={id}
         value={effectiveInputValue}
@@ -1596,8 +1595,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         hasResults={hasResults}
         comboBoxId={comboBoxId}
         listStateRef={listStateRef}
-        isLoading={isLoading}
-        allowsCustomValue={allowsCustomValue}
         onChange={handleInputChange}
         onFocus={handleInputFocus}
       />
