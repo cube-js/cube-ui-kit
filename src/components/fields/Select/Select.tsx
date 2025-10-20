@@ -142,7 +142,7 @@ const OverlayElement = tasty({
       '': '0 0',
       'open & [data-placement="top"]': '0 0',
       '!open & [data-placement="top"]': '0 1x',
-      'open & ([data-placement="bottom"] | ![data-placement]': '0 0',
+      'open & ([data-placement="bottom"] | ![data-placement])': '0 0',
       '!open & ([data-placement="bottom"] | ![data-placement])': '0 -1x',
     },
     transformOrigin: {
