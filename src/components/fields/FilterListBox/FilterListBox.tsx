@@ -57,10 +57,6 @@ const FilterListBoxWrapperElement = tasty({
       'invalid & focused': '#danger.50',
       focused: '#purple-03',
     },
-    height: {
-      '': false,
-      popover: 'initial max-content (50vh - 4x)',
-    },
     border: {
       '': true,
       focused: '#purple-text',
