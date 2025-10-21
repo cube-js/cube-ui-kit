@@ -27,7 +27,7 @@ export { AriaRadioProps };
 export { useRadio };
 
 const RadioButtonElement = tasty(ItemBase, {
-  qa: 'Radio',
+  qa: 'RadioButton',
   as: 'label',
   styles: {
     preset: 't3m',
@@ -301,7 +301,6 @@ function Radio(props: CubeRadioProps, ref) {
     return (
       <ButtonElement
         ref={domRef}
-        qa={qa || 'Radio'}
         type={effectiveButtonType}
         theme={isInvalid ? 'danger' : 'default'}
         size={effectiveSize}
