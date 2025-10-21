@@ -463,7 +463,7 @@ describe('<ComboBox />', () => {
     });
   });
 
-  it('should clear selection on blur when clearOnBlur is true', async () => {
+  it('should clear invalid input on blur when clearOnBlur is true', async () => {
     const onSelectionChange = jest.fn();
 
     const { getByRole, getAllByRole, queryByRole } = renderWithRoot(
@@ -493,12 +493,18 @@ describe('<ComboBox />', () => {
       expect(combobox).toHaveValue('Red');
     });
 
+    onSelectionChange.mockClear();
+
+    // Type invalid text to make input invalid
+    await userEvent.clear(combobox);
+    await userEvent.type(combobox, 'xyz');
+
     // Blur the input
     await act(async () => {
       combobox.blur();
     });
 
-    // Should clear selection on blur
+    // Should clear selection on blur because input is invalid
     await waitFor(() => {
       expect(onSelectionChange).toHaveBeenCalledWith(null);
       expect(combobox).toHaveValue('');
@@ -582,6 +588,131 @@ describe('<ComboBox />', () => {
     await waitFor(() => {
       expect(onSelectionChange).toHaveBeenCalledWith('Custom Value');
       expect(combobox).toHaveValue('Custom Value');
+    });
+  });
+
+  it('should auto-select when there is exactly one filtered result on blur', async () => {
+    const onSelectionChange = jest.fn();
+
+    const { getByRole } = renderWithRoot(
+      <ComboBox label="test" onSelectionChange={onSelectionChange}>
+        {items.map((item) => (
+          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+    );
+
+    const combobox = getByRole('combobox');
+
+    // Type partial match that results in one item (Violet is unique with 'vio')
+    await userEvent.type(combobox, 'vio');
+
+    // Blur the input
+    await act(async () => {
+      combobox.blur();
+    });
+
+    // Should auto-select the single matching item
+    await waitFor(() => {
+      expect(onSelectionChange).toHaveBeenCalledWith('violet');
+      expect(combobox).toHaveValue('Violet');
+    });
+  });
+
+  it('should reset to selected value on blur when clearOnBlur is false and input is invalid', async () => {
+    const onSelectionChange = jest.fn();
+
+    const { getByRole, getAllByRole, queryByRole } = renderWithRoot(
+      <ComboBox label="test" onSelectionChange={onSelectionChange}>
+        {items.map((item) => (
+          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+    );
+
+    const combobox = getByRole('combobox');
+
+    // Type to filter and open popover
+    await userEvent.type(combobox, 're');
+
+    await waitFor(() => {
+      expect(queryByRole('listbox')).toBeInTheDocument();
+    });
+
+    // Click on first option (Red)
+    const options = getAllByRole('option');
+    await userEvent.click(options[0]);
+
+    // Verify selection was made
+    await waitFor(() => {
+      expect(onSelectionChange).toHaveBeenCalledWith('red');
+      expect(combobox).toHaveValue('Red');
+    });
+
+    onSelectionChange.mockClear();
+
+    // Type invalid text to make input invalid
+    await userEvent.clear(combobox);
+    await userEvent.type(combobox, 'xyz');
+
+    // Blur the input
+    await act(async () => {
+      combobox.blur();
+    });
+
+    // Should reset input to selected value (Red) since clearOnBlur is false
+    await waitFor(() => {
+      expect(combobox).toHaveValue('Red');
+    });
+
+    // Selection should not change
+    expect(onSelectionChange).not.toHaveBeenCalled();
+  });
+
+  it('should clear selection when input is empty on blur even with clearOnBlur false', async () => {
+    const onSelectionChange = jest.fn();
+
+    const { getByRole, getAllByRole, queryByRole } = renderWithRoot(
+      <ComboBox label="test" onSelectionChange={onSelectionChange}>
+        {items.map((item) => (
+          <ComboBox.Item key={item.key}>{item.children}</ComboBox.Item>
+        ))}
+      </ComboBox>,
+    );
+
+    const combobox = getByRole('combobox');
+
+    // Type to filter and open popover
+    await userEvent.type(combobox, 're');
+
+    await waitFor(() => {
+      expect(queryByRole('listbox')).toBeInTheDocument();
+    });
+
+    // Click on first option (Red)
+    const options = getAllByRole('option');
+    await userEvent.click(options[0]);
+
+    // Verify selection was made
+    await waitFor(() => {
+      expect(onSelectionChange).toHaveBeenCalledWith('red');
+      expect(combobox).toHaveValue('Red');
+    });
+
+    onSelectionChange.mockClear();
+
+    // Clear the input completely
+    await userEvent.clear(combobox);
+
+    // Blur the input
+    await act(async () => {
+      combobox.blur();
+    });
+
+    // Should clear selection even though clearOnBlur is false
+    await waitFor(() => {
+      expect(onSelectionChange).toHaveBeenCalledWith(null);
+      expect(combobox).toHaveValue('');
     });
   });
 
