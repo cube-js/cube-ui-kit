@@ -128,7 +128,10 @@ export const INPUT_WRAPPER_STYLES: Styles = {
   },
 };
 
-const InputWrapperElement = tasty({ styles: INPUT_WRAPPER_STYLES });
+const InputWrapperElement = tasty({
+  qa: 'InputWrapper',
+  styles: INPUT_WRAPPER_STYLES,
+});
 
 const STYLE_LIST = [...POSITION_STYLES, ...DIMENSION_STYLES];
 
@@ -357,7 +360,6 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
   const textField = (
     <InputWrapperElement
       ref={wrapperRef}
-      qa={qa || 'TextInput'}
       mods={modifiers}
       data-size={size}
       styles={wrapperStyles}
@@ -365,6 +367,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
     >
       {prefix ? <div data-element="Prefix">{prefix}</div> : null}
       <InputElement
+        qa={qa || 'Input'}
         as={ElementType}
         {...mergeProps(inputProps, focusProps, hoverProps)}
         ref={inputRef}
@@ -397,6 +400,7 @@ function _TextInputBase(props: CubeTextInputBaseProps, ref) {
 
   return wrapWithField(textField, domRef, {
     ...props,
+    form: undefined,
     styles,
   });
 }
