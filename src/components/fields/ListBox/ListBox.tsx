@@ -77,7 +77,7 @@ const ListBoxWrapperElement = tasty({
       valid: '#success-text.50',
       invalid: '#danger-text.50',
       disabled: true,
-      'popover | searchable': false,
+      searchable: false,
     },
   },
 });
