@@ -575,6 +575,24 @@ function useComboBoxKeyboard({
           selectionManager.setFocusedKey(nextKey);
         }
       } else if (e.key === 'Enter') {
+        // If popover is open, try to select the focused item first
+        if (isPopoverOpen) {
+          const listState = listStateRef.current;
+          if (listState) {
+            const keyToSelect = listState.selectionManager.focusedKey;
+
+            if (keyToSelect != null) {
+              e.preventDefault();
+              listState.selectionManager.select(keyToSelect, e);
+              // Ensure the popover closes even if selection stays the same
+              onClosePopover();
+              inputRef.current?.focus();
+              return;
+            }
+          }
+        }
+
+        // If no results, handle empty input or custom values
         if (!hasResults) {
           e.preventDefault();
 
@@ -591,19 +609,12 @@ function useComboBoxKeyboard({
           return;
         }
 
-        if (isPopoverOpen) {
-          const listState = listStateRef.current;
-          if (!listState) return;
-
-          const keyToSelect = listState.selectionManager.focusedKey;
-
-          if (keyToSelect != null) {
-            e.preventDefault();
-            listState.selectionManager.select(keyToSelect, e);
-            // Ensure the popover closes even if selection stays the same
-            onClosePopover();
-            inputRef.current?.focus();
-          }
+        // Clear selection if input is empty and popover is closed (or no focused item)
+        const trimmed = (effectiveInputValue || '').trim();
+        if (trimmed === '') {
+          e.preventDefault();
+          onSelectionChange(null);
+          return;
         }
       } else if (e.key === 'Escape') {
         if (isPopoverOpen) {
@@ -1214,23 +1225,39 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
   // Composite blur handler - fires when focus leaves the entire component
   const handleCompositeBlur = useEvent(() => {
-    // Always disable filter on blur
-    setIsFilterActive(false);
+    // NOTE: Do NOT disable filter yet; we need it active for validity check
 
-    // In allowsCustomValue mode with shouldCommitOnBlur, commit the input value
-    if (
-      allowsCustomValue &&
-      shouldCommitOnBlur &&
-      effectiveInputValue &&
-      effectiveSelectedKey == null
-    ) {
-      externalOnSelectionChange?.(effectiveInputValue as string);
-      if (!isControlledKey) {
-        setInternalSelectedKey(effectiveInputValue as Key);
+    // In allowsCustomValue mode
+    if (allowsCustomValue) {
+      // Commit the input value if it's non-empty and nothing is selected
+      if (
+        shouldCommitOnBlur &&
+        effectiveInputValue &&
+        effectiveSelectedKey == null
+      ) {
+        externalOnSelectionChange?.(effectiveInputValue as string);
+        if (!isControlledKey) {
+          setInternalSelectedKey(effectiveInputValue as Key);
+        }
+        onBlur?.();
+        setIsFilterActive(false);
+        return;
       }
-      // Call user's onBlur callback
-      onBlur?.();
-      return;
+
+      // Clear selection if input is empty
+      if (!String(effectiveInputValue).trim()) {
+        externalOnSelectionChange?.(null);
+        if (!isControlledKey) {
+          setInternalSelectedKey(null);
+        }
+        if (!isControlledInput) {
+          setInternalInputValue('');
+        }
+        onInputChange?.('');
+        onBlur?.();
+        setIsFilterActive(false);
+        return;
+      }
     }
 
     // In non-custom-value mode, validate input and handle accordingly
@@ -1253,8 +1280,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         }
         onInputChange?.(label);
         externalOnSelectionChange?.(singleMatchKey as string | null);
-        // Call user's onBlur callback
         onBlur?.();
+        setIsFilterActive(false);
         return;
       }
 
@@ -1262,8 +1289,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       if (!isValid) {
         const trimmedInput = effectiveInputValue.trim();
 
-        if (clearOnBlur) {
-          // Clear selection and input
+        // Clear if clearOnBlur is set or input is empty
+        if (clearOnBlur || !trimmedInput) {
           externalOnSelectionChange?.(null);
           if (!isControlledKey) {
             setInternalSelectedKey(null);
@@ -1272,37 +1299,28 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
             setInternalInputValue('');
           }
           onInputChange?.('');
-        } else {
-          // If input is empty (after trim), clear selection and input
-          if (!trimmedInput) {
-            externalOnSelectionChange?.(null);
-            if (!isControlledKey) {
-              setInternalSelectedKey(null);
-            }
-            if (!isControlledInput) {
-              setInternalInputValue('');
-            }
-            onInputChange?.('');
-          } else {
-            // Reset input to current selected value (or empty if none)
-            const nextValue =
-              effectiveSelectedKey != null
-                ? getItemLabel(effectiveSelectedKey)
-                : '';
-
-            if (!isControlledInput) {
-              setInternalInputValue(nextValue);
-            }
-            onInputChange?.(nextValue);
-          }
+          onBlur?.();
+          setIsFilterActive(false);
+          return;
         }
-        // Call user's onBlur callback
+
+        // Reset input to current selected value (or empty if none)
+        const nextValue =
+          effectiveSelectedKey != null
+            ? getItemLabel(effectiveSelectedKey)
+            : '';
+
+        if (!isControlledInput) {
+          setInternalInputValue(nextValue);
+        }
+        onInputChange?.(nextValue);
         onBlur?.();
+        setIsFilterActive(false);
         return;
       }
     }
 
-    // Reset input to show current selection (or empty if none)
+    // Fallback: Reset input to show current selection (or empty if none)
     const nextValue =
       effectiveSelectedKey != null ? getItemLabel(effectiveSelectedKey) : '';
 
@@ -1310,9 +1328,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       setInternalInputValue(nextValue);
     }
     onInputChange?.(nextValue);
-
-    // Call user's onBlur callback
     onBlur?.();
+    setIsFilterActive(false);
   });
 
   // Composite focus hook - handles focus tracking across wrapper and portaled popover
@@ -1443,9 +1460,21 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   ]);
 
   // Sync input value with controlled selectedKey
+  const lastSyncedSelectedKey = useRef<Key | null | undefined>(undefined);
+
   useEffect(() => {
     // Only run when selectedKey is controlled but inputValue is uncontrolled
     if (!isControlledKey || isControlledInput) return;
+
+    // Skip if the key hasn't actually changed (prevents unnecessary resets when collection rebuilds)
+    if (
+      lastSyncedSelectedKey.current !== undefined &&
+      lastSyncedSelectedKey.current === effectiveSelectedKey
+    ) {
+      return;
+    }
+
+    lastSyncedSelectedKey.current = effectiveSelectedKey;
 
     // Get the expected label for the current selection
     const expectedLabel =

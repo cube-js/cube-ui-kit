@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { userEvent, within } from 'storybook/test';
 
 import { baseProps } from '../../../stories/lists/baseProps';
@@ -772,12 +772,12 @@ export const ShowAllOnNoResults: StoryObj<typeof ComboBox> = {
 };
 
 export const VirtualizedList = () => {
+  const [selected, setSelected] = useState<string | null>(null);
+
   interface Item {
     key: string;
     name: string;
   }
-
-  const [selected, setSelected] = useState<string | null>(null);
 
   // Generate a large list of items with varying content to test virtualization
   const items: Item[] = Array.from({ length: 1000 }, (_, i) => ({

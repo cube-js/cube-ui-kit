@@ -726,6 +726,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       id: id,
       'aria-label': props['aria-label'] || label?.toString(),
       isDisabled,
+      isVirtualized: true,
       shouldUseVirtualFocus: shouldUseVirtualFocus ?? false,
       escapeKeyBehavior: onEscape ? 'none' : 'clearSelection',
     },
