@@ -1,5 +1,11 @@
 # @cube-dev/ui-kit
 
+## 0.84.0
+
+### Minor Changes
+
+- [#817](https://github.com/cube-js/cube-ui-kit/pull/817) [`bb56ca5a`](https://github.com/cube-js/cube-ui-kit/commit/bb56ca5a8a4b08379685a7d32a797ea65019c12d) Thanks [@tenphi](https://github.com/tenphi)! - Add Picker component as a more advanced version of Select.
+
 ## 0.83.3
 
 ### Patch Changes
