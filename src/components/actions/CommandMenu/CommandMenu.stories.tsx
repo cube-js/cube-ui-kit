@@ -1,14 +1,19 @@
 import {
   IconArrowBack,
   IconArrowForward,
+  IconBook,
+  IconBulb,
   IconClipboard,
   IconCopy,
   IconCut,
+  IconPlus,
+  IconReload,
   IconSelect,
 } from '@tabler/icons-react';
 import React, { useState } from 'react';
 import { expect, findByRole, userEvent, waitFor, within } from 'storybook/test';
 
+import { ClearIcon, EditIcon } from '../../../icons';
 import { tasty } from '../../../tasty';
 import { Card } from '../../content/Card/Card';
 import { HotKeys } from '../../content/HotKeys';
@@ -23,6 +28,7 @@ import {
   useDialogContainer,
 } from '../../overlays/Dialog';
 import { Button } from '../Button';
+import { ItemAction } from '../ItemAction';
 import { Menu } from '../Menu/Menu';
 import { useAnchoredMenu } from '../use-anchored-menu';
 import { useContextMenu } from '../use-context-menu';
@@ -374,6 +380,107 @@ WithSections.args = {
   searchPlaceholder: 'Search all commands...',
   autoFocus: true,
   width: '20x 50x',
+};
+
+export const ItemsWithActions = (props) => {
+  const handleAction = (key) => {
+    console.log('CommandMenu action:', key);
+  };
+
+  const handleItemAction = (itemKey, actionKey) => {
+    console.log(`Action "${actionKey}" triggered on item "${itemKey}"`);
+  };
+
+  return (
+    <CommandMenu
+      id="command-menu-with-actions"
+      {...props}
+      searchPlaceholder="Search files..."
+      autoFocus={true}
+      width="20x 50x"
+      onAction={handleAction}
+    >
+      <CommandMenu.Item
+        key="file1"
+        icon={<IconBook />}
+        description="PDF document"
+        actions={
+          <>
+            <ItemAction
+              icon={<EditIcon />}
+              aria-label="Edit"
+              onPress={() => handleItemAction('file1', 'edit')}
+            />
+            <ItemAction
+              icon={<ClearIcon />}
+              aria-label="Delete"
+              onPress={() => handleItemAction('file1', 'delete')}
+            />
+          </>
+        }
+      >
+        Document.pdf
+      </CommandMenu.Item>
+      <CommandMenu.Item
+        key="file2"
+        icon={<IconReload />}
+        description="Backup file"
+        actions={
+          <>
+            <ItemAction
+              icon={<EditIcon />}
+              aria-label="Edit"
+              onPress={() => handleItemAction('file2', 'edit')}
+            />
+            <ItemAction
+              icon={<ClearIcon />}
+              aria-label="Delete"
+              onPress={() => handleItemAction('file2', 'delete')}
+            />
+          </>
+        }
+      >
+        Backup.zip
+      </CommandMenu.Item>
+      <CommandMenu.Item
+        key="file3"
+        icon={<IconPlus />}
+        description="New file"
+        actions={
+          <>
+            <ItemAction
+              icon={<EditIcon />}
+              aria-label="Edit"
+              onPress={() => handleItemAction('file3', 'edit')}
+            />
+            <ItemAction
+              icon={<ClearIcon />}
+              aria-label="Delete"
+              onPress={() => handleItemAction('file3', 'delete')}
+            />
+          </>
+        }
+      >
+        Project.doc
+      </CommandMenu.Item>
+      <CommandMenu.Item
+        key="file4"
+        icon={<IconBulb />}
+        description="No actions"
+      >
+        Item without actions
+      </CommandMenu.Item>
+    </CommandMenu>
+  );
+};
+
+ItemsWithActions.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates CommandMenu.Item with inline actions. Actions are displayed on the right side of each item and inherit the item type through ItemActionProvider context. Search to filter items and hover to see the actions.',
+    },
+  },
 };
 
 export const WithMenuTrigger: StoryFn<CubeCommandMenuProps<any>> = (args) => (

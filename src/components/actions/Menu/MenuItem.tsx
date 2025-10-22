@@ -78,6 +78,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
     rightIcon,
     prefix,
     tooltip,
+    actions,
     mods: itemMods,
     qa: itemQa,
     textValue,
@@ -134,6 +135,7 @@ export function MenuItem<T>(props: MenuItemProps<T>) {
         description={description}
         hotkeys={hotkeys}
         tooltip={tooltip}
+        actions={actions}
         defaultTooltipPlacement="right"
         isSelected={isSelectable ? isSelected : undefined}
         isDisabled={isDisabled}

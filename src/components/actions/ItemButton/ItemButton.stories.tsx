@@ -1,4 +1,11 @@
-import { IconExternalLink, IconFile } from '@tabler/icons-react';
+import {
+  IconEdit,
+  IconExternalLink,
+  IconFile,
+  IconTrash,
+} from '@tabler/icons-react';
+
+import { ItemAction } from '../ItemAction';
 
 import { ItemButton } from './ItemButton';
 
@@ -591,6 +598,152 @@ export const AutoTooltipOnOverflow: Story = {
       description: {
         story:
           'Demonstrates the auto tooltip functionality that shows tooltips only when button text overflows. Use `tooltip={true}` for simple auto tooltips or `tooltip={{ auto: true, ...config }}` for advanced configuration. When text is not overflowed, no tooltip is shown. Explicit `title` in tooltip config takes priority over auto behavior. Auto tooltips work with all button types, hotkeys, and other features.',
+      },
+    },
+  },
+};
+
+export const WithActions: Story = {
+  render: (args) => (
+    <div style={{ display: 'grid', gap: 16, maxWidth: 600 }}>
+      <div>
+        <h4>Basic Item with Actions</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            icon={<IconFile />}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Item with Actions
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>Different Button Types with Actions</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            type="primary"
+            icon={<IconFile />}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Primary Item
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="secondary"
+            icon={<IconFile />}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Secondary Item
+          </ItemButton>
+          <ItemButton
+            {...args}
+            type="outline"
+            icon={<IconFile />}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Outline Item
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>With Description and Actions</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            icon={<IconFile />}
+            description="Additional information"
+            descriptionPlacement="block"
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Item with Description
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>Long Text with Actions</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            icon={<IconFile />}
+            style={{ maxWidth: '300px' }}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            This is a very long item name that should truncate properly while
+            leaving space for actions
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>Multiple Actions</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            icon={<IconFile />}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Two Actions
+          </ItemButton>
+          <ItemButton
+            {...args}
+            icon={<IconFile />}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+              </>
+            }
+          >
+            Single Action
+          </ItemButton>
+        </div>
+      </div>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Demonstrates ItemButton with actions displayed on the right side. The actions are absolutely positioned and the button automatically reserves space for them to prevent content overlap. Actions use the ItemAction component for consistent styling.',
       },
     },
   },

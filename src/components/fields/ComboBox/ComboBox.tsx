@@ -1,4 +1,4 @@
-import { Key } from '@react-types/shared';
+import { FocusableRef, Key } from '@react-types/shared';
 import React, {
   cloneElement,
   ForwardedRef,
@@ -191,7 +191,7 @@ export interface CubeComboBoxProps<T>
   /** Ref for accessing the popover element */
   popoverRef?: RefObject<HTMLDivElement>;
   /** Ref for accessing the trigger button element */
-  triggerRef?: RefObject<HTMLButtonElement>;
+  triggerRef?: FocusableRef<HTMLButtonElement>;
 
   /** Custom styles for the input */
   inputStyles?: Styles;

@@ -1,10 +1,16 @@
-import { IconCoin, IconSettings, IconUser } from '@tabler/icons-react';
+import {
+  IconCoin,
+  IconEdit,
+  IconSettings,
+  IconTrash,
+  IconUser,
+} from '@tabler/icons-react';
 import { useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { DirectionIcon } from '../../../icons';
 import { baseProps } from '../../../stories/lists/baseProps';
-import { Button } from '../../actions';
+import { Button, ItemAction } from '../../actions';
 import { Space } from '../../layout/Space';
 import { Title } from '../Title';
 
@@ -1067,6 +1073,237 @@ WithDescriptionBlock.parameters = {
     description: {
       story:
         'Demonstrates the `descriptionPlacement="block"` functionality where descriptions are positioned below the entire ItemBase component instead of inside the content area. This is useful for longer descriptions or when you want to maintain a clean main content area.',
+    },
+  },
+};
+
+export const WithActions: StoryFn<CubeItemBaseProps> = (args) => (
+  <Space gap="2x" flow="column" placeItems="start">
+    <Title level={5}>Basic Item with Inline Actions</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        icon={<IconUser />}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Item with actions
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        icon={<IconCoin />}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+          </>
+        }
+      >
+        Single action
+      </ItemBase>
+    </Space>
+
+    <Title level={5}>Different Sizes with Actions</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        size="small"
+        icon={<IconUser />}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Small item
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        size="medium"
+        icon={<IconUser />}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Medium item
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        size="large"
+        icon={<IconUser />}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Large item
+      </ItemBase>
+    </Space>
+
+    <Title level={5}>Different Types with Actions</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="item"
+        icon={<IconUser />}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Item type
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="primary"
+        icon={<IconUser />}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Primary type
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="secondary"
+        icon={<IconUser />}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Secondary type
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        type="outline"
+        icon={<IconUser />}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Outline type
+      </ItemBase>
+    </Space>
+
+    <Title level={5}>With Complex Configurations</Title>
+    <Space gap="1x" flow="column" placeItems="start">
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        icon={<IconCoin />}
+        rightIcon={<IconSettings />}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        With both icons
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        icon={<IconCoin />}
+        prefix="$"
+        suffix=".99"
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Product Item
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        icon={<IconUser />}
+        description="Additional information"
+        descriptionPlacement="inline"
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        With inline description
+      </ItemBase>
+      <ItemBase
+        {...args}
+        styles={DEFAULT_STYLES}
+        icon={<IconUser />}
+        description="Additional information"
+        descriptionPlacement="block"
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        With block description
+      </ItemBase>
+    </Space>
+
+    <Title level={5}>Long Text with Actions</Title>
+    <ItemBase
+      {...args}
+      styles={{ ...DEFAULT_STYLES, width: '400px' }}
+      icon={<IconUser />}
+      actions={
+        <>
+          <ItemAction icon={<IconEdit />} aria-label="Edit" />
+          <ItemAction icon={<IconTrash />} aria-label="Delete" />
+        </>
+      }
+    >
+      This is a very long item name that demonstrates how the actions are
+      positioned inline as part of the grid layout
+    </ItemBase>
+  </Space>
+);
+
+WithActions.args = {
+  width: '450px',
+};
+
+WithActions.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates the `actions` prop which allows rendering action buttons inline as part of the grid layout. Unlike ItemButton which positions actions absolutely, ItemBase renders actions as a native grid column that automatically sizes to fit the content. Actions are rendered using the ItemAction component for consistent styling.',
     },
   },
 };
