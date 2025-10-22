@@ -1,5 +1,21 @@
 # @cube-dev/ui-kit
 
+## 0.83.2
+
+### Patch Changes
+
+- [#835](https://github.com/cube-js/cube-ui-kit/pull/835) [`97925cab`](https://github.com/cube-js/cube-ui-kit/commit/97925cabf6babdfc546436cb59d24967a826fb74) Thanks [@tenphi](https://github.com/tenphi)! - Fix qa prop in Radio component.
+
+- [#837](https://github.com/cube-js/cube-ui-kit/pull/837) [`f80593b8`](https://github.com/cube-js/cube-ui-kit/commit/f80593b89bba6c638d8cfd795e9ad5b02609e75a) Thanks [@tenphi](https://github.com/tenphi)! - Fix qa prop on TextInputBase.
+
+## 0.83.1
+
+### Patch Changes
+
+- [#832](https://github.com/cube-js/cube-ui-kit/pull/832) [`50cf8a77`](https://github.com/cube-js/cube-ui-kit/commit/50cf8a77c6ce34d8d8be011a3fd9c897e80ef9c5) Thanks [@tenphi](https://github.com/tenphi)! - Fix qa prop binding in ComboBox.
+
+- [#831](https://github.com/cube-js/cube-ui-kit/pull/831) [`9995e8a5`](https://github.com/cube-js/cube-ui-kit/commit/9995e8a5ed4a31166d40e46f7e5e1d6f12d940f8) Thanks [@tenphi](https://github.com/tenphi)! - Fix popover transitions in ComboBox and Select. Fix transitions in Tooltip.
+
 ## 0.83.0
 
 ### Minor Changes
