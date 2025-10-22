@@ -54,6 +54,8 @@ import { CubeItemProps, Item } from '../../Item';
 import type { CollectionBase, Key } from '@react-types/shared';
 import type { FieldBaseProps } from '../../../shared';
 
+type FirstArg<F> = F extends (...args: infer A) => any ? A[0] : never;
+
 const ListBoxWrapperElement = tasty({
   qa: 'ListBox',
   styles: {
@@ -294,6 +296,13 @@ export interface CubeListBoxProps<T>
    * Props to apply to the "Select All" option.
    */
   allValueProps?: Partial<CubeItemProps<T>>;
+
+  /**
+   * Filter function to apply to the collection nodes.
+   * Takes an iterable of nodes and returns a filtered iterable.
+   * Useful for implementing search/filter functionality.
+   */
+  filter?: (nodes: Iterable<any>) => Iterable<any>;
 }
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
@@ -498,6 +507,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     showSelectAll,
     selectAllLabel,
     allValueProps,
+    filter,
     form,
     ...otherProps
   } = props;
@@ -553,10 +563,12 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   ]);
 
   // Prepare props for useListState with correct selection props
-  const listStateProps: any = {
+  const listStateProps: FirstArg<typeof useListState> = {
     ...props,
     onSelectionChange: wrappedOnSelectionChange,
     isDisabled,
+    disabledBehavior: 'all',
+    filter,
     selectionMode: props.selectionMode || 'single',
   };
 
@@ -595,9 +607,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
     delete listStateProps.defaultSelectedKey;
   }
 
-  const listState = useListState({
-    ...listStateProps,
-  });
+  const listState = useListState(listStateProps);
 
   useLayoutEffect(() => {
     const selected = listState.selectionManager.selectedKeys;
@@ -716,6 +726,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       id: id,
       'aria-label': props['aria-label'] || label?.toString(),
       isDisabled,
+      isVirtualized: true,
       shouldUseVirtualFocus: shouldUseVirtualFocus ?? false,
       escapeKeyBehavior: onEscape ? 'none' : 'clearSelection',
     },
@@ -843,7 +854,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
   const listBoxField = (
     <ListBoxWrapperElement
       ref={ref}
-      qa={qa || 'ListBox'}
+      qa="ListBoxWrapper"
       mods={mods}
       styles={styles}
     >
@@ -876,6 +887,7 @@ export const ListBox = forwardRef(function ListBox<T extends object>(
       {/* Scroll container wrapper */}
       <ListBoxScrollElement ref={scrollRef} mods={mods} {...focusProps}>
         <ListElement
+          qa={qa || 'ListBox'}
           {...mergedListBoxProps}
           ref={listRef}
           styles={listStyles}

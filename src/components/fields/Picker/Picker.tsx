@@ -2,9 +2,9 @@ import { CollectionChildren } from '@react-types/shared';
 import {
   ForwardedRef,
   forwardRef,
+  MutableRefObject,
   ReactElement,
   ReactNode,
-  RefObject,
   useCallback,
   useEffect,
   useMemo,
@@ -39,25 +39,12 @@ import { CubeItemBaseProps } from '../../content/ItemBase';
 import { Text } from '../../content/Text';
 import { useFieldProps, useFormProps, wrapWithField } from '../../form';
 import { Dialog, DialogTrigger } from '../../overlays/Dialog';
-import {
-  CubeFilterListBoxProps,
-  FilterListBox,
-} from '../FilterListBox/FilterListBox';
-import { ListBox } from '../ListBox';
+import { CubeListBoxProps, ListBox } from '../ListBox/ListBox';
 
 import type { FieldBaseProps } from '../../../shared';
 
-// Define interface for items that can have keys
-interface ItemWithKey {
-  key?: string | number;
-  id?: string | number;
-  textValue?: string;
-  children?: ItemWithKey[];
-  [key: string]: unknown;
-}
-
-export interface CubeFilterPickerProps<T>
-  extends Omit<CubeFilterListBoxProps<T>, 'size' | 'tooltip'>,
+export interface CubePickerProps<T>
+  extends Omit<CubeListBoxProps<T>, 'size' | 'tooltip'>,
     Omit<CubeItemBaseProps, 'children' | 'size'>,
     BasePropsWithoutChildren,
     BaseStyleProps,
@@ -111,18 +98,18 @@ export interface CubeFilterPickerProps<T>
       }) => ReactNode)
     | false;
 
-  /** Ref to access internal ListBox state (from FilterListBox) */
-  listStateRef?: RefObject<ListState<T>>;
-  /** Additional modifiers for styling the FilterPicker */
+  /** Ref to access internal ListBox state */
+  listStateRef?: MutableRefObject<ListState<T>>;
+  /** Additional modifiers for styling the Picker */
   mods?: Record<string, boolean>;
-  /** Whether the filter picker is clearable using a clear button in the rightIcon slot */
+  /** Whether the picker is clearable using a clear button in the rightIcon slot */
   isClearable?: boolean;
   /** Callback called when the clear button is pressed */
   onClear?: () => void;
   /**
-   * Sort selected items to the top when the popover opens.
+   * Sort selected item(s) to the top when the popover opens.
    * Only works when using the `items` prop (data-driven mode).
-   * Ignored when using JSX children.
+   * Supports both single and multiple selection modes.
    * @default true when items are provided, false when using JSX children
    */
   sortSelectedToTop?: boolean;
@@ -130,8 +117,8 @@ export interface CubeFilterPickerProps<T>
 
 const PROP_STYLES = [...BASE_STYLES, ...OUTER_STYLES, ...COLOR_STYLES];
 
-const FilterPickerWrapper = tasty({
-  qa: 'FilterPicker',
+const PickerWrapper = tasty({
+  qa: 'PickerWrapper',
   styles: {
     display: 'inline-grid',
     flow: 'column',
@@ -141,8 +128,8 @@ const FilterPickerWrapper = tasty({
   },
 });
 
-export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
-  props: CubeFilterPickerProps<T>,
+export const Picker = forwardRef(function Picker<T extends object>(
+  props: CubePickerProps<T>,
   ref: ForwardedRef<HTMLElement>,
 ) {
   props = useProviderProps(props);
@@ -175,10 +162,10 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   });
 
   let {
+    id,
     qa,
     label,
     extra,
-    id,
     icon,
     rightIcon,
     prefix,
@@ -224,18 +211,9 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     headerStyles,
     footerStyles,
     triggerStyles,
-    allowsCustomValue,
     renderSummary,
     isCheckable,
     allValueProps,
-    customValueProps,
-    newCustomValueProps,
-    searchPlaceholder,
-    autoFocus,
-    filter,
-    emptyLabel,
-    searchInputStyles,
-    searchInputRef,
     listStyles,
     optionStyles,
     sectionStyles,
@@ -246,29 +224,23 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     onEscape,
     onOptionClick,
     isClearable,
-    searchValue,
-    onSearchChange,
-    sortSelectedToTop: sortSelectedToTopProp,
-    form,
+    onClear,
+    sortSelectedToTop,
+    listStateRef: externalListStateRef,
     ...otherProps
   } = props;
 
-  // Track if sortSelectedToTop was explicitly provided
-  const sortSelectedToTopExplicit = sortSelectedToTopProp !== undefined;
-  // Default to true if items are provided, false otherwise
-  const sortSelectedToTop = sortSelectedToTopProp ?? (items ? true : false);
-
   styles = extractStyles(otherProps, PROP_STYLES, styles);
 
-  // Generate a unique ID for this FilterPicker instance
-  const filterPickerId = useMemo(() => generateRandomId(), []);
+  // Generate a unique ID for this Picker instance
+  const pickerId = useMemo(() => generateRandomId(), []);
 
   // Get event bus for menu synchronization
   const { emit, on } = useEventBus();
 
   // Warn if isCheckable is false in single selection mode
   useWarn(isCheckable === false && selectionMode === 'single', {
-    key: ['filterpicker-checkable-single-mode'],
+    key: ['picker-checkable-single-mode'],
     args: [
       'CubeUIKit: isCheckable=false is not recommended in single selection mode as it may confuse users about selection behavior.',
     ],
@@ -284,20 +256,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
   // Track popover open/close and capture children order for session
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  // Cache for sorted items array when using `items` prop
-  const cachedItemsOrder = useRef<T[] | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-
-  // ---------------------------------------------------------------------------
-  // Invalidate cached sorting whenever the available options change.
-  // This ensures newly provided options are displayed and properly sorted on
-  // the next popover open instead of re-using a stale order from a previous
-  // session (which caused only the previously selected options to be rendered
-  // or the list to appear unsorted).
-  // ---------------------------------------------------------------------------
-  useEffect(() => {
-    cachedItemsOrder.current = null;
-  }, [items]);
 
   const isControlledSingle = selectedKey !== undefined;
   const isControlledMultiple = selectedKeys !== undefined;
@@ -308,56 +267,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
   const effectiveSelectedKeys = isControlledMultiple
     ? selectedKeys
     : internalSelectedKeys;
-
-  // Create a local collection for label extraction only (not for rendering)
-  // This gives us immediate access to textValue without waiting for FilterListBox
-  const localCollectionState = useListState({
-    children: children as any,
-    items: items as any,
-    selectionMode: 'none' as any, // We don't need selection management
-  });
-
-  // ---------------------------------------------------------------------------
-  // Map user-provided keys to collection keys using the local collection.
-  // The collection handles key normalization internally, so we use direct
-  // string comparison.
-  // ---------------------------------------------------------------------------
-
-  const findCollectionKey = useCallback(
-    (lookup: Key): Key => {
-      if (lookup == null) return lookup;
-
-      // Direct comparison - collection handles normalization internally
-      for (const item of localCollectionState.collection) {
-        if (String(item.key) === String(lookup)) {
-          return item.key;
-        }
-      }
-
-      // Fallback: return the lookup key as-is
-      return lookup;
-    },
-    [localCollectionState.collection],
-  );
-
-  const mappedSelectedKey = useMemo(() => {
-    if (selectionMode !== 'single') return null;
-    return effectiveSelectedKey
-      ? findCollectionKey(effectiveSelectedKey)
-      : null;
-  }, [selectionMode, effectiveSelectedKey, findCollectionKey]);
-
-  const mappedSelectedKeys = useMemo(() => {
-    if (selectionMode !== 'multiple') return undefined;
-
-    if (effectiveSelectedKeys === 'all') return 'all' as const;
-
-    if (Array.isArray(effectiveSelectedKeys)) {
-      return (effectiveSelectedKeys as Key[]).map((k) => findCollectionKey(k));
-    }
-
-    return effectiveSelectedKeys;
-  }, [selectionMode, effectiveSelectedKeys, findCollectionKey]);
 
   // Given an iterable of keys (array or Set) toggle membership for duplicates
   const processSelectionArray = (iterable: Iterable<Key>): string[] => {
@@ -373,216 +282,167 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     return Array.from(resultSet);
   };
 
-  // Helper to get selected item labels for display using local collection
-  const getSelectedLabels = () => {
-    const collection = localCollectionState.collection;
+  // Ref to access internal ListBox state for collection API
+  const internalListStateRef = useRef<ListState<T>>(null);
 
-    // Helper to recursively collect all item labels from collection (including nested in sections)
-    const collectAllLabels = (): string[] => {
-      const allLabels: string[] = [];
-
-      const traverse = (nodes: Iterable<any>) => {
-        for (const node of nodes) {
-          if (node.type === 'item') {
-            allLabels.push(node.textValue || String(node.key));
-          } else if (node.childNodes) {
-            traverse(node.childNodes);
-          }
-        }
-      };
-
-      traverse(collection);
-      return allLabels;
-    };
-
-    // Handle "all" selection - return all available labels
-    if (selectionMode === 'multiple' && effectiveSelectedKeys === 'all') {
-      return collectAllLabels();
-    }
-
-    const selectedSet = new Set(
-      selectionMode === 'multiple' && effectiveSelectedKeys !== 'all'
-        ? (effectiveSelectedKeys || []).map((k) => String(k))
-        : effectiveSelectedKey != null
-          ? [String(effectiveSelectedKey)]
-          : [],
-    );
-
-    const labels: string[] = [];
-    const processedKeys = new Set<string>();
-
-    // Use collection.getItem() to directly retrieve items by key (works with sections)
-    selectedSet.forEach((key) => {
-      const item = collection.getItem(key);
-      if (item) {
-        labels.push(item.textValue || String(item.key));
-        processedKeys.add(String(item.key));
-      }
-    });
-
-    // Handle custom values that aren't in the collection
-    const selectedKeysArr =
-      selectionMode === 'multiple' && effectiveSelectedKeys !== 'all'
-        ? (effectiveSelectedKeys || []).map(String)
-        : effectiveSelectedKey != null
-          ? [String(effectiveSelectedKey)]
-          : [];
-
-    // Add labels for any selected keys that weren't found in collection (custom values)
-    selectedKeysArr.forEach((key) => {
-      if (!processedKeys.has(String(key))) {
-        // This is a custom value, use the key as the label
-        labels.push(key);
-      }
-    });
-
-    return labels;
-  };
-
-  const selectedLabels = getSelectedLabels();
-  const hasSelection = selectedLabels.length > 0;
-
-  // Always keep the latest selection in a ref (with normalized keys) so that we can read it synchronously in the popover close effect.
-  const latestSelectionRef = useRef<{
-    single: string | null;
-    multiple: 'all' | string[];
-  }>({
-    single: effectiveSelectedKey != null ? String(effectiveSelectedKey) : null,
-    multiple:
-      effectiveSelectedKeys === 'all'
-        ? 'all'
-        : (effectiveSelectedKeys ?? []).map(String),
-  });
-
+  // Sync internal ref with external ref if provided
   useEffect(() => {
-    latestSelectionRef.current = {
-      single:
-        effectiveSelectedKey != null ? String(effectiveSelectedKey) : null,
-      multiple:
-        effectiveSelectedKeys === 'all'
-          ? 'all'
-          : (effectiveSelectedKeys ?? []).map(String),
-    };
-  }, [effectiveSelectedKey, effectiveSelectedKeys]);
-  const selectionsWhenClosed = useRef<{
+    if (externalListStateRef && internalListStateRef.current) {
+      externalListStateRef.current = internalListStateRef.current;
+    }
+  }, [externalListStateRef]);
+
+  // Cache for sorted items array when using `items` prop
+  const cachedItemsOrder = useRef<T[] | null>(null);
+  const selectionWhenClosed = useRef<{
     single: string | null;
-    multiple: 'all' | string[];
+    multiple: string[];
   }>({ single: null, multiple: [] });
 
-  // Capture the initial selection (from defaultSelectedKey(s)) so that
-  // the very first popover open can already use it for sorting.
+  // Track if sortSelectedToTop was explicitly provided
+  const sortSelectedToTopExplicit = sortSelectedToTop !== undefined;
+  // Default to true if items are provided, false otherwise
+  const shouldSortSelectedToTop = sortSelectedToTop ?? (items ? true : false);
+
+  // Invalidate cache when items change
   useEffect(() => {
-    selectionsWhenClosed.current = { ...latestSelectionRef.current };
-  }, []); // run only once on mount
+    cachedItemsOrder.current = null;
+  }, [items]);
 
-  // Function to sort children with selected items on top
-  const getSortedChildren = useCallback(() => {
-    // Warn if sorting is explicitly requested but not supported
-    if (sortSelectedToTopExplicit && sortSelectedToTop && !items) {
-      console.warn(
-        'FilterPicker: sortSelectedToTop only works with the items prop. ' +
-          'Sorting will be skipped when using JSX children.',
-      );
+  // Capture selection when popover closes
+  useEffect(() => {
+    if (!isPopoverOpen) {
+      selectionWhenClosed.current = {
+        single:
+          effectiveSelectedKey != null ? String(effectiveSelectedKey) : null,
+        multiple:
+          selectionMode === 'multiple' && effectiveSelectedKeys !== 'all'
+            ? (effectiveSelectedKeys || []).map(String)
+            : [],
+      };
+      cachedItemsOrder.current = null;
     }
+  }, [
+    isPopoverOpen,
+    effectiveSelectedKey,
+    effectiveSelectedKeys,
+    selectionMode,
+  ]);
 
-    // Return children as-is (no sorting for JSX children)
-    return children;
-  }, [children, sortSelectedToTop, sortSelectedToTopExplicit, items]);
+  // Sort items with selected on top if enabled
+  const getSortedItems = useCallback((): typeof items => {
+    if (!items || !shouldSortSelectedToTop) return items;
 
-  // Compute sorted items array when using `items` prop
-  const getSortedItems = useCallback(() => {
-    if (!items) return items;
-
-    // Only sort if explicitly enabled
-    if (!sortSelectedToTop) {
-      return items;
-    }
-
-    // Reuse the cached order if we have it. We only compute the sorted array
-    // once when the pop-over is opened. Cache is cleared on close.
+    // Reuse cached order if available
     if (cachedItemsOrder.current) {
       return cachedItemsOrder.current;
     }
 
-    const selectedSet = new Set<string>();
-
-    const addSelected = (key: Key) => {
-      if (key != null) selectedSet.add(String(key));
-    };
-
-    if (selectionMode === 'multiple') {
-      if (selectionsWhenClosed.current.multiple === 'all') {
-        // Do not sort when all selected – keep original order
-        return items;
-      }
-      (selectionsWhenClosed.current.multiple as string[]).forEach(addSelected);
-    } else {
-      if (selectionsWhenClosed.current.single != null) {
-        addSelected(selectionsWhenClosed.current.single);
-      }
-    }
-
-    if (selectedSet.size === 0) {
+    // Warn if explicitly requested but JSX children used
+    if (sortSelectedToTopExplicit && !items) {
+      console.warn(
+        'Picker: sortSelectedToTop only works with the items prop. ' +
+          'Sorting will be skipped when using JSX children.',
+      );
       return items;
     }
 
-    // Helpers to extract key from item object
-    const getItemKey = (obj: unknown): string | undefined => {
-      if (obj == null || typeof obj !== 'object') return undefined;
+    const selectedKeys = new Set<string>();
 
-      const item = obj as ItemWithKey;
-      if (item.key != null) return String(item.key);
-      if (item.id != null) return String(item.id);
-      return undefined;
-    };
+    if (selectionMode === 'multiple') {
+      // Don't sort when "all" is selected
+      if (
+        selectionWhenClosed.current.multiple.length === 0 ||
+        effectiveSelectedKeys === 'all'
+      ) {
+        return items;
+      }
+      selectionWhenClosed.current.multiple.forEach((k) => selectedKeys.add(k));
+    } else if (selectionWhenClosed.current.single) {
+      selectedKeys.add(selectionWhenClosed.current.single);
+    }
 
-    const sortArray = (arr: unknown[]): unknown[] => {
-      const selectedArr: unknown[] = [];
-      const unselectedArr: unknown[] = [];
+    if (selectedKeys.size === 0) return items;
 
-      arr.forEach((obj) => {
-        const item = obj as ItemWithKey;
-        if (obj && Array.isArray(item.children)) {
-          // Section-like object – keep order, but sort its children
-          const sortedChildren = sortArray(item.children);
-          unselectedArr.push({ ...item, children: sortedChildren });
-        } else {
-          const key = getItemKey(obj);
-          if (key && selectedSet.has(key)) {
-            selectedArr.push(obj);
-          } else {
-            unselectedArr.push(obj);
-          }
-        }
-      });
+    const itemsArray = Array.isArray(items) ? items : Array.from(items);
+    const selectedItems: T[] = [];
+    const unselectedItems: T[] = [];
 
-      return [...selectedArr, ...unselectedArr];
-    };
+    itemsArray.forEach((item) => {
+      const key = (item as any)?.key ?? (item as any)?.id;
+      if (key != null && selectedKeys.has(String(key))) {
+        selectedItems.push(item);
+      } else {
+        unselectedItems.push(item);
+      }
+    });
 
-    const itemsArray = Array.isArray(items)
-      ? items
-      : Array.from(items as Iterable<unknown>);
-    const sorted = sortArray(itemsArray) as T[];
+    const sorted = [...selectedItems, ...unselectedItems];
 
-    if (isPopoverOpen || !cachedItemsOrder.current) {
+    if (isPopoverOpen) {
       cachedItemsOrder.current = sorted;
     }
 
     return sorted;
   }, [
     items,
-    sortSelectedToTop,
+    shouldSortSelectedToTop,
+    sortSelectedToTopExplicit,
     selectionMode,
+    effectiveSelectedKeys,
     isPopoverOpen,
-    selectionsWhenClosed.current.multiple,
-    selectionsWhenClosed.current.single,
   ]);
 
   const finalItems = getSortedItems();
 
-  // FilterListBox handles custom values internally when allowsCustomValue={true}
-  // We provide sorted children (if any) and sorted items
-  const finalChildren = getSortedChildren();
+  // Create local collection state for reading item data (labels, etc.)
+  // This allows us to read item labels even before the popover opens
+  const localCollectionState = useListState({
+    children,
+    items: finalItems, // Use sorted items to match what's shown in popover
+    selectionMode: 'none', // Don't manage selection in this state
+  });
+
+  // Helper to get label from local collection
+  const getItemLabel = useCallback(
+    (key: Key): string => {
+      const item = localCollectionState?.collection?.getItem(key);
+      return item?.textValue || String(key);
+    },
+    [localCollectionState?.collection],
+  );
+
+  const selectedLabels = useMemo(() => {
+    const keysToGet =
+      selectionMode === 'multiple' && effectiveSelectedKeys !== 'all'
+        ? effectiveSelectedKeys || []
+        : effectiveSelectedKey != null
+          ? [effectiveSelectedKey]
+          : [];
+
+    // Handle "all" selection
+    if (selectionMode === 'multiple' && effectiveSelectedKeys === 'all') {
+      if (!localCollectionState?.collection) return [];
+      const labels: string[] = [];
+      for (const item of localCollectionState.collection) {
+        if (item.type === 'item') {
+          labels.push(item.textValue || String(item.key));
+        }
+      }
+      return labels;
+    }
+
+    // Get labels for selected keys
+    return keysToGet.map((key) => getItemLabel(key)).filter(Boolean);
+  }, [
+    selectionMode,
+    effectiveSelectedKeys,
+    effectiveSelectedKey,
+    getItemLabel,
+    localCollectionState?.collection,
+  ]);
+
+  const hasSelection = selectedLabels.length > 0;
 
   const renderTriggerContent = () => {
     // When there is a selection and a custom summary renderer is provided – use it.
@@ -639,32 +499,26 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     // Listen for other menus opening and close this one if needed
     useEffect(() => {
       const unsubscribe = on('popover:open', (data: { menuId: string }) => {
-        // If another menu is opening and this FilterPicker is open, close this one
-        if (data.menuId !== filterPickerId && state.isOpen) {
+        // If another menu is opening and this Picker is open, close this one
+        if (data.menuId !== pickerId && state.isOpen) {
           state.close();
         }
       });
 
       return unsubscribe;
-    }, [on, filterPickerId, state]);
+    }, [on, pickerId, state]);
 
-    // Emit event when this FilterPicker opens
+    // Emit event when this Picker opens
     useEffect(() => {
       if (state.isOpen) {
-        emit('popover:open', { menuId: filterPickerId });
+        emit('popover:open', { menuId: pickerId });
       }
-    }, [state.isOpen, emit, filterPickerId]);
+    }, [state.isOpen, emit, pickerId]);
 
     // Track popover open/close state to control sorting
     useEffect(() => {
       if (state.isOpen !== isPopoverOpen) {
         setIsPopoverOpen(state.isOpen);
-        if (!state.isOpen) {
-          // Popover just closed – record the latest selection for the next opening
-          // and clear the cached order so the next session can compute afresh.
-          selectionsWhenClosed.current = { ...latestSelectionRef.current };
-          cachedItemsOrder.current = null;
-        }
       }
     }, [state.isOpen, isPopoverOpen]);
 
@@ -714,7 +568,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
 
       triggerRef?.current?.focus?.();
 
-      props.onClear?.();
+      onClear?.();
 
       return false;
     });
@@ -723,8 +577,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
       <ItemButton
         ref={triggerRef as any}
         data-popover-trigger
-        qa={qa || 'FilterPicker'}
         id={id}
+        qa={qa || 'PickerTrigger'}
         type={type}
         theme={validationState === 'invalid' ? 'danger' : theme}
         size={size}
@@ -745,7 +599,7 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
               icon={<CloseIcon />}
               size={size}
               theme={validationState === 'invalid' ? 'danger' : undefined}
-              qa="FilterPickerClearButton"
+              qa="PickerClearButton"
               mods={{ pressed: false }}
               onPress={clearValue}
             />
@@ -768,9 +622,8 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
     );
   };
 
-  const filterPickerField = (
-    <FilterPickerWrapper
-      qa="FilterPickerWrapper"
+  const pickerField = (
+    <PickerWrapper
       styles={styles}
       {...filterBaseProps(otherProps, { eventProps: true })}
     >
@@ -802,39 +655,33 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
             }}
           >
             <FocusScope restoreFocus>
-              <FilterListBox
+              <ListBox
                 autoFocus
                 items={items ? (finalItems as typeof props.items) : undefined}
                 // Pass an aria-label so the internal ListBox is properly labeled and React Aria doesn't warn.
                 aria-label={`${props['aria-label'] ?? props.label ?? ''} Picker`}
-                _internalCollection={localCollectionState.collection}
                 selectedKey={
-                  selectionMode === 'single' ? mappedSelectedKey : undefined
+                  selectionMode === 'single' ? effectiveSelectedKey : undefined
                 }
                 selectedKeys={
-                  selectionMode === 'multiple' ? mappedSelectedKeys : undefined
+                  selectionMode === 'multiple'
+                    ? effectiveSelectedKeys
+                    : undefined
                 }
-                searchPlaceholder={searchPlaceholder}
-                filter={filter}
-                searchValue={searchValue}
                 listStyles={listStyles}
                 optionStyles={optionStyles}
                 sectionStyles={sectionStyles}
                 headingStyles={headingStyles}
                 listRef={listRef}
                 disallowEmptySelection={disallowEmptySelection}
-                emptyLabel={emptyLabel}
-                searchInputStyles={searchInputStyles}
-                searchInputRef={searchInputRef}
                 disabledKeys={disabledKeys}
                 focusOnHover={focusOnHover}
                 shouldFocusWrap={shouldFocusWrap}
-                allowsCustomValue={allowsCustomValue}
                 selectionMode={selectionMode}
                 validationState={validationState}
                 isDisabled={isDisabled}
                 isLoading={isLoading}
-                stateRef={listStateRef}
+                stateRef={internalListStateRef}
                 isCheckable={isCheckable}
                 mods={{
                   popover: true,
@@ -846,13 +693,11 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                 footer={footer}
                 headerStyles={headerStyles}
                 footerStyles={footerStyles}
+                qa={`${props.qa || 'Picker'}ListBox`}
                 allValueProps={allValueProps}
-                customValueProps={customValueProps}
-                newCustomValueProps={newCustomValueProps}
-                onSearchChange={onSearchChange}
                 onEscape={() => close()}
                 onOptionClick={(key) => {
-                  // For FilterPicker, clicking the content area should close the popover
+                  // For Picker, clicking the content area should close the popover
                   // in multiple selection mode (single mode already closes via onSelectionChange)
                   if (
                     (selectionMode === 'multiple' && isCheckable) ||
@@ -893,35 +738,6 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                     }
                   }
 
-                  // Update latest selection ref synchronously
-                  if (selectionMode === 'single') {
-                    latestSelectionRef.current.single =
-                      selection != null ? String(selection) : null;
-                  } else {
-                    if (selection === 'all') {
-                      latestSelectionRef.current.multiple = 'all';
-                    } else if (Array.isArray(selection)) {
-                      latestSelectionRef.current.multiple = Array.from(
-                        new Set(processSelectionArray(selection)),
-                      );
-                    } else if (
-                      selection &&
-                      typeof selection === 'object' &&
-                      (selection as any) instanceof Set
-                    ) {
-                      latestSelectionRef.current.multiple = Array.from(
-                        new Set(processSelectionArray(selection as Set<Key>)),
-                      );
-                    } else {
-                      latestSelectionRef.current.multiple =
-                        selection === 'all'
-                          ? 'all'
-                          : Array.isArray(selection)
-                            ? selection.map(String)
-                            : [];
-                    }
-                  }
-
                   onSelectionChange?.(selection);
 
                   if (selectionMode === 'single') {
@@ -929,40 +745,37 @@ export const FilterPicker = forwardRef(function FilterPicker<T extends object>(
                   }
                 }}
               >
-                {
-                  (children
-                    ? (finalChildren as CollectionChildren<T>)
-                    : undefined) as CollectionChildren<T>
-                }
-              </FilterListBox>
+                {children as CollectionChildren<T>}
+              </ListBox>
             </FocusScope>
           </Dialog>
         )}
       </DialogTrigger>
-    </FilterPickerWrapper>
+    </PickerWrapper>
   );
 
-  const finalProps = {
-    ...props,
-    children: undefined,
-    styles: undefined,
-  };
-
-  return wrapWithField<Omit<CubeFilterPickerProps<T>, 'children' | 'tooltip'>>(
-    filterPickerField,
+  return wrapWithField<Omit<CubePickerProps<T>, 'children' | 'tooltip'>>(
+    pickerField,
     ref as any,
-    mergeProps(finalProps, {}),
+    mergeProps(
+      {
+        ...props,
+        children: undefined,
+        styles: undefined,
+      },
+      {},
+    ),
   );
 }) as unknown as (<T>(
-  props: CubeFilterPickerProps<T> & { ref?: ForwardedRef<HTMLElement> },
+  props: CubePickerProps<T> & { ref?: ForwardedRef<HTMLElement> },
 ) => ReactElement) & { Item: typeof ListBox.Item; Section: typeof BaseSection };
 
-FilterPicker.Item = ListBox.Item;
+Picker.Item = ListBox.Item;
 
-FilterPicker.Section = BaseSection;
+Picker.Section = BaseSection;
 
-Object.defineProperty(FilterPicker, 'cubeInputType', {
-  value: 'FilterPicker',
+Object.defineProperty(Picker, 'cubeInputType', {
+  value: 'Picker',
   enumerable: false,
   configurable: false,
 });
