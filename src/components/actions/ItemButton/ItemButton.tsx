@@ -6,10 +6,12 @@ import {
   useRef,
   useState,
 } from 'react';
+import { useHover } from 'react-aria';
 
 import { Styles, tasty } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
 import { CubeItemBaseProps, ItemBase } from '../../content/ItemBase';
+import { DisplayTransition } from '../../helpers';
 import { CubeItemActionProps, ItemAction } from '../ItemAction';
 import { ItemActionProvider } from '../ItemActionContext';
 import { CubeUseActionProps, useAction } from '../use-action';
@@ -19,6 +21,7 @@ export interface CubeItemButtonProps
     Omit<CubeUseActionProps, 'as'> {
   actions?: ReactNode;
   wrapperStyles?: Styles;
+  showActionsOnHover?: boolean;
 }
 
 const StyledItemBase = tasty(ItemBase, {
@@ -60,6 +63,15 @@ const ActionsContainer = tasty({
     pointerEvents: 'auto',
     padding: '0 .5x 0 0',
     height: '$size',
+    opacity: {
+      '': 1,
+      hidden: 0,
+    },
+    translate: {
+      '': '0 0',
+      hidden: '.5x 0',
+    },
+    transition: 'theme, translate',
   },
 });
 
@@ -77,6 +89,7 @@ const ItemButton = forwardRef(function ItemButton(
     onPress,
     actions,
     size = 'medium',
+    showActionsOnHover = false,
     ...rest
   } = allProps as CubeItemButtonProps & {
     as?: 'a' | 'button' | 'div' | 'span';
@@ -84,6 +97,7 @@ const ItemButton = forwardRef(function ItemButton(
 
   const actionsRef = useRef<HTMLDivElement>(null);
   const [actionsWidth, setActionsWidth] = useState(0);
+  const [areActionsVisible, setAreActionsVisible] = useState(false);
 
   useLayoutEffect(() => {
     if (actions && actionsRef.current) {
@@ -92,7 +106,9 @@ const ItemButton = forwardRef(function ItemButton(
         setActionsWidth(width);
       }
     }
-  }, [actions, actionsWidth]);
+  }, [actions, areActionsVisible]);
+
+  const { hoverProps, isHovered } = useHover({});
 
   const { actionProps } = useAction(
     { ...(allProps as any), htmlType, to, as, mods },
@@ -113,18 +129,46 @@ const ItemButton = forwardRef(function ItemButton(
   if (actions) {
     return (
       <ActionsWrapper
+        {...hoverProps}
         data-size={typeof size === 'number' ? undefined : size}
         style={
           {
-            '--actions-width': `${actionsWidth}px`,
+            '--actions-width':
+              areActionsVisible || !showActionsOnHover
+                ? `${actionsWidth}px`
+                : '0px',
             '--size': typeof size === 'number' ? `${size}px` : undefined,
           } as any
         }
       >
         {button}
-        <ActionsContainer ref={actionsRef}>
-          <ItemActionProvider type={type}>{actions}</ItemActionProvider>
-        </ActionsContainer>
+        {showActionsOnHover ? (
+          <DisplayTransition
+            exposeUnmounted
+            isShown={isHovered}
+            onPhaseChange={(phase) => {
+              setAreActionsVisible(phase !== 'unmounted');
+            }}
+          >
+            {({ isShown, ref: transitionRef }) => {
+              return (
+                <ActionsContainer
+                  ref={(node: any) => {
+                    actionsRef.current = node;
+                    transitionRef(node);
+                  }}
+                  mods={{ hidden: !isShown }}
+                >
+                  <ItemActionProvider type={type}>{actions}</ItemActionProvider>
+                </ActionsContainer>
+              );
+            }}
+          </DisplayTransition>
+        ) : (
+          <ActionsContainer ref={actionsRef}>
+            <ItemActionProvider type={type}>{actions}</ItemActionProvider>
+          </ActionsContainer>
+        )}
       </ActionsWrapper>
     );
   }

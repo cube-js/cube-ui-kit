@@ -2009,12 +2009,12 @@ export const ItemsWithActions = (props) => {
           icon={<IconReload />}
           actions={
             <>
-              <ItemAction
+              <Menu.Item.Action
                 icon={<EditIcon />}
                 aria-label="Edit"
                 onPress={() => handleItemAction('file2', 'edit')}
               />
-              <ItemAction
+              <Menu.Item.Action
                 icon={<ClearIcon />}
                 aria-label="Delete"
                 onPress={() => handleItemAction('file2', 'delete')}

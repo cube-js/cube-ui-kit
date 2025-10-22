@@ -58,7 +58,7 @@ import {
   tasty,
 } from '../../../tasty';
 import { mergeProps } from '../../../utils/react';
-import { CubeItemActionProps, ItemAction } from '../../actions/ItemAction';
+import { ItemAction } from '../../actions/ItemAction';
 import { ItemActionProvider } from '../../actions/ItemActionContext';
 import {
   CubeTooltipProviderProps,
@@ -286,17 +286,17 @@ const ItemBaseElement = tasty({
         '': '$block-padding $inline-padding',
         '(with-icon | with-prefix)':
           '$block-padding $inline-padding $block-padding 0',
-        '(with-right-icon | with-suffix)':
+        '(with-right-icon | with-suffix | with-actions)':
           '$block-padding 0 $block-padding $inline-padding',
-        '(with-icon | with-prefix) & (with-right-icon | with-suffix)':
+        '(with-icon | with-prefix) & (with-right-icon | with-suffix | with-actions)':
           '$block-padding 0',
         'with-description & !with-description-block':
           '$block-padding $inline-padding 0 $inline-padding',
         'with-description & !with-description-block & (with-icon | with-prefix)':
           '$block-padding $inline-padding 0 0',
-        'with-description & !with-description-block & (with-right-icon | with-suffix)':
+        'with-description & !with-description-block & (with-right-icon | with-suffix | with-actions)':
           '$block-padding 0 0 $inline-padding',
-        'with-description & !with-description-block & (with-icon | with-prefix) & (with-right-icon | with-suffix)':
+        'with-description & !with-description-block & (with-icon | with-prefix) & (with-right-icon | with-suffix | with-actions)':
           '$block-padding 0 0 0',
       },
       gridRow: {
@@ -368,6 +368,10 @@ const ItemBaseElement = tasty({
       width: {
         '': 'var(--actions-width, 0px)',
         'with-actions-content': 'auto',
+      },
+      transition: {
+        '': false,
+        'with-action && !with-actions-content': 'width $transition ease-out',
       },
     },
   },

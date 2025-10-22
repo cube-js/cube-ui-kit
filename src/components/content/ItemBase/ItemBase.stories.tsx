@@ -1308,6 +1308,106 @@ WithActions.parameters = {
   },
 };
 
+export const WithActionsOnHover: StoryFn<CubeItemBaseProps> = (args) => (
+  <Space gap="2x" flow="column">
+    <Title level={4}>Actions on Hover</Title>
+    <ItemBase
+      {...args}
+      showActionsOnHover
+      styles={{ ...DEFAULT_STYLES, width: '400px' }}
+      icon={<IconUser />}
+      actions={
+        <>
+          <ItemAction icon={<IconEdit />} aria-label="Edit" />
+          <ItemAction icon={<IconTrash />} aria-label="Delete" />
+        </>
+      }
+    >
+      Hover to see actions
+    </ItemBase>
+
+    <Title level={5}>Different Sizes</Title>
+    <Space gap="1x" flow="column">
+      <ItemBase
+        {...args}
+        showActionsOnHover
+        styles={DEFAULT_STYLES}
+        size="small"
+        icon={<IconUser />}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Small with hover actions
+      </ItemBase>
+      <ItemBase
+        {...args}
+        showActionsOnHover
+        styles={DEFAULT_STYLES}
+        size="medium"
+        icon={<IconUser />}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Medium with hover actions
+      </ItemBase>
+      <ItemBase
+        {...args}
+        showActionsOnHover
+        styles={DEFAULT_STYLES}
+        size="large"
+        icon={<IconUser />}
+        actions={
+          <>
+            <ItemAction icon={<IconEdit />} aria-label="Edit" />
+            <ItemAction icon={<IconTrash />} aria-label="Delete" />
+          </>
+        }
+      >
+        Large with hover actions
+      </ItemBase>
+    </Space>
+
+    <Title level={5}>With Description</Title>
+    <ItemBase
+      {...args}
+      showActionsOnHover
+      width="150px"
+      styles={DEFAULT_STYLES}
+      icon={<IconUser />}
+      description="Additional information"
+      actions={
+        <>
+          <ItemAction icon={<IconEdit />} aria-label="Edit" />
+          <ItemAction icon={<IconTrash />} aria-label="Delete" />
+        </>
+      }
+    >
+      With description
+    </ItemBase>
+  </Space>
+);
+
+WithActionsOnHover.args = {
+  width: '450px',
+};
+
+WithActionsOnHover.parameters = {
+  docs: {
+    description: {
+      story:
+        'Demonstrates the `showActionsOnHover` prop which hides actions until the item is hovered, with a smooth transition. The actions space is reserved in the layout to prevent layout shift on hover.',
+    },
+  },
+};
+
 const timeout = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 

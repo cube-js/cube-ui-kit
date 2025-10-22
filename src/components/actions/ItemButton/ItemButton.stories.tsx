@@ -75,6 +75,11 @@ const meta: Meta<typeof ItemButton> = {
       description:
         'Which slot to replace with loading icon (auto intelligently selects)',
     },
+    showActionsOnHover: {
+      control: 'boolean',
+      description:
+        'When true, actions are hidden by default and fade in on hover',
+    },
     // Icon controls are typically not included in argTypes since they're complex ReactNode objects
     // prefix and suffix are also ReactNode, so omitted from controls
     onPress: {
@@ -737,13 +742,99 @@ export const WithActions: Story = {
           </ItemButton>
         </div>
       </div>
+
+      <div>
+        <h4>Actions Visible on Hover Only</h4>
+        <p style={{ fontSize: 14, color: '#666', marginBottom: 16 }}>
+          Use <code>showActionsOnHover</code> to hide actions by default and
+          show them only when hovering over the button:
+        </p>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            showActionsOnHover
+            icon={<IconFile />}
+            width="200px"
+            actions={
+              <>
+                <ItemButton.Action icon={<IconEdit />} aria-label="Edit" />
+                <ItemButton.Action icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Hover to see actions
+          </ItemButton>
+          <ItemButton
+            {...args}
+            showActionsOnHover
+            type="primary"
+            width="200px"
+            icon={<IconFile />}
+            actions={
+              <>
+                <ItemButton.Action icon={<IconEdit />} aria-label="Edit" />
+                <ItemButton.Action icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Primary with hover actions
+          </ItemButton>
+          <ItemButton
+            {...args}
+            showActionsOnHover
+            width="200px"
+            icon={<IconFile />}
+            description="Additional information"
+            descriptionPlacement="block"
+            actions={
+              <>
+                <ItemButton.Action icon={<IconEdit />} aria-label="Edit" />
+                <ItemButton.Action icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            With description and hover actions
+          </ItemButton>
+        </div>
+      </div>
+
+      <div>
+        <h4>Comparison: Always Visible vs Hover Only</h4>
+        <div style={{ display: 'grid', gap: 8, placeItems: 'start' }}>
+          <ItemButton
+            {...args}
+            icon={<IconFile />}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Actions always visible (default)
+          </ItemButton>
+          <ItemButton
+            {...args}
+            showActionsOnHover
+            icon={<IconFile />}
+            actions={
+              <>
+                <ItemAction icon={<IconEdit />} aria-label="Edit" />
+                <ItemAction icon={<IconTrash />} aria-label="Delete" />
+              </>
+            }
+          >
+            Actions on hover only
+          </ItemButton>
+        </div>
+      </div>
     </div>
   ),
   parameters: {
     docs: {
       description: {
         story:
-          'Demonstrates ItemButton with actions displayed on the right side. The actions are absolutely positioned and the button automatically reserves space for them to prevent content overlap. Actions use the ItemAction component for consistent styling.',
+          'Demonstrates ItemButton with actions displayed on the right side. The actions are absolutely positioned and the button automatically reserves space for them to prevent content overlap. Use `showActionsOnHover={true}` to hide actions by default and show them with a smooth fade transition when hovering over the button. Actions use the ItemAction component for consistent styling.',
       },
     },
   },
