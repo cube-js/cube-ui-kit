@@ -86,6 +86,7 @@ export { PieChartIcon } from './PieChartIcon';
 export { PlayCircleIcon } from './PlayCircleIcon';
 export { PlayIcon } from './PlayIcon';
 export { PlusIcon } from './PlusIcon';
+export { ProgressBarIcon } from './ProgressBarIcon';
 export { ReloadIcon } from './ReloadIcon';
 export { ReportIcon } from './ReportIcon';
 export { ReturnIcon } from './ReturnIcon';
