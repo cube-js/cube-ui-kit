@@ -1,5 +1,27 @@
 # @cube-dev/ui-kit
 
+## 0.84.0
+
+### Minor Changes
+
+- [#817](https://github.com/cube-js/cube-ui-kit/pull/817) [`bb56ca5a`](https://github.com/cube-js/cube-ui-kit/commit/bb56ca5a8a4b08379685a7d32a797ea65019c12d) Thanks [@tenphi](https://github.com/tenphi)! - Add Picker component as a more advanced version of Select.
+
+## 0.83.3
+
+### Patch Changes
+
+- [#838](https://github.com/cube-js/cube-ui-kit/pull/838) [`17518277`](https://github.com/cube-js/cube-ui-kit/commit/17518277e6bda8b495c0e74b884f6c97096760e3) Thanks [@tenphi](https://github.com/tenphi)! - Add ProgressBarIcon.
+
+- [#840](https://github.com/cube-js/cube-ui-kit/pull/840) [`5fb963f0`](https://github.com/cube-js/cube-ui-kit/commit/5fb963f040f1c1ec59bd63c6918cb5f6f6b7a210) Thanks [@tenphi](https://github.com/tenphi)! - Fix RadioGroup base layout.
+
+## 0.83.2
+
+### Patch Changes
+
+- [#835](https://github.com/cube-js/cube-ui-kit/pull/835) [`97925cab`](https://github.com/cube-js/cube-ui-kit/commit/97925cabf6babdfc546436cb59d24967a826fb74) Thanks [@tenphi](https://github.com/tenphi)! - Fix qa prop in Radio component.
+
+- [#837](https://github.com/cube-js/cube-ui-kit/pull/837) [`f80593b8`](https://github.com/cube-js/cube-ui-kit/commit/f80593b89bba6c638d8cfd795e9ad5b02609e75a) Thanks [@tenphi](https://github.com/tenphi)! - Fix qa prop on TextInputBase.
+
 ## 0.83.1
 
 ### Patch Changes

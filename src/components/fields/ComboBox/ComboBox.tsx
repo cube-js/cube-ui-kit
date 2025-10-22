@@ -18,7 +18,7 @@ import {
   useOverlay,
   useOverlayPosition,
 } from 'react-aria';
-import { Section as BaseSection } from 'react-stately';
+import { Section as BaseSection, useListState } from 'react-stately';
 
 import { useEvent } from '../../../_internal';
 import { CloseIcon, DirectionIcon, LoadingIcon } from '../../../icons';
@@ -326,19 +326,17 @@ function useComboBoxState({
 // Hook: useComboBoxFiltering
 // ============================================================================
 interface UseComboBoxFilteringProps {
-  children: ReactNode;
   effectiveInputValue: string;
   filter: FilterFn | false | undefined;
 }
 
 interface UseComboBoxFilteringReturn {
-  filteredChildren: ReactNode;
+  filterFn: (nodes: Iterable<any>) => Iterable<any>;
   isFilterActive: boolean;
   setIsFilterActive: (active: boolean) => void;
 }
 
 function useComboBoxFiltering({
-  children,
   effectiveInputValue,
   filter,
 }: UseComboBoxFilteringProps): UseComboBoxFilteringReturn {
@@ -351,79 +349,44 @@ function useComboBoxFiltering({
     [filter, contains],
   );
 
-  // Filter children based on input value
-  const filteredChildren = useMemo(() => {
-    const term = effectiveInputValue.trim();
+  // Create a filter function for collection nodes
+  const filterFn = useCallback(
+    (nodes: Iterable<any>) => {
+      const term = effectiveInputValue.trim();
 
-    if (!isFilterActive || !term || !children) {
-      return children;
-    }
+      // Don't filter if not active or no search term
+      if (!isFilterActive || !term) {
+        return nodes;
+      }
 
-    const nodeMatches = (node: any): boolean => {
-      if (!node?.props) return false;
-
-      const textValue =
-        node.props.textValue ||
-        (typeof node.props.children === 'string' ? node.props.children : '') ||
-        String(node.props.children || '');
-
-      return textFilterFn(textValue, term);
-    };
-
-    const filterChildren = (childNodes: ReactNode): ReactNode => {
-      if (!childNodes) return null;
-
-      const childArray = Array.isArray(childNodes) ? childNodes : [childNodes];
-      const filteredNodes: ReactNode[] = [];
-
-      childArray.forEach((child: any) => {
-        if (!child || typeof child !== 'object') {
-          return;
-        }
-
-        if (
-          child.type === BaseSection ||
-          child.type?.displayName === 'Section'
-        ) {
-          const sectionChildren = Array.isArray(child.props.children)
-            ? child.props.children
-            : [child.props.children];
-
-          const filteredSectionChildren = sectionChildren.filter(
-            (sectionChild: any) => {
-              return (
-                sectionChild &&
-                typeof sectionChild === 'object' &&
-                nodeMatches(sectionChild)
-              );
-            },
-          );
-
-          if (filteredSectionChildren.length > 0) {
-            filteredNodes.push(
-              cloneElement(child, {
-                key: child.key,
-                children: filteredSectionChildren,
-              }),
+      // Filter nodes based on their textValue and preserve section structure
+      return [...nodes]
+        .map((node: any) => {
+          if (node.type === 'section' && node.childNodes) {
+            const filteredChildren = [...node.childNodes].filter((child: any) =>
+              textFilterFn(child.textValue || '', term),
             );
-          }
-        } else if (child.type === Item) {
-          if (nodeMatches(child)) {
-            filteredNodes.push(child);
-          }
-        } else if (nodeMatches(child)) {
-          filteredNodes.push(child);
-        }
-      });
 
-      return filteredNodes;
-    };
+            if (filteredChildren.length === 0) {
+              return null;
+            }
 
-    return filterChildren(children);
-  }, [isFilterActive, children, effectiveInputValue, textFilterFn]);
+            return {
+              ...node,
+              childNodes: filteredChildren,
+              hasChildNodes: true,
+            };
+          }
+
+          return textFilterFn(node.textValue || '', term) ? node : null;
+        })
+        .filter(Boolean);
+    },
+    [isFilterActive, effectiveInputValue, textFilterFn],
+  );
 
   return {
-    filteredChildren,
+    filterFn,
     isFilterActive,
     setIsFilterActive,
   };
@@ -613,6 +576,24 @@ function useComboBoxKeyboard({
           selectionManager.setFocusedKey(nextKey);
         }
       } else if (e.key === 'Enter') {
+        // If popover is open, try to select the focused item first
+        if (isPopoverOpen) {
+          const listState = listStateRef.current;
+          if (listState) {
+            const keyToSelect = listState.selectionManager.focusedKey;
+
+            if (keyToSelect != null) {
+              e.preventDefault();
+              listState.selectionManager.select(keyToSelect, e);
+              // Ensure the popover closes even if selection stays the same
+              onClosePopover();
+              inputRef.current?.focus();
+              return;
+            }
+          }
+        }
+
+        // If no results, handle empty input or custom values
         if (!hasResults) {
           e.preventDefault();
 
@@ -629,19 +610,12 @@ function useComboBoxKeyboard({
           return;
         }
 
-        if (isPopoverOpen) {
-          const listState = listStateRef.current;
-          if (!listState) return;
-
-          const keyToSelect = listState.selectionManager.focusedKey;
-
-          if (keyToSelect != null) {
-            e.preventDefault();
-            listState.selectionManager.select(keyToSelect, e);
-            // Ensure the popover closes even if selection stays the same
-            onClosePopover();
-            inputRef.current?.focus();
-          }
+        // Clear selection if input is empty and popover is closed (or no focused item)
+        const trimmed = (effectiveInputValue || '').trim();
+        if (trimmed === '') {
+          e.preventDefault();
+          onSelectionChange(null);
+          return;
         }
       } else if (e.key === 'Escape') {
         if (isPopoverOpen) {
@@ -819,6 +793,7 @@ interface ComboBoxOverlayProps {
     onFocus: (e: React.FocusEvent) => void;
     onBlur: (e: React.FocusEvent) => void;
   };
+  filter?: (nodes: Iterable<any>) => Iterable<any>;
 }
 
 function ComboBoxOverlay({
@@ -847,6 +822,7 @@ function ComboBoxOverlay({
   label,
   ariaLabel,
   compositeFocusProps,
+  filter,
 }: ComboBoxOverlayProps) {
   // Overlay positioning
   const {
@@ -895,7 +871,7 @@ function ComboBoxOverlay({
   const placementDirection = placement?.split(' ')[0] || direction;
 
   const overlayContent = (
-    <DisplayTransition exposeUnmounted isShown={isOpen}>
+    <DisplayTransition isShown={isOpen}>
       {({ phase, isShown, ref: transitionRef }) => (
         <ComboBoxOverlayElement
           {...mergeProps(
@@ -933,6 +909,7 @@ function ComboBoxOverlay({
             disabledKeys={disabledKeys}
             shouldUseVirtualFocus={true}
             items={items as any}
+            filter={filter}
             styles={listBoxStyles}
             optionStyles={optionStyles}
             sectionStyles={sectionStyles}
@@ -1176,67 +1153,173 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   }, [isPopoverOpen, effectiveSelectedKey]);
 
   // Filtering hook
-  const { filteredChildren, isFilterActive, setIsFilterActive } =
-    useComboBoxFiltering({
-      children,
-      effectiveInputValue,
-      filter,
-    });
+  const { filterFn, isFilterActive, setIsFilterActive } = useComboBoxFiltering({
+    effectiveInputValue,
+    filter,
+  });
 
-  // Freeze filtered children during close animation to prevent visual jumps
-  const frozenFilteredChildrenRef = useRef<ReactNode>(null);
-
-  useEffect(() => {
-    // Update frozen children only when popover is open
-    if (isPopoverOpen) {
-      frozenFilteredChildrenRef.current = filteredChildren;
-    }
-  }, [isPopoverOpen, filteredChildren]);
-
-  // Use frozen children during close animation, fresh children when open
-  const displayedFilteredChildren = isPopoverOpen
-    ? filteredChildren
-    : frozenFilteredChildrenRef.current ?? filteredChildren;
+  // Create local collection state for reading item data (labels, etc.)
+  // This allows us to read item labels even before the popover opens
+  const localCollectionState = useListState({
+    children,
+    items: sortedItems,
+    selectionMode: 'none', // Don't manage selection in this state
+  });
 
   const { isFocused, focusProps } = useFocus({ isDisabled });
 
+  // Helper to check if current input value is valid
+  const checkInputValidity = useCallback(() => {
+    if (!effectiveInputValue.trim()) {
+      return { isValid: false, singleMatchKey: null, filteredCount: 0 };
+    }
+
+    // Get filtered collection based on current input
+    const filteredNodes = filterFn(localCollectionState.collection);
+    const filteredItems: Array<{ key: Key; textValue: string }> = [];
+
+    // Flatten filtered nodes (handle sections)
+    for (const node of filteredNodes) {
+      if (node.type === 'section' && node.childNodes) {
+        for (const child of node.childNodes) {
+          if (child.type === 'item') {
+            filteredItems.push({
+              key: child.key,
+              textValue: child.textValue || '',
+            });
+          }
+        }
+      } else if (node.type === 'item') {
+        filteredItems.push({
+          key: node.key,
+          textValue: node.textValue || '',
+        });
+      }
+    }
+
+    const filteredCount = filteredItems.length;
+
+    // Check for exact match
+    const exactMatch = filteredItems.find(
+      (item) =>
+        item.textValue.toLowerCase() ===
+        effectiveInputValue.trim().toLowerCase(),
+    );
+
+    if (exactMatch) {
+      return { isValid: true, singleMatchKey: exactMatch.key, filteredCount };
+    }
+
+    // If exactly one filtered result, consider it valid
+    if (filteredCount === 1) {
+      return {
+        isValid: true,
+        singleMatchKey: filteredItems[0].key,
+        filteredCount,
+      };
+    }
+
+    return { isValid: false, singleMatchKey: null, filteredCount };
+  }, [effectiveInputValue, filterFn, localCollectionState.collection]);
+
   // Composite blur handler - fires when focus leaves the entire component
   const handleCompositeBlur = useEvent(() => {
-    // Always disable filter on blur
-    setIsFilterActive(false);
+    // NOTE: Do NOT disable filter yet; we need it active for validity check
 
-    // In allowsCustomValue mode with shouldCommitOnBlur, commit the input value
-    if (
-      allowsCustomValue &&
-      shouldCommitOnBlur &&
-      effectiveInputValue &&
-      effectiveSelectedKey == null
-    ) {
-      externalOnSelectionChange?.(effectiveInputValue as string);
-      if (!isControlledKey) {
-        setInternalSelectedKey(effectiveInputValue as Key);
+    // In allowsCustomValue mode
+    if (allowsCustomValue) {
+      // Commit the input value if it's non-empty and nothing is selected
+      if (
+        shouldCommitOnBlur &&
+        effectiveInputValue &&
+        effectiveSelectedKey == null
+      ) {
+        externalOnSelectionChange?.(effectiveInputValue as string);
+        if (!isControlledKey) {
+          setInternalSelectedKey(effectiveInputValue as Key);
+        }
+        onBlur?.();
+        setIsFilterActive(false);
+        return;
       }
-      // Call user's onBlur callback
-      onBlur?.();
-      return;
+
+      // Clear selection if input is empty
+      if (!String(effectiveInputValue).trim()) {
+        externalOnSelectionChange?.(null);
+        if (!isControlledKey) {
+          setInternalSelectedKey(null);
+        }
+        if (!isControlledInput) {
+          setInternalInputValue('');
+        }
+        onInputChange?.('');
+        onBlur?.();
+        setIsFilterActive(false);
+        return;
+      }
     }
 
-    // In clearOnBlur mode (only for non-custom-value mode), clear selection and input
-    if (clearOnBlur && !allowsCustomValue) {
-      externalOnSelectionChange?.(null);
-      if (!isControlledKey) {
-        setInternalSelectedKey(null);
+    // In non-custom-value mode, validate input and handle accordingly
+    if (!allowsCustomValue) {
+      const { isValid, singleMatchKey } = checkInputValidity();
+
+      // If there's exactly one filtered result, auto-select it
+      if (
+        isValid &&
+        singleMatchKey != null &&
+        singleMatchKey !== effectiveSelectedKey
+      ) {
+        const label = getItemLabel(singleMatchKey);
+
+        if (!isControlledKey) {
+          setInternalSelectedKey(singleMatchKey);
+        }
+        if (!isControlledInput) {
+          setInternalInputValue(label);
+        }
+        onInputChange?.(label);
+        externalOnSelectionChange?.(singleMatchKey as string | null);
+        onBlur?.();
+        setIsFilterActive(false);
+        return;
       }
-      if (!isControlledInput) {
-        setInternalInputValue('');
+
+      // If input is invalid (no exact match, not a single result)
+      if (!isValid) {
+        const trimmedInput = effectiveInputValue.trim();
+
+        // Clear if clearOnBlur is set or input is empty
+        if (clearOnBlur || !trimmedInput) {
+          externalOnSelectionChange?.(null);
+          if (!isControlledKey) {
+            setInternalSelectedKey(null);
+          }
+          if (!isControlledInput) {
+            setInternalInputValue('');
+          }
+          onInputChange?.('');
+          onBlur?.();
+          setIsFilterActive(false);
+          return;
+        }
+
+        // Reset input to current selected value (or empty if none)
+        const nextValue =
+          effectiveSelectedKey != null
+            ? getItemLabel(effectiveSelectedKey)
+            : '';
+
+        if (!isControlledInput) {
+          setInternalInputValue(nextValue);
+        }
+        onInputChange?.(nextValue);
+        onBlur?.();
+        setIsFilterActive(false);
+        return;
       }
-      onInputChange?.('');
-      // Call user's onBlur callback
-      onBlur?.();
-      return;
     }
 
-    // Reset input to show current selection (or empty if none)
+    // Fallback: Reset input to show current selection (or empty if none)
     const nextValue =
       effectiveSelectedKey != null ? getItemLabel(effectiveSelectedKey) : '';
 
@@ -1244,9 +1327,8 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
       setInternalInputValue(nextValue);
     }
     onInputChange?.(nextValue);
-
-    // Call user's onBlur callback
     onBlur?.();
+    setIsFilterActive(false);
   });
 
   // Composite focus hook - handles focus tracking across wrapper and portaled popover
@@ -1267,11 +1349,14 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   const listStateRef = useRef<any>(null);
   const focusInitAttemptsRef = useRef(0);
 
-  // Helper to get label from collection item
-  const getItemLabel = useCallback((key: Key): string => {
-    const item = listStateRef.current?.collection?.getItem(key);
-    return item?.textValue || String(key);
-  }, []);
+  // Helper to get label from local collection
+  const getItemLabel = useCallback(
+    (key: Key): string => {
+      const item = localCollectionState?.collection?.getItem(key);
+      return item?.textValue || String(key);
+    },
+    [localCollectionState?.collection],
+  );
 
   // Selection change handler
   const handleSelectionChange = useEvent((selection: Key | Key[] | null) => {
@@ -1359,9 +1444,6 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
 
     // Priority 2: fall back to defaultSelectedKey's label
     if (defaultSelectedKey) {
-      // Wait for collection to be ready
-      if (!listStateRef.current?.collection) return;
-
       const label = getItemLabel(defaultSelectedKey);
 
       setInternalInputValue(label);
@@ -1377,12 +1459,21 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
   ]);
 
   // Sync input value with controlled selectedKey
+  const lastSyncedSelectedKey = useRef<Key | null | undefined>(undefined);
+
   useEffect(() => {
     // Only run when selectedKey is controlled but inputValue is uncontrolled
     if (!isControlledKey || isControlledInput) return;
 
-    // Wait for collection to be ready
-    if (!listStateRef.current?.collection) return;
+    // Skip if the key hasn't actually changed (prevents unnecessary resets when collection rebuilds)
+    if (
+      lastSyncedSelectedKey.current !== undefined &&
+      lastSyncedSelectedKey.current === effectiveSelectedKey
+    ) {
+      return;
+    }
+
+    lastSyncedSelectedKey.current = effectiveSelectedKey;
 
     // Get the expected label for the current selection
     const expectedLabel =
@@ -1413,12 +1504,27 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
     : effectiveSelectedKey != null;
   let showClearButton = isClearable && hasValue && !isDisabled && !isReadOnly;
 
-  const hasResults = Boolean(
-    displayedFilteredChildren &&
-      (Array.isArray(displayedFilteredChildren)
-        ? displayedFilteredChildren.length > 0
-        : displayedFilteredChildren !== null),
-  );
+  // Check if there are any results after filtering
+  const hasResults = useMemo(() => {
+    if (!children) return false;
+    if (!Array.isArray(children) && children === null) return false;
+
+    // If we have a collection, check if filtering will produce any results
+    if (localCollectionState?.collection) {
+      const filteredNodes = filterFn(localCollectionState.collection);
+      const resultArray = Array.from(filteredNodes).flatMap((node: any) => {
+        if (node.type === 'section' && node.childNodes) {
+          return [...node.childNodes];
+        }
+
+        return [node];
+      });
+      return resultArray.length > 0;
+    }
+
+    // Fallback: check if children exists
+    return Array.isArray(children) ? children.length > 0 : true;
+  }, [children, localCollectionState?.collection, filterFn]);
 
   // Clear function
   let clearValue = useEvent(() => {
@@ -1674,10 +1780,11 @@ export const ComboBox = forwardRef(function ComboBox<T extends object>(
         label={label}
         ariaLabel={(props as any)['aria-label']}
         compositeFocusProps={compositeFocusProps}
+        filter={filterFn}
         onSelectionChange={handleSelectionChange}
         onClose={() => setIsPopoverOpen(false)}
       >
-        {displayedFilteredChildren}
+        {children}
       </ComboBoxOverlay>
     </ComboBoxWrapperElement>
   );

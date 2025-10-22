@@ -976,10 +976,14 @@ export const InDialog: StoryFn = () => {
   return (
     <DialogTrigger isOpen={isOpen} onOpenChange={setIsOpen}>
       <Button>Open Dialog with FilterListBox</Button>
-      <Dialog>
+      <Dialog
+        styles={{ display: 'grid', gridRows: '1sf' }}
+        isDismissable={false}
+      >
         <FilterListBox
           autoFocus
           size="large"
+          styles={{ border: false, radius: '1cr' }}
           searchPlaceholder="Search frameworks..."
         >
           <FilterListBox.Section title="Frontend">

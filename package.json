@@ -1,6 +1,6 @@
 {
   "name": "@cube-dev/ui-kit",
-  "version": "0.83.1",
+  "version": "0.84.0",
   "type": "module",
   "description": "UIKit for Cube Projects",
   "repository": {
@@ -10,7 +10,7 @@
   "module": "dist/es/index.js",
   "types": "dist/types/index.d.ts",
   "sideEffects": false,
-  "packageManager": "pnpm@10.14.0",
+  "packageManager": "pnpm@10.19.0",
   "exports": {
     ".": {
       "import": "./dist/es/index.js",
