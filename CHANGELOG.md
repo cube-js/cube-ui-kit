@@ -1,5 +1,13 @@
 # @cube-dev/ui-kit
 
+## 0.83.3
+
+### Patch Changes
+
+- [#838](https://github.com/cube-js/cube-ui-kit/pull/838) [`17518277`](https://github.com/cube-js/cube-ui-kit/commit/17518277e6bda8b495c0e74b884f6c97096760e3) Thanks [@tenphi](https://github.com/tenphi)! - Add ProgressBarIcon.
+
+- [#840](https://github.com/cube-js/cube-ui-kit/pull/840) [`5fb963f0`](https://github.com/cube-js/cube-ui-kit/commit/5fb963f040f1c1ec59bd63c6918cb5f6f6b7a210) Thanks [@tenphi](https://github.com/tenphi)! - Fix RadioGroup base layout.
+
 ## 0.83.2
 
 ### Patch Changes
