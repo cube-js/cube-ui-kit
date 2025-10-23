@@ -227,19 +227,21 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
         trigger
       )}
       <DisplayTransition isShown={state.isOpen && !isDisabled}>
-        {({ phase, isShown, ref: transitionRef }) => (
-          <TooltipContext.Provider
-            value={{
-              ...tooltipContextValue,
-              phase,
-              isShown,
-              ref: overlayRef,
-              transitionRef,
-            }}
-          >
-            <Portal>{tooltip}</Portal>
-          </TooltipContext.Provider>
-        )}
+        {({ phase, isShown, ref: transitionRef }) =>
+          isDisabled ? null : (
+            <TooltipContext.Provider
+              value={{
+                ...tooltipContextValue,
+                phase,
+                isShown,
+                ref: overlayRef,
+                transitionRef,
+              }}
+            >
+              <Portal>{tooltip}</Portal>
+            </TooltipContext.Provider>
+          )
+        }
       </DisplayTransition>
     </>
   );
