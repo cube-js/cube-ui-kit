@@ -629,7 +629,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
 ) => {
   let {
     children,
-    size,
+    size = 'medium',
     type = 'item',
     theme = 'default',
     mods,
