@@ -367,12 +367,10 @@ const ItemBaseElement = tasty({
       gridRow: 'span 2',
       width: {
         '': 'var(--actions-width, 0px)',
-        'with-actions-content': 'auto',
+        'with-actions-content': 'calc-size(max-content, size)',
       },
-      transition: {
-        '': false,
-        'with-action && !with-actions-content': 'width $transition ease-out',
-      },
+      transition: 'width $transition ease-out',
+      interpolateSize: 'allow-keywords',
     },
   },
   variants: {
@@ -660,6 +658,12 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     return 'icon'; // fallback
   }, [loadingSlot, icon, rightIcon]);
 
+  const showDescriptions = useMemo(() => {
+    const copyProps = { ...descriptionProps };
+    delete copyProps.id;
+    return !!(description || Object.keys(copyProps).length > 0);
+  }, [description, descriptionProps]);
+
   // Apply loading state to appropriate slots
   const finalIcon =
     isLoading && resolvedLoadingSlot === 'icon' ? <LoadingIcon /> : icon;
@@ -716,9 +720,9 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
       'with-label': !!(children || labelProps),
       'with-prefix': !!finalPrefix,
       'with-suffix': !!finalSuffix,
-      'with-description': !!description,
+      'with-description': showDescriptions,
       'with-description-block':
-        !!description && descriptionPlacement === 'block',
+        showDescriptions && descriptionPlacement === 'block',
       'with-actions': !!actions,
       'with-actions-content': !!(actions && actions !== true),
       checkbox: hasCheckbox,
@@ -732,7 +736,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     finalRightIcon,
     finalPrefix,
     finalSuffix,
-    description,
+    showDescriptions,
     descriptionPlacement,
     hasCheckbox,
     isSelected,
@@ -802,7 +806,7 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
               {children}
             </div>
           ) : null}
-          {description || descriptionProps ? (
+          {showDescriptions ? (
             <div data-element="Description" {...descriptionProps}>
               {description}
             </div>

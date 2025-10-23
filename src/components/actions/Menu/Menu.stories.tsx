@@ -1982,7 +1982,7 @@ export const ItemsWithActions = (props) => {
   };
 
   return (
-    <div style={{ padding: '20px', width: '380px' }}>
+    <div style={{ padding: '20px', width: '200px' }}>
       <Menu id="menu-with-actions" {...props} onAction={handleAction}>
         <Menu.Item
           key="file1"
@@ -1992,11 +1992,13 @@ export const ItemsWithActions = (props) => {
               <ItemAction
                 icon={<EditIcon />}
                 aria-label="Edit"
+                tooltip="Edit"
                 onPress={() => handleItemAction('file1', 'edit')}
               />
               <ItemAction
                 icon={<ClearIcon />}
                 aria-label="Delete"
+                tooltip="Delete"
                 onPress={() => handleItemAction('file1', 'delete')}
               />
             </>
