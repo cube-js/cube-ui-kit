@@ -21,7 +21,14 @@ export function ItemActionProvider({
 }: ItemActionProviderProps) {
   return (
     <ItemActionContext.Provider
-      value={{ type: type === 'item' ? 'neutral' : type }}
+      value={{
+        type:
+          type === 'item' || type === 'outline'
+            ? 'neutral'
+            : type === 'secondary'
+              ? 'clear'
+              : type,
+      }}
     >
       {children}
     </ItemActionContext.Provider>
