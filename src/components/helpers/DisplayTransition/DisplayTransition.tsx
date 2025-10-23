@@ -8,7 +8,7 @@ import {
   useState,
 } from 'react';
 
-const AUTO_FALLBACK_DURATION = 180;
+const AUTO_FALLBACK_DURATION = 500;
 
 type Phase = 'enter' | 'entered' | 'exit' | 'unmounted';
 

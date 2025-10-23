@@ -83,4 +83,31 @@ describe('dimensionStyle – width & height helpers', () => {
     const res = heightStyle({ height: 'stretch' }) as any;
     expect(res.height).toBe('auto');
   });
+
+  test('calc-size(auto) width', () => {
+    const res = widthStyle({ width: 'calc-size(auto)' }) as any;
+    expect(res.width).toBe('calc-size(auto)');
+    expect(res['min-width']).toBe('initial');
+    expect(res['max-width']).toBe('initial');
+  });
+
+  test('calc-size(auto) with min constraint', () => {
+    const res = widthStyle({ width: '100px calc-size(auto)' }) as any;
+    expect(res.width).toBe('auto');
+    expect(res['min-width']).toBe('100px');
+    expect(res['max-width']).toBe('calc-size(auto)');
+  });
+
+  test('parseStyle processes calc-size(auto) correctly', () => {
+    const parsed = parseStyle('calc-size(auto)');
+    expect(parsed.output).toBe('calc-size(auto)');
+    expect(parsed.groups[0].values).toEqual(['calc-size(auto)']);
+    expect(parsed.groups[0].mods).toEqual([]);
+  });
+
+  test('parseStyle processes calc-size with complex inner value', () => {
+    const parsed = parseStyle('calc-size(fit-content)');
+    expect(parsed.output).toBe('calc-size(fit-content)');
+    expect(parsed.groups[0].values).toEqual(['calc-size(fit-content)']);
+  });
 });

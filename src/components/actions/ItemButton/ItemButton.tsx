@@ -1,5 +1,6 @@
 import { FocusableRef } from '@react-types/shared';
 import {
+  CSSProperties,
   forwardRef,
   ReactNode,
   useLayoutEffect,
@@ -106,7 +107,7 @@ const ItemButton = forwardRef(function ItemButton(
         setActionsWidth(width);
       }
     }
-  }, [actions, areActionsVisible]);
+  }, [actions]);
 
   const { hoverProps, isHovered } = useHover({});
 
@@ -137,8 +138,8 @@ const ItemButton = forwardRef(function ItemButton(
               areActionsVisible || !showActionsOnHover
                 ? `${actionsWidth}px`
                 : '0px',
-            '--size': typeof size === 'number' ? `${size}px` : undefined,
-          } as any
+            ...(typeof size === 'number' && { '--size': `${size}px` }),
+          } as CSSProperties
         }
       >
         {button}
