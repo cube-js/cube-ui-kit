@@ -19,9 +19,10 @@ import { ItemActionProvider } from '../ItemActionContext';
 import { CubeUseActionProps, useAction } from '../use-action';
 
 export interface CubeItemButtonProps
-  extends CubeItemBaseProps,
+  extends Omit<CubeItemBaseProps, 'size'>,
     Omit<CubeUseActionProps, 'as'> {
   actions?: ReactNode;
+  size?: Omit<CubeItemBaseProps['size'], 'inline'>;
   wrapperStyles?: Styles;
   showActionsOnHover?: boolean;
 }

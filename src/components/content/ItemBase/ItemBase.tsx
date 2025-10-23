@@ -90,6 +90,7 @@ export interface CubeItemBaseProps extends BaseProps, ContainerStyleProps {
     | 'medium'
     | 'large'
     | 'xlarge'
+    | 'inline'
     | number
     | (string & {});
   type?:
