@@ -90,7 +90,6 @@ const ItemButton = forwardRef(function ItemButton(
     onPress,
     actions,
     size = 'medium',
-    styles,
     wrapperStyles,
     showActionsOnHover = false,
     ...rest
