@@ -26,7 +26,8 @@ export interface CubeTooltipProviderProps
 
 export function TooltipProvider(props: CubeTooltipProviderProps): ReactElement {
   const [rendered, setRendered] = useState(false);
-  const { title, children, tooltipStyles, width, ...otherProps } = props;
+  const { title, children, tooltipStyles, width, isDisabled, ...otherProps } =
+    props;
 
   useEffect(() => {
     setRendered(true);
@@ -48,7 +49,11 @@ export function TooltipProvider(props: CubeTooltipProviderProps): ReactElement {
   // Both patterns pass through to TooltipTrigger
   // The difference is whether we pass function or element as first child
   return (
-    <TooltipTrigger {...otherProps} disableFocusableProvider={isFunction}>
+    <TooltipTrigger
+      {...otherProps}
+      isDisabled={isDisabled}
+      disableFocusableProvider={isFunction}
+    >
       {isFunction ||
       isValidElement(children) ||
       typeof children === 'string' ? (
@@ -56,9 +61,13 @@ export function TooltipProvider(props: CubeTooltipProviderProps): ReactElement {
       ) : (
         <>{children}</>
       )}
-      <Tooltip styles={tooltipStyles} {...(width ? { width } : null)}>
-        {title}
-      </Tooltip>
+      {isDisabled ? (
+        <div />
+      ) : (
+        <Tooltip styles={tooltipStyles} {...(width ? { width } : null)}>
+          {title}
+        </Tooltip>
+      )}
     </TooltipTrigger>
   );
 }

@@ -477,7 +477,7 @@ describe('<Menu />', () => {
   it('should handle keyboard navigation', async () => {
     const onAction = jest.fn();
 
-    const { getByRole } = render(
+    const { getByRole } = renderWithRoot(
       <Menu id="test-menu" aria-label="Test menu" onAction={onAction}>
         {basicItems}
       </Menu>,
@@ -496,7 +496,7 @@ describe('<Menu />', () => {
   });
 
   it('should handle keyboard navigation with focus wrapping', async () => {
-    const { getByRole } = render(
+    const { getByRole } = renderWithRoot(
       <Menu shouldFocusWrap id="test-menu" aria-label="Test menu">
         {basicItems}
       </Menu>,
@@ -516,7 +516,7 @@ describe('<Menu />', () => {
   });
 
   it('should handle keyboard navigation with arrow keys', async () => {
-    const { getByRole } = render(
+    const { getByRole } = renderWithRoot(
       <Menu id="test-menu" aria-label="Test menu">
         {basicItems}
       </Menu>,
@@ -549,7 +549,7 @@ describe('<Menu />', () => {
   });
 
   it('should handle focus with first strategy', () => {
-    const { container } = render(
+    const { container } = renderWithRoot(
       <Menu id="test-menu" aria-label="Test menu" autoFocus="first">
         {basicItems}
       </Menu>,
@@ -561,7 +561,7 @@ describe('<Menu />', () => {
   });
 
   it('should handle focus with last strategy', () => {
-    const { container } = render(
+    const { container } = renderWithRoot(
       <Menu id="test-menu" aria-label="Test menu" autoFocus="last">
         {basicItems}
       </Menu>,

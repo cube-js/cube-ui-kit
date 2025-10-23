@@ -144,7 +144,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
   let tooltipTriggerRef = externalRef ?? internalRef;
   let overlayRef = useRef<HTMLElement | null>(null);
 
-  let state = useTooltipTriggerState({ delay, ...props });
+  let state = useTooltipTriggerState({ delay, ...props, isDismissable: false });
 
   let { triggerProps, tooltipProps } = useTooltipTrigger(
     {
@@ -152,6 +152,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
       delay,
       isOpen,
       onOpenChange,
+      isDismissable: false,
       defaultOpen,
     },
     state,
@@ -165,6 +166,7 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
       overlayRef,
       offset,
       crossOffset,
+      isDismissable: false,
       isOpen: state.isOpen,
     });
 
@@ -227,21 +229,19 @@ export function TooltipTrigger(props: CubeTooltipTriggerProps) {
         trigger
       )}
       <DisplayTransition isShown={state.isOpen && !isDisabled}>
-        {({ phase, isShown, ref: transitionRef }) =>
-          isDisabled ? null : (
-            <TooltipContext.Provider
-              value={{
-                ...tooltipContextValue,
-                phase,
-                isShown,
-                ref: overlayRef,
-                transitionRef,
-              }}
-            >
-              <Portal>{tooltip}</Portal>
-            </TooltipContext.Provider>
-          )
-        }
+        {({ phase, isShown, ref: transitionRef }) => (
+          <TooltipContext.Provider
+            value={{
+              ...tooltipContextValue,
+              phase,
+              isShown,
+              ref: overlayRef,
+              transitionRef,
+            }}
+          >
+            <Portal>{tooltip}</Portal>
+          </TooltipContext.Provider>
+        )}
       </DisplayTransition>
     </>
   );

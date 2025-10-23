@@ -414,10 +414,12 @@ export function useAutoTooltip({
   tooltip,
   children,
   labelProps,
+  isDynamicLabel = false, // if actions are set
 }: {
   tooltip: CubeItemBaseProps['tooltip'];
   children: ReactNode;
   labelProps?: Props;
+  isDynamicLabel?: boolean;
 }) {
   // Determine if auto tooltip is enabled
   // Auto tooltip only works when children is a string (overflow detection needs text)
@@ -551,12 +553,15 @@ export function useAutoTooltip({
 
         // Boolean tooltip - auto tooltip on overflow
         if (tooltip === true) {
-          if (children || labelProps) {
+          if (
+            (children || labelProps) &&
+            (isLabelOverflowed || isDynamicLabel)
+          ) {
             return (
               <TooltipProvider
                 placement={defaultTooltipPlacement}
                 title={children}
-                isDisabled={!isLabelOverflowed}
+                isDisabled={!isLabelOverflowed && isDynamicLabel}
               >
                 {(triggerProps, ref) => renderElement(triggerProps, ref)}
               </TooltipProvider>
@@ -581,13 +586,18 @@ export function useAutoTooltip({
           }
 
           // If title is provided with auto=true, OR no title but auto behavior enabled
-          if (children || labelProps) {
+          if (
+            (children || labelProps) &&
+            (isLabelOverflowed || isDynamicLabel)
+          ) {
             return (
               <TooltipProvider
                 placement={defaultTooltipPlacement}
                 title={tooltipProps.title ?? children}
                 isDisabled={
-                  !isLabelOverflowed && tooltipProps.isDisabled !== true
+                  !isLabelOverflowed &&
+                  isDynamicLabel &&
+                  tooltipProps.isDisabled !== true
                 }
                 {...tooltipProps}
               >
@@ -753,7 +763,12 @@ const ItemBase = <T extends HTMLElement = HTMLDivElement>(
     labelProps: finalLabelProps,
     labelRef,
     renderWithTooltip,
-  } = useAutoTooltip({ tooltip, children, labelProps });
+  } = useAutoTooltip({
+    tooltip,
+    children,
+    labelProps,
+    isDynamicLabel: !!actions,
+  });
 
   // Create a stable render function that doesn't call hooks
   const renderItemElement = useCallback(
