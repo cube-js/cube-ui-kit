@@ -4,7 +4,6 @@ import { userEvent, within } from 'storybook/test';
 import {
   CheckIcon,
   DatabaseIcon,
-  EditIcon,
   FilterIcon,
   PlusIcon,
   RightIcon,

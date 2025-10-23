@@ -71,6 +71,14 @@ const InputElement = tasty({
   styles: DEFAULT_INPUT_STYLES,
 });
 
+const ComboBoxOverlayWrapper = tasty({
+  qa: 'ComboBoxOverlayWrapper',
+  styles: {
+    position: 'absolute',
+    zIndex: 1000,
+  },
+});
+
 const ComboBoxOverlayElement = tasty({
   qa: 'ComboBoxOverlay',
   styles: {
@@ -78,7 +86,7 @@ const ComboBoxOverlayElement = tasty({
     gridRows: '1sf',
     gridColumns: '1sf',
     width: '$min-width max-content 50vw',
-    height: 'initial max-content (50vh - $size)',
+    height: 'initial max-content (50vh - 5x)',
     overflow: 'auto',
     background: '#white',
     radius: '1cr',
@@ -89,7 +97,6 @@ const ComboBoxOverlayElement = tasty({
       '': false,
       hidden: true,
     },
-
     transition:
       'translate $transition ease-out, scale $transition ease-out, theme $transition ease-out',
     translate: {
@@ -873,56 +880,54 @@ function ComboBoxOverlay({
   const overlayContent = (
     <DisplayTransition isShown={isOpen}>
       {({ phase, isShown, ref: transitionRef }) => (
-        <ComboBoxOverlayElement
-          {...mergeProps(
-            overlayPositionProps,
-            overlayBehaviorProps,
-            compositeFocusProps,
-          )}
-          ref={(value) => {
-            transitionRef(value as HTMLElement | null);
-            (popoverRef as any).current = value;
-          }}
-          data-placement={placementDirection}
-          data-phase={phase}
-          mods={{
-            open: isShown,
-            hidden: phase === 'unmounted',
-          }}
-          styles={overlayStyles}
-          style={{
-            '--min-width': comboBoxWidth ? `${comboBoxWidth}px` : undefined,
-            ...overlayPositionProps.style,
-          }}
+        <ComboBoxOverlayWrapper
+          {...mergeProps(overlayPositionProps, overlayBehaviorProps)}
+          ref={popoverRef}
+          style={overlayPositionProps.style}
         >
-          <ListBox
-            ref={listBoxRef}
-            focusOnHover
-            disableSelectionToggle
-            id={`ComboBoxListBox-${comboBoxId}`}
-            aria-label={
-              ariaLabel || (typeof label === 'string' ? label : 'Options')
-            }
-            selectedKey={effectiveSelectedKey}
-            selectionMode="single"
-            isDisabled={isDisabled}
-            disabledKeys={disabledKeys}
-            shouldUseVirtualFocus={true}
-            items={items as any}
-            filter={filter}
-            styles={listBoxStyles}
-            optionStyles={optionStyles}
-            sectionStyles={sectionStyles}
-            headingStyles={headingStyles}
-            stateRef={listStateRef}
+          <ComboBoxOverlayElement
+            {...compositeFocusProps}
+            ref={transitionRef}
+            data-placement={placementDirection}
+            data-phase={phase}
             mods={{
-              popover: true,
+              open: isShown,
+              hidden: phase === 'unmounted',
             }}
-            onSelectionChange={onSelectionChange}
+            styles={overlayStyles}
+            style={{
+              '--min-width': comboBoxWidth ? `${comboBoxWidth}px` : undefined,
+            }}
           >
-            {children as any}
-          </ListBox>
-        </ComboBoxOverlayElement>
+            <ListBox
+              ref={listBoxRef}
+              focusOnHover
+              disableSelectionToggle
+              id={`ComboBoxListBox-${comboBoxId}`}
+              aria-label={
+                ariaLabel || (typeof label === 'string' ? label : 'Options')
+              }
+              selectedKey={effectiveSelectedKey}
+              selectionMode="single"
+              isDisabled={isDisabled}
+              disabledKeys={disabledKeys}
+              shouldUseVirtualFocus={true}
+              items={items as any}
+              filter={filter}
+              styles={listBoxStyles}
+              optionStyles={optionStyles}
+              sectionStyles={sectionStyles}
+              headingStyles={headingStyles}
+              stateRef={listStateRef}
+              mods={{
+                popover: true,
+              }}
+              onSelectionChange={onSelectionChange}
+            >
+              {children as any}
+            </ListBox>
+          </ComboBoxOverlayElement>
+        </ComboBoxOverlayWrapper>
       )}
     </DisplayTransition>
   );
