@@ -249,7 +249,7 @@ const ItemBaseElement = tasty({
     },
 
     $size: {
-      '': 'var(--size, $size-md)',
+      '': '$size-md',
       '[data-size="xsmall"]': '$size-xs',
       '[data-size="small"]': '$size-sm',
       '[data-size="medium"]': '$size-md',
